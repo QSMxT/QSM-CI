@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 # install dependencies
 echo "[INFO] Downloading dependencies"
 pip install qsm-forward webdavclient3

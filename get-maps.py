@@ -26,7 +26,7 @@ def get_maps():
     client = webdav_connect()            
     client.download_sync(
         remote_path="QSMFUNCTOR-Q0748/qsm-challenge-and-head-phantom/head-phantom-maps.tar",
-        local_path=os.path.join(tmp_dir, "head-phantom-maps.tar")
+        local_path=os.path.join(os.path.abspath('.'), "head-phantom-maps.tar")
     )
 
 if __name__ == "__main__":
