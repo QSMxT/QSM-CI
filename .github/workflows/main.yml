@@ -12,6 +12,9 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Test test.sh
+      env:
+        RDM_USER: ${{ secrets.RDM_USER }}
+        RDM_KEY: ${{ secrets.RDM_KEY }}
       run: |
         /bin/bash test.sh
         
