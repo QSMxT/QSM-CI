@@ -1,0 +1,17 @@
+name: Test
+on:
+  workflow_dispatch:
+  repository_dispatch:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+jobs:
+  test_install:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Test test.sh
+      run: |
+        /bin/bash test.sh
+        
