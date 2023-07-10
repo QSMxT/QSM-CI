@@ -8,7 +8,7 @@ if command -v python >/dev/null 2>&1; then
 else
     echo "Python is not installed. Installing..."
     sudo apt-get update
-    sudo apt-get install python -y
+    sudo apt-get install python3 -y
 fi
 
 # install dependencies
