@@ -6,21 +6,21 @@ runners:
     region: eu-frankfurt-1
     labels:
       - cirun-oracle
-  - name: "nectar-runner-medium"
+  - name: "cirun-nectar-medium"
     cloud: "openstack"
     instance_type: "r3.medium"
     machine_image: "4adcec13-2291-4bff-987f-d87f98d24379"
     region: Melbourne
     labels:
       - "cirun-nectar-medium"
-  - name: "nectar-runner-small"
+  - name: "cirun-nectar-small"
     cloud: "openstack"
     instance_type: "r3.small"
     machine_image: "4adcec13-2291-4bff-987f-d87f98d24379"
     region: Melbourne
     labels:
       - "cirun-nectar-small"  
-  - name: "nectar-runner-large"
+  - name: "cirun-nectar-large"
     cloud: "openstack"
     instance_type: "r3.large"
     machine_image: "4adcec13-2291-4bff-987f-d87f98d24379"
