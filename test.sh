@@ -13,7 +13,7 @@ fi
 
 # install dependencies
 echo "[INFO] Downloading dependencies"
-pip install qsm-forward webdavclient3
+pip install qsm-forward==0.11 webdavclient3
 export PATH=$PATH:/home/runnerx/.local/bin
 
 # download head-phantom-maps
