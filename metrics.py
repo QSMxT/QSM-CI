@@ -14,7 +14,7 @@ Example:
     >>> roi = np.random.randint(0, 2, size=(100, 100, 100), dtype=bool)
     >>> metrics = metrics.all_metrics(pred_data, ref_data, roi)
 
-Author: Boyi Du <boyi.du@uq.net.au>
+Authors: Boyi Du <boyi.du@uq.net.au>, Ashley Stewart <ashley.stewart@uq.edu.au>
 
 """
 
