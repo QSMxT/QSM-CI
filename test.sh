@@ -26,3 +26,15 @@ rm head-phantom-maps.tar
 echo "[INFO] Simulating BIDS dataset"
 qsm-forward head-phantom-maps/ bids
 
+# install qsmxt
+# ...
+
+# do reconstruction using qsmxt
+# run_2_qsm.py bids/ output/ --premade nextqsm
+
+# run metrics + generate figure - pass command-line arguments
+# python metrics.py bids/ output/
+
+# display figure to github
+# ...
+

@@ -229,3 +229,20 @@ def all_metrics(pred_data, ref_data, roi=None):
 
     return d
 
+if __name__ == "__main__":
+    
+    # get command-line arguments
+    # ... - argparse (python module; e.g. import argparse)
+    
+    # load nifti images (ground truth + recon) - should for all ground truth images and all reconstructions
+    # ...
+    
+    # do metrics
+    # ...
+    
+    # generate figures
+    # ...
+    
+    # save figures as pngs
+    # ...
+    
