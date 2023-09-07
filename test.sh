@@ -26,6 +26,9 @@ rm head-phantom-maps.tar
 echo "[INFO] Simulating BIDS dataset"
 qsm-forward head-phantom-maps/ bids
 
+# create reconstructions folder
+mkdir recons
+
 # install qsmxt
 echo "[INFO] Pulling QSMxT image"
 sudo docker pull vnmd/qsmxt_5.1.0:20230905
@@ -37,12 +40,16 @@ echo "[INFO] Starting QSMxT container"
 docker start qsmxt-container
 
 # do reconstruction using qsmxt
-# run_2_qsm.py bids/ output/ --premade nextqsm
 echo "[INFO] Starting QSM reconstruction"
-docker exec qsmxt-container bash -c "qsmxt /tmp/bids/ /tmp/output_dir --premade 'fast' --auto_yes"
+docker exec qsmxt-container bash -c "qsmxt /tmp/bids/ /tmp/qsmxt_output --premade 'fast' --auto_yes"
+
+echo "[INFO] Collecting QSMxT results"
+mv qsmxt_output/qsm recons/qsmxt
+rm -rf qsmxt_output/
+tree recons/
 
 # run metrics + generate figure - pass command-line arguments
-# python metrics.py bids/ output/
+# python metrics.py bids/ recons/
 
 # display figure to github
 # ...
