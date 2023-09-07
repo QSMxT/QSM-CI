@@ -32,14 +32,8 @@ sudo docker pull vnmd/qsmxt_5.1.0:20230905
 
 echo "[INFO] Creating QSMxT container"
 docker create --name qsmxt-container -it \
-    -v `pwd`:/tmp \
-    --env WEBDAV_LOGIN="${WEBDAV_LOGIN}" \
-    --env WEBDAV_PASSWORD="${WEBDAV_PASSWORD}" \
-    --env FREEIMAGE_KEY="${FREEIMAGE_KEY}" \
-    --env OSF_TOKEN="${OSF_TOKEN}" \
-    --env OSF_USER="${OSF_USER}" \
-    --env OSF_PASS="${OSF_PASS}" \
-    ${container} \
+    -v `pwd`:/tmp /
+    vnmd/qsmxt_5.1.0:20230905 \
     /bin/bash
 
 echo "[INFO] Starting QSMxT container"
