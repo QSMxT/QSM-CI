@@ -27,10 +27,12 @@ echo "[INFO] Simulating BIDS dataset"
 qsm-forward head-phantom-maps/ bids
 
 # install qsmxt
-echo "[INFO] Installing QSMxT"
+echo "[INFO] Pulling QSMxT image"
 sudo docker pull vnmd/qsmxt_5.1.0:20230905
+
+echo "[INFO] Creating QSMxT container"
 docker create --name qsmxt-container -it \
-    -v `pwd`:`pwd` \
+    -v `pwd`:/tmp \
     --env WEBDAV_LOGIN="${WEBDAV_LOGIN}" \
     --env WEBDAV_PASSWORD="${WEBDAV_PASSWORD}" \
     --env FREEIMAGE_KEY="${FREEIMAGE_KEY}" \
@@ -39,11 +41,14 @@ docker create --name qsmxt-container -it \
     --env OSF_PASS="${OSF_PASS}" \
     ${container} \
     /bin/bash
+
+echo "[INFO] Starting QSMxT container"
 docker start qsmxt-container
 
 # do reconstruction using qsmxt
 # run_2_qsm.py bids/ output/ --premade nextqsm
-docker exec qsmxt-container bash -c "qsmxt bids/ output_dir --premade 'fast' --auto_yes"
+echo "[INFO] Starting QSM reconstruction"
+docker exec qsmxt-container bash -c "qsmxt /tmp/bids/ /tmp/output_dir --premade 'fast' --auto_yes"
 
 # run metrics + generate figure - pass command-line arguments
 # python metrics.py bids/ output/
