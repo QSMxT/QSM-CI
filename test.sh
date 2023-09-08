@@ -26,9 +26,6 @@ rm head-phantom-maps.tar
 echo "[INFO] Simulating BIDS dataset"
 qsm-forward head-phantom-maps/ bids
 
-# create reconstructions folder
-mkdir recons
-
 # install qsmxt
 echo "[INFO] Pulling QSMxT image"
 sudo docker pull vnmd/qsmxt_5.1.0:20230905
@@ -41,10 +38,10 @@ docker start qsmxt-container
 
 # do reconstruction using qsmxt
 echo "[INFO] Starting QSM reconstruction"
-mkdir -p qsmxt_output/qsm
 docker exec qsmxt-container bash -c "qsmxt /tmp/bids/ /tmp/qsmxt_output --premade 'fast' --auto_yes"
 
 echo "[INFO] Collecting QSMxT results"
+sudo chown -R $(whoami): qsmxt_output/qsm
 mv qsmxt_output/qsm recons/qsmxt
 rm -rf qsmxt_output/
 tree recons/
