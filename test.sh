@@ -41,6 +41,7 @@ docker start qsmxt-container
 
 # do reconstruction using qsmxt
 echo "[INFO] Starting QSM reconstruction"
+mkdir -p qsmxt_output/qsm
 docker exec qsmxt-container bash -c "qsmxt /tmp/bids/ /tmp/qsmxt_output --premade 'fast' --auto_yes"
 
 echo "[INFO] Collecting QSMxT results"
