@@ -25,6 +25,7 @@ rm head-phantom-maps.tar
 # generate bids data
 echo "[INFO] Simulating BIDS dataset"
 qsm-forward head-phantom-maps/ bids
+rm -rf head-phantom-maps/
 
 # install qsmxt
 echo "[INFO] Pulling QSMxT image"
@@ -42,6 +43,7 @@ docker exec qsmxt-container bash -c "qsmxt /tmp/bids/ /tmp/qsmxt_output --premad
 
 echo "[INFO] Collecting QSMxT results"
 sudo chown -R $(whoami): qsmxt_output/qsm
+rm -rf qsmxt_output/workflow
 mv qsmxt_output/qsm recons/qsmxt
 rm -rf qsmxt_output/
 tree recons/
