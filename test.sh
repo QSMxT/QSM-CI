@@ -42,10 +42,9 @@ echo "[INFO] Starting QSM reconstruction"
 docker exec qsmxt-container bash -c "qsmxt /tmp/bids/ /tmp/qsmxt_output --premade 'fast' --auto_yes"
 
 echo "[INFO] Collecting QSMxT results"
-sudo chown -R $(whoami): qsmxt_output/qsm
-rm -rf qsmxt_output/workflow
-mv qsmxt_output/qsm recons/qsmxt
-rm -rf qsmxt_output/
+sudo rm -rf qsmxt_output/workflow
+sudo mv qsmxt_output/qsm recons/qsmxt
+sudo rm -rf qsmxt_output/
 tree recons/
 
 # run metrics + generate figure - pass command-line arguments
