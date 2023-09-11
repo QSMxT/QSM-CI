@@ -27,6 +27,9 @@ echo "[INFO] Simulating BIDS dataset"
 qsm-forward head-phantom-maps/ bids
 rm -rf head-phantom-maps/
 
+# create output directory
+mkdir recons/
+
 # install qsmxt
 echo "[INFO] Pulling QSMxT image"
 sudo docker pull vnmd/qsmxt_5.1.0:20230905
