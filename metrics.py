@@ -23,7 +23,6 @@ from sklearn.metrics import mean_squared_error
 from skimage.metrics import structural_similarity
 from skimage.metrics import normalized_mutual_information
 from scipy.ndimage import gaussian_laplace
-from numpy.linalg import norm
 from skimage.measure import pearson_corr_coeff
 
 def calculate_rmse(pred_data, ref_data):
@@ -63,9 +62,12 @@ def calculate_nrmse(pred_data, ref_data):
     float
         The calculated NRMSE value.
 
+    References
+    ----------
+    .. [1] https://github.com/scikit-image/scikit-image/blob/v0.21.0/skimage/metrics/simple_metrics.py#L50-L108
     """
     rmse = calculate_rmse(pred_data, ref_data)
-    nrmse = rmse / np.linalg.norm(pred_data) * 100
+    nrmse = rmse * np.sqrt(len(ref_data)) / np.linalg.norm(ref_data) * 100 # Frobenius norm
     return nrmse
 
 def calculate_hfen(pred_data, ref_data):
@@ -83,11 +85,14 @@ def calculate_hfen(pred_data, ref_data):
     -------
     float
         The calculated HFEN value.
+    References
+    ----------
+    .. [1] https://doi.org/10.1002/mrm.26830
 
     """
     LoG_pred = gaussian_laplace(pred_data, sigma = 1.5)
     LoG_ref = gaussian_laplace(ref_data, sigma = 1.5)
-    hfen = norm(LoG_ref - LoG_pred)/norm(LoG_pred)
+    hfen = np.linalg.norm(LoG_ref - LoG_pred)/np.linalg.norm(LoG_ref)
     return hfen
 
 def calculate_xsim(pred_data, ref_data):
@@ -202,7 +207,7 @@ def all_metrics(pred_data, ref_data, roi=None):
     Returns
     -------
     dict
-        A dictionary of calculated error metrics, including RMSE, NRMSE, FHEN, XSIM, MAD, 
+        A dictionary of calculated error metrics, including RMSE, NRMSE, HFEN, XSIM, MAD, 
         CC (Pearson Correlation Coefficient), NMI (Normalized Mutual Information) and GXE 
         (Gradient difference error).
 
@@ -220,7 +225,7 @@ def all_metrics(pred_data, ref_data, roi=None):
 
     d['RMSE'] = calculate_rmse(pred_data[roi], ref_data[roi])
     d['NRMSE'] = calculate_nrmse(pred_data[roi], ref_data[roi])
-    d['FHEN'] = calculate_hfen(pred_data, ref_data)  # does not flatten
+    d['HFEN'] = calculate_hfen(pred_data, ref_data)  # does not flatten
     d['MAD'] = calculate_mad(pred_data[roi], ref_data[roi])
     d['XSIM'] = calculate_xsim(pred_data, ref_data)  # does not flatten
     d['CC'] = pearson_corr_coeff(pred_data[roi], ref_data[roi])
@@ -229,7 +234,7 @@ def all_metrics(pred_data, ref_data, roi=None):
 
     return d
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
     
     # get command-line arguments
     # ... - argparse (python module; e.g. import argparse)
