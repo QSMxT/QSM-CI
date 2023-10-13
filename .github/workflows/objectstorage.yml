@@ -7,13 +7,6 @@ on:
   pull_request:
     branches: [ main ]
 
-env:
-  OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD }}
-  OS_PROJECT_ID: ${{ secrets.SWIFT_OS_PROJECT_ID }}
-  OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME }}
-  OS_APPLICATION_CREDENTIAL_ID: ${{ secrets.SWIFT_OS_APPLICATION_CREDENTIAL_ID }}
-  OS_APPLICATION_CREDENTIAL_SECRET: ${{ secrets.SWIFT_OS_APPLICATION_CREDENTIAL_SECRET }}
-
 jobs:
   upload:
     runs-on: ubuntu-22.04
@@ -21,8 +14,13 @@ jobs:
     - uses: actions/checkout@v3
     - name: upload
       env:
-        RDM_USER: ${{ secrets.RDM_USER }}
-        RDM_KEY: ${{ secrets.RDM_KEY }}
+        OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD }}
+        OS_PROJECT_ID: ${{ secrets.SWIFT_OS_PROJECT_ID }}
+        OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME }}
+        OS_APPLICATION_CREDENTIAL_ID: ${{ secrets.SWIFT_OS_APPLICATION_CREDENTIAL_ID }}
+        OS_APPLICATION_CREDENTIAL_SECRET: ${{ secrets.SWIFT_OS_APPLICATION_CREDENTIAL_SECRET }}
+        PARSE_APPLICATION_ID: ${{ secrets.PARSE_APPLICATION_ID }}
+        PARSE_REST_API_KEY: ${{ secrets.PARSE_REST_API_KEY }}
       run: |
         /bin/bash upload.sh
         
