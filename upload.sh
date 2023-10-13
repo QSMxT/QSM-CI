@@ -3,16 +3,18 @@
 set -e
 
 for file in `ls recons/qsmxt/*.nii`; do
-    IMAGE_HASH=$(md5sum $file | awk '{print $1}')
+    IMAGE_HASH=$(md5sum "$file" | awk '{print $1}')
     echo $IMAGE_HASH
-    mv $file ${IMAGE_HASH}_$file
+    DIRNAME=$(dirname "$file")
+    BASENAME=$(basename "$file")
+    mv "$file" "${DIRNAME}/${IMAGE_HASH}_${BASENAME}"
 
     # Upload to Nectar Swift Object Storage
-    URL=https://object-store.rc.nectar.org.au:8888/v1/AUTH_dead991e1fa847e3afcca2d3a7041f5d/qsmxt/${IMAGE_HASH}_$file
+    URL=https://object-store.rc.nectar.org.au:8888/v1/AUTH_dead991e1fa847e3afcca2d3a7041f5d/qsmxt/${IMAGE_HASH}_${BASENAME}
     if curl --output /dev/null --silent --head --fail "${URL}"; then
-        echo "[DEBUG] ${IMAGE_HASH}_$file exists in nectar swift object storage"
+        echo "[DEBUG] ${IMAGE_HASH}_${BASENAME} exists in nectar swift object storage"
     else
-        echo "[DEBUG] ${IMAGE_HASH}_$file does not exist yet in nectar swift - uploading it there as well!"
+        echo "[DEBUG] ${IMAGE_HASH}_${BASENAME} does not exist yet in nectar swift - uploading it there as well!"
 
         if [ -n "$swift_setup_done" ]; then
             echo "Setup already done. Skipping."
@@ -30,11 +32,11 @@ for file in `ls recons/qsmxt/*.nii`; do
             export swift_setup_done="true"
         fi
 
-        swift upload qsmxt ${IMAGE_HASH}_$file --segment-size 1073741824
+        swift upload qsmxt ${IMAGE_HASH}_${BASENAME} --segment-size 1073741824
 
         # Check if it is uploaded to Nectar Swift Object Storage and if so, add it to the database
         if curl --output /dev/null --silent --head --fail "${URL}"; then
-            echo "[DEBUG] ${IMAGE_HASH}_$file exists in nectar swift object storage"
+            echo "[DEBUG] ${IMAGE_HASH}_${BASENAME} exists in nectar swift object storage"
 
             curl -X POST \
             -H "X-Parse-Application-Id: '"${PARSE_APPLICATION_ID}"'" \
@@ -44,7 +46,7 @@ for file in `ls recons/qsmxt/*.nii`; do
             https://parseapi.back4app.com/classes/Images
 
         else
-            echo "[DEBUG] ${IMAGE_HASH}_$file does not exist yet in nectar swift"
+            echo "[DEBUG] ${IMAGE_HASH}_${BASENAME} does not exist yet in nectar swift"
             exit 2
         fi
     fi
