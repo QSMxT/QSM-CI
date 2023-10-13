@@ -16,8 +16,8 @@ pip install argparse numpy nibabel scikit-learn scikit-image scipy
 
 # run metrics
 python metrics/metrics.py \
-    --ground_truth "bids/derivatives/qsm-forward/sub-1/anat/sub-1_Chimap.nii" \
-    --recon "recons/qsmxt/qsm/*.nii" \
+    "bids/derivatives/qsm-forward/sub-1/anat/sub-1_Chimap.nii" \
+    "recons/qsmxt/qsm/*.nii" \
     --roi "bids/derivatives/qsm-forward/sub-1/anat/sub-1_mask.nii"
 
 # display figure to github

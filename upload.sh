@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 set -e
 
 # Check if Python is installed and if not install it
