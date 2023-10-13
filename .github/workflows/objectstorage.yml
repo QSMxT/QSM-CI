@@ -6,8 +6,16 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+
+env:
+  OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD }}
+  OS_PROJECT_ID: ${{ secrets.SWIFT_OS_PROJECT_ID }}
+  OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME }}
+  OS_APPLICATION_CREDENTIAL_ID: ${{ secrets.SWIFT_OS_APPLICATION_CREDENTIAL_ID }}
+  OS_APPLICATION_CREDENTIAL_SECRET: ${{ secrets.SWIFT_OS_APPLICATION_CREDENTIAL_SECRET }}
+
 jobs:
-  test_install:
+  upload:
     runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v3
