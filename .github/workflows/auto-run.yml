@@ -60,7 +60,7 @@ jobs:
     needs: list-algos
     uses: ./.github/workflows/run-algos.yml
     with:
-      algos: ${{ needs.list-algos.outputs.algo_list }}
+      algo_list: ${{ needs.list-algos.outputs.algo_list }}
       runner: ${{ needs.list-algos.outputs.runner }}
     secrets: inherit
 
