@@ -237,6 +237,40 @@ def all_metrics(pred_data, ref_data, roi=None):
 
     return d
 
+def save_as_csv(metrics_dict, filepath):
+    """
+    Save the metrics as a CSV file.
+
+    Parameters
+    ----------
+    metrics_dict : dict
+        A dictionary containing the metrics.
+    filepath : str
+        The path to the file to save the results.
+    """
+    with open(filepath, 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(["Metric", "Value"])
+        for key, value in metrics_dict.items():
+            writer.writerow([key, value])
+
+def save_as_markdown(metrics_dict, filepath):
+    """
+    Save the metrics as a markdown table.
+
+    Parameters
+    ----------
+    metrics_dict : dict
+        A dictionary containing the metrics.
+    filepath : str
+        The path to the file to save the results.
+    """
+    with open(filepath, 'w') as file:
+        file.write("| Metric | Value |\n")
+        file.write("|--------|-------|\n")
+        for key, value in metrics_dict.items():
+            file.write(f"| {key} | {value:.6f} |\n")
+
 if __name__ == "__main__":
     
     parser = argparse.ArgumentParser(description='Compute metrics for 3D images.')
