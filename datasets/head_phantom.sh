@@ -24,6 +24,6 @@ rm head-phantom-maps.tar
 
 # generate bids data
 echo "[INFO] Simulating BIDS dataset"
-qsm-forward head-phantom-maps/ bids
+qsm-forward head head-phantom-maps/ bids
 rm -rf head-phantom-maps/
 
