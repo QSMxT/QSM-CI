@@ -15,7 +15,7 @@ env:
   OS_APPLICATION_CREDENTIAL_SECRET: ${{ secrets.SWIFT_OS_APPLICATION_CREDENTIAL_SECRET }}
 
 jobs:
-  test_install:
+  upload:
     runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v3
