@@ -20,6 +20,7 @@ echo "[INFO] Starting QSM reconstruction"
 docker exec qsmxt-container bash -c "qsmxt /tmp/bids/ /tmp/qsmxt_output --premade fast -auto_yes --use_existing_masks"
 
 echo "[INFO] Collecting QSMxT results"
+mkdir -p recons/qsmxt/
 sudo rm -rf qsmxt_output/workflow
 sudo mv qsmxt_output/qsm/*.nii recons/qsmxt
 sudo rm -rf qsmxt_output/
