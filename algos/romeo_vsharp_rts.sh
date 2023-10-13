@@ -15,7 +15,7 @@ docker create --name qsmxt-container -it -v $(pwd):/tmp vnmd/qsmxt_6.2.0:2023101
 echo "[INFO] Starting QSMxT container"
 docker start qsmxt-container
 
-# do reconstruction using qsmxt
+# do reconstruction using qsmxt 
 echo "[INFO] Starting QSM reconstruction"
 docker exec qsmxt-container bash -c "qsmxt /tmp/bids/ /tmp/qsmxt_output --premade fast -auto_yes --use_existing_masks"
 
