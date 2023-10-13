@@ -2,7 +2,7 @@
 
 set -e
 
-for file in `ls recons/qsmxt/*.nii`; do
+for file in `ls recons/${ALGO_NAME}/*.nii`; do
     IMAGE_HASH=$(md5sum "$file" | awk '{print $1}')
     DIRNAME=$(dirname "$file")
     BASENAME=$(basename "$file")
