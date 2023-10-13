@@ -21,6 +21,6 @@ python metrics/metrics.py \
     --roi "bids/derivatives/qsm-forward/sub-1/anat/sub-1_mask.nii"
 
 # display figure to github
-cat *.csv
 cat *.md
+cat *.md >> $GITHUB_STEP_SUMMARY
 
