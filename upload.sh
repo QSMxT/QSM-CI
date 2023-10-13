@@ -43,8 +43,8 @@ for file in `ls *.nii.gz`; do
         echo "[DEBUG] ${IMAGE_HASH}_$file exists in nectar swift object storage"
 
         curl -X POST \
-        -H "X-Parse-Application-Id: ZCoZexyqRwzq32JZHipwS26TFZ2YbdwHwv4YG6Oa" \
-        -H "X-Parse-REST-API-Key: Qzh1FL8CqHjJiKcZMAMPEeTGZLF0ZyeQVGRzIYOQ" \
+        -H "X-Parse-Application-Id: '"${PARSE_APPLICATION_ID}"'" \
+        -H "X-Parse-REST-API-Key: '"${PARSE_APPLICATION_ID}"'" \
         -H "Content-Type: application/json" \
         -d '{"url":"'"${URL}"'"}' \
         https://parseapi.back4app.com/classes/Images
