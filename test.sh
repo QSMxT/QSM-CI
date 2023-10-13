@@ -13,22 +13,15 @@ fi
 
 # install dependencies
 echo "[INFO] Downloading dependencies"
-pip install qsm-forward==0.11 webdavclient3
+pip install qsm-forward==0.18 webdavclient3
 export PATH=$PATH:/home/runnerx/.local/bin
 
 sudo apt-get update
 sudo apt-get install tree
 
-# download head-phantom-maps
-echo "[INFO] Downloading test data"
-python get-maps.py
-tar xf head-phantom-maps.tar
-rm head-phantom-maps.tar
-
 # generate bids data
 echo "[INFO] Simulating BIDS dataset"
-qsm-forward head-phantom-maps/ bids
-rm -rf head-phantom-maps/
+qsm-forward simple bids
 
 # create output directory
 mkdir recons/
@@ -45,7 +38,7 @@ docker start qsmxt-container
 
 # do reconstruction using qsmxt
 echo "[INFO] Starting QSM reconstruction"
-docker exec qsmxt-container bash -c "qsmxt /tmp/bids/ /tmp/qsmxt_output --premade 'fast' --auto_yes"
+docker exec qsmxt-container bash -c "qsmxt /tmp/bids/ /tmp/qsmxt_output --premade fast --masking_algorithm threshold --masking_input phase --auto_yes"
 
 echo "[INFO] Collecting QSMxT results"
 sudo rm -rf qsmxt_output/workflow
@@ -54,8 +47,12 @@ sudo rm -rf qsmxt_output/
 tree recons/
 
 # run metrics + generate figure - pass command-line arguments
-# python metrics.py bids/ recons/
+python metrics.py \
+    --ground_truth "bids/derivatives/qsm-forward/sub-1/anat/sub-1_Chimap.nii" \
+    --recon "recons/qsmxt/qsm/*.nii" \
+    --roi "bids/derivatives/qsm-forward/sub-1/anat/sub-1_mask.nii"
 
 # display figure to github
-# ...
+cat *.csv
+cat *.md
 
