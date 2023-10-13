@@ -1,0 +1,30 @@
+name: Reconstruct and evaluate
+on:
+  workflow_call:
+    inputs:
+      algo_list:
+        required: true
+        type: string
+      runner:
+        required: true
+        type: string
+jobs:
+  recon_and_evaluate:
+    if: ${{ inputs.algo_list != '[]' }}
+    runs-on: ${{ fromJSON(inputs.runner) }}
+    strategy:
+      matrix:
+        algo: ${{ fromJSON(inputs.algo_list) }}
+    steps:
+    - uses: actions/checkout@v3
+    - name: Get modified algorithms
+      id: getfile
+      run: |
+        
+      shell: bash
+    - name: Reconstruct and evaluate
+      env:
+        RDM_USER: ${{ secrets.RDM_USER }}
+        RDM_KEY: ${{ secrets.RDM_KEY }}
+      run: ./recon_and_eval.sh ${{ matrix.algo }}
+        
