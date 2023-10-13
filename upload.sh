@@ -32,7 +32,7 @@ for file in `ls recons/qsmxt/*.nii`; do
             export swift_setup_done="true"
         fi
 
-        swift upload qsmxt ${IMAGE_HASH}_${BASENAME} --segment-size 1073741824
+        swift upload qsmxt ${DIRNAME}/${IMAGE_HASH}_${BASENAME} --segment-size 1073741824
 
         # Check if it is uploaded to Nectar Swift Object Storage and if so, add it to the database
         if curl --output /dev/null --silent --head --fail "${URL}"; then
