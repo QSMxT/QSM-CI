@@ -7,7 +7,7 @@ bash datasets/simple_phantom.sh
 # bash datasets/head_phantom.sh
 
 # run reconstruction
-bash algos/$1.sh
+bash algos/$1
 
 # metrics
 bash metrics/metrics.sh
