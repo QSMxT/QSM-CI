@@ -36,22 +36,24 @@ for file in `ls *.nii.gz`; do
         fi
 
         swift upload qsmxt ${IMAGE_HASH}_$file --segment-size 1073741824
+
+        # Check if it is uploaded to Nectar Swift Object Storage and if so, add it to the database
+        if curl --output /dev/null --silent --head --fail "${URL}"; then
+            echo "[DEBUG] ${IMAGE_HASH}_$file exists in nectar swift object storage"
+
+            curl -X POST \
+            -H "X-Parse-Application-Id: '"${PARSE_APPLICATION_ID}"'" \
+            -H "X-Parse-REST-API-Key: '"${PARSE_APPLICATION_ID}"'" \
+            -H "Content-Type: application/json" \
+            -d '{"url":"'"${URL}"'"}' \
+            https://parseapi.back4app.com/classes/Images
+
+        else
+            echo "[DEBUG] ${IMAGE_HASH}_$file does not exist yet in nectar swift"
+            exit 2
+        fi
     fi
 
-    # Check if it is uploaded to Nectar Swift Object Storage and if so, add it to the database
-    if curl --output /dev/null --silent --head --fail "${URL}"; then
-        echo "[DEBUG] ${IMAGE_HASH}_$file exists in nectar swift object storage"
 
-        curl -X POST \
-        -H "X-Parse-Application-Id: '"${PARSE_APPLICATION_ID}"'" \
-        -H "X-Parse-REST-API-Key: '"${PARSE_APPLICATION_ID}"'" \
-        -H "Content-Type: application/json" \
-        -d '{"url":"'"${URL}"'"}' \
-        https://parseapi.back4app.com/classes/Images
-
-    else
-        echo "[DEBUG] ${IMAGE_HASH}_$file does not exist yet in nectar swift"
-        exit 2
-    fi
 
 done
