@@ -58,10 +58,9 @@ jobs:
 
   build-apps:
     needs: list-algos
-    uses: ./.github/workflows/build-algos.yml
+    uses: ./.github/workflows/run-algos.yml
     with:
       applications: ${{ needs.list-algos.outputs.algo_list }}
       runner: ${{ needs.list-algos.outputs.runner }}
     secrets: inherit
 
-    
