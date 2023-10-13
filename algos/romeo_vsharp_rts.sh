@@ -17,7 +17,7 @@ docker start qsmxt-container
 
 # do reconstruction using qsmxt
 echo "[INFO] Starting QSM reconstruction"
-docker exec qsmxt-container bash -c "qsmxt bids qsmxt_output --premade fast -auto_yes --use_existing_masks"
+docker exec qsmxt-container bash -c "qsmxt /tmp/bids/ /tmp/qsmxt_output --premade fast -auto_yes --use_existing_masks"
 
 echo "[INFO] Collecting QSMxT results"
 sudo rm -rf qsmxt_output/workflow
