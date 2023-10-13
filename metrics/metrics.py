@@ -226,6 +226,13 @@ def all_metrics(pred_data, ref_data, roi=None):
     ref_data = ref_data[bbox]
     roi = roi[bbox]
 
+    if np.isnan(pred_data).any() or np.isnan(ref_data).any():
+        print("Input arrays contain NaN values.")
+    if np.std(pred_data) == 0 or np.std(ref_data) == 0:
+        print(np.std(pred_data))
+        print(np.std(ref_data))
+        print("One of the input arrays has no variance.")
+
     d['RMSE'] = calculate_rmse(pred_data[roi], ref_data[roi])
     d['NRMSE'] = calculate_nrmse(pred_data[roi], ref_data[roi])
     d['HFEN'] = calculate_hfen(pred_data, ref_data)  # does not flatten
@@ -269,7 +276,11 @@ def save_as_markdown(metrics_dict, filepath):
         file.write("| Metric | Value |\n")
         file.write("|--------|-------|\n")
         for key, value in metrics_dict.items():
-            file.write(f"| {key} | {value:.6f} |\n")
+            if isinstance(value, tuple) and len(value) == 2:  # Assuming it's the PearsonRResult
+                file.write(f"| {key} correlation | {value[0]:.6f} |\n")
+                file.write(f"| {key} p-value | {value[1]:.6f} |\n")
+            else:
+                file.write(f"| {key} | {value:.6f} |\n")
 
 if __name__ == "__main__":
     
@@ -285,7 +296,7 @@ if __name__ == "__main__":
     recon_img = nib.load(args.recon).get_fdata()
 
     if args.roi:
-        roi_img = nib.load(args.roi).get_fdata()
+        roi_img = np.array(nib.load(args.roi).get_fdata(), dtype=bool)
     else:
         roi_img = None
 
