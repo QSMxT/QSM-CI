@@ -2,8 +2,6 @@
 
 set -e
 
-export ALGO_NAME="romeo_vsharp_rts"
-
 # create output directory
 mkdir -p "recons/${ALGO_NAME}"
 
