@@ -4,10 +4,9 @@ set -e
 
 for file in `ls recons/qsmxt/*.nii`; do
     IMAGE_HASH=$(md5sum "$file" | awk '{print $1}')
-    echo $IMAGE_HASH
     DIRNAME=$(dirname "$file")
     BASENAME=$(basename "$file")
-    mv "$file" "${DIRNAME}/${IMAGE_HASH}_${BASENAME}"
+    cp "${DIRNAME}/${IMAGE_HASH}_${BASENAME}" "${IMAGE_HASH}_${BASENAME}"
 
     # Upload to Nectar Swift Object Storage
     URL=https://object-store.rc.nectar.org.au:8888/v1/AUTH_dead991e1fa847e3afcca2d3a7041f5d/qsmxt/${IMAGE_HASH}_${BASENAME}
@@ -32,7 +31,7 @@ for file in `ls recons/qsmxt/*.nii`; do
             export swift_setup_done="true"
         fi
 
-        swift upload qsmxt ${DIRNAME}/${IMAGE_HASH}_${BASENAME} --segment-size 1073741824
+        swift upload qsmxt "${IMAGE_HASH}_${BASENAME}" --segment-size 1073741824
 
         # Check if it is uploaded to Nectar Swift Object Storage and if so, add it to the database
         if curl --output /dev/null --silent --head --fail "${URL}"; then
