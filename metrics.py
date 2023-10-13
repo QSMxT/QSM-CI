@@ -18,7 +18,11 @@ Authors: Boyi Du <boyi.du@uq.net.au>, Ashley Stewart <ashley.stewart@uq.edu.au>
 
 """
 
+import argparse
+import os
 import numpy as np
+import csv
+import nibabel as nib
 from sklearn.metrics import mean_squared_error
 from skimage.metrics import structural_similarity
 from skimage.metrics import normalized_mutual_information
@@ -214,14 +218,13 @@ def all_metrics(pred_data, ref_data, roi=None):
     """
     d = dict()
 
-    if roi is not None:
-        roi = np.array(roi, dtype=bool)
-        bbox = get_bounding_box(roi)
-        pred_data = pred_data[bbox]
-        ref_data = ref_data[bbox]
-        roi = roi[bbox]
-    else:
-        roi = np.ones(pred_data.shape, dtype=bool)
+    if roi is None:
+        roi = np.array(pred_data != 0, dtype=bool)
+
+    bbox = get_bounding_box(roi)
+    pred_data = pred_data[bbox]
+    ref_data = ref_data[bbox]
+    roi = roi[bbox]
 
     d['RMSE'] = calculate_rmse(pred_data[roi], ref_data[roi])
     d['NRMSE'] = calculate_nrmse(pred_data[roi], ref_data[roi])
@@ -234,20 +237,33 @@ def all_metrics(pred_data, ref_data, roi=None):
 
     return d
 
-# if __name__ == "__main__":
+if __name__ == "__main__":
     
-    # get command-line arguments
-    # ... - argparse (python module; e.g. import argparse)
-    
-    # load nifti images (ground truth + recon) - should for all ground truth images and all reconstructions
-    # ...
-    
-    # do metrics
-    # ...
-    
-    # generate figures
-    # ...
-    
-    # save figures as pngs
-    # ...
+    parser = argparse.ArgumentParser(description='Compute metrics for 3D images.')
+    parser.add_argument('ground_truth', type=str, help='Path to the ground truth NIFTI image.')
+    parser.add_argument('recon', type=str, help='Path to the reconstructed NIFTI image.')
+    parser.add_argument('--roi', type=str, help='Path to the ROI NIFTI image (optional).')
+    parser.add_argument('--output_dir', type=str, default='./', help='Directory to save metrics.')
+    args = parser.parse_args()
+
+    # Load images
+    gt_img = nib.load(args.ground_truth).get_fdata()
+    recon_img = nib.load(args.recon).get_fdata()
+
+    if args.roi:
+        roi_img = nib.load(args.roi).get_fdata()
+    else:
+        roi_img = None
+
+    # Compute metrics
+    metrics = all_metrics(recon_img, gt_img, roi_img)
+
+    # Save metrics
+    csv_path = os.path.join(args.output_dir, 'metrics.csv')
+    md_path = os.path.join(args.output_dir, 'metrics.md')
+
+    save_as_csv(metrics, csv_path)
+    save_as_markdown(metrics, md_path)
+
+    print(f"Metrics saved to {csv_path} and {md_path}")
     
