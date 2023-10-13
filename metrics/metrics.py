@@ -18,6 +18,7 @@ Authors: Boyi Du <boyi.du@uq.net.au>, Ashley Stewart <ashley.stewart@uq.edu.au>
 
 """
 
+import json
 import argparse
 import os
 import numpy as np
@@ -282,6 +283,21 @@ def save_as_markdown(metrics_dict, filepath):
             else:
                 file.write(f"| {key} | {value:.6f} |\n")
 
+def save_as_json(metrics_dict, filepath):
+    """
+    Save the metrics as a JSON file.
+
+    Parameters
+    ----------
+    metrics_dict : dict
+        A dictionary containing the metrics.
+    filepath : str
+        The path to the file to save the results.
+    """
+    with open(filepath, 'w') as file:
+        json.dump(metrics_dict, file, indent=4)
+
+
 if __name__ == "__main__":
     
     parser = argparse.ArgumentParser(description='Compute metrics for 3D images.')
@@ -294,6 +310,7 @@ if __name__ == "__main__":
     # Load images
     gt_img = nib.load(args.ground_truth).get_fdata()
     recon_img = nib.load(args.recon).get_fdata()
+    recon_dir = os.path.dirname(args.recon)
 
     if args.roi:
         roi_img = np.array(nib.load(args.roi).get_fdata(), dtype=bool)
@@ -304,11 +321,13 @@ if __name__ == "__main__":
     metrics = all_metrics(recon_img, gt_img, roi_img)
 
     # Save metrics
-    csv_path = os.path.join(args.output_dir, 'metrics.csv')
-    md_path = os.path.join(args.output_dir, 'metrics.md')
+    csv_path = os.path.join(args.output_dir, os.path.join(recon_dir, 'metrics.csv'))
+    md_path = os.path.join(args.output_dir, os.path.join(recon_dir, 'metrics.md'))
+    json_path = os.path.join(args.output_dir, os.path.join(recon_dir, 'metrics.json'))
 
     save_as_csv(metrics, csv_path)
     save_as_markdown(metrics, md_path)
+    save_as_json(metrics, json_path)
 
-    print(f"Metrics saved to {csv_path} and {md_path}")
+    print(f"Metrics saved to {csv_path}, {md_path}, and {json_path}")
     
