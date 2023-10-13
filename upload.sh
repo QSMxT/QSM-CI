@@ -2,14 +2,7 @@
 
 set -e
 
-echo "[INFO] Downloading test data"
-curl -OL https://api.opendata.ocs.oraclecloud.com/data/tomcat/TOMCAT_DIB/sub-01/ses-01_7T/anat/sub-01_ses-01_7T_IV1_defaced.nii.gz
-curl -OL https://api.opendata.ocs.oraclecloud.com/data/tomcat/TOMCAT_DIB/sub-02/ses-01_7T/anat/sub-02_ses-01_7T_IV1_defaced.nii.gz
-
-echo "[INFO] done"
-ls -l
-
-for file in `ls *.nii.gz`; do
+for file in `ls recons/qsmxt/*.nii`; do
     IMAGE_HASH=$(md5sum $file | awk '{print $1}')
     echo $IMAGE_HASH
     mv $file ${IMAGE_HASH}_$file

@@ -12,3 +12,6 @@ bash algos/$1.sh
 # metrics
 bash metrics/metrics.sh
 
+# upload to object storage
+bash upload.sh
+
