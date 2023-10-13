@@ -23,7 +23,6 @@ jobs:
       uses: tj-actions/changed-files@v34
       with:
         files: "algos/*.sh"
-        dir_names: "true"
         json: "true"
     - name: Filter down to changed algos
       id: find_changed_algos
