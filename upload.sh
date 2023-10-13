@@ -39,10 +39,10 @@ for file in `ls recons/qsmxt/*.nii`; do
             echo "[DEBUG] ${IMAGE_HASH}_${BASENAME} exists in nectar swift object storage"
 
             curl -X POST \
-            -H "X-Parse-Application-Id: '"${PARSE_APPLICATION_ID}"'" \
-            -H "X-Parse-REST-API-Key: '"${PARSE_REST_API_KEY}"'" \
+            -H "X-Parse-Application-Id: ${PARSE_APPLICATION_ID}" \
+            -H "X-Parse-REST-API-Key: ${PARSE_REST_API_KEY}" \
             -H "Content-Type: application/json" \
-            -d '{"url":"'"${URL}"'"}' \
+            -d "{ \"url\":\"$URL\",\"elo\":\" \",\"rmse\":\" $RMSE \",\"ssim\":\" $SSIM \"  }" \
             https://parseapi.back4app.com/classes/Images
 
         else
