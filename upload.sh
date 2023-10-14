@@ -11,12 +11,12 @@ fi
 ls recons/
 ls recons/*
 JSON_FILE="recons/${ALGO_NAME}/metrics.json"
-NIFTI_FILE="recons/${ALGO_NAME}/*.nii"
+NIFTI_FILE="recons/${ALGO_NAME}/${ALGO_NAME}.nii"
 
 NIFTI_HASH=$(md5sum "${NIFTI_FILE}" | awk '{print $1}')
 DIRNAME=$(dirname "${NIFTI_FILE}")
 BASENAME=$(basename "${NIFTI_FILE}")
-cp "${DIRNAME}/${NIFTI_HASH}_${BASENAME}" "${NIFTI_HASH}_${BASENAME}"
+cp "${DIRNAME}/${BASENAME}" "${NIFTI_HASH}_${BASENAME}"
 
 # Upload to Nectar Swift Object Storage
 URL=https://object-store.rc.nectar.org.au:8888/v1/AUTH_dead991e1fa847e3afcca2d3a7041f5d/qsmxt/${NIFTI_HASH}_${BASENAME}
