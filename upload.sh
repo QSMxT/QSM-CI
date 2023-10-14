@@ -8,6 +8,8 @@ if ! command -v jq &> /dev/null; then
     sudo apt-get install jq
 fi
 
+ls recons/
+ls recons/*
 JSON_FILE="recons/${ALGO_NAME}/metrics.json"
 NIFTI_FILE="recons/${ALGO_NAME}/*.nii"
 
