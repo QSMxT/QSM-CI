@@ -11,7 +11,7 @@ sudo docker pull vnmd/qsmxt_6.2.0:20231012
 echo "[INFO] Creating QSMxT container" 
 docker create --name qsmxt-container -it -v $(pwd):/tmp vnmd/qsmxt_6.2.0:20231012 /bin/bash
 
-echo "[INFO] Starting QSMxT container" 
+echo "[INFO] Starting QSMxT container"
 docker start qsmxt-container
 
 echo "[INFO] Starting QSM reconstruction"
