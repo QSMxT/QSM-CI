@@ -8,8 +8,6 @@ if ! command -v jq &> /dev/null; then
     sudo apt-get install jq
 fi
 
-ls recons/
-ls recons/*
 JSON_FILE="recons/${ALGO_NAME}/metrics.json"
 NIFTI_FILE="recons/${ALGO_NAME}/${ALGO_NAME}.nii"
 
@@ -26,7 +24,7 @@ else
     echo "[DEBUG] ${NIFTI_HASH}_${BASENAME} does not exist yet in nectar swift - uploading it there as well!"
 
     if [ -n "$swift_setup_done" ]; then
-        echo "Setup already done. Skipping."
+        echo "[DEBUG] Setup already done. Skipping."
     else
         echo "[DEBUG] Configure for SWIFT storage"
         sudo pip3 install setuptools
@@ -41,7 +39,8 @@ else
         export swift_setup_done="true"
     fi
 
-    swift upload qsmxt "${NIFTI_HASH}_${BASENAME}" --segment-size 1073741824
+    echo "[DEBUG] Uploading via swift..."
+    swift upload qsmxt "${NIFTI_HASH}_${BASENAME}" --segment-size 1073741824 --verbose
 
     # Check if it is uploaded to Nectar Swift Object Storage and if so, add it to the database
     if curl --output /dev/null --silent --head --fail "${URL}"; then
