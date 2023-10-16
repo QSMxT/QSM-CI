@@ -16,6 +16,9 @@ DIRNAME=$(dirname "${NIFTI_FILE}")
 BASENAME=$(basename "${NIFTI_FILE}")
 cp "${DIRNAME}/${BASENAME}" "${NIFTI_HASH}_${BASENAME}"
 
+echo "[DEBUG] Checking file..."
+ls ${NIFTI_HASH}_${BASENAME} -lahtr
+
 # Upload to Nectar Swift Object Storage
 URL=https://object-store.rc.nectar.org.au:8888/v1/AUTH_dead991e1fa847e3afcca2d3a7041f5d/qsmxt/${NIFTI_HASH}_${BASENAME}
 if curl --output /dev/null --silent --head --fail "${URL}"; then
