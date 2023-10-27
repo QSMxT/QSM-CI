@@ -33,5 +33,6 @@ jobs:
         OS_APPLICATION_CREDENTIAL_SECRET: ${{ secrets.SWIFT_OS_APPLICATION_CREDENTIAL_SECRET }}
         PARSE_APPLICATION_ID: ${{ secrets.PARSE_APPLICATION_ID }}
         PARSE_REST_API_KEY: ${{ secrets.PARSE_REST_API_KEY }}
+        PARSE_MASTER_KEY: ${{ secrets.PARSE_MASTER_KEY }}
       run: ./recon_and_eval.sh ${{ matrix.algo }}
         
