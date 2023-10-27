@@ -23,3 +23,4 @@ sudo mv qsmxt_output/qsm/*.nii "recons/${ALGO_NAME}/${ALGO_NAME}.nii"
 echo "[INFO] Deleting old outputs"
 sudo rm -rf qsmxt_output/
 
+#end
