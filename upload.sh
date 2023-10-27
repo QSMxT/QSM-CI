@@ -9,7 +9,7 @@ if ! command -v jq &> /dev/null; then
 fi
 
 JSON_FILE="recons/${ALGO_NAME}/metrics.json"
-NIFTI_FILE="recons/${ALGO_NAME}/${ALGO_NAME}.nii"
+NIFTI_FILE="recons/${ALGO_NAME}/${ALGO_NAME}.nii*"
 
 NIFTI_HASH=$(md5sum "${NIFTI_FILE}" | awk '{print $1}')
 DIRNAME=$(dirname "${NIFTI_FILE}")
