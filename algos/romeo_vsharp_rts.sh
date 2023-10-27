@@ -2,8 +2,6 @@
 
 set -e
 
-#test
-
 # create output directory
 mkdir -p "recons/${ALGO_NAME}"
 
