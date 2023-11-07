@@ -18,7 +18,9 @@ echo "[INFO] Starting QSM reconstruction"
 docker exec qsmxt-container bash -c "qsmxt /tmp/bids/ /tmp/qsmxt_output --premade fast -auto_yes --use_existing_masks"
 
 echo "[INFO] Collecting QSMxT results"
-sudo gzip -f qsmxt_output/qsm/*.nii
+if ls qsmxt_output/qsm/*.nii 1> /dev/null 2>&1; then
+    sudo gzip -f qsmxt_output/qsm/*.nii
+fi
 sudo mv qsmxt_output/qsm/*.nii.gz "recons/${ALGO_NAME}/${ALGO_NAME}.nii.gz"
 
 echo "[INFO] Deleting old outputs"
