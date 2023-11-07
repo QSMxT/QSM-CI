@@ -11,20 +11,19 @@ fi
 JSON_FILE="recons/${ALGO_NAME}/metrics.json"
 NIFTI_FILE="recons/${ALGO_NAME}/${ALGO_NAME}.nii.gz"
 
-NIFTI_HASH=$(md5sum "${NIFTI_FILE}" | awk '{print $1}')
 DIRNAME=$(dirname "${NIFTI_FILE}")
 BASENAME=$(basename "${NIFTI_FILE}")
-cp "${DIRNAME}/${BASENAME}" "${NIFTI_HASH}_${BASENAME}"
+cp "${DIRNAME}/${BASENAME}" "${BASENAME}"
 
 echo "[DEBUG] Checking file..."
-ls ${NIFTI_HASH}_${BASENAME} -lahtr
+ls ${BASENAME} -lahtr
 
 # Upload to Nectar Swift Object Storage
-URL=https://object-store.rc.nectar.org.au:8888/v1/AUTH_dead991e1fa847e3afcca2d3a7041f5d/qsmxt/${NIFTI_HASH}_${BASENAME}
+URL=https://object-store.rc.nectar.org.au:8888/v1/AUTH_dead991e1fa847e3afcca2d3a7041f5d/qsmxt/${BASENAME}
 if curl --output /dev/null --silent --head --fail "${URL}"; then
-    echo "[DEBUG] ${NIFTI_HASH}_${BASENAME} exists in nectar swift object storage"
+    echo "[DEBUG] ${BASENAME} exists in nectar swift object storage"
 else
-    echo "[DEBUG] ${NIFTI_HASH}_${BASENAME} does not exist yet in nectar swift - uploading it there as well!"
+    echo "[DEBUG] ${BASENAME} does not exist yet in nectar swift - uploading it there as well!"
 
     if [ -n "$swift_setup_done" ]; then
         echo "[DEBUG] Setup already done. Skipping."
@@ -43,11 +42,11 @@ else
     fi
 
     echo "[DEBUG] Uploading via swift..."
-    swift upload qsmxt "${NIFTI_HASH}_${BASENAME}" --segment-size 1073741824 --verbose
+    swift upload qsmxt "${BASENAME}" --segment-size 1073741824 --verbose
 
     # Check if it is uploaded to Nectar Swift Object Storage and if so, add it to the database
     if curl --output /dev/null --silent --head --fail "${URL}"; then
-        echo "[DEBUG] ${NIFTI_HASH}_${BASENAME} exists in nectar swift object storage"
+        echo "[DEBUG] ${BASENAME} exists in nectar swift object storage"
 
         curl -X POST \
         -H "X-Parse-Application-Id: ${PARSE_APPLICATION_ID}" \
@@ -69,7 +68,7 @@ else
         https://parseapi.back4app.com/classes/Images
 
     else
-        echo "[DEBUG] ${NIFTI_HASH}_${BASENAME} does not exist yet in nectar swift"
+        echo "[DEBUG] ${BASENAME} does not exist yet in nectar swift"
         exit 2
     fi
 fi
