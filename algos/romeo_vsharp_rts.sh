@@ -19,6 +19,7 @@ docker exec qsmxt-container bash -c "qsmxt /tmp/bids/ /tmp/qsmxt_output --premad
 
 echo "[INFO] Collecting QSMxT results"
 sudo gzip -f qsmxt_output/qsm/*.nii*
+ls qsm_output/qsm/
 sudo mv qsmxt_output/qsm/*.nii.gz "recons/${ALGO_NAME}/${ALGO_NAME}.nii.gz"
 
 echo "[INFO] Deleting old outputs"
