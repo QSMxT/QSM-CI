@@ -43,9 +43,41 @@ else
     fi
 
     echo "[DEBUG] Uploading via swift..."
-    # swift upload qsmxt "${BASENAME}" --segment-size 1073741824 --verbose
-    curl -i -T "${BASENAME}" -X PUT -H "X-Auth-Token: $X_AUTH_TOKEN" https://object-store.rc.nectar.org.au/v1/AUTH_dead991e1fa847e3afcca2d3a7041f5d/qsmxt/
+    # swift upload qsmxt "${BASENAME}" --segment-size 1073741824 --verbose 
+    # SWIFTCLIENT IS BROKEN ON UBUNTU 22.04 in version
 
+
+    # THIS ALSO DOESN'T WORK and fails with TLSv1.3 (OUT), TLS alert, decode error (562)
+    # curl -i \
+    # -H "Content-Type: application/json" \
+    # -d '
+    # { "auth": {
+    # "identity": {
+    #     "methods": ["application_credential"],
+    #     "application_credential": {
+    #     "id": "'"$OS_APPLICATION_CREDENTIAL_ID"'",
+    #     "secret": "'"$OS_APPLICATION_CREDENTIAL_SECRET"'"
+    #     }
+    # }
+    # }
+    # }' $OS_AUTH_URL/auth/tokens > token.txt
+
+    # X_AUTH_TOKEN=`grep X-Subject-Token token.txt | awk '{printf $2}' | awk '{ gsub (" ", "", $0); print}'`
+
+    # X_AUTH_TOKEN=${X_AUTH_TOKEN//[$'\t\r\n']} #Token needs to be cleaned up!
+
+
+    # # upload file:
+    # curl -i -T "${BASENAME}" -X PUT -H "X-Auth-Token: $X_AUTH_TOKEN" https://object-store.rc.nectar.org.au/v1/AUTH_dead991e1fa847e3afcca2d3a7041f5d/qsmxt/
+
+    sudo apt install rclone
+    echo "[nectar-swift]
+            type = swift
+            env_auth = true" >  ~/.config/rclone/rclone.conf
+
+    cat ~/.config/rclone/rclone.conf
+
+    rclone copy "${BASENAME}" nectar-swift:qsmxt
 
     # Check if it is uploaded to Nectar Swift Object Storage and if so, add it to the database
     if curl --output /dev/null --silent --head --fail "${URL}"; then
