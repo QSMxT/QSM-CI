@@ -43,7 +43,9 @@ else
     fi
 
     echo "[DEBUG] Uploading via swift..."
-    swift upload qsmxt "${BASENAME}" --segment-size 1073741824 --verbose
+    # swift upload qsmxt "${BASENAME}" --segment-size 1073741824 --verbose
+    curl -i -T "${BASENAME}" -X PUT -H "X-Auth-Token: $X_AUTH_TOKEN" https://object-store.rc.nectar.org.au/v1/AUTH_dead991e1fa847e3afcca2d3a7041f5d/qsmxt/
+
 
     # Check if it is uploaded to Nectar Swift Object Storage and if so, add it to the database
     if curl --output /dev/null --silent --head --fail "${URL}"; then
