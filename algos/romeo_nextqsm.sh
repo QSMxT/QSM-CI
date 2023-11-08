@@ -15,7 +15,7 @@ echo "[INFO] Starting QSMxT container"
 docker start qsmxt-container
 
 echo "[INFO] Starting QSM reconstruction"
-docker exec qsmxt-container bash -c "qsmxt /tmp/bids/ /tmp/qsmxt_output --premade nextqsm --auto_yes --use_existing_masks"
+docker exec qsmxt-container bash -c "qsmxt /tmp/bids/ /tmp/qsmxt_output --premade nextqsm --auto_yes --use_existing_masks" 
 
 echo "[INFO] Collecting QSMxT results"
 if ls qsmxt_output/qsm/*.nii 1> /dev/null 2>&1; then
