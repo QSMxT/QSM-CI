@@ -20,7 +20,8 @@ ls ${BASENAME} -lahtr
 
 # Upload to Nectar Swift Object Storage
 URL=https://object-store.rc.nectar.org.au:8888/v1/AUTH_dead991e1fa847e3afcca2d3a7041f5d/qsmxt/${BASENAME}
-if curl --output /dev/null --silent --head --fail "${URL}"; then
+#if curl --output /dev/null --silent --head --fail "${URL}"; then
+if false; then
     echo "[DEBUG] ${BASENAME} exists in nectar swift object storage"
 else
     echo "[DEBUG] ${BASENAME} does not exist yet in nectar swift - uploading it there as well!"
