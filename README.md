@@ -98,3 +98,33 @@ echo "[INFO] Deleting old outputs"
 sudo rm -rf qsmxt_output/
 ```
 
+## Testing locally
+
+To test a pipeline locally, you will need at least Python v3.8. Several of the existing pipelines also use Docker, so if you wish to test one of these, you must also install Docker and have the Docker daemon running.
+
+To test, run the `recon_and_eval.sh` script with the algorithm of your choice. The algorithm names are the filenames of the scripts in the `algos/` directory without file extensions. You also need to either simulate a BIDS dataset or provide one yourself for testing. 
+
+### Simulated 'test-tube' phantom
+
+QSM-CI provides a simple 'test-tube' phantom that you can generate using the `--simple` flag. For example:
+
+```bash
+./recon_and_eval.sh romeo_vsharp_rts --simple
+```
+
+### Realistic in-silico head phantom
+
+To generate the more realistic head phantom, you should use the `--head` option. You will also need to provide the `data/` directory from the [realistic in-silico head phantom](https://doi.org/10.34973/m20r-jt17) repository with permission from the authors, and place it in the working directory:
+
+```bash
+./recon_and_eval.sh romeo_vsharp_rts --head
+```
+
+### Custom BIDS dataset
+
+If you have your own BIDS dataset you would like to test, simply omit the simulation options:
+
+```bash
+./recon_and_eval.sh romeo_vsharp_rts
+```
+

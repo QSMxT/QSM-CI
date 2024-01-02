@@ -8,8 +8,9 @@ def webdav_connect():
         webdav_login = os.environ['RDM_USER']
         webdav_password = os.environ['RDM_KEY']
     except KeyError as e:
-        print(f"Could not connect to WEBDAV - missing WEBDAV_LOGIN and/or WEBDAV_PASSWORD")
-        raise e
+        raise Exception("WEBDAV_LOGIN and/or WEBDAV_PASSWORD not found! "
+                        "Are you running locally? If so, please instead download the data/ folder from the head phantom at https://doi.org/10.34973/m20r-jt17 "
+                        "and disable the --head option, or simulate a simple dataset using --simple.") from e
 
     try:
         client = webdav3.client.Client({
@@ -27,8 +28,8 @@ def webdav_connect():
 def get_maps():
     client = webdav_connect()            
     client.download_sync(
-        remote_path="QSMFUNCTOR-Q0748/qsm-challenge-and-head-phantom/head-phantom-maps.tar",
-        local_path=os.path.join(os.path.abspath('.'), "head-phantom-maps.tar")
+        remote_path="QSMFUNCTOR-Q0748/qsm-challenge-and-head-phantom/data.tar",
+        local_path=os.path.join(os.path.abspath('.'), "data.tar")
     )
 
 if __name__ == "__main__":

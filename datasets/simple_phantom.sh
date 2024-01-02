@@ -11,9 +11,13 @@ else
     sudo apt-get install python3 python-is-python3 -y
 fi
 
+# create python virtual environment
+python -m venv .venv/
+source .venv/bin/activate
+
 # install dependencies
 echo "[INFO] Downloading dependencies"
-pip install qsm-forward==0.18 webdavclient3
+pip install qsm-forward==0.19 webdavclient3
 export PATH=$PATH:/home/runnerx/.local/bin
 
 # generate bids data

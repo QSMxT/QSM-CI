@@ -9,13 +9,13 @@ echo "[INFO] Pulling QSMxT image"
 sudo docker pull vnmd/qsmxt_6.2.0:20231012
 
 echo "[INFO] Creating QSMxT container"
-docker create --name qsmxt-container -it -v $(pwd):/tmp vnmd/qsmxt_6.2.0:20231012 /bin/bash
+sudo docker create --name qsmxt-container -it -v $(pwd):/tmp vnmd/qsmxt_6.2.0:20231012 /bin/bash
 
 echo "[INFO] Starting QSMxT container"
-docker start qsmxt-container
+sudo docker start qsmxt-container
 
 echo "[INFO] Starting QSM reconstruction"
-docker exec qsmxt-container bash -c "qsmxt /tmp/bids/ /tmp/qsmxt_output --premade fast --auto_yes --use_existing_masks" 
+sudo docker exec qsmxt-container bash -c "qsmxt /tmp/bids/ /tmp/qsmxt_output --premade fast --auto_yes --use_existing_masks" 
 
 echo "[INFO] Collecting QSMxT results"
 if ls qsmxt_output/qsm/*.nii 1> /dev/null 2>&1; then
