@@ -8,9 +8,7 @@ def webdav_connect():
         webdav_login = os.environ['RDM_USER']
         webdav_password = os.environ['RDM_KEY']
     except KeyError as e:
-        raise Exception("WEBDAV_LOGIN and/or WEBDAV_PASSWORD not found! "
-                        "Are you running locally? If so, please instead download the data/ folder from the head phantom at https://doi.org/10.34973/m20r-jt17 "
-                        "and disable the --head option, or simulate a simple dataset using --simple.") from e
+        raise Exception("WEBDAV_LOGIN and/or WEBDAV_PASSWORD not found!") from e
 
     try:
         client = webdav3.client.Client({

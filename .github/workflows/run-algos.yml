@@ -34,5 +34,7 @@ jobs:
         PARSE_APPLICATION_ID: ${{ secrets.PARSE_APPLICATION_ID }}
         PARSE_REST_API_KEY: ${{ secrets.PARSE_REST_API_KEY }}
         PARSE_MASTER_KEY: ${{ secrets.PARSE_MASTER_KEY }}
-      run: ./recon_and_eval.sh ${{ matrix.algo }} --head
-        
+      run: 
+        ./datasets/head_phantom.sh
+        ./recon_and_eval.sh ${{ matrix.algo }}
+
