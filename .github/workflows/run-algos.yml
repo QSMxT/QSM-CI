@@ -36,7 +36,7 @@ jobs:
         PARSE_MASTER_KEY: ${{ secrets.PARSE_MASTER_KEY }}
       run: 
         sudo apt-get update &&
-        sudo apt-get install python3.10-venv -y &&
+        sudo apt-get install python3.10 python3.10-venv -y &&
         ./datasets/head_phantom.sh &&
         ./recon_and_eval.sh ${{ matrix.algo }}
 
