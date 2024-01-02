@@ -3,7 +3,7 @@
 set -e
 
 # check dependencies
-if command -v python >/dev/null 2>&1; then
+if ! command -v python >/dev/null 2>&1; then
     echo "Python >=3.8 is required. Please install it and try again."
     exit 1
 fi
