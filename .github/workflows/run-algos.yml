@@ -44,7 +44,7 @@ jobs:
         rm data.tar
         qsm-forward head data/ bids
 
-        PIPELINE_NAME="$(basename "${{ matrix.algo }}" .sh)"
+        export PIPELINE_NAME="$(basename "${{ matrix.algo }}" .sh)"
 
         bash algos/${PIPELINE_NAME}.sh
         
