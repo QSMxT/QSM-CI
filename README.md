@@ -54,7 +54,7 @@ To test a pipeline, you first need a BIDS-formatted dataset. You can either use 
 
 ## Simulating data
 
-First install [`qsm-forward`](https://github.com/astewartau/qsm-forward). Then, you can choose to either generate a simple 'test-tube' phantom consisting of cylindrical structures, each with a uniform susceptibility value, or using the [QSM Challenge 2.0 realistic in-silico head phantom](https://doi.org/10.1002/mrm.28716) (Marques, J. P., 2021). Currently, the head phantom simulation is used for online evaluation.
+First install [`qsm-forward`](https://github.com/astewartau/qsm-forward). Then, you can choose to either generate a simple 'test-tube' phantom consisting of cylindrical structures, each with a uniform susceptibility value, or using the [realistic in-silico head phantom](#realistic-in-silico-head-phantom). Currently, the head phantom simulation is used for online evaluation.
 
 ### Simulated 'test-tube' phantom
 
@@ -97,7 +97,7 @@ bids
 
 ### Realistic in-silico head phantom
 
-To generate input data using the head phantom, you should use the `--head` option in `qsm-forward`. You will also need to provide the `data/` directory from the [realistic in-silico head phantom](https://doi.org/10.34973/m20r-jt17) repository, with permission from the authors, and place it in the working directory. It should be structured as follows:
+To generate input data using the head phantom, you should use the `--head` option in `qsm-forward`. You will also need to provide the `data/` directory from the [realistic in-silico head phantom](https://doi.org/10.34973/m20r-jt17) repository (Marques, J. P., 2021) with permission from the authors, and place it in the working directory. It should be structured as follows:
 
 ```
 data
