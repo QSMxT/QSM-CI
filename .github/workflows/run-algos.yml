@@ -44,13 +44,15 @@ jobs:
         rm data.tar
         qsm-forward head data/ bids
 
-        bash algos/${{ matrix.algo }}.sh
+        PIPELINE_NAME="$(basename "${{ matrix.algo }}" .sh)"
+
+        bash algos/${PIPELINE_NAME}.sh
         
         python metrics/metrics.py \
           "bids/derivatives/qsm-forward/sub-1/anat/sub-1_Chimap.nii" \
-          recons/${{ matrix.algo }}/*.nii* \
+          recons/${PIPELINE_NAME}/*.nii* \
           --roi "bids/derivatives/qsm-forward/sub-1/anat/sub-1_mask.nii"
-        cat recons/${{ matrix.algo }}/*.md* >> $GITHUB_STEP_SUMMARY
+        cat recons/${PIPELINE_NAME}/*.md* >> $GITHUB_STEP_SUMMARY
 
         ./upload.sh
 
