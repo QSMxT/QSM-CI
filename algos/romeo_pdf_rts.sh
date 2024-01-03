@@ -2,7 +2,7 @@
 
 set -e
 
-# create output directory
+# create output directory 
 PIPELINE_NAME="$(basename "$0" .sh)"
 mkdir -p "recons/${PIPELINE_NAME}"
 
