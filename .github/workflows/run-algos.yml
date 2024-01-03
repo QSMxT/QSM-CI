@@ -34,9 +34,17 @@ jobs:
         PARSE_APPLICATION_ID: ${{ secrets.PARSE_APPLICATION_ID }}
         PARSE_REST_API_KEY: ${{ secrets.PARSE_REST_API_KEY }}
         PARSE_MASTER_KEY: ${{ secrets.PARSE_MASTER_KEY }}
-      run: 
-        sudo apt-get update &&
-        sudo apt-get install python3.10 python3.10-venv python-is-python3 -y &&
-        ./datasets/head_phantom.sh &&
-        ./recon_and_eval.sh ${{ matrix.algo }}
+      run: |
+        sudo apt-get update
+        sudo apt-get install python3.10 python3.10-venv python-is-python3 -y
+        pip install qsm-forward==0.19 webdavclient3
+        export PATH=$PATH:/home/runnerx/.local/bin
+        python get-maps.py
+        tar xf data.tar
+        rm data.tar
+        qsm-forward head data/ bids
+        ./recon_and_eval.sh 
+        bash algos/${{ matrix.algo }}.sh
+        ./metrics/metrics.sh
+        ./upload.sh
 
