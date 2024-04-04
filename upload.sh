@@ -4,8 +4,8 @@ set -e
 
 # Install jq if not already installed
 if ! command -v jq &> /dev/null; then
-    sudo apt-get update
-    sudo apt-get install jq
+    sudo apt-get update -y
+    sudo apt-get install jq -y
 fi
 
 JSON_FILE="recons/${PIPELINE_NAME}/metrics.json"
