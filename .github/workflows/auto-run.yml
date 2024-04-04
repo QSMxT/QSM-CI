@@ -6,54 +6,54 @@ on:
       - algos/*.sh
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   list-algos:
     runs-on: ubuntu-22.04
-    if: ${{ !contains(github.event.head_commit.message, 'skipci') }}
     outputs:
-      algo_list: ${{ steps.find_changed_algos.outputs.algo_list }}
+      algo_list: ${{ steps.process_algos.outputs.algo_list }}
       runner: ${{ steps.select_runner.outputs.runner }}
     steps:
     - uses: actions/checkout@v3
       with:
         fetch-depth: 0
-    - name: Find all algo files with changes
+
+    - name: Find changed files
+      if: ${{ github.event_name == 'push' }}
       id: find_changed_files
       uses: tj-actions/changed-files@v34
       with:
-        files: "algos/*.sh"
-        json: "true"
-    - name: Filter down to changed algos
-      id: find_changed_algos
-      if: steps.find_changed_files.outputs.any_changed == 'true'
+        files: 'algos/*.sh'
+        json: 'true'
+
+    - name: Process algorithms
+      id: process_algos
       run: |
-        # Get dir changelist -> convert list to json -> extract algo name only -> remove duplicate algos
-        changed_algos=$(echo "${{ steps.find_changed_files.outputs.all_changed_files }}" | jq -rc '.[]'  | cut -d/ -s -f 2-2 | jq -ncR '[inputs]' | jq -rc 'unique')
-        echo "changed_algos=${changed_algos}"
+        if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+          algo_files=$(ls algos/*.sh | xargs -n1 basename)
+        else
+          algo_files=$(echo "${{ steps.find_changed_files.outputs.all_changed_files }}" | jq -r '.[]' | xargs -n1 basename)
+        fi
         
-        algo_list='['
-        for ALGO in $(echo "${changed_algos}" | jq -r '.[]'); do
-          AUTORUN=$(cat .github/workflows/build-config.json | jq ".${ALGO} .autoRun")
-          [ "$AUTORUN" == "null" ] && AUTORUN=$(cat .github/workflows/build-config.json | jq ".default .autoRun")
-          if [ "$AUTORUN" = "true" ]; then
-          algo_list+="\"${ALGO}\","
-          else
-              echo "$ALGO:autoBuild:$AUTORUN in build-config.json"
+        algo_list="["
+        for file in $algo_files; do
+          algo="${file%.sh}"
+          autorun=$(jq -r ".${algo}.autoRun // .default.autoRun" .github/workflows/build-config.json)
+          if [[ "$autorun" == "true" ]]; then
+            algo_list+="\"$algo\","
           fi
         done
-        algo_list=$(sed '$s/,$//' <<< $algo_list)
-        algo_list+=']'
+        algo_list=$(sed 's/,$/]/' <<< "$algo_list")
+        
         echo "algo_list=${algo_list}"
         echo "algo_list=${algo_list}" >> $GITHUB_OUTPUT
+
     - name: Select runner
       id: select_runner
       run: |
-        if [ "${{ github.repository }}" = "QSMxT/QSM-CI" ]; then
-          echo "runner=[\"self-hosted\"]" >> $GITHUB_OUTPUT
-        else
-          echo "runner=[\"ubuntu-22.04\"]" >> $GITHUB_OUTPUT
-        fi
+        echo "runner=$( [ "${{ github.repository }}" == "QSMxT/QSM-CI" ] && echo "\"self-hosted\"" || echo "\"ubuntu-22.04\"" )"
+        echo "runner=${runner}" >> $GITHUB_OUTPUT
 
   build-apps:
     needs: list-algos
@@ -63,3 +63,4 @@ jobs:
       runner: ${{ needs.list-algos.outputs.runner }}
     secrets: inherit
 
+    
