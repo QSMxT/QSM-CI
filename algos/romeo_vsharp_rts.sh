@@ -4,7 +4,7 @@
 # Submission: romeo_vsharp_rts.sh
 # 
 # == References ==
-# - QSMxT: Stewart AW, Robinson SD, O\'Brien K, et al. QSMxT: Robust masking and artifact reduction for quantitative susceptibility mapping. Magnetic Resonance in Medicine. 2022;87(3):1289-1300. doi:10.1002/mrm.29048
+# - QSMxT: Stewart AW, Robinson SD, O'Brien K, et al. QSMxT: Robust masking and artifact reduction for quantitative susceptibility mapping. Magnetic Resonance in Medicine. 2022;87(3):1289-1300. doi:10.1002/mrm.29048
 # - QSMxT: Stewart AW, Bollman S, et al. QSMxT/QSMxT. GitHub; 2022. https://github.com/QSMxT/QSMxT
 # - Python package - Nipype: Gorgolewski K, Burns C, Madison C, et al. Nipype: A Flexible, Lightweight and Extensible Neuroimaging Data Processing Framework in Python. Frontiers in Neuroinformatics. 2011;5. Accessed April 20, 2022. doi:10.3389/fninf.2011.00013
 # - Unwrapping algorithm - ROMEO: Dymerska B, Eckstein K, Bachrata B, et al. Phase unwrapping with a rapid opensource minimum spanning tree algorithm (ROMEO). Magnetic Resonance in Medicine. 2021;85(4):2294-2308. doi:10.1002/mrm.28563
@@ -25,6 +25,10 @@ mkdir -p "recons/${PIPELINE_NAME}"
 echo "[INFO] Pulling QSMxT image"
 sudo docker pull vnmd/qsmxt_6.2.0:20231012
 
+if docker ps -a --format '{{.Names}}' | grep -q '^qsmxt-container$'; then
+  echo "[INFO] Removing existing QSMxT container"
+  docker rm -f qsmxt-container
+fi
 echo "[INFO] Creating QSMxT container"
 sudo docker create --name qsmxt-container -it -v $(pwd):/tmp vnmd/qsmxt_6.2.0:20231012 /bin/bash
 
