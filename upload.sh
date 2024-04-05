@@ -70,15 +70,15 @@ else
     # # upload file:
     # curl -i -T "${BASENAME}" -X PUT -H "X-Auth-Token: $X_AUTH_TOKEN" https://object-store.rc.nectar.org.au/v1/AUTH_dead991e1fa847e3afcca2d3a7041f5d/qsmxt/
 
-    sudo apt install rclone
-    mkdir -p ~/.config/rclone/
-    echo "[nectar-swift]
-            type = swift
-            env_auth = true" >  ~/.config/rclone/rclone.conf
+    # THIS needs to be moved to a setup step, but our runner has this already configured.
+    # sudo apt install rclone
+    # mkdir -p ~/.config/rclone/
+    # echo "[nectar-swift]
+    #         type = swift
+    #         env_auth = true" >  ~/.config/rclone/rclone.conf
 
-    cat ~/.config/rclone/rclone.conf
 
-    rclone copy "${BASENAME}" nectar-swift:qsmxt
+    rclone copy "${BASENAME}" nectar-swift-qsmxt:qsmxt
 
     # Check if it is uploaded to Nectar Swift Object Storage and if so, add it to the database
     if curl --output /dev/null --silent --head --fail "${URL}"; then
