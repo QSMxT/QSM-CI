@@ -34,20 +34,9 @@ jobs:
         PARSE_REST_API_KEY: ${{ secrets.PARSE_REST_API_KEY }}
         PARSE_MASTER_KEY: ${{ secrets.PARSE_MASTER_KEY }}
       run: |
-        LOCKFILE=/tmp/run-algos.lock
-
-        while [ -f "${LOCKFILE}" ]; do
-          delay=$((RANDOM % 16 + 15))
-          echo "Lockfile exists... Sleeping for $delay seconds..."
-          sleep $delay
-        done
-
-        touch ${LOCKFILE}
-        trap 'rm -f "${LOCKFILE}"' EXIT
-
-        sudo apt-get update
-        sudo apt-get install python3.10 python3.10-venv python-is-python3 -y
-        pip install qsm-forward==0.19 osfclient argparse numpy nibabel scikit-learn scikit-image scipy
+        #sudo apt-get update
+        #sudo apt-get install python3.10 python3.10-venv python-is-python3 -y
+        #pip install qsm-forward==0.19 osfclient argparse numpy nibabel scikit-learn scikit-image scipy
         export PATH=$PATH:/home/runnerx/.local/bin
 
         if [ ! -d "bids" ]; then
