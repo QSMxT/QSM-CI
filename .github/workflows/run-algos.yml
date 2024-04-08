@@ -59,7 +59,7 @@ jobs:
 
         export PIPELINE_NAME="$(basename "${{ matrix.algo }}" .sh)"
         
-        bash algos/${PIPELINE_NAME}.sh
+        bash run.sh algos/${PIPELINE_NAME}.sh
         
         python metrics/metrics.py \
           "bids/derivatives/qsm-forward/sub-1/anat/sub-1_Chimap.nii" \
