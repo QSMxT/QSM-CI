@@ -3,7 +3,7 @@ name: auto-run
 on:
   push:
     paths:
-      - 'algos/*.sh'
+      - 'algos/**/*'
     branches:
       - main
   workflow_dispatch:
@@ -24,27 +24,33 @@ jobs:
       id: find_changed_files
       uses: tj-actions/changed-files@v34
       with:
-        files: "algos/*.sh"
+        files: "algos/**/*"
         json: "true"
     - name: Set algo list
       id: set_algo_list
       run: |
         if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-          all_algos=$(ls algos/*.sh | xargs -n1 basename | sed 's/\.sh$//')
+          all_algos=$(find algos -type f -name main.sh | cut -d/ -f2)
         else
-          changed_algos=$(echo "${{ steps.find_changed_files.outputs.all_changed_files }}" | jq -rc '.[]'  | cut -d/ -f2 | sed 's/\.sh$//' | jq -ncR '[inputs]' | jq -rc 'unique')
-          all_algos=$(echo $changed_algos | jq -r '.[]')
+          # Extract only the unique directory names where changes have occurred
+          changed_dirs=$(echo "${{ steps.find_changed_files.outputs.all_changed_files }}" | jq -rc '.[]' | cut -d/ -f1,2 | uniq)
+          all_algos=""
+          for DIR in $changed_dirs; do
+            if [ -f "${DIR}/main.sh" ]; then
+              all_algos+=$(echo "${DIR}" | cut -d/ -f2)" "
+            fi
+          done
         fi
         
         algo_list="["
         for ALGO in $all_algos; do
-          AUTORUN=$(cat .github/workflows/build-config.json | jq ".${ALGO} .autoRun")
-          [ "$AUTORUN" == "null" ] && AUTORUN=$(cat .github/workflows/build-config.json | jq ".default .autoRun")
+          AUTORUN=$(cat .github/workflows/build-config.json | jq ".${ALGO}.autoRun")
+          [ "$AUTORUN" == "null" ] && AUTORUN=$(cat .github/workflows/build-config.json | jq ".default.autoRun")
           if [ "$AUTORUN" == "true" ]; then
             algo_list+="\"${ALGO}\","
           fi
         done
-        algo_list=$(sed 's/,$//' <<< "$algo_list")
+        algo_list=$(echo "$algo_list" | sed 's/,$//')
         algo_list+="]"
         
         echo "algo_list=${algo_list}"
