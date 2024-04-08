@@ -1,33 +1,28 @@
 #!/usr/bin/env bash
-
-USER_SCRIPT="$1"
-DEFAULT_IMAGE="ubuntu:latest"
-PIPELINE_NAME="$(basename $USER_SCRIPT .sh)"
+SCRIPT_PATH=$(realpath "$0")
+SCRIPT_DIR=$(dirname "$SCRIPT_PATH")
+USER_SCRIPT_DIR=$(realpath "$1")
+PIPELINE_NAME="$(basename $USER_SCRIPT_DIR)"
 
 if [ -z "$1" ]; then
-    echo "[ERROR] Argument needed to specify algorithm script file"
+    echo "[ERROR] Argument needed to specify algorithm directory"
     exit 1
 fi
 
-if [ ! -f $USER_SCRIPT ]; then
-    echo "[ERROR] Algorithm script file '$USER_SCRIPT' not found!"
+if [ ! -d $USER_SCRIPT_DIR ]; then
+    echo "[ERROR] Algorithm directory '$USER_SCRIPT_DIR' not found!"
     exit 1
 fi
-echo "[INFO] TESTING PIPELINE '${PIPELINE_NAME}'"
+echo "[INFO] TESTING ALGORITHM '${PIPELINE_NAME}'"
 
 # Determine the Docker image from the user script
-IMAGE=$(grep '^#DOCKER_IMAGE=' "$USER_SCRIPT" | cut -d= -f2)
+IMAGE=$(grep '^#DOCKER_IMAGE=' "$USER_SCRIPT_DIR/main.sh" | cut -d= -f2)
 if [ -z "$IMAGE" ]; then
-    IMAGE="$DEFAULT_IMAGE"
+    IMAGE="ubuntu:latest"
 fi
 
-# Prepare the output directory
-OUTPUT_DIR="$(pwd)/recons/${PIPELINE_NAME}"
-rm -rf "$OUTPUT_DIR"
-mkdir -p "$OUTPUT_DIR"
-echo "[INFO] Preparing required Docker image $IMAGE with container name '${PIPELINE_NAME}'"
-
 # Check if the container is running
+echo "[INFO] Preparing required Docker image $IMAGE with container name '${PIPELINE_NAME}'"
 if [ "$(docker ps -q -f name=^/${PIPELINE_NAME}$)" ]; then
     echo "[INFO] Container named '${PIPELINE_NAME}' exists and is running. Stopping..."
     docker stop "$PIPELINE_NAME"
@@ -40,24 +35,27 @@ if docker inspect "$PIPELINE_NAME" &>/dev/null; then
     docker rm -f "$PIPELINE_NAME"
 fi
 
-echo "[INFO] Setting up copy of BIDS directory..."
-rm -rf bids-copy
-cp -r bids bids-copy
+echo "[INFO] Setting up testing directories..."
+OUTPUT_DIR="$SCRIPT_DIR/recons/${PIPELINE_NAME}"
+rm -rf "$OUTPUT_DIR"
+mkdir -p "$OUTPUT_DIR"
+
+UUID=$(uuidgen)
+rm -rf /tmp/$UUID
+mkdir -p /tmp/$UUID
+trap "rm -rf '/tmp/$UUID'" EXIT
+cp -r bids /tmp/$UUID/bids
+cp -r $USER_SCRIPT_DIR/* /tmp/$UUID/
+cp -r $USER_SCRIPT_DIR/.* /tmp/$UUID/
 
 echo "[INFO] Creating and starting the container '$PIPELINE_NAME' with image $IMAGE..."
 docker run --rm --name "$PIPELINE_NAME" -d \
-    -v "$(pwd)/bids-copy:/tmp/bids" \
-    -v "$OUTPUT_DIR:/tmp/output" \
+    -v "/tmp/$UUID:/qsmci" \
+    -v "$OUTPUT_DIR:/qsmci/output" \
     "$IMAGE" tail -f /dev/null
 
-# Ensure /tmp/output exists and is writable inside the container
-docker exec "$PIPELINE_NAME" mkdir -p /tmp/output
-docker exec "$PIPELINE_NAME" chmod 777 /tmp/output
-
-# Run the user script in the container
-echo "[INFO] Running $USER_SCRIPT in container..."
-docker cp "$USER_SCRIPT" "$PIPELINE_NAME":/tmp/$(basename $USER_SCRIPT)
-docker exec "$PIPELINE_NAME" bash -c "cd /tmp && chmod +x $(basename $USER_SCRIPT) && ./$(basename $USER_SCRIPT)"
+echo "[INFO] Running $USER_SCRIPT_DIR/main.sh in container..."
+docker exec "$PIPELINE_NAME" bash -c "cd /qsmci && chmod +x main.sh && ./main.sh"
 
 echo "[INFO] Consolidating outputs in recons/${PIPELINE_NAME}"
 OUTPUT_FILES=$(ls recons/${PIPELINE_NAME}/*.nii* 2> /dev/null | wc -l)
@@ -71,6 +69,8 @@ else
     if [ ! -f recons/${PIPELINE_NAME}/*.nii.gz ]; then
         gzip -f recons/${PIPELINE_NAME}/*.nii
     fi
-    mv recons/${PIPELINE_NAME}/*.nii.gz recons/${PIPELINE_NAME}/${PIPELINE_NAME}.nii.gz
+    if [ ! -f recons/${PIPELINE_NAME}/${PIPELINE_NAME}.nii.gz ]; then
+        mv recons/${PIPELINE_NAME}/*.nii.gz recons/${PIPELINE_NAME}/${PIPELINE_NAME}.nii.gz
+    fi
 fi
 
