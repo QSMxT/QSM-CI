@@ -46,9 +46,9 @@ jobs:
           qsm-forward head data/ bids
         fi
 
-        export PIPELINE_NAME="$(basename "${{ matrix.algo }}" .sh)"
+        export PIPELINE_NAME="$(basename "${{ matrix.algo }}")"
         
-        bash run.sh algos/${PIPELINE_NAME}.sh
+        bash run.sh algos/${PIPELINE_NAME}
         
         python metrics/metrics.py \
           "bids/derivatives/qsm-forward/sub-1/anat/sub-1_Chimap.nii" \
