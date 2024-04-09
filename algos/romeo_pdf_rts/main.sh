@@ -23,6 +23,3 @@ qsmxt bids qsmxt_output --premade bet --bf_algorithm pdf --qsm_algorithm rts --a
 # move output to expected location
 mv qsmxt_output/qsm/*.nii* output/
 
-# cleanup
-rm -rf qsmxt_output
-

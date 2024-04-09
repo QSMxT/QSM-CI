@@ -21,6 +21,3 @@ qsmxt bids qsmxt_output --premade bet --qsm_algorithm tgv --auto_yes --use_exist
 # move output to expected location
 mv qsmxt_output/qsm/*.nii* output/
 
-# cleanup
-rm -rf qsmxt_output
-

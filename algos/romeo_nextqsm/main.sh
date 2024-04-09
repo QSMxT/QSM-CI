@@ -15,11 +15,9 @@
 # - Python package - numpy: Harris CR, Millman KJ, van der Walt SJ, et al. Array programming with NumPy. Nature. 2020;585(7825):357-362. doi:10.1038/s41586-020-2649-2
 #
 
+# run qsmxt
 qsmxt bids qsmxt_output --premade nextqsm --auto_yes --use_existing_masks
 
 # move output to expected location
 mv qsmxt_output/qsm/*.nii* output/
-
-# cleanup
-rm -rf qsmxt_output
 

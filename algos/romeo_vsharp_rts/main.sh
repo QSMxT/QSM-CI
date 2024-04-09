@@ -23,6 +23,3 @@ qsmxt bids qsmxt_output --premade fast --auto_yes --use_existing_masks
 # move output to expected location
 mv qsmxt_output/qsm/*.nii* output/
 
-# cleanup
-rm -rf qsmxt_output
-
