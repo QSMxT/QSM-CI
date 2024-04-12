@@ -52,9 +52,9 @@ jobs:
         
         python metrics/metrics.py \
           "bids/derivatives/qsm-forward/sub-1/anat/sub-1_Chimap.nii" \
-          recons/${PIPELINE_NAME}/*.nii* \
+          output/${PIPELINE_NAME}/*.nii* \
           --roi "bids/derivatives/qsm-forward/sub-1/anat/sub-1_mask.nii"
-        cat recons/${PIPELINE_NAME}/*.md* >> $GITHUB_STEP_SUMMARY
+        cat output/${PIPELINE_NAME}/*.md* >> $GITHUB_STEP_SUMMARY
 
         ./upload.sh
 

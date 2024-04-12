@@ -8,8 +8,8 @@ if ! command -v jq &> /dev/null; then
     sudo apt-get install jq -y
 fi
 
-JSON_FILE="recons/${PIPELINE_NAME}/metrics.json"
-NIFTI_FILE="recons/${PIPELINE_NAME}/${PIPELINE_NAME}.nii.gz"
+JSON_FILE="output/${PIPELINE_NAME}/metrics.json"
+NIFTI_FILE="output/${PIPELINE_NAME}/${PIPELINE_NAME}.nii.gz"
 
 DIRNAME=$(dirname "${NIFTI_FILE}")
 BASENAME=$(basename "${NIFTI_FILE}")

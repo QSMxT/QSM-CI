@@ -223,16 +223,16 @@ For example:
 ```bash
 $ python metrics/metrics.py \
     "bids/derivatives/qsm-forward/sub-1/anat/sub-1_Chimap.nii" \
-    recons/romeo_vsharp_rts/romeo_vsharp_rts.nii.gz \
+    output/romeo_vsharp_rts/romeo_vsharp_rts.nii.gz \
     --roi "bids/derivatives/qsm-forward/sub-1/anat/sub-1_mask.nii"
-$ tree recons/
-recons/
+$ tree output/
+output/
 └── romeo_vsharp_rts
     ├── metrics.csv
     ├── metrics.json
     ├── metrics.md
     └── romeo_vsharp_rts.nii.gz
-$ cat recons/metrics.json
+$ cat output/metrics.json
 {
     "RMSE": 0.02399989263113798,
     "NRMSE": 75.32962107000168,
