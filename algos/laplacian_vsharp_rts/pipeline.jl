@@ -68,6 +68,6 @@ ni = NIVolume(x[:,:,:]; voxel_size=vsz,
             orientation=nothing, dim_info=Integer.(vsz),
             time_step=nii_mag.header.slice_duration != false && !isempty(time_step.data) ? time_step.data[1] : 0f0)
 
-println("[INFO] Writing output to NIfTI...")
-niwrite("output/laplacian_vsharp_rts.nii.gz", ni)
-println("[INFO] Process completed successfully.")
+niwrite("out.nii.gz", ni)
+println("[INFO] Pipeline completed successfully.")
+

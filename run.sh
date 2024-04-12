@@ -36,7 +36,7 @@ if docker inspect "$PIPELINE_NAME" &>/dev/null; then
 fi
 
 echo "[INFO] Setting up testing directories..."
-OUTPUT_DIR="$SCRIPT_DIR/recons/${PIPELINE_NAME}"
+OUTPUT_DIR="$SCRIPT_DIR/output/${PIPELINE_NAME}"
 rm -rf "$OUTPUT_DIR"
 mkdir -p "$OUTPUT_DIR"
 
@@ -57,20 +57,20 @@ docker run --rm --name "$PIPELINE_NAME" -d \
 echo "[INFO] Running $USER_SCRIPT_DIR/main.sh in container..."
 docker exec "$PIPELINE_NAME" bash -c "cd /qsmci && chmod +x main.sh && ./main.sh"
 
-echo "[INFO] Consolidating outputs in recons/${PIPELINE_NAME}"
-OUTPUT_FILES=$(ls recons/${PIPELINE_NAME}/*.nii* 2> /dev/null | wc -l)
+echo "[INFO] Consolidating output in output/${PIPELINE_NAME}"
+OUTPUT_FILES=$(ls output/${PIPELINE_NAME}/*.nii* 2> /dev/null | wc -l)
 if [ "$OUTPUT_FILES" -eq 0 ]; then
     echo "[ERROR] Expected output not found! Check that the script correctly places one NIfTI file in 'output/'"
     exit 1
 elif [ "$OUTPUT_FILES" -ne 1 ]; then
-    echo "[ERROR] More than one output file found! '`ls recons/${PIPELINE_NAME} -m`'"
+    echo "[ERROR] More than one output file found! '`ls output/${PIPELINE_NAME} -m`'"
     exit 1
 else
-    if [ ! -f recons/${PIPELINE_NAME}/*.nii.gz ]; then
-        gzip -f recons/${PIPELINE_NAME}/*.nii
+    if [ ! -f output/${PIPELINE_NAME}/*.nii.gz ]; then
+        gzip -f output/${PIPELINE_NAME}/*.nii
     fi
-    if [ ! -f recons/${PIPELINE_NAME}/${PIPELINE_NAME}.nii.gz ]; then
-        mv recons/${PIPELINE_NAME}/*.nii.gz recons/${PIPELINE_NAME}/${PIPELINE_NAME}.nii.gz
+    if [ ! -f output/${PIPELINE_NAME}/${PIPELINE_NAME}.nii.gz ]; then
+        mv output/${PIPELINE_NAME}/*.nii.gz output/${PIPELINE_NAME}/${PIPELINE_NAME}.nii.gz
     fi
 fi
 
