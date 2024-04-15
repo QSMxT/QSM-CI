@@ -59,7 +59,7 @@ else
 fi
 
 echo "[DEBUG] Uploading via swift..."
-echo rclone copy "${BASENAME}" nectar-swift-qsmxt:qsmxt
+rclone copy "${BASENAME}" nectar-swift-qsmxt:qsmxt
 
 # Check if it is uploaded to Nectar Swift Object Storage and if so, add it to the database
 if curl --output /dev/null --silent --head --fail "${URL}"; then
