@@ -16,6 +16,6 @@
 # run qsmxt
 qsmxt bids qsmxt_output --premade fast --unwrapping_algorithm laplacian --bf_algorithm pdf --qsm_algorithm rts --combine_phase off --auto_yes --use_existing_masks
 
-# move output to expected location
+# move output to expected location 
 mv qsmxt_output/qsm/*.nii* output/
 
