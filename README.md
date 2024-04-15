@@ -1,5 +1,7 @@
 # QSM-CI Introduction
 
+![QSM-CI Logo](img/QSM-CI-small.png)
+
 Welcome to the Quantitative Susceptibility Mapping (QSM) Online Challenge (QSM-CI)! This initiative aims to continually evaluate QSM algorithms and pipelines openly and continuously to remain up-to-date with advancements.
 
 Key features:
