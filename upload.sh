@@ -66,7 +66,7 @@ if curl --output /dev/null --silent --head --fail "${URL}"; then
     echo "[DEBUG] ${BASENAME} exists in nectar swift object storage"
 
     echo "[DEBUG] Posting metrics for ${BASENAME} to the database."
-    echo curl -X POST \
+    curl -X POST \
     -H "X-Parse-Application-Id: ${PARSE_APPLICATION_ID}" \
     -H "X-Parse-REST-API-Key: ${PARSE_REST_API_KEY}" \
     -H "X-Parse-Master-Key: ${PARSE_MASTER_KEY}" \
