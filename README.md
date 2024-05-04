@@ -139,7 +139,7 @@ bids
 
 ### Realistic in-silico head phantom
 
-To generate input data using the head phantom, you should use the `--head` option in `qsm-forward`. You will also need to provide the `data/` directory from the [realistic in-silico head phantom](https://doi.org/10.34973/m20r-jt17) repository (Marques, J. P., 2021) with permission from the authors, and place it in the working directory. It should be structured as follows:
+To generate input data using the head phantom, you should use the `head` option in `qsm-forward`. You will also need to provide the `data/` directory from the [realistic in-silico head phantom](https://doi.org/10.34973/m20r-jt17) repository (Marques, J. P., 2021) with permission from the authors, and place it in the working directory. It should be structured as follows:
 
 ```
 data
