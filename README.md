@@ -25,7 +25,7 @@ Submitted pipelines are evaluated using the following quantitative metrics:
 - HFEN (high-frequency error norm)
 - MAD (mean absolute deviation)
 - CC (cross-correlation)
-- XSIM (QSM cross-correlation)
+- XSIM (structural similarity adjusted for QSM)
 - NMI (normalized mutual information)
 - GXE (gradient difference error)
 
