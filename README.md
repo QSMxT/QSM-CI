@@ -38,7 +38,7 @@ In addition to quantitative metrics, qualitative evaluation is conducted through
 To participate, follow these steps:
 
 1. **Fork the repository**: Fork this GitHub repository to your GitHub account.
-2. **Add your pipeline**: Create a new directory for your pipeline containing in the `algos/` directory and format your pipeline according to the [Pipeline requirements](#pipeline-requirements).
+2. **Add your pipeline**: Create a new directory for your pipeline in the `algos/` directory and format your pipeline according to the [Pipeline requirements](#pipeline-requirements).
 3. **Test your pipeline**: Test your pipeline locally. Follow the instructions in [Testing locally](#testing-locally)
 3. **Create a pull request**: Submit a pull request. Once accepted, the GitHub Action will automatically trigger to test your pipeline.
 
