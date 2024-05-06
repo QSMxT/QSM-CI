@@ -119,22 +119,22 @@ bids
 │               └── sub-1_mask.nii
 └── sub-1
     └── anat
-        ├── sub-1_echo-1_part-mag_T2starw.json
-        ├── sub-1_echo-1_part-mag_T2starw.nii
-        ├── sub-1_echo-1_part-phase_T2starw.json
-        ├── sub-1_echo-1_part-phase_T2starw.nii
-        ├── sub-1_echo-2_part-mag_T2starw.json
-        ├── sub-1_echo-2_part-mag_T2starw.nii
-        ├── sub-1_echo-2_part-phase_T2starw.json
-        ├── sub-1_echo-2_part-phase_T2starw.nii
-        ├── sub-1_echo-3_part-mag_T2starw.json
-        ├── sub-1_echo-3_part-mag_T2starw.nii
-        ├── sub-1_echo-3_part-phase_T2starw.json
-        ├── sub-1_echo-3_part-phase_T2starw.nii
-        ├── sub-1_echo-4_part-mag_T2starw.json
-        ├── sub-1_echo-4_part-mag_T2starw.nii
-        ├── sub-1_echo-4_part-phase_T2starw.json
-        └── sub-1_echo-4_part-phase_T2starw.nii
+        ├── sub-1_echo-1_part-mag_MEGRE.json
+        ├── sub-1_echo-1_part-mag_MEGRE.nii
+        ├── sub-1_echo-1_part-phase_MEGRE.json
+        ├── sub-1_echo-1_part-phase_MEGRE.nii
+        ├── sub-1_echo-2_part-mag_MEGRE.json
+        ├── sub-1_echo-2_part-mag_MEGRE.nii
+        ├── sub-1_echo-2_part-phase_MEGRE.json
+        ├── sub-1_echo-2_part-phase_MEGRE.nii
+        ├── sub-1_echo-3_part-mag_MEGRE.json
+        ├── sub-1_echo-3_part-mag_MEGRE.nii
+        ├── sub-1_echo-3_part-phase_MEGRE.json
+        ├── sub-1_echo-3_part-phase_MEGRE.nii
+        ├── sub-1_echo-4_part-mag_MEGRE.json
+        ├── sub-1_echo-4_part-mag_MEGRE.nii
+        ├── sub-1_echo-4_part-phase_MEGRE.json
+        └── sub-1_echo-4_part-phase_MEGRE.nii
 ```
 
 ### Realistic in-silico head phantom
@@ -177,22 +177,22 @@ bids
 │               └── sub-1_mask.nii
 └── sub-1
     └── anat
-        ├── sub-1_echo-1_part-mag_T2starw.json
-        ├── sub-1_echo-1_part-mag_T2starw.nii
-        ├── sub-1_echo-1_part-phase_T2starw.json
-        ├── sub-1_echo-1_part-phase_T2starw.nii
-        ├── sub-1_echo-2_part-mag_T2starw.json
-        ├── sub-1_echo-2_part-mag_T2starw.nii
-        ├── sub-1_echo-2_part-phase_T2starw.json
-        ├── sub-1_echo-2_part-phase_T2starw.nii
-        ├── sub-1_echo-3_part-mag_T2starw.json
-        ├── sub-1_echo-3_part-mag_T2starw.nii
-        ├── sub-1_echo-3_part-phase_T2starw.json
-        ├── sub-1_echo-3_part-phase_T2starw.nii
-        ├── sub-1_echo-4_part-mag_T2starw.json
-        ├── sub-1_echo-4_part-mag_T2starw.nii
-        ├── sub-1_echo-4_part-phase_T2starw.json
-        └── sub-1_echo-4_part-phase_T2starw.nii
+        ├── sub-1_echo-1_part-mag_MEGRE.json
+        ├── sub-1_echo-1_part-mag_MEGRE.nii
+        ├── sub-1_echo-1_part-phase_MEGRE.json
+        ├── sub-1_echo-1_part-phase_MEGRE.nii
+        ├── sub-1_echo-2_part-mag_MEGRE.json
+        ├── sub-1_echo-2_part-mag_MEGRE.nii
+        ├── sub-1_echo-2_part-phase_MEGRE.json
+        ├── sub-1_echo-2_part-phase_MEGRE.nii
+        ├── sub-1_echo-3_part-mag_MEGRE.json
+        ├── sub-1_echo-3_part-mag_MEGRE.nii
+        ├── sub-1_echo-3_part-phase_MEGRE.json
+        ├── sub-1_echo-3_part-phase_MEGRE.nii
+        ├── sub-1_echo-4_part-mag_MEGRE.json
+        ├── sub-1_echo-4_part-mag_MEGRE.nii
+        ├── sub-1_echo-4_part-phase_MEGRE.json
+        └── sub-1_echo-4_part-phase_MEGRE.nii
 ```
 
 ## Testing and evaluating a pipeline
