@@ -55,7 +55,7 @@ def parse_bids_directory(bids_dir):
                     software_name_match = re.search(r'derivatives/([^/]+)/', root)
                     if software_name_match:
                         software_name = software_name_match.group(1)
-                        derivative_type_match = re.search(r'_([^_]+)\.nii(\.gz)?', file)
+                        derivative_type_match = re.search(r'_([^_]+)(?=\.(nii|nii\.gz))', file)
                         if derivative_type_match:
                             derivative_type = derivative_type_match.group(1)
                             if subject not in temp_derivatives:
