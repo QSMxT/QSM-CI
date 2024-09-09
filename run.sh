@@ -10,6 +10,7 @@ echo "[DEBUG] SCRIPT_PATH $SCRIPT_PATH"
 echo "[DEBUG] SCRIPT_DIR $SCRIPT_DIR"
 echo "[DEBUG] USER_SCRIPT_DIR $USER_SCRIPT_DIR"
 echo "[DEBUG] PIPELINE_NAME $PIPELINE_NAME"
+echo "[DEBUG] INPUTS_JSON $INPUTS_JSON"
 
 if [ -z "$1" ]; then
     echo "[ERROR] Argument needed to specify algorithm directory"

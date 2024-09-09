@@ -92,18 +92,18 @@ jobs:
       - name: Extract fields from JSON
         id: extract
         run: |
-          subject=$(jq -r '.Subject' downloaded_jsons/${{ matrix.json_file }})
-          session=$(jq -r '.Session' downloaded_jsons/${{ matrix.json_file }})
-          acquisition=$(jq -r '.Acquisition' downloaded_jsons/${{ matrix.json_file }})
-          run=$(jq -r '.Run' downloaded_jsons/${{ matrix.json_file }})
+          SUBJECT=$(jq -r '.Subject' downloaded_jsons/${{ matrix.json_file }})
+          SESSION=$(jq -r '.Session' downloaded_jsons/${{ matrix.json_file }})
+          ACQUISITION=$(jq -r '.Acquisition' downloaded_jsons/${{ matrix.json_file }})
+          RUN=$(jq -r '.Run' downloaded_jsons/${{ matrix.json_file }})
 
-          echo "Subject=$subject" >> $GITHUB_ENV
-          echo "Session=$session" >> $GITHUB_ENV
-          echo "Acquisition=$acquisition" >> $GITHUB_ENV
-          echo "Run=$run" >> $GITHUB_ENV
+          echo "SUBJECT=$SUBJECT" >> $GITHUB_ENV
+          echo "SESSION=$SESSION" >> $GITHUB_ENV
+          echo "ACQUISITION=$ACQUISITION" >> $GITHUB_ENV
+          echo "RUN=$RUN" >> $GITHUB_ENV
         shell: bash
 
-      - name: Reconstruct and evaluate for algo ${{ matrix.algo }} and ${{ env.Subject }}_session_${{ env.Session }}_acquisition_${{ env.Acquisition }}_run_${{ env.Run }}
+      - name: ${{ matrix.algo }} - sub-${{ env.SUBJECT }}_ses-${{ env.SESSION }}_acq-${{ env.ACQUISITION }}_run-${{ env.RUN }}
         env:
           OSF_TOKEN: ${{ secrets.OSF_TOKEN }}
           OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD }}
@@ -114,14 +114,14 @@ jobs:
           PARSE_APPLICATION_ID: ${{ secrets.PARSE_APPLICATION_ID }}
           PARSE_REST_API_KEY: ${{ secrets.PARSE_REST_API_KEY }}
           PARSE_MASTER_KEY: ${{ secrets.PARSE_MASTER_KEY }}
-          Subject: ${{ env.Subject }}
-          Session: ${{ env.Session }}
-          Acquisition: ${{ env.Acquisition }}
-          Run: ${{ env.Run }}
+          SUBJECT: ${{ env.SUBJECT }}
+          SESSION: ${{ env.SESSION }}
+          ACQUISITION: ${{ env.ACQUISITION }}
+          RUN: ${{ env.RUN }}
           PIPELINE_NAME: ${{ matrix.algo }}
           INPUTS_JSON: downloaded_jsons/${{ matrix.json_file }}
         run: |
-          echo "Reconstructing and evaluating for algo=${PIPELINE_NAME} Subject=$Subject, Session=$Session, Acquisition=$Acquisition, Run=$Run"
+          echo "Reconstructing and evaluating for algo=${PIPELINE_NAME} SUBJECT=$SUBJECT, SESSION=$SESSION, ACQUISITION=$ACQUISITION, RUN=$RUN"
           
           bash run.sh algos/${PIPELINE_NAME}
 
