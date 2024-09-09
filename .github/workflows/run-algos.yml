@@ -48,13 +48,11 @@ jobs:
           json_list=$(find . -name "*.json" | jq -R -s -c 'split("\n")[:-1]')
           echo "::set-output name=json_list::${json_list}"
 
-      - name: Upload BIDS directory and JSON files as artifact
+      - name: Upload JSON files as artifact
         uses: actions/upload-artifact@v3
         with:
-          name: bids-and-json
-          path: |
-            bids/
-            *.json
+          name: json-files
+          path: "*.json"
 
   recon_and_evaluate:
     needs: generate_json_files
@@ -67,19 +65,37 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Download BIDS and JSON files
+      - name: Download JSON files
         uses: actions/download-artifact@v3
         with:
-          name: bids-and-json
-          path: downloaded_data
+          name: json-files
+          path: downloaded_jsons
+
+      - name: Fetch BIDS data
+        env:
+          OSF_TOKEN: ${{ secrets.OSF_TOKEN }}
+          OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD }}
+          OS_PROJECT_ID: ${{ secrets.SWIFT_OS_PROJECT_ID }}
+          OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME }}
+          OS_APPLICATION_CREDENTIAL_ID: ${{ secrets.SWIFT_OS_APPLICATION_CREDENTIAL_ID }}
+          OS_APPLICATION_CREDENTIAL_SECRET: ${{ secrets.SWIFT_OS_APPLICATION_CREDENTIAL_SECRET }}
+        run: |
+          export PATH=$PATH:/home/runnerx/.local/bin
+
+          if [ ! -d "bids" ]; then
+            osf --project 9jc42 fetch data.tar
+            tar xf data.tar
+            rm data.tar
+            qsm-forward head data/ bids
+          fi
 
       - name: Extract fields from JSON
         id: extract
         run: |
-          subject=$(jq -r '.Subject' downloaded_data/${{ matrix.json_file }})
-          session=$(jq -r '.Session' downloaded_data/${{ matrix.json_file }})
-          acquisition=$(jq -r '.Acquisition' downloaded_data/${{ matrix.json_file }})
-          run=$(jq -r '.Run' downloaded_data/${{ matrix.json_file }})
+          subject=$(jq -r '.Subject' downloaded_jsons/${{ matrix.json_file }})
+          session=$(jq -r '.Session' downloaded_jsons/${{ matrix.json_file }})
+          acquisition=$(jq -r '.Acquisition' downloaded_jsons/${{ matrix.json_file }})
+          run=$(jq -r '.Run' downloaded_jsons/${{ matrix.json_file }})
 
           echo "Subject=$subject" >> $GITHUB_ENV
           echo "Session=$session" >> $GITHUB_ENV
@@ -109,9 +125,9 @@ jobs:
           bash run.sh algos/${PIPELINE_NAME}
 
           python metrics/metrics.py \
-            "downloaded_data/bids/derivatives/qsm-forward/sub-1/anat/sub-1_Chimap.nii" \
+            "bids/derivatives/qsm-forward/sub-1/anat/sub-1_Chimap.nii" \
             output/${PIPELINE_NAME}/*.nii* \
-            --roi "downloaded_data/bids/derivatives/qsm-forward/sub-1/anat/sub-1_mask.nii"
+            --roi "bids/derivatives/qsm-forward/sub-1/anat/sub-1_mask.nii"
 
           cat output/${PIPELINE_NAME}/*.md* >> $GITHUB_STEP_SUMMARY
 
