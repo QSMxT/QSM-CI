@@ -44,8 +44,8 @@ jobs:
       - name: Collect JSON files
         id: collect_jsons
         run: |
-          # Find all JSON files and join them into a JSON array string
-          json_list=$(find . -name "*.json" | jq -R -s -c 'split("\n")[:-1]')
+          # Find all JSON files matching the pattern group*.json and join them into a JSON array string
+          json_list=$(find . -name "group*.json" | jq -R -s -c 'split("\n")[:-1]')
           echo "::set-output name=json_list::${json_list}"
 
       - name: Upload JSON files as artifact
