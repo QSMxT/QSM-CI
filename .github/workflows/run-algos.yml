@@ -119,9 +119,10 @@ jobs:
           Acquisition: ${{ env.Acquisition }}
           Run: ${{ env.Run }}
           PIPELINE_NAME: ${{ matrix.algo }}
+          INPUTS_JSON: ${{ matrix.json_file }}
         run: |
           echo "Reconstructing and evaluating for algo=${PIPELINE_NAME} Subject=$Subject, Session=$Session, Acquisition=$Acquisition, Run=$Run"
-
+          
           bash run.sh algos/${PIPELINE_NAME}
 
           python metrics/metrics.py \

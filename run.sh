@@ -1,8 +1,15 @@
 #!/usr/bin/env bash
+set -e
+
 SCRIPT_PATH=$(realpath "$0")
 SCRIPT_DIR=$(dirname "$SCRIPT_PATH")
 USER_SCRIPT_DIR=$(realpath "$1")
 PIPELINE_NAME="$(basename $USER_SCRIPT_DIR)"
+
+echo "[DEBUG] SCRIPT_PATH $SCRIPT_PATH"
+echo "[DEBUG] SCRIPT_DIR $SCRIPT_DIR"
+echo "[DEBUG] USER_SCRIPT_DIR $USER_SCRIPT_DIR"
+echo "[DEBUG] PIPELINE_NAME $PIPELINE_NAME"
 
 if [ -z "$1" ]; then
     echo "[ERROR] Argument needed to specify algorithm directory"
@@ -45,8 +52,8 @@ rm -rf /tmp/$UUID
 mkdir -p /tmp/$UUID
 trap "rm -rf '/tmp/$UUID'" EXIT
 cp -r bids /tmp/$UUID/bids
-cp -r $USER_SCRIPT_DIR/* /tmp/$UUID/
-cp -r $USER_SCRIPT_DIR/.* /tmp/$UUID/
+cp -r $USER_SCRIPT_DIR/*.* /tmp/$UUID/
+cp $INPUTS_JSON /tmp/$UUID/inputs.json
 
 echo "[INFO] Creating and starting the container '$PIPELINE_NAME' with image $IMAGE..."
 docker run --rm --name "$PIPELINE_NAME" -d \
