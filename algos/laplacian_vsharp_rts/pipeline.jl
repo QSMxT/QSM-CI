@@ -16,6 +16,18 @@ phas_files = json_data["phase_nii"]
 TEs = json_data["EchoTime"]
 B0 = json_data["MagneticFieldStrength"]
 
+# Read JSON input file
+input_file = "inputs.json"
+println("[INFO] Loading input JSON file...")
+json_data = JSON.parsefile(input_file)
+
+# Extract subject information and data paths
+mask_file = json_data["mask"]
+mag_files = json_data["mag_nii"]
+phas_files = json_data["phase_nii"]
+TEs = json_data["EchoTime"]
+B0 = json_data["MagneticFieldStrength"]
+
 # constants
 γ = 267.52 # gyromagnetic ratio (MHz/T)
 bdir = (0.,0.,1.)   # direction of B-field
@@ -76,4 +88,3 @@ ni = NIVolume(x[:,:,:]; voxel_size=vsz, orientation=nothing, dim_info=Integer.(v
 niwrite(output_file, ni)
 
 println("[INFO] Pipeline completed successfully.")
-
