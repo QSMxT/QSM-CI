@@ -5,14 +5,11 @@ using NIfTI
 using Statistics
 using JSON
 
-println("[INFO] Starting script...")
+println("[INFO] Starting laplacian_vsharp_rts pipeline...")
 
-# Read JSON input file
-input_file = "inputs.json"
 println("[INFO] Loading input JSON file...")
+input_file = "inputs.json"
 json_data = JSON.parsefile(input_file)
-
-# Extract subject information and data paths
 mask_file = json_data["mask"]
 mag_files = json_data["mag_nii"]
 phas_files = json_data["phase_nii"]
@@ -20,16 +17,16 @@ TEs = json_data["EchoTime"]
 B0 = json_data["MagneticFieldStrength"]
 
 # constants
-γ = 267.52      # gyromagnetic ratio (MHz/T)
+γ = 267.52 # gyromagnetic ratio (MHz/T)
+bdir = (0.,0.,1.)   # direction of B-field
+vsz  = (1.0, 1.0, 1.0)   # voxel size (assuming isotropic)
 
-# Load the first magnitude image to get shape
 println("[INFO] Loading magnitude image for echo-1 to get shape...")
 nii_mag = niread(mag_files[1])
 phs_shape = size(Float32.(nii_mag))
 num_images = length(mag_files)
 mag_shape = tuple(phs_shape..., num_images)
 phas_shape = tuple(phs_shape..., num_images)
-
 mag = Array{Float32}(undef, mag_shape...)
 phas = Array{Float32}(undef, phas_shape...)
 
@@ -45,11 +42,6 @@ for i in 1:num_images
     mag[:,:,:,i] = mag_tmp
     phas[:,:,:,i] = phas_tmp
 end
-
-bdir = (0.,0.,1.)   # direction of B-field
-vsz  = (1.0, 1.0, 1.0)   # voxel size (assuming isotropic)
-
-println("[INFO] Acquisition parameters set from JSON.")
 
 # Load the mask file
 println("[INFO] Loading mask: $mask_file")
@@ -84,3 +76,4 @@ ni = NIVolume(x[:,:,:]; voxel_size=vsz, orientation=nothing, dim_info=Integer.(v
 niwrite(output_file, ni)
 
 println("[INFO] Pipeline completed successfully.")
+
