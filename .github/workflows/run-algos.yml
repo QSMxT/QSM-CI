@@ -1,4 +1,5 @@
 name: Reconstruct and evaluate
+
 on:
   workflow_call:
     inputs:
@@ -8,53 +9,110 @@ on:
       runner:
         required: true
         type: string
+
 jobs:
-  recon_and_evaluate:
-    if: ${{ inputs.algo_list != '[]' }}
+  generate_json_files:
     runs-on: ${{ fromJSON(inputs.runner) }}
+    outputs:
+      json_list: ${{ steps.collect_jsons.outputs.json_list }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Fetch BIDS data and generate JSON files
+        env:
+          OSF_TOKEN: ${{ secrets.OSF_TOKEN }}
+          OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD }}
+          OS_PROJECT_ID: ${{ secrets.SWIFT_OS_PROJECT_ID }}
+          OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME }}
+          OS_APPLICATION_CREDENTIAL_ID: ${{ secrets.SWIFT_OS_APPLICATION_CREDENTIAL_ID }}
+          OS_APPLICATION_CREDENTIAL_SECRET: ${{ secrets.SWIFT_OS_APPLICATION_CREDENTIAL_SECRET }}
+          PARSE_APPLICATION_ID: ${{ secrets.PARSE_APPLICATION_ID }}
+          PARSE_REST_API_KEY: ${{ secrets.PARSE_REST_API_KEY }}
+          PARSE_MASTER_KEY: ${{ secrets.PARSE_MASTER_KEY }}
+        run: |
+          export PATH=$PATH:/home/runnerx/.local/bin
+
+          if [ ! -d "bids" ]; then
+            osf --project 9jc42 fetch data.tar
+            tar xf data.tar
+            rm data.tar
+            qsm-forward head data/ bids
+          fi
+
+          python parse_bids.py bids .
+
+      - name: Collect JSON files
+        id: collect_jsons
+        run: |
+          # Find all JSON files and join them into a JSON array string
+          json_list=$(find . -name "*.json" | jq -R -s -c 'split("\n")[:-1]')
+          echo "::set-output name=json_list::${json_list}"
+
+      - name: Upload BIDS directory and JSON files as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: bids-and-json
+          path: |
+            bids/
+            *.json
+
+  recon_and_evaluate:
+    needs: generate_json_files
+    runs-on: ${{ fromJSON(inputs.runner) }}
+    if: ${{ inputs.algo_list != '[]' }}
     strategy:
       matrix:
         algo: ${{ fromJSON(inputs.algo_list) }}
+        json_file: ${{ fromJSON(needs.generate_json_files.outputs.json_list) }}
     steps:
-    - uses: actions/checkout@v3
-    - name: Get modified algorithms
-      id: getfile
-      run: |
-        
-      shell: bash
-    - name: Reconstruct and evaluate
-      env:
-        OSF_TOKEN: ${{ secrets.OSF_TOKEN }}
-        OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD }}
-        OS_PROJECT_ID: ${{ secrets.SWIFT_OS_PROJECT_ID }}
-        OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME }}
-        OS_APPLICATION_CREDENTIAL_ID: ${{ secrets.SWIFT_OS_APPLICATION_CREDENTIAL_ID }}
-        OS_APPLICATION_CREDENTIAL_SECRET: ${{ secrets.SWIFT_OS_APPLICATION_CREDENTIAL_SECRET }}
-        PARSE_APPLICATION_ID: ${{ secrets.PARSE_APPLICATION_ID }}
-        PARSE_REST_API_KEY: ${{ secrets.PARSE_REST_API_KEY }}
-        PARSE_MASTER_KEY: ${{ secrets.PARSE_MASTER_KEY }}
-      run: |
-        #sudo apt-get update
-        #sudo apt-get install python3.10 python3.10-venv python-is-python3 -y
-        #pip install qsm-forward==0.19 osfclient argparse numpy nibabel scikit-learn scikit-image scipy
-        export PATH=$PATH:/home/runnerx/.local/bin
+      - uses: actions/checkout@v3
 
-        if [ ! -d "bids" ]; then
-          osf --project 9jc42 fetch data.tar
-          tar xf data.tar
-          rm data.tar
-          qsm-forward head data/ bids
-        fi
+      - name: Download BIDS and JSON files
+        uses: actions/download-artifact@v3
+        with:
+          name: bids-and-json
+          path: downloaded_data
 
-        export PIPELINE_NAME="$(basename "${{ matrix.algo }}")"
-        
-        bash run.sh algos/${PIPELINE_NAME}
-        
-        python metrics/metrics.py \
-          "bids/derivatives/qsm-forward/sub-1/anat/sub-1_Chimap.nii" \
-          output/${PIPELINE_NAME}/*.nii* \
-          --roi "bids/derivatives/qsm-forward/sub-1/anat/sub-1_mask.nii"
-        cat output/${PIPELINE_NAME}/*.md* >> $GITHUB_STEP_SUMMARY
+      - name: Extract fields from JSON
+        id: extract
+        run: |
+          subject=$(jq -r '.Subject' downloaded_data/${{ matrix.json_file }})
+          session=$(jq -r '.Session' downloaded_data/${{ matrix.json_file }})
+          acquisition=$(jq -r '.Acquisition' downloaded_data/${{ matrix.json_file }})
+          run=$(jq -r '.Run' downloaded_data/${{ matrix.json_file }})
 
-        ./upload.sh
+          echo "Subject=$subject" >> $GITHUB_ENV
+          echo "Session=$session" >> $GITHUB_ENV
+          echo "Acquisition=$acquisition" >> $GITHUB_ENV
+          echo "Run=$run" >> $GITHUB_ENV
+        shell: bash
 
+      - name: Reconstruct and evaluate for algo ${{ matrix.algo }} and ${{ env.Subject }}_session_${{ env.Session }}_acquisition_${{ env.Acquisition }}_run_${{ env.Run }}
+        env:
+          OSF_TOKEN: ${{ secrets.OSF_TOKEN }}
+          OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD }}
+          OS_PROJECT_ID: ${{ secrets.SWIFT_OS_PROJECT_ID }}
+          OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME }}
+          OS_APPLICATION_CREDENTIAL_ID: ${{ secrets.SWIFT_OS_APPLICATION_CREDENTIAL_ID }}
+          OS_APPLICATION_CREDENTIAL_SECRET: ${{ secrets.SWIFT_OS_APPLICATION_CREDENTIAL_SECRET }}
+          PARSE_APPLICATION_ID: ${{ secrets.PARSE_APPLICATION_ID }}
+          PARSE_REST_API_KEY: ${{ secrets.PARSE_REST_API_KEY }}
+          PARSE_MASTER_KEY: ${{ secrets.PARSE_MASTER_KEY }}
+          Subject: ${{ env.Subject }}
+          Session: ${{ env.Session }}
+          Acquisition: ${{ env.Acquisition }}
+          Run: ${{ env.Run }}
+          PIPELINE_NAME: ${{ matrix.algo }}
+        run: |
+          echo "Reconstructing and evaluating for algo=${PIPELINE_NAME} Subject=$Subject, Session=$Session, Acquisition=$Acquisition, Run=$Run"
+
+          bash run.sh algos/${PIPELINE_NAME}
+
+          python metrics/metrics.py \
+            "downloaded_data/bids/derivatives/qsm-forward/sub-1/anat/sub-1_Chimap.nii" \
+            output/${PIPELINE_NAME}/*.nii* \
+            --roi "downloaded_data/bids/derivatives/qsm-forward/sub-1/anat/sub-1_mask.nii"
+
+          cat output/${PIPELINE_NAME}/*.md* >> $GITHUB_STEP_SUMMARY
+
+          ./upload.sh
