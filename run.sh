@@ -10,6 +10,10 @@ echo "[DEBUG] SCRIPT_PATH $SCRIPT_PATH"
 echo "[DEBUG] SCRIPT_DIR $SCRIPT_DIR"
 echo "[DEBUG] USER_SCRIPT_DIR $USER_SCRIPT_DIR"
 echo "[DEBUG] PIPELINE_NAME $PIPELINE_NAME"
+echo "[DEBUG] BIDS_SUBJECT=$BIDS_SUBJECT"
+echo "[DEBUG] BIDS_SESSION=$BIDS_SESSION"
+echo "[DEBUG] BIDS_ACQUISITION=$BIDS_ACQUISITION"
+echo "[DEBUG] BIDS_RUN=$BIDS_RUN"
 echo "[DEBUG] INPUTS_JSON $INPUTS_JSON"
 
 if [ -z "$1" ]; then
@@ -51,13 +55,17 @@ mkdir -p "$OUTPUT_DIR"
 UUID=$(uuidgen)
 rm -rf /tmp/$UUID
 mkdir -p /tmp/$UUID
-trap "rm -rf '/tmp/$UUID'" EXIT
+trap "sudo rm -rf '/tmp/$UUID'" EXIT
 cp -r bids /tmp/$UUID/bids
 cp -r $USER_SCRIPT_DIR/*.* /tmp/$UUID/
 cp $INPUTS_JSON /tmp/$UUID/inputs.json
 
 echo "[INFO] Creating and starting the container '$PIPELINE_NAME' with image $IMAGE..."
 docker run --rm --name "$PIPELINE_NAME" -d \
+    -e BIDS_SUBJECT=$BIDS_SUBJECT \
+    -e BIDS_SESSION=$BIDS_SESSION \
+    -e BIDS_ACQUISITION=$BIDS_ACQUISITION \
+    -e BIDS_RUN=$BIDS_RUN \
     -v "/tmp/$UUID:/qsmci" \
     -v "$OUTPUT_DIR:/qsmci/output" \
     "$IMAGE" tail -f /dev/null
