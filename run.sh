@@ -82,3 +82,5 @@ else
     fi
 fi
 
+echo "[INFO] Completed run.sh"
+

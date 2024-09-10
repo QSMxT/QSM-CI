@@ -14,7 +14,17 @@
 # - Python package - numpy: Harris CR, Millman KJ, van der Walt SJ, et al. Array programming with NumPy. Nature. 2020;585(7825):357-362. doi:10.1038/s41586-020-2649-2
 
 # run qsmxt
-qsmxt bids qsmxt_output --premade fast --unwrapping_algorithm laplacian --bf_algorithm pdf --qsm_algorithm rts --combine_phase off --auto_yes --use_existing_masks
+qsmxt bids qsmxt_output \
+    --subjects $BIDS_SUBJECT \
+    --sessions $BIDS_SESSION \
+    --runs $BIDS_RUN \
+    --premade fast \
+    --unwrapping_algorithm laplacian \
+    --bf_algorithm pdf \
+    --qsm_algorithm rts \
+    --combine_phase off \
+    --auto_yes \
+    --use_existing_masks
 
 # move output to expected location 
 mv qsmxt_output/qsm/*.nii* output/

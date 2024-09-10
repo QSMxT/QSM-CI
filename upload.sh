@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+echo "[INFO] In upload.sh"
+
 set -e
 
 # Install jq if not already installed

@@ -92,18 +92,18 @@ jobs:
       - name: Extract fields from JSON
         id: extract
         run: |
-          SUBJECT=$(jq -r '.Subject' downloaded_jsons/${{ matrix.json_file }})
-          SESSION=$(jq -r '.Session' downloaded_jsons/${{ matrix.json_file }})
-          ACQUISITION=$(jq -r '.Acquisition' downloaded_jsons/${{ matrix.json_file }})
-          RUN=$(jq -r '.Run' downloaded_jsons/${{ matrix.json_file }})
+          BIDS_SUBJECT=$(jq -r '.Subject' downloaded_jsons/${{ matrix.json_file }})
+          BIDS_SESSION=$(jq -r '.Session' downloaded_jsons/${{ matrix.json_file }})
+          BIDS_ACQUISITION=$(jq -r '.Acquisition' downloaded_jsons/${{ matrix.json_file }})
+          BIDS_RUN=$(jq -r '.Run' downloaded_jsons/${{ matrix.json_file }})
 
-          echo "SUBJECT=$SUBJECT" >> $GITHUB_ENV
-          echo "SESSION=$SESSION" >> $GITHUB_ENV
-          echo "ACQUISITION=$ACQUISITION" >> $GITHUB_ENV
-          echo "RUN=$RUN" >> $GITHUB_ENV
+          echo "BIDS_SUBJECT=$BIDS_SUBJECT" >> $GITHUB_ENV
+          echo "BIDS_SESSION=$BIDS_SESSION" >> $GITHUB_ENV
+          echo "BIDS_ACQUISITION=$BIDS_ACQUISITION" >> $GITHUB_ENV
+          echo "BIDS_RUN=$BIDS_RUN" >> $GITHUB_ENV
         shell: bash
 
-      - name: ${{ matrix.algo }} - sub-${{ env.SUBJECT }}_ses-${{ env.SESSION }}_acq-${{ env.ACQUISITION }}_run-${{ env.RUN }}
+      - name: ${{ matrix.algo }} - sub-${{ env.BIDS_SUBJECT }}_ses-${{ env.BIDS_SESSION }}_acq-${{ env.BIDS_ACQUISITION }}_run-${{ env.BIDS_RUN }}
         env:
           OSF_TOKEN: ${{ secrets.OSF_TOKEN }}
           OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD }}
@@ -114,14 +114,14 @@ jobs:
           PARSE_APPLICATION_ID: ${{ secrets.PARSE_APPLICATION_ID }}
           PARSE_REST_API_KEY: ${{ secrets.PARSE_REST_API_KEY }}
           PARSE_MASTER_KEY: ${{ secrets.PARSE_MASTER_KEY }}
-          SUBJECT: ${{ env.SUBJECT }}
-          SESSION: ${{ env.SESSION }}
-          ACQUISITION: ${{ env.ACQUISITION }}
-          RUN: ${{ env.RUN }}
+          BIDS_SUBJECT: ${{ env.BIDS_SUBJECT }}
+          BIDS_SESSION: ${{ env.BIDS_SESSION }}
+          BIDS_ACQUISITION: ${{ env.BIDS_ACQUISITION }}
+          BIDS_RUN: ${{ env.BIDS_RUN }}
           PIPELINE_NAME: ${{ matrix.algo }}
           INPUTS_JSON: downloaded_jsons/${{ matrix.json_file }}
         run: |
-          echo "Reconstructing and evaluating for algo=${PIPELINE_NAME} SUBJECT=$SUBJECT, SESSION=$SESSION, ACQUISITION=$ACQUISITION, RUN=$RUN"
+          echo "[INFO] Reconstructing and evaluating algo=${PIPELINE_NAME} BIDS_SUBJECT=$BIDS_SUBJECT, BIDS_SESSION=$BIDS_SESSION, BIDS_ACQUISITION=$BIDS_ACQUISITION, BIDS_RUN=$BIDS_RUN"
           
           bash run.sh algos/${PIPELINE_NAME}
 
@@ -133,3 +133,5 @@ jobs:
           cat output/${PIPELINE_NAME}/*.md* >> $GITHUB_STEP_SUMMARY
 
           ./upload.sh
+
+          
