@@ -15,7 +15,7 @@
 # run qsmxt
 qsmxt_cmd="qsmxt bids qsmxt_output --premade nextqsm --unwrapping_algorithm laplacian --combine_phase off --auto_yes --use_existing_masks"
 
-qsmxt_cmd+=" --subjects $BIDS_SUBJECT"
+qsmxt_cmd+=" --subjects sub-$BIDS_SUBJECT"
 
 if [ "$BIDS_SESSION" != "null" ]; then
     qsmxt_cmd+=" --sessions $BIDS_SESSION"
