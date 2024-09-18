@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+echo "[INFO] In upload.sh"
+
 set -e
 
 # Install jq if not already installed
@@ -33,13 +35,13 @@ if wget -O "${TEMP_FILE}" "${URL}" 2>/dev/null; then
 
     if [ "${LOCAL_MD5}" = "${REMOTE_MD5}" ]; then
         echo "[DEBUG] ${BASENAME} exists in Nectar Swift Object Storage and is up-to-date."
-        rm -f "${TEMP_FILE}"
+        sudo rm -f "${TEMP_FILE}"
         exit 0
     fi
 else
     echo "[DEBUG] ${BASENAME} does not exist in Nectar Swift Object Storage or could not be downloaded."
 fi
-rm -f "${TEMP_FILE}"
+sudo rm -f "${TEMP_FILE}"
 
 echo "[DEBUG] ${BASENAME} is being uploaded to Nectar Swift Object Storage."
 
