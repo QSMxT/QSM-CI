@@ -38,14 +38,14 @@ def parse_bids_directory(bids_dir):
                     session = session_file_match.group(1) if session_file_match else None
 
                 # Extract acquisition and run
-                acquisition_match = re.search(r'_acq-(\w+)_', file)
+                acquisition_match = re.search(r'_acq-([^_]+)', file)
                 acquisition = acquisition_match.group(1) if acquisition_match else None
 
-                run_match = re.search(r'_run-(\d+)_', file)
+                run_match = re.search(r'_run-([^_]+)_', file)
                 run = run_match.group(1) if run_match else None
 
                 # Extract parts of the filename
-                echo_match = re.search(r'_echo-(\d+)_', file)
+                echo_match = re.search(r'_echo-([^_]+)_', file)
                 part_match = re.search(r'_part-(mag|phase)_', file)
                 suffix_match = re.search(r'_MEGRE', file)
 
@@ -61,7 +61,10 @@ def parse_bids_directory(bids_dir):
                                 derivative_type = derivative_type_match.group(1)
                                 if derivative_type == "mask":
                                     # Handle mask in the root node, create a list if needed
-                                    group = next((g for g in groups if g['Subject'] == subject), None)
+                                    group = next((g for g in groups if g['Subject'] == subject and
+                                                                     g['Session'] == session and
+                                                                     g['Acquisition'] == acquisition and
+                                                                     g['Run'] == run), None)
                                     if not group:
                                         group = {
                                             "Subject": subject,
@@ -97,8 +100,15 @@ def parse_bids_directory(bids_dir):
                         continue
 
                 # MEGRE-related file processing
-                echo_number = int(echo_match.group(1))
-                part = part_match.group(1)
+                if echo_match:
+                    echo_number = int(echo_match.group(1))
+                else:
+                    echo_number = 1
+                
+                if part_match:
+                    part = part_match.group(1)
+                else:
+                    part = 'mag'    
 
                 group = next((g for g in groups if g['Subject'] == subject and
                                                     g['Session'] == session and
@@ -159,12 +169,15 @@ def parse_bids_directory(bids_dir):
                 group['phase_nii'] = sorted(group['phase_nii'])
                 group['phase_json'] = sorted(group['phase_json'])
 
-    # Match derivatives with the corresponding groups by subject only
+    # Match derivatives with the corresponding groups by subject, session, acquisition, and run
     for subject, derivatives in temp_derivatives.items():
         for derivative in derivatives:
             for group in groups:
-                if group['Subject'] == subject:
-                    # Add derivatives to the matching subject group
+                if (group['Subject'] == subject and 
+                    group['Session'] == derivative['session'] and 
+                    group['Acquisition'] == derivative['acquisition'] and 
+                    group['Run'] == derivative['run']):
+                    # Add derivatives to the matching group
                     if derivative['software_name'] not in group['Derivatives']:
                         group['Derivatives'][derivative['software_name']] = {}
                     if derivative['type'] not in group['Derivatives'][derivative['software_name']]:
@@ -172,35 +185,8 @@ def parse_bids_directory(bids_dir):
                     if derivative['path'] not in group['Derivatives'][derivative['software_name']][derivative['type']]:
                         group['Derivatives'][derivative['software_name']][derivative['type']].append(derivative['path'])
 
-    # Consolidate unique groups by subject to avoid duplicate files
-    unique_groups = {}
-    for group in groups:
-        subject = group['Subject']
-        if subject not in unique_groups:
-            unique_groups[subject] = group
-        else:
-            # Merge MEGRE files and derivatives from multiple groups with the same subject
-            for key in ['phase_nii', 'phase_json', 'mag_nii', 'mag_json']:
-                unique_groups[subject][key] = sorted(set(unique_groups[subject][key] + group[key]))
-
-            # Merge derivatives
-            for software, types in group['Derivatives'].items():
-                if software not in unique_groups[subject]['Derivatives']:
-                    unique_groups[subject]['Derivatives'][software] = types
-                else:
-                    for dtype, paths in types.items():
-                        if dtype not in unique_groups[subject]['Derivatives'][software]:
-                            unique_groups[subject]['Derivatives'][software][dtype] = paths
-                        else:
-                            unique_groups[subject]['Derivatives'][software][dtype] = sorted(
-                                set(unique_groups[subject]['Derivatives'][software][dtype] + paths)
-                            )
-
-    # Convert the dictionary of unique groups back to a list
-    groups = list(unique_groups.values())
-
+    # Return the groups
     return {"Groups": groups}
-
 
 def save_groups_to_json(groups, output_dir):
     # Ensure output directory exists
@@ -224,7 +210,8 @@ def main():
     parsed_data = parse_bids_directory(args.bids_dir)
 
     # Save the parsed groups to JSON files
-    save_groups_to_json(parsed_data["Groups"], args.output_dir)
+    save_groups_to_json(sorted(parsed_data["Groups"], key=lambda x: (x['Subject'], x['Session'], x['Acquisition'], x['Run'])), args.output_dir)
 
 if __name__ == "__main__":
     main()
+    
