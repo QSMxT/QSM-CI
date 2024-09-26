@@ -186,7 +186,9 @@ def parse_bids_directory(bids_dir):
                         group['Derivatives'][derivative['software_name']][derivative['type']].append(derivative['path'])
 
     # Return the groups
-    return {"Groups": groups}
+    parsed_data = {"Groups": groups}
+    parsed_data = sorted(parsed_data["Groups"], key=lambda x: (x['Subject'], x['Session'], x['Acquisition'], x['Run']))
+    return parsed_data
 
 def save_groups_to_json(groups, output_dir):
     # Ensure output directory exists
@@ -210,7 +212,7 @@ def main():
     parsed_data = parse_bids_directory(args.bids_dir)
 
     # Save the parsed groups to JSON files
-    save_groups_to_json(sorted(parsed_data["Groups"], key=lambda x: (x['Subject'], x['Session'], x['Acquisition'], x['Run'])), args.output_dir)
+    save_groups_to_json(parsed_data, args.output_dir)
 
 if __name__ == "__main__":
     main()

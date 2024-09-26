@@ -22,5 +22,6 @@ echo "[INFO] Starting reconstruction with QSM.jl"
 julia-1.9.4/bin/julia pipeline.jl
 
 echo "[INFO] Moving output to expected location"
-mv out.nii.gz output/laplacian_vsharp_rts.nii.gz
+mkdir -p output
+mv out.nii.gz output/chimap.nii.gz
 

@@ -123,15 +123,15 @@ jobs:
         run: |
           echo "[INFO] Reconstructing and evaluating algo=${PIPELINE_NAME} BIDS_SUBJECT=$BIDS_SUBJECT, BIDS_SESSION=$BIDS_SESSION, BIDS_ACQUISITION=$BIDS_ACQUISITION, BIDS_RUN=$BIDS_RUN"
           
-          bash run.sh algos/${PIPELINE_NAME}
+          python run.py bids algos/${PIPELINE_NAME} work_dir $INPUTS_JSON
 
-          python metrics/metrics.py \
-            "bids/derivatives/qsm-forward/sub-1/anat/sub-1_Chimap.nii" \
-            output/${PIPELINE_NAME}/*.nii* \
-            --roi "bids/derivatives/qsm-forward/sub-1/anat/sub-1_mask.nii"
+          #python metrics/metrics.py \
+          #  "bids/derivatives/qsm-forward/sub-1/anat/sub-1_Chimap.nii" \
+          #  output/${PIPELINE_NAME}/*.nii* \
+          #  --roi "bids/derivatives/qsm-forward/sub-1/anat/sub-1_mask.nii"
 
-          cat output/${PIPELINE_NAME}/*.md* >> $GITHUB_STEP_SUMMARY
+          #cat output/${PIPELINE_NAME}/*.md* >> $GITHUB_STEP_SUMMARY
 
-          ./upload.sh
+          #./upload.sh
 
           
