@@ -123,8 +123,8 @@ jobs:
         run: |
           echo "[INFO] Reconstructing and evaluating algo=${PIPELINE_NAME} BIDS_SUBJECT=$BIDS_SUBJECT, BIDS_SESSION=$BIDS_SESSION, BIDS_ACQUISITION=$BIDS_ACQUISITION, BIDS_RUN=$BIDS_RUN"
           
-          pip install docker
-          python run.py bids algos/${PIPELINE_NAME} work_dir $INPUTS_JSON
+          sudo pip install docker
+          sudo python run.py bids algos/${PIPELINE_NAME} work_dir $INPUTS_JSON
 
           #python metrics/metrics.py \
           #  "bids/derivatives/qsm-forward/sub-1/anat/sub-1_Chimap.nii" \
