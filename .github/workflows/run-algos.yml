@@ -39,7 +39,7 @@ jobs:
             qsm-forward head data/ bids
           fi
 
-          python parse_bids.py bids .
+          python utils/parse_bids.py bids .
 
       - name: Collect JSON files
         id: collect_jsons
