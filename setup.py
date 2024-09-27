@@ -11,7 +11,10 @@ setup(
         ],
     },
     install_requires=[
-        'docker'
+        'docker',
+        'scikit-learn',
+        'scikit-image',
+        'scipy'
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
