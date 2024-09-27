@@ -120,7 +120,7 @@ def run_algo(client, docker_image, algo_name, work_dir, input_json):
     # Wait for the container to finish
     exit_code = container.wait()
     print(f"Container {algo_name} exited with code {exit_code['StatusCode']}")
-    if int(exit_code) != 0:
+    if int(exit_code['StatusCode']) != 0:
         raise RuntimeError(f"Container {algo_name} exited with code {exit_code['StatusCode']}")
 
     # Change ownership of files in the output directory to the current user
