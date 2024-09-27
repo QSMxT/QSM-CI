@@ -145,7 +145,7 @@ jobs:
           sudo pip install docker
 
           echo "[INFO] Starting run.py..."
-          sudo python run.py bids algos/${PIPELINE_NAME} work_dir $INPUTS_JSON
+          sudo -E python run.py bids algos/${PIPELINE_NAME} work_dir $INPUTS_JSON
 
           #python metrics/metrics.py \
           #  "bids/derivatives/qsm-forward/sub-1/anat/sub-1_Chimap.nii" \
