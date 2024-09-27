@@ -69,7 +69,13 @@ jobs:
         algo: ${{ fromJSON(inputs.algo_list) }}
         json_file: ${{ fromJSON(needs.generate_json_files.outputs.json_list) }}
     steps:
-      - uses: actions/checkout@v3
+      - name: Take ownership of workspace
+        run: |
+          echo "[INFO] Taking ownership of workspace `pwd` to $(whoami):$(id -gn)..."
+          sudo chown -R $(whoami):$(id -gn) .
+
+      - name: Checkout git repository
+        uses: actions/checkout@v3
 
       - name: Download JSON files
         uses: actions/download-artifact@v3
