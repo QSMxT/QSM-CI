@@ -31,7 +31,7 @@ def setup_environment(bids_dir, algo_dir, work_dir):
     # Determine the docker_image to use by reading the line with #DOCKER_IMG=... (default 'ubuntu:latest')
     docker_image = 'ubuntu:latest'
     for line in main_script_content.splitlines():
-        if line.startswith('#DOCKER_IMG='):
+        if line.startswith('#DOCKER_IMAGE='):
             docker_image = line.split('=')[1].strip()
             break
 
