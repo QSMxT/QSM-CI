@@ -77,12 +77,16 @@ def run_algo(client, docker_image, algo_name, work_dir, input_json):
         environment = {}
         
         if 'BIDS_SUBJECT' in os.environ:
+            print(f"Passing BIDS_SUBJECT={os.environ['BIDS_SUBJECT']}")
             environment['BIDS_SUBJECT'] = os.environ['BIDS_SUBJECT']
         if 'BIDS_SESSION' in os.environ:
+            print(f"Passing BIDS_SESSION={os.environ['BIDS_SESSION']}")
             environment['BIDS_SESSION'] = os.environ['BIDS_SESSION']
         if 'BIDS_ACQUISITION' in os.environ:
+            print(f"Passing BIDS_ACQUISITION={os.environ['BIDS_ACQUISITION']}")
             environment['BIDS_ACQUISITION'] = os.environ['BIDS_ACQUISITION']
         if 'BIDS_RUN' in os.environ:
+            print(f"Passing BIDS_RUN={os.environ['BIDS_RUN']}")
             environment['BIDS_RUN'] = os.environ['BIDS_RUN']
 
         # Create the docker container using docker_image and call it the algo_name
