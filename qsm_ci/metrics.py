@@ -24,11 +24,12 @@ import os
 import numpy as np
 import csv
 import nibabel as nib
+
 from sklearn.metrics import mean_squared_error
 from skimage.metrics import structural_similarity
 from skimage.metrics import normalized_mutual_information
-from scipy.ndimage import gaussian_laplace
 from skimage.measure import pearson_corr_coeff
+from scipy.ndimage import gaussian_laplace
 
 def calculate_rmse(pred_data, ref_data):
     """
@@ -100,7 +101,7 @@ def calculate_hfen(pred_data, ref_data):
     hfen = np.linalg.norm(LoG_ref - LoG_pred)/np.linalg.norm(LoG_ref)
     return hfen
 
-def calculate_xsim(pred_data, ref_data):
+def calculate_xsim(pred_data, ref_data, data_range=None):
     """
     Calculate the structural similarity (XSIM) between the predicted and reference data.
 
@@ -110,14 +111,20 @@ def calculate_xsim(pred_data, ref_data):
         Predicted data as a numpy array.
     ref_data : numpy.ndarray
         Reference data as a numpy array.
+    data_range : float
+        Expected data range.
 
     Returns
     -------
     float
         The calculated structural similarity value.
 
+    References
+    ----------
+    .. [1] Milovic, C., et al. (2024). XSIM: A structural similarity index measure optimized for MRI QSM. Magnetic Resonance in Medicine. doi:10.1002/mrm.30271
     """
-    xsim = structural_similarity(pred_data,ref_data,win_size = 3, K1 = 0.01, K2 = 0.001, data_range = 1)
+    if not data_range: data_range = ref_data.max() - ref_data.min()
+    xsim = structural_similarity(pred_data, ref_data, win_size=3, K1=0.01, K2=0.001, data_range=data_range)
     return xsim
 
 def calculate_mad(pred_data, ref_data):
