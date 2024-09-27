@@ -144,8 +144,10 @@ jobs:
           echo "[INFO] Preparing dependencies..."
           sudo pip install docker
 
-          echo "[INFO] Starting run.py..."
-          sudo -E python run.py bids algos/${PIPELINE_NAME} work_dir $INPUTS_JSON
+          sudo pip install -e .
+
+          echo "[INFO] Starting qsm-ci..."
+          sudo -E qsm-ci bids algos/${PIPELINE_NAME} work_dir $INPUTS_JSON
 
           #python metrics/metrics.py \
           #  "bids/derivatives/qsm-forward/sub-1/anat/sub-1_Chimap.nii" \
