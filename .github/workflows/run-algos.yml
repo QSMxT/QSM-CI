@@ -16,7 +16,13 @@ jobs:
     outputs:
       json_list: ${{ steps.collect_jsons.outputs.json_list }}
     steps:
-      - uses: actions/checkout@v3
+      - name: Take ownership of workspace
+        run: |
+          echo "[INFO] Taking ownership of workspace `pwd` to $(whoami):$(id -gn)..."
+          sudo chown -R $(whoami):$(id -gn) .
+
+      - name: Checkout git repository
+        uses: actions/checkout@v3
 
       - name: Fetch BIDS data and generate JSON files
         env:
