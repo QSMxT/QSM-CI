@@ -73,6 +73,18 @@ def run_algo(client, docker_image, algo_name, work_dir, input_json):
     except docker.errors.NotFound:
         print(f"No existing container with name {algo_name} found. Proceeding to create a new one.")
 
+        # Prepare environment variables from the host environment
+        environment = {}
+        
+        if 'BIDS_SUBJECT' in os.environ:
+            environment['BIDS_SUBJECT'] = os.environ['BIDS_SUBJECT']
+        if 'BIDS_SESSION' in os.environ:
+            environment['BIDS_SESSION'] = os.environ['BIDS_SESSION']
+        if 'BIDS_ACQUISITION' in os.environ:
+            environment['BIDS_ACQUISITION'] = os.environ['BIDS_ACQUISITION']
+        if 'BIDS_RUN' in os.environ:
+            environment['BIDS_RUN'] = os.environ['BIDS_RUN']
+
         # Create the docker container using docker_image and call it the algo_name
         container = client.containers.create(
             image=docker_image,
@@ -80,6 +92,7 @@ def run_algo(client, docker_image, algo_name, work_dir, input_json):
             volumes={work_dir: {'bind': '/workdir', 'mode': 'rw'}},
             working_dir='/workdir',
             command=["./main.sh"],  # Execute the main.sh script
+            environment=environment,  # Pass the environment variables
             auto_remove=False
         )
         if container:
