@@ -123,7 +123,16 @@ jobs:
         run: |
           echo "[INFO] Reconstructing and evaluating algo=${PIPELINE_NAME} BIDS_SUBJECT=$BIDS_SUBJECT, BIDS_SESSION=$BIDS_SESSION, BIDS_ACQUISITION=$BIDS_ACQUISITION, BIDS_RUN=$BIDS_RUN"
           
+          if [ $(docker ps -a -q -f name=${PIPELINE_NAME}) ]; then
+            echo "[INFO] Removing existing container ${PIPELINE_NAME}..."
+            sudo docker container stop ${PIPELINE_NAME}
+            sudo docker container rm ${PIPELINE_NAME}
+          fi
+
+          echo "[INFO] Preparing dependencies..."
           sudo pip install docker
+
+          echo "[INFO] Starting run.py..."
           sudo python run.py bids algos/${PIPELINE_NAME} work_dir $INPUTS_JSON
 
           #python metrics/metrics.py \
