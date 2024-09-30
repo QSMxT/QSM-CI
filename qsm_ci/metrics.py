@@ -305,7 +305,7 @@ def save_as_json(metrics_dict, filepath):
         json.dump(metrics_dict, file, indent=4)
 
 
-if __name__ == "__main__":
+def main():
     
     parser = argparse.ArgumentParser(description='Compute metrics for 3D images.')
     parser.add_argument('ground_truth', type=str, help='Path to the ground truth NIFTI image.')
@@ -341,3 +341,6 @@ if __name__ == "__main__":
 
     print(f"[INFO] Metrics saved to {csv_path}, {md_path}, and {json_path}")
     
+if __name__ == "__main__":
+    main()
+
