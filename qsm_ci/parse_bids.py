@@ -15,6 +15,7 @@ def parse_bids_directory(bids_dir):
     # Process files and directories
     for root, dirs, files in os.walk(bids_dir):
         # Determine if we are in the derivatives directory
+        rel_root = os.path.join('bids', os.path.sep.join(root.split(os.path.sep)[1:]))
         is_derivative = 'derivatives' in root
 
         # Extract the session from the folder path
@@ -81,11 +82,11 @@ def parse_bids_directory(bids_dir):
                                         }
                                         groups.append(group)
                                     if "mask" not in group:
-                                        group["mask"] = os.path.join(root, file)
+                                        group["mask"] = os.path.join(rel_root, file)
                                     else:
                                         if not isinstance(group["mask"], list):
                                             group["mask"] = [group["mask"]]
-                                        group["mask"].append(os.path.join(root, file))
+                                        group["mask"].append(os.path.join(rel_root, file))
                                 else:
                                     if subject not in temp_derivatives:
                                         temp_derivatives[subject] = []
@@ -95,7 +96,7 @@ def parse_bids_directory(bids_dir):
                                         "session": session,
                                         "acquisition": acquisition,
                                         "run": run,
-                                        "path": os.path.join(root, file)
+                                        "path": os.path.join(rel_root, file)
                                     })
                         continue
 
@@ -135,11 +136,11 @@ def parse_bids_directory(bids_dir):
                 # Add files to the group based on their type
                 if part == "mag":
                     if file.endswith('.nii'):
-                        if os.path.join(root, file) not in group['mag_nii']:
-                            group['mag_nii'].append(os.path.join(root, file))
+                        if os.path.join(rel_root, file) not in group['mag_nii']:
+                            group['mag_nii'].append(os.path.join(rel_root, file))
                     elif file.endswith('.json'):
-                        if os.path.join(root, file) not in group['mag_json']:
-                            group['mag_json'].append(os.path.join(root, file))
+                        if os.path.join(rel_root, file) not in group['mag_json']:
+                            group['mag_json'].append(os.path.join(rel_root, file))
                             # Extract EchoTime and MagneticFieldStrength from JSON
                             with open(os.path.join(root, file), 'r') as f:
                                 metadata = json.load(f)
@@ -149,11 +150,11 @@ def parse_bids_directory(bids_dir):
                                     group['MagneticFieldStrength'] = metadata.get('MagneticFieldStrength')
                 elif part == "phase":
                     if file.endswith('.nii'):
-                        if os.path.join(root, file) not in group['phase_nii']:
-                            group['phase_nii'].append(os.path.join(root, file))
+                        if os.path.join(rel_root, file) not in group['phase_nii']:
+                            group['phase_nii'].append(os.path.join(rel_root, file))
                     elif file.endswith('.json'):
-                        if os.path.join(root, file) not in group['phase_json']:
-                            group['phase_json'].append(os.path.join(root, file))
+                        if os.path.join(rel_root, file) not in group['phase_json']:
+                            group['phase_json'].append(os.path.join(rel_root, file))
                             # Extract EchoTime and MagneticFieldStrength from JSON
                             with open(os.path.join(root, file), 'r') as f:
                                 metadata = json.load(f)
