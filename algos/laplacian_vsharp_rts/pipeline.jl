@@ -1,32 +1,40 @@
+#!/usr/bin/env julia
+
 using QSM
 using NIfTI
 using Statistics
+using JSON
 
-println("[INFO] Starting script...")
+println("[INFO] Starting laplacian_vsharp_rts pipeline...")
+
+println("[INFO] Loading input JSON file...")
+input_file = "inputs.json"
+json_data = JSON.parsefile(input_file)
+mask_file = json_data["mask"]
+mag_files = json_data["mag_nii"]
+phas_files = json_data["phase_nii"]
+TEs = json_data["EchoTime"]
+B0 = json_data["MagneticFieldStrength"]
 
 # constants
-γ = 267.52      # gyromagnetic ratio
-B0 = 3          # main magnetic field strength
-println("[INFO] Constants set: gyromagnetic ratio = $γ, main magnetic field strength = $B0 T")
+γ = 267.52 # gyromagnetic ratio (MHz/T)
+bdir = (0.,0.,1.)   # direction of B-field
+vsz  = (1.0, 1.0, 1.0)   # voxel size (assuming isotropic)
 
-# Assuming prior steps for data loading are handled as needed...
-
-## concatenate nifti files
-num_images = 4
 println("[INFO] Loading magnitude image for echo-1 to get shape...")
-nii_mag = niread("bids/sub-1/anat/sub-1_echo-1_part-mag_T2starw.nii")
+nii_mag = niread(mag_files[1])
 phs_shape = size(Float32.(nii_mag))
+num_images = length(mag_files)
 mag_shape = tuple(phs_shape..., num_images)
 phas_shape = tuple(phs_shape..., num_images)
-
 mag = Array{Float32}(undef, mag_shape...)
 phas = Array{Float32}(undef, phas_shape...)
 
 println("[INFO] Concatenating magnitude and phase images...")
 for i in 1:num_images
     println("[INFO] Loading images for echo $i...")
-    mag_tmp = niread("bids/sub-1/anat/sub-1_echo-" * string(i) * "_part-mag_T2starw.nii")
-    phas_tmp = niread("bids/sub-1/anat/sub-1_echo-" * string(i) * "_part-phase_T2starw.nii")
+    mag_tmp = niread(mag_files[i])
+    phas_tmp = niread(phas_files[i])
 
     mag_tmp = Float32.(mag_tmp)
     phas_tmp = Float32.(phas_tmp)
@@ -35,39 +43,37 @@ for i in 1:num_images
     phas[:,:,:,i] = phas_tmp
 end
 
-bdir = (0.,0.,1.)   # direction of B-field
-vsz  = (1.0,1.0,1.0)   # voxel size
-TEs  = [0.004,0.012,0.02,0.028]    # echo times
-println("[INFO] Acquisition parameters set.")
-
-mask = niread("bids/derivatives/qsm-forward/sub-1/anat/sub-1_mask.nii")
+# Load the mask file
+println("[INFO] Loading mask: $mask_file")
+mask = niread(mask_file)
 mask = Bool.(mask)
 println("[INFO] Mask loaded.")
 
-# unwrap phase + harmonic background field correction
+# Unwrap phase and correct for harmonic background field
 println("[INFO] Unwrapping phase and correcting for harmonic background fields...")
 uphas = unwrap_laplacian(phas, mask, vsz)
 
-# convert units
+# Convert units
 println("[INFO] Converting phase units...")
 @views for t in axes(uphas, 4)
     uphas[:,:,:,t] .*= inv(B0 * γ * TEs[t])
 end
 
-# remove non-harmonic background fields
+# Remove non-harmonic background fields
 println("[INFO] Removing non-harmonic background fields...")
 fl, mask2 = vsharp(uphas, mask, vsz)
 
-# dipole inversion
+# Perform dipole inversion
 println("[INFO] Performing dipole inversion...")
 x = rts(fl, mask2, vsz, bdir=bdir)
 x = mean(x, dims = 4)
 println("[INFO] Dipole inversion completed.")
 
-ni = NIVolume(x[:,:,:]; voxel_size=vsz,
-            orientation=nothing, dim_info=Integer.(vsz),
-            time_step=nii_mag.header.slice_duration != false && !isempty(time_step.data) ? time_step.data[1] : 0f0)
+# Save the output
+output_file = "out.nii.gz"
+println("[INFO] Saving output to $output_file")
+ni = NIVolume(x[:,:,:]; voxel_size=vsz, orientation=nothing, dim_info=Integer.(vsz), time_step=0f0)
+niwrite(output_file, ni)
 
-niwrite("out.nii.gz", ni)
 println("[INFO] Pipeline completed successfully.")
 

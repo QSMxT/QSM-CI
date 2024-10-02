@@ -308,6 +308,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Load images
+    print("[INFO] Loading images to compute metrics...")
     gt_img = nib.load(args.ground_truth).get_fdata()
     recon_img = nib.load(args.recon).get_fdata()
     recon_dir = os.path.dirname(args.recon)
@@ -318,9 +319,11 @@ if __name__ == "__main__":
         roi_img = None
 
     # Compute metrics
+    print("[INFO] Computing metrics...")
     metrics = all_metrics(recon_img, gt_img, roi_img)
 
     # Save metrics
+    print("[INFO] Saving results...")
     csv_path = os.path.join(args.output_dir, 'metrics.csv')
     md_path = os.path.join(args.output_dir, 'metrics.md')
     json_path = os.path.join(args.output_dir, 'metrics.json')
@@ -329,5 +332,5 @@ if __name__ == "__main__":
     save_as_markdown(metrics, md_path)
     save_as_json(metrics, json_path)
 
-    print(f"Metrics saved to {csv_path}, {md_path}, and {json_path}")
+    print(f"[INFO] Metrics saved to {csv_path}, {md_path}, and {json_path}")
     

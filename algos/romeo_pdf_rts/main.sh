@@ -14,8 +14,20 @@
 # - Python package - numpy: Harris CR, Millman KJ, van der Walt SJ, et al. Array programming with NumPy. Nature. 2020;585(7825):357-362. doi:10.1038/s41586-020-2649-2
 
 # run qsmxt
-qsmxt bids qsmxt_output --premade bet --bf_algorithm pdf --qsm_algorithm rts --auto_yes --use_existing_masks
+qsmxt_cmd="qsmxt bids qsmxt_output --premade bet --bf_algorithm pdf --qsm_algorithm rts --auto_yes --use_existing_masks"
+
+qsmxt_cmd+=" --subjects sub-$BIDS_SUBJECT"
+
+if [ "$BIDS_SESSION" != "null" ]; then
+    qsmxt_cmd+=" --sessions $BIDS_SESSION"
+fi
+
+if [ "$BIDS_RUN" != "null" ]; then
+    qsmxt_cmd+=" --runs $BIDS_RUN"
+fi
+
+# Execute the command
+eval $qsmxt_cmd
 
 # move output to expected location
 mv qsmxt_output/qsm/*.nii* output/
-
