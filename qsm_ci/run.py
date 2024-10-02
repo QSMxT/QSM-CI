@@ -99,7 +99,15 @@ def run_docker_algo(client, docker_image, algo_name, bids_dir, work_dir, input_j
             volumes=volumes,
             working_dir='/workdir',
             command=["./main.sh"],
-            auto_remove=False
+            auto_remove=False,
+            environment={
+                'BIDS_SUBJECT': os.environ.get('BIDS_SUBJECT', ''),
+                'BIDS_SESSION': os.environ.get('BIDS_SESSION', ''),
+                'BIDS_ACQUISITION': os.environ.get('BIDS_ACQUISITION', ''),
+                'BIDS_RUN': os.environ.get('BIDS_RUN', ''),
+                'PIPELINE_NAME': os.environ.get('PIPELINE_NAME', ''),
+                'INPUTS_JSON': os.environ.get('INPUTS_JSON', '')
+            }
         )
         print(f"Container {algo_name} created successfully.")
 
