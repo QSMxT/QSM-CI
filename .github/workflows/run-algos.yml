@@ -150,9 +150,9 @@ jobs:
           sudo -E qsm-ci run algos/${PIPELINE_NAME} bids work_dir $INPUTS_JSON
 
           sudo -E qsm-ci eval \
-            "bids/derivatives/qsm-forward/sub-1/anat/sub-1_Chimap.nii" \
-            "bids/derivatives/${PIPELINE_NAME}/sub-1/anat/*Chimap.nii* \
-            --roi "bids/derivatives/qsm-forward/sub-1/anat/sub-1_mask.nii"
+            bids/derivatives/qsm-forward/sub-1/anat/sub-1_Chimap.nii \
+            bids/derivatives/${PIPELINE_NAME}/sub-1/anat/*Chimap.nii* \
+            --roi bids/derivatives/qsm-forward/sub-1/anat/sub-1_mask.nii
 
           cat output/${PIPELINE_NAME}/*.md* >> $GITHUB_STEP_SUMMARY
 
