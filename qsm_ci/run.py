@@ -21,7 +21,7 @@ def create_overlay(overlay_path, size_mb=1024):
     else:
         print(f"Using existing overlay at {overlay_path}")
 
-def setup_environment(bids_dir, algo_dir, work_dir, container_system):
+def setup_environment(bids_dir, algo_dir, work_dir, container_engine):
     """Set up the environment and prepare directories for the algorithm execution."""
     work_dir = os.path.abspath(work_dir)
     algo_name = os.path.basename(os.path.normpath(algo_dir))
@@ -46,7 +46,7 @@ def setup_environment(bids_dir, algo_dir, work_dir, container_system):
         if line.startswith('#SINGULARITY_IMAGE='):
             apptainer_image = line.split('=')[1].strip()
 
-    if container_system == 'docker':
+    if container_engine == 'docker':
         client = docker.from_env()
         try:
             client.images.get(docker_image)
@@ -75,13 +75,13 @@ def setup_environment(bids_dir, algo_dir, work_dir, container_system):
 
     return docker_image, apptainer_image, algo_name, work_dir
 
-def run_algo(client, docker_image, apptainer_image, algo_name, bids_dir, work_dir, input_json, container_system, overlay_path=None):
+def run_algo(client, docker_image, apptainer_image, algo_name, bids_dir, work_dir, input_json, container_engine, overlay_path=None):
     bids_dir = os.path.abspath(bids_dir)
 
     with open(os.path.join(work_dir, 'inputs.json'), 'w') as json_file:
         json.dump(input_json, json_file, indent=4)
 
-    if container_system == 'docker':
+    if container_engine == 'docker':
         run_docker_algo(client, docker_image, algo_name, bids_dir, work_dir, input_json)
     else:
         run_apptainer_algo(apptainer_image, algo_name, bids_dir, work_dir, input_json, overlay_path)
@@ -136,6 +136,18 @@ def run_apptainer_algo(apptainer_image, algo_name, bids_dir, work_dir, input_jso
 
     if overlay_path:
         command.extend(['--overlay', overlay_path])
+
+    env_vars = {
+        'BIDS_SUBJECT': os.environ.get('BIDS_SUBJECT', ''),
+        'BIDS_SESSION': os.environ.get('BIDS_SESSION', ''),
+        'BIDS_ACQUISITION': os.environ.get('BIDS_ACQUISITION', ''),
+        'BIDS_RUN': os.environ.get('BIDS_RUN', ''),
+        'PIPELINE_NAME': os.environ.get('PIPELINE_NAME', ''),
+        'INPUTS_JSON': os.environ.get('INPUTS_JSON', '')
+    }
+
+    for var, value in env_vars.items():
+        command.extend(['--env', f"{var}={value}"])
 
     command.extend([apptainer_image, './main.sh'])
 
@@ -205,32 +217,29 @@ def main():
     parser.add_argument('bids_dir', type=str, help='Path to the BIDS directory')
     parser.add_argument('work_dir', type=str, help='Path to the working directory')
     parser.add_argument('inputs_json', type=str, nargs='?', help='Path to the inputs.json file')
-    parser.add_argument('--container_system', type=str, default='docker', choices=['docker', 'apptainer'], help='Choose between Docker or Apptainer')
+    parser.add_argument('--container_engine', type=str, default='docker', choices=['docker', 'apptainer'], help='Choose between Docker or Apptainer')
     parser.add_argument('--overlay', type=str, help='Path to overlay image (for Apptainer)')
-    parser.add_argument('--overlay_size', type=int, default=1024, help='Size of overlay in MB (if using Apptainer)')
+    parser.add_argument('--overlay_size', type=int, default=4096, help='Size of overlay in MB (if using Apptainer)')
     args = parser.parse_args()
-    print("bids_dir:", args.bids_dir)
-    print("algo_dir:", args.algo_dir)
-    print("work_dir:", args.work_dir)
 
     client = None
-    docker_image, apptainer_image, algo_name, work_dir = setup_environment(args.bids_dir, args.algo_dir, args.work_dir, args.container_system)
+    docker_image, apptainer_image, algo_name, work_dir = setup_environment(args.bids_dir, args.algo_dir, args.work_dir, args.container_engine)
 
-    if args.container_system == 'apptainer' and args.overlay:
+    if args.container_engine == 'apptainer' and args.overlay:
         create_overlay(args.overlay, size_mb=args.overlay_size)
 
-    if args.container_system == 'docker':
+    if args.container_engine == 'docker':
         client = docker.from_env()
 
     if not args.inputs_json:
         for input_json in parse_bids.parse_bids_directory(args.bids_dir):
-            run_algo(client, docker_image, apptainer_image, algo_name, args.bids_dir, work_dir, input_json, args.container_system, args.overlay)
+            run_algo(client, docker_image, apptainer_image, algo_name, args.bids_dir, work_dir, input_json, args.container_engine, args.overlay)
     else:
         with open(args.inputs_json, 'r') as json_file:
             input_json = json.load(json_file)
-        run_algo(client, docker_image, apptainer_image, algo_name, args.bids_dir, work_dir, input_json, args.container_system, args.overlay)
+        run_algo(client, docker_image, apptainer_image, algo_name, args.bids_dir, work_dir, input_json, args.container_engine, args.overlay)
 
-    if client and args.container_system == 'docker':
+    if client and args.container_engine == 'docker':
         container = client.containers.get(algo_name)
         container.remove()
         print(f"Container {algo_name} has been removed.")

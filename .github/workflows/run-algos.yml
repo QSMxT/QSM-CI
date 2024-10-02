@@ -151,18 +151,10 @@ jobs:
 
           sudo -E qsm-ci eval \
             "bids/derivatives/qsm-forward/sub-1/anat/sub-1_Chimap.nii" \
-            output/${PIPELINE_NAME}/*.nii* \
+            "bids/derivatives/${PIPELINE_NAME}/sub-1/anat/*Chimap.nii* \
             --roi "bids/derivatives/qsm-forward/sub-1/anat/sub-1_mask.nii"
 
           cat output/${PIPELINE_NAME}/*.md* >> $GITHUB_STEP_SUMMARY
-
-          #parser = argparse.ArgumentParser(description='Upload NIfTI file to Nectar Swift Object Storage')
-          #parser.add_argument('nifti_file', type=str, help='Path to the NIfTI file')
-          #parser.add_argument('json_file', type=str, help='Path to the JSON file produced by `qsm-ci eval` containing metrics')
-          #parser.add_argument('parse_application_id', type=str, help='Parse Application ID')
-          #parser.add_argument('parse_rest_api_key', type=str, help='Parse REST API Key')
-          #parser.add_argument('parse_master_key', type=str, help='Parse Master Key')
-          #args = parser.parse_args()
 
           sudo -E qsm-ci upload \
             output/${PIPELINE_NAME}/*.nii* \
@@ -170,7 +162,5 @@ jobs:
             $PARSE_APPLICATION_ID \
             $PARSE_REST_API_KEY \
             $PARSE_MASTER_KEY
-
-          #./upload.sh
 
           
