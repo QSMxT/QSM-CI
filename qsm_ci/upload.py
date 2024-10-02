@@ -1,4 +1,6 @@
+#!/usr/bin/env python
 
+import argparse
 import shutil
 import os
 import subprocess
@@ -7,12 +9,8 @@ import tempfile
 import requests
 import json
 
-def upload_file_to_swift(pipeline_name, parse_application_id, parse_rest_api_key, parse_master_key):
+def upload_file_to_swift(nifti_file, json_file, parse_application_id, parse_rest_api_key, parse_master_key):
     print("[INFO] In upload_file_to_swift")
-
-    # Paths to files
-    json_file = f"output/{pipeline_name}/metrics.json"
-    nifti_file = f"output/{pipeline_name}/{pipeline_name}.nii.gz"
 
     dirname = os.path.dirname(nifti_file)
     basename = os.path.basename(nifti_file)
@@ -106,4 +104,18 @@ def upload_file_to_swift(pipeline_name, parse_application_id, parse_rest_api_key
     else:
         print(f"[DEBUG] {basename} does not exist yet in Nectar Swift.")
         return 2
+
+def main():
+    parser = argparse.ArgumentParser(description='Upload NIfTI file to Nectar Swift Object Storage')
+    parser.add_argument('nifti_file', type=str, help='Path to the NIfTI file')
+    parser.add_argument('json_file', type=str, help='Path to the JSON file produced by `qsm-ci eval` containing metrics')
+    parser.add_argument('parse_application_id', type=str, help='Parse Application ID')
+    parser.add_argument('parse_rest_api_key', type=str, help='Parse REST API Key')
+    parser.add_argument('parse_master_key', type=str, help='Parse Master Key')
+    args = parser.parse_args()
+
+    upload_file_to_swift(args.nifti_file, args.json_file, args.parse_application_id, args.parse_rest_api_key, args.parse_master_key)
+
+if __name__ == "__main__":
+    main()
 

@@ -7,7 +7,7 @@ setup(
     include_package_data=True,
     entry_points={
         'console_scripts': [
-            'qsm-ci=qsm_ci.run:main',
+            'qsm-ci=qsm_ci.main:main',
         ],
     },
     install_requires=[
@@ -23,3 +23,4 @@ setup(
     ],
     python_requires='>=3.6',
 )
+

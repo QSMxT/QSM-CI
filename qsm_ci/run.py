@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import argparse
 import json
 import os
@@ -108,7 +110,7 @@ def run_docker_algo(client, docker_image, algo_name, bids_dir, work_dir, input_j
         print(log.decode().strip())
 
     exit_code = container.wait()
-    handle_output(work_dir)
+    handle_output(work_dir, algo_name, input_json)
 
 def run_apptainer_algo(apptainer_image, algo_name, bids_dir, work_dir, input_json, overlay_path=None):
     main_script_path = os.path.join(work_dir, 'main.sh')
@@ -191,14 +193,17 @@ def construct_bids_filename(input_json, nifti_file):
 
 def main():
     parser = argparse.ArgumentParser(description='Run a QSM algorithm on BIDS data using a working directory.')
-    parser.add_argument('bids_dir', type=str, help='Path to the BIDS directory')
     parser.add_argument('algo_dir', type=str, help='Path to the QSM algorithm')
+    parser.add_argument('bids_dir', type=str, help='Path to the BIDS directory')
     parser.add_argument('work_dir', type=str, help='Path to the working directory')
     parser.add_argument('inputs_json', type=str, nargs='?', help='Path to the inputs.json file')
     parser.add_argument('--container_system', type=str, default='docker', choices=['docker', 'apptainer'], help='Choose between Docker or Apptainer')
     parser.add_argument('--overlay', type=str, help='Path to overlay image (for Apptainer)')
     parser.add_argument('--overlay_size', type=int, default=1024, help='Size of overlay in MB (if using Apptainer)')
     args = parser.parse_args()
+    print("bids_dir:", args.bids_dir)
+    print("algo_dir:", args.algo_dir)
+    print("work_dir:", args.work_dir)
 
     client = None
     docker_image, apptainer_image, algo_name, work_dir = setup_environment(args.bids_dir, args.algo_dir, args.work_dir, args.container_system)

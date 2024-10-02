@@ -1,5 +1,7 @@
+#!/usr/bin/env python
+
 """
-metrics.py
+eval.py
 
 This module provides functions to compute various error metrics between 3D predicted and reference 
 data arrays. The primary function, `all_metrics()`, returns a dictionary of all computed metrics.
@@ -306,7 +308,6 @@ def save_as_json(metrics_dict, filepath):
 
 
 def main():
-    
     parser = argparse.ArgumentParser(description='Compute metrics for 3D images.')
     parser.add_argument('ground_truth', type=str, help='Path to the ground truth NIFTI image.')
     parser.add_argument('recon', type=str, help='Path to the reconstructed NIFTI image.')
