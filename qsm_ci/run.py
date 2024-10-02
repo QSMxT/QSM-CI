@@ -221,6 +221,9 @@ def main():
     parser.add_argument('--overlay', type=str, help='Path to overlay image (for Apptainer)')
     parser.add_argument('--overlay_size', type=int, default=4096, help='Size of overlay in MB (if using Apptainer)')
     args = parser.parse_args()
+    print("bids_dir:", args.bids_dir)
+    print("algo_dir:", args.algo_dir)
+    print("work_dir:", args.work_dir)
 
     client = None
     docker_image, apptainer_image, algo_name, work_dir = setup_environment(args.bids_dir, args.algo_dir, args.work_dir, args.container_engine)
