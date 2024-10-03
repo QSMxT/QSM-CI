@@ -14,7 +14,8 @@ setup(
         'docker',
         'scikit-learn',
         'scikit-image',
-        'scipy'
+        'scipy',
+        'nibabel'
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
