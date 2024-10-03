@@ -141,9 +141,16 @@ jobs:
             sudo docker container rm ${PIPELINE_NAME}
           fi
 
-          echo "[INFO] Preparing dependencies..."
-          sudo pip install docker
+          echo "[INFO] Creating Python virtual envrionment..."
+          sudo python -m venv venv
+          export PATH=`pwd`/venv/bin:$PATH
 
+          echo "[INFO] Checking pip"
+          which pip
+          pip --version
+
+          echo "[INFO] Installing docker and qsm-ci..."
+          sudo pip install docker
           sudo pip install -e .
 
           echo "[INFO] Starting qsm-ci..."
