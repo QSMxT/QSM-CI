@@ -150,8 +150,8 @@ jobs:
           pip --version
 
           echo "[INFO] Installing docker and qsm-ci..."
-          sudo pip install docker
-          sudo pip install -e .
+          sudo ./venv/bin/pip install docker
+          sudo ./venv/bin/pip install -e .
 
           echo "[INFO] Starting qsm-ci..."
           sudo -E qsm-ci run algos/${PIPELINE_NAME} bids work_dir $INPUTS_JSON
