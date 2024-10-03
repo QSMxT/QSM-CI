@@ -152,7 +152,8 @@ jobs:
           sudo -E qsm-ci eval \
             work_dir/bids/derivatives/qsm-forward/sub-1/anat/sub-1_Chimap.nii \
             work_dir/bids/derivatives/${PIPELINE_NAME}/sub-1/anat/*Chimap.nii* \
-            --roi work_dir/bids/derivatives/qsm-forward/sub-1/anat/sub-1_mask.nii
+            --roi work_dir/bids/derivatives/qsm-forward/sub-1/anat/sub-1_mask.nii \
+            --output_dir work_dir/output/${PIPELINE_NAME}
 
           cat work_dir/output/${PIPELINE_NAME}/*.md* >> $GITHUB_STEP_SUMMARY
 
