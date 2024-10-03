@@ -319,7 +319,6 @@ def main():
     print("[INFO] Loading images to compute metrics...")
     gt_img = nib.load(args.ground_truth).get_fdata()
     recon_img = nib.load(args.recon).get_fdata()
-    recon_dir = os.path.dirname(args.recon)
 
     if args.roi:
         roi_img = np.array(nib.load(args.roi).get_fdata(), dtype=bool)
@@ -331,10 +330,10 @@ def main():
     metrics = all_metrics(recon_img, gt_img, roi_img)
 
     # Save metrics
-    print("[INFO] Saving results...")
-    csv_path = os.path.join(args.output_dir, os.path.join(recon_dir, 'metrics.csv'))
-    md_path = os.path.join(args.output_dir, os.path.join(recon_dir, 'metrics.md'))
-    json_path = os.path.join(args.output_dir, os.path.join(recon_dir, 'metrics.json'))
+    print(f"[INFO] Saving results to {args.output_dir}...")
+    csv_path = os.path.join(args.output_dir, 'metrics.csv')
+    md_path = os.path.join(args.output_dir, 'metrics.md')
+    json_path = os.path.join(args.output_dir, 'metrics.json')
 
     save_as_csv(metrics, csv_path)
     save_as_markdown(metrics, md_path)
