@@ -154,9 +154,9 @@ jobs:
           sudo ./venv/bin/pip install -e .
 
           echo "[INFO] Starting qsm-ci..."
-          sudo -E qsm-ci run algos/${PIPELINE_NAME} bids work_dir $INPUTS_JSON
+          sudo -E ./venv/bin/qsm-ci run algos/${PIPELINE_NAME} bids work_dir $INPUTS_JSON
 
-          sudo -E qsm-ci eval \
+          sudo -E ./venv/bin/qsm-ci eval \
             work_dir/bids/derivatives/qsm-forward/sub-1/anat/sub-1_Chimap.nii \
             work_dir/bids/derivatives/${PIPELINE_NAME}/sub-1/anat/*Chimap.nii* \
             --roi work_dir/bids/derivatives/qsm-forward/sub-1/anat/sub-1_mask.nii \
@@ -164,7 +164,7 @@ jobs:
 
           cat work_dir/output/${PIPELINE_NAME}/*.md* >> $GITHUB_STEP_SUMMARY
 
-          sudo -E qsm-ci upload \
+          sudo -E ./venv/bin/qsm-ci upload \
             work_dir/bids/derivatives/${PIPELINE_NAME}/sub-1/anat/*Chimap.nii* \
             work_dir/output/${PIPELINE_NAME}/*.json* \
             $PARSE_APPLICATION_ID \
