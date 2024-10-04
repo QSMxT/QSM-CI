@@ -16,6 +16,15 @@ phas_files = json_data["phase_nii"]
 TEs = json_data["EchoTime"]
 B0 = json_data["MagneticFieldStrength"]
 
+println("[INFO] Loading input JSON file...")
+input_file = "inputs.json"
+json_data = JSON.parsefile(input_file)
+mask_file = json_data["mask"]
+mag_files = json_data["mag_nii"]
+phas_files = json_data["phase_nii"]
+TEs = json_data["EchoTime"]
+B0 = json_data["MagneticFieldStrength"]
+
 # constants
 γ = 267.52 # gyromagnetic ratio (MHz/T)
 bdir = (0.,0.,1.)   # direction of B-field

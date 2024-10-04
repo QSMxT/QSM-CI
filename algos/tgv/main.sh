@@ -28,5 +28,6 @@ fi
 eval $qsmxt_cmd
 
 # move output to expected location
+mkdir -p output
 mv qsmxt_output/qsm/*.nii* output/
 

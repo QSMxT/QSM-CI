@@ -1,5 +1,7 @@
+#!/usr/bin/env python
+
 """
-metrics.py
+eval.py
 
 This module provides functions to compute various error metrics between 3D predicted and reference 
 data arrays. The primary function, `all_metrics()`, returns a dictionary of all computed metrics.
@@ -24,11 +26,12 @@ import os
 import numpy as np
 import csv
 import nibabel as nib
+
 from sklearn.metrics import mean_squared_error
 from skimage.metrics import structural_similarity
 from skimage.metrics import normalized_mutual_information
-from scipy.ndimage import gaussian_laplace
 from skimage.measure import pearson_corr_coeff
+from scipy.ndimage import gaussian_laplace
 
 def calculate_rmse(pred_data, ref_data):
     """
@@ -100,7 +103,7 @@ def calculate_hfen(pred_data, ref_data):
     hfen = np.linalg.norm(LoG_ref - LoG_pred)/np.linalg.norm(LoG_ref)
     return hfen
 
-def calculate_xsim(pred_data, ref_data):
+def calculate_xsim(pred_data, ref_data, data_range=None):
     """
     Calculate the structural similarity (XSIM) between the predicted and reference data.
 
@@ -110,14 +113,20 @@ def calculate_xsim(pred_data, ref_data):
         Predicted data as a numpy array.
     ref_data : numpy.ndarray
         Reference data as a numpy array.
+    data_range : float
+        Expected data range.
 
     Returns
     -------
     float
         The calculated structural similarity value.
 
+    References
+    ----------
+    .. [1] Milovic, C., et al. (2024). XSIM: A structural similarity index measure optimized for MRI QSM. Magnetic Resonance in Medicine. doi:10.1002/mrm.30271
     """
-    xsim = structural_similarity(pred_data,ref_data,win_size = 3, K1 = 0.01, K2 = 0.001, data_range = 1)
+    if not data_range: data_range = ref_data.max() - ref_data.min()
+    xsim = structural_similarity(pred_data, ref_data, win_size=3, K1=0.01, K2=0.001, data_range=data_range)
     return xsim
 
 def calculate_mad(pred_data, ref_data):
@@ -298,11 +307,10 @@ def save_as_json(metrics_dict, filepath):
         json.dump(metrics_dict, file, indent=4)
 
 
-if __name__ == "__main__":
-    
+def main():
     parser = argparse.ArgumentParser(description='Compute metrics for 3D images.')
-    parser.add_argument('ground_truth', type=str, help='Path to the ground truth NIFTI image.')
-    parser.add_argument('recon', type=str, help='Path to the reconstructed NIFTI image.')
+    parser.add_argument('--ground_truth', type=str, help='Path to the ground truth NIFTI image.')
+    parser.add_argument('--estimate', type=str, help='Path to the reconstructed NIFTI image.')
     parser.add_argument('--roi', type=str, help='Path to the ROI NIFTI image (optional).')
     parser.add_argument('--output_dir', type=str, default='./', help='Directory to save metrics.')
     args = parser.parse_args()
@@ -311,7 +319,6 @@ if __name__ == "__main__":
     print("[INFO] Loading images to compute metrics...")
     gt_img = nib.load(args.ground_truth).get_fdata()
     recon_img = nib.load(args.recon).get_fdata()
-    recon_dir = os.path.dirname(args.recon)
 
     if args.roi:
         roi_img = np.array(nib.load(args.roi).get_fdata(), dtype=bool)
@@ -323,7 +330,7 @@ if __name__ == "__main__":
     metrics = all_metrics(recon_img, gt_img, roi_img)
 
     # Save metrics
-    print("[INFO] Saving results...")
+    print(f"[INFO] Saving results to {args.output_dir}...")
     csv_path = os.path.join(args.output_dir, 'metrics.csv')
     md_path = os.path.join(args.output_dir, 'metrics.md')
     json_path = os.path.join(args.output_dir, 'metrics.json')
@@ -334,3 +341,6 @@ if __name__ == "__main__":
 
     print(f"[INFO] Metrics saved to {csv_path}, {md_path}, and {json_path}")
     
+if __name__ == "__main__":
+    main()
+

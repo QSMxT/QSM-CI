@@ -16,7 +16,13 @@ jobs:
     outputs:
       json_list: ${{ steps.collect_jsons.outputs.json_list }}
     steps:
-      - uses: actions/checkout@v3
+      - name: Take ownership of workspace
+        run: |
+          echo "[INFO] Taking ownership of workspace `pwd` to $(whoami):$(id -gn)..."
+          sudo chown -R $(whoami):$(id -gn) .
+
+      - name: Checkout git repository
+        uses: actions/checkout@v3
 
       - name: Fetch BIDS data and generate JSON files
         env:
@@ -39,7 +45,7 @@ jobs:
             qsm-forward head data/ bids
           fi
 
-          python parse_bids.py bids .
+          python qsm_ci/parse_bids.py bids .
 
       - name: Collect JSON files
         id: collect_jsons
@@ -63,7 +69,13 @@ jobs:
         algo: ${{ fromJSON(inputs.algo_list) }}
         json_file: ${{ fromJSON(needs.generate_json_files.outputs.json_list) }}
     steps:
-      - uses: actions/checkout@v3
+      - name: Take ownership of workspace
+        run: |
+          echo "[INFO] Taking ownership of workspace `pwd` to $(whoami):$(id -gn)..."
+          sudo chown -R $(whoami):$(id -gn) .
+
+      - name: Checkout git repository
+        uses: actions/checkout@v3
 
       - name: Download JSON files
         uses: actions/download-artifact@v3
@@ -123,15 +135,40 @@ jobs:
         run: |
           echo "[INFO] Reconstructing and evaluating algo=${PIPELINE_NAME} BIDS_SUBJECT=$BIDS_SUBJECT, BIDS_SESSION=$BIDS_SESSION, BIDS_ACQUISITION=$BIDS_ACQUISITION, BIDS_RUN=$BIDS_RUN"
           
-          bash run.sh algos/${PIPELINE_NAME}
+          if [ $(docker ps -a -q -f name=${PIPELINE_NAME}) ]; then
+            echo "[INFO] Removing existing container ${PIPELINE_NAME}..."
+            sudo docker container stop ${PIPELINE_NAME}
+            sudo docker container rm ${PIPELINE_NAME}
+          fi
 
-          python metrics/metrics.py \
-            "bids/derivatives/qsm-forward/sub-1/anat/sub-1_Chimap.nii" \
-            output/${PIPELINE_NAME}/*.nii* \
-            --roi "bids/derivatives/qsm-forward/sub-1/anat/sub-1_mask.nii"
+          echo "[INFO] Creating Python virtual envrionment..."
+          sudo python -m venv venv
+          export PATH=`pwd`/venv/bin:$PATH
 
-          cat output/${PIPELINE_NAME}/*.md* >> $GITHUB_STEP_SUMMARY
+          echo "[INFO] Checking pip"
+          which pip
+          pip --version
 
-          ./upload.sh
+          echo "[INFO] Installing docker and qsm-ci..."
+          sudo ./venv/bin/pip install docker
+          sudo ./venv/bin/pip install -e .
+
+          echo "[INFO] Starting qsm-ci..."
+          sudo -E ./venv/bin/qsm-ci run algos/${PIPELINE_NAME} bids work_dir $INPUTS_JSON
+
+          sudo -E ./venv/bin/qsm-ci eval \
+            --ground_truth work_dir/bids/derivatives/qsm-forward/sub-1/anat/sub-1_Chimap.nii \
+            --estimate work_dir/bids/derivatives/${PIPELINE_NAME}/sub-1/anat/*Chimap.nii* \
+            --roi work_dir/bids/derivatives/qsm-forward/sub-1/anat/sub-1_mask.nii \
+            --output_dir work_dir/output
+
+          cat work_dir/output/*.md* >> $GITHUB_STEP_SUMMARY
+
+          sudo -E ./venv/bin/qsm-ci upload \
+            work_dir/bids/derivatives/${PIPELINE_NAME}/sub-1/anat/*Chimap.nii* \
+            work_dir/output/*.json* \
+            $PARSE_APPLICATION_ID \
+            $PARSE_REST_API_KEY \
+            $PARSE_MASTER_KEY
 
           
