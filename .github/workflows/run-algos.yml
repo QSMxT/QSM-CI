@@ -160,13 +160,13 @@ jobs:
             work_dir/bids/derivatives/qsm-forward/sub-1/anat/sub-1_Chimap.nii \
             work_dir/bids/derivatives/${PIPELINE_NAME}/sub-1/anat/*Chimap.nii* \
             --roi work_dir/bids/derivatives/qsm-forward/sub-1/anat/sub-1_mask.nii \
-            --output_dir work_dir/output/${PIPELINE_NAME}
+            --output_dir work_dir/output
 
-          cat work_dir/output/${PIPELINE_NAME}/*.md* >> $GITHUB_STEP_SUMMARY
+          cat work_dir/output/*.md* >> $GITHUB_STEP_SUMMARY
 
           sudo -E ./venv/bin/qsm-ci upload \
             work_dir/bids/derivatives/${PIPELINE_NAME}/sub-1/anat/*Chimap.nii* \
-            work_dir/output/${PIPELINE_NAME}/*.json* \
+            work_dir/output/*.json* \
             $PARSE_APPLICATION_ID \
             $PARSE_REST_API_KEY \
             $PARSE_MASTER_KEY
