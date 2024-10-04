@@ -318,7 +318,7 @@ def main():
     # Load images
     print("[INFO] Loading images to compute metrics...")
     gt_img = nib.load(args.ground_truth).get_fdata()
-    recon_img = nib.load(args.recon).get_fdata()
+    recon_img = nib.load(args.estimate).get_fdata()
 
     if args.roi:
         roi_img = np.array(nib.load(args.roi).get_fdata(), dtype=bool)
