@@ -309,8 +309,8 @@ def save_as_json(metrics_dict, filepath):
 
 def main():
     parser = argparse.ArgumentParser(description='Compute metrics for 3D images.')
-    parser.add_argument('ground_truth', type=str, help='Path to the ground truth NIFTI image.')
-    parser.add_argument('recon', type=str, help='Path to the reconstructed NIFTI image.')
+    parser.add_argument('--ground_truth', type=str, help='Path to the ground truth NIFTI image.')
+    parser.add_argument('--estimate', type=str, help='Path to the reconstructed NIFTI image.')
     parser.add_argument('--roi', type=str, help='Path to the ROI NIFTI image (optional).')
     parser.add_argument('--output_dir', type=str, default='./', help='Directory to save metrics.')
     args = parser.parse_args()

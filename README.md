@@ -2,16 +2,16 @@
 
 ![QSM-CI Logo](img/QSM-CI-small.png)
 
-Welcome to the Quantitative Susceptibility Mapping (QSM) Online Challenge (QSM-CI)! This initiative aims to continually and transparently evaluate QSM algorithms and pipelines to remain up-to-date with advancements.
+Welcome to the Quantitative Susceptibility Mapping (QSM) Online Challenge (QSM-CI)! This initiative aims to continually and transparently integrate (CI) and evaluate QSM algorithms and pipelines to remain up-to-date with advancements.
 
 [![](img/button.png)](https://forms.gle/spuRTVp5i6FUXbif7)
 
 Key features:
 
-- **Always-Online submissions**: Submit and update your QSM pipelines anytime.
+- **Always-Online submissions**: Submit and update QSM pipelines at any time.
 - **Full QSM pipeline**: Submitted QSM pipelines perform all steps from multi-echo combination, phase unwrapping, background field removal and dipole inversion. If you just want to submit an algorithm for one of these steps, you can construct a pipeline that includes it and substitute in your preferred algorithms for each of the other steps.
-- **Automated testing**: Pipelines are automatically evaluated using GitHub Actions on simulated data.
-- **Quantitative metrics**: A series of metrics are automatically computed to assess pipeline performance.
+- **Automated testing**: Pipelines are automatically evaluated using GitHub Actions on simulated data, currently running on ARDC cloud resources.
+- **Quantitative metrics**: A series of metrics are automatically computed to assess pipeline performance.  
 - **Qualitative metrics**: Visual comparison through user-based qualitative metrics using the Elo rating system.
 
 # Metrics
@@ -44,18 +44,82 @@ To participate, follow these steps:
 
 ## Pipeline requirements
 
-After cloning the QSM-CI repository using `git clone https://github.com/QSMxT/QSM-CI.git`, create a directory under `algos/` for your pipeline, add a Bash script called `main.sh` that will be used to run the pipeline.
+After cloning the QSM-CI repository using `git clone https://github.com/QSMxT/QSM-CI.git`, install the QSM-CI pip package via `pip install -e .` or `pip install qsm-ci`. Then, create a directory under `algos/` for your pipeline, add a Bash script called `main.sh` that will be used to run the pipeline.
 
-The `main.sh` file is the starting point for your pipeline's execution on QSM-CI. After you submit your pipeline, it will automatically execute in the Docker container specified in the directive towards the top of the script (see the example script below). If you wish to use a different container, simply specify it by changing the directive. 
+The `main.sh` file is the starting point for your pipeline's execution on QSM-CI. After you submit your pipeline, it will automatically execute in the Docker or Apptainer container specified in the directive towards the top of the script (see the example script below). If you wish to use a different container, simply specify it by changing the directive. 
 
-When the container is run, the `main.sh` script will be executed within a directory containing the script and any other files included in your pipeline directory. The demo `main.sh` file below, for example, requires `install_packages.jl` and `pipeline.jl` scripts alongside `main.sh`. Additionally, there will be a `bids/` directory available that contains input data, and an `output/` directory that should store your final NIfTI output volume once the script has completed.
+When the container is run, the `main.sh` script will be executed within a directory containing the script and any other files included in your pipeline directory. The demo `main.sh` file below, for example, makes use of supplementary scripts `install_packages.jl` and `pipeline.jl`. Additionally, there will be a `bids/` directory available that contains input data, an `inputs.json` file that will contain paths to necessary files for QSM reconstruction, and an `output/` directory that should store your final NIfTI output volume once the script has completed. For example:
+
+```
+├── bids/
+│   └── sub-1
+│       └── ...
+│       └── ...
+│   └── ...
+│── output/
+├── inputs.json
+└── main.sh
+```
+
+The following is an example of `inputs.json`:
+
+```json
+{
+    "Subject": "1",
+    "Session": null,
+    "Acquisition": null,
+    "Run": null,
+    "phase_nii": [
+        "bids/sub-1/anat/sub-1_echo-1_part-phase_MEGRE.nii",
+        "bids/sub-1/anat/sub-1_echo-2_part-phase_MEGRE.nii",
+        "bids/sub-1/anat/sub-1_echo-3_part-phase_MEGRE.nii",
+        "bids/sub-1/anat/sub-1_echo-4_part-phase_MEGRE.nii"
+    ],
+    "phase_json": [
+        "bids/sub-1/anat/sub-1_echo-1_part-phase_MEGRE.json",
+        "bids/sub-1/anat/sub-1_echo-2_part-phase_MEGRE.json",
+        "bids/sub-1/anat/sub-1_echo-3_part-phase_MEGRE.json",
+        "bids/sub-1/anat/sub-1_echo-4_part-phase_MEGRE.json"
+    ],
+    "mag_nii": [
+        "bids/sub-1/anat/sub-1_echo-1_part-mag_MEGRE.nii",
+        "bids/sub-1/anat/sub-1_echo-2_part-mag_MEGRE.nii",
+        "bids/sub-1/anat/sub-1_echo-3_part-mag_MEGRE.nii",
+        "bids/sub-1/anat/sub-1_echo-4_part-mag_MEGRE.nii"
+    ],
+    "mag_json": [
+        "bids/sub-1/anat/sub-1_echo-1_part-mag_MEGRE.json",
+        "bids/sub-1/anat/sub-1_echo-2_part-mag_MEGRE.json",
+        "bids/sub-1/anat/sub-1_echo-3_part-mag_MEGRE.json",
+        "bids/sub-1/anat/sub-1_echo-4_part-mag_MEGRE.json"
+    ],
+    "EchoTime": [
+        0.004,
+        0.012,
+        0.02,
+        0.028
+    ],
+    "MagneticFieldStrength": 7,
+    "Derivatives": {
+        "qsm-forward": {
+            "Chimap": [
+                "bids/derivatives/qsm-forward/sub-1/anat/sub-1_Chimap.nii"
+            ],
+            "dseg": [
+                "bids/derivatives/qsm-forward/sub-1/anat/sub-1_dseg.nii"
+            ]
+        }
+    },
+    "mask": "bids/derivatives/qsm-forward/sub-1/anat/sub-1_mask.nii"
+}
+```
 
 The `main.sh` file should be structured as follows:
 
 1. Run directives specify the shell and the Docker container for the pipeline to run with.
 2. A reference list properly cites any algorithms used using comments.
 2. Dependencies not already available in the container are installed.
-3. The pipeline is executed against the simulated data available in the [BIDS](https://bids-specification.readthedocs.io/)-compliant `bids/` directory.
+3. The pipeline is executed against the requested files from inputs.json, which will derive from the data available in the [BIDS](https://bids-specification.readthedocs.io/)-compliant `bids/` directory.  
 4. The final outputs of the pipeline are converted to NIfTI and placed in the `output/` directory.
 
 To test your pipeline, please see [Testing locally](#testing-locally).
@@ -195,29 +259,32 @@ bids
         └── sub-1_echo-4_part-phase_MEGRE.nii
 ```
 
-## Testing and evaluating a pipeline
+## Running and evaluating a pipeline
 
-Testing a pipeline locally requires a Linux or MacOS environment, or Windows Subsystem for Linux (WSL). It also requires Docker, Python, and pip. Please ensure these dependencies are available before attempting to test a pipeline locally. Additionally, please ensure you have your BIDS-complient directory ready in the QSM-CI repository folder.
+Running a pipeline locally requires a Linux or MacOS environment, or Windows Subsystem for Linux (WSL). It also requires Docker or Apptainer, as well as Python and pip. Please ensure these dependencies are available before attempting to test a pipeline locally. Additionally, please ensure you have your BIDS-complient directory ready as described above.
 
-You can test and evaluate a pipeline using the following, run from the QSM-CI repository's root directory (replace `${PIPELINE}` with the name of the desired pipeline - this should match the folder name):
+First, make sure to install QSM-CI using either `pip install qsm-ci` (or `pip install -e .` from the repository directory). 
+
+Then, you can run a pipeline using the `qsm-ci run` command:
 
 ```bash
-./run.sh algos/${PIPELINE}
+qsm-ci run <PIPELINE_DIR> <BIDS_DIR> <WORK_DIR>
 ```
 
-To produce quantitative metrics, several more dependencies are needed. First, run:
+For example:
 
 ```bash
-pip install argparse numpy nibabel scikit-learn scikit-image scipy
+qsm-ci run algos/laplacian_vsharp_rts bids work
 ```
 
-Then, to evaluate (replacing `${PIPELINE}` with your desired pipeline and `${RESULT}` with the filename of the NIfTI result):
+Then, to evaluate, you can use `qsm-ci eval` against a ground truth QSM file and a reconstruction, using a mask to constrain the evaluation:
 
 ```bash
-python metrics/metrics.py \
-    "bids/derivatives/qsm-forward/sub-1/anat/sub-1_Chimap.nii" \
-    output/${PIPELINE}.nii.gz \
-    --roi "bids/derivatives/qsm-forward/sub-1/anat/sub-1_mask.nii"
+qsm-ci eval \
+    --ground_truth bids/qsm-forward/sub-1/anat/sub-1_Chimap.nii \
+    --estimate bids/laplacian_vsharp_rts/sub-1/anat/sub-1_Chimap.nii \
+    --roi bids/qsm-forward/sub-1/anat/sub-1_mask.nii \
+    --output_dir output
 ```
 
 This will generate a series of metrics output files alongside the result in several formats (CSV, JSON and markdown).
@@ -225,10 +292,6 @@ This will generate a series of metrics output files alongside the result in seve
 For example:
 
 ```bash
-$ python metrics/metrics.py \
-    "bids/derivatives/qsm-forward/sub-1/anat/sub-1_Chimap.nii" \
-    output/romeo_vsharp_rts/romeo_vsharp_rts.nii.gz \
-    --roi "bids/derivatives/qsm-forward/sub-1/anat/sub-1_mask.nii"
 $ tree output/
 output/
 └── romeo_vsharp_rts

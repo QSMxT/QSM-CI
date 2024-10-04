@@ -157,8 +157,8 @@ jobs:
           sudo -E ./venv/bin/qsm-ci run algos/${PIPELINE_NAME} bids work_dir $INPUTS_JSON
 
           sudo -E ./venv/bin/qsm-ci eval \
-            work_dir/bids/derivatives/qsm-forward/sub-1/anat/sub-1_Chimap.nii \
-            work_dir/bids/derivatives/${PIPELINE_NAME}/sub-1/anat/*Chimap.nii* \
+            --ground_truth work_dir/bids/derivatives/qsm-forward/sub-1/anat/sub-1_Chimap.nii \
+            --estimate work_dir/bids/derivatives/${PIPELINE_NAME}/sub-1/anat/*Chimap.nii* \
             --roi work_dir/bids/derivatives/qsm-forward/sub-1/anat/sub-1_mask.nii \
             --output_dir work_dir/output
 
