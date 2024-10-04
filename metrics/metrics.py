@@ -324,9 +324,9 @@ if __name__ == "__main__":
 
     # Save metrics
     print("[INFO] Saving results...")
-    csv_path = os.path.join(args.output_dir, os.path.join(recon_dir, 'metrics.csv'))
-    md_path = os.path.join(args.output_dir, os.path.join(recon_dir, 'metrics.md'))
-    json_path = os.path.join(args.output_dir, os.path.join(recon_dir, 'metrics.json'))
+    csv_path = os.path.join(args.output_dir, 'metrics.csv')
+    md_path = os.path.join(args.output_dir, 'metrics.md')
+    json_path = os.path.join(args.output_dir, 'metrics.json')
 
     save_as_csv(metrics, csv_path)
     save_as_markdown(metrics, md_path)
