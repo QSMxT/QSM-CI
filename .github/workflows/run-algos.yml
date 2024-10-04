@@ -136,8 +136,10 @@ jobs:
           echo "[INFO] Reconstructing and evaluating algo=${PIPELINE_NAME} BIDS_SUBJECT=$BIDS_SUBJECT, BIDS_SESSION=$BIDS_SESSION, BIDS_ACQUISITION=$BIDS_ACQUISITION, BIDS_RUN=$BIDS_RUN"
           
           if [ $(docker ps -a -q -f name=${PIPELINE_NAME}) ]; then
-            echo "[INFO] Removing existing container ${PIPELINE_NAME}..."
+            echo "[INFO] Found existing container $(docker ps -a -q -f name=${PIPELINE_NAME})..."
+            echo "[INFO] Stopping container ${PIPELINE_NAME}..."
             sudo docker container stop ${PIPELINE_NAME}
+            echo "[INFO] Removing container ${PIPELINE_NAME}..."
             sudo docker container rm ${PIPELINE_NAME}
           fi
 
@@ -145,9 +147,8 @@ jobs:
           sudo python -m venv venv
           export PATH=`pwd`/venv/bin:$PATH
 
-          echo "[INFO] Checking pip"
-          which pip
-          pip --version
+          echo "[INFO] Checking pip version"
+          ./venv/bin/pip --version
 
           echo "[INFO] Installing docker and qsm-ci..."
           sudo ./venv/bin/pip install docker
