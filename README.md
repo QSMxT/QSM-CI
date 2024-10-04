@@ -277,6 +277,12 @@ For example:
 qsm-ci run algos/laplacian_vsharp_rts bids work
 ```
 
+By default, containers are run using Docker. You can also use Apptainer (singularity) by changing the container engine:
+
+```bash
+qsm-ci run algos/laplacian_vsharp_rts bids work --container_engine apptainer
+```
+
 Then, to evaluate, you can use `qsm-ci eval` against a ground truth QSM file and a reconstruction, using a mask to constrain the evaluation:
 
 ```bash
