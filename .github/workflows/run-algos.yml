@@ -168,6 +168,7 @@ jobs:
           sudo -E ./venv/bin/qsm-ci upload \
             work_dir/bids/derivatives/${PIPELINE_NAME}/sub-1/anat/*Chimap.nii* \
             work_dir/output/*.json* \
+            $PIPELINE_NAME \
             $PARSE_APPLICATION_ID \
             $PARSE_REST_API_KEY \
             $PARSE_MASTER_KEY
