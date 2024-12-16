@@ -90,46 +90,47 @@ def upload_file_to_swift(nifti_file, json_file, algo_name, parse_application_id,
 
     # Check if it is uploaded to Nectar Swift Object Storage
     response = requests.head(url)
-    if response.status_code == 200:
-        print(f"[DEBUG] {nifti_file} now exists in Nectar Swift Object Storage as {algo_name}.nii")
-
-        # Post metrics to the database
-        with open(json_file, 'r') as jf:
-            metrics = json.load(jf)
-
-        payload = {
-            "url": url,
-            "RMSE": metrics.get('RMSE'),
-            "NRMSE": metrics.get('NRMSE'),
-            "HFEN": metrics.get('HFEN'),
-            "MAD": metrics.get('MAD'),
-            "XSIM": metrics.get('XSIM'),
-            "CC1": metrics['CC'][0] if 'CC' in metrics and len(metrics['CC']) > 0 else None,
-            "CC2": metrics['CC'][1] if 'CC' in metrics and len(metrics['CC']) > 1 else None,
-            "NMI": metrics.get('NMI'),
-            "GXE": metrics.get('GXE')
-        }
-
-        headers = {
-            "X-Parse-Application-Id": parse_application_id,
-            "X-Parse-REST-API-Key": parse_rest_api_key,
-            "X-Parse-Master-Key": parse_master_key,
-            "Content-Type": "application/json"
-        }
-
-        response = requests.post(
-            PARSEAPI_URL,
-            json=payload,
-            headers=headers
-        )
-
-        if response.status_code == 201:
-            print("[DEBUG] Metrics posted to the database successfully.")
-        else:
-            print(f"[DEBUG] Failed to post metrics to the database. Response: {response.text}")
-    else:
-        print(f"[DEBUG] {algo_name} does not exist yet in Nectar Swift.")
+    if response.status_code != 200:
+        print(f"[DEBUG] Failed to upload {nifti_file} to Nectar Swift Object Storage.")
+        print(f"[DEBUG] Response: {response.text}")
         return 2
+    
+    print(f"[DEBUG] {nifti_file} now exists in Nectar Swift Object Storage as {algo_name}.nii")
+
+    # Post metrics to the database
+    with open(json_file, 'r') as jf:
+        metrics = json.load(jf)
+
+    payload = {
+        "url": url,
+        "RMSE": metrics.get('RMSE'),
+        "NRMSE": metrics.get('NRMSE'),
+        "HFEN": metrics.get('HFEN'),
+        "MAD": metrics.get('MAD'),
+        "XSIM": metrics.get('XSIM'),
+        "CC1": metrics['CC'][0] if 'CC' in metrics and len(metrics['CC']) > 0 else None,
+        "CC2": metrics['CC'][1] if 'CC' in metrics and len(metrics['CC']) > 1 else None,
+        "NMI": metrics.get('NMI'),
+        "GXE": metrics.get('GXE')
+    }
+
+    headers = {
+        "X-Parse-Application-Id": parse_application_id,
+        "X-Parse-REST-API-Key": parse_rest_api_key,
+        "X-Parse-Master-Key": parse_master_key,
+        "Content-Type": "application/json"
+    }
+
+    response = requests.post(
+        PARSEAPI_URL,
+        json=payload,
+        headers=headers
+    )
+
+    if response.status_code == 201:
+        print("[DEBUG] Metrics posted to the database successfully.")
+    else:
+        print(f"[DEBUG] Failed to post metrics to the database. Response: {response.text}")
 
 def main():
     parser = argparse.ArgumentParser(description='Upload NIfTI file to Nectar Swift Object Storage')
