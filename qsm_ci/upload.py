@@ -92,7 +92,7 @@ def upload_file_to_swift(nifti_file, json_file, algo_name, parse_application_id,
     response = requests.head(url)
     if response.status_code != 200:
         print(f"[DEBUG] Failed to upload {nifti_file} to Nectar Swift Object Storage.")
-        print(f"[DEBUG] Response: {response.text}")
+        print(f"[DEBUG] Response {response.status_code}: {response.text}")
         return 2
     
     print(f"[DEBUG] {nifti_file} now exists in Nectar Swift Object Storage as {algo_name}.nii")
