@@ -9,116 +9,75 @@ import requests
 import json
 
 PARSEAPI_URL = "https://parseapi.back4app.com/classes/Images"
-
-def delete_all_images(parse_application_id, parse_rest_api_key, parse_master_key):
-    headers = {
-        "X-Parse-Application-Id": parse_application_id,
-        "X-Parse-REST-API-Key": parse_rest_api_key,
-        "X-Parse-Master-Key": parse_master_key,
-        "Content-Type": "application/json"
-    }
-
-    # Fetch all image records from the database
-    response = requests.get(
-        PARSEAPI_URL,
-        headers=headers
-    )
-
-    if response.status_code == 200:
-        images = response.json().get('results', [])
-        print(f"[DEBUG] Found {len(images)} images to delete.")
-
-        for image in images:
-            image_id = image['objectId']
-            delete_url = f"{PARSEAPI_URL}/{image_id}"
-
-            # Send a delete request for each image
-            delete_response = requests.delete(delete_url, headers=headers)
-            if delete_response.status_code == 200:
-                print(f"[DEBUG] Deleted image with objectId: {image_id}")
-            else:
-                print(f"[DEBUG] Failed to delete image with objectId: {image_id}. Response: {delete_response.text}")
-    else:
-        print(f"[DEBUG] Failed to fetch images from the database. Response: {response.text}")
+OBJECT_STORAGE_URL = "https://object-store.rc.nectar.org.au:8888/v1/AUTH_dead991e1fa847e3afcca2d3a7041f5d"
 
 def upload_file_to_swift(nifti_file, json_file, algo_name, parse_application_id, parse_rest_api_key, parse_master_key):
     print("[INFO] In upload_file_to_swift")
 
-    # Compute the MD5 hash of the local file
-    with open(nifti_file, 'rb') as f:
-        local_md5 = hashlib.md5(f.read()).hexdigest()
-    print(f"[DEBUG] Local file MD5: {local_md5}")
+    def compute_md5(file_path):
+        """Compute the MD5 hash of a local file."""
+        with open(file_path, 'rb') as f:
+            return hashlib.md5(f.read()).hexdigest()
 
-    # Nectar Swift Object Storage URL
-    url = f"https://object-store.rc.nectar.org.au:8888/v1/AUTH_dead991e1fa847e3afcca2d3a7041f5d/qsmxt/{algo_name}.nii"
+    def check_remote_md5(url):
+        """Download the remote file and compute its MD5 hash."""
+        with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+            try:
+                subprocess.run(['wget', '-O', temp_file.name, url], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                with open(temp_file.name, 'rb') as f:
+                    remote_md5 = hashlib.md5(f.read()).hexdigest()
+                return remote_md5
+            except subprocess.CalledProcessError:
+                print(f"[DEBUG] {url} does not exist or failed to download.")
+                return None
+            finally:
+                os.remove(temp_file.name)
 
-    # Try to download the remote file to a temp location and calculate its MD5
-    with tempfile.NamedTemporaryFile(delete=False) as temp_file:
-        temp_file_name = temp_file.name
-        try:
-            subprocess.run(['wget', '-O', temp_file_name, url], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            with open(temp_file_name, 'rb') as f:
-                remote_md5 = hashlib.md5(f.read()).hexdigest()
-            print(f"[DEBUG] Remote file MD5: {remote_md5}")
+    def upload_to_swift(local_file, remote_path):
+        """Upload a file to Swift storage using rclone."""
+        print(f"[DEBUG] Uploading {local_file} to Swift as {remote_path}...")
+        result = subprocess.run(['rclone', 'copyto', local_file, f'nectar-swift-qsmxt:{remote_path}'], check=True)
+        if result.returncode != 0:
+            print(f"[ERROR] Failed to upload {local_file}.")
+            return False
+        return True
 
-            if local_md5 == remote_md5:
-                print(f"[DEBUG] {algo_name} exists in Nectar Swift Object Storage and is up-to-date.")
-                os.remove(temp_file_name)
-                return
+    # Compute local hashes
+    nifti_md5 = compute_md5(nifti_file)
+    json_md5 = compute_md5(json_file)
+    print(f"[DEBUG] Local NIfTI file MD5: {nifti_md5}")
+    print(f"[DEBUG] Local JSON file MD5: {json_md5}")
 
-        except subprocess.CalledProcessError:
-            print(f"[DEBUG] {algo_name} does not exist in Nectar Swift Object Storage or could not be downloaded.")
+    # Define remote file URLs and paths
+    nifti_url = f"{OBJECT_STORAGE_URL}/qsmxt/{algo_name}.nii"
+    json_url = f"{OBJECT_STORAGE_URL}/qsmxt/{algo_name}.json"
 
-        finally:
-            os.remove(temp_file_name)
+    # Check NIfTI hash remotely
+    remote_nifti_md5 = check_remote_md5(nifti_url)
+    if remote_nifti_md5 == nifti_md5:
+        print("[DEBUG] NIfTI file is up-to-date. Skipping upload.")
+    else:
+        if not upload_to_swift(nifti_file, nifti_url):
+            print("[ERROR] Failed to upload NIfTI file.")
+            return 1
+        print(f"[DEBUG] Uploaded NIfTI file: {nifti_url}")
 
-    print(f"[DEBUG] {nifti_file} is being uploaded to Nectar Swift Object Storage for algorithm {algo_name}.")
+    # Check JSON hash remotely
+    remote_json_md5 = check_remote_md5(json_url)
+    if remote_json_md5 == json_md5:
+        print("[DEBUG] JSON file is up-to-date. Skipping upload.")
+    else:
+        if not upload_to_swift(json_file, json_url):
+            print("[ERROR] Failed to upload JSON file.")
+            return 1
+        print(f"[DEBUG] Uploaded JSON file: {json_url}")
 
-    # Configure for SWIFT storage
-    print("[DEBUG] Configuring for SWIFT storage")
-    result = subprocess.run(['pip3', 'install', 'setuptools', 'wheel', 'python-swiftclient', 'python-keystoneclient'], check=True)
-
-    # print subprocess exit code and output
-    print(f"[DEBUG] pip3 exit code: {result.returncode}")
-    print(f"[DEBUG] pip3 output: {result.stdout}")
-
-    if result.returncode != 0:
-        print("[DEBUG] Failed to install required packages for SWIFT storage.")
-        return 1
-
-    os.environ['OS_AUTH_URL'] = 'https://keystone.rc.nectar.org.au:5000/v3/'
-    os.environ['OS_AUTH_TYPE'] = 'v3applicationcredential'
-    os.environ['OS_PROJECT_NAME'] = 'neurodesk'
-    os.environ['OS_USER_DOMAIN_NAME'] = 'Default'
-    os.environ['OS_REGION_NAME'] = 'Melbourne'
-
-    # Upload via rclone
-    print("[DEBUG] Uploading via rclone...")
-    subprocess.run(['rclone', 'copyto', nifti_file, f'nectar-swift-qsmxt:qsmxt/{algo_name}.nii'], check=True)
-
-    # print subprocess exit code and output
-    print(f"[DEBUG] rclone exit code: {result.returncode}")
-    print(f"[DEBUG] rclone output: {result.stdout}")
-
-    if result.returncode != 0:
-        print("[DEBUG] Failed to upload via rclone.")
-        return 1
-
-    # Check if it is uploaded to Nectar Swift Object Storage
-    response = requests.head(url)
-    if response.status_code != 200:
-        print(f"[DEBUG] Failed to upload {nifti_file} to Nectar Swift Object Storage.")
-        print(f"[DEBUG] Response {response.status_code}: {response.text}")
-        return 2
-    
-    print(f"[DEBUG] {nifti_file} now exists in Nectar Swift Object Storage as {algo_name}.nii")
-
-    # Post metrics to the database
+    # Post metrics to Parse API
     with open(json_file, 'r') as jf:
         metrics = json.load(jf)
 
     payload = {
-        "url": url,
+        "url": nifti_url,
         "RMSE": metrics.get('RMSE'),
         "NRMSE": metrics.get('NRMSE'),
         "HFEN": metrics.get('HFEN'),
@@ -137,20 +96,14 @@ def upload_file_to_swift(nifti_file, json_file, algo_name, parse_application_id,
         "Content-Type": "application/json"
     }
 
-    response = requests.post(
-        PARSEAPI_URL,
-        json=payload,
-        headers=headers
-    )
-
-    # print response status code and text
+    response = requests.post(PARSEAPI_URL, json=payload, headers=headers)
     print(f"[DEBUG] Response status code: {response.status_code}")
     print(f"[DEBUG] Response text: {response.text}")
 
     if response.status_code == 201:
-        print("[DEBUG] Metrics posted to the database successfully.")
+        print("[DEBUG] Metrics and file URLs posted successfully to the database.")
     else:
-        print(f"[DEBUG] Failed to post metrics to the database.")
+        print("[ERROR] Failed to post metrics to the database.")
 
 def main():
     parser = argparse.ArgumentParser(description='Upload NIfTI file to Nectar Swift Object Storage')
