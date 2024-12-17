@@ -76,7 +76,15 @@ def upload_file_to_swift(nifti_file, json_file, algo_name, parse_application_id,
 
     # Configure for SWIFT storage
     print("[DEBUG] Configuring for SWIFT storage")
-    subprocess.run(['pip3', 'install', 'setuptools', 'wheel', 'python-swiftclient', 'python-keystoneclient'], check=True)
+    result = subprocess.run(['pip3', 'install', 'setuptools', 'wheel', 'python-swiftclient', 'python-keystoneclient'], check=True)
+
+    # print subprocess exit code and output
+    print(f"[DEBUG] pip3 exit code: {result.returncode}")
+    print(f"[DEBUG] pip3 output: {result.stdout}")
+
+    if result.returncode != 0:
+        print("[DEBUG] Failed to install required packages for SWIFT storage.")
+        return 1
 
     os.environ['OS_AUTH_URL'] = 'https://keystone.rc.nectar.org.au:5000/v3/'
     os.environ['OS_AUTH_TYPE'] = 'v3applicationcredential'
@@ -86,7 +94,15 @@ def upload_file_to_swift(nifti_file, json_file, algo_name, parse_application_id,
 
     # Upload via rclone
     print("[DEBUG] Uploading via rclone...")
-    subprocess.run(['rclone', 'copy', nifti_file, 'nectar-swift-qsmxt:qsmxt'], check=True)
+    result = subprocess.run(['rclone', 'copy', nifti_file, 'nectar-swift-qsmxt:qsmxt'], check=True)
+
+    # print subprocess exit code and output
+    print(f"[DEBUG] rclone exit code: {result.returncode}")
+    print(f"[DEBUG] rclone output: {result.stdout}")
+
+    if result.returncode != 0:
+        print("[DEBUG] Failed to upload via rclone.")
+        return 1
 
     # Check if it is uploaded to Nectar Swift Object Storage
     response = requests.head(url)
@@ -127,10 +143,14 @@ def upload_file_to_swift(nifti_file, json_file, algo_name, parse_application_id,
         headers=headers
     )
 
+    # print response status code and text
+    print(f"[DEBUG] Response status code: {response.status_code}")
+    print(f"[DEBUG] Response text: {response.text}")
+
     if response.status_code == 201:
         print("[DEBUG] Metrics posted to the database successfully.")
     else:
-        print(f"[DEBUG] Failed to post metrics to the database. Response: {response.text}")
+        print(f"[DEBUG] Failed to post metrics to the database.")
 
 def main():
     parser = argparse.ArgumentParser(description='Upload NIfTI file to Nectar Swift Object Storage')
@@ -142,6 +162,20 @@ def main():
     parser.add_argument('parse_master_key', type=str, help='Parse Master Key')
     args = parser.parse_args()
 
+    # check if the files exist
+    if not os.path.exists(args.nifti_file):
+        print(f"[ERROR] NIfTI file {args.nifti_file} does not exist.")
+        return 1
+    if not os.path.exists(args.json_file):
+        print(f"[ERROR] JSON file {args.json_file} does not exist.")
+        return 1
+    
+    # display the arguments
+    print(f"[DEBUG] parse_application_id: {args.parse_application_id}")
+    print(f"[DEBUG] parse_rest_api_key: {args.parse_rest_api_key}")
+    print(f"[DEBUG] parse_master_key: {args.parse_master_key}")
+
+    # upload the files to swift
     upload_file_to_swift(
         args.nifti_file,
         args.json_file,
