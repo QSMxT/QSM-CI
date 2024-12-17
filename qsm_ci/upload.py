@@ -94,7 +94,7 @@ def upload_file_to_swift(nifti_file, json_file, algo_name, parse_application_id,
 
     # Upload via rclone
     print("[DEBUG] Uploading via rclone...")
-    result = subprocess.run(['rclone', 'copy', nifti_file, 'nectar-swift-qsmxt:qsmxt'], check=True)
+    subprocess.run(['rclone', 'copyto', nifti_file, f'nectar-swift-qsmxt:qsmxt/{algo_name}.nii'], check=True)
 
     # print subprocess exit code and output
     print(f"[DEBUG] rclone exit code: {result.returncode}")
