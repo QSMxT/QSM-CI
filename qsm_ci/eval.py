@@ -237,11 +237,11 @@ def all_metrics(pred_data, ref_data, roi=None):
     roi = roi[bbox]
 
     if np.isnan(pred_data).any() or np.isnan(ref_data).any():
-        print("Input arrays contain NaN values.")
-    if np.std(pred_data) == 0 or np.std(ref_data) == 0:
-        print(np.std(pred_data))
-        print(np.std(ref_data))
-        print("One of the input arrays has no variance.")
+        print("[WARNING] Input arrays contain NaN values.")
+    if np.std(pred_data) == 0:
+        print("[WARNING] The predicted data has no variance.")
+    if np.std(ref_data) == 0:
+        print("[WARNING] The reference data has no variance.")
 
     d['RMSE'] = calculate_rmse(pred_data[roi], ref_data[roi])
     d['NRMSE'] = calculate_nrmse(pred_data[roi], ref_data[roi])

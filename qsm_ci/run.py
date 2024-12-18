@@ -13,13 +13,13 @@ from qsm_ci import parse_bids
 def create_overlay(overlay_path, size_mb=1024):
     """Create an overlay file if it doesn't already exist."""
     if not os.path.exists(overlay_path):
-        print(f"Creating overlay at {overlay_path} with size {size_mb}MB")
+        print(f"[INFO] Creating overlay at {overlay_path} with size {size_mb}MB")
         # Create an empty file of the specified size
         subprocess.run(['dd', 'if=/dev/zero', f'of={overlay_path}', 'bs=1M', f'count={size_mb}'])
         # Format the file as ext3 filesystem
         subprocess.run(['mkfs.ext3', '-F', overlay_path])
     else:
-        print(f"Using existing overlay at {overlay_path}")
+        print(f"[INFO] Using existing overlay at {overlay_path}")
 
 def setup_environment(bids_dir, algo_dir, work_dir, container_engine):
     """Set up the environment and prepare directories for the algorithm execution."""
@@ -29,7 +29,7 @@ def setup_environment(bids_dir, algo_dir, work_dir, container_engine):
     if not os.path.exists(work_dir):
         os.makedirs(work_dir)
     elif os.listdir(work_dir):
-        print(f"Warning: The working directory {work_dir} is not empty.")
+        print(f"[WARNING] The working directory {work_dir} is not empty.")
 
     main_script_path = os.path.join(algo_dir, 'main.sh')
     if not os.path.isfile(main_script_path):
@@ -50,20 +50,20 @@ def setup_environment(bids_dir, algo_dir, work_dir, container_engine):
         client = docker.from_env()
         try:
             client.images.get(docker_image)
-            print(f"Docker image {docker_image} found locally.")
+            print(f"[INFO] Docker image {docker_image} found locally.")
         except docker.errors.ImageNotFound:
-            print(f"Pulling Docker image {docker_image}...")
+            print(f"[INFO] Pulling Docker image {docker_image}...")
             client.images.pull(docker_image)
     else:
         if not apptainer_image:
             raise ValueError("Apptainer image is not specified in the algorithm script.")
-        print(f"Using Apptainer image: {apptainer_image}")
+        print(f"[INFO] Using Apptainer image: {apptainer_image}")
 
     work_bids_dir = os.path.join(work_dir, 'bids')
     if os.path.exists(work_bids_dir):
         shutil.rmtree(work_bids_dir)
     shutil.copytree(bids_dir, work_bids_dir)
-    print(f"Copied BIDS directory to {work_bids_dir}")
+    print(f"[INFO] Copied BIDS directory to {work_bids_dir}")
 
     for item in os.listdir(algo_dir):
         s = os.path.join(algo_dir, item)
@@ -89,9 +89,9 @@ def run_algo(client, docker_image, apptainer_image, algo_name, bids_dir, work_di
 def run_docker_algo(client, docker_image, algo_name, bids_dir, work_dir, input_json):
     try:
         container = client.containers.get(algo_name)
-        print(f"Container with name {algo_name} already exists.")
+        print(f"[INFO] Container with name {algo_name} already exists.")
     except docker.errors.NotFound:
-        print(f"No existing container with name {algo_name} found. Proceeding to create a new one.")
+        print(f"[INFO] No existing container with name {algo_name} found. Proceeding to create a new one.")
         volumes = {work_dir: {'bind': '/workdir', 'mode': 'rw'}}
         container = client.containers.create(
             image=docker_image,
@@ -109,7 +109,7 @@ def run_docker_algo(client, docker_image, algo_name, bids_dir, work_dir, input_j
                 'INPUTS_JSON': os.environ.get('INPUTS_JSON', '')
             }
         )
-        print(f"Container {algo_name} created successfully.")
+        print(f"[INFO] Container {algo_name} created successfully.")
 
     if container.status != 'running':
         container.start()
@@ -151,7 +151,7 @@ def run_apptainer_algo(apptainer_image, algo_name, bids_dir, work_dir, input_jso
 
     command.extend([apptainer_image, './main.sh'])
 
-    print(f"Running Apptainer command: {' '.join(command)}")
+    print(f"[INFO] Running Apptainer command: {' '.join(command)}")
 
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     for line in process.stdout:
@@ -169,15 +169,22 @@ def handle_output(work_dir, algo_name, input_json):
     output_dir = os.path.join(work_dir, 'output')
     nifti_files = glob.glob(os.path.join(output_dir, "*.nii*"))
 
+    # gunzip any gzipped files
+    for i, nifti_file in enumerate(nifti_files):
+        if nifti_file.endswith('.gz'):
+            print(f"[INFO] Unzipping {nifti_file}")
+            subprocess.run(['gunzip', nifti_file])
+            nifti_files[i] = nifti_file.replace('.gz', '')
+
     if not nifti_files:
-        print(f"No NIfTI files found in {output_dir}.")
+        print(f"[WARNING] No NIfTI files found in {output_dir}.")
     else:
         for nifti_file in nifti_files:
             dest_dir = construct_bids_derivative_path(input_json, algo_name, work_dir)
             os.makedirs(dest_dir, exist_ok=True)
             dest_file = construct_bids_filename(input_json, nifti_file)
             shutil.move(nifti_file, os.path.join(dest_dir, dest_file))
-            print(f"Moved {nifti_file} to {os.path.join(dest_dir, dest_file)}")
+            print(f"[INFO] Moved {nifti_file} to {os.path.join(dest_dir, dest_file)}")
 
 def construct_bids_derivative_path(input_json, algo_name, work_dir):
     subject = input_json.get('Subject')
@@ -221,9 +228,9 @@ def main():
     parser.add_argument('--overlay', type=str, help='Path to overlay image (for Apptainer)')
     parser.add_argument('--overlay_size', type=int, default=4096, help='Size of overlay in MB (if using Apptainer)')
     args = parser.parse_args()
-    print("bids_dir:", args.bids_dir)
-    print("algo_dir:", args.algo_dir)
-    print("work_dir:", args.work_dir)
+    print(f"[INFO] bids_dir: {args.bids_dir}")
+    print(f"[INFO] algo_dir: {args.algo_dir}")
+    print(f"[INFO] work_dir: {args.work_dir}")
 
     client = None
     docker_image, apptainer_image, algo_name, work_dir = setup_environment(args.bids_dir, args.algo_dir, args.work_dir, args.container_engine)
@@ -245,7 +252,7 @@ def main():
     if client and args.container_engine == 'docker':
         container = client.containers.get(algo_name)
         container.remove()
-        print(f"Container {algo_name} has been removed.")
+        print(f"[INFO] Container {algo_name} has been removed.")
 
 if __name__ == '__main__':
     main()
