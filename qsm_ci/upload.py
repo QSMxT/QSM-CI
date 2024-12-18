@@ -67,10 +67,11 @@ def upload_file_to_swift(nifti_file, json_file, algo_name, parse_application_id,
     if remote_json_md5 == json_md5:
         print("[DEBUG] JSON file is up-to-date. Skipping upload.")
     else:
-        if not upload_to_swift(json_file, json_url):
-            print("[ERROR] Failed to upload JSON file.")
-            return 1
-        print(f"[DEBUG] Uploaded JSON file: {json_url}")
+        print("[DEBUG] JSON file is not up-to-date, but we are skipping it anyway because something broke.")
+        #if not upload_to_swift(json_file, json_url):
+        #    print("[ERROR] Failed to upload JSON file.")
+        #    return 1
+        #print(f"[DEBUG] Uploaded JSON file: {json_url}")
 
     # Post metrics to Parse API
     with open(json_file, 'r') as jf:
