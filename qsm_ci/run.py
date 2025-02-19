@@ -59,12 +59,16 @@ def setup_environment(bids_dir, algo_dir, work_dir, container_engine):
             raise ValueError("Apptainer image is not specified in the algorithm script.")
         print(f"[INFO] Using Apptainer image: {apptainer_image}")
 
+    print(f"[INFO] Removing existing BIDS directory in {work_dir}...")
     work_bids_dir = os.path.join(work_dir, 'bids')
     if os.path.exists(work_bids_dir):
         shutil.rmtree(work_bids_dir)
+    
+    print(f"[INFO] Copying BIDS directory to {work_bids_dir}...")
     shutil.copytree(bids_dir, work_bids_dir)
     print(f"[INFO] Copied BIDS directory to {work_bids_dir}")
 
+    print(f"[INFO] Copying algorithm directory to {work_dir}...")
     for item in os.listdir(algo_dir):
         s = os.path.join(algo_dir, item)
         d = os.path.join(work_dir, item)
@@ -89,27 +93,36 @@ def run_algo(client, docker_image, apptainer_image, algo_name, bids_dir, work_di
 def run_docker_algo(client, docker_image, algo_name, bids_dir, work_dir, input_json):
     try:
         container = client.containers.get(algo_name)
-        print(f"[INFO] Container with name {algo_name} already exists.")
+        print(f"[INFO] Container with name {algo_name} already exists! Stopping and removing it...")
+        container.stop()
+        container.remove()
     except docker.errors.NotFound:
-        print(f"[INFO] No existing container with name {algo_name} found. Proceeding to create a new one.")
-        volumes = {work_dir: {'bind': '/workdir', 'mode': 'rw'}}
-        container = client.containers.create(
-            image=docker_image,
-            name=algo_name,
-            volumes=volumes,
-            working_dir='/workdir',
-            command=["./main.sh"],
-            auto_remove=False,
-            environment={
-                'BIDS_SUBJECT': os.environ.get('BIDS_SUBJECT', ''),
-                'BIDS_SESSION': os.environ.get('BIDS_SESSION', ''),
-                'BIDS_ACQUISITION': os.environ.get('BIDS_ACQUISITION', ''),
-                'BIDS_RUN': os.environ.get('BIDS_RUN', ''),
-                'PIPELINE_NAME': os.environ.get('PIPELINE_NAME', ''),
-                'INPUTS_JSON': os.environ.get('INPUTS_JSON', '')
-            }
-        )
-        print(f"[INFO] Container {algo_name} created successfully.")
+        pass
+
+    subject = input_json.get('Subject')
+    session = input_json.get('Session')
+    acq = input_json.get('Acquisition')
+    run = input_json.get('Run')
+
+    print(f"[INFO] Creating container {algo_name}...")        
+    volumes = {work_dir: {'bind': '/workdir', 'mode': 'rw'}}
+    container = client.containers.create(
+        image=docker_image,
+        name=algo_name,
+        volumes=volumes,
+        working_dir='/workdir',
+        command=["./main.sh"],
+        auto_remove=False,
+        environment={
+            'BIDS_SUBJECT': subject,
+            'BIDS_SESSION': session,
+            'BIDS_ACQUISITION': acq,
+            'BIDS_RUN': run,
+            'PIPELINE_NAME': algo_name,
+            'INPUTS_JSON': '/workdir/inputs.json'
+        }
+    )
+    print(f"[INFO] Container {algo_name} created successfully.")
 
     if container.status != 'running':
         container.start()
@@ -137,13 +150,18 @@ def run_apptainer_algo(apptainer_image, algo_name, bids_dir, work_dir, input_jso
     if overlay_path:
         command.extend(['--overlay', overlay_path])
 
+    subject = input_json.get('Subject')
+    session = input_json.get('Session')
+    acq = input_json.get('Acquisition')
+    run = input_json.get('Run')
+
     env_vars = {
-        'BIDS_SUBJECT': os.environ.get('BIDS_SUBJECT', ''),
-        'BIDS_SESSION': os.environ.get('BIDS_SESSION', ''),
-        'BIDS_ACQUISITION': os.environ.get('BIDS_ACQUISITION', ''),
-        'BIDS_RUN': os.environ.get('BIDS_RUN', ''),
-        'PIPELINE_NAME': os.environ.get('PIPELINE_NAME', ''),
-        'INPUTS_JSON': os.environ.get('INPUTS_JSON', '')
+        'BIDS_SUBJECT': subject,
+        'BIDS_SESSION': session,
+        'BIDS_ACQUISITION': acq,
+        'BIDS_RUN': run,
+        'PIPELINE_NAME': algo_name,
+        'INPUTS_JSON': '/workdir/inputs.json'
     }
 
     for var, value in env_vars.items():

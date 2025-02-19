@@ -5,8 +5,36 @@ import nibabel as nib
 import h5py
 import json
 import os
-import datetime
 import osfclient.cli as osf
+
+DESCRIPTION="""
+Conversion to BIDS performed by QSM-CI.
+
+A Multi-orientation Gradient-echo MRI Dataset
+
+144 groups of local field maps from 8 subjects, COSMOS images and six symmetric susceptibility tensor 
+components from 8 subjects are provided in our dataset.
+
+Recently, deep neural networks have shown great potentials for solving dipole inversion of quantitative 
+susceptibility mapping (QSM) with improved results. However, these studies utilized their limited dataset 
+for network training and inference, making the conclusion might be untrustworthy. Thus, a common dataset 
+is needed for a fair comparison between different QSM reconstruction networks. Additionally, finding an 
+in vivo reference susceptibility map that matches acquired single-orientation phase data remains an open 
+problem. Susceptibility tensor imaging (STI) chi_{33} and Calculation of Susceptibility through Multiple 
+Orientation Sampling (COSMOS) are considered reference susceptibillity candidates. However, a large 
+number of multi-orientation GRE data for STI or COSMOS reconstruction is now unavailable for training 
+supervised neural networks for QSM. In this study, we reported the largest multi-orientation dataset, to 
+the best of our knowledge in the QSM research field, with a total of 144 scans of 8 healthy subjects 
+collected using a 3D GRE sequence from the same MR scanner. In addition, the parcellation of deep gray 
+matter is also provided for extracting susceptibility values automatically.
+
+Shi, Y., Feng, R., Li, Z., Zhuang, J., Zhang, Y., & Wei, H. (2022). Towards in vivo ground truth 
+susceptibility for single-orientation deep learning QSM: A multi-orientation gradient-echo MRI dataset. 
+Neuroimage, 261, 119522.
+
+osf.io/y6rc3
+osf.io/yfms7
+"""
 
 def fetch(project, remote, local):
     class Args:
@@ -25,7 +53,7 @@ def fetch(project, remote, local):
 bids_dir = "bids"
 os.makedirs(bids_dir, exist_ok=True)
 
-for subject_id in range(2, 9):
+for subject_id in range(1, 9):
     print(f"Fetching sub-{subject_id}")
     sub_dir = os.path.join(bids_dir, f"sub-{subject_id}")
     os.makedirs(sub_dir, exist_ok=True)
@@ -84,28 +112,28 @@ for subject_id in range(2, 9):
             with open(fname_start + "part-mag_MEGRE.json", 'w') as json_handle:
                 json.dump(bids_json_mag, json_handle)
                 
-            print(f"Generating details for BIDS datset_description.json...")
-            dataset_description = {
-                "Name" : f"QSM-CI BIDS ({datetime.date.today()})",
-                "BIDSVersion" : "1.9.0",
-                "GeneratedBy" : [{
-                    "Name" : "qsmci",
-                    "Version": f"v1.0",
-                    "CodeURL" : "https://github.com/QSMxT/QSM-CI"
-                }],
-                "Authors" : ["ADD AUTHORS HERE"]
-            }
-            print(f"Writing BIDS dataset_description.json...")
-            with open(os.path.join(bids_dir, 'dataset_description.json'), 'w', encoding='utf-8') as dataset_json_file:
-                json.dump(dataset_description, dataset_json_file)
-            with open(os.path.join(bids_dir, 'derivatives', 'qsmci', 'dataset_description.json'), 'w', encoding='utf-8') as dataset_json_file:
-                json.dump(dataset_description, dataset_json_file)
+print(f"Generating details for BIDS dataset_description.json...")
+dataset_description = {
+    "Name" : f"A Multi-orientation Gradient-echo MRI Dataset",
+    "BIDSVersion" : "1.9.0",
+    "GeneratedBy" : [{
+        "Name" : "qsmci",
+        "Version": f"v0.1.0",
+        "CodeURL" : "https://github.com/QSMxT/QSM-CI"
+    }],
+    "Authors" : ["Yuting Shi", "Ruimin Feng", "Zhenghao Li", "Jie Zhuang", "Yuyao Zhang", "Hongjiang Wei"]
+}
+print(f"Writing BIDS dataset_description.json...")
+with open(os.path.join(bids_dir, 'dataset_description.json'), 'w', encoding='utf-8') as dataset_json_file:
+    json.dump(dataset_description, dataset_json_file)
+with open(os.path.join(bids_dir, 'derivatives', 'qsmci', 'dataset_description.json'), 'w', encoding='utf-8') as dataset_json_file:
+    json.dump(dataset_description, dataset_json_file)
 
-            print(f"Writing BIDS .bidsignore file...")
-            with open(os.path.join(bids_dir, '.bidsignore'), 'w', encoding='utf-8') as bidsignore_file:
-                bidsignore_file.write('')
+print(f"Writing BIDS .bidsignore file...")
+with open(os.path.join(bids_dir, '.bidsignore'), 'w', encoding='utf-8') as bidsignore_file:
+    bidsignore_file.write('')
 
-            print(f"Writing BIDS dataset README...")
-            with open(os.path.join(bids_dir, 'README'), 'w', encoding='utf-8') as readme_file:
-                readme_file.write(f"Generated using qsmci.\n")
-                readme_file.write(f"\nDescribe your dataset here.\n")
+print(f"Writing BIDS dataset README...")
+with open(os.path.join(bids_dir, 'README'), 'w', encoding='utf-8') as readme_file:
+    readme_file.write(DESCRIPTION)
+

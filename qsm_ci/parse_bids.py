@@ -39,14 +39,14 @@ def parse_bids_directory(bids_dir):
                     session = session_file_match.group(1) if session_file_match else None
 
                 # Extract acquisition and run
-                acquisition_match = re.search(r'_acq-([^_]+)', file)
+                acquisition_match = re.search(r'_acq-(\w+)_', file)
                 acquisition = acquisition_match.group(1) if acquisition_match else None
 
-                run_match = re.search(r'_run-([^_]+)_', file)
+                run_match = re.search(r'_run-(\d+)_', file)
                 run = run_match.group(1) if run_match else None
 
                 # Extract parts of the filename
-                echo_match = re.search(r'_echo-([^_]+)_', file)
+                echo_match = re.search(r'_echo-(\d+)_', file)
                 part_match = re.search(r'_part-(mag|phase)_', file)
                 suffix_match = re.search(r'_MEGRE', file)
 
@@ -135,7 +135,7 @@ def parse_bids_directory(bids_dir):
 
                 # Add files to the group based on their type
                 if part == "mag":
-                    if file.endswith('.nii'):
+                    if file.endswith('.nii') or file.endswith('.nii.gz'):
                         if os.path.join(rel_root, file) not in group['mag_nii']:
                             group['mag_nii'].append(os.path.join(rel_root, file))
                     elif file.endswith('.json'):
@@ -149,7 +149,7 @@ def parse_bids_directory(bids_dir):
                                 if group['MagneticFieldStrength'] is None:
                                     group['MagneticFieldStrength'] = metadata.get('MagneticFieldStrength')
                 elif part == "phase":
-                    if file.endswith('.nii'):
+                    if file.endswith('.nii') or file.endswith('.nii.gz'):
                         if os.path.join(rel_root, file) not in group['phase_nii']:
                             group['phase_nii'].append(os.path.join(rel_root, file))
                     elif file.endswith('.json'):
@@ -188,7 +188,7 @@ def parse_bids_directory(bids_dir):
 
     # Return the groups
     parsed_data = {"Groups": groups}
-    parsed_data = sorted(parsed_data["Groups"], key=lambda x: (x['Subject'], x['Session'], x['Acquisition'], x['Run']))
+    parsed_data = sorted(parsed_data["Groups"], key=lambda x: (x['Subject'], x['Session'] if x['Session'] else "", x['Acquisition'] if x['Acquisition'] else "", x['Run'] if x['Run'] else ""))
     return parsed_data
 
 def save_groups_to_json(groups, output_dir):
