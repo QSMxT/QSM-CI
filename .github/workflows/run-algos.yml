@@ -22,7 +22,7 @@ jobs:
           sudo chown -R $(whoami):$(id -gn) .
 
       - name: Checkout git repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Fetch BIDS data and generate JSON files
         env:
@@ -55,7 +55,7 @@ jobs:
           echo "::set-output name=json_list::${json_list}"
 
       - name: Upload JSON files as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: json-files
           path: "*.json"
@@ -75,10 +75,10 @@ jobs:
           sudo chown -R $(whoami):$(id -gn) .
 
       - name: Checkout git repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Download JSON files
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: json-files
           path: downloaded_jsons
