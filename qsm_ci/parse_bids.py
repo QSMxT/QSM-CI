@@ -48,10 +48,10 @@ def parse_bids_directory(bids_dir):
                 # Extract parts of the filename
                 echo_match = re.search(r'_echo-(\d+)_', file)
                 part_match = re.search(r'_part-(mag|phase)_', file)
-                suffix_match = re.search(r'_MEGRE', file)
+                suffix_match = re.search(r'_MEGRE\.(nii|json)', file)
 
-                # Skip files that don't match the MEGRE series
-                if not echo_match or not part_match or not suffix_match:
+                # Skip files that don't match the raw BIDS MEGRE series (no derivatives)
+                if not echo_match or not part_match or not suffix_match or is_derivative:
                     # Handle derivatives that are not part of the MEGRE series
                     if is_derivative:
                         software_name_match = re.search(r'derivatives/([^/]+)/', root)
