@@ -10,20 +10,26 @@ println("[INFO] Starting laplacian_vsharp_rts pipeline...")
 println("[INFO] Loading input JSON file...")
 input_file = "inputs.json"
 json_data = JSON.parsefile(input_file)
-mask_file = json_data["mask"]
-mag_files = json_data["mag_nii"]
-phas_files = json_data["phase_nii"]
+
+# Function to normalize paths for TinyRange VM (remove bids/challenges/bids/ prefix)
+function normalize_path(path::String)
+    # Remove the bids/challenges/bids/ prefix if present
+    if startswith(path, "bids/challenges/bids/")
+        return path[21:end]  # Remove first 20 characters: "bids/challenges/bids/"
+    end
+    return path
+end
+
+mask_file = normalize_path(json_data["mask"])
+mag_files = [normalize_path(f) for f in json_data["mag_nii"]]
+phas_files = [normalize_path(f) for f in json_data["phase_nii"]]
 TEs = json_data["EchoTime"]
 B0 = json_data["MagneticFieldStrength"]
 
-println("[INFO] Loading input JSON file...")
-input_file = "inputs.json"
-json_data = JSON.parsefile(input_file)
-mask_file = json_data["mask"]
-mag_files = json_data["mag_nii"]
-phas_files = json_data["phase_nii"]
-TEs = json_data["EchoTime"]
-B0 = json_data["MagneticFieldStrength"]
+println("[INFO] Normalized file paths:")
+println("  Mask: $mask_file")
+println("  Mag files: $mag_files")
+println("  Phase files: $phas_files")
 
 # constants
 γ = 267.52 # gyromagnetic ratio (MHz/T)

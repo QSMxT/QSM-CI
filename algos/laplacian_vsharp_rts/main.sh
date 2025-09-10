@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 #DOCKER_IMAGE=ubuntu:latest
+#TINYRANGE_IMAGE=ubuntu@noble
+#TINYRANGE_MEMORY_MB=2048
+#TINYRANGE_CPU_CORES=2
+#TINYRANGE_STORAGE_MB=8192
 
 # == References ==
 # - Unwrapping algorithm - Laplacian: Schofield MA, Zhu Y. Fast phase unwrapping algorithm for interferometric applications. Optics letters. 2003 Jul 15;28(14):1194-6. doi:10.1364/OL.28.001194")
@@ -11,17 +15,35 @@
 
 echo "[INFO] Downloading Julia"
 apt-get update
-apt-get install wget -y
+apt-get install wget build-essential libfftw3-dev -y
 wget https://julialang-s3.julialang.org/bin/linux/x64/1.9/julia-1.9.4-linux-x86_64.tar.gz
 tar xf julia-1.9.4-linux-x86_64.tar.gz
+
+echo "[DEBUG] Available disk space:"
+df -h
+echo "[DEBUG] Available memory:"
+free -h  
+echo "[DEBUG] Build tools:"
+which gcc make || echo "Build tools missing"
+echo "[DEBUG] Julia version and environment:"
+julia-1.9.4/bin/julia --version
+julia-1.9.4/bin/julia -e "println(\"CPU cores: \", Sys.CPU_THREADS); println(\"Total memory: \", Sys.total_memory())"
+
+echo "[DEBUG] Working directory contents:"
+pwd
+ls -la
+echo "[DEBUG] BIDS directory structure:"
+find . -name "*.nii*" | head -10
 
 echo "[INFO] Installing Julia packages"
 julia-1.9.4/bin/julia install_packages.jl
 
+echo "[DEBUG] Julia package status:"
+julia-1.9.4/bin/julia -e "using Pkg; Pkg.status(); println(\"FFTW info:\"); using FFTW; println(FFTW.version)"
+
 echo "[INFO] Starting reconstruction with QSM.jl"
 julia-1.9.4/bin/julia pipeline.jl
 
-echo "[INFO] Moving output to expected location"
-mkdir -p output
-mv out.nii.gz output/chimap.nii.gz
+echo "[INFO] QSM reconstruction completed - output file: out.nii.gz"
+ls -la out.nii.gz
 
