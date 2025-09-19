@@ -156,15 +156,17 @@ jobs:
 
           echo "[INFO] Configuring rclone for Swift..."
           mkdir -p ~/.config/rclone
-          echo "[nectar-swift-qsmxt]" > ~/.config/rclone/rclone.conf
-          echo "type = swift" >> ~/.config/rclone/rclone.conf
-          echo "auth = v3" >> ~/.config/rclone/rclone.conf
-          echo "auth_version = 3" >> ~/.config/rclone/rclone.conf
-          echo "application_credential_id = $OS_APPLICATION_CREDENTIAL_ID" >> ~/.config/rclone/rclone.conf
-          echo "application_credential_secret = $OS_APPLICATION_CREDENTIAL_SECRET" >> ~/.config/rclone/rclone.conf
-          echo "auth_url = https://keystone.rc.nectar.org.au:5000/v3" >> ~/.config/rclone/rclone.conf
-          echo "region = Melbourne" >> ~/.config/rclone/rclone.conf
-          echo "storage_url = https://object-store.rc.nectar.org.au:8888/v1/AUTH_dead991e1fa847e3afcca2d3a7041f5d" >> ~/.config/rclone/rclone.conf
+          {
+            echo "[nectar-swift-qsmxt]"
+            echo "type = swift"
+            echo "auth = v3"
+            echo "auth_version = 3"
+            echo "application_credential_id = ${OS_APPLICATION_CREDENTIAL_ID}"
+            echo "application_credential_secret = ${OS_APPLICATION_CREDENTIAL_SECRET}"
+            echo "auth_url = https://keystone.rc.nectar.org.au:5000/v3"
+            echo "region = Melbourne"
+            echo "storage_url = https://object-store.rc.nectar.org.au:8888/v1/AUTH_dead991e1fa847e3afcca2d3a7041f5d"
+          } > ~/.config/rclone/rclone.conf
 
           echo "[INFO] Starting qsm-ci..."
           sudo -E ./venv/bin/qsm-ci run algos/${PIPELINE_NAME} bids work_dir $INPUTS_JSON
