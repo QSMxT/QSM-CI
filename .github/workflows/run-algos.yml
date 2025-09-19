@@ -22,7 +22,7 @@ jobs:
           sudo chown -R $(whoami):$(id -gn) .
 
       - name: Checkout git repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Fetch BIDS data and generate JSON files
         env:
@@ -55,7 +55,7 @@ jobs:
           echo "::set-output name=json_list::${json_list}"
 
       - name: Upload JSON files as artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: json-files
           path: "*.json"
@@ -75,10 +75,10 @@ jobs:
           sudo chown -R $(whoami):$(id -gn) .
 
       - name: Checkout git repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Download JSON files
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v3
         with:
           name: json-files
           path: downloaded_jsons
@@ -153,14 +153,6 @@ jobs:
           echo "[INFO] Installing docker and qsm-ci..."
           sudo ./venv/bin/pip install docker
           sudo ./venv/bin/pip install -e .
-
-          echo "[INFO] Configuring rclone for Swift..."
-          echo "[DEBUG] OS_APPLICATION_CREDENTIAL_ID: ${OS_APPLICATION_CREDENTIAL_ID:0:10}..."
-          echo "[DEBUG] OS_APPLICATION_CREDENTIAL_SECRET: ${OS_APPLICATION_CREDENTIAL_SECRET:0:10}..."
-          sudo mkdir -p /root/.config/rclone
-          sudo bash -c "printf '[nectar-swift-qsmxt]\ntype = swift\nauth = v3\nauth_version = 3\napplication_credential_id = %s\napplication_credential_secret = %s\nauth_url = https://keystone.rc.nectar.org.au:5000/v3\nregion = Melbourne\nstorage_url = https://object-store.rc.nectar.org.au:8888/v1/AUTH_dead991e1fa847e3afcca2d3a7041f5d\n' '${OS_APPLICATION_CREDENTIAL_ID}' '${OS_APPLICATION_CREDENTIAL_SECRET}' > /root/.config/rclone/rclone.conf"
-          echo "[DEBUG] rclone config:"
-          sudo cat /root/.config/rclone/rclone.conf
 
           echo "[INFO] Starting qsm-ci..."
           sudo -E ./venv/bin/qsm-ci run algos/${PIPELINE_NAME} bids work_dir $INPUTS_JSON
