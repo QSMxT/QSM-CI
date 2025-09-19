@@ -158,19 +158,7 @@ jobs:
           echo "[DEBUG] OS_APPLICATION_CREDENTIAL_ID: ${OS_APPLICATION_CREDENTIAL_ID:0:10}..."
           echo "[DEBUG] OS_APPLICATION_CREDENTIAL_SECRET: ${OS_APPLICATION_CREDENTIAL_SECRET:0:10}..."
           mkdir -p ~/.config/rclone
-          cat << 'EOF' > ~/.config/rclone/rclone.conf
-[nectar-swift-qsmxt]
-type = swift
-auth = v3
-auth_version = 3
-EOF
-          echo "application_credential_id = ${OS_APPLICATION_CREDENTIAL_ID}" >> ~/.config/rclone/rclone.conf
-          echo "application_credential_secret = ${OS_APPLICATION_CREDENTIAL_SECRET}" >> ~/.config/rclone/rclone.conf
-          cat << 'EOF' >> ~/.config/rclone/rclone.conf
-auth_url = https://keystone.rc.nectar.org.au:5000/v3
-region = Melbourne
-storage_url = https://object-store.rc.nectar.org.au:8888/v1/AUTH_dead991e1fa847e3afcca2d3a7041f5d
-EOF
+          printf "[nectar-swift-qsmxt]\ntype = swift\nauth = v3\nauth_version = 3\napplication_credential_id = %s\napplication_credential_secret = %s\nauth_url = https://keystone.rc.nectar.org.au:5000/v3\nregion = Melbourne\nstorage_url = https://object-store.rc.nectar.org.au:8888/v1/AUTH_dead991e1fa847e3afcca2d3a7041f5d\n" "${OS_APPLICATION_CREDENTIAL_ID}" "${OS_APPLICATION_CREDENTIAL_SECRET}" > ~/.config/rclone/rclone.conf
           echo "[DEBUG] rclone config:"
           cat ~/.config/rclone/rclone.conf
 
