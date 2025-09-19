@@ -55,7 +55,7 @@ jobs:
           echo "::set-output name=json_list::${json_list}"
 
       - name: Upload JSON files as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: json-files
           path: "*.json"
