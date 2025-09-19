@@ -92,6 +92,21 @@ def upload_file_to_swift(nifti_file, json_file, algo_name, parse_application_id,
     os.environ['OS_USER_DOMAIN_NAME'] = 'Default'
     os.environ['OS_REGION_NAME'] = 'Melbourne'
 
+    # Set up rclone configuration for Swift storage
+    rclone_config_dir = os.path.expanduser("~/.config/rclone")
+    os.makedirs(rclone_config_dir, exist_ok=True)
+    rclone_config_path = os.path.join(rclone_config_dir, "rclone.conf")
+
+    rclone_config = """[nectar-swift-qsmxt]
+type = swift
+env_auth = true
+"""
+
+    with open(rclone_config_path, 'w') as f:
+        f.write(rclone_config)
+
+    print(f"[DEBUG] Created rclone config at {rclone_config_path}")
+
     # Upload via rclone
     print("[DEBUG] Uploading via rclone...")
     subprocess.run(['rclone', 'copyto', nifti_file, f'nectar-swift-qsmxt:qsmxt/{algo_name}.nii'], check=True)
