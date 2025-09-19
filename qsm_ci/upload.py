@@ -51,13 +51,15 @@ def upload_file_to_swift(nifti_file, json_file, algo_name, parse_application_id,
     # Define remote file URLs and paths
     nifti_url = f"{OBJECT_STORAGE_URL}/qsmxt/{algo_name}.nii"
     json_url = f"{OBJECT_STORAGE_URL}/qsmxt/{algo_name}.json"
+    nifti_path = f"/qsmxt/{algo_name}.nii"
+    json_path = f"/qsmxt/{algo_name}.json"
 
     # Check NIfTI hash remotely
     remote_nifti_md5 = check_remote_md5(nifti_url)
     if remote_nifti_md5 == nifti_md5:
         print("[DEBUG] NIfTI file is up-to-date. Skipping upload.")
     else:
-        if not upload_to_swift(nifti_file, nifti_url):
+        if not upload_to_swift(nifti_file, nifti_path):
             print("[ERROR] Failed to upload NIfTI file.")
             return 1
         print(f"[DEBUG] Uploaded NIfTI file: {nifti_url}")
@@ -68,7 +70,7 @@ def upload_file_to_swift(nifti_file, json_file, algo_name, parse_application_id,
         print("[DEBUG] JSON file is up-to-date. Skipping upload.")
     else:
         print("[DEBUG] JSON file is not up-to-date, but we are skipping it anyway because something broke.")
-        #if not upload_to_swift(json_file, json_url):
+        #if not upload_to_swift(json_file, json_path):
         #    print("[ERROR] Failed to upload JSON file.")
         #    return 1
         #print(f"[DEBUG] Uploaded JSON file: {json_url}")
