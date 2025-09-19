@@ -44,3 +44,5 @@ $JULIA_BIN --project=/workdir/medi_env /workdir/pipeline_medi.jl \
 
 echo "[INFO] Done. Checking final output..."
 ls -lh "$output_dir"
+
+
