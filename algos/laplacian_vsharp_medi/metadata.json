@@ -1,4 +1,4 @@
 {
-  "algorithmDescription": "Laplacian-based QSM reconstruction combining V-SHARP (Variable-kernel SHARP) background field removal with MEDI (Morphology Enabled Dipole Inversion). This hybrid approach provides robust susceptibility mapping with improved background field handling.",
-  "tags": ["laplacian", "vsharp", "medi", "qsm", "background-field", "dipole-inversion", "susceptibility", "mri"]
+  "algorithmDescription": "Combines Laplacian phase unwrapping, V-SHARP (Variable-kernel Sophisticated Harmonic Artifact Reduction) background field removal, and MEDI (Morphology Enabled Dipole Inversion) using morphological constraints from magnitude images.",
+  "tags": ["type::Iterative", "Morphological Constraints"]
 }
