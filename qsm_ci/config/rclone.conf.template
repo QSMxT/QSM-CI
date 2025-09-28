@@ -1,0 +1,9 @@
+# Rclone configuration for QSM-CI Swift storage
+# This section is used for uploading QSM results to Nectar Swift Object Storage
+# The env_auth setting uses environment variables for authentication:
+# - OS_AUTH_URL, OS_PROJECT_NAME, OS_USER_DOMAIN_NAME, OS_REGION_NAME
+# These are set by the upload.py script at runtime
+
+[nectar-swift-qsmxt]
+type = swift
+env_auth = true

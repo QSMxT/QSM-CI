@@ -97,15 +97,37 @@ def upload_file_to_swift(nifti_file, json_file, algo_name, parse_application_id,
     os.makedirs(rclone_config_dir, exist_ok=True)
     rclone_config_path = os.path.join(rclone_config_dir, "rclone.conf")
 
-    rclone_config = """[nectar-swift-qsmxt]
-type = swift
-env_auth = true
-"""
+    # Load our template configuration
+    import configparser
+    template_config = configparser.ConfigParser()
+    template_path = os.path.join(os.path.dirname(__file__), 'config', 'rclone.conf.template')
 
+    template_config.read(template_path)
+    print(f"[DEBUG] Loaded rclone config template from {template_path}")
+
+    # Read existing user config if it exists
+    user_config = configparser.ConfigParser()
+    if os.path.exists(rclone_config_path):
+        user_config.read(rclone_config_path)
+        print(f"[DEBUG] Read existing rclone config from {rclone_config_path}")
+
+    # Merge template sections into user config
+    for section in template_config.sections():
+        if section not in user_config:
+            user_config[section] = {}
+            print(f"[DEBUG] Adding section '{section}' to rclone config")
+        else:
+            print(f"[DEBUG] Updating existing section '{section}' in rclone config")
+
+        # Update section with template values
+        for key, value in template_config[section].items():
+            user_config[section][key] = value
+
+    # Write back the merged config
     with open(rclone_config_path, 'w') as f:
-        f.write(rclone_config)
+        user_config.write(f)
 
-    print(f"[DEBUG] Created rclone config at {rclone_config_path}")
+    print(f"[DEBUG] Updated rclone config at {rclone_config_path}")
 
     # Upload via rclone
     print("[DEBUG] Uploading via rclone...")
