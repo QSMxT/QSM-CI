@@ -16,7 +16,7 @@ jobs:
       algo_list: ${{ steps.set_algo_list.outputs.algo_list }}
       runner: ${{ steps.select_runner.outputs.runner }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v3
       with:
         fetch-depth: 0
     - name: Find changed algorithms
@@ -63,7 +63,6 @@ jobs:
         else
           echo "runner=\"ubuntu-22.04\"" >> $GITHUB_OUTPUT
         fi
-
   build-apps:
     needs: list-algos
     uses: ./.github/workflows/run-algos.yml
