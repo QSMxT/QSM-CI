@@ -187,16 +187,16 @@ def handle_output(work_dir, algo_name, input_json):
     output_dir = os.path.join(work_dir, 'output')
     nifti_files = glob.glob(os.path.join(output_dir, "*.nii*"))
 
-    # gunzip any gzipped files
-    for i, nifti_file in enumerate(nifti_files):
-        if nifti_file.endswith('.gz'):
-            print(f"[INFO] Unzipping {nifti_file}")
-            subprocess.run(['gunzip', nifti_file])
-            nifti_files[i] = nifti_file.replace('.gz', '')
-
     if not nifti_files:
-        print(f"[WARNING] No NIfTI files found in {output_dir}.")
+        print(f"[ERROR] No NIfTI files found in {output_dir}.")
+        raise FileNotFoundError(f"No NIfTI files found in {output_dir}.")
     else:
+        # gunzip any gzipped files
+        for i, nifti_file in enumerate(nifti_files):
+            if nifti_file.endswith('.gz'):
+                print(f"[INFO] Unzipping {nifti_file}")
+                subprocess.run(['gunzip', nifti_file])
+                nifti_files[i] = nifti_file.replace('.gz', '')
         for nifti_file in nifti_files:
             dest_dir = construct_bids_derivative_path(input_json, algo_name, work_dir)
             os.makedirs(dest_dir, exist_ok=True)

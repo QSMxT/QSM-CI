@@ -43,3 +43,5 @@ julia-1.9.4/bin/julia pipeline.jl
 echo "[INFO] QSM reconstruction completed - output file: out.nii.gz"
 ls -la out.nii.gz
 
+echo "[INFO] Moving output to output"
+mv out.nii.gz output/
