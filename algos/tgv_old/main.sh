@@ -12,6 +12,13 @@ output_dir=${2:-/workdir/output}
 mkdir -p "$output_dir/tmp" "$output_dir"
 
 # --- Julia Setup ---
+
+echo "[INFO] Downloading Julia..."
+apt-get update
+apt-get install wget build-essential libfftw3-dev -y
+wget -q https://julialang-s3.julialang.org/bin/linux/x64/1.9/julia-1.9.4-linux-x86_64.tar.gz
+tar xf julia-1.9.4-linux-x86_64.tar.gz
+
 JULIA_BIN=/workdir/julia-1.9.4/bin/julia
 $JULIA_BIN --version
 
@@ -35,6 +42,8 @@ $JULIA_BIN --project=/workdir/tgv_old_env /workdir/romeo_unwrapping.jl \
 echo "[INFO] ROMEO step finished successfully."
 
 
+
+# --- Step 3: Convertig to radians ---
 
 
 echo "[INFO] Converting B0 fieldmap to radians..."
@@ -118,7 +127,8 @@ cd /workdir/TGV_QSM
 echo "[DEBUG] Files in TGV_QSM:"
 ls -lh
 
-# Test: Compiler aus Python heraus
+
+
 echo "[DEBUG] Testing gcc from Python..."
 /workdir/miniconda2/bin/python -c "import subprocess; print('Running gcc from Python...'); subprocess.call(['/usr/bin/gcc','--version'])"
 
@@ -141,12 +151,14 @@ cd /workdir
   --no-resampling
 
 # Move output to output_dir
-mkdir -p "$output_dir/test_copies"
-mv "$output_dir/sub-1_phase_4D.nii"    "$output_dir/test_copies/" || true
-mv "$output_dir/sub-1_mag_4D.nii"      "$output_dir/test_copies/" || true
-mv "$output_dir/sub-1_B0.nii"          "$output_dir/test_copies/" || true
-mv "$output_dir/sub-1_radians.nii"     "$output_dir/test_copies/" || true
-cp "$output_dir"/sub-1*QSM*.nii* "$output_dir/test_copies/" 2>/dev/null || true
+
+# mkdir -p "$output_dir/test_copies"
+# mv "$output_dir/sub-1_phase_4D.nii"    "$output_dir/test_copies/" || true
+# mv "$output_dir/sub-1_mag_4D.nii"      "$output_dir/test_copies/" || true
+# mv "$output_dir/sub-1_B0.nii"          "$output_dir/test_copies/" || true
+# mv "$output_dir/sub-1_radians.nii"     "$output_dir/test_copies/" || true
+# cp "$output_dir"/sub-1*QSM*.nii* "$output_dir/test_copies/" 2>/dev/null || true
+
 
 
 echo "[INFO] TGV_QSM finished. Output: $output_dir/sub-1_QSM.nii.gz"

@@ -28,13 +28,7 @@ B0 = Float64(data["MagneticFieldStrength"])
 println("[INFO] Using EchoTime: $TE s")
 println("[INFO] Using B0: $B0 T")
 
-# TE and B0 saved for main.sh
-open(joinpath(outdir, "te_used.txt"), "w") do f
-    write(f, string(TE))
-end
-open(joinpath(outdir, "b0_used.txt"), "w") do f
-    write(f, string(B0))
-end
+
 
 println("[INFO] Converting fieldmap to radians...")
 println("  Input:  $b0_file")
