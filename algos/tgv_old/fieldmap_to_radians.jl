@@ -29,6 +29,7 @@ println("[INFO] Using EchoTime: $TE s")
 println("[INFO] Using B0: $B0 T")
 
 
+
 println("[INFO] Converting fieldmap to radians...")
 println("  Input:  $b0_file")
 println("  Output: $outdir")

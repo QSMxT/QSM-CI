@@ -12,6 +12,7 @@ outdir  = sys.argv[2]
 if not os.path.exists(outdir):
     os.makedirs(outdir)
 
+
 # --- EchoTime from inputs.json  ---
 with open("inputs.json", "r") as f:
     d = json.load(f)
@@ -19,17 +20,21 @@ TE = float(d["EchoTime"][0])
 print("[INFO] Using EchoTime from inputs.json: {} sec".format(TE))
 
 # --- load B0 ---
+
 b0_img  = nib.load(b0_file)
 b0_data = b0_img.get_fdata()
 
 # --- Hz → Radian ---
 radian_data = 2*np.pi * b0_data * TE
 
+
 # --- header ---
 hdr = b0_img.header.copy()
 radian_img = nib.Nifti1Image(radian_data.astype(np.float32), b0_img.affine, hdr)
 
 # --- load mask ---
+
+
 mask_file = "bids/derivatives/qsm-forward/sub-1/anat/sub-1_mask.nii"
 if os.path.exists(mask_file):
     mask_img = nib.load(mask_file)
@@ -38,7 +43,9 @@ if os.path.exists(mask_file):
     rad_hdr.set_sform(mask_img.affine, code=int(mask_img.header['sform_code']))
     print("[INFO] Copied qform/sform from mask.")
 
+
 # --- Save ---
+
 out_file = os.path.join(outdir, "sub-1_radians.nii")
 nib.save(radian_img, out_file)
 print("[INFO] Saved radians fieldmap -> {}".format(out_file))
