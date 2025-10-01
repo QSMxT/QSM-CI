@@ -43,20 +43,7 @@ $JULIA_BIN --project=/workdir/tgv_old_env /workdir/fieldmap_to_radians.jl \
     "$output_dir/sub-1_B0.nii" \
     "$output_dir"
 
-
-
-# --- 3) Header check ---
-echo "[DEBUG] Checking header match between radians and mask..."
-/workdir/miniconda2/bin/python - <<'EOF'
-import nibabel as nib
-phase = nib.load("output/sub-1_radians.nii")
-mask  = nib.load("bids/derivatives/qsm-forward/sub-1/anat/sub-1_mask.nii")
-
-print("Phase shape:", phase.shape, "zooms:", phase.header.get_zooms())
-print("Mask  shape:", mask.shape, "zooms:", mask.header.get_zooms())
-print("Affine diff:\n", phase.affine - mask.affine)
-EOF
-echo "[DEBUG] Header check done."
+echo "[INFO] Conversion to radians finished successfully."
 
 # --- 4) Run TGV ---
 
@@ -84,15 +71,18 @@ else
   ln -s /usr/bin/gcc /usr/bin/cc
 fi
 
-#should be in container already
-# echo "[INFO] Installing Miniconda2..."
-# wget https://repo.anaconda.com/miniconda/Miniconda2-4.6.14-Linux-x86_64.sh
-# bash Miniconda2-4.6.14-Linux-x86_64.sh -b -p miniconda2
-# miniconda2/bin/conda install -y -c anaconda cython==0.29.4
-# miniconda2/bin/conda install -y numpy
-# miniconda2/bin/conda install -y pyparsing
-# miniconda2/bin/pip install scipy==0.17.1 nibabel==2.1.0
-# miniconda2/bin/pip install --upgrade cython
+echo "[INFO] Installing Miniconda2..."
+
+if [ ! -f "Miniconda2-4.6.14-Linux-x86_64.sh" ]; then
+  wget https://repo.anaconda.com/miniconda/Miniconda2-4.6.14-Linux-x86_64.sh -O Miniconda2-4.6.14-Linux-x86_64.sh
+fi
+#instal miniconda
+bash Miniconda2-4.6.14-Linux-x86_64.sh -b -u -p miniconda2
+miniconda2/bin/conda install -y -c anaconda cython==0.29.4
+miniconda2/bin/conda install -y numpy
+miniconda2/bin/conda install -y pyparsing
+miniconda2/bin/pip install scipy==0.17.1 nibabel==2.1.0
+miniconda2/bin/pip install --upgrade cython
 
 # Miniconda-symlink check
 if [ -L "/workdir/miniconda2/bin/cc" ]; then
