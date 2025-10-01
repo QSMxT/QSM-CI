@@ -154,6 +154,19 @@ echo "[INFO] Moving output to expected location
 mv out.nii.gz output/laplacian_vsharp_rts.nii.gz
 ```
 
+## Algorithm metadata
+
+Each algorithm directory should include a `metadata.json` file containing algorithm description and tags for the web interface:
+
+```json
+{
+  "algorithmDescription": "Brief description of the algorithm and its approach",
+  "tags": ["tag1", "tag2", "grouped::tag", "type::Deep Learning"]
+}
+```
+
+**Tag formatting**: Use `groupId::value` format for grouped tags (e.g., `type::Deep Learning`, `complexity::High`). Grouped tags must also be configured in the frontend's tag groups. Regular ungrouped tags are also supported.
+
 # Testing locally
 
 To test a pipeline locally, you first need a [BIDS](https://bids-specification.readthedocs.io/)-compliant dataset. You can use an existing dataset or simulate one using the [`qsm-forward`](https://github.com/astewartau/qsm-forward) pip package as described below.

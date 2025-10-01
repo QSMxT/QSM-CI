@@ -10,6 +10,16 @@ import json
 
 PARSEAPI_URL = "https://parseapi.back4app.com/classes/Images"
 
+def find_metadata_file(algo_name):
+    #Find the metadata file for the given algorithm.
+    standard_path = f"algos/{algo_name}/metadata.json"
+    if os.path.exists(standard_path):
+        print(f"[DEBUG] Found metadata file: {standard_path}")
+        return standard_path
+    
+    print(f"[WARNING] No metadata file found for algorithm {algo_name}")
+    return None
+
 def delete_all_images(parse_application_id, parse_rest_api_key, parse_master_key):
     headers = {
         "X-Parse-Application-Id": parse_application_id,
@@ -154,6 +164,21 @@ def upload_file_to_swift(nifti_file, json_file, algo_name, parse_application_id,
     with open(json_file, 'r') as jf:
         metrics = json.load(jf)
 
+    # Find and read metadata file
+    metadata_file = find_metadata_file(algo_name)
+    metadata = {}
+    if metadata_file:
+        try:
+            with open(metadata_file, 'r') as mf:
+                metadata = json.load(mf)
+            print(f"[DEBUG] Using metadata from: {metadata_file}")
+        except Exception as e:
+            print(f"[ERROR] Failed to read metadata file {metadata_file}: {e}")
+            print(f"[WARNING] Using empty metadata due to error.")
+            metadata = {}
+    else:
+        print(f"[WARNING] No metadata file found for algorithm {algo_name}. Using empty metadata.")
+
     payload = {
         "url": url,
         "RMSE": metrics.get('RMSE'),
@@ -164,7 +189,9 @@ def upload_file_to_swift(nifti_file, json_file, algo_name, parse_application_id,
         "CC1": metrics['CC'][0] if 'CC' in metrics and len(metrics['CC']) > 0 else None,
         "CC2": metrics['CC'][1] if 'CC' in metrics and len(metrics['CC']) > 1 else None,
         "NMI": metrics.get('NMI'),
-        "GXE": metrics.get('GXE')
+        "GXE": metrics.get('GXE'),
+        "algorithmDescription": metadata.get('algorithmDescription', ''),
+        "tags": metadata.get('tags', [])
     }
 
     headers = {
