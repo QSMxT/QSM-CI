@@ -152,12 +152,12 @@ cd /workdir
 
 # Move output to output_dir
 
-# mkdir -p "$output_dir/test_copies"
-# mv "$output_dir/sub-1_phase_4D.nii"    "$output_dir/test_copies/" || true
-# mv "$output_dir/sub-1_mag_4D.nii"      "$output_dir/test_copies/" || true
-# mv "$output_dir/sub-1_B0.nii"          "$output_dir/test_copies/" || true
-# mv "$output_dir/sub-1_radians.nii"     "$output_dir/test_copies/" || true
-# cp "$output_dir"/sub-1*QSM*.nii* "$output_dir/test_copies/" 2>/dev/null || true
+mkdir -p "$output_dir/test_copies"
+mv "$output_dir/sub-1_phase_4D.nii"    "$output_dir/test_copies/" || true
+mv "$output_dir/sub-1_mag_4D.nii"      "$output_dir/test_copies/" || true
+mv "$output_dir/sub-1_B0.nii"          "$output_dir/test_copies/" || true
+mv "$output_dir/sub-1_radians.nii"     "$output_dir/test_copies/" || true
+
 
 
 
