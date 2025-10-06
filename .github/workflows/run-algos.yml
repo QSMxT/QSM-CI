@@ -38,13 +38,24 @@ jobs:
         run: |
           export PATH=$PATH:/home/runnerx/.local/bin
 
-          if [ ! -d "bids" ]; then
+           if [ ! -d "bids" ]; then
+            echo "[INFO] Fetching base data..."
             osf --project 9jc42 fetch data.tar
             tar xf data.tar
             rm data.tar
-            qsm-forward head data/ bids
           fi
 
+          echo "[INFO] Generating BIDS variants from qsm-forward-params.json..."
+          cat qsm-forward-params.json | jq -c '.[]' | while read cfg; do
+            acq=$(echo $cfg | jq -r '."--acq" // empty')
+            vox=$(echo $cfg | jq -r '."--voxel-size" | @sh' | tr -d "'")
+            savefield=$(echo $cfg | jq -r '."--save-field" // false')
+
+            echo "[INFO] Running qsm-forward with acq=$acq voxel=$vox save-field=$savefield"
+            qsm-forward head data/ bids ${acq:+--acq $acq} --voxel-size $vox ${savefield:+--save-field True}
+          done
+
+          echo "[INFO] Parsing BIDS..."
           python qsm_ci/parse_bids.py bids .
 
       - name: Collect JSON files
