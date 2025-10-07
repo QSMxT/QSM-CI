@@ -38,8 +38,9 @@ jobs:
         run: |
           export PATH=$PATH:/home/runnerx/.local/bin
 
-           if [ ! -d "bids" ]; then
-            echo "[INFO] Fetching base data..."
+          # --- Fetch base data first, if missing ---
+          if [ ! -d "data/chimodel" ]; then
+            echo "[INFO] Base data not found. Fetching data.tar from OSF..."
             osf --project 9jc42 fetch data.tar
             tar xf data.tar
             rm data.tar
