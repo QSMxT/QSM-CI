@@ -53,6 +53,44 @@ def delete_all_images(parse_application_id, parse_rest_api_key, parse_master_key
 
 def upload_file_to_swift(nifti_file, json_file, algo_name, parse_application_id, parse_rest_api_key, parse_master_key):
     print("[INFO] In upload_file_to_swift")
+    acq_name = None
+    
+    env_acq = os.getenv('BIDS_ACQUISITION')
+    if env_acq and env_acq.lower() != "null":
+        acq_name = env_acq
+        print(f"[INFO] Detected acquisition from environment: {acq_name}")
+
+    # 2) Fallback: read from group_xxx.json if available
+    if not acq_name:
+        group_files = [f for f in os.listdir('.') if f.startswith('group_') and f.endswith('.json')]
+        if group_files:
+            group_file = group_files[0]
+            try:
+                with open(group_file, 'r') as f:
+                    group_data = json.load(f)
+                if isinstance(group_data, list) and len(group_data) > 0:
+                    acq_name = group_data[0].get("--acq")
+                    print(f"[INFO] Detected acquisition from {group_file}: {acq_name}")
+            except Exception as e:
+                print(f"[WARN] Could not read {group_file}: {e}")
+
+    # 3) Fallback: qsm-forward-params.json if neither of the above
+    if not acq_name:
+        params_file = '/workdir/qsm-forward-params.json'
+        if os.path.exists(params_file):
+            try:
+                with open(params_file, 'r') as f:
+                    params = json.load(f)
+                if isinstance(params, list) and len(params) > 0:
+                    acq_name = params[0].get("--acq")
+                    print(f"[INFO] Detected acquisition from qsm-forward-params.json: {acq_name}")
+            except Exception as e:
+                print(f"[WARN] Could not read {params_file}: {e}")
+
+    # 4) Final fallback
+    if not acq_name:
+        acq_name = "unknown"
+        print("[WARN] Could not determine acquisition name, using 'unknown'.")
 
     # Compute the MD5 hash of the local file
     with open(nifti_file, 'rb') as f:
@@ -60,7 +98,10 @@ def upload_file_to_swift(nifti_file, json_file, algo_name, parse_application_id,
     print(f"[DEBUG] Local file MD5: {local_md5}")
 
     # Nectar Swift Object Storage URL
-    url = f"https://object-store.rc.nectar.org.au:8888/v1/AUTH_dead991e1fa847e3afcca2d3a7041f5d/qsmxt/{algo_name}.nii"
+    if acq_name:
+        url = f"https://object-store.rc.nectar.org.au:8888/v1/AUTH_dead991e1fa847e3afcca2d3a7041f5d/qsmxt/{algo_name}_acq-{acq_name}.nii"
+    else:
+        url = f"https://object-store.rc.nectar.org.au:8888/v1/AUTH_dead991e1fa847e3afcca2d3a7041f5d/qsmxt/{algo_name}.nii"
 
     # Try to download the remote file to a temp location and calculate its MD5
     with tempfile.NamedTemporaryFile(delete=False) as temp_file:
@@ -82,7 +123,7 @@ def upload_file_to_swift(nifti_file, json_file, algo_name, parse_application_id,
         finally:
             os.remove(temp_file_name)
 
-    print(f"[DEBUG] {nifti_file} is being uploaded to Nectar Swift Object Storage for algorithm {algo_name}.")
+    print(f"[DEBUG] {nifti_file} is being uploaded to Nectar Swift Object Storage for algorithm {algo_name} (acq: {acq_name}).")
 
     # Configure for SWIFT storage
     print("[DEBUG] Configuring for SWIFT storage")
@@ -141,7 +182,10 @@ def upload_file_to_swift(nifti_file, json_file, algo_name, parse_application_id,
 
     # Upload via rclone
     print("[DEBUG] Uploading via rclone...")
-    subprocess.run(['rclone', 'copyto', nifti_file, f'nectar-swift-qsmxt:qsmxt/{algo_name}.nii'], check=True)
+    if acq_name:
+        subprocess.run(['rclone', 'copyto', nifti_file, f'nectar-swift-qsmxt:qsmxt/{algo_name}_acq-{acq_name}.nii'], check=True)
+    else:
+        subprocess.run(['rclone', 'copyto', nifti_file, f'nectar-swift-qsmxt:qsmxt/{algo_name}.nii'], check=True)
 
     # print subprocess exit code and output
     print(f"[DEBUG] rclone exit code: {result.returncode}")
@@ -181,6 +225,7 @@ def upload_file_to_swift(nifti_file, json_file, algo_name, parse_application_id,
 
     payload = {
         "url": url,
+        "acq": acq_name,  
         "RMSE": metrics.get('RMSE'),
         "NRMSE": metrics.get('NRMSE'),
         "HFEN": metrics.get('HFEN'),
@@ -212,7 +257,7 @@ def upload_file_to_swift(nifti_file, json_file, algo_name, parse_application_id,
     print(f"[DEBUG] Response text: {response.text}")
 
     if response.status_code == 201:
-        print("[DEBUG] Metrics posted to the database successfully.")
+        print("[DEBUG] Metrics and acquisition info posted to the database successfully.")
     else:
         print(f"[DEBUG] Failed to post metrics to the database.")
 

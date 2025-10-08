@@ -313,6 +313,7 @@ def main():
     parser.add_argument('--estimate', type=str, help='Path to the reconstructed NIFTI image.')
     parser.add_argument('--roi', type=str, help='Path to the ROI NIFTI image (optional).')
     parser.add_argument('--output_dir', type=str, default='./', help='Directory to save metrics.')
+    parser.add_argument('--acq', type=str, help='Acquisition name (e.g., 1p0mm, 2p0mm)', default=None)
     args = parser.parse_args()
 
     # Load images
@@ -328,7 +329,12 @@ def main():
     # Compute metrics
     print("[INFO] Computing metrics...")
     metrics = all_metrics(recon_img, gt_img, roi_img)
-
+    
+    # Add acquisition name if provided
+    if args.acq:
+        metrics["acq"] = args.acq
+        print(f"[INFO] Added acquisition name to metrics: {args.acq}")
+        
     # Save metrics
     print(f"[INFO] Saving results to {args.output_dir}...")
     csv_path = os.path.join(args.output_dir, 'metrics.csv')

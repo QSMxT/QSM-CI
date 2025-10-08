@@ -85,7 +85,7 @@ echo "[INFO] Installing Miniconda2..."
 if [ ! -f "Miniconda2-4.6.14-Linux-x86_64.sh" ]; then
   wget https://repo.anaconda.com/miniconda/Miniconda2-4.6.14-Linux-x86_64.sh -O Miniconda2-4.6.14-Linux-x86_64.sh
 fi
-#instal miniconda
+# Install Miniconda2
 bash Miniconda2-4.6.14-Linux-x86_64.sh -b -u -p miniconda2
 miniconda2/bin/conda install -y -c anaconda cython==0.29.4
 miniconda2/bin/conda install -y numpy
