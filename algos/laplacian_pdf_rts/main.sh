@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#DOCKER_IMAGE=vnmd/qsmxt_6.4.3:20240327
+#DOCKER_IMAGE=vnmd/qsmxt_8.1.3:20250827
 
 # == References ==
 # - QSMxT: Stewart AW, Robinson SD, O'Brien K, et al. QSMxT: Robust masking and artifact reduction for quantitative susceptibility mapping. Magnetic Resonance in Medicine. 2022;87(3):1289-1300. doi:10.1002/mrm.29048
