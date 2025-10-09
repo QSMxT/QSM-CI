@@ -91,14 +91,6 @@ def run_algo(client, docker_image, apptainer_image, algo_name, bids_dir, work_di
         run_apptainer_algo(apptainer_image, algo_name, bids_dir, work_dir, input_json, overlay_path)
 
 def run_docker_algo(client, docker_image, algo_name, bids_dir, work_dir, input_json):
-    try:
-        container = client.containers.get(algo_name)
-        print(f"[INFO] Container with name {algo_name} already exists! Stopping and removing it...")
-        container.stop()
-        container.remove()
-    except docker.errors.NotFound:
-        pass
-
     subject = input_json.get('Subject')
     session = input_json.get('Session')
     acq = input_json.get('Acquisition')
@@ -114,6 +106,16 @@ def run_docker_algo(client, docker_image, algo_name, bids_dir, work_dir, input_j
         unique_name += f"_ses-{session}"
     if run:
         unique_name += f"_run-{run}"
+
+    # Use unique_name for all container operations
+    try:
+        container = client.containers.get(unique_name)
+        print(f"[INFO] Found existing container {container.id}...")
+        print(f"[INFO] Stopping container {unique_name}...")
+        container.stop()
+        container.remove()
+    except docker.errors.NotFound:
+        pass
 
     print(f"[INFO] Creating container {unique_name}...")        
     volumes = {work_dir: {'bind': '/workdir', 'mode': 'rw'}}
@@ -143,6 +145,8 @@ def run_docker_algo(client, docker_image, algo_name, bids_dir, work_dir, input_j
 
     exit_code = container.wait()
     handle_output(work_dir, unique_name, input_json)
+    # Store the container name for later removal
+    return unique_name
 
 def run_apptainer_algo(apptainer_image, algo_name, bids_dir, work_dir, input_json, overlay_path=None):
     main_script_path = os.path.join(work_dir, 'main.sh')
@@ -231,7 +235,7 @@ def construct_bids_derivative_path(input_json, algo_name, work_dir):
 def construct_bids_filename(input_json, nifti_file):
     subject = input_json.get('Subject')
     session = input_json.get('Session')
-    acq = input_json.get('Acq')
+    acq = input_json.get('Acquisition')  
     run = input_json.get('Run')
 
     filename = f"sub-{subject}"
@@ -270,18 +274,28 @@ def main():
     if args.container_engine == 'docker':
         client = docker.from_env()
 
+    container_name_to_remove = None
     if not args.inputs_json:
         for input_json in parse_bids.parse_bids_directory(args.bids_dir):
-            run_algo(client, docker_image, apptainer_image, algo_name, args.bids_dir, work_dir, input_json, args.container_engine, args.overlay)
+            if args.container_engine == 'docker':
+                container_name_to_remove = run_algo(client, docker_image, apptainer_image, algo_name, args.bids_dir, work_dir, input_json, args.container_engine, args.overlay)
+            else:
+                run_algo(client, docker_image, apptainer_image, algo_name, args.bids_dir, work_dir, input_json, args.container_engine, args.overlay)
     else:
         with open(args.inputs_json, 'r') as json_file:
             input_json = json.load(json_file)
-        run_algo(client, docker_image, apptainer_image, algo_name, args.bids_dir, work_dir, input_json, args.container_engine, args.overlay)
+        if args.container_engine == 'docker':
+            container_name_to_remove = run_algo(client, docker_image, apptainer_image, algo_name, args.bids_dir, work_dir, input_json, args.container_engine, args.overlay)
+        else:
+            run_algo(client, docker_image, apptainer_image, algo_name, args.bids_dir, work_dir, input_json, args.container_engine, args.overlay)
 
-    if client and args.container_engine == 'docker':
-        container = client.containers.get(algo_name)
-        container.remove()
-        print(f"[INFO] Container {algo_name} has been removed.")
+    if client and args.container_engine == 'docker' and container_name_to_remove:
+        try:
+            container = client.containers.get(container_name_to_remove)
+            container.remove()
+            print(f"[INFO] Container {container_name_to_remove} has been removed.")
+        except docker.errors.NotFound:
+            print(f"[INFO] Container {container_name_to_remove} was already removed or not found.")
 
 if __name__ == '__main__':
     main()

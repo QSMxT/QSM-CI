@@ -7,6 +7,11 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      selected_algos:
+        description: 'Comma-separated list of algorithms to run (leave blank to auto-detect)'
+        required: false
+        default: ''
 
 jobs:
   list-algos:
@@ -26,35 +31,37 @@ jobs:
       with:
         files: "algos/**/*"
         json: "true"
-    - name: Set algo list
-      id: set_algo_list
-      run: |
-        if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-          all_algos=$(find algos -type f -name main.sh | cut -d/ -f2)
-        else
-          # Extract only the unique directory names where changes have occurred
-          changed_dirs=$(echo "${{ steps.find_changed_files.outputs.all_changed_files }}" | jq -rc '.[]' | cut -d/ -f1,2 | uniq)
-          all_algos=""
-          for DIR in $changed_dirs; do
-            if [ -f "${DIR}/main.sh" ]; then
-              all_algos+=$(echo "${DIR}" | cut -d/ -f2)" "
+      - name: Set algo list
+        id: set_algo_list
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ] && [ -n "${{ github.event.inputs.selected_algos }}" ]; then
+            all_algos=$(echo "${{ github.event.inputs.selected_algos }}" | tr ',' ' ')
+          elif [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            all_algos=$(find algos -type f -name main.sh | cut -d/ -f2)
+          else
+            # Extract only the unique directory names where changes have occurred
+            changed_dirs=$(echo "${{ steps.find_changed_files.outputs.all_changed_files }}" | jq -rc '.[]' | cut -d/ -f1,2 | uniq)
+            all_algos=""
+            for DIR in $changed_dirs; do
+              if [ -f "${DIR}/main.sh" ]; then
+                all_algos+=$(echo "${DIR}" | cut -d/ -f2)" "
+              fi
+            done
+          fi
+
+          algo_list="["
+          for ALGO in $all_algos; do
+            AUTORUN=$(cat .github/workflows/build-config.json | jq ".${ALGO}.autoRun")
+            [ "$AUTORUN" == "null" ] && AUTORUN=$(cat .github/workflows/build-config.json | jq ".default.autoRun")
+            if [ "$AUTORUN" == "true" ]; then
+              algo_list+="\"${ALGO}\"," 
             fi
           done
-        fi
-        
-        algo_list="["
-        for ALGO in $all_algos; do
-          AUTORUN=$(cat .github/workflows/build-config.json | jq ".${ALGO}.autoRun")
-          [ "$AUTORUN" == "null" ] && AUTORUN=$(cat .github/workflows/build-config.json | jq ".default.autoRun")
-          if [ "$AUTORUN" == "true" ]; then
-            algo_list+="\"${ALGO}\","
-          fi
-        done
-        algo_list=$(echo "$algo_list" | sed 's/,$//')
-        algo_list+="]"
-        
-        echo "algo_list=${algo_list}"
-        echo "algo_list=${algo_list}" >> $GITHUB_OUTPUT
+          algo_list=$(echo "$algo_list" | sed 's/,$//')
+          algo_list+="]"
+
+          echo "algo_list=${algo_list}"
+          echo "algo_list=${algo_list}" >> $GITHUB_OUTPUT
     - name: Select runner
       id: select_runner
       run: |
