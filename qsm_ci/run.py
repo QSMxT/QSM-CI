@@ -104,11 +104,22 @@ def run_docker_algo(client, docker_image, algo_name, bids_dir, work_dir, input_j
     acq = input_json.get('Acquisition')
     run = input_json.get('Run')
 
-    print(f"[INFO] Creating container {algo_name}...")        
+    # Build unique container name
+    unique_name = algo_name
+    if acq:
+        unique_name += f"_acq-{acq}"
+    if subject:
+        unique_name += f"_sub-{subject}"
+    if session:
+        unique_name += f"_ses-{session}"
+    if run:
+        unique_name += f"_run-{run}"
+
+    print(f"[INFO] Creating container {unique_name}...")        
     volumes = {work_dir: {'bind': '/workdir', 'mode': 'rw'}}
     container = client.containers.create(
         image=docker_image,
-        name=algo_name,
+        name=unique_name,
         volumes=volumes,
         working_dir='/workdir',
         command=["./main.sh"],
@@ -122,7 +133,7 @@ def run_docker_algo(client, docker_image, algo_name, bids_dir, work_dir, input_j
             'INPUTS_JSON': '/workdir/inputs.json'
         }
     )
-    print(f"[INFO] Container {algo_name} created successfully.")
+    print(f"[INFO] Container {unique_name} created successfully.")
 
     if container.status != 'running':
         container.start()
@@ -131,7 +142,7 @@ def run_docker_algo(client, docker_image, algo_name, bids_dir, work_dir, input_j
         print(log.decode().strip())
 
     exit_code = container.wait()
-    handle_output(work_dir, algo_name, input_json)
+    handle_output(work_dir, unique_name, input_json)
 
 def run_apptainer_algo(apptainer_image, algo_name, bids_dir, work_dir, input_json, overlay_path=None):
     main_script_path = os.path.join(work_dir, 'main.sh')

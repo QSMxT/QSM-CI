@@ -265,7 +265,7 @@ def main():
     parser = argparse.ArgumentParser(description='Upload NIfTI file to Nectar Swift Object Storage')
     parser.add_argument('nifti_file', type=str, help='Path to the NIfTI file')
     parser.add_argument('json_file', type=str, help='Path to the JSON file produced by `qsm-ci eval` containing metrics')
-    parser.add_argument('algo_name', type=str, help='Name of the algorithm')
+    parser.add_argument('algo_name', type=str, nargs='?', help='Name of the algorithm (optional, will be constructed if not provided)')
     parser.add_argument('parse_application_id', type=str, help='Parse Application ID')
     parser.add_argument('parse_rest_api_key', type=str, help='Parse REST API Key')
     parser.add_argument('parse_master_key', type=str, help='Parse Master Key')
@@ -278,7 +278,26 @@ def main():
     if not os.path.exists(args.json_file):
         print(f"[ERROR] JSON file {args.json_file} does not exist.")
         return 1
-    
+
+    # Build unique algo_name if not provided
+    algo_name = args.algo_name
+    if not algo_name or algo_name.lower() == "none":
+        base_name = os.getenv('PIPELINE_NAME', 'algo')
+        acq = os.getenv('BIDS_ACQUISITION')
+        subject = os.getenv('BIDS_SUBJECT')
+        session = os.getenv('BIDS_SESSION')
+        run = os.getenv('BIDS_RUN')
+        algo_name = base_name
+        if acq and acq.lower() != "null":
+            algo_name += f"_acq-{acq}"
+        if subject and subject.lower() != "null":
+            algo_name += f"_sub-{subject}"
+        if session and session.lower() != "null":
+            algo_name += f"_ses-{session}"
+        if run and run.lower() != "null":
+            algo_name += f"_run-{run}"
+        print(f"[DEBUG] Constructed unique algo_name: {algo_name}")
+
     # display the arguments
     print(f"[DEBUG] parse_application_id: {args.parse_application_id}")
     print(f"[DEBUG] parse_rest_api_key: {args.parse_rest_api_key}")
@@ -288,7 +307,7 @@ def main():
     upload_file_to_swift(
         args.nifti_file,
         args.json_file,
-        args.algo_name,
+        algo_name,
         args.parse_application_id,
         args.parse_rest_api_key,
         args.parse_master_key
