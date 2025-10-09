@@ -50,6 +50,11 @@ vsz  = (1.0, 1.0, 1.0)
 
 # --- Load magnitude & phase ---
 println("[INFO] Loading magnitude and phase images...")
+
+function resolve_path(f)
+    isabspath(f) ? f : joinpath(pwd(), f)
+end
+
 nii_mag = niread(mag_files[1])
 shape3d = size(Float32.(nii_mag))
 n_echo  = length(mag_files)
@@ -59,8 +64,10 @@ phas = Array{Float32}(undef, shape3d..., n_echo)
 
 for i in 1:n_echo
     println("[DEBUG] Loading echo $i...")
-    mag[:,:,:,i]  = Float32.(niread(mag_files[i]))
-    phas[:,:,:,i] = Float32.(niread(phas_files[i]))
+    mag_file = resolve_path(mag_files[i])
+    phase_file = resolve_path(phas_files[i])
+    mag[:,:,:,i]  = Float32.(niread(mag_file))
+    phas[:,:,:,i] = Float32.(niread(phase_file))
 end
 
 # --- Load mask ---

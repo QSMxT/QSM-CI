@@ -19,8 +19,16 @@ println("[INFO] Loading inputs.json...")
 d = JSON3.read(open("inputs.json"))
 
 #  JSON3.Array to Vector{String}
+function resolve_path(f)
+    isabspath(f) ? f : joinpath(pwd(), f)
+end
+
 phase_files = collect(String.(d["phase_nii"]))
 mag_files   = collect(String.(d["mag_nii"]))
+
+# Resolve all file paths to absolute paths
+phase_files = [resolve_path(f) for f in phase_files]
+mag_files   = [resolve_path(f) for f in mag_files]
 
 println("[INFO] Phase files: ", join(phase_files, ", "))
 println("[INFO] Magnitude files: ", join(mag_files, ", "))
