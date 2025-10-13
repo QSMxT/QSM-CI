@@ -63,7 +63,7 @@ def setup_environment(bids_dir, algo_dir, work_dir, container_engine):
     work_bids_dir = os.path.join(work_dir, 'bids')
     if os.path.exists(work_bids_dir):
         shutil.rmtree(work_bids_dir)
-    
+
     print(f"[INFO] Copying BIDS directory to {work_bids_dir}...")
     shutil.copytree(bids_dir, work_bids_dir)
     print(f"[INFO] Copied BIDS directory to {work_bids_dir}")
@@ -86,7 +86,7 @@ def run_algo(client, docker_image, apptainer_image, algo_name, bids_dir, work_di
         json.dump(input_json, json_file, indent=4)
 
     if container_engine == 'docker':
-        # Return the actual container name used
+         # Return the actual container name used
         return run_docker_algo(client, docker_image, algo_name, bids_dir, work_dir, input_json)
     else:
         run_apptainer_algo(apptainer_image, algo_name, bids_dir, work_dir, input_json, overlay_path)
@@ -107,6 +107,16 @@ def run_docker_algo(client, docker_image, algo_name, bids_dir, work_dir, input_j
         unique_name += f"_ses-{session}"
     if run:
         unique_name += f"_run-{run}"
+        
+    print(f"[DEBUG] Container setup:")
+    print(f"  Work dir: {work_dir}")
+    print(f"  BIDS dir: {bids_dir}")
+    print(f"  Input JSON: {json.dumps(input_json, indent=2)}")
+    
+    # Create container
+    print(f"[DEBUG] Creating container {unique_name}...")        
+    volumes = {work_dir: {'bind': '/workdir', 'mode': 'rw'}}
+    print(f"[DEBUG] Volume mappings: {volumes}")
 
     # Remove any containers whose name starts with algo_name
     for container in client.containers.list(all=True):
@@ -142,8 +152,13 @@ def run_docker_algo(client, docker_image, algo_name, bids_dir, work_dir, input_j
     if container.status != 'running':
         container.start()
 
+    # Stream logs with error indication
     for log in container.logs(stream=True):
-        print(log.decode().strip())
+        line = log.decode().strip()
+        if "error" in line.lower() or "exception" in line.lower():
+            print(f"[ERROR] {line}")
+        else:
+            print(line)
 
     exit_code = container.wait()
     handle_output(work_dir, unique_name, input_json)
@@ -275,12 +290,11 @@ def main():
 
     if args.container_engine == 'docker':
         client = docker.from_env()
-
-    container_names_to_remove = []
-    if not args.inputs_json:
+       container_names_to_remove = []    
+       if not args.inputs_json:
         for input_json in parse_bids.parse_bids_directory(args.bids_dir):
             if args.container_engine == 'docker':
-                cname = run_algo(client, docker_image, apptainer_image, algo_name, args.bids_dir, work_dir, input_json, args.container_engine, args.overlay)
+                 cname = run_algo(client, docker_image, apptainer_image, algo_name, args.bids_dir, work_dir, input_json, args.container_engine, args.overlay)
                 if cname:
                     container_names_to_remove.append(cname)
             else:
@@ -289,13 +303,12 @@ def main():
         with open(args.inputs_json, 'r') as json_file:
             input_json = json.load(json_file)
         if args.container_engine == 'docker':
-            cname = run_algo(client, docker_image, apptainer_image, algo_name, args.bids_dir, work_dir, input_json, args.container_engine, args.overlay)
+              cname = run_algo(client, docker_image, apptainer_image, algo_name, args.bids_dir, work_dir, input_json, args.container_engine, args.overlay)
             if cname:
                 container_names_to_remove.append(cname)
-        else:
+                     else:
             run_algo(client, docker_image, apptainer_image, algo_name, args.bids_dir, work_dir, input_json, args.container_engine, args.overlay)
-
-    # Remove all containers that were created
+             # Remove all containers that were created
     if client and args.container_engine == 'docker':
         for cname in container_names_to_remove:
             try:

@@ -18,20 +18,33 @@ isdir(outdir) || mkpath(outdir)
 println("[INFO] Loading inputs.json...")
 d = JSON3.read(open("inputs.json"))
 
-#  JSON3.Array to Vector{String}
-function resolve_path(f)
-    isabspath(f) ? f : joinpath(pwd(), f)
-end
+# Debug current state
+println("[INFO] Current working directory: $(pwd())")
+println("[INFO] Contents of current directory:")
+run(`ls -la`)
 
 phase_files = collect(String.(d["phase_nii"]))
 mag_files   = collect(String.(d["mag_nii"]))
 
-# Resolve all file paths to absolute paths
-phase_files = [resolve_path(f) for f in phase_files]
-mag_files   = [resolve_path(f) for f in mag_files]
+# Always use absolute paths from /workdir
+phase_files = [joinpath("/workdir", f) for f in phase_files]
+mag_files = [joinpath("/workdir", f) for f in mag_files]
 
-println("[INFO] Phase files: ", join(phase_files, ", "))
-println("[INFO] Magnitude files: ", join(mag_files, ", "))
+# Check if files exist before processing
+for f in phase_files
+    if !isfile(f)
+        error("[ERROR] Phase file not found: $f")
+    end
+end
+
+for f in mag_files
+    if !isfile(f)
+        error("[ERROR] Magnitude file not found: $f")
+    end
+end
+
+println("[INFO] Phase files exist: ", join(phase_files, ", "))
+println("[INFO] Magnitude files exist: ", join(mag_files, ", "))
 
 function combine_to_4d(in_files::Vector{String}, out_file::String)
     imgs  = [NIfTI.niread(f) for f in in_files]
