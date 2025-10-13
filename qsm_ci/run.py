@@ -290,35 +290,36 @@ def main():
 
     if args.container_engine == 'docker':
         client = docker.from_env()
-       container_names_to_remove = []    
-       if not args.inputs_json:
-        for input_json in parse_bids.parse_bids_directory(args.bids_dir):
+        container_names_to_remove = []    
+        if not args.inputs_json:
+            for input_json in parse_bids.parse_bids_directory(args.bids_dir):
+                if args.container_engine == 'docker':
+                    cname = run_algo(client, docker_image, apptainer_image, algo_name, args.bids_dir, work_dir, input_json, args.container_engine, args.overlay)
+                    if cname:
+                        container_names_to_remove.append(cname)
+                else:
+                    run_algo(client, docker_image, apptainer_image, algo_name, args.bids_dir, work_dir, input_json, args.container_engine, args.overlay)
+        else:
+            with open(args.inputs_json, 'r') as json_file:
+                input_json = json.load(json_file)
             if args.container_engine == 'docker':
-                 cname = run_algo(client, docker_image, apptainer_image, algo_name, args.bids_dir, work_dir, input_json, args.container_engine, args.overlay)
+                cname = run_algo(client, docker_image, apptainer_image, algo_name, args.bids_dir, work_dir, input_json, args.container_engine, args.overlay)
                 if cname:
                     container_names_to_remove.append(cname)
             else:
                 run_algo(client, docker_image, apptainer_image, algo_name, args.bids_dir, work_dir, input_json, args.container_engine, args.overlay)
-    else:
-        with open(args.inputs_json, 'r') as json_file:
-            input_json = json.load(json_file)
-        if args.container_engine == 'docker':
-              cname = run_algo(client, docker_image, apptainer_image, algo_name, args.bids_dir, work_dir, input_json, args.container_engine, args.overlay)
-            if cname:
-                container_names_to_remove.append(cname)
-                     else:
-            run_algo(client, docker_image, apptainer_image, algo_name, args.bids_dir, work_dir, input_json, args.container_engine, args.overlay)
-             # Remove all containers that were created
-    if client and args.container_engine == 'docker':
-        for cname in container_names_to_remove:
-            try:
-                container = client.containers.get(cname)
-                container.remove()
-                print(f"[INFO] Container {cname} has been removed.")
-            except docker.errors.NotFound:
-                print(f"[INFO] Container {cname} was already removed or not found.")
-            except Exception as e:
-                print(f"[WARNING] Could not remove container {cname}: {e}")
+
+        # Remove all containers that were created
+        if container_names_to_remove:
+            for cname in container_names_to_remove:
+                try:
+                    container = client.containers.get(cname)
+                    container.remove()
+                    print(f"[INFO] Container {cname} has been removed.")
+                except docker.errors.NotFound:
+                    print(f"[INFO] Container {cname} was already removed or not found.")
+                except Exception as e:
+                    print(f"[WARNING] Could not remove container {cname}: {e}")
 
 if __name__ == '__main__':
     main()
