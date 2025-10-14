@@ -55,19 +55,22 @@ jobs:
             echo "[INFO] Running qsm-forward with acq=$acq voxel=$vox save-field=$savefield"
             qsm-forward head data/ bids ${acq:+--acq $acq} --voxel-size $vox ${savefield:+--save-field True}
 
-            find bids/sub-1/anat -type f -name "*.nii" \
+            # --- Rename NIfTI files (only those without existing _acq-) ---
+            find bids/sub-1/anat -maxdepth 1 -type f -name "*.nii" ! -name "*_acq-*" \
               -exec bash -c 'f="{}"; mv "$f" "${f/sub-1_/sub-1_acq-'$acq'_}"' \;
 
-            find bids/sub-1/anat -type f -name "*.json" \
+            # --- Rename JSON files (only those without existing _acq-) ---
+            find bids/sub-1/anat -maxdepth 1 -type f -name "*.json" ! -name "*_acq-*" \
               -exec bash -c 'f="{}"; mv "$f" "${f/sub-1_/sub-1_acq-'$acq'_}"' \;
 
-            # --- Rename derivative qsm-forward outputs (Chimap, mask, dseg) ---
-            if ls bids/derivatives/qsm-forward/sub-1/anat/*.nii 1> /dev/null 2>&1; then
-              find bids/derivatives/qsm-forward/sub-1/anat -maxdepth 1 -type f -name "*.nii" \
-                -exec bash -c 'f="{}"; mv "$f" "${f/sub-1_/sub-1_acq-'$acq'_}"' \;
-            else
-              echo "[INFO] No derivative NIfTI files found to rename for $acq"
-            fi
+
+            # --- Rename derivative qsm-forward outputs (Chimap, mask, dseg, fieldmap, etc.) ---
+              if ls bids/derivatives/qsm-forward/sub-1/anat/*.nii 1> /dev/null 2>&1; then
+                find bids/derivatives/qsm-forward/sub-1/anat -maxdepth 1 -type f -name "*.nii" ! -name "*_acq-*" \
+                  -exec bash -c 'f="{}"; mv "$f" "${f/sub-1_/sub-1_acq-'$acq'_}"' \;
+              else
+                echo "[INFO] No derivative NIfTI files found to rename for $acq"
+              fi
 
           done
 
