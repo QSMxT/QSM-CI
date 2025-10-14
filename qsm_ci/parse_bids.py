@@ -4,8 +4,13 @@ import os
 import re
 import json
 import argparse
+import subprocess
 
 def parse_bids_directory(bids_dir):
+    print("[DEBUG] Scanning BIDS directory:", bids_dir)
+    print("[DEBUG] BIDS directory contents:")
+    subprocess.run(['ls', '-R', bids_dir])
+
     # List to store groups
     groups = []
 
@@ -217,4 +222,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    

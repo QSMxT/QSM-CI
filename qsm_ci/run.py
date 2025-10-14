@@ -66,7 +66,10 @@ def setup_environment(bids_dir, algo_dir, work_dir, container_engine):
 
     print(f"[INFO] Copying BIDS directory to {work_bids_dir}...")
     shutil.copytree(bids_dir, work_bids_dir)
-    print(f"[INFO] Copied BIDS directory to {work_bids_dir}")
+    
+    # Debug BIDS directory contents
+    print("[DEBUG] Contents of work_bids_dir after copy:")
+    subprocess.run(['ls', '-R', work_bids_dir])
 
     print(f"[INFO] Copying algorithm directory to {work_dir}...")
     for item in os.listdir(algo_dir):

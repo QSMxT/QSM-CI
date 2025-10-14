@@ -53,15 +53,23 @@ jobs:
             savefield=$(echo $cfg | jq -r '."--save-field" // false')
 
             echo "[INFO] Running qsm-forward with acq=$acq voxel=$vox save-field=$savefield"
-            qsm-forward head data/ bids ${acq:+--acq $acq} \
-              --voxel-size $vox \
-              --save-field True \
-              --save-signal True \
-              --save-mag True
+            qsm-forward head data/ bids ${acq:+--acq $acq} --voxel-size $vox ${savefield:+--save-field True}
           done
+
+          # Debug output
+          echo "[DEBUG] Generated BIDS directory structure:"
+          ls -R bids/
+
+          echo "[DEBUG] Generated BIDS structure before parsing:"
+          ls -R bids/sub-1/anat/
 
           echo "[INFO] Parsing BIDS..."
           python qsm_ci/parse_bids.py bids .
+
+          echo "[DEBUG] Generated JSON files:"
+          ls -l *.json
+          echo "[DEBUG] Contents of first JSON file:"
+          cat $(ls group*.json | head -n1)
 
       - name: Collect JSON files
         id: collect_jsons
