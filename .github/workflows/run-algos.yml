@@ -53,7 +53,11 @@ jobs:
             savefield=$(echo $cfg | jq -r '."--save-field" // false')
 
             echo "[INFO] Running qsm-forward with acq=$acq voxel=$vox save-field=$savefield"
-            qsm-forward head data/ bids ${acq:+--acq $acq} --voxel-size $vox ${savefield:+--save-field True}
+            qsm-forward head data/ bids ${acq:+--acq $acq} \
+              --voxel-size $vox \
+              --save-field True \
+              --save-signal True \
+              --save-mag True
           done
 
           echo "[INFO] Parsing BIDS..."
