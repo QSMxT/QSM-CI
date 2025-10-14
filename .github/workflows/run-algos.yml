@@ -143,6 +143,30 @@ jobs:
             qsm-forward head data/ bids
           fi
 
+      - name: Replace default BIDS with generated BIDS
+        shell: bash
+        run: |
+          echo "[INFO] Replacing OSF BIDS with locally generated BIDS..."
+
+          if [ -d "bids" ]; then
+            sudo rm -rf bids
+          fi
+
+          if [ -d "${GITHUB_WORKSPACE}/bids" ]; then
+            sudo cp -r ${GITHUB_WORKSPACE}/bids .
+            echo "[INFO] Copied local BIDS from ${GITHUB_WORKSPACE}/bids"
+          elif [ -d "../bids" ]; then
+            sudo cp -r ../bids .
+            echo "[INFO] Copied fallback BIDS from parent directory"
+          else
+            echo "[ERROR] No local BIDS directory found!"
+            exit 1
+          fi
+
+          echo "[INFO] Final BIDS structure ready:"
+          find bids -type f | head -n 20
+  
+
       - name: Extract fields from JSON
         id: extract
         run: |
