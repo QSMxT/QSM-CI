@@ -31,17 +31,31 @@ $JULIA_BIN --project=/workdir/tgv_old_env /workdir/combine_to_4d.jl $output_dir
 echo "[INFO] Combine step finished successfully."
 
 # --- Step 2: Run ROMEO ---
+
+# Determine mask path based on BIDS_ACQUISITION
+# BIDS_ACQUISITION for the git docker important
+if [ -n "$BIDS_ACQUISITION" ] && [ "$BIDS_ACQUISITION" != "null" ]; then
+    MASK_PATH="bids/derivatives/qsm-forward/sub-1/anat/sub-1_acq-${BIDS_ACQUISITION}_mask.nii"
+else
+    MASK_PATH="bids/derivatives/qsm-forward/sub-1/anat/sub-1_mask.nii"
+fi
+
+echo "[INFO] Using mask: $MASK_PATH"
+
+if [ ! -f "$MASK_PATH" ]; then
+    echo "[ERROR] Mask file not found: $MASK_PATH"
+    exit 1
+fi
+
 $JULIA_BIN --project=/workdir/tgv_old_env /workdir/romeo_unwrapping.jl \
   --phase "$output_dir/sub-1_phase_4D.nii" \
   --mag "$output_dir/sub-1_mag_4D.nii" \
-  --mask "bids/derivatives/qsm-forward/sub-1/anat/sub-1_mask.nii" \
+  --mask "$MASK_PATH" \
   --compute-B0 "$output_dir/sub-1_B0.nii" \
   --correct-global \
   --phase-offset-correction bipolar
 
 echo "[INFO] ROMEO step finished successfully."
-
-
 
 # --- Step 3: Convertig to radians ---
 
@@ -144,7 +158,7 @@ B0=$(jq '.MagneticFieldStrength' /workdir/inputs.json)
 cd /workdir
 /workdir/miniconda2/bin/tgv_qsm \
   -p /workdir/output/sub-1_radians.nii \
-  -m /workdir/bids/derivatives/qsm-forward/sub-1/anat/sub-1_mask.nii \
+  -m "$MASK_PATH" \
   -f $B0 \
   -t $TE \
   -o sub-1_QSM \

@@ -97,7 +97,7 @@ def run_algo(client, docker_image, apptainer_image, algo_name, bids_dir, work_di
 def run_docker_algo(client, docker_image, algo_name, bids_dir, work_dir, input_json):
     subject = input_json.get('Subject')
     session = input_json.get('Session')
-    acq = input_json.get('Acquisition')
+    acq = input_json.get('Acquisition')  
     run = input_json.get('Run')
 
     # Build unique container name that includes all relevant info
@@ -132,7 +132,7 @@ def run_docker_algo(client, docker_image, algo_name, bids_dir, work_dir, input_j
         environment={
             'BIDS_SUBJECT': subject,
             'BIDS_SESSION': session,
-            'BIDS_ACQUISITION': acq,
+            'BIDS_ACQUISITION': acq, 
             'BIDS_RUN': run,
             'PIPELINE_NAME': algo_name,
             'INPUTS_JSON': '/workdir/inputs.json'

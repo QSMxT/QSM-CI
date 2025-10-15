@@ -75,7 +75,16 @@ radian_volume = NIfTI.NIVolume(
 )
 
 # --- Copy geometry from mask ---
-mask_file = abspath("bids/derivatives/qsm-forward/sub-1/anat/sub-1_mask.nii")
+acq = get(data, "Acquisition", nothing)
+mask_filename = if !isnothing(acq) && acq != "null"
+    "sub-1_acq-$(acq)_mask.nii"
+else
+    "sub-1_mask.nii"
+end
+
+mask_file = abspath("bids/derivatives/qsm-forward/sub-1/anat/$(mask_filename)")
+println("[INFO] Looking for mask file: $mask_file")
+
 if isfile(mask_file)
     mask_img = NIfTI.niread(mask_file)
     hdr_mask = mask_img.header
