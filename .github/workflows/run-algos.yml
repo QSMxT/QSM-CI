@@ -198,21 +198,31 @@ jobs:
           echo "[INFO] Starting qsm-ci..."
           sudo -E ./venv/bin/qsm-ci run algos/${PIPELINE_NAME} bids work_dir $INPUTS_JSON
 
-          # Update eval to use acquisition-specific files
+          # Construct derivative path based on actual algorithm name
+          ALGO_DERIVATIVE_NAME="${PIPELINE_NAME}"
+          if [ -n "$BIDS_ACQUISITION" ] && [ "$BIDS_ACQUISITION" != "null" ]; then
+            ALGO_DERIVATIVE_NAME="${PIPELINE_NAME}_acq-${BIDS_ACQUISITION}"
+          fi
+          if [ -n "$BIDS_SUBJECT" ] && [ "$BIDS_SUBJECT" != "null" ]; then
+            ALGO_DERIVATIVE_NAME="${ALGO_DERIVATIVE_NAME}_sub-${BIDS_SUBJECT}"
+          fi
+
+          echo "[DEBUG] Looking for derivatives in: work_dir/bids/derivatives/${ALGO_DERIVATIVE_NAME}/sub-1/anat/"
+          ls -la work_dir/bids/derivatives/${ALGO_DERIVATIVE_NAME}/sub-1/anat/ || true
+
           sudo -E ./venv/bin/qsm-ci eval \
             --ground_truth work_dir/bids/derivatives/qsm-forward/sub-1/anat/sub-1_acq-${BIDS_ACQUISITION}_Chimap.nii \
-            --estimate work_dir/bids/derivatives/${PIPELINE_NAME}/sub-1/anat/*Chimap.nii* \
+            --estimate work_dir/bids/derivatives/${ALGO_DERIVATIVE_NAME}/sub-1/anat/*Chimap.nii* \
             --roi work_dir/bids/derivatives/qsm-forward/sub-1/anat/sub-1_acq-${BIDS_ACQUISITION}_mask.nii \
             --output_dir work_dir/output
 
           cat work_dir/output/*.md* >> $GITHUB_STEP_SUMMARY
 
           sudo -E ./venv/bin/qsm-ci upload \
-            work_dir/bids/derivatives/${PIPELINE_NAME}/sub-1/anat/*Chimap.nii* \
+            work_dir/bids/derivatives/${ALGO_DERIVATIVE_NAME}/sub-1/anat/*Chimap.nii* \
             work_dir/output/*.json* \
             $PIPELINE_NAME \
             $PARSE_APPLICATION_ID \
             $PARSE_REST_API_KEY \
             $PARSE_MASTER_KEY
 
-          
