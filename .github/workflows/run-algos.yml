@@ -99,8 +99,10 @@ jobs:
       - name: Upload JSON files as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: json-files
-          path: "*.json"
+          name: json-and-bids
+          path: |
+              *.json
+              bids/
 
   recon_and_evaluate:
     needs: generate_json_files
@@ -119,61 +121,26 @@ jobs:
       - name: Checkout git repository
         uses: actions/checkout@v3
 
-      - name: Download JSON files
+      - name: Download JSON and BIDS files
         uses: actions/download-artifact@v4
         with:
-          name: json-files
-          path: downloaded_jsons
+          name: json-and-bids
+          path: .
 
-      - name: Fetch BIDS data
-        env:
-          OSF_TOKEN: ${{ secrets.OSF_TOKEN }}
-          OS_PASSWORD: ${{ secrets.SWIFT_OS_PASSWORD }}
-          OS_PROJECT_ID: ${{ secrets.SWIFT_OS_PROJECT_ID }}
-          OS_USERNAME: ${{ secrets.SWIFT_OS_USERNAME }}
-          OS_APPLICATION_CREDENTIAL_ID: ${{ secrets.SWIFT_OS_APPLICATION_CREDENTIAL_ID }}
-          OS_APPLICATION_CREDENTIAL_SECRET: ${{ secrets.SWIFT_OS_APPLICATION_CREDENTIAL_SECRET }}
+      - name: Verify BIDS data
         run: |
-          export PATH=$PATH:/home/runnerx/.local/bin
-
-          if [ ! -d "bids" ]; then
-            osf --project 9jc42 fetch data.tar
-            tar xf data.tar
-            rm data.tar
-            qsm-forward head data/ bids
-          fi
-
-      - name: Replace default BIDS with generated BIDS
-        shell: bash
-        run: |
-          echo "[INFO] Replacing OSF BIDS with locally generated BIDS..."
-
-          if [ -d "bids" ]; then
-            sudo rm -rf bids
-          fi
-
-          if [ -d "${GITHUB_WORKSPACE}/bids" ]; then
-            sudo cp -r ${GITHUB_WORKSPACE}/bids .
-            echo "[INFO] Copied local BIDS from ${GITHUB_WORKSPACE}/bids"
-          elif [ -d "../bids" ]; then
-            sudo cp -r ../bids .
-            echo "[INFO] Copied fallback BIDS from parent directory"
-          else
-            echo "[ERROR] No local BIDS directory found!"
-            exit 1
-          fi
-
-          echo "[INFO] Final BIDS structure ready:"
-          find bids -type f | head -n 20
-  
+          echo "[DEBUG] Contents after downloading artifact:"
+          ls -la
+          echo "[DEBUG] BIDS directory structure:"
+          ls -R bids/
 
       - name: Extract fields from JSON
         id: extract
         run: |
-          BIDS_SUBJECT=$(jq -r '.Subject' downloaded_jsons/${{ matrix.json_file }})
-          BIDS_SESSION=$(jq -r '.Session' downloaded_jsons/${{ matrix.json_file }})
-          BIDS_ACQUISITION=$(jq -r '.Acquisition' downloaded_jsons/${{ matrix.json_file }})
-          BIDS_RUN=$(jq -r '.Run' downloaded_jsons/${{ matrix.json_file }})
+          BIDS_SUBJECT=$(jq -r '.Subject' ${{ matrix.json_file }})
+          BIDS_SESSION=$(jq -r '.Session' ${{ matrix.json_file }})
+          BIDS_ACQUISITION=$(jq -r '.Acquisition' ${{ matrix.json_file }})
+          BIDS_RUN=$(jq -r '.Run' ${{ matrix.json_file }})
 
           echo "BIDS_SUBJECT=$BIDS_SUBJECT" >> $GITHUB_ENV
           echo "BIDS_SESSION=$BIDS_SESSION" >> $GITHUB_ENV
