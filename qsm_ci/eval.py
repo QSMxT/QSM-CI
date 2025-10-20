@@ -98,10 +98,20 @@ def calculate_hfen(pred_data, ref_data):
     .. [1] https://doi.org/10.1002/mrm.26830
 
     """
-    LoG_pred = gaussian_laplace(pred_data, sigma = 1.5)
-    LoG_ref = gaussian_laplace(ref_data, sigma = 1.5)
-    hfen = np.linalg.norm(LoG_ref - LoG_pred)/np.linalg.norm(LoG_ref)
-    return hfen
+    # Check if arrays are large enough for Laplacian calculation
+    min_dim = min(pred_data.shape)
+    if min_dim < 3:
+        print(f"[WARNING] ROI too small ({pred_data.shape}) for HFEN calculation. Returning NaN.")
+        return float('nan')
+    
+    try:
+        LoG_pred = gaussian_laplace(pred_data, sigma = 1.5)
+        LoG_ref = gaussian_laplace(ref_data, sigma = 1.5)
+        hfen = np.linalg.norm(LoG_ref - LoG_pred)/np.linalg.norm(LoG_ref)
+        return hfen
+    except Exception as e:
+        print(f"[WARNING] HFEN calculation failed: {e}. Returning NaN.")
+        return float('nan')
 
 def calculate_xsim(pred_data, ref_data, data_range=None):
     """
@@ -177,8 +187,18 @@ def calculate_gxe(pred_data, ref_data):
         The calculated GXE value.
 
     """
-    gxe = np.sqrt(np.mean((np.array(np.gradient(pred_data)) - np.array(np.gradient(ref_data))) ** 2))
-    return gxe
+    # Check if arrays are large enough for gradient calculation (need at least 2 elements per dimension)
+    min_dim = min(pred_data.shape)
+    if min_dim < 2:
+        print(f"[WARNING] ROI too small ({pred_data.shape}) for GXE calculation. Returning NaN.")
+        return float('nan')
+    
+    try:
+        gxe = np.sqrt(np.mean((np.array(np.gradient(pred_data)) - np.array(np.gradient(ref_data))) ** 2))
+        return gxe
+    except ValueError as e:
+        print(f"[WARNING] GXE calculation failed: {e}. Returning NaN.")
+        return float('nan')
 
 
 def get_bounding_box(roi):
