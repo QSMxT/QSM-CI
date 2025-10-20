@@ -267,9 +267,10 @@ def save_as_csv(metrics_dict, filepath):
     """
     with open(filepath, 'w', newline='') as file:
         writer = csv.writer(file)
-        writer.writerow(["Metric", "Value"])
-        for key, value in metrics_dict.items():
-            writer.writerow([key, value])
+        writer.writerow(["Region", "Metric", "Value"])
+        for region, metrics in metrics_dict.items():
+            for key, value in metrics.items():
+                writer.writerow([region, key, value])
 
 def save_as_markdown(metrics_dict, filepath):
     """
@@ -311,7 +312,7 @@ def main():
     parser = argparse.ArgumentParser(description='Compute metrics for 3D images.')
     parser.add_argument('--ground_truth', type=str, help='Path to the ground truth NIFTI image.')
     parser.add_argument('--estimate', type=str, help='Path to the reconstructed NIFTI image.')
-    parser.add_argument('--roi', type=str, help='Path to the ROI NIFTI image (optional).')
+    parser.add_argument('--roi', type=str, help='Path to the ROI NIFTI image (optional).', default=None)
     parser.add_argument('--output_dir', type=str, default='./', help='Directory to save metrics.')
     parser.add_argument('--acq', type=str, help='Acquisition name (e.g., 1p0mm, 2p0mm)', default=None)
     args = parser.parse_args()
@@ -321,29 +322,82 @@ def main():
     gt_img = nib.load(args.ground_truth).get_fdata()
     recon_img = nib.load(args.estimate).get_fdata()
 
-    if args.roi:
-        roi_img = np.array(nib.load(args.roi).get_fdata(), dtype=bool)
+    # Handle ROI: if not provided or file doesn't exist, use full volume
+    if args.roi and os.path.exists(args.roi):
+        print(f"[INFO] Using ROI file: {args.roi}")
+        roi_img = np.array(nib.load(args.roi).get_fdata(), dtype=int)
+        use_rois = True
     else:
-        roi_img = None
+        if args.roi:
+            print(f"[WARNING] ROI file not found: {args.roi}")
+        print("[INFO] No ROI provided - computing metrics on full brain mask")
+        roi_img = np.ones_like(gt_img, dtype=int)
+        use_rois = False
 
-    # Compute metrics
-    print("[INFO] Computing metrics...")
-    metrics = all_metrics(recon_img, gt_img, roi_img)
+    print("[INFO] Computing metrics per ROI...")
+
+    label_dict = {
+        1: "Caudate",
+        2: "Globus pallidus",
+        3: "Putamen",
+        4: "Red nucleus",
+        5: "Dentate nucleus",
+        6: "Substantia nigra & STN",
+        7: "Thalamus",
+        8: "White matter",
+        9: "Gray matter",
+        10: "CSF",
+        11: "Blood",
+        12: "Fat",
+        13: "Bone",
+        14: "Air",
+        15: "Muscle",
+        16: "Calcification"
+    }
+
+    results = {}
     
-    # Add acquisition name if provided
-    if args.acq:
-        metrics["acq"] = args.acq
-        print(f"[INFO] Added acquisition name to metrics: {args.acq}")
+    if use_rois:
+        # Process each ROI label separately
+        labels = np.unique(roi_img)
+        labels = labels[labels != 0]
         
-    # Save metrics
-    print(f"[INFO] Saving results to {args.output_dir}...")
-    csv_path = os.path.join(args.output_dir, 'metrics.csv')
-    md_path = os.path.join(args.output_dir, 'metrics.md')
-    json_path = os.path.join(args.output_dir, 'metrics.json')
+        for lbl in labels:
+            roi_mask = roi_img == lbl
+            name = label_dict.get(lbl, f"ROI_{lbl}")
+            print(f"[INFO] → Processing region: {name} (Label {lbl})")
 
-    save_as_csv(metrics, csv_path)
-    save_as_markdown(metrics, md_path)
-    save_as_json(metrics, json_path)
+            metrics = all_metrics(recon_img, gt_img, roi_mask)
+            metrics["MeanChi_est"] = float(np.mean(recon_img[roi_mask]))
+            metrics["MeanChi_gt"] = float(np.mean(gt_img[roi_mask]))
+
+            if args.acq:
+                metrics["acq"] = args.acq
+            results[name] = metrics
+    else:
+        # Single whole-brain evaluation
+        name = "Whole_Brain"
+        print(f"[INFO] → Processing region: {name}")
+        
+        brain_mask = roi_img > 0
+        metrics = all_metrics(recon_img, gt_img, brain_mask)
+        metrics["MeanChi_est"] = float(np.mean(recon_img[brain_mask]))
+        metrics["MeanChi_gt"] = float(np.mean(gt_img[brain_mask]))
+
+        if args.acq:
+            metrics["acq"] = args.acq
+        results[name] = metrics
+
+    # Save
+    acq_suffix = f"_{args.acq}" if args.acq else ""
+    print(f"[INFO] Saving metrics to {args.output_dir}...")
+    csv_path = os.path.join(args.output_dir, f"roi_metrics{acq_suffix}.csv")
+    md_path = os.path.join(args.output_dir, f"roi_metrics{acq_suffix}.md")
+    json_path = os.path.join(args.output_dir, f"roi_metrics{acq_suffix}.json")
+
+    save_as_csv(results, csv_path)
+    save_as_markdown(results, md_path)
+    save_as_json(results, json_path)
 
     print(f"[INFO] Metrics saved to {csv_path}, {md_path}, and {json_path}")
     

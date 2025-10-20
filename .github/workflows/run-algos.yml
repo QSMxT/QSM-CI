@@ -201,7 +201,7 @@ jobs:
           # Construct derivative path based on actual algorithm name
           ALGO_DERIVATIVE_NAME="${PIPELINE_NAME}"
           if [ -n "$BIDS_ACQUISITION" ] && [ "$BIDS_ACQUISITION" != "null" ]; then
-            ALGO_DERIVATIVE_NAME="${PIPELINE_NAME}_acq-${BIDS_ACQUISITION}"
+            ALGO_DERIVATIVE_NAME="${ALGO_DERIVATIVE_NAME}_acq-${BIDS_ACQUISITION}"
           fi
           if [ -n "$BIDS_SUBJECT" ] && [ "$BIDS_SUBJECT" != "null" ]; then
             ALGO_DERIVATIVE_NAME="${ALGO_DERIVATIVE_NAME}_sub-${BIDS_SUBJECT}"
@@ -210,11 +210,25 @@ jobs:
           echo "[DEBUG] Looking for derivatives in: work_dir/bids/derivatives/${ALGO_DERIVATIVE_NAME}/sub-1/anat/"
           ls -la work_dir/bids/derivatives/${ALGO_DERIVATIVE_NAME}/sub-1/anat/ || true
 
-          sudo -E ./venv/bin/qsm-ci eval \
-            --ground_truth work_dir/bids/derivatives/qsm-forward/sub-1/anat/sub-1_acq-${BIDS_ACQUISITION}_Chimap.nii \
-            --estimate work_dir/bids/derivatives/${ALGO_DERIVATIVE_NAME}/sub-1/anat/*Chimap.nii* \
-            --roi work_dir/bids/derivatives/qsm-forward/sub-1/anat/sub-1_acq-${BIDS_ACQUISITION}_mask.nii \
-            --output_dir work_dir/output
+          # Use acquisition-specific files for evaluation
+          DSEG_FILE="work_dir/bids/derivatives/qsm-forward/sub-1/anat/sub-1_acq-${BIDS_ACQUISITION}_dseg.nii"
+          
+          if [ -f "$DSEG_FILE" ]; then
+            echo "[INFO] Using ROI segmentation for per-region metrics: $DSEG_FILE"
+            sudo -E ./venv/bin/qsm-ci eval \
+              --ground_truth work_dir/bids/derivatives/qsm-forward/sub-1/anat/sub-1_acq-${BIDS_ACQUISITION}_Chimap.nii \
+              --estimate work_dir/bids/derivatives/${ALGO_DERIVATIVE_NAME}/sub-1/anat/*Chimap.nii* \
+              --roi "$DSEG_FILE" \
+              --acq ${BIDS_ACQUISITION} \
+              --output_dir work_dir/output
+          else
+            echo "[WARNING] No dseg found - computing whole-brain metrics only"
+            sudo -E ./venv/bin/qsm-ci eval \
+              --ground_truth work_dir/bids/derivatives/qsm-forward/sub-1/anat/sub-1_acq-${BIDS_ACQUISITION}_Chimap.nii \
+              --estimate work_dir/bids/derivatives/${ALGO_DERIVATIVE_NAME}/sub-1/anat/*Chimap.nii* \
+              --acq ${BIDS_ACQUISITION} \
+              --output_dir work_dir/output
+          fi
 
           cat work_dir/output/*.md* >> $GITHUB_STEP_SUMMARY
 
@@ -226,3 +240,10 @@ jobs:
             $PARSE_REST_API_KEY \
             $PARSE_MASTER_KEY
 
+      - name: Upload metrics as artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: metrics-and-roi
+          path: |
+            work_dir/output/metrics.*
+            work_dir/output/roi_metrics.*
