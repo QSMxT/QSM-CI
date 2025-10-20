@@ -121,7 +121,11 @@ def upload_file_to_swift(nifti_file, json_file, algo_name, parse_application_id,
             print(f"[DEBUG] {algo_name} does not exist in Nectar Swift Object Storage or could not be downloaded.")
 
         finally:
-            os.remove(temp_file_name)
+            if os.path.exists(temp_file_name):
+                os.remove(temp_file_name)
+            else:
+                print(f"[DEBUG] Temp file {temp_file_name} already removed — skipping cleanup.")
+
 
     print(f"[DEBUG] {nifti_file} is being uploaded to Nectar Swift Object Storage for algorithm {algo_name} (acq: {acq_name}).")
 
