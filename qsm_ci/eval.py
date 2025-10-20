@@ -320,14 +320,27 @@ def save_as_markdown(metrics_dict, filepath):
         The path to the file to save the results.
     """
     with open(filepath, 'w') as file:
-        file.write("| Metric | Value |\n")
-        file.write("|--------|-------|\n")
-        for key, value in metrics_dict.items():
-            if isinstance(value, tuple) and len(value) == 2:  # Assuming it's the PearsonRResult
-                file.write(f"| {key} correlation | {value[0]:.6f} |\n")
-                file.write(f"| {key} p-value | {value[1]:.6f} |\n")
-            else:
-                file.write(f"| {key} | {value:.6f} |\n")
+        file.write("| Region | Metric | Value |\n")
+        file.write("|--------|--------|-------|\n")
+        
+        for region, metrics in metrics_dict.items():
+            for key, value in metrics.items():
+                # Skip non-numeric values like 'acq'
+                if isinstance(value, str):
+                    file.write(f"| {region} | {key} | {value} |\n")
+                elif isinstance(value, tuple) and len(value) == 2:
+                    # Handle Pearson correlation result
+                    file.write(f"| {region} | {key}_corr | {value[0]:.6f} |\n")
+                    file.write(f"| {region} | {key}_pval | {value[1]:.6f} |\n")
+                elif isinstance(value, (int, float)):
+                    # Handle NaN gracefully
+                    if np.isnan(value):
+                        file.write(f"| {region} | {key} | NaN |\n")
+                    else:
+                        file.write(f"| {region} | {key} | {value:.6f} |\n")
+                else:
+                    # Unknown type, convert to string
+                    file.write(f"| {region} | {key} | {str(value)} |\n")
 
 def save_as_json(metrics_dict, filepath):
     """
