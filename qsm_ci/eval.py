@@ -126,8 +126,19 @@ def calculate_xsim(pred_data, ref_data, data_range=None):
     .. [1] Milovic, C., et al. (2024). XSIM: A structural similarity index measure optimized for MRI QSM. Magnetic Resonance in Medicine. doi:10.1002/mrm.30271
     """
     if not data_range: data_range = ref_data.max() - ref_data.min()
-    xsim = structural_similarity(pred_data, ref_data, win_size=3, K1=0.01, K2=0.001, data_range=data_range)
-    return xsim
+    
+    # Check if the ROI is large enough for win_size=3 (requires at least 7x7x7)
+    min_dim = min(pred_data.shape)
+    if min_dim < 7:
+        print(f"[WARNING] ROI too small ({pred_data.shape}) for XSIM with win_size=3. Returning NaN.")
+        return float('nan')
+    
+    try:
+        xsim = structural_similarity(pred_data, ref_data, win_size=3, K1=0.01, K2=0.001, data_range=data_range)
+        return xsim
+    except ValueError as e:
+        print(f"[WARNING] XSIM calculation failed: {e}. Returning NaN.")
+        return float('nan')
 
 def calculate_mad(pred_data, ref_data):
     """
@@ -243,11 +254,16 @@ def all_metrics(pred_data, ref_data, roi=None):
     if np.std(ref_data) == 0:
         print("[WARNING] The reference data has no variance.")
 
+    # Check if ROI is too small
+    roi_voxels = np.sum(roi)
+    if roi_voxels < 50:
+        print(f"[WARNING] ROI has only {roi_voxels} voxels - some metrics may be unreliable")
+
     d['RMSE'] = calculate_rmse(pred_data[roi], ref_data[roi])
     d['NRMSE'] = calculate_nrmse(pred_data[roi], ref_data[roi])
     d['HFEN'] = calculate_hfen(pred_data, ref_data)  # does not flatten
     d['MAD'] = calculate_mad(pred_data[roi], ref_data[roi])
-    d['XSIM'] = calculate_xsim(pred_data, ref_data)  # does not flatten
+    d['XSIM'] = calculate_xsim(pred_data, ref_data)  # does not flatten, now handles small ROIs
     d['CC'] = pearson_corr_coeff(pred_data[roi], ref_data[roi])
     d['NMI'] = normalized_mutual_information(pred_data[roi], ref_data[roi])
     d['GXE'] = calculate_gxe(pred_data, ref_data)  # does not flatten
@@ -321,6 +337,11 @@ def main():
     print("[INFO] Loading images to compute metrics...")
     gt_img = nib.load(args.ground_truth).get_fdata()
     recon_img = nib.load(args.estimate).get_fdata()
+    
+    print(f"[DEBUG] Ground truth shape: {gt_img.shape}, dtype: {gt_img.dtype}")
+    print(f"[DEBUG] Estimate shape: {recon_img.shape}, dtype: {recon_img.dtype}")
+    print(f"[DEBUG] Ground truth range: [{gt_img.min():.6f}, {gt_img.max():.6f}]")
+    print(f"[DEBUG] Estimate range: [{recon_img.min():.6f}, {recon_img.max():.6f}]")
 
     # Handle ROI: if not provided or file doesn't exist, use full volume
     if args.roi and os.path.exists(args.roi):
