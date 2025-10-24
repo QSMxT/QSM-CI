@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import os
 import re
 import json
@@ -31,33 +29,109 @@ def parse_bids_directory(bids_dir):
     # Dictionary to temporarily store derivatives if the group doesn't exist yet
     temp_derivatives = {}
 
-    # Walk through the BIDS directory
+    # Process files and directories
     for root, dirs, files in os.walk(bids_dir):
+        # Determine if we are in the derivatives directory
+        rel_root = os.path.join('bids', os.path.sep.join(root.split(os.path.sep)[1:]))
+        is_derivative = 'derivatives' in root
+
+        # Extract the session from the folder path
+        session_match = re.search(r'ses-(\w+)', root)
+        session = session_match.group(1) if session_match else None
+
+        # Sort files to ensure they are processed in the correct order
+        files.sort()
+
         for file in files:
             if file.endswith('.nii') or file.endswith('.json') or file.endswith('.nii.gz'):
-                # Extract subject, session, acquisition, and run from the file path
-                rel_path = os.path.relpath(root, bids_dir)
-                path_parts = rel_path.split(os.sep)
+                # Extract the subject from the directory structure
+                subject_match = re.search(r'sub-(\w+)', root)
+                if not subject_match:
+                    continue
+                subject = subject_match.group(1)
 
-                if len(path_parts) < 2:
-                    continue  # Skip files that don't have subject/session in the path
+                # Extract session from filename if not already extracted from the folder
+                if not session:
+                    session_file_match = re.search(r'_ses-(\w+)', file)
+                    session = session_file_match.group(1) if session_file_match else None
 
-                subject = path_parts[0]
-                session = path_parts[1] if len(path_parts) > 1 else None
-                acquisition = re.search(r'_acq-(\w+)', file)
-                run = re.search(r'_run-(\d+)', file)
+                # Extract acquisition and run
+                acquisition_match = re.search(r'_acq-(\w+)_', file)
+                acquisition = acquisition_match.group(1) if acquisition_match else None
 
-                acquisition = acquisition.group(1) if acquisition else None
-                run = run.group(1) if run else None
+                run_match = re.search(r'_run-(\d+)_', file)
+                run = run_match.group(1) if run_match else None
 
-                # Initialize group variable
-                group = None
+                # Extract parts of the filename
+                echo_match = re.search(r'_echo-(\d+)_', file)
+                part_match = re.search(r'_part-(mag|phase)_', file)
+                suffix_match = re.search(r'_MEGRE\.(nii|json)', file)
 
-                # Check if the group already exists
-                for g in groups:
-                    if g["Subject"] == subject and g["Session"] == session and g["Acquisition"] == acquisition:
-                        group = g
-                        break
+                # Skip files that don't match the raw BIDS MEGRE series (no derivatives)
+                if not echo_match or not part_match or not suffix_match or is_derivative:
+                    # Handle derivatives that are not part of the MEGRE series
+                    if is_derivative:
+                        software_name_match = re.search(r'derivatives/([^/]+)/', root)
+                        if software_name_match:
+                            software_name = software_name_match.group(1)
+                            derivative_type_match = re.search(r'_([^_]+)(?=\.(nii|nii\.gz))', file)
+                            if derivative_type_match:
+                                derivative_type = derivative_type_match.group(1)
+                                if derivative_type == "mask":
+                                    # Handle mask in the root node, create a list if needed
+                                    group = next((g for g in groups if g['Subject'] == subject and
+                                                                     g['Session'] == session and
+                                                                     g['Acquisition'] == acquisition and
+                                                                     g['Run'] == run), None)
+                                    if not group:
+                                        group = {
+                                            "Subject": subject,
+                                            "Session": session,
+                                            "Acquisition": acquisition,
+                                            "Run": run,
+                                            "phase_nii": [],
+                                            "phase_json": [],
+                                            "mag_nii": [],
+                                            "mag_json": [],
+                                            "EchoTime": [],
+                                            "MagneticFieldStrength": None,
+                                            "Derivatives": {}
+                                        }
+                                        groups.append(group)
+                                    if "mask" not in group:
+                                        group["mask"] = os.path.join(rel_root, file)
+                                    else:
+                                        if not isinstance(group["mask"], list):
+                                            group["mask"] = [group["mask"]]
+                                        group["mask"].append(os.path.join(rel_root, file))
+                                else:
+                                    if subject not in temp_derivatives:
+                                        temp_derivatives[subject] = []
+                                    temp_derivatives[subject].append({
+                                        "software_name": software_name,
+                                        "type": derivative_type,
+                                        "session": session,
+                                        "acquisition": acquisition,
+                                        "run": run,
+                                        "path": os.path.join(rel_root, file)
+                                    })
+                        continue
+
+                # MEGRE-related file processing
+                if echo_match:
+                    echo_number = int(echo_match.group(1))
+                else:
+                    echo_number = 1
+                
+                if part_match:
+                    part = part_match.group(1)
+                else:
+                    part = 'mag'    
+
+                group = next((g for g in groups if g['Subject'] == subject and
+                                                    g['Session'] == session and
+                                                    g['Acquisition'] == acquisition and
+                                                    g['Run'] == run), None)
 
                 if not group:
                     # Create a new group if it doesn't exist
@@ -78,9 +152,58 @@ def parse_bids_directory(bids_dir):
                     groups.append(group)
                     print(f"[INFO] Group for acq={acquisition} created with B0_dir={group['B0_dir']}")
 
-                # ...existing code for file processing...
+                # Add files to the group based on their type
+                if part == "mag":
+                    if file.endswith('.nii') or file.endswith('.nii.gz'):
+                        if os.path.join(rel_root, file) not in group['mag_nii']:
+                            group['mag_nii'].append(os.path.join(rel_root, file))
+                    elif file.endswith('.json'):
+                        if os.path.join(rel_root, file) not in group['mag_json']:
+                            group['mag_json'].append(os.path.join(rel_root, file))
+                            # Extract EchoTime and MagneticFieldStrength from JSON
+                            with open(os.path.join(root, file), 'r') as f:
+                                metadata = json.load(f)
+                                if metadata.get('EchoTime') and metadata.get('EchoTime') not in group['EchoTime']:
+                                    group['EchoTime'].append(metadata.get('EchoTime'))
+                                if group['MagneticFieldStrength'] is None:
+                                    group['MagneticFieldStrength'] = metadata.get('MagneticFieldStrength')
+                elif part == "phase":
+                    if file.endswith('.nii') or file.endswith('.nii.gz'):
+                        if os.path.join(rel_root, file) not in group['phase_nii']:
+                            group['phase_nii'].append(os.path.join(rel_root, file))
+                    elif file.endswith('.json'):
+                        if os.path.join(rel_root, file) not in group['phase_json']:
+                            group['phase_json'].append(os.path.join(rel_root, file))
+                            # Extract EchoTime and MagneticFieldStrength from JSON
+                            with open(os.path.join(root, file), 'r') as f:
+                                metadata = json.load(f)
+                                if metadata.get('EchoTime') and metadata.get('EchoTime') not in group['EchoTime']:
+                                    group['EchoTime'].append(metadata.get('EchoTime'))
+                                if group['MagneticFieldStrength'] is None:
+                                    group['MagneticFieldStrength'] = metadata.get('MagneticFieldStrength')
 
-    # ...existing code for derivatives matching...
+                # Ensure that sorting only happens when the lengths of all lists are equal
+                group['EchoTime'] = sorted(group['EchoTime'])
+                group['mag_nii'] = sorted(group['mag_nii'])
+                group['mag_json'] = sorted(group['mag_json'])
+                group['phase_nii'] = sorted(group['phase_nii'])
+                group['phase_json'] = sorted(group['phase_json'])
+
+    # Match derivatives with the corresponding groups by subject, session, acquisition, and run
+    for subject, derivatives in temp_derivatives.items():
+        for derivative in derivatives:
+            for group in groups:
+                if (group['Subject'] == subject and 
+                    group['Session'] == derivative['session'] and 
+                    group['Acquisition'] == derivative['acquisition'] and 
+                    group['Run'] == derivative['run']):
+                    # Add derivatives to the matching group
+                    if derivative['software_name'] not in group['Derivatives']:
+                        group['Derivatives'][derivative['software_name']] = {}
+                    if derivative['type'] not in group['Derivatives'][derivative['software_name']]:
+                        group['Derivatives'][derivative['software_name']][derivative['type']] = []
+                    if derivative['path'] not in group['Derivatives'][derivative['software_name']][derivative['type']]:
+                        group['Derivatives'][derivative['software_name']][derivative['type']].append(derivative['path'])
 
     # Return the groups
     parsed_data = {"Groups": groups}
