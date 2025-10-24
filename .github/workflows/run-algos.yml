@@ -51,9 +51,14 @@ jobs:
             acq=$(echo $cfg | jq -r '."--acq" // empty')
             vox=$(echo $cfg | jq -r '."--voxel-size" | @sh' | tr -d "'")
             savefield=$(echo $cfg | jq -r '."--save-field" // false')
+            b0_dir=$(echo $cfg | jq -r '."--B0-dir" | join(",")')
 
-            echo "[INFO] Running qsm-forward with acq=$acq voxel=$vox save-field=$savefield"
-            qsm-forward head data/ bids ${acq:+--acq $acq} --voxel-size $vox ${savefield:+--save-field True}
+            echo "[INFO] Running qsm-forward with acq=$acq voxel=$vox save-field=$savefield B0-dir=$b0_dir"
+            qsm-forward head data/ bids \
+              ${acq:+--acq $acq} \
+              --voxel-size $vox \
+              ${savefield:+--save-field True} \
+              --B0-dir $b0_dir
 
             # --- Rename NIfTI files (only those without existing _acq-) ---
             find bids/sub-1/anat -maxdepth 1 -type f -name "*.nii" ! -name "*_acq-*" \
