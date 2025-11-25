@@ -16,6 +16,7 @@ mkdir -p "$output_dir/tmp" "$output_dir"
 echo "[INFO] Downloading Julia..."
 apt-get update
 apt-get install wget build-essential libfftw3-dev -y
+apt-get install -y jq
 wget -q https://julialang-s3.julialang.org/bin/linux/x64/1.9/julia-1.9.4-linux-x86_64.tar.gz
 tar xf julia-1.9.4-linux-x86_64.tar.gz
 
@@ -32,13 +33,9 @@ echo "[INFO] Combine step finished successfully."
 
 # --- Step 2: Run ROMEO ---
 
-# Determine mask path based on BIDS_ACQUISITION
-# BIDS_ACQUISITION for the git docker important
-if [ -n "$BIDS_ACQUISITION" ] && [ "$BIDS_ACQUISITION" != "null" ]; then
-    MASK_PATH="bids/derivatives/qsm-forward/sub-1/anat/sub-1_acq-${BIDS_ACQUISITION}_mask.nii"
-else
-    MASK_PATH="bids/derivatives/qsm-forward/sub-1/anat/sub-1_mask.nii"
-fi
+# Read mask path from input.json
+INPUT_JSON="$input_dir/inputs.json"
+MASK_PATH=$(jq -r '.mask' "$INPUT_JSON")
 
 echo "[INFO] Using mask: $MASK_PATH"
 

@@ -75,31 +75,30 @@ radian_volume = NIfTI.NIVolume(
 )
 
 # --- Copy geometry from mask ---
-acq = get(data, "Acquisition", nothing)
-mask_filename = if !isnothing(acq) && acq != "null"
-    "sub-1_acq-$(acq)_mask.nii"
+mask_file = get(data, "mask", nothing)
+
+if !isnothing(mask_file) && mask_file != ""
+    mask_path = abspath(mask_file)
+    println("[INFO] Using mask from input.json: $mask_path")
+    
+    if isfile(mask_path)
+        mask_img = NIfTI.niread(mask_path)
+        hdr_mask = mask_img.header
+
+        radian_volume.header.srow_x     = hdr_mask.srow_x
+        radian_volume.header.srow_y     = hdr_mask.srow_y
+        radian_volume.header.srow_z     = hdr_mask.srow_z
+        radian_volume.header.sform_code = hdr_mask.sform_code
+        radian_volume.header.qform_code = hdr_mask.qform_code
+        radian_volume.header.pixdim     = hdr_mask.pixdim
+        radian_volume.header.xyzt_units = hdr_mask.xyzt_units
+
+        println("[INFO] Copied qform/sform geometry from mask: $mask_path")
+    else
+        println("[WARN] Mask file not found: $mask_path")
+    end
 else
-    "sub-1_mask.nii"
-end
-
-mask_file = abspath("bids/derivatives/qsm-forward/sub-1/anat/$(mask_filename)")
-println("[INFO] Looking for mask file: $mask_file")
-
-if isfile(mask_file)
-    mask_img = NIfTI.niread(mask_file)
-    hdr_mask = mask_img.header
-
-    radian_volume.header.srow_x     = hdr_mask.srow_x
-    radian_volume.header.srow_y     = hdr_mask.srow_y
-    radian_volume.header.srow_z     = hdr_mask.srow_z
-    radian_volume.header.sform_code = hdr_mask.sform_code
-    radian_volume.header.qform_code = hdr_mask.qform_code
-    radian_volume.header.pixdim     = hdr_mask.pixdim
-    radian_volume.header.xyzt_units = hdr_mask.xyzt_units
-
-    println("[INFO] Copied qform/sform geometry from mask: $mask_file")
-else
-    println("[WARN] Mask file not found: $mask_file (skipping geometry copy)")
+    println("[WARN] No mask specified in input.json (skipping geometry copy)")
 end
 
 # --- Save ---
