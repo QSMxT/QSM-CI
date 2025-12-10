@@ -184,18 +184,17 @@ def run_apptainer_algo(apptainer_image, algo_name, bids_dir, work_dir, input_jso
     command = [
         'apptainer', 'run',
         '--bind', f"{work_dir}:/workdir",
-        '--pwd', '/workdir',
-        '--cleanenv'  # Für HPC: saubere Umgebung
+        '--pwd', '/workdir'
     ]
     
-    # Nur fakeroot wenn verfügbar (nicht auf allen HPC-Systemen)
-    try:
-        subprocess.run(['apptainer', 'exec', '--fakeroot', 'docker://ubuntu:latest', 'true'], 
-                      capture_output=True, check=True)
+    # Auf HPC: --cleanenv statt --fakeroot
+    if '/scratch' in work_dir or os.environ.get('SLURM_JOBID'):
+        print("[INFO] HPC environment detected - using --cleanenv")
+        command.append('--cleanenv')
+    else:
+        print("[INFO] Local environment - using --fakeroot")
         command.append('--fakeroot')
-    except:
-        print("[WARN] --fakeroot not available, running without")
-    
+
     if overlay_path:
         command.extend(['--overlay', overlay_path])
 
