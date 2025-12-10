@@ -55,8 +55,8 @@ def parse_bids_directory(bids_dir):
                     session_file_match = re.search(r'_ses-(\w+)', file)
                     session = session_file_match.group(1) if session_file_match else None
 
-                # Extract acquisition and run
-                acquisition_match = re.search(r'_acq-(\w+)_', file)
+                # Extract acquisition and run - treat run- as acquisition
+                acquisition_match = re.search(r'_(?:acq|run)-(\w+)_', file)
                 acquisition = acquisition_match.group(1) if acquisition_match else None
 
                 run_match = re.search(r'_run-(\d+)_', file)
@@ -77,44 +77,17 @@ def parse_bids_directory(bids_dir):
                             derivative_type_match = re.search(r'_([^_]+)(?=\.(nii|nii\.gz))', file)
                             if derivative_type_match:
                                 derivative_type = derivative_type_match.group(1)
-                                if derivative_type == "mask":
-                                    # Handle mask in the root node, create a list if needed
-                                    group = next((g for g in groups if g['Subject'] == subject and
-                                                                     g['Session'] == session and
-                                                                     g['Acquisition'] == acquisition and
-                                                                     g['Run'] == run), None)
-                                    if not group:
-                                        group = {
-                                            "Subject": subject,
-                                            "Session": session,
-                                            "Acquisition": acquisition,
-                                            "Run": run,
-                                            "phase_nii": [],
-                                            "phase_json": [],
-                                            "mag_nii": [],
-                                            "mag_json": [],
-                                            "EchoTime": [],
-                                            "MagneticFieldStrength": None,
-                                            "Derivatives": {}
-                                        }
-                                        groups.append(group)
-                                    if "mask" not in group:
-                                        group["mask"] = os.path.join(rel_root, file)
-                                    else:
-                                        if not isinstance(group["mask"], list):
-                                            group["mask"] = [group["mask"]]
-                                        group["mask"].append(os.path.join(rel_root, file))
-                                else:
-                                    if subject not in temp_derivatives:
-                                        temp_derivatives[subject] = []
-                                    temp_derivatives[subject].append({
-                                        "software_name": software_name,
-                                        "type": derivative_type,
-                                        "session": session,
-                                        "acquisition": acquisition,
-                                        "run": run,
-                                        "path": os.path.join(rel_root, file)
-                                    })
+                                # Store all derivatives the same way, including mask
+                                if subject not in temp_derivatives:
+                                    temp_derivatives[subject] = []
+                                temp_derivatives[subject].append({
+                                    "software_name": software_name,
+                                    "type": derivative_type,
+                                    "session": session,
+                                    "acquisition": acquisition,
+                                    "run": run,
+                                    "path": os.path.join(rel_root, file)
+                                })
                         continue
 
                 # MEGRE-related file processing
@@ -147,7 +120,7 @@ def parse_bids_directory(bids_dir):
                         "EchoTime": [],
                         "MagneticFieldStrength": None,
                         "Derivatives": {},
-                        "B0_dir": b0_dir_map.get(acquisition, [0, 0, 1])  # Add B0_dir here
+                        "B0_dir": b0_dir_map.get(acquisition, [0, 0, 1])  # Only for synthetic data
                     }
                     groups.append(group)
                     print(f"[INFO] Group for acq={acquisition} created with B0_dir={group['B0_dir']}")
@@ -167,6 +140,11 @@ def parse_bids_directory(bids_dir):
                                     group['EchoTime'].append(metadata.get('EchoTime'))
                                 if group['MagneticFieldStrength'] is None:
                                     group['MagneticFieldStrength'] = metadata.get('MagneticFieldStrength')
+                                # For COSMOS/Synthetic: read B0 from JSON (prefer B0_direction, else B0_dir)
+                                if 'B0_direction' in metadata:
+                                    group['B0_dir'] = metadata['B0_direction']
+                                elif 'B0_dir' in metadata:
+                                    group['B0_dir'] = metadata['B0_dir']
                 elif part == "phase":
                     if file.endswith('.nii') or file.endswith('.nii.gz'):
                         if os.path.join(rel_root, file) not in group['phase_nii']:
@@ -181,6 +159,11 @@ def parse_bids_directory(bids_dir):
                                     group['EchoTime'].append(metadata.get('EchoTime'))
                                 if group['MagneticFieldStrength'] is None:
                                     group['MagneticFieldStrength'] = metadata.get('MagneticFieldStrength')
+                                # For COSMOS/Synthetic: read B0 from JSON (prefer B0_direction, else B0_dir)
+                                if 'B0_direction' in metadata:
+                                    group['B0_dir'] = metadata['B0_direction']
+                                elif 'B0_dir' in metadata:
+                                    group['B0_dir'] = metadata['B0_dir']
 
                 # Ensure that sorting only happens when the lengths of all lists are equal
                 group['EchoTime'] = sorted(group['EchoTime'])
@@ -192,18 +175,60 @@ def parse_bids_directory(bids_dir):
     # Match derivatives with the corresponding groups by subject, session, acquisition, and run
     for subject, derivatives in temp_derivatives.items():
         for derivative in derivatives:
-            for group in groups:
-                if (group['Subject'] == subject and 
-                    group['Session'] == derivative['session'] and 
-                    group['Acquisition'] == derivative['acquisition'] and 
-                    group['Run'] == derivative['run']):
-                    # Add derivatives to the matching group
-                    if derivative['software_name'] not in group['Derivatives']:
-                        group['Derivatives'][derivative['software_name']] = {}
-                    if derivative['type'] not in group['Derivatives'][derivative['software_name']]:
-                        group['Derivatives'][derivative['software_name']][derivative['type']] = []
-                    if derivative['path'] not in group['Derivatives'][derivative['software_name']][derivative['type']]:
-                        group['Derivatives'][derivative['software_name']][derivative['type']].append(derivative['path'])
+            # Find all groups for this subject with MEGRE data
+            subject_groups = [g for g in groups if g['Subject'] == subject and len(g.get('mag_nii', [])) > 0]
+            
+            if subject_groups:
+                # Sort by acquisition number to get the first run (handle None values)
+                subject_groups.sort(key=lambda x: int(x.get('Acquisition', '0')) if x.get('Acquisition') and x.get('Acquisition').isdigit() else 999)
+                
+                # Check if this is COSMOS data
+                first_group = subject_groups[0]
+                first_acq = first_group.get('Acquisition')
+                is_cosmos_data = first_acq and first_acq.isdigit()
+                
+                if is_cosmos_data:
+                    # For COSMOS: Add derivatives to the first group (run-1)
+                    target_group = subject_groups[0]
+                    
+                    # Add derivatives to the target group
+                    if derivative['software_name'] not in target_group['Derivatives']:
+                        target_group['Derivatives'][derivative['software_name']] = {}
+                    if derivative['type'] not in target_group['Derivatives'][derivative['software_name']]:
+                        target_group['Derivatives'][derivative['software_name']][derivative['type']] = []
+                    if derivative['path'] not in target_group['Derivatives'][derivative['software_name']][derivative['type']]:
+                        target_group['Derivatives'][derivative['software_name']][derivative['type']].append(derivative['path'])
+                    
+                    # For COSMOS: Add mask to ALL groups, not just the first one
+                    if derivative['type'] == "mask":
+                        for cosmos_group in subject_groups:
+                            cosmos_group["mask"] = derivative['path']
+                            print(f"[INFO] Added mask to COSMOS run {cosmos_group.get('Acquisition')}: {derivative['path']}")
+                else:
+                    # For synthetic data: Try to match by exact acquisition/run
+                    matching_groups = [g for g in subject_groups if 
+                                     g.get('Session') == derivative['session'] and 
+                                     g.get('Acquisition') == derivative['acquisition'] and 
+                                     g.get('Run') == derivative['run']]
+                            
+                    for group in matching_groups:
+                        # Add derivatives to matching groups
+                        if derivative['software_name'] not in group['Derivatives']:
+                            group['Derivatives'][derivative['software_name']] = {}
+                        if derivative['type'] not in group['Derivatives'][derivative['software_name']]:
+                            group['Derivatives'][derivative['software_name']][derivative['type']] = []
+                        if derivative['path'] not in group['Derivatives'][derivative['software_name']][derivative['type']]:
+                            group['Derivatives'][derivative['software_name']][derivative['type']].append(derivative['path'])
+                        
+                        # Also add mask to root level for backward compatibility
+                        if derivative['type'] == "mask":
+                            group["mask"] = derivative['path']
+            else:
+                # Skip creating empty groups for derivatives in COSMOS data
+                pass
+
+    # Remove empty groups (derivatives-only groups)
+    groups = [g for g in groups if len(g.get('mag_nii', [])) > 0 or len(g.get('Derivatives', {})) == 0]
 
     # Return the groups
     parsed_data = {"Groups": groups}

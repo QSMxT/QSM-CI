@@ -85,6 +85,9 @@ def setup_environment(bids_dir, algo_dir, work_dir, container_engine):
 def run_algo(client, docker_image, apptainer_image, algo_name, bids_dir, work_dir, input_json, container_engine, overlay_path=None):
     bids_dir = os.path.abspath(bids_dir)
 
+    print(f"[DEBUG] Input JSON contents:")
+    print(json.dumps(input_json, indent=2))
+
     with open(os.path.join(work_dir, 'inputs.json'), 'w') as json_file:
         json.dump(input_json, json_file, indent=4)
 
@@ -182,9 +185,17 @@ def run_apptainer_algo(apptainer_image, algo_name, bids_dir, work_dir, input_jso
         'apptainer', 'run',
         '--bind', f"{work_dir}:/workdir",
         '--pwd', '/workdir',
-        '--fakeroot'
+        '--cleanenv'  # Für HPC: saubere Umgebung
     ]
-
+    
+    # Nur fakeroot wenn verfügbar (nicht auf allen HPC-Systemen)
+    try:
+        subprocess.run(['apptainer', 'exec', '--fakeroot', 'docker://ubuntu:latest', 'true'], 
+                      capture_output=True, check=True)
+        command.append('--fakeroot')
+    except:
+        print("[WARN] --fakeroot not available, running without")
+    
     if overlay_path:
         command.extend(['--overlay', overlay_path])
 
@@ -274,6 +285,30 @@ def construct_bids_filename(input_json, nifti_file):
 
     return filename
 
+def parse_run_selection(run_str, valid_results):
+    """Parse run selection string to actual run numbers"""
+    runs = []
+    
+    for part in run_str.split(','):
+        part = part.strip()
+        if '-' in part and part != '-':
+            # Range like "5-7" 
+            start, end = map(int, part.split('-'))
+            runs.extend(range(start, end + 1))  # Include end
+        else:
+            # Single run like "5"
+            runs.append(int(part))
+    
+    # Find matching groups by actual run number
+    selected_groups = []
+    for run_num in runs:
+        for group in valid_results:
+            if group.get('Acquisition') == str(run_num):
+                selected_groups.append(group)
+                break
+    
+    return selected_groups
+
 def main():
     parser = argparse.ArgumentParser(description='Run a QSM algorithm on BIDS data using a working directory.')
     parser.add_argument('algo_dir', type=str, help='Path to the QSM algorithm')
@@ -283,6 +318,7 @@ def main():
     parser.add_argument('--container_engine', type=str, default='docker', choices=['docker', 'apptainer'], help='Choose between Docker or Apptainer')
     parser.add_argument('--overlay', type=str, help='Path to overlay image (for Apptainer)')
     parser.add_argument('--overlay_size', type=int, default=4096, help='Size of overlay in MB (if using Apptainer)')
+    parser.add_argument('--cosmos_runs', type=str, default='1', help='COSMOS runs to process (e.g. "1" or "1,2,5" or "1-3")')
     args = parser.parse_args()
     print(f"[INFO] bids_dir: {args.bids_dir}")
     print(f"[INFO] algo_dir: {args.algo_dir}")
@@ -294,13 +330,41 @@ def main():
     if args.container_engine == 'apptainer' and args.overlay:
         create_overlay(args.overlay, size_mb=args.overlay_size)
 
+    # Parse BIDS for both Docker and Apptainer
+    if not args.inputs_json:
+        print("[DEBUG] Parsing BIDS directory...")
+        bids_results = list(parse_bids.parse_bids_directory(args.bids_dir))
+        print(f"[DEBUG] Found {len(bids_results)} BIDS entries")
+        
+        # Filter valid groups with MEGRE data
+        valid_results = [r for r in bids_results if len(r.get('mag_nii', [])) > 0]
+        print(f"[DEBUG] Found {len(valid_results)} valid groups with MEGRE data")
+        
+        if len(valid_results) == 0:
+            print("[ERROR] No valid MEGRE data found!")
+            return
+        
+        # Detect dataset type: COSMOS vs synthetic
+        first_group = valid_results[0]
+        acq = first_group.get('Acquisition')
+        is_cosmos_data = acq and acq.isdigit()
+        
+        if is_cosmos_data:
+            print(f"[DEBUG] Detected COSMOS dataset (numeric acq: {acq})")
+            selected_groups = parse_run_selection(args.cosmos_runs, valid_results)
+            print(f"[DEBUG] Selected COSMOS runs: {[g.get('Acquisition') for g in selected_groups]}")
+        else:
+            print(f"[DEBUG] Detected synthetic dataset (named acq: {acq})")
+            selected_groups = valid_results
+
     if args.container_engine == 'docker':
         client = docker.from_env()
         container_names_to_remove = []
         
-        # Store container names as they're created
         if not args.inputs_json:
-            for input_json in parse_bids.parse_bids_directory(args.bids_dir):
+            for input_json in selected_groups:
+                run_num = input_json.get('Acquisition')
+                print(f"[DEBUG] Processing run {run_num}")
                 cname = run_algo(client, docker_image, apptainer_image, algo_name, args.bids_dir, work_dir, input_json, args.container_engine, args.overlay)
                 if cname:
                     container_names_to_remove.append(cname)
@@ -311,7 +375,7 @@ def main():
             if cname:
                 container_names_to_remove.append(cname)
 
-        # Clean up exactly those containers we created
+        # Clean up containers
         for cname in container_names_to_remove:
             try:
                 container = client.containers.get(cname)
@@ -321,6 +385,17 @@ def main():
                 print(f"[INFO] Container {cname} already removed.")
             except Exception as e:
                 print(f"[WARNING] Could not remove container {cname}: {e}")
+    
+    else:  # Apptainer
+        if not args.inputs_json:
+            for input_json in selected_groups:
+                run_num = input_json.get('Acquisition')
+                print(f"[DEBUG] Processing run {run_num}")
+                run_algo(None, docker_image, apptainer_image, algo_name, args.bids_dir, work_dir, input_json, args.container_engine, args.overlay)
+        else:
+            with open(args.inputs_json, 'r') as json_file:
+                input_json = json.load(json_file)
+            run_algo(None, docker_image, apptainer_image, algo_name, args.bids_dir, work_dir, input_json, args.container_engine, args.overlay)
 
 if __name__ == '__main__':
     main()

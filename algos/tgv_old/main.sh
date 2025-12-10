@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 #DOCKER_IMAGE=ubuntu:18.04
+#SINGULARITY_IMAGE=docker://ubuntu:18.04
 
 set -euo pipefail
 set -x
@@ -15,8 +16,7 @@ mkdir -p "$output_dir/tmp" "$output_dir"
 
 echo "[INFO] Downloading Julia..."
 apt-get update
-apt-get install wget build-essential libfftw3-dev -y
-apt-get install -y jq
+apt-get install -y libpcre2-8-0 wget build-essential libfftw3-dev jq
 wget -q https://julialang-s3.julialang.org/bin/linux/x64/1.9/julia-1.9.4-linux-x86_64.tar.gz
 tar xf julia-1.9.4-linux-x86_64.tar.gz
 
