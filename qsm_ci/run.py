@@ -14,10 +14,13 @@ def create_overlay(overlay_path, size_mb=1024):
     """Create an overlay file if it doesn't already exist."""
     if not os.path.exists(overlay_path):
         print(f"[INFO] Creating overlay at {overlay_path} with size {size_mb}MB")
-        # Create an empty file of the specified size
-        subprocess.run(['dd', 'if=/dev/zero', f'of={overlay_path}', 'bs=1M', f'count={size_mb}'])
-        # Format the file as ext3 filesystem
-        subprocess.run(['mkfs.ext3', '-F', overlay_path])
+        # On HPC: use dd without sudo
+        subprocess.run(['dd', 'if=/dev/zero', f'of={overlay_path}', 'bs=1M', f'count={size_mb}'], check=True)
+        # Format with ext3 (may fail on HPC without sudo)
+        try:
+            subprocess.run(['mkfs.ext3', '-F', overlay_path], check=True)
+        except:
+            print("[WARN] mkfs.ext3 failed - overlay may not work. Using --writable-tmpfs instead.")
     else:
         print(f"[INFO] Using existing overlay at {overlay_path}")
 
@@ -187,16 +190,21 @@ def run_apptainer_algo(apptainer_image, algo_name, bids_dir, work_dir, input_jso
         '--pwd', '/workdir'
     ]
     
-    # Auf HPC: --cleanenv statt --fakeroot
-    if '/scratch' in work_dir or os.environ.get('SLURM_JOBID'):
-        print("[INFO] HPC environment detected - using --cleanenv")
-        command.append('--cleanenv')
+    # HPC Detection
+    is_hpc = '/scratch' in work_dir or os.environ.get('SLURM_JOBID')
+    
+    if is_hpc:
+        print("[INFO] HPC environment detected - using --writable-tmpfs instead of overlay")
+        command.append('--writable-tmpfs')
+        # Skip overlay on HPC - use tmpfs instead
+        overlay_path = None
     else:
         print("[INFO] Local environment - using --fakeroot")
         command.append('--fakeroot')
 
     if overlay_path:
-        command.extend(['--overlay', overlay_path])
+        # Ensure overlay has :rw flag for write access
+        command.extend(['--overlay', f"{overlay_path}:rw"])
 
     subject = input_json.get('Subject')
     session = input_json.get('Session')
@@ -359,41 +367,41 @@ def main():
     if args.container_engine == 'docker':
         client = docker.from_env()
         container_names_to_remove = []
-        
+           run_num = input_json.get('Acquisition')
         if not args.inputs_json:
-            for input_json in selected_groups:
-                run_num = input_json.get('Acquisition')
-                print(f"[DEBUG] Processing run {run_num}")
-                cname = run_algo(client, docker_image, apptainer_image, algo_name, args.bids_dir, work_dir, input_json, args.container_engine, args.overlay)
-                if cname:
-                    container_names_to_remove.append(cname)
+            for input_json in selected_groups:mage, apptainer_image, algo_name, args.bids_dir, work_dir, input_json, args.container_engine, args.overlay)
         else:
-            with open(args.inputs_json, 'r') as json_file:
+            with open(args.inputs_json, 'r') as json_file:ontainer_names_to_remove.append(cname)
                 input_json = json.load(json_file)
-            cname = run_algo(client, docker_image, apptainer_image, algo_name, args.bids_dir, work_dir, input_json, args.container_engine, args.overlay)
-            if cname:
-                container_names_to_remove.append(cname)
-
+            cname = run_algo(client, docker_image, apptainer_image, algo_name, args.bids_dir, work_dir, input_json, args.container_engine, args.overlay)            with open(args.inputs_json, 'r') as json_file:
+            if cname:json.load(json_file)
+                container_names_to_remove.append(cname)ge, apptainer_image, algo_name, args.bids_dir, work_dir, input_json, args.container_engine, args.overlay)
+name:
         # Clean up containers
         for cname in container_names_to_remove:
             try:
-                container = client.containers.get(cname)
+                container = client.containers.get(cname)move:
                 container.remove()
-                print(f"[INFO] Container {cname} removed.")
+                print(f"[INFO] Container {cname} removed.").containers.get(cname)
             except docker.errors.NotFound:
-                print(f"[INFO] Container {cname} already removed.")
-            except Exception as e:
-                print(f"[WARNING] Could not remove container {cname}: {e}")
+                print(f"[INFO] Container {cname} already removed.")            print(f"[INFO] Container {cname} removed.")
+            except Exception as e:ker.errors.NotFound:
+                print(f"[WARNING] Could not remove container {cname}: {e}")ontainer {cname} already removed.")
     
-    else:  # Apptainer
+    else:  # Apptainerainer {cname}: {e}")
         if not args.inputs_json:
             for input_json in selected_groups:
-                run_num = input_json.get('Acquisition')
+                run_num = input_json.get('Acquisition')t args.inputs_json:
                 print(f"[DEBUG] Processing run {run_num}")
-                run_algo(None, docker_image, apptainer_image, algo_name, args.bids_dir, work_dir, input_json, args.container_engine, args.overlay)
+                run_algo(None, docker_image, apptainer_image, algo_name, args.bids_dir, work_dir, input_json, args.container_engine, args.overlay)tion')
         else:
-            with open(args.inputs_json, 'r') as json_file:
+            with open(args.inputs_json, 'r') as json_file:                run_algo(None, docker_image, apptainer_image, algo_name, args.bids_dir, work_dir, input_json, args.container_engine, args.overlay)
                 input_json = json.load(json_file)
+            run_algo(None, docker_image, apptainer_image, algo_name, args.bids_dir, work_dir, input_json, args.container_engine, args.overlay)  with open(args.inputs_json, 'r') as json_file:
+
+
+
+    main()if __name__ == '__main__':                input_json = json.load(json_file)
             run_algo(None, docker_image, apptainer_image, algo_name, args.bids_dir, work_dir, input_json, args.container_engine, args.overlay)
 
 if __name__ == '__main__':
