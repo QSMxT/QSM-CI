@@ -187,20 +187,27 @@ def run_apptainer_algo(apptainer_image, algo_name, bids_dir, work_dir, input_jso
         '--pwd', '/workdir'
     ]
     
-    # On HPC: use --fakeroot when overlay is enabled
+    overlay_provided = bool(overlay_path)
+
+    # On HPC: isolate env; always use fakeroot so apt can run
     if '/scratch' in work_dir or os.environ.get('SLURM_JOBID'):
         print("[INFO] HPC environment detected")
-        if overlay_path:
-            print("[INFO] Overlay enabled -> using --fakeroot for Apptainer")
-            command.extend(['--fakeroot', '--overlay', overlay_path])
+        command.append('--cleanenv')
+        command.append('--fakeroot')
+        if overlay_provided:
+            print("[INFO] Overlay enabled -> using --overlay with --writable-tmpfs for apt/dpkg")
+            command.extend(['--overlay', overlay_path, '--writable-tmpfs'])
         else:
-            print("[INFO] No overlay - using --cleanenv")
-            command.append('--cleanenv')
+            print("[INFO] No overlay - using --writable-tmpfs (needed for apt installs)")
+            command.append('--writable-tmpfs')
     else:
         print("[INFO] Local environment - using --fakeroot")
         command.append('--fakeroot')
-        if overlay_path:
+        if overlay_provided:
             command.extend(['--overlay', overlay_path])
+        else:
+            # Allow package installs inside read-only images without a persistent overlay
+            command.append('--writable-tmpfs')
 
     subject = input_json.get('Subject')
     session = input_json.get('Session')
