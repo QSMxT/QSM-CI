@@ -187,16 +187,20 @@ def run_apptainer_algo(apptainer_image, algo_name, bids_dir, work_dir, input_jso
         '--pwd', '/workdir'
     ]
     
-    # On HPC: --cleanenv instead of --fakeroot
+    # On HPC: use --fakeroot when overlay is enabled
     if '/scratch' in work_dir or os.environ.get('SLURM_JOBID'):
-        print("[INFO] HPC environment detected - using --cleanenv")
-        command.append('--cleanenv')
+        print("[INFO] HPC environment detected")
+        if overlay_path:
+            print("[INFO] Overlay enabled -> using --fakeroot for Apptainer")
+            command.extend(['--fakeroot', '--overlay', overlay_path])
+        else:
+            print("[INFO] No overlay - using --cleanenv")
+            command.append('--cleanenv')
     else:
         print("[INFO] Local environment - using --fakeroot")
         command.append('--fakeroot')
-
-    if overlay_path:
-        command.extend(['--overlay', overlay_path])
+        if overlay_path:
+            command.extend(['--overlay', overlay_path])
 
     subject = input_json.get('Subject')
     session = input_json.get('Session')

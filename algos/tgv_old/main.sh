@@ -16,7 +16,8 @@ mkdir -p "$output_dir/tmp" "$output_dir"
 
 echo "[INFO] Downloading Julia..."
 apt-get update
-apt-get install -y libpcre2-8-0 wget build-essential libfftw3-dev jq
+apt-get install wget build-essential libfftw3-dev -y
+apt-get install -y jq
 wget -q https://julialang-s3.julialang.org/bin/linux/x64/1.9/julia-1.9.4-linux-x86_64.tar.gz
 tar xf julia-1.9.4-linux-x86_64.tar.gz
 
@@ -54,8 +55,7 @@ $JULIA_BIN --project=/workdir/tgv_old_env /workdir/romeo_unwrapping.jl \
 
 echo "[INFO] ROMEO step finished successfully."
 
-# --- Step 3: Convertig to radians ---
-
+# --- Step 3: Converting to radians ---
 
 echo "[INFO] Converting B0 fieldmap to radians..."
 
@@ -146,30 +146,27 @@ echo "[DEBUG] Testing gcc from Python..."
 echo "[INFO] Installing TGV_QSM via Python..."
 PATH=/usr/bin:$PATH /workdir/miniconda2/bin/python setup.py install
 
+# -------------------------
+# 4) RUN TGV_old
+# -------------------------
 
-# -------------------------
-# 5) Run TGV_QSM
-# -------------------------
+# ===== START BENCHMARK WITH JULIA @TIME MACRO =====
+echo "[INFO] ===== STARTING ALGORITHM EXECUTION BENCHMARK ====="
 TE=$(jq '.EchoTime[0]' /workdir/inputs.json)
 B0=$(jq '.MagneticFieldStrength' /workdir/inputs.json)
 cd /workdir
-/workdir/miniconda2/bin/tgv_qsm \
-  -p /workdir/output/sub-1_radians.nii \
-  -m "$MASK_PATH" \
-  -f $B0 \
-  -t $TE \
-  -o sub-1_QSM \
-  --no-resampling
+
+# Use Julia to time the Python TGV_QSM call
+$JULIA_BIN -e "
+using Base.Iterators
+println(\"[INFO] Running TGV_QSM with @time...\")
+@time run(\`/workdir/miniconda2/bin/tgv_qsm -p /workdir/output/sub-1_radians.nii -m $MASK_PATH -f $B0 -t $TE -o sub-1_QSM --no-resampling\`)"
 
 # Move output to output_dir
-
 mkdir -p "$output_dir/test_copies"
 mv "$output_dir/sub-1_phase_4D.nii"    "$output_dir/test_copies/" || true
 mv "$output_dir/sub-1_mag_4D.nii"      "$output_dir/test_copies/" || true
 mv "$output_dir/sub-1_B0.nii"          "$output_dir/test_copies/" || true
 mv "$output_dir/sub-1_radians.nii"     "$output_dir/test_copies/" || true
-
-
-
 
 echo "[INFO] TGV_QSM finished. Output: $output_dir/sub-1_QSM.nii.gz"
