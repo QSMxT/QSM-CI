@@ -5,6 +5,10 @@
 set -euo pipefail
 set -x
 
+# Optional: Set number of threads for OpenMP
+# export OMP_NUM_THREADS=5
+# echo "[INFO] OMP_NUM_THREADS set to: $OMP_NUM_THREADS"
+
 echo "[INFO] Starting TGV_QSM (old) pipeline"
 
 input_dir=${1:-/workdir}
