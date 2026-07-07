@@ -49,7 +49,7 @@ example you can copy.
 |------|-----------|
 | `CONTRACT.md` | The frozen `/input`→`/output` contract |
 | `algorithms/<slug>/` | One submission each (metadata + image ref + `run.sh`) |
-| `eval/` | `qsm-eval` — the Rust scorer (wraps QSM.rs metrics) |
+| `eval/` | `qsm-eval` — the Python scorer (metrics ported from QSM.rs) |
 | `data/sim/`, `data/invivo/` | Public challenge inputs (ground truth is held out on OSF) |
 | `results/` | Per-run scores as JSON; `index.json` feeds the leaderboard |
 | `web/` | The static leaderboard + NiiVue viewer (GitHub Pages) |
@@ -58,8 +58,9 @@ example you can copy.
 ## Local development
 
 ```bash
-# Score a reconstruction locally (needs the qsm-core metrics; see eval/README)
-cargo run -p qsm-eval -- --recon out/chimap.nii.gz --track sim \
+# Score a reconstruction locally (see eval/README.md)
+pip install -r eval/requirements.txt
+python eval/qsm_eval.py --recon out/chimap.nii.gz --track sim \
   --truth gt/chimap.nii.gz --seg gt/dseg.nii.gz --mask data/sim/public/mask.nii.gz \
   --out metrics.json --figures figures/
 

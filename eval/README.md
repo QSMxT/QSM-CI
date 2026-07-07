@@ -1,26 +1,33 @@
 # qsm-eval
 
 The QSM-CI scorer. Loads a reconstruction and the held-out ground truth, computes the challenge
-metrics, and writes `metrics.json` (plus optional slice figures).
+metrics, and writes `metrics.json` (plus an optional slice figure).
 
-Metrics come from **QSM.rs** (`qsm_core::metrics`) — the exact code the QSM.rs CI uses — so a run's
-QSM-CI score matches what QSM.rs reports for the same data. There is a single source of truth.
+Implemented in Python (numpy/scipy/nibabel) so contributors can read and patch the metrics easily,
+and so the scorer has no build coupling to any reconstruction library.
 
-## Prerequisite
+## Faithful port — keep in sync
 
-`qsm_core::metrics` must be a **public** module in QSM.rs. This depends on the companion change
-"promote the test-only metrics in `tests/common/mod.rs` into a public `src/metrics.rs`". Until that
-lands, `eval/Cargo.toml` points at a local `path = "../../../QSM.rs"` checkout; switch it to a pinned
-`git` rev before building the published image.
+The metrics are a 1:1 port of the QSM.rs reference implementation
+(`tests/common/mod.rs` in https://github.com/astewartau/QSM.rs): `nrmse_challenge`, `correlation`,
+`xsim` (5×5×5 XSIM), `dgm_linearity`, `dilate_mask_3d`, and `calcification_metrics`. Because it is a
+*second* implementation, it must not drift:
+
+- `test_metrics.py` pins the invariants.
+- `qsm_eval.py --selfcheck` runs quick sanity checks.
+- Before the challenge opens, add a fixture that cross-checks these numbers against QSM.rs on the
+  actual phantom (identical inputs ⇒ identical scores to floating-point tolerance).
 
 ## Usage
 
 ```bash
-cargo run -p qsm-eval -- \
+pip install -r requirements.txt
+
+python qsm_eval.py \
   --recon out/chimap.nii.gz \
   --truth gt/chimap.nii.gz \
   --seg   gt/dseg.nii.gz \
-  --mask  data/sim/public/mask.nii.gz \
+  --mask  ../data/sim/public/mask.nii.gz \
   --track sim \
   --name  example-tkd \
   --runtime 42 \
@@ -33,7 +40,7 @@ cargo run -p qsm-eval -- \
 
 ## Output
 
-`metrics.json`:
+`metrics.json` (NaN metrics serialize as `null`):
 
 ```json
 {
