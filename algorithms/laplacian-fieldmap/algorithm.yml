@@ -1,0 +1,4 @@
+contract: v2
+stage: field-mapping     # consumes: phase, magnitude, mask, params  ->  produces: totalfield
+image: ghcr.io/astewartau/qsm-ci/py-ref:v1
+run: bash run.sh

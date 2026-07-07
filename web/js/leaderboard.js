@@ -13,7 +13,7 @@ const LOWER_BETTER = new Set([
 ]);
 const DP = (k) => (["correlation", "xsim", "dgm_linearity"].includes(k) ? 4 : 2);
 
-const state = { runs: [], view: "isolated", stage: "dipole", metric: "xsim", sortKey: "xsim", sortDir: "desc", filter: "" };
+const state = { runs: [], view: "isolated", stage: "dipole", fmap: "gt", metric: "xsim", sortKey: "xsim", sortDir: "desc", filter: "" };
 
 async function load() {
   state.runs = (await (await fetch("results/index.json")).json()).runs || [];
@@ -25,8 +25,13 @@ async function load() {
 function isolatedRuns() {
   return state.runs.filter((r) => r.mode === "isolated" && r.stage === state.stage);
 }
+function fieldMappings() {
+  return [...new Set(state.runs.filter((r) => r.mode === "composed" && r.combo).map((r) => r.combo.field_mapping || "gt"))];
+}
 function composedRuns() {
-  return state.runs.filter((r) => r.mode === "composed");
+  // Show pipelines for the selected field-mapping source, plus spans (no combo).
+  return state.runs.filter((r) => r.mode === "composed" &&
+    (!r.combo || (r.combo.field_mapping || "gt") === state.fmap));
 }
 
 function metricKeys(runs) {
@@ -48,11 +53,14 @@ function renderControls(cols) {
       </select></label>
     ${state.view === "isolated" ? `<label>Stage:
       <select id="stage">${stages.map((s) => `<option${s === state.stage ? " selected" : ""}>${s}</option>`).join("")}</select></label>` : ""}
+    ${state.view === "composed" && fieldMappings().length > 1 ? `<label>Field mapping:
+      <select id="fmap">${fieldMappings().map((f) => `<option${f === state.fmap ? " selected" : ""}>${f}</option>`).join("")}</select></label>` : ""}
     ${state.view === "composed" ? `<label>Matrix metric:
       <select id="metric">${cols.filter((c) => c !== "runtime_s").map((c) => `<option${c === state.metric ? " selected" : ""}>${c}</option>`).join("")}</select></label>` : ""}
     <input id="filter" type="search" placeholder="Filter…" value="${state.filter}" />`;
   el.querySelector("#view").onchange = (e) => { state.view = e.target.value; render(); };
   if (el.querySelector("#stage")) el.querySelector("#stage").onchange = (e) => { state.stage = e.target.value; render(); };
+  if (el.querySelector("#fmap")) el.querySelector("#fmap").onchange = (e) => { state.fmap = e.target.value; render(); };
   if (el.querySelector("#metric")) el.querySelector("#metric").onchange = (e) => { state.metric = e.target.value; renderMatrix(); };
   el.querySelector("#filter").oninput = (e) => { state.filter = e.target.value; render(); };
 }
@@ -101,12 +109,15 @@ function renderMatrix() {
     return `<td class="cell" style="background:${color(v)}"${r ? ` onclick="location.href='submission.html?run=${encodeURIComponent(r.id)}'"` : ""}>` +
       `${v == null ? "—" : Number(v).toFixed(DP(state.metric))}</td>`;
   }).join("") + "</tr>").join("");
+  const fmNote = state.fmap === "gt" ? "ground-truth field" : `field mapping: ${state.fmap}`;
   document.getElementById("matrix").innerHTML =
-    `<h3>Combination matrix — ${state.metric} <span class="hint">(greener = better)</span></h3>` +
+    `<h3>Combination matrix — ${state.metric} <span class="hint">(${fmNote}; greener = better)</span></h3>` +
     `<table class="heatmap">${head}${body}</table>`;
 }
 
 function render() {
+  const fms = fieldMappings();
+  if (fms.length && !fms.includes(state.fmap)) state.fmap = fms.includes("gt") ? "gt" : fms[0];
   const runs = state.view === "isolated" ? isolatedRuns() : composedRuns();
   const cols = metricKeys(runs);
   if (!cols.includes(state.sortKey)) state.sortKey = "xsim";

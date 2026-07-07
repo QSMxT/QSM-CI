@@ -4,6 +4,26 @@
   "runs": [
     {
       "contract": "v2",
+      "name": "laplacian-fieldmap",
+      "track": "sim",
+      "stage": "field-mapping",
+      "artifact": "totalfield",
+      "kind": "field",
+      "image": null,
+      "runtime_s": 11.16921615600586,
+      "metrics": {
+        "nrmse": 78.8362894008095,
+        "nrmse_detrend": 127.9251107947276,
+        "correlation": 0.6158677738459796,
+        "xsim": 0.1833579935358206
+      },
+      "status": "ok",
+      "id": "laplacian-fieldmap-iso",
+      "slug": "laplacian-fieldmap",
+      "mode": "isolated"
+    },
+    {
+      "contract": "v2",
       "name": "matlab-tkd",
       "track": "sim",
       "stage": "dipole",
@@ -21,7 +41,7 @@
       "artifact": "localfield",
       "kind": "field",
       "image": null,
-      "runtime_s": 0.6805799007415771,
+      "runtime_s": 0.6790034770965576,
       "metrics": {
         "nrmse": 1626.1253282181558,
         "nrmse_detrend": 1946.8602205089346,
@@ -41,7 +61,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 2.940410852432251,
+      "runtime_s": 2.9455485343933105,
       "metrics": {
         "nrmse": 37.03495324457923,
         "nrmse_detrend": 39.72054204822565,
@@ -67,7 +87,7 @@
       "artifact": "localfield",
       "kind": "field",
       "image": null,
-      "runtime_s": 3.0598642826080322,
+      "runtime_s": 3.2232959270477295,
       "metrics": {
         "nrmse": 62.76130222192409,
         "nrmse_detrend": 80.60379641995668,
@@ -87,7 +107,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1.7319889068603516,
+      "runtime_s": 1.6368329524993896,
       "metrics": {
         "nrmse": 55.07648208841707,
         "nrmse_detrend": 50.09798279845688,
@@ -113,7 +133,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1.7060785293579102,
+      "runtime_s": 1.6807727813720703,
       "metrics": {
         "nrmse": 37.03494402165627,
         "nrmse_detrend": 39.72053384928798,
@@ -135,13 +155,14 @@
       "contract": "v2",
       "name": "nobfr-baseline+matlab-tkd",
       "track": "sim",
-      "stage": "bfr+dipole",
+      "stage": "field-mapping+bfr+dipole",
       "mode": "composed",
       "status": "DNF",
       "metrics": {},
-      "id": "nobfr-baseline+matlab-tkd-cmp",
+      "id": "gt~nobfr-baseline~matlab-tkd-cmp",
       "slug": "nobfr-baseline+matlab-tkd",
       "combo": {
+        "field_mapping": "gt",
         "bfr": "nobfr-baseline",
         "dipole": "matlab-tkd"
       }
@@ -154,7 +175,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1.9574151039123535,
+      "runtime_s": 1.9378516674041748,
       "metrics": {
         "nrmse": 1141.9178216115026,
         "nrmse_detrend": 1999.0897542197927,
@@ -168,10 +189,11 @@
         "xsim": 0.006156430175998886
       },
       "status": "ok",
-      "id": "nobfr-baseline+octave-tkd-cmp",
+      "id": "gt~nobfr-baseline~octave-tkd-cmp",
       "slug": "nobfr-baseline+octave-tkd",
       "mode": "composed",
       "combo": {
+        "field_mapping": "gt",
         "bfr": "nobfr-baseline",
         "dipole": "octave-tkd"
       }
@@ -184,7 +206,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1.628486156463623,
+      "runtime_s": 1.5296046733856201,
       "metrics": {
         "nrmse": 637.0085960543622,
         "nrmse_detrend": 1920.9978513560245,
@@ -198,10 +220,11 @@
         "xsim": 0.014983765579676895
       },
       "status": "ok",
-      "id": "nobfr-baseline+tikhonov-cmp",
+      "id": "gt~nobfr-baseline~tikhonov-cmp",
       "slug": "nobfr-baseline+tikhonov",
       "mode": "composed",
       "combo": {
+        "field_mapping": "gt",
         "bfr": "nobfr-baseline",
         "dipole": "tikhonov"
       }
@@ -214,7 +237,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1.6120975017547607,
+      "runtime_s": 1.6539223194122314,
       "metrics": {
         "nrmse": 1141.9154777429485,
         "nrmse_detrend": 1998.5042963268522,
@@ -228,10 +251,11 @@
         "xsim": 0.006161589664985552
       },
       "status": "ok",
-      "id": "nobfr-baseline+tkd-cmp",
+      "id": "gt~nobfr-baseline~tkd-cmp",
       "slug": "nobfr-baseline+tkd",
       "mode": "composed",
       "combo": {
+        "field_mapping": "gt",
         "bfr": "nobfr-baseline",
         "dipole": "tkd"
       }
@@ -240,13 +264,14 @@
       "contract": "v2",
       "name": "sharp+matlab-tkd",
       "track": "sim",
-      "stage": "bfr+dipole",
+      "stage": "field-mapping+bfr+dipole",
       "mode": "composed",
       "status": "DNF",
       "metrics": {},
-      "id": "sharp+matlab-tkd-cmp",
+      "id": "gt~sharp~matlab-tkd-cmp",
       "slug": "sharp+matlab-tkd",
       "combo": {
+        "field_mapping": "gt",
         "bfr": "sharp",
         "dipole": "matlab-tkd"
       }
@@ -259,7 +284,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 2.699773073196411,
+      "runtime_s": 2.8739020824432373,
       "metrics": {
         "nrmse": 71.88755473646006,
         "nrmse_detrend": 103.35633160193758,
@@ -273,10 +298,11 @@
         "xsim": 0.34022996304913167
       },
       "status": "ok",
-      "id": "sharp+octave-tkd-cmp",
+      "id": "gt~sharp~octave-tkd-cmp",
       "slug": "sharp+octave-tkd",
       "mode": "composed",
       "combo": {
+        "field_mapping": "gt",
         "bfr": "sharp",
         "dipole": "octave-tkd"
       }
@@ -289,7 +315,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1.5148963928222656,
+      "runtime_s": 1.60746431350708,
       "metrics": {
         "nrmse": 77.00498385773018,
         "nrmse_detrend": 107.36539666146635,
@@ -303,10 +329,11 @@
         "xsim": 0.2678321495878546
       },
       "status": "ok",
-      "id": "sharp+tikhonov-cmp",
+      "id": "gt~sharp~tikhonov-cmp",
       "slug": "sharp+tikhonov",
       "mode": "composed",
       "combo": {
+        "field_mapping": "gt",
         "bfr": "sharp",
         "dipole": "tikhonov"
       }
@@ -319,7 +346,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1.619452953338623,
+      "runtime_s": 1.6947689056396484,
       "metrics": {
         "nrmse": 71.88766582956848,
         "nrmse_detrend": 103.356648617325,
@@ -333,10 +360,229 @@
         "xsim": 0.3402273261229193
       },
       "status": "ok",
-      "id": "sharp+tkd-cmp",
+      "id": "gt~sharp~tkd-cmp",
       "slug": "sharp+tkd",
       "mode": "composed",
       "combo": {
+        "field_mapping": "gt",
+        "bfr": "sharp",
+        "dipole": "tkd"
+      }
+    },
+    {
+      "contract": "v2",
+      "name": "laplacian-fieldmap+nobfr-baseline+matlab-tkd",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "mode": "composed",
+      "status": "DNF",
+      "metrics": {},
+      "id": "laplacian-fieldmap~nobfr-baseline~matlab-tkd-cmp",
+      "slug": "laplacian-fieldmap+nobfr-baseline+matlab-tkd",
+      "combo": {
+        "field_mapping": "laplacian-fieldmap",
+        "bfr": "nobfr-baseline",
+        "dipole": "matlab-tkd"
+      }
+    },
+    {
+      "contract": "v2",
+      "name": "laplacian-fieldmap+nobfr-baseline+octave-tkd",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 1.862370252609253,
+      "metrics": {
+        "nrmse": 611.483691558971,
+        "nrmse_detrend": 827.0817650613071,
+        "nrmse_tissue": 1072.8134613449752,
+        "nrmse_blood": 8554.418043704947,
+        "nrmse_dgm": 597.6731963901995,
+        "dgm_linearity": 0.2740930905751665,
+        "calc_moment_dev": 51.374977469444275,
+        "calc_streak": null,
+        "correlation": 0.12003286263170505,
+        "xsim": 0.013597254501096116
+      },
+      "status": "ok",
+      "id": "laplacian-fieldmap~nobfr-baseline~octave-tkd-cmp",
+      "slug": "laplacian-fieldmap+nobfr-baseline+octave-tkd",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-fieldmap",
+        "bfr": "nobfr-baseline",
+        "dipole": "octave-tkd"
+      }
+    },
+    {
+      "contract": "v2",
+      "name": "laplacian-fieldmap+nobfr-baseline+tikhonov",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 1.5141582489013672,
+      "metrics": {
+        "nrmse": 348.80448218373596,
+        "nrmse_detrend": 823.9745455650032,
+        "nrmse_tissue": 993.9889862618367,
+        "nrmse_blood": 5407.356816577351,
+        "nrmse_dgm": 376.8052326489276,
+        "dgm_linearity": 0.23582259789344784,
+        "calc_moment_dev": 51.374977469444275,
+        "calc_streak": null,
+        "correlation": 0.12047895016179586,
+        "xsim": 0.02642722317048756
+      },
+      "status": "ok",
+      "id": "laplacian-fieldmap~nobfr-baseline~tikhonov-cmp",
+      "slug": "laplacian-fieldmap+nobfr-baseline+tikhonov",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-fieldmap",
+        "bfr": "nobfr-baseline",
+        "dipole": "tikhonov"
+      }
+    },
+    {
+      "contract": "v2",
+      "name": "laplacian-fieldmap+nobfr-baseline+tkd",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 1.5990736484527588,
+      "metrics": {
+        "nrmse": 611.4842634386781,
+        "nrmse_detrend": 827.0025323635092,
+        "nrmse_tissue": 1072.6954826037877,
+        "nrmse_blood": 8550.771462069783,
+        "nrmse_dgm": 597.4780856135319,
+        "dgm_linearity": 0.2742361988635804,
+        "calc_moment_dev": 51.374977469444275,
+        "calc_streak": null,
+        "correlation": 0.12004419691562597,
+        "xsim": 0.013584554253610664
+      },
+      "status": "ok",
+      "id": "laplacian-fieldmap~nobfr-baseline~tkd-cmp",
+      "slug": "laplacian-fieldmap+nobfr-baseline+tkd",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-fieldmap",
+        "bfr": "nobfr-baseline",
+        "dipole": "tkd"
+      }
+    },
+    {
+      "contract": "v2",
+      "name": "laplacian-fieldmap+sharp+matlab-tkd",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "mode": "composed",
+      "status": "DNF",
+      "metrics": {},
+      "id": "laplacian-fieldmap~sharp~matlab-tkd-cmp",
+      "slug": "laplacian-fieldmap+sharp+matlab-tkd",
+      "combo": {
+        "field_mapping": "laplacian-fieldmap",
+        "bfr": "sharp",
+        "dipole": "matlab-tkd"
+      }
+    },
+    {
+      "contract": "v2",
+      "name": "laplacian-fieldmap+sharp+octave-tkd",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 2.8500254154205322,
+      "metrics": {
+        "nrmse": 87.46401803667695,
+        "nrmse_detrend": 175.26600846549343,
+        "nrmse_tissue": 169.2489803221999,
+        "nrmse_blood": 643.4345693625552,
+        "nrmse_dgm": 93.5857883704368,
+        "dgm_linearity": 0.4318154862081206,
+        "calc_moment_dev": 43.97929911315441,
+        "calc_streak": 0.17136410902905003,
+        "correlation": 0.49557096608310564,
+        "xsim": 0.19622216194374903
+      },
+      "status": "ok",
+      "id": "laplacian-fieldmap~sharp~octave-tkd-cmp",
+      "slug": "laplacian-fieldmap+sharp+octave-tkd",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-fieldmap",
+        "bfr": "sharp",
+        "dipole": "octave-tkd"
+      }
+    },
+    {
+      "contract": "v2",
+      "name": "laplacian-fieldmap+sharp+tikhonov",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 1.6114816665649414,
+      "metrics": {
+        "nrmse": 87.80629008964257,
+        "nrmse_detrend": 174.1074822952752,
+        "nrmse_tissue": 170.6688398193787,
+        "nrmse_blood": 585.7733693851316,
+        "nrmse_dgm": 91.81465901364425,
+        "dgm_linearity": 0.6385821280293127,
+        "calc_moment_dev": 47.07668899744749,
+        "calc_streak": 0.15148106684373708,
+        "correlation": 0.49805259038948796,
+        "xsim": 0.1570842445512049
+      },
+      "status": "ok",
+      "id": "laplacian-fieldmap~sharp~tikhonov-cmp",
+      "slug": "laplacian-fieldmap+sharp+tikhonov",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-fieldmap",
+        "bfr": "sharp",
+        "dipole": "tikhonov"
+      }
+    },
+    {
+      "contract": "v2",
+      "name": "laplacian-fieldmap+sharp+tkd",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 1.713545322418213,
+      "metrics": {
+        "nrmse": 87.46388473615488,
+        "nrmse_detrend": 175.26505210764904,
+        "nrmse_tissue": 169.24752173085537,
+        "nrmse_blood": 643.4424379092521,
+        "nrmse_dgm": 93.58565779608999,
+        "dgm_linearity": 0.4318031077125096,
+        "calc_moment_dev": 43.9799839258194,
+        "calc_streak": 0.1713855217050043,
+        "correlation": 0.49557300611605004,
+        "xsim": 0.19622324005241296
+      },
+      "status": "ok",
+      "id": "laplacian-fieldmap~sharp~tkd-cmp",
+      "slug": "laplacian-fieldmap+sharp+tkd",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-fieldmap",
         "bfr": "sharp",
         "dipole": "tkd"
       }

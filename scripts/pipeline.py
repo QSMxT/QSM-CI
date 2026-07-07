@@ -213,45 +213,60 @@ def main() -> None:
                 print(f"  isolated  {a['slug']:<16} DNF ({e})")
                 runs.append(dnf(f"{a['slug']}-iso", a["slug"], a["slug"], a["stage"], "isolated", args.track))
 
-    # -------- composed: bfr x dipole matrix (+ direct chimap spans) --------
+    # -------- composed: (field-mapping) x bfr x dipole, chaining real outputs --------
     if args.mode in ("composed", "both"):
+        fmap = [a for a in algos if "totalfield" in a["produces"]]
         bfr = [a for a in algos if "localfield" in a["produces"]]
         dipole = [a for a in algos if a["stage"] == "dipole"]
         spans = [a for a in algos if "chimap" in a["produces"] and a["stage"] != "dipole"]
-        # cache each bfr's localfield output (starting from GT totalfield)
-        lf_cache: dict[str, Path] = {}
-        for b in bfr:
-            idir, odir = args.work / f"cmp_{b['slug']}_in", args.work / f"cmp_{b['slug']}_out"
+
+        # totalfield sources: the ground-truth field ("gt"), plus each field-mapping submission's
+        # output (run on raw inputs). This lets the matrix start from raw phase, not just GT field.
+        tf_sources: dict[str, Path] = {"gt": gt / ARTIFACT_FILE["totalfield"]}
+        for f in fmap:
+            idir, odir = args.work / f"cmp_fm_{f['slug']}_in", args.work / f"cmp_fm_{f['slug']}_out"
             try:
-                prepare_input(b["consumes"], gt_sources, idir)
-                run_algo(b, idir, odir, args.runner)
-                lf_cache[b["slug"]] = odir / "localfield.nii.gz"
+                prepare_input(f["consumes"], gt_sources, idir)
+                run_algo(f, idir, odir, args.runner)
+                tf_sources[f["slug"]] = odir / "totalfield.nii.gz"
             except Exception as e:
-                print(f"  composed  bfr {b['slug']} DNF ({e}) — skipping its combos")
-        for b in bfr:
-            if b["slug"] not in lf_cache:
-                continue
-            for d in dipole:
-                combo = f"{b['slug']}+{d['slug']}"
-                cinfo = {"bfr": b["slug"], "dipole": d["slug"]}
+                print(f"  composed  fieldmap {f['slug']} DNF ({e}) — skipping its pipelines")
+
+        for tfk, tfp in tf_sources.items():
+            lf_cache: dict[str, Path] = {}  # bfr localfield output for this totalfield source
+            for b in bfr:
+                idir, odir = args.work / f"cmp_{tfk}_{b['slug']}_in", args.work / f"cmp_{tfk}_{b['slug']}_out"
                 try:
-                    src = dict(gt_sources)
-                    src["localfield"] = lf_cache[b["slug"]]  # chain: real bfr output -> dipole input
-                    idir, odir = args.work / f"cmp_{combo}_in", args.work / f"cmp_{combo}_out"
-                    prepare_input(d["consumes"], src, idir)
-                    rt = run_algo(d, idir, odir, args.runner)
-                    meta = {"id": f"{combo}-cmp", "slug": combo, "name": combo,
-                            "stage": "bfr+dipole", "mode": "composed", "track": args.track,
-                            "runtime": rt, "combo": cinfo}
-                    r = score(odir / "chimap.nii.gz", "chimap", gt, mask,
-                              args.work / f"cmp_{combo}.json", meta)
-                    runs.append(r)
-                    m = r["metrics"]
-                    print(f"  composed  {combo:<28} chimap xsim={m.get('xsim'):.4f} "
-                          f"nrmse_dt={m.get('nrmse_detrend'):.2f}%")
+                    src = dict(gt_sources); src["totalfield"] = tfp
+                    prepare_input(b["consumes"], src, idir)
+                    run_algo(b, idir, odir, args.runner)
+                    lf_cache[b["slug"]] = odir / "localfield.nii.gz"
                 except Exception as e:
-                    print(f"  composed  {combo:<28} DNF ({e})")
-                    runs.append(dnf(f"{combo}-cmp", combo, combo, "bfr+dipole", "composed", args.track, cinfo))
+                    print(f"  composed  {tfk}+{b['slug']} bfr DNF ({e})")
+            for b in bfr:
+                if b["slug"] not in lf_cache:
+                    continue
+                for d in dipole:
+                    combo = f"{b['slug']}+{d['slug']}" if tfk == "gt" else f"{tfk}+{b['slug']}+{d['slug']}"
+                    cid = f"{tfk}~{b['slug']}~{d['slug']}-cmp"
+                    cinfo = {"field_mapping": tfk, "bfr": b["slug"], "dipole": d["slug"]}
+                    try:
+                        src = dict(gt_sources); src["localfield"] = lf_cache[b["slug"]]
+                        idir, odir = args.work / f"cmp_{cid}_in", args.work / f"cmp_{cid}_out"
+                        prepare_input(d["consumes"], src, idir)
+                        rt = run_algo(d, idir, odir, args.runner)
+                        meta = {"id": cid, "slug": combo, "name": combo,
+                                "stage": "bfr+dipole" if tfk == "gt" else "field-mapping+bfr+dipole",
+                                "mode": "composed", "track": args.track, "runtime": rt, "combo": cinfo}
+                        r = score(odir / "chimap.nii.gz", "chimap", gt, mask,
+                                  args.work / f"cmp_{cid}.json", meta)
+                        runs.append(r)
+                        m = r["metrics"]
+                        print(f"  composed  {combo:<34} chimap xsim={m.get('xsim'):.4f} "
+                              f"nrmse_dt={m.get('nrmse_detrend'):.2f}%")
+                    except Exception as e:
+                        print(f"  composed  {combo:<34} DNF ({e})")
+                        runs.append(dnf(cid, combo, combo, "field-mapping+bfr+dipole", "composed", args.track, cinfo))
         for s in spans:
             idir, odir = args.work / f"cmp_{s['slug']}_in", args.work / f"cmp_{s['slug']}_out"
             try:
