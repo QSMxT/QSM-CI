@@ -53,14 +53,9 @@ ALGOS = [
      "Iterative Spherical Mean Value background field removal.",
      "Wen et al., 2014", None,
      [("tol", "1e-4", "tolerance"), ("max_iter", "100", "iterations"), ("radius_factor", "2.0", "× max voxel size")]),
-    ("harperella", "bfr", "harperella", "HARPERELLA",
-     "Integrated phase unwrapping + background removal via SMV (phase-domain).",
-     "Li et al., NMR Biomed 2014", None,
-     [("radius", "15.0", "SMV kernel radius (mm)"), ("max_iter", "1000", "iterations")]),
-    ("iharperella", "bfr", "iharperella", "iHARPERELLA",
-     "Improved HARPERELLA with low-frequency suppression.",
-     "Li et al., 2015", None,
-     [("radius", "15.0", "SMV kernel radius (mm)"), ("max_iter", "1000", "iterations")]),
+    # NOTE: HARPERELLA / iHARPERELLA are phase-domain (consume WRAPPED PHASE, not total field, and
+    # take no B0 direction) — an `unwrap+bfr` span over single-echo phase. They need a bespoke run.sh
+    # (echo selection), so they're excluded from this generator for now. TODO: add as a span.
     # --- dipole inversion ---
     ("rts", "dipole", "rts", "RTS",
      "Rapid Two-Step QSM: streaking-artifact reduction via a fast ADMM split.",
@@ -104,7 +99,7 @@ RUN_SH = """#!/usr/bin/env bash
 # QSM-CI submission — {name} ({stage} stage) via QSMxT / QSM.rs.
 set -euo pipefail
 IN="${{1:-/input}}"; OUT="${{2:-/output}}"
-B0=$(sed -n 's/.*"B0_dir"[^[]*\\[\\([^]]*\\)\\].*/\\1/p' "$IN/params.json" | tr ',' ' ')
+B0=$(jq -r '.B0_dir | join(" ")' "$IN/params.json")
 qsmxt {group} {algo} "$IN/{inp}.nii.gz" -m "$IN/mask.nii.gz" -o "$OUT/{out}.nii.gz" --b0-direction $B0
 """
 

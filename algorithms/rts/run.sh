@@ -2,5 +2,5 @@
 # QSM-CI submission — RTS (dipole stage) via QSMxT / QSM.rs.
 set -euo pipefail
 IN="${1:-/input}"; OUT="${2:-/output}"
-B0=$(sed -n 's/.*"B0_dir"[^[]*\[\([^]]*\)\].*/\1/p' "$IN/params.json" | tr ',' ' ')
+B0=$(jq -r '.B0_dir | join(" ")' "$IN/params.json")
 qsmxt invert rts "$IN/localfield.nii.gz" -m "$IN/mask.nii.gz" -o "$OUT/chimap.nii.gz" --b0-direction $B0
