@@ -30,9 +30,11 @@ def _cmd_submit(args) -> int:
 
 def _cmd_doctor(args) -> int:
     import shutil
-    from .runner import check_docker
+    from .runner import check_runner
     print(f"qsm-ci {__version__}")
-    print(f"  docker   {'ok' if check_docker() else 'MISSING (needed for qsm-ci run)'}")
+    engines = [r for r in ("docker", "podman", "apptainer") if check_runner(r)]
+    print(f"  runners  {', '.join(engines) if engines else 'none'} + local  "
+          f"(qsm-ci run --runner …)")
     print(f"  gh       {'ok' if shutil.which('gh') else 'missing (optional, for qsm-ci submit)'}")
     for mod in ("numpy", "scipy", "nibabel"):
         try:

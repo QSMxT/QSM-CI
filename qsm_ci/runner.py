@@ -52,27 +52,58 @@ def resolve_algo_dir(target: str) -> Path:
                      f"(looked at {p}, algorithms/{target})")
 
 
-def check_docker() -> bool:
-    try:
-        return subprocess.run(["docker", "version"], capture_output=True).returncode == 0
-    except FileNotFoundError:
-        return False
+RUNNERS = ("docker", "podman", "apptainer", "local")
+_OCI_ENGINES = ("docker", "podman")  # daemonless podman is CLI-compatible with docker
 
 
-def _build_env(algo: dict, log) -> str:
-    """Resolve the runnable image: build a Dockerfile if present, else pull image:."""
+def _have(binary: str) -> bool:
+    return shutil.which(binary) is not None
+
+
+def check_runner(runner: str) -> bool:
+    """Is the tooling for this runner available?"""
+    if runner == "local":
+        return True
+    if runner == "docker":  # also confirm the daemon answers
+        try:
+            return subprocess.run(["docker", "version"], capture_output=True).returncode == 0
+        except FileNotFoundError:
+            return False
+    return _have(runner)
+
+
+def check_docker() -> bool:  # kept for back-compat
+    return check_runner("docker")
+
+
+def _build_oci(algo: dict, engine: str, log) -> str:
+    """docker/podman: build a Dockerfile if present, else pull image:. Returns the image ref."""
     if (algo["dir"] / "Dockerfile").exists():
         tag = f"qsm-ci-local/{algo['slug']}:latest"
         log(f"⚙ building image from Dockerfile → {tag}")
-        subprocess.run(["docker", "build", "-q", "-t", tag, str(algo["dir"])], check=True)
+        subprocess.run([engine, "build", "-q", "-t", tag, str(algo["dir"])], check=True)
         return tag
     tag = algo["image"]
     if not tag:
         raise SystemExit("algorithm.yml has no image: and no Dockerfile to build")
-    if subprocess.run(["docker", "image", "inspect", tag], capture_output=True).returncode != 0:
+    if subprocess.run([engine, "image", "inspect", tag], capture_output=True).returncode != 0:
         log(f"↓ pulling {tag}")
-        subprocess.run(["docker", "pull", tag], check=True)
+        subprocess.run([engine, "pull", tag], check=True)
     return tag
+
+
+def _apptainer_image(algo: dict) -> str:
+    """apptainer runs from a docker:// ref or a .sif — it can't build a Dockerfile itself."""
+    if (algo["dir"] / "Dockerfile").exists():
+        raise SystemExit(
+            "apptainer can't build a Dockerfile. Build it first with --runner docker/podman, "
+            "or set image: to a prebuilt reference (docker://…, a registry ref, or a .sif).")
+    img = algo["image"]
+    if not img:
+        raise SystemExit("algorithm.yml has no image: for apptainer to run")
+    if "://" in img or img.endswith(".sif") or os.path.exists(img):
+        return img
+    return f"docker://{img}"  # plain registry ref -> pull & convert on the fly
 
 
 def _run_container(algo, input_dir, output_dir, runner, log) -> float:
@@ -80,17 +111,27 @@ def _run_container(algo, input_dir, output_dir, runner, log) -> float:
         shutil.rmtree(output_dir)
     output_dir.mkdir(parents=True)
     t0 = time.time()
-    if runner == "docker":
-        image = _build_env(algo, log)
-        log(f"⚙ running container ({image})")
+    if runner in _OCI_ENGINES:
+        image = _build_oci(algo, runner, log)
+        log(f"⚙ running container ({runner}: {image})")
         subprocess.run([
-            "docker", "run", "--rm", "--network", "none",
+            runner, "run", "--rm", "--network", "none",
             "--user", f"{os.getuid()}:{os.getgid()}",
             "-v", f"{algo['dir']}:/algo:ro",
             "-v", f"{input_dir}:/input:ro", "-v", f"{output_dir}:/output",
             image, "bash", "/algo/run.sh",
         ], check=True)
-    else:
+    elif runner == "apptainer":
+        image = _apptainer_image(algo)
+        log(f"⚙ running container (apptainer: {image})")
+        log("  note: apptainer runs without enforced network isolation here; CI uses --network none.")
+        subprocess.run([
+            "apptainer", "exec", "--no-home", "--cleanenv",
+            "-B", f"{algo['dir']}:/algo:ro",
+            "-B", f"{input_dir}:/input:ro", "-B", f"{output_dir}:/output",
+            image, "bash", "/algo/run.sh",
+        ], check=True)
+    else:  # local
         log("⚙ running run.sh directly (--runner local)")
         subprocess.run(["bash", str(algo["dir"] / "run.sh"), str(input_dir), str(output_dir)],
                        check=True)
@@ -171,8 +212,8 @@ def _build_run_parser(slug: str, algo: dict) -> argparse.ArgumentParser:
                    help="where to write the produced artifact")
     p.add_argument("--truth", metavar="PATH", help=f"ground-truth {produced} to score against")
     p.add_argument("--seg", metavar="PATH", help="segmentation (enables full χ region metrics)")
-    p.add_argument("--runner", choices=["docker", "local"], default="docker",
-                   help="docker builds/runs the image; local runs run.sh on the host")
+    p.add_argument("--runner", choices=list(RUNNERS), default="docker",
+                   help="docker/podman/apptainer run the image; local runs run.sh on the host")
     p.add_argument("--set", action="append", default=[], dest="overrides", metavar="NAME=VALUE",
                    help="override a method parameter (repeatable); valid names listed below")
     return p
@@ -218,9 +259,10 @@ def run_command(argv, log=print) -> int:
 
     cfg = _overrides(algo, args.overrides)  # validate --set up front, before any work
 
-    if args.runner == "docker" and not check_docker():
-        log("! Docker isn't available. Install/start Docker, or use --runner local "
-            "(runs run.sh on the host; needs your deps installed).")
+    if not check_runner(args.runner):
+        hint = ("Install/start Docker" if args.runner == "docker" else f"'{args.runner}' not found")
+        log(f"! {args.runner} runner unavailable — {hint}. "
+            f"Try another --runner ({', '.join(RUNNERS)}); 'local' runs run.sh on the host.")
         return 1
 
     stage = algo["stage"]

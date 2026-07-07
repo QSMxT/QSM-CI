@@ -32,7 +32,8 @@ qsm-forward simple bids/            # permission-free cylinder phantom (or: qsm-
 # the fields/χ/mask/dseg land under bids/derivatives/qsm-forward/… — feed them to qsm-ci run
 ```
 
-`qsm-ci run` needs Docker (or `--runner local` to run `run.sh` on the host). Everything below is the
+`qsm-ci run` uses **Docker** by default; pick a container engine with `--runner`
+(`docker` · `podman` · `apptainer`), or `--runner local` to run `run.sh` on the host. Everything below is the
 detail behind these commands — read on if you want to hand-build a submission.
 
 ## 1. Pick your stage
@@ -91,7 +92,7 @@ Copy a reference folder to `algorithms/<your-slug>/` and edit:
 # flags depend on the stage — see: qsm-ci run <your-slug> --help
 qsm-ci run <your-slug> --localfield lf.nii.gz --mask mask.nii.gz --params params.json \
   --truth chi.nii.gz --seg dseg.nii.gz         # --truth/--seg optional; omit to just run
-qsm-ci run <your-slug> ... --runner local      # run run.sh on the host instead of in Docker
+qsm-ci run <your-slug> ... --runner podman     # or apptainer (docker:// images); local = run on host
 ```
 
 Your stage runs with **no network**, writes its produced artifact, and — if you passed `--truth` —
