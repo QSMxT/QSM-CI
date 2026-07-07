@@ -82,9 +82,12 @@ def run_algo(algo: dict, input_dir: Path, output_dir: Path, runner: str = "local
     output_dir.mkdir(parents=True)
     t0 = time.time()
     if runner == "docker":
+        import os
         # Untrusted submission: no network, read-only input, its own image (code baked in).
+        # Run as the host user so /output files aren't root-owned.
         subprocess.run([
             "docker", "run", "--rm", "--network", "none",
+            "--user", f"{os.getuid()}:{os.getgid()}",
             "-v", f"{input_dir}:/input:ro", "-v", f"{output_dir}:/output",
             algo["image"], "bash", "run.sh",
         ], check=True)

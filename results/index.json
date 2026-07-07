@@ -81,32 +81,6 @@
     },
     {
       "contract": "v2",
-      "name": "tkd",
-      "track": "sim",
-      "stage": "dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 0.34878063201904297,
-      "metrics": {
-        "nrmse": 32.610267656766595,
-        "nrmse_detrend": 34.46175937040432,
-        "nrmse_tissue": null,
-        "nrmse_blood": null,
-        "nrmse_dgm": 34.46175937040432,
-        "dgm_linearity": null,
-        "calc_moment_dev": null,
-        "calc_streak": null,
-        "correlation": 0.9454341497615044,
-        "xsim": 0.22330454332763244
-      },
-      "status": "ok",
-      "id": "tkd-iso",
-      "slug": "tkd",
-      "mode": "isolated"
-    },
-    {
-      "contract": "v2",
       "name": "nobfr-baseline+matlab-tkd",
       "track": "sim",
       "stage": "bfr+dipole",
@@ -254,6 +228,32 @@
         "bfr": "sharp",
         "dipole": "tkd"
       }
+    },
+    {
+      "contract": "v2",
+      "name": "tkd",
+      "track": "sim",
+      "stage": "dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 0.3901221752166748,
+      "metrics": {
+        "nrmse": 32.610267656766595,
+        "nrmse_detrend": 34.46175937040432,
+        "nrmse_tissue": null,
+        "nrmse_blood": null,
+        "nrmse_dgm": 34.46175937040432,
+        "dgm_linearity": null,
+        "calc_moment_dev": null,
+        "calc_streak": null,
+        "correlation": 0.9454341497615044,
+        "xsim": 0.22330454332763244
+      },
+      "status": "ok",
+      "id": "tkd-iso",
+      "slug": "tkd",
+      "mode": "isolated"
     }
   ]
 }
