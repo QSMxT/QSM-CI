@@ -22,9 +22,12 @@ Two datasets:
 - **`dev/`** — a small phantom for local development (`data/sim/dev/`), generated on demand. Both
   `inputs/` and `groundtruth/` may be released openly. Git-ignored (regenerate with the commands
   below).
-- **`scoring/`** — the phantom submissions are scored on. `groundtruth/` is held out on **OSF** and
-  pulled by CI (`scripts/fetch_dataset.sh`, `OSF_TOKEN`). Overfitting is prevented because
-  submissions never see it.
+- **`scoring/`** — the phantom submissions are scored on. Sourced from the QSM.rs reference dataset
+  on **OSF** (private project [`y8adf`](https://osf.io/y8adf/), "QSM Rust Test Data" — a single
+  `bids.zip` with raw data + `derivatives/qsm-forward` ground truth). `scripts/fetch_dataset.sh`
+  downloads it with `OSF_TOKEN`, unzips, and packs it into `inputs/` + `groundtruth/`. The CI caches
+  the zip (`OSF_ZIP=.osfcache/bids.zip`). Held out — submissions never get the token, so they can't
+  see `groundtruth/`.
 
 ## Generating a dataset
 

@@ -19,6 +19,11 @@ gt/
 # Pipeline runner scratch
 .work/
 
+# OSF dataset cache + any local token (secret — never commit)
+.osfcache/
+*osf*.txt
+qsm-ci-osf.txt
+
 # NIfTI volumes (datasets pulled/generated at runtime; result volumes are opt-in)
 *.nii
 *.nii.gz

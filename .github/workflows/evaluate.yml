@@ -53,9 +53,15 @@ jobs:
       - name: Install scorer deps
         run: pip install -r eval/requirements.txt
 
+      - name: Cache OSF dataset zip
+        uses: actions/cache@v4
+        with:
+          path: .osfcache/bids.zip
+          key: osf-bids-698ac9aecae88916d1e24f69
       - name: Fetch dataset (public inputs + held-out ground truth)
         env:
           OSF_TOKEN: ${{ secrets.OSF_TOKEN }}
+          OSF_ZIP: .osfcache/bids.zip
         run: scripts/fetch_dataset.sh "$TRACK" data/${TRACK}/scoring
 
       - name: Isolated evaluation (build env with network, run offline, mount code)
