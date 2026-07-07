@@ -24,7 +24,10 @@ function badge(text, cls) {
 
 const uniq = (arr) => [...new Set(arr)];
 const composedRuns = () => allRuns.filter((r) => r.mode === "composed" && r.combo);
-const fmapsList = () => uniq(composedRuns().map((r) => r.combo.field_mapping || "gt"));
+const fmapsList = () => {
+  const s = uniq(composedRuns().map((r) => r.combo.field_mapping || "gt"));
+  return s.includes("gt") ? ["gt", ...s.filter((x) => x !== "gt")] : s;  // ground truth first (default)
+};
 const bfrList = () => uniq(composedRuns().map((r) => r.combo.bfr));
 const dipoleList = () => uniq(composedRuns().map((r) => r.combo.dipole));
 const findPipeline = (f, b, d) => composedRuns().find((r) =>
@@ -59,22 +62,26 @@ function stagesHTML() {
   }).join("") || `<p class="p-3 text-sm text-gray-400">No matches.</p>`;
 }
 
+const fmapName = (m) => (m === "gt" ? "ground truth" : m);
+
 function pipelinesHTML() {
   const cur = currentCombo();
   const f = filter.toLowerCase();
-  const fmaps = fmapsList();
-  const fmSel = fmaps.length > 1
-    ? `<div class="px-1 pb-3"><select id="pl-fmap" class="w-full rounded-lg border-gray-300 text-sm py-1.5">
-        ${fmaps.map((x) => `<option value="${x}" ${x === cur.fmap ? "selected" : ""}>Field: ${x === "gt" ? "ground truth" : x}</option>`).join("")}</select></div>`
-    : "";
   const axis = (title, methods, kind) => {
-    const rows = methods.filter((m) => !f || m.toLowerCase().includes(f)).map((m) => {
-      const rn = kind === "bfr" ? findPipeline(cur.fmap, m, cur.dipole) : findPipeline(cur.fmap, cur.bfr, m);
-      return runItem(rn, run?.id).replace("%NAME%", m);
+    const rows = methods.filter((m) => {
+      const nm = kind === "fmap" ? fmapName(m) : m;
+      return !f || nm.toLowerCase().includes(f);
+    }).map((m) => {
+      const rn = kind === "fmap" ? findPipeline(m, cur.bfr, cur.dipole)
+        : kind === "bfr" ? findPipeline(cur.fmap, m, cur.dipole)
+        : findPipeline(cur.fmap, cur.bfr, m);
+      return runItem(rn, run?.id).replace("%NAME%", kind === "fmap" ? fmapName(m) : m);
     }).join("");
     return `<div class="mb-3"><div class="px-2.5 pt-1 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">${title}</div>${rows}</div>`;
   };
-  return fmSel + axis("Background removal", bfrList(), "bfr") + axis("Dipole inversion", dipoleList(), "dipole");
+  return axis("Field mapping", fmapsList(), "fmap")
+    + axis("Background removal", bfrList(), "bfr")
+    + axis("Dipole inversion", dipoleList(), "dipole");
 }
 
 function buildSidebar() {
@@ -84,12 +91,6 @@ function buildSidebar() {
   $("run-list").innerHTML = navMode === "stages" ? stagesHTML() : pipelinesHTML();
   $("run-list").querySelectorAll(".run-item").forEach((b) =>
     b.addEventListener("click", () => { if (b.dataset.id) selectRun(b.dataset.id); }));
-  const sel = $("pl-fmap");
-  if (sel) sel.addEventListener("change", () => {
-    const cur = currentCombo();
-    const rn = findPipeline(sel.value, cur.bfr, cur.dipole);
-    if (rn) selectRun(rn.id);
-  });
 }
 
 function selectRun(id) {
@@ -115,14 +116,14 @@ async function loadRun() {
   $("sub-meta").innerHTML = bits.join(" · ");
   renderMetrics();
 
-  const note = $("viewer-note"), canvas = $("gl1"), tabs = $("layer-tabs");
+  const note = $("viewer-note"), canvas = $("gl1"), controls = $("viewer-controls");
   if (run.status === "DNF") {
-    canvas.style.visibility = "hidden"; tabs.style.visibility = "hidden";
+    canvas.style.visibility = "hidden"; controls.style.display = "none";
     note.textContent = "This run did not produce a valid output (DNF).";
     note.classList.remove("hidden"); note.classList.add("flex");
     return;
   }
-  canvas.style.visibility = "visible"; tabs.style.visibility = "visible";
+  canvas.style.visibility = "visible"; controls.style.display = "";
   note.classList.add("hidden"); note.classList.remove("flex");
 
   baseUrl = `results/${run.id}/`;
@@ -169,28 +170,61 @@ function setLayerActive(layer) {
     t.className = "rounded-md px-3 py-1 transition " +
       (t.dataset.layer === layer ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700"));
 }
+const cap = (s) => s[0].toUpperCase() + s.slice(1);
+const baseVol = () => nv.volumes[0];
+function setViewActive(v) {
+  $("view-tabs").querySelectorAll("button").forEach((b) =>
+    b.className = "rounded-md px-2.5 py-1 transition " +
+      (b.dataset.view === v ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700"));
+}
+function syncWindow() {
+  const v = baseVol(); if (!v) return;
+  $("win-min").value = Number(v.cal_min).toPrecision(4);
+  $("win-max").value = Number(v.cal_max).toPrecision(4);
+}
+
 function wireControls() {
   $("layer-tabs").querySelectorAll("button").forEach((t) =>
     t.addEventListener("click", () => { setLayerActive(t.dataset.layer); showLayer(t.dataset.layer); }));
+  $("view-tabs").querySelectorAll("button").forEach((t) =>
+    t.addEventListener("click", () => { setViewActive(t.dataset.view); nv.setSliceType(nv["sliceType" + cap(t.dataset.view)]); }));
+  $("cmap").addEventListener("change", () => { const v = baseVol(); if (v) { v.colormap = $("cmap").value; nv.updateGLVolume(); } });
+  $("t-colorbar").addEventListener("change", (e) => { nv.opts.isColorbar = e.target.checked; nv.drawScene(); });
+  $("t-crosshair").addEventListener("change", (e) => { nv.setCrosshairWidth(e.target.checked ? 0.75 : 0); });
+  $("t-interp").addEventListener("change", (e) => { nv.setInterpolation(!e.target.checked); nv.drawScene(); });
+  const setWin = () => { const v = baseVol(); if (!v) return; v.cal_min = parseFloat($("win-min").value); v.cal_max = parseFloat($("win-max").value); nv.updateGLVolume(); };
+  $("win-min").addEventListener("change", setWin);
+  $("win-max").addEventListener("change", setWin);
+  $("win-auto").addEventListener("click", () => {
+    const v = baseVol(); if (!v) return;
+    v.cal_min = v.robust_min ?? v.global_min; v.cal_max = v.robust_max ?? v.global_max;
+    nv.updateGLVolume(); syncWindow();
+  });
   $("opacity").addEventListener("input", (e) => {
     for (let i = 1; i < nv.volumes.length; i++) nv.setOpacity(i, parseFloat(e.target.value));
     nv.updateGLVolume();
   });
+  nv.setInterpolation(true);      // nearest-neighbour by default (Smooth unchecked)
+  setViewActive("multiplanar");
 }
 
 async function showLayer(layer) {
-  const opacity = parseFloat($("opacity").value);
+  const cmap = $("cmap").value;
+  const overlayCtl = $("overlay-ctl");
   if (layer === "error") {
-    await nv.loadVolumes([{ url: baseUrl + "truth.nii.gz", colormap: "gray" }]);
-    nv.volumes[0].cal_min = win.lo; nv.volumes[0].cal_max = win.hi;
-    await nv.addVolumeFromUrl({ url: baseUrl + "error.nii.gz", colormap: "warm", opacity });
+    await nv.loadVolumes([{ url: baseUrl + "truth.nii.gz", colormap: cmap }]);
+    baseVol().cal_min = win.lo; baseVol().cal_max = win.hi;
+    await nv.addVolumeFromUrl({ url: baseUrl + "error.nii.gz", colormap: "warm", opacity: parseFloat($("opacity").value) });
     const ov = nv.volumes[nv.volumes.length - 1];
     ov.cal_min = win.elo; ov.cal_max = win.ehi;
+    overlayCtl.classList.remove("hidden"); overlayCtl.classList.add("flex");
   } else {
-    await nv.loadVolumes([{ url: baseUrl + (layer === "truth" ? "truth.nii.gz" : "recon.nii.gz"), colormap: "gray" }]);
-    nv.volumes[0].cal_min = win.lo; nv.volumes[0].cal_max = win.hi;
+    await nv.loadVolumes([{ url: baseUrl + (layer === "truth" ? "truth.nii.gz" : "recon.nii.gz"), colormap: cmap }]);
+    baseVol().cal_min = win.lo; baseVol().cal_max = win.hi;
+    overlayCtl.classList.add("hidden"); overlayCtl.classList.remove("flex");
   }
   nv.updateGLVolume();
+  syncWindow();
 }
 
 // ---- boot -------------------------------------------------------------------
