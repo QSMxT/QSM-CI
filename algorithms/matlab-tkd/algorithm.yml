@@ -1,4 +1,11 @@
 contract: v2
 stage: dipole            # consumes: localfield, mask, params  ->  produces: chimap
+# Prebuilt MCR image: MATLAB Runtime base + the compiled `recon` (see BUILD.md).
+# QSM-CI pulls this and runs it offline (--network none) — no MATLAB license at run time.
 image: ghcr.io/astewartau/qsm-ci/matlab-tkd:v1
 run: bash run.sh
+# Optional: let CI compile recon.m for you on a MATLAB-licensed runner instead of pre-building
+# the image yourself (see .github/workflows/matlab-compile.yml).
+matlab:
+  entry: recon.m
+  runtime: r2023b        # MATLAB Runtime version; must match the MATLAB Compiler release

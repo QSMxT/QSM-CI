@@ -1,31 +1,48 @@
-# Building the MATLAB submission
+# Building matlab-tkd for the MATLAB Runtime
 
-The container runs a **compiled** MATLAB binary on the license-free MATLAB Runtime, so no MATLAB
-license is needed to *run* the submission — only to *build* it.
+Compile once on a machine with **MATLAB + MATLAB Compiler** — the only place a license is needed.
+The result runs on the free **MATLAB Runtime (MCR)**, so QSM-CI scores it offline with no license.
 
-## 1. Compile `recon.m` (needs MATLAB + MATLAB Compiler)
+## 1. Compile `recon.m` → standalone `recon`
 
-```matlab
-mcc -m recon.m -o recon
+```bash
+matlab -batch "mcc('-m','recon.m','-o','recon','-d','.')"
 ```
 
-This produces the standalone `recon` executable (and an MCR wrapper). Use a MATLAB version whose
-Runtime matches the base image in `Dockerfile` (here R2023b).
+Use the MATLAB release whose Runtime you'll target (here **R2023b**). `mcc` bundles the toolbox code
+your method uses into the binary, so real toolboxes (SEPIA, MEDI, …) work. Keep the `recon`
+executable (ignore the generated `run_recon.sh`, `readme.txt`, etc.).
 
-## 2. Build the image
+## 2. Bake into an MCR image and push
 
-Place the compiled `recon` next to the `Dockerfile`, then:
+With the compiled `recon` in this folder:
+
+```dockerfile
+# Dockerfile
+FROM containers.mathworks.com/matlab-runtime:r2023b     # free Runtime; match the compiler release
+COPY recon /opt/qsm-ci/recon
+RUN chmod +x /opt/qsm-ci/recon
+```
 
 ```bash
 docker build -t ghcr.io/astewartau/qsm-ci/matlab-tkd:v1 .
 docker push  ghcr.io/astewartau/qsm-ci/matlab-tkd:v1
 ```
 
+That tag is what `algorithm.yml`'s `image:` points at. QSM-CI pulls it, mounts your `run.sh` at
+`/algo`, and runs `/opt/qsm-ci/recon /input /output` with `--network none`.
+
+## Alternatives
+
+- **Let CI compile it.** If you don't want to build locally, push just `recon.m` (source) and run
+  [`.github/workflows/matlab-compile.yml`](../../.github/workflows/matlab-compile.yml) on a
+  self-hosted runner that has MATLAB + Compiler + your license. It compiles and pushes the image for
+  you (the license is used at *build* time, where network is allowed).
+- **Mount instead of bake.** Commit the compiled `recon` in this folder and point `image:` at a plain
+  `matlab-runtime` base; `run.sh` falls back to `/algo/recon`. Simpler, but puts a binary in git.
+
 ## Notes
 
-- The compiled `recon` is a binary artifact, not committed here — build it in your environment (or a
-  CI job with a MATLAB license) and push the resulting image.
-- Alternatively, wrap an existing Neurodesk MATLAB QSM container (e.g. TGV-QSM) by pointing
-  `algorithm.yml`'s `image:` at it and adapting `run.sh` to its CLI — often the fastest MATLAB path.
-- See [`../../docs/matlab.md`](../../docs/matlab.md) and the Neurodesk `matlabmcr` template for
-  Runtime versions and environment variables.
+- The MCR version **must** match the MATLAB Compiler release used.
+- The binary is Linux x86_64 and opaque (source isn't recoverable) — fine, it runs sandboxed.
+- A few MATLAB functions are non-deployable by `mcc`; core QSM math is fine.
