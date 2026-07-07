@@ -4,22 +4,36 @@ A submission is one folder and a pull request. You bring a container image; QSM-
 
 ## Quickstart — the `qsm-ci` CLI
 
-The CLI scaffolds, tests, and submits — it builds and runs your container on a small public **dev
-phantom** and scores it with the *exact* code the leaderboard uses, so your local numbers match.
+The CLI scaffolds a submission, runs one stage on **files you provide**, and (if you hand it a
+ground truth) scores it with the *exact* code the leaderboard uses, so your numbers match. It does
+**not** parse BIDS — bring the specific NIfTIs a stage consumes. (BIDS parsing is qsmxt's job, and
+QSM-CI only does it server-side to build the challenge dataset.)
 
 ```bash
 pipx install git+https://github.com/astewartau/qsm-ci   # or: pip install qsm-ci
 
 qsm-ci new                 # interactive scaffold -> algorithms/<slug>/ (or use the web wizard)
 # ... edit your recon.py / recon.m / recon.rs / recon.jl ...
-qsm-ci test <slug>         # build + run your container on the dev phantom, print your scores
-qsm-ci submit <slug>       # commit on a branch and open a pull request
 
-qsm-ci doctor              # check docker / gh / deps / dataset
+# run one stage on explicit inputs; the --<artifact> flags depend on the stage:
+qsm-ci run my-method --localfield lf.nii.gz --mask mask.nii.gz --params params.json
+#   add --truth chi.nii.gz [--seg dseg.nii.gz] to score the output
+qsm-ci run my-method --help    # show exactly which files this submission's stage needs
+
+qsm-ci submit my-method    # commit on a branch and open a pull request
+qsm-ci doctor              # check docker / gh / deps
 ```
 
-`qsm-ci test` needs Docker (or `--runner local` to run `run.sh` on the host). Everything below is
-the detail behind those commands — read on if you want to hand-build a submission.
+Need a dataset to test against? Generate one with **qsm-forward** (it forward-simulates a phantom,
+so it comes *with* ground truth) and pass the files to `qsm-ci run`:
+
+```bash
+qsm-forward simple bids/            # permission-free cylinder phantom (or: qsm-forward head <maps> bids/)
+# the fields/χ/mask/dseg land under bids/derivatives/qsm-forward/… — feed them to qsm-ci run
+```
+
+`qsm-ci run` needs Docker (or `--runner local` to run `run.sh` on the host). Everything below is the
+detail behind these commands — read on if you want to hand-build a submission.
 
 ## 1. Pick your stage
 
@@ -71,16 +85,19 @@ Copy a reference folder to `algorithms/<your-slug>/` and edit:
 - Bake your code into the image (or, like the reference algos, keep `recon.*` + `run.sh` in the
   folder and a small `Dockerfile` that copies them onto a base image).
 
-## 4. Test locally
+## 4. Run it locally
 
 ```bash
-qsm-ci test <your-slug>          # fetches the dev phantom, builds+runs your container, scores it
-qsm-ci test <your-slug> --runner local   # run run.sh on the host instead of in Docker
+# flags depend on the stage — see: qsm-ci run <your-slug> --help
+qsm-ci run <your-slug> --localfield lf.nii.gz --mask mask.nii.gz --params params.json \
+  --truth chi.nii.gz --seg dseg.nii.gz         # --truth/--seg optional; omit to just run
+qsm-ci run <your-slug> ... --runner local      # run run.sh on the host instead of in Docker
 ```
 
-Under the hood this is one iteration of the isolated evaluation: your stage is fed the dev phantom's
-ground-truth boundary, run with **no network**, and its output scored by `qsm_ci.qsm_eval` — the same
-scorer the CI uses. To drive the whole isolated + composed matrix at once (from a repo checkout):
+Your stage runs with **no network**, writes its produced artifact, and — if you passed `--truth` —
+is scored by `qsm_ci.qsm_eval`, the same scorer the CI uses. Generate a phantom with `qsm-forward`
+(see the Quickstart) if you need inputs with ground truth. To drive the whole isolated + composed
+matrix across all submissions at once (from a repo checkout):
 
 ```bash
 python scripts/pipeline.py --dataset data/sim/dev --mode both --runner docker
@@ -95,5 +112,5 @@ qsm-ci submit <your-slug>        # commit on a branch + open the PR (uses gh if 
 QSM-CI runs your stage **isolated** on the held-out ground-truth boundary (no network, time-limited),
 scores it, and comments the metrics on your PR. The full **composition matrix** (your stage against
 everyone else's) refreshes on the [leaderboard](https://astewartau.github.io/qsm-ci/). The
-authoritative score always comes from CI — it holds the real, hidden scoring phantom — but
-`qsm-ci test` on the open dev phantom confirms your plumbing and shows roughly where you'd land.
+authoritative score always comes from CI — it holds the real, hidden scoring phantom — but running
+locally against your own phantom confirms your plumbing and shows roughly where you'd land.

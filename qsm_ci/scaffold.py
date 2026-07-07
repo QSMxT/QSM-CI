@@ -87,5 +87,5 @@ def run_new(args) -> int:
     print(f"\n✓ created {rel}/")
     for fname, _ in templates.files(meta):
         print(f"    {rel}/{fname}")
-    print(f"\nNext:  edit your reconstruction, then  qsm-ci test {meta['slug']}")
+    print(f"\nNext:  edit your reconstruction, then  qsm-ci run {meta['slug']} --help")
     return 0
