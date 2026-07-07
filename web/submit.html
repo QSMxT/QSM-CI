@@ -82,8 +82,19 @@
           Your code runs in a container with <strong>no network</strong>. It reads
           <code x-text="STAGE_IO[stage].c"></code> from <code>/input</code> and writes
           <code x-text="STAGE_IO[stage].p + '.nii.gz'"></code> (in ppm) to <code>/output</code>.
-          Any language works — see the <a href="methods.html" class="text-indigo-600 hover:underline">example methods</a>
-          (Python, Octave, MATLAB via QSMxT).
+          Any language works — pick one below for a starter file.
+        </div>
+        <div class="block text-sm">
+          <span class="font-medium">Language</span>
+          <div class="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <template x-for="l in langs" :key="l.key">
+              <button type="button" @click="lang = l.key" class="rounded-lg border px-3 py-2 text-center transition"
+                :class="lang===l.key ? 'border-indigo-500 ring-2 ring-indigo-500/30 bg-indigo-50/50 dark:bg-indigo-500/10' : 'border-gray-200 hover:border-gray-300 dark:border-gray-700'">
+                <span class="font-medium" x-text="l.name"></span>
+              </button>
+            </template>
+          </div>
+          <span class="mt-1.5 block text-xs text-gray-500 dark:text-gray-400">We'll generate a <code x-text="langMeta.file"></code> starter for you. Suggested base image: <span x-text="langMeta.image"></span>.</span>
         </div>
         <div class="block text-sm">
           <span class="font-medium">Container image</span>
@@ -146,7 +157,7 @@
         <div class="rounded-xl bg-gray-50 p-4 dark:bg-gray-800/50">
           <p class="text-sm font-medium">Then, on your machine</p>
           <ol class="mt-2 space-y-1.5 text-sm text-gray-600 dark:text-gray-400 list-decimal list-inside">
-            <li>Download the zip (or copy the files) and drop the folder into <code>algorithms/</code> in your fork; fill in <code>recon.py</code> with your method.</li>
+            <li>Download the zip (or copy the files) and drop the folder into <code>algorithms/</code> in your fork; fill in <code x-text="langMeta.file"></code> with your method.</li>
             <li>Test locally:
               <code class="block mt-1 rounded bg-gray-900 text-gray-100 px-2 py-1 text-xs" x-text="'python scripts/pipeline.py --dataset data/sim/dev --mode isolated --only ' + slugOr"></code></li>
             <li>Commit on a branch and open a pull request.</li>
@@ -197,6 +208,13 @@
           { label: "GHCR", value: "ghcr.io/user/image:tag" },
           { label: "Quay", value: "quay.io/user/image:tag" },
         ],
+        langs: [
+          { key: "python", name: "Python", file: "recon.py", image: "python:3.11 + numpy, nibabel" },
+          { key: "rust", name: "Rust", file: "recon.rs", image: "rust:1 (deps vendored at build)" },
+          { key: "matlab", name: "MATLAB / Octave", file: "recon.m", image: "MATLAB Runtime or Octave" },
+          { key: "julia", name: "Julia", file: "recon.jl", image: "julia:1 + NIfTI.jl" },
+        ],
+        lang: "python",
         name: "", slug: "", stage: "dipole", description: "",
         image: "", run: "bash run.sh",
         authors: "", license: "MIT", citation: "", doi: "", code_url: "", params: [],
@@ -215,35 +233,99 @@
           return y;
         },
         get algorithmYml() { return `contract: v2\nstage: ${this.stage}\nimage: ${this.image || "ghcr.io/you/your-image:v1"}\nrun: ${this.run}\n`; },
+        get langMeta() { return this.langs.find((l) => l.key === this.lang) || this.langs[0]; },
         get runSh() {
           const io = STAGE_IO[this.stage];
-          return `#!/usr/bin/env bash\n# ${this.name || this.slugOr} — ${this.stage} stage.\n`
+          const head = `#!/usr/bin/env bash\n# ${this.name || this.slugOr} — ${this.stage} stage.\n`
             + `# consumes: ${io.c}\n# produces: ${io.p}.nii.gz (ppm, within the mask)\n`
-            + `set -euo pipefail\nIN="\${1:-/input}"; OUT="\${2:-/output}"\n\n`
-            + `# TODO: read ${io.inp}.nii.gz from $IN, write ${io.p}.nii.gz to $OUT.\n`
-            + `python3 "$(dirname "$0")/recon.py" "$IN" "$OUT"\n`;
+            + `set -euo pipefail\nIN="\${1:-/input}"; OUT="\${2:-/output}"\n`
+            + `HERE="$(cd "$(dirname "$0")" && pwd)"\n\n`;
+          const body = {
+            python: `python3 "$HERE/recon.py" "$IN" "$OUT"\n`,
+            julia: `julia "$HERE/recon.jl" "$IN" "$OUT"\n`,
+            matlab: `# MATLAB:\nmatlab -batch "addpath('$HERE'); recon('$IN','$OUT')"\n`
+              + `# Octave alternative:\n# octave --eval "addpath('$HERE'); recon('$IN','$OUT')"\n`,
+            rust: `# Build your binary in the image (network is on at build time): cargo build --release\n`
+              + `BIN="$HERE/target/release/recon"\n`
+              + `[ -x "$BIN" ] || cargo build --release --offline --manifest-path "$HERE/Cargo.toml"\n`
+              + `"$BIN" "$IN" "$OUT"\n`,
+          };
+          return head + (body[this.lang] || body.python);
         },
-        get reconPy() {
-          const io = STAGE_IO[this.stage];
-          return `#!/usr/bin/env python3\n"""${this.name || this.slugOr} — ${this.stage} stage. Reads /input, writes /output."""\n`
-            + `import sys\nimport nibabel as nib\nimport numpy as np\n\n\n`
-            + `def main(inp, out):\n`
-            + `    # consumes: ${io.c}\n`
-            + `    img = nib.load(f"{inp}/${io.inp}.nii.gz")\n`
-            + `    ${io.inp} = img.get_fdata().astype(np.float64)\n`
-            + `    mask = nib.load(f"{inp}/mask.nii.gz").get_fdata() > 0.5\n\n`
-            + `    # TODO: your reconstruction here. Produce ${io.p} (ppm), within the mask.\n`
-            + `    ${io.p} = ${io.inp} * mask  # placeholder\n\n`
-            + `    nib.save(nib.Nifti1Image(${io.p}.astype(np.float32), img.affine), f"{out}/${io.p}.nii.gz")\n\n\n`
-            + `if __name__ == "__main__":\n    main(sys.argv[1], sys.argv[2])\n`;
+        get reconBody() {
+          const io = STAGE_IO[this.stage], nm = this.name || this.slugOr;
+          if (this.lang === "python")
+            return `#!/usr/bin/env python3\n"""${nm} — ${this.stage} stage. Reads <in-dir>, writes <out-dir>."""\n`
+              + `import sys\nimport nibabel as nib\nimport numpy as np\n\n\n`
+              + `def main(inp, out):\n`
+              + `    # consumes: ${io.c}\n`
+              + `    img = nib.load(f"{inp}/${io.inp}.nii.gz")\n`
+              + `    ${io.inp} = img.get_fdata().astype(np.float64)\n`
+              + `    mask = nib.load(f"{inp}/mask.nii.gz").get_fdata() > 0.5\n\n`
+              + `    # TODO: your reconstruction here. Produce ${io.p} (ppm), within the mask.\n`
+              + `    ${io.p} = ${io.inp} * mask  # placeholder\n\n`
+              + `    nib.save(nib.Nifti1Image(${io.p}.astype(np.float32), img.affine), f"{out}/${io.p}.nii.gz")\n\n\n`
+              + `if __name__ == "__main__":\n    main(sys.argv[1], sys.argv[2])\n`;
+          if (this.lang === "julia")
+            return `# ${nm} — ${this.stage} stage.  consumes: ${io.c}\n`
+              + `using NIfTI\n\n`
+              + `function main(inp, out)\n`
+              + `    img = niread(joinpath(inp, "${io.inp}.nii.gz"))\n`
+              + `    ${io.inp} = Float64.(img.raw)\n`
+              + `    mask = niread(joinpath(inp, "mask.nii.gz")).raw .> 0.5\n\n`
+              + `    # TODO: your reconstruction here. Produce ${io.p} (ppm), within the mask.\n`
+              + `    ${io.p} = ${io.inp} .* mask  # placeholder\n\n`
+              + `    niwrite(joinpath(out, "${io.p}.nii.gz"), NIVolume(img.header, Float32.(${io.p})))\n`
+              + `end\n\n`
+              + `main(ARGS[1], ARGS[2])\n`;
+          if (this.lang === "matlab")
+            return `function recon(inp, out)\n`
+              + `% ${nm} — ${this.stage} stage.  consumes: ${io.c}\n`
+              + `    info = niftiinfo(fullfile(inp, '${io.inp}.nii.gz'));\n`
+              + `    ${io.inp} = double(niftiread(info));\n`
+              + `    mask = niftiread(fullfile(inp, 'mask.nii.gz')) > 0.5;\n\n`
+              + `    % TODO: your reconstruction here. Produce ${io.p} (ppm), within the mask.\n`
+              + `    ${io.p} = ${io.inp} .* mask;  % placeholder\n\n`
+              + `    info.Datatype = 'single';\n`
+              + `    niftiwrite(single(${io.p}), fullfile(out, '${io.p}.nii'), info, 'Compressed', true);\n`
+              + `end\n`;
+          // rust
+          return `//! ${nm} — ${this.stage} stage. Reads <in-dir>, writes <out-dir>.\n`
+            + `use std::env;\n`
+            + `use nifti::writer::WriterOptions;\n`
+            + `use nifti::{IntoNdArray, NiftiObject, ReaderOptions};\n\n`
+            + `fn main() -> Result<(), Box<dyn std::error::Error>> {\n`
+            + `    let args: Vec<String> = env::args().collect();\n`
+            + `    let (inp, out) = (&args[1], &args[2]);\n\n`
+            + `    // consumes: ${io.c}\n`
+            + `    let obj = ReaderOptions::new().read_file(format!("{}/${io.inp}.nii.gz", inp))?;\n`
+            + `    let header = obj.header().clone();\n`
+            + `    let ${io.inp} = obj.into_volume().into_ndarray::<f64>()?;\n`
+            + `    let mask = ReaderOptions::new()\n`
+            + `        .read_file(format!("{}/mask.nii.gz", inp))?\n`
+            + `        .into_volume().into_ndarray::<f64>()?\n`
+            + `        .mapv(|v| if v > 0.5 { 1.0 } else { 0.0 });\n\n`
+            + `    // TODO: your reconstruction here. Produce ${io.p} (ppm), within the mask.\n`
+            + `    let ${io.p} = &${io.inp} * &mask; // placeholder\n\n`
+            + `    WriterOptions::new(format!("{}/${io.p}.nii.gz", out))\n`
+            + `        .reference_header(&header)\n`
+            + `        .write_nifti(&${io.p})?;\n`
+            + `    Ok(())\n}\n`;
+        },
+        get cargoToml() {
+          return `[package]\nname = "recon"\nversion = "0.1.0"\nedition = "2021"\n\n`
+            + `[[bin]]\nname = "recon"\npath = "recon.rs"\n\n`
+            + `[dependencies]\nnifti = { version = "0.16", features = ["ndarray_volumes"] }\nndarray = "0.15"\n`;
         },
         get files() {
-          return [
+          const f = [
             { name: "metadata.yml", body: this.metadataYml },
             { name: "algorithm.yml", body: this.algorithmYml },
             { name: "run.sh", body: this.runSh },
-            { name: "recon.py", body: this.reconPy },
+            { name: this.langMeta.file, body: this.reconBody },
           ];
+          if (this.lang === "rust") f.push({ name: "Cargo.toml", body: this.cargoToml });
+          return f;
         },
         copy(text, name) { navigator.clipboard.writeText(text); this.copied = name; setTimeout(() => (this.copied = ""), 1500); },
         async downloadZip() {
