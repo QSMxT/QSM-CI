@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# QSM-CI submission — TGV (dipole stage) via QSMxT / QSM.rs.
+# QSM-CI submission — TGV (bfr+dipole stage) via QSMxT / QSM.rs.
 set -euo pipefail
 IN="${1:-/input}"; OUT="${2:-/output}"
 B0=$(jq -r '.B0_dir | join(" ")' "$IN/params.json")
@@ -12,4 +12,4 @@ if [ -f "$CFG" ]; then
   V=$(jq -r '.alpha1 // empty' "$CFG"); [ -n "$V" ] && SET="$SET --alpha1 $V"
   V=$(jq -r '.alpha0 // empty' "$CFG"); [ -n "$V" ] && SET="$SET --alpha0 $V"
 fi
-qsmxt invert tgv "$IN/localfield.nii.gz" -m "$IN/mask.nii.gz" -o "$OUT/chimap.nii.gz" --b0-direction $B0 --field-strength "$(jq -r .B0 "$IN/params.json")" --echo-time "$(jq -r .TE[0] "$IN/params.json")" $SET
+qsmxt invert tgv "$IN/totalfield.nii.gz" -m "$IN/mask.nii.gz" -o "$OUT/chimap.nii.gz" --b0-direction $B0 --field-strength "$(jq -r .B0 "$IN/params.json")" --echo-time "$(jq -r .TE[0] "$IN/params.json")" $SET

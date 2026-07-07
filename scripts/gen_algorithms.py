@@ -23,6 +23,7 @@ STAGE = {
     "bfr":        ("totalfield", "localfield", "bgremove"),
     "dipole":     ("localfield", "chimap",     "invert"),
     "unwrap+bfr": ("phase",      "localfield", "bgremove"),  # HARPERELLA: wrapped phase -> local field
+    "bfr+dipole": ("totalfield", "chimap",     "invert"),    # TGV: total field -> chi (own BFR)
 }
 
 # slug, stage, qsmxt algo name, display name, description, citation, doi, [(param, default, desc)]
@@ -93,8 +94,9 @@ ALGOS = [
      "Iterative LSQR inversion with streaking-artifact reduction.",
      "Li et al., NMR Biomed 2015", None,
      [("tol", "1e-4", "tolerance"), ("max_iter", "1000", "iterations")]),
-    ("tgv", "dipole", "tgv", "TGV",
-     "Total Generalized Variation regularized inversion (QSMxT inverts the local field).",
+    ("tgv", "bfr+dipole", "tgv", "TGV",
+     "Total Generalized Variation single-step reconstruction: total field -> susceptibility, "
+     "doing its own background field removal.",
      "Langkammer et al., NeuroImage 2015", "10.1016/j.neuroimage.2015.02.041",
      [("iterations", "1000", "iterations"), ("alpha1", "0.0015", "first-order weight"),
       ("alpha0", "0.003", "second-order weight")]),

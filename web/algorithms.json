@@ -317,9 +317,9 @@
     {
       "slug": "tgv",
       "name": "TGV",
-      "stage": "dipole",
+      "stage": "bfr+dipole",
       "engine": "QSMxT / QSM.rs",
-      "description": "Total Generalized Variation regularized inversion (QSMxT inverts the local field).",
+      "description": "Total Generalized Variation single-step reconstruction: total field -> susceptibility, doing its own background field removal.",
       "citation": "Langkammer et al., NeuroImage 2015",
       "doi": "10.1016/j.neuroimage.2015.02.041",
       "code_url": "https://github.com/astewartau/QSM.rs",
