@@ -9,52 +9,66 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script>tailwind.config = { theme: { extend: { fontFamily: { sans: ["Inter", "system-ui", "sans-serif"] } } } };</script>
   <script src="js/app.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body class="font-sans text-gray-900 bg-gray-50 antialiased">
   <header id="site-nav"></header>
 
-  <main class="mx-auto max-w-6xl px-6 py-8">
+  <main class="mx-auto max-w-7xl px-6 py-8">
     <a href="leaderboard.html" class="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900">
       <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Back to leaderboard
+      All results
     </a>
 
-    <!-- header card -->
-    <div class="mt-4 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-      <div class="flex flex-wrap items-center gap-3">
-        <h1 id="sub-title" class="text-2xl font-bold tracking-tight">Loading…</h1>
-        <div id="sub-badges" class="flex gap-2"></div>
-      </div>
-      <p id="sub-meta" class="mt-2 text-sm text-gray-500"></p>
-    </div>
-
-    <div class="mt-6 grid lg:grid-cols-5 gap-6">
-      <!-- viewer -->
-      <section class="lg:col-span-3 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-        <div class="flex flex-wrap items-center gap-4">
-          <div class="inline-flex rounded-lg bg-gray-100 p-1 text-sm font-medium" id="layer-tabs">
-            <button data-layer="recon" class="rounded-md px-3 py-1 transition">Reconstruction</button>
-            <button data-layer="truth" class="rounded-md px-3 py-1 transition">Ground truth</button>
-            <button data-layer="error" class="rounded-md px-3 py-1 transition">Error</button>
+    <div class="mt-4 grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-6">
+      <!-- sidebar -->
+      <aside class="lg:sticky lg:top-20 self-start">
+        <div class="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+          <div class="p-3 border-b border-gray-100">
+            <input id="run-filter" type="search" placeholder="Filter runs…" class="w-full rounded-lg border-gray-300 text-sm py-1.5 focus:border-indigo-500 focus:ring-indigo-500" />
           </div>
-          <label class="flex items-center gap-2 text-sm text-gray-500">Opacity
-            <input id="opacity" type="range" min="0" max="1" step="0.05" value="1" class="accent-indigo-600" />
-          </label>
-          <span id="intensity" class="ml-auto text-xs tabular-nums text-gray-400"></span>
+          <nav id="run-list" class="max-h-[calc(100vh-11rem)] overflow-y-auto p-2"></nav>
         </div>
-        <canvas id="gl1" class="mt-4 w-full rounded-xl bg-black" style="height:480px"></canvas>
-        <div id="viewer-note"></div>
-      </section>
+      </aside>
 
-      <!-- metrics -->
-      <section class="lg:col-span-2 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-        <h2 class="font-semibold text-gray-900">Metrics</h2>
-        <p id="metrics-sub" class="mt-0.5 text-xs text-gray-500"></p>
-        <table class="mt-4 w-full text-sm">
-          <tbody id="metrics-body" class="divide-y divide-gray-100"></tbody>
-        </table>
-      </section>
+      <!-- content -->
+      <div>
+        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+          <div class="flex flex-wrap items-center gap-3">
+            <h1 id="sub-title" class="text-2xl font-bold tracking-tight">Loading…</h1>
+            <div id="sub-badges" class="flex gap-2"></div>
+          </div>
+          <p id="sub-meta" class="mt-2 text-sm text-gray-500"></p>
+        </div>
+
+        <div class="mt-6 grid xl:grid-cols-5 gap-6">
+          <section class="xl:col-span-3 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+            <div class="flex flex-wrap items-center gap-4">
+              <div class="inline-flex rounded-lg bg-gray-100 p-1 text-sm font-medium" id="layer-tabs">
+                <button data-layer="recon" class="rounded-md px-3 py-1 transition">Reconstruction</button>
+                <button data-layer="truth" class="rounded-md px-3 py-1 transition">Ground truth</button>
+                <button data-layer="error" class="rounded-md px-3 py-1 transition">Error</button>
+              </div>
+              <label class="flex items-center gap-2 text-sm text-gray-500">Opacity
+                <input id="opacity" type="range" min="0" max="1" step="0.05" value="1" class="accent-indigo-600" />
+              </label>
+              <span id="intensity" class="ml-auto text-xs tabular-nums text-gray-400"></span>
+            </div>
+            <!-- fixed-height wrapper + absolutely-filled canvas: prevents the NiiVue resize-growth loop -->
+            <div class="relative mt-4 rounded-xl overflow-hidden bg-black" style="height:480px">
+              <canvas id="gl1" class="absolute inset-0 h-full w-full block"></canvas>
+              <div id="viewer-note" class="absolute inset-0 hidden items-center justify-center px-6 text-center text-sm text-gray-400 bg-gray-50"></div>
+            </div>
+          </section>
+
+          <section class="xl:col-span-2 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+            <h2 class="font-semibold text-gray-900">Metrics</h2>
+            <p id="metrics-sub" class="mt-0.5 text-xs text-gray-500"></p>
+            <table class="mt-4 w-full text-sm">
+              <tbody id="metrics-body" class="divide-y divide-gray-100"></tbody>
+            </table>
+          </section>
+        </div>
+      </div>
     </div>
   </main>
 
