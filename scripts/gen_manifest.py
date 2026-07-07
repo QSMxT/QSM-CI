@@ -24,7 +24,7 @@ def entry(meta: dict) -> dict:
         "engine": meta.get("engine"),
         "description": (meta.get("description") or "").strip(),
         "citation": meta.get("citation"),
-        "doi": meta.get("doi") or meta.get("paper_doi"),
+        "doi": meta.get("doi"),
         "code_url": meta.get("code_url"),
         "license": meta.get("license"),
         "authors": author_names,
