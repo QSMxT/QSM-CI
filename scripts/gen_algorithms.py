@@ -79,7 +79,7 @@ ALGOS = [
     ("tikhonov", "dipole", "tikhonov", "Tikhonov",
      "Closed-form L2 (Tikhonov) regularized inversion.",
      "Kames et al., 2018", None,
-     [("lambda", "1e-4", "L2 regularization"), ("reg", "laplacian", "identity|gradient|laplacian")]),
+     [("lambda", "1e-4", "L2 regularization")]),
     ("nltv", "dipole", "nltv", "NLTV",
      "Nonlocal Total Variation regularized inversion.",
      "—", None,
@@ -87,24 +87,48 @@ ALGOS = [
     ("medi", "dipole", "medi", "MEDI",
      "Morphology Enabled Dipole Inversion: magnitude-guided edge regularization.",
      "Liu et al., 2012", None,
-     [("lambda", "1e-4", "regularization"), ("smv", "true", "SMV deconvolution"), ("percentage", "0.95", "edge percentage")]),
+     [("lambda", "1e-4", "regularization"), ("percentage", "0.95", "edge percentage")]),
     ("ilsqr", "dipole", "ilsqr", "iLSQR",
      "Iterative LSQR inversion with streaking-artifact reduction.",
      "Li et al., NMR Biomed 2015", None,
      [("tol", "1e-4", "tolerance"), ("max_iter", "1000", "iterations")]),
 ]
 
-RUN_SH = """#!/usr/bin/env bash
-# QSM-CI submission — {name} ({stage} stage) via QSMxT / QSM.rs.
-set -euo pipefail
-IN="${{1:-/input}}"; OUT="${{2:-/output}}"
-B0=$(jq -r '.B0_dir | join(" ")' "$IN/params.json")
-qsmxt {group} {algo} "$IN/{inp}.nii.gz" -m "$IN/mask.nii.gz" -o "$OUT/{out}.nii.gz" --b0-direction $B0
-"""
-
-
 def yamllist(items):
     return "".join(f"  - name: {n}\n    default: {d}\n    description: {desc}\n" for n, d, desc in items)
+
+
+def param_block(algo, params):
+    """Bash that reads parameter overrides from /input/config.json into $SET (empty if none).
+
+    qsm-ci writes config.json from `--set name=value`; each declared param maps to the qsmxt flag
+    `--<algo>-<name>`. Absent file/keys => the qsmxt binary defaults are used (CI is unaffected).
+    """
+    if not params:
+        return "", ""
+    lines = ["", "# Parameter overrides (qsm-ci run --set NAME=VALUE) arrive as /input/config.json.",
+             'SET=""', 'CFG="$IN/config.json"', 'if [ -f "$CFG" ]; then']
+    for n, _, _ in params:
+        flag = f"--{algo}-{n.replace('_', '-')}"
+        lines.append(f'  V=$(jq -r \'.{n} // empty\' "$CFG"); [ -n "$V" ] && SET="$SET {flag} $V"')
+    lines.append("fi")
+    return "\n".join(lines) + "\n", " $SET"
+
+
+def run_sh(name, stage, group, algo, inp, out, slug, params):
+    pblock, suffix = param_block(algo, params)
+    cmd = (f'qsmxt {group} {algo} "$IN/{inp}.nii.gz" -m "$IN/mask.nii.gz" '
+           f'-o "$OUT/{out}.nii.gz" --b0-direction $B0')
+    if slug == "medi":  # MEDI: radians (needs B0+TE), uses magnitude, no internal SMV
+        cmd += (' --field-strength "$(jq -r .B0 "$IN/params.json")"'
+                ' --echo-time "$(jq -r .TE[0] "$IN/params.json")"'
+                ' --smv false --magnitude "$IN/magnitude.nii.gz"')
+    return ("#!/usr/bin/env bash\n"
+            f"# QSM-CI submission — {name} ({stage} stage) via QSMxT / QSM.rs.\n"
+            "set -euo pipefail\n"
+            'IN="${1:-/input}"; OUT="${2:-/output}"\n'
+            "B0=$(jq -r '.B0_dir | join(\" \")' \"$IN/params.json\")\n"
+            f"{pblock}{cmd}{suffix}\n")
 
 
 def gen(slug, stage, algo, name, desc, cite, doi, params):
@@ -123,15 +147,7 @@ def gen(slug, stage, algo, name, desc, cite, doi, params):
         f"image: {IMAGE}\nrun: bash run.sh\n"
         f"parameters:\n{yamllist(params)}")
 
-    rs = RUN_SH.format(name=name, stage=stage, group=group, algo=algo, inp=inp, out=out)
-    if slug == "medi":  # MEDI: works in radians (needs B0+TE), uses magnitude, no internal SMV
-        rs = rs.replace(
-            '--b0-direction $B0\n',
-            '--b0-direction $B0 '
-            '--field-strength "$(jq -r .B0 "$IN/params.json")" '
-            '--echo-time "$(jq -r .TE[0] "$IN/params.json")" '
-            '--smv false --magnitude "$IN/magnitude.nii.gz"\n')
-    (d / "run.sh").write_text(rs)
+    (d / "run.sh").write_text(run_sh(name, stage, group, algo, inp, out, slug, params))
     (d / "run.sh").chmod((d / "run.sh").stat().st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
 
     ptab = "\n".join(f"| `{n}` | {dv} | {ds} |" for n, dv, ds in params) or "| — | — | — |"

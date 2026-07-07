@@ -2,8 +2,8 @@ name: TKD
 slug: tkd
 stage: dipole
 engine: QSMxT / QSM.rs
-description: 'Thresholded K-space Division: direct inversion with the dipole kernel
-  thresholded.'
+description: >
+  Thresholded K-space Division: direct inversion with the dipole kernel thresholded.
 citation: Shmueli et al., Magn Reson Med 2009
 doi: null
 code_url: https://github.com/astewartau/QSM.rs
@@ -11,6 +11,6 @@ license: MIT
 image: ghcr.io/astewartau/qsm-ci/qsmxt:v1
 run: bash run.sh
 parameters:
-- name: threshold
-  default: 0.1
-  description: k-space threshold
+  - name: threshold
+    default: 0.1
+    description: k-space threshold

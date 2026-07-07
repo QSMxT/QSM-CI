@@ -2,8 +2,8 @@ name: PDF
 slug: pdf
 stage: bfr
 engine: QSMxT / QSM.rs
-description: 'Projection onto Dipole Fields: models the background field as external
-  dipoles.'
+description: >
+  Projection onto Dipole Fields: models the background field as external dipoles.
 citation: Liu et al., NMR Biomed 2011
 doi: 10.1002/nbm.1670
 code_url: https://github.com/astewartau/QSM.rs
@@ -11,6 +11,6 @@ license: MIT
 image: ghcr.io/astewartau/qsm-ci/qsmxt:v1
 run: bash run.sh
 parameters:
-- name: tol
-  default: 1e-4
-  description: convergence tolerance
+  - name: tol
+    default: 1e-4
+    description: convergence tolerance

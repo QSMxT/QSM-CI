@@ -2,7 +2,8 @@ name: iLSQR
 slug: ilsqr
 stage: dipole
 engine: QSMxT / QSM.rs
-description: Iterative LSQR inversion with streaking-artifact reduction.
+description: >
+  Iterative LSQR inversion with streaking-artifact reduction.
 citation: Li et al., NMR Biomed 2015
 doi: null
 code_url: https://github.com/astewartau/QSM.rs
@@ -10,9 +11,9 @@ license: MIT
 image: ghcr.io/astewartau/qsm-ci/qsmxt:v1
 run: bash run.sh
 parameters:
-- name: tol
-  default: 1e-4
-  description: tolerance
-- name: max_iter
-  default: 1000
-  description: iterations
+  - name: tol
+    default: 1e-4
+    description: tolerance
+  - name: max_iter
+    default: 1000
+    description: iterations

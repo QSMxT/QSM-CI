@@ -9,6 +9,7 @@ No BIDS, no datasets, no downloads: you point at the exact NIfTIs a stage consum
 from __future__ import annotations
 
 import argparse
+import json
 import math
 import os
 import shutil
@@ -133,8 +134,7 @@ def _manifest_epilog(algo: dict) -> "str | None":
     lines = []
     params = algo.get("parameters") or []
     if params:
-        lines.append("method parameters (documented from algorithm.yml; the method runs at its")
-        lines.append("built-in defaults — QSM-CI does not override them):")
+        lines.append("method parameters — override with --set NAME=VALUE (else the method's default):")
         width = max((len(str(p.get("name", ""))) for p in params), default=0)
         for p in params:
             name = str(p.get("name", "")).ljust(width)
@@ -173,7 +173,34 @@ def _build_run_parser(slug: str, algo: dict) -> argparse.ArgumentParser:
     p.add_argument("--seg", metavar="PATH", help="segmentation (enables full χ region metrics)")
     p.add_argument("--runner", choices=["docker", "local"], default="docker",
                    help="docker builds/runs the image; local runs run.sh on the host")
+    p.add_argument("--set", action="append", default=[], dest="overrides", metavar="NAME=VALUE",
+                   help="override a method parameter (repeatable); valid names listed below")
     return p
+
+
+def _coerce(v: str):
+    for cast in (int, float):
+        try:
+            return cast(v)
+        except ValueError:
+            pass
+    if v.lower() in ("true", "false"):
+        return v.lower() == "true"
+    return v
+
+
+def _overrides(algo: dict, items: list) -> dict:
+    declared = {str(p.get("name")): p for p in (algo.get("parameters") or [])}
+    cfg = {}
+    for item in items:
+        if "=" not in item:
+            raise SystemExit(f"--set expects NAME=VALUE, got '{item}'")
+        k, v = item.split("=", 1)
+        if k not in declared:
+            valid = ", ".join(declared) or "(this method declares no parameters)"
+            raise SystemExit(f"unknown parameter '{k}'. valid: {valid}")
+        cfg[k] = _coerce(v)
+    return cfg
 
 
 def run_command(argv, log=print) -> int:
@@ -189,6 +216,8 @@ def run_command(argv, log=print) -> int:
     parser = _build_run_parser(slug, algo)
     args = parser.parse_args(argv)
 
+    cfg = _overrides(algo, args.overrides)  # validate --set up front, before any work
+
     if args.runner == "docker" and not check_docker():
         log("! Docker isn't available. Install/start Docker, or use --runner local "
             "(runs run.sh on the host; needs your deps installed).")
@@ -200,6 +229,8 @@ def run_command(argv, log=print) -> int:
 
     import tempfile
     log(f"▸ {algo['name']}  [{stage}]  runner={args.runner}")
+    if cfg:
+        log(f"  overrides: {cfg}")
     with tempfile.TemporaryDirectory(prefix="qsm-ci-") as td:
         idir, odir = Path(td) / "input", Path(td) / "output"
         idir.mkdir(parents=True)
@@ -210,6 +241,9 @@ def run_command(argv, log=print) -> int:
             if not Path(path).exists():
                 raise SystemExit(f"--{art} file not found: {path}")
             shutil.copy(path, idir / ARTIFACT_FILE[art])
+
+        if cfg:
+            (idir / "config.json").write_text(json.dumps(cfg, indent=2) + "\n")
 
         runtime = _run_container(algo, idir, odir, args.runner, log)
 

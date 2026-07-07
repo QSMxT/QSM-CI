@@ -252,6 +252,7 @@
           const io = STAGE_IO[this.stage];
           const head = `#!/usr/bin/env bash\n# ${this.name || this.slugOr} — ${this.stage} stage.\n`
             + `# consumes: ${io.c}\n# produces: ${io.p}.nii.gz (ppm, within the mask)\n`
+            + `# parameter overrides (qsm-ci run --set) arrive as $IN/config.json\n`
             + `set -euo pipefail\nIN="\${1:-/input}"; OUT="\${2:-/output}"\n`
             + `HERE="$(cd "$(dirname "$0")" && pwd)"\n\n`;
           const body = {
@@ -274,12 +275,14 @@
           const io = STAGE_IO[this.stage], nm = this.name || this.slugOr;
           if (this.lang === "python")
             return `#!/usr/bin/env python3\n"""${nm} — ${this.stage} stage. Reads <in-dir>, writes <out-dir>."""\n`
-              + `import sys\nimport nibabel as nib\nimport numpy as np\n\n\n`
+              + `import json\nimport os\nimport sys\nimport nibabel as nib\nimport numpy as np\n\n\n`
               + `def main(inp, out):\n`
               + `    # consumes: ${io.c}\n`
               + `    img = nib.load(f"{inp}/${io.inp}.nii.gz")\n`
               + `    ${io.inp} = img.get_fdata().astype(np.float64)\n`
               + `    mask = nib.load(f"{inp}/mask.nii.gz").get_fdata() > 0.5\n\n`
+              + `    # Optional overrides (qsm-ci run --set NAME=VALUE); declare them in algorithm.yml.\n`
+              + `    cfg = json.load(open(f"{inp}/config.json")) if os.path.exists(f"{inp}/config.json") else {}\n\n`
               + `    # TODO: your reconstruction here. Produce ${io.p} (ppm), within the mask.\n`
               + `    ${io.p} = ${io.inp} * mask  # placeholder\n\n`
               + `    nib.save(nib.Nifti1Image(${io.p}.astype(np.float32), img.affine), f"{out}/${io.p}.nii.gz")\n\n\n`

@@ -31,6 +31,8 @@ def _sub(text: str, stage: str, name: str) -> str:
 
 _PYTHON = '''#!/usr/bin/env python3
 """__NAME__ — __STAGE__ stage. Reads <in-dir>, writes <out-dir>."""
+import json
+import os
 import sys
 import nibabel as nib
 import numpy as np
@@ -41,6 +43,11 @@ def main(inp, out):
     img = nib.load(f"{inp}/__INP__.nii.gz")
     __INP__ = img.get_fdata().astype(np.float64)
     mask = nib.load(f"{inp}/mask.nii.gz").get_fdata() > 0.5
+
+    # Optional parameter overrides (qsm-ci run --set NAME=VALUE) arrive here; declare them in
+    # algorithm.yml. Fall back to your own defaults.
+    cfg = json.load(open(f"{inp}/config.json")) if os.path.exists(f"{inp}/config.json") else {}
+    # e.g. threshold = cfg.get("threshold", 0.1)
 
     # TODO: your reconstruction here. Produce __OUT__ (ppm), within the mask.
     __OUT__ = __INP__ * mask  # placeholder
@@ -133,6 +140,7 @@ def _run_sh(stage: str, lang: str, name: str) -> str:
             f"# {name} — {stage} stage.\n"
             f"# consumes: {CONSUMES[stage]}\n"
             f"# produces: {produced_artifact(stage)}.nii.gz (ppm, within the mask)\n"
+            "# parameter overrides (qsm-ci run --set) arrive as $IN/config.json\n"
             'set -euo pipefail\n'
             'IN="${1:-/input}"; OUT="${2:-/output}"\n'
             'HERE="$(cd "$(dirname "$0")" && pwd)"\n\n')

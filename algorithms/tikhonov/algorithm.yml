@@ -2,7 +2,8 @@ name: Tikhonov
 slug: tikhonov
 stage: dipole
 engine: QSMxT / QSM.rs
-description: Closed-form L2 (Tikhonov) regularized inversion.
+description: >
+  Closed-form L2 (Tikhonov) regularized inversion.
 citation: Kames et al., 2018
 doi: null
 code_url: https://github.com/astewartau/QSM.rs
@@ -10,9 +11,6 @@ license: MIT
 image: ghcr.io/astewartau/qsm-ci/qsmxt:v1
 run: bash run.sh
 parameters:
-- name: lambda
-  default: 1e-4
-  description: L2 regularization
-- name: reg
-  default: laplacian
-  description: identity|gradient|laplacian
+  - name: lambda
+    default: 1e-4
+    description: L2 regularization

@@ -120,11 +120,6 @@
           "description": "regularization"
         },
         {
-          "name": "smv",
-          "default": true,
-          "description": "SMV deconvolution"
-        },
-        {
           "name": "percentage",
           "default": 0.95,
           "description": "edge percentage"
@@ -282,11 +277,6 @@
           "name": "lambda",
           "default": "1e-4",
           "description": "L2 regularization"
-        },
-        {
-          "name": "reg",
-          "default": "laplacian",
-          "description": "identity|gradient|laplacian"
         }
       ]
     },

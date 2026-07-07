@@ -2,7 +2,8 @@ name: TV (ADMM)
 slug: tv
 stage: dipole
 engine: QSMxT / QSM.rs
-description: Total Variation regularized dipole inversion solved with ADMM.
+description: >
+  Total Variation regularized dipole inversion solved with ADMM.
 citation: Bilgic et al., 2014
 doi: null
 code_url: https://github.com/astewartau/QSM.rs
@@ -10,12 +11,12 @@ license: MIT
 image: ghcr.io/astewartau/qsm-ci/qsmxt:v1
 run: bash run.sh
 parameters:
-- name: lambda
-  default: 1e-4
-  description: TV regularization
-- name: rho
-  default: 1.0
-  description: ADMM penalty
-- name: max_iter
-  default: 1000
-  description: iterations
+  - name: lambda
+    default: 1e-4
+    description: TV regularization
+  - name: rho
+    default: 1.0
+    description: ADMM penalty
+  - name: max_iter
+    default: 1000
+    description: iterations

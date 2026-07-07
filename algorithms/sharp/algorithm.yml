@@ -2,7 +2,8 @@ name: SHARP
 slug: sharp
 stage: bfr
 engine: QSMxT / QSM.rs
-description: 'Sophisticated Harmonic Artifact Reduction for Phase data: SMV deconvolution.'
+description: >
+  Sophisticated Harmonic Artifact Reduction for Phase data: SMV deconvolution.
 citation: Schweser et al., NeuroImage 2011
 doi: 10.1016/j.neuroimage.2010.10.070
 code_url: https://github.com/astewartau/QSM.rs
@@ -10,9 +11,9 @@ license: MIT
 image: ghcr.io/astewartau/qsm-ci/qsmxt:v1
 run: bash run.sh
 parameters:
-- name: threshold
-  default: 0.02
-  description: deconvolution threshold
-- name: radius_factor
-  default: 0.5
-  description: × min voxel size
+  - name: threshold
+    default: 0.02
+    description: deconvolution threshold
+  - name: radius_factor
+    default: 0.5
+    description: × min voxel size

@@ -2,8 +2,8 @@ name: V-SHARP
 slug: vsharp
 stage: bfr
 engine: QSMxT / QSM.rs
-description: 'Variable-radius SHARP: SMV deconvolution with a spatially varying kernel
-  radius.'
+description: >
+  Variable-radius SHARP: SMV deconvolution with a spatially varying kernel radius.
 citation: Wu et al., Magn Reson Med 2012
 doi: null
 code_url: https://github.com/astewartau/QSM.rs
@@ -11,12 +11,12 @@ license: MIT
 image: ghcr.io/astewartau/qsm-ci/qsmxt:v1
 run: bash run.sh
 parameters:
-- name: threshold
-  default: 0.02
-  description: deconvolution threshold
-- name: max_radius_factor
-  default: 0.5
-  description: × min voxel size
-- name: min_radius_factor
-  default: 0.0
-  description: × max voxel size
+  - name: threshold
+    default: 0.02
+    description: deconvolution threshold
+  - name: max_radius_factor
+    default: 0.5
+    description: × min voxel size
+  - name: min_radius_factor
+    default: 0.0
+    description: × max voxel size

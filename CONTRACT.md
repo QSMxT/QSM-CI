@@ -65,6 +65,21 @@ affine of `mask.nii.gz`.
 | `B0_dir` | unit vector | B0 direction in image coordinates |
 | `voxel_size` | mm | voxel dimensions (x, y, z) |
 
+### `config.json` (optional — parameter overrides)
+
+A method may declare tunable `parameters:` in its `algorithm.yml` (name, default, description). When a
+caller overrides one — `qsm-ci run <slug> --set threshold=0.2` — QSM-CI writes those values as a flat
+JSON object to `/input/config.json`:
+
+```json
+{ "threshold": 0.2 }
+```
+
+Your `run.sh` (or recon code) reads it and applies the values, falling back to your own defaults for
+anything absent. **`config.json` is optional**: when no overrides are given the file is absent and your
+method runs at its defaults, so nothing breaks if you ignore it. Only keys you declared in
+`parameters:` are ever written.
+
 ## Execution model — environment vs. code
 
 Your submission is **code plus an environment**; you do not have to bake your code into a custom
