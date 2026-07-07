@@ -1,66 +1,78 @@
 # Submitting an algorithm to QSM-CI
 
-A submission is one folder and a pull request. You bring a container image; QSM-CI does the rest.
+A submission is one folder and a pull request. You bring a container image; QSM-CI runs and scores it.
 
-## 1. Package your algorithm as a container
+## 1. Pick your stage
 
-Put your reconstruction in any container image, in any language. The only requirement is that it
-honors [the contract](../CONTRACT.md): read `/input`, write `/output/chimap.nii.gz` (ppm).
+QSM is a pipeline: **field-mapping → background field removal (BFR) → dipole inversion**. You
+implement one stage, or a span for methods that cross boundaries. See
+[`../CONTRACT.md`](../CONTRACT.md) and [`../stages.yml`](../stages.yml).
 
-- Bake in all dependencies, weights, and models — **there is no network at run time**.
-- Push the image somewhere public: GHCR, Docker Hub, or quay.io.
-- MATLAB users: see [matlab.md](matlab.md) for a no-license template using the Neurodesk MATLAB
-  Runtime image.
+| `stage:` | Consumes (in `/input`) | Produces (in `/output`) |
+|---|---|---|
+| `field-mapping` | `phase`, `magnitude`, `mask`, `params` | `totalfield` |
+| `bfr` | `totalfield`, `mask`, `params` | `localfield` |
+| `dipole` | `localfield`, `mask`, `params` | `chimap` |
+| `unwrap+bfr` | `phase`, `magnitude`, `mask`, `params` | `localfield` |
+| `bfr+dipole` | `totalfield`, `mask`, `params` | `chimap` |
+| `end-to-end` | `phase`, `magnitude`, `mask`, `params` | `chimap` |
 
-A minimal Python example image:
+All fields and χ are **ppm**. Your stage is scored two ways: **isolated** (fed the ground-truth
+input boundary) and **composed** (chained with other people's stages — e.g. every BFR × your
+dipole).
+
+## 2. Package your algorithm as a container
+
+Put your reconstruction in any container image, any language. It must read the consumed artifacts
+from `/input` and write the produced artifact(s) to `/output`. No network at run time — bake in all
+dependencies and weights. Push the image somewhere public (GHCR, Docker Hub, quay.io).
+
+A minimal Python `dipole` example image:
 
 ```dockerfile
 FROM python:3.12-slim
 RUN pip install --no-cache-dir nibabel numpy scipy
-COPY recon.py /opt/recon.py
-COPY run.sh /opt/run.sh
-WORKDIR /opt
+COPY recon.py run.sh /opt/algo/
+WORKDIR /opt/algo
 ```
 
-where `run.sh` calls `python recon.py /input /output` and `recon.py` writes
-`/output/chimap.nii.gz`.
+where `run.sh` runs `python recon.py /input /output` and `recon.py` reads
+`/input/localfield.nii.gz` (+ `mask.nii.gz`, `params.json`) and writes `/output/chimap.nii.gz`.
+The in-repo reference submissions [`algorithms/tkd`](../algorithms/tkd),
+[`algorithms/sharp`](../algorithms/sharp), and [`algorithms/matlab-tkd`](../algorithms/matlab-tkd)
+(MATLAB via MATLAB Runtime — see [matlab.md](matlab.md)) are working templates to copy.
 
-## 2. Add your submission folder
+## 3. Add your submission folder
 
-Copy [`algorithms/example-tkd/`](../algorithms/example-tkd/) to `algorithms/<your-slug>/` and edit:
+Copy a reference folder to `algorithms/<your-slug>/` and edit:
 
-- **`metadata.yml`** — name, authors, paper DOI, license, tracks.
-- **`algorithm.yml`** — your `image:` reference and the `run:` command. Keep `contract: v1`.
-- **`run.sh`** — the command(s) inside your container that produce the output. (You can also embed
-  this in your image and just point `run:` at it.)
+- **`metadata.yml`** — name, authors, paper DOI, license, and `stage:`.
+- **`algorithm.yml`** — `contract: v2`, your `stage:`, your `image:`, and the `run:` command.
+- Bake your code into the image (or, like the reference algos, keep `recon.*` + `run.sh` in the
+  folder and a small `Dockerfile` that copies them onto a base image).
 
-## 3. Open a pull request
+## 4. Open a pull request
 
-Push a branch and open a PR that adds only your `algorithms/<your-slug>/` folder. When it's merged
-(or on demand), QSM-CI will:
+Open a PR adding only your `algorithms/<your-slug>/` folder. QSM-CI will pull your image, run your
+stage **isolated** on the ground-truth boundary (no network, time-limited), score the output, and
+comment the metrics on your PR. The full **composition matrix** (your stage against everyone else's)
+refreshes on the [leaderboard](https://astewartau.github.io/qsm-ci/).
 
-1. Pull your image.
-2. Run it on the challenge inputs, with no network, under a time limit.
-3. Score `chimap.nii.gz` against the held-out ground truth with `qsm-eval`.
-4. Post the metrics (and slice figures) back on the PR, and add your run to the
-   [leaderboard](https://astewartau.github.io/qsm-ci/).
+## 5. Test locally before submitting
 
-## 4. Check your result
-
-Your reconstruction shows up on the leaderboard with an interactive 3D viewer (reconstruction,
-ground truth, and error). Sort by any metric to see where you land.
-
-## Testing locally before you submit
-
-You can dry-run the contract yourself:
+Dry-run the contract with the dev phantom (see [`../data/sim/README.md`](../data/sim/README.md) to
+generate it), then run the local pipeline:
 
 ```bash
+# your container, no network, isolated boundary as input
 docker run --rm --network none \
-  -v "$PWD/data/sim/public:/input:ro" \
-  -v "$PWD/out:/output" \
+  -v "$PWD/data/sim/dev/groundtruth:/input:ro" -v "$PWD/out:/output" \
   <your-image> bash run.sh
-ls out/chimap.nii.gz   # should exist
+ls out/chimap.nii.gz
+
+# or drive the whole isolated+composed evaluation locally (no Docker)
+python scripts/pipeline.py --dataset data/sim/dev --mode both
 ```
 
-Scoring needs the held-out ground truth, so the authoritative score always comes from CI — but the
-dry-run confirms your plumbing works.
+The authoritative score always comes from CI (it holds the real, hidden ground truth), but the local
+run confirms your plumbing and lets you see where you'd land.

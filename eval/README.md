@@ -23,20 +23,25 @@ The metrics are a 1:1 port of the QSM.rs reference implementation
 ```bash
 pip install -r requirements.txt
 
+# score a chi map (dipole/end-to-end output) — full suite with a segmentation
 python qsm_eval.py \
-  --recon out/chimap.nii.gz \
-  --truth gt/chimap.nii.gz \
-  --seg   gt/dseg.nii.gz \
-  --mask  ../data/sim/public/mask.nii.gz \
-  --track sim \
-  --name  example-tkd \
-  --runtime 42 \
-  --out metrics.json \
-  --figures figures/
+  --recon out/chimap.nii.gz --kind chi \
+  --truth gt/chimap.nii.gz --seg gt/dseg.nii.gz \
+  --mask  ../data/sim/dev/inputs/mask.nii.gz \
+  --stage dipole --name tkd --runtime 42 \
+  --out metrics.json --figures figures/
+
+# score a field map (field-mapping / bfr output)
+python qsm_eval.py --recon out/localfield.nii.gz --kind field \
+  --truth gt/localfield.nii.gz --mask ../data/sim/dev/inputs/mask.nii.gz \
+  --stage bfr --name sharp --out metrics.json
 ```
 
-- `--track sim` → full suite (region NRMSE, DGM linearity, calcification, streak, correlation, XSIM).
-- `--track invivo` → correlation + XSIM only (phantom-only metrics omitted).
+- `--kind chi` with `--seg` → full suite (region NRMSE, DGM linearity, calcification, streak,
+  correlation, XSIM). Without `--seg` (e.g. in-vivo) → correlation + XSIM only.
+- `--kind field` → demeaned/detrended NRMSE, correlation, XSIM (region metrics don't apply to fields).
+
+Usually you don't call this directly — `scripts/pipeline.py` drives it per produced artifact.
 
 ## Output
 

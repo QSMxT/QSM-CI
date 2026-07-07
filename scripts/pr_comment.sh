@@ -1,23 +1,29 @@
 #!/usr/bin/env bash
-# Post (or update) a metrics summary comment on the PR, with slice figures.
-# Modeled on the QSM.rs integration-test PR comment. Requires `gh` and GITHUB_TOKEN.
+# Post (or update) a metrics comment on the PR for a submission's isolated run.
+# Reads the run pipeline.py wrote into results/index.json. Requires `gh` + GH_TOKEN.
 #
-# Usage: pr_comment.sh <slug> <track> <figures-dir>
+# Usage: pr_comment.sh <slug>
 set -euo pipefail
 
-SLUG="${1:?}"; TRACK="${2:?}"; FIGDIR="${3:?}"
-METRICS="${FIGDIR}/metrics.json"
+SLUG="${1:?slug required}"
 
-if [ -f "$METRICS" ]; then
-  body=$(jq -r --arg slug "$SLUG" --arg track "$TRACK" '
-    "### QSM-CI · \($slug) · track `\($track)`\n\n" +
-    "| metric | value |\n|---|---|\n" +
-    (.metrics | to_entries | map("| \(.key) | \(.value) |") | join("\n"))
-  ' "$METRICS")
-else
-  body="### QSM-CI · ${SLUG} · track \`${TRACK}\`\n\n**DNF** — the algorithm did not produce a valid \`chimap.nii.gz\`."
-fi
+body=$(python3 - "$SLUG" <<'PY'
+import json, sys, pathlib
+slug = sys.argv[1]
+idx = json.loads(pathlib.Path("results/index.json").read_text())
+runs = [r for r in idx.get("runs", []) if r.get("slug") == slug and r.get("mode") == "isolated"]
+if not runs:
+    print(f"### QSM-CI · {slug}\n\n**DNF** — no valid output was produced.")
+    raise SystemExit
+r = runs[0]
+lines = [f"### QSM-CI · `{slug}` · stage `{r.get('stage')}` · isolated",
+         f"Scored artifact: `{r.get('artifact')}` ({r.get('kind')}), runtime {r.get('runtime_s'):.1f}s\n",
+         "| metric | value |", "|---|---|"]
+for k, v in (r.get("metrics") or {}).items():
+    lines.append(f"| {k} | {'—' if v is None else round(v, 4)} |")
+lines.append("\n_Composed BFR×inversion results appear on the [leaderboard](https://astewartau.github.io/qsm-ci/)._")
+print("\n".join(lines))
+PY
+)
 
-# TODO: upload figures (FIGDIR/*.png) and embed them; gh does not host images directly.
-printf '%b\n' "$body" | gh pr comment "${PR_NUMBER:-}" --body-file - || \
-  printf '%b\n' "$body"   # fall back to logging if not in a PR context
+printf '%s\n' "$body" | gh pr comment "${PR_NUMBER:-}" --body-file - || printf '%s\n' "$body"

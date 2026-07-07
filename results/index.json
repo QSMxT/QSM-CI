@@ -1,5 +1,259 @@
 {
-  "contract": "v1",
+  "contract": "v2",
   "generated": null,
-  "runs": []
+  "runs": [
+    {
+      "contract": "v2",
+      "name": "matlab-tkd",
+      "track": "sim",
+      "stage": "dipole",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "matlab-tkd-iso",
+      "slug": "matlab-tkd"
+    },
+    {
+      "contract": "v2",
+      "name": "nobfr-baseline",
+      "track": "sim",
+      "stage": "bfr",
+      "artifact": "localfield",
+      "kind": "field",
+      "image": null,
+      "runtime_s": 0.3217329978942871,
+      "metrics": {
+        "nrmse": 0.0,
+        "nrmse_detrend": 0.0,
+        "correlation": 1.0,
+        "xsim": 0.866822246864905
+      },
+      "status": "ok",
+      "id": "nobfr-baseline-iso",
+      "slug": "nobfr-baseline",
+      "mode": "isolated"
+    },
+    {
+      "contract": "v2",
+      "name": "sharp",
+      "track": "sim",
+      "stage": "bfr",
+      "artifact": "localfield",
+      "kind": "field",
+      "image": null,
+      "runtime_s": 0.589787483215332,
+      "metrics": {
+        "nrmse": 38.0342886371443,
+        "nrmse_detrend": 38.47837723187669,
+        "correlation": 0.9332929411184061,
+        "xsim": 0.6340505917070867
+      },
+      "status": "ok",
+      "id": "sharp-iso",
+      "slug": "sharp",
+      "mode": "isolated"
+    },
+    {
+      "contract": "v2",
+      "name": "tikhonov",
+      "track": "sim",
+      "stage": "dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 0.33911895751953125,
+      "metrics": {
+        "nrmse": 45.69775994630694,
+        "nrmse_detrend": 29.68675665404108,
+        "nrmse_tissue": null,
+        "nrmse_blood": null,
+        "nrmse_dgm": 29.68675665404108,
+        "dgm_linearity": null,
+        "calc_moment_dev": null,
+        "calc_streak": null,
+        "correlation": 0.9586488104580759,
+        "xsim": 0.30977346653089377
+      },
+      "status": "ok",
+      "id": "tikhonov-iso",
+      "slug": "tikhonov",
+      "mode": "isolated"
+    },
+    {
+      "contract": "v2",
+      "name": "tkd",
+      "track": "sim",
+      "stage": "dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 0.34878063201904297,
+      "metrics": {
+        "nrmse": 32.610267656766595,
+        "nrmse_detrend": 34.46175937040432,
+        "nrmse_tissue": null,
+        "nrmse_blood": null,
+        "nrmse_dgm": 34.46175937040432,
+        "dgm_linearity": null,
+        "calc_moment_dev": null,
+        "calc_streak": null,
+        "correlation": 0.9454341497615044,
+        "xsim": 0.22330454332763244
+      },
+      "status": "ok",
+      "id": "tkd-iso",
+      "slug": "tkd",
+      "mode": "isolated"
+    },
+    {
+      "contract": "v2",
+      "name": "nobfr-baseline+matlab-tkd",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "mode": "composed",
+      "status": "DNF",
+      "metrics": {},
+      "id": "nobfr-baseline+matlab-tkd-cmp",
+      "slug": "nobfr-baseline+matlab-tkd",
+      "combo": {
+        "bfr": "nobfr-baseline",
+        "dipole": "matlab-tkd"
+      }
+    },
+    {
+      "contract": "v2",
+      "name": "nobfr-baseline+tikhonov",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 0.37541937828063965,
+      "metrics": {
+        "nrmse": 46.998409879132154,
+        "nrmse_detrend": 32.45987569803001,
+        "nrmse_tissue": null,
+        "nrmse_blood": null,
+        "nrmse_dgm": 32.45987569803001,
+        "dgm_linearity": null,
+        "calc_moment_dev": null,
+        "calc_streak": null,
+        "correlation": 0.951146189921367,
+        "xsim": 0.1696923803800333
+      },
+      "status": "ok",
+      "id": "nobfr-baseline+tikhonov-cmp",
+      "slug": "nobfr-baseline+tikhonov",
+      "mode": "composed",
+      "combo": {
+        "bfr": "nobfr-baseline",
+        "dipole": "tikhonov"
+      }
+    },
+    {
+      "contract": "v2",
+      "name": "nobfr-baseline+tkd",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 0.4376041889190674,
+      "metrics": {
+        "nrmse": 35.41953517665984,
+        "nrmse_detrend": 37.86499736665871,
+        "nrmse_tissue": null,
+        "nrmse_blood": null,
+        "nrmse_dgm": 37.86499736665871,
+        "dgm_linearity": null,
+        "calc_moment_dev": null,
+        "calc_streak": null,
+        "correlation": 0.9352021606579367,
+        "xsim": 0.20392342955530002
+      },
+      "status": "ok",
+      "id": "nobfr-baseline+tkd-cmp",
+      "slug": "nobfr-baseline+tkd",
+      "mode": "composed",
+      "combo": {
+        "bfr": "nobfr-baseline",
+        "dipole": "tkd"
+      }
+    },
+    {
+      "contract": "v2",
+      "name": "sharp+matlab-tkd",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "mode": "composed",
+      "status": "DNF",
+      "metrics": {},
+      "id": "sharp+matlab-tkd-cmp",
+      "slug": "sharp+matlab-tkd",
+      "combo": {
+        "bfr": "sharp",
+        "dipole": "matlab-tkd"
+      }
+    },
+    {
+      "contract": "v2",
+      "name": "sharp+tikhonov",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 0.35279107093811035,
+      "metrics": {
+        "nrmse": 50.71550429491541,
+        "nrmse_detrend": 46.97756733804116,
+        "nrmse_tissue": null,
+        "nrmse_blood": null,
+        "nrmse_dgm": 46.97756733804116,
+        "dgm_linearity": null,
+        "calc_moment_dev": null,
+        "calc_streak": null,
+        "correlation": 0.9051018485360292,
+        "xsim": 0.22073471751942975
+      },
+      "status": "ok",
+      "id": "sharp+tikhonov-cmp",
+      "slug": "sharp+tikhonov",
+      "mode": "composed",
+      "combo": {
+        "bfr": "sharp",
+        "dipole": "tikhonov"
+      }
+    },
+    {
+      "contract": "v2",
+      "name": "sharp+tkd",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 0.40444445610046387,
+      "metrics": {
+        "nrmse": 49.474411113546125,
+        "nrmse_detrend": 54.789297300806474,
+        "nrmse_tissue": null,
+        "nrmse_blood": null,
+        "nrmse_dgm": 54.789297300806474,
+        "dgm_linearity": null,
+        "calc_moment_dev": null,
+        "calc_streak": null,
+        "correlation": 0.8769950432481763,
+        "xsim": 0.1861362263395229
+      },
+      "status": "ok",
+      "id": "sharp+tkd-cmp",
+      "slug": "sharp+tkd",
+      "mode": "composed",
+      "combo": {
+        "bfr": "sharp",
+        "dipole": "tkd"
+      }
+    }
+  ]
 }

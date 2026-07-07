@@ -10,15 +10,18 @@ __pycache__/
 figures/
 out/
 
-# Held-out ground truth must NEVER be committed (pulled from OSF in CI)
+# Held-out ground truth + generated/downloaded datasets must never be committed
 data/**/groundtruth/
+data/*/dev/
+data/*/scoring/
 gt/
 
-# Large NIfTI test data pulled at runtime
+# Pipeline runner scratch
+.work/
+
+# NIfTI volumes (datasets pulled/generated at runtime; result volumes are opt-in)
 *.nii
 *.nii.gz
-# ...except tiny committed public inputs and any result volumes we intentionally serve
-!data/sim/public/*.nii.gz
 !results/**/*.nii.gz
 
 # OS

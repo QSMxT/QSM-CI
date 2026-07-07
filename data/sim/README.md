@@ -1,40 +1,57 @@
 # Simulated track data
 
-The **simulated** track uses a digital phantom with a perfectly known susceptibility map, so the
-full metric suite (region-specific NRMSE, DGM linearity, calcification, streaking) is meaningful.
+The **simulated** track uses a digital phantom with perfectly known field maps and susceptibility,
+so every stage boundary can be scored against ground truth.
 
-## What's here (public)
+## Layout
 
-`public/` holds the **inputs** given to every submission (mounted at `/input`):
+A dataset is a directory with two parts (see [`../../CONTRACT.md`](../../CONTRACT.md) and
+[`../../stages.yml`](../../stages.yml)):
 
-- `phase.nii.gz` — wrapped multi-echo phase (radians)
-- `magnitude.nii.gz` — magnitude
-- `mask.nii.gz` — brain mask
-- `params.json` — TE / B0 / B0_dir / voxel_size (see [`../../CONTRACT.md`](../../CONTRACT.md))
+```
+<dataset>/inputs/        phase.nii.gz  magnitude.nii.gz  mask.nii.gz  params.json   (public boundary)
+<dataset>/groundtruth/   totalfield.nii.gz  localfield.nii.gz  chimap.nii.gz  dseg.nii.gz   (held out)
+```
 
-## What's held out (never committed)
+- `inputs/` — the public entry boundary (raw phase/mag/mask/params).
+- `groundtruth/` — the per-stage scoring targets *and* the boundaries mounted at run time as
+  isolated-mode inputs (a `dipole` submission is fed the true `localfield`, etc.). **Never committed.**
 
-The ground truth is **not** in this repo, so submissions cannot overfit to it:
+Two datasets:
 
-- `chimap.nii.gz` — true susceptibility map (ppm)
-- `dseg.nii.gz` — tissue segmentation (labels used for region-specific metrics)
+- **`dev/`** — a small phantom for local development (`data/sim/dev/`), generated on demand. Both
+  `inputs/` and `groundtruth/` may be released openly. Git-ignored (regenerate with the commands
+  below).
+- **`scoring/`** — the phantom submissions are scored on. `groundtruth/` is held out on **OSF** and
+  pulled by CI (`scripts/fetch_dataset.sh`, `OSF_TOKEN`). Overfitting is prevented because
+  submissions never see it.
 
-It lives on **OSF** and is pulled by `.github/workflows/evaluate.yml` using the `OSF_TOKEN` repo
-secret, mirroring how QSM.rs' integration-test data is stored (OSF project `y8adf`).
+## Generating a dataset
 
-- OSF project: `<TODO: fill in QSM-CI OSF project id>`
-- Files: `sim/groundtruth/chimap.nii.gz`, `sim/groundtruth/dseg.nii.gz`
+From the `qsm-forward` checkout (`~/repos/qsm/qsm-forward`), simulate a BIDS phantom, then flatten
+it into the QSM-CI artifact layout with `scripts/pack_dataset.py`:
 
-## How the data was generated
+```bash
+# 1. simulate (from the qsm-forward source dir so `import qsm_forward` resolves)
+python -c "import numpy as np, qsm_forward as q; \
+  chi=q.generate_susceptibility_phantom([96,96,60],0,0.005,[6,6,5,4],[0.05,0.1,-0.1,0.2]); \
+  q.generate_bids(q.TissueParams(chi=chi, voxel_size=np.array([1.,1.,1.])), \
+  q.ReconParams(subject='1', B0=3.0, TEs=np.array([0.004,0.012,0.02,0.028]), \
+  voxel_size=np.array([1.,1.,1.]), peak_snr=100, random_seed=42), '/tmp/BIDS', save_field=True)"
 
-Generated with [`qsm-forward`](https://github.com/astewartau/qsm-forward) (local checkout at
-`~/repos/qsm/qsm-forward`), the same forward model behind QSM.rs' `derivatives/qsm-forward`.
+# 2. pack into inputs/ + groundtruth/
+python scripts/pack_dataset.py /tmp/BIDS data/sim/dev
+```
 
-- Grid / voxel size: `<TODO>`
-- Field strength B0: `<TODO>` T, B0_dir `[0, 0, 1]`
-- Echo times: `<TODO>`
-- Segmentation labels: 1–6 deep gray matter, 7 thalamus, 8 WM, 9 GM, 10 CSF, 11 blood,
-  16 calcification (matches QSM.rs `ChallengeMetrics`).
+## ⚠️ Head phantom needed for the real challenge
 
-Record the exact `qsm-forward` invocation here once the phantom is finalized so the dataset is
-reproducible.
+The simple cylinder phantom above validates the **plumbing** but not the science:
+
+- `totalfield == localfield` (no background sources) — so the BFR stage has nothing to remove.
+- `dseg` has only labels {0, 1} — so the region-specific χ metrics (tissue/blood/DGM/calcification)
+  are degenerate.
+
+The scoring dataset must use `qsm-forward`'s realistic head model (`ChiModelMIX` + segmentation +
+air/skull background sources) so that `totalfield ≠ localfield` and the full label set (1–6 DGM,
+7 thalamus, 8 WM, 9 GM, 11 blood, 16 calcification) is present. Sourcing/curating that head model is
+the remaining data task; record the exact `qsm-forward` invocation here once finalized.

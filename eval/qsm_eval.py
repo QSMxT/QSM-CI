@@ -186,6 +186,21 @@ def calcification_metrics(recon, truth, seg) -> tuple[float, float]:
     return moment_dev, streak
 
 
+def field_metrics(recon, truth, mask) -> dict:
+    """Metric subset appropriate for a field map (total or local), a scalar field in ppm.
+
+    The region-specific chi metrics (tissue/blood/DGM/calcification) do not apply to field maps,
+    so we score global agreement within the mask: demeaned & detrended NRMSE, correlation, XSIM.
+    """
+    nrmse, nrmse_dt = nrmse_challenge(recon, truth, mask)
+    return {
+        "nrmse": nrmse,
+        "nrmse_detrend": nrmse_dt,
+        "correlation": correlation(recon, truth, mask),
+        "xsim": xsim(recon, truth, mask),
+    }
+
+
 def challenge_metrics(recon, truth, mask, seg) -> dict:
     """Full sim-track metric suite. Mirrors QSM.rs `ChallengeMetrics::compute`."""
     m = mask > 0
@@ -261,11 +276,15 @@ def selfcheck() -> None:
 
 def main() -> None:
     p = argparse.ArgumentParser(description="Score a QSM reconstruction against ground truth (QSM-CI).")
-    p.add_argument("--recon", type=Path)
-    p.add_argument("--truth", type=Path)
-    p.add_argument("--seg", type=Path)
+    p.add_argument("--recon", type=Path, help="produced artifact to score")
+    p.add_argument("--truth", type=Path, help="ground-truth artifact")
+    p.add_argument("--kind", choices=["field", "chi"], default="chi",
+                   help="artifact kind: 'field' (total/local field) or 'chi' (susceptibility)")
+    p.add_argument("--seg", type=Path, help="segmentation (enables region metrics for kind=chi)")
     p.add_argument("--mask", type=Path)
-    p.add_argument("--track", default="sim", choices=["sim", "invivo"])
+    p.add_argument("--track", default="sim", choices=["sim", "invivo"], help="dataset label")
+    p.add_argument("--stage", default=None, help="stage/span this run implements (recorded)")
+    p.add_argument("--artifact", default=None, help="canonical name of the scored artifact (recorded)")
     p.add_argument("--name", default="submission")
     p.add_argument("--image", default=None)
     p.add_argument("--runtime", type=float, default=None)
@@ -282,18 +301,21 @@ def main() -> None:
     if recon.shape != truth.shape or recon.shape != mask.shape:
         raise SystemExit(f"shape mismatch: recon {recon.shape}, truth {truth.shape}, mask {mask.shape}")
 
-    if args.track == "sim":
-        if not args.seg:
-            raise SystemExit("--seg is required for the sim track")
+    if args.kind == "field":
+        metrics = field_metrics(recon, truth, mask)
+    elif args.seg:  # chi with segmentation -> full challenge suite
         seg = np.rint(load(args.seg)).astype(np.int32)
         metrics = challenge_metrics(recon, truth, mask, seg)
-    else:  # invivo
+    else:  # chi without segmentation (e.g. in-vivo)
         metrics = {"correlation": correlation(recon, truth, mask), "xsim": xsim(recon, truth, mask)}
 
     result = {
-        "contract": "v1",
+        "contract": "v2",
         "name": args.name,
         "track": args.track,
+        "stage": args.stage,
+        "artifact": args.artifact,
+        "kind": args.kind,
         "image": args.image,
         "runtime_s": args.runtime,
         "metrics": {k: (None if isinstance(v, float) and math.isnan(v) else v) for k, v in metrics.items()},

@@ -55,4 +55,14 @@ tbody tr:hover { background: var(--panel); }
 #metrics { max-width: 480px; }
 #metrics th { text-align: left; color: var(--muted); font-weight: 500; }
 
+#matrix { margin-bottom: 1.5rem; }
+#matrix h3 { margin: 0 0 0.5rem; font-weight: 600; }
+#matrix .hint { color: var(--muted); font-weight: 400; font-size: 0.85rem; }
+table.heatmap { width: auto; }
+table.heatmap th { color: var(--muted); text-align: center; padding: 0.5rem 0.8rem; }
+table.heatmap th.name-col { text-align: right; color: var(--fg); }
+table.heatmap td.cell { text-align: center; cursor: pointer; color: #fff; font-variant-numeric: tabular-nums;
+  min-width: 90px; border: 1px solid var(--bg); }
+table.heatmap td.cell:hover { outline: 2px solid var(--fg); }
+
 footer { padding: 1.5rem 2rem; color: var(--muted); border-top: 1px solid var(--border); }

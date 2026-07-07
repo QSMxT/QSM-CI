@@ -53,7 +53,13 @@ async function init() {
   });
   await nv.attachTo("gl1");
   nv.setSliceType(nv.sliceTypeMultiplanar);
-  await showLayer("recon");
+  try {
+    await showLayer("recon");
+  } catch (e) {
+    document.querySelector(".viewer-section").innerHTML =
+      `<p class="empty">Interactive volumes not published for this run yet. ` +
+      `Enable volume export in the evaluation step to view reconstruction / truth / error here.</p>`;
+  }
 }
 
 function renderMetrics() {

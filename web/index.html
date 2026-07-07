@@ -9,31 +9,22 @@
 <body>
   <header>
     <h1>QSM-CI</h1>
-    <p class="tagline">A challenge for Quantitative Susceptibility Mapping reconstruction.</p>
-    <nav>
-      <label>Track:
-        <select id="track">
-          <option value="sim">Simulated</option>
-          <option value="invivo">In-vivo</option>
-        </select>
-      </label>
-      <input id="filter" type="search" placeholder="Filter by name / author…" />
-      <a href="https://github.com/astewartau/qsm-ci/blob/main/docs/submitting.md">Submit an algorithm →</a>
-    </nav>
+    <p class="tagline">A challenge for Quantitative Susceptibility Mapping reconstruction — per stage, and in combination.</p>
+    <nav id="controls"></nav>
   </header>
 
   <main>
-    <table id="leaderboard">
-      <thead><tr id="header-row"></tr></thead>
-      <tbody id="rows"></tbody>
-    </table>
-    <p id="empty" class="empty" hidden>No results yet for this track.</p>
+    <div id="matrix"></div>
+    <table id="table"></table>
+    <p id="empty" class="empty" hidden>No results yet for this view.</p>
   </main>
 
   <footer>
-    <p>Scored with <a href="https://github.com/astewartau/qsm-ci/tree/main/eval">qsm-eval</a>,
-       which wraps the <a href="https://github.com/astewartau/QSM.rs">QSM.rs</a> metrics.
-       Click a row for the interactive viewer.</p>
+    <p><strong>Per-stage (isolated)</strong>: each stage scored on the ground-truth boundary it consumes.
+       <strong>Combinations (composed)</strong>: real BFR outputs chained into dipole inversions, scored on the final χ map.
+       Scored with <a href="https://github.com/astewartau/qsm-ci/tree/main/eval">qsm-eval</a>
+       (metrics from <a href="https://github.com/astewartau/QSM.rs">QSM.rs</a>).
+       <a href="https://github.com/astewartau/qsm-ci/blob/main/docs/submitting.md">Submit an algorithm →</a></p>
   </footer>
 
   <script type="module" src="js/leaderboard.js"></script>

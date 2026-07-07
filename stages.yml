@@ -1,0 +1,45 @@
+# QSM-CI stage & artifact registry (contract v2).
+#
+# The platform reads this to know what to mount into a submission's /input, what to expect in
+# /output, and how to score each produced artifact. A submission declares one `stage` (a single
+# stage or a named span) in its algorithm.yml.
+contract: v2
+
+# Canonical artifacts. `kind` selects the scoring metric set; `groundtruth` names the file under a
+# dataset's groundtruth/ dir (present only for scorable artifacts).
+artifacts:
+  phase:       { kind: phase,     units: rad,    ndim: 4, file: phase.nii.gz }
+  magnitude:   { kind: magnitude, units: a.u.,   ndim: 4, file: magnitude.nii.gz }
+  mask:        { kind: mask,      units: binary, ndim: 3, file: mask.nii.gz }
+  params:      { kind: params,                            file: params.json }
+  totalfield:  { kind: field,     units: ppm,    ndim: 3, file: totalfield.nii.gz, groundtruth: totalfield.nii.gz }
+  localfield:  { kind: field,     units: ppm,    ndim: 3, file: localfield.nii.gz, groundtruth: localfield.nii.gz }
+  chimap:      { kind: chi,       units: ppm,    ndim: 3, file: chimap.nii.gz,     groundtruth: chimap.nii.gz }
+
+# The three swappable stages, in pipeline order. `consumes`/`produces` are artifact names.
+stages:
+  field-mapping: { consumes: [phase, magnitude, mask, params], produces: [totalfield] }
+  bfr:           { consumes: [totalfield, mask, params],        produces: [localfield] }
+  dipole:        { consumes: [localfield, mask, params],        produces: [chimap] }
+
+# Named contiguous spans, for methods that cross stage boundaries (joint / single-step / phase-domain).
+# A submission may set `stage` to any stage or span name below.
+spans:
+  unwrap+bfr:  { consumes: [phase, magnitude, mask, params], produces: [localfield] }   # e.g. HARPERELLA
+  bfr+dipole:  { consumes: [totalfield, mask, params],       produces: [chimap] }        # e.g. QSMART
+  end-to-end:  { consumes: [phase, magnitude, mask, params], produces: [chimap] }        # e.g. TGV
+
+# Metrics reported per artifact kind (see eval/qsm_eval.py).
+scoring:
+  field: [nrmse, nrmse_detrend, correlation, xsim]
+  chi:   [nrmse, nrmse_detrend, nrmse_tissue, nrmse_blood, nrmse_dgm,
+          dgm_linearity, calc_moment_dev, calc_streak, correlation, xsim]
+
+# Evaluation modes.
+#   isolated  — each stage/span is fed the GROUND-TRUTH artifact(s) it consumes (mounted at run time
+#               from held-out GT, never published), and each produced artifact is scored against GT.
+#               Gives fair per-stage leaderboards.
+#   composed  — stage/span outputs are chained (bfr output -> dipole input, etc.); the final chimap
+#               (and any intermediate) is scored. Enumerates the field-mapping x bfr x dipole matrix
+#               to study how stages interact. Intermediate outputs are cached and reused.
+modes: [isolated, composed]

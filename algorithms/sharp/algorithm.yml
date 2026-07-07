@@ -1,0 +1,4 @@
+contract: v2
+stage: bfr               # consumes: totalfield, mask, params  ->  produces: localfield
+image: ghcr.io/astewartau/qsm-ci/sharp:v1
+run: bash run.sh

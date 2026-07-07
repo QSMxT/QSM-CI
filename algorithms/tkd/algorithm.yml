@@ -1,0 +1,4 @@
+contract: v2
+stage: dipole            # consumes: localfield, mask, params  ->  produces: chimap
+image: ghcr.io/astewartau/qsm-ci/tkd:v1
+run: bash run.sh
