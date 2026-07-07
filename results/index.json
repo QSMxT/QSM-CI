@@ -101,32 +101,6 @@
     },
     {
       "contract": "v2",
-      "name": "medi",
-      "track": "sim",
-      "stage": "dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 48.20903277397156,
-      "metrics": {
-        "nrmse": 75.22770406524832,
-        "nrmse_detrend": 111.9148034554938,
-        "nrmse_tissue": 136.24156647150244,
-        "nrmse_blood": 109.66326548804425,
-        "nrmse_dgm": 87.85467497638973,
-        "dgm_linearity": 0.4723253256140033,
-        "calc_moment_dev": 4.322312235832214,
-        "calc_streak": 0.017865190344114865,
-        "correlation": 0.6662977400593726,
-        "xsim": 0.3340832090153917
-      },
-      "status": "ok",
-      "id": "medi-iso",
-      "slug": "medi",
-      "mode": "isolated"
-    },
-    {
-      "contract": "v2",
       "name": "nltv",
       "track": "sim",
       "stage": "dipole",
@@ -944,6 +918,32 @@
         "bfr": "vsharp",
         "dipole": "tsvd"
       }
+    },
+    {
+      "contract": "v2",
+      "name": "medi",
+      "track": "sim",
+      "stage": "dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 26.733356475830078,
+      "metrics": {
+        "nrmse": 62.564621166752204,
+        "nrmse_detrend": 75.5046265932995,
+        "nrmse_tissue": 75.51161995221871,
+        "nrmse_blood": 128.53534476386696,
+        "nrmse_dgm": 38.95504103243484,
+        "dgm_linearity": 0.11820297432867866,
+        "calc_moment_dev": 17.567867130041122,
+        "calc_streak": 0.11822251019216601,
+        "correlation": 0.7980627742626817,
+        "xsim": 0.6283346278053923
+      },
+      "status": "ok",
+      "id": "medi-iso",
+      "slug": "medi",
+      "mode": "isolated"
     }
   ]
 }
