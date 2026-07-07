@@ -65,6 +65,8 @@ function stagesHTML() {
 const fmapName = (m) => (m === "gt" ? "ground truth" : m);
 
 function pipelinesHTML() {
+  if (!composedRuns().length)
+    return `<p class="p-3 text-sm text-gray-400">No pipeline combinations available yet — the composed matrix is computed by the nightly job.</p>`;
   const cur = currentCombo();
   const f = filter.toLowerCase();
   const axis = (title, methods, kind) => {
@@ -127,9 +129,6 @@ async function loadRun() {
   note.classList.add("hidden"); note.classList.remove("flex");
 
   baseUrl = `results/${run.id}/`;
-  win = run.kind === "field"
-    ? { lo: -1.0, hi: 1.0, elo: 0, ehi: 0.5 }
-    : { lo: -0.1, hi: 0.1, elo: 0, ehi: 0.05 };
 
   if (!nv) {
     nv = new Niivue({
@@ -208,19 +207,23 @@ function wireControls() {
   setViewActive("multiplanar");
 }
 
+function autoWin(vol) {  // robust percentile auto-window (the "Auto" button's behaviour)
+  vol.cal_min = vol.robust_min ?? vol.global_min;
+  vol.cal_max = vol.robust_max ?? vol.global_max;
+}
+
 async function showLayer(layer) {
   const cmap = $("cmap").value;
   const overlayCtl = $("overlay-ctl");
   if (layer === "error") {
     await nv.loadVolumes([{ url: baseUrl + "truth.nii.gz", colormap: cmap }]);
-    baseVol().cal_min = win.lo; baseVol().cal_max = win.hi;
+    autoWin(baseVol());
     await nv.addVolumeFromUrl({ url: baseUrl + "error.nii.gz", colormap: "warm", opacity: parseFloat($("opacity").value) });
-    const ov = nv.volumes[nv.volumes.length - 1];
-    ov.cal_min = win.elo; ov.cal_max = win.ehi;
+    autoWin(nv.volumes[nv.volumes.length - 1]);
     overlayCtl.classList.remove("hidden"); overlayCtl.classList.add("flex");
   } else {
     await nv.loadVolumes([{ url: baseUrl + (layer === "truth" ? "truth.nii.gz" : "recon.nii.gz"), colormap: cmap }]);
-    baseVol().cal_min = win.lo; baseVol().cal_max = win.hi;
+    autoWin(baseVol());
     overlayCtl.classList.add("hidden"); overlayCtl.classList.remove("flex");
   }
   nv.updateGLVolume();

@@ -126,6 +126,8 @@ def gen(slug, stage, algo, name, desc, cite, doi, params):
         f"image: {IMAGE}\nrun: bash run.sh\n")
 
     rs = RUN_SH.format(name=name, stage=stage, group=group, algo=algo, inp=inp, out=out)
+    if slug == "medi":  # MEDI uses the magnitude for morphology/edge weighting
+        rs = rs.replace('--b0-direction $B0\n', '--b0-direction $B0 --magnitude "$IN/magnitude.nii.gz"\n')
     (d / "run.sh").write_text(rs)
     (d / "run.sh").chmod((d / "run.sh").stat().st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
 

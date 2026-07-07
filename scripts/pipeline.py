@@ -32,7 +32,7 @@ EVAL = ROOT / "eval" / "qsm_eval.py"
 STAGES = {
     "field-mapping": {"consumes": ["phase", "magnitude", "mask", "params"], "produces": ["totalfield"]},
     "bfr": {"consumes": ["totalfield", "mask", "params"], "produces": ["localfield"]},
-    "dipole": {"consumes": ["localfield", "mask", "params"], "produces": ["chimap"]},
+    "dipole": {"consumes": ["localfield", "mask", "params", "magnitude"], "produces": ["chimap"]},
     "unwrap+bfr": {"consumes": ["phase", "magnitude", "mask", "params"], "produces": ["localfield"]},
     "bfr+dipole": {"consumes": ["totalfield", "mask", "params"], "produces": ["chimap"]},
     "end-to-end": {"consumes": ["phase", "magnitude", "mask", "params"], "produces": ["chimap"]},
@@ -165,6 +165,17 @@ def dnf(rid, slug, name, stage, mode, track, combo=None):
     return e
 
 
+def flush_index(runs):
+    """Merge the current runs into results/index.json (replace matching ids) and write immediately,
+    so a long run's progress is visible on the leaderboard as it goes."""
+    idx = ROOT / "results" / "index.json"
+    existing = json.loads(idx.read_text()).get("runs", []) if idx.exists() else []
+    ids = {r["id"] for r in runs}
+    merged = [r for r in existing if r.get("id") not in ids] + runs
+    idx.write_text(json.dumps({"contract": "v2", "generated": None, "runs": merged}, indent=2) + "\n")
+    return len(merged)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dataset", type=Path, default=ROOT / "data/sim/dev")
@@ -172,6 +183,7 @@ def main() -> None:
     ap.add_argument("--runner", choices=["local", "docker"], default="local",
                     help="local runs run.sh directly; docker runs each submission's image (CI)")
     ap.add_argument("--only", default=None, help="restrict isolated evaluation to this slug")
+    ap.add_argument("--include", default=None, help="comma-separated slugs to restrict the run to")
     ap.add_argument("--track", default="sim")
     ap.add_argument("--work", type=Path, default=ROOT / ".work")
     ap.add_argument("--emit-volumes", action="store_true",
@@ -191,6 +203,9 @@ def main() -> None:
         "chimap": gt / "chimap.nii.gz",
     }
     algos = discover_algorithms()
+    if args.include:
+        keep = set(args.include.split(","))
+        algos = [a for a in algos if a["slug"] in keep]
     print(f"discovered {len(algos)} submissions:",
           ", ".join(f"{a['slug']}[{a['stage']}]" for a in algos))
     runs: list[dict] = []
@@ -288,6 +303,7 @@ def main() -> None:
                     except Exception as e:
                         print(f"  composed  {combo:<34} DNF ({e})")
                         runs.append(dnf(cid, combo, combo, "field-mapping+bfr+dipole", "composed", args.track, cinfo))
+                    flush_index(runs)  # write progress incrementally
         for s in spans:
             idir, odir = args.work / f"cmp_{s['slug']}_in", args.work / f"cmp_{s['slug']}_out"
             try:
@@ -301,13 +317,8 @@ def main() -> None:
                 print(f"  composed  {s['slug']:<28} DNF ({e})")
                 runs.append(dnf(f"{s['slug']}-cmp", s["slug"], s["slug"], s["stage"], "composed", args.track))
 
-    # -------- merge into results/index.json (replace entries with matching id) --------
-    idx = ROOT / "results" / "index.json"
-    existing = json.loads(idx.read_text()).get("runs", []) if idx.exists() else []
-    new_ids = {r["id"] for r in runs}
-    merged = [r for r in existing if r.get("id") not in new_ids] + runs
-    idx.write_text(json.dumps({"contract": "v2", "generated": None, "runs": merged}, indent=2) + "\n")
-    print(f"\nmerged {len(runs)} runs into {idx} ({len(merged)} total)")
+    total = flush_index(runs)
+    print(f"\nmerged {len(runs)} runs into results/index.json ({total} total)")
 
 
 if __name__ == "__main__":
