@@ -8,7 +8,7 @@ B0=$(jq -r '.B0_dir | join(" ")' "$IN/params.json")
 SET=""
 CFG="$IN/config.json"
 if [ -f "$CFG" ]; then
-  V=$(jq -r '.radius // empty' "$CFG"); [ -n "$V" ] && SET="$SET --resharp-radius $V"
-  V=$(jq -r '.tik_reg // empty' "$CFG"); [ -n "$V" ] && SET="$SET --resharp-tik-reg $V"
+  V=$(jq -r '.radius // empty' "$CFG"); [ -n "$V" ] && SET="$SET --radius $V"
+  V=$(jq -r '.tik_reg // empty' "$CFG"); [ -n "$V" ] && SET="$SET --tik-reg $V"
 fi
 qsmxt bgremove resharp "$IN/totalfield.nii.gz" -m "$IN/mask.nii.gz" -o "$OUT/localfield.nii.gz" --b0-direction $B0 $SET

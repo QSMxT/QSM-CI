@@ -8,7 +8,7 @@ B0=$(jq -r '.B0_dir | join(" ")' "$IN/params.json")
 SET=""
 CFG="$IN/config.json"
 if [ -f "$CFG" ]; then
-  V=$(jq -r '.tol // empty' "$CFG"); [ -n "$V" ] && SET="$SET --ilsqr-tol $V"
-  V=$(jq -r '.max_iter // empty' "$CFG"); [ -n "$V" ] && SET="$SET --ilsqr-max-iter $V"
+  V=$(jq -r '.tol // empty' "$CFG"); [ -n "$V" ] && SET="$SET --tol $V"
+  V=$(jq -r '.max_iter // empty' "$CFG"); [ -n "$V" ] && SET="$SET --max-iter $V"
 fi
 qsmxt invert ilsqr "$IN/localfield.nii.gz" -m "$IN/mask.nii.gz" -o "$OUT/chimap.nii.gz" --b0-direction $B0 $SET

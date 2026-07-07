@@ -1,6 +1,64 @@
 {
   "algorithms": [
     {
+      "slug": "harperella",
+      "name": "HARPERELLA",
+      "stage": "unwrap+bfr",
+      "engine": "QSMxT / QSM.rs",
+      "description": "Integrated phase unwrapping + background field removal, operating on wrapped phase.",
+      "citation": "Li et al., NeuroImage 2014",
+      "doi": "10.1016/j.neuroimage.2014.08.029",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT",
+      "authors": [],
+      "parameters": [
+        {
+          "name": "radius",
+          "default": 5.0,
+          "description": "SMV kernel radius (mm)"
+        },
+        {
+          "name": "max_iter",
+          "default": 100,
+          "description": "iterations"
+        },
+        {
+          "name": "tol",
+          "default": "1e-4",
+          "description": "tolerance"
+        }
+      ]
+    },
+    {
+      "slug": "iharperella",
+      "name": "iHARPERELLA",
+      "stage": "unwrap+bfr",
+      "engine": "QSMxT / QSM.rs",
+      "description": "Improved HARPERELLA: iterative integrated unwrapping + background removal on wrapped phase.",
+      "citation": "Li et al., NeuroImage 2014",
+      "doi": "10.1016/j.neuroimage.2014.08.029",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT",
+      "authors": [],
+      "parameters": [
+        {
+          "name": "radius",
+          "default": 5.0,
+          "description": "SMV kernel radius (mm)"
+        },
+        {
+          "name": "max_iter",
+          "default": 100,
+          "description": "iterations"
+        },
+        {
+          "name": "tol",
+          "default": "1e-4",
+          "description": "tolerance"
+        }
+      ]
+    },
+    {
       "slug": "ilsqr",
       "name": "iLSQR",
       "stage": "dipole",
@@ -118,11 +176,6 @@
           "name": "lambda",
           "default": "1e-4",
           "description": "regularization"
-        },
-        {
-          "name": "percentage",
-          "default": 0.95,
-          "description": "edge percentage"
         }
       ]
     },
@@ -258,6 +311,35 @@
           "name": "radius_factor",
           "default": 0.5,
           "description": "\u00d7 min voxel size"
+        }
+      ]
+    },
+    {
+      "slug": "tgv",
+      "name": "TGV",
+      "stage": "dipole",
+      "engine": "QSMxT / QSM.rs",
+      "description": "Total Generalized Variation regularized inversion (QSMxT inverts the local field).",
+      "citation": "Langkammer et al., NeuroImage 2015",
+      "doi": "10.1016/j.neuroimage.2015.02.041",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT",
+      "authors": [],
+      "parameters": [
+        {
+          "name": "iterations",
+          "default": 1000,
+          "description": "iterations"
+        },
+        {
+          "name": "alpha1",
+          "default": 0.0015,
+          "description": "first-order weight"
+        },
+        {
+          "name": "alpha0",
+          "default": 0.003,
+          "description": "second-order weight"
         }
       ]
     },

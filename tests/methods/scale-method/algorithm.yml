@@ -1,0 +1,9 @@
+name: Scale Test
+slug: scale-method
+stage: dipole
+image: local
+run: bash run.sh
+parameters:
+  - name: scale
+    default: 1.0
+    description: multiply the field by this factor

@@ -1,0 +1,22 @@
+name: TGV
+slug: tgv
+stage: dipole
+engine: QSMxT / QSM.rs
+description: >
+  Total Generalized Variation regularized inversion (QSMxT inverts the local field).
+citation: Langkammer et al., NeuroImage 2015
+doi: 10.1016/j.neuroimage.2015.02.041
+code_url: https://github.com/astewartau/QSM.rs
+license: MIT
+image: ghcr.io/astewartau/qsm-ci/qsmxt:v1
+run: bash run.sh
+parameters:
+  - name: iterations
+    default: 1000
+    description: iterations
+  - name: alpha1
+    default: 0.0015
+    description: first-order weight
+  - name: alpha0
+    default: 0.003
+    description: second-order weight

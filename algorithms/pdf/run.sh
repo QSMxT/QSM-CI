@@ -8,6 +8,6 @@ B0=$(jq -r '.B0_dir | join(" ")' "$IN/params.json")
 SET=""
 CFG="$IN/config.json"
 if [ -f "$CFG" ]; then
-  V=$(jq -r '.tol // empty' "$CFG"); [ -n "$V" ] && SET="$SET --pdf-tol $V"
+  V=$(jq -r '.tol // empty' "$CFG"); [ -n "$V" ] && SET="$SET --tol $V"
 fi
 qsmxt bgremove pdf "$IN/totalfield.nii.gz" -m "$IN/mask.nii.gz" -o "$OUT/localfield.nii.gz" --b0-direction $B0 $SET

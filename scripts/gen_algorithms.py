@@ -20,8 +20,9 @@ QSMXT = "https://github.com/QSMxT/QSMxT"
 
 # stage -> (input artifact, output artifact, qsmxt subcommand group)
 STAGE = {
-    "bfr":    ("totalfield", "localfield", "bgremove"),
-    "dipole": ("localfield", "chimap",     "invert"),
+    "bfr":        ("totalfield", "localfield", "bgremove"),
+    "dipole":     ("localfield", "chimap",     "invert"),
+    "unwrap+bfr": ("phase",      "localfield", "bgremove"),  # HARPERELLA: wrapped phase -> local field
 }
 
 # slug, stage, qsmxt algo name, display name, description, citation, doi, [(param, default, desc)]
@@ -87,48 +88,76 @@ ALGOS = [
     ("medi", "dipole", "medi", "MEDI",
      "Morphology Enabled Dipole Inversion: magnitude-guided edge regularization.",
      "Liu et al., 2012", None,
-     [("lambda", "1e-4", "regularization"), ("percentage", "0.95", "edge percentage")]),
+     [("lambda", "1e-4", "regularization")]),
     ("ilsqr", "dipole", "ilsqr", "iLSQR",
      "Iterative LSQR inversion with streaking-artifact reduction.",
      "Li et al., NMR Biomed 2015", None,
      [("tol", "1e-4", "tolerance"), ("max_iter", "1000", "iterations")]),
+    ("tgv", "dipole", "tgv", "TGV",
+     "Total Generalized Variation regularized inversion (QSMxT inverts the local field).",
+     "Langkammer et al., NeuroImage 2015", "10.1016/j.neuroimage.2015.02.041",
+     [("iterations", "1000", "iterations"), ("alpha1", "0.0015", "first-order weight"),
+      ("alpha0", "0.003", "second-order weight")]),
+    # --- integrated unwrap + background removal (span: wrapped phase -> local field) ---
+    ("harperella", "unwrap+bfr", "harperella", "HARPERELLA",
+     "Integrated phase unwrapping + background field removal, operating on wrapped phase.",
+     "Li et al., NeuroImage 2014", "10.1016/j.neuroimage.2014.08.029",
+     [("radius", "5.0", "SMV kernel radius (mm)"), ("max_iter", "100", "iterations"),
+      ("tol", "1e-4", "tolerance")]),
+    ("iharperella", "unwrap+bfr", "iharperella", "iHARPERELLA",
+     "Improved HARPERELLA: iterative integrated unwrapping + background removal on wrapped phase.",
+     "Li et al., NeuroImage 2014", "10.1016/j.neuroimage.2014.08.029",
+     [("radius", "5.0", "SMV kernel radius (mm)"), ("max_iter", "100", "iterations"),
+      ("tol", "1e-4", "tolerance")]),
 ]
 
 def yamllist(items):
     return "".join(f"  - name: {n}\n    default: {d}\n    description: {desc}\n" for n, d, desc in items)
 
 
-def param_block(algo, params):
+def param_block(params):
     """Bash that reads parameter overrides from /input/config.json into $SET (empty if none).
 
-    qsm-ci writes config.json from `--set name=value`; each declared param maps to the qsmxt flag
-    `--<algo>-<name>`. Absent file/keys => the qsmxt binary defaults are used (CI is unaffected).
+    qsm-ci writes config.json from `--set name=value`; each declared param maps to the standalone
+    qsmxt flag `--<name>` (the per-subcommand flags are plain, not pipeline-prefixed). Absent
+    file/keys => the qsmxt binary defaults are used (CI is unaffected).
     """
     if not params:
         return "", ""
     lines = ["", "# Parameter overrides (qsm-ci run --set NAME=VALUE) arrive as /input/config.json.",
              'SET=""', 'CFG="$IN/config.json"', 'if [ -f "$CFG" ]; then']
     for n, _, _ in params:
-        flag = f"--{algo}-{n.replace('_', '-')}"
+        flag = f"--{n.replace('_', '-')}"
         lines.append(f'  V=$(jq -r \'.{n} // empty\' "$CFG"); [ -n "$V" ] && SET="$SET {flag} $V"')
     lines.append("fi")
     return "\n".join(lines) + "\n", " $SET"
 
 
+def extra_flags(slug):
+    """Algorithm-specific flags beyond the common input/mask/output/b0."""
+    te = (' --field-strength "$(jq -r .B0 "$IN/params.json")"'
+          ' --echo-time "$(jq -r .TE[0] "$IN/params.json")"')
+    if slug == "medi":  # radians (needs B0+TE), uses magnitude, no internal SMV (input is local field)
+        return te + ' --smv false --magnitude "$IN/magnitude.nii.gz"'
+    if slug == "tgv":   # TGV inversion also needs B0 + TE
+        return te
+    return ""
+
+
 def run_sh(name, stage, group, algo, inp, out, slug, params):
-    pblock, suffix = param_block(algo, params)
-    cmd = (f'qsmxt {group} {algo} "$IN/{inp}.nii.gz" -m "$IN/mask.nii.gz" '
-           f'-o "$OUT/{out}.nii.gz" --b0-direction $B0')
-    if slug == "medi":  # MEDI: radians (needs B0+TE), uses magnitude, no internal SMV
-        cmd += (' --field-strength "$(jq -r .B0 "$IN/params.json")"'
-                ' --echo-time "$(jq -r .TE[0] "$IN/params.json")"'
-                ' --smv false --magnitude "$IN/magnitude.nii.gz"')
-    return ("#!/usr/bin/env bash\n"
-            f"# QSM-CI submission — {name} ({stage} stage) via QSMxT / QSM.rs.\n"
-            "set -euo pipefail\n"
-            'IN="${1:-/input}"; OUT="${2:-/output}"\n'
-            "B0=$(jq -r '.B0_dir | join(\" \")' \"$IN/params.json\")\n"
-            f"{pblock}{cmd}{suffix}\n")
+    pblock, suffix = param_block(params)
+    use_b0 = inp != "phase"  # phase-domain bgremove (HARPERELLA) takes no B0 direction
+    head = ["#!/usr/bin/env bash",
+            f"# QSM-CI submission — {name} ({stage} stage) via QSMxT / QSM.rs.",
+            "set -euo pipefail",
+            'IN="${1:-/input}"; OUT="${2:-/output}"']
+    if use_b0:
+        head.append("B0=$(jq -r '.B0_dir | join(\" \")' \"$IN/params.json\")")
+    cmd = f'qsmxt {group} {algo} "$IN/{inp}.nii.gz" -m "$IN/mask.nii.gz" -o "$OUT/{out}.nii.gz"'
+    if use_b0:
+        cmd += " --b0-direction $B0"
+    cmd += extra_flags(slug)
+    return "\n".join(head) + "\n" + pblock + cmd + suffix + "\n"
 
 
 def gen(slug, stage, algo, name, desc, cite, doi, params):

@@ -17,6 +17,5 @@ qsmxt invert medi /input/localfield.nii.gz -m /input/mask.nii.gz -o /output/chim
 | parameter | default | description |
 |---|---|---|
 | `lambda` | 1e-4 | regularization |
-| `percentage` | 0.95 | edge percentage |
 
 _Citations/DOIs are auto-generated best-effort references and should be verified._

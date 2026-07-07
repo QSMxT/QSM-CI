@@ -1,0 +1,22 @@
+name: HARPERELLA
+slug: harperella
+stage: unwrap+bfr
+engine: QSMxT / QSM.rs
+description: >
+  Integrated phase unwrapping + background field removal, operating on wrapped phase.
+citation: Li et al., NeuroImage 2014
+doi: 10.1016/j.neuroimage.2014.08.029
+code_url: https://github.com/astewartau/QSM.rs
+license: MIT
+image: ghcr.io/astewartau/qsm-ci/qsmxt:v1
+run: bash run.sh
+parameters:
+  - name: radius
+    default: 5.0
+    description: SMV kernel radius (mm)
+  - name: max_iter
+    default: 100
+    description: iterations
+  - name: tol
+    default: 1e-4
+    description: tolerance

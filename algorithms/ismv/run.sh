@@ -8,8 +8,8 @@ B0=$(jq -r '.B0_dir | join(" ")' "$IN/params.json")
 SET=""
 CFG="$IN/config.json"
 if [ -f "$CFG" ]; then
-  V=$(jq -r '.tol // empty' "$CFG"); [ -n "$V" ] && SET="$SET --ismv-tol $V"
-  V=$(jq -r '.max_iter // empty' "$CFG"); [ -n "$V" ] && SET="$SET --ismv-max-iter $V"
-  V=$(jq -r '.radius_factor // empty' "$CFG"); [ -n "$V" ] && SET="$SET --ismv-radius-factor $V"
+  V=$(jq -r '.tol // empty' "$CFG"); [ -n "$V" ] && SET="$SET --tol $V"
+  V=$(jq -r '.max_iter // empty' "$CFG"); [ -n "$V" ] && SET="$SET --max-iter $V"
+  V=$(jq -r '.radius_factor // empty' "$CFG"); [ -n "$V" ] && SET="$SET --radius-factor $V"
 fi
 qsmxt bgremove ismv "$IN/totalfield.nii.gz" -m "$IN/mask.nii.gz" -o "$OUT/localfield.nii.gz" --b0-direction $B0 $SET

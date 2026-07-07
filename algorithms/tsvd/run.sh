@@ -8,6 +8,6 @@ B0=$(jq -r '.B0_dir | join(" ")' "$IN/params.json")
 SET=""
 CFG="$IN/config.json"
 if [ -f "$CFG" ]; then
-  V=$(jq -r '.threshold // empty' "$CFG"); [ -n "$V" ] && SET="$SET --tsvd-threshold $V"
+  V=$(jq -r '.threshold // empty' "$CFG"); [ -n "$V" ] && SET="$SET --threshold $V"
 fi
 qsmxt invert tsvd "$IN/localfield.nii.gz" -m "$IN/mask.nii.gz" -o "$OUT/chimap.nii.gz" --b0-direction $B0 $SET

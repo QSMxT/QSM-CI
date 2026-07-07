@@ -8,8 +8,8 @@ B0=$(jq -r '.B0_dir | join(" ")' "$IN/params.json")
 SET=""
 CFG="$IN/config.json"
 if [ -f "$CFG" ]; then
-  V=$(jq -r '.delta // empty' "$CFG"); [ -n "$V" ] && SET="$SET --rts-delta $V"
-  V=$(jq -r '.mu // empty' "$CFG"); [ -n "$V" ] && SET="$SET --rts-mu $V"
-  V=$(jq -r '.max_iter // empty' "$CFG"); [ -n "$V" ] && SET="$SET --rts-max-iter $V"
+  V=$(jq -r '.delta // empty' "$CFG"); [ -n "$V" ] && SET="$SET --delta $V"
+  V=$(jq -r '.mu // empty' "$CFG"); [ -n "$V" ] && SET="$SET --mu $V"
+  V=$(jq -r '.max_iter // empty' "$CFG"); [ -n "$V" ] && SET="$SET --max-iter $V"
 fi
 qsmxt invert rts "$IN/localfield.nii.gz" -m "$IN/mask.nii.gz" -o "$OUT/chimap.nii.gz" --b0-direction $B0 $SET

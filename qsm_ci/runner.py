@@ -114,9 +114,12 @@ def _run_container(algo, input_dir, output_dir, runner, log) -> float:
     if runner in _OCI_ENGINES:
         image = _build_oci(algo, runner, log)
         log(f"⚙ running container ({runner}: {image})")
+        # rootless podman: keep-id maps your host uid inside, so files written to the /output
+        # bind mount come back owned by you. docker (root daemon): run as your uid directly.
+        id_args = (["--userns=keep-id"] if runner == "podman"
+                   else ["--user", f"{os.getuid()}:{os.getgid()}"])
         subprocess.run([
-            runner, "run", "--rm", "--network", "none",
-            "--user", f"{os.getuid()}:{os.getgid()}",
+            runner, "run", "--rm", "--network", "none", *id_args,
             "-v", f"{algo['dir']}:/algo:ro",
             "-v", f"{input_dir}:/input:ro", "-v", f"{output_dir}:/output",
             image, "bash", "/algo/run.sh",
