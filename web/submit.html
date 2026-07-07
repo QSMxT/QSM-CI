@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>QSM-CI — Submit</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { darkMode: "class", theme: { extend: { fontFamily: { sans: ["Inter", "system-ui", "sans-serif"] } } } };</script>
+  <script src="js/app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak]{display:none!important}
+    .field { @apply w-full rounded-lg border-gray-300 text-sm; }
+    .prose-x h1{font-size:1.6rem;font-weight:700;margin:1.2rem 0 .6rem} .prose-x h2{font-size:1.2rem;font-weight:600;margin:1.4rem 0 .5rem}
+    .prose-x h3{font-weight:600;margin:1rem 0 .4rem} .prose-x p{margin:.6rem 0;line-height:1.65} .prose-x ul{list-style:disc;margin:.6rem 0 .6rem 1.3rem}
+    .prose-x ol{list-style:decimal;margin:.6rem 0 .6rem 1.3rem} .prose-x li{margin:.25rem 0} .prose-x a{color:#4f46e5;text-decoration:underline}
+    .prose-x code{background:rgba(99,102,241,.1);border-radius:.3rem;padding:.1rem .3rem;font-size:.85em}
+    .prose-x pre{background:#0b1220;color:#e5e7eb;border-radius:.6rem;padding:.9rem 1rem;overflow-x:auto;margin:.8rem 0;font-size:.82rem}
+    .prose-x pre code{background:none;padding:0} .prose-x table{width:100%;font-size:.85rem;margin:.6rem 0} .prose-x th,.prose-x td{border-bottom:1px solid rgba(120,120,120,.2);padding:.35rem .5rem;text-align:left}
+    .dark .prose-x a{color:#a5b4fc}
+  </style>
+</head>
+<body class="font-sans text-gray-900 bg-gray-50 antialiased dark:bg-gray-950 dark:text-gray-100">
+  <header id="site-nav"></header>
+
+  <main x-data="submit()" x-init="init()" class="mx-auto max-w-6xl px-6 py-10">
+    <h1 class="text-3xl font-bold tracking-tight">Submit an algorithm</h1>
+    <p class="mt-1 text-gray-600 dark:text-gray-400">Fill this in to generate your submission files, then save them, test locally, and open a pull request.</p>
+
+    <div class="mt-8 grid lg:grid-cols-2 gap-8">
+      <!-- form -->
+      <div class="space-y-5">
+        <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm space-y-4 dark:border-gray-800 dark:bg-gray-900">
+          <div class="grid sm:grid-cols-2 gap-4">
+            <label class="block text-sm"><span class="font-medium">Name</span>
+              <input x-model="name" placeholder="My Method" class="mt-1 w-full rounded-lg border-gray-300 text-sm dark:bg-gray-800 dark:border-gray-700" /></label>
+            <label class="block text-sm"><span class="font-medium">Slug</span>
+              <input x-model="slug" :placeholder="autoSlug" class="mt-1 w-full rounded-lg border-gray-300 text-sm font-mono dark:bg-gray-800 dark:border-gray-700" /></label>
+          </div>
+          <label class="block text-sm"><span class="font-medium">Stage</span>
+            <select x-model="stage" class="mt-1 w-full rounded-lg border-gray-300 text-sm dark:bg-gray-800 dark:border-gray-700">
+              <template x-for="s in Object.keys(STAGE_IO)" :key="s"><option :value="s" x-text="s"></option></template>
+            </select>
+            <span class="mt-1 block text-xs text-gray-500 dark:text-gray-400">consumes <code x-text="STAGE_IO[stage].c"></code> → produces <code x-text="STAGE_IO[stage].p"></code></span>
+          </label>
+          <label class="block text-sm"><span class="font-medium">Description</span>
+            <textarea x-model="description" rows="2" placeholder="One-line description of the method." class="mt-1 w-full rounded-lg border-gray-300 text-sm dark:bg-gray-800 dark:border-gray-700"></textarea></label>
+        </div>
+
+        <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm space-y-4 dark:border-gray-800 dark:bg-gray-900">
+          <p class="text-sm font-medium">Environment</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Your code is mounted at <code>/algo</code>; provide an image with everything it needs (no network at run time).</p>
+          <label class="block text-sm"><span class="font-medium">Container image</span>
+            <input x-model="image" placeholder="ghcr.io/you/your-image:v1" class="mt-1 w-full rounded-lg border-gray-300 text-sm font-mono dark:bg-gray-800 dark:border-gray-700" /></label>
+          <label class="block text-sm"><span class="font-medium">Run command</span>
+            <input x-model="run" class="mt-1 w-full rounded-lg border-gray-300 text-sm font-mono dark:bg-gray-800 dark:border-gray-700" /></label>
+        </div>
+
+        <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm space-y-4 dark:border-gray-800 dark:bg-gray-900">
+          <p class="text-sm font-medium">Attribution</p>
+          <div class="grid sm:grid-cols-2 gap-4">
+            <label class="block text-sm"><span class="font-medium">Authors</span>
+              <input x-model="authors" placeholder="Jane Doe, John Roe" class="mt-1 w-full rounded-lg border-gray-300 text-sm dark:bg-gray-800 dark:border-gray-700" /></label>
+            <label class="block text-sm"><span class="font-medium">License</span>
+              <input x-model="license" class="mt-1 w-full rounded-lg border-gray-300 text-sm dark:bg-gray-800 dark:border-gray-700" /></label>
+            <label class="block text-sm"><span class="font-medium">Citation</span>
+              <input x-model="citation" placeholder="Doe et al., Journal 2025" class="mt-1 w-full rounded-lg border-gray-300 text-sm dark:bg-gray-800 dark:border-gray-700" /></label>
+            <label class="block text-sm"><span class="font-medium">DOI</span>
+              <input x-model="doi" placeholder="10.xxxx/xxxxx" class="mt-1 w-full rounded-lg border-gray-300 text-sm font-mono dark:bg-gray-800 dark:border-gray-700" /></label>
+          </div>
+          <label class="block text-sm"><span class="font-medium">Source code URL</span>
+            <input x-model="code_url" placeholder="https://github.com/you/your-method" class="mt-1 w-full rounded-lg border-gray-300 text-sm dark:bg-gray-800 dark:border-gray-700" /></label>
+        </div>
+
+        <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+          <div class="flex items-center justify-between">
+            <p class="text-sm font-medium">Parameters <span class="text-gray-400 font-normal">(optional)</span></p>
+            <button @click="params.push({name:'',default:'',description:''})" class="text-xs font-medium text-indigo-600 hover:text-indigo-700">+ add</button>
+          </div>
+          <template x-for="(p,i) in params" :key="i">
+            <div class="mt-2 grid grid-cols-[1fr_1fr_2fr_auto] gap-2 items-center">
+              <input x-model="p.name" placeholder="name" class="rounded-lg border-gray-300 text-xs font-mono dark:bg-gray-800 dark:border-gray-700" />
+              <input x-model="p.default" placeholder="default" class="rounded-lg border-gray-300 text-xs font-mono dark:bg-gray-800 dark:border-gray-700" />
+              <input x-model="p.description" placeholder="description" class="rounded-lg border-gray-300 text-xs dark:bg-gray-800 dark:border-gray-700" />
+              <button @click="params.splice(i,1)" class="text-gray-300 hover:text-red-500 text-lg leading-none">×</button>
+            </div>
+          </template>
+        </div>
+      </div>
+
+      <!-- generated files -->
+      <div class="lg:sticky lg:top-20 self-start space-y-5">
+        <div class="rounded-2xl border border-indigo-100 bg-indigo-50/50 p-5 dark:border-indigo-500/20 dark:bg-indigo-500/5">
+          <p class="text-sm font-medium text-gray-900 dark:text-gray-100">Create <code x-text="'algorithms/' + slugOr + '/'"></code> with these files</p>
+          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Plus your reconstruction code (e.g. <code>recon.py</code>) that reads <code>/input</code> and writes <code>/output</code>.</p>
+        </div>
+
+        <template x-for="f in files" :key="f.name">
+          <div class="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden dark:border-gray-800 dark:bg-gray-900">
+            <div class="flex items-center justify-between px-4 py-2 border-b border-gray-100 dark:border-gray-800">
+              <span class="font-mono text-xs text-gray-500 dark:text-gray-400" x-text="f.name"></span>
+              <button @click="copy(f.body, f.name)" class="text-xs font-medium text-indigo-600 hover:text-indigo-700" x-text="copied===f.name ? 'copied ✓' : 'copy'"></button>
+            </div>
+            <pre class="p-4 overflow-x-auto text-xs leading-relaxed text-gray-800 dark:text-gray-200"><code x-text="f.body"></code></pre>
+          </div>
+        </template>
+
+        <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+          <p class="text-sm font-medium">Next steps</p>
+          <ol class="mt-2 space-y-1.5 text-sm text-gray-600 dark:text-gray-400 list-decimal list-inside">
+            <li>Save the files above under <code x-text="'algorithms/' + slugOr + '/'"></code> and add your reconstruction code.</li>
+            <li>Generate a dev phantom and test locally:
+              <code class="block mt-1 rounded bg-gray-900 text-gray-100 px-2 py-1 text-xs" x-text="'python scripts/pipeline.py --dataset data/sim/dev --mode isolated --only ' + slugOr"></code></li>
+            <li>Commit on a branch and open a pull request.</li>
+          </ol>
+          <div class="mt-4 flex flex-wrap gap-2">
+            <a :href="GH + '/compare'" target="_blank" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">Open a pull request →</a>
+            <a href="methods.html" class="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:ring-gray-700">See example methods</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- full guide -->
+    <div class="mt-14 rounded-2xl border border-gray-200 bg-white p-8 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+      <div class="prose-x max-w-none text-gray-700 dark:text-gray-300" id="guide" x-html="guideHtml"></div>
+    </div>
+  </main>
+
+  <footer id="site-footer"></footer>
+
+  <script>
+    const STAGE_IO = {
+      "field-mapping": { c: "phase, magnitude, mask, params", p: "totalfield", inp: "phase" },
+      "bfr": { c: "totalfield, mask, params", p: "localfield", inp: "totalfield" },
+      "dipole": { c: "localfield, mask, params", p: "chimap", inp: "localfield" },
+      "unwrap+bfr": { c: "phase, magnitude, mask, params", p: "localfield", inp: "phase" },
+      "bfr+dipole": { c: "totalfield, mask, params", p: "chimap", inp: "totalfield" },
+      "end-to-end": { c: "phase, magnitude, mask, params", p: "chimap", inp: "phase" },
+    };
+    function submit() {
+      return {
+        GH, STAGE_IO, copied: "",
+        name: "", slug: "", stage: "dipole", description: "",
+        image: "", run: "bash run.sh",
+        authors: "", license: "MIT", citation: "", doi: "", code_url: "",
+        params: [], guideHtml: "",
+        async init() {
+          try { const md = await (await fetch("docs/submitting.md")).text(); this.guideHtml = marked.parse(md); }
+          catch (e) { this.guideHtml = `<p>See the <a href="${GH}/blob/main/docs/submitting.md">submission guide</a>.</p>`; }
+        },
+        get autoSlug() { return this.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "my-method"; },
+        get slugOr() { return this.slug || this.autoSlug; },
+        get metadataYml() {
+          const ps = this.params.filter((p) => p.name);
+          let y = `name: ${this.name || this.slugOr}\nslug: ${this.slugOr}\n`;
+          if (this.authors) y += "authors:\n" + this.authors.split(",").map((a) => `  - name: ${a.trim()}`).join("\n") + "\n";
+          y += `description: >\n  ${this.description || "TODO"}\n`;
+          y += `citation: ${this.citation || "null"}\ndoi: ${this.doi || "null"}\ncode_url: ${this.code_url || "null"}\n`;
+          y += `license: ${this.license}\nstage: ${this.stage}\n`;
+          if (ps.length) y += "parameters:\n" + ps.map((p) => `  - name: ${p.name}\n    default: ${p.default}\n    description: ${p.description}`).join("\n") + "\n";
+          return y;
+        },
+        get algorithmYml() {
+          return `contract: v2\nstage: ${this.stage}\nimage: ${this.image || "ghcr.io/you/your-image:v1"}\nrun: ${this.run}\n`;
+        },
+        get runSh() {
+          const io = STAGE_IO[this.stage];
+          return `#!/usr/bin/env bash\n# ${this.name || this.slugOr} — ${this.stage} stage.\n`
+            + `# consumes: ${io.c}\n# produces: ${io.p}.nii.gz (in ppm, within the mask)\n`
+            + `set -euo pipefail\nIN="\${1:-/input}"; OUT="\${2:-/output}"\n\n`
+            + `# TODO: run your reconstruction — read ${io.inp}.nii.gz from $IN, write ${io.p}.nii.gz to $OUT.\n`
+            + `python3 "$(dirname "$0")/recon.py" "$IN" "$OUT"\n`;
+        },
+        get files() {
+          return [
+            { name: "metadata.yml", body: this.metadataYml },
+            { name: "algorithm.yml", body: this.algorithmYml },
+            { name: "run.sh", body: this.runSh },
+          ];
+        },
+        copy(text, name) { navigator.clipboard.writeText(text); this.copied = name; setTimeout(() => (this.copied = ""), 1500); },
+      };
+    }
+  </script>
+</body>
+</html>
