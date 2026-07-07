@@ -14,7 +14,7 @@ import stat
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-IMAGE = "ghcr.io/astewartau/qsm-ci/qsmxt:v1"
+IMAGE = "ghcr.io/astewartau/qsm-ci/qsmxt:v9.2.0"
 QSM_RS = "https://github.com/astewartau/QSM.rs"
 QSMXT = "https://github.com/QSMxT/QSMxT"
 
@@ -55,9 +55,7 @@ ALGOS = [
      "Iterative Spherical Mean Value background field removal.",
      "Wen et al., 2014", None,
      [("tol", "1e-4", "tolerance"), ("max_iter", "100", "iterations"), ("radius_factor", "2.0", "× max voxel size")]),
-    # NOTE: HARPERELLA / iHARPERELLA are phase-domain (consume WRAPPED PHASE, not total field, and
-    # take no B0 direction) — an `unwrap+bfr` span over single-echo phase. They need a bespoke run.sh
-    # (echo selection), so they're excluded from this generator for now. TODO: add as a span.
+    # (HARPERELLA / iHARPERELLA are phase-domain -> an `unwrap+bfr` span; defined below.)
     # --- dipole inversion ---
     ("rts", "dipole", "rts", "RTS",
      "Rapid Two-Step QSM: streaking-artifact reduction via a fast ADMM split.",
@@ -75,9 +73,7 @@ ALGOS = [
      "Truncated Singular Value Decomposition inversion.",
      "Wharton et al., Magn Reson Med 2010", "10.1002/mrm.22334",
      [("threshold", "0.1", "singular-value threshold")]),
-    # NOTE: TGV is single-step (phase -> chi, doing unwrap+BFR+inversion itself); it is NOT a
-    # standalone dipole inversion, so running it on a background-removed local field is wrong.
-    # Excluded here — it belongs as an `end-to-end` span (phase -> chimap). TODO.
+    # (TGV takes the TOTAL field and does its own BFR -> a `bfr+dipole` span; defined below.)
     ("tikhonov", "dipole", "tikhonov", "Tikhonov",
      "Closed-form L2 (Tikhonov) regularized inversion.",
      "Kames et al., 2018", None,
