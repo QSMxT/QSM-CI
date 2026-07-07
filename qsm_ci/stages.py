@@ -12,7 +12,7 @@ STAGES = {
     "bfr": {"consumes": ["totalfield", "mask", "params"], "produces": ["localfield"]},
     "dipole": {"consumes": ["localfield", "mask", "params", "magnitude"], "produces": ["chimap"]},
     "unwrap+bfr": {"consumes": ["phase", "magnitude", "mask", "params"], "produces": ["localfield"]},
-    "bfr+dipole": {"consumes": ["totalfield", "mask", "params"], "produces": ["chimap"]},
+    "bfr+dipole": {"consumes": ["totalfield", "mask", "params", "magnitude"], "produces": ["chimap"]},
     "end-to-end": {"consumes": ["phase", "magnitude", "mask", "params"], "produces": ["chimap"]},
 }
 

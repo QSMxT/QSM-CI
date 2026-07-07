@@ -1,0 +1,14 @@
+name: QSMART
+slug: qsmart
+stage: bfr+dipole
+engine: QSMxT / QSM.rs
+description: >
+  QSMART: vessel-aware two-stage reconstruction. Consumes the total field and produces
+  susceptibility, doing its own spatially-dependent background field removal and vasculature-aware
+  regularization (Frangi vessel detection + SDF).
+citation: Yaghmaie et al., NMR Biomed 2021
+doi: 10.1002/nbm.4442
+code_url: https://github.com/astewartau/QSM.rs
+license: MIT
+image: ghcr.io/astewartau/qsm-ci/qsmxt:v1
+run: bash run.sh

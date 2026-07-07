@@ -25,7 +25,7 @@ stages:
 # A submission may set `stage` to any stage or span name below.
 spans:
   unwrap+bfr:  { consumes: [phase, magnitude, mask, params], produces: [localfield] }   # e.g. HARPERELLA
-  bfr+dipole:  { consumes: [totalfield, mask, params],       produces: [chimap] }        # e.g. QSMART
+  bfr+dipole:  { consumes: [totalfield, mask, params, magnitude], produces: [chimap] }    # e.g. QSMART, TGV
   end-to-end:  { consumes: [phase, magnitude, mask, params], produces: [chimap] }        # e.g. TGV
 
 # Metrics reported per artifact kind (see eval/qsm_eval.py).
