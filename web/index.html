@@ -8,12 +8,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    tailwind.config = { theme: { extend: { fontFamily: { sans: ["Inter", "system-ui", "sans-serif"] } } } };
+    tailwind.config = { darkMode: "class", theme: { extend: { fontFamily: { sans: ["Inter", "system-ui", "sans-serif"] } } } };
   </script>
   <script src="js/app.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
-<body class="font-sans text-gray-900 bg-white antialiased">
+<body class="font-sans text-gray-900 bg-white antialiased dark:bg-gray-950 dark:text-gray-100">
   <header id="site-nav"></header>
 
   <main x-data="home()" x-init="init()">

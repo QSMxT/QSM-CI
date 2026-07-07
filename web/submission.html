@@ -7,14 +7,29 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>tailwind.config = { theme: { extend: { fontFamily: { sans: ["Inter", "system-ui", "sans-serif"] } } } };</script>
+  <script>tailwind.config = { darkMode: "class", theme: { extend: { fontFamily: { sans: ["Inter", "system-ui", "sans-serif"] } } } };</script>
   <script src="js/app.js"></script>
+  <style>
+    /* dual-range windowing slider with value bubbles */
+    .dualrange { position: relative; height: 40px; }
+    .dualrange .track { position: absolute; top: 24px; left: 0; right: 0; height: 6px; border-radius: 9999px; background: #e5e7eb; }
+    .dark .dualrange .track { background: #374151; }
+    .dualrange .fill { position: absolute; top: 24px; height: 6px; border-radius: 9999px; background: #6366f1; }
+    .dualrange input[type=range] { position: absolute; top: 19px; left: 0; width: 100%; height: 16px; margin: 0; background: none; pointer-events: none; -webkit-appearance: none; appearance: none; }
+    .dualrange input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; pointer-events: auto; height: 16px; width: 16px; border-radius: 9999px; background: #fff; border: 2px solid #6366f1; cursor: grab; box-shadow: 0 1px 3px rgba(0,0,0,.15); }
+    .dualrange input[type=range]::-moz-range-thumb { pointer-events: auto; height: 16px; width: 16px; border-radius: 9999px; background: #fff; border: 2px solid #6366f1; cursor: grab; box-shadow: 0 1px 3px rgba(0,0,0,.15); }
+    .dark .dualrange input[type=range]::-webkit-slider-thumb { background: #1f2937; }
+    .dark .dualrange input[type=range]::-moz-range-thumb { background: #1f2937; }
+    .win-bubble { position: absolute; top: 0; transform: translateX(-50%); font-size: 11px; line-height: 1; padding: 3px 6px; border-radius: 6px; background: #111827; color: #fff; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .dark .win-bubble { background: #4f46e5; }
+  </style>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
-<body class="font-sans text-gray-900 bg-gray-50 antialiased">
+<body class="font-sans text-gray-900 bg-gray-50 antialiased dark:bg-gray-950 dark:text-gray-100">
   <header id="site-nav"></header>
 
   <main class="mx-auto max-w-7xl px-6 py-8">
-    <a href="leaderboard.html" class="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900">
+    <a href="leaderboard.html" class="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 dark:hover:text-gray-200">
       <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
       All results
     </a>
@@ -22,13 +37,13 @@
     <div class="mt-4 grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-6">
       <!-- sidebar -->
       <aside class="lg:sticky lg:top-20 self-start">
-        <div class="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-          <div class="p-3 border-b border-gray-100 space-y-2">
-            <div id="nav-toggle" class="inline-flex w-full rounded-lg bg-gray-100 p-1 text-xs font-medium">
+        <div class="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden dark:border-gray-800 dark:bg-gray-900">
+          <div class="p-3 border-b border-gray-100 space-y-2 dark:border-gray-800">
+            <div id="nav-toggle" class="inline-flex w-full rounded-lg bg-gray-100 p-1 text-xs font-medium dark:bg-gray-800">
               <button data-mode="stages" class="flex-1 rounded-md px-2 py-1 transition">Stages</button>
               <button data-mode="pipelines" class="flex-1 rounded-md px-2 py-1 transition">Pipelines</button>
             </div>
-            <input id="run-filter" type="search" placeholder="Filter…" class="w-full rounded-lg border-gray-300 text-sm py-1.5 focus:border-indigo-500 focus:ring-indigo-500" />
+            <input id="run-filter" type="search" placeholder="Filter…" class="w-full rounded-lg border-gray-300 text-sm py-1.5 focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-800 dark:border-gray-700" />
           </div>
           <nav id="run-list" class="max-h-[calc(100vh-13rem)] overflow-y-auto p-2"></nav>
         </div>
@@ -36,73 +51,77 @@
 
       <!-- content -->
       <div>
-        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
           <div class="flex flex-wrap items-center gap-3">
             <h1 id="sub-title" class="text-2xl font-bold tracking-tight">Loading…</h1>
             <div id="sub-badges" class="flex gap-2"></div>
           </div>
-          <p id="sub-meta" class="mt-2 text-sm text-gray-500"></p>
-          <div id="method-info" class="mt-3 border-t border-gray-100 pt-3 space-y-2"></div>
+          <p id="sub-meta" class="mt-2 text-sm text-gray-500 dark:text-gray-400"></p>
+          <div id="method-info" class="mt-3 border-t border-gray-100 pt-3 space-y-2 dark:border-gray-800"></div>
         </div>
 
         <div class="mt-6 grid xl:grid-cols-5 gap-6">
-          <section class="xl:col-span-3 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-            <div id="viewer-controls">
-            <!-- layer -->
-            <div class="flex flex-wrap items-center gap-3">
-              <div class="inline-flex rounded-lg bg-gray-100 p-1 text-sm font-medium" id="layer-tabs">
+          <section class="xl:col-span-3 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+            <!-- layer selector -->
+            <div id="layer-row" class="flex flex-wrap items-center justify-between gap-3">
+              <div class="inline-flex rounded-lg bg-gray-100 p-1 text-sm font-medium dark:bg-gray-800" id="layer-tabs">
                 <button data-layer="recon" class="rounded-md px-3 py-1 transition">Reconstruction</button>
                 <button data-layer="truth" class="rounded-md px-3 py-1 transition">Ground truth</button>
                 <button data-layer="error" class="rounded-md px-3 py-1 transition">Error</button>
               </div>
-              <span id="intensity" class="ml-auto text-xs tabular-nums text-gray-400"></span>
+              <span id="intensity" class="text-xs tabular-nums text-gray-400 dark:text-gray-500"></span>
             </div>
-            <!-- view mode + display toggles -->
-            <div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
-              <div class="inline-flex rounded-lg bg-gray-100 p-1 text-xs font-medium" id="view-tabs">
-                <button data-view="multiplanar" class="rounded-md px-2.5 py-1 transition">3-plane</button>
-                <button data-view="axial" class="rounded-md px-2.5 py-1 transition">Axial</button>
-                <button data-view="coronal" class="rounded-md px-2.5 py-1 transition">Coronal</button>
-                <button data-view="sagittal" class="rounded-md px-2.5 py-1 transition">Sagittal</button>
-                <button data-view="render" class="rounded-md px-2.5 py-1 transition">3D</button>
-              </div>
-              <label class="flex items-center gap-1.5 text-gray-500">Colour
-                <select id="cmap" class="rounded-lg border-gray-300 text-sm py-1 pr-7">
-                  <option value="gray">Gray</option>
-                  <option value="viridis">Viridis</option>
-                  <option value="plasma">Plasma</option>
-                  <option value="hot">Hot</option>
-                  <option value="cool">Cool</option>
-                </select>
-              </label>
-              <label class="flex items-center gap-1.5 text-gray-500"><input id="t-colorbar" type="checkbox" class="accent-indigo-600" checked /> Colorbar</label>
-              <label class="flex items-center gap-1.5 text-gray-500"><input id="t-crosshair" type="checkbox" class="accent-indigo-600" checked /> Crosshair</label>
-              <label class="flex items-center gap-1.5 text-gray-500"><input id="t-interp" type="checkbox" class="accent-indigo-600" /> Smooth</label>
-            </div>
-            <!-- windowing -->
-            <div class="mt-2 flex flex-wrap items-center gap-2.5 text-sm">
-              <span class="text-gray-500">Window</span>
-              <input id="win-min" type="number" step="any" class="w-24 rounded-lg border-gray-300 text-sm py-1 tabular-nums" />
-              <span class="text-gray-400">–</span>
-              <input id="win-max" type="number" step="any" class="w-24 rounded-lg border-gray-300 text-sm py-1 tabular-nums" />
-              <button id="win-auto" class="rounded-lg bg-white px-3 py-1 text-sm font-medium text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50">Auto</button>
-              <label id="overlay-ctl" class="hidden items-center gap-2 text-gray-500 ml-2">Overlay
-                <input id="opacity" type="range" min="0" max="1" step="0.05" value="1" class="accent-indigo-600" />
-              </label>
-            </div>
-            </div><!-- /viewer-controls -->
-            <!-- fixed-height wrapper + absolutely-filled canvas: prevents the NiiVue resize-growth loop -->
+            <!-- canvas -->
             <div class="relative mt-4 rounded-xl overflow-hidden bg-black" style="height:480px">
               <canvas id="gl1" class="absolute inset-0 h-full w-full block"></canvas>
-              <div id="viewer-note" class="absolute inset-0 hidden items-center justify-center px-6 text-center text-sm text-gray-400 bg-gray-50"></div>
+              <div id="viewer-note" class="absolute inset-0 hidden items-center justify-center px-6 text-center text-sm text-gray-400 bg-gray-50 dark:bg-gray-900"></div>
+            </div>
+            <!-- control panel -->
+            <div id="viewer-controls" class="mt-4 rounded-xl bg-gray-50 p-4 space-y-4 dark:bg-gray-800/50">
+              <div class="flex flex-wrap items-center gap-x-5 gap-y-3 text-sm">
+                <div class="inline-flex rounded-lg bg-white p-1 text-xs font-medium ring-1 ring-gray-200 dark:bg-gray-800 dark:ring-gray-700" id="view-tabs">
+                  <button data-view="multiplanar" class="rounded-md px-2.5 py-1 transition">3-plane</button>
+                  <button data-view="axial" class="rounded-md px-2.5 py-1 transition">Axial</button>
+                  <button data-view="coronal" class="rounded-md px-2.5 py-1 transition">Coronal</button>
+                  <button data-view="sagittal" class="rounded-md px-2.5 py-1 transition">Sagittal</button>
+                  <button data-view="render" class="rounded-md px-2.5 py-1 transition">3D</button>
+                </div>
+                <label class="flex items-center gap-1.5 text-gray-500 dark:text-gray-400">Colour
+                  <select id="cmap" class="rounded-lg border-gray-300 text-sm py-1 pr-7 dark:bg-gray-800 dark:border-gray-700">
+                    <option value="gray">Gray</option><option value="viridis">Viridis</option>
+                    <option value="plasma">Plasma</option><option value="hot">Hot</option><option value="cool">Cool</option>
+                  </select>
+                </label>
+                <div class="flex items-center gap-3 text-gray-500 dark:text-gray-400">
+                  <label class="flex items-center gap-1.5"><input id="t-colorbar" type="checkbox" class="accent-indigo-600" checked /> Colorbar</label>
+                  <label class="flex items-center gap-1.5"><input id="t-crosshair" type="checkbox" class="accent-indigo-600" checked /> Crosshair</label>
+                  <label class="flex items-center gap-1.5"><input id="t-interp" type="checkbox" class="accent-indigo-600" /> Smooth</label>
+                </div>
+              </div>
+              <!-- windowing -->
+              <div>
+                <div class="flex items-center justify-between text-sm mb-1">
+                  <span class="font-medium text-gray-600 dark:text-gray-300">Window</span>
+                  <button id="win-auto" class="rounded-lg bg-white px-2.5 py-1 text-xs font-medium text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:ring-gray-700">Auto</button>
+                </div>
+                <div class="dualrange" id="win">
+                  <div class="track"></div><div class="fill" id="win-fill"></div>
+                  <input id="win-lo" type="range" /><input id="win-hi" type="range" />
+                  <div class="win-bubble" id="win-lo-bubble"></div>
+                  <div class="win-bubble" id="win-hi-bubble"></div>
+                </div>
+                <label id="overlay-ctl" class="hidden items-center gap-2 text-sm text-gray-500 mt-1 dark:text-gray-400">Overlay opacity
+                  <input id="opacity" type="range" min="0" max="1" step="0.05" value="1" class="accent-indigo-600 flex-1" />
+                </label>
+              </div>
             </div>
           </section>
 
-          <section class="xl:col-span-2 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h2 class="font-semibold text-gray-900">Metrics</h2>
-            <p id="metrics-sub" class="mt-0.5 text-xs text-gray-500"></p>
+          <section class="xl:col-span-2 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+            <h2 class="font-semibold text-gray-900 dark:text-gray-100">Metrics</h2>
+            <p id="metrics-sub" class="mt-0.5 text-xs text-gray-500 dark:text-gray-400"></p>
             <table class="mt-4 w-full text-sm">
-              <tbody id="metrics-body" class="divide-y divide-gray-100"></tbody>
+              <tbody id="metrics-body" class="divide-y divide-gray-100 dark:divide-gray-800"></tbody>
             </table>
           </section>
         </div>
