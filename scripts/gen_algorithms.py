@@ -73,10 +73,9 @@ ALGOS = [
      "Truncated Singular Value Decomposition inversion.",
      "Wharton et al., Magn Reson Med 2010", "10.1002/mrm.22334",
      [("threshold", "0.1", "singular-value threshold")]),
-    ("tgv", "dipole", "tgv", "TGV",
-     "Total Generalized Variation single-step QSM (unwrap + BFR + inversion).",
-     "Langkammer et al., NeuroImage 2015", "10.1016/j.neuroimage.2015.02.041",
-     [("iterations", "1000", "iterations"), ("alpha0", "0.001", "2nd-order weight"), ("alpha1", "0.002", "1st-order weight")]),
+    # NOTE: TGV is single-step (phase -> chi, doing unwrap+BFR+inversion itself); it is NOT a
+    # standalone dipole inversion, so running it on a background-removed local field is wrong.
+    # Excluded here — it belongs as an `end-to-end` span (phase -> chimap). TODO.
     ("tikhonov", "dipole", "tikhonov", "Tikhonov",
      "Closed-form L2 (Tikhonov) regularized inversion.",
      "Kames et al., 2018", None,
@@ -127,12 +126,6 @@ def gen(slug, stage, algo, name, desc, cite, doi, params):
         f"image: {IMAGE}\nrun: bash run.sh\n")
 
     rs = RUN_SH.format(name=name, stage=stage, group=group, algo=algo, inp=inp, out=out)
-    if slug == "tgv":  # single-step method: also needs field strength + echo time
-        rs = rs.replace(
-            '--b0-direction $B0\n',
-            '--b0-direction $B0 '
-            '--field-strength "$(jq -r .B0 "$IN/params.json")" '
-            '--echo-time "$(jq -r .TE[0] "$IN/params.json")"\n')
     (d / "run.sh").write_text(rs)
     (d / "run.sh").chmod((d / "run.sh").stat().st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
 
