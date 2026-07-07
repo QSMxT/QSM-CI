@@ -3,4 +3,4 @@
 set -euo pipefail
 IN="${1:-/input}"; OUT="${2:-/output}"
 B0=$(jq -r '.B0_dir | join(" ")' "$IN/params.json")
-qsmxt invert tgv "$IN/localfield.nii.gz" -m "$IN/mask.nii.gz" -o "$OUT/chimap.nii.gz" --b0-direction $B0
+qsmxt invert tgv "$IN/localfield.nii.gz" -m "$IN/mask.nii.gz" -o "$OUT/chimap.nii.gz" --b0-direction $B0 --field-strength "$(jq -r .B0 "$IN/params.json")" --echo-time "$(jq -r .TE[0] "$IN/params.json")"

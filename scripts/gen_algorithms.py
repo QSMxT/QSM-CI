@@ -127,6 +127,12 @@ def gen(slug, stage, algo, name, desc, cite, doi, params):
         f"image: {IMAGE}\nrun: bash run.sh\n")
 
     rs = RUN_SH.format(name=name, stage=stage, group=group, algo=algo, inp=inp, out=out)
+    if slug == "tgv":  # single-step method: also needs field strength + echo time
+        rs = rs.replace(
+            '--b0-direction $B0\n',
+            '--b0-direction $B0 '
+            '--field-strength "$(jq -r .B0 "$IN/params.json")" '
+            '--echo-time "$(jq -r .TE[0] "$IN/params.json")"\n')
     (d / "run.sh").write_text(rs)
     (d / "run.sh").chmod((d / "run.sh").stat().st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
 

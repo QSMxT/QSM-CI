@@ -141,6 +141,7 @@
         async init() {
           this.runs = await loadRuns();
           const st = this.stages(); if (!st.includes(this.stage)) this.stage = st[0] || "dipole";
+          if (!this.runs.some((r) => r.mode === "composed")) this.view = "isolated";  // per-stage until the matrix is populated
         },
         stages() { return [...new Set(this.runs.filter(r => r.mode === "isolated").map(r => r.stage))]; },
         fmaps() { return [...new Set(this.runs.filter(r => r.mode === "composed" && r.combo).map(r => r.combo.field_mapping || "gt"))]; },
