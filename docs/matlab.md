@@ -1,50 +1,69 @@
 # Submitting a MATLAB algorithm
 
-MATLAB QSM code is welcome, and you do **not** need a MATLAB license to submit. There are three
-routes, in rough order of ease:
+MATLAB QSM code is welcome. **You provide `.m` code + an environment; you don't bake an image**
+(see [../CONTRACT.md](../CONTRACT.md)) — your scripts are mounted at `/algo`, and any toolbox is
+downloaded during the build phase (which has network). The only real question is *what runs your
+`.m` at run time*, because the run phase is offline:
 
-- **Octave** (Option C) — run your `.m` code license-free on GNU Octave. Best for self-contained
-  code (no proprietary toolboxes). This is how the reference [`octave-tkd`](../algorithms/octave-tkd)
-  submission works, and it runs today with no license at all.
-- **MATLAB Runtime** (Option A) — compile with the MATLAB Compiler (`mcc`, needs a license once at
-  build time) and run the compiled binary on the free MATLAB Runtime via the Neurodesk `matlabmcr`
-  base. Best for MATLAB toolboxes (SEPIA, MEDI, STI Suite, chi-separation).
-- **Wrap an existing container** (Option B).
+- **Octave** (Option C, recommended) — runs `.m` **license-free**, offline, no problem. Download an
+  Octave-compatible toolbox at build, mount your code, done. This is how
+  [`octave-tkd`](../algorithms/octave-tkd) works today.
+- **Full MATLAB base + toolbox** (Option A) — a licensed MATLAB container *can* run raw `.m` + a
+  downloaded toolbox (SEPIA/MEDI/…) with **no compilation**. The catch is **licensing at run time**:
+  the offline run phase can't reach a network license server, so you need a license the runner can
+  use offline (a baked/mounted license file, or a self-hosted runner with one configured).
+- **MATLAB Runtime / MCR** (Option A′) — license-free *at run time*, but MCR only runs **compiled**
+  code, so you `mcc`-compile your wrapper+toolbox once (license at build). Good when you can't provide
+  a run-time MATLAB license.
 
-> Note: Neurodesk does not currently ship a ready-made MATLAB *QSM* container — its QSM tools
-> (QSMxT, TGV-QSM, CLEARSWI, ROMEO) are Python/Julia, and its `matlabmcr`-based containers are other
-> tools (CAT12, Brainstorm, …). So for a MATLAB QSM method you package it yourself via Option A or C.
+So: downloading the toolbox and mounting your code is exactly right — Octave runs it free; full
+MATLAB runs it too but needs a run-time license; MCR is the license-free-but-compile middle path.
 
-## Option A — compiled MATLAB on the MATLAB Runtime (recommended)
+> Neurodesk ships no ready MATLAB *QSM* container (its QSM tools — QSMxT, TGV-QSM, CLEARSWI, ROMEO —
+> are Python/Julia; its `matlabmcr` images are CAT12, Brainstorm, …). You supply the environment via
+> `image:` or a small `Dockerfile`.
 
-1. On a machine with MATLAB + MATLAB Compiler, compile your entry point:
+## Option A — full MATLAB base + downloaded toolbox + mounted `.m`
 
-   ```matlab
-   % recon.m:  function recon(inputDir, outputDir)
-   %   reads <inputDir>/phase.nii.gz etc., writes <outputDir>/chimap.nii.gz (ppm)
-   mcc -m recon.m -o recon
-   ```
+This is the "download the toolbox and use it with a regular MATLAB container" path. Your `Dockerfile`
+starts from a licensed MATLAB base and downloads the toolbox during the build (network on); your
+`.m` code is mounted at `/algo` at run time — nothing is compiled or baked.
 
-2. Build an image from a MATLAB Runtime base and copy in the compiled binary:
+```dockerfile
+# Environment only — no algorithm code copied in (it is mounted at /algo).
+FROM containers.mathworks.com/matlab:r2023b        # a licensed MATLAB base
+RUN git clone --depth 1 https://github.com/kschan0214/sepia /opt/sepia   # download at build
+```
 
-   ```dockerfile
-   # Base with the matching MATLAB Runtime (see Neurodesk matlabmcr recipe for versions)
-   FROM containers.mathworks.com/matlab-runtime:r2023b
-   COPY recon /opt/recon
-   COPY run.sh /opt/run.sh
-   WORKDIR /opt
-   ```
+`run.sh` (mounted with your code):
 
-   `run.sh`:
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+IN="${1:-/input}"; OUT="${2:-/output}"
+matlab -batch "addpath(genpath('/opt/sepia')); addpath('/algo'); recon('$IN','$OUT')"
+```
 
-   ```bash
-   #!/usr/bin/env bash
-   set -euo pipefail
-   ./recon /input /output    # the MCR wrapper sets up LD_LIBRARY_PATH
-   ```
+**Licensing caveat:** the run phase is offline (`--network none`), so a full MATLAB base needs a
+license it can use **without** a network license server — a baked/mounted license file, or a
+self-hosted runner configured with one. If you can't provide that, use Option A′ or Octave.
 
-3. Read/write NIfTI in MATLAB with `niftiread` / `niftiwrite` (or a bundled toolbox). Output must be
-   **ppm** on the same grid as `mask.nii.gz`.
+## Option A′ — MATLAB Runtime (MCR), license-free at run time
+
+MCR runs only **compiled** code, so compile once on a machine with MATLAB + Compiler, then run the
+binary on the free Runtime (no run-time license). The compiled `recon` is your mounted code.
+
+```matlab
+mcc -m recon.m -o recon        % produces the standalone `recon` (+ MCR wrapper)
+```
+
+```dockerfile
+FROM containers.mathworks.com/matlab-runtime:r2023b   # free MATLAB Runtime, matching version
+```
+
+`run.sh` runs `/algo/recon /input /output` (the MCR wrapper sets `LD_LIBRARY_PATH`). Read/write
+NIfTI with `niftiread`/`niftiwrite` or a bundled toolbox; output **ppm** on the `mask.nii.gz` grid.
+See [`algorithms/matlab-tkd`](../algorithms/matlab-tkd) for the template.
 
 ## Option B — reuse an existing Neurodesk QSM container
 

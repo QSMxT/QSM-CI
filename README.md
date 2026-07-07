@@ -13,8 +13,10 @@ inversion is best" and "which BFR+inversion *pairing* wins."
 
 ## How it works
 
-1. **You submit** a folder under `algorithms/<your-slug>/` via a pull request: a container image, a
-   `run.sh`, and a `stage:` declaration. (See [docs/submitting.md](docs/submitting.md).)
+1. **You submit** a folder under `algorithms/<your-slug>/` via a pull request: your code (`run.sh` +
+   scripts), a `stage:` declaration, and an *environment* — a base image (`image:`) or a small
+   `Dockerfile`. Your code is **mounted**, not baked, and toolboxes are downloaded when the
+   environment is built. (See [docs/submitting.md](docs/submitting.md).)
 2. **QSM-CI runs it** on the challenge data inside your container (`/input` → `/output`), with no
    network and no access to the answer.
 3. **QSM-CI scores it** against held-out ground truth with `qsm-eval` (the QSM.rs metrics), both

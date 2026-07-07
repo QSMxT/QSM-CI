@@ -21,26 +21,27 @@ All fields and χ are **ppm**. Your stage is scored two ways: **isolated** (fed 
 input boundary) and **composed** (chained with other people's stages — e.g. every BFR × your
 dipole).
 
-## 2. Package your algorithm as a container
+## 2. Provide your code + an environment (you don't bake an image)
 
-Put your reconstruction in any container image, any language. It must read the consumed artifacts
-from `/input` and write the produced artifact(s) to `/output`. No network at run time — bake in all
-dependencies and weights. Push the image somewhere public (GHCR, Docker Hub, quay.io).
+A submission is **your code plus an environment**. Your `run.sh` and scripts stay in the folder and
+are **mounted** into the environment at `/algo` at run time — you don't build or push a per-submission
+image with your code inside. Two ways to specify the environment (see [../CONTRACT.md](../CONTRACT.md)):
 
-A minimal Python `dipole` example image:
+- **Point at a base image** — set `image:` to a container that already has what you need (the shared
+  `py-ref` deps image, a Neurodesk MATLAB/Octave container, etc.). No build at all.
+- **Add a `Dockerfile`** — start `FROM` any base and install/download dependencies (including
+  toolboxes; the build phase has network). Do **not** `COPY` your code — it's mounted.
 
-```dockerfile
-FROM python:3.12-slim
-RUN pip install --no-cache-dir nibabel numpy scipy
-COPY recon.py run.sh /opt/algo/
-WORKDIR /opt/algo
-```
+Your `run.sh` reads the consumed artifacts from `/input` and writes the produced artifact(s) to
+`/output`. At run time there is **no network**, so anything your code needs must already be in the
+environment.
 
-where `run.sh` runs `python recon.py /input /output` and `recon.py` reads
-`/input/localfield.nii.gz` (+ `mask.nii.gz`, `params.json`) and writes `/output/chimap.nii.gz`.
-The in-repo reference submissions [`algorithms/tkd`](../algorithms/tkd),
-[`algorithms/sharp`](../algorithms/sharp), and [`algorithms/matlab-tkd`](../algorithms/matlab-tkd)
-(MATLAB via MATLAB Runtime — see [matlab.md](matlab.md)) are working templates to copy.
+Working templates to copy:
+- Python `dipole`: [`algorithms/tkd`](../algorithms/tkd) — just `recon.py` + `run.sh`, `image:`
+  pointing at the shared deps base. No Dockerfile.
+- MATLAB-language via Octave: [`algorithms/octave-tkd`](../algorithms/octave-tkd) — `.m` files + a
+  tiny `Dockerfile` that installs Octave (deps only). See [matlab.md](matlab.md).
+- BFR: [`algorithms/sharp`](../algorithms/sharp).
 
 ## 3. Add your submission folder
 

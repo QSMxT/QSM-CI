@@ -58,12 +58,7 @@ jobs:
           OSF_TOKEN: ${{ secrets.OSF_TOKEN }}
         run: scripts/fetch_dataset.sh "$TRACK" data/${TRACK}/scoring
 
-      - name: Pull submission image
-        run: |
-          img=$(grep '^image:' "algorithms/${{ matrix.slug }}/algorithm.yml" | awk '{print $2}')
-          docker pull "$img"
-
-      - name: Isolated evaluation (containerized, no network)
+      - name: Isolated evaluation (build env with network, run offline, mount code)
         run: |
           python scripts/pipeline.py \
             --dataset data/${TRACK}/scoring \

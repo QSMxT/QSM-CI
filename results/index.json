@@ -35,32 +35,6 @@
     },
     {
       "contract": "v2",
-      "name": "octave-tkd",
-      "track": "sim",
-      "stage": "dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 2.8789236545562744,
-      "metrics": {
-        "nrmse": 37.03495324457923,
-        "nrmse_detrend": 39.72054204822565,
-        "nrmse_tissue": 45.453110404587015,
-        "nrmse_blood": 67.38459622014909,
-        "nrmse_dgm": 32.514883589654865,
-        "dgm_linearity": 0.15603774142287863,
-        "calc_moment_dev": 8.90408793091774,
-        "calc_streak": 0.026247346398780638,
-        "correlation": 0.9293695765576047,
-        "xsim": 0.7143791507206863
-      },
-      "status": "ok",
-      "id": "octave-tkd-iso",
-      "slug": "octave-tkd",
-      "mode": "isolated"
-    },
-    {
-      "contract": "v2",
       "name": "sharp",
       "track": "sim",
       "stage": "bfr",
@@ -103,32 +77,6 @@
       "status": "ok",
       "id": "tikhonov-iso",
       "slug": "tikhonov",
-      "mode": "isolated"
-    },
-    {
-      "contract": "v2",
-      "name": "tkd",
-      "track": "sim",
-      "stage": "dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 1.8842251300811768,
-      "metrics": {
-        "nrmse": 37.03494402165627,
-        "nrmse_detrend": 39.72053384928798,
-        "nrmse_tissue": 45.45310732080086,
-        "nrmse_blood": 67.38450058818337,
-        "nrmse_dgm": 32.515546473391936,
-        "dgm_linearity": 0.1560399104841531,
-        "calc_moment_dev": 8.903974071145058,
-        "calc_streak": 0.02624756098579124,
-        "correlation": 0.9293696026995604,
-        "xsim": 0.7143791675956812
-      },
-      "status": "ok",
-      "id": "tkd-iso",
-      "slug": "tkd",
       "mode": "isolated"
     },
     {
@@ -340,6 +288,58 @@
         "bfr": "sharp",
         "dipole": "tkd"
       }
+    },
+    {
+      "contract": "v2",
+      "name": "octave-tkd",
+      "track": "sim",
+      "stage": "dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 3.0176260471343994,
+      "metrics": {
+        "nrmse": 37.03495324457923,
+        "nrmse_detrend": 39.72054204822565,
+        "nrmse_tissue": 45.453110404587015,
+        "nrmse_blood": 67.38459622014909,
+        "nrmse_dgm": 32.514883589654865,
+        "dgm_linearity": 0.15603774142287863,
+        "calc_moment_dev": 8.90408793091774,
+        "calc_streak": 0.026247346398780638,
+        "correlation": 0.9293695765576047,
+        "xsim": 0.7143791507206863
+      },
+      "status": "ok",
+      "id": "octave-tkd-iso",
+      "slug": "octave-tkd",
+      "mode": "isolated"
+    },
+    {
+      "contract": "v2",
+      "name": "tkd",
+      "track": "sim",
+      "stage": "dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 1.3346219062805176,
+      "metrics": {
+        "nrmse": 37.03494402165627,
+        "nrmse_detrend": 39.72053384928798,
+        "nrmse_tissue": 45.45310732080086,
+        "nrmse_blood": 67.38450058818337,
+        "nrmse_dgm": 32.515546473391936,
+        "dgm_linearity": 0.1560399104841531,
+        "calc_moment_dev": 8.903974071145058,
+        "calc_streak": 0.02624756098579124,
+        "correlation": 0.9293696026995604,
+        "xsim": 0.7143791675956812
+      },
+      "status": "ok",
+      "id": "tkd-iso",
+      "slug": "tkd",
+      "mode": "isolated"
     }
   ]
 }

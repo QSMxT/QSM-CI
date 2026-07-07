@@ -1,7 +1,4 @@
-# MATLAB submission image — compiled code on the license-free MATLAB Runtime.
-# The `recon` binary is produced on a machine with MATLAB + MATLAB Compiler (see BUILD.md), then
-# baked onto the MATLAB Runtime base (matching the compiler version). No MATLAB license at run time.
+# Environment only: the license-free MATLAB Runtime (no algorithm code copied in).
+# The compiled `recon` binary + run.sh live in this folder and are mounted at /algo at run time.
+# Match the Runtime version to the MATLAB Compiler used to build `recon` (see BUILD.md).
 FROM containers.mathworks.com/matlab-runtime:r2023b
-COPY recon run.sh /opt/algo/
-WORKDIR /opt/algo
-RUN chmod +x /opt/algo/run.sh /opt/algo/recon

@@ -76,6 +76,30 @@ def prepare_input(consumes: list[str], sources: dict[str, Path], dest: Path) -> 
         shutil.copy(src, dest / ARTIFACT_FILE[art])
 
 
+_built: dict[str, str] = {}
+
+
+def build_env(algo: dict) -> str:
+    """Resolve the submission's ENVIRONMENT image (build/setup phase — network allowed).
+
+    - If the folder has a Dockerfile, build it (a base image + any toolbox downloads). The code is
+      NOT baked in; it is mounted at run time.
+    - Otherwise use `image:` (a ready base, e.g. a MATLAB/Octave container), pulling if not local.
+    Returns the image tag to run offline.
+    """
+    if algo["slug"] in _built:
+        return _built[algo["slug"]]
+    if (algo["dir"] / "Dockerfile").exists():
+        tag = f"qsm-ci-env/{algo['slug']}:latest"
+        subprocess.run(["docker", "build", "-q", "-t", tag, str(algo["dir"])], check=True)
+    else:
+        tag = algo["image"]
+        if subprocess.run(["docker", "image", "inspect", tag], capture_output=True).returncode != 0:
+            subprocess.run(["docker", "pull", tag], check=True)
+    _built[algo["slug"]] = tag
+    return tag
+
+
 def run_algo(algo: dict, input_dir: Path, output_dir: Path, runner: str = "local") -> float:
     if output_dir.exists():
         shutil.rmtree(output_dir)
@@ -83,13 +107,13 @@ def run_algo(algo: dict, input_dir: Path, output_dir: Path, runner: str = "local
     t0 = time.time()
     if runner == "docker":
         import os
-        # Untrusted submission: no network, read-only input, its own image (code baked in).
-        # Run as the host user so /output files aren't root-owned.
+        # Run phase: no network, read-only input, the submission's CODE mounted at /algo (not baked).
         subprocess.run([
             "docker", "run", "--rm", "--network", "none",
             "--user", f"{os.getuid()}:{os.getgid()}",
+            "-v", f"{algo['dir']}:/algo:ro",
             "-v", f"{input_dir}:/input:ro", "-v", f"{output_dir}:/output",
-            algo["image"], "bash", "run.sh",
+            algo["image"], "bash", "/algo/run.sh",
         ], check=True)
     else:
         subprocess.run(["bash", str(algo["dir"] / "run.sh"), str(input_dir), str(output_dir)],
@@ -150,6 +174,22 @@ def main() -> None:
           ", ".join(f"{a['slug']}[{a['stage']}]" for a in algos))
     runs: list[dict] = []
     args.work.mkdir(parents=True, exist_ok=True)
+
+    # Build/setup phase (network allowed): resolve each submission's environment image. Code is
+    # mounted at run time, not baked. A submission whose env can't be built is excluded (DNF).
+    if args.runner == "docker":
+        ok = []
+        for a in algos:
+            if args.only and a["slug"] != args.only and args.mode == "isolated":
+                ok.append(a)
+                continue
+            try:
+                a["image"] = build_env(a)
+                ok.append(a)
+            except Exception as e:
+                print(f"  build     {a['slug']:<16} env FAILED ({e}) — excluded")
+                runs.append(dnf(f"{a['slug']}-iso", a["slug"], a["slug"], a["stage"], "isolated", args.track))
+        algos = ok
 
     # -------- isolated --------
     if args.mode in ("isolated", "both"):

@@ -67,21 +67,37 @@ affine of `mask.nii.gz`.
 | `B0_dir` | unit vector | B0 direction in image coordinates |
 | `voxel_size` | mm | voxel dimensions (x, y, z) |
 
-## Execution model
+## Execution model — environment vs. code
+
+Your submission is **code plus an environment**; you do not have to bake your code into a custom
+image. Evaluation is two phases:
+
+**1. Build/setup phase (network ON).** QSM-CI produces your environment image:
+- If your folder has a `Dockerfile`, it is built — start `FROM` any base (a MATLAB/Octave/Python
+  container, a Neurodesk image, …) and install or **download dependencies here** (this is where a
+  MATLAB toolbox like SEPIA gets `git clone`d). Do **not** copy your algorithm code in; it is mounted.
+- Otherwise your `image:` is used directly as the environment (a base that already has what you need).
+
+**2. Run phase (network OFF).** QSM-CI runs your code in that environment:
 
 ```bash
 docker run --rm --network none \
+  -v <your-folder>:/algo:ro \
   -v <consumed-artifacts>:/input:ro \
   -v <fresh-output-dir>:/output \
-  <your-image> bash run.sh
+  <environment-image> bash /algo/run.sh
 ```
 
-- **No network.** Bake all dependencies, weights, and models into the image.
+- **Code is mounted**, not baked — your `run.sh`/scripts live in `/algo`.
+- **No network** at run time; everything your algorithm needs must already be in the environment.
 - **Read-only input.** `/input` contains only the artifacts your stage consumes.
 - **Time limit.** Default 2 h wall-clock; exceeding it is a DNF.
 - **Exit code.** `0` on success; non-zero is a failed run (DNF).
 - **Output.** Write each produced artifact under its canonical filename to `/output`. A missing,
   misshapen, or unreadable output is a DNF.
+
+So a MATLAB submission is: your `.m` files + either a base MATLAB/Octave `image:`, or a `Dockerfile`
+that starts from one and downloads your toolbox. Nothing is baked by you.
 
 ## How your stage is evaluated
 
