@@ -23,10 +23,14 @@
       <!-- sidebar -->
       <aside class="lg:sticky lg:top-20 self-start">
         <div class="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-          <div class="p-3 border-b border-gray-100">
-            <input id="run-filter" type="search" placeholder="Filter runs…" class="w-full rounded-lg border-gray-300 text-sm py-1.5 focus:border-indigo-500 focus:ring-indigo-500" />
+          <div class="p-3 border-b border-gray-100 space-y-2">
+            <div id="nav-toggle" class="inline-flex w-full rounded-lg bg-gray-100 p-1 text-xs font-medium">
+              <button data-mode="stages" class="flex-1 rounded-md px-2 py-1 transition">Stages</button>
+              <button data-mode="pipelines" class="flex-1 rounded-md px-2 py-1 transition">Pipelines</button>
+            </div>
+            <input id="run-filter" type="search" placeholder="Filter…" class="w-full rounded-lg border-gray-300 text-sm py-1.5 focus:border-indigo-500 focus:ring-indigo-500" />
           </div>
-          <nav id="run-list" class="max-h-[calc(100vh-11rem)] overflow-y-auto p-2"></nav>
+          <nav id="run-list" class="max-h-[calc(100vh-13rem)] overflow-y-auto p-2"></nav>
         </div>
       </aside>
 

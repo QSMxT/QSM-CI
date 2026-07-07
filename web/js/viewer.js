@@ -13,7 +13,7 @@ const STAGE_COLOR = {
 let allRuns = [];
 let nv = null;        // created lazily on the first run that has volumes
 let run;              // current run
-let baseUrl, win, filter = "";
+let baseUrl, win, filter = "", navMode = "stages";
 
 const $ = (id) => document.getElementById(id);
 function badge(text, cls) {
@@ -22,43 +22,74 @@ function badge(text, cls) {
 
 // ---- sidebar ----------------------------------------------------------------
 
-function sidebarGroups() {
-  const iso = (stage) => allRuns.filter((r) => r.mode === "isolated" && r.stage === stage);
-  const fmaps = [...new Set(allRuns.filter((r) => r.mode === "composed" && r.combo).map((r) => r.combo.field_mapping || "gt"))];
-  const groups = [];
-  for (const s of ["dipole", "bfr", "field-mapping"]) {
-    const rs = iso(s); if (rs.length) groups.push({ header: STAGE_LABEL[s] || s, runs: rs });
-  }
-  for (const f of fmaps) {
-    const rs = allRuns.filter((r) => r.mode === "composed" && (r.combo?.field_mapping || "gt") === f);
-    if (rs.length) groups.push({ header: "Pipelines · " + (f === "gt" ? "GT field" : f), runs: rs });
-  }
-  return groups;
+const uniq = (arr) => [...new Set(arr)];
+const composedRuns = () => allRuns.filter((r) => r.mode === "composed" && r.combo);
+const fmapsList = () => uniq(composedRuns().map((r) => r.combo.field_mapping || "gt"));
+const bfrList = () => uniq(composedRuns().map((r) => r.combo.bfr));
+const dipoleList = () => uniq(composedRuns().map((r) => r.combo.dipole));
+const findPipeline = (f, b, d) => composedRuns().find((r) =>
+  (r.combo.field_mapping || "gt") === f && r.combo.bfr === b && r.combo.dipole === d);
+
+function currentCombo() {
+  if (run?.combo) return { fmap: run.combo.field_mapping || "gt", bfr: run.combo.bfr, dipole: run.combo.dipole };
+  const c = { fmap: fmapsList()[0], bfr: bfrList()[0], dipole: dipoleList()[0] };
+  if (run?.mode === "isolated") { if (run.stage === "dipole") c.dipole = run.slug; if (run.stage === "bfr") c.bfr = run.slug; }
+  return c;
+}
+
+function runItem(r, activeId) {
+  const active = r && r.id === activeId;
+  const label = r ? (r.status === "DNF" ? "DNF" : fmt(val(r, "xsim"), "xsim")) : "—";
+  const dis = !r || r.status === "DNF";
+  return `<button data-id="${r ? r.id : ""}" ${dis ? "" : ""}
+    class="run-item w-full text-left rounded-lg px-2.5 py-1.5 text-sm flex items-center justify-between gap-2 transition
+      ${active ? "bg-indigo-50 text-indigo-700 font-medium" : "text-gray-600 hover:bg-gray-50"} ${!r ? "opacity-40 cursor-default" : ""}">
+    <span class="truncate">%NAME%</span>
+    <span class="shrink-0 tabular-nums text-xs ${dis ? "text-gray-300" : active ? "text-indigo-500" : "text-gray-400"}">${label}</span>
+  </button>`;
+}
+
+function stagesHTML() {
+  const f = filter.toLowerCase();
+  return ["dipole", "bfr", "field-mapping"].map((s) => {
+    const rs = allRuns.filter((r) => r.mode === "isolated" && r.stage === s && (!f || r.name.toLowerCase().includes(f)));
+    if (!rs.length) return "";
+    const rows = rs.map((r) => runItem(r, run?.id).replace("%NAME%", r.name)).join("");
+    return `<div class="mb-3"><div class="px-2.5 pt-1 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">${STAGE_LABEL[s] || s}</div>${rows}</div>`;
+  }).join("") || `<p class="p-3 text-sm text-gray-400">No matches.</p>`;
+}
+
+function pipelinesHTML() {
+  const cur = currentCombo();
+  const f = filter.toLowerCase();
+  const fmaps = fmapsList();
+  const fmSel = fmaps.length > 1
+    ? `<div class="px-1 pb-3"><select id="pl-fmap" class="w-full rounded-lg border-gray-300 text-sm py-1.5">
+        ${fmaps.map((x) => `<option value="${x}" ${x === cur.fmap ? "selected" : ""}>Field: ${x === "gt" ? "ground truth" : x}</option>`).join("")}</select></div>`
+    : "";
+  const axis = (title, methods, kind) => {
+    const rows = methods.filter((m) => !f || m.toLowerCase().includes(f)).map((m) => {
+      const rn = kind === "bfr" ? findPipeline(cur.fmap, m, cur.dipole) : findPipeline(cur.fmap, cur.bfr, m);
+      return runItem(rn, run?.id).replace("%NAME%", m);
+    }).join("");
+    return `<div class="mb-3"><div class="px-2.5 pt-1 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">${title}</div>${rows}</div>`;
+  };
+  return fmSel + axis("Background removal", bfrList(), "bfr") + axis("Dipole inversion", dipoleList(), "dipole");
 }
 
 function buildSidebar() {
-  const f = filter.toLowerCase();
-  const html = sidebarGroups().map((g) => {
-    const items = g.runs.filter((r) => !f || r.name.toLowerCase().includes(f));
-    if (!items.length) return "";
-    const rows = items.map((r) => {
-      const active = r.id === run?.id;
-      const primary = val(r, "xsim");
-      const right = r.status === "DNF" ? "DNF" : (primary != null ? fmt(primary, "xsim") : "");
-      return `<button data-id="${r.id}"
-        class="run-item w-full text-left rounded-lg px-2.5 py-1.5 text-sm flex items-center justify-between gap-2 transition
-               ${active ? "bg-indigo-50 text-indigo-700 font-medium" : "text-gray-600 hover:bg-gray-50"}">
-        <span class="truncate">${r.name}</span>
-        <span class="shrink-0 tabular-nums text-xs ${r.status === "DNF" ? "text-gray-300" : active ? "text-indigo-500" : "text-gray-400"}">${right}</span>
-      </button>`;
-    }).join("");
-    return `<div class="mb-2">
-      <div class="px-2.5 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">${g.header}</div>
-      ${rows}</div>`;
-  }).join("");
-  $("run-list").innerHTML = html || `<p class="p-3 text-sm text-gray-400">No matches.</p>`;
+  document.querySelectorAll("#nav-toggle button").forEach((b) =>
+    b.className = "flex-1 rounded-md px-2 py-1 transition " +
+      (b.dataset.mode === navMode ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700"));
+  $("run-list").innerHTML = navMode === "stages" ? stagesHTML() : pipelinesHTML();
   $("run-list").querySelectorAll(".run-item").forEach((b) =>
-    b.addEventListener("click", () => selectRun(b.dataset.id)));
+    b.addEventListener("click", () => { if (b.dataset.id) selectRun(b.dataset.id); }));
+  const sel = $("pl-fmap");
+  if (sel) sel.addEventListener("change", () => {
+    const cur = currentCombo();
+    const rn = findPipeline(sel.value, cur.bfr, cur.dipole);
+    if (rn) selectRun(rn.id);
+  });
 }
 
 function selectRun(id) {
@@ -169,7 +200,10 @@ async function init() {
   const id = new URLSearchParams(location.search).get("run");
   run = allRuns.find((r) => r.id === id) || allRuns.find((r) => r.status !== "DNF") || allRuns[0];
   if (!run) { $("sub-title").textContent = "No runs"; return; }
+  navMode = run.mode === "composed" ? "pipelines" : "stages";
   $("run-filter").addEventListener("input", (e) => { filter = e.target.value; buildSidebar(); });
+  document.querySelectorAll("#nav-toggle button").forEach((b) =>
+    b.addEventListener("click", () => { navMode = b.dataset.mode; buildSidebar(); }));
   buildSidebar();
   loadRun();
 }
