@@ -1,0 +1,20 @@
+name: iSMV
+slug: ismv
+engine: QSMxT / QSM.rs
+description: >
+  Iterative Spherical Mean Value background field removal.
+citation: Wen et al., 2014
+doi: null
+code_url: https://github.com/astewartau/QSM.rs
+license: MIT
+stage: bfr
+parameters:
+  - name: tol
+    default: 1e-4
+    description: tolerance
+  - name: max_iter
+    default: 100
+    description: iterations
+  - name: radius_factor
+    default: 2.0
+    description: × max voxel size

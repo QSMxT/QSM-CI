@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# QSM-CI entrypoint. Defaults to the container mounts (/input, /output); accepts explicit dirs so
-# the local runner (scripts/pipeline.py) can drive it without Docker.
+# QSM-CI submission — Tikhonov (dipole stage) via QSMxT / QSM.rs.
 set -euo pipefail
 IN="${1:-/input}"; OUT="${2:-/output}"
-python3 "$(dirname "$0")/recon.py" "$IN" "$OUT"
+B0=$(sed -n 's/.*"B0_dir"[^[]*\[\([^]]*\)\].*/\1/p' "$IN/params.json" | tr ',' ' ')
+qsmxt invert tikhonov "$IN/localfield.nii.gz" -m "$IN/mask.nii.gz" -o "$OUT/chimap.nii.gz" --b0-direction $B0

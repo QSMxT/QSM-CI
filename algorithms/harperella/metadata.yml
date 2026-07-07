@@ -1,0 +1,17 @@
+name: HARPERELLA
+slug: harperella
+engine: QSMxT / QSM.rs
+description: >
+  Integrated phase unwrapping + background removal via SMV (phase-domain).
+citation: Li et al., NMR Biomed 2014
+doi: null
+code_url: https://github.com/astewartau/QSM.rs
+license: MIT
+stage: bfr
+parameters:
+  - name: radius
+    default: 15.0
+    description: SMV kernel radius (mm)
+  - name: max_iter
+    default: 1000
+    description: iterations

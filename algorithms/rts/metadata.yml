@@ -1,0 +1,20 @@
+name: RTS
+slug: rts
+engine: QSMxT / QSM.rs
+description: >
+  Rapid Two-Step QSM: streaking-artifact reduction via a fast ADMM split.
+citation: Kames et al., NeuroImage 2018
+doi: 10.1016/j.neuroimage.2018.07.043
+code_url: https://github.com/astewartau/QSM.rs
+license: MIT
+stage: dipole
+parameters:
+  - name: delta
+    default: 1.0
+    description: regularization
+  - name: mu
+    default: 1.0
+    description: smoothness
+  - name: max_iter
+    default: 1000
+    description: iterations

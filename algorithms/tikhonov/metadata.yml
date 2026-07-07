@@ -1,10 +1,17 @@
 name: Tikhonov
 slug: tikhonov
-authors:
-  - name: QSM-CI
-    affiliation: Neurodesk
+engine: QSMxT / QSM.rs
 description: >
-  Closed-form L2 (Tikhonov) dipole inversion. Reference `dipole`-stage submission.
-paper_doi: null
+  Closed-form L2 (Tikhonov) regularized inversion.
+citation: Kames et al., 2018
+doi: null
+code_url: https://github.com/astewartau/QSM.rs
 license: MIT
 stage: dipole
+parameters:
+  - name: lambda
+    default: 1e-4
+    description: L2 regularization
+  - name: reg
+    default: laplacian
+    description: identity|gradient|laplacian
