@@ -52,6 +52,7 @@ const MOON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor
   html.dark main .text-gray-300{color:#4b5563}
   html.dark main .hover\\:bg-gray-50:hover{background-color:#1f2937}
   html.dark main .hover\\:bg-indigo-50\\/40:hover,html.dark main .hover\\:bg-indigo-50:hover{background-color:rgba(99,102,241,.1)}
+  html.dark main .group:hover .group-hover\\:bg-indigo-50\\/40{background-color:rgba(99,102,241,.1)}
   html.dark main .bg-gray-50\\/70{background-color:#0f172a}
   html.dark main input,html.dark main select{background-color:#1f2937;border-color:#374151;color:#f3f4f6}
   html.dark main .ring-gray-200,html.dark main .ring-gray-300{--tw-ring-color:#374151}
