@@ -29,7 +29,13 @@ const MOON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor
   html.dark main .bg-gray-50{background-color:#1f2937}
   html.dark main .bg-gray-100{background-color:#1f2937}
   html.dark main .border-gray-200,html.dark main .border-gray-100{border-color:#1f2937}
-  html.dark main .divide-gray-100>*{border-color:#1f2937}
+  html.dark main .border-gray-300{border-color:#374151}
+  html.dark main .divide-gray-100>:not([hidden])~:not([hidden]),html.dark main .divide-gray-800>:not([hidden])~:not([hidden]){border-color:#1f2937}
+  html.dark main .bg-indigo-50{background-color:rgba(99,102,241,.13)}
+  html.dark main .text-indigo-700{color:#a5b4fc}
+  html.dark main .text-indigo-600{color:#818cf8}
+  html.dark main .ring-indigo-100{--tw-ring-color:rgba(99,102,241,.25)}
+  html.dark main .hover\\:bg-indigo-100:hover{background-color:rgba(99,102,241,.2)}
   html.dark main .text-gray-900{color:#f3f4f6}
   html.dark main .text-gray-700{color:#d1d5db}
   html.dark main .text-gray-600,html.dark main .text-gray-500{color:#9ca3af}
