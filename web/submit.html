@@ -84,9 +84,19 @@
           Any language works — see the <a href="methods.html" class="text-indigo-600 hover:underline">example methods</a>
           (Python, Octave, MATLAB via QSMxT).
         </div>
-        <label class="block text-sm"><span class="font-medium">Container image</span>
+        <div class="block text-sm">
+          <span class="font-medium">Container image</span>
           <input x-model="image" placeholder="ghcr.io/you/your-image:v1" class="mt-1 w-full font-mono" />
-          <span class="mt-1 block text-xs text-gray-500 dark:text-gray-400">A public image with your dependencies baked in. Your code is mounted at <code>/algo</code>.</span></label>
+          <div class="mt-2 flex flex-wrap items-center gap-1.5 text-xs">
+            <span class="text-gray-400 dark:text-gray-500">Format examples:</span>
+            <template x-for="ex in imageExamples" :key="ex.label">
+              <button @click="image = ex.value" type="button"
+                class="rounded-md bg-gray-100 px-2 py-0.5 font-mono text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                :title="ex.value"><span class="font-sans font-medium" x-text="ex.label"></span> <span class="text-gray-400" x-text="ex.value"></span></button>
+            </template>
+          </div>
+          <span class="mt-2 block text-xs text-gray-500 dark:text-gray-400">A public image with your dependencies baked in (Docker Hub, GHCR, Quay…). Your code is mounted at <code>/algo</code>, and there's no network at run time.</span>
+        </div>
         <label class="block text-sm"><span class="font-medium">Run command</span>
           <input x-model="run" class="mt-1 w-full font-mono" /></label>
       </section>
@@ -174,6 +184,12 @@
           { key: "end-to-end", name: "End-to-end", desc: "phase → χ (single-step)" },
           { key: "bfr+dipole", name: "BFR + dipole", desc: "total field → χ" },
           { key: "unwrap+bfr", name: "Unwrap + BFR", desc: "phase → local field" },
+        ],
+        imageExamples: [
+          { label: "Docker Hub", value: "docker.io/user/image:tag" },
+          { label: "Docker Hub (short)", value: "user/image:tag" },
+          { label: "GHCR", value: "ghcr.io/user/image:tag" },
+          { label: "Quay", value: "quay.io/user/image:tag" },
         ],
         name: "", slug: "", stage: "dipole", description: "",
         image: "", run: "bash run.sh",
