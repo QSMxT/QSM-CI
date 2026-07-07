@@ -193,7 +193,7 @@
     const STAGE_IO = {
       "field-mapping": { c: "phase, magnitude, mask, params", p: "totalfield", inp: "phase" },
       "bfr": { c: "totalfield, mask, params", p: "localfield", inp: "totalfield" },
-      "dipole": { c: "localfield, mask, params", p: "chimap", inp: "localfield" },
+      "dipole": { c: "localfield, mask, params, magnitude", p: "chimap", inp: "localfield" },
       "unwrap+bfr": { c: "phase, magnitude, mask, params", p: "localfield", inp: "phase" },
       "bfr+dipole": { c: "totalfield, mask, params", p: "chimap", inp: "totalfield" },
       "end-to-end": { c: "phase, magnitude, mask, params", p: "chimap", inp: "phase" },

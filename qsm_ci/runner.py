@@ -11,7 +11,6 @@ from __future__ import annotations
 import argparse
 import math
 import os
-import re
 import shutil
 import subprocess
 import time
@@ -28,17 +27,18 @@ def _parse_manifest(algo_dir: Path) -> dict:
     spec = algo_dir / "algorithm.yml"
     if not spec.exists():
         raise SystemExit(f"no algorithm.yml in {algo_dir}")
-    text = spec.read_text()
-
-    def field(key):
-        m = re.search(rf"^{key}:\s*(.+?)\s*$", text, re.M)
-        return m.group(1) if m else None
-
-    stage = field("stage")
+    try:
+        import yaml
+    except ImportError:
+        raise SystemExit("PyYAML is required to read algorithm.yml — pip install pyyaml")
+    meta = yaml.safe_load(spec.read_text()) or {}
+    stage = meta.get("stage")
     if stage not in STAGES:
         raise SystemExit(f"algorithm.yml stage '{stage}' is not a known stage/span")
-    return {"dir": algo_dir, "name": field("name") or algo_dir.name,
-            "slug": field("slug") or algo_dir.name, "stage": stage, "image": field("image")}
+    meta["dir"] = algo_dir
+    meta.setdefault("name", algo_dir.name)
+    meta.setdefault("slug", algo_dir.name)
+    return meta
 
 
 def resolve_algo_dir(target: str) -> Path:
@@ -125,14 +125,42 @@ def _print_metrics(name, stage, artifact, runtime, metrics, log):
     log("")
 
 
+class _HelpFmt(argparse.ArgumentDefaultsHelpFormatter, argparse.RawDescriptionHelpFormatter):
+    """Show argument defaults AND keep newlines in the description/epilog."""
+
+
+def _manifest_epilog(algo: dict) -> "str | None":
+    lines = []
+    params = algo.get("parameters") or []
+    if params:
+        lines.append("method parameters (documented from algorithm.yml; the method runs at its")
+        lines.append("built-in defaults — QSM-CI does not override them):")
+        width = max((len(str(p.get("name", ""))) for p in params), default=0)
+        for p in params:
+            name = str(p.get("name", "")).ljust(width)
+            default = p.get("default")
+            desc = p.get("description", "")
+            lines.append(f"  {name}  = {default!s:<8} {desc}")
+    cite, doi = algo.get("citation"), algo.get("doi")
+    if cite and cite != "null":
+        ref = f"reference: {cite}"
+        if doi and doi != "null":
+            ref += f"   doi:{doi}"
+        lines.append("")
+        lines.append(ref)
+    return "\n".join(lines) if lines else None
+
+
 def _build_run_parser(slug: str, algo: dict) -> argparse.ArgumentParser:
     stage = algo["stage"]
     consumes = STAGES[stage]["consumes"]
     produced = STAGES[stage]["produces"][0]
+    desc = f"{algo['name']} — {stage} stage  ({', '.join(consumes)} → {produced})"
+    if algo.get("description"):
+        desc += "\n\n" + " ".join(str(algo["description"]).split())
     p = argparse.ArgumentParser(
-        prog=f"qsm-ci run {slug}",
-        description=f"{algo['name']} — {stage} stage  ({', '.join(consumes)} → {produced})",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+        prog=f"qsm-ci run {slug}", description=desc,
+        epilog=_manifest_epilog(algo), formatter_class=_HelpFmt)
     p.add_argument("slug", help=argparse.SUPPRESS)  # already known; keep argparse happy
     for art in consumes:
         req = art not in OPTIONAL_ARTIFACTS
