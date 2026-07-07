@@ -158,16 +158,21 @@
           </div>
         </template>
         <div class="rounded-xl bg-gray-50 p-4 dark:bg-gray-800/50">
-          <p class="text-sm font-medium">Then, on your machine</p>
-          <ol class="mt-2 space-y-1.5 text-sm text-gray-600 dark:text-gray-400 list-decimal list-inside">
-            <li>Download the zip (or copy the files) and drop the folder into <code>algorithms/</code> in your fork; fill in <code x-text="langMeta.file"></code> with your method.</li>
-            <li>Test locally:
-              <code class="block mt-1 rounded bg-gray-900 text-gray-100 px-2 py-1 text-xs" x-text="'python scripts/pipeline.py --dataset data/sim/dev --mode isolated --only ' + slugOr"></code></li>
-            <li>Commit on a branch and open a pull request.</li>
+          <p class="text-sm font-medium">Then, with the <code>qsm-ci</code> CLI</p>
+          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">One tool tests and submits your algorithm — it builds &amp; runs your container on a public dev phantom and scores it with the exact code the leaderboard uses.</p>
+          <ol class="mt-3 space-y-2 text-sm text-gray-600 dark:text-gray-400 list-decimal list-inside">
+            <li>Install once:
+              <code class="block mt-1 rounded bg-gray-900 text-gray-100 px-2 py-1 text-xs">pipx install git+https://github.com/astewartau/qsm-ci</code></li>
+            <li>Unzip the folder into <code>algorithms/</code> and fill in <code x-text="langMeta.file"></code> with your method
+              <span class="text-gray-400">(or scaffold in the terminal with <code>qsm-ci new</code>).</span></li>
+            <li>Test it on the dev phantom:
+              <code class="block mt-1 rounded bg-gray-900 text-gray-100 px-2 py-1 text-xs" x-text="'qsm-ci test ' + slugOr"></code></li>
+            <li>Open the pull request:
+              <code class="block mt-1 rounded bg-gray-900 text-gray-100 px-2 py-1 text-xs" x-text="'qsm-ci submit ' + slugOr"></code></li>
           </ol>
           <div class="mt-4 flex flex-wrap gap-2">
-            <a :href="GH + '/compare'" target="_blank" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">Open a pull request →</a>
             <a :href="GH + '/blob/main/docs/submitting.md'" target="_blank" class="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:ring-gray-700">Full guide</a>
+            <a :href="GH + '/compare'" target="_blank" class="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:ring-gray-700">Open a PR by hand →</a>
           </div>
         </div>
       </section>

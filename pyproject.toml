@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "qsm-ci"
+version = "0.1.0"
+description = "Submit, test, and score QSM reconstruction algorithms for the QSM-CI challenge."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "QSM-CI" }]
+keywords = ["qsm", "mri", "susceptibility", "challenge", "neuroimaging"]
+dependencies = [
+    "numpy",
+    "scipy",
+    "nibabel",
+]
+
+[project.optional-dependencies]
+figures = ["pillow"]
+
+[project.urls]
+Homepage = "https://github.com/astewartau/qsm-ci"
+Source = "https://github.com/astewartau/qsm-ci"
+
+[project.scripts]
+qsm-ci = "qsm_ci.cli:main"
+
+[tool.setuptools]
+# Only the CLI package ships in the wheel — not the repo's data/web/results.
+packages = ["qsm_ci"]
