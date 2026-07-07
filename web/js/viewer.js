@@ -2,7 +2,7 @@
 // Module scope (needs `import`); shared helpers via window.QSM.
 import { Niivue } from "https://unpkg.com/@niivue/niivue@0.57.0/dist/index.js";
 
-const { loadRuns, METRICS, STAGE_LABEL, val, fmt } = window.QSM;
+const { loadRuns, loadAlgos, METRICS, STAGE_LABEL, val, fmt } = window.QSM;
 
 const STAGE_COLOR = {
   "field-mapping": "bg-indigo-50 text-indigo-700 ring-indigo-100",
@@ -11,6 +11,7 @@ const STAGE_COLOR = {
 };
 
 let allRuns = [];
+let algos = [];       // algorithm manifest (algorithms.json)
 let nv = null;        // created lazily on the first run that has volumes
 let run;              // current run
 let baseUrl, win, filter = "", navMode = "stages";
@@ -116,6 +117,7 @@ async function loadRun() {
   if (run.runtime_s != null) bits.push(`runtime ${run.runtime_s.toFixed(1)}s`);
   if (run.image) bits.push(`image <code class="text-gray-700">${run.image}</code>`);
   $("sub-meta").innerHTML = bits.join(" · ");
+  renderMethodInfo();
   renderMetrics();
 
   const note = $("viewer-note"), canvas = $("gl1"), controls = $("viewer-controls");
@@ -232,8 +234,37 @@ async function showLayer(layer) {
 
 // ---- boot -------------------------------------------------------------------
 
+function methodCard(a) {
+  if (!a) return "";
+  const links = [];
+  if (a.doi) links.push(`<a href="https://doi.org/${a.doi}" class="text-indigo-600 hover:underline">doi</a>`);
+  if (a.code_url) links.push(`<a href="${a.code_url}" class="text-indigo-600 hover:underline">source</a>`);
+  return `<div>
+    <div class="flex items-baseline gap-2">
+      <a href="methods.html" class="font-medium text-gray-900 hover:text-indigo-600">${a.name}</a>
+      <span class="text-xs text-gray-400">${a.stage ? (STAGE_LABEL[a.stage] || a.stage) : ""}</span>
+    </div>
+    <p class="text-sm text-gray-600">${a.description || ""}</p>
+    ${(a.citation || links.length) ? `<p class="mt-0.5 text-xs text-gray-400">${a.citation || ""} ${links.length ? "· " + links.join(" · ") : ""}</p>` : ""}
+  </div>`;
+}
+
+function renderMethodInfo() {
+  const el = $("method-info");
+  const bySlug = Object.fromEntries(algos.map((a) => [a.slug, a]));
+  const cards = [];
+  if (run.combo) {  // composed: the component methods
+    for (const s of [run.combo.field_mapping, run.combo.bfr, run.combo.dipole])
+      if (s && s !== "gt" && bySlug[s]) cards.push(methodCard(bySlug[s]));
+  } else if (bySlug[run.slug]) {
+    cards.push(methodCard(bySlug[run.slug]));
+  }
+  el.innerHTML = cards.join("");
+  el.style.display = cards.length ? "" : "none";
+}
+
 async function init() {
-  allRuns = await loadRuns();
+  [allRuns, algos] = await Promise.all([loadRuns(), loadAlgos()]);
   const id = new URLSearchParams(location.search).get("run");
   run = allRuns.find((r) => r.id === id) || allRuns.find((r) => r.status !== "DNF") || allRuns[0];
   if (!run) { $("sub-title").textContent = "No runs"; return; }
