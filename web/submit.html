@@ -94,7 +94,10 @@
               </button>
             </template>
           </div>
-          <span class="mt-1.5 block text-xs text-gray-500 dark:text-gray-400">We'll generate a <code x-text="langMeta.file"></code> starter for you. Suggested base image: <span x-text="langMeta.image"></span>.</span>
+          <span class="mt-1.5 block text-xs text-gray-500 dark:text-gray-400">
+            <span x-show="lang!=='other'">We'll generate a <code x-text="langMeta.file"></code> starter for you.</span>
+            <span x-show="lang==='other'">You'll wire up your own program in <code>run.sh</code>.</span>
+            Suggested base image: <span x-text="langMeta.image"></span>.</span>
         </div>
         <div class="block text-sm">
           <span class="font-medium">Container image</span>
@@ -213,6 +216,7 @@
           { key: "rust", name: "Rust", file: "recon.rs", image: "rust:1 (deps vendored at build)" },
           { key: "matlab", name: "MATLAB / Octave", file: "recon.m", image: "MATLAB Runtime or Octave" },
           { key: "julia", name: "Julia", file: "recon.jl", image: "julia:1 + NIfTI.jl" },
+          { key: "other", name: "Other", file: "run.sh", image: "any base with your deps" },
         ],
         lang: "python",
         name: "", slug: "", stage: "dipole", description: "",
@@ -249,6 +253,10 @@
               + `BIN="$HERE/target/release/recon"\n`
               + `[ -x "$BIN" ] || cargo build --release --offline --manifest-path "$HERE/Cargo.toml"\n`
               + `"$BIN" "$IN" "$OUT"\n`,
+            other: `# TODO: run your reconstruction in whatever language you like.\n`
+              + `# Read ${io.inp}.nii.gz + mask.nii.gz from "$IN"; write ${io.p}.nii.gz (ppm,\n`
+              + `# within the mask) to "$OUT". For example:\n`
+              + `#   "$HERE/my-program" "$IN" "$OUT"\n`,
           };
           return head + (body[this.lang] || body.python);
         },
@@ -322,8 +330,8 @@
             { name: "metadata.yml", body: this.metadataYml },
             { name: "algorithm.yml", body: this.algorithmYml },
             { name: "run.sh", body: this.runSh },
-            { name: this.langMeta.file, body: this.reconBody },
           ];
+          if (this.lang !== "other") f.push({ name: this.langMeta.file, body: this.reconBody });
           if (this.lang === "rust") f.push({ name: "Cargo.toml", body: this.cargoToml });
           return f;
         },
