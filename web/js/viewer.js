@@ -32,7 +32,8 @@ const runId = new URLSearchParams(location.search).get("run");
 
 let nv;
 let run;      // the run's index.json entry
-let baseUrl;  // results/<slug>/<track>/ — where recon/truth/error nii.gz live
+let baseUrl;  // results/<id>/ — where recon/truth/error nii.gz live
+let win;      // display window (depends on artifact kind: chi vs field)
 
 async function init() {
   const index = await (await fetch("results/index.json")).json();
@@ -46,7 +47,10 @@ async function init() {
 
   renderMetrics();
 
-  baseUrl = `results/${run.slug}/${run.track}/`;
+  baseUrl = `results/${run.id}/`;
+  win = run.kind === "field"
+    ? { lo: -1.0, hi: 1.0, elo: 0, ehi: 0.5 }   // field maps (ppm), larger range
+    : { lo: -0.1, hi: 0.1, elo: 0, ehi: 0.05 }; // susceptibility (ppm)
   nv = new Niivue({
     ...VIEWER_CONFIG,
     onLocationChange: (d) => { document.getElementById("intensity").innerHTML = d.string; },
@@ -74,17 +78,18 @@ function renderMetrics() {
 async function showLayer(layer) {
   const opacity = parseFloat(document.getElementById("opacity").value);
   if (layer === "error") {
-    // base = ground truth (gray), overlay = signed error (diverging colormap)
+    // base = ground truth (gray), overlay = |error| (warm colormap)
     await nv.loadVolumes([{ url: baseUrl + "truth.nii.gz", colormap: "gray" }]);
+    nv.volumes[0].cal_min = win.lo; nv.volumes[0].cal_max = win.hi;
     await nv.addVolumeFromUrl({ url: baseUrl + "error.nii.gz", colormap: "warm", opacity });
     const ov = nv.volumes[nv.volumes.length - 1];
-    ov.cal_min = 0; ov.cal_max = 0.05; // ppm; tune to data
+    ov.cal_min = win.elo; ov.cal_max = win.ehi;
     nv.updateGLVolume();
   } else {
     const url = layer === "truth" ? baseUrl + "truth.nii.gz" : baseUrl + "recon.nii.gz";
     await nv.loadVolumes([{ url, colormap: "gray" }]);
     const vol = nv.volumes[0];
-    vol.cal_min = -0.1; vol.cal_max = 0.1; // ppm display window; tune to data
+    vol.cal_min = win.lo; vol.cal_max = win.hi;
     nv.updateGLVolume();
   }
 }

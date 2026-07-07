@@ -44,6 +44,20 @@ ARTIFACT_FILE = {
 }
 ARTIFACT_KIND = {"totalfield": "field", "localfield": "field", "chimap": "chi"}
 
+EMIT_VOLUMES = False  # when set, write recon/truth/error NIfTIs per run for the web viewer
+
+
+def emit_volumes(run_id, recon, truth):
+    """Write recon / truth / error volumes under results/<run_id>/ for the NiiVue viewer."""
+    import nibabel as nib
+    d = ROOT / "results" / run_id
+    d.mkdir(parents=True, exist_ok=True)
+    shutil.copy(recon, d / "recon.nii.gz")
+    shutil.copy(truth, d / "truth.nii.gz")
+    r, t = nib.load(str(recon)), nib.load(str(truth))
+    err = nib.Nifti1Image((r.get_fdata() - t.get_fdata()).astype("float32"), r.affine)
+    nib.save(err, str(d / "error.nii.gz"))
+
 
 def discover_algorithms() -> list[dict]:
     algos = []
@@ -138,6 +152,8 @@ def score(recon: Path, artifact: str, gt_dir: Path, mask: Path, out_json: Path, 
     result.update({k: meta[k] for k in ("id", "slug", "mode") if k in meta})
     if "combo" in meta:
         result["combo"] = meta["combo"]
+    if EMIT_VOLUMES and "id" in meta:
+        emit_volumes(meta["id"], recon, gt_dir / ARTIFACT_FILE[artifact])
     return result
 
 
@@ -158,7 +174,12 @@ def main() -> None:
     ap.add_argument("--only", default=None, help="restrict isolated evaluation to this slug")
     ap.add_argument("--track", default="sim")
     ap.add_argument("--work", type=Path, default=ROOT / ".work")
+    ap.add_argument("--emit-volumes", action="store_true",
+                    help="write recon/truth/error NIfTIs per run under results/<id>/ for the web viewer")
     args = ap.parse_args()
+
+    global EMIT_VOLUMES
+    EMIT_VOLUMES = args.emit_volumes
 
     inputs, gt = args.dataset / "inputs", args.dataset / "groundtruth"
     mask, params = inputs / "mask.nii.gz", inputs / "params.json"

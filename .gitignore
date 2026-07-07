@@ -24,10 +24,12 @@ gt/
 *osf*.txt
 qsm-ci-osf.txt
 
-# NIfTI volumes (datasets pulled/generated at runtime; result volumes are opt-in)
+# NIfTI volumes are build artifacts (datasets, and per-run viewer volumes) — never committed
 *.nii
 *.nii.gz
-!results/**/*.nii.gz
+
+# local static-site serving symlink
+web/results
 
 # OS
 .DS_Store
