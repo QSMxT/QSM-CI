@@ -20,7 +20,6 @@
         <h1 class="text-3xl font-bold tracking-tight">Leaderboard</h1>
         <p class="mt-1 text-gray-600">Compare methods per stage, or every pipeline combination.</p>
       </div>
-      <!-- view toggle -->
       <div class="inline-flex rounded-xl bg-gray-100 p-1 text-sm font-medium">
         <button @click="view='composed'" :class="view==='composed' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'" class="rounded-lg px-4 py-1.5 transition">Combinations</button>
         <button @click="view='isolated'" :class="view==='isolated' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'" class="rounded-lg px-4 py-1.5 transition">Per stage</button>
@@ -29,7 +28,6 @@
 
     <!-- sub-controls -->
     <div class="mt-6 flex flex-wrap items-center gap-3">
-      <!-- stage pills (per-stage view) -->
       <template x-if="view==='isolated'">
         <div class="inline-flex flex-wrap gap-2">
           <template x-for="s in stages()" :key="s">
@@ -37,7 +35,6 @@
           </template>
         </div>
       </template>
-      <!-- field-mapping selector (composed view) -->
       <template x-if="view==='composed' && fmaps().length>1">
         <label class="inline-flex items-center gap-2 text-sm text-gray-600">Field mapping
           <select x-model="fmap" class="rounded-lg border-gray-300 text-sm py-1.5 pr-8">
@@ -47,50 +44,75 @@
       </template>
       <div class="grow"></div>
       <input x-model="filter" type="search" placeholder="Filter…" class="rounded-lg border-gray-300 text-sm py-1.5 w-44 focus:border-indigo-500 focus:ring-indigo-500" />
-      <button @click="showAll=!showAll" :class="showAll ? 'bg-indigo-50 text-indigo-700 ring-indigo-200' : 'bg-white text-gray-600 ring-gray-200'" class="rounded-lg px-3 py-1.5 text-sm font-medium ring-1 transition">All metrics</button>
+      <!-- metric column picker -->
+      <div class="relative" @click.outside="colMenu=false">
+        <button @click="colMenu=!colMenu" class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+          Metrics
+          <span class="rounded bg-gray-100 px-1.5 text-xs" x-text="displayCols.length"></span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div x-show="colMenu" x-cloak class="absolute right-0 z-20 mt-2 w-56 rounded-xl border border-gray-200 bg-white p-1.5 shadow-lg" style="display:none">
+          <template x-for="c in cols" :key="c">
+            <label class="flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-sm hover:bg-gray-50 cursor-pointer">
+              <input type="checkbox" class="accent-indigo-600" :checked="selectedCols.includes(c)" @change="toggleCol(c)" />
+              <span x-text="METRICS[c].label"></span>
+              <span class="ml-auto text-xs text-gray-400" x-text="METRICS[c].unit || (METRICS[c].better==='higher'?'↑':'↓')"></span>
+            </label>
+          </template>
+        </div>
+      </div>
     </div>
 
     <!-- combination matrix -->
-    <template x-if="view==='composed'">
+    <template x-if="view==='composed' && matrix.bfrs.length">
       <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-        <div class="flex items-center justify-between">
-          <h2 class="font-semibold text-gray-900">Combination matrix</h2>
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 class="font-semibold text-gray-900">Combination matrix</h2>
+            <p class="mt-0.5 text-xs text-gray-500">Background removal <span class="text-gray-400">↓</span> × dipole inversion <span class="text-gray-400">→</span>, chained end-to-end · click a cell to inspect.</p>
+          </div>
           <label class="inline-flex items-center gap-2 text-sm text-gray-600">Colour by
             <select x-model="metric" class="rounded-lg border-gray-300 text-sm py-1.5 pr-8">
               <template x-for="c in cols.filter(c=>c!=='runtime_s')" :key="c"><option :value="c" x-text="METRICS[c].label"></option></template>
             </select>
           </label>
         </div>
-        <p class="mt-1 text-xs text-gray-500">Background removal (rows) × dipole inversion (cols), chained end-to-end. Greener is better · click a cell.</p>
-        <div class="mt-4 overflow-x-auto">
-          <table class="border-separate" style="border-spacing:4px">
-            <thead>
-              <tr>
-                <th></th>
-                <template x-for="d in matrix.dips" :key="d"><th class="px-3 pb-1 text-xs font-medium text-gray-500" x-text="d"></th></template>
-              </tr>
-            </thead>
-            <tbody>
-              <template x-for="b in matrix.bfrs" :key="b">
-                <tr>
-                  <th class="pr-3 text-right text-xs font-medium text-gray-500 whitespace-nowrap" x-text="b"></th>
-                  <template x-for="d in matrix.dips" :key="d">
-                    <td class="p-0">
-                      <template x-if="matrix.cell[b+'|'+d]">
-                        <button @click="go(matrix.cell[b+'|'+d])"
-                          class="flex h-14 w-24 items-center justify-center rounded-lg text-sm font-semibold text-white/95 hover:ring-2 hover:ring-gray-900/20 transition"
-                          :style="'background:'+color(val(matrix.cell[b+'|'+d], metric))"
-                          x-text="fmt(val(matrix.cell[b+'|'+d], metric), metric)"></button>
-                      </template>
-                      <template x-if="!matrix.cell[b+'|'+d]">
-                        <div class="flex h-14 w-24 items-center justify-center rounded-lg bg-gray-50 text-gray-300">—</div>
-                      </template>
-                    </td>
+
+        <div class="mt-5 overflow-x-auto">
+          <div class="inline-grid gap-1.5" :style="`grid-template-columns: auto repeat(${matrix.dips.length}, minmax(6.5rem,1fr))`">
+            <div></div>
+            <template x-for="d in matrix.dips" :key="'h'+d">
+              <div class="pb-1 text-center text-xs font-semibold text-gray-500 truncate" x-text="d"></div>
+            </template>
+            <template x-for="b in matrix.bfrs" :key="b">
+              <template x-for="(d,di) in ['__row__', ...matrix.dips]" :key="b+'-'+d+di">
+                <div>
+                  <div x-show="d==='__row__'" class="flex h-14 items-center justify-end pr-3 text-xs font-semibold text-gray-500 whitespace-nowrap" x-text="b"></div>
+                  <template x-if="d!=='__row__'">
+                    <template x-if="matrix.cell[b+'|'+d]">
+                      <button @click="go(matrix.cell[b+'|'+d])"
+                        :title="b+' + '+d+' — '+METRICS[metric].label+': '+fmt(val(matrix.cell[b+'|'+d],metric),metric)"
+                        class="group relative h-14 w-full rounded-xl text-white font-semibold text-sm shadow-sm transition hover:z-10 hover:scale-[1.06] hover:shadow-md focus:outline-none ring-1 ring-black/5"
+                        :style="'background:'+heat(norm(val(matrix.cell[b+'|'+d],metric)))">
+                        <span x-text="fmt(val(matrix.cell[b+'|'+d], metric), metric)"></span>
+                      </button>
+                    </template>
+                    <template x-if="!matrix.cell[b+'|'+d]">
+                      <div class="flex h-14 w-full items-center justify-center rounded-xl border border-dashed border-gray-200 text-gray-300 text-sm">—</div>
+                    </template>
                   </template>
-                </tr>
+                </div>
               </template>
-            </tbody>
-          </table>
+            </template>
+          </div>
+        </div>
+
+        <!-- legend -->
+        <div class="mt-5 flex items-center gap-3 text-xs text-gray-500">
+          <span x-text="(METRICS[metric].better==='higher'?'worse':'better')"></span>
+          <div class="h-2.5 w-40 rounded-full" style="background:linear-gradient(90deg,#ef4444,#f59e0b,#22c55e)"></div>
+          <span x-text="(METRICS[metric].better==='higher'?'better':'worse')"></span>
+          <span class="ml-2 tabular-nums" x-text="'range '+fmt(matrix.lo,metric)+' – '+fmt(matrix.hi,metric)"></span>
         </div>
       </div>
     </template>
@@ -131,50 +153,62 @@
   </main>
 
   <footer id="site-footer"></footer>
+  <style>[x-cloak]{display:none!important}</style>
 
   <script>
     function board() {
       return {
         METRICS, STAGE_LABEL, MEDALS, fmt, val,
         runs: [], view: "composed", stage: "dipole", fmap: "gt",
-        metric: "xsim", sortKey: "xsim", sortDir: "desc", filter: "", showAll: false,
+        metric: "xsim", sortKey: "xsim", sortDir: "desc", filter: "",
+        colMenu: false, selectedCols: ["nrmse", "correlation", "xsim", "runtime_s"],
         async init() {
           this.runs = await loadRuns();
           const st = this.stages(); if (!st.includes(this.stage)) this.stage = st[0] || "dipole";
-          if (!this.runs.some((r) => r.mode === "composed")) this.view = "isolated";  // per-stage until the matrix is populated
+          if (!this.runs.some((r) => r.mode === "composed")) this.view = "isolated";
         },
-        stages() { return [...new Set(this.runs.filter(r => r.mode === "isolated").map(r => r.stage))]; },
-        fmaps() { return [...new Set(this.runs.filter(r => r.mode === "composed" && r.combo).map(r => r.combo.field_mapping || "gt"))]; },
+        stages() { return [...new Set(this.runs.filter((r) => r.mode === "isolated").map((r) => r.stage))]; },
+        fmaps() { return [...new Set(this.runs.filter((r) => r.mode === "composed" && r.combo).map((r) => r.combo.field_mapping || "gt"))]; },
         get baseRows() {
           return this.view === "isolated"
-            ? this.runs.filter(r => r.mode === "isolated" && r.stage === this.stage)
-            : this.runs.filter(r => r.mode === "composed" && (!r.combo || (r.combo.field_mapping || "gt") === this.fmap));
+            ? this.runs.filter((r) => r.mode === "isolated" && r.stage === this.stage)
+            : this.runs.filter((r) => r.mode === "composed" && (!r.combo || (r.combo.field_mapping || "gt") === this.fmap));
         },
         get cols() { return metricCols(this.baseRows); },
         get displayCols() {
-          if (this.showAll) return this.cols;
-          const primary = ["nrmse", "correlation", "xsim", "runtime_s"];
-          const sub = this.cols.filter(c => primary.includes(c));
-          if (!sub.includes(this.sortKey) && this.cols.includes(this.sortKey)) sub.push(this.sortKey);
-          return sub;
+          const sel = this.cols.filter((c) => this.selectedCols.includes(c));
+          return sel.length ? sel : this.cols.filter((c) => c === "xsim");
+        },
+        toggleCol(c) {
+          this.selectedCols = this.selectedCols.includes(c) ? this.selectedCols.filter((x) => x !== c) : [...this.selectedCols, c];
         },
         get rows() {
           const f = this.filter.toLowerCase();
-          return this.baseRows.filter(r => !f || r.name.toLowerCase().includes(f)).slice().sort((a, b) => {
+          return this.baseRows.filter((r) => !f || r.name.toLowerCase().includes(f)).slice().sort((a, b) => {
             const av = val(a, this.sortKey), bv = val(b, this.sortKey);
             if (av == null) return 1; if (bv == null) return -1;
             return this.sortDir === "asc" ? av - bv : bv - av;
           });
         },
         get matrix() {
-          const rs = this.runs.filter(r => r.mode === "composed" && r.combo && (r.combo.field_mapping || "gt") === this.fmap);
-          const bfrs = [...new Set(rs.map(r => r.combo.bfr))];
-          const dips = [...new Set(rs.map(r => r.combo.dipole))];
-          const cell = {}; rs.forEach(r => { cell[r.combo.bfr + "|" + r.combo.dipole] = r; });
-          const vals = rs.map(r => val(r, this.metric)).filter(v => v != null);
+          const rs = this.runs.filter((r) => r.mode === "composed" && r.combo && (r.combo.field_mapping || "gt") === this.fmap);
+          const bfrs = [...new Set(rs.map((r) => r.combo.bfr))];
+          const dips = [...new Set(rs.map((r) => r.combo.dipole))];
+          const cell = {}; rs.forEach((r) => { cell[r.combo.bfr + "|" + r.combo.dipole] = r; });
+          const vals = rs.map((r) => val(r, this.metric)).filter((v) => v != null);
           return { bfrs, dips, cell, lo: Math.min(...vals), hi: Math.max(...vals) };
         },
-        color(v) { return heatColor(v, this.matrix.lo, this.matrix.hi, this.metric); },
+        norm(v) { // 0 = worst, 1 = best (respecting metric direction)
+          const m = this.matrix; if (v == null || m.hi === m.lo) return 0.5;
+          let t = (v - m.lo) / (m.hi - m.lo);
+          return (METRICS[this.metric]?.better || "higher") === "lower" ? 1 - t : t;
+        },
+        heat(t) { // red -> amber -> green
+          const s = [[239, 68, 68], [245, 158, 11], [34, 197, 94]];
+          const x = Math.max(0, Math.min(1, t)) * 2, i = Math.min(1, Math.floor(x)), f = x - i;
+          const c = s[i].map((a, k) => Math.round(a + (s[i + 1][k] - a) * f));
+          return `rgb(${c[0]},${c[1]},${c[2]})`;
+        },
         sort(k) {
           if (this.sortKey === k) this.sortDir = this.sortDir === "asc" ? "desc" : "asc";
           else { this.sortKey = k; this.sortDir = METRICS[k]?.better === "lower" ? "asc" : "desc"; }
