@@ -134,14 +134,14 @@
           </thead>
           <tbody class="divide-y divide-gray-100">
             <template x-for="(r, i) in rows" :key="r.id">
-              <tr @click="go(r)" class="group hover:bg-indigo-50/40 cursor-pointer" :class="r.status==='DNF' ? 'opacity-50' : ''">
+              <tr @click="go(r)" class="group cursor-pointer" :class="r.status==='DNF' ? 'opacity-50' : ''">
                 <td class="px-5 py-3 text-left font-medium text-gray-900 sticky left-0 bg-white group-hover:bg-indigo-50/40">
                   <span class="mr-1.5 inline-block w-5 text-center" x-text="medal(i)"></span>
                   <span x-text="r.name"></span>
                   <span x-show="r.status==='DNF'" class="ml-2 rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold text-gray-500">DNF</span>
                 </td>
                 <template x-for="c in displayCols" :key="c">
-                  <td class="px-4 py-3 text-right tabular-nums" :class="c===sortKey ? 'font-semibold text-gray-900' : 'text-gray-600'" x-text="fmt(val(r,c), c)"></td>
+                  <td class="px-4 py-3 text-right tabular-nums group-hover:bg-indigo-50/40" :class="c===sortKey ? 'font-semibold text-gray-900' : 'text-gray-600'" x-text="fmt(val(r,c), c)"></td>
                 </template>
               </tr>
             </template>
