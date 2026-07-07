@@ -150,7 +150,7 @@ async function loadRun() {
   baseUrl = `results/${run.id}/`;
   if (!nv) {
     nv = new Niivue({
-      isColorbar: true, textHeight: 0.03, show3Dcrosshair: false, crosshairWidth: 0.75, backColor: [0, 0, 0, 1],
+      isColorbar: false, textHeight: 0.03, show3Dcrosshair: false, crosshairWidth: 0.75, backColor: [0, 0, 0, 1],
       onLocationChange: (d) => { $("intensity").innerHTML = d.string; },
     });
     await nv.attachTo("gl1");

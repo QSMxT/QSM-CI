@@ -9,124 +9,146 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script>tailwind.config = { darkMode: "class", theme: { extend: { fontFamily: { sans: ["Inter", "system-ui", "sans-serif"] } } } };</script>
   <script src="js/app.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-  <style>
-    [x-cloak]{display:none!important}
-    .field { @apply w-full rounded-lg border-gray-300 text-sm; }
-    .prose-x h1{font-size:1.6rem;font-weight:700;margin:1.2rem 0 .6rem} .prose-x h2{font-size:1.2rem;font-weight:600;margin:1.4rem 0 .5rem}
-    .prose-x h3{font-weight:600;margin:1rem 0 .4rem} .prose-x p{margin:.6rem 0;line-height:1.65} .prose-x ul{list-style:disc;margin:.6rem 0 .6rem 1.3rem}
-    .prose-x ol{list-style:decimal;margin:.6rem 0 .6rem 1.3rem} .prose-x li{margin:.25rem 0} .prose-x a{color:#4f46e5;text-decoration:underline}
-    .prose-x code{background:rgba(99,102,241,.1);border-radius:.3rem;padding:.1rem .3rem;font-size:.85em}
-    .prose-x pre{background:#0b1220;color:#e5e7eb;border-radius:.6rem;padding:.9rem 1rem;overflow-x:auto;margin:.8rem 0;font-size:.82rem}
-    .prose-x pre code{background:none;padding:0} .prose-x table{width:100%;font-size:.85rem;margin:.6rem 0} .prose-x th,.prose-x td{border-bottom:1px solid rgba(120,120,120,.2);padding:.35rem .5rem;text-align:left}
-    .dark .prose-x a{color:#a5b4fc}
-  </style>
+  <style>[x-cloak]{display:none!important}</style>
 </head>
 <body class="font-sans text-gray-900 bg-gray-50 antialiased dark:bg-gray-950 dark:text-gray-100">
   <header id="site-nav"></header>
 
-  <main x-data="submit()" x-init="init()" class="mx-auto max-w-6xl px-6 py-10">
-    <h1 class="text-3xl font-bold tracking-tight">Submit an algorithm</h1>
-    <p class="mt-1 text-gray-600 dark:text-gray-400">Fill this in to generate your submission files, then save them, test locally, and open a pull request.</p>
+  <main x-data="submit()" x-init="init()" class="mx-auto max-w-3xl px-6 py-10">
+    <div class="text-center">
+      <h1 class="text-3xl font-bold tracking-tight">Submit an algorithm</h1>
+      <p class="mt-1 text-gray-600 dark:text-gray-400">A few questions, and we'll generate your submission files.</p>
+    </div>
 
-    <div class="mt-8 grid lg:grid-cols-2 gap-8">
-      <!-- form -->
-      <div class="space-y-5">
-        <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm space-y-4 dark:border-gray-800 dark:bg-gray-900">
-          <div class="grid sm:grid-cols-2 gap-4">
-            <label class="block text-sm"><span class="font-medium">Name</span>
-              <input x-model="name" placeholder="My Method" class="mt-1 w-full rounded-lg border-gray-300 text-sm dark:bg-gray-800 dark:border-gray-700" /></label>
-            <label class="block text-sm"><span class="font-medium">Slug</span>
-              <input x-model="slug" :placeholder="autoSlug" class="mt-1 w-full rounded-lg border-gray-300 text-sm font-mono dark:bg-gray-800 dark:border-gray-700" /></label>
-          </div>
-          <label class="block text-sm"><span class="font-medium">Stage</span>
-            <select x-model="stage" class="mt-1 w-full rounded-lg border-gray-300 text-sm dark:bg-gray-800 dark:border-gray-700">
-              <template x-for="s in Object.keys(STAGE_IO)" :key="s"><option :value="s" x-text="s"></option></template>
-            </select>
-            <span class="mt-1 block text-xs text-gray-500 dark:text-gray-400">consumes <code x-text="STAGE_IO[stage].c"></code> → produces <code x-text="STAGE_IO[stage].p"></code></span>
-          </label>
-          <label class="block text-sm"><span class="font-medium">Description</span>
-            <textarea x-model="description" rows="2" placeholder="One-line description of the method." class="mt-1 w-full rounded-lg border-gray-300 text-sm dark:bg-gray-800 dark:border-gray-700"></textarea></label>
-        </div>
+    <!-- stepper -->
+    <nav class="mt-8 flex items-center justify-center gap-2 sm:gap-4">
+      <template x-for="(s, i) in stepNames" :key="i">
+        <button @click="if (i+1 <= maxStep) step = i+1" class="flex items-center gap-2 group" :disabled="i+1 > maxStep">
+          <span class="flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold transition"
+            :class="step === i+1 ? 'bg-indigo-600 text-white' : (i+1 < step ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300' : 'bg-gray-100 text-gray-400 dark:bg-gray-800')"
+            x-text="i+1 < step ? '✓' : (i+1)"></span>
+          <span class="hidden sm:block text-sm" :class="step === i+1 ? 'font-semibold text-gray-900 dark:text-gray-100' : 'text-gray-400'" x-text="s"></span>
+        </button>
+      </template>
+    </nav>
 
-        <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm space-y-4 dark:border-gray-800 dark:bg-gray-900">
-          <p class="text-sm font-medium">Environment</p>
-          <p class="text-xs text-gray-500 dark:text-gray-400">Your code is mounted at <code>/algo</code>; provide an image with everything it needs (no network at run time).</p>
-          <label class="block text-sm"><span class="font-medium">Container image</span>
-            <input x-model="image" placeholder="ghcr.io/you/your-image:v1" class="mt-1 w-full rounded-lg border-gray-300 text-sm font-mono dark:bg-gray-800 dark:border-gray-700" /></label>
-          <label class="block text-sm"><span class="font-medium">Run command</span>
-            <input x-model="run" class="mt-1 w-full rounded-lg border-gray-300 text-sm font-mono dark:bg-gray-800 dark:border-gray-700" /></label>
-        </div>
-
-        <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm space-y-4 dark:border-gray-800 dark:bg-gray-900">
-          <p class="text-sm font-medium">Attribution</p>
-          <div class="grid sm:grid-cols-2 gap-4">
-            <label class="block text-sm"><span class="font-medium">Authors</span>
-              <input x-model="authors" placeholder="Jane Doe, John Roe" class="mt-1 w-full rounded-lg border-gray-300 text-sm dark:bg-gray-800 dark:border-gray-700" /></label>
-            <label class="block text-sm"><span class="font-medium">License</span>
-              <input x-model="license" class="mt-1 w-full rounded-lg border-gray-300 text-sm dark:bg-gray-800 dark:border-gray-700" /></label>
-            <label class="block text-sm"><span class="font-medium">Citation</span>
-              <input x-model="citation" placeholder="Doe et al., Journal 2025" class="mt-1 w-full rounded-lg border-gray-300 text-sm dark:bg-gray-800 dark:border-gray-700" /></label>
-            <label class="block text-sm"><span class="font-medium">DOI</span>
-              <input x-model="doi" placeholder="10.xxxx/xxxxx" class="mt-1 w-full rounded-lg border-gray-300 text-sm font-mono dark:bg-gray-800 dark:border-gray-700" /></label>
-          </div>
-          <label class="block text-sm"><span class="font-medium">Source code URL</span>
-            <input x-model="code_url" placeholder="https://github.com/you/your-method" class="mt-1 w-full rounded-lg border-gray-300 text-sm dark:bg-gray-800 dark:border-gray-700" /></label>
-        </div>
-
-        <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-          <div class="flex items-center justify-between">
-            <p class="text-sm font-medium">Parameters <span class="text-gray-400 font-normal">(optional)</span></p>
-            <button @click="params.push({name:'',default:'',description:''})" class="text-xs font-medium text-indigo-600 hover:text-indigo-700">+ add</button>
-          </div>
-          <template x-for="(p,i) in params" :key="i">
-            <div class="mt-2 grid grid-cols-[1fr_1fr_2fr_auto] gap-2 items-center">
-              <input x-model="p.name" placeholder="name" class="rounded-lg border-gray-300 text-xs font-mono dark:bg-gray-800 dark:border-gray-700" />
-              <input x-model="p.default" placeholder="default" class="rounded-lg border-gray-300 text-xs font-mono dark:bg-gray-800 dark:border-gray-700" />
-              <input x-model="p.description" placeholder="description" class="rounded-lg border-gray-300 text-xs dark:bg-gray-800 dark:border-gray-700" />
-              <button @click="params.splice(i,1)" class="text-gray-300 hover:text-red-500 text-lg leading-none">×</button>
-            </div>
+    <div class="mt-8 rounded-2xl border border-gray-200 bg-white p-6 sm:p-8 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+      <!-- STEP 1: stage -->
+      <section x-show="step===1" x-cloak>
+        <h2 class="text-lg font-semibold">Which part of the pipeline does your method implement?</h2>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">QSM is modular — pick a single stage, or a span if your method crosses boundaries.</p>
+        <div class="mt-5 grid sm:grid-cols-2 gap-3">
+          <template x-for="s in stageChoices" :key="s.key">
+            <button @click="stage = s.key" class="text-left rounded-xl border p-4 transition"
+              :class="stage === s.key ? 'border-indigo-500 ring-2 ring-indigo-500/30 bg-indigo-50/50 dark:bg-indigo-500/10' : 'border-gray-200 hover:border-gray-300 dark:border-gray-700'">
+              <div class="font-medium" x-text="s.name"></div>
+              <div class="mt-0.5 text-xs text-gray-500 dark:text-gray-400" x-text="s.desc"></div>
+            </button>
           </template>
         </div>
-      </div>
+      </section>
 
-      <!-- generated files -->
-      <div class="lg:sticky lg:top-20 self-start space-y-5">
-        <div class="rounded-2xl border border-indigo-100 bg-indigo-50/50 p-5 dark:border-indigo-500/20 dark:bg-indigo-500/5">
-          <p class="text-sm font-medium text-gray-900 dark:text-gray-100">Create <code x-text="'algorithms/' + slugOr + '/'"></code> with these files</p>
-          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Plus your reconstruction code (e.g. <code>recon.py</code>) that reads <code>/input</code> and writes <code>/output</code>.</p>
+      <!-- STEP 2: method -->
+      <section x-show="step===2" x-cloak class="space-y-4">
+        <h2 class="text-lg font-semibold">Tell us about your method</h2>
+        <div class="grid sm:grid-cols-2 gap-4">
+          <label class="block text-sm"><span class="font-medium">Name</span>
+            <input x-model="name" placeholder="My Method" class="mt-1 w-full" /></label>
+          <label class="block text-sm"><span class="font-medium">Slug <span class="text-gray-400 font-normal">(folder name)</span></span>
+            <input x-model="slug" :placeholder="autoSlug" class="mt-1 w-full font-mono" /></label>
         </div>
+        <label class="block text-sm"><span class="font-medium">Short description</span>
+          <textarea x-model="description" rows="2" placeholder="One line on what the method does." class="mt-1 w-full"></textarea></label>
+        <div class="grid sm:grid-cols-2 gap-4">
+          <label class="block text-sm"><span class="font-medium">Authors</span>
+            <input x-model="authors" placeholder="Jane Doe, John Roe" class="mt-1 w-full" /></label>
+          <label class="block text-sm"><span class="font-medium">License</span>
+            <input x-model="license" class="mt-1 w-full" /></label>
+          <label class="block text-sm"><span class="font-medium">Citation <span class="text-gray-400 font-normal">(optional)</span></span>
+            <input x-model="citation" placeholder="Doe et al., Journal 2025" class="mt-1 w-full" /></label>
+          <label class="block text-sm"><span class="font-medium">DOI <span class="text-gray-400 font-normal">(optional)</span></span>
+            <input x-model="doi" placeholder="10.xxxx/xxxxx" class="mt-1 w-full font-mono" /></label>
+        </div>
+        <label class="block text-sm"><span class="font-medium">Source code URL <span class="text-gray-400 font-normal">(optional)</span></span>
+          <input x-model="code_url" placeholder="https://github.com/you/your-method" class="mt-1 w-full" /></label>
+      </section>
 
+      <!-- STEP 3: environment -->
+      <section x-show="step===3" x-cloak class="space-y-4">
+        <h2 class="text-lg font-semibold">Package &amp; run</h2>
+        <div class="rounded-xl bg-gray-50 p-4 text-sm text-gray-600 dark:bg-gray-800/50 dark:text-gray-400">
+          Your code runs in a container with <strong>no network</strong>. It reads
+          <code x-text="STAGE_IO[stage].c"></code> from <code>/input</code> and writes
+          <code x-text="STAGE_IO[stage].p + '.nii.gz'"></code> (in ppm) to <code>/output</code>.
+          Any language works — see the <a href="methods.html" class="text-indigo-600 hover:underline">example methods</a>
+          (Python, Octave, MATLAB via QSMxT).
+        </div>
+        <label class="block text-sm"><span class="font-medium">Container image</span>
+          <input x-model="image" placeholder="ghcr.io/you/your-image:v1" class="mt-1 w-full font-mono" />
+          <span class="mt-1 block text-xs text-gray-500 dark:text-gray-400">A public image with your dependencies baked in. Your code is mounted at <code>/algo</code>.</span></label>
+        <label class="block text-sm"><span class="font-medium">Run command</span>
+          <input x-model="run" class="mt-1 w-full font-mono" /></label>
+      </section>
+
+      <!-- STEP 4: parameters -->
+      <section x-show="step===4" x-cloak>
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-lg font-semibold">Parameters</h2>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Optional — documents the knobs your method exposes.</p>
+          </div>
+          <button @click="params.push({name:'',default:'',description:''})" class="text-sm font-medium text-indigo-600 hover:text-indigo-700">+ add parameter</button>
+        </div>
+        <template x-if="!params.length"><p class="mt-4 text-sm text-gray-400">No parameters — that's fine, click Next.</p></template>
+        <template x-for="(p,i) in params" :key="i">
+          <div class="mt-3 grid grid-cols-[1fr_1fr_2fr_auto] gap-2 items-center">
+            <input x-model="p.name" placeholder="name" class="font-mono text-xs" />
+            <input x-model="p.default" placeholder="default" class="font-mono text-xs" />
+            <input x-model="p.description" placeholder="description" class="text-xs" />
+            <button @click="params.splice(i,1)" class="text-gray-300 hover:text-red-500 text-xl leading-none px-1">×</button>
+          </div>
+        </template>
+      </section>
+
+      <!-- STEP 5: review -->
+      <section x-show="step===5" x-cloak class="space-y-5">
+        <h2 class="text-lg font-semibold">Review &amp; submit</h2>
+        <div class="rounded-xl border border-indigo-100 bg-indigo-50/50 p-4 text-sm dark:border-indigo-500/20 dark:bg-indigo-500/5">
+          Create <code x-text="'algorithms/' + slugOr + '/'"></code> with the files below, plus your reconstruction code
+          (e.g. <code>recon.py</code>).
+        </div>
         <template x-for="f in files" :key="f.name">
-          <div class="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden dark:border-gray-800 dark:bg-gray-900">
-            <div class="flex items-center justify-between px-4 py-2 border-b border-gray-100 dark:border-gray-800">
+          <div class="rounded-xl border border-gray-200 overflow-hidden dark:border-gray-800">
+            <div class="flex items-center justify-between px-4 py-2 border-b border-gray-100 bg-gray-50 dark:border-gray-800 dark:bg-gray-800/50">
               <span class="font-mono text-xs text-gray-500 dark:text-gray-400" x-text="f.name"></span>
               <button @click="copy(f.body, f.name)" class="text-xs font-medium text-indigo-600 hover:text-indigo-700" x-text="copied===f.name ? 'copied ✓' : 'copy'"></button>
             </div>
-            <pre class="p-4 overflow-x-auto text-xs leading-relaxed text-gray-800 dark:text-gray-200"><code x-text="f.body"></code></pre>
+            <pre class="p-4 overflow-x-auto text-xs leading-relaxed bg-white dark:bg-gray-900"><code x-text="f.body"></code></pre>
           </div>
         </template>
-
-        <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-          <p class="text-sm font-medium">Next steps</p>
+        <div class="rounded-xl bg-gray-50 p-4 dark:bg-gray-800/50">
+          <p class="text-sm font-medium">Then, on your machine</p>
           <ol class="mt-2 space-y-1.5 text-sm text-gray-600 dark:text-gray-400 list-decimal list-inside">
-            <li>Save the files above under <code x-text="'algorithms/' + slugOr + '/'"></code> and add your reconstruction code.</li>
-            <li>Generate a dev phantom and test locally:
+            <li>Save these files and add your reconstruction code.</li>
+            <li>Test locally:
               <code class="block mt-1 rounded bg-gray-900 text-gray-100 px-2 py-1 text-xs" x-text="'python scripts/pipeline.py --dataset data/sim/dev --mode isolated --only ' + slugOr"></code></li>
             <li>Commit on a branch and open a pull request.</li>
           </ol>
           <div class="mt-4 flex flex-wrap gap-2">
             <a :href="GH + '/compare'" target="_blank" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">Open a pull request →</a>
-            <a href="methods.html" class="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:ring-gray-700">See example methods</a>
+            <a :href="GH + '/blob/main/docs/submitting.md'" target="_blank" class="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:ring-gray-700">Full guide</a>
           </div>
         </div>
-      </div>
-    </div>
+      </section>
 
-    <!-- full guide -->
-    <div class="mt-14 rounded-2xl border border-gray-200 bg-white p-8 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-      <div class="prose-x max-w-none text-gray-700 dark:text-gray-300" id="guide" x-html="guideHtml"></div>
+      <!-- nav -->
+      <div class="mt-8 flex items-center justify-between border-t border-gray-100 pt-5 dark:border-gray-800">
+        <button @click="step = Math.max(1, step-1)" x-show="step > 1" class="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800">← Back</button>
+        <div x-show="step === 1"></div>
+        <button @click="next()" x-show="step < 5" class="ml-auto rounded-lg bg-indigo-600 px-5 py-2 text-sm font-semibold text-white hover:bg-indigo-700">Next →</button>
+        <a x-show="step === 5" :href="GH + '/compare'" target="_blank" class="ml-auto rounded-lg bg-indigo-600 px-5 py-2 text-sm font-semibold text-white hover:bg-indigo-700">Open a pull request →</a>
+      </div>
     </div>
   </main>
 
@@ -143,15 +165,21 @@
     };
     function submit() {
       return {
-        GH, STAGE_IO, copied: "",
+        GH, STAGE_IO, copied: "", step: 1, maxStep: 1,
+        stepNames: ["Stage", "Method", "Package", "Parameters", "Review"],
+        stageChoices: [
+          { key: "dipole", name: "Dipole inversion", desc: "local field → susceptibility (χ)" },
+          { key: "bfr", name: "Background field removal", desc: "total field → local field" },
+          { key: "field-mapping", name: "Field mapping", desc: "multi-echo phase → total field" },
+          { key: "end-to-end", name: "End-to-end", desc: "phase → χ (single-step)" },
+          { key: "bfr+dipole", name: "BFR + dipole", desc: "total field → χ" },
+          { key: "unwrap+bfr", name: "Unwrap + BFR", desc: "phase → local field" },
+        ],
         name: "", slug: "", stage: "dipole", description: "",
         image: "", run: "bash run.sh",
-        authors: "", license: "MIT", citation: "", doi: "", code_url: "",
-        params: [], guideHtml: "",
-        async init() {
-          try { const md = await (await fetch("docs/submitting.md")).text(); this.guideHtml = marked.parse(md); }
-          catch (e) { this.guideHtml = `<p>See the <a href="${GH}/blob/main/docs/submitting.md">submission guide</a>.</p>`; }
-        },
+        authors: "", license: "MIT", citation: "", doi: "", code_url: "", params: [],
+        init() {},
+        next() { this.step = Math.min(5, this.step + 1); this.maxStep = Math.max(this.maxStep, this.step); },
         get autoSlug() { return this.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "my-method"; },
         get slugOr() { return this.slug || this.autoSlug; },
         get metadataYml() {
@@ -164,23 +192,17 @@
           if (ps.length) y += "parameters:\n" + ps.map((p) => `  - name: ${p.name}\n    default: ${p.default}\n    description: ${p.description}`).join("\n") + "\n";
           return y;
         },
-        get algorithmYml() {
-          return `contract: v2\nstage: ${this.stage}\nimage: ${this.image || "ghcr.io/you/your-image:v1"}\nrun: ${this.run}\n`;
-        },
+        get algorithmYml() { return `contract: v2\nstage: ${this.stage}\nimage: ${this.image || "ghcr.io/you/your-image:v1"}\nrun: ${this.run}\n`; },
         get runSh() {
           const io = STAGE_IO[this.stage];
           return `#!/usr/bin/env bash\n# ${this.name || this.slugOr} — ${this.stage} stage.\n`
-            + `# consumes: ${io.c}\n# produces: ${io.p}.nii.gz (in ppm, within the mask)\n`
+            + `# consumes: ${io.c}\n# produces: ${io.p}.nii.gz (ppm, within the mask)\n`
             + `set -euo pipefail\nIN="\${1:-/input}"; OUT="\${2:-/output}"\n\n`
-            + `# TODO: run your reconstruction — read ${io.inp}.nii.gz from $IN, write ${io.p}.nii.gz to $OUT.\n`
+            + `# TODO: read ${io.inp}.nii.gz from $IN, write ${io.p}.nii.gz to $OUT.\n`
             + `python3 "$(dirname "$0")/recon.py" "$IN" "$OUT"\n`;
         },
         get files() {
-          return [
-            { name: "metadata.yml", body: this.metadataYml },
-            { name: "algorithm.yml", body: this.algorithmYml },
-            { name: "run.sh", body: this.runSh },
-          ];
+          return [{ name: "metadata.yml", body: this.metadataYml }, { name: "algorithm.yml", body: this.algorithmYml }, { name: "run.sh", body: this.runSh }];
         },
         copy(text, name) { navigator.clipboard.writeText(text); this.copied = name; setTimeout(() => (this.copied = ""), 1500); },
       };

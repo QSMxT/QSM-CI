@@ -25,6 +25,15 @@ const MOON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor
 // uses explicit dark: variants with matching colours).
 (function injectThemeCSS() {
   const css = `
+  /* base form control styling (Tailwind CDN has no forms plugin) */
+  main input:not([type=checkbox]):not([type=radio]):not([type=range]),main select,main textarea{
+    padding:.5rem .75rem;border:1px solid #d1d5db;border-radius:.5rem;font-size:.875rem;line-height:1.25rem;background-color:#fff;transition:border-color .12s,box-shadow .12s}
+  main input:not([type=checkbox]):not([type=radio]):not([type=range]):focus,main select:focus,main textarea:focus{
+    outline:none;border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,.22)}
+  main select{padding-right:2rem;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .6rem center;-webkit-appearance:none;appearance:none}
+  main ::placeholder{color:#9ca3af}
+  html.dark main input:not([type=checkbox]):not([type=radio]):not([type=range]),html.dark main select,html.dark main textarea{background-color:#1f2937;border-color:#374151;color:#f3f4f6}
+  html.dark main ::placeholder{color:#6b7280}
   html.dark main .bg-white{background-color:#111827}
   html.dark main .bg-gray-50{background-color:#1f2937}
   html.dark main .bg-gray-100{background-color:#1f2937}
