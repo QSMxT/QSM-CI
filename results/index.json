@@ -10,7 +10,7 @@
       "artifact": "totalfield",
       "kind": "field",
       "image": null,
-      "runtime_s": 11.272456884384155,
+      "runtime_s": 12.02273678779602,
       "metrics": {
         "nrmse": 78.8362894008095,
         "nrmse_detrend": 127.9251107947276,
@@ -35,33 +35,13 @@
     },
     {
       "contract": "v2",
-      "name": "nobfr-baseline",
-      "track": "sim",
-      "stage": "bfr",
-      "artifact": "localfield",
-      "kind": "field",
-      "image": null,
-      "runtime_s": 0.6839256286621094,
-      "metrics": {
-        "nrmse": 1626.1253282181558,
-        "nrmse_detrend": 1946.8602205089346,
-        "correlation": 0.051297130887458436,
-        "xsim": 0.04313912263862238
-      },
-      "status": "ok",
-      "id": "nobfr-baseline-iso",
-      "slug": "nobfr-baseline",
-      "mode": "isolated"
-    },
-    {
-      "contract": "v2",
       "name": "octave-tkd",
       "track": "sim",
       "stage": "dipole",
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 3.010073661804199,
+      "runtime_s": 2.9803736209869385,
       "metrics": {
         "nrmse": 37.03495324457923,
         "nrmse_detrend": 39.72054204822565,
@@ -87,7 +67,7 @@
       "artifact": "localfield",
       "kind": "field",
       "image": null,
-      "runtime_s": 3.249865770339966,
+      "runtime_s": 3.236499309539795,
       "metrics": {
         "nrmse": 62.76130222192409,
         "nrmse_detrend": 80.60379641995668,
@@ -107,7 +87,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1.6910910606384277,
+      "runtime_s": 1.590688943862915,
       "metrics": {
         "nrmse": 55.07648208841707,
         "nrmse_detrend": 50.09798279845688,
@@ -133,7 +113,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1.678771734237671,
+      "runtime_s": 1.678955316543579,
       "metrics": {
         "nrmse": 37.03494402165627,
         "nrmse_detrend": 39.72053384928798,
@@ -150,115 +130,6 @@
       "id": "tkd-iso",
       "slug": "tkd",
       "mode": "isolated"
-    },
-    {
-      "contract": "v2",
-      "name": "nobfr-baseline+matlab-tkd",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "mode": "composed",
-      "status": "DNF",
-      "metrics": {},
-      "id": "gt~nobfr-baseline~matlab-tkd-cmp",
-      "slug": "nobfr-baseline+matlab-tkd",
-      "combo": {
-        "field_mapping": "gt",
-        "bfr": "nobfr-baseline",
-        "dipole": "matlab-tkd"
-      }
-    },
-    {
-      "contract": "v2",
-      "name": "nobfr-baseline+octave-tkd",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 2.085484743118286,
-      "metrics": {
-        "nrmse": 1141.9178216115026,
-        "nrmse_detrend": 1999.0897542197927,
-        "nrmse_tissue": 3143.6415747323495,
-        "nrmse_blood": 2740.3055889366983,
-        "nrmse_dgm": 257.61027752059897,
-        "dgm_linearity": 1.9536370243587546,
-        "calc_moment_dev": 4.652430176734924,
-        "calc_streak": 0.0389519347798702,
-        "correlation": 0.04996029830293931,
-        "xsim": 0.006156430175998886
-      },
-      "status": "ok",
-      "id": "gt~nobfr-baseline~octave-tkd-cmp",
-      "slug": "nobfr-baseline+octave-tkd",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "gt",
-        "bfr": "nobfr-baseline",
-        "dipole": "octave-tkd"
-      }
-    },
-    {
-      "contract": "v2",
-      "name": "nobfr-baseline+tikhonov",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 1.5976135730743408,
-      "metrics": {
-        "nrmse": 637.0085960543622,
-        "nrmse_detrend": 1920.9978513560245,
-        "nrmse_tissue": 3859.598616161442,
-        "nrmse_blood": 2102.0348935772154,
-        "nrmse_dgm": 255.38097304371075,
-        "dgm_linearity": 0.8816431649755712,
-        "calc_moment_dev": 14.516863822937012,
-        "calc_streak": 0.0419250439622178,
-        "correlation": 0.05198588945571652,
-        "xsim": 0.014983765579676895
-      },
-      "status": "ok",
-      "id": "gt~nobfr-baseline~tikhonov-cmp",
-      "slug": "nobfr-baseline+tikhonov",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "gt",
-        "bfr": "nobfr-baseline",
-        "dipole": "tikhonov"
-      }
-    },
-    {
-      "contract": "v2",
-      "name": "nobfr-baseline+tkd",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 1.6494183540344238,
-      "metrics": {
-        "nrmse": 1141.9154777429485,
-        "nrmse_detrend": 1998.5042963268522,
-        "nrmse_tissue": 3144.9404161199063,
-        "nrmse_blood": 2740.667133049174,
-        "nrmse_dgm": 257.5377821728473,
-        "dgm_linearity": 1.9541375147008657,
-        "calc_moment_dev": 4.652782440185547,
-        "calc_streak": 0.03895137819664951,
-        "correlation": 0.049974897526457084,
-        "xsim": 0.006161589664985552
-      },
-      "status": "ok",
-      "id": "gt~nobfr-baseline~tkd-cmp",
-      "slug": "nobfr-baseline+tkd",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "gt",
-        "bfr": "nobfr-baseline",
-        "dipole": "tkd"
-      }
     },
     {
       "contract": "v2",
@@ -284,7 +155,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 2.914154291152954,
+      "runtime_s": 2.879655361175537,
       "metrics": {
         "nrmse": 71.88755473646006,
         "nrmse_detrend": 103.35633160193758,
@@ -315,7 +186,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1.6571037769317627,
+      "runtime_s": 1.587827205657959,
       "metrics": {
         "nrmse": 77.00498385773018,
         "nrmse_detrend": 107.36539666146635,
@@ -346,7 +217,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1.7329668998718262,
+      "runtime_s": 1.5779728889465332,
       "metrics": {
         "nrmse": 71.88766582956848,
         "nrmse_detrend": 103.356648617325,
@@ -366,115 +237,6 @@
       "combo": {
         "field_mapping": "gt",
         "bfr": "sharp",
-        "dipole": "tkd"
-      }
-    },
-    {
-      "contract": "v2",
-      "name": "laplacian-fieldmap+nobfr-baseline+matlab-tkd",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "mode": "composed",
-      "status": "DNF",
-      "metrics": {},
-      "id": "laplacian-fieldmap~nobfr-baseline~matlab-tkd-cmp",
-      "slug": "laplacian-fieldmap+nobfr-baseline+matlab-tkd",
-      "combo": {
-        "field_mapping": "laplacian-fieldmap",
-        "bfr": "nobfr-baseline",
-        "dipole": "matlab-tkd"
-      }
-    },
-    {
-      "contract": "v2",
-      "name": "laplacian-fieldmap+nobfr-baseline+octave-tkd",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 1.9697182178497314,
-      "metrics": {
-        "nrmse": 611.483691558971,
-        "nrmse_detrend": 827.0817650613071,
-        "nrmse_tissue": 1072.8134613449752,
-        "nrmse_blood": 8554.418043704947,
-        "nrmse_dgm": 597.6731963901995,
-        "dgm_linearity": 0.2740930905751665,
-        "calc_moment_dev": 51.374977469444275,
-        "calc_streak": null,
-        "correlation": 0.12003286263170505,
-        "xsim": 0.013597254501096116
-      },
-      "status": "ok",
-      "id": "laplacian-fieldmap~nobfr-baseline~octave-tkd-cmp",
-      "slug": "laplacian-fieldmap+nobfr-baseline+octave-tkd",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "laplacian-fieldmap",
-        "bfr": "nobfr-baseline",
-        "dipole": "octave-tkd"
-      }
-    },
-    {
-      "contract": "v2",
-      "name": "laplacian-fieldmap+nobfr-baseline+tikhonov",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 1.649587631225586,
-      "metrics": {
-        "nrmse": 348.80448218373596,
-        "nrmse_detrend": 823.9745455650032,
-        "nrmse_tissue": 993.9889862618367,
-        "nrmse_blood": 5407.356816577351,
-        "nrmse_dgm": 376.8052326489276,
-        "dgm_linearity": 0.23582259789344784,
-        "calc_moment_dev": 51.374977469444275,
-        "calc_streak": null,
-        "correlation": 0.12047895016179586,
-        "xsim": 0.02642722317048756
-      },
-      "status": "ok",
-      "id": "laplacian-fieldmap~nobfr-baseline~tikhonov-cmp",
-      "slug": "laplacian-fieldmap+nobfr-baseline+tikhonov",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "laplacian-fieldmap",
-        "bfr": "nobfr-baseline",
-        "dipole": "tikhonov"
-      }
-    },
-    {
-      "contract": "v2",
-      "name": "laplacian-fieldmap+nobfr-baseline+tkd",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 1.6976597309112549,
-      "metrics": {
-        "nrmse": 611.4842634386781,
-        "nrmse_detrend": 827.0025323635092,
-        "nrmse_tissue": 1072.6954826037877,
-        "nrmse_blood": 8550.771462069783,
-        "nrmse_dgm": 597.4780856135319,
-        "dgm_linearity": 0.2742361988635804,
-        "calc_moment_dev": 51.374977469444275,
-        "calc_streak": null,
-        "correlation": 0.12004419691562597,
-        "xsim": 0.013584554253610664
-      },
-      "status": "ok",
-      "id": "laplacian-fieldmap~nobfr-baseline~tkd-cmp",
-      "slug": "laplacian-fieldmap+nobfr-baseline+tkd",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "laplacian-fieldmap",
-        "bfr": "nobfr-baseline",
         "dipole": "tkd"
       }
     },
@@ -502,7 +264,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 2.7688379287719727,
+      "runtime_s": 2.700043201446533,
       "metrics": {
         "nrmse": 87.46401803667695,
         "nrmse_detrend": 175.26600846549343,
@@ -533,7 +295,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1.6401116847991943,
+      "runtime_s": 1.6119282245635986,
       "metrics": {
         "nrmse": 87.80629008964257,
         "nrmse_detrend": 174.1074822952752,
@@ -564,7 +326,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1.6526908874511719,
+      "runtime_s": 1.663062572479248,
       "metrics": {
         "nrmse": 87.46388473615488,
         "nrmse_detrend": 175.26505210764904,

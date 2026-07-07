@@ -1,7 +1,0 @@
-contract: v2
-stage: bfr
-# Environment: the shared deps-only base image. The code in this folder is mounted at
-# /algo at run time (not baked). Submitters can instead point `image:` at any base, or add a
-# Dockerfile here to install/download dependencies during the build phase.
-image: ghcr.io/astewartau/qsm-ci/py-ref:v1
-run: bash run.sh
