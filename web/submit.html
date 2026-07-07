@@ -226,17 +226,17 @@
         next() { this.step = Math.min(5, this.step + 1); this.maxStep = Math.max(this.maxStep, this.step); },
         get autoSlug() { return this.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "my-method"; },
         get slugOr() { return this.slug || this.autoSlug; },
-        get metadataYml() {
+        get algorithmYml() {
           const ps = this.params.filter((p) => p.name);
-          let y = `name: ${this.name || this.slugOr}\nslug: ${this.slugOr}\n`;
-          if (this.authors) y += "authors:\n" + this.authors.split(",").map((a) => `  - name: ${a.trim()}`).join("\n") + "\n";
+          let y = `name: ${this.name || this.slugOr}\nslug: ${this.slugOr}\nstage: ${this.stage}\n`;
           y += `description: >\n  ${this.description || "TODO"}\n`;
+          if (this.authors) y += "authors:\n" + this.authors.split(",").map((a) => `  - name: ${a.trim()}`).join("\n") + "\n";
           y += `citation: ${this.citation || "null"}\ndoi: ${this.doi || "null"}\ncode_url: ${this.code_url || "null"}\n`;
-          y += `license: ${this.license}\nstage: ${this.stage}\n`;
+          y += `license: ${this.license}\n`;
+          y += `image: ${this.image || "ghcr.io/you/your-image:v1"}\nrun: ${this.run}\n`;
           if (ps.length) y += "parameters:\n" + ps.map((p) => `  - name: ${p.name}\n    default: ${p.default}\n    description: ${p.description}`).join("\n") + "\n";
           return y;
         },
-        get algorithmYml() { return `contract: v2\nstage: ${this.stage}\nimage: ${this.image || "ghcr.io/you/your-image:v1"}\nrun: ${this.run}\n`; },
         get langMeta() { return this.langs.find((l) => l.key === this.lang) || this.langs[0]; },
         get runSh() {
           const io = STAGE_IO[this.stage];
@@ -327,7 +327,6 @@
         },
         get files() {
           const f = [
-            { name: "metadata.yml", body: this.metadataYml },
             { name: "algorithm.yml", body: this.algorithmYml },
             { name: "run.sh", body: this.runSh },
           ];

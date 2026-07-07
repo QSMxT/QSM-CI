@@ -23,7 +23,7 @@ inversion is best" and "which BFR+inversion *pairing* wins."
    **isolated** (fed the true input boundary) and **composed** (chained with other stages).
 4. **Results appear** on the leaderboard — per-stage tables and a BFR × inversion combination matrix.
 
-## The contract (v2)
+## The contract
 
 Your container implements one stage and reads/writes canonical artifacts (all fields & χ in **ppm**):
 

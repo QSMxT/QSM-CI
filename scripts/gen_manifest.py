@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-"""Build web/algorithms.json from every algorithms/<slug>/metadata.yml.
+"""Build web/algorithms.json from every algorithms/<slug>/algorithm.yml.
 
 The site (Methods page + submission page) fetches this manifest to show what each algorithm is —
-description, parameters, citation/DOI, source — alongside the scores. Normalises the two metadata
-shapes (generated QSMxT ones and hand-written ones).
+description, parameters, citation/DOI, source — alongside the scores.
 """
 from __future__ import annotations
 
@@ -36,7 +35,7 @@ def entry(meta: dict) -> dict:
 def main() -> None:
     algos = []
     for d in sorted((ROOT / "algorithms").glob("*/")):
-        mfile = d / "metadata.yml"
+        mfile = d / "algorithm.yml"
         if d.name.startswith("_") or not mfile.exists():
             continue
         meta = yaml.safe_load(mfile.read_text())

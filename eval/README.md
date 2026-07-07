@@ -51,7 +51,6 @@ Usually you don't call this directly — `scripts/pipeline.py` drives it per pro
 
 ```json
 {
-  "contract": "v1",
   "name": "example-tkd",
   "track": "sim",
   "runtime_s": 42.0,

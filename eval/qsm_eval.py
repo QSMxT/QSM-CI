@@ -310,7 +310,6 @@ def main() -> None:
         metrics = {"correlation": correlation(recon, truth, mask), "xsim": xsim(recon, truth, mask)}
 
     result = {
-        "contract": "v2",
         "name": args.name,
         "track": args.track,
         "stage": args.stage,

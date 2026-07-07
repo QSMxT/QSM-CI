@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Generate QSM-CI submissions that wrap QSMxT (the QSM.rs Rust engine).
 
-Each algorithm becomes a folder under algorithms/<slug>/ with metadata.yml, algorithm.yml, run.sh,
+Each algorithm becomes a folder under algorithms/<slug>/ with algorithm.yml, run.sh,
 and README.md. All share one environment image (the qsmxt binary); run.sh calls the matching
 `qsmxt bgremove <algo>` / `qsmxt invert <algo>` subcommand. Re-run to regenerate.
 
@@ -112,18 +112,16 @@ def gen(slug, stage, algo, name, desc, cite, doi, params):
     d = ROOT / "algorithms" / slug
     d.mkdir(parents=True, exist_ok=True)
 
-    (d / "metadata.yml").write_text(
-        f"name: {name}\nslug: {slug}\nengine: QSMxT / QSM.rs\n"
+    # Single manifest: docs + runtime in one file. Code (run.sh) is mounted at /algo.
+    (d / "algorithm.yml").write_text(
+        f"name: {name}\nslug: {slug}\nstage: {stage}\nengine: QSMxT / QSM.rs\n"
         f"description: >\n  {desc}\n"
         f"citation: {cite if cite else 'null'}\n"
         f"doi: {doi if doi else 'null'}\n"
         f"code_url: {QSM_RS}\n"
-        f"license: MIT\nstage: {stage}\nparameters:\n{yamllist(params)}")
-
-    (d / "algorithm.yml").write_text(
-        f"contract: v2\nstage: {stage}\n"
-        f"# Environment: the QSMxT engine image (QSM.rs). Code (run.sh) is mounted at /algo.\n"
-        f"image: {IMAGE}\nrun: bash run.sh\n")
+        f"license: MIT\n"
+        f"image: {IMAGE}\nrun: bash run.sh\n"
+        f"parameters:\n{yamllist(params)}")
 
     rs = RUN_SH.format(name=name, stage=stage, group=group, algo=algo, inp=inp, out=out)
     if slug == "medi":  # MEDI: works in radians (needs B0+TE), uses magnitude, no internal SMV

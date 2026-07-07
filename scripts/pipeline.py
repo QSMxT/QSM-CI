@@ -158,7 +158,7 @@ def score(recon: Path, artifact: str, gt_dir: Path, mask: Path, out_json: Path, 
 
 
 def dnf(rid, slug, name, stage, mode, track, combo=None):
-    e = {"contract": "v2", "name": name, "track": track, "stage": stage, "mode": mode,
+    e = {"name": name, "track": track, "stage": stage, "mode": mode,
          "status": "DNF", "metrics": {}, "id": rid, "slug": slug}
     if combo:
         e["combo"] = combo
@@ -172,7 +172,7 @@ def flush_index(runs):
     existing = json.loads(idx.read_text()).get("runs", []) if idx.exists() else []
     ids = {r["id"] for r in runs}
     merged = [r for r in existing if r.get("id") not in ids] + runs
-    idx.write_text(json.dumps({"contract": "v2", "generated": None, "runs": merged}, indent=2) + "\n")
+    idx.write_text(json.dumps({"generated": None, "runs": merged}, indent=2) + "\n")
     return len(merged)
 
 

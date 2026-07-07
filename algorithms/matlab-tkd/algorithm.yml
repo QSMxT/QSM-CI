@@ -1,11 +1,16 @@
-contract: v2
-stage: dipole            # consumes: localfield, mask, params  ->  produces: chimap
-# Prebuilt MCR image: MATLAB Runtime base + the compiled `recon` (see BUILD.md).
-# QSM-CI pulls this and runs it offline (--network none) — no MATLAB license at run time.
+name: TKD (MATLAB)
+slug: matlab-tkd
+stage: dipole
+description: Thresholded k-space division dipole inversion implemented in MATLAB and
+  run on the license-free MATLAB Runtime. Reference `dipole`-stage submission demonstrating
+  the MATLAB path.
+authors:
+- name: QSM-CI
+  affiliation: Neurodesk
+paper_doi: 10.1002/mrm.22187
+license: MIT
 image: ghcr.io/astewartau/qsm-ci/matlab-tkd:v1
 run: bash run.sh
-# Optional: let CI compile recon.m for you on a MATLAB-licensed runner instead of pre-building
-# the image yourself (see .github/workflows/matlab-compile.yml).
 matlab:
   entry: recon.m
-  runtime: r2026a        # match your installed MATLAB (detected: R2026a) and an available MATLAB Runtime release
+  runtime: r2026a

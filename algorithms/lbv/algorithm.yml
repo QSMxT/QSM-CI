@@ -1,5 +1,16 @@
-contract: v2
+name: LBV
+slug: lbv
 stage: bfr
-# Environment: the QSMxT engine image (QSM.rs). Code (run.sh) is mounted at /algo.
+engine: QSMxT / QSM.rs
+description: 'Laplacian Boundary Value: solves the Laplacian of the field with boundary
+  conditions.'
+citation: Zhou et al., NMR Biomed 2014
+doi: 10.1002/nbm.3064
+code_url: https://github.com/astewartau/QSM.rs
+license: MIT
 image: ghcr.io/astewartau/qsm-ci/qsmxt:v1
 run: bash run.sh
+parameters:
+- name: tol
+  default: 1e-4
+  description: convergence tolerance

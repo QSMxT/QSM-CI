@@ -1,5 +1,21 @@
-contract: v2
+name: RTS
+slug: rts
 stage: dipole
-# Environment: the QSMxT engine image (QSM.rs). Code (run.sh) is mounted at /algo.
+engine: QSMxT / QSM.rs
+description: 'Rapid Two-Step QSM: streaking-artifact reduction via a fast ADMM split.'
+citation: Kames et al., NeuroImage 2018
+doi: 10.1016/j.neuroimage.2018.07.043
+code_url: https://github.com/astewartau/QSM.rs
+license: MIT
 image: ghcr.io/astewartau/qsm-ci/qsmxt:v1
 run: bash run.sh
+parameters:
+- name: delta
+  default: 1.0
+  description: regularization
+- name: mu
+  default: 1.0
+  description: smoothness
+- name: max_iter
+  default: 1000
+  description: iterations

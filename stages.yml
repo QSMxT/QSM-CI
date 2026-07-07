@@ -1,9 +1,8 @@
-# QSM-CI stage & artifact registry (contract v2).
+# QSM-CI stage & artifact registry.
 #
 # The platform reads this to know what to mount into a submission's /input, what to expect in
 # /output, and how to score each produced artifact. A submission declares one `stage` (a single
 # stage or a named span) in its algorithm.yml.
-contract: v2
 
 # Canonical artifacts. `kind` selects the scoring metric set; `groundtruth` names the file under a
 # dataset's groundtruth/ dir (present only for scorable artifacts).

@@ -47,8 +47,8 @@ Working templates to copy:
 
 Copy a reference folder to `algorithms/<your-slug>/` and edit:
 
-- **`metadata.yml`** — name, authors, paper DOI, license, and `stage:`.
-- **`algorithm.yml`** — `contract: v2`, your `stage:`, your `image:`, and the `run:` command.
+- **`algorithm.yml`** — one manifest: name, authors, DOI, license, your `stage:`, your `image:`,
+  the `run:` command, and any `parameters:`.
 - Bake your code into the image (or, like the reference algos, keep `recon.*` + `run.sh` in the
   folder and a small `Dockerfile` that copies them onto a base image).
 

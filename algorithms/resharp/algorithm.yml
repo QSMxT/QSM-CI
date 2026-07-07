@@ -1,5 +1,18 @@
-contract: v2
+name: RESHARP
+slug: resharp
 stage: bfr
-# Environment: the QSMxT engine image (QSM.rs). Code (run.sh) is mounted at /algo.
+engine: QSMxT / QSM.rs
+description: Regularized SHARP with Tikhonov regularization of the deconvolution.
+citation: Sun & Wilman, Magn Reson Med 2014
+doi: 10.1002/mrm.24765
+code_url: https://github.com/astewartau/QSM.rs
+license: MIT
 image: ghcr.io/astewartau/qsm-ci/qsmxt:v1
 run: bash run.sh
+parameters:
+- name: radius
+  default: 15.0
+  description: SMV kernel radius (mm)
+- name: tik_reg
+  default: 1e-3
+  description: Tikhonov regularization

@@ -1,5 +1,18 @@
-contract: v2
+name: NLTV
+slug: nltv
 stage: dipole
-# Environment: the QSMxT engine image (QSM.rs). Code (run.sh) is mounted at /algo.
+engine: QSMxT / QSM.rs
+description: Nonlocal Total Variation regularized inversion.
+citation: —
+doi: null
+code_url: https://github.com/astewartau/QSM.rs
+license: MIT
 image: ghcr.io/astewartau/qsm-ci/qsmxt:v1
 run: bash run.sh
+parameters:
+- name: lambda
+  default: 1e-4
+  description: regularization
+- name: max_iter
+  default: 1000
+  description: iterations

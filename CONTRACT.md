@@ -1,10 +1,9 @@
-# QSM-CI submission contract — `v2`
+# QSM-CI submission contract
 
 Every submission is a container that implements one **stage** (or a **span** of stages) of the QSM
 pipeline. It reads the artifacts that stage *consumes* from `/input` and writes the artifacts it
 *produces* to `/output`. The registry of artifacts and stages is [`stages.yml`](stages.yml); this
-document is the human contract. It is **frozen** — changes bump the version and each submission
-declares `contract: v2`.
+document is the human contract.
 
 ## Why stages
 
@@ -52,7 +51,6 @@ affine of `mask.nii.gz`.
 
 ```json
 {
-  "contract": "v2",
   "TE": [0.004, 0.012, 0.020, 0.028],
   "B0": 3.0,
   "B0_dir": [0.0, 0.0, 1.0],

@@ -63,7 +63,6 @@ def params_from_sidecars(anat: Path) -> dict:
     s0 = sides[0]
     vox = s0.get("VoxelSize") or [1.0, 1.0, 1.0]
     return {
-        "contract": "v2",
         "TE": [s["EchoTime"] for s in sides],
         "B0": s0["MagneticFieldStrength"],
         "B0_dir": list(s0.get("B0_dir", [0, 0, 1])),

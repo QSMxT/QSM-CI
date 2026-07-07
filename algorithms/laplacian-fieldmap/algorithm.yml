@@ -1,4 +1,12 @@
-contract: v2
-stage: field-mapping     # consumes: phase, magnitude, mask, params  ->  produces: totalfield
+name: Laplacian field mapping
+slug: laplacian-fieldmap
+stage: field-mapping
+description: Multi-echo B0 field mapping by Laplacian phase unwrapping + linear fit
+  over echoes. Reference `field-mapping`-stage submission (raw phase -> total field).
+authors:
+- name: QSM-CI
+  affiliation: Neurodesk
+paper_doi: null
+license: MIT
 image: ghcr.io/astewartau/qsm-ci/py-ref:v1
 run: bash run.sh
