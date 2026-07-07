@@ -65,7 +65,12 @@ python -m http.server -d web 8000   # → http://localhost:8000
 
 ## Status
 
-The stage model, scorer, composition matrix, and website are working end-to-end on a simulated
-phantom. Before opening the challenge: curate the realistic head phantom (so BFR and region metrics
-are meaningful — see [data/sim/README.md](data/sim/README.md)), upload held-out ground truth to OSF,
-cross-check `qsm-eval` against QSM.rs on that phantom, and wire the ARC runner + `OSF_TOKEN` secrets.
+Working end-to-end on a realistic **head phantom** (`data/sim/scoring/`, 7T, 164×205×205): the stage
+model, scorer (full region metrics), composition matrix, containerized runner (`--network none`),
+and website. Reference submissions include Python (`tkd`, `tikhonov`, `sharp`, `nobfr-baseline`) and
+MATLAB-language via **Octave** (`octave-tkd`, license-free, verified in-container) and MCR
+(`matlab-tkd`, template).
+
+Before opening the challenge: fix the canonical head-phantom `qsm-forward` invocation and upload its
+held-out ground truth to OSF; wire the ARC runner + `OSF_TOKEN` secrets; cross-check `qsm-eval`
+against QSM.rs on that phantom; add a `field-mapping` reference so the matrix starts from raw phase.

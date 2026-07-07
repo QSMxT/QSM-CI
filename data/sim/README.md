@@ -43,15 +43,20 @@ python -c "import numpy as np, qsm_forward as q; \
 python scripts/pack_dataset.py /tmp/BIDS data/sim/dev
 ```
 
-## ⚠️ Head phantom needed for the real challenge
+## Head phantom (the real scoring dataset)
 
-The simple cylinder phantom above validates the **plumbing** but not the science:
+The simple cylinder phantom above validates **plumbing only** (`totalfield == localfield`, so BFR
+has nothing to remove; `dseg` labels {0,1}, so region χ metrics are degenerate).
 
-- `totalfield == localfield` (no background sources) — so the BFR stage has nothing to remove.
-- `dseg` has only labels {0, 1} — so the region-specific χ metrics (tissue/blood/DGM/calcification)
-  are degenerate.
+The **scoring** dataset uses `qsm-forward`'s realistic head model, which gives:
 
-The scoring dataset must use `qsm-forward`'s realistic head model (`ChiModelMIX` + segmentation +
-air/skull background sources) so that `totalfield ≠ localfield` and the full label set (1–6 DGM,
-7 thalamus, 8 WM, 9 GM, 11 blood, 16 calcification) is present. Sourcing/curating that head model is
-the remaining data task; record the exact `qsm-forward` invocation here once finalized.
+- `totalfield ≠ localfield` (air/skull background sources) — so the BFR stage is meaningful.
+- the full label set — 1–6 DGM, 7 thalamus, 8 WM, 9 GM, 10 CSF, 11 blood, 13 bone, 14 air,
+  15 muscle, 16 calcification — so every region χ metric populates.
+
+A head-phantom BIDS run was packed into `data/sim/scoring/` with `pack_dataset.py` (7T, 4 echoes,
+1mm, 164×205×205) and drives the current leaderboard in `results/index.json`. It confirmed the
+expected behaviour: the no-BFR baseline is catastrophic (localfield xsim ≈ 0.04), SHARP recovers it
+(≈ 0.61), and the per-stage ordering (TKD > Tikhonov) survives composition. **Record the exact
+`qsm-forward` head-model invocation here** once the canonical challenge phantom is fixed, and upload
+its `groundtruth/` to OSF (held out).
