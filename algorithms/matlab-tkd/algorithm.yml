@@ -8,4 +8,4 @@ run: bash run.sh
 # the image yourself (see .github/workflows/matlab-compile.yml).
 matlab:
   entry: recon.m
-  runtime: r2023b        # MATLAB Runtime version; must match the MATLAB Compiler release
+  runtime: r2026a        # match your installed MATLAB (detected: R2026a) and an available MATLAB Runtime release
