@@ -15,8 +15,10 @@ The metrics are a 1:1 port of the QSM.rs reference implementation
 
 - `test_metrics.py` pins the invariants.
 - `qsm_eval.py --selfcheck` runs quick sanity checks.
-- Before the challenge opens, add a fixture that cross-checks these numbers against QSM.rs on the
-  actual phantom (identical inputs ⇒ identical scores to floating-point tolerance).
+- **Cross-checked against QSM.rs** on the head phantom: feeding the same recon/truth/mask/seg to
+  `qsm-eval` and to QSM.rs's own `ChallengeMetrics` agrees to a **max relative difference of
+  1.5e-12** across all 10 metrics (floating-point summation order only — numerically identical).
+  Re-run with `scripts/crosscheck_qsmrs.sh` (needs a QSM.rs checkout with `tests/crosscheck.rs`).
 
 ## Usage
 
