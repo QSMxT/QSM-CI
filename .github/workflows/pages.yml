@@ -1,0 +1,43 @@
+name: pages
+
+# Deploy the static leaderboard (web/ + results/) to GitHub Pages.
+# No build step — the site is vanilla HTML/JS and reads results/index.json at runtime.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "web/**"
+      - "results/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Assemble site (web/ + results/ served alongside)
+        run: |
+          mkdir -p _site
+          cp -r web/* _site/
+          cp -r results _site/results
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: _site }
+      - id: deployment
+        uses: actions/deploy-pages@v4

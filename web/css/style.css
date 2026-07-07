@@ -1,0 +1,58 @@
+:root {
+  --bg: #0f1216;
+  --panel: #171c22;
+  --fg: #e6e9ee;
+  --muted: #9aa4b2;
+  --accent: #3b82f6;
+  --border: #262d36;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+header {
+  padding: 1.25rem 2rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--panel);
+}
+header h1 { margin: 0; font-size: 1.6rem; letter-spacing: 0.5px; }
+header h1 a { color: var(--fg); }
+.tagline { margin: 0.25rem 0 0.75rem; color: var(--muted); }
+nav { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+nav select, nav input, .viewer-controls select, .viewer-controls input {
+  background: var(--bg); color: var(--fg); border: 1px solid var(--border);
+  border-radius: 6px; padding: 0.35rem 0.5rem;
+}
+
+main { padding: 1.5rem 2rem; max-width: 1200px; margin: 0 auto; }
+
+table { border-collapse: collapse; width: 100%; }
+th, td { padding: 0.55rem 0.7rem; text-align: right; border-bottom: 1px solid var(--border); }
+th.name-col, td.name-col { text-align: left; }
+thead th { color: var(--muted); font-weight: 600; user-select: none; }
+th.sortable { cursor: pointer; }
+th.sortable:hover { color: var(--fg); }
+tbody tr { cursor: pointer; }
+tbody tr:hover { background: var(--panel); }
+.authors { display: block; color: var(--muted); font-size: 0.8rem; }
+.empty { color: var(--muted); padding: 2rem 0; text-align: center; }
+
+.submission-meta { color: var(--muted); }
+.submission-meta code { color: var(--fg); }
+
+.viewer-section { margin: 1rem 0 2rem; }
+.viewer-controls { display: flex; gap: 1.25rem; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; }
+.intensity { color: var(--muted); font-variant-numeric: tabular-nums; margin-left: auto; }
+#gl1 { width: 100%; height: 520px; background: #000; border: 1px solid var(--border); border-radius: 8px; }
+
+#metrics { max-width: 480px; }
+#metrics th { text-align: left; color: var(--muted); font-weight: 500; }
+
+footer { padding: 1.5rem 2rem; color: var(--muted); border-top: 1px solid var(--border); }

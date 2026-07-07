@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>QSM-CI — Submission</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header>
+    <h1><a href="index.html">QSM-CI</a></h1>
+    <p class="tagline"><a href="index.html">← Back to leaderboard</a></p>
+  </header>
+
+  <main>
+    <h2 id="title">Loading…</h2>
+    <p id="meta" class="submission-meta"></p>
+
+    <section class="viewer-section">
+      <div class="viewer-controls">
+        <label>Overlay:
+          <select id="layer">
+            <option value="recon">Reconstruction</option>
+            <option value="truth">Ground truth</option>
+            <option value="error">Error (recon − truth)</option>
+          </select>
+        </label>
+        <label>Opacity: <input id="opacity" type="range" min="0" max="1" step="0.05" value="1" /></label>
+        <span id="intensity" class="intensity"></span>
+      </div>
+      <canvas id="gl1"></canvas>
+    </section>
+
+    <section>
+      <h3>Metrics</h3>
+      <table id="metrics"><tbody></tbody></table>
+    </section>
+  </main>
+
+  <script type="module" src="js/viewer.js"></script>
+</body>
+</html>

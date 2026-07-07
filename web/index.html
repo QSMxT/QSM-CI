@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>QSM-CI — Leaderboard</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header>
+    <h1>QSM-CI</h1>
+    <p class="tagline">A challenge for Quantitative Susceptibility Mapping reconstruction.</p>
+    <nav>
+      <label>Track:
+        <select id="track">
+          <option value="sim">Simulated</option>
+          <option value="invivo">In-vivo</option>
+        </select>
+      </label>
+      <input id="filter" type="search" placeholder="Filter by name / author…" />
+      <a href="https://github.com/astewartau/qsm-ci/blob/main/docs/submitting.md">Submit an algorithm →</a>
+    </nav>
+  </header>
+
+  <main>
+    <table id="leaderboard">
+      <thead><tr id="header-row"></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <p id="empty" class="empty" hidden>No results yet for this track.</p>
+  </main>
+
+  <footer>
+    <p>Scored with <a href="https://github.com/astewartau/qsm-ci/tree/main/eval">qsm-eval</a>,
+       which wraps the <a href="https://github.com/astewartau/QSM.rs">QSM.rs</a> metrics.
+       Click a row for the interactive viewer.</p>
+  </footer>
+
+  <script type="module" src="js/leaderboard.js"></script>
+</body>
+</html>

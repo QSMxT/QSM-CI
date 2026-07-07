@@ -1,0 +1,24 @@
+# Rust
+/target
+**/target
+Cargo.lock
+
+# Local scratch
+/tmp
+*.log
+figures/
+out/
+
+# Held-out ground truth must NEVER be committed (pulled from OSF in CI)
+data/**/groundtruth/
+gt/
+
+# Large NIfTI test data pulled at runtime
+*.nii
+*.nii.gz
+# ...except tiny committed public inputs and any result volumes we intentionally serve
+!data/sim/public/*.nii.gz
+!results/**/*.nii.gz
+
+# OS
+.DS_Store

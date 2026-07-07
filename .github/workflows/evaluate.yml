@@ -1,0 +1,126 @@
+name: evaluate
+
+# Runs a submitted algorithm on the challenge data and scores it with qsm-eval.
+# Executes on Neurodesk's self-hosted ARC runners. Ground truth is pulled from OSF and is only
+# ever mounted into the scorer — never into the (network-less) algorithm container.
+
+on:
+  pull_request:
+    paths:
+      - "algorithms/**"
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: "Algorithm slug under algorithms/ to (re)run"
+        required: true
+  schedule:
+    - cron: "0 4 * * 1" # weekly reproducibility re-run of all algorithms
+
+permissions:
+  contents: write        # to push results to the results branch
+  pull-requests: write   # to post the metrics comment
+
+env:
+  TRACK: sim
+  QSM_EVAL_IMAGE: ghcr.io/astewartau/qsm-ci/qsm-eval:latest
+  RUN_TIMEOUT: "7200"    # seconds (2h)
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    outputs:
+      slugs: ${{ steps.changed.outputs.slugs }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - id: changed
+        name: Determine which algorithm(s) to run
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "slugs=[\"${{ inputs.slug }}\"]" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event_name }}" = "schedule" ]; then
+            ls -d algorithms/*/ | xargs -n1 basename | jq -R . | jq -sc . \
+              | sed 's/^/slugs=/' >> "$GITHUB_OUTPUT"
+          else
+            git diff --name-only origin/${{ github.base_ref }}... \
+              | grep '^algorithms/' | cut -d/ -f2 | sort -u \
+              | jq -R . | jq -sc . | sed 's/^/slugs=/' >> "$GITHUB_OUTPUT"
+          fi
+
+  evaluate:
+    needs: discover
+    if: needs.discover.outputs.slugs != '[]'
+    runs-on: [self-hosted, neurodesk]   # ARC runner label
+    strategy:
+      fail-fast: false
+      matrix:
+        slug: ${{ fromJson(needs.discover.outputs.slugs) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pull held-out ground truth from OSF
+        env:
+          OSF_TOKEN: ${{ secrets.OSF_TOKEN }}
+        run: |
+          mkdir -p gt
+          # Mirror QSM.rs CI: authenticated download of the sim ground truth (chimap + dseg).
+          scripts/fetch_groundtruth.sh "$TRACK" gt/
+
+      - name: Read submission spec
+        id: spec
+        run: |
+          img=$(yq '.image' "algorithms/${{ matrix.slug }}/algorithm.yml")
+          run=$(yq '.run'   "algorithms/${{ matrix.slug }}/algorithm.yml")
+          echo "image=$img" >> "$GITHUB_OUTPUT"
+          echo "run=$run"   >> "$GITHUB_OUTPUT"
+
+      - name: Run algorithm (no network, time-limited)
+        id: run
+        run: |
+          mkdir -p out
+          start=$(date +%s)
+          set +e
+          timeout "${RUN_TIMEOUT}s" docker run --rm --network none \
+            -v "$PWD/data/${TRACK}/public:/input:ro" \
+            -v "$PWD/out:/output" \
+            "${{ steps.spec.outputs.image }}" ${{ steps.spec.outputs.run }}
+          code=$?
+          set -e
+          echo "elapsed=$(( $(date +%s) - start ))" >> "$GITHUB_OUTPUT"
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          if [ $code -ne 0 ] || [ ! -f out/chimap.nii.gz ]; then
+            echo "status=DNF" >> "$GITHUB_OUTPUT"
+          else
+            echo "status=ok" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Score with qsm-eval
+        if: steps.run.outputs.status == 'ok'
+        run: |
+          mkdir -p figures
+          docker run --rm \
+            -v "$PWD/out:/output:ro" \
+            -v "$PWD/gt:/gt:ro" \
+            -v "$PWD/data/${TRACK}/public:/input:ro" \
+            -v "$PWD/figures:/figures" \
+            "$QSM_EVAL_IMAGE" \
+            --recon /output/chimap.nii.gz \
+            --truth /gt/chimap.nii.gz \
+            --seg   /gt/dseg.nii.gz \
+            --mask  /input/mask.nii.gz \
+            --track "$TRACK" \
+            --name  "${{ matrix.slug }}" \
+            --runtime "${{ steps.run.outputs.elapsed }}" \
+            --image "${{ steps.spec.outputs.image }}" \
+            --out /figures/metrics.json --figures /figures
+
+      - name: Publish result + viewer volumes
+        run: |
+          scripts/publish_result.sh \
+            "${{ matrix.slug }}" "$TRACK" \
+            "${{ steps.run.outputs.status }}" \
+            figures/metrics.json out/chimap.nii.gz gt/chimap.nii.gz
+
+      - name: Comment metrics on PR
+        if: github.event_name == 'pull_request'
+        run: scripts/pr_comment.sh "${{ matrix.slug }}" "$TRACK" figures
