@@ -1,84 +1,104 @@
-// Per-submission detail page + NiiVue viewer.
-// Mirrors the qsmbly integration (~/repos/qsm/qsmbly/qsmbly): NiiVue from CDN, attach to a
-// canvas, multiplanar view, load volumes from static URLs, add an overlay with colormap + opacity.
-
+// Submission detail + NiiVue viewer. Module scope (needs `import`); shared helpers via window.QSM.
 import { Niivue } from "https://unpkg.com/@niivue/niivue@0.57.0/dist/index.js";
 
-// Same viewer config qsmbly uses (js/app/config.js VIEWER_CONFIG).
-const VIEWER_CONFIG = {
-  loadingText: "loading…",
-  dragToMeasure: false,
-  isColorbar: true,
-  textHeight: 0.03,
-  show3Dcrosshair: false,
-  crosshairWidth: 0.75,
+const { loadRuns, METRICS, STAGE_LABEL, val, fmt } = window.QSM;
+
+const STAGE_COLOR = {
+  "field-mapping": "bg-indigo-50 text-indigo-700 ring-indigo-100",
+  bfr: "bg-violet-50 text-violet-700 ring-violet-100",
+  dipole: "bg-fuchsia-50 text-fuchsia-700 ring-fuchsia-100",
 };
 
-const METRIC_ROWS = [
-  ["nrmse", "NRMSE (demeaned) %", 2],
-  ["nrmse_detrend", "NRMSE (detrended) %", 2],
-  ["nrmse_tissue", "NRMSE tissue (GM/WM/Thal) %", 2],
-  ["nrmse_blood", "NRMSE blood %", 2],
-  ["nrmse_dgm", "NRMSE deep gray matter %", 2],
-  ["dgm_linearity", "DGM linearity |1−slope|", 4],
-  ["calc_moment_dev", "Calcification moment dev.", 4],
-  ["calc_streak", "Streak artifact", 4],
-  ["correlation", "Correlation r", 4],
-  ["xsim", "XSIM", 4],
-  ["runtime_s", "Runtime (s)", 2],
-];
-
 const runId = new URLSearchParams(location.search).get("run");
+let nv, run, baseUrl, win;
 
-let nv;
-let run;      // the run's index.json entry
-let baseUrl;  // results/<id>/ — where recon/truth/error nii.gz live
-let win;      // display window (depends on artifact kind: chi vs field)
+function badge(text, cls) {
+  return `<span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset ${cls}">${text}</span>`;
+}
 
 async function init() {
-  const index = await (await fetch("results/index.json")).json();
-  run = (index.runs || []).find((r) => r.id === runId);
-  if (!run) { document.getElementById("title").textContent = "Run not found"; return; }
+  const runs = await loadRuns();
+  run = runs.find((r) => r.id === runId);
+  if (!run) { document.getElementById("sub-title").textContent = "Run not found"; return; }
 
-  document.getElementById("title").textContent = run.name;
-  document.getElementById("meta").innerHTML =
-    `${(run.authors || []).join(", ")} · track: ${run.track} · ` +
-    `image <code>${run.image || "—"}</code>`;
+  document.getElementById("sub-title").textContent = run.name;
+  const stageCls = STAGE_COLOR[run.stage] || "bg-gray-100 text-gray-600 ring-gray-200";
+  document.getElementById("sub-badges").innerHTML =
+    badge(STAGE_LABEL[run.stage] || run.stage, stageCls) +
+    badge(run.mode === "composed" ? "Composed pipeline" : "Isolated", "bg-gray-100 text-gray-600 ring-gray-200") +
+    (run.status === "DNF" ? badge("DNF", "bg-red-50 text-red-600 ring-red-100") : "");
+  const bits = [];
+  if (run.artifact) bits.push(`scored artifact <code class="text-gray-700">${run.artifact}</code>`);
+  if (run.runtime_s != null) bits.push(`runtime ${run.runtime_s.toFixed(1)}s`);
+  if (run.image) bits.push(`image <code class="text-gray-700">${run.image}</code>`);
+  document.getElementById("sub-meta").innerHTML = bits.join(" · ");
 
   renderMetrics();
 
+  if (run.status === "DNF") {
+    viewerPlaceholder("This run did not produce a valid output (DNF).");
+    return;
+  }
+
   baseUrl = `results/${run.id}/`;
   win = run.kind === "field"
-    ? { lo: -1.0, hi: 1.0, elo: 0, ehi: 0.5 }   // field maps (ppm), larger range
-    : { lo: -0.1, hi: 0.1, elo: 0, ehi: 0.05 }; // susceptibility (ppm)
+    ? { lo: -1.0, hi: 1.0, elo: 0, ehi: 0.5 }
+    : { lo: -0.1, hi: 0.1, elo: 0, ehi: 0.05 };
+
   nv = new Niivue({
-    ...VIEWER_CONFIG,
+    isColorbar: true, textHeight: 0.03, show3Dcrosshair: false, crosshairWidth: 0.75,
+    backColor: [0, 0, 0, 1],
     onLocationChange: (d) => { document.getElementById("intensity").innerHTML = d.string; },
   });
   await nv.attachTo("gl1");
   nv.setSliceType(nv.sliceTypeMultiplanar);
-  try {
-    await showLayer("recon");
-  } catch (e) {
-    document.querySelector(".viewer-section").innerHTML =
-      `<p class="empty">Interactive volumes not published for this run yet. ` +
-      `Enable volume export in the evaluation step to view reconstruction / truth / error here.</p>`;
+
+  wireControls();
+  try { await showLayer("recon"); } catch (e) {
+    viewerPlaceholder("Interactive volumes aren't available for this run.");
   }
 }
 
 function renderMetrics() {
   const m = run.metrics || {};
-  document.querySelector("#metrics tbody").innerHTML = METRIC_ROWS
-    .filter(([k]) => m[k] != null)
-    .map(([k, label, dp]) => `<tr><th>${label}</th><td>${Number(m[k]).toFixed(dp)}</td></tr>`)
-    .join("");
+  document.getElementById("metrics-sub").textContent =
+    run.mode === "composed" ? "Final χ map vs. ground truth" : `${run.artifact || "output"} vs. ground truth`;
+  const order = Object.keys(METRICS).filter((k) => m[k] != null);
+  document.getElementById("metrics-body").innerHTML = order.map((k) => {
+    const meta = METRICS[k];
+    const arrow = meta.better === "higher" ? "↑" : "↓";
+    const hero = k === "xsim" || k === "nrmse";
+    return `<tr>
+      <td class="py-2.5 text-gray-500">${meta.label}
+        <span class="text-gray-300" title="${meta.better} is better">${arrow}</span></td>
+      <td class="py-2.5 text-right tabular-nums ${hero ? "font-bold text-gray-900" : "font-medium text-gray-700"}">${fmt(m[k], k)}</td>
+    </tr>`;
+  }).join("") || `<tr><td class="py-3 text-gray-400">No metrics.</td></tr>`;
 }
 
-// Load the anatomical/recon base and, for the error view, an overlay on top.
+function viewerPlaceholder(msg) {
+  document.getElementById("gl1").style.display = "none";
+  document.querySelector("#layer-tabs").parentElement.style.display = "none";
+  document.getElementById("viewer-note").innerHTML =
+    `<div class="flex h-[480px] items-center justify-center rounded-xl bg-gray-50 text-sm text-gray-400 px-6 text-center">${msg}</div>`;
+}
+
+function wireControls() {
+  const tabs = document.querySelectorAll("#layer-tabs button");
+  const setActive = (layer) => tabs.forEach((t) =>
+    t.className = "rounded-md px-3 py-1 transition " +
+      (t.dataset.layer === layer ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700"));
+  tabs.forEach((t) => t.addEventListener("click", () => { setActive(t.dataset.layer); showLayer(t.dataset.layer); }));
+  setActive("recon");
+  document.getElementById("opacity").addEventListener("input", (e) => {
+    for (let i = 1; i < nv.volumes.length; i++) nv.setOpacity(i, parseFloat(e.target.value));
+    nv.updateGLVolume();
+  });
+}
+
 async function showLayer(layer) {
   const opacity = parseFloat(document.getElementById("opacity").value);
   if (layer === "error") {
-    // base = ground truth (gray), overlay = |error| (warm colormap)
     await nv.loadVolumes([{ url: baseUrl + "truth.nii.gz", colormap: "gray" }]);
     nv.volumes[0].cal_min = win.lo; nv.volumes[0].cal_max = win.hi;
     await nv.addVolumeFromUrl({ url: baseUrl + "error.nii.gz", colormap: "warm", opacity });
@@ -86,18 +106,10 @@ async function showLayer(layer) {
     ov.cal_min = win.elo; ov.cal_max = win.ehi;
     nv.updateGLVolume();
   } else {
-    const url = layer === "truth" ? baseUrl + "truth.nii.gz" : baseUrl + "recon.nii.gz";
-    await nv.loadVolumes([{ url, colormap: "gray" }]);
-    const vol = nv.volumes[0];
-    vol.cal_min = win.lo; vol.cal_max = win.hi;
+    await nv.loadVolumes([{ url: baseUrl + (layer === "truth" ? "truth.nii.gz" : "recon.nii.gz"), colormap: "gray" }]);
+    nv.volumes[0].cal_min = win.lo; nv.volumes[0].cal_max = win.hi;
     nv.updateGLVolume();
   }
 }
-
-document.getElementById("layer").addEventListener("change", (e) => showLayer(e.target.value));
-document.getElementById("opacity").addEventListener("input", (e) => {
-  for (let i = 1; i < nv.volumes.length; i++) nv.setOpacity(i, parseFloat(e.target.value));
-  nv.updateGLVolume();
-});
 
 init();

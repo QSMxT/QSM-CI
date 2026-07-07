@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>QSM-CI — Leaderboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { theme: { extend: { fontFamily: { sans: ["Inter", "system-ui", "sans-serif"] } } } };</script>
+  <script src="js/app.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class="font-sans text-gray-900 bg-gray-50 antialiased">
+  <header id="site-nav"></header>
+
+  <main x-data="board()" x-init="init()" class="mx-auto max-w-6xl px-6 py-10">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+      <div>
+        <h1 class="text-3xl font-bold tracking-tight">Leaderboard</h1>
+        <p class="mt-1 text-gray-600">Compare methods per stage, or every pipeline combination.</p>
+      </div>
+      <!-- view toggle -->
+      <div class="inline-flex rounded-xl bg-gray-100 p-1 text-sm font-medium">
+        <button @click="view='composed'" :class="view==='composed' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'" class="rounded-lg px-4 py-1.5 transition">Combinations</button>
+        <button @click="view='isolated'" :class="view==='isolated' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'" class="rounded-lg px-4 py-1.5 transition">Per stage</button>
+      </div>
+    </div>
+
+    <!-- sub-controls -->
+    <div class="mt-6 flex flex-wrap items-center gap-3">
+      <!-- stage pills (per-stage view) -->
+      <template x-if="view==='isolated'">
+        <div class="inline-flex flex-wrap gap-2">
+          <template x-for="s in stages()" :key="s">
+            <button @click="stage=s; fixSort()" :class="stage===s ? 'bg-indigo-600 text-white' : 'bg-white text-gray-600 ring-1 ring-gray-200 hover:bg-gray-50'" class="rounded-full px-3.5 py-1.5 text-sm font-medium transition" x-text="STAGE_LABEL[s]||s"></button>
+          </template>
+        </div>
+      </template>
+      <!-- field-mapping selector (composed view) -->
+      <template x-if="view==='composed' && fmaps().length>1">
+        <label class="inline-flex items-center gap-2 text-sm text-gray-600">Field mapping
+          <select x-model="fmap" class="rounded-lg border-gray-300 text-sm py-1.5 pr-8">
+            <template x-for="f in fmaps()" :key="f"><option :value="f" x-text="f==='gt' ? 'ground truth' : f"></option></template>
+          </select>
+        </label>
+      </template>
+      <div class="grow"></div>
+      <input x-model="filter" type="search" placeholder="Filter…" class="rounded-lg border-gray-300 text-sm py-1.5 w-44 focus:border-indigo-500 focus:ring-indigo-500" />
+      <button @click="showAll=!showAll" :class="showAll ? 'bg-indigo-50 text-indigo-700 ring-indigo-200' : 'bg-white text-gray-600 ring-gray-200'" class="rounded-lg px-3 py-1.5 text-sm font-medium ring-1 transition">All metrics</button>
+    </div>
+
+    <!-- combination matrix -->
+    <template x-if="view==='composed'">
+      <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+        <div class="flex items-center justify-between">
+          <h2 class="font-semibold text-gray-900">Combination matrix</h2>
+          <label class="inline-flex items-center gap-2 text-sm text-gray-600">Colour by
+            <select x-model="metric" class="rounded-lg border-gray-300 text-sm py-1.5 pr-8">
+              <template x-for="c in cols.filter(c=>c!=='runtime_s')" :key="c"><option :value="c" x-text="METRICS[c].label"></option></template>
+            </select>
+          </label>
+        </div>
+        <p class="mt-1 text-xs text-gray-500">Background removal (rows) × dipole inversion (cols), chained end-to-end. Greener is better · click a cell.</p>
+        <div class="mt-4 overflow-x-auto">
+          <table class="border-separate" style="border-spacing:4px">
+            <thead>
+              <tr>
+                <th></th>
+                <template x-for="d in matrix.dips" :key="d"><th class="px-3 pb-1 text-xs font-medium text-gray-500" x-text="d"></th></template>
+              </tr>
+            </thead>
+            <tbody>
+              <template x-for="b in matrix.bfrs" :key="b">
+                <tr>
+                  <th class="pr-3 text-right text-xs font-medium text-gray-500 whitespace-nowrap" x-text="b"></th>
+                  <template x-for="d in matrix.dips" :key="d">
+                    <td class="p-0">
+                      <template x-if="matrix.cell[b+'|'+d]">
+                        <button @click="go(matrix.cell[b+'|'+d])"
+                          class="flex h-14 w-24 items-center justify-center rounded-lg text-sm font-semibold text-white/95 hover:ring-2 hover:ring-gray-900/20 transition"
+                          :style="'background:'+color(val(matrix.cell[b+'|'+d], metric))"
+                          x-text="fmt(val(matrix.cell[b+'|'+d], metric), metric)"></button>
+                      </template>
+                      <template x-if="!matrix.cell[b+'|'+d]">
+                        <div class="flex h-14 w-24 items-center justify-center rounded-lg bg-gray-50 text-gray-300">—</div>
+                      </template>
+                    </td>
+                  </template>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </template>
+
+    <!-- table -->
+    <div class="mt-6 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm whitespace-nowrap">
+          <thead class="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
+            <tr>
+              <th class="px-5 py-3 text-left font-medium sticky left-0 bg-gray-50" x-text="view==='composed' ? 'Pipeline' : 'Method'"></th>
+              <template x-for="c in displayCols" :key="c">
+                <th @click="sort(c)" class="px-4 py-3 text-right font-medium cursor-pointer select-none hover:text-gray-800">
+                  <span x-text="METRICS[c].label"></span>
+                  <span x-show="sortKey===c" x-text="sortDir==='asc' ? '↑' : '↓'"></span>
+                </th>
+              </template>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <template x-for="(r, i) in rows" :key="r.id">
+              <tr @click="go(r)" class="hover:bg-indigo-50/40 cursor-pointer" :class="r.status==='DNF' ? 'opacity-50' : ''">
+                <td class="px-5 py-3 text-left font-medium text-gray-900 sticky left-0 bg-white">
+                  <span class="mr-1.5 inline-block w-5 text-center" x-text="medal(i)"></span>
+                  <span x-text="r.name"></span>
+                  <span x-show="r.status==='DNF'" class="ml-2 rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold text-gray-500">DNF</span>
+                </td>
+                <template x-for="c in displayCols" :key="c">
+                  <td class="px-4 py-3 text-right tabular-nums" :class="c===sortKey ? 'font-semibold text-gray-900' : 'text-gray-600'" x-text="fmt(val(r,c), c)"></td>
+                </template>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+      <p x-show="rows.length===0" class="px-5 py-10 text-center text-gray-400">No results for this view yet.</p>
+    </div>
+  </main>
+
+  <footer id="site-footer"></footer>
+
+  <script>
+    function board() {
+      return {
+        METRICS, STAGE_LABEL, MEDALS, fmt, val,
+        runs: [], view: "composed", stage: "dipole", fmap: "gt",
+        metric: "xsim", sortKey: "xsim", sortDir: "desc", filter: "", showAll: false,
+        async init() {
+          this.runs = await loadRuns();
+          const st = this.stages(); if (!st.includes(this.stage)) this.stage = st[0] || "dipole";
+        },
+        stages() { return [...new Set(this.runs.filter(r => r.mode === "isolated").map(r => r.stage))]; },
+        fmaps() { return [...new Set(this.runs.filter(r => r.mode === "composed" && r.combo).map(r => r.combo.field_mapping || "gt"))]; },
+        get baseRows() {
+          return this.view === "isolated"
+            ? this.runs.filter(r => r.mode === "isolated" && r.stage === this.stage)
+            : this.runs.filter(r => r.mode === "composed" && (!r.combo || (r.combo.field_mapping || "gt") === this.fmap));
+        },
+        get cols() { return metricCols(this.baseRows); },
+        get displayCols() {
+          if (this.showAll) return this.cols;
+          const primary = ["nrmse", "correlation", "xsim", "runtime_s"];
+          const sub = this.cols.filter(c => primary.includes(c));
+          if (!sub.includes(this.sortKey) && this.cols.includes(this.sortKey)) sub.push(this.sortKey);
+          return sub;
+        },
+        get rows() {
+          const f = this.filter.toLowerCase();
+          return this.baseRows.filter(r => !f || r.name.toLowerCase().includes(f)).slice().sort((a, b) => {
+            const av = val(a, this.sortKey), bv = val(b, this.sortKey);
+            if (av == null) return 1; if (bv == null) return -1;
+            return this.sortDir === "asc" ? av - bv : bv - av;
+          });
+        },
+        get matrix() {
+          const rs = this.runs.filter(r => r.mode === "composed" && r.combo && (r.combo.field_mapping || "gt") === this.fmap);
+          const bfrs = [...new Set(rs.map(r => r.combo.bfr))];
+          const dips = [...new Set(rs.map(r => r.combo.dipole))];
+          const cell = {}; rs.forEach(r => { cell[r.combo.bfr + "|" + r.combo.dipole] = r; });
+          const vals = rs.map(r => val(r, this.metric)).filter(v => v != null);
+          return { bfrs, dips, cell, lo: Math.min(...vals), hi: Math.max(...vals) };
+        },
+        color(v) { return heatColor(v, this.matrix.lo, this.matrix.hi, this.metric); },
+        sort(k) {
+          if (this.sortKey === k) this.sortDir = this.sortDir === "asc" ? "desc" : "asc";
+          else { this.sortKey = k; this.sortDir = METRICS[k]?.better === "lower" ? "asc" : "desc"; }
+        },
+        fixSort() { if (!this.cols.includes(this.sortKey)) { this.sortKey = "xsim"; this.sortDir = "desc"; } },
+        medal(i) {
+          const good = this.sortDir === (METRICS[this.sortKey]?.better === "lower" ? "asc" : "desc");
+          return good && i < 3 ? MEDALS[i] : "";
+        },
+        go(r) { if (r.status !== "DNF") location.href = "submission.html?run=" + encodeURIComponent(r.id); },
+      };
+    }
+  </script>
+</body>
+</html>
