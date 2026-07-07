@@ -386,6 +386,564 @@
       "id": "vsharp-iso",
       "slug": "vsharp",
       "mode": "isolated"
+    },
+    {
+      "contract": "v2",
+      "name": "ismv+tikhonov",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 1.0630803108215332,
+      "metrics": {
+        "nrmse": 71.55434896856922,
+        "nrmse_detrend": 99.18940257659372,
+        "nrmse_tissue": 122.43973104963658,
+        "nrmse_blood": 99.94066069278219,
+        "nrmse_dgm": 71.47056332102301,
+        "dgm_linearity": 0.43982814648627655,
+        "calc_moment_dev": 0.19621456414461136,
+        "calc_streak": 0.02227289054061275,
+        "correlation": 0.7099784597278542,
+        "xsim": 0.3842531435517877
+      },
+      "status": "ok",
+      "id": "gt~ismv~tikhonov-cmp",
+      "slug": "ismv+tikhonov",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "ismv",
+        "dipole": "tikhonov"
+      }
+    },
+    {
+      "contract": "v2",
+      "name": "ismv+tkd",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 1.031175136566162,
+      "metrics": {
+        "nrmse": 71.10113275418676,
+        "nrmse_detrend": 101.04224494619028,
+        "nrmse_tissue": 124.96662938725943,
+        "nrmse_blood": 101.31394981750357,
+        "nrmse_dgm": 73.58523450382187,
+        "dgm_linearity": 0.3584079451451325,
+        "calc_moment_dev": 6.779181256890297,
+        "calc_streak": 0.023261467452331087,
+        "correlation": 0.7034315394354643,
+        "xsim": 0.3991128081613167
+      },
+      "status": "ok",
+      "id": "gt~ismv~tkd-cmp",
+      "slug": "ismv+tkd",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "ismv",
+        "dipole": "tkd"
+      }
+    },
+    {
+      "contract": "v2",
+      "name": "ismv+tsvd",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 1.0296947956085205,
+      "metrics": {
+        "nrmse": 73.96350554553217,
+        "nrmse_detrend": 109.07816027993343,
+        "nrmse_tissue": 138.13003098348264,
+        "nrmse_blood": 104.23237800592733,
+        "nrmse_dgm": 79.15682353703454,
+        "dgm_linearity": 0.4392780061651774,
+        "calc_moment_dev": 2.5714306384325027,
+        "calc_streak": 0.02199768134780589,
+        "correlation": 0.6757675409839838,
+        "xsim": 0.3528927324092191
+      },
+      "status": "ok",
+      "id": "gt~ismv~tsvd-cmp",
+      "slug": "ismv+tsvd",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "ismv",
+        "dipole": "tsvd"
+      }
+    },
+    {
+      "contract": "v2",
+      "name": "lbv+tikhonov",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 1.1234724521636963,
+      "metrics": {
+        "nrmse": 56.5441236550172,
+        "nrmse_detrend": 67.92153842127317,
+        "nrmse_tissue": 80.0210911727661,
+        "nrmse_blood": 92.20798708541416,
+        "nrmse_dgm": 37.99370397167095,
+        "dgm_linearity": 0.3002203536326262,
+        "calc_moment_dev": 2.754573307931423,
+        "calc_streak": 0.02639135789173991,
+        "correlation": 0.8272281870390245,
+        "xsim": 0.5159428889082297
+      },
+      "status": "ok",
+      "id": "gt~lbv~tikhonov-cmp",
+      "slug": "lbv+tikhonov",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "lbv",
+        "dipole": "tikhonov"
+      }
+    },
+    {
+      "contract": "v2",
+      "name": "lbv+tkd",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 1.1156284809112549,
+      "metrics": {
+        "nrmse": 57.44221026395099,
+        "nrmse_detrend": 69.37010031929287,
+        "nrmse_tissue": 81.7785704518449,
+        "nrmse_blood": 93.8158938027476,
+        "nrmse_dgm": 38.26283734507179,
+        "dgm_linearity": 0.2003544150306119,
+        "calc_moment_dev": 9.347665771842003,
+        "calc_streak": 0.026209535059208245,
+        "correlation": 0.8216560505762768,
+        "xsim": 0.5207358037665046
+      },
+      "status": "ok",
+      "id": "gt~lbv~tkd-cmp",
+      "slug": "lbv+tkd",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "lbv",
+        "dipole": "tkd"
+      }
+    },
+    {
+      "contract": "v2",
+      "name": "lbv+tsvd",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 1.1288073062896729,
+      "metrics": {
+        "nrmse": 61.739619340882214,
+        "nrmse_detrend": 78.41560819384038,
+        "nrmse_tissue": 95.15684611081879,
+        "nrmse_blood": 98.32538944849422,
+        "nrmse_dgm": 47.45689364990278,
+        "dgm_linearity": 0.2816711170248978,
+        "calc_moment_dev": 4.101848796010017,
+        "calc_streak": 0.024379985186461003,
+        "correlation": 0.7869136530268147,
+        "xsim": 0.44855590272798773
+      },
+      "status": "ok",
+      "id": "gt~lbv~tsvd-cmp",
+      "slug": "lbv+tsvd",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "lbv",
+        "dipole": "tsvd"
+      }
+    },
+    {
+      "contract": "v2",
+      "name": "pdf+tikhonov",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 1.042186975479126,
+      "metrics": {
+        "nrmse": 60.03688763720106,
+        "nrmse_detrend": 74.31311171086493,
+        "nrmse_tissue": 84.63559191214357,
+        "nrmse_blood": 101.73661868179487,
+        "nrmse_dgm": 37.19618267997053,
+        "dgm_linearity": 0.27729075552934335,
+        "calc_moment_dev": 2.9827833995223045,
+        "calc_streak": 0.028234850767664448,
+        "correlation": 0.802638569222032,
+        "xsim": 0.4993243754714422
+      },
+      "status": "ok",
+      "id": "gt~pdf~tikhonov-cmp",
+      "slug": "pdf+tikhonov",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "pdf",
+        "dipole": "tikhonov"
+      }
+    },
+    {
+      "contract": "v2",
+      "name": "pdf+tkd",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 1.1208856105804443,
+      "metrics": {
+        "nrmse": 61.32112460451606,
+        "nrmse_detrend": 76.78397795863451,
+        "nrmse_tissue": 87.5586348986522,
+        "nrmse_blood": 103.99792822620765,
+        "nrmse_dgm": 37.40778685168085,
+        "dgm_linearity": 0.1768762078717887,
+        "calc_moment_dev": 9.64451251924038,
+        "calc_streak": 0.028090325809921667,
+        "correlation": 0.7931568662924088,
+        "xsim": 0.4968831153022592
+      },
+      "status": "ok",
+      "id": "gt~pdf~tkd-cmp",
+      "slug": "pdf+tkd",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "pdf",
+        "dipole": "tkd"
+      }
+    },
+    {
+      "contract": "v2",
+      "name": "pdf+tsvd",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 1.075911045074463,
+      "metrics": {
+        "nrmse": 63.78955864955034,
+        "nrmse_detrend": 82.82408774645953,
+        "nrmse_tissue": 97.3304993215626,
+        "nrmse_blood": 105.64735177273157,
+        "nrmse_dgm": 46.65495067796758,
+        "dgm_linearity": 0.2588167453987943,
+        "calc_moment_dev": 4.209820672869682,
+        "calc_streak": 0.02471241051876341,
+        "correlation": 0.7701466145563345,
+        "xsim": 0.44385978205971954
+      },
+      "status": "ok",
+      "id": "gt~pdf~tsvd-cmp",
+      "slug": "pdf+tsvd",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "pdf",
+        "dipole": "tsvd"
+      }
+    },
+    {
+      "contract": "v2",
+      "name": "resharp+tikhonov",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 1.2147841453552246,
+      "metrics": {
+        "nrmse": 67.71624646289166,
+        "nrmse_detrend": 90.67114241149228,
+        "nrmse_tissue": 103.90208607236603,
+        "nrmse_blood": 118.48777190347073,
+        "nrmse_dgm": 42.196369479495154,
+        "dgm_linearity": 0.29880376424865707,
+        "calc_moment_dev": 2.654498338699341,
+        "calc_streak": 0.02703892860933313,
+        "correlation": 0.7408168370822861,
+        "xsim": 0.3987797509069127
+      },
+      "status": "ok",
+      "id": "gt~resharp~tikhonov-cmp",
+      "slug": "resharp+tikhonov",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "resharp",
+        "dipole": "tikhonov"
+      }
+    },
+    {
+      "contract": "v2",
+      "name": "resharp+tkd",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 5.552062511444092,
+      "metrics": {
+        "nrmse": 68.08551748599949,
+        "nrmse_detrend": 92.70516848197704,
+        "nrmse_tissue": 106.46689400295801,
+        "nrmse_blood": 120.33513130147416,
+        "nrmse_dgm": 42.60228378306361,
+        "dgm_linearity": 0.20440696463289398,
+        "calc_moment_dev": 9.477882996201515,
+        "calc_streak": 0.027290230584403326,
+        "correlation": 0.7333489717829694,
+        "xsim": 0.4015648659294382
+      },
+      "status": "ok",
+      "id": "gt~resharp~tkd-cmp",
+      "slug": "resharp+tkd",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "resharp",
+        "dipole": "tkd"
+      }
+    },
+    {
+      "contract": "v2",
+      "name": "resharp+tsvd",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 1.052823781967163,
+      "metrics": {
+        "nrmse": 70.60348479765196,
+        "nrmse_detrend": 99.5822591235093,
+        "nrmse_tissue": 117.9080953769493,
+        "nrmse_blood": 121.92072146217131,
+        "nrmse_dgm": 50.64271579117769,
+        "dgm_linearity": 0.2790522977186639,
+        "calc_moment_dev": 4.430227547883987,
+        "calc_streak": 0.02500235842735462,
+        "correlation": 0.7085852574180649,
+        "xsim": 0.35833663807444693
+      },
+      "status": "ok",
+      "id": "gt~resharp~tsvd-cmp",
+      "slug": "resharp+tsvd",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "resharp",
+        "dipole": "tsvd"
+      }
+    },
+    {
+      "contract": "v2",
+      "name": "sharp+tikhonov",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 1.030799388885498,
+      "metrics": {
+        "nrmse": 82.76374978725771,
+        "nrmse_detrend": 147.38884568831196,
+        "nrmse_tissue": 181.3825818884361,
+        "nrmse_blood": 194.79359271490847,
+        "nrmse_dgm": 84.42781752320242,
+        "dgm_linearity": 0.5627969557978599,
+        "calc_moment_dev": 14.115900471806526,
+        "calc_streak": 0.05031474676328955,
+        "correlation": 0.5614481364503305,
+        "xsim": 0.1832508290700556
+      },
+      "status": "ok",
+      "id": "gt~sharp~tikhonov-cmp",
+      "slug": "sharp+tikhonov",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "sharp",
+        "dipole": "tikhonov"
+      }
+    },
+    {
+      "contract": "v2",
+      "name": "sharp+tkd",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 1.0293920040130615,
+      "metrics": {
+        "nrmse": 85.10172750147927,
+        "nrmse_detrend": 156.15267720894917,
+        "nrmse_tissue": 193.1076050522516,
+        "nrmse_blood": 203.5736084639293,
+        "nrmse_dgm": 88.01406665592003,
+        "dgm_linearity": 0.5040648110825945,
+        "calc_moment_dev": 7.336870178580284,
+        "calc_streak": 0.05318740336435285,
+        "correlation": 0.5392919740546799,
+        "xsim": 0.17609520511700943
+      },
+      "status": "ok",
+      "id": "gt~sharp~tkd-cmp",
+      "slug": "sharp+tkd",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "sharp",
+        "dipole": "tkd"
+      }
+    },
+    {
+      "contract": "v2",
+      "name": "sharp+tsvd",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 1.055356502532959,
+      "metrics": {
+        "nrmse": 83.3668022526766,
+        "nrmse_detrend": 150.95409420592995,
+        "nrmse_tissue": 191.8298408438414,
+        "nrmse_blood": 195.27722232298044,
+        "nrmse_dgm": 85.02992035406692,
+        "dgm_linearity": 0.5471879671076563,
+        "calc_moment_dev": 18.96382537484169,
+        "calc_streak": 0.03169846646522441,
+        "correlation": 0.552265917458933,
+        "xsim": 0.16817769749054196
+      },
+      "status": "ok",
+      "id": "gt~sharp~tsvd-cmp",
+      "slug": "sharp+tsvd",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "sharp",
+        "dipole": "tsvd"
+      }
+    },
+    {
+      "contract": "v2",
+      "name": "vsharp+tikhonov",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 1.0485405921936035,
+      "metrics": {
+        "nrmse": 60.681637537330744,
+        "nrmse_detrend": 75.6244249853342,
+        "nrmse_tissue": 87.27140504758047,
+        "nrmse_blood": 103.79977938769076,
+        "nrmse_dgm": 36.57721058915621,
+        "dgm_linearity": 0.2660215779392866,
+        "calc_moment_dev": 3.4539740309119296,
+        "calc_streak": 0.02804736782535265,
+        "correlation": 0.7976030422828168,
+        "xsim": 0.479370765029448
+      },
+      "status": "ok",
+      "id": "gt~vsharp~tikhonov-cmp",
+      "slug": "vsharp+tikhonov",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "vsharp",
+        "dipole": "tikhonov"
+      }
+    },
+    {
+      "contract": "v2",
+      "name": "vsharp+tkd",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 2.3705291748046875,
+      "metrics": {
+        "nrmse": 61.28133522194976,
+        "nrmse_detrend": 76.88033090463364,
+        "nrmse_tissue": 88.68262000406719,
+        "nrmse_blood": 105.77742860587732,
+        "nrmse_dgm": 36.735898567470805,
+        "dgm_linearity": 0.1604373083444618,
+        "calc_moment_dev": 9.795146033167839,
+        "calc_streak": 0.027278615343710438,
+        "correlation": 0.7927877340228537,
+        "xsim": 0.4856168611129491
+      },
+      "status": "ok",
+      "id": "gt~vsharp~tkd-cmp",
+      "slug": "vsharp+tkd",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "vsharp",
+        "dipole": "tkd"
+      }
+    },
+    {
+      "contract": "v2",
+      "name": "vsharp+tsvd",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 1.0214262008666992,
+      "metrics": {
+        "nrmse": 65.78939045127665,
+        "nrmse_detrend": 87.28804282478879,
+        "nrmse_tissue": 104.87865447613795,
+        "nrmse_blood": 109.90052454609368,
+        "nrmse_dgm": 45.3979980570118,
+        "dgm_linearity": 0.23703845341792829,
+        "calc_moment_dev": 4.430967152118683,
+        "calc_streak": 0.024389846721278644,
+        "correlation": 0.7533674939608579,
+        "xsim": 0.4134688078395487
+      },
+      "status": "ok",
+      "id": "gt~vsharp~tsvd-cmp",
+      "slug": "vsharp+tsvd",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "vsharp",
+        "dipole": "tsvd"
+      }
     }
   ]
 }
