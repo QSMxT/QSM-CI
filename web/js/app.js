@@ -34,6 +34,9 @@ const MOON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor
   html.dark main .text-gray-700{color:#d1d5db}
   html.dark main .text-gray-600,html.dark main .text-gray-500{color:#9ca3af}
   html.dark main .text-gray-400{color:#6b7280}
+  html.dark main .text-gray-300{color:#4b5563}
+  html.dark main .hover\\:bg-gray-50:hover{background-color:#1f2937}
+  html.dark main .bg-gray-50\\/70{background-color:#0f172a}
   html.dark main input,html.dark main select{background-color:#1f2937;border-color:#374151;color:#f3f4f6}
   html.dark main .ring-gray-200,html.dark main .ring-gray-300{--tw-ring-color:#374151}
   html.dark main .shadow-sm{box-shadow:0 1px 2px 0 rgba(0,0,0,.4)}
