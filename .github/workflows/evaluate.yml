@@ -2,7 +2,7 @@ name: evaluate
 
 # Per-PR isolated evaluation of a changed submission: run its stage on the ground-truth boundary
 # (in its container, no network) and score the output. Runs on Neurodesk's self-hosted ARC runners.
-# The full composition matrix runs separately in combine.yml.
+# The full composition matrix runs separately in score.yml (on merge to main).
 
 on:
   pull_request:

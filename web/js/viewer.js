@@ -234,16 +234,19 @@ function wireControls() {
   setViewActive("multiplanar");
 }
 
+// Volumes are served from OSF (run.volumes[kind]); fall back to local results/<id>/ for dev.
+const volUrl = (kind) => (run && run.volumes && run.volumes[kind]) || (baseUrl + kind + ".nii.gz");
+
 async function showLayer(layer) {
   const cmap = $("cmap").value, overlayCtl = $("overlay-ctl");
   if (layer === "error") {
-    await nv.loadVolumes([{ url: baseUrl + "truth.nii.gz", colormap: cmap }]);
+    await nv.loadVolumes([{ url: volUrl("truth"), colormap: cmap }]);
     defaultWindow(baseVol());
-    await nv.addVolumeFromUrl({ url: baseUrl + "error.nii.gz", colormap: "warm", opacity: parseFloat($("opacity").value) });
+    await nv.addVolumeFromUrl({ url: volUrl("error"), colormap: "warm", opacity: parseFloat($("opacity").value) });
     autoWin(nv.volumes[nv.volumes.length - 1]);
     overlayCtl.classList.remove("hidden"); overlayCtl.classList.add("flex");
   } else {
-    await nv.loadVolumes([{ url: baseUrl + (layer === "truth" ? "truth.nii.gz" : "recon.nii.gz"), colormap: cmap }]);
+    await nv.loadVolumes([{ url: volUrl(layer === "truth" ? "truth" : "recon"), colormap: cmap }]);
     defaultWindow(baseVol());
     overlayCtl.classList.add("hidden"); overlayCtl.classList.remove("flex");
   }

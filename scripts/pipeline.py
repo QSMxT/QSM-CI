@@ -183,6 +183,9 @@ def main() -> None:
     ap.add_argument("--runner", choices=["local", "docker"], default="local",
                     help="local runs run.sh directly; docker runs each submission's image (CI)")
     ap.add_argument("--only", default=None, help="restrict isolated evaluation to this slug")
+    ap.add_argument("--focus", default=None,
+                    help="incremental: isolated for this slug, and every composed combo that includes "
+                         "it (its own stage is pinned to it; complementary stages stay full)")
     ap.add_argument("--include", default=None, help="comma-separated slugs to restrict the run to")
     ap.add_argument("--track", default="sim")
     ap.add_argument("--work", type=Path, default=ROOT / ".work")
@@ -215,8 +218,9 @@ def main() -> None:
     # mounted at run time, not baked. A submission whose env can't be built is excluded (DNF).
     if args.runner == "docker":
         ok = []
+        iso_only = args.focus or args.only  # in pure isolated mode, only this slug needs building
         for a in algos:
-            if args.only and a["slug"] != args.only and args.mode == "isolated":
+            if iso_only and a["slug"] != iso_only and args.mode == "isolated":
                 ok.append(a)
                 continue
             try:
@@ -227,10 +231,12 @@ def main() -> None:
                 runs.append(dnf(f"{a['slug']}-iso", a["slug"], a["slug"], a["stage"], "isolated", args.track))
         algos = ok
 
+    iso_target = args.focus or args.only  # isolated runs only this slug when set
+
     # -------- isolated --------
     if args.mode in ("isolated", "both"):
         for a in algos:
-            if args.only and a["slug"] != args.only:
+            if iso_target and a["slug"] != iso_target:
                 continue
             idir, odir = args.work / f"iso_{a['slug']}_in", args.work / f"iso_{a['slug']}_out"
             try:
@@ -255,6 +261,19 @@ def main() -> None:
         bfr = [a for a in algos if "localfield" in a["produces"]]
         dipole = [a for a in algos if a["stage"] == "dipole"]
         spans = [a for a in algos if "chimap" in a["produces"] and a["stage"] != "dipole"]
+
+        if args.focus:  # pin the focus's own stage to it; every combo that includes it still runs
+            f = next((a for a in algos if a["slug"] == args.focus), None)
+            if f is None:
+                fmap, bfr, dipole, spans = [], [], [], []
+            elif f["stage"] == "dipole":
+                dipole, spans = [f], []
+            elif "localfield" in f["produces"]:      # a bfr (or unwrap+bfr) — this bfr × all dipoles
+                bfr, spans = [f], []
+            elif "totalfield" in f["produces"]:      # a field-mapping — this map through the matrix
+                fmap, spans = [f], []
+            else:                                     # a bfr+dipole / end-to-end span — run it alone
+                fmap, bfr, dipole, spans = [], [], [], [f]
 
         # totalfield sources: the ground-truth field ("gt"), plus each field-mapping submission's
         # output (run on raw inputs). This lets the matrix start from raw phase, not just GT field.

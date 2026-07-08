@@ -47,9 +47,14 @@ MATLAB is welcome via the license-free MATLAB Runtime — see **[docs/matlab.md]
 | `scripts/pipeline.py` | Isolated + composed evaluation runner (local or containerized) |
 | `scripts/pack_dataset.py` | qsm-forward BIDS → QSM-CI artifact layout |
 | `data/sim/`, `data/invivo/` | Datasets; ground truth held out on OSF |
-| `results/index.json` | Per-run scores; feeds the leaderboard |
+| `results/index.json` | Per-run scores + OSF volume URLs; feeds the leaderboard (the only committed result) |
 | `web/` | Static leaderboard + NiiVue viewer (GitHub Pages) |
-| `.github/workflows/` | `evaluate` (per-PR isolated), `combine` (composition matrix), `pages` |
+| `.github/workflows/` | `ci` (CLI/runner smoke tests), `evaluate` (per-PR), `score` (change-triggered scoring + OSF), `pages` (deploy), `matlab-compile` |
+
+**Results storage.** NIfTI volumes are **never** committed — they're uploaded to a public OSF
+component (`scripts/publish_volumes.py`, secret `OSF_VOLUMES_NODE`) and the viewer loads them by URL.
+Only the small `results/index.json` lives in git. The `score` workflow runs on change (a changed
+algorithm → its combos; changed scorer/orchestration → everything), never on a weekly timer.
 
 ## Local development
 
