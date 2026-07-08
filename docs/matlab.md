@@ -41,7 +41,8 @@ Point `algorithm.yml`'s `image:` at that tag. QSM-CI mounts your `run.sh` at `/a
 
 **Don't have the Compiler handy?** Push just `recon.m` (declare `matlab: {entry, runtime}` in
 `algorithm.yml`) and run [`.github/workflows/matlab-compile.yml`](../.github/workflows/matlab-compile.yml)
-on a self-hosted runner with MATLAB + Compiler + license — it compiles and pushes the image for you.
+on GitHub-hosted runners (via MathWorks' setup-matlab action + a batch licensing token, secret
+`MATLAB_BATCH_TOKEN`) — it compiles and pushes the image for you.
 The license is used at build time, where network is allowed.
 
 ## Option B — full MATLAB at run time (needs a run-time license)

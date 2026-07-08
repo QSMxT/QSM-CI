@@ -59,7 +59,7 @@ jobs:
   score:
     needs: scope
     if: needs.scope.outputs.full == 'true' || needs.scope.outputs.slugs != '[]'
-    runs-on: [self-hosted, neurodesk]
+    runs-on: [self-hosted, Linux, X64]
     steps:
       - uses: actions/checkout@v4
 

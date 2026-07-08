@@ -42,7 +42,7 @@ jobs:
   evaluate:
     needs: discover
     if: needs.discover.outputs.slugs != '[]'
-    runs-on: [self-hosted, neurodesk]
+    runs-on: [self-hosted, Linux, X64]
     strategy:
       fail-fast: false
       matrix:

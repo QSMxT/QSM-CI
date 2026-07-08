@@ -35,8 +35,8 @@ That tag is what `algorithm.yml`'s `image:` points at. QSM-CI pulls it, mounts y
 ## Alternatives
 
 - **Let CI compile it.** If you don't want to build locally, push just `recon.m` (source) and run
-  [`.github/workflows/matlab-compile.yml`](../../.github/workflows/matlab-compile.yml) on a
-  self-hosted runner that has MATLAB + Compiler + your license. It compiles and pushes the image for
+  [`.github/workflows/matlab-compile.yml`](../../.github/workflows/matlab-compile.yml) — it runs on
+  GitHub-hosted runners with a MATLAB batch licensing token (secret `MATLAB_BATCH_TOKEN`) and pushes the image for
   you (the license is used at *build* time, where network is allowed).
 - **Mount instead of bake.** Commit the compiled `recon` in this folder and point `image:` at a plain
   `matlab-runtime` base; `run.sh` falls back to `/algo/recon`. Simpler, but puts a binary in git.

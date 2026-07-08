@@ -146,8 +146,9 @@ offline with no license.
 ## Option A — let CI compile it (recommended)
 
 Push just `recon.m`, then run
-[`.github/workflows/matlab-compile.yml`](../../.github/workflows/matlab-compile.yml) on a self-hosted
-runner that has MATLAB + Compiler + your license. It reads the `matlab:` block in `algorithm.yml`,
+[`.github/workflows/matlab-compile.yml`](../../.github/workflows/matlab-compile.yml) — it runs on
+GitHub-hosted runners with a MATLAB batch licensing token (secret `MATLAB_BATCH_TOKEN`), reads the
+`matlab:` block in `algorithm.yml`,
 compiles `recon.m`, and pushes the image to the `image:` tag for you. `image:` is just the *intended*
 tag — it does not need to exist beforehand.
 

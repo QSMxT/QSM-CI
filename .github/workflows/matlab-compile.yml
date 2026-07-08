@@ -1,12 +1,11 @@
 name: matlab-compile
 
 # Compile a MATLAB submission's source (algorithm.yml `matlab.entry`) into a standalone binary and
-# bake it into an MCR image. Runs on a SELF-HOSTED runner that has MATLAB + MATLAB Compiler and a
-# license (network license servers are reachable here — this is the build phase, network allowed).
-# The resulting image runs license-free on the free MATLAB Runtime during scoring (evaluate.yml).
+# bake it into an MCR image, on a GitHub-hosted runner using MathWorks' official actions. The
+# compiled binary then runs license-free on the free MATLAB Runtime during scoring.
 #
-# Setup required: a runner labelled [self-hosted, matlab] with MATLAB + Compiler installed, and the
-# MLM_LICENSE_FILE secret (port@host or a license file path).
+# Licensing: mcc needs a license at BUILD time only. On hosted runners that's a MATLAB *batch
+# licensing token* (free for public repos from MathWorks). Store it as the secret MATLAB_BATCH_TOKEN.
 
 on:
   workflow_dispatch:
@@ -21,7 +20,7 @@ permissions:
 
 jobs:
   compile:
-    runs-on: [self-hosted, matlab]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -34,19 +33,24 @@ jobs:
           echo "runtime=$(echo "$blk" | grep 'runtime:' | awk '{print $2}')" >> "$GITHUB_OUTPUT"
           echo "image=$(grep '^image:' "$f" | awk '{print $2}')" >> "$GITHUB_OUTPUT"
 
-      - name: Compile with MATLAB Compiler
-        working-directory: algorithms/${{ inputs.slug }}
+      - name: Set up MATLAB + Compiler
+        uses: matlab-actions/setup-matlab@v2
+        with:
+          products: MATLAB Compiler
+
+      - name: Compile recon.m -> standalone binary
+        uses: matlab-actions/run-command@v2
         env:
-          MLM_LICENSE_FILE: ${{ secrets.MLM_LICENSE_FILE }}
-        run: |
-          matlab -batch "mcc('-m','${{ steps.spec.outputs.entry }}','-o','recon','-d','.')"
-          test -x ./recon
+          MLM_LICENSE_TOKEN: ${{ secrets.MATLAB_BATCH_TOKEN }}
+        with:
+          command: cd(fullfile('algorithms', '${{ inputs.slug }}')); mcc('-m', '${{ steps.spec.outputs.entry }}', '-o', 'recon', '-d', '.')
 
       - name: Bake MCR image and push
         working-directory: algorithms/${{ inputs.slug }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          test -x ./recon
           cat > Dockerfile.mcr <<EOF
           FROM containers.mathworks.com/matlab-runtime:${{ steps.spec.outputs.runtime }}
           COPY recon /opt/qsm-ci/recon
