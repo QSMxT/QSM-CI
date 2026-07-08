@@ -48,7 +48,7 @@ implement one stage, or a span for methods that cross boundaries. See
 | `bfr` | `totalfield`, `mask`, `params` | `localfield` |
 | `dipole` | `localfield`, `mask`, `params` | `chimap` |
 | `unwrap+bfr` | `phase`, `magnitude`, `mask`, `params` | `localfield` |
-| `bfr+dipole` | `totalfield`, `mask`, `params` | `chimap` |
+| `bfr+dipole` | `totalfield`, `mask`, `params`, `magnitude` | `chimap` |
 | `end-to-end` | `phase`, `magnitude`, `mask`, `params` | `chimap` |
 
 All fields and χ are **ppm**. Your stage is scored two ways: **isolated** (fed the ground-truth
@@ -62,7 +62,7 @@ are **mounted** into the environment at `/algo` at run time — you don't build 
 image with your code inside. Two ways to specify the environment (see [../CONTRACT.md](../CONTRACT.md)):
 
 - **Point at a base image** — set `image:` to a container that already has what you need (the shared
-  `py-ref` deps image, a Neurodesk MATLAB/Octave container, etc.). No build at all.
+  `py-ref` deps image, a Neurodesk MATLAB Runtime container, etc.). No build at all.
 - **Add a `Dockerfile`** — start `FROM` any base and install/download dependencies (including
   toolboxes; the build phase has network). Do **not** `COPY` your code — it's mounted.
 
@@ -73,8 +73,8 @@ environment.
 Working templates to copy:
 - Python `dipole`: [`algorithms/tkd`](../algorithms/tkd) — just `recon.py` + `run.sh`, `image:`
   pointing at the shared deps base. No Dockerfile.
-- MATLAB-language via Octave: [`algorithms/octave-tkd`](../algorithms/octave-tkd) — `.m` files + a
-  tiny `Dockerfile` that installs Octave (deps only). See [matlab.md](matlab.md).
+- MATLAB compiled to the free MATLAB Runtime: [`algorithms/matlab-tkd`](../algorithms/matlab-tkd) —
+  `recon.m` + a `matlab:` block; compiled once (license at build time only). See [matlab.md](matlab.md).
 - BFR: [`algorithms/sharp`](../algorithms/sharp).
 
 ## 3. Add your submission folder

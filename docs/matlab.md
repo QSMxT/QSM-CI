@@ -1,17 +1,15 @@
 # Submitting a MATLAB algorithm
 
 MATLAB QSM code is welcome. The scoring run is offline (`--network none`), so the real question is
-*what executes your code without a license at run time*. Three routes, **recommended first**:
+*what executes your code without a license at run time*. Two routes, **recommended first**:
 
 - **Compile → MATLAB Runtime (Option A, recommended).** Compile your `.m` (+ toolboxes) with the
   MATLAB Compiler once — the **only** place a license is needed, at *build* time on your machine (or a
   licensed CI runner). The standalone binary runs on the **free MATLAB Runtime**, so scoring stays
   fully offline and license-free, and any toolbox (SEPIA, MEDI, STI Suite, chi-separation) works
-  because `mcc` bundles it. This is the [`matlab-tkd`](../algorithms/matlab-tkd) template.
-- **GNU Octave (Option B).** Runs `.m` license-free with zero compilation — but no proprietary
-  toolboxes / MEX / `.p`. Great for self-contained methods; see
-  [`octave-tkd`](../algorithms/octave-tkd).
-- **Full MATLAB at run time (Option C).** A licensed MATLAB container runs raw `.m` + toolboxes with
+  because `mcc` bundles it. This is the [`matlab-tkd`](../algorithms/matlab-tkd) template, and what
+  `qsm-ci new --lang matlab` scaffolds.
+- **Full MATLAB at run time (Option B).** A licensed MATLAB container runs raw `.m` + toolboxes with
   no compilation, but needs a **license at run time**, which the offline run phase can't reach over a
   network license server — so it requires an offline/node-locked license or a controlled
   license-server exception on the runner. Use only if compiling is impractical.
@@ -46,21 +44,7 @@ Point `algorithm.yml`'s `image:` at that tag. QSM-CI mounts your `run.sh` at `/a
 on a self-hosted runner with MATLAB + Compiler + license — it compiles and pushes the image for you.
 The license is used at build time, where network is allowed.
 
-## Option B — GNU Octave (license-free, no compilation)
-
-Run `.m` on Octave — no license, builds in seconds. See [`algorithms/octave-tkd`](../algorithms/octave-tkd):
-`recon.m` plus a tiny self-contained `readnii.m`/`writenii.m` (NIfTI-1, no toolbox); its scores match
-the Python reference exactly.
-
-```dockerfile
-FROM debian:bookworm-slim
-RUN apt-get update && apt-get install -y --no-install-recommends octave gzip && rm -rf /var/lib/apt/lists/*
-```
-
-Caveats: Octave lacks proprietary toolboxes (Image Processing, Optimization, Deep Learning), MEX, and
-`.p` files, and `niftiread`/`niftiwrite`. Great for self-contained methods; otherwise use Option A.
-
-## Option C — full MATLAB at run time (needs a run-time license)
+## Option B — full MATLAB at run time (needs a run-time license)
 
 A licensed MATLAB base runs raw `.m` + a downloaded toolbox with no compilation:
 

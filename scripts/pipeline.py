@@ -98,7 +98,7 @@ def build_env(algo: dict) -> str:
 
     - If the folder has a Dockerfile, build it (a base image + any toolbox downloads). The code is
       NOT baked in; it is mounted at run time.
-    - Otherwise use `image:` (a ready base, e.g. a MATLAB/Octave container), pulling if not local.
+    - Otherwise use `image:` (a ready base, e.g. a MATLAB Runtime container), pulling if not local.
     Returns the image tag to run offline.
     """
     if algo["slug"] in _built:

@@ -190,6 +190,7 @@
   <footer id="site-footer"></footer>
 
   <script>
+    const MATLAB_RUNTIME = "r2026a";
     const STAGE_IO = {
       "field-mapping": { c: "phase, magnitude, mask, params", p: "totalfield", inp: "phase" },
       "bfr": { c: "totalfield, mask, params", p: "localfield", inp: "totalfield" },
@@ -219,7 +220,7 @@
         langs: [
           { key: "python", name: "Python", file: "recon.py", image: "python:3.11 + numpy, nibabel" },
           { key: "rust", name: "Rust", file: "recon.rs", image: "rust:1 (deps vendored at build)" },
-          { key: "matlab", name: "MATLAB / Octave", file: "recon.m", image: "MATLAB Runtime or Octave" },
+          { key: "matlab", name: "MATLAB (compiled)", file: "recon.m", image: "matlab-runtime (compiled once via MATLAB Compiler)" },
           { key: "julia", name: "Julia", file: "recon.jl", image: "julia:1 + NIfTI.jl" },
           { key: "other", name: "Other", file: "run.sh", image: "any base with your deps" },
         ],
@@ -239,6 +240,7 @@
           y += `citation: ${this.citation || "null"}\ndoi: ${this.doi || "null"}\ncode_url: ${this.code_url || "null"}\n`;
           y += `license: ${this.license}\n`;
           y += `image: ${this.image || "ghcr.io/you/your-image:v1"}\nrun: ${this.run}\n`;
+          if (this.lang === "matlab") y += `matlab:\n  entry: recon.m\n  runtime: ${MATLAB_RUNTIME}\n`;
           if (ps.length) y += "parameters:\n" + ps.map((p) => `  - name: ${p.name}\n    default: ${p.default}\n    description: ${p.description}`).join("\n") + "\n";
           return y;
         },
@@ -258,8 +260,12 @@
           const body = {
             python: `python3 "$HERE/recon.py" "$IN" "$OUT"\n`,
             julia: `julia "$HERE/recon.jl" "$IN" "$OUT"\n`,
-            matlab: `# MATLAB:\nmatlab -batch "addpath('$HERE'); recon('$IN','$OUT')"\n`
-              + `# Octave alternative:\n# octave --eval "addpath('$HERE'); recon('$IN','$OUT')"\n`,
+            matlab: `# Runs the MATLAB-compiled \`recon\` on the free MATLAB Runtime (no license at run time).\n`
+              + `# Baked into the image at /opt/qsm-ci/recon (recommended), or mounted at /algo/recon.\n`
+              + `# See BUILD.md to compile recon.m (locally or via .github/workflows/matlab-compile.yml).\n`
+              + `BIN="\${MATLAB_RECON:-/opt/qsm-ci/recon}"\n`
+              + `[ -x "$BIN" ] || BIN="$HERE/recon"\n`
+              + `exec "$BIN" "$IN" "$OUT"\n`,
             rust: `# Build your binary in the image (network is on at build time): cargo build --release\n`
               + `BIN="$HERE/target/release/recon"\n`
               + `[ -x "$BIN" ] || cargo build --release --offline --manifest-path "$HERE/Cargo.toml"\n`
@@ -338,6 +344,22 @@
             + `[[bin]]\nname = "recon"\npath = "recon.rs"\n\n`
             + `[dependencies]\nnifti = { version = "0.16", features = ["ndarray_volumes"] }\nndarray = "0.15"\n`;
         },
+        get matlabBuild() {
+          return `# Building ${this.name || this.slugOr} for the MATLAB Runtime\n\n`
+            + `Compile \`recon.m\` once on a machine (or CI runner) with **MATLAB + MATLAB Compiler** — the only\n`
+            + `place a license is needed. The result runs on the free **MATLAB Runtime (MCR)**, so QSM-CI scores\n`
+            + `it offline with no license.\n\n`
+            + `## Option A — let CI compile it (recommended)\n\n`
+            + `Push just \`recon.m\`, then run \`.github/workflows/matlab-compile.yml\` on a self-hosted runner that\n`
+            + `has MATLAB + Compiler + your license. It reads the \`matlab:\` block in \`algorithm.yml\`, compiles\n`
+            + `\`recon.m\`, and pushes the image to the \`image:\` tag for you — the tag need not exist beforehand.\n\n`
+            + `## Option B — compile locally\n\n`
+            + '```bash\nmatlab -batch "mcc(\'-m\',\'recon.m\',\'-o\',\'recon\',\'-d\',\'.\')"\n```\n\n'
+            + `Bake the compiled \`recon\` into an MCR image and push it to your \`image:\` tag:\n\n`
+            + '```dockerfile\nFROM containers.mathworks.com/matlab-runtime:' + MATLAB_RUNTIME + '\n'
+            + 'COPY recon /opt/qsm-ci/recon\nRUN chmod +x /opt/qsm-ci/recon\n```\n\n'
+            + `The Runtime version (\`runtime:\` in algorithm.yml, ${MATLAB_RUNTIME}) must match the Compiler release.\n`;
+        },
         get files() {
           const f = [
             { name: "algorithm.yml", body: this.algorithmYml },
@@ -345,6 +367,7 @@
           ];
           if (this.lang !== "other") f.push({ name: this.langMeta.file, body: this.reconBody });
           if (this.lang === "rust") f.push({ name: "Cargo.toml", body: this.cargoToml });
+          if (this.lang === "matlab") f.push({ name: "BUILD.md", body: this.matlabBuild });
           return f;
         },
         copy(text, name) { navigator.clipboard.writeText(text); this.copied = name; setTimeout(() => (this.copied = ""), 1500); },

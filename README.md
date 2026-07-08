@@ -69,9 +69,9 @@ python -m http.server -d web 8000   # → http://localhost:8000
 
 Working end-to-end on a realistic **head phantom** (`data/sim/scoring/`, 7T, 164×205×205): the stage
 model, scorer (full region metrics), composition matrix, containerized runner (`--network none`),
-and website. Reference submissions include Python (`tkd`, `tikhonov`, `sharp`, `nobfr-baseline`) and
-MATLAB-language via **Octave** (`octave-tkd`, license-free, verified in-container) and MCR
-(`matlab-tkd`, template).
+and website. Reference submissions include Python (`tkd`, `tikhonov`, `sharp`), the full QSMxT/QSM.rs
+engine set (all BFR + dipole methods, HARPERELLA, TGV, QSMART), and a **MATLAB** template compiled to
+the free MATLAB Runtime (`matlab-tkd`).
 
 Before opening the challenge: fix the canonical head-phantom `qsm-forward` invocation and upload its
 held-out ground truth to OSF; wire the ARC runner + `OSF_TOKEN` secrets; cross-check `qsm-eval`

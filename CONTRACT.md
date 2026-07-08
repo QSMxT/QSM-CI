@@ -25,7 +25,7 @@ Spans (declare one of these if your method crosses stages):
 | Span | Consumes | Produces | Example |
 |------|----------|----------|---------|
 | `unwrap+bfr` | `phase`, `magnitude`, `mask`, `params` | `localfield` | HARPERELLA |
-| `bfr+dipole` | `totalfield`, `mask`, `params` | `chimap` | QSMART |
+| `bfr+dipole` | `totalfield`, `mask`, `params`, `magnitude` | `chimap` | QSMART, TGV |
 | `end-to-end` | `phase`, `magnitude`, `mask`, `params` | `chimap` | TGV |
 
 Your `algorithm.yml` sets `stage:` to one of these names. The platform mounts exactly the consumed
@@ -86,7 +86,7 @@ Your submission is **code plus an environment**; you do not have to bake your co
 image. Evaluation is two phases:
 
 **1. Build/setup phase (network ON).** QSM-CI produces your environment image:
-- If your folder has a `Dockerfile`, it is built — start `FROM` any base (a MATLAB/Octave/Python
+- If your folder has a `Dockerfile`, it is built — start `FROM` any base (a MATLAB Runtime/Python
   container, a Neurodesk image, …) and install or **download dependencies here** (this is where a
   MATLAB toolbox like SEPIA gets `git clone`d). Do **not** copy your algorithm code in; it is mounted.
 - Otherwise your `image:` is used directly as the environment (a base that already has what you need).
@@ -109,7 +109,7 @@ docker run --rm --network none \
 - **Output.** Write each produced artifact under its canonical filename to `/output`. A missing,
   misshapen, or unreadable output is a DNF.
 
-So a MATLAB submission is: your `.m` files + either a base MATLAB/Octave `image:`, or a `Dockerfile`
+So a MATLAB submission is: your `.m` files + either a base MATLAB Runtime `image:`, or a `Dockerfile`
 that starts from one and downloads your toolbox. Nothing is baked by you.
 
 ## How your stage is evaluated
