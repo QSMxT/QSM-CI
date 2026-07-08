@@ -60,6 +60,10 @@ jobs:
     needs: scope
     if: needs.scope.outputs.full == 'true' || needs.scope.outputs.slugs != '[]'
     runs-on: [self-hosted, Linux, X64]
+    # The serial composed matrix on the large 7T volume exceeds the default 6h job timeout and
+    # gets cancelled before publishing results. Raise the limit so runs can finish + commit
+    # index.json. (Real fix is parallelising pipeline.py / trimming slow submissions — deferred.)
+    timeout-minutes: 720
     steps:
       - uses: actions/checkout@v4
 
