@@ -64,7 +64,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install scorer deps
-        run: pip install -r eval/requirements.txt
+        run: pip install -r eval/requirements.txt osfclient
 
       - name: Cache OSF dataset zip
         uses: actions/cache@v4
