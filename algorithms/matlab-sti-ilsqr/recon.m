@@ -29,8 +29,14 @@ function recon(inp, out)
     GYRO = 42.576e6;                                                % Hz/T
     TissuePhase = field * 1e-6 * 2*pi * GYRO * B0 * TE;
 
-    chi = QSM_iLSQR(TissuePhase, double(Mask), 'TE', TE*1000, 'B0', B0, 'H', H, ...
-                    'padsize', padsize, 'voxelsize', vox);         % ppm
+    % STI Suite's calcD2Matrix indexes assuming even matrix dims; pad odd dims to even
+    % (post) before the inversion and crop back after (lossless zero-pad for the FFT model).
+    sz0 = size(TissuePhase); po = mod(sz0, 2);
+    TP  = padarray(TissuePhase, po, 0, 'post');
+    Mk  = padarray(double(Mask), po, 0, 'post');
+    chi = QSM_iLSQR(TP, Mk, 'TE', TE*1000, 'B0', B0, 'H', H, ...
+                    'padsize', padsize, 'voxelsize', vox);          % ppm
+    chi = chi(1:sz0(1), 1:sz0(2), 1:sz0(3));
     chi = double(chi) .* Mask;
 
     nii.img = single(chi);

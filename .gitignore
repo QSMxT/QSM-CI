@@ -52,3 +52,8 @@ algorithms/*/nifti/
 algorithms/*/medi/
 algorithms/*/sti/
 algorithms/*/sti_support/
+# Compiled-MATLAB submissions ship as prebuilt+pushed GHCR images (the Dockerfile bakes a
+# licensed mcc binary that CI cannot reproduce), so CI must PULL image: rather than build the
+# Dockerfile. Keeping the Dockerfile out of the checkout makes pipeline.build_env pull it.
+# (Dockerfile content is documented in each submission's BUILD.md.)
+algorithms/matlab-*/Dockerfile
