@@ -1,0 +1,29 @@
+name: MEDI (MATLAB)
+slug: matlab-medi
+stage: bfr+dipole
+description: Morphology Enabled Dipole Inversion (Cornell MEDI toolbox), compiled from
+  MATLAB and run on the license-free MATLAB Runtime. Takes the total field, removes the
+  background field with PDF, then solves the L1 morphology-regularized dipole inversion.
+authors:
+- name: QSM-CI
+  affiliation: Neurodesk
+doi: 10.1002/mrm.26946
+license: See Cornell MEDI toolbox license
+image: ghcr.io/astewartau/qsm-ci/matlab-medi:v1
+run: bash run.sh
+matlab:
+  entry: recon.m
+  runtime: r2026a
+params:
+- name: lambda
+  default: 1000
+  description: data-fidelity weight (larger = closer data fit, less regularization)
+- name: smv_radius
+  default: 5
+  description: spherical-mean-value radius (mm) for extra background removal; 0 disables
+- name: percentage
+  default: 0.9
+  description: fraction of voxels kept as edges in the morphology gradient mask
+- name: merit
+  default: 0
+  description: model-error reduction (iterative reweighting); 1 enables

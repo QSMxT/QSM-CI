@@ -1,0 +1,20 @@
+name: V-SHARP (STI Suite)
+slug: matlab-sti-vsharp
+stage: bfr
+description: V-SHARP background field removal from STI Suite v3 (spatially-varying SMV deconvolution),
+  compiled from MATLAB and run on the license-free MATLAB Runtime. Takes the total field and removes
+  the background field to yield the local tissue field.
+authors:
+- name: Hongjiang Wei and Chunlei Liu
+  affiliation: UC Berkeley
+doi: 10.1002/nbm.3056
+license: See STI Suite license
+image: ghcr.io/astewartau/qsm-ci/matlab-sti-vsharp:v1
+run: bash run.sh
+matlab:
+  entry: recon.m
+  runtime: r2026a
+params:
+- name: smvsize
+  default: 12
+  description: maximum spherical-mean-value kernel size (voxels) for the SMV deconvolution

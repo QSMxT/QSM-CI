@@ -1,0 +1,23 @@
+name: iHARPERELLA (STI Suite)
+slug: matlab-sti-iharperella
+stage: unwrap+bfr
+description: Integrated phase unwrapping + background field removal (iHARPERELLA) from STI Suite v3,
+  compiled from MATLAB and run on the license-free MATLAB Runtime. Operates on wrapped multi-echo
+  phase and yields the local tissue field (echoes combined with optimal TE^2 weights).
+authors:
+- name: Wei Li and Chunlei Liu
+  affiliation: UC Berkeley
+doi: 10.1016/j.neuroimage.2014.08.029
+license: See STI Suite license
+image: ghcr.io/astewartau/qsm-ci/matlab-sti-iharperella:v1
+run: bash run.sh
+matlab:
+  entry: recon.m
+  runtime: r2026a
+params:
+- name: niter
+  default: 40
+  description: iHARPERELLA iteration count
+- name: padsize
+  default: 12
+  description: zero-pad size (voxels, isotropic) for numerical accuracy

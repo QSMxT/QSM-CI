@@ -1,0 +1,12 @@
+name: ROMEO field mapping
+slug: romeo-fieldmap
+stage: field-mapping
+description: Multi-echo B0 field mapping by ROMEO phase unwrapping (via the QSMxT/QSM.rs engine) with
+  a per-voxel linear fit of unwrapped phase over echoes. Alternative to Laplacian field mapping.
+authors:
+- name: Dymerska and Eckstein et al.
+  affiliation: Medical University of Vienna
+doi: 10.1002/mrm.28563
+license: MIT
+image: ghcr.io/astewartau/qsm-ci/romeo-fieldmap:v1
+run: bash run.sh

@@ -20,6 +20,7 @@ from __future__ import annotations
 import json
 import os
 import sys
+import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -28,6 +29,27 @@ KINDS = ("recon", "truth", "error")
 
 def _name(rid: str, kind: str) -> str:
     return f"{rid}__{kind}.nii.gz".replace("~", "_").replace("+", "_")
+
+
+def _transient(exc: Exception) -> bool:
+    # OSF/WaterButler occasionally return a gateway error mid-request; osfclient surfaces it as a
+    # RuntimeError("Response has status code 50x ..."). Also retry raw connection blips.
+    s = str(exc)
+    return any(c in s for c in ("status code 502", "status code 503", "status code 504")) \
+        or exc.__class__.__name__ in ("ConnectionError", "Timeout", "ChunkedEncodingError")
+
+
+def _retry(desc: str, fn, attempts: int = 5, base: float = 3.0):
+    for i in range(attempts):
+        try:
+            return fn()
+        except Exception as exc:  # noqa: BLE001 — narrow via _transient below
+            if i == attempts - 1 or not _transient(exc):
+                raise
+            wait = base * (2 ** i)
+            print(f"  ! transient OSF error on {desc} ({exc}); retry {i + 1}/{attempts - 1} in {wait:.0f}s",
+                  file=sys.stderr)
+            time.sleep(wait)
 
 
 def main() -> int:
@@ -64,14 +86,18 @@ def main() -> int:
             if not f.exists():
                 continue
             name = _name(rid, kind)
-            with open(f, "rb") as fp:
-                storage.create_file(name, fp, force=True, update=True)
+
+            def _upload(path=f, nm=name):
+                with open(path, "rb") as fp:
+                    storage.create_file(nm, fp, force=True, update=True)
+
+            _retry(f"upload {name}", _upload)
             want.setdefault(rid, {})[kind] = name
             print(f"  uploaded {name}")
 
     # Resolve public download URLs from the storage listing. Verify every upload actually landed —
     # osfclient can PUT against a read-only token and not raise, so never trust "no exception".
-    url_by_name = {f.name: f._download_url for f in storage.files}
+    url_by_name = _retry("list storage", lambda: {f.name: f._download_url for f in storage.files})
     missing = [n for kinds in want.values() for n in kinds.values() if n not in url_by_name]
     if missing:
         print(f"! {len(missing)} volume(s) did not appear on OSF after upload (check the token has "
