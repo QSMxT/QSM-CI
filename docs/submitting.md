@@ -10,7 +10,7 @@ ground truth) scores it with the *exact* code the leaderboard uses, so your numb
 QSM-CI only does it server-side to build the challenge dataset.)
 
 ```bash
-pipx install git+https://github.com/astewartau/qsm-ci   # or: pip install qsm-ci
+pipx install git+https://github.com/QSMxT/QSM-CI   # or: pip install qsm-ci
 
 qsm-ci new                 # interactive scaffold -> algorithms/<slug>/ (or use the web wizard)
 # ... edit your recon.py / recon.m / recon.rs / recon.jl ...
@@ -112,6 +112,6 @@ qsm-ci submit <your-slug>        # commit on a branch + open the PR (uses gh if 
 
 QSM-CI runs your stage **isolated** on the held-out ground-truth boundary (no network, time-limited),
 scores it, and comments the metrics on your PR. The full **composition matrix** (your stage against
-everyone else's) refreshes on the [leaderboard](https://astewartau.github.io/qsm-ci/). The
+everyone else's) refreshes on the [leaderboard](https://qsmxt.github.io/QSM-CI/). The
 authoritative score always comes from CI — it holds the real, hidden scoring phantom — but running
 locally against your own phantom confirms your plumbing and shows roughly where you'd land.

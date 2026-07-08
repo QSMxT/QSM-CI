@@ -1,7 +1,7 @@
 // Shared chrome (nav + footer) and helpers for the QSM-CI site.
 // Loaded before Alpine so the page component factories can use these globals.
 
-const GH = "https://github.com/astewartau/qsm-ci";
+const GH = "https://github.com/QSMxT/QSM-CI";
 
 // ---- theme (dark mode) ------------------------------------------------------
 function applyTheme() {

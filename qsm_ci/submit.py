@@ -10,7 +10,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
-UPSTREAM = "astewartau/qsm-ci"
+UPSTREAM = "QSMxT/QSM-CI"
 
 
 def _has(cmd: str) -> bool:
