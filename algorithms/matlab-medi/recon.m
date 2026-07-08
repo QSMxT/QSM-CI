@@ -13,7 +13,9 @@ function recon(inp, out)
     B0T = p.B0;                       % field strength (Tesla)
     TE  = p.TE(:)';                   % echo time(s), seconds
 
-    cfg = struct('lambda', 1000, 'smv_radius', 5, 'merit', 0, ...
+    % lambda=100 (not the Cornell default 1000): the QSM-CI phantom has extreme susceptibility
+    % sources; lambda=1000 makes the Gauss-Newton iteration diverge, lambda=100 converges.
+    cfg = struct('lambda', 100, 'smv_radius', 5, 'merit', 0, ...
                  'percentage', 0.9, 'cg_tol', 0.01);
     cf_file = fullfile(inp, 'config.json');
     if exist(cf_file, 'file')
@@ -30,11 +32,14 @@ function recon(inp, out)
 
     matrix_size = size(Mask);
     GYRO = 42.576e6;                          % Hz/T
-    CF   = GYRO * B0T;                        % centre frequency, Hz
-    if numel(TE) > 1, delta_TE = TE(2) - TE(1); else, delta_TE = TE(1); end
-
-    % ppm field -> radians accrued over delta_TE (self-consistent with MEDI's ppm output scaling)
-    iFreq = field * 1e-6 * 2*pi * CF * delta_TE;
+    % MEDI is nonlinear and scale-dependent: its Gauss-Newton `lambda` must match the radian scale
+    % of the data, or the iteration diverges (observed at 7T with a 3T-tuned lambda). The field is
+    % already ppm (B0-normalised), so represent it internally at a FIXED reference scale (3T, 8 ms)
+    % regardless of the actual B0/TE. The SAME factor is used for MEDI_L1's ppm output conversion,
+    % so it cancels: chi stays in ppm while lambda=1000 stays tuned at any field strength.
+    CF       = GYRO * 3.0;                     % reference centre frequency (3T), Hz
+    delta_TE = 0.008;                          % reference echo spacing, s
+    iFreq    = field * 1e-6 * 2*pi * CF * delta_TE;   % ppm field -> reference-scale radians
 
     % noise proxy: SD ~ 1/SNR ~ 1/magnitude, normalised to unit median inside the mask
     iMagN = iMag / max(iMag(Mask));
