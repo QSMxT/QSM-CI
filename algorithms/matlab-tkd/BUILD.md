@@ -1,48 +1,33 @@
-# Building matlab-tkd for the MATLAB Runtime
+# Building matlab-tkd (compiled MATLAB → MATLAB Runtime)
 
-Compile once on a machine with **MATLAB + MATLAB Compiler** — the only place a license is needed.
-The result runs on the free **MATLAB Runtime (MCR)**, so QSM-CI scores it offline with no license.
+Compile `recon.m` once on a machine with **MATLAB + MATLAB Compiler** (no license needed to *run*
+the result on the free MATLAB Runtime). Proven with R2026a.
 
-## 1. Compile `recon.m` → standalone `recon`
+## Key patterns (reused by every MATLAB submission)
+- **No Image Processing Toolbox.** Read/write NIfTI with the bundled **Jimmy Shen NIfTI toolbox**
+  (`load_untouch_nii`/`save_untouch_nii`), not `niftiread`/`niftiwrite`.
+- **No JVM in compiled binaries** → decompress/compress `.nii.gz` with the OS (`gunzip`/`gzip` via
+  `system()`), since the toolbox's own gzip path needs Java. See `read_niigz`/`write_niigz` in `recon.m`.
 
+## 1. Fetch the NIfTI toolbox (build-time only; not committed)
 ```bash
-matlab -batch "mcc('-m','recon.m','-o','recon','-d','.')"
+# any copy of the Jimmy Shen "Tools for NIfTI and ANALYZE image" toolbox, e.g.:
+cp -r /path/to/NIfTI_20140122 algorithms/matlab-tkd/nifti
 ```
 
-Use the MATLAB release whose Runtime you'll target (here **R2023b**). `mcc` bundles the toolbox code
-your method uses into the binary, so real toolboxes (SEPIA, MEDI, …) work. Keep the `recon`
-executable (ignore the generated `run_recon.sh`, `readme.txt`, etc.).
-
-## 2. Bake into an MCR image and push
-
-With the compiled `recon` in this folder:
-
-```dockerfile
-# Dockerfile
-FROM containers.mathworks.com/matlab-runtime:r2023b     # free Runtime; match the compiler release
-COPY recon /opt/qsm-ci/recon
-RUN chmod +x /opt/qsm-ci/recon
+## 2. Compile
+```bash
+cd algorithms/matlab-tkd
+matlab -batch "addpath('nifti'); mcc('-m','recon.m','-o','recon','-d','.')"   # -> ./recon (ELF binary)
 ```
 
+## 3. Bake the MCR image and push
 ```bash
-docker build -t ghcr.io/astewartau/qsm-ci/matlab-tkd:v1 .
+docker build -t ghcr.io/astewartau/qsm-ci/matlab-tkd:v1 .   # FROM matlab-runtime:r2026a + COPY recon
 docker push  ghcr.io/astewartau/qsm-ci/matlab-tkd:v1
 ```
+Point `algorithm.yml`'s `image:` at that tag and make the package public. QSM-CI runs
+`/opt/qsm-ci/recon /input /output` on the free Runtime, offline.
 
-That tag is what `algorithm.yml`'s `image:` points at. QSM-CI pulls it, mounts your `run.sh` at
-`/algo`, and runs `/opt/qsm-ci/recon /input /output` with `--network none`.
-
-## Alternatives
-
-- **Let CI compile it.** If you don't want to build locally, push just `recon.m` (source) and run
-  [`.github/workflows/matlab-compile.yml`](../../.github/workflows/matlab-compile.yml) — it runs on
-  GitHub-hosted runners with a MATLAB batch licensing token (secret `MATLAB_BATCH_TOKEN`) and pushes the image for
-  you (the license is used at *build* time, where network is allowed).
-- **Mount instead of bake.** Commit the compiled `recon` in this folder and point `image:` at a plain
-  `matlab-runtime` base; `run.sh` falls back to `/algo/recon`. Simpler, but puts a binary in git.
-
-## Notes
-
-- The MCR version **must** match the MATLAB Compiler release used.
-- The binary is Linux x86_64 and opaque (source isn't recoverable) — fine, it runs sandboxed.
-- A few MATLAB functions are non-deployable by `mcc`; core QSM math is fine.
+> CI compile (`.github/workflows/matlab-compile.yml`) needs a MATLAB **batch licensing token** for
+> Compiler (pilot program) — until you have one, compile locally as above.

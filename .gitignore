@@ -38,3 +38,14 @@ web/results
 .DS_Store
 algorithms/_qsmxt/qsmxt
 web/docs
+
+# Compiled MATLAB artifacts (build locally; the binary ships in the MCR image, not git)
+algorithms/*/recon
+algorithms/*/run_recon.sh
+algorithms/*/readme.txt
+algorithms/*/mccExcludedFiles.log
+algorithms/*/requiredMCRProducts.txt
+algorithms/*/unresolvedSymbols.txt
+algorithms/*/includedSupportPackages.txt
+algorithms/*/buildresult.json
+algorithms/*/nifti/
