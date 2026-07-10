@@ -17,7 +17,9 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import concurrent.futures as _cf
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -27,6 +29,21 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 EVAL = ROOT / "eval" / "qsm_eval.py"
+
+# Independent submission runs (each a Docker container + a scoring subprocess) are executed
+# concurrently, bounded by QSM_CI_JOBS. The cap is deliberately conservative: MATLAB MCR runs on
+# the 205^3 volume peak at a few GB each, so 4 keeps well under the runner's ~31 GB. Set 1 for
+# fully-serial behaviour. Threads are fine — the actual work is in subprocess.run (GIL released).
+JOBS = max(1, int(os.environ.get("QSM_CI_JOBS", "4")))
+
+
+def _pmap(items, fn):
+    """Apply fn to each item, up to JOBS at a time, preserving input order. fn must handle its own
+    errors (return a value, never raise) so one bad task can't sink the batch."""
+    if JOBS <= 1 or len(items) <= 1:
+        return [fn(x) for x in items]
+    with _cf.ThreadPoolExecutor(max_workers=JOBS) as ex:
+        return list(ex.map(fn, items))
 
 # Stage graph (mirrors stages.yml). Kept here so the runner needs no YAML dependency.
 STAGES = {
@@ -174,6 +191,7 @@ def flush_index(runs):
     """Merge the current runs into results/index.json (replace matching ids) and write immediately,
     so a long run's progress is visible on the leaderboard as it goes."""
     idx = ROOT / "results" / "index.json"
+    idx.parent.mkdir(parents=True, exist_ok=True)
     existing = json.loads(idx.read_text()).get("runs", []) if idx.exists() else []
     ids = {r["id"] for r in runs}
     merged = [r for r in existing if r.get("id") not in ids] + runs
@@ -238,29 +256,37 @@ def main() -> None:
 
     iso_target = args.focus or args.only  # isolated runs only this slug when set
 
-    # -------- isolated --------
+    # -------- isolated (independent runs -> parallel) --------
     if args.mode in ("isolated", "both"):
-        for a in algos:
-            if iso_target and a["slug"] != iso_target:
-                continue
+        iso_algos = [a for a in algos if not (iso_target and a["slug"] != iso_target)]
+
+        def do_isolated(a):
             idir, odir = args.work / f"iso_{a['slug']}_in", args.work / f"iso_{a['slug']}_out"
             try:
                 prepare_input(a["consumes"], gt_sources, idir)
                 rt = run_algo(a, idir, odir, args.runner)
+                out = []
                 for art in a["produces"]:
                     meta = {"id": f"{a['slug']}-iso", "slug": a["slug"], "name": a["slug"],
                             "stage": a["stage"], "mode": "isolated", "track": args.track, "runtime": rt}
                     r = score(odir / ARTIFACT_FILE[art], art, gt, mask,
                               args.work / f"iso_{a['slug']}.json", meta)
-                    runs.append(r)
+                    out.append(r)
                     m = r["metrics"]
                     print(f"  isolated  {a['slug']:<16} {art:<11} "
                           f"xsim={m.get('xsim'):.4f} nrmse={m.get('nrmse'):.2f}%")
+                return out
             except Exception as e:  # DNF — record and continue
                 print(f"  isolated  {a['slug']:<16} DNF ({e})")
-                runs.append(dnf(f"{a['slug']}-iso", a["slug"], a["slug"], a["stage"], "isolated", args.track))
+                return [dnf(f"{a['slug']}-iso", a["slug"], a["slug"], a["stage"], "isolated", args.track)]
+
+        for out in _pmap(iso_algos, do_isolated):
+            runs.extend(out)
+        flush_index(runs)
 
     # -------- composed: (field-mapping) x bfr x dipole, chaining real outputs --------
+    # Dependency order is fieldmap -> bfr -> dipole, so each stage is a barrier; but every
+    # combo within a stage is independent, so each stage fans out over the pool.
     if args.mode in ("composed", "both"):
         fmap = [a for a in algos if "totalfield" in a["produces"]]
         bfr = [a for a in algos if "localfield" in a["produces"]]
@@ -280,66 +306,90 @@ def main() -> None:
             else:                                     # a bfr+dipole / end-to-end span — run it alone
                 fmap, bfr, dipole, spans = [], [], [], [f]
 
-        # totalfield sources: the ground-truth field ("gt"), plus each field-mapping submission's
-        # output (run on raw inputs). This lets the matrix start from raw phase, not just GT field.
+        # Stage 1 — totalfield sources: the ground-truth field ("gt") plus each field-mapping
+        # submission's output (run on raw inputs), so the matrix can start from raw phase.
         tf_sources: dict[str, Path] = {"gt": gt / ARTIFACT_FILE["totalfield"]}
-        for f in fmap:
+
+        def do_fieldmap(f):
             idir, odir = args.work / f"cmp_fm_{f['slug']}_in", args.work / f"cmp_fm_{f['slug']}_out"
             try:
                 prepare_input(f["consumes"], gt_sources, idir)
                 run_algo(f, idir, odir, args.runner)
-                tf_sources[f["slug"]] = odir / "totalfield.nii.gz"
+                return (f["slug"], odir / "totalfield.nii.gz")
             except Exception as e:
                 print(f"  composed  fieldmap {f['slug']} DNF ({e}) — skipping its pipelines")
+                return None
 
-        for tfk, tfp in tf_sources.items():
-            lf_cache: dict[str, Path] = {}  # bfr localfield output for this totalfield source
-            for b in bfr:
-                idir, odir = args.work / f"cmp_{tfk}_{b['slug']}_in", args.work / f"cmp_{tfk}_{b['slug']}_out"
-                try:
-                    src = dict(gt_sources); src["totalfield"] = tfp
-                    prepare_input(b["consumes"], src, idir)
-                    run_algo(b, idir, odir, args.runner)
-                    lf_cache[b["slug"]] = odir / "localfield.nii.gz"
-                except Exception as e:
-                    print(f"  composed  {tfk}+{b['slug']} bfr DNF ({e})")
-            for b in bfr:
-                if b["slug"] not in lf_cache:
-                    continue
-                for d in dipole:
-                    combo = f"{b['slug']}+{d['slug']}" if tfk == "gt" else f"{tfk}+{b['slug']}+{d['slug']}"
-                    cid = f"{tfk}~{b['slug']}~{d['slug']}-cmp"
-                    cinfo = {"field_mapping": tfk, "bfr": b["slug"], "dipole": d["slug"]}
-                    try:
-                        src = dict(gt_sources); src["localfield"] = lf_cache[b["slug"]]
-                        idir, odir = args.work / f"cmp_{cid}_in", args.work / f"cmp_{cid}_out"
-                        prepare_input(d["consumes"], src, idir)
-                        rt = run_algo(d, idir, odir, args.runner)
-                        meta = {"id": cid, "slug": combo, "name": combo,
-                                "stage": "bfr+dipole" if tfk == "gt" else "field-mapping+bfr+dipole",
-                                "mode": "composed", "track": args.track, "runtime": rt, "combo": cinfo}
-                        r = score(odir / "chimap.nii.gz", "chimap", gt, mask,
-                                  args.work / f"cmp_{cid}.json", meta)
-                        runs.append(r)
-                        m = r["metrics"]
-                        print(f"  composed  {combo:<34} chimap xsim={m.get('xsim'):.4f} "
-                              f"nrmse_dt={m.get('nrmse_detrend'):.2f}%")
-                    except Exception as e:
-                        print(f"  composed  {combo:<34} DNF ({e})")
-                        runs.append(dnf(cid, combo, combo, "field-mapping+bfr+dipole", "composed", args.track, cinfo))
-                    flush_index(runs)  # write progress incrementally
-        for s in spans:
+        for res in _pmap(fmap, do_fieldmap):
+            if res:
+                tf_sources[res[0]] = res[1]
+
+        # Stage 2 — bfr: localfield for each (totalfield source, bfr), keyed (tfk, bfr slug).
+        lf_cache: dict[tuple, Path] = {}
+
+        def do_bfr(task):
+            tfk, tfp, b = task
+            idir, odir = args.work / f"cmp_{tfk}_{b['slug']}_in", args.work / f"cmp_{tfk}_{b['slug']}_out"
+            try:
+                src = dict(gt_sources); src["totalfield"] = tfp
+                prepare_input(b["consumes"], src, idir)
+                run_algo(b, idir, odir, args.runner)
+                return ((tfk, b["slug"]), odir / "localfield.nii.gz")
+            except Exception as e:
+                print(f"  composed  {tfk}+{b['slug']} bfr DNF ({e})")
+                return None
+
+        bfr_tasks = [(tfk, tfp, b) for tfk, tfp in tf_sources.items() for b in bfr]
+        for res in _pmap(bfr_tasks, do_bfr):
+            if res:
+                lf_cache[res[0]] = res[1]
+
+        # Stage 3 — dipole: invert each cached localfield with every dipole method.
+        def do_dipole(task):
+            tfk, b, d = task
+            combo = f"{b['slug']}+{d['slug']}" if tfk == "gt" else f"{tfk}+{b['slug']}+{d['slug']}"
+            cid = f"{tfk}~{b['slug']}~{d['slug']}-cmp"
+            cinfo = {"field_mapping": tfk, "bfr": b["slug"], "dipole": d["slug"]}
+            try:
+                src = dict(gt_sources); src["localfield"] = lf_cache[(tfk, b["slug"])]
+                idir, odir = args.work / f"cmp_{cid}_in", args.work / f"cmp_{cid}_out"
+                prepare_input(d["consumes"], src, idir)
+                rt = run_algo(d, idir, odir, args.runner)
+                meta = {"id": cid, "slug": combo, "name": combo,
+                        "stage": "bfr+dipole" if tfk == "gt" else "field-mapping+bfr+dipole",
+                        "mode": "composed", "track": args.track, "runtime": rt, "combo": cinfo}
+                r = score(odir / "chimap.nii.gz", "chimap", gt, mask,
+                          args.work / f"cmp_{cid}.json", meta)
+                m = r["metrics"]
+                print(f"  composed  {combo:<34} chimap xsim={m.get('xsim'):.4f} "
+                      f"nrmse_dt={m.get('nrmse_detrend'):.2f}%")
+                return r
+            except Exception as e:
+                print(f"  composed  {combo:<34} DNF ({e})")
+                return dnf(cid, combo, combo, "field-mapping+bfr+dipole", "composed", args.track, cinfo)
+
+        dip_tasks = [(tfk, b, d) for tfk in tf_sources for b in bfr
+                     if (tfk, b["slug"]) in lf_cache for d in dipole]
+        for r in _pmap(dip_tasks, do_dipole):
+            runs.append(r)
+        flush_index(runs)
+
+        # Stage 4 — spans (bfr+dipole / end-to-end submissions), independent.
+        def do_span(s):
             idir, odir = args.work / f"cmp_{s['slug']}_in", args.work / f"cmp_{s['slug']}_out"
             try:
                 prepare_input(s["consumes"], gt_sources, idir)
                 rt = run_algo(s, idir, odir, args.runner)
                 meta = {"id": f"{s['slug']}-cmp", "slug": s["slug"], "name": s["slug"],
                         "stage": s["stage"], "mode": "composed", "track": args.track, "runtime": rt}
-                r = score(odir / "chimap.nii.gz", "chimap", gt, mask, args.work / f"cmp_{s['slug']}.json", meta)
-                runs.append(r)
+                return score(odir / "chimap.nii.gz", "chimap", gt, mask,
+                             args.work / f"cmp_{s['slug']}.json", meta)
             except Exception as e:
                 print(f"  composed  {s['slug']:<28} DNF ({e})")
-                runs.append(dnf(f"{s['slug']}-cmp", s["slug"], s["slug"], s["stage"], "composed", args.track))
+                return dnf(f"{s['slug']}-cmp", s["slug"], s["slug"], s["stage"], "composed", args.track)
+
+        for r in _pmap(spans, do_span):
+            runs.append(r)
 
     total = flush_index(runs)
     print(f"\nmerged {len(runs)} runs into results/index.json ({total} total)")
