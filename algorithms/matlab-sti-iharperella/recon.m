@@ -30,10 +30,16 @@ function recon(inp, out)
     if numel(TE) < ne, TE = TE(1) * (1:ne); end   % fall back to uniform spacing if TE underspecified
 
     GYRO = 42.576e6;                                             % Hz/T
+    % STI Suite's SMVFiltering (inside iHARPERELLA) indexes with size/2, which is fractional on
+    % odd dims (e.g. 205) -> "Integer operands required for colon operator" and a corrupted filter.
+    % Pad odd dims to even before the call and crop back after (the pad is outside the mask).
+    sz0 = size(Mask); po = mod(sz0, 2);
     num = zeros(size(Mask)); den = 0;
     for e = 1:ne
-        tp = iHARPERELLA(phase(:,:,:,e), double(Mask), ...
-                         'voxelsize', vox, 'padsize', padsize, 'niter', niter);   % radians, local
+        pe = padarray(phase(:,:,:,e), po, 0, 'post');
+        Mk = padarray(double(Mask), po, 0, 'post');
+        tp = iHARPERELLA(pe, Mk, 'voxelsize', vox, 'padsize', padsize, 'niter', niter);  % rad, local
+        tp = tp(1:sz0(1), 1:sz0(2), 1:sz0(3));
         field_e = double(tp) / (2*pi * GYRO * B0 * TE(e)) * 1e6;                   % ppm
         w = TE(e)^2;                                          % optimal weight for field-from-phase
         num = num + w * field_e; den = den + w;
