@@ -32,10 +32,13 @@ def _name(rid: str, kind: str) -> str:
 
 
 def _transient(exc: Exception) -> bool:
-    # OSF/WaterButler occasionally return a gateway error mid-request; osfclient surfaces it as a
-    # RuntimeError("Response has status code 50x ..."). Also retry raw connection blips.
+    # OSF/WaterButler intermittently fail a request mid-upload; osfclient surfaces these as either
+    # RuntimeError("Response has status code 50x ...") or RuntimeError("Could not create a new file
+    # at (...) nor update it."). Retry those plus raw connection blips.
     s = str(exc)
-    return any(c in s for c in ("status code 502", "status code 503", "status code 504")) \
+    return any(c in s for c in ("status code 502", "status code 503", "status code 504",
+                                "Could not create a new file", "nor update it",
+                                "timed out", "Connection")) \
         or exc.__class__.__name__ in ("ConnectionError", "Timeout", "ChunkedEncodingError")
 
 
@@ -76,7 +79,11 @@ def main() -> int:
     storage = OSF(token=token).project(node).storage("osfstorage")
 
     # Upload every run's volumes (overwrite in place), recording the OSF filename per (run, kind).
+    # Best-effort: a volume that fails after retries is skipped, never aborts the publish — the
+    # leaderboard scores live in index.json and MUST commit even if the OSF viewer volumes (or the
+    # OSF component's storage quota) are having a bad day.
     want: dict[str, dict[str, str]] = {}
+    failed = 0
     for run_dir in sorted(results.glob("*/")):
         rid = run_dir.name
         if rid not in by_id:
@@ -91,23 +98,33 @@ def main() -> int:
                 with open(path, "rb") as fp:
                     storage.create_file(nm, fp, force=True, update=True)
 
-            _retry(f"upload {name}", _upload)
+            try:
+                _retry(f"upload {name}", _upload)
+            except Exception as exc:  # noqa: BLE001 — best-effort; don't let one volume sink the run
+                failed += 1
+                print(f"  ! skipping {name} after retries: {exc}", file=sys.stderr)
+                continue
             want.setdefault(rid, {})[kind] = name
             print(f"  uploaded {name}")
+    if failed:
+        print(f"! {failed} volume(s) failed to upload; publishing index.json with the rest "
+              f"(the viewer will be missing those volumes)", file=sys.stderr)
 
-    # Resolve public download URLs from the storage listing. Verify every upload actually landed —
+    # Resolve public download URLs from the storage listing. Verify each upload actually landed —
     # osfclient can PUT against a read-only token and not raise, so never trust "no exception".
-    url_by_name = _retry("list storage", lambda: {f.name: f._download_url for f in storage.files})
-    missing = [n for kinds in want.values() for n in kinds.values() if n not in url_by_name]
-    if missing:
-        print(f"! {len(missing)} volume(s) did not appear on OSF after upload (check the token has "
-              f"write scope on node '{node}'): {missing[:3]}...", file=sys.stderr)
-        return 1
+    try:
+        url_by_name = _retry("list storage", lambda: {f.name: f._download_url for f in storage.files})
+    except Exception as exc:  # noqa: BLE001
+        print(f"! could not list OSF storage ({exc}); committing index.json without volume URLs",
+              file=sys.stderr)
+        url_by_name = {}
 
     published = 0
     for rid, kinds in want.items():
-        by_id[rid]["volumes"] = {k: url_by_name[n] for k, n in kinds.items()}
-        published += 1
+        vols = {k: url_by_name[n] for k, n in kinds.items() if n in url_by_name}
+        if vols:
+            by_id[rid]["volumes"] = vols
+            published += 1
 
     index.write_text(json.dumps(doc, indent=2) + "\n")
     print(f"published volumes for {published} runs -> {index}")

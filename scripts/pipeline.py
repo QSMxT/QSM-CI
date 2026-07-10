@@ -108,8 +108,13 @@ def build_env(algo: dict) -> str:
         subprocess.run(["docker", "build", "-q", "-t", tag, str(algo["dir"])], check=True)
     else:
         tag = algo["image"]
-        if subprocess.run(["docker", "image", "inspect", tag], capture_output=True).returncode != 0:
-            subprocess.run(["docker", "pull", tag], check=True)
+        # Always pull: submissions push updated builds to the SAME tag (e.g. matlab-*:v1), so a
+        # stale copy cached from a prior run would otherwise be used silently (docker image inspect
+        # succeeds and skips the pull). `docker pull` is cheap when the digest already matches.
+        if subprocess.run(["docker", "pull", tag], capture_output=True).returncode != 0:
+            # Offline / registry hiccup — fall back to a locally cached image if one exists.
+            if subprocess.run(["docker", "image", "inspect", tag], capture_output=True).returncode != 0:
+                raise RuntimeError(f"cannot pull or find image {tag}")
     _built[algo["slug"]] = tag
     return tag
 
