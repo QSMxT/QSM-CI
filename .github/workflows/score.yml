@@ -96,12 +96,17 @@ jobs:
           fi
 
       - name: Publish volumes to OSF
+        # Best-effort viewer volumes — must never block committing the leaderboard scores below.
+        continue-on-error: true
         env:
           OSF_TOKEN: ${{ secrets.OSF_TOKEN }}
           OSF_VOLUMES_NODE: ${{ secrets.OSF_VOLUMES_NODE }}
         run: python scripts/publish_volumes.py results
 
       - name: Commit results index (triggers the Pages deploy)
+        # Always commit the scored index.json even if the OSF volume publish failed — the
+        # leaderboard (scores) lives here; the OSF volumes are only for the NiiVue viewer.
+        if: ${{ !cancelled() }}
         run: |
           git config user.name  "qsm-ci-bot"
           git config user.email "qsm-ci@users.noreply.github.com"
