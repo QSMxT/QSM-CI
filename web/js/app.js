@@ -1,12 +1,22 @@
 // Shared chrome (nav + footer) and helpers for the QSM-CI site.
 // Loaded before Alpine so the page component factories can use these globals.
 
+// Cross-project "ecosystem bar" shared across all QSM sites (see QSMxT/qsmxt.github.io).
+(function () {
+  const s = document.createElement("script");
+  const local = location.hostname === "localhost" || location.hostname === "127.0.0.1";
+  s.src = local ? "/qsm-nav.js" : "https://qsmxt.github.io/qsm-nav.js";
+  s.dataset.current = "ci";
+  document.head.appendChild(s);
+})();
+
 const GH = "https://github.com/QSMxT/QSM-CI";
 
 // ---- theme (dark mode) ------------------------------------------------------
 function applyTheme() {
   const saved = localStorage.getItem("qsmci-theme");
-  const dark = saved === "dark" || (!saved && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  // Dark-first across the QSM family: default to dark unless the user chose light.
+  const dark = saved ? saved === "dark" : true;
   document.documentElement.classList.toggle("dark", dark);
 }
 function toggleTheme() {
@@ -29,7 +39,7 @@ const MOON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor
   main input:not([type=checkbox]):not([type=radio]):not([type=range]),main select,main textarea{
     padding:.5rem .75rem;border:1px solid #d1d5db;border-radius:.5rem;font-size:.875rem;line-height:1.25rem;background-color:#fff;transition:border-color .12s,box-shadow .12s}
   main input:not([type=checkbox]):not([type=radio]):not([type=range]):focus,main select:focus,main textarea:focus{
-    outline:none;border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,.22)}
+    outline:none;border-color:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,.22)}
   main select{padding-right:2rem;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .6rem center;-webkit-appearance:none;appearance:none}
   main ::placeholder{color:#9ca3af}
   html.dark main input:not([type=checkbox]):not([type=radio]):not([type=range]),html.dark main select,html.dark main textarea{background-color:#1f2937;border-color:#374151;color:#f3f4f6}
@@ -40,24 +50,24 @@ const MOON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor
   html.dark main .border-gray-200,html.dark main .border-gray-100{border-color:#1f2937}
   html.dark main .border-gray-300{border-color:#374151}
   html.dark main .divide-gray-100>:not([hidden])~:not([hidden]),html.dark main .divide-gray-800>:not([hidden])~:not([hidden]){border-color:#1f2937}
-  html.dark main .bg-indigo-50{background-color:rgba(99,102,241,.13)}
-  html.dark main .text-indigo-700{color:#a5b4fc}
-  html.dark main .text-indigo-600{color:#818cf8}
-  html.dark main .ring-indigo-100{--tw-ring-color:rgba(99,102,241,.25)}
-  html.dark main .hover\\:bg-indigo-100:hover{background-color:rgba(99,102,241,.2)}
+  html.dark main .bg-emerald-50{background-color:rgba(16,185,129,.13)}
+  html.dark main .text-emerald-700{color:#6ee7b7}
+  html.dark main .text-emerald-600{color:#34d399}
+  html.dark main .ring-emerald-100{--tw-ring-color:rgba(16,185,129,.25)}
+  html.dark main .hover\\:bg-emerald-100:hover{background-color:rgba(16,185,129,.2)}
   html.dark main .text-gray-900{color:#f3f4f6}
   html.dark main .text-gray-700{color:#d1d5db}
   html.dark main .text-gray-600,html.dark main .text-gray-500{color:#9ca3af}
   html.dark main .text-gray-400{color:#6b7280}
   html.dark main .text-gray-300{color:#4b5563}
   html.dark main .hover\\:bg-gray-50:hover{background-color:#1f2937}
-  html.dark main .hover\\:bg-indigo-50\\/40:hover,html.dark main .hover\\:bg-indigo-50:hover{background-color:rgba(99,102,241,.1)}
-  html.dark main .group:hover .group-hover\\:bg-indigo-50\\/40{background-color:rgba(99,102,241,.1)}
+  html.dark main .hover\\:bg-emerald-50\\/40:hover,html.dark main .hover\\:bg-emerald-50:hover{background-color:rgba(16,185,129,.1)}
+  html.dark main .group:hover .group-hover\\:bg-emerald-50\\/40{background-color:rgba(16,185,129,.1)}
   html.dark main .bg-gray-50\\/70{background-color:#0f172a}
   html.dark main input,html.dark main select{background-color:#1f2937;border-color:#374151;color:#f3f4f6}
   html.dark main .ring-gray-200,html.dark main .ring-gray-300{--tw-ring-color:#374151}
   html.dark main .shadow-sm{box-shadow:0 1px 2px 0 rgba(0,0,0,.4)}
-  html.dark .from-indigo-50\\/70{--tw-gradient-from:rgba(30,27,75,.4) var(--tw-gradient-from-position)}`;
+  html.dark .from-emerald-50\\/70{--tw-gradient-from:rgba(2,44,34,.4) var(--tw-gradient-from-position)}`;
   const s = document.createElement("style");
   s.textContent = css;
   document.addEventListener("DOMContentLoaded", () => document.head.appendChild(s));
@@ -129,7 +139,7 @@ function heatColor(v, lo, hi, key) {
 
 function navLink(href, label, active) {
   const cls = active
-    ? "text-indigo-600 dark:text-indigo-400 font-semibold"
+    ? "text-emerald-600 dark:text-emerald-400 font-semibold"
     : "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100";
   return `<a href="${href}" class="text-sm ${cls} transition-colors">${label}</a>`;
 }
@@ -143,10 +153,12 @@ function injectChrome() {
     nav.innerHTML = `
       <div class="mx-auto max-w-6xl px-6 h-16 flex items-center justify-between">
         <a href="index.html" class="flex items-center gap-2.5">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" class="text-indigo-600 dark:text-indigo-400">
-            <path d="M12 2l8.66 5v10L12 22l-8.66-5V7L12 2z" fill="currentColor" fill-opacity="0.12"/>
-            <path d="M12 2l8.66 5v10L12 22l-8.66-5V7L12 2z" stroke="currentColor" stroke-width="1.6"/>
-            <circle cx="12" cy="12" r="3" fill="currentColor"/>
+          <svg width="26" height="26" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+            <defs><linearGradient id="ci-nav-g" x1="2" y1="2" x2="30" y2="30" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#34d399"/><stop offset="1" stop-color="#059669"/></linearGradient></defs>
+            <rect x="1.5" y="1.5" width="29" height="29" rx="8" fill="url(#ci-nav-g)"/>
+            <g transform="translate(4,4)" stroke="#fff" stroke-width="2.6" stroke-linecap="round">
+              <path d="M6 19v-4"/><path d="M12 19V9"/><path d="M18 19V5"/></g>
           </svg>
           <span class="font-semibold text-gray-900 dark:text-gray-100 tracking-tight">QSM-CI</span>
         </a>
@@ -168,8 +180,8 @@ function injectChrome() {
     footer.innerHTML = `
       <div class="mx-auto max-w-6xl px-6 py-10 text-sm text-gray-500 dark:text-gray-400 flex flex-col sm:flex-row justify-between gap-4">
         <p>QSM-CI — a challenge for Quantitative Susceptibility Mapping reconstruction.</p>
-        <p>Scored with <a href="${GH}/tree/main/eval" class="text-indigo-600 hover:underline">qsm-eval</a>
-           · metrics from <a href="https://github.com/astewartau/QSM.rs" class="text-indigo-600 hover:underline">QSM.rs</a></p>
+        <p>Scored with <a href="${GH}/tree/main/eval" class="text-emerald-600 hover:underline">qsm-eval</a>
+           · metrics from <a href="https://github.com/astewartau/QSM.rs" class="text-emerald-600 hover:underline">QSM.rs</a></p>
       </div>`;
   }
 }

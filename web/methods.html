@@ -31,7 +31,7 @@
                 </div>
                 <template x-if="a.xsim != null">
                   <a :href="'submission.html?run=' + a.runId"
-                     class="shrink-0 rounded-lg bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700 hover:bg-indigo-100"
+                     class="shrink-0 rounded-lg bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 hover:bg-emerald-100"
                      title="View reconstruction">XSIM <span x-text="a.xsim.toFixed(3)"></span></a>
                 </template>
               </div>
@@ -54,10 +54,10 @@
 
               <div class="mt-auto pt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
                 <span class="text-gray-500" x-show="a.citation" x-text="a.citation"></span>
-                <a x-show="a.doi" :href="'https://doi.org/' + a.doi" class="text-indigo-600 hover:underline">doi</a>
-                <a x-show="a.code_url" :href="a.code_url" class="text-indigo-600 hover:underline">source</a>
+                <a x-show="a.doi" :href="'https://doi.org/' + a.doi" class="text-emerald-600 hover:underline">doi</a>
+                <a x-show="a.code_url" :href="a.code_url" class="text-emerald-600 hover:underline">source</a>
                 <template x-if="a.runId">
-                  <a :href="'submission.html?run=' + a.runId" class="ml-auto font-semibold text-indigo-600 hover:text-indigo-700">View reconstruction →</a>
+                  <a :href="'submission.html?run=' + a.runId" class="ml-auto font-semibold text-emerald-600 hover:text-emerald-700">View reconstruction →</a>
                 </template>
                 <span x-show="!a.runId" class="ml-auto text-gray-300">no result</span>
               </div>

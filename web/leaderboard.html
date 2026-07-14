@@ -31,7 +31,7 @@
       <template x-if="view==='isolated'">
         <div class="inline-flex flex-wrap gap-2">
           <template x-for="s in stages()" :key="s">
-            <button @click="stage=s; fixSort()" :class="stage===s ? 'bg-indigo-600 text-white' : 'bg-white text-gray-600 ring-1 ring-gray-200 hover:bg-gray-50'" class="rounded-full px-3.5 py-1.5 text-sm font-medium transition" x-text="STAGE_LABEL[s]||s"></button>
+            <button @click="stage=s; fixSort()" :class="stage===s ? 'bg-emerald-600 text-white' : 'bg-white text-gray-600 ring-1 ring-gray-200 hover:bg-gray-50'" class="rounded-full px-3.5 py-1.5 text-sm font-medium transition" x-text="STAGE_LABEL[s]||s"></button>
           </template>
         </div>
       </template>
@@ -43,7 +43,7 @@
         </label>
       </template>
       <div class="grow"></div>
-      <input x-model="filter" type="search" placeholder="Filter…" class="rounded-lg border-gray-300 text-sm px-3 py-1.5 w-44 focus:border-indigo-500 focus:ring-indigo-500" />
+      <input x-model="filter" type="search" placeholder="Filter…" class="rounded-lg border-gray-300 text-sm px-3 py-1.5 w-44 focus:border-emerald-500 focus:ring-emerald-500" />
       <!-- metric column picker -->
       <div class="relative" @click.outside="colMenu=false">
         <button @click="colMenu=!colMenu" class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
@@ -54,7 +54,7 @@
         <div x-show="colMenu" x-cloak class="absolute right-0 z-20 mt-2 w-56 rounded-xl border border-gray-200 bg-white p-1.5 shadow-lg" style="display:none">
           <template x-for="c in cols" :key="c">
             <label class="flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-sm hover:bg-gray-50 cursor-pointer">
-              <input type="checkbox" class="accent-indigo-600" :checked="selectedCols.includes(c)" @change="toggleCol(c)" />
+              <input type="checkbox" class="accent-emerald-600" :checked="selectedCols.includes(c)" @change="toggleCol(c)" />
               <span x-text="METRICS[c].label"></span>
               <span class="ml-auto text-xs text-gray-400" x-text="METRICS[c].unit || (METRICS[c].better==='higher'?'↑':'↓')"></span>
             </label>
@@ -135,13 +135,13 @@
           <tbody class="divide-y divide-gray-100">
             <template x-for="(r, i) in rows" :key="r.id">
               <tr @click="go(r)" class="group cursor-pointer" :class="r.status==='DNF' ? 'opacity-50' : ''">
-                <td class="px-5 py-3 text-left font-medium text-gray-900 sticky left-0 bg-white group-hover:bg-indigo-50/40">
+                <td class="px-5 py-3 text-left font-medium text-gray-900 sticky left-0 bg-white group-hover:bg-emerald-50/40">
                   <span class="mr-1.5 inline-block w-5 text-center" x-text="medal(i)"></span>
                   <span x-text="r.name"></span>
                   <span x-show="r.status==='DNF'" class="ml-2 rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold text-gray-500">DNF</span>
                 </td>
                 <template x-for="c in displayCols" :key="c">
-                  <td class="px-4 py-3 text-right tabular-nums group-hover:bg-indigo-50/40" :class="c===sortKey ? 'font-semibold text-gray-900' : 'text-gray-600'" x-text="fmt(val(r,c), c)"></td>
+                  <td class="px-4 py-3 text-right tabular-nums group-hover:bg-emerald-50/40" :class="c===sortKey ? 'font-semibold text-gray-900' : 'text-gray-600'" x-text="fmt(val(r,c), c)"></td>
                 </template>
               </tr>
             </template>
