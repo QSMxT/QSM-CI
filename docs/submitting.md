@@ -12,13 +12,15 @@ QSM-CI only does it server-side to build the challenge dataset.)
 ```bash
 pipx install git+https://github.com/QSMxT/QSM-CI   # or: pip install qsm-ci
 
+qsm-ci list                # the reference algorithms you can run, grouped by stage
 qsm-ci new                 # interactive scaffold -> algorithms/<slug>/ (or use the web wizard)
 # ... edit your recon.py / recon.m / recon.rs / recon.jl ...
 
 # run one stage on explicit inputs; the --<artifact> flags depend on the stage:
 qsm-ci run my-method --localfield lf.nii.gz --mask mask.nii.gz --params params.json
 #   add --truth chi.nii.gz [--seg dseg.nii.gz] to score the output
-qsm-ci run my-method --help    # show exactly which files this submission's stage needs
+qsm-ci run my-method           # with no inputs, prints exactly which files this stage needs
+qsm-ci run my-method --help    # full help: scoring/runner options + method parameters
 
 qsm-ci submit my-method    # commit on a branch and open a pull request
 qsm-ci doctor              # check docker / gh / deps

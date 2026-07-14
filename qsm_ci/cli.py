@@ -1,13 +1,14 @@
 """qsm-ci — command-line companion for the QSM-CI challenge.
 
+  qsm-ci list                list the reference algorithms you can run
   qsm-ci new                 scaffold a submission folder (interactive)
   qsm-ci run <slug> ...      run one stage on explicit input files; score it with --truth
   qsm-ci submit <slug>       open a pull request adding your submission
   qsm-ci doctor              check your environment
 
-`run` takes flags for the artifacts its stage consumes, e.g.
+Start with `qsm-ci list` to see the slugs, then `qsm-ci run <slug>` to see the inputs that
+slug's stage needs. `run` takes a flag per consumed artifact, e.g.
   qsm-ci run tkd --localfield lf.nii.gz --mask mask.nii.gz --params params.json --truth chi.nii.gz
-See `qsm-ci run <slug> --help` for the exact flags a submission needs.
 """
 
 from __future__ import annotations
@@ -60,9 +61,11 @@ def build_parser() -> argparse.ArgumentParser:
     n.add_argument("--force", action="store_true")
     n.set_defaults(func=_cmd_new)
 
+    sub.add_parser("list", help="list the reference algorithms you can run")
+
     # `run` parses its own (stage-dependent) flags — register it just for help/usage listing.
     sub.add_parser("run", add_help=False,
-                   help="run one stage on explicit files (qsm-ci run <slug> --help for flags)")
+                   help="run one stage on explicit files (qsm-ci run <slug> for the inputs it needs)")
 
     s = sub.add_parser("submit", help="open a pull request adding your submission")
     s.add_argument("slug")
@@ -86,6 +89,10 @@ def main(argv=None) -> int:
                 return e.code
             print(f"✗ {e}", file=sys.stderr)
             return 1
+
+    if argv and argv[0] == "list":
+        from .runner import list_command
+        return list_command(argv[1:])
 
     args = build_parser().parse_args(argv)
     return args.func(args)

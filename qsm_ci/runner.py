@@ -9,6 +9,7 @@ No BIDS, no datasets, no downloads: you point at the exact NIfTIs a stage consum
 from __future__ import annotations
 
 import argparse
+import difflib
 import json
 import math
 import os
@@ -42,14 +43,98 @@ def _parse_manifest(algo_dir: Path) -> dict:
     return meta
 
 
-def resolve_algo_dir(target: str) -> Path:
-    """Accept a slug (algorithms/<slug> or ./<slug>) or a direct path to the folder."""
+def _find_algo_dir(target: str) -> "Path | None":
+    """Resolve a slug (algorithms/<slug> or ./<slug>) or a direct path; None if not found."""
     p = Path(target)
     for cand in (p, Path("algorithms") / target, Path.cwd() / target):
         if (cand / "algorithm.yml").exists():
             return cand.resolve()
-    raise SystemExit(f"could not find an algorithm.yml for '{target}' "
-                     f"(looked at {p}, algorithms/{target})")
+    return None
+
+
+def resolve_algo_dir(target: str) -> Path:
+    """Accept a slug (algorithms/<slug> or ./<slug>) or a direct path to the folder."""
+    d = _find_algo_dir(target)
+    if d is None:
+        raise SystemExit(f"could not find an algorithm.yml for '{target}' "
+                         f"(looked at {target}, algorithms/{target})")
+    return d
+
+
+def _algorithms_root() -> "Path | None":
+    for cand in (Path("algorithms"), Path.cwd() / "algorithms"):
+        if cand.is_dir():
+            return cand
+    return None
+
+
+def _list_algorithms() -> "list[tuple[str, str, str]]":
+    """(slug, stage, name) for every runnable submission under ./algorithms (skips _internal)."""
+    root = _algorithms_root()
+    if root is None:
+        return []
+    out = []
+    for d in sorted(root.iterdir()):
+        if d.name.startswith("_") or not (d / "algorithm.yml").exists():
+            continue
+        stage = name = ""
+        for line in (d / "algorithm.yml").read_text().splitlines():
+            s = line.strip()
+            if s.startswith("stage:") and not stage:
+                stage = s.split(":", 1)[1].strip()
+            elif s.startswith("name:") and not name:
+                name = s.split(":", 1)[1].strip().strip('"\'')
+        out.append((d.name, stage or "?", name or d.name))
+    return out
+
+
+def _algorithms_help() -> str:
+    """A grouped listing of runnable slugs, or guidance if there's no algorithms/ here."""
+    algos = _list_algorithms()
+    if not algos:
+        return ("No algorithms/ directory found here. Run qsm-ci from a QSM-CI checkout\n"
+                "(git clone https://github.com/QSMxT/QSM-CI), or pass a path to a submission folder.")
+    width = max(len(slug) for slug, _, _ in algos)
+    by_stage: dict[str, list[tuple[str, str]]] = {}
+    for slug, stage, name in algos:
+        by_stage.setdefault(stage, []).append((slug, name))
+    lines = ["Available algorithms — run  qsm-ci run <slug>  to see the inputs each needs:", ""]
+    for stage in sorted(by_stage):
+        lines.append(f"  {stage}:")
+        for slug, name in by_stage[stage]:
+            lines.append(f"    {slug.ljust(width)}   {name}")
+    return "\n".join(lines)
+
+
+def _closest_slugs(target: str) -> "list[str]":
+    names = [slug for slug, _, _ in _list_algorithms()]
+    return difflib.get_close_matches(target, names, n=3, cutoff=0.4)
+
+
+def _inputs_summary(slug: str, algo: dict) -> str:
+    """Tell the user exactly which input files a valid slug's stage needs, with an example."""
+    stage = algo["stage"]
+    consumes = STAGES[stage]["consumes"]
+    produced = STAGES[stage]["produces"][0]
+    lines = [f"{algo['name']}  —  {stage} stage   ({', '.join(consumes)} → {produced})", "",
+             "Provide each input as a file:"]
+    for art in consumes:
+        ftype = "JSON" if art == "params" else "NIfTI"
+        opt = "  [optional]" if art in OPTIONAL_ARTIFACTS else ""
+        lines.append(f"  --{art} PATH".ljust(20) + f" {ARTIFACT_FILE[art]} ({ftype}){opt}")
+    req = [a for a in consumes if a not in OPTIONAL_ARTIFACTS]
+    example = " ".join(f"--{a} {a}{'.json' if a == 'params' else '.nii.gz'}" for a in req)
+    lines += ["",
+              f"Example:  qsm-ci run {slug} {example}",
+              f"Add  --truth {produced}.nii.gz  [--seg dseg.nii.gz]  to score the output.",
+              f"See   qsm-ci run {slug} --help  for runner/scoring options and method parameters."]
+    return "\n".join(lines)
+
+
+def list_command(argv=None, log=print) -> int:
+    """`qsm-ci list` — show the reference algorithms available to run."""
+    log(_algorithms_help())
+    return 0
 
 
 RUNNERS = ("docker", "podman", "apptainer", "local")
@@ -249,14 +334,36 @@ def _overrides(algo: dict, items: list) -> dict:
 
 def run_command(argv, log=print) -> int:
     """Dispatch `qsm-ci run ...` with flags derived from the submission's stage."""
+    has_help = any(a in ("-h", "--help") for a in argv)
     slug = next((a for a in argv if not a.startswith("-")), None)
+
+    # No slug (incl. bare `--help`): show what you can run instead of a dead-end usage line.
     if not slug:
         log("usage: qsm-ci run <slug> [--<artifact> PATH ...] [--truth PATH] [-o OUT]")
-        log("The accepted --<artifact> flags depend on the submission's stage.")
-        log("Run  qsm-ci run <slug> --help  to see them.")
+        log("")
+        log(_algorithms_help())
+        return 0 if has_help else 2
+
+    # Unknown slug: guide, don't just error.
+    algo_dir = _find_algo_dir(slug)
+    if algo_dir is None:
+        log(f"✗ no submission '{slug}' (looked at {slug}, algorithms/{slug}).")
+        hint = _closest_slugs(slug)
+        if hint:
+            log(f"  did you mean:  {', '.join(hint)}")
+        log("")
+        log(_algorithms_help())
         return 2
 
-    algo = _parse_manifest(resolve_algo_dir(slug))
+    algo = _parse_manifest(algo_dir)
+
+    # `qsm-ci run <slug>` with no input files (and not --help): tell them what to provide.
+    artifact_flags = {f"--{art}" for art in STAGES[algo["stage"]]["consumes"]}
+    gave_input = any(a.split("=", 1)[0] in artifact_flags for a in argv)
+    if not has_help and not gave_input:
+        log(_inputs_summary(slug, algo))
+        return 0
+
     parser = _build_run_parser(slug, algo)
     args = parser.parse_args(argv)
 
