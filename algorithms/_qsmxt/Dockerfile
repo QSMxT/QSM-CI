@@ -1,6 +1,6 @@
 # QSMxT engine image — pinned to an official release (reproducible).
 FROM debian:bookworm-slim
-ARG QSMXT_VERSION=v9.2.0
+ARG QSMXT_VERSION=v9.4.0
 RUN apt-get update && apt-get install -y --no-install-recommends jq ca-certificates curl \
     && rm -rf /var/lib/apt/lists/*
 # Statically-linked musl build — no glibc dependency, so it runs on any slim base.
