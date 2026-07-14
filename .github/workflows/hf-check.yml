@@ -1,0 +1,64 @@
+name: hf-check
+
+# Manually validate the Hugging Face volume-publish path (scripts/publish_volumes.py) against the
+# live dataset repo — without a full scoring run. Uploads a few tiny synthetic volumes, confirms
+# the URLs recorded in index.json are publicly downloadable, then deletes the test files.
+# Needs: secret HF_TOKEN (write), repo variable HF_VOLUMES_REPO (e.g. qsmxt/qsm-ci-volumes).
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install numpy nibabel huggingface_hub
+
+      - name: Synthesize a tiny run + volumes
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          import nibabel as nib, numpy as np
+          d = Path("results/__hfcheck"); d.mkdir(parents=True, exist_ok=True)
+          for k in ("recon", "truth", "error"):
+              nib.save(nib.Nifti1Image(np.zeros((6, 6, 6), "float32"), np.eye(4)), d / f"{k}.nii.gz")
+          Path("results/index.json").write_text(
+              json.dumps({"runs": [{"id": "__hfcheck", "slug": "x", "name": "hf-check"}]}))
+          PY
+
+      - name: Publish to Hugging Face + verify public download
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_VOLUMES_REPO: ${{ vars.HF_VOLUMES_REPO }}
+        run: |
+          python scripts/publish_volumes.py results
+          url=$(python -c "import json;print(json.load(open('results/index.json'))['runs'][0]['volumes']['recon'])")
+          echo "recon URL: $url"
+          # unauthenticated, like the browser viewer; -L follows the CDN redirect
+          curl -fsSL "$url" -o /tmp/dl.nii.gz
+          echo "✓ public download OK ($(stat -c%s /tmp/dl.nii.gz) bytes)"
+
+      - name: Clean up the test files from the HF repo
+        if: always()
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_VOLUMES_REPO: ${{ vars.HF_VOLUMES_REPO }}
+        run: |
+          python - <<'PY'
+          import os
+          from huggingface_hub import CommitOperationDelete, HfApi
+          api = HfApi(token=os.environ["HF_TOKEN"])
+          repo = os.environ["HF_VOLUMES_REPO"]
+          ops = [CommitOperationDelete(path_in_repo=f)
+                 for f in api.list_repo_files(repo, repo_type="dataset")
+                 if f.startswith("__hfcheck__")]
+          if ops:
+              api.create_commit(repo, repo_type="dataset", operations=ops,
+                                commit_message="hf-check cleanup")
+          print("removed", [o.path_in_repo for o in ops] or "nothing")
+          PY

@@ -1,0 +1,43 @@
+name: migrate-volumes
+
+# One-off: move the existing viewer volumes from OSF to the Hugging Face dataset repo and commit
+# the rewritten results/index.json (which triggers the Pages deploy). Idempotent — re-run it if it
+# times out or OSF drops some downloads; already-migrated runs are skipped. Delete this workflow
+# once results/index.json contains only huggingface.co volume URLs.
+# Needs: secret HF_TOKEN (write), repo variable HF_VOLUMES_REPO.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install requests huggingface_hub
+
+      - name: Migrate volumes OSF -> Hugging Face
+        # The script persists index.json after every 64-file batch, so even a timeout here keeps
+        # everything migrated so far — the commit step below still runs and a re-run resumes.
+        timeout-minutes: 330
+        continue-on-error: true
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_VOLUMES_REPO: ${{ vars.HF_VOLUMES_REPO }}
+        run: python scripts/migrate_volumes_to_hf.py results
+
+      - name: Commit rewritten index (triggers the Pages deploy)
+        if: ${{ !cancelled() }}
+        run: |
+          git config user.name  "qsm-ci-bot"
+          git config user.email "qsm-ci@users.noreply.github.com"
+          git add results/index.json
+          git commit -m "Point viewer volumes at Hugging Face" || { echo "no changes"; exit 0; }
+          git pull --rebase origin main
+          git push

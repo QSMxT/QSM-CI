@@ -234,7 +234,7 @@ function wireControls() {
   setViewActive("multiplanar");
 }
 
-// Volumes are served from OSF (run.volumes[kind]); fall back to local results/<id>/ for dev.
+// Volumes are served from the Hugging Face Hub (run.volumes[kind]); fall back to local results/<id>/ for dev.
 const volUrl = (kind) => (run && run.volumes && run.volumes[kind]) || (baseUrl + kind + ".nii.gz");
 
 async function showLayer(layer) {

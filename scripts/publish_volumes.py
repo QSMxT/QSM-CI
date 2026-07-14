@@ -1,23 +1,31 @@
 #!/usr/bin/env python3
-"""Publish per-run viewer volumes to a public OSF component and record their URLs in the leaderboard.
+"""Publish per-run viewer volumes to a public Hugging Face dataset repo and record their URLs
+in the leaderboard.
 
-The site never serves NIfTI volumes from git or the Pages build — they live on OSF. This uploads
-every `results/<id>/{recon,truth,error}.nii.gz` written by `pipeline.py --emit-volumes` to a PUBLIC
-OSF component, then patches `results/index.json` so each run carries a `volumes: {kind: url}` map the
-viewer loads from. Re-runs overwrite the same files (new version), so it's idempotent.
+The site never serves NIfTI volumes from git or the Pages build — they live on the Hugging Face
+Hub. This uploads every `results/<id>/{recon,truth,error}.nii.gz` written by
+`pipeline.py --emit-volumes` to a PUBLIC dataset repo, then patches `results/index.json` so each
+run carries a `volumes: {kind: url}` map the viewer loads from. Re-runs overwrite the same paths
+(new revision), so it's idempotent — and identical content is deduplicated server-side, so
+re-publishing unchanged volumes is cheap.
 
-Talks to OSF/WaterButler over plain HTTP (requests) rather than osfclient: osfclient's
-create_file(update=True) re-lists EVERY existing file on every single upload — O(N^2), which turned
-a ~1000-file publish into a multi-hour hang. Here we list the component once, then PUT each file
-directly (create new, or overwrite an existing one by id) — O(N).
+Why HF (and not OSF, which this replaced): volumes are committed in batches of ~64 files per
+commit instead of one HTTP round-trip per file, uploads within a batch run in parallel, and the
+`resolve/` download URLs are CDN-backed and send CORS headers — exactly what the in-browser
+NiiVue viewer needs (OSF's WaterButler links were slow, flaky, and needed an `&direct` CORS
+workaround).
 
-Best-effort: a volume that fails after a couple of retries is skipped, never aborting the publish —
-the leaderboard scores live in index.json (committed by the workflow regardless). A circuit breaker
-bails out early if OSF is genuinely down, so we never grind for hours.
+Download URLs are deterministic (`https://huggingface.co/datasets/<repo>/resolve/main/<file>`),
+so they can be recorded even before a batch lands.
+
+Best-effort: a batch that fails after a few retries is skipped, never aborting the publish — the
+leaderboard scores live in index.json (committed by the workflow regardless). A circuit breaker
+bails out early if the Hub is genuinely down, so we never grind for hours.
 
 Env:
-  OSF_TOKEN          personal access token with write access to the volumes component
-  OSF_VOLUMES_NODE   the *public* OSF node id that stores volumes (e.g. sn52e; NOT the private GT project)
+  HF_TOKEN           Hugging Face token with write access (repo Settings -> Actions secret)
+  HF_VOLUMES_REPO    dataset repo id that stores volumes, e.g. "qsmxt/qsm-ci-volumes"
+                     (created automatically as a public dataset repo if it doesn't exist)
 
 Usage:
   python scripts/publish_volumes.py [results_dir]     # default: ./results
@@ -30,18 +38,24 @@ import sys
 import time
 from pathlib import Path
 
-import requests
+from huggingface_hub import CommitOperationAdd, HfApi
 
 ROOT = Path(__file__).resolve().parent.parent
 KINDS = ("recon", "truth", "error")
+BATCH = 64  # files per Hub commit — small enough that a failed batch is cheap to retry/skip
 
 
 def _name(rid: str, kind: str) -> str:
     return f"{rid}__{kind}.nii.gz".replace("~", "_").replace("+", "_")
 
 
-def _retry(desc, fn, attempts=3, base=2.0):
-    """Retry a request a few times on transient failure (short backoff — uploads are fast now)."""
+def _url(repo: str, name: str) -> str:
+    """Stable public download URL; `resolve/` redirects to the CDN and sends CORS headers."""
+    return f"https://huggingface.co/datasets/{repo}/resolve/main/{name}"
+
+
+def _retry(desc, fn, attempts=3, base=4.0):
+    """Retry a Hub call a few times on transient failure."""
     for i in range(attempts):
         try:
             return fn()
@@ -54,29 +68,11 @@ def _retry(desc, fn, attempts=3, base=2.0):
             time.sleep(wait)
 
 
-def _list_existing(session, node):
-    """One paginated pass over the component: name -> {'id': file id, 'download': url}."""
-    out = {}
-    url = f"https://api.osf.io/v2/nodes/{node}/files/osfstorage/?page[size]=100"
-    while url:
-        j = _retry("list", lambda u=url: _ok(session.get(u, timeout=60))).json()
-        for f in j.get("data", []):
-            a = f.get("attributes", {})
-            out[a.get("name")] = {"id": f["id"], "download": f.get("links", {}).get("download")}
-        url = j.get("links", {}).get("next")
-    return out
-
-
-def _ok(resp):
-    resp.raise_for_status()
-    return resp
-
-
 def main() -> int:
-    node = os.environ.get("OSF_VOLUMES_NODE")
-    token = os.environ.get("OSF_TOKEN")
-    if not node or not token:
-        print("! OSF_VOLUMES_NODE and OSF_TOKEN must be set", file=sys.stderr)
+    repo = os.environ.get("HF_VOLUMES_REPO")
+    token = os.environ.get("HF_TOKEN")
+    if not repo or not token:
+        print("! HF_VOLUMES_REPO and HF_TOKEN must be set", file=sys.stderr)
         return 1
 
     results = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "results"
@@ -88,63 +84,53 @@ def main() -> int:
     doc = json.loads(index.read_text())
     by_id = {r["id"]: r for r in doc.get("runs", [])}
 
-    session = requests.Session()
-    session.headers["Authorization"] = f"Bearer {token}"
-    wb = f"https://files.osf.io/v1/resources/{node}/providers/osfstorage/"
-
+    api = HfApi(token=token)
     try:
-        existing = _list_existing(session, node)  # ONE listing, not per-file
+        _retry("create_repo", lambda: api.create_repo(repo, repo_type="dataset", exist_ok=True))
     except Exception as exc:  # noqa: BLE001
-        print(f"! could not list OSF storage ({exc}); committing index.json without volumes",
+        print(f"! could not create/access {repo} ({exc}); committing index.json without volumes",
               file=sys.stderr)
         return 0
-    print(f"  {len(existing)} files already in the component")
 
-    def _upload(path: Path, name: str) -> str:
-        """PUT one file (overwrite existing by id, else create by name); return its download URL."""
-        with open(path, "rb") as fp:
-            if name in existing:
-                resp = _ok(session.put(wb + existing[name]["id"], params={"kind": "file"},
-                                       data=fp, timeout=300))
-            else:
-                resp = _ok(session.put(wb, params={"kind": "file", "name": name},
-                                       data=fp, timeout=300))
-        return resp.json().get("data", {}).get("links", {}).get("download") \
-            or existing.get(name, {}).get("download")
-
-    want: dict[str, dict[str, str]] = {}
-    failed = 0
-    done = 0
-    consecutive_fail = 0
-    give_up = False
+    # Gather every volume that belongs to a run in the index.
+    items: list[tuple[str, str, Path]] = []  # (rid, kind, path)
     for run_dir in sorted(results.glob("*/")):
-        if give_up:
-            break
         rid = run_dir.name
         if rid not in by_id:
             continue
         for kind in KINDS:
             f = run_dir / f"{kind}.nii.gz"
-            if not f.exists():
-                continue
-            name = _name(rid, kind)
-            try:
-                url = _retry(f"upload {name}", lambda p=f, n=name: _upload(p, n))
-                if url:
-                    want.setdefault(rid, {})[kind] = url
-                consecutive_fail = 0
-                done += 1
-                if done % 50 == 0:
-                    print(f"  ... {done} uploaded", flush=True)
-            except Exception as exc:  # noqa: BLE001 — best-effort per volume
-                failed += 1
-                consecutive_fail += 1
-                print(f"  ! skipping {name}: {exc}", file=sys.stderr)
-                if consecutive_fail >= 15:  # circuit breaker: OSF is down, stop grinding
-                    print("  ! 15 consecutive upload failures — OSF looks down; giving up on volumes "
-                          "and committing the scores.", file=sys.stderr)
-                    give_up = True
-                    break
+            if f.exists():
+                items.append((rid, kind, f))
+    if not items:
+        print("no volumes on disk — nothing to publish")
+        return 0
+    print(f"uploading {len(items)} volumes to {repo} in batches of {BATCH}")
+
+    want: dict[str, dict[str, str]] = {}
+    failed = 0
+    consecutive_fail = 0
+    for start in range(0, len(items), BATCH):
+        batch = items[start:start + BATCH]
+        ops = [CommitOperationAdd(path_in_repo=_name(rid, kind), path_or_fileobj=str(path))
+               for rid, kind, path in batch]
+        desc = f"batch {start // BATCH + 1}/{(len(items) + BATCH - 1) // BATCH}"
+        try:
+            _retry(desc, lambda o=ops, d=desc: api.create_commit(
+                repo, repo_type="dataset", operations=o,
+                commit_message=f"publish volumes ({d})"))
+            for rid, kind, _ in batch:
+                want.setdefault(rid, {})[kind] = _url(repo, _name(rid, kind))
+            consecutive_fail = 0
+            print(f"  ✓ {desc} ({min(start + BATCH, len(items))}/{len(items)})", flush=True)
+        except Exception as exc:  # noqa: BLE001 — best-effort per batch
+            failed += len(batch)
+            consecutive_fail += 1
+            print(f"  ! skipping {desc}: {exc}", file=sys.stderr)
+            if consecutive_fail >= 3:  # circuit breaker: the Hub is down, stop grinding
+                print("  ! 3 consecutive batch failures — Hugging Face looks down; giving up on "
+                      "volumes and committing the scores.", file=sys.stderr)
+                break
     if failed:
         print(f"! {failed} volume(s) failed to upload; committing index.json with the rest",
               file=sys.stderr)
