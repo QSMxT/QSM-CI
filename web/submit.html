@@ -27,7 +27,7 @@
       <template x-for="(s, i) in stepNames" :key="i">
         <button @click="if (i+1 <= maxStep) step = i+1" class="flex items-center gap-2 group" :disabled="i+1 > maxStep">
           <span class="flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold transition"
-            :class="step === i+1 ? 'bg-indigo-600 text-white' : (i+1 < step ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300' : 'bg-gray-100 text-gray-400 dark:bg-gray-800')"
+            :class="step === i+1 ? 'bg-emerald-600 text-white' : (i+1 < step ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300' : 'bg-gray-100 text-gray-400 dark:bg-gray-800')"
             x-text="i+1 < step ? '✓' : (i+1)"></span>
           <span class="hidden sm:block text-sm" :class="step === i+1 ? 'font-semibold text-gray-900 dark:text-gray-100' : 'text-gray-400'" x-text="s"></span>
         </button>
@@ -42,7 +42,7 @@
         <div class="mt-5 grid sm:grid-cols-2 gap-3">
           <template x-for="s in stageChoices" :key="s.key">
             <button @click="stage = s.key" class="text-left rounded-xl border p-4 transition"
-              :class="stage === s.key ? 'border-indigo-500 ring-2 ring-indigo-500/30 bg-indigo-50/50 dark:bg-indigo-500/10' : 'border-gray-200 hover:border-gray-300 dark:border-gray-700'">
+              :class="stage === s.key ? 'border-emerald-500 ring-2 ring-emerald-500/30 bg-emerald-50/50 dark:bg-emerald-500/10' : 'border-gray-200 hover:border-gray-300 dark:border-gray-700'">
               <div class="font-medium" x-text="s.name"></div>
               <div class="mt-0.5 text-xs text-gray-500 dark:text-gray-400" x-text="s.desc"></div>
             </button>
@@ -89,7 +89,7 @@
           <div class="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-2">
             <template x-for="l in langs" :key="l.key">
               <button type="button" @click="lang = l.key" class="rounded-lg border px-3 py-2 text-center transition"
-                :class="lang===l.key ? 'border-indigo-500 ring-2 ring-indigo-500/30 bg-indigo-50/50 dark:bg-indigo-500/10' : 'border-gray-200 hover:border-gray-300 dark:border-gray-700'">
+                :class="lang===l.key ? 'border-emerald-500 ring-2 ring-emerald-500/30 bg-emerald-50/50 dark:bg-emerald-500/10' : 'border-gray-200 hover:border-gray-300 dark:border-gray-700'">
                 <span class="font-medium" x-text="l.name"></span>
               </button>
             </template>
@@ -123,7 +123,7 @@
             <h2 class="text-lg font-semibold">Parameters</h2>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Optional — documents the knobs your method exposes.</p>
           </div>
-          <button @click="params.push({name:'',default:'',description:''})" class="text-sm font-medium text-indigo-600 hover:text-indigo-700">+ add parameter</button>
+          <button @click="params.push({name:'',default:'',description:''})" class="text-sm font-medium text-emerald-600 hover:text-emerald-700">+ add parameter</button>
         </div>
         <template x-if="!params.length"><p class="mt-4 text-sm text-gray-400">No parameters — that's fine, click Next.</p></template>
         <template x-for="(p,i) in params" :key="i">
@@ -139,10 +139,10 @@
       <!-- STEP 5: review -->
       <section x-show="step===5" x-cloak class="space-y-5">
         <h2 class="text-lg font-semibold">Review &amp; submit</h2>
-        <div class="rounded-xl border border-indigo-100 bg-indigo-50/50 p-4 dark:border-indigo-500/20 dark:bg-indigo-500/5">
+        <div class="rounded-xl border border-emerald-100 bg-emerald-50/50 p-4 dark:border-emerald-500/20 dark:bg-emerald-500/5">
           <div class="flex flex-wrap items-center justify-between gap-3">
             <p class="text-sm">Your submission folder <code x-text="'algorithms/' + slugOr + '/'"></code> — download it as a zip, or copy the files below.</p>
-            <button @click="downloadZip()" class="shrink-0 inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">
+            <button @click="downloadZip()" class="shrink-0 inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
               Download .zip
             </button>
@@ -152,7 +152,7 @@
           <div class="rounded-xl border border-gray-200 overflow-hidden dark:border-gray-800">
             <div class="flex items-center justify-between px-4 py-2 border-b border-gray-100 bg-gray-50 dark:border-gray-800 dark:bg-gray-800/50">
               <span class="font-mono text-xs text-gray-500 dark:text-gray-400" x-text="f.name"></span>
-              <button @click="copy(f.body, f.name)" class="text-xs font-medium text-indigo-600 hover:text-indigo-700" x-text="copied===f.name ? 'copied ✓' : 'copy'"></button>
+              <button @click="copy(f.body, f.name)" class="text-xs font-medium text-emerald-600 hover:text-emerald-700" x-text="copied===f.name ? 'copied ✓' : 'copy'"></button>
             </div>
             <pre class="p-4 overflow-x-auto text-xs leading-relaxed bg-white dark:bg-gray-900"><code x-text="f.body"></code></pre>
           </div>
@@ -181,8 +181,8 @@
       <div class="mt-8 flex items-center justify-between border-t border-gray-100 pt-5 dark:border-gray-800">
         <button @click="step = Math.max(1, step-1)" x-show="step > 1" class="rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800">← Back</button>
         <div x-show="step === 1"></div>
-        <button @click="next()" x-show="step < 5" class="ml-auto rounded-lg bg-indigo-600 px-5 py-2 text-sm font-semibold text-white hover:bg-indigo-700">Next →</button>
-        <a x-show="step === 5" :href="GH + '/compare'" target="_blank" class="ml-auto rounded-lg bg-indigo-600 px-5 py-2 text-sm font-semibold text-white hover:bg-indigo-700">Open a pull request →</a>
+        <button @click="next()" x-show="step < 5" class="ml-auto rounded-lg bg-emerald-600 px-5 py-2 text-sm font-semibold text-white hover:bg-emerald-700">Next →</button>
+        <a x-show="step === 5" :href="GH + '/compare'" target="_blank" class="ml-auto rounded-lg bg-emerald-600 px-5 py-2 text-sm font-semibold text-white hover:bg-emerald-700">Open a pull request →</a>
       </div>
     </div>
   </main>
@@ -196,7 +196,7 @@
       "bfr": { c: "totalfield, mask, params", p: "localfield", inp: "totalfield" },
       "dipole": { c: "localfield, mask, params, magnitude", p: "chimap", inp: "localfield" },
       "unwrap+bfr": { c: "phase, magnitude, mask, params", p: "localfield", inp: "phase" },
-      "bfr+dipole": { c: "totalfield, mask, params", p: "chimap", inp: "totalfield" },
+      "bfr+dipole": { c: "totalfield, mask, params, magnitude", p: "chimap", inp: "totalfield" },
       "end-to-end": { c: "phase, magnitude, mask, params", p: "chimap", inp: "phase" },
     };
     function submit() {
@@ -270,53 +270,97 @@
               + `BIN="$HERE/target/release/recon"\n`
               + `[ -x "$BIN" ] || cargo build --release --offline --manifest-path "$HERE/Cargo.toml"\n`
               + `"$BIN" "$IN" "$OUT"\n`,
-            other: `# TODO: run your reconstruction in whatever language you like.\n`
-              + `# Read ${io.inp}.nii.gz + mask.nii.gz from "$IN"; write ${io.p}.nii.gz (ppm,\n`
-              + `# within the mask) to "$OUT". For example:\n`
-              + `#   "$HERE/my-program" "$IN" "$OUT"\n`,
+            other: `# Minimal working example for the ${this.stage} stage. Inputs are in "$IN":\n`
+              + `#   ${io.inp}.nii.gz  (primary input, ppm)\n`
+              + (io.c.includes("magnitude") ? `#   magnitude.nii.gz          (magnitude; e.g. data-fidelity weighting)\n` : "")
+              + `#   mask.nii.gz                (brain mask)\n`
+              + `#   params.json               (B0_dir, voxel_size mm, B0 tesla, TE echo times s)\n`
+              + `# You must write ${io.p}.nii.gz (ppm, within the mask) to "$OUT",\n`
+              + `# on the same voxel grid as the inputs.\n\n`
+              + `# Read acquisition parameters if you need them (jq is in the reference images):\n`
+              + `if command -v jq >/dev/null 2>&1; then\n`
+              + `  B0_DIR=$(jq -r ".B0_dir | join(\\" \\")" "$IN/params.json")   # e.g. dipole/BFR need this\n`
+              + `  echo "B0 direction: $B0_DIR"\n`
+              + `fi\n`
+              + `# Parameter overrides (qsm-ci run --set NAME=VALUE) arrive as $IN/config.json.\n\n`
+              + `# TODO: replace this passthrough with your reconstruction — e.g. call your own program:\n`
+              + `#   "$HERE/my-program" "$IN/${io.inp}.nii.gz" "$IN/mask.nii.gz" "$OUT/${io.p}.nii.gz"\n`
+              + `cp "$IN/${io.inp}.nii.gz" "$OUT/${io.p}.nii.gz"   # placeholder: copies input through unchanged\n`,
           };
           return head + (body[this.lang] || body.python);
         },
         get reconBody() {
           const io = STAGE_IO[this.stage], nm = this.name || this.slugOr;
-          if (this.lang === "python")
+          const hasMag = io.c.includes("magnitude");
+          if (this.lang === "python") {
+            const mag = hasMag
+              ? `    magnitude = nib.load(f"{inp}/magnitude.nii.gz").get_fdata()  # e.g. data-fidelity weighting\n`
+              : "";
             return `#!/usr/bin/env python3\n"""${nm} — ${this.stage} stage. Reads <in-dir>, writes <out-dir>."""\n`
               + `import json\nimport os\nimport sys\nimport nibabel as nib\nimport numpy as np\n\n\n`
               + `def main(inp, out):\n`
-              + `    # consumes: ${io.c}\n`
-              + `    img = nib.load(f"{inp}/${io.inp}.nii.gz")\n`
+              + `    # This ${this.stage} stage consumes: ${io.c}  (all in \`inp\`), and must write ${io.p}.nii.gz to \`out\`.\n`
+              + `    img = nib.load(f"{inp}/${io.inp}.nii.gz")            # primary input (ppm)\n`
               + `    ${io.inp} = img.get_fdata().astype(np.float64)\n`
               + `    mask = nib.load(f"{inp}/mask.nii.gz").get_fdata() > 0.5\n\n`
-              + `    # Optional overrides (qsm-ci run --set NAME=VALUE); declare them in algorithm.yml.\n`
-              + `    cfg = json.load(open(f"{inp}/config.json")) if os.path.exists(f"{inp}/config.json") else {}\n\n`
+              + `    # Acquisition parameters. B0_dir is the unit B0 direction in image space (key for dipole/BFR);\n`
+              + `    # also params["voxel_size"] (mm), params["B0"] (tesla), params["TE"] (echo times, s).\n`
+              + `    params = json.load(open(f"{inp}/params.json"))\n`
+              + `    b0_dir = np.array(params["B0_dir"], float)\n`
+              + mag
+              + `\n    # Optional parameter overrides (qsm-ci run --set NAME=VALUE); declare them in algorithm.yml.\n`
+              + `    cfg = json.load(open(f"{inp}/config.json")) if os.path.exists(f"{inp}/config.json") else {}\n`
+              + `    # e.g. threshold = cfg.get("threshold", 0.1)\n\n`
               + `    # TODO: your reconstruction here. Produce ${io.p} (ppm), within the mask.\n`
               + `    ${io.p} = ${io.inp} * mask  # placeholder\n\n`
               + `    nib.save(nib.Nifti1Image(${io.p}.astype(np.float32), img.affine), f"{out}/${io.p}.nii.gz")\n\n\n`
               + `if __name__ == "__main__":\n    main(sys.argv[1], sys.argv[2])\n`;
-          if (this.lang === "julia")
-            return `# ${nm} — ${this.stage} stage.  consumes: ${io.c}\n`
+          }
+          if (this.lang === "julia") {
+            const mag = hasMag
+              ? `    magnitude = niread(joinpath(inp, "magnitude.nii.gz")).raw  # e.g. data-fidelity weighting\n`
+              : "";
+            return `# ${nm} — ${this.stage} stage.  consumes: ${io.c}  (all in \`inp\`); writes ${io.p}.nii.gz to \`out\`.\n`
               + `using NIfTI\n\n`
               + `function main(inp, out)\n`
-              + `    img = niread(joinpath(inp, "${io.inp}.nii.gz"))\n`
+              + `    img = niread(joinpath(inp, "${io.inp}.nii.gz"))     # primary input (ppm)\n`
               + `    ${io.inp} = Float64.(img.raw)\n`
               + `    mask = niread(joinpath(inp, "mask.nii.gz")).raw .> 0.5\n\n`
-              + `    # TODO: your reconstruction here. Produce ${io.p} (ppm), within the mask.\n`
+              + `    # params.json (B0_dir = unit B0 direction, voxel_size mm, B0 tesla, TE echo times s) is in \`inp\`;\n`
+              + `    # add JSON.jl to your image to parse it if your method needs those (e.g. B0_dir for dipole/BFR).\n`
+              + mag
+              + `\n    # TODO: your reconstruction here. Produce ${io.p} (ppm), within the mask.\n`
               + `    ${io.p} = ${io.inp} .* mask  # placeholder\n\n`
               + `    niwrite(joinpath(out, "${io.p}.nii.gz"), NIVolume(img.header, Float32.(${io.p})))\n`
               + `end\n\n`
               + `main(ARGS[1], ARGS[2])\n`;
-          if (this.lang === "matlab")
+          }
+          if (this.lang === "matlab") {
+            const mag = hasMag
+              ? `    magnitude = double(niftiread(fullfile(inp, 'magnitude.nii.gz')));  % e.g. data-fidelity weighting\n`
+              : "";
             return `function recon(inp, out)\n`
-              + `% ${nm} — ${this.stage} stage.  consumes: ${io.c}\n`
-              + `    info = niftiinfo(fullfile(inp, '${io.inp}.nii.gz'));\n`
+              + `% ${nm} — ${this.stage} stage.  consumes: ${io.c}  (all in inp); writes ${io.p}.nii.gz to out.\n`
+              + `    info = niftiinfo(fullfile(inp, '${io.inp}.nii.gz'));   % primary input (ppm)\n`
               + `    ${io.inp} = double(niftiread(info));\n`
               + `    mask = niftiread(fullfile(inp, 'mask.nii.gz')) > 0.5;\n\n`
-              + `    % TODO: your reconstruction here. Produce ${io.p} (ppm), within the mask.\n`
+              + `    % Acquisition parameters. p.B0_dir = unit B0 direction (key for dipole/BFR);\n`
+              + `    % also p.voxel_size (mm), p.B0 (tesla), p.TE (echo times, s).\n`
+              + `    p = jsondecode(fileread(fullfile(inp, 'params.json')));\n`
+              + `    b0_dir = p.B0_dir(:)';\n`
+              + mag
+              + `\n    % TODO: your reconstruction here. Produce ${io.p} (ppm), within the mask.\n`
               + `    ${io.p} = ${io.inp} .* mask;  % placeholder\n\n`
               + `    info.Datatype = 'single';\n`
               + `    niftiwrite(single(${io.p}), fullfile(out, '${io.p}.nii'), info, 'Compressed', true);\n`
               + `end\n`;
+          }
           // rust
+          const mag = hasMag
+            ? `    let magnitude = ReaderOptions::new()\n`
+              + `        .read_file(format!("{}/magnitude.nii.gz", inp))?\n`
+              + `        .into_volume().into_ndarray::<f64>()?; // e.g. data-fidelity weighting\n`
+            : "";
           return `//! ${nm} — ${this.stage} stage. Reads <in-dir>, writes <out-dir>.\n`
             + `use std::env;\n`
             + `use nifti::writer::WriterOptions;\n`
@@ -324,15 +368,18 @@
             + `fn main() -> Result<(), Box<dyn std::error::Error>> {\n`
             + `    let args: Vec<String> = env::args().collect();\n`
             + `    let (inp, out) = (&args[1], &args[2]);\n\n`
-            + `    // consumes: ${io.c}\n`
-            + `    let obj = ReaderOptions::new().read_file(format!("{}/${io.inp}.nii.gz", inp))?;\n`
+            + `    // This ${this.stage} stage consumes: ${io.c}  (all in \`inp\`); writes ${io.p}.nii.gz to \`out\`.\n`
+            + `    let obj = ReaderOptions::new().read_file(format!("{}/${io.inp}.nii.gz", inp))?; // primary (ppm)\n`
             + `    let header = obj.header().clone();\n`
             + `    let ${io.inp} = obj.into_volume().into_ndarray::<f64>()?;\n`
             + `    let mask = ReaderOptions::new()\n`
             + `        .read_file(format!("{}/mask.nii.gz", inp))?\n`
             + `        .into_volume().into_ndarray::<f64>()?\n`
-            + `        .mapv(|v| if v > 0.5 { 1.0 } else { 0.0 });\n\n`
-            + `    // TODO: your reconstruction here. Produce ${io.p} (ppm), within the mask.\n`
+            + `        .mapv(|v| if v > 0.5 { 1.0 } else { 0.0 });\n`
+            + `    // params.json (B0_dir = unit B0 direction, voxel_size mm, B0 tesla, TE echo times s) is at\n`
+            + `    // {inp}/params.json; add serde_json to Cargo.toml to parse it (e.g. B0_dir for dipole/BFR).\n`
+            + mag
+            + `\n    // TODO: your reconstruction here. Produce ${io.p} (ppm), within the mask.\n`
             + `    let ${io.p} = &${io.inp} * &mask; // placeholder\n\n`
             + `    WriterOptions::new(format!("{}/${io.p}.nii.gz", out))\n`
             + `        .reference_header(&header)\n`
@@ -346,19 +393,26 @@
         },
         get matlabBuild() {
           return `# Building ${this.name || this.slugOr} for the MATLAB Runtime\n\n`
-            + `Compile \`recon.m\` once on a machine (or CI runner) with **MATLAB + MATLAB Compiler** — the only\n`
-            + `place a license is needed. The result runs on the free **MATLAB Runtime (MCR)**, so QSM-CI scores\n`
-            + `it offline with no license.\n\n`
+            + `Compile \`recon.m\` once on a machine (or CI runner) with **MATLAB + MATLAB Compiler** — the only place\n`
+            + `a license is needed. The result runs on the free **MATLAB Runtime (MCR)**, so QSM-CI scores it\n`
+            + `offline with no license.\n\n`
             + `## Option A — let CI compile it (recommended)\n\n`
-            + `Push just \`recon.m\`, then run \`.github/workflows/matlab-compile.yml\` on a self-hosted runner that\n`
-            + `has MATLAB + Compiler + your license. It reads the \`matlab:\` block in \`algorithm.yml\`, compiles\n`
-            + `\`recon.m\`, and pushes the image to the \`image:\` tag for you — the tag need not exist beforehand.\n\n`
+            + `Push just \`recon.m\`, then run\n`
+            + `[\`.github/workflows/matlab-compile.yml\`](../../.github/workflows/matlab-compile.yml) — it runs on\n`
+            + `GitHub-hosted runners with a MATLAB batch licensing token (secret \`MATLAB_BATCH_TOKEN\`), reads the\n`
+            + `\`matlab:\` block in \`algorithm.yml\`,\n`
+            + `compiles \`recon.m\`, and pushes the image to the \`image:\` tag for you. \`image:\` is just the *intended*\n`
+            + `tag — it does not need to exist beforehand.\n\n`
             + `## Option B — compile locally\n\n`
-            + '```bash\nmatlab -batch "mcc(\'-m\',\'recon.m\',\'-o\',\'recon\',\'-d\',\'.\')"\n```\n\n'
+            + '```bash\nmatlab -batch "mcc(\'-m\',\'recon.m\',\'-o\',\'recon\',\'-d\',\'.\')"   # needs MATLAB + Compiler + license\n```\n\n'
             + `Bake the compiled \`recon\` into an MCR image and push it to your \`image:\` tag:\n\n`
-            + '```dockerfile\nFROM containers.mathworks.com/matlab-runtime:' + MATLAB_RUNTIME + '\n'
+            + '```dockerfile\nFROM containers.mathworks.com/matlab-runtime:' + MATLAB_RUNTIME + '   # free Runtime; match the compiler release\n'
             + 'COPY recon /opt/qsm-ci/recon\nRUN chmod +x /opt/qsm-ci/recon\n```\n\n'
-            + `The Runtime version (\`runtime:\` in algorithm.yml, ${MATLAB_RUNTIME}) must match the Compiler release.\n`;
+            + `## Notes\n\n`
+            + `- The Runtime version (\`runtime:\` in algorithm.yml — \`${MATLAB_RUNTIME}\`) **must** match the MATLAB Compiler\n`
+            + `  release used to build \`recon\`.\n`
+            + `- \`mcc\` bundles the toolbox code your method uses (SEPIA, MEDI, …) into the binary.\n`
+            + `- At scoring time \`run.sh\` runs the compiled binary with \`--network none\` — no license, no network.\n`;
         },
         get files() {
           const f = [
