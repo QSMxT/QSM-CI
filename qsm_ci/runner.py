@@ -10,10 +10,12 @@ from __future__ import annotations
 
 import argparse
 import difflib
+import glob
 import gzip
 import json
 import math
 import os
+import re
 import shutil
 import struct
 import subprocess
@@ -166,6 +168,55 @@ def _params_dict(args, stage: str) -> dict:
     else:
         primary = getattr(args, consumes[0], None)
         voxel = _nifti_voxel_size(primary) or [1.0, 1.0, 1.0]
+    return {"TE": [float(t) for t in te], "B0": float(b0),
+            "B0_dir": [float(x) for x in b0_dir], "voxel_size": [float(v) for v in voxel]}
+
+
+def _looks_like_sidecar(obj: dict) -> bool:
+    """A BIDS MEGRE sidecar carries these keys; a QSM-CI params.json does not."""
+    return isinstance(obj, dict) and ("EchoTime" in obj or "MagneticFieldStrength" in obj)
+
+
+def _sidecar_te(sidecar_path: Path) -> "list[float]":
+    """Echo times (s) for the whole acquisition: all `*part-phase*MEGRE.json` in the sidecar's
+    directory, in echo order. Falls back to just this file's EchoTime."""
+    def echo_no(f: str) -> int:
+        m = re.search(r"echo-(\d+)", f)
+        return int(m.group(1)) if m else 0
+    tes = []
+    for f in sorted(glob.glob(str(sidecar_path.parent / "*part-phase*MEGRE.json")), key=echo_no):
+        try:
+            v = json.load(open(f)).get("EchoTime")
+        except Exception:  # noqa: BLE001
+            v = None
+        if v is not None:
+            tes.append(float(v))
+    if not tes:
+        v = json.load(open(sidecar_path)).get("EchoTime")
+        tes = [float(v)] if v is not None else []
+    return tes
+
+
+def _sidecar_to_params(path: Path, obj: dict, args, stage: str) -> dict:
+    """Map a BIDS MEGRE phase sidecar onto the QSM-CI params.json schema.
+
+    Voxel size is read from the input NIfTI header (the authoritative grid); the sidecar's
+    `VoxelSize` is only a fallback. Any explicit acquisition flag the user passed wins.
+    """
+    consumes = STAGES[stage]["consumes"]
+    primary = getattr(args, consumes[0], None)
+    te = _sidecar_te(path)
+    b0 = obj.get("MagneticFieldStrength", 3.0)
+    b0_dir = obj.get("B0_dir") or [0.0, 0.0, 1.0]
+    voxel = _nifti_voxel_size(primary) or obj.get("VoxelSize") or [1.0, 1.0, 1.0]
+    if args.te:
+        te = args.te
+    if args.field_strength is not None:
+        b0 = args.field_strength
+    if args.b0_dir is not None:
+        b0_dir = args.b0_dir
+    if args.voxel_size is not None:
+        voxel = args.voxel_size
     return {"TE": [float(t) for t in te], "B0": float(b0),
             "B0_dir": [float(x) for x in b0_dir], "voxel_size": [float(v) for v in voxel]}
 
@@ -364,7 +415,7 @@ def _build_run_parser(slug: str, algo: dict) -> argparse.ArgumentParser:
     for art in consumes:
         if art == "params":
             p.add_argument("--params", metavar="PATH", required=False,
-                           help="params.json — or build it from the acquisition flags below")
+                           help="params.json or a BIDS MEGRE sidecar — or use the acquisition flags below")
             continue
         req = art not in OPTIONAL_ARTIFACTS
         p.add_argument(f"--{art}", metavar="PATH", required=req,
@@ -470,13 +521,25 @@ def run_command(argv, log=print) -> int:
         idir.mkdir(parents=True)
         for art in consumes:
             if art == "params":
+                dest = idir / ARTIFACT_FILE["params"]
                 if args.params:
-                    if not Path(args.params).exists():
-                        raise SystemExit(f"--params file not found: {args.params}")
-                    shutil.copy(args.params, idir / ARTIFACT_FILE["params"])
+                    src = Path(args.params)
+                    if not src.exists():
+                        raise SystemExit(f"--params file not found: {src}")
+                    try:
+                        obj = json.loads(src.read_text())
+                    except Exception as e:  # noqa: BLE001
+                        raise SystemExit(f"--params is not valid JSON: {e}")
+                    if _looks_like_sidecar(obj):
+                        params = _sidecar_to_params(src, obj, args, stage)
+                        dest.write_text(json.dumps(params, indent=2) + "\n")
+                        log(f"  params (from BIDS sidecar): TE={params['TE']} B0={params['B0']} "
+                            f"B0_dir={params['B0_dir']} voxel_size={params['voxel_size']}")
+                    else:
+                        shutil.copy(src, dest)  # already a params.json — use verbatim
                 else:
                     params = _params_dict(args, stage)
-                    (idir / ARTIFACT_FILE["params"]).write_text(json.dumps(params, indent=2) + "\n")
+                    dest.write_text(json.dumps(params, indent=2) + "\n")
                     log(f"  params: TE={params['TE']} B0={params['B0']} "
                         f"B0_dir={params['B0_dir']} voxel_size={params['voxel_size']}")
                 continue
@@ -496,7 +559,9 @@ def run_command(argv, log=print) -> int:
         if not produced_tmp.exists():
             raise SystemExit(f"submission did not write {ARTIFACT_FILE[produced]} to /output")
         out_path = Path(args.out)
-        if out_path.parent != Path(""):
+        if out_path.is_dir():
+            out_path = out_path / ARTIFACT_FILE[produced]  # -o <dir> → write <dir>/<artifact>
+        if str(out_path.parent):
             out_path.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(produced_tmp, out_path)
         log(f"✓ wrote {out_path}  ({runtime:.1f}s)")

@@ -18,7 +18,7 @@ qsm-ci new                 # interactive scaffold -> algorithms/<slug>/ (or use 
 
 # run one stage on explicit inputs; the --<artifact> flags depend on the stage:
 qsm-ci run my-method --localfield lf.nii.gz --mask mask.nii.gz
-#   acquisition params: pass a file (--params params.json) OR flags — either works:
+#   acquisition params: pass a file (--params params.json OR a BIDS MEGRE sidecar) OR flags:
 #   --te 0.004 0.012 ... --field-strength 7 --b0-dir 0 0 1 --voxel-size 1 1 1
 #   (B0 dir defaults to 0 0 1, voxel size is read from the input header; BFR/dipole
 #    stages don't need --te/--field-strength at all)
