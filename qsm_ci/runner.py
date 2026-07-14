@@ -10,10 +10,12 @@ from __future__ import annotations
 
 import argparse
 import difflib
+import gzip
 import json
 import math
 import os
 import shutil
+import struct
 import subprocess
 import time
 from pathlib import Path
@@ -111,19 +113,87 @@ def _closest_slugs(target: str) -> "list[str]":
     return difflib.get_close_matches(target, names, n=3, cutoff=0.4)
 
 
+def _nifti_voxel_size(path) -> "list[float] | None":
+    """Read pixdim[1:4] (mm) straight from a NIfTI-1 header — no nibabel dependency."""
+    if not path or not Path(path).exists():
+        return None
+    opener = gzip.open if str(path).endswith(".gz") else open
+    try:
+        with opener(path, "rb") as f:
+            hdr = f.read(352)
+        if len(hdr) < 352:
+            return None
+        for endian in ("<", ">"):  # header endianness is whichever makes sizeof_hdr == 348
+            if struct.unpack(endian + "i", hdr[0:4])[0] == 348:
+                pixdim = struct.unpack(endian + "8f", hdr[76:108])
+                vs = [abs(pixdim[1]), abs(pixdim[2]), abs(pixdim[3])]
+                return vs if all(v > 0 for v in vs) else None
+    except Exception:  # noqa: BLE001 — best-effort; caller falls back to a default
+        return None
+    return None
+
+
+def _place_input(src, dest: Path) -> None:
+    """Put a consumed NIfTI at <name>.nii.gz, gzip-compressing a plain .nii on the way in."""
+    src = str(src)
+    if src.endswith(".nii") and str(dest).endswith(".nii.gz"):
+        with open(src, "rb") as fi, gzip.open(dest, "wb") as fo:
+            shutil.copyfileobj(fi, fo)
+    else:
+        shutil.copy(src, dest)
+
+
+def _params_dict(args, stage: str) -> dict:
+    """Assemble a params.json dict from --te/--field-strength/--b0-dir/--voxel-size (+ defaults).
+
+    B0_dir defaults to +z; voxel size is read from the primary input's NIfTI header when not given.
+    Echo times and field strength are only required for stages that consume phase (field-mapping);
+    BFR/dipole work in ppm and don't use them, so they get harmless placeholders.
+    """
+    consumes = STAGES[stage]["consumes"]
+    needs_echo = "phase" in consumes
+    te = list(args.te) if args.te else []
+    b0 = args.field_strength
+    if needs_echo and (not te or b0 is None):
+        raise SystemExit(
+            f"the {stage} stage needs echo times and field strength — pass "
+            "--te SEC [SEC ...] and --field-strength TESLA, or give a --params file.")
+    if b0 is None:
+        b0 = 3.0  # unused by BFR/dipole; a contract placeholder
+    b0_dir = list(args.b0_dir) if args.b0_dir is not None else [0.0, 0.0, 1.0]
+    if args.voxel_size is not None:
+        voxel = list(args.voxel_size)
+    else:
+        primary = getattr(args, consumes[0], None)
+        voxel = _nifti_voxel_size(primary) or [1.0, 1.0, 1.0]
+    return {"TE": [float(t) for t in te], "B0": float(b0),
+            "B0_dir": [float(x) for x in b0_dir], "voxel_size": [float(v) for v in voxel]}
+
+
 def _inputs_summary(slug: str, algo: dict) -> str:
-    """Tell the user exactly which input files a valid slug's stage needs, with an example."""
+    """Tell the user exactly which inputs a valid slug's stage needs, with an example."""
     stage = algo["stage"]
     consumes = STAGES[stage]["consumes"]
     produced = STAGES[stage]["produces"][0]
+    needs_echo = "phase" in consumes
     lines = [f"{algo['name']}  —  {stage} stage   ({', '.join(consumes)} → {produced})", "",
-             "Provide each input as a file:"]
+             "Image inputs (provide each as a file):"]
     for art in consumes:
-        ftype = "JSON" if art == "params" else "NIfTI"
+        if art == "params":
+            continue
         opt = "  [optional]" if art in OPTIONAL_ARTIFACTS else ""
-        lines.append(f"  --{art} PATH".ljust(20) + f" {ARTIFACT_FILE[art]} ({ftype}){opt}")
-    req = [a for a in consumes if a not in OPTIONAL_ARTIFACTS]
-    example = " ".join(f"--{a} {a}{'.json' if a == 'params' else '.nii.gz'}" for a in req)
+        lines.append(f"  --{art} PATH".ljust(22) + f"{ARTIFACT_FILE[art]} (NIfTI){opt}")
+    lines += ["", "Acquisition parameters — give a params.json OR the flags (either works):",
+              "  --params PATH".ljust(22) + "params.json"]
+    tag = "   [required here]"
+    lines.append("  --te SEC [SEC ...]".ljust(22) + "echo times, seconds" + (tag if needs_echo else ""))
+    lines.append("  --field-strength T".ljust(22) + "B0 in tesla" + (tag if needs_echo else ""))
+    lines.append("  --b0-dir X Y Z".ljust(22) + "unit B0 direction (default: 0 0 1)")
+    lines.append("  --voxel-size X Y Z".ljust(22) + "mm (default: from the input header)")
+    req_imgs = [a for a in consumes if a not in OPTIONAL_ARTIFACTS and a != "params"]
+    example = " ".join(f"--{a} {a}.nii.gz" for a in req_imgs)
+    if needs_echo:
+        example += " --te 0.004 0.012 0.02 0.028 --field-strength 7"
     lines += ["",
               f"Example:  qsm-ci run {slug} {example}",
               f"Add  --truth {produced}.nii.gz  [--seg dseg.nii.gz]  to score the output.",
@@ -292,10 +362,22 @@ def _build_run_parser(slug: str, algo: dict) -> argparse.ArgumentParser:
         epilog=_manifest_epilog(algo), formatter_class=_HelpFmt)
     p.add_argument("slug", help=argparse.SUPPRESS)  # already known; keep argparse happy
     for art in consumes:
+        if art == "params":
+            p.add_argument("--params", metavar="PATH", required=False,
+                           help="params.json — or build it from the acquisition flags below")
+            continue
         req = art not in OPTIONAL_ARTIFACTS
-        ftype = "JSON" if art == "params" else "NIfTI"
         p.add_argument(f"--{art}", metavar="PATH", required=req,
-                       help=f"{ARTIFACT_FILE[art]} ({ftype})" + ("" if req else "  [optional]"))
+                       help=f"{ARTIFACT_FILE[art]} (NIfTI)" + ("" if req else "  [optional]"))
+    acq = p.add_argument_group("acquisition parameters (build params.json when --params is omitted)")
+    acq.add_argument("--te", nargs="+", type=float, metavar="SEC",
+                     help="echo times in seconds (required for field-mapping stages)")
+    acq.add_argument("--field-strength", "--b0", dest="field_strength", type=float, metavar="TESLA",
+                     help="B0 field strength (required for field-mapping stages)")
+    acq.add_argument("--b0-dir", nargs=3, type=float, metavar=("X", "Y", "Z"),
+                     help="unit B0 direction (default: 0 0 1)")
+    acq.add_argument("--voxel-size", nargs=3, type=float, metavar=("X", "Y", "Z"),
+                     help="voxel size in mm (default: read from the input NIfTI header)")
     p.add_argument("-o", "--out", metavar="PATH", default=f"{produced}.nii.gz",
                    help="where to write the produced artifact")
     p.add_argument("--truth", metavar="PATH", help=f"ground-truth {produced} to score against")
@@ -387,12 +469,23 @@ def run_command(argv, log=print) -> int:
         idir, odir = Path(td) / "input", Path(td) / "output"
         idir.mkdir(parents=True)
         for art in consumes:
+            if art == "params":
+                if args.params:
+                    if not Path(args.params).exists():
+                        raise SystemExit(f"--params file not found: {args.params}")
+                    shutil.copy(args.params, idir / ARTIFACT_FILE["params"])
+                else:
+                    params = _params_dict(args, stage)
+                    (idir / ARTIFACT_FILE["params"]).write_text(json.dumps(params, indent=2) + "\n")
+                    log(f"  params: TE={params['TE']} B0={params['B0']} "
+                        f"B0_dir={params['B0_dir']} voxel_size={params['voxel_size']}")
+                continue
             path = getattr(args, art, None)
             if not path:
                 continue  # optional and not supplied
             if not Path(path).exists():
                 raise SystemExit(f"--{art} file not found: {path}")
-            shutil.copy(path, idir / ARTIFACT_FILE[art])
+            _place_input(path, idir / ARTIFACT_FILE[art])
 
         if cfg:
             (idir / "config.json").write_text(json.dumps(cfg, indent=2) + "\n")

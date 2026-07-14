@@ -17,9 +17,13 @@ qsm-ci new                 # interactive scaffold -> algorithms/<slug>/ (or use 
 # ... edit your recon.py / recon.m / recon.rs / recon.jl ...
 
 # run one stage on explicit inputs; the --<artifact> flags depend on the stage:
-qsm-ci run my-method --localfield lf.nii.gz --mask mask.nii.gz --params params.json
+qsm-ci run my-method --localfield lf.nii.gz --mask mask.nii.gz
+#   acquisition params: pass a file (--params params.json) OR flags — either works:
+#   --te 0.004 0.012 ... --field-strength 7 --b0-dir 0 0 1 --voxel-size 1 1 1
+#   (B0 dir defaults to 0 0 1, voxel size is read from the input header; BFR/dipole
+#    stages don't need --te/--field-strength at all)
 #   add --truth chi.nii.gz [--seg dseg.nii.gz] to score the output
-qsm-ci run my-method           # with no inputs, prints exactly which files this stage needs
+qsm-ci run my-method           # with no inputs, prints exactly which inputs this stage needs
 qsm-ci run my-method --help    # full help: scoring/runner options + method parameters
 
 qsm-ci submit my-method    # commit on a branch and open a pull request
