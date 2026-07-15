@@ -157,8 +157,31 @@ def run_algo(algo: dict, input_dir: Path, output_dir: Path, runner: str = "local
     return time.time() - t0
 
 
+def _valid_mask(volume: Path, base_mask: Path, out: Path) -> Path:
+    """Write `base_mask ∧ (|volume| > 0)` — the region where a stage actually produced a value.
+
+    Eroding stages (SHARP/V-SHARP/RESHARP/iSMV, Laplacian field-mapping, …) zero exactly the voxels
+    they drop, so a field/χ's non-zero support IS the stage's valid region. Threading this as the
+    mask into the next stage stops a dipole from deconvolving a zero-field rim (which smears a blurry
+    boundary), and scoring within it stops that rim being counted as error. Empty output → keep the
+    base mask so it still scores (badly) rather than crashing."""
+    import nibabel as nib
+    import numpy as np
+    v = nib.load(str(volume))
+    valid = np.abs(v.get_fdata()) > 0
+    base = nib.load(str(base_mask)).get_fdata() > 0.5
+    m = valid & base
+    if not m.any():
+        m = base
+    nib.save(nib.Nifti1Image(m.astype(np.uint8), v.affine), str(out))
+    return out
+
+
 def score(recon: Path, artifact: str, gt_dir: Path, mask: Path, out_json: Path, meta: dict) -> dict:
     kind = ARTIFACT_KIND[artifact]
+    # Score only where the method actually produced a value (its non-zero support), so an eroded
+    # rim isn't penalised as error — consistent with masking that rim out of the pipeline.
+    mask = _valid_mask(recon, mask, out_json.parent / (out_json.stem + "_scoremask.nii.gz"))
     cmd = [sys.executable, str(EVAL), "--recon", str(recon),
            "--truth", str(gt_dir / ARTIFACT_FILE[artifact]), "--kind", kind,
            "--mask", str(mask), "--artifact", artifact, "--out", str(out_json),
@@ -308,38 +331,47 @@ def main() -> None:
 
         # Stage 1 — totalfield sources: the ground-truth field ("gt") plus each field-mapping
         # submission's output (run on raw inputs), so the matrix can start from raw phase.
-        tf_sources: dict[str, Path] = {"gt": gt / ARTIFACT_FILE["totalfield"]}
+        # Each source is (totalfield, valid-region mask) so downstream stages inherit any erosion.
+        tf_sources: dict[str, tuple] = {"gt": (gt / ARTIFACT_FILE["totalfield"], mask)}
 
         def do_fieldmap(f):
             idir, odir = args.work / f"cmp_fm_{f['slug']}_in", args.work / f"cmp_fm_{f['slug']}_out"
             try:
                 prepare_input(f["consumes"], gt_sources, idir)
                 run_algo(f, idir, odir, args.runner)
-                return (f["slug"], odir / "totalfield.nii.gz")
+                tf = odir / "totalfield.nii.gz"
+                # A field-mapping method may erode (e.g. Laplacian unwrapping) — carry its valid region.
+                fm_mask = _valid_mask(tf, mask, odir / "validmask.nii.gz")
+                return (f["slug"], tf, fm_mask)
             except Exception as e:
                 print(f"  composed  fieldmap {f['slug']} DNF ({e}) — skipping its pipelines")
                 return None
 
         for res in _pmap(fmap, do_fieldmap):
             if res:
-                tf_sources[res[0]] = res[1]
+                tf_sources[res[0]] = (res[1], res[2])
 
         # Stage 2 — bfr: localfield for each (totalfield source, bfr), keyed (tfk, bfr slug).
-        lf_cache: dict[tuple, Path] = {}
+        # Each entry caches (localfield, valid-region mask) so the dipole inherits any erosion.
+        lf_cache: dict[tuple, tuple] = {}
 
         def do_bfr(task):
-            tfk, tfp, b = task
+            tfk, tfp, tf_mask, b = task
             idir, odir = args.work / f"cmp_{tfk}_{b['slug']}_in", args.work / f"cmp_{tfk}_{b['slug']}_out"
             try:
-                src = dict(gt_sources); src["totalfield"] = tfp
+                # Run within the incoming valid region (not the full mask) so a field-mapping erosion
+                # already narrows the boundary before the BFR erodes further.
+                src = dict(gt_sources); src["totalfield"] = tfp; src["mask"] = tf_mask
                 prepare_input(b["consumes"], src, idir)
                 run_algo(b, idir, odir, args.runner)
-                return ((tfk, b["slug"]), odir / "localfield.nii.gz")
+                lf = odir / "localfield.nii.gz"
+                bfr_mask = _valid_mask(lf, tf_mask, odir / "validmask.nii.gz")
+                return ((tfk, b["slug"]), (lf, bfr_mask))
             except Exception as e:
                 print(f"  composed  {tfk}+{b['slug']} bfr DNF ({e})")
                 return None
 
-        bfr_tasks = [(tfk, tfp, b) for tfk, tfp in tf_sources.items() for b in bfr]
+        bfr_tasks = [(tfk, tfp, tf_mask, b) for tfk, (tfp, tf_mask) in tf_sources.items() for b in bfr]
         for res in _pmap(bfr_tasks, do_bfr):
             if res:
                 lf_cache[res[0]] = res[1]
@@ -351,7 +383,10 @@ def main() -> None:
             cid = f"{tfk}~{b['slug']}~{d['slug']}-cmp"
             cinfo = {"field_mapping": tfk, "bfr": b["slug"], "dipole": d["slug"]}
             try:
-                src = dict(gt_sources); src["localfield"] = lf_cache[(tfk, b["slug"])]
+                lf, bfr_mask = lf_cache[(tfk, b["slug"])]
+                # Invert within the BFR's eroded region — not the original full mask — so the dipole
+                # never deconvolves a zero-field rim into a blurry boundary.
+                src = dict(gt_sources); src["localfield"] = lf; src["mask"] = bfr_mask
                 idir, odir = args.work / f"cmp_{cid}_in", args.work / f"cmp_{cid}_out"
                 prepare_input(d["consumes"], src, idir)
                 rt = run_algo(d, idir, odir, args.runner)
