@@ -10,6 +10,12 @@ on:
       - "web/**"
       - "results/**"
       - ".github/workflows/pages.yml"
+  # The `score` job commits results/index.json with the default GITHUB_TOKEN, whose pushes do
+  # NOT trigger the `push` event above — so deploy explicitly once scoring finishes.
+  workflow_run:
+    workflows: ["score"]
+    types: [completed]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
