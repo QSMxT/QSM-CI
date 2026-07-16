@@ -35,7 +35,8 @@ RUN pip install --no-cache-dir \
         "numpy==1.16.4" \
         "scipy==1.2.1" \
         "nibabel==3.2.2" \
-        "gdown==4.7.1"
+        "gdown==4.7.1" \
+        "matplotlib==3.5.3"
 
 # Clone QSMnet (pinned for reproducibility) into /opt/QSMnet.
 ARG QSMNET_REF=master
