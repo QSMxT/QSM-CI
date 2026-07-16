@@ -4,8 +4,9 @@ function recon(inp, out)
 % Reads <inp>/phase.nii.gz (radians, wrapped, 3D or 4D multi-echo) + magnitude + mask + params,
 % writes <out>/localfield.nii.gz (ppm).
 %
-% Each echo is unwrapped+background-removed by iHARPERELLA, converted to a ppm field
-% (phase_e / (2*pi*gamma*B0*TE_e)), then combined across echoes with optimal TE^2 weights.
+% iHARPERELLA is a single-echo method (Li et al., NMR Biomed 2014;27:219, DOI 10.1002/nbm.3056):
+% it unwraps + removes background from ONE wrapped 3D phase image. We use the first echo (as QSM.rs/
+% QSMxT and STI Suite's STI_Templates.m do), then convert to a ppm field (phase/(2*pi*gamma*B0*TE1)).
 % Bundled NIfTI + STI Suite v3 (.p) + support functions + IPT shims. OS gunzip/gzip (no JVM).
 % Optional <inp>/config.json overrides {niter, padsize}. See BUILD.md.
 
@@ -41,17 +42,15 @@ function recon(inp, out)
     % the content so its center maps to floor(Neven/2)+1 == the kernel origin; cropping the SAME
     % 'pre' offset back out restores alignment. Robust for any combination of odd dims.
     sz0 = size(Mask); po = mod(sz0, 2);          % +1 per axis that is odd, e.g. [1 0 1]
-    num = zeros(size(Mask)); den = 0;
-    for e = 1:ne
-        pe = padarray(phase(:,:,:,e), po, 0, 'pre');
-        Mk = padarray(double(Mask), po, 0, 'pre');
-        tp = iHARPERELLA(pe, Mk, 'voxelsize', vox, 'padsize', padsize, 'niter', niter);  % rad, local
-        tp = tp(po(1)+1 : po(1)+sz0(1), po(2)+1 : po(2)+sz0(2), po(3)+1 : po(3)+sz0(3));
-        field_e = double(tp) / (2*pi * GYRO * B0 * TE(e)) * 1e6;                   % ppm
-        w = TE(e)^2;                                          % optimal weight for field-from-phase
-        num = num + w * field_e; den = den + w;
-    end
-    local = (num / den) .* Mask;                                                   % ppm
+    % First echo only. iHARPERELLA processes a single wrapped phase image (see header). Feeding it
+    % every echo and TE^2-weighting made the field near-random (corr ~0.10): late 7T echoes (20/28 ms)
+    % are heavily wrapped, iHARPERELLA unwraps them worst, and TE^2 weights those failures ~49x the
+    % first echo. QSM.rs uses echo 1 and scores well.
+    pe = padarray(phase(:,:,:,1), po, 0, 'pre');
+    Mk = padarray(double(Mask),   po, 0, 'pre');
+    tp = iHARPERELLA(pe, Mk, 'voxelsize', vox, 'padsize', padsize, 'niter', niter);  % rad, local
+    tp = tp(po(1)+1 : po(1)+sz0(1), po(2)+1 : po(2)+sz0(2), po(3)+1 : po(3)+sz0(3));
+    local = (double(tp) / (2*pi * GYRO * B0 * TE(1)) * 1e6) .* Mask;                  % ppm
 
     nii.img = single(local);
     nii.hdr.dime.datatype = 16;  nii.hdr.dime.bitpix = 32;
