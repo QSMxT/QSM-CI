@@ -90,7 +90,37 @@ def pin_image(algorithm_yml_text):
     return algorithm_yml_text.replace(f"image: {ref}", f"image: {pinned}"), pinned
 
 
-def method_zip(slug, algo_dir):
+# The primary input each stage consumes (besides the mask), for the README run examples.
+_STAGE_PRIMARY = {
+    "field-mapping": "phase", "bfr": "totalfield", "dipole": "localfield",
+    "unwrap+bfr": "phase", "bfr+dipole": "totalfield", "end-to-end": "phase",
+}
+
+
+def run_instructions(slug, meta):
+    """A generated 'how to run this download' section appended to the shipped README, so anyone who
+    downloads the record from Zenodo can actually run it. Deterministic (keeps the zip checksum stable)."""
+    primary = _STAGE_PRIMARY.get(meta.get("stage"), "phase")
+    inp = f"--{primary} {primary}.nii.gz --mask mask.nii.gz"
+    return (
+        "\n\n## Run this algorithm\n\n"
+        "This is a [QSM-CI](https://github.com/QSMxT/QSM-CI) algorithm. Install the runner with "
+        "`pip install qsm-ci`, then run it any of these three ways:\n\n"
+        "```bash\n"
+        "# 1. from this folder, after unzipping the download\n"
+        f"qsm-ci run ./{slug} {inp}\n\n"
+        "# 2. by name — fetched from Zenodo and cached, no download needed\n"
+        f"qsm-ci run {slug} {inp}\n\n"
+        "# 3. this exact, citable version — use the DOI shown on this Zenodo record\n"
+        f"qsm-ci run doi:<this record's DOI> {inp}\n"
+        "```\n\n"
+        f"`qsm-ci run {slug} --help` lists every input and option. It runs the container pinned in "
+        "`algorithm.yml` (Docker/Podman/Apptainer), so the result is byte-reproducible. Add "
+        "`--truth chimap.nii.gz` to score against a reference.\n"
+    )
+
+
+def method_zip(slug, algo_dir, meta):
     """Zip the git-tracked files of a method, with its image digest-pinned. Returns (bytes, pinned)."""
     listed = subprocess.run(["git", "ls-files", algo_dir], capture_output=True, text=True, check=True)
     files = [f for f in listed.stdout.splitlines() if f.strip()]
@@ -105,6 +135,8 @@ def method_zip(slug, algo_dir):
             if f.endswith("algorithm.yml"):
                 new, pinned = pin_image(text.decode())
                 text = new.encode()
+            elif f.endswith("README.md"):
+                text = text.rstrip() + run_instructions(slug, meta).encode()
             # Deterministic entry: a fixed timestamp + mode so an unchanged method yields a
             # STABLE checksum across runs. Otherwise writestr(arcname, ...) stamps the current
             # time into the zip, the checksum differs every run, the "skip if unchanged" guard
@@ -224,7 +256,7 @@ def main():
         if args.only and slug != args.only:
             continue
         try:
-            blob, pinned = method_zip(slug, algo_dir)
+            blob, pinned = method_zip(slug, algo_dir, meta)
         except Exception as e:  # noqa: BLE001
             warn(f"{slug}: cannot package: {e}"); failures += 1; continue
         ck = checksum(blob)
