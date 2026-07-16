@@ -1,16 +1,43 @@
 {
   "algorithms": [
     {
+      "slug": "autoqsm",
+      "name": "AutoQSM",
+      "stage": "bfr+dipole",
+      "engine": null,
+      "description": "AutoQSM \u2014 learning-based single-step QSM reconstruction without brain extraction. A V-Net that maps the total field map directly to susceptibility, doing neither brain extraction nor a separate background-field-removal step. Consumes the total field and produces susceptibility. Runs CPU-only on the legacy TensorFlow 1.15 / Keras 2.2.5 stack the method was published against.",
+      "citation": null,
+      "doi": "10.1016/j.neuroimage.2019.116064",
+      "code_url": "https://github.com/AMRI-Lab/AutoQSM",
+      "license": "none declared; used with author permission",
+      "authors": [
+        "Wei H.",
+        "Cao S.",
+        "Zhang Y.",
+        "Guan X.",
+        "Yan F.",
+        "Yeom K.W.",
+        "Liu C."
+      ],
+      "parameters": []
+    },
+    {
       "slug": "harperella",
       "name": "HARPERELLA",
       "stage": "unwrap+bfr",
       "engine": "QSMxT / QSM.rs",
       "description": "Integrated phase unwrapping + background field removal, operating on wrapped phase.",
-      "citation": "Li et al., NeuroImage 2014",
-      "doi": "10.1016/j.neuroimage.2014.08.029",
+      "citation": "Li et al., NMR Biomed 2014",
+      "doi": "10.1002/nbm.3056",
       "code_url": "https://github.com/astewartau/QSM.rs",
       "license": "MIT",
-      "authors": [],
+      "authors": [
+        "Wei Li",
+        "Alexandru V. Avram",
+        "Bing Wu",
+        "Xue Xiao",
+        "Chunlei Liu"
+      ],
       "parameters": [
         {
           "name": "radius",
@@ -35,11 +62,17 @@
       "stage": "unwrap+bfr",
       "engine": "QSMxT / QSM.rs",
       "description": "Improved HARPERELLA: iterative integrated unwrapping + background removal on wrapped phase.",
-      "citation": "Li et al., NeuroImage 2014",
-      "doi": "10.1016/j.neuroimage.2014.08.029",
+      "citation": "Li et al., NMR Biomed 2014",
+      "doi": "10.1002/nbm.3056",
       "code_url": "https://github.com/astewartau/QSM.rs",
       "license": "MIT",
-      "authors": [],
+      "authors": [
+        "Wei Li",
+        "Alexandru V. Avram",
+        "Bing Wu",
+        "Xue Xiao",
+        "Chunlei Liu"
+      ],
       "parameters": [
         {
           "name": "radius",
@@ -64,11 +97,21 @@
       "stage": "dipole",
       "engine": "QSMxT / QSM.rs",
       "description": "Iterative LSQR inversion with streaking-artifact reduction.",
-      "citation": "Li et al., NMR Biomed 2015",
-      "doi": null,
+      "citation": "Li et al., NeuroImage 2015",
+      "doi": "10.1016/j.neuroimage.2014.12.043",
       "code_url": "https://github.com/astewartau/QSM.rs",
       "license": "MIT",
-      "authors": [],
+      "authors": [
+        "Wei Li",
+        "Nian Wang",
+        "Fang Yu",
+        "Hui Han",
+        "Wei Cao",
+        "Rebecca Romero",
+        "Bundhit Tantiwongkosi",
+        "Timothy Q. Duong",
+        "Chunlei Liu"
+      ],
       "parameters": [
         {
           "name": "tol",
@@ -83,16 +126,71 @@
       ]
     },
     {
+      "slug": "iqsm",
+      "name": "iQSM",
+      "stage": "end-to-end",
+      "engine": "iQSM (PyTorch)",
+      "description": "iQSM \u2014 instant single-step QSM from raw MRI phase using Laplacian-enabled deep neural networks (LoT-Unet). A single deep network maps raw wrapped phase directly to susceptibility, performing phase unwrapping, background-field removal, and dipole inversion in one pass. Multi-echo phase is reconstructed per echo and combined with magnitude x TE^2 weighting. Runs CPU-only with a CPU-only PyTorch wheel; pretrained weights (HuggingFace sunhongfu/iQSM) are baked into the image.",
+      "citation": null,
+      "doi": "10.1016/j.neuroimage.2022.119410",
+      "code_url": "https://github.com/sunhongfu/iQSM",
+      "license": "See repository (used with author permission)",
+      "authors": [
+        "Gao Y.",
+        "Xiong Z.",
+        "Fazlollahi A.",
+        "Nestor P.J.",
+        "Vegh V.",
+        "Nasrallah F.",
+        "Winter C.",
+        "Pike G.B.",
+        "Crozier S.",
+        "Liu F.",
+        "Sun H."
+      ],
+      "parameters": []
+    },
+    {
+      "slug": "iqsm-plus",
+      "name": "iQSM+",
+      "stage": "end-to-end",
+      "engine": null,
+      "description": "iQSM+ \u2014 an orientation-adaptive, single-step deep-learning method that reconstructs susceptibility directly from the raw wrapped MRI phase (unwrapping, background-field removal and dipole inversion in one network pass). It extends iQSM with orientation-adaptive latent feature editing (OA-LFE) blocks that consume the B0 direction vector, so oblique / sagittal / coronal acquisitions reconstruct correctly, not just axial scans. Consumes phase, magnitude, mask and params and produces the susceptibility map. Multi-echo phase is handled by the engine's own per-echo inference with magnitude x TE^2 weighted combination. Runs CPU-only with a CPU PyTorch wheel (no GPU).",
+      "citation": null,
+      "doi": "10.1016/j.media.2024.103160",
+      "code_url": "https://github.com/sunhongfu/iQSM_Plus",
+      "license": "Used with author permission (no license file in the upstream repository)",
+      "authors": [
+        "Gao Y.",
+        "Xiong Z.",
+        "Shan S.",
+        "Liu Y.",
+        "Rong P.",
+        "Li M.",
+        "Wilman A.H.",
+        "Pike G.B.",
+        "Liu F.",
+        "Sun H."
+      ],
+      "parameters": []
+    },
+    {
       "slug": "ismv",
       "name": "iSMV",
       "stage": "bfr",
       "engine": "QSMxT / QSM.rs",
       "description": "Iterative Spherical Mean Value background field removal.",
-      "citation": "Wen et al., 2014",
-      "doi": null,
+      "citation": "Wen et al., Magn Reson Med 2014",
+      "doi": "10.1002/mrm.24998",
       "code_url": "https://github.com/astewartau/QSM.rs",
       "license": "MIT",
-      "authors": [],
+      "authors": [
+        "Yan Wen",
+        "Dong Zhou",
+        "Tian Liu",
+        "Pascal Spincemaille",
+        "Yi Wang"
+      ],
       "parameters": [
         {
           "name": "tol",
@@ -146,6 +244,25 @@
       ]
     },
     {
+      "slug": "lpcnn",
+      "name": "LPCNN",
+      "stage": "dipole",
+      "engine": null,
+      "description": "LPCNN (Learned Proximal Convolutional Neural Network) \u2014 a learned proximal, unrolled network for QSM dipole inversion. It integrates proximal gradient descent with a 3D CNN denoiser: the physics data-consistency term uses a dipole kernel encoding the B0 direction, and a learned proximal operator regularizes each of 3 unrolled iterations. Consumes the local (tissue) field and produces susceptibility. Run in single-orientation mode (number=1), CPU-only via --no_cuda, with the pretrained 7T weights committed in-repo.",
+      "citation": null,
+      "doi": "10.1007/978-3-030-59713-9_13",
+      "code_url": "https://github.com/Sulam-Group/LPCNN",
+      "license": "none declared; used with author permission",
+      "authors": [
+        "Lai K-W.",
+        "Aggarwal M.",
+        "van Zijl P.",
+        "Li X.",
+        "Sulam J."
+      ],
+      "parameters": []
+    },
+    {
       "slug": "matlab-bfrnet",
       "name": "BFRnet",
       "stage": "bfr",
@@ -166,12 +283,22 @@
       "stage": "bfr+dipole",
       "engine": null,
       "description": "Morphology Enabled Dipole Inversion (Cornell MEDI toolbox), compiled from MATLAB and run on the license-free MATLAB Runtime. Takes the total field, removes the background field with PDF, then solves the L1 morphology-regularized dipole inversion.",
-      "citation": null,
-      "doi": "10.1002/mrm.26946",
+      "citation": "Liu et al., NeuroImage 2012",
+      "doi": "10.1016/j.neuroimage.2011.08.082",
       "code_url": null,
       "license": "See Cornell MEDI toolbox license",
       "authors": [
-        "QSM-CI"
+        "Jing Liu",
+        "Tian Liu",
+        "Ludovic de Rochefort",
+        "James Ledoux",
+        "Ildar Khalidov",
+        "Weiwei Chen",
+        "A. John Tsiouris",
+        "Cynthia Wisnieff",
+        "Pascal Spincemaille",
+        "Martin R. Prince",
+        "Yi Wang"
       ],
       "parameters": [
         {
@@ -202,12 +329,16 @@
       "stage": "unwrap+bfr",
       "engine": null,
       "description": "Integrated phase unwrapping + background field removal (iHARPERELLA) from STI Suite v3, compiled from MATLAB and run on the license-free MATLAB Runtime. Operates on wrapped multi-echo phase and yields the local tissue field (echoes combined with optimal TE^2 weights).",
-      "citation": null,
-      "doi": "10.1016/j.neuroimage.2014.08.029",
+      "citation": "Li et al., NMR Biomed 2014",
+      "doi": "10.1002/nbm.3056",
       "code_url": null,
       "license": "See STI Suite license",
       "authors": [
-        "Wei Li and Chunlei Liu"
+        "Wei Li",
+        "Alexandru V. Avram",
+        "Bing Wu",
+        "Xue Xiao",
+        "Chunlei Liu"
       ],
       "parameters": [
         {
@@ -228,12 +359,20 @@
       "stage": "dipole",
       "engine": null,
       "description": "Iterative LSQR dipole inversion from STI Suite v3 (the reference iLSQR implementation), compiled from MATLAB and run on the license-free MATLAB Runtime. Takes the local field and solves for susceptibility with streaking-artifact reduction.",
-      "citation": null,
-      "doi": "10.1002/nbm.3056",
+      "citation": "Li et al., NeuroImage 2015",
+      "doi": "10.1016/j.neuroimage.2014.12.043",
       "code_url": null,
       "license": "See STI Suite license",
       "authors": [
-        "Wei Li and Chunlei Liu"
+        "Wei Li",
+        "Nian Wang",
+        "Fang Yu",
+        "Hui Han",
+        "Wei Cao",
+        "Rebecca Romero",
+        "Bundhit Tantiwongkosi",
+        "Timothy Q. Duong",
+        "Chunlei Liu"
       ],
       "parameters": [
         {
@@ -270,12 +409,15 @@
       "stage": "bfr",
       "engine": null,
       "description": "V-SHARP background field removal from STI Suite v3 (spatially-varying SMV deconvolution), compiled from MATLAB and run on the license-free MATLAB Runtime. Takes the total field and removes the background field to yield the local tissue field.",
-      "citation": null,
-      "doi": "10.1002/nbm.3056",
+      "citation": "Wu et al., Magn Reson Med 2012",
+      "doi": "10.1002/mrm.23000",
       "code_url": null,
       "license": "See STI Suite license",
       "authors": [
-        "Hongjiang Wei and Chunlei Liu"
+        "Bing Wu",
+        "Wei Li",
+        "Arnaud Guidon",
+        "Chunlei Liu"
       ],
       "parameters": [
         {
@@ -291,12 +433,17 @@
       "stage": "dipole",
       "engine": null,
       "description": "Thresholded k-space division dipole inversion implemented in MATLAB and run on the license-free MATLAB Runtime. Reference `dipole`-stage submission demonstrating the MATLAB path.",
-      "citation": null,
-      "doi": "10.1002/mrm.22187",
+      "citation": "Shmueli et al., Magn Reson Med 2009",
+      "doi": "10.1002/mrm.22135",
       "code_url": null,
       "license": "MIT",
       "authors": [
-        "QSM-CI"
+        "Karin Shmueli",
+        "Jacco A. de Zwart",
+        "Peter van Gelderen",
+        "Tie-Qiang Li",
+        "Stephen J. Dodd",
+        "Jeff H. Duyn"
       ],
       "parameters": []
     },
@@ -306,11 +453,23 @@
       "stage": "dipole",
       "engine": "QSMxT / QSM.rs",
       "description": "Morphology Enabled Dipole Inversion: magnitude-guided edge regularization.",
-      "citation": "Liu et al., 2012",
-      "doi": null,
+      "citation": "Liu et al., NeuroImage 2012",
+      "doi": "10.1016/j.neuroimage.2011.08.082",
       "code_url": "https://github.com/astewartau/QSM.rs",
       "license": "MIT",
-      "authors": [],
+      "authors": [
+        "Jing Liu",
+        "Tian Liu",
+        "Ludovic de Rochefort",
+        "James Ledoux",
+        "Ildar Khalidov",
+        "Weiwei Chen",
+        "A. John Tsiouris",
+        "Cynthia Wisnieff",
+        "Pascal Spincemaille",
+        "Martin R. Prince",
+        "Yi Wang"
+      ],
       "parameters": [
         {
           "name": "lambda",
@@ -318,6 +477,31 @@
           "description": "regularization"
         }
       ]
+    },
+    {
+      "slug": "modl-qsm",
+      "name": "MoDL-QSM",
+      "stage": "dipole",
+      "engine": null,
+      "description": "MoDL-QSM \u2014 model-based deep learning for quantitative susceptibility mapping. A dipole-inversion network that unrolls a gradient-descent solver of the QSM forward model, alternating a learned CNN prior with data-consistency terms built from the dipole kernel. Consumes the tissue (local) field in ppm and produces susceptibility (the STI \u03c733 component, comparable to scalar QSM). Runs CPU-only with legacy TensorFlow 1.15 / Keras 2.2.5.",
+      "citation": null,
+      "doi": "10.1016/j.neuroimage.2021.118376",
+      "code_url": "https://github.com/Ruimin-Feng/MoDL-QSM",
+      "license": "none declared; used with author permission",
+      "authors": [
+        "Feng R.",
+        "Zhao J.",
+        "Wang H.",
+        "Yang B.",
+        "Feng J.",
+        "Shi Y.",
+        "Zhang M.",
+        "Liu C.",
+        "Zhang Y.",
+        "Zhuang J.",
+        "Wei H."
+      ],
+      "parameters": []
     },
     {
       "slug": "nextqsm",
@@ -389,11 +573,92 @@
       "stage": "bfr+dipole",
       "engine": "QSMxT / QSM.rs",
       "description": "QSMART: vessel-aware two-stage reconstruction. Consumes the total field and produces susceptibility, doing its own spatially-dependent background field removal and vasculature-aware regularization (Frangi vessel detection + SDF).",
-      "citation": "Yaghmaie et al., NMR Biomed 2021",
-      "doi": "10.1002/nbm.4442",
+      "citation": "Yaghmaie et al., NeuroImage 2021",
+      "doi": "10.1016/j.neuroimage.2020.117701",
       "code_url": "https://github.com/astewartau/QSM.rs",
       "license": "MIT",
-      "authors": [],
+      "authors": [
+        "Negin Yaghmaie",
+        "Warda T. Syeda",
+        "Chengchuan Wu",
+        "Yicheng Zhang",
+        "Tracy D. Zhang",
+        "Emma L. Burrows",
+        "Amy Brodtmann",
+        "Bradford A. Moffat",
+        "David K. Wright",
+        "Rebecca Glarin",
+        "Scott Kolbe",
+        "Leigh A. Johnston"
+      ],
+      "parameters": []
+    },
+    {
+      "slug": "qsmgan",
+      "name": "QSMGAN",
+      "stage": "dipole",
+      "engine": null,
+      "description": "QSMGAN \u2014 dipole inversion by a 3D U-Net generator refined with a WGAN-GP and an increased receptive field. Consumes the background-removed local field (ppm) and produces susceptibility. Patch-based inference: 64^3 input patches are mapped to 48^3 receptive-field-cropped output patches (i64o48) and stitched. Runs CPU-only on legacy PyTorch with the published WGAN-refined generator weights.",
+      "citation": null,
+      "doi": "10.1016/j.neuroimage.2019.116389",
+      "code_url": "https://github.com/mmorri10/QSMGAN-LupoLab",
+      "license": "MIT",
+      "authors": [
+        "Chen Y.",
+        "Jakary A.",
+        "Avadiappan S.",
+        "Hess C.P.",
+        "Lupo J.M."
+      ],
+      "parameters": []
+    },
+    {
+      "slug": "qsmnet",
+      "name": "QSMnet",
+      "stage": "dipole",
+      "engine": null,
+      "description": "QSMnet \u2014 a pretrained 3D U-Net for QSM dipole inversion. Consumes the local (tissue) field in ppm and produces susceptibility (ppm). The input is normalized by the dataset mean/std stored with the checkpoint and the output is de-normalized back to ppm. Trained at 1 mm isotropic; each dimension is zero-padded to a multiple of 16 for the U-Net's four pool/deconv levels and cropped back afterwards. Runs CPU-only on the legacy TensorFlow 1.14 / Python 3.7 stack.",
+      "citation": null,
+      "doi": "10.1016/j.neuroimage.2018.06.030",
+      "code_url": "https://github.com/SNU-LIST/QSMnet",
+      "license": "SNU-LIST academic license (LICENSE.pdf); used with author permission",
+      "authors": [
+        "Yoon J.",
+        "Gong E.",
+        "Chatnuntawech I.",
+        "Bilgic B.",
+        "Lee J.",
+        "Jung W.",
+        "Ko J.",
+        "Jung H.",
+        "Setsompop K.",
+        "Zaharchuk G.",
+        "Kim E.Y.",
+        "Pauly J.",
+        "Lee J."
+      ],
+      "parameters": []
+    },
+    {
+      "slug": "qsmnet-plus",
+      "name": "QSMnet+",
+      "stage": "dipole",
+      "engine": null,
+      "description": "QSMnet+ \u2014 the augmentation-trained variant of QSMnet: the same pretrained 3D U-Net for QSM dipole inversion, trained with susceptibility-scaling data augmentation for a wider, more linear susceptibility range. Consumes the local (tissue) field in ppm and produces susceptibility (ppm). The input is normalized by the dataset mean/std stored with the checkpoint and the output is de-normalized back to ppm. Trained at 1 mm isotropic; each dimension is zero-padded to a multiple of 16 for the U-Net's four pool/deconv levels and cropped back afterwards. Runs CPU-only on the legacy TensorFlow 1.14 / Python 3.7 stack.",
+      "citation": null,
+      "doi": "10.1016/j.neuroimage.2020.116619",
+      "code_url": "https://github.com/SNU-LIST/QSMnet",
+      "license": "SNU-LIST academic license (LICENSE.pdf); used with author permission",
+      "authors": [
+        "Jung W.",
+        "Yoon J.",
+        "Ji S.",
+        "Choi J.Y.",
+        "Kim J.M.",
+        "Nam Y.",
+        "Kim E.Y.",
+        "Lee J."
+      ],
       "parameters": []
     },
     {
@@ -442,10 +707,14 @@
       "engine": "QSMxT / QSM.rs",
       "description": "Rapid Two-Step QSM: streaking-artifact reduction via a fast ADMM split.",
       "citation": "Kames et al., NeuroImage 2018",
-      "doi": "10.1016/j.neuroimage.2018.07.043",
+      "doi": "10.1016/j.neuroimage.2017.11.018",
       "code_url": "https://github.com/astewartau/QSM.rs",
       "license": "MIT",
-      "authors": [],
+      "authors": [
+        "Christian Kames",
+        "Vanessa Wiggermann",
+        "Alexander Rauscher"
+      ],
       "parameters": [
         {
           "name": "delta",
@@ -543,10 +812,17 @@
       "engine": "QSMxT / QSM.rs",
       "description": "Thresholded K-space Division: direct inversion with the dipole kernel thresholded.",
       "citation": "Shmueli et al., Magn Reson Med 2009",
-      "doi": null,
+      "doi": "10.1002/mrm.22135",
       "code_url": "https://github.com/astewartau/QSM.rs",
       "license": "MIT",
-      "authors": [],
+      "authors": [
+        "Karin Shmueli",
+        "Jacco A. de Zwart",
+        "Peter van Gelderen",
+        "Tie-Qiang Li",
+        "Stephen J. Dodd",
+        "Jeff H. Duyn"
+      ],
       "parameters": [
         {
           "name": "threshold",
@@ -610,10 +886,15 @@
       "engine": "QSMxT / QSM.rs",
       "description": "Variable-radius SHARP: SMV deconvolution with a spatially varying kernel radius.",
       "citation": "Wu et al., Magn Reson Med 2012",
-      "doi": null,
+      "doi": "10.1002/mrm.23000",
       "code_url": "https://github.com/astewartau/QSM.rs",
       "license": "MIT",
-      "authors": [],
+      "authors": [
+        "Bing Wu",
+        "Wei Li",
+        "Arnaud Guidon",
+        "Chunlei Liu"
+      ],
       "parameters": [
         {
           "name": "threshold",
@@ -631,6 +912,29 @@
           "description": "\u00d7 max voxel size"
         }
       ]
+    },
+    {
+      "slug": "xqsm",
+      "name": "xQSM",
+      "stage": "dipole",
+      "engine": null,
+      "description": "xQSM \u2014 an octave-convolutional, noise-regularized U-Net for QSM dipole inversion. Consumes the local (tissue) field in ppm and produces susceptibility (ppm) using the pretrained in-vivo checkpoint. The octave convolution adds an X-shaped multi-resolution feature exchange on a U-net backbone with a noise-adding regularization layer. Runs CPU-only with PyTorch (no GPU); the network auto zero-pads each dimension to a multiple of 8, so there is no fixed matrix size.",
+      "citation": null,
+      "doi": "10.1002/nbm.4461",
+      "code_url": "https://github.com/sunhongfu/xQSM",
+      "license": "Used with author permission (Hongfu Sun); see repository for terms.",
+      "authors": [
+        "Gao Y.",
+        "Zhu X.",
+        "Moffat B.A.",
+        "Glarin R.",
+        "Wilman A.H.",
+        "Pike G.B.",
+        "Crozier S.",
+        "Liu F.",
+        "Sun H."
+      ],
+      "parameters": []
     }
   ]
 }
