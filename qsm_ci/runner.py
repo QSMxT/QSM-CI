@@ -28,6 +28,10 @@ from .stages import ARTIFACT_FILE, ARTIFACT_KIND, STAGES
 # uses magnitude; plain TKD does not). Everything else the stage consumes is required.
 OPTIONAL_ARTIFACTS = {"magnitude"}
 
+# Multi-echo artifacts: a stage wants one 4D NIfTI (x,y,z,echo), but a caller with BIDS data has one
+# 3D file per echo. These flags accept several files and we stack them into the 4D artifact.
+STACKABLE_ARTIFACTS = {"phase", "magnitude"}
+
 
 def _parse_manifest(algo_dir: Path) -> dict:
     spec = algo_dir / "algorithm.yml"
@@ -48,9 +52,16 @@ def _parse_manifest(algo_dir: Path) -> dict:
 
 
 def _find_algo_dir(target: str) -> "Path | None":
-    """Resolve a slug (algorithms/<slug> or ./<slug>) or a direct path; None if not found."""
+    """Resolve a slug (algorithms/<slug> or ./<slug>) or a direct path; None if not found.
+
+    $QSMCI_ALGORITHMS, if set, is searched too — so a bare slug resolves even when the cwd isn't a
+    QSM-CI checkout (e.g. inside a Nextflow/CWL process that runs in its own isolated work dir)."""
     p = Path(target)
-    for cand in (p, Path("algorithms") / target, Path.cwd() / target):
+    cands = [p, Path("algorithms") / target, Path.cwd() / target]
+    env = os.environ.get("QSMCI_ALGORITHMS")
+    if env:
+        cands.append(Path(env) / target)
+    for cand in cands:
         if (cand / "algorithm.yml").exists():
             return cand.resolve()
     return None
@@ -66,7 +77,11 @@ def resolve_algo_dir(target: str) -> Path:
 
 
 def _algorithms_root() -> "Path | None":
-    for cand in (Path("algorithms"), Path.cwd() / "algorithms"):
+    env = os.environ.get("QSMCI_ALGORITHMS")
+    cands = [Path("algorithms"), Path.cwd() / "algorithms"]
+    if env:
+        cands.insert(0, Path(env))
+    for cand in cands:
         if cand.is_dir():
             return cand
     return None
@@ -143,6 +158,30 @@ def _place_input(src, dest: Path) -> None:
             shutil.copyfileobj(fi, fo)
     else:
         shutil.copy(src, dest)
+
+
+def _echo_key(path) -> int:
+    m = re.search(r"echo-?(\d+)", str(path))
+    return int(m.group(1)) if m else 0
+
+
+def _place_echoes(paths: list, dest: Path, log) -> None:
+    """Place a multi-echo artifact: one file goes in as-is; several 3D echoes are stacked into 4D.
+
+    When every filename carries a BIDS `echo-<n>`, echoes are ordered by that number (so echo-10
+    sorts after echo-2); otherwise the given order is kept. The stacked file must line up with the
+    `TE` list in params.json."""
+    if len(paths) == 1:
+        _place_input(paths[0], dest)
+        return
+    import nibabel as nib
+    import numpy as np
+    ordered = sorted(paths, key=_echo_key) if all(re.search(r"echo-?\d+", str(p)) for p in paths) else list(paths)
+    imgs = [nib.load(str(p)) for p in ordered]
+    data = np.stack([im.get_fdata(dtype=np.float64) for im in imgs], axis=-1)
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    nib.save(nib.Nifti1Image(data.astype(np.float32), imgs[0].affine), str(dest))
+    log(f"  stacked {len(ordered)} echoes → {dest.name}")
 
 
 def _params_dict(args, stage: str) -> dict:
@@ -418,8 +457,14 @@ def _build_run_parser(slug: str, algo: dict) -> argparse.ArgumentParser:
                            help="params.json or a BIDS MEGRE sidecar — or use the acquisition flags below")
             continue
         req = art not in OPTIONAL_ARTIFACTS
-        p.add_argument(f"--{art}", metavar="PATH", required=req,
-                       help=f"{ARTIFACT_FILE[art]} (NIfTI)" + ("" if req else "  [optional]"))
+        if art in STACKABLE_ARTIFACTS:
+            # multi-echo: accept one 4D file OR several per-echo 3D files (BIDS-style), stacked to 4D.
+            p.add_argument(f"--{art}", metavar="PATH", nargs="+", required=req,
+                           help=f"{ARTIFACT_FILE[art]} — one 4D file, or per-echo 3D files to stack"
+                                + ("" if req else "  [optional]"))
+        else:
+            p.add_argument(f"--{art}", metavar="PATH", required=req,
+                           help=f"{ARTIFACT_FILE[art]} (NIfTI)" + ("" if req else "  [optional]"))
     acq = p.add_argument_group("acquisition parameters (build params.json when --params is omitted)")
     acq.add_argument("--te", nargs="+", type=float, metavar="SEC",
                      help="echo times in seconds (required for field-mapping stages)")
@@ -477,10 +522,17 @@ def run_command(argv, log=print) -> int:
         log(_algorithms_help())
         return 0 if has_help else 2
 
-    # Unknown slug: guide, don't just error.
+    # Resolve locally first (a checkout / $QSMCI_ALGORITHMS), else fetch it from the Zenodo
+    # registry (a bare slug, a pinned `slug@version`, or a `doi:` reference).
     algo_dir = _find_algo_dir(slug)
     if algo_dir is None:
-        log(f"✗ no submission '{slug}' (looked at {slug}, algorithms/{slug}).")
+        try:
+            from .registry import resolve as _registry_resolve
+            algo_dir = _registry_resolve(slug, log)
+        except Exception as e:  # noqa: BLE001 — network/registry issues shouldn't crash; fall through to guidance
+            log(f"  (registry lookup failed: {e})")
+    if algo_dir is None:
+        log(f"✗ no submission '{slug}' (looked at {slug}, algorithms/{slug}, and the Zenodo registry).")
         hint = _closest_slugs(slug)
         if hint:
             log(f"  did you mean:  {', '.join(hint)}")
@@ -543,12 +595,17 @@ def run_command(argv, log=print) -> int:
                     log(f"  params: TE={params['TE']} B0={params['B0']} "
                         f"B0_dir={params['B0_dir']} voxel_size={params['voxel_size']}")
                 continue
-            path = getattr(args, art, None)
-            if not path:
+            value = getattr(args, art, None)
+            if not value:
                 continue  # optional and not supplied
-            if not Path(path).exists():
-                raise SystemExit(f"--{art} file not found: {path}")
-            _place_input(path, idir / ARTIFACT_FILE[art])
+            paths = value if isinstance(value, list) else [value]
+            for pth in paths:
+                if not Path(pth).exists():
+                    raise SystemExit(f"--{art} file not found: {pth}")
+            if art in STACKABLE_ARTIFACTS:
+                _place_echoes(paths, idir / ARTIFACT_FILE[art], log)
+            else:
+                _place_input(paths[0], idir / ARTIFACT_FILE[art])
 
         if cfg:
             (idir / "config.json").write_text(json.dumps(cfg, indent=2) + "\n")
