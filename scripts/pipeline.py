@@ -113,25 +113,30 @@ _built: dict[str, str] = {}
 def build_env(algo: dict) -> str:
     """Resolve the submission's ENVIRONMENT image (build/setup phase — network allowed).
 
-    - If the folder has a Dockerfile, build it (a base image + any toolbox downloads). The code is
-      NOT baked in; it is mounted at run time.
-    - Otherwise use `image:` (a ready base, e.g. a MATLAB Runtime container), pulling if not local.
+    Preference order:
+    1. If `image:` names a container we can PULL, use it. Heavy/DL submissions publish a prebuilt
+       image so scoring pulls it (seconds) instead of re-running their slow, sometimes flaky build
+       (large weight downloads, legacy toolchains) on every run. NB: when a published image exists,
+       it takes precedence over the folder Dockerfile — so rebuild+push the image after changing
+       the Dockerfile, or scoring will keep using the old one.
+    2. Else, if the folder has a Dockerfile, build it locally (a fresh submission with no published
+       image yet). The code is NOT baked in; it is mounted at run time.
+    3. Else (no Dockerfile, pull failed), fall back to a locally cached copy of `image:`.
     Returns the image tag to run offline.
     """
     if algo["slug"] in _built:
         return _built[algo["slug"]]
-    if (algo["dir"] / "Dockerfile").exists():
+    ref = algo.get("image")
+    # `docker pull` is cheap when the digest already matches, and it beats a stale local copy.
+    if ref and subprocess.run(["docker", "pull", ref], capture_output=True).returncode == 0:
+        tag = ref
+    elif (algo["dir"] / "Dockerfile").exists():
         tag = f"qsm-ci-env/{algo['slug']}:latest"
         subprocess.run(["docker", "build", "-q", "-t", tag, str(algo["dir"])], check=True)
+    elif ref and subprocess.run(["docker", "image", "inspect", ref], capture_output=True).returncode == 0:
+        tag = ref  # offline / registry hiccup, but a local copy exists
     else:
-        tag = algo["image"]
-        # Always pull: submissions push updated builds to the SAME tag (e.g. matlab-*:v1), so a
-        # stale copy cached from a prior run would otherwise be used silently (docker image inspect
-        # succeeds and skips the pull). `docker pull` is cheap when the digest already matches.
-        if subprocess.run(["docker", "pull", tag], capture_output=True).returncode != 0:
-            # Offline / registry hiccup — fall back to a locally cached image if one exists.
-            if subprocess.run(["docker", "image", "inspect", tag], capture_output=True).returncode != 0:
-                raise RuntimeError(f"cannot pull or find image {tag}")
+        raise RuntimeError(f"{algo['slug']}: cannot pull or find image {ref!r} and no Dockerfile to build")
     _built[algo["slug"]] = tag
     return tag
 
