@@ -351,10 +351,43 @@ def _apptainer_image(algo: dict) -> str:
     return f"docker://{img}"  # plain registry ref -> pull & convert on the fly
 
 
+def _param_env(input_dir: Path) -> "dict[str, str]":
+    """Layer B — expose params.json + config.json as ``QSMCI_*`` env vars so a run.sh needn't parse
+    JSON (no `jq` needed): ``QSMCI_B0``, ``QSMCI_TE`` (space-separated echoes), ``QSMCI_TE0`` (first
+    echo), ``QSMCI_B0_DIR``, ``QSMCI_VOXEL_SIZE``, and ``QSMCI_SET_<NAME>`` per --set override. The
+    JSON files are still written (Layer A), so this is purely additive."""
+    env: "dict[str, str]" = {}
+    pj = input_dir / ARTIFACT_FILE["params"]
+    if pj.exists():
+        try:
+            p = json.loads(pj.read_text())
+        except Exception:  # noqa: BLE001
+            p = {}
+        te = p.get("TE") or []
+        if te:
+            env["QSMCI_TE"] = " ".join(str(t) for t in te)
+            env["QSMCI_TE0"] = str(te[0])
+        if p.get("B0") is not None:
+            env["QSMCI_B0"] = str(p["B0"])
+        if p.get("B0_dir"):
+            env["QSMCI_B0_DIR"] = " ".join(str(x) for x in p["B0_dir"])
+        if p.get("voxel_size"):
+            env["QSMCI_VOXEL_SIZE"] = " ".join(str(x) for x in p["voxel_size"])
+    cj = input_dir / "config.json"
+    if cj.exists():
+        try:
+            for k, v in json.loads(cj.read_text()).items():
+                env[f"QSMCI_SET_{str(k).upper()}"] = str(v)
+        except Exception:  # noqa: BLE001
+            pass
+    return env
+
+
 def _run_container(algo, input_dir, output_dir, runner, log) -> float:
     if output_dir.exists():
         shutil.rmtree(output_dir)
     output_dir.mkdir(parents=True)
+    penv = _param_env(input_dir)  # Layer B: acquisition params + overrides as QSMCI_* env vars
     t0 = time.time()
     if runner in _OCI_ENGINES:
         image = _build_oci(algo, runner, log)
@@ -363,8 +396,9 @@ def _run_container(algo, input_dir, output_dir, runner, log) -> float:
         # bind mount come back owned by you. docker (root daemon): run as your uid directly.
         id_args = (["--userns=keep-id"] if runner == "podman"
                    else ["--user", f"{os.getuid()}:{os.getgid()}"])
+        e_args = [a for k, v in penv.items() for a in ("-e", f"{k}={v}")]
         subprocess.run([
-            runner, "run", "--rm", "--network", "none", *id_args,
+            runner, "run", "--rm", "--network", "none", *id_args, *e_args,
             "-v", f"{algo['dir']}:/algo:ro",
             "-v", f"{input_dir}:/input:ro", "-v", f"{output_dir}:/output",
             image, "bash", "/algo/run.sh",
@@ -373,8 +407,9 @@ def _run_container(algo, input_dir, output_dir, runner, log) -> float:
         image = _apptainer_image(algo)
         log(f"⚙ running container (apptainer: {image})")
         log("  note: apptainer runs without enforced network isolation here; CI uses --network none.")
+        e_args = [a for k, v in penv.items() for a in ("--env", f"{k}={v}")]
         subprocess.run([
-            "apptainer", "exec", "--no-home", "--cleanenv",
+            "apptainer", "exec", "--no-home", "--cleanenv", *e_args,
             "-B", f"{algo['dir']}:/algo:ro",
             "-B", f"{input_dir}:/input:ro", "-B", f"{output_dir}:/output",
             image, "bash", "/algo/run.sh",
@@ -382,7 +417,7 @@ def _run_container(algo, input_dir, output_dir, runner, log) -> float:
     else:  # local
         log("⚙ running run.sh directly (--runner local)")
         subprocess.run(["bash", str(algo["dir"] / "run.sh"), str(input_dir), str(output_dir)],
-                       check=True)
+                       check=True, env={**os.environ, **penv})
     return time.time() - t0
 
 

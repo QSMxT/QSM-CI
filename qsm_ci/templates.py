@@ -254,12 +254,12 @@ def _run_sh(stage: str, lang: str, name: str) -> str:
             f'# You must write {produced_artifact(stage)}.nii.gz (ppm, within the mask) to "$OUT",\n'
             "# on the same voxel grid as the inputs.\n"
             "\n"
-            "# Read acquisition parameters if you need them (jq is in the reference images):\n"
-            'if command -v jq >/dev/null 2>&1; then\n'
-            '  B0_DIR=$(jq -r ".B0_dir | join(\\" \\")" "$IN/params.json")   # e.g. dipole/BFR need this\n'
-            '  echo "B0 direction: $B0_DIR"\n'
-            "fi\n"
-            "# Parameter overrides (qsm-ci run --set NAME=VALUE) arrive as $IN/config.json.\n"
+            "# Acquisition parameters are injected as env vars (no parsing needed):\n"
+            '#   $QSMCI_B0 (tesla)  $QSMCI_TE (echoes)  $QSMCI_TE0 (first echo)\n'
+            '#   $QSMCI_B0_DIR (e.g. dipole/BFR need this)  $QSMCI_VOXEL_SIZE (mm)\n'
+            '#   $QSMCI_SET_<NAME>  for each  qsm-ci run --set NAME=VALUE  override\n'
+            'echo "B0 direction: $QSMCI_B0_DIR"\n'
+            "# (params.json / config.json are also in $IN if you prefer to read the JSON.)\n"
             "\n"
             "# TODO: replace this passthrough with your reconstruction — e.g. call your own program:\n"
             f'#   "$HERE/my-program" "$IN/{input_artifact(stage)}.nii.gz" "$IN/mask.nii.gz" "$OUT/{produced_artifact(stage)}.nii.gz"\n'
