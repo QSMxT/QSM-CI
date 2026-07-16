@@ -4,8 +4,8 @@ MATLAB QSM code is welcome. The scoring run is offline (`--network none`), so th
 *what executes your code without a license at run time*. Two routes, **recommended first**:
 
 - **Compile → MATLAB Runtime (Option A, recommended).** Compile your `.m` (+ toolboxes) with the
-  MATLAB Compiler once — the **only** place a license is needed, at *build* time on your machine (or a
-  licensed CI runner). The standalone binary runs on the **free MATLAB Runtime**, so scoring stays
+  MATLAB Compiler once — the **only** place a license is needed, at *build* time on your own machine.
+  The standalone binary runs on the **free MATLAB Runtime**, so scoring stays
   fully offline and license-free, and any toolbox (SEPIA, MEDI, STI Suite, chi-separation) works
   because `mcc` bundles it. This is the [`matlab-tkd`](../algorithms/matlab-tkd) template, and what
   `qsm-ci new --lang matlab` scaffolds.
@@ -39,11 +39,11 @@ Point `algorithm.yml`'s `image:` at that tag. QSM-CI mounts your `run.sh` at `/a
 `/opt/qsm-ci/recon /input /output` with `--network none`. Full recipe + version-pinning:
 [`algorithms/matlab-tkd/BUILD.md`](../algorithms/matlab-tkd/BUILD.md).
 
-**Don't have the Compiler handy?** Push just `recon.m` (declare `matlab: {entry, runtime}` in
-`algorithm.yml`) and run [`.github/workflows/matlab-compile.yml`](../.github/workflows/matlab-compile.yml)
-on GitHub-hosted runners (via MathWorks' setup-matlab action + a batch licensing token, secret
-`MATLAB_BATCH_TOKEN`) — it compiles and pushes the image for you.
-The license is used at build time, where network is allowed.
+**What lands where:** your PR holds only text — `algorithm.yml`, `run.sh`, `recon.m` (source), `BUILD.md`.
+The compiled binary is **not** committed; it ships inside the image you push, and QSM-CI pulls that image.
+(Unlike Python/Julia/Rust, where the source itself runs in a ready base image — nothing to compile or push.)
+
+No MATLAB Compiler license? Use Option B below, or reuse an existing licensed container.
 
 ## Option B — full MATLAB at run time (needs a run-time license)
 

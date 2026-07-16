@@ -2,7 +2,7 @@
 // interactive dual-range windowing, and per-algorithm docs. Module scope; helpers via window.QSM.
 import { Niivue } from "https://unpkg.com/@niivue/niivue@0.57.0/dist/index.js";
 
-const { loadRuns, loadAlgos, METRICS, STAGE_LABEL, val, fmt } = window.QSM;
+const { loadRuns, loadAlgos, loadRegistry, doiFor, METRICS, STAGE_LABEL, val, fmt } = window.QSM;
 
 const STAGE_COLOR = {
   "field-mapping": "bg-indigo-50 text-indigo-700 ring-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-300 dark:ring-indigo-500/20",
@@ -10,7 +10,72 @@ const STAGE_COLOR = {
   dipole: "bg-fuchsia-50 text-fuchsia-700 ring-fuchsia-100 dark:bg-fuchsia-500/10 dark:text-fuchsia-300 dark:ring-fuchsia-500/20",
 };
 
-let allRuns = [], algos = [];
+// Stage I/O for generating "how to run" qsm-ci commands (mirrors stages.yml; magnitude is optional
+// and omitted for brevity). Each stage's output filename is the next stage's input, so a composed
+// pipeline chains as written.
+const STAGE_IO = {
+  "field-mapping": { consumes: ["phase", "mask", "params"], produces: "totalfield" },
+  "bfr":           { consumes: ["totalfield", "mask", "params"], produces: "localfield" },
+  "dipole":        { consumes: ["localfield", "mask", "params"], produces: "chimap" },
+  "unwrap+bfr":    { consumes: ["phase", "mask", "params"], produces: "localfield" },
+  "bfr+dipole":    { consumes: ["totalfield", "mask", "params"], produces: "chimap" },
+  "end-to-end":    { consumes: ["phase", "mask", "params"], produces: "chimap" },
+};
+const ARTFILE = { phase: "phase.nii.gz", magnitude: "magnitude.nii.gz", mask: "mask.nii.gz",
+  params: "params.json", totalfield: "totalfield.nii.gz", localfield: "localfield.nii.gz",
+  chimap: "chimap.nii.gz" };
+const escapeHtml = (s) => s.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+
+function runLine(slug, stage, truth) {
+  const io = STAGE_IO[stage];
+  if (!io) return `qsm-ci run ${slug}`;
+  const flags = io.consumes.map((a) => `--${a} ${ARTFILE[a]}`).join(" ");
+  return `qsm-ci run ${slug} ${flags} -o ${ARTFILE[io.produces]}`
+    + (truth ? ` --truth ${io.produces}_groundtruth.nii.gz` : "");
+}
+
+// The qsm-ci command(s) that reproduce this run: one line for an isolated method, the
+// field-mapping → bfr → dipole chain for a composed pipeline.
+function renderHowToRun() {
+  const el = $("how-to-run");
+  if (!el) return;
+  const bySlug = Object.fromEntries(algos.map((a) => [a.slug, a]));
+  const stageOf = (s) => (bySlug[s] ? bySlug[s].stage : null);
+  const lines = [];
+  if (run.combo) {
+    const { field_mapping: fm, bfr, dipole } = run.combo;
+    if (fm && fm !== "gt" && stageOf(fm)) lines.push(runLine(fm, stageOf(fm), false));
+    if (bfr && stageOf(bfr)) lines.push(runLine(bfr, stageOf(bfr), false));
+    if (dipole && stageOf(dipole)) lines.push(runLine(dipole, stageOf(dipole), true));
+  } else if (bySlug[run.slug]) {
+    lines.push(runLine(run.slug, run.stage, true));
+  }
+  if (!lines.length) { el.style.display = "none"; return; }
+  el.style.display = "";
+  const full = "pip install qsm-ci\n" + lines.join("\n");
+  const chained = lines.length > 1;
+  el.innerHTML = `
+    <div class="flex items-baseline justify-between gap-3">
+      <h2 class="font-semibold text-gray-900 dark:text-gray-100">Run this yourself</h2>
+      <a href="running.html" class="text-xs text-emerald-600 hover:underline">Guide to running methods →</a>
+    </div>
+    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+      Reproduce it with the <a href="running.html" class="text-emerald-600 hover:underline"><code>qsm-ci</code></a> CLI —
+      bring your own NIfTIs${chained ? ", chained stage by stage," : ""} or make a phantom with
+      <code>qsm-forward</code>. Drop <code>--truth</code> to run without scoring.
+    </p>
+    <div class="relative mt-3">
+      <button data-copy class="absolute right-2 top-2 rounded-md bg-gray-800/80 px-2 py-1 text-xs font-medium text-gray-100 hover:bg-gray-700">Copy</button>
+      <pre class="overflow-x-auto rounded-xl bg-gray-900 p-4 text-xs leading-relaxed text-gray-100"><code>${escapeHtml(full)}</code></pre>
+    </div>`;
+  const btn = el.querySelector("[data-copy]");
+  if (btn) btn.addEventListener("click", () => {
+    navigator.clipboard.writeText(full);
+    btn.textContent = "Copied"; setTimeout(() => (btn.textContent = "Copy"), 1200);
+  });
+}
+
+let allRuns = [], algos = [], registry = {};
 let nv = null, run, baseUrl, filter = "", navMode = "stages";
 let gmin = 0, gmax = 1;  // data range for the windowing slider
 
@@ -91,6 +156,8 @@ function selectRun(id) {
 function methodCard(a) {
   if (!a) return "";
   const links = [];
+  const zdoi = doiFor(registry, a.slug);
+  if (zdoi) links.push(`<a href="${zdoi.url}" class="text-emerald-600 hover:underline" title="Cite this QSM-CI submission">cite (Zenodo v${zdoi.version})</a>`);
   if (a.doi) links.push(`<a href="https://doi.org/${a.doi}" class="text-indigo-600 hover:underline">doi</a>`);
   if (a.code_url) links.push(`<a href="${a.code_url}" class="text-indigo-600 hover:underline">source</a>`);
   const params = (a.parameters || []).map((p) =>
@@ -99,7 +166,6 @@ function methodCard(a) {
     <div class="flex items-baseline gap-2">
       <span class="font-medium text-gray-900 dark:text-gray-100">${a.name}</span>
       <span class="text-xs text-gray-400">${a.stage ? (STAGE_LABEL[a.stage] || a.stage) : ""}</span>
-      <a href="methods.html" class="ml-auto text-xs text-indigo-600 hover:underline">All methods →</a>
     </div>
     <p class="mt-0.5 text-sm text-gray-600 dark:text-gray-400">${a.description || ""}</p>
     ${params ? `<table class="mt-2 w-full text-xs"><tbody>${params}</tbody></table>` : ""}
@@ -134,6 +200,7 @@ async function loadRun() {
   if (run.image) bits.push(`image <code class="text-gray-700 dark:text-gray-300">${run.image}</code>`);
   $("sub-meta").innerHTML = bits.join(" · ");
   renderMethodInfo();
+  renderHowToRun();
   renderMetrics();
 
   const note = $("viewer-note"), canvas = $("gl1"), controls = $("viewer-controls"), layerRow = $("layer-row");
@@ -256,7 +323,7 @@ async function showLayer(layer) {
 
 // ---- boot -------------------------------------------------------------------
 async function init() {
-  [allRuns, algos] = await Promise.all([loadRuns(), loadAlgos()]);
+  [allRuns, algos, registry] = await Promise.all([loadRuns(), loadAlgos(), loadRegistry()]);
   const id = new URLSearchParams(location.search).get("run");
   run = allRuns.find((r) => r.id === id) || allRuns.find((r) => r.status !== "DNF") || allRuns[0];
   if (!run) { $("sub-title").textContent = "No runs"; return; }

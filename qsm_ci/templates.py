@@ -1,4 +1,4 @@
-"""Submission file templates — the same starters the web Submit wizard generates.
+"""Submission file templates — the starters `qsm-ci new` scaffolds.
 
 Keyed by stage (which artifact you read/write) and language. Token substitution (not f-strings)
 keeps the Rust/MATLAB/Julia braces intact.
@@ -171,32 +171,39 @@ MATLAB_RUNTIME = "r2026a"
 
 _MATLAB_BUILD = '''# Building __NAME__ for the MATLAB Runtime
 
-Compile `recon.m` once on a machine (or CI runner) with **MATLAB + MATLAB Compiler** — the only place
-a license is needed. The result runs on the free **MATLAB Runtime (MCR)**, so QSM-CI scores it
-offline with no license.
+You compile `recon.m` yourself, once, on a machine with **MATLAB + MATLAB Compiler** — the only place
+a license is needed, at *build* time. The standalone binary then runs on the free **MATLAB Runtime
+(MCR)**, so QSM-CI scores it offline with no license. (QSM-CI cannot compile it for you — its build
+environment has no MATLAB license.)
 
-## Option A — let CI compile it (recommended)
-
-Push just `recon.m`, then run
-[`.github/workflows/matlab-compile.yml`](../../.github/workflows/matlab-compile.yml) — it runs on
-GitHub-hosted runners with a MATLAB batch licensing token (secret `MATLAB_BATCH_TOKEN`), reads the
-`matlab:` block in `algorithm.yml`,
-compiles `recon.m`, and pushes the image to the `image:` tag for you. `image:` is just the *intended*
-tag — it does not need to exist beforehand.
-
-## Option B — compile locally
+## 1. Compile
 
 ```bash
-matlab -batch "mcc('-m','recon.m','-o','recon','-d','.')"   # needs MATLAB + Compiler + license
+matlab -batch "mcc('-m','recon.m','-o','recon','-d','.')"   # -> ./recon (needs MATLAB + Compiler)
 ```
 
-Bake the compiled `recon` into an MCR image and push it to your `image:` tag:
+## 2. Bake the MCR image and push
 
 ```dockerfile
 FROM containers.mathworks.com/matlab-runtime:__RUNTIME__   # free Runtime; match the compiler release
+ENV AGREE_TO_MATLAB_RUNTIME_LICENSE=yes
 COPY recon /opt/qsm-ci/recon
 RUN chmod +x /opt/qsm-ci/recon
 ```
+
+```bash
+docker build -t <your-image:tag> .  &&  docker push <your-image:tag>   # then make the package public
+```
+
+Point `algorithm.yml`'s `image:` at that tag. QSM-CI runs `/opt/qsm-ci/recon /input /output` on the
+free Runtime, offline.
+
+## What goes in your PR
+
+**Only text files:** `algorithm.yml`, `run.sh`, `recon.m` (your source, for review), and this
+`BUILD.md`. The compiled binary is **not** committed to git — it lives inside the image you pushed
+above, and QSM-CI pulls that image to run it. (This differs from Python/Julia/Rust, where your source
+*is* what runs, inside a ready base image — no compile, no image to build or push.)
 
 ## Notes
 
@@ -204,6 +211,9 @@ RUN chmod +x /opt/qsm-ci/recon
   release used to build `recon`.
 - `mcc` bundles the toolbox code your method uses (SEPIA, MEDI, …) into the binary.
 - At scoring time `run.sh` runs the compiled binary with `--network none` — no license, no network.
+- **No MATLAB Compiler?** You can instead run raw `.m` on a run-time-licensed MATLAB base image — see
+  the run-time-license option in [docs/matlab.md](https://github.com/QSMxT/QSM-CI/blob/main/docs/matlab.md).
+  Compiling is strongly preferred.
 '''
 
 
@@ -228,7 +238,7 @@ def _run_sh(stage: str, lang: str, name: str) -> str:
         "julia": 'julia "$HERE/recon.jl" "$IN" "$OUT"\n',
         "matlab": ('# Runs the MATLAB-compiled `recon` on the free MATLAB Runtime (no license at run time).\n'
                    '# Baked into the image at /opt/qsm-ci/recon (recommended), or mounted at /algo/recon.\n'
-                   '# See BUILD.md to compile recon.m (locally or via .github/workflows/matlab-compile.yml).\n'
+                   '# See BUILD.md to compile recon.m and bake the MCR image.\n'
                    'BIN="${MATLAB_RECON:-/opt/qsm-ci/recon}"\n'
                    '[ -x "$BIN" ] || BIN="$HERE/recon"\n'
                    'exec "$BIN" "$IN" "$OUT"\n'),
