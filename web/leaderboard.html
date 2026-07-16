@@ -3,6 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script>
+    // Older Zenodo records link here as leaderboard.html?method=<slug>; the per-algorithm page is
+    // submission.html. Redirect so those citation links land on the algorithm's page.
+    (function () {
+      var m = new URLSearchParams(location.search).get("method");
+      if (m) location.replace("submission.html?method=" + encodeURIComponent(m));
+    })();
+  </script>
   <title>QSM-CI — Leaderboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -123,7 +131,7 @@
         <table class="w-full text-sm whitespace-nowrap">
           <thead class="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
             <tr>
-              <th class="px-5 py-3 text-left font-medium sticky left-0 bg-gray-50" x-text="view==='composed' ? 'Pipeline' : 'Method'"></th>
+              <th class="px-5 py-3 text-left font-medium sticky left-0 bg-gray-50" x-text="view==='composed' ? 'Pipeline' : 'Algorithm'"></th>
               <template x-for="c in displayCols" :key="c">
                 <th @click="sort(c)" class="px-4 py-3 text-right font-medium cursor-pointer select-none hover:text-gray-800">
                   <span x-text="METRICS[c].label"></span>

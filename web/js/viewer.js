@@ -57,7 +57,7 @@ function renderHowToRun() {
   el.innerHTML = `
     <div class="flex items-baseline justify-between gap-3">
       <h2 class="font-semibold text-gray-900 dark:text-gray-100">Run this yourself</h2>
-      <a href="running.html" class="text-xs text-emerald-600 hover:underline">Guide to running methods →</a>
+      <a href="running.html" class="text-xs text-emerald-600 hover:underline">Guide to running algorithms →</a>
     </div>
     <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
       Reproduce it with the <a href="running.html" class="text-emerald-600 hover:underline"><code>qsm-ci</code></a> CLI —
@@ -157,9 +157,9 @@ function methodCard(a) {
   if (!a) return "";
   const links = [];
   const zdoi = doiFor(registry, a.slug);
-  if (zdoi) links.push(`<a href="${zdoi.url}" class="text-emerald-600 hover:underline" title="Cite this QSM-CI submission (Zenodo v${zdoi.version})">submission doi (v${zdoi.version})</a>`);
+  if (zdoi) links.push(`<a href="${zdoi.url}" class="text-emerald-600 hover:underline" title="Cite this QSM-CI submission (Zenodo v${zdoi.version})">submission doi</a>`);
   if (a.doi) links.push(`<a href="https://doi.org/${a.doi}" class="text-indigo-600 hover:underline">paper doi</a>`);
-  if (a.code_url) links.push(`<a href="${a.code_url}" class="text-indigo-600 hover:underline">source</a>`);
+  if (a.code_url) links.push(`<a href="${a.code_url}" class="text-indigo-600 hover:underline">source code</a>`);
   const params = (a.parameters || []).map((p) =>
     `<tr class="border-t border-gray-100 dark:border-gray-800"><td class="py-1 pr-3 font-mono text-gray-700 dark:text-gray-300">${p.name}</td><td class="py-1 pr-3 tabular-nums text-gray-500 dark:text-gray-400">${p.default}</td><td class="py-1 text-gray-400 dark:text-gray-500">${p.description || ""}</td></tr>`).join("");
   return `<div>
@@ -324,8 +324,13 @@ async function showLayer(layer) {
 // ---- boot -------------------------------------------------------------------
 async function init() {
   [allRuns, algos, registry] = await Promise.all([loadRuns(), loadAlgos(), loadRegistry()]);
-  const id = new URLSearchParams(location.search).get("run");
-  run = allRuns.find((r) => r.id === id) || allRuns.find((r) => r.status !== "DNF") || allRuns[0];
+  // Accept ?run=<run-id> (e.g. ismv-iso), or a bare slug via ?run= / ?method= (e.g. ?method=ismv,
+  // the form Zenodo records link to) → resolve to that algorithm's isolated run.
+  const q = new URLSearchParams(location.search);
+  const want = q.get("run") || q.get("method");
+  run = allRuns.find((r) => r.id === want)
+    || allRuns.find((r) => r.mode === "isolated" && r.slug === want)
+    || allRuns.find((r) => r.status !== "DNF") || allRuns[0];
   if (!run) { $("sub-title").textContent = "No runs"; return; }
   navMode = run.mode === "composed" ? "pipelines" : "stages";
   $("run-filter").addEventListener("input", (e) => { filter = e.target.value; buildSidebar(); });
