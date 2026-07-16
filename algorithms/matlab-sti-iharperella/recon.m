@@ -32,14 +32,21 @@ function recon(inp, out)
     GYRO = 42.576e6;                                             % Hz/T
     % STI Suite's SMVFiltering (inside iHARPERELLA) indexes with size/2, which is fractional on
     % odd dims (e.g. 205) -> "Integer operands required for colon operator" and a corrupted filter.
-    % Pad odd dims to even before the call and crop back after (the pad is outside the mask).
-    sz0 = size(Mask); po = mod(sz0, 2);
+    % Pad odd dims to the next even size before the call and crop back after (the pad is outside
+    % the mask). The pad MUST preserve the array/FFT center: iHARPERELLA's SMV/dipole kernels place
+    % the frequency origin at floor(N/2)+1, so an even N moves that origin +1 voxel vs the odd N.
+    % A one-sided 'post' pad leaves the data content on the old indices -> its true center no longer
+    % coincides with the kernel origin (1-voxel misregistration on every SMV/dipole convolution) ->
+    % geometry corrupted, correlation ~random. Adding the extra voxel on the FRONT ('pre') shifts
+    % the content so its center maps to floor(Neven/2)+1 == the kernel origin; cropping the SAME
+    % 'pre' offset back out restores alignment. Robust for any combination of odd dims.
+    sz0 = size(Mask); po = mod(sz0, 2);          % +1 per axis that is odd, e.g. [1 0 1]
     num = zeros(size(Mask)); den = 0;
     for e = 1:ne
-        pe = padarray(phase(:,:,:,e), po, 0, 'post');
-        Mk = padarray(double(Mask), po, 0, 'post');
+        pe = padarray(phase(:,:,:,e), po, 0, 'pre');
+        Mk = padarray(double(Mask), po, 0, 'pre');
         tp = iHARPERELLA(pe, Mk, 'voxelsize', vox, 'padsize', padsize, 'niter', niter);  % rad, local
-        tp = tp(1:sz0(1), 1:sz0(2), 1:sz0(3));
+        tp = tp(po(1)+1 : po(1)+sz0(1), po(2)+1 : po(2)+sz0(2), po(3)+1 : po(3)+sz0(3));
         field_e = double(tp) / (2*pi * GYRO * B0 * TE(e)) * 1e6;                   % ppm
         w = TE(e)^2;                                          % optimal weight for field-from-phase
         num = num + w * field_e; den = den + w;
