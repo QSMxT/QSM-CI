@@ -4,8 +4,18 @@ stage: dipole
 engine: QSMxT / QSM.rs
 description: >
   Iterative LSQR inversion with streaking-artifact reduction.
-citation: Li et al., NMR Biomed 2015
-doi: null
+citation: Li et al., NeuroImage 2015
+authors:
+- name: Wei Li
+- name: Nian Wang
+- name: Fang Yu
+- name: Hui Han
+- name: Wei Cao
+- name: Rebecca Romero
+- name: Bundhit Tantiwongkosi
+- name: Timothy Q. Duong
+- name: Chunlei Liu
+doi: 10.1016/j.neuroimage.2014.12.043
 code_url: https://github.com/astewartau/QSM.rs
 license: MIT
 image: ghcr.io/astewartau/qsm-ci/qsmxt:v9.4.0

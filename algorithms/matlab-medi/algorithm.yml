@@ -5,9 +5,19 @@ description: Morphology Enabled Dipole Inversion (Cornell MEDI toolbox), compile
   MATLAB and run on the license-free MATLAB Runtime. Takes the total field, removes the
   background field with PDF, then solves the L1 morphology-regularized dipole inversion.
 authors:
-- name: QSM-CI
-  affiliation: Neurodesk
-doi: 10.1002/mrm.26946
+- name: Jing Liu
+- name: Tian Liu
+- name: Ludovic de Rochefort
+- name: James Ledoux
+- name: Ildar Khalidov
+- name: Weiwei Chen
+- name: A. John Tsiouris
+- name: Cynthia Wisnieff
+- name: Pascal Spincemaille
+- name: Martin R. Prince
+- name: Yi Wang
+doi: 10.1016/j.neuroimage.2011.08.082
+citation: Liu et al., NeuroImage 2012
 license: See Cornell MEDI toolbox license
 image: ghcr.io/astewartau/qsm-ci/matlab-medi:v1
 run: bash run.sh

@@ -116,7 +116,9 @@ function runItem(r, activeId) {
 }
 function stagesHTML() {
   const f = filter.toLowerCase();
-  return ["dipole", "bfr", "field-mapping"].map((s) => {
+  // Pipeline order: field mapping → background removal → dipole inversion, then the combined
+  // single-method spans (bfr+dipole like TGV/QSMART/MEDI, unwrap+bfr like HARPERELLA, end-to-end).
+  return ["field-mapping", "bfr", "dipole", "bfr+dipole", "unwrap+bfr", "end-to-end"].map((s) => {
     const rs = allRuns.filter((r) => r.mode === "isolated" && r.stage === s && (!f || r.name.toLowerCase().includes(f)));
     if (!rs.length) return "";
     const rows = rs.map((r) => runItem(r, run?.id).replace("%NAME%", r.name)).join("");

@@ -1,84 +1,49 @@
 # QSM-CI
 
-**A challenge platform for Quantitative Susceptibility Mapping (QSM) reconstruction.**
+**An open challenge and leaderboard for Quantitative Susceptibility Mapping (QSM) reconstruction.**
 
-Submit a QSM algorithm — in *any* language — as a container. QSM-CI runs it automatically on
-standardized data, scores it the same way the [QSM.rs](https://github.com/astewartau/QSM.rs) CI
-does, and publishes the results to an interactive, sortable leaderboard.
+Submit a QSM algorithm — in any language, as a container — and QSM-CI runs it on standardized data,
+scores it against held-out ground truth, and publishes the result to an interactive leaderboard.
+Every published algorithm gets a citable Zenodo DOI and can be run by anyone with one command.
 
-QSM is a pipeline — **field-mapping → background field removal (BFR) → dipole inversion** — so
-QSM-CI is *stage-aware*: you can submit a single stage, or a span for methods that cross boundaries.
-Each stage is scored on its own **and** in combination with others, so you can see both "which
-inversion is best" and "which BFR+inversion *pairing* wins."
+## → https://qsmxt.github.io/QSM-CI
 
-## How it works
+- **[Leaderboard](https://qsmxt.github.io/QSM-CI/leaderboard.html)** — per-stage tables and the
+  background-removal × dipole-inversion combination matrix, with an interactive volume viewer.
+- **[Run an algorithm](https://qsmxt.github.io/QSM-CI/running.html)** — locally or from a workflow
+  engine (nipype, Pydra, CWL, Snakemake, Nextflow).
+- **[Submit yours](https://qsmxt.github.io/QSM-CI/submit.html)** — open a pull request adding a folder
+  under `algorithms/`.
 
-1. **You submit** a folder under `algorithms/<your-slug>/` via a pull request: your code (`run.sh` +
-   scripts), a `stage:` declaration, and an *environment* — a base image (`image:`) or a small
-   `Dockerfile`. Your code is **mounted**, not baked, and toolboxes are downloaded when the
-   environment is built. (See [docs/submitting.md](docs/submitting.md).)
-2. **QSM-CI runs it** on the challenge data inside your container (`/input` → `/output`), with no
-   network and no access to the answer.
-3. **QSM-CI scores it** against held-out ground truth with `qsm-eval` (the QSM.rs metrics), both
-   **isolated** (fed the true input boundary) and **composed** (chained with other stages).
-4. **Results appear** on the leaderboard — per-stage tables and a BFR × inversion combination matrix.
+## Run an algorithm
 
-## The contract
+```bash
+pip install qsm-ci
+qsm-ci list                                   # the published algorithms you can run
+qsm-ci run sharp --totalfield tf.nii.gz --mask mask.nii.gz
+```
 
-Your container implements one stage and reads/writes canonical artifacts (all fields & χ in **ppm**):
+Algorithms are fetched from Zenodo and run in their pinned container, so results are reproducible.
+See the [running guide](https://qsmxt.github.io/QSM-CI/running.html) for details.
 
-| `stage:` | Consumes (`/input`) | Produces (`/output`) |
-|---|---|---|
-| `field-mapping` | phase, magnitude, mask, params | `totalfield` |
-| `bfr` | totalfield, mask, params | `localfield` |
-| `dipole` | localfield, mask, params | `chimap` |
-| spans: `unwrap+bfr`, `bfr+dipole`, `end-to-end` | … | … |
+## Submit an algorithm
 
-Full details in **[CONTRACT.md](CONTRACT.md)** and the machine-readable **[stages.yml](stages.yml)**.
-MATLAB is welcome via the license-free MATLAB Runtime — see **[docs/matlab.md](docs/matlab.md)**.
+A submission is a folder under `algorithms/<slug>/` — your `run.sh`, a `stage:` declaration, and a
+container environment — reading and writing canonical artifacts (all fields and χ in **ppm**). Your
+code is mounted, not baked. QSM is scored stage-aware (field-mapping → background removal → dipole
+inversion, plus combined spans), both isolated and composed with other stages.
+
+Start from the **[Submit guide](https://qsmxt.github.io/QSM-CI/submit.html)**; the full rules are in
+**[CONTRACT.md](CONTRACT.md)** and the machine-readable **[stages.yml](stages.yml)**. MATLAB is
+welcome via the license-free MATLAB Runtime.
 
 ## Repository layout
 
 | Path | What it is |
-|------|-----------|
-| `CONTRACT.md`, `stages.yml` | The frozen contract; the artifact & stage registry |
-| `algorithms/<slug>/` | One submission each (metadata + image + `run.sh` + `stage:`) |
+|------|------------|
+| `algorithms/<slug>/` | One submission each |
+| `qsm_ci/` | The `qsm-ci` CLI (published to PyPI) |
 | `eval/` | `qsm-eval` — the Python scorer (metrics ported from QSM.rs) |
-| `scripts/pipeline.py` | Isolated + composed evaluation runner (local or containerized) |
-| `scripts/pack_dataset.py` | qsm-forward BIDS → QSM-CI artifact layout |
-| `data/sim/`, `data/invivo/` | Datasets; ground truth held out on OSF |
-| `results/index.json` | Per-run scores + Hugging Face volume URLs; feeds the leaderboard (the only committed result) |
-| `web/` | Static leaderboard + NiiVue viewer (GitHub Pages) |
-| `.github/workflows/` | `ci` (CLI/runner smoke tests), `evaluate` (per-PR), `score` (change-triggered scoring + volume publish), `pages` (deploy), `hf-check` (volume-publish smoke test) |
-
-**Results storage.** NIfTI volumes are **never** committed — they're uploaded to a public Hugging
-Face dataset repo (`scripts/publish_volumes.py`; secret `HF_TOKEN` + repo variable
-`HF_VOLUMES_REPO`) and the viewer loads them by URL.
-Only the small `results/index.json` lives in git. The `score` workflow runs on change (a changed
-algorithm → its combos; changed scorer/orchestration → everything), never on a weekly timer.
-
-## Local development
-
-```bash
-# 1. generate a dev phantom (see data/sim/README.md for the qsm-forward command), then:
-python scripts/pack_dataset.py /tmp/BIDS data/sim/dev
-
-# 2. run the full isolated + composed evaluation over all reference submissions
-pip install -r eval/requirements.txt
-python scripts/pipeline.py --dataset data/sim/dev --mode both
-
-# 3. preview the website (reads results/index.json)
-python -m http.server -d web 8000   # → http://localhost:8000
-```
-
-## Status
-
-Working end-to-end on a realistic **head phantom** (`data/sim/scoring/`, 7T, 164×205×205): the stage
-model, scorer (full region metrics), composition matrix, containerized runner (`--network none`),
-and website. Reference submissions include Python (`tkd`, `tikhonov`, `sharp`), the full QSMxT/QSM.rs
-engine set (all BFR + dipole methods, HARPERELLA, TGV, QSMART), and a **MATLAB** template compiled to
-the free MATLAB Runtime (`matlab-tkd`).
-
-Before opening the challenge: fix the canonical head-phantom `qsm-forward` invocation and upload its
-held-out ground truth to OSF; wire the ARC runner + `OSF_TOKEN` secrets; cross-check `qsm-eval`
-against QSM.rs on that phantom; add a `field-mapping` reference so the matrix starts from raw phase.
+| `scripts/pipeline.py` | Isolated + composed evaluation runner |
+| `web/`, `results/index.json` | The leaderboard site and the scores that feed it |
+| `CONTRACT.md`, `stages.yml` | The submission contract and stage registry |

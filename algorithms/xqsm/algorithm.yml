@@ -1,0 +1,24 @@
+name: xQSM
+slug: xqsm
+stage: dipole
+description: >
+  xQSM — an octave-convolutional, noise-regularized U-Net for QSM dipole inversion. Consumes the
+  local (tissue) field in ppm and produces susceptibility (ppm) using the pretrained in-vivo
+  checkpoint. The octave convolution adds an X-shaped multi-resolution feature exchange on a U-net
+  backbone with a noise-adding regularization layer. Runs CPU-only with PyTorch (no GPU); the network
+  auto zero-pads each dimension to a multiple of 8, so there is no fixed matrix size.
+authors:
+- name: Gao Y.
+- name: Zhu X.
+- name: Moffat B.A.
+- name: Glarin R.
+- name: Wilman A.H.
+- name: Pike G.B.
+- name: Crozier S.
+- name: Liu F.
+- name: Sun H.
+doi: 10.1002/nbm.4461
+code_url: https://github.com/sunhongfu/xQSM
+license: Used with author permission (Hongfu Sun); see repository for terms.
+image: ghcr.io/astewartau/qsm-ci/xqsm:v1
+run: bash run.sh
