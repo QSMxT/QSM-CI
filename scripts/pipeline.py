@@ -111,34 +111,27 @@ _built: dict[str, str] = {}
 
 
 def build_env(algo: dict) -> str:
-    """Resolve the submission's ENVIRONMENT image (build/setup phase — network allowed).
+    """Resolve the submission's ENVIRONMENT image by PULLING it — CI never builds containers.
 
-    Preference order:
-    1. If `image:` names a container we can PULL, use it. Heavy/DL submissions publish a prebuilt
-       image so scoring pulls it (seconds) instead of re-running their slow, sometimes flaky build
-       (large weight downloads, legacy toolchains) on every run. NB: when a published image exists,
-       it takes precedence over the folder Dockerfile — so rebuild+push the image after changing
-       the Dockerfile, or scoring will keep using the old one.
-    2. Else, if the folder has a Dockerfile, build it locally (a fresh submission with no published
-       image yet). The code is NOT baked in; it is mounted at run time.
-    3. Else (no Dockerfile, pull failed), fall back to a locally cached copy of `image:`.
+    Every submission publishes a prebuilt image (`image:`), built and pushed by the author/maintainer
+    (locally, or wherever — see each submission's BUILD.md). A folder Dockerfile, if present, is just
+    the *recipe* for that build; the scorer does NOT build it. This keeps the run fast and off the
+    hook for slow/flaky builds (large weight downloads, legacy toolchains). A submission whose image
+    can't be pulled (or found in the local cache) is excluded from the run.
     Returns the image tag to run offline.
     """
     if algo["slug"] in _built:
         return _built[algo["slug"]]
     ref = algo.get("image")
+    if not ref:
+        raise RuntimeError(f"{algo['slug']}: no image: set — build and push a container image and set it")
     # `docker pull` is cheap when the digest already matches, and it beats a stale local copy.
-    if ref and subprocess.run(["docker", "pull", ref], capture_output=True).returncode == 0:
-        tag = ref
-    elif (algo["dir"] / "Dockerfile").exists():
-        tag = f"qsm-ci-env/{algo['slug']}:latest"
-        subprocess.run(["docker", "build", "-q", "-t", tag, str(algo["dir"])], check=True)
-    elif ref and subprocess.run(["docker", "image", "inspect", ref], capture_output=True).returncode == 0:
-        tag = ref  # offline / registry hiccup, but a local copy exists
-    else:
-        raise RuntimeError(f"{algo['slug']}: cannot pull or find image {ref!r} and no Dockerfile to build")
-    _built[algo["slug"]] = tag
-    return tag
+    if subprocess.run(["docker", "pull", ref], capture_output=True).returncode != 0 \
+       and subprocess.run(["docker", "image", "inspect", ref], capture_output=True).returncode != 0:
+        raise RuntimeError(f"{algo['slug']}: cannot pull image {ref} — build and push it first "
+                           f"(the scorer does not build containers)")
+    _built[algo["slug"]] = ref
+    return ref
 
 
 def run_algo(algo: dict, input_dir: Path, output_dir: Path, runner: str = "local") -> float:
