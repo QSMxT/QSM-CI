@@ -83,6 +83,30 @@
       ]
     },
     {
+      "slug": "iqsm-plus",
+      "name": "iQSM+",
+      "stage": "end-to-end",
+      "engine": null,
+      "description": "iQSM+ \u2014 an orientation-adaptive, single-step deep-learning method that reconstructs susceptibility directly from the raw wrapped MRI phase (unwrapping, background-field removal and dipole inversion in one network pass). It extends iQSM with orientation-adaptive latent feature editing (OA-LFE) blocks that consume the B0 direction vector, so oblique / sagittal / coronal acquisitions reconstruct correctly, not just axial scans. Consumes phase, magnitude, mask and params and produces the susceptibility map. Multi-echo phase is handled by the engine's own per-echo inference with magnitude x TE^2 weighted combination. Runs CPU-only with a CPU PyTorch wheel (no GPU).",
+      "citation": null,
+      "doi": "10.1016/j.media.2024.103160",
+      "code_url": "https://github.com/sunhongfu/iQSM_Plus",
+      "license": "Used with author permission (no license file in the upstream repository)",
+      "authors": [
+        "Gao Y.",
+        "Xiong Z.",
+        "Shan S.",
+        "Liu Y.",
+        "Rong P.",
+        "Li M.",
+        "Wilman A.H.",
+        "Pike G.B.",
+        "Liu F.",
+        "Sun H."
+      ],
+      "parameters": []
+    },
+    {
       "slug": "ismv",
       "name": "iSMV",
       "stage": "bfr",
