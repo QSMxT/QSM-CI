@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=61"]
+requires = ["setuptools>=61", "setuptools-scm>=8"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "qsm-ci"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Submit, test, and score QSM reconstruction algorithms for the QSM-CI challenge."
 readme = "README.md"
 requires-python = ">=3.9"
@@ -20,6 +20,12 @@ dependencies = [
 
 [project.optional-dependencies]
 figures = ["pillow"]
+nipype = ["nipype>=1.8"]
+pydra = ["pydra>=0.23"]
+# Both Python workflow-engine interfaces in one go. Kept optional (nipype's dependency tree is heavy
+# and most users only use the CLI), but bundled for convenience: pip install "qsm-ci[interfaces]".
+interfaces = ["nipype>=1.8", "pydra>=0.23"]
+all = ["pillow", "nipype>=1.8", "pydra>=0.23"]
 
 [project.urls]
 Homepage = "https://github.com/QSMxT/QSM-CI"
@@ -31,3 +37,12 @@ qsm-ci = "qsm_ci.cli:main"
 [tool.setuptools]
 # Only the CLI package ships in the wheel — not the repo's data/web/results.
 packages = ["qsm_ci"]
+
+[tool.setuptools.package-data]
+# The Zenodo method registry ships with the CLI so `qsm-ci run <slug>` resolves + fetches methods
+# without a repo checkout (see qsm_ci/registry.py).
+qsm_ci = ["registry.json"]
+
+# Version is derived from the git tag at build time (setuptools-scm) — CI never rewrites source.
+# A GitHub Release with tag `vX.Y.Z` -> wheel version `X.Y.Z`; untagged dev builds get a 0.0.x.devN.
+[tool.setuptools_scm]
