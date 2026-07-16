@@ -560,6 +560,25 @@
       "parameters": []
     },
     {
+      "slug": "qsmgan",
+      "name": "QSMGAN",
+      "stage": "dipole",
+      "engine": null,
+      "description": "QSMGAN \u2014 dipole inversion by a 3D U-Net generator refined with a WGAN-GP and an increased receptive field. Consumes the background-removed local field (ppm) and produces susceptibility. Patch-based inference: 64^3 input patches are mapped to 48^3 receptive-field-cropped output patches (i64o48) and stitched. Runs CPU-only on legacy PyTorch with the published WGAN-refined generator weights.",
+      "citation": null,
+      "doi": "10.1016/j.neuroimage.2019.116389",
+      "code_url": "https://github.com/mmorri10/QSMGAN-LupoLab",
+      "license": "MIT",
+      "authors": [
+        "Chen Y.",
+        "Jakary A.",
+        "Avadiappan S.",
+        "Hess C.P.",
+        "Lupo J.M."
+      ],
+      "parameters": []
+    },
+    {
       "slug": "qsmnet",
       "name": "QSMnet",
       "stage": "dipole",
@@ -605,25 +624,6 @@
         "Nam Y.",
         "Kim E.Y.",
         "Lee J."
-      ],
-      "parameters": []
-    },
-    {
-      "slug": "qsmgan",
-      "name": "QSMGAN",
-      "stage": "dipole",
-      "engine": null,
-      "description": "QSMGAN \u2014 dipole inversion by a 3D U-Net generator refined with a WGAN-GP and an increased receptive field. Consumes the background-removed local field (ppm) and produces susceptibility. Patch-based inference: 64^3 input patches are mapped to 48^3 receptive-field-cropped output patches (i64o48) and stitched. Runs CPU-only on legacy PyTorch with the published WGAN-refined generator weights.",
-      "citation": null,
-      "doi": "10.1016/j.neuroimage.2019.116389",
-      "code_url": "https://github.com/mmorri10/QSMGAN-LupoLab",
-      "license": "MIT",
-      "authors": [
-        "Chen Y.",
-        "Jakary A.",
-        "Avadiappan S.",
-        "Hess C.P.",
-        "Lupo J.M."
       ],
       "parameters": []
     },
