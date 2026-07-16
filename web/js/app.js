@@ -94,6 +94,9 @@ const STAGE_LABEL = {
   "field-mapping": "Field mapping",
   bfr: "Background removal",
   dipole: "Dipole inversion",
+  "bfr+dipole": "Background removal + dipole inversion",
+  "unwrap+bfr": "Unwrapping + background removal",
+  "end-to-end": "End-to-end",
 };
 const MEDALS = ["🥇", "🥈", "🥉"];
 
