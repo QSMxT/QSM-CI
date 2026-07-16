@@ -1,6 +1,27 @@
 {
   "algorithms": [
     {
+      "slug": "autoqsm",
+      "name": "AutoQSM",
+      "stage": "bfr+dipole",
+      "engine": null,
+      "description": "AutoQSM \u2014 learning-based single-step QSM reconstruction without brain extraction. A V-Net that maps the total field map directly to susceptibility, doing neither brain extraction nor a separate background-field-removal step. Consumes the total field and produces susceptibility. Runs CPU-only on the legacy TensorFlow 1.15 / Keras 2.2.5 stack the method was published against.",
+      "citation": null,
+      "doi": "10.1016/j.neuroimage.2019.116064",
+      "code_url": "https://github.com/AMRI-Lab/AutoQSM",
+      "license": "none declared; used with author permission",
+      "authors": [
+        "Wei H.",
+        "Cao S.",
+        "Zhang Y.",
+        "Guan X.",
+        "Yan F.",
+        "Yeom K.W.",
+        "Liu C."
+      ],
+      "parameters": []
+    },
+    {
       "slug": "harperella",
       "name": "HARPERELLA",
       "stage": "unwrap+bfr",
