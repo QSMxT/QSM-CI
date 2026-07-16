@@ -16,7 +16,8 @@ on:
       - "scripts/pipeline.py"
       - "scripts/publish_volumes.py"
       - "stages.yml"
-      - ".github/workflows/score.yml"
+      # NB: score.yml itself is intentionally NOT here — editing the workflow (e.g. concurrency)
+      # shouldn't rescore the world. For a real scoring-logic change, dispatch with scope=all.
   workflow_dispatch:
     inputs:
       scope:
@@ -56,7 +57,7 @@ jobs:
           fi
           changed=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} 2>/dev/null \
                     || git diff --name-only HEAD~1 HEAD)
-          if echo "$changed" | grep -qE '^(eval/|scripts/pipeline\.py|scripts/publish_volumes\.py|stages\.yml|\.github/workflows/score\.yml)'; then
+          if echo "$changed" | grep -qE '^(eval/|scripts/pipeline\.py|scripts/publish_volumes\.py|stages\.yml)'; then
             echo "full=true"  >>"$GITHUB_OUTPUT"; echo "slugs=[]" >>"$GITHUB_OUTPUT"
           else
             slugs=$(echo "$changed" | grep '^algorithms/' | cut -d/ -f2 | grep -v '^_' | sort -u | jq -R . | jq -sc .)

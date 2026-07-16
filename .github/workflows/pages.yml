@@ -43,7 +43,7 @@ jobs:
           cp -r results _site/results
           cp -r docs _site/docs           # the Submit page renders docs/submitting.md
           rm -rf _site/examples; cp -r examples _site/examples   # Run page showcases the engine examples
-          cp qsm_ci/registry.json _site/registry.json           # method DOIs shown on the leaderboard
+          rm -f _site/registry.json; cp qsm_ci/registry.json _site/registry.json  # method DOIs (drop the web/ symlink first)
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
