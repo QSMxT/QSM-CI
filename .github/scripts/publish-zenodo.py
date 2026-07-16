@@ -148,8 +148,22 @@ def metadata(meta, slug, version, site_base):
         "title": f"QSM-CI method: {meta.get('name') or slug} (v{version})",
         "upload_type": "software", "description": desc, "creators": [{"name": a} for a in authors],
         "version": str(version), "keywords": KEYWORDS, "related_identifiers": related,
-        "license": (meta.get("license") or "MIT").lower().replace(" ", "-"),
+        "license": _license_id(meta.get("license")),
     }}
+
+
+# Zenodo validates `license` against a controlled vocabulary. Map to a valid id, and fall back to
+# `other-closed` for restrictive/custom licenses (e.g. "See STI Suite License") that aren't open ids.
+_VALID_LICENSES = {
+    "mit", "apache-2.0", "bsd-2-clause", "bsd-3-clause", "gpl-2.0", "gpl-3.0", "lgpl-2.1", "lgpl-3.0",
+    "agpl-3.0", "mpl-2.0", "isc", "unlicense", "cc0-1.0", "cc-by-4.0", "cc-by-sa-4.0", "cc-by-nc-4.0",
+    "other-open", "other-closed", "other-pd",
+}
+
+
+def _license_id(raw) -> str:
+    lic = str(raw or "MIT").strip().lower().replace(" ", "-")
+    return lic if lic in _VALID_LICENSES else "other-closed"
 
 
 def publish(base, site_base, token, slug, meta, version, blob, prev_record_id):
@@ -217,8 +231,11 @@ def main():
         version = str(max((int(k) for k in versions), default=0) + 1)
 
         if not pinned:
-            warn(f"{slug}: could not pin image to a digest (docker unavailable?) — publishing with the "
-                 f"tag as-is; this version won't be byte-reproducible.")
+            # Refuse to mint a DOI for a non-reproducible method — a digest is the whole point.
+            warn(f"{slug}: could not resolve its image to a digest (bad image ref, or docker "
+                 f"unavailable) — skipping. A published version must be byte-reproducible.")
+            failures += 1
+            continue
         if args.dry_run:
             log(f"{slug} v{version}: would {'create' if not entry.get('versions') else 'add version'} "
                 f"(image={pinned or 'UNPINNED'}, {ck[:20]}…)"); published += 1; continue
