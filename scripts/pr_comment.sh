@@ -16,8 +16,10 @@ if not runs:
     print(f"### QSM-CI · {slug}\n\n**DNF** — no valid output was produced.")
     raise SystemExit
 r = runs[0]
+rt = r.get("runtime_s")
+rt_str = f"{rt:.1f}s" if isinstance(rt, (int, float)) else "n/a"
 lines = [f"### QSM-CI · `{slug}` · stage `{r.get('stage')}` · isolated",
-         f"Scored artifact: `{r.get('artifact')}` ({r.get('kind')}), runtime {r.get('runtime_s'):.1f}s\n",
+         f"Scored artifact: `{r.get('artifact')}` ({r.get('kind')}), runtime {rt_str}\n",
          "| metric | value |", "|---|---|"]
 for k, v in (r.get("metrics") or {}).items():
     lines.append(f"| {k} | {'—' if v is None else round(v, 4)} |")
