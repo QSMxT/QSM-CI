@@ -32,9 +32,19 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Install package, workflow engines, and test deps
+      - name: Install package (with the Python interfaces) + test deps
         run: |
-          pip install ".[nipype,pydra]" cwltool snakemake pytest pyyaml
+          python -m pip install --upgrade pip
+          pip install ".[nipype,pydra]" pytest pyyaml
+
+      - name: Install CWL / Snakemake / Nextflow engines
+        # cwltool + snakemake are CLI tools the test only invokes via PATH, so install them isolated
+        # (pipx) — co-resolving them with nipype/pydra makes pip backtrack to an ancient, unbuildable
+        # cwltool. Nextflow is a standalone binary (needs the JVM above).
+        run: |
+          pipx install cwltool
+          pipx install snakemake
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
           curl -s https://get.nextflow.io | bash
           sudo mv nextflow /usr/local/bin/
 
