@@ -66,6 +66,13 @@ python3 LPCNN/inference.py \
 CKPT_STEM="$(basename "$RESUME")"; CKPT_STEM="${CKPT_STEM%%.*}"
 RESULT="$RUNDIR/LPCNN/test_result/$CKPT_STEM/lpcnn${SAVE_NAME}_qsm.nii.gz"
 mkdir -p "$OUT"
-cp "$RESULT" "$OUT/chimap.nii.gz"
+# inference.py's qsm_display saves a 4-D NIfTI (x,y,z,1); QSM-CI scoring indexes the recon
+# with a 3-D mask (a[mask]) and can't broadcast (x,y,z,1) against (x,y,z). Drop the trailing axis.
+python3 - "$RESULT" "$OUT/chimap.nii.gz" <<'PY'
+import sys, numpy as np, nibabel as nib
+img = nib.load(sys.argv[1])
+data = np.squeeze(np.asanyarray(img.dataobj))
+nib.Nifti1Image(data.astype(np.float32), img.affine, img.header).to_filename(sys.argv[2])
+PY
 rm -rf "$WORK"
 echo "wrote $OUT/chimap.nii.gz"
