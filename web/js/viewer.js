@@ -29,9 +29,11 @@ const escapeHtml = (s) => s.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;
 function runLine(slug, stage, truth) {
   const io = STAGE_IO[stage];
   if (!io) return `qsm-ci run ${slug}`;
-  const flags = io.consumes.map((a) => `--${a} ${ARTFILE[a]}`).join(" ");
-  return `qsm-ci run ${slug} ${flags} -o ${ARTFILE[io.produces]}`
-    + (truth ? ` --truth ${io.produces}_groundtruth.nii.gz` : "");
+  // One flag per line, backslash-continued, so long commands don't overflow the code block.
+  const parts = [`qsm-ci run ${slug}`, ...io.consumes.map((a) => `--${a} ${ARTFILE[a]}`),
+    `-o ${ARTFILE[io.produces]}`];
+  if (truth) parts.push(`--truth ${io.produces}_groundtruth.nii.gz`);
+  return parts.join(" \\\n  ");
 }
 
 // The qsm-ci command(s) that reproduce this run: one line for an isolated method, the
