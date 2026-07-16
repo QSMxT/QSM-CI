@@ -1,0 +1,63 @@
+name: image-access
+
+# Required merge gate: every changed submission's container image must be PULLABLE before it can
+# land on main. Without this, a submission whose image is private / mistyped / unpushed merges
+# green (pipeline.py records an unpullable image as a per-run DNF and doesn't fail the job), then
+# silently scores as DNF until someone notices and manually re-dispatches score.yml. Gating on
+# pullability at PR time makes score.yml's auto-trigger-on-merge reliable — no manual rescues.
+#
+# We check PULLABILITY, not ghcr visibility via the GitHub API, so the gate is registry-agnostic:
+# `docker manifest inspect <ref>` is the same command for ghcr.io / docker.io / quay.io / anything,
+# and keeps working unchanged if we move the containers to another registry. It fetches only the
+# manifest (no layer download).
+#
+# Runs on EVERY PR (no path filter) and passes trivially when no submission changed — a required
+# check that didn't run would sit "pending" forever and block unrelated PRs.
+#
+# NB: the check is anonymous (matches today's all-public setup — CI has no `docker login`). If the
+# containers ever move to a PRIVATE registry the scorer authenticates to, add a `docker/login-action`
+# step here with the same creds the scoring runner uses, so "accessible" keeps meaning "accessible
+# to the scoring environment".
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  image-access:
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_CLI_EXPERIMENTAL: enabled   # `docker manifest` is stable on modern docker; belt-and-braces
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - name: Assert each changed submission's image is pullable
+        run: |
+          # Candidate slugs from the diff, keep only those that still have an algorithm.yml
+          # (a deleted submission / a non-submission file under algorithms/ can't be gated).
+          slugs=$(git diff --name-only origin/${{ github.base_ref }}... \
+                  | grep '^algorithms/' | cut -d/ -f2 | grep -v '^_' | sort -u \
+                  | while read -r s; do [ -f "algorithms/$s/algorithm.yml" ] && echo "$s"; done)
+
+          if [ -z "$slugs" ]; then
+            echo "No changed submissions — nothing to gate."; exit 0
+          fi
+
+          fail=0
+          for slug in $slugs; do
+            img=$(sed -nE 's/^image:[[:space:]]*["'\'']?([^"'\'' ]+).*/\1/p' "algorithms/$slug/algorithm.yml" | head -1)
+            if [ -z "$img" ]; then
+              echo "::error::$slug has no image: in algorithm.yml"; fail=1; continue
+            fi
+            if docker manifest inspect "$img" >/dev/null 2>&1; then
+              echo "✓ $slug -> $img (pullable)"
+            else
+              echo "::error::$slug image is not pullable by the scoring environment: $img"
+              echo "         make the package public (or push it / fix the ref) before merging."
+              fail=1
+            fi
+          done
+          exit $fail
