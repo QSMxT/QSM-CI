@@ -12384,6 +12384,66 @@
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_tv-cmp__truth.nii.gz",
         "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_tv-cmp__error.nii.gz"
       }
+    },
+    {
+      "name": "nextqsm",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 93.54217481613159,
+      "metrics": {
+        "nrmse": 70.26451910806907,
+        "nrmse_detrend": 94.52684722905005,
+        "nrmse_tissue": 101.04059678657315,
+        "nrmse_blood": 138.32108617469652,
+        "nrmse_dgm": 58.34835086014658,
+        "dgm_linearity": 0.19760797716071554,
+        "calc_moment_dev": 16.35145466774702,
+        "calc_streak": 0.07337243673937158,
+        "correlation": 0.7267141557456843,
+        "xsim": 0.42839228808630947
+      },
+      "status": "ok",
+      "id": "nextqsm-iso",
+      "slug": "nextqsm",
+      "mode": "isolated",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/nextqsm-iso__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/nextqsm-iso__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/nextqsm-iso__error.nii.gz"
+      }
+    },
+    {
+      "name": "nextqsm",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 101.50079393386841,
+      "metrics": {
+        "nrmse": 70.26451910806907,
+        "nrmse_detrend": 94.52684722905005,
+        "nrmse_tissue": 101.04059678657315,
+        "nrmse_blood": 138.32108617469652,
+        "nrmse_dgm": 58.34835086014658,
+        "dgm_linearity": 0.19760797716071554,
+        "calc_moment_dev": 16.35145466774702,
+        "calc_streak": 0.07337243673937158,
+        "correlation": 0.7267141557456843,
+        "xsim": 0.42839228808630947
+      },
+      "status": "ok",
+      "id": "nextqsm-cmp",
+      "slug": "nextqsm",
+      "mode": "composed",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/nextqsm-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/nextqsm-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/nextqsm-cmp__error.nii.gz"
+      }
     }
   ]
 }
