@@ -87,11 +87,26 @@ def _algorithms_root() -> "Path | None":
     return None
 
 
+def _registry_algorithms() -> "list[tuple[str, str, str]]":
+    """(slug, stage, name) from the shipped Zenodo registry — the published methods a bare
+    pip install can fetch and run, used when there's no local checkout."""
+    try:
+        from .registry import load_mapping
+        mapping = load_mapping()
+    except Exception:  # noqa: BLE001 — best-effort; an unreadable registry just yields nothing
+        return []
+    return [(slug, mapping[slug].get("stage") or "?", mapping[slug].get("name") or slug)
+            for slug in sorted(mapping)]
+
+
 def _list_algorithms() -> "list[tuple[str, str, str]]":
-    """(slug, stage, name) for every runnable submission under ./algorithms (skips _internal)."""
+    """(slug, stage, name) for every runnable submission under ./algorithms (skips _internal).
+
+    With no local checkout (a bare pip install), fall back to the shipped registry — those are
+    exactly the methods `qsm-ci run <slug>` can fetch from Zenodo."""
     root = _algorithms_root()
     if root is None:
-        return []
+        return _registry_algorithms()
     out = []
     for d in sorted(root.iterdir()):
         if d.name.startswith("_") or not (d / "algorithm.yml").exists():
@@ -111,13 +126,16 @@ def _algorithms_help() -> str:
     """A grouped listing of runnable slugs, or guidance if there's no algorithms/ here."""
     algos = _list_algorithms()
     if not algos:
-        return ("No algorithms/ directory found here. Run qsm-ci from a QSM-CI checkout\n"
+        return ("No algorithms found. Run qsm-ci from a QSM-CI checkout\n"
                 "(git clone https://github.com/QSMxT/QSM-CI), or pass a path to a submission folder.")
     width = max(len(slug) for slug, _, _ in algos)
     by_stage: dict[str, list[tuple[str, str]]] = {}
     for slug, stage, name in algos:
         by_stage.setdefault(stage, []).append((slug, name))
-    lines = ["Available algorithms — run  qsm-ci run <slug>  to see the inputs each needs:", ""]
+    header = ("Published methods (fetched from Zenodo on first run) — run  qsm-ci run <slug>  to see the inputs each needs:"
+              if _algorithms_root() is None else
+              "Available algorithms — run  qsm-ci run <slug>  to see the inputs each needs:")
+    lines = [header, ""]
     for stage in sorted(by_stage):
         lines.append(f"  {stage}:")
         for slug, name in by_stage[stage]:

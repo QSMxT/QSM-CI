@@ -231,6 +231,13 @@ def main():
         entry = mapping.get(slug, {"versions": {}})
         versions = entry.get("versions", {})
 
+        # Carry display metadata so the shipped registry is self-describing — `qsm-ci list` reads
+        # it (name/stage) when there's no local checkout. Set before the skip so unchanged methods
+        # get backfilled too; it doesn't affect the checksum, so it won't cause a republish.
+        entry["name"] = meta.get("name") or slug
+        entry["stage"] = meta.get("stage")
+        mapping[slug] = entry
+
         # Unchanged since the last publish → skip. Otherwise the version is publish-assigned: the
         # next integer, which we also set as Zenodo's version metadata (so they never drift).
         if versions and versions.get(entry.get("latest"), {}).get("checksum") == ck:

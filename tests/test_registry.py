@@ -62,3 +62,17 @@ def test_describe_for_citation():
 def test_resolve_unknown_returns_none():
     # a slug not in the registry (and no network hit) resolves to None
     assert registry.resolve("definitely-not-a-method") is None
+
+
+def test_list_falls_back_to_registry_without_checkout(monkeypatch):
+    # A bare pip install (no ./algorithms) lists the published methods from the shipped registry.
+    from qsm_ci import runner
+    monkeypatch.setattr(registry, "_mapping_cache", {
+        "tkd": {"latest": "2", "stage": "dipole", "name": "TKD", "versions": {}},
+        "sharp": {"latest": "1", "stage": "bfr", "name": "SHARP", "versions": {}},
+    })
+    monkeypatch.setattr(runner, "_algorithms_root", lambda: None)
+    assert set(runner._list_algorithms()) == {("sharp", "bfr", "SHARP"), ("tkd", "dipole", "TKD")}
+    help_text = runner._algorithms_help()
+    assert "Published methods (fetched from Zenodo" in help_text
+    assert "tkd" in help_text and "SHARP" in help_text
