@@ -142,7 +142,7 @@ def upload(base, token, dep, blob, filename):
 
 def metadata(meta, slug, version, site_base):
     authors = [a.get("name") for a in (meta.get("authors") or []) if a.get("name")] or ["QSM-CI"]
-    page = f"{site_base}/leaderboard.html?method={slug}"
+    page = f"{site_base}/submission.html?method={slug}"
     desc = (f"{meta.get('description') or ''}<br><br>"
             f"QSM-CI reconstruction method <code>{slug}</code>. "
             f'Browse and run it at <a href="{page}">{page}</a>.')
