@@ -49,7 +49,7 @@ MATLAB is welcome via the license-free MATLAB Runtime — see **[docs/matlab.md]
 | `data/sim/`, `data/invivo/` | Datasets; ground truth held out on OSF |
 | `results/index.json` | Per-run scores + Hugging Face volume URLs; feeds the leaderboard (the only committed result) |
 | `web/` | Static leaderboard + NiiVue viewer (GitHub Pages) |
-| `.github/workflows/` | `ci` (CLI/runner smoke tests), `evaluate` (per-PR), `score` (change-triggered scoring + volume publish), `pages` (deploy), `matlab-compile`, `hf-check` (volume-publish smoke test) |
+| `.github/workflows/` | `ci` (CLI/runner smoke tests), `evaluate` (per-PR), `score` (change-triggered scoring + volume publish), `pages` (deploy), `hf-check` (volume-publish smoke test) |
 
 **Results storage.** NIfTI volumes are **never** committed — they're uploaded to a public Hugging
 Face dataset repo (`scripts/publish_volumes.py`; secret `HF_TOKEN` + repo variable
