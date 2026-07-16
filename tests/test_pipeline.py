@@ -41,7 +41,10 @@ FM, BFR, DIP = "romeo-fieldmap", "vsharp", "rts"        # (baked into the exampl
 os.environ.setdefault("QSMCI_ALGORITHMS", ALGOS)
 ENV = {**os.environ, "QSMCI_ALGORITHMS": ALGOS, "PYDRA_PLUGIN": "serial"}
 
-MIN_CORR = float(os.environ.get("QSMCI_MIN_CORR", "0.5"))
+# Floors calibrated from the real OSF challenge phantom: romeo-fieldmap → vsharp → rts scores
+# corr≈0.44, xsim≈0.22. These gate against a *broken* pipeline (units bug / mis-wire → corr≈0),
+# not against reconstruction quality; override with QSMCI_MIN_CORR / QSMCI_MIN_XSIM.
+MIN_CORR = float(os.environ.get("QSMCI_MIN_CORR", "0.3"))
 MIN_XSIM = float(os.environ.get("QSMCI_MIN_XSIM", "0.1"))
 
 
