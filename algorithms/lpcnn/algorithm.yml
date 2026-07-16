@@ -1,0 +1,21 @@
+name: LPCNN
+slug: lpcnn
+stage: dipole
+description: >
+  LPCNN (Learned Proximal Convolutional Neural Network) — a learned proximal, unrolled
+  network for QSM dipole inversion. It integrates proximal gradient descent with a 3D CNN
+  denoiser: the physics data-consistency term uses a dipole kernel encoding the B0
+  direction, and a learned proximal operator regularizes each of 3 unrolled iterations.
+  Consumes the local (tissue) field and produces susceptibility. Run in single-orientation
+  mode (number=1), CPU-only via --no_cuda, with the pretrained 7T weights committed in-repo.
+authors:
+- name: Lai K-W.
+- name: Aggarwal M.
+- name: van Zijl P.
+- name: Li X.
+- name: Sulam J.
+doi: 10.1007/978-3-030-59713-9_13
+code_url: https://github.com/Sulam-Group/LPCNN
+license: none declared; used with author permission
+image: ghcr.io/astewartau/qsm-ci/lpcnn:v1
+run: bash run.sh
