@@ -23,6 +23,12 @@ on:
         description: "all | <comma-separated slugs> (default: auto-detect from the diff)"
         default: "auto"
 
+# One rescore at a time — a new run queues behind the in-progress one instead of racing it (both
+# commit results/index.json, so overlapping runs could clobber each other / fail to push).
+concurrency:
+  group: score
+  cancel-in-progress: false
+
 permissions:
   contents: write
 
