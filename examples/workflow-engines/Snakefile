@@ -32,10 +32,9 @@ rule dipole:
         localfield="localfield.nii.gz",
         mask="mask.nii.gz",
         params="params.json",
-        magnitude="magnitude.nii.gz",
     output:
         chimap="chimap.nii.gz",
     params:
         slug="rts",
     shell:
-        "qsm-ci run {params.slug} --localfield {input.localfield} --mask {input.mask} --params {input.params} --magnitude {input.magnitude} -o {output.chimap}"
+        "qsm-ci run {params.slug} --localfield {input.localfield} --mask {input.mask} --params {input.params} -o {output.chimap}"
