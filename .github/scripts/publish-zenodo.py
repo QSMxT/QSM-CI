@@ -99,13 +99,20 @@ def method_zip(slug, algo_dir):
     pinned = None
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
-        for f in files:
+        for f in sorted(files):
             arcname = os.path.relpath(f, os.path.dirname(algo_dir.rstrip("/")))  # <slug>/<file>
             text = open(f, "rb").read()
             if f.endswith("algorithm.yml"):
                 new, pinned = pin_image(text.decode())
                 text = new.encode()
-            z.writestr(arcname, text)
+            # Deterministic entry: a fixed timestamp + mode so an unchanged method yields a
+            # STABLE checksum across runs. Otherwise writestr(arcname, ...) stamps the current
+            # time into the zip, the checksum differs every run, the "skip if unchanged" guard
+            # never fires, and every publish re-mints a Zenodo version DOI for all 26 methods.
+            info = zipfile.ZipInfo(arcname, date_time=(1980, 1, 1, 0, 0, 0))
+            info.compress_type = zipfile.ZIP_DEFLATED
+            info.external_attr = 0o644 << 16
+            z.writestr(info, text)
     return buf.getvalue(), pinned
 
 
