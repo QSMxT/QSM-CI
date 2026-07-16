@@ -5,9 +5,12 @@ description: V-SHARP background field removal from STI Suite v3 (spatially-varyi
   compiled from MATLAB and run on the license-free MATLAB Runtime. Takes the total field and removes
   the background field to yield the local tissue field.
 authors:
-- name: Hongjiang Wei and Chunlei Liu
-  affiliation: UC Berkeley
-doi: 10.1002/nbm.3056
+- name: Bing Wu
+- name: Wei Li
+- name: Arnaud Guidon
+- name: Chunlei Liu
+doi: 10.1002/mrm.23000
+citation: Wu et al., Magn Reson Med 2012
 license: See STI Suite license
 image: ghcr.io/astewartau/qsm-ci/matlab-sti-vsharp:v1
 run: bash run.sh
