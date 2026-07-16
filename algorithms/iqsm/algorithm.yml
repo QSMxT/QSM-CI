@@ -1,0 +1,27 @@
+name: iQSM
+slug: iqsm
+stage: end-to-end
+engine: iQSM (PyTorch)
+description: >
+  iQSM — instant single-step QSM from raw MRI phase using Laplacian-enabled deep neural networks
+  (LoT-Unet). A single deep network maps raw wrapped phase directly to susceptibility, performing
+  phase unwrapping, background-field removal, and dipole inversion in one pass. Multi-echo phase is
+  reconstructed per echo and combined with magnitude x TE^2 weighting. Runs CPU-only with a
+  CPU-only PyTorch wheel; pretrained weights (HuggingFace sunhongfu/iQSM) are baked into the image.
+authors:
+- name: Gao Y.
+- name: Xiong Z.
+- name: Fazlollahi A.
+- name: Nestor P.J.
+- name: Vegh V.
+- name: Nasrallah F.
+- name: Winter C.
+- name: Pike G.B.
+- name: Crozier S.
+- name: Liu F.
+- name: Sun H.
+doi: 10.1016/j.neuroimage.2022.119410
+code_url: https://github.com/sunhongfu/iQSM
+license: See repository (used with author permission)
+image: ghcr.io/astewartau/qsm-ci/iqsm:v1
+run: bash run.sh
