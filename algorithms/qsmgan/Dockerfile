@@ -36,11 +36,16 @@ RUN pip install --no-cache-dir "numpy<1.20" \
 # official LupoLab-UCSF/QSMGAN repo ships README only; the fork below carries the
 # code + committed checkpoints (UNet3D_i64o48.zip, WGAN_i64o48.zip). We use the
 # WGAN generator (the checkpoint the upstream NIFTI inference script loads).
+# The committed .zip preserves the checkpoints' original 0660 root:root perms; the
+# scorer runs the container as a non-root user (docker run --user <uid>:<gid>), which
+# then can't read config.json / net_best.pt (recon.py -> PermissionError). chmod the
+# tree world-readable so inference works regardless of the run uid.
 RUN git clone --depth 1 https://github.com/mmorri10/QSMGAN-LupoLab /tmp/qsmgan \
     && mkdir -p /opt/qsmgan \
     && unzip -q /tmp/qsmgan/WGAN_i64o48.zip -d /opt/qsmgan \
     && unzip -q /tmp/qsmgan/UNet3D_i64o48.zip -d /opt/qsmgan \
-    && rm -rf /tmp/qsmgan
+    && rm -rf /tmp/qsmgan \
+    && chmod -R a+rX /opt/qsmgan
 
 ENV CUDA_VISIBLE_DEVICES="-1" \
     QSMGAN_WEIGHTS="/opt/qsmgan/WGAN_i64o48"
