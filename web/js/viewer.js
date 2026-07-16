@@ -157,8 +157,8 @@ function methodCard(a) {
   if (!a) return "";
   const links = [];
   const zdoi = doiFor(registry, a.slug);
-  if (zdoi) links.push(`<a href="${zdoi.url}" class="text-emerald-600 hover:underline" title="Cite this QSM-CI submission">cite (Zenodo v${zdoi.version})</a>`);
-  if (a.doi) links.push(`<a href="https://doi.org/${a.doi}" class="text-indigo-600 hover:underline">doi</a>`);
+  if (zdoi) links.push(`<a href="${zdoi.url}" class="text-emerald-600 hover:underline" title="Cite this QSM-CI submission (Zenodo v${zdoi.version})">submission doi (v${zdoi.version})</a>`);
+  if (a.doi) links.push(`<a href="https://doi.org/${a.doi}" class="text-indigo-600 hover:underline">paper doi</a>`);
   if (a.code_url) links.push(`<a href="${a.code_url}" class="text-indigo-600 hover:underline">source</a>`);
   const params = (a.parameters || []).map((p) =>
     `<tr class="border-t border-gray-100 dark:border-gray-800"><td class="py-1 pr-3 font-mono text-gray-700 dark:text-gray-300">${p.name}</td><td class="py-1 pr-3 tabular-nums text-gray-500 dark:text-gray-400">${p.default}</td><td class="py-1 text-gray-400 dark:text-gray-500">${p.description || ""}</td></tr>`).join("");

@@ -141,7 +141,7 @@
                   <template x-if="doi(r)">
                     <a :href="doi(r).url" @click.stop target="_blank" rel="noopener"
                        class="ml-2 rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 hover:bg-emerald-100"
-                       :title="'Cite this method — Zenodo v' + doi(r).version">DOI</a>
+                       :title="'Submission DOI (Zenodo v' + doi(r).version + ')'">DOI</a>
                   </template>
                   <span x-show="r.status==='DNF'" class="ml-2 rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold text-gray-500">DNF</span>
                 </td>
