@@ -305,6 +305,31 @@
       ]
     },
     {
+      "slug": "modl-qsm",
+      "name": "MoDL-QSM",
+      "stage": "dipole",
+      "engine": null,
+      "description": "MoDL-QSM \u2014 model-based deep learning for quantitative susceptibility mapping. A dipole-inversion network that unrolls a gradient-descent solver of the QSM forward model, alternating a learned CNN prior with data-consistency terms built from the dipole kernel. Consumes the tissue (local) field in ppm and produces susceptibility (the STI \u03c733 component, comparable to scalar QSM). Runs CPU-only with legacy TensorFlow 1.15 / Keras 2.2.5.",
+      "citation": null,
+      "doi": "10.1016/j.neuroimage.2021.118376",
+      "code_url": "https://github.com/Ruimin-Feng/MoDL-QSM",
+      "license": "none declared; used with author permission",
+      "authors": [
+        "Feng R.",
+        "Zhao J.",
+        "Wang H.",
+        "Yang B.",
+        "Feng J.",
+        "Shi Y.",
+        "Zhang M.",
+        "Liu C.",
+        "Zhang Y.",
+        "Zhuang J.",
+        "Wei H."
+      ],
+      "parameters": []
+    },
+    {
       "slug": "nextqsm",
       "name": "NeXtQSM",
       "stage": "bfr+dipole",
