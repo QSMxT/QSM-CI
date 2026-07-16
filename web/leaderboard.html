@@ -138,6 +138,11 @@
                 <td class="px-5 py-3 text-left font-medium text-gray-900 sticky left-0 bg-white group-hover:bg-emerald-50/40">
                   <span class="mr-1.5 inline-block w-5 text-center" x-text="medal(i)"></span>
                   <span x-text="r.name"></span>
+                  <template x-if="doi(r)">
+                    <a :href="doi(r).url" @click.stop target="_blank" rel="noopener"
+                       class="ml-2 rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 hover:bg-emerald-100"
+                       :title="'Submission DOI (Zenodo v' + doi(r).version + ')'">DOI</a>
+                  </template>
                   <span x-show="r.status==='DNF'" class="ml-2 rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold text-gray-500">DNF</span>
                 </td>
                 <template x-for="c in displayCols" :key="c">
@@ -159,14 +164,17 @@
     function board() {
       return {
         METRICS, STAGE_LABEL, MEDALS, fmt, val,
-        runs: [], view: "composed", stage: "dipole", fmap: "gt",
+        runs: [], registry: {}, view: "composed", stage: "dipole", fmap: "gt",
         metric: "xsim", sortKey: "xsim", sortDir: "desc", filter: "",
         colMenu: false, selectedCols: ["nrmse", "correlation", "xsim", "runtime_s"],
         async init() {
           this.runs = await loadRuns();
+          this.registry = await loadRegistry();
           const st = this.stages(); if (!st.includes(this.stage)) this.stage = st[0] || "dipole";
           if (!this.runs.some((r) => r.mode === "composed")) this.view = "isolated";
         },
+        // Zenodo DOI for a method row (isolated view only; pipelines aren't single methods).
+        doi(r) { return this.view === "isolated" ? doiFor(this.registry, r.slug) : null; },
         stages() { return [...new Set(this.runs.filter((r) => r.mode === "isolated").map((r) => r.stage))]; },
         fmaps() { return [...new Set(this.runs.filter((r) => r.mode === "composed" && r.combo).map((r) => r.combo.field_mapping || "gt"))]; },
         get baseRows() {

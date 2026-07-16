@@ -10,10 +10,10 @@ ground truth) scores it with the *exact* code the leaderboard uses, so your numb
 QSM-CI only does it server-side to build the challenge dataset.)
 
 ```bash
-pipx install git+https://github.com/QSMxT/QSM-CI   # or: pip install qsm-ci
+pip install qsm-ci                 # (a virtualenv or conda env is recommended)
 
 qsm-ci list                # the reference algorithms you can run, grouped by stage
-qsm-ci new                 # interactive scaffold -> algorithms/<slug>/ (or use the web wizard)
+qsm-ci new                 # interactive scaffold -> algorithms/<slug>/
 # ... edit your recon.py / recon.m / recon.rs / recon.jl ...
 
 # run one stage on explicit inputs; the --<artifact> flags depend on the stage:

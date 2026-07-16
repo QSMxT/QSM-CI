@@ -1,0 +1,12 @@
+# The wheel ships only the qsm_ci package (see [tool.setuptools] in pyproject.toml). With
+# setuptools-scm installed, the sdist's default file finder would otherwise pull in the whole
+# repo (algorithms/, web/, results/, data/ …) — prune the large, non-package trees.
+prune algorithms
+prune web
+prune results
+prune data
+prune scripts
+prune docs
+prune .github
+global-exclude *.nii *.nii.gz *.png *.pyc
+include README.md CONTRACT.md LICENSE

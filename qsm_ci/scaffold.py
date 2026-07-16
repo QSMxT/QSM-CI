@@ -1,4 +1,4 @@
-"""`qsm-ci new` — scaffold a submission folder (the terminal version of the web Submit wizard)."""
+"""`qsm-ci new` — scaffold a submission folder."""
 
 from __future__ import annotations
 

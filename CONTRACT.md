@@ -80,6 +80,28 @@ anything absent. **`config.json` is optional**: when no overrides are given the 
 method runs at its defaults, so nothing breaks if you ignore it. Only keys you declared in
 `parameters:` are ever written.
 
+### Environment variables (no JSON parsing needed)
+
+The same values are also injected into your container as environment variables, so a `run.sh` can use
+them directly without `jq`:
+
+| Variable | From | Example |
+|----------|------|---------|
+| `QSMCI_B0` | `params.json` `B0` | `7` |
+| `QSMCI_TE` | `params.json` `TE` (space-separated) | `0.004 0.012 0.020` |
+| `QSMCI_TE0` | first echo | `0.004` |
+| `QSMCI_B0_DIR` | `params.json` `B0_dir` | `0 0 1` |
+| `QSMCI_VOXEL_SIZE` | `params.json` `voxel_size` (mm) | `1 1 1` |
+| `QSMCI_SET_<NAME>` | each `--set NAME=VALUE` override | `QSMCI_SET_THRESHOLD=0.2` |
+
+```bash
+qsmxt invert tkd "$IN/localfield.nii.gz" -m "$IN/mask.nii.gz" -o "$OUT/chimap.nii.gz" \
+  --b0-direction $QSMCI_B0_DIR
+```
+
+The JSON files above are still written, so parsing them stays valid — the env vars are purely a
+convenience.
+
 ## Execution model — environment vs. code
 
 Your submission is **code plus an environment**; you do not have to bake your code into a custom

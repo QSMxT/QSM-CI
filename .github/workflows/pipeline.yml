@@ -1,0 +1,67 @@
+name: pipeline
+
+# End-to-end workflow-engine verification: build the same phase → χ pipeline
+# (romeo-fieldmap → vsharp → rts) through nipype, pydra, CWL, Snakemake, and Nextflow, and check that
+# all five produce the identical χ map and that it matches the ground truth. Uses the real challenge
+# dataset (OSF, gated by OSF_TOKEN), so unlike ci.yml this job needs a secret — it runs on internal
+# pushes/PRs, not forks. See tests/test_pipeline.py.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+    paths:
+      - "qsm_ci/**"
+      - "tests/test_pipeline.py"
+      - "algorithms/**"
+      - ".github/workflows/pipeline.yml"
+
+jobs:
+  end-to-end:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - uses: actions/setup-java@v4       # Nextflow needs a JVM
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Install package (with the Python interfaces) + test deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install ".[nipype,pydra]" pytest pyyaml
+
+      - name: Install CWL / Snakemake / Nextflow engines
+        # cwltool + snakemake are CLI tools the test only invokes via PATH, so install them isolated
+        # (pipx) — co-resolving them with nipype/pydra makes pip backtrack to an ancient, unbuildable
+        # cwltool. Nextflow is a standalone binary (needs the JVM above).
+        run: |
+          pipx install cwltool
+          pipx install snakemake
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          curl -s https://get.nextflow.io | bash
+          sudo mv nextflow /usr/local/bin/
+
+      - name: Cache OSF dataset zip
+        uses: actions/cache@v4
+        with:
+          path: .osfcache/bids.zip
+          key: osf-bids-698ac9aecae88916d1e24f69
+
+      - name: Fetch the real challenge dataset (public inputs + held-out ground truth)
+        env:
+          OSF_TOKEN: ${{ secrets.OSF_TOKEN }}
+          OSF_ZIP: .osfcache/bids.zip
+        run: scripts/fetch_dataset.sh sim /tmp/phantom
+
+      - name: End-to-end pipeline across all 5 engines (phase → χ, scored vs ground truth)
+        env:
+          QSMCI_PHANTOM: /tmp/phantom
+          QSMCI_ALGORITHMS: ${{ github.workspace }}/algorithms
+        run: pytest -q -s tests/test_pipeline.py

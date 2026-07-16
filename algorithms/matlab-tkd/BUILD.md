@@ -29,5 +29,5 @@ docker push  ghcr.io/astewartau/qsm-ci/matlab-tkd:v1
 Point `algorithm.yml`'s `image:` at that tag and make the package public. QSM-CI runs
 `/opt/qsm-ci/recon /input /output` on the free Runtime, offline.
 
-> CI compile (`.github/workflows/matlab-compile.yml`) needs a MATLAB **batch licensing token** for
-> Compiler (pilot program) — until you have one, compile locally as above.
+> No MATLAB Compiler license? You can't compile — run raw `.m` on a run-time-licensed MATLAB base
+> instead (Option B in [`docs/matlab.md`](../../docs/matlab.md)). Compiling is strongly preferred.

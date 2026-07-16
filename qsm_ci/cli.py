@@ -29,6 +29,25 @@ def _cmd_submit(args) -> int:
     return run_submit(args)
 
 
+def _cmd_interface(args) -> int:
+    from .interfaces import generate, generate_pipeline
+    try:
+        if args.pipeline:
+            text = generate_pipeline(args.engine, [s.strip() for s in args.pipeline.split(",")])
+        else:
+            text = generate(args.engine, stage=args.stage, slug=args.slug)
+    except ValueError as e:
+        print(f"✗ {e}", file=sys.stderr)
+        return 1
+    if args.out:
+        from pathlib import Path
+        Path(args.out).write_text(text)
+        print(f"wrote {args.engine} wrapper → {args.out}")
+    else:
+        print(text, end="")
+    return 0
+
+
 def _cmd_doctor(args) -> int:
     import shutil
     from .runner import check_runner
@@ -70,6 +89,16 @@ def build_parser() -> argparse.ArgumentParser:
     s = sub.add_parser("submit", help="open a pull request adding your submission")
     s.add_argument("slug")
     s.set_defaults(func=_cmd_submit)
+
+    i = sub.add_parser("interface",
+                       help="generate a workflow-engine wrapper (cwl/snakemake/nextflow)")
+    i.add_argument("engine", choices=["cwl", "snakemake", "nextflow"])
+    i.add_argument("--stage", help="one stage/span (default: field-mapping, bfr, dipole)")
+    i.add_argument("--slug", default="SLUG", help="default method slug baked into the wrapper")
+    i.add_argument("--pipeline", metavar="FM,BFR,DIPOLE",
+                   help="emit a chained end-to-end pipeline: 3 method slugs (field-mapping,bfr,dipole)")
+    i.add_argument("-o", "--out", help="write to this file (default: stdout)")
+    i.set_defaults(func=_cmd_interface)
 
     d = sub.add_parser("doctor", help="check your environment")
     d.set_defaults(func=_cmd_doctor)

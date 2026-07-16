@@ -1,0 +1,81 @@
+name: publish-zenodo
+
+# Publish each algorithms/<slug>/ method to Zenodo as a citable, versioned artifact and commit the
+# updated registry (qsm_ci/registry.json) back to main. The registry is what the CLI ships and
+# resolves against, so `qsm-ci run <slug>` / `run <slug>@<version>` / `run doi:…` can fetch methods
+# without a checkout. See .github/scripts/publish-zenodo.py.
+#
+# Automatic runs (on a published release) go to PRODUCTION Zenodo; manual runs default to SANDBOX.
+# Sandbox and production keep SEPARATE registries so their incompatible record ids never collide.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Zenodo target"
+        type: choice
+        default: sandbox
+        options: [sandbox, production]
+      only:
+        description: "Publish just this slug (optional)"
+        required: false
+
+concurrency:
+  group: publish-zenodo
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pyyaml
+
+      - name: Resolve target
+        id: t
+        run: |
+          target="${{ github.event.inputs.target }}"
+          [ -z "$target" ] && target="production"   # release runs publish to production
+          if [ "$target" = "production" ]; then
+            echo "base=https://zenodo.org" >> "$GITHUB_OUTPUT"
+            echo "mapping=qsm_ci/registry.json" >> "$GITHUB_OUTPUT"
+          else
+            echo "base=https://sandbox.zenodo.org" >> "$GITHUB_OUTPUT"
+            echo "mapping=qsm_ci/registry.sandbox.json" >> "$GITHUB_OUTPUT"
+          fi
+          echo "target=$target" >> "$GITHUB_OUTPUT"
+
+      - name: Publish methods to Zenodo (${{ steps.t.outputs.target }})
+        env:
+          ZENODO_TOKEN: ${{ steps.t.outputs.target == 'production' && secrets.ZENODO_TOKEN || secrets.ZENODO_SANDBOX_TOKEN }}
+        run: |
+          python3 .github/scripts/publish-zenodo.py \
+            --zenodo-token "$ZENODO_TOKEN" \
+            --zenodo-base-url "${{ steps.t.outputs.base }}" \
+            --mapping "${{ steps.t.outputs.mapping }}" \
+            --site-base-url "https://qsmxt.github.io/QSM-CI" \
+            ${{ github.event.inputs.only && format('--only {0}', github.event.inputs.only) || '' }}
+
+      - name: Commit updated registry
+        if: steps.t.outputs.target == 'production'   # sandbox runs are throwaway (test the flow only)
+        env:
+          MAPPING: ${{ steps.t.outputs.mapping }}
+        run: |
+          if git diff --quiet -- "$MAPPING"; then
+            echo "No registry changes."; exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "$MAPPING"
+          git commit -m "chore: update Zenodo method registry [skip ci]"
+          git push
