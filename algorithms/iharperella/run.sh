@@ -3,6 +3,11 @@
 set -euo pipefail
 IN="${1:-/input}"; OUT="${2:-/output}"
 
+# iHARPERELLA operates on the first echo's phase; --te (that echo's TE) and --field-strength convert
+# its tissue-phase output from radians to ppm (qsmxt >= v9.7.0).
+B0=$(jq -r '.B0' "$IN/params.json")
+TE=$(jq -r '.TE[0]' "$IN/params.json")
+
 # Parameter overrides (qsm-ci run --set NAME=VALUE) arrive as /input/config.json.
 SET=""
 CFG="$IN/config.json"
@@ -11,4 +16,5 @@ if [ -f "$CFG" ]; then
   V=$(jq -r '.max_iter // empty' "$CFG"); [ -n "$V" ] && SET="$SET --max-iter $V"
   V=$(jq -r '.tol // empty' "$CFG"); [ -n "$V" ] && SET="$SET --tol $V"
 fi
-qsmxt bgremove iharperella "$IN/phase.nii.gz" -m "$IN/mask.nii.gz" -o "$OUT/localfield.nii.gz" $SET
+qsmxt bgremove iharperella "$IN/phase.nii.gz" -m "$IN/mask.nii.gz" -o "$OUT/localfield.nii.gz" \
+  --te "$TE" --field-strength "$B0" $SET
