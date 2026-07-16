@@ -5,9 +5,13 @@ description: Integrated phase unwrapping + background field removal (iHARPERELLA
   compiled from MATLAB and run on the license-free MATLAB Runtime. Operates on wrapped multi-echo
   phase and yields the local tissue field (echoes combined with optimal TE^2 weights).
 authors:
-- name: Wei Li and Chunlei Liu
-  affiliation: UC Berkeley
-doi: 10.1016/j.neuroimage.2014.08.029
+- name: Wei Li
+- name: Alexandru V. Avram
+- name: Bing Wu
+- name: Xue Xiao
+- name: Chunlei Liu
+doi: 10.1002/nbm.3056
+citation: Li et al., NMR Biomed 2014
 license: See STI Suite license
 image: ghcr.io/astewartau/qsm-ci/matlab-sti-iharperella:v1
 run: bash run.sh
