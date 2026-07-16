@@ -34,10 +34,23 @@ RESUME="${LPCNN_RESUME:-$LPCNN_HOME/checkpoints/lpcnn_test_Bmodel.pkl}"
 WORK="$OUT/_lpcnn_work"
 python3 "$ALGO_DIR/recon.py" "$IN" "$WORK" "$TESLA"
 
-# inference.py uses paths relative to its cwd (data/numpy_data stats, LPCNN/test_result out),
-# so run it from the LPCNN repo root. Single orientation => --number 1.
+# inference.py resolves every path relative to its cwd: it READS data/numpy_data/... (train
+# stats, via root_dir='data/') and WRITES its result under LPCNN/test_result/. The container
+# runs as a non-root user, so $LPCNN_HOME is read-only — cd-ing there makes the test_result
+# mkdir fail (Permission denied). Run from a writable dir under $OUT instead, staging the
+# read-only inputs as symlinks: 'data/' and the LPCNN package files (inference.py + lib) are
+# symlinked in, while LPCNN/test_result/ stays a real, writable directory so the cwd-relative
+# output can be written (the script dir on sys.path lets `from lib...` resolve through the
+# symlink). Single orientation => --number 1.
 SAVE_NAME="_qsmci"
-cd "$LPCNN_HOME"
+RUNDIR="$WORK/run"
+mkdir -p "$RUNDIR/LPCNN"
+ln -sf "$LPCNN_HOME/data" "$RUNDIR/data"
+for f in "$LPCNN_HOME/LPCNN"/*; do
+  [ "$(basename "$f")" = "test_result" ] && continue
+  ln -sf "$f" "$RUNDIR/LPCNN/$(basename "$f")"
+done
+cd "$RUNDIR"
 python3 LPCNN/inference.py \
   --number 1 \
   --tesla "$TESLA" \
@@ -51,7 +64,7 @@ python3 LPCNN/inference.py \
 
 # inference.py writes LPCNN/test_result/<ckpt_stem>/<arch><save_name>_qsm.nii.gz (cwd-relative).
 CKPT_STEM="$(basename "$RESUME")"; CKPT_STEM="${CKPT_STEM%%.*}"
-RESULT="$LPCNN_HOME/LPCNN/test_result/$CKPT_STEM/lpcnn${SAVE_NAME}_qsm.nii.gz"
+RESULT="$RUNDIR/LPCNN/test_result/$CKPT_STEM/lpcnn${SAVE_NAME}_qsm.nii.gz"
 mkdir -p "$OUT"
 cp "$RESULT" "$OUT/chimap.nii.gz"
 rm -rf "$WORK"
