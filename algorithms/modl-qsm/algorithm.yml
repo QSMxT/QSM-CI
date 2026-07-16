@@ -1,0 +1,26 @@
+name: MoDL-QSM
+slug: modl-qsm
+stage: dipole
+description: >
+  MoDL-QSM — model-based deep learning for quantitative susceptibility mapping. A dipole-inversion
+  network that unrolls a gradient-descent solver of the QSM forward model, alternating a learned
+  CNN prior with data-consistency terms built from the dipole kernel. Consumes the tissue (local)
+  field in ppm and produces susceptibility (the STI χ33 component, comparable to scalar QSM). Runs
+  CPU-only with legacy TensorFlow 1.15 / Keras 2.2.5.
+authors:
+- name: Feng R.
+- name: Zhao J.
+- name: Wang H.
+- name: Yang B.
+- name: Feng J.
+- name: Shi Y.
+- name: Zhang M.
+- name: Liu C.
+- name: Zhang Y.
+- name: Zhuang J.
+- name: Wei H.
+doi: 10.1016/j.neuroimage.2021.118376
+code_url: https://github.com/Ruimin-Feng/MoDL-QSM
+license: none declared; used with author permission
+image: ghcr.io/astewartau/qsm-ci/modl-qsm:v1
+run: bash run.sh

@@ -160,30 +160,6 @@
       }
     },
     {
-      "name": "matlab-sti-iharperella",
-      "track": "sim",
-      "stage": "unwrap+bfr",
-      "artifact": "localfield",
-      "kind": "field",
-      "image": null,
-      "runtime_s": 281.4745693206787,
-      "metrics": {
-        "nrmse": 264.4577491538032,
-        "nrmse_detrend": 1008.826692657141,
-        "correlation": 0.09864162297621673,
-        "xsim": 0.15523174141570825
-      },
-      "status": "ok",
-      "id": "matlab-sti-iharperella-iso",
-      "slug": "matlab-sti-iharperella",
-      "mode": "isolated",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/matlab-sti-iharperella-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/matlab-sti-iharperella-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/matlab-sti-iharperella-iso__error.nii.gz"
-      }
-    },
-    {
       "name": "matlab-sti-ilsqr",
       "track": "sim",
       "stage": "dipole",
@@ -1455,391 +1431,6 @@
         "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_lbv_tv-cmp__recon.nii.gz",
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_lbv_tv-cmp__truth.nii.gz",
         "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_lbv_tv-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "matlab-sti-iharperella+ilsqr",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 33.588231563568115,
-      "metrics": {
-        "nrmse": 225.06944524615568,
-        "nrmse_detrend": 1264.979058253753,
-        "nrmse_tissue": 1207.869152782977,
-        "nrmse_blood": 3318.630743282219,
-        "nrmse_dgm": 600.8625871995752,
-        "dgm_linearity": 0.7826741069973726,
-        "calc_moment_dev": 51.374977469444275,
-        "calc_streak": null,
-        "correlation": 0.07880683074279474,
-        "xsim": 0.04721123044319239
-      },
-      "status": "ok",
-      "id": "gt~matlab-sti-iharperella~ilsqr-cmp",
-      "slug": "matlab-sti-iharperella+ilsqr",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "gt",
-        "bfr": "matlab-sti-iharperella",
-        "dipole": "ilsqr"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_ilsqr-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_ilsqr-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_ilsqr-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "matlab-sti-iharperella+matlab-sti-ilsqr",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 121.84079146385193,
-      "metrics": {
-        "nrmse": 263.73606699525897,
-        "nrmse_detrend": 1305.5261520943013,
-        "nrmse_tissue": 1268.1838747437162,
-        "nrmse_blood": 3741.429848919156,
-        "nrmse_dgm": 559.888468805912,
-        "dgm_linearity": 0.6549370987196397,
-        "calc_moment_dev": 51.374977469444275,
-        "calc_streak": null,
-        "correlation": 0.07637374849287686,
-        "xsim": 0.06230770955473335
-      },
-      "status": "ok",
-      "id": "gt~matlab-sti-iharperella~matlab-sti-ilsqr-cmp",
-      "slug": "matlab-sti-iharperella+matlab-sti-ilsqr",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "gt",
-        "bfr": "matlab-sti-iharperella",
-        "dipole": "matlab-sti-ilsqr"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_matlab-sti-ilsqr-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_matlab-sti-ilsqr-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_matlab-sti-ilsqr-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "matlab-sti-iharperella+matlab-sti-star",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 25.245069980621338,
-      "metrics": {
-        "nrmse": 248.03875006657154,
-        "nrmse_detrend": 1733.9359349217987,
-        "nrmse_tissue": 1496.5158077868361,
-        "nrmse_blood": 3476.0381118629134,
-        "nrmse_dgm": 842.6392865007052,
-        "dgm_linearity": 0.8475734555190596,
-        "calc_moment_dev": 51.374977469444275,
-        "calc_streak": null,
-        "correlation": 0.057576584714142856,
-        "xsim": 0.043981960979999825
-      },
-      "status": "ok",
-      "id": "gt~matlab-sti-iharperella~matlab-sti-star-cmp",
-      "slug": "matlab-sti-iharperella+matlab-sti-star",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "gt",
-        "bfr": "matlab-sti-iharperella",
-        "dipole": "matlab-sti-star"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_matlab-sti-star-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_matlab-sti-star-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_matlab-sti-star-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "matlab-sti-iharperella+matlab-tkd",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 12.358222246170044,
-      "metrics": {
-        "nrmse": 265.20836135675023,
-        "nrmse_detrend": 1530.7736798254136,
-        "nrmse_tissue": 1330.3820725771386,
-        "nrmse_blood": 4034.1462612800224,
-        "nrmse_dgm": 998.9783947473325,
-        "dgm_linearity": 0.8427795847809245,
-        "calc_moment_dev": 51.374977469444275,
-        "calc_streak": null,
-        "correlation": 0.06518749612251766,
-        "xsim": 0.04103746790033532
-      },
-      "status": "ok",
-      "id": "gt~matlab-sti-iharperella~matlab-tkd-cmp",
-      "slug": "matlab-sti-iharperella+matlab-tkd",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "gt",
-        "bfr": "matlab-sti-iharperella",
-        "dipole": "matlab-tkd"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_matlab-tkd-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_matlab-tkd-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_matlab-tkd-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "matlab-sti-iharperella+medi",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 54.91861629486084,
-      "metrics": {
-        "nrmse": 406.60561156501427,
-        "nrmse_detrend": 1871.277720714556,
-        "nrmse_tissue": 1584.7333441075175,
-        "nrmse_blood": 4075.3240835848533,
-        "nrmse_dgm": 1308.16566031487,
-        "dgm_linearity": 0.8735207297362504,
-        "calc_moment_dev": 51.374977469444275,
-        "calc_streak": null,
-        "correlation": 0.053363279755627074,
-        "xsim": 0.027043229207530578
-      },
-      "status": "ok",
-      "id": "gt~matlab-sti-iharperella~medi-cmp",
-      "slug": "matlab-sti-iharperella+medi",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "gt",
-        "bfr": "matlab-sti-iharperella",
-        "dipole": "medi"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_medi-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_medi-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_medi-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "matlab-sti-iharperella+nltv",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 198.38570547103882,
-      "metrics": {
-        "nrmse": 589.3855338752904,
-        "nrmse_detrend": 4672.740326259008,
-        "nrmse_tissue": 3188.5456600907223,
-        "nrmse_blood": 16880.3183895366,
-        "nrmse_dgm": 1063.9306969460356,
-        "dgm_linearity": 1.2321906510781084,
-        "calc_moment_dev": 51.374977469444275,
-        "calc_streak": null,
-        "correlation": 0.02139581944315221,
-        "xsim": 0.0018299005946154695
-      },
-      "status": "ok",
-      "id": "gt~matlab-sti-iharperella~nltv-cmp",
-      "slug": "matlab-sti-iharperella+nltv",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "gt",
-        "bfr": "matlab-sti-iharperella",
-        "dipole": "nltv"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_nltv-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_nltv-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_nltv-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "matlab-sti-iharperella+rts",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 11.524171352386475,
-      "metrics": {
-        "nrmse": 220.97023762745397,
-        "nrmse_detrend": 1192.6297565698576,
-        "nrmse_tissue": 1040.7922149838437,
-        "nrmse_blood": 3260.8537829947268,
-        "nrmse_dgm": 554.9154789708452,
-        "dgm_linearity": 0.6732685122077555,
-        "calc_moment_dev": 51.374977469444275,
-        "calc_streak": null,
-        "correlation": 0.0835551144003824,
-        "xsim": 0.057087496339599225
-      },
-      "status": "ok",
-      "id": "gt~matlab-sti-iharperella~rts-cmp",
-      "slug": "matlab-sti-iharperella+rts",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "gt",
-        "bfr": "matlab-sti-iharperella",
-        "dipole": "rts"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_rts-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_rts-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_rts-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "matlab-sti-iharperella+tikhonov",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 2.53438138961792,
-      "metrics": {
-        "nrmse": 238.56621933681177,
-        "nrmse_detrend": 1482.353019098943,
-        "nrmse_tissue": 1288.2754463056249,
-        "nrmse_blood": 3802.0170622521573,
-        "nrmse_dgm": 873.1344932469622,
-        "dgm_linearity": 0.8625736539614871,
-        "calc_moment_dev": 51.374977469444275,
-        "calc_streak": null,
-        "correlation": 0.06730733349747427,
-        "xsim": 0.0476393942798877
-      },
-      "status": "ok",
-      "id": "gt~matlab-sti-iharperella~tikhonov-cmp",
-      "slug": "matlab-sti-iharperella+tikhonov",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "gt",
-        "bfr": "matlab-sti-iharperella",
-        "dipole": "tikhonov"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_tikhonov-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_tikhonov-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_tikhonov-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "matlab-sti-iharperella+tkd",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 2.0731406211853027,
-      "metrics": {
-        "nrmse": 298.2332315286186,
-        "nrmse_detrend": 1709.050288886867,
-        "nrmse_tissue": 1480.998831387483,
-        "nrmse_blood": 4301.230531984107,
-        "nrmse_dgm": 1304.2969057557202,
-        "dgm_linearity": 0.882248554704549,
-        "calc_moment_dev": 51.374977469444275,
-        "calc_streak": null,
-        "correlation": 0.05841212284730221,
-        "xsim": 0.030717682813282084
-      },
-      "status": "ok",
-      "id": "gt~matlab-sti-iharperella~tkd-cmp",
-      "slug": "matlab-sti-iharperella+tkd",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "gt",
-        "bfr": "matlab-sti-iharperella",
-        "dipole": "tkd"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_tkd-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_tkd-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_tkd-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "matlab-sti-iharperella+tsvd",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 2.844571113586426,
-      "metrics": {
-        "nrmse": 219.34467316451344,
-        "nrmse_detrend": 1275.0687847835075,
-        "nrmse_tissue": 1073.9303218594387,
-        "nrmse_blood": 3435.090786986255,
-        "nrmse_dgm": 578.9069598985653,
-        "dgm_linearity": 0.6989318364729799,
-        "calc_moment_dev": 51.374977469444275,
-        "calc_streak": null,
-        "correlation": 0.07818705300528872,
-        "xsim": 0.048763464967234924
-      },
-      "status": "ok",
-      "id": "gt~matlab-sti-iharperella~tsvd-cmp",
-      "slug": "matlab-sti-iharperella+tsvd",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "gt",
-        "bfr": "matlab-sti-iharperella",
-        "dipole": "tsvd"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_tsvd-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_tsvd-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_tsvd-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "matlab-sti-iharperella+tv",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 17.022664546966553,
-      "metrics": {
-        "nrmse": 334.2508113030571,
-        "nrmse_detrend": 2324.6373329228777,
-        "nrmse_tissue": 1999.6129850572524,
-        "nrmse_blood": 9155.787522377408,
-        "nrmse_dgm": 4651.49388799908,
-        "dgm_linearity": 0.9885836560551067,
-        "calc_moment_dev": 51.374977469444275,
-        "calc_streak": null,
-        "correlation": 0.04297771600561991,
-        "xsim": 0.022353403392767517
-      },
-      "status": "ok",
-      "id": "gt~matlab-sti-iharperella~tv-cmp",
-      "slug": "matlab-sti-iharperella+tv",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "gt",
-        "bfr": "matlab-sti-iharperella",
-        "dipole": "tv"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_tv-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_tv-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_tv-cmp__error.nii.gz"
       }
     },
     {
@@ -4538,391 +4129,6 @@
       }
     },
     {
-      "name": "laplacian-fieldmap+matlab-sti-iharperella+ilsqr",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 36.12310767173767,
-      "metrics": {
-        "nrmse": 225.06944524615568,
-        "nrmse_detrend": 1264.979058253753,
-        "nrmse_tissue": 1207.869152782977,
-        "nrmse_blood": 3318.630743282219,
-        "nrmse_dgm": 600.8625871995752,
-        "dgm_linearity": 0.7826741069973726,
-        "calc_moment_dev": 51.374977469444275,
-        "calc_streak": null,
-        "correlation": 0.07880683074279474,
-        "xsim": 0.04721123044319239
-      },
-      "status": "ok",
-      "id": "laplacian-fieldmap~matlab-sti-iharperella~ilsqr-cmp",
-      "slug": "laplacian-fieldmap+matlab-sti-iharperella+ilsqr",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "laplacian-fieldmap",
-        "bfr": "matlab-sti-iharperella",
-        "dipole": "ilsqr"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_ilsqr-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_ilsqr-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_ilsqr-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "laplacian-fieldmap+matlab-sti-iharperella+matlab-sti-ilsqr",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 122.87092971801758,
-      "metrics": {
-        "nrmse": 263.73606699525897,
-        "nrmse_detrend": 1305.5261520943013,
-        "nrmse_tissue": 1268.1838747437162,
-        "nrmse_blood": 3741.429848919156,
-        "nrmse_dgm": 559.888468805912,
-        "dgm_linearity": 0.6549370987196397,
-        "calc_moment_dev": 51.374977469444275,
-        "calc_streak": null,
-        "correlation": 0.07637374849287686,
-        "xsim": 0.06230770955473335
-      },
-      "status": "ok",
-      "id": "laplacian-fieldmap~matlab-sti-iharperella~matlab-sti-ilsqr-cmp",
-      "slug": "laplacian-fieldmap+matlab-sti-iharperella+matlab-sti-ilsqr",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "laplacian-fieldmap",
-        "bfr": "matlab-sti-iharperella",
-        "dipole": "matlab-sti-ilsqr"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_matlab-sti-ilsqr-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_matlab-sti-ilsqr-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_matlab-sti-ilsqr-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "laplacian-fieldmap+matlab-sti-iharperella+matlab-sti-star",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 24.85160207748413,
-      "metrics": {
-        "nrmse": 248.03875006657154,
-        "nrmse_detrend": 1733.9359349217987,
-        "nrmse_tissue": 1496.5158077868361,
-        "nrmse_blood": 3476.0381118629134,
-        "nrmse_dgm": 842.6392865007052,
-        "dgm_linearity": 0.8475734555190596,
-        "calc_moment_dev": 51.374977469444275,
-        "calc_streak": null,
-        "correlation": 0.057576584714142856,
-        "xsim": 0.043981960979999825
-      },
-      "status": "ok",
-      "id": "laplacian-fieldmap~matlab-sti-iharperella~matlab-sti-star-cmp",
-      "slug": "laplacian-fieldmap+matlab-sti-iharperella+matlab-sti-star",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "laplacian-fieldmap",
-        "bfr": "matlab-sti-iharperella",
-        "dipole": "matlab-sti-star"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_matlab-sti-star-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_matlab-sti-star-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_matlab-sti-star-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "laplacian-fieldmap+matlab-sti-iharperella+matlab-tkd",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 12.70021915435791,
-      "metrics": {
-        "nrmse": 265.20836135675023,
-        "nrmse_detrend": 1530.7736798254136,
-        "nrmse_tissue": 1330.3820725771386,
-        "nrmse_blood": 4034.1462612800224,
-        "nrmse_dgm": 998.9783947473325,
-        "dgm_linearity": 0.8427795847809245,
-        "calc_moment_dev": 51.374977469444275,
-        "calc_streak": null,
-        "correlation": 0.06518749612251766,
-        "xsim": 0.04103746790033532
-      },
-      "status": "ok",
-      "id": "laplacian-fieldmap~matlab-sti-iharperella~matlab-tkd-cmp",
-      "slug": "laplacian-fieldmap+matlab-sti-iharperella+matlab-tkd",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "laplacian-fieldmap",
-        "bfr": "matlab-sti-iharperella",
-        "dipole": "matlab-tkd"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_matlab-tkd-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_matlab-tkd-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_matlab-tkd-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "laplacian-fieldmap+matlab-sti-iharperella+medi",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 50.033812284469604,
-      "metrics": {
-        "nrmse": 406.60561156501427,
-        "nrmse_detrend": 1871.277720714556,
-        "nrmse_tissue": 1584.7333441075175,
-        "nrmse_blood": 4075.3240835848533,
-        "nrmse_dgm": 1308.16566031487,
-        "dgm_linearity": 0.8735207297362504,
-        "calc_moment_dev": 51.374977469444275,
-        "calc_streak": null,
-        "correlation": 0.053363279755627074,
-        "xsim": 0.027043229207530578
-      },
-      "status": "ok",
-      "id": "laplacian-fieldmap~matlab-sti-iharperella~medi-cmp",
-      "slug": "laplacian-fieldmap+matlab-sti-iharperella+medi",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "laplacian-fieldmap",
-        "bfr": "matlab-sti-iharperella",
-        "dipole": "medi"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_medi-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_medi-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_medi-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "laplacian-fieldmap+matlab-sti-iharperella+nltv",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 208.39040446281433,
-      "metrics": {
-        "nrmse": 589.3855338752904,
-        "nrmse_detrend": 4672.740326259008,
-        "nrmse_tissue": 3188.5456600907223,
-        "nrmse_blood": 16880.3183895366,
-        "nrmse_dgm": 1063.9306969460356,
-        "dgm_linearity": 1.2321906510781084,
-        "calc_moment_dev": 51.374977469444275,
-        "calc_streak": null,
-        "correlation": 0.02139581944315221,
-        "xsim": 0.0018299005946154695
-      },
-      "status": "ok",
-      "id": "laplacian-fieldmap~matlab-sti-iharperella~nltv-cmp",
-      "slug": "laplacian-fieldmap+matlab-sti-iharperella+nltv",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "laplacian-fieldmap",
-        "bfr": "matlab-sti-iharperella",
-        "dipole": "nltv"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_nltv-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_nltv-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_nltv-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "laplacian-fieldmap+matlab-sti-iharperella+rts",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 10.340777397155762,
-      "metrics": {
-        "nrmse": 220.97023762745397,
-        "nrmse_detrend": 1192.6297565698576,
-        "nrmse_tissue": 1040.7922149838437,
-        "nrmse_blood": 3260.8537829947268,
-        "nrmse_dgm": 554.9154789708452,
-        "dgm_linearity": 0.6732685122077555,
-        "calc_moment_dev": 51.374977469444275,
-        "calc_streak": null,
-        "correlation": 0.0835551144003824,
-        "xsim": 0.057087496339599225
-      },
-      "status": "ok",
-      "id": "laplacian-fieldmap~matlab-sti-iharperella~rts-cmp",
-      "slug": "laplacian-fieldmap+matlab-sti-iharperella+rts",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "laplacian-fieldmap",
-        "bfr": "matlab-sti-iharperella",
-        "dipole": "rts"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_rts-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_rts-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_rts-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "laplacian-fieldmap+matlab-sti-iharperella+tikhonov",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 2.43204665184021,
-      "metrics": {
-        "nrmse": 238.56621933681177,
-        "nrmse_detrend": 1482.353019098943,
-        "nrmse_tissue": 1288.2754463056249,
-        "nrmse_blood": 3802.0170622521573,
-        "nrmse_dgm": 873.1344932469622,
-        "dgm_linearity": 0.8625736539614871,
-        "calc_moment_dev": 51.374977469444275,
-        "calc_streak": null,
-        "correlation": 0.06730733349747427,
-        "xsim": 0.0476393942798877
-      },
-      "status": "ok",
-      "id": "laplacian-fieldmap~matlab-sti-iharperella~tikhonov-cmp",
-      "slug": "laplacian-fieldmap+matlab-sti-iharperella+tikhonov",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "laplacian-fieldmap",
-        "bfr": "matlab-sti-iharperella",
-        "dipole": "tikhonov"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_tikhonov-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_tikhonov-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_tikhonov-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "laplacian-fieldmap+matlab-sti-iharperella+tkd",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 2.0870375633239746,
-      "metrics": {
-        "nrmse": 298.2332315286186,
-        "nrmse_detrend": 1709.050288886867,
-        "nrmse_tissue": 1480.998831387483,
-        "nrmse_blood": 4301.230531984107,
-        "nrmse_dgm": 1304.2969057557202,
-        "dgm_linearity": 0.882248554704549,
-        "calc_moment_dev": 51.374977469444275,
-        "calc_streak": null,
-        "correlation": 0.05841212284730221,
-        "xsim": 0.030717682813282084
-      },
-      "status": "ok",
-      "id": "laplacian-fieldmap~matlab-sti-iharperella~tkd-cmp",
-      "slug": "laplacian-fieldmap+matlab-sti-iharperella+tkd",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "laplacian-fieldmap",
-        "bfr": "matlab-sti-iharperella",
-        "dipole": "tkd"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_tkd-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_tkd-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_tkd-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "laplacian-fieldmap+matlab-sti-iharperella+tsvd",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 2.862300157546997,
-      "metrics": {
-        "nrmse": 219.34467316451344,
-        "nrmse_detrend": 1275.0687847835075,
-        "nrmse_tissue": 1073.9303218594387,
-        "nrmse_blood": 3435.090786986255,
-        "nrmse_dgm": 578.9069598985653,
-        "dgm_linearity": 0.6989318364729799,
-        "calc_moment_dev": 51.374977469444275,
-        "calc_streak": null,
-        "correlation": 0.07818705300528872,
-        "xsim": 0.048763464967234924
-      },
-      "status": "ok",
-      "id": "laplacian-fieldmap~matlab-sti-iharperella~tsvd-cmp",
-      "slug": "laplacian-fieldmap+matlab-sti-iharperella+tsvd",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "laplacian-fieldmap",
-        "bfr": "matlab-sti-iharperella",
-        "dipole": "tsvd"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_tsvd-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_tsvd-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_tsvd-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "laplacian-fieldmap+matlab-sti-iharperella+tv",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 18.356446981430054,
-      "metrics": {
-        "nrmse": 334.2508113030571,
-        "nrmse_detrend": 2324.6373329228777,
-        "nrmse_tissue": 1999.6129850572524,
-        "nrmse_blood": 9155.787522377408,
-        "nrmse_dgm": 4651.49388799908,
-        "dgm_linearity": 0.9885836560551067,
-        "calc_moment_dev": 51.374977469444275,
-        "calc_streak": null,
-        "correlation": 0.04297771600561991,
-        "xsim": 0.022353403392767517
-      },
-      "status": "ok",
-      "id": "laplacian-fieldmap~matlab-sti-iharperella~tv-cmp",
-      "slug": "laplacian-fieldmap+matlab-sti-iharperella+tv",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "laplacian-fieldmap",
-        "bfr": "matlab-sti-iharperella",
-        "dipole": "tv"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_tv-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_tv-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_tv-cmp__error.nii.gz"
-      }
-    },
-    {
       "name": "laplacian-fieldmap+matlab-sti-vsharp+ilsqr",
       "track": "sim",
       "stage": "field-mapping+bfr+dipole",
@@ -7615,391 +6821,6 @@
         "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_lbv_tv-cmp__recon.nii.gz",
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_lbv_tv-cmp__truth.nii.gz",
         "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_lbv_tv-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "romeo-fieldmap+matlab-sti-iharperella+ilsqr",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 35.4840247631073,
-      "metrics": {
-        "nrmse": 225.06944524615568,
-        "nrmse_detrend": 1264.979058253753,
-        "nrmse_tissue": 1207.869152782977,
-        "nrmse_blood": 3318.630743282219,
-        "nrmse_dgm": 600.8625871995752,
-        "dgm_linearity": 0.7826741069973726,
-        "calc_moment_dev": 51.374977469444275,
-        "calc_streak": null,
-        "correlation": 0.07880683074279474,
-        "xsim": 0.04721123044319239
-      },
-      "status": "ok",
-      "id": "romeo-fieldmap~matlab-sti-iharperella~ilsqr-cmp",
-      "slug": "romeo-fieldmap+matlab-sti-iharperella+ilsqr",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "romeo-fieldmap",
-        "bfr": "matlab-sti-iharperella",
-        "dipole": "ilsqr"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_ilsqr-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_ilsqr-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_ilsqr-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "romeo-fieldmap+matlab-sti-iharperella+matlab-sti-ilsqr",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 123.07096123695374,
-      "metrics": {
-        "nrmse": 263.73606699525897,
-        "nrmse_detrend": 1305.5261520943013,
-        "nrmse_tissue": 1268.1838747437162,
-        "nrmse_blood": 3741.429848919156,
-        "nrmse_dgm": 559.888468805912,
-        "dgm_linearity": 0.6549370987196397,
-        "calc_moment_dev": 51.374977469444275,
-        "calc_streak": null,
-        "correlation": 0.07637374849287686,
-        "xsim": 0.06230770955473335
-      },
-      "status": "ok",
-      "id": "romeo-fieldmap~matlab-sti-iharperella~matlab-sti-ilsqr-cmp",
-      "slug": "romeo-fieldmap+matlab-sti-iharperella+matlab-sti-ilsqr",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "romeo-fieldmap",
-        "bfr": "matlab-sti-iharperella",
-        "dipole": "matlab-sti-ilsqr"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_matlab-sti-ilsqr-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_matlab-sti-ilsqr-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_matlab-sti-ilsqr-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "romeo-fieldmap+matlab-sti-iharperella+matlab-sti-star",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 24.193938970565796,
-      "metrics": {
-        "nrmse": 248.03875006657154,
-        "nrmse_detrend": 1733.9359349217987,
-        "nrmse_tissue": 1496.5158077868361,
-        "nrmse_blood": 3476.0381118629134,
-        "nrmse_dgm": 842.6392865007052,
-        "dgm_linearity": 0.8475734555190596,
-        "calc_moment_dev": 51.374977469444275,
-        "calc_streak": null,
-        "correlation": 0.057576584714142856,
-        "xsim": 0.043981960979999825
-      },
-      "status": "ok",
-      "id": "romeo-fieldmap~matlab-sti-iharperella~matlab-sti-star-cmp",
-      "slug": "romeo-fieldmap+matlab-sti-iharperella+matlab-sti-star",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "romeo-fieldmap",
-        "bfr": "matlab-sti-iharperella",
-        "dipole": "matlab-sti-star"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_matlab-sti-star-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_matlab-sti-star-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_matlab-sti-star-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "romeo-fieldmap+matlab-sti-iharperella+matlab-tkd",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 11.840219736099243,
-      "metrics": {
-        "nrmse": 265.20836135675023,
-        "nrmse_detrend": 1530.7736798254136,
-        "nrmse_tissue": 1330.3820725771386,
-        "nrmse_blood": 4034.1462612800224,
-        "nrmse_dgm": 998.9783947473325,
-        "dgm_linearity": 0.8427795847809245,
-        "calc_moment_dev": 51.374977469444275,
-        "calc_streak": null,
-        "correlation": 0.06518749612251766,
-        "xsim": 0.04103746790033532
-      },
-      "status": "ok",
-      "id": "romeo-fieldmap~matlab-sti-iharperella~matlab-tkd-cmp",
-      "slug": "romeo-fieldmap+matlab-sti-iharperella+matlab-tkd",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "romeo-fieldmap",
-        "bfr": "matlab-sti-iharperella",
-        "dipole": "matlab-tkd"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_matlab-tkd-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_matlab-tkd-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_matlab-tkd-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "romeo-fieldmap+matlab-sti-iharperella+medi",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 53.36746621131897,
-      "metrics": {
-        "nrmse": 406.60561156501427,
-        "nrmse_detrend": 1871.277720714556,
-        "nrmse_tissue": 1584.7333441075175,
-        "nrmse_blood": 4075.3240835848533,
-        "nrmse_dgm": 1308.16566031487,
-        "dgm_linearity": 0.8735207297362504,
-        "calc_moment_dev": 51.374977469444275,
-        "calc_streak": null,
-        "correlation": 0.053363279755627074,
-        "xsim": 0.027043229207530578
-      },
-      "status": "ok",
-      "id": "romeo-fieldmap~matlab-sti-iharperella~medi-cmp",
-      "slug": "romeo-fieldmap+matlab-sti-iharperella+medi",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "romeo-fieldmap",
-        "bfr": "matlab-sti-iharperella",
-        "dipole": "medi"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_medi-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_medi-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_medi-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "romeo-fieldmap+matlab-sti-iharperella+nltv",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 206.52961540222168,
-      "metrics": {
-        "nrmse": 589.3855338752904,
-        "nrmse_detrend": 4672.740326259008,
-        "nrmse_tissue": 3188.5456600907223,
-        "nrmse_blood": 16880.3183895366,
-        "nrmse_dgm": 1063.9306969460356,
-        "dgm_linearity": 1.2321906510781084,
-        "calc_moment_dev": 51.374977469444275,
-        "calc_streak": null,
-        "correlation": 0.02139581944315221,
-        "xsim": 0.0018299005946154695
-      },
-      "status": "ok",
-      "id": "romeo-fieldmap~matlab-sti-iharperella~nltv-cmp",
-      "slug": "romeo-fieldmap+matlab-sti-iharperella+nltv",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "romeo-fieldmap",
-        "bfr": "matlab-sti-iharperella",
-        "dipole": "nltv"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_nltv-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_nltv-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_nltv-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "romeo-fieldmap+matlab-sti-iharperella+rts",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 11.526249647140503,
-      "metrics": {
-        "nrmse": 220.97023762745397,
-        "nrmse_detrend": 1192.6297565698576,
-        "nrmse_tissue": 1040.7922149838437,
-        "nrmse_blood": 3260.8537829947268,
-        "nrmse_dgm": 554.9154789708452,
-        "dgm_linearity": 0.6732685122077555,
-        "calc_moment_dev": 51.374977469444275,
-        "calc_streak": null,
-        "correlation": 0.0835551144003824,
-        "xsim": 0.057087496339599225
-      },
-      "status": "ok",
-      "id": "romeo-fieldmap~matlab-sti-iharperella~rts-cmp",
-      "slug": "romeo-fieldmap+matlab-sti-iharperella+rts",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "romeo-fieldmap",
-        "bfr": "matlab-sti-iharperella",
-        "dipole": "rts"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_rts-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_rts-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_rts-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "romeo-fieldmap+matlab-sti-iharperella+tikhonov",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 2.2303905487060547,
-      "metrics": {
-        "nrmse": 238.56621933681177,
-        "nrmse_detrend": 1482.353019098943,
-        "nrmse_tissue": 1288.2754463056249,
-        "nrmse_blood": 3802.0170622521573,
-        "nrmse_dgm": 873.1344932469622,
-        "dgm_linearity": 0.8625736539614871,
-        "calc_moment_dev": 51.374977469444275,
-        "calc_streak": null,
-        "correlation": 0.06730733349747427,
-        "xsim": 0.0476393942798877
-      },
-      "status": "ok",
-      "id": "romeo-fieldmap~matlab-sti-iharperella~tikhonov-cmp",
-      "slug": "romeo-fieldmap+matlab-sti-iharperella+tikhonov",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "romeo-fieldmap",
-        "bfr": "matlab-sti-iharperella",
-        "dipole": "tikhonov"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_tikhonov-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_tikhonov-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_tikhonov-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "romeo-fieldmap+matlab-sti-iharperella+tkd",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 2.746093273162842,
-      "metrics": {
-        "nrmse": 298.2332315286186,
-        "nrmse_detrend": 1709.050288886867,
-        "nrmse_tissue": 1480.998831387483,
-        "nrmse_blood": 4301.230531984107,
-        "nrmse_dgm": 1304.2969057557202,
-        "dgm_linearity": 0.882248554704549,
-        "calc_moment_dev": 51.374977469444275,
-        "calc_streak": null,
-        "correlation": 0.05841212284730221,
-        "xsim": 0.030717682813282084
-      },
-      "status": "ok",
-      "id": "romeo-fieldmap~matlab-sti-iharperella~tkd-cmp",
-      "slug": "romeo-fieldmap+matlab-sti-iharperella+tkd",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "romeo-fieldmap",
-        "bfr": "matlab-sti-iharperella",
-        "dipole": "tkd"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_tkd-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_tkd-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_tkd-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "romeo-fieldmap+matlab-sti-iharperella+tsvd",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 2.5952813625335693,
-      "metrics": {
-        "nrmse": 219.34467316451344,
-        "nrmse_detrend": 1275.0687847835075,
-        "nrmse_tissue": 1073.9303218594387,
-        "nrmse_blood": 3435.090786986255,
-        "nrmse_dgm": 578.9069598985653,
-        "dgm_linearity": 0.6989318364729799,
-        "calc_moment_dev": 51.374977469444275,
-        "calc_streak": null,
-        "correlation": 0.07818705300528872,
-        "xsim": 0.048763464967234924
-      },
-      "status": "ok",
-      "id": "romeo-fieldmap~matlab-sti-iharperella~tsvd-cmp",
-      "slug": "romeo-fieldmap+matlab-sti-iharperella+tsvd",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "romeo-fieldmap",
-        "bfr": "matlab-sti-iharperella",
-        "dipole": "tsvd"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_tsvd-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_tsvd-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_tsvd-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "romeo-fieldmap+matlab-sti-iharperella+tv",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 19.314937353134155,
-      "metrics": {
-        "nrmse": 334.2508113030571,
-        "nrmse_detrend": 2324.6373329228777,
-        "nrmse_tissue": 1999.6129850572524,
-        "nrmse_blood": 9155.787522377408,
-        "nrmse_dgm": 4651.49388799908,
-        "dgm_linearity": 0.9885836560551067,
-        "calc_moment_dev": 51.374977469444275,
-        "calc_streak": null,
-        "correlation": 0.04297771600561991,
-        "xsim": 0.022353403392767517
-      },
-      "status": "ok",
-      "id": "romeo-fieldmap~matlab-sti-iharperella~tv-cmp",
-      "slug": "romeo-fieldmap+matlab-sti-iharperella+tv",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "romeo-fieldmap",
-        "bfr": "matlab-sti-iharperella",
-        "dipole": "tv"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_tv-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_tv-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_tv-cmp__error.nii.gz"
       }
     },
     {
@@ -12433,6 +11254,1185 @@
         "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/nextqsm-cmp__recon.nii.gz",
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/nextqsm-cmp__truth.nii.gz",
         "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/nextqsm-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "matlab-sti-iharperella",
+      "track": "sim",
+      "stage": "unwrap+bfr",
+      "artifact": "localfield",
+      "kind": "field",
+      "image": null,
+      "runtime_s": 64.07767295837402,
+      "metrics": {
+        "nrmse": 1125.5791652717169,
+        "nrmse_detrend": 1643.0199433413025,
+        "correlation": 0.06075111560367345,
+        "xsim": 0.13309333955472819
+      },
+      "status": "ok",
+      "id": "matlab-sti-iharperella-iso",
+      "slug": "matlab-sti-iharperella",
+      "mode": "isolated",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/matlab-sti-iharperella-iso__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/matlab-sti-iharperella-iso__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/matlab-sti-iharperella-iso__error.nii.gz"
+      }
+    },
+    {
+      "name": "matlab-sti-iharperella+ilsqr",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 32.81613373756409,
+      "metrics": {
+        "nrmse": 931.3163785198929,
+        "nrmse_detrend": 1191.8799596497763,
+        "nrmse_tissue": 1288.1681900237168,
+        "nrmse_blood": 4548.833181722162,
+        "nrmse_dgm": 243.94054250288855,
+        "dgm_linearity": 1.6684319792893452,
+        "calc_moment_dev": 50.186030983924866,
+        "calc_streak": 0.1908517497818562,
+        "correlation": 0.0836073105742725,
+        "xsim": 0.009898865862407912
+      },
+      "status": "ok",
+      "id": "gt~matlab-sti-iharperella~ilsqr-cmp",
+      "slug": "matlab-sti-iharperella+ilsqr",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "matlab-sti-iharperella",
+        "dipole": "ilsqr"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_ilsqr-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_ilsqr-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_ilsqr-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "matlab-sti-iharperella+matlab-sti-ilsqr",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 115.16692042350769,
+      "metrics": {
+        "nrmse": 1255.28491694262,
+        "nrmse_detrend": 1609.3923147839869,
+        "nrmse_tissue": 1613.3707758789608,
+        "nrmse_blood": 5970.733905629207,
+        "nrmse_dgm": 133.11190744676227,
+        "dgm_linearity": 1.8123219555407246,
+        "calc_moment_dev": 41.10388660430908,
+        "calc_streak": 0.14561722165340768,
+        "correlation": 0.062015654459170344,
+        "xsim": 0.03217327080480129
+      },
+      "status": "ok",
+      "id": "gt~matlab-sti-iharperella~matlab-sti-ilsqr-cmp",
+      "slug": "matlab-sti-iharperella+matlab-sti-ilsqr",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "matlab-sti-iharperella",
+        "dipole": "matlab-sti-ilsqr"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_matlab-sti-ilsqr-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_matlab-sti-ilsqr-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_matlab-sti-ilsqr-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "matlab-sti-iharperella+matlab-sti-star",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 24.732799768447876,
+      "metrics": {
+        "nrmse": 1000.938562400871,
+        "nrmse_detrend": 1268.5709120426343,
+        "nrmse_tissue": 1456.866459718675,
+        "nrmse_blood": 6049.153327739423,
+        "nrmse_dgm": 263.9974705316618,
+        "dgm_linearity": 1.8258501293858442,
+        "calc_moment_dev": 49.57639169692993,
+        "calc_streak": 0.13964413465815337,
+        "correlation": 0.07858507564892182,
+        "xsim": 0.008295253139757479
+      },
+      "status": "ok",
+      "id": "gt~matlab-sti-iharperella~matlab-sti-star-cmp",
+      "slug": "matlab-sti-iharperella+matlab-sti-star",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "matlab-sti-iharperella",
+        "dipole": "matlab-sti-star"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_matlab-sti-star-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_matlab-sti-star-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_matlab-sti-star-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "matlab-sti-iharperella+matlab-tkd",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 13.091428756713867,
+      "metrics": {
+        "nrmse": 1067.7770147151305,
+        "nrmse_detrend": 1618.5535888286909,
+        "nrmse_tissue": 1858.5575673782455,
+        "nrmse_blood": 5587.670342993499,
+        "nrmse_dgm": 304.1479984838245,
+        "dgm_linearity": 1.3021585469434536,
+        "calc_moment_dev": 49.198007464408875,
+        "calc_streak": 0.12570205890195163,
+        "correlation": 0.06166597446521677,
+        "xsim": 0.0057579910110961835
+      },
+      "status": "ok",
+      "id": "gt~matlab-sti-iharperella~matlab-tkd-cmp",
+      "slug": "matlab-sti-iharperella+matlab-tkd",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "matlab-sti-iharperella",
+        "dipole": "matlab-tkd"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_matlab-tkd-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_matlab-tkd-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_matlab-tkd-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "matlab-sti-iharperella+medi",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 77.2707839012146,
+      "metrics": {
+        "nrmse": 1465.574006469773,
+        "nrmse_detrend": 1745.2634094079892,
+        "nrmse_tissue": 1729.0783174747462,
+        "nrmse_blood": 4850.636736733389,
+        "nrmse_dgm": 414.9901310174203,
+        "dgm_linearity": 0.9609877026990417,
+        "calc_moment_dev": 42.07588994503021,
+        "calc_streak": 0.08915612641832621,
+        "correlation": 0.057204115922114135,
+        "xsim": 0.010455455251800128
+      },
+      "status": "ok",
+      "id": "gt~matlab-sti-iharperella~medi-cmp",
+      "slug": "matlab-sti-iharperella+medi",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "matlab-sti-iharperella",
+        "dipole": "medi"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_medi-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_medi-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_medi-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "matlab-sti-iharperella+nltv",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 239.57623553276062,
+      "metrics": {
+        "nrmse": 2872.298478138965,
+        "nrmse_detrend": 6359.287483474139,
+        "nrmse_tissue": 5442.246017430621,
+        "nrmse_blood": 48822.35273136254,
+        "nrmse_dgm": 488.7432207631342,
+        "dgm_linearity": 5.6113078739213424,
+        "calc_moment_dev": 51.374977469444275,
+        "calc_streak": null,
+        "correlation": 0.015723088273734455,
+        "xsim": -0.0003874509200756258
+      },
+      "status": "ok",
+      "id": "gt~matlab-sti-iharperella~nltv-cmp",
+      "slug": "matlab-sti-iharperella+nltv",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "matlab-sti-iharperella",
+        "dipole": "nltv"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_nltv-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_nltv-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_nltv-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "matlab-sti-iharperella+rts",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 7.7134315967559814,
+      "metrics": {
+        "nrmse": 897.3443610383703,
+        "nrmse_detrend": 1299.5405820940275,
+        "nrmse_tissue": 1569.2820610283934,
+        "nrmse_blood": 4976.33355584161,
+        "nrmse_dgm": 218.5059764661278,
+        "dgm_linearity": 1.8387647679120676,
+        "calc_moment_dev": 48.72886288166046,
+        "calc_streak": 0.0789753885419549,
+        "correlation": 0.07672345330773105,
+        "xsim": 0.012504755678125716
+      },
+      "status": "ok",
+      "id": "gt~matlab-sti-iharperella~rts-cmp",
+      "slug": "matlab-sti-iharperella+rts",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "matlab-sti-iharperella",
+        "dipole": "rts"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_rts-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_rts-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_rts-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "matlab-sti-iharperella+tikhonov",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 2.004911422729492,
+      "metrics": {
+        "nrmse": 943.5361967483433,
+        "nrmse_detrend": 1550.8726393297443,
+        "nrmse_tissue": 1755.1667677508005,
+        "nrmse_blood": 5335.949088482254,
+        "nrmse_dgm": 249.83362466055019,
+        "dgm_linearity": 1.434718732646464,
+        "calc_moment_dev": 49.3852573633194,
+        "calc_streak": 0.11934931326040599,
+        "correlation": 0.06434620164885488,
+        "xsim": 0.00746435124609705
+      },
+      "status": "ok",
+      "id": "gt~matlab-sti-iharperella~tikhonov-cmp",
+      "slug": "matlab-sti-iharperella+tikhonov",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "matlab-sti-iharperella",
+        "dipole": "tikhonov"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_tikhonov-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_tikhonov-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_tikhonov-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "matlab-sti-iharperella+tkd",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 2.2415771484375,
+      "metrics": {
+        "nrmse": 1197.3138172142706,
+        "nrmse_detrend": 1778.070120188169,
+        "nrmse_tissue": 2057.228838553596,
+        "nrmse_blood": 6529.648962498469,
+        "nrmse_dgm": 326.24842383017926,
+        "dgm_linearity": 1.2607166745858591,
+        "calc_moment_dev": 49.00654757022858,
+        "calc_streak": 0.13520156717601584,
+        "correlation": 0.056152016700376596,
+        "xsim": 0.0031881279417007094
+      },
+      "status": "ok",
+      "id": "gt~matlab-sti-iharperella~tkd-cmp",
+      "slug": "matlab-sti-iharperella+tkd",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "matlab-sti-iharperella",
+        "dipole": "tkd"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_tkd-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_tkd-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_tkd-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "matlab-sti-iharperella+tsvd",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 2.175156593322754,
+      "metrics": {
+        "nrmse": 894.603134879536,
+        "nrmse_detrend": 1311.387223981497,
+        "nrmse_tissue": 1536.4518018302972,
+        "nrmse_blood": 5367.99036882664,
+        "nrmse_dgm": 228.4984099181964,
+        "dgm_linearity": 1.884753189612284,
+        "calc_moment_dev": 47.77895784378052,
+        "calc_streak": 0.17248154562829432,
+        "correlation": 0.07603438389928462,
+        "xsim": 0.00957413646594108
+      },
+      "status": "ok",
+      "id": "gt~matlab-sti-iharperella~tsvd-cmp",
+      "slug": "matlab-sti-iharperella+tsvd",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "matlab-sti-iharperella",
+        "dipole": "tsvd"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_tsvd-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_tsvd-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_tsvd-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "matlab-sti-iharperella+tv",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 32.24820256233215,
+      "metrics": {
+        "nrmse": 1795.2816874230411,
+        "nrmse_detrend": 5782.797909080366,
+        "nrmse_tissue": 7425.848187827859,
+        "nrmse_blood": 20453.077209556825,
+        "nrmse_dgm": 654.1792241008297,
+        "dgm_linearity": 2.498131517746362,
+        "calc_moment_dev": 48.92482078075409,
+        "calc_streak": 0.16461694888686224,
+        "correlation": 0.017290082259054998,
+        "xsim": -0.00018205855629265517
+      },
+      "status": "ok",
+      "id": "gt~matlab-sti-iharperella~tv-cmp",
+      "slug": "matlab-sti-iharperella+tv",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "matlab-sti-iharperella",
+        "dipole": "tv"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_tv-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_tv-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_matlab-sti-iharperella_tv-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-fieldmap+matlab-sti-iharperella+ilsqr",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 35.51050400733948,
+      "metrics": {
+        "nrmse": 931.3163785198929,
+        "nrmse_detrend": 1191.8799596497763,
+        "nrmse_tissue": 1288.1681900237168,
+        "nrmse_blood": 4548.833181722162,
+        "nrmse_dgm": 243.94054250288855,
+        "dgm_linearity": 1.6684319792893452,
+        "calc_moment_dev": 50.186030983924866,
+        "calc_streak": 0.1908517497818562,
+        "correlation": 0.0836073105742725,
+        "xsim": 0.009898865862407912
+      },
+      "status": "ok",
+      "id": "laplacian-fieldmap~matlab-sti-iharperella~ilsqr-cmp",
+      "slug": "laplacian-fieldmap+matlab-sti-iharperella+ilsqr",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-fieldmap",
+        "bfr": "matlab-sti-iharperella",
+        "dipole": "ilsqr"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_ilsqr-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_ilsqr-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_ilsqr-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-fieldmap+matlab-sti-iharperella+matlab-sti-ilsqr",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 123.58945441246033,
+      "metrics": {
+        "nrmse": 1255.28491694262,
+        "nrmse_detrend": 1609.3923147839869,
+        "nrmse_tissue": 1613.3707758789608,
+        "nrmse_blood": 5970.733905629207,
+        "nrmse_dgm": 133.11190744676227,
+        "dgm_linearity": 1.8123219555407246,
+        "calc_moment_dev": 41.10388660430908,
+        "calc_streak": 0.14561722165340768,
+        "correlation": 0.062015654459170344,
+        "xsim": 0.03217327080480129
+      },
+      "status": "ok",
+      "id": "laplacian-fieldmap~matlab-sti-iharperella~matlab-sti-ilsqr-cmp",
+      "slug": "laplacian-fieldmap+matlab-sti-iharperella+matlab-sti-ilsqr",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-fieldmap",
+        "bfr": "matlab-sti-iharperella",
+        "dipole": "matlab-sti-ilsqr"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_matlab-sti-ilsqr-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_matlab-sti-ilsqr-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_matlab-sti-ilsqr-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-fieldmap+matlab-sti-iharperella+matlab-sti-star",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 24.88835859298706,
+      "metrics": {
+        "nrmse": 1000.938562400871,
+        "nrmse_detrend": 1268.5709120426343,
+        "nrmse_tissue": 1456.866459718675,
+        "nrmse_blood": 6049.153327739423,
+        "nrmse_dgm": 263.9974705316618,
+        "dgm_linearity": 1.8258501293858442,
+        "calc_moment_dev": 49.57639169692993,
+        "calc_streak": 0.13964413465815337,
+        "correlation": 0.07858507564892182,
+        "xsim": 0.008295253139757479
+      },
+      "status": "ok",
+      "id": "laplacian-fieldmap~matlab-sti-iharperella~matlab-sti-star-cmp",
+      "slug": "laplacian-fieldmap+matlab-sti-iharperella+matlab-sti-star",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-fieldmap",
+        "bfr": "matlab-sti-iharperella",
+        "dipole": "matlab-sti-star"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_matlab-sti-star-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_matlab-sti-star-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_matlab-sti-star-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-fieldmap+matlab-sti-iharperella+matlab-tkd",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 10.813045978546143,
+      "metrics": {
+        "nrmse": 1067.7770147151305,
+        "nrmse_detrend": 1618.5535888286909,
+        "nrmse_tissue": 1858.5575673782455,
+        "nrmse_blood": 5587.670342993499,
+        "nrmse_dgm": 304.1479984838245,
+        "dgm_linearity": 1.3021585469434536,
+        "calc_moment_dev": 49.198007464408875,
+        "calc_streak": 0.12570205890195163,
+        "correlation": 0.06166597446521677,
+        "xsim": 0.0057579910110961835
+      },
+      "status": "ok",
+      "id": "laplacian-fieldmap~matlab-sti-iharperella~matlab-tkd-cmp",
+      "slug": "laplacian-fieldmap+matlab-sti-iharperella+matlab-tkd",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-fieldmap",
+        "bfr": "matlab-sti-iharperella",
+        "dipole": "matlab-tkd"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_matlab-tkd-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_matlab-tkd-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_matlab-tkd-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-fieldmap+matlab-sti-iharperella+medi",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 77.47797656059265,
+      "metrics": {
+        "nrmse": 1465.574006469773,
+        "nrmse_detrend": 1745.2634094079892,
+        "nrmse_tissue": 1729.0783174747462,
+        "nrmse_blood": 4850.636736733389,
+        "nrmse_dgm": 414.9901310174203,
+        "dgm_linearity": 0.9609877026990417,
+        "calc_moment_dev": 42.07588994503021,
+        "calc_streak": 0.08915612641832621,
+        "correlation": 0.057204115922114135,
+        "xsim": 0.010455455251800128
+      },
+      "status": "ok",
+      "id": "laplacian-fieldmap~matlab-sti-iharperella~medi-cmp",
+      "slug": "laplacian-fieldmap+matlab-sti-iharperella+medi",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-fieldmap",
+        "bfr": "matlab-sti-iharperella",
+        "dipole": "medi"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_medi-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_medi-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_medi-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-fieldmap+matlab-sti-iharperella+nltv",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 236.38193678855896,
+      "metrics": {
+        "nrmse": 2872.298478138965,
+        "nrmse_detrend": 6359.287483474139,
+        "nrmse_tissue": 5442.246017430621,
+        "nrmse_blood": 48822.35273136254,
+        "nrmse_dgm": 488.7432207631342,
+        "dgm_linearity": 5.6113078739213424,
+        "calc_moment_dev": 51.374977469444275,
+        "calc_streak": null,
+        "correlation": 0.015723088273734455,
+        "xsim": -0.0003874509200756258
+      },
+      "status": "ok",
+      "id": "laplacian-fieldmap~matlab-sti-iharperella~nltv-cmp",
+      "slug": "laplacian-fieldmap+matlab-sti-iharperella+nltv",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-fieldmap",
+        "bfr": "matlab-sti-iharperella",
+        "dipole": "nltv"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_nltv-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_nltv-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_nltv-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-fieldmap+matlab-sti-iharperella+rts",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 7.8997838497161865,
+      "metrics": {
+        "nrmse": 897.3443610383703,
+        "nrmse_detrend": 1299.5405820940275,
+        "nrmse_tissue": 1569.2820610283934,
+        "nrmse_blood": 4976.33355584161,
+        "nrmse_dgm": 218.5059764661278,
+        "dgm_linearity": 1.8387647679120676,
+        "calc_moment_dev": 48.72886288166046,
+        "calc_streak": 0.0789753885419549,
+        "correlation": 0.07672345330773105,
+        "xsim": 0.012504755678125716
+      },
+      "status": "ok",
+      "id": "laplacian-fieldmap~matlab-sti-iharperella~rts-cmp",
+      "slug": "laplacian-fieldmap+matlab-sti-iharperella+rts",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-fieldmap",
+        "bfr": "matlab-sti-iharperella",
+        "dipole": "rts"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_rts-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_rts-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_rts-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-fieldmap+matlab-sti-iharperella+tikhonov",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 2.4605705738067627,
+      "metrics": {
+        "nrmse": 943.5361967483433,
+        "nrmse_detrend": 1550.8726393297443,
+        "nrmse_tissue": 1755.1667677508005,
+        "nrmse_blood": 5335.949088482254,
+        "nrmse_dgm": 249.83362466055019,
+        "dgm_linearity": 1.434718732646464,
+        "calc_moment_dev": 49.3852573633194,
+        "calc_streak": 0.11934931326040599,
+        "correlation": 0.06434620164885488,
+        "xsim": 0.00746435124609705
+      },
+      "status": "ok",
+      "id": "laplacian-fieldmap~matlab-sti-iharperella~tikhonov-cmp",
+      "slug": "laplacian-fieldmap+matlab-sti-iharperella+tikhonov",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-fieldmap",
+        "bfr": "matlab-sti-iharperella",
+        "dipole": "tikhonov"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_tikhonov-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_tikhonov-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_tikhonov-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-fieldmap+matlab-sti-iharperella+tkd",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 2.4087843894958496,
+      "metrics": {
+        "nrmse": 1197.3138172142706,
+        "nrmse_detrend": 1778.070120188169,
+        "nrmse_tissue": 2057.228838553596,
+        "nrmse_blood": 6529.648962498469,
+        "nrmse_dgm": 326.24842383017926,
+        "dgm_linearity": 1.2607166745858591,
+        "calc_moment_dev": 49.00654757022858,
+        "calc_streak": 0.13520156717601584,
+        "correlation": 0.056152016700376596,
+        "xsim": 0.0031881279417007094
+      },
+      "status": "ok",
+      "id": "laplacian-fieldmap~matlab-sti-iharperella~tkd-cmp",
+      "slug": "laplacian-fieldmap+matlab-sti-iharperella+tkd",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-fieldmap",
+        "bfr": "matlab-sti-iharperella",
+        "dipole": "tkd"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_tkd-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_tkd-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_tkd-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-fieldmap+matlab-sti-iharperella+tsvd",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 1.9975409507751465,
+      "metrics": {
+        "nrmse": 894.603134879536,
+        "nrmse_detrend": 1311.387223981497,
+        "nrmse_tissue": 1536.4518018302972,
+        "nrmse_blood": 5367.99036882664,
+        "nrmse_dgm": 228.4984099181964,
+        "dgm_linearity": 1.884753189612284,
+        "calc_moment_dev": 47.77895784378052,
+        "calc_streak": 0.17248154562829432,
+        "correlation": 0.07603438389928462,
+        "xsim": 0.00957413646594108
+      },
+      "status": "ok",
+      "id": "laplacian-fieldmap~matlab-sti-iharperella~tsvd-cmp",
+      "slug": "laplacian-fieldmap+matlab-sti-iharperella+tsvd",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-fieldmap",
+        "bfr": "matlab-sti-iharperella",
+        "dipole": "tsvd"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_tsvd-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_tsvd-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_tsvd-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-fieldmap+matlab-sti-iharperella+tv",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 31.580697298049927,
+      "metrics": {
+        "nrmse": 1795.2816874230411,
+        "nrmse_detrend": 5782.797909080366,
+        "nrmse_tissue": 7425.848187827859,
+        "nrmse_blood": 20453.077209556825,
+        "nrmse_dgm": 654.1792241008297,
+        "dgm_linearity": 2.498131517746362,
+        "calc_moment_dev": 48.92482078075409,
+        "calc_streak": 0.16461694888686224,
+        "correlation": 0.017290082259054998,
+        "xsim": -0.00018205855629265517
+      },
+      "status": "ok",
+      "id": "laplacian-fieldmap~matlab-sti-iharperella~tv-cmp",
+      "slug": "laplacian-fieldmap+matlab-sti-iharperella+tv",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-fieldmap",
+        "bfr": "matlab-sti-iharperella",
+        "dipole": "tv"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_tv-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_tv-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_matlab-sti-iharperella_tv-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-fieldmap+matlab-sti-iharperella+ilsqr",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 36.40200328826904,
+      "metrics": {
+        "nrmse": 931.3163785198929,
+        "nrmse_detrend": 1191.8799596497763,
+        "nrmse_tissue": 1288.1681900237168,
+        "nrmse_blood": 4548.833181722162,
+        "nrmse_dgm": 243.94054250288855,
+        "dgm_linearity": 1.6684319792893452,
+        "calc_moment_dev": 50.186030983924866,
+        "calc_streak": 0.1908517497818562,
+        "correlation": 0.0836073105742725,
+        "xsim": 0.009898865862407912
+      },
+      "status": "ok",
+      "id": "romeo-fieldmap~matlab-sti-iharperella~ilsqr-cmp",
+      "slug": "romeo-fieldmap+matlab-sti-iharperella+ilsqr",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-fieldmap",
+        "bfr": "matlab-sti-iharperella",
+        "dipole": "ilsqr"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_ilsqr-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_ilsqr-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_ilsqr-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-fieldmap+matlab-sti-iharperella+matlab-sti-ilsqr",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 125.82383441925049,
+      "metrics": {
+        "nrmse": 1255.28491694262,
+        "nrmse_detrend": 1609.3923147839869,
+        "nrmse_tissue": 1613.3707758789608,
+        "nrmse_blood": 5970.733905629207,
+        "nrmse_dgm": 133.11190744676227,
+        "dgm_linearity": 1.8123219555407246,
+        "calc_moment_dev": 41.10388660430908,
+        "calc_streak": 0.14561722165340768,
+        "correlation": 0.062015654459170344,
+        "xsim": 0.03217327080480129
+      },
+      "status": "ok",
+      "id": "romeo-fieldmap~matlab-sti-iharperella~matlab-sti-ilsqr-cmp",
+      "slug": "romeo-fieldmap+matlab-sti-iharperella+matlab-sti-ilsqr",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-fieldmap",
+        "bfr": "matlab-sti-iharperella",
+        "dipole": "matlab-sti-ilsqr"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_matlab-sti-ilsqr-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_matlab-sti-ilsqr-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_matlab-sti-ilsqr-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-fieldmap+matlab-sti-iharperella+matlab-sti-star",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 26.52444839477539,
+      "metrics": {
+        "nrmse": 1000.938562400871,
+        "nrmse_detrend": 1268.5709120426343,
+        "nrmse_tissue": 1456.866459718675,
+        "nrmse_blood": 6049.153327739423,
+        "nrmse_dgm": 263.9974705316618,
+        "dgm_linearity": 1.8258501293858442,
+        "calc_moment_dev": 49.57639169692993,
+        "calc_streak": 0.13964413465815337,
+        "correlation": 0.07858507564892182,
+        "xsim": 0.008295253139757479
+      },
+      "status": "ok",
+      "id": "romeo-fieldmap~matlab-sti-iharperella~matlab-sti-star-cmp",
+      "slug": "romeo-fieldmap+matlab-sti-iharperella+matlab-sti-star",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-fieldmap",
+        "bfr": "matlab-sti-iharperella",
+        "dipole": "matlab-sti-star"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_matlab-sti-star-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_matlab-sti-star-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_matlab-sti-star-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-fieldmap+matlab-sti-iharperella+matlab-tkd",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 11.26822566986084,
+      "metrics": {
+        "nrmse": 1067.7770147151305,
+        "nrmse_detrend": 1618.5535888286909,
+        "nrmse_tissue": 1858.5575673782455,
+        "nrmse_blood": 5587.670342993499,
+        "nrmse_dgm": 304.1479984838245,
+        "dgm_linearity": 1.3021585469434536,
+        "calc_moment_dev": 49.198007464408875,
+        "calc_streak": 0.12570205890195163,
+        "correlation": 0.06166597446521677,
+        "xsim": 0.0057579910110961835
+      },
+      "status": "ok",
+      "id": "romeo-fieldmap~matlab-sti-iharperella~matlab-tkd-cmp",
+      "slug": "romeo-fieldmap+matlab-sti-iharperella+matlab-tkd",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-fieldmap",
+        "bfr": "matlab-sti-iharperella",
+        "dipole": "matlab-tkd"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_matlab-tkd-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_matlab-tkd-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_matlab-tkd-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-fieldmap+matlab-sti-iharperella+medi",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 77.8490538597107,
+      "metrics": {
+        "nrmse": 1465.574006469773,
+        "nrmse_detrend": 1745.2634094079892,
+        "nrmse_tissue": 1729.0783174747462,
+        "nrmse_blood": 4850.636736733389,
+        "nrmse_dgm": 414.9901310174203,
+        "dgm_linearity": 0.9609877026990417,
+        "calc_moment_dev": 42.07588994503021,
+        "calc_streak": 0.08915612641832621,
+        "correlation": 0.057204115922114135,
+        "xsim": 0.010455455251800128
+      },
+      "status": "ok",
+      "id": "romeo-fieldmap~matlab-sti-iharperella~medi-cmp",
+      "slug": "romeo-fieldmap+matlab-sti-iharperella+medi",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-fieldmap",
+        "bfr": "matlab-sti-iharperella",
+        "dipole": "medi"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_medi-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_medi-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_medi-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-fieldmap+matlab-sti-iharperella+nltv",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 226.42146849632263,
+      "metrics": {
+        "nrmse": 2872.298478138965,
+        "nrmse_detrend": 6359.287483474139,
+        "nrmse_tissue": 5442.246017430621,
+        "nrmse_blood": 48822.35273136254,
+        "nrmse_dgm": 488.7432207631342,
+        "dgm_linearity": 5.6113078739213424,
+        "calc_moment_dev": 51.374977469444275,
+        "calc_streak": null,
+        "correlation": 0.015723088273734455,
+        "xsim": -0.0003874509200756258
+      },
+      "status": "ok",
+      "id": "romeo-fieldmap~matlab-sti-iharperella~nltv-cmp",
+      "slug": "romeo-fieldmap+matlab-sti-iharperella+nltv",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-fieldmap",
+        "bfr": "matlab-sti-iharperella",
+        "dipole": "nltv"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_nltv-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_nltv-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_nltv-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-fieldmap+matlab-sti-iharperella+rts",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 8.26270318031311,
+      "metrics": {
+        "nrmse": 897.3443610383703,
+        "nrmse_detrend": 1299.5405820940275,
+        "nrmse_tissue": 1569.2820610283934,
+        "nrmse_blood": 4976.33355584161,
+        "nrmse_dgm": 218.5059764661278,
+        "dgm_linearity": 1.8387647679120676,
+        "calc_moment_dev": 48.72886288166046,
+        "calc_streak": 0.0789753885419549,
+        "correlation": 0.07672345330773105,
+        "xsim": 0.012504755678125716
+      },
+      "status": "ok",
+      "id": "romeo-fieldmap~matlab-sti-iharperella~rts-cmp",
+      "slug": "romeo-fieldmap+matlab-sti-iharperella+rts",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-fieldmap",
+        "bfr": "matlab-sti-iharperella",
+        "dipole": "rts"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_rts-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_rts-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_rts-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-fieldmap+matlab-sti-iharperella+tikhonov",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 2.1727092266082764,
+      "metrics": {
+        "nrmse": 943.5361967483433,
+        "nrmse_detrend": 1550.8726393297443,
+        "nrmse_tissue": 1755.1667677508005,
+        "nrmse_blood": 5335.949088482254,
+        "nrmse_dgm": 249.83362466055019,
+        "dgm_linearity": 1.434718732646464,
+        "calc_moment_dev": 49.3852573633194,
+        "calc_streak": 0.11934931326040599,
+        "correlation": 0.06434620164885488,
+        "xsim": 0.00746435124609705
+      },
+      "status": "ok",
+      "id": "romeo-fieldmap~matlab-sti-iharperella~tikhonov-cmp",
+      "slug": "romeo-fieldmap+matlab-sti-iharperella+tikhonov",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-fieldmap",
+        "bfr": "matlab-sti-iharperella",
+        "dipole": "tikhonov"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_tikhonov-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_tikhonov-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_tikhonov-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-fieldmap+matlab-sti-iharperella+tkd",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 2.6166951656341553,
+      "metrics": {
+        "nrmse": 1197.3138172142706,
+        "nrmse_detrend": 1778.070120188169,
+        "nrmse_tissue": 2057.228838553596,
+        "nrmse_blood": 6529.648962498469,
+        "nrmse_dgm": 326.24842383017926,
+        "dgm_linearity": 1.2607166745858591,
+        "calc_moment_dev": 49.00654757022858,
+        "calc_streak": 0.13520156717601584,
+        "correlation": 0.056152016700376596,
+        "xsim": 0.0031881279417007094
+      },
+      "status": "ok",
+      "id": "romeo-fieldmap~matlab-sti-iharperella~tkd-cmp",
+      "slug": "romeo-fieldmap+matlab-sti-iharperella+tkd",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-fieldmap",
+        "bfr": "matlab-sti-iharperella",
+        "dipole": "tkd"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_tkd-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_tkd-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_tkd-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-fieldmap+matlab-sti-iharperella+tsvd",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 2.1554596424102783,
+      "metrics": {
+        "nrmse": 894.603134879536,
+        "nrmse_detrend": 1311.387223981497,
+        "nrmse_tissue": 1536.4518018302972,
+        "nrmse_blood": 5367.99036882664,
+        "nrmse_dgm": 228.4984099181964,
+        "dgm_linearity": 1.884753189612284,
+        "calc_moment_dev": 47.77895784378052,
+        "calc_streak": 0.17248154562829432,
+        "correlation": 0.07603438389928462,
+        "xsim": 0.00957413646594108
+      },
+      "status": "ok",
+      "id": "romeo-fieldmap~matlab-sti-iharperella~tsvd-cmp",
+      "slug": "romeo-fieldmap+matlab-sti-iharperella+tsvd",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-fieldmap",
+        "bfr": "matlab-sti-iharperella",
+        "dipole": "tsvd"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_tsvd-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_tsvd-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_tsvd-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-fieldmap+matlab-sti-iharperella+tv",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 32.525251388549805,
+      "metrics": {
+        "nrmse": 1795.2816874230411,
+        "nrmse_detrend": 5782.797909080366,
+        "nrmse_tissue": 7425.848187827859,
+        "nrmse_blood": 20453.077209556825,
+        "nrmse_dgm": 654.1792241008297,
+        "dgm_linearity": 2.498131517746362,
+        "calc_moment_dev": 48.92482078075409,
+        "calc_streak": 0.16461694888686224,
+        "correlation": 0.017290082259054998,
+        "xsim": -0.00018205855629265517
+      },
+      "status": "ok",
+      "id": "romeo-fieldmap~matlab-sti-iharperella~tv-cmp",
+      "slug": "romeo-fieldmap+matlab-sti-iharperella+tv",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-fieldmap",
+        "bfr": "matlab-sti-iharperella",
+        "dipole": "tv"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_tv-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_tv-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_tv-cmp__error.nii.gz"
       }
     }
   ]
