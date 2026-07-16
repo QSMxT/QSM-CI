@@ -6,8 +6,21 @@ description: >
   QSMART: vessel-aware two-stage reconstruction. Consumes the total field and produces
   susceptibility, doing its own spatially-dependent background field removal and vasculature-aware
   regularization (Frangi vessel detection + SDF).
-citation: Yaghmaie et al., NMR Biomed 2021
-doi: 10.1002/nbm.4442
+citation: Yaghmaie et al., NeuroImage 2021
+authors:
+- name: Negin Yaghmaie
+- name: Warda T. Syeda
+- name: Chengchuan Wu
+- name: Yicheng Zhang
+- name: Tracy D. Zhang
+- name: Emma L. Burrows
+- name: Amy Brodtmann
+- name: Bradford A. Moffat
+- name: David K. Wright
+- name: Rebecca Glarin
+- name: Scott Kolbe
+- name: Leigh A. Johnston
+doi: 10.1016/j.neuroimage.2020.117701
 code_url: https://github.com/astewartau/QSM.rs
 license: MIT
 image: ghcr.io/astewartau/qsm-ci/qsmxt:v9.4.0
