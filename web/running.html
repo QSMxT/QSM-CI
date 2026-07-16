@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>QSM-CI — Running methods</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { darkMode: "class", theme: { extend: { fontFamily: { sans: ["Inter", "system-ui", "sans-serif"] } } } };</script>
+  <script src="js/app.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <style>.hljs { background: transparent; }</style>
+</head>
+<body class="font-sans text-gray-900 bg-gray-50 antialiased dark:bg-gray-950 dark:text-gray-100">
+  <header id="site-nav"></header>
+
+  <main class="mx-auto max-w-3xl px-6 py-10">
+    <h1 class="text-3xl font-bold tracking-tight">Running methods</h1>
+    <p class="mt-2 text-gray-600 dark:text-gray-400">
+      Every algorithm on the leaderboard runs with the same <code>qsm-ci</code> command-line tool.
+      Point it at your own NIfTIs and, if you hand it a ground truth,
+      it scores the output with the <em>exact</em> code the leaderboard uses, so your numbers match.
+    </p>
+
+    <section class="mt-8 space-y-3">
+      <h2 class="text-lg font-semibold">1. Install</h2>
+      <pre class="overflow-x-auto rounded-xl bg-gray-900 p-4 text-sm text-gray-100"><code>pip install qsm-ci       # (a virtualenv or conda env is recommended)
+qsm-ci doctor            # check docker / gh / deps</code></pre>
+      <p class="text-sm text-gray-600 dark:text-gray-400">Runs with Docker by default; add
+        <code>--runner podman</code>, <code>--runner apptainer</code>, or <code>--runner local</code>.</p>
+    </section>
+
+    <section class="mt-8 space-y-3">
+      <h2 class="text-lg font-semibold">2. See what you can run</h2>
+      <pre class="overflow-x-auto rounded-xl bg-gray-900 p-4 text-sm text-gray-100"><code>qsm-ci list              # every reference method, grouped by stage</code></pre>
+      <p class="text-sm text-gray-600 dark:text-gray-400">Run <code>qsm-ci</code> from a
+        <a href="https://github.com/QSMxT/QSM-CI" class="text-emerald-600 hover:underline">QSM-CI checkout</a>
+        so it can find the <code>algorithms/</code> folder.</p>
+    </section>
+
+    <section class="mt-8 space-y-3">
+      <h2 class="text-lg font-semibold">3. Run one method</h2>
+      <p class="text-sm text-gray-600 dark:text-gray-400">The flags a method needs depend on its stage.
+        Run it with no inputs and it prints exactly what to provide:</p>
+      <pre class="overflow-x-auto rounded-xl bg-gray-900 p-4 text-sm text-gray-100"><code>qsm-ci run sharp                                    # prints the inputs this stage needs
+qsm-ci run sharp --totalfield tf.nii.gz --mask m.nii.gz --params params.json</code></pre>
+      <p class="text-sm text-gray-600 dark:text-gray-400">Add <code>--truth localfield.nii.gz</code>
+        (and <code>--seg dseg.nii.gz</code> for a χ map) to score it. Uncompressed <code>.nii</code> is fine.</p>
+    </section>
+
+    <section class="mt-8 space-y-3">
+      <h2 class="text-lg font-semibold">4. Acquisition parameters</h2>
+      <p class="text-sm text-gray-600 dark:text-gray-400">Three interchangeable ways — whichever you have:</p>
+      <pre class="overflow-x-auto rounded-xl bg-gray-900 p-4 text-sm text-gray-100"><code># a) a params.json          --params params.json
+# b) a BIDS MEGRE sidecar   --params sub-1_echo-1_part-phase_MEGRE.json
+# c) individual flags       --te 0.004 0.012 0.02 0.028 --field-strength 7 --b0-dir 0 0 1</code></pre>
+      <p class="text-sm text-gray-600 dark:text-gray-400">B0 direction defaults to <code>0 0 1</code> and
+        voxel size is read from the NIfTI header, so BFR/dipole methods often need nothing extra.</p>
+      <p class="text-sm text-gray-600 dark:text-gray-400"><span class="font-medium">Multi-echo / BIDS:</span>
+        <code>--phase</code> and <code>--magnitude</code> take either one 4D file or the per-echo 3D files
+        directly — they're stacked to 4D for you (ordered by <code>echo-&lt;n&gt;</code>):</p>
+      <pre class="overflow-x-auto rounded-xl bg-gray-900 p-4 text-sm text-gray-100"><code>qsm-ci run romeo-fieldmap \
+  --phase sub-1_echo-*_part-phase_MEGRE.nii.gz \
+  --magnitude sub-1_echo-*_part-mag_MEGRE.nii.gz \
+  --mask mask.nii.gz --te 0.004 0.012 0.02 0.028 --field-strength 7</code></pre>
+    </section>
+
+    <section class="mt-8 space-y-3">
+      <h2 class="text-lg font-semibold">5. Chain stages into a pipeline</h2>
+      <p class="text-sm text-gray-600 dark:text-gray-400">Each stage's output is the next one's input, so a
+        background-removal → dipole pipeline is just two runs (mix and match any methods):</p>
+      <pre class="overflow-x-auto rounded-xl bg-gray-900 p-4 text-sm text-gray-100"><code>qsm-ci run lbv   --totalfield tf.nii.gz --mask m.nii.gz --params p.json -o localfield.nii.gz
+qsm-ci run rts   --localfield localfield.nii.gz --mask m.nii.gz --params p.json -o chimap.nii.gz \
+                 --truth chimap_groundtruth.nii.gz</code></pre>
+      <p class="text-sm text-gray-600 dark:text-gray-400">Every per-method page has the exact commands for that
+        run — open one from the <a href="leaderboard.html" class="text-emerald-600 hover:underline">leaderboard</a>.</p>
+    </section>
+
+    <section class="mt-8 space-y-3">
+      <h2 class="text-lg font-semibold">6. Use it from a workflow engine</h2>
+      <p class="text-sm text-gray-600 dark:text-gray-400">Every method is one <code>qsm-ci run</code> away, so
+        it drops into any pipeline engine. <a href="https://nipype.readthedocs.io" class="text-emerald-600 hover:underline">nipype</a>
+        and <a href="https://pydra.readthedocs.io" class="text-emerald-600 hover:underline">Pydra</a> have
+        ready-to-import interfaces; for CWL, Snakemake, and Nextflow, <code>qsm-ci interface</code> generates a
+        wrapper from the stage contract. Either way it calls <code>qsm-ci run</code>, so the container runs underneath.</p>
+
+      <p class="text-sm text-gray-600 dark:text-gray-400">Each tab is a complete <strong>phase → χ</strong>
+        pipeline (<code>romeo-fieldmap → vsharp → rts</code>) — the actual
+        <a href="https://github.com/QSMxT/QSM-CI/tree/main/examples/workflow-engines" class="text-emerald-600 hover:underline">examples/workflow-engines/</a>
+        files CI runs on the real challenge data. Swap any slug to mix and match methods.</p>
+
+      <div data-tabs class="overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800">
+        <div role="tablist" class="flex flex-wrap gap-1 border-b border-gray-200 bg-gray-50 p-2 dark:border-gray-800 dark:bg-gray-900/40">
+          <button data-tab="nipype" data-example="nipype_pipeline.py" data-lang="python" class="tab-btn rounded-lg px-3 py-1.5 text-sm font-medium">nipype</button>
+          <button data-tab="pydra" data-example="pydra_pipeline.py" data-lang="python" class="tab-btn rounded-lg px-3 py-1.5 text-sm font-medium">Pydra</button>
+          <button data-tab="cwl" data-example="pipeline.cwl" data-lang="yaml" class="tab-btn rounded-lg px-3 py-1.5 text-sm font-medium">CWL</button>
+          <button data-tab="snakemake" data-example="Snakefile" data-lang="python" class="tab-btn rounded-lg px-3 py-1.5 text-sm font-medium">Snakemake</button>
+          <button data-tab="nextflow" data-example="pipeline.nf" data-lang="groovy" class="tab-btn rounded-lg px-3 py-1.5 text-sm font-medium">Nextflow</button>
+        </div>
+        <div class="space-y-3 p-4">
+          <div data-panel="nipype"><pre class="overflow-x-auto rounded-xl bg-gray-900 p-4 text-sm text-gray-100"><code>pip install "qsm-ci[nipype]"
+python nipype_pipeline.py --phase phase.nii.gz --magnitude mag.nii.gz \
+    --mask mask.nii.gz --params params.json --out chimap.nii.gz</code></pre></div>
+          <div data-panel="pydra" hidden><pre class="overflow-x-auto rounded-xl bg-gray-900 p-4 text-sm text-gray-100"><code>pip install "qsm-ci[pydra]"
+python pydra_pipeline.py --phase phase.nii.gz --magnitude mag.nii.gz \
+    --mask mask.nii.gz --params params.json --out chimap.nii.gz</code></pre></div>
+          <div data-panel="cwl" hidden><pre class="overflow-x-auto rounded-xl bg-gray-900 p-4 text-sm text-gray-100"><code>export QSMCI_ALGORITHMS=/path/to/QSM-CI/algorithms
+cwltool --preserve-environment QSMCI_ALGORITHMS pipeline.cwl \
+    --phase phase.nii.gz --magnitude mag.nii.gz --mask mask.nii.gz --params params.json</code></pre></div>
+          <div data-panel="snakemake" hidden><pre class="overflow-x-auto rounded-xl bg-gray-900 p-4 text-sm text-gray-100"><code># with phase/magnitude/mask/params.json in the working dir:
+snakemake -c1 chimap.nii.gz</code></pre></div>
+          <div data-panel="nextflow" hidden><pre class="overflow-x-auto rounded-xl bg-gray-900 p-4 text-sm text-gray-100"><code>export QSMCI_ALGORITHMS=/path/to/QSM-CI/algorithms
+nextflow run pipeline.nf --phase phase.nii.gz --magnitude mag.nii.gz \
+    --mask mask.nii.gz --params params.json --outdir results</code></pre></div>
+        </div>
+        <details open class="group border-t border-gray-200 dark:border-gray-800">
+          <summary class="flex cursor-pointer select-none items-center gap-2 bg-gray-50 px-4 py-2.5 text-xs font-medium text-gray-600 dark:bg-gray-900/40 dark:text-gray-400">
+            <svg class="h-3.5 w-3.5 shrink-0 text-gray-400 transition-transform group-open:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
+            <span class="group-open:hidden">Show</span><span class="hidden group-open:inline">Hide</span> the pipeline file&nbsp;<code id="example-name"></code>
+          </summary>
+          <pre class="max-h-[28rem] overflow-auto bg-gray-900 p-4 text-xs leading-relaxed"><code id="example-file" class="text-gray-100">loading…</code></pre>
+        </details>
+      </div>
+      <p class="mt-4 text-sm text-gray-600 dark:text-gray-400">Regenerate or customize the declarative
+        wrappers with <code>qsm-ci interface &lt;engine&gt; --pipeline romeo-fieldmap,vsharp,rts</code>. CWL and
+        Nextflow run each step in an isolated work dir, so set <code>QSMCI_ALGORITHMS</code> for a bare slug to resolve.</p>
+    </section>
+
+    <section class="mt-8 space-y-3">
+      <h2 class="text-lg font-semibold">7. Need test data?</h2>
+      <p class="text-sm text-gray-600 dark:text-gray-400">Generate a phantom with
+        <a href="https://github.com/astewartau/qsm-forward" class="text-emerald-600 hover:underline">qsm-forward</a> —
+        it forward-simulates, so it comes <em>with</em> ground truth:</p>
+      <pre class="overflow-x-auto rounded-xl bg-gray-900 p-4 text-sm text-gray-100"><code>qsm-forward simple bids/     # fields / χ / mask / dseg land under bids/derivatives/qsm-forward/</code></pre>
+      <p class="text-xs text-gray-500 dark:text-gray-500">The leaderboard is scored on the
+        <strong>Realistic In Silico Head Phantom</strong> (<code>qsm-forward head …</code>) from the QSM
+        Reconstruction Challenge 2.0 — Marques et al., <em>Magn Reson Med</em> 2021;86(1):526–542
+        (<a href="https://doi.org/10.1002/mrm.28716" class="text-emerald-600 hover:underline">doi:10.1002/mrm.28716</a>).
+        Please cite it if you use QSM-CI results.</p>
+    </section>
+
+    <div class="mt-10">
+      <a href="submit.html" class="rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700">Submit your own method →</a>
+    </div>
+    <p class="mt-6 text-sm text-gray-500 dark:text-gray-500">
+      Prefer the source? The CLI and reference methods live in the
+      <a href="https://github.com/QSMxT/QSM-CI" class="text-emerald-600 hover:underline">QSM-CI repository</a>.
+    </p>
+  </main>
+
+  <footer id="site-footer"></footer>
+
+  <script>
+    // Minimal tab controller: toggles [data-panel] visibility + active-button styling.
+    const ACTIVE = ["bg-emerald-600", "text-white"];
+    const INACTIVE = ["text-gray-600", "dark:text-gray-400", "hover:bg-gray-100", "dark:hover:bg-gray-800"];
+    document.querySelectorAll("[data-tabs]").forEach((group) => {
+      const buttons = group.querySelectorAll("[data-tab]");
+      const panels = group.querySelectorAll("[data-panel]");
+      const fileEl = document.getElementById("example-file");
+      const nameEl = document.getElementById("example-name");
+      const show = (name) => {
+        let example = null;
+        buttons.forEach((b) => {
+          const on = b.dataset.tab === name;
+          b.classList.toggle(ACTIVE[0], on); b.classList.toggle(ACTIVE[1], on);
+          INACTIVE.forEach((c) => b.classList.toggle(c, !on));
+          if (on) example = b.dataset.example;
+        });
+        panels.forEach((p) => { p.hidden = p.dataset.panel !== name; });
+        const lang = [...buttons].find((b) => b.dataset.tab === name)?.dataset.lang || "plaintext";
+        if (example && fileEl) {
+          if (nameEl) nameEl.textContent = example;
+          fileEl.textContent = "loading…";
+          fetch(`examples/workflow-engines/${example}`)
+            .then((r) => (r.ok ? r.text() : Promise.reject(r.status)))
+            .then((t) => {
+              fileEl.removeAttribute("data-highlighted");
+              fileEl.className = `language-${lang} text-gray-100`;
+              fileEl.textContent = t;
+              if (window.hljs) window.hljs.highlightElement(fileEl);
+            })
+            .catch(() => { fileEl.textContent = `See examples/workflow-engines/${example} in the repo.`; });
+        }
+      };
+      buttons.forEach((b) => b.addEventListener("click", () => show(b.dataset.tab)));
+      if (buttons.length) show(buttons[0].dataset.tab);
+    });
+  </script>
+</body>
+</html>
