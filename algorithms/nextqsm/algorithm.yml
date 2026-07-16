@@ -1,0 +1,21 @@
+name: NeXtQSM
+slug: nextqsm
+stage: bfr+dipole
+description: >
+  NeXtQSM — a complete deep-learning pipeline for data-consistent QSM trained with hybrid data.
+  Consumes the total (tissue) field and produces susceptibility, doing its own background field
+  removal (a U-Net) followed by a data-consistent variational-network dipole inversion. Runs
+  CPU-only with plain TensorFlow-CPU (no GPU, no ONNX).
+authors:
+- name: Cognolato F.
+- name: O'Brien K.
+- name: Jin J.
+- name: Robinson S.
+- name: Laun F.B.
+- name: Barth M.
+- name: Bollmann S.
+doi: 10.1016/j.media.2022.102700
+code_url: https://github.com/QSMxT/nextqsm
+license: MIT
+image: ghcr.io/astewartau/qsm-ci/nextqsm:v1
+run: bash run.sh

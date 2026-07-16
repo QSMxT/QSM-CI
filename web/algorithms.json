@@ -305,6 +305,27 @@
       ]
     },
     {
+      "slug": "nextqsm",
+      "name": "NeXtQSM",
+      "stage": "bfr+dipole",
+      "engine": null,
+      "description": "NeXtQSM \u2014 a complete deep-learning pipeline for data-consistent QSM trained with hybrid data. Consumes the total (tissue) field and produces susceptibility, doing its own background field removal (a U-Net) followed by a data-consistent variational-network dipole inversion. Runs CPU-only with plain TensorFlow-CPU (no GPU, no ONNX).",
+      "citation": null,
+      "doi": "10.1016/j.media.2022.102700",
+      "code_url": "https://github.com/QSMxT/nextqsm",
+      "license": "MIT",
+      "authors": [
+        "Cognolato F.",
+        "O'Brien K.",
+        "Jin J.",
+        "Robinson S.",
+        "Laun F.B.",
+        "Barth M.",
+        "Bollmann S."
+      ],
+      "parameters": []
+    },
+    {
       "slug": "nltv",
       "name": "NLTV",
       "stage": "dipole",
