@@ -57,7 +57,10 @@ jobs:
       - name: Install scorer deps
         # `.` installs the qsm-ci CLI onto PATH — pipeline.py --runner docker delegates each run to
         # `qsm-ci run …` (one run path, no CI-side container builds).
-        run: pip install -r eval/requirements.txt .
+        run: |
+          pip install -r eval/requirements.txt
+          pip install --upgrade setuptools setuptools_scm wheel   # runner's build tools are too old for setuptools-scm
+          pip install --no-build-isolation .                       # build the CLI with the upgraded tools
 
       - name: Cache OSF dataset zip
         uses: actions/cache@v4
