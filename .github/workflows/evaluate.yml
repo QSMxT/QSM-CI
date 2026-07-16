@@ -74,13 +74,17 @@ jobs:
         run: scripts/fetch_dataset.sh "$TRACK" data/${TRACK}/scoring
 
       - name: Isolated evaluation (build env with network, run offline, mount code)
+        # --fail-on-dnf: a submission that can't run (missing/broken run.sh, crash, wrong output
+        # artifact) turns this check RED instead of merging green and silently scoring DNF on main.
         run: |
           python scripts/pipeline.py \
             --dataset data/${TRACK}/scoring \
-            --mode isolated --runner docker --only "${{ matrix.slug }}" --track "$TRACK"
+            --mode isolated --runner docker --only "${{ matrix.slug }}" --track "$TRACK" --fail-on-dnf
 
       - name: Comment metrics on PR
-        if: github.event_name == 'pull_request'
+        # always() so a DNF (which fails the eval step above) still posts its metrics/DNF comment —
+        # the job stays red, but the PR shows why.
+        if: ${{ always() && github.event_name == 'pull_request' }}
         env:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

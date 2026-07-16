@@ -224,6 +224,10 @@ def main() -> None:
     ap.add_argument("--work", type=Path, default=ROOT / ".work")
     ap.add_argument("--emit-volumes", action="store_true",
                     help="write recon/truth/error NIfTIs per run under results/<id>/ for the web viewer")
+    ap.add_argument("--fail-on-dnf", action="store_true",
+                    help="exit non-zero if any run in scope DNF'd (a submission that couldn't run or "
+                         "produce a scorable artifact). Used by evaluate.yml so a broken run.sh / crash "
+                         "surfaces as a red check instead of a silently-swallowed DNF.")
     args = ap.parse_args()
 
     global EMIT_VOLUMES
@@ -401,6 +405,13 @@ def main() -> None:
 
     total = flush_index(runs)
     print(f"\nmerged {len(runs)} runs into results/index.json ({total} total)")
+
+    if args.fail_on_dnf:
+        dnfs = [r for r in runs if r.get("status") == "DNF"]
+        if dnfs:
+            print(f"\n::error::{len(dnfs)} run(s) DNF'd: "
+                  f"{', '.join(sorted({r['slug'] for r in dnfs}))}")
+            sys.exit(1)
 
 
 if __name__ == "__main__":
