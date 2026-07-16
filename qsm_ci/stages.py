@@ -10,7 +10,7 @@ from __future__ import annotations
 STAGES = {
     "field-mapping": {"consumes": ["phase", "magnitude", "mask", "params"], "produces": ["totalfield"]},
     "bfr": {"consumes": ["totalfield", "mask", "params"], "produces": ["localfield"]},
-    "dipole": {"consumes": ["localfield", "mask", "params", "magnitude"], "produces": ["chimap"]},
+    "dipole": {"consumes": ["localfield", "mask", "params"], "produces": ["chimap"]},
     "unwrap+bfr": {"consumes": ["phase", "magnitude", "mask", "params"], "produces": ["localfield"]},
     "bfr+dipole": {"consumes": ["totalfield", "mask", "params", "magnitude"], "produces": ["chimap"]},
     "end-to-end": {"consumes": ["phase", "magnitude", "mask", "params"], "produces": ["chimap"]},
