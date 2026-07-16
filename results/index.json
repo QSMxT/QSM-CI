@@ -28,64 +28,6 @@
       "mode": "isolated"
     },
     {
-      "name": "my-method",
-      "track": "sim",
-      "stage": "dipole",
-      "mode": "isolated",
-      "status": "DNF",
-      "metrics": {},
-      "id": "my-method-iso",
-      "slug": "my-method"
-    },
-    {
-      "name": "harperella",
-      "track": "sim",
-      "stage": "unwrap+bfr",
-      "artifact": "localfield",
-      "kind": "field",
-      "image": null,
-      "runtime_s": 37.70561504364014,
-      "metrics": {
-        "nrmse": 828.9443366161119,
-        "nrmse_detrend": 155.94491021172436,
-        "correlation": 0.5398012153957886,
-        "xsim": 0.012142972212155838
-      },
-      "status": "ok",
-      "id": "harperella-iso",
-      "slug": "harperella",
-      "mode": "isolated",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/harperella-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/harperella-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/harperella-iso__error.nii.gz"
-      }
-    },
-    {
-      "name": "iharperella",
-      "track": "sim",
-      "stage": "unwrap+bfr",
-      "artifact": "localfield",
-      "kind": "field",
-      "image": null,
-      "runtime_s": 39.55141258239746,
-      "metrics": {
-        "nrmse": 570.3071762439072,
-        "nrmse_detrend": 109.90665024278937,
-        "correlation": 0.6729854277275986,
-        "xsim": 0.0716134414911478
-      },
-      "status": "ok",
-      "id": "iharperella-iso",
-      "slug": "iharperella",
-      "mode": "isolated",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/iharperella-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/iharperella-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/iharperella-iso__error.nii.gz"
-      }
-    },
-    {
       "name": "ilsqr",
       "track": "sim",
       "stage": "dipole",
@@ -743,776 +685,6 @@
         "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/vsharp-iso__recon.nii.gz",
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/vsharp-iso__truth.nii.gz",
         "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/vsharp-iso__error.nii.gz"
-      }
-    },
-    {
-      "name": "harperella+ilsqr",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 27.518676280975342,
-      "metrics": {
-        "nrmse": 674.6668424631931,
-        "nrmse_detrend": 212.34006271072226,
-        "nrmse_tissue": 239.7959968142964,
-        "nrmse_blood": 653.5187865680557,
-        "nrmse_dgm": 79.46970964577936,
-        "dgm_linearity": 4.870945355334721,
-        "calc_moment_dev": 60.27929127216339,
-        "calc_streak": 0.13710535359321105,
-        "correlation": 0.42605955161130304,
-        "xsim": 0.015806632934467123
-      },
-      "status": "ok",
-      "id": "gt~harperella~ilsqr-cmp",
-      "slug": "harperella+ilsqr",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "gt",
-        "bfr": "harperella",
-        "dipole": "ilsqr"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_ilsqr-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_ilsqr-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_ilsqr-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "harperella+matlab-sti-ilsqr",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 101.90107536315918,
-      "metrics": {
-        "nrmse": 735.2739520691226,
-        "nrmse_detrend": 162.23732646443779,
-        "nrmse_tissue": 171.20008122044993,
-        "nrmse_blood": 477.6733705278899,
-        "nrmse_dgm": 61.23263509323067,
-        "dgm_linearity": 6.670435951834834,
-        "calc_moment_dev": 136.7010189294815,
-        "calc_streak": 0.15077637513325887,
-        "correlation": 0.524712487244386,
-        "xsim": 0.01692132083906072
-      },
-      "status": "ok",
-      "id": "gt~harperella~matlab-sti-ilsqr-cmp",
-      "slug": "harperella+matlab-sti-ilsqr",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "gt",
-        "bfr": "harperella",
-        "dipole": "matlab-sti-ilsqr"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_matlab-sti-ilsqr-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_matlab-sti-ilsqr-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_matlab-sti-ilsqr-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "harperella+matlab-sti-star",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 26.431701183319092,
-      "metrics": {
-        "nrmse": 1120.588674622283,
-        "nrmse_detrend": 270.23885975370916,
-        "nrmse_tissue": 314.8516850952154,
-        "nrmse_blood": 882.1210436685423,
-        "nrmse_dgm": 70.46065018007705,
-        "dgm_linearity": 6.742711318990631,
-        "calc_moment_dev": 126.51754170656204,
-        "calc_streak": 0.17798176211418962,
-        "correlation": 0.34704435794228233,
-        "xsim": 0.01071822515677343
-      },
-      "status": "ok",
-      "id": "gt~harperella~matlab-sti-star-cmp",
-      "slug": "harperella+matlab-sti-star",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "gt",
-        "bfr": "harperella",
-        "dipole": "matlab-sti-star"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_matlab-sti-star-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_matlab-sti-star-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_matlab-sti-star-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "harperella+matlab-tkd",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 12.353469848632812,
-      "metrics": {
-        "nrmse": 664.3554880828761,
-        "nrmse_detrend": 152.91013944287886,
-        "nrmse_tissue": 154.151784501903,
-        "nrmse_blood": 501.5943801678286,
-        "nrmse_dgm": 65.35231204729288,
-        "dgm_linearity": 5.902874337822201,
-        "calc_moment_dev": 96.16139149665833,
-        "calc_streak": 0.16415453163449875,
-        "correlation": 0.5473271682299082,
-        "xsim": 0.019785628524590464
-      },
-      "status": "ok",
-      "id": "gt~harperella~matlab-tkd-cmp",
-      "slug": "harperella+matlab-tkd",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "gt",
-        "bfr": "harperella",
-        "dipole": "matlab-tkd"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_matlab-tkd-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_matlab-tkd-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_matlab-tkd-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "harperella+medi",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 51.27964186668396,
-      "metrics": {
-        "nrmse": 825.990160877153,
-        "nrmse_detrend": 196.82221289303212,
-        "nrmse_tissue": 206.19532889482096,
-        "nrmse_blood": 676.8037110151816,
-        "nrmse_dgm": 107.6053943316222,
-        "dgm_linearity": 5.131223025329349,
-        "calc_moment_dev": 47.419827342033386,
-        "calc_streak": 0.10240039697588967,
-        "correlation": 0.45296199666467934,
-        "xsim": 0.012203456971962475
-      },
-      "status": "ok",
-      "id": "gt~harperella~medi-cmp",
-      "slug": "harperella+medi",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "gt",
-        "bfr": "harperella",
-        "dipole": "medi"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_medi-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_medi-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_medi-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "harperella+nltv",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 57.827571630477905,
-      "metrics": {
-        "nrmse": 1098.240341137477,
-        "nrmse_detrend": 215.97215596356133,
-        "nrmse_tissue": 235.9053640311417,
-        "nrmse_blood": 700.1480334212864,
-        "nrmse_dgm": 75.1504417530321,
-        "dgm_linearity": 6.567931261700284,
-        "calc_moment_dev": 92.47432708740234,
-        "calc_streak": 0.18828398943278776,
-        "correlation": 0.42016817051262506,
-        "xsim": 0.00904855810395116
-      },
-      "status": "ok",
-      "id": "gt~harperella~nltv-cmp",
-      "slug": "harperella+nltv",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "gt",
-        "bfr": "harperella",
-        "dipole": "nltv"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_nltv-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_nltv-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_nltv-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "harperella+rts",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 7.829620122909546,
-      "metrics": {
-        "nrmse": 613.3871908967524,
-        "nrmse_detrend": 148.89238202604668,
-        "nrmse_tissue": 150.81551215876186,
-        "nrmse_blood": 418.9102199076812,
-        "nrmse_dgm": 64.27131104667238,
-        "dgm_linearity": 6.176200808650341,
-        "calc_moment_dev": 132.33722645044327,
-        "calc_streak": 0.12920110495076287,
-        "correlation": 0.5575471690669555,
-        "xsim": 0.024797574077777496
-      },
-      "status": "ok",
-      "id": "gt~harperella~rts-cmp",
-      "slug": "harperella+rts",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "gt",
-        "bfr": "harperella",
-        "dipole": "rts"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_rts-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_rts-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_rts-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "harperella+tikhonov",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 1.9607758522033691,
-      "metrics": {
-        "nrmse": 595.9080001539686,
-        "nrmse_detrend": 152.25960263324106,
-        "nrmse_tissue": 153.27778700064087,
-        "nrmse_blood": 469.1806745907601,
-        "nrmse_dgm": 65.41385773987857,
-        "dgm_linearity": 5.350536173085589,
-        "calc_moment_dev": 91.37040996551514,
-        "calc_streak": 0.15560792460787715,
-        "correlation": 0.5489619763009946,
-        "xsim": 0.0221436705900112
-      },
-      "status": "ok",
-      "id": "gt~harperella~tikhonov-cmp",
-      "slug": "harperella+tikhonov",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "gt",
-        "bfr": "harperella",
-        "dipole": "tikhonov"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_tikhonov-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_tikhonov-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_tikhonov-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "harperella+tkd",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 2.108785629272461,
-      "metrics": {
-        "nrmse": 721.3243821783683,
-        "nrmse_detrend": 155.5706784043634,
-        "nrmse_tissue": 156.134931098972,
-        "nrmse_blood": 515.775317714329,
-        "nrmse_dgm": 65.58606229648142,
-        "dgm_linearity": 6.319368436516464,
-        "calc_moment_dev": 86.55687582492828,
-        "calc_streak": 0.1627858390231828,
-        "correlation": 0.5407203947079322,
-        "xsim": 0.01797336776250014
-      },
-      "status": "ok",
-      "id": "gt~harperella~tkd-cmp",
-      "slug": "harperella+tkd",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "gt",
-        "bfr": "harperella",
-        "dipole": "tkd"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_tkd-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_tkd-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_tkd-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "harperella+tsvd",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 2.592212677001953,
-      "metrics": {
-        "nrmse": 608.1977914920627,
-        "nrmse_detrend": 156.17970517709375,
-        "nrmse_tissue": 156.76271218454818,
-        "nrmse_blood": 449.48457716164774,
-        "nrmse_dgm": 70.62039656793397,
-        "dgm_linearity": 5.414711196048217,
-        "calc_moment_dev": 114.86391013860703,
-        "calc_streak": 0.15735122825275386,
-        "correlation": 0.5392257840628915,
-        "xsim": 0.023293196492331622
-      },
-      "status": "ok",
-      "id": "gt~harperella~tsvd-cmp",
-      "slug": "harperella+tsvd",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "gt",
-        "bfr": "harperella",
-        "dipole": "tsvd"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_tsvd-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_tsvd-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_tsvd-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "harperella+tv",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 11.371825456619263,
-      "metrics": {
-        "nrmse": 1040.462716461973,
-        "nrmse_detrend": 209.18835493718103,
-        "nrmse_tissue": 226.99884583500864,
-        "nrmse_blood": 697.5814642718713,
-        "nrmse_dgm": 67.81775386648894,
-        "dgm_linearity": 6.6549399832735805,
-        "calc_moment_dev": 103.29233586788177,
-        "calc_streak": 0.18679688575432316,
-        "correlation": 0.4312919058414444,
-        "xsim": 0.012082160216582675
-      },
-      "status": "ok",
-      "id": "gt~harperella~tv-cmp",
-      "slug": "harperella+tv",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "gt",
-        "bfr": "harperella",
-        "dipole": "tv"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_tv-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_tv-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_tv-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "iharperella+ilsqr",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 31.76101565361023,
-      "metrics": {
-        "nrmse": 452.4732781460091,
-        "nrmse_detrend": 141.82820207421975,
-        "nrmse_tissue": 139.0780472562528,
-        "nrmse_blood": 420.96085378493467,
-        "nrmse_dgm": 83.26924324884908,
-        "dgm_linearity": 3.2170376510266845,
-        "calc_moment_dev": 61.726108610630035,
-        "calc_streak": 0.1318249123713762,
-        "correlation": 0.5762445668031797,
-        "xsim": 0.03806369827220807
-      },
-      "status": "ok",
-      "id": "gt~iharperella~ilsqr-cmp",
-      "slug": "iharperella+ilsqr",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "gt",
-        "bfr": "iharperella",
-        "dipole": "ilsqr"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_ilsqr-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_ilsqr-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_ilsqr-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "iharperella+matlab-sti-ilsqr",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 117.3170759677887,
-      "metrics": {
-        "nrmse": 515.4880538338554,
-        "nrmse_detrend": 120.28943771851206,
-        "nrmse_tissue": 114.88050315788851,
-        "nrmse_blood": 346.9014451403688,
-        "nrmse_dgm": 71.99525696993878,
-        "dgm_linearity": 4.288770311280436,
-        "calc_moment_dev": 140.89708107709885,
-        "calc_streak": 0.1360388535701012,
-        "correlation": 0.639273966937764,
-        "xsim": 0.03741355619297444
-      },
-      "status": "ok",
-      "id": "gt~iharperella~matlab-sti-ilsqr-cmp",
-      "slug": "iharperella+matlab-sti-ilsqr",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "gt",
-        "bfr": "iharperella",
-        "dipole": "matlab-sti-ilsqr"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_matlab-sti-ilsqr-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_matlab-sti-ilsqr-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_matlab-sti-ilsqr-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "iharperella+matlab-sti-star",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 26.42409372329712,
-      "metrics": {
-        "nrmse": 470.55547988188596,
-        "nrmse_detrend": 137.05476141397526,
-        "nrmse_tissue": 134.99377463826997,
-        "nrmse_blood": 390.9720583576838,
-        "nrmse_dgm": 78.15775678542651,
-        "dgm_linearity": 3.4147902907186394,
-        "calc_moment_dev": 123.16750651597977,
-        "calc_streak": 0.16689375537877296,
-        "correlation": 0.5894193232640301,
-        "xsim": 0.038595910189594296
-      },
-      "status": "ok",
-      "id": "gt~iharperella~matlab-sti-star-cmp",
-      "slug": "iharperella+matlab-sti-star",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "gt",
-        "bfr": "iharperella",
-        "dipole": "matlab-sti-star"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_matlab-sti-star-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_matlab-sti-star-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_matlab-sti-star-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "iharperella+matlab-tkd",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 12.320326328277588,
-      "metrics": {
-        "nrmse": 513.633942749932,
-        "nrmse_detrend": 128.7427870959015,
-        "nrmse_tissue": 123.81143570715385,
-        "nrmse_blood": 382.3270774212397,
-        "nrmse_dgm": 75.75360827736702,
-        "dgm_linearity": 3.8915839205857434,
-        "calc_moment_dev": 113.28861081600189,
-        "calc_streak": 0.15060627107251962,
-        "correlation": 0.6134310742400653,
-        "xsim": 0.0372432313934852
-      },
-      "status": "ok",
-      "id": "gt~iharperella~matlab-tkd-cmp",
-      "slug": "iharperella+matlab-tkd",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "gt",
-        "bfr": "iharperella",
-        "dipole": "matlab-tkd"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_matlab-tkd-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_matlab-tkd-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_matlab-tkd-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "iharperella+medi",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 47.18847465515137,
-      "metrics": {
-        "nrmse": 591.6872968940542,
-        "nrmse_detrend": 132.65503794292377,
-        "nrmse_tissue": 127.73005584628974,
-        "nrmse_blood": 375.3676714768868,
-        "nrmse_dgm": 79.32075435658132,
-        "dgm_linearity": 4.091247602773833,
-        "calc_moment_dev": 156.55020588636398,
-        "calc_streak": 0.13589711937623852,
-        "correlation": 0.6019580653222841,
-        "xsim": 0.02911247809484483
-      },
-      "status": "ok",
-      "id": "gt~iharperella~medi-cmp",
-      "slug": "iharperella+medi",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "gt",
-        "bfr": "iharperella",
-        "dipole": "medi"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_medi-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_medi-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_medi-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "iharperella+nltv",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 180.0865342617035,
-      "metrics": {
-        "nrmse": 806.3698303526272,
-        "nrmse_detrend": 180.99908261176662,
-        "nrmse_tissue": 179.96553888167549,
-        "nrmse_blood": 462.09133704215884,
-        "nrmse_dgm": 104.026050894322,
-        "dgm_linearity": 4.42723608652996,
-        "calc_moment_dev": 51.641881108284,
-        "calc_streak": 0.1467661975280299,
-        "correlation": 0.48359049918055125,
-        "xsim": 0.011285364587480114
-      },
-      "status": "ok",
-      "id": "gt~iharperella~nltv-cmp",
-      "slug": "iharperella+nltv",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "gt",
-        "bfr": "iharperella",
-        "dipole": "nltv"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_nltv-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_nltv-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_nltv-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "iharperella+rts",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 9.239444732666016,
-      "metrics": {
-        "nrmse": 481.80887983345366,
-        "nrmse_detrend": 130.07337290856705,
-        "nrmse_tissue": 128.67704441320961,
-        "nrmse_blood": 368.4361088092045,
-        "nrmse_dgm": 71.00197203851586,
-        "dgm_linearity": 4.423787900436629,
-        "calc_moment_dev": 137.65887701511383,
-        "calc_streak": 0.12186878322517036,
-        "correlation": 0.6094946173273056,
-        "xsim": 0.039454450362856774
-      },
-      "status": "ok",
-      "id": "gt~iharperella~rts-cmp",
-      "slug": "iharperella+rts",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "gt",
-        "bfr": "iharperella",
-        "dipole": "rts"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_rts-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_rts-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_rts-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "iharperella+tikhonov",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 2.5854766368865967,
-      "metrics": {
-        "nrmse": 457.82960056183305,
-        "nrmse_detrend": 127.78761191865918,
-        "nrmse_tissue": 122.95840250069354,
-        "nrmse_blood": 379.8210031238082,
-        "nrmse_dgm": 75.47030369886356,
-        "dgm_linearity": 3.4495635818433037,
-        "calc_moment_dev": 100.52572798728943,
-        "calc_streak": 0.14759983778003116,
-        "correlation": 0.6162788464893665,
-        "xsim": 0.045265903748413966
-      },
-      "status": "ok",
-      "id": "gt~iharperella~tikhonov-cmp",
-      "slug": "iharperella+tikhonov",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "gt",
-        "bfr": "iharperella",
-        "dipole": "tikhonov"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_tikhonov-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_tikhonov-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_tikhonov-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "iharperella+tkd",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 2.4095005989074707,
-      "metrics": {
-        "nrmse": 551.6619227284918,
-        "nrmse_detrend": 130.77310245638927,
-        "nrmse_tissue": 125.47956238885126,
-        "nrmse_blood": 390.2072868689693,
-        "nrmse_dgm": 76.53075078280524,
-        "dgm_linearity": 4.025134531143605,
-        "calc_moment_dev": 100.65491223335266,
-        "calc_streak": 0.14962963561701725,
-        "correlation": 0.6074387592415933,
-        "xsim": 0.0330090598332563
-      },
-      "status": "ok",
-      "id": "gt~iharperella~tkd-cmp",
-      "slug": "iharperella+tkd",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "gt",
-        "bfr": "iharperella",
-        "dipole": "tkd"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_tkd-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_tkd-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_tkd-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "iharperella+tsvd",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 2.36146879196167,
-      "metrics": {
-        "nrmse": 473.8580190149874,
-        "nrmse_detrend": 136.27557755548602,
-        "nrmse_tissue": 134.2432108975887,
-        "nrmse_blood": 387.97621173734285,
-        "nrmse_dgm": 78.71751759716811,
-        "dgm_linearity": 3.72267394263611,
-        "calc_moment_dev": 123.94596600532532,
-        "calc_streak": 0.1495304654800067,
-        "correlation": 0.5916120733644481,
-        "xsim": 0.037253411330050355
-      },
-      "status": "ok",
-      "id": "gt~iharperella~tsvd-cmp",
-      "slug": "iharperella+tsvd",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "gt",
-        "bfr": "iharperella",
-        "dipole": "tsvd"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_tsvd-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_tsvd-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_tsvd-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "iharperella+tv",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 23.177767515182495,
-      "metrics": {
-        "nrmse": 640.1848358227993,
-        "nrmse_detrend": 142.03052858356298,
-        "nrmse_tissue": 138.75616430809126,
-        "nrmse_blood": 414.76385660421505,
-        "nrmse_dgm": 81.68311708168258,
-        "dgm_linearity": 4.226309139963212,
-        "calc_moment_dev": 64.48176229000092,
-        "calc_streak": 0.14354407438878672,
-        "correlation": 0.5756958794536539,
-        "xsim": 0.024402455298293234
-      },
-      "status": "ok",
-      "id": "gt~iharperella~tv-cmp",
-      "slug": "iharperella+tv",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "gt",
-        "bfr": "iharperella",
-        "dipole": "tv"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_tv-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_tv-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_tv-cmp__error.nii.gz"
       }
     },
     {
@@ -4596,776 +3768,6 @@
       }
     },
     {
-      "name": "laplacian-fieldmap+harperella+ilsqr",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 26.73883819580078,
-      "metrics": {
-        "nrmse": 674.6668424631931,
-        "nrmse_detrend": 212.34006271072226,
-        "nrmse_tissue": 239.7959968142964,
-        "nrmse_blood": 653.5187865680557,
-        "nrmse_dgm": 79.46970964577936,
-        "dgm_linearity": 4.870945355334721,
-        "calc_moment_dev": 60.27929127216339,
-        "calc_streak": 0.13710535359321105,
-        "correlation": 0.42605955161130304,
-        "xsim": 0.015806632934467123
-      },
-      "status": "ok",
-      "id": "laplacian-fieldmap~harperella~ilsqr-cmp",
-      "slug": "laplacian-fieldmap+harperella+ilsqr",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "laplacian-fieldmap",
-        "bfr": "harperella",
-        "dipole": "ilsqr"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_ilsqr-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_ilsqr-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_ilsqr-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "laplacian-fieldmap+harperella+matlab-sti-ilsqr",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 107.05804324150085,
-      "metrics": {
-        "nrmse": 735.2739520691226,
-        "nrmse_detrend": 162.23732646443779,
-        "nrmse_tissue": 171.20008122044993,
-        "nrmse_blood": 477.6733705278899,
-        "nrmse_dgm": 61.23263509323067,
-        "dgm_linearity": 6.670435951834834,
-        "calc_moment_dev": 136.7010189294815,
-        "calc_streak": 0.15077637513325887,
-        "correlation": 0.524712487244386,
-        "xsim": 0.01692132083906072
-      },
-      "status": "ok",
-      "id": "laplacian-fieldmap~harperella~matlab-sti-ilsqr-cmp",
-      "slug": "laplacian-fieldmap+harperella+matlab-sti-ilsqr",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "laplacian-fieldmap",
-        "bfr": "harperella",
-        "dipole": "matlab-sti-ilsqr"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_matlab-sti-ilsqr-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_matlab-sti-ilsqr-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_matlab-sti-ilsqr-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "laplacian-fieldmap+harperella+matlab-sti-star",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 27.070528745651245,
-      "metrics": {
-        "nrmse": 1120.588674622283,
-        "nrmse_detrend": 270.23885975370916,
-        "nrmse_tissue": 314.8516850952154,
-        "nrmse_blood": 882.1210436685423,
-        "nrmse_dgm": 70.46065018007705,
-        "dgm_linearity": 6.742711318990631,
-        "calc_moment_dev": 126.51754170656204,
-        "calc_streak": 0.17798176211418962,
-        "correlation": 0.34704435794228233,
-        "xsim": 0.01071822515677343
-      },
-      "status": "ok",
-      "id": "laplacian-fieldmap~harperella~matlab-sti-star-cmp",
-      "slug": "laplacian-fieldmap+harperella+matlab-sti-star",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "laplacian-fieldmap",
-        "bfr": "harperella",
-        "dipole": "matlab-sti-star"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_matlab-sti-star-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_matlab-sti-star-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_matlab-sti-star-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "laplacian-fieldmap+harperella+matlab-tkd",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 10.82479977607727,
-      "metrics": {
-        "nrmse": 664.3554880828761,
-        "nrmse_detrend": 152.91013944287886,
-        "nrmse_tissue": 154.151784501903,
-        "nrmse_blood": 501.5943801678286,
-        "nrmse_dgm": 65.35231204729288,
-        "dgm_linearity": 5.902874337822201,
-        "calc_moment_dev": 96.16139149665833,
-        "calc_streak": 0.16415453163449875,
-        "correlation": 0.5473271682299082,
-        "xsim": 0.019785628524590464
-      },
-      "status": "ok",
-      "id": "laplacian-fieldmap~harperella~matlab-tkd-cmp",
-      "slug": "laplacian-fieldmap+harperella+matlab-tkd",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "laplacian-fieldmap",
-        "bfr": "harperella",
-        "dipole": "matlab-tkd"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_matlab-tkd-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_matlab-tkd-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_matlab-tkd-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "laplacian-fieldmap+harperella+medi",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 48.912108182907104,
-      "metrics": {
-        "nrmse": 825.990160877153,
-        "nrmse_detrend": 196.82221289303212,
-        "nrmse_tissue": 206.19532889482096,
-        "nrmse_blood": 676.8037110151816,
-        "nrmse_dgm": 107.6053943316222,
-        "dgm_linearity": 5.131223025329349,
-        "calc_moment_dev": 47.419827342033386,
-        "calc_streak": 0.10240039697588967,
-        "correlation": 0.45296199666467934,
-        "xsim": 0.012203456971962475
-      },
-      "status": "ok",
-      "id": "laplacian-fieldmap~harperella~medi-cmp",
-      "slug": "laplacian-fieldmap+harperella+medi",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "laplacian-fieldmap",
-        "bfr": "harperella",
-        "dipole": "medi"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_medi-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_medi-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_medi-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "laplacian-fieldmap+harperella+nltv",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 59.99101424217224,
-      "metrics": {
-        "nrmse": 1098.240341137477,
-        "nrmse_detrend": 215.97215596356133,
-        "nrmse_tissue": 235.9053640311417,
-        "nrmse_blood": 700.1480334212864,
-        "nrmse_dgm": 75.1504417530321,
-        "dgm_linearity": 6.567931261700284,
-        "calc_moment_dev": 92.47432708740234,
-        "calc_streak": 0.18828398943278776,
-        "correlation": 0.42016817051262506,
-        "xsim": 0.00904855810395116
-      },
-      "status": "ok",
-      "id": "laplacian-fieldmap~harperella~nltv-cmp",
-      "slug": "laplacian-fieldmap+harperella+nltv",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "laplacian-fieldmap",
-        "bfr": "harperella",
-        "dipole": "nltv"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_nltv-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_nltv-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_nltv-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "laplacian-fieldmap+harperella+rts",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 7.9948015213012695,
-      "metrics": {
-        "nrmse": 613.3871908967524,
-        "nrmse_detrend": 148.89238202604668,
-        "nrmse_tissue": 150.81551215876186,
-        "nrmse_blood": 418.9102199076812,
-        "nrmse_dgm": 64.27131104667238,
-        "dgm_linearity": 6.176200808650341,
-        "calc_moment_dev": 132.33722645044327,
-        "calc_streak": 0.12920110495076287,
-        "correlation": 0.5575471690669555,
-        "xsim": 0.024797574077777496
-      },
-      "status": "ok",
-      "id": "laplacian-fieldmap~harperella~rts-cmp",
-      "slug": "laplacian-fieldmap+harperella+rts",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "laplacian-fieldmap",
-        "bfr": "harperella",
-        "dipole": "rts"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_rts-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_rts-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_rts-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "laplacian-fieldmap+harperella+tikhonov",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 2.5518481731414795,
-      "metrics": {
-        "nrmse": 595.9080001539686,
-        "nrmse_detrend": 152.25960263324106,
-        "nrmse_tissue": 153.27778700064087,
-        "nrmse_blood": 469.1806745907601,
-        "nrmse_dgm": 65.41385773987857,
-        "dgm_linearity": 5.350536173085589,
-        "calc_moment_dev": 91.37040996551514,
-        "calc_streak": 0.15560792460787715,
-        "correlation": 0.5489619763009946,
-        "xsim": 0.0221436705900112
-      },
-      "status": "ok",
-      "id": "laplacian-fieldmap~harperella~tikhonov-cmp",
-      "slug": "laplacian-fieldmap+harperella+tikhonov",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "laplacian-fieldmap",
-        "bfr": "harperella",
-        "dipole": "tikhonov"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_tikhonov-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_tikhonov-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_tikhonov-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "laplacian-fieldmap+harperella+tkd",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 2.6195731163024902,
-      "metrics": {
-        "nrmse": 721.3243821783683,
-        "nrmse_detrend": 155.5706784043634,
-        "nrmse_tissue": 156.134931098972,
-        "nrmse_blood": 515.775317714329,
-        "nrmse_dgm": 65.58606229648142,
-        "dgm_linearity": 6.319368436516464,
-        "calc_moment_dev": 86.55687582492828,
-        "calc_streak": 0.1627858390231828,
-        "correlation": 0.5407203947079322,
-        "xsim": 0.01797336776250014
-      },
-      "status": "ok",
-      "id": "laplacian-fieldmap~harperella~tkd-cmp",
-      "slug": "laplacian-fieldmap+harperella+tkd",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "laplacian-fieldmap",
-        "bfr": "harperella",
-        "dipole": "tkd"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_tkd-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_tkd-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_tkd-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "laplacian-fieldmap+harperella+tsvd",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 2.7838194370269775,
-      "metrics": {
-        "nrmse": 608.1977914920627,
-        "nrmse_detrend": 156.17970517709375,
-        "nrmse_tissue": 156.76271218454818,
-        "nrmse_blood": 449.48457716164774,
-        "nrmse_dgm": 70.62039656793397,
-        "dgm_linearity": 5.414711196048217,
-        "calc_moment_dev": 114.86391013860703,
-        "calc_streak": 0.15735122825275386,
-        "correlation": 0.5392257840628915,
-        "xsim": 0.023293196492331622
-      },
-      "status": "ok",
-      "id": "laplacian-fieldmap~harperella~tsvd-cmp",
-      "slug": "laplacian-fieldmap+harperella+tsvd",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "laplacian-fieldmap",
-        "bfr": "harperella",
-        "dipole": "tsvd"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_tsvd-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_tsvd-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_tsvd-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "laplacian-fieldmap+harperella+tv",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 11.788942813873291,
-      "metrics": {
-        "nrmse": 1040.462716461973,
-        "nrmse_detrend": 209.18835493718103,
-        "nrmse_tissue": 226.99884583500864,
-        "nrmse_blood": 697.5814642718713,
-        "nrmse_dgm": 67.81775386648894,
-        "dgm_linearity": 6.6549399832735805,
-        "calc_moment_dev": 103.29233586788177,
-        "calc_streak": 0.18679688575432316,
-        "correlation": 0.4312919058414444,
-        "xsim": 0.012082160216582675
-      },
-      "status": "ok",
-      "id": "laplacian-fieldmap~harperella~tv-cmp",
-      "slug": "laplacian-fieldmap+harperella+tv",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "laplacian-fieldmap",
-        "bfr": "harperella",
-        "dipole": "tv"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_tv-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_tv-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_tv-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "laplacian-fieldmap+iharperella+ilsqr",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 28.455119848251343,
-      "metrics": {
-        "nrmse": 452.4732781460091,
-        "nrmse_detrend": 141.82820207421975,
-        "nrmse_tissue": 139.0780472562528,
-        "nrmse_blood": 420.96085378493467,
-        "nrmse_dgm": 83.26924324884908,
-        "dgm_linearity": 3.2170376510266845,
-        "calc_moment_dev": 61.726108610630035,
-        "calc_streak": 0.1318249123713762,
-        "correlation": 0.5762445668031797,
-        "xsim": 0.03806369827220807
-      },
-      "status": "ok",
-      "id": "laplacian-fieldmap~iharperella~ilsqr-cmp",
-      "slug": "laplacian-fieldmap+iharperella+ilsqr",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "laplacian-fieldmap",
-        "bfr": "iharperella",
-        "dipole": "ilsqr"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_ilsqr-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_ilsqr-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_ilsqr-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "laplacian-fieldmap+iharperella+matlab-sti-ilsqr",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 118.62202906608582,
-      "metrics": {
-        "nrmse": 515.4880538338554,
-        "nrmse_detrend": 120.28943771851206,
-        "nrmse_tissue": 114.88050315788851,
-        "nrmse_blood": 346.9014451403688,
-        "nrmse_dgm": 71.99525696993878,
-        "dgm_linearity": 4.288770311280436,
-        "calc_moment_dev": 140.89708107709885,
-        "calc_streak": 0.1360388535701012,
-        "correlation": 0.639273966937764,
-        "xsim": 0.03741355619297444
-      },
-      "status": "ok",
-      "id": "laplacian-fieldmap~iharperella~matlab-sti-ilsqr-cmp",
-      "slug": "laplacian-fieldmap+iharperella+matlab-sti-ilsqr",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "laplacian-fieldmap",
-        "bfr": "iharperella",
-        "dipole": "matlab-sti-ilsqr"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_matlab-sti-ilsqr-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_matlab-sti-ilsqr-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_matlab-sti-ilsqr-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "laplacian-fieldmap+iharperella+matlab-sti-star",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 26.55902409553528,
-      "metrics": {
-        "nrmse": 470.55547988188596,
-        "nrmse_detrend": 137.05476141397526,
-        "nrmse_tissue": 134.99377463826997,
-        "nrmse_blood": 390.9720583576838,
-        "nrmse_dgm": 78.15775678542651,
-        "dgm_linearity": 3.4147902907186394,
-        "calc_moment_dev": 123.16750651597977,
-        "calc_streak": 0.16689375537877296,
-        "correlation": 0.5894193232640301,
-        "xsim": 0.038595910189594296
-      },
-      "status": "ok",
-      "id": "laplacian-fieldmap~iharperella~matlab-sti-star-cmp",
-      "slug": "laplacian-fieldmap+iharperella+matlab-sti-star",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "laplacian-fieldmap",
-        "bfr": "iharperella",
-        "dipole": "matlab-sti-star"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_matlab-sti-star-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_matlab-sti-star-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_matlab-sti-star-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "laplacian-fieldmap+iharperella+matlab-tkd",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 11.239615678787231,
-      "metrics": {
-        "nrmse": 513.633942749932,
-        "nrmse_detrend": 128.7427870959015,
-        "nrmse_tissue": 123.81143570715385,
-        "nrmse_blood": 382.3270774212397,
-        "nrmse_dgm": 75.75360827736702,
-        "dgm_linearity": 3.8915839205857434,
-        "calc_moment_dev": 113.28861081600189,
-        "calc_streak": 0.15060627107251962,
-        "correlation": 0.6134310742400653,
-        "xsim": 0.0372432313934852
-      },
-      "status": "ok",
-      "id": "laplacian-fieldmap~iharperella~matlab-tkd-cmp",
-      "slug": "laplacian-fieldmap+iharperella+matlab-tkd",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "laplacian-fieldmap",
-        "bfr": "iharperella",
-        "dipole": "matlab-tkd"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_matlab-tkd-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_matlab-tkd-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_matlab-tkd-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "laplacian-fieldmap+iharperella+medi",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 53.05162692070007,
-      "metrics": {
-        "nrmse": 591.6872968940542,
-        "nrmse_detrend": 132.65503794292377,
-        "nrmse_tissue": 127.73005584628974,
-        "nrmse_blood": 375.3676714768868,
-        "nrmse_dgm": 79.32075435658132,
-        "dgm_linearity": 4.091247602773833,
-        "calc_moment_dev": 156.55020588636398,
-        "calc_streak": 0.13589711937623852,
-        "correlation": 0.6019580653222841,
-        "xsim": 0.02911247809484483
-      },
-      "status": "ok",
-      "id": "laplacian-fieldmap~iharperella~medi-cmp",
-      "slug": "laplacian-fieldmap+iharperella+medi",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "laplacian-fieldmap",
-        "bfr": "iharperella",
-        "dipole": "medi"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_medi-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_medi-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_medi-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "laplacian-fieldmap+iharperella+nltv",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 178.97890329360962,
-      "metrics": {
-        "nrmse": 806.3698303526272,
-        "nrmse_detrend": 180.99908261176662,
-        "nrmse_tissue": 179.96553888167549,
-        "nrmse_blood": 462.09133704215884,
-        "nrmse_dgm": 104.026050894322,
-        "dgm_linearity": 4.42723608652996,
-        "calc_moment_dev": 51.641881108284,
-        "calc_streak": 0.1467661975280299,
-        "correlation": 0.48359049918055125,
-        "xsim": 0.011285364587480114
-      },
-      "status": "ok",
-      "id": "laplacian-fieldmap~iharperella~nltv-cmp",
-      "slug": "laplacian-fieldmap+iharperella+nltv",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "laplacian-fieldmap",
-        "bfr": "iharperella",
-        "dipole": "nltv"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_nltv-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_nltv-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_nltv-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "laplacian-fieldmap+iharperella+rts",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 8.163798332214355,
-      "metrics": {
-        "nrmse": 481.80887983345366,
-        "nrmse_detrend": 130.07337290856705,
-        "nrmse_tissue": 128.67704441320961,
-        "nrmse_blood": 368.4361088092045,
-        "nrmse_dgm": 71.00197203851586,
-        "dgm_linearity": 4.423787900436629,
-        "calc_moment_dev": 137.65887701511383,
-        "calc_streak": 0.12186878322517036,
-        "correlation": 0.6094946173273056,
-        "xsim": 0.039454450362856774
-      },
-      "status": "ok",
-      "id": "laplacian-fieldmap~iharperella~rts-cmp",
-      "slug": "laplacian-fieldmap+iharperella+rts",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "laplacian-fieldmap",
-        "bfr": "iharperella",
-        "dipole": "rts"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_rts-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_rts-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_rts-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "laplacian-fieldmap+iharperella+tikhonov",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 2.8070907592773438,
-      "metrics": {
-        "nrmse": 457.82960056183305,
-        "nrmse_detrend": 127.78761191865918,
-        "nrmse_tissue": 122.95840250069354,
-        "nrmse_blood": 379.8210031238082,
-        "nrmse_dgm": 75.47030369886356,
-        "dgm_linearity": 3.4495635818433037,
-        "calc_moment_dev": 100.52572798728943,
-        "calc_streak": 0.14759983778003116,
-        "correlation": 0.6162788464893665,
-        "xsim": 0.045265903748413966
-      },
-      "status": "ok",
-      "id": "laplacian-fieldmap~iharperella~tikhonov-cmp",
-      "slug": "laplacian-fieldmap+iharperella+tikhonov",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "laplacian-fieldmap",
-        "bfr": "iharperella",
-        "dipole": "tikhonov"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_tikhonov-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_tikhonov-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_tikhonov-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "laplacian-fieldmap+iharperella+tkd",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 2.6767239570617676,
-      "metrics": {
-        "nrmse": 551.6619227284918,
-        "nrmse_detrend": 130.77310245638927,
-        "nrmse_tissue": 125.47956238885126,
-        "nrmse_blood": 390.2072868689693,
-        "nrmse_dgm": 76.53075078280524,
-        "dgm_linearity": 4.025134531143605,
-        "calc_moment_dev": 100.65491223335266,
-        "calc_streak": 0.14962963561701725,
-        "correlation": 0.6074387592415933,
-        "xsim": 0.0330090598332563
-      },
-      "status": "ok",
-      "id": "laplacian-fieldmap~iharperella~tkd-cmp",
-      "slug": "laplacian-fieldmap+iharperella+tkd",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "laplacian-fieldmap",
-        "bfr": "iharperella",
-        "dipole": "tkd"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_tkd-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_tkd-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_tkd-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "laplacian-fieldmap+iharperella+tsvd",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 2.506728172302246,
-      "metrics": {
-        "nrmse": 473.8580190149874,
-        "nrmse_detrend": 136.27557755548602,
-        "nrmse_tissue": 134.2432108975887,
-        "nrmse_blood": 387.97621173734285,
-        "nrmse_dgm": 78.71751759716811,
-        "dgm_linearity": 3.72267394263611,
-        "calc_moment_dev": 123.94596600532532,
-        "calc_streak": 0.1495304654800067,
-        "correlation": 0.5916120733644481,
-        "xsim": 0.037253411330050355
-      },
-      "status": "ok",
-      "id": "laplacian-fieldmap~iharperella~tsvd-cmp",
-      "slug": "laplacian-fieldmap+iharperella+tsvd",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "laplacian-fieldmap",
-        "bfr": "iharperella",
-        "dipole": "tsvd"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_tsvd-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_tsvd-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_tsvd-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "laplacian-fieldmap+iharperella+tv",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 21.849052906036377,
-      "metrics": {
-        "nrmse": 640.1848358227993,
-        "nrmse_detrend": 142.03052858356298,
-        "nrmse_tissue": 138.75616430809126,
-        "nrmse_blood": 414.76385660421505,
-        "nrmse_dgm": 81.68311708168258,
-        "dgm_linearity": 4.226309139963212,
-        "calc_moment_dev": 64.48176229000092,
-        "calc_streak": 0.14354407438878672,
-        "correlation": 0.5756958794536539,
-        "xsim": 0.024402455298293234
-      },
-      "status": "ok",
-      "id": "laplacian-fieldmap~iharperella~tv-cmp",
-      "slug": "laplacian-fieldmap+iharperella+tv",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "laplacian-fieldmap",
-        "bfr": "iharperella",
-        "dipole": "tv"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_tv-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_tv-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_tv-cmp__error.nii.gz"
-      }
-    },
-    {
       "name": "laplacian-fieldmap+ismv+ilsqr",
       "track": "sim",
       "stage": "field-mapping+bfr+dipole",
@@ -8443,776 +6845,6 @@
         "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_vsharp_tv-cmp__recon.nii.gz",
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_vsharp_tv-cmp__truth.nii.gz",
         "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_vsharp_tv-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "romeo-fieldmap+harperella+ilsqr",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 27.083403825759888,
-      "metrics": {
-        "nrmse": 674.6668424631931,
-        "nrmse_detrend": 212.34006271072226,
-        "nrmse_tissue": 239.7959968142964,
-        "nrmse_blood": 653.5187865680557,
-        "nrmse_dgm": 79.46970964577936,
-        "dgm_linearity": 4.870945355334721,
-        "calc_moment_dev": 60.27929127216339,
-        "calc_streak": 0.13710535359321105,
-        "correlation": 0.42605955161130304,
-        "xsim": 0.015806632934467123
-      },
-      "status": "ok",
-      "id": "romeo-fieldmap~harperella~ilsqr-cmp",
-      "slug": "romeo-fieldmap+harperella+ilsqr",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "romeo-fieldmap",
-        "bfr": "harperella",
-        "dipole": "ilsqr"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_ilsqr-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_ilsqr-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_ilsqr-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "romeo-fieldmap+harperella+matlab-sti-ilsqr",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 106.67139148712158,
-      "metrics": {
-        "nrmse": 735.2739520691226,
-        "nrmse_detrend": 162.23732646443779,
-        "nrmse_tissue": 171.20008122044993,
-        "nrmse_blood": 477.6733705278899,
-        "nrmse_dgm": 61.23263509323067,
-        "dgm_linearity": 6.670435951834834,
-        "calc_moment_dev": 136.7010189294815,
-        "calc_streak": 0.15077637513325887,
-        "correlation": 0.524712487244386,
-        "xsim": 0.01692132083906072
-      },
-      "status": "ok",
-      "id": "romeo-fieldmap~harperella~matlab-sti-ilsqr-cmp",
-      "slug": "romeo-fieldmap+harperella+matlab-sti-ilsqr",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "romeo-fieldmap",
-        "bfr": "harperella",
-        "dipole": "matlab-sti-ilsqr"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_matlab-sti-ilsqr-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_matlab-sti-ilsqr-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_matlab-sti-ilsqr-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "romeo-fieldmap+harperella+matlab-sti-star",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 26.420292377471924,
-      "metrics": {
-        "nrmse": 1120.588674622283,
-        "nrmse_detrend": 270.23885975370916,
-        "nrmse_tissue": 314.8516850952154,
-        "nrmse_blood": 882.1210436685423,
-        "nrmse_dgm": 70.46065018007705,
-        "dgm_linearity": 6.742711318990631,
-        "calc_moment_dev": 126.51754170656204,
-        "calc_streak": 0.17798176211418962,
-        "correlation": 0.34704435794228233,
-        "xsim": 0.01071822515677343
-      },
-      "status": "ok",
-      "id": "romeo-fieldmap~harperella~matlab-sti-star-cmp",
-      "slug": "romeo-fieldmap+harperella+matlab-sti-star",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "romeo-fieldmap",
-        "bfr": "harperella",
-        "dipole": "matlab-sti-star"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_matlab-sti-star-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_matlab-sti-star-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_matlab-sti-star-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "romeo-fieldmap+harperella+matlab-tkd",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 12.731326818466187,
-      "metrics": {
-        "nrmse": 664.3554880828761,
-        "nrmse_detrend": 152.91013944287886,
-        "nrmse_tissue": 154.151784501903,
-        "nrmse_blood": 501.5943801678286,
-        "nrmse_dgm": 65.35231204729288,
-        "dgm_linearity": 5.902874337822201,
-        "calc_moment_dev": 96.16139149665833,
-        "calc_streak": 0.16415453163449875,
-        "correlation": 0.5473271682299082,
-        "xsim": 0.019785628524590464
-      },
-      "status": "ok",
-      "id": "romeo-fieldmap~harperella~matlab-tkd-cmp",
-      "slug": "romeo-fieldmap+harperella+matlab-tkd",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "romeo-fieldmap",
-        "bfr": "harperella",
-        "dipole": "matlab-tkd"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_matlab-tkd-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_matlab-tkd-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_matlab-tkd-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "romeo-fieldmap+harperella+medi",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 52.76772356033325,
-      "metrics": {
-        "nrmse": 825.990160877153,
-        "nrmse_detrend": 196.82221289303212,
-        "nrmse_tissue": 206.19532889482096,
-        "nrmse_blood": 676.8037110151816,
-        "nrmse_dgm": 107.6053943316222,
-        "dgm_linearity": 5.131223025329349,
-        "calc_moment_dev": 47.419827342033386,
-        "calc_streak": 0.10240039697588967,
-        "correlation": 0.45296199666467934,
-        "xsim": 0.012203456971962475
-      },
-      "status": "ok",
-      "id": "romeo-fieldmap~harperella~medi-cmp",
-      "slug": "romeo-fieldmap+harperella+medi",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "romeo-fieldmap",
-        "bfr": "harperella",
-        "dipole": "medi"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_medi-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_medi-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_medi-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "romeo-fieldmap+harperella+nltv",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 60.013636112213135,
-      "metrics": {
-        "nrmse": 1098.240341137477,
-        "nrmse_detrend": 215.97215596356133,
-        "nrmse_tissue": 235.9053640311417,
-        "nrmse_blood": 700.1480334212864,
-        "nrmse_dgm": 75.1504417530321,
-        "dgm_linearity": 6.567931261700284,
-        "calc_moment_dev": 92.47432708740234,
-        "calc_streak": 0.18828398943278776,
-        "correlation": 0.42016817051262506,
-        "xsim": 0.00904855810395116
-      },
-      "status": "ok",
-      "id": "romeo-fieldmap~harperella~nltv-cmp",
-      "slug": "romeo-fieldmap+harperella+nltv",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "romeo-fieldmap",
-        "bfr": "harperella",
-        "dipole": "nltv"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_nltv-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_nltv-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_nltv-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "romeo-fieldmap+harperella+rts",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 9.651760816574097,
-      "metrics": {
-        "nrmse": 613.3871908967524,
-        "nrmse_detrend": 148.89238202604668,
-        "nrmse_tissue": 150.81551215876186,
-        "nrmse_blood": 418.9102199076812,
-        "nrmse_dgm": 64.27131104667238,
-        "dgm_linearity": 6.176200808650341,
-        "calc_moment_dev": 132.33722645044327,
-        "calc_streak": 0.12920110495076287,
-        "correlation": 0.5575471690669555,
-        "xsim": 0.024797574077777496
-      },
-      "status": "ok",
-      "id": "romeo-fieldmap~harperella~rts-cmp",
-      "slug": "romeo-fieldmap+harperella+rts",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "romeo-fieldmap",
-        "bfr": "harperella",
-        "dipole": "rts"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_rts-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_rts-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_rts-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "romeo-fieldmap+harperella+tikhonov",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 2.3769166469573975,
-      "metrics": {
-        "nrmse": 595.9080001539686,
-        "nrmse_detrend": 152.25960263324106,
-        "nrmse_tissue": 153.27778700064087,
-        "nrmse_blood": 469.1806745907601,
-        "nrmse_dgm": 65.41385773987857,
-        "dgm_linearity": 5.350536173085589,
-        "calc_moment_dev": 91.37040996551514,
-        "calc_streak": 0.15560792460787715,
-        "correlation": 0.5489619763009946,
-        "xsim": 0.0221436705900112
-      },
-      "status": "ok",
-      "id": "romeo-fieldmap~harperella~tikhonov-cmp",
-      "slug": "romeo-fieldmap+harperella+tikhonov",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "romeo-fieldmap",
-        "bfr": "harperella",
-        "dipole": "tikhonov"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_tikhonov-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_tikhonov-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_tikhonov-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "romeo-fieldmap+harperella+tkd",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 2.7637970447540283,
-      "metrics": {
-        "nrmse": 721.3243821783683,
-        "nrmse_detrend": 155.5706784043634,
-        "nrmse_tissue": 156.134931098972,
-        "nrmse_blood": 515.775317714329,
-        "nrmse_dgm": 65.58606229648142,
-        "dgm_linearity": 6.319368436516464,
-        "calc_moment_dev": 86.55687582492828,
-        "calc_streak": 0.1627858390231828,
-        "correlation": 0.5407203947079322,
-        "xsim": 0.01797336776250014
-      },
-      "status": "ok",
-      "id": "romeo-fieldmap~harperella~tkd-cmp",
-      "slug": "romeo-fieldmap+harperella+tkd",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "romeo-fieldmap",
-        "bfr": "harperella",
-        "dipole": "tkd"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_tkd-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_tkd-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_tkd-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "romeo-fieldmap+harperella+tsvd",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 2.87642240524292,
-      "metrics": {
-        "nrmse": 608.1977914920627,
-        "nrmse_detrend": 156.17970517709375,
-        "nrmse_tissue": 156.76271218454818,
-        "nrmse_blood": 449.48457716164774,
-        "nrmse_dgm": 70.62039656793397,
-        "dgm_linearity": 5.414711196048217,
-        "calc_moment_dev": 114.86391013860703,
-        "calc_streak": 0.15735122825275386,
-        "correlation": 0.5392257840628915,
-        "xsim": 0.023293196492331622
-      },
-      "status": "ok",
-      "id": "romeo-fieldmap~harperella~tsvd-cmp",
-      "slug": "romeo-fieldmap+harperella+tsvd",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "romeo-fieldmap",
-        "bfr": "harperella",
-        "dipole": "tsvd"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_tsvd-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_tsvd-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_tsvd-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "romeo-fieldmap+harperella+tv",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 11.084289789199829,
-      "metrics": {
-        "nrmse": 1040.462716461973,
-        "nrmse_detrend": 209.18835493718103,
-        "nrmse_tissue": 226.99884583500864,
-        "nrmse_blood": 697.5814642718713,
-        "nrmse_dgm": 67.81775386648894,
-        "dgm_linearity": 6.6549399832735805,
-        "calc_moment_dev": 103.29233586788177,
-        "calc_streak": 0.18679688575432316,
-        "correlation": 0.4312919058414444,
-        "xsim": 0.012082160216582675
-      },
-      "status": "ok",
-      "id": "romeo-fieldmap~harperella~tv-cmp",
-      "slug": "romeo-fieldmap+harperella+tv",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "romeo-fieldmap",
-        "bfr": "harperella",
-        "dipole": "tv"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_tv-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_tv-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_tv-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "romeo-fieldmap+iharperella+ilsqr",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 30.87081027030945,
-      "metrics": {
-        "nrmse": 452.4732781460091,
-        "nrmse_detrend": 141.82820207421975,
-        "nrmse_tissue": 139.0780472562528,
-        "nrmse_blood": 420.96085378493467,
-        "nrmse_dgm": 83.26924324884908,
-        "dgm_linearity": 3.2170376510266845,
-        "calc_moment_dev": 61.726108610630035,
-        "calc_streak": 0.1318249123713762,
-        "correlation": 0.5762445668031797,
-        "xsim": 0.03806369827220807
-      },
-      "status": "ok",
-      "id": "romeo-fieldmap~iharperella~ilsqr-cmp",
-      "slug": "romeo-fieldmap+iharperella+ilsqr",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "romeo-fieldmap",
-        "bfr": "iharperella",
-        "dipole": "ilsqr"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_ilsqr-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_ilsqr-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_ilsqr-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "romeo-fieldmap+iharperella+matlab-sti-ilsqr",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 119.32116603851318,
-      "metrics": {
-        "nrmse": 515.4880538338554,
-        "nrmse_detrend": 120.28943771851206,
-        "nrmse_tissue": 114.88050315788851,
-        "nrmse_blood": 346.9014451403688,
-        "nrmse_dgm": 71.99525696993878,
-        "dgm_linearity": 4.288770311280436,
-        "calc_moment_dev": 140.89708107709885,
-        "calc_streak": 0.1360388535701012,
-        "correlation": 0.639273966937764,
-        "xsim": 0.03741355619297444
-      },
-      "status": "ok",
-      "id": "romeo-fieldmap~iharperella~matlab-sti-ilsqr-cmp",
-      "slug": "romeo-fieldmap+iharperella+matlab-sti-ilsqr",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "romeo-fieldmap",
-        "bfr": "iharperella",
-        "dipole": "matlab-sti-ilsqr"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_matlab-sti-ilsqr-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_matlab-sti-ilsqr-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_matlab-sti-ilsqr-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "romeo-fieldmap+iharperella+matlab-sti-star",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 26.87399411201477,
-      "metrics": {
-        "nrmse": 470.55547988188596,
-        "nrmse_detrend": 137.05476141397526,
-        "nrmse_tissue": 134.99377463826997,
-        "nrmse_blood": 390.9720583576838,
-        "nrmse_dgm": 78.15775678542651,
-        "dgm_linearity": 3.4147902907186394,
-        "calc_moment_dev": 123.16750651597977,
-        "calc_streak": 0.16689375537877296,
-        "correlation": 0.5894193232640301,
-        "xsim": 0.038595910189594296
-      },
-      "status": "ok",
-      "id": "romeo-fieldmap~iharperella~matlab-sti-star-cmp",
-      "slug": "romeo-fieldmap+iharperella+matlab-sti-star",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "romeo-fieldmap",
-        "bfr": "iharperella",
-        "dipole": "matlab-sti-star"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_matlab-sti-star-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_matlab-sti-star-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_matlab-sti-star-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "romeo-fieldmap+iharperella+matlab-tkd",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 13.363124132156372,
-      "metrics": {
-        "nrmse": 513.633942749932,
-        "nrmse_detrend": 128.7427870959015,
-        "nrmse_tissue": 123.81143570715385,
-        "nrmse_blood": 382.3270774212397,
-        "nrmse_dgm": 75.75360827736702,
-        "dgm_linearity": 3.8915839205857434,
-        "calc_moment_dev": 113.28861081600189,
-        "calc_streak": 0.15060627107251962,
-        "correlation": 0.6134310742400653,
-        "xsim": 0.0372432313934852
-      },
-      "status": "ok",
-      "id": "romeo-fieldmap~iharperella~matlab-tkd-cmp",
-      "slug": "romeo-fieldmap+iharperella+matlab-tkd",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "romeo-fieldmap",
-        "bfr": "iharperella",
-        "dipole": "matlab-tkd"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_matlab-tkd-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_matlab-tkd-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_matlab-tkd-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "romeo-fieldmap+iharperella+medi",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 50.186699628829956,
-      "metrics": {
-        "nrmse": 591.6872968940542,
-        "nrmse_detrend": 132.65503794292377,
-        "nrmse_tissue": 127.73005584628974,
-        "nrmse_blood": 375.3676714768868,
-        "nrmse_dgm": 79.32075435658132,
-        "dgm_linearity": 4.091247602773833,
-        "calc_moment_dev": 156.55020588636398,
-        "calc_streak": 0.13589711937623852,
-        "correlation": 0.6019580653222841,
-        "xsim": 0.02911247809484483
-      },
-      "status": "ok",
-      "id": "romeo-fieldmap~iharperella~medi-cmp",
-      "slug": "romeo-fieldmap+iharperella+medi",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "romeo-fieldmap",
-        "bfr": "iharperella",
-        "dipole": "medi"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_medi-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_medi-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_medi-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "romeo-fieldmap+iharperella+nltv",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 173.58042240142822,
-      "metrics": {
-        "nrmse": 806.3698303526272,
-        "nrmse_detrend": 180.99908261176662,
-        "nrmse_tissue": 179.96553888167549,
-        "nrmse_blood": 462.09133704215884,
-        "nrmse_dgm": 104.026050894322,
-        "dgm_linearity": 4.42723608652996,
-        "calc_moment_dev": 51.641881108284,
-        "calc_streak": 0.1467661975280299,
-        "correlation": 0.48359049918055125,
-        "xsim": 0.011285364587480114
-      },
-      "status": "ok",
-      "id": "romeo-fieldmap~iharperella~nltv-cmp",
-      "slug": "romeo-fieldmap+iharperella+nltv",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "romeo-fieldmap",
-        "bfr": "iharperella",
-        "dipole": "nltv"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_nltv-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_nltv-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_nltv-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "romeo-fieldmap+iharperella+rts",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 9.520267724990845,
-      "metrics": {
-        "nrmse": 481.80887983345366,
-        "nrmse_detrend": 130.07337290856705,
-        "nrmse_tissue": 128.67704441320961,
-        "nrmse_blood": 368.4361088092045,
-        "nrmse_dgm": 71.00197203851586,
-        "dgm_linearity": 4.423787900436629,
-        "calc_moment_dev": 137.65887701511383,
-        "calc_streak": 0.12186878322517036,
-        "correlation": 0.6094946173273056,
-        "xsim": 0.039454450362856774
-      },
-      "status": "ok",
-      "id": "romeo-fieldmap~iharperella~rts-cmp",
-      "slug": "romeo-fieldmap+iharperella+rts",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "romeo-fieldmap",
-        "bfr": "iharperella",
-        "dipole": "rts"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_rts-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_rts-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_rts-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "romeo-fieldmap+iharperella+tikhonov",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 2.7934951782226562,
-      "metrics": {
-        "nrmse": 457.82960056183305,
-        "nrmse_detrend": 127.78761191865918,
-        "nrmse_tissue": 122.95840250069354,
-        "nrmse_blood": 379.8210031238082,
-        "nrmse_dgm": 75.47030369886356,
-        "dgm_linearity": 3.4495635818433037,
-        "calc_moment_dev": 100.52572798728943,
-        "calc_streak": 0.14759983778003116,
-        "correlation": 0.6162788464893665,
-        "xsim": 0.045265903748413966
-      },
-      "status": "ok",
-      "id": "romeo-fieldmap~iharperella~tikhonov-cmp",
-      "slug": "romeo-fieldmap+iharperella+tikhonov",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "romeo-fieldmap",
-        "bfr": "iharperella",
-        "dipole": "tikhonov"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_tikhonov-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_tikhonov-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_tikhonov-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "romeo-fieldmap+iharperella+tkd",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 2.5861377716064453,
-      "metrics": {
-        "nrmse": 551.6619227284918,
-        "nrmse_detrend": 130.77310245638927,
-        "nrmse_tissue": 125.47956238885126,
-        "nrmse_blood": 390.2072868689693,
-        "nrmse_dgm": 76.53075078280524,
-        "dgm_linearity": 4.025134531143605,
-        "calc_moment_dev": 100.65491223335266,
-        "calc_streak": 0.14962963561701725,
-        "correlation": 0.6074387592415933,
-        "xsim": 0.0330090598332563
-      },
-      "status": "ok",
-      "id": "romeo-fieldmap~iharperella~tkd-cmp",
-      "slug": "romeo-fieldmap+iharperella+tkd",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "romeo-fieldmap",
-        "bfr": "iharperella",
-        "dipole": "tkd"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_tkd-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_tkd-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_tkd-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "romeo-fieldmap+iharperella+tsvd",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 2.551570415496826,
-      "metrics": {
-        "nrmse": 473.8580190149874,
-        "nrmse_detrend": 136.27557755548602,
-        "nrmse_tissue": 134.2432108975887,
-        "nrmse_blood": 387.97621173734285,
-        "nrmse_dgm": 78.71751759716811,
-        "dgm_linearity": 3.72267394263611,
-        "calc_moment_dev": 123.94596600532532,
-        "calc_streak": 0.1495304654800067,
-        "correlation": 0.5916120733644481,
-        "xsim": 0.037253411330050355
-      },
-      "status": "ok",
-      "id": "romeo-fieldmap~iharperella~tsvd-cmp",
-      "slug": "romeo-fieldmap+iharperella+tsvd",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "romeo-fieldmap",
-        "bfr": "iharperella",
-        "dipole": "tsvd"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_tsvd-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_tsvd-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_tsvd-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "romeo-fieldmap+iharperella+tv",
-      "track": "sim",
-      "stage": "field-mapping+bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 22.546056032180786,
-      "metrics": {
-        "nrmse": 640.1848358227993,
-        "nrmse_detrend": 142.03052858356298,
-        "nrmse_tissue": 138.75616430809126,
-        "nrmse_blood": 414.76385660421505,
-        "nrmse_dgm": 81.68311708168258,
-        "dgm_linearity": 4.226309139963212,
-        "calc_moment_dev": 64.48176229000092,
-        "calc_streak": 0.14354407438878672,
-        "correlation": 0.5756958794536539,
-        "xsim": 0.024402455298293234
-      },
-      "status": "ok",
-      "id": "romeo-fieldmap~iharperella~tv-cmp",
-      "slug": "romeo-fieldmap+iharperella+tv",
-      "mode": "composed",
-      "combo": {
-        "field_mapping": "romeo-fieldmap",
-        "bfr": "iharperella",
-        "dipole": "tv"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_tv-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_tv-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_tv-cmp__error.nii.gz"
       }
     },
     {
@@ -12383,6 +10015,2374 @@
         "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tgv-cmp__recon.nii.gz",
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tgv-cmp__truth.nii.gz",
         "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tgv-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "harperella",
+      "track": "sim",
+      "stage": "unwrap+bfr",
+      "artifact": "localfield",
+      "kind": "field",
+      "image": null,
+      "runtime_s": 29.808162689208984,
+      "metrics": {
+        "nrmse": 105.3370239441661,
+        "nrmse_detrend": 155.94491015261218,
+        "correlation": 0.539801215540782,
+        "xsim": 0.2512002748186813
+      },
+      "status": "ok",
+      "id": "harperella-iso",
+      "slug": "harperella",
+      "mode": "isolated",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/harperella-iso__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/harperella-iso__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/harperella-iso__error.nii.gz"
+      }
+    },
+    {
+      "name": "harperella+ilsqr",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 27.597481727600098,
+      "metrics": {
+        "nrmse": 104.51893904495032,
+        "nrmse_detrend": 212.34006318285103,
+        "nrmse_tissue": 239.79599684603218,
+        "nrmse_blood": 653.5187984429889,
+        "nrmse_dgm": 79.4697103191883,
+        "dgm_linearity": 0.21619996311534073,
+        "calc_moment_dev": 36.586951211094856,
+        "calc_streak": 0.13625626257586065,
+        "correlation": 0.426059550835943,
+        "xsim": 0.1689254028821187
+      },
+      "status": "ok",
+      "id": "gt~harperella~ilsqr-cmp",
+      "slug": "harperella+ilsqr",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "harperella",
+        "dipole": "ilsqr"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_ilsqr-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_ilsqr-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_ilsqr-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "harperella+matlab-sti-ilsqr",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 110.91032075881958,
+      "metrics": {
+        "nrmse": 99.77256077262683,
+        "nrmse_detrend": 162.23733883517957,
+        "nrmse_tissue": 171.20010257378047,
+        "nrmse_blood": 477.67340151526184,
+        "nrmse_dgm": 61.2326355489478,
+        "dgm_linearity": 0.024040630267763374,
+        "calc_moment_dev": 26.733622446656227,
+        "calc_streak": 0.14582614190396842,
+        "correlation": 0.5247124582502147,
+        "xsim": 0.22232329453583732
+      },
+      "status": "ok",
+      "id": "gt~harperella~matlab-sti-ilsqr-cmp",
+      "slug": "harperella+matlab-sti-ilsqr",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "harperella",
+        "dipole": "matlab-sti-ilsqr"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_matlab-sti-ilsqr-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_matlab-sti-ilsqr-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_matlab-sti-ilsqr-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "harperella+matlab-sti-star",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 27.692606925964355,
+      "metrics": {
+        "nrmse": 161.04963357594832,
+        "nrmse_detrend": 278.7473729548311,
+        "nrmse_tissue": 327.82238166713853,
+        "nrmse_blood": 927.5232906368844,
+        "nrmse_dgm": 70.74812973615312,
+        "dgm_linearity": 0.06598578456100457,
+        "calc_moment_dev": 28.295762732625008,
+        "calc_streak": 0.16868309086703379,
+        "correlation": 0.33767581819568526,
+        "xsim": 0.1469604559123956
+      },
+      "status": "ok",
+      "id": "gt~harperella~matlab-sti-star-cmp",
+      "slug": "harperella+matlab-sti-star",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "harperella",
+        "dipole": "matlab-sti-star"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_matlab-sti-star-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_matlab-sti-star-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_matlab-sti-star-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "harperella+matlab-tkd",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 12.963775634765625,
+      "metrics": {
+        "nrmse": 93.00347438253662,
+        "nrmse_detrend": 152.91013938821575,
+        "nrmse_tissue": 154.15178448391433,
+        "nrmse_blood": 501.5943778167331,
+        "nrmse_dgm": 65.35231203983254,
+        "dgm_linearity": 0.07843237405609771,
+        "calc_moment_dev": 31.678147479891777,
+        "calc_streak": 0.16415453066248242,
+        "correlation": 0.5473271683669564,
+        "xsim": 0.22883105450566257
+      },
+      "status": "ok",
+      "id": "gt~harperella~matlab-tkd-cmp",
+      "slug": "harperella+matlab-tkd",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "harperella",
+        "dipole": "matlab-tkd"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_matlab-tkd-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_matlab-tkd-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_matlab-tkd-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "harperella+medi",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 42.76682138442993,
+      "metrics": {
+        "nrmse": 109.17921204644085,
+        "nrmse_detrend": 179.74442913834102,
+        "nrmse_tissue": 194.49805562922154,
+        "nrmse_blood": 544.2027557996513,
+        "nrmse_dgm": 63.05192759627071,
+        "dgm_linearity": 0.011356611397268845,
+        "calc_moment_dev": 39.43747463822365,
+        "calc_streak": 0.14126431962823513,
+        "correlation": 0.4861703232910579,
+        "xsim": 0.21502630129466743
+      },
+      "status": "ok",
+      "id": "gt~harperella~medi-cmp",
+      "slug": "harperella+medi",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "harperella",
+        "dipole": "medi"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_medi-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_medi-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_medi-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "harperella+nltv",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 68.15141487121582,
+      "metrics": {
+        "nrmse": 141.99279058512369,
+        "nrmse_detrend": 215.6448695360124,
+        "nrmse_tissue": 235.8176656271066,
+        "nrmse_blood": 695.0994148555156,
+        "nrmse_dgm": 74.72797014165273,
+        "dgm_linearity": 0.014538240981875061,
+        "calc_moment_dev": 35.21189880371094,
+        "calc_streak": 0.16597655510692172,
+        "correlation": 0.4206930737486703,
+        "xsim": 0.16886690303218277
+      },
+      "status": "ok",
+      "id": "gt~harperella~nltv-cmp",
+      "slug": "harperella+nltv",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "harperella",
+        "dipole": "nltv"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_nltv-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_nltv-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_nltv-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "harperella+rts",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 11.387912511825562,
+      "metrics": {
+        "nrmse": 88.06812981123032,
+        "nrmse_detrend": 144.53054679922582,
+        "nrmse_tissue": 145.91109948340213,
+        "nrmse_blood": 410.5621578782976,
+        "nrmse_dgm": 62.475994767390645,
+        "dgm_linearity": 0.00629625709785564,
+        "calc_moment_dev": 27.067341431975365,
+        "calc_streak": 0.1271332711910551,
+        "correlation": 0.5689806808009689,
+        "xsim": 0.2564026671849909
+      },
+      "status": "ok",
+      "id": "gt~harperella~rts-cmp",
+      "slug": "harperella+rts",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "harperella",
+        "dipole": "rts"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_rts-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_rts-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_rts-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "harperella+tikhonov",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 2.8635101318359375,
+      "metrics": {
+        "nrmse": 89.21898030435564,
+        "nrmse_detrend": 152.25960265947168,
+        "nrmse_tissue": 153.27778704590037,
+        "nrmse_blood": 469.1806737782469,
+        "nrmse_dgm": 65.4138577239447,
+        "dgm_linearity": 0.15217223195798046,
+        "calc_moment_dev": 32.31776714324951,
+        "calc_streak": 0.15560792460145545,
+        "correlation": 0.5489619762349223,
+        "xsim": 0.2366698839222736
+      },
+      "status": "ok",
+      "id": "gt~harperella~tikhonov-cmp",
+      "slug": "harperella+tikhonov",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "harperella",
+        "dipole": "tikhonov"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_tikhonov-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_tikhonov-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_tikhonov-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "harperella+tkd",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 2.2766458988189697,
+      "metrics": {
+        "nrmse": 97.2455087164752,
+        "nrmse_detrend": 155.57067835729853,
+        "nrmse_tissue": 156.13493112393937,
+        "nrmse_blood": 515.775314692299,
+        "nrmse_dgm": 65.586062330404,
+        "dgm_linearity": 0.022828366116963816,
+        "calc_moment_dev": 33.52213400602341,
+        "calc_streak": 0.15937017700432202,
+        "correlation": 0.5407203948236876,
+        "xsim": 0.22267552525074572
+      },
+      "status": "ok",
+      "id": "gt~harperella~tkd-cmp",
+      "slug": "harperella+tkd",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "harperella",
+        "dipole": "tkd"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_tkd-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_tkd-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_tkd-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "harperella+tsvd",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 2.6956465244293213,
+      "metrics": {
+        "nrmse": 90.70543852312943,
+        "nrmse_detrend": 156.17970509752192,
+        "nrmse_tissue": 156.76271220916206,
+        "nrmse_blood": 449.4845744828464,
+        "nrmse_dgm": 70.6203965759103,
+        "dgm_linearity": 0.14360455001242245,
+        "calc_moment_dev": 29.3968118801713,
+        "calc_streak": 0.15608209994176525,
+        "correlation": 0.5392257842577396,
+        "xsim": 0.22875781989254573
+      },
+      "status": "ok",
+      "id": "gt~harperella~tsvd-cmp",
+      "slug": "harperella+tsvd",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "harperella",
+        "dipole": "tsvd"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_tsvd-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_tsvd-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_tsvd-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "harperella+tv",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 12.327634334564209,
+      "metrics": {
+        "nrmse": 124.20236300750376,
+        "nrmse_detrend": 204.5396836208787,
+        "nrmse_tissue": 222.05801308122707,
+        "nrmse_blood": 660.8598649208787,
+        "nrmse_dgm": 63.36678984161823,
+        "dgm_linearity": 0.09188213070958517,
+        "calc_moment_dev": 31.38818334043026,
+        "calc_streak": 0.14341312667136474,
+        "correlation": 0.43922013340936955,
+        "xsim": 0.2003288726469524
+      },
+      "status": "ok",
+      "id": "gt~harperella~tv-cmp",
+      "slug": "harperella+tv",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "harperella",
+        "dipole": "tv"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_tv-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_tv-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella_tv-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-fieldmap+harperella+ilsqr",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 27.93583106994629,
+      "metrics": {
+        "nrmse": 104.51893904495032,
+        "nrmse_detrend": 212.34006318285103,
+        "nrmse_tissue": 239.79599684603218,
+        "nrmse_blood": 653.5187984429889,
+        "nrmse_dgm": 79.4697103191883,
+        "dgm_linearity": 0.21619996311534073,
+        "calc_moment_dev": 36.586951211094856,
+        "calc_streak": 0.13625626257586065,
+        "correlation": 0.426059550835943,
+        "xsim": 0.1689254028821187
+      },
+      "status": "ok",
+      "id": "laplacian-fieldmap~harperella~ilsqr-cmp",
+      "slug": "laplacian-fieldmap+harperella+ilsqr",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-fieldmap",
+        "bfr": "harperella",
+        "dipole": "ilsqr"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_ilsqr-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_ilsqr-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_ilsqr-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-fieldmap+harperella+matlab-sti-ilsqr",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 105.66685724258423,
+      "metrics": {
+        "nrmse": 99.77256077262683,
+        "nrmse_detrend": 162.23733883517957,
+        "nrmse_tissue": 171.20010257378047,
+        "nrmse_blood": 477.67340151526184,
+        "nrmse_dgm": 61.2326355489478,
+        "dgm_linearity": 0.024040630267763374,
+        "calc_moment_dev": 26.733622446656227,
+        "calc_streak": 0.14582614190396842,
+        "correlation": 0.5247124582502147,
+        "xsim": 0.22232329453583732
+      },
+      "status": "ok",
+      "id": "laplacian-fieldmap~harperella~matlab-sti-ilsqr-cmp",
+      "slug": "laplacian-fieldmap+harperella+matlab-sti-ilsqr",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-fieldmap",
+        "bfr": "harperella",
+        "dipole": "matlab-sti-ilsqr"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_matlab-sti-ilsqr-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_matlab-sti-ilsqr-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_matlab-sti-ilsqr-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-fieldmap+harperella+matlab-sti-star",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 27.208202362060547,
+      "metrics": {
+        "nrmse": 161.04963357594832,
+        "nrmse_detrend": 278.7473729548311,
+        "nrmse_tissue": 327.82238166713853,
+        "nrmse_blood": 927.5232906368844,
+        "nrmse_dgm": 70.74812973615312,
+        "dgm_linearity": 0.06598578456100457,
+        "calc_moment_dev": 28.295762732625008,
+        "calc_streak": 0.16868309086703379,
+        "correlation": 0.33767581819568526,
+        "xsim": 0.1469604559123956
+      },
+      "status": "ok",
+      "id": "laplacian-fieldmap~harperella~matlab-sti-star-cmp",
+      "slug": "laplacian-fieldmap+harperella+matlab-sti-star",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-fieldmap",
+        "bfr": "harperella",
+        "dipole": "matlab-sti-star"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_matlab-sti-star-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_matlab-sti-star-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_matlab-sti-star-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-fieldmap+harperella+matlab-tkd",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 12.140918731689453,
+      "metrics": {
+        "nrmse": 93.00347438253662,
+        "nrmse_detrend": 152.91013938821575,
+        "nrmse_tissue": 154.15178448391433,
+        "nrmse_blood": 501.5943778167331,
+        "nrmse_dgm": 65.35231203983254,
+        "dgm_linearity": 0.07843237405609771,
+        "calc_moment_dev": 31.678147479891777,
+        "calc_streak": 0.16415453066248242,
+        "correlation": 0.5473271683669564,
+        "xsim": 0.22883105450566257
+      },
+      "status": "ok",
+      "id": "laplacian-fieldmap~harperella~matlab-tkd-cmp",
+      "slug": "laplacian-fieldmap+harperella+matlab-tkd",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-fieldmap",
+        "bfr": "harperella",
+        "dipole": "matlab-tkd"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_matlab-tkd-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_matlab-tkd-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_matlab-tkd-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-fieldmap+harperella+medi",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 41.6586811542511,
+      "metrics": {
+        "nrmse": 109.17921204644085,
+        "nrmse_detrend": 179.74442913834102,
+        "nrmse_tissue": 194.49805562922154,
+        "nrmse_blood": 544.2027557996513,
+        "nrmse_dgm": 63.05192759627071,
+        "dgm_linearity": 0.011356611397268845,
+        "calc_moment_dev": 39.43747463822365,
+        "calc_streak": 0.14126431962823513,
+        "correlation": 0.4861703232910579,
+        "xsim": 0.21502630129466743
+      },
+      "status": "ok",
+      "id": "laplacian-fieldmap~harperella~medi-cmp",
+      "slug": "laplacian-fieldmap+harperella+medi",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-fieldmap",
+        "bfr": "harperella",
+        "dipole": "medi"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_medi-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_medi-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_medi-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-fieldmap+harperella+nltv",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 67.49449896812439,
+      "metrics": {
+        "nrmse": 141.99279058512369,
+        "nrmse_detrend": 215.6448695360124,
+        "nrmse_tissue": 235.8176656271066,
+        "nrmse_blood": 695.0994148555156,
+        "nrmse_dgm": 74.72797014165273,
+        "dgm_linearity": 0.014538240981875061,
+        "calc_moment_dev": 35.21189880371094,
+        "calc_streak": 0.16597655510692172,
+        "correlation": 0.4206930737486703,
+        "xsim": 0.16886690303218277
+      },
+      "status": "ok",
+      "id": "laplacian-fieldmap~harperella~nltv-cmp",
+      "slug": "laplacian-fieldmap+harperella+nltv",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-fieldmap",
+        "bfr": "harperella",
+        "dipole": "nltv"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_nltv-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_nltv-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_nltv-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-fieldmap+harperella+rts",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 10.351474523544312,
+      "metrics": {
+        "nrmse": 88.06812981123032,
+        "nrmse_detrend": 144.53054679922582,
+        "nrmse_tissue": 145.91109948340213,
+        "nrmse_blood": 410.5621578782976,
+        "nrmse_dgm": 62.475994767390645,
+        "dgm_linearity": 0.00629625709785564,
+        "calc_moment_dev": 27.067341431975365,
+        "calc_streak": 0.1271332711910551,
+        "correlation": 0.5689806808009689,
+        "xsim": 0.2564026671849909
+      },
+      "status": "ok",
+      "id": "laplacian-fieldmap~harperella~rts-cmp",
+      "slug": "laplacian-fieldmap+harperella+rts",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-fieldmap",
+        "bfr": "harperella",
+        "dipole": "rts"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_rts-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_rts-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_rts-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-fieldmap+harperella+tikhonov",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 2.3595476150512695,
+      "metrics": {
+        "nrmse": 89.21898030435564,
+        "nrmse_detrend": 152.25960265947168,
+        "nrmse_tissue": 153.27778704590037,
+        "nrmse_blood": 469.1806737782469,
+        "nrmse_dgm": 65.4138577239447,
+        "dgm_linearity": 0.15217223195798046,
+        "calc_moment_dev": 32.31776714324951,
+        "calc_streak": 0.15560792460145545,
+        "correlation": 0.5489619762349223,
+        "xsim": 0.2366698839222736
+      },
+      "status": "ok",
+      "id": "laplacian-fieldmap~harperella~tikhonov-cmp",
+      "slug": "laplacian-fieldmap+harperella+tikhonov",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-fieldmap",
+        "bfr": "harperella",
+        "dipole": "tikhonov"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_tikhonov-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_tikhonov-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_tikhonov-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-fieldmap+harperella+tkd",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 2.5850014686584473,
+      "metrics": {
+        "nrmse": 97.2455087164752,
+        "nrmse_detrend": 155.57067835729853,
+        "nrmse_tissue": 156.13493112393937,
+        "nrmse_blood": 515.775314692299,
+        "nrmse_dgm": 65.586062330404,
+        "dgm_linearity": 0.022828366116963816,
+        "calc_moment_dev": 33.52213400602341,
+        "calc_streak": 0.15937017700432202,
+        "correlation": 0.5407203948236876,
+        "xsim": 0.22267552525074572
+      },
+      "status": "ok",
+      "id": "laplacian-fieldmap~harperella~tkd-cmp",
+      "slug": "laplacian-fieldmap+harperella+tkd",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-fieldmap",
+        "bfr": "harperella",
+        "dipole": "tkd"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_tkd-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_tkd-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_tkd-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-fieldmap+harperella+tsvd",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 2.3578941822052,
+      "metrics": {
+        "nrmse": 90.70543852312943,
+        "nrmse_detrend": 156.17970509752192,
+        "nrmse_tissue": 156.76271220916206,
+        "nrmse_blood": 449.4845744828464,
+        "nrmse_dgm": 70.6203965759103,
+        "dgm_linearity": 0.14360455001242245,
+        "calc_moment_dev": 29.3968118801713,
+        "calc_streak": 0.15608209994176525,
+        "correlation": 0.5392257842577396,
+        "xsim": 0.22875781989254573
+      },
+      "status": "ok",
+      "id": "laplacian-fieldmap~harperella~tsvd-cmp",
+      "slug": "laplacian-fieldmap+harperella+tsvd",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-fieldmap",
+        "bfr": "harperella",
+        "dipole": "tsvd"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_tsvd-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_tsvd-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_tsvd-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-fieldmap+harperella+tv",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 11.344628810882568,
+      "metrics": {
+        "nrmse": 124.20236300750376,
+        "nrmse_detrend": 204.5396836208787,
+        "nrmse_tissue": 222.05801308122707,
+        "nrmse_blood": 660.8598649208787,
+        "nrmse_dgm": 63.36678984161823,
+        "dgm_linearity": 0.09188213070958517,
+        "calc_moment_dev": 31.38818334043026,
+        "calc_streak": 0.14341312667136474,
+        "correlation": 0.43922013340936955,
+        "xsim": 0.2003288726469524
+      },
+      "status": "ok",
+      "id": "laplacian-fieldmap~harperella~tv-cmp",
+      "slug": "laplacian-fieldmap+harperella+tv",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-fieldmap",
+        "bfr": "harperella",
+        "dipole": "tv"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_tv-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_tv-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_harperella_tv-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-fieldmap+harperella+ilsqr",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 25.97731590270996,
+      "metrics": {
+        "nrmse": 104.51893904495032,
+        "nrmse_detrend": 212.34006318285103,
+        "nrmse_tissue": 239.79599684603218,
+        "nrmse_blood": 653.5187984429889,
+        "nrmse_dgm": 79.4697103191883,
+        "dgm_linearity": 0.21619996311534073,
+        "calc_moment_dev": 36.586951211094856,
+        "calc_streak": 0.13625626257586065,
+        "correlation": 0.426059550835943,
+        "xsim": 0.1689254028821187
+      },
+      "status": "ok",
+      "id": "romeo-fieldmap~harperella~ilsqr-cmp",
+      "slug": "romeo-fieldmap+harperella+ilsqr",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-fieldmap",
+        "bfr": "harperella",
+        "dipole": "ilsqr"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_ilsqr-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_ilsqr-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_ilsqr-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-fieldmap+harperella+matlab-sti-ilsqr",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 102.53278136253357,
+      "metrics": {
+        "nrmse": 99.77256077262683,
+        "nrmse_detrend": 162.23733883517957,
+        "nrmse_tissue": 171.20010257378047,
+        "nrmse_blood": 477.67340151526184,
+        "nrmse_dgm": 61.2326355489478,
+        "dgm_linearity": 0.024040630267763374,
+        "calc_moment_dev": 26.733622446656227,
+        "calc_streak": 0.14582614190396842,
+        "correlation": 0.5247124582502147,
+        "xsim": 0.22232329453583732
+      },
+      "status": "ok",
+      "id": "romeo-fieldmap~harperella~matlab-sti-ilsqr-cmp",
+      "slug": "romeo-fieldmap+harperella+matlab-sti-ilsqr",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-fieldmap",
+        "bfr": "harperella",
+        "dipole": "matlab-sti-ilsqr"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_matlab-sti-ilsqr-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_matlab-sti-ilsqr-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_matlab-sti-ilsqr-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-fieldmap+harperella+matlab-sti-star",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 26.632876873016357,
+      "metrics": {
+        "nrmse": 161.04963357594832,
+        "nrmse_detrend": 278.7473729548311,
+        "nrmse_tissue": 327.82238166713853,
+        "nrmse_blood": 927.5232906368844,
+        "nrmse_dgm": 70.74812973615312,
+        "dgm_linearity": 0.06598578456100457,
+        "calc_moment_dev": 28.295762732625008,
+        "calc_streak": 0.16868309086703379,
+        "correlation": 0.33767581819568526,
+        "xsim": 0.1469604559123956
+      },
+      "status": "ok",
+      "id": "romeo-fieldmap~harperella~matlab-sti-star-cmp",
+      "slug": "romeo-fieldmap+harperella+matlab-sti-star",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-fieldmap",
+        "bfr": "harperella",
+        "dipole": "matlab-sti-star"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_matlab-sti-star-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_matlab-sti-star-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_matlab-sti-star-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-fieldmap+harperella+matlab-tkd",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 11.700874090194702,
+      "metrics": {
+        "nrmse": 93.00347438253662,
+        "nrmse_detrend": 152.91013938821575,
+        "nrmse_tissue": 154.15178448391433,
+        "nrmse_blood": 501.5943778167331,
+        "nrmse_dgm": 65.35231203983254,
+        "dgm_linearity": 0.07843237405609771,
+        "calc_moment_dev": 31.678147479891777,
+        "calc_streak": 0.16415453066248242,
+        "correlation": 0.5473271683669564,
+        "xsim": 0.22883105450566257
+      },
+      "status": "ok",
+      "id": "romeo-fieldmap~harperella~matlab-tkd-cmp",
+      "slug": "romeo-fieldmap+harperella+matlab-tkd",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-fieldmap",
+        "bfr": "harperella",
+        "dipole": "matlab-tkd"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_matlab-tkd-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_matlab-tkd-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_matlab-tkd-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-fieldmap+harperella+medi",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 41.341551065444946,
+      "metrics": {
+        "nrmse": 109.17921204644085,
+        "nrmse_detrend": 179.74442913834102,
+        "nrmse_tissue": 194.49805562922154,
+        "nrmse_blood": 544.2027557996513,
+        "nrmse_dgm": 63.05192759627071,
+        "dgm_linearity": 0.011356611397268845,
+        "calc_moment_dev": 39.43747463822365,
+        "calc_streak": 0.14126431962823513,
+        "correlation": 0.4861703232910579,
+        "xsim": 0.21502630129466743
+      },
+      "status": "ok",
+      "id": "romeo-fieldmap~harperella~medi-cmp",
+      "slug": "romeo-fieldmap+harperella+medi",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-fieldmap",
+        "bfr": "harperella",
+        "dipole": "medi"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_medi-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_medi-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_medi-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-fieldmap+harperella+nltv",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 68.18947219848633,
+      "metrics": {
+        "nrmse": 141.99279058512369,
+        "nrmse_detrend": 215.6448695360124,
+        "nrmse_tissue": 235.8176656271066,
+        "nrmse_blood": 695.0994148555156,
+        "nrmse_dgm": 74.72797014165273,
+        "dgm_linearity": 0.014538240981875061,
+        "calc_moment_dev": 35.21189880371094,
+        "calc_streak": 0.16597655510692172,
+        "correlation": 0.4206930737486703,
+        "xsim": 0.16886690303218277
+      },
+      "status": "ok",
+      "id": "romeo-fieldmap~harperella~nltv-cmp",
+      "slug": "romeo-fieldmap+harperella+nltv",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-fieldmap",
+        "bfr": "harperella",
+        "dipole": "nltv"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_nltv-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_nltv-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_nltv-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-fieldmap+harperella+rts",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 10.80501103401184,
+      "metrics": {
+        "nrmse": 88.06812981123032,
+        "nrmse_detrend": 144.53054679922582,
+        "nrmse_tissue": 145.91109948340213,
+        "nrmse_blood": 410.5621578782976,
+        "nrmse_dgm": 62.475994767390645,
+        "dgm_linearity": 0.00629625709785564,
+        "calc_moment_dev": 27.067341431975365,
+        "calc_streak": 0.1271332711910551,
+        "correlation": 0.5689806808009689,
+        "xsim": 0.2564026671849909
+      },
+      "status": "ok",
+      "id": "romeo-fieldmap~harperella~rts-cmp",
+      "slug": "romeo-fieldmap+harperella+rts",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-fieldmap",
+        "bfr": "harperella",
+        "dipole": "rts"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_rts-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_rts-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_rts-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-fieldmap+harperella+tikhonov",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 2.0064029693603516,
+      "metrics": {
+        "nrmse": 89.21898030435564,
+        "nrmse_detrend": 152.25960265947168,
+        "nrmse_tissue": 153.27778704590037,
+        "nrmse_blood": 469.1806737782469,
+        "nrmse_dgm": 65.4138577239447,
+        "dgm_linearity": 0.15217223195798046,
+        "calc_moment_dev": 32.31776714324951,
+        "calc_streak": 0.15560792460145545,
+        "correlation": 0.5489619762349223,
+        "xsim": 0.2366698839222736
+      },
+      "status": "ok",
+      "id": "romeo-fieldmap~harperella~tikhonov-cmp",
+      "slug": "romeo-fieldmap+harperella+tikhonov",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-fieldmap",
+        "bfr": "harperella",
+        "dipole": "tikhonov"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_tikhonov-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_tikhonov-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_tikhonov-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-fieldmap+harperella+tkd",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 1.9869747161865234,
+      "metrics": {
+        "nrmse": 97.2455087164752,
+        "nrmse_detrend": 155.57067835729853,
+        "nrmse_tissue": 156.13493112393937,
+        "nrmse_blood": 515.775314692299,
+        "nrmse_dgm": 65.586062330404,
+        "dgm_linearity": 0.022828366116963816,
+        "calc_moment_dev": 33.52213400602341,
+        "calc_streak": 0.15937017700432202,
+        "correlation": 0.5407203948236876,
+        "xsim": 0.22267552525074572
+      },
+      "status": "ok",
+      "id": "romeo-fieldmap~harperella~tkd-cmp",
+      "slug": "romeo-fieldmap+harperella+tkd",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-fieldmap",
+        "bfr": "harperella",
+        "dipole": "tkd"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_tkd-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_tkd-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_tkd-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-fieldmap+harperella+tsvd",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 2.5175116062164307,
+      "metrics": {
+        "nrmse": 90.70543852312943,
+        "nrmse_detrend": 156.17970509752192,
+        "nrmse_tissue": 156.76271220916206,
+        "nrmse_blood": 449.4845744828464,
+        "nrmse_dgm": 70.6203965759103,
+        "dgm_linearity": 0.14360455001242245,
+        "calc_moment_dev": 29.3968118801713,
+        "calc_streak": 0.15608209994176525,
+        "correlation": 0.5392257842577396,
+        "xsim": 0.22875781989254573
+      },
+      "status": "ok",
+      "id": "romeo-fieldmap~harperella~tsvd-cmp",
+      "slug": "romeo-fieldmap+harperella+tsvd",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-fieldmap",
+        "bfr": "harperella",
+        "dipole": "tsvd"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_tsvd-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_tsvd-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_tsvd-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-fieldmap+harperella+tv",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 12.698424339294434,
+      "metrics": {
+        "nrmse": 124.20236300750376,
+        "nrmse_detrend": 204.5396836208787,
+        "nrmse_tissue": 222.05801308122707,
+        "nrmse_blood": 660.8598649208787,
+        "nrmse_dgm": 63.36678984161823,
+        "dgm_linearity": 0.09188213070958517,
+        "calc_moment_dev": 31.38818334043026,
+        "calc_streak": 0.14341312667136474,
+        "correlation": 0.43922013340936955,
+        "xsim": 0.2003288726469524
+      },
+      "status": "ok",
+      "id": "romeo-fieldmap~harperella~tv-cmp",
+      "slug": "romeo-fieldmap+harperella+tv",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-fieldmap",
+        "bfr": "harperella",
+        "dipole": "tv"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_tv-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_tv-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_harperella_tv-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "my-method",
+      "track": "sim",
+      "stage": "dipole",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "my-method-iso",
+      "slug": "my-method"
+    },
+    {
+      "name": "iharperella",
+      "track": "sim",
+      "stage": "unwrap+bfr",
+      "artifact": "localfield",
+      "kind": "field",
+      "image": null,
+      "runtime_s": 32.83042502403259,
+      "metrics": {
+        "nrmse": 75.93499425864555,
+        "nrmse_detrend": 109.90665019330432,
+        "correlation": 0.6729854278933728,
+        "xsim": 0.53459613476108
+      },
+      "status": "ok",
+      "id": "iharperella-iso",
+      "slug": "iharperella",
+      "mode": "isolated",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/iharperella-iso__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/iharperella-iso__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/iharperella-iso__error.nii.gz"
+      }
+    },
+    {
+      "name": "iharperella+ilsqr",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 30.166983366012573,
+      "metrics": {
+        "nrmse": 82.27600049505794,
+        "nrmse_detrend": 141.8282023882694,
+        "nrmse_tissue": 139.07804770417988,
+        "nrmse_blood": 420.96085154553646,
+        "nrmse_dgm": 83.26924369270021,
+        "dgm_linearity": 0.4370047659103169,
+        "calc_moment_dev": 36.527534648776054,
+        "calc_streak": 0.13028685229280895,
+        "correlation": 0.5762445659509012,
+        "xsim": 0.2559732637515443
+      },
+      "status": "ok",
+      "id": "gt~iharperella~ilsqr-cmp",
+      "slug": "iharperella+ilsqr",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "iharperella",
+        "dipole": "ilsqr"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_ilsqr-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_ilsqr-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_ilsqr-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "iharperella+matlab-sti-ilsqr",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 126.1087167263031,
+      "metrics": {
+        "nrmse": 77.9326436206754,
+        "nrmse_detrend": 120.28943423622057,
+        "nrmse_tissue": 114.88049557647925,
+        "nrmse_blood": 346.9014232457277,
+        "nrmse_dgm": 71.99526508354597,
+        "dgm_linearity": 0.29392326985635997,
+        "calc_moment_dev": 26.03477121144533,
+        "calc_streak": 0.13401263194495117,
+        "correlation": 0.6392739778811998,
+        "xsim": 0.3191870909332513
+      },
+      "status": "ok",
+      "id": "gt~iharperella~matlab-sti-ilsqr-cmp",
+      "slug": "iharperella+matlab-sti-ilsqr",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "iharperella",
+        "dipole": "matlab-sti-ilsqr"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_matlab-sti-ilsqr-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_matlab-sti-ilsqr-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_matlab-sti-ilsqr-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "iharperella+matlab-sti-star",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 27.880594730377197,
+      "metrics": {
+        "nrmse": 81.39398918899188,
+        "nrmse_detrend": 135.39788515870003,
+        "nrmse_tissue": 132.717353817194,
+        "nrmse_blood": 390.17725566744735,
+        "nrmse_dgm": 77.13996042448424,
+        "dgm_linearity": 0.391298514313161,
+        "calc_moment_dev": 28.284211814403534,
+        "calc_streak": 0.16344693811052297,
+        "correlation": 0.5940963472335131,
+        "xsim": 0.2809371576990871
+      },
+      "status": "ok",
+      "id": "gt~iharperella~matlab-sti-star-cmp",
+      "slug": "iharperella+matlab-sti-star",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "iharperella",
+        "dipole": "matlab-sti-star"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_matlab-sti-star-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_matlab-sti-star-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_matlab-sti-star-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "iharperella+matlab-tkd",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 13.258676767349243,
+      "metrics": {
+        "nrmse": 80.31371121439635,
+        "nrmse_detrend": 128.74278696860992,
+        "nrmse_tissue": 123.8114356861389,
+        "nrmse_blood": 382.3270751137996,
+        "nrmse_dgm": 75.75360819058078,
+        "dgm_linearity": 0.34694952104514276,
+        "calc_moment_dev": 30.057191491127014,
+        "calc_streak": 0.14734414853821948,
+        "correlation": 0.613431074618351,
+        "xsim": 0.3036619393501116
+      },
+      "status": "ok",
+      "id": "gt~iharperella~matlab-tkd-cmp",
+      "slug": "iharperella+matlab-tkd",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "iharperella",
+        "dipole": "matlab-tkd"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_matlab-tkd-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_matlab-tkd-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_matlab-tkd-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "iharperella+medi",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 50.770761013031006,
+      "metrics": {
+        "nrmse": 85.85879407497409,
+        "nrmse_detrend": 136.61830566885868,
+        "nrmse_tissue": 130.78419895364846,
+        "nrmse_blood": 396.2802029091913,
+        "nrmse_dgm": 74.1309670026185,
+        "dgm_linearity": 0.28701328966843576,
+        "calc_moment_dev": 40.41363462805748,
+        "calc_streak": 0.1324937328378346,
+        "correlation": 0.5906461115531372,
+        "xsim": 0.3146142171582716
+      },
+      "status": "ok",
+      "id": "gt~iharperella~medi-cmp",
+      "slug": "iharperella+medi",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "iharperella",
+        "dipole": "medi"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_medi-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_medi-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_medi-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "iharperella+nltv",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 244.46523261070251,
+      "metrics": {
+        "nrmse": 107.29197161766713,
+        "nrmse_detrend": 176.72112663157242,
+        "nrmse_tissue": 175.4136133592955,
+        "nrmse_blood": 459.0501133668015,
+        "nrmse_dgm": 104.35620257850591,
+        "dgm_linearity": 0.2916682952787799,
+        "calc_moment_dev": 38.244647681713104,
+        "calc_streak": 0.1429962370392107,
+        "correlation": 0.4924832390476904,
+        "xsim": 0.18785972547225302
+      },
+      "status": "ok",
+      "id": "gt~iharperella~nltv-cmp",
+      "slug": "iharperella+nltv",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "iharperella",
+        "dipole": "nltv"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_nltv-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_nltv-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_nltv-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "iharperella+rts",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 10.494823694229126,
+      "metrics": {
+        "nrmse": 78.97098502386928,
+        "nrmse_detrend": 126.11194410179887,
+        "nrmse_tissue": 124.13840071655753,
+        "nrmse_blood": 363.4396041540591,
+        "nrmse_dgm": 68.59599459641755,
+        "dgm_linearity": 0.2403250947675687,
+        "calc_moment_dev": 26.063552781939507,
+        "calc_streak": 0.1191780813395152,
+        "correlation": 0.6213191216192437,
+        "xsim": 0.30485291093684647
+      },
+      "status": "ok",
+      "id": "gt~iharperella~rts-cmp",
+      "slug": "iharperella+rts",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "iharperella",
+        "dipole": "rts"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_rts-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_rts-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_rts-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "iharperella+tikhonov",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 2.3824775218963623,
+      "metrics": {
+        "nrmse": 79.04679687624572,
+        "nrmse_detrend": 127.78761186016565,
+        "nrmse_tissue": 122.95840244402126,
+        "nrmse_blood": 379.82100232619416,
+        "nrmse_dgm": 75.47030381972962,
+        "dgm_linearity": 0.40596140817595483,
+        "calc_moment_dev": 31.240029096603394,
+        "calc_streak": 0.1468011631729041,
+        "correlation": 0.6162788466643213,
+        "xsim": 0.30096627341321747
+      },
+      "status": "ok",
+      "id": "gt~iharperella~tikhonov-cmp",
+      "slug": "iharperella+tikhonov",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "iharperella",
+        "dipole": "tikhonov"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_tikhonov-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_tikhonov-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_tikhonov-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "iharperella+tkd",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 1.9317803382873535,
+      "metrics": {
+        "nrmse": 81.97654100367222,
+        "nrmse_detrend": 130.77310238235222,
+        "nrmse_tissue": 125.47956234293441,
+        "nrmse_blood": 390.2072857753909,
+        "nrmse_dgm": 76.5307508078712,
+        "dgm_linearity": 0.3291198598030042,
+        "calc_moment_dev": 32.38005913794041,
+        "calc_streak": 0.1438960655349518,
+        "correlation": 0.6074387594586009,
+        "xsim": 0.30151955809850933
+      },
+      "status": "ok",
+      "id": "gt~iharperella~tkd-cmp",
+      "slug": "iharperella+tkd",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "iharperella",
+        "dipole": "tkd"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_tkd-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_tkd-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_tkd-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "iharperella+tsvd",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 2.1308846473693848,
+      "metrics": {
+        "nrmse": 81.37968896966913,
+        "nrmse_detrend": 136.2755775445948,
+        "nrmse_tissue": 134.24321088727075,
+        "nrmse_blood": 387.9762113794701,
+        "nrmse_dgm": 78.71751754699241,
+        "dgm_linearity": 0.3694998330109338,
+        "calc_moment_dev": 28.436871849000454,
+        "calc_streak": 0.14722820356737976,
+        "correlation": 0.5916120733951815,
+        "xsim": 0.2714173227975242
+      },
+      "status": "ok",
+      "id": "gt~iharperella~tsvd-cmp",
+      "slug": "iharperella+tsvd",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "iharperella",
+        "dipole": "tsvd"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_tsvd-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_tsvd-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_tsvd-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "iharperella+tv",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 26.884944677352905,
+      "metrics": {
+        "nrmse": 78.44616476225488,
+        "nrmse_detrend": 122.25010880117533,
+        "nrmse_tissue": 118.00412134249109,
+        "nrmse_blood": 366.1460800655904,
+        "nrmse_dgm": 69.30758517285665,
+        "dgm_linearity": 0.2662670272861498,
+        "calc_moment_dev": 31.966544166207314,
+        "calc_streak": 0.11831632366054325,
+        "correlation": 0.6331512523479551,
+        "xsim": 0.30687700631826936
+      },
+      "status": "ok",
+      "id": "gt~iharperella~tv-cmp",
+      "slug": "iharperella+tv",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "iharperella",
+        "dipole": "tv"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_tv-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_tv-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella_tv-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-fieldmap+iharperella+ilsqr",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 29.63377094268799,
+      "metrics": {
+        "nrmse": 82.27600049505794,
+        "nrmse_detrend": 141.8282023882694,
+        "nrmse_tissue": 139.07804770417988,
+        "nrmse_blood": 420.96085154553646,
+        "nrmse_dgm": 83.26924369270021,
+        "dgm_linearity": 0.4370047659103169,
+        "calc_moment_dev": 36.527534648776054,
+        "calc_streak": 0.13028685229280895,
+        "correlation": 0.5762445659509012,
+        "xsim": 0.2559732637515443
+      },
+      "status": "ok",
+      "id": "laplacian-fieldmap~iharperella~ilsqr-cmp",
+      "slug": "laplacian-fieldmap+iharperella+ilsqr",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-fieldmap",
+        "bfr": "iharperella",
+        "dipole": "ilsqr"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_ilsqr-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_ilsqr-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_ilsqr-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-fieldmap+iharperella+matlab-sti-ilsqr",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 124.63447523117065,
+      "metrics": {
+        "nrmse": 77.9326436206754,
+        "nrmse_detrend": 120.28943423622057,
+        "nrmse_tissue": 114.88049557647925,
+        "nrmse_blood": 346.9014232457277,
+        "nrmse_dgm": 71.99526508354597,
+        "dgm_linearity": 0.29392326985635997,
+        "calc_moment_dev": 26.03477121144533,
+        "calc_streak": 0.13401263194495117,
+        "correlation": 0.6392739778811998,
+        "xsim": 0.3191870909332513
+      },
+      "status": "ok",
+      "id": "laplacian-fieldmap~iharperella~matlab-sti-ilsqr-cmp",
+      "slug": "laplacian-fieldmap+iharperella+matlab-sti-ilsqr",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-fieldmap",
+        "bfr": "iharperella",
+        "dipole": "matlab-sti-ilsqr"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_matlab-sti-ilsqr-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_matlab-sti-ilsqr-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_matlab-sti-ilsqr-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-fieldmap+iharperella+matlab-sti-star",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 27.07199501991272,
+      "metrics": {
+        "nrmse": 81.39398918899188,
+        "nrmse_detrend": 135.39788515870003,
+        "nrmse_tissue": 132.717353817194,
+        "nrmse_blood": 390.17725566744735,
+        "nrmse_dgm": 77.13996042448424,
+        "dgm_linearity": 0.391298514313161,
+        "calc_moment_dev": 28.284211814403534,
+        "calc_streak": 0.16344693811052297,
+        "correlation": 0.5940963472335131,
+        "xsim": 0.2809371576990871
+      },
+      "status": "ok",
+      "id": "laplacian-fieldmap~iharperella~matlab-sti-star-cmp",
+      "slug": "laplacian-fieldmap+iharperella+matlab-sti-star",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-fieldmap",
+        "bfr": "iharperella",
+        "dipole": "matlab-sti-star"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_matlab-sti-star-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_matlab-sti-star-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_matlab-sti-star-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-fieldmap+iharperella+matlab-tkd",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 13.133815288543701,
+      "metrics": {
+        "nrmse": 80.31371121439635,
+        "nrmse_detrend": 128.74278696860992,
+        "nrmse_tissue": 123.8114356861389,
+        "nrmse_blood": 382.3270751137996,
+        "nrmse_dgm": 75.75360819058078,
+        "dgm_linearity": 0.34694952104514276,
+        "calc_moment_dev": 30.057191491127014,
+        "calc_streak": 0.14734414853821948,
+        "correlation": 0.613431074618351,
+        "xsim": 0.3036619393501116
+      },
+      "status": "ok",
+      "id": "laplacian-fieldmap~iharperella~matlab-tkd-cmp",
+      "slug": "laplacian-fieldmap+iharperella+matlab-tkd",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-fieldmap",
+        "bfr": "iharperella",
+        "dipole": "matlab-tkd"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_matlab-tkd-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_matlab-tkd-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_matlab-tkd-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-fieldmap+iharperella+medi",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 53.10947370529175,
+      "metrics": {
+        "nrmse": 85.85879407497409,
+        "nrmse_detrend": 136.61830566885868,
+        "nrmse_tissue": 130.78419895364846,
+        "nrmse_blood": 396.2802029091913,
+        "nrmse_dgm": 74.1309670026185,
+        "dgm_linearity": 0.28701328966843576,
+        "calc_moment_dev": 40.41363462805748,
+        "calc_streak": 0.1324937328378346,
+        "correlation": 0.5906461115531372,
+        "xsim": 0.3146142171582716
+      },
+      "status": "ok",
+      "id": "laplacian-fieldmap~iharperella~medi-cmp",
+      "slug": "laplacian-fieldmap+iharperella+medi",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-fieldmap",
+        "bfr": "iharperella",
+        "dipole": "medi"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_medi-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_medi-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_medi-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-fieldmap+iharperella+nltv",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 243.17976140975952,
+      "metrics": {
+        "nrmse": 107.29197161766713,
+        "nrmse_detrend": 176.72112663157242,
+        "nrmse_tissue": 175.4136133592955,
+        "nrmse_blood": 459.0501133668015,
+        "nrmse_dgm": 104.35620257850591,
+        "dgm_linearity": 0.2916682952787799,
+        "calc_moment_dev": 38.244647681713104,
+        "calc_streak": 0.1429962370392107,
+        "correlation": 0.4924832390476904,
+        "xsim": 0.18785972547225302
+      },
+      "status": "ok",
+      "id": "laplacian-fieldmap~iharperella~nltv-cmp",
+      "slug": "laplacian-fieldmap+iharperella+nltv",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-fieldmap",
+        "bfr": "iharperella",
+        "dipole": "nltv"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_nltv-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_nltv-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_nltv-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-fieldmap+iharperella+rts",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 10.929617881774902,
+      "metrics": {
+        "nrmse": 78.97098502386928,
+        "nrmse_detrend": 126.11194410179887,
+        "nrmse_tissue": 124.13840071655753,
+        "nrmse_blood": 363.4396041540591,
+        "nrmse_dgm": 68.59599459641755,
+        "dgm_linearity": 0.2403250947675687,
+        "calc_moment_dev": 26.063552781939507,
+        "calc_streak": 0.1191780813395152,
+        "correlation": 0.6213191216192437,
+        "xsim": 0.30485291093684647
+      },
+      "status": "ok",
+      "id": "laplacian-fieldmap~iharperella~rts-cmp",
+      "slug": "laplacian-fieldmap+iharperella+rts",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-fieldmap",
+        "bfr": "iharperella",
+        "dipole": "rts"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_rts-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_rts-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_rts-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-fieldmap+iharperella+tikhonov",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 3.928663969039917,
+      "metrics": {
+        "nrmse": 79.04679687624572,
+        "nrmse_detrend": 127.78761186016565,
+        "nrmse_tissue": 122.95840244402126,
+        "nrmse_blood": 379.82100232619416,
+        "nrmse_dgm": 75.47030381972962,
+        "dgm_linearity": 0.40596140817595483,
+        "calc_moment_dev": 31.240029096603394,
+        "calc_streak": 0.1468011631729041,
+        "correlation": 0.6162788466643213,
+        "xsim": 0.30096627341321747
+      },
+      "status": "ok",
+      "id": "laplacian-fieldmap~iharperella~tikhonov-cmp",
+      "slug": "laplacian-fieldmap+iharperella+tikhonov",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-fieldmap",
+        "bfr": "iharperella",
+        "dipole": "tikhonov"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_tikhonov-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_tikhonov-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_tikhonov-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-fieldmap+iharperella+tkd",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 2.9350361824035645,
+      "metrics": {
+        "nrmse": 81.97654100367222,
+        "nrmse_detrend": 130.77310238235222,
+        "nrmse_tissue": 125.47956234293441,
+        "nrmse_blood": 390.2072857753909,
+        "nrmse_dgm": 76.5307508078712,
+        "dgm_linearity": 0.3291198598030042,
+        "calc_moment_dev": 32.38005913794041,
+        "calc_streak": 0.1438960655349518,
+        "correlation": 0.6074387594586009,
+        "xsim": 0.30151955809850933
+      },
+      "status": "ok",
+      "id": "laplacian-fieldmap~iharperella~tkd-cmp",
+      "slug": "laplacian-fieldmap+iharperella+tkd",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-fieldmap",
+        "bfr": "iharperella",
+        "dipole": "tkd"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_tkd-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_tkd-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_tkd-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-fieldmap+iharperella+tsvd",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 3.0694429874420166,
+      "metrics": {
+        "nrmse": 81.37968896966913,
+        "nrmse_detrend": 136.2755775445948,
+        "nrmse_tissue": 134.24321088727075,
+        "nrmse_blood": 387.9762113794701,
+        "nrmse_dgm": 78.71751754699241,
+        "dgm_linearity": 0.3694998330109338,
+        "calc_moment_dev": 28.436871849000454,
+        "calc_streak": 0.14722820356737976,
+        "correlation": 0.5916120733951815,
+        "xsim": 0.2714173227975242
+      },
+      "status": "ok",
+      "id": "laplacian-fieldmap~iharperella~tsvd-cmp",
+      "slug": "laplacian-fieldmap+iharperella+tsvd",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-fieldmap",
+        "bfr": "iharperella",
+        "dipole": "tsvd"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_tsvd-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_tsvd-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_tsvd-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-fieldmap+iharperella+tv",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 32.25265669822693,
+      "metrics": {
+        "nrmse": 78.44616476225488,
+        "nrmse_detrend": 122.25010880117533,
+        "nrmse_tissue": 118.00412134249109,
+        "nrmse_blood": 366.1460800655904,
+        "nrmse_dgm": 69.30758517285665,
+        "dgm_linearity": 0.2662670272861498,
+        "calc_moment_dev": 31.966544166207314,
+        "calc_streak": 0.11831632366054325,
+        "correlation": 0.6331512523479551,
+        "xsim": 0.30687700631826936
+      },
+      "status": "ok",
+      "id": "laplacian-fieldmap~iharperella~tv-cmp",
+      "slug": "laplacian-fieldmap+iharperella+tv",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-fieldmap",
+        "bfr": "iharperella",
+        "dipole": "tv"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_tv-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_tv-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_iharperella_tv-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-fieldmap+iharperella+ilsqr",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 30.10880136489868,
+      "metrics": {
+        "nrmse": 82.27600049505794,
+        "nrmse_detrend": 141.8282023882694,
+        "nrmse_tissue": 139.07804770417988,
+        "nrmse_blood": 420.96085154553646,
+        "nrmse_dgm": 83.26924369270021,
+        "dgm_linearity": 0.4370047659103169,
+        "calc_moment_dev": 36.527534648776054,
+        "calc_streak": 0.13028685229280895,
+        "correlation": 0.5762445659509012,
+        "xsim": 0.2559732637515443
+      },
+      "status": "ok",
+      "id": "romeo-fieldmap~iharperella~ilsqr-cmp",
+      "slug": "romeo-fieldmap+iharperella+ilsqr",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-fieldmap",
+        "bfr": "iharperella",
+        "dipole": "ilsqr"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_ilsqr-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_ilsqr-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_ilsqr-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-fieldmap+iharperella+matlab-sti-ilsqr",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 128.51228594779968,
+      "metrics": {
+        "nrmse": 77.9326436206754,
+        "nrmse_detrend": 120.28943423622057,
+        "nrmse_tissue": 114.88049557647925,
+        "nrmse_blood": 346.9014232457277,
+        "nrmse_dgm": 71.99526508354597,
+        "dgm_linearity": 0.29392326985635997,
+        "calc_moment_dev": 26.03477121144533,
+        "calc_streak": 0.13401263194495117,
+        "correlation": 0.6392739778811998,
+        "xsim": 0.3191870909332513
+      },
+      "status": "ok",
+      "id": "romeo-fieldmap~iharperella~matlab-sti-ilsqr-cmp",
+      "slug": "romeo-fieldmap+iharperella+matlab-sti-ilsqr",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-fieldmap",
+        "bfr": "iharperella",
+        "dipole": "matlab-sti-ilsqr"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_matlab-sti-ilsqr-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_matlab-sti-ilsqr-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_matlab-sti-ilsqr-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-fieldmap+iharperella+matlab-sti-star",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 26.50430917739868,
+      "metrics": {
+        "nrmse": 81.39398918899188,
+        "nrmse_detrend": 135.39788515870003,
+        "nrmse_tissue": 132.717353817194,
+        "nrmse_blood": 390.17725566744735,
+        "nrmse_dgm": 77.13996042448424,
+        "dgm_linearity": 0.391298514313161,
+        "calc_moment_dev": 28.284211814403534,
+        "calc_streak": 0.16344693811052297,
+        "correlation": 0.5940963472335131,
+        "xsim": 0.2809371576990871
+      },
+      "status": "ok",
+      "id": "romeo-fieldmap~iharperella~matlab-sti-star-cmp",
+      "slug": "romeo-fieldmap+iharperella+matlab-sti-star",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-fieldmap",
+        "bfr": "iharperella",
+        "dipole": "matlab-sti-star"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_matlab-sti-star-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_matlab-sti-star-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_matlab-sti-star-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-fieldmap+iharperella+matlab-tkd",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 12.409736394882202,
+      "metrics": {
+        "nrmse": 80.31371121439635,
+        "nrmse_detrend": 128.74278696860992,
+        "nrmse_tissue": 123.8114356861389,
+        "nrmse_blood": 382.3270751137996,
+        "nrmse_dgm": 75.75360819058078,
+        "dgm_linearity": 0.34694952104514276,
+        "calc_moment_dev": 30.057191491127014,
+        "calc_streak": 0.14734414853821948,
+        "correlation": 0.613431074618351,
+        "xsim": 0.3036619393501116
+      },
+      "status": "ok",
+      "id": "romeo-fieldmap~iharperella~matlab-tkd-cmp",
+      "slug": "romeo-fieldmap+iharperella+matlab-tkd",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-fieldmap",
+        "bfr": "iharperella",
+        "dipole": "matlab-tkd"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_matlab-tkd-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_matlab-tkd-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_matlab-tkd-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-fieldmap+iharperella+medi",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 47.46159648895264,
+      "metrics": {
+        "nrmse": 85.85879407497409,
+        "nrmse_detrend": 136.61830566885868,
+        "nrmse_tissue": 130.78419895364846,
+        "nrmse_blood": 396.2802029091913,
+        "nrmse_dgm": 74.1309670026185,
+        "dgm_linearity": 0.28701328966843576,
+        "calc_moment_dev": 40.41363462805748,
+        "calc_streak": 0.1324937328378346,
+        "correlation": 0.5906461115531372,
+        "xsim": 0.3146142171582716
+      },
+      "status": "ok",
+      "id": "romeo-fieldmap~iharperella~medi-cmp",
+      "slug": "romeo-fieldmap+iharperella+medi",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-fieldmap",
+        "bfr": "iharperella",
+        "dipole": "medi"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_medi-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_medi-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_medi-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-fieldmap+iharperella+nltv",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 229.67603135108948,
+      "metrics": {
+        "nrmse": 107.29197161766713,
+        "nrmse_detrend": 176.72112663157242,
+        "nrmse_tissue": 175.4136133592955,
+        "nrmse_blood": 459.0501133668015,
+        "nrmse_dgm": 104.35620257850591,
+        "dgm_linearity": 0.2916682952787799,
+        "calc_moment_dev": 38.244647681713104,
+        "calc_streak": 0.1429962370392107,
+        "correlation": 0.4924832390476904,
+        "xsim": 0.18785972547225302
+      },
+      "status": "ok",
+      "id": "romeo-fieldmap~iharperella~nltv-cmp",
+      "slug": "romeo-fieldmap+iharperella+nltv",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-fieldmap",
+        "bfr": "iharperella",
+        "dipole": "nltv"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_nltv-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_nltv-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_nltv-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-fieldmap+iharperella+rts",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 12.086884260177612,
+      "metrics": {
+        "nrmse": 78.97098502386928,
+        "nrmse_detrend": 126.11194410179887,
+        "nrmse_tissue": 124.13840071655753,
+        "nrmse_blood": 363.4396041540591,
+        "nrmse_dgm": 68.59599459641755,
+        "dgm_linearity": 0.2403250947675687,
+        "calc_moment_dev": 26.063552781939507,
+        "calc_streak": 0.1191780813395152,
+        "correlation": 0.6213191216192437,
+        "xsim": 0.30485291093684647
+      },
+      "status": "ok",
+      "id": "romeo-fieldmap~iharperella~rts-cmp",
+      "slug": "romeo-fieldmap+iharperella+rts",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-fieldmap",
+        "bfr": "iharperella",
+        "dipole": "rts"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_rts-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_rts-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_rts-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-fieldmap+iharperella+tikhonov",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 3.066465139389038,
+      "metrics": {
+        "nrmse": 79.04679687624572,
+        "nrmse_detrend": 127.78761186016565,
+        "nrmse_tissue": 122.95840244402126,
+        "nrmse_blood": 379.82100232619416,
+        "nrmse_dgm": 75.47030381972962,
+        "dgm_linearity": 0.40596140817595483,
+        "calc_moment_dev": 31.240029096603394,
+        "calc_streak": 0.1468011631729041,
+        "correlation": 0.6162788466643213,
+        "xsim": 0.30096627341321747
+      },
+      "status": "ok",
+      "id": "romeo-fieldmap~iharperella~tikhonov-cmp",
+      "slug": "romeo-fieldmap+iharperella+tikhonov",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-fieldmap",
+        "bfr": "iharperella",
+        "dipole": "tikhonov"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_tikhonov-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_tikhonov-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_tikhonov-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-fieldmap+iharperella+tkd",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 3.0598018169403076,
+      "metrics": {
+        "nrmse": 81.97654100367222,
+        "nrmse_detrend": 130.77310238235222,
+        "nrmse_tissue": 125.47956234293441,
+        "nrmse_blood": 390.2072857753909,
+        "nrmse_dgm": 76.5307508078712,
+        "dgm_linearity": 0.3291198598030042,
+        "calc_moment_dev": 32.38005913794041,
+        "calc_streak": 0.1438960655349518,
+        "correlation": 0.6074387594586009,
+        "xsim": 0.30151955809850933
+      },
+      "status": "ok",
+      "id": "romeo-fieldmap~iharperella~tkd-cmp",
+      "slug": "romeo-fieldmap+iharperella+tkd",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-fieldmap",
+        "bfr": "iharperella",
+        "dipole": "tkd"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_tkd-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_tkd-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_tkd-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-fieldmap+iharperella+tsvd",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 2.9209799766540527,
+      "metrics": {
+        "nrmse": 81.37968896966913,
+        "nrmse_detrend": 136.2755775445948,
+        "nrmse_tissue": 134.24321088727075,
+        "nrmse_blood": 387.9762113794701,
+        "nrmse_dgm": 78.71751754699241,
+        "dgm_linearity": 0.3694998330109338,
+        "calc_moment_dev": 28.436871849000454,
+        "calc_streak": 0.14722820356737976,
+        "correlation": 0.5916120733951815,
+        "xsim": 0.2714173227975242
+      },
+      "status": "ok",
+      "id": "romeo-fieldmap~iharperella~tsvd-cmp",
+      "slug": "romeo-fieldmap+iharperella+tsvd",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-fieldmap",
+        "bfr": "iharperella",
+        "dipole": "tsvd"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_tsvd-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_tsvd-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_tsvd-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-fieldmap+iharperella+tv",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 28.421087980270386,
+      "metrics": {
+        "nrmse": 78.44616476225488,
+        "nrmse_detrend": 122.25010880117533,
+        "nrmse_tissue": 118.00412134249109,
+        "nrmse_blood": 366.1460800655904,
+        "nrmse_dgm": 69.30758517285665,
+        "dgm_linearity": 0.2662670272861498,
+        "calc_moment_dev": 31.966544166207314,
+        "calc_streak": 0.11831632366054325,
+        "correlation": 0.6331512523479551,
+        "xsim": 0.30687700631826936
+      },
+      "status": "ok",
+      "id": "romeo-fieldmap~iharperella~tv-cmp",
+      "slug": "romeo-fieldmap+iharperella+tv",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-fieldmap",
+        "bfr": "iharperella",
+        "dipole": "tv"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_tv-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_tv-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_tv-cmp__error.nii.gz"
       }
     }
   ]
