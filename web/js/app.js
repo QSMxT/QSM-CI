@@ -109,6 +109,26 @@ async function loadAlgos() {
   } catch (e) { return []; }
 }
 
+// The Zenodo method registry (qsm_ci/registry.json), served alongside the site. Maps a method slug
+// to its concept DOI + published versions, so pages can show a citable DOI per method.
+let _registry = null;
+async function loadRegistry() {
+  if (_registry) return _registry;
+  try {
+    const res = await fetch("registry.json", { cache: "no-store" });
+    _registry = res.ok ? await res.json() : {};
+  } catch (e) { _registry = {}; }
+  return _registry;
+}
+// { concept_doi, version_doi, version, url } for a slug, or null if unpublished.
+function doiFor(registry, slug) {
+  const e = registry && registry[slug];
+  if (!e || !e.concept_doi) return null;
+  const v = (e.versions && e.versions[e.latest]) || {};
+  return { concept_doi: e.concept_doi, version_doi: v.version_doi || null,
+           version: e.latest || null, url: "https://doi.org/" + e.concept_doi };
+}
+
 function val(run, key) { return run.metrics?.[key] ?? run[key]; }
 
 function fmt(v, key) {
@@ -165,7 +185,7 @@ function injectChrome() {
         <div class="flex items-center gap-6">
           ${navLink("index.html", "Home", page === "index.html")}
           ${navLink("leaderboard.html", "Leaderboard", page === "leaderboard.html")}
-          ${navLink("methods.html", "Methods", page === "methods.html")}
+          ${navLink("running.html", "Run", page === "running.html")}
           ${navLink("submit.html", "Submit", page === "submit.html")}
           <button onclick="toggleTheme()" class="text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors" title="Toggle theme">${isDark ? SUN : MOON}</button>
           <a href="${GH}" class="text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors" title="GitHub">
@@ -189,4 +209,4 @@ function injectChrome() {
 document.addEventListener("DOMContentLoaded", injectChrome);
 
 // Exposed for module scripts (e.g. the NiiVue viewer, which must be a module for `import`).
-window.QSM = { GH, METRICS, STAGE_LABEL, MEDALS, loadRuns, loadAlgos, val, fmt, metricCols, heatColor };
+window.QSM = { GH, METRICS, STAGE_LABEL, MEDALS, loadRuns, loadAlgos, loadRegistry, doiFor, val, fmt, metricCols, heatColor };
