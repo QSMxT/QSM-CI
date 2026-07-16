@@ -1,0 +1,25 @@
+name: QSMnet+
+slug: qsmnet-plus
+stage: dipole
+description: >
+  QSMnet+ — the augmentation-trained variant of QSMnet: the same pretrained 3D U-Net for QSM dipole
+  inversion, trained with susceptibility-scaling data augmentation for a wider, more linear
+  susceptibility range. Consumes the local (tissue) field in ppm and produces susceptibility (ppm).
+  The input is normalized by the dataset mean/std stored with the checkpoint and the output is
+  de-normalized back to ppm. Trained at 1 mm isotropic; each dimension is zero-padded to a multiple
+  of 16 for the U-Net's four pool/deconv levels and cropped back afterwards. Runs CPU-only on the
+  legacy TensorFlow 1.14 / Python 3.7 stack.
+authors:
+- name: Jung W.
+- name: Yoon J.
+- name: Ji S.
+- name: Choi J.Y.
+- name: Kim J.M.
+- name: Nam Y.
+- name: Kim E.Y.
+- name: Lee J.
+doi: 10.1016/j.neuroimage.2020.116619
+code_url: https://github.com/SNU-LIST/QSMnet
+license: SNU-LIST academic license (LICENSE.pdf); used with author permission
+image: ghcr.io/astewartau/qsm-ci/qsmnet-plus:v1
+run: bash run.sh
