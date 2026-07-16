@@ -115,6 +115,29 @@
           </div>
         </div>
 
+        <!-- combined single-method algorithms (span BFR + dipole in one step; not grid cells) -->
+        <template x-if="combinedAlgos.length">
+          <div class="mt-6 border-t border-gray-100 pt-5">
+            <p class="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500">
+              Combined single-method algorithms
+              <span class="font-normal normal-case tracking-normal text-gray-400">— background removal + dipole inversion in one step</span>
+            </p>
+            <div class="flex flex-col gap-1.5">
+              <template x-for="r in combinedAlgos" :key="r.id">
+                <div class="flex items-center gap-3">
+                  <div class="w-40 shrink-0 truncate pr-1 text-right text-xs font-semibold text-gray-500" x-text="r.name"></div>
+                  <button @click="go(r)"
+                    :title="r.name+' — '+METRICS[metric].label+': '+fmt(val(r,metric),metric)"
+                    class="group relative h-14 w-40 shrink-0 rounded-xl text-white font-semibold text-sm shadow-sm transition hover:z-10 hover:scale-[1.06] hover:shadow-md focus:outline-none ring-1 ring-black/5"
+                    :style="'background:'+heat(norm(val(r,metric)))">
+                    <span x-text="fmt(val(r, metric), metric)"></span>
+                  </button>
+                </div>
+              </template>
+            </div>
+          </div>
+        </template>
+
         <!-- legend -->
         <div class="mt-5 flex items-center gap-3 text-xs text-gray-500">
           <span x-text="(METRICS[metric].better==='higher'?'worse':'better')"></span>
@@ -213,6 +236,16 @@
           const cell = {}; rs.forEach((r) => { cell[r.combo.bfr + "|" + r.combo.dipole] = r; });
           const vals = rs.map((r) => val(r, this.metric)).filter((v) => v != null);
           return { bfrs, dips, cell, lo: Math.min(...vals), hi: Math.max(...vals) };
+        },
+        // Single-method algorithms that span background removal + dipole inversion (e.g. TGV,
+        // QSMART, matlab-medi) in one step. They take the ground-truth field and produce a chimap,
+        // so they're directly comparable to full pipelines, but can't be a cell in the BFR×dipole
+        // grid. Shown as a separate row-group below the matrix (composed view only).
+        get combinedAlgos() {
+          return this.runs.filter((r) => r.mode === "isolated"
+            && (r.stage === "bfr+dipole" || r.stage === "end-to-end")
+            && r.artifact === "chimap" && val(r, this.metric) != null)
+            .slice().sort((a, b) => this.norm(val(b, this.metric)) - this.norm(val(a, this.metric)));
         },
         norm(v) { // 0 = worst, 1 = best (respecting metric direction)
           const m = this.matrix; if (v == null || m.hi === m.lo) return 0.5;
