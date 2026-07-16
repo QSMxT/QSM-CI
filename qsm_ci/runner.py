@@ -229,6 +229,16 @@ def _params_dict(args, stage: str) -> dict:
             "B0_dir": [float(x) for x in b0_dir], "voxel_size": [float(v) for v in voxel]}
 
 
+def _params_summary(params: dict, stage: str) -> str:
+    """One-line echo of the params actually used by a stage. Field-mapping consumes TE + B0;
+    BFR/dipole work in ppm and use only B0 direction + voxel size, so don't imply otherwise."""
+    if "phase" in STAGES[stage]["consumes"]:
+        return (f"TE={params['TE']} B0={params['B0']} "
+                f"B0_dir={params['B0_dir']} voxel_size={params['voxel_size']}")
+    return (f"B0_dir={params['B0_dir']} voxel_size={params['voxel_size']}  "
+            f"(TE / field strength not used by this stage)")
+
+
 def _looks_like_sidecar(obj: dict) -> bool:
     """A BIDS MEGRE sidecar carries these keys; a QSM-CI params.json does not."""
     return isinstance(obj, dict) and ("EchoTime" in obj or "MagneticFieldStrength" in obj)
@@ -291,18 +301,29 @@ def _inputs_summary(slug: str, algo: dict) -> str:
             continue
         opt = "  [optional]" if art in OPTIONAL_ARTIFACTS else ""
         lines.append(f"  --{art} PATH".ljust(22) + f"{ARTIFACT_FILE[art]} (NIfTI){opt}")
-    lines += ["", "Acquisition parameters — give a params.json OR the flags (either works):",
-              "  --params PATH".ljust(22) + "params.json"]
-    tag = "   [required here]"
-    lines.append("  --te SEC [SEC ...]".ljust(22) + "echo times, seconds" + (tag if needs_echo else ""))
-    lines.append("  --field-strength T".ljust(22) + "B0 in tesla" + (tag if needs_echo else ""))
-    lines.append("  --b0-dir X Y Z".ljust(22) + "unit B0 direction (default: 0 0 1)")
-    lines.append("  --voxel-size X Y Z".ljust(22) + "mm (default: from the input header)")
+    if needs_echo:
+        lines += ["", "Acquisition parameters — give a params.json OR the flags (either works):",
+                  "  --params PATH".ljust(22) + "params.json (or a BIDS phase sidecar)",
+                  "  --te SEC [SEC ...]".ljust(22) + "echo times, seconds   [required here]",
+                  "  --field-strength T".ljust(22) + "B0 in tesla   [required here]",
+                  "  --b0-dir X Y Z".ljust(22) + "unit B0 direction (default: 0 0 1)",
+                  "  --voxel-size X Y Z".ljust(22) + "mm (default: from the input header)"]
+    else:
+        # BFR/dipole take a field already in ppm — echo times and field strength don't enter the
+        # maths (the dipole kernel depends only on B0 direction + voxel size), so all of these are
+        # optional with sane defaults; a bare run works.
+        lines += ["", "Acquisition parameters (optional — a ppm field; echo times / field strength aren't used):",
+                  "  --b0-dir X Y Z".ljust(22) + "unit B0 direction (default: 0 0 1)",
+                  "  --voxel-size X Y Z".ljust(22) + "mm (default: from the input header)",
+                  "  --params PATH".ljust(22) + "params.json or a BIDS sidecar (optional)"]
     req_imgs = [a for a in consumes if a not in OPTIONAL_ARTIFACTS and a != "params"]
     example = " ".join(f"--{a} {a}.nii.gz" for a in req_imgs)
     if needs_echo:
         example += " --te 0.004 0.012 0.02 0.028 --field-strength 7"
-    lines += ["",
+    lines += ["", "Output:",
+              "  -o PATH".ljust(22) + f"where to write {produced}.nii.gz "
+              f"(default: ./{produced}.nii.gz; a directory is fine)",
+              "",
               f"Example:  qsm-ci run {slug} {example}",
               f"Add  --truth {produced}.nii.gz  [--seg dseg.nii.gz]  to score the output.",
               f"See   qsm-ci run {slug} --help  for runner/scoring options and method parameters."]
@@ -638,15 +659,13 @@ def run_command(argv, log=print) -> int:
                     if _looks_like_sidecar(obj):
                         params = _sidecar_to_params(src, obj, args, stage)
                         dest.write_text(json.dumps(params, indent=2) + "\n")
-                        log(f"  params (from BIDS sidecar): TE={params['TE']} B0={params['B0']} "
-                            f"B0_dir={params['B0_dir']} voxel_size={params['voxel_size']}")
+                        log("  params (from BIDS sidecar): " + _params_summary(params, stage))
                     else:
                         shutil.copy(src, dest)  # already a params.json — use verbatim
                 else:
                     params = _params_dict(args, stage)
                     dest.write_text(json.dumps(params, indent=2) + "\n")
-                    log(f"  params: TE={params['TE']} B0={params['B0']} "
-                        f"B0_dir={params['B0_dir']} voxel_size={params['voxel_size']}")
+                    log("  params: " + _params_summary(params, stage))
                 continue
             value = getattr(args, art, None)
             if not value:
