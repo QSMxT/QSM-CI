@@ -13,6 +13,13 @@
 # with values ~[-0.9, 0.5] ppm). The V-Net output (tanh) is susceptibility in ppm. No Hz/rad/ppm
 # rescaling is applied. predict.py handles NIfTI<->array and preserves the mask grid / affine.
 #
+# Field POLARITY: QSM-CI's field is simulated by qsm-forward with the dipole kernel
+# D = 1/3 - kz^2/k^2  (field = ifft(fft(chi) * D)). AutoQSM was trained on the OPPOSITE field
+# convention (the QSMnet-lineage D = kz^2/k^2 - 1/3), so feeding the QSM-CI field as-is makes the
+# V-Net emit -chi (isolated corr/xsim came out negative: xsim=-0.033, corr=-0.505). We therefore
+# NEGATE the input field to match the training polarity; the network then emits correctly-signed chi
+# (verified: isolated corr flips to +0.53). This is an input-convention fix, not an output negation.
+#
 # Acquisition parameters are injected as env vars (see CONTRACT.md); AutoQSM needs none of them (it
 # has no dipole-kernel orientation input — orientation is baked into the trained weights).
 set -euo pipefail
@@ -26,6 +33,18 @@ export TF_CPP_MIN_LOG_LEVEL="${TF_CPP_MIN_LOG_LEVEL:-2}"
 # baked in the image at $AUTOQSM_HOME (default /opt/AutoQSM).
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# Negate the totalfield into a temp NIfTI so the baked predict.py / V-Net is untouched (input-only,
+# convention-matching fix). Uses the numpy/nibabel already in the image.
+WORK="$(mktemp -d)"
+trap 'rm -rf "$WORK"' EXIT
+python - "$IN/totalfield.nii.gz" "$WORK/totalfield.nii.gz" <<'PY'
+import sys, numpy as np, nibabel as nib
+nii = nib.load(sys.argv[1])
+neg = nib.Nifti1Image(-np.asarray(nii.get_fdata(), dtype=np.float32), nii.affine, nii.header)
+neg.set_data_dtype(np.float32)
+nib.save(neg, sys.argv[2])
+PY
+
 python "$HERE/predict.py" \
-  "$IN/totalfield.nii.gz" \
+  "$WORK/totalfield.nii.gz" \
   "$OUT/chimap.nii.gz"
