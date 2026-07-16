@@ -34,8 +34,12 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "slugs=[\"${{ inputs.slug }}\"]" >> "$GITHUB_OUTPUT"
           else
+            # Candidate slugs from the diff, then keep only those that still exist — a submission
+            # that was *deleted* (or a non-submission file under algorithms/) has no algorithm.yml
+            # and can't be evaluated, so drop it instead of failing on it.
             git diff --name-only origin/${{ github.base_ref }}... \
               | grep '^algorithms/' | cut -d/ -f2 | grep -v '^_' | sort -u \
+              | while read -r slug; do [ -f "algorithms/$slug/algorithm.yml" ] && echo "$slug"; done \
               | jq -R . | jq -sc . | sed 's/^/slugs=/' >> "$GITHUB_OUTPUT"
           fi
 
