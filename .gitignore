@@ -57,3 +57,6 @@ algorithms/*/sti_support/
 # Dockerfile. Keeping the Dockerfile out of the checkout makes pipeline.build_env pull it.
 # (Dockerfile content is documented in each submission's BUILD.md.)
 algorithms/matlab-*/Dockerfile
+
+# Large network weights are build-time deps (fetched at build), never committed.
+algorithms/*/*.mat

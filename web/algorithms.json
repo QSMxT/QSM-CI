@@ -263,6 +263,21 @@
       "parameters": []
     },
     {
+      "slug": "matlab-bfrnet",
+      "name": "BFRnet",
+      "stage": "bfr",
+      "engine": null,
+      "description": "Deep-learning background field removal (BFRnet), a 3D Octave-convolution DAG network trained to predict the background field of the brain \u2014 including brains with significant pathological susceptibility sources (haemorrhage, calcification). Consumes the total field (ppm) and predicts the background field; the local tissue field is total \u2212 background, masked. The MATLAB Deep Learning Toolbox network is compiled with the MATLAB Compiler and run on the license-free MATLAB Runtime.",
+      "citation": null,
+      "doi": "10.1016/j.zemedi.2022.08.001",
+      "code_url": "https://github.com/sunhongfu/BFRnet",
+      "license": "Used with author permission",
+      "authors": [
+        "Xuanyu Zhu, Yang Gao, Feng Liu, Stuart Crozier, Hongfu Sun"
+      ],
+      "parameters": []
+    },
+    {
       "slug": "matlab-medi",
       "name": "MEDI (MATLAB)",
       "stage": "bfr+dipole",
