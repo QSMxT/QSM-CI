@@ -67,7 +67,9 @@ jobs:
             ${{ github.event.inputs.only && format('--only {0}', github.event.inputs.only) || '' }}
 
       - name: Commit updated registry
-        if: steps.t.outputs.target == 'production'   # sandbox runs are throwaway (test the flow only)
+        # always() so a partial failure (some methods errored) still commits the ones that DID
+        # publish — otherwise their minted DOIs are lost and a re-run would duplicate them.
+        if: always() && steps.t.outputs.target == 'production'   # sandbox runs are throwaway
         env:
           MAPPING: ${{ steps.t.outputs.mapping }}
         run: |
