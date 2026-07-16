@@ -361,18 +361,25 @@ def check_docker() -> bool:  # kept for back-compat
 
 
 def _build_oci(algo: dict, engine: str, log) -> str:
-    """docker/podman: build a Dockerfile if present, else pull image:. Returns the image ref."""
-    if (algo["dir"] / "Dockerfile").exists():
-        tag = f"qsm-ci-local/{algo['slug']}:latest"
-        log(f"⚙ building image from Dockerfile → {tag}")
-        subprocess.run([engine, "build", "-q", "-t", tag, str(algo["dir"])], check=True)
-        return tag
-    tag = algo["image"]
+    """docker/podman: PULL the submission's prebuilt image: and return its ref — never build.
+
+    CI must not build containers. Every submission publishes a prebuilt ``image:``; a folder
+    Dockerfile is only the build recipe (used out-of-band to produce that image), never built here.
+    Pull the tag; if the pull fails (offline / registry hiccup) fall back to a locally cached copy;
+    if neither is available, stop with a clear message telling the author to build and push first."""
+    tag = algo.get("image")
     if not tag:
-        raise SystemExit("algorithm.yml has no image: and no Dockerfile to build")
-    if subprocess.run([engine, "image", "inspect", tag], capture_output=True).returncode != 0:
-        log(f"↓ pulling {tag}")
-        subprocess.run([engine, "pull", tag], check=True)
+        raise SystemExit(
+            "algorithm.yml has no image:. Publish a prebuilt image (build and push it first) and set "
+            "image: to its reference — the runner pulls images, it does not build containers.")
+    log(f"↓ pulling {tag}")
+    if subprocess.run([engine, "pull", tag], capture_output=True).returncode != 0:
+        # Offline / registry hiccup — fall back to a locally cached copy if one exists.
+        if subprocess.run([engine, "image", "inspect", tag], capture_output=True).returncode != 0:
+            raise SystemExit(
+                f"could not pull {tag} and no local copy is cached. Build and push the image first; "
+                "the runner does not build containers (a folder Dockerfile is only the build recipe).")
+        log(f"  (pull failed — using locally cached {tag})")
     return tag
 
 

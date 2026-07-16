@@ -2,8 +2,10 @@
 """QSM-CI pipeline runner — isolated + composed evaluation.
 
 Discovers stage submissions under algorithms/, runs them on a dataset, scores each produced
-artifact with qsm-eval, and writes results/ entries. Runs submissions directly via their run.sh
-(no Docker) so it works locally; the CI workflows mirror this with containers.
+artifact with qsm-eval, and writes results/ entries. The `local` runner runs submissions directly
+via their run.sh (no Docker) so it works locally; the `docker` runner (CI) delegates each run to the
+installed `qsm-ci run` CLI, which pulls the prebuilt image, mounts run.sh, and injects QSMCI_* env
+vars — one run path shared with the CLI, so the two harnesses can't drift.
 
 Modes (see stages.yml):
   isolated  — feed each stage/span its GROUND-TRUTH consumed artifacts; score its outputs vs GT.
@@ -107,33 +109,22 @@ def prepare_input(consumes: list[str], sources: dict[str, Path], dest: Path) -> 
         shutil.copy(src, dest / ARTIFACT_FILE[art])
 
 
-_built: dict[str, str] = {}
+def _cli_run_argv(algo: dict, input_dir: Path, output_dir: Path) -> list[str]:
+    """Build the `qsm-ci run …` argv that reproduces this submission's isolated docker run.
 
-
-def build_env(algo: dict) -> str:
-    """Resolve the submission's ENVIRONMENT image (build/setup phase — network allowed).
-
-    - If the folder has a Dockerfile, build it (a base image + any toolbox downloads). The code is
-      NOT baked in; it is mounted at run time.
-    - Otherwise use `image:` (a ready base, e.g. a MATLAB Runtime container), pulling if not local.
-    Returns the image tag to run offline.
-    """
-    if algo["slug"] in _built:
-        return _built[algo["slug"]]
-    if (algo["dir"] / "Dockerfile").exists():
-        tag = f"qsm-ci-env/{algo['slug']}:latest"
-        subprocess.run(["docker", "build", "-q", "-t", tag, str(algo["dir"])], check=True)
-    else:
-        tag = algo["image"]
-        # Always pull: submissions push updated builds to the SAME tag (e.g. matlab-*:v1), so a
-        # stale copy cached from a prior run would otherwise be used silently (docker image inspect
-        # succeeds and skips the pull). `docker pull` is cheap when the digest already matches.
-        if subprocess.run(["docker", "pull", tag], capture_output=True).returncode != 0:
-            # Offline / registry hiccup — fall back to a locally cached image if one exists.
-            if subprocess.run(["docker", "image", "inspect", tag], capture_output=True).returncode != 0:
-                raise RuntimeError(f"cannot pull or find image {tag}")
-    _built[algo["slug"]] = tag
-    return tag
+    Each consumed artifact becomes a `--<artifact> <input_dir>/<file>` flag (magnitude is optional —
+    only passed when present); the produced artifact is written with `-o <output_dir>/<file>`. The
+    CLI owns image resolution, mounting run.sh, and injecting the QSMCI_* acquisition env vars — so
+    the scorer no longer duplicates (and drifts from) that logic."""
+    produced = algo["produces"][0]
+    argv = ["qsm-ci", "run", str(algo["dir"])]
+    for art in algo["consumes"]:
+        f = input_dir / ARTIFACT_FILE[art]
+        if art == "magnitude" and not f.exists():
+            continue  # optional — only some methods use it
+        argv += [f"--{art}", str(f)]
+    argv += ["-o", str(output_dir / ARTIFACT_FILE[produced]), "--runner", "docker"]
+    return argv
 
 
 def run_algo(algo: dict, input_dir: Path, output_dir: Path, runner: str = "local") -> float:
@@ -142,15 +133,11 @@ def run_algo(algo: dict, input_dir: Path, output_dir: Path, runner: str = "local
     output_dir.mkdir(parents=True)
     t0 = time.time()
     if runner == "docker":
-        import os
-        # Run phase: no network, read-only input, the submission's CODE mounted at /algo (not baked).
-        subprocess.run([
-            "docker", "run", "--rm", "--network", "none",
-            "--user", f"{os.getuid()}:{os.getgid()}",
-            "-v", f"{algo['dir']}:/algo:ro",
-            "-v", f"{input_dir}:/input:ro", "-v", f"{output_dir}:/output",
-            algo["image"], "bash", "/algo/run.sh",
-        ], check=True)
+        # Delegate to the installed `qsm-ci` CLI (a console script) rather than reimplementing the
+        # container run here. The CLI resolves the folder, pulls the prebuilt image, mounts run.sh
+        # read-only, and injects the QSMCI_* env vars (TE/B0/…) — the very env vars this scorer used
+        # to omit, which DNF'd submissions that read acquisition params through them.
+        subprocess.run(_cli_run_argv(algo, input_dir, output_dir), check=True)
     else:
         subprocess.run(["bash", str(algo["dir"] / "run.sh"), str(input_dir), str(output_dir)],
                        check=True)
@@ -260,23 +247,9 @@ def main() -> None:
     runs: list[dict] = []
     args.work.mkdir(parents=True, exist_ok=True)
 
-    # Build/setup phase (network allowed): resolve each submission's environment image. Code is
-    # mounted at run time, not baked. A submission whose env can't be built is excluded (DNF).
-    if args.runner == "docker":
-        ok = []
-        iso_only = args.focus or args.only  # in pure isolated mode, only this slug needs building
-        for a in algos:
-            if iso_only and a["slug"] != iso_only and args.mode == "isolated":
-                ok.append(a)
-                continue
-            try:
-                a["image"] = build_env(a)
-                ok.append(a)
-            except Exception as e:
-                print(f"  build     {a['slug']:<16} env FAILED ({e}) — excluded")
-                runs.append(dnf(f"{a['slug']}-iso", a["slug"], a["slug"], a["stage"], "isolated", args.track))
-        algos = ok
-
+    # Image resolution (pull, network allowed) is owned by the `qsm-ci` CLI now — each run_algo call
+    # in docker mode shells out to `qsm-ci run …`, which pulls the submission's prebuilt image. A
+    # submission whose image can't be pulled DNFs at run time (per-run, doesn't sink the batch).
     iso_target = args.focus or args.only  # isolated runs only this slug when set
 
     # -------- isolated (independent runs -> parallel) --------
