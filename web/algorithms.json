@@ -146,6 +146,131 @@
       ]
     },
     {
+      "slug": "matlab-medi",
+      "name": "MEDI (MATLAB)",
+      "stage": "bfr+dipole",
+      "engine": null,
+      "description": "Morphology Enabled Dipole Inversion (Cornell MEDI toolbox), compiled from MATLAB and run on the license-free MATLAB Runtime. Takes the total field, removes the background field with PDF, then solves the L1 morphology-regularized dipole inversion.",
+      "citation": null,
+      "doi": "10.1002/mrm.26946",
+      "code_url": null,
+      "license": "See Cornell MEDI toolbox license",
+      "authors": [
+        "QSM-CI"
+      ],
+      "parameters": [
+        {
+          "name": "lambda",
+          "default": 100,
+          "description": "data-fidelity weight (larger = closer data fit, less regularization)"
+        },
+        {
+          "name": "smv_radius",
+          "default": 5,
+          "description": "spherical-mean-value radius (mm) for extra background removal; 0 disables"
+        },
+        {
+          "name": "percentage",
+          "default": 0.9,
+          "description": "fraction of voxels kept as edges in the morphology gradient mask"
+        },
+        {
+          "name": "merit",
+          "default": 0,
+          "description": "model-error reduction (iterative reweighting); 1 enables"
+        }
+      ]
+    },
+    {
+      "slug": "matlab-sti-iharperella",
+      "name": "iHARPERELLA (STI Suite)",
+      "stage": "unwrap+bfr",
+      "engine": null,
+      "description": "Integrated phase unwrapping + background field removal (iHARPERELLA) from STI Suite v3, compiled from MATLAB and run on the license-free MATLAB Runtime. Operates on wrapped multi-echo phase and yields the local tissue field (echoes combined with optimal TE^2 weights).",
+      "citation": null,
+      "doi": "10.1016/j.neuroimage.2014.08.029",
+      "code_url": null,
+      "license": "See STI Suite license",
+      "authors": [
+        "Wei Li and Chunlei Liu"
+      ],
+      "parameters": [
+        {
+          "name": "niter",
+          "default": 40,
+          "description": "iHARPERELLA iteration count"
+        },
+        {
+          "name": "padsize",
+          "default": 12,
+          "description": "zero-pad size (voxels, isotropic) for numerical accuracy"
+        }
+      ]
+    },
+    {
+      "slug": "matlab-sti-ilsqr",
+      "name": "iLSQR (STI Suite)",
+      "stage": "dipole",
+      "engine": null,
+      "description": "Iterative LSQR dipole inversion from STI Suite v3 (the reference iLSQR implementation), compiled from MATLAB and run on the license-free MATLAB Runtime. Takes the local field and solves for susceptibility with streaking-artifact reduction.",
+      "citation": null,
+      "doi": "10.1002/nbm.3056",
+      "code_url": null,
+      "license": "See STI Suite license",
+      "authors": [
+        "Wei Li and Chunlei Liu"
+      ],
+      "parameters": [
+        {
+          "name": "padsize",
+          "default": 12,
+          "description": "zero-pad size (voxels, isotropic) to improve numerical accuracy of the inversion"
+        }
+      ]
+    },
+    {
+      "slug": "matlab-sti-star",
+      "name": "STAR-QSM (STI Suite)",
+      "stage": "dipole",
+      "engine": null,
+      "description": "STAR-QSM (streaking artifact reduction) dipole inversion from STI Suite v3, compiled from MATLAB and run on the license-free MATLAB Runtime. Fast two-level susceptibility inversion of the local field.",
+      "citation": null,
+      "doi": "10.1002/nbm.3383",
+      "code_url": null,
+      "license": "See STI Suite license",
+      "authors": [
+        "Hongjiang Wei and Chunlei Liu"
+      ],
+      "parameters": [
+        {
+          "name": "padsize",
+          "default": 12,
+          "description": "zero-pad size (voxels, isotropic) to improve numerical accuracy of the inversion"
+        }
+      ]
+    },
+    {
+      "slug": "matlab-sti-vsharp",
+      "name": "V-SHARP (STI Suite)",
+      "stage": "bfr",
+      "engine": null,
+      "description": "V-SHARP background field removal from STI Suite v3 (spatially-varying SMV deconvolution), compiled from MATLAB and run on the license-free MATLAB Runtime. Takes the total field and removes the background field to yield the local tissue field.",
+      "citation": null,
+      "doi": "10.1002/nbm.3056",
+      "code_url": null,
+      "license": "See STI Suite license",
+      "authors": [
+        "Hongjiang Wei and Chunlei Liu"
+      ],
+      "parameters": [
+        {
+          "name": "smvsize",
+          "default": 12,
+          "description": "maximum spherical-mean-value kernel size (voxels) for the SMV deconvolution"
+        }
+      ]
+    },
+    {
       "slug": "matlab-tkd",
       "name": "TKD (MATLAB)",
       "stage": "dipole",
@@ -258,6 +383,21 @@
           "description": "Tikhonov regularization"
         }
       ]
+    },
+    {
+      "slug": "romeo-fieldmap",
+      "name": "ROMEO field mapping",
+      "stage": "field-mapping",
+      "engine": null,
+      "description": "Multi-echo B0 field mapping by ROMEO phase unwrapping (via the QSMxT/QSM.rs engine) with a per-voxel linear fit of unwrapped phase over echoes. Alternative to Laplacian field mapping.",
+      "citation": null,
+      "doi": "10.1002/mrm.28563",
+      "code_url": null,
+      "license": "MIT",
+      "authors": [
+        "Dymerska and Eckstein et al."
+      ],
+      "parameters": []
     },
     {
       "slug": "rts",

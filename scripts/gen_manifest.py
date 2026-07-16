@@ -28,11 +28,13 @@ def entry(meta: dict) -> dict:
         "code_url": meta.get("code_url"),
         "license": meta.get("license"),
         "authors": author_names,
-        "parameters": meta.get("parameters") or [],
+        # `parameters:` is the canonical key; tolerate a stray `params:` so a mistyped
+        # submission still shows its parameter rows instead of silently dropping them.
+        "parameters": meta.get("parameters") or meta.get("params") or [],
     }
 
 
-def main() -> None:
+def build() -> dict:
     algos = []
     for d in sorted((ROOT / "algorithms").glob("*/")):
         mfile = d / "algorithm.yml"
@@ -41,9 +43,18 @@ def main() -> None:
         meta = yaml.safe_load(mfile.read_text())
         meta.setdefault("slug", d.name)
         algos.append(entry(meta))
+    return {"algorithms": algos}
+
+
+def render(manifest: dict) -> str:
+    return json.dumps(manifest, indent=2) + "\n"
+
+
+def main() -> None:
+    manifest = build()
     out = ROOT / "web" / "algorithms.json"
-    out.write_text(json.dumps({"algorithms": algos}, indent=2) + "\n")
-    print(f"wrote {out} ({len(algos)} algorithms)")
+    out.write_text(render(manifest))
+    print(f"wrote {out} ({len(manifest['algorithms'])} algorithms)")
 
 
 if __name__ == "__main__":

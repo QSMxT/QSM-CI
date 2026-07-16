@@ -58,7 +58,7 @@ jobs:
       - name: Scorer selfcheck + unit tests
         run: |
           python eval/qsm_eval.py --selfcheck
-          pytest -q eval/test_metrics.py
+          pytest -q eval/test_metrics.py tests/test_manifest.py
 
       - name: Scaffold check (qsm-ci new)
         run: |
