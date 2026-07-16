@@ -150,7 +150,7 @@
 
     <!-- table -->
     <div class="mt-6 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-      <div class="overflow-x-auto">
+      <div class="overflow-x-auto" x-show="!loading" x-cloak>
         <table class="w-full text-sm whitespace-nowrap">
           <thead class="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
             <tr>
@@ -184,7 +184,14 @@
           </tbody>
         </table>
       </div>
-      <p x-show="rows.length===0" class="px-5 py-10 text-center text-gray-400">No results for this view yet.</p>
+      <div x-show="loading" x-cloak class="px-5 py-10 flex items-center justify-center gap-3 text-gray-400">
+        <svg class="animate-spin h-5 w-5 text-emerald-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+        </svg>
+        <span>Loading results…</span>
+      </div>
+      <p x-show="!loading && rows.length===0" x-cloak class="px-5 py-10 text-center text-gray-400">No results for this view yet.</p>
     </div>
   </main>
 
@@ -198,11 +205,16 @@
         runs: [], registry: {}, view: "composed", stage: "dipole", fmap: "gt",
         metric: "xsim", sortKey: "xsim", sortDir: "desc", filter: "",
         colMenu: false, selectedCols: ["nrmse", "correlation", "xsim", "runtime_s"],
+        loading: true,
         async init() {
-          this.runs = await loadRuns();
-          this.registry = await loadRegistry();
-          const st = this.stages(); if (!st.includes(this.stage)) this.stage = st[0] || "dipole";
-          if (!this.runs.some((r) => r.mode === "composed")) this.view = "isolated";
+          try {
+            this.runs = await loadRuns();
+            this.registry = await loadRegistry();
+            const st = this.stages(); if (!st.includes(this.stage)) this.stage = st[0] || "dipole";
+            if (!this.runs.some((r) => r.mode === "composed")) this.view = "isolated";
+          } finally {
+            this.loading = false;   // only reveal the empty-state once the fetch has actually resolved
+          }
         },
         // Zenodo DOI for a method row (isolated view only; pipelines aren't single methods).
         doi(r) { return this.view === "isolated" ? doiFor(this.registry, r.slug) : null; },
