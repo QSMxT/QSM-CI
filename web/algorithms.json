@@ -83,6 +83,31 @@
       ]
     },
     {
+      "slug": "iqsm",
+      "name": "iQSM",
+      "stage": "end-to-end",
+      "engine": "iQSM (PyTorch)",
+      "description": "iQSM \u2014 instant single-step QSM from raw MRI phase using Laplacian-enabled deep neural networks (LoT-Unet). A single deep network maps raw wrapped phase directly to susceptibility, performing phase unwrapping, background-field removal, and dipole inversion in one pass. Multi-echo phase is reconstructed per echo and combined with magnitude x TE^2 weighting. Runs CPU-only with a CPU-only PyTorch wheel; pretrained weights (HuggingFace sunhongfu/iQSM) are baked into the image.",
+      "citation": null,
+      "doi": "10.1016/j.neuroimage.2022.119410",
+      "code_url": "https://github.com/sunhongfu/iQSM",
+      "license": "See repository (used with author permission)",
+      "authors": [
+        "Gao Y.",
+        "Xiong Z.",
+        "Fazlollahi A.",
+        "Nestor P.J.",
+        "Vegh V.",
+        "Nasrallah F.",
+        "Winter C.",
+        "Pike G.B.",
+        "Crozier S.",
+        "Liu F.",
+        "Sun H."
+      ],
+      "parameters": []
+    },
+    {
       "slug": "ismv",
       "name": "iSMV",
       "stage": "bfr",
