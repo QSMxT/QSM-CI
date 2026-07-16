@@ -50,8 +50,8 @@ function renderHowToRun() {
   } else if (bySlug[run.slug]) {
     lines.push(runLine(run.slug, run.stage, true));
   }
-  if (!lines.length) { el.style.display = "none"; return; }
-  el.style.display = "";
+  if (!lines.length) { el.classList.add("hidden"); return; }
+  el.classList.remove("hidden");  // the div ships with Tailwind `hidden`; clear the class, not just inline style
   const full = "pip install qsm-ci\n" + lines.join("\n");
   const chained = lines.length > 1;
   el.innerHTML = `
