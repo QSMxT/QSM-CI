@@ -616,6 +616,29 @@
           "description": "\u00d7 max voxel size"
         }
       ]
+    },
+    {
+      "slug": "xqsm",
+      "name": "xQSM",
+      "stage": "dipole",
+      "engine": null,
+      "description": "xQSM \u2014 an octave-convolutional, noise-regularized U-Net for QSM dipole inversion. Consumes the local (tissue) field in ppm and produces susceptibility (ppm) using the pretrained in-vivo checkpoint. The octave convolution adds an X-shaped multi-resolution feature exchange on a U-net backbone with a noise-adding regularization layer. Runs CPU-only with PyTorch (no GPU); the network auto zero-pads each dimension to a multiple of 8, so there is no fixed matrix size.",
+      "citation": null,
+      "doi": "10.1002/nbm.4461",
+      "code_url": "https://github.com/sunhongfu/xQSM",
+      "license": "Used with author permission (Hongfu Sun); see repository for terms.",
+      "authors": [
+        "Gao Y.",
+        "Zhu X.",
+        "Moffat B.A.",
+        "Glarin R.",
+        "Wilman A.H.",
+        "Pike G.B.",
+        "Crozier S.",
+        "Liu F.",
+        "Sun H."
+      ],
+      "parameters": []
     }
   ]
 }
