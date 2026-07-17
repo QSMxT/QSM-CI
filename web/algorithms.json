@@ -217,7 +217,7 @@
       "description": "Multi-echo B0 field mapping by Laplacian phase unwrapping + linear fit over echoes. Reference `field-mapping`-stage submission (raw phase -> total field).",
       "citation": null,
       "doi": null,
-      "code_url": null,
+      "code_url": "https://github.com/QSMxT/QSM-CI",
       "license": "MIT",
       "authors": [
         "QSM-CI"
@@ -234,7 +234,12 @@
       "doi": "10.1002/nbm.3064",
       "code_url": "https://github.com/astewartau/QSM.rs",
       "license": "MIT",
-      "authors": [],
+      "authors": [
+        "Dong Zhou",
+        "Tian Liu",
+        "Pascal Spincemaille",
+        "Yi Wang"
+      ],
       "parameters": [
         {
           "name": "tol",
@@ -285,7 +290,7 @@
       "description": "Morphology Enabled Dipole Inversion (Cornell MEDI toolbox), compiled from MATLAB and run on the license-free MATLAB Runtime. Takes the total field, removes the background field with PDF, then solves the L1 morphology-regularized dipole inversion.",
       "citation": "Liu et al., NeuroImage 2012",
       "doi": "10.1016/j.neuroimage.2011.08.082",
-      "code_url": null,
+      "code_url": "http://pre.weill.cornell.edu/mri/pages/qsm.html",
       "license": "See Cornell MEDI toolbox license",
       "authors": [
         "Jing Liu",
@@ -331,7 +336,7 @@
       "description": "Integrated phase unwrapping + background field removal (iHARPERELLA) from STI Suite v3, compiled from MATLAB and run on the license-free MATLAB Runtime. Operates on wrapped multi-echo phase and yields the local tissue field (echoes combined with optimal TE^2 weights).",
       "citation": "Li et al., NMR Biomed 2014",
       "doi": "10.1002/nbm.3056",
-      "code_url": null,
+      "code_url": "https://people.eecs.berkeley.edu/~chunlei.liu/software.html",
       "license": "See STI Suite license",
       "authors": [
         "Wei Li",
@@ -361,7 +366,7 @@
       "description": "Iterative LSQR dipole inversion from STI Suite v3 (the reference iLSQR implementation), compiled from MATLAB and run on the license-free MATLAB Runtime. Takes the local field and solves for susceptibility with streaking-artifact reduction.",
       "citation": "Li et al., NeuroImage 2015",
       "doi": "10.1016/j.neuroimage.2014.12.043",
-      "code_url": null,
+      "code_url": "https://people.eecs.berkeley.edu/~chunlei.liu/software.html",
       "license": "See STI Suite license",
       "authors": [
         "Wei Li",
@@ -390,7 +395,7 @@
       "description": "STAR-QSM (streaking artifact reduction) dipole inversion from STI Suite v3, compiled from MATLAB and run on the license-free MATLAB Runtime. Fast two-level susceptibility inversion of the local field.",
       "citation": null,
       "doi": "10.1002/nbm.3383",
-      "code_url": null,
+      "code_url": "https://people.eecs.berkeley.edu/~chunlei.liu/software.html",
       "license": "See STI Suite license",
       "authors": [
         "Hongjiang Wei and Chunlei Liu"
@@ -411,7 +416,7 @@
       "description": "V-SHARP background field removal from STI Suite v3 (spatially-varying SMV deconvolution), compiled from MATLAB and run on the license-free MATLAB Runtime. Takes the total field and removes the background field to yield the local tissue field.",
       "citation": "Wu et al., Magn Reson Med 2012",
       "doi": "10.1002/mrm.23000",
-      "code_url": null,
+      "code_url": "https://people.eecs.berkeley.edu/~chunlei.liu/software.html",
       "license": "See STI Suite license",
       "authors": [
         "Bing Wu",
@@ -435,7 +440,7 @@
       "description": "Thresholded k-space division dipole inversion implemented in MATLAB and run on the license-free MATLAB Runtime. Reference `dipole`-stage submission demonstrating the MATLAB path.",
       "citation": "Shmueli et al., Magn Reson Med 2009",
       "doi": "10.1002/mrm.22135",
-      "code_url": null,
+      "code_url": "https://github.com/QSMxT/QSM-CI",
       "license": "MIT",
       "authors": [
         "Karin Shmueli",
@@ -530,11 +535,15 @@
       "stage": "dipole",
       "engine": "QSMxT / QSM.rs",
       "description": "Nonlocal Total Variation regularized inversion.",
-      "citation": "\u2014",
-      "doi": null,
+      "citation": "Kames et al., NeuroImage 2018",
+      "doi": "10.1016/j.neuroimage.2017.11.018",
       "code_url": "https://github.com/astewartau/QSM.rs",
       "license": "MIT",
-      "authors": [],
+      "authors": [
+        "Christian Kames",
+        "Vanessa Wiggermann",
+        "Alexander Rauscher"
+      ],
       "parameters": [
         {
           "name": "lambda",
@@ -558,7 +567,15 @@
       "doi": "10.1002/nbm.1670",
       "code_url": "https://github.com/astewartau/QSM.rs",
       "license": "MIT",
-      "authors": [],
+      "authors": [
+        "Tian Liu",
+        "Ildar Khalidov",
+        "Ludovic de Rochefort",
+        "Pascal Spincemaille",
+        "Jing Liu",
+        "A. John Tsiouris",
+        "Yi Wang"
+      ],
       "parameters": [
         {
           "name": "tol",
@@ -671,7 +688,10 @@
       "doi": "10.1002/mrm.24765",
       "code_url": "https://github.com/astewartau/QSM.rs",
       "license": "MIT",
-      "authors": [],
+      "authors": [
+        "Hongfu Sun",
+        "Alan H. Wilman"
+      ],
       "parameters": [
         {
           "name": "radius",
@@ -693,7 +713,7 @@
       "description": "Multi-echo B0 field mapping by ROMEO phase unwrapping (via the QSMxT/QSM.rs engine) with a per-voxel linear fit of unwrapped phase over echoes. Alternative to Laplacian field mapping.",
       "citation": null,
       "doi": "10.1002/mrm.28563",
-      "code_url": null,
+      "code_url": "https://github.com/astewartau/QSM.rs",
       "license": "MIT",
       "authors": [
         "Dymerska and Eckstein et al."
@@ -743,7 +763,12 @@
       "doi": "10.1016/j.neuroimage.2010.10.070",
       "code_url": "https://github.com/astewartau/QSM.rs",
       "license": "MIT",
-      "authors": [],
+      "authors": [
+        "Ferdinand Schweser",
+        "Andreas Deistung",
+        "Berengar Wendel Lehr",
+        "J\u00fcrgen Rainer Reichenbach"
+      ],
       "parameters": [
         {
           "name": "threshold",
@@ -767,7 +792,18 @@
       "doi": "10.1016/j.neuroimage.2015.02.041",
       "code_url": "https://github.com/astewartau/QSM.rs",
       "license": "MIT",
-      "authors": [],
+      "authors": [
+        "Christian Langkammer",
+        "Kristian Bredies",
+        "Benedikt A. Poser",
+        "Markus Barth",
+        "Gernot Reishofer",
+        "Audrey Peiwen Fan",
+        "Berkin Bilgic",
+        "Franz Fazekas",
+        "Caterina Mainero",
+        "Stefan Ropele"
+      ],
       "parameters": [
         {
           "name": "iterations",
@@ -776,12 +812,12 @@
         },
         {
           "name": "alpha1",
-          "default": 0.0015,
-          "description": "first-order weight"
+          "default": 0.0005,
+          "description": "first-order (gradient) weight"
         },
         {
           "name": "alpha0",
-          "default": 0.003,
+          "default": 0.0015,
           "description": "second-order weight"
         }
       ]
@@ -792,11 +828,19 @@
       "stage": "dipole",
       "engine": "QSMxT / QSM.rs",
       "description": "Closed-form L2 (Tikhonov) regularized inversion.",
-      "citation": "Kames et al., 2018",
-      "doi": null,
+      "citation": "Bilgic et al., JMRI 2014",
+      "doi": "10.1002/jmri.24365",
       "code_url": "https://github.com/astewartau/QSM.rs",
       "license": "MIT",
-      "authors": [],
+      "authors": [
+        "Berkin Bilgic",
+        "Itthi Chatnuntawech",
+        "Audrey P. Fan",
+        "Kawin Setsompop",
+        "Stephen F. Cauley",
+        "Lawrence L. Wald",
+        "Elfar Adalsteinsson"
+      ],
       "parameters": [
         {
           "name": "lambda",
@@ -841,7 +885,11 @@
       "doi": "10.1002/mrm.22334",
       "code_url": "https://github.com/astewartau/QSM.rs",
       "license": "MIT",
-      "authors": [],
+      "authors": [
+        "Sam Wharton",
+        "Andreas Sch\u00e4fer",
+        "Richard Bowtell"
+      ],
       "parameters": [
         {
           "name": "threshold",
@@ -856,11 +904,20 @@
       "stage": "dipole",
       "engine": "QSMxT / QSM.rs",
       "description": "Total Variation regularized dipole inversion solved with ADMM.",
-      "citation": "Bilgic et al., 2014",
-      "doi": null,
+      "citation": "Bilgic et al., MRM 2014",
+      "doi": "10.1002/mrm.25029",
       "code_url": "https://github.com/astewartau/QSM.rs",
       "license": "MIT",
-      "authors": [],
+      "authors": [
+        "Berkin Bilgic",
+        "Audrey P. Fan",
+        "Jonathan R. Polimeni",
+        "Stephen F. Cauley",
+        "Marta Bianciardi",
+        "Elfar Adalsteinsson",
+        "Lawrence L. Wald",
+        "Kawin Setsompop"
+      ],
       "parameters": [
         {
           "name": "lambda",
