@@ -51,7 +51,7 @@ def _pmap(items, fn):
 STAGES = {
     "field-mapping": {"consumes": ["phase", "magnitude", "mask", "params"], "produces": ["totalfield"]},
     "bfr": {"consumes": ["totalfield", "mask", "params"], "produces": ["localfield"]},
-    "dipole": {"consumes": ["localfield", "mask", "params", "magnitude"], "produces": ["chimap"]},
+    "dipole": {"consumes": ["localfield", "mask", "params"], "produces": ["chimap"]},
     "unwrap+bfr": {"consumes": ["phase", "magnitude", "mask", "params"], "produces": ["localfield"]},
     "bfr+dipole": {"consumes": ["totalfield", "mask", "params", "magnitude"], "produces": ["chimap"]},
     "end-to-end": {"consumes": ["phase", "magnitude", "mask", "params"], "produces": ["chimap"]},
@@ -90,9 +90,16 @@ def discover_algorithms() -> list[dict]:
         if not stage:
             continue
         s = stage.group(1)
+        # A method may declare optional extra inputs (algorithm.yml `optional_inputs:`) beyond its
+        # stage's baseline — e.g. MEDI (dipole) uses magnitude for edge weighting. Append them so the
+        # scorer mounts + passes exactly what `qsm-ci run` accepts (its _consumes does the same);
+        # otherwise it passes a flag the CLI rejects (--magnitude) and the run DNFs.
+        opt = re.search(r"^optional_inputs:\s*\n((?:[ \t]*-[ \t]*\S+[ \t]*\n?)+)", text, re.M)
+        optional = re.findall(r"-[ \t]*(\S+)", opt.group(1)) if opt else []
+        consumes = STAGES[s]["consumes"] + [a for a in optional if a not in STAGES[s]["consumes"]]
         algos.append({
             "slug": d.name, "dir": d, "stage": s, "image": image.group(1) if image else None,
-            "consumes": STAGES[s]["consumes"], "produces": STAGES[s]["produces"],
+            "consumes": consumes, "produces": STAGES[s]["produces"],
         })
     return algos
 
