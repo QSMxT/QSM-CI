@@ -22,6 +22,10 @@ code_url: https://github.com/astewartau/QSM.rs
 license: MIT
 image: ghcr.io/astewartau/qsm-ci/qsmxt:v9.4.0
 run: bash run.sh
+# MEDI uses magnitude for its morphological (edge) weighting — the plain dipole stage doesn't take
+# magnitude, so this method opts it in as an optional input (surfaced by `qsm-ci run medi`).
+optional_inputs:
+  - magnitude
 parameters:
   - name: lambda
     default: 1e-4

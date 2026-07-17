@@ -56,7 +56,6 @@ steps:
         localfield: { type: File, inputBinding: { prefix: --localfield, position: 2 } }
         mask: { type: File, inputBinding: { prefix: --mask, position: 2 } }
         params: { type: "File?", inputBinding: { prefix: --params, position: 2 } }
-        magnitude: { type: "File?", inputBinding: { prefix: --magnitude, position: 2 } }
         out: { type: string, default: chimap.nii.gz, inputBinding: { prefix: -o, position: 2 } }
       outputs:
         chimap: { type: File, outputBinding: { glob: chimap.nii.gz } }
@@ -64,5 +63,4 @@ steps:
       localfield: bfr/localfield
       mask: mask
       params: params
-      magnitude: magnitude
     out: [chimap]

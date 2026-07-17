@@ -33,6 +33,18 @@ OPTIONAL_ARTIFACTS = {"magnitude"}
 STACKABLE_ARTIFACTS = {"phase", "magnitude"}
 
 
+def _consumes(algo: dict) -> list:
+    """Artifacts a method takes as input: its stage's consumes plus any optional extras the method
+    itself declares (`optional_inputs:` in algorithm.yml). The plain `dipole` stage takes only the
+    local field, but a few methods (e.g. MEDI) additionally use magnitude for data-consistency
+    weighting — they opt in so *their* help lists --magnitude without implying every dipole method
+    needs it. Extras must be known optional artifacts and are appended once, after the stage inputs."""
+    base = STAGES[algo["stage"]]["consumes"]
+    extra = [a for a in (algo.get("optional_inputs") or [])
+             if a in OPTIONAL_ARTIFACTS and a not in base]
+    return base + extra
+
+
 def _parse_manifest(algo_dir: Path) -> dict:
     spec = algo_dir / "algorithm.yml"
     if not spec.exists():
@@ -202,6 +214,17 @@ def _place_echoes(paths: list, dest: Path, log) -> None:
     log(f"  stacked {len(ordered)} echoes → {dest.name}")
 
 
+def _ensure_te(te: list, stage: str) -> list:
+    """BFR/dipole don't use TE physically — the field is already in ppm and the TE·B0 scaling that
+    some recon code applies cancels out — but that code still indexes TE(1). Supply a nominal
+    placeholder so an omitted --te writes TE=[1.0] rather than an empty list that blows up the
+    container (MATLAB: "Index exceeds array bounds"). Never fabricates TE for phase-consuming
+    stages (field-mapping / end-to-end) — those genuinely need a real echo time."""
+    if te or "phase" in STAGES[stage]["consumes"]:
+        return te
+    return [1.0]
+
+
 def _params_dict(args, stage: str) -> dict:
     """Assemble a params.json dict from --te/--field-strength/--b0-dir/--voxel-size (+ defaults).
 
@@ -217,6 +240,7 @@ def _params_dict(args, stage: str) -> dict:
         raise SystemExit(
             f"the {stage} stage needs echo times and field strength — pass "
             "--te SEC [SEC ...] and --field-strength TESLA, or give a --params file.")
+    te = _ensure_te(te, stage)  # BFR/dipole: nominal placeholder if omitted (cancels; never empty)
     if b0 is None:
         b0 = 3.0  # unused by BFR/dipole; a contract placeholder
     b0_dir = list(args.b0_dir) if args.b0_dir is not None else [0.0, 0.0, 1.0]
@@ -284,6 +308,7 @@ def _sidecar_to_params(path: Path, obj: dict, args, stage: str) -> dict:
         b0_dir = args.b0_dir
     if args.voxel_size is not None:
         voxel = args.voxel_size
+    te = _ensure_te(te, stage)  # BFR/dipole: nominal placeholder if the sidecar carried no TE
     return {"TE": [float(t) for t in te], "B0": float(b0),
             "B0_dir": [float(x) for x in b0_dir], "voxel_size": [float(v) for v in voxel]}
 
@@ -291,7 +316,7 @@ def _sidecar_to_params(path: Path, obj: dict, args, stage: str) -> dict:
 def _inputs_summary(slug: str, algo: dict) -> str:
     """Tell the user exactly which inputs a valid slug's stage needs, with an example."""
     stage = algo["stage"]
-    consumes = STAGES[stage]["consumes"]
+    consumes = _consumes(algo)
     produced = STAGES[stage]["produces"][0]
     needs_echo = "phase" in consumes
     lines = [f"{algo['name']}  —  {stage} stage   ({', '.join(consumes)} → {produced})", "",
@@ -523,7 +548,7 @@ def _manifest_epilog(algo: dict) -> "str | None":
 
 def _build_run_parser(slug: str, algo: dict) -> argparse.ArgumentParser:
     stage = algo["stage"]
-    consumes = STAGES[stage]["consumes"]
+    consumes = _consumes(algo)
     produced = STAGES[stage]["produces"][0]
     desc = f"{algo['name']} — {stage} stage  ({', '.join(consumes)} → {produced})"
     if algo.get("description"):
@@ -624,7 +649,7 @@ def run_command(argv, log=print) -> int:
     algo = _parse_manifest(algo_dir)
 
     # `qsm-ci run <slug>` with no input files (and not --help): tell them what to provide.
-    artifact_flags = {f"--{art}" for art in STAGES[algo["stage"]]["consumes"]}
+    artifact_flags = {f"--{art}" for art in _consumes(algo)}
     gave_input = any(a.split("=", 1)[0] in artifact_flags for a in argv)
     if not has_help and not gave_input:
         log(_inputs_summary(slug, algo))
@@ -642,7 +667,7 @@ def run_command(argv, log=print) -> int:
         return 1
 
     stage = algo["stage"]
-    consumes = STAGES[stage]["consumes"]
+    consumes = _consumes(algo)
     produced = STAGES[stage]["produces"][0]
 
     import tempfile
