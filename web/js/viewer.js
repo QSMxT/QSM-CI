@@ -89,6 +89,20 @@ function badge(text, cls) {
 // ---- sidebar ----------------------------------------------------------------
 const uniq = (arr) => [...new Set(arr)];
 const composedRuns = () => allRuns.filter((r) => r.mode === "composed" && r.combo);
+// Combined single-step methods (bfr+dipole / end-to-end, e.g. NeXtQSM/TGV/QSMART/MEDI/iQSM) go
+// straight to a chi map in one step, so they have no fmap×bfr×dipole combo and are missed by the
+// matrix axes. Surface them as their own Pipelines group — one run per slug, preferring the composed
+// representation. (unwrap+bfr methods produce localfield, not chi, so they sit on the matrix's
+// background-removal axis instead and are excluded here.)
+const combinedRuns = () => {
+  const bySlug = {};
+  for (const r of allRuns) {
+    if (r.combo) continue;  // matrix combos carry stage bfr+dipole too — they belong on the axes
+    if (r.stage !== "bfr+dipole" && r.stage !== "end-to-end") continue;
+    if (!bySlug[r.slug] || r.mode === "composed") bySlug[r.slug] = r;
+  }
+  return Object.values(bySlug);
+};
 const fmapsList = () => {
   const s = uniq(composedRuns().map((r) => r.combo.field_mapping || "gt"));
   return s.includes("gt") ? ["gt", ...s.filter((x) => x !== "gt")] : s;
@@ -128,8 +142,6 @@ function stagesHTML() {
   }).join("") || `<p class="p-3 text-sm text-gray-400">No matches.</p>`;
 }
 function pipelinesHTML() {
-  if (!composedRuns().length)
-    return `<p class="p-3 text-sm text-gray-400">No pipeline combinations available yet — the composed matrix is computed by the nightly job.</p>`;
   const cur = currentCombo();
   const f = filter.toLowerCase();
   const axis = (title, methods, kind) => {
@@ -140,7 +152,15 @@ function pipelinesHTML() {
     }).join("");
     return `<div class="mb-3"><div class="px-2.5 pt-1 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">${title}</div>${rows}</div>`;
   };
-  return axis("Field mapping", fmapsList(), "fmap") + axis("Background removal", bfrList(), "bfr") + axis("Dipole inversion", dipoleList(), "dipole");
+  const matrix = composedRuns().length
+    ? axis("Field mapping", fmapsList(), "fmap") + axis("Background removal", bfrList(), "bfr") + axis("Dipole inversion", dipoleList(), "dipole")
+    : "";
+  const combined = combinedRuns().filter((r) => !f || r.name.toLowerCase().includes(f));
+  const combinedSection = combined.length
+    ? `<div class="mb-3"><div class="px-2.5 pt-1 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">Combined (single-step)</div>${combined.map((r) => runItem(r, run?.id).replace("%NAME%", r.name)).join("")}</div>`
+    : "";
+  return (matrix + combinedSection) ||
+    `<p class="p-3 text-sm text-gray-400">No pipeline combinations available yet — the composed matrix is computed by the nightly job.</p>`;
 }
 function buildSidebar() {
   document.querySelectorAll("#nav-toggle button").forEach((b) =>
