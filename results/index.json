@@ -830,36 +830,6 @@
       }
     },
     {
-      "name": "tgv",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 290.75891280174255,
-      "metrics": {
-        "nrmse": 64.77849412893488,
-        "nrmse_detrend": 84.68668096842205,
-        "nrmse_tissue": 115.02520525122623,
-        "nrmse_blood": 78.98054188187972,
-        "nrmse_dgm": 45.48528553515825,
-        "dgm_linearity": 0.09589285145654214,
-        "calc_moment_dev": 4.343570291996002,
-        "calc_streak": 0.011720727958097471,
-        "correlation": 0.7631179341393226,
-        "xsim": 0.32481008572120124
-      },
-      "status": "ok",
-      "id": "tgv-iso",
-      "slug": "tgv",
-      "mode": "isolated",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tgv-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tgv-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tgv-iso__error.nii.gz"
-      }
-    },
-    {
       "name": "tikhonov",
       "track": "sim",
       "stage": "dipole",
@@ -20855,18 +20825,48 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 299.1715922355652,
+      "runtime_s": 251.25668334960938,
       "metrics": {
-        "nrmse": 64.77849412893488,
-        "nrmse_detrend": 84.68668096842205,
-        "nrmse_tissue": 115.02520525122623,
-        "nrmse_blood": 78.98054188187972,
-        "nrmse_dgm": 45.48528553515825,
-        "dgm_linearity": 0.09589285145654214,
-        "calc_moment_dev": 4.343570291996002,
-        "calc_streak": 0.011720727958097471,
-        "correlation": 0.7631179341393226,
-        "xsim": 0.32481008572120124
+        "nrmse": 56.14768979062487,
+        "nrmse_detrend": 67.34121457284623,
+        "nrmse_tissue": 87.37970509143273,
+        "nrmse_blood": 66.48864847282039,
+        "nrmse_dgm": 38.13808473817292,
+        "dgm_linearity": 0.04639305861047771,
+        "calc_moment_dev": 8.168546125292778,
+        "calc_streak": 0.014426238451775257,
+        "correlation": 0.8294589250335143,
+        "xsim": 0.4674566344191893
+      },
+      "status": "ok",
+      "id": "tgv-iso",
+      "slug": "tgv",
+      "mode": "isolated",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tgv-iso__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tgv-iso__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tgv-iso__error.nii.gz"
+      }
+    },
+    {
+      "name": "tgv",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 247.3812952041626,
+      "metrics": {
+        "nrmse": 56.14768979062487,
+        "nrmse_detrend": 67.34121457284623,
+        "nrmse_tissue": 87.37970509143273,
+        "nrmse_blood": 66.48864847282039,
+        "nrmse_dgm": 38.13808473817292,
+        "dgm_linearity": 0.04639305861047771,
+        "calc_moment_dev": 8.168546125292778,
+        "calc_streak": 0.014426238451775257,
+        "correlation": 0.8294589250335143,
+        "xsim": 0.4674566344191893
       },
       "status": "ok",
       "id": "tgv-cmp",
