@@ -7,14 +7,24 @@ IN="${1:-/input}"; OUT="${2:-/output}"
 #   $QSMCI_SET_<NAME>  for each  qsm-ci run --set NAME=VALUE  override
 B0=$(jq -r '.B0_dir | join(" ")' "$IN/params.json")
 
+# REGULARIZATION DEFAULT. The bare `qsmxt invert tgv` defaults (qsm_core TgvParams::default:
+# alpha1=alpha0=0.001) OVER-SMOOTH this data: alpha1 is the first-order (gradient) TGV weight, and
+# 0.001 flattens genuine susceptibility contrast (measured mean|grad| ~40% of ground truth, xsim
+# 0.32). The TGV-QSM reference (Langkammer et al., NeuroImage 2015 — the citation in algorithm.yml,
+# and the classic tgv_qsm default) uses alpha = [alpha1=0.0005, alpha0=0.0015], i.e. a weaker
+# gradient penalty. Passing those explicitly recovers the contrast (mean|grad| ~0.0094 vs 0.0074,
+# xsim 0.32 -> 0.47, nrmse 64.8% -> 56.1% on data/sim/scoring). These stay overridable via config.json.
+ALPHA1=0.0005; ALPHA0=0.0015; ITERS=""
+
 # Parameter overrides (qsm-ci run --set NAME=VALUE) arrive as /input/config.json.
-SET=""
 CFG="$IN/config.json"
 if [ -f "$CFG" ]; then
-  V=$(jq -r '.iterations // empty' "$CFG"); [ -n "$V" ] && SET="$SET --iterations $V"
-  V=$(jq -r '.alpha1 // empty' "$CFG"); [ -n "$V" ] && SET="$SET --alpha1 $V"
-  V=$(jq -r '.alpha0 // empty' "$CFG"); [ -n "$V" ] && SET="$SET --alpha0 $V"
+  V=$(jq -r '.iterations // empty' "$CFG"); [ -n "$V" ] && ITERS="$V"
+  V=$(jq -r '.alpha1 // empty' "$CFG"); [ -n "$V" ] && ALPHA1="$V"
+  V=$(jq -r '.alpha0 // empty' "$CFG"); [ -n "$V" ] && ALPHA0="$V"
 fi
+SET="--alpha1 $ALPHA1 --alpha0 $ALPHA0"
+[ -n "$ITERS" ] && SET="$SET --iterations $ITERS"
 # UNIT FIX (QSM-CI contract: totalfield is in ppm; QSMxT/QSM.rs `invert tgv` expects the field in
 # RADIANS). Internally tgv_qsm scales its result to ppm with  chi_ppm = chi_raw / (2*pi*gamma*TE*B0),
 # gamma = 42.5781 Hz/T (see QSM.rs src/inversion/tgv.rs). QSM.rs's own pipeline (run_tgv in

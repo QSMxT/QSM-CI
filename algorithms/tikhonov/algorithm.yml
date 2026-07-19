@@ -4,8 +4,16 @@ stage: dipole
 engine: QSMxT / QSM.rs
 description: >
   Closed-form L2 (Tikhonov) regularized inversion.
-citation: Kames et al., 2018
-doi: null
+citation: Bilgic et al., JMRI 2014
+authors:
+- name: Berkin Bilgic
+- name: Itthi Chatnuntawech
+- name: Audrey P. Fan
+- name: Kawin Setsompop
+- name: Stephen F. Cauley
+- name: Lawrence L. Wald
+- name: Elfar Adalsteinsson
+doi: 10.1002/jmri.24365
 code_url: https://github.com/astewartau/QSM.rs
 license: MIT
 image: ghcr.io/astewartau/qsm-ci/qsmxt:v9.4.0

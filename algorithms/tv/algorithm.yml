@@ -4,8 +4,17 @@ stage: dipole
 engine: QSMxT / QSM.rs
 description: >
   Total Variation regularized dipole inversion solved with ADMM.
-citation: Bilgic et al., 2014
-doi: null
+citation: Bilgic et al., MRM 2014
+authors:
+- name: Berkin Bilgic
+- name: Audrey P. Fan
+- name: Jonathan R. Polimeni
+- name: Stephen F. Cauley
+- name: Marta Bianciardi
+- name: Elfar Adalsteinsson
+- name: Lawrence L. Wald
+- name: Kawin Setsompop
+doi: 10.1002/mrm.25029
 code_url: https://github.com/astewartau/QSM.rs
 license: MIT
 image: ghcr.io/astewartau/qsm-ci/qsmxt:v9.4.0

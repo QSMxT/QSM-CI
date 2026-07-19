@@ -5,6 +5,17 @@ engine: QSMxT / QSM.rs
 description: >
   Total Generalized Variation single-step reconstruction: total field -> susceptibility, doing its own background field removal.
 citation: Langkammer et al., NeuroImage 2015
+authors:
+- name: Christian Langkammer
+- name: Kristian Bredies
+- name: Benedikt A. Poser
+- name: Markus Barth
+- name: Gernot Reishofer
+- name: Audrey Peiwen Fan
+- name: Berkin Bilgic
+- name: Franz Fazekas
+- name: Caterina Mainero
+- name: Stefan Ropele
 doi: 10.1016/j.neuroimage.2015.02.041
 code_url: https://github.com/astewartau/QSM.rs
 license: MIT
@@ -15,8 +26,8 @@ parameters:
     default: 1000
     description: iterations
   - name: alpha1
-    default: 0.0015
-    description: first-order weight
+    default: 0.0005
+    description: first-order (gradient) weight
   - name: alpha0
-    default: 0.003
+    default: 0.0015
     description: second-order weight
