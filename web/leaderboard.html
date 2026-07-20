@@ -200,6 +200,30 @@
 
   <script>
     function board() {
+      // Non-reactive memo cache. Alpine getters recompute on EVERY property access, and the composed
+      // grid reads matrix.cell / norm() hundreds of times per render — so `matrix` (an O(all-runs)
+      // build) was running hundreds of times per click. Cache each derived value keyed by the state
+      // it depends on (runs.length busts it when data first loads), so it recomputes only when
+      // view/stage/fmap/metric/filter/sort actually change.
+      const _memo = {};
+      const _cache = (name, key, fn) => {
+        const c = _memo[name];
+        if (c && c.key === key) return c.val;
+        const val = fn(); _memo[name] = { key, val }; return val;
+      };
+      // Robust colour-scale window: clamp to the Tukey fences so a few extreme-outlier cells (e.g. a
+      // broken method's huge NRMSE) can't crush everyone else into one colour. Outliers saturate at
+      // the extreme; the bulk gets the full gradient. Falls back to true min/max when there are no
+      // outliers (fence wider than the data) or too few points.
+      const robustRange = (vals) => {
+        const s = vals.filter((v) => v != null && isFinite(v)).sort((a, b) => a - b);
+        const n = s.length;
+        if (n < 4) return [s[0] ?? 0, s[n - 1] ?? 1];
+        const q = (p) => s[Math.min(n - 1, Math.max(0, Math.round(p * (n - 1))))];
+        const q1 = q(0.25), q3 = q(0.75), iqr = q3 - q1;
+        const lo = Math.max(s[0], q1 - 1.5 * iqr), hi = Math.min(s[n - 1], q3 + 1.5 * iqr);
+        return lo < hi ? [lo, hi] : [s[0], s[n - 1]];
+      };
       return {
         METRICS, STAGE_LABEL, MEDALS, fmt, val,
         runs: [], registry: {}, view: "composed", stage: "dipole", fmap: "gt",
@@ -221,11 +245,12 @@
         stages() { return [...new Set(this.runs.filter((r) => r.mode === "isolated").map((r) => r.stage))]; },
         fmaps() { return [...new Set(this.runs.filter((r) => r.mode === "composed" && r.combo).map((r) => r.combo.field_mapping || "gt"))]; },
         get baseRows() {
-          return this.view === "isolated"
-            ? this.runs.filter((r) => r.mode === "isolated" && r.stage === this.stage)
-            : this.runs.filter((r) => r.mode === "composed" && (!r.combo || (r.combo.field_mapping || "gt") === this.fmap));
+          return _cache("baseRows", this.view + "|" + this.stage + "|" + this.fmap + "|" + this.runs.length, () =>
+            this.view === "isolated"
+              ? this.runs.filter((r) => r.mode === "isolated" && r.stage === this.stage)
+              : this.runs.filter((r) => r.mode === "composed" && (!r.combo || (r.combo.field_mapping || "gt") === this.fmap)));
         },
-        get cols() { return metricCols(this.baseRows); },
+        get cols() { return _cache("cols", this.view + "|" + this.stage + "|" + this.fmap + "|" + this.runs.length, () => metricCols(this.baseRows)); },
         get displayCols() {
           const sel = this.cols.filter((c) => this.selectedCols.includes(c));
           return sel.length ? sel : this.cols.filter((c) => c === "xsim");
@@ -234,30 +259,36 @@
           this.selectedCols = this.selectedCols.includes(c) ? this.selectedCols.filter((x) => x !== c) : [...this.selectedCols, c];
         },
         get rows() {
-          const f = this.filter.toLowerCase();
-          return this.baseRows.filter((r) => !f || r.name.toLowerCase().includes(f)).slice().sort((a, b) => {
-            const av = val(a, this.sortKey), bv = val(b, this.sortKey);
-            if (av == null) return 1; if (bv == null) return -1;
-            return this.sortDir === "asc" ? av - bv : bv - av;
-          });
+          return _cache("rows",
+            [this.view, this.stage, this.fmap, this.filter, this.sortKey, this.sortDir, this.runs.length].join("|"), () => {
+              const f = this.filter.toLowerCase();
+              return this.baseRows.filter((r) => !f || r.name.toLowerCase().includes(f)).slice().sort((a, b) => {
+                const av = val(a, this.sortKey), bv = val(b, this.sortKey);
+                if (av == null) return 1; if (bv == null) return -1;
+                return this.sortDir === "asc" ? av - bv : bv - av;
+              });
+            });
         },
         get matrix() {
-          const rs = this.runs.filter((r) => r.mode === "composed" && r.combo && (r.combo.field_mapping || "gt") === this.fmap);
-          const bfrs = [...new Set(rs.map((r) => r.combo.bfr))];
-          const dips = [...new Set(rs.map((r) => r.combo.dipole))];
-          const cell = {}; rs.forEach((r) => { cell[r.combo.bfr + "|" + r.combo.dipole] = r; });
-          const vals = rs.map((r) => val(r, this.metric)).filter((v) => v != null);
-          return { bfrs, dips, cell, lo: Math.min(...vals), hi: Math.max(...vals) };
+          return _cache("matrix", this.fmap + "|" + this.metric + "|" + this.runs.length, () => {
+            const rs = this.runs.filter((r) => r.mode === "composed" && r.combo && (r.combo.field_mapping || "gt") === this.fmap);
+            const bfrs = [...new Set(rs.map((r) => r.combo.bfr))];
+            const dips = [...new Set(rs.map((r) => r.combo.dipole))];
+            const cell = {}; rs.forEach((r) => { cell[r.combo.bfr + "|" + r.combo.dipole] = r; });
+            const [lo, hi] = robustRange(rs.map((r) => val(r, this.metric)));
+            return { bfrs, dips, cell, lo, hi };
+          });
         },
         // Single-method algorithms that span background removal + dipole inversion (e.g. TGV,
         // QSMART, matlab-medi) in one step. They take the ground-truth field and produce a chimap,
         // so they're directly comparable to full pipelines, but can't be a cell in the BFR×dipole
         // grid. Shown as a separate row-group below the matrix (composed view only).
         get combinedAlgos() {
-          return this.runs.filter((r) => r.mode === "isolated"
-            && (r.stage === "bfr+dipole" || r.stage === "end-to-end")
-            && r.artifact === "chimap" && val(r, this.metric) != null)
-            .slice().sort((a, b) => this.norm(val(b, this.metric)) - this.norm(val(a, this.metric)));
+          return _cache("combinedAlgos", this.fmap + "|" + this.metric + "|" + this.runs.length, () =>
+            this.runs.filter((r) => r.mode === "isolated"
+              && (r.stage === "bfr+dipole" || r.stage === "end-to-end")
+              && r.artifact === "chimap" && val(r, this.metric) != null)
+              .slice().sort((a, b) => this.norm(val(b, this.metric)) - this.norm(val(a, this.metric))));
         },
         norm(v) { // 0 = worst, 1 = best (respecting metric direction)
           const m = this.matrix; if (v == null || m.hi === m.lo) return 0.5;
