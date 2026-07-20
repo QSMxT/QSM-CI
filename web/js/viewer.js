@@ -39,11 +39,21 @@ function runLine(slug, stage, truth) {
 
 // The qsm-ci command(s) that reproduce this run: one line for an isolated method, the
 // field-mapping → bfr → dipole chain for a composed pipeline.
+// QSM-CI reproduces the scored artifact; QSMxT runs the same method(s) end-to-end from BIDS. Which
+// slugs QSMxT can run is read from each algorithm's self-described `engine` (contains "QSM.rs") — no
+// per-method hardcoding — and the qsmxt flag follows from the stage.
+const QSMXT_FLAG = {
+  bfr: "--bf-algorithm", "unwrap+bfr": "--bf-algorithm",
+  dipole: "--qsm-algorithm", "bfr+dipole": "--qsm-algorithm", "end-to-end": "--qsm-algorithm",
+};
 function renderHowToRun() {
   const el = $("how-to-run");
   if (!el) return;
   const bySlug = Object.fromEntries(algos.map((a) => [a.slug, a]));
   const stageOf = (s) => (bySlug[s] ? bySlug[s].stage : null);
+  const isQsmRs = (slug) => { const a = bySlug[slug]; return !!(a && a.engine && a.engine.includes("QSM.rs")); };
+
+  // ---- QSM-CI command (reproduces the scored artifact) ----
   const lines = [];
   if (run.combo) {
     const { field_mapping: fm, bfr, dipole } = run.combo;
@@ -54,28 +64,66 @@ function renderHowToRun() {
     lines.push(runLine(run.slug, run.stage, true));
   }
   if (!lines.length) { el.classList.add("hidden"); return; }
-  el.classList.remove("hidden");  // the div ships with Tailwind `hidden`; clear the class, not just inline style
-  const full = "pip install qsm-ci\n" + lines.join("\n");
+  const ciCmd = "pip install qsm-ci\n" + lines.join("\n");
   const chained = lines.length > 1;
+
+  // ---- QSMxT command (only when every method step is QSM.rs-backed) ----
+  const xtCmd = (() => {
+    const parts = ["qsmxt run /path/to/bids /path/to/output"];
+    if (run.combo) {
+      const { field_mapping: fm, bfr, dipole } = run.combo;
+      if (!isQsmRs(bfr) || !isQsmRs(dipole)) return null;
+      if (fm && fm !== "gt") { if (!isQsmRs(fm)) return null; parts.push(`--unwrapping-algorithm ${fm.replace(/-fieldmap$/, "")}`); }
+      parts.push(`--bf-algorithm ${bfr}`, `--qsm-algorithm ${dipole}`);
+    } else {
+      if (!isQsmRs(run.slug) || !QSMXT_FLAG[run.stage]) return null;
+      parts.push(`${QSMXT_FLAG[run.stage]} ${run.slug}`);
+    }
+    return parts.join(" \\\n  ");
+  })();
+
+  el.classList.remove("hidden");  // the div ships with Tailwind `hidden`; clear the class, not just inline style
+
+  const codePane = (cmd, key, hidden) =>
+    `<div data-pane="${key}" class="relative mt-3 ${hidden ? "hidden" : ""}">
+      <button data-copy="${key}" class="absolute right-2 top-2 rounded-md bg-gray-800/80 px-2 py-1 text-xs font-medium text-gray-100 hover:bg-gray-700">Copy</button>
+      <pre class="overflow-x-auto rounded-xl bg-gray-900 p-4 text-xs leading-relaxed text-gray-100"><code>${escapeHtml(cmd)}</code></pre>
+    </div>`;
+  const tabBtn = (key, label, active) =>
+    `<button data-tab="${key}" class="rounded-md px-3 py-1 transition ${active ? "bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100" : "text-gray-500 hover:text-gray-700 dark:text-gray-400"}">${label}</button>`;
+
+  const ciDesc = `Reproduce the scored artifact with the <a href="running.html" class="text-emerald-600 hover:underline"><code>qsm-ci</code></a> CLI —
+      bring your own NIfTIs${chained ? ", chained stage by stage," : ""} or make a phantom with <code>qsm-forward</code>. Drop <code>--truth</code> to run without scoring.`;
+  const xtDesc = `Run this ${run.combo ? "pipeline" : "method"} end-to-end on your own BIDS data with
+      <a href="https://qsmxt.github.io" class="text-emerald-600 hover:underline">QSMxT</a> — unwrapping, background removal and dipole
+      inversion in one command, on the same <a href="https://github.com/astewartau/QSM.rs" class="text-emerald-600 hover:underline">QSM.rs</a> engine QSM-CI uses.`;
+
   el.innerHTML = `
     <div class="flex items-baseline justify-between gap-3">
       <h2 class="font-semibold text-gray-900 dark:text-gray-100">Run this yourself</h2>
       <a href="running.html" class="text-xs text-emerald-600 hover:underline">Guide to running algorithms →</a>
     </div>
-    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-      Reproduce it with the <a href="running.html" class="text-emerald-600 hover:underline"><code>qsm-ci</code></a> CLI —
-      bring your own NIfTIs${chained ? ", chained stage by stage," : ""} or make a phantom with
-      <code>qsm-forward</code>. Drop <code>--truth</code> to run without scoring.
-    </p>
-    <div class="relative mt-3">
-      <button data-copy class="absolute right-2 top-2 rounded-md bg-gray-800/80 px-2 py-1 text-xs font-medium text-gray-100 hover:bg-gray-700">Copy</button>
-      <pre class="overflow-x-auto rounded-xl bg-gray-900 p-4 text-xs leading-relaxed text-gray-100"><code>${escapeHtml(full)}</code></pre>
-    </div>`;
-  const btn = el.querySelector("[data-copy]");
-  if (btn) btn.addEventListener("click", () => {
-    navigator.clipboard.writeText(full);
+    ${xtCmd ? `<div class="mt-2 inline-flex rounded-lg bg-gray-100 p-1 text-xs font-medium dark:bg-gray-800" data-howto-tabs>${tabBtn("ci", "QSM-CI", true)}${tabBtn("xt", "QSMxT", false)}</div>` : ""}
+    <p data-desc="ci" class="mt-2 text-sm text-gray-600 dark:text-gray-400">${ciDesc}</p>
+    ${xtCmd ? `<p data-desc="xt" class="mt-2 hidden text-sm text-gray-600 dark:text-gray-400">${xtDesc}</p>` : ""}
+    ${codePane(ciCmd, "ci", false)}
+    ${xtCmd ? codePane(xtCmd, "xt", true) : ""}`;
+
+  const cmds = { ci: ciCmd, xt: xtCmd };
+  el.querySelectorAll("[data-copy]").forEach((btn) => btn.addEventListener("click", () => {
+    navigator.clipboard.writeText(cmds[btn.dataset.copy]);
     btn.textContent = "Copied"; setTimeout(() => (btn.textContent = "Copy"), 1200);
-  });
+  }));
+  const tabs = el.querySelector("[data-howto-tabs]");
+  if (tabs) tabs.querySelectorAll("[data-tab]").forEach((b) => b.addEventListener("click", () => {
+    const key = b.dataset.tab;
+    tabs.querySelectorAll("[data-tab]").forEach((t) =>
+      t.className = "rounded-md px-3 py-1 transition " + (t.dataset.tab === key ? "bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100" : "text-gray-500 hover:text-gray-700 dark:text-gray-400"));
+    for (const k of ["ci", "xt"]) {
+      el.querySelector(`[data-pane="${k}"]`)?.classList.toggle("hidden", k !== key);
+      el.querySelector(`[data-desc="${k}"]`)?.classList.toggle("hidden", k !== key);
+    }
+  }));
 }
 
 let allRuns = [], algos = [], registry = {};
