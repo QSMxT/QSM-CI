@@ -10,18 +10,28 @@
   <script>tailwind.config = { darkMode: "class", theme: { extend: { fontFamily: { sans: ["Inter", "system-ui", "sans-serif"] } } } };</script>
   <script src="js/app.js"></script>
   <style>
-    /* dual-range windowing slider with value bubbles */
-    .dualrange { position: relative; height: 40px; }
-    .dualrange .track { position: absolute; top: 24px; left: 0; right: 0; height: 6px; border-radius: 9999px; background: #e5e7eb; }
+    /* dual-range windowing slider with value bubbles + intensity histogram */
+    .dualrange { position: relative; height: 66px; }
+    .dualrange .hist { position: absolute; top: 16px; left: 0; width: 100%; height: 26px; display: block; }
+    .dualrange .track { position: absolute; top: 46px; left: 0; right: 0; height: 6px; border-radius: 9999px; background: #e5e7eb; }
     .dark .dualrange .track { background: #374151; }
-    .dualrange .fill { position: absolute; top: 24px; height: 6px; border-radius: 9999px; background: #6366f1; }
-    .dualrange input[type=range] { position: absolute; top: 19px; left: 0; width: 100%; height: 16px; margin: 0; background: none; pointer-events: none; -webkit-appearance: none; appearance: none; }
+    .dualrange .fill { position: absolute; top: 46px; height: 6px; border-radius: 9999px; background: #6366f1; }
+    .dualrange input[type=range] { position: absolute; top: 41px; left: 0; width: 100%; height: 16px; margin: 0; background: none; pointer-events: none; -webkit-appearance: none; appearance: none; }
     .dualrange input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; pointer-events: auto; height: 16px; width: 16px; border-radius: 9999px; background: #fff; border: 2px solid #6366f1; cursor: grab; box-shadow: 0 1px 3px rgba(0,0,0,.15); }
     .dualrange input[type=range]::-moz-range-thumb { pointer-events: auto; height: 16px; width: 16px; border-radius: 9999px; background: #fff; border: 2px solid #6366f1; cursor: grab; box-shadow: 0 1px 3px rgba(0,0,0,.15); }
     .dark .dualrange input[type=range]::-webkit-slider-thumb { background: #1f2937; }
     .dark .dualrange input[type=range]::-moz-range-thumb { background: #1f2937; }
-    .win-bubble { position: absolute; top: 0; transform: translateX(-50%); font-size: 11px; line-height: 1; padding: 3px 6px; border-radius: 6px; background: #111827; color: #fff; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    /* value bubbles double as click-to-edit inputs (contenteditable) */
+    .win-bubble { position: absolute; top: 0; transform: translateX(-50%); font-size: 11px; line-height: 1; padding: 3px 6px; border-radius: 6px; background: #111827; color: #fff; white-space: nowrap; font-variant-numeric: tabular-nums; cursor: text; }
+    .win-bubble:hover { background: #1f2937; }
+    .win-bubble:focus { outline: none; box-shadow: 0 0 0 2px #a5b4fc; }
     .dark .win-bubble { background: #4f46e5; }
+    .dark .win-bubble:hover { background: #6366f1; }
+    /* viewer loading spinner */
+    .spinner { width: 20px; height: 20px; border-radius: 9999px; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; animation: spin .7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    /* intensity readout pill: hide until NiiVue populates it (avoids an empty box) */
+    #intensity:empty { display: none; }
   </style>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
@@ -64,19 +74,25 @@
 
         <div class="mt-6 grid xl:grid-cols-5 gap-6">
           <section class="xl:col-span-3 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-            <!-- layer selector -->
-            <div id="layer-row" class="flex flex-wrap items-center justify-between gap-3">
+            <!-- canvas -->
+            <div class="relative rounded-xl overflow-hidden bg-black" style="height:480px">
+              <canvas id="gl1" class="absolute inset-0 h-full w-full block"></canvas>
+              <!-- intensity readout floats over the canvas so a long value string never reflows the layout -->
+              <div id="intensity" class="pointer-events-none absolute bottom-2 left-2 z-10 max-w-[calc(100%-1rem)] truncate rounded-md bg-black/50 px-2 py-0.5 text-xs tabular-nums text-gray-200 backdrop-blur-sm"></div>
+              <div id="viewer-loading" class="absolute inset-0 z-10 hidden items-center justify-center gap-3 bg-black/40 backdrop-blur-sm text-sm font-medium text-gray-100">
+                <span class="spinner"></span> Loading volume…
+              </div>
+              <div id="viewer-note" class="absolute inset-0 hidden items-center justify-center px-6 text-center text-sm text-gray-400 bg-gray-50 dark:bg-gray-900"></div>
+            </div>
+            <!-- layer selector (beneath the viewer) -->
+            <div id="layer-row" class="mt-4 flex flex-wrap items-center gap-3">
               <div class="inline-flex rounded-lg bg-gray-100 p-1 text-sm font-medium dark:bg-gray-800" id="layer-tabs">
                 <button data-layer="recon" class="rounded-md px-3 py-1 transition">Reconstruction</button>
                 <button data-layer="truth" class="rounded-md px-3 py-1 transition">Ground truth</button>
-                <button data-layer="error" class="rounded-md px-3 py-1 transition">Error</button>
               </div>
-              <span id="intensity" class="text-xs tabular-nums text-gray-400 dark:text-gray-500"></span>
-            </div>
-            <!-- canvas -->
-            <div class="relative mt-4 rounded-xl overflow-hidden bg-black" style="height:480px">
-              <canvas id="gl1" class="absolute inset-0 h-full w-full block"></canvas>
-              <div id="viewer-note" class="absolute inset-0 hidden items-center justify-center px-6 text-center text-sm text-gray-400 bg-gray-50 dark:bg-gray-900"></div>
+              <label class="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-300" title="Overlay the error map on top of the selected map">
+                <input id="t-error" type="checkbox" class="accent-emerald-600" /> Error map
+              </label>
             </div>
             <!-- control panel -->
             <div id="viewer-controls" class="mt-4 rounded-xl bg-gray-50 p-4 space-y-4 dark:bg-gray-800/50">
@@ -88,33 +104,22 @@
                   <button data-view="sagittal" class="rounded-md px-2.5 py-1 transition">Sagittal</button>
                   <button data-view="render" class="rounded-md px-2.5 py-1 transition">3D</button>
                 </div>
-                <label class="flex items-center gap-1.5 text-gray-500 dark:text-gray-400">Colour
-                  <select id="cmap" class="rounded-lg border-gray-300 text-sm py-1 pr-7 dark:bg-gray-800 dark:border-gray-700">
-                    <option value="gray">Gray</option><option value="viridis">Viridis</option>
-                    <option value="plasma">Plasma</option><option value="hot">Hot</option><option value="cool">Cool</option>
-                  </select>
-                </label>
                 <div class="flex items-center gap-3 text-gray-500 dark:text-gray-400">
                   <label class="flex items-center gap-1.5"><input id="t-colorbar" type="checkbox" class="accent-emerald-600" /> Colorbar</label>
                   <label class="flex items-center gap-1.5"><input id="t-crosshair" type="checkbox" class="accent-emerald-600" checked /> Crosshair</label>
                   <label class="flex items-center gap-1.5"><input id="t-interp" type="checkbox" class="accent-emerald-600" /> Smooth</label>
                 </div>
               </div>
-              <!-- windowing -->
-              <div>
-                <div class="flex items-center justify-between text-sm mb-1">
-                  <span class="font-medium text-gray-600 dark:text-gray-300">Window</span>
-                  <button id="win-auto" class="rounded-lg bg-white px-2.5 py-1 text-xs font-medium text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:ring-gray-700">Auto</button>
+              <!-- windowing: one section per shown map (base, then error overlay) -->
+              <div class="space-y-3">
+                <div id="win-base"></div>
+                <div id="win-error-section" class="hidden space-y-2 border-t border-gray-200 pt-3 dark:border-gray-700">
+                  <div id="win-error"></div>
+                  <label class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">Error overlay opacity
+                    <input id="opacity" type="range" min="0" max="1" step="0.05" value="1" class="accent-emerald-600 flex-1" />
+                    <span id="opacity-val" class="w-9 shrink-0 text-right text-xs tabular-nums">100%</span>
+                  </label>
                 </div>
-                <div class="dualrange" id="win">
-                  <div class="track"></div><div class="fill" id="win-fill"></div>
-                  <input id="win-lo" type="range" /><input id="win-hi" type="range" />
-                  <div class="win-bubble" id="win-lo-bubble"></div>
-                  <div class="win-bubble" id="win-hi-bubble"></div>
-                </div>
-                <label id="overlay-ctl" class="hidden items-center gap-2 text-sm text-gray-500 mt-1 dark:text-gray-400">Overlay opacity
-                  <input id="opacity" type="range" min="0" max="1" step="0.05" value="1" class="accent-emerald-600 flex-1" />
-                </label>
               </div>
             </div>
           </section>
@@ -123,6 +128,13 @@
             <h2 class="font-semibold text-gray-900 dark:text-gray-100">Metrics</h2>
             <p id="metrics-sub" class="mt-0.5 text-xs text-gray-500 dark:text-gray-400"></p>
             <table class="mt-4 w-full text-sm">
+              <thead>
+                <tr class="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">
+                  <th class="pb-2 text-left font-medium">Metric</th>
+                  <th class="pb-2 text-right font-medium">Value</th>
+                  <th class="pb-2 pl-3 text-right font-medium">Rank</th>
+                </tr>
+              </thead>
               <tbody id="metrics-body" class="divide-y divide-gray-100 dark:divide-gray-800"></tbody>
             </table>
           </section>

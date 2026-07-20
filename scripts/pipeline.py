@@ -66,16 +66,21 @@ ARTIFACT_KIND = {"totalfield": "field", "localfield": "field", "chimap": "chi"}
 EMIT_VOLUMES = False  # when set, write recon/truth/error NIfTIs per run for the web viewer
 
 
-def emit_volumes(run_id, recon, truth):
-    """Write recon / truth / error volumes under results/<run_id>/ for the NiiVue viewer."""
+def emit_volumes(run_id, recon, truth, mask=None):
+    """Write recon / truth / error volumes under results/<run_id>/ for the NiiVue viewer.
+
+    The error map is the signed difference recon - truth, zeroed outside the raw brain mask so the
+    background stays clean (the viewer shows it with a diverging red↔blue colormap)."""
     import nibabel as nib
     d = ROOT / "results" / run_id
     d.mkdir(parents=True, exist_ok=True)
     shutil.copy(recon, d / "recon.nii.gz")
     shutil.copy(truth, d / "truth.nii.gz")
     r, t = nib.load(str(recon)), nib.load(str(truth))
-    err = nib.Nifti1Image((r.get_fdata() - t.get_fdata()).astype("float32"), r.affine)
-    nib.save(err, str(d / "error.nii.gz"))
+    err = (r.get_fdata() - t.get_fdata()).astype("float32")
+    if mask is not None:
+        err[nib.load(str(mask)).get_fdata() <= 0.5] = 0.0
+    nib.save(nib.Nifti1Image(err, r.affine), str(d / "error.nii.gz"))
 
 
 def discover_algorithms() -> list[dict]:
@@ -173,6 +178,7 @@ def _valid_mask(volume: Path, base_mask: Path, out: Path) -> Path:
 
 def score(recon: Path, artifact: str, gt_dir: Path, mask: Path, out_json: Path, meta: dict) -> dict:
     kind = ARTIFACT_KIND[artifact]
+    raw_mask = mask  # the full brain mask, before erosion — used to mask the viewer's error map
     # Score only where the method actually produced a value (its non-zero support), so an eroded
     # rim isn't penalised as error — consistent with masking that rim out of the pipeline.
     mask = _valid_mask(recon, mask, out_json.parent / (out_json.stem + "_scoremask.nii.gz"))
@@ -192,7 +198,7 @@ def score(recon: Path, artifact: str, gt_dir: Path, mask: Path, out_json: Path, 
     if "combo" in meta:
         result["combo"] = meta["combo"]
     if EMIT_VOLUMES and "id" in meta:
-        emit_volumes(meta["id"], recon, gt_dir / ARTIFACT_FILE[artifact])
+        emit_volumes(meta["id"], recon, gt_dir / ARTIFACT_FILE[artifact], raw_mask)
     return result
 
 

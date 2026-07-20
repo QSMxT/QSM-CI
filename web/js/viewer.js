@@ -1,8 +1,9 @@
 // Submission detail + NiiVue viewer: run sidebar, in-place switching, cohesive controls,
-// interactive dual-range windowing, and per-algorithm docs. Module scope; helpers via window.QSM.
+// histogram-backed dual-range windowing with typed bounds, and per-algorithm docs.
+// Module scope; helpers via window.QSM.
 import { Niivue } from "https://unpkg.com/@niivue/niivue@0.57.0/dist/index.js";
 
-const { loadRuns, loadAlgos, loadRegistry, doiFor, METRICS, STAGE_LABEL, val, fmt } = window.QSM;
+const { loadRuns, loadAlgos, loadRegistry, doiFor, METRICS, STAGE_LABEL, val, fmt, robustRange, heatScale } = window.QSM;
 
 const STAGE_COLOR = {
   "field-mapping": "bg-indigo-50 text-indigo-700 ring-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-300 dark:ring-indigo-500/20",
@@ -79,7 +80,10 @@ function renderHowToRun() {
 
 let allRuns = [], algos = [], registry = {};
 let nv = null, run, baseUrl, filter = "", navMode = "stages";
-let gmin = 0, gmax = 1;  // data range for the windowing slider
+let curBase = "recon";       // base map shown underneath: recon | truth
+let showError = false;       // whether the error map is overlaid on top of the base
+let loadedBase = null, loadedError = false;  // what's actually in nv.volumes right now
+let baseCtl = null, errorCtl = null;         // the two windowing controls (base + error overlay)
 
 const $ = (id) => document.getElementById(id);
 function badge(text, cls) {
@@ -155,10 +159,16 @@ function pipelinesHTML() {
   const matrix = composedRuns().length
     ? axis("Field mapping", fmapsList(), "fmap") + axis("Background removal", bfrList(), "bfr") + axis("Dipole inversion", dipoleList(), "dipole")
     : "";
+  // Single-step χ producers, grouped by their self-described stage (not hardcoded per method) — the
+  // same split as the Stages view and the leaderboard: bfr+dipole and end-to-end are distinct spans.
   const combined = combinedRuns().filter((r) => !f || r.name.toLowerCase().includes(f));
-  const combinedSection = combined.length
-    ? `<div class="mb-3"><div class="px-2.5 pt-1 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">Combined (single-step)</div>${combined.map((r) => runItem(r, run?.id).replace("%NAME%", r.name)).join("")}</div>`
-    : "";
+  const combinedGroup = (stage) => {
+    const rs = combined.filter((r) => r.stage === stage);
+    return rs.length
+      ? `<div class="mb-3"><div class="px-2.5 pt-1 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">${STAGE_LABEL[stage] || stage}</div>${rs.map((r) => runItem(r, run?.id).replace("%NAME%", r.name)).join("")}</div>`
+      : "";
+  };
+  const combinedSection = combinedGroup("bfr+dipole") + combinedGroup("end-to-end");
   return (matrix + combinedSection) ||
     `<p class="p-3 text-sm text-gray-400">No pipeline combinations available yet — the composed matrix is computed by the nightly job.</p>`;
 }
@@ -248,23 +258,52 @@ async function loadRun() {
     nv.setSliceType(nv.sliceTypeMultiplanar);
     wireControls();
   }
-  setLayerActive("recon");
-  try { await showLayer("recon"); } catch (e) {
+  // New run → nothing loaded yet; the base map (recon/truth) selection carries over between runs.
+  loadedBase = null; loadedError = false;
+  const hasError = !run.volumes || !!run.volumes.error;  // HF-backed runs advertise which volumes exist
+  if (!hasError) showError = false;
+  $("t-error").disabled = !hasError;
+  $("t-error").checked = showError;
+  setLayerActive(curBase);
+  try { await refreshView(); } catch (e) {
     canvas.style.visibility = "hidden";
     note.textContent = "Interactive volumes aren't available for this run.";
     note.classList.remove("hidden"); note.classList.add("flex");
   }
 }
 
+// Rank this run's value for metric `k` among comparable runs (same job: composed pipelines together,
+// or isolated runs sharing this run's stage). Returns { rank, n, t } where t is 0..1 goodness for
+// colour, or null when there's nothing to compare against.
+function metricRank(k) {
+  const meta = METRICS[k], v = run.metrics?.[k];
+  if (v == null) return null;
+  const sameGroup = (r) => (run.combo ? r.mode === "composed" : r.mode === "isolated" && r.stage === run.stage);
+  const peers = allRuns.filter((r) => r.status !== "DNF" && sameGroup(r) && val(r, k) != null);
+  if (peers.length < 2) return null;
+  const higher = meta.better !== "lower";
+  const rank = 1 + peers.filter((r) => (higher ? val(r, k) > v : val(r, k) < v)).length;
+  const [lo, hi] = robustRange(peers.map((r) => val(r, k)));
+  let t = hi === lo ? 0.5 : (v - lo) / (hi - lo);
+  if (!higher) t = 1 - t;
+  return { rank, n: peers.length, t };
+}
+
 function renderMetrics() {
   const m = run.metrics || {};
   $("metrics-sub").textContent = run.mode === "composed" ? "Final χ map vs. ground truth" : `${run.artifact || "output"} vs. ground truth`;
   const order = Object.keys(METRICS).filter((k) => m[k] != null);
+  const groupLabel = run.combo ? "composed pipelines" : `isolated ${STAGE_LABEL[run.stage] || run.stage} methods`;
   $("metrics-body").innerHTML = order.map((k) => {
     const meta = METRICS[k], arrow = meta.better === "higher" ? "↑" : "↓", hero = k === "xsim" || k === "nrmse";
+    const rk = metricRank(k);
+    const rankCell = rk
+      ? `<span class="inline-block rounded-md px-1.5 py-0.5 text-xs font-semibold text-white shadow-sm" style="background:${heatScale(rk.t)}" data-tip="Rank ${rk.rank} of ${rk.n} ${groupLabel} for ${meta.label}">#${rk.rank}<span class="opacity-70"> / ${rk.n}</span></span>`
+      : `<span class="text-gray-300 dark:text-gray-600">—</span>`;
     return `<tr>
-      <td class="py-2.5 text-gray-500 dark:text-gray-400">${meta.label} <span class="text-gray-300 dark:text-gray-600" title="${meta.better} is better">${arrow}</span></td>
+      <td class="py-2.5 text-gray-500 dark:text-gray-400"><span class="has-tip" data-tip="${(meta.desc || "").replace(/"/g, "&quot;")}">${meta.label}</span> <span class="text-gray-300 dark:text-gray-600" title="${meta.better} is better">${arrow}</span></td>
       <td class="py-2.5 text-right tabular-nums ${hero ? "font-bold text-gray-900 dark:text-gray-100" : "font-medium text-gray-700 dark:text-gray-300"}">${fmt(m[k], k)}</td>
+      <td class="py-2.5 pl-3 text-right">${rankCell}</td>
     </tr>`;
   }).join("") || `<tr><td class="py-3 text-gray-400">No metrics for this run.</td></tr>`;
 }
@@ -288,39 +327,248 @@ function defaultWindow(vol) {
   else autoWin(vol);                                                  // fields / everything else: auto
 }
 const fmtWin = (v) => (Math.abs(v) >= 100 ? v.toFixed(0) : Math.abs(v) >= 1 ? v.toFixed(2) : v.toPrecision(2));
+const fmtNum = (v) => String(+Number(v).toPrecision(4));
 
-function setupWindow() {
-  const v = baseVol(); if (!v) return;
-  gmin = v.global_min; gmax = v.global_max;
-  const step = (gmax - gmin) / 1000 || 1e-6;
-  for (const el of [$("win-lo"), $("win-hi")]) { el.min = gmin; el.max = gmax; el.step = step; }
-  $("win-lo").value = v.cal_min; $("win-hi").value = v.cal_max;
-  updateWindowUI();
+// Colormaps for the error overlay. Every option windows on |error| with a transparency floor (so the
+// masked, near-zero background stays clear); "diverging" colours the two signs differently (NiiVue
+// colormapNegative) for a signed red↔blue view, the rest reuse one map for both signs (magnitude only).
+const ERROR_CMAPS = {
+  diverging: { colormap: "warm", colormapNegative: "winter" },  // signed: red = recon>truth, blue = recon<truth
+  warm:    { colormap: "warm",    colormapNegative: "warm" },
+  hot:     { colormap: "hot",     colormapNegative: "hot" },
+  viridis: { colormap: "viridis", colormapNegative: "viridis" },
+  plasma:  { colormap: "plasma",  colormapNegative: "plasma" },
+  cool:    { colormap: "cool",    colormapNegative: "cool" },
+  gray:    { colormap: "gray",    colormapNegative: "gray" },
+};
+
+function setLoading(on) {
+  const el = $("viewer-loading");
+  el.classList.toggle("hidden", !on);
+  el.classList.toggle("flex", on);
 }
-function updateWindowUI() {
-  let lo = parseFloat($("win-lo").value), hi = parseFloat($("win-hi").value);
-  if (lo > hi) { [lo, hi] = [hi, lo]; }
-  const v = baseVol(); if (v) { v.cal_min = lo; v.cal_max = hi; nv.updateGLVolume(); }
-  const pct = (x) => (gmax === gmin ? 0 : ((x - gmin) / (gmax - gmin)) * 100);
-  $("win-fill").style.left = pct(lo) + "%";
-  $("win-fill").style.width = (pct(hi) - pct(lo)) + "%";
-  $("win-lo-bubble").style.left = pct(lo) + "%"; $("win-lo-bubble").textContent = fmtWin(lo);
-  $("win-hi-bubble").style.left = pct(hi) + "%"; $("win-hi-bubble").textContent = fmtWin(hi);
+
+// A self-contained windowing control: label, typed lo/hi bounds, Auto, a dual-range slider and an
+// intensity histogram drawn behind it. `getVol` returns the NiiVue volume it drives, so the same
+// widget serves both the base map and the error overlay. Instances live in `winControls` so a theme
+// toggle or resize can repaint every histogram at once. cal_min/cal_max are the source of truth;
+// typed bounds may fall outside [global_min, global_max] (the slider thumb clamps, the volume doesn't).
+const winControls = [];
+function makeWindowControl(getVol, cmapCfg) {
+  const el = document.createElement("div");
+  el.innerHTML = `
+    <div class="flex items-center gap-2">
+      <div class="dualrange flex-1" title="Scroll to zoom the range · double-click to reset">
+        <canvas class="hist"></canvas>
+        <div class="track"></div><div class="fill"></div>
+        <input class="rng-lo" type="range" /><input class="rng-hi" type="range" />
+        <span class="win-bubble bub-lo" contenteditable="true" inputmode="decimal" spellcheck="false" title="Click to edit this bound"></span>
+        <span class="win-bubble bub-hi" contenteditable="true" inputmode="decimal" spellcheck="false" title="Click to edit this bound"></span>
+      </div>
+      <div class="flex w-28 shrink-0 flex-col gap-1.5">
+        <select class="cmap-sel hidden w-full !py-1 !pl-2 !pr-6 text-[11px] leading-tight" title="Colormap"></select>
+        <button class="btn-auto w-full rounded-lg bg-white px-2.5 py-1 text-xs font-medium text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:ring-gray-700" title="Reset to an automatic window">Auto</button>
+      </div>
+    </div>
+    <div class="zoom-hint mt-0.5 text-[10px] text-gray-400 dark:text-gray-500"></div>`;
+  const q = (s) => el.querySelector(s);
+  const rngLo = q(".rng-lo"), rngHi = q(".rng-hi"),
+    fill = q(".fill"), bubLo = q(".bub-lo"), bubHi = q(".bub-hi"), canvas = q(".hist"),
+    dr = q(".dualrange"), hintEl = q(".zoom-hint"), cmapSel = q(".cmap-sel");
+  // Optional compact colormap dropdown sits above the Auto button. Fixed-width so a long selection
+  // (e.g. "Diverging (red ↔ blue)") truncates rather than widening the control; the native option list
+  // still shows each label in full.
+  if (cmapCfg) {
+    cmapSel.classList.remove("hidden");
+    cmapSel.innerHTML = cmapCfg.options.map(([v, l]) => `<option value="${v}">${l}</option>`).join("");
+    cmapSel.value = cmapCfg.value;
+    cmapSel.addEventListener("change", () => cmapCfg.onChange(cmapSel.value));
+  }
+  // magnitude=true windows on |value| over [0, maxAbs] — used for the signed error map under a diverging
+  // colormap, where cal_min/cal_max act as a magnitude transparency floor + saturation (mirrored to negatives).
+  // [dmin,dmax] is the full data range; [vmin,vmax] is the zoomed *view* the slider+histogram span, so
+  // scrolling to a narrow view makes each pixel of drag fine. cal_min/cal_max stay the source of truth.
+  let dmin = 0, dmax = 1, vmin = 0, vmax = 1, winLo = 0, winHi = 1, hist = null, magnitude = false;
+  const clampV = (x) => Math.min(vmax, Math.max(vmin, x));  // into the zoom view; thumbs pin, cal_* stay exact
+  const pct = (x) => (vmax === vmin ? 0 : ((clampV(x) - vmin) / (vmax - vmin)) * 100);
+
+  // Read the volume's current window + data range, reset the zoom to the full range, and sync the UI.
+  function setup() {
+    const v = getVol(); if (!v) return;
+    if (magnitude) { dmin = 0; dmax = Math.max(Math.abs(v.global_min), Math.abs(v.global_max)) || 1; }
+    else { dmin = v.global_min; dmax = v.global_max; }
+    vmin = dmin; vmax = dmax;
+    winLo = v.cal_min; winHi = v.cal_max;
+    applyView();
+  }
+  // Re-point the slider + histogram at the current zoom view [vmin,vmax] and reposition the window.
+  function applyView() {
+    const step = (vmax - vmin) / 1000 || 1e-6;
+    for (const r of [rngLo, rngHi]) { r.min = vmin; r.max = vmax; r.step = step; }
+    const zoomed = vmax - vmin < (dmax - dmin) * 0.999;
+    hintEl.textContent = zoomed
+      ? `zoomed to ${fmtWin(vmin)} – ${fmtWin(vmax)} · double-click to reset`
+      : "scroll over the bar to zoom in for finer control";
+    buildHistogram(getVol());
+    apply(winLo, winHi);
+  }
+  // Zoom the view by `factor` about the value under `frac` (0..1 across the bar), clamped to the data.
+  function zoom(factor, frac) {
+    const full = dmax - dmin || 1;
+    const span = Math.min(full, Math.max(full / 5000, (vmax - vmin) * factor));
+    const center = vmin + frac * (vmax - vmin);
+    let nmin = center - frac * span, nmax = nmin + span;
+    if (nmin < dmin) { nmin = dmin; nmax = dmin + span; }
+    if (nmax > dmax) { nmax = dmax; nmin = dmax - span; }
+    vmin = nmin; vmax = nmax;
+    applyView();
+  }
+  function apply(lo, hi) {
+    if (!isFinite(lo)) lo = dmin;
+    if (!isFinite(hi)) hi = dmax;
+    if (lo > hi) [lo, hi] = [hi, lo];
+    if (magnitude) { lo = Math.max(0, lo); hi = Math.max(0, hi); }  // magnitudes only
+    winLo = lo; winHi = hi;
+    const v = getVol(); if (v) { v.cal_min = lo; v.cal_max = hi; nv.updateGLVolume(); }
+    rngLo.value = clampV(lo); rngHi.value = clampV(hi);
+    fill.style.left = pct(lo) + "%"; fill.style.width = (pct(hi) - pct(lo)) + "%";
+    if (document.activeElement !== bubLo) bubLo.textContent = fmtWin(lo);  // don't clobber a bubble mid-edit
+    if (document.activeElement !== bubHi) bubHi.textContent = fmtWin(hi);
+    positionBubbles();
+    draw();
+  }
+  // Place the two value bubbles at their thumbs, but when they'd overlap nudge them apart symmetrically
+  // (clamped to the bar edges) so both stay readable when the bounds are close together.
+  function positionBubbles() {
+    const bw = dr.clientWidth || 1;
+    let cLo = (pct(winLo) / 100) * bw, cHi = (pct(winHi) / 100) * bw;
+    const wLo = bubLo.offsetWidth, wHi = bubHi.offsetWidth, minSep = wLo / 2 + wHi / 2 + 4;
+    if (cHi - cLo < minSep) {
+      const mid = (cLo + cHi) / 2;
+      cLo = mid - minSep / 2; cHi = mid + minSep / 2;
+      if (cLo < wLo / 2) { cLo = wLo / 2; cHi = cLo + minSep; }
+      if (cHi > bw - wHi / 2) { cHi = bw - wHi / 2; cLo = cHi - minSep; }
+    }
+    bubLo.style.left = cLo + "px"; bubHi.style.left = cHi + "px";
+  }
+  // Intensity histogram over the current zoom view. Exact-zero voxels are skipped (the masked background
+  // dominates otherwise) and counts are log-scaled so the tissue distribution stays visible next to the mode.
+  function buildHistogram(v) {
+    hist = null;
+    const img = v && v.img;
+    if (img && img.length && vmax > vmin) {
+      const slope = v.hdr?.scl_slope || 1, inter = v.hdr?.scl_inter || 0;
+      const NB = 128, counts = new Float64Array(NB);
+      const stride = Math.max(1, Math.floor(img.length / 400000));  // sample large volumes
+      for (let i = 0; i < img.length; i += stride) {
+        let x = img[i] * slope + inter;
+        if (magnitude) x = Math.abs(x);
+        if (!isFinite(x) || x === 0 || x < vmin || x > vmax) continue;  // only voxels in the zoom view
+        counts[Math.min(NB - 1, Math.max(0, Math.floor(((x - vmin) / (vmax - vmin)) * NB)))]++;
+      }
+      let max = 0;
+      for (let b = 0; b < NB; b++) { counts[b] = Math.log1p(counts[b]); if (counts[b] > max) max = counts[b]; }
+      if (max > 0) { for (let b = 0; b < NB; b++) counts[b] /= max; hist = counts; }
+    }
+    draw();
+  }
+  function draw() {
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    if (!w || !h) return;
+    const dpr = window.devicePixelRatio || 1;
+    if (canvas.width !== Math.round(w * dpr) || canvas.height !== Math.round(h * dpr)) { canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr); }
+    const ctx = canvas.getContext("2d");
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+    if (!hist) return;
+    const dark = document.documentElement.classList.contains("dark");
+    const px = (x) => ((x - vmin) / (vmax - vmin || 1)) * w;
+    const loX = px(winLo), hiX = px(winHi);
+    const NB = hist.length, bw = w / NB;
+    for (let b = 0; b < NB; b++) {
+      const bh = hist[b] * (h - 1);
+      if (!bh) continue;
+      const x = b * bw, mid = x + bw / 2;
+      ctx.fillStyle = mid >= loX && mid <= hiX ? (dark ? "#818cf8" : "#6366f1") : (dark ? "#4b5563" : "#d1d5db");
+      ctx.fillRect(x + 0.5, h - bh, Math.max(bw - 1, 0.75), bh);
+    }
+  }
+  // Slider drag moves only the dragged bound, so a typed out-of-range bound on the other side survives.
+  const onRange = (e) => {
+    const x = parseFloat(e.target.value);
+    const [lo, hi] = e.target === rngLo ? [x, winHi] : [winLo, x];
+    apply(Math.min(lo, hi), Math.max(lo, hi));
+  };
+  rngLo.addEventListener("input", onRange);
+  rngHi.addEventListener("input", onRange);
+  // The value bubbles are editable: click to type an exact bound (out-of-range allowed). On focus show the
+  // full-precision value and select it; Enter/blur commits, Escape reverts.
+  const bubVal = (b) => (b === bubLo ? winLo : winHi);
+  for (const b of [bubLo, bubHi]) {
+    b.addEventListener("focus", () => {
+      b.textContent = fmtNum(bubVal(b));
+      const r = document.createRange(); r.selectNodeContents(b);
+      const s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    });
+    b.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); b.blur(); }
+      else if (e.key === "Escape") { e.preventDefault(); b.textContent = fmtWin(bubVal(b)); b.blur(); }
+    });
+    b.addEventListener("blur", () => {
+      const v = parseFloat(b.textContent);
+      apply(b === bubLo ? v : winLo, b === bubHi ? v : winHi);  // apply() handles NaN + lo/hi order
+    });
+  }
+  q(".btn-auto").addEventListener("click", () => { const v = getVol(); if (!v) return; autoWin(v); apply(v.cal_min, v.cal_max); });
+  // Scroll to zoom the view about the cursor (finer control in a narrow range); double-click resets.
+  dr.addEventListener("wheel", (e) => {
+    if (!getVol()) return;
+    e.preventDefault();
+    const rect = dr.getBoundingClientRect();
+    const frac = rect.width ? Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width)) : 0.5;
+    zoom(e.deltaY < 0 ? 0.8 : 1.25, frac);
+  }, { passive: false });
+  dr.addEventListener("dblclick", () => { if (!getVol()) return; vmin = dmin; vmax = dmax; applyView(); });
+
+  const ctl = { el, setup, redraw: () => { draw(); positionBubbles(); }, setMagnitude: (on) => { magnitude = on; }, cmapSelect: cmapSel };
+  winControls.push(ctl);
+  return ctl;
 }
 
 function wireControls() {
+  // base map colormap (recon/truth) — compact dropdown above this control's Auto button
+  baseCtl = makeWindowControl(() => nv.volumes[0], {
+    value: "gray",
+    options: [["gray", "Gray"], ["viridis", "Viridis"], ["plasma", "Plasma"], ["hot", "Hot"], ["cool", "Cool"]],
+    onChange: (v) => { const vol = baseVol(); if (vol) { vol.colormap = v; nv.updateGLVolume(); } },
+  });
+  // error overlay colormap — dropdown above the error window's Auto button; drives setErrorColormap
+  errorCtl = makeWindowControl(() => nv.volumes[1], {
+    value: "diverging",
+    options: [["diverging", "Diverging (red ↔ blue)"], ["warm", "Warm"], ["hot", "Hot"], ["viridis", "Viridis"], ["plasma", "Plasma"], ["cool", "Cool"], ["gray", "Gray"]],
+    onChange: () => setErrorColormap(),
+  });
+  $("win-base").appendChild(baseCtl.el);
+  $("win-error").appendChild(errorCtl.el);
+
   $("layer-tabs").querySelectorAll("button").forEach((t) =>
-    t.addEventListener("click", () => { setLayerActive(t.dataset.layer); showLayer(t.dataset.layer); }));
+    t.addEventListener("click", () => { curBase = t.dataset.layer; setLayerActive(curBase); refreshView(); }));
+  $("t-error").addEventListener("change", (e) => { showError = e.target.checked; refreshView(); });
   $("view-tabs").querySelectorAll("button").forEach((t) =>
     t.addEventListener("click", () => { setViewActive(t.dataset.view); nv.setSliceType(nv["sliceType" + cap(t.dataset.view)]); }));
-  $("cmap").addEventListener("change", () => { const v = baseVol(); if (v) { v.colormap = $("cmap").value; nv.updateGLVolume(); } });
   $("t-colorbar").addEventListener("change", (e) => { nv.opts.isColorbar = e.target.checked; nv.drawScene(); });
   $("t-crosshair").addEventListener("change", (e) => { nv.setCrosshairWidth(e.target.checked ? 0.75 : 0); });
   $("t-interp").addEventListener("change", (e) => { nv.setInterpolation(!e.target.checked); nv.drawScene(); });
-  $("win-lo").addEventListener("input", updateWindowUI);
-  $("win-hi").addEventListener("input", updateWindowUI);
-  $("win-auto").addEventListener("click", () => { const v = baseVol(); if (!v) return; autoWin(v); $("win-lo").value = v.cal_min; $("win-hi").value = v.cal_max; updateWindowUI(); });
-  $("opacity").addEventListener("input", (e) => { for (let i = 1; i < nv.volumes.length; i++) nv.setOpacity(i, parseFloat(e.target.value)); nv.updateGLVolume(); });
+  $("opacity").addEventListener("input", (e) => {
+    const o = parseFloat(e.target.value);
+    for (let i = 1; i < nv.volumes.length; i++) nv.setOpacity(i, o);
+    $("opacity-val").textContent = Math.round(o * 100) + "%";
+    nv.updateGLVolume();
+  });
+  const redrawAll = () => winControls.forEach((c) => c.redraw());
+  window.addEventListener("resize", redrawAll);
+  // theme toggle flips html.dark without reloading — recolour every histogram
+  new MutationObserver(redrawAll).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
   nv.setInterpolation(true);
   setViewActive("multiplanar");
 }
@@ -328,21 +576,50 @@ function wireControls() {
 // Volumes are served from the Hugging Face Hub (run.volumes[kind]); fall back to local results/<id>/ for dev.
 const volUrl = (kind) => (run && run.volumes && run.volumes[kind]) || (baseUrl + kind + ".nii.gz");
 
-async function showLayer(layer) {
-  const cmap = $("cmap").value, overlayCtl = $("overlay-ctl");
-  if (layer === "error") {
-    await nv.loadVolumes([{ url: volUrl("truth"), colormap: cmap }]);
-    defaultWindow(baseVol());
-    await nv.addVolumeFromUrl({ url: volUrl("error"), colormap: "warm", opacity: parseFloat($("opacity").value) });
-    autoWin(nv.volumes[nv.volumes.length - 1]);
-    overlayCtl.classList.remove("hidden"); overlayCtl.classList.add("flex");
-  } else {
-    await nv.loadVolumes([{ url: volUrl(layer === "truth" ? "truth" : "recon"), colormap: cmap }]);
-    defaultWindow(baseVol());
-    overlayCtl.classList.add("hidden"); overlayCtl.classList.remove("flex");
-  }
+// Reconcile the viewer with (curBase, showError): reload the base only when it changes, add/remove the
+// error overlay independently, and show a second windowing section for the error map when it's on.
+async function refreshView() {
+  const cmap = baseCtl.cmapSelect.value;
+  const baseKind = curBase === "truth" ? "truth" : "recon";
+  const needBase = loadedBase !== baseKind || !nv.volumes.length;
+  if (needBase || (showError && !loadedError)) setLoading(true);  // only when a fetch is actually pending
+  try {
+    if (needBase) {
+      await nv.loadVolumes([{ url: volUrl(baseKind), colormap: cmap }]);  // replaces all volumes (drops any overlay)
+      defaultWindow(baseVol());
+      loadedBase = baseKind; loadedError = false;
+      baseCtl.setup();
+    }
+    if (showError && !loadedError) {
+      await nv.addVolumeFromUrl({ url: volUrl("error"), opacity: parseFloat($("opacity").value) });
+      loadedError = true;
+      setErrorColormap();  // sets colormap (+ diverging negative), window, magnitude mode and label
+    } else if (!showError && loadedError) {
+      nv.removeVolumeByUrl(volUrl("error"));
+      loadedError = false;
+    }
+  } finally { setLoading(false); }
   nv.updateGLVolume();
-  setupWindow();
+  $("win-error-section").classList.toggle("hidden", !showError);
+}
+
+// Apply the chosen error-overlay colormap. The error is always windowed on |error| (magnitude) with a
+// transparency floor: cal_min hides near-zero background, cal_max saturates, both mirrored to the
+// negative side. χ error uses the eval's ppm scale (floor 0.01, sat 0.1 ppm).
+function setErrorColormap() {
+  if (!loadedError) return;
+  const ov = nv.volumes[nv.volumes.length - 1];
+  const cfg = ERROR_CMAPS[errorCtl.cmapSelect.value] || ERROR_CMAPS.diverging;
+  ov.colormap = cfg.colormap;
+  ov.colormapNegative = cfg.colormapNegative;
+  if (run.kind === "chi") { ov.cal_min = 0.01; ov.cal_max = 0.1; }
+  else {
+    const m = Math.max(Math.abs(ov.robust_min ?? ov.global_min), Math.abs(ov.robust_max ?? ov.global_max)) || 1;
+    ov.cal_min = 0.02 * m; ov.cal_max = m;
+  }
+  errorCtl.setMagnitude(true);
+  errorCtl.setup();
+  nv.updateGLVolume();
 }
 
 // ---- boot -------------------------------------------------------------------
@@ -359,7 +636,12 @@ async function init() {
   navMode = run.mode === "composed" ? "pipelines" : "stages";
   $("run-filter").addEventListener("input", (e) => { filter = e.target.value; buildSidebar(); });
   document.querySelectorAll("#nav-toggle button").forEach((b) => b.addEventListener("click", () => { navMode = b.dataset.mode; buildSidebar(); }));
+  // Deep links: ?layer=truth selects the ground-truth base; ?layer=error (or ?error=1) turns on the
+  // error overlay. Applied before the first render so loadRun picks them up.
+  const layer = q.get("layer");
+  if (layer === "truth") curBase = "truth";
+  if (layer === "error" || q.get("error") === "1") showError = true;
   buildSidebar();
-  loadRun();
+  await loadRun();
 }
 init();
