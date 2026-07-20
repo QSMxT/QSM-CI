@@ -46,66 +46,47 @@
       <template x-if="view==='composed' && fmaps().length>1">
         <label class="inline-flex items-center gap-2 text-sm text-gray-600">Field mapping
           <select x-model="fmap" class="rounded-lg border-gray-300 text-sm py-1.5 pr-8">
-            <template x-for="f in fmaps()" :key="f"><option :value="f" x-text="f==='gt' ? 'ground truth' : f"></option></template>
+            <template x-for="f in fmaps()" :key="f"><option :value="f" :selected="f===fmap" x-text="f==='gt' ? 'ground truth' : f"></option></template>
           </select>
         </label>
       </template>
-      <div class="grow"></div>
-      <input x-model="filter" type="search" placeholder="Filter…" class="rounded-lg border-gray-300 text-sm px-3 py-1.5 w-44 focus:border-emerald-500 focus:ring-emerald-500" />
-      <!-- metric column picker -->
-      <div class="relative" @click.outside="colMenu=false">
-        <button @click="colMenu=!colMenu" class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
-          Metrics
-          <span class="rounded bg-gray-100 px-1.5 text-xs" x-text="displayCols.length"></span>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-        <div x-show="colMenu" x-cloak class="absolute right-0 z-20 mt-2 w-56 rounded-xl border border-gray-200 bg-white p-1.5 shadow-lg" style="display:none">
-          <template x-for="c in cols" :key="c">
-            <label class="flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-sm hover:bg-gray-50 cursor-pointer">
-              <input type="checkbox" class="accent-emerald-600" :checked="selectedCols.includes(c)" @change="toggleCol(c)" />
-              <span x-text="METRICS[c].label"></span>
-              <span class="ml-auto text-xs text-gray-400" x-text="METRICS[c].unit || (METRICS[c].better==='higher'?'↑':'↓')"></span>
-            </label>
-          </template>
-        </div>
-      </div>
     </div>
 
     <!-- combination matrix -->
-    <template x-if="view==='composed' && matrix.bfrs.length">
+    <template x-if="view==='composed' && matrix.rows.length">
       <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 class="font-semibold text-gray-900">Combination matrix</h2>
-            <p class="mt-0.5 text-xs text-gray-500">Background removal <span class="text-gray-400">↓</span> × dipole inversion <span class="text-gray-400">→</span>, chained end-to-end · click a cell to inspect.</p>
+            <p class="mt-0.5 text-xs text-gray-500">Dipole inversion <span class="text-gray-400">↓</span> × background removal <span class="text-gray-400">→</span>, chained end-to-end · best methods top-left · click a cell to inspect.</p>
           </div>
           <label class="inline-flex items-center gap-2 text-sm text-gray-600">Colour by
             <select x-model="metric" class="rounded-lg border-gray-300 text-sm py-1.5 pr-8">
-              <template x-for="c in cols.filter(c=>c!=='runtime_s')" :key="c"><option :value="c" x-text="METRICS[c].label"></option></template>
+              <template x-for="c in cols.filter(c=>c!=='runtime_s')" :key="c"><option :value="c" :selected="c===metric" x-text="METRICS[c].label"></option></template>
             </select>
           </label>
         </div>
 
         <div class="mt-5 overflow-x-auto">
-          <div class="inline-grid gap-1.5" :style="`grid-template-columns: auto repeat(${matrix.dips.length}, minmax(6.5rem,1fr))`">
+          <div class="inline-grid gap-1.5" :style="`grid-template-columns: auto repeat(${matrix.cols.length}, minmax(6.5rem,1fr))`">
             <div></div>
-            <template x-for="d in matrix.dips" :key="'h'+d">
-              <div class="pb-1 text-center text-xs font-semibold text-gray-500 truncate" x-text="d"></div>
+            <template x-for="c in matrix.cols" :key="'h'+c">
+              <div class="pb-1 text-center text-xs font-semibold text-gray-500 truncate" x-text="c"></div>
             </template>
-            <template x-for="b in matrix.bfrs" :key="b">
-              <template x-for="(d,di) in ['__row__', ...matrix.dips]" :key="b+'-'+d+di">
+            <template x-for="rw in matrix.rows" :key="rw">
+              <template x-for="(c,ci) in ['__row__', ...matrix.cols]" :key="rw+'-'+c+ci">
                 <div>
-                  <div x-show="d==='__row__'" class="flex h-14 items-center justify-end pr-3 text-xs font-semibold text-gray-500 whitespace-nowrap" x-text="b"></div>
-                  <template x-if="d!=='__row__'">
-                    <template x-if="matrix.cell[b+'|'+d]">
-                      <button @click="go(matrix.cell[b+'|'+d])"
-                        :title="b+' + '+d+' — '+METRICS[metric].label+': '+fmt(val(matrix.cell[b+'|'+d],metric),metric)"
+                  <div x-show="c==='__row__'" class="flex h-14 items-center justify-end pr-3 text-xs font-semibold text-gray-500 whitespace-nowrap" x-text="rw"></div>
+                  <template x-if="c!=='__row__'">
+                    <template x-if="matrix.cell[c+'|'+rw]">
+                      <button @click="go(matrix.cell[c+'|'+rw])"
+                        :title="c+' + '+rw+' — '+METRICS[metric].label+': '+fmt(val(matrix.cell[c+'|'+rw],metric),metric)"
                         class="group relative h-14 w-full rounded-xl text-white font-semibold text-sm shadow-sm transition hover:z-10 hover:scale-[1.06] hover:shadow-md focus:outline-none ring-1 ring-black/5"
-                        :style="'background:'+heat(norm(val(matrix.cell[b+'|'+d],metric)))">
-                        <span x-text="fmt(val(matrix.cell[b+'|'+d], metric), metric)"></span>
+                        :style="'background:'+heat(norm(val(matrix.cell[c+'|'+rw],metric)))">
+                        <span x-text="fmt(val(matrix.cell[c+'|'+rw], metric), metric)"></span>
                       </button>
                     </template>
-                    <template x-if="!matrix.cell[b+'|'+d]">
+                    <template x-if="!matrix.cell[c+'|'+rw]">
                       <div class="flex h-14 w-full items-center justify-center rounded-xl border border-dashed border-gray-200 text-gray-300 text-sm">—</div>
                     </template>
                   </template>
@@ -120,18 +101,25 @@
           <div class="mt-6 border-t border-gray-100 pt-5">
             <p class="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500">
               Combined single-method algorithms
-              <span class="font-normal normal-case tracking-normal text-gray-400">— background removal + dipole inversion in one step</span>
+              <span class="font-normal normal-case tracking-normal text-gray-400">— one step straight to a χ map</span>
             </p>
-            <div class="flex flex-col gap-1.5">
-              <template x-for="r in combinedAlgos" :key="r.id">
-                <div class="flex items-center gap-3">
-                  <div class="w-40 shrink-0 truncate pr-1 text-right text-xs font-semibold text-gray-500" x-text="r.name"></div>
-                  <button @click="go(r)"
-                    :title="r.name+' — '+METRICS[metric].label+': '+fmt(val(r,metric),metric)"
-                    class="group relative h-14 w-40 shrink-0 rounded-xl text-white font-semibold text-sm shadow-sm transition hover:z-10 hover:scale-[1.06] hover:shadow-md focus:outline-none ring-1 ring-black/5"
-                    :style="'background:'+heat(norm(val(r,metric)))">
-                    <span x-text="fmt(val(r, metric), metric)"></span>
-                  </button>
+            <div class="grid gap-x-10 gap-y-4 sm:grid-cols-2">
+              <template x-for="grp in [{stage:'bfr+dipole', label:'Background removal + dipole inversion'}, {stage:'end-to-end', label:'End-to-end'}]" :key="grp.stage">
+                <div x-show="combinedAlgos.some(r=>r.stage===grp.stage)">
+                  <p class="mb-2 text-[11px] font-semibold uppercase tracking-wide text-gray-400" x-text="grp.label"></p>
+                  <div class="flex flex-col gap-1.5">
+                    <template x-for="r in combinedAlgos.filter(r=>r.stage===grp.stage)" :key="r.id">
+                      <div class="flex items-center gap-3">
+                        <div class="w-36 shrink-0 truncate pr-1 text-right text-xs font-semibold text-gray-500" x-text="r.name"></div>
+                        <button @click="go(r)"
+                          :title="r.name+' — '+METRICS[metric].label+': '+fmt(val(r,metric),metric)"
+                          class="group relative h-14 w-40 shrink-0 rounded-xl text-white font-semibold text-sm shadow-sm transition hover:z-10 hover:scale-[1.06] hover:shadow-md focus:outline-none ring-1 ring-black/5"
+                          :style="'background:'+heat(norm(val(r,metric)))">
+                          <span x-text="fmt(val(r, metric), metric)"></span>
+                        </button>
+                      </div>
+                    </template>
+                  </div>
                 </div>
               </template>
             </div>
@@ -148,16 +136,39 @@
       </div>
     </template>
 
+    <!-- table controls (filter + metric columns), sitting right above the leaderboard -->
+    <div class="mt-8 flex flex-wrap items-center gap-3">
+      <div class="grow"></div>
+      <input x-model="filter" type="search" placeholder="Filter…" class="rounded-lg border-gray-300 text-sm px-3 py-1.5 w-44 focus:border-emerald-500 focus:ring-emerald-500" />
+      <!-- metric column picker -->
+      <div class="relative" @click.outside="colMenu=false">
+        <button @click="colMenu=!colMenu" class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+          Metrics
+          <span class="rounded bg-gray-100 px-1.5 text-xs" x-text="displayCols.length"></span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div x-show="colMenu" x-cloak class="absolute right-0 z-20 mt-2 w-56 rounded-xl border border-gray-200 bg-white p-1.5 shadow-lg" style="display:none">
+          <template x-for="c in cols" :key="c">
+            <label class="flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-sm hover:bg-gray-50 cursor-pointer">
+              <input type="checkbox" class="accent-emerald-600" :checked="selectedCols.includes(c)" @change="toggleCol(c)" />
+              <span x-text="METRICS[c].label" :data-tip="METRICS[c].desc"></span>
+              <span class="ml-auto text-xs text-gray-400" x-text="METRICS[c].unit || (METRICS[c].better==='higher'?'↑':'↓')"></span>
+            </label>
+          </template>
+        </div>
+      </div>
+    </div>
+
     <!-- table -->
-    <div class="mt-6 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+    <div class="mt-4 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
       <div class="overflow-x-auto" x-show="!loading" x-cloak>
         <table class="w-full text-sm whitespace-nowrap">
           <thead class="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
             <tr>
               <th class="px-5 py-3 text-left font-medium sticky left-0 bg-gray-50" x-text="view==='composed' ? 'Pipeline' : 'Algorithm'"></th>
               <template x-for="c in displayCols" :key="c">
-                <th @click="sort(c)" class="px-4 py-3 text-right font-medium cursor-pointer select-none hover:text-gray-800">
-                  <span x-text="METRICS[c].label"></span>
+                <th @click="sort(c)" class="px-4 py-3 text-right font-medium cursor-pointer select-none hover:text-gray-800 dark:hover:text-gray-100">
+                  <span x-text="METRICS[c].label" :data-tip="METRICS[c].desc"></span>
                   <span x-show="sortKey===c" x-text="sortDir==='asc' ? '↑' : '↓'"></span>
                 </th>
               </template>
@@ -276,7 +287,14 @@
             const dips = [...new Set(rs.map((r) => r.combo.dipole))];
             const cell = {}; rs.forEach((r) => { cell[r.combo.bfr + "|" + r.combo.dipole] = r; });
             const [lo, hi] = robustRange(rs.map((r) => val(r, this.metric)));
-            return { bfrs, dips, cell, lo, hi };
+            // Rank each axis by mean "goodness" (direction-aware, 0=worst..1=best) so the strongest
+            // methods sit toward the top-left. Rows = dipole inversion, columns = background removal.
+            const better = METRICS[this.metric]?.better || "higher";
+            const good = (r) => { const v = r ? val(r, this.metric) : null; if (v == null) return null; const t = hi === lo ? 0.5 : (v - lo) / (hi - lo); return better === "lower" ? 1 - t : t; };
+            const mean = (ks) => { const g = ks.map((k) => good(cell[k])).filter((v) => v != null); return g.length ? g.reduce((a, c) => a + c, 0) / g.length : -Infinity; };
+            const rows = dips.slice().sort((a, b) => mean(bfrs.map((x) => x + "|" + b)) - mean(bfrs.map((x) => x + "|" + a)));
+            const cols = bfrs.slice().sort((a, b) => mean(dips.map((x) => b + "|" + x)) - mean(dips.map((x) => a + "|" + x)));
+            return { rows, cols, cell, lo, hi };
           });
         },
         // Single-method algorithms that span background removal + dipole inversion (e.g. TGV,

@@ -73,19 +73,73 @@ const MOON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor
   document.addEventListener("DOMContentLoaded", () => document.head.appendChild(s));
 })();
 
-// Metric metadata: label, unit, better direction, decimals.
+// Global hover tooltip: any element with a [data-tip] attribute shows a styled tooltip. Rendered in a
+// single body-level layer (position:fixed) so it never clips inside overflow/scroll containers such as
+// the leaderboard table. Add `has-tip` for the dotted-underline "hover me" affordance.
+(function tooltips() {
+  const css = `
+  .has-tip{cursor:help;border-bottom:1px dotted rgba(107,114,128,.55)}
+  .qsm-tip{position:fixed;z-index:9999;max-width:270px;background:#111827;color:#f3f4f6;font-size:11px;
+    font-weight:400;line-height:1.5;letter-spacing:normal;text-transform:none;text-align:left;
+    padding:8px 10px;border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,.35);pointer-events:none;
+    opacity:0;transition:opacity .12s;display:none}
+  .qsm-tip.show{opacity:1}
+  html.dark .qsm-tip{background:#0b1220;box-shadow:0 10px 30px rgba(0,0,0,.6);outline:1px solid rgba(148,163,184,.15)}`;
+  let tip = null, cur = null;
+  // Follow the cursor: offset below-right, flipping to the other side near a viewport edge.
+  const positionAt = (x, y) => {
+    if (!tip) return;
+    const tw = tip.offsetWidth, th = tip.offsetHeight, pad = 8, off = 16;
+    let left = x + off, top = y + off;
+    if (left + tw > window.innerWidth - pad) left = x - tw - off;
+    if (top + th > window.innerHeight - pad) top = y - th - off;
+    tip.style.left = Math.max(pad, left) + "px";
+    tip.style.top = Math.max(pad, top) + "px";
+  };
+  const show = (target, x, y) => {
+    const text = target.getAttribute("data-tip"); if (!text) return;
+    cur = target;
+    if (!tip) { tip = document.createElement("div"); tip.className = "qsm-tip"; document.body.appendChild(tip); }
+    tip.textContent = text; tip.style.display = "block";
+    positionAt(x, y); tip.classList.add("show");
+  };
+  const hide = () => { cur = null; if (tip) { tip.classList.remove("show"); tip.style.display = "none"; } };
+  document.addEventListener("mouseover", (e) => { const t = e.target.closest?.("[data-tip]"); if (t) show(t, e.clientX, e.clientY); });
+  document.addEventListener("mousemove", (e) => {
+    if (!cur) return;
+    if (e.target.closest?.("[data-tip]") === cur) positionAt(e.clientX, e.clientY); else hide();
+  });
+  document.addEventListener("mouseout", (e) => { const t = e.target.closest?.("[data-tip]"); if (t === cur && !t?.contains(e.relatedTarget)) hide(); });
+  document.addEventListener("mousedown", hide, true);
+  const s = document.createElement("style"); s.textContent = css;
+  document.addEventListener("DOMContentLoaded", () => document.head.appendChild(s));
+})();
+
+// Metric metadata: label, unit, better direction, decimals, and a plain-language description
+// (surfaced as hover tooltips). Descriptions mirror eval/qsm_eval.py (ported from QSM.rs).
 const METRICS = {
-  nrmse:           { label: "NRMSE",            unit: "%", better: "lower",  dp: 1 },
-  nrmse_detrend:   { label: "Detrended NRMSE",  unit: "%", better: "lower",  dp: 1 },
-  nrmse_tissue:    { label: "Tissue NRMSE",     unit: "%", better: "lower",  dp: 1 },
-  nrmse_blood:     { label: "Blood NRMSE",      unit: "%", better: "lower",  dp: 1 },
-  nrmse_dgm:       { label: "DGM NRMSE",        unit: "%", better: "lower",  dp: 1 },
-  dgm_linearity:   { label: "DGM linearity",    unit: "",  better: "lower",  dp: 3 },
-  calc_moment_dev: { label: "Calcification dev.",unit: "", better: "lower",  dp: 2 },
-  calc_streak:     { label: "Streak",           unit: "",  better: "lower",  dp: 3 },
-  correlation:     { label: "Correlation",      unit: "",  better: "higher", dp: 3 },
-  xsim:            { label: "XSIM",             unit: "",  better: "higher", dp: 3 },
-  runtime_s:       { label: "Runtime",          unit: "s", better: "lower",  dp: 1 },
+  nrmse:           { label: "NRMSE",            unit: "%", better: "lower",  dp: 1,
+    desc: "Normalized root-mean-square error within the mask, after demeaning both maps. 0 = perfect; ~100% ≈ a flat map (the do-nothing baseline)." },
+  nrmse_detrend:   { label: "Detrended NRMSE",  unit: "%", better: "lower",  dp: 1,
+    desc: "NRMSE after correcting a global linear scaling of the reconstruction — measures error independent of overall contrast/gain." },
+  nrmse_tissue:    { label: "Tissue NRMSE",     unit: "%", better: "lower",  dp: 1,
+    desc: "Demeaned NRMSE restricted to brain-tissue regions (grey + white matter)." },
+  nrmse_blood:     { label: "Blood NRMSE",      unit: "%", better: "lower",  dp: 1,
+    desc: "Demeaned NRMSE restricted to venous blood regions." },
+  nrmse_dgm:       { label: "DGM NRMSE",        unit: "%", better: "lower",  dp: 1,
+    desc: "Demeaned NRMSE restricted to the deep grey-matter nuclei." },
+  dgm_linearity:   { label: "DGM linearity",    unit: "",  better: "lower",  dp: 3,
+    desc: "|1 − slope| of mean reconstructed vs. true susceptibility across the six deep grey-matter nuclei. 0 = a perfectly linear response." },
+  calc_moment_dev: { label: "Calcification dev.",unit: "", better: "lower",  dp: 2,
+    desc: "Absolute error in the total susceptibility moment recovered inside the calcification." },
+  calc_streak:     { label: "Streak",           unit: "",  better: "lower",  dp: 3,
+    desc: "Streaking-artefact level around the calcification: residual spread near its rim, relative to the calcification's mean susceptibility." },
+  correlation:     { label: "Correlation",      unit: "",  better: "higher", dp: 3,
+    desc: "Pearson correlation between reconstructed and ground-truth χ within the mask. 1 = perfect." },
+  xsim:            { label: "XSIM",             unit: "",  better: "higher", dp: 3,
+    desc: "Structural-similarity index tuned for QSM (5×5×5 windows). 1 = identical to the ground truth." },
+  runtime_s:       { label: "Runtime",          unit: "s", better: "lower",  dp: 1,
+    desc: "Wall-clock time taken by this run." },
 };
 const PREFERRED = ["nrmse", "nrmse_detrend", "nrmse_tissue", "nrmse_blood", "nrmse_dgm",
   "dgm_linearity", "calc_moment_dev", "calc_streak", "correlation", "xsim"];
@@ -133,6 +187,26 @@ function doiFor(registry, slug) {
 }
 
 function val(run, key) { return run.metrics?.[key] ?? run[key]; }
+
+// Robust [lo,hi] colour-scale window via Tukey fences: a few extreme outliers saturate at the ends
+// instead of crushing everyone else into one colour. Shared by the leaderboard matrix and the
+// submission-page metric ranks so their colouring matches. Falls back to min/max when too few points.
+function robustRange(vals) {
+  const s = vals.filter((v) => v != null && isFinite(v)).sort((a, b) => a - b);
+  const n = s.length;
+  if (n < 4) return [s[0] ?? 0, s[n - 1] ?? 1];
+  const q = (p) => s[Math.min(n - 1, Math.max(0, Math.round(p * (n - 1))))];
+  const q1 = q(0.25), q3 = q(0.75), iqr = q3 - q1;
+  const lo = Math.max(s[0], q1 - 1.5 * iqr), hi = Math.min(s[n - 1], q3 + 1.5 * iqr);
+  return lo < hi ? [lo, hi] : [s[0], s[n - 1]];
+}
+// Muted red → gold → sage for t in [0,1] (0 = worst, 1 = best) — the combination-matrix heat scale.
+function heatScale(t) {
+  const stops = [[190, 107, 107], [196, 158, 96], [110, 168, 134]];
+  const x = Math.max(0, Math.min(1, t)) * 2, i = Math.min(1, Math.floor(x)), f = x - i;
+  const c = stops[i].map((a, k) => Math.round(a + (stops[i + 1][k] - a) * f));
+  return `rgb(${c[0]},${c[1]},${c[2]})`;
+}
 
 function fmt(v, key) {
   if (v == null) return "—";
@@ -212,4 +286,4 @@ function injectChrome() {
 document.addEventListener("DOMContentLoaded", injectChrome);
 
 // Exposed for module scripts (e.g. the NiiVue viewer, which must be a module for `import`).
-window.QSM = { GH, METRICS, STAGE_LABEL, MEDALS, loadRuns, loadAlgos, loadRegistry, doiFor, val, fmt, metricCols, heatColor };
+window.QSM = { GH, METRICS, STAGE_LABEL, MEDALS, loadRuns, loadAlgos, loadRegistry, doiFor, val, fmt, metricCols, heatColor, robustRange, heatScale };
