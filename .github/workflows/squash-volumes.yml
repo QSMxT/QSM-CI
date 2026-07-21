@@ -1,0 +1,29 @@
+name: Squash volume history
+
+# Manual, on-demand: collapse the Hugging Face volumes dataset repo's git history to a single
+# commit, reclaiming storage from old LFS versions of overwritten volumes. score.yml already does
+# this automatically after a *full* rescore; this workflow is for one-off cleanups (e.g. after a
+# full rescore that ran on an older workflow revision without the squash step).
+on:
+  workflow_dispatch:
+
+# Own group (NOT "score") — entering the score group would cancel a queued rescore. Only dispatch
+# this once the score queue is drained, so it never squashes mid-publish.
+concurrency:
+  group: squash-volumes
+  cancel-in-progress: false
+
+jobs:
+  squash:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install --quiet huggingface_hub
+      - name: Squash HF volume history
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_VOLUMES_REPO: ${{ vars.HF_VOLUMES_REPO }}
+        run: python scripts/squash_hf_history.py
