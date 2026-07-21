@@ -69,29 +69,26 @@
 
         <div class="mt-5 overflow-x-auto">
           <div class="inline-grid gap-1.5" :style="`grid-template-columns: auto repeat(${matrix.cols.length}, minmax(6.5rem,1fr))`">
-            <div></div>
-            <template x-for="c in matrix.cols" :key="'h'+c">
-              <div class="pb-1 text-center text-xs font-semibold text-gray-500 truncate" x-text="c"></div>
-            </template>
-            <template x-for="rw in matrix.rows" :key="rw">
-              <template x-for="(c,ci) in ['__row__', ...matrix.cols]" :key="rw+'-'+c+ci">
-                <div>
-                  <div x-show="c==='__row__'" class="flex h-14 items-center justify-end pr-3 text-xs font-semibold text-gray-500 whitespace-nowrap" x-text="rw"></div>
-                  <template x-if="c!=='__row__'">
-                    <template x-if="matrix.cell[c+'|'+rw]">
-                      <button @click="go(matrix.cell[c+'|'+rw])"
-                        :title="c+' + '+rw+' — '+METRICS[metric].label+': '+fmt(val(matrix.cell[c+'|'+rw],metric),metric)"
-                        class="group relative h-14 w-full rounded-xl text-white font-semibold text-sm shadow-sm transition hover:z-10 hover:scale-[1.06] hover:shadow-md focus:outline-none ring-1 ring-black/5"
-                        :style="'background:'+heat(norm(val(matrix.cell[c+'|'+rw],metric)))">
-                        <span x-text="fmt(val(matrix.cell[c+'|'+rw], metric), metric)"></span>
-                      </button>
-                    </template>
-                    <template x-if="!matrix.cell[c+'|'+rw]">
-                      <div class="flex h-14 w-full items-center justify-center rounded-xl border border-dashed border-gray-200 text-gray-300 text-sm">—</div>
-                    </template>
-                  </template>
-                </div>
-              </template>
+            <template x-for="g in matrix.cells" :key="g.k">
+              <div>
+                <template x-if="g.t==='header'">
+                  <div class="pb-1 text-center text-xs font-semibold text-gray-500 truncate" x-text="g.label"></div>
+                </template>
+                <template x-if="g.t==='rowlabel'">
+                  <div class="flex h-14 items-center justify-end pr-3 text-xs font-semibold text-gray-500 whitespace-nowrap" x-text="g.label"></div>
+                </template>
+                <template x-if="g.t==='cell'">
+                  <button @click="go(g.run)"
+                    :title="g.run.combo.bfr+' + '+g.run.combo.dipole+' — '+METRICS[metric].label+': '+fmt(val(g.run,metric),metric)"
+                    class="group relative h-14 w-full rounded-xl text-white font-semibold text-sm shadow-sm transition hover:z-10 hover:scale-[1.06] hover:shadow-md focus:outline-none ring-1 ring-black/5"
+                    :style="'background:'+heat(norm(val(g.run,metric)))">
+                    <span x-text="fmt(val(g.run, metric), metric)"></span>
+                  </button>
+                </template>
+                <template x-if="g.t==='empty'">
+                  <div class="flex h-14 w-full items-center justify-center rounded-xl border border-dashed border-gray-200 text-gray-300 text-sm">—</div>
+                </template>
+              </div>
             </template>
           </div>
         </div>
@@ -294,7 +291,20 @@
             const mean = (ks) => { const g = ks.map((k) => good(cell[k])).filter((v) => v != null); return g.length ? g.reduce((a, c) => a + c, 0) / g.length : -Infinity; };
             const rows = dips.slice().sort((a, b) => mean(bfrs.map((x) => x + "|" + b)) - mean(bfrs.map((x) => x + "|" + a)));
             const cols = bfrs.slice().sort((a, b) => mean(dips.map((x) => b + "|" + x)) - mean(dips.map((x) => a + "|" + x)));
-            return { rows, cols, cell, lo, hi };
+            // Flatten the grid into one ordered list of cells, each with a *position-independent* key.
+            // The matrix reorders when metric/fmap changes; a single keyed x-for reorders cleanly,
+            // whereas nested x-for + x-if in a CSS grid mis-reconciles on reorder (cells land in the
+            // wrong slots). Order per row = row-label then one cell per column.
+            const cells = [{ k: "corner", t: "corner" }];
+            cols.forEach((c) => cells.push({ k: "h|" + c, t: "header", label: c }));
+            rows.forEach((rw) => {
+              cells.push({ k: "rl|" + rw, t: "rowlabel", label: rw });
+              cols.forEach((c) => {
+                const run = cell[c + "|" + rw];
+                cells.push(run ? { k: "c|" + c + "|" + rw, t: "cell", run } : { k: "x|" + c + "|" + rw, t: "empty" });
+              });
+            });
+            return { rows, cols, cell, lo, hi, cells };
           });
         },
         // Single-method algorithms that span background removal + dipole inversion (e.g. TGV,
