@@ -116,6 +116,17 @@ jobs:
           HF_VOLUMES_REPO: ${{ vars.HF_VOLUMES_REPO }}
         run: python scripts/publish_volumes.py results
 
+      - name: Squash HF volume history (full re-publish only — reclaim old LFS versions)
+        # A full rescore regenerates every error map (etc.), leaving old LFS versions as orphaned
+        # storage. Collapse history to one commit so they're reclaimed (~36h). Full runs only —
+        # focused re-publishes churn too few files to bother. Best-effort; never blocks the commit.
+        if: ${{ needs.scope.outputs.full == 'true' }}
+        continue-on-error: true
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_VOLUMES_REPO: ${{ vars.HF_VOLUMES_REPO }}
+        run: python scripts/squash_hf_history.py
+
       - name: Commit results index (triggers the Pages deploy)
         # Always commit the scored index.json even if the volume publish failed — the
         # leaderboard (scores) lives here; the HF volumes are only for the NiiVue viewer.
