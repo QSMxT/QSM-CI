@@ -339,6 +339,8 @@ async function loadRun() {
       onLocationChange: (d) => { $("intensity").innerHTML = d.string; },
     });
     await nv.attachTo("gl1");
+    nv.addColormap("errpos", ERR_POS_CMAP);   // signed error map: over-estimate (red), under-estimate (blue)
+    nv.addColormap("errneg", ERR_NEG_CMAP);
     nv.setSliceType(nv.sliceTypeMultiplanar);
     wireControls();
   }
@@ -414,11 +416,20 @@ function defaultWindow(vol) {
 const fmtWin = (v) => (Math.abs(v) >= 100 ? v.toFixed(0) : Math.abs(v) >= 1 ? v.toFixed(2) : v.toPrecision(2));
 const fmtNum = (v) => String(+Number(v).toPrecision(4));
 
-// Colormaps for the error overlay. Every option windows on |error| with a transparency floor (so the
-// masked, near-zero background stays clear); "diverging" colours the two signs differently (NiiVue
-// colormapNegative) for a signed red↔blue view, the rest reuse one map for both signs (magnitude only).
+// Signed error-map colormaps: over-estimate (recon>truth) ramps transparent→red→yellow, under-estimate
+// ramps transparent→blue→cyan. Alpha starts at 0 so the inner window bound (cal_min) is a hard
+// transparency floor — errors below it (incl. exact zero + the masked background) don't render at all —
+// and rises to full by the outer bound (cal_max = saturation). Used as colormap / colormapNegative,
+// so the two signs diverge from a fixed, transparent zero: the window changes only the ±inner/±outer
+// thresholds, never the centre.
+const ERR_POS_CMAP = { R: [180, 240, 255], G: [0, 70, 224], B: [0, 30, 40], A: [0, 200, 255], I: [0, 128, 255] };
+const ERR_NEG_CMAP = { R: [0, 20, 120], G: [0, 90, 224], B: [140, 210, 255], A: [0, 200, 255], I: [0, 128, 255] };
+
+// Colormaps for the error overlay. "diverging" is the zero-centered signed view (red = over, blue =
+// under) with a transparency floor at cal_min and saturation at cal_max. The rest window on |error|
+// with a single map for both signs (magnitude only).
 const ERROR_CMAPS = {
-  diverging: { colormap: "warm", colormapNegative: "winter" },  // signed: red = recon>truth, blue = recon<truth
+  diverging: { colormap: "errpos", colormapNegative: "errneg" },  // signed: red = recon>truth, blue = recon<truth
   warm:    { colormap: "warm",    colormapNegative: "warm" },
   hot:     { colormap: "hot",     colormapNegative: "hot" },
   viridis: { colormap: "viridis", colormapNegative: "viridis" },
@@ -479,12 +490,25 @@ function makeWindowControl(getVol, cmapCfg) {
   const pct = (x) => (vmax === vmin ? 0 : ((clampV(x) - vmin) / (vmax - vmin)) * 100);
 
   // Read the volume's current window + data range, reset the zoom to the full range, and sync the UI.
+  // Open the histogram zoomed so the window [winLo, winHi] spans ~half the visible range (context on
+  // both sides) rather than a sliver of the full data range. Preserves the view width when clamped to
+  // the data bounds; leaves the full range when the window is degenerate or already fills it.
+  function frameWindow() {
+    const W = winHi - winLo;
+    if (!(W > 0) || !(dmax > dmin)) { vmin = dmin; vmax = dmax; return; }
+    const span = Math.min(dmax - dmin, W * 2);           // window ≈ 50% of the view
+    const c = (winLo + winHi) / 2;
+    let nmin = c - span / 2, nmax = c + span / 2;
+    if (nmin < dmin) { nmin = dmin; nmax = dmin + span; }
+    if (nmax > dmax) { nmax = dmax; nmin = dmax - span; }
+    vmin = Math.max(dmin, nmin); vmax = Math.min(dmax, nmax);
+  }
   function setup() {
     const v = getVol(); if (!v) return;
     if (magnitude) { dmin = 0; dmax = Math.max(Math.abs(v.global_min), Math.abs(v.global_max)) || 1; }
     else { dmin = v.global_min; dmax = v.global_max; }
-    vmin = dmin; vmax = dmax;
     winLo = v.cal_min; winHi = v.cal_max;
+    frameWindow();   // zoom the initial view so the window takes up ~half the histogram
     applyView();
   }
   // Re-point the slider + histogram at the current zoom view [vmin,vmax] and reposition the window.
@@ -709,6 +733,10 @@ async function refreshView() {
       loadedBase = baseKind; loadedError = false;
       baseCtl.setup();
     }
+    // Reveal the error windowing section BEFORE setErrorColormap() so its canvas has a non-zero size
+    // when the histogram first draws — otherwise it renders blank and the bubbles mis-position until
+    // the next interaction (a hidden `display:none` element reports clientWidth 0).
+    $("win-error-section").classList.toggle("hidden", !showError);
     if (showError && !loadedError) {
       await nv.addVolumeFromUrl({ url: volUrl("error"), opacity: parseFloat($("opacity").value) });
       loadedError = true;
@@ -719,7 +747,6 @@ async function refreshView() {
     }
   } finally { setLoading(false); }
   nv.updateGLVolume();
-  $("win-error-section").classList.toggle("hidden", !showError);
 }
 
 // Apply the chosen error-overlay colormap. The error is always windowed on |error| (magnitude) with a
@@ -731,11 +758,14 @@ function setErrorColormap() {
   const cfg = ERROR_CMAPS[errorCtl.cmapSelect.value] || ERROR_CMAPS.diverging;
   ov.colormap = cfg.colormap;
   ov.colormapNegative = cfg.colormapNegative;
-  if (run.kind === "chi") { ov.cal_min = 0.01; ov.cal_max = 0.1; }
-  else {
-    const m = Math.max(Math.abs(ov.robust_min ?? ov.global_min), Math.abs(ov.robust_max ?? ov.global_max)) || 1;
-    ov.cal_min = 0.02 * m; ov.cal_max = m;
-  }
+  // Window on |error|, mirrored to both signs so zero is a fixed, transparent centre. cal_min = inner
+  // (transparency floor — errors below it, including exact zero, don't render); cal_max = outer
+  // (saturation — beyond it everything shows the top colour). Moving either changes only the ±inner/
+  // ±outer thresholds, never where the two signs diverge.
+  const m = (run.kind === "chi") ? 0.1
+    : (Math.max(Math.abs(ov.robust_min ?? ov.global_min), Math.abs(ov.robust_max ?? ov.global_max)) || 1);
+  ov.cal_min = (run.kind === "chi") ? 0.02 : 0.05 * m;
+  ov.cal_max = m;
   errorCtl.setMagnitude(true);
   errorCtl.setup();
   nv.updateGLVolume();
