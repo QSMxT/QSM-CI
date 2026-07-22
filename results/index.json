@@ -1818,37 +1818,6 @@
       }
     },
     {
-      "name": "matlab-medi",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 1024.9109499454498,
-      "metrics": {
-        "nrmse": 68.24589342565264,
-        "nrmse_detrend": 90.1481569368341,
-        "nrmse_tissue": 132.10976716993397,
-        "nrmse_blood": 78.74283862707841,
-        "nrmse_dgm": 63.93438039806516,
-        "dgm_linearity": 0.14354480309764406,
-        "calc_moment_dev": 0.7494011595845222,
-        "calc_streak": 0.01605872440152576,
-        "correlation": 0.7427467220714759,
-        "xsim": 0.30418084823324676
-      },
-      "status": "ok",
-      "id": "matlab-medi-iso",
-      "slug": "matlab-medi",
-      "mode": "isolated",
-      "variant": "default",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/matlab-medi-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/matlab-medi-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/matlab-medi-iso__error.nii.gz"
-      }
-    },
-    {
       "name": "qsmart",
       "track": "sim",
       "stage": "bfr+dipole",
@@ -8302,36 +8271,6 @@
         "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_xqsm-cmp__recon.nii.gz",
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_xqsm-cmp__truth.nii.gz",
         "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-iharperella_xqsm-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "matlab-medi",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 763.9620459079742,
-      "metrics": {
-        "nrmse": 68.24589342565264,
-        "nrmse_detrend": 90.1481569368341,
-        "nrmse_tissue": 132.10976716993397,
-        "nrmse_blood": 78.74283862707841,
-        "nrmse_dgm": 63.93438039806516,
-        "dgm_linearity": 0.14354480309764406,
-        "calc_moment_dev": 0.7494011595845222,
-        "calc_streak": 0.01605872440152576,
-        "correlation": 0.7427467220714759,
-        "xsim": 0.30418084823324676
-      },
-      "status": "ok",
-      "id": "matlab-medi-cmp",
-      "slug": "matlab-medi",
-      "mode": "composed",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/matlab-medi-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/matlab-medi-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/matlab-medi-cmp__error.nii.gz"
       }
     },
     {
@@ -21153,6 +21092,101 @@
         "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_xqsm-cmp__recon.nii.gz",
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_xqsm-cmp__truth.nii.gz",
         "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_iharperella_xqsm-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "matlab-medi",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 1126.3251988887787,
+      "metrics": {
+        "nrmse": 68.24589342565264,
+        "nrmse_detrend": 90.1481569368341,
+        "nrmse_tissue": 132.10976716993397,
+        "nrmse_blood": 78.74283862707841,
+        "nrmse_dgm": 63.93438039806516,
+        "dgm_linearity": 0.14354480309764406,
+        "calc_moment_dev": 0.7494011595845222,
+        "calc_streak": 0.01605872440152576,
+        "correlation": 0.7427467220714759,
+        "xsim": 0.30418084823324676
+      },
+      "status": "ok",
+      "id": "matlab-medi-iso",
+      "slug": "matlab-medi",
+      "mode": "isolated",
+      "variant": "default",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/matlab-medi-iso__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/matlab-medi-iso__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/matlab-medi-iso__error.nii.gz"
+      }
+    },
+    {
+      "name": "matlab-medi",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 1435.1233491897583,
+      "metrics": {
+        "nrmse": 58.37104811796437,
+        "nrmse_detrend": 71.10200229616402,
+        "nrmse_tissue": 83.10729792828356,
+        "nrmse_blood": 101.79400124962375,
+        "nrmse_dgm": 33.069334583965585,
+        "dgm_linearity": 0.24291638163863638,
+        "calc_moment_dev": 5.072891242802143,
+        "calc_streak": 0.02525448489947,
+        "correlation": 0.8149903836843782,
+        "xsim": 0.5756723721468054
+      },
+      "status": "ok",
+      "id": "matlab-medi-iso-tuned",
+      "slug": "matlab-medi",
+      "mode": "isolated",
+      "variant": "tuned",
+      "params": {
+        "lambda": "520"
+      },
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/matlab-medi-iso-tuned__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/matlab-medi-iso-tuned__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/matlab-medi-iso-tuned__error.nii.gz"
+      }
+    },
+    {
+      "name": "matlab-medi",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 759.6527006626129,
+      "metrics": {
+        "nrmse": 68.24589342565264,
+        "nrmse_detrend": 90.1481569368341,
+        "nrmse_tissue": 132.10976716993397,
+        "nrmse_blood": 78.74283862707841,
+        "nrmse_dgm": 63.93438039806516,
+        "dgm_linearity": 0.14354480309764406,
+        "calc_moment_dev": 0.7494011595845222,
+        "calc_streak": 0.01605872440152576,
+        "correlation": 0.7427467220714759,
+        "xsim": 0.30418084823324676
+      },
+      "status": "ok",
+      "id": "matlab-medi-cmp",
+      "slug": "matlab-medi",
+      "mode": "composed",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/matlab-medi-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/matlab-medi-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/matlab-medi-cmp__error.nii.gz"
       }
     }
   ]
