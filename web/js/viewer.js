@@ -315,7 +315,6 @@ async function loadRun() {
     b.addEventListener("click", () => selectRun(b.dataset.variantId)));
   const bits = [];
   if (run.artifact) bits.push(`scored artifact <code class="text-gray-700 dark:text-gray-300">${run.artifact}</code>`);
-  if (run.runtime_s != null) bits.push(`runtime ${run.runtime_s.toFixed(1)}s`);
   if (run.image) bits.push(`image <code class="text-gray-700 dark:text-gray-300">${run.image}</code>`);
   $("sub-meta").innerHTML = bits.join(" · ");
   renderMethodInfo();
@@ -361,7 +360,7 @@ async function loadRun() {
 // or isolated runs sharing this run's stage). Returns { rank, n, t } where t is 0..1 goodness for
 // colour, or null when there's nothing to compare against.
 function metricRank(k) {
-  const meta = METRICS[k], v = run.metrics?.[k];
+  const meta = METRICS[k], v = val(run, k);   // val() also reaches top-level fields (e.g. runtime_s)
   if (v == null) return null;
   const sameGroup = (r) => (run.combo ? r.mode === "composed" : r.mode === "isolated" && r.stage === run.stage);
   const peers = allRuns.filter((r) => r.status !== "DNF" && sameGroup(r) && val(r, k) != null);
@@ -375,9 +374,10 @@ function metricRank(k) {
 }
 
 function renderMetrics() {
-  const m = run.metrics || {};
   $("metrics-sub").textContent = run.mode === "composed" ? "Final χ map vs. ground truth" : `${run.artifact || "output"} vs. ground truth`;
-  const order = Object.keys(METRICS).filter((k) => m[k] != null);
+  // Include runtime_s (a top-level field, not under run.metrics) via val(), so it's ranked alongside
+  // the accuracy metrics. Object.keys(METRICS) keeps it last, matching its registry order.
+  const order = Object.keys(METRICS).filter((k) => val(run, k) != null);
   const groupLabel = run.combo ? "composed pipelines" : `isolated ${STAGE_LABEL[run.stage] || run.stage} methods`;
   $("metrics-body").innerHTML = order.map((k) => {
     const meta = METRICS[k], arrow = meta.better === "higher" ? "↑" : "↓", hero = k === "xsim" || k === "nrmse";
@@ -387,7 +387,7 @@ function renderMetrics() {
       : `<span class="text-gray-300 dark:text-gray-600">—</span>`;
     return `<tr>
       <td class="py-2.5 text-gray-500 dark:text-gray-400"><span class="has-tip" data-tip="${(meta.desc || "").replace(/"/g, "&quot;")}">${meta.label}</span> <span class="text-gray-300 dark:text-gray-600" title="${meta.better} is better">${arrow}</span></td>
-      <td class="py-2.5 text-right tabular-nums ${hero ? "font-bold text-gray-900 dark:text-gray-100" : "font-medium text-gray-700 dark:text-gray-300"}">${fmt(m[k], k)}</td>
+      <td class="py-2.5 text-right tabular-nums ${hero ? "font-bold text-gray-900 dark:text-gray-100" : "font-medium text-gray-700 dark:text-gray-300"}">${fmt(val(run, k), k)}</td>
       <td class="py-2.5 pl-3 text-right">${rankCell}</td>
     </tr>`;
   }).join("") || `<tr><td class="py-3 text-gray-400">No metrics for this run.</td></tr>`;
@@ -443,7 +443,7 @@ function makeWindowControl(getVol, cmapCfg) {
   const el = document.createElement("div");
   el.innerHTML = `
     <div class="flex items-center gap-2">
-      <div class="dualrange flex-1" title="Scroll to zoom the range · double-click to reset">
+      <div class="dualrange flex-1" title="Scroll to zoom the range · drag to pan when zoomed · double-click to reset">
         <canvas class="hist"></canvas>
         <div class="track"></div><div class="fill"></div>
         <input class="rng-lo" type="range" /><input class="rng-hi" type="range" />
@@ -474,6 +474,7 @@ function makeWindowControl(getVol, cmapCfg) {
   // [dmin,dmax] is the full data range; [vmin,vmax] is the zoomed *view* the slider+histogram span, so
   // scrolling to a narrow view makes each pixel of drag fine. cal_min/cal_max stay the source of truth.
   let dmin = 0, dmax = 1, vmin = 0, vmax = 1, winLo = 0, winHi = 1, hist = null, magnitude = false;
+  let pan = null, panRAF = 0;   // active drag-to-pan state (of the zoomed view) + its rAF handle
   const clampV = (x) => Math.min(vmax, Math.max(vmin, x));  // into the zoom view; thumbs pin, cal_* stay exact
   const pct = (x) => (vmax === vmin ? 0 : ((clampV(x) - vmin) / (vmax - vmin)) * 100);
 
@@ -492,8 +493,9 @@ function makeWindowControl(getVol, cmapCfg) {
     for (const r of [rngLo, rngHi]) { r.min = vmin; r.max = vmax; r.step = step; }
     const zoomed = vmax - vmin < (dmax - dmin) * 0.999;
     hintEl.textContent = zoomed
-      ? `zoomed to ${fmtWin(vmin)} – ${fmtWin(vmax)} · double-click to reset`
+      ? `zoomed to ${fmtWin(vmin)} – ${fmtWin(vmax)} · drag to pan · double-click to reset`
       : "scroll over the bar to zoom in for finer control";
+    dr.style.cursor = pan ? "grabbing" : zoomed ? "grab" : "";  // affordance: grab when there's room to pan
     buildHistogram(getVol());
     apply(winLo, winHi);
   }
@@ -614,6 +616,38 @@ function makeWindowControl(getVol, cmapCfg) {
     zoom(e.deltaY < 0 ? 0.8 : 1.25, frac);
   }, { passive: false });
   dr.addEventListener("dblclick", () => { if (!getVol()) return; vmin = dmin; vmax = dmax; applyView(); });
+  // Drag across the bar to pan the zoomed-in view (scroll zooms; this slides the [vmin,vmax] window
+  // left/right). Ignores drags that begin on a slider thumb or a value bubble — those keep their own
+  // behaviour — and does nothing until the view is actually zoomed in. rAF-coalesced so a fast drag
+  // repaints the histogram at most once per frame.
+  const onThumbOrBubble = (t) => t === rngLo || t === rngHi || !!(t.closest && t.closest(".win-bubble"));
+  dr.addEventListener("pointerdown", (e) => {
+    if (!getVol() || onThumbOrBubble(e.target)) return;
+    if (vmax - vmin >= (dmax - dmin) * 0.999) return;   // not zoomed — nothing to pan
+    pan = { x0: e.clientX, x1: e.clientX, vmin0: vmin, vmax0: vmax, w: dr.getBoundingClientRect().width || 1 };
+    dr.setPointerCapture(e.pointerId); dr.style.cursor = "grabbing"; e.preventDefault();
+  });
+  dr.addEventListener("pointermove", (e) => {
+    if (!pan) return;
+    pan.x1 = e.clientX;
+    if (panRAF) return;
+    panRAF = requestAnimationFrame(() => {
+      panRAF = 0; if (!pan) return;
+      const span = pan.vmax0 - pan.vmin0, dx = ((pan.x1 - pan.x0) / pan.w) * span;  // drag right → view moves left
+      let nmin = pan.vmin0 - dx, nmax = pan.vmax0 - dx;
+      if (nmin < dmin) { nmin = dmin; nmax = dmin + span; }
+      if (nmax > dmax) { nmax = dmax; nmin = dmax - span; }
+      vmin = nmin; vmax = nmax; applyView();
+    });
+  });
+  const endPan = (e) => {
+    if (!pan) return;
+    pan = null; if (panRAF) { cancelAnimationFrame(panRAF); panRAF = 0; }
+    applyView();  // restores the idle grab/none cursor
+    try { dr.releasePointerCapture(e.pointerId); } catch (_) { /* pointer already released */ }
+  };
+  dr.addEventListener("pointerup", endPan);
+  dr.addEventListener("pointercancel", endPan);
 
   const ctl = { el, setup, redraw: () => { draw(); positionBubbles(); }, setMagnitude: (on) => { magnitude = on; }, cmapSelect: cmapSel };
   winControls.push(ctl);

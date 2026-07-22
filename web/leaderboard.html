@@ -68,7 +68,7 @@
           </div>
           <label class="inline-flex items-center gap-2 text-sm text-gray-600">Colour by
             <select x-model="metric" class="rounded-lg border-gray-300 text-sm py-1.5 pr-8">
-              <template x-for="c in cols.filter(c=>c!=='runtime_s')" :key="c"><option :value="c" :selected="c===metric" x-text="METRICS[c].label"></option></template>
+              <template x-for="c in cols" :key="c"><option :value="c" :selected="c===metric" x-text="METRICS[c].label"></option></template>
             </select>
           </label>
         </div>

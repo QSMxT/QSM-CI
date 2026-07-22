@@ -395,48 +395,51 @@ def main() -> None:
 
         # Stage 1 — totalfield sources: the ground-truth field ("gt") plus each field-mapping
         # submission's output (run on raw inputs), so the matrix can start from raw phase.
-        # Each source is (totalfield, valid-region mask) so downstream stages inherit any erosion.
-        tf_sources: dict[str, tuple] = {"gt": (gt / ARTIFACT_FILE["totalfield"], mask)}
+        # Each source is (totalfield, valid-region mask, cumulative runtime s) so downstream stages
+        # inherit any erosion and can accumulate the full pipeline's wall-clock time. The ground-truth
+        # field costs nothing to "produce", so its runtime is 0.
+        tf_sources: dict[str, tuple] = {"gt": (gt / ARTIFACT_FILE["totalfield"], mask, 0.0)}
 
         def do_fieldmap(f):
             idir, odir = args.work / f"cmp_fm_{f['slug']}_in", args.work / f"cmp_fm_{f['slug']}_out"
             try:
                 prepare_input(f["consumes"], gt_sources, idir)
-                run_algo(f, idir, odir, args.runner)
+                fm_rt = run_algo(f, idir, odir, args.runner)
                 tf = odir / "totalfield.nii.gz"
                 # A field-mapping method may erode (e.g. Laplacian unwrapping) — carry its valid region.
                 fm_mask = _valid_mask(tf, mask, odir / "validmask.nii.gz")
-                return (f["slug"], tf, fm_mask)
+                return (f["slug"], tf, fm_mask, fm_rt)
             except Exception as e:
                 print(f"  composed  fieldmap {f['slug']} DNF ({e}) — skipping its pipelines")
                 return None
 
         for res in _pmap(fmap, do_fieldmap):
             if res:
-                tf_sources[res[0]] = (res[1], res[2])
+                tf_sources[res[0]] = (res[1], res[2], res[3])
 
         # Stage 2 — bfr: localfield for each (totalfield source, bfr), keyed (tfk, bfr slug).
-        # Each entry caches (localfield, valid-region mask) so the dipole inherits any erosion.
+        # Each entry caches (localfield, valid-region mask, cumulative runtime s) so the dipole
+        # inherits any erosion and the upstream field-mapping + BFR wall-clock time.
         lf_cache: dict[tuple, tuple] = {}
 
         def do_bfr(task):
-            tfk, tfp, tf_mask, b = task
+            tfk, tfp, tf_mask, fm_rt, b = task
             idir, odir = args.work / f"cmp_{tfk}_{b['slug']}_in", args.work / f"cmp_{tfk}_{b['slug']}_out"
             try:
                 # Run within the incoming valid region (not the full mask) so a field-mapping erosion
                 # already narrows the boundary before the BFR erodes further.
                 src = dict(gt_sources); src["totalfield"] = tfp; src["mask"] = tf_mask
                 prepare_input(b["consumes"], src, idir)
-                run_algo(b, idir, odir, args.runner)
+                bfr_rt = run_algo(b, idir, odir, args.runner)
                 lf = odir / "localfield.nii.gz"
                 bfr_mask = _valid_mask(lf, tf_mask, odir / "validmask.nii.gz")
-                return ((tfk, b["slug"]), (lf, bfr_mask))
+                return ((tfk, b["slug"]), (lf, bfr_mask, fm_rt + bfr_rt))
             except Exception as e:
                 print(f"  composed  {tfk}+{b['slug']} bfr DNF ({e})")
                 return None
 
-        bfr_tasks = [(tfk, tfp, tf_mask, b) for tfk, (tfp, tf_mask) in tf_sources.items() for b in bfr
-                     if owns_col(tfk, b["slug"])]  # --shard: only this shard's columns
+        bfr_tasks = [(tfk, tfp, tf_mask, fm_rt, b) for tfk, (tfp, tf_mask, fm_rt) in tf_sources.items()
+                     for b in bfr if owns_col(tfk, b["slug"])]  # --shard: only this shard's columns
         for res in _pmap(bfr_tasks, do_bfr):
             if res:
                 lf_cache[res[0]] = res[1]
@@ -448,16 +451,17 @@ def main() -> None:
             cid = f"{tfk}~{b['slug']}~{d['slug']}-cmp"
             cinfo = {"field_mapping": tfk, "bfr": b["slug"], "dipole": d["slug"]}
             try:
-                lf, bfr_mask = lf_cache[(tfk, b["slug"])]
+                lf, bfr_mask, upstream_rt = lf_cache[(tfk, b["slug"])]
                 # Invert within the BFR's eroded region — not the original full mask — so the dipole
                 # never deconvolves a zero-field rim into a blurry boundary.
                 src = dict(gt_sources); src["localfield"] = lf; src["mask"] = bfr_mask
                 idir, odir = args.work / f"cmp_{cid}_in", args.work / f"cmp_{cid}_out"
                 prepare_input(d["consumes"], src, idir)
                 rt = run_algo(d, idir, odir, args.runner)
+                # runtime_s is the whole pipeline's wall-clock: field-mapping + BFR (upstream_rt) + dipole.
                 meta = {"id": cid, "slug": combo, "name": combo,
                         "stage": "bfr+dipole" if tfk == "gt" else "field-mapping+bfr+dipole",
-                        "mode": "composed", "track": args.track, "runtime": rt, "combo": cinfo}
+                        "mode": "composed", "track": args.track, "runtime": upstream_rt + rt, "combo": cinfo}
                 r = score(odir / "chimap.nii.gz", "chimap", gt, mask,
                           args.work / f"cmp_{cid}.json", meta)
                 m = r["metrics"]
