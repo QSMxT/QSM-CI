@@ -21,7 +21,7 @@ jobs:
   end-to-end:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-python@v5
         with:
@@ -49,7 +49,7 @@ jobs:
           sudo mv nextflow /usr/local/bin/
 
       - name: Cache OSF dataset zip
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: .osfcache/bids.zip
           key: osf-bids-698ac9aecae88916d1e24f69

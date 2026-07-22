@@ -58,7 +58,7 @@ jobs:
       full: ${{ steps.decide.outputs.full }}
       slugs: ${{ steps.decide.outputs.slugs }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with: { fetch-depth: 0 }
       - id: decide
         run: |
@@ -107,7 +107,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 180
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install qsm-ci CLI + scorer deps
         run: |
@@ -116,7 +116,7 @@ jobs:
           pip install --no-build-isolation .
 
       - name: Cache OSF dataset zip
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: .osfcache/bids.zip
           key: osf-bids-698ac9aecae88916d1e24f69
@@ -137,7 +137,7 @@ jobs:
           python scripts/pipeline.py $ARGS
           echo "== task ${{ matrix.task.id }} wall-clock: $(( $(date +%s) - t0 ))s =="
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: shard-${{ matrix.task.id }}
           retention-days: 1
@@ -151,8 +151,8 @@ jobs:
     if: ${{ !cancelled() && needs.score.result != 'skipped' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
         with:
           pattern: shard-*
           merge-multiple: true
@@ -203,7 +203,7 @@ jobs:
 
       - name: (dry-run) upload candidate index instead of committing
         if: ${{ github.event.inputs.dry_run == 'true' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: index-candidate
           path: results/index.json
