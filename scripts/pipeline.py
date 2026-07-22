@@ -250,8 +250,8 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dataset", type=Path, default=ROOT / "data/sim/dev")
     ap.add_argument("--mode", choices=["isolated", "composed", "both"], default="both")
-    ap.add_argument("--runner", choices=["local", "docker"], default="local",
-                    help="local runs run.sh directly; docker runs each submission's image (CI)")
+    ap.add_argument("--runner", choices=["local", "docker", "apptainer"], default="local",
+                    help="local runs run.sh directly; docker/apptainer run each submission's image")
     ap.add_argument("--only", default=None, help="restrict isolated evaluation to this slug")
     ap.add_argument("--focus", default=None,
                     help="incremental: isolated for this slug, and every composed combo that includes "
