@@ -88,12 +88,17 @@ jobs:
       tasks: ${{ steps.gen.outputs.tasks }}
     steps:
       - id: gen
+        # slugs/full come in as env vars (not inlined) — the slugs JSON contains double quotes that
+        # would otherwise break the python -c "..." string in the focused branch.
+        env:
+          FULL: ${{ needs.scope.outputs.full }}
+          SLUGS: ${{ needs.scope.outputs.slugs }}
+          N: ${{ github.event.inputs.shards || '12' }}
         run: |
-          N="${{ github.event.inputs.shards || '12' }}"
-          if [ "${{ needs.scope.outputs.full }}" = "true" ]; then
-            TASKS=$(python3 -c "import json;N=int('$N');print(json.dumps([{'id':'s%02d'%i,'shard':'%d/%d'%(i,N)} for i in range(N)]))")
+          if [ "$FULL" = "true" ]; then
+            TASKS=$(python3 -c "import json,os;N=int(os.environ['N']);print(json.dumps([{'id':'s%02d'%i,'shard':'%d/%d'%(i,N)} for i in range(N)]))")
           else
-            TASKS=$(python3 -c "import json;s=json.loads('${{ needs.scope.outputs.slugs }}');print(json.dumps([{'id':'f-'+x,'focus':x} for x in s]))")
+            TASKS=$(python3 -c "import json,os;s=json.loads(os.environ['SLUGS']);print(json.dumps([{'id':'f-'+x,'focus':x} for x in s]))")
           fi
           echo "tasks=$TASKS" >>"$GITHUB_OUTPUT"
           echo "planned tasks: $TASKS"
