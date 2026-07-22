@@ -139,7 +139,7 @@ const METRICS = {
   xsim:            { label: "XSIM",             unit: "",  better: "higher", dp: 3,
     desc: "Structural-similarity index tuned for QSM (5×5×5 windows). 1 = identical to the ground truth." },
   runtime_s:       { label: "Runtime",          unit: "s", better: "lower",  dp: 1,
-    desc: "Wall-clock time taken by this run." },
+    desc: "Wall-clock time to produce this output — for a combined pipeline, the sum of its field-mapping, background-removal and dipole-inversion stages. Measured on GitHub-hosted runners (≈4 vCPU, 16 GB RAM, no GPU — so learning-based methods run on CPU); treat it as relative speed, not an absolute benchmark." },
 };
 const PREFERRED = ["nrmse", "nrmse_detrend", "nrmse_tissue", "nrmse_blood", "nrmse_dgm",
   "dgm_linearity", "calc_moment_dev", "calc_streak", "correlation", "xsim"];
