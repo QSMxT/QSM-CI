@@ -19,6 +19,7 @@ run: bash run.sh
 parameters:
   - name: radius
     default: 5.0
+    tuned: 3.0
     description: SMV kernel radius (mm)
   - name: max_iter
     default: 100

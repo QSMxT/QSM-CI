@@ -409,17 +409,21 @@ def _build_oci(algo: dict, engine: str, log) -> str:
 
 
 def _apptainer_image(algo: dict) -> str:
-    """apptainer runs from a docker:// ref or a .sif — it can't build a Dockerfile itself."""
+    """apptainer runs from a docker:// ref or a .sif — it can't build a Dockerfile itself.
+
+    A published ``image:`` is used as-is (pulled & converted on the fly) exactly like the docker
+    path does — a folder Dockerfile is only the build recipe, never built here. Only when no
+    ``image:`` is set does a local Dockerfile become a hard error (apptainer can't build it)."""
+    img = algo.get("image")
+    if img:
+        if "://" in img or img.endswith(".sif") or os.path.exists(img):
+            return img
+        return f"docker://{img}"  # plain registry ref -> pull & convert on the fly
     if (algo["dir"] / "Dockerfile").exists():
         raise SystemExit(
             "apptainer can't build a Dockerfile. Build it first with --runner docker/podman, "
             "or set image: to a prebuilt reference (docker://…, a registry ref, or a .sif).")
-    img = algo["image"]
-    if not img:
-        raise SystemExit("algorithm.yml has no image: for apptainer to run")
-    if "://" in img or img.endswith(".sif") or os.path.exists(img):
-        return img
-    return f"docker://{img}"  # plain registry ref -> pull & convert on the fly
+    raise SystemExit("algorithm.yml has no image: for apptainer to run")
 
 
 def _param_env(input_dir: Path) -> "dict[str, str]":

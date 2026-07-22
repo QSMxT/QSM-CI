@@ -36,6 +36,12 @@
 
     <!-- sub-controls -->
     <div class="mt-6 flex flex-wrap items-center gap-3">
+      <template x-if="hasTuned()">
+        <div class="inline-flex rounded-lg bg-gray-100 p-0.5 text-xs font-medium">
+          <button @click="variant='default'" :class="variant==='default' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'" class="rounded-md px-3 py-1 transition">Defaults</button>
+          <button @click="variant='tuned'" data-tip="Each method's parameters optimised on the QSM-CI scoring phantom (maximising xSIM). Tuning on the scored data is a form of overfitting, and only some methods are tunable (pretrained networks aren't) — so Defaults is the fair cross-method ranking. Applies to the per-stage tables and combined-method rows; the combination matrix stays at defaults." :class="variant==='tuned' ? 'bg-white shadow-sm text-emerald-700' : 'text-gray-500 hover:text-gray-700'" class="rounded-md px-3 py-1 transition">⚙ Tuned</button>
+        </div>
+      </template>
       <template x-if="view==='isolated'">
         <div class="inline-flex flex-wrap gap-2">
           <template x-for="s in stages()" :key="s">
@@ -235,6 +241,7 @@
       return {
         METRICS, STAGE_LABEL, MEDALS, fmt, val,
         runs: [], registry: {}, view: "composed", stage: "dipole", fmap: "gt",
+        variant: "default",
         metric: "xsim", sortKey: "xsim", sortDir: "desc", filter: "",
         colMenu: false, selectedCols: ["nrmse", "correlation", "xsim", "runtime_s"],
         loading: true,
@@ -252,13 +259,26 @@
         doi(r) { return this.view === "isolated" ? doiFor(this.registry, r.slug) : null; },
         stages() { return [...new Set(this.runs.filter((r) => r.mode === "isolated").map((r) => r.stage))]; },
         fmaps() { return [...new Set(this.runs.filter((r) => r.mode === "composed" && r.combo).map((r) => r.combo.field_mapping || "gt"))]; },
+        // Any tuned (optimised-on-the-scoring-phantom) runs present? Gates the Defaults/Tuned toggle.
+        hasTuned() { return this.runs.some((r) => r.variant === "tuned"); },
+        // Pick one run per method for the selected variant. In "tuned" mode a method with no tuned run
+        // (pretrained nets, or already-optimal defaults) falls back to its default run, so the toggle
+        // never drops methods — it only lifts the ones we optimised.
+        pickVariant(pool) {
+          if (this.variant !== "tuned") return pool.filter((r) => (r.variant || "default") === "default");
+          const by = {};
+          pool.forEach((r) => { (by[r.slug] ||= {})[r.variant || "default"] = r; });
+          return Object.values(by).map((v) => v.tuned || v.default).filter(Boolean);
+        },
         get baseRows() {
-          return _cache("baseRows", this.view + "|" + this.stage + "|" + this.fmap + "|" + this.runs.length, () =>
+          return _cache("baseRows", this.view + "|" + this.stage + "|" + this.fmap + "|" + this.variant + "|" + this.runs.length, () =>
             this.view === "isolated"
-              ? this.runs.filter((r) => r.mode === "isolated" && r.stage === this.stage)
+              ? this.pickVariant(this.runs.filter((r) => r.mode === "isolated" && r.stage === this.stage))
+              // Composed matrix is default-only (we don't run the tuned combinatorial matrix), so it
+              // ignores the variant toggle.
               : this.runs.filter((r) => r.mode === "composed" && (!r.combo || (r.combo.field_mapping || "gt") === this.fmap)));
         },
-        get cols() { return _cache("cols", this.view + "|" + this.stage + "|" + this.fmap + "|" + this.runs.length, () => metricCols(this.baseRows)); },
+        get cols() { return _cache("cols", this.view + "|" + this.stage + "|" + this.fmap + "|" + this.variant + "|" + this.runs.length, () => metricCols(this.baseRows)); },
         get displayCols() {
           const sel = this.cols.filter((c) => this.selectedCols.includes(c));
           return sel.length ? sel : this.cols.filter((c) => c === "xsim");
@@ -268,7 +288,7 @@
         },
         get rows() {
           return _cache("rows",
-            [this.view, this.stage, this.fmap, this.filter, this.sortKey, this.sortDir, this.runs.length].join("|"), () => {
+            [this.view, this.stage, this.fmap, this.variant, this.filter, this.sortKey, this.sortDir, this.runs.length].join("|"), () => {
               const f = this.filter.toLowerCase();
               return this.baseRows.filter((r) => !f || r.name.toLowerCase().includes(f)).slice().sort((a, b) => {
                 const av = val(a, this.sortKey), bv = val(b, this.sortKey);
@@ -312,10 +332,10 @@
         // so they're directly comparable to full pipelines, but can't be a cell in the BFR×dipole
         // grid. Shown as a separate row-group below the matrix (composed view only).
         get combinedAlgos() {
-          return _cache("combinedAlgos", this.fmap + "|" + this.metric + "|" + this.runs.length, () =>
-            this.runs.filter((r) => r.mode === "isolated"
+          return _cache("combinedAlgos", this.fmap + "|" + this.metric + "|" + this.variant + "|" + this.runs.length, () =>
+            this.pickVariant(this.runs.filter((r) => r.mode === "isolated"
               && (r.stage === "bfr+dipole" || r.stage === "end-to-end")
-              && r.artifact === "chimap" && val(r, this.metric) != null)
+              && r.artifact === "chimap" && val(r, this.metric) != null))
               .slice().sort((a, b) => this.norm(val(b, this.metric)) - this.norm(val(a, this.metric))));
         },
         norm(v) { // 0 = worst, 1 = best (respecting metric direction)

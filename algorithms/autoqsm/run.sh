@@ -45,6 +45,9 @@ neg.set_data_dtype(np.float32)
 nib.save(neg, sys.argv[2])
 PY
 
+# Pass the mounted brain mask so the whole-head V-Net output is zeroed outside the brain (AutoQSM
+# does no brain extraction). Cosmetic for the viewer — scoring is already mask-restricted.
 python "$HERE/predict.py" \
   "$WORK/totalfield.nii.gz" \
-  "$OUT/chimap.nii.gz"
+  "$OUT/chimap.nii.gz" \
+  "$IN/mask.nii.gz"

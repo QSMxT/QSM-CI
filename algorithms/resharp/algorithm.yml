@@ -16,6 +16,7 @@ run: bash run.sh
 parameters:
   - name: radius
     default: 15.0
+    tuned: 12.0
     description: SMV kernel radius (mm)
   - name: tik_reg
     default: 1e-3

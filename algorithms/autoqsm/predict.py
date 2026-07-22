@@ -15,7 +15,12 @@ whole-head map with values ~[-0.9, 0.5], std ~0.11, exactly the scale of a 3T to
 voxels through unchanged. The network's final activation is tanh, so its output susceptibility is in
 ppm as well; we write it out unchanged. No Hz/rad rescaling is applied.
 
-Usage:  predict.py <totalfield.nii.gz> <chimap.nii.gz>
+AutoQSM runs on the whole head (no brain extraction), so its raw output is a dense whole-head map.
+QSM-CI scores only inside the brain mask, so masking doesn't change the metrics — but an unmasked
+whole-head χ renders as noise in the volume viewer and isn't a usable susceptibility map. When a mask
+is given we zero the output outside it, matching the canonical brain-masked χ every other method emits.
+
+Usage:  predict.py <totalfield.nii.gz> <chimap.nii.gz> [mask.nii.gz]
 """
 import os
 import sys
@@ -38,7 +43,7 @@ INPUT_PATCH_SHAPE = [64, 64, 64]
 OUTPUT_PATCH_SHAPE = [32, 32, 32]
 
 
-def main(in_path, out_path):
+def main(in_path, out_path, mask_path=None):
     nii = nib.load(in_path)
     field = np.asarray(nii.get_fdata(), dtype=np.float32)   # totalfield, ppm
     if field.ndim != 3:
@@ -53,6 +58,14 @@ def main(in_path, out_path):
     chi, _patches = data_predict(model, field, INPUT_PATCH_SHAPE, OUTPUT_PATCH_SHAPE)
     chi = np.asarray(chi, dtype=np.float32)                 # susceptibility, ppm
 
+    # AutoQSM has no brain extraction — zero the whole-head output outside the brain mask so it's a
+    # canonical brain-masked χ (cosmetic for the viewer; scoring is already mask-restricted).
+    if mask_path:
+        mask = np.asarray(nib.load(mask_path).get_fdata(), dtype=np.float32) > 0.5
+        if mask.shape != chi.shape:
+            raise ValueError("mask shape {} != chi shape {}".format(mask.shape, chi.shape))
+        chi = chi * mask
+
     # Preserve the input grid / voxel size / affine (QSM-CI 3D artifacts all share the mask grid).
     out = nib.Nifti1Image(chi, nii.affine, nii.header)
     out.set_data_dtype(np.float32)
@@ -61,6 +74,6 @@ def main(in_path, out_path):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        sys.exit("usage: predict.py <totalfield.nii.gz> <chimap.nii.gz>")
-    main(sys.argv[1], sys.argv[2])
+    if len(sys.argv) not in (3, 4):
+        sys.exit("usage: predict.py <totalfield.nii.gz> <chimap.nii.gz> [mask.nii.gz]")
+    main(*sys.argv[1:])
