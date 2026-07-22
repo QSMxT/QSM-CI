@@ -46,6 +46,10 @@ permissions:
 env:
   TRACK: sim
   SETUPTOOLS_SCM_PRETEND_VERSION: "0.0.0"   # shallow checkout has no tags for setuptools-scm
+  # GitHub-hosted runners have ~16 GB RAM; pipeline.py's default of 4 concurrent containers (tuned for
+  # the ~31 GB self-hosted box) OOM-kills the runner when MATLAB/DL containers coincide ("hosted runner
+  # lost communication"). Cap at 2 — parallelism comes from the shard matrix, not intra-shard threads.
+  QSM_CI_JOBS: "2"
 
 jobs:
   scope:
