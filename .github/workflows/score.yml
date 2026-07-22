@@ -1,11 +1,15 @@
 name: score
 
 # Recompute leaderboard results and publish viewer volumes — only when something actually changed
-# (not on a weekly timer). Scope:
+# (not on a weekly timer). Scoring is PARALLELISED across GitHub-hosted runners: a full re-run is
+# split into N disjoint shards (pipeline.py --shard i/N, column-sharded so each bfr localfield is
+# computed once), a focused re-run fans out one job per changed slug. Each job writes its own runs +
+# volumes; a single merge job combines them, publishes volumes to Hugging Face, and commits the
+# small results/index.json (which triggers the Pages deploy).
+#
+# Scope:
 #   - a changed algorithm  -> that algorithm's isolated run + every composed combo that includes it
 #   - changed scorer / orchestration (eval, pipeline, stages) -> a full re-run of everything
-# Volumes go to a Hugging Face dataset repo; only the small results/index.json is committed
-# (which triggers the Pages deploy).
 
 on:
   push:
@@ -16,16 +20,22 @@ on:
       - "scripts/pipeline.py"
       - "scripts/publish_volumes.py"
       - "stages.yml"
-      # NB: score.yml itself is intentionally NOT here — editing the workflow (e.g. concurrency)
-      # shouldn't rescore the world. For a real scoring-logic change, dispatch with scope=all.
+      # NB: score.yml itself is intentionally NOT here — editing the workflow shouldn't rescore the
+      # world. For a real scoring-logic change, dispatch with scope=all.
   workflow_dispatch:
     inputs:
       scope:
         description: "all | <comma-separated slugs> (default: auto-detect from the diff)"
         default: "auto"
+      shards:
+        description: "number of parallel shards for a full re-run"
+        default: "12"
+      dry_run:
+        description: "true = score + merge but DON'T publish volumes or commit (upload a candidate index artifact instead)"
+        default: "false"
 
-# One rescore at a time — a new run queues behind the in-progress one instead of racing it (both
-# commit results/index.json, so overlapping runs could clobber each other / fail to push).
+# One rescore at a time — a new run queues behind the in-progress one instead of racing it (the merge
+# job commits results/index.json, so overlapping runs could clobber each other / fail to push).
 concurrency:
   group: score
   cancel-in-progress: false
@@ -35,6 +45,7 @@ permissions:
 
 env:
   TRACK: sim
+  SETUPTOOLS_SCM_PRETEND_VERSION: "0.0.0"   # shallow checkout has no tags for setuptools-scm
 
 jobs:
   scope:
@@ -64,24 +75,41 @@ jobs:
             echo "full=false" >>"$GITHUB_OUTPUT"; echo "slugs=$slugs" >>"$GITHUB_OUTPUT"
           fi
 
-  score:
+  # Turn the scope into a matrix of parallel tasks: full -> N shards; focused -> one job per slug.
+  plan:
     needs: scope
     if: needs.scope.outputs.full == 'true' || needs.scope.outputs.slugs != '[]'
-    runs-on: [self-hosted, Linux, X64]
-    # The serial composed matrix on the large 7T volume exceeds the default 6h job timeout and
-    # gets cancelled before publishing results. Raise the limit so runs can finish + commit
-    # index.json. (Real fix is parallelising pipeline.py / trimming slow submissions — deferred.)
-    timeout-minutes: 720
+    runs-on: ubuntu-latest
+    outputs:
+      tasks: ${{ steps.gen.outputs.tasks }}
+    steps:
+      - id: gen
+        run: |
+          N="${{ github.event.inputs.shards || '12' }}"
+          if [ "${{ needs.scope.outputs.full }}" = "true" ]; then
+            TASKS=$(python3 -c "import json;N=int('$N');print(json.dumps([{'id':'s%02d'%i,'shard':'%d/%d'%(i,N)} for i in range(N)]))")
+          else
+            TASKS=$(python3 -c "import json;s=json.loads('${{ needs.scope.outputs.slugs }}');print(json.dumps([{'id':'f-'+x,'focus':x} for x in s]))")
+          fi
+          echo "tasks=$TASKS" >>"$GITHUB_OUTPUT"
+          echo "planned tasks: $TASKS"
+
+  score:
+    needs: [scope, plan]
+    strategy:
+      fail-fast: false
+      matrix:
+        task: ${{ fromJson(needs.plan.outputs.tasks) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install scorer deps
-        # `.` installs the qsm-ci CLI onto PATH — pipeline.py --runner docker delegates each run to
-        # `qsm-ci run …` (one run path, no CI-side container builds).
+      - name: Install qsm-ci CLI + scorer deps
         run: |
           pip install -r eval/requirements.txt huggingface_hub
-          pip install --upgrade setuptools setuptools_scm wheel   # runner's build tools are too old for setuptools-scm
-          pip install --no-build-isolation .                       # build the CLI with the upgraded tools
+          pip install --upgrade setuptools setuptools_scm wheel
+          pip install --no-build-isolation .
 
       - name: Cache OSF dataset zip
         uses: actions/cache@v4
@@ -94,61 +122,84 @@ jobs:
           OSF_ZIP: .osfcache/bids.zip
         run: scripts/fetch_dataset.sh "$TRACK" data/${TRACK}/scoring
 
-      - name: Score (build envs with network, run offline, emit volumes)
+      - name: Score task ${{ matrix.task.id }}
         run: |
           DS="data/${TRACK}/scoring"
-          if [ "${{ needs.scope.outputs.full }}" = "true" ]; then
-            echo "::notice::full re-run"
-            python scripts/pipeline.py --dataset "$DS" --mode both --runner docker --track "$TRACK" --emit-volumes
-          else
-            for slug in $(echo '${{ needs.scope.outputs.slugs }}' | jq -r '.[]'); do
-              echo "::notice::focus $slug"
-              python scripts/pipeline.py --dataset "$DS" --mode both --runner docker --track "$TRACK" \
-                --emit-volumes --focus "$slug"
-            done
-          fi
+          ARGS="--dataset $DS --mode both --runner docker --track $TRACK --emit-volumes --runs-out runs-${{ matrix.task.id }}.json"
+          [ -n "${{ matrix.task.shard }}" ] && ARGS="$ARGS --shard ${{ matrix.task.shard }}"
+          [ -n "${{ matrix.task.focus }}" ] && ARGS="$ARGS --focus ${{ matrix.task.focus }}"
+          echo "== task ${{ matrix.task.id }}: pipeline.py $ARGS =="
+          t0=$(date +%s)
+          python scripts/pipeline.py $ARGS
+          echo "== task ${{ matrix.task.id }} wall-clock: $(( $(date +%s) - t0 ))s =="
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: shard-${{ matrix.task.id }}
+          retention-days: 1
+          path: |
+            runs-${{ matrix.task.id }}.json
+            results
+            !results/index.json
+
+  merge:
+    needs: [scope, score]
+    if: ${{ !cancelled() && needs.score.result != 'skipped' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: shard-*
+          merge-multiple: true
+          path: .
+
+      - name: Merge deps
+        run: pip install -r eval/requirements.txt huggingface_hub
+
+      - name: Merge shard runs into results/index.json
+        run: |
+          python3 - <<'PY'
+          import json, glob
+          from collections import Counter
+          runs = []
+          for f in sorted(glob.glob("runs-*.json")):
+              runs += json.load(open(f))
+          idx = json.load(open("results/index.json"))
+          ids = {r["id"] for r in runs}
+          merged = [r for r in idx["runs"] if r.get("id") not in ids] + runs
+          json.dump({"generated": None, "runs": merged}, open("results/index.json", "w"), indent=2)
+          dup = [i for i, c in Counter(r["id"] for r in runs).items() if c > 1]
+          dnf = sorted(r["id"] for r in runs if r.get("status") == "DNF")
+          print(f"merged {len(runs)} shard runs; index now {len(merged)} total")
+          print(f"duplicate ids across shards: {dup or 'none (partition OK)'}")
+          print(f"DNF ({len(dnf)}): {', '.join(dnf) if dnf else 'none'}")
+          PY
 
       - name: Publish volumes to Hugging Face
-        # Best-effort viewer volumes — must never block committing the leaderboard scores below.
+        if: ${{ github.event.inputs.dry_run != 'true' }}
         continue-on-error: true
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           HF_VOLUMES_REPO: ${{ vars.HF_VOLUMES_REPO }}
         run: python scripts/publish_volumes.py results
 
-      - name: Squash HF volume history (full re-publish only — reclaim old LFS versions)
-        # A full rescore regenerates every error map (etc.), leaving old LFS versions as orphaned
-        # storage. Collapse history to one commit so they're reclaimed (~36h). Full runs only —
-        # focused re-publishes churn too few files to bother. Best-effort; never blocks the commit.
-        if: ${{ needs.scope.outputs.full == 'true' }}
-        continue-on-error: true
-        env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
-          HF_VOLUMES_REPO: ${{ vars.HF_VOLUMES_REPO }}
-        run: python scripts/squash_hf_history.py
-
       - name: Commit results index (triggers the Pages deploy)
-        # Always commit the scored index.json even if the volume publish failed — the
-        # leaderboard (scores) lives here; the HF volumes are only for the NiiVue viewer.
-        if: ${{ !cancelled() }}
+        if: ${{ github.event.inputs.dry_run != 'true' }}
         run: |
           git config user.name  "qsm-ci-bot"
           git config user.email "qsm-ci@users.noreply.github.com"
-          # main can advance while this long scoring job runs (a PR merge, a registry commit, or an
-          # earlier rescore whose results this run was based *before*). Do NOT rebase index.json onto
-          # it — concurrent rescores touch the same file and rebasing conflicts, losing the scores
-          # (that was the #72 failure). Instead re-apply only the runs THIS rescore changed, by id,
-          # onto the latest index.json each attempt (scripts/merge_index.py).
-          cp results/index.json /tmp/scored.json
-          git show HEAD:results/index.json > /tmp/base.json 2>/dev/null || echo '{"runs":[]}' > /tmp/base.json
+          git add results/index.json
+          git commit -m "Update results" || { echo "no changes"; exit 0; }
           for attempt in 1 2 3 4 5; do
-            git fetch -q origin main
-            git reset -q --hard origin/main            # latest main (discards any prior failed attempt)
-            python3 scripts/merge_index.py /tmp/base.json /tmp/scored.json results/index.json results/index.json
-            git add results/index.json
-            git diff --cached --quiet && { echo "no score changes to commit"; exit 0; }
-            git commit -q -m "Update results"
-            git push -q && exit 0
-            echo "push attempt $attempt rejected — main moved; retrying"; sleep $((attempt * 5))
+            git pull --rebase origin main && git push && exit 0
+            echo "push attempt $attempt rejected — retrying"; sleep $((attempt * 5))
           done
           echo "::error::could not push results after 5 attempts"; exit 1
+
+      - name: (dry-run) upload candidate index instead of committing
+        if: ${{ github.event.inputs.dry_run == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: index-candidate
+          path: results/index.json
