@@ -134,14 +134,21 @@ jobs:
         run: |
           git config user.name  "qsm-ci-bot"
           git config user.email "qsm-ci@users.noreply.github.com"
-          git add results/index.json
-          git commit -m "Update results" || { echo "no changes"; exit 0; }
-          # main can advance while this long scoring job runs (a PR merge, a registry commit),
-          # which would reject a plain push as non-fast-forward and LOSE the scores. Rebase the
-          # results commit onto latest main and retry. Only score writes results/index.json (and
-          # score runs are serialised by the concurrency group), so the rebase applies cleanly.
+          # main can advance while this long scoring job runs (a PR merge, a registry commit, or an
+          # earlier rescore whose results this run was based *before*). Do NOT rebase index.json onto
+          # it — concurrent rescores touch the same file and rebasing conflicts, losing the scores
+          # (that was the #72 failure). Instead re-apply only the runs THIS rescore changed, by id,
+          # onto the latest index.json each attempt (scripts/merge_index.py).
+          cp results/index.json /tmp/scored.json
+          git show HEAD:results/index.json > /tmp/base.json 2>/dev/null || echo '{"runs":[]}' > /tmp/base.json
           for attempt in 1 2 3 4 5; do
-            git pull --rebase origin main && git push && exit 0
-            echo "push attempt $attempt rejected — retrying"; sleep $((attempt * 5))
+            git fetch -q origin main
+            git reset -q --hard origin/main            # latest main (discards any prior failed attempt)
+            python3 scripts/merge_index.py /tmp/base.json /tmp/scored.json results/index.json results/index.json
+            git add results/index.json
+            git diff --cached --quiet && { echo "no score changes to commit"; exit 0; }
+            git commit -q -m "Update results"
+            git push -q && exit 0
+            echo "push attempt $attempt rejected — main moved; retrying"; sleep $((attempt * 5))
           done
           echo "::error::could not push results after 5 attempts"; exit 1
