@@ -27,6 +27,7 @@ parameters:
     description: iterations
   - name: alpha1
     default: 0.0005
+    tuned: 0.00015
     description: first-order (gradient) weight
   - name: alpha0
     default: 0.0015

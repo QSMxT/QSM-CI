@@ -17,6 +17,7 @@ run: bash run.sh
 parameters:
   - name: lambda
     default: 1e-4
+    tuned: 3e-3
     description: regularization
   - name: max_iter
     default: 1000

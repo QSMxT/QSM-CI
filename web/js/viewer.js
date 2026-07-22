@@ -150,6 +150,7 @@ const combinedRuns = () => {
   const bySlug = {};
   for (const r of allRuns) {
     if (r.combo) continue;  // matrix combos carry stage bfr+dipole too — they belong on the axes
+    if (r.variant === "tuned") continue;  // tuned variants are reached via the toggle, not the list
     if (r.stage !== "bfr+dipole" && r.stage !== "end-to-end") continue;
     if (!bySlug[r.slug] || r.mode === "composed") bySlug[r.slug] = r;
   }
@@ -187,7 +188,7 @@ function stagesHTML() {
   // Pipeline order: field mapping → background removal → dipole inversion, then the combined
   // single-method spans (bfr+dipole like TGV/QSMART/MEDI, unwrap+bfr like HARPERELLA, end-to-end).
   return ["field-mapping", "bfr", "dipole", "bfr+dipole", "unwrap+bfr", "end-to-end"].map((s) => {
-    const rs = allRuns.filter((r) => r.mode === "isolated" && r.stage === s && (!f || r.name.toLowerCase().includes(f)));
+    const rs = allRuns.filter((r) => r.mode === "isolated" && r.stage === s && (r.variant || "default") === "default" && (!f || r.name.toLowerCase().includes(f)));
     if (!rs.length) return "";
     const rows = rs.map((r) => runItem(r, run?.id).replace("%NAME%", r.name)).join("");
     return `<div class="mb-3"><div class="px-2.5 pt-1 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">${STAGE_LABEL[s] || s}</div>${rows}</div>`;
@@ -242,15 +243,27 @@ function methodCard(a) {
   if (zdoi) links.push(`<a href="${zdoi.url}" class="text-emerald-600 hover:underline" title="Cite this QSM-CI submission (Zenodo v${zdoi.version})">submission doi</a>`);
   if (a.doi) links.push(`<a href="https://doi.org/${a.doi}" class="text-indigo-600 hover:underline">paper doi</a>`);
   if (a.code_url) links.push(`<a href="${a.code_url}" class="text-indigo-600 hover:underline">source code</a>`);
-  const params = (a.parameters || []).map((p) =>
-    `<tr class="border-t border-gray-100 dark:border-gray-800"><td class="py-1 pr-3 font-mono text-gray-700 dark:text-gray-300">${p.name}</td><td class="py-1 pr-3 tabular-nums text-gray-500 dark:text-gray-400">${p.default}</td><td class="py-1 text-gray-400 dark:text-gray-500">${p.description || ""}</td></tr>`).join("");
+  // A parameter may carry a `tuned:` value — the setting optimised on the QSM-CI scoring phantom,
+  // shown next to the method's usual `default:`. Only disclosed (submission page); the leaderboard
+  // still ranks methods at their defaults.
+  const plist = a.parameters || [];
+  const hasTuned = plist.some((p) => p.tuned != null && String(p.tuned) !== String(p.default));
+  const params = plist.map((p) => {
+    const tuned = (p.tuned != null && String(p.tuned) !== String(p.default))
+      ? `<span class="text-emerald-600 dark:text-emerald-400" title="Optimised on the QSM-CI scoring phantom">⚙ ${p.tuned}</span>`
+      : `<span class="text-gray-300 dark:text-gray-600">—</span>`;
+    return `<tr class="border-t border-gray-100 dark:border-gray-800"><td class="py-1 pr-3 font-mono text-gray-700 dark:text-gray-300">${p.name}</td><td class="py-1 pr-3 tabular-nums text-gray-500 dark:text-gray-400">${p.default}</td>${hasTuned ? `<td class="py-1 pr-3 tabular-nums">${tuned}</td>` : ""}<td class="py-1 text-gray-400 dark:text-gray-500">${p.description || ""}</td></tr>`;
+  }).join("");
+  const paramHead = hasTuned
+    ? `<thead><tr class="text-left text-gray-400 dark:text-gray-500"><th class="py-1 pr-3 font-normal">parameter</th><th class="py-1 pr-3 font-normal">default</th><th class="py-1 pr-3 font-normal"><span class="has-tip text-emerald-600 dark:text-emerald-400" data-tip="Value optimised on the QSM-CI scoring phantom (maximising xSIM). The default is the method's usual setting; the leaderboard still ranks methods at their defaults.">⚙ tuned</span></th><th class="py-1 font-normal"></th></tr></thead>`
+    : "";
   return `<div>
     <div class="flex items-baseline gap-2">
       <span class="font-medium text-gray-900 dark:text-gray-100">${a.name}</span>
       <span class="text-xs text-gray-400">${a.stage ? (STAGE_LABEL[a.stage] || a.stage) : ""}</span>
     </div>
     <p class="mt-0.5 text-sm text-gray-600 dark:text-gray-400">${a.description || ""}</p>
-    ${params ? `<table class="mt-2 w-full text-xs"><tbody>${params}</tbody></table>` : ""}
+    ${params ? `<table class="mt-2 w-full text-xs">${paramHead}<tbody>${params}</tbody></table>` : ""}
     ${(a.citation || links.length) ? `<p class="mt-1.5 text-xs text-gray-400 dark:text-gray-500">${a.citation || ""} ${links.length ? "· " + links.join(" · ") : ""}</p>` : ""}
   </div>`;
 }
@@ -269,13 +282,37 @@ function renderMethodInfo() {
 }
 
 // ---- detail + viewer --------------------------------------------------------
+// Default + tuned isolated runs for the current method, if both exist (drives the Defaults/Tuned
+// toggle — switching swaps the metrics AND the NiiVue volumes, since each variant is its own run).
+function variantRuns() {
+  if (!run || run.mode !== "isolated") return null;
+  const sib = allRuns.filter((r) => r.slug === run.slug && r.mode === "isolated" && r.artifact === run.artifact);
+  const def = sib.find((r) => (r.variant || "default") === "default");
+  const tun = sib.find((r) => r.variant === "tuned" && r.status !== "DNF");
+  return def && tun ? { def, tun } : null;
+}
+function variantToggleHTML() {
+  const v = variantRuns();
+  if (!v) return "";
+  const cur = run.variant === "tuned" ? "tuned" : "default";
+  const btn = (key, id, label) =>
+    `<button data-variant-id="${id}" class="px-2 py-0.5 rounded-md transition ${cur === key
+      ? "bg-white shadow-sm text-emerald-700 dark:bg-gray-700 dark:text-emerald-400"
+      : "text-gray-500 hover:text-gray-700 dark:text-gray-400"}">${label}</button>`;
+  return `<span class="inline-flex items-center rounded-lg bg-gray-100 dark:bg-gray-800 p-0.5 text-xs font-medium align-middle"
+    title="Switch between the method's default parameters and the values optimised on the QSM-CI scoring phantom. Metrics and the volumes below update to match.">${btn("default", v.def.id, "Defaults")}${btn("tuned", v.tun.id, "⚙ Tuned")}</span>`;
+}
+
 async function loadRun() {
   $("sub-title").textContent = run.name;
   const stageCls = STAGE_COLOR[run.stage] || "bg-gray-100 text-gray-600 ring-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-700";
   $("sub-badges").innerHTML =
     badge(STAGE_LABEL[run.stage] || run.stage, stageCls) +
     badge(run.mode === "composed" ? "Composed pipeline" : "Isolated", "bg-gray-100 text-gray-600 ring-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-700") +
-    (run.status === "DNF" ? badge("DNF", "bg-red-50 text-red-600 ring-red-100 dark:bg-red-500/10 dark:text-red-400 dark:ring-red-500/20") : "");
+    (run.status === "DNF" ? badge("DNF", "bg-red-50 text-red-600 ring-red-100 dark:bg-red-500/10 dark:text-red-400 dark:ring-red-500/20") : "") +
+    variantToggleHTML();
+  $("sub-badges").querySelectorAll("[data-variant-id]").forEach((b) =>
+    b.addEventListener("click", () => selectRun(b.dataset.variantId)));
   const bits = [];
   if (run.artifact) bits.push(`scored artifact <code class="text-gray-700 dark:text-gray-300">${run.artifact}</code>`);
   if (run.runtime_s != null) bits.push(`runtime ${run.runtime_s.toFixed(1)}s`);
