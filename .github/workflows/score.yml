@@ -101,7 +101,9 @@ jobs:
       matrix:
         task: ${{ fromJson(needs.plan.outputs.tasks) }}
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    # QSM_CI_JOBS=2 (below) halves intra-shard parallelism, so shards run longer — raise the ceiling
+    # so the heaviest shard finishes well within it rather than tripping the limit.
+    timeout-minutes: 300
     steps:
       - uses: actions/checkout@v4
 
@@ -123,6 +125,12 @@ jobs:
         run: scripts/fetch_dataset.sh "$TRACK" data/${TRACK}/scoring
 
       - name: Score task ${{ matrix.task.id }}
+        env:
+          # GitHub-hosted ubuntu-latest is a 16 GB runner. pipeline.py defaults to 4 concurrent
+          # containers (tuned for the ~31 GB self-hosted box), which OOM-kills the scorer when a
+          # shard hits several MATLAB MCR / CPU-torch jobs at once. Cap to 2 (~8 GB) per shard; the
+          # 12-way shard matrix still gives ~24-way total parallelism.
+          QSM_CI_JOBS: "2"
         run: |
           DS="data/${TRACK}/scoring"
           ARGS="--dataset $DS --mode both --runner docker --track $TRACK --emit-volumes --runs-out runs-${{ matrix.task.id }}.json"

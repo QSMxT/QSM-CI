@@ -33,9 +33,10 @@ ROOT = Path(__file__).resolve().parent.parent
 EVAL = ROOT / "eval" / "qsm_eval.py"
 
 # Independent submission runs (each a Docker container + a scoring subprocess) are executed
-# concurrently, bounded by QSM_CI_JOBS. The cap is deliberately conservative: MATLAB MCR runs on
-# the 205^3 volume peak at a few GB each, so 4 keeps well under the runner's ~31 GB. Set 1 for
-# fully-serial behaviour. Threads are fine — the actual work is in subprocess.run (GIL released).
+# concurrently, bounded by QSM_CI_JOBS. MATLAB MCR peaks at a few GB each on the 205^3 volume, so
+# the default 4 suits a ~31 GB box; CI (score.yml) runs on 16 GB GitHub-hosted runners and sets
+# QSM_CI_JOBS=2 so a shard of heavy jobs doesn't OOM. Set 1 for fully-serial. Threads are fine —
+# the actual work is in subprocess.run (GIL released).
 JOBS = max(1, int(os.environ.get("QSM_CI_JOBS", "4")))
 
 
