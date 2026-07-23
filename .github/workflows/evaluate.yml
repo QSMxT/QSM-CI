@@ -27,7 +27,7 @@ jobs:
     outputs:
       slugs: ${{ steps.changed.outputs.slugs }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with: { fetch-depth: 0 }
       - id: changed
         run: |
@@ -52,7 +52,7 @@ jobs:
       matrix:
         slug: ${{ fromJson(needs.discover.outputs.slugs) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install scorer deps
         # `.` installs the qsm-ci CLI onto PATH — pipeline.py --runner docker delegates each run to
@@ -63,7 +63,7 @@ jobs:
           pip install --no-build-isolation .                       # build the CLI with the upgraded tools
 
       - name: Cache OSF dataset zip
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: .osfcache/bids.zip
           key: osf-bids-698ac9aecae88916d1e24f69
