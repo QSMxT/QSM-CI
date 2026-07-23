@@ -86,8 +86,10 @@ def emit_volumes(run_id, recon, truth, mask=None):
 def _tuned_overrides(text: str) -> dict:
     """Extract `{param: tuned_value}` from an algorithm.yml `parameters:` block — the settings we
     optimised on the scoring phantom (each parameter may carry a `tuned:` alongside its `default:`).
-    Regex, not YAML, to keep this module dependency-free like the rest of the runner."""
-    m = re.search(r"^parameters:\s*\n(.*?)(?=^[A-Za-z]|\Z)", text, re.M | re.S)
+    Regex, not YAML, to keep this module dependency-free like the rest of the runner. The block runs
+    to the next top-level key (or EOF), NOT to the next non-space line — YAML list items may be
+    unindented (`- name:` at column 0, as the MATLAB ymls write them), and those must not end it."""
+    m = re.search(r"^parameters:[ \t]*\n(.*?)(?=^[A-Za-z_]|\Z)", text, re.M | re.S)
     if not m:
         return {}
     out = {}
