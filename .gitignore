@@ -57,6 +57,16 @@ algorithms/*/sti_support/
 # Dockerfile. Keeping the Dockerfile out of the checkout makes pipeline.build_env pull it.
 # (Dockerfile content is documented in each submission's BUILD.md.)
 algorithms/matlab-*/Dockerfile
+# New compiled-MATLAB submissions (clean names, not matlab-*) + IR2QSM (a baked pretrained checkpoint
+# CI cannot reproduce — the authors' single-file Drive link is quota-blocked). Same rule: CI PULLs
+# the pushed image, so keep their Dockerfiles out of the checkout.
+algorithms/fansi/Dockerfile
+algorithms/ndi/Dockerfile
+algorithms/l1-qsm/Dockerfile
+algorithms/wh-qsm/Dockerfile
+algorithms/hd-qsm/Dockerfile
+algorithms/ir2qsm/Dockerfile
 
 # Large network weights are build-time deps (fetched at build), never committed.
 algorithms/*/*.mat
+algorithms/*/*.pth

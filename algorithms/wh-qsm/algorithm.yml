@@ -1,0 +1,43 @@
+name: WH-QSM (MATLAB)
+slug: wh-qsm
+stage: dipole
+description: Weak-Harmonic QSM (WH-QSM) — dipole inversion that jointly estimates
+  susceptibility and a residual harmonic (background) field remaining in the local field
+  after background-field removal, correcting imperfect BFR during inversion. TV regularized,
+  from Carlos Milovic's FANSI toolbox (WH_nlTV.m). Compiled from MATLAB and run on the
+  license-free MATLAB Runtime.
+authors:
+- name: Carlos Milovic
+- name: Julio Acosta-Cabronero
+- name: José Miguel Pinto
+- name: Hendrik Mattern
+- name: Cristian Tejos
+- name: Karin Shmueli
+doi: 10.1002/mrm.27483
+citation: Milovic et al., Magn Reson Med 2019
+code_url: https://gitlab.com/cmilovic/FANSI-toolbox
+# FANSI-toolbox ships no LICENSE file; its README grants use "for academic and research
+# purposes" with a BSD-style warranty disclaimer.
+license: academic use; cite paper
+# Shared image with fansi/ndi/l1-qsm (all one FANSI toolbox); see BUILD.md.
+image: ghcr.io/astewartau/qsm-ci/wh-qsm:v1
+run: bash run.sh
+matlab:
+  entry: recon.m
+  runtime: r2026a
+parameters:
+- name: alpha1
+  default: 0.0003
+  description: gradient L1 (total-variation) penalty; larger = smoother, more regularized
+- name: beta
+  default: 150
+  description: weak-harmonic constraint weight (strength of the residual background-field model)
+- name: mu1
+  default: 0.03
+  description: gradient-consistency ADMM weight (recommended 100*alpha1)
+- name: iterations
+  default: 300
+  description: max ADMM outer iterations (WH needs many iterations for the harmonic field to converge)
+- name: tol_update
+  default: 0.1
+  description: convergence threshold on the normalized solution update (percent)

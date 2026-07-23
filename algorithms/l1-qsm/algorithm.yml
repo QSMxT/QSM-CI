@@ -1,0 +1,41 @@
+name: L1-QSM (MATLAB)
+slug: l1-qsm
+stage: dipole
+description: L1-norm data-fidelity QSM (also called PI-QSM) — nonlinear dipole inversion
+  with an L1 data-fidelity term that is more robust to phase inconsistencies than the
+  standard L2 (FANSI) term, plus TV regularization. Implementation from Carlos Milovic's
+  FANSI toolbox (nlL1TV.m). Compiled from MATLAB and run on the license-free MATLAB Runtime.
+authors:
+- name: Carlos Milovic
+- name: Berkin Bilgic
+- name: Bo Zhao
+- name: Cristian Tejos
+- name: Karin Shmueli
+doi: 10.1002/mrm.28957
+citation: Milovic et al., Magn Reson Med 2022 (L1-QSM)
+code_url: https://gitlab.com/cmilovic/FANSI-toolbox
+# FANSI-toolbox ships no LICENSE file; its README grants use "for academic and research
+# purposes" with a BSD-style warranty disclaimer.
+license: academic use; cite paper
+# Shared image with fansi/ndi/wh-qsm (all one FANSI toolbox); see BUILD.md.
+image: ghcr.io/astewartau/qsm-ci/l1-qsm:v1
+run: bash run.sh
+matlab:
+  entry: recon.m
+  runtime: r2026a
+parameters:
+- name: alpha1
+  default: 0.0003
+  description: gradient L1 (total-variation) penalty; larger = smoother, more regularized
+- name: lambda
+  default: 1.0
+  description: L1 data-fidelity strength (scales the fidelity weight); lambda<1 rejects more inconsistent voxels
+- name: mu1
+  default: 0.03
+  description: gradient-consistency ADMM weight (recommended 100*alpha1)
+- name: iterations
+  default: 50
+  description: maximum number of ADMM outer iterations
+- name: tol_update
+  default: 1.0
+  description: convergence threshold on the normalized solution update (percent)

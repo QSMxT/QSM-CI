@@ -1,0 +1,36 @@
+name: NDI (MATLAB)
+slug: ndi
+stage: dipole
+description: Nonlinear Dipole Inversion (NDI) — a parameter-tuning-free gradient-descent
+  QSM solver with a nonlinear data-fidelity term. Implementation from Carlos Milovic's
+  FANSI toolbox (ndi.m). Compiled from MATLAB and run on the license-free MATLAB Runtime.
+  Consumes the local field and produces a susceptibility map.
+authors:
+- name: Daniel Polak
+- name: Itthi Chatnuntawech
+- name: Jaeyeon Yoon
+- name: Siddharth Srinivasan Iyer
+- name: Kawin Setsompop
+- name: Berkin Bilgic
+doi: 10.1002/nbm.4271
+citation: Polak et al., NMR Biomed 2020
+code_url: https://gitlab.com/cmilovic/FANSI-toolbox
+# FANSI-toolbox ships no LICENSE file; its README grants use "for academic and research
+# purposes" with a BSD-style warranty disclaimer.
+license: academic use; cite paper
+# Shared image with fansi/l1-qsm/wh-qsm (all one FANSI toolbox); see BUILD.md.
+image: ghcr.io/astewartau/qsm-ci/ndi:v1
+run: bash run.sh
+matlab:
+  entry: recon.m
+  runtime: r2026a
+parameters:
+- name: tau
+  default: 2.0
+  description: gradient-descent step size; larger converges faster but may diverge
+- name: iterations
+  default: 100
+  description: number of gradient-descent iterations
+- name: alpha
+  default: 0.00001
+  description: small Tikhonov regularization weight for numerical stability
