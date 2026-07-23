@@ -22,6 +22,51 @@
       "parameters": []
     },
     {
+      "slug": "fansi",
+      "name": "FANSI (MATLAB)",
+      "stage": "dipole",
+      "engine": null,
+      "description": "Fast Nonlinear Susceptibility Inversion (FANSI) \u2014 nonlinear total-variation regularized dipole inversion solved with ADMM, from the FANSI toolbox. Compiled from MATLAB and run on the license-free MATLAB Runtime. Consumes the local field and produces a susceptibility map.",
+      "citation": "Milovic et al., Magn Reson Med 2018",
+      "doi": "10.1002/mrm.27073",
+      "code_url": "https://gitlab.com/cmilovic/FANSI-toolbox",
+      "license": "academic use; cite paper",
+      "authors": [
+        "Carlos Milovic",
+        "Berkin Bilgic",
+        "Bo Zhao",
+        "Julio Acosta-Cabronero",
+        "Cristian Tejos"
+      ],
+      "parameters": [
+        {
+          "name": "alpha1",
+          "default": 0.0003,
+          "description": "gradient L1 (total-variation) penalty; larger = smoother, more regularized"
+        },
+        {
+          "name": "mu1",
+          "default": 0.03,
+          "description": "gradient-consistency ADMM weight (FANSI recommends 100*alpha1)"
+        },
+        {
+          "name": "iterations",
+          "default": 150,
+          "description": "maximum number of ADMM outer iterations"
+        },
+        {
+          "name": "tol_update",
+          "default": 0.1,
+          "description": "convergence threshold on the normalized solution update (percent)"
+        },
+        {
+          "name": "isTGV",
+          "default": 0,
+          "description": "0 = TV regularization (nlTV), 1 = TGV regularization (nlTGV)"
+        }
+      ]
+    },
+    {
       "slug": "harperella",
       "name": "HARPERELLA",
       "stage": "unwrap+bfr",
@@ -54,6 +99,49 @@
           "name": "tol",
           "default": "1e-4",
           "description": "tolerance"
+        }
+      ]
+    },
+    {
+      "slug": "hd-qsm",
+      "name": "HD-QSM (MATLAB)",
+      "stage": "dipole",
+      "engine": null,
+      "description": "Hybrid Data-fidelity QSM (HD-QSM) \u2014 a two-stage linear dipole inversion. An L1 data-fidelity stage estimates a discrepancy map that re-weights a second L2 stage, combining robustness to inconsistencies with L2 smoothness. Compiled from MATLAB and run on the license-free MATLAB Runtime. Consumes the local field, produces a susceptibility map.",
+      "citation": "Lambert et al., Magn Reson Med 2022",
+      "doi": "10.1002/mrm.29218",
+      "code_url": "https://github.com/mglambert/HD-QSM",
+      "license": "MIT",
+      "authors": [
+        "Mathias Lambert",
+        "Carlos Milovic",
+        "Cristian Tejos"
+      ],
+      "parameters": [
+        {
+          "name": "alphaL2",
+          "default": 1.6406e-05,
+          "description": "L2-stage TV regularization weight (10^-4.785; from the HDQSM example)"
+        },
+        {
+          "name": "mu1L2",
+          "default": 0.00016406,
+          "description": "L2-stage gradient-consistency ADMM weight (recommended 10*alphaL2)"
+        },
+        {
+          "name": "iterationsL1",
+          "default": 20,
+          "description": "iterations of the L1 (first / discrepancy-estimation) stage"
+        },
+        {
+          "name": "iterationsL2",
+          "default": 80,
+          "description": "iterations of the L2 (second / final) stage"
+        },
+        {
+          "name": "tol_update",
+          "default": 1.0,
+          "description": "convergence threshold on the L2-stage normalized solution update (percent)"
         }
       ]
     },
@@ -127,6 +215,68 @@
       ]
     },
     {
+      "slug": "inr-qsm",
+      "name": "INR-QSM",
+      "stage": "dipole",
+      "engine": null,
+      "description": "INR-QSM \u2014 a subject-specific UNSUPERVISED deep-learning dipole inversion using an implicit neural representation. No pretrained weights: a sine-activated coordinate MLP (SIREN) is OPTIMIZED per-subject so that the susceptibility it represents, pushed through the QSM dipole forward model, reproduces the input local field, with edge-weighted TV and gradient-domain regularizers. Consumes the local (tissue) field in ppm and produces susceptibility (ppm). The dipole kernel is built from the B0 direction and voxel size. Runs CPU-only by default (the reference is GPU-oriented, ~10 GB VRAM; see RUNTIME/GPU CAVEAT in README). Because it optimizes per input volume with a patch-based non-local phase-compensation scheme, runtime is long.",
+      "citation": null,
+      "doi": "10.1016/j.media.2024.103173",
+      "code_url": "https://github.com/AMRI-Lab/INR-QSM",
+      "license": "none declared (no LICENSE in repo); academic use, cite the paper",
+      "authors": [
+        "Zhang M.",
+        "Feng R.",
+        "Li Z.",
+        "Feng J.",
+        "Wu Q.",
+        "Zhang Z.",
+        "Ma C.",
+        "Wu J.",
+        "Yan F.",
+        "Liu C.",
+        "Zhang Y.",
+        "Wei H."
+      ],
+      "parameters": [
+        {
+          "name": "epoch",
+          "default": 50,
+          "description": "Number of per-subject optimization epochs (reference config.py default 50). Main runtime/quality knob; fewer epochs run faster but under-fit.\n"
+        },
+        {
+          "name": "star_lr",
+          "default": 1e-05,
+          "description": "Starting Adam learning rate at the first epoch (reference default 1e-5)."
+        },
+        {
+          "name": "end_lr",
+          "default": 2e-07,
+          "description": "Final learning rate at the last epoch, reached by an exponential schedule (reference default 0.02e-5)."
+        },
+        {
+          "name": "hidden_dim_num",
+          "default": 512,
+          "description": "Width (neurons per layer) of the SIREN coordinate MLP (reference default 512)."
+        },
+        {
+          "name": "num_layers",
+          "default": 10,
+          "description": "Number of layers in the SIREN MLP (reference default 10)."
+        },
+        {
+          "name": "TV_weight",
+          "default": 0.15,
+          "description": "Weight of the edge-weighted total-variation regularizer (reference default 0.15)."
+        },
+        {
+          "name": "gd_weight",
+          "default": 1.0,
+          "description": "Weight of the gradient-domain data-consistency regularizer (reference default 1.0)."
+        }
+      ]
+    },
+    {
       "slug": "iqsm",
       "name": "iQSM",
       "stage": "end-to-end",
@@ -176,6 +326,29 @@
       "parameters": []
     },
     {
+      "slug": "ir2qsm",
+      "name": "IR2QSM",
+      "stage": "dipole",
+      "engine": null,
+      "description": "IR2QSM \u2014 a pretrained deep-learning dipole-inversion network (iterative Reverse Concatenations and Recurrent Modules). Consumes the local (tissue) field in ppm and produces susceptibility (ppm). The network is an \"IR2U-net\": a specially tailored 3D U-net iterated T=4 times, with reverse concatenations between iterations and a recurrent (SRU) middle module. Unlike QSMnet it applies NO dataset mean/std normalization \u2014 the local field in ppm is fed to the net directly and the output is already in ppm. Each dimension is zero-padded to a multiple of 8 (the U-net has 3 pool/deconv levels) and cropped back afterwards; trained at 1 mm isotropic. Runs CPU-only with PyTorch (no GPU).",
+      "citation": null,
+      "doi": "10.1002/mp.17747",
+      "code_url": "https://github.com/YangGaoUQ/IR2QSM",
+      "license": "No LICENSE file in the upstream repository; academic use only \u2014 cite the paper (arXiv:2406.12300). Confirm terms with the authors before redistribution.\n",
+      "authors": [
+        "Li M.",
+        "Chen C.",
+        "Xiong Z.",
+        "Liu Y.",
+        "Rong P.",
+        "Shan S.",
+        "Liu F.",
+        "Sun H.",
+        "Gao Y."
+      ],
+      "parameters": []
+    },
+    {
       "slug": "ismv",
       "name": "iSMV",
       "stage": "bfr",
@@ -207,6 +380,51 @@
           "name": "radius_factor",
           "default": 2.0,
           "description": "\u00d7 max voxel size"
+        }
+      ]
+    },
+    {
+      "slug": "l1-qsm",
+      "name": "L1-QSM (MATLAB)",
+      "stage": "dipole",
+      "engine": null,
+      "description": "L1-norm data-fidelity QSM (also called PI-QSM) \u2014 nonlinear dipole inversion with an L1 data-fidelity term that is more robust to phase inconsistencies than the standard L2 (FANSI) term, plus TV regularization. Implementation from Carlos Milovic's FANSI toolbox (nlL1TV.m). Compiled from MATLAB and run on the license-free MATLAB Runtime.",
+      "citation": "Milovic et al., Magn Reson Med 2022 (L1-QSM)",
+      "doi": "10.1002/mrm.28957",
+      "code_url": "https://gitlab.com/cmilovic/FANSI-toolbox",
+      "license": "academic use; cite paper",
+      "authors": [
+        "Carlos Milovic",
+        "Berkin Bilgic",
+        "Bo Zhao",
+        "Cristian Tejos",
+        "Karin Shmueli"
+      ],
+      "parameters": [
+        {
+          "name": "alpha1",
+          "default": 0.0003,
+          "description": "gradient L1 (total-variation) penalty; larger = smoother, more regularized"
+        },
+        {
+          "name": "lambda",
+          "default": 1.0,
+          "description": "L1 data-fidelity strength (scales the fidelity weight); lambda<1 rejects more inconsistent voxels"
+        },
+        {
+          "name": "mu1",
+          "default": 0.03,
+          "description": "gradient-consistency ADMM weight (recommended 100*alpha1)"
+        },
+        {
+          "name": "iterations",
+          "default": 50,
+          "description": "maximum number of ADMM outer iterations"
+        },
+        {
+          "name": "tol_update",
+          "default": 1.0,
+          "description": "convergence threshold on the normalized solution update (percent)"
         }
       ]
     },
@@ -486,6 +704,43 @@
       ]
     },
     {
+      "slug": "modip",
+      "name": "MoDIP",
+      "stage": "dipole",
+      "engine": null,
+      "description": "MoDIP \u2014 model-based deep image prior for QSM dipole inversion. UNSUPERVISED / untrained: no pretrained weights are loaded \u2014 a small 3D U-Net (deep image prior) is optimized per-subject at inference time to fit the input local field through the QSM dipole forward model, with a gradient-domain regularizer. Consumes the local (tissue) field in ppm and produces susceptibility (ppm). The dipole kernel is built internally from the B0 direction and voxel size. Runs CPU-only by default (the reference is GPU-oriented; see RUNTIME/GPU CAVEAT in README). Because it optimizes per input volume, runtime is long (hundreds of iterations).",
+      "citation": null,
+      "doi": "10.1016/j.neuroimage.2024.120583",
+      "code_url": "https://github.com/sunhongfu/MoDIP",
+      "license": "none declared (no LICENSE in repo); academic use, cite the paper",
+      "authors": [
+        "Xiong Z.",
+        "Gao Y.",
+        "Liu Y.",
+        "Fazlollahi A.",
+        "Nestor P.",
+        "Liu F.",
+        "Sun H."
+      ],
+      "parameters": [
+        {
+          "name": "epoch_num",
+          "default": 500,
+          "description": "Number of per-subject optimization iterations (reference default 500). Fewer iterations run faster but under-fit; this is the main knob for trading runtime against quality on CPU.\n"
+        },
+        {
+          "name": "lr",
+          "default": 0.0005,
+          "description": "Adam learning rate for the deep-image-prior optimization (reference default 5e-4)."
+        },
+        {
+          "name": "base",
+          "default": 32,
+          "description": "Base channel count of the DIP U-Net (reference default 32). Lower reduces memory/compute (the reference README suggests decreasing base and increasing iterations under memory pressure).\n"
+        }
+      ]
+    },
+    {
       "slug": "modl-qsm",
       "name": "MoDL-QSM",
       "stage": "dipole",
@@ -509,6 +764,42 @@
         "Wei H."
       ],
       "parameters": []
+    },
+    {
+      "slug": "ndi",
+      "name": "NDI (MATLAB)",
+      "stage": "dipole",
+      "engine": null,
+      "description": "Nonlinear Dipole Inversion (NDI) \u2014 a parameter-tuning-free gradient-descent QSM solver with a nonlinear data-fidelity term. Implementation from Carlos Milovic's FANSI toolbox (ndi.m). Compiled from MATLAB and run on the license-free MATLAB Runtime. Consumes the local field and produces a susceptibility map.",
+      "citation": "Polak et al., NMR Biomed 2020",
+      "doi": "10.1002/nbm.4271",
+      "code_url": "https://gitlab.com/cmilovic/FANSI-toolbox",
+      "license": "academic use; cite paper",
+      "authors": [
+        "Daniel Polak",
+        "Itthi Chatnuntawech",
+        "Jaeyeon Yoon",
+        "Siddharth Srinivasan Iyer",
+        "Kawin Setsompop",
+        "Berkin Bilgic"
+      ],
+      "parameters": [
+        {
+          "name": "tau",
+          "default": 2.0,
+          "description": "gradient-descent step size; larger converges faster but may diverge"
+        },
+        {
+          "name": "iterations",
+          "default": 100,
+          "description": "number of gradient-descent iterations"
+        },
+        {
+          "name": "alpha",
+          "default": 1e-05,
+          "description": "small Tikhonov regularization weight for numerical stability"
+        }
+      ]
     },
     {
       "slug": "nextqsm",
@@ -976,6 +1267,52 @@
           "name": "min_radius_factor",
           "default": 0.0,
           "description": "\u00d7 max voxel size"
+        }
+      ]
+    },
+    {
+      "slug": "wh-qsm",
+      "name": "WH-QSM (MATLAB)",
+      "stage": "dipole",
+      "engine": null,
+      "description": "Weak-Harmonic QSM (WH-QSM) \u2014 dipole inversion that jointly estimates susceptibility and a residual harmonic (background) field remaining in the local field after background-field removal, correcting imperfect BFR during inversion. TV regularized, from Carlos Milovic's FANSI toolbox (WH_nlTV.m). Compiled from MATLAB and run on the license-free MATLAB Runtime.",
+      "citation": "Milovic et al., Magn Reson Med 2019",
+      "doi": "10.1002/mrm.27483",
+      "code_url": "https://gitlab.com/cmilovic/FANSI-toolbox",
+      "license": "academic use; cite paper",
+      "authors": [
+        "Carlos Milovic",
+        "Julio Acosta-Cabronero",
+        "Jos\u00e9 Miguel Pinto",
+        "Hendrik Mattern",
+        "Cristian Tejos",
+        "Karin Shmueli"
+      ],
+      "parameters": [
+        {
+          "name": "alpha1",
+          "default": 0.0003,
+          "description": "gradient L1 (total-variation) penalty; larger = smoother, more regularized"
+        },
+        {
+          "name": "beta",
+          "default": 150,
+          "description": "weak-harmonic constraint weight (strength of the residual background-field model)"
+        },
+        {
+          "name": "mu1",
+          "default": 0.03,
+          "description": "gradient-consistency ADMM weight (recommended 100*alpha1)"
+        },
+        {
+          "name": "iterations",
+          "default": 300,
+          "description": "max ADMM outer iterations (WH needs many iterations for the harmonic field to converge)"
+        },
+        {
+          "name": "tol_update",
+          "default": 0.1,
+          "description": "convergence threshold on the normalized solution update (percent)"
         }
       ]
     },

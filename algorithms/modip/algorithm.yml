@@ -1,0 +1,41 @@
+name: MoDIP
+slug: modip
+stage: dipole
+description: >
+  MoDIP — model-based deep image prior for QSM dipole inversion. UNSUPERVISED / untrained: no
+  pretrained weights are loaded — a small 3D U-Net (deep image prior) is optimized per-subject at
+  inference time to fit the input local field through the QSM dipole forward model, with a
+  gradient-domain regularizer. Consumes the local (tissue) field in ppm and produces susceptibility
+  (ppm). The dipole kernel is built internally from the B0 direction and voxel size. Runs CPU-only by
+  default (the reference is GPU-oriented; see RUNTIME/GPU CAVEAT in README). Because it optimizes per
+  input volume, runtime is long (hundreds of iterations).
+authors:
+- name: Xiong Z.
+- name: Gao Y.
+- name: Liu Y.
+- name: Fazlollahi A.
+- name: Nestor P.
+- name: Liu F.
+- name: Sun H.
+# DOI verified via PubMed/ScienceDirect: NeuroImage vol. 291, article 120583 (2024). The DOI given in
+# the submission brief (…120540) did not resolve to this paper; using the verified 120583.
+doi: 10.1016/j.neuroimage.2024.120583
+code_url: https://github.com/sunhongfu/MoDIP
+# The MoDIP repo ships NO LICENSE file. Treat as academic use; cite the paper.
+license: none declared (no LICENSE in repo); academic use, cite the paper
+image: ghcr.io/astewartau/qsm-ci/modip:v1
+run: bash run.sh
+parameters:
+- name: epoch_num
+  default: 500
+  description: >
+    Number of per-subject optimization iterations (reference default 500). Fewer iterations run
+    faster but under-fit; this is the main knob for trading runtime against quality on CPU.
+- name: lr
+  default: 0.0005
+  description: Adam learning rate for the deep-image-prior optimization (reference default 5e-4).
+- name: base
+  default: 32
+  description: >
+    Base channel count of the DIP U-Net (reference default 32). Lower reduces memory/compute
+    (the reference README suggests decreasing base and increasing iterations under memory pressure).

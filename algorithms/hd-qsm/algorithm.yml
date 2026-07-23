@@ -1,0 +1,36 @@
+name: HD-QSM (MATLAB)
+slug: hd-qsm
+stage: dipole
+description: Hybrid Data-fidelity QSM (HD-QSM) — a two-stage linear dipole inversion.
+  An L1 data-fidelity stage estimates a discrepancy map that re-weights a second L2 stage,
+  combining robustness to inconsistencies with L2 smoothness. Compiled from MATLAB and run
+  on the license-free MATLAB Runtime. Consumes the local field, produces a susceptibility map.
+authors:
+- name: Mathias Lambert
+- name: Carlos Milovic
+- name: Cristian Tejos
+doi: 10.1002/mrm.29218
+citation: Lambert et al., Magn Reson Med 2022
+code_url: https://github.com/mglambert/HD-QSM
+license: MIT
+image: ghcr.io/astewartau/qsm-ci/hd-qsm:v1
+run: bash run.sh
+matlab:
+  entry: recon.m
+  runtime: r2026a
+parameters:
+- name: alphaL2
+  default: 1.6406e-05
+  description: L2-stage TV regularization weight (10^-4.785; from the HDQSM example)
+- name: mu1L2
+  default: 1.6406e-04
+  description: L2-stage gradient-consistency ADMM weight (recommended 10*alphaL2)
+- name: iterationsL1
+  default: 20
+  description: iterations of the L1 (first / discrepancy-estimation) stage
+- name: iterationsL2
+  default: 80
+  description: iterations of the L2 (second / final) stage
+- name: tol_update
+  default: 1.0
+  description: convergence threshold on the L2-stage normalized solution update (percent)

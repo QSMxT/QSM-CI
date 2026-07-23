@@ -1,0 +1,42 @@
+name: FANSI (MATLAB)
+slug: fansi
+stage: dipole
+description: Fast Nonlinear Susceptibility Inversion (FANSI) — nonlinear total-variation
+  regularized dipole inversion solved with ADMM, from the FANSI toolbox. Compiled from
+  MATLAB and run on the license-free MATLAB Runtime. Consumes the local field and produces
+  a susceptibility map.
+authors:
+- name: Carlos Milovic
+- name: Berkin Bilgic
+- name: Bo Zhao
+- name: Julio Acosta-Cabronero
+- name: Cristian Tejos
+doi: 10.1002/mrm.27073
+citation: Milovic et al., Magn Reson Med 2018
+code_url: https://gitlab.com/cmilovic/FANSI-toolbox
+# FANSI-toolbox ships no LICENSE file; its README grants use "for academic and research
+# purposes" with a BSD-style warranty disclaimer.
+license: academic use; cite paper
+# Shared image: fansi, ndi, l1-qsm and wh-qsm are all built from the one FANSI toolbox, so
+# they share a single compiled image (each has its own recon.m entry; see BUILD.md).
+image: ghcr.io/astewartau/qsm-ci/fansi:v1
+run: bash run.sh
+matlab:
+  entry: recon.m
+  runtime: r2026a
+parameters:
+- name: alpha1
+  default: 0.0003
+  description: gradient L1 (total-variation) penalty; larger = smoother, more regularized
+- name: mu1
+  default: 0.03
+  description: gradient-consistency ADMM weight (FANSI recommends 100*alpha1)
+- name: iterations
+  default: 150
+  description: maximum number of ADMM outer iterations
+- name: tol_update
+  default: 0.1
+  description: convergence threshold on the normalized solution update (percent)
+- name: isTGV
+  default: 0
+  description: 0 = TV regularization (nlTV), 1 = TGV regularization (nlTGV)

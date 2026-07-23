@@ -1,0 +1,55 @@
+name: INR-QSM
+slug: inr-qsm
+stage: dipole
+description: >
+  INR-QSM — a subject-specific UNSUPERVISED deep-learning dipole inversion using an implicit neural
+  representation. No pretrained weights: a sine-activated coordinate MLP (SIREN) is OPTIMIZED
+  per-subject so that the susceptibility it represents, pushed through the QSM dipole forward model,
+  reproduces the input local field, with edge-weighted TV and gradient-domain regularizers. Consumes
+  the local (tissue) field in ppm and produces susceptibility (ppm). The dipole kernel is built from
+  the B0 direction and voxel size. Runs CPU-only by default (the reference is GPU-oriented, ~10 GB
+  VRAM; see RUNTIME/GPU CAVEAT in README). Because it optimizes per input volume with a patch-based
+  non-local phase-compensation scheme, runtime is long.
+authors:
+- name: Zhang M.
+- name: Feng R.
+- name: Li Z.
+- name: Feng J.
+- name: Wu Q.
+- name: Zhang Z.
+- name: Ma C.
+- name: Wu J.
+- name: Yan F.
+- name: Liu C.
+- name: Zhang Y.
+- name: Wei H.
+doi: 10.1016/j.media.2024.103173
+code_url: https://github.com/AMRI-Lab/INR-QSM
+# The INR-QSM repo ships NO LICENSE file. Treat as academic use; cite the paper.
+license: none declared (no LICENSE in repo); academic use, cite the paper
+image: ghcr.io/astewartau/qsm-ci/inr-qsm:v1
+run: bash run.sh
+parameters:
+- name: epoch
+  default: 50
+  description: >
+    Number of per-subject optimization epochs (reference config.py default 50). Main runtime/quality
+    knob; fewer epochs run faster but under-fit.
+- name: star_lr
+  default: 1.0e-5
+  description: Starting Adam learning rate at the first epoch (reference default 1e-5).
+- name: end_lr
+  default: 2.0e-7
+  description: Final learning rate at the last epoch, reached by an exponential schedule (reference default 0.02e-5).
+- name: hidden_dim_num
+  default: 512
+  description: Width (neurons per layer) of the SIREN coordinate MLP (reference default 512).
+- name: num_layers
+  default: 10
+  description: Number of layers in the SIREN MLP (reference default 10).
+- name: TV_weight
+  default: 0.15
+  description: Weight of the edge-weighted total-variation regularizer (reference default 0.15).
+- name: gd_weight
+  default: 1.0
+  description: Weight of the gradient-domain data-consistency regularizer (reference default 1.0).
