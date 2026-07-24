@@ -26,3 +26,11 @@ license: >
   (arXiv:2406.12300). Confirm terms with the authors before redistribution.
 image: ghcr.io/astewartau/qsm-ci/ir2qsm:v1
 run: bash run.sh
+# Notes on how QSM-CI runs this method vs. its reference (shown on the submission page).
+ci_notes:
+- >
+  Executed CPU-only on QSM-CI's runners (no GPU). IR2QSM is a GPU-oriented network, so wall-clock
+  runtime here is far longer than a GPU deployment and should not be read as the method's native speed.
+- >
+  The reference injects noise at inference through a CUDA-only operation; QSM-CI patches it to run on
+  CPU, so reconstructions are mildly stochastic and can vary slightly between runs.

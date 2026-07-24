@@ -22,6 +22,9 @@ license: academic use; cite paper
 # Shared image with fansi/ndi/l1-qsm (all one FANSI toolbox); see BUILD.md.
 image: ghcr.io/astewartau/qsm-ci/wh-qsm:v1
 run: bash run.sh
+# Route to QSM-CI's 31 GB self-hosted runner: the 300-iteration weak-harmonic solve exceeds the
+# hosted 180-min budget across its composed combos. Only 2 self-hosted jobs run at once.
+runner: self-hosted
 matlab:
   entry: recon.m
   runtime: r2026a

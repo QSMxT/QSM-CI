@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Build web/algorithms.json from every algorithms/<slug>/algorithm.yml.
 
-The site (Methods page + submission page) fetches this manifest to show what each algorithm is —
-description, parameters, citation/DOI, source — alongside the scores.
+The submission page fetches this manifest to show what each algorithm is — description, parameters,
+citation/DOI, source, and any `ci_notes` — and the leaderboard uses it to badge methods that carry
+notes on how QSM-CI runs them.
 """
 from __future__ import annotations
 
@@ -31,6 +32,9 @@ def entry(meta: dict) -> dict:
         # `parameters:` is the canonical key; tolerate a stray `params:` so a mistyped
         # submission still shows its parameter rows instead of silently dropping them.
         "parameters": meta.get("parameters") or meta.get("params") or [],
+        # Optional notes on how QSM-CI runs this method vs. its reference (e.g. CPU-only execution of
+        # a GPU method, model complexity reduced to fit the runner) — shown on the submission page.
+        "ci_notes": meta.get("ci_notes") or [],
     }
 
 

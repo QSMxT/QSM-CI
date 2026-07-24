@@ -86,9 +86,11 @@
                 <template x-if="g.t==='cell'">
                   <button @click="go(g.run)"
                     :title="g.run.combo.bfr+' + '+g.run.combo.dipole+' — '+METRICS[metric].label+': '+fmt(val(g.run,metric),metric)"
-                    class="group relative h-14 w-full rounded-xl text-white font-semibold text-sm shadow-sm transition hover:z-10 hover:scale-[1.06] hover:shadow-md focus:outline-none ring-1 ring-black/5"
-                    :style="'background:'+heat(norm(val(g.run,metric)))">
+                    class="heat-cell group relative h-14 w-full rounded-xl font-semibold text-sm shadow-sm transition hover:z-10 hover:scale-[1.06] hover:shadow-md focus:outline-none"
+                    :class="g.run.variant==='tuned' ? 'ring-2 ring-emerald-600 ring-offset-2' : 'ring-1 ring-black/5'"
+                    :style="'--heat:'+heat(norm(val(g.run,metric)))">
                     <span x-text="fmt(val(g.run, metric), metric)"></span>
+                    <span x-show="g.run.variant==='tuned'" class="absolute -right-1.5 -top-1.5 grid h-4 w-4 place-items-center rounded-full bg-emerald-600 text-[9px] shadow" title="tuned parameters">⚙</span>
                   </button>
                 </template>
                 <template x-if="g.t==='empty'">
@@ -115,10 +117,12 @@
                       <div class="flex items-center gap-3">
                         <div class="w-36 shrink-0 truncate pr-1 text-right text-xs font-semibold text-gray-500" x-text="r.name"></div>
                         <button @click="go(r)"
-                          :title="r.name+' — '+METRICS[metric].label+': '+fmt(val(r,metric),metric)"
-                          class="group relative h-14 w-40 shrink-0 rounded-xl text-white font-semibold text-sm shadow-sm transition hover:z-10 hover:scale-[1.06] hover:shadow-md focus:outline-none ring-1 ring-black/5"
-                          :style="'background:'+heat(norm(val(r,metric)))">
+                          :title="r.name+' — '+METRICS[metric].label+': '+fmt(val(r,metric),metric)+(r.variant==='tuned' ? ' (tuned parameters)' : '')"
+                          class="heat-cell group relative h-14 w-40 shrink-0 rounded-xl font-semibold text-sm shadow-sm transition hover:z-10 hover:scale-[1.06] hover:shadow-md focus:outline-none"
+                          :class="r.variant==='tuned' ? 'ring-2 ring-emerald-600 ring-offset-2' : 'ring-1 ring-black/5'"
+                          :style="'--heat:'+heat(norm(val(r,metric)))">
                           <span x-text="fmt(val(r, metric), metric)"></span>
+                          <span x-show="r.variant==='tuned'" class="absolute -right-1.5 -top-1.5 grid h-4 w-4 place-items-center rounded-full bg-emerald-600 text-[9px] shadow" title="tuned parameters">⚙</span>
                         </button>
                       </div>
                     </template>
@@ -132,7 +136,7 @@
         <!-- legend -->
         <div class="mt-5 flex items-center gap-3 text-xs text-gray-500">
           <span x-text="(METRICS[metric].better==='higher'?'worse':'better')"></span>
-          <div class="h-2.5 w-40 rounded-full" style="background:linear-gradient(90deg,#be6b6b,#c49e60,#6ea886)"></div>
+          <div class="heat-legend h-2.5 w-40 rounded-full ring-1 ring-inset ring-black/5"></div>
           <span x-text="(METRICS[metric].better==='higher'?'better':'worse')"></span>
           <span class="ml-2 tabular-nums" x-text="'range '+fmt(matrix.lo,metric)+' – '+fmt(matrix.hi,metric)"></span>
         </div>
@@ -179,7 +183,7 @@
           </thead>
           <tbody class="divide-y divide-gray-100">
             <template x-for="(r, i) in rows" :key="r.id">
-              <tr @click="go(r)" class="group cursor-pointer" :class="r.status==='DNF' ? 'opacity-50' : ''">
+              <tr @click="go(r)" class="group cursor-pointer" :class="(r.status==='DNF' ? 'opacity-50 ' : '') + (r.variant==='tuned' ? 'tuned-row' : '')">
                 <td class="px-5 py-3 text-left font-medium text-gray-900 sticky left-0 bg-white group-hover:bg-emerald-50/40">
                   <span class="mr-1.5 inline-block w-5 text-center" x-text="medal(i)"></span>
                   <span x-text="r.name"></span>
@@ -189,6 +193,8 @@
                        :title="'Submission DOI (Zenodo v' + doi(r).version + ')'">DOI</a>
                   </template>
                   <span x-show="r.status==='DNF'" class="ml-2 rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold text-gray-500">DNF</span>
+                  <span x-show="r.variant==='tuned'" class="ml-2 rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-600/25" title="Parameters tuned on the scoring phantom">⚙ tuned</span>
+                  <span x-show="ciNotes(r.slug).length" class="ml-2 cursor-help rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700 ring-1 ring-inset ring-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300" :data-tip="ciNotes(r.slug).join('  •  ')">⚠ note</span>
                 </td>
                 <template x-for="c in displayCols" :key="c">
                   <td class="px-4 py-3 text-right tabular-nums group-hover:bg-emerald-50/40" :class="c===sortKey ? 'font-semibold text-gray-900' : 'text-gray-600'" x-text="fmt(val(r,c), c)"></td>
@@ -210,7 +216,29 @@
   </main>
 
   <footer id="site-footer"></footer>
-  <style>[x-cloak]{display:none!important}</style>
+  <style>
+    [x-cloak]{display:none!important}
+    /* Tuned rows: faint emerald tint + left accent bar, styled per-cell — a tr outline paints
+       under the sticky first cell and doubles up between adjacent tuned rows. The sticky cell
+       gets the same tint as an opaque colour so columns scrolling beneath it don't show through;
+       Tailwind's group-hover classes still win on hover (higher specificity). */
+    tr.tuned-row td{background:rgb(236 253 245/.55)}
+    tr.tuned-row td:first-child{background:rgb(245 254 249);box-shadow:inset 3px 0 0 rgb(5 150 105/.6)}
+    /* Dark counterparts (site themes via html.dark overrides in app.js, and the light values above
+       outrank them — so restate both cells here). Sticky cell = emerald tint pre-blended into the
+       dark table bg (#111827), kept opaque for the same see-through reason. */
+    html.dark tr.tuned-row td{background:rgb(16 185 129/.08)}
+    html.dark tr.tuned-row td:first-child{background:rgb(17 37 40);box-shadow:inset 3px 0 0 rgb(52 211 153/.55)}
+    /* Combination-matrix cells. heat() supplies the dark-first muted colour in --heat; in light
+       mode render it as a pastel wash with dark tinted text (solid mid-tones + white text read
+       murky on the white card), in dark mode use it as-is. CSS-only so the theme toggle switches
+       cells without an Alpine re-render. */
+    .heat-cell{background:color-mix(in srgb,var(--heat) 38%,#fff);color:color-mix(in srgb,var(--heat) 55%,#1f2937)}
+    .heat-legend{background:linear-gradient(90deg,
+      color-mix(in srgb,#be6b6b 38%,#fff),color-mix(in srgb,#c49e60 38%,#fff),color-mix(in srgb,#6ea886 38%,#fff))}
+    html.dark .heat-cell{background:var(--heat);color:#fff}
+    html.dark .heat-legend{background:linear-gradient(90deg,#be6b6b,#c49e60,#6ea886)}
+  </style>
 
   <script>
     function board() {
@@ -240,16 +268,26 @@
       };
       return {
         METRICS, STAGE_LABEL, MEDALS, fmt, val,
-        runs: [], registry: {}, view: "composed", stage: "dipole", fmap: "gt",
+        runs: [], registry: {}, algos: [], view: "composed", stage: "dipole", fmap: "gt",
         variant: "default",
         metric: "xsim", sortKey: "xsim", sortDir: "desc", filter: "",
         colMenu: false, selectedCols: ["nrmse", "correlation", "xsim", "runtime_s"],
         loading: true,
+        // ci_notes: per-method infrastructure caveats (algorithms.json), surfaced as a ⚠ badge that
+        // tooltips the notes; clicking the row opens the method's submission page with the full text.
+        ciNotes(slug) { const a = this.algos.find((x) => x.slug === slug); return (a && a.ci_notes) || []; },
         async init() {
+          // Deep-link support: leaderboard.html?view=isolated&stage=dipole&variant=tuned
+          const q = new URLSearchParams(location.search);
+          if (["composed", "isolated"].includes(q.get("view"))) this.view = q.get("view");
+          if (q.get("variant") === "tuned") this.variant = "tuned";
           try {
             this.runs = await loadRuns();
             this.registry = await loadRegistry();
-            const st = this.stages(); if (!st.includes(this.stage)) this.stage = st[0] || "dipole";
+            this.algos = await loadAlgos();
+            const st = this.stages();
+            if (st.includes(q.get("stage"))) this.stage = q.get("stage");
+            else if (!st.includes(this.stage)) this.stage = st[0] || "dipole";
             if (!this.runs.some((r) => r.mode === "composed")) this.view = "isolated";
           } finally {
             this.loading = false;   // only reveal the empty-state once the fetch has actually resolved
