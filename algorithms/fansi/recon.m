@@ -37,10 +37,17 @@ function recon(inp, out)
 
     N = size(field);
 
-    % ppm -> radians (see UNITS note above)
-    GYRO_MHz = 42.58;                       % gyromagnetic ratio, MHz/T (absorbs the ppm 1e6 factor)
-    phs_scale = 2*pi * GYRO_MHz * B0T * TE;
-    phase_rad = field * phs_scale;
+    % ppm -> radians (see UNITS note above). nlTV's nonlinear sin() data term diverges to NaN once
+    % |phase| approaches pi: the fixed physical scale 2*pi*gamma*B0*TE overflows at 7 T on fields with
+    % large outliers (the scoring phantom reaches ~0.8 ppm -> ~6 rad -> NaN by iter 3). Cap the scale
+    % so the max in-brain phase stays ~1.5 rad. FANSI is scale-consistent (chi = x/phs_scale), so on
+    % well-behaved fields the physical scale is used unchanged (e.g. the 3 T dev phantom, |field|<0.1
+    % ppm) and the inversion is identical; the cap only tames the pathological high-field case.
+    GYRO_MHz   = 42.58;                      % gyromagnetic ratio, MHz/T (absorbs the ppm 1e6 factor)
+    phys_scale = 2*pi * GYRO_MHz * B0T * TE;
+    fmax       = max(abs(field(mask)));      % largest in-brain |field| — drives the phase magnitude
+    phs_scale  = min(phys_scale, 1.5 / max(fmax, eps));
+    phase_rad  = field * phs_scale;
 
     % Dipole kernel (continuous, angulated for arbitrary B0 direction)
     kernel = dipole_kernel_angulated(N, vox, b0);
