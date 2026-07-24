@@ -21,6 +21,12 @@ license: academic use; cite paper
 # they share a single compiled image (each has its own recon.m entry; see BUILD.md).
 image: ghcr.io/astewartau/qsm-ci/fansi:v1
 run: bash run.sh
+# Notes on how QSM-CI runs this method vs. its reference (shown on the submission page).
+ci_notes:
+- >
+  On high-field data with large field outliers, the ppm-to-radians phase scale is capped so FANSI's
+  nonlinear solver stays numerically stable (at the physical 7 T scale it otherwise diverges to NaN).
+  Well-behaved fields use the standard physical scale unchanged, so the inversion is unaffected there.
 matlab:
   entry: recon.m
   runtime: r2026a

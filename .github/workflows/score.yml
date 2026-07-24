@@ -87,19 +87,50 @@ jobs:
     outputs:
       tasks: ${{ steps.gen.outputs.tasks }}
     steps:
+      - uses: actions/checkout@v7   # need algorithm.yml to read each method's `runner:` routing
       - id: gen
-        # slugs/full come in as env vars (not inlined) — the slugs JSON contains double quotes that
-        # would otherwise break the python -c "..." string in the focused branch.
         env:
           FULL: ${{ needs.scope.outputs.full }}
           SLUGS: ${{ needs.scope.outputs.slugs }}
           N: ${{ github.event.inputs.shards || '12' }}
         run: |
-          if [ "$FULL" = "true" ]; then
-            TASKS=$(python3 -c "import json,os;N=int(os.environ['N']);print(json.dumps([{'id':'s%02d'%i,'shard':'%d/%d'%(i,N)} for i in range(N)]))")
-          else
-            TASKS=$(python3 -c "import json,os;s=json.loads(os.environ['SLUGS']);print(json.dumps([{'id':'f-'+x,'focus':x} for x in s]))")
-          fi
+          TASKS=$(python3 - <<'PY'
+          import json, os, re, glob
+          full = os.environ['FULL'] == 'true'
+          # Per-task runner routing. A method may set `runner: self-hosted` in its algorithm.yml to run
+          # on QSM-CI's 31 GB private runners (more RAM, no 180-min hosted cap, 4 concurrent containers)
+          # instead of ubuntu-latest — needed by heavy DL/optimization methods. Only the two self-hosted
+          # runners run in parallel, so keep the self-hosted set small.
+          HOSTED     = {'runs_on': 'ubuntu-latest', 'timeout': 180, 'jobs': 2}
+          SELFHOSTED = {'runs_on': ['self-hosted', 'Linux', 'X64'], 'timeout': 360, 'jobs': 4}
+          def is_self_hosted(text):
+              m = re.search(r'^runner:[ \t]*(\S+)', text, re.M)
+              return bool(m and m.group(1) == 'self-hosted')
+          def route(slug):
+              try: t = open(f'algorithms/{slug}/algorithm.yml').read()
+              except FileNotFoundError: return HOSTED
+              return SELFHOSTED if is_self_hosted(t) else HOSTED
+          def all_self_hosted():
+              out = []
+              for p in sorted(glob.glob('algorithms/*/algorithm.yml')):
+                  slug = p.split('/')[1]
+                  if not slug.startswith('_') and is_self_hosted(open(p).read()):
+                      out.append(slug)
+              return out
+          if full:
+              # Full re-run: hosted shards score the whole matrix MINUS the self-hosted methods
+              # (pipeline.py --exclude), and each self-hosted method runs as its own focused job on the
+              # private runner (--focus). Union = the full matrix, every method on the right runner.
+              N = int(os.environ['N'])
+              sh = all_self_hosted()
+              excl = ','.join(sh)
+              tasks = [{'id': 's%02d' % i, 'shard': '%d/%d' % (i, N), 'exclude': excl, **HOSTED} for i in range(N)]
+              tasks += [{'id': 'f-' + s, 'focus': s, **SELFHOSTED} for s in sh]
+          else:
+              tasks = [{'id': 'f-' + s, 'focus': s, **route(s)} for s in json.loads(os.environ['SLUGS'])]
+          print(json.dumps(tasks))
+          PY
+          )
           echo "tasks=$TASKS" >>"$GITHUB_OUTPUT"
           echo "planned tasks: $TASKS"
 
@@ -109,8 +140,13 @@ jobs:
       fail-fast: false
       matrix:
         task: ${{ fromJson(needs.plan.outputs.tasks) }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 180
+    # Runner, wall-clock budget and intra-job container parallelism are chosen per task by the plan
+    # job (ubuntu-latest/180/2 by default; the 31 GB self-hosted runners/360/4 for `runner: self-hosted`
+    # methods). QSM_CI_JOBS here overrides the workflow-level cap of 2 for self-hosted jobs.
+    runs-on: ${{ matrix.task.runs_on }}
+    timeout-minutes: ${{ matrix.task.timeout }}
+    env:
+      QSM_CI_JOBS: ${{ matrix.task.jobs }}
     steps:
       - uses: actions/checkout@v7
 
@@ -137,6 +173,7 @@ jobs:
           ARGS="--dataset $DS --mode both --runner docker --track $TRACK --emit-volumes --runs-out runs-${{ matrix.task.id }}.json"
           [ -n "${{ matrix.task.shard }}" ] && ARGS="$ARGS --shard ${{ matrix.task.shard }}"
           [ -n "${{ matrix.task.focus }}" ] && ARGS="$ARGS --focus ${{ matrix.task.focus }}"
+          [ -n "${{ matrix.task.exclude }}" ] && ARGS="$ARGS --exclude ${{ matrix.task.exclude }}"
           echo "== task ${{ matrix.task.id }}: pipeline.py $ARGS =="
           t0=$(date +%s)
           python scripts/pipeline.py $ARGS

@@ -21,6 +21,7 @@ from __future__ import annotations
 import argparse
 import concurrent.futures as _cf
 import json
+import math
 import os
 import re
 import shutil
@@ -202,6 +203,16 @@ def _valid_mask(volume: Path, base_mask: Path, out: Path) -> Path:
     return out
 
 
+def _finite(v) -> bool:
+    """True if v is a real, finite number — a usable metric, not None/NaN/inf."""
+    return isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v)
+
+
+def _fmt(v, spec: str = ".4f") -> str:
+    """Format a metric, or 'n/a' when it's missing/non-finite — so a NaN output can't crash a print."""
+    return format(v, spec) if _finite(v) else "n/a"
+
+
 def score(recon: Path, artifact: str, gt_dir: Path, mask: Path, out_json: Path, meta: dict) -> dict:
     kind = ARTIFACT_KIND[artifact]
     raw_mask = mask  # the full brain mask, before erosion — used to mask the viewer's error map
@@ -219,7 +230,15 @@ def score(recon: Path, artifact: str, gt_dir: Path, mask: Path, out_json: Path, 
         cmd += ["--seg", str(seg)]
     subprocess.run(cmd, check=True)
     result = json.loads(out_json.read_text())
-    result["status"] = "ok"
+    # A scorable recon yields finite metrics; an all-NaN / empty output makes the scorer emit
+    # null/NaN. Record that as a clear DNF (not a metric-less "ok" row, and without crashing the
+    # caller's formatted print) so the failure is legible instead of a cryptic format-string error.
+    primary = (result.get("metrics") or {}).get("xsim" if kind == "chi" else "nrmse")
+    if _finite(primary):
+        result["status"] = "ok"
+    else:
+        result["status"] = "DNF"
+        result["dnf_reason"] = "non-finite output (unscorable)"
     result.update({k: meta[k] for k in ("id", "slug", "mode", "variant", "params") if k in meta})
     if "combo" in meta:
         result["combo"] = meta["combo"]
@@ -259,6 +278,10 @@ def main() -> None:
                     help="incremental: isolated for this slug, and every composed combo that includes "
                          "it (its own stage is pinned to it; complementary stages stay full)")
     ap.add_argument("--include", default=None, help="comma-separated slugs to restrict the run to")
+    ap.add_argument("--exclude", default=None,
+                    help="comma-separated slugs to DROP from the run (isolated + composed). Used by "
+                         "score.yml's full re-run so the hosted shards skip methods pinned to the "
+                         "self-hosted runner; those run as separate --focus jobs on that runner.")
     ap.add_argument("--shard", default=None, metavar="i/n",
                     help="run only shard i of n disjoint shards (0-indexed), for parallel scoring "
                          "across jobs. Composed work is split by (field-map, bfr) COLUMN so each "
@@ -304,6 +327,9 @@ def main() -> None:
     if args.include:
         keep = set(args.include.split(","))
         algos = [a for a in algos if a["slug"] in keep]
+    if args.exclude:
+        drop = set(args.exclude.split(","))
+        algos = [a for a in algos if a["slug"] not in drop]
     print(f"discovered {len(algos)} submissions:",
           ", ".join(f"{a['slug']}[{a['stage']}]" for a in algos))
     runs: list[dict] = []
@@ -346,8 +372,11 @@ def main() -> None:
                               args.work / f"iso_{a['slug']}{sfx}.json", meta)
                     out.append(r)
                     m = r["metrics"]
-                    print(f"  isolated  {a['slug']:<16} {variant:<8} {art:<11} "
-                          f"xsim={m.get('xsim'):.4f} nrmse={m.get('nrmse'):.2f}%")
+                    if r.get("status") == "DNF":
+                        print(f"  isolated  {a['slug']:<16} {variant:<8} {art:<11} DNF ({r.get('dnf_reason','')})")
+                    else:
+                        print(f"  isolated  {a['slug']:<16} {variant:<8} {art:<11} "
+                              f"xsim={_fmt(m.get('xsim'))} nrmse={_fmt(m.get('nrmse'), '.2f')}%")
                 return out
             except Exception as e:  # DNF — record and continue
                 print(f"  isolated  {a['slug']:<16} {variant:<8} DNF ({e})")
@@ -467,8 +496,11 @@ def main() -> None:
                 r = score(odir / "chimap.nii.gz", "chimap", gt, mask,
                           args.work / f"cmp_{cid}.json", meta)
                 m = r["metrics"]
-                print(f"  composed  {combo:<34} chimap xsim={m.get('xsim'):.4f} "
-                      f"nrmse_dt={m.get('nrmse_detrend'):.2f}%")
+                if r.get("status") == "DNF":
+                    print(f"  composed  {combo:<34} DNF ({r.get('dnf_reason','')})")
+                else:
+                    print(f"  composed  {combo:<34} chimap xsim={_fmt(m.get('xsim'))} "
+                          f"nrmse_dt={_fmt(m.get('nrmse_detrend'), '.2f')}%")
                 return r
             except Exception as e:
                 print(f"  composed  {combo:<34} DNF ({e})")

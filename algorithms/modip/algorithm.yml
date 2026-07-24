@@ -25,6 +25,14 @@ code_url: https://github.com/sunhongfu/MoDIP
 license: none declared (no LICENSE in repo); academic use, cite the paper
 image: ghcr.io/astewartau/qsm-ci/modip:v1
 run: bash run.sh
+# Route to QSM-CI's 31 GB self-hosted runner: the per-subject optimization exceeds the hosted
+# 180-min budget. Only 2 self-hosted jobs run at once.
+runner: self-hosted
+# Notes on how QSM-CI runs this method vs. its reference (shown on the submission page).
+ci_notes:
+- >
+  Executed CPU-only. The reference optimizes per subject on a GPU, so runtime here is substantially
+  longer and not comparable to GPU timings.
 parameters:
 - name: epoch_num
   default: 500

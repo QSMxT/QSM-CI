@@ -19,7 +19,8 @@
         "Yeom K.W.",
         "Liu C."
       ],
-      "parameters": []
+      "parameters": [],
+      "ci_notes": []
     },
     {
       "slug": "fansi",
@@ -64,6 +65,9 @@
           "default": 0,
           "description": "0 = TV regularization (nlTV), 1 = TGV regularization (nlTGV)"
         }
+      ],
+      "ci_notes": [
+        "On high-field data with large field outliers, the ppm-to-radians phase scale is capped so FANSI's nonlinear solver stays numerically stable (at the physical 7 T scale it otherwise diverges to NaN). Well-behaved fields use the standard physical scale unchanged, so the inversion is unaffected there.\n"
       ]
     },
     {
@@ -100,7 +104,8 @@
           "default": "1e-4",
           "description": "tolerance"
         }
-      ]
+      ],
+      "ci_notes": []
     },
     {
       "slug": "hd-qsm",
@@ -143,7 +148,8 @@
           "default": 1.0,
           "description": "convergence threshold on the L2-stage normalized solution update (percent)"
         }
-      ]
+      ],
+      "ci_notes": []
     },
     {
       "slug": "iharperella",
@@ -178,7 +184,8 @@
           "default": "1e-4",
           "description": "tolerance"
         }
-      ]
+      ],
+      "ci_notes": []
     },
     {
       "slug": "ilsqr",
@@ -212,7 +219,8 @@
           "default": 1000,
           "description": "iterations"
         }
-      ]
+      ],
+      "ci_notes": []
     },
     {
       "slug": "inr-qsm",
@@ -274,6 +282,9 @@
           "default": 1.0,
           "description": "Weight of the gradient-domain data-consistency regularizer (reference default 1.0)."
         }
+      ],
+      "ci_notes": [
+        "Executed CPU-only. The reference optimizes per subject on an NVIDIA GPU with mixed precision, so runtime here is substantially longer and not comparable to GPU timings.\n"
       ]
     },
     {
@@ -299,7 +310,8 @@
         "Liu F.",
         "Sun H."
       ],
-      "parameters": []
+      "parameters": [],
+      "ci_notes": []
     },
     {
       "slug": "iqsm-plus",
@@ -323,7 +335,8 @@
         "Liu F.",
         "Sun H."
       ],
-      "parameters": []
+      "parameters": [],
+      "ci_notes": []
     },
     {
       "slug": "ir2qsm",
@@ -346,7 +359,11 @@
         "Sun H.",
         "Gao Y."
       ],
-      "parameters": []
+      "parameters": [],
+      "ci_notes": [
+        "Executed CPU-only on QSM-CI's runners (no GPU). IR2QSM is a GPU-oriented network, so wall-clock runtime here is far longer than a GPU deployment and should not be read as the method's native speed.\n",
+        "The reference injects noise at inference through a CUDA-only operation; QSM-CI patches it to run on CPU, so reconstructions are mildly stochastic and can vary slightly between runs.\n"
+      ]
     },
     {
       "slug": "ismv",
@@ -381,7 +398,8 @@
           "default": 2.0,
           "description": "\u00d7 max voxel size"
         }
-      ]
+      ],
+      "ci_notes": []
     },
     {
       "slug": "l1-qsm",
@@ -426,7 +444,8 @@
           "default": 1.0,
           "description": "convergence threshold on the normalized solution update (percent)"
         }
-      ]
+      ],
+      "ci_notes": []
     },
     {
       "slug": "laplacian-fieldmap",
@@ -441,7 +460,8 @@
       "authors": [
         "QSM-CI"
       ],
-      "parameters": []
+      "parameters": [],
+      "ci_notes": []
     },
     {
       "slug": "lbv",
@@ -465,7 +485,8 @@
           "default": "1e-4",
           "description": "convergence tolerance"
         }
-      ]
+      ],
+      "ci_notes": []
     },
     {
       "slug": "lpcnn",
@@ -484,7 +505,8 @@
         "Li X.",
         "Sulam J."
       ],
-      "parameters": []
+      "parameters": [],
+      "ci_notes": []
     },
     {
       "slug": "matlab-bfrnet",
@@ -499,7 +521,8 @@
       "authors": [
         "Xuanyu Zhu, Yang Gao, Feng Liu, Stuart Crozier, Hongfu Sun"
       ],
-      "parameters": []
+      "parameters": [],
+      "ci_notes": []
     },
     {
       "slug": "matlab-medi",
@@ -546,7 +569,8 @@
           "default": 0,
           "description": "model-error reduction (iterative reweighting); 1 enables"
         }
-      ]
+      ],
+      "ci_notes": []
     },
     {
       "slug": "matlab-sti-iharperella",
@@ -576,7 +600,8 @@
           "default": 12,
           "description": "zero-pad size (voxels, isotropic) for numerical accuracy"
         }
-      ]
+      ],
+      "ci_notes": []
     },
     {
       "slug": "matlab-sti-ilsqr",
@@ -605,7 +630,8 @@
           "default": 12,
           "description": "zero-pad size (voxels, isotropic) to improve numerical accuracy of the inversion"
         }
-      ]
+      ],
+      "ci_notes": []
     },
     {
       "slug": "matlab-sti-star",
@@ -626,7 +652,8 @@
           "default": 12,
           "description": "zero-pad size (voxels, isotropic) to improve numerical accuracy of the inversion"
         }
-      ]
+      ],
+      "ci_notes": []
     },
     {
       "slug": "matlab-sti-vsharp",
@@ -650,7 +677,8 @@
           "default": 12,
           "description": "maximum spherical-mean-value kernel size (voxels) for the SMV deconvolution"
         }
-      ]
+      ],
+      "ci_notes": []
     },
     {
       "slug": "matlab-tkd",
@@ -670,7 +698,8 @@
         "Stephen J. Dodd",
         "Jeff H. Duyn"
       ],
-      "parameters": []
+      "parameters": [],
+      "ci_notes": []
     },
     {
       "slug": "medi",
@@ -701,7 +730,8 @@
           "default": "1e-4",
           "description": "regularization"
         }
-      ]
+      ],
+      "ci_notes": []
     },
     {
       "slug": "modip",
@@ -738,6 +768,9 @@
           "default": 32,
           "description": "Base channel count of the DIP U-Net (reference default 32). Lower reduces memory/compute (the reference README suggests decreasing base and increasing iterations under memory pressure).\n"
         }
+      ],
+      "ci_notes": [
+        "Executed CPU-only. The reference optimizes per subject on a GPU, so runtime here is substantially longer and not comparable to GPU timings.\n"
       ]
     },
     {
@@ -763,7 +796,8 @@
         "Zhuang J.",
         "Wei H."
       ],
-      "parameters": []
+      "parameters": [],
+      "ci_notes": []
     },
     {
       "slug": "ndi",
@@ -799,7 +833,8 @@
           "default": 1e-05,
           "description": "small Tikhonov regularization weight for numerical stability"
         }
-      ]
+      ],
+      "ci_notes": []
     },
     {
       "slug": "nextqsm",
@@ -820,7 +855,8 @@
         "Barth M.",
         "Bollmann S."
       ],
-      "parameters": []
+      "parameters": [],
+      "ci_notes": []
     },
     {
       "slug": "nltv",
@@ -849,7 +885,8 @@
           "default": 1000,
           "description": "iterations"
         }
-      ]
+      ],
+      "ci_notes": []
     },
     {
       "slug": "pdf",
@@ -876,7 +913,8 @@
           "default": "1e-4",
           "description": "convergence tolerance"
         }
-      ]
+      ],
+      "ci_notes": []
     },
     {
       "slug": "qsmart",
@@ -902,7 +940,8 @@
         "Scott Kolbe",
         "Leigh A. Johnston"
       ],
-      "parameters": []
+      "parameters": [],
+      "ci_notes": []
     },
     {
       "slug": "qsmgan",
@@ -921,7 +960,8 @@
         "Hess C.P.",
         "Lupo J.M."
       ],
-      "parameters": []
+      "parameters": [],
+      "ci_notes": []
     },
     {
       "slug": "qsmnet",
@@ -948,7 +988,8 @@
         "Pauly J.",
         "Lee J."
       ],
-      "parameters": []
+      "parameters": [],
+      "ci_notes": []
     },
     {
       "slug": "qsmnet-plus",
@@ -970,7 +1011,8 @@
         "Kim E.Y.",
         "Lee J."
       ],
-      "parameters": []
+      "parameters": [],
+      "ci_notes": []
     },
     {
       "slug": "resharp",
@@ -998,7 +1040,8 @@
           "default": "1e-3",
           "description": "Tikhonov regularization"
         }
-      ]
+      ],
+      "ci_notes": []
     },
     {
       "slug": "romeo-fieldmap",
@@ -1013,7 +1056,8 @@
       "authors": [
         "Dymerska and Eckstein et al."
       ],
-      "parameters": []
+      "parameters": [],
+      "ci_notes": []
     },
     {
       "slug": "rts",
@@ -1046,7 +1090,8 @@
           "default": 1000,
           "description": "iterations"
         }
-      ]
+      ],
+      "ci_notes": []
     },
     {
       "slug": "sharp",
@@ -1076,7 +1121,8 @@
           "default": 0.5,
           "description": "\u00d7 min voxel size"
         }
-      ]
+      ],
+      "ci_notes": []
     },
     {
       "slug": "tgv",
@@ -1117,7 +1163,8 @@
           "default": 0.0015,
           "description": "second-order weight"
         }
-      ]
+      ],
+      "ci_notes": []
     },
     {
       "slug": "tikhonov",
@@ -1145,7 +1192,8 @@
           "tuned": "3e-3",
           "description": "L2 regularization"
         }
-      ]
+      ],
+      "ci_notes": []
     },
     {
       "slug": "tkd",
@@ -1171,7 +1219,8 @@
           "default": 0.1,
           "description": "k-space threshold"
         }
-      ]
+      ],
+      "ci_notes": []
     },
     {
       "slug": "tsvd",
@@ -1195,7 +1244,8 @@
           "tuned": 0.05,
           "description": "singular-value threshold"
         }
-      ]
+      ],
+      "ci_notes": []
     },
     {
       "slug": "tv",
@@ -1234,7 +1284,8 @@
           "default": 1000,
           "description": "iterations"
         }
-      ]
+      ],
+      "ci_notes": []
     },
     {
       "slug": "vsharp",
@@ -1268,7 +1319,8 @@
           "default": 0.0,
           "description": "\u00d7 max voxel size"
         }
-      ]
+      ],
+      "ci_notes": []
     },
     {
       "slug": "wh-qsm",
@@ -1314,7 +1366,8 @@
           "default": 0.1,
           "description": "convergence threshold on the normalized solution update (percent)"
         }
-      ]
+      ],
+      "ci_notes": []
     },
     {
       "slug": "xqsm",
@@ -1337,7 +1390,8 @@
         "Liu F.",
         "Sun H."
       ],
-      "parameters": []
+      "parameters": [],
+      "ci_notes": []
     }
   ]
 }

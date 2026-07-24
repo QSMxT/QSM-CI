@@ -263,6 +263,10 @@ function methodCard(a) {
       <span class="text-xs text-gray-400">${a.stage ? (STAGE_LABEL[a.stage] || a.stage) : ""}</span>
     </div>
     <p class="mt-0.5 text-sm text-gray-600 dark:text-gray-400">${a.description || ""}</p>
+    ${(a.ci_notes && a.ci_notes.length) ? `<div class="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+      <div class="flex items-center gap-1.5 font-semibold"><span aria-hidden="true">⚠</span> How QSM-CI runs this</div>
+      <ul class="mt-1 list-disc space-y-0.5 pl-4 marker:text-amber-400">${a.ci_notes.map((n) => `<li>${n}</li>`).join("")}</ul>
+    </div>` : ""}
     ${params ? `<table class="mt-2 w-full text-xs">${paramHead}<tbody>${params}</tbody></table>` : ""}
     ${(a.citation || links.length) ? `<p class="mt-1.5 text-xs text-gray-400 dark:text-gray-500">${a.citation || ""} ${links.length ? "· " + links.join(" · ") : ""}</p>` : ""}
   </div>`;
