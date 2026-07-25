@@ -1,11 +1,11 @@
-name: WH-QSM
-slug: wh-qsm
+name: FANSI (nlTGV)
+slug: fansi-tgv
 stage: dipole
 engine: QSMxT / QSM.rs
 description: >
-  Weak-Harmonic QSM: jointly estimates susceptibility and a residual harmonic background field, correcting imperfect background-field removal.
-citation: Milovic et al., Magn Reson Med 2019
-doi: 10.1002/mrm.27483
+  FANSI with nonlinear total-generalized-variation (second-order) regularization, solved with ADMM.
+citation: Milovic et al., Magn Reson Med 2018
+doi: 10.1002/mrm.27073
 code_url: https://github.com/astewartau/QSM.rs
 license: MIT
 image: ghcr.io/astewartau/qsm-ci/qsmxt:v9.9.0
@@ -13,15 +13,15 @@ run: bash run.sh
 parameters:
   - name: alpha1
     default: 2e-4
-    description: gradient L1 (TV) penalty
+    description: first-order (TGV) L1 penalty
+  - name: alpha0
+    default: 4e-4
+    description: second-order (curvature) penalty
   - name: mu1
     default: 2e-2
     description: gradient-consistency ADMM weight
-  - name: beta
-    default: 150
-    description: harmonic-constraint weight
   - name: max_iter
-    default: 300
+    default: 150
     description: iterations
   - name: tol_update
     default: 0.1

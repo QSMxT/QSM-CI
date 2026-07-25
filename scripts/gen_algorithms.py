@@ -14,7 +14,7 @@ import stat
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-IMAGE = "ghcr.io/astewartau/qsm-ci/qsmxt:v9.2.0"
+IMAGE = "ghcr.io/astewartau/qsm-ci/qsmxt:v9.9.0"
 QSM_RS = "https://github.com/astewartau/QSM.rs"
 QSMXT = "https://github.com/QSMxT/QSMxT"
 
@@ -90,6 +90,57 @@ ALGOS = [
      "Iterative LSQR inversion with streaking-artifact reduction.",
      "Li et al., NMR Biomed 2015", None,
      [("tol", "1e-4", "tolerance"), ("max_iter", "1000", "iterations")]),
+    # --- FANSI family (Rust ports; replace the former MATLAB/MCR submissions) ---
+    ("ndi", "dipole", "ndi", "NDI",
+     "Nonlinear Dipole Inversion: gradient-descent solve of a nonlinear (wrapped-phase) data "
+     "term; effectively tuning-free.",
+     "Polak et al., NMR Biomed 2020", "10.1002/nbm.4271",
+     [("tau", "2.0", "gradient-descent step size"),
+      ("alpha", "1e-5", "L2 regularization weight"),
+      ("max_iter", "200", "iterations")]),
+    ("fansi", "dipole", "fansi", "FANSI (nlTV)",
+     "Fast Nonlinear Susceptibility Inversion with nonlinear total-variation regularization, "
+     "solved with ADMM.",
+     "Milovic et al., Magn Reson Med 2018", "10.1002/mrm.27073",
+     [("alpha1", "2e-4", "gradient L1 (TV) penalty"),
+      ("mu1", "2e-2", "gradient-consistency ADMM weight"),
+      ("max_iter", "150", "iterations"),
+      ("tol_update", "0.1", "convergence threshold on the solution update (percent)")]),
+    ("fansi-tgv", "dipole", "fansi-tgv", "FANSI (nlTGV)",
+     "FANSI with nonlinear total-generalized-variation (second-order) regularization, solved "
+     "with ADMM.",
+     "Milovic et al., Magn Reson Med 2018", "10.1002/mrm.27073",
+     [("alpha1", "2e-4", "first-order (TGV) L1 penalty"),
+      ("alpha0", "4e-4", "second-order (curvature) penalty"),
+      ("mu1", "2e-2", "gradient-consistency ADMM weight"),
+      ("max_iter", "150", "iterations"),
+      ("tol_update", "0.1", "convergence threshold on the solution update (percent)")]),
+    ("l1-qsm", "dipole", "l1qsm", "L1-QSM",
+     "L1-norm data-fidelity QSM (PI-QSM): an L1 fidelity term with TV regularization, robust to "
+     "phase inconsistencies.",
+     "Milovic et al., Magn Reson Med 2022", "10.1002/mrm.28957",
+     [("alpha1", "2e-4", "gradient L1 (TV) penalty"),
+      ("mu1", "2e-2", "gradient-consistency ADMM weight"),
+      ("lambda", "1.0", "L1 fidelity strength (<1 rejects more inconsistent voxels)"),
+      ("max_iter", "50", "iterations"),
+      ("tol_update", "1.0", "convergence threshold on the solution update (percent)")]),
+    ("wh-qsm", "dipole", "whqsm", "WH-QSM",
+     "Weak-Harmonic QSM: jointly estimates susceptibility and a residual harmonic background "
+     "field, correcting imperfect background-field removal.",
+     "Milovic et al., Magn Reson Med 2019", "10.1002/mrm.27483",
+     [("alpha1", "2e-4", "gradient L1 (TV) penalty"),
+      ("mu1", "2e-2", "gradient-consistency ADMM weight"),
+      ("beta", "150", "harmonic-constraint weight"),
+      ("max_iter", "300", "iterations"),
+      ("tol_update", "0.1", "convergence threshold on the solution update (percent)")]),
+    ("hd-qsm", "dipole", "hdqsm", "HD-QSM",
+     "Hybrid data-fidelity QSM: a two-stage linear inversion where an L1 stage produces a "
+     "discrepancy map that reweights a second L2 stage.",
+     "Lambert et al., Magn Reson Med 2022", "10.1002/mrm.29218",
+     [("alpha_l2", "1e-4", "L2-stage TV weight"),
+      ("mu1_l2", "1e-2", "L2-stage gradient-consistency weight"),
+      ("max_iter_l1", "20", "stage-1 (L1) iterations"),
+      ("max_iter_l2", "80", "stage-2 (L2) iterations")]),
     ("tgv", "bfr+dipole", "tgv", "TGV",
      "Total Generalized Variation single-step reconstruction: total field -> susceptibility, "
      "doing its own background field removal.",

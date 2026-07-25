@@ -24,51 +24,78 @@
     },
     {
       "slug": "fansi",
-      "name": "FANSI (MATLAB)",
+      "name": "FANSI (nlTV)",
       "stage": "dipole",
-      "engine": null,
-      "description": "Fast Nonlinear Susceptibility Inversion (FANSI) \u2014 nonlinear total-variation regularized dipole inversion solved with ADMM, from the FANSI toolbox. Compiled from MATLAB and run on the license-free MATLAB Runtime. Consumes the local field and produces a susceptibility map.",
+      "engine": "QSMxT / QSM.rs",
+      "description": "Fast Nonlinear Susceptibility Inversion with nonlinear total-variation regularization, solved with ADMM.",
       "citation": "Milovic et al., Magn Reson Med 2018",
       "doi": "10.1002/mrm.27073",
-      "code_url": "https://gitlab.com/cmilovic/FANSI-toolbox",
-      "license": "academic use; cite paper",
-      "authors": [
-        "Carlos Milovic",
-        "Berkin Bilgic",
-        "Bo Zhao",
-        "Julio Acosta-Cabronero",
-        "Cristian Tejos"
-      ],
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT",
+      "authors": [],
       "parameters": [
         {
           "name": "alpha1",
-          "default": 0.0003,
-          "description": "gradient L1 (total-variation) penalty; larger = smoother, more regularized"
+          "default": "2e-4",
+          "description": "gradient L1 (TV) penalty"
         },
         {
           "name": "mu1",
-          "default": 0.03,
-          "description": "gradient-consistency ADMM weight (FANSI recommends 100*alpha1)"
+          "default": "2e-2",
+          "description": "gradient-consistency ADMM weight"
         },
         {
-          "name": "iterations",
+          "name": "max_iter",
           "default": 150,
-          "description": "maximum number of ADMM outer iterations"
+          "description": "iterations"
         },
         {
           "name": "tol_update",
           "default": 0.1,
-          "description": "convergence threshold on the normalized solution update (percent)"
-        },
-        {
-          "name": "isTGV",
-          "default": 0,
-          "description": "0 = TV regularization (nlTV), 1 = TGV regularization (nlTGV)"
+          "description": "convergence threshold on the solution update (percent)"
         }
       ],
-      "ci_notes": [
-        "On high-field data with large field outliers, the ppm-to-radians phase scale is capped so FANSI's nonlinear solver stays numerically stable (at the physical 7 T scale it otherwise diverges to NaN). Well-behaved fields use the standard physical scale unchanged, so the inversion is unaffected there.\n"
-      ]
+      "ci_notes": []
+    },
+    {
+      "slug": "fansi-tgv",
+      "name": "FANSI (nlTGV)",
+      "stage": "dipole",
+      "engine": "QSMxT / QSM.rs",
+      "description": "FANSI with nonlinear total-generalized-variation (second-order) regularization, solved with ADMM.",
+      "citation": "Milovic et al., Magn Reson Med 2018",
+      "doi": "10.1002/mrm.27073",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT",
+      "authors": [],
+      "parameters": [
+        {
+          "name": "alpha1",
+          "default": "2e-4",
+          "description": "first-order (TGV) L1 penalty"
+        },
+        {
+          "name": "alpha0",
+          "default": "4e-4",
+          "description": "second-order (curvature) penalty"
+        },
+        {
+          "name": "mu1",
+          "default": "2e-2",
+          "description": "gradient-consistency ADMM weight"
+        },
+        {
+          "name": "max_iter",
+          "default": 150,
+          "description": "iterations"
+        },
+        {
+          "name": "tol_update",
+          "default": 0.1,
+          "description": "convergence threshold on the solution update (percent)"
+        }
+      ],
+      "ci_notes": []
     },
     {
       "slug": "harperella",
@@ -109,44 +136,35 @@
     },
     {
       "slug": "hd-qsm",
-      "name": "HD-QSM (MATLAB)",
+      "name": "HD-QSM",
       "stage": "dipole",
-      "engine": null,
-      "description": "Hybrid Data-fidelity QSM (HD-QSM) \u2014 a two-stage linear dipole inversion. An L1 data-fidelity stage estimates a discrepancy map that re-weights a second L2 stage, combining robustness to inconsistencies with L2 smoothness. Compiled from MATLAB and run on the license-free MATLAB Runtime. Consumes the local field, produces a susceptibility map.",
+      "engine": "QSMxT / QSM.rs",
+      "description": "Hybrid data-fidelity QSM: a two-stage linear inversion where an L1 stage produces a discrepancy map that reweights a second L2 stage.",
       "citation": "Lambert et al., Magn Reson Med 2022",
       "doi": "10.1002/mrm.29218",
-      "code_url": "https://github.com/mglambert/HD-QSM",
+      "code_url": "https://github.com/astewartau/QSM.rs",
       "license": "MIT",
-      "authors": [
-        "Mathias Lambert",
-        "Carlos Milovic",
-        "Cristian Tejos"
-      ],
+      "authors": [],
       "parameters": [
         {
-          "name": "alphaL2",
-          "default": 1.6406e-05,
-          "description": "L2-stage TV regularization weight (10^-4.785; from the HDQSM example)"
+          "name": "alpha_l2",
+          "default": "1e-4",
+          "description": "L2-stage TV weight"
         },
         {
-          "name": "mu1L2",
-          "default": 0.00016406,
-          "description": "L2-stage gradient-consistency ADMM weight (recommended 10*alphaL2)"
+          "name": "mu1_l2",
+          "default": "1e-2",
+          "description": "L2-stage gradient-consistency weight"
         },
         {
-          "name": "iterationsL1",
+          "name": "max_iter_l1",
           "default": 20,
-          "description": "iterations of the L1 (first / discrepancy-estimation) stage"
+          "description": "stage-1 (L1) iterations"
         },
         {
-          "name": "iterationsL2",
+          "name": "max_iter_l2",
           "default": 80,
-          "description": "iterations of the L2 (second / final) stage"
-        },
-        {
-          "name": "tol_update",
-          "default": 1.0,
-          "description": "convergence threshold on the L2-stage normalized solution update (percent)"
+          "description": "stage-2 (L2) iterations"
         }
       ],
       "ci_notes": []
@@ -403,46 +421,40 @@
     },
     {
       "slug": "l1-qsm",
-      "name": "L1-QSM (MATLAB)",
+      "name": "L1-QSM",
       "stage": "dipole",
-      "engine": null,
-      "description": "L1-norm data-fidelity QSM (also called PI-QSM) \u2014 nonlinear dipole inversion with an L1 data-fidelity term that is more robust to phase inconsistencies than the standard L2 (FANSI) term, plus TV regularization. Implementation from Carlos Milovic's FANSI toolbox (nlL1TV.m). Compiled from MATLAB and run on the license-free MATLAB Runtime.",
-      "citation": "Milovic et al., Magn Reson Med 2022 (L1-QSM)",
+      "engine": "QSMxT / QSM.rs",
+      "description": "L1-norm data-fidelity QSM (PI-QSM): an L1 fidelity term with TV regularization, robust to phase inconsistencies.",
+      "citation": "Milovic et al., Magn Reson Med 2022",
       "doi": "10.1002/mrm.28957",
-      "code_url": "https://gitlab.com/cmilovic/FANSI-toolbox",
-      "license": "academic use; cite paper",
-      "authors": [
-        "Carlos Milovic",
-        "Berkin Bilgic",
-        "Bo Zhao",
-        "Cristian Tejos",
-        "Karin Shmueli"
-      ],
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT",
+      "authors": [],
       "parameters": [
         {
           "name": "alpha1",
-          "default": 0.0003,
-          "description": "gradient L1 (total-variation) penalty; larger = smoother, more regularized"
+          "default": "2e-4",
+          "description": "gradient L1 (TV) penalty"
+        },
+        {
+          "name": "mu1",
+          "default": "2e-2",
+          "description": "gradient-consistency ADMM weight"
         },
         {
           "name": "lambda",
           "default": 1.0,
-          "description": "L1 data-fidelity strength (scales the fidelity weight); lambda<1 rejects more inconsistent voxels"
+          "description": "L1 fidelity strength (<1 rejects more inconsistent voxels)"
         },
         {
-          "name": "mu1",
-          "default": 0.03,
-          "description": "gradient-consistency ADMM weight (recommended 100*alpha1)"
-        },
-        {
-          "name": "iterations",
+          "name": "max_iter",
           "default": 50,
-          "description": "maximum number of ADMM outer iterations"
+          "description": "iterations"
         },
         {
           "name": "tol_update",
           "default": 1.0,
-          "description": "convergence threshold on the normalized solution update (percent)"
+          "description": "convergence threshold on the solution update (percent)"
         }
       ],
       "ci_notes": []
@@ -801,37 +813,30 @@
     },
     {
       "slug": "ndi",
-      "name": "NDI (MATLAB)",
+      "name": "NDI",
       "stage": "dipole",
-      "engine": null,
-      "description": "Nonlinear Dipole Inversion (NDI) \u2014 a parameter-tuning-free gradient-descent QSM solver with a nonlinear data-fidelity term. Implementation from Carlos Milovic's FANSI toolbox (ndi.m). Compiled from MATLAB and run on the license-free MATLAB Runtime. Consumes the local field and produces a susceptibility map.",
+      "engine": "QSMxT / QSM.rs",
+      "description": "Nonlinear Dipole Inversion: gradient-descent solve of a nonlinear (wrapped-phase) data term; effectively tuning-free.",
       "citation": "Polak et al., NMR Biomed 2020",
       "doi": "10.1002/nbm.4271",
-      "code_url": "https://gitlab.com/cmilovic/FANSI-toolbox",
-      "license": "academic use; cite paper",
-      "authors": [
-        "Daniel Polak",
-        "Itthi Chatnuntawech",
-        "Jaeyeon Yoon",
-        "Siddharth Srinivasan Iyer",
-        "Kawin Setsompop",
-        "Berkin Bilgic"
-      ],
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT",
+      "authors": [],
       "parameters": [
         {
           "name": "tau",
           "default": 2.0,
-          "description": "gradient-descent step size; larger converges faster but may diverge"
-        },
-        {
-          "name": "iterations",
-          "default": 100,
-          "description": "number of gradient-descent iterations"
+          "description": "gradient-descent step size"
         },
         {
           "name": "alpha",
-          "default": 1e-05,
-          "description": "small Tikhonov regularization weight for numerical stability"
+          "default": "1e-5",
+          "description": "L2 regularization weight"
+        },
+        {
+          "name": "max_iter",
+          "default": 200,
+          "description": "iterations"
         }
       ],
       "ci_notes": []
@@ -1324,47 +1329,40 @@
     },
     {
       "slug": "wh-qsm",
-      "name": "WH-QSM (MATLAB)",
+      "name": "WH-QSM",
       "stage": "dipole",
-      "engine": null,
-      "description": "Weak-Harmonic QSM (WH-QSM) \u2014 dipole inversion that jointly estimates susceptibility and a residual harmonic (background) field remaining in the local field after background-field removal, correcting imperfect BFR during inversion. TV regularized, from Carlos Milovic's FANSI toolbox (WH_nlTV.m). Compiled from MATLAB and run on the license-free MATLAB Runtime.",
+      "engine": "QSMxT / QSM.rs",
+      "description": "Weak-Harmonic QSM: jointly estimates susceptibility and a residual harmonic background field, correcting imperfect background-field removal.",
       "citation": "Milovic et al., Magn Reson Med 2019",
       "doi": "10.1002/mrm.27483",
-      "code_url": "https://gitlab.com/cmilovic/FANSI-toolbox",
-      "license": "academic use; cite paper",
-      "authors": [
-        "Carlos Milovic",
-        "Julio Acosta-Cabronero",
-        "Jos\u00e9 Miguel Pinto",
-        "Hendrik Mattern",
-        "Cristian Tejos",
-        "Karin Shmueli"
-      ],
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT",
+      "authors": [],
       "parameters": [
         {
           "name": "alpha1",
-          "default": 0.0003,
-          "description": "gradient L1 (total-variation) penalty; larger = smoother, more regularized"
+          "default": "2e-4",
+          "description": "gradient L1 (TV) penalty"
+        },
+        {
+          "name": "mu1",
+          "default": "2e-2",
+          "description": "gradient-consistency ADMM weight"
         },
         {
           "name": "beta",
           "default": 150,
-          "description": "weak-harmonic constraint weight (strength of the residual background-field model)"
+          "description": "harmonic-constraint weight"
         },
         {
-          "name": "mu1",
-          "default": 0.03,
-          "description": "gradient-consistency ADMM weight (recommended 100*alpha1)"
-        },
-        {
-          "name": "iterations",
+          "name": "max_iter",
           "default": 300,
-          "description": "max ADMM outer iterations (WH needs many iterations for the harmonic field to converge)"
+          "description": "iterations"
         },
         {
           "name": "tol_update",
           "default": 0.1,
-          "description": "convergence threshold on the normalized solution update (percent)"
+          "description": "convergence threshold on the solution update (percent)"
         }
       ],
       "ci_notes": []
