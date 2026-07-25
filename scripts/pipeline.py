@@ -67,7 +67,7 @@ ARTIFACT_KIND = {"totalfield": "field", "localfield": "field", "chimap": "chi"}
 EMIT_VOLUMES = False  # when set, write recon/truth/error NIfTIs per run for the web viewer
 
 
-def emit_volumes(run_id, recon, truth, mask=None):
+def emit_volumes(run_id, recon, truth, mask=None, resources=None):
     """Write recon / truth / error volumes under results/<run_id>/ for the NiiVue viewer.
 
     The error map is the signed difference recon - truth, zeroed outside the raw brain mask so the
@@ -77,6 +77,8 @@ def emit_volumes(run_id, recon, truth, mask=None):
     d.mkdir(parents=True, exist_ok=True)
     shutil.copy(recon, d / "recon.nii.gz")
     shutil.copy(truth, d / "truth.nii.gz")
+    if resources is not None and Path(resources).exists():
+        shutil.copy(resources, d / "resources.json")  # memory/CPU-over-time trace for the graph
     r, t = nib.load(str(recon)), nib.load(str(truth))
     err = (r.get_fdata() - t.get_fdata()).astype("float32")
     if mask is not None:
@@ -174,7 +176,11 @@ def run_algo(algo: dict, input_dir: Path, output_dir: Path, runner: str = "local
         # container run here. The CLI resolves the folder, pulls the prebuilt image, mounts run.sh
         # read-only, and injects the QSMCI_* env vars (TE/B0/…) — the very env vars this scorer used
         # to omit, which DNF'd submissions that read acquisition params through them.
-        subprocess.run(_cli_run_argv(algo, input_dir, output_dir, runner, overrides), check=True)
+        # Ask the CLI's container runner to trace this run's memory/CPU over time into the output dir
+        # (resources.json); score()/emit_volumes() later copy it next to the viewer volumes.
+        env = {**os.environ, "QSMCI_RESOURCES_OUT": str(output_dir / "resources.json")}
+        subprocess.run(_cli_run_argv(algo, input_dir, output_dir, runner, overrides),
+                       check=True, env=env)
     else:
         if overrides:  # run.sh reads overrides from $IN/config.json (mirrors `qsm-ci run --set`)
             (input_dir / "config.json").write_text(json.dumps(overrides))
@@ -243,7 +249,11 @@ def score(recon: Path, artifact: str, gt_dir: Path, mask: Path, out_json: Path, 
     if "combo" in meta:
         result["combo"] = meta["combo"]
     if EMIT_VOLUMES and "id" in meta:
-        emit_volumes(meta["id"], recon, gt_dir / ARTIFACT_FILE[artifact], raw_mask)
+        # The container runner (docker/podman path) writes resources.json beside the recon in the
+        # run's output dir; carry it into results/<id>/ so the web viewer can graph it.
+        res = recon.parent / "resources.json"
+        emit_volumes(meta["id"], recon, gt_dir / ARTIFACT_FILE[artifact], raw_mask,
+                     resources=res if res.exists() else None)
     return result
 
 
