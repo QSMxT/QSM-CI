@@ -500,7 +500,10 @@ class _ResourceSampler(threading.Thread):
     def __init__(self, name: str, engine: str, out_path: Path, interval: float = 1.0):
         super().__init__(daemon=True)
         self.name, self.engine, self.out_path, self.interval = name, engine, Path(out_path), interval
-        self._stop = threading.Event()
+        # NB: must NOT be named `_stop` — threading.Thread has a private `_stop()` method that join()
+        # calls internally; shadowing it with an Event breaks join() ("'Event' object is not callable")
+        # and made every sampled run crash -> DNF.
+        self._stop_event = threading.Event()
         self.t, self.mem_bytes, self.cpu_cores = [], [], []
 
     def _sample(self):
@@ -530,17 +533,17 @@ class _ResourceSampler(threading.Thread):
         t0 = time.time()
         # Poll immediately, then every `interval` seconds until stopped — so even a very short run
         # (0–2 samples) records something rather than nothing.
-        while not self._stop.is_set():
+        while not self._stop_event.is_set():
             before = time.time()
             self._sample()
             if self.mem_bytes:  # only timestamp accepted samples, so t/mem/cpu stay aligned
                 if len(self.t) < len(self.mem_bytes):
                     self.t.append(round(before - t0, 3))
             elapsed = time.time() - before
-            self._stop.wait(max(0.0, self.interval - elapsed))
+            self._stop_event.wait(max(0.0, self.interval - elapsed))
 
     def stop(self):
-        self._stop.set()
+        self._stop_event.set()
 
     def write(self):
         try:
