@@ -33,6 +33,8 @@
     /* intensity readout pill: hide until NiiVue populates it (avoids an empty box) */
     #intensity:empty { display: none; }
   </style>
+  <link rel="stylesheet" href="https://unpkg.com/uplot@1.6.32/dist/uPlot.min.css">
+  <script src="https://unpkg.com/uplot@1.6.32/dist/uPlot.iife.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body class="font-sans text-gray-900 bg-gray-50 antialiased dark:bg-gray-950 dark:text-gray-100">
@@ -139,6 +141,14 @@
             </table>
           </section>
         </div>
+
+        <!-- per-run resource usage over time (memory + CPU), rendered by viewer.js via uPlot.
+             Hidden until a run's resources.json is found; stays hidden for DNF runs. -->
+        <section id="resources-panel" class="mt-6 hidden rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+          <h2 class="font-semibold text-gray-900 dark:text-gray-100">Resource usage</h2>
+          <p id="resources-sub" class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">Memory and CPU sampled once per second during the container run. CPU is in cores — above 1 means the method used more than one core.</p>
+          <div id="resources-chart" class="mt-4"></div>
+        </section>
       </div>
     </div>
   </main>

@@ -45,8 +45,8 @@ KINDS = ("recon", "truth", "error")
 BATCH = 64  # files per Hub commit — small enough that a failed batch is cheap to retry/skip
 
 
-def _name(rid: str, kind: str) -> str:
-    return f"{rid}__{kind}.nii.gz".replace("~", "_").replace("+", "_")
+def _name(rid: str, kind: str, ext: str = "nii.gz") -> str:
+    return f"{rid}__{kind}.{ext}".replace("~", "_").replace("+", "_")
 
 
 def _url(repo: str, name: str) -> str:
@@ -92,8 +92,10 @@ def main() -> int:
               file=sys.stderr)
         return 0
 
-    # Gather every volume that belongs to a run in the index.
-    items: list[tuple[str, str, Path]] = []  # (rid, kind, path)
+    # Gather every artifact that belongs to a run in the index: the NIfTI volumes plus, when present,
+    # the small resources.json memory/CPU trace. Each item carries its extension so a non-nii.gz
+    # artifact (the JSON trace) is named and URL'd correctly.
+    items: list[tuple[str, str, str, Path]] = []  # (rid, kind, ext, path)
     for run_dir in sorted(results.glob("*/")):
         rid = run_dir.name
         if rid not in by_id:
@@ -101,26 +103,29 @@ def main() -> int:
         for kind in KINDS:
             f = run_dir / f"{kind}.nii.gz"
             if f.exists():
-                items.append((rid, kind, f))
+                items.append((rid, kind, "nii.gz", f))
+        rf = run_dir / "resources.json"
+        if rf.exists():
+            items.append((rid, "resources", "json", rf))
     if not items:
         print("no volumes on disk — nothing to publish")
         return 0
-    print(f"uploading {len(items)} volumes to {repo} in batches of {BATCH}")
+    print(f"uploading {len(items)} artifacts to {repo} in batches of {BATCH}")
 
     want: dict[str, dict[str, str]] = {}
     failed = 0
     consecutive_fail = 0
     for start in range(0, len(items), BATCH):
         batch = items[start:start + BATCH]
-        ops = [CommitOperationAdd(path_in_repo=_name(rid, kind), path_or_fileobj=str(path))
-               for rid, kind, path in batch]
+        ops = [CommitOperationAdd(path_in_repo=_name(rid, kind, ext), path_or_fileobj=str(path))
+               for rid, kind, ext, path in batch]
         desc = f"batch {start // BATCH + 1}/{(len(items) + BATCH - 1) // BATCH}"
         try:
             _retry(desc, lambda o=ops, d=desc: api.create_commit(
                 repo, repo_type="dataset", operations=o,
                 commit_message=f"publish volumes ({d})"))
-            for rid, kind, _ in batch:
-                want.setdefault(rid, {})[kind] = _url(repo, _name(rid, kind))
+            for rid, kind, ext, _ in batch:
+                want.setdefault(rid, {})[kind] = _url(repo, _name(rid, kind, ext))
             consecutive_fail = 0
             print(f"  ✓ {desc} ({min(start + BATCH, len(items))}/{len(items)})", flush=True)
         except Exception as exc:  # noqa: BLE001 — best-effort per batch
@@ -137,8 +142,14 @@ def main() -> int:
 
     published = 0
     for rid, kinds in want.items():
+        # The resources trace isn't a NiiVue volume — surface it as its own top-level URL the viewer
+        # graphs, and keep the nii.gz volumes under `volumes` as before.
+        res_url = kinds.pop("resources", None)
+        if res_url:
+            by_id[rid]["resources_url"] = res_url
         if kinds:
             by_id[rid]["volumes"] = kinds
+        if res_url or kinds:
             published += 1
 
     index.write_text(json.dumps(doc, indent=2) + "\n")

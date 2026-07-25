@@ -128,6 +128,7 @@ function renderHowToRun() {
 
 let allRuns = [], algos = [], registry = {};
 let nv = null, run, baseUrl, filter = "", navMode = "stages";
+let resChart = null;         // the uPlot instance for the resource-usage panel (destroyed per run)
 let curBase = "recon";       // base map shown underneath: recon | truth
 let showError = false;       // whether the error map is overlaid on top of the base
 let loadedBase = null, loadedError = false;  // what's actually in nv.volumes right now
@@ -324,6 +325,9 @@ async function loadRun() {
   renderMethodInfo();
   renderHowToRun();
   renderMetrics();
+  // Render the resource graph up front — independent of (and before) the WebGL/NiiVue viewer, so a
+  // browser without WebGL2, or a run whose volumes fail to load, still shows the usage trace.
+  renderResources();
 
   const note = $("viewer-note"), canvas = $("gl1"), controls = $("viewer-controls"), layerRow = $("layer-row");
   const hide = (el, h) => { el.style.display = h ? "none" : ""; };
@@ -360,6 +364,94 @@ async function loadRun() {
     note.textContent = "Interactive volumes aren't available for this run.";
     note.classList.remove("hidden"); note.classList.add("flex");
   }
+}
+
+// ---- resource-usage graph ---------------------------------------------------
+// Fetch this run's memory/CPU-over-time trace (resources.json) and draw it as a two-axis uPlot:
+// memory in GB on the left, CPU in cores on the right (a subtle reference line at 1 core makes
+// multi-core use obvious). Served from the Hugging Face Hub (run.resources_url) with a dev fallback
+// to results/<id>/resources.json — the same pattern volUrl() uses for the NIfTI volumes. A missing
+// trace (404) just leaves the panel hidden; a DNF run has no trace.
+function resourcesUrl() {
+  return (run && run.resources_url) || `results/${run.id}/resources.json`;
+}
+async function renderResources() {
+  const panel = document.getElementById("resources-panel");
+  const host = document.getElementById("resources-chart");
+  if (!panel || !host) return;
+  const hidePanel = () => { panel.classList.add("hidden"); };
+  if (resChart) { resChart.destroy(); resChart = null; }
+  host.innerHTML = "";
+  if (!run || run.status === "DNF") { hidePanel(); return; }
+
+  let data;
+  try {
+    const res = await fetch(resourcesUrl(), { cache: "no-store" });
+    if (!res.ok) { hidePanel(); return; }        // 404 / no trace for this run
+    data = await res.json();
+  } catch (e) { hidePanel(); return; }
+  const t = data.t || [], memB = data.mem_bytes || [], cpu = data.cpu_cores || [];
+  if (!t.length) { hidePanel(); return; }
+
+  const memGB = memB.map((b) => b / 1e9);
+  const dark = document.documentElement.classList.contains("dark");
+  const gridStroke = dark ? "rgba(148,163,184,0.15)" : "rgba(100,116,139,0.15)";
+  const axisStroke = dark ? "#94a3b8" : "#64748b";
+  const MEM_COLOR = "#6366f1", CPU_COLOR = "#10b981";
+
+  const fmtT = (v) => `${v}s`;
+  // Adaptive GB precision: a near-constant ~0.16 GB trace needs decimals; a 12 GB one doesn't.
+  const fmtGB = (v) => { const a = Math.abs(v); const d = a >= 100 ? 0 : a >= 10 ? 1 : a >= 1 ? 2 : 3; return `${v.toFixed(d)} GB`; };
+  // Two y-scales: "mem" (GB, left) and "cpu" (cores, right). uPlot maps each series to its scale.
+  const opts = {
+    width: host.clientWidth || 640,
+    height: 260,
+    cursor: { drag: { x: true, y: false } },
+    scales: { x: { time: false }, cpu: { range: (u, min, max) => [0, Math.max(1.1, max * 1.1)] } },
+    series: [
+      { label: "t", value: (u, v) => (v == null ? "" : `${v}s`) },
+      { label: "Memory", scale: "mem", stroke: MEM_COLOR, width: 2, fill: dark ? "rgba(99,102,241,0.12)" : "rgba(99,102,241,0.08)",
+        value: (u, v) => (v == null ? "" : fmtGB(v)) },
+      { label: "CPU", scale: "cpu", stroke: CPU_COLOR, width: 2,
+        value: (u, v) => (v == null ? "" : `${v.toFixed(2)} cores`) },
+    ],
+    axes: [
+      { stroke: axisStroke, grid: { stroke: gridStroke, width: 1 }, ticks: { stroke: gridStroke }, values: (u, vals) => vals.map(fmtT) },
+      { scale: "mem", stroke: MEM_COLOR, size: 64, grid: { stroke: gridStroke, width: 1 }, ticks: { stroke: gridStroke },
+        values: (u, vals) => vals.map(fmtGB) },
+      { scale: "cpu", side: 1, stroke: CPU_COLOR, grid: { show: false },
+        values: (u, vals) => vals.map((v) => `${v}`) },
+    ],
+    // Reference line at 1 core: anything above it means the method used more than one core.
+    hooks: {
+      draw: [(u) => {
+        const y = u.valToPos(1, "cpu", true);
+        if (!isFinite(y)) return;
+        const ctx = u.ctx;
+        ctx.save();
+        ctx.strokeStyle = CPU_COLOR;
+        ctx.globalAlpha = 0.35;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(u.bbox.left, y);
+        ctx.lineTo(u.bbox.left + u.bbox.width, y);
+        ctx.stroke();
+        ctx.restore();
+      }],
+    },
+  };
+  panel.classList.remove("hidden");           // unhide before construct so clientWidth is real
+  resChart = new uPlot(opts, [t, memGB, cpu], host);
+
+  // Keep the chart width in sync with the panel (resize + a one-shot after layout settles).
+  const fit = () => { if (resChart) resChart.setSize({ width: host.clientWidth || 640, height: 260 }); };
+  requestAnimationFrame(fit);
+  if (!renderResources._wired) { window.addEventListener("resize", () => { if (resChart) fit(); }); renderResources._wired = true; }
+
+  const peakGB = (data.mem_peak_bytes ? data.mem_peak_bytes / 1e9 : Math.max(...memGB)).toFixed(2);
+  const maxCores = (data.cpu_cores_max != null ? data.cpu_cores_max : Math.max(...cpu)).toFixed(2);
+  const sub = document.getElementById("resources-sub");
+  if (sub) sub.textContent = `Peak memory ${peakGB} GB · up to ${maxCores} CPU cores · sampled every ${data.interval_s || 1}s during the container run.`;
 }
 
 // Rank this run's value for metric `k` among comparable runs (same job: composed pipelines together,
