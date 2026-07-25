@@ -1,0 +1,26 @@
+name: BFRnet
+slug: bfrnet
+stage: bfr
+engine: ONNX Runtime
+description: >
+  Deep-learning background field removal (BFRnet): a 3D dual-frequency octave-convolution U-net
+  trained to predict the background field of the brain — including brains with significant
+  pathological susceptibility sources (haemorrhage, calcification). Consumes the total field (ppm)
+  and predicts the background field; the local tissue field is total − background, masked. The
+  authors' trained MATLAB network was exported to ONNX and is run here with ONNX Runtime — no
+  MATLAB Runtime — reproducing the MATLAB output to ~1e-8 at a fraction of the memory and image size.
+authors:
+- name: Xuanyu Zhu, Yang Gao, Feng Liu, Stuart Crozier, Hongfu Sun
+  affiliation: University of Queensland
+doi: 10.1016/j.zemedi.2022.08.001
+citation: Zhu et al., Z Med Phys 2022
+code_url: https://github.com/sunhongfu/BFRnet
+license: Used with author permission
+image: ghcr.io/astewartau/qsm-ci/bfrnet:v1
+run: bash run.sh
+ci_notes:
+- >
+  Ported from the authors' MATLAB Deep Learning Toolbox network (BFRnet.mat) via exportONNXNetwork and
+  run with ONNX Runtime. Output matches the MATLAB reference to max |Δ| ≈ 1e-8. The previous compiled
+  MATLAB/MCR submission was OOM-killed on the 16 GB hosted runner (DNF); this ONNX build peaks at
+  ~1.5 GB, so it scores on the standard hosted runner.

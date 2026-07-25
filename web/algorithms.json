@@ -23,6 +23,24 @@
       "ci_notes": []
     },
     {
+      "slug": "bfrnet",
+      "name": "BFRnet",
+      "stage": "bfr",
+      "engine": "ONNX Runtime",
+      "description": "Deep-learning background field removal (BFRnet): a 3D dual-frequency octave-convolution U-net trained to predict the background field of the brain \u2014 including brains with significant pathological susceptibility sources (haemorrhage, calcification). Consumes the total field (ppm) and predicts the background field; the local tissue field is total \u2212 background, masked. The authors' trained MATLAB network was exported to ONNX and is run here with ONNX Runtime \u2014 no MATLAB Runtime \u2014 reproducing the MATLAB output to ~1e-8 at a fraction of the memory and image size.",
+      "citation": "Zhu et al., Z Med Phys 2022",
+      "doi": "10.1016/j.zemedi.2022.08.001",
+      "code_url": "https://github.com/sunhongfu/BFRnet",
+      "license": "Used with author permission",
+      "authors": [
+        "Xuanyu Zhu, Yang Gao, Feng Liu, Stuart Crozier, Hongfu Sun"
+      ],
+      "parameters": [],
+      "ci_notes": [
+        "Ported from the authors' MATLAB Deep Learning Toolbox network (BFRnet.mat) via exportONNXNetwork and run with ONNX Runtime. Output matches the MATLAB reference to max |\u0394| \u2248 1e-8. The previous compiled MATLAB/MCR submission was OOM-killed on the 16 GB hosted runner (DNF); this ONNX build peaks at ~1.5 GB, so it scores on the standard hosted runner.\n"
+      ]
+    },
+    {
       "slug": "fansi",
       "name": "FANSI (nlTV)",
       "stage": "dipole",
@@ -516,22 +534,6 @@
         "van Zijl P.",
         "Li X.",
         "Sulam J."
-      ],
-      "parameters": [],
-      "ci_notes": []
-    },
-    {
-      "slug": "matlab-bfrnet",
-      "name": "BFRnet",
-      "stage": "bfr",
-      "engine": null,
-      "description": "Deep-learning background field removal (BFRnet), a 3D Octave-convolution DAG network trained to predict the background field of the brain \u2014 including brains with significant pathological susceptibility sources (haemorrhage, calcification). Consumes the total field (ppm) and predicts the background field; the local tissue field is total \u2212 background, masked. The MATLAB Deep Learning Toolbox network is compiled with the MATLAB Compiler and run on the license-free MATLAB Runtime.",
-      "citation": null,
-      "doi": "10.1016/j.zemedi.2022.08.001",
-      "code_url": "https://github.com/sunhongfu/BFRnet",
-      "license": "Used with author permission",
-      "authors": [
-        "Xuanyu Zhu, Yang Gao, Feng Liu, Stuart Crozier, Hongfu Sun"
       ],
       "parameters": [],
       "ci_notes": []
