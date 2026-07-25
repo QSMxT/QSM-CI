@@ -1787,152 +1787,6 @@
       }
     },
     {
-      "name": "autoqsm",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 319.8284409046173,
-      "metrics": {
-        "nrmse": 85.6773260937374,
-        "nrmse_detrend": 162.16542194208776,
-        "nrmse_tissue": 177.96663797289793,
-        "nrmse_blood": 250.62365578146097,
-        "nrmse_dgm": 93.20171906113576,
-        "dgm_linearity": 0.2915625844796893,
-        "calc_moment_dev": 50.94412490725517,
-        "calc_streak": 0.14750338410006192,
-        "correlation": 0.5248810587556114,
-        "xsim": 0.24675471584309255
-      },
-      "status": "ok",
-      "id": "autoqsm-iso",
-      "slug": "autoqsm",
-      "mode": "isolated",
-      "variant": "default",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/autoqsm-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/autoqsm-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/autoqsm-iso__error.nii.gz"
-      }
-    },
-    {
-      "name": "laplacian-fieldmap",
-      "track": "sim",
-      "stage": "field-mapping",
-      "artifact": "totalfield",
-      "kind": "field",
-      "image": null,
-      "runtime_s": 24.779426097869873,
-      "metrics": {
-        "nrmse": 78.8362894008095,
-        "nrmse_detrend": 127.9251107947276,
-        "correlation": 0.6158677738459796,
-        "xsim": 0.1833579935358206
-      },
-      "status": "ok",
-      "id": "laplacian-fieldmap-iso",
-      "slug": "laplacian-fieldmap",
-      "mode": "isolated",
-      "variant": "default",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap-iso__error.nii.gz"
-      }
-    },
-    {
-      "name": "modl-qsm",
-      "track": "sim",
-      "stage": "dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 465.92528772354126,
-      "metrics": {
-        "nrmse": 73.82661506479846,
-        "nrmse_detrend": 107.07572191920241,
-        "nrmse_tissue": 115.64979124007056,
-        "nrmse_blood": 225.36929758071722,
-        "nrmse_dgm": 72.51779002227963,
-        "dgm_linearity": 0.20149042114276883,
-        "calc_moment_dev": 25.9195104688406,
-        "calc_streak": 0.04118132043730102,
-        "correlation": 0.6825467874507604,
-        "xsim": 0.25474549577233874
-      },
-      "status": "ok",
-      "id": "modl-qsm-iso",
-      "slug": "modl-qsm",
-      "mode": "isolated",
-      "variant": "default",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/modl-qsm-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/modl-qsm-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/modl-qsm-iso__error.nii.gz"
-      }
-    },
-    {
-      "name": "romeo-fieldmap",
-      "track": "sim",
-      "stage": "field-mapping",
-      "artifact": "totalfield",
-      "kind": "field",
-      "image": null,
-      "runtime_s": 27.83547878265381,
-      "metrics": {
-        "nrmse": 73.24315203974926,
-        "nrmse_detrend": 107.51331567321527,
-        "correlation": 0.6810587157239131,
-        "xsim": 0.1902625581124188
-      },
-      "status": "ok",
-      "id": "romeo-fieldmap-iso",
-      "slug": "romeo-fieldmap",
-      "mode": "isolated",
-      "variant": "default",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap-iso__error.nii.gz"
-      }
-    },
-    {
-      "name": "tv",
-      "track": "sim",
-      "stage": "dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 27.7881498336792,
-      "metrics": {
-        "nrmse": 26.509154231690392,
-        "nrmse_detrend": 27.38515714909432,
-        "nrmse_tissue": 28.790244702247104,
-        "nrmse_blood": 62.40195605133311,
-        "nrmse_dgm": 19.99265444564146,
-        "dgm_linearity": 0.014049776393821434,
-        "calc_moment_dev": 13.848276942968369,
-        "calc_streak": 0.021172222201878026,
-        "correlation": 0.9644880294517648,
-        "xsim": 0.8477282514050722
-      },
-      "status": "ok",
-      "id": "tv-iso-tuned",
-      "slug": "tv",
-      "mode": "isolated",
-      "variant": "tuned",
-      "params": {
-        "lambda": "3e-5"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tv-iso-tuned__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tv-iso-tuned__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tv-iso-tuned__error.nii.gz"
-      }
-    },
-    {
       "name": "harperella+ilsqr",
       "track": "sim",
       "stage": "bfr+dipole",
@@ -3820,117 +3674,6 @@
         "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_ismv_xqsm-cmp__recon.nii.gz",
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_ismv_xqsm-cmp__truth.nii.gz",
         "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_ismv_xqsm-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "autoqsm",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 195.26100254058838,
-      "metrics": {
-        "nrmse": 85.6773260937374,
-        "nrmse_detrend": 162.16542194208776,
-        "nrmse_tissue": 177.96663797289793,
-        "nrmse_blood": 250.62365578146097,
-        "nrmse_dgm": 93.20171906113576,
-        "dgm_linearity": 0.2915625844796893,
-        "calc_moment_dev": 50.94412490725517,
-        "calc_streak": 0.14750338410006192,
-        "correlation": 0.5248810587556114,
-        "xsim": 0.24675471584309255
-      },
-      "status": "ok",
-      "id": "autoqsm-cmp",
-      "slug": "autoqsm",
-      "mode": "composed",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/autoqsm-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/autoqsm-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/autoqsm-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "lbv",
-      "track": "sim",
-      "stage": "bfr",
-      "artifact": "localfield",
-      "kind": "field",
-      "image": null,
-      "runtime_s": 20.638346672058105,
-      "metrics": {
-        "nrmse": 42.38767750033696,
-        "nrmse_detrend": 45.860955738791915,
-        "correlation": 0.9089696988787495,
-        "xsim": 0.8776557129948063
-      },
-      "status": "ok",
-      "id": "lbv-iso",
-      "slug": "lbv",
-      "mode": "isolated",
-      "variant": "default",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/lbv-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/lbv-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/lbv-iso__error.nii.gz"
-      }
-    },
-    {
-      "name": "rts",
-      "track": "sim",
-      "stage": "dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 11.995894193649292,
-      "metrics": {
-        "nrmse": 38.447135529108486,
-        "nrmse_detrend": 41.330024328483184,
-        "nrmse_tissue": 47.88220515017059,
-        "nrmse_blood": 67.16849297219137,
-        "nrmse_dgm": 29.449354366989343,
-        "dgm_linearity": 0.07605845818363233,
-        "calc_moment_dev": 6.899957954883575,
-        "calc_streak": 0.011316528341475434,
-        "correlation": 0.924177675094407,
-        "xsim": 0.6942398283715571
-      },
-      "status": "ok",
-      "id": "rts-iso",
-      "slug": "rts",
-      "mode": "isolated",
-      "variant": "default",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/rts-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/rts-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/rts-iso__error.nii.gz"
-      }
-    },
-    {
-      "name": "vsharp",
-      "track": "sim",
-      "stage": "bfr",
-      "artifact": "localfield",
-      "kind": "field",
-      "image": null,
-      "runtime_s": 10.554887533187866,
-      "metrics": {
-        "nrmse": 42.623581251534,
-        "nrmse_detrend": 47.11464551486871,
-        "correlation": 0.9046240548934699,
-        "xsim": 0.8656682672542579
-      },
-      "status": "ok",
-      "id": "vsharp-iso",
-      "slug": "vsharp",
-      "mode": "isolated",
-      "variant": "default",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/vsharp-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/vsharp-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/vsharp-iso__error.nii.gz"
       }
     },
     {
@@ -5824,179 +5567,6 @@
       }
     },
     {
-      "name": "iqsm",
-      "track": "sim",
-      "stage": "end-to-end",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 66.20249485969543,
-      "metrics": {
-        "nrmse": 74.55170655340491,
-        "nrmse_detrend": 110.76767758222958,
-        "nrmse_tissue": 115.31697379025219,
-        "nrmse_blood": 231.52316793972645,
-        "nrmse_dgm": 71.08117043862919,
-        "dgm_linearity": 0.21485927870877097,
-        "calc_moment_dev": 19.69363959133625,
-        "calc_streak": 0.06620984855947454,
-        "correlation": 0.6701082696831007,
-        "xsim": 0.31209194785267863
-      },
-      "status": "ok",
-      "id": "iqsm-cmp",
-      "slug": "iqsm",
-      "mode": "composed",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/iqsm-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/iqsm-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/iqsm-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "harperella",
-      "track": "sim",
-      "stage": "unwrap+bfr",
-      "artifact": "localfield",
-      "kind": "field",
-      "image": null,
-      "runtime_s": 33.04972863197327,
-      "metrics": {
-        "nrmse": 105.33702394416613,
-        "nrmse_detrend": 155.9449101526121,
-        "correlation": 0.5398012155407825,
-        "xsim": 0.25120027481868135
-      },
-      "status": "ok",
-      "id": "harperella-iso",
-      "slug": "harperella",
-      "mode": "isolated",
-      "variant": "default",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/harperella-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/harperella-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/harperella-iso__error.nii.gz"
-      }
-    },
-    {
-      "name": "lpcnn",
-      "track": "sim",
-      "stage": "dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 321.95641350746155,
-      "metrics": {
-        "nrmse": 45.65884860278705,
-        "nrmse_detrend": 49.83562382241043,
-        "nrmse_tissue": 54.476002930639204,
-        "nrmse_blood": 85.59450668677798,
-        "nrmse_dgm": 39.78662916932538,
-        "dgm_linearity": 0.06633662576049493,
-        "calc_moment_dev": 0.4810840003192425,
-        "calc_streak": 0.02558254363255096,
-        "correlation": 0.8950148931470379,
-        "xsim": 0.6201424256951842
-      },
-      "status": "ok",
-      "id": "lpcnn-iso",
-      "slug": "lpcnn",
-      "mode": "isolated",
-      "variant": "default",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/lpcnn-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/lpcnn-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/lpcnn-iso__error.nii.gz"
-      }
-    },
-    {
-      "name": "nextqsm",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 182.43331050872803,
-      "metrics": {
-        "nrmse": 70.26445973174881,
-        "nrmse_detrend": 94.5267064126704,
-        "nrmse_tissue": 101.04047029287024,
-        "nrmse_blood": 138.32119824442046,
-        "nrmse_dgm": 58.34846698811,
-        "dgm_linearity": 0.19760906241202914,
-        "calc_moment_dev": 16.35145801305771,
-        "calc_streak": 0.07337287365751397,
-        "correlation": 0.7267146666026763,
-        "xsim": 0.4283929394468237
-      },
-      "status": "ok",
-      "id": "nextqsm-iso",
-      "slug": "nextqsm",
-      "mode": "isolated",
-      "variant": "default",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/nextqsm-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/nextqsm-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/nextqsm-iso__error.nii.gz"
-      }
-    },
-    {
-      "name": "sharp",
-      "track": "sim",
-      "stage": "bfr",
-      "artifact": "localfield",
-      "kind": "field",
-      "image": null,
-      "runtime_s": 4.14815616607666,
-      "metrics": {
-        "nrmse": 36.333968017797716,
-        "nrmse_detrend": 38.997436512618975,
-        "correlation": 0.9316626395833262,
-        "xsim": 0.890581695735657
-      },
-      "status": "ok",
-      "id": "sharp-iso",
-      "slug": "sharp",
-      "mode": "isolated",
-      "variant": "default",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/sharp-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/sharp-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/sharp-iso__error.nii.gz"
-      }
-    },
-    {
-      "name": "xqsm",
-      "track": "sim",
-      "stage": "dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 104.58494400978088,
-      "metrics": {
-        "nrmse": 49.793814036732016,
-        "nrmse_detrend": 54.92642049947872,
-        "nrmse_tissue": 66.97695140066625,
-        "nrmse_blood": 73.98569209756084,
-        "nrmse_dgm": 40.367551159547844,
-        "dgm_linearity": 0.155164198493146,
-        "calc_moment_dev": 10.134918235242367,
-        "calc_streak": 0.016056309866000838,
-        "correlation": 0.8764880939685935,
-        "xsim": 0.6202409111130656
-      },
-      "status": "ok",
-      "id": "xqsm-iso",
-      "slug": "xqsm",
-      "mode": "isolated",
-      "variant": "default",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/xqsm-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/xqsm-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/xqsm-iso__error.nii.gz"
-      }
-    },
-    {
       "name": "ismv+ilsqr",
       "track": "sim",
       "stage": "bfr+dipole",
@@ -7257,64 +6827,6 @@
       }
     },
     {
-      "name": "iqsm-plus",
-      "track": "sim",
-      "stage": "end-to-end",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 85.95951461791992,
-      "metrics": {
-        "nrmse": 77.003159267797,
-        "nrmse_detrend": 119.04425244254539,
-        "nrmse_tissue": 121.36730175914595,
-        "nrmse_blood": 249.78400176184144,
-        "nrmse_dgm": 70.92443329515983,
-        "dgm_linearity": 0.22685789588637495,
-        "calc_moment_dev": 34.107851557433605,
-        "calc_streak": 0.06612940134591118,
-        "correlation": 0.643202750901822,
-        "xsim": 0.3197975755371504
-      },
-      "status": "ok",
-      "id": "iqsm-plus-cmp",
-      "slug": "iqsm-plus",
-      "mode": "composed",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/iqsm-plus-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/iqsm-plus-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/iqsm-plus-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "harperella",
-      "track": "sim",
-      "stage": "unwrap+bfr",
-      "artifact": "localfield",
-      "kind": "field",
-      "image": null,
-      "runtime_s": 52.66048741340637,
-      "metrics": {
-        "nrmse": 112.00679018387447,
-        "nrmse_detrend": 169.51816484758052,
-        "correlation": 0.5080896235035237,
-        "xsim": 0.39598381462355425
-      },
-      "status": "ok",
-      "id": "harperella-iso-tuned",
-      "slug": "harperella",
-      "mode": "isolated",
-      "variant": "tuned",
-      "params": {
-        "radius": "3.0"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/harperella-iso-tuned__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/harperella-iso-tuned__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/harperella-iso-tuned__error.nii.gz"
-      }
-    },
-    {
       "name": "matlab-bfrnet",
       "track": "sim",
       "stage": "bfr",
@@ -7324,65 +6836,6 @@
       "id": "matlab-bfrnet-iso",
       "slug": "matlab-bfrnet",
       "variant": "default"
-    },
-    {
-      "name": "nltv",
-      "track": "sim",
-      "stage": "dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 181.9783580303192,
-      "metrics": {
-        "nrmse": 34.960801856650136,
-        "nrmse_detrend": 35.630205613984415,
-        "nrmse_tissue": 39.724728466130415,
-        "nrmse_blood": 66.70573870118072,
-        "nrmse_dgm": 28.27766022907421,
-        "dgm_linearity": 0.0065928854617851584,
-        "calc_moment_dev": 13.529605627059937,
-        "calc_streak": 0.02671222522328966,
-        "correlation": 0.9419925183053294,
-        "xsim": 0.7818947119074875
-      },
-      "status": "ok",
-      "id": "nltv-iso",
-      "slug": "nltv",
-      "mode": "isolated",
-      "variant": "default",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/nltv-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/nltv-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/nltv-iso__error.nii.gz"
-      }
-    },
-    {
-      "name": "sharp",
-      "track": "sim",
-      "stage": "bfr",
-      "artifact": "localfield",
-      "kind": "field",
-      "image": null,
-      "runtime_s": 3.8592653274536133,
-      "metrics": {
-        "nrmse": 32.90951827633364,
-        "nrmse_detrend": 34.300006227743985,
-        "correlation": 0.9459044634052274,
-        "xsim": 0.9101204710278267
-      },
-      "status": "ok",
-      "id": "sharp-iso-tuned",
-      "slug": "sharp",
-      "mode": "isolated",
-      "variant": "tuned",
-      "params": {
-        "threshold": "0.01"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/sharp-iso-tuned__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/sharp-iso-tuned__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/sharp-iso-tuned__error.nii.gz"
-      }
     },
     {
       "name": "lbv+ilsqr",
@@ -8645,132 +8098,6 @@
       }
     },
     {
-      "name": "matlab-medi",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 976.8099038600922,
-      "metrics": {
-        "nrmse": 68.23466410522676,
-        "nrmse_detrend": 90.12521350562864,
-        "nrmse_tissue": 132.08644919367623,
-        "nrmse_blood": 78.68233923584268,
-        "nrmse_dgm": 63.91216889734081,
-        "dgm_linearity": 0.14352723996907724,
-        "calc_moment_dev": 0.7747305184602737,
-        "calc_streak": 0.016043474414919406,
-        "correlation": 0.7428314753508598,
-        "xsim": 0.3042017290954058
-      },
-      "status": "ok",
-      "id": "matlab-medi-cmp",
-      "slug": "matlab-medi",
-      "mode": "composed",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/matlab-medi-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/matlab-medi-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/matlab-medi-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "matlab-medi",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 1031.7292358875275,
-      "metrics": {
-        "nrmse": 68.24589342565264,
-        "nrmse_detrend": 90.1481569368341,
-        "nrmse_tissue": 132.10976716993397,
-        "nrmse_blood": 78.74283862707841,
-        "nrmse_dgm": 63.93438039806516,
-        "dgm_linearity": 0.14354480309764406,
-        "calc_moment_dev": 0.7494011595845222,
-        "calc_streak": 0.01605872440152576,
-        "correlation": 0.7427467220714759,
-        "xsim": 0.30418084823324676
-      },
-      "status": "ok",
-      "id": "matlab-medi-iso",
-      "slug": "matlab-medi",
-      "mode": "isolated",
-      "variant": "default",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/matlab-medi-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/matlab-medi-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/matlab-medi-iso__error.nii.gz"
-      }
-    },
-    {
-      "name": "nltv",
-      "track": "sim",
-      "stage": "dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 143.5163550376892,
-      "metrics": {
-        "nrmse": 28.914762813967975,
-        "nrmse_detrend": 29.7423965281775,
-        "nrmse_tissue": 31.765212260814238,
-        "nrmse_blood": 63.862747418250784,
-        "nrmse_dgm": 22.975712030982063,
-        "dgm_linearity": 0.015123490309868814,
-        "calc_moment_dev": 14.287731781601906,
-        "calc_streak": 0.02368654452935805,
-        "correlation": 0.958503185661587,
-        "xsim": 0.824227990752242
-      },
-      "status": "ok",
-      "id": "nltv-iso-tuned",
-      "slug": "nltv",
-      "mode": "isolated",
-      "variant": "tuned",
-      "params": {
-        "lambda": "3e-3"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/nltv-iso-tuned__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/nltv-iso-tuned__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/nltv-iso-tuned__error.nii.gz"
-      }
-    },
-    {
-      "name": "tgv",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 224.06813097000122,
-      "metrics": {
-        "nrmse": 56.14768979062488,
-        "nrmse_detrend": 67.34121457284623,
-        "nrmse_tissue": 87.3797050914327,
-        "nrmse_blood": 66.48864847282037,
-        "nrmse_dgm": 38.13808473817292,
-        "dgm_linearity": 0.04639305861047771,
-        "calc_moment_dev": 8.168546125292778,
-        "calc_streak": 0.014426238451775257,
-        "correlation": 0.829458925033514,
-        "xsim": 0.4674566344191894
-      },
-      "status": "ok",
-      "id": "tgv-iso",
-      "slug": "tgv",
-      "mode": "isolated",
-      "variant": "default",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tgv-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tgv-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tgv-iso__error.nii.gz"
-      }
-    },
-    {
       "name": "laplacian-fieldmap+matlab-sti-iharperella+ilsqr",
       "track": "sim",
       "stage": "field-mapping+bfr+dipole",
@@ -10028,154 +9355,6 @@
         "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-vsharp_xqsm-cmp__recon.nii.gz",
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-vsharp_xqsm-cmp__truth.nii.gz",
         "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_matlab-sti-vsharp_xqsm-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "nextqsm",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 122.6756751537323,
-      "metrics": {
-        "nrmse": 70.26445973174881,
-        "nrmse_detrend": 94.5267064126704,
-        "nrmse_tissue": 101.04047029287024,
-        "nrmse_blood": 138.32119824442046,
-        "nrmse_dgm": 58.34846698811,
-        "dgm_linearity": 0.19760906241202914,
-        "calc_moment_dev": 16.35145801305771,
-        "calc_streak": 0.07337287365751397,
-        "correlation": 0.7267146666026763,
-        "xsim": 0.4283929394468237
-      },
-      "status": "ok",
-      "id": "nextqsm-cmp",
-      "slug": "nextqsm",
-      "mode": "composed",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/nextqsm-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/nextqsm-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/nextqsm-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "iharperella",
-      "track": "sim",
-      "stage": "unwrap+bfr",
-      "artifact": "localfield",
-      "kind": "field",
-      "image": null,
-      "runtime_s": 33.144105434417725,
-      "metrics": {
-        "nrmse": 75.93499425864555,
-        "nrmse_detrend": 109.90665019330422,
-        "correlation": 0.6729854278933721,
-        "xsim": 0.5345961347610801
-      },
-      "status": "ok",
-      "id": "iharperella-iso",
-      "slug": "iharperella",
-      "mode": "isolated",
-      "variant": "default",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/iharperella-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/iharperella-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/iharperella-iso__error.nii.gz"
-      }
-    },
-    {
-      "name": "matlab-medi",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 1273.676854133606,
-      "metrics": {
-        "nrmse": 58.37104811796437,
-        "nrmse_detrend": 71.10200229616402,
-        "nrmse_tissue": 83.10729792828356,
-        "nrmse_blood": 101.79400124962375,
-        "nrmse_dgm": 33.069334583965585,
-        "dgm_linearity": 0.24291638163863638,
-        "calc_moment_dev": 5.072891242802143,
-        "calc_streak": 0.02525448489947,
-        "correlation": 0.8149903836843782,
-        "xsim": 0.5756723721468054
-      },
-      "status": "ok",
-      "id": "matlab-medi-iso-tuned",
-      "slug": "matlab-medi",
-      "mode": "isolated",
-      "variant": "tuned",
-      "params": {
-        "lambda": "520"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/matlab-medi-iso-tuned__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/matlab-medi-iso-tuned__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/matlab-medi-iso-tuned__error.nii.gz"
-      }
-    },
-    {
-      "name": "pdf",
-      "track": "sim",
-      "stage": "bfr",
-      "artifact": "localfield",
-      "kind": "field",
-      "image": null,
-      "runtime_s": 289.4830141067505,
-      "metrics": {
-        "nrmse": 44.49073623165467,
-        "nrmse_detrend": 49.678311976494925,
-        "correlation": 0.8955766065899206,
-        "xsim": 0.8430211307719389
-      },
-      "status": "ok",
-      "id": "pdf-iso",
-      "slug": "pdf",
-      "mode": "isolated",
-      "variant": "default",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/pdf-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/pdf-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/pdf-iso__error.nii.gz"
-      }
-    },
-    {
-      "name": "tgv",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 232.3698377609253,
-      "metrics": {
-        "nrmse": 56.36320856734428,
-        "nrmse_detrend": 67.84722481730033,
-        "nrmse_tissue": 88.87319917930762,
-        "nrmse_blood": 63.882475675338966,
-        "nrmse_dgm": 40.25105105669646,
-        "dgm_linearity": 0.08652283123321769,
-        "calc_moment_dev": 8.977720603346825,
-        "calc_streak": 0.01604123351221154,
-        "correlation": 0.8275139060385495,
-        "xsim": 0.5194213826502867
-      },
-      "status": "ok",
-      "id": "tgv-iso-tuned",
-      "slug": "tgv",
-      "mode": "isolated",
-      "variant": "tuned",
-      "params": {
-        "alpha1": "0.00015"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tgv-iso-tuned__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tgv-iso-tuned__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tgv-iso-tuned__error.nii.gz"
       }
     },
     {
@@ -12069,154 +11248,6 @@
       }
     },
     {
-      "name": "qsmart",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 557.8281161785126,
-      "metrics": {
-        "nrmse": 83.82779884208755,
-        "nrmse_detrend": 152.94921671504073,
-        "nrmse_tissue": 190.73155890624375,
-        "nrmse_blood": 159.5077559927791,
-        "nrmse_dgm": 85.78870106900544,
-        "dgm_linearity": 0.579886544980141,
-        "calc_moment_dev": 20.097199626266953,
-        "calc_streak": 0.07477941568032473,
-        "correlation": 0.5472292101129119,
-        "xsim": 0.2450592797508551
-      },
-      "status": "ok",
-      "id": "qsmart-cmp",
-      "slug": "qsmart",
-      "mode": "composed",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/qsmart-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/qsmart-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/qsmart-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "ilsqr",
-      "track": "sim",
-      "stage": "dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 81.50796008110046,
-      "metrics": {
-        "nrmse": 53.27187958007887,
-        "nrmse_detrend": 62.94372244232081,
-        "nrmse_tissue": 68.01960945813633,
-        "nrmse_blood": 98.35475314278867,
-        "nrmse_dgm": 40.4323553416211,
-        "dgm_linearity": 0.20431202094104306,
-        "calc_moment_dev": 15.463777542114258,
-        "calc_streak": 0.07781538911119446,
-        "correlation": 0.8463062511929376,
-        "xsim": 0.5810902196336484
-      },
-      "status": "ok",
-      "id": "ilsqr-iso",
-      "slug": "ilsqr",
-      "mode": "isolated",
-      "variant": "default",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/ilsqr-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/ilsqr-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/ilsqr-iso__error.nii.gz"
-      }
-    },
-    {
-      "name": "matlab-sti-iharperella",
-      "track": "sim",
-      "stage": "unwrap+bfr",
-      "artifact": "localfield",
-      "kind": "field",
-      "image": null,
-      "runtime_s": 440.43588304519653,
-      "metrics": {
-        "nrmse": 264.4026231747113,
-        "nrmse_detrend": 1006.1874775495048,
-        "correlation": 0.09889783115973143,
-        "xsim": 0.15534419095082339
-      },
-      "status": "ok",
-      "id": "matlab-sti-iharperella-iso",
-      "slug": "matlab-sti-iharperella",
-      "mode": "isolated",
-      "variant": "default",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/matlab-sti-iharperella-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/matlab-sti-iharperella-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/matlab-sti-iharperella-iso__error.nii.gz"
-      }
-    },
-    {
-      "name": "qsmart",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 559.9478397369385,
-      "metrics": {
-        "nrmse": 83.82779884208755,
-        "nrmse_detrend": 152.94921671504073,
-        "nrmse_tissue": 190.73155890624375,
-        "nrmse_blood": 159.5077559927791,
-        "nrmse_dgm": 85.78870106900544,
-        "dgm_linearity": 0.579886544980141,
-        "calc_moment_dev": 20.097199626266953,
-        "calc_streak": 0.07477941568032473,
-        "correlation": 0.5472292101129119,
-        "xsim": 0.2450592797508551
-      },
-      "status": "ok",
-      "id": "qsmart-iso",
-      "slug": "qsmart",
-      "mode": "isolated",
-      "variant": "default",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/qsmart-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/qsmart-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/qsmart-iso__error.nii.gz"
-      }
-    },
-    {
-      "name": "tikhonov",
-      "track": "sim",
-      "stage": "dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 2.2484359741210938,
-      "metrics": {
-        "nrmse": 38.70587749353184,
-        "nrmse_detrend": 39.71401478903067,
-        "nrmse_tissue": 45.453401530045284,
-        "nrmse_blood": 67.62511345955616,
-        "nrmse_dgm": 32.870813576843155,
-        "dgm_linearity": 0.23396036555007071,
-        "calc_moment_dev": 3.200457513332367,
-        "calc_streak": 0.026756914026503206,
-        "correlation": 0.92939038742978,
-        "xsim": 0.7016639605553306
-      },
-      "status": "ok",
-      "id": "tikhonov-iso",
-      "slug": "tikhonov",
-      "mode": "isolated",
-      "variant": "default",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tikhonov-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tikhonov-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tikhonov-iso__error.nii.gz"
-      }
-    },
-    {
       "name": "matlab-sti-vsharp+ilsqr",
       "track": "sim",
       "stage": "bfr+dipole",
@@ -14104,163 +13135,6 @@
         "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_resharp_xqsm-cmp__recon.nii.gz",
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_resharp_xqsm-cmp__truth.nii.gz",
         "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_resharp_xqsm-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "tgv",
-      "track": "sim",
-      "stage": "bfr+dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 134.34830904006958,
-      "metrics": {
-        "nrmse": 56.14768979062488,
-        "nrmse_detrend": 67.34121457284623,
-        "nrmse_tissue": 87.3797050914327,
-        "nrmse_blood": 66.48864847282037,
-        "nrmse_dgm": 38.13808473817292,
-        "dgm_linearity": 0.04639305861047771,
-        "calc_moment_dev": 8.168546125292778,
-        "calc_streak": 0.014426238451775257,
-        "correlation": 0.829458925033514,
-        "xsim": 0.4674566344191894
-      },
-      "status": "ok",
-      "id": "tgv-cmp",
-      "slug": "tgv",
-      "mode": "composed",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tgv-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tgv-cmp__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tgv-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "iqsm",
-      "track": "sim",
-      "stage": "end-to-end",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 98.55840730667114,
-      "metrics": {
-        "nrmse": 74.55170655340491,
-        "nrmse_detrend": 110.76767758222958,
-        "nrmse_tissue": 115.31697379025219,
-        "nrmse_blood": 231.52316793972645,
-        "nrmse_dgm": 71.08117043862919,
-        "dgm_linearity": 0.21485927870877097,
-        "calc_moment_dev": 19.69363959133625,
-        "calc_streak": 0.06620984855947454,
-        "correlation": 0.6701082696831007,
-        "xsim": 0.31209194785267863
-      },
-      "status": "ok",
-      "id": "iqsm-iso",
-      "slug": "iqsm",
-      "mode": "isolated",
-      "variant": "default",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/iqsm-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/iqsm-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/iqsm-iso__error.nii.gz"
-      }
-    },
-    {
-      "name": "matlab-sti-ilsqr",
-      "track": "sim",
-      "stage": "dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 276.66628098487854,
-      "metrics": {
-        "nrmse": 40.82415532482099,
-        "nrmse_detrend": 44.614919055668125,
-        "nrmse_tissue": 51.53770063511237,
-        "nrmse_blood": 71.24626370568102,
-        "nrmse_dgm": 30.39523208368449,
-        "dgm_linearity": 0.12231165600589922,
-        "calc_moment_dev": 4.337038509547703,
-        "calc_streak": 0.013311833512052803,
-        "correlation": 0.9132328312526075,
-        "xsim": 0.6788280705358191
-      },
-      "status": "ok",
-      "id": "matlab-sti-ilsqr-iso",
-      "slug": "matlab-sti-ilsqr",
-      "mode": "isolated",
-      "variant": "default",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/matlab-sti-ilsqr-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/matlab-sti-ilsqr-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/matlab-sti-ilsqr-iso__error.nii.gz"
-      }
-    },
-    {
-      "name": "qsmgan",
-      "track": "sim",
-      "stage": "dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 245.64273190498352,
-      "metrics": {
-        "nrmse": 77.5331679431055,
-        "nrmse_detrend": 90.38852556821962,
-        "nrmse_tissue": 103.98312201922755,
-        "nrmse_blood": 118.36633645101296,
-        "nrmse_dgm": 56.346243105348556,
-        "dgm_linearity": 0.6167903736570595,
-        "calc_moment_dev": 39.736201122403145,
-        "calc_streak": 0.04984121949418375,
-        "correlation": 0.7418592461849712,
-        "xsim": 0.2445412154186394
-      },
-      "status": "ok",
-      "id": "qsmgan-iso",
-      "slug": "qsmgan",
-      "mode": "isolated",
-      "variant": "default",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/qsmgan-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/qsmgan-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/qsmgan-iso__error.nii.gz"
-      }
-    },
-    {
-      "name": "tikhonov",
-      "track": "sim",
-      "stage": "dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 4.479323148727417,
-      "metrics": {
-        "nrmse": 36.382285156687104,
-        "nrmse_detrend": 39.05305838199617,
-        "nrmse_tissue": 44.4374601112172,
-        "nrmse_blood": 67.66521679963064,
-        "nrmse_dgm": 31.52436984452193,
-        "dgm_linearity": 0.13181431401388533,
-        "calc_moment_dev": 8.967712014913559,
-        "calc_streak": 0.02818273816307574,
-        "correlation": 0.9314871527371783,
-        "xsim": 0.7373795259445559
-      },
-      "status": "ok",
-      "id": "tikhonov-iso-tuned",
-      "slug": "tikhonov",
-      "mode": "isolated",
-      "variant": "tuned",
-      "params": {
-        "lambda": "3e-3"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tikhonov-iso-tuned__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tikhonov-iso-tuned__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tikhonov-iso-tuned__error.nii.gz"
       }
     },
     {
@@ -16154,130 +15028,6 @@
       }
     },
     {
-      "name": "iqsm-plus",
-      "track": "sim",
-      "stage": "end-to-end",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 107.6809492111206,
-      "metrics": {
-        "nrmse": 77.003159267797,
-        "nrmse_detrend": 119.04425244254539,
-        "nrmse_tissue": 121.36730175914595,
-        "nrmse_blood": 249.78400176184144,
-        "nrmse_dgm": 70.92443329515983,
-        "dgm_linearity": 0.22685789588637495,
-        "calc_moment_dev": 34.107851557433605,
-        "calc_streak": 0.06612940134591118,
-        "correlation": 0.643202750901822,
-        "xsim": 0.3197975755371504
-      },
-      "status": "ok",
-      "id": "iqsm-plus-iso",
-      "slug": "iqsm-plus",
-      "mode": "isolated",
-      "variant": "default",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/iqsm-plus-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/iqsm-plus-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/iqsm-plus-iso__error.nii.gz"
-      }
-    },
-    {
-      "name": "matlab-sti-star",
-      "track": "sim",
-      "stage": "dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 218.4854030609131,
-      "metrics": {
-        "nrmse": 48.280163926148134,
-        "nrmse_detrend": 54.794670138009366,
-        "nrmse_tissue": 64.3215430399397,
-        "nrmse_blood": 77.50097769588324,
-        "nrmse_dgm": 40.567629755714236,
-        "dgm_linearity": 0.26463878302113386,
-        "calc_moment_dev": 7.24340745061636,
-        "calc_streak": 0.02860490820910166,
-        "correlation": 0.8769751869917645,
-        "xsim": 0.5825285525673377
-      },
-      "status": "ok",
-      "id": "matlab-sti-star-iso",
-      "slug": "matlab-sti-star",
-      "mode": "isolated",
-      "variant": "default",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/matlab-sti-star-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/matlab-sti-star-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/matlab-sti-star-iso__error.nii.gz"
-      }
-    },
-    {
-      "name": "qsmnet",
-      "track": "sim",
-      "stage": "dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 189.7776038646698,
-      "metrics": {
-        "nrmse": 49.0209158178078,
-        "nrmse_detrend": 54.70707272011612,
-        "nrmse_tissue": 61.577957741209566,
-        "nrmse_blood": 85.01920139338621,
-        "nrmse_dgm": 35.174292093224835,
-        "dgm_linearity": 0.02785814917481777,
-        "calc_moment_dev": 27.873899329453707,
-        "calc_streak": 0.02902264030109824,
-        "correlation": 0.8772988437106785,
-        "xsim": 0.6217182151897079
-      },
-      "status": "ok",
-      "id": "qsmnet-iso",
-      "slug": "qsmnet",
-      "mode": "isolated",
-      "variant": "default",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/qsmnet-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/qsmnet-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/qsmnet-iso__error.nii.gz"
-      }
-    },
-    {
-      "name": "tkd",
-      "track": "sim",
-      "stage": "dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 5.589271783828735,
-      "metrics": {
-        "nrmse": 36.30613223593693,
-        "nrmse_detrend": 38.948445638852924,
-        "nrmse_tissue": 44.370190879870094,
-        "nrmse_blood": 67.16524973701938,
-        "nrmse_dgm": 31.786479986785935,
-        "dgm_linearity": 0.12358776913790193,
-        "calc_moment_dev": 9.878554716706276,
-        "calc_streak": 0.02571753548610168,
-        "correlation": 0.9318170805052699,
-        "xsim": 0.7296238085504234
-      },
-      "status": "ok",
-      "id": "tkd-iso",
-      "slug": "tkd",
-      "mode": "isolated",
-      "variant": "default",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tkd-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tkd-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tkd-iso__error.nii.gz"
-      }
-    },
-    {
       "name": "resharp+ilsqr",
       "track": "sim",
       "stage": "bfr+dipole",
@@ -18168,124 +16918,6 @@
       }
     },
     {
-      "name": "ir2qsm",
-      "track": "sim",
-      "stage": "dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 120.12027263641357,
-      "metrics": {
-        "nrmse": 41.35836407601854,
-        "nrmse_detrend": 39.741043687314246,
-        "nrmse_tissue": 44.08059067369855,
-        "nrmse_blood": 69.00522963741649,
-        "nrmse_dgm": 31.65954859567896,
-        "dgm_linearity": 0.2956510860626427,
-        "calc_moment_dev": 3.659013856202357,
-        "calc_streak": 0.011350071724177312,
-        "correlation": 0.929304197999023,
-        "xsim": 0.6675715432066516
-      },
-      "status": "ok",
-      "id": "ir2qsm-iso",
-      "slug": "ir2qsm",
-      "mode": "isolated",
-      "variant": "default",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/ir2qsm-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/ir2qsm-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/ir2qsm-iso__error.nii.gz"
-      }
-    },
-    {
-      "name": "matlab-sti-vsharp",
-      "track": "sim",
-      "stage": "bfr",
-      "artifact": "localfield",
-      "kind": "field",
-      "image": null,
-      "runtime_s": 158.04965257644653,
-      "metrics": {
-        "nrmse": 48.70001566312133,
-        "nrmse_detrend": 55.206123742751934,
-        "correlation": 0.8754528296144302,
-        "xsim": 0.8351638968378525
-      },
-      "status": "ok",
-      "id": "matlab-sti-vsharp-iso",
-      "slug": "matlab-sti-vsharp",
-      "mode": "isolated",
-      "variant": "default",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/matlab-sti-vsharp-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/matlab-sti-vsharp-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/matlab-sti-vsharp-iso__error.nii.gz"
-      }
-    },
-    {
-      "name": "qsmnet-plus",
-      "track": "sim",
-      "stage": "dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 164.36252188682556,
-      "metrics": {
-        "nrmse": 52.78238330415584,
-        "nrmse_detrend": 60.02420936743948,
-        "nrmse_tissue": 75.02467921374915,
-        "nrmse_blood": 71.93603908807805,
-        "nrmse_dgm": 46.37700644149206,
-        "dgm_linearity": 0.08404090193592295,
-        "calc_moment_dev": 9.61361912637949,
-        "calc_streak": 0.012110705597417703,
-        "correlation": 0.857401336494222,
-        "xsim": 0.5114892512596083
-      },
-      "status": "ok",
-      "id": "qsmnet-plus-iso",
-      "slug": "qsmnet-plus",
-      "mode": "isolated",
-      "variant": "default",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/qsmnet-plus-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/qsmnet-plus-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/qsmnet-plus-iso__error.nii.gz"
-      }
-    },
-    {
-      "name": "tsvd",
-      "track": "sim",
-      "stage": "dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 6.711771726608276,
-      "metrics": {
-        "nrmse": 46.388942655474146,
-        "nrmse_detrend": 52.214845570889075,
-        "nrmse_tissue": 61.85477954566684,
-        "nrmse_blood": 74.78946842064032,
-        "nrmse_dgm": 43.30725338828065,
-        "dgm_linearity": 0.2227427947515146,
-        "calc_moment_dev": 4.131278648972511,
-        "calc_streak": 0.024385606897654472,
-        "correlation": 0.8864359978824105,
-        "xsim": 0.5994907209796654
-      },
-      "status": "ok",
-      "id": "tsvd-iso",
-      "slug": "tsvd",
-      "mode": "isolated",
-      "variant": "default",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tsvd-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tsvd-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tsvd-iso__error.nii.gz"
-      }
-    },
-    {
       "name": "sharp+ilsqr",
       "track": "sim",
       "stage": "bfr+dipole",
@@ -19543,121 +18175,6 @@
         "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_vsharp_xqsm-cmp__recon.nii.gz",
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_vsharp_xqsm-cmp__truth.nii.gz",
         "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-fieldmap_vsharp_xqsm-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "ismv",
-      "track": "sim",
-      "stage": "bfr",
-      "artifact": "localfield",
-      "kind": "field",
-      "image": null,
-      "runtime_s": 47.83111834526062,
-      "metrics": {
-        "nrmse": 28.10908187188692,
-        "nrmse_detrend": 29.14345826863072,
-        "correlation": 0.960059870580002,
-        "xsim": 0.9251047096854906
-      },
-      "status": "ok",
-      "id": "ismv-iso",
-      "slug": "ismv",
-      "mode": "isolated",
-      "variant": "default",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/ismv-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/ismv-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/ismv-iso__error.nii.gz"
-      }
-    },
-    {
-      "name": "matlab-tkd",
-      "track": "sim",
-      "stage": "dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 116.85557126998901,
-      "metrics": {
-        "nrmse": 37.03495324457923,
-        "nrmse_detrend": 39.72054204822565,
-        "nrmse_tissue": 45.453110404587015,
-        "nrmse_blood": 67.38459622014909,
-        "nrmse_dgm": 32.514883589654865,
-        "dgm_linearity": 0.15603774142287863,
-        "calc_moment_dev": 8.90408793091774,
-        "calc_streak": 0.026247346398780638,
-        "correlation": 0.9293695765576047,
-        "xsim": 0.7143791507206863
-      },
-      "status": "ok",
-      "id": "matlab-tkd-iso",
-      "slug": "matlab-tkd",
-      "mode": "isolated",
-      "variant": "default",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/matlab-tkd-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/matlab-tkd-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/matlab-tkd-iso__error.nii.gz"
-      }
-    },
-    {
-      "name": "resharp",
-      "track": "sim",
-      "stage": "bfr",
-      "artifact": "localfield",
-      "kind": "field",
-      "image": null,
-      "runtime_s": 34.85551619529724,
-      "metrics": {
-        "nrmse": 32.99950301675298,
-        "nrmse_detrend": 34.6627076131805,
-        "correlation": 0.9448477744369965,
-        "xsim": 0.9034796308624468
-      },
-      "status": "ok",
-      "id": "resharp-iso",
-      "slug": "resharp",
-      "mode": "isolated",
-      "variant": "default",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/resharp-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/resharp-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/resharp-iso__error.nii.gz"
-      }
-    },
-    {
-      "name": "tsvd",
-      "track": "sim",
-      "stage": "dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 8.195765972137451,
-      "metrics": {
-        "nrmse": 39.09260006735435,
-        "nrmse_detrend": 41.51771571337005,
-        "nrmse_tissue": 47.493285504819006,
-        "nrmse_blood": 69.00274707519732,
-        "nrmse_dgm": 34.08795578546576,
-        "dgm_linearity": 0.06314320453597,
-        "calc_moment_dev": 12.968238517642021,
-        "calc_streak": 0.029614135364814106,
-        "correlation": 0.9235645782271149,
-        "xsim": 0.7162265199940118
-      },
-      "status": "ok",
-      "id": "tsvd-iso-tuned",
-      "slug": "tsvd",
-      "mode": "isolated",
-      "variant": "tuned",
-      "params": {
-        "threshold": "0.05"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tsvd-iso-tuned__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tsvd-iso-tuned__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tsvd-iso-tuned__error.nii.gz"
       }
     },
     {
@@ -20921,96 +19438,6 @@
       }
     },
     {
-      "name": "medi",
-      "track": "sim",
-      "stage": "dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 47.53652763366699,
-      "metrics": {
-        "nrmse": 62.49311678277717,
-        "nrmse_detrend": 75.41506990195856,
-        "nrmse_tissue": 75.41186835910733,
-        "nrmse_blood": 128.44995575339195,
-        "nrmse_dgm": 38.87127052712435,
-        "dgm_linearity": 0.11843637408940244,
-        "calc_moment_dev": 17.590122640132904,
-        "calc_streak": 0.11792033881015467,
-        "correlation": 0.798406494916983,
-        "xsim": 0.628487844894079
-      },
-      "status": "ok",
-      "id": "medi-iso",
-      "slug": "medi",
-      "mode": "isolated",
-      "variant": "default",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/medi-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/medi-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/medi-iso__error.nii.gz"
-      }
-    },
-    {
-      "name": "resharp",
-      "track": "sim",
-      "stage": "bfr",
-      "artifact": "localfield",
-      "kind": "field",
-      "image": null,
-      "runtime_s": 27.491936445236206,
-      "metrics": {
-        "nrmse": 20.712756827553925,
-        "nrmse_detrend": 20.81715169102156,
-        "correlation": 0.9790120392902966,
-        "xsim": 0.9336993203995261
-      },
-      "status": "ok",
-      "id": "resharp-iso-tuned",
-      "slug": "resharp",
-      "mode": "isolated",
-      "variant": "tuned",
-      "params": {
-        "radius": "12.0"
-      },
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/resharp-iso-tuned__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/resharp-iso-tuned__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/resharp-iso-tuned__error.nii.gz"
-      }
-    },
-    {
-      "name": "tv",
-      "track": "sim",
-      "stage": "dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 14.435974836349487,
-      "metrics": {
-        "nrmse": 28.6886159615408,
-        "nrmse_detrend": 29.38924679605864,
-        "nrmse_tissue": 31.256968032671395,
-        "nrmse_blood": 62.69543636109458,
-        "nrmse_dgm": 21.310332602094903,
-        "dgm_linearity": 0.021530761713261737,
-        "calc_moment_dev": 11.859794817864888,
-        "calc_streak": 0.012879477750117871,
-        "correlation": 0.9594239637323588,
-        "xsim": 0.7648294899167801
-      },
-      "status": "ok",
-      "id": "tv-iso",
-      "slug": "tv",
-      "mode": "isolated",
-      "variant": "default",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tv-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tv-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tv-iso__error.nii.gz"
-      }
-    },
-    {
       "name": "laplacian-fieldmap+harperella+ilsqr",
       "track": "sim",
       "stage": "field-mapping+bfr+dipole",
@@ -22271,38 +20698,6 @@
       }
     },
     {
-      "name": "fansi",
-      "track": "sim",
-      "stage": "dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 124.25523853302002,
-      "metrics": {
-        "nrmse": 31.93850220820435,
-        "nrmse_detrend": 33.0207701318137,
-        "nrmse_tissue": 36.151962359853364,
-        "nrmse_blood": 63.08483572728362,
-        "nrmse_dgm": 21.86591572863926,
-        "dgm_linearity": 0.034781657778748865,
-        "calc_moment_dev": 11.76670886576175,
-        "calc_streak": 0.012488898033726461,
-        "correlation": 0.9495699392499038,
-        "xsim": 0.666691750169656
-      },
-      "status": "ok",
-      "id": "fansi-iso",
-      "slug": "fansi",
-      "mode": "isolated",
-      "variant": "default",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/fansi-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/fansi-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/fansi-iso__error.nii.gz"
-      },
-      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/fansi-iso__resources.json"
-    },
-    {
       "name": "harperella+fansi",
       "track": "sim",
       "stage": "bfr+dipole",
@@ -23350,37 +21745,6 @@
         "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_vsharp_fansi-cmp__recon.nii.gz",
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_vsharp_fansi-cmp__truth.nii.gz",
         "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_vsharp_fansi-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "hd-qsm",
-      "track": "sim",
-      "stage": "dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 28.5121488571167,
-      "metrics": {
-        "nrmse": 33.17252193736282,
-        "nrmse_detrend": 34.90530747977772,
-        "nrmse_tissue": 39.20373062934657,
-        "nrmse_blood": 62.48895930729063,
-        "nrmse_dgm": 21.224948150470553,
-        "dgm_linearity": 0.07641357044042563,
-        "calc_moment_dev": 8.51220640540123,
-        "calc_streak": 0.012934655670351014,
-        "correlation": 0.9441367815008918,
-        "xsim": 0.6715373663357117
-      },
-      "status": "ok",
-      "id": "hd-qsm-iso",
-      "slug": "hd-qsm",
-      "mode": "isolated",
-      "variant": "default",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/hd-qsm-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/hd-qsm-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/hd-qsm-iso__error.nii.gz"
       }
     },
     {
@@ -24434,37 +22798,6 @@
       }
     },
     {
-      "name": "l1-qsm",
-      "track": "sim",
-      "stage": "dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 72.20129203796387,
-      "metrics": {
-        "nrmse": 47.734840041181094,
-        "nrmse_detrend": 49.990041355275096,
-        "nrmse_tissue": 57.14962872352916,
-        "nrmse_blood": 77.21924116422572,
-        "nrmse_dgm": 36.641740825503526,
-        "dgm_linearity": 0.03963690413706478,
-        "calc_moment_dev": 8.434609055519104,
-        "calc_streak": 0.03608179189728056,
-        "correlation": 0.8944628187108713,
-        "xsim": 0.7099391035309035
-      },
-      "status": "ok",
-      "id": "l1-qsm-iso",
-      "slug": "l1-qsm",
-      "mode": "isolated",
-      "variant": "default",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/l1-qsm-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/l1-qsm-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/l1-qsm-iso__error.nii.gz"
-      }
-    },
-    {
       "name": "harperella+l1-qsm",
       "track": "sim",
       "stage": "bfr+dipole",
@@ -25512,37 +23845,6 @@
         "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_vsharp_l1-qsm-cmp__recon.nii.gz",
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_vsharp_l1-qsm-cmp__truth.nii.gz",
         "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-fieldmap_vsharp_l1-qsm-cmp__error.nii.gz"
-      }
-    },
-    {
-      "name": "ndi",
-      "track": "sim",
-      "stage": "dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 85.33312368392944,
-      "metrics": {
-        "nrmse": 48.331511604777944,
-        "nrmse_detrend": 54.29486308306862,
-        "nrmse_tissue": 64.57066899176024,
-        "nrmse_blood": 75.2473073904516,
-        "nrmse_dgm": 37.235686470893484,
-        "dgm_linearity": 0.13157284540431502,
-        "calc_moment_dev": 11.031356915831559,
-        "calc_streak": 0.032975170212580826,
-        "correlation": 0.8788197176467198,
-        "xsim": 0.6155901738442324
-      },
-      "status": "ok",
-      "id": "ndi-iso",
-      "slug": "ndi",
-      "mode": "isolated",
-      "variant": "default",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/ndi-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/ndi-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/ndi-iso__error.nii.gz"
       }
     },
     {
@@ -26596,37 +24898,6 @@
       }
     },
     {
-      "name": "wh-qsm",
-      "track": "sim",
-      "stage": "dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 112.75987219810486,
-      "metrics": {
-        "nrmse": 42.5025299061804,
-        "nrmse_detrend": 45.72039658459229,
-        "nrmse_tissue": 52.19727705285206,
-        "nrmse_blood": 69.94789255419109,
-        "nrmse_dgm": 24.133687373197567,
-        "dgm_linearity": 0.07579859970158664,
-        "calc_moment_dev": 11.854178994894028,
-        "calc_streak": 0.01300173170258414,
-        "correlation": 0.9094534600472832,
-        "xsim": 0.6217515834364545
-      },
-      "status": "ok",
-      "id": "wh-qsm-iso",
-      "slug": "wh-qsm",
-      "mode": "isolated",
-      "variant": "default",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/wh-qsm-iso__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/wh-qsm-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/wh-qsm-iso__error.nii.gz"
-      }
-    },
-    {
       "name": "harperella+wh-qsm",
       "track": "sim",
       "stage": "bfr+dipole",
@@ -27677,6 +25948,94 @@
       }
     },
     {
+      "name": "inr-qsm",
+      "track": "sim",
+      "stage": "dipole",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "inr-qsm-iso",
+      "slug": "inr-qsm",
+      "variant": "default"
+    },
+    {
+      "name": "modip",
+      "track": "sim",
+      "stage": "dipole",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "modip-iso",
+      "slug": "modip",
+      "variant": "default"
+    },
+    {
+      "name": "autoqsm",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "autoqsm-iso",
+      "slug": "autoqsm",
+      "variant": "default"
+    },
+    {
+      "name": "ismv",
+      "track": "sim",
+      "stage": "bfr",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "ismv-iso",
+      "slug": "ismv",
+      "variant": "default"
+    },
+    {
+      "name": "medi",
+      "track": "sim",
+      "stage": "dipole",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "medi-iso",
+      "slug": "medi",
+      "variant": "default"
+    },
+    {
+      "name": "resharp",
+      "track": "sim",
+      "stage": "bfr",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "resharp-iso-tuned",
+      "slug": "resharp",
+      "variant": "tuned"
+    },
+    {
+      "name": "tv",
+      "track": "sim",
+      "stage": "dipole",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "tv-iso",
+      "slug": "tv",
+      "variant": "default"
+    },
+    {
+      "name": "autoqsm",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "mode": "composed",
+      "status": "DNF",
+      "metrics": {},
+      "id": "autoqsm-cmp",
+      "slug": "autoqsm",
+      "variant": "default"
+    },
+    {
       "name": "bfrnet",
       "track": "sim",
       "stage": "bfr",
@@ -27686,6 +26045,590 @@
       "id": "bfrnet-iso",
       "slug": "bfrnet",
       "variant": "default"
+    },
+    {
+      "name": "l1-qsm",
+      "track": "sim",
+      "stage": "dipole",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "l1-qsm-iso",
+      "slug": "l1-qsm",
+      "variant": "default"
+    },
+    {
+      "name": "modl-qsm",
+      "track": "sim",
+      "stage": "dipole",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "modl-qsm-iso",
+      "slug": "modl-qsm",
+      "variant": "default"
+    },
+    {
+      "name": "romeo-fieldmap",
+      "track": "sim",
+      "stage": "field-mapping",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "romeo-fieldmap-iso",
+      "slug": "romeo-fieldmap",
+      "variant": "default"
+    },
+    {
+      "name": "tv",
+      "track": "sim",
+      "stage": "dipole",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "tv-iso-tuned",
+      "slug": "tv",
+      "variant": "tuned"
+    },
+    {
+      "name": "iqsm",
+      "track": "sim",
+      "stage": "end-to-end",
+      "mode": "composed",
+      "status": "DNF",
+      "metrics": {},
+      "id": "iqsm-cmp",
+      "slug": "iqsm",
+      "variant": "default"
+    },
+    {
+      "name": "fansi",
+      "track": "sim",
+      "stage": "dipole",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "fansi-iso",
+      "slug": "fansi",
+      "variant": "default",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/fansi-iso__resources.json"
+    },
+    {
+      "name": "laplacian-fieldmap",
+      "track": "sim",
+      "stage": "field-mapping",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "laplacian-fieldmap-iso",
+      "slug": "laplacian-fieldmap",
+      "variant": "default"
+    },
+    {
+      "name": "ndi",
+      "track": "sim",
+      "stage": "dipole",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "ndi-iso",
+      "slug": "ndi",
+      "variant": "default"
+    },
+    {
+      "name": "rts",
+      "track": "sim",
+      "stage": "dipole",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "rts-iso",
+      "slug": "rts",
+      "variant": "default"
+    },
+    {
+      "name": "vsharp",
+      "track": "sim",
+      "stage": "bfr",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "vsharp-iso",
+      "slug": "vsharp",
+      "variant": "default"
+    },
+    {
+      "name": "iqsm-plus",
+      "track": "sim",
+      "stage": "end-to-end",
+      "mode": "composed",
+      "status": "DNF",
+      "metrics": {},
+      "id": "iqsm-plus-cmp",
+      "slug": "iqsm-plus",
+      "variant": "default"
+    },
+    {
+      "name": "fansi-tgv",
+      "track": "sim",
+      "stage": "dipole",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "fansi-tgv-iso",
+      "slug": "fansi-tgv",
+      "variant": "default"
+    },
+    {
+      "name": "lbv",
+      "track": "sim",
+      "stage": "bfr",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "lbv-iso",
+      "slug": "lbv",
+      "variant": "default"
+    },
+    {
+      "name": "nextqsm",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "nextqsm-iso",
+      "slug": "nextqsm",
+      "variant": "default"
+    },
+    {
+      "name": "sharp",
+      "track": "sim",
+      "stage": "bfr",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "sharp-iso",
+      "slug": "sharp",
+      "variant": "default"
+    },
+    {
+      "name": "wh-qsm",
+      "track": "sim",
+      "stage": "dipole",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "wh-qsm-iso",
+      "slug": "wh-qsm",
+      "variant": "default"
+    },
+    {
+      "name": "matlab-medi",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "mode": "composed",
+      "status": "DNF",
+      "metrics": {},
+      "id": "matlab-medi-cmp",
+      "slug": "matlab-medi",
+      "variant": "default"
+    },
+    {
+      "name": "harperella",
+      "track": "sim",
+      "stage": "unwrap+bfr",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "harperella-iso",
+      "slug": "harperella",
+      "variant": "default"
+    },
+    {
+      "name": "lpcnn",
+      "track": "sim",
+      "stage": "dipole",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "lpcnn-iso",
+      "slug": "lpcnn",
+      "variant": "default"
+    },
+    {
+      "name": "nltv",
+      "track": "sim",
+      "stage": "dipole",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "nltv-iso",
+      "slug": "nltv",
+      "variant": "default"
+    },
+    {
+      "name": "sharp",
+      "track": "sim",
+      "stage": "bfr",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "sharp-iso-tuned",
+      "slug": "sharp",
+      "variant": "tuned"
+    },
+    {
+      "name": "xqsm",
+      "track": "sim",
+      "stage": "dipole",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "xqsm-iso",
+      "slug": "xqsm",
+      "variant": "default"
+    },
+    {
+      "name": "nextqsm",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "mode": "composed",
+      "status": "DNF",
+      "metrics": {},
+      "id": "nextqsm-cmp",
+      "slug": "nextqsm",
+      "variant": "default"
+    },
+    {
+      "name": "harperella",
+      "track": "sim",
+      "stage": "unwrap+bfr",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "harperella-iso-tuned",
+      "slug": "harperella",
+      "variant": "tuned"
+    },
+    {
+      "name": "matlab-medi",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "matlab-medi-iso",
+      "slug": "matlab-medi",
+      "variant": "default"
+    },
+    {
+      "name": "nltv",
+      "track": "sim",
+      "stage": "dipole",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "nltv-iso-tuned",
+      "slug": "nltv",
+      "variant": "tuned"
+    },
+    {
+      "name": "tgv",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "tgv-iso",
+      "slug": "tgv",
+      "variant": "default"
+    },
+    {
+      "name": "qsmart",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "mode": "composed",
+      "status": "DNF",
+      "metrics": {},
+      "id": "qsmart-cmp",
+      "slug": "qsmart",
+      "variant": "default"
+    },
+    {
+      "name": "hd-qsm",
+      "track": "sim",
+      "stage": "dipole",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "hd-qsm-iso",
+      "slug": "hd-qsm",
+      "variant": "default"
+    },
+    {
+      "name": "matlab-medi",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "matlab-medi-iso-tuned",
+      "slug": "matlab-medi",
+      "variant": "tuned"
+    },
+    {
+      "name": "pdf",
+      "track": "sim",
+      "stage": "bfr",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "pdf-iso",
+      "slug": "pdf",
+      "variant": "default"
+    },
+    {
+      "name": "tgv",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "tgv-iso-tuned",
+      "slug": "tgv",
+      "variant": "tuned"
+    },
+    {
+      "name": "tgv",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "mode": "composed",
+      "status": "DNF",
+      "metrics": {},
+      "id": "tgv-cmp",
+      "slug": "tgv",
+      "variant": "default"
+    },
+    {
+      "name": "iharperella",
+      "track": "sim",
+      "stage": "unwrap+bfr",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "iharperella-iso",
+      "slug": "iharperella",
+      "variant": "default"
+    },
+    {
+      "name": "matlab-sti-iharperella",
+      "track": "sim",
+      "stage": "unwrap+bfr",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "matlab-sti-iharperella-iso",
+      "slug": "matlab-sti-iharperella",
+      "variant": "default"
+    },
+    {
+      "name": "qsmart",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "qsmart-iso",
+      "slug": "qsmart",
+      "variant": "default"
+    },
+    {
+      "name": "tikhonov",
+      "track": "sim",
+      "stage": "dipole",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "tikhonov-iso",
+      "slug": "tikhonov",
+      "variant": "default"
+    },
+    {
+      "name": "ilsqr",
+      "track": "sim",
+      "stage": "dipole",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "ilsqr-iso",
+      "slug": "ilsqr",
+      "variant": "default"
+    },
+    {
+      "name": "matlab-sti-ilsqr",
+      "track": "sim",
+      "stage": "dipole",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "matlab-sti-ilsqr-iso",
+      "slug": "matlab-sti-ilsqr",
+      "variant": "default"
+    },
+    {
+      "name": "qsmgan",
+      "track": "sim",
+      "stage": "dipole",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "qsmgan-iso",
+      "slug": "qsmgan",
+      "variant": "default"
+    },
+    {
+      "name": "tikhonov",
+      "track": "sim",
+      "stage": "dipole",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "tikhonov-iso-tuned",
+      "slug": "tikhonov",
+      "variant": "tuned"
+    },
+    {
+      "name": "iqsm",
+      "track": "sim",
+      "stage": "end-to-end",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "iqsm-iso",
+      "slug": "iqsm",
+      "variant": "default"
+    },
+    {
+      "name": "matlab-sti-star",
+      "track": "sim",
+      "stage": "dipole",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "matlab-sti-star-iso",
+      "slug": "matlab-sti-star",
+      "variant": "default"
+    },
+    {
+      "name": "qsmnet",
+      "track": "sim",
+      "stage": "dipole",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "qsmnet-iso",
+      "slug": "qsmnet",
+      "variant": "default"
+    },
+    {
+      "name": "tkd",
+      "track": "sim",
+      "stage": "dipole",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "tkd-iso",
+      "slug": "tkd",
+      "variant": "default"
+    },
+    {
+      "name": "iqsm-plus",
+      "track": "sim",
+      "stage": "end-to-end",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "iqsm-plus-iso",
+      "slug": "iqsm-plus",
+      "variant": "default"
+    },
+    {
+      "name": "matlab-sti-vsharp",
+      "track": "sim",
+      "stage": "bfr",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "matlab-sti-vsharp-iso",
+      "slug": "matlab-sti-vsharp",
+      "variant": "default"
+    },
+    {
+      "name": "qsmnet-plus",
+      "track": "sim",
+      "stage": "dipole",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "qsmnet-plus-iso",
+      "slug": "qsmnet-plus",
+      "variant": "default"
+    },
+    {
+      "name": "tsvd",
+      "track": "sim",
+      "stage": "dipole",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "tsvd-iso",
+      "slug": "tsvd",
+      "variant": "default"
+    },
+    {
+      "name": "ir2qsm",
+      "track": "sim",
+      "stage": "dipole",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "ir2qsm-iso",
+      "slug": "ir2qsm",
+      "variant": "default"
+    },
+    {
+      "name": "matlab-tkd",
+      "track": "sim",
+      "stage": "dipole",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "matlab-tkd-iso",
+      "slug": "matlab-tkd",
+      "variant": "default"
+    },
+    {
+      "name": "resharp",
+      "track": "sim",
+      "stage": "bfr",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "resharp-iso",
+      "slug": "resharp",
+      "variant": "default"
+    },
+    {
+      "name": "tsvd",
+      "track": "sim",
+      "stage": "dipole",
+      "mode": "isolated",
+      "status": "DNF",
+      "metrics": {},
+      "id": "tsvd-iso-tuned",
+      "slug": "tsvd",
+      "variant": "tuned"
     }
   ]
 }
