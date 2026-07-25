@@ -1,14 +1,17 @@
 #!/usr/bin/env bash
-# Runs the MATLAB-compiled `recon` on the free MATLAB Runtime (no license at run time).
-# The binary is either baked into the image at /opt/qsm-ci/recon (recommended) or committed
-# alongside this script and mounted at /algo. No network needed.
+# QSM-CI submission — WH-QSM (dipole stage) via QSMxT / QSM.rs.
 set -euo pipefail
 IN="${1:-/input}"; OUT="${2:-/output}"
-DIR="$(cd "$(dirname "$0")" && pwd)"
-BIN="${MATLAB_RECON:-/opt/qsm-ci/recon}"
-[ -x "$BIN" ] || BIN="$DIR/recon"
-# MATLAB Runtime extracts its CTF archive to MCR_CACHE_ROOT; the default ($HOME/.mcrCache*) is
-# not writable when the container runs as a mounted host UID with no home (e.g. GitHub-hosted
-# runners: "Could not access the MATLAB Runtime component cache"). Point it at a writable temp.
-export MCR_CACHE_ROOT="${MCR_CACHE_ROOT:-$(mktemp -d)}"
-exec "$BIN" "$IN" "$OUT"    # the MCR wrapper sets LD_LIBRARY_PATH
+B0=$(jq -r '.B0_dir | join(" ")' "$IN/params.json")
+
+# Parameter overrides (qsm-ci run --set NAME=VALUE) arrive as /input/config.json.
+SET=""
+CFG="$IN/config.json"
+if [ -f "$CFG" ]; then
+  V=$(jq -r '.alpha1 // empty' "$CFG"); [ -n "$V" ] && SET="$SET --alpha1 $V"
+  V=$(jq -r '.mu1 // empty' "$CFG"); [ -n "$V" ] && SET="$SET --mu1 $V"
+  V=$(jq -r '.beta // empty' "$CFG"); [ -n "$V" ] && SET="$SET --beta $V"
+  V=$(jq -r '.max_iter // empty' "$CFG"); [ -n "$V" ] && SET="$SET --max-iter $V"
+  V=$(jq -r '.tol_update // empty' "$CFG"); [ -n "$V" ] && SET="$SET --tol-update $V"
+fi
+qsmxt invert whqsm "$IN/localfield.nii.gz" -m "$IN/mask.nii.gz" -o "$OUT/chimap.nii.gz" --b0-direction $B0 $SET

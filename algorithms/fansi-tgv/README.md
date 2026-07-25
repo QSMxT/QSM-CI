@@ -1,6 +1,6 @@
-# FANSI (nlTV)
+# FANSI (nlTGV)
 
-Fast Nonlinear Susceptibility Inversion with nonlinear total-variation regularization, solved with ADMM.
+FANSI with nonlinear total-generalized-variation (second-order) regularization, solved with ADMM.
 
 - **Stage:** `dipole` (localfield → chimap, ppm)
 - **Engine:** [QSMxT](https://github.com/QSMxT/QSMxT) — the [QSM.rs](https://github.com/astewartau/QSM.rs) Rust implementation
@@ -9,14 +9,15 @@ Fast Nonlinear Susceptibility Inversion with nonlinear total-variation regulariz
 ## How QSM-CI runs it
 
 ```bash
-qsmxt invert fansi /input/localfield.nii.gz -m /input/mask.nii.gz -o /output/chimap.nii.gz --b0-direction <B0>
+qsmxt invert fansi-tgv /input/localfield.nii.gz -m /input/mask.nii.gz -o /output/chimap.nii.gz --b0-direction <B0>
 ```
 
 ## Parameters
 
 | parameter | default | description |
 |---|---|---|
-| `alpha1` | 2e-4 | gradient L1 (TV) penalty |
+| `alpha1` | 2e-4 | first-order (TGV) L1 penalty |
+| `alpha0` | 4e-4 | second-order (curvature) penalty |
 | `mu1` | 2e-2 | gradient-consistency ADMM weight |
 | `max_iter` | 150 | iterations |
 | `tol_update` | 0.1 | convergence threshold on the solution update (percent) |
