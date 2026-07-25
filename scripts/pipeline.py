@@ -86,6 +86,108 @@ def emit_volumes(run_id, recon, truth, mask=None, resources=None):
     nib.save(nib.Nifti1Image(err, r.affine), str(d / "error.nii.gz"))
 
 
+def _load_resources(path) -> "dict | None":
+    """Read a stage's resources.json (as written by qsm_ci.runner._ResourceSampler), or None if it's
+    missing/unreadable — a stage may legitimately produce no trace (a sub-2s run, or the local runner
+    which doesn't sample), and that must never sink the composed run."""
+    try:
+        p = Path(path)
+        if not p.exists():
+            return None
+        return json.loads(p.read_text())
+    except Exception:  # noqa: BLE001 — profiling is best-effort
+        return None
+
+
+def concat_resources(stages: list) -> "dict | None":
+    """Concatenate per-stage resource traces into one series for a composed run.
+
+    `stages` is a list of `(name, resources_path, duration_s)` in EXECUTION ORDER — the field-mapping
+    → BFR → dipole sequence, each with the same measured wall-time pipeline.py already sums for the
+    composed run's `runtime_s`. Each stage's own resources.json (memory/CPU over time) is loaded and:
+
+      - its `t[]` samples are offset by the cumulative wall-time of all PRIOR stages (their measured
+        durations), so the combined timeline's span matches `runtime_s` and the graph lines up with
+        the metrics/NiiVue image on the submission page;
+      - `mem_bytes` / `cpu_cores` are concatenated in the same order;
+      - `mem_peak_bytes` / `cpu_cores_max` are the max over all stages;
+      - a `stages` field records each stage's `{name, t_start, t_end}` boundary (front-end may mark
+        stage transitions; it can also ignore it).
+
+    A stage with no samples (e.g. a <2s run, or none captured) contributes zero points but its
+    duration still advances the offset, so later stages — and the total span — stay aligned with
+    `runtime_s`. Returns None only when there are no stages at all."""
+    if not stages:
+        return None
+    t_all: list = []
+    mem_all: list = []
+    cpu_all: list = []
+    bounds: list = []
+    peak = 0.0
+    cpu_max = 0.0
+    interval = None
+    runner = None
+    offset = 0.0
+    for name, path, duration in stages:
+        try:
+            dur = float(duration)
+        except (TypeError, ValueError):
+            dur = 0.0
+        data = _load_resources(path) or {}
+        st = data.get("t") or []
+        sm = data.get("mem_bytes") or []
+        sc = data.get("cpu_cores") or []
+        n = min(len(st), len(sm), len(sc))  # only keep aligned samples
+        for i in range(n):
+            t_all.append(round(offset + float(st[i]), 3))
+            mem_all.append(sm[i])
+            cpu_all.append(sc[i])
+        if data.get("mem_peak_bytes"):
+            peak = max(peak, float(data["mem_peak_bytes"]))
+        elif sm:
+            peak = max(peak, float(max(sm[:n] or sm)))
+        if data.get("cpu_cores_max") is not None:
+            cpu_max = max(cpu_max, float(data["cpu_cores_max"]))
+        elif sc:
+            cpu_max = max(cpu_max, float(max(sc[:n] or sc)))
+        if interval is None and data.get("interval_s") is not None:
+            interval = data["interval_s"]
+        if runner is None and data.get("runner"):
+            runner = data["runner"]
+        bounds.append({"name": name, "t_start": round(offset, 3), "t_end": round(offset + dur, 3)})
+        offset += dur
+    return {
+        "interval_s": interval if interval is not None else 1.0,
+        "t": t_all,
+        "mem_bytes": mem_all,
+        "cpu_cores": cpu_all,
+        "mem_peak_bytes": peak,
+        "cpu_cores_max": cpu_max,
+        "sampler": "docker-stats",
+        "runner": runner or "docker",
+        "stages": bounds,
+        "composed": True,
+    }
+
+
+def _emit_composed_resources(run_id: str, stages: list) -> None:
+    """Write the concatenated composed-run trace to results/<run_id>/resources.json, replacing the
+    single-stage copy emit_volumes() left there. Only writes when EMIT_VOLUMES is on (the same gate
+    that produces the viewer volumes) and there's a real trace to write. Never raises into the run —
+    a failed profile write must not fail the pipeline."""
+    if not EMIT_VOLUMES:
+        return
+    try:
+        doc = concat_resources(stages)
+        if not doc or not doc.get("t"):
+            return  # no samples at all (e.g. every stage <2s, or the local runner) — leave as-is
+        d = ROOT / "results" / run_id
+        d.mkdir(parents=True, exist_ok=True)
+        (d / "resources.json").write_text(json.dumps(doc))
+    except Exception:  # noqa: BLE001 — profiling is best-effort
+        pass
+
+
 def _tuned_overrides(text: str) -> dict:
     """Extract `{param: tuned_value}` from an algorithm.yml `parameters:` block — the settings we
     optimised on the scoring phantom (each parameter may carry a `tuned:` alongside its `default:`).
@@ -439,7 +541,11 @@ def main() -> None:
         # Each source is (totalfield, valid-region mask, cumulative runtime s) so downstream stages
         # inherit any erosion and can accumulate the full pipeline's wall-clock time. The ground-truth
         # field costs nothing to "produce", so its runtime is 0.
-        tf_sources: dict[str, tuple] = {"gt": (gt / ARTIFACT_FILE["totalfield"], mask, 0.0)}
+        # Each source carries (totalfield, valid-region mask, cumulative runtime s, stage-traces),
+        # where stage-traces is the ordered list of (name, resources.json path, duration s) for every
+        # stage run so far — so the composed run can concatenate the whole pipeline's memory/CPU trace
+        # (not just the final stage's). The ground-truth field ran no stage, so its list is empty.
+        tf_sources: dict[str, tuple] = {"gt": (gt / ARTIFACT_FILE["totalfield"], mask, 0.0, [])}
 
         def do_fieldmap(f):
             idir, odir = args.work / f"cmp_fm_{f['slug']}_in", args.work / f"cmp_fm_{f['slug']}_out"
@@ -449,14 +555,15 @@ def main() -> None:
                 tf = odir / "totalfield.nii.gz"
                 # A field-mapping method may erode (e.g. Laplacian unwrapping) — carry its valid region.
                 fm_mask = _valid_mask(tf, mask, odir / "validmask.nii.gz")
-                return (f["slug"], tf, fm_mask, fm_rt)
+                trace = [(f"field-mapping:{f['slug']}", odir / "resources.json", fm_rt)]
+                return (f["slug"], tf, fm_mask, fm_rt, trace)
             except Exception as e:
                 print(f"  composed  fieldmap {f['slug']} DNF ({e}) — skipping its pipelines")
                 return None
 
         for res in _pmap(fmap, do_fieldmap):
             if res:
-                tf_sources[res[0]] = (res[1], res[2], res[3])
+                tf_sources[res[0]] = (res[1], res[2], res[3], res[4])
 
         # Stage 2 — bfr: localfield for each (totalfield source, bfr), keyed (tfk, bfr slug).
         # Each entry caches (localfield, valid-region mask, cumulative runtime s) so the dipole
@@ -464,7 +571,7 @@ def main() -> None:
         lf_cache: dict[tuple, tuple] = {}
 
         def do_bfr(task):
-            tfk, tfp, tf_mask, fm_rt, b = task
+            tfk, tfp, tf_mask, fm_rt, fm_trace, b = task
             idir, odir = args.work / f"cmp_{tfk}_{b['slug']}_in", args.work / f"cmp_{tfk}_{b['slug']}_out"
             try:
                 # Run within the incoming valid region (not the full mask) so a field-mapping erosion
@@ -474,12 +581,14 @@ def main() -> None:
                 bfr_rt = run_algo(b, idir, odir, args.runner)
                 lf = odir / "localfield.nii.gz"
                 bfr_mask = _valid_mask(lf, tf_mask, odir / "validmask.nii.gz")
-                return ((tfk, b["slug"]), (lf, bfr_mask, fm_rt + bfr_rt))
+                trace = fm_trace + [(f"bfr:{b['slug']}", odir / "resources.json", bfr_rt)]
+                return ((tfk, b["slug"]), (lf, bfr_mask, fm_rt + bfr_rt, trace))
             except Exception as e:
                 print(f"  composed  {tfk}+{b['slug']} bfr DNF ({e})")
                 return None
 
-        bfr_tasks = [(tfk, tfp, tf_mask, fm_rt, b) for tfk, (tfp, tf_mask, fm_rt) in tf_sources.items()
+        bfr_tasks = [(tfk, tfp, tf_mask, fm_rt, fm_trace, b)
+                     for tfk, (tfp, tf_mask, fm_rt, fm_trace) in tf_sources.items()
                      for b in bfr if owns_col(tfk, b["slug"])]  # --shard: only this shard's columns
         for res in _pmap(bfr_tasks, do_bfr):
             if res:
@@ -492,7 +601,7 @@ def main() -> None:
             cid = f"{tfk}~{b['slug']}~{d['slug']}-cmp"
             cinfo = {"field_mapping": tfk, "bfr": b["slug"], "dipole": d["slug"]}
             try:
-                lf, bfr_mask, upstream_rt = lf_cache[(tfk, b["slug"])]
+                lf, bfr_mask, upstream_rt, upstream_trace = lf_cache[(tfk, b["slug"])]
                 # Invert within the BFR's eroded region — not the original full mask — so the dipole
                 # never deconvolves a zero-field rim into a blurry boundary.
                 src = dict(gt_sources); src["localfield"] = lf; src["mask"] = bfr_mask
@@ -505,6 +614,12 @@ def main() -> None:
                         "mode": "composed", "track": args.track, "runtime": upstream_rt + rt, "combo": cinfo}
                 r = score(odir / "chimap.nii.gz", "chimap", gt, mask,
                           args.work / f"cmp_{cid}.json", meta)
+                # The submission page for this composed run must graph the WHOLE pipeline, so overwrite
+                # the single-stage resources.json emit_volumes() copied (the dipole's alone) with the
+                # concatenation of every stage's trace, in execution order, with cumulative offsets —
+                # its span then matches runtime_s and the metrics/NiiVue image on that page.
+                _emit_composed_resources(
+                    cid, upstream_trace + [(f"dipole:{d['slug']}", odir / "resources.json", rt)])
                 m = r["metrics"]
                 if r.get("status") == "DNF":
                     print(f"  composed  {combo:<34} DNF ({r.get('dnf_reason','')})")

@@ -425,9 +425,28 @@ async function renderResources() {
     // Reference line at 1 core: anything above it means the method used more than one core.
     hooks: {
       draw: [(u) => {
+        const ctx = u.ctx;
+        // Composed runs concatenate their stages' traces; draw a subtle vertical marker at each
+        // stage boundary (t_start of every stage after the first) so transitions are visible.
+        const stages = Array.isArray(data.stages) ? data.stages : [];
+        if (stages.length > 1) {
+          ctx.save();
+          ctx.strokeStyle = axisStroke;
+          ctx.globalAlpha = 0.30;
+          ctx.setLineDash([2, 3]);
+          for (let i = 1; i < stages.length; i++) {
+            const x = u.valToPos(stages[i].t_start, "x", true);
+            if (!isFinite(x)) continue;
+            ctx.beginPath();
+            ctx.moveTo(x, u.bbox.top);
+            ctx.lineTo(x, u.bbox.top + u.bbox.height);
+            ctx.stroke();
+          }
+          ctx.restore();
+        }
+        // Reference line at 1 core.
         const y = u.valToPos(1, "cpu", true);
         if (!isFinite(y)) return;
-        const ctx = u.ctx;
         ctx.save();
         ctx.strokeStyle = CPU_COLOR;
         ctx.globalAlpha = 0.35;
