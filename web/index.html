@@ -157,12 +157,10 @@
         async init() {
           this.runs = await loadRuns();
           const methods = new Set(this.runs.filter(r => r.mode === "isolated").map(r => r.slug));
-          const stages = new Set(this.runs.filter(r => r.mode === "isolated").map(r => r.stage));
           const composed = this.runs.filter(r => r.mode === "composed" && r.status !== "DNF");
           const bestX = Math.max(...composed.map(r => val(r, "xsim")).filter(v => v != null), 0);
           this.statCards = [
             { label: "Methods", value: methods.size },
-            { label: "Stages", value: stages.size },
             { label: "Pipelines evaluated", value: composed.length },
             { label: "Best XSIM", value: bestX.toFixed(3) },
           ];

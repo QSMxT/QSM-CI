@@ -190,7 +190,14 @@ jobs:
 
   merge:
     needs: [scope, score]
-    if: ${{ !cancelled() && needs.score.result != 'skipped' }}
+    # Publish whatever finished scoring — even if a leg failed or a flaky self-hosted DL job (e.g.
+    # modip) was cancelled/timed out. `merge` downloads the shard artifacts that exist and merges
+    # them into results/index.json by run-id, so a leg that uploaded nothing is simply absent and
+    # keeps its previous score. We need always() here: without it, one cancelled leg skips merge and
+    # blocks the ENTIRE leaderboard publish, including all the hosted results (this is what DNF'd the
+    # BFRnet/resource-graph publish). Still skip when scope failed (nothing was planned) or scoring
+    # was skipped (nothing changed).
+    if: ${{ always() && needs.scope.result == 'success' && needs.score.result != 'skipped' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
