@@ -34,6 +34,11 @@ qsm-ci-osf.txt
 # local static-site serving symlink
 web/results
 
+# Claude Code agent worktrees / local scratch — never belong in the repo. (14 stray gitlink
+# submodule entries under .claude/worktrees/ leaked in via PR #49 and made every git operation
+# emit "fatal: No url found for submodule"; removed and ignored here.)
+.claude/
+
 # OS
 .DS_Store
 algorithms/_qsmxt/qsmxt
