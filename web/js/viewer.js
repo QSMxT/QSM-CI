@@ -402,6 +402,14 @@ async function renderResources() {
   const fmtT = (v) => `${v}s`;
   // Adaptive GB precision: a near-constant ~0.16 GB trace needs decimals; a 12 GB one doesn't.
   const fmtGB = (v) => { const a = Math.abs(v); const d = a >= 100 ? 0 : a >= 10 ? 1 : a >= 1 ? 2 : 3; return `${v.toFixed(d)} GB`; };
+  // Human-readable stage label, e.g. "bfr:pdf" -> "Background removal · pdf".
+  const stageLabel = (name) => {
+    const [kind, algo] = String(name || "").split(":");
+    const KMAP = { field_mapping: "Field mapping", "field-mapping": "Field mapping",
+                   unwrap: "Unwrapping", bfr: "Background removal", dipole: "Dipole inversion" };
+    const k = KMAP[kind] || (kind || "stage");
+    return algo ? `${k} · ${algo}` : k;
+  };
   // Two y-scales: "mem" (GB, left) and "cpu" (cores, right). uPlot maps each series to its scale.
   const opts = {
     width: host.clientWidth || 640,
@@ -424,23 +432,53 @@ async function renderResources() {
     ],
     // Reference line at 1 core: anything above it means the method used more than one core.
     hooks: {
+      // Composed runs concatenate their stages' traces. Shade each stage's time span with a
+      // subtle alternating band (drawn behind the series) so the segments are visible at a glance.
+      drawClear: [(u) => {
+        const stages = Array.isArray(data.stages) ? data.stages : [];
+        if (stages.length < 2) return;
+        const ctx = u.ctx; ctx.save();
+        const bands = dark
+          ? ["rgba(148,163,184,0.00)", "rgba(148,163,184,0.10)"]
+          : ["rgba(100,116,139,0.00)", "rgba(100,116,139,0.07)"];
+        for (let i = 0; i < stages.length; i++) {
+          const x0 = u.valToPos(stages[i].t_start, "x", true);
+          const x1 = u.valToPos(stages[i].t_end, "x", true);
+          if (!isFinite(x0) || !isFinite(x1)) continue;
+          ctx.fillStyle = bands[i % 2];
+          ctx.fillRect(x0, u.bbox.top, Math.max(0, x1 - x0), u.bbox.height);
+        }
+        ctx.restore();
+      }],
       draw: [(u) => {
         const ctx = u.ctx;
-        // Composed runs concatenate their stages' traces; draw a subtle vertical marker at each
-        // stage boundary (t_start of every stage after the first) so transitions are visible.
         const stages = Array.isArray(data.stages) ? data.stages : [];
         if (stages.length > 1) {
+          // Boundary lines at each stage transition.
           ctx.save();
-          ctx.strokeStyle = axisStroke;
-          ctx.globalAlpha = 0.30;
-          ctx.setLineDash([2, 3]);
+          ctx.strokeStyle = axisStroke; ctx.globalAlpha = 0.30; ctx.setLineDash([2, 3]);
           for (let i = 1; i < stages.length; i++) {
             const x = u.valToPos(stages[i].t_start, "x", true);
             if (!isFinite(x)) continue;
-            ctx.beginPath();
-            ctx.moveTo(x, u.bbox.top);
-            ctx.lineTo(x, u.bbox.top + u.bbox.height);
-            ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(x, u.bbox.top); ctx.lineTo(x, u.bbox.top + u.bbox.height); ctx.stroke();
+          }
+          ctx.restore();
+          // Stage name labels (with a legibility pill) centered in each band; skipped if too narrow.
+          ctx.save();
+          ctx.font = "600 11px ui-sans-serif, system-ui, sans-serif";
+          ctx.textBaseline = "top"; ctx.setLineDash([]);
+          for (let i = 0; i < stages.length; i++) {
+            const x0 = u.valToPos(stages[i].t_start, "x", true);
+            const x1 = u.valToPos(stages[i].t_end, "x", true);
+            if (!isFinite(x0) || !isFinite(x1)) continue;
+            const label = stageLabel(stages[i].name);
+            const w = ctx.measureText(label).width;
+            if ((x1 - x0) < w + 14) continue;
+            const tx = (x0 + x1) / 2 - w / 2, ty = u.bbox.top + 6;
+            ctx.globalAlpha = 1;
+            ctx.fillStyle = dark ? "rgba(15,23,42,0.78)" : "rgba(255,255,255,0.82)";
+            ctx.fillRect(tx - 5, ty - 2, w + 10, 16);
+            ctx.fillStyle = axisStroke; ctx.fillText(label, tx, ty);
           }
           ctx.restore();
         }
@@ -448,13 +486,8 @@ async function renderResources() {
         const y = u.valToPos(1, "cpu", true);
         if (!isFinite(y)) return;
         ctx.save();
-        ctx.strokeStyle = CPU_COLOR;
-        ctx.globalAlpha = 0.35;
-        ctx.setLineDash([4, 4]);
-        ctx.beginPath();
-        ctx.moveTo(u.bbox.left, y);
-        ctx.lineTo(u.bbox.left + u.bbox.width, y);
-        ctx.stroke();
+        ctx.strokeStyle = CPU_COLOR; ctx.globalAlpha = 0.35; ctx.setLineDash([4, 4]);
+        ctx.beginPath(); ctx.moveTo(u.bbox.left, y); ctx.lineTo(u.bbox.left + u.bbox.width, y); ctx.stroke();
         ctx.restore();
       }],
     },
