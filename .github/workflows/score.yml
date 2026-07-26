@@ -212,6 +212,9 @@ jobs:
 
       - name: Merge shard runs into results/index.json
         run: |
+          # Preserve the index this rescore STARTED from (its checkout base) — the commit step needs
+          # it to re-apply only the runs THIS rescore changed onto the latest main at push time.
+          cp results/index.json /tmp/base-index.json
           python3 - <<'PY'
           import json, glob
           from collections import Counter
@@ -242,11 +245,23 @@ jobs:
         run: |
           git config user.name  "qsm-ci-bot"
           git config user.email "qsm-ci@users.noreply.github.com"
-          git add results/index.json
-          git commit -m "Update results" || { echo "no changes"; exit 0; }
+          # This rescore's scored output (base + freshly scored runs).
+          cp results/index.json /tmp/scored-index.json
+          # Never `git pull --rebase` results/index.json: a rescore based on a commit before another
+          # rescore's results landed conflicts on the same file, leaving the loop stuck on "unmerged
+          # files" (the #72 / observed BFRnet-publish failure). Instead, each attempt takes the LATEST
+          # index from main and re-applies ONLY the runs THIS rescore changed (by id, via
+          # merge_index.py), so concurrent rescores of different slugs never clobber each other.
           for attempt in 1 2 3 4 5; do
-            git pull --rebase origin main && git push && exit 0
-            echo "push attempt $attempt rejected — retrying"; sleep $((attempt * 5))
+            git fetch origin main -q
+            git reset --hard origin/main -q          # HEAD + results/index.json = latest main
+            python3 scripts/merge_index.py /tmp/base-index.json /tmp/scored-index.json \
+                    results/index.json results/index.json
+            git add results/index.json
+            git diff --cached --quiet && { echo "no changes to publish"; exit 0; }
+            git commit -q -m "Update results"
+            git push && exit 0
+            echo "push attempt $attempt rejected — re-applying onto latest main"; sleep $((attempt * 3))
           done
           echo "::error::could not push results after 5 attempts"; exit 1
 
