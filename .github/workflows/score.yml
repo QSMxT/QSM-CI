@@ -97,35 +97,41 @@ jobs:
           TASKS=$(python3 - <<'PY'
           import json, os, re, glob
           full = os.environ['FULL'] == 'true'
-          # Per-task runner routing. A method may set `runner: self-hosted` in its algorithm.yml to run
-          # on QSM-CI's 31 GB private runners (more RAM, no 180-min hosted cap, 4 concurrent containers)
-          # instead of ubuntu-latest — needed by heavy DL/optimization methods. Only the two self-hosted
-          # runners run in parallel, so keep the self-hosted set small.
-          HOSTED     = {'runs_on': 'ubuntu-latest', 'timeout': 180, 'jobs': 2}
-          SELFHOSTED = {'runs_on': ['self-hosted', 'Linux', 'X64'], 'timeout': 360, 'jobs': 4}
-          def is_self_hosted(text):
-              m = re.search(r'^runner:[ \t]*(\S+)', text, re.M)
-              return bool(m and m.group(1) == 'self-hosted')
+          # Per-task runner routing, chosen by each method's `runner:` field in its algorithm.yml:
+          #   (unset)      -> HOSTED:      ubuntu-latest, 180-min cap, 2 concurrent containers. Default;
+          #                   scored inside the parallel shard sweep.
+          #   hosted-long  -> HOSTED_LONG: ubuntu-latest but the full 6-h GitHub cap and 1 container
+          #                   (full 16 GB), for methods that FIT hosted memory but exceed 180 min
+          #                   (e.g. modip: a slow per-subject CPU optimization). Its own focused job.
+          #   self-hosted  -> SELFHOSTED:  QSM-CI's 31 GB private runners (more RAM), for methods that
+          #                   OOM the 16 GB hosted box. Its own focused job; only 2 run in parallel.
+          # hosted-long + self-hosted methods run as dedicated --focus jobs and are excluded from the
+          # 180-min shard sweep (which can't give them the time/memory they need).
+          HOSTED      = {'runs_on': 'ubuntu-latest', 'timeout': 180, 'jobs': 2}
+          HOSTED_LONG = {'runs_on': 'ubuntu-latest', 'timeout': 360, 'jobs': 1}
+          SELFHOSTED  = {'runs_on': ['self-hosted', 'Linux', 'X64'], 'timeout': 360, 'jobs': 4}
           def route(slug):
               try: t = open(f'algorithms/{slug}/algorithm.yml').read()
               except FileNotFoundError: return HOSTED
-              return SELFHOSTED if is_self_hosted(t) else HOSTED
-          def all_self_hosted():
+              m = re.search(r'^runner:[ \t]*(\S+)', t, re.M)
+              return {'self-hosted': SELFHOSTED, 'hosted-long': HOSTED_LONG}.get(m.group(1) if m else '', HOSTED)
+          def dedicated():
+              # Methods that run as their own focused job (not the shard sweep): anything not plain HOSTED.
               out = []
               for p in sorted(glob.glob('algorithms/*/algorithm.yml')):
                   slug = p.split('/')[1]
-                  if not slug.startswith('_') and is_self_hosted(open(p).read()):
+                  if not slug.startswith('_') and route(slug) is not HOSTED:
                       out.append(slug)
               return out
           if full:
-              # Full re-run: hosted shards score the whole matrix MINUS the self-hosted methods
-              # (pipeline.py --exclude), and each self-hosted method runs as its own focused job on the
-              # private runner (--focus). Union = the full matrix, every method on the right runner.
+              # Full re-run: hosted shards score the whole matrix MINUS the dedicated methods
+              # (pipeline.py --exclude), and each dedicated method runs as its own focused job on its
+              # chosen runner (--focus). Union = the full matrix, every method on the right runner.
               N = int(os.environ['N'])
-              sh = all_self_hosted()
-              excl = ','.join(sh)
+              ded = dedicated()
+              excl = ','.join(ded)
               tasks = [{'id': 's%02d' % i, 'shard': '%d/%d' % (i, N), 'exclude': excl, **HOSTED} for i in range(N)]
-              tasks += [{'id': 'f-' + s, 'focus': s, **SELFHOSTED} for s in sh]
+              tasks += [{'id': 'f-' + s, 'focus': s, **route(s)} for s in ded]
           else:
               tasks = [{'id': 'f-' + s, 'focus': s, **route(s)} for s in json.loads(os.environ['SLUGS'])]
           print(json.dumps(tasks))
