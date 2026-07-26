@@ -23,12 +23,13 @@ import concurrent.futures as _cf
 import json
 import math
 import os
-import re
 import shutil
 import subprocess
 import sys
 import time
 from pathlib import Path
+
+import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
 EVAL = ROOT / "eval" / "qsm_eval.py"
@@ -192,21 +193,32 @@ def _emit_composed_resources(run_id: str, stages: list, emit_volumes_on: bool) -
         pass
 
 
-def _tuned_overrides(text: str) -> dict:
-    """Extract `{param: tuned_value}` from an algorithm.yml `parameters:` block — the settings we
-    optimised on the scoring phantom (each parameter may carry a `tuned:` alongside its `default:`).
-    Regex, not YAML, to keep this module dependency-free like the rest of the runner. The block runs
-    to the next top-level key (or EOF), NOT to the next non-space line — YAML list items may be
-    unindented (`- name:` at column 0, as the MATLAB ymls write them), and those must not end it."""
-    m = re.search(r"^parameters:[ \t]*\n(.*?)(?=^[A-Za-z_]|\Z)", text, re.M | re.S)
-    if not m:
+def _yaml_scalar(v) -> str:
+    """Render a parsed YAML scalar as the bare token the old regex captured (`\\S+`).
+
+    The previous parser read `stage:`/`image:`/`tuned:`/list items straight out of the text as
+    strings, so every consumer downstream expects a `str`. yaml.safe_load instead coerces `520`→int,
+    `0.00015`→float, etc. Stringifying restores the old type/shape without a lossy re-parse — and for
+    every value in the repo's ymls `str(safe_load(tok)) == tok` (ints, plain floats, and `NeM`
+    exponents alike), so the tuned/optional/stage strings are byte-identical to the regex output."""
+    return str(v)
+
+
+def _tuned_overrides(doc: dict) -> dict:
+    """Extract `{param: tuned_value}` from a parsed algorithm.yml `parameters:` block — the settings
+    we optimised on the scoring phantom (each parameter may carry a `tuned:` alongside its
+    `default:`). Values are returned as strings to match the old regex parser (they flow into
+    `overrides` -> config.json / `--set`, which expect the raw token). YAML handles the unindented
+    list items (`- name:` at column 0, as the MATLAB ymls write them) that the old regex needed a
+    special workaround for."""
+    params = doc.get("parameters")
+    if not isinstance(params, list):
         return {}
     out = {}
-    for item in re.split(r"^[ \t]*-[ \t]*name:[ \t]*", m.group(1), flags=re.M)[1:]:
-        name = item.splitlines()[0].strip()
-        tm = re.search(r"^[ \t]*tuned:[ \t]*(\S+)", item, re.M)
-        if tm:
-            out[name] = tm.group(1)
+    for item in params:
+        if not isinstance(item, dict) or "name" not in item or "tuned" not in item:
+            continue
+        out[_yaml_scalar(item["name"])] = _yaml_scalar(item["tuned"])
     return out
 
 
@@ -216,23 +228,28 @@ def discover_algorithms() -> list[dict]:
         spec = d / "algorithm.yml"
         if d.name.startswith("_") or not spec.exists():
             continue
-        text = spec.read_text()
-        stage = re.search(r"^stage:\s*(\S+)", text, re.M)
-        image = re.search(r"^image:\s*(\S+)", text, re.M)
-        if not stage:
+        try:
+            doc = yaml.safe_load(spec.read_text())
+        except yaml.YAMLError:
+            # A malformed yaml the old regex parser might have limped past — skip rather than crash
+            # the whole discovery, matching the old `if not stage: continue` graceful behaviour.
             continue
-        s = stage.group(1)
+        if not isinstance(doc, dict) or doc.get("stage") is None:
+            continue
+        s = _yaml_scalar(doc["stage"])
+        image = doc.get("image")
         # A method may declare optional extra inputs (algorithm.yml `optional_inputs:`) beyond its
         # stage's baseline — e.g. MEDI (dipole) uses magnitude for edge weighting. Append them so the
         # scorer mounts + passes exactly what `qsm-ci run` accepts (its _consumes does the same);
         # otherwise it passes a flag the CLI rejects (--magnitude) and the run DNFs.
-        opt = re.search(r"^optional_inputs:\s*\n((?:[ \t]*-[ \t]*\S+[ \t]*\n?)+)", text, re.M)
-        optional = re.findall(r"-[ \t]*(\S+)", opt.group(1)) if opt else []
+        opt = doc.get("optional_inputs")
+        optional = [_yaml_scalar(a) for a in opt] if isinstance(opt, list) else []
         consumes = STAGES[s]["consumes"] + [a for a in optional if a not in STAGES[s]["consumes"]]
         algos.append({
-            "slug": d.name, "dir": d, "stage": s, "image": image.group(1) if image else None,
+            "slug": d.name, "dir": d, "stage": s,
+            "image": _yaml_scalar(image) if image is not None else None,
             "consumes": consumes, "produces": STAGES[s]["produces"],
-            "tuned": _tuned_overrides(text),
+            "tuned": _tuned_overrides(doc),
         })
     return algos
 
