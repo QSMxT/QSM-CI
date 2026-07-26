@@ -35,11 +35,15 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 EVAL = ROOT / "eval" / "qsm_eval.py"
+# Repo root on sys.path so `qsm_ci` resolves from a bare checkout (same pattern as pipeline.py);
+# scripts/ for the pipeline chain machinery we still reuse.
+sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
+from qsm_ci.scoring import gt_sources, eval_argv  # noqa: E402  shared primitives
 from pipeline import (  # noqa: E402  reuse the exact composed-chain machinery
     ARTIFACT_FILE, discover_algorithms, prepare_input, run_algo, _valid_mask,
 )
-from sweep import GRIDS, REFINE, combos, fmt, gt_sources  # noqa: E402  one grid definition, shared
+from sweep import GRIDS, REFINE, combos, fmt  # noqa: E402  one grid definition, shared
 
 # Which stages each swept slug belongs to is decided from discover_algorithms(), not hardcoded — so
 # the split below is derived at runtime. GRIDS/REFINE already list every method with a tunable knob.
@@ -53,13 +57,10 @@ def score_chi_xsim(recon: Path, gt_dir: Path, mask: Path, work: Path) -> dict:
     pipeline.score / sweep.score_xsim, so combo numbers are comparable to the leaderboard's."""
     sm = _valid_mask(recon, mask, work.with_suffix(".scoremask.nii.gz"))
     out_json = work.with_suffix(".score.json")
-    cmd = [sys.executable, str(EVAL), "--recon", str(recon),
-           "--truth", str(gt_dir / ARTIFACT_FILE["chimap"]), "--kind", "chi",
-           "--mask", str(sm), "--artifact", "chimap", "--out", str(out_json),
-           "--stage", "combo-sweep", "--name", "combo-sweep", "--track", "sim"]
     seg = gt_dir / "dseg.nii.gz"
-    if seg.exists():
-        cmd += ["--seg", str(seg)]
+    cmd = eval_argv(sys.executable, EVAL, recon, gt_dir / ARTIFACT_FILE["chimap"], "chi", sm,
+                    "chimap", out_json, stage="combo-sweep", name="combo-sweep", track="sim",
+                    seg=seg if seg.exists() else None)
     subprocess.run(cmd, check=True, capture_output=True)
     return json.loads(out_json.read_text())["metrics"]
 

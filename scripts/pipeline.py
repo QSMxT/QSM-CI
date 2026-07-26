@@ -40,6 +40,12 @@ EVAL = ROOT / "eval" / "qsm_eval.py"
 # not). qsm_ci.stages is pure literals — no yaml/heavy deps.
 sys.path.insert(0, str(ROOT))
 from qsm_ci.stages import STAGES, ARTIFACT_FILE, ARTIFACT_KIND  # noqa: E402
+# Shared scoring/sweep primitives (also used by scripts/sweep.py + combo_sweep.py) — one home for the
+# `qsm-ci run` argv builder, the GT source map, the --shard partition, and the qsm_eval argv, so the
+# scorer and the sweeps can't drift. Pure literals/argv assembly — no heavy deps at import.
+from qsm_ci.scoring import (  # noqa: E402
+    cli_run_argv, gt_sources as _gt_sources, parse_shard, shard_owns, shard_partition, eval_argv,
+)
 
 # Independent submission runs (each a Docker container + a scoring subprocess) are executed
 # concurrently, bounded by QSM_CI_JOBS. The cap is deliberately conservative: MATLAB MCR runs on
@@ -241,28 +247,6 @@ def prepare_input(consumes: list[str], sources: dict[str, Path], dest: Path) -> 
         shutil.copy(src, dest / ARTIFACT_FILE[art])
 
 
-def _cli_run_argv(algo: dict, input_dir: Path, output_dir: Path,
-                  runner: str = "docker", overrides: "dict | None" = None) -> list[str]:
-    """Build the `qsm-ci run …` argv that reproduces this submission's isolated container run.
-
-    Each consumed artifact becomes a `--<artifact> <input_dir>/<file>` flag (magnitude is optional —
-    only passed when present); the produced artifact is written with `-o <output_dir>/<file>`. Any
-    `overrides` become `--set NAME=VALUE` (the tuned pass). The CLI owns image resolution, mounting
-    run.sh, and injecting the QSMCI_* acquisition env vars — so the scorer no longer duplicates
-    (and drifts from) that logic."""
-    produced = algo["produces"][0]
-    argv = ["qsm-ci", "run", str(algo["dir"])]
-    for art in algo["consumes"]:
-        f = input_dir / ARTIFACT_FILE[art]
-        if art == "magnitude" and not f.exists():
-            continue  # optional — only some methods use it
-        argv += [f"--{art}", str(f)]
-    for k, v in (overrides or {}).items():
-        argv += ["--set", f"{k}={v}"]
-    argv += ["-o", str(output_dir / ARTIFACT_FILE[produced]), "--runner", runner]
-    return argv
-
-
 def run_algo(algo: dict, input_dir: Path, output_dir: Path, runner: str = "local",
              overrides: "dict | None" = None) -> float:
     if output_dir.exists():
@@ -277,7 +261,7 @@ def run_algo(algo: dict, input_dir: Path, output_dir: Path, runner: str = "local
         # Ask the CLI's container runner to trace this run's memory/CPU over time into the output dir
         # (resources.json); score()/emit_volumes() later copy it next to the viewer volumes.
         env = {**os.environ, "QSMCI_RESOURCES_OUT": str(output_dir / "resources.json")}
-        subprocess.run(_cli_run_argv(algo, input_dir, output_dir, runner, overrides),
+        subprocess.run(cli_run_argv(algo, input_dir, output_dir, ARTIFACT_FILE, runner, overrides),
                        check=True, env=env)
     else:
         if overrides:  # run.sh reads overrides from $IN/config.json (mirrors `qsm-ci run --set`)
@@ -323,15 +307,11 @@ def score(recon: Path, artifact: str, gt_dir: Path, mask: Path, out_json: Path, 
     # Score only where the method actually produced a value (its non-zero support), so an eroded
     # rim isn't penalised as error — consistent with masking that rim out of the pipeline.
     mask = _valid_mask(recon, mask, out_json.parent / (out_json.stem + "_scoremask.nii.gz"))
-    cmd = [sys.executable, str(EVAL), "--recon", str(recon),
-           "--truth", str(gt_dir / ARTIFACT_FILE[artifact]), "--kind", kind,
-           "--mask", str(mask), "--artifact", artifact, "--out", str(out_json),
-           "--stage", meta["stage"], "--name", meta["name"], "--track", meta["track"]]
-    if meta.get("runtime") is not None:
-        cmd += ["--runtime", str(meta["runtime"])]
     seg = gt_dir / "dseg.nii.gz"
-    if kind == "chi" and seg.exists():
-        cmd += ["--seg", str(seg)]
+    cmd = eval_argv(sys.executable, EVAL, recon, gt_dir / ARTIFACT_FILE[artifact], kind, mask,
+                    artifact, out_json, stage=meta["stage"], name=meta["name"], track=meta["track"],
+                    runtime=meta.get("runtime"),
+                    seg=seg if (kind == "chi" and seg.exists()) else None)
     subprocess.run(cmd, check=True)
     result = json.loads(out_json.read_text())
     # A scorable recon yields finite metrics; an all-NaN / empty output makes the scorer emit
@@ -414,23 +394,14 @@ def main() -> None:
 
     # --shard i/n : this job runs shard i of n. `_owns(index)` is a deterministic round-robin over a
     # stable ordering, so the n shards partition the work with no overlap and no gaps.
-    shard_i, shard_n = (None, None)
-    if args.shard:
-        shard_i, shard_n = (int(x) for x in args.shard.split("/"))
-        if not (0 <= shard_i < shard_n):
-            raise SystemExit(f"--shard i/n needs 0 <= i < n, got {args.shard}")
+    shard_i, shard_n = parse_shard(args.shard)
     def _owns(index):
-        return shard_n is None or index % shard_n == shard_i
+        return shard_owns(index, shard_i, shard_n)
 
     inputs, gt = args.dataset / "inputs", args.dataset / "groundtruth"
     mask, params = inputs / "mask.nii.gz", inputs / "params.json"
-    # GT-backed source map: inputs for raw artifacts, groundtruth for stage boundaries.
-    gt_sources = {
-        "phase": inputs / "phase.nii.gz", "magnitude": inputs / "magnitude.nii.gz",
-        "mask": mask, "params": params,
-        "totalfield": gt / "totalfield.nii.gz", "localfield": gt / "localfield.nii.gz",
-        "chimap": gt / "chimap.nii.gz",
-    }
+    # GT-backed source map: inputs for raw artifacts, groundtruth for stage boundaries (shared helper).
+    gt_sources = _gt_sources(args.dataset)
     algos = discover_algorithms()
     if args.include:
         keep = set(args.include.split(","))
@@ -492,7 +463,7 @@ def main() -> None:
                             args.track, variant=variant)]
 
         iso_tasks = [t for a in iso_algos for t in iso_variants(a)]
-        iso_tasks = [t for idx, t in enumerate(iso_tasks) if _owns(idx)]  # --shard: round-robin
+        iso_tasks = shard_partition(iso_tasks, args.shard)  # --shard: round-robin over a stable order
         for out in _pmap(iso_tasks, do_isolated):
             runs.extend(out)
         if not args.runs_out:
@@ -530,7 +501,7 @@ def main() -> None:
         if shard_n is not None:
             needed_fm = {tfk for (tfk, bs) in col_owner if tfk != "gt" and owns_col(tfk, bs)}
             fmap = [f for f in fmap if f["slug"] in needed_fm]
-            spans = [s for idx, s in enumerate(sorted(spans, key=lambda x: x["slug"])) if _owns(idx)]
+            spans = shard_partition(sorted(spans, key=lambda x: x["slug"]), args.shard)
 
         # Stage 1 — totalfield sources: the ground-truth field ("gt") plus each field-mapping
         # submission's output (run on raw inputs), so the matrix can start from raw phase.

@@ -26,7 +26,11 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 EVAL = ROOT / "eval" / "qsm_eval.py"
+# Put the repo root on sys.path so `qsm_ci` resolves straight from a bare checkout (same pattern as
+# pipeline.py). scripts/ is on the path too for the pipeline helpers we still reuse (run_algo etc.).
+sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
+from qsm_ci.scoring import cli_run_argv, gt_sources, eval_argv  # noqa: E402  shared primitives
 from pipeline import (  # noqa: E402  reuse the exact isolated-scoring machinery
     ARTIFACT_FILE, discover_algorithms, prepare_input, _valid_mask,
 )
@@ -71,16 +75,6 @@ _print_lock = threading.Lock()
 RUNNER = "docker"
 
 
-def gt_sources(dataset: Path) -> dict[str, Path]:
-    inputs, gt = dataset / "inputs", dataset / "groundtruth"
-    return {
-        "phase": inputs / "phase.nii.gz", "magnitude": inputs / "magnitude.nii.gz",
-        "mask": inputs / "mask.nii.gz", "params": inputs / "params.json",
-        "totalfield": gt / "totalfield.nii.gz", "localfield": gt / "localfield.nii.gz",
-        "chimap": gt / "chimap.nii.gz",
-    }
-
-
 def combos(grid: dict[str, list]) -> list[dict]:
     keys = list(grid)
     return [dict(zip(keys, vals)) for vals in itertools.product(*(grid[k] for k in keys))]
@@ -95,13 +89,10 @@ def score_xsim(recon: Path, artifact: str, gt: Path, mask: Path, work: Path) -> 
     kind = {"totalfield": "field", "localfield": "field", "chimap": "chi"}[artifact]
     sm = _valid_mask(recon, mask, work.with_suffix(".scoremask.nii.gz"))
     out_json = work.with_suffix(".score.json")
-    cmd = [sys.executable, str(EVAL), "--recon", str(recon),
-           "--truth", str(gt / ARTIFACT_FILE[artifact]), "--kind", kind,
-           "--mask", str(sm), "--artifact", artifact, "--out", str(out_json),
-           "--stage", "sweep", "--name", "sweep", "--track", "sim"]
     seg = gt / "dseg.nii.gz"
-    if kind == "chi" and seg.exists():
-        cmd += ["--seg", str(seg)]
+    cmd = eval_argv(sys.executable, EVAL, recon, gt / ARTIFACT_FILE[artifact], kind, sm,
+                    artifact, out_json, stage="sweep", name="sweep", track="sim",
+                    seg=seg if (kind == "chi" and seg.exists()) else None)
     subprocess.run(cmd, check=True, capture_output=True)
     return json.loads(out_json.read_text())["metrics"]
 
@@ -113,15 +104,9 @@ def run_one(algo: dict, override: dict, src: dict, work: Path) -> dict:
     odir = work / f"{slug}__{tag}__out"
     produced = algo["produces"][0]
     prepare_input(algo["consumes"], src, idir)  # stage GT inputs under canonical names
-    argv = ["qsm-ci", "run", str(algo["dir"])]
-    for art in algo["consumes"]:
-        f = idir / ARTIFACT_FILE[art]
-        if art == "magnitude" and not f.exists():
-            continue
-        argv += [f"--{art}", str(f)]
-    for k, v in override.items():
-        argv += ["--set", f"{k}={fmt(v)}"]
-    argv += ["-o", str(odir / ARTIFACT_FILE[produced]), "--runner", RUNNER]
+    # Shared argv builder — `fmt=fmt` reproduces the sweep's grid-value formatting (a swept float like
+    # 8.0 renders as `8`, this script's long-standing behaviour), so the emitted argv is unchanged.
+    argv = cli_run_argv(algo, idir, odir, ARTIFACT_FILE, RUNNER, override, fmt=fmt)
     rec = {"slug": slug, "stage": algo["stage"], "override": override, "tag": tag}
     try:
         odir.mkdir(parents=True, exist_ok=True)
