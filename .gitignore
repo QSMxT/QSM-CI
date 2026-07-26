@@ -3,6 +3,7 @@ __pycache__/
 *.pyc
 .pytest_cache/
 .venv/
+venv/
 build/
 dist/
 *.egg-info/
@@ -12,6 +13,12 @@ dist/
 *.log
 figures/
 out/
+.sweep/
+
+# Per-run scoring scratch: only results/index.json is tracked (Pages reads it, score.yml commits
+# it). Everything else under results/ is per-run recon/truth/error/resources scratch — never commit.
+/results/*
+!/results/index.json
 
 # Held-out ground truth + generated/downloaded datasets must never be committed
 data/**/groundtruth/
