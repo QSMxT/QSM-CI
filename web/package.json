@@ -1,0 +1,12 @@
+{
+  "name": "qsm-ci-web",
+  "version": "1.0.0",
+  "private": true,
+  "description": "QSM-CI static leaderboard site — Tailwind CSS build.",
+  "scripts": {
+    "build:css": "tailwindcss -i ./src/input.css -o ./styles.css --minify"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.17"
+  }
+}
