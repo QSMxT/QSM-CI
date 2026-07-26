@@ -16,11 +16,30 @@ doi: 10.1016/j.zemedi.2022.08.001
 citation: Zhu et al., Z Med Phys 2022
 code_url: https://github.com/sunhongfu/BFRnet
 license: Used with author permission
-image: ghcr.io/astewartau/qsm-ci/bfrnet:v1
+image: ghcr.io/astewartau/qsm-ci/bfrnet:v2
 run: bash run.sh
+parameters:
+- name: patch_size
+  default: 128
+  description: >
+    Cubic patch edge for memory-bounded sliding-window inference (kept divisible by 8). The whole
+    164x205x205 challenge volume needs ~19 GB and is OOM-killed on the 16 GB runner, so by default
+    the fully-convolutional net is run over overlapping 128^3 patches (~5.3 GB peak) and blended with
+    a Hann window. Larger patches see more context and track the whole-volume result more closely
+    (local field: 128^3 -> corr 0.992 vs whole-volume) at higher memory. Set 0 to run the whole
+    volume in one pass (needs ~19 GB RAM — for a machine with the memory, e.g. `qsm-ci run
+    algorithms/bfrnet --set patch_size=0`).
+- name: overlap
+  default: 32
+  description: >
+    Voxels of overlap between adjacent patches. More overlap = smoother Hann blending across patch
+    seams (and more tiles / longer runtime). Ignored when patch_size is 0.
 ci_notes:
 - >
   Ported from the authors' MATLAB Deep Learning Toolbox network (BFRnet.mat) via exportONNXNetwork and
-  run with ONNX Runtime. Output matches the MATLAB reference to max |Δ| ≈ 1e-8. The previous compiled
-  MATLAB/MCR submission was OOM-killed on the 16 GB hosted runner (DNF); this ONNX build peaks at
-  ~1.5 GB, so it scores on the standard hosted runner.
+  run with ONNX Runtime. Output matches the MATLAB reference to max |Δ| ≈ 1e-8. The compiled MATLAB/MCR
+  submission was OOM-killed on the 16 GB hosted runner (DNF); running the ONNX net on the whole
+  164x205x205 volume also peaks at ~18.7 GB and OOM-kills (exit 137). So inference is tiled over
+  overlapping 128^3 patches (Hann-blended, onnxruntime CPU arena disabled) — ~5.3 GB peak, local field
+  within corr 0.992 of the whole-volume result — which scores on the standard hosted runner. Patch
+  size is tunable via the patch_size parameter (0 = whole volume).

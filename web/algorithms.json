@@ -35,9 +35,20 @@
       "authors": [
         "Xuanyu Zhu, Yang Gao, Feng Liu, Stuart Crozier, Hongfu Sun"
       ],
-      "parameters": [],
+      "parameters": [
+        {
+          "name": "patch_size",
+          "default": 128,
+          "description": "Cubic patch edge for memory-bounded sliding-window inference (kept divisible by 8). The whole 164x205x205 challenge volume needs ~19 GB and is OOM-killed on the 16 GB runner, so by default the fully-convolutional net is run over overlapping 128^3 patches (~5.3 GB peak) and blended with a Hann window. Larger patches see more context and track the whole-volume result more closely (local field: 128^3 -> corr 0.992 vs whole-volume) at higher memory. Set 0 to run the whole volume in one pass (needs ~19 GB RAM \u2014 for a machine with the memory, e.g. `qsm-ci run algorithms/bfrnet --set patch_size=0`).\n"
+        },
+        {
+          "name": "overlap",
+          "default": 32,
+          "description": "Voxels of overlap between adjacent patches. More overlap = smoother Hann blending across patch seams (and more tiles / longer runtime). Ignored when patch_size is 0.\n"
+        }
+      ],
       "ci_notes": [
-        "Ported from the authors' MATLAB Deep Learning Toolbox network (BFRnet.mat) via exportONNXNetwork and run with ONNX Runtime. Output matches the MATLAB reference to max |\u0394| \u2248 1e-8. The previous compiled MATLAB/MCR submission was OOM-killed on the 16 GB hosted runner (DNF); this ONNX build peaks at ~1.5 GB, so it scores on the standard hosted runner.\n"
+        "Ported from the authors' MATLAB Deep Learning Toolbox network (BFRnet.mat) via exportONNXNetwork and run with ONNX Runtime. Output matches the MATLAB reference to max |\u0394| \u2248 1e-8. The compiled MATLAB/MCR submission was OOM-killed on the 16 GB hosted runner (DNF); running the ONNX net on the whole 164x205x205 volume also peaks at ~18.7 GB and OOM-kills (exit 137). So inference is tiled over overlapping 128^3 patches (Hann-blended, onnxruntime CPU arena disabled) \u2014 ~5.3 GB peak, local field within corr 0.992 of the whole-volume result \u2014 which scores on the standard hosted runner. Patch size is tunable via the patch_size parameter (0 = whole volume).\n"
       ]
     },
     {
