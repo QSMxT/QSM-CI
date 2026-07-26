@@ -141,8 +141,9 @@ const METRICS = {
   runtime_s:       { label: "Runtime",          unit: "s", better: "lower",  dp: 1,
     desc: "Wall-clock time to produce this output — for a combined pipeline, the sum of its field-mapping, background-removal and dipole-inversion stages. Measured on GitHub-hosted runners (≈4 vCPU, 16 GB RAM, no GPU — so learning-based methods run on CPU); treat it as relative speed, not an absolute benchmark." },
 };
-const PREFERRED = ["nrmse", "nrmse_detrend", "nrmse_tissue", "nrmse_blood", "nrmse_dgm",
-  "dgm_linearity", "calc_moment_dev", "calc_streak", "correlation", "xsim"];
+// Metric column order for tables — the METRICS declaration order minus runtime_s (runtime is
+// appended separately as the trailing column by metricCols()).
+const PREFERRED = Object.keys(METRICS).filter((k) => k !== "runtime_s");
 
 const STAGE_LABEL = {
   "field-mapping": "Field mapping",
@@ -223,15 +224,6 @@ function metricCols(runs) {
   return cols;
 }
 
-// Red→green background for a value within [lo,hi], respecting metric direction.
-function heatColor(v, lo, hi, key) {
-  if (v == null) return "transparent";
-  let t = hi === lo ? 0.5 : (v - lo) / (hi - lo);
-  if ((METRICS[key]?.better || "higher") === "lower") t = 1 - t;
-  const hue = Math.round(t * 130);         // 0 red → 130 green
-  return `hsl(${hue} 72% 46%)`;
-}
-
 // ---- shared chrome ----------------------------------------------------------
 
 function navLink(href, label, active) {
@@ -286,4 +278,4 @@ function injectChrome() {
 document.addEventListener("DOMContentLoaded", injectChrome);
 
 // Exposed for module scripts (e.g. the NiiVue viewer, which must be a module for `import`).
-window.QSM = { GH, METRICS, STAGE_LABEL, MEDALS, loadRuns, loadAlgos, loadRegistry, doiFor, val, fmt, metricCols, heatColor, robustRange, heatScale };
+window.QSM = { GH, METRICS, STAGE_LABEL, MEDALS, loadRuns, loadAlgos, loadRegistry, doiFor, val, fmt, metricCols, robustRange, heatScale };
