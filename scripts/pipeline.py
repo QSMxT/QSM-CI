@@ -33,6 +33,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 EVAL = ROOT / "eval" / "qsm_eval.py"
 
+# Single source of truth for the stage graph + artifact tables (checked vs stages.yml by
+# tests/test_stages_sync.py) — previously a third divergent copy lived here. Put the repo root on
+# sys.path so `qsm_ci` resolves straight from the checkout even when the package isn't pip-installed
+# in the interpreter running this script (CI installs it; a bare `python scripts/pipeline.py` may
+# not). qsm_ci.stages is pure literals — no yaml/heavy deps.
+sys.path.insert(0, str(ROOT))
+from qsm_ci.stages import STAGES, ARTIFACT_FILE, ARTIFACT_KIND  # noqa: E402
+
 # Independent submission runs (each a Docker container + a scoring subprocess) are executed
 # concurrently, bounded by QSM_CI_JOBS. The cap is deliberately conservative: MATLAB MCR runs on
 # the 205^3 volume peak at a few GB each, so 4 keeps well under the runner's ~31 GB. Set 1 for
@@ -48,21 +56,9 @@ def _pmap(items, fn):
     with _cf.ThreadPoolExecutor(max_workers=JOBS) as ex:
         return list(ex.map(fn, items))
 
-# Stage graph (mirrors stages.yml). Kept here so the runner needs no YAML dependency.
-STAGES = {
-    "field-mapping": {"consumes": ["phase", "magnitude", "mask", "params"], "produces": ["totalfield"]},
-    "bfr": {"consumes": ["totalfield", "mask", "params"], "produces": ["localfield"]},
-    "dipole": {"consumes": ["localfield", "mask", "params"], "produces": ["chimap"]},
-    "unwrap+bfr": {"consumes": ["phase", "magnitude", "mask", "params"], "produces": ["localfield"]},
-    "bfr+dipole": {"consumes": ["totalfield", "mask", "params", "magnitude"], "produces": ["chimap"]},
-    "end-to-end": {"consumes": ["phase", "magnitude", "mask", "params"], "produces": ["chimap"]},
-}
-ARTIFACT_FILE = {
-    "phase": "phase.nii.gz", "magnitude": "magnitude.nii.gz", "mask": "mask.nii.gz",
-    "params": "params.json", "totalfield": "totalfield.nii.gz",
-    "localfield": "localfield.nii.gz", "chimap": "chimap.nii.gz",
-}
-ARTIFACT_KIND = {"totalfield": "field", "localfield": "field", "chimap": "chi"}
+# Stage graph / artifact tables: STAGES, ARTIFACT_FILE, ARTIFACT_KIND are imported once from
+# qsm_ci.stages (top of file) — single source of truth, checked against stages.yml by
+# tests/test_stages_sync.py. Previously duplicated here, which was a third copy free to drift.
 
 EMIT_VOLUMES = False  # when set, write recon/truth/error NIfTIs per run for the web viewer
 
