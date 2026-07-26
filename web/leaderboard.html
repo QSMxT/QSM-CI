@@ -17,7 +17,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script>tailwind.config = { darkMode: "class", theme: { extend: { fontFamily: { sans: ["Inter", "system-ui", "sans-serif"] } } } };</script>
   <script src="js/app.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.15.12/dist/cdn.min.js"></script>
 </head>
 <body class="font-sans text-gray-900 bg-gray-50 antialiased dark:bg-gray-950 dark:text-gray-100">
   <header id="site-nav"></header>
@@ -90,7 +90,7 @@
                     :title="g.run.combo.bfr+' + '+g.run.combo.dipole+' — '+METRICS[metric].label+': '+fmt(val(g.run,metric),metric)"
                     class="heat-cell group relative h-14 w-full rounded-xl font-semibold text-sm shadow-sm transition hover:z-10 hover:scale-[1.06] hover:shadow-md focus:outline-none"
                     :class="g.run.variant==='tuned' ? 'ring-2 ring-emerald-600 ring-offset-2' : 'ring-1 ring-black/5'"
-                    :style="'--heat:'+heat(norm(val(g.run,metric)))">
+                    :style="'--heat:'+heatScale(norm(val(g.run,metric)))">
                     <span x-text="fmt(val(g.run, metric), metric)"></span>
                     <span x-show="g.run.variant==='tuned'" class="absolute -right-1.5 -top-1.5 grid h-4 w-4 place-items-center rounded-full bg-emerald-600 text-[9px] shadow" title="tuned parameters">⚙</span>
                   </button>
@@ -122,7 +122,7 @@
                           :title="r.name+' — '+METRICS[metric].label+': '+fmt(val(r,metric),metric)+(r.variant==='tuned' ? ' (tuned parameters)' : '')"
                           class="heat-cell group relative h-14 w-40 shrink-0 rounded-xl font-semibold text-sm shadow-sm transition hover:z-10 hover:scale-[1.06] hover:shadow-md focus:outline-none"
                           :class="r.variant==='tuned' ? 'ring-2 ring-emerald-600 ring-offset-2' : 'ring-1 ring-black/5'"
-                          :style="'--heat:'+heat(norm(val(r,metric)))">
+                          :style="'--heat:'+heatScale(norm(val(r,metric)))">
                           <span x-text="fmt(val(r, metric), metric)"></span>
                           <span x-show="r.variant==='tuned'" class="absolute -right-1.5 -top-1.5 grid h-4 w-4 place-items-center rounded-full bg-emerald-600 text-[9px] shadow" title="tuned parameters">⚙</span>
                         </button>
@@ -231,7 +231,7 @@
        dark table bg (#111827), kept opaque for the same see-through reason. */
     html.dark tr.tuned-row td{background:rgb(16 185 129/.08)}
     html.dark tr.tuned-row td:first-child{background:rgb(17 37 40);box-shadow:inset 3px 0 0 rgb(52 211 153/.55)}
-    /* Combination-matrix cells. heat() supplies the dark-first muted colour in --heat; in light
+    /* Combination-matrix cells. heatScale() supplies the dark-first muted colour in --heat; in light
        mode render it as a pastel wash with dark tinted text (solid mid-tones + white text read
        murky on the white card), in dark mode use it as-is. CSS-only so the theme toggle switches
        cells without an Alpine re-render. */
@@ -255,19 +255,9 @@
         if (c && c.key === key) return c.val;
         const val = fn(); _memo[name] = { key, val }; return val;
       };
-      // Robust colour-scale window: clamp to the Tukey fences so a few extreme-outlier cells (e.g. a
-      // broken method's huge NRMSE) can't crush everyone else into one colour. Outliers saturate at
-      // the extreme; the bulk gets the full gradient. Falls back to true min/max when there are no
-      // outliers (fence wider than the data) or too few points.
-      const robustRange = (vals) => {
-        const s = vals.filter((v) => v != null && isFinite(v)).sort((a, b) => a - b);
-        const n = s.length;
-        if (n < 4) return [s[0] ?? 0, s[n - 1] ?? 1];
-        const q = (p) => s[Math.min(n - 1, Math.max(0, Math.round(p * (n - 1))))];
-        const q1 = q(0.25), q3 = q(0.75), iqr = q3 - q1;
-        const lo = Math.max(s[0], q1 - 1.5 * iqr), hi = Math.min(s[n - 1], q3 + 1.5 * iqr);
-        return lo < hi ? [lo, hi] : [s[0], s[n - 1]];
-      };
+      // robustRange (Tukey-fence colour-scale window) and heat()/heatScale (muted red→gold→sage
+      // gradient) are shared with the submission page via app.js's window.QSM globals, so the
+      // leaderboard matrix and the per-metric ranks colour identically.
       return {
         METRICS, STAGE_LABEL, MEDALS, fmt, val,
         runs: [], registry: {}, algos: [], view: "composed", stage: "dipole", fmap: "gt",
@@ -382,12 +372,6 @@
           const m = this.matrix; if (v == null || m.hi === m.lo) return 0.5;
           let t = (v - m.lo) / (m.hi - m.lo);
           return (METRICS[this.metric]?.better || "higher") === "lower" ? 1 - t : t;
-        },
-        heat(t) { // muted red -> gold -> sage
-          const s = [[190, 107, 107], [196, 158, 96], [110, 168, 134]];
-          const x = Math.max(0, Math.min(1, t)) * 2, i = Math.min(1, Math.floor(x)), f = x - i;
-          const c = s[i].map((a, k) => Math.round(a + (s[i + 1][k] - a) * f));
-          return `rgb(${c[0]},${c[1]},${c[2]})`;
         },
         sort(k) {
           if (this.sortKey === k) this.sortDir = this.sortDir === "asc" ? "desc" : "asc";
