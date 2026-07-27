@@ -8,6 +8,7 @@ runner, and deliberately defensive: profiling must never perturb or sink the run
 from __future__ import annotations
 
 import json
+import os
 import re
 import subprocess
 import threading
@@ -114,5 +115,107 @@ class _ResourceSampler(threading.Thread):
                 "runner": self.engine,
             }
             self.out_path.write_text(json.dumps(doc))
+        except Exception:  # noqa: BLE001 — profiling is best-effort; never sink the run over it
+            pass
+
+
+_CLK_TCK = os.sysconf("SC_CLK_TCK") if hasattr(os, "sysconf") else 100
+_PAGE_SIZE = os.sysconf("SC_PAGE_SIZE") if hasattr(os, "sysconf") else 4096
+
+
+def _stat_fields(pid: int) -> "list | None":
+    """Fields of /proc/<pid>/stat AFTER pid+comm, so index 0 = state, 1 = ppid, 11 = utime, 12 = stime
+    (comm can contain spaces/parens, so split after the final ')')."""
+    try:
+        data = open(f"/proc/{pid}/stat").read()
+    except OSError:
+        return None
+    r = data.rfind(")")
+    return data[r + 2:].split() if r != -1 else None
+
+
+class _ProcResourceSampler(threading.Thread):
+    """Resource sampler for runners without a `stats` command (apptainer): polls /proc for the whole
+    process TREE rooted at `root_pid`, summing RSS (bytes) and deriving CPU (cores) from utime+stime
+    deltas. Same output shape as _ResourceSampler so the pipeline consumes it identically. Best-effort:
+    a bad read is skipped, never raised."""
+
+    def __init__(self, root_pid: int, out_path: Path, interval: float = 1.0):
+        super().__init__(daemon=True)
+        self.root_pid, self.out_path, self.interval = root_pid, Path(out_path), interval
+        self._stop_event = threading.Event()
+        self.t, self.mem_bytes, self.cpu_cores = [], [], []
+        self._prev_ticks = None
+        self._prev_time = None
+
+    def _tree_pids(self) -> list:
+        """root_pid + all descendants, via the ppid links in /proc."""
+        children: dict = {}
+        try:
+            entries = [int(e) for e in os.listdir("/proc") if e.isdigit()]
+        except OSError:
+            return [self.root_pid]
+        for pid in entries:
+            f = _stat_fields(pid)
+            if f and len(f) > 1:
+                try:
+                    children.setdefault(int(f[1]), []).append(pid)
+                except ValueError:
+                    pass
+        pids, stack = [], [self.root_pid]
+        while stack:
+            p = stack.pop()
+            pids.append(p)
+            stack.extend(children.get(p, []))
+        return pids
+
+    def _sample(self):
+        rss, ticks = 0, 0
+        for pid in self._tree_pids():
+            try:
+                rss += int(open(f"/proc/{pid}/statm").read().split()[1]) * _PAGE_SIZE  # resident pages
+            except (OSError, IndexError, ValueError):
+                pass
+            f = _stat_fields(pid)
+            if f and len(f) > 12:
+                try:
+                    ticks += int(f[11]) + int(f[12])  # utime + stime
+                except ValueError:
+                    pass
+        now = time.time()
+        cpu = 0.0
+        if self._prev_ticks is not None and now > self._prev_time:
+            cpu = (ticks - self._prev_ticks) / _CLK_TCK / (now - self._prev_time)
+        self._prev_ticks, self._prev_time = ticks, now
+        if rss > 0:
+            self.mem_bytes.append(rss)
+            self.cpu_cores.append(round(max(cpu, 0.0), 3))
+            return True
+        return False
+
+    def run(self):
+        t0 = time.time()
+        while not self._stop_event.is_set():
+            before = time.time()
+            if self._sample() and len(self.t) < len(self.mem_bytes):
+                self.t.append(round(before - t0, 3))
+            self._stop_event.wait(max(0.0, self.interval - (time.time() - before)))
+
+    def stop(self):
+        self._stop_event.set()
+
+    def write(self):
+        try:
+            self.out_path.parent.mkdir(parents=True, exist_ok=True)
+            self.out_path.write_text(json.dumps({
+                "interval_s": self.interval,
+                "t": self.t,
+                "mem_bytes": self.mem_bytes,
+                "cpu_cores": self.cpu_cores,
+                "mem_peak_bytes": max(self.mem_bytes) if self.mem_bytes else 0,
+                "cpu_cores_max": max(self.cpu_cores) if self.cpu_cores else 0,
+                "sampler": "proc",
+                "runner": "apptainer",
+            }))
         except Exception:  # noqa: BLE001 — profiling is best-effort; never sink the run over it
             pass

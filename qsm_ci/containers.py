@@ -15,7 +15,7 @@ import time
 from pathlib import Path
 from uuid import uuid4
 
-from .resources import _ResourceSampler
+from .resources import _ResourceSampler, _ProcResourceSampler
 from .stages import ARTIFACT_FILE
 
 RUNNERS = ("docker", "podman", "apptainer", "local")
@@ -154,12 +154,28 @@ def _run_container(algo, input_dir, output_dir, runner, log) -> float:
         log(f"⚙ running container (apptainer: {image})")
         log("  note: apptainer runs without enforced network isolation here; CI uses --network none.")
         e_args = [a for k, v in penv.items() for a in ("--env", f"{k}={v}")]
-        subprocess.run([
+        cmd = [
             "apptainer", "exec", "--no-home", "--cleanenv", *e_args,
             "-B", f"{algo['dir']}:/algo:ro",
             "-B", f"{input_dir}:/input:ro", "-B", f"{output_dir}:/output",
             image, "bash", "/algo/run.sh",
-        ], check=True)
+        ]
+        # apptainer has no `stats`, so sample the process TREE via /proc for the memory/CPU trace
+        # (opt-in via $QSMCI_RESOURCES_OUT) — Popen to get the pid, then wait as `run(check=True)` would.
+        res_out = os.environ.get("QSMCI_RESOURCES_OUT")
+        proc = subprocess.Popen(cmd)
+        sampler = _ProcResourceSampler(proc.pid, Path(res_out), interval=1.0) if res_out else None
+        if sampler is not None:
+            sampler.start()
+        try:
+            rc = proc.wait()
+            if rc != 0:
+                raise subprocess.CalledProcessError(rc, cmd)
+        finally:
+            if sampler is not None:
+                sampler.stop()
+                sampler.join(timeout=6)
+                sampler.write()
     else:  # local
         log("⚙ running run.sh directly (--runner local)")
         subprocess.run(["bash", str(algo["dir"] / "run.sh"), str(input_dir), str(output_dir)],
