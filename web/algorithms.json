@@ -1,6 +1,29 @@
 {
   "algorithms": [
     {
+      "slug": "apart-qsm",
+      "name": "APART-QSM",
+      "stage": "chi-separation",
+      "domain": "chisep",
+      "engine": "APART-QSM (AMRI-Lab), MATLAB",
+      "description": "APART-QSM \u2014 an iterative susceptibility-source separation method that fits complex multi-echo GRE data to jointly estimate paramagnetic (\u03c7+, iron) and diamagnetic (\u03c7\u2212, myelin/calcium) susceptibility. Unlike \u03c7-separation methods that take a precomputed R2' and QSM, APART-QSM performs its own iterative data fitting (magnitude-decay a-map + field/QSM) to break the para/dia degeneracy. It ingests per-echo magnitude and LOCAL (background-removed) phase plus an R2 map and an initial QSM, and returns \u03c7+ and \u03c7\u2212 (the latter reported as a positive magnitude).",
+      "citation": "Li et al., NeuroImage 2023",
+      "doi": "10.1016/j.neuroimage.2023.120148",
+      "code_url": "https://github.com/AMRI-Lab/APART-QSM",
+      "license": "academic use",
+      "authors": [
+        "Zhenghao Li",
+        "Ruimin Feng",
+        "Qiangqiang Liu",
+        "Jie Feng",
+        "Guoyan Lao",
+        "Ming Zhang",
+        "Hongjiang Wei"
+      ],
+      "parameters": [],
+      "ci_notes": []
+    },
+    {
       "slug": "autoqsm",
       "name": "AutoQSM",
       "stage": "bfr+dipole",
@@ -52,6 +75,44 @@
       "ci_notes": [
         "Ported from the authors' MATLAB Deep Learning Toolbox network (BFRnet.mat) via exportONNXNetwork and run with ONNX Runtime. Output matches the MATLAB reference to max |\u0394| \u2248 1e-8. The compiled MATLAB/MCR submission was OOM-killed on the 16 GB hosted runner (DNF); running the ONNX net on the whole 164x205x205 volume also peaks at ~18.7 GB and OOM-kills (exit 137). So inference is tiled over overlapping 128^3 patches (Hann-blended, onnxruntime CPU arena disabled) \u2014 ~5.3 GB peak, local field within corr 0.992 of the whole-volume result \u2014 which scores on the standard hosted runner. Patch size is tunable via the patch_size parameter (0 = whole volume).\n"
       ]
+    },
+    {
+      "slug": "chi-sep-ilsqr",
+      "name": "\u03c7-separation (iLSQR)",
+      "stage": "chi-separation",
+      "domain": "chisep",
+      "engine": "chi-separation toolbox (SNU-LIST)",
+      "description": "\u03c7-separation (iLSQR variant) \u2014 separates net susceptibility into paramagnetic (\u03c7+, iron) and diamagnetic (\u03c7\u2212, myelin/calcium) sources using the local field and an R2' map to break the para/dia degeneracy. The QSM is reconstructed in-house with STI-Suite QSM_iLSQR from the local field (the toolbox needs a QSM in its own scaling/orientation conventions \u2014 see recon.m). From the SNU-LIST chi-separation toolbox. A classical iterative baseline (\u03c7+ xsim ~0.49 on the phantom).",
+      "citation": "Shin et al., NeuroImage 2021",
+      "doi": "10.1016/j.neuroimage.2021.118371",
+      "code_url": "https://github.com/SNU-LIST/chi-separation",
+      "license": "academic use; toolbox obtained via the SNU-LIST Google Form",
+      "authors": [
+        "Hyeong-Geol Shin",
+        "Jingu Lee",
+        "Jongho Lee"
+      ],
+      "parameters": [],
+      "ci_notes": []
+    },
+    {
+      "slug": "chi-sep-medi",
+      "name": "\u03c7-separation (MEDI)",
+      "stage": "chi-separation",
+      "domain": "chisep",
+      "engine": "chi-separation toolbox (SNU-LIST)",
+      "description": "\u03c7-separation (MEDI variant) \u2014 separates net susceptibility into paramagnetic (\u03c7+, iron) and diamagnetic (\u03c7\u2212, myelin/calcium) sources using the local field, a QSM/\u03c7_total map, and an R2' map, with a morphology-enabled dipole (MEDI) regulariser. From the SNU-LIST chi-separation toolbox.",
+      "citation": "Shin et al., NeuroImage 2021",
+      "doi": "10.1016/j.neuroimage.2021.118371",
+      "code_url": "https://github.com/SNU-LIST/chi-separation",
+      "license": "academic use; toolbox obtained via the SNU-LIST Google Form",
+      "authors": [
+        "Hyeong-Geol Shin",
+        "Jingu Lee",
+        "Jongho Lee"
+      ],
+      "parameters": [],
+      "ci_notes": []
     },
     {
       "slug": "chi-sepnet",
@@ -1421,6 +1482,27 @@
           "description": "\u00d7 max voxel size"
         }
       ],
+      "ci_notes": []
+    },
+    {
+      "slug": "wavesep",
+      "name": "WaveSep",
+      "stage": "chi-separation",
+      "domain": "chisep",
+      "engine": "WaveSep (wavelet-domain L1 source separation, iterative, NumPy+PyWavelets, CPU)",
+      "description": "WaveSep \u2014 a wavelet-based iterative approach for susceptibility source separation. It splits net susceptibility (\u03c7_total/QSM) into paramagnetic (\u03c7+, iron) and diamagnetic (\u03c7\u2212, myelin\u00b7calcium) sources using an R2' map to break the para/dia degeneracy, under two voxel-wise data-fidelity terms (\u03c7+ + \u03c7\u2212 \u2248 \u03c7_total, \u03c7+ \u2212 \u03c7\u2212 \u2248 R2'/Dr) and a wavelet-domain L1 sparsity prior solved by proximal gradient (soft-thresholding, db4). Pure Python on CPU \u2014 no network, no pretrained weights, no GPU.",
+      "citation": "Fang, Shin, van Zijl, Li, Sulam, \"WaveSep: A Flexible Wavelet-Based Approach for Source Separation in Susceptibility Imaging\", Machine Learning in Clinical Neuroimaging (MLCN), MICCAI 2023, Springer LNCS.\n",
+      "doi": "10.1007/978-3-031-44858-4_6",
+      "code_url": "https://github.com/ZhenghanFang/WaveSep",
+      "license": "academic use (author permission)",
+      "authors": [
+        "Zhenghan Fang",
+        "Hyeong-Geol Shin",
+        "Peter van Zijl",
+        "Xu Li",
+        "Jeremias Sulam"
+      ],
+      "parameters": [],
       "ci_notes": []
     },
     {
