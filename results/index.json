@@ -32182,7 +32182,7 @@
       "stage": "chi-separation",
       "mode": "isolated",
       "track": "sim",
-      "runtime_s": 81.65059733390808,
+      "runtime_s": 75.85367465019226,
       "variant": "default",
       "domain": "chisep",
       "kind": "chisep",
@@ -32207,8 +32207,11 @@
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/chi-sepnet-iso__resources.json",
       "volumes": {
         "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/chi-sepnet-iso__recon.nii.gz",
+        "recon-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/chi-sepnet-iso__recon-dia.nii.gz",
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/chi-sepnet-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/chi-sepnet-iso__error.nii.gz"
+        "truth-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/chi-sepnet-iso__truth-dia.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/chi-sepnet-iso__error.nii.gz",
+        "error-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/chi-sepnet-iso__error-dia.nii.gz"
       }
     },
     {
@@ -32218,33 +32221,36 @@
       "stage": "chi-separation",
       "mode": "isolated",
       "track": "sim",
-      "runtime_s": 118.75527930259705,
+      "runtime_s": 81.89945960044861,
       "variant": "default",
       "domain": "chisep",
       "kind": "chisep",
       "metrics": {
-        "para_nrmse": 55.64135278048975,
-        "para_nrmse_detrend": 65.93308736792241,
-        "para_correlation": 0.8348661397547527,
-        "para_xsim": 0.650688089246919,
-        "para_nrmse_dgm": 19.63584644349972,
-        "para_dgm_linearity": 0.1153746517884644,
-        "para_nrmse_blood": 71.40904500694234,
+        "para_nrmse": 55.6413527604066,
+        "para_nrmse_detrend": 65.93308730858787,
+        "para_correlation": 0.8348661399823997,
+        "para_xsim": 0.6506880885446722,
+        "para_nrmse_dgm": 19.63584681754764,
+        "para_dgm_linearity": 0.11537464584333113,
+        "para_nrmse_blood": 71.4090447336071,
         "para_calc_leak": 0.00895288959145546,
-        "dia_nrmse": 58.95165770732873,
-        "dia_nrmse_detrend": 50.60277997353825,
-        "dia_correlation": 0.8922654825883017,
-        "dia_xsim": 0.6015413744008795,
-        "dia_calc_moment_dev": 24.35539147257805,
-        "dia_calc_streak": 0.003825668228479655,
-        "dia_iron_leak": 0.011501495506371282
+        "dia_nrmse": 58.95165610072813,
+        "dia_nrmse_detrend": 50.602779469997564,
+        "dia_correlation": 0.8922654843983545,
+        "dia_xsim": 0.6015413757608983,
+        "dia_calc_moment_dev": 24.355389200150967,
+        "dia_calc_streak": 0.00382566831841037,
+        "dia_iron_leak": 0.011501495509084272
       },
       "status": "ok",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/susep-net-iso__resources.json",
       "volumes": {
         "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/susep-net-iso__recon.nii.gz",
+        "recon-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/susep-net-iso__recon-dia.nii.gz",
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/susep-net-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/susep-net-iso__error.nii.gz"
+        "truth-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/susep-net-iso__truth-dia.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/susep-net-iso__error.nii.gz",
+        "error-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/susep-net-iso__error-dia.nii.gz"
       }
     },
     {
@@ -32254,7 +32260,7 @@
       "stage": "chi-separation",
       "mode": "isolated",
       "track": "sim",
-      "runtime_s": 178.10441827774048,
+      "runtime_s": 206.8145627975464,
       "variant": "default",
       "domain": "chisep",
       "kind": "chisep",
@@ -32279,8 +32285,11 @@
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/chi-sep-medi-iso__resources.json",
       "volumes": {
         "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/chi-sep-medi-iso__recon.nii.gz",
+        "recon-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/chi-sep-medi-iso__recon-dia.nii.gz",
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/chi-sep-medi-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/chi-sep-medi-iso__error.nii.gz"
+        "truth-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/chi-sep-medi-iso__truth-dia.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/chi-sep-medi-iso__error.nii.gz",
+        "error-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/chi-sep-medi-iso__error-dia.nii.gz"
       }
     },
     {
@@ -32290,7 +32299,7 @@
       "stage": "chi-separation",
       "mode": "isolated",
       "track": "sim",
-      "runtime_s": 46.731253147125244,
+      "runtime_s": 51.538702726364136,
       "variant": "default",
       "domain": "chisep",
       "kind": "chisep",
@@ -32315,8 +32324,50 @@
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/wavesep-iso__resources.json",
       "volumes": {
         "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/wavesep-iso__recon.nii.gz",
+        "recon-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/wavesep-iso__recon-dia.nii.gz",
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/wavesep-iso__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/wavesep-iso__error.nii.gz"
+        "truth-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/wavesep-iso__truth-dia.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/wavesep-iso__error.nii.gz",
+        "error-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/wavesep-iso__error-dia.nii.gz"
+      }
+    },
+    {
+      "id": "chi-sep-ilsqr-iso",
+      "slug": "chi-sep-ilsqr",
+      "name": "\u03c7-separation (iLSQR)",
+      "stage": "chi-separation",
+      "mode": "isolated",
+      "track": "sim",
+      "runtime_s": 1809.0436842441559,
+      "variant": "default",
+      "domain": "chisep",
+      "kind": "chisep",
+      "metrics": {
+        "para_nrmse": 52.568895958911334,
+        "para_nrmse_detrend": 58.558641855449494,
+        "para_correlation": 0.8629314771668082,
+        "para_xsim": 0.5895732983255532,
+        "para_nrmse_dgm": 31.749406755943706,
+        "para_dgm_linearity": 0.2404545017691938,
+        "para_nrmse_blood": 75.18940037314395,
+        "para_calc_leak": 0.009797146438813797,
+        "dia_nrmse": 60.70612615882768,
+        "dia_nrmse_detrend": 73.30162262804362,
+        "dia_correlation": 0.806526942976859,
+        "dia_xsim": 0.4792476413617852,
+        "dia_calc_moment_dev": 10.784591250121593,
+        "dia_calc_streak": 0.01434756173809907,
+        "dia_iron_leak": 0.008402225989327352
+      },
+      "status": "ok",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/chi-sep-ilsqr-iso__resources.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/chi-sep-ilsqr-iso__recon.nii.gz",
+        "recon-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/chi-sep-ilsqr-iso__recon-dia.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/chi-sep-ilsqr-iso__truth.nii.gz",
+        "truth-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/chi-sep-ilsqr-iso__truth-dia.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/chi-sep-ilsqr-iso__error.nii.gz",
+        "error-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/chi-sep-ilsqr-iso__error-dia.nii.gz"
       }
     }
   ]
