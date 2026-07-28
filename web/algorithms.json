@@ -1,29 +1,6 @@
 {
   "algorithms": [
     {
-      "slug": "apart-qsm",
-      "name": "APART-QSM",
-      "stage": "chi-separation",
-      "domain": "chisep",
-      "engine": "APART-QSM (AMRI-Lab), MATLAB",
-      "description": "APART-QSM \u2014 an iterative susceptibility-source separation method that fits complex multi-echo GRE data to jointly estimate paramagnetic (\u03c7+, iron) and diamagnetic (\u03c7\u2212, myelin/calcium) susceptibility. Unlike \u03c7-separation methods that take a precomputed R2' and QSM, APART-QSM performs its own iterative data fitting (magnitude-decay a-map + field/QSM) to break the para/dia degeneracy. It ingests per-echo magnitude and LOCAL (background-removed) phase plus an R2 map and an initial QSM, and returns \u03c7+ and \u03c7\u2212 (the latter reported as a positive magnitude).",
-      "citation": "Li et al., NeuroImage 2023",
-      "doi": "10.1016/j.neuroimage.2023.120148",
-      "code_url": "https://github.com/AMRI-Lab/APART-QSM",
-      "license": "academic use",
-      "authors": [
-        "Zhenghao Li",
-        "Ruimin Feng",
-        "Qiangqiang Liu",
-        "Jie Feng",
-        "Guoyan Lao",
-        "Ming Zhang",
-        "Hongjiang Wei"
-      ],
-      "parameters": [],
-      "ci_notes": []
-    },
-    {
       "slug": "autoqsm",
       "name": "AutoQSM",
       "stage": "bfr+dipole",
