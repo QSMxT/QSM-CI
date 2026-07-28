@@ -14,7 +14,11 @@ on:
     paths:
       - "qsm_ci/**"
       - "tests/test_pipeline.py"
-      - "algorithms/**"
+      # Only the three methods this engine-parity test actually runs — not every submission. A change
+      # to an unrelated method (e.g. a χ-separation one) can't affect the romeo→vsharp→rts engine check.
+      - "algorithms/romeo-fieldmap/**"
+      - "algorithms/vsharp/**"
+      - "algorithms/rts/**"
       - ".github/workflows/pipeline.yml"
 
 jobs:

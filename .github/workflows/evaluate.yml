@@ -1,8 +1,9 @@
 name: evaluate
 
-# Per-PR isolated evaluation of a changed submission: run its stage on the ground-truth boundary
-# (in its container, no network) and score the output. Runs on Neurodesk's self-hosted ARC runners.
-# The full composition matrix runs separately in score.yml (on merge to main).
+# Per-PR SMOKE check of a changed submission: run its stage in its container (no network) on a small
+# central crop of the phantom and verify it emits a valid (present/finite/non-empty) output — a fast
+# gate that the submission actually RUNS. It does NOT score; score.yml does the real scoring + the full
+# composition matrix + leaderboard on merge to main. Runs on Neurodesk's self-hosted ARC runners.
 
 on:
   pull_request:
@@ -90,13 +91,17 @@ jobs:
           OSF_ZIP: .osfcache/${{ steps.route.outputs.fetch_track }}.zip
         run: scripts/fetch_dataset.sh "${{ steps.route.outputs.fetch_track }}" "${{ steps.route.outputs.dataset }}"
 
-      - name: Isolated evaluation (build env with network, run offline, mount code)
-        # --fail-on-dnf: a submission that can't run (missing/broken run.sh, crash, wrong output
-        # artifact) turns this check RED instead of merging green and silently scoring DNF on main.
+      - name: Smoke check (run the method, verify a valid output — no full scoring)
+        # --smoke: crop inputs to a central box, run the submission in its container, and assert it
+        # emits a present/finite/non-empty output. This is the PR GATE — it catches a broken run.sh,
+        # crash, permissions issue, or bad output artifact cheaply, without the full-resolution
+        # reconstruction or the scoring that score.yml re-does on merge. --fail-on-dnf turns any such
+        # failure RED instead of merging green and silently DNF'ing on main.
         run: |
           python scripts/pipeline.py \
             --dataset "${{ steps.route.outputs.dataset }}" \
-            --mode isolated --runner docker --only "${{ matrix.slug }}" --track "$TRACK" --fail-on-dnf
+            --mode isolated --runner docker --only "${{ matrix.slug }}" --track "$TRACK" \
+            --smoke --fail-on-dnf
 
       - name: Comment metrics on PR
         # always() so a DNF (which fails the eval step above) still posts its metrics/DNF comment —
