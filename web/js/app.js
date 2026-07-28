@@ -209,8 +209,18 @@ function heatScale(t) {
   return `rgb(${c[0]},${c[1]},${c[2]})`;
 }
 
+// Humanised duration: 3s · 1m 2s · 1h 4m 2s (matches the runtime style used across the leaderboard).
+function fmtDuration(v) {
+  if (v == null || !isFinite(v)) return "—";
+  const s = Math.round(v);
+  if (s < 60) return s + "s";
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+  return h ? `${h}h ${m}m ${sec}s` : `${m}m ${sec}s`;
+}
+
 function fmt(v, key) {
   if (v == null) return "—";
+  if (key === "runtime_s") return fmtDuration(v);
   const m = METRICS[key] || { dp: 2, unit: "" };
   return Number(v).toFixed(m.dp) + (m.unit || "");
 }
@@ -278,4 +288,4 @@ function injectChrome() {
 document.addEventListener("DOMContentLoaded", injectChrome);
 
 // Exposed for module scripts (e.g. the NiiVue viewer, which must be a module for `import`).
-window.QSM = { GH, METRICS, STAGE_LABEL, MEDALS, loadRuns, loadAlgos, loadRegistry, doiFor, val, fmt, metricCols, robustRange, heatScale };
+window.QSM = { GH, METRICS, STAGE_LABEL, MEDALS, loadRuns, loadAlgos, loadRegistry, doiFor, val, fmt, fmtDuration, metricCols, robustRange, heatScale };

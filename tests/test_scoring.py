@@ -98,6 +98,7 @@ def test_gt_sources_mapping():
         "magnitude": ds / "inputs" / "magnitude.nii.gz",
         "mask": ds / "inputs" / "mask.nii.gz",
         "params": ds / "inputs" / "params.json",
+        "r2prime": ds / "inputs" / "r2prime.nii.gz",
         "totalfield": ds / "groundtruth" / "totalfield.nii.gz",
         "localfield": ds / "groundtruth" / "localfield.nii.gz",
         "chimap": ds / "groundtruth" / "chimap.nii.gz",

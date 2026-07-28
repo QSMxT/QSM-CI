@@ -72,23 +72,25 @@ def _pmap(items, fn):
 # run_composed() — main() reads it from --emit-volumes and passes it down. No module-global state.
 
 
-def emit_volumes(run_id, recon, truth, mask=None, resources=None):
+def emit_volumes(run_id, recon, truth, mask=None, resources=None, suffix=""):
     """Write recon / truth / error volumes under results/<run_id>/ for the NiiVue viewer.
 
     The error map is the signed difference recon - truth, zeroed outside the raw brain mask so the
-    background stays clean (the viewer shows it with a diverging red↔blue colormap)."""
+    background stays clean (the viewer shows it with a diverging red↔blue colormap). `suffix` names a
+    second volume set on the same run — χ-separation uses "-dia" for its χ− source so the viewer's
+    χ+/χ− toggle can load recon-dia.nii.gz etc. alongside the plain χ+ set."""
     import nibabel as nib
     d = ROOT / "results" / run_id
     d.mkdir(parents=True, exist_ok=True)
-    shutil.copy(recon, d / "recon.nii.gz")
-    shutil.copy(truth, d / "truth.nii.gz")
+    shutil.copy(recon, d / f"recon{suffix}.nii.gz")
+    shutil.copy(truth, d / f"truth{suffix}.nii.gz")
     if resources is not None and Path(resources).exists():
         shutil.copy(resources, d / "resources.json")  # memory/CPU-over-time trace for the graph
     r, t = nib.load(str(recon)), nib.load(str(truth))
     err = (r.get_fdata() - t.get_fdata()).astype("float32")
     if mask is not None:
         err[nib.load(str(mask)).get_fdata() <= 0.5] = 0.0
-    nib.save(nib.Nifti1Image(err, r.affine), str(d / "error.nii.gz"))
+    nib.save(nib.Nifti1Image(err, r.affine), str(d / f"error{suffix}.nii.gz"))
 
 
 def _load_resources(path) -> "dict | None":
@@ -247,6 +249,7 @@ def discover_algorithms() -> list[dict]:
         consumes = STAGES[s]["consumes"] + [a for a in optional if a not in STAGES[s]["consumes"]]
         algos.append({
             "slug": d.name, "dir": d, "stage": s,
+            "name": _yaml_scalar(doc.get("name")) if doc.get("name") is not None else d.name,
             "image": _yaml_scalar(image) if image is not None else None,
             "consumes": consumes, "produces": STAGES[s]["produces"],
             "tuned": _tuned_overrides(doc),
@@ -328,16 +331,18 @@ def score(recon: Path, artifact: str, gt_dir: Path, mask: Path, out_json: Path, 
     # rim isn't penalised as error — consistent with masking that rim out of the pipeline.
     mask = _valid_mask(recon, mask, out_json.parent / (out_json.stem + "_scoremask.nii.gz"))
     seg = gt_dir / "dseg.nii.gz"
+    component = {"chi-para": "para", "chi-dia": "dia"}.get(artifact)  # χ-sep source for region metrics
     cmd = eval_argv(sys.executable, EVAL, recon, gt_dir / ARTIFACT_FILE[artifact], kind, mask,
                     artifact, out_json, stage=meta["stage"], name=meta["name"], track=meta["track"],
                     runtime=meta.get("runtime"),
-                    seg=seg if (kind == "chi" and seg.exists()) else None)
+                    seg=seg if (kind in ("chi", "chisep") and seg.exists()) else None,
+                    component=component)
     subprocess.run(cmd, check=True)
     result = json.loads(out_json.read_text())
     # A scorable recon yields finite metrics; an all-NaN / empty output makes the scorer emit
     # null/NaN. Record that as a clear DNF (not a metric-less "ok" row, and without crashing the
     # caller's formatted print) so the failure is legible instead of a cryptic format-string error.
-    primary = (result.get("metrics") or {}).get("xsim" if kind == "chi" else "nrmse")
+    primary = (result.get("metrics") or {}).get("xsim" if kind in ("chi", "chisep") else "nrmse")
     if _finite(primary):
         result["status"] = "ok"
     else:
@@ -392,9 +397,48 @@ def iso_variants(a: dict) -> list:
     return [(a, name, ov) for name, ov in vs]
 
 
+# χ-separation folds its two produced source maps into one leaderboard row: χ+ → para_*, χ− → dia_*.
+CHISEP_PREFIX = {"chi-para": "para", "chi-dia": "dia"}
+
+
+def _score_chisep(a, sfx, variant, overrides, odir, gt, mask, rt, args):
+    """Score a χ-separation run's two source maps (χ+, χ−) and fold them into ONE leaderboard row with
+    para_*/dia_* prefixed metrics and domain='chisep' — the chi-sep leaderboard shows one row per
+    method with χ+ vs χ− columns, not two separate rows. A DNF in either component marks the row DNF."""
+    rid = f"{a['slug']}-iso{sfx}"
+    row = {"id": rid, "slug": a["slug"], "name": a.get("name", a["slug"]), "stage": a["stage"], "mode": "isolated",
+           "track": args.track, "runtime_s": rt, "variant": variant, "domain": "chisep",
+           "kind": "chisep", "metrics": {}, "status": "ok"}
+    if overrides:
+        row["params"] = overrides
+    for art in a["produces"]:
+        pfx = CHISEP_PREFIX.get(art, art)
+        meta = {"id": f"{rid}-{pfx}", "slug": a["slug"], "name": a["slug"], "stage": a["stage"],
+                "mode": "isolated", "track": args.track, "runtime": rt, "variant": variant}
+        # emit_volumes off: the two components would collide on one id; chi-sep viewer volumes are a
+        # later feature. We only need each component's metrics here.
+        r = score(odir / ARTIFACT_FILE[art], art, gt, mask,
+                  args.work / f"iso_{a['slug']}{sfx}_{pfx}.json", meta, emit_volumes_on=False)
+        for k, v in (r.get("metrics") or {}).items():
+            row["metrics"][f"{pfx}_{k}"] = v
+        if r.get("status") == "DNF":
+            row["status"], row["dnf_reason"] = "DNF", r.get("dnf_reason", "")
+        m = r.get("metrics") or {}
+        shown = ("DNF" if r.get("status") == "DNF"
+                 else f"xsim={_fmt(m.get('xsim'))} nrmse={_fmt(m.get('nrmse'), '.2f')}%")
+        print(f"  isolated  {a['slug']:<16} {variant:<8} {art:<11} {shown}")
+    # Viewer volumes: emit both sources under the run id (results/<id>/) — χ+ as the plain set and χ−
+    # with a "-dia" suffix, so the detail viewer's χ+/χ− toggle can load either.
+    if args.emit_volumes:
+        emit_volumes(rid, odir / ARTIFACT_FILE["chi-para"], gt / ARTIFACT_FILE["chi-para"], mask)
+        emit_volumes(rid, odir / ARTIFACT_FILE["chi-dia"], gt / ARTIFACT_FILE["chi-dia"], mask, suffix="-dia")
+    return row
+
+
 def do_isolated(task, args, gt_sources, gt, mask):
     """Run + score one isolated (algorithm, variant) task. Returns a list of result rows (one per
-    produced artifact), or a single DNF row on any failure — never raises, so _pmap can't be sunk."""
+    produced artifact — χ-separation folds its two into one), or a single DNF row on any failure —
+    never raises, so _pmap can't be sunk."""
     a, variant, overrides = task
     sfx = "" if variant == "default" else "-tuned"
     idir = args.work / f"iso_{a['slug']}{sfx}_in"
@@ -402,9 +446,12 @@ def do_isolated(task, args, gt_sources, gt, mask):
     try:
         prepare_input(a["consumes"], gt_sources, idir)
         rt = run_algo(a, idir, odir, args.runner, overrides)
+        prods = a["produces"]
+        if len(prods) > 1 and all(ARTIFACT_KIND.get(p) == "chisep" for p in prods):
+            return [_score_chisep(a, sfx, variant, overrides, odir, gt, mask, rt, args)]
         out = []
-        for art in a["produces"]:
-            meta = {"id": f"{a['slug']}-iso{sfx}", "slug": a["slug"], "name": a["slug"],
+        for art in prods:
+            meta = {"id": f"{a['slug']}-iso{sfx}", "slug": a["slug"], "name": a.get("name", a["slug"]),
                     "stage": a["stage"], "mode": "isolated", "track": args.track, "runtime": rt,
                     "variant": variant}
             if overrides:
@@ -530,7 +577,7 @@ def do_span(s, args, gt_sources, gt, mask):
     try:
         prepare_input(s["consumes"], gt_sources, idir)
         rt = run_algo(s, idir, odir, args.runner)
-        meta = {"id": f"{s['slug']}-cmp", "slug": s["slug"], "name": s["slug"],
+        meta = {"id": f"{s['slug']}-cmp", "slug": s["slug"], "name": s.get("name", s["slug"]),
                 "stage": s["stage"], "mode": "composed", "track": args.track, "runtime": rt}
         return score(odir / "chimap.nii.gz", "chimap", gt, mask,
                      args.work / f"cmp_{s['slug']}.json", meta, args.emit_volumes)

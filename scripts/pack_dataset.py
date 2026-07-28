@@ -76,9 +76,11 @@ def save(path: Path, data: np.ndarray, affine: np.ndarray) -> None:
 
 
 def main() -> None:
-    if len(sys.argv) != 3:
+    args = [a for a in sys.argv[1:] if not a.startswith("-")]
+    force_chisep = "--chisep" in sys.argv[1:]
+    if len(args) != 2:
         raise SystemExit(__doc__)
-    bids, out = Path(sys.argv[1]), Path(sys.argv[2])
+    bids, out = Path(args[0]), Path(args[1])
     anat = find_sub_anat(bids)
     deriv = sorted(glob.glob(str(bids / "derivatives" / "qsm-forward" / "sub-*" / "anat")))
     if not deriv:
@@ -96,8 +98,22 @@ def main() -> None:
     (out / "inputs").mkdir(parents=True, exist_ok=True)
     (out / "inputs" / "params.json").write_text(json.dumps(params_from_sidecars(anat), indent=2) + "\n")
 
+    # χ-separation phantom? (has the paramagnetic/diamagnetic source maps). If so, the local field,
+    # χ_total and R2' are PROVIDED inputs (methods invert them), and the scored targets are χ+/χ−.
+    chisep = force_chisep or bool(glob.glob(str(deriv / f"{pre}_Chimap-pos.nii*")))
+
     # groundtruth/  (qsm-forward name -> canonical artifact name)
-    gt = {"fieldmap": "totalfield", "fieldmap-local": "localfield", "Chimap": "chimap", "dseg": "dseg"}
+    if chisep:
+        # χ-sep inputs: local field + χ_total + R2' are given to the method.
+        inp = {"fieldmap-local": "localfield", "Chimap": "chimap", "R2prime": "r2prime"}
+        for src, dst in inp.items():
+            hit = glob.glob(str(deriv / f"{pre}_{src}.nii*"))
+            if hit:
+                im = nib.load(hit[0])
+                save(out / "inputs" / f"{dst}.nii.gz", im.get_fdata(), im.affine)
+        gt = {"Chimap-pos": "chi-para", "Chimap-neg": "chi-dia", "Chimap": "chimap", "dseg": "dseg"}
+    else:
+        gt = {"fieldmap": "totalfield", "fieldmap-local": "localfield", "Chimap": "chimap", "dseg": "dseg"}
     for src, dst in gt.items():
         hit = glob.glob(str(deriv / f"{pre}_{src}.nii*"))
         if not hit:

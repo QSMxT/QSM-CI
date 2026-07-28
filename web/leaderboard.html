@@ -22,19 +22,27 @@
   <header id="site-nav"></header>
 
   <main x-data="board()" x-init="init()" class="mx-auto max-w-6xl px-6 py-10">
-    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+    <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
       <div>
         <h1 class="text-3xl font-bold tracking-tight">Leaderboard</h1>
         <p class="mt-1 text-gray-600">Compare methods per stage, or every pipeline combination.</p>
       </div>
-      <div class="inline-flex rounded-xl bg-gray-100 p-1 text-sm font-medium">
-        <button @click="view='composed'" :class="view==='composed' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'" class="rounded-lg px-4 py-1.5 transition">Combinations</button>
-        <button @click="view='isolated'" :class="view==='isolated' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'" class="rounded-lg px-4 py-1.5 transition">Per stage</button>
+      <div class="flex flex-col items-end gap-2">
+        <div class="inline-flex rounded-xl bg-gray-100 p-1 text-sm font-medium">
+          <button @click="domain='qsm'" :class="domain==='qsm' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'" class="rounded-lg px-4 py-1.5 transition">QSM</button>
+          <button x-show="hasChiSep()" @click="domain='chisep'" :class="domain==='chisep' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'" class="rounded-lg px-4 py-1.5 transition">χ-separation</button>
+        </div>
+        <template x-if="domain==='qsm'">
+          <div class="inline-flex rounded-xl bg-gray-100 p-1 text-sm font-medium">
+            <button @click="view='composed'" :class="view==='composed' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'" class="rounded-lg px-4 py-1.5 transition">Full pipelines</button>
+            <button @click="view='isolated'" :class="view==='isolated' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'" class="rounded-lg px-4 py-1.5 transition">Steps</button>
+          </div>
+        </template>
       </div>
     </div>
 
     <!-- sub-controls -->
-    <div class="mt-6 flex flex-wrap items-center gap-3">
+    <div class="mt-6 flex flex-wrap items-center gap-3" x-show="domain==='qsm'">
       <template x-if="hasTuned()">
         <div class="inline-flex rounded-lg bg-gray-100 p-0.5 text-xs font-medium">
           <button @click="variant='default'" :class="variant==='default' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'" class="rounded-md px-3 py-1 transition">Defaults</button>
@@ -51,14 +59,14 @@
       <template x-if="view==='composed' && fmaps().length>1">
         <label class="inline-flex items-center gap-2 text-sm text-gray-600">Field mapping
           <select x-model="fmap" class="rounded-lg border-gray-300 text-sm py-1.5 pr-8">
-            <template x-for="f in fmaps()" :key="f"><option :value="f" :selected="f===fmap" x-text="f==='gt' ? 'ground truth' : f"></option></template>
+            <template x-for="f in fmaps()" :key="f"><option :value="f" :selected="f===fmap" x-text="f==='gt' ? 'ground truth' : algoName(f)"></option></template>
           </select>
         </label>
       </template>
     </div>
 
     <!-- combination matrix -->
-    <template x-if="view==='composed' && matrix.rows.length">
+    <template x-if="domain==='qsm' && view==='composed' && matrix.rows.length">
       <!-- On wide screens the matrix breaks out of the page's max-w-6xl to a viewport-centered,
            wider width (only this card; the tables and everything else stay at page width). -->
       <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm xl:relative xl:left-1/2 xl:w-[92vw] xl:max-w-[110rem] xl:-translate-x-1/2">
@@ -145,7 +153,7 @@
     </template>
 
     <!-- table controls (filter + metric columns), sitting right above the leaderboard -->
-    <div class="mt-8 flex flex-wrap items-center gap-3">
+    <div class="mt-8 flex flex-wrap items-center gap-3" x-show="domain==='qsm'">
       <div class="grow"></div>
       <input x-model="filter" type="search" placeholder="Filter…" class="rounded-lg border-gray-300 text-sm px-3 py-1.5 w-44 focus:border-emerald-500 focus:ring-emerald-500" />
       <!-- metric column picker -->
@@ -168,7 +176,7 @@
     </div>
 
     <!-- table -->
-    <div class="mt-4 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+    <div class="mt-4 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm" x-show="domain==='qsm'">
       <div class="overflow-x-auto" x-show="!loading" x-cloak>
         <table class="w-full text-sm whitespace-nowrap">
           <thead class="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
@@ -213,6 +221,53 @@
         <span>Loading results…</span>
       </div>
       <p x-show="!loading && rows.length===0" x-cloak class="px-5 py-10 text-center text-gray-400">No results for this view yet.</p>
+    </div>
+
+    <!-- chi-separation leaderboard (susceptibility source separation: χ+ para vs χ− dia) -->
+    <div x-show="domain==='chisep'" x-cloak class="mt-3">
+      <p class="max-w-3xl text-sm text-gray-600">Susceptibility source separation splits net χ into <strong>paramagnetic (χ+, iron)</strong> and <strong>diamagnetic (χ−, myelin / calcium)</strong> sources. Methods are fed the ground-truth local field, R2′ and χ_total, and each source map is scored separately against the qsm-forward chi-separation phantom. R2′ uses physically-realistic split relaxivities (Dr₊ = 114, Dr₋ = 30 Hz/ppm); each method applies its own Dr assumption.</p>
+      <div class="mt-8 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+        <table class="w-full text-sm whitespace-nowrap">
+          <thead class="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
+            <tr>
+              <th class="px-5 py-3 text-left font-medium" rowspan="2">Algorithm</th>
+              <th @click="chiSepSort('avg')" class="px-4 py-3 text-right font-medium cursor-pointer select-none hover:text-gray-800 dark:hover:text-gray-100 border-l border-gray-200" rowspan="2">
+                <span class="has-tip" data-tip="Mean of the χ+ and χ− xSIM — the headline combined source-separation score. Higher is better.">Avg xSIM</span>
+                <span x-show="chisepSort==='avg'" x-text="chisepDir==='asc'?'↑':'↓'"></span>
+              </th>
+              <th class="px-4 py-2 text-center font-medium border-l border-gray-200" colspan="2"><span class="has-tip" data-tip="Paramagnetic susceptibility source (positive χ) — dominated by iron.">χ+ paramagnetic</span></th>
+              <th class="px-4 py-2 text-center font-medium border-l border-gray-200" colspan="2"><span class="has-tip" data-tip="Diamagnetic susceptibility source (negative χ, reported as magnitude) — myelin and calcium.">χ− diamagnetic</span></th>
+              <th class="px-4 py-3 text-right font-medium border-l border-gray-200" rowspan="2">Runtime</th>
+            </tr>
+            <tr>
+              <th @click="chiSepSort('para_xsim')" class="px-4 py-2 text-right font-normal cursor-pointer select-none hover:text-gray-800 dark:hover:text-gray-100 border-l border-gray-200"><span class="has-tip" data-tip="Structural similarity of the χ+ map vs ground truth. Higher is better.">xSIM</span><span x-show="chisepSort==='para_xsim'" x-text="chisepDir==='asc'?'↑':'↓'"></span></th>
+              <th @click="chiSepSort('para_nrmse')" class="px-4 py-2 text-right font-normal cursor-pointer select-none hover:text-gray-800 dark:hover:text-gray-100"><span class="has-tip" data-tip="Normalised RMS error of χ+ vs ground truth (%). Lower is better.">NRMSE</span><span x-show="chisepSort==='para_nrmse'" x-text="chisepDir==='asc'?'↑':'↓'"></span></th>
+              <th @click="chiSepSort('dia_xsim')" class="px-4 py-2 text-right font-normal cursor-pointer select-none hover:text-gray-800 dark:hover:text-gray-100 border-l border-gray-200"><span class="has-tip" data-tip="Structural similarity of the χ− map vs ground truth. Higher is better.">xSIM</span><span x-show="chisepSort==='dia_xsim'" x-text="chisepDir==='asc'?'↑':'↓'"></span></th>
+              <th @click="chiSepSort('dia_nrmse')" class="px-4 py-2 text-right font-normal cursor-pointer select-none hover:text-gray-800 dark:hover:text-gray-100"><span class="has-tip" data-tip="Normalised RMS error of χ− vs ground truth (%). Lower is better.">NRMSE</span><span x-show="chisepSort==='dia_nrmse'" x-text="chisepDir==='asc'?'↑':'↓'"></span></th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <template x-for="(r,i) in chiSepRows()" :key="r.id">
+              <tr @click="go(r)" class="group cursor-pointer" :class="r.status==='DNF' ? 'opacity-50' : ''">
+                <td class="px-5 py-3 text-left font-medium text-gray-900 group-hover:bg-emerald-50/40">
+                  <span class="mr-1.5 inline-block w-5 text-center" x-text="medal(i)"></span>
+                  <span x-text="r.name"></span>
+                  <template x-if="r.doi"><a :href="'https://doi.org/'+r.doi" @click.stop target="_blank" rel="noopener" class="ml-2 rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 hover:bg-emerald-100">paper</a></template>
+                  <span x-show="r.status==='running'" class="ml-2 rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700 animate-pulse">computing…</span>
+                  <span x-show="r.status==='DNF'" class="ml-2 rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold text-gray-500">DNF</span>
+                </td>
+                <td class="px-4 py-3 text-right tabular-nums font-semibold text-gray-900 group-hover:bg-emerald-50/40" x-text="fmt(chiVal(r,'avg'),'xsim')"></td>
+                <td class="px-4 py-3 text-right tabular-nums group-hover:bg-emerald-50/40" :class="chisepSort==='para_xsim' ? 'font-semibold text-gray-900' : 'text-gray-600'" x-text="fmt((r.metrics||{}).para_xsim,'xsim')"></td>
+                <td class="px-4 py-3 text-right tabular-nums group-hover:bg-emerald-50/40" :class="chisepSort==='para_nrmse' ? 'font-semibold text-gray-900' : 'text-gray-600'" x-text="fmt((r.metrics||{}).para_nrmse,'nrmse')"></td>
+                <td class="px-4 py-3 text-right tabular-nums group-hover:bg-emerald-50/40" :class="chisepSort==='dia_xsim' ? 'font-semibold text-gray-900' : 'text-gray-600'" x-text="fmt((r.metrics||{}).dia_xsim,'xsim')"></td>
+                <td class="px-4 py-3 text-right tabular-nums group-hover:bg-emerald-50/40" :class="chisepSort==='dia_nrmse' ? 'font-semibold text-gray-900' : 'text-gray-600'" x-text="fmt((r.metrics||{}).dia_nrmse,'nrmse')"></td>
+                <td class="px-4 py-3 text-right tabular-nums text-gray-500 group-hover:bg-emerald-50/40" x-text="fmt(r.runtime_s,'runtime_s')"></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+        <p x-show="chiSepRows().length===0" class="px-5 py-10 text-center text-gray-400">No chi-separation results yet.</p>
+      </div>
     </div>
   </main>
 
@@ -259,14 +314,39 @@
       // leaderboard matrix and the per-metric ranks colour identically.
       return {
         METRICS, STAGE_LABEL, MEDALS, fmt, val,
-        runs: [], registry: {}, algos: [], view: "composed", stage: "dipole", fmap: "gt",
-        variant: "default",
+        runs: [], registry: {}, algos: [], domain: "qsm", view: "composed", stage: "dipole", fmap: "gt",
+        variant: "default", chisepSort: "avg", chisepDir: "desc",
         metric: "xsim", sortKey: "xsim", sortDir: "desc", filter: "",
         colMenu: false, selectedCols: ["nrmse", "correlation", "xsim", "runtime_s"],
         loading: true,
         // ci_notes: per-method infrastructure caveats (algorithms.json), surfaced as a ⚠ badge that
         // tooltips the notes; clicking the row opens the method's submission page with the full text.
         ciNotes(slug) { const a = this.algos.find((x) => x.slug === slug); return (a && a.ci_notes) || []; },
+        // slug → display name (from the manifest); used for the composed-matrix axes + fmap selector
+        // so the Pipelines view shows method names (e.g. "V-SHARP", "RTS"), not raw slugs.
+        algoName(slug) { const a = this.algos.find((x) => x.slug === slug); return (a && a.name) || slug; },
+        // chi-separation: a distinct domain (source separation into χ+/χ−). Runs are marked
+        // domain:"chisep"; each carries per-component metrics (para_/dia_ xsim & nrmse).
+        _isChisep(r) { return r.domain === "chisep" || r.stage === "chi-separation"; },
+        _chisep() { return this.runs.filter((r) => this._isChisep(r)); },
+        hasChiSep() { return this._chisep().length > 0; },
+        chiVal(r, k) {  // metric value for a chi-sep column ('avg' = mean of the two component xSIMs)
+          const m = r.metrics || {};
+          if (k === "avg") return (m.para_xsim != null && m.dia_xsim != null) ? (m.para_xsim + m.dia_xsim) / 2 : null;
+          return m[k];
+        },
+        chiSepSort(k) {  // click a header: toggle direction if same key, else sort (xSIM desc, NRMSE asc)
+          if (this.chisepSort === k) this.chisepDir = this.chisepDir === "asc" ? "desc" : "asc";
+          else { this.chisepSort = k; this.chisepDir = /nrmse/.test(k) ? "asc" : "desc"; }
+        },
+        chiSepRows() {
+          const k = this.chisepSort, dir = this.chisepDir === "asc" ? 1 : -1;
+          return this._chisep().slice().sort((a, b) => {
+            const va = this.chiVal(a, k), vb = this.chiVal(b, k);          // nulls (DNF/computing) sink
+            if (va == null) return 1; if (vb == null) return -1;
+            return (va - vb) * dir;
+          });
+        },
         async init() {
           // Deep-link support: leaderboard.html?view=isolated&stage=dipole&variant=tuned
           const q = new URLSearchParams(location.search);
@@ -286,7 +366,7 @@
         },
         // Zenodo DOI for a method row (isolated view only; pipelines aren't single methods).
         doi(r) { return this.view === "isolated" ? doiFor(this.registry, r.slug) : null; },
-        stages() { return [...new Set(this.runs.filter((r) => r.mode === "isolated").map((r) => r.stage))]; },
+        stages() { return [...new Set(this.runs.filter((r) => r.mode === "isolated" && !this._isChisep(r)).map((r) => r.stage))]; },
         fmaps() { return [...new Set(this.runs.filter((r) => r.mode === "composed" && r.combo).map((r) => r.combo.field_mapping || "gt"))]; },
         // Any tuned (optimised-on-the-scoring-phantom) runs present? Gates the Defaults/Tuned toggle.
         hasTuned() { return this.runs.some((r) => r.variant === "tuned"); },
@@ -345,9 +425,9 @@
             // whereas nested x-for + x-if in a CSS grid mis-reconciles on reorder (cells land in the
             // wrong slots). Order per row = row-label then one cell per column.
             const cells = [{ k: "corner", t: "corner" }];
-            cols.forEach((c) => cells.push({ k: "h|" + c, t: "header", label: c }));
+            cols.forEach((c) => cells.push({ k: "h|" + c, t: "header", label: this.algoName(c) }));
             rows.forEach((rw) => {
-              cells.push({ k: "rl|" + rw, t: "rowlabel", label: rw });
+              cells.push({ k: "rl|" + rw, t: "rowlabel", label: this.algoName(rw) });
               cols.forEach((c) => {
                 const run = cell[c + "|" + rw];
                 cells.push(run ? { k: "c|" + c + "|" + rw, t: "cell", run } : { k: "x|" + c + "|" + rw, t: "empty" });

@@ -22,6 +22,9 @@ def entry(meta: dict) -> dict:
         "slug": meta["slug"],
         "name": meta.get("name", meta["slug"]),
         "stage": meta.get("stage"),
+        # Leaderboard / submission-sidebar domain: 'qsm' (the field-mapping→bfr→dipole pipeline) or
+        # 'chisep' (susceptibility source separation). Explicit `domain:` wins; else derived from stage.
+        "domain": meta.get("domain") or ("chisep" if meta.get("stage") == "chi-separation" else "qsm"),
         "engine": meta.get("engine"),
         "description": (meta.get("description") or "").strip(),
         "citation": meta.get("citation"),
