@@ -205,31 +205,48 @@ def main():
     gd_loss_fn = inr_utils.GradientLoss()
 
     # --- per-subject optimization: min ||mask·(F⁻¹ D F χ − phi)||² + TV + GD ---
+    # MEMORY. Evaluating the SIREN over the whole 205^3 grid at once and holding every layer's
+    # activations for backprop needs ~130-250 GB (OOM). The reference avoids this by tiling into
+    # patches + fp16; we instead split the coordinate grid into slabs along X and take a two-pass
+    # step per epoch that is mathematically identical to the full-volume step (same forward, same
+    # total gradient), with peak memory of ONE slab, not the volume:
+    #   Pass 1 (no_grad): assemble the full chi slab-by-slab, then get d(loss)/d(chi) via a cheap
+    #                     backward through the FFT dipole physics + TV/GD only (SIREN not in graph).
+    #   Pass 2: recompute the SIREN slab-by-slab WITH grad and backprop the matching d(loss)/d(chi)
+    #                     slice, accumulating parameter grads.
+    # INR_QSM_SLAB trades peak memory against per-epoch overhead (default 8 X-slices ≈ a few GB).
+    Xdim = shape[0]
+    SLAB = max(1, int(os.environ.get("INR_QSM_SLAB", "8")))
+    slabs = [slice(x0, min(x0 + SLAB, Xdim)) for x0 in range(0, Xdim, SLAB)]
+
+    def _chi_full():  # (1,X,Y,Z,1) masked chi, assembled slab-by-slab under no_grad
+        with torch.no_grad():
+            return torch.cat([net(coor[:, sl]) for sl in slabs], dim=1) * mask_t
+
     net.train()
     for e in range(epoch):
         optimizer.zero_grad()
-        chi = net(coor) * mask_t                                   # (1,X,Y,Z,1)
-        chi_k = inr_utils.myfftnc(chi, dim=[1, 2, 3])
-        fwd = inr_utils.myifftnc(chi_k * kernel, dim=[1, 2, 3]).real
-        fwd = fwd * mask_t
+        chi_leaf = _chi_full().detach().requires_grad_(True)
+        chi_k = inr_utils.myfftnc(chi_leaf, dim=[1, 2, 3])
+        fwd = inr_utils.myifftnc(chi_k * kernel, dim=[1, 2, 3]).real * mask_t
         target = phi_t * mask_t
-
         mse = l2(fwd, target)
-        tv = tv_weight * tv_loss_fn(chi, "L2", WG)
+        tv = tv_weight * tv_loss_fn(chi_leaf, "L2", WG)
         gd = gd_weight * gd_loss_fn(fwd, target, "L2", WG)
         loss = mse + tv + gd
-
-        loss.backward()
+        loss.backward()                       # cheap: fills chi_leaf.grad = d(loss)/d(chi)
+        g = chi_leaf.grad
+        for sl in slabs:                      # accumulate SIREN param grads one slab at a time
+            (net(coor[:, sl]) * mask_t[:, sl]).backward(g[:, sl])
         optimizer.step()
         scheduler.step()
         print(f"INR-QSM epoch [{e + 1}/{epoch}] lr {scheduler.get_last_lr()[0]:.3e} "
               f"MSE {mse.item():.5f} TV {tv.item():.5f} GD {gd.item():.5f} "
               f"loss {loss.item():.5f}", flush=True)
 
-    # --- final prediction ---
+    # --- final prediction (slab-wise, no_grad) ---
     net.eval()
-    with torch.no_grad():
-        chi = (net(coor) * mask_t).squeeze(0).squeeze(-1).cpu().numpy().astype(np.float32)
+    chi = _chi_full().squeeze(0).squeeze(-1).cpu().numpy().astype(np.float32)
 
     os.makedirs(OUT, exist_ok=True)
     out_path = os.path.join(OUT, "chimap.nii.gz")
