@@ -435,6 +435,51 @@ def _score_chisep(a, sfx, variant, overrides, odir, gt, mask, rt, args):
     return row
 
 
+def _smoke_crop(idir, consumes, box):
+    """Crop each spatial input to a central box for a --smoke run (compute reduction): the method only
+    has to RUN and emit a valid output, not score, so fewer voxels = a much faster iterative run while
+    fully-convolutional networks just pad back up. Voxel resolution and the echo dim are preserved."""
+    import nibabel as nib
+    import numpy as np
+    for art in consumes:
+        if art == "params":
+            continue
+        f = idir / ARTIFACT_FILE[art]
+        if not f.exists():
+            continue
+        im = nib.load(str(f))
+        d = np.asarray(im.dataobj)
+        sl = tuple(slice((n - box) // 2, (n - box) // 2 + box) if n > box else slice(None)
+                   for n in d.shape[:3]) + tuple(slice(None) for _ in d.shape[3:])
+        nib.save(nib.Nifti1Image(d[sl], im.affine, im.header), str(f))
+
+
+def _smoke_check(a, sfx, variant, odir, rt, args):
+    """--smoke gate: the method ran — did it emit each produced artifact as a valid (present, correctly
+    shaped, finite, non-empty) volume? No scoring; a crash / missing / empty / non-finite output is a
+    DNF that fails the check. This is what --smoke swaps in for score(): prove it runs, cheaply."""
+    import nibabel as nib
+    import numpy as np
+    rid = f"{a['slug']}-iso{sfx}"
+    row = {"id": rid, "slug": a["slug"], "name": a.get("name", a["slug"]), "stage": a["stage"],
+           "mode": "isolated", "track": args.track, "runtime_s": rt, "variant": variant,
+           "metrics": {}, "status": "ok", "smoke": True}
+    if a["stage"] == "chi-separation":
+        row["domain"] = "chisep"
+    for art in a["produces"]:
+        f = odir / ARTIFACT_FILE[art]
+        if not f.exists():
+            reason = "not written"
+        else:
+            d = np.asarray(nib.load(str(f)).dataobj, dtype="float32")
+            reason = "empty / non-finite" if (not np.isfinite(d).any() or not np.any(d != 0)) else None
+        print(f"  smoke     {a['slug']:<16} {variant:<8} {art:<11} {'ok' if reason is None else 'DNF (' + reason + ')'}")
+        if reason:
+            row["status"] = "DNF"
+            row["dnf_reason"] = f"{art}: {reason}"
+    return row
+
+
 def do_isolated(task, args, gt_sources, gt, mask):
     """Run + score one isolated (algorithm, variant) task. Returns a list of result rows (one per
     produced artifact — χ-separation folds its two into one), or a single DNF row on any failure —
@@ -445,8 +490,12 @@ def do_isolated(task, args, gt_sources, gt, mask):
     odir = args.work / f"iso_{a['slug']}{sfx}_out"
     try:
         prepare_input(a["consumes"], gt_sources, idir)
+        if args.smoke:
+            _smoke_crop(idir, a["consumes"], args.smoke_box)
         rt = run_algo(a, idir, odir, args.runner, overrides)
         prods = a["produces"]
+        if args.smoke:  # smoke: prove it runs + emits a valid output, don't score
+            return [_smoke_check(a, sfx, variant, odir, rt, args)]
         if len(prods) > 1 and all(ARTIFACT_KIND.get(p) == "chisep" for p in prods):
             return [_score_chisep(a, sfx, variant, overrides, odir, gt, mask, rt, args)]
         out = []
@@ -694,6 +743,13 @@ def main() -> None:
     ap.add_argument("--work", type=Path, default=ROOT / ".work")
     ap.add_argument("--emit-volumes", action="store_true",
                     help="write recon/truth/error NIfTIs per run under results/<id>/ for the web viewer")
+    ap.add_argument("--smoke", action="store_true",
+                    help="smoke mode (isolated only): crop inputs to a central box, RUN the method, and "
+                         "verify it emits a valid (present/finite/non-empty) output — but do NOT score. "
+                         "A fast PR gate that catches broken run.sh / crashes / bad output without the "
+                         "full-resolution reconstruction or the (score.yml-duplicated) scoring.")
+    ap.add_argument("--smoke-box", type=int, default=96,
+                    help="central crop size per spatial axis for --smoke (default 96)")
     ap.add_argument("--fail-on-dnf", action="store_true",
                     help="exit non-zero if any run in scope DNF'd (a submission that couldn't run or "
                          "produce a scorable artifact). Used by evaluate.yml so a broken run.sh / crash "
