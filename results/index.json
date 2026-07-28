@@ -32244,6 +32244,76 @@
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/susep-net-iso__truth.nii.gz",
         "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/susep-net-iso__error.nii.gz"
       }
+    },
+    {
+      "id": "chi-sep-medi-iso",
+      "slug": "chi-sep-medi",
+      "name": "\u03c7-separation (MEDI)",
+      "stage": "chi-separation",
+      "mode": "isolated",
+      "track": "sim",
+      "runtime_s": 201.40723752975464,
+      "variant": "default",
+      "domain": "chisep",
+      "kind": "chisep",
+      "metrics": {
+        "para_nrmse": 43.45516010448212,
+        "para_nrmse_detrend": 47.44777512230599,
+        "para_correlation": 0.9034602839096771,
+        "para_xsim": 0.7312207483962995,
+        "para_nrmse_dgm": 17.30011013880719,
+        "para_dgm_linearity": 0.24858193836455245,
+        "para_nrmse_blood": 65.39447640316281,
+        "para_calc_leak": null,
+        "dia_nrmse": 44.6398378468932,
+        "dia_nrmse_detrend": 45.116454632762185,
+        "dia_correlation": 0.9115238385951361,
+        "dia_xsim": 0.5795490027893987,
+        "dia_calc_moment_dev": 6.64042641222477,
+        "dia_calc_streak": 0.0059271851426154635,
+        "dia_iron_leak": 0.012056921483803875
+      },
+      "status": "ok",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/chi-sep-medi-iso__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/chi-sep-medi-iso__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/chi-sep-medi-iso__error.nii.gz"
+      }
+    },
+    {
+      "id": "wavesep-iso",
+      "slug": "wavesep",
+      "name": "WaveSep",
+      "stage": "chi-separation",
+      "mode": "isolated",
+      "track": "sim",
+      "runtime_s": 38.245736598968506,
+      "variant": "default",
+      "domain": "chisep",
+      "kind": "chisep",
+      "metrics": {
+        "para_nrmse": 27.95414166416038,
+        "para_nrmse_detrend": 28.969658706377377,
+        "para_correlation": 0.9605070596274577,
+        "para_xsim": 0.8345248273428697,
+        "para_nrmse_dgm": 16.967415441939494,
+        "para_dgm_linearity": 0.015311581818634235,
+        "para_nrmse_blood": 42.409491316510774,
+        "para_calc_leak": null,
+        "dia_nrmse": 40.497346301436785,
+        "dia_nrmse_detrend": 42.44473284008168,
+        "dia_correlation": 0.9205139538984289,
+        "dia_xsim": 0.6920393681607926,
+        "dia_calc_moment_dev": 14.610069416463375,
+        "dia_calc_streak": 0.004277019120649294,
+        "dia_iron_leak": 0.01807724966989544
+      },
+      "status": "ok",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/wavesep-iso__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/wavesep-iso__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/wavesep-iso__error.nii.gz"
+      }
     }
   ]
 }
