@@ -593,9 +593,12 @@ const isChisepRun = () => run && (run.domain === "chisep" || run.stage === "chi-
 // χ-separation writes a second set of volumes for the χ− source with a "-dia" suffix
 // (recon-dia.nii.gz, truth-dia.nii.gz, error-dia.nii.gz); the χ+ set uses the plain names.
 const volUrl = (kind) => {
-  if (run && run.volumes && run.volumes[kind]) return run.volumes[kind];
+  // Apply the χ− "-dia" suffix to the KEY too, not just the dev-fallback path — otherwise an
+  // HF-backed run returns run.volumes["recon"] (the χ+ volume) for the χ− toggle.
   const suffix = (isChisepRun() && chisepComp === "dia") ? "-dia" : "";
-  return baseUrl + kind + suffix + ".nii.gz";
+  const k = kind + suffix;
+  if (run && run.volumes && run.volumes[k]) return run.volumes[k];
+  return baseUrl + k + ".nii.gz";
 };
 
 // Reconcile the viewer with (curBase, showError): reload the base only when it changes, add/remove the
