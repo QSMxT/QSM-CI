@@ -85,3 +85,8 @@ algorithms/*/*.pth
 algorithms/*/*.onnx
 algorithms/chi-sepnet/Dockerfile
 algorithms/susep-net/Dockerfile
+
+# WaveSep: third-party source (no license; author permission for academic use only) is baked into the
+# image, not redistributed in the repo. Its Dockerfile is gitignored too so CI pulls the prebuilt image.
+algorithms/wavesep/wavesep/
+algorithms/wavesep/Dockerfile

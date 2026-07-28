@@ -1,0 +1,29 @@
+name: WaveSep
+slug: wavesep
+stage: chi-separation
+engine: WaveSep (wavelet-domain L1 source separation, iterative, NumPy+PyWavelets, CPU)
+description: >
+  WaveSep — a wavelet-based iterative approach for susceptibility source separation. It splits net
+  susceptibility (χ_total/QSM) into paramagnetic (χ+, iron) and diamagnetic (χ−, myelin·calcium)
+  sources using an R2' map to break the para/dia degeneracy, under two voxel-wise data-fidelity terms
+  (χ+ + χ− ≈ χ_total, χ+ − χ− ≈ R2'/Dr) and a wavelet-domain L1 sparsity prior solved by proximal
+  gradient (soft-thresholding, db4). Pure Python on CPU — no network, no pretrained weights, no GPU.
+authors:
+- name: Zhenghan Fang
+- name: Hyeong-Geol Shin
+- name: Peter van Zijl
+- name: Xu Li
+- name: Jeremias Sulam
+doi: 10.1007/978-3-031-44858-4_6
+citation: >
+  Fang, Shin, van Zijl, Li, Sulam, "WaveSep: A Flexible Wavelet-Based Approach for Source Separation in
+  Susceptibility Imaging", Machine Learning in Clinical Neuroimaging (MLCN), MICCAI 2023, Springer LNCS.
+code_url: https://github.com/ZhenghanFang/WaveSep
+license: academic use (author permission)
+image: ghcr.io/astewartau/qsm-ci/wavesep:v1
+run: bash run.sh
+# Produces two source maps: chi-para (χ+) and chi-dia (χ−). WaveSep's QSM path uses χ_total + R2' only
+# (no B0 direction, so single-orientation data needs no reorientation), with a single relaxivity kernel
+# Dr=137 Hz/ppm (the qsm-forward phantom's kernel; override via $WAVESEP_DR or params.json "Dr").
+# The WaveSep source is third-party (no license; used with the author's permission for academic
+# benchmarking) — gitignored and baked into the image, so CI pulls the prebuilt image (see BUILD.md).
