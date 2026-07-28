@@ -90,3 +90,10 @@ algorithms/susep-net/Dockerfile
 # image, not redistributed in the repo. Its Dockerfile is gitignored too so CI pulls the prebuilt image.
 algorithms/wavesep/wavesep/
 algorithms/wavesep/Dockerfile
+
+# chi-separation MATLAB methods: the SNU-LIST chi-separation toolbox (obtained via Google Form, academic
+# use) is a build-time dep baked into the compiled recon binary, never committed. shims/ IS committed
+# (ours). Dockerfiles gitignored so CI pulls the prebuilt MCR image (see each BUILD.md).
+algorithms/*/chisep/
+algorithms/chi-sep-ilsqr/Dockerfile
+algorithms/chi-sep-medi/Dockerfile
