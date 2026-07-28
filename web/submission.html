@@ -50,6 +50,12 @@
       <aside class="lg:sticky lg:top-20 self-start">
         <div class="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden dark:border-gray-800 dark:bg-gray-900">
           <div class="p-3 border-b border-gray-100 space-y-2 dark:border-gray-800">
+            <!-- domain: QSM pipeline vs χ-separation. The χ-separation button is revealed only when
+                 chi-sep methods exist, so the sidebar isn't cluttered with the wrong category. -->
+            <div id="domain-toggle" class="inline-flex w-full rounded-lg bg-gray-100 p-1 text-xs font-medium dark:bg-gray-800">
+              <button data-domain="qsm" class="flex-1 rounded-md px-2 py-1 transition">QSM</button>
+              <button data-domain="chisep" class="flex-1 rounded-md px-2 py-1 transition hidden">χ-separation</button>
+            </div>
             <div id="nav-toggle" class="inline-flex w-full rounded-lg bg-gray-100 p-1 text-xs font-medium dark:bg-gray-800">
               <button data-mode="stages" class="flex-1 rounded-md px-2 py-1 transition">Stages</button>
               <button data-mode="pipelines" class="flex-1 rounded-md px-2 py-1 transition">Pipelines</button>
@@ -79,7 +85,7 @@
             <div class="relative rounded-xl overflow-hidden bg-black" style="height:480px">
               <canvas id="gl1" class="absolute inset-0 h-full w-full block"></canvas>
               <!-- intensity readout floats over the canvas so a long value string never reflows the layout -->
-              <div id="intensity" class="pointer-events-none absolute bottom-2 left-2 z-10 max-w-[calc(100%-1rem)] truncate rounded-md bg-black/50 px-2 py-0.5 text-xs tabular-nums text-gray-200 backdrop-blur-sm"></div>
+              <div id="intensity" class="pointer-events-none absolute top-2 left-2 z-10 max-w-[calc(100%-1rem)] truncate rounded-md bg-black/50 px-2 py-0.5 text-xs tabular-nums text-gray-200 backdrop-blur-sm"></div>
               <div id="viewer-loading" class="absolute inset-0 z-10 hidden items-center justify-center gap-3 bg-black/40 backdrop-blur-sm text-sm font-medium text-gray-100">
                 <span class="spinner"></span> Loading volume…
               </div>
@@ -90,6 +96,11 @@
               <div class="inline-flex rounded-lg bg-gray-100 p-1 text-sm font-medium dark:bg-gray-800" id="layer-tabs">
                 <button data-layer="recon" class="rounded-md px-3 py-1 transition">Reconstruction</button>
                 <button data-layer="truth" class="rounded-md px-3 py-1 transition">Ground truth</button>
+              </div>
+              <!-- χ-separation source toggle (χ+ vs χ−); shown only for chi-separation runs -->
+              <div class="hidden inline-flex rounded-lg bg-gray-100 p-1 text-sm font-medium dark:bg-gray-800" id="chisep-tabs">
+                <button data-comp="para" class="rounded-md px-3 py-1 transition">χ+ paramagnetic</button>
+                <button data-comp="dia" class="rounded-md px-3 py-1 transition">χ− diamagnetic</button>
               </div>
               <label class="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-300" title="Overlay the error map on top of the selected map">
                 <input id="t-error" type="checkbox" class="accent-emerald-600" /> Error map

@@ -1,0 +1,20 @@
+name: χ-sepnet
+slug: chi-sepnet
+stage: chi-separation
+engine: chi-separation toolbox (SNU-LIST) — χ-sepnet, ONNX
+description: >
+  χ-sepnet — a deep-learning χ-separation method (SNU-LIST). A 3D network maps the local field,
+  χ_total and R2′ to the paramagnetic (χ+) and diamagnetic (χ−) source maps. Run here via ONNX
+  (onnxruntime), 192×192×128 sliding-window patches, Dr = 114 Hz/ppm.
+authors:
+- name: Minjun Kim
+- name: Hyeong-Geol Shin
+- name: Jongho Lee
+doi: 10.1016/j.neuroimage.2021.118371
+citation: Shin et al., NeuroImage 2021 (χ-separation); χ-sepnet, SNU-LIST
+code_url: https://github.com/SNU-LIST/chi-separation
+license: academic use; toolbox obtained via the SNU-LIST Google Form
+image: ghcr.io/astewartau/qsm-ci/chi-sepnet:v1
+run: bash run.sh
+# Produces two source maps: chi-para (χ+) and chi-dia (χ−). Weights (ONNX) not committed; the image
+# would bundle them. Runs via `--runner local` for the PoC (XSEP_PYTHON = an onnxruntime venv).

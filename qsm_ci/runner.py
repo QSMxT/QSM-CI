@@ -157,9 +157,10 @@ def _inputs_summary(slug: str, algo: dict) -> str:
     """Tell the user exactly which inputs a valid slug's stage needs, with an example."""
     stage = algo["stage"]
     consumes = _consumes(algo)
-    produced = STAGES[stage]["produces"][0]
+    prods = STAGES[stage]["produces"]
+    produced = prods[0]
     needs_echo = "phase" in consumes
-    lines = [f"{algo['name']}  —  {stage} stage   ({', '.join(consumes)} → {produced})", "",
+    lines = [f"{algo['name']}  —  {stage} stage   ({', '.join(consumes)} → {', '.join(prods)})", "",
              "Image inputs (provide each as a file):"]
     for art in consumes:
         if art == "params":
@@ -185,13 +186,21 @@ def _inputs_summary(slug: str, algo: dict) -> str:
     example = " ".join(f"--{a} {a}.nii.gz" for a in req_imgs)
     if needs_echo:
         example += " --te 0.004 0.012 0.02 0.028 --field-strength 7"
-    lines += ["", "Output:",
-              "  -o PATH".ljust(22) + f"where to write {produced}.nii.gz "
-              f"(default: ./{produced}.nii.gz; a directory is fine)",
-              "",
-              f"Example:  qsm-ci run {slug} {example}",
-              f"Add  --truth {produced}.nii.gz  [--seg dseg.nii.gz]  to score the output.",
-              f"See   qsm-ci run {slug} --help  for runner/scoring options and method parameters."]
+    if len(prods) == 1:
+        lines += ["", "Output:",
+                  "  -o PATH".ljust(22) + f"where to write {produced}.nii.gz "
+                  f"(default: ./{produced}.nii.gz; a directory is fine)",
+                  "",
+                  f"Example:  qsm-ci run {slug} {example}",
+                  f"Add  --truth {produced}.nii.gz  [--seg dseg.nii.gz]  to score the output."]
+    else:
+        outs = ", ".join(f"{p}.nii.gz" for p in prods)
+        lines += ["", "Output:",
+                  "  -o DIR".ljust(22) + f"directory to write {outs} into (default: current dir)",
+                  "",
+                  f"Example:  qsm-ci run {slug} {example} -o out/",
+                  f"Add  --truth GT_DIR/  (a folder holding {outs}) to score each output."]
+    lines.append(f"See   qsm-ci run {slug} --help  for runner/scoring options and method parameters.")
     return "\n".join(lines)
 
 
@@ -207,6 +216,11 @@ def _score(recon: Path, artifact: str, truth: Path, mask: Path, seg: "Path | Non
     r, t, m = qsm_eval.load(recon), qsm_eval.load(truth), qsm_eval.load(mask)
     if r.shape != t.shape or r.shape != m.shape:
         raise SystemExit(f"shape mismatch: recon {r.shape}, truth {t.shape}, mask {m.shape}")
+    if kind == "chisep":
+        import numpy as np
+        component = {"chi-para": "para", "chi-dia": "dia"}.get(artifact, "para")
+        segd = np.rint(qsm_eval.load(seg)).astype("int32") if (seg and Path(seg).exists()) else None
+        return qsm_eval.chisep_metrics(r, t, m, segd, component)
     if kind == "field":
         return qsm_eval.field_metrics(r, t, m)
     if seg and Path(seg).exists():
@@ -258,8 +272,9 @@ def _manifest_epilog(algo: dict) -> "str | None":
 def _build_run_parser(slug: str, algo: dict) -> argparse.ArgumentParser:
     stage = algo["stage"]
     consumes = _consumes(algo)
-    produced = STAGES[stage]["produces"][0]
-    desc = f"{algo['name']} — {stage} stage  ({', '.join(consumes)} → {produced})"
+    prods = STAGES[stage]["produces"]
+    produced = prods[0]
+    desc = f"{algo['name']} — {stage} stage  ({', '.join(consumes)} → {', '.join(prods)})"
     if algo.get("description"):
         desc += "\n\n" + " ".join(str(algo["description"]).split())
     p = argparse.ArgumentParser(
@@ -289,9 +304,16 @@ def _build_run_parser(slug: str, algo: dict) -> argparse.ArgumentParser:
                      help="unit B0 direction (default: 0 0 1)")
     acq.add_argument("--voxel-size", nargs=3, type=float, metavar=("X", "Y", "Z"),
                      help="voxel size in mm (default: read from the input NIfTI header)")
-    p.add_argument("-o", "--out", metavar="PATH", default=f"{produced}.nii.gz",
-                   help="where to write the produced artifact")
-    p.add_argument("--truth", metavar="PATH", help=f"ground-truth {produced} to score against")
+    if len(prods) == 1:
+        p.add_argument("-o", "--out", metavar="PATH", default=f"{produced}.nii.gz",
+                       help="where to write the produced artifact (a file, or a directory)")
+        p.add_argument("--truth", metavar="PATH", help=f"ground-truth {produced} to score against")
+    else:
+        outs = ", ".join(f"{a}.nii.gz" for a in prods)
+        p.add_argument("-o", "--out", metavar="DIR", default=".",
+                       help=f"directory to write the produced artifacts into ({outs})")
+        p.add_argument("--truth", metavar="DIR",
+                       help=f"ground-truth directory holding {outs} to score each output against")
     p.add_argument("--seg", metavar="PATH", help="segmentation (enables full χ region metrics)")
     p.add_argument("--runner", choices=list(RUNNERS), default="docker",
                    help="docker/podman/apptainer run the image; local runs run.sh on the host")
@@ -377,7 +399,8 @@ def run_command(argv, log=print) -> int:
 
     stage = algo["stage"]
     consumes = _consumes(algo)
-    produced = STAGES[stage]["produces"][0]
+    prods = STAGES[stage]["produces"]
+    multi = len(prods) > 1
 
     import tempfile
     log(f"▸ {algo['name']}  [{stage}]  runner={args.runner}")
@@ -425,20 +448,29 @@ def run_command(argv, log=print) -> int:
 
         runtime = _run_container(algo, idir, odir, args.runner, log)
 
-        produced_tmp = odir / ARTIFACT_FILE[produced]
-        if not produced_tmp.exists():
-            raise SystemExit(f"submission did not write {ARTIFACT_FILE[produced]} to /output")
-        out_path = Path(args.out)
-        if out_path.is_dir():
-            out_path = out_path / ARTIFACT_FILE[produced]  # -o <dir> → write <dir>/<artifact>
-        if str(out_path.parent):
-            out_path.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy(produced_tmp, out_path)
-        log(f"✓ wrote {out_path}  ({runtime:.1f}s)")
+        # Copy every produced artifact out. Single-output stages honour `-o <file>` (a directory is
+        # also accepted); a multi-output stage (χ-separation) always writes each canonical file into
+        # the `-o <dir>` directory.
+        out_arg = Path(args.out)
+        written = {}
+        for art in prods:
+            src = odir / ARTIFACT_FILE[art]
+            if not src.exists():
+                raise SystemExit(f"submission did not write {ARTIFACT_FILE[art]} to /output")
+            dest = out_arg / ARTIFACT_FILE[art] if (multi or out_arg.is_dir()) else out_arg
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy(src, dest)
+            written[art] = dest
+            log(f"✓ wrote {dest}  ({runtime:.1f}s)")
 
         if args.truth:
-            metrics = _score(out_path, produced, Path(args.truth), Path(args.mask), args.seg)
-            _print_metrics(algo["name"], stage, produced, runtime, metrics, log)
+            # Single output: `--truth <file>` (a directory is also accepted). Multi-output: `--truth
+            # <dir>` holding each ground-truth by canonical name; score every produced artifact.
+            truth = Path(args.truth)
+            for art in prods:
+                tpath = truth / ARTIFACT_FILE[art] if (multi or truth.is_dir()) else truth
+                metrics = _score(written[art], art, tpath, Path(args.mask), args.seg)
+                _print_metrics(algo["name"], stage, art, runtime, metrics, log)
         else:
             log("  (no --truth given → not scored)")
     return 0

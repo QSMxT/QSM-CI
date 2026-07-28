@@ -24,19 +24,29 @@ const STAGE_IO = {
   "unwrap+bfr":    { consumes: ["phase", "mask", "params"], produces: "localfield" },
   "bfr+dipole":    { consumes: ["totalfield", "mask", "params"], produces: "chimap" },
   "end-to-end":    { consumes: ["phase", "mask", "params"], produces: "chimap" },
+  // χ-separation produces TWO source maps, so `produces` is an array — runLine writes them to a
+  // directory and scores against a ground-truth directory.
+  "chi-separation": { consumes: ["localfield", "r2prime", "chimap", "magnitude", "mask", "params"],
+    produces: ["chi-para", "chi-dia"] },
 };
 const ARTFILE = { phase: "phase.nii.gz", magnitude: "magnitude.nii.gz", mask: "mask.nii.gz",
   params: "params.json", totalfield: "totalfield.nii.gz", localfield: "localfield.nii.gz",
-  chimap: "chimap.nii.gz" };
+  chimap: "chimap.nii.gz", r2prime: "r2prime.nii.gz", "chi-para": "chi-para.nii.gz",
+  "chi-dia": "chi-dia.nii.gz" };
 const escapeHtml = (s) => s.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
 
 function runLine(slug, stage, truth) {
   const io = STAGE_IO[stage];
   if (!io) return `qsm-ci run ${slug}`;
   // One flag per line, backslash-continued, so long commands don't overflow the code block.
-  const parts = [`qsm-ci run ${slug}`, ...io.consumes.map((a) => `--${a} ${ARTFILE[a]}`),
-    `-o ${ARTFILE[io.produces]}`];
-  if (truth) parts.push(`--truth ${io.produces}_groundtruth.nii.gz`);
+  const parts = [`qsm-ci run ${slug}`, ...io.consumes.map((a) => `--${a} ${ARTFILE[a]}`)];
+  if (Array.isArray(io.produces)) {  // multi-output (χ-separation): a directory in, a directory to score against
+    parts.push("-o out/");
+    if (truth) parts.push("--truth groundtruth/");
+  } else {
+    parts.push(`-o ${ARTFILE[io.produces]}`);
+    if (truth) parts.push(`--truth ${io.produces}_groundtruth.nii.gz`);
+  }
   return parts.join(" \\\n  ");
 }
 
@@ -130,8 +140,9 @@ function renderHowToRun() {
 }
 
 let allRuns = [], algos = [], registry = {};
-let nv = null, run, baseUrl, filter = "", navMode = "stages";
+let nv = null, run, baseUrl, filter = "", navMode = "stages", domain = "qsm";
 let curBase = "recon";       // base map shown underneath: recon | truth
+let chisepComp = "para";     // χ-separation source shown: para (χ+) | dia (χ−)
 let showError = false;       // whether the error map is overlaid on top of the base
 let loadedBase = null, loadedError = false;  // what's actually in nv.volumes right now
 let baseCtl = null, errorCtl = null;         // the two windowing controls (base + error overlay)
@@ -144,6 +155,10 @@ function badge(text, cls) {
 // ---- sidebar ----------------------------------------------------------------
 const uniq = (arr) => [...new Set(arr)];
 const composedRuns = () => allRuns.filter((r) => r.mode === "composed" && r.combo);
+// χ-separation methods (a distinct domain): one flat list, default variant only.
+const chisepRuns = () => allRuns.filter((r) => (r.domain === "chisep" || r.stage === "chi-separation")
+  && (r.variant || "default") === "default");
+const hasChisep = () => chisepRuns().length > 0;
 // Combined single-step methods (bfr+dipole / end-to-end, e.g. NeXtQSM/TGV/QSMART/MEDI/iQSM) go
 // straight to a chi map in one step, so they have no fmap×bfr×dipole combo and are missed by the
 // matrix axes. Surface them as their own Pipelines group — one run per slug, preferring the composed
@@ -177,7 +192,12 @@ function currentCombo() {
 }
 function runItem(r, activeId) {
   const active = r && r.id === activeId;
-  const label = r ? (r.status === "DNF" ? "DNF" : fmt(val(r, "xsim"), "xsim")) : "—";
+  // χ-separation rows carry no plain xsim — show the mean of the χ+ and χ− xSIM instead.
+  const m = (r && r.metrics) || {};
+  const xs = m.xsim != null ? m.xsim
+    : (m.para_xsim != null && m.dia_xsim != null ? (m.para_xsim + m.dia_xsim) / 2
+    : (r ? val(r, "xsim") : null));
+  const label = r ? (r.status === "DNF" ? "DNF" : fmt(xs, "xsim")) : "—";
   const dis = !r || r.status === "DNF";
   return `<button data-id="${r ? r.id : ""}"
     class="run-item w-full text-left rounded-lg px-2.5 py-1.5 text-sm flex items-center justify-between gap-2 transition
@@ -224,11 +244,26 @@ function pipelinesHTML() {
   return (matrix + combinedSection) ||
     `<p class="p-3 text-sm text-gray-400">No pipeline combinations available yet — the composed matrix is computed by the nightly job.</p>`;
 }
+function chisepHTML() {
+  const f = filter.toLowerCase();
+  const rs = chisepRuns().filter((r) => !f || r.name.toLowerCase().includes(f));
+  if (!rs.length) return `<p class="p-3 text-sm text-gray-400">No χ-separation methods yet.</p>`;
+  const rows = rs.map((r) => runItem(r, run?.id).replace("%NAME%", r.name)).join("");
+  return `<div class="mb-3"><div class="px-2.5 pt-1 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">χ-separation</div>${rows}</div>`;
+}
 function buildSidebar() {
+  if (domain === "chisep" && !hasChisep()) domain = "qsm";
+  // Domain toggle: the χ-separation button is present only when such methods exist.
+  document.querySelectorAll("#domain-toggle button").forEach((b) =>
+    b.className = "flex-1 rounded-md px-2 py-1 transition "
+      + (b.dataset.domain === "chisep" && !hasChisep() ? "hidden " : "")
+      + (b.dataset.domain === domain ? "bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100" : "text-gray-500 hover:text-gray-700 dark:text-gray-400"));
+  // The Stages/Pipelines split is meaningless for χ-separation (one flat list) — hide it there.
+  $("nav-toggle")?.classList.toggle("hidden", domain === "chisep");
   document.querySelectorAll("#nav-toggle button").forEach((b) =>
     b.className = "flex-1 rounded-md px-2 py-1 transition " +
       (b.dataset.mode === navMode ? "bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100" : "text-gray-500 hover:text-gray-700 dark:text-gray-400"));
-  $("run-list").innerHTML = navMode === "stages" ? stagesHTML() : pipelinesHTML();
+  $("run-list").innerHTML = domain === "chisep" ? chisepHTML() : (navMode === "stages" ? stagesHTML() : pipelinesHTML());
   $("run-list").querySelectorAll(".run-item").forEach((b) => b.addEventListener("click", () => { if (b.dataset.id) selectRun(b.dataset.id); }));
 }
 function selectRun(id) {
@@ -361,6 +396,9 @@ async function loadRun() {
   $("t-error").disabled = !hasError;
   $("t-error").checked = showError;
   setLayerActive(curBase);
+  // χ-separation runs get a χ+ / χ− source toggle; other runs hide it.
+  $("chisep-tabs").classList.toggle("hidden", !isChisepRun());
+  if (isChisepRun()) setChisepActive(chisepComp);
   try { await refreshView(); } catch (e) {
     canvas.style.visibility = "hidden";
     note.textContent = "Interactive volumes aren't available for this run.";
@@ -385,7 +423,52 @@ function metricRank(k) {
   return { rank, n: peers.length, t };
 }
 
+function renderChisepMetrics() {
+  // χ-separation runs carry paired, source-specific metrics (para_*/dia_*), not the plain QSM keys.
+  // Render them grouped by source: χ+ gets iron/vein metrics, χ− gets calcification metrics, and each
+  // gets a leakage (cross-contamination) term.
+  $("metrics-sub").textContent = "χ+ / χ− sources vs. ground truth";
+  const m = run.metrics || {};
+  const avg = (m.para_xsim != null && m.dia_xsim != null) ? (m.para_xsim + m.dia_xsim) / 2 : null;
+  const num = (v, fk) => v == null ? null
+    : fk === "pct" ? v.toFixed(1) + "%" : fk === "xsim" ? fmt(v, "xsim")
+    : fk === "sec" ? fmt(v, "runtime_s") : v.toFixed(3);
+  const groups = [
+    [null, [["Avg xSIM", avg, "xsim", "↑", "Mean of the χ+ and χ− xSIM — the headline combined score."]]],
+    ["χ+ paramagnetic (iron, veins)", [
+      ["xSIM", m.para_xsim, "xsim", "↑", "Structural similarity of χ+ vs ground truth."],
+      ["NRMSE", m.para_nrmse, "pct", "↓", "Normalised RMS error of χ+ (%)."],
+      ["DGM iron NRMSE", m.para_nrmse_dgm, "pct", "↓", "χ+ error in deep gray matter (iron)."],
+      ["DGM linearity", m.para_dgm_linearity, "num", "↓", "|1 − slope| of χ+ across DGM iron regions; 0 = perfect iron quantification."],
+      ["Vein NRMSE", m.para_nrmse_blood, "pct", "↓", "χ+ error in venous blood."],
+      ["Calcium leakage", m.para_calc_leak, "num", "↓", "Mean |χ+| in the calcification (should be ~0) — calcium wrongly bleeding into the paramagnetic map."],
+    ]],
+    ["χ− diamagnetic (calcium, myelin)", [
+      ["xSIM", m.dia_xsim, "xsim", "↑", "Structural similarity of χ− vs ground truth."],
+      ["NRMSE", m.dia_nrmse, "pct", "↓", "Normalised RMS error of χ− (%)."],
+      ["Calcification dev", m.dia_calc_moment_dev, "num", "↓", "Deviation of the recovered calcification's susceptibility moment."],
+      ["Streaking", m.dia_calc_streak, "num", "↓", "Streaking-artifact level around the calcification."],
+      ["Iron leakage", m.dia_iron_leak, "num", "↓", "Mean |χ−| in DGM/veins (should be ~0) — iron wrongly bleeding into the diamagnetic map."],
+    ]],
+    [null, [["Runtime", run.runtime_s, "sec", "", "Wall-clock runtime."]]],
+  ];
+  let html = "";
+  for (const [header, rows] of groups) {
+    if (header) html += `<tr><td colspan="3" class="pt-3 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">${header}</td></tr>`;
+    for (const [label, v, fk, arrow, tip] of rows) {
+      if (v == null) continue;
+      const hero = label === "Avg xSIM";
+      html += `<tr>
+        <td class="py-2 text-gray-500 dark:text-gray-400"><span class="has-tip" data-tip="${tip.replace(/"/g, "&quot;")}">${label}</span> <span class="text-gray-300 dark:text-gray-600" title="${arrow === "↑" ? "higher" : "lower"} is better">${arrow}</span></td>
+        <td class="py-2 text-right tabular-nums ${hero ? "font-bold text-gray-900 dark:text-gray-100" : "font-medium text-gray-700 dark:text-gray-300"}">${num(v, fk)}</td>
+        <td class="py-2 pl-3 text-right"><span class="text-gray-300 dark:text-gray-600">—</span></td>
+      </tr>`;
+    }
+  }
+  $("metrics-body").innerHTML = html || `<tr><td class="py-3 text-gray-400">No metrics for this run.</td></tr>`;
+}
 function renderMetrics() {
+  if (run.domain === "chisep" || run.stage === "chi-separation") { renderChisepMetrics(); return; }
   $("metrics-sub").textContent = run.mode === "composed" ? "Final χ map vs. ground truth" : `${run.artifact || "output"} vs. ground truth`;
   // Include runtime_s (a top-level field, not under run.metrics) via val(), so it's ranked alongside
   // the accuracy metrics. Object.keys(METRICS) keeps it last, matching its registry order.
@@ -413,6 +496,11 @@ function setLayerActive(layer) {
     t.className = "rounded-md px-3 py-1 transition " +
       (t.dataset.layer === layer ? "bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100" : "text-gray-500 hover:text-gray-700 dark:text-gray-400"));
 }
+function setChisepActive(comp) {
+  $("chisep-tabs").querySelectorAll("button").forEach((t) =>
+    t.className = "rounded-md px-3 py-1 transition " +
+      (t.dataset.comp === comp ? "bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100" : "text-gray-500 hover:text-gray-700 dark:text-gray-400"));
+}
 function setViewActive(v) {
   $("view-tabs").querySelectorAll("button").forEach((b) =>
     b.className = "rounded-md px-2.5 py-1 transition " +
@@ -421,6 +509,9 @@ function setViewActive(v) {
 function autoWin(vol) { vol.cal_min = vol.robust_min ?? vol.global_min; vol.cal_max = vol.robust_max ?? vol.global_max; }
 function defaultWindow(vol) {
   if (run.kind === "chi") { vol.cal_min = -0.1; vol.cal_max = 0.1; }  // χ maps: fixed ±0.1 ppm
+  // χ-separation sources are non-negative magnitudes: χ+ (paramagnetic) [0, 0.1], χ− (diamagnetic)
+  // [0, 0.05]. The histogram auto-frames this window (~50% of view), matching the QSM behaviour.
+  else if (isChisepRun()) { vol.cal_min = 0; vol.cal_max = chisepComp === "dia" ? 0.05 : 0.1; }
   else autoWin(vol);                                                  // fields / everything else: auto
 }
 
@@ -470,6 +561,13 @@ function wireControls() {
 
   $("layer-tabs").querySelectorAll("button").forEach((t) =>
     t.addEventListener("click", () => { curBase = t.dataset.layer; setLayerActive(curBase); refreshView(); }));
+  // χ+ / χ− source toggle: switch which volume set loads, forcing a base reload (the URL changes but
+  // the recon/truth kind doesn't, so refreshView wouldn't otherwise re-fetch).
+  $("chisep-tabs").querySelectorAll("button").forEach((t) =>
+    t.addEventListener("click", () => {
+      chisepComp = t.dataset.comp; setChisepActive(chisepComp);
+      loadedBase = null; loadedError = false; refreshView();
+    }));
   $("t-error").addEventListener("change", (e) => { showError = e.target.checked; refreshView(); });
   $("view-tabs").querySelectorAll("button").forEach((t) =>
     t.addEventListener("click", () => { setViewActive(t.dataset.view); nv.setSliceType(nv["sliceType" + cap(t.dataset.view)]); }));
@@ -491,7 +589,14 @@ function wireControls() {
 }
 
 // Volumes are served from the Hugging Face Hub (run.volumes[kind]); fall back to local results/<id>/ for dev.
-const volUrl = (kind) => (run && run.volumes && run.volumes[kind]) || (baseUrl + kind + ".nii.gz");
+const isChisepRun = () => run && (run.domain === "chisep" || run.stage === "chi-separation");
+// χ-separation writes a second set of volumes for the χ− source with a "-dia" suffix
+// (recon-dia.nii.gz, truth-dia.nii.gz, error-dia.nii.gz); the χ+ set uses the plain names.
+const volUrl = (kind) => {
+  if (run && run.volumes && run.volumes[kind]) return run.volumes[kind];
+  const suffix = (isChisepRun() && chisepComp === "dia") ? "-dia" : "";
+  return baseUrl + kind + suffix + ".nii.gz";
+};
 
 // Reconcile the viewer with (curBase, showError): reload the base only when it changes, add/remove the
 // error overlay independently, and show a second windowing section for the error map when it's on.
@@ -556,9 +661,11 @@ async function init() {
     || allRuns.find((r) => r.mode === "isolated" && r.slug === want)
     || allRuns.find((r) => r.status !== "DNF") || allRuns[0];
   if (!run) { $("sub-title").textContent = "No runs"; return; }
+  domain = (run.domain === "chisep" || run.stage === "chi-separation") ? "chisep" : "qsm";
   navMode = run.mode === "composed" ? "pipelines" : "stages";
   $("run-filter").addEventListener("input", (e) => { filter = e.target.value; buildSidebar(); });
   document.querySelectorAll("#nav-toggle button").forEach((b) => b.addEventListener("click", () => { navMode = b.dataset.mode; buildSidebar(); }));
+  document.querySelectorAll("#domain-toggle button").forEach((b) => b.addEventListener("click", () => { domain = b.dataset.domain; buildSidebar(); }));
   // Deep links: ?layer=truth selects the ground-truth base; ?layer=error (or ?error=1) turns on the
   // error overlay. Applied before the first render so loadRun picks them up.
   const layer = q.get("layer");

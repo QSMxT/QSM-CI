@@ -1,0 +1,25 @@
+name: SUSEP-Net
+slug: susep-net
+stage: chi-separation
+engine: SUSEP-Net (dual-branch 3D U-net, PyTorch, CPU)
+description: >
+  SUSEP-Net — a simulation-supervised, contrastive-learning deep network for sub-voxel susceptibility
+  source separation. A dual-branch 3D U-net with two guidance encoders maps the R2′, local field and
+  χ_total (QSM) images to the paramagnetic (χ+, iron) and diamagnetic (χ−, myelin·calcium) source
+  maps. Run here via PyTorch on CPU, whole-volume, z-scored inputs (QSM/field in ppm, R2′ in Hz).
+authors:
+- name: Zhenghao Li
+- name: Chunlei Liu
+- name: Hongfu Sun
+- name: Yang Gao
+doi: 10.48550/arXiv.2506.13293
+citation: >
+  Li, Gao, Sun et al., "SUSEP-Net: simulation-supervised contrastive learning for susceptibility
+  source separation via a sub-voxel QSM network", arXiv:2506.13293, 2025.
+code_url: https://github.com/YangGaoUQ/SUSEP-Net
+license: academic use
+image: ghcr.io/astewartau/qsm-ci/susep-net:v1
+run: bash run.sh
+# Produces two source maps: chi-para (χ+) and chi-dia (χ−). Weights (SUSEPNet.pth, from the authors'
+# public Google-Drive release) + norm stats are not committed; the image bundles them. Runs via
+# `--runner local` for the PoC (XSEP_PYTHON = a torch venv).

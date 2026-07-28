@@ -40,7 +40,7 @@ def cli_run_argv(algo: dict, input_dir: Path, output_dir: Path, artifact_file: d
     the default `str(v)` matches pipeline.py / run_algo, so both callers keep their exact output.
     """
     fmt = fmt or str
-    produced = algo["produces"][0]
+    produces = algo["produces"]
     argv = ["qsm-ci", "run", str(algo["dir"])]
     for art in algo["consumes"]:
         f = input_dir / artifact_file[art]
@@ -49,24 +49,36 @@ def cli_run_argv(algo: dict, input_dir: Path, output_dir: Path, artifact_file: d
         argv += [f"--{art}", str(f)]
     for k, v in (overrides or {}).items():
         argv += ["--set", f"{k}={fmt(v)}"]
-    argv += ["-o", str(output_dir / artifact_file[produced]), "--runner", runner]
+    # Single-output stages name the file directly (unchanged); a multi-output stage (χ-separation)
+    # gets the output directory and the CLI writes each produced artifact there by canonical name.
+    out = output_dir / artifact_file[produces[0]] if len(produces) == 1 else output_dir
+    argv += ["-o", str(out), "--runner", runner]
     return argv
 
 
 def gt_sources(dataset: Path) -> dict[str, Path]:
     """Map each canonical artifact to its ground-truth-backed source path for a dataset dir.
 
-    Raw acquisition artifacts (phase/magnitude/mask/params) come from `<dataset>/inputs`; the stage
-    boundaries (totalfield/localfield/chimap) come from `<dataset>/groundtruth`, so an isolated run is
-    fed the exact GT artifact its stage consumes.
+    Each artifact resolves to `<dataset>/inputs/<file>` when that file exists, else
+    `<dataset>/groundtruth/<file>` — so an isolated run is fed the exact artifact its stage consumes,
+    whichever side of the boundary it lives on. For the QSM sim datasets that means raw acquisition
+    (phase/magnitude/mask/params) from inputs/ and the held-out stage boundaries
+    (totalfield/localfield/chimap) from groundtruth/. For the χ-separation dataset the local field,
+    R2′ and χ_total are *provided* inputs, so they resolve from inputs/ (the phantom's true maps),
+    while the scored χ+/χ− source maps stay in groundtruth/.
     """
     inputs, gt = dataset / "inputs", dataset / "groundtruth"
-    return {
-        "phase": inputs / "phase.nii.gz", "magnitude": inputs / "magnitude.nii.gz",
-        "mask": inputs / "mask.nii.gz", "params": inputs / "params.json",
-        "totalfield": gt / "totalfield.nii.gz", "localfield": gt / "localfield.nii.gz",
-        "chimap": gt / "chimap.nii.gz",
-    }
+    # Raw acquisition / provided-relaxation artifacts are always public inputs.
+    raw = {"phase": "phase.nii.gz", "magnitude": "magnitude.nii.gz", "mask": "mask.nii.gz",
+           "params": "params.json", "r2prime": "r2prime.nii.gz"}
+    # Stage boundaries are held-out ground truth for the QSM pipeline, but *provided* inputs for the
+    # χ-separation dataset (the phantom's true local field / χ_total). Prefer inputs/ when present.
+    boundary = {"totalfield": "totalfield.nii.gz", "localfield": "localfield.nii.gz",
+                "chimap": "chimap.nii.gz"}
+    src = {art: inputs / f for art, f in raw.items()}
+    src.update({art: (inputs / f if (inputs / f).exists() else gt / f)
+                for art, f in boundary.items()})
+    return src
 
 
 def parse_shard(spec: "str | None") -> "tuple[int | None, int | None]":
@@ -104,7 +116,7 @@ def shard_partition(items: "list", spec: "str | None") -> "list":
 
 def eval_argv(python: str, eval_path: Path, recon: Path, truth: Path, kind: str, mask: Path,
               artifact: str, out_json: Path, *, stage: str, name: str, track: str,
-              runtime=None, seg: "Path | None" = None) -> list[str]:
+              runtime=None, seg: "Path | None" = None, component: "str | None" = None) -> list[str]:
     """Build the `python qsm_eval.py …` argv the scorer subprocess runs.
 
     This is the flag-assembly the three scoring wrappers (pipeline.score, sweep.score_xsim,
@@ -123,4 +135,6 @@ def eval_argv(python: str, eval_path: Path, recon: Path, truth: Path, kind: str,
         cmd += ["--runtime", str(runtime)]
     if seg is not None:
         cmd += ["--seg", str(seg)]
+    if component is not None:  # χ-separation source (para=χ+, dia=χ−) for the source-specific metrics
+        cmd += ["--component", component]
     return cmd

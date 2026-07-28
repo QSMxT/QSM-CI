@@ -19,8 +19,9 @@ from pathlib import Path
 from .stages import STAGES
 
 # Consumed artifacts that aren't required to run a stage (only some methods use them, e.g. MEDI
-# uses magnitude; plain TKD does not). Everything else the stage consumes is required.
-OPTIONAL_ARTIFACTS = {"magnitude"}
+# uses magnitude; plain TKD does not; GRE-based χ-separation methods like APART-QSM/DECOMPOSE opt into
+# raw multi-echo phase). Everything else the stage consumes is required.
+OPTIONAL_ARTIFACTS = {"magnitude", "phase"}
 
 # Multi-echo artifacts: a stage wants one 4D NIfTI (x,y,z,echo), but a caller with BIDS data has one
 # 3D file per echo. These flags accept several files and we stack them into the 4D artifact.

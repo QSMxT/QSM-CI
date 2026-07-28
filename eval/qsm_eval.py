@@ -186,6 +186,43 @@ def calcification_metrics(recon, truth, seg) -> tuple[float, float]:
     return moment_dev, streak
 
 
+def chisep_metrics(recon, truth, mask, seg=None, component="para") -> dict:
+    """Metrics for one χ-separation source map.
+
+    `component` is 'para' (χ+, paramagnetic — iron in deep gray matter and venous blood) or 'dia' (χ−,
+    diamagnetic — calcification/myelin, stored as a POSITIVE magnitude). Because χ-separation isolates
+    the sources, the QSM region metrics apply to the source that owns each feature: χ+ carries the DGM
+    iron and venous blood; χ− carries the calcification. The base agreement set
+    (nrmse/nrmse_detrend/correlation/xsim) is always reported; with a segmentation we add:
+      χ+ : nrmse_dgm, dgm_linearity, nrmse_blood, calc_leak  (calcium wrongly bleeding INTO χ+)
+      χ− : calc_moment_dev, calc_streak, iron_leak           (iron/veins wrongly bleeding INTO χ−)
+    'leak' is the mean |recon| in the region owned by the OTHER source (which should be ~0 here) — a
+    direct cross-contamination / separation-fidelity measure, lower is better."""
+    out = field_metrics(recon, truth, mask)
+    if seg is None:
+        return out
+    m = mask > 0
+    seg = np.rint(seg).astype(np.int32)
+    dgm = m & np.isin(seg, [1, 2, 3, 4, 5, 6])
+    blood = (dilate_mask_3d((m & (seg == 11)).astype(np.uint8)) > 0) & m
+    calc = m & (seg == 16)
+
+    def leak(sel):  # contamination: mean |recon| where this source should be ~0
+        return float(np.abs(recon[sel]).mean()) if sel.any() else math.nan
+
+    if component == "para":
+        _, out["nrmse_dgm"] = nrmse_challenge(recon, truth, dgm)
+        out["dgm_linearity"] = dgm_linearity(recon, truth, seg)
+        _, out["nrmse_blood"] = nrmse_challenge(recon, truth, blood)
+        out["calc_leak"] = leak(calc)
+    else:  # dia — χ− is a positive magnitude; flip sign so the calcification reads negative
+        dev, streak = calcification_metrics(-recon, -truth, seg)
+        out["calc_moment_dev"] = dev
+        out["calc_streak"] = streak
+        out["iron_leak"] = leak(dgm | blood)
+    return out
+
+
 def field_metrics(recon, truth, mask) -> dict:
     """Metric subset appropriate for a field map (total or local), a scalar field in ppm.
 
@@ -278,9 +315,13 @@ def main() -> None:
     p = argparse.ArgumentParser(description="Score a QSM reconstruction against ground truth (QSM-CI).")
     p.add_argument("--recon", type=Path, help="produced artifact to score")
     p.add_argument("--truth", type=Path, help="ground-truth artifact")
-    p.add_argument("--kind", choices=["field", "chi"], default="chi",
-                   help="artifact kind: 'field' (total/local field) or 'chi' (susceptibility)")
-    p.add_argument("--seg", type=Path, help="segmentation (enables region metrics for kind=chi)")
+    p.add_argument("--kind", choices=["field", "chi", "chisep"], default="chi",
+                   help="artifact kind: 'field' (total/local field), 'chi' (susceptibility), or "
+                        "'chisep' (a χ+/χ− source-separation component; with --seg adds source-specific "
+                        "region metrics — DGM/blood for χ+, calcification for χ− — plus a leakage term)")
+    p.add_argument("--component", choices=["para", "dia"], default="para",
+                   help="χ-separation source for kind=chisep: para=χ+ (paramagnetic), dia=χ− (diamagnetic)")
+    p.add_argument("--seg", type=Path, help="segmentation (enables region metrics for kind=chi/chisep)")
     p.add_argument("--mask", type=Path)
     p.add_argument("--track", default="sim", choices=["sim", "invivo"], help="dataset label")
     p.add_argument("--stage", default=None, help="stage/span this run implements (recorded)")
@@ -301,7 +342,10 @@ def main() -> None:
     if recon.shape != truth.shape or recon.shape != mask.shape:
         raise SystemExit(f"shape mismatch: recon {recon.shape}, truth {truth.shape}, mask {mask.shape}")
 
-    if args.kind == "field":
+    if args.kind == "chisep":
+        seg = np.rint(load(args.seg)).astype(np.int32) if args.seg else None
+        metrics = chisep_metrics(recon, truth, mask, seg, args.component)
+    elif args.kind == "field":
         metrics = field_metrics(recon, truth, mask)
     elif args.seg:  # chi with segmentation -> full challenge suite
         seg = np.rint(load(args.seg)).astype(np.int32)

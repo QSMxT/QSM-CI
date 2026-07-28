@@ -19,7 +19,12 @@ set -euo pipefail
 TRACK="${1:?track required}"
 DEST="${2:?dest dir required}"
 OSF_PROJECT="${OSF_PROJECT:-y8adf}"
-OSF_FILE="${OSF_FILE:-698ac9aecae88916d1e24f69}"   # bids.zip in y8adf/osfstorage
+# bids.zip file id per track. The χ-separation phantom is a SEPARATE bids (χ+/χ− sources + R2'
+# derivatives), so it lives in its own OSF file — set OSF_FILE_CHISEP (or override OSF_FILE).
+case "$TRACK" in
+  chisep) OSF_FILE="${OSF_FILE:-${OSF_FILE_CHISEP:?set OSF_FILE_CHISEP to the χ-sep bids.zip OSF file id}}"; PACK_FLAGS="--chisep" ;;
+  *)      OSF_FILE="${OSF_FILE:-698ac9aecae88916d1e24f69}"; PACK_FLAGS="" ;;   # QSM bids
+esac
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
@@ -31,8 +36,17 @@ else
   : "${OSF_TOKEN:?OSF_TOKEN must be set (or provide an existing OSF_ZIP)}"
   echo "[fetch_dataset] downloading ${OSF_PROJECT}/${OSF_FILE} from OSF"
   mkdir -p "$(dirname "$zip")"
-  curl -fSL -H "Authorization: Bearer ${OSF_TOKEN}" \
-    "https://files.osf.io/v1/resources/${OSF_PROJECT}/providers/osfstorage/${OSF_FILE}" -o "$zip"
+  # A 24-hex string is a waterbutler file id (osfstorage path); anything shorter is a file GUID,
+  # downloaded via osf.io/<guid>/download. Both authenticate with the OSF token for a private project.
+  if [[ "$OSF_FILE" =~ ^[0-9a-f]{24}$ ]]; then
+    url="https://files.osf.io/v1/resources/${OSF_PROJECT}/providers/osfstorage/${OSF_FILE}"
+  else
+    url="https://osf.io/${OSF_FILE}/download"
+  fi
+  # --location-trusted: a GUID download redirects osf.io -> files.osf.io (-> signed storage); keep the
+  # OSF token across those hops so a private-project file still authenticates. (Harmless for the direct
+  # waterbutler URL, and the signed storage URL just ignores the extra header.)
+  curl -fS --location-trusted -H "Authorization: Bearer ${OSF_TOKEN}" "$url" -o "$zip"
 fi
 
 unzip -q "$zip" -d "$tmp/extract"
@@ -41,5 +55,5 @@ phase="$(find "$tmp/extract" -path '*/sub-*/anat/*part-phase_MEGRE.nii*' ! -path
 [ -n "$phase" ] || { echo "[fetch_dataset] could not find raw phase under the zip" >&2; exit 1; }
 bids="$(dirname "$(dirname "$(dirname "$phase")")")"
 
-python3 "$SCRIPT_DIR/pack_dataset.py" "$bids" "$DEST"
+python3 "$SCRIPT_DIR/pack_dataset.py" "$bids" "$DEST" $PACK_FLAGS
 echo "[fetch_dataset] ${TRACK} dataset ready at ${DEST}"

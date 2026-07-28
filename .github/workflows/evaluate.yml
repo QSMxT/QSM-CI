@@ -62,23 +62,40 @@ jobs:
           pip install --upgrade setuptools setuptools_scm wheel   # runner's build tools are too old for setuptools-scm
           pip install --no-build-isolation .                       # build the CLI with the upgraded tools
 
+      # Route each method to the right phantom by its stage: χ-separation methods need the chisep
+      # dataset (χ+/χ− ground truth + R2'/χ_total inputs), everything else the QSM scoring phantom.
+      - name: Route dataset by stage
+        id: route
+        run: |
+          stage=$(sed -nE 's/^stage:[[:space:]]*//p' "algorithms/${{ matrix.slug }}/algorithm.yml" | head -1)
+          if [ "$stage" = "chi-separation" ]; then
+            echo "fetch_track=chisep"          >> "$GITHUB_OUTPUT"
+            echo "dataset=data/chisep/scoring" >> "$GITHUB_OUTPUT"
+            echo "zipkey=osf-chisep-${{ secrets.OSF_FILE_CHISEP }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "fetch_track=sim"             >> "$GITHUB_OUTPUT"
+            echo "dataset=data/sim/scoring"    >> "$GITHUB_OUTPUT"
+            echo "zipkey=osf-bids-698ac9aecae88916d1e24f69" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Cache OSF dataset zip
         uses: actions/cache@v6
         with:
-          path: .osfcache/bids.zip
-          key: osf-bids-698ac9aecae88916d1e24f69
+          path: .osfcache/${{ steps.route.outputs.fetch_track }}.zip
+          key: ${{ steps.route.outputs.zipkey }}
       - name: Fetch dataset (public inputs + held-out ground truth)
         env:
           OSF_TOKEN: ${{ secrets.OSF_TOKEN }}
-          OSF_ZIP: .osfcache/bids.zip
-        run: scripts/fetch_dataset.sh "$TRACK" data/${TRACK}/scoring
+          OSF_FILE_CHISEP: ${{ secrets.OSF_FILE_CHISEP }}   # χ-sep bids.zip OSF file id (set once uploaded)
+          OSF_ZIP: .osfcache/${{ steps.route.outputs.fetch_track }}.zip
+        run: scripts/fetch_dataset.sh "${{ steps.route.outputs.fetch_track }}" "${{ steps.route.outputs.dataset }}"
 
       - name: Isolated evaluation (build env with network, run offline, mount code)
         # --fail-on-dnf: a submission that can't run (missing/broken run.sh, crash, wrong output
         # artifact) turns this check RED instead of merging green and silently scoring DNF on main.
         run: |
           python scripts/pipeline.py \
-            --dataset data/${TRACK}/scoring \
+            --dataset "${{ steps.route.outputs.dataset }}" \
             --mode isolated --runner docker --only "${{ matrix.slug }}" --track "$TRACK" --fail-on-dnf
 
       - name: Comment metrics on PR

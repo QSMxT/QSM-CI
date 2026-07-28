@@ -14,12 +14,22 @@ artifacts:
   totalfield:  { kind: field,     units: ppm,    ndim: 3, file: totalfield.nii.gz, groundtruth: totalfield.nii.gz }
   localfield:  { kind: field,     units: ppm,    ndim: 3, file: localfield.nii.gz, groundtruth: localfield.nii.gz }
   chimap:      { kind: chi,       units: ppm,    ndim: 3, file: chimap.nii.gz,     groundtruth: chimap.nii.gz }
+  # χ-separation (susceptibility source separation). r2prime is a provided relaxation input; chi-para
+  # (χ+, paramagnetic/iron) and chi-dia (χ−, diamagnetic/myelin·calcium, stored as positive magnitude)
+  # are the two scored source maps.
+  r2prime:     { kind: relaxation, units: Hz,    ndim: 3, file: r2prime.nii.gz }
+  chi-para:    { kind: chisep,    units: ppm,    ndim: 3, file: chi-para.nii.gz,   groundtruth: chi-para.nii.gz }
+  chi-dia:     { kind: chisep,    units: ppm,    ndim: 3, file: chi-dia.nii.gz,    groundtruth: chi-dia.nii.gz }
 
 # The three swappable stages, in pipeline order. `consumes`/`produces` are artifact names.
 stages:
   field-mapping: { consumes: [phase, magnitude, mask, params], produces: [totalfield] }
   bfr:           { consumes: [totalfield, mask, params],        produces: [localfield] }
   dipole:        { consumes: [localfield, mask, params],        produces: [chimap] }
+  # χ-separation: fed the local field, R2′, χ_total and multi-echo magnitude, produces two source maps.
+  # Isolated-only (never part of the field-mapping × bfr × dipole composed matrix — its outputs are
+  # neither localfield nor chimap, so run_composed skips it).
+  chi-separation: { consumes: [localfield, r2prime, chimap, magnitude, mask, params], produces: [chi-para, chi-dia] }
 
 # Named contiguous spans, for methods that cross stage boundaries (joint / single-step / phase-domain).
 # A submission may set `stage` to any stage or span name below.
@@ -30,9 +40,14 @@ spans:
 
 # Metrics reported per artifact kind (see eval/qsm_eval.py).
 scoring:
-  field: [nrmse, nrmse_detrend, correlation, xsim]
-  chi:   [nrmse, nrmse_detrend, nrmse_tissue, nrmse_blood, nrmse_dgm,
-          dgm_linearity, calc_moment_dev, calc_streak, correlation, xsim]
+  field:  [nrmse, nrmse_detrend, correlation, xsim]
+  chi:    [nrmse, nrmse_detrend, nrmse_tissue, nrmse_blood, nrmse_dgm,
+           dgm_linearity, calc_moment_dev, calc_streak, correlation, xsim]
+  # χ-separation source map. Base agreement set for both sources, plus source-specific region metrics:
+  # χ+ (para) adds nrmse_dgm, dgm_linearity, nrmse_blood, calc_leak; χ− (dia) adds calc_moment_dev,
+  # calc_streak, iron_leak. 'leak' terms measure cross-contamination into the wrong source.
+  chisep: [nrmse, nrmse_detrend, correlation, xsim, nrmse_dgm, dgm_linearity, nrmse_blood, calc_leak,
+           calc_moment_dev, calc_streak, iron_leak]
 
 # Evaluation modes.
 #   isolated  — each stage/span is fed the GROUND-TRUTH artifact(s) it consumes (mounted at run time
