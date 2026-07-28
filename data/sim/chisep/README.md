@@ -15,14 +15,28 @@ multi-echo magnitude, and must recover the paramagnetic (χ+) and diamagnetic (�
 
 ## R2′ relaxivity model
 
-R2′ is physically realistic: `R2' = Dr₊·|χ+| + Dr₋·|χ−|` with **split relaxivities `Dr₊ = 114`,
-`Dr₋ = 30 Hz/ppm`** (qsm-forward defaults; paramagnetic iron dephases more per ppm than diamagnetic
-myelin/calcium). This is what real tissue looks like and what learned methods (χ-sepnet) are trained on,
-so it's the right ground truth; each method applies its own Dr assumption when inverting.
+R2′ uses a **single magnitude decay kernel** `Dr = 137 Hz/ppm` shared by both source types:
 
-Note: purely analytic single-Dr methods (e.g. iLSQR) are disadvantaged by split relaxivities, which is a
-fair reflection of a real limitation — but that is *not* why our iLSQR run failed (it produced pure
-artifact regardless of the R2′ model, a separate wiring/black-box issue; χ-sepnet works well here).
+```
+R2' = Dr · (|χ+| + |χ−|),   Dr = 137 Hz/ppm
+```
+
+This is the standard chi-separation model (Shin et al. 2021): in the static-dephasing regime the
+reversible relaxation depends on the *magnitude* of the field perturbation, not its sign, so one kernel
+applies to iron and myelin alike. 137 Hz/ppm is Shin's empirically measured value (multi-orientation
+work, 2022); every published chi-separation method we benchmark (χ-sep iLSQR/MEDI, χ-sepnet, SUSEP-Net,
+APART-QSM, WaveSep) is built on this single-kernel assumption.
+
+**Why not a split (`Dr₊ ≠ Dr₋`)?** Real microstructure (spherical ferritin vs anisotropic myelin)
+plausibly gives the two source types different *effective* relaxivities, so a split is biophysically
+defensible in principle. But it is **deliberately not used here**, because: (a) the relaxivities are
+**not recoverable from the data** — with one QSM + one R2′ map they must be assumed a priori, so baking a
+specific split into the ground truth mainly rewards whichever method happens to share that exact
+assumption rather than testing recovery; (b) no widely-used chi-sep method or reference phantom adopts a
+split; and (c) the split this phantom previously shipped (`Dr₊ = 114`, `Dr₋ = 30`) had **no published
+basis** — 114 is a valid *single*-kernel value (COSMOS-referenced, χ-sepnet), but the `30` was
+unsourced. A split remains available as an explicit opt-in in qsm-forward (`generate_r2prime(..., dr_neg=…)`
+or `--dr-neg`) for sensitivity studies. See the `DR_KERNEL` note in `qsm-forward` for the full rationale.
 
 To rebuild `r2prime.nii.gz` from the ground-truth sources:
-`114·|chi-para| + 30·|chi-dia|` within the brain mask.
+`137·(|chi-para| + |chi-dia|)` within the brain mask.
