@@ -101,9 +101,12 @@ def main() -> int:
         if rid not in by_id:
             continue
         for kind in KINDS:
-            f = run_dir / f"{kind}.nii.gz"
-            if f.exists():
-                items.append((rid, kind, "nii.gz", f))
+            # χ-separation writes a second "-dia" volume set (recon-dia/truth-dia/error-dia) for its χ−
+            # source alongside the plain χ+ set; publish both so the viewer's χ+/χ− toggle can load either.
+            for sfx in ("", "-dia"):
+                f = run_dir / f"{kind}{sfx}.nii.gz"
+                if f.exists():
+                    items.append((rid, kind + sfx, "nii.gz", f))
         rf = run_dir / "resources.json"
         if rf.exists():
             items.append((rid, "resources", "json", rf))
