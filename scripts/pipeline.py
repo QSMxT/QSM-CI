@@ -428,9 +428,13 @@ def _score_chisep(a, sfx, variant, overrides, odir, gt, mask, rt, args):
                  else f"xsim={_fmt(m.get('xsim'))} nrmse={_fmt(m.get('nrmse'), '.2f')}%")
         print(f"  isolated  {a['slug']:<16} {variant:<8} {art:<11} {shown}")
     # Viewer volumes: emit both sources under the run id (results/<id>/) — χ+ as the plain set and χ−
-    # with a "-dia" suffix, so the detail viewer's χ+/χ− toggle can load either.
+    # with a "-dia" suffix, so the detail viewer's χ+/χ− toggle can load either. The container runner
+    # writes one resources.json (memory/CPU-over-time) beside the outputs for the whole run; carry it
+    # on the χ+ set so the detail page graphs CPU/RAM for χ-sep methods too, like the QSM ones.
     if args.emit_volumes:
-        emit_volumes(rid, odir / ARTIFACT_FILE["chi-para"], gt / ARTIFACT_FILE["chi-para"], mask)
+        res = odir / "resources.json"
+        emit_volumes(rid, odir / ARTIFACT_FILE["chi-para"], gt / ARTIFACT_FILE["chi-para"], mask,
+                     resources=res if res.exists() else None)
         emit_volumes(rid, odir / ARTIFACT_FILE["chi-dia"], gt / ARTIFACT_FILE["chi-dia"], mask, suffix="-dia")
     return row
 
