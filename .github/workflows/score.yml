@@ -115,25 +115,36 @@ jobs:
               except FileNotFoundError: return HOSTED
               m = re.search(r'^runner:[ \t]*(\S+)', t, re.M)
               return {'self-hosted': SELFHOSTED, 'hosted-long': HOSTED_LONG}.get(m.group(1) if m else '', HOSTED)
+          def is_chisep(slug):
+              try: t = open(f'algorithms/{slug}/algorithm.yml').read()
+              except FileNotFoundError: return False
+              m = re.search(r'^stage:[ \t]*(\S+)', t, re.M)
+              return bool(m) and m.group(1) == 'chi-separation'
+          def phantom(slug):
+              # Which phantom this method scores on: χ-separation methods use the chisep dataset (χ+/χ−
+              # GT + R2'/χ_total inputs); everything else the QSM sim phantom.
+              return 'chisep' if is_chisep(slug) else 'sim'
           def dedicated():
-              # Methods that run as their own focused job (not the shard sweep): anything not plain HOSTED.
+              # Methods that run as their own focused job (not the shard sweep): a non-HOSTED runner OR a
+              # χ-separation method (scored on a SEPARATE phantom, isolated-only — can't ride the QSM shard
+              # sweep). Both are --exclude'd from the shards and get a --focus job on the right phantom.
               out = []
               for p in sorted(glob.glob('algorithms/*/algorithm.yml')):
                   slug = p.split('/')[1]
-                  if not slug.startswith('_') and route(slug) is not HOSTED:
+                  if not slug.startswith('_') and (route(slug) is not HOSTED or is_chisep(slug)):
                       out.append(slug)
               return out
           if full:
-              # Full re-run: hosted shards score the whole matrix MINUS the dedicated methods
+              # Full re-run: hosted shards score the whole QSM matrix MINUS the dedicated methods
               # (pipeline.py --exclude), and each dedicated method runs as its own focused job on its
-              # chosen runner (--focus). Union = the full matrix, every method on the right runner.
+              # chosen runner + phantom (--focus). Union = the full matrix, every method scored correctly.
               N = int(os.environ['N'])
               ded = dedicated()
               excl = ','.join(ded)
-              tasks = [{'id': 's%02d' % i, 'shard': '%d/%d' % (i, N), 'exclude': excl, **HOSTED} for i in range(N)]
-              tasks += [{'id': 'f-' + s, 'focus': s, **route(s)} for s in ded]
+              tasks = [{'id': 's%02d' % i, 'shard': '%d/%d' % (i, N), 'exclude': excl, 'phantom': 'sim', **HOSTED} for i in range(N)]
+              tasks += [{'id': 'f-' + s, 'focus': s, 'phantom': phantom(s), **route(s)} for s in ded]
           else:
-              tasks = [{'id': 'f-' + s, 'focus': s, **route(s)} for s in json.loads(os.environ['SLUGS'])]
+              tasks = [{'id': 'f-' + s, 'focus': s, 'phantom': phantom(s), **route(s)} for s in json.loads(os.environ['SLUGS'])]
           print(json.dumps(tasks))
           PY
           )
@@ -165,18 +176,21 @@ jobs:
       - name: Cache OSF dataset zip
         uses: actions/cache@v6
         with:
-          path: .osfcache/bids.zip
-          key: osf-bids-698ac9aecae88916d1e24f69
+          path: .osfcache/${{ matrix.task.phantom || 'sim' }}.zip
+          key: ${{ matrix.task.phantom == 'chisep' && format('osf-chisep-{0}', secrets.OSF_FILE_CHISEP) || 'osf-bids-698ac9aecae88916d1e24f69' }}
       - name: Fetch dataset (public inputs + held-out ground truth)
         env:
           OSF_TOKEN: ${{ secrets.OSF_TOKEN }}
-          OSF_ZIP: .osfcache/bids.zip
-        run: scripts/fetch_dataset.sh "$TRACK" data/${TRACK}/scoring
+          OSF_FILE_CHISEP: ${{ secrets.OSF_FILE_CHISEP }}   # χ-sep bids.zip OSF file id
+          OSF_ZIP: .osfcache/${{ matrix.task.phantom || 'sim' }}.zip
+        run: scripts/fetch_dataset.sh "${{ matrix.task.phantom || 'sim' }}" "data/${{ matrix.task.phantom || 'sim' }}/scoring"
 
       - name: Score task ${{ matrix.task.id }}
         run: |
-          DS="data/${TRACK}/scoring"
-          ARGS="--dataset $DS --mode both --runner docker --track $TRACK --emit-volumes --runs-out runs-${{ matrix.task.id }}.json"
+          PH="${{ matrix.task.phantom || 'sim' }}"
+          DS="data/$PH/scoring"
+          MODE=both; [ "$PH" = chisep ] && MODE=isolated   # χ-separation is isolated-only (no composed matrix)
+          ARGS="--dataset $DS --mode $MODE --runner docker --track $TRACK --emit-volumes --runs-out runs-${{ matrix.task.id }}.json"
           [ -n "${{ matrix.task.shard }}" ] && ARGS="$ARGS --shard ${{ matrix.task.shard }}"
           [ -n "${{ matrix.task.focus }}" ] && ARGS="$ARGS --focus ${{ matrix.task.focus }}"
           [ -n "${{ matrix.task.exclude }}" ] && ARGS="$ARGS --exclude ${{ matrix.task.exclude }}"
