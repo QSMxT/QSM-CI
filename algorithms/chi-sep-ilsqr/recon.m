@@ -8,10 +8,12 @@ function recon(inp, out)
 % result (χ+ xsim 0.22); reconstructing the QSM in-house with STI-Suite QSM_iLSQR from the same local
 % field (matching the toolbox's scaling/orientation conventions) gives a real reconstruction (χ+ xsim
 % 0.49, χ− 0.32) and ~70x lower cross-source leakage. So we ignore chimap.nii.gz and derive the QSM here.
-    addpath(getenv('CHISEP_SHIMS'));                              % padarray/tukeywin/strel shims (no IPT/SPT)
-    addpath(genpath(getenv('CHISEP_TOOLBOX')));                  % SNU-LIST chi-separation toolbox
-    addpath(genpath(getenv('CHISEP_STISUITE')));                % STI Suite (QSM_iLSQR)
-    addpath(getenv('CHISEP_NIFTI'));                            % Jimmy Shen NIfTI I/O
+    % Local (full-MATLAB) runs point these env vars at the toolboxes; the compiled MCR binary has them
+    % baked in at mcc time (see BUILD.md) and leaves the vars unset, so only addpath when non-empty.
+    addpath_env('CHISEP_SHIMS', false);      % padarray/tukeywin/strel shims (no IPT/SPT)
+    addpath_env('CHISEP_TOOLBOX', true);     % SNU-LIST chi-separation toolbox
+    addpath_env('CHISEP_STISUITE', true);    % STI Suite (QSM_iLSQR)
+    addpath_env('CHISEP_NIFTI', false);      % Jimmy Shen NIfTI I/O
 
     p   = jsondecode(fileread(fullfile(inp, 'params.json')));
     B0  = p.B0; CF = 42.5774e6 * B0; b0d = p.B0_dir(:)'; vox = p.voxel_size(:)';
@@ -48,6 +50,12 @@ function nii = setimg(tmpl, img)
     nii = tmpl; nii.img = img;
     nii.hdr.dime.datatype = 16; nii.hdr.dime.bitpix = 32;
     nii.hdr.dime.dim(1) = 3; nii.hdr.dime.dim(5) = 1;
+end
+function addpath_env(name, recurse)
+    d = getenv(name);
+    if ~isempty(d)
+        if recurse, addpath(genpath(d)); else, addpath(d); end
+    end
 end
 function nii = read_niigz(f)
     t = [tempname '.nii']; system(sprintf('gunzip -c ''%s'' > ''%s''', f, t)); nii = load_untouch_nii(t); delete(t);
