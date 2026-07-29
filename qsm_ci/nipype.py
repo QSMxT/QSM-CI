@@ -146,4 +146,39 @@ class DipoleInversion(_QsmCiRun):
     _produced = "chimap.nii.gz"
 
 
-__all__ = ["FieldMapping", "BackgroundRemoval", "DipoleInversion"]
+# --- chi-separation: localfield + r2prime + chimap (+magnitude) -> chi-para + chi-dia ----------
+# The only multi-output stage: `-o` is a DIRECTORY and two source maps are written into it, so this
+# interface has its own two-file output spec instead of the single `out_file`.
+
+class ChiSeparationInputSpec(_RunInputSpec):
+    localfield = File(exists=True, argstr="--localfield %s", mandatory=True,
+                      desc="local field NIfTI (ppm)")
+    r2prime = File(exists=True, argstr="--r2prime %s", mandatory=True, desc="R2' NIfTI (Hz)")
+    chimap = File(exists=True, argstr="--chimap %s", desc="χ_total / QSM NIfTI (ppm)")
+    magnitude = File(exists=True, argstr="--magnitude %s", desc="multi-echo magnitude NIfTI")
+    out = File("chisep_out", argstr="-o %s", usedefault=True,
+               desc="directory to write chi-para.nii.gz and chi-dia.nii.gz into")
+
+
+class ChiSeparationOutputSpec(TraitedSpec):
+    chi_para = File(desc="paramagnetic source χ+ (iron), ppm")
+    chi_dia = File(desc="diamagnetic source χ− (myelin/calcium), positive magnitude, ppm")
+
+
+class ChiSeparation(_QsmCiRun):
+    """QSM-CI *χ-separation* stage — χ_total + R2′ → χ+ (paramagnetic) and χ− (diamagnetic).
+
+    Multi-output: ``out`` is a directory; ``chi_para`` and ``chi_dia`` are the two maps written into it."""
+
+    input_spec = ChiSeparationInputSpec
+    output_spec = ChiSeparationOutputSpec
+
+    def _list_outputs(self):
+        d = os.path.abspath(self.inputs.out)
+        outputs = self.output_spec().get()
+        outputs["chi_para"] = os.path.join(d, "chi-para.nii.gz")
+        outputs["chi_dia"] = os.path.join(d, "chi-dia.nii.gz")
+        return outputs
+
+
+__all__ = ["FieldMapping", "BackgroundRemoval", "DipoleInversion", "ChiSeparation"]

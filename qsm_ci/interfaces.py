@@ -18,7 +18,7 @@ the engine's own container support. The two Python engines ship as ready-to-impo
 
 from __future__ import annotations
 
-from .stages import ARTIFACT_FILE, STAGES, produced_artifact
+from .stages import ARTIFACT_FILE, STAGES, produced_artifact, produced_artifacts
 
 # Consumed artifacts a stage can run without: magnitude (only some methods use it) and params
 # (a caller may pass acquisition flags instead). Everything else a stage consumes is required.
@@ -49,7 +49,8 @@ def _consumes(stage: str) -> list:
 # --- CWL --------------------------------------------------------------------------------------
 
 def _cwl_tool(stage: str, indent: str = "") -> str:
-    produced = produced_artifact(stage)
+    prods = produced_artifacts(stage)
+    multi = len(prods) > 1  # χ-separation writes two source maps into an output directory
     lines = [
         "class: CommandLineTool",
         f"label: QSM-CI {stage} stage ({STAGE_DESC.get(stage, stage)})",
@@ -62,11 +63,14 @@ def _cwl_tool(stage: str, indent: str = "") -> str:
         # every flag after the positional slug (position:1), else unpositioned flags sort before it.
         t = '"File?"' if art in OPTIONAL else "File"
         lines.append(f"  {art}: {{ type: {t}, inputBinding: {{ prefix: --{art}, position: 2 }} }}")
+    default_out = "out" if multi else ARTIFACT_FILE[prods[0]]
     lines.append(
-        f"  out: {{ type: string, default: {ARTIFACT_FILE[produced]}, "
+        f"  out: {{ type: string, default: {default_out}, "
         f"inputBinding: {{ prefix: -o, position: 2 }} }}")
     lines.append("outputs:")
-    lines.append(f"  {produced}: {{ type: File, outputBinding: {{ glob: $(inputs.out) }} }}")
+    for art in prods:  # single-output: glob the -o path; multi (dir): glob each file inside it
+        glob = f"$(inputs.out)/{ARTIFACT_FILE[art]}" if multi else "$(inputs.out)"
+        lines.append(f"  {art}: {{ type: File, outputBinding: {{ glob: {glob} }} }}")
     return "\n".join(indent + ln for ln in lines) if indent else "\n".join(lines)
 
 
@@ -83,15 +87,19 @@ def _cwl(stages: list) -> str:
 # --- Snakemake --------------------------------------------------------------------------------
 
 def _snakemake_rule(stage: str, slug: str) -> str:
-    produced = produced_artifact(stage)
+    prods = produced_artifacts(stage)
+    multi = len(prods) > 1  # χ-separation writes two files into an output directory
     inputs = "\n".join(f'        {a}="{ARTIFACT_FILE[a]}",' for a in _consumes(stage))
     flags = " ".join(f"--{a} {{input.{a}}}" for a in _consumes(stage))
+    outputs = "\n".join(f'        {_ident(a)}="{ARTIFACT_FILE[a]}",' for a in prods)
+    # -o is a file for single-output stages, a directory for χ-separation (writes both maps into it).
+    out_ref = "." if multi else f"{{output.{_ident(prods[0])}}}"
     return (
         f"rule {_ident(stage)}:\n"
         f"    input:\n{inputs}\n"
-        f"    output:\n        {produced}=\"{ARTIFACT_FILE[produced]}\",\n"
+        f"    output:\n{outputs}\n"
         f'    params:\n        slug="{slug}",\n'
-        f'    shell:\n        "qsm-ci run {{params.slug}} {flags} -o {{output.{produced}}}"'
+        f'    shell:\n        "qsm-ci run {{params.slug}} {flags} -o {out_ref}"'
     )
 
 
@@ -104,15 +112,18 @@ def _snakemake(stages: list, slug: str) -> str:
 # --- Nextflow (DSL2) --------------------------------------------------------------------------
 
 def _nextflow_process(stage: str, slug: str) -> str:
-    produced = produced_artifact(stage)
+    prods = produced_artifacts(stage)
+    multi = len(prods) > 1  # χ-separation emits two files (into the task dir via -o .)
     ins = "\n".join(["    val slug"] + [f"    path {a}" for a in _consumes(stage)])
     flags = " ".join(f"--{a} ${{{a}}}" for a in _consumes(stage))
+    outs = "\n".join(f"    path '{ARTIFACT_FILE[a]}'" for a in prods)
+    out_ref = "." if multi else ARTIFACT_FILE[prods[0]]
     return (
         f"process {_ident(stage)} {{\n"
         f"    input:\n{ins}\n\n"
-        f"    output:\n    path '{ARTIFACT_FILE[produced]}'\n\n"
+        f"    output:\n{outs}\n\n"
         f'    script:\n    """\n'
-        f"    qsm-ci run ${{slug}} {flags} -o {ARTIFACT_FILE[produced]}\n"
+        f"    qsm-ci run ${{slug}} {flags} -o {out_ref}\n"
         f'    """\n'
         f"}}"
     )

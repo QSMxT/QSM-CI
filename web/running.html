@@ -78,7 +78,19 @@ qsm-ci run rts   --localfield localfield.nii.gz --mask m.nii.gz --params p.json 
     </section>
 
     <section class="mt-8 space-y-3">
-      <h2 class="text-lg font-semibold">6. Use it from a workflow engine</h2>
+      <h2 class="text-lg font-semibold">6. χ-separation (two source maps)</h2>
+      <p class="text-sm text-gray-600 dark:text-gray-400">Susceptibility source separation splits net χ into
+        paramagnetic (χ+, iron) and diamagnetic (χ−, myelin·calcium). These methods read the local field,
+        R2′ and χ_total and write <em>both</em> maps into a directory — so <code>-o</code> is a folder (and
+        <code>--truth</code> a folder of ground-truth maps):</p>
+      <pre class="overflow-x-auto rounded-xl bg-gray-900 p-4 text-sm text-gray-100"><code>qsm-ci run chi-sepnet \
+  --localfield localfield.nii.gz --r2prime r2prime.nii.gz --chimap chimap.nii.gz \
+  --magnitude magnitude.nii.gz --mask mask.nii.gz --params params.json \
+  -o out/   <span class="text-gray-400"># writes out/chi-para.nii.gz (χ+) and out/chi-dia.nii.gz (χ−)</span></code></pre>
+    </section>
+
+    <section class="mt-8 space-y-3">
+      <h2 class="text-lg font-semibold">7. Use it from a workflow engine</h2>
       <p class="text-sm text-gray-600 dark:text-gray-400">Every method is one <code>qsm-ci run</code> away, so
         it drops into any pipeline engine. <a href="https://nipype.readthedocs.io" class="text-emerald-600 hover:underline">nipype</a>
         and <a href="https://pydra.readthedocs.io" class="text-emerald-600 hover:underline">Pydra</a> have
@@ -128,7 +140,7 @@ nextflow run pipeline.nf --phase phase.nii.gz --magnitude mag.nii.gz \
     </section>
 
     <section class="mt-8 space-y-3">
-      <h2 class="text-lg font-semibold">7. Need test data?</h2>
+      <h2 class="text-lg font-semibold">8. Need test data?</h2>
       <p class="text-sm text-gray-600 dark:text-gray-400">Generate a phantom with
         <a href="https://github.com/astewartau/qsm-forward" class="text-emerald-600 hover:underline">qsm-forward</a> —
         it forward-simulates, so it comes <em>with</em> ground truth:</p>

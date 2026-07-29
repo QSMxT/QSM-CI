@@ -123,4 +123,32 @@ def DipoleInversion(name: str = "dipole", **kwargs) -> "ShellCommandTask":
                             input_spec=_dipole_in, output_spec=_dipole_out, **kwargs)
 
 
+# --- chi-separation: localfield + r2prime + chimap (+magnitude) -> chi-para + chi-dia ----------
+# The one multi-output stage: `out` is a DIRECTORY; the two source maps land inside it, so the output
+# spec has two fields templated on {out} rather than the single produced-artifact field.
+
+_chisep_in = _input("ChiSeparationIn", [
+    ("localfield", File, {"help_string": "local field NIfTI (ppm)",
+                          "argstr": "--localfield", "mandatory": True}),
+    ("r2prime", File, {"help_string": "R2' NIfTI (Hz)", "argstr": "--r2prime", "mandatory": True}),
+    ("chimap", File, {"help_string": "χ_total / QSM NIfTI (ppm)", "argstr": "--chimap"}),
+    ("magnitude", File, {"help_string": "multi-echo magnitude NIfTI", "argstr": "--magnitude"}),
+    *_trailing("chisep_out"),
+])
+_chisep_out = SpecInfo(name="ChiSeparationOut", bases=(ShellOutSpec,), fields=[
+    ("chi_para", File, {"help_string": "paramagnetic source χ+ (iron), ppm",
+                        "output_file_template": "{out}/chi-para.nii.gz"}),
+    ("chi_dia", File, {"help_string": "diamagnetic source χ− (myelin/calcium), positive magnitude",
+                       "output_file_template": "{out}/chi-dia.nii.gz"}),
+])
+
+
+def ChiSeparation(name: str = "chi_separation", **kwargs) -> "ShellCommandTask":
+    """QSM-CI χ-separation stage — χ_total + R2′ → χ+ (paramagnetic) and χ− (diamagnetic).
+
+    Multi-output: ``out`` is a directory; the task exposes ``chi_para`` and ``chi_dia`` from inside it."""
+    return ShellCommandTask(name=name, executable=["qsm-ci", "run"],
+                            input_spec=_chisep_in, output_spec=_chisep_out, **kwargs)
+
+
 __all__ = ["FieldMapping", "BackgroundRemoval", "DipoleInversion"]

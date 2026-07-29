@@ -17,6 +17,7 @@ STAGE_HELP = {
     "end-to-end": "phase → χ (single-step)",
     "bfr+dipole": "total field → χ",
     "unwrap+bfr": "phase → local field",
+    "chi-separation": "χ_total + R2′ → χ+ (paramagnetic) and χ− (diamagnetic)",
 }
 
 

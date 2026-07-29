@@ -89,6 +89,7 @@ qsm-ci doctor            # checks you have what you need (Docker, etc.)</code></
                 <tr><td class="px-3 py-1.5 font-mono">unwrap+bfr</td><td class="px-3 py-1.5">phase, magnitude</td><td class="px-3 py-1.5">local field</td></tr>
                 <tr><td class="px-3 py-1.5 font-mono">bfr+dipole</td><td class="px-3 py-1.5">total field</td><td class="px-3 py-1.5">susceptibility (χ)</td></tr>
                 <tr><td class="px-3 py-1.5 font-mono">end-to-end</td><td class="px-3 py-1.5">phase, magnitude</td><td class="px-3 py-1.5">susceptibility (χ)</td></tr>
+                <tr><td class="px-3 py-1.5 font-mono">chi-separation</td><td class="px-3 py-1.5">local field, R2′, χ_total, magnitude</td><td class="px-3 py-1.5">χ+ (paramagnetic) &amp; χ− (diamagnetic)</td></tr>
               </tbody>
             </table>
           </div>
@@ -97,6 +98,12 @@ qsm-ci doctor            # checks you have what you need (Docker, etc.)</code></
              produced files are <code>totalfield.nii.gz</code> / <code>localfield.nii.gz</code> /
              <code>chimap.nii.gz</code>, all in ppm. To convert a field from Hz:
              <code>ppm = Hz · 1e6 / (γ · B0)</code>, <code>γ = 42.576e6</code> Hz/T.</p>
+          <p><strong>χ-separation</strong> is the one stage that produces <em>two</em> maps. It reads the
+             local field, <code>r2prime.nii.gz</code> (R2′, Hz), <code>chimap.nii.gz</code> (χ_total) and
+             multi-echo <code>magnitude.nii.gz</code>, and writes both <code>chi-para.nii.gz</code> (χ+,
+             paramagnetic / iron) and <code>chi-dia.nii.gz</code> (χ−, diamagnetic / myelin·calcium, stored
+             as a positive magnitude) to <code>/output</code>. <code>qsm-ci new</code> scaffolds a working
+             χ-separation starter; each source map is scored separately on the leaderboard.</p>
           <p><code>params.json</code> carries the scan settings your method may need:</p>
           <pre class="overflow-x-auto rounded-lg bg-gray-900 p-3 text-xs text-gray-100"><code>{ "TE": [0.004, 0.012, 0.020, 0.028],   // echo time(s), seconds
   "B0": 3.0,                            // field strength, tesla
