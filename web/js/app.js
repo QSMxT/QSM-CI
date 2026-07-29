@@ -268,6 +268,7 @@ function injectChrome() {
         <div class="flex items-center gap-6">
           ${navLink("index.html", "Home", page === "index.html")}
           ${navLink("leaderboard.html", "Leaderboard", page === "leaderboard.html")}
+          ${navLink("data.html", "Data", page === "data.html")}
           ${navLink("running.html", "Run", page === "running.html")}
           ${navLink("submit.html", "Submit", page === "submit.html")}
           <button onclick="toggleTheme()" class="text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors" title="Toggle theme">${isDark ? SUN : MOON}</button>

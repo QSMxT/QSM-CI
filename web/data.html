@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>QSM-CI · The benchmark data</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="js/app.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <style>
+    /* code blocks */
+    main pre {
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+    main pre code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.8125rem;
+      line-height: 1.65;
+    }
+    .hljs { background: transparent; padding: 0; }
+    /* inline code chips */
+    main :not(pre) > code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.82em;
+      padding: 0.13em 0.42em;
+      border-radius: 0.375rem;
+      background: #f1f5f9;
+      color: #334155;
+      border: 1px solid #e2e8f0;
+    }
+    .dark main :not(pre) > code {
+      background: rgba(148, 163, 184, 0.14);
+      color: #cbd5e1;
+      border-color: rgba(148, 163, 184, 0.20);
+    }
+  </style>
+</head>
+<body class="font-sans text-gray-900 bg-gray-50 antialiased dark:bg-gray-950 dark:text-gray-100">
+  <header id="site-nav"></header>
+
+  <main class="mx-auto max-w-3xl px-6 py-10">
+    <h1 class="text-3xl font-bold tracking-tight">The benchmark data</h1>
+    <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">
+      Every method on the leaderboard is scored against the same in-silico phantom: the
+      <strong>Realistic In Silico Head Phantom</strong> from the QSM Reconstruction Challenge 2.0,
+      forward-simulated to a BIDS MRI acquisition with
+      <a href="https://github.com/astewartau/qsm-forward" class="text-emerald-600 hover:underline">qsm-forward</a>.
+      Because the phantom starts from known ground-truth susceptibility, every intermediate is exactly
+      known (the total field, the local field, the tissue susceptibility, and for source separation the
+      paramagnetic and diamagnetic components), so each pipeline stage can be scored on its own.
+      This page covers where the source maps come from, how to regenerate the dataset yourself, and what
+      the &chi;-separation phantom does differently.
+    </p>
+
+    <!-- ---------------------------------------------------------------- -->
+    <section class="mt-12 space-y-3">
+      <h2 class="text-2xl font-bold tracking-tight">1. The source phantom</h2>
+      <p class="text-gray-600 dark:text-gray-400 leading-relaxed">
+        qsm-forward does not ship the anatomy. It <em>simulates an acquisition</em> from a set of
+        ground-truth tissue-property maps: the digital brain model published with the
+        <strong>QSM Reconstruction Challenge 2.0</strong>. You request those maps from the authors
+        (Donders / Radboud University data repository) and point qsm-forward at them.
+      </p>
+      <div class="rounded-2xl border border-gray-200 bg-white p-5 text-sm shadow-sm dark:border-gray-800 dark:bg-gray-900">
+        <p class="font-semibold text-gray-900 dark:text-gray-100">Request the maps</p>
+        <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">
+          QSM Challenge 2.0 dataset (Marques et&nbsp;al.) in the Donders Repository:
+          <a href="https://data.ru.nl/collections/di/dccn/DSC_3015069.02_542" class="text-emerald-600 hover:underline break-words">data.ru.nl/collections/di/dccn/DSC_3015069.02_542</a>
+          (DOI <a href="https://doi.org/10.34973/m20r-jt17" class="text-emerald-600 hover:underline">10.34973/m20r-jt17</a>).
+          Accept the data-use terms to download the archive.
+        </p>
+      </div>
+      <p class="text-gray-600 dark:text-gray-400 leading-relaxed">
+        Arrange the download so qsm-forward&rsquo;s <code>head</code> mode finds the maps it expects:
+      </p>
+      <pre class="overflow-x-auto rounded-xl bg-gray-900 p-4 text-sm text-gray-100"><code class="language-plaintext">qsm-challenge-2.0/
+├── chimodel/
+│   ├── ChiModelMIX.nii            # ground-truth susceptibility (χ_total)
+│   └── SusceptibilityValues.mat   # per-label χ⁺/χ⁻ source values (Tables 1–2)
+├── maps/
+│   ├── M0.nii.gz  R1.nii.gz  R2star.nii.gz
+└── masks/
+    └── BrainMask.nii.gz</code></pre>
+    </section>
+
+    <!-- ---------------------------------------------------------------- -->
+    <section class="mt-12 space-y-3">
+      <h2 class="text-2xl font-bold tracking-tight">2. Install qsm-forward</h2>
+      <pre class="overflow-x-auto rounded-xl bg-gray-900 p-4 text-sm text-gray-100"><code class="language-bash">pip install qsm-forward     # a virtualenv or conda env is recommended
+qsm-forward --help</code></pre>
+      <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+        qsm-forward is open source
+        (<a href="https://github.com/astewartau/qsm-forward" class="text-emerald-600 hover:underline">astewartau/qsm-forward</a>).
+        The CLI wraps the same <code>generate_bids()</code> Python API the sections below describe.
+      </p>
+    </section>
+
+    <!-- ---------------------------------------------------------------- -->
+    <section class="mt-12 space-y-3">
+      <h2 class="text-2xl font-bold tracking-tight">3. Generate the QSM phantom</h2>
+      <p class="text-gray-600 dark:text-gray-400 leading-relaxed">
+        This is the dataset behind the main leaderboard (the field-mapping, background-field removal,
+        dipole inversion, and end-to-end tracks). It simulates a 7&nbsp;T multi-echo GRE acquisition and
+        writes the total and local field maps as ground truth.
+      </p>
+      <pre class="overflow-x-auto rounded-xl bg-gray-900 p-4 text-sm text-gray-100"><code class="language-bash"># 7 T, 4 echoes (4/12/20/28 ms), 1 mm, fixed seed: matches the scored phantom
+qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
+      <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+        <code>--save-field</code> emits the total field (<code>fieldmap</code>) and local field
+        (<code>fieldmap-local</code>) that the isolated BFR and dipole stages are scored against.
+        Acquisition parameters (<code>--B0</code>, <code>--TEs</code>, <code>--voxel-size</code>,
+        <code>--peak-snr</code>, <code>--random-seed</code>) all default to the challenge phantom;
+        override them for sensitivity studies.
+      </p>
+    </section>
+
+    <!-- ---------------------------------------------------------------- -->
+    <section class="mt-12 space-y-3">
+      <h2 class="text-2xl font-bold tracking-tight">4. Generate the χ-separation phantom</h2>
+      <p class="text-gray-600 dark:text-gray-400 leading-relaxed">
+        Susceptibility source-separation methods split the net susceptibility &chi; into a
+        <strong>paramagnetic</strong> component &chi;<sup>+</sup> (iron) and a
+        <strong>diamagnetic</strong> component &chi;<sup>&minus;</sup> (myelin, calcium). The χ-sep
+        phantom adds those source maps, an R2&prime; map, and a source-separation-aware signal model.
+      </p>
+      <pre class="overflow-x-auto rounded-xl bg-gray-900 p-4 text-sm text-gray-100"><code class="language-bash">qsm-forward head ./qsm-challenge-2.0 bids_chisep \
+  --save-field --save-chi-pos --save-chi-neg --save-r2prime \
+  --chisep-signal --chisep-multicompartment</code></pre>
+      <ul class="list-disc pl-5 space-y-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+        <li><code>--save-chi-pos</code> / <code>--save-chi-neg</code>: the χ<sup>+</sup> and
+          χ<sup>&minus;</sup> ground-truth source maps (the scoring targets).</li>
+        <li><code>--save-r2prime</code>: the R2&prime; map, a provided input for R2&prime;-domain
+          methods (χ-sepnet, SUSEP-Net, χ-sep iLSQR/MEDI, WaveSep).</li>
+        <li><code>--chisep-signal</code>: replaces the plain R2* magnitude decay with the χ-sep
+          static-dephasing model (see §6).</li>
+        <li><code>--chisep-multicompartment</code>: builds the voxel magnitude as a sum of
+          paramagnetic, diamagnetic, and neutral compartments, which signal-domain separators
+          (e.g. DECOMPOSE) need (see §6). It implies <code>--chisep-signal</code>.</li>
+      </ul>
+    </section>
+
+    <!-- ---------------------------------------------------------------- -->
+    <section class="mt-12 space-y-3">
+      <h2 class="text-2xl font-bold tracking-tight">5. Run methods on it</h2>
+      <p class="text-gray-600 dark:text-gray-400 leading-relaxed">
+        qsm-forward writes a standard BIDS tree, so there is nothing to repackage. Point
+        <a href="running.html" class="text-emerald-600 hover:underline"><code>qsm-ci run</code></a>
+        straight at the individual NIfTIs. It reads acquisition parameters from the BIDS JSON sidecar
+        and stacks per-echo files for you. The ground-truth maps sit alongside in
+        <code>derivatives/qsm-forward/</code>, so you can score against them with <code>--truth</code> too.
+      </p>
+      <pre class="overflow-x-auto rounded-xl bg-gray-900 p-4 text-sm text-gray-100"><code class="language-bash"># field-based χ-sep method: inputs are individual files from the BIDS tree
+D=bids_chisep/derivatives/qsm-forward/sub-1/anat
+qsm-ci run chi-sepnet \
+  --localfield $D/sub-1_fieldmap-local.nii --r2prime $D/sub-1_R2prime.nii \
+  --chimap $D/sub-1_Chimap.nii --mask $D/sub-1_mask.nii \
+  --params bids_chisep/sub-1/anat/sub-1_echo-1_part-phase_MEGRE.json</code></pre>
+      <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+        Each method&rsquo;s inputs depend on its stage. Run it with no inputs and it prints exactly what
+        to provide. See <a href="running.html" class="text-emerald-600 hover:underline">Run</a> for the
+        full CLI, scoring, and chaining stages into a pipeline.
+      </p>
+    </section>
+
+    <!-- ---------------------------------------------------------------- -->
+    <section class="mt-12 space-y-4">
+      <h2 class="text-2xl font-bold tracking-tight">6. What the χ-separation phantom does differently</h2>
+      <p class="text-gray-600 dark:text-gray-400 leading-relaxed">
+        Two modelling choices in the χ-sep phantom are worth spelling out, because they encode
+        assumptions that directly affect what a source-separation benchmark can and cannot reward.
+      </p>
+
+      <div>
+        <h3 class="text-lg font-semibold">The R2&prime; relaxivity: one kernel, D<sub>r</sub> = 137 Hz/ppm</h3>
+        <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">
+          R2&prime; (reversible transverse relaxation) is generated from the source magnitudes with a
+          <strong>single</strong> relaxivity kernel shared by both source types:
+        </p>
+        <pre class="mt-2 overflow-x-auto rounded-xl bg-gray-900 p-4 text-sm text-gray-100"><code class="language-plaintext">R2′ = D_r · ( |χ⁺| + |χ⁻| ),   D_r = 137 Hz/ppm</code></pre>
+        <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">
+          This is the standard χ-separation model (Shin et&nbsp;al. 2021): in the static-dephasing
+          regime the reversible relaxation depends on the <em>magnitude</em> of the field perturbation,
+          not its sign, so one kernel applies to iron and myelin alike. 137&nbsp;Hz/ppm is Shin&rsquo;s
+          empirically measured value.
+        </p>
+      </div>
+
+      <div class="rounded-2xl border border-gray-200 bg-white p-5 text-sm shadow-sm dark:border-gray-800 dark:bg-gray-900">
+        <p class="font-semibold text-gray-900 dark:text-gray-100">Why not a split (D<sub>r</sub><sup>+</sup> ≠ D<sub>r</sub><sup>&minus;</sup>)?</p>
+        <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">
+          Real microstructure (spherical ferritin vs. anisotropic myelin) plausibly gives the two
+          source types different <em>effective</em> relaxivities, so a split is biophysically defensible
+          in principle. It is <strong>deliberately not used here</strong> because:
+        </p>
+        <ul class="mt-2 list-disc pl-5 space-y-2 text-gray-600 dark:text-gray-400 leading-relaxed">
+          <li>The relaxivities are <strong>not recoverable from the data</strong>. With one QSM and one
+            R2&prime; map they must be assumed a priori, so baking a specific split into the ground
+            truth mainly rewards whichever method shares that exact assumption rather than testing
+            recovery.</li>
+          <li>The methods benchmarked here invert a single-kernel model, so a shared kernel keeps the
+            ground truth aligned with the model they assume rather than pre-committing it to one
+            particular split.</li>
+          <li>A split remains available as an explicit opt-in
+            (<code>generate_r2prime(..., dr_neg=…)</code> or <code>--dr-neg</code>) for sensitivity
+            studies.</li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 class="text-lg font-semibold">The multi-compartment magnitude</h3>
+        <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">
+          Field-domain methods only need R2&prime; and the field. <em>Signal-domain</em> separators
+          (e.g. DECOMPOSE) instead fit the multi-echo complex signal per voxel, and a plain
+          mono-exponential decay carries no information to separate. With
+          <code>--chisep-multicompartment</code> the voxel magnitude becomes the modulus of a sum of
+          compartments:
+        </p>
+        <pre class="mt-2 overflow-x-auto rounded-xl bg-gray-900 p-4 text-sm text-gray-100"><code class="language-plaintext">S(TE) = | C₊·e^(−(R2 + D_r|χ⁺| + i·ω·χ⁺)·TE)
+        + C₋·e^(−(R2 + D_r|χ⁻| + i·ω·χ⁻)·TE)
+        +  C₀·e^(−R2·TE) |,     ω = (2/3)·γ·B₀</code></pre>
+        <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">
+          Each compartment is a static-dephasing exponential with its own decay rate and off-resonance,
+          so the paramagnetic and diamagnetic pools beat against each other and give the
+          non-mono-exponential magnitude those methods rely on. Crucially, the compartment decay rates
+          reuse the <strong>same</strong> D<sub>r</sub> kernel as R2&prime;, so the effective R2* (and
+          thus R2&prime;) is unchanged: the field-domain methods see identical inputs, and only the
+          <em>shape</em> of the magnitude decay is enriched. It defaults to off.
+        </p>
+      </div>
+    </section>
+
+    <!-- ---------------------------------------------------------------- -->
+    <section class="mt-12 space-y-3">
+      <h2 class="text-2xl font-bold tracking-tight">Citations</h2>
+      <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+        If you use QSM-CI results, please cite the head phantom. Cite the source-separation references
+        for χ-sep work.
+      </p>
+      <ul class="list-disc pl-5 space-y-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+        <li><strong>Head phantom:</strong> Marques J.P., Meineke J., Milovic C., et&nbsp;al.
+          &ldquo;QSM reconstruction challenge 2.0: A realistic in silico head phantom for MRI data
+          simulation and evaluation of susceptibility mapping procedures.&rdquo;
+          <em>Magnetic Resonance in Medicine</em> 2021;86(1):526&ndash;542.
+          <a href="https://doi.org/10.1002/mrm.28716" class="text-emerald-600 hover:underline">doi:10.1002/mrm.28716</a>.
+          Data: <a href="https://doi.org/10.34973/m20r-jt17" class="text-emerald-600 hover:underline">doi:10.34973/m20r-jt17</a>.</li>
+        <li><strong>χ-separation model &amp; D<sub>r</sub>:</strong> Shin H.G., Lee J., Yun Y.H.,
+          et&nbsp;al. &ldquo;χ-separation: Magnetic susceptibility source separation toward iron and
+          myelin mapping in the brain.&rdquo; <em>NeuroImage</em> 2021;240:118371.
+          <a href="https://doi.org/10.1016/j.neuroimage.2021.118371" class="text-emerald-600 hover:underline">doi:10.1016/j.neuroimage.2021.118371</a>.</li>
+        <li><strong>Static-dephasing regime:</strong> Yablonskiy D.A., Haacke E.M. &ldquo;Theory of NMR
+          signal behavior in magnetically inhomogeneous tissues: the static dephasing regime.&rdquo;
+          <em>Magnetic Resonance in Medicine</em> 1994;32(6):749&ndash;763.
+          <a href="https://doi.org/10.1002/mrm.1910320610" class="text-emerald-600 hover:underline">doi:10.1002/mrm.1910320610</a>.</li>
+        <li><strong>DECOMPOSE (signal-domain separation):</strong> Chen J., et&nbsp;al.
+          &ldquo;Decompose quantitative susceptibility mapping (QSM) to sub-voxel diamagnetic and
+          paramagnetic components based on gradient-echo MRI data.&rdquo;
+          <em>NeuroImage</em> 2021.
+          <a href="https://doi.org/10.1016/j.neuroimage.2021.118735" class="text-emerald-600 hover:underline">doi:10.1016/j.neuroimage.2021.118735</a>.</li>
+        <li><strong>SUSEP-Net:</strong> Li, Gao, Sun, et&nbsp;al. &ldquo;SUSEP-Net: simulation-supervised
+          contrastive learning for susceptibility source separation via a sub-voxel QSM network.&rdquo;
+          arXiv:2506.13293, 2025.
+          <a href="https://doi.org/10.48550/arXiv.2506.13293" class="text-emerald-600 hover:underline">doi:10.48550/arXiv.2506.13293</a>.</li>
+        <li><strong>WaveSep:</strong> Fang Z., Shin H.G., van&nbsp;Zijl P., Li X., Sulam J.
+          &ldquo;WaveSep: A Flexible Wavelet-Based Approach for Source Separation in Susceptibility
+          Imaging.&rdquo; <em>MLCN, MICCAI</em> 2023, Springer LNCS.
+          <a href="https://doi.org/10.1007/978-3-031-44858-4_6" class="text-emerald-600 hover:underline">doi:10.1007/978-3-031-44858-4_6</a>.</li>
+        <li><strong>Forward simulation:</strong>
+          <a href="https://github.com/astewartau/qsm-forward" class="text-emerald-600 hover:underline">qsm-forward</a>
+          (Stewart A., et&nbsp;al.).</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer id="site-footer"></footer>
+
+  <script>
+    // Syntax-highlight only the shell blocks; leave the directory tree and formulae as plain text.
+    window.addEventListener("DOMContentLoaded", function () {
+      document.querySelectorAll("pre code.language-bash").forEach(function (el) {
+        if (window.hljs) window.hljs.highlightElement(el);
+      });
+    });
+  </script>
+</body>
+</html>
