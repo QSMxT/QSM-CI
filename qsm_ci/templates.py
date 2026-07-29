@@ -6,7 +6,7 @@ keeps the Rust/MATLAB/Julia braces intact.
 
 from __future__ import annotations
 
-from .stages import STAGES, input_artifact, produced_artifact
+from .stages import STAGES, input_artifact, produced_artifact, produced_artifacts
 
 # stage -> human list of consumed artifacts (for comments)
 CONSUMES = {s: ", ".join(STAGES[s]["consumes"]) for s in STAGES}
@@ -166,6 +166,132 @@ ndarray = "0.15"
 
 _RECON = {"python": _PYTHON, "julia": _JULIA, "matlab": _MATLAB, "rust": _RUST}
 
+# --- χ-separation: the one multi-output stage (produces χ+ and χ−). Its starters read the source-
+# separation inputs (χ_total, R2', local field) and write BOTH chi-para.nii.gz and chi-dia.nii.gz.
+# The placeholder is a real closed-form static-dephasing split with a single relaxivity Dr (Hz/ppm):
+#   χ+ = (χ_total + R2'/Dr)/2 ,  χ− = (R2'/Dr − χ_total)/2   (both stored as non-negative magnitudes).
+_PYTHON_CHISEP = '''#!/usr/bin/env python3
+"""__NAME__ — chi-separation stage. Reads <in-dir>, writes χ+ (chi-para) and χ− (chi-dia) to <out-dir>."""
+import json
+import os
+import sys
+import nibabel as nib
+import numpy as np
+
+
+def main(inp, out):
+    # χ-separation splits net susceptibility into paramagnetic (χ+, iron) and diamagnetic
+    # (χ−, myelin/calcium) sources. Inputs in `inp`: __C__.
+    chimap = nib.load(f"{inp}/chimap.nii.gz")               # χ_total / QSM (ppm)
+    chi = chimap.get_fdata().astype(np.float64)
+    r2p = nib.load(f"{inp}/r2prime.nii.gz").get_fdata()     # R2' (Hz)
+    field = nib.load(f"{inp}/localfield.nii.gz").get_fdata()  # local field (ppm)  (unused by the placeholder)
+    mask = nib.load(f"{inp}/mask.nii.gz").get_fdata() > 0.5
+    params = json.load(open(f"{inp}/params.json"))          # B0, B0_dir, TE, voxel_size
+
+    cfg = json.load(open(f"{inp}/config.json")) if os.path.exists(f"{inp}/config.json") else {}
+
+    # TODO: your source separation here. Placeholder: closed-form static-dephasing split with a single
+    # relaxivity Dr (Hz/ppm); override with `qsm-ci run --set Dr=...` (declare it in algorithm.yml).
+    Dr = float(cfg.get("Dr", 137.0))
+    s = r2p / Dr                                             # |χ+| + |χ−|  (from R2')
+    chi_para = np.clip((chi + s) / 2, 0, None) * mask        # χ+ (paramagnetic)
+    chi_dia = np.clip((s - chi) / 2, 0, None) * mask         # χ− (diamagnetic, POSITIVE magnitude)
+
+    nib.save(nib.Nifti1Image(chi_para.astype(np.float32), chimap.affine), f"{out}/chi-para.nii.gz")
+    nib.save(nib.Nifti1Image(chi_dia.astype(np.float32), chimap.affine), f"{out}/chi-dia.nii.gz")
+
+
+if __name__ == "__main__":
+    main(sys.argv[1], sys.argv[2])
+'''
+
+_MATLAB_CHISEP = '''function recon(inp, out)
+% __NAME__ — chi-separation stage. consumes: __C__ (all in inp); writes chi-para.nii.gz (χ+) and
+% chi-dia.nii.gz (χ−, positive magnitude) to out.
+    ci = niftiinfo(fullfile(inp, 'chimap.nii.gz'));         % χ_total / QSM (ppm)
+    chi = double(niftiread(ci));
+    r2p = double(niftiread(fullfile(inp, 'r2prime.nii.gz')));   % R2' (Hz)
+    mask = double(niftiread(fullfile(inp, 'mask.nii.gz'))) > 0.5;
+    params = jsondecode(fileread(fullfile(inp, 'params.json')));  %#ok<NASGU>  % B0, B0_dir, TE, voxel_size
+
+    cfg = struct();
+    if isfile(fullfile(inp, 'config.json')); cfg = jsondecode(fileread(fullfile(inp, 'config.json'))); end
+    if isfield(cfg, 'Dr'); Dr = cfg.Dr; else; Dr = 137.0; end
+
+    % TODO: your source separation here. Placeholder: closed-form static-dephasing split (single Dr).
+    s = r2p ./ Dr;                                          % |χ+| + |χ−|
+    chi_para = max((chi + s) ./ 2, 0) .* mask;              % χ+ (paramagnetic)
+    chi_dia  = max((s - chi) ./ 2, 0) .* mask;              % χ− (diamagnetic, positive magnitude)
+
+    niftiwrite(single(chi_para), fullfile(out, 'chi-para.nii'), ci, 'Compressed', true);
+    niftiwrite(single(chi_dia),  fullfile(out, 'chi-dia.nii'),  ci, 'Compressed', true);
+end
+'''
+
+_JULIA_CHISEP = '''# __NAME__ — chi-separation stage. consumes: __C__ (all in `inp`); writes chi-para.nii.gz (χ+)
+# and chi-dia.nii.gz (χ−, positive magnitude) to `out`.
+using NIfTI, JSON
+
+function main(inp, out)
+    ci = niread(joinpath(inp, "chimap.nii.gz"))            # χ_total / QSM (ppm)
+    chi = Float64.(ci.raw)
+    r2p = Float64.(niread(joinpath(inp, "r2prime.nii.gz")).raw)   # R2' (Hz)
+    mask = Float64.(niread(joinpath(inp, "mask.nii.gz")).raw) .> 0.5
+    params = JSON.parsefile(joinpath(inp, "params.json"))        # B0, B0_dir, TE, voxel_size
+
+    cfg = isfile(joinpath(inp, "config.json")) ? JSON.parsefile(joinpath(inp, "config.json")) : Dict()
+    Dr = Float64(get(cfg, "Dr", 137.0))
+
+    # TODO: your source separation here. Placeholder: closed-form static-dephasing split (single Dr).
+    s = r2p ./ Dr
+    chi_para = max.((chi .+ s) ./ 2, 0) .* mask            # χ+ (paramagnetic)
+    chi_dia  = max.((s .- chi) ./ 2, 0) .* mask            # χ− (diamagnetic, positive magnitude)
+
+    niwrite(joinpath(out, "chi-para.nii.gz"), NIVolume(ci.header, Float32.(chi_para)))
+    niwrite(joinpath(out, "chi-dia.nii.gz"),  NIVolume(ci.header, Float32.(chi_dia)))
+end
+
+main(ARGS[1], ARGS[2])
+'''
+
+_RUST_CHISEP = '''//! __NAME__ — chi-separation stage. Reads <in-dir>, writes chi-para.nii.gz (χ+) and
+//! chi-dia.nii.gz (χ−, positive magnitude) to <out-dir>.  consumes: __C__
+use nifti::{ReaderOptions, writer::WriterOptions, NiftiObject, IntoNdArray};
+use std::env;
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let inp = env::args().nth(1).unwrap();
+    let out = env::args().nth(2).unwrap();
+    let ci = ReaderOptions::new().read_file(format!("{}/chimap.nii.gz", inp))?;   // χ_total (ppm)
+    let chi = ci.into_volume().into_ndarray::<f64>()?;
+    let r2p = ReaderOptions::new().read_file(format!("{}/r2prime.nii.gz", inp))?
+        .into_volume().into_ndarray::<f64>()?;                                    // R2' (Hz)
+    let mask = ReaderOptions::new().read_file(format!("{}/mask.nii.gz", inp))?
+        .into_volume().into_ndarray::<f64>()?.mapv(|v| if v > 0.5 { 1.0 } else { 0.0 });
+
+    // TODO: your source separation here. Placeholder: closed-form static-dephasing split (single Dr).
+    let dr = 137.0_f64;
+    let s = &r2p / dr;                                       // |χ+| + |χ−|
+    let chi_para = (&chi + &s).mapv(|v| (v / 2.0).max(0.0)) * &mask;   // χ+
+    let chi_dia  = (&s - &chi).mapv(|v| (v / 2.0).max(0.0)) * &mask;   // χ−
+
+    WriterOptions::new(format!("{}/chi-para.nii.gz", out)).write_nifti(&chi_para)?;
+    WriterOptions::new(format!("{}/chi-dia.nii.gz", out)).write_nifti(&chi_dia)?;
+    Ok(())
+}
+'''
+
+_RECON_CHISEP = {"python": _PYTHON_CHISEP, "julia": _JULIA_CHISEP,
+                 "matlab": _MATLAB_CHISEP, "rust": _RUST_CHISEP}
+
+
+def _recon_source(stage: str, lang: str, name: str) -> str:
+    """The recon starter for (stage, lang). χ-separation gets a dedicated two-output template; every
+    other (single-output) stage uses the generic one with __INP__/__OUT__ substitution."""
+    table = _RECON_CHISEP if stage == "chi-separation" else _RECON
+    return _sub(table[lang], stage, name, lang)
+
 # Default MATLAB Runtime release for scaffolded MATLAB submissions.
 MATLAB_RUNTIME = "r2026a"
 
@@ -225,10 +351,11 @@ def _bash_extra_inputs(stage: str) -> str:
 
 
 def _run_sh(stage: str, lang: str, name: str) -> str:
+    prods = ", ".join(f"{a}.nii.gz" for a in produced_artifacts(stage))
     head = ("#!/usr/bin/env bash\n"
             f"# {name} — {stage} stage.\n"
             f"# consumes: {CONSUMES[stage]}\n"
-            f"# produces: {produced_artifact(stage)}.nii.gz (ppm, within the mask)\n"
+            f"# produces: {prods} (within the mask)\n"
             "# parameter overrides (qsm-ci run --set) arrive as $IN/config.json\n"
             'set -euo pipefail\n'
             'IN="${1:-/input}"; OUT="${2:-/output}"\n'
@@ -251,8 +378,7 @@ def _run_sh(stage: str, lang: str, name: str) -> str:
             f"#   {input_artifact(stage)}.nii.gz  (primary input, ppm){_bash_extra_inputs(stage)}\n"
             "#   mask.nii.gz                (brain mask)\n"
             "#   params.json               (B0_dir, voxel_size mm, B0 tesla, TE echo times s)\n"
-            f'# You must write {produced_artifact(stage)}.nii.gz (ppm, within the mask) to "$OUT",\n'
-            "# on the same voxel grid as the inputs.\n"
+            f'# You must write {prods} (within the mask) to "$OUT", on the input voxel grid.\n'
             "\n"
             "# Acquisition parameters are injected as env vars (no parsing needed):\n"
             '#   $QSMCI_B0 (tesla)  $QSMCI_TE (echoes)  $QSMCI_TE0 (first echo)\n'
@@ -261,9 +387,9 @@ def _run_sh(stage: str, lang: str, name: str) -> str:
             'echo "B0 direction: $QSMCI_B0_DIR"\n'
             "# (params.json / config.json are also in $IN if you prefer to read the JSON.)\n"
             "\n"
-            "# TODO: replace this passthrough with your reconstruction — e.g. call your own program:\n"
-            f'#   "$HERE/my-program" "$IN/{input_artifact(stage)}.nii.gz" "$IN/mask.nii.gz" "$OUT/{produced_artifact(stage)}.nii.gz"\n'
-            f'cp "$IN/{input_artifact(stage)}.nii.gz" "$OUT/{produced_artifact(stage)}.nii.gz"   # placeholder: copies input through unchanged\n'),
+            "# TODO: replace this passthrough with your reconstruction — e.g. call your own program.\n"
+            + "".join(f'cp "$IN/{input_artifact(stage)}.nii.gz" "$OUT/{a}.nii.gz"   # placeholder\n'
+                      for a in produced_artifacts(stage))),
     }
     return head + body.get(lang, body["python"])
 
@@ -297,7 +423,7 @@ def files(meta: dict) -> "list[tuple[str, str]]":
     out = [("algorithm.yml", algorithm_yml(meta)),
            ("run.sh", _run_sh(stage, lang, name))]
     if lang != "other":
-        out.append((LANGS[lang]["file"], _sub(_RECON[lang], stage, name, lang)))
+        out.append((LANGS[lang]["file"], _recon_source(stage, lang, name)))
     if lang == "rust":
         out.append(("Cargo.toml", _CARGO))
     if lang == "matlab":
