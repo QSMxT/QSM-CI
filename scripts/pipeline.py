@@ -240,13 +240,20 @@ def discover_algorithms() -> list[dict]:
             continue
         s = _yaml_scalar(doc["stage"])
         image = doc.get("image")
-        # A method may declare optional extra inputs (algorithm.yml `optional_inputs:`) beyond its
-        # stage's baseline — e.g. MEDI (dipole) uses magnitude for edge weighting. Append them so the
-        # scorer mounts + passes exactly what `qsm-ci run` accepts (its _consumes does the same);
-        # otherwise it passes a flag the CLI rejects (--magnitude) and the run DNFs.
-        opt = doc.get("optional_inputs")
-        optional = [_yaml_scalar(a) for a in opt] if isinstance(opt, list) else []
-        consumes = STAGES[s]["consumes"] + [a for a in optional if a not in STAGES[s]["consumes"]]
+        # Mirror runner._consumes EXACTLY so the scorer mounts + passes only the flags `qsm-ci run`
+        # accepts; otherwise it passes a flag the CLI rejects (e.g. --magnitude) and the run DNFs.
+        # A method may NARROW its inputs (`inputs:` — the exact artifacts it reads, a subset of the
+        # stage), or ADD optional extras (`optional_inputs:` — e.g. MEDI (dipole) uses magnitude for
+        # edge weighting). `inputs:` wins; else stage baseline + optional extras.
+        base = STAGES[s]["consumes"]
+        explicit = doc.get("inputs")
+        if isinstance(explicit, list):
+            want = {_yaml_scalar(a) for a in explicit}
+            consumes = [a for a in base if a in want]
+        else:
+            opt = doc.get("optional_inputs")
+            optional = [_yaml_scalar(a) for a in opt] if isinstance(opt, list) else []
+            consumes = base + [a for a in optional if a not in base]
         algos.append({
             "slug": d.name, "dir": d, "stage": s,
             "name": _yaml_scalar(doc.get("name")) if doc.get("name") is not None else d.name,
