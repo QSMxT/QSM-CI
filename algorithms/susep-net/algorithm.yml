@@ -1,7 +1,7 @@
 name: SUSEP-Net
 slug: susep-net
 stage: chi-separation
-inputs: [localfield, chimap, r2prime, mask, params]  # the artifacts this method actually reads (a subset of the stage's inputs)
+inputs: [localfield, chimap, r2prime, mask]  # the artifacts this method actually reads (a subset of the stage's inputs)
 engine: SUSEP-Net (dual-branch 3D U-net, PyTorch, CPU)
 description: >
   SUSEP-Net — a simulation-supervised, contrastive-learning deep network for sub-voxel susceptibility

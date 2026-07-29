@@ -1,6 +1,7 @@
 name: Laplacian field mapping
 slug: laplacian-fieldmap
 stage: field-mapping
+inputs: [phase, mask, params]  # the artifacts this method actually reads (a subset of the stage's inputs)
 description: Multi-echo B0 field mapping by Laplacian phase unwrapping + linear fit
   over echoes. Reference `field-mapping`-stage submission (raw phase -> total field).
 authors:
