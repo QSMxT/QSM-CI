@@ -148,7 +148,10 @@ let nv = null, run, baseUrl, filter = "", navMode = "stages", domain = "qsm";
 let curBase = "recon";       // base map shown underneath: recon | truth
 let chisepComp = "para";     // χ-separation source shown: para (χ+) | dia (χ−)
 let showError = false;       // whether the error map is overlaid on top of the base
-let loadedBase = null, loadedError = false;  // what's actually in nv.volumes right now
+// Preload model: every candidate map (recon/truth[/-dia] + error[/-dia]) is loaded ONCE into
+// nv.volumes and kept resident for the run; switching just toggles opacity (instant) instead of
+// re-fetching. activeBaseVol / activeErrVol point the windowing controls at the map currently shown.
+let activeBaseVol = null, activeErrVol = null, residentRunId = null, preloadPromise = null;
 let baseCtl = null, errorCtl = null;         // the two windowing controls (base + error overlay)
 
 const $ = (id) => document.getElementById(id);
@@ -393,8 +396,8 @@ async function loadRun() {
     nv.setSliceType(nv.sliceTypeMultiplanar);
     wireControls();
   }
-  // New run → nothing loaded yet; the base map (recon/truth) selection carries over between runs.
-  loadedBase = null; loadedError = false;
+  // New run: the base map (recon/truth) + source selection carry over; refreshView() rebuilds the
+  // resident volume set when run.id changes.
   const hasError = !run.volumes || !!run.volumes.error;  // HF-backed runs advertise which volumes exist
   if (!hasError) showError = false;
   $("t-error").disabled = !hasError;
@@ -427,47 +430,74 @@ function metricRank(k) {
   return { rank, n: peers.length, t };
 }
 
+// Rank `run` among comparable peers by an arbitrary accessor (r) => value — used for χ-separation,
+// whose paired metrics (para_*/dia_*) and the derived Avg xSIM aren't plain METRICS keys. Same
+// grouping/goodness logic as metricRank(). `higher` = higher-is-better. null if <2 peers to compare.
+function rankBy(accessor, higher) {
+  const v = accessor(run);
+  if (v == null) return null;
+  const sameGroup = (r) => (run.combo ? r.mode === "composed" : r.mode === "isolated" && r.stage === run.stage);
+  const peers = allRuns.filter((r) => r.status !== "DNF" && sameGroup(r) && accessor(r) != null);
+  if (peers.length < 2) return null;
+  const rank = 1 + peers.filter((r) => (higher ? accessor(r) > v : accessor(r) < v)).length;
+  const [lo, hi] = robustRange(peers.map(accessor));
+  let t = hi === lo ? 0.5 : (v - lo) / (hi - lo);
+  if (!higher) t = 1 - t;
+  return { rank, n: peers.length, t };
+}
+
 function renderChisepMetrics() {
   // χ-separation runs carry paired, source-specific metrics (para_*/dia_*), not the plain QSM keys.
   // Render them grouped by source: χ+ gets iron/vein metrics, χ− gets calcification metrics, and each
   // gets a leakage (cross-contamination) term.
   $("metrics-sub").textContent = "χ+ / χ− sources vs. ground truth";
-  const m = run.metrics || {};
-  const avg = (m.para_xsim != null && m.dia_xsim != null) ? (m.para_xsim + m.dia_xsim) / 2 : null;
+  const mv = (k) => (r) => { const x = r.metrics ? r.metrics[k] : null; return x == null ? null : x; };
+  const avgAcc = (r) => {
+    const p = r.metrics ? r.metrics.para_xsim : null, d = r.metrics ? r.metrics.dia_xsim : null;
+    return (p != null && d != null) ? (p + d) / 2 : null;
+  };
+  const rtAcc = (r) => (r.runtime_s == null ? null : r.runtime_s);
   const num = (v, fk) => v == null ? null
     : fk === "pct" ? v.toFixed(1) + "%" : fk === "xsim" ? fmt(v, "xsim")
     : fk === "sec" ? fmt(v, "runtime_s") : v.toFixed(3);
+  // rows: [label, accessor, formatKey, arrow, tip] — accessor(r) yields the value for run r (so peers
+  // can be ranked the same way), arrow "↑" = higher-is-better.
   const groups = [
-    [null, [["Avg xSIM", avg, "xsim", "↑", "Mean of the χ+ and χ− xSIM — the headline combined score."]]],
+    [null, [["Avg xSIM", avgAcc, "xsim", "↑", "Mean of the χ+ and χ− xSIM — the headline combined score."]]],
     ["χ+ paramagnetic (iron, veins)", [
-      ["xSIM", m.para_xsim, "xsim", "↑", "Structural similarity of χ+ vs ground truth."],
-      ["NRMSE", m.para_nrmse, "pct", "↓", "Normalised RMS error of χ+ (%)."],
-      ["DGM iron NRMSE", m.para_nrmse_dgm, "pct", "↓", "χ+ error in deep gray matter (iron)."],
-      ["DGM linearity", m.para_dgm_linearity, "num", "↓", "|1 − slope| of χ+ across DGM iron regions; 0 = perfect iron quantification."],
-      ["Vein NRMSE", m.para_nrmse_blood, "pct", "↓", "χ+ error in venous blood."],
-      ["Calcium leakage (region)", m.para_calc_leak, "num", "↓", "Mean |χ+| in the calcification (should be ~0) — calcium wrongly bleeding into the paramagnetic map."],
-      ["Leakage χ−→χ+ (whole-brain)", m.para_leak, "num", "↓", "Regression slope of χ+ on the χ− ground truth over the whole brain — the fraction of diamagnetic signal bleeding into the paramagnetic map (0 = clean). Unlike xSIM it isn't fooled by the shared R2' common mode."],
+      ["xSIM", mv("para_xsim"), "xsim", "↑", "Structural similarity of χ+ vs ground truth."],
+      ["NRMSE", mv("para_nrmse"), "pct", "↓", "Normalised RMS error of χ+ (%)."],
+      ["DGM iron NRMSE", mv("para_nrmse_dgm"), "pct", "↓", "χ+ error in deep gray matter (iron)."],
+      ["DGM linearity", mv("para_dgm_linearity"), "num", "↓", "|1 − slope| of χ+ across DGM iron regions; 0 = perfect iron quantification."],
+      ["Vein NRMSE", mv("para_nrmse_blood"), "pct", "↓", "χ+ error in venous blood."],
+      ["Calcium leakage (region)", mv("para_calc_leak"), "num", "↓", "Mean |χ+| in the calcification (should be ~0) — calcium wrongly bleeding into the paramagnetic map."],
+      ["Leakage χ−→χ+ (whole-brain)", mv("para_leak"), "num", "↓", "Regression slope of χ+ on the χ− ground truth over the whole brain — the fraction of diamagnetic signal bleeding into the paramagnetic map (0 = clean). Unlike xSIM it isn't fooled by the shared R2' common mode."],
     ]],
     ["χ− diamagnetic (calcium, myelin)", [
-      ["xSIM", m.dia_xsim, "xsim", "↑", "Structural similarity of χ− vs ground truth."],
-      ["NRMSE", m.dia_nrmse, "pct", "↓", "Normalised RMS error of χ− (%)."],
-      ["Calcification dev", m.dia_calc_moment_dev, "num", "↓", "Deviation of the recovered calcification's susceptibility moment."],
-      ["Streaking", m.dia_calc_streak, "num", "↓", "Streaking-artifact level around the calcification."],
-      ["Iron leakage (region)", m.dia_iron_leak, "num", "↓", "Mean |χ−| in DGM/veins (should be ~0) — iron wrongly bleeding into the diamagnetic map."],
-      ["Leakage χ+→χ− (whole-brain)", m.dia_leak, "num", "↓", "Regression slope of χ− on the χ+ ground truth over the whole brain — the fraction of paramagnetic signal bleeding into the diamagnetic map (0 = clean). The whole-map counterpart to the DGM iron leakage above; unlike xSIM it isn't fooled by the shared R2' common mode."],
+      ["xSIM", mv("dia_xsim"), "xsim", "↑", "Structural similarity of χ− vs ground truth."],
+      ["NRMSE", mv("dia_nrmse"), "pct", "↓", "Normalised RMS error of χ− (%)."],
+      ["Calcification dev", mv("dia_calc_moment_dev"), "num", "↓", "Deviation of the recovered calcification's susceptibility moment."],
+      ["Streaking", mv("dia_calc_streak"), "num", "↓", "Streaking-artifact level around the calcification."],
+      ["Iron leakage (region)", mv("dia_iron_leak"), "num", "↓", "Mean |χ−| in DGM/veins (should be ~0) — iron wrongly bleeding into the diamagnetic map."],
+      ["Leakage χ+→χ− (whole-brain)", mv("dia_leak"), "num", "↓", "Regression slope of χ− on the χ+ ground truth over the whole brain — the fraction of paramagnetic signal bleeding into the diamagnetic map (0 = clean). The whole-map counterpart to the DGM iron leakage above; unlike xSIM it isn't fooled by the shared R2' common mode."],
     ]],
-    [null, [["Runtime", run.runtime_s, "sec", "", "Wall-clock runtime."]]],
+    [null, [["Runtime", rtAcc, "sec", "", "Wall-clock runtime."]]],
   ];
   let html = "";
   for (const [header, rows] of groups) {
     if (header) html += `<tr><td colspan="3" class="pt-3 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">${header}</td></tr>`;
-    for (const [label, v, fk, arrow, tip] of rows) {
+    for (const [label, acc, fk, arrow, tip] of rows) {
+      const v = acc(run);
       if (v == null) continue;
       const hero = label === "Avg xSIM";
+      const rk = rankBy(acc, arrow === "↑");
+      const rankCell = rk
+        ? `<span class="inline-block rounded-md px-1.5 py-0.5 text-xs font-semibold text-white shadow-sm" style="background:${heatScale(rk.t)}" data-tip="Rank ${rk.rank} of ${rk.n} χ-separation methods for ${label}">#${rk.rank}<span class="opacity-70"> / ${rk.n}</span></span>`
+        : `<span class="text-gray-300 dark:text-gray-600">—</span>`;
       html += `<tr>
         <td class="py-2 text-gray-500 dark:text-gray-400"><span class="has-tip" data-tip="${tip.replace(/"/g, "&quot;")}">${label}</span> <span class="text-gray-300 dark:text-gray-600" title="${arrow === "↑" ? "higher" : "lower"} is better">${arrow}</span></td>
         <td class="py-2 text-right tabular-nums ${hero ? "font-bold text-gray-900 dark:text-gray-100" : "font-medium text-gray-700 dark:text-gray-300"}">${num(v, fk)}</td>
-        <td class="py-2 pl-3 text-right"><span class="text-gray-300 dark:text-gray-600">—</span></td>
+        <td class="py-2 pl-3 text-right">${rankCell}</td>
       </tr>`;
     }
   }
@@ -496,7 +526,7 @@ function renderMetrics() {
 
 // ---- controls ---------------------------------------------------------------
 const cap = (s) => s[0].toUpperCase() + s.slice(1);
-const baseVol = () => nv.volumes[0];
+const baseVol = () => activeBaseVol || nv.volumes[0];
 function setLayerActive(layer) {
   $("layer-tabs").querySelectorAll("button").forEach((t) =>
     t.className = "rounded-md px-3 py-1 transition " +
@@ -513,13 +543,6 @@ function setViewActive(v) {
       (b.dataset.view === v ? "bg-indigo-600 text-white dark:bg-indigo-500" : "text-gray-500 hover:text-gray-700 dark:text-gray-400"));
 }
 function autoWin(vol) { vol.cal_min = vol.robust_min ?? vol.global_min; vol.cal_max = vol.robust_max ?? vol.global_max; }
-function defaultWindow(vol) {
-  if (run.kind === "chi") { vol.cal_min = -0.1; vol.cal_max = 0.1; }  // χ maps: fixed ±0.1 ppm
-  // χ-separation sources are non-negative magnitudes: χ+ (paramagnetic) [0, 0.1], χ− (diamagnetic)
-  // [0, 0.05]. The histogram auto-frames this window (~50% of view), matching the QSM behaviour.
-  else if (isChisepRun()) { vol.cal_min = 0; vol.cal_max = chisepComp === "dia" ? 0.05 : 0.1; }
-  else autoWin(vol);                                                  // fields / everything else: auto
-}
 
 // Signed error-map colormaps: over-estimate (recon>truth) ramps transparent→red→yellow, under-estimate
 // ramps transparent→blue→cyan. Alpha starts at 0 so the inner window bound (cal_min) is a hard
@@ -551,13 +574,14 @@ function setLoading(on) {
 
 function wireControls() {
   // base map colormap (recon/truth) — compact dropdown above this control's Auto button
-  baseCtl = makeWindowControl(() => nv, () => nv.volumes[0], {
+  baseCtl = makeWindowControl(() => nv, () => baseVol(), {
     value: "gray",
     options: [["gray", "Gray"], ["viridis", "Viridis"], ["plasma", "Plasma"], ["hot", "Hot"], ["cool", "Cool"]],
-    onChange: (v) => { const vol = baseVol(); if (vol) { vol.colormap = v; nv.updateGLVolume(); } },
+    // apply to every resident base map so the colormap persists across recon/truth/χ± toggles
+    onChange: (v) => { nv.volumes.forEach((vol) => { if (vol.__role === "base") vol.colormap = v; }); nv.updateGLVolume(); },
   });
   // error overlay colormap — dropdown above the error window's Auto button; drives setErrorColormap
-  errorCtl = makeWindowControl(() => nv, () => nv.volumes[1], {
+  errorCtl = makeWindowControl(() => nv, () => activeErrVol, {
     value: "diverging",
     options: [["diverging", "Diverging (red ↔ blue)"], ["warm", "Warm"], ["hot", "Hot"], ["viridis", "Viridis"], ["plasma", "Plasma"], ["cool", "Cool"], ["gray", "Gray"]],
     onChange: () => setErrorColormap(),
@@ -572,7 +596,7 @@ function wireControls() {
   $("chisep-tabs").querySelectorAll("button").forEach((t) =>
     t.addEventListener("click", () => {
       chisepComp = t.dataset.comp; setChisepActive(chisepComp);
-      loadedBase = null; loadedError = false; refreshView();
+      refreshView();   // toggles opacity to the χ± source's resident volumes — no re-fetch
     }));
   $("t-error").addEventListener("change", (e) => { showError = e.target.checked; refreshView(); });
   $("view-tabs").querySelectorAll("button").forEach((t) =>
@@ -582,7 +606,7 @@ function wireControls() {
   $("t-interp").addEventListener("change", (e) => { nv.setInterpolation(!e.target.checked); nv.drawScene(); });
   $("opacity").addEventListener("input", (e) => {
     const o = parseFloat(e.target.value);
-    for (let i = 1; i < nv.volumes.length; i++) nv.setOpacity(i, o);
+    if (activeErrVol) activeErrVol.opacity = o;   // slider drives the error overlay only
     $("opacity-val").textContent = Math.round(o * 100) + "%";
     nv.updateGLVolume();
   });
@@ -597,43 +621,88 @@ function wireControls() {
 // Volumes are served from the Hugging Face Hub (run.volumes[kind]); fall back to local results/<id>/ for dev.
 const isChisepRun = () => run && (run.domain === "chisep" || run.stage === "chi-separation");
 // χ-separation writes a second set of volumes for the χ− source with a "-dia" suffix
-// (recon-dia.nii.gz, truth-dia.nii.gz, error-dia.nii.gz); the χ+ set uses the plain names.
-const volUrl = (kind) => {
-  // Apply the χ− "-dia" suffix to the KEY too, not just the dev-fallback path — otherwise an
-  // HF-backed run returns run.volumes["recon"] (the χ+ volume) for the χ− toggle.
-  const suffix = (isChisepRun() && chisepComp === "dia") ? "-dia" : "";
-  const k = kind + suffix;
-  if (run && run.volumes && run.volumes[k]) return run.volumes[k];
-  return baseUrl + k + ".nii.gz";
-};
+// (recon-dia.nii.gz, truth-dia.nii.gz, error-dia.nii.gz); the χ+ set uses the plain names. HF-backed
+// runs expose each as its own run.volumes key (recon / recon-dia / …); dev falls back to local files.
+const volKey = (kind, comp) => kind + (comp === "dia" ? "-dia" : "");
+function volUrlFor(kind, comp) {
+  const key = volKey(kind, comp);
+  if (run && run.volumes && run.volumes[key]) return run.volumes[key];
+  return baseUrl + key + ".nii.gz";
+}
+const runHasError = () => !run.volumes || !!run.volumes.error;
+const volComps = () => (isChisepRun() ? ["para", "dia"] : ["para"]);
+const residentByUrl = (u) => nv.volumes.find((v) => v.url === u);
 
-// Reconcile the viewer with (curBase, showError): reload the base only when it changes, add/remove the
-// error overlay independently, and show a second windowing section for the error map when it's on.
+// Per-source display window: χ+ [0,0.1], χ− [0,0.05]; plain χ maps ±0.1 ppm; fields/other auto.
+function windowFor(vol, comp) {
+  if (run.kind === "chi") { vol.cal_min = -0.1; vol.cal_max = 0.1; }
+  else if (isChisepRun()) { vol.cal_min = 0; vol.cal_max = comp === "dia" ? 0.05 : 0.1; }
+  else autoWin(vol);
+}
+
+// Load one candidate map into nv.volumes (hidden) and tag it — unless already resident. `role` is
+// "base" (recon/truth) or "error". All bases are loaded before any error so the error stays on top.
+async function ensureVolume(role, kind, comp) {
+  const url = volUrlFor(kind, comp);
+  let v = residentByUrl(url);
+  if (v) return v;
+  const cmap = role === "error"
+    ? (errorCtl.cmapSelect.value === "diverging" ? "errpos" : errorCtl.cmapSelect.value)
+    : (baseCtl.cmapSelect.value || "gray");
+  if (!nv.volumes.length) await nv.loadVolumes([{ url, colormap: cmap, opacity: 0 }]);
+  else await nv.addVolumeFromUrl({ url, colormap: cmap, opacity: 0 });
+  v = residentByUrl(url);
+  if (!v) return null;
+  v.__role = role; v.__kind = kind; v.__comp = comp;
+  if (role === "base") windowFor(v, comp);
+  return v;
+}
+
+// Load every candidate map for this run once: all bases first (they sit below), then the error
+// overlays. Kicked off in the background after the first base paints; awaited before an error shows.
+async function preloadAll() {
+  for (const comp of volComps())
+    for (const kind of ["recon", "truth"]) { try { await ensureVolume("base", kind, comp); } catch (_) { /* 404 → skip */ } }
+  if (runHasError())
+    for (const comp of volComps()) { try { await ensureVolume("error", "error", comp); } catch (_) { /* skip */ } }
+}
+
+// Toggle opacity so only the active base (opacity 1) and, if shown, the active error overlay (slider
+// opacity) render; every other resident volume is hidden (opacity 0). No fetch — this is the switch.
+function applyOpacities() {
+  const oErr = parseFloat($("opacity").value);
+  for (const v of nv.volumes) {
+    if (v.__role === "error") v.opacity = (v === activeErrVol ? oErr : 0);
+    else v.opacity = (v === activeBaseVol ? 1 : 0);
+  }
+}
+
+// Reconcile the viewer with (curBase, chisepComp, showError) by toggling opacity on the resident,
+// preloaded volumes — a switch does NOT re-fetch. Only the first view of a run (or a not-yet-preloaded
+// map) actually loads data. On a new run the previous run's volumes are dropped and the set rebuilt.
 async function refreshView() {
-  const cmap = baseCtl.cmapSelect.value;
   const baseKind = curBase === "truth" ? "truth" : "recon";
-  const needBase = loadedBase !== baseKind || !nv.volumes.length;
-  if (needBase || (showError && !loadedError)) setLoading(true);  // only when a fetch is actually pending
+  if (residentRunId !== run.id) {
+    [...nv.volumes].forEach((v) => nv.removeVolumeByUrl(v.url));
+    residentRunId = run.id; activeBaseVol = activeErrVol = null; preloadPromise = null;
+  }
+  const needErr = showError && runHasError();
+  const pending = !residentByUrl(volUrlFor(baseKind, chisepComp))
+    || (needErr && !residentByUrl(volUrlFor("error", chisepComp)));
+  if (pending) setLoading(true);
   try {
-    if (needBase) {
-      await nv.loadVolumes([{ url: volUrl(baseKind), colormap: cmap }]);  // replaces all volumes (drops any overlay)
-      defaultWindow(baseVol());
-      loadedBase = baseKind; loadedError = false;
-      baseCtl.setup();
-    }
+    activeBaseVol = await ensureVolume("base", baseKind, chisepComp);   // the visible map (await)
+    if (!activeBaseVol) throw new Error("base volume unavailable");     // → loadRun shows the fallback note
+    if (!preloadPromise) preloadPromise = preloadAll();                 // background-load the rest
     // Reveal the error windowing section BEFORE setErrorColormap() so its canvas has a non-zero size
-    // when the histogram first draws — otherwise it renders blank and the bubbles mis-position until
-    // the next interaction (a hidden `display:none` element reports clientWidth 0).
+    // when the histogram first draws (a hidden display:none element reports clientWidth 0).
     $("win-error-section").classList.toggle("hidden", !showError);
-    if (showError && !loadedError) {
-      await nv.addVolumeFromUrl({ url: volUrl("error"), opacity: parseFloat($("opacity").value) });
-      loadedError = true;
-      setErrorColormap();  // sets colormap (+ diverging negative), window, magnitude mode and label
-    } else if (!showError && loadedError) {
-      nv.removeVolumeByUrl(volUrl("error"));
-      loadedError = false;
-    }
-  } finally { setLoading(false); }
+    if (needErr) { await preloadPromise; activeErrVol = await ensureVolume("error", "error", chisepComp); }
+    else activeErrVol = null;
+  } finally { if (pending) setLoading(false); }
+  applyOpacities();
+  if (activeErrVol) setErrorColormap();   // colormap (+ diverging negative), window, magnitude mode
+  baseCtl.setup();                        // reframe the base histogram/window for the active map
   nv.updateGLVolume();
 }
 
@@ -641,8 +710,8 @@ async function refreshView() {
 // transparency floor: cal_min hides near-zero background, cal_max saturates, both mirrored to the
 // negative side. χ error uses the eval's ppm scale (floor 0.01, sat 0.1 ppm).
 function setErrorColormap() {
-  if (!loadedError) return;
-  const ov = nv.volumes[nv.volumes.length - 1];
+  if (!activeErrVol) return;
+  const ov = activeErrVol;
   const cfg = ERROR_CMAPS[errorCtl.cmapSelect.value] || ERROR_CMAPS.diverging;
   ov.colormap = cfg.colormap;
   ov.colormapNegative = cfg.colormapNegative;
