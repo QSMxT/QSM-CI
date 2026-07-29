@@ -8,11 +8,22 @@ notes on how QSM-CI runs them.
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 
 import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+from qsm_ci.runner import _consumes  # noqa: E402
+from qsm_ci.stages import STAGES  # noqa: E402
+
+
+def _inputs(meta: dict) -> list:
+    """The artifacts this method actually reads (its declared `inputs:`, else the stage's consumes) —
+    so the site's 'run it yourself' command lists only the flags the method uses. Empty for a method
+    whose stage isn't a known pipeline stage."""
+    return _consumes(meta) if meta.get("stage") in STAGES else []
 
 
 def entry(meta: dict) -> dict:
@@ -22,6 +33,9 @@ def entry(meta: dict) -> dict:
         "slug": meta["slug"],
         "name": meta.get("name", meta["slug"]),
         "stage": meta.get("stage"),
+        # The artifacts this method actually consumes (declared `inputs:` ∩ stage, else the full stage
+        # consumes) — the viewer's "run it yourself" command lists only these flags.
+        "inputs": _inputs(meta),
         # Leaderboard / submission-sidebar domain: 'qsm' (the field-mapping→bfr→dipole pipeline) or
         # 'chisep' (susceptibility source separation). Explicit `domain:` wins; else derived from stage.
         "domain": meta.get("domain") or ("chisep" if meta.get("stage") == "chi-separation" else "qsm"),

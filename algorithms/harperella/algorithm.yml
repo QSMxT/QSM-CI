@@ -1,6 +1,7 @@
 name: HARPERELLA
 slug: harperella
 stage: unwrap+bfr
+inputs: [phase, mask, params]  # the artifacts this method actually reads (a subset of the stage's inputs)
 engine: QSMxT / QSM.rs
 description: >
   Integrated phase unwrapping + background field removal, operating on wrapped phase.

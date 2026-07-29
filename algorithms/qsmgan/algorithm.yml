@@ -1,6 +1,7 @@
 name: QSMGAN
 slug: qsmgan
 stage: dipole
+inputs: [localfield, mask]  # the artifacts this method actually reads (a subset of the stage's inputs)
 description: >
   QSMGAN — dipole inversion by a 3D U-Net generator refined with a WGAN-GP and an
   increased receptive field. Consumes the background-removed local field (ppm) and
