@@ -4,6 +4,10 @@
       "slug": "autoqsm",
       "name": "AutoQSM",
       "stage": "bfr+dipole",
+      "inputs": [
+        "totalfield",
+        "mask"
+      ],
       "domain": "qsm",
       "engine": null,
       "description": "AutoQSM \u2014 learning-based single-step QSM reconstruction without brain extraction. A V-Net that maps the total field map directly to susceptibility, doing neither brain extraction nor a separate background-field-removal step. Consumes the total field and produces susceptibility. Runs CPU-only on the legacy TensorFlow 1.15 / Keras 2.2.5 stack the method was published against.",
@@ -27,6 +31,11 @@
       "slug": "bfrnet",
       "name": "BFRnet",
       "stage": "bfr",
+      "inputs": [
+        "totalfield",
+        "mask",
+        "params"
+      ],
       "domain": "qsm",
       "engine": "ONNX Runtime",
       "description": "Deep-learning background field removal (BFRnet): a 3D dual-frequency octave-convolution U-net trained to predict the background field of the brain \u2014 including brains with significant pathological susceptibility sources (haemorrhage, calcification). Consumes the total field (ppm) and predicts the background field; the local tissue field is total \u2212 background, masked. The authors' trained MATLAB network was exported to ONNX and is run here with ONNX Runtime \u2014 no MATLAB Runtime \u2014 reproducing the MATLAB output to ~1e-8 at a fraction of the memory and image size.",
@@ -57,6 +66,13 @@
       "slug": "chi-sep-ilsqr",
       "name": "\u03c7-separation (iLSQR)",
       "stage": "chi-separation",
+      "inputs": [
+        "localfield",
+        "r2prime",
+        "magnitude",
+        "mask",
+        "params"
+      ],
       "domain": "chisep",
       "engine": "chi-separation toolbox (SNU-LIST)",
       "description": "\u03c7-separation (iLSQR variant) \u2014 separates net susceptibility into paramagnetic (\u03c7+, iron) and diamagnetic (\u03c7\u2212, myelin/calcium) sources using the local field and an R2' map to break the para/dia degeneracy. The QSM is reconstructed in-house with STI-Suite QSM_iLSQR from the local field (the toolbox needs a QSM in its own scaling/orientation conventions \u2014 see recon.m). From the SNU-LIST chi-separation toolbox. A classical iterative baseline (\u03c7+ xsim ~0.58 / \u03c7\u2212 ~0.47 on the phantom).",
@@ -76,6 +92,14 @@
       "slug": "chi-sep-medi",
       "name": "\u03c7-separation (MEDI)",
       "stage": "chi-separation",
+      "inputs": [
+        "localfield",
+        "r2prime",
+        "chimap",
+        "magnitude",
+        "mask",
+        "params"
+      ],
       "domain": "chisep",
       "engine": "chi-separation toolbox (SNU-LIST)",
       "description": "\u03c7-separation (MEDI variant) \u2014 separates net susceptibility into paramagnetic (\u03c7+, iron) and diamagnetic (\u03c7\u2212, myelin/calcium) sources using the local field, a QSM/\u03c7_total map, and an R2' map, with a morphology-enabled dipole (MEDI) regulariser. From the SNU-LIST chi-separation toolbox.",
@@ -95,6 +119,13 @@
       "slug": "chi-sepnet",
       "name": "\u03c7-sepnet",
       "stage": "chi-separation",
+      "inputs": [
+        "localfield",
+        "r2prime",
+        "chimap",
+        "mask",
+        "params"
+      ],
       "domain": "chisep",
       "engine": "chi-separation toolbox (SNU-LIST) \u2014 \u03c7-sepnet, ONNX",
       "description": "\u03c7-sepnet \u2014 a deep-learning \u03c7-separation method (SNU-LIST). A 3D network maps the local field, \u03c7_total and R2\u2032 to the paramagnetic (\u03c7+) and diamagnetic (\u03c7\u2212) source maps. Run here via ONNX (onnxruntime), 192\u00d7192\u00d7128 sliding-window patches, Dr = 114 Hz/ppm.",
@@ -114,6 +145,11 @@
       "slug": "fansi",
       "name": "FANSI (nlTV)",
       "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params"
+      ],
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",
       "description": "Fast Nonlinear Susceptibility Inversion with nonlinear total-variation regularization, solved with ADMM.",
@@ -150,6 +186,11 @@
       "slug": "fansi-tgv",
       "name": "FANSI (nlTGV)",
       "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params"
+      ],
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",
       "description": "FANSI with nonlinear total-generalized-variation (second-order) regularization, solved with ADMM.",
@@ -191,6 +232,11 @@
       "slug": "harperella",
       "name": "HARPERELLA",
       "stage": "unwrap+bfr",
+      "inputs": [
+        "phase",
+        "mask",
+        "params"
+      ],
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",
       "description": "Integrated phase unwrapping + background field removal, operating on wrapped phase.",
@@ -229,6 +275,11 @@
       "slug": "hd-qsm",
       "name": "HD-QSM",
       "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params"
+      ],
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",
       "description": "Hybrid data-fidelity QSM: a two-stage linear inversion where an L1 stage produces a discrepancy map that reweights a second L2 stage.",
@@ -265,6 +316,11 @@
       "slug": "iharperella",
       "name": "iHARPERELLA",
       "stage": "unwrap+bfr",
+      "inputs": [
+        "phase",
+        "mask",
+        "params"
+      ],
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",
       "description": "Improved HARPERELLA: iterative integrated unwrapping + background removal on wrapped phase.",
@@ -302,6 +358,11 @@
       "slug": "ilsqr",
       "name": "iLSQR",
       "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params"
+      ],
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",
       "description": "Iterative LSQR inversion with streaking-artifact reduction.",
@@ -338,6 +399,11 @@
       "slug": "inr-qsm",
       "name": "INR-QSM",
       "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params"
+      ],
       "domain": "qsm",
       "engine": null,
       "description": "INR-QSM \u2014 a subject-specific UNSUPERVISED deep-learning dipole inversion using an implicit neural representation. No pretrained weights: a sine-activated coordinate MLP (SIREN) is OPTIMIZED per-subject so that the susceptibility it represents, pushed through the QSM dipole forward model, reproduces the input local field, with edge-weighted TV and gradient-domain regularizers. Consumes the local (tissue) field in ppm and produces susceptibility (ppm). The dipole kernel is built from the B0 direction and voxel size. Runs CPU-only by default (the reference is GPU-oriented, ~10 GB VRAM; see RUNTIME/GPU CAVEAT in README). Because it optimizes per input volume with a patch-based non-local phase-compensation scheme, runtime is long.",
@@ -404,6 +470,12 @@
       "slug": "iqsm",
       "name": "iQSM",
       "stage": "end-to-end",
+      "inputs": [
+        "phase",
+        "magnitude",
+        "mask",
+        "params"
+      ],
       "domain": "qsm",
       "engine": "iQSM (PyTorch)",
       "description": "iQSM \u2014 instant single-step QSM from raw MRI phase using Laplacian-enabled deep neural networks (LoT-Unet). A single deep network maps raw wrapped phase directly to susceptibility, performing phase unwrapping, background-field removal, and dipole inversion in one pass. Multi-echo phase is reconstructed per echo and combined with magnitude x TE^2 weighting. Runs CPU-only with a CPU-only PyTorch wheel; pretrained weights (HuggingFace sunhongfu/iQSM) are baked into the image.",
@@ -431,6 +503,12 @@
       "slug": "iqsm-plus",
       "name": "iQSM+",
       "stage": "end-to-end",
+      "inputs": [
+        "phase",
+        "magnitude",
+        "mask",
+        "params"
+      ],
       "domain": "qsm",
       "engine": null,
       "description": "iQSM+ \u2014 an orientation-adaptive, single-step deep-learning method that reconstructs susceptibility directly from the raw wrapped MRI phase (unwrapping, background-field removal and dipole inversion in one network pass). It extends iQSM with orientation-adaptive latent feature editing (OA-LFE) blocks that consume the B0 direction vector, so oblique / sagittal / coronal acquisitions reconstruct correctly, not just axial scans. Consumes phase, magnitude, mask and params and produces the susceptibility map. Multi-echo phase is handled by the engine's own per-echo inference with magnitude x TE^2 weighted combination. Runs CPU-only with a CPU PyTorch wheel (no GPU).",
@@ -457,6 +535,11 @@
       "slug": "ir2qsm",
       "name": "IR2QSM",
       "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params"
+      ],
       "domain": "qsm",
       "engine": null,
       "description": "IR2QSM \u2014 a pretrained deep-learning dipole-inversion network (iterative Reverse Concatenations and Recurrent Modules). Consumes the local (tissue) field in ppm and produces susceptibility (ppm). The network is an \"IR2U-net\": a specially tailored 3D U-net iterated T=4 times, with reverse concatenations between iterations and a recurrent (SRU) middle module. Unlike QSMnet it applies NO dataset mean/std normalization \u2014 the local field in ppm is fed to the net directly and the output is already in ppm. Each dimension is zero-padded to a multiple of 8 (the U-net has 3 pool/deconv levels) and cropped back afterwards; trained at 1 mm isotropic. Runs CPU-only with PyTorch (no GPU).",
@@ -485,6 +568,11 @@
       "slug": "ismv",
       "name": "iSMV",
       "stage": "bfr",
+      "inputs": [
+        "totalfield",
+        "mask",
+        "params"
+      ],
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",
       "description": "Iterative Spherical Mean Value background field removal.",
@@ -522,6 +610,11 @@
       "slug": "l1-qsm",
       "name": "L1-QSM",
       "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params"
+      ],
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",
       "description": "L1-norm data-fidelity QSM (PI-QSM): an L1 fidelity term with TV regularization, robust to phase inconsistencies.",
@@ -563,6 +656,12 @@
       "slug": "laplacian-fieldmap",
       "name": "Laplacian field mapping",
       "stage": "field-mapping",
+      "inputs": [
+        "phase",
+        "magnitude",
+        "mask",
+        "params"
+      ],
       "domain": "qsm",
       "engine": null,
       "description": "Multi-echo B0 field mapping by Laplacian phase unwrapping + linear fit over echoes. Reference `field-mapping`-stage submission (raw phase -> total field).",
@@ -580,6 +679,11 @@
       "slug": "lbv",
       "name": "LBV",
       "stage": "bfr",
+      "inputs": [
+        "totalfield",
+        "mask",
+        "params"
+      ],
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",
       "description": "Laplacian Boundary Value: solves the Laplacian of the field with boundary conditions.",
@@ -606,6 +710,11 @@
       "slug": "lpcnn",
       "name": "LPCNN",
       "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params"
+      ],
       "domain": "qsm",
       "engine": null,
       "description": "LPCNN (Learned Proximal Convolutional Neural Network) \u2014 a learned proximal, unrolled network for QSM dipole inversion. It integrates proximal gradient descent with a 3D CNN denoiser: the physics data-consistency term uses a dipole kernel encoding the B0 direction, and a learned proximal operator regularizes each of 3 unrolled iterations. Consumes the local (tissue) field and produces susceptibility. Run in single-orientation mode (number=1), CPU-only via --no_cuda, with the pretrained 7T weights committed in-repo.",
@@ -627,6 +736,12 @@
       "slug": "matlab-medi",
       "name": "MEDI (MATLAB)",
       "stage": "bfr+dipole",
+      "inputs": [
+        "totalfield",
+        "mask",
+        "params",
+        "magnitude"
+      ],
       "domain": "qsm",
       "engine": null,
       "description": "Morphology Enabled Dipole Inversion (Cornell MEDI toolbox), compiled from MATLAB and run on the license-free MATLAB Runtime. Takes the total field, removes the background field with PDF, then solves the L1 morphology-regularized dipole inversion.",
@@ -676,6 +791,11 @@
       "slug": "matlab-sti-iharperella",
       "name": "iHARPERELLA (STI Suite)",
       "stage": "unwrap+bfr",
+      "inputs": [
+        "phase",
+        "mask",
+        "params"
+      ],
       "domain": "qsm",
       "engine": null,
       "description": "Integrated phase unwrapping + background field removal (iHARPERELLA) from STI Suite v3, compiled from MATLAB and run on the license-free MATLAB Runtime. Operates on wrapped multi-echo phase and yields the local tissue field (echoes combined with optimal TE^2 weights).",
@@ -708,6 +828,11 @@
       "slug": "matlab-sti-ilsqr",
       "name": "iLSQR (STI Suite)",
       "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params"
+      ],
       "domain": "qsm",
       "engine": null,
       "description": "Iterative LSQR dipole inversion from STI Suite v3 (the reference iLSQR implementation), compiled from MATLAB and run on the license-free MATLAB Runtime. Takes the local field and solves for susceptibility with streaking-artifact reduction.",
@@ -739,6 +864,11 @@
       "slug": "matlab-sti-star",
       "name": "STAR-QSM (STI Suite)",
       "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params"
+      ],
       "domain": "qsm",
       "engine": null,
       "description": "STAR-QSM (streaking artifact reduction) dipole inversion from STI Suite v3, compiled from MATLAB and run on the license-free MATLAB Runtime. Fast two-level susceptibility inversion of the local field.",
@@ -762,6 +892,11 @@
       "slug": "matlab-sti-vsharp",
       "name": "V-SHARP (STI Suite)",
       "stage": "bfr",
+      "inputs": [
+        "totalfield",
+        "mask",
+        "params"
+      ],
       "domain": "qsm",
       "engine": null,
       "description": "V-SHARP background field removal from STI Suite v3 (spatially-varying SMV deconvolution), compiled from MATLAB and run on the license-free MATLAB Runtime. Takes the total field and removes the background field to yield the local tissue field.",
@@ -788,6 +923,11 @@
       "slug": "matlab-tkd",
       "name": "TKD (MATLAB)",
       "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params"
+      ],
       "domain": "qsm",
       "engine": null,
       "description": "Thresholded k-space division dipole inversion implemented in MATLAB and run on the license-free MATLAB Runtime. Reference `dipole`-stage submission demonstrating the MATLAB path.",
@@ -810,6 +950,12 @@
       "slug": "medi",
       "name": "MEDI",
       "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params",
+        "magnitude"
+      ],
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",
       "description": "Morphology Enabled Dipole Inversion: magnitude-guided edge regularization.",
@@ -843,6 +989,11 @@
       "slug": "modip",
       "name": "MoDIP",
       "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params"
+      ],
       "domain": "qsm",
       "engine": null,
       "description": "MoDIP \u2014 model-based deep image prior for QSM dipole inversion. UNSUPERVISED / untrained: no pretrained weights are loaded \u2014 a small 3D U-Net (deep image prior) is optimized per-subject at inference time to fit the input local field through the QSM dipole forward model, with a gradient-domain regularizer. Consumes the local (tissue) field in ppm and produces susceptibility (ppm). The dipole kernel is built internally from the B0 direction and voxel size. Runs CPU-only by default (the reference is GPU-oriented; see RUNTIME/GPU CAVEAT in README). Because it optimizes per input volume, runtime is long (hundreds of iterations).",
@@ -884,6 +1035,11 @@
       "slug": "modl-qsm",
       "name": "MoDL-QSM",
       "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params"
+      ],
       "domain": "qsm",
       "engine": null,
       "description": "MoDL-QSM \u2014 model-based deep learning for quantitative susceptibility mapping. A dipole-inversion network that unrolls a gradient-descent solver of the QSM forward model, alternating a learned CNN prior with data-consistency terms built from the dipole kernel. Consumes the tissue (local) field in ppm and produces susceptibility (the STI \u03c733 component, comparable to scalar QSM). Runs CPU-only with legacy TensorFlow 1.15 / Keras 2.2.5.",
@@ -911,6 +1067,11 @@
       "slug": "ndi",
       "name": "NDI",
       "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params"
+      ],
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",
       "description": "Nonlinear Dipole Inversion: gradient-descent solve of a nonlinear (wrapped-phase) data term; effectively tuning-free.",
@@ -942,6 +1103,12 @@
       "slug": "nextqsm",
       "name": "NeXtQSM",
       "stage": "bfr+dipole",
+      "inputs": [
+        "totalfield",
+        "mask",
+        "params",
+        "magnitude"
+      ],
       "domain": "qsm",
       "engine": null,
       "description": "NeXtQSM \u2014 a complete deep-learning pipeline for data-consistent QSM trained with hybrid data. Consumes the total (tissue) field and produces susceptibility, doing its own background field removal (a U-Net) followed by a data-consistent variational-network dipole inversion. Runs CPU-only with plain TensorFlow-CPU (no GPU, no ONNX).",
@@ -965,6 +1132,11 @@
       "slug": "nltv",
       "name": "NLTV",
       "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params"
+      ],
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",
       "description": "Nonlocal Total Variation regularized inversion.",
@@ -996,6 +1168,11 @@
       "slug": "pdf",
       "name": "PDF",
       "stage": "bfr",
+      "inputs": [
+        "totalfield",
+        "mask",
+        "params"
+      ],
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",
       "description": "Projection onto Dipole Fields: models the background field as external dipoles.",
@@ -1025,6 +1202,12 @@
       "slug": "qsmart",
       "name": "QSMART",
       "stage": "bfr+dipole",
+      "inputs": [
+        "totalfield",
+        "mask",
+        "params",
+        "magnitude"
+      ],
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",
       "description": "QSMART: vessel-aware two-stage reconstruction. Consumes the total field and produces susceptibility, doing its own spatially-dependent background field removal and vasculature-aware regularization (Frangi vessel detection + SDF).",
@@ -1053,6 +1236,10 @@
       "slug": "qsmgan",
       "name": "QSMGAN",
       "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask"
+      ],
       "domain": "qsm",
       "engine": null,
       "description": "QSMGAN \u2014 dipole inversion by a 3D U-Net generator refined with a WGAN-GP and an increased receptive field. Consumes the background-removed local field (ppm) and produces susceptibility. Patch-based inference: 64^3 input patches are mapped to 48^3 receptive-field-cropped output patches (i64o48) and stitched. Runs CPU-only on legacy PyTorch with the published WGAN-refined generator weights.",
@@ -1074,6 +1261,10 @@
       "slug": "qsmnet",
       "name": "QSMnet",
       "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask"
+      ],
       "domain": "qsm",
       "engine": null,
       "description": "QSMnet \u2014 a pretrained 3D U-Net for QSM dipole inversion. Consumes the local (tissue) field in ppm and produces susceptibility (ppm). The input is normalized by the dataset mean/std stored with the checkpoint and the output is de-normalized back to ppm. Trained at 1 mm isotropic; each dimension is zero-padded to a multiple of 16 for the U-Net's four pool/deconv levels and cropped back afterwards. Runs CPU-only on the legacy TensorFlow 1.14 / Python 3.7 stack.",
@@ -1103,6 +1294,10 @@
       "slug": "qsmnet-plus",
       "name": "QSMnet+",
       "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask"
+      ],
       "domain": "qsm",
       "engine": null,
       "description": "QSMnet+ \u2014 the augmentation-trained variant of QSMnet: the same pretrained 3D U-Net for QSM dipole inversion, trained with susceptibility-scaling data augmentation for a wider, more linear susceptibility range. Consumes the local (tissue) field in ppm and produces susceptibility (ppm). The input is normalized by the dataset mean/std stored with the checkpoint and the output is de-normalized back to ppm. Trained at 1 mm isotropic; each dimension is zero-padded to a multiple of 16 for the U-Net's four pool/deconv levels and cropped back afterwards. Runs CPU-only on the legacy TensorFlow 1.14 / Python 3.7 stack.",
@@ -1127,6 +1322,11 @@
       "slug": "resharp",
       "name": "RESHARP",
       "stage": "bfr",
+      "inputs": [
+        "totalfield",
+        "mask",
+        "params"
+      ],
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",
       "description": "Regularized SHARP with Tikhonov regularization of the deconvolution.",
@@ -1157,6 +1357,12 @@
       "slug": "romeo-fieldmap",
       "name": "ROMEO field mapping",
       "stage": "field-mapping",
+      "inputs": [
+        "phase",
+        "magnitude",
+        "mask",
+        "params"
+      ],
       "domain": "qsm",
       "engine": null,
       "description": "Multi-echo B0 field mapping by ROMEO phase unwrapping (via the QSMxT/QSM.rs engine) with a per-voxel linear fit of unwrapped phase over echoes. Alternative to Laplacian field mapping.",
@@ -1174,6 +1380,11 @@
       "slug": "rts",
       "name": "RTS",
       "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params"
+      ],
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",
       "description": "Rapid Two-Step QSM: streaking-artifact reduction via a fast ADMM split.",
@@ -1209,6 +1420,11 @@
       "slug": "sharp",
       "name": "SHARP",
       "stage": "bfr",
+      "inputs": [
+        "totalfield",
+        "mask",
+        "params"
+      ],
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",
       "description": "Sophisticated Harmonic Artifact Reduction for Phase data: SMV deconvolution.",
@@ -1241,6 +1457,13 @@
       "slug": "susep-net",
       "name": "SUSEP-Net",
       "stage": "chi-separation",
+      "inputs": [
+        "localfield",
+        "r2prime",
+        "chimap",
+        "mask",
+        "params"
+      ],
       "domain": "chisep",
       "engine": "SUSEP-Net (dual-branch 3D U-net, PyTorch, CPU)",
       "description": "SUSEP-Net \u2014 a simulation-supervised, contrastive-learning deep network for sub-voxel susceptibility source separation. A dual-branch 3D U-net with two guidance encoders maps the R2\u2032, local field and \u03c7_total (QSM) images to the paramagnetic (\u03c7+, iron) and diamagnetic (\u03c7\u2212, myelin\u00b7calcium) source maps. Run here via PyTorch on CPU, whole-volume, z-scored inputs (QSM/field in ppm, R2\u2032 in Hz).",
@@ -1261,6 +1484,12 @@
       "slug": "tgv",
       "name": "TGV",
       "stage": "bfr+dipole",
+      "inputs": [
+        "totalfield",
+        "mask",
+        "params",
+        "magnitude"
+      ],
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",
       "description": "Total Generalized Variation single-step reconstruction: total field -> susceptibility, doing its own background field removal.",
@@ -1304,6 +1533,11 @@
       "slug": "tikhonov",
       "name": "Tikhonov",
       "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params"
+      ],
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",
       "description": "Closed-form L2 (Tikhonov) regularized inversion.",
@@ -1334,6 +1568,11 @@
       "slug": "tkd",
       "name": "TKD",
       "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params"
+      ],
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",
       "description": "Thresholded K-space Division: direct inversion with the dipole kernel thresholded.",
@@ -1362,6 +1601,11 @@
       "slug": "tsvd",
       "name": "TSVD",
       "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params"
+      ],
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",
       "description": "Truncated Singular Value Decomposition inversion.",
@@ -1388,6 +1632,11 @@
       "slug": "tv",
       "name": "TV (ADMM)",
       "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params"
+      ],
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",
       "description": "Total Variation regularized dipole inversion solved with ADMM.",
@@ -1429,6 +1678,11 @@
       "slug": "vsharp",
       "name": "V-SHARP",
       "stage": "bfr",
+      "inputs": [
+        "totalfield",
+        "mask",
+        "params"
+      ],
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",
       "description": "Variable-radius SHARP: SMV deconvolution with a spatially varying kernel radius.",
@@ -1465,6 +1719,12 @@
       "slug": "wavesep",
       "name": "WaveSep",
       "stage": "chi-separation",
+      "inputs": [
+        "r2prime",
+        "chimap",
+        "mask",
+        "params"
+      ],
       "domain": "chisep",
       "engine": "WaveSep (wavelet-domain L1 source separation, iterative, NumPy+PyWavelets, CPU)",
       "description": "WaveSep \u2014 a wavelet-based iterative approach for susceptibility source separation. It splits net susceptibility (\u03c7_total/QSM) into paramagnetic (\u03c7+, iron) and diamagnetic (\u03c7\u2212, myelin\u00b7calcium) sources using an R2' map to break the para/dia degeneracy, under two voxel-wise data-fidelity terms (\u03c7+ + \u03c7\u2212 \u2248 \u03c7_total, \u03c7+ \u2212 \u03c7\u2212 \u2248 R2'/Dr) and a wavelet-domain L1 sparsity prior solved by proximal gradient (soft-thresholding, db4). Pure Python on CPU \u2014 no network, no pretrained weights, no GPU.",
@@ -1486,6 +1746,11 @@
       "slug": "wh-qsm",
       "name": "WH-QSM",
       "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params"
+      ],
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",
       "description": "Weak-Harmonic QSM: jointly estimates susceptibility and a residual harmonic background field, correcting imperfect background-field removal.",
@@ -1527,6 +1792,10 @@
       "slug": "xqsm",
       "name": "xQSM",
       "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask"
+      ],
       "domain": "qsm",
       "engine": null,
       "description": "xQSM \u2014 an octave-convolutional, noise-regularized U-Net for QSM dipole inversion. Consumes the local (tissue) field in ppm and produces susceptibility (ppm) using the pretrained in-vivo checkpoint. The octave convolution adds an X-shaped multi-resolution feature exchange on a U-net backbone with a noise-adding regularization layer. Runs CPU-only with PyTorch (no GPU); the network auto zero-pads each dimension to a multiple of 8, so there is no fixed matrix size.",

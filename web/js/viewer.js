@@ -35,11 +35,14 @@ const ARTFILE = { phase: "phase.nii.gz", magnitude: "magnitude.nii.gz", mask: "m
   "chi-dia": "chi-dia.nii.gz" };
 const escapeHtml = (s) => s.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
 
-function runLine(slug, stage, truth) {
+function runLine(slug, stage, truth, inputs) {
   const io = STAGE_IO[stage];
   if (!io) return `qsm-ci run ${slug}`;
-  // One flag per line, backslash-continued, so long commands don't overflow the code block.
-  const parts = [`qsm-ci run ${slug}`, ...io.consumes.map((a) => `--${a} ${ARTFILE[a]}`)];
+  // Prefer the method's declared inputs (only the artifacts it actually reads) so the command doesn't
+  // advertise flags the method ignores; fall back to the stage's full consumes when a run predates the
+  // manifest field. One flag per line, backslash-continued, so long commands don't overflow the block.
+  const consumes = (inputs && inputs.length ? inputs.filter((a) => ARTFILE[a]) : io.consumes);
+  const parts = [`qsm-ci run ${slug}`, ...consumes.map((a) => `--${a} ${ARTFILE[a]}`)];
   if (Array.isArray(io.produces)) {  // multi-output (χ-separation): a directory in, a directory to score against
     parts.push("-o out/");
     if (truth) parts.push("--truth groundtruth/");
@@ -70,11 +73,12 @@ function renderHowToRun() {
   const lines = [];
   if (run.combo) {
     const { field_mapping: fm, bfr, dipole } = run.combo;
-    if (fm && fm !== "gt" && stageOf(fm)) lines.push(runLine(fm, stageOf(fm), false));
-    if (bfr && stageOf(bfr)) lines.push(runLine(bfr, stageOf(bfr), false));
-    if (dipole && stageOf(dipole)) lines.push(runLine(dipole, stageOf(dipole), true));
+    const ins = (s) => bySlug[s] && bySlug[s].inputs;
+    if (fm && fm !== "gt" && stageOf(fm)) lines.push(runLine(fm, stageOf(fm), false, ins(fm)));
+    if (bfr && stageOf(bfr)) lines.push(runLine(bfr, stageOf(bfr), false, ins(bfr)));
+    if (dipole && stageOf(dipole)) lines.push(runLine(dipole, stageOf(dipole), true, ins(dipole)));
   } else if (bySlug[run.slug]) {
-    lines.push(runLine(run.slug, run.stage, true));
+    lines.push(runLine(run.slug, run.stage, true, bySlug[run.slug].inputs));
   }
   if (!lines.length) { el.classList.add("hidden"); return; }
   const ciCmd = "pip install qsm-ci\n" + lines.join("\n");

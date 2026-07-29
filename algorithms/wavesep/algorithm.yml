@@ -1,6 +1,7 @@
 name: WaveSep
 slug: wavesep
 stage: chi-separation
+inputs: [chimap, r2prime, mask, params]  # the artifacts this method actually reads (a subset of the stage's inputs)
 engine: WaveSep (wavelet-domain L1 source separation, iterative, NumPy+PyWavelets, CPU)
 description: >
   WaveSep — a wavelet-based iterative approach for susceptibility source separation. It splits net

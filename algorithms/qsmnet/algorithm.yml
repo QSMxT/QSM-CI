@@ -1,6 +1,7 @@
 name: QSMnet
 slug: qsmnet
 stage: dipole
+inputs: [localfield, mask]  # the artifacts this method actually reads (a subset of the stage's inputs)
 description: >
   QSMnet — a pretrained 3D U-Net for QSM dipole inversion. Consumes the local (tissue) field in ppm
   and produces susceptibility (ppm). The input is normalized by the dataset mean/std stored with the

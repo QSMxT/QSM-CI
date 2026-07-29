@@ -1,6 +1,7 @@
 name: QSMnet+
 slug: qsmnet-plus
 stage: dipole
+inputs: [localfield, mask]  # the artifacts this method actually reads (a subset of the stage's inputs)
 description: >
   QSMnet+ — the augmentation-trained variant of QSMnet: the same pretrained 3D U-Net for QSM dipole
   inversion, trained with susceptibility-scaling data augmentation for a wider, more linear

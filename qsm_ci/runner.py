@@ -26,12 +26,19 @@ from .stages import ARTIFACT_FILE, ARTIFACT_KIND, STAGES
 
 
 def _consumes(algo: dict) -> list:
-    """Artifacts a method takes as input: its stage's consumes plus any optional extras the method
-    itself declares (`optional_inputs:` in algorithm.yml). The plain `dipole` stage takes only the
-    local field, but a few methods (e.g. MEDI) additionally use magnitude for data-consistency
-    weighting — they opt in so *their* help lists --magnitude without implying every dipole method
-    needs it. Extras must be known optional artifacts and are appended once, after the stage inputs."""
+    """Artifacts a method actually takes as input — so the CLI only suggests flags the method uses.
+
+    A method may declare an explicit `inputs:` list in algorithm.yml (the exact artifacts its code
+    reads); when present we return that, intersected with the stage contract and kept in stage order,
+    so a chi-separation net that ignores `magnitude` doesn't advertise `--magnitude`. Without it we
+    fall back to the stage's full `consumes` plus any `optional_inputs:` the method opts into — the
+    additive default (the plain `dipole` stage takes only the local field; MEDI opts into magnitude
+    for data-consistency weighting so only *its* help lists --magnitude)."""
     base = STAGES[algo["stage"]]["consumes"]
+    explicit = algo.get("inputs")
+    if explicit:
+        want = set(explicit)
+        return [a for a in base if a in want]  # stage order; only what the method declares it reads
     extra = [a for a in (algo.get("optional_inputs") or [])
              if a in OPTIONAL_ARTIFACTS and a not in base]
     return base + extra
