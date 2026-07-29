@@ -144,7 +144,10 @@ let nv = null, run, baseUrl, filter = "", navMode = "stages", domain = "qsm";
 let curBase = "recon";       // base map shown underneath: recon | truth
 let chisepComp = "para";     // χ-separation source shown: para (χ+) | dia (χ−)
 let showError = false;       // whether the error map is overlaid on top of the base
-let loadedBase = null, loadedError = false;  // what's actually in nv.volumes right now
+// Preload model: every candidate map (recon/truth[/-dia] + error[/-dia]) is loaded ONCE into
+// nv.volumes and kept resident for the run; switching just toggles opacity (instant) instead of
+// re-fetching. activeBaseVol / activeErrVol point the windowing controls at the map currently shown.
+let activeBaseVol = null, activeErrVol = null, residentRunId = null, preloadPromise = null;
 let baseCtl = null, errorCtl = null;         // the two windowing controls (base + error overlay)
 
 const $ = (id) => document.getElementById(id);
@@ -389,8 +392,8 @@ async function loadRun() {
     nv.setSliceType(nv.sliceTypeMultiplanar);
     wireControls();
   }
-  // New run → nothing loaded yet; the base map (recon/truth) selection carries over between runs.
-  loadedBase = null; loadedError = false;
+  // New run: the base map (recon/truth) + source selection carry over; refreshView() rebuilds the
+  // resident volume set when run.id changes.
   const hasError = !run.volumes || !!run.volumes.error;  // HF-backed runs advertise which volumes exist
   if (!hasError) showError = false;
   $("t-error").disabled = !hasError;
@@ -517,7 +520,7 @@ function renderMetrics() {
 
 // ---- controls ---------------------------------------------------------------
 const cap = (s) => s[0].toUpperCase() + s.slice(1);
-const baseVol = () => nv.volumes[0];
+const baseVol = () => activeBaseVol || nv.volumes[0];
 function setLayerActive(layer) {
   $("layer-tabs").querySelectorAll("button").forEach((t) =>
     t.className = "rounded-md px-3 py-1 transition " +
@@ -534,13 +537,6 @@ function setViewActive(v) {
       (b.dataset.view === v ? "bg-indigo-600 text-white dark:bg-indigo-500" : "text-gray-500 hover:text-gray-700 dark:text-gray-400"));
 }
 function autoWin(vol) { vol.cal_min = vol.robust_min ?? vol.global_min; vol.cal_max = vol.robust_max ?? vol.global_max; }
-function defaultWindow(vol) {
-  if (run.kind === "chi") { vol.cal_min = -0.1; vol.cal_max = 0.1; }  // χ maps: fixed ±0.1 ppm
-  // χ-separation sources are non-negative magnitudes: χ+ (paramagnetic) [0, 0.1], χ− (diamagnetic)
-  // [0, 0.05]. The histogram auto-frames this window (~50% of view), matching the QSM behaviour.
-  else if (isChisepRun()) { vol.cal_min = 0; vol.cal_max = chisepComp === "dia" ? 0.05 : 0.1; }
-  else autoWin(vol);                                                  // fields / everything else: auto
-}
 
 // Signed error-map colormaps: over-estimate (recon>truth) ramps transparent→red→yellow, under-estimate
 // ramps transparent→blue→cyan. Alpha starts at 0 so the inner window bound (cal_min) is a hard
@@ -572,13 +568,14 @@ function setLoading(on) {
 
 function wireControls() {
   // base map colormap (recon/truth) — compact dropdown above this control's Auto button
-  baseCtl = makeWindowControl(() => nv, () => nv.volumes[0], {
+  baseCtl = makeWindowControl(() => nv, () => baseVol(), {
     value: "gray",
     options: [["gray", "Gray"], ["viridis", "Viridis"], ["plasma", "Plasma"], ["hot", "Hot"], ["cool", "Cool"]],
-    onChange: (v) => { const vol = baseVol(); if (vol) { vol.colormap = v; nv.updateGLVolume(); } },
+    // apply to every resident base map so the colormap persists across recon/truth/χ± toggles
+    onChange: (v) => { nv.volumes.forEach((vol) => { if (vol.__role === "base") vol.colormap = v; }); nv.updateGLVolume(); },
   });
   // error overlay colormap — dropdown above the error window's Auto button; drives setErrorColormap
-  errorCtl = makeWindowControl(() => nv, () => nv.volumes[1], {
+  errorCtl = makeWindowControl(() => nv, () => activeErrVol, {
     value: "diverging",
     options: [["diverging", "Diverging (red ↔ blue)"], ["warm", "Warm"], ["hot", "Hot"], ["viridis", "Viridis"], ["plasma", "Plasma"], ["cool", "Cool"], ["gray", "Gray"]],
     onChange: () => setErrorColormap(),
@@ -593,7 +590,7 @@ function wireControls() {
   $("chisep-tabs").querySelectorAll("button").forEach((t) =>
     t.addEventListener("click", () => {
       chisepComp = t.dataset.comp; setChisepActive(chisepComp);
-      loadedBase = null; loadedError = false; refreshView();
+      refreshView();   // toggles opacity to the χ± source's resident volumes — no re-fetch
     }));
   $("t-error").addEventListener("change", (e) => { showError = e.target.checked; refreshView(); });
   $("view-tabs").querySelectorAll("button").forEach((t) =>
@@ -603,7 +600,7 @@ function wireControls() {
   $("t-interp").addEventListener("change", (e) => { nv.setInterpolation(!e.target.checked); nv.drawScene(); });
   $("opacity").addEventListener("input", (e) => {
     const o = parseFloat(e.target.value);
-    for (let i = 1; i < nv.volumes.length; i++) nv.setOpacity(i, o);
+    if (activeErrVol) activeErrVol.opacity = o;   // slider drives the error overlay only
     $("opacity-val").textContent = Math.round(o * 100) + "%";
     nv.updateGLVolume();
   });
@@ -618,40 +615,88 @@ function wireControls() {
 // Volumes are served from the Hugging Face Hub (run.volumes[kind]); fall back to local results/<id>/ for dev.
 const isChisepRun = () => run && (run.domain === "chisep" || run.stage === "chi-separation");
 // χ-separation writes a second set of volumes for the χ− source with a "-dia" suffix
-// (recon-dia.nii.gz, truth-dia.nii.gz, error-dia.nii.gz); the χ+ set uses the plain names.
-const volUrl = (kind) => {
-  if (run && run.volumes && run.volumes[kind]) return run.volumes[kind];
-  const suffix = (isChisepRun() && chisepComp === "dia") ? "-dia" : "";
-  return baseUrl + kind + suffix + ".nii.gz";
-};
+// (recon-dia.nii.gz, truth-dia.nii.gz, error-dia.nii.gz); the χ+ set uses the plain names. HF-backed
+// runs expose each as its own run.volumes key (recon / recon-dia / …); dev falls back to local files.
+const volKey = (kind, comp) => kind + (comp === "dia" ? "-dia" : "");
+function volUrlFor(kind, comp) {
+  const key = volKey(kind, comp);
+  if (run && run.volumes && run.volumes[key]) return run.volumes[key];
+  return baseUrl + key + ".nii.gz";
+}
+const runHasError = () => !run.volumes || !!run.volumes.error;
+const volComps = () => (isChisepRun() ? ["para", "dia"] : ["para"]);
+const residentByUrl = (u) => nv.volumes.find((v) => v.url === u);
 
-// Reconcile the viewer with (curBase, showError): reload the base only when it changes, add/remove the
-// error overlay independently, and show a second windowing section for the error map when it's on.
+// Per-source display window: χ+ [0,0.1], χ− [0,0.05]; plain χ maps ±0.1 ppm; fields/other auto.
+function windowFor(vol, comp) {
+  if (run.kind === "chi") { vol.cal_min = -0.1; vol.cal_max = 0.1; }
+  else if (isChisepRun()) { vol.cal_min = 0; vol.cal_max = comp === "dia" ? 0.05 : 0.1; }
+  else autoWin(vol);
+}
+
+// Load one candidate map into nv.volumes (hidden) and tag it — unless already resident. `role` is
+// "base" (recon/truth) or "error". All bases are loaded before any error so the error stays on top.
+async function ensureVolume(role, kind, comp) {
+  const url = volUrlFor(kind, comp);
+  let v = residentByUrl(url);
+  if (v) return v;
+  const cmap = role === "error"
+    ? (errorCtl.cmapSelect.value === "diverging" ? "errpos" : errorCtl.cmapSelect.value)
+    : (baseCtl.cmapSelect.value || "gray");
+  if (!nv.volumes.length) await nv.loadVolumes([{ url, colormap: cmap, opacity: 0 }]);
+  else await nv.addVolumeFromUrl({ url, colormap: cmap, opacity: 0 });
+  v = residentByUrl(url);
+  if (!v) return null;
+  v.__role = role; v.__kind = kind; v.__comp = comp;
+  if (role === "base") windowFor(v, comp);
+  return v;
+}
+
+// Load every candidate map for this run once: all bases first (they sit below), then the error
+// overlays. Kicked off in the background after the first base paints; awaited before an error shows.
+async function preloadAll() {
+  for (const comp of volComps())
+    for (const kind of ["recon", "truth"]) { try { await ensureVolume("base", kind, comp); } catch (_) { /* 404 → skip */ } }
+  if (runHasError())
+    for (const comp of volComps()) { try { await ensureVolume("error", "error", comp); } catch (_) { /* skip */ } }
+}
+
+// Toggle opacity so only the active base (opacity 1) and, if shown, the active error overlay (slider
+// opacity) render; every other resident volume is hidden (opacity 0). No fetch — this is the switch.
+function applyOpacities() {
+  const oErr = parseFloat($("opacity").value);
+  for (const v of nv.volumes) {
+    if (v.__role === "error") v.opacity = (v === activeErrVol ? oErr : 0);
+    else v.opacity = (v === activeBaseVol ? 1 : 0);
+  }
+}
+
+// Reconcile the viewer with (curBase, chisepComp, showError) by toggling opacity on the resident,
+// preloaded volumes — a switch does NOT re-fetch. Only the first view of a run (or a not-yet-preloaded
+// map) actually loads data. On a new run the previous run's volumes are dropped and the set rebuilt.
 async function refreshView() {
-  const cmap = baseCtl.cmapSelect.value;
   const baseKind = curBase === "truth" ? "truth" : "recon";
-  const needBase = loadedBase !== baseKind || !nv.volumes.length;
-  if (needBase || (showError && !loadedError)) setLoading(true);  // only when a fetch is actually pending
+  if (residentRunId !== run.id) {
+    [...nv.volumes].forEach((v) => nv.removeVolumeByUrl(v.url));
+    residentRunId = run.id; activeBaseVol = activeErrVol = null; preloadPromise = null;
+  }
+  const needErr = showError && runHasError();
+  const pending = !residentByUrl(volUrlFor(baseKind, chisepComp))
+    || (needErr && !residentByUrl(volUrlFor("error", chisepComp)));
+  if (pending) setLoading(true);
   try {
-    if (needBase) {
-      await nv.loadVolumes([{ url: volUrl(baseKind), colormap: cmap }]);  // replaces all volumes (drops any overlay)
-      defaultWindow(baseVol());
-      loadedBase = baseKind; loadedError = false;
-      baseCtl.setup();
-    }
+    activeBaseVol = await ensureVolume("base", baseKind, chisepComp);   // the visible map (await)
+    if (!activeBaseVol) throw new Error("base volume unavailable");     // → loadRun shows the fallback note
+    if (!preloadPromise) preloadPromise = preloadAll();                 // background-load the rest
     // Reveal the error windowing section BEFORE setErrorColormap() so its canvas has a non-zero size
-    // when the histogram first draws — otherwise it renders blank and the bubbles mis-position until
-    // the next interaction (a hidden `display:none` element reports clientWidth 0).
+    // when the histogram first draws (a hidden display:none element reports clientWidth 0).
     $("win-error-section").classList.toggle("hidden", !showError);
-    if (showError && !loadedError) {
-      await nv.addVolumeFromUrl({ url: volUrl("error"), opacity: parseFloat($("opacity").value) });
-      loadedError = true;
-      setErrorColormap();  // sets colormap (+ diverging negative), window, magnitude mode and label
-    } else if (!showError && loadedError) {
-      nv.removeVolumeByUrl(volUrl("error"));
-      loadedError = false;
-    }
-  } finally { setLoading(false); }
+    if (needErr) { await preloadPromise; activeErrVol = await ensureVolume("error", "error", chisepComp); }
+    else activeErrVol = null;
+  } finally { if (pending) setLoading(false); }
+  applyOpacities();
+  if (activeErrVol) setErrorColormap();   // colormap (+ diverging negative), window, magnitude mode
+  baseCtl.setup();                        // reframe the base histogram/window for the active map
   nv.updateGLVolume();
 }
 
@@ -659,8 +704,8 @@ async function refreshView() {
 // transparency floor: cal_min hides near-zero background, cal_max saturates, both mirrored to the
 // negative side. χ error uses the eval's ppm scale (floor 0.01, sat 0.1 ppm).
 function setErrorColormap() {
-  if (!loadedError) return;
-  const ov = nv.volumes[nv.volumes.length - 1];
+  if (!activeErrVol) return;
+  const ov = activeErrVol;
   const cfg = ERROR_CMAPS[errorCtl.cmapSelect.value] || ERROR_CMAPS.diverging;
   ov.colormap = cfg.colormap;
   ov.colormapNegative = cfg.colormapNegative;
