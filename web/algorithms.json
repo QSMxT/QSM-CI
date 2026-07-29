@@ -33,8 +33,7 @@
       "stage": "bfr",
       "inputs": [
         "totalfield",
-        "mask",
-        "params"
+        "mask"
       ],
       "domain": "qsm",
       "engine": "ONNX Runtime",
@@ -123,8 +122,7 @@
         "localfield",
         "r2prime",
         "chimap",
-        "mask",
-        "params"
+        "mask"
       ],
       "domain": "chisep",
       "engine": "chi-separation toolbox (SNU-LIST) \u2014 \u03c7-sepnet, ONNX",
@@ -537,8 +535,7 @@
       "stage": "dipole",
       "inputs": [
         "localfield",
-        "mask",
-        "params"
+        "mask"
       ],
       "domain": "qsm",
       "engine": null,
@@ -658,7 +655,6 @@
       "stage": "field-mapping",
       "inputs": [
         "phase",
-        "magnitude",
         "mask",
         "params"
       ],
@@ -1106,8 +1102,7 @@
       "inputs": [
         "totalfield",
         "mask",
-        "params",
-        "magnitude"
+        "params"
       ],
       "domain": "qsm",
       "engine": null,
@@ -1461,8 +1456,7 @@
         "localfield",
         "r2prime",
         "chimap",
-        "mask",
-        "params"
+        "mask"
       ],
       "domain": "chisep",
       "engine": "SUSEP-Net (dual-branch 3D U-net, PyTorch, CPU)",
@@ -1487,8 +1481,7 @@
       "inputs": [
         "totalfield",
         "mask",
-        "params",
-        "magnitude"
+        "params"
       ],
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",

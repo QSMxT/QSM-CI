@@ -1,6 +1,7 @@
 name: NeXtQSM
 slug: nextqsm
 stage: bfr+dipole
+inputs: [totalfield, mask, params]  # the artifacts this method actually reads (a subset of the stage's inputs)
 description: >
   NeXtQSM — a complete deep-learning pipeline for data-consistent QSM trained with hybrid data.
   Consumes the total (tissue) field and produces susceptibility, doing its own background field

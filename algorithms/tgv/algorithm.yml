@@ -1,6 +1,7 @@
 name: TGV
 slug: tgv
 stage: bfr+dipole
+inputs: [totalfield, mask, params]  # the artifacts this method actually reads (a subset of the stage's inputs)
 engine: QSMxT / QSM.rs
 description: >
   Total Generalized Variation single-step reconstruction: total field -> susceptibility, doing its own background field removal.

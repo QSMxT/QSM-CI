@@ -1,7 +1,7 @@
 name: χ-sepnet
 slug: chi-sepnet
 stage: chi-separation
-inputs: [localfield, chimap, r2prime, mask, params]  # the artifacts this method actually reads (a subset of the stage's inputs)
+inputs: [localfield, chimap, r2prime, mask]  # the artifacts this method actually reads (a subset of the stage's inputs)
 engine: chi-separation toolbox (SNU-LIST) — χ-sepnet, ONNX
 description: >
   χ-sepnet — a deep-learning χ-separation method (SNU-LIST). A 3D network maps the local field,
