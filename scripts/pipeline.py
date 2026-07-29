@@ -260,6 +260,9 @@ def discover_algorithms() -> list[dict]:
             "image": _yaml_scalar(image) if image is not None else None,
             "consumes": consumes, "produces": STAGES[s]["produces"],
             "tuned": _tuned_overrides(doc),
+            # Optional per-method smoke-crop size (voxels): a slow per-voxel method (e.g. DECOMPOSE)
+            # can shrink the --smoke gate's central box so the PR check stays fast; None = CLI default.
+            "smoke_box": doc.get("smoke_box"),
         })
     return algos
 
@@ -536,7 +539,7 @@ def do_isolated(task, args, gt_sources, gt, mask):
     try:
         prepare_input(a["consumes"], gt_sources, idir)
         if args.smoke:
-            _smoke_crop(idir, a["consumes"], args.smoke_box)
+            _smoke_crop(idir, a["consumes"], a.get("smoke_box") or args.smoke_box)
         rt = run_algo(a, idir, odir, args.runner, overrides)
         prods = a["produces"]
         if args.smoke:  # smoke: prove it runs + emits a valid output, don't score
