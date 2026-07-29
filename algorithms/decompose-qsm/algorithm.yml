@@ -1,0 +1,34 @@
+name: DECOMPOSE-QSM
+slug: decompose-qsm
+stage: chi-separation
+inputs: [magnitude, chimap, mask, params]  # signal-domain: multi-echo magnitude + provided χ_total (chimap)
+engine: DECOMPOSE (signal-domain per-voxel complex-fit source separation), MATLAB
+description: >
+  DECOMPOSE-QSM — a signal-domain susceptibility source separation. Unlike the R2'-based methods it
+  fits the multi-echo COMPLEX GRE signal per voxel with a 3-stage alternating non-linear least-squares
+  fit (lsqcurvefit) to split χ into paramagnetic (χ+, iron) and diamagnetic (χ−, myelin/calcium)
+  sources. Uses the provided χ_total (chimap) for the signal's phase term (χ is echo-independent), which
+  isolates DECOMPOSE's separation step from any upstream QSM error. Tim Ho's open MATLAB
+  re-implementation of DECOMPOSE.
+authors:
+- name: Tim Ho
+  note: open MATLAB implementation
+- name: Chen et al.
+  note: original DECOMPOSE method
+doi: 10.1016/j.neuroimage.2021.118735
+citation: >
+  Chen J. et al., "Decompose quantitative susceptibility mapping (QSM) to sub-voxel diamagnetic and
+  paramagnetic components based on gradient-echo MRI data", NeuroImage 2021.
+code_url: https://github.com/timwahoo/DECOMPOSE-QSM
+license: GPL-3.0
+image: ghcr.io/astewartau/qsm-ci/decompose-qsm:v1
+run: bash run.sh
+runner: self-hosted   # per-voxel non-linear fit (parfor); ~31 min on 48 cores — needs a many-core runner + long cap
+matlab:
+  entry: recon.m
+  runtime: r2026a
+# Feasibility CONFIRMED on Bunya: full-brain fit ~31 min on 48 cores (job 26707883). Uses the provided
+# χ_total (chimap) for the signal phase — no STI Suite / phase input needed (chi-separation stage already
+# consumes magnitude + chimap + mask + params). GPL-3.0 (redistribution OK with attribution);
+# decompose_utils/ vendored. Build the mcc binary + GHCR image on Bunya (Optimization Toolbox required at
+# compile) per bunya_test.md §3, then this scores on the canonical chisep phantom via score.yml routing.
