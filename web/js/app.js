@@ -138,6 +138,10 @@ const METRICS = {
     desc: "Pearson correlation between reconstructed and ground-truth χ within the mask. 1 = perfect." },
   xsim:            { label: "XSIM",             unit: "",  better: "higher", dp: 3,
     desc: "Structural-similarity index tuned for QSM (5×5×5 windows). 1 = identical to the ground truth." },
+  para_leak:       { label: "χ−→χ+ leak",       unit: "",  better: "lower",  dp: 3,
+    desc: "Whole-brain regression slope of χ+ on the χ− ground truth — the fraction of diamagnetic signal bleeding into the paramagnetic map. 0 = clean; magnitude = contamination. Unlike xSIM it isn't fooled by the shared R2' common mode." },
+  dia_leak:        { label: "χ+→χ− leak",       unit: "",  better: "lower",  dp: 3,
+    desc: "Whole-brain regression slope of χ− on the χ+ ground truth — the fraction of paramagnetic signal bleeding into the diamagnetic map. 0 = clean; magnitude = contamination. Unlike xSIM it isn't fooled by the shared R2' common mode." },
   runtime_s:       { label: "Runtime",          unit: "s", better: "lower",  dp: 1,
     desc: "Wall-clock time to produce this output — for a combined pipeline, the sum of its field-mapping, background-removal and dipole-inversion stages. Measured on GitHub-hosted runners (≈4 vCPU, 16 GB RAM, no GPU — so learning-based methods run on CPU); treat it as relative speed, not an absolute benchmark." },
 };
