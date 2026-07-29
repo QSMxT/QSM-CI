@@ -441,14 +441,16 @@ function renderChisepMetrics() {
       ["DGM iron NRMSE", m.para_nrmse_dgm, "pct", "↓", "χ+ error in deep gray matter (iron)."],
       ["DGM linearity", m.para_dgm_linearity, "num", "↓", "|1 − slope| of χ+ across DGM iron regions; 0 = perfect iron quantification."],
       ["Vein NRMSE", m.para_nrmse_blood, "pct", "↓", "χ+ error in venous blood."],
-      ["Calcium leakage", m.para_calc_leak, "num", "↓", "Mean |χ+| in the calcification (should be ~0) — calcium wrongly bleeding into the paramagnetic map."],
+      ["Calcium leakage (region)", m.para_calc_leak, "num", "↓", "Mean |χ+| in the calcification (should be ~0) — calcium wrongly bleeding into the paramagnetic map."],
+      ["Leakage χ−→χ+ (whole-brain)", m.para_leak, "num", "↓", "Regression slope of χ+ on the χ− ground truth over the whole brain — the fraction of diamagnetic signal bleeding into the paramagnetic map (0 = clean). Unlike xSIM it isn't fooled by the shared R2' common mode."],
     ]],
     ["χ− diamagnetic (calcium, myelin)", [
       ["xSIM", m.dia_xsim, "xsim", "↑", "Structural similarity of χ− vs ground truth."],
       ["NRMSE", m.dia_nrmse, "pct", "↓", "Normalised RMS error of χ− (%)."],
       ["Calcification dev", m.dia_calc_moment_dev, "num", "↓", "Deviation of the recovered calcification's susceptibility moment."],
       ["Streaking", m.dia_calc_streak, "num", "↓", "Streaking-artifact level around the calcification."],
-      ["Iron leakage", m.dia_iron_leak, "num", "↓", "Mean |χ−| in DGM/veins (should be ~0) — iron wrongly bleeding into the diamagnetic map."],
+      ["Iron leakage (region)", m.dia_iron_leak, "num", "↓", "Mean |χ−| in DGM/veins (should be ~0) — iron wrongly bleeding into the diamagnetic map."],
+      ["Leakage χ+→χ− (whole-brain)", m.dia_leak, "num", "↓", "Regression slope of χ− on the χ+ ground truth over the whole brain — the fraction of paramagnetic signal bleeding into the diamagnetic map (0 = clean). The whole-map counterpart to the DGM iron leakage above; unlike xSIM it isn't fooled by the shared R2' common mode."],
     ]],
     [null, [["Runtime", run.runtime_s, "sec", "", "Wall-clock runtime."]]],
   ];

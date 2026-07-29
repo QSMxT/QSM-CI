@@ -235,15 +235,17 @@
                 <span class="has-tip" data-tip="Mean of the χ+ and χ− xSIM — the headline combined source-separation score. Higher is better.">Avg xSIM</span>
                 <span x-show="chisepSort==='avg'" x-text="chisepDir==='asc'?'↑':'↓'"></span>
               </th>
-              <th class="px-4 py-2 text-center font-medium border-l border-gray-200" colspan="2"><span class="has-tip" data-tip="Paramagnetic susceptibility source (positive χ) — dominated by iron.">χ+ paramagnetic</span></th>
-              <th class="px-4 py-2 text-center font-medium border-l border-gray-200" colspan="2"><span class="has-tip" data-tip="Diamagnetic susceptibility source (negative χ, reported as magnitude) — myelin and calcium.">χ− diamagnetic</span></th>
+              <th class="px-4 py-2 text-center font-medium border-l border-gray-200" colspan="3"><span class="has-tip" data-tip="Paramagnetic susceptibility source (positive χ) — dominated by iron.">χ+ paramagnetic</span></th>
+              <th class="px-4 py-2 text-center font-medium border-l border-gray-200" colspan="3"><span class="has-tip" data-tip="Diamagnetic susceptibility source (negative χ, reported as magnitude) — myelin and calcium.">χ− diamagnetic</span></th>
               <th class="px-4 py-3 text-right font-medium border-l border-gray-200" rowspan="2">Runtime</th>
             </tr>
             <tr>
               <th @click="chiSepSort('para_xsim')" class="px-4 py-2 text-right font-normal cursor-pointer select-none hover:text-gray-800 dark:hover:text-gray-100 border-l border-gray-200"><span class="has-tip" data-tip="Structural similarity of the χ+ map vs ground truth. Higher is better.">xSIM</span><span x-show="chisepSort==='para_xsim'" x-text="chisepDir==='asc'?'↑':'↓'"></span></th>
               <th @click="chiSepSort('para_nrmse')" class="px-4 py-2 text-right font-normal cursor-pointer select-none hover:text-gray-800 dark:hover:text-gray-100"><span class="has-tip" data-tip="Normalised RMS error of χ+ vs ground truth (%). Lower is better.">NRMSE</span><span x-show="chisepSort==='para_nrmse'" x-text="chisepDir==='asc'?'↑':'↓'"></span></th>
+              <th @click="chiSepSort('para_leak')" class="px-4 py-2 text-right font-normal cursor-pointer select-none hover:text-gray-800 dark:hover:text-gray-100"><span class="has-tip" data-tip="Whole-brain leakage: fraction of χ− (diamagnetic) signal bleeding into the χ+ map. 0 = clean. Lower is better.">leak</span><span x-show="chisepSort==='para_leak'" x-text="chisepDir==='asc'?'↑':'↓'"></span></th>
               <th @click="chiSepSort('dia_xsim')" class="px-4 py-2 text-right font-normal cursor-pointer select-none hover:text-gray-800 dark:hover:text-gray-100 border-l border-gray-200"><span class="has-tip" data-tip="Structural similarity of the χ− map vs ground truth. Higher is better.">xSIM</span><span x-show="chisepSort==='dia_xsim'" x-text="chisepDir==='asc'?'↑':'↓'"></span></th>
               <th @click="chiSepSort('dia_nrmse')" class="px-4 py-2 text-right font-normal cursor-pointer select-none hover:text-gray-800 dark:hover:text-gray-100"><span class="has-tip" data-tip="Normalised RMS error of χ− vs ground truth (%). Lower is better.">NRMSE</span><span x-show="chisepSort==='dia_nrmse'" x-text="chisepDir==='asc'?'↑':'↓'"></span></th>
+              <th @click="chiSepSort('dia_leak')" class="px-4 py-2 text-right font-normal cursor-pointer select-none hover:text-gray-800 dark:hover:text-gray-100"><span class="has-tip" data-tip="Whole-brain leakage: fraction of χ+ (paramagnetic/iron) signal bleeding into the χ− map. 0 = clean. Lower is better — this is the whole-map version of the DGM iron-leak issue.">leak</span><span x-show="chisepSort==='dia_leak'" x-text="chisepDir==='asc'?'↑':'↓'"></span></th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100">
@@ -259,8 +261,10 @@
                 <td class="px-4 py-3 text-right tabular-nums font-semibold text-gray-900 group-hover:bg-emerald-50/40" x-text="fmt(chiVal(r,'avg'),'xsim')"></td>
                 <td class="px-4 py-3 text-right tabular-nums group-hover:bg-emerald-50/40" :class="chisepSort==='para_xsim' ? 'font-semibold text-gray-900' : 'text-gray-600'" x-text="fmt((r.metrics||{}).para_xsim,'xsim')"></td>
                 <td class="px-4 py-3 text-right tabular-nums group-hover:bg-emerald-50/40" :class="chisepSort==='para_nrmse' ? 'font-semibold text-gray-900' : 'text-gray-600'" x-text="fmt((r.metrics||{}).para_nrmse,'nrmse')"></td>
+                <td class="px-4 py-3 text-right tabular-nums group-hover:bg-emerald-50/40" :class="chisepSort==='para_leak' ? 'font-semibold text-gray-900' : 'text-gray-600'" x-text="fmt((r.metrics||{}).para_leak,'para_leak')"></td>
                 <td class="px-4 py-3 text-right tabular-nums group-hover:bg-emerald-50/40" :class="chisepSort==='dia_xsim' ? 'font-semibold text-gray-900' : 'text-gray-600'" x-text="fmt((r.metrics||{}).dia_xsim,'xsim')"></td>
                 <td class="px-4 py-3 text-right tabular-nums group-hover:bg-emerald-50/40" :class="chisepSort==='dia_nrmse' ? 'font-semibold text-gray-900' : 'text-gray-600'" x-text="fmt((r.metrics||{}).dia_nrmse,'nrmse')"></td>
+                <td class="px-4 py-3 text-right tabular-nums group-hover:bg-emerald-50/40" :class="chisepSort==='dia_leak' ? 'font-semibold text-gray-900' : 'text-gray-600'" x-text="fmt((r.metrics||{}).dia_leak,'dia_leak')"></td>
                 <td class="px-4 py-3 text-right tabular-nums text-gray-500 group-hover:bg-emerald-50/40" x-text="fmt(r.runtime_s,'runtime_s')"></td>
               </tr>
             </template>

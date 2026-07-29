@@ -401,10 +401,38 @@ def iso_variants(a: dict) -> list:
 CHISEP_PREFIX = {"chi-para": "para", "chi-dia": "dia"}
 
 
+def _chisep_leakage(odir, gt, mask) -> "dict | None":
+    """Whole-brain cross-source leakage for a χ-separation run: {para_leak, dia_leak}.
+
+    Regress each reconstructed source on BOTH ground-truth sources (recon ≈ a·GT_same + b·GT_other + c)
+    and take the slope `b` on the WRONG source — the fraction of the other source that bleeds into this
+    map (0 = clean separation). Because it controls for the correct source, it isolates true χ+↔χ−
+    contamination, unlike xSIM/NRMSE which are dominated by the shared R2'/2Dr common mode. Needs both
+    GT sources, so it's computed here rather than per-component. Returns None if a map can't be read."""
+    import numpy as np
+    import nibabel as nib
+    L = lambda p: np.asarray(nib.load(str(p)).get_fdata(), np.float64)
+    try:
+        rp, rd = L(odir / ARTIFACT_FILE["chi-para"]), L(odir / ARTIFACT_FILE["chi-dia"])
+        gp, gd = L(gt / ARTIFACT_FILE["chi-para"]), L(gt / ARTIFACT_FILE["chi-dia"])
+        m = L(mask) > 0.5
+    except Exception:  # noqa: BLE001 — a missing/unreadable map just means "no leakage number"
+        return None
+    def slope(recon, same, other):
+        A = np.c_[same[m], other[m], np.ones(int(m.sum()))]
+        return float(np.linalg.lstsq(A, recon[m], rcond=None)[0][1])
+    return {"para_leak": slope(rp, gp, gd),   # χ− (diamagnetic) bleeding INTO the χ+ map
+            "dia_leak":  slope(rd, gd, gp)}   # χ+ (paramagnetic) bleeding INTO the χ− map
+
+
 def _score_chisep(a, sfx, variant, overrides, odir, gt, mask, rt, args):
     """Score a χ-separation run's two source maps (χ+, χ−) and fold them into ONE leaderboard row with
     para_*/dia_* prefixed metrics and domain='chisep' — the chi-sep leaderboard shows one row per
-    method with χ+ vs χ− columns, not two separate rows. A DNF in either component marks the row DNF."""
+    method with χ+ vs χ− columns, not two separate rows. A DNF in either component marks the row DNF.
+
+    Metrics per source: xsim/nrmse/correlation, region leakage (dia_iron_leak = mean |χ−| in the
+    iron/DGM+vein regions where χ− should be ~0; para_calc_leak = mean |χ+| in calcification), and the
+    whole-brain regression leakage (para_leak / dia_leak) from _chisep_leakage."""
     rid = f"{a['slug']}-iso{sfx}"
     row = {"id": rid, "slug": a["slug"], "name": a.get("name", a["slug"]), "stage": a["stage"], "mode": "isolated",
            "track": args.track, "runtime_s": rt, "variant": variant, "domain": "chisep",
@@ -427,6 +455,12 @@ def _score_chisep(a, sfx, variant, overrides, odir, gt, mask, rt, args):
         shown = ("DNF" if r.get("status") == "DNF"
                  else f"xsim={_fmt(m.get('xsim'))} nrmse={_fmt(m.get('nrmse'), '.2f')}%")
         print(f"  isolated  {a['slug']:<16} {variant:<8} {art:<11} {shown}")
+    if row["status"] != "DNF":  # whole-brain χ+↔χ− leakage (needs both GT + both recon maps)
+        lk = _chisep_leakage(odir, gt, mask)
+        if lk:
+            row["metrics"].update(lk)
+            print(f"  isolated  {a['slug']:<16} {variant:<8} {'leakage':<11} "
+                  f"para_leak={_fmt(lk['para_leak'])} dia_leak={_fmt(lk['dia_leak'])}")
     # Viewer volumes: emit both sources under the run id (results/<id>/) — χ+ as the plain set and χ−
     # with a "-dia" suffix, so the detail viewer's χ+/χ− toggle can load either. The container runner
     # writes one resources.json (memory/CPU-over-time) beside the outputs for the whole run; carry it
