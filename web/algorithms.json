@@ -1,6 +1,29 @@
 {
   "algorithms": [
     {
+      "slug": "apart-qsm",
+      "name": "APART-QSM",
+      "stage": "chi-separation",
+      "domain": "chisep",
+      "engine": "APART-QSM (AMRI-Lab), MATLAB",
+      "description": "APART-QSM \u2014 an iterative susceptibility-source separation method that fits complex multi-echo GRE data to jointly estimate paramagnetic (\u03c7+, iron) and diamagnetic (\u03c7\u2212, myelin/calcium) susceptibility. Unlike \u03c7-separation methods that take a precomputed R2' and QSM, APART-QSM performs its own iterative data fitting (magnitude-decay a-map + field/QSM) to break the para/dia degeneracy. It ingests per-echo magnitude and LOCAL (background-removed) phase plus an R2 map and an initial QSM, and returns \u03c7+ and \u03c7\u2212 (the latter reported as a positive magnitude).",
+      "citation": "Li et al., NeuroImage 2023",
+      "doi": "10.1016/j.neuroimage.2023.120148",
+      "code_url": "https://github.com/AMRI-Lab/APART-QSM",
+      "license": "academic use",
+      "authors": [
+        "Zhenghao Li",
+        "Ruimin Feng",
+        "Qiangqiang Liu",
+        "Jie Feng",
+        "Guoyan Lao",
+        "Ming Zhang",
+        "Hongjiang Wei"
+      ],
+      "parameters": [],
+      "ci_notes": []
+    },
+    {
       "slug": "autoqsm",
       "name": "AutoQSM",
       "stage": "bfr+dipole",
@@ -54,6 +77,44 @@
       ]
     },
     {
+      "slug": "chi-sep-ilsqr",
+      "name": "\u03c7-separation (iLSQR)",
+      "stage": "chi-separation",
+      "domain": "chisep",
+      "engine": "chi-separation toolbox (SNU-LIST)",
+      "description": "\u03c7-separation (iLSQR variant) \u2014 separates net susceptibility into paramagnetic (\u03c7+, iron) and diamagnetic (\u03c7\u2212, myelin/calcium) sources using the local field and an R2' map to break the para/dia degeneracy. The QSM is reconstructed in-house with STI-Suite QSM_iLSQR from the local field (the toolbox needs a QSM in its own scaling/orientation conventions \u2014 see recon.m). From the SNU-LIST chi-separation toolbox. A classical iterative baseline (\u03c7+ xsim ~0.58 / \u03c7\u2212 ~0.47 on the phantom).",
+      "citation": "Shin et al., NeuroImage 2021",
+      "doi": "10.1016/j.neuroimage.2021.118371",
+      "code_url": "https://github.com/SNU-LIST/chi-separation",
+      "license": "academic use; toolbox obtained via the SNU-LIST Google Form",
+      "authors": [
+        "Hyeong-Geol Shin",
+        "Jingu Lee",
+        "Jongho Lee"
+      ],
+      "parameters": [],
+      "ci_notes": []
+    },
+    {
+      "slug": "chi-sep-medi",
+      "name": "\u03c7-separation (MEDI)",
+      "stage": "chi-separation",
+      "domain": "chisep",
+      "engine": "chi-separation toolbox (SNU-LIST)",
+      "description": "\u03c7-separation (MEDI variant) \u2014 separates net susceptibility into paramagnetic (\u03c7+, iron) and diamagnetic (\u03c7\u2212, myelin/calcium) sources using the local field, a QSM/\u03c7_total map, and an R2' map, with a morphology-enabled dipole (MEDI) regulariser. From the SNU-LIST chi-separation toolbox.",
+      "citation": "Shin et al., NeuroImage 2021",
+      "doi": "10.1016/j.neuroimage.2021.118371",
+      "code_url": "https://github.com/SNU-LIST/chi-separation",
+      "license": "academic use; toolbox obtained via the SNU-LIST Google Form",
+      "authors": [
+        "Hyeong-Geol Shin",
+        "Jingu Lee",
+        "Jongho Lee"
+      ],
+      "parameters": [],
+      "ci_notes": []
+    },
+    {
       "slug": "chi-sepnet",
       "name": "\u03c7-sepnet",
       "stage": "chi-separation",
@@ -68,6 +129,24 @@
         "Minjun Kim",
         "Hyeong-Geol Shin",
         "Jongho Lee"
+      ],
+      "parameters": [],
+      "ci_notes": []
+    },
+    {
+      "slug": "decompose-qsm",
+      "name": "DECOMPOSE-QSM",
+      "stage": "chi-separation",
+      "domain": "chisep",
+      "engine": "DECOMPOSE (signal-domain per-voxel complex-fit source separation), MATLAB",
+      "description": "DECOMPOSE-QSM \u2014 a signal-domain susceptibility source separation. Unlike the R2'-based methods it fits the multi-echo COMPLEX GRE signal per voxel with a 3-stage alternating non-linear least-squares fit (lsqcurvefit) to split \u03c7 into paramagnetic (\u03c7+, iron) and diamagnetic (\u03c7\u2212, myelin/calcium) sources. Uses the provided \u03c7_total (chimap) for the signal's phase term (\u03c7 is echo-independent), which isolates DECOMPOSE's separation step from any upstream QSM error. Tim Ho's open MATLAB re-implementation of DECOMPOSE.",
+      "citation": "Chen J. et al., \"Decompose quantitative susceptibility mapping (QSM) to sub-voxel diamagnetic and paramagnetic components based on gradient-echo MRI data\", NeuroImage 2021.\n",
+      "doi": "10.1016/j.neuroimage.2021.118735",
+      "code_url": "https://github.com/timwahoo/DECOMPOSE-QSM",
+      "license": "GPL-3.0",
+      "authors": [
+        "Tim Ho",
+        "Chen et al."
       ],
       "parameters": [],
       "ci_notes": []
@@ -1421,6 +1500,27 @@
           "description": "\u00d7 max voxel size"
         }
       ],
+      "ci_notes": []
+    },
+    {
+      "slug": "wavesep",
+      "name": "WaveSep",
+      "stage": "chi-separation",
+      "domain": "chisep",
+      "engine": "WaveSep (wavelet-domain L1 source separation, iterative, NumPy+PyWavelets, CPU)",
+      "description": "WaveSep \u2014 a wavelet-based iterative approach for susceptibility source separation. It splits net susceptibility (\u03c7_total/QSM) into paramagnetic (\u03c7+, iron) and diamagnetic (\u03c7\u2212, myelin\u00b7calcium) sources using an R2' map to break the para/dia degeneracy, under two voxel-wise data-fidelity terms (\u03c7+ + \u03c7\u2212 \u2248 \u03c7_total, \u03c7+ \u2212 \u03c7\u2212 \u2248 R2'/Dr) and a wavelet-domain L1 sparsity prior solved by proximal gradient (soft-thresholding, db4). Pure Python on CPU \u2014 no network, no pretrained weights, no GPU.",
+      "citation": "Fang, Shin, van Zijl, Li, Sulam, \"WaveSep: A Flexible Wavelet-Based Approach for Source Separation in Susceptibility Imaging\", Machine Learning in Clinical Neuroimaging (MLCN), MICCAI 2023, Springer LNCS.\n",
+      "doi": "10.1007/978-3-031-44858-4_6",
+      "code_url": "https://github.com/ZhenghanFang/WaveSep",
+      "license": "academic use (author permission)",
+      "authors": [
+        "Zhenghan Fang",
+        "Hyeong-Geol Shin",
+        "Peter van Zijl",
+        "Xu Li",
+        "Jeremias Sulam"
+      ],
+      "parameters": [],
       "ci_notes": []
     },
     {
