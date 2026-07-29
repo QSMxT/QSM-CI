@@ -423,45 +423,72 @@ function metricRank(k) {
   return { rank, n: peers.length, t };
 }
 
+// Rank `run` among comparable peers by an arbitrary accessor (r) => value — used for χ-separation,
+// whose paired metrics (para_*/dia_*) and the derived Avg xSIM aren't plain METRICS keys. Same
+// grouping/goodness logic as metricRank(). `higher` = higher-is-better. null if <2 peers to compare.
+function rankBy(accessor, higher) {
+  const v = accessor(run);
+  if (v == null) return null;
+  const sameGroup = (r) => (run.combo ? r.mode === "composed" : r.mode === "isolated" && r.stage === run.stage);
+  const peers = allRuns.filter((r) => r.status !== "DNF" && sameGroup(r) && accessor(r) != null);
+  if (peers.length < 2) return null;
+  const rank = 1 + peers.filter((r) => (higher ? accessor(r) > v : accessor(r) < v)).length;
+  const [lo, hi] = robustRange(peers.map(accessor));
+  let t = hi === lo ? 0.5 : (v - lo) / (hi - lo);
+  if (!higher) t = 1 - t;
+  return { rank, n: peers.length, t };
+}
+
 function renderChisepMetrics() {
   // χ-separation runs carry paired, source-specific metrics (para_*/dia_*), not the plain QSM keys.
   // Render them grouped by source: χ+ gets iron/vein metrics, χ− gets calcification metrics, and each
   // gets a leakage (cross-contamination) term.
   $("metrics-sub").textContent = "χ+ / χ− sources vs. ground truth";
-  const m = run.metrics || {};
-  const avg = (m.para_xsim != null && m.dia_xsim != null) ? (m.para_xsim + m.dia_xsim) / 2 : null;
+  const mv = (k) => (r) => { const x = r.metrics ? r.metrics[k] : null; return x == null ? null : x; };
+  const avgAcc = (r) => {
+    const p = r.metrics ? r.metrics.para_xsim : null, d = r.metrics ? r.metrics.dia_xsim : null;
+    return (p != null && d != null) ? (p + d) / 2 : null;
+  };
+  const rtAcc = (r) => (r.runtime_s == null ? null : r.runtime_s);
   const num = (v, fk) => v == null ? null
     : fk === "pct" ? v.toFixed(1) + "%" : fk === "xsim" ? fmt(v, "xsim")
     : fk === "sec" ? fmt(v, "runtime_s") : v.toFixed(3);
+  // rows: [label, accessor, formatKey, arrow, tip] — accessor(r) yields the value for run r (so peers
+  // can be ranked the same way), arrow "↑" = higher-is-better.
   const groups = [
-    [null, [["Avg xSIM", avg, "xsim", "↑", "Mean of the χ+ and χ− xSIM — the headline combined score."]]],
+    [null, [["Avg xSIM", avgAcc, "xsim", "↑", "Mean of the χ+ and χ− xSIM — the headline combined score."]]],
     ["χ+ paramagnetic (iron, veins)", [
-      ["xSIM", m.para_xsim, "xsim", "↑", "Structural similarity of χ+ vs ground truth."],
-      ["NRMSE", m.para_nrmse, "pct", "↓", "Normalised RMS error of χ+ (%)."],
-      ["DGM iron NRMSE", m.para_nrmse_dgm, "pct", "↓", "χ+ error in deep gray matter (iron)."],
-      ["DGM linearity", m.para_dgm_linearity, "num", "↓", "|1 − slope| of χ+ across DGM iron regions; 0 = perfect iron quantification."],
-      ["Vein NRMSE", m.para_nrmse_blood, "pct", "↓", "χ+ error in venous blood."],
-      ["Calcium leakage", m.para_calc_leak, "num", "↓", "Mean |χ+| in the calcification (should be ~0) — calcium wrongly bleeding into the paramagnetic map."],
+      ["xSIM", mv("para_xsim"), "xsim", "↑", "Structural similarity of χ+ vs ground truth."],
+      ["NRMSE", mv("para_nrmse"), "pct", "↓", "Normalised RMS error of χ+ (%)."],
+      ["DGM iron NRMSE", mv("para_nrmse_dgm"), "pct", "↓", "χ+ error in deep gray matter (iron)."],
+      ["DGM linearity", mv("para_dgm_linearity"), "num", "↓", "|1 − slope| of χ+ across DGM iron regions; 0 = perfect iron quantification."],
+      ["Vein NRMSE", mv("para_nrmse_blood"), "pct", "↓", "χ+ error in venous blood."],
+      ["Calcium leakage", mv("para_calc_leak"), "num", "↓", "Mean |χ+| in the calcification (should be ~0) — calcium wrongly bleeding into the paramagnetic map."],
     ]],
     ["χ− diamagnetic (calcium, myelin)", [
-      ["xSIM", m.dia_xsim, "xsim", "↑", "Structural similarity of χ− vs ground truth."],
-      ["NRMSE", m.dia_nrmse, "pct", "↓", "Normalised RMS error of χ− (%)."],
-      ["Calcification dev", m.dia_calc_moment_dev, "num", "↓", "Deviation of the recovered calcification's susceptibility moment."],
-      ["Streaking", m.dia_calc_streak, "num", "↓", "Streaking-artifact level around the calcification."],
-      ["Iron leakage", m.dia_iron_leak, "num", "↓", "Mean |χ−| in DGM/veins (should be ~0) — iron wrongly bleeding into the diamagnetic map."],
+      ["xSIM", mv("dia_xsim"), "xsim", "↑", "Structural similarity of χ− vs ground truth."],
+      ["NRMSE", mv("dia_nrmse"), "pct", "↓", "Normalised RMS error of χ− (%)."],
+      ["Calcification dev", mv("dia_calc_moment_dev"), "num", "↓", "Deviation of the recovered calcification's susceptibility moment."],
+      ["Streaking", mv("dia_calc_streak"), "num", "↓", "Streaking-artifact level around the calcification."],
+      ["Iron leakage", mv("dia_iron_leak"), "num", "↓", "Mean |χ−| in DGM/veins (should be ~0) — iron wrongly bleeding into the diamagnetic map."],
     ]],
-    [null, [["Runtime", run.runtime_s, "sec", "", "Wall-clock runtime."]]],
+    [null, [["Runtime", rtAcc, "sec", "", "Wall-clock runtime."]]],
   ];
   let html = "";
   for (const [header, rows] of groups) {
     if (header) html += `<tr><td colspan="3" class="pt-3 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">${header}</td></tr>`;
-    for (const [label, v, fk, arrow, tip] of rows) {
+    for (const [label, acc, fk, arrow, tip] of rows) {
+      const v = acc(run);
       if (v == null) continue;
       const hero = label === "Avg xSIM";
+      const rk = rankBy(acc, arrow === "↑");
+      const rankCell = rk
+        ? `<span class="inline-block rounded-md px-1.5 py-0.5 text-xs font-semibold text-white shadow-sm" style="background:${heatScale(rk.t)}" data-tip="Rank ${rk.rank} of ${rk.n} χ-separation methods for ${label}">#${rk.rank}<span class="opacity-70"> / ${rk.n}</span></span>`
+        : `<span class="text-gray-300 dark:text-gray-600">—</span>`;
       html += `<tr>
         <td class="py-2 text-gray-500 dark:text-gray-400"><span class="has-tip" data-tip="${tip.replace(/"/g, "&quot;")}">${label}</span> <span class="text-gray-300 dark:text-gray-600" title="${arrow === "↑" ? "higher" : "lower"} is better">${arrow}</span></td>
         <td class="py-2 text-right tabular-nums ${hero ? "font-bold text-gray-900 dark:text-gray-100" : "font-medium text-gray-700 dark:text-gray-300"}">${num(v, fk)}</td>
-        <td class="py-2 pl-3 text-right"><span class="text-gray-300 dark:text-gray-600">—</span></td>
+        <td class="py-2 pl-3 text-right">${rankCell}</td>
       </tr>`;
     }
   }
