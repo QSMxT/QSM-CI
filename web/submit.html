@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>QSM-CI — Submit</title>
+  <title>QSM-CI · Submit</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
   <script src="js/app.js"></script>
   <style>
-    /* native <details> accordions — no JS */
+    /* native <details> accordions (no JS) */
     details > summary { list-style: none; }
     details > summary::-webkit-details-marker { display: none; }
   </style>
@@ -21,7 +21,7 @@
     <h1 class="text-3xl font-bold tracking-tight">Submit your algorithm</h1>
     <p class="mt-3 text-gray-600 dark:text-gray-400">
       You can add your own QSM reconstruction method to QSM-CI and have it automatically run and scored
-      against everyone else's — on the same data, with the same scoring — so the comparison is fair. This
+      against everyone else's (on the same data, with the same scoring) so the comparison is fair. This
       page is a step-by-step guide to doing that.
     </p>
     <p class="mt-3 text-gray-600 dark:text-gray-400">
@@ -44,7 +44,7 @@ qsm-ci doctor            # checks you have what you need (Docker, etc.)</code></
     <section class="mt-10 space-y-3">
       <h2 class="text-xl font-semibold">2. Create your submission</h2>
       <p class="text-sm text-gray-600 dark:text-gray-400">
-        Run <code>qsm-ci new</code>. It asks a couple of questions and scaffolds a submission folder —
+        Run <code>qsm-ci new</code>. It asks a couple of questions and scaffolds a submission folder:
         <code>algorithms/&lt;your-method&gt;/</code> with the boilerplate (manifest, <code>run.sh</code>, a
         starter recon file) filled in, so you only write the reconstruction itself.
       </p>
@@ -67,7 +67,7 @@ qsm-ci doctor            # checks you have what you need (Docker, etc.)</code></
       </div>
       <p class="text-sm text-gray-600 dark:text-gray-400">
         Most methods do exactly one of these. If yours combines two (or goes all the way from phase to χ in
-        one shot), there are combined options too — the panel has the full list and the exact inputs.
+        one shot), there are combined options too: the panel has the full list and the exact inputs.
       </p>
 
       <details class="group rounded-xl border border-gray-200 dark:border-gray-800">
@@ -124,7 +124,7 @@ qsm-ci doctor            # checks you have what you need (Docker, etc.)</code></
         Open the starter file (<code>recon.py</code>, <code>recon.m</code>, …) and fill in your method. It
         reads its inputs from <code>/input</code> and writes its result to <code>/output</code> as a field or
         susceptibility map in <strong>ppm</strong>. Your code runs in a container, so you point at an image
-        that has your dependencies rather than packaging your code into one — your files are mounted in at
+        that has your dependencies rather than packaging your code into one: your files are mounted in at
         run time.
       </p>
 
@@ -134,7 +134,7 @@ qsm-ci doctor            # checks you have what you need (Docker, etc.)</code></
           Exactly how your code is run
         </summary>
         <div class="space-y-3 border-t border-gray-200 px-4 py-4 text-sm text-gray-600 dark:border-gray-800 dark:text-gray-400">
-          <p>You never invoke the container yourself — <code>qsm-ci run</code> does it locally, and QSM-CI's
+          <p>You never invoke the container yourself: <code>qsm-ci run</code> does it locally, and QSM-CI's
              servers do the same when scoring. It runs in two phases: a <span class="font-medium">setup phase</span>
              (with internet) builds your environment, then a <span class="font-medium">run phase</span>
              (no internet) executes your code. Under the hood that run is roughly:</p>
@@ -143,9 +143,9 @@ qsm-ci doctor            # checks you have what you need (Docker, etc.)</code></
   -v &lt;inputs&gt;:/input:ro \
   -v &lt;output-dir&gt;:/output \
   &lt;environment&gt; bash /algo/run.sh</code></pre>
-          <p>You don't type this — but it fixes the rules your code has to play by:</p>
+          <p>You don't type this, but it fixes the rules your code has to play by:</p>
           <ul class="list-disc space-y-1 pl-5">
-            <li>Your code is <span class="font-medium">mounted</span> at <code>/algo</code> — you don't bake it into an image.</li>
+            <li>Your code is <span class="font-medium">mounted</span> at <code>/algo</code> (you don't bake it into an image).</li>
             <li><span class="font-medium">No internet</span> during the run, so everything must already be in the environment.</li>
             <li><code>/input</code> is read-only and holds only the files your step needs.</li>
             <li>Write each output under its expected filename to <code>/output</code>.</li>
@@ -160,16 +160,16 @@ qsm-ci doctor            # checks you have what you need (Docker, etc.)</code></
           Choosing an environment for your code
         </summary>
         <div class="space-y-3 border-t border-gray-200 px-4 py-4 text-sm text-gray-600 dark:border-gray-800 dark:text-gray-400">
-          <p>Two options — you don't build a custom image with your code inside:</p>
+          <p>Two options (you don't build a custom image with your code inside):</p>
           <ul class="list-disc space-y-1 pl-5">
             <li><span class="font-medium">Point at a ready-made image</span> that already has your dependencies
                 (the shared Python image, a Neurodesk container, …). Nothing to build.</li>
             <li><span class="font-medium">Add a small <code>Dockerfile</code></span> that starts from any base and
                 installs/downloads what you need (this happens in the setup phase, which has internet). Don't
-                copy your code in — it's mounted for you.</li>
+                copy your code in; it's mounted for you.</li>
           </ul>
           <p>For Python, Julia, and Rust this is fully self-serve: your source runs directly. MATLAB has one
-             extra step — see below.</p>
+             extra step; see below.</p>
         </div>
       </details>
 
@@ -192,11 +192,11 @@ RUN chmod +x /opt/qsm-ci/recon
           <p>Point your <code>algorithm.yml</code>'s <code>image:</code> at that upload. QSM-CI runs the
              compiled program on the free Runtime, offline.</p>
           <p class="rounded-lg bg-amber-50 px-3 py-2 text-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
-             What you actually submit is just text — <code>algorithm.yml</code>, <code>run.sh</code>, and your
+             What you actually submit is just text: <code>algorithm.yml</code>, <code>run.sh</code>, and your
              <code>recon.m</code> source. The compiled program isn't part of the submission; it lives in the
-             image you uploaded. (Python/Julia/Rust skip all this — the source itself runs.)</p>
+             image you uploaded. (Python/Julia/Rust skip all this; the source itself runs.)</p>
           <p>No MATLAB Compiler licence? You can instead run plain <code>.m</code> on a licensed MATLAB image, or
-             reuse an existing licensed container — but compiling is the recommended route.</p>
+             reuse an existing licensed container, but compiling is the recommended route.</p>
         </div>
       </details>
     </section>
@@ -206,13 +206,13 @@ RUN chmod +x /opt/qsm-ci/recon
       <h2 class="text-xl font-semibold">4. Try it out locally</h2>
       <p class="text-sm text-gray-600 dark:text-gray-400">
         Before submitting, run your method on some data to check it works. If you also give it a ground truth
-        to score against, <code>qsm-ci</code> uses the exact same code the leaderboard does — so the numbers
+        to score against, <code>qsm-ci</code> uses the exact same code the leaderboard does, so the numbers
         you see match what you'll get online:
       </p>
       <pre class="overflow-x-auto rounded-xl bg-gray-900 p-4 text-sm text-gray-100"><code>qsm-ci run &lt;your-method&gt; --localfield lf.nii.gz --mask m.nii.gz --params p.json --truth chi.nii.gz</code></pre>
       <p class="text-sm text-gray-600 dark:text-gray-400">
         No ground truth to hand? Generate a synthetic brain phantom with
-        <code>qsm-forward</code> — it comes <em>with</em> its ground truth. The
+        <code>qsm-forward</code>; it comes <em>with</em> its ground truth. The
         <a href="running.html" class="text-emerald-600 hover:underline">running guide</a> covers all of this.
       </p>
 
@@ -224,9 +224,9 @@ RUN chmod +x /opt/qsm-ci/recon
         <div class="space-y-3 border-t border-gray-200 px-4 py-4 text-sm text-gray-600 dark:border-gray-800 dark:text-gray-400">
           <p>Your step is scored two ways:</p>
           <ul class="list-disc space-y-1 pl-5">
-            <li><span class="font-medium">On its own</span> — it's given the perfect (ground-truth) inputs for
+            <li><span class="font-medium">On its own</span>: it's given the perfect (ground-truth) inputs for
                 its step and scored against ground truth. A clean measure of just your step.</li>
-            <li><span class="font-medium">In combination</span> — it's chained with other people's steps (say,
+            <li><span class="font-medium">In combination</span>: it's chained with other people's steps (say,
                 every background-removal method feeding your dipole inversion) and scored on the final χ map.
                 This is the comparison grid you see on the leaderboard.</li>
           </ul>
@@ -236,8 +236,8 @@ RUN chmod +x /opt/qsm-ci/recon
           <p>The test phantom is the <strong>Realistic In Silico Head Phantom</strong> from the QSM Reconstruction
              Challenge 2.0 (Marques et al., <em>Magn Reson Med</em> 2021;86(1):526–542,
              <a href="https://doi.org/10.1002/mrm.28716" class="text-emerald-600 hover:underline">doi:10.1002/mrm.28716</a>),
-             simulated with <a href="https://github.com/astewartau/qsm-forward" class="text-emerald-600 hover:underline">qsm-forward</a> —
-             please cite it if you report QSM-CI results.</p>
+             simulated with <a href="https://github.com/astewartau/qsm-forward" class="text-emerald-600 hover:underline">qsm-forward</a>.
+             Please cite it if you report QSM-CI results.</p>
         </div>
       </details>
     </section>
@@ -252,7 +252,7 @@ RUN chmod +x /opt/qsm-ci/recon
       <pre class="overflow-x-auto rounded-xl bg-gray-900 p-4 text-sm text-gray-100"><code>qsm-ci submit &lt;your-method&gt;</code></pre>
       <p class="text-sm text-gray-600 dark:text-gray-400">
         It walks you through each step and confirms before anything leaves your machine. You need a
-        <strong>fork</strong> of QSM-CI to open a PR — if you don't have one, <code>qsm-ci submit</code> can create
+        <strong>fork</strong> of QSM-CI to open a PR; if you don't have one, <code>qsm-ci submit</code> can create
         it for you with the GitHub CLI (or take the URL of one you already have).
       </p>
       <p class="text-sm text-gray-600 dark:text-gray-400">

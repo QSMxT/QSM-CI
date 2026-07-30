@@ -11,7 +11,7 @@
       if (m) location.replace("submission.html?method=" + encodeURIComponent(m));
     })();
   </script>
-  <title>QSM-CI — Leaderboard</title>
+  <title>QSM-CI · Leaderboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
@@ -22,41 +22,37 @@
   <header id="site-nav"></header>
 
   <main x-data="board()" x-init="init()" class="mx-auto max-w-6xl px-6 py-10">
-    <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-      <div>
-        <h1 class="text-3xl font-bold tracking-tight">Leaderboard</h1>
-        <p class="mt-1 text-gray-600">Compare methods per stage, or every pipeline combination.</p>
-      </div>
-      <div class="flex flex-col items-end gap-2">
-        <div class="inline-flex rounded-xl bg-gray-100 p-1 text-sm font-medium">
-          <button @click="domain='qsm'" :class="domain==='qsm' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'" class="rounded-lg px-4 py-1.5 transition">QSM</button>
-          <button x-show="hasChiSep()" @click="domain='chisep'" :class="domain==='chisep' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'" class="rounded-lg px-4 py-1.5 transition">χ-separation</button>
-        </div>
-        <template x-if="domain==='qsm'">
-          <div class="inline-flex rounded-xl bg-gray-100 p-1 text-sm font-medium">
-            <button @click="view='composed'" :class="view==='composed' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'" class="rounded-lg px-4 py-1.5 transition">Full pipelines</button>
-            <button @click="view='isolated'" :class="view==='isolated' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'" class="rounded-lg px-4 py-1.5 transition">Steps</button>
-          </div>
-        </template>
-      </div>
+    <div>
+      <h1 class="text-3xl font-bold tracking-tight">Leaderboard</h1>
+      <p class="mt-1 text-gray-600">Compare methods per stage, or every pipeline combination.</p>
     </div>
 
-    <!-- sub-controls -->
-    <div class="mt-6 flex flex-wrap items-center gap-3" x-show="domain==='qsm'">
-      <template x-if="hasTuned()">
-        <div class="inline-flex rounded-lg bg-gray-100 p-0.5 text-xs font-medium">
-          <button @click="variant='default'" :class="variant==='default' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'" class="rounded-md px-3 py-1 transition">Defaults</button>
-          <button @click="variant='tuned'" data-tip="Each method's parameters optimised on the QSM-CI scoring phantom (maximising xSIM). Tuning on the scored data is a form of overfitting, and only some methods are tunable (pretrained networks aren't) — so Defaults is the fair cross-method ranking. Applies to the per-stage tables and combined-method rows; the combination matrix stays at defaults." :class="variant==='tuned' ? 'bg-white shadow-sm text-emerald-700' : 'text-gray-500 hover:text-gray-700'" class="rounded-md px-3 py-1 transition">⚙ Tuned</button>
+    <!-- unified control bar: domain + view toggles, then the view-specific controls -->
+    <div class="mt-6 flex flex-wrap items-center gap-3">
+      <div class="inline-flex rounded-xl bg-gray-100 p-1 text-sm font-medium">
+        <button @click="domain='qsm'" :class="domain==='qsm' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'" class="rounded-lg px-4 py-1.5 transition">QSM</button>
+        <button x-show="hasChiSep()" @click="domain='chisep'" :class="domain==='chisep' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'" class="rounded-lg px-4 py-1.5 transition">χ-separation</button>
+      </div>
+      <template x-if="domain==='qsm'">
+        <div class="inline-flex rounded-xl bg-gray-100 p-1 text-sm font-medium">
+          <button @click="view='composed'" :class="view==='composed' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'" class="rounded-lg px-4 py-1.5 transition">Full pipelines</button>
+          <button @click="view='isolated'" :class="view==='isolated' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'" class="rounded-lg px-4 py-1.5 transition">Steps</button>
         </div>
       </template>
-      <template x-if="view==='isolated'">
+      <template x-if="domain==='qsm' && hasTuned()">
+        <div class="inline-flex rounded-xl bg-gray-100 p-1 text-sm font-medium">
+          <button @click="variant='default'" :class="variant==='default' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'" class="rounded-lg px-4 py-1.5 transition">Defaults</button>
+          <button @click="variant='tuned'" data-tip="Each method's parameters optimised on the QSM-CI scoring phantom (maximising xSIM). Tuning on the scored data is a form of overfitting, and only some methods are tunable (pretrained networks aren't), so Defaults is the fair cross-method ranking. Applies to the per-stage tables and combined-method rows; the combination matrix stays at defaults." :class="variant==='tuned' ? 'bg-white shadow-sm text-emerald-700' : 'text-gray-500 hover:text-gray-700'" class="rounded-lg px-4 py-1.5 transition">⚙ Tuned</button>
+        </div>
+      </template>
+      <template x-if="domain==='qsm' && view==='isolated'">
         <div class="inline-flex flex-wrap gap-2">
           <template x-for="s in stages()" :key="s">
             <button @click="stage=s; fixSort()" :class="stage===s ? 'bg-emerald-600 text-white' : 'bg-white text-gray-600 ring-1 ring-gray-200 hover:bg-gray-50'" class="rounded-full px-3.5 py-1.5 text-sm font-medium transition" x-text="STAGE_LABEL[s]||s"></button>
           </template>
         </div>
       </template>
-      <template x-if="view==='composed' && fmaps().length>1">
+      <template x-if="domain==='qsm' && view==='composed' && fmaps().length>1">
         <label class="inline-flex items-center gap-2 text-sm text-gray-600">Field mapping
           <select x-model="fmap" class="rounded-lg border-gray-300 text-sm py-1.5 pr-8">
             <template x-for="f in fmaps()" :key="f"><option :value="f" :selected="f===fmap" x-text="f==='gt' ? 'ground truth' : algoName(f)"></option></template>
@@ -94,7 +90,7 @@
                 </template>
                 <template x-if="g.t==='cell'">
                   <button @click="go(g.run)"
-                    :title="g.run.combo.bfr+' + '+g.run.combo.dipole+' — '+METRICS[metric].label+': '+fmt(val(g.run,metric),metric)"
+                    :title="g.run.combo.bfr+' + '+g.run.combo.dipole+': '+METRICS[metric].label+': '+fmt(val(g.run,metric),metric)"
                     class="heat-cell group relative h-14 w-full rounded-xl font-semibold text-sm shadow-sm transition hover:z-10 hover:scale-[1.06] hover:shadow-md focus:outline-none"
                     :class="g.run.variant==='tuned' ? 'ring-2 ring-emerald-600 ring-offset-2' : 'ring-1 ring-black/5'"
                     :style="'--heat:'+heatScale(norm(val(g.run,metric)))">
@@ -115,7 +111,7 @@
           <div class="mt-6 border-t border-gray-100 pt-5">
             <p class="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500">
               Combined single-method algorithms
-              <span class="font-normal normal-case tracking-normal text-gray-400">— one step straight to a χ map</span>
+              <span class="font-normal normal-case tracking-normal text-gray-400">(one step straight to a χ map)</span>
             </p>
             <div class="grid gap-x-10 gap-y-4 sm:grid-cols-2">
               <template x-for="grp in [{stage:'bfr+dipole', label:'Background removal + dipole inversion'}, {stage:'end-to-end', label:'End-to-end'}]" :key="grp.stage">
@@ -126,7 +122,7 @@
                       <div class="flex items-center gap-3">
                         <div class="w-36 shrink-0 truncate pr-1 text-right text-xs font-semibold text-gray-500" x-text="r.name"></div>
                         <button @click="go(r)"
-                          :title="r.name+' — '+METRICS[metric].label+': '+fmt(val(r,metric),metric)+(r.variant==='tuned' ? ' (tuned parameters)' : '')"
+                          :title="r.name+': '+METRICS[metric].label+': '+fmt(val(r,metric),metric)+(r.variant==='tuned' ? ' (tuned parameters)' : '')"
                           class="heat-cell group relative h-14 w-40 shrink-0 rounded-xl font-semibold text-sm shadow-sm transition hover:z-10 hover:scale-[1.06] hover:shadow-md focus:outline-none"
                           :class="r.variant==='tuned' ? 'ring-2 ring-emerald-600 ring-offset-2' : 'ring-1 ring-black/5'"
                           :style="'--heat:'+heatScale(norm(val(r,metric)))">
@@ -289,14 +285,14 @@
   <footer id="site-footer"></footer>
   <style>
     [x-cloak]{display:none!important}
-    /* Tuned rows: faint emerald tint + left accent bar, styled per-cell — a tr outline paints
+    /* Tuned rows: faint emerald tint + left accent bar, styled per-cell because a tr outline paints
        under the sticky first cell and doubles up between adjacent tuned rows. The sticky cell
        gets the same tint as an opaque colour so columns scrolling beneath it don't show through;
        Tailwind's group-hover classes still win on hover (higher specificity). */
     tr.tuned-row td{background:rgb(236 253 245/.55)}
     tr.tuned-row td:first-child{background:rgb(245 254 249);box-shadow:inset 3px 0 0 rgb(5 150 105/.6)}
     /* Dark counterparts (site themes via html.dark overrides in app.js, and the light values above
-       outrank them — so restate both cells here). Sticky cell = emerald tint pre-blended into the
+       outrank them, so restate both cells here). Sticky cell = emerald tint pre-blended into the
        dark table bg (#111827), kept opaque for the same see-through reason. */
     html.dark tr.tuned-row td{background:rgb(16 185 129/.08)}
     html.dark tr.tuned-row td:first-child{background:rgb(17 37 40);box-shadow:inset 3px 0 0 rgb(52 211 153/.55)}
@@ -316,19 +312,19 @@
     // customisable column picker + table, mirroring the QSM leaderboard's METRICS/selectedCols. `f` is
     // the formatter kind: xsim / pct (NRMSE %) / num (bare 3dp) / sec (runtime).
     const CHISEP_COLS = [
-      { key: "avg",                 label: "Avg xSIM",        better: "higher", f: "xsim", tip: "Mean of the χ+ and χ− xSIM — the headline combined source-separation score. Higher is better." },
+      { key: "avg",                 label: "Avg xSIM",        better: "higher", f: "xsim", tip: "Mean of the χ+ and χ− xSIM: the headline combined source-separation score. Higher is better." },
       { key: "para_xsim",           label: "χ+ xSIM",         better: "higher", f: "xsim", tip: "Structural similarity of the χ+ (paramagnetic, iron) map vs ground truth. Higher is better." },
       { key: "para_nrmse",          label: "χ+ NRMSE",        better: "lower",  f: "pct",  tip: "Normalised RMS error of χ+ vs ground truth (%). Lower is better." },
       { key: "para_nrmse_dgm",      label: "χ+ DGM NRMSE",    better: "lower",  f: "pct",  tip: "χ+ error in deep gray matter (iron) (%). Lower is better." },
       { key: "para_dgm_linearity",  label: "χ+ DGM linearity", better: "lower", f: "num",  tip: "|1 − slope| of χ+ across DGM iron regions; 0 = perfect iron quantification. Lower is better." },
       { key: "para_nrmse_blood",    label: "χ+ vein NRMSE",   better: "lower",  f: "pct",  tip: "χ+ error in venous blood (%). Lower is better." },
-      { key: "para_calc_leak",      label: "χ+ Ca leak",      better: "lower",  f: "num",  tip: "Mean |χ+| in the calcification (should be ~0) — calcium wrongly bleeding into the paramagnetic map. Lower is better." },
+      { key: "para_calc_leak",      label: "χ+ Ca leak",      better: "lower",  f: "num",  tip: "Mean |χ+| in the calcification (should be ~0): calcium wrongly bleeding into the paramagnetic map. Lower is better." },
       { key: "para_leak",           label: "χ−→χ+ leak",      better: "lower",  f: "num",  tip: "Whole-brain leakage: fraction of χ− (diamagnetic) signal bleeding into the χ+ map. 0 = clean. Lower is better." },
       { key: "dia_xsim",            label: "χ− xSIM",         better: "higher", f: "xsim", tip: "Structural similarity of the χ− (diamagnetic, myelin/calcium) map vs ground truth. Higher is better." },
       { key: "dia_nrmse",           label: "χ− NRMSE",        better: "lower",  f: "pct",  tip: "Normalised RMS error of χ− vs ground truth (%). Lower is better." },
       { key: "dia_calc_moment_dev", label: "χ− Ca dev",       better: "lower",  f: "num",  tip: "Deviation of the recovered calcification's susceptibility moment. Lower is better." },
       { key: "dia_calc_streak",     label: "χ− streak",       better: "lower",  f: "num",  tip: "Streaking-artifact level around the calcification. Lower is better." },
-      { key: "dia_iron_leak",       label: "χ− Fe leak",      better: "lower",  f: "num",  tip: "Mean |χ−| in DGM/veins (should be ~0) — iron wrongly bleeding into the diamagnetic map. Lower is better." },
+      { key: "dia_iron_leak",       label: "χ− Fe leak",      better: "lower",  f: "num",  tip: "Mean |χ−| in DGM/veins (should be ~0): iron wrongly bleeding into the diamagnetic map. Lower is better." },
       { key: "dia_leak",            label: "χ+→χ− leak",      better: "lower",  f: "num",  tip: "Whole-brain leakage: fraction of χ+ (paramagnetic/iron) signal bleeding into the χ− map. 0 = clean. Lower is better." },
       { key: "runtime_s",           label: "Runtime",         better: "lower",  f: "sec",  tip: "Wall-clock runtime." },
     ];
@@ -336,7 +332,7 @@
 
     function board() {
       // Non-reactive memo cache. Alpine getters recompute on EVERY property access, and the composed
-      // grid reads matrix.cell / norm() hundreds of times per render — so `matrix` (an O(all-runs)
+      // grid reads matrix.cell / norm() hundreds of times per render, so `matrix` (an O(all-runs)
       // build) was running hundreds of times per click. Cache each derived value keyed by the state
       // it depends on (runs.length busts it when data first loads), so it recomputes only when
       // view/stage/fmap/metric/filter/sort actually change.
@@ -426,7 +422,7 @@
         hasTuned() { return this.runs.some((r) => r.variant === "tuned"); },
         // Pick one run per method for the selected variant. In "tuned" mode a method with no tuned run
         // (pretrained nets, or already-optimal defaults) falls back to its default run, so the toggle
-        // never drops methods — it only lifts the ones we optimised.
+        // never drops methods; it only lifts the ones we optimised.
         pickVariant(pool) {
           if (this.variant !== "tuned") return pool.filter((r) => (r.variant || "default") === "default");
           const by = {};

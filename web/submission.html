@@ -3,12 +3,23 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>QSM-CI — Submission</title>
+  <title>QSM-CI · Submission</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
   <script src="js/app.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
   <style>
+    .hljs { background: transparent; padding: 0; }
+    main pre { border: 1px solid rgba(148,163,184,0.18); box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+    /* inline code chips (prose, not code blocks) */
+    main :not(pre) > code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.82em; padding: 0.1em 0.38em; border-radius: 0.375rem;
+      background: #f1f5f9; color: #334155; border: 1px solid #e2e8f0;
+    }
+    .dark main :not(pre) > code { background: rgba(148,163,184,0.14); color: #cbd5e1; border-color: rgba(148,163,184,0.2); }
     /* dual-range windowing slider with value bubbles + intensity histogram */
     .dualrange { position: relative; height: 66px; }
     .dualrange .hist { position: absolute; top: 16px; left: 0; width: 100%; height: 26px; display: block; }
@@ -156,7 +167,7 @@
              Hidden until a run's resources.json is found; stays hidden for DNF runs. -->
         <section id="resources-panel" class="mt-6 hidden rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
           <h2 class="font-semibold text-gray-900 dark:text-gray-100">Resource usage</h2>
-          <p id="resources-sub" class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">Memory and CPU sampled once per second during the container run. CPU is in cores — above 1 means the method used more than one core.</p>
+          <p id="resources-sub" class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">Memory and CPU sampled once per second during the container run. CPU is in cores: above 1 means the method used more than one core.</p>
           <div id="resources-chart" class="mt-4"></div>
         </section>
       </div>

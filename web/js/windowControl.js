@@ -47,7 +47,7 @@ export function makeWindowControl(getNv, getVol, cmapCfg) {
     cmapSel.value = cmapCfg.value;
     cmapSel.addEventListener("change", () => cmapCfg.onChange(cmapSel.value));
   }
-  // magnitude=true windows on |value| over [0, maxAbs] — used for the signed error map under a diverging
+  // magnitude=true windows on |value| over [0, maxAbs], used for the signed error map under a diverging
   // colormap, where cal_min/cal_max act as a magnitude transparency floor + saturation (mirrored to negatives).
   // [dmin,dmax] is the full data range; [vmin,vmax] is the zoomed *view* the slider+histogram span, so
   // scrolling to a narrow view makes each pixel of drag fine. cal_min/cal_max stay the source of truth.
@@ -209,13 +209,13 @@ export function makeWindowControl(getNv, getVol, cmapCfg) {
   }, { passive: false });
   dr.addEventListener("dblclick", () => { if (!getVol()) return; vmin = dmin; vmax = dmax; applyView(); });
   // Drag across the bar to pan the zoomed-in view (scroll zooms; this slides the [vmin,vmax] window
-  // left/right). Ignores drags that begin on a slider thumb or a value bubble — those keep their own
-  // behaviour — and does nothing until the view is actually zoomed in. rAF-coalesced so a fast drag
+  // left/right). Ignores drags that begin on a slider thumb or a value bubble (those keep their own
+  // behaviour) and does nothing until the view is actually zoomed in. rAF-coalesced so a fast drag
   // repaints the histogram at most once per frame.
   const onThumbOrBubble = (t) => t === rngLo || t === rngHi || !!(t.closest && t.closest(".win-bubble"));
   dr.addEventListener("pointerdown", (e) => {
     if (!getVol() || onThumbOrBubble(e.target)) return;
-    if (vmax - vmin >= (dmax - dmin) * 0.999) return;   // not zoomed — nothing to pan
+    if (vmax - vmin >= (dmax - dmin) * 0.999) return;   // not zoomed: nothing to pan
     pan = { x0: e.clientX, x1: e.clientX, vmin0: vmin, vmax0: vmax, w: dr.getBoundingClientRect().width || 1 };
     dr.setPointerCapture(e.pointerId); dr.style.cursor = "grabbing"; e.preventDefault();
   });

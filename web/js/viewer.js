@@ -1,7 +1,7 @@
 // Submission detail + NiiVue viewer: run sidebar, in-place switching, cohesive controls,
 // histogram-backed dual-range windowing with typed bounds, and per-algorithm docs.
 // Module scope; helpers via window.QSM. The resource chart and the dual-range windowing widget live
-// in their own modules (resourceChart.js / windowControl.js) — this file coordinates them.
+// in their own modules (resourceChart.js / windowControl.js); this file coordinates them.
 import { Niivue } from "https://unpkg.com/@niivue/niivue@0.57.0/dist/index.js";
 import { renderResources } from "./resourceChart.js";
 import { makeWindowControl, winControls } from "./windowControl.js";
@@ -24,7 +24,7 @@ const STAGE_IO = {
   "unwrap+bfr":    { consumes: ["phase", "mask", "params"], produces: "localfield" },
   "bfr+dipole":    { consumes: ["totalfield", "mask", "params"], produces: "chimap" },
   "end-to-end":    { consumes: ["phase", "mask", "params"], produces: "chimap" },
-  // χ-separation produces TWO source maps, so `produces` is an array — runLine writes them to a
+  // χ-separation produces TWO source maps, so `produces` is an array; runLine writes them to a
   // directory and scores against a ground-truth directory.
   "chi-separation": { consumes: ["localfield", "r2prime", "chimap", "magnitude", "mask", "params"],
     produces: ["chi-para", "chi-dia"] },
@@ -56,8 +56,8 @@ function runLine(slug, stage, truth, inputs) {
 // The qsm-ci command(s) that reproduce this run: one line for an isolated method, the
 // field-mapping → bfr → dipole chain for a composed pipeline.
 // QSM-CI reproduces the scored artifact; QSMxT runs the same method(s) end-to-end from BIDS. Which
-// slugs QSMxT can run is read from each algorithm's self-described `engine` (contains "QSM.rs") — no
-// per-method hardcoding — and the qsmxt flag follows from the stage.
+// slugs QSMxT can run is read from each algorithm's self-described `engine` (contains "QSM.rs"), with no
+// per-method hardcoding, and the qsmxt flag follows from the stage.
 const QSMXT_FLAG = {
   bfr: "--bf-algorithm", "unwrap+bfr": "--bf-algorithm",
   dipole: "--qsm-algorithm", "bfr+dipole": "--qsm-algorithm", "end-to-end": "--qsm-algorithm",
@@ -104,16 +104,16 @@ function renderHowToRun() {
   const codePane = (cmd, key, hidden) =>
     `<div data-pane="${key}" class="relative mt-3 ${hidden ? "hidden" : ""}">
       <button data-copy="${key}" class="absolute right-2 top-2 rounded-md bg-gray-800/80 px-2 py-1 text-xs font-medium text-gray-100 hover:bg-gray-700">Copy</button>
-      <pre class="overflow-x-auto rounded-xl bg-gray-900 p-4 text-xs leading-relaxed text-gray-100"><code>${escapeHtml(cmd)}</code></pre>
+      <pre class="overflow-x-auto rounded-xl bg-gray-900 p-4 text-xs leading-relaxed text-gray-100"><code class="language-bash">${escapeHtml(cmd)}</code></pre>
     </div>`;
   const tabBtn = (key, label, active) =>
     `<button data-tab="${key}" class="rounded-md px-3 py-1 transition ${active ? "bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100" : "text-gray-500 hover:text-gray-700 dark:text-gray-400"}">${label}</button>`;
 
-  const ciDesc = `Reproduce the scored artifact with the <a href="running.html" class="text-emerald-600 hover:underline"><code>qsm-ci</code></a> CLI —
+  const ciDesc = `Reproduce the scored artifact with the <a href="running.html" class="text-emerald-600 hover:underline"><code>qsm-ci</code></a> CLI:
       bring your own NIfTIs${chained ? ", chained stage by stage," : ""} or make a phantom with <code>qsm-forward</code>. Drop <code>--truth</code> to run without scoring.`;
   const xtDesc = `Run this ${run.combo ? "pipeline" : "method"} end-to-end on your own BIDS data with
-      <a href="https://qsmxt.github.io" class="text-emerald-600 hover:underline">QSMxT</a> — unwrapping, background removal and dipole
-      inversion in one command, on the same <a href="https://github.com/astewartau/QSM.rs" class="text-emerald-600 hover:underline">QSM.rs</a> engine QSM-CI uses.`;
+      <a href="https://qsmxt.github.io" class="text-emerald-600 hover:underline">QSMxT</a> (unwrapping, background removal and dipole
+      inversion in one command), on the same <a href="https://github.com/astewartau/QSM.rs" class="text-emerald-600 hover:underline">QSM.rs</a> engine QSM-CI uses.`;
 
   el.innerHTML = `
     <div class="flex items-baseline justify-between gap-3">
@@ -126,6 +126,7 @@ function renderHowToRun() {
     ${codePane(ciCmd, "ci", false)}
     ${xtCmd ? codePane(xtCmd, "xt", true) : ""}`;
 
+  if (window.hljs) el.querySelectorAll("pre code.language-bash").forEach((c) => window.hljs.highlightElement(c));
   const cmds = { ci: ciCmd, xt: xtCmd };
   el.querySelectorAll("[data-copy]").forEach((btn) => btn.addEventListener("click", () => {
     navigator.clipboard.writeText(cmds[btn.dataset.copy]);
@@ -168,13 +169,13 @@ const chisepRuns = () => allRuns.filter((r) => (r.domain === "chisep" || r.stage
 const hasChisep = () => chisepRuns().length > 0;
 // Combined single-step methods (bfr+dipole / end-to-end, e.g. NeXtQSM/TGV/QSMART/MEDI/iQSM) go
 // straight to a chi map in one step, so they have no fmap×bfr×dipole combo and are missed by the
-// matrix axes. Surface them as their own Pipelines group — one run per slug, preferring the composed
+// matrix axes. Surface them as their own Pipelines group: one run per slug, preferring the composed
 // representation. (unwrap+bfr methods produce localfield, not chi, so they sit on the matrix's
 // background-removal axis instead and are excluded here.)
 const combinedRuns = () => {
   const bySlug = {};
   for (const r of allRuns) {
-    if (r.combo) continue;  // matrix combos carry stage bfr+dipole too — they belong on the axes
+    if (r.combo) continue;  // matrix combos carry stage bfr+dipole too; they belong on the axes
     if (r.variant === "tuned") continue;  // tuned variants are reached via the toggle, not the list
     if (r.stage !== "bfr+dipole" && r.stage !== "end-to-end") continue;
     if (!bySlug[r.slug] || r.mode === "composed") bySlug[r.slug] = r;
@@ -199,7 +200,7 @@ function currentCombo() {
 }
 function runItem(r, activeId) {
   const active = r && r.id === activeId;
-  // χ-separation rows carry no plain xsim — show the mean of the χ+ and χ− xSIM instead.
+  // χ-separation rows carry no plain xsim; show the mean of the χ+ and χ− xSIM instead.
   const m = (r && r.metrics) || {};
   const xs = m.xsim != null ? m.xsim
     : (m.para_xsim != null && m.dia_xsim != null ? (m.para_xsim + m.dia_xsim) / 2
@@ -238,7 +239,7 @@ function pipelinesHTML() {
   const matrix = composedRuns().length
     ? axis("Field mapping", fmapsList(), "fmap") + axis("Background removal", bfrList(), "bfr") + axis("Dipole inversion", dipoleList(), "dipole")
     : "";
-  // Single-step χ producers, grouped by their self-described stage (not hardcoded per method) — the
+  // Single-step χ producers, grouped by their self-described stage (not hardcoded per method): the
   // same split as the Stages view and the leaderboard: bfr+dipole and end-to-end are distinct spans.
   const combined = combinedRuns().filter((r) => !f || r.name.toLowerCase().includes(f));
   const combinedGroup = (stage) => {
@@ -249,7 +250,7 @@ function pipelinesHTML() {
   };
   const combinedSection = combinedGroup("bfr+dipole") + combinedGroup("end-to-end");
   return (matrix + combinedSection) ||
-    `<p class="p-3 text-sm text-gray-400">No pipeline combinations available yet — the composed matrix is computed by the nightly job.</p>`;
+    `<p class="p-3 text-sm text-gray-400">No pipeline combinations available yet; the composed matrix is computed by the nightly job.</p>`;
 }
 function chisepHTML() {
   const f = filter.toLowerCase();
@@ -265,7 +266,7 @@ function buildSidebar() {
     b.className = "flex-1 rounded-md px-2 py-1 transition "
       + (b.dataset.domain === "chisep" && !hasChisep() ? "hidden " : "")
       + (b.dataset.domain === domain ? "bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100" : "text-gray-500 hover:text-gray-700 dark:text-gray-400"));
-  // The Stages/Pipelines split is meaningless for χ-separation (one flat list) — hide it there.
+  // The Stages/Pipelines split is meaningless for χ-separation (one flat list); hide it there.
   $("nav-toggle")?.classList.toggle("hidden", domain === "chisep");
   document.querySelectorAll("#nav-toggle button").forEach((b) =>
     b.className = "flex-1 rounded-md px-2 py-1 transition " +
@@ -288,7 +289,7 @@ function methodCard(a) {
   if (zdoi) links.push(`<a href="${zdoi.url}" class="text-emerald-600 hover:underline" title="Cite this QSM-CI submission (Zenodo v${zdoi.version})">submission doi</a>`);
   if (a.doi) links.push(`<a href="https://doi.org/${a.doi}" class="text-indigo-600 hover:underline">paper doi</a>`);
   if (a.code_url) links.push(`<a href="${a.code_url}" class="text-indigo-600 hover:underline">source code</a>`);
-  // A parameter may carry a `tuned:` value — the setting optimised on the QSM-CI scoring phantom,
+  // A parameter may carry a `tuned:` value: the setting optimised on the QSM-CI scoring phantom,
   // shown next to the method's usual `default:`. Only disclosed (submission page); the leaderboard
   // still ranks methods at their defaults.
   const plist = a.parameters || [];
@@ -332,7 +333,7 @@ function renderMethodInfo() {
 
 // ---- detail + viewer --------------------------------------------------------
 // Default + tuned isolated runs for the current method, if both exist (drives the Defaults/Tuned
-// toggle — switching swaps the metrics AND the NiiVue volumes, since each variant is its own run).
+// toggle: switching swaps the metrics AND the NiiVue volumes, since each variant is its own run).
 function variantRuns() {
   if (!run || run.mode !== "isolated") return null;
   const sib = allRuns.filter((r) => r.slug === run.slug && r.mode === "isolated" && r.artifact === run.artifact);
@@ -369,7 +370,7 @@ async function loadRun() {
   renderMethodInfo();
   renderHowToRun();
   renderMetrics();
-  // Render the resource graph up front — independent of (and before) the WebGL/NiiVue viewer, so a
+  // Render the resource graph up front, independent of (and before) the WebGL/NiiVue viewer, so a
   // browser without WebGL2, or a run whose volumes fail to load, still shows the usage trace.
   renderResources(run);
 
@@ -430,7 +431,7 @@ function metricRank(k) {
   return { rank, n: peers.length, t };
 }
 
-// Rank `run` among comparable peers by an arbitrary accessor (r) => value — used for χ-separation,
+// Rank `run` among comparable peers by an arbitrary accessor (r) => value; used for χ-separation,
 // whose paired metrics (para_*/dia_*) and the derived Avg xSIM aren't plain METRICS keys. Same
 // grouping/goodness logic as metricRank(). `higher` = higher-is-better. null if <2 peers to compare.
 function rankBy(accessor, higher) {
@@ -460,26 +461,26 @@ function renderChisepMetrics() {
   const num = (v, fk) => v == null ? null
     : fk === "pct" ? v.toFixed(1) + "%" : fk === "xsim" ? fmt(v, "xsim")
     : fk === "sec" ? fmt(v, "runtime_s") : v.toFixed(3);
-  // rows: [label, accessor, formatKey, arrow, tip] — accessor(r) yields the value for run r (so peers
+  // rows: [label, accessor, formatKey, arrow, tip]: accessor(r) yields the value for run r (so peers
   // can be ranked the same way), arrow "↑" = higher-is-better.
   const groups = [
-    [null, [["Avg xSIM", avgAcc, "xsim", "↑", "Mean of the χ+ and χ− xSIM — the headline combined score."]]],
+    [null, [["Avg xSIM", avgAcc, "xsim", "↑", "Mean of the χ+ and χ− xSIM: the headline combined score."]]],
     ["χ+ paramagnetic (iron, veins)", [
       ["xSIM", mv("para_xsim"), "xsim", "↑", "Structural similarity of χ+ vs ground truth."],
       ["NRMSE", mv("para_nrmse"), "pct", "↓", "Normalised RMS error of χ+ (%)."],
-      ["DGM iron NRMSE", mv("para_nrmse_dgm"), "pct", "↓", "χ+ error in deep gray matter (iron)."],
+      ["DGM NRMSE", mv("para_nrmse_dgm"), "pct", "↓", "χ+ error in deep gray matter (iron)."],
       ["DGM linearity", mv("para_dgm_linearity"), "num", "↓", "|1 − slope| of χ+ across DGM iron regions; 0 = perfect iron quantification."],
       ["Vein NRMSE", mv("para_nrmse_blood"), "pct", "↓", "χ+ error in venous blood."],
-      ["Calcium leakage (region)", mv("para_calc_leak"), "num", "↓", "Mean |χ+| in the calcification (should be ~0) — calcium wrongly bleeding into the paramagnetic map."],
-      ["Leakage χ−→χ+ (whole-brain)", mv("para_leak"), "num", "↓", "Regression slope of χ+ on the χ− ground truth over the whole brain — the fraction of diamagnetic signal bleeding into the paramagnetic map (0 = clean). Unlike xSIM it isn't fooled by the shared R2' common mode."],
+      ["Ca leak", mv("para_calc_leak"), "num", "↓", "Mean |χ+| in the calcification (should be ~0): calcium wrongly bleeding into the paramagnetic map."],
+      ["χ−→χ+ leak", mv("para_leak"), "num", "↓", "Whole-brain regression slope of χ+ on the χ− ground truth: the fraction of diamagnetic signal bleeding into the paramagnetic map (0 = clean). Unlike xSIM it isn't fooled by the shared R2' common mode."],
     ]],
     ["χ− diamagnetic (calcium, myelin)", [
       ["xSIM", mv("dia_xsim"), "xsim", "↑", "Structural similarity of χ− vs ground truth."],
       ["NRMSE", mv("dia_nrmse"), "pct", "↓", "Normalised RMS error of χ− (%)."],
-      ["Calcification dev", mv("dia_calc_moment_dev"), "num", "↓", "Deviation of the recovered calcification's susceptibility moment."],
+      ["Ca dev", mv("dia_calc_moment_dev"), "num", "↓", "Deviation of the recovered calcification's susceptibility moment."],
       ["Streaking", mv("dia_calc_streak"), "num", "↓", "Streaking-artifact level around the calcification."],
-      ["Iron leakage (region)", mv("dia_iron_leak"), "num", "↓", "Mean |χ−| in DGM/veins (should be ~0) — iron wrongly bleeding into the diamagnetic map."],
-      ["Leakage χ+→χ− (whole-brain)", mv("dia_leak"), "num", "↓", "Regression slope of χ− on the χ+ ground truth over the whole brain — the fraction of paramagnetic signal bleeding into the diamagnetic map (0 = clean). The whole-map counterpart to the DGM iron leakage above; unlike xSIM it isn't fooled by the shared R2' common mode."],
+      ["Fe leak", mv("dia_iron_leak"), "num", "↓", "Mean |χ−| in DGM/veins (should be ~0): iron wrongly bleeding into the diamagnetic map."],
+      ["χ+→χ− leak", mv("dia_leak"), "num", "↓", "Whole-brain regression slope of χ− on the χ+ ground truth: the fraction of paramagnetic signal bleeding into the diamagnetic map (0 = clean). The whole-map counterpart to the DGM iron leakage above; unlike xSIM it isn't fooled by the shared R2' common mode."],
     ]],
     [null, [["Runtime", rtAcc, "sec", "", "Wall-clock runtime."]]],
   ];
@@ -495,7 +496,7 @@ function renderChisepMetrics() {
         ? `<span class="inline-block rounded-md px-1.5 py-0.5 text-xs font-semibold text-white shadow-sm" style="background:${heatScale(rk.t)}" data-tip="Rank ${rk.rank} of ${rk.n} χ-separation methods for ${label}">#${rk.rank}<span class="opacity-70"> / ${rk.n}</span></span>`
         : `<span class="text-gray-300 dark:text-gray-600">—</span>`;
       html += `<tr>
-        <td class="py-2 text-gray-500 dark:text-gray-400"><span class="has-tip" data-tip="${tip.replace(/"/g, "&quot;")}">${label}</span> <span class="text-gray-300 dark:text-gray-600" title="${arrow === "↑" ? "higher" : "lower"} is better">${arrow}</span></td>
+        <td class="whitespace-nowrap py-2 text-gray-500 dark:text-gray-400"><span class="has-tip" data-tip="${tip.replace(/"/g, "&quot;")}">${label}</span> <span class="text-gray-300 dark:text-gray-600" title="${arrow === "↑" ? "higher" : "lower"} is better">${arrow}</span></td>
         <td class="py-2 text-right tabular-nums ${hero ? "font-bold text-gray-900 dark:text-gray-100" : "font-medium text-gray-700 dark:text-gray-300"}">${num(v, fk)}</td>
         <td class="py-2 pl-3 text-right">${rankCell}</td>
       </tr>`;
@@ -546,7 +547,7 @@ function autoWin(vol) { vol.cal_min = vol.robust_min ?? vol.global_min; vol.cal_
 
 // Signed error-map colormaps: over-estimate (recon>truth) ramps transparent→red→yellow, under-estimate
 // ramps transparent→blue→cyan. Alpha starts at 0 so the inner window bound (cal_min) is a hard
-// transparency floor — errors below it (incl. exact zero + the masked background) don't render at all —
+// transparency floor (errors below it, including exact zero and the masked background, don't render at all)
 // and rises to full by the outer bound (cal_max = saturation). Used as colormap / colormapNegative,
 // so the two signs diverge from a fixed, transparent zero: the window changes only the ±inner/±outer
 // thresholds, never the centre.
@@ -573,14 +574,14 @@ function setLoading(on) {
 }
 
 function wireControls() {
-  // base map colormap (recon/truth) — compact dropdown above this control's Auto button
+  // base map colormap (recon/truth): compact dropdown above this control's Auto button
   baseCtl = makeWindowControl(() => nv, () => baseVol(), {
     value: "gray",
     options: [["gray", "Gray"], ["viridis", "Viridis"], ["plasma", "Plasma"], ["hot", "Hot"], ["cool", "Cool"]],
     // apply to every resident base map so the colormap persists across recon/truth/χ± toggles
     onChange: (v) => { nv.volumes.forEach((vol) => { if (vol.__role === "base") vol.colormap = v; }); nv.updateGLVolume(); },
   });
-  // error overlay colormap — dropdown above the error window's Auto button; drives setErrorColormap
+  // error overlay colormap: dropdown above the error window's Auto button; drives setErrorColormap
   errorCtl = makeWindowControl(() => nv, () => activeErrVol, {
     value: "diverging",
     options: [["diverging", "Diverging (red ↔ blue)"], ["warm", "Warm"], ["hot", "Hot"], ["viridis", "Viridis"], ["plasma", "Plasma"], ["cool", "Cool"], ["gray", "Gray"]],
@@ -596,7 +597,7 @@ function wireControls() {
   $("chisep-tabs").querySelectorAll("button").forEach((t) =>
     t.addEventListener("click", () => {
       chisepComp = t.dataset.comp; setChisepActive(chisepComp);
-      refreshView();   // toggles opacity to the χ± source's resident volumes — no re-fetch
+      refreshView();   // toggles opacity to the χ± source's resident volumes; no re-fetch
     }));
   $("t-error").addEventListener("change", (e) => { showError = e.target.checked; refreshView(); });
   $("view-tabs").querySelectorAll("button").forEach((t) =>
@@ -612,7 +613,7 @@ function wireControls() {
   });
   const redrawAll = () => winControls.forEach((c) => c.redraw());
   window.addEventListener("resize", redrawAll);
-  // theme toggle flips html.dark without reloading — recolour every histogram
+  // theme toggle flips html.dark without reloading; recolour every histogram
   new MutationObserver(redrawAll).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
   nv.setInterpolation(true);
   setViewActive("multiplanar");
@@ -640,7 +641,7 @@ function windowFor(vol, comp) {
   else autoWin(vol);
 }
 
-// Load one candidate map into nv.volumes (hidden) and tag it — unless already resident. `role` is
+// Load one candidate map into nv.volumes (hidden) and tag it, unless already resident. `role` is
 // "base" (recon/truth) or "error". All bases are loaded before any error so the error stays on top.
 async function ensureVolume(role, kind, comp) {
   const url = volUrlFor(kind, comp);
@@ -668,7 +669,7 @@ async function preloadAll() {
 }
 
 // Toggle opacity so only the active base (opacity 1) and, if shown, the active error overlay (slider
-// opacity) render; every other resident volume is hidden (opacity 0). No fetch — this is the switch.
+// opacity) render; every other resident volume is hidden (opacity 0). No fetch; this is the switch.
 function applyOpacities() {
   const oErr = parseFloat($("opacity").value);
   for (const v of nv.volumes) {
@@ -678,7 +679,7 @@ function applyOpacities() {
 }
 
 // Reconcile the viewer with (curBase, chisepComp, showError) by toggling opacity on the resident,
-// preloaded volumes — a switch does NOT re-fetch. Only the first view of a run (or a not-yet-preloaded
+// preloaded volumes; a switch does NOT re-fetch. Only the first view of a run (or a not-yet-preloaded
 // map) actually loads data. On a new run the previous run's volumes are dropped and the set rebuilt.
 async function refreshView() {
   const baseKind = curBase === "truth" ? "truth" : "recon";
@@ -716,8 +717,8 @@ function setErrorColormap() {
   ov.colormap = cfg.colormap;
   ov.colormapNegative = cfg.colormapNegative;
   // Window on |error|, mirrored to both signs so zero is a fixed, transparent centre. cal_min = inner
-  // (transparency floor — errors below it, including exact zero, don't render); cal_max = outer
-  // (saturation — beyond it everything shows the top colour). Moving either changes only the ±inner/
+  // (transparency floor: errors below it, including exact zero, don't render); cal_max = outer
+  // (saturation: beyond it everything shows the top colour). Moving either changes only the ±inner/
   // ±outer thresholds, never where the two signs diverge.
   const m = (run.kind === "chi") ? 0.1
     : (Math.max(Math.abs(ov.robust_min ?? ov.global_min), Math.abs(ov.robust_max ?? ov.global_max)) || 1);
