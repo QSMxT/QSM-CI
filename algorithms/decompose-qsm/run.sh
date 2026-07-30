@@ -13,4 +13,8 @@ DIR="$(cd "$(dirname "$0")" && pwd)"
 BIN="${MATLAB_RECON:-/opt/qsm-ci/recon}"
 [ -x "$BIN" ] || BIN="$DIR/recon"
 export MCR_CACHE_ROOT="${MCR_CACHE_ROOT:-$(mktemp -d)}"
+# CI runs the container as a homeless non-root user (--user 1000:1001). The MATLAB Runtime extracts the
+# embedded CTF and starts a parpool under HOME, so point HOME at a writable dir or it fails with
+# "Cannot find nonembedded CTF archive".
+export HOME="${HOME:-}"; { [ -n "$HOME" ] && [ -w "$HOME" ]; } || export HOME="$MCR_CACHE_ROOT"
 exec "$BIN" "$IN" "$OUT"
