@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>QSM-CI — Running methods</title>
+  <title>QSM-CI · Running methods</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
@@ -51,7 +51,7 @@ qsm-ci run sharp --totalfield tf.nii.gz --mask m.nii.gz --params params.json</co
 
     <section class="mt-8 space-y-3">
       <h2 class="text-lg font-semibold">4. Acquisition parameters</h2>
-      <p class="text-sm text-gray-600 dark:text-gray-400">Three interchangeable ways — whichever you have:</p>
+      <p class="text-sm text-gray-600 dark:text-gray-400">Three interchangeable ways, whichever you have:</p>
       <pre class="overflow-x-auto rounded-xl bg-gray-900 p-4 text-sm text-gray-100"><code># a) a params.json          --params params.json
 # b) a BIDS MEGRE sidecar   --params sub-1_echo-1_part-phase_MEGRE.json
 # c) individual flags       --te 0.004 0.012 0.02 0.028 --field-strength 7 --b0-dir 0 0 1</code></pre>
@@ -59,7 +59,7 @@ qsm-ci run sharp --totalfield tf.nii.gz --mask m.nii.gz --params params.json</co
         voxel size is read from the NIfTI header, so BFR/dipole methods often need nothing extra.</p>
       <p class="text-sm text-gray-600 dark:text-gray-400"><span class="font-medium">Multi-echo / BIDS:</span>
         <code>--phase</code> and <code>--magnitude</code> take either one 4D file or the per-echo 3D files
-        directly — they're stacked to 4D for you (ordered by <code>echo-&lt;n&gt;</code>):</p>
+        directly; they're stacked to 4D for you (ordered by <code>echo-&lt;n&gt;</code>):</p>
       <pre class="overflow-x-auto rounded-xl bg-gray-900 p-4 text-sm text-gray-100"><code>qsm-ci run romeo-fieldmap \
   --phase sub-1_echo-*_part-phase_MEGRE.nii.gz \
   --magnitude sub-1_echo-*_part-mag_MEGRE.nii.gz \
@@ -74,14 +74,14 @@ qsm-ci run sharp --totalfield tf.nii.gz --mask m.nii.gz --params params.json</co
 qsm-ci run rts   --localfield localfield.nii.gz --mask m.nii.gz --params p.json -o chimap.nii.gz \
                  --truth chimap_groundtruth.nii.gz</code></pre>
       <p class="text-sm text-gray-600 dark:text-gray-400">Every per-method page has the exact commands for that
-        run — open one from the <a href="leaderboard.html" class="text-emerald-600 hover:underline">leaderboard</a>.</p>
+        run: open one from the <a href="leaderboard.html" class="text-emerald-600 hover:underline">leaderboard</a>.</p>
     </section>
 
     <section class="mt-8 space-y-3">
       <h2 class="text-lg font-semibold">6. χ-separation (two source maps)</h2>
       <p class="text-sm text-gray-600 dark:text-gray-400">Susceptibility source separation splits net χ into
         paramagnetic (χ+, iron) and diamagnetic (χ−, myelin·calcium). These methods read the local field,
-        R2′ and χ_total and write <em>both</em> maps into a directory — so <code>-o</code> is a folder (and
+        R2′ and χ_total and write <em>both</em> maps into a directory, so <code>-o</code> is a folder (and
         <code>--truth</code> a folder of ground-truth maps):</p>
       <pre class="overflow-x-auto rounded-xl bg-gray-900 p-4 text-sm text-gray-100"><code>qsm-ci run chi-sepnet \
   --localfield localfield.nii.gz --r2prime r2prime.nii.gz --chimap chimap.nii.gz \
@@ -98,7 +98,7 @@ qsm-ci run rts   --localfield localfield.nii.gz --mask m.nii.gz --params p.json 
         wrapper from the stage contract. Either way it calls <code>qsm-ci run</code>, so the container runs underneath.</p>
 
       <p class="text-sm text-gray-600 dark:text-gray-400">Each tab is a complete <strong>phase → χ</strong>
-        pipeline (<code>romeo-fieldmap → vsharp → rts</code>) — the actual
+        pipeline (<code>romeo-fieldmap → vsharp → rts</code>): the actual
         <a href="https://github.com/QSMxT/QSM-CI/tree/main/examples/workflow-engines" class="text-emerald-600 hover:underline">examples/workflow-engines/</a>
         files CI runs on the real challenge data. Swap any slug to mix and match methods.</p>
 
@@ -142,12 +142,12 @@ nextflow run pipeline.nf --phase phase.nii.gz --magnitude mag.nii.gz \
     <section class="mt-8 space-y-3">
       <h2 class="text-lg font-semibold">8. Need test data?</h2>
       <p class="text-sm text-gray-600 dark:text-gray-400">Generate a phantom with
-        <a href="https://github.com/astewartau/qsm-forward" class="text-emerald-600 hover:underline">qsm-forward</a> —
-        it forward-simulates, so it comes <em>with</em> ground truth:</p>
+        <a href="https://github.com/astewartau/qsm-forward" class="text-emerald-600 hover:underline">qsm-forward</a>.
+        It forward-simulates, so it comes <em>with</em> ground truth:</p>
       <pre class="overflow-x-auto rounded-xl bg-gray-900 p-4 text-sm text-gray-100"><code>qsm-forward simple bids/     # fields / χ / mask / dseg land under bids/derivatives/qsm-forward/</code></pre>
       <p class="text-xs text-gray-500 dark:text-gray-500">The leaderboard is scored on the
         <strong>Realistic In Silico Head Phantom</strong> (<code>qsm-forward head …</code>) from the QSM
-        Reconstruction Challenge 2.0 — Marques et al., <em>Magn Reson Med</em> 2021;86(1):526–542
+        Reconstruction Challenge 2.0: Marques et al., <em>Magn Reson Med</em> 2021;86(1):526–542
         (<a href="https://doi.org/10.1002/mrm.28716" class="text-emerald-600 hover:underline">doi:10.1002/mrm.28716</a>).
         Please cite it if you use QSM-CI results.</p>
     </section>

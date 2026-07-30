@@ -2,7 +2,7 @@
 // Fetch this run's memory/CPU-over-time trace (resources.json) and draw it as a two-axis uPlot:
 // memory in GB on the left, CPU in cores on the right (a subtle reference line at 1 core makes
 // multi-core use obvious). Served from the Hugging Face Hub (run.resources_url) with a dev fallback
-// to results/<id>/resources.json — the same pattern volUrl() uses for the NIfTI volumes. A missing
+// to results/<id>/resources.json, the same pattern volUrl() uses for the NIfTI volumes. A missing
 // trace (404) just leaves the panel hidden; a DNF run has no trace.
 //
 // ES module: imported by viewer.js. Depends on the global `uPlot` (loaded as an IIFE <script> before
