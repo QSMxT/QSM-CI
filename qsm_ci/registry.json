@@ -2,7 +2,7 @@
   "autoqsm": {
     "concept_doi": "10.5281/zenodo.21441850",
     "concept_recid": "21441850",
-    "latest": "2",
+    "latest": "3",
     "name": "AutoQSM",
     "stage": "bfr+dipole",
     "versions": {
@@ -19,13 +19,20 @@
         "record_id": "21549328",
         "updated_at": "2026-07-25T08:40:11Z",
         "version_doi": "10.5281/zenodo.21549328"
+      },
+      "3": {
+        "checksum": "sha256:9d7f0243b45e775b0d72924b49d3173657023a49f9988e3ea157dbc8d530f823",
+        "image": "ghcr.io/astewartau/qsm-ci/autoqsm@sha256:8b5e8552a6795a59add02f9ddb392f45c7a8dcb98f465520ecda89a2fa055d54",
+        "record_id": "21697742",
+        "updated_at": "2026-07-30T05:28:50Z",
+        "version_doi": "10.5281/zenodo.21697742"
       }
     }
   },
   "bfrnet": {
     "concept_doi": "10.5281/zenodo.21549331",
     "concept_recid": "21549331",
-    "latest": "1",
+    "latest": "2",
     "name": "BFRnet",
     "stage": "bfr",
     "versions": {
@@ -35,6 +42,77 @@
         "record_id": "21549332",
         "updated_at": "2026-07-25T08:40:11Z",
         "version_doi": "10.5281/zenodo.21549332"
+      },
+      "2": {
+        "checksum": "sha256:350f395dd28561060ecf7350c9c2de0557472e596ca2fc2bb7053dcd503c8d92",
+        "image": "ghcr.io/astewartau/qsm-ci/bfrnet@sha256:ab939d3759104300dcca11421b020221dcc682bd397d77c656862cc02b5c9891",
+        "record_id": "21697743",
+        "updated_at": "2026-07-30T05:28:50Z",
+        "version_doi": "10.5281/zenodo.21697743"
+      }
+    }
+  },
+  "chi-sep-ilsqr": {
+    "concept_doi": "10.5281/zenodo.21697748",
+    "concept_recid": "21697748",
+    "latest": "1",
+    "name": "\u03c7-separation (iLSQR)",
+    "stage": "chi-separation",
+    "versions": {
+      "1": {
+        "checksum": "sha256:21f5a5039eefbcd97040826e8366ea0c696d55f36b5d81fbdce96bfa2513e264",
+        "image": "ghcr.io/astewartau/qsm-ci/chi-sep-ilsqr@sha256:d07d167420d04a26403c20d42d47269ecd95ff354529521dddd282449e6bf35a",
+        "record_id": "21697749",
+        "updated_at": "2026-07-30T05:28:50Z",
+        "version_doi": "10.5281/zenodo.21697749"
+      }
+    }
+  },
+  "chi-sep-medi": {
+    "concept_doi": "10.5281/zenodo.21697752",
+    "concept_recid": "21697752",
+    "latest": "1",
+    "name": "\u03c7-separation (MEDI)",
+    "stage": "chi-separation",
+    "versions": {
+      "1": {
+        "checksum": "sha256:3feaf729d731eaa12fa542c1df673ee68594d1554cb786895d5abd50059317df",
+        "image": "ghcr.io/astewartau/qsm-ci/chi-sep-medi@sha256:d1f5e3ecb92c9153983c5d82c135cf50e451387a21d5814bdfdd10edc238a5d5",
+        "record_id": "21697753",
+        "updated_at": "2026-07-30T05:28:50Z",
+        "version_doi": "10.5281/zenodo.21697753"
+      }
+    }
+  },
+  "chi-sepnet": {
+    "concept_doi": "10.5281/zenodo.21697757",
+    "concept_recid": "21697757",
+    "latest": "1",
+    "name": "\u03c7-sepnet",
+    "stage": "chi-separation",
+    "versions": {
+      "1": {
+        "checksum": "sha256:70f2eb8d25340ab62732f89e8bea5a98329c339966037e45a14ad4cf8466eaf3",
+        "image": "ghcr.io/astewartau/qsm-ci/chi-sepnet@sha256:9588a43b6f99e310ef4c16bc26a8dc59751d7527bf62a1d914dfba82c788bc88",
+        "record_id": "21697759",
+        "updated_at": "2026-07-30T05:28:50Z",
+        "version_doi": "10.5281/zenodo.21697759"
+      }
+    }
+  },
+  "decompose-qsm": {
+    "concept_doi": "10.5281/zenodo.21697760",
+    "concept_recid": "21697760",
+    "latest": "1",
+    "name": "DECOMPOSE-QSM",
+    "stage": "chi-separation",
+    "versions": {
+      "1": {
+        "checksum": "sha256:568387e328af9012910a0d74204744c2f690c3b09681adeb61dc03aa09101eb6",
+        "image": "ghcr.io/astewartau/qsm-ci/decompose-qsm@sha256:a273a9b34f2863e4dac7e0c99f2c90e0dc220c56bf2e0f892c671a16be40112f",
+        "record_id": "21697761",
+        "updated_at": "2026-07-30T05:28:50Z",
+        "version_doi": "10.5281/zenodo.21697761"
       }
     }
   },
@@ -73,7 +151,7 @@
   "harperella": {
     "concept_doi": "10.5281/zenodo.21386693",
     "concept_recid": "21386693",
-    "latest": "6",
+    "latest": "7",
     "name": "HARPERELLA",
     "stage": "unwrap+bfr",
     "versions": {
@@ -118,6 +196,13 @@
         "record_id": "21549342",
         "updated_at": "2026-07-25T08:40:11Z",
         "version_doi": "10.5281/zenodo.21549342"
+      },
+      "7": {
+        "checksum": "sha256:019082b3af0c0c346d4b138380ee467c78b93d9ac914fc7f31629164dff681b7",
+        "image": "ghcr.io/astewartau/qsm-ci/qsmxt@sha256:3abc302e02d141f0a410488df197005c1f4443ff6e9a5f0da31aa1c9cb43ff10",
+        "record_id": "21697764",
+        "updated_at": "2026-07-30T05:28:50Z",
+        "version_doi": "10.5281/zenodo.21697764"
       }
     }
   },
@@ -140,7 +225,7 @@
   "iharperella": {
     "concept_doi": "10.5281/zenodo.21386695",
     "concept_recid": "21386695",
-    "latest": "5",
+    "latest": "6",
     "name": "iHARPERELLA",
     "stage": "unwrap+bfr",
     "versions": {
@@ -178,6 +263,13 @@
         "record_id": "21441853",
         "updated_at": "2026-07-19T13:22:20Z",
         "version_doi": "10.5281/zenodo.21441853"
+      },
+      "6": {
+        "checksum": "sha256:e1cb0d99a8913a7247dbe2fc4c19149e73820b959a82ab80a761c2da0a929633",
+        "image": "ghcr.io/astewartau/qsm-ci/qsmxt@sha256:3abc302e02d141f0a410488df197005c1f4443ff6e9a5f0da31aa1c9cb43ff10",
+        "record_id": "21697767",
+        "updated_at": "2026-07-30T05:28:50Z",
+        "version_doi": "10.5281/zenodo.21697767"
       }
     }
   },
@@ -235,7 +327,7 @@
   "inr-qsm": {
     "concept_doi": "10.5281/zenodo.21549354",
     "concept_recid": "21549354",
-    "latest": "1",
+    "latest": "2",
     "name": "INR-QSM",
     "stage": "dipole",
     "versions": {
@@ -245,6 +337,13 @@
         "record_id": "21549355",
         "updated_at": "2026-07-25T08:40:11Z",
         "version_doi": "10.5281/zenodo.21549355"
+      },
+      "2": {
+        "checksum": "sha256:e527243421def8c8811e338dea7e05dd7a22b126d713787fc9ef5ba8296015ce",
+        "image": "ghcr.io/astewartau/qsm-ci/inr-qsm@sha256:3e1cc4ec25aee7bfd52a815e90d398375163254e4189bea324570cc900550c8f",
+        "record_id": "21697770",
+        "updated_at": "2026-07-30T05:28:50Z",
+        "version_doi": "10.5281/zenodo.21697770"
       }
     }
   },
@@ -283,7 +382,7 @@
   "ir2qsm": {
     "concept_doi": "10.5281/zenodo.21549360",
     "concept_recid": "21549360",
-    "latest": "1",
+    "latest": "2",
     "name": "IR2QSM",
     "stage": "dipole",
     "versions": {
@@ -293,6 +392,13 @@
         "record_id": "21549361",
         "updated_at": "2026-07-25T08:40:11Z",
         "version_doi": "10.5281/zenodo.21549361"
+      },
+      "2": {
+        "checksum": "sha256:82eeb14429470fb279b401d28d3cba14c0bb359d5cab0fd98701ee3db3a8c5ab",
+        "image": "ghcr.io/astewartau/qsm-ci/ir2qsm@sha256:7df8887acc7cdfac4ea3ec845377c3d0b595975c3d240cd1ee63e826908c98ca",
+        "record_id": "21697778",
+        "updated_at": "2026-07-30T05:28:50Z",
+        "version_doi": "10.5281/zenodo.21697778"
       }
     }
   },
@@ -359,7 +465,7 @@
   "laplacian-fieldmap": {
     "concept_doi": "10.5281/zenodo.21386702",
     "concept_recid": "21386702",
-    "latest": "5",
+    "latest": "6",
     "name": "Laplacian field mapping",
     "stage": "field-mapping",
     "versions": {
@@ -397,6 +503,13 @@
         "record_id": "21441869",
         "updated_at": "2026-07-19T13:22:20Z",
         "version_doi": "10.5281/zenodo.21441869"
+      },
+      "6": {
+        "checksum": "sha256:230259302691237d6ac2e991bbacdc57ef2ab0cdc6314be777033261bc7124c8",
+        "image": "ghcr.io/astewartau/qsm-ci/py-ref@sha256:aec2653661bf2f7b7fa90d182e6c55dfbba7d7eee176b33c2abfe54e038b7b66",
+        "record_id": "21697781",
+        "updated_at": "2026-07-30T05:28:50Z",
+        "version_doi": "10.5281/zenodo.21697781"
       }
     }
   },
@@ -523,7 +636,7 @@
   "matlab-sti-iharperella": {
     "concept_doi": "10.5281/zenodo.21386906",
     "concept_recid": "21386906",
-    "latest": "5",
+    "latest": "6",
     "name": "iHARPERELLA (STI Suite)",
     "stage": "unwrap+bfr",
     "versions": {
@@ -561,6 +674,13 @@
         "record_id": "21549372",
         "updated_at": "2026-07-25T08:40:11Z",
         "version_doi": "10.5281/zenodo.21549372"
+      },
+      "6": {
+        "checksum": "sha256:3c3a92b5ff2fe054d4ebf4b700eafcff4a9571a4cef39e92b6c3314da41ac5a3",
+        "image": "ghcr.io/astewartau/qsm-ci/matlab-sti-iharperella@sha256:8197066c500e0d49a79cd2623ec35e8e1d22c80c09c2d9052236cafb2690ea7f",
+        "record_id": "21697784",
+        "updated_at": "2026-07-30T05:28:50Z",
+        "version_doi": "10.5281/zenodo.21697784"
       }
     }
   },
@@ -794,7 +914,7 @@
   "modip": {
     "concept_doi": "10.5281/zenodo.21549391",
     "concept_recid": "21549391",
-    "latest": "1",
+    "latest": "2",
     "name": "MoDIP",
     "stage": "dipole",
     "versions": {
@@ -804,6 +924,13 @@
         "record_id": "21549392",
         "updated_at": "2026-07-25T08:40:11Z",
         "version_doi": "10.5281/zenodo.21549392"
+      },
+      "2": {
+        "checksum": "sha256:30a8efbcdaccdfecb5b7a2064449ea30f07bd50f4f6ff8b36375b84c33bab7a3",
+        "image": "ghcr.io/astewartau/qsm-ci/modip@sha256:51c144b3b19030ff5b8d3e4843165d086248e5bfcee0623af5376f935cccaa31",
+        "record_id": "21697789",
+        "updated_at": "2026-07-30T05:28:50Z",
+        "version_doi": "10.5281/zenodo.21697789"
       }
     }
   },
@@ -842,7 +969,7 @@
   "nextqsm": {
     "concept_doi": "10.5281/zenodo.21441889",
     "concept_recid": "21441889",
-    "latest": "1",
+    "latest": "2",
     "name": "NeXtQSM",
     "stage": "bfr+dipole",
     "versions": {
@@ -852,6 +979,13 @@
         "record_id": "21441890",
         "updated_at": "2026-07-19T13:22:20Z",
         "version_doi": "10.5281/zenodo.21441890"
+      },
+      "2": {
+        "checksum": "sha256:b9819418beffc6aa7727fcb7957ba8845dee7f88977a3e9e52e757351e3380a4",
+        "image": "ghcr.io/astewartau/qsm-ci/nextqsm@sha256:015ff4413ee0b8b2f665194b1dc722aca6523f63cf9c5ce1c2fc5ec27891a4e4",
+        "record_id": "21697792",
+        "updated_at": "2026-07-30T05:28:50Z",
+        "version_doi": "10.5281/zenodo.21697792"
       }
     }
   },
@@ -997,7 +1131,7 @@
   "qsmgan": {
     "concept_doi": "10.5281/zenodo.21441898",
     "concept_recid": "21441898",
-    "latest": "1",
+    "latest": "2",
     "name": "QSMGAN",
     "stage": "dipole",
     "versions": {
@@ -1007,13 +1141,20 @@
         "record_id": "21441899",
         "updated_at": "2026-07-19T13:22:20Z",
         "version_doi": "10.5281/zenodo.21441899"
+      },
+      "2": {
+        "checksum": "sha256:5d3a51485ebdeeb8b784d4741b30da7a4a185cf4f9595d87a2c98624bdf91cbe",
+        "image": "ghcr.io/astewartau/qsm-ci/qsmgan@sha256:c7c83e392af271ed21e9a63062fbdc2a4ed2e46547798d81cc1e7e527700d380",
+        "record_id": "21697797",
+        "updated_at": "2026-07-30T05:28:50Z",
+        "version_doi": "10.5281/zenodo.21697797"
       }
     }
   },
   "qsmnet": {
     "concept_doi": "10.5281/zenodo.21441900",
     "concept_recid": "21441900",
-    "latest": "1",
+    "latest": "2",
     "name": "QSMnet",
     "stage": "dipole",
     "versions": {
@@ -1023,13 +1164,20 @@
         "record_id": "21441901",
         "updated_at": "2026-07-19T13:22:20Z",
         "version_doi": "10.5281/zenodo.21441901"
+      },
+      "2": {
+        "checksum": "sha256:870a447906004e2f237fdd2f29e9c6a7be713e950de33bcceb191d2a7af72ce6",
+        "image": "ghcr.io/astewartau/qsm-ci/qsmnet@sha256:7081b0782c7cb23ec8a9fc509af44f7f3a4960eec886299af63dc950c6d0b2c3",
+        "record_id": "21697800",
+        "updated_at": "2026-07-30T05:28:50Z",
+        "version_doi": "10.5281/zenodo.21697800"
       }
     }
   },
   "qsmnet-plus": {
     "concept_doi": "10.5281/zenodo.21441902",
     "concept_recid": "21441902",
-    "latest": "1",
+    "latest": "2",
     "name": "QSMnet+",
     "stage": "dipole",
     "versions": {
@@ -1039,6 +1187,13 @@
         "record_id": "21441903",
         "updated_at": "2026-07-19T13:22:20Z",
         "version_doi": "10.5281/zenodo.21441903"
+      },
+      "2": {
+        "checksum": "sha256:0cdf205c034e34e04676732f64b69a4d2605ad6be526d30e9316d7da63571d95",
+        "image": "ghcr.io/astewartau/qsm-ci/qsmnet-plus@sha256:d63e1a6ad3f0e208c9fb45e510c715fe4669cf806c52e47814e80898a4c65ea7",
+        "record_id": "21697803",
+        "updated_at": "2026-07-30T05:28:50Z",
+        "version_doi": "10.5281/zenodo.21697803"
       }
     }
   },
@@ -1232,10 +1387,26 @@
       }
     }
   },
+  "susep-net": {
+    "concept_doi": "10.5281/zenodo.21697812",
+    "concept_recid": "21697812",
+    "latest": "1",
+    "name": "SUSEP-Net",
+    "stage": "chi-separation",
+    "versions": {
+      "1": {
+        "checksum": "sha256:3b4f96f92fd074da4ffc6179a21323fbeb3ac6d3547c4dfd1f2aab4dfcbfb785",
+        "image": "ghcr.io/astewartau/qsm-ci/susep-net@sha256:b4d175563f6b32f84b3af163a1ac5975cc8397393457c2ef83367db11056d975",
+        "record_id": "21697813",
+        "updated_at": "2026-07-30T05:28:50Z",
+        "version_doi": "10.5281/zenodo.21697813"
+      }
+    }
+  },
   "tgv": {
     "concept_doi": "10.5281/zenodo.21386739",
     "concept_recid": "21386739",
-    "latest": "6",
+    "latest": "7",
     "name": "TGV",
     "stage": "bfr+dipole",
     "versions": {
@@ -1280,6 +1451,13 @@
         "record_id": "21549414",
         "updated_at": "2026-07-25T08:40:11Z",
         "version_doi": "10.5281/zenodo.21549414"
+      },
+      "7": {
+        "checksum": "sha256:8e0d60357f689a733101f27a9c7f7e875bbe6a2676836fecf8671d3b189ccfa6",
+        "image": "ghcr.io/astewartau/qsm-ci/qsmxt@sha256:6b93077f6b3a6a75a68db126de6c32c6eb9ccc4c0deebf86ef6ffb5880d89328",
+        "record_id": "21697816",
+        "updated_at": "2026-07-30T05:28:50Z",
+        "version_doi": "10.5281/zenodo.21697816"
       }
     }
   },
@@ -1524,6 +1702,22 @@
       }
     }
   },
+  "wavesep": {
+    "concept_doi": "10.5281/zenodo.21697821",
+    "concept_recid": "21697821",
+    "latest": "1",
+    "name": "WaveSep",
+    "stage": "chi-separation",
+    "versions": {
+      "1": {
+        "checksum": "sha256:792772f410e668fc04d3557ab83a03858ed72c15d3091fec6ea526b58d1f7533",
+        "image": "ghcr.io/astewartau/qsm-ci/wavesep@sha256:c96094a98049ccfb9d660a2463ef772502b30dcb412095e45641d67edeb8791a",
+        "record_id": "21697822",
+        "updated_at": "2026-07-30T05:28:50Z",
+        "version_doi": "10.5281/zenodo.21697822"
+      }
+    }
+  },
   "wh-qsm": {
     "concept_doi": "10.5281/zenodo.21549425",
     "concept_recid": "21549425",
@@ -1543,7 +1737,7 @@
   "xqsm": {
     "concept_doi": "10.5281/zenodo.21441920",
     "concept_recid": "21441920",
-    "latest": "1",
+    "latest": "2",
     "name": "xQSM",
     "stage": "dipole",
     "versions": {
@@ -1553,6 +1747,13 @@
         "record_id": "21441921",
         "updated_at": "2026-07-19T13:22:20Z",
         "version_doi": "10.5281/zenodo.21441921"
+      },
+      "2": {
+        "checksum": "sha256:4173140e17c5bc0dcb4bf00ff62da39dc2a753f5f94aeac49348ff3e5c4d3bfc",
+        "image": "ghcr.io/astewartau/qsm-ci/xqsm@sha256:f28dabe6f7f41db967133a022f3eb5205d2a2bbb5fab78117d58b1fb84b26444",
+        "record_id": "21697825",
+        "updated_at": "2026-07-30T05:28:50Z",
+        "version_doi": "10.5281/zenodo.21697825"
       }
     }
   }
