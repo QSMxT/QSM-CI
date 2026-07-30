@@ -29,6 +29,14 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y "./apptainer_${ver}_amd64.deb"
 
+      - name: Point podman at runc
+        # ubuntu-latest's podman/crun combo errors "crun: unknown version specified"; the interface
+        # tests run methods through podman, so select runc (also preinstalled) as podman's runtime.
+        run: |
+          mkdir -p ~/.config/containers
+          printf '[engine]\nruntime = "runc"\n' > ~/.config/containers/containers.conf
+          podman info --format '{{.Host.OCIRuntime.Name}}' || true
+
       - name: Generate a qsm-forward phantom
         run: |
           qsm-forward simple /tmp/bids --resolution 40 40 40 --save-field
