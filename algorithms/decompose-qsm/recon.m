@@ -48,6 +48,24 @@ function recon(inp, out)
     N_inner = 10; niv = str2double(getenv('DECOMPOSE_NINNER')); if ~isnan(niv) && niv > 0; N_inner = niv; end
     fprintf('DECOMPOSE: fitting %d voxels (N_inner=%d)\n', nnz(fitmask), N_inner);
 
+    % Start a local parallel pool so the per-voxel parfor runs across all cores. Compiled WITH the
+    % Parallel Computing Toolbox, the MATLAB Runtime can open a pool up to the container's core count
+    % without a license; degrade gracefully to a serial parfor if the pool can't start. $DECOMPOSE_WORKERS
+    % caps the worker count (e.g. when a runner shares cores between concurrent jobs).
+    try
+        if isempty(gcp('nocreate'))
+            nw = str2double(getenv('DECOMPOSE_WORKERS'));
+            if isnan(nw) || nw < 1; nw = feature('numcores'); end
+            c = parcluster('local');
+            jsl = tempname; mkdir(jsl); c.JobStorageLocation = jsl;   % writable scratch (container HOME may be read-only)
+            c.NumWorkers = nw;
+            parpool(c, nw);
+        end
+        fprintf('DECOMPOSE: parpool with %d workers\n', gcp().NumWorkers);
+    catch e
+        fprintf('DECOMPOSE: no parpool (%s) — running serial\n', e.message);
+    end
+
     opt = optimoptions('lsqcurvefit', 'Display', 'off', 'UseParallel', false);
     lb = [0 0 0]; ub = [inf inf inf]; lb2 = 0; ub2 = inf; upper = 0.5; lb3 = [0 -upper]; ub3 = [upper 0];
     Cp = zeros(N1,N2,N3); Cm = zeros(N1,N2,N3); C0m = zeros(N1,N2,N3);
