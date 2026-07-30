@@ -32379,6 +32379,47 @@
         "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/chi-sep-ilsqr-iso__error.nii.gz",
         "error-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/chi-sep-ilsqr-iso__error-dia.nii.gz"
       }
+    },
+    {
+      "id": "decompose-qsm-iso",
+      "slug": "decompose-qsm",
+      "name": "DECOMPOSE-QSM",
+      "stage": "chi-separation",
+      "mode": "isolated",
+      "track": "sim",
+      "runtime_s": 6808.652737379074,
+      "variant": "default",
+      "domain": "chisep",
+      "kind": "chisep",
+      "metrics": {
+        "para_nrmse": 80.48628836830333,
+        "para_nrmse_detrend": 128.4405235029746,
+        "para_correlation": 0.6143302612657743,
+        "para_xsim": 0.34382322902651385,
+        "para_nrmse_dgm": 227.05198259840918,
+        "para_dgm_linearity": 1.2119614815484414,
+        "para_nrmse_blood": 577.6685694058575,
+        "para_calc_leak": 0.0008564508026747245,
+        "dia_nrmse": 73.3364946597121,
+        "dia_nrmse_detrend": 91.59017090618069,
+        "dia_correlation": 0.7374350653959965,
+        "dia_xsim": 0.3349724850276783,
+        "dia_calc_moment_dev": 26.814431607723236,
+        "dia_calc_streak": 0.08619794343270412,
+        "dia_iron_leak": 0.0025034403814695664,
+        "para_leak": -0.2467059904978231,
+        "dia_leak": -0.23869729917185875
+      },
+      "status": "ok",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/decompose-qsm-iso__resources.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/decompose-qsm-iso__recon.nii.gz",
+        "recon-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/decompose-qsm-iso__recon-dia.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/decompose-qsm-iso__truth.nii.gz",
+        "truth-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/decompose-qsm-iso__truth-dia.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/decompose-qsm-iso__error.nii.gz",
+        "error-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/decompose-qsm-iso__error-dia.nii.gz"
+      }
     }
   ]
 }
