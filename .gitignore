@@ -78,6 +78,12 @@ algorithms/l1-qsm/Dockerfile
 algorithms/wh-qsm/Dockerfile
 algorithms/hd-qsm/Dockerfile
 algorithms/ir2qsm/Dockerfile
+# AMP-PE: the upstream MIT solver (amp_pe_qsm/, functions/) is a build-time dep fetched via
+# git clone and baked into the compiled recon binary (see BUILD.md), so it isn't committed; its
+# Dockerfile is gitignored too so CI pulls the prebuilt MCR image.
+algorithms/amp-pe/Dockerfile
+algorithms/amp-pe/amp_pe_qsm/
+algorithms/amp-pe/functions/
 
 # Large network weights are build-time deps (fetched at build), never committed.
 algorithms/*/*.mat

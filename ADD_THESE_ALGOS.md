@@ -19,7 +19,7 @@ missing/unclear (needs author OK before redistribution) · 🔴 no public code (
 
 | Method | Approach | Paper | Code | Weights | License | Lang | Obtain |
 |--------|----------|-------|------|---------|---------|------|--------|
-| **AMP-PE** | Bayesian approximate message passing; MAP with Laplace sparse-wavelet prior + Gaussian-mixture noise model on the nonlinear complex forward model | Huang et al., *MRM* 2023 (PMC10664815) | [EmoryCN2L/QSM_AMP_PE](https://github.com/EmoryCN2L/QSM_AMP_PE) | n/a (iterative) | **MIT** | MATLAB (needs Wavelet Toolbox) | 🟢 |
+| **AMP-PE** ✅ **added** (`algorithms/amp-pe`) | Bayesian approximate message passing; MAP with Laplace sparse-wavelet prior + Gaussian-mixture noise model on the nonlinear complex forward model | Huang et al., *MRM* 2023;90(4):1414-1430, doi:10.1002/mrm.29722 | [EmoryCN2L/QSM_AMP_PE](https://github.com/EmoryCN2L/QSM_AMP_PE) | n/a (iterative) | **MIT** | MATLAB (needs Wavelet Toolbox) | 🟢 |
 | **DeepQSM** | Fully-convolutional (U-Net) dipole inversion trained *purely on synthetic* dipole-forward data; the original synthetic-trained CNN | Bollmann et al., *NeuroImage* 2019;195:373–383 | Colab/tutorial via [dlQSM](https://github.com/dlQSM/dlQSM); check original repo at integration | Pretrained (synthetic) — confirm asset | Confirm | Python (TF) | 🟡 |
 | **AFTER-QSM** | Affine-transformation-equivariant network for high-resolution / arbitrary-orientation dipole inversion | Gao et al. (UQ) | [sunhongfu/deepMRI/AFTER-QSM](https://github.com/sunhongfu/deepMRI/tree/master/AFTER-QSM) | Provided in repo | Confirm (repo-level) | Python (PyTorch) | 🟡 |
 | **DCRNet** | Dense-connection reconstruction net for accelerated/robust dipole inversion | Gao et al. | [sunhongfu/deepMRI/DCRNet](https://github.com/sunhongfu/deepMRI/tree/master/DCRNet) | Provided in repo | Confirm | Python (PyTorch) | 🟡 |
@@ -82,7 +82,17 @@ missing/unclear (needs author OK before redistribution) · 🔴 no public code (
 
 ## Suggested next steps
 
-1. **AMP-PE** first — MIT-licensed, self-contained MATLAB, clean fit for a `dipole` submission.
+1. ✅ **AMP-PE** — **done** (`algorithms/amp-pe`, 2026-07-31). Packaged as a compiled-MATLAB `dipole`
+   submission with `optional_inputs: [magnitude]` (nonlinear model uses magnitude to weight the data
+   term + build a wavelet morphology mask; falls back to uniform weights without it). AMP-PE's own
+   unwrap/BET/PDF/erosion are dropped — it gets the ground-truth local field and only runs the
+   two-step AMP-PE inversion. Validated on `data/sim/dev`: **corr 0.995, detrended NRMSE 10.5%** at
+   the default 25+25 linearization iters (~5.5 min on the 96×96×60 volume). Image build/push to GHCR
+   and the leaderboard rescore are left to CI/Bunya. **Wavelet-Toolbox note:** AMP-PE needs it
+   (db1/db2). The local `/opt/MATLAB/R2026a` has the Compiler but not Wavelet; it's licensed, so it
+   was installed via `mpm` into `/home/ashley/matlab-onnx` and put on the compile path with the
+   codegen `eml` folders excluded. `mcc` bundles the wavelet code into the binary (`-a dbwavf.m`
+   needed for the one dynamically-`feval`'d filter), so the Runtime image needs no Wavelet licence.
 2. **APART-QSM** — highest-value chi-separation add; email AMRI-Lab for a license/redistribution OK.
 3. Batch the **`sunhongfu/deepMRI`** methods (AFTER-QSM, DCRNet, DIP-UP) once licensing is confirmed.
 4. **wfTFI** as a `bfr+dipole` single-step entry (Python/GPU — mind our CPU-only CI, cf. INR-QSM/MoDIP).
