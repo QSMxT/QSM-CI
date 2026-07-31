@@ -10,10 +10,16 @@
 #                 chimap, dseg) — never committed.
 #
 # Usage: fetch_dataset.sh <track> <dest>
-# Env:   OSF_TOKEN   (required unless OSF_ZIP is set) — OSF personal access token
-#        OSF_PROJECT (default y8adf), OSF_FILE (default the bids.zip file id)
-#        OSF_ZIP     (optional) — persistent path for bids.zip. If it exists it's reused (no
-#                    download); if not, the download is saved there. Point CI's cache at it.
+# Env:   OSF_TOKEN     (required unless OSF_ZIP is set) — OSF personal access token
+#        OSF_PROJECT   (default y8adf), OSF_FILE (default the bids.zip file id)
+#        OSF_FILE_INVIVO (invivo track) — OSF file id of the pre-flattened invivo_qsm2016.zip
+#        OSF_ZIP       (optional) — persistent path for the download. If it exists it's reused (no
+#                      download); if not, the download is saved there. Point CI's cache at it.
+#
+# Tracks: sim / chisep ship as qsm-forward BIDS trees (flattened here by pack_dataset.py). The
+# invivo track (2016 QSM Reconstruction Challenge) ships ALREADY FLATTENED (inputs/ + groundtruth/
+# at the zip root, built by scripts/make_invivo_zip.py), so it skips the BIDS-find + pack step and
+# just unzips straight into $DEST.
 set -euo pipefail
 
 TRACK="${1:?track required}"
@@ -23,6 +29,7 @@ OSF_PROJECT="${OSF_PROJECT:-y8adf}"
 # derivatives), so it lives in its own OSF file — set OSF_FILE_CHISEP (or override OSF_FILE).
 case "$TRACK" in
   chisep) OSF_FILE="${OSF_FILE:-${OSF_FILE_CHISEP:?set OSF_FILE_CHISEP to the χ-sep bids.zip OSF file id}}"; PACK_FLAGS="--chisep" ;;
+  invivo) OSF_FILE="${OSF_FILE:-${OSF_FILE_INVIVO:-hw9rn}}"; PACK_FLAGS="" ;;   # invivo_qsm2016.zip (osf.io/hw9rn), pre-flattened
   *)      OSF_FILE="${OSF_FILE:-698ac9aecae88916d1e24f69}"; PACK_FLAGS="" ;;   # QSM bids
 esac
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -47,6 +54,16 @@ else
   # OSF token across those hops so a private-project file still authenticates. (Harmless for the direct
   # waterbutler URL, and the signed storage URL just ignores the extra header.)
   curl -fS --location-trusted -H "Authorization: Bearer ${OSF_TOKEN}" "$url" -o "$zip"
+fi
+
+# The invivo zip is ALREADY flattened (inputs/ + groundtruth/ at its root, built by
+# scripts/make_invivo_zip.py) — no BIDS tree, no pack step. Just unzip it straight into $DEST.
+if [ "$TRACK" = "invivo" ]; then
+  rm -rf "$DEST"
+  mkdir -p "$DEST"
+  unzip -q "$zip" -d "$DEST"
+  echo "[fetch_dataset] ${TRACK} dataset ready at ${DEST} (pre-flattened, no BIDS pack)"
+  exit 0
 fi
 
 unzip -q "$zip" -d "$tmp/extract"

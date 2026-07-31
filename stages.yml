@@ -42,7 +42,7 @@ spans:
 scoring:
   field:  [nrmse, nrmse_detrend, correlation, xsim]
   chi:    [nrmse, nrmse_detrend, nrmse_tissue, nrmse_blood, nrmse_dgm,
-           dgm_linearity, calc_moment_dev, calc_streak, correlation, xsim]
+           dgm_linearity, calc_moment_dev, calc_streak, correlation, xsim, hfen]
   # χ-separation source map. Base agreement set for both sources, plus source-specific region metrics:
   # χ+ (para) adds nrmse_dgm, dgm_linearity, nrmse_blood, calc_leak; χ− (dia) adds calc_moment_dev,
   # calc_streak, iron_leak. 'leak' terms measure cross-contamination into the wrong source.

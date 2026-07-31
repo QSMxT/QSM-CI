@@ -120,6 +120,20 @@ jobs:
               except FileNotFoundError: return False
               m = re.search(r'^stage:[ \t]*(\S+)', t, re.M)
               return bool(m) and m.group(1) == 'chi-separation'
+          def is_dipole(slug):
+              # A dipole method (localfield -> chimap) — the only stage scorable on the in-vivo track.
+              try: t = open(f'algorithms/{slug}/algorithm.yml').read()
+              except FileNotFoundError: return False
+              m = re.search(r'^stage:[ \t]*(\S+)', t, re.M)
+              return bool(m) and m.group(1) == 'dipole'
+          def invivo_tasks(slugs):
+              # In-vivo (2016 challenge) leaderboard: each dipole method ALSO runs, isolated, on the
+              # invivo dataset (localfield -> chimap, scored vs COSMOS + STI). This is an ADDITIONAL
+              # run of the same dipole methods (not a reroute of a disjoint set like chisep), each as
+              # its own --focus job with --track invivo on the 'invivo' phantom. Its runs get the
+              # `-invivo` id namespace (pipeline.py id_suffix), so they never collide with sim runs.
+              return [{'id': 'iv-' + s, 'focus': s, 'phantom': 'invivo', 'track': 'invivo', **route(s)}
+                      for s in sorted(slugs) if is_dipole(s) and not s.startswith('_')]
           def phantom(slug):
               # Which phantom this method scores on: χ-separation methods use the chisep dataset (χ+/χ−
               # GT + R2'/χ_total inputs); everything else the QSM sim phantom.
@@ -143,8 +157,14 @@ jobs:
               excl = ','.join(ded)
               tasks = [{'id': 's%02d' % i, 'shard': '%d/%d' % (i, N), 'exclude': excl, 'phantom': 'sim', **HOSTED} for i in range(N)]
               tasks += [{'id': 'f-' + s, 'focus': s, 'phantom': phantom(s), **route(s)} for s in ded]
+              # In-vivo leaderboard: an extra isolated invivo run of EVERY dipole method.
+              all_slugs = [p.split('/')[1] for p in sorted(glob.glob('algorithms/*/algorithm.yml'))]
+              tasks += invivo_tasks(all_slugs)
           else:
-              tasks = [{'id': 'f-' + s, 'focus': s, 'phantom': phantom(s), **route(s)} for s in json.loads(os.environ['SLUGS'])]
+              slugs = json.loads(os.environ['SLUGS'])
+              tasks = [{'id': 'f-' + s, 'focus': s, 'phantom': phantom(s), **route(s)} for s in slugs]
+              # A changed dipole method also re-scores on the in-vivo track.
+              tasks += invivo_tasks(slugs)
           print(json.dumps(tasks))
           PY
           )
@@ -173,15 +193,18 @@ jobs:
           pip install --upgrade setuptools setuptools_scm wheel
           pip install --no-build-isolation .
 
+      # Per-phantom OSF zip cache key: chisep and invivo each ship their own OSF file (a separate
+      # secret); the QSM sim phantom is the shared bids.zip.
       - name: Cache OSF dataset zip
         uses: actions/cache@v6
         with:
           path: .osfcache/${{ matrix.task.phantom || 'sim' }}.zip
-          key: ${{ matrix.task.phantom == 'chisep' && format('osf-chisep-{0}', secrets.OSF_FILE_CHISEP) || 'osf-bids-698ac9aecae88916d1e24f69' }}
+          key: ${{ matrix.task.phantom == 'chisep' && format('osf-chisep-{0}', secrets.OSF_FILE_CHISEP) || (matrix.task.phantom == 'invivo' && format('osf-invivo-{0}', secrets.OSF_FILE_INVIVO) || 'osf-bids-698ac9aecae88916d1e24f69') }}
       - name: Fetch dataset (public inputs + held-out ground truth)
         env:
           OSF_TOKEN: ${{ secrets.OSF_TOKEN }}
           OSF_FILE_CHISEP: ${{ secrets.OSF_FILE_CHISEP }}   # χ-sep bids.zip OSF file id
+          OSF_FILE_INVIVO: ${{ secrets.OSF_FILE_INVIVO }}   # invivo_qsm2016.zip OSF file id (pre-flattened)
           OSF_ZIP: .osfcache/${{ matrix.task.phantom || 'sim' }}.zip
         run: scripts/fetch_dataset.sh "${{ matrix.task.phantom || 'sim' }}" "data/${{ matrix.task.phantom || 'sim' }}/scoring"
 
@@ -189,8 +212,12 @@ jobs:
         run: |
           PH="${{ matrix.task.phantom || 'sim' }}"
           DS="data/$PH/scoring"
-          MODE=both; [ "$PH" = chisep ] && MODE=isolated   # χ-separation is isolated-only (no composed matrix)
-          ARGS="--dataset $DS --mode $MODE --runner docker --track $TRACK --emit-volumes --runs-out runs-${{ matrix.task.id }}.json"
+          # χ-separation and in-vivo are isolated-only (no composed matrix); sim runs both modes.
+          MODE=both; { [ "$PH" = chisep ] || [ "$PH" = invivo ]; } && MODE=isolated
+          # Track defaults to $TRACK (sim); an invivo task overrides it so pipeline.py scores against
+          # COSMOS + STI and namespaces its run ids with `-invivo`.
+          TRK="${{ matrix.task.track || '' }}"; [ -z "$TRK" ] && TRK="$TRACK"
+          ARGS="--dataset $DS --mode $MODE --runner docker --track $TRK --emit-volumes --runs-out runs-${{ matrix.task.id }}.json"
           [ -n "${{ matrix.task.shard }}" ] && ARGS="$ARGS --shard ${{ matrix.task.shard }}"
           [ -n "${{ matrix.task.focus }}" ] && ARGS="$ARGS --focus ${{ matrix.task.focus }}"
           [ -n "${{ matrix.task.exclude }}" ] && ARGS="$ARGS --exclude ${{ matrix.task.exclude }}"

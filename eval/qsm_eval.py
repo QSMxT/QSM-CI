@@ -18,7 +18,7 @@ import math
 from pathlib import Path
 
 import numpy as np
-from scipy.ndimage import binary_dilation, uniform_filter
+from scipy.ndimage import binary_dilation, gaussian_laplace, uniform_filter
 
 # --- core metrics (ported 1:1 from QSM.rs tests/common/mod.rs) ----------------------------------
 
@@ -95,6 +95,28 @@ def nrmse_challenge(a: np.ndarray, b: np.ndarray, mask: np.ndarray) -> tuple[flo
     corrected = (1.0 / slope) * recon + (-intercept / slope)
     nrmse_dt = 100.0 * math.sqrt(((corrected - truth) ** 2).sum()) / norm_truth
     return nrmse, nrmse_dt
+
+
+def hfen(recon: np.ndarray, truth: np.ndarray, mask: np.ndarray, sigma: float = 1.5) -> float:
+    """High-Frequency Error Norm (%): norm of the LoG-filtered error over the norm of the LoG-filtered
+    truth, within the mask, ×100. This is the classic 2016 QSM Reconstruction Challenge HFEN — a
+    Laplacian-of-Gaussian (σ≈1.5 voxels, 15-voxel kernel) high-pass that measures how well fine
+    edges/detail are recovered, complementing the global NRMSE. Lower is better; identical inputs → 0.
+
+    scipy's `gaussian_laplace` gives the LoG directly (a Gaussian-smoothed Laplacian); a truncate of 5
+    at σ=1.5 spans ~15 voxels, matching the reference kernel size. The filter is applied over the whole
+    volume (edges need neighbourhood context) but the norms are taken only within the mask."""
+    m = mask > 0
+    if not m.any():
+        return math.nan
+    lr = gaussian_laplace(recon.astype(np.float64), sigma=sigma, truncate=5.0)
+    lt = gaussian_laplace(truth.astype(np.float64), sigma=sigma, truncate=5.0)
+    err = lr[m] - lt[m]
+    denom = math.sqrt(float((lt[m] * lt[m]).sum()))
+    if denom < 1e-30:
+        return math.nan
+    val = 100.0 * math.sqrt(float((err * err).sum())) / denom
+    return val if math.isfinite(val) else math.nan
 
 
 def dgm_linearity(recon: np.ndarray, truth: np.ndarray, seg: np.ndarray) -> float:
@@ -266,6 +288,7 @@ def challenge_metrics(recon, truth, mask, seg) -> dict:
         "calc_streak": calc_streak,
         "correlation": correlation(recon, truth, mask),
         "xsim": xsim(recon, truth, mask),
+        "hfen": hfen(recon, truth, mask),
     }
 
 
@@ -308,6 +331,7 @@ def selfcheck() -> None:
     assert abs(xsim(truth, truth, mask) - 1.0) < 1e-6
     n, ndt = nrmse_challenge(truth, truth, mask)
     assert abs(n) < 1e-9 and abs(ndt) < 1e-9
+    assert abs(hfen(truth, truth, mask)) < 1e-9
     print("[qsm-eval] selfcheck ok")
 
 
@@ -350,8 +374,18 @@ def main() -> None:
     elif args.seg:  # chi with segmentation -> full challenge suite
         seg = np.rint(load(args.seg)).astype(np.int32)
         metrics = challenge_metrics(recon, truth, mask, seg)
-    else:  # chi without segmentation (e.g. in-vivo)
-        metrics = {"correlation": correlation(recon, truth, mask), "xsim": xsim(recon, truth, mask)}
+    else:  # chi without segmentation (e.g. in-vivo): no region metrics, but the headline 2016
+        # challenge suite still applies — NRMSE (the 2016 headline metric), detrended NRMSE, HFEN
+        # (fine-detail error), correlation and XSIM. Region/calcification metrics need the sim
+        # segmentation scheme, which the in-vivo dseg does not follow, so they are omitted.
+        nrmse, nrmse_dt = nrmse_challenge(recon, truth, mask)
+        metrics = {
+            "nrmse": nrmse,
+            "nrmse_detrend": nrmse_dt,
+            "hfen": hfen(recon, truth, mask),
+            "correlation": correlation(recon, truth, mask),
+            "xsim": xsim(recon, truth, mask),
+        }
 
     result = {
         "name": args.name,
