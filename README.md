@@ -8,8 +8,8 @@ Every published algorithm gets a citable Zenodo DOI and can be run by anyone wit
 
 ## → https://qsmxt.github.io/QSM-CI
 
-- **[Leaderboard](https://qsmxt.github.io/QSM-CI/leaderboard.html)** — per-stage tables and the
-  background-removal × dipole-inversion combination matrix, with an interactive volume viewer.
+- **[Results](https://qsmxt.github.io/QSM-CI/results.html)** — per-stage tables, the
+  background-removal × dipole-inversion combination matrix, and findings, with an interactive volume viewer.
 - **[Run an algorithm](https://qsmxt.github.io/QSM-CI/running.html)** — locally or from a workflow
   engine (nipype, Pydra, CWL, Snakemake, Nextflow).
 - **[Submit yours](https://qsmxt.github.io/QSM-CI/submit.html)** — open a pull request adding a folder
