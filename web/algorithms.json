@@ -1551,6 +1551,44 @@
       "ci_notes": []
     },
     {
+      "slug": "tfi",
+      "name": "TFI",
+      "stage": "bfr+dipole",
+      "inputs": [
+        "totalfield",
+        "mask",
+        "params",
+        "magnitude"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "description": "Preconditioned Total Field Inversion: a single-step method that inverts the total field directly to susceptibility over the whole field-of-view, jointly performing background-field removal and dipole inversion. Uses a preconditioner (\u03c7 = P\u00b7y, larger outside the brain) so the large out-of-brain background susceptibility is well-conditioned, with MEDI-style L1 morphology regularization.",
+      "citation": "Liu et al., Magn Reson Med 2017;78(1):303-315",
+      "doi": "10.1002/mrm.26946",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT",
+      "authors": [
+        "Zhe Liu",
+        "Youngwook Kee",
+        "Dong Zhou",
+        "Yi Wang",
+        "Pascal Spincemaille"
+      ],
+      "parameters": [
+        {
+          "name": "lambda",
+          "default": 7.5e-05,
+          "description": "data-fidelity weight (matches MEDI's default; larger = closer data fit, less regularization)"
+        },
+        {
+          "name": "precond",
+          "default": 30,
+          "description": "preconditioner \u2014 susceptibility scaling outside the brain mask (Liu 2017 uses ~30 for in-vivo air)"
+        }
+      ],
+      "ci_notes": []
+    },
+    {
       "slug": "tgv",
       "name": "TGV",
       "stage": "bfr+dipole",
