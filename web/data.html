@@ -45,16 +45,114 @@
   <main class="mx-auto max-w-3xl px-6 py-10">
     <h1 class="text-3xl font-bold tracking-tight">The benchmark data</h1>
     <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">
-      Every method on the leaderboard is scored against the same in-silico phantom: the
-      <strong>Realistic In Silico Head Phantom</strong> from the QSM Reconstruction Challenge 2.0,
-      forward-simulated to a BIDS MRI acquisition with
-      <a href="https://github.com/astewartau/qsm-forward" class="text-emerald-600 hover:underline">qsm-forward</a>.
-      Because the phantom starts from known ground-truth susceptibility, every intermediate is exactly
-      known (the total field, the local field, the tissue susceptibility, and for source separation the
-      paramagnetic and diamagnetic components), so each pipeline stage can be scored on its own.
-      This page covers where the source maps come from, how to regenerate the dataset yourself, and what
-      the &chi;-separation phantom does differently.
+      QSM is an ill-posed dipole deconvolution: the kernel vanishes on two cone surfaces in k-space, so the
+      reconstruction is regulariser-dependent and different algorithms produce visibly different maps from
+      the same phase. Comparing them needs a ground-truth susceptibility map, which no in&nbsp;vivo
+      acquisition provides. This page covers why QSM-CI&rsquo;s ground truth is synthetic, how the field
+      arrived there, how to regenerate the dataset, and what the &chi;-separation phantom adds.
     </p>
+
+    <!-- ---------------------------------------------------------------- -->
+    <section class="mt-12 space-y-3">
+      <h2 class="text-2xl font-bold tracking-tight">Assessing QSM algorithms</h2>
+      <p class="text-gray-600 dark:text-gray-400 leading-relaxed">
+        No in&nbsp;vivo acquisition yields a true susceptibility map, so QSM references are all surrogates,
+        and each biases assessment differently.
+      </p>
+      <p class="text-gray-600 dark:text-gray-400 leading-relaxed">
+        <strong>In vitro</strong> phantoms (agar or aqueous solutions doped with known gadolinium or
+        iron-oxide concentrations) give a known susceptibility, and established that QSM is linear and
+        reproducible across sites; but their geometry and physics are far simpler than brain.
+        <strong>In vivo</strong>, references are surrogates: literature deep-gray-matter iron over a few ROIs,
+        or a <strong>COSMOS</strong> reconstruction
+        (<a href="https://doi.org/10.1002/mrm.21828" class="text-emerald-600 hover:underline">Liu et&nbsp;al., 2009</a>)
+        that over-determines the inversion by sampling multiple orientations, but averages anisotropic
+        susceptibility across them, biasing it as a reference for single-orientation maps.
+      </p>
+      <p class="text-gray-600 dark:text-gray-400 leading-relaxed">
+        Dipole inversion has also been assessed against numerical or physical phantoms built from
+        <strong>piecewise-constant</strong> susceptibility: geometric shapes or simplistic head models
+        (<a href="https://doi.org/10.1002/mrm.21710" class="text-emerald-600 hover:underline">de&nbsp;Rochefort et&nbsp;al., 2008</a>;
+        <a href="https://doi.org/10.1002/mrm.22334" class="text-emerald-600 hover:underline">Wharton et&nbsp;al., 2010</a>).
+        This favours TV/TGV and morphological-prior methods, which reconstruct piecewise-constant maps almost
+        by construction and so score well when the ground truth is itself piecewise-constant
+        (<a href="https://doi.org/10.1002/mrm.22595" class="text-emerald-600 hover:underline">Knoll et&nbsp;al., 2011</a>),
+        an edge that need not survive anisotropy, chemical exchange, physiological noise, flow, and
+        microstructure. A ground truth is never neutral: its texture decides which assumptions get rewarded.
+      </p>
+    </section>
+
+    <!-- ---------------------------------------------------------------- -->
+    <section class="mt-12 space-y-3">
+      <h2 class="text-2xl font-bold tracking-tight">The QSM reconstruction challenges</h2>
+      <p class="text-gray-600 dark:text-gray-400 leading-relaxed">
+        Two community challenges, run at the International Workshop on MRI Phase Contrast &amp; QSM, set out
+        to assess dipole inversion systematically on common data.
+      </p>
+      <p class="text-gray-600 dark:text-gray-400 leading-relaxed">
+        The <strong>2016 Reconstruction Challenge</strong>
+        (<a href="https://doi.org/10.1002/mrm.26830" class="text-emerald-600 hover:underline">Langkammer et&nbsp;al., 2018</a>)
+        used a single-orientation 3&nbsp;T acquisition of one healthy volunteer and took the
+        &chi;<sub>33</sub> component of a susceptibility-tensor (STI) reconstruction as the reference, hoping
+        to sidestep the orientation bias of COSMOS. Twenty-seven submissions were scored on RMSE, HFEN, SSIM
+        and regional errors. The outcome was a warning about metrics as much as algorithms: because methods
+        were tuned to minimise those errors, the winning maps were over-smoothed and lost fine structure such
+        as vessels, and the top entries had near-identical scores but visibly different appearances. A
+        follow-up analysis
+        (<a href="https://doi.org/10.1002/mrm.28185" class="text-emerald-600 hover:underline">Milovic et&nbsp;al., 2020</a>)
+        then showed the &chi;<sub>33</sub> reference itself did not match the measured phase once anisotropy,
+        microstructure, noise and residual background field were accounted for: the &ldquo;ground
+        truth&rdquo; was not one.
+      </p>
+      <p class="text-gray-600 dark:text-gray-400 leading-relaxed">
+        Those lessons pushed the <strong>QSM Reconstruction Challenge 2.0</strong> to drop in vivo references
+        entirely in favour of an <em>in silico</em> head phantom
+        (<a href="https://doi.org/10.1002/mrm.28716" class="text-emerald-600 hover:underline">Marques et&nbsp;al., 2021</a>):
+        a realistic digital brain, derived from a 0.64&nbsp;mm 7&nbsp;T multi-parametric acquisition of a
+        volunteer with an interhemispheric calcification, whose susceptibility map is known exactly and from
+        which a data-consistent gradient-echo acquisition can be forward-simulated. Deliberately, the phantom
+        builds in physiological texture and within-structure variation so it does <em>not</em> reward
+        piecewise-smooth solutions the way earlier phantoms did. The challenge itself
+        (<a href="https://doi.org/10.1002/mrm.28754" class="text-emerald-600 hover:underline">QSM Challenge&nbsp;2.0 committee, 2021</a>)
+        ran in two stages (stage&nbsp;1 with no ground truth, mimicking the clinic; stage&nbsp;2 with it
+        released for parameter tuning) and scored NRMSE variants per region alongside calcification
+        streaking and moment errors. Iterative methods with TV-based regularisation scored best, and methods
+        that used multi-echo and magnitude information beat those that did not.
+      </p>
+    </section>
+
+    <!-- ---------------------------------------------------------------- -->
+    <section class="mt-12 space-y-3">
+      <h2 class="text-2xl font-bold tracking-tight">What QSM-CI does</h2>
+      <p class="text-gray-600 dark:text-gray-400 leading-relaxed">
+        Both challenges were fixed events: a submission window, a closed field of entries, and each
+        reconstruction judged as a finished whole. What outlasts them is the more useful artefact, a public
+        phantom with a genuine, per-voxel ground truth. QSM-CI turns that ground truth into a standing
+        benchmark, forward-simulated to a BIDS acquisition with
+        <a href="https://github.com/astewartau/qsm-forward" class="text-emerald-600 hover:underline">qsm-forward</a>.
+        Because every intermediate is exactly known (the total field, the local field, the tissue
+        susceptibility, and for source separation the paramagnetic and diamagnetic components), it scores
+        each pipeline stage on its own, field-mapping, background removal and dipole inversion, rather than
+        only the end result, and it stays open: methods are submitted, rerun and ranked as they appear.
+      </p>
+      <p class="text-gray-600 dark:text-gray-400 leading-relaxed">
+        It stays synthetic, but less idealised than the challenge as it was run. Because qsm-forward
+        simulates the whole-head susceptibility, the data carries realistic background fields (from
+        air-tissue interfaces) and wrapped multi-echo phase, so the field-mapping and background-removal
+        stages genuinely have to unwrap phase and remove background fields, not just invert the dipole kernel
+        the challenges scored. What the model still leaves out is the harder physics: susceptibility is an
+        isotropic scalar (no white-matter anisotropy), there is no flow or motion, microstructure enters only
+        through the &chi;-separation compartments, noise is complex Gaussian, and the phantom derives from a
+        single subject. A QSM-CI ranking is therefore a strong controlled test, not a guarantee of in vivo
+        performance.
+      </p>
+      <p class="text-gray-600 dark:text-gray-400 leading-relaxed">
+        One inheritance from RC2 is visible in the results. The phantom deliberately gives brain tissue
+        realistic texture and within-structure variation to discourage piecewise-smooth reconstructions, yet
+        TV-based methods still lead the dipole-inversion leaderboard, as they topped every metric in RC2.
+        The rest of this page is how to regenerate the data and what the &chi;-separation variant adds.
+      </p>
+    </section>
 
     <!-- ---------------------------------------------------------------- -->
     <section class="mt-12 space-y-3">
@@ -170,81 +268,73 @@ qsm-ci run chi-sepnet \
     <section class="mt-12 space-y-4">
       <h2 class="text-2xl font-bold tracking-tight">6. What the χ-separation phantom does differently</h2>
       <p class="text-gray-600 dark:text-gray-400 leading-relaxed">
-        Two modelling choices in the χ-sep phantom are worth spelling out, because they encode
-        assumptions that directly affect what a source-separation benchmark can and cannot reward.
+        A &chi;-separation phantom is the QSM phantom plus a forward model for how paramagnetic and
+        diamagnetic sources dephase the MR signal. The Challenge&nbsp;2.0 phantom ships
+        &chi;<sub>total</sub>, R2*, R1, M0 and a tissue segmentation, but no source-separated maps and no
+        R2&prime;; the &chi;-sep phantom derives them. &chi;<sub>total</sub> is split into paramagnetic
+        (χ⁺) and diamagnetic (χ⁻) components from per-tissue reference values and the segmentation, and
+        R2&prime; follows from that split, so everything the benchmark scores against traces back to
+        the challenge <em>susceptibility</em> map, not its R2*. The forward model then builds up in two
+        layers: first the field-domain machinery that most methods need (how R2&prime; relates to R2,
+        and the relaxivity D<sub>r</sub> that sets it), then the multi-compartment magnitude that
+        signal-domain separators additionally rely on.
       </p>
 
       <div>
-        <h3 class="text-lg font-semibold">The R2&prime; relaxivity: one kernel, D<sub>r</sub> = 137 Hz/ppm</h3>
+        <h3 class="text-lg font-semibold">Relaxation: R2, R2*, and R2&prime;</h3>
         <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">
-          R2&prime; (reversible transverse relaxation) is generated from the source magnitudes with a
-          <strong>single</strong> relaxivity kernel shared by both source types:
+          The gradient-echo magnitude decays at R2* = R2 + R2&prime;. <strong>R2</strong> is the
+          <em>irreversible</em> rate (spin&ndash;spin interactions, diffusion); <strong>R2&prime;</strong> is
+          the <em>reversible</em> rate from static field inhomogeneity around susceptibility sources, which a
+          spin echo refocuses. R2&prime; is the susceptibility-driven part of the decay, and hence the
+          relaxation channel source separation draws on.
         </p>
-        <pre class="mt-2 overflow-x-auto rounded-xl bg-gray-900 p-4 text-sm text-gray-100"><code class="language-plaintext">R2′ = D_r · ( |χ⁺| + |χ⁻| ),   D_r = 137 Hz/ppm</code></pre>
         <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">
-          This is the standard χ-separation model (Shin et&nbsp;al. 2021): in the static-dephasing
-          regime the reversible relaxation depends on the <em>magnitude</em> of the field perturbation,
-          not its sign, so one kernel applies to iron and myelin alike. 137&nbsp;Hz/ppm is Shin&rsquo;s
-          empirically measured value.
-        </p>
-      </div>
-
-      <div>
-        <h3 class="text-lg font-semibold">R2, R2*, and how R2&prime; is obtained</h3>
-        <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">
-          R2&prime; is only the <em>reversible</em> (susceptibility-induced) part of transverse
-          relaxation. The GRE magnitude decays with the full R2* = R2 + R2&prime;, where R2 is the
-          <em>irreversible</em> rate. The phantom simulates a genuine R2 map from per-tissue literature
-          T2 values, so R2 and R2&prime; are modelled <strong>independently</strong> and add to the exact
-          R2* &mdash; no fixed R2*/R2&prime; ratio is assumed. The R2&prime; map itself is shipped
-          directly as a provided input (<code>r2prime.nii.gz</code>), computed as
-          D<sub>r</sub>&middot;(|χ⁺|&nbsp;+&nbsp;|χ⁻|) above.
-        </p>
-      </div>
-
-      <div>
-        <h3 class="text-lg font-semibold">Where the source maps come from</h3>
-        <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">
-          The QSM Challenge&nbsp;2.0 head phantom provides a ground-truth total susceptibility
-          (χ<sub>total</sub>), R2*, R1, M0 and a tissue segmentation &mdash; but <strong>no</strong>
-          source-separated maps and <strong>no</strong> R2&prime;. Everything the source-separation
-          benchmark scores against is <em>derived here</em>: χ<sub>total</sub> is split into
-          paramagnetic (χ⁺) and diamagnetic (χ⁻) components using per-tissue reference values and the
-          segmentation, and R2&prime; is then computed from that split as
-          D<sub>r</sub>&middot;(|χ⁺|&nbsp;+&nbsp;|χ⁻|). So χ⁺/χ⁻ and R2&prime; all trace back to the
-          challenge <em>susceptibility</em> map, not its R2*. The challenge R2* is used separately, only
-          to add realistic intra-tissue texture to the simulated R2 map.
+          The phantom simulates R2 <strong>independently</strong>, from per-tissue literature T2 values
+          (with the challenge R2* map only lending realistic intra-tissue texture), and adds it to
+          R2&prime; to reach R2*, with no fixed R2*/R2&prime; ratio assumed. The R2&prime; map is then
+          shipped directly as a provided input (<code>r2prime.nii.gz</code>). qsm-forward can instead
+          simulate a matched multi-echo spin echo (<code>--save-se</code>), whose magnitude decays with R2
+          alone (the 180&deg; pulse refocuses static dephasing), letting a method recover
+          R2&prime; = R2* &minus; R2 itself as it would from real data (Stoll,&nbsp;2025); the ground-truth
+          R2 and R2&prime; are the same either way, so this phantom simply ships R2&prime; directly and does
+          not currently include the SE.
         </p>
       </div>
 
       <div class="rounded-2xl border border-gray-200 bg-white p-5 text-sm shadow-sm dark:border-gray-800 dark:bg-gray-900">
-        <p class="font-semibold text-amber-600 dark:text-amber-400">Reviewed from the literature, deliberately <em>not</em> used here</p>
+        <p class="font-semibold text-gray-900 dark:text-gray-100">Why R2 and R2&prime; are modelled independently</p>
         <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">
-          Two options from the χ-separation forward-modelling literature were considered and left out.
-          Spelling them out makes the phantom&rsquo;s assumptions explicit.
+          &ldquo;Independently&rdquo; means R2 (from tissue T2 values) and R2&prime;
+          (D<sub>r</sub>&middot;(|χ⁺|&nbsp;+&nbsp;|χ⁻|), from the source magnitudes) are generated from
+          separate maps, so neither is a function of the other. A common shortcut in χ-sep forward models
+          is the <strong>κ approximation, R2* ≈ κ&middot;R2&prime;</strong> (κ ≈ 1.9;
+          <a href="https://doi.org/10.3390/tomography8030127" class="text-emerald-600 hover:underline">Dimov et&nbsp;al., 2022</a>;
+          adopted by Stoll&nbsp;2025): with no independent R2, it takes R2 as a fixed multiple of R2&prime;
+          (R2 = (κ&minus;1)&middot;R2&prime; ≈ 0.9&middot;R2&prime;). We avoid it: tying R2 to
+          R2&prime; by a constant makes the two collinear, so recovering R2&prime; = R2* &minus; R2 becomes
+          degenerate and unrealistically easy, and R2 carries no tissue information of its own. κ ≈ 1.9 is
+          kept only as a sanity check on the phantom&rsquo;s mean R2*/R2&prime; ratio.
         </p>
-        <ul class="mt-3 list-disc pl-5 space-y-3 text-gray-600 dark:text-gray-400 leading-relaxed">
-          <li>
-            <strong>The κ approximation, R2* ≈ κ&middot;R2&prime; (κ ≈ 1.9; Dimov et&nbsp;al. 2022),</strong>
-            as adopted in the forward model of Stoll&nbsp;(2025). When no independent R2 is available, R2*
-            can be approximated as a fixed multiple of R2&prime; (equivalently R2 = (κ&minus;1)&middot;R2&prime;
-            ≈ 0.9&middot;R2&prime;). We <strong>do not</strong> use it: tying R2 to R2&prime; by a constant
-            makes the two collinear, so recovering R2&prime; = R2* &minus; R2 becomes degenerate and
-            unrealistically easy, and R2 carries no tissue information of its own. Simulating R2
-            independently (above) keeps the separation a genuine test. κ ≈ 1.9 is retained only as a
-            <em>sanity check</em> on the phantom&rsquo;s mean R2*/R2&prime; ratio.
-          </li>
-          <li>
-            <strong>A paired spin-echo (SE) acquisition (Stoll&nbsp;2025).</strong> qsm-forward
-            <em>can</em> emit a matched multi-echo SE (<code>--save-se</code>) whose magnitude decays with
-            R2 alone &mdash; the 180&deg; refocusing pulse reverses static dephasing &mdash; so a method
-            could derive R2&prime; = R2* &minus; R2 exactly as from real data:
-            <code class="whitespace-nowrap">S_SE = M0·(1 − e^(−TR·R1))·e^(−TE·R2)</code>. This is
-            Stoll&rsquo;s main forward-model extension, but the dataset here ships the R2&prime; map
-            directly, so the SE acquisition is an <strong>available qsm-forward capability that this
-            χ-sep phantom does not currently include</strong>.
-          </li>
-        </ul>
+      </div>
+
+      <div>
+        <h3 class="text-lg font-semibold">The relaxivity D<sub>r</sub></h3>
+        <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">
+          <em>Relaxivity</em> is the constant that turns a susceptibility source into the reversible
+          relaxation it produces: how many Hz of R2&prime; you get per ppm of source.
+          &chi;-separation models it with a <strong>single</strong> kernel shared by both source types:
+        </p>
+        <pre class="mt-2 overflow-x-auto rounded-xl bg-gray-900 p-4 text-sm text-gray-100"><code class="language-plaintext">R2′ = D_r · ( |χ⁺| + |χ⁻| ),   D_r = 137 Hz/ppm</code></pre>
+        <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">
+          One kernel for both, because in the static-dephasing regime
+          (<a href="https://doi.org/10.1002/mrm.1910320610" class="text-emerald-600 hover:underline">Yablonskiy &amp; Haacke, 1994</a>)
+          reversible relaxation depends on the <em>magnitude</em> of the field perturbation, not its sign,
+          so a paramagnetic and a diamagnetic source of equal strength dephase spins equally.
+          D<sub>r</sub> = 137&nbsp;Hz/ppm is the value
+          <a href="https://doi.org/10.1016/j.neuroimage.2021.118371" class="text-emerald-600 hover:underline">Shin et&nbsp;al. (2021)</a>
+          measured, and it is the standard &chi;-separation setting.
+        </p>
       </div>
 
       <div class="rounded-2xl border border-gray-200 bg-white p-5 text-sm shadow-sm dark:border-gray-800 dark:bg-gray-900">
@@ -295,8 +385,8 @@ qsm-ci run chi-sepnet \
     <section class="mt-12 space-y-3">
       <h2 class="text-2xl font-bold tracking-tight">Citations</h2>
       <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-        If you use QSM-CI results, please cite the head phantom. Cite the source-separation references
-        for χ-sep work.
+        If you use QSM-CI results, please cite the head phantom; cite the source-separation references for
+        χ-sep work. The challenge reports and other works referenced on this page are listed below too.
       </p>
       <ul class="list-disc pl-5 space-y-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
         <li><strong>Head phantom:</strong> Marques J.P., Meineke J., Milovic C., et&nbsp;al.
@@ -305,6 +395,19 @@ qsm-ci run chi-sepnet \
           <em>Magnetic Resonance in Medicine</em> 2021;86(1):526&ndash;542.
           <a href="https://doi.org/10.1002/mrm.28716" class="text-emerald-600 hover:underline">doi:10.1002/mrm.28716</a>.
           Data: <a href="https://doi.org/10.34973/m20r-jt17" class="text-emerald-600 hover:underline">doi:10.34973/m20r-jt17</a>.</li>
+        <li><strong>QSM Reconstruction Challenge 2.0 (design &amp; results):</strong> QSM Challenge&nbsp;2.0
+          Organization Committee; Bilgic B., Langkammer C., Marques J.P., Meineke J., Milovic C.,
+          Schweser F. &ldquo;QSM reconstruction challenge 2.0: Design and report of results.&rdquo;
+          <em>Magnetic Resonance in Medicine</em> 2021;86(3):1241&ndash;1255.
+          <a href="https://doi.org/10.1002/mrm.28754" class="text-emerald-600 hover:underline">doi:10.1002/mrm.28754</a>.</li>
+        <li><strong>2016 Reconstruction Challenge (report):</strong> Langkammer C., Schweser F.,
+          Shmueli K., et&nbsp;al. &ldquo;Quantitative susceptibility mapping: Report from the 2016
+          reconstruction challenge.&rdquo; <em>Magnetic Resonance in Medicine</em> 2018;79(3):1661&ndash;1673.
+          <a href="https://doi.org/10.1002/mrm.26830" class="text-emerald-600 hover:underline">doi:10.1002/mrm.26830</a>.</li>
+        <li><strong>2016 Challenge (lessons learned):</strong> Milovic C., Tejos C., Acosta-Cabronero J.,
+          et&nbsp;al. &ldquo;The 2016 QSM Challenge: Lessons learned and considerations for a future
+          challenge design.&rdquo; <em>Magnetic Resonance in Medicine</em> 2020;84(3):1624&ndash;1637.
+          <a href="https://doi.org/10.1002/mrm.28185" class="text-emerald-600 hover:underline">doi:10.1002/mrm.28185</a>.</li>
         <li><strong>χ-separation model &amp; D<sub>r</sub>:</strong> Shin H.G., Lee J., Yun Y.H.,
           et&nbsp;al. &ldquo;χ-separation: Magnetic susceptibility source separation toward iron and
           myelin mapping in the brain.&rdquo; <em>NeuroImage</em> 2021;240:118371.
@@ -326,11 +429,32 @@ qsm-ci run chi-sepnet \
           &ldquo;WaveSep: A Flexible Wavelet-Based Approach for Source Separation in Susceptibility
           Imaging.&rdquo; <em>MLCN, MICCAI</em> 2023, Springer LNCS.
           <a href="https://doi.org/10.1007/978-3-031-44858-4_6" class="text-emerald-600 hover:underline">doi:10.1007/978-3-031-44858-4_6</a>.</li>
+        <li><strong>κ approximation (R2*/R2′ relaxometric constant):</strong> Dimov A.V., Gillen K.M.,
+          Nguyen T.D., et&nbsp;al. &ldquo;Magnetic susceptibility source separation solely from gradient echo
+          data: histological validation.&rdquo; <em>Tomography</em> 2022;8(3):1544&ndash;1551.
+          <a href="https://doi.org/10.3390/tomography8030127" class="text-emerald-600 hover:underline">doi:10.3390/tomography8030127</a>.</li>
         <li><strong>χ-separation SE forward model (available in qsm-forward):</strong> Stoll&nbsp;P.
           &ldquo;Development of a Deep Learning Framework for Iron and Myelin Mapping from Quantitative
           Susceptibility Maps.&rdquo; MSc thesis, ETH&nbsp;Zurich, 2025. Basis for qsm-forward&rsquo;s
           matched spin-echo acquisition (<code>--save-se</code>) that lets a method derive R2&prime; from
-          paired GRE/SE data &mdash; a capability this dataset does not currently ship (see §6).</li>
+          paired GRE/SE data, a capability this dataset does not currently ship (see §6).</li>
+        <li><strong>COSMOS reference:</strong> Liu T., Spincemaille P., de&nbsp;Rochefort L., Kressler B.,
+          Wang Y. &ldquo;Calculation of susceptibility through multiple orientation sampling (COSMOS).&rdquo;
+          <em>Magnetic Resonance in Medicine</em> 2009;61(1):196&ndash;204.
+          <a href="https://doi.org/10.1002/mrm.21828" class="text-emerald-600 hover:underline">doi:10.1002/mrm.21828</a>.</li>
+        <li><strong>Piecewise-constant phantom inversion:</strong> de&nbsp;Rochefort L., Brown R.,
+          Prince M.R., Wang Y. &ldquo;Quantitative MR susceptibility mapping using piece-wise constant
+          regularized inversion of the magnetic field.&rdquo;
+          <em>Magnetic Resonance in Medicine</em> 2008;60(4):1003&ndash;1009.
+          <a href="https://doi.org/10.1002/mrm.21710" class="text-emerald-600 hover:underline">doi:10.1002/mrm.21710</a>.
+          Wharton S., Sch&auml;fer A., Bowtell R. &ldquo;Susceptibility mapping in the human brain using
+          threshold-based k-space division.&rdquo;
+          <em>Magnetic Resonance in Medicine</em> 2010;63(5):1292&ndash;1304.
+          <a href="https://doi.org/10.1002/mrm.22334" class="text-emerald-600 hover:underline">doi:10.1002/mrm.22334</a>.</li>
+        <li><strong>TGV regularisation:</strong> Knoll F., Bredies K., Pock T., Stollberger R.
+          &ldquo;Second order total generalized variation (TGV) for MRI.&rdquo;
+          <em>Magnetic Resonance in Medicine</em> 2011;65(2):480&ndash;491.
+          <a href="https://doi.org/10.1002/mrm.22595" class="text-emerald-600 hover:underline">doi:10.1002/mrm.22595</a>.</li>
         <li><strong>Forward simulation:</strong>
           <a href="https://github.com/astewartau/qsm-forward" class="text-emerald-600 hover:underline">qsm-forward</a>
           (Stewart A., et&nbsp;al.).</li>

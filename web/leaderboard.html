@@ -65,7 +65,7 @@
     <template x-if="domain==='qsm' && view==='composed' && matrix.rows.length">
       <!-- On wide screens the matrix breaks out of the page's max-w-6xl to a viewport-centered,
            wider width (only this card; the tables and everything else stay at page width). -->
-      <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm xl:relative xl:left-1/2 xl:w-[92vw] xl:max-w-[110rem] xl:-translate-x-1/2">
+      <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 class="font-semibold text-gray-900">Combination matrix</h2>
@@ -79,27 +79,28 @@
         </div>
 
         <div class="mt-5 overflow-x-auto">
-          <div class="inline-grid gap-1.5" :style="`grid-template-columns: auto repeat(${matrix.cols.length}, minmax(6.5rem,1fr))`">
+          <div class="grid gap-1" :style="`grid-template-columns: auto repeat(${matrix.cols.length}, minmax(3.5rem,1fr))`">
             <template x-for="g in matrix.cells" :key="g.k">
-              <div>
+              <div style="display:contents">
+                <template x-if="g.t==='corner'"><div></div></template>
                 <template x-if="g.t==='header'">
-                  <div class="pb-1 text-center text-xs font-semibold text-gray-500 truncate" x-text="g.label"></div>
+                  <div class="pb-1 text-center text-xs font-semibold text-gray-500 truncate" style="cursor:help" :data-tip="g.label" x-text="g.label"></div>
                 </template>
                 <template x-if="g.t==='rowlabel'">
-                  <div class="flex h-14 items-center justify-end pr-3 text-xs font-semibold text-gray-500 whitespace-nowrap" x-text="g.label"></div>
+                  <div class="flex h-9 items-center justify-end pr-2 text-[11px] font-semibold text-gray-500 whitespace-nowrap" x-text="g.label"></div>
                 </template>
                 <template x-if="g.t==='cell'">
                   <button @click="go(g.run)"
                     :title="g.run.combo.bfr+' + '+g.run.combo.dipole+': '+METRICS[metric].label+': '+fmt(val(g.run,metric),metric)"
-                    class="heat-cell group relative h-14 w-full rounded-xl font-semibold text-sm shadow-sm transition hover:z-10 hover:scale-[1.06] hover:shadow-md focus:outline-none"
-                    :class="g.run.variant==='tuned' ? 'ring-2 ring-emerald-600 ring-offset-2' : 'ring-1 ring-black/5'"
+                    class="heat-cell group relative h-9 w-full rounded-md font-semibold text-xs transition hover:z-10 hover:scale-[1.08] hover:shadow-md focus:outline-none"
+                    :class="g.run.variant==='tuned' ? 'ring-2 ring-emerald-600 ring-offset-1' : 'ring-1 ring-black/5'"
                     :style="'--heat:'+heatScale(norm(val(g.run,metric)))">
                     <span x-text="fmt(val(g.run, metric), metric)"></span>
-                    <span x-show="g.run.variant==='tuned'" class="absolute -right-1.5 -top-1.5 grid h-4 w-4 place-items-center rounded-full bg-emerald-600 text-[9px] shadow" title="tuned parameters">⚙</span>
+                    <span x-show="g.run.variant==='tuned'" class="absolute -right-1 -top-1 grid h-3.5 w-3.5 place-items-center rounded-full bg-emerald-600 text-[8px] shadow" title="tuned parameters">⚙</span>
                   </button>
                 </template>
                 <template x-if="g.t==='empty'">
-                  <div class="flex h-14 w-full items-center justify-center rounded-xl border border-dashed border-gray-200 text-gray-300 text-sm">—</div>
+                  <div class="flex h-9 w-full items-center justify-center rounded-md border border-dashed border-gray-200 text-gray-300 text-xs">—</div>
                 </template>
               </div>
             </template>
@@ -114,20 +115,20 @@
               <span class="font-normal normal-case tracking-normal text-gray-400">(one step straight to a χ map)</span>
             </p>
             <div class="grid gap-x-10 gap-y-4 sm:grid-cols-2">
-              <template x-for="grp in [{stage:'bfr+dipole', label:'Background removal + dipole inversion'}, {stage:'end-to-end', label:'End-to-end'}]" :key="grp.stage">
-                <div x-show="combinedAlgos.some(r=>r.stage===grp.stage)">
+              <template x-for="grp in [{e2e:false, label:'Background removal + dipole inversion'}, {e2e:true, label:'End-to-end'}]" :key="grp.label">
+                <div x-show="combinedAlgos.some(r=>(r.stage==='end-to-end')===grp.e2e)">
                   <p class="mb-2 text-[11px] font-semibold uppercase tracking-wide text-gray-400" x-text="grp.label"></p>
-                  <div class="flex flex-col gap-1.5">
-                    <template x-for="r in combinedAlgos.filter(r=>r.stage===grp.stage)" :key="r.id">
-                      <div class="flex items-center gap-3">
-                        <div class="w-36 shrink-0 truncate pr-1 text-right text-xs font-semibold text-gray-500" x-text="r.name"></div>
+                  <div class="flex flex-col gap-1">
+                    <template x-for="r in combinedAlgos.filter(r=>(r.stage==='end-to-end')===grp.e2e)" :key="r.id">
+                      <div class="flex items-center gap-2.5">
+                        <div class="w-32 shrink-0 truncate pr-1 text-right text-[11px] font-semibold text-gray-500" x-text="r.name"></div>
                         <button @click="go(r)"
                           :title="r.name+': '+METRICS[metric].label+': '+fmt(val(r,metric),metric)+(r.variant==='tuned' ? ' (tuned parameters)' : '')"
-                          class="heat-cell group relative h-14 w-40 shrink-0 rounded-xl font-semibold text-sm shadow-sm transition hover:z-10 hover:scale-[1.06] hover:shadow-md focus:outline-none"
-                          :class="r.variant==='tuned' ? 'ring-2 ring-emerald-600 ring-offset-2' : 'ring-1 ring-black/5'"
+                          class="heat-cell group relative h-9 w-32 shrink-0 rounded-md font-semibold text-xs transition hover:z-10 hover:scale-[1.08] hover:shadow-md focus:outline-none"
+                          :class="r.variant==='tuned' ? 'ring-2 ring-emerald-600 ring-offset-1' : 'ring-1 ring-black/5'"
                           :style="'--heat:'+heatScale(norm(val(r,metric)))">
                           <span x-text="fmt(val(r, metric), metric)"></span>
-                          <span x-show="r.variant==='tuned'" class="absolute -right-1.5 -top-1.5 grid h-4 w-4 place-items-center rounded-full bg-emerald-600 text-[9px] shadow" title="tuned parameters">⚙</span>
+                          <span x-show="r.variant==='tuned'" class="absolute -right-1 -top-1 grid h-3.5 w-3.5 place-items-center rounded-full bg-emerald-600 text-[8px] shadow" title="tuned parameters">⚙</span>
                         </button>
                       </div>
                     </template>
@@ -458,7 +459,10 @@
         },
         get matrix() {
           return _cache("matrix", this.fmap + "|" + this.metric + "|" + this.runs.length, () => {
-            const rs = this.runs.filter((r) => r.mode === "composed" && r.combo && (r.combo.field_mapping || "gt") === this.fmap);
+            // Grid cells only: a composed run with BOTH a bfr and a dipole in its combo. Single-step
+            // span methods (TGV, NeXtQSM, …) are also composed and carry combo.field_mapping, but no
+            // bfr/dipole — they're shown in the combined-methods list below, not as grid cells.
+            const rs = this.runs.filter((r) => r.mode === "composed" && r.combo && r.combo.bfr && r.combo.dipole && (r.combo.field_mapping || "gt") === this.fmap);
             const bfrs = [...new Set(rs.map((r) => r.combo.bfr))];
             const dips = [...new Set(rs.map((r) => r.combo.dipole))];
             const cell = {}; rs.forEach((r) => { cell[r.combo.bfr + "|" + r.combo.dipole] = r; });
@@ -491,11 +495,20 @@
         // so they're directly comparable to full pipelines, but can't be a cell in the BFR×dipole
         // grid. Shown as a separate row-group below the matrix (composed view only).
         get combinedAlgos() {
-          return _cache("combinedAlgos", this.fmap + "|" + this.metric + "|" + this.variant + "|" + this.runs.length, () =>
-            this.pickVariant(this.runs.filter((r) => r.mode === "isolated"
-              && (r.stage === "bfr+dipole" || r.stage === "end-to-end")
-              && r.artifact === "chimap" && val(r, this.metric) != null))
-              .slice().sort((a, b) => this.norm(val(b, this.metric)) - this.norm(val(a, this.metric))));
+          // Single-step span methods, shown COMPOSED (not isolated) so they use the same upstream as
+          // the grid: a bfr+dipole span (TGV, NeXtQSM, MEDI, QSMART, AutoQSM) is run once per
+          // field-mapping and filtered to the selected one; an end-to-end span (iQSM) does its own
+          // field-mapping from phase, so it appears under every field-mapping view. Span runs are the
+          // composed chimap runs WITHOUT a bfr/dipole combo (those are the grid cells).
+          return _cache("combinedAlgos", this.fmap + "|" + this.metric + "|" + this.runs.length, () => {
+            const rs = this.runs.filter((r) => r.mode === "composed" && r.artifact === "chimap"
+              && !(r.combo && r.combo.bfr)
+              && (r.stage === "bfr+dipole" || r.stage === "field-mapping+bfr+dipole" || r.stage === "end-to-end")
+              && val(r, this.metric) != null
+              && (r.stage === "end-to-end" || (r.combo?.field_mapping || "gt") === this.fmap));
+            const by = {}; rs.forEach((r) => { by[r.slug] = r; });   // one row per method
+            return Object.values(by).sort((a, b) => this.norm(val(b, this.metric)) - this.norm(val(a, this.metric)));
+          });
         },
         norm(v) { // 0 = worst, 1 = best (respecting metric direction)
           const m = this.matrix; if (v == null || m.hi === m.lo) return 0.5;
