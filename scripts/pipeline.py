@@ -668,19 +668,55 @@ def do_dipole(task, args, gt_sources, gt, mask, lf_cache):
         return dnf(cid, combo, combo, "field-mapping+bfr+dipole", "composed", args.track, cinfo)
 
 
-def do_span(s, args, gt_sources, gt, mask):
-    """Run + score one span submission (bfr+dipole / end-to-end), returning its result row (or DNF)."""
-    idir, odir = args.work / f"cmp_{s['slug']}_in", args.work / f"cmp_{s['slug']}_out"
+def do_span(task, args, gt_sources, gt, mask, tf_sources):
+    """Run + score one span submission (bfr+dipole / end-to-end), returning its result row (or DNF).
+
+    A bfr+dipole span consumes the total field, so it is composed with a total-field SOURCE — the
+    ground truth ("gt") or a field-mapping submission's output — exactly like a BFR method. `task` is
+    (span, totalfield-source key); the run is tagged combo={field_mapping: key} and staged
+    "bfr+dipole" (gt) or "field-mapping+bfr+dipole" (a field map), so it lands under the matching
+    field-mapping on the leaderboard instead of being pinned to the ground-truth field. An end-to-end
+    span consumes phase and does its own field-mapping, so it runs once from GT (no upstream field
+    map, no combo)."""
+    s, tfk = task
+    consumes_tf = "totalfield" in s["consumes"]
+    upstream_rt, upstream_trace, src = 0.0, [], dict(gt_sources)
+    if consumes_tf:
+        tfp, tf_mask, upstream_rt, upstream_trace = tf_sources[tfk]
+        src["totalfield"], src["mask"] = tfp, tf_mask
+        stage = "bfr+dipole" if tfk == "gt" else "field-mapping+bfr+dipole"
+        combo = {"field_mapping": tfk}
+        # gt reuses the historical "{slug}-cmp" id (so a re-score overwrites the old ground-truth-field
+        # span run in place, leaving no orphan); a field-map gets its own "{fm}~{slug}-cmp" id.
+        cid = f"{s['slug']}-cmp" if tfk == "gt" else f"{tfk}~{s['slug']}-cmp"
+    else:                                       # end-to-end: from GT phase, its own field-mapping
+        stage, combo, cid = s["stage"], None, f"{s['slug']}-cmp"
+    idir, odir = args.work / f"cmp_{cid}_in", args.work / f"cmp_{cid}_out"
     try:
-        prepare_input(s["consumes"], gt_sources, idir)
+        prepare_input(s["consumes"], src, idir)
         rt = run_algo(s, idir, odir, args.runner)
-        meta = {"id": f"{s['slug']}-cmp", "slug": s["slug"], "name": s.get("name", s["slug"]),
-                "stage": s["stage"], "mode": "composed", "track": args.track, "runtime": rt}
-        return score(odir / "chimap.nii.gz", "chimap", gt, mask,
-                     args.work / f"cmp_{s['slug']}.json", meta, args.emit_volumes)
+        meta = {"id": cid, "slug": s["slug"], "name": s.get("name", s["slug"]), "stage": stage,
+                "mode": "composed", "track": args.track, "runtime": upstream_rt + rt}
+        if combo is not None:
+            meta["combo"] = combo
+        r = score(odir / "chimap.nii.gz", "chimap", gt, mask,
+                  args.work / f"cmp_{cid}.json", meta, args.emit_volumes)
+        # A field-mapping-composed span is a two-stage pipeline, so its viewer trace concatenates the
+        # field-mapping stage with the span (matching runtime_s); a gt/end-to-end span is a single run.
+        if upstream_trace:
+            _emit_composed_resources(
+                cid, upstream_trace + [(f"{s['stage']}:{s['slug']}", odir / "resources.json", rt)],
+                args.emit_volumes)
+        m = r["metrics"]
+        if r.get("status") == "DNF":
+            print(f"  composed  {cid:<34} DNF ({r.get('dnf_reason','')})")
+        else:
+            print(f"  composed  {cid:<34} chimap xsim={_fmt(m.get('xsim'))} "
+                  f"nrmse_dt={_fmt(m.get('nrmse_detrend'), '.2f')}%")
+        return r
     except Exception as e:
-        print(f"  composed  {s['slug']:<28} DNF ({e})")
-        return dnf(f"{s['slug']}-cmp", s["slug"], s["slug"], s["stage"], "composed", args.track)
+        print(f"  composed  {cid:<28} DNF ({e})")
+        return dnf(cid, s["slug"], s.get("name", s["slug"]), stage, "composed", args.track, combo)
 
 
 def run_composed(args, algos, gt_sources, gt, mask, shard_i, shard_n, runs: list) -> None:
@@ -709,8 +745,11 @@ def run_composed(args, algos, gt_sources, gt, mask, shard_i, shard_n, runs: list
             bfr, spans = [f], []
         elif "totalfield" in f["produces"]:      # a field-mapping — this map through the matrix
             fmap, spans = [f], []
-        else:                                     # a bfr+dipole / end-to-end span — run it alone
-            fmap, bfr, dipole, spans = [], [], [], [f]
+        else:                                     # a bfr+dipole / end-to-end span
+            # A bfr+dipole span consumes the total field, so still compose it with every field-mapping
+            # (plus gt); an end-to-end span runs from phase, so it has no field-mapping upstream.
+            bfr, dipole, spans = [], [], [f]
+            fmap = [a for a in algos if "totalfield" in a["produces"]] if "totalfield" in f["consumes"] else []
 
     # --shard: own each composed COLUMN = (totalfield-source, bfr) via round-robin over a stable
     # ordering. A column's bfr localfield is computed in exactly one shard (no cross-shard bfr
@@ -719,10 +758,20 @@ def run_composed(args, algos, gt_sources, gt, mask, shard_i, shard_n, runs: list
     col_owner = {(tfk, bs): idx for idx, (tfk, bs)
                  in enumerate((tfk, b["slug"]) for tfk in fm_keys for b in sorted(bfr, key=lambda x: x["slug"]))}
     owns_col = lambda tfk, bs: _owns(col_owner.get((tfk, bs), 0))
+    # bfr+dipole spans (TGV, NeXtQSM, MEDI, QSMART, …) consume the total field, so each composes with
+    # every total-field source (gt + each field-map); treat each (source, span) as its own shard column
+    # so it runs in exactly one shard and that shard runs the field-map it needs. end-to-end spans run
+    # once from GT phase.
+    tf_spans = sorted([s for s in spans if "totalfield" in s["consumes"]], key=lambda x: x["slug"])
+    e2e_spans = sorted([s for s in spans if "totalfield" not in s["consumes"]], key=lambda x: x["slug"])
+    span_owner = {(tfk, s["slug"]): idx for idx, (tfk, s)
+                  in enumerate((tfk, s) for tfk in fm_keys for s in tf_spans)}
+    owns_span = lambda tfk, ss: _owns(span_owner.get((tfk, ss), 0))
     if shard_n is not None:
         needed_fm = {tfk for (tfk, bs) in col_owner if tfk != "gt" and owns_col(tfk, bs)}
+        needed_fm |= {tfk for (tfk, ss) in span_owner if tfk != "gt" and owns_span(tfk, ss)}
         fmap = [f for f in fmap if f["slug"] in needed_fm]
-        spans = shard_partition(sorted(spans, key=lambda x: x["slug"]), args.shard)
+        e2e_spans = shard_partition(e2e_spans, args.shard)
 
     # Stage 1 — totalfield sources: the ground-truth field ("gt") plus each field-mapping
     # submission's output (run on raw inputs), so the matrix can start from raw phase.
@@ -758,8 +807,11 @@ def run_composed(args, algos, gt_sources, gt, mask, shard_i, shard_n, runs: list
     if not args.runs_out:
         flush_index(runs)
 
-    # Stage 4 — spans (bfr+dipole / end-to-end submissions), independent.
-    for r in _pmap(spans, lambda s: do_span(s, args, gt_sources, gt, mask)):
+    # Stage 4 — spans. bfr+dipole spans compose with each total-field source produced above (this
+    # shard's owned (source, span) columns only); end-to-end spans run once from GT phase.
+    span_tasks = [(s, tfk) for tfk in tf_sources for s in tf_spans if owns_span(tfk, s["slug"])]
+    span_tasks += [(s, "gt") for s in e2e_spans]
+    for r in _pmap(span_tasks, lambda t: do_span(t, args, gt_sources, gt, mask, tf_sources)):
         runs.append(r)
 
 
