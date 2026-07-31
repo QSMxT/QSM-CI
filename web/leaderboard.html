@@ -328,6 +328,8 @@
       { key: "dia_iron_leak",       label: "χ− Fe leak",      better: "lower",  f: "num",  tip: "Mean |χ−| in DGM/veins (should be ~0): iron wrongly bleeding into the diamagnetic map. Lower is better." },
       { key: "dia_leak",            label: "χ+→χ− leak",      better: "lower",  f: "num",  tip: "Whole-brain leakage: fraction of χ+ (paramagnetic/iron) signal bleeding into the χ− map. 0 = clean. Lower is better." },
       { key: "runtime_s",           label: "Runtime",         better: "lower",  f: "sec",  tip: "Wall-clock runtime." },
+      { key: "mem_peak_bytes",      label: "Peak mem",        better: "lower",  f: "bytes", tip: "Peak resident memory (max RSS) while the method runs. Lower fits smaller machines." },
+      { key: "cpu_cores_avg",       label: "Avg CPU",         better: "higher", f: "cores", tip: "Average CPU cores busy over the run: how well it parallelises. Higher = more parallel." },
     ];
     const CHISEP_COL = Object.fromEntries(CHISEP_COLS.map((c) => [c.key, c]));
 
@@ -351,9 +353,9 @@
         runs: [], registry: {}, algos: [], domain: "qsm", view: "composed", stage: "dipole", fmap: "gt",
         variant: "default", chisepSort: "avg", chisepDir: "desc",
         chisepColMenu: false, chisepCols: CHISEP_COLS,
-        chisepSelectedCols: ["avg", "para_xsim", "para_nrmse", "para_leak", "dia_xsim", "dia_nrmse", "dia_leak", "runtime_s"],
+        chisepSelectedCols: ["avg", "para_xsim", "para_nrmse", "para_leak", "dia_xsim", "dia_nrmse", "dia_leak", "runtime_s", "mem_peak_bytes", "cpu_cores_avg"],
         metric: "xsim", sortKey: "xsim", sortDir: "desc", filter: "",
-        colMenu: false, selectedCols: ["nrmse", "correlation", "xsim", "runtime_s"],
+        colMenu: false, selectedCols: ["nrmse", "correlation", "xsim", "runtime_s", "mem_peak_bytes", "cpu_cores_avg"],
         loading: true,
         // ci_notes: per-method infrastructure caveats (algorithms.json), surfaced as a ⚠ badge that
         // tooltips the notes; clicking the row opens the method's submission page with the full text.
@@ -375,7 +377,8 @@
           if (v == null) return "—";
           const f = (CHISEP_COL[key] || {}).f;
           return f === "pct" ? v.toFixed(1) + "%" : f === "num" ? v.toFixed(3)
-            : f === "sec" ? fmt(v, "runtime_s") : fmt(v, "xsim");
+            : f === "sec" ? fmt(v, "runtime_s") : f === "bytes" ? fmt(v, "mem_peak_bytes")
+            : f === "cores" ? fmt(v, "cpu_cores_avg") : fmt(v, "xsim");
         },
         // Customisable columns (mirrors the QSM METRICS picker). Selected keys, kept in catalog order.
         chisepDisplayCols() {

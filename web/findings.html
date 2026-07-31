@@ -169,6 +169,36 @@
         <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="paretoSVG"></div>
       </div>
 
+      <!-- 7b. runtime by stage, coloured by an algorithm-metadata axis -->
+      <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h3 class="font-semibold text-gray-900">Compute cost by stage — and what drives it</h3>
+            <p class="mt-0.5 max-w-2xl text-xs text-gray-500">Every isolated method's resource cost, one lane per stage. Pick the axis — wall-clock <em>runtime</em>, <em>peak memory</em>, or <em>average CPU</em> (mean cores busy, a proxy for how well it parallelises) — and colour by how it's built. On runtime the native <span style="color:#10b981" class="font-semibold">Rust</span> (QSM.rs) ports cluster fast; <span style="color:#f59e0b" class="font-semibold">MATLAB</span> toolboxes and <span style="color:#6366f1" class="font-semibold">deep-learning</span> methods sit slower and heavier. Short ticks above each lane mark the per-group median. Hover a point; click to open it.</p>
+          </div>
+          <div class="flex shrink-0 flex-wrap items-center gap-2">
+            <label class="inline-flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">measure
+              <select x-model="rtMetric" class="rounded-lg border-gray-300 text-sm py-1.5 pr-8">
+                <option value="runtime_s">Runtime</option>
+                <option value="mem_peak_bytes">Peak memory</option>
+                <option value="cpu_cores_avg">Avg CPU</option>
+              </select>
+            </label>
+            <label class="inline-flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">colour by
+              <select x-model="rtColor" class="rounded-lg border-gray-300 text-sm py-1.5 pr-8">
+                <option value="language">Language</option>
+                <option value="family">Method family</option>
+                <option value="learning">Learning</option>
+                <option value="engine">Toolbox / engine</option>
+              </select>
+            </label>
+          </div>
+        </div>
+        <div class="mt-3" x-html="runtimeLegend"></div>
+        <div class="mt-2 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="runtimeSVG"></div>
+        <p class="mt-2 text-[11px] text-gray-400">Runtime, memory and CPU are sampled on the CI runners while each method runs (learning-based methods run CPU-only, without a GPU). Absolute numbers depend on the runner, so read them as relative cost, not an absolute benchmark; the fastest sub-2s methods produce too few samples to report memory/CPU and drop from those axes.</p>
+      </div>
+
       <!-- 8. tuning gain -->
       <template x-if="tuningRows.length">
         <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
@@ -241,11 +271,27 @@
       const DL = new Set(["qsmnet","qsmnet-plus","qsmgan","xqsm","lpcnn","modl-qsm","hd-qsm","ir2qsm","iqsm","iqsm+","autoqsm","inr-qsm","modip","deepqsm"]);
       const DIRECT = new Set(["tkd","matlab-tkd","tsvd","tikhonov"]);
       const FAM = { dl: { label: "Deep learning", c: "#6366f1" }, iter: { label: "Iterative", c: "#10b981" }, direct: { label: "Direct / k-space", c: "#f59e0b" } };
+      // Colour axes for the runtime-by-stage chart. Values come from algorithms.json metadata
+      // (language / family / learning / engine); known values get a fixed colour, the rest cycle a palette.
+      const RT_AXES = {
+        language: { label: "Language", colors: { Rust: "#10b981", MATLAB: "#f59e0b", Python: "#6366f1" } },
+        family: { label: "Method family", colors: { direct: "#f59e0b", iterative: "#10b981", "deep-learning": "#6366f1", bayesian: "#ec4899" } },
+        learning: { label: "Learning", colors: { none: "#10b981", pretrained: "#6366f1", untrained: "#f59e0b" } },
+        engine: { label: "Toolbox / engine", colors: { "QSMxT / QSM.rs": "#10b981", "STI Suite": "#f59e0b", "MEDI toolbox": "#6366f1", "χ-separation toolbox": "#ec4899", "Independent": "#94a3b8" } },
+      };
+      const RT_PALETTE = ["#10b981", "#6366f1", "#f59e0b", "#ec4899", "#0ea5e9", "#ef4444", "#84cc16", "#a855f7", "#14b8a6", "#f97316", "#eab308", "#8b5cf6"];
+      // X-axis metrics for the compute-cost chart. `log` picks a log scale; `fmt` renders a value.
+      const _fmtBytes = (v) => v >= 1e9 ? (v / 1e9).toFixed(v >= 1e10 ? 0 : 1) + " GB" : Math.round(v / 1e6) + " MB";
+      const RT_METRICS = {
+        runtime_s: { label: "Runtime", log: true, fmt: (v) => fmtDuration(v), note: "lower is faster" },
+        mem_peak_bytes: { label: "Peak memory", log: true, fmt: _fmtBytes, note: "lower fits smaller machines" },
+        cpu_cores_avg: { label: "Avg CPU", log: false, fmt: (v) => v.toFixed(1) + " cores", note: "higher = more parallel" },
+      };
 
       return {
         METRICS, val, fmt,
         runs: [], algos: [], loading: true, insightMode: "mean",
-        xMet: "runtime_s", yMet: "xsim", expStage: "dipole",
+        xMet: "runtime_s", yMet: "xsim", expStage: "dipole", rtColor: "language", rtMetric: "runtime_s",
 
         async init() {
           try { this.runs = await loadRuns(); this.algos = await loadAlgos(); }
@@ -501,6 +547,72 @@
             pts.forEach((p) => {
               s += `<circle cx="${p.px}" cy="${p.py}" r="${p.pareto ? 4.5 : 3.5}" fill="${p.pareto ? "#10b981" : "#94a3b8"}" opacity="${p.pareto ? 1 : 0.5}" ${this._pt(p.slug, `${p.name} — xSIM ${p.xsim.toFixed(2)}, ${fmt(p.rt, "runtime_s")}`)}/>`;
               if (p.pareto) s += `<text x="${p.px + 7}" y="${p.py + 3}" fill="currentColor" opacity="0.85" style="font-size:10px">${E(p.name)}</text>`;
+            });
+            return s + "</svg>";
+          });
+        },
+
+        // ---- 7b. runtime by stage, coloured by an algorithm-metadata axis ----------------
+        _algoMeta(slug, axis) { const a = this.algos.find((x) => x.slug === slug); return (a && a[axis]) || "—"; },
+        _rtRuns() {  // isolated default runs carrying the selected X-metric, one per method
+          const by = {};
+          this.runs.filter((r) => r.mode === "isolated" && (r.variant || "default") === "default" && r.slug && val(r, this.rtMetric) != null)
+            .forEach((r) => { by[r.slug] = r; });
+          return Object.values(by);
+        },
+        _rtValues() { return [...new Set(this._rtRuns().map((r) => this._algoMeta(r.slug, this.rtColor)))].sort(); },
+        _rtColorMap() {  // category value -> colour (fixed for known values, palette-cycled otherwise)
+          const ax = RT_AXES[this.rtColor] || { colors: {} }, map = {}; let i = 0;
+          this._rtValues().forEach((v) => { map[v] = ax.colors[v] || RT_PALETTE[i++ % RT_PALETTE.length]; });
+          return map;
+        },
+        get runtimeLegend() {
+          return _cache("rtleg", this.rtColor + "|" + this.rtMetric + "|" + this.algos.length + "|" + this.runs.length, () => {
+            const cmap = this._rtColorMap();
+            return this._rtValues().map((v) => `<span style="display:inline-flex;align-items:center;gap:5px;margin-right:14px;margin-bottom:4px;font-size:11px"><span style="width:9px;height:9px;border-radius:50%;background:${cmap[v]};display:inline-block"></span>${this._esc(v)}</span>`).join("");
+          });
+        },
+        get runtimeSVG() {
+          return _cache("rt", this.rtColor + "|" + this.rtMetric + "|" + this.runs.length + "|" + this.algos.length, () => {
+            const E = this._esc, mk = this.rtMetric, M = RT_METRICS[mk] || RT_METRICS.runtime_s;
+            const runs = this._rtRuns();
+            if (!runs.length) return "<svg></svg>";
+            const cmap = this._rtColorMap();
+            const pts = runs.map((r) => ({ slug: r.slug, name: this.algoName(r.slug), id: r.id, stage: r.stage, x: val(r, mk), cat: this._algoMeta(r.slug, this.rtColor) }));
+            const order = ["field-mapping", "unwrap+bfr", "bfr", "dipole", "bfr+dipole", "end-to-end", "chi-separation"];
+            const groups = {}; pts.forEach((p) => (groups[p.stage] ||= []).push(p));
+            const stages = order.filter((st) => groups[st]).concat(Object.keys(groups).filter((st) => !order.includes(st)));
+            const labW = 150, padR = 20, w = 720, band = 11, rowH = 44, padT = 14;
+            // scale: log for runtime/memory, linear (from 0) for CPU cores
+            const tx = (v) => M.log ? Math.log10(v) : v;
+            const xv = pts.map((p) => p.x);
+            const x0 = M.log ? Math.min(...xv.map(Math.log10)) : 0;
+            const x1 = M.log ? Math.max(...xv.map(Math.log10)) : Math.max(...xv) * 1.04;
+            const sx = (v) => labW + (tx(v) - x0) / (x1 - x0 || 1) * (w - labW - padR);
+            const med = (a) => { const s = [...a].sort((m, n) => m - n), n = s.length; return !n ? null : n % 2 ? s[(n - 1) / 2] : (s[n / 2 - 1] + s[n / 2]) / 2; };
+            const hash = (s) => { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return h; };
+            const h = padT + stages.length * rowH + 30, axY = h - 26;
+            // x ticks: powers of ten on a log axis; evenly-spaced round values on a linear one
+            let ticks = [];
+            if (M.log) { for (let e = Math.ceil(x0); e <= Math.floor(x1); e++) ticks.push(10 ** e); }
+            else { const step = x1 <= 6 ? 1 : x1 <= 16 ? 2 : Math.ceil(x1 / 8); for (let v = 0; v <= x1 + 1e-9; v += step) ticks.push(v); }
+            let s = `<svg width="${w}" height="${h}" style="max-width:100%;height:auto">`;
+            ticks.forEach((v) => { const x = sx(v);
+              s += `<line x1="${x}" y1="${padT}" x2="${x}" y2="${axY}" stroke="currentColor" opacity="0.07"/>`;
+              s += `<text x="${x}" y="${axY + 14}" text-anchor="middle" fill="currentColor" opacity="0.5" style="font-size:10px">${E(M.fmt(v))}</text>`;
+            });
+            s += `<line x1="${labW}" y1="${axY}" x2="${w - 8}" y2="${axY}" stroke="currentColor" opacity="0.2"/>`;
+            s += `<text x="${(labW + w) / 2}" y="${h - 5}" text-anchor="middle" fill="currentColor" opacity="0.55" style="font-size:11px;font-weight:600">${E(M.label)}${M.log ? " (log scale)" : ""} · ${E(M.note)}</text>`;
+            stages.forEach((st, si) => {
+              const cy = padT + si * rowH + rowH / 2 - 2;
+              s += `<text x="8" y="${cy + 3}" fill="currentColor" opacity="0.75" style="font-size:11px;font-weight:600">${E(this.stageLabel(st))}</text>`;
+              // per-category median ticks (only where a category has ≥2 methods in this stage)
+              const bycat = {}; groups[st].forEach((p) => (bycat[p.cat] ||= []).push(p.x));
+              Object.entries(bycat).forEach(([cat, arr]) => { if (arr.length < 2) return; const mx = sx(med(arr)); s += `<line x1="${mx}" y1="${cy - band - 7}" x2="${mx}" y2="${cy - band}" stroke="${cmap[cat] || "#94a3b8"}" stroke-width="2" opacity="0.9"/>`; });
+              groups[st].forEach((p) => {
+                const y = cy + ((hash(p.slug) % 1000) / 1000 - 0.5) * 2 * band;
+                s += `<circle cx="${sx(p.x)}" cy="${y}" r="4" fill="${cmap[p.cat] || "#94a3b8"}" opacity="0.88" data-tip="${E(p.name + " — " + M.fmt(p.x) + " · " + p.cat)}"${p.id ? ` data-run="${E(p.id)}"` : ""}/>`;
+              });
             });
             return s + "</svg>";
           });
