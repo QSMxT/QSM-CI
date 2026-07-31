@@ -170,6 +170,9 @@ def concat_resources(stages: list) -> "dict | None":
         "cpu_cores": cpu_all,
         "mem_peak_bytes": peak,
         "cpu_cores_max": cpu_max,
+        # mean over the whole concatenated timeline (all stages), so composed runs summarise the same
+        # way isolated ones do — see qsm_ci.resources for the interpretation.
+        "cpu_cores_avg": (sum(cpu_all) / len(cpu_all)) if cpu_all else 0,
         "sampler": "docker-stats",
         "runner": runner or "docker",
         "stages": bounds,
@@ -226,7 +229,11 @@ def _tuned_overrides(doc: dict) -> dict:
 
 def discover_algorithms() -> list[dict]:
     algos = []
-    for d in sorted((ROOT / "algorithms").glob("*/")):
+    # QSMCI_ALGORITHMS_DIR lets a harness test point discovery at a fixture method set (tests/methods)
+    # instead of the real algorithms/ tree — so the orchestration (discover -> isolated/composed ->
+    # score -> index) can be smoke-tested end-to-end on the local runner without any real container.
+    algos_root = Path(os.environ.get("QSMCI_ALGORITHMS_DIR") or (ROOT / "algorithms"))
+    for d in sorted(algos_root.glob("*/")):
         spec = d / "algorithm.yml"
         if d.name.startswith("_") or not spec.exists():
             continue
@@ -416,11 +423,30 @@ def dnf(rid, slug, name, stage, mode, track, combo=None, variant="default"):
     return e
 
 
+def _stamp_resource_summary(run):
+    """Copy the resource summary — peak memory, avg + peak CPU — from a run's resources.json onto the
+    run row, next to runtime_s, so the leaderboard and findings figures read it directly instead of
+    fetching the full time-series. Best-effort: a run with no trace (a sub-2s run, or the local runner
+    which doesn't sample) simply leaves the fields absent, and the figure drops it from those axes."""
+    try:
+        p = ROOT / "results" / run["id"] / "resources.json"
+        if not p.exists():
+            return
+        d = json.loads(p.read_text())
+    except Exception:  # noqa: BLE001 — profiling is best-effort; never sink a run over it
+        return
+    for k in ("mem_peak_bytes", "cpu_cores_avg", "cpu_cores_max"):
+        if d.get(k):
+            run[k] = d[k]
+
+
 def flush_index(runs):
     """Merge the current runs into results/index.json (replace matching ids) and write immediately,
     so a long run's progress is visible on the leaderboard as it goes."""
     idx = ROOT / "results" / "index.json"
     idx.parent.mkdir(parents=True, exist_ok=True)
+    for r in runs:
+        _stamp_resource_summary(r)
     existing = json.loads(idx.read_text()).get("runs", []) if idx.exists() else []
     ids = {r["id"] for r in runs}
     merged = [r for r in existing if r.get("id") not in ids] + runs

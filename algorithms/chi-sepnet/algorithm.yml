@@ -1,8 +1,11 @@
 name: χ-sepnet
 slug: chi-sepnet
 stage: chi-separation
+language: Python
+family: deep-learning
+learning: pretrained
 inputs: [localfield, chimap, r2prime, mask]  # the artifacts this method actually reads (a subset of the stage's inputs)
-engine: chi-separation toolbox (SNU-LIST) — χ-sepnet, ONNX
+engine: χ-separation toolbox
 description: >
   χ-sepnet — a deep-learning χ-separation method (SNU-LIST). A 3D network maps the local field,
   χ_total and R2′ to the paramagnetic (χ+) and diamagnetic (χ−) source maps. Run here via ONNX

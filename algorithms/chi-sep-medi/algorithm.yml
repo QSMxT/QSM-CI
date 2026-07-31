@@ -1,7 +1,10 @@
 name: χ-separation (MEDI)
 slug: chi-sep-medi
 stage: chi-separation
-engine: chi-separation toolbox (SNU-LIST)
+language: MATLAB
+family: iterative
+learning: none
+engine: χ-separation toolbox
 description: >
   χ-separation (MEDI variant) — separates net susceptibility into paramagnetic (χ+, iron) and
   diamagnetic (χ−, myelin/calcium) sources using the local field, a QSM/χ_total map, and an R2' map,

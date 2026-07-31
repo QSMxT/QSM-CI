@@ -1,6 +1,10 @@
 name: iHARPERELLA (STI Suite)
 slug: matlab-sti-iharperella
 stage: unwrap+bfr
+language: MATLAB
+family: iterative
+learning: none
+engine: STI Suite
 inputs: [phase, mask, params]  # the artifacts this method actually reads (a subset of the stage's inputs)
 description: Integrated phase unwrapping + background field removal (iHARPERELLA) from STI Suite v3,
   compiled from MATLAB and run on the license-free MATLAB Runtime. Operates on wrapped multi-echo

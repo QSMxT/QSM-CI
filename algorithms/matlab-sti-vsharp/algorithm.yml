@@ -1,6 +1,10 @@
 name: V-SHARP (STI Suite)
 slug: matlab-sti-vsharp
 stage: bfr
+language: MATLAB
+family: iterative
+learning: none
+engine: STI Suite
 description: V-SHARP background field removal from STI Suite v3 (spatially-varying SMV deconvolution),
   compiled from MATLAB and run on the license-free MATLAB Runtime. Takes the total field and removes
   the background field to yield the local tissue field.

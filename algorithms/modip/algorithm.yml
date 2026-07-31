@@ -1,6 +1,10 @@
 name: MoDIP
 slug: modip
 stage: dipole
+language: Python
+family: deep-learning
+learning: untrained
+engine: Independent
 description: >
   MoDIP — model-based deep image prior for QSM dipole inversion. UNSUPERVISED / untrained: no
   pretrained weights are loaded — a small 3D U-Net (deep image prior) is optimized per-subject at

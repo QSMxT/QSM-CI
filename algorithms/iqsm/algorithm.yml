@@ -1,7 +1,10 @@
 name: iQSM
 slug: iqsm
 stage: end-to-end
-engine: iQSM (PyTorch)
+language: Python
+family: deep-learning
+learning: pretrained
+engine: Independent
 description: >
   iQSM — instant single-step QSM from raw MRI phase using Laplacian-enabled deep neural networks
   (LoT-Unet). A single deep network maps raw wrapped phase directly to susceptibility, performing

@@ -1,6 +1,9 @@
 name: L1-QSM
 slug: l1-qsm
 stage: dipole
+language: Rust
+family: iterative
+learning: none
 engine: QSMxT / QSM.rs
 description: >
   L1-norm data-fidelity QSM (PI-QSM): an L1 fidelity term with TV regularization, robust to phase inconsistencies.

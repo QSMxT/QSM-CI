@@ -40,6 +40,11 @@ def entry(meta: dict) -> dict:
         # 'chisep' (susceptibility source separation). Explicit `domain:` wins; else derived from stage.
         "domain": meta.get("domain") or ("chisep" if meta.get("stage") == "chi-separation" else "qsm"),
         "engine": meta.get("engine"),
+        # Taxonomy axes (controlled vocabularies), used by the site's figures — e.g. the findings
+        # runtime chart's colour selector. Value sets are documented in scripts/apply_metadata.py.
+        "language": meta.get("language"),   # Rust | MATLAB | Python
+        "family": meta.get("family"),       # direct | iterative | deep-learning | bayesian
+        "learning": meta.get("learning"),   # none | pretrained | untrained
         "description": (meta.get("description") or "").strip(),
         "citation": meta.get("citation"),
         "doi": meta.get("doi"),

@@ -190,7 +190,8 @@ const bfrList = () => uniq(composedRuns().map((r) => r.combo.bfr));
 const dipoleList = () => uniq(composedRuns().map((r) => r.combo.dipole));
 const findPipeline = (f, b, d) => composedRuns().find((r) =>
   (r.combo.field_mapping || "gt") === f && r.combo.bfr === b && r.combo.dipole === d);
-const fmapName = (m) => (m === "gt" ? "ground truth" : m);
+const algoName = (slug) => { const a = algos.find((x) => x.slug === slug); return (a && a.name) || slug; };
+const fmapName = (m) => (m === "gt" ? "ground truth" : algoName(m));
 
 function currentCombo() {
   if (run?.combo) return { fmap: run.combo.field_mapping || "gt", bfr: run.combo.bfr, dipole: run.combo.dipole };
@@ -229,10 +230,10 @@ function pipelinesHTML() {
   const cur = currentCombo();
   const f = filter.toLowerCase();
   const axis = (title, methods, kind) => {
-    const rows = methods.filter((m) => { const nm = kind === "fmap" ? fmapName(m) : m; return !f || nm.toLowerCase().includes(f); }).map((m) => {
+    const rows = methods.filter((m) => { const nm = kind === "fmap" ? fmapName(m) : algoName(m); return !f || nm.toLowerCase().includes(f); }).map((m) => {
       const rn = kind === "fmap" ? findPipeline(m, cur.bfr, cur.dipole)
         : kind === "bfr" ? findPipeline(cur.fmap, m, cur.dipole) : findPipeline(cur.fmap, cur.bfr, m);
-      return runItem(rn, run?.id).replace("%NAME%", kind === "fmap" ? fmapName(m) : m);
+      return runItem(rn, run?.id).replace("%NAME%", kind === "fmap" ? fmapName(m) : algoName(m));
     }).join("");
     return `<div class="mb-3"><div class="px-2.5 pt-1 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">${title}</div>${rows}</div>`;
   };
@@ -458,9 +459,12 @@ function renderChisepMetrics() {
     return (p != null && d != null) ? (p + d) / 2 : null;
   };
   const rtAcc = (r) => (r.runtime_s == null ? null : r.runtime_s);
+  const memAcc = (r) => (r.mem_peak_bytes == null ? null : r.mem_peak_bytes);
+  const cpuAcc = (r) => (r.cpu_cores_avg == null ? null : r.cpu_cores_avg);
   const num = (v, fk) => v == null ? null
     : fk === "pct" ? v.toFixed(1) + "%" : fk === "xsim" ? fmt(v, "xsim")
-    : fk === "sec" ? fmt(v, "runtime_s") : v.toFixed(3);
+    : fk === "sec" ? fmt(v, "runtime_s") : fk === "bytes" ? fmt(v, "mem_peak_bytes")
+    : fk === "cores" ? fmt(v, "cpu_cores_avg") : v.toFixed(3);
   // rows: [label, accessor, formatKey, arrow, tip]: accessor(r) yields the value for run r (so peers
   // can be ranked the same way), arrow "↑" = higher-is-better.
   const groups = [
@@ -482,7 +486,11 @@ function renderChisepMetrics() {
       ["Fe leak", mv("dia_iron_leak"), "num", "↓", "Mean |χ−| in DGM/veins (should be ~0): iron wrongly bleeding into the diamagnetic map."],
       ["χ+→χ− leak", mv("dia_leak"), "num", "↓", "Whole-brain regression slope of χ− on the χ+ ground truth: the fraction of paramagnetic signal bleeding into the diamagnetic map (0 = clean). The whole-map counterpart to the DGM iron leakage above; unlike xSIM it isn't fooled by the shared R2' common mode."],
     ]],
-    [null, [["Runtime", rtAcc, "sec", "", "Wall-clock runtime."]]],
+    ["Resources", [
+      ["Runtime", rtAcc, "sec", "↓", "Wall-clock runtime."],
+      ["Peak memory", memAcc, "bytes", "↓", "Peak resident memory (max RSS) sampled while the method runs — the RAM it needs to fit."],
+      ["Avg CPU", cpuAcc, "cores", "↑", "Average CPU cores busy over the run (CPU-time ÷ wall-time): how well it parallelises. ~1 = single-threaded."],
+    ]],
   ];
   let html = "";
   for (const [header, rows] of groups) {

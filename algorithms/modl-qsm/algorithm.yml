@@ -1,6 +1,10 @@
 name: MoDL-QSM
 slug: modl-qsm
 stage: dipole
+language: Python
+family: deep-learning
+learning: pretrained
+engine: Independent
 description: >
   MoDL-QSM — model-based deep learning for quantitative susceptibility mapping. A dipole-inversion
   network that unrolls a gradient-descent solver of the QSM forward model, alternating a learned

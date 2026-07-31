@@ -152,10 +152,15 @@ const METRICS = {
     desc: "Whole-brain regression slope of χ− on the χ+ ground truth: the fraction of paramagnetic signal bleeding into the diamagnetic map. 0 = clean; magnitude = contamination. Unlike xSIM it isn't fooled by the shared R2' common mode." },
   runtime_s:       { label: "Runtime",          unit: "s", better: "lower",  dp: 1,
     desc: "Wall-clock time to produce this output; for a combined pipeline, the sum of its field-mapping, background-removal and dipole-inversion stages. Measured on GitHub-hosted runners (≈4 vCPU, 16 GB RAM, no GPU, so learning-based methods run on CPU); treat it as relative speed, not an absolute benchmark." },
+  mem_peak_bytes:  { label: "Peak memory",       unit: "",  better: "lower",  dp: 0,
+    desc: "Peak resident memory (max RSS) sampled once per second while the method runs — the RAM it needs to fit on a machine. Measured on the CI runners; treat it as relative, not an absolute benchmark." },
+  cpu_cores_avg:   { label: "Avg CPU",           unit: " cores", better: "higher", dp: 1,
+    desc: "Average CPU cores busy over the run (CPU-time ÷ wall-time): how well the method parallelises. ~1 = single-threaded, higher = more cores used at once. A utilisation indicator, not a quality score; measured on the CI runners." },
 };
-// Metric column order for tables: the METRICS declaration order minus runtime_s (runtime is
-// appended separately as the trailing column by metricCols()).
-const PREFERRED = Object.keys(METRICS).filter((k) => k !== "runtime_s");
+// Metric column order for tables: the METRICS declaration order minus the top-level resource fields
+// (runtime / peak memory / avg CPU), which metricCols() appends as trailing columns in that order.
+const RESOURCE_COLS = ["runtime_s", "mem_peak_bytes", "cpu_cores_avg"];
+const PREFERRED = Object.keys(METRICS).filter((k) => !RESOURCE_COLS.includes(k));
 
 const STAGE_LABEL = {
   "field-mapping": "Field mapping",
@@ -164,6 +169,7 @@ const STAGE_LABEL = {
   "bfr+dipole": "Background removal + dipole inversion",
   "unwrap+bfr": "Unwrapping + background removal",
   "end-to-end": "End-to-end",
+  "chi-separation": "Source separation",
 };
 const MEDALS = ["🥇", "🥈", "🥉"];
 
@@ -230,9 +236,16 @@ function fmtDuration(v) {
   return h ? `${h}h ${m}m ${sec}s` : `${m}m ${sec}s`;
 }
 
+// Humanised byte size for peak-memory cells: 986 MB · 1.2 GB · 14 GB (1 dp under 10 GB, else 0).
+function fmtBytes(v) {
+  if (v == null || !isFinite(v)) return "—";
+  return v >= 1e9 ? (v / 1e9).toFixed(v >= 1e10 ? 0 : 1) + " GB" : Math.round(v / 1e6) + " MB";
+}
+
 function fmt(v, key) {
   if (v == null) return "—";
   if (key === "runtime_s") return fmtDuration(v);
+  if (key === "mem_peak_bytes") return fmtBytes(v);
   const m = METRICS[key] || { dp: 2, unit: "" };
   return Number(v).toFixed(m.dp) + (m.unit || "");
 }
@@ -242,7 +255,8 @@ function metricCols(runs) {
   const present = new Set();
   runs.forEach((r) => Object.entries(r.metrics || {}).forEach(([k, v]) => v != null && present.add(k)));
   const cols = PREFERRED.filter((k) => present.has(k));
-  if (runs.some((r) => r.runtime_s != null)) cols.push("runtime_s");
+  // Resource fields live at the top level (not under .metrics); append any that are present, in order.
+  RESOURCE_COLS.forEach((k) => { if (runs.some((r) => r[k] != null)) cols.push(k); });
   return cols;
 }
 
@@ -307,4 +321,4 @@ function injectChrome() {
 document.addEventListener("DOMContentLoaded", injectChrome);
 
 // Exposed for module scripts (e.g. the NiiVue viewer, which must be a module for `import`).
-window.QSM = { GH, METRICS, STAGE_LABEL, MEDALS, loadRuns, loadAlgos, loadRegistry, doiFor, val, fmt, fmtDuration, metricCols, robustRange, heatScale };
+window.QSM = { GH, METRICS, STAGE_LABEL, MEDALS, loadRuns, loadAlgos, loadRegistry, doiFor, val, fmt, fmtDuration, fmtBytes, metricCols, robustRange, heatScale };
