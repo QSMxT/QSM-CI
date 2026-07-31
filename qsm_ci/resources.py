@@ -111,6 +111,9 @@ class _ResourceSampler(threading.Thread):
                 "cpu_cores": self.cpu_cores,
                 "mem_peak_bytes": max(self.mem_bytes) if self.mem_bytes else 0,
                 "cpu_cores_max": max(self.cpu_cores) if self.cpu_cores else 0,
+                # mean cores busy over the run = CPU-time / wall-time: sustained parallel utilisation
+                # (>1 = real parallelism, ~1 = single-threaded). More telling than peak, which spikes.
+                "cpu_cores_avg": (sum(self.cpu_cores) / len(self.cpu_cores)) if self.cpu_cores else 0,
                 "sampler": "docker-stats",
                 "runner": self.engine,
             }
@@ -214,6 +217,7 @@ class _ProcResourceSampler(threading.Thread):
                 "cpu_cores": self.cpu_cores,
                 "mem_peak_bytes": max(self.mem_bytes) if self.mem_bytes else 0,
                 "cpu_cores_max": max(self.cpu_cores) if self.cpu_cores else 0,
+                "cpu_cores_avg": (sum(self.cpu_cores) / len(self.cpu_cores)) if self.cpu_cores else 0,
                 "sampler": "proc",
                 "runner": "apptainer",
             }))
