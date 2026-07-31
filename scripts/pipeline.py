@@ -345,10 +345,15 @@ def score(recon: Path, artifact: str, gt_dir: Path, mask: Path, out_json: Path, 
     mask = _valid_mask(recon, mask, out_json.parent / (out_json.stem + "_scoremask.nii.gz"))
     seg = gt_dir / "dseg.nii.gz"
     component = {"chi-para": "para", "chi-dia": "dia"}.get(artifact)  # χ-sep source for region metrics
+    # The in-vivo (2016 challenge) dataset DOES ship a dseg, but it follows a different label scheme
+    # (0–11) than the sim phantom's tissue/blood/DGM/calcification labels, so its region metrics would
+    # be meaningless. Withhold the seg for that track → the scorer's no-seg chi branch (global
+    # NRMSE/HFEN/correlation/XSIM only), which is exactly the in-vivo metric set.
+    use_seg = kind in ("chi", "chisep") and seg.exists() and meta["track"] != "invivo"
     cmd = eval_argv(sys.executable, EVAL, recon, gt_dir / ARTIFACT_FILE[artifact], kind, mask,
                     artifact, out_json, stage=meta["stage"], name=meta["name"], track=meta["track"],
                     runtime=meta.get("runtime"),
-                    seg=seg if (kind in ("chi", "chisep") and seg.exists()) else None,
+                    seg=seg if use_seg else None,
                     component=component)
     subprocess.run(cmd, check=True)
     result = json.loads(out_json.read_text())
@@ -371,6 +376,39 @@ def score(recon: Path, artifact: str, gt_dir: Path, mask: Path, out_json: Path, 
         emit_volumes(meta["id"], recon, gt_dir / ARTIFACT_FILE[artifact], raw_mask,
                      resources=res if res.exists() else None)
     return result
+
+
+def id_suffix(track: str) -> str:
+    """Run-id namespace for a track. The QSM sim track keeps the historical bare ids (`<slug>-iso`,
+    `<slug>-cmp`, …) so a re-score overwrites the existing leaderboard entry in place; every other
+    track (currently just `invivo`) appends `-<track>` so its runs live in a disjoint id space and
+    never collide with the sim entries in results/index.json."""
+    return "" if track == "sim" else f"-{track}"
+
+
+# Secondary reference for the in-vivo track: the STI χ33 map is scored by re-running the SAME dipole
+# recon through the scorer against groundtruth/chimap-sti.nii.gz, and its metrics are merged into the
+# primary (COSMOS) run under a `_sti` suffix. There is no second recon — just a second scoring pass.
+STI_REFERENCE = "chimap-sti.nii.gz"
+
+
+def score_secondary(recon: Path, gt_dir: Path, mask: Path, out_json: Path, meta: dict,
+                    ref_file: str, suffix: str) -> dict:
+    """Score `recon` against a SECONDARY ground-truth reference (`gt_dir/ref_file`) and return its
+    metrics keyed with `suffix` appended (e.g. `nrmse` -> `nrmse_sti`). Used by the in-vivo track to
+    add the STI χ33 reference alongside the primary COSMOS reference without a second recon. Returns
+    {} if the reference file is absent (secondary is optional — primary behaviour is untouched)."""
+    ref = gt_dir / ref_file
+    if not ref.exists():
+        return {}
+    kind = ARTIFACT_KIND["chimap"]
+    smask = _valid_mask(recon, mask, out_json.parent / (out_json.stem + "_scoremask.nii.gz"))
+    cmd = eval_argv(sys.executable, EVAL, recon, ref, kind, smask, "chimap", out_json,
+                    stage=meta["stage"], name=meta["name"], track=meta["track"],
+                    runtime=meta.get("runtime"))
+    subprocess.run(cmd, check=True)
+    metrics = (json.loads(out_json.read_text()).get("metrics") or {})
+    return {f"{k}{suffix}": v for k, v in metrics.items()}
 
 
 def dnf(rid, slug, name, stage, mode, track, combo=None, variant="default"):
@@ -555,9 +593,10 @@ def do_isolated(task, args, gt_sources, gt, mask):
     produced artifact — χ-separation folds its two into one), or a single DNF row on any failure —
     never raises, so _pmap can't be sunk."""
     a, variant, overrides = task
-    sfx = "" if variant == "default" else "-tuned"
-    idir = args.work / f"iso_{a['slug']}{sfx}_in"
-    odir = args.work / f"iso_{a['slug']}{sfx}_out"
+    sfx = "" if variant == "default" else "-tuned"          # variant suffix (work paths)
+    idsfx = sfx + id_suffix(args.track)                     # + track namespace (run ids)
+    idir = args.work / f"iso_{a['slug']}{idsfx}_in"
+    odir = args.work / f"iso_{a['slug']}{idsfx}_out"
     try:
         prepare_input(a["consumes"], gt_sources, idir)
         if args.smoke:
@@ -565,18 +604,26 @@ def do_isolated(task, args, gt_sources, gt, mask):
         rt = run_algo(a, idir, odir, args.runner, overrides)
         prods = a["produces"]
         if args.smoke:  # smoke: prove it runs + emits a valid output, don't score
-            return [_smoke_check(a, sfx, variant, odir, rt, args)]
+            return [_smoke_check(a, idsfx, variant, odir, rt, args)]
         if len(prods) > 1 and all(ARTIFACT_KIND.get(p) == "chisep" for p in prods):
-            return [_score_chisep(a, sfx, variant, overrides, odir, gt, mask, rt, args)]
+            return [_score_chisep(a, idsfx, variant, overrides, odir, gt, mask, rt, args)]
         out = []
         for art in prods:
-            meta = {"id": f"{a['slug']}-iso{sfx}", "slug": a["slug"], "name": a.get("name", a["slug"]),
+            meta = {"id": f"{a['slug']}-iso{idsfx}", "slug": a["slug"], "name": a.get("name", a["slug"]),
                     "stage": a["stage"], "mode": "isolated", "track": args.track, "runtime": rt,
                     "variant": variant}
             if overrides:
                 meta["params"] = overrides
             r = score(odir / ARTIFACT_FILE[art], art, gt, mask,
-                      args.work / f"iso_{a['slug']}{sfx}.json", meta, args.emit_volumes)
+                      args.work / f"iso_{a['slug']}{idsfx}.json", meta, args.emit_volumes)
+            # In-vivo track: score the SAME chimap against the secondary STI χ33 reference too, and
+            # merge its metrics under a `_sti` suffix (nrmse_sti, xsim_sti, …). COSMOS keeps the
+            # unsuffixed keys. Skipped silently if chimap-sti.nii.gz isn't shipped (sim untouched).
+            if args.track == "invivo" and art == "chimap" and r.get("status") != "DNF":
+                sti = score_secondary(odir / ARTIFACT_FILE[art], gt, mask,
+                                      args.work / f"iso_{a['slug']}{idsfx}_sti.json", meta,
+                                      STI_REFERENCE, "_sti")
+                r.setdefault("metrics", {}).update(sti)
             out.append(r)
             m = r["metrics"]
             if r.get("status") == "DNF":
@@ -587,7 +634,7 @@ def do_isolated(task, args, gt_sources, gt, mask):
         return out
     except Exception as e:  # DNF — record and continue
         print(f"  isolated  {a['slug']:<16} {variant:<8} DNF ({e})")
-        return [dnf(f"{a['slug']}-iso{sfx}", a["slug"], a["slug"], a["stage"], "isolated",
+        return [dnf(f"{a['slug']}-iso{idsfx}", a["slug"], a["slug"], a["stage"], "isolated",
                     args.track, variant=variant)]
 
 
@@ -893,6 +940,15 @@ def main() -> None:
     if args.exclude:
         drop = set(args.exclude.split(","))
         algos = [a for a in algos if a["slug"] not in drop]
+    # The in-vivo (2016 challenge) dataset ships only localfield + chimap ground truth, so ONLY the
+    # dipole stage is scorable (ppm localfield -> ppm chimap). Restrict to dipole methods and force
+    # isolated mode — there is no field-mapping/BFR GT to feed a composed matrix, so composed would
+    # only emit empty/unscorable rows.
+    if args.track == "invivo":
+        algos = [a for a in algos if a["stage"] == "dipole"]
+        if args.mode != "isolated":
+            print("[invivo] only the dipole stage is scored — forcing --mode isolated")
+            args.mode = "isolated"
     print(f"discovered {len(algos)} submissions:",
           ", ".join(f"{a['slug']}[{a['stage']}]" for a in algos))
     runs: list[dict] = []

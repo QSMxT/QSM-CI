@@ -78,6 +78,9 @@ jobs:
             echo "dataset=data/sim/scoring"    >> "$GITHUB_OUTPUT"
             echo "zipkey=osf-bids-698ac9aecae88916d1e24f69" >> "$GITHUB_OUTPUT"
           fi
+          # Dipole methods are the only stage scored on the in-vivo track, so only they get the extra
+          # invivo smoke leg below.
+          echo "is_dipole=$([ "$stage" = dipole ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
 
       - name: Cache OSF dataset zip
         uses: actions/cache@v6
@@ -101,4 +104,32 @@ jobs:
           python scripts/pipeline.py \
             --dataset "${{ steps.route.outputs.dataset }}" \
             --mode isolated --runner docker --only "${{ matrix.slug }}" --track "$TRACK" \
+            --smoke --fail-on-dnf
+
+      # ---- In-vivo (2016 challenge) smoke leg — dipole methods only --------------------------------
+      # The in-vivo track scores each dipole method (localfield -> chimap) against COSMOS + STI. It is
+      # an ADDITIONAL run of the same dipole methods (not a reroute of a disjoint set like chisep), so
+      # a changed dipole method also gets a cheap smoke on the invivo dataset here — proving it runs on
+      # that grid too — while score.yml does the real invivo scoring + leaderboard on merge. The invivo
+      # zip is pre-flattened (fetch_dataset.sh invivo just unzips it) and gated behind its own
+      # OSF_FILE_INVIVO secret + .osfcache/invivo.zip cache key.
+      - name: Cache invivo OSF zip
+        if: steps.route.outputs.is_dipole == 'true'
+        uses: actions/cache@v6
+        with:
+          path: .osfcache/invivo.zip
+          key: osf-invivo-${{ secrets.OSF_FILE_INVIVO }}
+      - name: Fetch invivo dataset
+        if: steps.route.outputs.is_dipole == 'true'
+        env:
+          OSF_TOKEN: ${{ secrets.OSF_TOKEN }}
+          OSF_FILE_INVIVO: ${{ secrets.OSF_FILE_INVIVO }}
+          OSF_ZIP: .osfcache/invivo.zip
+        run: scripts/fetch_dataset.sh invivo data/invivo/scoring
+      - name: Smoke check (in-vivo dipole)
+        if: steps.route.outputs.is_dipole == 'true'
+        run: |
+          python scripts/pipeline.py \
+            --dataset data/invivo/scoring \
+            --mode isolated --runner docker --only "${{ matrix.slug }}" --track invivo \
             --smoke --fail-on-dnf

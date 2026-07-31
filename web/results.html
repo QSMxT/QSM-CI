@@ -1,0 +1,1448 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script>
+    // Older Zenodo records link to leaderboard.html?method=<slug>; the per-algorithm page is
+    // submission.html. Keep honouring that here too, since results.html now hosts the leaderboard.
+    (function () {
+      var m = new URLSearchParams(location.search).get("method");
+      if (m) location.replace("submission.html?method=" + encodeURIComponent(m));
+    })();
+  </script>
+  <title>QSM-CI · Results</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="js/app.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.15.12/dist/cdn.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script>window.addEventListener("DOMContentLoaded",function(){document.querySelectorAll("pre code.language-bash").forEach(function(el){if(window.hljs)window.hljs.highlightElement(el);});});</script>
+  <style>
+    [x-cloak]{display:none!important}
+
+    /* ---- top-level tab bar (underline style; distinct from the pill sub-toggles) ---------- */
+    .rtabs{display:flex;flex-wrap:wrap;gap:.25rem;border-bottom:1px solid rgb(229 231 235)}
+    html.dark .rtabs{border-color:rgb(31 41 55)}
+    .rtab{position:relative;padding:.6rem .95rem;font-size:.95rem;font-weight:600;color:rgb(107 114 128);
+      background:none;border:0;cursor:pointer;transition:color .15s;white-space:nowrap}
+    .rtab:hover{color:rgb(31 41 55)}
+    html.dark .rtab{color:rgb(156 163 175)}
+    html.dark .rtab:hover{color:rgb(243 244 246)}
+    .rtab-on,.rtab-on:hover{color:rgb(5 150 105)}
+    html.dark .rtab-on,html.dark .rtab-on:hover{color:rgb(52 211 153)}
+    .rtab::after{content:"";position:absolute;left:.55rem;right:.55rem;bottom:-1px;height:2px;
+      border-radius:2px 2px 0 0;background:transparent;transition:background .15s}
+    .rtab-on::after{background:rgb(5 150 105)}
+    html.dark .rtab-on::after{background:rgb(52 211 153)}
+
+    /* ---- dataset tabs (top level; a size up from the section tabs, same underline language) ---- */
+    .dtabs{display:flex;flex-wrap:wrap;gap:.35rem;border-bottom:1px solid rgb(229 231 235)}
+    html.dark .dtabs{border-color:rgb(31 41 55)}
+    .dtab{position:relative;padding:.7rem 1.15rem;font-size:1.1rem;font-weight:700;letter-spacing:-.01em;color:rgb(107 114 128);background:none;border:0;cursor:pointer;transition:color .15s;white-space:nowrap}
+    .dtab:hover{color:rgb(17 24 39)}
+    html.dark .dtab{color:rgb(156 163 175)}
+    html.dark .dtab:hover{color:rgb(243 244 246)}
+    .dtab-on,.dtab-on:hover{color:rgb(5 150 105)}
+    html.dark .dtab-on,html.dark .dtab-on:hover{color:rgb(52 211 153)}
+    .dtab::after{content:"";position:absolute;left:.5rem;right:.5rem;bottom:-1px;height:2.5px;border-radius:2px 2px 0 0;background:transparent;transition:background .15s}
+    .dtab-on::after{background:rgb(5 150 105)}
+    html.dark .dtab-on::after{background:rgb(52 211 153)}
+
+    /* Sub-controls are labelled <select> dropdowns (View, Stage, Section, …), matching the Findings
+       explorer selectors. The one exception is the Defaults / Tuned control, kept as a segmented
+       pill toggle by request; its Tuned side tints emerald when active. */
+    .seg{display:inline-flex;padding:3px;border-radius:.75rem;background:rgb(243 244 246);font-size:.8rem;font-weight:500}
+    html.dark .seg{background:rgb(31 41 55)}
+    .seg-btn{padding:.35rem 1rem;border-radius:.5rem;color:rgb(107 114 128);background:none;border:0;cursor:pointer;transition:color .15s,background .15s,box-shadow .15s;white-space:nowrap}
+    .seg-btn:hover{color:rgb(55 65 81)}
+    html.dark .seg-btn{color:rgb(156 163 175)}
+    html.dark .seg-btn:hover{color:rgb(229 231 235)}
+    .seg-on,.seg-on:hover{background:#fff;color:rgb(17 24 39);box-shadow:0 1px 2px rgb(0 0 0/.06)}
+    html.dark .seg-on,html.dark .seg-on:hover{background:rgb(55 65 81);color:#fff;box-shadow:none}
+    .seg-on-emerald{color:rgb(4 120 87)!important}
+    html.dark .seg-on-emerald{color:rgb(52 211 153)!important}
+
+    /* Findings section sub-tabs — same underline language as the top tab bar, one size down so the
+       hierarchy still reads. */
+    .subtabs{display:flex;flex-wrap:wrap;gap:.15rem;border-bottom:1px solid rgb(229 231 235)}
+    html.dark .subtabs{border-color:rgb(31 41 55)}
+    .subtab{position:relative;padding:.5rem .7rem;font-size:.85rem;font-weight:500;color:rgb(107 114 128);background:none;border:0;cursor:pointer;transition:color .15s;white-space:nowrap}
+    .subtab:hover{color:rgb(31 41 55)}
+    html.dark .subtab{color:rgb(156 163 175)}
+    html.dark .subtab:hover{color:rgb(243 244 246)}
+    .subtab-on,.subtab-on:hover{color:rgb(5 150 105)}
+    html.dark .subtab-on,html.dark .subtab-on:hover{color:rgb(52 211 153)}
+    .subtab::after{content:"";position:absolute;left:.5rem;right:.5rem;bottom:-1px;height:2px;border-radius:2px 2px 0 0;background:transparent;transition:background .15s}
+    .subtab-on::after{background:rgb(5 150 105)}
+    html.dark .subtab-on::after{background:rgb(52 211 153)}
+
+    /* Tuned rows: faint emerald tint + left accent bar, styled per-cell because a tr outline paints
+       under the sticky first cell and doubles up between adjacent tuned rows. */
+    tr.tuned-row td{background:rgb(236 253 245/.55)}
+    tr.tuned-row td:first-child{background:rgb(245 254 249);box-shadow:inset 3px 0 0 rgb(5 150 105/.6)}
+    html.dark tr.tuned-row td{background:rgb(16 185 129/.08)}
+    html.dark tr.tuned-row td:first-child{background:rgb(17 37 40);box-shadow:inset 3px 0 0 rgb(52 211 153/.55)}
+
+    /* Combination-matrix cells (heatScale() supplies --heat; pastel wash in light, as-is in dark). */
+    .heat-cell{background:color-mix(in srgb,var(--heat) 38%,#fff);color:color-mix(in srgb,var(--heat) 55%,#1f2937)}
+    .heat-legend{background:linear-gradient(90deg,
+      color-mix(in srgb,#be6b6b 38%,#fff),color-mix(in srgb,#c49e60 38%,#fff),color-mix(in srgb,#6ea886 38%,#fff))}
+    html.dark .heat-cell{background:var(--heat);color:#fff}
+    html.dark .heat-legend{background:linear-gradient(90deg,#be6b6b,#c49e60,#6ea886)}
+
+    /* Findings: interactive marks on the x-html-injected SVG. */
+    main svg [data-tip]{cursor:pointer}
+    main svg circle[data-tip]:hover{stroke:currentColor;stroke-width:2}
+    main svg g[data-tip]:hover circle{stroke:currentColor;stroke-width:2}
+    main svg g[data-tip]:hover line{opacity:.95;stroke-width:3}
+    main svg polyline[data-tip]:hover{opacity:1;stroke-width:2.6}
+    main svg rect[data-tip]:hover{stroke:currentColor;stroke-width:1.5}
+
+    /* Info-tab prose: code blocks + inline code chips (migrated from the Data page) */
+    .info pre{border:1px solid rgba(148,163,184,.18);box-shadow:0 1px 2px rgba(0,0,0,.04)}
+    .info pre code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.8125rem;line-height:1.65}
+    .info .hljs{background:transparent;padding:0}
+    .info :not(pre) > code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.82em;padding:.13em .42em;border-radius:.375rem;background:#f1f5f9;color:#334155;border:1px solid #e2e8f0}
+    html.dark .info :not(pre) > code{background:rgba(148,163,184,.14);color:#cbd5e1;border-color:rgba(148,163,184,.20)}
+    /* Section spacing: space-y-8 isn't in the purged Tailwind build, so each section (heading + its
+       paragraphs) gets its top gap here, keeping headings tight to the content below. */
+    .info > * + *{margin-top:2rem}
+  </style>
+</head>
+<body class="font-sans text-gray-900 bg-gray-50 antialiased dark:bg-gray-950 dark:text-gray-100">
+  <header id="site-nav"></header>
+
+  <main x-data="results()" x-init="init()" class="mx-auto max-w-6xl px-6 py-10">
+    <div>
+      <h1 class="text-3xl font-bold tracking-tight">Results</h1>
+      <p class="mt-1 text-gray-600 dark:text-gray-400">Every method per stage, every full-pipeline combination, and the patterns behind the numbers.</p>
+    </div>
+
+    <!-- ===================== dataset tabs (top level) ===================== -->
+    <div class="dtabs mt-6">
+      <template x-if="hasChiSep()">
+        <button class="dtab" :class="{'dtab-on': dataset==='chisep'}" @click="setDataset('chisep')">χ-separation (2026)</button>
+      </template>
+      <button class="dtab" :class="{'dtab-on': dataset==='sim'}" @click="setDataset('sim')">In silico (2019)</button>
+      <template x-if="hasInvivo()">
+        <button class="dtab" :class="{'dtab-on': dataset==='invivo'}" @click="setDataset('invivo')">In vivo (2016)</button>
+      </template>
+    </div>
+
+    <!-- ===================== IN SILICO (2019) ===================== -->
+    <div x-show="dataset==='sim'" x-cloak>
+    <!-- section tabs -->
+    <div class="rtabs mt-3">
+      <button class="rtab" :class="{'rtab-on': tab==='info'}" @click="setTab('info')">Info</button>
+      <button class="rtab" :class="{'rtab-on': tab==='leaderboard'}" @click="setTab('leaderboard')">Leaderboard</button>
+      <button class="rtab" :class="{'rtab-on': tab==='findings'}" @click="setTab('findings')">Findings</button>
+    </div>
+
+    <!-- ===================== LEADERBOARD (tab) ===================== -->
+    <div x-show="tab==='leaderboard'" x-cloak>
+    <div class="subtabs mt-4">
+      <button class="subtab" :class="{'subtab-on': lbView==='pipelines'}" @click="setLb('pipelines')">Full pipelines</button>
+      <button class="subtab" :class="{'subtab-on': lbView==='stages'}" @click="setLb('stages')">Stages</button>
+    </div>
+
+    <!-- ===================== controls (one unified row, like Stages) ===================== -->
+    <div class="mt-6 flex flex-wrap items-center gap-3">
+      <template x-if="lbView==='pipelines'">
+        <span class="seg">
+          <button class="seg-btn" :class="{'seg-on': pipeView==='matrix'}" @click="pipeView='matrix'">Matrix</button>
+          <button class="seg-btn" :class="{'seg-on': pipeView==='table'}" @click="pipeView='table'">Leaderboard</button>
+        </span>
+      </template>
+      <template x-if="lbView==='pipelines' && fmaps().length>1">
+        <div class="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+          <span>Field mapping</span>
+          <div class="relative" @click.outside="fmapMenu=false">
+            <button @click="fmapMenu=!fmapMenu" class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+              <span x-text="fmap==='gt' ? 'ground truth' : algoName(fmap)"></span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div x-show="fmapMenu" x-cloak class="absolute left-0 z-20 mt-2 w-56 rounded-xl border border-gray-200 bg-white p-1.5 shadow-lg" style="display:none">
+              <template x-for="f in fmaps()" :key="f">
+                <button @click="fmap=f; fmapMenu=false" class="flex w-full items-center rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-gray-50" :class="fmap===f ? 'font-semibold text-emerald-700' : 'text-gray-600'" x-text="f==='gt' ? 'ground truth' : algoName(f)"></button>
+              </template>
+            </div>
+          </div>
+        </div>
+      </template>
+      <template x-if="lbView==='stages'">
+        <div class="relative" @click.outside="stageMenu=false">
+          <button @click="stageMenu=!stageMenu" class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+            <span x-text="STAGE_LABEL[stage]||stage"></span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div x-show="stageMenu" x-cloak class="absolute left-0 z-20 mt-2 w-64 rounded-xl border border-gray-200 bg-white p-1.5 shadow-lg" style="display:none">
+            <template x-for="s in stages()" :key="s">
+              <button @click="stage=s; fixSort(); stageMenu=false" class="flex w-full items-center rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-gray-50" :class="stage===s ? 'font-semibold text-emerald-700' : 'text-gray-600'" x-text="STAGE_LABEL[s]||s"></button>
+            </template>
+          </div>
+        </div>
+      </template>
+      <template x-if="lbView==='stages' && hasTuned()">
+        <span class="seg">
+          <button class="seg-btn" :class="{'seg-on': variant==='default'}" @click="variant='default'">Defaults</button>
+          <button class="seg-btn" :class="{'seg-on': variant==='tuned', 'seg-on-emerald': variant==='tuned'}" @click="variant='tuned'" data-tip="Each method's parameters optimised on the QSM-CI scoring phantom (maximising xSIM). Tuning on the scored data is a form of overfitting, and only some methods are tunable (pretrained networks aren't), so Defaults is the fair cross-method ranking.">⚙ Tuned</button>
+        </span>
+      </template>
+      <div class="grow"></div>
+      <template x-if="(lbView==='pipelines'&&pipeView==='table')||lbView==='stages'">
+        <div class="flex flex-wrap items-center gap-3">
+          <input x-model="filter" type="search" placeholder="Filter…" class="rounded-lg border-gray-300 text-sm px-3 py-1.5 w-44 focus:border-emerald-500 focus:ring-emerald-500" />
+          <div class="relative" @click.outside="colMenu=false">
+            <button @click="colMenu=!colMenu" class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+              Metrics
+              <span class="rounded bg-gray-100 px-1.5 text-xs" x-text="displayCols.length"></span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div x-show="colMenu" x-cloak class="absolute right-0 z-20 mt-2 w-56 rounded-xl border border-gray-200 bg-white p-1.5 shadow-lg" style="display:none">
+              <template x-for="c in cols" :key="c">
+                <label class="flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-sm hover:bg-gray-50 cursor-pointer">
+                  <input type="checkbox" class="accent-emerald-600" :checked="selectedCols.includes(c)" @change="toggleCol(c)" />
+                  <span x-text="METRICS[c].label" :data-tip="METRICS[c].desc"></span>
+                  <span class="ml-auto text-xs text-gray-400" x-text="METRICS[c].unit || (METRICS[c].better==='higher'?'↑':'↓')"></span>
+                </label>
+              </template>
+            </div>
+          </div>
+        </div>
+      </template>
+    </div>
+
+    <!-- ===================== MATRIX ===================== -->
+    <div x-show="lbView==='pipelines' && pipeView==='matrix'" x-cloak>
+        <template x-if="matrix.rows.length">
+          <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 class="font-semibold text-gray-900">Combination matrix</h2>
+                <p class="mt-0.5 text-xs text-gray-500">Dipole inversion <span class="text-gray-400">↓</span> × background removal <span class="text-gray-400">→</span>, chained end-to-end · best methods top-left · click a cell to inspect.</p>
+              </div>
+              <div class="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                <span>Colour by</span>
+                <div class="relative" @click.outside="metricMenu=false">
+                  <button @click="metricMenu=!metricMenu" class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+                    <span x-text="METRICS[metric].label"></span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </button>
+                  <div x-show="metricMenu" x-cloak class="absolute right-0 z-20 mt-2 w-48 rounded-xl border border-gray-200 bg-white p-1.5 shadow-lg" style="display:none">
+                    <template x-for="c in cols" :key="c">
+                      <button @click="metric=c; metricMenu=false" class="flex w-full items-center rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-gray-50" :class="metric===c ? 'font-semibold text-emerald-700' : 'text-gray-600'" x-text="METRICS[c].label"></button>
+                    </template>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-5 overflow-x-auto">
+              <div class="grid gap-1" :style="`grid-template-columns: auto repeat(${matrix.cols.length}, minmax(3.5rem,1fr))`">
+                <template x-for="g in matrix.cells" :key="g.k">
+                  <div style="display:contents">
+                    <template x-if="g.t==='corner'"><div></div></template>
+                    <template x-if="g.t==='header'">
+                      <div class="pb-1 text-center text-xs font-semibold text-gray-500 truncate" style="cursor:help" :data-tip="g.label" x-text="g.label"></div>
+                    </template>
+                    <template x-if="g.t==='rowlabel'">
+                      <div class="flex h-9 items-center justify-end pr-2 text-[11px] font-semibold text-gray-500 whitespace-nowrap" x-text="g.label"></div>
+                    </template>
+                    <template x-if="g.t==='cell'">
+                      <button @click="go(g.run)"
+                        :title="g.run.combo.bfr+' + '+g.run.combo.dipole+': '+METRICS[metric].label+': '+fmt(val(g.run,metric),metric)"
+                        class="heat-cell group relative h-9 w-full rounded-md font-semibold text-xs transition hover:z-10 hover:scale-[1.08] hover:shadow-md focus:outline-none"
+                        :class="g.run.variant==='tuned' ? 'ring-2 ring-emerald-600 ring-offset-1' : 'ring-1 ring-black/5'"
+                        :style="'--heat:'+heatScale(norm(val(g.run,metric)))">
+                        <span x-text="fmt(val(g.run, metric), metric)"></span>
+                        <span x-show="g.run.variant==='tuned'" class="absolute -right-1 -top-1 grid h-3.5 w-3.5 place-items-center rounded-full bg-emerald-600 text-[8px] shadow" title="tuned parameters">⚙</span>
+                      </button>
+                    </template>
+                    <template x-if="g.t==='empty'">
+                      <div class="flex h-9 w-full items-center justify-center rounded-md border border-dashed border-gray-200 text-gray-300 text-xs">—</div>
+                    </template>
+                  </div>
+                </template>
+              </div>
+            </div>
+
+            <!-- combined single-method algorithms (span BFR + dipole in one step; not grid cells) -->
+            <template x-if="combinedAlgos.length">
+              <div class="mt-6 border-t border-gray-100 pt-5">
+                <p class="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                  Combined single-method algorithms
+                  <span class="font-normal normal-case tracking-normal text-gray-400">(one step straight to a χ map)</span>
+                </p>
+                <div class="grid gap-x-10 gap-y-4 sm:grid-cols-2">
+                  <template x-for="grp in [{e2e:false, label:'Background removal + dipole inversion'}, {e2e:true, label:'End-to-end'}]" :key="grp.label">
+                    <div x-show="combinedAlgos.some(r=>(r.stage==='end-to-end')===grp.e2e)">
+                      <p class="mb-2 text-[11px] font-semibold uppercase tracking-wide text-gray-400" x-text="grp.label"></p>
+                      <div class="flex flex-col gap-1">
+                        <template x-for="r in combinedAlgos.filter(r=>(r.stage==='end-to-end')===grp.e2e)" :key="r.id">
+                          <div class="flex items-center gap-2.5">
+                            <div class="w-32 shrink-0 truncate pr-1 text-right text-[11px] font-semibold text-gray-500" x-text="r.name"></div>
+                            <button @click="go(r)"
+                              :title="r.name+': '+METRICS[metric].label+': '+fmt(val(r,metric),metric)+(r.variant==='tuned' ? ' (tuned parameters)' : '')"
+                              class="heat-cell group relative h-9 w-32 shrink-0 rounded-md font-semibold text-xs transition hover:z-10 hover:scale-[1.08] hover:shadow-md focus:outline-none"
+                              :class="r.variant==='tuned' ? 'ring-2 ring-emerald-600 ring-offset-1' : 'ring-1 ring-black/5'"
+                              :style="'--heat:'+heatScale(norm(val(r,metric)))">
+                              <span x-text="fmt(val(r, metric), metric)"></span>
+                              <span x-show="r.variant==='tuned'" class="absolute -right-1 -top-1 grid h-3.5 w-3.5 place-items-center rounded-full bg-emerald-600 text-[8px] shadow" title="tuned parameters">⚙</span>
+                            </button>
+                          </div>
+                        </template>
+                      </div>
+                    </div>
+                  </template>
+                </div>
+              </div>
+            </template>
+
+            <!-- legend -->
+            <div class="mt-5 flex items-center gap-3 text-xs text-gray-500">
+              <span x-text="(METRICS[metric].better==='higher'?'worse':'better')"></span>
+              <div class="heat-legend h-2.5 w-40 rounded-full ring-1 ring-inset ring-black/5"></div>
+              <span x-text="(METRICS[metric].better==='higher'?'better':'worse')"></span>
+              <span class="ml-2 tabular-nums" x-text="'range '+fmt(matrix.lo,metric)+' – '+fmt(matrix.hi,metric)"></span>
+            </div>
+          </div>
+        </template>
+        <p x-show="!loading && !matrix.rows.length" x-cloak class="mt-6 rounded-2xl border border-gray-200 bg-white px-5 py-10 text-center text-gray-400 shadow-sm">No pipeline combinations for this field mapping yet.</p>
+      </div>
+    <!-- ===================== TABLE (Leaderboard sub-view + Stages) ===================== -->
+    <div x-show="(lbView==='pipelines'&&pipeView==='table')||lbView==='stages'" x-cloak>
+
+      <!-- table -->
+      <div class="mt-4 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+        <div class="overflow-x-auto" x-show="!loading" x-cloak>
+          <table class="w-full text-sm whitespace-nowrap">
+            <thead class="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
+              <tr>
+                <th class="px-5 py-3 text-left font-medium sticky left-0 bg-gray-50" x-text="view==='composed' ? 'Pipeline' : 'Algorithm'"></th>
+                <template x-for="c in displayCols" :key="c">
+                  <th @click="sort(c)" class="px-4 py-3 text-right font-medium cursor-pointer select-none hover:text-gray-800 dark:hover:text-gray-100">
+                    <span x-text="METRICS[c].label" :data-tip="METRICS[c].desc"></span>
+                    <span x-show="sortKey===c" x-text="sortDir==='asc' ? '↑' : '↓'"></span>
+                  </th>
+                </template>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <template x-for="(r, i) in rows" :key="r.id">
+                <tr @click="go(r)" class="group cursor-pointer" :class="(r.status==='DNF' ? 'opacity-50 ' : '') + (r.variant==='tuned' ? 'tuned-row' : '')">
+                  <td class="px-5 py-3 text-left font-medium text-gray-900 sticky left-0 bg-white group-hover:bg-emerald-50/40">
+                    <span class="mr-1.5 inline-block w-5 text-center" x-text="medal(i)"></span>
+                    <span x-text="r.name"></span>
+                    <template x-if="doi(r)">
+                      <a :href="doi(r).url" @click.stop target="_blank" rel="noopener"
+                         class="ml-2 rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 hover:bg-emerald-100"
+                         :title="'Submission DOI (Zenodo v' + doi(r).version + ')'">DOI</a>
+                    </template>
+                    <span x-show="r.status==='DNF'" class="ml-2 rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold text-gray-500">DNF</span>
+                    <span x-show="r.variant==='tuned'" class="ml-2 rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-600/25" title="Parameters tuned on the scoring phantom">⚙ tuned</span>
+                    <span x-show="ciNotes(r.slug).length" class="ml-2 cursor-help rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700 ring-1 ring-inset ring-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300" :data-tip="ciNotes(r.slug).join('  •  ')">⚠ note</span>
+                  </td>
+                  <template x-for="c in displayCols" :key="c">
+                    <td class="px-4 py-3 text-right tabular-nums group-hover:bg-emerald-50/40" :class="c===sortKey ? 'font-semibold text-gray-900' : 'text-gray-600'" x-text="fmt(val(r,c), c)"></td>
+                  </template>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+        <div x-show="loading" x-cloak class="px-5 py-10 flex items-center justify-center gap-3 text-gray-400">
+          <svg class="animate-spin h-5 w-5 text-emerald-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+          </svg>
+          <span>Loading results…</span>
+        </div>
+        <p x-show="!loading && rows.length===0" x-cloak class="px-5 py-10 text-center text-gray-400">No results for this view yet.</p>
+      </div>
+    </div>
+    </div><!-- /Leaderboard -->
+
+    <!-- ===================== FINDINGS ===================== -->
+    <section x-show="tab==='findings'" x-cloak>
+      <div class="subtabs mt-4">
+        <button class="subtab" :class="{'subtab-on': findView==='pipelines'}" @click="findView='pipelines'">Pipeline</button>
+        <button class="subtab" :class="{'subtab-on': findView==='metrics'}" @click="findView='metrics'">Metric</button>
+        <button class="subtab" :class="{'subtab-on': findView==='speed'}" @click="findView='speed'">Cost &amp; tuning</button>
+        <button class="subtab" :class="{'subtab-on': findView==='explore'}" @click="findView='explore'">Explore</button>
+      </div>
+      <p class="mt-5 max-w-3xl text-gray-600 dark:text-gray-400 leading-relaxed">
+        Patterns the leaderboard tables don't surface, computed live from the same results. The recurring
+        lesson: a method's standing depends heavily on <em>what</em> you score, and on the pipeline it sits
+        in, not just on a single number.
+      </p>
+
+      <div x-show="loading" x-cloak class="mt-8 flex items-center gap-3 text-gray-400">
+        <svg class="animate-spin h-5 w-5 text-emerald-500" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+        <span>Loading results…</span>
+      </div>
+
+      <div x-show="!loading" x-cloak>
+        <!-- ---- Pipelines & composition ---- -->
+        <div x-show="findView==='pipelines'">
+          <div class="mt-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h3 class="font-semibold text-gray-900">The isolated ranking misleads about real pipelines</h3>
+                <p class="mt-0.5 max-w-2xl text-xs text-gray-500">Dipole inversion ranked on the clean ground-truth field (left) versus chained after real background removal (right), by NRMSE, best at top. <span style="color:#10b981" class="font-semibold">Green</span> rises when composed (robust to upstream error); <span style="color:#e11d48" class="font-semibold">red</span> falls. TV-family methods top the clean ranking, then collapse; several networks climb.</p>
+              </div>
+              <label class="inline-flex shrink-0 items-center gap-2 text-xs text-gray-500" data-tip="How each dipole method is summarised across its background-removal partners: the mean (rewards robustness) or its single best pairing (fairest per method).">Summarise by
+                <select x-model="insightMode" class="rounded-lg border-gray-300 text-xs py-1 pr-7">
+                  <option value="mean">mean over BFRs</option>
+                  <option value="best">best pairing</option>
+                </select>
+              </label>
+            </div>
+            <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="slopeSVG"></div>
+          </div>
+
+          <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+            <h3 class="font-semibold text-gray-900">Accurate but fragile, or reliable but modest</h3>
+            <p class="mt-0.5 max-w-2xl text-xs text-gray-500">Each dipole method by its mean NRMSE across background-removal partners (x) versus how much that error <em>varies</em> between partners (y). Bottom-left is the sweet spot: accurate <em>and</em> consistent. Iterative methods lead on average but scatter wildly with a poor upstream stage; networks are dull but dependable.</p>
+            <div class="mt-2" x-html="familyLegend"></div>
+            <div class="mt-2 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="reliabilitySVG"></div>
+          </div>
+
+          <template x-if="pipelineFacts">
+            <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+              <h3 class="font-semibold text-gray-900">You can't build the best pipeline greedily</h3>
+              <p class="mt-0.5 max-w-2xl text-xs text-gray-500">Picking the strongest method at each stage independently does <em>not</em> give the best end-to-end pipeline: stages interact. The best full pipeline beats the greedy per-stage choice by <span class="font-semibold" x-text="pipelineFacts.deltaPct+'%'"></span> NRMSE.</p>
+              <div class="mt-4 space-y-3">
+                <template x-for="row in [{k:'optimal',lab:'Best full pipeline',c:'#10b981'},{k:'greedy',lab:'Greedy (best method per stage)',c:'#e11d48'}]" :key="row.k">
+                  <div>
+                    <div class="mb-1 flex items-center justify-between text-xs">
+                      <span class="font-semibold" x-text="row.lab"></span>
+                      <span class="tabular-nums text-gray-500"><span x-text="fmt(pipelineFacts[row.k].nrmse,'nrmse')"></span> NRMSE</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <div class="flex flex-wrap gap-1.5 text-[11px]">
+                        <span class="rounded bg-gray-100 px-2 py-0.5 font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-300" x-text="disp(pipelineFacts[row.k].fm)"></span>
+                        <span class="text-gray-300">→</span>
+                        <span class="rounded bg-gray-100 px-2 py-0.5 font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-300" x-text="disp(pipelineFacts[row.k].bfr)"></span>
+                        <span class="text-gray-300">→</span>
+                        <span class="rounded bg-gray-100 px-2 py-0.5 font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-300" x-text="disp(pipelineFacts[row.k].dipole)"></span>
+                      </div>
+                    </div>
+                    <div class="mt-1.5 h-2.5 w-full rounded-full bg-gray-100 dark:bg-gray-800">
+                      <div class="h-2.5 rounded-full" :style="`width:${Math.min(100,pipelineFacts[row.k].nrmse/120*100)}%;background:${row.c}`"></div>
+                    </div>
+                  </div>
+                </template>
+              </div>
+              <p class="mt-5 mb-2 text-[11px] font-semibold uppercase tracking-wide text-gray-400">Top pipelines (of <span x-text="pipelineFacts.total"></span>)</p>
+              <div class="overflow-x-auto">
+                <table class="w-full text-xs">
+                  <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                    <template x-for="(p,i) in pipelineFacts.top" :key="i">
+                      <tr>
+                        <td class="py-1.5 pr-2 text-gray-400 tabular-nums" x-text="i+1"></td>
+                        <td class="py-1.5 pr-2"><span class="rounded bg-gray-100 px-1.5 py-0.5 font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-300" x-text="disp(p.fm)"></span></td>
+                        <td class="py-1.5 pr-2"><span class="rounded bg-gray-100 px-1.5 py-0.5 font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-300" x-text="disp(p.bfr)"></span></td>
+                        <td class="py-1.5 pr-2"><span class="rounded bg-gray-100 px-1.5 py-0.5 font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-300" x-text="disp(p.dipole)"></span></td>
+                        <td class="py-1.5 text-right tabular-nums font-semibold text-gray-700 dark:text-gray-200" x-text="fmt(p.nrmse,'nrmse')"></td>
+                      </tr>
+                    </template>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </template>
+
+          <template x-if="stageImportance">
+            <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+              <h3 class="font-semibold text-gray-900">Which stage decides your result?</h3>
+              <p class="mt-0.5 max-w-2xl text-xs text-gray-500">Share of full-pipeline NRMSE variance explained by the choice at each stage, across every pipeline. Background removal dominates: it swings the final error far more than the dipole-inversion method the field usually focuses on.</p>
+              <div class="mt-4 space-y-3">
+                <template x-for="st in stageImportance" :key="st.f">
+                  <div>
+                    <div class="mb-1 flex items-center justify-between text-xs">
+                      <span class="font-semibold" x-text="st.lab"></span>
+                      <span class="tabular-nums text-gray-500"><span class="font-semibold text-gray-700 dark:text-gray-200" x-text="st.eta.toFixed(1)+'%'"></span> of variance</span>
+                    </div>
+                    <div class="h-3 w-full rounded-full bg-gray-100 dark:bg-gray-800">
+                      <div class="h-3 rounded-full" :style="`width:${Math.max(1,st.eta)}%;background:${st.f==='bfr'?'#e11d48':st.f==='dipole'?'#f59e0b':'#10b981'}`"></div>
+                    </div>
+                    <p class="mt-1 text-[11px] text-gray-400">best <span class="text-gray-500 dark:text-gray-400" x-text="st.best.name"></span> (<span x-text="fmt(st.best.val,'nrmse')"></span>) · worst <span class="text-gray-500 dark:text-gray-400" x-text="st.worst.name"></span> (<span x-text="fmt(st.worst.val,'nrmse')"></span>)</p>
+                  </div>
+                </template>
+              </div>
+              <p class="mt-3 text-[11px] text-gray-400">Caveat: one pathological background-removal method inflates that stage's spread; the ordering holds without it.</p>
+            </div>
+          </template>
+        </div>
+
+        <!-- ---- Different metrics, different winners ---- -->
+        <div x-show="findView==='metrics'">
+          <div class="mt-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+            <h3 class="font-semibold text-gray-900">The best method depends on what you measure</h3>
+            <p class="mt-0.5 max-w-2xl text-xs text-gray-500">Isolated dipole methods across five metrics, each normalised so <em>higher is better</em>. Grey lines are all methods; the coloured lines are the winner of a given axis, showing they lose elsewhere: the global-NRMSE / xSIM leader is among the <em>worst</em> at calcification, and the fast direct methods that under-quantify iron.</p>
+            <div class="mt-2 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="parallelSVG"></div>
+          </div>
+
+          <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+            <h3 class="font-semibold text-gray-900">Where the error lives</h3>
+            <p class="mt-0.5 max-w-2xl text-xs text-gray-500">Isolated dipole error by region and artefact (rows sorted by overall NRMSE). <span style="color:#6ea886" class="font-semibold">Green</span> is good, <span style="color:#be6b6b" class="font-semibold">red</span> is poor, coloured within each column. Venous blood is universally hardest; the calcification columns reshuffle the ranking entirely.</p>
+            <div class="mt-3 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="roiHeatSVG"></div>
+          </div>
+
+          <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+            <h3 class="font-semibold text-gray-900">Which metrics are redundant</h3>
+            <p class="mt-0.5 max-w-2xl text-xs text-gray-500">Rank agreement (Spearman ρ) between metrics over the isolated dipole methods, sign-aligned so +1 means they reward the same methods. NRMSE, detrended NRMSE and correlation are near-interchangeable; DGM linearity, calcification and runtime are their own axes, so a single headline number can't stand in for them.</p>
+            <div class="mt-3 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="corrSVG"></div>
+          </div>
+        </div>
+
+        <!-- ---- Speed & tuning ---- -->
+        <div x-show="findView==='speed'">
+          <div class="mt-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+            <h3 class="font-semibold text-gray-900">Accuracy vs compute</h3>
+            <p class="mt-0.5 max-w-2xl text-xs text-gray-500">Isolated dipole inversion: structural similarity (xSIM, higher is better) against wall-clock runtime on a log scale. <span style="color:#10b981" class="font-semibold">Green</span> points are Pareto-optimal (nothing is both faster and more accurate); grey points are dominated. Some methods cost minutes for no accuracy gain.</p>
+            <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="paretoSVG"></div>
+          </div>
+
+          <template x-if="tuningRows.length">
+            <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+              <h3 class="font-semibold text-gray-900">What tuning buys</h3>
+              <p class="mt-0.5 max-w-2xl text-xs text-gray-500">Isolated dipole NRMSE at default parameters (grey) versus tuned on the scoring phantom (green). Only a handful of methods are tunable (pretrained networks aren't), which is why <em>defaults</em> is the fair cross-method ranking. Tuning on the scored data is a mild form of overfitting.</p>
+              <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="tuningSVG"></div>
+            </div>
+          </template>
+        </div>
+
+        <!-- ---- Explore ---- -->
+        <div x-show="findView==='explore'">
+          <div class="mt-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+            <h3 class="font-semibold text-gray-900">Build your own comparison</h3>
+            <p class="mt-0.5 max-w-2xl text-xs text-gray-500">Plot any two metrics against each other for any isolated stage. Points are methods, coloured by family; hover to identify, click to open a method. Runtime uses a log scale.</p>
+            <div class="mt-3 flex flex-wrap items-center gap-3 text-sm">
+              <label class="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400">Stage
+                <select x-model="expStage" @change="fixExpMetrics()" class="rounded-lg border-gray-300 text-sm py-1.5 pr-8">
+                  <template x-for="st in explorerStages()" :key="st"><option :value="st" x-text="stageLabel(st)"></option></template>
+                </select>
+              </label>
+              <label class="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400">X axis
+                <select x-model="xMet" class="rounded-lg border-gray-300 text-sm py-1.5 pr-8">
+                  <template x-for="m in explorerMetrics()" :key="'x'+m"><option :value="m" x-text="metLabel(m)"></option></template>
+                </select>
+              </label>
+              <label class="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400">Y axis
+                <select x-model="yMet" class="rounded-lg border-gray-300 text-sm py-1.5 pr-8">
+                  <template x-for="m in explorerMetrics()" :key="'y'+m"><option :value="m" x-text="metLabel(m)"></option></template>
+                </select>
+              </label>
+            </div>
+            <div class="mt-3" x-html="familyLegend"></div>
+            <div class="mt-2 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="explorerSVG"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- In silico · Info -->
+    <section x-show="tab==='info'" x-cloak class="info mt-6 space-y-8">
+      <div>
+        <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">In silico &middot; QSM Challenge 2.0 (2019)</h2>
+        <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">The main dataset is the QSM Reconstruction Challenge 2.0 in-silico head phantom, forward-simulated to a BIDS multi-echo acquisition with <a href="https://github.com/astewartau/qsm-forward" class="text-emerald-600 hover:underline">qsm-forward</a>. Its per-voxel susceptibility is known exactly, so QSM-CI scores each pipeline stage on its own (field mapping, background removal, dipole inversion) rather than only the final map. It backs the Full&nbsp;pipelines, Stages and Findings views.</p>
+      </div>
+      <div>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Why a synthetic ground truth</h3>
+        <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">QSM is an ill-posed dipole deconvolution, so different algorithms produce visibly different maps from the same phase. Judging them needs a true susceptibility map, which no in vivo acquisition provides, so every in vivo reference is a surrogate that biases the comparison: a COSMOS reconstruction (<a href="https://doi.org/10.1002/mrm.21828" class="text-emerald-600 hover:underline">Liu et&nbsp;al., 2009</a>) averages anisotropic susceptibility across orientations, and simple piecewise-constant phantoms (<a href="https://doi.org/10.1002/mrm.21710" class="text-emerald-600 hover:underline">de&nbsp;Rochefort, 2008</a>; <a href="https://doi.org/10.1002/mrm.22334" class="text-emerald-600 hover:underline">Wharton, 2010</a>) flatter the TV/TGV methods that reconstruct piecewise-constant maps by construction (<a href="https://doi.org/10.1002/mrm.22595" class="text-emerald-600 hover:underline">Knoll, 2011</a>). A ground truth is never neutral; its texture decides which assumptions get rewarded.</p>
+        <p class="mt-4 text-gray-600 dark:text-gray-400 leading-relaxed">Challenge&nbsp;2.0 (<a href="https://doi.org/10.1002/mrm.28716" class="text-emerald-600 hover:underline">Marques et&nbsp;al., 2021</a>) answered this with an in-silico head phantom: a realistic digital brain from a 0.64&nbsp;mm 7&nbsp;T acquisition, with an interhemispheric calcification, whose susceptibility is known exactly and from which a data-consistent gradient-echo acquisition is forward-simulated. It deliberately carries physiological texture so it does not reward piecewise-smooth solutions the way earlier phantoms did.</p>
+      </div>
+      <div>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">What QSM-CI scores, and what it leaves out</h3>
+        <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">Because the total field, local field and tissue susceptibility are all known, QSM-CI scores each stage independently and reruns methods as they appear. The simulation carries realistic background fields from air/tissue interfaces and wrapped multi-echo phase, so field mapping and background removal genuinely have work to do, not just dipole inversion.</p>
+        <p class="mt-4 text-gray-600 dark:text-gray-400 leading-relaxed">It stays idealised in known ways: susceptibility is an isotropic scalar (no white-matter anisotropy), there is no flow or motion, microstructure enters only through the &chi;-separation compartments, noise is complex Gaussian, and the phantom comes from a single subject. A QSM-CI ranking is a strong controlled test, not a guarantee of in vivo performance.</p>
+      </div>
+      <div>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Reproduce the phantom</h3>
+        <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">qsm-forward simulates the acquisition from the Challenge&nbsp;2.0 tissue-property maps. Request those from the Donders repository (<a href="https://data.ru.nl/collections/di/dccn/DSC_3015069.02_542" class="text-emerald-600 hover:underline break-words">data.ru.nl/&hellip;/DSC_3015069.02_542</a>, DOI <a href="https://doi.org/10.34973/m20r-jt17" class="text-emerald-600 hover:underline">10.34973/m20r-jt17</a>), then generate:</p>
+        <pre class="mt-3 overflow-x-auto rounded-xl bg-gray-900 p-4 text-sm text-gray-100"><code class="language-bash">pip install qsm-forward
+# 7 T, 4 echoes, 1 mm, fixed seed: matches the scored phantom
+qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
+        <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed"><code>--save-field</code> emits the total field (<code>fieldmap</code>) and local field (<code>fieldmap-local</code>) that the isolated background-removal and dipole stages are scored against. Acquisition parameters (<code>--B0</code>, <code>--TEs</code>, <code>--voxel-size</code>, <code>--peak-snr</code>, <code>--random-seed</code>) default to the challenge phantom.</p>
+      </div>
+      <div>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Citations</h3>
+        <ul class="mt-2 list-disc pl-5 space-y-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+          <li><strong>Head phantom:</strong> Marques J.P., Meineke J., Milovic C., et&nbsp;al. &ldquo;QSM reconstruction challenge 2.0: A realistic in silico head phantom for MRI data simulation and evaluation of susceptibility mapping procedures.&rdquo; <em>Magn Reson Med</em> 2021;86(1):526&ndash;542. <a href="https://doi.org/10.1002/mrm.28716" class="text-emerald-600 hover:underline">doi:10.1002/mrm.28716</a>. Data: <a href="https://doi.org/10.34973/m20r-jt17" class="text-emerald-600 hover:underline">doi:10.34973/m20r-jt17</a>.</li>
+          <li><strong>Challenge 2.0 design &amp; results:</strong> QSM Challenge&nbsp;2.0 Organization Committee. &ldquo;QSM reconstruction challenge 2.0: Design and report of results.&rdquo; <em>Magn Reson Med</em> 2021;86(3):1241&ndash;1255. <a href="https://doi.org/10.1002/mrm.28754" class="text-emerald-600 hover:underline">doi:10.1002/mrm.28754</a>.</li>
+          <li><strong>COSMOS reference:</strong> Liu T., Spincemaille P., de&nbsp;Rochefort L., et&nbsp;al. &ldquo;Calculation of susceptibility through multiple orientation sampling (COSMOS).&rdquo; <em>Magn Reson Med</em> 2009;61(1):196&ndash;204. <a href="https://doi.org/10.1002/mrm.21828" class="text-emerald-600 hover:underline">doi:10.1002/mrm.21828</a>.</li>
+          <li><strong>Piecewise-constant inversion:</strong> de&nbsp;Rochefort L., et&nbsp;al. <em>Magn Reson Med</em> 2008;60(4):1003&ndash;1009. <a href="https://doi.org/10.1002/mrm.21710" class="text-emerald-600 hover:underline">doi:10.1002/mrm.21710</a>. Wharton S., et&nbsp;al. <em>Magn Reson Med</em> 2010;63(5):1292&ndash;1304. <a href="https://doi.org/10.1002/mrm.22334" class="text-emerald-600 hover:underline">doi:10.1002/mrm.22334</a>.</li>
+          <li><strong>TGV regularisation:</strong> Knoll F., Bredies K., Pock T., Stollberger R. &ldquo;Second order total generalized variation (TGV) for MRI.&rdquo; <em>Magn Reson Med</em> 2011;65(2):480&ndash;491. <a href="https://doi.org/10.1002/mrm.22595" class="text-emerald-600 hover:underline">doi:10.1002/mrm.22595</a>.</li>
+          <li><strong>Forward simulation:</strong> <a href="https://github.com/astewartau/qsm-forward" class="text-emerald-600 hover:underline">qsm-forward</a> (Stewart A., et&nbsp;al.).</li>
+        </ul>
+      </div>
+    </section>
+    </div><!-- /In silico (2019) -->
+
+    <!-- ===================== χ-SEPARATION ===================== -->
+    <section x-show="dataset==='chisep'" x-cloak class="mt-3">
+      <div class="rtabs">
+        <button class="rtab" :class="{'rtab-on': chisepView==='info'}" @click="chisepView='info'">Info</button>
+        <button class="rtab" :class="{'rtab-on': chisepView==='board'}" @click="chisepView='board'">Leaderboard</button>
+      </div>
+
+      <div x-show="chisepView==='board'" x-cloak>
+
+      <!-- table controls (filter + metric columns) -->
+      <div class="mt-6 flex flex-wrap items-center gap-3">
+        <div class="grow"></div>
+        <input x-model="filter" type="search" placeholder="Filter…" class="rounded-lg border-gray-300 text-sm px-3 py-1.5 w-44 focus:border-emerald-500 focus:ring-emerald-500" />
+        <div class="relative" @click.outside="chisepColMenu=false">
+          <button @click="chisepColMenu=!chisepColMenu" class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+            Metrics
+            <span class="rounded bg-gray-100 px-1.5 text-xs" x-text="chisepDisplayCols().length"></span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div x-show="chisepColMenu" x-cloak class="absolute right-0 z-20 mt-2 w-64 max-h-96 overflow-y-auto rounded-xl border border-gray-200 bg-white p-1.5 shadow-lg" style="display:none">
+            <template x-for="c in chisepCols" :key="c.key">
+              <label class="flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-sm hover:bg-gray-50 cursor-pointer">
+                <input type="checkbox" class="accent-emerald-600" :checked="chisepSelectedCols.includes(c.key)" @change="toggleChisepCol(c.key)" />
+                <span x-text="c.label" :data-tip="c.tip"></span>
+                <span class="ml-auto text-xs text-gray-400" x-text="c.better==='higher'?'↑':'↓'"></span>
+              </label>
+            </template>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-4 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+        <div class="overflow-x-auto">
+        <table class="w-full text-sm whitespace-nowrap">
+          <thead class="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
+            <tr>
+              <th class="px-5 py-3 text-left font-medium sticky left-0 bg-gray-50">Algorithm</th>
+              <template x-for="c in chisepDisplayCols()" :key="c.key">
+                <th @click="chiSepSort(c.key)" class="px-4 py-3 text-right font-medium cursor-pointer select-none hover:text-gray-800 dark:hover:text-gray-100">
+                  <span class="has-tip" :data-tip="c.tip" x-text="c.label"></span>
+                  <span x-show="chisepSort===c.key" x-text="chisepDir==='asc'?'↑':'↓'"></span>
+                </th>
+              </template>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <template x-for="(r,i) in chiSepRows()" :key="r.id">
+              <tr @click="go(r)" class="group cursor-pointer" :class="r.status==='DNF' ? 'opacity-50' : ''">
+                <td class="px-5 py-3 text-left font-medium text-gray-900 sticky left-0 bg-white group-hover:bg-emerald-50/40">
+                  <span class="mr-1.5 inline-block w-5 text-center" x-text="medal(i)"></span>
+                  <span x-text="r.name"></span>
+                  <template x-if="r.doi"><a :href="'https://doi.org/'+r.doi" @click.stop target="_blank" rel="noopener" class="ml-2 rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 hover:bg-emerald-100">paper</a></template>
+                  <span x-show="r.status==='running'" class="ml-2 rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700 animate-pulse">computing…</span>
+                  <span x-show="r.status==='DNF'" class="ml-2 rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold text-gray-500">DNF</span>
+                </td>
+                <template x-for="c in chisepDisplayCols()" :key="c.key">
+                  <td class="px-4 py-3 text-right tabular-nums group-hover:bg-emerald-50/40" :class="(chisepSort===c.key || c.key==='avg') ? 'font-semibold text-gray-900' : 'text-gray-600'" x-text="chiFmt(chiVal(r, c.key), c.key)"></td>
+                </template>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+        </div>
+        <p x-show="chiSepRows().length===0" class="px-5 py-10 text-center text-gray-400">No chi-separation results yet.</p>
+      </div>
+
+      <!-- chi-sep figures -->
+      <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+        <h3 class="font-semibold text-gray-900">Myelin (χ−) is harder to recover than iron (χ+)</h3>
+        <p class="mt-0.5 max-w-2xl text-xs text-gray-500">Structural similarity (xSIM) of the recovered paramagnetic χ+ (iron) source versus the diamagnetic χ− (myelin / calcium) source. Every method drops from left to right, so the diamagnetic map is systematically the harder of the two.</p>
+        <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="chisepSVG"></div>
+      </div>
+
+      <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+        <h3 class="font-semibold text-gray-900">Cross-contamination between the two sources</h3>
+        <p class="mt-0.5 max-w-2xl text-xs text-gray-500">How much each source map bleeds into the other (regression slope, 0 = clean): iron leaking into the myelin map (x) versus myelin leaking into iron (y). The origin is perfect separation; distance from it is contamination that xSIM can miss.</p>
+        <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="leakSVG"></div>
+      </div>
+      </div><!-- /chisep board -->
+
+      <!-- χ-separation · Info -->
+      <div x-show="chisepView==='info'" x-cloak class="info mt-6 space-y-8">
+        <div>
+          <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">&chi;-separation (2026)</h2>
+          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">Susceptibility source separation splits the net susceptibility &chi; into a paramagnetic part &chi;&#8314; (iron) and a diamagnetic part &chi;&#8315; (myelin, calcium). On this dataset each method is fed the ground-truth local field, R2&prime; and &chi;<sub>total</sub>, and its recovered &chi;&#8314; and &chi;&#8315; maps are scored separately. It extends the in-silico Challenge&nbsp;2.0 phantom, so the susceptibility ground truth is the same one behind the In&nbsp;silico dataset.</p>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">The phantom</h3>
+          <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">The &chi;-separation phantom is generated with <a href="https://github.com/astewartau/qsm-forward" class="text-emerald-600 hover:underline">qsm-forward</a>, which ports and extends the neuropoly Susceptibility-Separation-Phantom (<a href="https://doi.org/10.64898/2026.04.07.716972" class="text-emerald-600 hover:underline">Ridani et&nbsp;al., 2026</a>), itself an extension of the Challenge&nbsp;2.0 head phantom. It adds three things the plain QSM phantom lacks: the &chi;&#8314;/&chi;&#8315; source maps (the scoring targets), an R2&prime; map, and a source-separation-aware signal model. The &chi;&#8314;/&chi;&#8315; split and relaxation model follow the reference phantom; qsm-forward additionally offers a matched spin-echo acquisition and a multi-compartment signal model.</p>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">The forward model</h3>
+          <h4 class="mt-3 font-semibold text-gray-900 dark:text-gray-100">Relaxation: R2, R2*, and R2&prime;</h4>
+          <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">The gradient-echo magnitude decays at R2* = R2 + R2&prime;. R2 is the irreversible rate; R2&prime; is the reversible rate from static field inhomogeneity around susceptibility sources, and it is the channel source separation draws on. The phantom simulates R2 independently from per-tissue literature T2 values and adds it to R2&prime; to reach R2*, with no fixed ratio between them (the common &kappa; shortcut, R2* &asymp; 1.9&middot;R2&prime; from <a href="https://doi.org/10.3390/tomography8030127" class="text-emerald-600 hover:underline">Dimov et&nbsp;al., 2022</a>, is avoided because it makes recovering R2&prime; = R2* &minus; R2 degenerate). The R2&prime; map is shipped directly as a provided input; qsm-forward can instead simulate a matched spin echo (<code>--save-se</code>) that lets a method derive R2&prime; from paired GRE/SE data (Stoll,&nbsp;2025), a capability this dataset does not currently ship.</p>
+          <h4 class="mt-5 font-semibold text-gray-900 dark:text-gray-100">The relaxivity D<sub>r</sub></h4>
+          <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">Relaxivity converts a susceptibility source into the reversible relaxation it produces. &chi;-separation uses a single kernel shared by both source types:</p>
+          <pre class="mt-3 overflow-x-auto rounded-xl bg-gray-900 p-4 text-sm text-gray-100"><code class="language-plaintext">R2&prime; = D_r &middot; ( |&chi;&#8314;| + |&chi;&#8315;| ),   D_r = 137 Hz/ppm</code></pre>
+          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">One kernel for both, because in the static-dephasing regime (<a href="https://doi.org/10.1002/mrm.1910320610" class="text-emerald-600 hover:underline">Yablonskiy &amp; Haacke, 1994</a>) reversible relaxation depends on the magnitude of the field perturbation, not its sign. D<sub>r</sub> = 137&nbsp;Hz/ppm is the value <a href="https://doi.org/10.1016/j.neuroimage.2021.118371" class="text-emerald-600 hover:underline">Shin et&nbsp;al. (2021)</a> measured. A split (D<sub>r</sub>&#8314; &ne; D<sub>r</sub>&#8315;) is left off by default, since the two relaxivities are not recoverable from one QSM and one R2&prime; map; it stays available as an opt-in (<code>--dr-neg</code>) for sensitivity studies.</p>
+          <h4 class="mt-5 font-semibold text-gray-900 dark:text-gray-100">The multi-compartment magnitude</h4>
+          <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">Field-domain methods need only R2&prime; and the field. Signal-domain separators (e.g. DECOMPOSE) fit the multi-echo complex signal per voxel, where a plain mono-exponential decay carries nothing to separate. With <code>--chisep-multicompartment</code> the voxel magnitude becomes the modulus of a sum of compartments:</p>
+          <pre class="mt-3 overflow-x-auto rounded-xl bg-gray-900 p-4 text-sm text-gray-100"><code class="language-plaintext">S(TE) = | C&#8330;&middot;e^(&minus;(R2 + D_r|&chi;&#8314;| + i&middot;&omega;&middot;&chi;&#8314;)&middot;TE)
+        + C&#8331;&middot;e^(&minus;(R2 + D_r|&chi;&#8315;| + i&middot;&omega;&middot;&chi;&#8315;)&middot;TE)
+        +  C&#8320;&middot;e^(&minus;R2&middot;TE) |,     &omega; = (2/3)&middot;&gamma;&middot;B&#8320;</code></pre>
+          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">Each compartment is a static-dephasing exponential with its own decay and off-resonance, so the pools beat against each other and give the non-mono-exponential magnitude those methods rely on. The rates reuse the same D<sub>r</sub> kernel as R2&prime;, so the effective R2* is unchanged and field-domain methods see identical inputs; only the shape of the decay is enriched. It defaults to off.</p>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Reproduce the phantom</h3>
+          <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">From the same Challenge&nbsp;2.0 maps, add the source-separation outputs:</p>
+          <pre class="mt-3 overflow-x-auto rounded-xl bg-gray-900 p-4 text-sm text-gray-100"><code class="language-bash">qsm-forward head ./qsm-challenge-2.0 bids_chisep \
+  --save-field --save-chi-pos --save-chi-neg --save-r2prime \
+  --chisep-signal --chisep-multicompartment</code></pre>
+          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed"><code>--save-chi-pos</code>/<code>--save-chi-neg</code> write the scoring targets, <code>--save-r2prime</code> the provided R2&prime; input, and the <code>--chisep-*</code> flags select the source-separation signal model. qsm-forward writes a standard BIDS tree; point <a href="running.html" class="text-emerald-600 hover:underline"><code>qsm-ci run</code></a> straight at the NIfTIs.</p>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Citations</h3>
+          <ul class="mt-2 list-disc pl-5 space-y-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+            <li><strong>Separation phantom:</strong> Ridani S., De&nbsp;Leener B., Alonso-Ortiz E. &ldquo;A realistic in-silico brain phantom for quantifying susceptibility anisotropy-induced error in susceptibility separation.&rdquo; <em>bioRxiv</em> 2026. <a href="https://doi.org/10.64898/2026.04.07.716972" class="text-emerald-600 hover:underline">doi:10.64898/2026.04.07.716972</a>.</li>
+            <li><strong>&chi;-separation model &amp; D<sub>r</sub>:</strong> Shin H.G., Lee J., Yun Y.H., et&nbsp;al. &ldquo;&chi;-separation: Magnetic susceptibility source separation toward iron and myelin mapping in the brain.&rdquo; <em>NeuroImage</em> 2021;240:118371. <a href="https://doi.org/10.1016/j.neuroimage.2021.118371" class="text-emerald-600 hover:underline">doi:10.1016/j.neuroimage.2021.118371</a>.</li>
+            <li><strong>Static-dephasing regime:</strong> Yablonskiy D.A., Haacke E.M. &ldquo;Theory of NMR signal behavior in magnetically inhomogeneous tissues: the static dephasing regime.&rdquo; <em>Magn Reson Med</em> 1994;32(6):749&ndash;763. <a href="https://doi.org/10.1002/mrm.1910320610" class="text-emerald-600 hover:underline">doi:10.1002/mrm.1910320610</a>.</li>
+            <li><strong>DECOMPOSE:</strong> Chen J., et&nbsp;al. &ldquo;Decompose QSM to sub-voxel diamagnetic and paramagnetic components based on gradient-echo MRI data.&rdquo; <em>NeuroImage</em> 2021. <a href="https://doi.org/10.1016/j.neuroimage.2021.118735" class="text-emerald-600 hover:underline">doi:10.1016/j.neuroimage.2021.118735</a>.</li>
+            <li><strong>SUSEP-Net:</strong> Li, Gao, Sun, et&nbsp;al. &ldquo;SUSEP-Net: simulation-supervised contrastive learning for susceptibility source separation via a sub-voxel QSM network.&rdquo; arXiv:2506.13293, 2025. <a href="https://doi.org/10.48550/arXiv.2506.13293" class="text-emerald-600 hover:underline">doi:10.48550/arXiv.2506.13293</a>.</li>
+            <li><strong>WaveSep:</strong> Fang Z., Shin H.G., van&nbsp;Zijl P., Li X., Sulam J. &ldquo;WaveSep: A Flexible Wavelet-Based Approach for Source Separation in Susceptibility Imaging.&rdquo; <em>MLCN, MICCAI</em> 2023. <a href="https://doi.org/10.1007/978-3-031-44858-4_6" class="text-emerald-600 hover:underline">doi:10.1007/978-3-031-44858-4_6</a>.</li>
+            <li><strong>&kappa; approximation:</strong> Dimov A.V., et&nbsp;al. &ldquo;Magnetic susceptibility source separation solely from gradient echo data: histological validation.&rdquo; <em>Tomography</em> 2022;8(3):1544&ndash;1551. <a href="https://doi.org/10.3390/tomography8030127" class="text-emerald-600 hover:underline">doi:10.3390/tomography8030127</a>.</li>
+            <li><strong>&chi;-sep spin-echo model:</strong> Stoll&nbsp;P. &ldquo;Development of a Deep Learning Framework for Iron and Myelin Mapping from Quantitative Susceptibility Maps.&rdquo; MSc thesis, ETH&nbsp;Zurich, 2025.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== IN VIVO (2016) ===================== -->
+    <section x-show="dataset==='invivo'" x-cloak class="mt-3">
+      <div class="rtabs">
+        <button class="rtab" :class="{'rtab-on': invivoView==='info'}" @click="invivoView='info'">Info</button>
+        <button class="rtab" :class="{'rtab-on': invivoView==='board'}" @click="invivoView='board'">Leaderboard</button>
+      </div>
+
+      <div x-show="invivoView==='board'" x-cloak>
+
+      <!-- table -->
+      <div class="mt-6 flex flex-wrap items-center gap-3">
+        <div class="grow"></div>
+        <input x-model="filter" type="search" placeholder="Filter…" class="rounded-lg border-gray-300 text-sm px-3 py-1.5 w-44 focus:border-emerald-500 focus:ring-emerald-500" />
+      </div>
+      <div class="mt-4 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm whitespace-nowrap">
+            <thead class="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
+              <!-- grouped reference header -->
+              <tr>
+                <th class="px-5 py-2 text-left font-medium sticky left-0 bg-gray-50" rowspan="2">Algorithm</th>
+                <th class="px-4 py-2 text-center font-semibold border-l border-gray-200" :colspan="INVIVO_COLS.filter(c=>c.grp==='cosmos').length">vs COSMOS</th>
+                <th class="px-4 py-2 text-center font-semibold border-l border-gray-200" :colspan="INVIVO_COLS.filter(c=>c.grp==='sti').length">vs STI χ33</th>
+                <th class="px-4 py-2 text-center font-semibold border-l border-gray-200" rowspan="2">Runtime</th>
+              </tr>
+              <tr>
+                <template x-for="c in INVIVO_COLS" :key="c.key">
+                  <th @click="invivoSort(c.key)" class="px-4 py-2 text-right font-medium cursor-pointer select-none hover:text-gray-800 dark:hover:text-gray-100"
+                      :class="c.grp==='sti' && INVIVO_COLS.findIndex(x=>x.grp==='sti')===INVIVO_COLS.indexOf(c) ? 'border-l border-gray-200' : ''">
+                    <span class="has-tip" :data-tip="c.tip" x-text="c.label"></span>
+                    <span x-show="invivoSortKey===c.key" x-text="invivoDir==='asc'?'↑':'↓'"></span>
+                  </th>
+                </template>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <template x-for="(r,i) in invivoRows()" :key="r.id">
+                <tr @click="go(r)" class="group cursor-pointer" :class="r.status==='DNF' ? 'opacity-50' : ''">
+                  <td class="px-5 py-3 text-left font-medium text-gray-900 sticky left-0 bg-white group-hover:bg-emerald-50/40">
+                    <span class="mr-1.5 inline-block w-5 text-center" x-text="invMedal(i)"></span>
+                    <span x-text="r.name"></span>
+                    <span x-show="r.status==='DNF'" class="ml-2 rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold text-gray-500">DNF</span>
+                  </td>
+                  <template x-for="c in INVIVO_COLS" :key="c.key">
+                    <td class="px-4 py-3 text-right tabular-nums group-hover:bg-emerald-50/40"
+                        :class="(invivoSortKey===c.key ? 'font-semibold text-gray-900 ' : 'text-gray-600 ') + (c.grp==='sti' && INVIVO_COLS.findIndex(x=>x.grp==='sti')===INVIVO_COLS.indexOf(c) ? 'border-l border-gray-100' : '')"
+                        x-text="invFmt(val(r, c.key), c.key)"></td>
+                  </template>
+                  <td class="px-4 py-3 text-right tabular-nums text-gray-600 border-l border-gray-100 group-hover:bg-emerald-50/40" x-text="fmt(val(r,'runtime_s'),'runtime_s')"></td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+        <p x-show="invivoRows().length===0" class="px-5 py-10 text-center text-gray-400">No in-vivo results yet.</p>
+      </div>
+      </div><!-- /in-vivo board -->
+
+      <!-- In vivo · Info -->
+      <div x-show="invivoView==='info'" x-cloak class="info mt-6 space-y-8">
+        <div>
+          <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">In vivo &middot; 2016 Reconstruction Challenge</h2>
+          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">This dataset is real acquired brain data from the 2016 QSM Reconstruction Challenge: a single-orientation 3&nbsp;T scan of one volunteer. Each method inverts the ground-truth local tissue field to a susceptibility map, scored against two reference reconstructions rather than a true susceptibility (none exists in vivo). Only the dipole-inversion stage is scored, so the ranking reads as agreement with a reference, not accuracy against ground truth.</p>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">The challenge and its references</h3>
+          <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">The 2016 Reconstruction Challenge (<a href="https://doi.org/10.1002/mrm.26830" class="text-emerald-600 hover:underline">Langkammer et&nbsp;al., 2018</a>) took the &chi;<sub>33</sub> component of a susceptibility-tensor (STI) reconstruction as its reference, hoping to sidestep the orientation bias of COSMOS. Twenty-seven submissions were scored on RMSE, HFEN, SSIM and regional error. The lesson was as much about metrics as algorithms: tuned to minimise those errors, the winning maps were over-smoothed and lost fine structure, and near-identical scores hid visibly different maps. A follow-up (<a href="https://doi.org/10.1002/mrm.28185" class="text-emerald-600 hover:underline">Milovic et&nbsp;al., 2020</a>) then showed the &chi;<sub>33</sub> reference itself did not match the measured phase once anisotropy, microstructure and noise were accounted for.</p>
+          <p class="mt-4 text-gray-600 dark:text-gray-400 leading-relaxed">QSM-CI scores each method against both available references: the multi-orientation COSMOS reconstruction and the STI &chi;<sub>33</sub> map. Source: the 2016 challenge (<a href="https://qsm.neuroimaging.at" target="_blank" rel="noopener" class="text-emerald-600 hover:underline">qsm.neuroimaging.at</a>); the local tissue field and both reference &chi; maps are in ppm.</p>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Citations</h3>
+          <ul class="mt-2 list-disc pl-5 space-y-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+            <li><strong>2016 Challenge report:</strong> Langkammer C., Schweser F., Shmueli K., et&nbsp;al. &ldquo;Quantitative susceptibility mapping: Report from the 2016 reconstruction challenge.&rdquo; <em>Magn Reson Med</em> 2018;79(3):1661&ndash;1673. <a href="https://doi.org/10.1002/mrm.26830" class="text-emerald-600 hover:underline">doi:10.1002/mrm.26830</a>.</li>
+            <li><strong>2016 Challenge lessons:</strong> Milovic C., Tejos C., Acosta-Cabronero J., et&nbsp;al. &ldquo;The 2016 QSM Challenge: Lessons learned and considerations for a future challenge design.&rdquo; <em>Magn Reson Med</em> 2020;84(3):1624&ndash;1637. <a href="https://doi.org/10.1002/mrm.28185" class="text-emerald-600 hover:underline">doi:10.1002/mrm.28185</a>.</li>
+            <li><strong>COSMOS reference:</strong> Liu T., Spincemaille P., de&nbsp;Rochefort L., Kressler B., Wang Y. &ldquo;Calculation of susceptibility through multiple orientation sampling (COSMOS).&rdquo; <em>Magn Reson Med</em> 2009;61(1):196&ndash;204. <a href="https://doi.org/10.1002/mrm.21828" class="text-emerald-600 hover:underline">doi:10.1002/mrm.21828</a>.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer id="site-footer"></footer>
+
+  <script>
+    // χ-separation metric catalog (para_*/dia_* aren't in the global METRICS registry). Drives the
+    // customisable column picker + table. `f` is the formatter kind: xsim / pct / num / sec.
+    const CHISEP_COLS = [
+      { key: "avg",                 label: "Avg xSIM",        better: "higher", f: "xsim", tip: "Mean of the χ+ and χ− xSIM: the headline combined source-separation score. Higher is better." },
+      { key: "para_xsim",           label: "χ+ xSIM",         better: "higher", f: "xsim", tip: "Structural similarity of the χ+ (paramagnetic, iron) map vs ground truth. Higher is better." },
+      { key: "para_nrmse",          label: "χ+ NRMSE",        better: "lower",  f: "pct",  tip: "Normalised RMS error of χ+ vs ground truth (%). Lower is better." },
+      { key: "para_nrmse_dgm",      label: "χ+ DGM NRMSE",    better: "lower",  f: "pct",  tip: "χ+ error in deep gray matter (iron) (%). Lower is better." },
+      { key: "para_dgm_linearity",  label: "χ+ DGM linearity", better: "lower", f: "num",  tip: "|1 − slope| of χ+ across DGM iron regions; 0 = perfect iron quantification. Lower is better." },
+      { key: "para_nrmse_blood",    label: "χ+ vein NRMSE",   better: "lower",  f: "pct",  tip: "χ+ error in venous blood (%). Lower is better." },
+      { key: "para_calc_leak",      label: "χ+ Ca leak",      better: "lower",  f: "num",  tip: "Mean |χ+| in the calcification (should be ~0): calcium wrongly bleeding into the paramagnetic map. Lower is better." },
+      { key: "para_leak",           label: "χ−→χ+ leak",      better: "lower",  f: "num",  tip: "Whole-brain leakage: fraction of χ− (diamagnetic) signal bleeding into the χ+ map. 0 = clean. Lower is better." },
+      { key: "dia_xsim",            label: "χ− xSIM",         better: "higher", f: "xsim", tip: "Structural similarity of the χ− (diamagnetic, myelin/calcium) map vs ground truth. Higher is better." },
+      { key: "dia_nrmse",           label: "χ− NRMSE",        better: "lower",  f: "pct",  tip: "Normalised RMS error of χ− vs ground truth (%). Lower is better." },
+      { key: "dia_calc_moment_dev", label: "χ− Ca dev",       better: "lower",  f: "num",  tip: "Deviation of the recovered calcification's susceptibility moment. Lower is better." },
+      { key: "dia_calc_streak",     label: "χ− streak",       better: "lower",  f: "num",  tip: "Streaking-artifact level around the calcification. Lower is better." },
+      { key: "dia_iron_leak",       label: "χ− Fe leak",      better: "lower",  f: "num",  tip: "Mean |χ−| in DGM/veins (should be ~0): iron wrongly bleeding into the diamagnetic map. Lower is better." },
+      { key: "dia_leak",            label: "χ+→χ− leak",      better: "lower",  f: "num",  tip: "Whole-brain leakage: fraction of χ+ (paramagnetic/iron) signal bleeding into the χ− map. 0 = clean. Lower is better." },
+      { key: "runtime_s",           label: "Runtime",         better: "lower",  f: "sec",  tip: "Wall-clock runtime." },
+    ];
+    const CHISEP_COL = Object.fromEntries(CHISEP_COLS.map((c) => [c.key, c]));
+
+    // In-vivo (2016 challenge) dipole leaderboard columns. Each method is scored against TWO
+    // references: COSMOS (primary, unsuffixed metric keys) and STI χ33 (secondary, `_sti` keys, merged
+    // in by pipeline.py). `grp` groups the columns under the two-tier "vs COSMOS" / "vs STI χ33"
+    // header; `f` is the formatter kind (xsim / pct). Runtime is rendered separately (shared by both).
+    const INVIVO_COLS = [
+      { key: "nrmse",              grp: "cosmos", label: "NRMSE",     better: "lower",  f: "pct",  tip: "Demeaned normalised RMS error vs the COSMOS reference (%). The headline 2016 challenge metric. Lower is better." },
+      { key: "nrmse_detrend",      grp: "cosmos", label: "Detrended", better: "lower", f: "pct",  tip: "NRMSE vs COSMOS after correcting a global linear scaling (contrast/gain-independent). Lower is better." },
+      { key: "xsim",               grp: "cosmos", label: "xSIM",      better: "higher", f: "xsim", tip: "QSM structural-similarity index vs COSMOS. 1 = identical. Higher is better." },
+      { key: "correlation",        grp: "cosmos", label: "Corr.",     better: "higher", f: "xsim", tip: "Pearson correlation vs COSMOS within the mask. Higher is better." },
+      { key: "hfen",               grp: "cosmos", label: "HFEN",      better: "lower",  f: "pct",  tip: "High-Frequency Error Norm vs COSMOS (%): Laplacian-of-Gaussian high-pass error, i.e. fine-detail fidelity. Lower is better." },
+      { key: "nrmse_sti",          grp: "sti",    label: "NRMSE",     better: "lower",  f: "pct",  tip: "Demeaned NRMSE vs the STI χ33 reference (%). Lower is better." },
+      { key: "nrmse_detrend_sti",  grp: "sti",    label: "Detrended", better: "lower", f: "pct",  tip: "Detrended NRMSE vs STI χ33 (%). Lower is better." },
+      { key: "xsim_sti",           grp: "sti",    label: "xSIM",      better: "higher", f: "xsim", tip: "QSM structural-similarity index vs STI χ33. Higher is better." },
+      { key: "correlation_sti",    grp: "sti",    label: "Corr.",     better: "higher", f: "xsim", tip: "Pearson correlation vs STI χ33. Higher is better." },
+      { key: "hfen_sti",           grp: "sti",    label: "HFEN",      better: "lower",  f: "pct",  tip: "High-Frequency Error Norm vs STI χ33 (%). Lower is better." },
+    ];
+    const INVIVO_COL = Object.fromEntries(INVIVO_COLS.map((c) => [c.key, c]));
+
+    // Merged component: the leaderboard (board) state + the findings figures, behind one tab bar.
+    // Both halves share the same runs/algos load and the memo cache; tabs drive the leaderboard's
+    // composed/isolated `view` via syncView().
+    function results() {
+      // Non-reactive memo cache shared by both halves (cache names are disjoint). Alpine getters
+      // recompute on EVERY property access, and the matrix + SVG builders are O(all-runs), so each
+      // derived value is cached keyed by the state it depends on (runs.length busts it on first load).
+      const _memo = {};
+      const _cache = (name, key, fn) => {
+        const c = _memo[name];
+        if (c && c.key === key) return c.val;
+        const val = fn(); _memo[name] = { key, val }; return val;
+      };
+      // approximate method-family taxonomy (for findings colouring only). Unknown → iterative.
+      const DL = new Set(["qsmnet","qsmnet-plus","qsmgan","xqsm","lpcnn","modl-qsm","hd-qsm","ir2qsm","iqsm","iqsm+","autoqsm","inr-qsm","modip","deepqsm"]);
+      const DIRECT = new Set(["tkd","matlab-tkd","tsvd","tikhonov"]);
+      const FAM = { dl: { label: "Deep learning", c: "#6366f1" }, iter: { label: "Iterative", c: "#10b981" }, direct: { label: "Direct / k-space", c: "#f59e0b" } };
+
+      return {
+        METRICS, STAGE_LABEL, MEDALS, fmt, val, INVIVO_COLS,
+        runs: [], registry: {}, algos: [], loading: true,
+        // dataset (top level) + section tab state
+        dataset: "sim",
+        tab: "leaderboard", lbView: "pipelines", pipeView: "matrix", findView: "pipelines", view: "composed",
+        chisepView: "board", invivoView: "board",   // per-dataset Leaderboard / Info subtab
+        // leaderboard state
+        stage: "dipole", fmap: "gt", variant: "default",
+        metric: "xsim", sortKey: "xsim", sortDir: "desc", filter: "",
+        colMenu: false, stageMenu: false, fmapMenu: false, metricMenu: false, selectedCols: ["nrmse", "correlation", "xsim", "runtime_s"],
+        chisepSort: "avg", chisepDir: "desc", chisepColMenu: false, chisepCols: CHISEP_COLS,
+        chisepSelectedCols: ["avg", "para_xsim", "para_nrmse", "para_leak", "dia_xsim", "dia_nrmse", "dia_leak", "runtime_s"],
+        invivoSortKey: "nrmse", invivoDir: "asc",   // in-vivo default sort: COSMOS NRMSE (2016 headline)
+        // findings state
+        insightMode: "mean", xMet: "runtime_s", yMet: "xsim", expStage: "dipole",
+
+        // ---- tabs ------------------------------------------------------------------------
+        syncView() { this.view = this.lbView === "stages" ? "isolated" : "composed"; },
+        setTab(t) { this.tab = t; this.syncView(); },
+        setLb(v) { this.lbView = v; this.syncView(); },
+        setDataset(d) { this.dataset = d; },
+
+        async init() {
+          // Deep links: results.html?tab=…; legacy leaderboard.html?view=isolated&stage=…&variant=tuned
+          const q = new URLSearchParams(location.search);
+          // top-level dataset (default in-silico); legacy ?tab=invivo also selects the in-vivo dataset
+          if (q.get("dataset") === "invivo" || q.get("tab") === "invivo") this.dataset = "invivo";
+          if (q.get("dataset") === "chisep" || q.get("tab") === "chisep") this.dataset = "chisep";
+          const t = q.get("tab");
+          if (["info", "leaderboard", "findings"].includes(t)) this.tab = t;
+          else if (["pipelines", "stages"].includes(t)) this.tab = "leaderboard";
+          if (t === "stages" || q.get("view") === "isolated") this.lbView = "stages";
+          else if (t === "pipelines" || q.get("view") === "composed") this.lbView = "pipelines";
+          if (q.get("variant") === "tuned") this.variant = "tuned";
+          this.syncView();
+          try {
+            this.runs = await loadRuns();
+            this.registry = await loadRegistry();
+            this.algos = await loadAlgos();
+            const st = this.stages();
+            if (st.includes(q.get("stage"))) this.stage = q.get("stage");
+            else if (!st.includes(this.stage)) this.stage = st[0] || "dipole";
+            if (!this.runs.some((r) => r.mode === "composed")) { this.lbView = "stages"; this.syncView(); }
+            if (!this.hasChiSep() && this.dataset === "chisep") this.dataset = "sim";
+            if (!this.hasInvivo() && this.dataset === "invivo") this.dataset = "sim";
+          } finally {
+            this.loading = false;   // only reveal the empty-state once the fetch has actually resolved
+          }
+          // findings: delegated click — any injected mark carrying data-run opens that run's page
+          this.$root.addEventListener("click", (e) => {
+            const el = e.target.closest && e.target.closest("[data-run]");
+            if (el && el.dataset.run) location.href = "submission.html?run=" + encodeURIComponent(el.dataset.run);
+          });
+        },
+
+        // ==================================================================================
+        //  LEADERBOARD
+        // ==================================================================================
+        ciNotes(slug) { const a = this.algos.find((x) => x.slug === slug); return (a && a.ci_notes) || []; },
+        algoName(slug) { const a = this.algos.find((x) => x.slug === slug); return (a && a.name) || slug; },
+        _isChisep(r) { return r.domain === "chisep" || r.stage === "chi-separation"; },
+        _chisep() { return this.runs.filter((r) => this._isChisep(r)); },
+        hasChiSep() { return this._chisep().length > 0; },
+        // In-vivo (2016 challenge) dipole runs share stage==='dipole' with the sim leaderboard, so
+        // every SIM-facing table/matrix/finding must exclude them (track==='invivo'); they live only
+        // on their own In-vivo tab. Sim runs carry track==='sim' or (legacy) no track field.
+        _isInvivo(r) { return r.track === "invivo"; },
+        _invivo() { return this.runs.filter((r) => this._isInvivo(r)); },
+        hasInvivo() { return this._invivo().length > 0; },
+        chiVal(r, k) {
+          const m = r.metrics || {};
+          if (k === "avg") return (m.para_xsim != null && m.dia_xsim != null) ? (m.para_xsim + m.dia_xsim) / 2 : null;
+          return val(r, k);
+        },
+        chiFmt(v, key) {
+          if (v == null) return "—";
+          const f = (CHISEP_COL[key] || {}).f;
+          return f === "pct" ? v.toFixed(1) + "%" : f === "num" ? v.toFixed(3)
+            : f === "sec" ? fmt(v, "runtime_s") : fmt(v, "xsim");
+        },
+        chisepDisplayCols() {
+          const sel = CHISEP_COLS.filter((c) => this.chisepSelectedCols.includes(c.key));
+          return sel.length ? sel : CHISEP_COLS.filter((c) => c.key === "avg");
+        },
+        toggleChisepCol(k) {
+          this.chisepSelectedCols = this.chisepSelectedCols.includes(k)
+            ? this.chisepSelectedCols.filter((x) => x !== k) : [...this.chisepSelectedCols, k];
+        },
+        chiSepSort(k) {
+          if (this.chisepSort === k) this.chisepDir = this.chisepDir === "asc" ? "desc" : "asc";
+          else { this.chisepSort = k; this.chisepDir = (CHISEP_COL[k] || {}).better === "lower" ? "asc" : "desc"; }
+        },
+        chiSepRows() {
+          const k = this.chisepSort, dir = this.chisepDir === "asc" ? 1 : -1, f = this.filter.toLowerCase();
+          return this._chisep().filter((r) => !f || r.name.toLowerCase().includes(f)).slice().sort((a, b) => {
+            const va = this.chiVal(a, k), vb = this.chiVal(b, k);
+            if (va == null) return 1; if (vb == null) return -1;
+            return (va - vb) * dir;
+          });
+        },
+        // ---- in-vivo (2016 challenge) dipole leaderboard --------------------------------
+        invivoRows() {
+          const k = this.invivoSortKey, dir = this.invivoDir === "asc" ? 1 : -1, f = this.filter.toLowerCase();
+          // one row per method (default variant only), most recent scoring wins on id collision
+          const by = {};
+          this._invivo().filter((r) => r.mode === "isolated").forEach((r) => { by[r.slug] = r; });
+          return Object.values(by).filter((r) => !f || (r.name || r.slug).toLowerCase().includes(f))
+            .sort((a, b) => {
+              const va = val(a, k), vb = val(b, k);
+              if (va == null) return 1; if (vb == null) return -1;
+              return (va - vb) * dir;
+            });
+        },
+        invivoSort(k) {
+          if (this.invivoSortKey === k) this.invivoDir = this.invivoDir === "asc" ? "desc" : "asc";
+          else { this.invivoSortKey = k; this.invivoDir = (INVIVO_COL[k] || {}).better === "lower" ? "asc" : "desc"; }
+        },
+        invFmt(v, key) {
+          if (v == null) return "—";
+          return (INVIVO_COL[key] || {}).f === "pct" ? v.toFixed(1) + "%" : fmt(v, "xsim");
+        },
+        invMedal(i) {
+          const better = (INVIVO_COL[this.invivoSortKey] || {}).better || "higher";
+          const good = this.invivoDir === (better === "lower" ? "asc" : "desc");
+          return good && i < 3 ? MEDALS[i] : "";
+        },
+        doi(r) { return this.view === "isolated" ? doiFor(this.registry, r.slug) : null; },
+        stages() { return [...new Set(this.runs.filter((r) => r.mode === "isolated" && !this._isChisep(r) && !this._isInvivo(r)).map((r) => r.stage))]; },
+        fmaps() { return [...new Set(this.runs.filter((r) => r.mode === "composed" && r.combo).map((r) => r.combo.field_mapping || "gt"))]; },
+        hasTuned() { return this.runs.some((r) => r.variant === "tuned"); },
+        pickVariant(pool) {
+          if (this.variant !== "tuned") return pool.filter((r) => (r.variant || "default") === "default");
+          const by = {};
+          pool.forEach((r) => { (by[r.slug] ||= {})[r.variant || "default"] = r; });
+          return Object.values(by).map((v) => v.tuned || v.default).filter(Boolean);
+        },
+        get baseRows() {
+          return _cache("baseRows", this.view + "|" + this.stage + "|" + this.fmap + "|" + this.variant + "|" + this.runs.length, () =>
+            this.view === "isolated"
+              ? this.pickVariant(this.runs.filter((r) => r.mode === "isolated" && !this._isInvivo(r) && r.stage === this.stage))
+              : this.runs.filter((r) => r.mode === "composed" && (!r.combo || (r.combo.field_mapping || "gt") === this.fmap)));
+        },
+        get cols() { return _cache("cols", this.view + "|" + this.stage + "|" + this.fmap + "|" + this.variant + "|" + this.runs.length, () => metricCols(this.baseRows)); },
+        get displayCols() {
+          const sel = this.cols.filter((c) => this.selectedCols.includes(c));
+          return sel.length ? sel : this.cols.filter((c) => c === "xsim");
+        },
+        toggleCol(c) {
+          this.selectedCols = this.selectedCols.includes(c) ? this.selectedCols.filter((x) => x !== c) : [...this.selectedCols, c];
+        },
+        get rows() {
+          return _cache("rows",
+            [this.view, this.stage, this.fmap, this.variant, this.filter, this.sortKey, this.sortDir, this.runs.length].join("|"), () => {
+              const f = this.filter.toLowerCase();
+              return this.baseRows.filter((r) => !f || r.name.toLowerCase().includes(f)).slice().sort((a, b) => {
+                const av = val(a, this.sortKey), bv = val(b, this.sortKey);
+                if (av == null) return 1; if (bv == null) return -1;
+                return this.sortDir === "asc" ? av - bv : bv - av;
+              });
+            });
+        },
+        get matrix() {
+          return _cache("matrix", this.fmap + "|" + this.metric + "|" + this.runs.length, () => {
+            const rs = this.runs.filter((r) => r.mode === "composed" && r.combo && r.combo.bfr && r.combo.dipole && (r.combo.field_mapping || "gt") === this.fmap);
+            const bfrs = [...new Set(rs.map((r) => r.combo.bfr))];
+            const dips = [...new Set(rs.map((r) => r.combo.dipole))];
+            const cell = {}; rs.forEach((r) => { cell[r.combo.bfr + "|" + r.combo.dipole] = r; });
+            const [lo, hi] = robustRange(rs.map((r) => val(r, this.metric)));
+            const better = METRICS[this.metric]?.better || "higher";
+            const good = (r) => { const v = r ? val(r, this.metric) : null; if (v == null) return null; const t = hi === lo ? 0.5 : (v - lo) / (hi - lo); return better === "lower" ? 1 - t : t; };
+            const mean = (ks) => { const g = ks.map((k) => good(cell[k])).filter((v) => v != null); return g.length ? g.reduce((a, c) => a + c, 0) / g.length : -Infinity; };
+            const rows = dips.slice().sort((a, b) => mean(bfrs.map((x) => x + "|" + b)) - mean(bfrs.map((x) => x + "|" + a)));
+            const cols = bfrs.slice().sort((a, b) => mean(dips.map((x) => b + "|" + x)) - mean(dips.map((x) => a + "|" + x)));
+            const cells = [{ k: "corner", t: "corner" }];
+            cols.forEach((c) => cells.push({ k: "h|" + c, t: "header", label: this.algoName(c) }));
+            rows.forEach((rw) => {
+              cells.push({ k: "rl|" + rw, t: "rowlabel", label: this.algoName(rw) });
+              cols.forEach((c) => {
+                const run = cell[c + "|" + rw];
+                cells.push(run ? { k: "c|" + c + "|" + rw, t: "cell", run } : { k: "x|" + c + "|" + rw, t: "empty" });
+              });
+            });
+            return { rows, cols, cell, lo, hi, cells };
+          });
+        },
+        get combinedAlgos() {
+          return _cache("combinedAlgos", this.fmap + "|" + this.metric + "|" + this.runs.length, () => {
+            const rs = this.runs.filter((r) => r.mode === "composed" && r.artifact === "chimap"
+              && !(r.combo && r.combo.bfr)
+              && (r.stage === "bfr+dipole" || r.stage === "field-mapping+bfr+dipole" || r.stage === "end-to-end")
+              && val(r, this.metric) != null
+              && (r.stage === "end-to-end" || (r.combo?.field_mapping || "gt") === this.fmap));
+            const by = {}; rs.forEach((r) => { by[r.slug] = r; });
+            return Object.values(by).sort((a, b) => this.norm(val(b, this.metric)) - this.norm(val(a, this.metric)));
+          });
+        },
+        norm(v) {
+          const m = this.matrix; if (v == null || m.hi === m.lo) return 0.5;
+          let t = (v - m.lo) / (m.hi - m.lo);
+          return (METRICS[this.metric]?.better || "higher") === "lower" ? 1 - t : t;
+        },
+        sort(k) {
+          if (this.sortKey === k) this.sortDir = this.sortDir === "asc" ? "desc" : "asc";
+          else { this.sortKey = k; this.sortDir = METRICS[k]?.better === "lower" ? "asc" : "desc"; }
+        },
+        fixSort() { if (!this.cols.includes(this.sortKey)) { this.sortKey = "xsim"; this.sortDir = "desc"; } },
+        medal(i) {
+          const good = this.sortDir === (METRICS[this.sortKey]?.better === "lower" ? "asc" : "desc");
+          return good && i < 3 ? MEDALS[i] : "";
+        },
+        go(r) { if (r.status !== "DNF") location.href = "submission.html?run=" + encodeURIComponent(r.id); },
+
+        // ==================================================================================
+        //  FINDINGS
+        // ==================================================================================
+        _esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); },
+        disp(slug) { return slug === "gt" ? "ground truth" : this.algoName(slug); },
+        _fam(slug) { return DL.has(slug) ? "dl" : DIRECT.has(slug) ? "direct" : "iter"; },
+        _famC(slug) { return FAM[this._fam(slug)].c; },
+        _runId(slug) { const r = this.runs.find((x) => x.mode === "isolated" && !this._isInvivo(x) && x.stage === "dipole" && x.slug === slug && (x.variant || "default") === "default"); return r ? r.id : ""; },
+        _pt(slug, tip) { const id = this._runId(slug); return `data-tip="${this._esc(tip)}"` + (id ? ` data-run="${id}"` : ""); },
+        _heat(t) {
+          const st = [[190,107,107],[196,158,96],[110,168,134]];
+          const x = Math.max(0, Math.min(1, t)) * 2, i = Math.min(1, Math.floor(x)), f = x - i;
+          const c = st[i].map((a, k) => Math.round(a + (st[i + 1][k] - a) * f));
+          const lum = (0.299*c[0] + 0.587*c[1] + 0.114*c[2]) / 255;
+          return { fill: `rgb(${c[0]},${c[1]},${c[2]})`, text: lum > 0.62 ? "#1f2937" : "#fff" };
+        },
+        _diverge(r) {
+          const neg = [225,29,72], mid = [226,232,240], pos = [16,185,129], t = Math.max(-1, Math.min(1, r));
+          const c = mid.map((a, k) => Math.round(a + ((t >= 0 ? pos[k] : neg[k]) - a) * Math.abs(t)));
+          const lum = (0.299*c[0] + 0.587*c[1] + 0.114*c[2]) / 255;
+          return { fill: `rgb(${c[0]},${c[1]},${c[2]})`, text: lum > 0.62 ? "#1f2937" : "#fff" };
+        },
+        _spear(xs, ys) {
+          const rank = (v) => { const o = [...v.keys()].sort((a, b) => v[a] - v[b]); const rk = Array(v.length); o.forEach((idx, p) => rk[idx] = p); return rk; };
+          const rx = rank(xs), ry = rank(ys), n = xs.length;
+          if (n < 3) return 0;
+          const d = rx.reduce((a, _, i) => a + (rx[i] - ry[i]) ** 2, 0);
+          return 1 - 6 * d / (n * (n * n - 1));
+        },
+        get familyLegend() {
+          return Object.values(FAM).map((f) => `<span style="display:inline-flex;align-items:center;gap:5px;margin-right:14px;font-size:11px"><span style="width:9px;height:9px;border-radius:50%;background:${f.c};display:inline-block"></span>${f.label}</span>`).join("");
+        },
+
+        _isoDip() {
+          const by = {};
+          this.runs.filter((r) => r.mode === "isolated" && !this._isInvivo(r) && r.stage === "dipole" && (r.variant || "default") === "default" && val(r, "nrmse") != null)
+            .forEach((r) => { by[r.slug] = r; });
+          return Object.values(by);
+        },
+        _dipComposedBy() {
+          const g = {};
+          this.runs.filter((r) => r.mode === "composed" && r.stage === "bfr+dipole" && r.combo && r.combo.dipole && val(r, "nrmse") != null)
+            .forEach((r) => { (g[r.combo.dipole] ||= []).push(val(r, "nrmse")); });
+          return g;
+        },
+
+        get slopeSVG() {
+          return _cache("slope", this.insightMode + "|" + this.runs.length, () => {
+            const E = this._esc, iso = {}, comp = this._dipComposedBy(), rows = [];
+            this._isoDip().forEach((r) => { iso[r.slug] = val(r, "nrmse"); });
+            Object.keys(iso).forEach((slug) => {
+              if (!comp[slug]) return;
+              const cs = comp[slug];
+              rows.push({ slug, name: this.algoName(slug), iso: iso[slug], comp: this.insightMode === "best" ? Math.min(...cs) : cs.reduce((a, c) => a + c, 0) / cs.length });
+            });
+            if (!rows.length) return "<svg></svg>";
+            [...rows].sort((a, b) => a.iso - b.iso).forEach((r, i) => { r.iR = i; });
+            [...rows].sort((a, b) => a.comp - b.comp).forEach((r, i) => { r.cR = i; });
+            const rh = 26, top = 40, xL = 215, xR = 470, w = 690, h = top + rows.length * rh + 12;
+            let s = `<svg width="${w}" height="${h}" style="max-width:100%;height:auto">`;
+            s += `<text x="${xL}" y="22" text-anchor="middle" fill="currentColor" opacity="0.55" style="font-size:11px;font-weight:600">isolated · clean field</text>`;
+            s += `<text x="${xR}" y="22" text-anchor="middle" fill="currentColor" opacity="0.55" style="font-size:11px;font-weight:600">composed · real BFR</text>`;
+            rows.forEach((r) => {
+              const yL = top + r.iR * rh, yR = top + r.cR * rh, d = r.iR - r.cR, c = d > 0 ? "#10b981" : d < 0 ? "#e11d48" : "#94a3b8";
+              s += `<g ${this._pt(r.slug, `${r.name} — isolated ${r.iso.toFixed(1)} → composed ${r.comp.toFixed(1)} NRMSE`)}>`;
+              s += `<line x1="${xL}" y1="${yL}" x2="${xR}" y2="${yR}" stroke="${c}" stroke-width="1.5" opacity="0.65"/>`;
+              s += `<circle cx="${xL}" cy="${yL}" r="3.5" fill="${c}"/><circle cx="${xR}" cy="${yR}" r="3.5" fill="${c}"/>`;
+              s += `<text x="${xL - 9}" y="${yL + 3.5}" text-anchor="end" fill="currentColor" opacity="0.8" style="font-size:11px">${E(r.name)}</text>`;
+              s += `<text x="${xR + 9}" y="${yR + 3.5}" text-anchor="start" fill="currentColor" opacity="0.8" style="font-size:11px">${E(r.name)}</text>`;
+              s += `</g>`;
+            });
+            return s + "</svg>";
+          });
+        },
+
+        get reliabilitySVG() {
+          return _cache("rel", this.runs.length, () => {
+            const E = this._esc, by = this._dipComposedBy(), rows = [];
+            Object.entries(by).forEach(([slug, vs]) => {
+              if (vs.length < 3) return;
+              const m = vs.reduce((a, c) => a + c, 0) / vs.length;
+              const sd = Math.sqrt(vs.reduce((a, c) => a + (c - m) ** 2, 0) / vs.length);
+              rows.push({ slug, name: this.algoName(slug), mean: m, sd });
+            });
+            const w = 720, h = 430, padL = 54, padR = 104, padT = 18, padB = 48;
+            if (!rows.length) return "<svg></svg>";
+            const mx = rows.map((r) => r.mean), sy = rows.map((r) => r.sd);
+            const [x0, x1] = robustRange(mx), y1 = Math.max(...sy) * 1.05;
+            const SX = (v) => padL + (Math.min(v, x1) - x0) / (x1 - x0 || 1) * (w - padL - padR);
+            const SY = (v) => h - padB - v / (y1 || 1) * (h - padT - padB);
+            const lab = new Set([...rows].sort((a, b) => a.mean - b.mean).slice(0, 4).map((r) => r.slug));
+            [...rows].sort((a, b) => b.sd - a.sd).slice(0, 3).forEach((r) => lab.add(r.slug));
+            [...rows].sort((a, b) => a.sd - b.sd).slice(0, 3).forEach((r) => lab.add(r.slug));
+            let s = `<svg width="${w}" height="${h}" style="max-width:100%;height:auto">`;
+            s += `<line x1="${padL}" y1="${h - padB}" x2="${w - 8}" y2="${h - padB}" stroke="currentColor" opacity="0.2"/>`;
+            s += `<line x1="${padL}" y1="${padT}" x2="${padL}" y2="${h - padB}" stroke="currentColor" opacity="0.2"/>`;
+            s += `<text x="${(padL + w) / 2}" y="${h - 6}" text-anchor="middle" fill="currentColor" opacity="0.55" style="font-size:11px;font-weight:600">mean NRMSE across BFR partners →</text>`;
+            s += `<text x="14" y="${(padT + h - padB) / 2}" text-anchor="middle" fill="currentColor" opacity="0.55" style="font-size:11px;font-weight:600" transform="rotate(-90 14 ${(padT + h - padB) / 2})">spread (std) →</text>`;
+            s += `<text x="${padL + 6}" y="${h - padB - 6}" fill="currentColor" opacity="0.4" style="font-size:10px;font-style:italic">accurate &amp; consistent</text>`;
+            rows.forEach((r) => {
+              const x = SX(r.mean), y = SY(r.sd), c = this._famC(r.slug);
+              s += `<circle cx="${x}" cy="${y}" r="4.5" fill="${c}" opacity="0.85" ${this._pt(r.slug, `${r.name} — mean ${r.mean.toFixed(0)}, spread ±${r.sd.toFixed(0)} NRMSE`)}/>`;
+              if (lab.has(r.slug)) s += `<text x="${x + 7}" y="${y + 3}" fill="currentColor" opacity="0.8" style="font-size:10px">${E(r.name)}</text>`;
+            });
+            return s + "</svg>";
+          });
+        },
+
+        get pipelineFacts() {
+          return _cache("pf", this.runs.length, () => {
+            const cells = this.runs.filter((r) => r.stage === "field-mapping+bfr+dipole" && r.mode === "composed" && r.combo && val(r, "nrmse") != null)
+              .map((r) => ({ fm: r.combo.field_mapping, bfr: r.combo.bfr, dipole: r.combo.dipole, nrmse: val(r, "nrmse") }));
+            if (cells.length < 4) return null;
+            const optimal = [...cells].sort((a, b) => a.nrmse - b.nrmse)[0];
+            const bestAvg = (key) => {
+              const agg = {}; cells.forEach((c) => { (agg[c[key]] ||= []).push(c.nrmse); });
+              return Object.entries(agg).map(([k, vs]) => [k, vs.reduce((a, c) => a + c, 0) / vs.length]).sort((a, b) => a[1] - b[1])[0][0];
+            };
+            const gf = bestAvg("fm"), gb = bestAvg("bfr"), gd = bestAvg("dipole");
+            const greedy = cells.find((c) => c.fm === gf && c.bfr === gb && c.dipole === gd) || { fm: gf, bfr: gb, dipole: gd, nrmse: null };
+            return { optimal, greedy, total: cells.length, top: [...cells].sort((a, b) => a.nrmse - b.nrmse).slice(0, 8),
+              deltaPct: greedy.nrmse != null ? Math.round((greedy.nrmse - optimal.nrmse) / optimal.nrmse * 100) : null };
+          });
+        },
+
+        get parallelSVG() {
+          return _cache("par", this.runs.length, () => {
+            const E = this._esc;
+            const axes = [["nrmse", "NRMSE"], ["xsim", "xSIM"], ["dgm_linearity", "DGM lin."], ["calc_moment_dev", "Calc dev"], ["nrmse_blood", "Blood"]];
+            const methods = this._isoDip().filter((r) => axes.every(([k]) => val(r, k) != null));
+            const w = 700, h = 380, padL = 40, padR = 96, padT = 44, padB = 30;
+            if (methods.length < 2) return "<svg></svg>";
+            const ax = axes.map(([k, lab], i) => {
+              const [lo, hi] = robustRange(methods.map((r) => val(r, k)));
+              return { k, lab, lo, hi, better: METRICS[k]?.better || "lower", x: padL + i * (w - padL - padR) / (axes.length - 1) };
+            });
+            const good = (r, a) => { let t = a.hi === a.lo ? 0.5 : (val(r, a.k) - a.lo) / (a.hi - a.lo); t = Math.max(0, Math.min(1, t)); return a.better === "higher" ? t : 1 - t; };
+            const yTop = padT, yBot = h - padB, Y = (g) => yBot - g * (yBot - yTop);
+            const win = (k) => methods.reduce((b, r) => { const g = good(r, ax.find((a) => a.k === k)); return !b || g > b.g ? { r, g } : b; }, null).r;
+            const hl = [{ r: win("xsim"), c: "#10b981" }, { r: win("calc_moment_dev"), c: "#f59e0b" }, { r: win("dgm_linearity"), c: "#6366f1" }];
+            const hlS = new Set(hl.map((x) => x.r.slug));
+            let s = `<svg width="${w}" height="${h}" style="max-width:100%;height:auto">`;
+            ax.forEach((a) => {
+              s += `<line x1="${a.x}" y1="${yTop}" x2="${a.x}" y2="${yBot}" stroke="currentColor" opacity="0.25"/>`;
+              s += `<text x="${a.x}" y="${yTop - 20}" text-anchor="middle" fill="currentColor" opacity="0.7" style="font-size:11px;font-weight:600">${a.lab}</text>`;
+              s += `<text x="${a.x}" y="${yTop - 8}" text-anchor="middle" fill="currentColor" opacity="0.35" style="font-size:9px">best ↑</text>`;
+            });
+            const tip = (r) => this.algoName(r.slug) + " — " + ax.map((a) => a.lab + " " + fmt(val(r, a.k), a.k)).join(", ");
+            methods.forEach((r) => { if (hlS.has(r.slug)) return; s += `<polyline points="${ax.map((a) => a.x + "," + Y(good(r, a))).join(" ")}" fill="none" stroke="currentColor" stroke-width="1" opacity="0.12" ${this._pt(r.slug, tip(r))}/>`; });
+            hl.forEach((x) => {
+              const pts = ax.map((a) => a.x + "," + Y(good(x.r, a))).join(" ");
+              s += `<polyline points="${pts}" fill="none" stroke="${x.c}" stroke-width="2.2" opacity="0.95" ${this._pt(x.r.slug, tip(x.r))}/>`;
+              const la = ax[ax.length - 1];
+              s += `<text x="${la.x + 8}" y="${Y(good(x.r, la)) + 3}" fill="${x.c}" style="font-size:10px;font-weight:600">${E(this.algoName(x.r.slug))}</text>`;
+            });
+            return s + "</svg>";
+          });
+        },
+
+        get roiHeatSVG() {
+          return _cache("roi", this.runs.length, () => {
+            const E = this._esc;
+            const cols = [["nrmse", "Overall"], ["nrmse_tissue", "Tissue"], ["nrmse_dgm", "DGM"], ["nrmse_blood", "Blood"], ["calc_moment_dev", "Calc dev"], ["calc_streak", "Streak"], ["dgm_linearity", "DGM lin."]];
+            let methods = this._isoDip().filter((r) => val(r, "nrmse_tissue") != null).sort((a, b) => val(a, "nrmse") - val(b, "nrmse"));
+            if (!methods.length) return "<svg></svg>";
+            const ranges = {}; cols.forEach(([k]) => { ranges[k] = robustRange(methods.map((r) => val(r, k)).filter((v) => v != null)); });
+            const labW = 150, cw = 74, ch = 22, top = 26, w = labW + cols.length * cw, h = top + methods.length * ch + 4;
+            let s = `<svg width="${w}" height="${h}" style="max-width:100%;height:auto">`;
+            cols.forEach(([k, lab], j) => s += `<text x="${labW + j * cw + cw / 2}" y="18" text-anchor="middle" fill="currentColor" opacity="0.6" style="font-size:10px;font-weight:600">${lab}</text>`);
+            methods.forEach((r, i) => {
+              const y = top + i * ch;
+              s += `<text x="${labW - 8}" y="${y + ch / 2 + 3}" text-anchor="end" fill="currentColor" opacity="0.8" style="font-size:11px">${E(this.algoName(r.slug))}</text>`;
+              cols.forEach(([k, lab], j) => {
+                const v = val(r, k), x = labW + j * cw;
+                if (v == null) { s += `<rect x="${x + 1}" y="${y + 1}" width="${cw - 3}" height="${ch - 3}" rx="3" fill="currentColor" opacity="0.05"/>`; return; }
+                const [lo, hi] = ranges[k]; let t = hi === lo ? 0.5 : (v - lo) / (hi - lo); t = Math.max(0, Math.min(1, t));
+                const hc = this._heat(1 - t);
+                s += `<rect x="${x + 1}" y="${y + 1}" width="${cw - 3}" height="${ch - 3}" rx="3" fill="${hc.fill}" ${this._pt(r.slug, `${this.algoName(r.slug)} · ${lab}: ${fmt(v, k)}`)}/>`;
+                s += `<text x="${x + cw / 2}" y="${y + ch / 2 + 3}" text-anchor="middle" fill="${hc.text}" style="font-size:9.5px">${fmt(v, k).replace("%", "")}</text>`;
+              });
+            });
+            return s + "</svg>";
+          });
+        },
+
+        get corrSVG() {
+          return _cache("corr", this.runs.length, () => {
+            const mets = [["nrmse", "NRMSE"], ["nrmse_detrend", "Detrend"], ["xsim", "xSIM"], ["correlation", "Corr"], ["dgm_linearity", "DGM lin"], ["calc_moment_dev", "Calc dev"], ["calc_streak", "Streak"], ["runtime_s", "Runtime"]];
+            const M = this._isoDip().filter((r) => mets.every(([k]) => val(r, k) != null));
+            if (M.length < 4) return "<svg></svg>";
+            const dir = (k) => (METRICS[k]?.better || "lower") === "higher" ? 1 : -1;
+            const series = mets.map(([k]) => M.map((r) => val(r, k)));
+            const labW = 66, cw = 46, top = 66, N = mets.length, w = labW + N * cw + 6, h = top + N * cw + 6;
+            let s = `<svg width="${w}" height="${h}" style="max-width:100%;height:auto">`;
+            mets.forEach(([k, lab], j) => {
+              s += `<text x="${labW + j * cw + cw / 2}" y="${top - 6}" text-anchor="start" fill="currentColor" opacity="0.6" style="font-size:9.5px" transform="rotate(-45 ${labW + j * cw + cw / 2} ${top - 6})">${lab}</text>`;
+              s += `<text x="${labW - 6}" y="${top + j * cw + cw / 2 + 3}" text-anchor="end" fill="currentColor" opacity="0.6" style="font-size:9.5px">${lab}</text>`;
+            });
+            for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) {
+              const rho = i === j ? 1 : this._spear(series[i], series[j]) * dir(mets[i][0]) * dir(mets[j][0]);
+              const dv = this._diverge(rho), x = labW + j * cw, y = top + i * cw;
+              s += `<rect x="${x + 1}" y="${y + 1}" width="${cw - 2}" height="${cw - 2}" rx="3" fill="${dv.fill}" data-tip="${this._esc(mets[i][1] + " vs " + mets[j][1] + ": ρ = " + rho.toFixed(2))}"/>`;
+              s += `<text x="${x + cw / 2}" y="${y + cw / 2 + 3}" text-anchor="middle" fill="${dv.text}" style="font-size:9.5px">${rho.toFixed(2)}</text>`;
+            }
+            return s + "</svg>";
+          });
+        },
+
+        get paretoSVG() {
+          return _cache("pareto", this.runs.length, () => {
+            const E = this._esc;
+            const pts = this._isoDip().filter((r) => val(r, "xsim") != null && val(r, "runtime_s") != null)
+              .map((r) => ({ slug: r.slug, name: this.algoName(r.slug), rt: val(r, "runtime_s"), xsim: val(r, "xsim") }));
+            const w = 690, h = 380, padL = 46, padR = 16, padT = 16, padB = 46;
+            if (!pts.length) return "<svg></svg>";
+            pts.forEach((p) => { p.pareto = !pts.some((q) => q !== p && q.xsim >= p.xsim && q.rt <= p.rt && (q.xsim > p.xsim || q.rt < p.rt)); });
+            const lx = pts.map((p) => Math.log10(p.rt)), x0 = Math.min(...lx), x1 = Math.max(...lx);
+            const ys = pts.map((p) => p.xsim), y0 = Math.max(0, Math.min(...ys) - 0.03), y1 = Math.min(1, Math.max(...ys) + 0.03);
+            const sx = (v) => padL + (Math.log10(v) - x0) / (x1 - x0 || 1) * (w - padL - padR);
+            const sy = (v) => h - padB - (v - y0) / (y1 - y0 || 1) * (h - padT - padB);
+            pts.forEach((p) => { p.px = sx(p.rt); p.py = sy(p.xsim); });
+            const front = pts.filter((p) => p.pareto).sort((a, b) => a.rt - b.rt);
+            const fr = (v) => v >= 3600 ? Math.round(v / 3600) + "h" : v >= 60 ? Math.round(v / 60) + "m" : Math.round(v) + "s";
+            const ay = h - padB;
+            let s = `<svg width="${w}" height="${h}" style="max-width:100%;height:auto">`;
+            s += `<line x1="${padL}" y1="${ay}" x2="${w - 8}" y2="${ay}" stroke="currentColor" opacity="0.2"/><line x1="${padL}" y1="${padT}" x2="${padL}" y2="${ay}" stroke="currentColor" opacity="0.2"/>`;
+            for (let e = Math.ceil(x0); e <= Math.floor(x1); e++) { const v = 10 ** e, x = sx(v); s += `<line x1="${x}" y1="${ay}" x2="${x}" y2="${ay + 4}" stroke="currentColor" opacity="0.3"/><text x="${x}" y="${ay + 16}" text-anchor="middle" fill="currentColor" opacity="0.5" style="font-size:10px">${fr(v)}</text>`; }
+            for (let t = Math.ceil(y0 * 10) / 10; t <= y1 + 1e-9; t += 0.1) s += `<text x="${padL - 6}" y="${sy(t) + 3}" text-anchor="end" fill="currentColor" opacity="0.5" style="font-size:10px">${t.toFixed(1)}</text>`;
+            s += `<text x="${(padL + w) / 2}" y="${h - 4}" text-anchor="middle" fill="currentColor" opacity="0.55" style="font-size:11px;font-weight:600">runtime (log scale)</text>`;
+            s += `<text x="13" y="${(padT + ay) / 2}" text-anchor="middle" fill="currentColor" opacity="0.55" style="font-size:11px;font-weight:600" transform="rotate(-90 13 ${(padT + ay) / 2})">xSIM</text>`;
+            if (front.length > 1) s += `<polyline points="${front.map((p) => p.px + "," + p.py).join(" ")}" fill="none" stroke="#10b981" stroke-width="1.5" opacity="0.5" stroke-dasharray="4 3"/>`;
+            pts.forEach((p) => {
+              s += `<circle cx="${p.px}" cy="${p.py}" r="${p.pareto ? 4.5 : 3.5}" fill="${p.pareto ? "#10b981" : "#94a3b8"}" opacity="${p.pareto ? 1 : 0.5}" ${this._pt(p.slug, `${p.name} — xSIM ${p.xsim.toFixed(2)}, ${fmt(p.rt, "runtime_s")}`)}/>`;
+              if (p.pareto) s += `<text x="${p.px + 7}" y="${p.py + 3}" fill="currentColor" opacity="0.85" style="font-size:10px">${E(p.name)}</text>`;
+            });
+            return s + "</svg>";
+          });
+        },
+
+        get tuningRows() {
+          return _cache("tr", this.runs.length, () => {
+            const by = {};
+            this.runs.filter((r) => r.mode === "isolated" && !this._isInvivo(r) && r.stage === "dipole" && val(r, "nrmse") != null)
+              .forEach((r) => { (by[r.slug] ||= {})[r.variant || "default"] = val(r, "nrmse"); });
+            return Object.entries(by).filter(([, v]) => v.default != null && v.tuned != null)
+              .map(([slug, v]) => ({ slug, name: this.algoName(slug), def: v.default, tuned: v.tuned })).sort((a, b) => a.tuned - b.tuned);
+          });
+        },
+        get tuningSVG() {
+          const E = this._esc, rows = this.tuningRows;
+          if (!rows.length) return "<svg></svg>";
+          const w = 600, rh = 40, top = 30, padL = 130, padR = 60, h = top + rows.length * rh + 10;
+          const all = rows.flatMap((r) => [r.def, r.tuned]), lo = Math.min(...all) * 0.95, hi = Math.max(...all) * 1.02;
+          const X = (v) => padL + (v - lo) / (hi - lo || 1) * (w - padL - padR);
+          let s = `<svg width="${w}" height="${h}" style="max-width:100%;height:auto">`;
+          s += `<text x="${padL}" y="18" fill="currentColor" opacity="0.5" style="font-size:10px">NRMSE (lower is better) →</text>`;
+          rows.forEach((r, i) => {
+            const y = top + i * rh + rh / 2, xd = X(r.def), xt = X(r.tuned);
+            s += `<text x="${padL - 12}" y="${y + 3}" text-anchor="end" fill="currentColor" opacity="0.8" style="font-size:11px">${E(r.name)}</text>`;
+            s += `<g ${this._pt(r.slug, `${r.name} — default ${r.def.toFixed(1)} → tuned ${r.tuned.toFixed(1)} NRMSE`)}>`;
+            s += `<line x1="${xd}" y1="${y}" x2="${xt}" y2="${y}" stroke="currentColor" opacity="0.25" stroke-width="2"/>`;
+            s += `<circle cx="${xd}" cy="${y}" r="4.5" fill="#94a3b8"/>`;
+            s += `<circle cx="${xt}" cy="${y}" r="4.5" fill="#10b981"/></g>`;
+            s += `<text x="${Math.min(xd, xt) - 8}" y="${y + 3}" text-anchor="end" fill="#10b981" style="font-size:10px;font-weight:600">${(r.tuned - r.def).toFixed(1)}</text>`;
+          });
+          s += `<g transform="translate(${w - 150},${h - 14})" style="font-size:10px"><circle cx="0" cy="-3" r="4" fill="#94a3b8"/><text x="8" y="0" fill="currentColor" opacity="0.6">default</text><circle cx="66" cy="-3" r="4" fill="#10b981"/><text x="74" y="0" fill="currentColor" opacity="0.6">tuned</text></g>`;
+          return s + "</svg>";
+        },
+
+        get chisepSVG() {
+          return _cache("cs", this.runs.length, () => {
+            const E = this._esc;
+            const rows = this.runs.filter((r) => this._isChisep(r) && r.metrics && r.metrics.para_xsim != null && r.metrics.dia_xsim != null)
+              .map((r) => ({ id: r.id, name: r.name, para: r.metrics.para_xsim, dia: r.metrics.dia_xsim }));
+            const w = 560, h = 300, padT = 34, padB = 34, xL = 155, xR = 405;
+            if (!rows.length) return "<svg></svg>";
+            const vals = rows.flatMap((r) => [r.para, r.dia]), v0 = Math.max(0, Math.min(...vals) - 0.04), v1 = Math.min(1, Math.max(...vals) + 0.04);
+            const sy = (v) => padT + (v1 - v) / (v1 - v0 || 1) * (h - padT - padB);
+            let s = `<svg width="${w}" height="${h}" style="max-width:100%;height:auto">`;
+            s += `<text x="${xL}" y="20" text-anchor="middle" fill="currentColor" opacity="0.55" style="font-size:11px;font-weight:600">χ+ (iron)</text>`;
+            s += `<text x="${xR}" y="20" text-anchor="middle" fill="currentColor" opacity="0.55" style="font-size:11px;font-weight:600">χ− (myelin)</text>`;
+            rows.forEach((r) => {
+              const yP = sy(r.para), yD = sy(r.dia);
+              s += `<g data-tip="${E(r.name + " — χ+ " + r.para.toFixed(2) + " · χ− " + r.dia.toFixed(2) + " xSIM")}" data-run="${E(r.id)}">`;
+              s += `<line x1="${xL}" y1="${yP}" x2="${xR}" y2="${yD}" stroke="#6366f1" stroke-width="1.5" opacity="0.6"/>`;
+              s += `<circle cx="${xL}" cy="${yP}" r="3.5" fill="#6366f1"/><circle cx="${xR}" cy="${yD}" r="3.5" fill="#6366f1"/>`;
+              s += `<text x="${xL - 9}" y="${yP + 3.5}" text-anchor="end" fill="currentColor" opacity="0.8" style="font-size:11px">${E(r.name)}</text>`;
+              s += `<text x="${xL - 9}" y="${yP - 8}" text-anchor="end" fill="currentColor" opacity="0.45" style="font-size:9px">${r.para.toFixed(2)}</text>`;
+              s += `<text x="${xR + 9}" y="${yD + 3.5}" text-anchor="start" fill="currentColor" opacity="0.6" style="font-size:10px">${r.dia.toFixed(2)}</text>`;
+              s += `</g>`;
+            });
+            return s + "</svg>";
+          });
+        },
+
+        get leakSVG() {
+          return _cache("leak", this.runs.length, () => {
+            const E = this._esc;
+            const rows = this.runs.filter((r) => this._isChisep(r) && r.metrics && r.metrics.para_leak != null && r.metrics.dia_leak != null)
+              .map((r) => ({ id: r.id, name: r.name, px: r.metrics.para_leak, py: r.metrics.dia_leak }));
+            const w = 540, h = 380, pad = 46;
+            if (!rows.length) return "<svg></svg>";
+            const m = Math.max(0.05, ...rows.flatMap((r) => [Math.abs(r.px), Math.abs(r.py)])) * 1.15;
+            const cx0 = pad, cx1 = w - 16, cy0 = 16, cy1 = h - pad;
+            const X = (v) => cx0 + (v + m) / (2 * m) * (cx1 - cx0), Y = (v) => cy1 - (v + m) / (2 * m) * (cy1 - cy0);
+            let s = `<svg width="${w}" height="${h}" style="max-width:100%;height:auto">`;
+            s += `<line x1="${cx0}" y1="${Y(0)}" x2="${cx1}" y2="${Y(0)}" stroke="currentColor" opacity="0.25"/>`;
+            s += `<line x1="${X(0)}" y1="${cy0}" x2="${X(0)}" y2="${cy1}" stroke="currentColor" opacity="0.25"/>`;
+            s += `<text x="${X(0) + 4}" y="${cy0 + 10}" fill="currentColor" opacity="0.4" style="font-size:9px">clean = origin</text>`;
+            s += `<text x="${(cx0 + cx1) / 2}" y="${h - 6}" text-anchor="middle" fill="currentColor" opacity="0.55" style="font-size:11px;font-weight:600">iron → myelin leak →</text>`;
+            s += `<text x="14" y="${(cy0 + cy1) / 2}" text-anchor="middle" fill="currentColor" opacity="0.55" style="font-size:11px;font-weight:600" transform="rotate(-90 14 ${(cy0 + cy1) / 2})">myelin → iron leak →</text>`;
+            rows.forEach((r) => {
+              const x = X(r.px), y = Y(r.py);
+              s += `<circle cx="${x}" cy="${y}" r="4.5" fill="#6366f1" opacity="0.85" data-tip="${E(r.name + " — iron→myelin " + r.px.toFixed(3) + " · myelin→iron " + r.py.toFixed(3))}" data-run="${E(r.id)}"/>`;
+              s += `<text x="${x + 7}" y="${y + 3}" fill="currentColor" opacity="0.8" style="font-size:10px">${E(r.name)}</text>`;
+            });
+            return s + "</svg>";
+          });
+        },
+
+        get stageImportance() {
+          return _cache("si", this.runs.length, () => {
+            const full = this.runs.filter((r) => r.stage === "field-mapping+bfr+dipole" && r.mode === "composed" && r.combo && val(r, "nrmse") != null);
+            if (full.length < 8) return null;
+            const vs = full.map((r) => val(r, "nrmse")), gm = vs.reduce((a, c) => a + c, 0) / vs.length;
+            const sst = vs.reduce((a, v) => a + (v - gm) ** 2, 0) || 1;
+            return [["bfr", "Background removal"], ["dipole", "Dipole inversion"], ["field_mapping", "Field mapping"]].map(([f, lab]) => {
+              const g = {}; full.forEach((r) => { (g[r.combo[f]] ||= []).push(val(r, "nrmse")); });
+              const means = Object.entries(g).map(([k, a]) => [k, a.reduce((x, c) => x + c, 0) / a.length]).sort((a, b) => a[1] - b[1]);
+              const ssb = Object.values(g).reduce((a, arr) => { const m = arr.reduce((x, c) => x + c, 0) / arr.length; return a + arr.length * (m - gm) ** 2; }, 0);
+              return { f, lab, eta: ssb / sst * 100, levels: means.length, best: { name: this.disp(means[0][0]), val: means[0][1] }, worst: { name: this.disp(means[means.length - 1][0]), val: means[means.length - 1][1] } };
+            }).sort((a, b) => b.eta - a.eta);
+          });
+        },
+
+        metLabel(k) { return (METRICS[k] || {}).label || k; },
+        stageLabel(s) { return STAGE_LABEL[s] || s; },
+        _isoStage(st) { const by = {}; this.runs.filter((r) => r.mode === "isolated" && !this._isInvivo(r) && r.stage === st && (r.variant || "default") === "default").forEach((r) => { by[r.slug] = r; }); return Object.values(by); },
+        explorerStages() { return [...new Set(this.runs.filter((r) => r.mode === "isolated" && !this._isChisep(r) && !this._isInvivo(r)).map((r) => r.stage))].filter((st) => this._isoStage(st).filter((r) => val(r, "nrmse") != null).length >= 3); },
+        explorerMetrics() { return metricCols(this._isoStage(this.expStage)); },
+        fixExpMetrics() {
+          const m = this.explorerMetrics(); if (!m.length) return;
+          if (!m.includes(this.xMet)) this.xMet = (m.includes("runtime_s") && m.length > 1) ? "runtime_s" : m[0];
+          if (!m.includes(this.yMet) || this.yMet === this.xMet) this.yMet = m.find((k) => k !== this.xMet) || m[0];
+        },
+        get explorerSVG() {
+          return _cache("exp", this.expStage + "|" + this.xMet + "|" + this.yMet + "|" + this.runs.length, () => {
+            const E = this._esc, xk = this.xMet, yk = this.yMet;
+            const w = 700, h = 400, padL = 58, padR = 96, padT = 18, padB = 50;
+            const pts = this._isoStage(this.expStage).filter((r) => val(r, xk) != null && val(r, yk) != null).map((r) => ({ slug: r.slug, name: this.algoName(r.slug), x: val(r, xk), y: val(r, yk) }));
+            if (!pts.length) return `<svg width="${w}" height="${h}"><text x="${w / 2}" y="${h / 2}" text-anchor="middle" fill="currentColor" opacity="0.4" style="font-size:12px">No methods have both metrics at this stage.</text></svg>`;
+            const xlog = xk === "runtime_s", ylog = yk === "runtime_s";
+            const tx = (v) => xlog ? Math.log10(v) : v, ty = (v) => ylog ? Math.log10(v) : v;
+            const xr = pts.map((p) => p.x), yr = pts.map((p) => p.y);
+            const xmin = Math.min(...xr), xmax = Math.max(...xr), ymin = Math.min(...yr), ymax = Math.max(...yr);
+            const X0 = tx(xmin), X1 = tx(xmax), Y0 = ty(ymin), Y1 = ty(ymax);
+            const px = (X1 - X0 || 1) * 0.06, py = (Y1 - Y0 || 1) * 0.09;
+            const ax0 = X0 - px, ax1 = X1 + px, ay0 = Y0 - py, ay1 = Y1 + py;
+            const SX = (v) => padL + (tx(v) - ax0) / (ax1 - ax0 || 1) * (w - padL - padR);
+            const SY = (v) => h - padB - (ty(v) - ay0) / (ay1 - ay0 || 1) * (h - padT - padB);
+            const ayx = h - padB;
+            const better = (k) => (METRICS[k]?.better || "lower") === "higher" ? "higher = better" : "lower = better";
+            const powTicks = (lo, hi) => { const o = []; for (let e = Math.ceil(Math.log10(lo)); e <= Math.floor(Math.log10(hi)); e++) o.push(10 ** e); return o; };
+            let s = `<svg width="${w}" height="${h}" style="max-width:100%;height:auto">`;
+            s += `<line x1="${padL}" y1="${ayx}" x2="${w - 8}" y2="${ayx}" stroke="currentColor" opacity="0.2"/><line x1="${padL}" y1="${padT}" x2="${padL}" y2="${ayx}" stroke="currentColor" opacity="0.2"/>`;
+            const xticks = xlog ? powTicks(xmin, xmax) : [0, 0.25, 0.5, 0.75, 1].map((f) => xmin + (xmax - xmin) * f);
+            xticks.forEach((v) => { const x = SX(v); s += `<line x1="${x}" y1="${ayx}" x2="${x}" y2="${ayx + 4}" stroke="currentColor" opacity="0.3"/><text x="${x}" y="${ayx + 16}" text-anchor="middle" fill="currentColor" opacity="0.5" style="font-size:10px">${E(fmt(v, xk))}</text>`; });
+            const yticks = ylog ? powTicks(ymin, ymax) : [0, 0.25, 0.5, 0.75, 1].map((f) => ymin + (ymax - ymin) * f);
+            yticks.forEach((v) => { const y = SY(v); s += `<text x="${padL - 6}" y="${y + 3}" text-anchor="end" fill="currentColor" opacity="0.5" style="font-size:10px">${E(fmt(v, yk))}</text>`; });
+            s += `<text x="${(padL + w) / 2}" y="${h - 4}" text-anchor="middle" fill="currentColor" opacity="0.55" style="font-size:11px;font-weight:600">${E(this.metLabel(xk))} · ${better(xk)}</text>`;
+            s += `<text x="14" y="${(padT + ayx) / 2}" text-anchor="middle" fill="currentColor" opacity="0.55" style="font-size:11px;font-weight:600" transform="rotate(-90 14 ${(padT + ayx) / 2})">${E(this.metLabel(yk))}</text>`;
+            pts.forEach((p) => { const x = SX(p.x), y = SY(p.y); s += `<circle cx="${x}" cy="${y}" r="4.5" fill="${this._famC(p.slug)}" opacity="0.85" ${this._pt(p.slug, `${p.name} — ${this.metLabel(xk)} ${fmt(p.x, xk)}, ${this.metLabel(yk)} ${fmt(p.y, yk)}`)}/>`; });
+            return s + "</svg>";
+          });
+        },
+      };
+    }
+  </script>
+</body>
+</html>
