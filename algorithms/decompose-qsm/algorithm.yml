@@ -1,8 +1,11 @@
 name: DECOMPOSE-QSM
 slug: decompose-qsm
 stage: chi-separation
+language: MATLAB
+family: iterative
+learning: none
 inputs: [magnitude, chimap, mask, params]  # signal-domain: multi-echo magnitude + provided χ_total (chimap)
-engine: DECOMPOSE (signal-domain per-voxel complex-fit source separation), MATLAB
+engine: Independent
 description: >
   DECOMPOSE-QSM — a signal-domain susceptibility source separation. Unlike the R2'-based methods it
   fits the multi-echo COMPLEX GRE signal per voxel with a 3-stage alternating non-linear least-squares

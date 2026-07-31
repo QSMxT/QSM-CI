@@ -1,6 +1,10 @@
 name: IR2QSM
 slug: ir2qsm
 stage: dipole
+language: Python
+family: deep-learning
+learning: pretrained
+engine: Independent
 inputs: [localfield, mask]  # the artifacts this method actually reads (a subset of the stage's inputs)
 description: >
   IR2QSM — a pretrained deep-learning dipole-inversion network (iterative Reverse Concatenations and

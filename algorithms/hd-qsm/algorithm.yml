@@ -1,6 +1,9 @@
 name: HD-QSM
 slug: hd-qsm
 stage: dipole
+language: Rust
+family: iterative
+learning: none
 engine: QSMxT / QSM.rs
 description: >
   Hybrid data-fidelity QSM: a two-stage linear inversion where an L1 stage produces a discrepancy map that reweights a second L2 stage.

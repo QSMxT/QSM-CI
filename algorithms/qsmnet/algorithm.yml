@@ -1,6 +1,10 @@
 name: QSMnet
 slug: qsmnet
 stage: dipole
+language: Python
+family: deep-learning
+learning: pretrained
+engine: Independent
 inputs: [localfield, mask]  # the artifacts this method actually reads (a subset of the stage's inputs)
 description: >
   QSMnet — a pretrained 3D U-Net for QSM dipole inversion. Consumes the local (tissue) field in ppm

@@ -1,6 +1,10 @@
 name: iLSQR (STI Suite)
 slug: matlab-sti-ilsqr
 stage: dipole
+language: MATLAB
+family: iterative
+learning: none
+engine: STI Suite
 description: Iterative LSQR dipole inversion from STI Suite v3 (the reference iLSQR implementation),
   compiled from MATLAB and run on the license-free MATLAB Runtime. Takes the local field and solves
   for susceptibility with streaking-artifact reduction.

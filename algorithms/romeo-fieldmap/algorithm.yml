@@ -1,6 +1,10 @@
 name: ROMEO field mapping
 slug: romeo-fieldmap
 stage: field-mapping
+language: Rust
+family: direct
+learning: none
+engine: QSMxT / QSM.rs
 description: Multi-echo B0 field mapping by ROMEO phase unwrapping (via the QSMxT/QSM.rs engine) with
   a per-voxel linear fit of unwrapped phase over echoes. Alternative to Laplacian field mapping.
 authors:

@@ -1,6 +1,10 @@
 name: NeXtQSM
 slug: nextqsm
 stage: bfr+dipole
+language: Python
+family: deep-learning
+learning: pretrained
+engine: Independent
 inputs: [totalfield, mask, params]  # the artifacts this method actually reads (a subset of the stage's inputs)
 description: >
   NeXtQSM — a complete deep-learning pipeline for data-consistent QSM trained with hybrid data.

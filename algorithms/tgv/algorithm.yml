@@ -1,6 +1,9 @@
 name: TGV
 slug: tgv
 stage: bfr+dipole
+language: Rust
+family: iterative
+learning: none
 inputs: [totalfield, mask, params]  # the artifacts this method actually reads (a subset of the stage's inputs)
 engine: QSMxT / QSM.rs
 description: >

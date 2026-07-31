@@ -1,8 +1,11 @@
 name: BFRnet
 slug: bfrnet
 stage: bfr
+language: Python
+family: deep-learning
+learning: pretrained
 inputs: [totalfield, mask]  # the artifacts this method actually reads (a subset of the stage's inputs)
-engine: ONNX Runtime
+engine: Independent
 description: >
   Deep-learning background field removal (BFRnet): a 3D dual-frequency octave-convolution U-net
   trained to predict the background field of the brain — including brains with significant

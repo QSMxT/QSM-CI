@@ -1,6 +1,10 @@
 name: MEDI (MATLAB)
 slug: matlab-medi
 stage: bfr+dipole
+language: MATLAB
+family: iterative
+learning: none
+engine: MEDI toolbox
 description: Morphology Enabled Dipole Inversion (Cornell MEDI toolbox), compiled from
   MATLAB and run on the license-free MATLAB Runtime. Takes the total field, removes the
   background field with PDF, then solves the L1 morphology-regularized dipole inversion.
