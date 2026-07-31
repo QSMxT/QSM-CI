@@ -229,7 +229,11 @@ def _tuned_overrides(doc: dict) -> dict:
 
 def discover_algorithms() -> list[dict]:
     algos = []
-    for d in sorted((ROOT / "algorithms").glob("*/")):
+    # QSMCI_ALGORITHMS_DIR lets a harness test point discovery at a fixture method set (tests/methods)
+    # instead of the real algorithms/ tree — so the orchestration (discover -> isolated/composed ->
+    # score -> index) can be smoke-tested end-to-end on the local runner without any real container.
+    algos_root = Path(os.environ.get("QSMCI_ALGORITHMS_DIR") or (ROOT / "algorithms"))
+    for d in sorted(algos_root.glob("*/")):
         spec = d / "algorithm.yml"
         if d.name.startswith("_") or not spec.exists():
             continue
