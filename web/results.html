@@ -146,17 +146,29 @@
 
     <!-- ===================== LEADERBOARD (tab) ===================== -->
     <div x-show="tab==='leaderboard'" x-cloak>
-    <div class="subtabs mt-4">
-      <button class="subtab" :class="{'subtab-on': lbView==='pipelines'}" @click="setLb('pipelines')">Full pipelines</button>
-      <button class="subtab" :class="{'subtab-on': lbView==='stages'}" @click="setLb('stages')">Stages</button>
-    </div>
 
-    <!-- ===================== controls (one unified row, like Stages) ===================== -->
+    <!-- ===================== controls (one unified row) ===================== -->
     <div class="mt-6 flex flex-wrap items-center gap-3">
+      <!-- Unified stage / pipelines selector — replaces the Full pipelines / Stages sub-subtabs.
+           "Pipelines" is the first option; the rest are the individual stages. -->
+      <div class="relative" @click.outside="stageMenu=false">
+        <button @click="stageMenu=!stageMenu" class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+          <span x-text="lbView==='pipelines' ? 'Pipelines' : (STAGE_LABEL[stage]||stage)"></span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div x-show="stageMenu" x-cloak class="absolute left-0 z-20 mt-2 w-64 rounded-xl border border-gray-200 bg-white p-1.5 shadow-lg" style="display:none">
+          <button @click="pickLbStage('pipelines')" class="flex w-full items-center rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-gray-50" :class="lbView==='pipelines' ? 'font-semibold text-emerald-700' : 'text-gray-600'">Pipelines</button>
+          <div class="my-1 border-t border-gray-100 dark:border-gray-700"></div>
+          <template x-for="s in stages()" :key="s">
+            <button @click="pickLbStage(s)" class="flex w-full items-center rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-gray-50" :class="lbView==='stages' && stage===s ? 'font-semibold text-emerald-700' : 'text-gray-600'" x-text="STAGE_LABEL[s]||s"></button>
+          </template>
+        </div>
+      </div>
+      <!-- Matrix / Table + Field mapping appear only for Pipelines. -->
       <template x-if="lbView==='pipelines'">
         <span class="seg">
           <button class="seg-btn" :class="{'seg-on': pipeView==='matrix'}" @click="pipeView='matrix'">Matrix</button>
-          <button class="seg-btn" :class="{'seg-on': pipeView==='table'}" @click="pipeView='table'">Leaderboard</button>
+          <button class="seg-btn" :class="{'seg-on': pipeView==='table'}" @click="pipeView='table'">Table</button>
         </span>
       </template>
       <template x-if="lbView==='pipelines' && fmaps().length>1">
@@ -172,19 +184,6 @@
                 <button @click="fmap=f; fmapMenu=false" class="flex w-full items-center rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-gray-50" :class="fmap===f ? 'font-semibold text-emerald-700' : 'text-gray-600'" x-text="f==='gt' ? 'ground truth' : algoName(f)"></button>
               </template>
             </div>
-          </div>
-        </div>
-      </template>
-      <template x-if="lbView==='stages'">
-        <div class="relative" @click.outside="stageMenu=false">
-          <button @click="stageMenu=!stageMenu" class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
-            <span x-text="STAGE_LABEL[stage]||stage"></span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
-          <div x-show="stageMenu" x-cloak class="absolute left-0 z-20 mt-2 w-64 rounded-xl border border-gray-200 bg-white p-1.5 shadow-lg" style="display:none">
-            <template x-for="s in stages()" :key="s">
-              <button @click="stage=s; fixSort(); stageMenu=false" class="flex w-full items-center rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-gray-50" :class="stage===s ? 'font-semibold text-emerald-700' : 'text-gray-600'" x-text="STAGE_LABEL[s]||s"></button>
-            </template>
           </div>
         </div>
       </template>
@@ -947,6 +946,12 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
         syncView() { this.view = this.lbView === "stages" ? "isolated" : "composed"; },
         setTab(t) { this.tab = t; this.syncView(); },
         setLb(v) { this.lbView = v; this.syncView(); },
+        // Unified stage dropdown: "pipelines" selects the composed view; anything else is an isolated stage.
+        pickLbStage(v) {
+          if (v === "pipelines") { this.lbView = "pipelines"; }
+          else { this.lbView = "stages"; this.stage = v; this.fixSort(); }
+          this.syncView(); this.stageMenu = false;
+        },
         setDataset(d) { this.dataset = d; },
 
         async init() {
