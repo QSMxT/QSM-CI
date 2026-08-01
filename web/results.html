@@ -130,6 +130,9 @@
       <template x-if="hasInvivo()">
         <button class="dtab" :class="{'dtab-on': dataset==='invivo'}" @click="setDataset('invivo')">In vivo (2016)</button>
       </template>
+      <template x-if="hasCross()">
+        <button class="dtab" :class="{'dtab-on': dataset==='cross'}" @click="setDataset('cross')">Cross-dataset</button>
+      </template>
     </div>
 
     <!-- ===================== IN SILICO (2019) ===================== -->
@@ -721,6 +724,7 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
       <div class="rtabs">
         <button class="rtab" :class="{'rtab-on': invivoView==='info'}" @click="invivoView='info'">Info</button>
         <button class="rtab" :class="{'rtab-on': invivoView==='board'}" @click="invivoView='board'">Leaderboard</button>
+        <button class="rtab" :class="{'rtab-on': invivoView==='findings'}" @click="invivoView='findings'">Findings</button>
       </div>
 
       <div x-show="invivoView==='board'" x-cloak>
@@ -774,6 +778,26 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
       </div>
       </div><!-- /in-vivo board -->
 
+      <!-- In vivo · Findings -->
+      <div x-show="invivoView==='findings'" x-cloak>
+        <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+          <h3 class="font-semibold text-gray-900">COSMOS vs STI χ33 — the harder reference</h3>
+          <p class="mt-0.5 max-w-2xl text-xs text-gray-500">Each method's structural similarity against the two references. Every point sits below the diagonal — STI χ33 is a systematically harder target than COSMOS (roughly +20 NRMSE across the board) — yet the two references rank methods almost identically. Coloured by family; hover for values.</p>
+          <div class="mt-2" x-html="familyLegend"></div>
+          <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="ivRefScatterSVG"></div>
+        </div>
+        <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+          <h3 class="font-semibold text-gray-900">Do NRMSE and HFEN agree?</h3>
+          <p class="mt-0.5 max-w-2xl text-xs text-gray-500">The headline error metric (NRMSE) against the fine-detail metric (HFEN, the 2016 challenge's signature), both vs COSMOS. A high Spearman ρ means they reward the same methods; where a point strays off the trend, a method wins on bulk error but loses fine structure, or vice-versa.</p>
+          <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="ivHfenNrmseSVG"></div>
+        </div>
+        <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+          <h3 class="font-semibold text-gray-900">Runtime vs accuracy</h3>
+          <p class="mt-0.5 max-w-2xl text-xs text-gray-500">In-vivo structural similarity (xSIM vs COSMOS) against wall-clock runtime on a log scale. <span style="color:#10b981" class="font-semibold">Green</span> points are Pareto-optimal (nothing is both faster and more accurate); grey points are dominated.</p>
+          <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="ivParetoSVG"></div>
+        </div>
+      </div><!-- /in-vivo findings -->
+
       <!-- In vivo · Info -->
       <div x-show="invivoView==='info'" x-cloak class="info mt-6 space-y-8">
         <div>
@@ -792,6 +816,33 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
             <li><strong>2016 Challenge lessons:</strong> Milovic C., Tejos C., Acosta-Cabronero J., et&nbsp;al. &ldquo;The 2016 QSM Challenge: Lessons learned and considerations for a future challenge design.&rdquo; <em>Magn Reson Med</em> 2020;84(3):1624&ndash;1637. <a href="https://doi.org/10.1002/mrm.28185" class="text-emerald-600 hover:underline">doi:10.1002/mrm.28185</a>.</li>
             <li><strong>COSMOS reference:</strong> Liu T., Spincemaille P., de&nbsp;Rochefort L., Kressler B., Wang Y. &ldquo;Calculation of susceptibility through multiple orientation sampling (COSMOS).&rdquo; <em>Magn Reson Med</em> 2009;61(1):196&ndash;204. <a href="https://doi.org/10.1002/mrm.21828" class="text-emerald-600 hover:underline">doi:10.1002/mrm.21828</a>.</li>
           </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== CROSS-DATASET ===================== -->
+    <section x-show="dataset==='cross'" x-cloak class="mt-3">
+      <div class="mt-6 space-y-8">
+        <div>
+          <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">Dipole inversion across datasets</h2>
+          <p class="mt-2 max-w-3xl text-gray-600 dark:text-gray-400 leading-relaxed">The same isolated dipole-inversion methods, scored on the in-silico phantom (2019, true χ) and the in-vivo challenge (2016, COSMOS reference). Does a ranking on the idealised phantom carry over to real acquired data?</p>
+        </div>
+        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+          <h3 class="font-semibold text-gray-900 dark:text-gray-100">Phantom rank does not predict in-vivo rank</h3>
+          <p class="mt-0.5 max-w-2xl text-xs text-gray-500">Each method's xSIM on the in-silico phantom (x) against its xSIM in vivo (y), coloured by family. The two are essentially uncorrelated: classical iterative and direct methods that win on the clean phantom collapse in vivo, while deep-learning methods hold up. Hover for values; click to open a method.</p>
+          <div class="mt-2" x-html="familyLegend"></div>
+          <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="crossScatterSVG"></div>
+        </div>
+        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+          <h3 class="font-semibold text-gray-900 dark:text-gray-100">How methods move between datasets</h3>
+          <p class="mt-0.5 max-w-2xl text-xs text-gray-500">Each method's rank on the in-silico phantom (left) linked to its rank in vivo (right), by xSIM. Lines coloured by family: deep-learning methods tend to climb left-to-right; classical methods fall.</p>
+          <div class="mt-2" x-html="familyLegend"></div>
+          <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="crossBumpSVG"></div>
+        </div>
+        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+          <h3 class="font-semibold text-gray-900 dark:text-gray-100">Domain robustness by family</h3>
+          <p class="mt-0.5 max-w-2xl text-xs text-gray-500">Mean xSIM per method family on each dataset. Deep-learning methods barely drop from phantom to in-vivo; classical iterative and direct methods lose far more — tuned to the idealised phantom, they generalise worse to real 3 T data.</p>
+          <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="crossBarsSVG"></div>
         </div>
       </div>
     </section>
@@ -886,6 +937,7 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
           // top-level dataset (default in-silico); legacy ?tab=invivo also selects the in-vivo dataset
           if (q.get("dataset") === "invivo" || q.get("tab") === "invivo") this.dataset = "invivo";
           if (q.get("dataset") === "chisep" || q.get("tab") === "chisep") this.dataset = "chisep";
+          if (q.get("dataset") === "cross") this.dataset = "cross";
           const t = q.get("tab");
           if (["info", "leaderboard", "findings"].includes(t)) this.tab = t;
           else if (["pipelines", "stages"].includes(t)) this.tab = "leaderboard";
@@ -903,6 +955,7 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
             if (!this.runs.some((r) => r.mode === "composed")) { this.lbView = "stages"; this.syncView(); }
             if (!this.hasChiSep() && this.dataset === "chisep") this.dataset = "sim";
             if (!this.hasInvivo() && this.dataset === "invivo") this.dataset = "sim";
+            if (!this.hasCross() && this.dataset === "cross") this.dataset = "sim";
           } finally {
             this.loading = false;   // only reveal the empty-state once the fetch has actually resolved
           }
@@ -1099,6 +1152,185 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
           const d = rx.reduce((a, _, i) => a + (rx[i] - ry[i]) ** 2, 0);
           return 1 - 6 * d / (n * (n * n - 1));
         },
+
+        // ---- in-vivo (2016) + cross-dataset findings -------------------------------------
+        _ivDip() {
+          const by = {};
+          this._invivo().filter((r) => r.mode === "isolated" && (r.variant || "default") === "default" && r.status !== "DNF" && val(r, "xsim") != null)
+            .forEach((r) => { by[r.slug] = r; });
+          return Object.values(by);
+        },
+        _ivRunId(slug) { const r = this.runs.find((x) => this._isInvivo(x) && x.mode === "isolated" && x.slug === slug && (x.variant || "default") === "default"); return r ? r.id : ""; },
+        _ptIv(slug, tip) { const id = this._ivRunId(slug); return `data-tip="${this._esc(tip)}"` + (id ? ` data-run="${id}"` : ""); },
+        hasCross() { return this._isoDip().length > 0 && this.hasInvivo(); },
+        _crossDip() {
+          const iv = {}; this._ivDip().forEach((r) => { iv[r.slug] = r; });
+          return this._isoDip().filter((r) => iv[r.slug] && val(r, "xsim") != null && val(iv[r.slug], "xsim") != null)
+            .map((r) => ({ slug: r.slug, name: this.algoName(r.slug), si: val(r, "xsim"), iv: val(iv[r.slug], "xsim"), fam: this._fam(r.slug) }));
+        },
+
+        // In-vivo · COSMOS vs STI reference agreement (points below the diagonal = STI is the harder target).
+        get ivRefScatterSVG() {
+          return _cache("ivref", this.runs.length, () => {
+            const E = this._esc;
+            const rows = this._ivDip().map((r) => ({ slug: r.slug, name: this.algoName(r.slug), x: val(r, "xsim"), y: val(r, "xsim_sti"), fam: this._fam(r.slug) })).filter((p) => p.x != null && p.y != null);
+            if (rows.length < 2) return "<svg></svg>";
+            const w = 700, h = 420, pl = 52, pr = 20, pt = 20, pb = 46;
+            const all = rows.flatMap((r) => [r.x, r.y]), lo = Math.max(0, Math.min(...all) - 0.03), hi = Math.min(1, Math.max(...all) + 0.03);
+            const SX = (v) => pl + (v - lo) / (hi - lo || 1) * (w - pl - pr), SY = (v) => h - pb - (v - lo) / (hi - lo || 1) * (h - pt - pb);
+            let s = `<svg width="${w}" height="${h}" style="max-width:100%;height:auto">`;
+            s += `<line x1="${SX(lo)}" y1="${SY(lo)}" x2="${SX(hi)}" y2="${SY(hi)}" stroke="currentColor" stroke-dasharray="4 4" opacity="0.25"/>`;
+            s += `<text x="${SX(hi) - 4}" y="${SY(hi) + 14}" text-anchor="end" fill="currentColor" opacity="0.4" style="font-size:10px;font-style:italic">equal agreement</text>`;
+            s += `<line x1="${pl}" y1="${h - pb}" x2="${w - 8}" y2="${h - pb}" stroke="currentColor" opacity="0.2"/><line x1="${pl}" y1="${pt}" x2="${pl}" y2="${h - pb}" stroke="currentColor" opacity="0.2"/>`;
+            s += `<text x="${(pl + w) / 2}" y="${h - 5}" text-anchor="middle" fill="currentColor" opacity="0.55" style="font-size:11px;font-weight:600">xSIM vs COSMOS →</text>`;
+            s += `<text x="14" y="${(pt + h - pb) / 2}" text-anchor="middle" fill="currentColor" opacity="0.55" style="font-size:11px;font-weight:600" transform="rotate(-90 14 ${(pt + h - pb) / 2})">xSIM vs STI χ33 →</text>`;
+            const lab = new Set([...rows].sort((a, b) => b.x - a.x).slice(0, 3).map((r) => r.slug)); [...rows].sort((a, b) => a.x - b.x).slice(0, 2).forEach((r) => lab.add(r.slug));
+            rows.forEach((r) => {
+              const x = SX(r.x), y = SY(r.y);
+              s += `<circle cx="${x}" cy="${y}" r="4.5" fill="${FAM[r.fam].c}" opacity="0.85" ${this._ptIv(r.slug, `${r.name} — COSMOS ${r.x.toFixed(2)}, STI ${r.y.toFixed(2)} xSIM`)}/>`;
+              if (lab.has(r.slug)) s += `<text x="${x + 7}" y="${y + 3}" fill="currentColor" opacity="0.8" style="font-size:10px">${E(r.name)}</text>`;
+            });
+            return s + "</svg>";
+          });
+        },
+
+        // In-vivo · do the two agreement metrics (NRMSE, HFEN) rank methods the same?
+        get ivHfenNrmseSVG() {
+          return _cache("ivhn", this.runs.length, () => {
+            const E = this._esc;
+            const rows = this._ivDip().map((r) => ({ slug: r.slug, name: this.algoName(r.slug), x: val(r, "nrmse"), y: val(r, "hfen"), fam: this._fam(r.slug) })).filter((p) => p.x != null && p.y != null);
+            if (rows.length < 2) return "<svg></svg>";
+            const w = 700, h = 400, pl = 50, pr = 20, pt = 18, pb = 46;
+            const [x0, x1] = robustRange(rows.map((r) => r.x)), [y0, y1] = robustRange(rows.map((r) => r.y));
+            const SX = (v) => pl + (Math.min(v, x1) - x0) / (x1 - x0 || 1) * (w - pl - pr), SY = (v) => h - pb - (Math.min(v, y1) - y0) / (y1 - y0 || 1) * (h - pt - pb);
+            const rho = this._spear(rows.map((r) => r.x), rows.map((r) => r.y));
+            let s = `<svg width="${w}" height="${h}" style="max-width:100%;height:auto">`;
+            s += `<line x1="${pl}" y1="${h - pb}" x2="${w - 8}" y2="${h - pb}" stroke="currentColor" opacity="0.2"/><line x1="${pl}" y1="${pt}" x2="${pl}" y2="${h - pb}" stroke="currentColor" opacity="0.2"/>`;
+            s += `<text x="${(pl + w) / 2}" y="${h - 5}" text-anchor="middle" fill="currentColor" opacity="0.55" style="font-size:11px;font-weight:600">NRMSE vs COSMOS (%) →</text>`;
+            s += `<text x="14" y="${(pt + h - pb) / 2}" text-anchor="middle" fill="currentColor" opacity="0.55" style="font-size:11px;font-weight:600" transform="rotate(-90 14 ${(pt + h - pb) / 2})">HFEN vs COSMOS (%) →</text>`;
+            s += `<text x="${w - 14}" y="${pt + 12}" text-anchor="end" fill="currentColor" opacity="0.6" style="font-size:11px;font-weight:600">Spearman ρ = ${rho.toFixed(2)}</text>`;
+            const lab = new Set([...rows].sort((a, b) => a.x - b.x).slice(0, 3).map((r) => r.slug)); [...rows].sort((a, b) => b.x - a.x).slice(0, 2).forEach((r) => lab.add(r.slug));
+            rows.forEach((r) => {
+              const x = SX(r.x), y = SY(r.y);
+              s += `<circle cx="${x}" cy="${y}" r="4.5" fill="${FAM[r.fam].c}" opacity="0.85" ${this._ptIv(r.slug, `${r.name} — NRMSE ${r.x.toFixed(0)}%, HFEN ${r.y.toFixed(0)}%`)}/>`;
+              if (lab.has(r.slug)) s += `<text x="${x + 7}" y="${y + 3}" fill="currentColor" opacity="0.8" style="font-size:10px">${E(r.name)}</text>`;
+            });
+            return s + "</svg>";
+          });
+        },
+
+        // In-vivo · runtime vs accuracy Pareto (COSMOS xSIM).
+        get ivParetoSVG() {
+          return _cache("ivpar", this.runs.length, () => {
+            const E = this._esc;
+            const pts = this._ivDip().filter((r) => val(r, "xsim") != null && val(r, "runtime_s") != null)
+              .map((r) => ({ slug: r.slug, name: this.algoName(r.slug), rt: val(r, "runtime_s"), xsim: val(r, "xsim") }));
+            const w = 690, h = 380, pl = 46, pr = 16, pt = 16, pb = 46;
+            if (!pts.length) return "<svg></svg>";
+            pts.forEach((p) => { p.pareto = !pts.some((q) => q !== p && q.xsim >= p.xsim && q.rt <= p.rt && (q.xsim > p.xsim || q.rt < p.rt)); });
+            const lx = pts.map((p) => Math.log10(p.rt)), x0 = Math.min(...lx), x1 = Math.max(...lx);
+            const ys = pts.map((p) => p.xsim), y0 = Math.max(0, Math.min(...ys) - 0.03), y1 = Math.min(1, Math.max(...ys) + 0.03);
+            const sx = (v) => pl + (Math.log10(v) - x0) / (x1 - x0 || 1) * (w - pl - pr), sy = (v) => h - pb - (v - y0) / (y1 - y0 || 1) * (h - pt - pb);
+            pts.forEach((p) => { p.px = sx(p.rt); p.py = sy(p.xsim); });
+            const front = pts.filter((p) => p.pareto).sort((a, b) => a.rt - b.rt), fr = (v) => v >= 3600 ? Math.round(v / 3600) + "h" : v >= 60 ? Math.round(v / 60) + "m" : Math.round(v) + "s", ay = h - pb;
+            let s = `<svg width="${w}" height="${h}" style="max-width:100%;height:auto">`;
+            s += `<line x1="${pl}" y1="${ay}" x2="${w - 8}" y2="${ay}" stroke="currentColor" opacity="0.2"/><line x1="${pl}" y1="${pt}" x2="${pl}" y2="${ay}" stroke="currentColor" opacity="0.2"/>`;
+            for (let e = Math.ceil(x0); e <= Math.floor(x1); e++) { const v = 10 ** e, x = sx(v); s += `<line x1="${x}" y1="${ay}" x2="${x}" y2="${ay + 4}" stroke="currentColor" opacity="0.3"/><text x="${x}" y="${ay + 16}" text-anchor="middle" fill="currentColor" opacity="0.5" style="font-size:10px">${fr(v)}</text>`; }
+            s += `<text x="${(pl + w) / 2}" y="${h - 3}" text-anchor="middle" fill="currentColor" opacity="0.55" style="font-size:11px;font-weight:600">runtime (log scale)</text>`;
+            s += `<text x="13" y="${(pt + ay) / 2}" text-anchor="middle" fill="currentColor" opacity="0.55" style="font-size:11px;font-weight:600" transform="rotate(-90 13 ${(pt + ay) / 2})">xSIM vs COSMOS</text>`;
+            if (front.length > 1) s += `<polyline points="${front.map((p) => p.px + "," + p.py).join(" ")}" fill="none" stroke="#10b981" stroke-width="1.5" opacity="0.5" stroke-dasharray="4 3"/>`;
+            pts.forEach((p) => {
+              s += `<circle cx="${p.px}" cy="${p.py}" r="${p.pareto ? 4.5 : 3.5}" fill="${p.pareto ? "#10b981" : "#94a3b8"}" opacity="${p.pareto ? 1 : 0.5}" ${this._ptIv(p.slug, `${p.name} — xSIM ${p.xsim.toFixed(2)}, ${fmt(p.rt, "runtime_s")}`)}/>`;
+              if (p.pareto) s += `<text x="${p.px + 7}" y="${p.py + 3}" fill="currentColor" opacity="0.85" style="font-size:10px">${E(p.name)}</text>`;
+            });
+            return s + "</svg>";
+          });
+        },
+
+        // Cross-dataset · in-silico xSIM vs in-vivo (COSMOS) xSIM, coloured by family — the money shot.
+        get crossScatterSVG() {
+          return _cache("xsc", this.runs.length, () => {
+            const E = this._esc, rows = this._crossDip();
+            if (rows.length < 3) return "<svg></svg>";
+            const w = 720, h = 460, pl = 52, pr = 20, pt = 22, pb = 46;
+            const xs = rows.map((r) => r.si), ys = rows.map((r) => r.iv);
+            const x0 = Math.max(0, Math.min(...xs) - 0.03), x1 = Math.min(1, Math.max(...xs) + 0.03), y0 = Math.max(0, Math.min(...ys) - 0.03), y1 = Math.min(1, Math.max(...ys) + 0.03);
+            const SX = (v) => pl + (v - x0) / (x1 - x0 || 1) * (w - pl - pr), SY = (v) => h - pb - (v - y0) / (y1 - y0 || 1) * (h - pt - pb);
+            const rho = this._spear(xs, ys);
+            let s = `<svg width="${w}" height="${h}" style="max-width:100%;height:auto">`;
+            s += `<line x1="${pl}" y1="${h - pb}" x2="${w - 8}" y2="${h - pb}" stroke="currentColor" opacity="0.2"/><line x1="${pl}" y1="${pt}" x2="${pl}" y2="${h - pb}" stroke="currentColor" opacity="0.2"/>`;
+            s += `<text x="${(pl + w) / 2}" y="${h - 5}" text-anchor="middle" fill="currentColor" opacity="0.55" style="font-size:11px;font-weight:600">in-silico (2019) xSIM · true χ →</text>`;
+            s += `<text x="14" y="${(pt + h - pb) / 2}" text-anchor="middle" fill="currentColor" opacity="0.55" style="font-size:11px;font-weight:600" transform="rotate(-90 14 ${(pt + h - pb) / 2})">in-vivo (2016) xSIM · COSMOS →</text>`;
+            s += `<text x="${w - 14}" y="${pt + 12}" text-anchor="end" fill="currentColor" opacity="0.65" style="font-size:12px;font-weight:700">Spearman ρ = ${rho.toFixed(2)}</text>`;
+            s += `<text x="${w - 14}" y="${pt + 28}" text-anchor="end" fill="currentColor" opacity="0.45" style="font-size:10px">phantom rank ≠ in-vivo rank</text>`;
+            const lab = new Set(); [...rows].sort((a, b) => b.si - a.si).slice(0, 2).forEach((r) => lab.add(r.slug)); [...rows].sort((a, b) => b.iv - a.iv).slice(0, 2).forEach((r) => lab.add(r.slug));
+            [...rows].sort((a, b) => Math.abs(b.si - b.iv) - Math.abs(a.si - a.iv)).slice(0, 4).forEach((r) => lab.add(r.slug));
+            rows.forEach((r) => {
+              const x = SX(r.si), y = SY(r.iv);
+              s += `<circle cx="${x}" cy="${y}" r="5" fill="${FAM[r.fam].c}" opacity="0.85" ${this._ptIv(r.slug, `${r.name} — silico ${r.si.toFixed(2)}, in-vivo ${r.iv.toFixed(2)} xSIM`)}/>`;
+              if (lab.has(r.slug)) s += `<text x="${x + 7}" y="${y + 3}" fill="currentColor" opacity="0.85" style="font-size:10px">${E(r.name)}</text>`;
+            });
+            return s + "</svg>";
+          });
+        },
+
+        // Cross-dataset · rank slope chart (in-silico rank → in-vivo rank), lines coloured by family.
+        get crossBumpSVG() {
+          return _cache("xbump", this.runs.length, () => {
+            const E = this._esc, rows = this._crossDip();
+            if (rows.length < 3) return "<svg></svg>";
+            [...rows].sort((a, b) => b.si - a.si).forEach((r, i) => { r.sR = i; });
+            [...rows].sort((a, b) => b.iv - a.iv).forEach((r, i) => { r.vR = i; });
+            const rh = 24, top = 40, xL = 200, xR = 520, w = 740, h = top + rows.length * rh + 12;
+            let s = `<svg width="${w}" height="${h}" style="max-width:100%;height:auto">`;
+            s += `<text x="${xL}" y="22" text-anchor="middle" fill="currentColor" opacity="0.55" style="font-size:11px;font-weight:600">in-silico (2019) rank</text>`;
+            s += `<text x="${xR}" y="22" text-anchor="middle" fill="currentColor" opacity="0.55" style="font-size:11px;font-weight:600">in-vivo (2016) rank</text>`;
+            rows.forEach((r) => {
+              const yL = top + r.sR * rh, yR = top + r.vR * rh, c = FAM[r.fam].c;
+              s += `<g ${this._ptIv(r.slug, `${r.name} — silico #${r.sR + 1} → in-vivo #${r.vR + 1}`)}>`;
+              s += `<line x1="${xL}" y1="${yL}" x2="${xR}" y2="${yR}" stroke="${c}" stroke-width="1.5" opacity="0.6"/>`;
+              s += `<circle cx="${xL}" cy="${yL}" r="3.5" fill="${c}"/><circle cx="${xR}" cy="${yR}" r="3.5" fill="${c}"/>`;
+              s += `<text x="${xL - 9}" y="${yL + 3.5}" text-anchor="end" fill="currentColor" opacity="0.8" style="font-size:11px">${E(r.name)}</text>`;
+              s += `<text x="${xR + 9}" y="${yR + 3.5}" text-anchor="start" fill="currentColor" opacity="0.8" style="font-size:11px">${E(r.name)}</text>`;
+              s += `</g>`;
+            });
+            return s + "</svg>";
+          });
+        },
+
+        // Cross-dataset · mean xSIM by family on each dataset (the robustness gap).
+        get crossBarsSVG() {
+          return _cache("xbar", this.runs.length, () => {
+            const E = this._esc, rows = this._crossDip();
+            if (rows.length < 3) return "<svg></svg>";
+            const order = ["dl", "iter", "direct"];
+            const groups = order.map((f) => {
+              const g = rows.filter((r) => r.fam === f);
+              const mean = (k) => g.length ? g.reduce((a, r) => a + r[k], 0) / g.length : 0;
+              return { fam: f, n: g.length, si: mean("si"), iv: mean("iv") };
+            }).filter((g) => g.n);
+            const w = 640, h = 360, pl = 44, pr = 16, pt = 20, pb = 54, gw = (w - pl - pr) / groups.length;
+            const y1 = Math.min(1, Math.max(...groups.flatMap((g) => [g.si, g.iv])) + 0.08);
+            const SY = (v) => h - pb - v / (y1 || 1) * (h - pt - pb), base = h - pb;
+            let s = `<svg width="${w}" height="${h}" style="max-width:100%;height:auto">`;
+            s += `<line x1="${pl}" y1="${base}" x2="${w - 8}" y2="${base}" stroke="currentColor" opacity="0.2"/><line x1="${pl}" y1="${pt}" x2="${pl}" y2="${base}" stroke="currentColor" opacity="0.2"/>`;
+            for (let t = 0.2; t <= y1 + 1e-9; t += 0.2) s += `<text x="${pl - 6}" y="${SY(t) + 3}" text-anchor="end" fill="currentColor" opacity="0.5" style="font-size:10px">${t.toFixed(1)}</text>`;
+            s += `<text x="13" y="${(pt + base) / 2}" text-anchor="middle" fill="currentColor" opacity="0.55" style="font-size:11px;font-weight:600" transform="rotate(-90 13 ${(pt + base) / 2})">mean xSIM</text>`;
+            groups.forEach((g, i) => {
+              const cx = pl + gw * i + gw / 2, bw = Math.min(52, gw / 3), c = FAM[g.fam].c;
+              const bars = [["silico", g.si, 0.45], ["in-vivo", g.iv, 0.95]];
+              bars.forEach(([lab, v, op], j) => {
+                const x = cx - bw - 4 + j * (bw + 8), y = SY(v);
+                s += `<rect x="${x}" y="${y}" width="${bw}" height="${base - y}" rx="3" fill="${c}" opacity="${op}"><title>${E(FAM[g.fam].label)} · ${lab}: ${v.toFixed(2)}</title></rect>`;
+                s += `<text x="${x + bw / 2}" y="${y - 4}" text-anchor="middle" fill="currentColor" opacity="0.7" style="font-size:10px">${v.toFixed(2)}</text>`;
+                s += `<text x="${x + bw / 2}" y="${base + 14}" text-anchor="middle" fill="currentColor" opacity="0.5" style="font-size:9px">${lab}</text>`;
+              });
+              s += `<text x="${cx}" y="${base + 30}" text-anchor="middle" fill="currentColor" opacity="0.75" style="font-size:11px;font-weight:600">${E(FAM[g.fam].label)} (n=${g.n})</text>`;
+            });
+            return s + "</svg>";
+          });
+        },
+
         get familyLegend() {
           return Object.values(FAM).map((f) => `<span style="display:inline-flex;align-items:center;gap:5px;margin-right:14px;font-size:11px"><span style="width:9px;height:9px;border-radius:50%;background:${f.c};display:inline-block"></span>${f.label}</span>`).join("");
         },
