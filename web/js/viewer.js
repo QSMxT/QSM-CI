@@ -381,6 +381,7 @@ function methodCard(a) {
   };
   const hasSim = plist.some((p) => tunedVal(p, "sim") != null);
   const hasIv  = plist.some((p) => tunedVal(p, "invivo") != null);
+  const hasCs  = plist.some((p) => tunedVal(p, "chisep") != null);
   const cell = (v) => v != null
     ? `<span class="text-emerald-600 dark:text-emerald-400">⚙ ${v}</span>`
     : `<span class="text-gray-300 dark:text-gray-600">—</span>`;
@@ -390,13 +391,15 @@ function methodCard(a) {
     + `<td class="py-1 pr-3 tabular-nums text-gray-500 dark:text-gray-400">${p.default}</td>`
     + (hasSim ? `<td class="py-1 pr-3 tabular-nums">${cell(tunedVal(p, "sim"))}</td>` : "")
     + (hasIv  ? `<td class="py-1 pr-3 tabular-nums">${cell(tunedVal(p, "invivo"))}</td>` : "")
+    + (hasCs  ? `<td class="py-1 pr-3 tabular-nums">${cell(tunedVal(p, "chisep"))}</td>` : "")
     + `<td class="py-1 text-gray-400 dark:text-gray-500">${p.description || ""}</td></tr>`
   ).join("");
   const th = (lab, tip) => `<th class="py-1 pr-3 font-normal"><span class="has-tip text-emerald-600 dark:text-emerald-400" data-tip="${tip}">${lab}</span></th>`;
-  const paramHead = (hasSim || hasIv)
+  const paramHead = (hasSim || hasIv || hasCs)
     ? `<thead><tr class="text-left text-gray-400 dark:text-gray-500"><th class="py-1 pr-3 font-normal">parameter</th><th class="py-1 pr-3 font-normal">default</th>`
       + (hasSim ? th("⚙ tuned · in&nbsp;silico (2019)", "Parameters optimised on the in-silico (2019) scoring phantom, maximising xSIM. The leaderboard still ranks methods at their defaults.") : "")
       + (hasIv  ? th("⚙ tuned · in&nbsp;vivo (2016)", "Parameters optimised on the in-vivo (2016) challenge data (COSMOS reference), maximising xSIM.") : "")
+      + (hasCs  ? th("⚙ tuned · χ-sep (2026)", "Parameters optimised on the χ-separation phantom, maximising source-separation xSIM.") : "")
       + `<th class="py-1 font-normal"></th></tr></thead>`
     : "";
   return `<div>
