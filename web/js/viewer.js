@@ -224,8 +224,10 @@ const fmapsList = () => {
   const s = uniq(composedRuns().map((r) => r.combo.field_mapping || "gt"));
   return s.includes("gt") ? ["gt", ...s.filter((x) => x !== "gt")] : s;
 };
-const bfrList = () => uniq(composedRuns().map((r) => r.combo.bfr));
-const dipoleList = () => uniq(composedRuns().map((r) => r.combo.dipole));
+// Single-step spans (bfr+dipole / end-to-end, e.g. TGV/MEDI/AutoQSM) have a composed run with no
+// bfr/dipole in the combo — filter those out so they don't add an empty "Undefined" row to the axes.
+const bfrList = () => uniq(composedRuns().map((r) => r.combo.bfr).filter(Boolean));
+const dipoleList = () => uniq(composedRuns().map((r) => r.combo.dipole).filter(Boolean));
 const findPipeline = (f, b, d) => composedRuns().find((r) =>
   (r.combo.field_mapping || "gt") === f && r.combo.bfr === b && r.combo.dipole === d);
 const algoName = (slug) => { const a = algos.find((x) => x.slug === slug); return (a && a.name) || slug; };
