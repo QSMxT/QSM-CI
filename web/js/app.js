@@ -311,9 +311,8 @@ function injectChrome() {
     footer.className = "border-t border-gray-200 mt-20 dark:border-gray-800";
     footer.innerHTML = `
       <div class="mx-auto max-w-6xl px-6 py-10 text-sm text-gray-500 dark:text-gray-400 flex flex-col sm:flex-row justify-between gap-4">
-        <p>QSM-CI: a challenge for Quantitative Susceptibility Mapping reconstruction.</p>
-        <p>Scored with <a href="${GH}/tree/main/eval" class="text-emerald-600 hover:underline">qsm-eval</a>
-           · metrics from <a href="https://github.com/astewartau/QSM.rs" class="text-emerald-600 hover:underline">QSM.rs</a></p>
+        <p>QSM-CI: a benchmarking platform for Quantitative Susceptibility Mapping.</p>
+        <p><a href="${GH}" class="text-emerald-600 hover:underline">github.com/QSMxT/QSM-CI</a></p>
       </div>`;
   }
 }
