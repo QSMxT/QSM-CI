@@ -370,15 +370,37 @@ function methodCard(a) {
   // shown next to the method's usual `default:`. Only disclosed (submission page); the leaderboard
   // still ranks methods at their defaults.
   const plist = a.parameters || [];
-  const hasTuned = plist.some((p) => p.tuned != null && String(p.tuned) !== String(p.default));
-  const params = plist.map((p) => {
-    const tuned = (p.tuned != null && String(p.tuned) !== String(p.default))
-      ? `<span class="text-emerald-600 dark:text-emerald-400" title="Optimised on the QSM-CI scoring phantom">⚙ ${p.tuned}</span>`
-      : `<span class="text-gray-300 dark:text-gray-600">—</span>`;
-    return `<tr class="border-t border-gray-100 dark:border-gray-800"><td class="py-1 pr-3 font-mono text-gray-700 dark:text-gray-300">${p.name}</td><td class="py-1 pr-3 tabular-nums text-gray-500 dark:text-gray-400">${p.default}</td>${hasTuned ? `<td class="py-1 pr-3 tabular-nums">${tuned}</td>` : ""}<td class="py-1 text-gray-400 dark:text-gray-500">${p.description || ""}</td></tr>`;
-  }).join("");
-  const paramHead = hasTuned
-    ? `<thead><tr class="text-left text-gray-400 dark:text-gray-500"><th class="py-1 pr-3 font-normal">parameter</th><th class="py-1 pr-3 font-normal">default</th><th class="py-1 pr-3 font-normal"><span class="has-tip text-emerald-600 dark:text-emerald-400" data-tip="Value optimised on the QSM-CI scoring phantom (maximising xSIM). The default is the method's usual setting; the leaderboard still ranks methods at their defaults.">⚙ tuned</span></th><th class="py-1 font-normal"></th></tr></thead>`
+  // Per-parameter tuned value for a dataset. `tuned` is either a scalar (legacy = in-silico) or a
+  // per-dataset map { sim, invivo }. Returns the value only when it actually differs from the default.
+  const tunedVal = (p, ds) => {
+    let t = p.tuned;
+    if (t == null) return null;
+    if (typeof t === "object") t = t[ds];
+    else if (ds !== "sim") t = null;   // a legacy scalar tuning applies to in-silico only
+    return (t != null && String(t) !== String(p.default)) ? t : null;
+  };
+  const hasSim = plist.some((p) => tunedVal(p, "sim") != null);
+  const hasIv  = plist.some((p) => tunedVal(p, "invivo") != null);
+  const hasCs  = plist.some((p) => tunedVal(p, "chisep") != null);
+  const cell = (v) => v != null
+    ? `<span class="text-emerald-600 dark:text-emerald-400">⚙ ${v}</span>`
+    : `<span class="text-gray-300 dark:text-gray-600">—</span>`;
+  const params = plist.map((p) =>
+    `<tr class="border-t border-gray-100 dark:border-gray-800">`
+    + `<td class="py-1 pr-3 font-mono text-gray-700 dark:text-gray-300">${p.name}</td>`
+    + `<td class="py-1 pr-3 tabular-nums text-gray-500 dark:text-gray-400">${p.default}</td>`
+    + (hasSim ? `<td class="py-1 pr-3 tabular-nums">${cell(tunedVal(p, "sim"))}</td>` : "")
+    + (hasIv  ? `<td class="py-1 pr-3 tabular-nums">${cell(tunedVal(p, "invivo"))}</td>` : "")
+    + (hasCs  ? `<td class="py-1 pr-3 tabular-nums">${cell(tunedVal(p, "chisep"))}</td>` : "")
+    + `<td class="py-1 text-gray-400 dark:text-gray-500">${p.description || ""}</td></tr>`
+  ).join("");
+  const th = (lab, tip) => `<th class="py-1 pr-3 font-normal"><span class="has-tip text-emerald-600 dark:text-emerald-400" data-tip="${tip}">${lab}</span></th>`;
+  const paramHead = (hasSim || hasIv || hasCs)
+    ? `<thead><tr class="text-left text-gray-400 dark:text-gray-500"><th class="py-1 pr-3 font-normal">parameter</th><th class="py-1 pr-3 font-normal">default</th>`
+      + (hasSim ? th("⚙ tuned · in&nbsp;silico (2019)", "Parameters optimised on the in-silico (2019) scoring phantom, maximising xSIM. The leaderboard still ranks methods at their defaults.") : "")
+      + (hasIv  ? th("⚙ tuned · in&nbsp;vivo (2016)", "Parameters optimised on the in-vivo (2016) challenge data (COSMOS reference), maximising xSIM.") : "")
+      + (hasCs  ? th("⚙ tuned · χ-sep (2026)", "Parameters optimised on the χ-separation phantom, maximising source-separation xSIM.") : "")
+      + `<th class="py-1 font-normal"></th></tr></thead>`
     : "";
   return `<div>
     <div class="flex items-baseline gap-2">
@@ -781,7 +803,8 @@ function applyOpacities() {
 // map) actually loads data. On a new run the previous run's volumes are dropped and the set rebuilt.
 async function refreshView() {
   const baseKind = curBase === "truth" ? "truth" : "recon";
-  if (residentRunId !== run.id) {
+  const runChanged = residentRunId !== run.id;
+  if (runChanged) {
     [...nv.volumes].forEach((v) => nv.removeVolumeByUrl(v.url));
     residentRunId = run.id; activeBaseVol = activeErrVol = null; preloadPromise = null;
   }
@@ -803,7 +826,20 @@ async function refreshView() {
   if (activeErrVol) setErrorColormap();   // colormap (+ diverging negative), window, magnitude mode
   baseCtl.setup();                        // reframe the base histogram/window for the active map
   nv.updateGLVolume();
+  // A new run can have a different geometry (in-vivo 160³ vs in-silico 164×205×205). NiiVue keeps its
+  // 2D pan/zoom and crosshair across volume swaps, so a fresh volume was being rendered through the
+  // previous one's pan — cutting part of it off, worse each time you toggled datasets. Reset the pan/
+  // zoom and recentre the crosshair whenever the run changes.
+  if (runChanged) {
+    try {
+      nv.scene.pan2Dxyzmm = [0, 0, 0, 1];
+      nv.scene.crosshairPos = [0.5, 0.5, 0.5];
+      nv.updateGLVolume();
+      nv.drawScene();
+    } catch (_) { /* best-effort recentre */ }
+  }
 }
+
 
 // Apply the chosen error-overlay colormap. The error is always windowed on |error| (magnitude) with a
 // transparency floor: cal_min hides near-zero background, cal_max saturates, both mirrored to the
