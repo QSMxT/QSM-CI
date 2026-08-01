@@ -209,13 +209,17 @@ def _yaml_scalar(v) -> str:
     return str(v)
 
 
-def _tuned_overrides(doc: dict) -> dict:
-    """Extract `{param: tuned_value}` from a parsed algorithm.yml `parameters:` block — the settings
-    we optimised on the scoring phantom (each parameter may carry a `tuned:` alongside its
-    `default:`). Values are returned as strings to match the old regex parser (they flow into
-    `overrides` -> config.json / `--set`, which expect the raw token). YAML handles the unindented
-    list items (`- name:` at column 0, as the MATLAB ymls write them) that the old regex needed a
-    special workaround for."""
+def _tuned_overrides(doc: dict, dataset: str = "sim") -> dict:
+    """Extract `{param: tuned_value}` for a dataset (`sim` / `invivo` / `chisep`) from a parsed
+    algorithm.yml `parameters:` block — the settings optimised on that dataset (each parameter may
+    carry a `tuned:` alongside its `default:`). `tuned` is either a per-dataset MAP
+    (`tuned: {sim: .., invivo: .., chisep: ..}`) or a legacy SCALAR (which applies to the in-silico/sim
+    dataset only). So sim keeps reading the existing scalar tunings, and a method only gets an
+    in-vivo / chi-sep tuned variant once it declares `tuned.invivo` / `tuned.chisep`.
+
+    Values are returned as strings (they flow into `overrides` -> config.json / `--set`, which expect
+    the raw token). YAML handles the unindented list items (`- name:` at column 0, as the MATLAB ymls
+    write them) that the old regex needed a special workaround for."""
     params = doc.get("parameters")
     if not isinstance(params, list):
         return {}
@@ -223,11 +227,18 @@ def _tuned_overrides(doc: dict) -> dict:
     for item in params:
         if not isinstance(item, dict) or "name" not in item or "tuned" not in item:
             continue
-        out[_yaml_scalar(item["name"])] = _yaml_scalar(item["tuned"])
+        t = item["tuned"]
+        val = t.get(dataset) if isinstance(t, dict) else (t if dataset == "sim" else None)
+        if val is None:
+            continue
+        out[_yaml_scalar(item["name"])] = _yaml_scalar(val)
     return out
 
 
-def discover_algorithms() -> list[dict]:
+def discover_algorithms(track: str = "sim") -> list[dict]:
+    # `track` selects which dataset's tuned params each method carries: a chi-separation method is only
+    # ever scored on the chisep dataset (→ "chisep"), otherwise the in-vivo run uses "invivo" and
+    # everything else "sim". So the tuned variant a run expands is the one optimised on ITS dataset.
     algos = []
     # QSMCI_ALGORITHMS_DIR lets a harness test point discovery at a fixture method set (tests/methods)
     # instead of the real algorithms/ tree — so the orchestration (discover -> isolated/composed ->
@@ -266,7 +277,8 @@ def discover_algorithms() -> list[dict]:
             "name": _yaml_scalar(doc.get("name")) if doc.get("name") is not None else d.name,
             "image": _yaml_scalar(image) if image is not None else None,
             "consumes": consumes, "produces": STAGES[s]["produces"],
-            "tuned": _tuned_overrides(doc),
+            "tuned": _tuned_overrides(doc, "chisep" if s == "chi-separation"
+                                      else ("invivo" if track == "invivo" else "sim")),
             # Optional per-method smoke-crop size (voxels): a slow per-voxel method (e.g. DECOMPOSE)
             # can shrink the --smoke gate's central box so the PR check stays fast; None = CLI default.
             "smoke_box": doc.get("smoke_box"),
@@ -937,7 +949,7 @@ def main() -> None:
     mask, params = inputs / "mask.nii.gz", inputs / "params.json"
     # GT-backed source map: inputs for raw artifacts, groundtruth for stage boundaries (shared helper).
     gt_sources = _gt_sources(args.dataset)
-    algos = discover_algorithms()
+    algos = discover_algorithms(args.track)
     if args.include:
         keep = set(args.include.split(","))
         algos = [a for a in algos if a["slug"] in keep]

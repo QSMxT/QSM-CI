@@ -604,6 +604,12 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
 
       <!-- table controls (filter + metric columns) -->
       <div class="mt-6 flex flex-wrap items-center gap-3">
+        <template x-if="hasChisepTuned()">
+          <span class="seg">
+            <button class="seg-btn" :class="{'seg-on': variant==='default'}" @click="variant='default'">Defaults</button>
+            <button class="seg-btn" :class="{'seg-on': variant==='tuned', 'seg-on-emerald': variant==='tuned'}" @click="variant='tuned'" data-tip="Each χ-separation method's parameters optimised on the χ-separation phantom, maximising source-separation xSIM.">⚙ Tuned</button>
+          </span>
+        </template>
         <div class="grow"></div>
         <input x-model="filter" type="search" placeholder="Filter…" class="rounded-lg border-gray-300 text-sm px-3 py-1.5 w-44 focus:border-emerald-500 focus:ring-emerald-500" />
         <button @click="downloadCSV(csvRowsChisep(), 'qsm-ci_chi-separation.csv')" data-tip="Download every method and all fields (all metrics, runtime, peak memory, avg/peak CPU) as CSV" class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
@@ -743,6 +749,12 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
 
       <!-- table -->
       <div class="mt-6 flex flex-wrap items-center gap-3">
+        <template x-if="hasInvivoTuned()">
+          <span class="seg">
+            <button class="seg-btn" :class="{'seg-on': variant==='default'}" @click="variant='default'">Defaults</button>
+            <button class="seg-btn" :class="{'seg-on': variant==='tuned', 'seg-on-emerald': variant==='tuned'}" @click="variant='tuned'" data-tip="Each dipole method's parameters optimised on the in-vivo (2016) data (COSMOS reference), maximising xSIM. Only some methods are tunable, so Defaults is the fair cross-method ranking.">⚙ Tuned</button>
+          </span>
+        </template>
         <div class="grow"></div>
         <input x-model="filter" type="search" placeholder="Filter…" class="rounded-lg border-gray-300 text-sm px-3 py-1.5 w-44 focus:border-emerald-500 focus:ring-emerald-500" />
         <button @click="downloadCSV(csvRowsInvivo(), 'qsm-ci_in-vivo-2016.csv')" data-tip="Download every method and all fields (all metrics vs COSMOS + STI, runtime, peak memory, avg/peak CPU) as CSV" class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
@@ -1023,7 +1035,8 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
         },
         chiSepRows() {
           const k = this.chisepSort, dir = this.chisepDir === "asc" ? 1 : -1, f = this.filter.toLowerCase();
-          return this._chisep().filter((r) => !f || r.name.toLowerCase().includes(f)).slice().sort((a, b) => {
+          // one row per method; the Defaults/Tuned toggle (variant) picks default or the chisep-tuned run.
+          return this.pickVariant(this._chisep()).filter((r) => !f || r.name.toLowerCase().includes(f)).slice().sort((a, b) => {
             const va = this.chiVal(a, k), vb = this.chiVal(b, k);
             if (va == null) return 1; if (vb == null) return -1;
             return (va - vb) * dir;
@@ -1032,10 +1045,9 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
         // ---- in-vivo (2016 challenge) dipole leaderboard --------------------------------
         invivoRows() {
           const k = this.invivoSortKey, dir = this.invivoDir === "asc" ? 1 : -1, f = this.filter.toLowerCase();
-          // one row per method (default variant only), most recent scoring wins on id collision
-          const by = {};
-          this._invivo().filter((r) => r.mode === "isolated").forEach((r) => { by[r.slug] = r; });
-          return Object.values(by).filter((r) => !f || (r.name || r.slug).toLowerCase().includes(f))
+          // one row per method; the Defaults/Tuned toggle (variant) picks default or the in-vivo-tuned run.
+          return this.pickVariant(this._invivo().filter((r) => r.mode === "isolated"))
+            .filter((r) => !f || (r.name || r.slug).toLowerCase().includes(f))
             .sort((a, b) => {
               const va = val(a, k), vb = val(b, k);
               if (va == null) return 1; if (vb == null) return -1;
@@ -1058,7 +1070,9 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
         doi(r) { return this.view === "isolated" ? doiFor(this.registry, r.slug) : null; },
         stages() { return [...new Set(this.runs.filter((r) => r.mode === "isolated" && !this._isChisep(r) && !this._isInvivo(r)).map((r) => r.stage))]; },
         fmaps() { return [...new Set(this.runs.filter((r) => r.mode === "composed" && r.combo).map((r) => r.combo.field_mapping || "gt"))]; },
-        hasTuned() { return this.runs.some((r) => r.variant === "tuned"); },
+        hasTuned() { return this.runs.some((r) => r.variant === "tuned" && !this._isInvivo(r) && !this._isChisep(r)); },
+        hasInvivoTuned() { return this.runs.some((r) => this._isInvivo(r) && r.variant === "tuned"); },
+        hasChisepTuned() { return this.runs.some((r) => this._isChisep(r) && r.variant === "tuned"); },
         // ---- CSV export: dump a table's full rows with EVERY available field (all metrics + runtime,
         // peak memory, avg/peak CPU), independent of which metric columns are ticked. --------------
         _csvCell(v) {
