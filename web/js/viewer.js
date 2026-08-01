@@ -501,7 +501,12 @@ async function loadRun() {
 function metricRank(k) {
   const meta = METRICS[k], v = val(run, k);   // val() also reaches top-level fields (e.g. runtime_s)
   if (v == null) return null;
-  const sameGroup = (r) => (run.combo ? r.mode === "composed" : r.mode === "isolated" && r.stage === run.stage);
+  // Composed pipelines are ranked within their OWN field-mapping (the leaderboard groups the same
+  // way: it shows one field-mapping's bfr×dipole matrix at a time), so the denominator matches the
+  // table you clicked from — not the full cross-field-mapping pool of ~845 pipelines.
+  const sameGroup = (r) => (run.combo
+    ? r.mode === "composed" && (r.combo?.field_mapping || "gt") === (run.combo.field_mapping || "gt")
+    : r.mode === "isolated" && r.stage === run.stage);
   const peers = allRuns.filter((r) => r.status !== "DNF" && sameGroup(r) && val(r, k) != null);
   if (peers.length < 2) return null;
   const higher = meta.better !== "lower";
@@ -518,7 +523,12 @@ function metricRank(k) {
 function rankBy(accessor, higher) {
   const v = accessor(run);
   if (v == null) return null;
-  const sameGroup = (r) => (run.combo ? r.mode === "composed" : r.mode === "isolated" && r.stage === run.stage);
+  // Composed pipelines are ranked within their OWN field-mapping (the leaderboard groups the same
+  // way: it shows one field-mapping's bfr×dipole matrix at a time), so the denominator matches the
+  // table you clicked from — not the full cross-field-mapping pool of ~845 pipelines.
+  const sameGroup = (r) => (run.combo
+    ? r.mode === "composed" && (r.combo?.field_mapping || "gt") === (run.combo.field_mapping || "gt")
+    : r.mode === "isolated" && r.stage === run.stage);
   const peers = allRuns.filter((r) => r.status !== "DNF" && sameGroup(r) && accessor(r) != null);
   if (peers.length < 2) return null;
   const rank = 1 + peers.filter((r) => (higher ? accessor(r) > v : accessor(r) < v)).length;
