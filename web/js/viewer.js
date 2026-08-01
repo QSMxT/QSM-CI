@@ -183,6 +183,28 @@ const hasInvivo = () => invivoRuns().length > 0;
 // Which dataset/domain sidebar view a run belongs to.
 const datasetOf = (r) => isInvivo(r) ? "invivo"
   : (r.domain === "chisep" || r.stage === "chi-separation") ? "chisep" : "qsm";
+const DATASET_LABEL = { invivo: "In vivo (2016)", qsm: "In silico (2019)", chisep: "χ-sep (2026)" };
+
+// The isolated-dipole run for `slug` on a given dataset — the "same algorithm, other dataset" target.
+// Only dipole methods span the 2016/2019 datasets (in-vivo scores dipole only).
+function dipoleRunOn(slug, dom) {
+  if (dom === "invivo") return invivoRuns().find((r) => r.slug === slug);
+  return allRuns.find((r) => r.slug === slug && !isInvivo(r) && datasetOf(r) === dom
+    && r.mode === "isolated" && r.stage === "dipole" && (r.variant || "default") === "default");
+}
+// The datasets (2016 / 2019) on which the CURRENT method has an isolated dipole run, in display order.
+function datasetPeers() {
+  if (!run || run.stage !== "dipole" || run.mode !== "isolated") return [];
+  return ["invivo", "qsm"].map((d) => ({ dom: d, run: dipoleRunOn(run.slug, d) })).filter((p) => p.run);
+}
+// Switch dataset while keeping the same algorithm open when it exists on the target (re-selecting its
+// run there); otherwise just browse the target dataset's list.
+function switchDataset(dom) {
+  const peer = run ? dipoleRunOn(run.slug, dom) : null;
+  if (peer) { selectRun(peer.id); return; }  // selectRun re-derives `domain` from the chosen run
+  domain = dom;
+  buildSidebar();
+}
 // Combined single-step methods (bfr+dipole / end-to-end, e.g. NeXtQSM/TGV/QSMART/MEDI/iQSM) go
 // straight to a chi map in one step, so they have no fmap×bfr×dipole combo and are missed by the
 // matrix axes. Surface them as their own Pipelines group: one run per slug, preferring the composed
@@ -303,6 +325,29 @@ function buildSidebar() {
     : (navMode === "stages" ? stagesHTML() : pipelinesHTML());
   $("run-list").querySelectorAll(".run-item").forEach((b) => b.addEventListener("click", () => { if (b.dataset.id) selectRun(b.dataset.id); }));
 }
+// In-content dataset switch, shown above the viewer/metrics only for a dipole method that has an
+// isolated run on more than one dataset (In vivo 2016 / In silico 2019): swap dataset, same method.
+function renderDatasetSwitch() {
+  const el = $("dataset-switch");
+  if (!el) return;
+  const peers = datasetPeers();
+  if (peers.length < 2) { el.classList.add("hidden"); el.innerHTML = ""; return; }
+  const cur = datasetOf(run);
+  const btns = peers.map((p) => {
+    const on = p.dom === cur;
+    return `<button data-switch="${p.dom}" class="rounded-md px-3 py-1.5 transition ${on
+      ? "bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100"
+      : "text-gray-500 hover:text-gray-700 dark:text-gray-400"}">${DATASET_LABEL[p.dom]}</button>`;
+  }).join("");
+  el.innerHTML = `<div class="flex flex-wrap items-center gap-3">
+    <span class="text-xs font-semibold uppercase tracking-wide text-gray-400">Dataset</span>
+    <div class="inline-flex rounded-lg bg-gray-100 p-1 text-xs font-medium dark:bg-gray-800">${btns}</div>
+    <span class="text-xs text-gray-400 dark:text-gray-500">same method — switch the dataset it was scored on</span>
+  </div>`;
+  el.querySelectorAll("[data-switch]").forEach((b) =>
+    b.addEventListener("click", () => switchDataset(b.dataset.switch)));
+  el.classList.remove("hidden");
+}
 function selectRun(id) {
   run = allRuns.find((r) => r.id === id);
   domain = datasetOf(run);   // keep the sidebar on the dataset this run belongs to
@@ -402,6 +447,7 @@ async function loadRun() {
   $("sub-meta").innerHTML = bits.join(" · ");
   renderMethodInfo();
   renderHowToRun();
+  renderDatasetSwitch();
   renderMetrics();
   // Render the resource graph up front, independent of (and before) the WebGL/NiiVue viewer, so a
   // browser without WebGL2, or a run whose volumes fail to load, still shows the usage trace.
@@ -784,7 +830,7 @@ async function init() {
   navMode = run.mode === "composed" ? "pipelines" : "stages";
   $("run-filter").addEventListener("input", (e) => { filter = e.target.value; buildSidebar(); });
   document.querySelectorAll("#nav-toggle button").forEach((b) => b.addEventListener("click", () => { navMode = b.dataset.mode; buildSidebar(); }));
-  document.querySelectorAll("#domain-toggle button").forEach((b) => b.addEventListener("click", () => { domain = b.dataset.domain; buildSidebar(); }));
+  document.querySelectorAll("#domain-toggle button").forEach((b) => b.addEventListener("click", () => switchDataset(b.dataset.domain)));
   // Deep links: ?layer=truth selects the ground-truth base; ?layer=error (or ?error=1) turns on the
   // error overlay. Applied before the first render so loadRun picks them up.
   const layer = q.get("layer");
