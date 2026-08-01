@@ -32,7 +32,8 @@ matlab:
 parameters:
 - name: lambda
   default: 100
-  tuned: 520
+  tuned:
+    sim: 520
   description: data-fidelity weight (larger = closer data fit, less regularization)
 - name: smv_radius
   default: 5

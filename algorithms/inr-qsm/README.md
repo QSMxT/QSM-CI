@@ -4,7 +4,7 @@ Subject-specific **unsupervised** deep-learning **dipole inversion** using an **
 representation** (a coordinate MLP optimized per subject — no pretrained recon weights).
 
 > **STATUS: scaffold — needs image build + push (human).** The container image
-> `ghcr.io/astewartau/qsm-ci/inr-qsm:v1` has not been built or pushed yet, and this scaffold has not
+> `ghcr.io/astewartau/qsm-ci/inr-qsm:v2` has not been built or pushed yet, and this scaffold has not
 > been run end-to-end. See `BUILD.md` and the checklist below.
 
 - **Stage:** `dipole` (localfield → chimap, ppm)

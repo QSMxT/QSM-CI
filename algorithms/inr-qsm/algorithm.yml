@@ -31,7 +31,7 @@ doi: 10.1016/j.media.2024.103173
 code_url: https://github.com/AMRI-Lab/INR-QSM
 # The INR-QSM repo ships NO LICENSE file. Treat as academic use; cite the paper.
 license: none declared (no LICENSE in repo); academic use, cite the paper
-image: ghcr.io/astewartau/qsm-ci/inr-qsm:v1
+image: ghcr.io/astewartau/qsm-ci/inr-qsm:v2
 run: bash run.sh
 # Route to QSM-CI's 31 GB self-hosted runner: the full-size CPU optimization OOMs GitHub's 16 GB
 # hosted box and needs more than the hosted 180-min budget. Only 2 self-hosted jobs run at once.
@@ -61,6 +61,9 @@ parameters:
   description: Number of layers in the SIREN MLP (reference default 10).
 - name: TV_weight
   default: 0.15
+  tuned:
+    sim: 0.01
+    invivo: 0.02
   description: Weight of the edge-weighted total-variation regularizer (reference default 0.15).
 - name: gd_weight
   default: 1.0

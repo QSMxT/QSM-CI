@@ -25,7 +25,9 @@ run: bash run.sh
 parameters:
   - name: lambda
     default: 1e-4
-    tuned: 3e-5
+    tuned:
+      sim: 3e-5
+      invivo: 3e-4
     description: TV regularization
   - name: rho
     default: 1.0

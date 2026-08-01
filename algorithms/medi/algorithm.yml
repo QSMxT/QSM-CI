@@ -32,4 +32,7 @@ optional_inputs:
 parameters:
   - name: lambda
     default: 1e-4
+    tuned:
+      sim: 3e-4
+      invivo: 0.01
     description: regularization

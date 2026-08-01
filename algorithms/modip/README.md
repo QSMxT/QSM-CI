@@ -5,7 +5,7 @@ deep-learning method that optimizes a network **per subject** at inference time 
 weights).
 
 > **STATUS: scaffold — needs image build + push (human).** The container image
-> `ghcr.io/astewartau/qsm-ci/modip:v1` has not been built or pushed yet, and this scaffold has not
+> `ghcr.io/astewartau/qsm-ci/modip:v2` has not been built or pushed yet, and this scaffold has not
 > been run end-to-end. See `BUILD.md` and the checklist below.
 
 - **Stage:** `dipole` (localfield → chimap, ppm)
@@ -94,7 +94,7 @@ pass. The reference targets an **NVIDIA GPU**. Consequences for QSM-CI:
 
 ## Human checklist to finish
 
-- [ ] Build & push the image: `docker build -t ghcr.io/astewartau/qsm-ci/modip:v1 algorithms/modip && docker push ...` (pin `MODIP_REF` to a commit SHA for reproducibility).
+- [ ] Build & push the image: `docker build -t ghcr.io/astewartau/qsm-ci/modip:v2 algorithms/modip && docker push ...` (pin `MODIP_REF` to a commit SHA for reproducibility).
 - [ ] Run once locally on a `qsm-forward` phantom (`qsm-ci run modip --localfield lf.nii.gz --mask mask.nii.gz --params params.json --truth chi.nii.gz`) to confirm plumbing + units + scale.
 - [ ] **Time a CPU run** and decide: GPU runner vs. lower `epoch_num` (iteration cap) to fit the CI time limit.
 - [ ] Verify output scale/sign against a known-good QSM (de-meaning + ppm).

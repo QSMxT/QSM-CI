@@ -26,6 +26,8 @@ run: bash run.sh
 parameters:
 - name: lambda
   default: 7.5e-5
+  tuned:
+    sim: 1e-5
   description: data-fidelity weight (matches MEDI's default; larger = closer data fit, less regularization)
 - name: precond
   default: 30

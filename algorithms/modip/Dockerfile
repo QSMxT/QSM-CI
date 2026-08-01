@@ -9,25 +9,27 @@
 # offline (--network none). We do NOT COPY the submission code — run.sh + modip_infer.py are mounted
 # at /algo at run time (QSM-CI execution model).
 #
-# CPU by default: we install the CPU PyTorch wheel and force CUDA off at run time. The reference is
-# GPU-oriented and per-subject optimization is expensive; see algorithms/modip/README.md
-# "RUNTIME/GPU CAVEAT". A GPU build would swap the torch index-url below.
+# GPU-capable, CPU-optional: we install the default (CUDA) PyTorch wheel, which also runs on CPU-only
+# hosts (torch falls back to CPU when no GPU is visible). Device is chosen AT RUN TIME —
+# run.sh uses the GPU when the runner exposes one (QSM-CI's --runner passes --nv / --gpus all under
+# QSMCI_GPU=1) and CPU otherwise, or on demand via QSMCI_FORCE_CPU=1. See README "RUNTIME/GPU CAVEAT".
 #
 # Build & push once (see algorithms/modip/README.md):
-#   docker build -t ghcr.io/astewartau/qsm-ci/modip:v1 algorithms/modip
-#   docker push ghcr.io/astewartau/qsm-ci/modip:v1
+#   docker build -t ghcr.io/astewartau/qsm-ci/modip:v2 algorithms/modip
+#   docker push ghcr.io/astewartau/qsm-ci/modip:v2
 FROM python:3.10-slim
 
-LABEL description="MoDIP — CPU-capable per-subject deep-image-prior QSM dipole inversion for QSM-CI"
+LABEL description="MoDIP — GPU-capable (CPU-optional) per-subject deep-image-prior QSM dipole inversion for QSM-CI"
 
-# git to clone the repo; libgomp1 for the PyTorch CPU (OpenMP) runtime; ca-certificates for TLS.
+# git to clone the repo; libgomp1 for the PyTorch (OpenMP) CPU runtime; ca-certificates for TLS.
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates git libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
-# CPU PyTorch wheel + NIfTI/array deps. Pin torch to the CPU index so no CUDA runtime is pulled in.
+# Default (CUDA) PyTorch wheel + NIfTI/array deps. The CUDA wheel bundles its own CUDA runtime, so it
+# needs only an NVIDIA driver at run time (via --nv/--gpus) and otherwise falls back to CPU cleanly.
 RUN pip install --no-cache-dir \
-        "torch>=2.1.0" --index-url https://download.pytorch.org/whl/cpu \
+        "torch>=2.1.0" \
  && pip install --no-cache-dir \
         "numpy>=1.23" \
         "scipy>=1.10" \
@@ -40,5 +42,5 @@ RUN git clone https://github.com/sunhongfu/MoDIP /opt/MoDIP \
  && git -C /opt/MoDIP checkout "$MODIP_REF"
 ENV MODIP_HOME="/opt/MoDIP"
 
-# Force CPU + quiet threads at run time (override MODIP_HOME / device if building a GPU variant).
-ENV CUDA_VISIBLE_DEVICES="-1"
+# Device is selected at run time by run.sh (GPU when exposed, else CPU; force CPU with
+# QSMCI_FORCE_CPU=1) — no build-time CUDA lock.

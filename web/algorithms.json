@@ -40,11 +40,17 @@
         {
           "name": "wave_pec",
           "default": 0.85,
+          "tuned": {
+            "invivo": 0.6
+          },
           "description": "fraction of magnitude wavelet coefficients kept in the morphology mask (anatomical prior)"
         },
         {
           "name": "simulated_TE",
           "default": 0.008,
+          "tuned": {
+            "invivo": 0.002
+          },
           "description": "echo time (s) used to simulate the phase from the local field; sets the wrapped-model operating point"
         },
         {
@@ -260,6 +266,10 @@
         {
           "name": "alpha1",
           "default": "2e-4",
+          "tuned": {
+            "sim": "3e-5",
+            "invivo": "4e-4"
+          },
           "description": "gradient L1 (TV) penalty"
         },
         {
@@ -304,11 +314,19 @@
         {
           "name": "alpha1",
           "default": "2e-4",
+          "tuned": {
+            "sim": "3e-5",
+            "invivo": "4e-4"
+          },
           "description": "first-order (TGV) L1 penalty"
         },
         {
           "name": "alpha0",
           "default": "4e-4",
+          "tuned": {
+            "sim": "1e-4",
+            "invivo": "8e-4"
+          },
           "description": "second-order (curvature) penalty"
         },
         {
@@ -359,7 +377,9 @@
         {
           "name": "radius",
           "default": 5.0,
-          "tuned": 3.0,
+          "tuned": {
+            "sim": 3.0
+          },
           "description": "SMV kernel radius (mm)"
         },
         {
@@ -399,6 +419,10 @@
         {
           "name": "alpha_l2",
           "default": "1e-4",
+          "tuned": {
+            "sim": "1e-5",
+            "invivo": "3e-4"
+          },
           "description": "L2-stage TV weight"
         },
         {
@@ -570,6 +594,10 @@
         {
           "name": "TV_weight",
           "default": 0.15,
+          "tuned": {
+            "sim": 0.01,
+            "invivo": 0.02
+          },
           "description": "Weight of the edge-weighted total-variation regularizer (reference default 0.15)."
         },
         {
@@ -757,6 +785,10 @@
         {
           "name": "alpha1",
           "default": "2e-4",
+          "tuned": {
+            "sim": "8e-4",
+            "invivo": 0.02
+          },
           "description": "gradient L1 (TV) penalty"
         },
         {
@@ -907,7 +939,9 @@
         {
           "name": "lambda",
           "default": 100,
-          "tuned": 520,
+          "tuned": {
+            "sim": 520
+          },
           "description": "data-fidelity weight (larger = closer data fit, less regularization)"
         },
         {
@@ -1139,6 +1173,10 @@
         {
           "name": "lambda",
           "default": "1e-4",
+          "tuned": {
+            "sim": "3e-4",
+            "invivo": 0.01
+          },
           "description": "regularization"
         }
       ],
@@ -1326,7 +1364,10 @@
         {
           "name": "lambda",
           "default": "1e-4",
-          "tuned": "3e-3",
+          "tuned": {
+            "sim": "3e-3",
+            "invivo": "3e-3"
+          },
           "description": "regularization"
         },
         {
@@ -1533,12 +1574,17 @@
         {
           "name": "radius",
           "default": 15.0,
-          "tuned": 12.0,
+          "tuned": {
+            "sim": 12.0
+          },
           "description": "SMV kernel radius (mm)"
         },
         {
           "name": "tik_reg",
           "default": "1e-3",
+          "tuned": {
+            "sim": "1e-4"
+          },
           "description": "Tikhonov regularization"
         }
       ],
@@ -1642,7 +1688,6 @@
         {
           "name": "threshold",
           "default": 0.02,
-          "tuned": 0.01,
           "description": "deconvolution threshold"
         },
         {
@@ -1713,6 +1758,9 @@
         {
           "name": "lambda",
           "default": 7.5e-05,
+          "tuned": {
+            "sim": "1e-5"
+          },
           "description": "data-fidelity weight (matches MEDI's default; larger = closer data fit, less regularization)"
         },
         {
@@ -1763,7 +1811,9 @@
         {
           "name": "alpha1",
           "default": 0.0005,
-          "tuned": 0.00015,
+          "tuned": {
+            "sim": 0.00015
+          },
           "description": "first-order (gradient) weight"
         },
         {
@@ -1806,7 +1856,9 @@
         {
           "name": "lambda",
           "default": "1e-4",
-          "tuned": "3e-3",
+          "tuned": {
+            "sim": "3e-4"
+          },
           "description": "L2 regularization"
         }
       ],
@@ -1843,6 +1895,9 @@
         {
           "name": "threshold",
           "default": 0.1,
+          "tuned": {
+            "invivo": 0.4
+          },
           "description": "k-space threshold"
         }
       ],
@@ -1876,7 +1931,9 @@
         {
           "name": "threshold",
           "default": 0.1,
-          "tuned": 0.05,
+          "tuned": {
+            "sim": 0.05
+          },
           "description": "singular-value threshold"
         }
       ],
@@ -1915,7 +1972,10 @@
         {
           "name": "lambda",
           "default": "1e-4",
-          "tuned": "3e-5",
+          "tuned": {
+            "sim": "3e-5",
+            "invivo": "3e-4"
+          },
           "description": "TV regularization"
         },
         {
@@ -2029,6 +2089,9 @@
         {
           "name": "alpha1",
           "default": "2e-4",
+          "tuned": {
+            "sim": "3e-5"
+          },
           "description": "gradient L1 (TV) penalty"
         },
         {
@@ -2039,6 +2102,9 @@
         {
           "name": "beta",
           "default": 150,
+          "tuned": {
+            "sim": 75
+          },
           "description": "harmonic-constraint weight"
         },
         {

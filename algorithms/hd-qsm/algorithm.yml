@@ -16,6 +16,9 @@ run: bash run.sh
 parameters:
   - name: alpha_l2
     default: 1e-4
+    tuned:
+      sim: 1e-5
+      invivo: 3e-4
     description: L2-stage TV weight
   - name: mu1_l2
     default: 1e-2
