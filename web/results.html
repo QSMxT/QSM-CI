@@ -198,6 +198,10 @@
       <template x-if="(lbView==='pipelines'&&pipeView==='table')||lbView==='stages'">
         <div class="flex flex-wrap items-center gap-3">
           <input x-model="filter" type="search" placeholder="Filter…" class="rounded-lg border-gray-300 text-sm px-3 py-1.5 w-44 focus:border-emerald-500 focus:ring-emerald-500" />
+          <button @click="downloadCSV(csvRowsSim(), csvNameSim())" data-tip="Download every method and all fields (all metrics, runtime, peak memory, avg/peak CPU) as CSV" class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            CSV
+          </button>
           <div class="relative" @click.outside="colMenu=false">
             <button @click="colMenu=!colMenu" class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
               Metrics
@@ -600,6 +604,10 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
       <div class="mt-6 flex flex-wrap items-center gap-3">
         <div class="grow"></div>
         <input x-model="filter" type="search" placeholder="Filter…" class="rounded-lg border-gray-300 text-sm px-3 py-1.5 w-44 focus:border-emerald-500 focus:ring-emerald-500" />
+        <button @click="downloadCSV(csvRowsChisep(), 'qsm-ci_chi-separation.csv')" data-tip="Download every method and all fields (all metrics, runtime, peak memory, avg/peak CPU) as CSV" class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          CSV
+        </button>
         <div class="relative" @click.outside="chisepColMenu=false">
           <button @click="chisepColMenu=!chisepColMenu" class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
             Metrics
@@ -733,6 +741,10 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
       <div class="mt-6 flex flex-wrap items-center gap-3">
         <div class="grow"></div>
         <input x-model="filter" type="search" placeholder="Filter…" class="rounded-lg border-gray-300 text-sm px-3 py-1.5 w-44 focus:border-emerald-500 focus:ring-emerald-500" />
+        <button @click="downloadCSV(csvRowsInvivo(), 'qsm-ci_in-vivo-2016.csv')" data-tip="Download every method and all fields (all metrics vs COSMOS + STI, runtime, peak memory, avg/peak CPU) as CSV" class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          CSV
+        </button>
       </div>
       <div class="mt-4 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
         <div class="overflow-x-auto">
@@ -1041,6 +1053,43 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
         stages() { return [...new Set(this.runs.filter((r) => r.mode === "isolated" && !this._isChisep(r) && !this._isInvivo(r)).map((r) => r.stage))]; },
         fmaps() { return [...new Set(this.runs.filter((r) => r.mode === "composed" && r.combo).map((r) => r.combo.field_mapping || "gt"))]; },
         hasTuned() { return this.runs.some((r) => r.variant === "tuned"); },
+        // ---- CSV export: dump a table's full rows with EVERY available field (all metrics + runtime,
+        // peak memory, avg/peak CPU), independent of which metric columns are ticked. --------------
+        _csvCell(v) {
+          if (v == null) return "";
+          const s = typeof v === "number" ? String(v) : String(v);
+          return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+        },
+        downloadCSV(rows, filename) {
+          rows = (rows || []).filter(Boolean);
+          if (!rows.length) return;
+          const ID = ["name", "slug", "stage", "mode", "variant", "track", "status", "id", "image"];
+          const RES = ["runtime_s", "mem_peak_bytes", "cpu_cores_avg", "cpu_cores_max"];
+          const hasCombo = rows.some((r) => r.combo);
+          const COMBO = hasCombo ? ["combo_field_mapping", "combo_bfr", "combo_dipole"] : [];
+          // union of every metric key present across the rows, so chi-sep (para_/dia_) and in-vivo
+          // (_sti) tables export their full metric set too.
+          const metricKeys = [], seen = new Set();
+          rows.forEach((r) => Object.keys(r.metrics || {}).forEach((k) => { if (!seen.has(k)) { seen.add(k); metricKeys.push(k); } }));
+          metricKeys.sort();
+          const cols = [...ID, ...COMBO, ...RES, ...metricKeys];
+          const cell = (r, c) =>
+            c === "combo_field_mapping" ? this._csvCell(r.combo && (r.combo.field_mapping || "gt"))
+            : c === "combo_bfr" ? this._csvCell(r.combo && r.combo.bfr)
+            : c === "combo_dipole" ? this._csvCell(r.combo && r.combo.dipole)
+            : (ID.includes(c) || RES.includes(c)) ? this._csvCell(r[c])
+            : this._csvCell((r.metrics || {})[c]);
+          const csv = [cols.join(","), ...rows.map((r) => cols.map((c) => cell(r, c)).join(","))].join("\n");
+          const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+          const a = document.createElement("a");
+          a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+          URL.revokeObjectURL(url);
+        },
+        // The full row set behind the in-silico leaderboard (ignores the text filter → a complete table).
+        csvRowsSim() { return this.baseRows; },
+        csvNameSim() { return this.view === "isolated" ? `qsm-ci_in-silico_${this.stage}.csv` : `qsm-ci_in-silico_pipelines_fmap-${this.fmap}.csv`; },
+        csvRowsChisep() { return this._chisep(); },
+        csvRowsInvivo() { const by = {}; this._invivo().filter((r) => r.mode === "isolated").forEach((r) => { by[r.slug] = r; }); return Object.values(by); },
         pickVariant(pool) {
           if (this.variant !== "tuned") return pool.filter((r) => (r.variant || "default") === "default");
           const by = {};
