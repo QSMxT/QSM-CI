@@ -61,11 +61,13 @@
       <aside class="lg:sticky lg:top-20 self-start">
         <div class="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden dark:border-gray-800 dark:bg-gray-900">
           <div class="p-3 border-b border-gray-100 space-y-2 dark:border-gray-800">
-            <!-- domain: QSM pipeline vs χ-separation. The χ-separation button is revealed only when
-                 chi-sep methods exist, so the sidebar isn't cluttered with the wrong category. -->
-            <div id="domain-toggle" class="inline-flex w-full rounded-lg bg-gray-100 p-1 text-xs font-medium dark:bg-gray-800">
-              <button data-domain="qsm" class="flex-1 rounded-md px-2 py-1 transition">QSM</button>
+            <!-- dataset / domain: the in-silico (2019) QSM phantom, χ-separation, or the in-vivo (2016)
+                 challenge. The χ-separation and In-vivo buttons are revealed only when such runs exist,
+                 so the sidebar isn't cluttered with an empty category. -->
+            <div id="domain-toggle" class="inline-flex w-full rounded-lg bg-gray-100 p-1 text-[11px] font-medium dark:bg-gray-800">
+              <button data-domain="qsm" class="flex-1 rounded-md px-2 py-1 transition">In silico (2019)</button>
               <button data-domain="chisep" class="flex-1 rounded-md px-2 py-1 transition hidden">χ-separation</button>
+              <button data-domain="invivo" class="flex-1 rounded-md px-2 py-1 transition hidden">In vivo (2016)</button>
             </div>
             <div id="nav-toggle" class="inline-flex w-full rounded-lg bg-gray-100 p-1 text-xs font-medium dark:bg-gray-800">
               <button data-mode="stages" class="flex-1 rounded-md px-2 py-1 transition">Stages</button>

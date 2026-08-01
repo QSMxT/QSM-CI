@@ -14,6 +14,14 @@ const STAGE_COLOR = {
   dipole: "bg-fuchsia-50 text-fuchsia-700 ring-fuchsia-100 dark:bg-fuchsia-500/10 dark:text-fuchsia-300 dark:ring-fuchsia-500/20",
 };
 
+// Which dataset a run was scored on — shown as the leading badge on the detail page so an in-vivo
+// (2016) run is never mistaken for an in-silico (2019) one. Amber for in-vivo matches results.html.
+const DATASET_BADGE = {
+  qsm:    ["In silico (2019)", "bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/20"],
+  chisep: ["χ-separation",     "bg-indigo-50 text-indigo-700 ring-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-300 dark:ring-indigo-500/20"],
+  invivo: ["In vivo (2016)",   "bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/20"],
+};
+
 // Stage I/O for generating "how to run" qsm-ci commands (mirrors stages.yml; magnitude is optional
 // and omitted for brevity). Each stage's output filename is the next stage's input, so a composed
 // pipeline chains as written.
@@ -167,6 +175,14 @@ const composedRuns = () => allRuns.filter((r) => r.mode === "composed" && r.comb
 const chisepRuns = () => allRuns.filter((r) => (r.domain === "chisep" || r.stage === "chi-separation")
   && (r.variant || "default") === "default");
 const hasChisep = () => chisepRuns().length > 0;
+// In-vivo (2016 challenge) runs: a distinct DATASET (not just a domain) — dipole-only, scored vs
+// COSMOS + STI χ33. One flat list, default variant only, like χ-separation.
+const isInvivo = (r) => r.track === "invivo";
+const invivoRuns = () => allRuns.filter((r) => isInvivo(r) && (r.variant || "default") === "default");
+const hasInvivo = () => invivoRuns().length > 0;
+// Which dataset/domain sidebar view a run belongs to.
+const datasetOf = (r) => isInvivo(r) ? "invivo"
+  : (r.domain === "chisep" || r.stage === "chi-separation") ? "chisep" : "qsm";
 // Combined single-step methods (bfr+dipole / end-to-end, e.g. NeXtQSM/TGV/QSMART/MEDI/iQSM) go
 // straight to a chi map in one step, so they have no fmap×bfr×dipole combo and are missed by the
 // matrix axes. Surface them as their own Pipelines group: one run per slug, preferring the composed
@@ -220,7 +236,7 @@ function stagesHTML() {
   // Pipeline order: field mapping → background removal → dipole inversion, then the combined
   // single-method spans (bfr+dipole like TGV/QSMART/MEDI, unwrap+bfr like HARPERELLA, end-to-end).
   return ["field-mapping", "bfr", "dipole", "bfr+dipole", "unwrap+bfr", "end-to-end"].map((s) => {
-    const rs = allRuns.filter((r) => r.mode === "isolated" && r.stage === s && (r.variant || "default") === "default" && (!f || r.name.toLowerCase().includes(f)));
+    const rs = allRuns.filter((r) => r.mode === "isolated" && r.stage === s && (r.variant || "default") === "default" && !isInvivo(r) && (!f || r.name.toLowerCase().includes(f)));
     if (!rs.length) return "";
     const rows = rs.map((r) => runItem(r, run?.id).replace("%NAME%", r.name)).join("");
     return `<div class="mb-3"><div class="px-2.5 pt-1 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">${STAGE_LABEL[s] || s}</div>${rows}</div>`;
@@ -260,23 +276,36 @@ function chisepHTML() {
   const rows = rs.map((r) => runItem(r, run?.id).replace("%NAME%", r.name)).join("");
   return `<div class="mb-3"><div class="px-2.5 pt-1 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">χ-separation</div>${rows}</div>`;
 }
+function invivoHTML() {
+  const f = filter.toLowerCase();
+  const rs = invivoRuns().filter((r) => !f || r.name.toLowerCase().includes(f));
+  if (!rs.length) return `<p class="p-3 text-sm text-gray-400">No in-vivo runs yet.</p>`;
+  const rows = rs.map((r) => runItem(r, run?.id).replace("%NAME%", r.name)).join("");
+  return `<div class="mb-3"><div class="px-2.5 pt-1 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">In vivo (2016) · dipole</div>${rows}</div>`;
+}
 function buildSidebar() {
+  // Fall back to the in-silico dataset if the selected one has no runs.
   if (domain === "chisep" && !hasChisep()) domain = "qsm";
-  // Domain toggle: the χ-separation button is present only when such methods exist.
+  if (domain === "invivo" && !hasInvivo()) domain = "qsm";
+  // Dataset toggle: the χ-separation and In-vivo buttons appear only when such runs exist.
   document.querySelectorAll("#domain-toggle button").forEach((b) =>
     b.className = "flex-1 rounded-md px-2 py-1 transition "
-      + (b.dataset.domain === "chisep" && !hasChisep() ? "hidden " : "")
+      + ((b.dataset.domain === "chisep" && !hasChisep()) || (b.dataset.domain === "invivo" && !hasInvivo()) ? "hidden " : "")
       + (b.dataset.domain === domain ? "bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100" : "text-gray-500 hover:text-gray-700 dark:text-gray-400"));
-  // The Stages/Pipelines split is meaningless for χ-separation (one flat list); hide it there.
-  $("nav-toggle")?.classList.toggle("hidden", domain === "chisep");
+  // The Stages/Pipelines split is meaningless for the flat χ-separation / in-vivo lists; hide it there.
+  const flat = domain === "chisep" || domain === "invivo";
+  $("nav-toggle")?.classList.toggle("hidden", flat);
   document.querySelectorAll("#nav-toggle button").forEach((b) =>
     b.className = "flex-1 rounded-md px-2 py-1 transition " +
       (b.dataset.mode === navMode ? "bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100" : "text-gray-500 hover:text-gray-700 dark:text-gray-400"));
-  $("run-list").innerHTML = domain === "chisep" ? chisepHTML() : (navMode === "stages" ? stagesHTML() : pipelinesHTML());
+  $("run-list").innerHTML = domain === "chisep" ? chisepHTML()
+    : domain === "invivo" ? invivoHTML()
+    : (navMode === "stages" ? stagesHTML() : pipelinesHTML());
   $("run-list").querySelectorAll(".run-item").forEach((b) => b.addEventListener("click", () => { if (b.dataset.id) selectRun(b.dataset.id); }));
 }
 function selectRun(id) {
   run = allRuns.find((r) => r.id === id);
+  domain = datasetOf(run);   // keep the sidebar on the dataset this run belongs to
   history.replaceState(null, "", "?run=" + encodeURIComponent(id));
   buildSidebar();
   loadRun();
@@ -357,7 +386,9 @@ function variantToggleHTML() {
 async function loadRun() {
   $("sub-title").textContent = run.name;
   const stageCls = STAGE_COLOR[run.stage] || "bg-gray-100 text-gray-600 ring-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-700";
+  const ds = DATASET_BADGE[datasetOf(run)];
   $("sub-badges").innerHTML =
+    badge(ds[0], ds[1]) +
     badge(STAGE_LABEL[run.stage] || run.stage, stageCls) +
     badge(run.mode === "composed" ? "Composed pipeline" : "Isolated", "bg-gray-100 text-gray-600 ring-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-700") +
     (run.status === "DNF" ? badge("DNF", "bg-red-50 text-red-600 ring-red-100 dark:bg-red-500/10 dark:text-red-400 dark:ring-red-500/20") : "") +
@@ -365,6 +396,7 @@ async function loadRun() {
   $("sub-badges").querySelectorAll("[data-variant-id]").forEach((b) =>
     b.addEventListener("click", () => selectRun(b.dataset.variantId)));
   const bits = [];
+  if (isInvivo(run)) bits.push("2016 challenge · scored vs COSMOS + STI χ33 (no true χ in vivo)");
   if (run.artifact) bits.push(`scored artifact <code class="text-gray-700 dark:text-gray-300">${run.artifact}</code>`);
   if (run.image) bits.push(`image <code class="text-gray-700 dark:text-gray-300">${run.image}</code>`);
   $("sub-meta").innerHTML = bits.join(" · ");
@@ -748,7 +780,7 @@ async function init() {
     || allRuns.find((r) => r.mode === "isolated" && r.slug === want)
     || allRuns.find((r) => r.status !== "DNF") || allRuns[0];
   if (!run) { $("sub-title").textContent = "No runs"; return; }
-  domain = (run.domain === "chisep" || run.stage === "chi-separation") ? "chisep" : "qsm";
+  domain = datasetOf(run);
   navMode = run.mode === "composed" ? "pipelines" : "stages";
   $("run-filter").addEventListener("input", (e) => { filter = e.target.value; buildSidebar(); });
   document.querySelectorAll("#nav-toggle button").forEach((b) => b.addEventListener("click", () => { navMode = b.dataset.mode; buildSidebar(); }));
