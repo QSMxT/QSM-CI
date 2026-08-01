@@ -1,6 +1,6 @@
 # QSM-CI
 
-**An open challenge and leaderboard for Quantitative Susceptibility Mapping (QSM) reconstruction.**
+**An open benchmarking platform and leaderboard for Quantitative Susceptibility Mapping (QSM) reconstruction.**
 
 Submit a QSM algorithm — in any language, as a container — and QSM-CI runs it on standardized data,
 scores it against held-out ground truth, and publishes the result to an interactive leaderboard.
