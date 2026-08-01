@@ -393,8 +393,8 @@
           <div class="mt-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
             <div class="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <h3 class="font-semibold text-gray-900">The isolated ranking misleads about real pipelines</h3>
-                <p class="mt-0.5 max-w-2xl text-xs text-gray-500">Dipole inversion ranked on the clean ground-truth field (left) versus chained after real background removal (right), by NRMSE, best at top. <span style="color:#10b981" class="font-semibold">Green</span> rises when composed (robust to upstream error); <span style="color:#e11d48" class="font-semibold">red</span> falls. TV-family methods top the clean ranking, then collapse; several networks climb.</p>
+                <h3 class="text-lg font-semibold text-gray-900">The isolated ranking misleads about real pipelines</h3>
+                <p class="mt-2 text-sm text-gray-600 leading-relaxed">Dipole inversion ranked on the clean ground-truth field (left) versus chained after real background removal (right), by NRMSE, best at top. <span style="color:#10b981" class="font-semibold">Green</span> rises when composed (robust to upstream error); <span style="color:#e11d48" class="font-semibold">red</span> falls. TV-family methods top the clean ranking, then collapse; several networks climb.</p>
               </div>
               <label class="inline-flex shrink-0 items-center gap-2 text-xs text-gray-500" data-tip="How each dipole method is summarised across its background-removal partners: the mean (rewards robustness) or its single best pairing (fairest per method).">Summarise by
                 <select x-model="insightMode" class="rounded-lg border-gray-300 text-xs py-1 pr-7">
@@ -403,20 +403,20 @@
                 </select>
               </label>
             </div>
-            <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="slopeSVG"></div>
+            <div class="mt-5 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="slopeSVG"></div>
           </div>
 
           <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h3 class="font-semibold text-gray-900">Accurate but fragile, or reliable but modest</h3>
-            <p class="mt-0.5 max-w-2xl text-xs text-gray-500">Each dipole method by its mean NRMSE across background-removal partners (x) versus how much that error <em>varies</em> between partners (y). Bottom-left is the sweet spot: accurate <em>and</em> consistent. Iterative methods lead on average but scatter wildly with a poor upstream stage; networks are dull but dependable.</p>
+            <h3 class="text-lg font-semibold text-gray-900">Accurate but fragile, or reliable but modest</h3>
+            <p class="mt-2 text-sm text-gray-600 leading-relaxed">Each dipole method by its mean NRMSE across background-removal partners (x) versus how much that error <em>varies</em> between partners (y). Bottom-left is the sweet spot: accurate <em>and</em> consistent. Iterative methods lead on average but scatter wildly with a poor upstream stage; networks are dull but dependable.</p>
             <div class="mt-2" x-html="familyLegend"></div>
             <div class="mt-2 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="reliabilitySVG"></div>
           </div>
 
           <template x-if="pipelineFacts">
             <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-              <h3 class="font-semibold text-gray-900">You can't build the best pipeline greedily</h3>
-              <p class="mt-0.5 max-w-2xl text-xs text-gray-500">Picking the strongest method at each stage independently does <em>not</em> give the best end-to-end pipeline: stages interact. The best full pipeline beats the greedy per-stage choice by <span class="font-semibold" x-text="pipelineFacts.deltaPct+'%'"></span> NRMSE.</p>
+              <h3 class="text-lg font-semibold text-gray-900">You can't build the best pipeline greedily</h3>
+              <p class="mt-2 text-sm text-gray-600 leading-relaxed">Picking the strongest method at each stage independently does <em>not</em> give the best end-to-end pipeline: stages interact. The best full pipeline beats the greedy per-stage choice by <span class="font-semibold" x-text="pipelineFacts.deltaPct+'%'"></span> NRMSE.</p>
               <div class="mt-4 space-y-3">
                 <template x-for="row in [{k:'optimal',lab:'Best full pipeline',c:'#10b981'},{k:'greedy',lab:'Greedy (best method per stage)',c:'#e11d48'}]" :key="row.k">
                   <div>
@@ -460,8 +460,8 @@
 
           <template x-if="stageImportance">
             <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-              <h3 class="font-semibold text-gray-900">Which stage decides your result?</h3>
-              <p class="mt-0.5 max-w-2xl text-xs text-gray-500">Share of full-pipeline NRMSE variance explained by the choice at each stage, across every pipeline. Background removal dominates: it swings the final error far more than the dipole-inversion method the field usually focuses on.</p>
+              <h3 class="text-lg font-semibold text-gray-900">Which stage decides your result?</h3>
+              <p class="mt-2 text-sm text-gray-600 leading-relaxed">Share of full-pipeline NRMSE variance explained by the choice at each stage, across every pipeline. Background removal dominates: it swings the final error far more than the dipole-inversion method the field usually focuses on.</p>
               <div class="mt-4 space-y-3">
                 <template x-for="st in stageImportance" :key="st.f">
                   <div>
@@ -484,20 +484,20 @@
         <!-- ---- Different metrics, different winners ---- -->
         <div x-show="findView==='metrics'">
           <div class="mt-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h3 class="font-semibold text-gray-900">The best method depends on what you measure</h3>
-            <p class="mt-0.5 max-w-2xl text-xs text-gray-500">Isolated dipole methods across five metrics, each normalised so <em>higher is better</em>. Grey lines are all methods; the coloured lines are the winner of a given axis, showing they lose elsewhere: the global-NRMSE / xSIM leader is among the <em>worst</em> at calcification, and the fast direct methods that under-quantify iron.</p>
+            <h3 class="text-lg font-semibold text-gray-900">The best method depends on what you measure</h3>
+            <p class="mt-2 text-sm text-gray-600 leading-relaxed">Isolated dipole methods across five metrics, each normalised so <em>higher is better</em>. Grey lines are all methods; the coloured lines are the winner of a given axis, showing they lose elsewhere: the global-NRMSE / xSIM leader is among the <em>worst</em> at calcification, and the fast direct methods that under-quantify iron.</p>
             <div class="mt-2 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="parallelSVG"></div>
           </div>
 
           <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h3 class="font-semibold text-gray-900">Where the error lives</h3>
-            <p class="mt-0.5 max-w-2xl text-xs text-gray-500">Isolated dipole error by region and artefact (rows sorted by overall NRMSE). <span style="color:#6ea886" class="font-semibold">Green</span> is good, <span style="color:#be6b6b" class="font-semibold">red</span> is poor, coloured within each column. Venous blood is universally hardest; the calcification columns reshuffle the ranking entirely.</p>
+            <h3 class="text-lg font-semibold text-gray-900">Where the error lives</h3>
+            <p class="mt-2 text-sm text-gray-600 leading-relaxed">Isolated dipole error by region and artefact (rows sorted by overall NRMSE). <span style="color:#6ea886" class="font-semibold">Green</span> is good, <span style="color:#be6b6b" class="font-semibold">red</span> is poor, coloured within each column. Venous blood is universally hardest; the calcification columns reshuffle the ranking entirely.</p>
             <div class="mt-3 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="roiHeatSVG"></div>
           </div>
 
           <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h3 class="font-semibold text-gray-900">Which metrics are redundant</h3>
-            <p class="mt-0.5 max-w-2xl text-xs text-gray-500">Rank agreement (Spearman ρ) between metrics over the isolated dipole methods, sign-aligned so +1 means they reward the same methods. NRMSE, detrended NRMSE and correlation are near-interchangeable; DGM linearity, calcification and runtime are their own axes, so a single headline number can't stand in for them.</p>
+            <h3 class="text-lg font-semibold text-gray-900">Which metrics are redundant</h3>
+            <p class="mt-2 text-sm text-gray-600 leading-relaxed">Rank agreement (Spearman ρ) between metrics over the isolated dipole methods, sign-aligned so +1 means they reward the same methods. NRMSE, detrended NRMSE and correlation are near-interchangeable; DGM linearity, calcification and runtime are their own axes, so a single headline number can't stand in for them.</p>
             <div class="mt-3 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="corrSVG"></div>
           </div>
         </div>
@@ -505,16 +505,16 @@
         <!-- ---- Speed & tuning ---- -->
         <div x-show="findView==='speed'">
           <div class="mt-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h3 class="font-semibold text-gray-900">Accuracy vs compute</h3>
-            <p class="mt-0.5 max-w-2xl text-xs text-gray-500">Isolated dipole inversion: structural similarity (xSIM, higher is better) against wall-clock runtime on a log scale. <span style="color:#10b981" class="font-semibold">Green</span> points are Pareto-optimal (nothing is both faster and more accurate); grey points are dominated. Some methods cost minutes for no accuracy gain.</p>
-            <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="paretoSVG"></div>
+            <h3 class="text-lg font-semibold text-gray-900">Accuracy vs compute</h3>
+            <p class="mt-2 text-sm text-gray-600 leading-relaxed">Isolated dipole inversion: structural similarity (xSIM, higher is better) against wall-clock runtime on a log scale. <span style="color:#10b981" class="font-semibold">Green</span> points are Pareto-optimal (nothing is both faster and more accurate); grey points are dominated. Some methods cost minutes for no accuracy gain.</p>
+            <div class="mt-5 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="paretoSVG"></div>
           </div>
 
           <template x-if="tuningRows.length">
             <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-              <h3 class="font-semibold text-gray-900">What tuning buys</h3>
-              <p class="mt-0.5 max-w-2xl text-xs text-gray-500">Isolated dipole NRMSE at default parameters (grey) versus tuned on the scoring phantom (green). Only a handful of methods are tunable (pretrained networks aren't), which is why <em>defaults</em> is the fair cross-method ranking. Tuning on the scored data is a mild form of overfitting.</p>
-              <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="tuningSVG"></div>
+              <h3 class="text-lg font-semibold text-gray-900">What tuning buys</h3>
+              <p class="mt-2 text-sm text-gray-600 leading-relaxed">Isolated dipole NRMSE at default parameters (grey) versus tuned on the scoring phantom (green). Only a handful of methods are tunable (pretrained networks aren't), which is why <em>defaults</em> is the fair cross-method ranking. Tuning on the scored data is a mild form of overfitting.</p>
+              <div class="mt-5 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="tuningSVG"></div>
             </div>
           </template>
         </div>
@@ -522,8 +522,8 @@
         <!-- ---- Explore ---- -->
         <div x-show="findView==='explore'">
           <div class="mt-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h3 class="font-semibold text-gray-900">Build your own comparison</h3>
-            <p class="mt-0.5 max-w-2xl text-xs text-gray-500">Plot any two metrics against each other for any isolated stage. Points are methods, coloured by family; hover to identify, click to open a method. Runtime uses a log scale.</p>
+            <h3 class="text-lg font-semibold text-gray-900">Build your own comparison</h3>
+            <p class="mt-2 text-sm text-gray-600 leading-relaxed">Plot any two metrics against each other for any isolated stage. Points are methods, coloured by family; hover to identify, click to open a method. Runtime uses a log scale.</p>
             <div class="mt-3 flex flex-wrap items-center gap-3 text-sm">
               <label class="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400">Stage
                 <select x-model="expStage" @change="fixExpMetrics()" class="rounded-lg border-gray-300 text-sm py-1.5 pr-8">
@@ -658,15 +658,15 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
       <!-- χ-separation · Findings (figures split out of the Leaderboard, mirroring the in-silico dataset) -->
       <div x-show="chisepView==='findings'" x-cloak>
       <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-        <h3 class="font-semibold text-gray-900">Myelin (χ−) is harder to recover than iron (χ+)</h3>
-        <p class="mt-0.5 max-w-2xl text-xs text-gray-500">Structural similarity (xSIM) of the recovered paramagnetic χ+ (iron) source versus the diamagnetic χ− (myelin / calcium) source. Every method drops from left to right, so the diamagnetic map is systematically the harder of the two.</p>
-        <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="chisepSVG"></div>
+        <h3 class="text-lg font-semibold text-gray-900">Myelin (χ−) is harder to recover than iron (χ+)</h3>
+        <p class="mt-2 text-sm text-gray-600 leading-relaxed">Structural similarity (xSIM) of the recovered paramagnetic χ+ (iron) source versus the diamagnetic χ− (myelin / calcium) source. Every method drops from left to right, so the diamagnetic map is systematically the harder of the two.</p>
+        <div class="mt-5 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="chisepSVG"></div>
       </div>
 
       <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-        <h3 class="font-semibold text-gray-900">Cross-contamination between the two sources</h3>
-        <p class="mt-0.5 max-w-2xl text-xs text-gray-500">How much each source map bleeds into the other (regression slope, 0 = clean): iron leaking into the myelin map (x) versus myelin leaking into iron (y). The origin is perfect separation; distance from it is contamination that xSIM can miss.</p>
-        <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="leakSVG"></div>
+        <h3 class="text-lg font-semibold text-gray-900">Cross-contamination between the two sources</h3>
+        <p class="mt-2 text-sm text-gray-600 leading-relaxed">How much each source map bleeds into the other (regression slope, 0 = clean): iron leaking into the myelin map (x) versus myelin leaking into iron (y). The origin is perfect separation; distance from it is contamination that xSIM can miss.</p>
+        <div class="mt-5 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="leakSVG"></div>
       </div>
       </div><!-- /chisep findings -->
 
@@ -781,20 +781,20 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
       <!-- In vivo · Findings -->
       <div x-show="invivoView==='findings'" x-cloak>
         <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-          <h3 class="font-semibold text-gray-900">COSMOS vs STI χ33 — the harder reference</h3>
-          <p class="mt-0.5 max-w-2xl text-xs text-gray-500">Each method's structural similarity against the two references. Every point sits below the diagonal — STI χ33 is a systematically harder target than COSMOS (roughly +20 NRMSE across the board) — yet the two references rank methods almost identically. Coloured by family; hover for values.</p>
+          <h3 class="text-lg font-semibold text-gray-900">COSMOS vs STI χ33 — the harder reference</h3>
+          <p class="mt-2 text-sm text-gray-600 leading-relaxed">Each method's structural similarity against the two references. Every point sits below the diagonal — STI χ33 is a systematically harder target than COSMOS (roughly +20 NRMSE across the board) — yet the two references rank methods almost identically. Coloured by family; hover for values.</p>
           <div class="mt-2" x-html="familyLegend"></div>
-          <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="ivRefScatterSVG"></div>
+          <div class="mt-5 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="ivRefScatterSVG"></div>
         </div>
         <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-          <h3 class="font-semibold text-gray-900">Do NRMSE and HFEN agree?</h3>
-          <p class="mt-0.5 max-w-2xl text-xs text-gray-500">The headline error metric (NRMSE) against the fine-detail metric (HFEN, the 2016 challenge's signature), both vs COSMOS. A high Spearman ρ means they reward the same methods; where a point strays off the trend, a method wins on bulk error but loses fine structure, or vice-versa.</p>
-          <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="ivHfenNrmseSVG"></div>
+          <h3 class="text-lg font-semibold text-gray-900">Do NRMSE and HFEN agree?</h3>
+          <p class="mt-2 text-sm text-gray-600 leading-relaxed">The headline error metric (NRMSE) against the fine-detail metric (HFEN, the 2016 challenge's signature), both vs COSMOS. A high Spearman ρ means they reward the same methods; where a point strays off the trend, a method wins on bulk error but loses fine structure, or vice-versa.</p>
+          <div class="mt-5 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="ivHfenNrmseSVG"></div>
         </div>
         <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-          <h3 class="font-semibold text-gray-900">Runtime vs accuracy</h3>
-          <p class="mt-0.5 max-w-2xl text-xs text-gray-500">In-vivo structural similarity (xSIM vs COSMOS) against wall-clock runtime on a log scale. <span style="color:#10b981" class="font-semibold">Green</span> points are Pareto-optimal (nothing is both faster and more accurate); grey points are dominated.</p>
-          <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="ivParetoSVG"></div>
+          <h3 class="text-lg font-semibold text-gray-900">Runtime vs accuracy</h3>
+          <p class="mt-2 text-sm text-gray-600 leading-relaxed">In-vivo structural similarity (xSIM vs COSMOS) against wall-clock runtime on a log scale. <span style="color:#10b981" class="font-semibold">Green</span> points are Pareto-optimal (nothing is both faster and more accurate); grey points are dominated.</p>
+          <div class="mt-5 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="ivParetoSVG"></div>
         </div>
       </div><!-- /in-vivo findings -->
 
@@ -827,22 +827,22 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
           <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">Dipole inversion across datasets</h2>
           <p class="mt-2 max-w-3xl text-gray-600 dark:text-gray-400 leading-relaxed">The same isolated dipole-inversion methods, scored on the in-silico phantom (2019, true χ) and the in-vivo challenge (2016, COSMOS reference). Does a ranking on the idealised phantom carry over to real acquired data?</p>
         </div>
-        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-          <h3 class="font-semibold text-gray-900 dark:text-gray-100">Phantom rank does not predict in-vivo rank</h3>
-          <p class="mt-0.5 max-w-2xl text-xs text-gray-500">Each method's xSIM on the in-silico phantom (x) against its xSIM in vivo (y), coloured by family. The two are essentially uncorrelated: classical iterative and direct methods that win on the clean phantom collapse in vivo, while deep-learning methods hold up. Hover for values; click to open a method.</p>
+        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+          <h3 class="text-lg font-semibold text-gray-900">Phantom rank does not predict in-vivo rank</h3>
+          <p class="mt-2 text-sm text-gray-600 leading-relaxed">Each method's xSIM on the in-silico phantom (x) against its xSIM in vivo (y), coloured by family. The two are essentially uncorrelated: classical iterative and direct methods that win on the clean phantom collapse in vivo, while deep-learning methods hold up. Hover for values; click to open a method.</p>
           <div class="mt-2" x-html="familyLegend"></div>
-          <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="crossScatterSVG"></div>
+          <div class="mt-5 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="crossScatterSVG"></div>
         </div>
-        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-          <h3 class="font-semibold text-gray-900 dark:text-gray-100">How methods move between datasets</h3>
-          <p class="mt-0.5 max-w-2xl text-xs text-gray-500">Each method's rank on the in-silico phantom (left) linked to its rank in vivo (right), by xSIM. Lines coloured by family: deep-learning methods tend to climb left-to-right; classical methods fall.</p>
+        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+          <h3 class="text-lg font-semibold text-gray-900">How methods move between datasets</h3>
+          <p class="mt-2 text-sm text-gray-600 leading-relaxed">Each method's rank on the in-silico phantom (left) linked to its rank in vivo (right), by xSIM. Lines coloured by family: deep-learning methods tend to climb left-to-right; classical methods fall.</p>
           <div class="mt-2" x-html="familyLegend"></div>
-          <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="crossBumpSVG"></div>
+          <div class="mt-5 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="crossBumpSVG"></div>
         </div>
-        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-          <h3 class="font-semibold text-gray-900 dark:text-gray-100">Domain robustness by family</h3>
-          <p class="mt-0.5 max-w-2xl text-xs text-gray-500">Mean xSIM per method family on each dataset. Deep-learning methods barely drop from phantom to in-vivo; classical iterative and direct methods lose far more — tuned to the idealised phantom, they generalise worse to real 3 T data.</p>
-          <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="crossBarsSVG"></div>
+        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+          <h3 class="text-lg font-semibold text-gray-900">Domain robustness by family</h3>
+          <p class="mt-2 text-sm text-gray-600 leading-relaxed">Mean xSIM per method family on each dataset. Deep-learning methods barely drop from phantom to in-vivo; classical iterative and direct methods lose far more — tuned to the idealised phantom, they generalise worse to real 3 T data.</p>
+          <div class="mt-5 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="crossBarsSVG"></div>
         </div>
       </div>
     </section>
