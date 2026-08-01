@@ -651,7 +651,7 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
           </thead>
           <tbody class="divide-y divide-gray-100">
             <template x-for="(r,i) in chiSepRows()" :key="r.id">
-              <tr @click="go(r)" class="group cursor-pointer" :class="r.status==='DNF' ? 'opacity-50' : ''">
+              <tr @click="go(r)" class="group cursor-pointer" :class="(r.status==='DNF' ? 'opacity-50 ' : '') + (r.variant==='tuned' ? 'tuned-row' : '')">
                 <td class="px-4 py-3 text-right tabular-nums text-gray-400 sticky left-0 bg-white group-hover:bg-emerald-50/40" style="min-width:3rem" x-text="i+1"></td>
                 <td class="px-5 py-3 text-left font-medium text-gray-900 sticky bg-white group-hover:bg-emerald-50/40" style="left:3rem">
                   <span class="mr-1.5 inline-block w-5 text-center" x-text="medal(i)"></span>
@@ -786,7 +786,7 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
             </thead>
             <tbody class="divide-y divide-gray-100">
               <template x-for="(r,i) in invivoRows()" :key="r.id">
-                <tr @click="go(r)" class="group cursor-pointer" :class="r.status==='DNF' ? 'opacity-50' : ''">
+                <tr @click="go(r)" class="group cursor-pointer" :class="(r.status==='DNF' ? 'opacity-50 ' : '') + (r.variant==='tuned' ? 'tuned-row' : '')">
                   <td class="px-4 py-3 text-right tabular-nums text-gray-400 sticky left-0 bg-white group-hover:bg-emerald-50/40" style="min-width:3rem" x-text="i+1"></td>
                   <td class="px-5 py-3 text-left font-medium text-gray-900 sticky bg-white group-hover:bg-emerald-50/40" style="left:3rem">
                     <span class="mr-1.5 inline-block w-5 text-center" x-text="invMedal(i)"></span>
