@@ -62,6 +62,7 @@ qsm-ci doctor            # checks you have what you need (Docker, etc.)</code></
             <tr><td class="px-4 py-2 font-medium">Field mapping</td><td class="px-4 py-2 text-gray-600 dark:text-gray-400">phase &amp; magnitude images</td><td class="px-4 py-2 text-gray-600 dark:text-gray-400">total field</td></tr>
             <tr><td class="px-4 py-2 font-medium">Background field removal</td><td class="px-4 py-2 text-gray-600 dark:text-gray-400">total field</td><td class="px-4 py-2 text-gray-600 dark:text-gray-400">local (tissue) field</td></tr>
             <tr><td class="px-4 py-2 font-medium">Dipole inversion</td><td class="px-4 py-2 text-gray-600 dark:text-gray-400">local field</td><td class="px-4 py-2 text-gray-600 dark:text-gray-400">susceptibility map (χ)</td></tr>
+            <tr><td class="px-4 py-2 font-medium">χ-separation</td><td class="px-4 py-2 text-gray-600 dark:text-gray-400">local field, R2′, χ map (&amp; magnitude)</td><td class="px-4 py-2 text-gray-600 dark:text-gray-400">χ+ (paramagnetic) &amp; χ− (diamagnetic) source maps</td></tr>
           </tbody>
         </table>
       </div>
@@ -89,7 +90,6 @@ qsm-ci doctor            # checks you have what you need (Docker, etc.)</code></
                 <tr><td class="px-3 py-1.5 font-mono">unwrap+bfr</td><td class="px-3 py-1.5">phase, magnitude</td><td class="px-3 py-1.5">local field</td></tr>
                 <tr><td class="px-3 py-1.5 font-mono">bfr+dipole</td><td class="px-3 py-1.5">total field</td><td class="px-3 py-1.5">susceptibility (χ)</td></tr>
                 <tr><td class="px-3 py-1.5 font-mono">end-to-end</td><td class="px-3 py-1.5">phase, magnitude</td><td class="px-3 py-1.5">susceptibility (χ)</td></tr>
-                <tr><td class="px-3 py-1.5 font-mono">chi-separation</td><td class="px-3 py-1.5">local field, R2′, χ_total, magnitude</td><td class="px-3 py-1.5">χ+ (paramagnetic) &amp; χ− (diamagnetic)</td></tr>
               </tbody>
             </table>
           </div>
@@ -262,10 +262,6 @@ RUN chmod +x /opt/qsm-ci/recon
       </p>
     </section>
 
-    <p class="mt-10 text-sm text-gray-500 dark:text-gray-500">
-      Want the nitty-gritty? The tool, the reference methods, and the full technical spec live in the
-      <a href="https://github.com/QSMxT/QSM-CI" class="text-emerald-600 hover:underline">QSM-CI repository</a>.
-    </p>
   </main>
 
   <footer id="site-footer"></footer>
