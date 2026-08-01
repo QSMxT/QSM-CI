@@ -588,6 +588,7 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
       <div class="rtabs">
         <button class="rtab" :class="{'rtab-on': chisepView==='info'}" @click="chisepView='info'">Info</button>
         <button class="rtab" :class="{'rtab-on': chisepView==='board'}" @click="chisepView='board'">Leaderboard</button>
+        <button class="rtab" :class="{'rtab-on': chisepView==='findings'}" @click="chisepView='findings'">Findings</button>
       </div>
 
       <div x-show="chisepView==='board'" x-cloak>
@@ -649,7 +650,10 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
         <p x-show="chiSepRows().length===0" class="px-5 py-10 text-center text-gray-400">No chi-separation results yet.</p>
       </div>
 
-      <!-- chi-sep figures -->
+      </div><!-- /chisep board -->
+
+      <!-- χ-separation · Findings (figures split out of the Leaderboard, mirroring the in-silico dataset) -->
+      <div x-show="chisepView==='findings'" x-cloak>
       <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
         <h3 class="font-semibold text-gray-900">Myelin (χ−) is harder to recover than iron (χ+)</h3>
         <p class="mt-0.5 max-w-2xl text-xs text-gray-500">Structural similarity (xSIM) of the recovered paramagnetic χ+ (iron) source versus the diamagnetic χ− (myelin / calcium) source. Every method drops from left to right, so the diamagnetic map is systematically the harder of the two.</p>
@@ -661,7 +665,7 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
         <p class="mt-0.5 max-w-2xl text-xs text-gray-500">How much each source map bleeds into the other (regression slope, 0 = clean): iron leaking into the myelin map (x) versus myelin leaking into iron (y). The origin is perfect separation; distance from it is contamination that xSIM can miss.</p>
         <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="leakSVG"></div>
       </div>
-      </div><!-- /chisep board -->
+      </div><!-- /chisep findings -->
 
       <!-- χ-separation · Info -->
       <div x-show="chisepView==='info'" x-cloak class="info mt-6 space-y-8">
