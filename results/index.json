@@ -36159,44 +36159,6 @@
       "cpu_cores_max": 1.872
     },
     {
-      "name": "NLTV",
-      "track": "invivo",
-      "stage": "dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 179.54660367965698,
-      "metrics": {
-        "nrmse": 166.26611052993294,
-        "nrmse_detrend": 140.5919943056924,
-        "hfen": 171.93545409208812,
-        "correlation": 0.5796141337868371,
-        "xsim": 0.1622164692272193,
-        "nrmse_sti": 190.35840916650648,
-        "nrmse_detrend_sti": 188.26761708299188,
-        "hfen_sti": 198.00975451930688,
-        "correlation_sti": 0.4690924039301834,
-        "xsim_sti": 0.10627040055461338
-      },
-      "status": "ok",
-      "id": "nltv-iso-tuned-invivo",
-      "slug": "nltv",
-      "mode": "isolated",
-      "variant": "tuned",
-      "params": {
-        "lambda": "3e-3"
-      },
-      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/nltv-iso-tuned-invivo__resources.json",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/nltv-iso-tuned-invivo__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/nltv-iso-tuned-invivo__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/nltv-iso-tuned-invivo__error.nii.gz"
-      },
-      "mem_peak_bytes": 532152320,
-      "cpu_cores_avg": 1.6048,
-      "cpu_cores_max": 1.7593
-    },
-    {
       "name": "QSMGAN",
       "track": "invivo",
       "stage": "dipole",
@@ -36369,41 +36331,6 @@
       }
     },
     {
-      "name": "Tikhonov",
-      "track": "invivo",
-      "stage": "dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 3.862429618835449,
-      "metrics": {
-        "nrmse": 104.2618978448372,
-        "nrmse_detrend": 103.15811926514573,
-        "hfen": 91.56635409098125,
-        "correlation": 0.6960306215445874,
-        "xsim": 0.3276035651416914,
-        "nrmse_sti": 127.98814338375313,
-        "nrmse_detrend_sti": 146.24138258451546,
-        "hfen_sti": 116.85464024727685,
-        "correlation_sti": 0.5644536231765737,
-        "xsim_sti": 0.2072242214867708
-      },
-      "status": "ok",
-      "id": "tikhonov-iso-tuned-invivo",
-      "slug": "tikhonov",
-      "mode": "isolated",
-      "variant": "tuned",
-      "params": {
-        "lambda": "3e-3"
-      },
-      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tikhonov-iso-tuned-invivo__resources.json",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tikhonov-iso-tuned-invivo__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tikhonov-iso-tuned-invivo__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tikhonov-iso-tuned-invivo__error.nii.gz"
-      }
-    },
-    {
       "name": "TKD",
       "track": "invivo",
       "stage": "dipole",
@@ -36468,41 +36395,6 @@
       }
     },
     {
-      "name": "TSVD",
-      "track": "invivo",
-      "stage": "dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 4.681064605712891,
-      "metrics": {
-        "nrmse": 123.75711704031987,
-        "nrmse_detrend": 112.7898918910182,
-        "hfen": 107.59042301652867,
-        "correlation": 0.6634083446643043,
-        "xsim": 0.2623189590200129,
-        "nrmse_sti": 148.30438214882804,
-        "nrmse_detrend_sti": 158.45543274141608,
-        "hfen_sti": 133.73305683092414,
-        "correlation_sti": 0.533698751914367,
-        "xsim_sti": 0.1637208824426778
-      },
-      "status": "ok",
-      "id": "tsvd-iso-tuned-invivo",
-      "slug": "tsvd",
-      "mode": "isolated",
-      "variant": "tuned",
-      "params": {
-        "threshold": "0.05"
-      },
-      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tsvd-iso-tuned-invivo__resources.json",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tsvd-iso-tuned-invivo__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tsvd-iso-tuned-invivo__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tsvd-iso-tuned-invivo__error.nii.gz"
-      }
-    },
-    {
       "name": "TV (ADMM)",
       "track": "invivo",
       "stage": "dipole",
@@ -36536,44 +36428,6 @@
       "mem_peak_bytes": 499122176,
       "cpu_cores_avg": 1.5463,
       "cpu_cores_max": 1.6439
-    },
-    {
-      "name": "TV (ADMM)",
-      "track": "invivo",
-      "stage": "dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 17.428093194961548,
-      "metrics": {
-        "nrmse": 136.3984018305043,
-        "nrmse_detrend": 118.87546655024055,
-        "hfen": 138.24915767868947,
-        "correlation": 0.6437377115254427,
-        "xsim": 0.23130026933096273,
-        "nrmse_sti": 160.2600581227414,
-        "nrmse_detrend_sti": 161.97163845991108,
-        "hfen_sti": 163.75690410147533,
-        "correlation_sti": 0.525335797808969,
-        "xsim_sti": 0.15244439757978653
-      },
-      "status": "ok",
-      "id": "tv-iso-tuned-invivo",
-      "slug": "tv",
-      "mode": "isolated",
-      "variant": "tuned",
-      "params": {
-        "lambda": "3e-5"
-      },
-      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tv-iso-tuned-invivo__resources.json",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tv-iso-tuned-invivo__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tv-iso-tuned-invivo__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tv-iso-tuned-invivo__error.nii.gz"
-      },
-      "mem_peak_bytes": 499331891,
-      "cpu_cores_avg": 1.6794,
-      "cpu_cores_max": 1.8286
     },
     {
       "name": "WH-QSM",
