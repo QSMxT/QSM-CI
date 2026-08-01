@@ -66,6 +66,23 @@ function recon(inp, out)
 
     gyro_ratio = 42.58;                                   % MHz/T (matches upstream)
 
+    %% ---- pad to a multiple of 2^nlevel for the wavelet transform ---------------------------
+    % wavedec3/waverec3 at `nlevel` levels need each dimension divisible by 2^nlevel. The QSM
+    % Challenge 2.0 phantom is 164x205x205 (none divisible by 8), which breaks the sparsifying
+    % wavelet operators and yields a structureless map (xSIM ~ 0), while the 160^3 in-vivo grid
+    % (all divisible by 8) reconstructs fine. Zero-pad the field / mask / magnitude to the next
+    % multiple, reconstruct on that grid, then crop chi back at the end. The padded rim has mask = 0
+    % so it never enters the data term; enlarging the FFT grid is standard (benign) for the kernel.
+    orig_sz  = mat_sz;
+    pad_mult = 2^nlevel;
+    pad_sz   = ceil(orig_sz / pad_mult) * pad_mult;
+    if ~isequal(pad_sz, orig_sz)
+        localfield = local_pad(localfield, pad_sz);
+        mask       = local_pad(mask,       pad_sz);
+        iMagWtd    = local_pad(iMagWtd,     pad_sz);
+        mat_sz = pad_sz;  sx = pad_sz(1);  sy = pad_sz(2);  sz = pad_sz(3);
+    end
+
     %% ---- simulate single-echo tissue phase (radians) from the local field (ppm) ------------
     % mut_cst converts a ppm field to radians at simulated_TE. It appears in both the measurement and
     % the forward operator, so the recovered susceptibility is invariant to the simulated_TE choice
@@ -225,11 +242,18 @@ function recon(inp, out)
 
     chi = res.x_hat_meas;
     chi(mask == 0) = 0;
+    chi = chi(1:orig_sz(1), 1:orig_sz(2), 1:orig_sz(3));   % crop back to the input grid
 
     %% ---- write output ----------------------------------------------------------------------
     lf_nii.img = single(chi);
     lf_nii.hdr.dime.datatype = 16;  lf_nii.hdr.dime.bitpix = 32;
     write_niigz(lf_nii, fullfile(out, 'chimap.nii.gz'));
+end
+
+function w = local_pad(v, sz)
+% Zero-pad a 3D array up to sz at the high index of each dimension (no toolbox dependency).
+    w = zeros(sz, 'like', v);
+    w(1:size(v,1), 1:size(v,2), 1:size(v,3)) = v;
 end
 
 function v = getparam(cfg, name, default)
