@@ -10628,35 +10628,6 @@
       }
     },
     {
-      "name": "SHARP",
-      "track": "sim",
-      "stage": "bfr",
-      "artifact": "localfield",
-      "kind": "field",
-      "image": null,
-      "runtime_s": 2.9640746116638184,
-      "metrics": {
-        "nrmse": 32.90951827633364,
-        "nrmse_detrend": 34.300006227743985,
-        "correlation": 0.9459044634052274,
-        "xsim": 0.9101204710278267
-      },
-      "status": "ok",
-      "id": "sharp-iso-tuned",
-      "slug": "sharp",
-      "mode": "isolated",
-      "variant": "tuned",
-      "params": {
-        "threshold": "0.01"
-      },
-      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/sharp-iso-tuned__resources.json",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/sharp-iso-tuned__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/sharp-iso-tuned__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/sharp-iso-tuned__error.nii.gz"
-      }
-    },
-    {
       "name": "xQSM",
       "track": "sim",
       "stage": "dipole",
@@ -34086,76 +34057,6 @@
         "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/nltv-iso-tuned-invivo__recon.nii.gz",
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/nltv-iso-tuned-invivo__truth.nii.gz",
         "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/nltv-iso-tuned-invivo__error.nii.gz"
-      }
-    },
-    {
-      "name": "Tikhonov",
-      "track": "invivo",
-      "stage": "dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 3.727900981903076,
-      "metrics": {
-        "nrmse": 104.2618978448372,
-        "nrmse_detrend": 103.15811926514573,
-        "hfen": 91.56635409098125,
-        "correlation": 0.6960306215445874,
-        "xsim": 0.3276035651416914,
-        "nrmse_sti": 127.98814338375313,
-        "nrmse_detrend_sti": 146.24138258451546,
-        "hfen_sti": 116.85464024727685,
-        "correlation_sti": 0.5644536231765737,
-        "xsim_sti": 0.2072242214867708
-      },
-      "status": "ok",
-      "id": "tikhonov-iso-tuned-invivo",
-      "slug": "tikhonov",
-      "mode": "isolated",
-      "variant": "tuned",
-      "params": {
-        "lambda": "3e-3"
-      },
-      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tikhonov-iso-tuned-invivo__resources.json",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tikhonov-iso-tuned-invivo__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tikhonov-iso-tuned-invivo__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tikhonov-iso-tuned-invivo__error.nii.gz"
-      }
-    },
-    {
-      "name": "TSVD",
-      "track": "invivo",
-      "stage": "dipole",
-      "artifact": "chimap",
-      "kind": "chi",
-      "image": null,
-      "runtime_s": 6.41684889793396,
-      "metrics": {
-        "nrmse": 123.75711704031987,
-        "nrmse_detrend": 112.7898918910182,
-        "hfen": 107.59042301652867,
-        "correlation": 0.6634083446643043,
-        "xsim": 0.2623189590200129,
-        "nrmse_sti": 148.30438214882804,
-        "nrmse_detrend_sti": 158.45543274141608,
-        "hfen_sti": 133.73305683092414,
-        "correlation_sti": 0.533698751914367,
-        "xsim_sti": 0.1637208824426778
-      },
-      "status": "ok",
-      "id": "tsvd-iso-tuned-invivo",
-      "slug": "tsvd",
-      "mode": "isolated",
-      "variant": "tuned",
-      "params": {
-        "threshold": "0.05"
-      },
-      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tsvd-iso-tuned-invivo__resources.json",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tsvd-iso-tuned-invivo__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tsvd-iso-tuned-invivo__truth.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/tsvd-iso-tuned-invivo__error.nii.gz"
       }
     },
     {

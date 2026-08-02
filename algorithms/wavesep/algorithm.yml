@@ -26,6 +26,27 @@ code_url: https://github.com/ZhenghanFang/WaveSep
 license: academic use (author permission)
 image: ghcr.io/astewartau/qsm-ci/wavesep:v1
 run: bash run.sh
+parameters:
+  - name: Dr
+    default: 137.0
+    description: >
+      Static-dephasing relaxivity kernel (Hz/ppm) tying R2' to the source magnitude
+      (R2' = Dr·(|χ+|+|χ−|)). 137 is the qsm-forward phantom's kernel (Shin 2022); WaveSep assumes
+      Dr_pos == Dr_neg. Overriding here takes precedence over $WAVESEP_DR and params.json "Dr".
+  - name: lambda
+    default: 0.02
+    description: wavelet-domain L1 (soft-thresholding) sparsity weight — the primary regularisation knob.
+  - name: alpha
+    default: 0.2
+    description: proximal-gradient step / data-consistency weight.
+  - name: wavelet
+    default: db4
+    description: PyWavelets wavelet basis for the sparsity transform (e.g. db2, db4, db6, sym4).
+  - name: max_iter
+    default: 100
+    description: >
+      maximum proximal-gradient iterations (early-stops on convergence, ~12 on the phantom). A pure
+      convergence knob, not a regularisation target.
 # Produces two source maps: chi-para (χ+) and chi-dia (χ−). WaveSep's QSM path uses χ_total + R2' only
 # (no B0 direction, so single-orientation data needs no reorientation), with a single relaxivity kernel
 # Dr=137 Hz/ppm (the qsm-forward phantom's kernel; override via $WAVESEP_DR or params.json "Dr").
