@@ -484,6 +484,25 @@
               <p class="mt-3 text-[11px] text-gray-400">Caveat: one pathological background-removal method inflates that stage's spread; the ordering holds without it.</p>
             </div>
           </template>
+
+          <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+            <h3 class="text-lg font-semibold text-gray-900">Error compounds through the pipeline</h3>
+            <p class="mt-2 text-sm text-gray-600 leading-relaxed">The best achievable xSIM (blue) and the median (green box = interquartile range) at three pipeline depths: dipole inversion alone from the ground-truth local field, then with real background removal added (from the ground-truth total field), then a full pipeline from raw phase. Each real upstream stage roughly halves the median and caps the best — the ceiling falls from <span class="font-semibold">0.78 → 0.68 → 0.39</span>. Upstream error is never recovered downstream, so a method's isolated score badly overstates its end-to-end result.</p>
+            <div class="mt-5 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="cascadeSVG"></div>
+          </div>
+
+          <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+            <h3 class="text-lg font-semibold text-gray-900">Pick your dipole independently of background removal</h3>
+            <p class="mt-2 text-sm text-gray-600 leading-relaxed">For each dipole method, its rank among dipoles (dot = mean, bar = min–max) across the eight strong background-removal methods. Most bars are tight: the dipole ranking barely shifts with the upstream stage (mean pairwise Spearman ρ ≈ 0.87), so the stages are near-separable — <span class="font-semibold">wh-qsm and hd-qsm lead everywhere, modl-qsm/qsmgan/nltv trail everywhere</span>. A handful in the middle (xqsm, l1-qsm) swing widely — those are the genuinely upstream-sensitive methods. Coloured by family.</p>
+            <div class="mt-2" x-html="familyLegend"></div>
+            <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="dipoleStabilitySVG"></div>
+          </div>
+
+          <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+            <h3 class="text-lg font-semibold text-gray-900">The best background-removal method depends on what you measure</h3>
+            <p class="mt-2 text-sm text-gray-600 leading-relaxed">Each background-removal method's rank (1 = best, <span style="color:#3ba85a" class="font-semibold">green</span> good → <span style="color:#d84a4a" class="font-semibold">red</span> poor) under five metrics, rows sorted by xSIM. The similarity metrics — xSIM, NRMSE, HFEN — are nearly interchangeable (their columns match). But calcification and <em>iron linearity</em> reshuffle the ranking: iron linearity is essentially uncorrelated with similarity (ρ ≈ −0.02), and the deep-learning <span class="font-semibold">bfrnet</span> is worst-tier on similarity yet best on iron quantification. A single headline number hides which sources a method actually recovers.</p>
+            <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="bfrMetricSVG"></div>
+          </div>
         </div>
 
         <!-- ---- Different metrics, different winners ---- -->
@@ -1532,6 +1551,99 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
           this.runs.filter((r) => r.mode === "composed" && r.stage === "bfr+dipole" && r.combo && r.combo.dipole && val(r, "nrmse") != null)
             .forEach((r) => { (g[r.combo.dipole] ||= []).push(val(r, "nrmse")); });
           return g;
+        },
+
+        // Error compounds through the pipeline: the achievable xSIM ceiling (and median) collapses as
+        // each real upstream stage is added — dipole from GT local field, then + background removal from
+        // GT total field, then + field mapping from raw phase.
+        get cascadeSVG() {
+          return _cache("cascade", this.runs.length, () => {
+            const xs = (f) => this.runs.filter(f).map((r) => val(r, "xsim")).filter((v) => v != null);
+            const iso = xs((r) => r.mode === "isolated" && !this._isInvivo(r) && !this._isChisep(r) && r.stage === "dipole" && (r.variant || "default") === "default");
+            const bd = xs((r) => r.mode === "composed" && r.stage === "bfr+dipole" && r.status !== "DNF");
+            const fl = xs((r) => r.mode === "composed" && r.stage === "field-mapping+bfr+dipole" && r.status !== "DNF");
+            const stat = (a) => { const s = [...a].sort((x, y) => x - y); const q = (p) => { const i = p * (s.length - 1), lo = Math.floor(i); return s[lo] + (i - lo) * ((s[lo + 1] ?? s[lo]) - s[lo]); }; return { n: s.length, best: s[s.length - 1], q75: q(.75), med: q(.5), q25: q(.25) }; };
+            const cols = [{ lab: "dipole only", sub: "ground-truth local field", d: stat(iso) }, { lab: "+ background removal", sub: "ground-truth total field", d: stat(bd) }, { lab: "+ field mapping", sub: "raw phase", d: stat(fl) }];
+            if (cols.some((c) => !c.d.n)) return "<svg></svg>";
+            const w = 640, h = 410, padT = 52, padB = 66, hi = 0.82;
+            const Y = (v) => padT + (hi - v) / hi * (h - padT - padB);
+            const X = (i) => 150 + i * ((580 - 150) / 2), bw = 54;
+            let s = `<svg width="${w}" height="${h}" style="max-width:100%;height:auto">`;
+            for (let g = 0; g <= 0.8; g += 0.2) { const y = Y(g); s += `<line x1="44" y1="${y}" x2="600" y2="${y}" stroke="currentColor" opacity="0.08"/>`; s += `<text x="30" y="${y + 3}" text-anchor="end" fill="currentColor" opacity="0.4" style="font-size:9px">${g.toFixed(1)}</text>`; }
+            s += `<text x="16" y="${(padT + h - padB) / 2}" text-anchor="middle" fill="currentColor" opacity="0.5" style="font-size:10px" transform="rotate(-90 16 ${(padT + h - padB) / 2})">xSIM (higher is better) →</text>`;
+            const path = (key, color, dash) => { let p = ""; cols.forEach((c, i) => { p += (i ? "L" : "M") + X(i) + " " + Y(c.d[key]); }); s += `<path d="${p}" fill="none" stroke="${color}" stroke-width="2" ${dash ? `stroke-dasharray="${dash}"` : ""} opacity="0.9"/>`; };
+            path("best", "#6366f1", "5 4"); path("med", "#10b981");
+            cols.forEach((c, i) => {
+              const x = X(i);
+              s += `<rect x="${x - bw / 2}" y="${Y(c.d.q75)}" width="${bw}" height="${Y(c.d.q25) - Y(c.d.q75)}" fill="#10b981" opacity="0.12" stroke="#10b981" stroke-opacity="0.35"/>`;
+              s += `<line x1="${x - bw / 2}" y1="${Y(c.d.med)}" x2="${x + bw / 2}" y2="${Y(c.d.med)}" stroke="#10b981" stroke-width="2"/>`;
+              s += `<circle cx="${x}" cy="${Y(c.d.best)}" r="4" fill="#6366f1"/>`;
+              s += `<text x="${x}" y="${Y(c.d.best) - 9}" text-anchor="middle" fill="#6366f1" style="font-size:11px;font-weight:600">${c.d.best.toFixed(2)}</text>`;
+              s += `<text x="${x + bw / 2 + 6}" y="${Y(c.d.med) + 3}" fill="#10b981" style="font-size:10px;font-weight:600">${c.d.med.toFixed(2)}</text>`;
+              s += `<text x="${x}" y="${h - padB + 26}" text-anchor="middle" fill="currentColor" opacity="0.85" style="font-size:11px;font-weight:600">${this._esc(c.lab)}</text>`;
+              s += `<text x="${x}" y="${h - padB + 41}" text-anchor="middle" fill="currentColor" opacity="0.45" style="font-size:9px">${this._esc(c.sub)} · n=${c.d.n}</text>`;
+            });
+            s += `<g transform="translate(150,26)" style="font-size:10px"><circle cx="0" cy="-3" r="4" fill="#6366f1"/><text x="8" y="0" fill="currentColor" opacity="0.6">best achievable</text><line x1="118" y1="-3" x2="138" y2="-3" stroke="#10b981" stroke-width="2"/><text x="144" y="0" fill="currentColor" opacity="0.6">median (box = IQR)</text></g>`;
+            return s + "</svg>";
+          });
+        },
+
+        // Separability: the dipole ranking barely moves across background-removal methods. For each dipole,
+        // its rank range (min–max, dot = mean) across the 8 strong BFRs — tight bars = its standing is
+        // insensitive to the upstream stage (mean pairwise Spearman of the orderings ≈ 0.87).
+        get dipoleStabilitySVG() {
+          return _cache("dipstab", this.runs.length, () => {
+            const good = new Set(["ismv", "resharp", "sharp", "lbv", "vsharp", "pdf", "matlab-sti-vsharp", "bfrnet"]);
+            const cell = {};
+            this.runs.filter((r) => r.mode === "composed" && r.stage === "bfr+dipole" && r.combo && good.has(r.combo.bfr) && r.combo.dipole && r.combo.dipole !== "amp-pe" && val(r, "xsim") != null)
+              .forEach((r) => { (cell[r.combo.bfr] ||= {})[r.combo.dipole] = val(r, "xsim"); });
+            const bfrs = Object.keys(cell); if (bfrs.length < 3) return "<svg></svg>";
+            const ranks = {};
+            bfrs.forEach((b) => { Object.keys(cell[b]).sort((a, c) => cell[b][c] - cell[b][a]).forEach((dp, i) => { (ranks[dp] ||= []).push(i + 1); }); });
+            const rows = Object.entries(ranks).filter(([, v]) => v.length === bfrs.length)
+              .map(([dp, v]) => ({ slug: dp, name: this.algoName(dp), min: Math.min(...v), max: Math.max(...v), mean: v.reduce((a, c) => a + c, 0) / v.length, fam: this._fam(dp) }))
+              .sort((a, b) => a.mean - b.mean);
+            const n = rows.length, rh = 17, top = 42, padL = 134, padR = 28, w = 620, h = top + n * rh + 18, maxr = n;
+            const X = (r) => padL + (r - 1) / (maxr - 1) * (w - padL - padR);
+            let s = `<svg width="${w}" height="${h}" style="max-width:100%;height:auto">`;
+            s += `<text x="${padL}" y="18" fill="currentColor" opacity="0.5" style="font-size:10px">rank among dipoles (1 = best), across ${bfrs.length} background-removal methods →</text>`;
+            [1, 5, 10, 15, 20].forEach((g) => { if (g <= maxr) { const x = X(g); s += `<line x1="${x}" y1="${top - 4}" x2="${x}" y2="${h - 14}" stroke="currentColor" opacity="0.08"/>`; s += `<text x="${x}" y="${h - 4}" text-anchor="middle" fill="currentColor" opacity="0.4" style="font-size:9px">${g}</text>`; } });
+            rows.forEach((r, i) => {
+              const y = top + i * rh + rh / 2, c = FAM[r.fam].c;
+              s += `<text x="${padL - 10}" y="${y + 3}" text-anchor="end" fill="currentColor" opacity="0.8" style="font-size:10px">${this._esc(r.name)}</text>`;
+              s += `<g data-tip="${this._esc(`${r.name} — rank ${r.min}–${r.max} across ${bfrs.length} BFRs (mean ${r.mean.toFixed(1)})`)}">`;
+              s += `<line x1="${X(r.min)}" y1="${y}" x2="${X(r.max)}" y2="${y}" stroke="${c}" stroke-width="3" opacity="0.3" stroke-linecap="round"/>`;
+              s += `<circle cx="${X(r.mean)}" cy="${y}" r="3.4" fill="${c}"/></g>`;
+            });
+            return s + "</svg>";
+          });
+        },
+
+        // Which metric you score by changes which BFR wins: rank of each BFR (rows, sorted by xSIM) under
+        // five metrics (cols). xSIM/NRMSE/HFEN columns are near-identical (redundant); calcification and
+        // iron linearity reshuffle — iron linearity is orthogonal to similarity (bfrnet worst-tier on
+        // similarity, best on iron).
+        get bfrMetricSVG() {
+          return _cache("bfrmet", this.runs.length, () => {
+            const mets = [["xsim", "xSIM", "higher"], ["nrmse_detrend", "NRMSE", "lower"], ["hfen", "HFEN", "lower"], ["calc_streak", "calcif.", "lower"], ["dgm_linearity", "iron lin.", "lower"]];
+            const acc = {};
+            this.runs.filter((r) => r.mode === "composed" && r.stage === "bfr+dipole" && r.combo && r.combo.bfr && r.combo.dipole && r.combo.dipole !== "amp-pe")
+              .forEach((r) => { mets.forEach(([m]) => { const v = val(r, m); if (v != null) { ((acc[m] ||= {})[r.combo.bfr] ||= []).push(v); } }); });
+            const bfrsAll = Object.keys(acc["xsim"] || {}); if (!bfrsAll.length) return "<svg></svg>";
+            const rankOf = {};
+            mets.forEach(([m, , dir]) => { const means = bfrsAll.map((b) => [b, acc[m][b].reduce((a, c) => a + c, 0) / acc[m][b].length]); means.sort((a, b) => dir === "higher" ? b[1] - a[1] : a[1] - b[1]); rankOf[m] = {}; means.forEach(([b], i) => rankOf[m][b] = i + 1); });
+            const bfrs = [...bfrsAll].sort((a, b) => rankOf["xsim"][a] - rankOf["xsim"][b]);
+            const N = bfrs.length, cw = 84, rh = 26, padL = 168, top = 46, w = padL + mets.length * cw + 14, h = top + N * rh + 8;
+            const col = (rank) => { const t = (rank - 1) / (N - 1); return `rgb(${Math.round(200 * t) + 44},${Math.round(180 * (1 - t)) + 48},76)`; };
+            let s = `<svg width="${w}" height="${h}" style="max-width:100%;height:auto">`;
+            mets.forEach(([, lab], j) => { s += `<text x="${padL + j * cw + cw / 2}" y="${top - 12}" text-anchor="middle" fill="currentColor" opacity="0.7" style="font-size:10px;font-weight:600">${lab}</text>`; });
+            bfrs.forEach((b, i) => {
+              const y = top + i * rh;
+              s += `<text x="${padL - 10}" y="${y + rh / 2 + 3}" text-anchor="end" fill="currentColor" opacity="0.8" style="font-size:10px">${this._esc(this.algoName(b))}</text>`;
+              mets.forEach(([m], j) => { const rk = rankOf[m][b], x = padL + j * cw; s += `<rect x="${x + 3}" y="${y + 2}" width="${cw - 6}" height="${rh - 4}" rx="3" fill="${col(rk)}" opacity="0.9"/>`; s += `<text x="${x + cw / 2}" y="${y + rh / 2 + 4}" text-anchor="middle" fill="#fff" style="font-size:10px;font-weight:700">${rk}</text>`; });
+            });
+            return s + "</svg>";
+          });
         },
 
         get slopeSVG() {
