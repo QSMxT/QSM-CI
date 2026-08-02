@@ -154,7 +154,13 @@
         "Jingu Lee",
         "Jongho Lee"
       ],
-      "parameters": [],
+      "parameters": [
+        {
+          "name": "pad_size",
+          "default": 12,
+          "description": "Zero-padding (voxels, applied on each axis as [pad pad pad]) for the in-house STI-Suite QSM_iLSQR step that reconstructs the QSM fed to chi_sep_iLSQR. Larger padding reduces dipole-inversion boundary/wrap artifacts at higher memory/runtime. (chi_sep_iLSQR's own internals are a black-box .p toolbox and expose no further knobs here; the Bunya diagnostic found N_std/CSF had no effect.)\n"
+        }
+      ],
       "ci_notes": []
     },
     {
@@ -184,7 +190,13 @@
         "Jingu Lee",
         "Jongho Lee"
       ],
-      "parameters": [],
+      "parameters": [
+        {
+          "name": "lambda",
+          "default": 1,
+          "description": "MEDI data-fidelity / morphology regularisation weight passed to chi_sep_MEDI (params.lambda) \u2014 the method's primary regularisation knob. Larger = smoother/more-regularised source maps. (lambda_CSF is held at 0: the isolated-eval stage contract provides no CSF mask.)\n"
+        }
+      ],
       "ci_notes": []
     },
     {
@@ -212,7 +224,13 @@
         "Hyeong-Geol Shin",
         "Jongho Lee"
       ],
-      "parameters": [],
+      "parameters": [
+        {
+          "name": "Dr",
+          "default": 114.0,
+          "description": "Relaxivity (Hz/ppm) used to scale R2' into the network's R2'/Dr input channel. The network was trained at Dr=114 (its COSMOS-referenced value), so moving it feeds off-distribution inputs \u2014 this is a research knob, not an accuracy-tuning target. (No patch/overlap knob: the ONNX graph fixes the 192\u00d7192\u00d7128 input, and the weights fix everything else.)\n"
+        }
+      ],
       "ci_notes": []
     },
     {
@@ -2062,7 +2080,33 @@
         "Xu Li",
         "Jeremias Sulam"
       ],
-      "parameters": [],
+      "parameters": [
+        {
+          "name": "Dr",
+          "default": 137.0,
+          "description": "Static-dephasing relaxivity kernel (Hz/ppm) tying R2' to the source magnitude (R2' = Dr\u00b7(|\u03c7+|+|\u03c7\u2212|)). 137 is the qsm-forward phantom's kernel (Shin 2022); WaveSep assumes Dr_pos == Dr_neg. Overriding here takes precedence over $WAVESEP_DR and params.json \"Dr\".\n"
+        },
+        {
+          "name": "lambda",
+          "default": 0.02,
+          "description": "wavelet-domain L1 (soft-thresholding) sparsity weight \u2014 the primary regularisation knob."
+        },
+        {
+          "name": "alpha",
+          "default": 0.2,
+          "description": "proximal-gradient step / data-consistency weight."
+        },
+        {
+          "name": "wavelet",
+          "default": "db4",
+          "description": "PyWavelets wavelet basis for the sparsity transform (e.g. db2, db4, db6, sym4)."
+        },
+        {
+          "name": "max_iter",
+          "default": 100,
+          "description": "maximum proximal-gradient iterations (early-stops on convergence, ~12 on the phantom). A pure convergence knob, not a regularisation target.\n"
+        }
+      ],
       "ci_notes": []
     },
     {

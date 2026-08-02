@@ -25,6 +25,14 @@ run: bash run.sh
 matlab:
   entry: recon.m
   runtime: r2026a
+parameters:
+  - name: pad_size
+    default: 12
+    description: >
+      Zero-padding (voxels, applied on each axis as [pad pad pad]) for the in-house STI-Suite QSM_iLSQR
+      step that reconstructs the QSM fed to chi_sep_iLSQR. Larger padding reduces dipole-inversion
+      boundary/wrap artifacts at higher memory/runtime. (chi_sep_iLSQR's own internals are a black-box
+      .p toolbox and expose no further knobs here; the Bunya diagnostic found N_std/CSF had no effect.)
 # Inputs consumed (isolated eval): local field + R2' + mask + magnitude. The QSM is reconstructed
 # in-house (STI-Suite QSM_iLSQR); chimap.nii.gz is intentionally NOT used (see recon.m note).
 # Produces two source maps: chi-para (χ+) and chi-dia (χ−).

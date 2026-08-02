@@ -30,10 +30,15 @@ function recon(inp, out)
     local_field_hz = localfield * 1e-6 * CF;        % ppm -> Hz (chi_sep_iLSQR expects Hz)
     params.b0_dir = b0d; params.CF = CF; params.voxel_size = vox;
 
+    % Parameter overrides (qsm-ci run --set NAME=VALUE) arrive as /input/config.json (absent otherwise).
+    cfg = struct();
+    if isfile(fullfile(inp, 'config.json')); cfg = jsondecode(fileread(fullfile(inp, 'config.json'))); end
+    if isfield(cfg, 'pad_size'); ps = cfg.pad_size; else; ps = 12; end
+
     % --- reconstruct the QSM in-house with STI-Suite QSM_iLSQR (see note above) ---
     tissue_phase = local_field_hz * 2*pi * dTE;     % Hz -> radian tissue phase over one echo spacing
     qsm = QSM_iLSQR(tissue_phase, mask, 'TE', dTE*1e3, 'B0', B0, 'H', b0d, ...
-                    'padsize', [12 12 12], 'voxelsize', vox);
+                    'padsize', [ps ps ps], 'voxelsize', vox);
 
     % noise weighting from magnitude (~1 in tissue, higher where signal is low); CSF from mask edge is
     % not available in isolated eval, so N_std alone. (CSF mask + N_std had no measurable effect vs the

@@ -24,10 +24,15 @@ function recon(inp, out)
     mag4       = rd('magnitude.nii.gz');            % (x,y,z,te)
     mag        = sqrt(sum(mag4.^2, 4));
 
+    % Parameter overrides (qsm-ci run --set NAME=VALUE) arrive as /input/config.json (absent otherwise).
+    cfg = struct();
+    if isfile(fullfile(inp, 'config.json')); cfg = jsondecode(fileread(fullfile(inp, 'config.json'))); end
+    if isfield(cfg, 'lambda'); lambda = cfg.lambda; else; lambda = 1; end
+
     local_field_hz = localfield * 1e-6 * CF;        % ppm -> Hz
     N_std = ones(size(mask));
     params.b0_dir = b0d; params.CF = CF; params.voxel_size = vox;
-    params.lambda = 1; params.lambda_CSF = 0;       % no CSF mask in the contract -> CSF term off
+    params.lambda = lambda; params.lambda_CSF = 0;  % no CSF mask in the contract -> CSF term off
     option_data.qsm = qsm; option_data.N_std = N_std;
     option_data.mask_CSF = false(size(mask));
 

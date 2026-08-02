@@ -27,7 +27,7 @@ import onnxruntime as ort
 
 IN = sys.argv[1] if len(sys.argv) > 1 else "/input"
 OUT = sys.argv[2] if len(sys.argv) > 2 else "/output"
-DR = 114.0
+DEFAULT_DR = 114.0    # the network's COSMOS-referenced relaxivity (Hz/ppm) — see read_dr()
 PATCH = (192, 192, 128)
 ONNX = "240904_xsepnet.onnx"
 NORM = "xsepnet_train_patch_norm_factor_inplane_largedegree_romeo_arlo.mat"
@@ -49,6 +49,20 @@ def _models_dir():
 MODELS = _models_dir()
 
 
+def read_dr():
+    """Dr (Hz/ppm) used to scale R2' into the network's input channel. Overridable via
+    `qsm-ci run chi-sepnet --set Dr=...` (arrives as /input/config.json), else the trained default 114.
+    NB: the net was trained at Dr=114 — moving it feeds off-distribution inputs, so this is a research
+    knob, not an accuracy-tuning target."""
+    p = os.path.join(IN, "config.json")
+    if os.path.exists(p):
+        with open(p) as f:
+            v = json.load(f).get("Dr")
+        if v is not None:
+            return float(v)
+    return DEFAULT_DR
+
+
 def load(name):
     img = nib.load(os.path.join(IN, name))
     return np.asarray(img.get_fdata(), dtype=np.float64), img
@@ -68,6 +82,7 @@ def main():
     qsm, _ = load("chimap.nii.gz")             # ppm (χ_total)
     r2p, _ = load("r2prime.nii.gz")            # Hz
     mask = (load("mask.nii.gz")[0] > 0.5)
+    dr = read_dr()
 
     N = sio.loadmat(os.path.join(MODELS, NORM))
     def s(k):
@@ -77,7 +92,7 @@ def main():
     chans = [
         (qsm - s("cosmos_sus_mean")) / s("cosmos_sus_std"),
         (field - s("field_mean")) / s("field_std"),
-        ((r2p / DR) - s("r2prime_mean")) / s("r2prime_std"),
+        ((r2p / dr) - s("r2prime_mean")) / s("r2prime_std"),
     ]
     vol = np.stack([c * mask for c in chans]).astype(np.float32)   # (3, X, Y, Z)
     _, X, Y, Z = vol.shape
@@ -108,7 +123,7 @@ def main():
              os.path.join(OUT, "chi-para.nii.gz"))
     nib.save(nib.Nifti1Image(xneg.astype(np.float32), fimg.affine, fimg.header),
              os.path.join(OUT, "chi-dia.nii.gz"))
-    print("chi-sepnet: wrote chi-para/chi-dia", xpos.shape, flush=True)
+    print("chi-sepnet: wrote chi-para/chi-dia", xpos.shape, "Dr=%g" % dr, flush=True)
 
 
 if __name__ == "__main__":

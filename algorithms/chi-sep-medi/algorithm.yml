@@ -22,6 +22,13 @@ run: bash run.sh
 matlab:
   entry: recon.m
   runtime: r2026a
+parameters:
+  - name: lambda
+    default: 1
+    description: >
+      MEDI data-fidelity / morphology regularisation weight passed to chi_sep_MEDI (params.lambda) —
+      the method's primary regularisation knob. Larger = smoother/more-regularised source maps.
+      (lambda_CSF is held at 0: the isolated-eval stage contract provides no CSF mask.)
 # Inputs consumed (isolated eval, fed ground truth): local field + R2' + QSM + mask + magnitude.
 # Produces two source maps: chi-para (χ+) and chi-dia (χ−). CSF referencing disabled (no CSF mask in
 # the stage contract). Same GHCR/image caveat as the iLSQR submission — runs via `--runner local`.

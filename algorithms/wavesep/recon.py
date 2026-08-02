@@ -43,8 +43,11 @@ from wavesep.utils.solver_wavesep_qsm import Solver
 
 IN = sys.argv[1] if len(sys.argv) > 1 else "/input"
 OUT = sys.argv[2] if len(sys.argv) > 2 else "/output"
-WAVELET = "db4"
-ALPHA, LAMBDA, MAXIT = 0.2, 0.02, 100
+# Repo defaults (WaveSep's own, from wavesep/qsm_sep.py). Each is overridable per run via
+# `qsm-ci run wavesep --set <name>=<value>` (arrives as /input/config.json — see read_cfg / dr_value).
+DEFAULT_WAVELET = "db4"
+DEFAULT_ALPHA, DEFAULT_LAMBDA, DEFAULT_MAXIT = 0.2, 0.02, 100
+DEFAULT_DR = 137.0
 
 
 def load(name):
@@ -65,13 +68,26 @@ def pad_spec(shape, wavelet):
         P *= 2
 
 
-def dr_value(params):
+def read_cfg():
+    """Parameter overrides (`qsm-ci run --set NAME=VALUE`) arrive as /input/config.json; absent when no
+    override is given. Only keys declared in algorithm.yml `parameters:` are ever written here."""
+    p = os.path.join(IN, "config.json")
+    if os.path.exists(p):
+        with open(p) as f:
+            return json.load(f)
+    return {}
+
+
+def dr_value(params, cfg):
+    # precedence: --set Dr (config.json) > $WAVESEP_DR > params.json "Dr" > repo default
+    if cfg.get("Dr") is not None:
+        return float(cfg["Dr"])
     env = os.environ.get("WAVESEP_DR")
     if env:
         return float(env)
     if isinstance(params, dict) and params.get("Dr") is not None:
         return float(params["Dr"])
-    return 137.0
+    return DEFAULT_DR
 
 
 def main():
@@ -80,11 +96,16 @@ def main():
     mask = (load("mask.nii.gz")[0] > 0.5).astype(np.float64)
     with open(os.path.join(IN, "params.json")) as f:
         params = json.load(f)
-    Dr = dr_value(params)
+    cfg = read_cfg()
+    Dr = dr_value(params, cfg)
+    wavelet = str(cfg.get("wavelet", DEFAULT_WAVELET))
+    alpha = float(cfg.get("alpha", DEFAULT_ALPHA))
+    lam = float(cfg.get("lambda", DEFAULT_LAMBDA))
+    maxit = int(cfg.get("max_iter", DEFAULT_MAXIT))
 
     qsm = qsm.squeeze() * mask
     X, Y, Z = qsm.shape
-    pad = pad_spec((X, Y, Z), WAVELET)
+    pad = pad_spec((X, Y, Z), wavelet)
     pf = lambda a: np.pad(a, pad)
     mask_p = pf(mask)
     qsm_p = pf(qsm) * mask_p
@@ -94,7 +115,7 @@ def main():
     # upstream solve() prints self.metrics[-1]; with no ground truth that list is empty -> attach a
     # no-op evaluator so it stays populated (no skimage compute, no change to the optimisation).
     solver.evaluator = type("_NoOpEval", (), {"evaluate": lambda self, x3d: {}})()
-    xp, xn = solver.solve(ALPHA, LAMBDA, WAVELET, level=None, maxit=MAXIT)
+    xp, xn = solver.solve(alpha, lam, wavelet, level=None, maxit=maxit)
 
     xpos = (xp[:X, :Y, :Z] * mask).astype(np.float32)         # χ+
     xneg = (-xn[:X, :Y, :Z] * mask).astype(np.float32)        # χ− (positive magnitude)
@@ -102,7 +123,8 @@ def main():
     os.makedirs(OUT, exist_ok=True)
     nib.save(nib.Nifti1Image(xpos, qimg.affine, qimg.header), os.path.join(OUT, "chi-para.nii.gz"))
     nib.save(nib.Nifti1Image(xneg, qimg.affine, qimg.header), os.path.join(OUT, "chi-dia.nii.gz"))
-    print(f"wavesep: wrote chi-para/chi-dia {xpos.shape} Dr={Dr}", flush=True)
+    print(f"wavesep: wrote chi-para/chi-dia {xpos.shape} "
+          f"Dr={Dr} lambda={lam:g} alpha={alpha:g} wavelet={wavelet} max_iter={maxit}", flush=True)
 
 
 if __name__ == "__main__":
