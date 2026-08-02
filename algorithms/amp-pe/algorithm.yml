@@ -39,9 +39,13 @@ parameters:
   description: number of levels in the 3D wavelet transform
 - name: wave_pec
   default: 0.85
+  tuned:
+    invivo: 0.6
   description: fraction of magnitude wavelet coefficients kept in the morphology mask (anatomical prior)
 - name: simulated_TE
   default: 0.008
+  tuned:
+    invivo: 0.002
   description: echo time (s) used to simulate the phase from the local field; sets the wrapped-model operating point
 - name: max_linearization_ite
   default: 25

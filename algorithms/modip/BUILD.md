@@ -11,8 +11,8 @@ There are **no weights to download** (MoDIP is untrained — it optimizes per su
 
 ```bash
 # from the repo root
-docker build -t ghcr.io/astewartau/qsm-ci/modip:v1 algorithms/modip
-docker push  ghcr.io/astewartau/qsm-ci/modip:v1
+docker build -t ghcr.io/astewartau/qsm-ci/modip:v2 algorithms/modip
+docker push  ghcr.io/astewartau/qsm-ci/modip:v2
 ```
 
 - For reproducibility, pin the method commit: `--build-arg MODIP_REF=<sha>`.

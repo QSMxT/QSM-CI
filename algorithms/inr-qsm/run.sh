@@ -20,7 +20,9 @@
 set -euo pipefail
 IN="${1:-/input}"; OUT="${2:-/output}"
 
-export CUDA_VISIBLE_DEVICES="-1"                         # force CPU
+# Device is chosen at run time: use the GPU when the runner exposes one (torch.cuda.is_available()),
+# otherwise CPU. Set QSMCI_FORCE_CPU=1 to force CPU even on a GPU host (parity / reproducibility).
+[ "${QSMCI_FORCE_CPU:-0}" = "1" ] && export CUDA_VISIBLE_DEVICES="-1"
 export INR_QSM_HOME="${INR_QSM_HOME:-/opt/INR-QSM/inr-qsm}"
 
 mkdir -p "$OUT"

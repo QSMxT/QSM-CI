@@ -24,5 +24,6 @@ run: bash run.sh
 parameters:
   - name: lambda
     default: 1e-4
-    tuned: 3e-3
+    tuned:
+      sim: 3e-4
     description: L2 regularization

@@ -22,6 +22,25 @@ RUNNERS = ("docker", "podman", "apptainer", "local")
 _OCI_ENGINES = ("docker", "podman")  # daemonless podman is CLI-compatible with docker
 
 
+def _gpu_flags(runner: str) -> list[str]:
+    """GPU-passthrough flags for the given runner, or [] when GPU is not requested.
+
+    Opt-in via the ``QSMCI_GPU`` env var (truthy: 1/true/yes). Default OFF, so CI — which runs on
+    CPU-only hosts and never sets it — is byte-identical to before. On a GPU host (e.g. an HPC GPU
+    node) export ``QSMCI_GPU=1`` and the container gets the host GPUs; images whose torch is a CUDA
+    build then use them, while CPU-only hosts (or ``QSMCI_FORCE_CPU=1`` in run.sh) fall back to CPU.
+    """
+    if os.environ.get("QSMCI_GPU", "").strip().lower() not in ("1", "true", "yes", "on"):
+        return []
+    if runner == "docker":
+        return ["--gpus", "all"]
+    if runner == "podman":
+        return ["--device", "nvidia.com/gpu=all"]
+    if runner == "apptainer":
+        return ["--nv"]
+    return []
+
+
 def _have(binary: str) -> bool:
     return shutil.which(binary) is not None
 
@@ -139,7 +158,8 @@ def _run_container(algo, input_dir, output_dir, runner, log) -> float:
             sampler.start()
         try:
             subprocess.run([
-                runner, "run", "--rm", "--network", "none", "--name", name, *id_args, *e_args,
+                runner, "run", "--rm", "--network", "none", "--name", name,
+                *_gpu_flags(runner), *id_args, *e_args,
                 "-v", f"{algo['dir']}:/algo:ro",
                 "-v", f"{input_dir}:/input:ro", "-v", f"{output_dir}:/output",
                 image, "bash", "/algo/run.sh",
@@ -155,7 +175,7 @@ def _run_container(algo, input_dir, output_dir, runner, log) -> float:
         log("  note: apptainer runs without enforced network isolation here; CI uses --network none.")
         e_args = [a for k, v in penv.items() for a in ("--env", f"{k}={v}")]
         cmd = [
-            "apptainer", "exec", "--no-home", "--cleanenv", *e_args,
+            "apptainer", "exec", "--no-home", "--cleanenv", *_gpu_flags("apptainer"), *e_args,
             "-B", f"{algo['dir']}:/algo:ro",
             "-B", f"{input_dir}:/input:ro", "-B", f"{output_dir}:/output",
             image, "bash", "/algo/run.sh",

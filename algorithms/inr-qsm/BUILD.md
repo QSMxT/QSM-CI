@@ -15,8 +15,8 @@ convergence); it comes along with the clone.
 
 ```bash
 # from the repo root
-docker build -t ghcr.io/astewartau/qsm-ci/inr-qsm:v1 algorithms/inr-qsm
-docker push  ghcr.io/astewartau/qsm-ci/inr-qsm:v1
+docker build -t ghcr.io/astewartau/qsm-ci/inr-qsm:v2 algorithms/inr-qsm
+docker push  ghcr.io/astewartau/qsm-ci/inr-qsm:v2
 ```
 
 - For reproducibility, pin the method commit: `--build-arg INR_QSM_REF=<sha>`.
