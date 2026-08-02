@@ -825,6 +825,13 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
           <p class="mt-2 text-sm text-gray-600 leading-relaxed">In-vivo structural similarity (xSIM vs COSMOS) against wall-clock runtime on a log scale. <span style="color:#10b981" class="font-semibold">Green</span> points are Pareto-optimal (nothing is both faster and more accurate); grey points are dominated.</p>
           <div class="mt-5 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="ivParetoSVG"></div>
         </div>
+        <template x-if="ivTuningRows.rows.length">
+          <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+            <h3 class="text-lg font-semibold text-gray-900">Tuning rescues classical methods in vivo</h3>
+            <p class="mt-2 text-sm text-gray-600 leading-relaxed">Isolated dipole xSIM vs COSMOS at default parameters (grey) versus tuned on the in-vivo data (green), ordered by gain. At their defaults the classical iterative methods look far weaker than the pretrained networks; tuned, several leap most of the way to the <span style="color:#6366f1" class="font-semibold">best learned method</span> (dashed). The payoff dwarfs the phantom's — medi and l1-qsm each gain roughly +0.3&nbsp;xSIM — because their defaults are mistuned for real-data noise. Tuning on the scored data is a mild form of overfitting, and only some methods are tunable, so defaults stays the fair cross-method ranking.</p>
+            <div class="mt-5 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="ivTuningSVG"></div>
+          </div>
+        </template>
       </div><!-- /in-vivo findings -->
 
       <!-- In vivo · Info -->
@@ -873,6 +880,14 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
           <p class="mt-2 text-sm text-gray-600 leading-relaxed">Mean xSIM per method family on each dataset. Deep-learning methods barely drop from phantom to in-vivo; classical iterative and direct methods lose far more — tuned to the idealised phantom, they generalise worse to real 3 T data.</p>
           <div class="mt-5 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="crossBarsSVG"></div>
         </div>
+        <template x-if="optShiftRows.length">
+          <div class="mt-8 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+            <h3 class="text-lg font-semibold text-gray-900">The tuned optimum moves with the data</h3>
+            <p class="mt-2 text-sm text-gray-600 leading-relaxed">For every dipole method tuned on <em>both</em> datasets, its optimal regularisation strength on the in-silico phantom (left) versus in vivo (right), on a log scale. The in-vivo optimum sits roughly 10–30× higher almost everywhere: real 3&nbsp;T data — with acquisition noise and forward-model mismatch — needs far heavier regularisation than the idealised phantom, so a single &ldquo;recommended&rdquo; value can't serve both. Coloured by family; hover for the shift.</p>
+            <div class="mt-2" x-html="familyLegend"></div>
+            <div class="mt-5 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="optShiftSVG"></div>
+          </div>
+        </template>
       </div>
     </section>
   </main>
@@ -1241,6 +1256,103 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
           const iv = {}; this._ivDip().forEach((r) => { iv[r.slug] = r; });
           return this._isoDip().filter((r) => iv[r.slug] && val(r, "xsim") != null && val(iv[r.slug], "xsim") != null)
             .map((r) => ({ slug: r.slug, name: this.algoName(r.slug), si: val(r, "xsim"), iv: val(iv[r.slug], "xsim"), fam: this._fam(r.slug) }));
+        },
+
+        // In-vivo · what tuning buys on real data: default -> tuned xSIM, ordered by gain, with the best
+        // pretrained network as a ceiling. Classical methods look weak at defaults and leap toward the
+        // learned ceiling once tuned — the payoff is far larger in vivo than on the phantom.
+        get ivTuningRows() {
+          return _cache("ivtune", this.runs.length, () => {
+            const by = {};
+            this._invivo().filter((r) => r.mode === "isolated" && r.stage === "dipole" && val(r, "xsim") != null)
+              .forEach((r) => { (by[r.slug] ||= {})[r.variant || "default"] = val(r, "xsim"); });
+            const rows = Object.entries(by).filter(([, v]) => v.default != null && v.tuned != null)
+              .map(([slug, v]) => ({ slug, name: this.algoName(slug), fam: this._fam(slug), def: v.default, tuned: v.tuned }))
+              .sort((a, b) => (b.tuned - b.def) - (a.tuned - a.def));
+            const dl = this._invivo().filter((r) => r.mode === "isolated" && r.stage === "dipole" && this._fam(r.slug) === "dl" && (r.variant || "default") === "default" && val(r, "xsim") != null).map((r) => val(r, "xsim"));
+            return { rows, ceil: dl.length ? Math.max(...dl) : null };
+          });
+        },
+        get ivTuningSVG() {
+          const E = this._esc, data = this.ivTuningRows, rows = data.rows;
+          if (!rows.length) return "<svg></svg>";
+          const w = 620, rh = 38, top = 34, padL = 132, padR = 56, h = top + rows.length * rh + 20;
+          const all = rows.flatMap((r) => [r.def, r.tuned]).concat(data.ceil != null ? [data.ceil] : []);
+          const lo = Math.max(0, Math.min(...all) - 0.04), hi = Math.min(1, Math.max(...all) + 0.04);
+          const X = (v) => padL + (v - lo) / (hi - lo || 1) * (w - padL - padR);
+          let s = `<svg width="${w}" height="${h}" style="max-width:100%;height:auto">`;
+          s += `<text x="${padL}" y="18" fill="currentColor" opacity="0.5" style="font-size:10px">xSIM vs COSMOS (higher is better) →</text>`;
+          if (data.ceil != null) {
+            const xc = X(data.ceil);
+            s += `<line x1="${xc}" y1="${top - 6}" x2="${xc}" y2="${h - 22}" stroke="#6366f1" stroke-dasharray="4 4" opacity="0.6"/>`;
+            s += `<text x="${xc}" y="${h - 8}" text-anchor="middle" fill="#6366f1" opacity="0.85" style="font-size:9px">best learned method</text>`;
+          }
+          rows.forEach((r, i) => {
+            const y = top + i * rh + rh / 2, xd = X(r.def), xt = X(r.tuned);
+            s += `<text x="${padL - 12}" y="${y + 3}" text-anchor="end" fill="currentColor" opacity="0.8" style="font-size:11px">${E(r.name)}</text>`;
+            s += `<g ${this._ptIv(r.slug, `${r.name} — default ${r.def.toFixed(3)} → tuned ${r.tuned.toFixed(3)} xSIM (+${(r.tuned - r.def).toFixed(3)})`)}>`;
+            s += `<line x1="${xd}" y1="${y}" x2="${xt}" y2="${y}" stroke="currentColor" opacity="0.25" stroke-width="2"/>`;
+            s += `<circle cx="${xd}" cy="${y}" r="4.5" fill="#94a3b8"/>`;
+            s += `<circle cx="${xt}" cy="${y}" r="4.5" fill="#10b981"/></g>`;
+            s += `<text x="${Math.max(xd, xt) + 8}" y="${y + 3}" fill="#10b981" style="font-size:10px;font-weight:600">+${(r.tuned - r.def).toFixed(2)}</text>`;
+          });
+          s += `<g transform="translate(${w - 150},14)" style="font-size:10px"><circle cx="0" cy="-3" r="4" fill="#94a3b8"/><text x="8" y="0" fill="currentColor" opacity="0.6">default</text><circle cx="66" cy="-3" r="4" fill="#10b981"/><text x="74" y="0" fill="currentColor" opacity="0.6">tuned</text></g>`;
+          return s + "</svg>";
+        },
+
+        // Cross-dataset · the tuned optimum moves with the data. For each dipole method tuned on BOTH
+        // datasets (same single knob), its in-silico optimum vs its in-vivo optimum on a log axis —
+        // in vivo sits systematically higher (heavier regularisation for real-data noise).
+        get optShiftRows() {
+          return _cache("optshift", this.runs.length, () => {
+            const pick = (inv) => {
+              const by = {};
+              this.runs.filter((r) => r.mode === "isolated" && r.stage === "dipole" && r.variant === "tuned" && this._isInvivo(r) === inv && r.params && Object.keys(r.params).length === 1)
+                .forEach((r) => { const k = Object.keys(r.params)[0], v = parseFloat(r.params[k]); if (isFinite(v) && v > 0) by[r.slug] = { k, v }; });
+              return by;
+            };
+            const sim = pick(false), iv = pick(true);
+            return Object.keys(sim).filter((s) => iv[s] && iv[s].k === sim[s].k)
+              .map((s) => ({ slug: s, name: this.algoName(s), key: sim[s].k, sim: sim[s].v, iv: iv[s].v, fam: this._fam(s) }))
+              .sort((a, b) => (b.iv / b.sim) - (a.iv / a.sim));
+          });
+        },
+        get optShiftSVG() {
+          const E = this._esc, rows = this.optShiftRows;
+          if (!rows.length) return "<svg></svg>";
+          const w = 620, h = 420, top = 46, bot = 30, xL = 200, xR = 430;
+          const vals = rows.flatMap((r) => [r.sim, r.iv]);
+          const lo = Math.log10(Math.min(...vals)), hi = Math.log10(Math.max(...vals));
+          const pad = (hi - lo) * 0.14 || 0.4, L0 = lo - pad, L1 = hi + pad;
+          const Y = (v) => top + (L1 - Math.log10(v)) / (L1 - L0 || 1) * (h - top - bot);
+          // de-collide the column labels (several methods share an in-silico optimum, and the in-vivo
+          // ratio labels stack where lines cross): greedily push each down to keep a minimum gap.
+          const declutter = (key) => {
+            const out = {}; let prev = -1e9;
+            rows.map((r, i) => ({ i, y: Y(r[key]) })).sort((a, b) => a.y - b.y)
+              .forEach((o) => { const y = Math.max(o.y, prev + 13); out[o.i] = y; prev = y; });
+            return out;
+          };
+          const ly = declutter("sim"), ry = declutter("iv");
+          let s = `<svg width="${w}" height="${h}" style="max-width:100%;height:auto">`;
+          for (let d = Math.ceil(L0); d <= Math.floor(L1); d++) {
+            const y = Y(Math.pow(10, d));
+            s += `<line x1="${xL}" y1="${y}" x2="${xR}" y2="${y}" stroke="currentColor" opacity="0.1"/>`;
+            s += `<text x="34" y="${y + 3}" fill="currentColor" opacity="0.4" style="font-size:9px">1e${d}</text>`;
+          }
+          s += `<text x="${xL}" y="24" text-anchor="middle" fill="currentColor" opacity="0.6" style="font-size:11px;font-weight:600">in-silico (2019)</text>`;
+          s += `<text x="${xR}" y="24" text-anchor="middle" fill="currentColor" opacity="0.6" style="font-size:11px;font-weight:600">in-vivo (2016)</text>`;
+          s += `<text x="14" y="${(top + h - bot) / 2}" text-anchor="middle" fill="currentColor" opacity="0.5" style="font-size:10px" transform="rotate(-90 14 ${(top + h - bot) / 2})">tuned parameter value (log) →</text>`;
+          rows.forEach((r, i) => {
+            const yS = Y(r.sim), yI = Y(r.iv), c = FAM[r.fam].c;
+            s += `<g data-tip="${E(`${r.name} — ${r.key}: ${r.sim} (in-silico) → ${r.iv} (in-vivo), ${(r.iv / r.sim).toFixed(0)}× heavier`)}">`;
+            s += `<line x1="${xL}" y1="${yS}" x2="${xR}" y2="${yI}" stroke="${c}" stroke-width="1.6" opacity="0.6"/>`;
+            s += `<circle cx="${xL}" cy="${yS}" r="3.6" fill="${c}"/><circle cx="${xR}" cy="${yI}" r="3.6" fill="${c}"/>`;
+            s += `<text x="${xL - 9}" y="${ly[i] + 3}" text-anchor="end" fill="currentColor" opacity="0.8" style="font-size:11px">${E(r.name)}</text>`;
+            s += `<text x="${xR + 12}" y="${ry[i] + 3}" text-anchor="start" fill="${c}" opacity="0.9" style="font-size:10px;font-weight:600">${(r.iv / r.sim).toFixed(0)}×</text>`;
+            s += `</g>`;
+          });
+          return s + "</svg>";
         },
 
         // In-vivo · COSMOS vs STI reference agreement (points below the diagonal = STI is the harder target).
