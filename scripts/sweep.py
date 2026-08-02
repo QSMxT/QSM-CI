@@ -6,11 +6,21 @@ artifact(s) its stage consumes, exactly like scripts/pipeline.py isolated), scor
 xSIM against ground truth with the same valid-mask logic as the pipeline, and reports the best grid
 point per algorithm against its current default.
 
-  python scripts/sweep.py --dataset data/sim/dev [--only tgv,tkd] [--jobs 4]
+  python scripts/sweep.py --dataset data/sim/scoring [--only tgv,tkd] [--jobs 4]
+
+The χ-separation stage is supported too: those methods emit TWO source maps (χ+ and χ−), each scored
+with `--kind chisep`, and the sweep's objective is the mean of the two xSIMs (both are reported so a
+human can favour χ+ or χ− when picking a tuned value). Point it at the chisep dataset and restrict to
+the chisep slugs:
+
+  python scripts/sweep.py --dataset data/sim/chisep --only wavesep,chi-sep-medi,chi-sep-ilsqr
 
 Writes results/sweep.json (every grid point) and prints a per-algorithm best-vs-baseline table.
 Only regularisation / threshold knobs are swept — pure convergence knobs (tol, max_iter) are held at
 their defaults, since they change convergence, not the over-/under-regularisation we're tuning for.
+The two χ-separation deep nets are intentionally NOT swept: susep-net exposes no knob, and χ-sepnet's
+only knob (Dr) is baked into its trained weights, so moving it feeds off-distribution inputs rather
+than tuning accuracy.
 """
 from __future__ import annotations
 
@@ -32,7 +42,7 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 from qsm_ci.scoring import cli_run_argv, gt_sources, eval_argv  # noqa: E402  shared primitives
 from pipeline import (  # noqa: E402  reuse the exact isolated-scoring machinery
-    ARTIFACT_FILE, discover_algorithms, prepare_input, _valid_mask,
+    ARTIFACT_FILE, ARTIFACT_KIND, discover_algorithms, prepare_input, _valid_mask,
 )
 
 # Grid of {param: [values]} per slug. itertools.product expands to one run per combination.
@@ -56,6 +66,16 @@ GRIDS: dict[str, dict[str, list]] = {
     # --- unwrap+bfr ---
     "harperella":  {"radius": [3.0, 5.0, 8.0]},
     "iharperella": {"radius": [3.0, 5.0, 8.0]},
+    # --- chi-separation (iterative only; run with --dataset data/sim/chisep) ---
+    # wavesep: wavelet-L1 sparsity weight (primary knob) x proximal-gradient step. Dr is left at the
+    # phantom's known kernel (137) — sweeping a physical constant on the phantom that defines it is
+    # circular, and it's exposed for callers who want it. max_iter (convergence) held at default.
+    "wavesep":       {"lambda": [0.005, 0.01, 0.02, 0.04, 0.08], "alpha": [0.1, 0.2, 0.4]},
+    # chi-sep-medi: MEDI data-fidelity/morphology regularisation weight (params.lambda).
+    "chi-sep-medi":  {"lambda": [0.1, 0.3, 1.0, 3.0, 10.0]},
+    # chi-sep-ilsqr: padding for the in-house QSM_iLSQR step (boundary/wrap artifacts). A numerical
+    # knob rather than a regularisation one, but it's the only lever the black-box toolbox exposes.
+    "chi-sep-ilsqr": {"pad_size": [8, 12, 16, 20]},
 }
 
 # Round-2 refinement: extend the axes where round-1's best sat on a grid edge, so the true optimum
@@ -97,30 +117,78 @@ def score_xsim(recon: Path, artifact: str, gt: Path, mask: Path, work: Path) -> 
     return json.loads(out_json.read_text())["metrics"]
 
 
-def run_one(algo: dict, override: dict, src: dict, work: Path) -> dict:
+def is_chisep(algo: dict) -> bool:
+    """A χ-separation run: >1 produced artifact, all of kind 'chisep' (χ+ and χ−) — same test the
+    pipeline uses to route to its two-output scorer."""
+    prods = algo["produces"]
+    return len(prods) > 1 and all(ARTIFACT_KIND.get(p) == "chisep" for p in prods)
+
+
+def score_chisep(odir: Path, gt: Path, mask: Path, work: Path) -> dict:
+    """Score a χ-separation run's two source maps (χ+ = chi-para, χ− = chi-dia) against ground truth,
+    each with `--kind chisep`, using the same valid-mask logic as the QSM path. Returns
+    {para_xsim, dia_xsim, para_nrmse, dia_nrmse}. seg (dseg) is passed when present so the recorded
+    metrics include the region-specific leakage, matching pipeline.score."""
+    seg = gt / "dseg.nii.gz"
+    out: dict = {}
+    for art, comp in (("chi-para", "para"), ("chi-dia", "dia")):
+        recon = odir / ARTIFACT_FILE[art]
+        sm = _valid_mask(recon, mask, work.with_suffix(f".{comp}.scoremask.nii.gz"))
+        out_json = work.with_suffix(f".{comp}.score.json")
+        cmd = eval_argv(sys.executable, EVAL, recon, gt / ARTIFACT_FILE[art], "chisep", sm,
+                        art, out_json, stage="sweep", name="sweep", track="chisep",
+                        seg=seg if seg.exists() else None, component=comp)
+        subprocess.run(cmd, check=True, capture_output=True)
+        m = json.loads(out_json.read_text())["metrics"]
+        out[f"{comp}_xsim"] = m.get("xsim")
+        out[f"{comp}_nrmse"] = m.get("nrmse")
+    return out
+
+
+def _f4(v) -> str:
+    return f"{v:.4f}" if isinstance(v, (int, float)) else "n/a"
+
+
+def run_one(algo: dict, override: dict, src: dict, gt_dir: Path, work: Path) -> dict:
     slug = algo["slug"]
     tag = "__".join(f"{k}-{fmt(v)}" for k, v in override.items()) or "default"
     idir = work / f"{slug}__{tag}__in"
     odir = work / f"{slug}__{tag}__out"
-    produced = algo["produces"][0]
     prepare_input(algo["consumes"], src, idir)  # stage GT inputs under canonical names
     # Shared argv builder — `fmt=fmt` reproduces the sweep's grid-value formatting (a swept float like
     # 8.0 renders as `8`, this script's long-standing behaviour), so the emitted argv is unchanged.
+    # For a χ-separation (multi-output) method it hands the CLI the output DIR, not a single file.
     argv = cli_run_argv(algo, idir, odir, ARTIFACT_FILE, RUNNER, override, fmt=fmt)
     rec = {"slug": slug, "stage": algo["stage"], "override": override, "tag": tag}
+    chisep = is_chisep(algo)
     try:
         odir.mkdir(parents=True, exist_ok=True)
         t0 = time.time()
         subprocess.run(argv, check=True, capture_output=True, text=True)
-        m = score_xsim(odir / ARTIFACT_FILE[produced], produced,
-                       Path(src["chimap"]).parent, src["mask"], work / f"{slug}__{tag}")
-        rec.update(status="ok", xsim=m.get("xsim"), nrmse=m.get("nrmse"), runtime=time.time() - t0)
+        if chisep:
+            m = score_chisep(odir, gt_dir, src["mask"], work / f"{slug}__{tag}")
+            xs = [m[k] for k in ("para_xsim", "dia_xsim") if m.get(k) is not None]
+            # Objective: mean of the two source xSIMs (both are also recorded so a human can favour one).
+            rec.update(status="ok", xsim=(sum(xs) / len(xs) if xs else None),
+                       para_xsim=m.get("para_xsim"), dia_xsim=m.get("dia_xsim"),
+                       para_nrmse=m.get("para_nrmse"), dia_nrmse=m.get("dia_nrmse"),
+                       runtime=time.time() - t0)
+        else:
+            produced = algo["produces"][0]
+            m = score_xsim(odir / ARTIFACT_FILE[produced], produced,
+                           gt_dir, src["mask"], work / f"{slug}__{tag}")
+            rec.update(status="ok", xsim=m.get("xsim"), nrmse=m.get("nrmse"), runtime=time.time() - t0)
     except subprocess.CalledProcessError as e:
         rec.update(status="DNF", error=(e.stderr or "")[-400:])
     except Exception as e:  # noqa: BLE001
         rec.update(status="DNF", error=str(e)[-400:])
     with _print_lock:
-        x = f"xsim={rec['xsim']:.4f}" if rec.get("xsim") is not None else f"DNF"
+        if rec.get("xsim") is None:
+            x = "DNF"
+        elif chisep:
+            x = f"xsim={rec['xsim']:.4f} (χ+={_f4(rec.get('para_xsim'))} χ−={_f4(rec.get('dia_xsim'))})"
+        else:
+            x = f"xsim={rec['xsim']:.4f}"
         print(f"  {slug:<14} {tag:<28} {x}", flush=True)
     return rec
 
@@ -139,6 +207,7 @@ def main() -> None:
     RUNNER = args.runner
 
     src = gt_sources(args.dataset)
+    gt_dir = args.dataset / "groundtruth"   # scored artifacts (chimap / chi-para / chi-dia / dseg) live here
     algos = {a["slug"]: a for a in discover_algorithms()}
     grids = REFINE if args.refine else GRIDS
     want = args.only.split(",") if args.only else list(grids)
@@ -157,7 +226,7 @@ def main() -> None:
 
     # MATLAB MCR runs are memory-heavy; keep the whole sweep at the given cap (default 4).
     with cf.ThreadPoolExecutor(max_workers=max(1, args.jobs)) as ex:
-        results = list(ex.map(lambda t: run_one(t[0], t[1], src, args.work), tasks))
+        results = list(ex.map(lambda t: run_one(t[0], t[1], src, gt_dir, args.work), tasks))
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(results, indent=2) + "\n")
@@ -169,8 +238,12 @@ def main() -> None:
             print(f"{slug:<14} all DNF"); continue
         rs.sort(key=lambda r: r["xsim"], reverse=True)
         best, worst = rs[0], rs[-1]
+        # χ-separation optimises the mean of χ+/χ− xSIM — show both components on the winning point so
+        # a reviewer can still favour one source before writing the tuned value into algorithm.yml.
+        extra = (f"  [χ+={_f4(best.get('para_xsim'))} χ−={_f4(best.get('dia_xsim'))}]"
+                 if best.get("para_xsim") is not None else "")
         print(f"{slug:<14} best xsim={best['xsim']:.4f} @ {best['tag']:<26} "
-              f"(range {worst['xsim']:.4f}–{best['xsim']:.4f} over {len(rs)} pts)")
+              f"(range {worst['xsim']:.4f}–{best['xsim']:.4f} over {len(rs)} pts){extra}")
     print(f"\nwrote {args.out}")
 
 
