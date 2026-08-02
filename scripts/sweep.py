@@ -89,6 +89,14 @@ REFINE: dict[str, dict[str, list]] = {
     "harperella": {"radius": [1.0, 2.0, 3.0]},
     # λ climbs to 0.546 at 450 but diverges hard by 600 — pin the peak in the pre-cliff window.
     "matlab-medi": {"lambda": [460, 480, 500, 520, 540, 560], "smv_radius": [5]},
+    # --- chi-separation round-2 (PROVISIONAL: re-center on round-1's best before use) ---
+    # Finer log-brackets around each method's primary regularisation knob. Unlike the entries above —
+    # which were narrowed to where round-1 actually peaked — these are seeded from the round-1 grid's
+    # interesting middle because the χ-sep sweep hasn't been run yet (no containers/data in this env).
+    # Once round-1 exists, re-center on its best (and pin wavesep's alpha to round-1's best alpha, not
+    # the 0.2 default assumed here). pad_size (ilsqr) is already dense in round-1, so it has no round-2.
+    "wavesep":      {"lambda": [0.008, 0.012, 0.016, 0.02, 0.028, 0.04, 0.06], "alpha": [0.2]},
+    "chi-sep-medi": {"lambda": [0.3, 0.5, 0.7, 1.0, 1.5, 2.0, 3.0]},
 }
 
 _print_lock = threading.Lock()
