@@ -1,0 +1,36 @@
+name: NLTV
+algorithm: nltv
+source: qsmrs
+stage: dipole
+language: Rust
+family: iterative
+learning: none
+engine: QSMxT / QSM.rs
+description: >
+  Nonlocal Total Variation regularized inversion.
+citation: Kames et al., NeuroImage 2018
+authors:
+- name: Christian Kames
+- name: Vanessa Wiggermann
+- name: Alexander Rauscher
+doi: 10.1016/j.neuroimage.2017.11.018
+code_url: https://github.com/astewartau/QSM.rs
+license: MIT
+image: ghcr.io/astewartau/qsm-ci/qsmxt:v9.4.0
+run: bash run.sh
+parameters:
+  - name: lambda
+    default: 1e-4
+    tuned:
+      sim: 3e-3
+      invivo: 3e-3
+    description: regularization
+  - name: max_iter
+    default: 1000
+    description: iterations
+
+# Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
+tuning:
+  date: 2026-08
+  status: tuned
+  note: "Swept lambda on sim+invivo (2026-08). Tuned both: 3e-3 (in-vivo xSIM low in absolute terms)."

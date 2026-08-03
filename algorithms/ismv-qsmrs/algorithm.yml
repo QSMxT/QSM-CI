@@ -1,0 +1,38 @@
+name: iSMV
+algorithm: ismv
+source: qsmrs
+stage: bfr
+language: Rust
+family: iterative
+learning: none
+engine: QSMxT / QSM.rs
+description: >
+  Iterative Spherical Mean Value background field removal.
+citation: Wen et al., Magn Reson Med 2014
+authors:
+- name: Yan Wen
+- name: Dong Zhou
+- name: Tian Liu
+- name: Pascal Spincemaille
+- name: Yi Wang
+doi: 10.1002/mrm.24998
+code_url: https://github.com/astewartau/QSM.rs
+license: MIT
+image: ghcr.io/astewartau/qsm-ci/qsmxt:v9.4.0
+run: bash run.sh
+parameters:
+  - name: tol
+    default: 1e-4
+    description: tolerance
+  - name: max_iter
+    default: 100
+    description: iterations
+  - name: radius_factor
+    default: 2.0
+    description: × max voxel size
+
+# Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
+tuning:
+  date: 2026-08
+  status: default-optimal
+  note: "Swept radius_factor on sim (sim-only); non-default grid points DNF'd, default retained."

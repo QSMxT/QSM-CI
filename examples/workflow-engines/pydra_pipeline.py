@@ -29,12 +29,12 @@ def main() -> None:
 
     wf = pydra.Workflow(name="qsm", input_spec=["phase", "magnitude", "mask", "params"],
                         phase=a.phase, magnitude=a.magnitude, mask=a.mask, params=a.params)
-    wf.add(FieldMapping(name="fm", slug="romeo-fieldmap", phase=wf.lzin.phase,
+    wf.add(FieldMapping(name="fm", slug="romeo-qsmrs", phase=wf.lzin.phase,
                         magnitude=wf.lzin.magnitude, mask=wf.lzin.mask, params=wf.lzin.params,
                         runner=a.runner))
-    wf.add(BackgroundRemoval(name="bfr", slug="vsharp", totalfield=wf.fm.lzout.totalfield,
+    wf.add(BackgroundRemoval(name="bfr", slug="vsharp-qsmrs", totalfield=wf.fm.lzout.totalfield,
                              mask=wf.lzin.mask, params=wf.lzin.params, runner=a.runner))
-    wf.add(DipoleInversion(name="dip", slug="rts", localfield=wf.bfr.lzout.localfield,
+    wf.add(DipoleInversion(name="dip", slug="rts-qsmrs", localfield=wf.bfr.lzout.localfield,
                            mask=wf.lzin.mask, params=wf.lzin.params, runner=a.runner))
     wf.set_output({"chimap": wf.dip.lzout.chimap})
 

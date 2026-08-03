@@ -967,8 +967,8 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
         const val = fn(); _memo[name] = { key, val }; return val;
       };
       // approximate method-family taxonomy (for findings colouring only). Unknown → iterative.
-      const DL = new Set(["qsmnet","qsmnet-plus","qsmgan","xqsm","lpcnn","modl-qsm","hd-qsm","ir2qsm","iqsm","iqsm+","autoqsm","inr-qsm","modip","deepqsm"]);
-      const DIRECT = new Set(["tkd","matlab-tkd","tsvd","tikhonov"]);
+      const DL = new Set(["qsmnet","qsmnet-plus","qsmgan","xqsm","lpcnn","modl-qsm","hdqsm-qsmrs","ir2qsm","iqsm","iqsm+","autoqsm","inr-qsm","modip","deepqsm"]);
+      const DIRECT = new Set(["tkd-qsmrs","tkd-qsmci","tsvd-qsmrs","tikhonov-qsmrs"]);
       const FAM = { dl: { label: "Deep learning", c: "#6366f1" }, iter: { label: "Iterative", c: "#10b981" }, direct: { label: "Direct / k-space", c: "#f59e0b" } };
 
       return {
@@ -1593,7 +1593,7 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
         // insensitive to the upstream stage (mean pairwise Spearman of the orderings ≈ 0.87).
         get dipoleStabilitySVG() {
           return _cache("dipstab", this.runs.length, () => {
-            const good = new Set(["ismv", "resharp", "sharp", "lbv", "vsharp", "pdf", "matlab-sti-vsharp", "bfrnet"]);
+            const good = new Set(["ismv-qsmrs", "resharp-qsmrs", "sharp-qsmrs", "lbv-qsmrs", "vsharp-qsmrs", "pdf-qsmrs", "vsharp-sti", "bfrnet"]);
             const cell = {};
             this.runs.filter((r) => r.mode === "composed" && r.stage === "bfr+dipole" && r.combo && good.has(r.combo.bfr) && r.combo.dipole && r.combo.dipole !== "amp-pe" && val(r, "xsim") != null)
               .forEach((r) => { (cell[r.combo.bfr] ||= {})[r.combo.dipole] = val(r, "xsim"); });

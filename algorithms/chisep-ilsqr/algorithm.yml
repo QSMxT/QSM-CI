@@ -1,0 +1,44 @@
+name: χ-separation (iLSQR)
+algorithm: chisep
+variant: ilsqr
+source: snu
+stage: chi-separation
+language: MATLAB
+family: iterative
+learning: none
+inputs: [localfield, r2prime, magnitude, mask, params]  # the artifacts this method actually reads (a subset of the stage's inputs)
+engine: χ-separation toolbox
+description: >
+  χ-separation (iLSQR variant) — separates net susceptibility into paramagnetic (χ+, iron) and
+  diamagnetic (χ−, myelin/calcium) sources using the local field and an R2' map to break the para/dia
+  degeneracy. The QSM is reconstructed in-house with STI-Suite QSM_iLSQR from the local field (the
+  toolbox needs a QSM in its own scaling/orientation conventions — see recon.m). From the SNU-LIST
+  chi-separation toolbox. A classical iterative baseline (χ+ xsim ~0.58 / χ− ~0.47 on the phantom).
+authors:
+- name: Hyeong-Geol Shin
+- name: Jingu Lee
+- name: Jongho Lee
+doi: 10.1016/j.neuroimage.2021.118371
+citation: Shin et al., NeuroImage 2021
+code_url: https://github.com/SNU-LIST/chi-separation
+license: academic use; toolbox obtained via the SNU-LIST Google Form
+image: ghcr.io/astewartau/qsm-ci/chi-sep-ilsqr:v1
+run: bash run.sh
+matlab:
+  entry: recon.m
+  runtime: r2026a
+parameters:
+  - name: pad_size
+    default: 12
+    description: >
+      Zero-padding (voxels, applied on each axis as [pad pad pad]) for the in-house STI-Suite QSM_iLSQR
+      step that reconstructs the QSM fed to chi_sep_iLSQR. Larger padding reduces dipole-inversion
+      boundary/wrap artifacts at higher memory/runtime. (chi_sep_iLSQR's own internals are a black-box
+      .p toolbox and expose no further knobs here; the Bunya diagnostic found N_std/CSF had no effect.)
+# Inputs consumed (isolated eval): local field + R2' + mask + magnitude. The QSM is reconstructed
+# in-house (STI-Suite QSM_iLSQR); chimap.nii.gz is intentionally NOT used (see recon.m note).
+# Produces two source maps: chi-para (χ+) and chi-dia (χ−).
+# NOTE: the GHCR image above is not built yet — the SNU-LIST toolbox + STI Suite need a MATLAB license
+# and are obtained via the SNU-LIST Google Form, so this runs via `--runner local` (run.sh) for now.
+# Like the other MATLAB methods, the Dockerfile (once added, via mcc + matlab-runtime) is gitignored so
+# CI pulls the prebuilt image. Runner must have STI Suite on $CHISEP_STISUITE.

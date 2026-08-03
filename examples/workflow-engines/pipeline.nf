@@ -53,8 +53,8 @@ process dipole {
 }
 
 workflow {
-    field_mapping_out = field_mapping('romeo-fieldmap', file(params.phase), file(params.magnitude), file(params.mask), file(params.params))
-    bfr_out = bfr('vsharp', field_mapping_out, file(params.mask), file(params.params))
-    dipole_out = dipole('rts', bfr_out, file(params.mask), file(params.params))
+    field_mapping_out = field_mapping('romeo-qsmrs', file(params.phase), file(params.magnitude), file(params.mask), file(params.params))
+    bfr_out = bfr('vsharp-qsmrs', field_mapping_out, file(params.mask), file(params.params))
+    dipole_out = dipole('rts-qsmrs', bfr_out, file(params.mask), file(params.params))
     dipole_out.collectFile(name: 'chimap.nii.gz', storeDir: params.outdir ?: '.')
 }

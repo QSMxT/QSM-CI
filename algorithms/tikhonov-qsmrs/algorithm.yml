@@ -1,0 +1,36 @@
+name: Tikhonov
+algorithm: tikhonov
+source: qsmrs
+stage: dipole
+language: Rust
+family: direct
+learning: none
+engine: QSMxT / QSM.rs
+description: >
+  Closed-form L2 (Tikhonov) regularized inversion.
+citation: Bilgic et al., JMRI 2014
+authors:
+- name: Berkin Bilgic
+- name: Itthi Chatnuntawech
+- name: Audrey P. Fan
+- name: Kawin Setsompop
+- name: Stephen F. Cauley
+- name: Lawrence L. Wald
+- name: Elfar Adalsteinsson
+doi: 10.1002/jmri.24365
+code_url: https://github.com/astewartau/QSM.rs
+license: MIT
+image: ghcr.io/astewartau/qsm-ci/qsmxt:v9.4.0
+run: bash run.sh
+parameters:
+  - name: lambda
+    default: 1e-4
+    tuned:
+      sim: 3e-4
+    description: L2 regularization
+
+# Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
+tuning:
+  date: 2026-08
+  status: partial
+  note: "Swept lambda on sim+invivo (2026-08). sim tuned (3e-4); invivo default optimal."

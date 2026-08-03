@@ -1,0 +1,51 @@
+name: MEDI (Cornell)
+algorithm: medi
+source: cornell
+stage: dipole
+language: MATLAB
+family: iterative
+learning: none
+engine: MEDI toolbox
+description: Morphology Enabled Dipole Inversion (Cornell MEDI toolbox), compiled from
+  MATLAB and run on the license-free MATLAB Runtime. Solves the L1 morphology-regularized
+  dipole inversion directly on the local (tissue) field (no background-field removal).
+authors:
+- name: Jing Liu
+- name: Tian Liu
+- name: Ludovic de Rochefort
+- name: James Ledoux
+- name: Ildar Khalidov
+- name: Weiwei Chen
+- name: A. John Tsiouris
+- name: Cynthia Wisnieff
+- name: Pascal Spincemaille
+- name: Martin R. Prince
+- name: Yi Wang
+doi: 10.1016/j.neuroimage.2011.08.082
+citation: Liu et al., NeuroImage 2012
+code_url: http://pre.weill.cornell.edu/mri/pages/qsm.html
+license: See Cornell MEDI toolbox license
+image: ghcr.io/astewartau/qsm-ci/medi-cornell:v1
+run: bash run.sh
+matlab:
+  entry: recon.m
+  runtime: r2026a
+parameters:
+- name: lambda
+  default: 100
+  description: data-fidelity weight (larger = closer data fit, less regularization)
+- name: smv_radius
+  default: 0
+  description: spherical-mean-value radius (mm) for extra background removal; 0 disables (default now off — input is already a local field)
+- name: percentage
+  default: 0.9
+  description: fraction of voxels kept as edges in the morphology gradient mask
+- name: merit
+  default: 0
+  description: model-error reduction (iterative reweighting); 1 enables
+
+# Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
+tuning:
+  date: 2026-08
+  status: pending
+  note: "Converted from a bfr+dipole span (PDF+MEDI) to a pure dipole inversion (MEDI_L1 on the local field); the old lambda=520 tuning was for the span and no longer applies. Needs re-sweeping as a dipole method."

@@ -29,76 +29,76 @@ STAGE = {
 # slug, stage, qsmxt algo name, display name, description, citation, doi, [(param, default, desc)]
 ALGOS = [
     # --- background field removal ---
-    ("vsharp", "bfr", "vsharp", "V-SHARP",
+    ("vsharp-qsmrs", "bfr", "vsharp-qsmrs", "V-SHARP",
      "Variable-radius SHARP: SMV deconvolution with a spatially varying kernel radius.",
      "Wu et al., Magn Reson Med 2012", None,
      [("threshold", "0.02", "deconvolution threshold"),
       ("max_radius_factor", "0.5", "× min voxel size"),
       ("min_radius_factor", "0.0", "× max voxel size")]),
-    ("sharp", "bfr", "sharp", "SHARP",
+    ("sharp-qsmrs", "bfr", "sharp-qsmrs", "SHARP",
      "Sophisticated Harmonic Artifact Reduction for Phase data: SMV deconvolution.",
      "Schweser et al., NeuroImage 2011", "10.1016/j.neuroimage.2010.10.070",
      [("threshold", "0.02", "deconvolution threshold"), ("radius_factor", "0.5", "× min voxel size")]),
-    ("resharp", "bfr", "resharp", "RESHARP",
+    ("resharp-qsmrs", "bfr", "resharp-qsmrs", "RESHARP",
      "Regularized SHARP with Tikhonov regularization of the deconvolution.",
      "Sun & Wilman, Magn Reson Med 2014", "10.1002/mrm.24765",
      [("radius", "15.0", "SMV kernel radius (mm)"), ("tik_reg", "1e-3", "Tikhonov regularization")]),
-    ("pdf", "bfr", "pdf", "PDF",
+    ("pdf-qsmrs", "bfr", "pdf-qsmrs", "PDF",
      "Projection onto Dipole Fields: models the background field as external dipoles.",
      "Liu et al., NMR Biomed 2011", "10.1002/nbm.1670",
      [("tol", "1e-4", "convergence tolerance")]),
-    ("lbv", "bfr", "lbv", "LBV",
+    ("lbv-qsmrs", "bfr", "lbv-qsmrs", "LBV",
      "Laplacian Boundary Value: solves the Laplacian of the field with boundary conditions.",
      "Zhou et al., NMR Biomed 2014", "10.1002/nbm.3064",
      [("tol", "1e-4", "convergence tolerance")]),
-    ("ismv", "bfr", "ismv", "iSMV",
+    ("ismv-qsmrs", "bfr", "ismv-qsmrs", "iSMV",
      "Iterative Spherical Mean Value background field removal.",
      "Wen et al., 2014", None,
      [("tol", "1e-4", "tolerance"), ("max_iter", "100", "iterations"), ("radius_factor", "2.0", "× max voxel size")]),
     # (HARPERELLA / iHARPERELLA are phase-domain -> an `unwrap+bfr` span; defined below.)
     # --- dipole inversion ---
-    ("rts", "dipole", "rts", "RTS",
+    ("rts-qsmrs", "dipole", "rts-qsmrs", "RTS",
      "Rapid Two-Step QSM: streaking-artifact reduction via a fast ADMM split.",
      "Kames et al., NeuroImage 2018", "10.1016/j.neuroimage.2018.07.043",
      [("delta", "1.0", "regularization"), ("mu", "1.0", "smoothness"), ("max_iter", "1000", "iterations")]),
-    ("tv", "dipole", "tv", "TV (ADMM)",
+    ("tv-qsmrs", "dipole", "tv-qsmrs", "TV (ADMM)",
      "Total Variation regularized dipole inversion solved with ADMM.",
      "Bilgic et al., 2014", None,
      [("lambda", "1e-4", "TV regularization"), ("rho", "1.0", "ADMM penalty"), ("max_iter", "1000", "iterations")]),
-    ("tkd", "dipole", "tkd", "TKD",
+    ("tkd-qsmrs", "dipole", "tkd-qsmrs", "TKD",
      "Thresholded K-space Division: direct inversion with the dipole kernel thresholded.",
      "Shmueli et al., Magn Reson Med 2009", None,
      [("threshold", "0.1", "k-space threshold")]),
-    ("tsvd", "dipole", "tsvd", "TSVD",
+    ("tsvd-qsmrs", "dipole", "tsvd-qsmrs", "TSVD",
      "Truncated Singular Value Decomposition inversion.",
      "Wharton et al., Magn Reson Med 2010", "10.1002/mrm.22334",
      [("threshold", "0.1", "singular-value threshold")]),
     # (TGV takes the TOTAL field and does its own BFR -> a `bfr+dipole` span; defined below.)
-    ("tikhonov", "dipole", "tikhonov", "Tikhonov",
+    ("tikhonov-qsmrs", "dipole", "tikhonov-qsmrs", "Tikhonov",
      "Closed-form L2 (Tikhonov) regularized inversion.",
      "Kames et al., 2018", None,
      [("lambda", "1e-4", "L2 regularization")]),
-    ("nltv", "dipole", "nltv", "NLTV",
+    ("nltv-qsmrs", "dipole", "nltv-qsmrs", "NLTV",
      "Nonlocal Total Variation regularized inversion.",
      "—", None,
      [("lambda", "1e-4", "regularization"), ("max_iter", "1000", "iterations")]),
-    ("medi", "dipole", "medi", "MEDI",
+    ("medi-qsmrs", "dipole", "medi-qsmrs", "MEDI",
      "Morphology Enabled Dipole Inversion: magnitude-guided edge regularization.",
      "Liu et al., 2012", None,
      [("lambda", "1e-4", "regularization")]),
-    ("ilsqr", "dipole", "ilsqr", "iLSQR",
+    ("ilsqr-qsmrs", "dipole", "ilsqr-qsmrs", "iLSQR",
      "Iterative LSQR inversion with streaking-artifact reduction.",
      "Li et al., NMR Biomed 2015", None,
      [("tol", "1e-4", "tolerance"), ("max_iter", "1000", "iterations")]),
     # --- FANSI family (Rust ports; replace the former MATLAB/MCR submissions) ---
-    ("ndi", "dipole", "ndi", "NDI",
+    ("ndi-qsmrs", "dipole", "ndi-qsmrs", "NDI",
      "Nonlinear Dipole Inversion: gradient-descent solve of a nonlinear (wrapped-phase) data "
      "term; effectively tuning-free.",
      "Polak et al., NMR Biomed 2020", "10.1002/nbm.4271",
      [("tau", "2.0", "gradient-descent step size"),
       ("alpha", "1e-5", "L2 regularization weight"),
       ("max_iter", "200", "iterations")]),
-    ("fansi", "dipole", "fansi", "FANSI (nlTV)",
+    ("fansi-nltv-qsmrs", "dipole", "fansi-nltv-qsmrs", "FANSI (nlTV)",
      "Fast Nonlinear Susceptibility Inversion with nonlinear total-variation regularization, "
      "solved with ADMM.",
      "Milovic et al., Magn Reson Med 2018", "10.1002/mrm.27073",
@@ -106,7 +106,7 @@ ALGOS = [
       ("mu1", "2e-2", "gradient-consistency ADMM weight"),
       ("max_iter", "150", "iterations"),
       ("tol_update", "0.1", "convergence threshold on the solution update (percent)")]),
-    ("fansi-tgv", "dipole", "fansi-tgv", "FANSI (nlTGV)",
+    ("fansi-nltgv-qsmrs", "dipole", "fansi-nltgv-qsmrs", "FANSI (nlTGV)",
      "FANSI with nonlinear total-generalized-variation (second-order) regularization, solved "
      "with ADMM.",
      "Milovic et al., Magn Reson Med 2018", "10.1002/mrm.27073",
@@ -115,7 +115,7 @@ ALGOS = [
       ("mu1", "2e-2", "gradient-consistency ADMM weight"),
       ("max_iter", "150", "iterations"),
       ("tol_update", "0.1", "convergence threshold on the solution update (percent)")]),
-    ("l1-qsm", "dipole", "l1qsm", "L1-QSM",
+    ("l1qsm-qsmrs", "dipole", "l1qsm", "L1-QSM",
      "L1-norm data-fidelity QSM (PI-QSM): an L1 fidelity term with TV regularization, robust to "
      "phase inconsistencies.",
      "Milovic et al., Magn Reson Med 2022", "10.1002/mrm.28957",
@@ -124,7 +124,7 @@ ALGOS = [
       ("lambda", "1.0", "L1 fidelity strength (<1 rejects more inconsistent voxels)"),
       ("max_iter", "50", "iterations"),
       ("tol_update", "1.0", "convergence threshold on the solution update (percent)")]),
-    ("wh-qsm", "dipole", "whqsm", "WH-QSM",
+    ("whqsm-qsmrs", "dipole", "whqsm", "WH-QSM",
      "Weak-Harmonic QSM: jointly estimates susceptibility and a residual harmonic background "
      "field, correcting imperfect background-field removal.",
      "Milovic et al., Magn Reson Med 2019", "10.1002/mrm.27483",
@@ -133,7 +133,7 @@ ALGOS = [
       ("beta", "150", "harmonic-constraint weight"),
       ("max_iter", "300", "iterations"),
       ("tol_update", "0.1", "convergence threshold on the solution update (percent)")]),
-    ("hd-qsm", "dipole", "hdqsm", "HD-QSM",
+    ("hdqsm-qsmrs", "dipole", "hdqsm", "HD-QSM",
      "Hybrid data-fidelity QSM: a two-stage linear inversion where an L1 stage produces a "
      "discrepancy map that reweights a second L2 stage.",
      "Lambert et al., Magn Reson Med 2022", "10.1002/mrm.29218",
@@ -141,19 +141,19 @@ ALGOS = [
       ("mu1_l2", "1e-2", "L2-stage gradient-consistency weight"),
       ("max_iter_l1", "20", "stage-1 (L1) iterations"),
       ("max_iter_l2", "80", "stage-2 (L2) iterations")]),
-    ("tgv", "bfr+dipole", "tgv", "TGV",
+    ("tgv-qsmrs", "bfr+dipole", "tgv-qsmrs", "TGV",
      "Total Generalized Variation single-step reconstruction: total field -> susceptibility, "
      "doing its own background field removal.",
      "Langkammer et al., NeuroImage 2015", "10.1016/j.neuroimage.2015.02.041",
      [("iterations", "1000", "iterations"), ("alpha1", "0.0015", "first-order weight"),
       ("alpha0", "0.003", "second-order weight")]),
     # --- integrated unwrap + background removal (span: wrapped phase -> local field) ---
-    ("harperella", "unwrap+bfr", "harperella", "HARPERELLA",
+    ("harperella-qsmrs", "unwrap+bfr", "harperella-qsmrs", "HARPERELLA",
      "Integrated phase unwrapping + background field removal, operating on wrapped phase.",
      "Li et al., NeuroImage 2014", "10.1016/j.neuroimage.2014.08.029",
      [("radius", "5.0", "SMV kernel radius (mm)"), ("max_iter", "100", "iterations"),
       ("tol", "1e-4", "tolerance")]),
-    ("iharperella", "unwrap+bfr", "iharperella", "iHARPERELLA",
+    ("iharperella-qsmrs", "unwrap+bfr", "iharperella-qsmrs", "iHARPERELLA",
      "Improved HARPERELLA: iterative integrated unwrapping + background removal on wrapped phase.",
      "Li et al., NeuroImage 2014", "10.1016/j.neuroimage.2014.08.029",
      [("radius", "5.0", "SMV kernel radius (mm)"), ("max_iter", "100", "iterations"),
@@ -186,9 +186,9 @@ def extra_flags(slug):
     """Algorithm-specific flags beyond the common input/mask/output/b0."""
     te = (' --field-strength "$(jq -r .B0 "$IN/params.json")"'
           ' --echo-time "$(jq -r .TE[0] "$IN/params.json")"')
-    if slug == "medi":  # radians (needs B0+TE), uses magnitude, no internal SMV (input is local field)
+    if slug == "medi-qsmrs":  # radians (needs B0+TE), uses magnitude, no internal SMV (input is local field)
         return te + ' --smv false --magnitude "$IN/magnitude.nii.gz"'
-    if slug == "tgv":   # TGV inversion also needs B0 + TE
+    if slug == "tgv-qsmrs":   # TGV inversion also needs B0 + TE
         return te
     return ""
 

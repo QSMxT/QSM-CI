@@ -15,9 +15,9 @@ Example — a background-removal → dipole-inversion pipeline mixing two method
     from nipype import Workflow, Node
     from qsm_ci.nipype import BackgroundRemoval, DipoleInversion
 
-    bfr = Node(BackgroundRemoval(slug="sharp", totalfield="totalfield.nii.gz",
+    bfr = Node(BackgroundRemoval(slug="sharp-qsmrs", totalfield="totalfield.nii.gz",
                                  mask="mask.nii.gz", params="params.json"), name="bfr")
-    dip = Node(DipoleInversion(slug="rts", mask="mask.nii.gz", params="params.json"), name="dip")
+    dip = Node(DipoleInversion(slug="rts-qsmrs", mask="mask.nii.gz", params="params.json"), name="dip")
 
     wf = Workflow(name="qsm")
     wf.connect(bfr, "out_file", dip, "localfield")
@@ -48,7 +48,7 @@ class _RunInputSpec(CommandLineInputSpec):
     """Flags common to every ``qsm-ci run`` invocation (see `qsm-ci run <slug> --help`)."""
 
     slug = traits.Str(argstr="%s", position=0, mandatory=True,
-                      desc="algorithm slug to run for this stage (e.g. 'sharp', 'rts')")
+                      desc="algorithm slug to run for this stage (e.g. 'sharp-qsmrs', 'rts-qsmrs')")
     mask = File(exists=True, argstr="--mask %s", mandatory=True, desc="brain mask NIfTI")
     params = File(exists=True, argstr="--params %s",
                   desc="params.json or a BIDS MEGRE sidecar (alternative to --te/--field-strength)")

@@ -11,7 +11,7 @@ rule field_mapping:
     output:
         totalfield="totalfield.nii.gz",
     params:
-        slug="romeo-fieldmap",
+        slug="romeo-qsmrs",
     shell:
         "qsm-ci run {params.slug} --phase {input.phase} --magnitude {input.magnitude} --mask {input.mask} --params {input.params} -o {output.totalfield}"
 
@@ -23,7 +23,7 @@ rule bfr:
     output:
         localfield="localfield.nii.gz",
     params:
-        slug="vsharp",
+        slug="vsharp-qsmrs",
     shell:
         "qsm-ci run {params.slug} --totalfield {input.totalfield} --mask {input.mask} --params {input.params} -o {output.localfield}"
 
@@ -35,6 +35,6 @@ rule dipole:
     output:
         chimap="chimap.nii.gz",
     params:
-        slug="rts",
+        slug="rts-qsmrs",
     shell:
         "qsm-ci run {params.slug} --localfield {input.localfield} --mask {input.mask} --params {input.params} -o {output.chimap}"
