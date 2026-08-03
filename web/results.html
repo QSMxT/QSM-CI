@@ -466,22 +466,22 @@
           <template x-if="stageImportance">
             <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
               <h3 class="text-lg font-semibold text-gray-900">Which stage decides your result?</h3>
-              <p class="mt-2 text-sm text-gray-600 leading-relaxed">Share of full-pipeline NRMSE variance explained by the choice at each stage, across every pipeline. Background removal dominates: it swings the final error far more than the dipole-inversion method the field usually focuses on.</p>
+              <p class="mt-2 text-sm text-gray-600 leading-relaxed">How much the choice at each stage reshuffles the full-pipeline ranking (rank-based, so one broken method can't skew it), across every pipeline. Background removal is the biggest lever — it reorders the final result more than the dipole-inversion step the field usually focuses on, while field mapping barely moves it.</p>
               <div class="mt-4 space-y-3">
                 <template x-for="st in stageImportance" :key="st.f">
                   <div>
                     <div class="mb-1 flex items-center justify-between text-xs">
                       <span class="font-semibold" x-text="st.lab"></span>
-                      <span class="tabular-nums text-gray-500"><span class="font-semibold text-gray-700 dark:text-gray-200" x-text="st.eta.toFixed(1)+'%'"></span> of variance</span>
+                      <span class="tabular-nums text-gray-500"><span class="font-semibold text-gray-700 dark:text-gray-200" x-text="st.eta.toFixed(1)+'%'"></span> of ranking</span>
                     </div>
                     <div class="h-3 w-full rounded-full bg-gray-100 dark:bg-gray-800">
                       <div class="h-3 rounded-full" :style="`width:${Math.max(1,st.eta)}%;background:${st.f==='bfr'?'#e11d48':st.f==='dipole'?'#f59e0b':'#10b981'}`"></div>
                     </div>
-                    <p class="mt-1 text-[11px] text-gray-400">best <span class="text-gray-500 dark:text-gray-400" x-text="st.best.name"></span> (<span x-text="fmt(st.best.val,'nrmse')"></span>) · worst <span class="text-gray-500 dark:text-gray-400" x-text="st.worst.name"></span> (<span x-text="fmt(st.worst.val,'nrmse')"></span>)</p>
+                    <p class="mt-1 text-[11px] text-gray-400"><span x-text="st.levels"></span> methods compared at this stage</p>
                   </div>
                 </template>
               </div>
-              <p class="mt-3 text-[11px] text-gray-400">Caveat: one pathological background-removal method inflates that stage's spread; the ordering holds without it.</p>
+              <p class="mt-3 text-[11px] text-gray-400">Rank-based on purpose: under a raw-NRMSE variance measure a single catastrophic method (AMP-PE fails on in-silico, ~4000% NRMSE) would make its stage look all-important. Ranking each pipeline first keeps the comparison robust.</p>
             </div>
           </template>
 
@@ -1687,9 +1687,11 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
             const w = 720, h = 430, padL = 54, padR = 104, padT = 18, padB = 48;
             if (!rows.length) return "<svg></svg>";
             const mx = rows.map((r) => r.mean), sy = rows.map((r) => r.sd);
-            const [x0, x1] = robustRange(mx), y1 = Math.max(...sy) * 1.05;
+            // Both axes robust (IQR fences) + clamped, so one broken method (amp-pe: mean ~4000, spread
+            // ~2.4x the next-worst) can't blow out the scale and squash every other method into a corner.
+            const [x0, x1] = robustRange(mx), y1 = (robustRange(sy)[1] || Math.max(...sy)) * 1.05;
             const SX = (v) => padL + (Math.min(v, x1) - x0) / (x1 - x0 || 1) * (w - padL - padR);
-            const SY = (v) => h - padB - v / (y1 || 1) * (h - padT - padB);
+            const SY = (v) => h - padB - Math.min(v, y1) / (y1 || 1) * (h - padT - padB);
             const lab = new Set([...rows].sort((a, b) => a.mean - b.mean).slice(0, 4).map((r) => r.slug));
             [...rows].sort((a, b) => b.sd - a.sd).slice(0, 3).forEach((r) => lab.add(r.slug));
             [...rows].sort((a, b) => a.sd - b.sd).slice(0, 3).forEach((r) => lab.add(r.slug));
@@ -1924,13 +1926,18 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
           return _cache("si", this.runs.length, () => {
             const full = this.runs.filter((r) => r.stage === "field-mapping+bfr+dipole" && r.mode === "composed" && r.combo && val(r, "nrmse") != null);
             if (full.length < 8) return null;
-            const vs = full.map((r) => val(r, "nrmse")), gm = vs.reduce((a, c) => a + c, 0) / vs.length;
-            const sst = vs.reduce((a, v) => a + (v - gm) ** 2, 0) || 1;
+            // Rank-transform NRMSE (1 = best) before the variance decomposition, so a single broken
+            // method (e.g. AMP-PE at ~4000% NRMSE on in-silico) can't hijack a raw-variance score and
+            // make its stage look all-important. eta^2 on ranks = share of the OUTCOME ORDERING each
+            // stage's choice explains — robust to outliers, and still uses every pipeline.
+            const ord = [...full].sort((a, b) => val(a, "nrmse") - val(b, "nrmse"));
+            const rank = new Map(); ord.forEach((r, i) => rank.set(r, i + 1));
+            const rs = full.map((r) => rank.get(r)), gm = rs.reduce((a, c) => a + c, 0) / rs.length;
+            const sst = rs.reduce((a, v) => a + (v - gm) ** 2, 0) || 1;
             return [["bfr", "Background removal"], ["dipole", "Dipole inversion"], ["field_mapping", "Field mapping"]].map(([f, lab]) => {
-              const g = {}; full.forEach((r) => { (g[r.combo[f]] ||= []).push(val(r, "nrmse")); });
-              const means = Object.entries(g).map(([k, a]) => [k, a.reduce((x, c) => x + c, 0) / a.length]).sort((a, b) => a[1] - b[1]);
-              const ssb = Object.values(g).reduce((a, arr) => { const m = arr.reduce((x, c) => x + c, 0) / arr.length; return a + arr.length * (m - gm) ** 2; }, 0);
-              return { f, lab, eta: ssb / sst * 100, levels: means.length, best: { name: this.disp(means[0][0]), val: means[0][1] }, worst: { name: this.disp(means[means.length - 1][0]), val: means[means.length - 1][1] } };
+              const gr = {}; full.forEach((r) => { (gr[r.combo[f]] ||= []).push(rank.get(r)); });
+              const ssb = Object.values(gr).reduce((a, arr) => { const m = arr.reduce((x, c) => x + c, 0) / arr.length; return a + arr.length * (m - gm) ** 2; }, 0);
+              return { f, lab, eta: ssb / sst * 100, levels: Object.keys(gr).length };
             }).sort((a, b) => b.eta - a.eta);
           });
         },
