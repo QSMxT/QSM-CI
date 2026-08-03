@@ -23,3 +23,9 @@ parameters:
     tuned:
       sim: 0.05
     description: singular-value threshold
+
+# Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
+tuning:
+  date: 2026-08
+  status: partial
+  note: "Swept threshold on sim+invivo (2026-08). sim tuned (0.05); invivo default optimal (+0.002 negligible)."

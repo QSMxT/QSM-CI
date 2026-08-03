@@ -29,3 +29,9 @@ parameters:
   - name: tol_update
     default: 0.1
     description: convergence threshold on the solution update (percent)
+
+# Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
+tuning:
+  date: 2026-08
+  status: tuned
+  note: "Swept alpha1 on sim+invivo (2026-08). Tuned both: sim 3e-5, invivo 4e-4."
