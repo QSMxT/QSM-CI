@@ -1717,7 +1717,8 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
 
         get pipelineFacts() {
           return _cache("pf", this.runs.length, () => {
-            const cells = this.runs.filter((r) => r.stage === "field-mapping+bfr+dipole" && r.mode === "composed" && r.combo && val(r, "nrmse") != null)
+            const cells = this.runs.filter((r) => r.stage === "field-mapping+bfr+dipole" && r.mode === "composed"
+                && r.combo && r.combo.field_mapping && r.combo.bfr && r.combo.dipole && val(r, "nrmse") != null)
               .map((r) => ({ fm: r.combo.field_mapping, bfr: r.combo.bfr, dipole: r.combo.dipole, nrmse: val(r, "nrmse") }));
             if (cells.length < 4) return null;
             const optimal = [...cells].sort((a, b) => a.nrmse - b.nrmse)[0];
