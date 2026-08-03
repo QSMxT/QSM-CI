@@ -327,8 +327,8 @@
           <table class="w-full text-sm whitespace-nowrap">
             <thead class="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
               <tr>
-                <th class="px-4 py-3 text-right font-medium sticky left-0 bg-gray-50" style="min-width:3rem">#</th>
-                <th class="px-5 py-3 text-left font-medium sticky bg-gray-50" style="left:3rem" x-text="view==='composed' ? 'Pipeline' : 'Algorithm'"></th>
+                <th class="px-4 py-3 text-right font-medium sticky left-0 bg-gray-50" style="min-width:4rem">#</th>
+                <th class="px-5 py-3 text-left font-medium sticky bg-gray-50" style="left:4rem" x-text="view==='composed' ? 'Pipeline' : 'Algorithm'"></th>
                 <template x-for="c in displayCols" :key="c">
                   <th @click="sort(c)" class="px-4 py-3 text-right font-medium cursor-pointer select-none hover:text-gray-800 dark:hover:text-gray-100">
                     <span x-text="METRICS[c].label" :data-tip="METRICS[c].desc"></span>
@@ -340,8 +340,8 @@
             <tbody class="divide-y divide-gray-100">
               <template x-for="(r, i) in rows" :key="r.id">
                 <tr @click="go(r)" class="group cursor-pointer" :class="(r.status==='DNF' ? 'opacity-50 ' : '') + (r.variant==='tuned' ? 'tuned-row' : '')">
-                  <td class="px-4 py-3 text-right tabular-nums text-gray-400 sticky left-0 bg-white group-hover:bg-emerald-50/40" style="min-width:3rem" x-text="i+1"></td>
-                  <td class="px-5 py-3 text-left font-medium text-gray-900 sticky bg-white group-hover:bg-emerald-50/40" style="left:3rem">
+                  <td class="px-4 py-3 text-right tabular-nums text-gray-400 sticky left-0 bg-white group-hover:bg-emerald-50/40" style="min-width:4rem"><span x-text="i+1"></span><span x-show="rankDelta(r.slug,i)!==0" :class="rankDelta(r.slug,i)>0?'text-emerald-600':'text-rose-400'" class="ml-0.5 text-[10px] font-semibold align-top" :title="rankDelta(r.slug,i)>0 ? ('up '+rankDelta(r.slug,i)+' vs default') : ('down '+Math.abs(rankDelta(r.slug,i))+' vs default')" x-text="(rankDelta(r.slug,i)>0?'▲':'▼')+Math.abs(rankDelta(r.slug,i))"></span></td>
+                  <td class="px-5 py-3 text-left font-medium text-gray-900 sticky bg-white group-hover:bg-emerald-50/40" style="left:4rem">
                     <span class="mr-1.5 inline-block w-5 text-center" x-text="medal(i)"></span>
                     <span x-text="r.name"></span>
                     <template x-if="doi(r)">
@@ -657,8 +657,8 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
         <table class="w-full text-sm whitespace-nowrap">
           <thead class="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
             <tr>
-              <th class="px-4 py-3 text-right font-medium sticky left-0 bg-gray-50" style="min-width:3rem">#</th>
-              <th class="px-5 py-3 text-left font-medium sticky bg-gray-50" style="left:3rem">Algorithm</th>
+              <th class="px-4 py-3 text-right font-medium sticky left-0 bg-gray-50" style="min-width:4rem">#</th>
+              <th class="px-5 py-3 text-left font-medium sticky bg-gray-50" style="left:4rem">Algorithm</th>
               <template x-for="c in chisepDisplayCols()" :key="c.key">
                 <th @click="chiSepSort(c.key)" class="px-4 py-3 text-right font-medium cursor-pointer select-none hover:text-gray-800 dark:hover:text-gray-100">
                   <span class="has-tip" :data-tip="c.tip" x-text="c.label"></span>
@@ -670,8 +670,8 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
           <tbody class="divide-y divide-gray-100">
             <template x-for="(r,i) in chiSepRows()" :key="r.id">
               <tr @click="go(r)" class="group cursor-pointer" :class="(r.status==='DNF' ? 'opacity-50 ' : '') + (r.variant==='tuned' ? 'tuned-row' : '')">
-                <td class="px-4 py-3 text-right tabular-nums text-gray-400 sticky left-0 bg-white group-hover:bg-emerald-50/40" style="min-width:3rem" x-text="i+1"></td>
-                <td class="px-5 py-3 text-left font-medium text-gray-900 sticky bg-white group-hover:bg-emerald-50/40" style="left:3rem">
+                <td class="px-4 py-3 text-right tabular-nums text-gray-400 sticky left-0 bg-white group-hover:bg-emerald-50/40" style="min-width:4rem"><span x-text="i+1"></span><span x-show="rankDelta(r.slug,i)!==0" :class="rankDelta(r.slug,i)>0?'text-emerald-600':'text-rose-400'" class="ml-0.5 text-[10px] font-semibold align-top" :title="rankDelta(r.slug,i)>0 ? ('up '+rankDelta(r.slug,i)+' vs default') : ('down '+Math.abs(rankDelta(r.slug,i))+' vs default')" x-text="(rankDelta(r.slug,i)>0?'▲':'▼')+Math.abs(rankDelta(r.slug,i))"></span></td>
+                <td class="px-5 py-3 text-left font-medium text-gray-900 sticky bg-white group-hover:bg-emerald-50/40" style="left:4rem">
                   <span class="mr-1.5 inline-block w-5 text-center" x-text="medal(i)"></span>
                   <span x-text="r.name"></span>
                   <template x-if="r.doi"><a :href="'https://doi.org/'+r.doi" @click.stop target="_blank" rel="noopener" class="ml-2 rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 hover:bg-emerald-100">paper</a></template>
@@ -786,8 +786,8 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
             <thead class="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
               <!-- grouped reference header -->
               <tr>
-                <th class="px-4 py-2 text-right font-medium sticky left-0 bg-gray-50" style="min-width:3rem" rowspan="2">#</th>
-                <th class="px-5 py-2 text-left font-medium sticky bg-gray-50" style="left:3rem" rowspan="2">Algorithm</th>
+                <th class="px-4 py-2 text-right font-medium sticky left-0 bg-gray-50" style="min-width:4rem" rowspan="2">#</th>
+                <th class="px-5 py-2 text-left font-medium sticky bg-gray-50" style="left:4rem" rowspan="2">Algorithm</th>
                 <th class="px-4 py-2 text-center font-semibold border-l border-gray-200" :colspan="INVIVO_COLS.filter(c=>c.grp==='cosmos').length">vs COSMOS</th>
                 <th class="px-4 py-2 text-center font-semibold border-l border-gray-200" :colspan="INVIVO_COLS.filter(c=>c.grp==='sti').length">vs STI χ33</th>
                 <th class="px-4 py-2 text-center font-semibold border-l border-gray-200" rowspan="2">Runtime</th>
@@ -805,8 +805,8 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
             <tbody class="divide-y divide-gray-100">
               <template x-for="(r,i) in invivoRows()" :key="r.id">
                 <tr @click="go(r)" class="group cursor-pointer" :class="(r.status==='DNF' ? 'opacity-50 ' : '') + (r.variant==='tuned' ? 'tuned-row' : '')">
-                  <td class="px-4 py-3 text-right tabular-nums text-gray-400 sticky left-0 bg-white group-hover:bg-emerald-50/40" style="min-width:3rem" x-text="i+1"></td>
-                  <td class="px-5 py-3 text-left font-medium text-gray-900 sticky bg-white group-hover:bg-emerald-50/40" style="left:3rem">
+                  <td class="px-4 py-3 text-right tabular-nums text-gray-400 sticky left-0 bg-white group-hover:bg-emerald-50/40" style="min-width:4rem"><span x-text="i+1"></span><span x-show="rankDelta(r.slug,i)!==0" :class="rankDelta(r.slug,i)>0?'text-emerald-600':'text-rose-400'" class="ml-0.5 text-[10px] font-semibold align-top" :title="rankDelta(r.slug,i)>0 ? ('up '+rankDelta(r.slug,i)+' vs default') : ('down '+Math.abs(rankDelta(r.slug,i))+' vs default')" x-text="(rankDelta(r.slug,i)>0?'▲':'▼')+Math.abs(rankDelta(r.slug,i))"></span></td>
+                  <td class="px-5 py-3 text-left font-medium text-gray-900 sticky bg-white group-hover:bg-emerald-50/40" style="left:4rem">
                     <span class="mr-1.5 inline-block w-5 text-center" x-text="invMedal(i)"></span>
                     <span x-text="r.name"></span>
                     <span x-show="r.status==='DNF'" class="ml-2 rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold text-gray-500">DNF</span>
@@ -1141,6 +1141,30 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
               if (va == null) return 1; if (vb == null) return -1;
               return (va - vb) * dir;
             });
+        },
+        // --- rank movement when Tuned is on: each method's rank in the DEFAULT-variant ordering, so the
+        //     # column can show how far tuning moved it (▲ up / ▼ down). One map per table. ---
+        _defRanks(pool, cmp) { const m = {}; pool.slice().sort(cmp).forEach((r, i) => { m[r.slug] = i + 1; }); return m; },
+        get simDefRanks() {
+          return _cache("simdef", [this.view, this.stage, this.fmap, this.sortKey, this.sortDir, this.runs.length].join("|"), () => {
+            const pool = this.view === "isolated"
+              ? this.runs.filter((r) => r.mode === "isolated" && !this._isInvivo(r) && r.stage === this.stage && (r.variant || "default") === "default")
+              : this.runs.filter((r) => r.mode === "composed" && (!r.combo || (r.combo.field_mapping || "gt") === this.fmap) && (r.variant || "default") === "default");
+            return this._defRanks(pool, (a, b) => { const av = val(a, this.sortKey), bv = val(b, this.sortKey); if (av == null) return 1; if (bv == null) return -1; return this.sortDir === "asc" ? av - bv : bv - av; });
+          });
+        },
+        get chisepDefRanks() {
+          return _cache("csdef", [this.chisepSort, this.chisepDir, this.runs.length].join("|"), () =>
+            this._defRanks(this._chisep().filter((r) => (r.variant || "default") === "default"), (a, b) => { const va = this.chiVal(a, this.chisepSort), vb = this.chiVal(b, this.chisepSort); if (va == null) return 1; if (vb == null) return -1; return (va - vb) * (this.chisepDir === "asc" ? 1 : -1); }));
+        },
+        get invivoDefRanks() {
+          return _cache("ivdef", [this.invivoSortKey, this.invivoDir, this.runs.length].join("|"), () =>
+            this._defRanks(this._invivo().filter((r) => r.mode === "isolated" && (r.variant || "default") === "default"), (a, b) => { const va = val(a, this.invivoSortKey), vb = val(b, this.invivoSortKey); if (va == null) return 1; if (vb == null) return -1; return (va - vb) * (this.invivoDir === "asc" ? 1 : -1); }));
+        },
+        rankDelta(slug, i) {
+          if (this.variant !== "tuned") return 0;
+          const map = this.dataset === "invivo" ? this.invivoDefRanks : this.dataset === "chisep" ? this.chisepDefRanks : this.simDefRanks;
+          const d = map[slug]; return d == null ? 0 : d - (i + 1);   // >0 = moved up (tuning improved rank)
         },
         invivoSort(k) {
           if (this.invivoSortKey === k) this.invivoDir = this.invivoDir === "asc" ? "desc" : "asc";
