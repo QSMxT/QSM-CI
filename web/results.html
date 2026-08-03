@@ -973,7 +973,7 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
 
       return {
         METRICS, STAGE_LABEL, MEDALS, fmt, val, INVIVO_COLS,
-        runs: [], registry: {}, algos: [], loading: true,
+        runs: [], registry: {}, algos: [], loading: true, _ready: false,
         // dataset (top level) + section tab state
         dataset: "sim",
         tab: "leaderboard", lbView: "pipelines", pipeView: "matrix", findView: "pipelines", view: "composed",
@@ -990,6 +990,37 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
 
         // ---- tabs ------------------------------------------------------------------------
         syncView() { this.view = this.lbView === "stages" ? "isolated" : "composed"; },
+        // Two-way deep-linking: reflect the current tab/subtab state in the URL query (defaults omitted
+        // for clean links) so every view is shareable. Paired with the reads in init() + the $watch set.
+        syncUrl() {
+          if (!this._ready) return;                 // don't write while init() is still restoring state
+          const p = new URLSearchParams();
+          if (this.dataset !== "sim") p.set("dataset", this.dataset);
+          if (this.dataset === "invivo" || this.dataset === "chisep") {
+            // these datasets have their own tab set (info / board / findings)
+            const v = this.dataset === "invivo" ? this.invivoView : this.chisepView;
+            if (v !== "board") p.set("sub", v);
+            if (v === "board" && this.dataset === "invivo") {
+              if (this.variant !== "default") p.set("variant", this.variant);
+              if (this.metric !== "xsim") p.set("metric", this.metric);
+            }
+          } else {
+            // sim / cross: top tab is info / leaderboard / findings
+            if (this.tab !== "leaderboard") p.set("tab", this.tab);
+            if (this.tab === "findings") {
+              if (this.findView !== "pipelines") p.set("find", this.findView);
+            } else if (this.tab === "leaderboard") {
+              const stageParam = this.lbView === "pipelines" ? "pipelines" : this.stage;
+              if (stageParam !== "pipelines") p.set("stage", stageParam);
+              else if (this.pipeView !== "matrix") p.set("pipe", this.pipeView);
+              if (this.variant !== "default") p.set("variant", this.variant);
+              if (this.metric !== "xsim") p.set("metric", this.metric);
+              if (this.fmap !== "gt") p.set("fmap", this.fmap);
+            }
+          }
+          const qs = p.toString();
+          history.replaceState(null, "", qs ? "?" + qs : location.pathname);
+        },
         setTab(t) { this.tab = t; this.syncView(); },
         setLb(v) { this.lbView = v; this.syncView(); },
         // Unified stage dropdown: "pipelines" selects the composed view; anything else is an isolated stage.
@@ -1013,6 +1044,11 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
           if (t === "stages" || q.get("view") === "isolated") this.lbView = "stages";
           else if (t === "pipelines" || q.get("view") === "composed") this.lbView = "pipelines";
           if (q.get("variant") === "tuned") this.variant = "tuned";
+          if (["matrix", "table"].includes(q.get("pipe"))) this.pipeView = q.get("pipe");
+          if (["pipelines", "metrics", "speed", "explore"].includes(q.get("find"))) this.findView = q.get("find");
+          if (q.get("metric") && METRICS[q.get("metric")]) this.metric = q.get("metric");
+          if (q.get("fmap")) this.fmap = q.get("fmap");
+          if (["board", "info", "findings"].includes(q.get("sub"))) { this.invivoView = q.get("sub"); this.chisepView = q.get("sub"); }
           this.syncView();
           try {
             // Fetch concurrently but assign the name manifest (algos) + registry BEFORE runs: runs is
@@ -1024,8 +1060,11 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
             this.registry = registry;
             this.runs = runs;
             const st = this.stages();
-            if (st.includes(q.get("stage"))) this.stage = q.get("stage");
+            const sp = q.get("stage");
+            if (sp === "pipelines") this.lbView = "pipelines";
+            else if (st.includes(sp)) { this.stage = sp; this.lbView = "stages"; }  // isolated stage deep-link
             else if (!st.includes(this.stage)) this.stage = st[0] || "dipole";
+            this.syncView();
             if (!this.runs.some((r) => r.mode === "composed")) { this.lbView = "stages"; this.syncView(); }
             if (!this.hasChiSep() && this.dataset === "chisep") this.dataset = "sim";
             if (!this.hasInvivo() && this.dataset === "invivo") this.dataset = "sim";
@@ -1033,6 +1072,11 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
           } finally {
             this.loading = false;   // only reveal the empty-state once the fetch has actually resolved
           }
+          // Now that state is restored from the URL + data, keep the URL in sync with every tab change.
+          this._ready = true;
+          ["dataset", "tab", "lbView", "stage", "pipeView", "findView", "variant", "metric", "fmap", "invivoView", "chisepView"]
+            .forEach((k) => this.$watch(k, () => this.syncUrl()));
+          this.syncUrl();   // canonicalise (e.g. if an unavailable dataset was reset to sim)
           // findings: delegated click — any injected mark carrying data-run opens that run's page
           this.$root.addEventListener("click", (e) => {
             const el = e.target.closest && e.target.closest("[data-run]");
