@@ -24,7 +24,7 @@ import pytest
 METHODS = Path(__file__).parent / "methods"
 CP_BFR = str((METHODS / "cp-bfr").resolve())        # bfr:    totalfield -> localfield
 CP_DIPOLE = str((METHODS / "cp-method").resolve())  # dipole: localfield -> chimap
-TKD = str((Path(__file__).parent.parent / "algorithms" / "tkd").resolve())  # a real dipole method
+TKD = str((Path(__file__).parent.parent / "algorithms" / "tkd-qsmrs").resolve())  # a real dipole method
 
 RUNNERS = ["docker", "podman", "apptainer", "local"]
 
