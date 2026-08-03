@@ -1015,9 +1015,14 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
           if (q.get("variant") === "tuned") this.variant = "tuned";
           this.syncView();
           try {
-            this.runs = await loadRuns();
-            this.registry = await loadRegistry();
-            this.algos = await loadAlgos();
+            // Fetch concurrently but assign the name manifest (algos) + registry BEFORE runs: runs is
+            // the big reactive trigger, and name-dependent getters (matrix, findings) cache by
+            // runs.length — if algos isn't loaded yet when they first compute, algoName() falls back to
+            // raw slugs and the cache never refreshes. Assigning algos first avoids that.
+            const [algos, registry, runs] = await Promise.all([loadAlgos(), loadRegistry(), loadRuns()]);
+            this.algos = algos;
+            this.registry = registry;
+            this.runs = runs;
             const st = this.stages();
             if (st.includes(q.get("stage"))) this.stage = q.get("stage");
             else if (!st.includes(this.stage)) this.stage = st[0] || "dipole";
@@ -1181,7 +1186,7 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
             });
         },
         get matrix() {
-          return _cache("matrix", this.fmap + "|" + this.metric + "|" + this.runs.length, () => {
+          return _cache("matrix", this.fmap + "|" + this.metric + "|" + this.runs.length + "|" + this.algos.length, () => {
             const rs = this.runs.filter((r) => r.mode === "composed" && r.combo && r.combo.bfr && r.combo.dipole && (r.combo.field_mapping || "gt") === this.fmap);
             const bfrs = [...new Set(rs.map((r) => r.combo.bfr))];
             const dips = [...new Set(rs.map((r) => r.combo.dipole))];
