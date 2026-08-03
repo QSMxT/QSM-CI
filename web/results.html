@@ -775,6 +775,22 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
         </template>
         <div class="grow"></div>
         <input x-model="filter" type="search" placeholder="Filter…" class="rounded-lg border-gray-300 text-sm px-3 py-1.5 w-44 focus:border-emerald-500 focus:ring-emerald-500" />
+        <div class="relative" @click.outside="invivoColMenu=false">
+          <button @click="invivoColMenu=!invivoColMenu" class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+            Metrics
+            <span class="rounded bg-gray-100 px-1.5 text-xs" x-text="invivoDisplayCols().length"></span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div x-show="invivoColMenu" x-cloak class="absolute right-0 z-20 mt-2 w-64 max-h-96 overflow-y-auto rounded-xl border border-gray-200 bg-white p-1.5 shadow-lg" style="display:none">
+            <template x-for="c in INVIVO_COLS" :key="c.key">
+              <label class="flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-sm hover:bg-gray-50 cursor-pointer">
+                <input type="checkbox" class="accent-emerald-600" :checked="invivoSelectedCols.includes(c.key)" @change="toggleInvivoCol(c.key)" />
+                <span x-text="(c.grp==='sti'?'STI · ':'COSMOS · ')+c.label" :data-tip="c.tip"></span>
+                <span class="ml-auto text-xs text-gray-400" x-text="c.better==='higher'?'↑':'↓'"></span>
+              </label>
+            </template>
+          </div>
+        </div>
         <button @click="downloadCSV(csvRowsInvivo(), 'qsm-ci_in-vivo-2016.csv')" data-tip="Download every method and all fields (all metrics vs COSMOS + STI, runtime, peak memory, avg/peak CPU) as CSV" class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" stroke-linecap="round" stroke-linejoin="round"/></svg>
           CSV
@@ -788,14 +804,14 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
               <tr>
                 <th class="px-4 py-2 text-right font-medium sticky left-0 bg-gray-50" style="min-width:4rem" rowspan="2">#</th>
                 <th class="px-5 py-2 text-left font-medium sticky bg-gray-50" style="left:4rem" rowspan="2">Algorithm</th>
-                <th class="px-4 py-2 text-center font-semibold border-l border-gray-200" :colspan="INVIVO_COLS.filter(c=>c.grp==='cosmos').length">vs COSMOS</th>
-                <th class="px-4 py-2 text-center font-semibold border-l border-gray-200" :colspan="INVIVO_COLS.filter(c=>c.grp==='sti').length">vs STI χ33</th>
+                <th class="px-4 py-2 text-center font-semibold border-l border-gray-200" x-show="invivoDisplayCols().some(c=>c.grp==='cosmos')" :colspan="invivoDisplayCols().filter(c=>c.grp==='cosmos').length">vs COSMOS</th>
+                <th class="px-4 py-2 text-center font-semibold border-l border-gray-200" x-show="invivoDisplayCols().some(c=>c.grp==='sti')" :colspan="invivoDisplayCols().filter(c=>c.grp==='sti').length">vs STI χ33</th>
                 <th class="px-4 py-2 text-center font-semibold border-l border-gray-200" rowspan="2">Runtime</th>
               </tr>
               <tr>
-                <template x-for="c in INVIVO_COLS" :key="c.key">
+                <template x-for="c in invivoDisplayCols()" :key="c.key">
                   <th @click="invivoSort(c.key)" class="px-4 py-2 text-right font-medium cursor-pointer select-none hover:text-gray-800 dark:hover:text-gray-100"
-                      :class="c.grp==='sti' && INVIVO_COLS.findIndex(x=>x.grp==='sti')===INVIVO_COLS.indexOf(c) ? 'border-l border-gray-200' : ''">
+                      :class="c.grp==='sti' && invivoDisplayCols().findIndex(x=>x.grp==='sti')===invivoDisplayCols().indexOf(c) ? 'border-l border-gray-200' : ''">
                     <span class="has-tip" :data-tip="c.tip" x-text="c.label"></span>
                     <span x-show="invivoSortKey===c.key" x-text="invivoDir==='asc'?'↑':'↓'"></span>
                   </th>
@@ -811,9 +827,9 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
                     <span x-text="r.name"></span>
                     <span x-show="r.status==='DNF'" class="ml-2 rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold text-gray-500">DNF</span>
                   </td>
-                  <template x-for="c in INVIVO_COLS" :key="c.key">
+                  <template x-for="c in invivoDisplayCols()" :key="c.key">
                     <td class="px-4 py-3 text-right tabular-nums group-hover:bg-emerald-50/40"
-                        :class="(invivoSortKey===c.key ? 'font-semibold text-gray-900 ' : 'text-gray-600 ') + (c.grp==='sti' && INVIVO_COLS.findIndex(x=>x.grp==='sti')===INVIVO_COLS.indexOf(c) ? 'border-l border-gray-100' : '')"
+                        :class="(invivoSortKey===c.key ? 'font-semibold text-gray-900 ' : 'text-gray-600 ') + (c.grp==='sti' && invivoDisplayCols().findIndex(x=>x.grp==='sti')===invivoDisplayCols().indexOf(c) ? 'border-l border-gray-100' : '')"
                         x-text="invFmt(val(r, c.key), c.key)"></td>
                   </template>
                   <td class="px-4 py-3 text-right tabular-nums text-gray-600 border-l border-gray-100 group-hover:bg-emerald-50/40" x-text="fmt(val(r,'runtime_s'),'runtime_s')"></td>
@@ -985,6 +1001,7 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
         chisepSort: "avg", chisepDir: "desc", chisepColMenu: false, chisepCols: CHISEP_COLS,
         chisepSelectedCols: ["avg", "para_xsim", "para_nrmse", "para_leak", "dia_xsim", "dia_nrmse", "dia_leak", "runtime_s"],
         invivoSortKey: "nrmse", invivoDir: "asc",   // in-vivo default sort: COSMOS NRMSE (2016 headline)
+        invivoColMenu: false, invivoSelectedCols: INVIVO_COLS.map((c) => c.key),   // in-vivo metric column picker (all shown by default)
         // findings state
         insightMode: "mean", xMet: "runtime_s", yMet: "xsim", expStage: "dipole",
 
@@ -1116,6 +1133,14 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
         toggleChisepCol(k) {
           this.chisepSelectedCols = this.chisepSelectedCols.includes(k)
             ? this.chisepSelectedCols.filter((x) => x !== k) : [...this.chisepSelectedCols, k];
+        },
+        invivoDisplayCols() {
+          const sel = INVIVO_COLS.filter((c) => this.invivoSelectedCols.includes(c.key));
+          return sel.length ? sel : INVIVO_COLS.filter((c) => c.key === "nrmse");
+        },
+        toggleInvivoCol(k) {
+          this.invivoSelectedCols = this.invivoSelectedCols.includes(k)
+            ? this.invivoSelectedCols.filter((x) => x !== k) : [...this.invivoSelectedCols, k];
         },
         chiSepSort(k) {
           if (this.chisepSort === k) this.chisepDir = this.chisepDir === "asc" ? "desc" : "asc";
