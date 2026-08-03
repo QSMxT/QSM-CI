@@ -259,7 +259,7 @@
                     </template>
                     <template x-if="g.t==='cell'">
                       <button @click="go(g.run)"
-                        :title="g.run.combo.bfr+' + '+g.run.combo.dipole+': '+METRICS[metric].label+': '+fmt(val(g.run,metric),metric)"
+                        :title="algoName(g.run.combo.bfr)+' + '+algoName(g.run.combo.dipole)+': '+METRICS[metric].label+': '+fmt(val(g.run,metric),metric)"
                         class="heat-cell group relative h-9 w-full rounded-md font-semibold text-xs transition hover:z-10 hover:scale-[1.08] hover:shadow-md focus:outline-none"
                         :class="g.run.variant==='tuned' ? 'ring-2 ring-emerald-600 ring-offset-1' : 'ring-1 ring-black/5'"
                         :style="'--heat:'+heatScale(norm(val(g.run,metric)))">
