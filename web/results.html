@@ -493,14 +493,14 @@
 
           <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
             <h3 class="text-lg font-semibold text-gray-900">Pick your dipole independently of background removal</h3>
-            <p class="mt-2 text-sm text-gray-600 leading-relaxed">For each dipole method, its rank among dipoles (dot = mean, bar = min–max) across the eight strong background-removal methods. Most bars are tight: the dipole ranking barely shifts with the upstream stage (mean pairwise Spearman ρ ≈ 0.87), so the stages are near-separable — <span class="font-semibold">wh-qsm and hd-qsm lead everywhere, modl-qsm/qsmgan/nltv trail everywhere</span>. A handful in the middle (xqsm, l1-qsm) swing widely — those are the genuinely upstream-sensitive methods. Coloured by family.</p>
+            <p class="mt-2 text-sm text-gray-600 leading-relaxed">For each dipole method, its rank among dipoles (dot = mean, bar = min–max) across the eight strong background-removal methods. Most bars are tight: the dipole ranking barely shifts with the upstream stage (mean pairwise Spearman ρ ≈ 0.87), so the stages are near-separable — <span class="font-semibold">WH-QSM and HD-QSM lead everywhere, MoDL-QSM/QSMGAN/NLTV trail everywhere</span>. A handful in the middle (xQSM, L1-QSM) swing widely — those are the genuinely upstream-sensitive methods. Coloured by family.</p>
             <div class="mt-2" x-html="familyLegend"></div>
             <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="dipoleStabilitySVG"></div>
           </div>
 
           <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
             <h3 class="text-lg font-semibold text-gray-900">The best background-removal method depends on what you measure</h3>
-            <p class="mt-2 text-sm text-gray-600 leading-relaxed">Each background-removal method's rank (1 = best, <span style="color:#3ba85a" class="font-semibold">green</span> good → <span style="color:#d84a4a" class="font-semibold">red</span> poor) under five metrics, rows sorted by xSIM. The similarity metrics — xSIM, NRMSE, HFEN — are nearly interchangeable (their columns match). But calcification and <em>iron linearity</em> reshuffle the ranking: iron linearity is essentially uncorrelated with similarity (ρ ≈ −0.02), and the deep-learning <span class="font-semibold">bfrnet</span> is worst-tier on similarity yet best on iron quantification. A single headline number hides which sources a method actually recovers.</p>
+            <p class="mt-2 text-sm text-gray-600 leading-relaxed">Each background-removal method's rank (1 = best, <span style="color:#3ba85a" class="font-semibold">green</span> good → <span style="color:#d84a4a" class="font-semibold">red</span> poor) under five metrics, rows sorted by xSIM. The similarity metrics — xSIM, NRMSE, HFEN — are nearly interchangeable (their columns match). But calcification and <em>iron linearity</em> reshuffle the ranking: iron linearity is essentially uncorrelated with similarity (near-zero rank correlation), and the deep-learning <span class="font-semibold">bfrnet</span> is worst-tier on similarity yet best on iron quantification. A single headline number hides which sources a method actually recovers.</p>
             <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="bfrMetricSVG"></div>
           </div>
         </div>
@@ -509,7 +509,7 @@
         <div x-show="findView==='metrics'">
           <div class="mt-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
             <h3 class="text-lg font-semibold text-gray-900">The best method depends on what you measure</h3>
-            <p class="mt-2 text-sm text-gray-600 leading-relaxed">Isolated dipole methods across five metrics, each normalised so <em>higher is better</em>. Grey lines are all methods; a coloured line is the winner of one axis, showing it gives up ground elsewhere — e.g. the global-error (NRMSE / xSIM) leader slips well down the calcification axis. No single method wins every metric.</p>
+            <p class="mt-2 text-sm text-gray-600 leading-relaxed">Isolated dipole methods across five metrics, each normalised so <em>higher is better</em>. Grey lines are all methods; a coloured line is the winner of one axis, showing it gives up ground elsewhere — the global-error (NRMSE / xSIM) leader slips down the calcification axis, and the fast direct methods under-quantify iron in deep grey matter. No single method wins every metric.</p>
             <div class="mt-2 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="parallelSVG"></div>
           </div>
 
