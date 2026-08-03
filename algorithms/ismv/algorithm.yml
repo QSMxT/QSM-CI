@@ -29,3 +29,9 @@ parameters:
   - name: radius_factor
     default: 2.0
     description: × max voxel size
+
+# Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
+tuning:
+  date: 2026-08
+  status: default-optimal
+  note: "Swept radius_factor on sim (sim-only); non-default grid points DNF'd, default retained."

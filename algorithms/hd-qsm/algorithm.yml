@@ -29,3 +29,9 @@ parameters:
   - name: max_iter_l2
     default: 80
     description: stage-2 (L2) iterations
+
+# Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
+tuning:
+  date: 2026-08
+  status: tuned
+  note: "Swept alpha_l2 on sim+invivo (2026-08). Tuned both: sim 1e-5, invivo 3e-4."

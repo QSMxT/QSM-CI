@@ -37,3 +37,9 @@ parameters:
   - name: alpha0
     default: 0.0015
     description: second-order weight
+
+# Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
+tuning:
+  date: 2026-08
+  status: tuned
+  note: "Swept alpha1/alpha0 on sim (bfr+dipole span; sim-only). Tuned sim: alpha1 1.5e-4."

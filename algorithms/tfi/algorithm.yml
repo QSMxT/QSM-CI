@@ -32,3 +32,9 @@ parameters:
 - name: precond
   default: 30
   description: preconditioner — susceptibility scaling outside the brain mask (Liu 2017 uses ~30 for in-vivo air)
+
+# Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
+tuning:
+  date: 2026-08
+  status: tuned
+  note: "Swept lambda on sim (span; sim-only). Tuned sim: 1e-5."

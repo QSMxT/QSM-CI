@@ -32,3 +32,9 @@ parameters:
   - name: tol
     default: 1e-4
     description: tolerance
+
+# Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
+tuning:
+  date: 2026-08
+  status: tuned
+  note: "Swept radius on sim (sim-only). Tuned sim: radius 3."

@@ -26,3 +26,9 @@ parameters:
     tuned:
       invivo: 0.4
     description: k-space threshold
+
+# Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
+tuning:
+  date: 2026-08
+  status: partial
+  note: "Swept threshold on sim+invivo (2026-08). invivo tuned (0.4); sim default optimal (grid gain negligible, +0.001)."
