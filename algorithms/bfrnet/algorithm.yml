@@ -47,3 +47,9 @@ ci_notes:
   overlapping 128^3 patches (Hann-blended, onnxruntime CPU arena disabled) — ~5.3 GB peak, local field
   within corr 0.992 of the whole-volume result — which scores on the standard hosted runner. Patch
   size is tunable via the patch_size parameter (0 = whole volume).
+
+# Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
+tuning:
+  date: 2026-08
+  status: default-optimal
+  note: "Swept patch overlap on sim (sim-only); best beat default by only +0.002 (noise). Left at default."

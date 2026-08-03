@@ -27,3 +27,9 @@ parameters:
     tuned:
       sim: 3e-4
     description: L2 regularization
+
+# Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
+tuning:
+  date: 2026-08
+  status: partial
+  note: "Swept lambda on sim+invivo (2026-08). sim tuned (3e-4); invivo default optimal."

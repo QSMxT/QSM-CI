@@ -44,3 +44,9 @@ parameters:
 - name: merit
   default: 0
   description: model-error reduction (iterative reweighting); 1 enables
+
+# Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
+tuning:
+  date: 2026-08
+  status: tuned
+  note: "Swept lambda/smv_radius on sim (span; sim-only). Tuned sim: lambda 520; smv_radius best == default (5), not set."

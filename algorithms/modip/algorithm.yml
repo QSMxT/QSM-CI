@@ -52,3 +52,9 @@ parameters:
   description: >
     Base channel count of the DIP U-Net (reference default 32). Lower reduces memory/compute
     (the reference README suggests decreasing base and increasing iterations under memory pressure).
+
+# Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
+tuning:
+  date: 2026-08
+  status: not-tunable
+  note: "Swept lr on sim+invivo (GPU, 2026-08). NOT tuned: stochastic deep image prior - run-to-run xSIM variance (0.01-0.15) exceeds the lr effect and the best lr flips between identical reruns, so any tuned lr would encode noise. Left at default."

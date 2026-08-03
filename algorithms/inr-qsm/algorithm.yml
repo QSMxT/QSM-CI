@@ -68,3 +68,9 @@ parameters:
 - name: gd_weight
   default: 1.0
   description: Weight of the gradient-domain data-consistency regularizer (reference default 1.0).
+
+# Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
+tuning:
+  date: 2026-08
+  status: tuned
+  note: "Swept TV_weight on sim+invivo (GPU, 2026-08). Deterministic (reruns identical) -> tuned: sim 0.01, invivo 0.02."

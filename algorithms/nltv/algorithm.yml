@@ -27,3 +27,9 @@ parameters:
   - name: max_iter
     default: 1000
     description: iterations
+
+# Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
+tuning:
+  date: 2026-08
+  status: tuned
+  note: "Swept lambda on sim+invivo (2026-08). Tuned both: 3e-3 (in-vivo xSIM low in absolute terms)."

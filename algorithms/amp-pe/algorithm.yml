@@ -50,3 +50,9 @@ parameters:
 - name: max_linearization_ite
   default: 25
   description: linearization steps per reconstruction stage (preliminary and final)
+
+# Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
+tuning:
+  date: 2026-08
+  status: tuned
+  note: "Swept wave_pec/simulated_TE on invivo (MATLAB; invivo-only, sim pending image rebuild). Tuned invivo: 0.6 / 0.002."

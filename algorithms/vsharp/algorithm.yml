@@ -28,3 +28,9 @@ parameters:
   - name: min_radius_factor
     default: 0.0
     description: × max voxel size
+
+# Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
+tuning:
+  date: 2026-08
+  status: default-optimal
+  note: "Swept threshold on sim (sim-only); best beat default by only +0.002 (noise). Left at default."

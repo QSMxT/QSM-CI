@@ -30,3 +30,9 @@ parameters:
   - name: max_iter
     default: 1000
     description: iterations
+
+# Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
+tuning:
+  date: 2026-08
+  status: default-optimal
+  note: "Swept max_iter (truncated-LSQR early stop) on sim+invivo (2026-08); default already optimal. Left at default."
