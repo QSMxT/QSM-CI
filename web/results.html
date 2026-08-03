@@ -413,15 +413,15 @@
 
           <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
             <h3 class="text-lg font-semibold text-gray-900">Accurate but fragile, or reliable but modest</h3>
-            <p class="mt-2 text-sm text-gray-600 leading-relaxed">Each dipole method by its mean NRMSE across background-removal partners (x) versus how much that error <em>varies</em> between partners (y). Bottom-left is the sweet spot: accurate <em>and</em> consistent. Iterative methods lead on average but scatter wildly with a poor upstream stage; networks are dull but dependable.</p>
+            <p class="mt-2 text-sm text-gray-600 leading-relaxed">Each dipole method by its mean NRMSE across background-removal partners (x) versus how much that error <em>varies</em> between partners (y). Bottom-left is the sweet spot: accurate <em>and</em> consistent. The networks cluster there — accurate and dependable across upstream partners; the iterative methods scatter — the best few rival the networks, but many degrade sharply with a poor upstream stage.</p>
             <div class="mt-2" x-html="familyLegend"></div>
             <div class="mt-2 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="reliabilitySVG"></div>
           </div>
 
           <template x-if="pipelineFacts">
             <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-              <h3 class="text-lg font-semibold text-gray-900">You can't build the best pipeline greedily</h3>
-              <p class="mt-2 text-sm text-gray-600 leading-relaxed">Picking the strongest method at each stage independently does <em>not</em> give the best end-to-end pipeline: stages interact. The best full pipeline beats the greedy per-stage choice by <span class="font-semibold" x-text="pipelineFacts.deltaPct+'%'"></span> NRMSE.</p>
+              <h3 class="text-lg font-semibold text-gray-900">Greedy pipeline-building is close, but not optimal</h3>
+              <p class="mt-2 text-sm text-gray-600 leading-relaxed">Picking the strongest method at each stage independently lands within <span class="font-semibold" x-text="pipelineFacts.deltaPct+'%'"></span> NRMSE of the best full pipeline — composition is fairly forgiving. But the two share no methods: stages interact, so the actual best combo isn't the one you'd assemble greedily.</p>
               <div class="mt-4 space-y-3">
                 <template x-for="row in [{k:'optimal',lab:'Best full pipeline',c:'#10b981'},{k:'greedy',lab:'Greedy (best method per stage)',c:'#e11d48'}]" :key="row.k">
                   <div>
@@ -466,7 +466,7 @@
           <template x-if="stageImportance">
             <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
               <h3 class="text-lg font-semibold text-gray-900">Which stage decides your result?</h3>
-              <p class="mt-2 text-sm text-gray-600 leading-relaxed">How much the choice at each stage reshuffles the full-pipeline ranking (rank-based, so one broken method can't skew it), across every pipeline. Background removal is the biggest lever — it reorders the final result more than the dipole-inversion step the field usually focuses on, while field mapping barely moves it.</p>
+              <p class="mt-2 text-sm text-gray-600 leading-relaxed">How much the choice at each stage reshuffles the full-pipeline ranking (rank-based, so one broken method can't skew it), across every pipeline. Background removal and dipole inversion matter about equally — each reshuffles the result far more than field mapping. The notable part: the background-removal choice is as influential as the dipole-inversion step the field usually fixates on.</p>
               <div class="mt-4 space-y-3">
                 <template x-for="st in stageImportance" :key="st.f">
                   <div>
@@ -509,7 +509,7 @@
         <div x-show="findView==='metrics'">
           <div class="mt-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
             <h3 class="text-lg font-semibold text-gray-900">The best method depends on what you measure</h3>
-            <p class="mt-2 text-sm text-gray-600 leading-relaxed">Isolated dipole methods across five metrics, each normalised so <em>higher is better</em>. Grey lines are all methods; the coloured lines are the winner of a given axis, showing they lose elsewhere: the global-NRMSE / xSIM leader is among the <em>worst</em> at calcification, and the fast direct methods that under-quantify iron.</p>
+            <p class="mt-2 text-sm text-gray-600 leading-relaxed">Isolated dipole methods across five metrics, each normalised so <em>higher is better</em>. Grey lines are all methods; a coloured line is the winner of one axis, showing it gives up ground elsewhere — e.g. the global-error (NRMSE / xSIM) leader slips well down the calcification axis. No single method wins every metric.</p>
             <div class="mt-2 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="parallelSVG"></div>
           </div>
 
