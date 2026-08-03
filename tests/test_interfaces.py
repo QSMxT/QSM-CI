@@ -170,7 +170,7 @@ def test_generate_pipeline_chains_stages():
 
     from qsm_ci.interfaces import generate_pipeline
 
-    slugs = ["romeo-fieldmap", "vsharp", "rts"]
+    slugs = ["romeo-qsmrs", "vsharp-qsmrs", "rts-qsmrs"]
     wf = list(yaml.safe_load_all(generate_pipeline("cwl", slugs)))[0]
     assert wf["class"] == "Workflow"
     assert set(wf["steps"]) == {"field_mapping", "bfr", "dipole"}
@@ -189,7 +189,7 @@ def test_example_pipelines_are_current():
     from qsm_ci.interfaces import generate_pipeline
 
     examples = Path(__file__).parent.parent / "examples" / "workflow-engines"
-    slugs = ["romeo-fieldmap", "vsharp", "rts"]
+    slugs = ["romeo-qsmrs", "vsharp-qsmrs", "rts-qsmrs"]
     for fname, engine in [("pipeline.cwl", "cwl"), ("Snakefile", "snakemake"), ("pipeline.nf", "nextflow")]:
         assert (examples / fname).read_text() == generate_pipeline(engine, slugs), (
             f"{fname} is stale — regenerate: qsm-ci interface {engine} --pipeline {','.join(slugs)}")

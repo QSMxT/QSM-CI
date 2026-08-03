@@ -3,7 +3,7 @@
 Every QSM-CI algorithm is one `qsm-ci run <slug>` away, so any published method drops into a workflow
 engine — the container is handled underneath by the CLI. This folder has a **complete end-to-end
 pipeline** (phase → χ: field-mapping → background-field removal → dipole inversion, using
-`romeo-fieldmap` → `vsharp` → `rts`) for each engine we support. Swap any method slug to mix and match.
+`romeo-qsmrs` → `vsharp-qsmrs` → `rts-qsmrs`) for each engine we support. Swap any method slug to mix and match.
 
 | Engine | File | How it's provided |
 |---|---|---|
@@ -17,9 +17,9 @@ The two Python engines have ready-to-import interfaces; the three declarative en
 from the stage contract, so they stay in sync. Regenerate the declarative files any time with:
 
 ```bash
-qsm-ci interface cwl       --pipeline romeo-fieldmap,vsharp,rts -o pipeline.cwl
-qsm-ci interface snakemake --pipeline romeo-fieldmap,vsharp,rts -o Snakefile
-qsm-ci interface nextflow  --pipeline romeo-fieldmap,vsharp,rts -o pipeline.nf
+qsm-ci interface cwl       --pipeline romeo-qsmrs,vsharp-qsmrs,rts-qsmrs -o pipeline.cwl
+qsm-ci interface snakemake --pipeline romeo-qsmrs,vsharp-qsmrs,rts-qsmrs -o Snakefile
+qsm-ci interface nextflow  --pipeline romeo-qsmrs,vsharp-qsmrs,rts-qsmrs -o pipeline.nf
 ```
 
 ## Running them
