@@ -259,7 +259,7 @@
                     </template>
                     <template x-if="g.t==='cell'">
                       <button @click="go(g.run)"
-                        :title="g.run.combo.bfr+' + '+g.run.combo.dipole+': '+METRICS[metric].label+': '+fmt(val(g.run,metric),metric)"
+                        :title="algoName(g.run.combo.bfr)+' + '+algoName(g.run.combo.dipole)+': '+METRICS[metric].label+': '+fmt(val(g.run,metric),metric)"
                         class="heat-cell group relative h-9 w-full rounded-md font-semibold text-xs transition hover:z-10 hover:scale-[1.08] hover:shadow-md focus:outline-none"
                         :class="g.run.variant==='tuned' ? 'ring-2 ring-emerald-600 ring-offset-1' : 'ring-1 ring-black/5'"
                         :style="'--heat:'+heatScale(norm(val(g.run,metric)))">
@@ -327,8 +327,8 @@
           <table class="w-full text-sm whitespace-nowrap">
             <thead class="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
               <tr>
-                <th class="px-4 py-3 text-right font-medium sticky left-0 bg-gray-50" style="min-width:3rem">#</th>
-                <th class="px-5 py-3 text-left font-medium sticky bg-gray-50" style="left:3rem" x-text="view==='composed' ? 'Pipeline' : 'Algorithm'"></th>
+                <th class="px-4 py-3 text-right font-medium sticky left-0 bg-gray-50" style="min-width:4rem">#</th>
+                <th class="px-5 py-3 text-left font-medium sticky bg-gray-50" style="left:4rem" x-text="view==='composed' ? 'Pipeline' : 'Algorithm'"></th>
                 <template x-for="c in displayCols" :key="c">
                   <th @click="sort(c)" class="px-4 py-3 text-right font-medium cursor-pointer select-none hover:text-gray-800 dark:hover:text-gray-100">
                     <span x-text="METRICS[c].label" :data-tip="METRICS[c].desc"></span>
@@ -340,8 +340,8 @@
             <tbody class="divide-y divide-gray-100">
               <template x-for="(r, i) in rows" :key="r.id">
                 <tr @click="go(r)" class="group cursor-pointer" :class="(r.status==='DNF' ? 'opacity-50 ' : '') + (r.variant==='tuned' ? 'tuned-row' : '')">
-                  <td class="px-4 py-3 text-right tabular-nums text-gray-400 sticky left-0 bg-white group-hover:bg-emerald-50/40" style="min-width:3rem" x-text="i+1"></td>
-                  <td class="px-5 py-3 text-left font-medium text-gray-900 sticky bg-white group-hover:bg-emerald-50/40" style="left:3rem">
+                  <td class="px-4 py-3 text-right tabular-nums text-gray-400 sticky left-0 bg-white group-hover:bg-emerald-50/40" style="min-width:4rem"><span x-text="i+1"></span><span x-show="rankDelta(r.slug,i)!==0" :class="rankDelta(r.slug,i)>0?'text-emerald-600':'text-rose-400'" class="ml-0.5 text-[10px] font-semibold align-top" :title="rankDelta(r.slug,i)>0 ? ('up '+rankDelta(r.slug,i)+' vs default') : ('down '+Math.abs(rankDelta(r.slug,i))+' vs default')" x-text="(rankDelta(r.slug,i)>0?'▲':'▼')+Math.abs(rankDelta(r.slug,i))"></span></td>
+                  <td class="px-5 py-3 text-left font-medium text-gray-900 sticky bg-white group-hover:bg-emerald-50/40" style="left:4rem">
                     <span class="mr-1.5 inline-block w-5 text-center" x-text="medal(i)"></span>
                     <span x-text="r.name"></span>
                     <template x-if="doi(r)">
@@ -413,15 +413,15 @@
 
           <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
             <h3 class="text-lg font-semibold text-gray-900">Accurate but fragile, or reliable but modest</h3>
-            <p class="mt-2 text-sm text-gray-600 leading-relaxed">Each dipole method by its mean NRMSE across background-removal partners (x) versus how much that error <em>varies</em> between partners (y). Bottom-left is the sweet spot: accurate <em>and</em> consistent. Iterative methods lead on average but scatter wildly with a poor upstream stage; networks are dull but dependable.</p>
+            <p class="mt-2 text-sm text-gray-600 leading-relaxed">Each dipole method by its mean NRMSE across background-removal partners (x) versus how much that error <em>varies</em> between partners (y). Bottom-left is the sweet spot: accurate <em>and</em> consistent. The networks cluster there — accurate and dependable across upstream partners; the iterative methods scatter — the best few rival the networks, but many degrade sharply with a poor upstream stage.</p>
             <div class="mt-2" x-html="familyLegend"></div>
             <div class="mt-2 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="reliabilitySVG"></div>
           </div>
 
           <template x-if="pipelineFacts">
             <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-              <h3 class="text-lg font-semibold text-gray-900">You can't build the best pipeline greedily</h3>
-              <p class="mt-2 text-sm text-gray-600 leading-relaxed">Picking the strongest method at each stage independently does <em>not</em> give the best end-to-end pipeline: stages interact. The best full pipeline beats the greedy per-stage choice by <span class="font-semibold" x-text="pipelineFacts.deltaPct+'%'"></span> NRMSE.</p>
+              <h3 class="text-lg font-semibold text-gray-900">Greedy pipeline-building is close, but not optimal</h3>
+              <p class="mt-2 text-sm text-gray-600 leading-relaxed">Picking the strongest method at each stage independently lands within <span class="font-semibold" x-text="pipelineFacts.deltaPct+'%'"></span> NRMSE of the best full pipeline — composition is fairly forgiving. But the two share no methods: stages interact, so the actual best combo isn't the one you'd assemble greedily.</p>
               <div class="mt-4 space-y-3">
                 <template x-for="row in [{k:'optimal',lab:'Best full pipeline',c:'#10b981'},{k:'greedy',lab:'Greedy (best method per stage)',c:'#e11d48'}]" :key="row.k">
                   <div>
@@ -466,7 +466,7 @@
           <template x-if="stageImportance">
             <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
               <h3 class="text-lg font-semibold text-gray-900">Which stage decides your result?</h3>
-              <p class="mt-2 text-sm text-gray-600 leading-relaxed">How much the choice at each stage reshuffles the full-pipeline ranking (rank-based, so one broken method can't skew it), across every pipeline. Background removal is the biggest lever — it reorders the final result more than the dipole-inversion step the field usually focuses on, while field mapping barely moves it.</p>
+              <p class="mt-2 text-sm text-gray-600 leading-relaxed">How much the choice at each stage reshuffles the full-pipeline ranking (rank-based, so one broken method can't skew it), across every pipeline. Background removal and dipole inversion matter about equally — each reshuffles the result far more than field mapping. The notable part: the background-removal choice is as influential as the dipole-inversion step the field usually fixates on.</p>
               <div class="mt-4 space-y-3">
                 <template x-for="st in stageImportance" :key="st.f">
                   <div>
@@ -493,14 +493,14 @@
 
           <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
             <h3 class="text-lg font-semibold text-gray-900">Pick your dipole independently of background removal</h3>
-            <p class="mt-2 text-sm text-gray-600 leading-relaxed">For each dipole method, its rank among dipoles (dot = mean, bar = min–max) across the eight strong background-removal methods. Most bars are tight: the dipole ranking barely shifts with the upstream stage (mean pairwise Spearman ρ ≈ 0.87), so the stages are near-separable — <span class="font-semibold">wh-qsm and hd-qsm lead everywhere, modl-qsm/qsmgan/nltv trail everywhere</span>. A handful in the middle (xqsm, l1-qsm) swing widely — those are the genuinely upstream-sensitive methods. Coloured by family.</p>
+            <p class="mt-2 text-sm text-gray-600 leading-relaxed">For each dipole method, its rank among dipoles (dot = mean, bar = min–max) across the eight strong background-removal methods. Most bars are tight: the dipole ranking barely shifts with the upstream stage (mean pairwise Spearman ρ ≈ 0.87), so the stages are near-separable — <span class="font-semibold">WH-QSM and HD-QSM lead everywhere, MoDL-QSM/QSMGAN/NLTV trail everywhere</span>. A handful in the middle (xQSM, L1-QSM) swing widely — those are the genuinely upstream-sensitive methods. Coloured by family.</p>
             <div class="mt-2" x-html="familyLegend"></div>
             <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="dipoleStabilitySVG"></div>
           </div>
 
           <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
             <h3 class="text-lg font-semibold text-gray-900">The best background-removal method depends on what you measure</h3>
-            <p class="mt-2 text-sm text-gray-600 leading-relaxed">Each background-removal method's rank (1 = best, <span style="color:#3ba85a" class="font-semibold">green</span> good → <span style="color:#d84a4a" class="font-semibold">red</span> poor) under five metrics, rows sorted by xSIM. The similarity metrics — xSIM, NRMSE, HFEN — are nearly interchangeable (their columns match). But calcification and <em>iron linearity</em> reshuffle the ranking: iron linearity is essentially uncorrelated with similarity (ρ ≈ −0.02), and the deep-learning <span class="font-semibold">bfrnet</span> is worst-tier on similarity yet best on iron quantification. A single headline number hides which sources a method actually recovers.</p>
+            <p class="mt-2 text-sm text-gray-600 leading-relaxed">Each background-removal method's rank (1 = best, <span style="color:#3ba85a" class="font-semibold">green</span> good → <span style="color:#d84a4a" class="font-semibold">red</span> poor) under five metrics, rows sorted by xSIM. The similarity metrics — xSIM, NRMSE, HFEN — are nearly interchangeable (their columns match). But calcification and <em>iron linearity</em> reshuffle the ranking: iron linearity is essentially uncorrelated with similarity (near-zero rank correlation), and the deep-learning <span class="font-semibold">bfrnet</span> is worst-tier on similarity yet best on iron quantification. A single headline number hides which sources a method actually recovers.</p>
             <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="bfrMetricSVG"></div>
           </div>
         </div>
@@ -509,7 +509,7 @@
         <div x-show="findView==='metrics'">
           <div class="mt-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
             <h3 class="text-lg font-semibold text-gray-900">The best method depends on what you measure</h3>
-            <p class="mt-2 text-sm text-gray-600 leading-relaxed">Isolated dipole methods across five metrics, each normalised so <em>higher is better</em>. Grey lines are all methods; the coloured lines are the winner of a given axis, showing they lose elsewhere: the global-NRMSE / xSIM leader is among the <em>worst</em> at calcification, and the fast direct methods that under-quantify iron.</p>
+            <p class="mt-2 text-sm text-gray-600 leading-relaxed">Isolated dipole methods across five metrics, each normalised so <em>higher is better</em>. Grey lines are all methods; a coloured line is the winner of one axis, showing it gives up ground elsewhere — the global-error (NRMSE / xSIM) leader slips down the calcification axis, and the fast direct methods under-quantify iron in deep grey matter. No single method wins every metric.</p>
             <div class="mt-2 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="parallelSVG"></div>
           </div>
 
@@ -657,8 +657,8 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
         <table class="w-full text-sm whitespace-nowrap">
           <thead class="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
             <tr>
-              <th class="px-4 py-3 text-right font-medium sticky left-0 bg-gray-50" style="min-width:3rem">#</th>
-              <th class="px-5 py-3 text-left font-medium sticky bg-gray-50" style="left:3rem">Algorithm</th>
+              <th class="px-4 py-3 text-right font-medium sticky left-0 bg-gray-50" style="min-width:4rem">#</th>
+              <th class="px-5 py-3 text-left font-medium sticky bg-gray-50" style="left:4rem">Algorithm</th>
               <template x-for="c in chisepDisplayCols()" :key="c.key">
                 <th @click="chiSepSort(c.key)" class="px-4 py-3 text-right font-medium cursor-pointer select-none hover:text-gray-800 dark:hover:text-gray-100">
                   <span class="has-tip" :data-tip="c.tip" x-text="c.label"></span>
@@ -670,8 +670,8 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
           <tbody class="divide-y divide-gray-100">
             <template x-for="(r,i) in chiSepRows()" :key="r.id">
               <tr @click="go(r)" class="group cursor-pointer" :class="(r.status==='DNF' ? 'opacity-50 ' : '') + (r.variant==='tuned' ? 'tuned-row' : '')">
-                <td class="px-4 py-3 text-right tabular-nums text-gray-400 sticky left-0 bg-white group-hover:bg-emerald-50/40" style="min-width:3rem" x-text="i+1"></td>
-                <td class="px-5 py-3 text-left font-medium text-gray-900 sticky bg-white group-hover:bg-emerald-50/40" style="left:3rem">
+                <td class="px-4 py-3 text-right tabular-nums text-gray-400 sticky left-0 bg-white group-hover:bg-emerald-50/40" style="min-width:4rem"><span x-text="i+1"></span><span x-show="rankDelta(r.slug,i)!==0" :class="rankDelta(r.slug,i)>0?'text-emerald-600':'text-rose-400'" class="ml-0.5 text-[10px] font-semibold align-top" :title="rankDelta(r.slug,i)>0 ? ('up '+rankDelta(r.slug,i)+' vs default') : ('down '+Math.abs(rankDelta(r.slug,i))+' vs default')" x-text="(rankDelta(r.slug,i)>0?'▲':'▼')+Math.abs(rankDelta(r.slug,i))"></span></td>
+                <td class="px-5 py-3 text-left font-medium text-gray-900 sticky bg-white group-hover:bg-emerald-50/40" style="left:4rem">
                   <span class="mr-1.5 inline-block w-5 text-center" x-text="medal(i)"></span>
                   <span x-text="r.name"></span>
                   <template x-if="r.doi"><a :href="'https://doi.org/'+r.doi" @click.stop target="_blank" rel="noopener" class="ml-2 rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 hover:bg-emerald-100">paper</a></template>
@@ -775,6 +775,22 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
         </template>
         <div class="grow"></div>
         <input x-model="filter" type="search" placeholder="Filter…" class="rounded-lg border-gray-300 text-sm px-3 py-1.5 w-44 focus:border-emerald-500 focus:ring-emerald-500" />
+        <div class="relative" @click.outside="invivoColMenu=false">
+          <button @click="invivoColMenu=!invivoColMenu" class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+            Metrics
+            <span class="rounded bg-gray-100 px-1.5 text-xs" x-text="invivoDisplayCols().length"></span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div x-show="invivoColMenu" x-cloak class="absolute right-0 z-20 mt-2 w-64 max-h-96 overflow-y-auto rounded-xl border border-gray-200 bg-white p-1.5 shadow-lg" style="display:none">
+            <template x-for="c in INVIVO_COLS" :key="c.key">
+              <label class="flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-sm hover:bg-gray-50 cursor-pointer">
+                <input type="checkbox" class="accent-emerald-600" :checked="invivoSelectedCols.includes(c.key)" @change="toggleInvivoCol(c.key)" />
+                <span x-text="(c.grp==='sti'?'STI · ':'COSMOS · ')+c.label" :data-tip="c.tip"></span>
+                <span class="ml-auto text-xs text-gray-400" x-text="c.better==='higher'?'↑':'↓'"></span>
+              </label>
+            </template>
+          </div>
+        </div>
         <button @click="downloadCSV(csvRowsInvivo(), 'qsm-ci_in-vivo-2016.csv')" data-tip="Download every method and all fields (all metrics vs COSMOS + STI, runtime, peak memory, avg/peak CPU) as CSV" class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" stroke-linecap="round" stroke-linejoin="round"/></svg>
           CSV
@@ -786,16 +802,16 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
             <thead class="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
               <!-- grouped reference header -->
               <tr>
-                <th class="px-4 py-2 text-right font-medium sticky left-0 bg-gray-50" style="min-width:3rem" rowspan="2">#</th>
-                <th class="px-5 py-2 text-left font-medium sticky bg-gray-50" style="left:3rem" rowspan="2">Algorithm</th>
-                <th class="px-4 py-2 text-center font-semibold border-l border-gray-200" :colspan="INVIVO_COLS.filter(c=>c.grp==='cosmos').length">vs COSMOS</th>
-                <th class="px-4 py-2 text-center font-semibold border-l border-gray-200" :colspan="INVIVO_COLS.filter(c=>c.grp==='sti').length">vs STI χ33</th>
+                <th class="px-4 py-2 text-right font-medium sticky left-0 bg-gray-50" style="min-width:4rem" rowspan="2">#</th>
+                <th class="px-5 py-2 text-left font-medium sticky bg-gray-50" style="left:4rem" rowspan="2">Algorithm</th>
+                <th class="px-4 py-2 text-center font-semibold border-l border-gray-200" x-show="invivoDisplayCols().some(c=>c.grp==='cosmos')" :colspan="invivoDisplayCols().filter(c=>c.grp==='cosmos').length">vs COSMOS</th>
+                <th class="px-4 py-2 text-center font-semibold border-l border-gray-200" x-show="invivoDisplayCols().some(c=>c.grp==='sti')" :colspan="invivoDisplayCols().filter(c=>c.grp==='sti').length">vs STI χ33</th>
                 <th class="px-4 py-2 text-center font-semibold border-l border-gray-200" rowspan="2">Runtime</th>
               </tr>
               <tr>
-                <template x-for="c in INVIVO_COLS" :key="c.key">
+                <template x-for="c in invivoDisplayCols()" :key="c.key">
                   <th @click="invivoSort(c.key)" class="px-4 py-2 text-right font-medium cursor-pointer select-none hover:text-gray-800 dark:hover:text-gray-100"
-                      :class="c.grp==='sti' && INVIVO_COLS.findIndex(x=>x.grp==='sti')===INVIVO_COLS.indexOf(c) ? 'border-l border-gray-200' : ''">
+                      :class="c.grp==='sti' && invivoDisplayCols().findIndex(x=>x.grp==='sti')===invivoDisplayCols().indexOf(c) ? 'border-l border-gray-200' : ''">
                     <span class="has-tip" :data-tip="c.tip" x-text="c.label"></span>
                     <span x-show="invivoSortKey===c.key" x-text="invivoDir==='asc'?'↑':'↓'"></span>
                   </th>
@@ -805,15 +821,15 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
             <tbody class="divide-y divide-gray-100">
               <template x-for="(r,i) in invivoRows()" :key="r.id">
                 <tr @click="go(r)" class="group cursor-pointer" :class="(r.status==='DNF' ? 'opacity-50 ' : '') + (r.variant==='tuned' ? 'tuned-row' : '')">
-                  <td class="px-4 py-3 text-right tabular-nums text-gray-400 sticky left-0 bg-white group-hover:bg-emerald-50/40" style="min-width:3rem" x-text="i+1"></td>
-                  <td class="px-5 py-3 text-left font-medium text-gray-900 sticky bg-white group-hover:bg-emerald-50/40" style="left:3rem">
+                  <td class="px-4 py-3 text-right tabular-nums text-gray-400 sticky left-0 bg-white group-hover:bg-emerald-50/40" style="min-width:4rem"><span x-text="i+1"></span><span x-show="rankDelta(r.slug,i)!==0" :class="rankDelta(r.slug,i)>0?'text-emerald-600':'text-rose-400'" class="ml-0.5 text-[10px] font-semibold align-top" :title="rankDelta(r.slug,i)>0 ? ('up '+rankDelta(r.slug,i)+' vs default') : ('down '+Math.abs(rankDelta(r.slug,i))+' vs default')" x-text="(rankDelta(r.slug,i)>0?'▲':'▼')+Math.abs(rankDelta(r.slug,i))"></span></td>
+                  <td class="px-5 py-3 text-left font-medium text-gray-900 sticky bg-white group-hover:bg-emerald-50/40" style="left:4rem">
                     <span class="mr-1.5 inline-block w-5 text-center" x-text="invMedal(i)"></span>
                     <span x-text="r.name"></span>
                     <span x-show="r.status==='DNF'" class="ml-2 rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold text-gray-500">DNF</span>
                   </td>
-                  <template x-for="c in INVIVO_COLS" :key="c.key">
+                  <template x-for="c in invivoDisplayCols()" :key="c.key">
                     <td class="px-4 py-3 text-right tabular-nums group-hover:bg-emerald-50/40"
-                        :class="(invivoSortKey===c.key ? 'font-semibold text-gray-900 ' : 'text-gray-600 ') + (c.grp==='sti' && INVIVO_COLS.findIndex(x=>x.grp==='sti')===INVIVO_COLS.indexOf(c) ? 'border-l border-gray-100' : '')"
+                        :class="(invivoSortKey===c.key ? 'font-semibold text-gray-900 ' : 'text-gray-600 ') + (c.grp==='sti' && invivoDisplayCols().findIndex(x=>x.grp==='sti')===invivoDisplayCols().indexOf(c) ? 'border-l border-gray-100' : '')"
                         x-text="invFmt(val(r, c.key), c.key)"></td>
                   </template>
                   <td class="px-4 py-3 text-right tabular-nums text-gray-600 border-l border-gray-100 group-hover:bg-emerald-50/40" x-text="fmt(val(r,'runtime_s'),'runtime_s')"></td>
@@ -967,13 +983,13 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
         const val = fn(); _memo[name] = { key, val }; return val;
       };
       // approximate method-family taxonomy (for findings colouring only). Unknown → iterative.
-      const DL = new Set(["qsmnet","qsmnet-plus","qsmgan","xqsm","lpcnn","modl-qsm","hd-qsm","ir2qsm","iqsm","iqsm+","autoqsm","inr-qsm","modip","deepqsm"]);
-      const DIRECT = new Set(["tkd","matlab-tkd","tsvd","tikhonov"]);
+      const DL = new Set(["qsmnet","qsmnet-plus","qsmgan","xqsm","lpcnn","modl-qsm","hdqsm-qsmrs","ir2qsm","iqsm","iqsm+","autoqsm","inr-qsm","modip","deepqsm"]);
+      const DIRECT = new Set(["tkd-qsmrs","tkd-qsmci","tsvd-qsmrs","tikhonov-qsmrs"]);
       const FAM = { dl: { label: "Deep learning", c: "#6366f1" }, iter: { label: "Iterative", c: "#10b981" }, direct: { label: "Direct / k-space", c: "#f59e0b" } };
 
       return {
         METRICS, STAGE_LABEL, MEDALS, fmt, val, INVIVO_COLS,
-        runs: [], registry: {}, algos: [], loading: true,
+        runs: [], registry: {}, algos: [], loading: true, _ready: false,
         // dataset (top level) + section tab state
         dataset: "sim",
         tab: "leaderboard", lbView: "pipelines", pipeView: "matrix", findView: "pipelines", view: "composed",
@@ -985,11 +1001,43 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
         chisepSort: "avg", chisepDir: "desc", chisepColMenu: false, chisepCols: CHISEP_COLS,
         chisepSelectedCols: ["avg", "para_xsim", "para_nrmse", "para_leak", "dia_xsim", "dia_nrmse", "dia_leak", "runtime_s"],
         invivoSortKey: "nrmse", invivoDir: "asc",   // in-vivo default sort: COSMOS NRMSE (2016 headline)
+        invivoColMenu: false, invivoSelectedCols: INVIVO_COLS.map((c) => c.key),   // in-vivo metric column picker (all shown by default)
         // findings state
         insightMode: "mean", xMet: "runtime_s", yMet: "xsim", expStage: "dipole",
 
         // ---- tabs ------------------------------------------------------------------------
         syncView() { this.view = this.lbView === "stages" ? "isolated" : "composed"; },
+        // Two-way deep-linking: reflect the current tab/subtab state in the URL query (defaults omitted
+        // for clean links) so every view is shareable. Paired with the reads in init() + the $watch set.
+        syncUrl() {
+          if (!this._ready) return;                 // don't write while init() is still restoring state
+          const p = new URLSearchParams();
+          if (this.dataset !== "sim") p.set("dataset", this.dataset);
+          if (this.dataset === "invivo" || this.dataset === "chisep") {
+            // these datasets have their own tab set (info / board / findings)
+            const v = this.dataset === "invivo" ? this.invivoView : this.chisepView;
+            if (v !== "board") p.set("sub", v);
+            if (v === "board" && this.dataset === "invivo") {
+              if (this.variant !== "default") p.set("variant", this.variant);
+              if (this.metric !== "xsim") p.set("metric", this.metric);
+            }
+          } else {
+            // sim / cross: top tab is info / leaderboard / findings
+            if (this.tab !== "leaderboard") p.set("tab", this.tab);
+            if (this.tab === "findings") {
+              if (this.findView !== "pipelines") p.set("find", this.findView);
+            } else if (this.tab === "leaderboard") {
+              const stageParam = this.lbView === "pipelines" ? "pipelines" : this.stage;
+              if (stageParam !== "pipelines") p.set("stage", stageParam);
+              else if (this.pipeView !== "matrix") p.set("pipe", this.pipeView);
+              if (this.variant !== "default") p.set("variant", this.variant);
+              if (this.metric !== "xsim") p.set("metric", this.metric);
+              if (this.fmap !== "gt") p.set("fmap", this.fmap);
+            }
+          }
+          const qs = p.toString();
+          history.replaceState(null, "", qs ? "?" + qs : location.pathname);
+        },
         setTab(t) { this.tab = t; this.syncView(); },
         setLb(v) { this.lbView = v; this.syncView(); },
         // Unified stage dropdown: "pipelines" selects the composed view; anything else is an isolated stage.
@@ -1013,14 +1061,27 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
           if (t === "stages" || q.get("view") === "isolated") this.lbView = "stages";
           else if (t === "pipelines" || q.get("view") === "composed") this.lbView = "pipelines";
           if (q.get("variant") === "tuned") this.variant = "tuned";
+          if (["matrix", "table"].includes(q.get("pipe"))) this.pipeView = q.get("pipe");
+          if (["pipelines", "metrics", "speed", "explore"].includes(q.get("find"))) this.findView = q.get("find");
+          if (q.get("metric") && METRICS[q.get("metric")]) this.metric = q.get("metric");
+          if (q.get("fmap")) this.fmap = q.get("fmap");
+          if (["board", "info", "findings"].includes(q.get("sub"))) { this.invivoView = q.get("sub"); this.chisepView = q.get("sub"); }
           this.syncView();
           try {
-            this.runs = await loadRuns();
-            this.registry = await loadRegistry();
-            this.algos = await loadAlgos();
+            // Fetch concurrently but assign the name manifest (algos) + registry BEFORE runs: runs is
+            // the big reactive trigger, and name-dependent getters (matrix, findings) cache by
+            // runs.length — if algos isn't loaded yet when they first compute, algoName() falls back to
+            // raw slugs and the cache never refreshes. Assigning algos first avoids that.
+            const [algos, registry, runs] = await Promise.all([loadAlgos(), loadRegistry(), loadRuns()]);
+            this.algos = algos;
+            this.registry = registry;
+            this.runs = runs;
             const st = this.stages();
-            if (st.includes(q.get("stage"))) this.stage = q.get("stage");
+            const sp = q.get("stage");
+            if (sp === "pipelines") this.lbView = "pipelines";
+            else if (st.includes(sp)) { this.stage = sp; this.lbView = "stages"; }  // isolated stage deep-link
             else if (!st.includes(this.stage)) this.stage = st[0] || "dipole";
+            this.syncView();
             if (!this.runs.some((r) => r.mode === "composed")) { this.lbView = "stages"; this.syncView(); }
             if (!this.hasChiSep() && this.dataset === "chisep") this.dataset = "sim";
             if (!this.hasInvivo() && this.dataset === "invivo") this.dataset = "sim";
@@ -1028,6 +1089,11 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
           } finally {
             this.loading = false;   // only reveal the empty-state once the fetch has actually resolved
           }
+          // Now that state is restored from the URL + data, keep the URL in sync with every tab change.
+          this._ready = true;
+          ["dataset", "tab", "lbView", "stage", "pipeView", "findView", "variant", "metric", "fmap", "invivoView", "chisepView"]
+            .forEach((k) => this.$watch(k, () => this.syncUrl()));
+          this.syncUrl();   // canonicalise (e.g. if an unavailable dataset was reset to sim)
           // findings: delegated click — any injected mark carrying data-run opens that run's page
           this.$root.addEventListener("click", (e) => {
             const el = e.target.closest && e.target.closest("[data-run]");
@@ -1068,6 +1134,14 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
           this.chisepSelectedCols = this.chisepSelectedCols.includes(k)
             ? this.chisepSelectedCols.filter((x) => x !== k) : [...this.chisepSelectedCols, k];
         },
+        invivoDisplayCols() {
+          const sel = INVIVO_COLS.filter((c) => this.invivoSelectedCols.includes(c.key));
+          return sel.length ? sel : INVIVO_COLS.filter((c) => c.key === "nrmse");
+        },
+        toggleInvivoCol(k) {
+          this.invivoSelectedCols = this.invivoSelectedCols.includes(k)
+            ? this.invivoSelectedCols.filter((x) => x !== k) : [...this.invivoSelectedCols, k];
+        },
         chiSepSort(k) {
           if (this.chisepSort === k) this.chisepDir = this.chisepDir === "asc" ? "desc" : "asc";
           else { this.chisepSort = k; this.chisepDir = (CHISEP_COL[k] || {}).better === "lower" ? "asc" : "desc"; }
@@ -1092,6 +1166,30 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
               if (va == null) return 1; if (vb == null) return -1;
               return (va - vb) * dir;
             });
+        },
+        // --- rank movement when Tuned is on: each method's rank in the DEFAULT-variant ordering, so the
+        //     # column can show how far tuning moved it (▲ up / ▼ down). One map per table. ---
+        _defRanks(pool, cmp) { const m = {}; pool.slice().sort(cmp).forEach((r, i) => { m[r.slug] = i + 1; }); return m; },
+        get simDefRanks() {
+          return _cache("simdef", [this.view, this.stage, this.fmap, this.sortKey, this.sortDir, this.runs.length].join("|"), () => {
+            const pool = this.view === "isolated"
+              ? this.runs.filter((r) => r.mode === "isolated" && !this._isInvivo(r) && r.stage === this.stage && (r.variant || "default") === "default")
+              : this.runs.filter((r) => r.mode === "composed" && (!r.combo || (r.combo.field_mapping || "gt") === this.fmap) && (r.variant || "default") === "default");
+            return this._defRanks(pool, (a, b) => { const av = val(a, this.sortKey), bv = val(b, this.sortKey); if (av == null) return 1; if (bv == null) return -1; return this.sortDir === "asc" ? av - bv : bv - av; });
+          });
+        },
+        get chisepDefRanks() {
+          return _cache("csdef", [this.chisepSort, this.chisepDir, this.runs.length].join("|"), () =>
+            this._defRanks(this._chisep().filter((r) => (r.variant || "default") === "default"), (a, b) => { const va = this.chiVal(a, this.chisepSort), vb = this.chiVal(b, this.chisepSort); if (va == null) return 1; if (vb == null) return -1; return (va - vb) * (this.chisepDir === "asc" ? 1 : -1); }));
+        },
+        get invivoDefRanks() {
+          return _cache("ivdef", [this.invivoSortKey, this.invivoDir, this.runs.length].join("|"), () =>
+            this._defRanks(this._invivo().filter((r) => r.mode === "isolated" && (r.variant || "default") === "default"), (a, b) => { const va = val(a, this.invivoSortKey), vb = val(b, this.invivoSortKey); if (va == null) return 1; if (vb == null) return -1; return (va - vb) * (this.invivoDir === "asc" ? 1 : -1); }));
+        },
+        rankDelta(slug, i) {
+          if (this.variant !== "tuned") return 0;
+          const map = this.dataset === "invivo" ? this.invivoDefRanks : this.dataset === "chisep" ? this.chisepDefRanks : this.simDefRanks;
+          const d = map[slug]; return d == null ? 0 : d - (i + 1);   // >0 = moved up (tuning improved rank)
         },
         invivoSort(k) {
           if (this.invivoSortKey === k) this.invivoDir = this.invivoDir === "asc" ? "desc" : "asc";
@@ -1181,7 +1279,7 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
             });
         },
         get matrix() {
-          return _cache("matrix", this.fmap + "|" + this.metric + "|" + this.runs.length, () => {
+          return _cache("matrix", this.fmap + "|" + this.metric + "|" + this.runs.length + "|" + this.algos.length, () => {
             const rs = this.runs.filter((r) => r.mode === "composed" && r.combo && r.combo.bfr && r.combo.dipole && (r.combo.field_mapping || "gt") === this.fmap);
             const bfrs = [...new Set(rs.map((r) => r.combo.bfr))];
             const dips = [...new Set(rs.map((r) => r.combo.dipole))];
@@ -1593,7 +1691,7 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
         // insensitive to the upstream stage (mean pairwise Spearman of the orderings ≈ 0.87).
         get dipoleStabilitySVG() {
           return _cache("dipstab", this.runs.length, () => {
-            const good = new Set(["ismv", "resharp", "sharp", "lbv", "vsharp", "pdf", "matlab-sti-vsharp", "bfrnet"]);
+            const good = new Set(["ismv-qsmrs", "resharp-qsmrs", "sharp-qsmrs", "lbv-qsmrs", "vsharp-qsmrs", "pdf-qsmrs", "vsharp-sti", "bfrnet"]);
             const cell = {};
             this.runs.filter((r) => r.mode === "composed" && r.stage === "bfr+dipole" && r.combo && good.has(r.combo.bfr) && r.combo.dipole && r.combo.dipole !== "amp-pe" && val(r, "xsim") != null)
               .forEach((r) => { (cell[r.combo.bfr] ||= {})[r.combo.dipole] = val(r, "xsim"); });
@@ -1712,7 +1810,8 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
 
         get pipelineFacts() {
           return _cache("pf", this.runs.length, () => {
-            const cells = this.runs.filter((r) => r.stage === "field-mapping+bfr+dipole" && r.mode === "composed" && r.combo && val(r, "nrmse") != null)
+            const cells = this.runs.filter((r) => r.stage === "field-mapping+bfr+dipole" && r.mode === "composed"
+                && r.combo && r.combo.field_mapping && r.combo.bfr && r.combo.dipole && val(r, "nrmse") != null)
               .map((r) => ({ fm: r.combo.field_mapping, bfr: r.combo.bfr, dipole: r.combo.dipole, nrmse: val(r, "nrmse") }));
             if (cells.length < 4) return null;
             const optimal = [...cells].sort((a, b) => a.nrmse - b.nrmse)[0];

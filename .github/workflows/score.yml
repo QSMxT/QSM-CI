@@ -114,7 +114,15 @@ jobs:
               try: t = open(f'algorithms/{slug}/algorithm.yml').read()
               except FileNotFoundError: return HOSTED
               m = re.search(r'^runner:[ \t]*(\S+)', t, re.M)
-              return {'self-hosted': SELFHOSTED, 'hosted-long': HOSTED_LONG}.get(m.group(1) if m else '', HOSTED)
+              tier = {'self-hosted': SELFHOSTED, 'hosted-long': HOSTED_LONG}.get(m.group(1) if m else '', HOSTED)
+              # Optional per-method `timeout_minutes:` override. Only honored on self-hosted, where GitHub
+              # lets a job run past the 6-h hosted cap (up to ~5 days) — e.g. modip's full per-subject CPU
+              # optimization normally finishes in a few hours but can drift past 6 h under shared-box
+              # contention. Hosted tiers stay hard-capped at 6 h by GitHub, so an override there is ignored.
+              tmo = re.search(r'^timeout_minutes:[ \t]*(\d+)', t, re.M)
+              if tmo and tier is SELFHOSTED:
+                  tier = {**tier, 'timeout': int(tmo.group(1))}
+              return tier
           def is_chisep(slug):
               try: t = open(f'algorithms/{slug}/algorithm.yml').read()
               except FileNotFoundError: return False

@@ -1,0 +1,40 @@
+name: iHARPERELLA
+slug: iharperella-qsmrs
+algorithm: iharperella
+source: qsmrs
+stage: unwrap+bfr
+language: Rust
+family: iterative
+learning: none
+inputs: [phase, mask, params]  # the artifacts this method actually reads (a subset of the stage's inputs)
+engine: QSMxT / QSM.rs
+description: >
+  Improved HARPERELLA: iterative integrated unwrapping + background removal on wrapped phase.
+citation: Li et al., NMR Biomed 2014
+authors:
+- name: Wei Li
+- name: Alexandru V. Avram
+- name: Bing Wu
+- name: Xue Xiao
+- name: Chunlei Liu
+doi: 10.1002/nbm.3056
+code_url: https://github.com/astewartau/QSM.rs
+license: MIT
+image: ghcr.io/astewartau/qsm-ci/qsmxt:v9.7.0
+run: bash run.sh
+parameters:
+  - name: radius
+    default: 5.0
+    description: SMV kernel radius (mm)
+  - name: max_iter
+    default: 100
+    description: iterations
+  - name: tol
+    default: 1e-4
+    description: tolerance
+
+# Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
+tuning:
+  date: 2026-08
+  status: default-optimal
+  note: "Swept radius on sim (sim-only); default already optimal. Left at default."

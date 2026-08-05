@@ -16,7 +16,7 @@ steps:
       class: CommandLineTool
       baseCommand: [qsm-ci, run]
       inputs:
-        slug: { type: string, default: romeo-fieldmap, inputBinding: { position: 1 } }
+        slug: { type: string, default: romeo-qsmrs, inputBinding: { position: 1 } }
         phase: { type: File, inputBinding: { prefix: --phase, position: 2 } }
         magnitude: { type: "File?", inputBinding: { prefix: --magnitude, position: 2 } }
         mask: { type: File, inputBinding: { prefix: --mask, position: 2 } }
@@ -35,7 +35,7 @@ steps:
       class: CommandLineTool
       baseCommand: [qsm-ci, run]
       inputs:
-        slug: { type: string, default: vsharp, inputBinding: { position: 1 } }
+        slug: { type: string, default: vsharp-qsmrs, inputBinding: { position: 1 } }
         totalfield: { type: File, inputBinding: { prefix: --totalfield, position: 2 } }
         mask: { type: File, inputBinding: { prefix: --mask, position: 2 } }
         params: { type: "File?", inputBinding: { prefix: --params, position: 2 } }
@@ -52,7 +52,7 @@ steps:
       class: CommandLineTool
       baseCommand: [qsm-ci, run]
       inputs:
-        slug: { type: string, default: rts, inputBinding: { position: 1 } }
+        slug: { type: string, default: rts-qsmrs, inputBinding: { position: 1 } }
         localfield: { type: File, inputBinding: { prefix: --localfield, position: 2 } }
         mask: { type: File, inputBinding: { prefix: --mask, position: 2 } }
         params: { type: "File?", inputBinding: { prefix: --params, position: 2 } }

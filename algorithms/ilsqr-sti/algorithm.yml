@@ -1,0 +1,35 @@
+name: iLSQR (STI Suite)
+slug: ilsqr-sti
+algorithm: ilsqr
+source: sti
+stage: dipole
+language: MATLAB
+family: iterative
+learning: none
+engine: STI Suite
+description: Iterative LSQR dipole inversion from STI Suite v3 (the reference iLSQR implementation),
+  compiled from MATLAB and run on the license-free MATLAB Runtime. Takes the local field and solves
+  for susceptibility with streaking-artifact reduction.
+authors:
+- name: Wei Li
+- name: Nian Wang
+- name: Fang Yu
+- name: Hui Han
+- name: Wei Cao
+- name: Rebecca Romero
+- name: Bundhit Tantiwongkosi
+- name: Timothy Q. Duong
+- name: Chunlei Liu
+doi: 10.1016/j.neuroimage.2014.12.043
+citation: Li et al., NeuroImage 2015
+code_url: https://people.eecs.berkeley.edu/~chunlei.liu/software.html
+license: See STI Suite license
+image: ghcr.io/astewartau/qsm-ci/matlab-sti-ilsqr:v1
+run: bash run.sh
+matlab:
+  entry: recon.m
+  runtime: r2026a
+params:
+- name: padsize
+  default: 12
+  description: zero-pad size (voxels, isotropic) to improve numerical accuracy of the inversion

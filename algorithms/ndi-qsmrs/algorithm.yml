@@ -1,0 +1,27 @@
+name: NDI
+slug: ndi-qsmrs
+algorithm: ndi
+source: qsmrs
+stage: dipole
+language: Rust
+family: iterative
+learning: none
+engine: QSMxT / QSM.rs
+description: >
+  Nonlinear Dipole Inversion: gradient-descent solve of a nonlinear (wrapped-phase) data term; effectively tuning-free.
+citation: Polak et al., NMR Biomed 2020
+doi: 10.1002/nbm.4271
+code_url: https://github.com/astewartau/QSM.rs
+license: MIT
+image: ghcr.io/astewartau/qsm-ci/qsmxt:v9.9.0
+run: bash run.sh
+parameters:
+  - name: tau
+    default: 2.0
+    description: gradient-descent step size
+  - name: alpha
+    default: 1e-5
+    description: L2 regularization weight
+  - name: max_iter
+    default: 200
+    description: iterations

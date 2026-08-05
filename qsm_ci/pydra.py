@@ -16,11 +16,11 @@ Example — an end-to-end phase → χ pipeline mixing three methods::
     from qsm_ci.pydra import FieldMapping, BackgroundRemoval, DipoleInversion
 
     wf = pydra.Workflow(name="qsm", input_spec=["phase", "magnitude", "mask", "params"])
-    wf.add(FieldMapping(name="fm", slug="romeo-fieldmap", phase=wf.lzin.phase,
+    wf.add(FieldMapping(name="fm", slug="romeo-qsmrs", phase=wf.lzin.phase,
                         magnitude=wf.lzin.magnitude, mask=wf.lzin.mask, params=wf.lzin.params))
-    wf.add(BackgroundRemoval(name="bfr", slug="sharp", totalfield=wf.fm.lzout.totalfield,
+    wf.add(BackgroundRemoval(name="bfr", slug="sharp-qsmrs", totalfield=wf.fm.lzout.totalfield,
                              mask=wf.lzin.mask, params=wf.lzin.params))
-    wf.add(DipoleInversion(name="dip", slug="rts", localfield=wf.bfr.lzout.localfield,
+    wf.add(DipoleInversion(name="dip", slug="rts-qsmrs", localfield=wf.bfr.lzout.localfield,
                            mask=wf.lzin.mask, params=wf.lzin.params))
     wf.set_output({"chimap": wf.dip.lzout.chimap})
 

@@ -129,7 +129,7 @@
       ]
     },
     {
-      "slug": "chi-sep-ilsqr",
+      "slug": "chisep-ilsqr",
       "name": "\u03c7-separation (iLSQR)",
       "stage": "chi-separation",
       "inputs": [
@@ -164,7 +164,7 @@
       "ci_notes": []
     },
     {
-      "slug": "chi-sep-medi",
+      "slug": "chisep-medi",
       "name": "\u03c7-separation (MEDI)",
       "stage": "chi-separation",
       "inputs": [
@@ -200,7 +200,7 @@
       "ci_notes": []
     },
     {
-      "slug": "chi-sepnet",
+      "slug": "chisepnet",
       "name": "\u03c7-sepnet",
       "stage": "chi-separation",
       "inputs": [
@@ -261,55 +261,7 @@
       "ci_notes": []
     },
     {
-      "slug": "fansi",
-      "name": "FANSI (nlTV)",
-      "stage": "dipole",
-      "inputs": [
-        "localfield",
-        "mask",
-        "params"
-      ],
-      "domain": "qsm",
-      "engine": "QSMxT / QSM.rs",
-      "language": "Rust",
-      "family": "iterative",
-      "learning": "none",
-      "description": "Fast Nonlinear Susceptibility Inversion with nonlinear total-variation regularization, solved with ADMM.",
-      "citation": "Milovic et al., Magn Reson Med 2018",
-      "doi": "10.1002/mrm.27073",
-      "code_url": "https://github.com/astewartau/QSM.rs",
-      "license": "MIT",
-      "authors": [],
-      "parameters": [
-        {
-          "name": "alpha1",
-          "default": "2e-4",
-          "tuned": {
-            "sim": "3e-5",
-            "invivo": "4e-4"
-          },
-          "description": "gradient L1 (TV) penalty"
-        },
-        {
-          "name": "mu1",
-          "default": "2e-2",
-          "description": "gradient-consistency ADMM weight"
-        },
-        {
-          "name": "max_iter",
-          "default": 150,
-          "description": "iterations"
-        },
-        {
-          "name": "tol_update",
-          "default": 0.1,
-          "description": "convergence threshold on the solution update (percent)"
-        }
-      ],
-      "ci_notes": []
-    },
-    {
-      "slug": "fansi-tgv",
+      "slug": "fansi-nltgv-qsmrs",
       "name": "FANSI (nlTGV)",
       "stage": "dipole",
       "inputs": [
@@ -366,7 +318,55 @@
       "ci_notes": []
     },
     {
-      "slug": "harperella",
+      "slug": "fansi-nltv-qsmrs",
+      "name": "FANSI (nlTV)",
+      "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "language": "Rust",
+      "family": "iterative",
+      "learning": "none",
+      "description": "Fast Nonlinear Susceptibility Inversion with nonlinear total-variation regularization, solved with ADMM.",
+      "citation": "Milovic et al., Magn Reson Med 2018",
+      "doi": "10.1002/mrm.27073",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT",
+      "authors": [],
+      "parameters": [
+        {
+          "name": "alpha1",
+          "default": "2e-4",
+          "tuned": {
+            "sim": "3e-5",
+            "invivo": "4e-4"
+          },
+          "description": "gradient L1 (TV) penalty"
+        },
+        {
+          "name": "mu1",
+          "default": "2e-2",
+          "description": "gradient-consistency ADMM weight"
+        },
+        {
+          "name": "max_iter",
+          "default": 150,
+          "description": "iterations"
+        },
+        {
+          "name": "tol_update",
+          "default": 0.1,
+          "description": "convergence threshold on the solution update (percent)"
+        }
+      ],
+      "ci_notes": []
+    },
+    {
+      "slug": "harperella-qsmrs",
       "name": "HARPERELLA",
       "stage": "unwrap+bfr",
       "inputs": [
@@ -414,7 +414,7 @@
       "ci_notes": []
     },
     {
-      "slug": "hd-qsm",
+      "slug": "hdqsm-qsmrs",
       "name": "HD-QSM",
       "stage": "dipole",
       "inputs": [
@@ -462,7 +462,7 @@
       "ci_notes": []
     },
     {
-      "slug": "iharperella",
+      "slug": "iharperella-qsmrs",
       "name": "iHARPERELLA",
       "stage": "unwrap+bfr",
       "inputs": [
@@ -507,8 +507,8 @@
       "ci_notes": []
     },
     {
-      "slug": "ilsqr",
-      "name": "iLSQR",
+      "slug": "ilsqr-qsmrs",
+      "name": "iLSQR (QSM.rs)",
       "stage": "dipole",
       "inputs": [
         "localfield",
@@ -546,6 +546,45 @@
           "name": "max_iter",
           "default": 1000,
           "description": "iterations"
+        }
+      ],
+      "ci_notes": []
+    },
+    {
+      "slug": "ilsqr-sti",
+      "name": "iLSQR (STI Suite)",
+      "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "STI Suite",
+      "language": "MATLAB",
+      "family": "iterative",
+      "learning": "none",
+      "description": "Iterative LSQR dipole inversion from STI Suite v3 (the reference iLSQR implementation), compiled from MATLAB and run on the license-free MATLAB Runtime. Takes the local field and solves for susceptibility with streaking-artifact reduction.",
+      "citation": "Li et al., NeuroImage 2015",
+      "doi": "10.1016/j.neuroimage.2014.12.043",
+      "code_url": "https://people.eecs.berkeley.edu/~chunlei.liu/software.html",
+      "license": "See STI Suite license",
+      "authors": [
+        "Wei Li",
+        "Nian Wang",
+        "Fang Yu",
+        "Hui Han",
+        "Wei Cao",
+        "Rebecca Romero",
+        "Bundhit Tantiwongkosi",
+        "Timothy Q. Duong",
+        "Chunlei Liu"
+      ],
+      "parameters": [
+        {
+          "name": "padsize",
+          "default": 12,
+          "description": "zero-pad size (voxels, isotropic) to improve numerical accuracy of the inversion"
         }
       ],
       "ci_notes": []
@@ -735,7 +774,7 @@
       ]
     },
     {
-      "slug": "ismv",
+      "slug": "ismv-qsmrs",
       "name": "iSMV",
       "stage": "bfr",
       "inputs": [
@@ -780,7 +819,7 @@
       "ci_notes": []
     },
     {
-      "slug": "l1-qsm",
+      "slug": "l1qsm-qsmrs",
       "name": "L1-QSM",
       "stage": "dipole",
       "inputs": [
@@ -833,7 +872,7 @@
       "ci_notes": []
     },
     {
-      "slug": "laplacian-fieldmap",
+      "slug": "laplacian-qsmci",
       "name": "Laplacian field mapping",
       "stage": "field-mapping",
       "inputs": [
@@ -858,7 +897,7 @@
       "ci_notes": []
     },
     {
-      "slug": "lbv",
+      "slug": "lbv-qsmrs",
       "name": "LBV",
       "stage": "bfr",
       "inputs": [
@@ -921,11 +960,11 @@
       "ci_notes": []
     },
     {
-      "slug": "matlab-medi",
-      "name": "MEDI (MATLAB)",
-      "stage": "bfr+dipole",
+      "slug": "medi-cornell",
+      "name": "MEDI (Cornell)",
+      "stage": "dipole",
       "inputs": [
-        "totalfield",
+        "localfield",
         "mask",
         "params",
         "magnitude"
@@ -935,7 +974,7 @@
       "language": "MATLAB",
       "family": "iterative",
       "learning": "none",
-      "description": "Morphology Enabled Dipole Inversion (Cornell MEDI toolbox), compiled from MATLAB and run on the license-free MATLAB Runtime. Takes the total field, removes the background field with PDF, then solves the L1 morphology-regularized dipole inversion.",
+      "description": "Morphology Enabled Dipole Inversion (Cornell MEDI toolbox), compiled from MATLAB and run on the license-free MATLAB Runtime. Solves the L1 morphology-regularized dipole inversion directly on the local (tissue) field (no background-field removal).",
       "citation": "Liu et al., NeuroImage 2012",
       "doi": "10.1016/j.neuroimage.2011.08.082",
       "code_url": "http://pre.weill.cornell.edu/mri/pages/qsm.html",
@@ -957,15 +996,12 @@
         {
           "name": "lambda",
           "default": 100,
-          "tuned": {
-            "sim": 520
-          },
           "description": "data-fidelity weight (larger = closer data fit, less regularization)"
         },
         {
           "name": "smv_radius",
-          "default": 5,
-          "description": "spherical-mean-value radius (mm) for extra background removal; 0 disables"
+          "default": 0,
+          "description": "spherical-mean-value radius (mm) for extra background removal; 0 disables (default now off \u2014 input is already a local field)"
         },
         {
           "name": "percentage",
@@ -981,182 +1017,8 @@
       "ci_notes": []
     },
     {
-      "slug": "matlab-sti-iharperella",
-      "name": "iHARPERELLA (STI Suite)",
-      "stage": "unwrap+bfr",
-      "inputs": [
-        "phase",
-        "mask",
-        "params"
-      ],
-      "domain": "qsm",
-      "engine": "STI Suite",
-      "language": "MATLAB",
-      "family": "iterative",
-      "learning": "none",
-      "description": "Integrated phase unwrapping + background field removal (iHARPERELLA) from STI Suite v3, compiled from MATLAB and run on the license-free MATLAB Runtime. Operates on wrapped multi-echo phase and yields the local tissue field (echoes combined with optimal TE^2 weights).",
-      "citation": "Li et al., NMR Biomed 2014",
-      "doi": "10.1002/nbm.3056",
-      "code_url": "https://people.eecs.berkeley.edu/~chunlei.liu/software.html",
-      "license": "See STI Suite license",
-      "authors": [
-        "Wei Li",
-        "Alexandru V. Avram",
-        "Bing Wu",
-        "Xue Xiao",
-        "Chunlei Liu"
-      ],
-      "parameters": [
-        {
-          "name": "niter",
-          "default": 40,
-          "description": "iHARPERELLA iteration count"
-        },
-        {
-          "name": "padsize",
-          "default": 12,
-          "description": "zero-pad size (voxels, isotropic) for numerical accuracy"
-        }
-      ],
-      "ci_notes": []
-    },
-    {
-      "slug": "matlab-sti-ilsqr",
-      "name": "iLSQR (STI Suite)",
-      "stage": "dipole",
-      "inputs": [
-        "localfield",
-        "mask",
-        "params"
-      ],
-      "domain": "qsm",
-      "engine": "STI Suite",
-      "language": "MATLAB",
-      "family": "iterative",
-      "learning": "none",
-      "description": "Iterative LSQR dipole inversion from STI Suite v3 (the reference iLSQR implementation), compiled from MATLAB and run on the license-free MATLAB Runtime. Takes the local field and solves for susceptibility with streaking-artifact reduction.",
-      "citation": "Li et al., NeuroImage 2015",
-      "doi": "10.1016/j.neuroimage.2014.12.043",
-      "code_url": "https://people.eecs.berkeley.edu/~chunlei.liu/software.html",
-      "license": "See STI Suite license",
-      "authors": [
-        "Wei Li",
-        "Nian Wang",
-        "Fang Yu",
-        "Hui Han",
-        "Wei Cao",
-        "Rebecca Romero",
-        "Bundhit Tantiwongkosi",
-        "Timothy Q. Duong",
-        "Chunlei Liu"
-      ],
-      "parameters": [
-        {
-          "name": "padsize",
-          "default": 12,
-          "description": "zero-pad size (voxels, isotropic) to improve numerical accuracy of the inversion"
-        }
-      ],
-      "ci_notes": []
-    },
-    {
-      "slug": "matlab-sti-star",
-      "name": "STAR-QSM (STI Suite)",
-      "stage": "dipole",
-      "inputs": [
-        "localfield",
-        "mask",
-        "params"
-      ],
-      "domain": "qsm",
-      "engine": "STI Suite",
-      "language": "MATLAB",
-      "family": "iterative",
-      "learning": "none",
-      "description": "STAR-QSM (streaking artifact reduction) dipole inversion from STI Suite v3, compiled from MATLAB and run on the license-free MATLAB Runtime. Fast two-level susceptibility inversion of the local field.",
-      "citation": null,
-      "doi": "10.1002/nbm.3383",
-      "code_url": "https://people.eecs.berkeley.edu/~chunlei.liu/software.html",
-      "license": "See STI Suite license",
-      "authors": [
-        "Hongjiang Wei and Chunlei Liu"
-      ],
-      "parameters": [
-        {
-          "name": "padsize",
-          "default": 12,
-          "description": "zero-pad size (voxels, isotropic) to improve numerical accuracy of the inversion"
-        }
-      ],
-      "ci_notes": []
-    },
-    {
-      "slug": "matlab-sti-vsharp",
-      "name": "V-SHARP (STI Suite)",
-      "stage": "bfr",
-      "inputs": [
-        "totalfield",
-        "mask",
-        "params"
-      ],
-      "domain": "qsm",
-      "engine": "STI Suite",
-      "language": "MATLAB",
-      "family": "iterative",
-      "learning": "none",
-      "description": "V-SHARP background field removal from STI Suite v3 (spatially-varying SMV deconvolution), compiled from MATLAB and run on the license-free MATLAB Runtime. Takes the total field and removes the background field to yield the local tissue field.",
-      "citation": "Wu et al., Magn Reson Med 2012",
-      "doi": "10.1002/mrm.23000",
-      "code_url": "https://people.eecs.berkeley.edu/~chunlei.liu/software.html",
-      "license": "See STI Suite license",
-      "authors": [
-        "Bing Wu",
-        "Wei Li",
-        "Arnaud Guidon",
-        "Chunlei Liu"
-      ],
-      "parameters": [
-        {
-          "name": "smvsize",
-          "default": 12,
-          "description": "maximum spherical-mean-value kernel size (voxels) for the SMV deconvolution"
-        }
-      ],
-      "ci_notes": []
-    },
-    {
-      "slug": "matlab-tkd",
-      "name": "TKD (MATLAB)",
-      "stage": "dipole",
-      "inputs": [
-        "localfield",
-        "mask",
-        "params"
-      ],
-      "domain": "qsm",
-      "engine": "Independent",
-      "language": "MATLAB",
-      "family": "direct",
-      "learning": "none",
-      "description": "Thresholded k-space division dipole inversion implemented in MATLAB and run on the license-free MATLAB Runtime. Reference `dipole`-stage submission demonstrating the MATLAB path.",
-      "citation": "Shmueli et al., Magn Reson Med 2009",
-      "doi": "10.1002/mrm.22135",
-      "code_url": "https://github.com/QSMxT/QSM-CI",
-      "license": "MIT",
-      "authors": [
-        "Karin Shmueli",
-        "Jacco A. de Zwart",
-        "Peter van Gelderen",
-        "Tie-Qiang Li",
-        "Stephen J. Dodd",
-        "Jeff H. Duyn"
-      ],
-      "parameters": [],
-      "ci_notes": []
-    },
-    {
-      "slug": "medi",
-      "name": "MEDI",
+      "slug": "medi-qsmrs",
+      "name": "MEDI (QSM.rs)",
       "stage": "dipole",
       "inputs": [
         "localfield",
@@ -1285,7 +1147,7 @@
       "ci_notes": []
     },
     {
-      "slug": "ndi",
+      "slug": "ndi-qsmrs",
       "name": "NDI",
       "stage": "dipole",
       "inputs": [
@@ -1355,7 +1217,7 @@
       "ci_notes": []
     },
     {
-      "slug": "nltv",
+      "slug": "nltv-qsmrs",
       "name": "NLTV",
       "stage": "dipole",
       "inputs": [
@@ -1397,7 +1259,7 @@
       "ci_notes": []
     },
     {
-      "slug": "pdf",
+      "slug": "pdf-qsmrs",
       "name": "PDF",
       "stage": "bfr",
       "inputs": [
@@ -1434,7 +1296,7 @@
       "ci_notes": []
     },
     {
-      "slug": "qsmart",
+      "slug": "qsmart-qsmrs",
       "name": "QSMART",
       "stage": "bfr+dipole",
       "inputs": [
@@ -1566,7 +1428,7 @@
       "ci_notes": []
     },
     {
-      "slug": "resharp",
+      "slug": "resharp-qsmrs",
       "name": "RESHARP",
       "stage": "bfr",
       "inputs": [
@@ -1609,7 +1471,7 @@
       "ci_notes": []
     },
     {
-      "slug": "romeo-fieldmap",
+      "slug": "romeo-qsmrs",
       "name": "ROMEO field mapping",
       "stage": "field-mapping",
       "inputs": [
@@ -1635,7 +1497,7 @@
       "ci_notes": []
     },
     {
-      "slug": "rts",
+      "slug": "rts-qsmrs",
       "name": "RTS",
       "stage": "dipole",
       "inputs": [
@@ -1678,7 +1540,7 @@
       "ci_notes": []
     },
     {
-      "slug": "sharp",
+      "slug": "sharp-qsmrs",
       "name": "SHARP",
       "stage": "bfr",
       "inputs": [
@@ -1717,6 +1579,37 @@
       "ci_notes": []
     },
     {
+      "slug": "star-sti",
+      "name": "STAR-QSM (STI Suite)",
+      "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "STI Suite",
+      "language": "MATLAB",
+      "family": "iterative",
+      "learning": "none",
+      "description": "STAR-QSM (streaking artifact reduction) dipole inversion from STI Suite v3, compiled from MATLAB and run on the license-free MATLAB Runtime. Fast two-level susceptibility inversion of the local field.",
+      "citation": null,
+      "doi": "10.1002/nbm.3383",
+      "code_url": "https://people.eecs.berkeley.edu/~chunlei.liu/software.html",
+      "license": "See STI Suite license",
+      "authors": [
+        "Hongjiang Wei and Chunlei Liu"
+      ],
+      "parameters": [
+        {
+          "name": "padsize",
+          "default": 12,
+          "description": "zero-pad size (voxels, isotropic) to improve numerical accuracy of the inversion"
+        }
+      ],
+      "ci_notes": []
+    },
+    {
       "slug": "susep-net",
       "name": "SUSEP-Net",
       "stage": "chi-separation",
@@ -1746,7 +1639,7 @@
       "ci_notes": []
     },
     {
-      "slug": "tfi",
+      "slug": "tfi-qsmrs",
       "name": "TFI",
       "stage": "bfr+dipole",
       "inputs": [
@@ -1790,7 +1683,7 @@
       "ci_notes": []
     },
     {
-      "slug": "tgv",
+      "slug": "tgv-qsmrs",
       "name": "TGV",
       "stage": "bfr+dipole",
       "inputs": [
@@ -1843,7 +1736,7 @@
       "ci_notes": []
     },
     {
-      "slug": "tikhonov",
+      "slug": "tikhonov-qsmrs",
       "name": "Tikhonov",
       "stage": "dipole",
       "inputs": [
@@ -1883,8 +1776,38 @@
       "ci_notes": []
     },
     {
-      "slug": "tkd",
-      "name": "TKD",
+      "slug": "tkd-qsmci",
+      "name": "TKD (QSM-CI)",
+      "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "Independent",
+      "language": "MATLAB",
+      "family": "direct",
+      "learning": "none",
+      "description": "Thresholded k-space division dipole inversion implemented in MATLAB and run on the license-free MATLAB Runtime. Reference `dipole`-stage submission demonstrating the MATLAB path.",
+      "citation": "Shmueli et al., Magn Reson Med 2009",
+      "doi": "10.1002/mrm.22135",
+      "code_url": "https://github.com/QSMxT/QSM-CI",
+      "license": "MIT",
+      "authors": [
+        "Karin Shmueli",
+        "Jacco A. de Zwart",
+        "Peter van Gelderen",
+        "Tie-Qiang Li",
+        "Stephen J. Dodd",
+        "Jeff H. Duyn"
+      ],
+      "parameters": [],
+      "ci_notes": []
+    },
+    {
+      "slug": "tkd-qsmrs",
+      "name": "TKD (QSM.rs)",
       "stage": "dipole",
       "inputs": [
         "localfield",
@@ -1922,7 +1845,7 @@
       "ci_notes": []
     },
     {
-      "slug": "tsvd",
+      "slug": "tsvd-qsmrs",
       "name": "TSVD",
       "stage": "dipole",
       "inputs": [
@@ -1958,7 +1881,7 @@
       "ci_notes": []
     },
     {
-      "slug": "tv",
+      "slug": "tv-qsmrs",
       "name": "TV (ADMM)",
       "stage": "dipole",
       "inputs": [
@@ -2010,8 +1933,8 @@
       "ci_notes": []
     },
     {
-      "slug": "vsharp",
-      "name": "V-SHARP",
+      "slug": "vsharp-qsmrs",
+      "name": "V-SHARP (QSM.rs)",
       "stage": "bfr",
       "inputs": [
         "totalfield",
@@ -2049,6 +1972,40 @@
           "name": "min_radius_factor",
           "default": 0.0,
           "description": "\u00d7 max voxel size"
+        }
+      ],
+      "ci_notes": []
+    },
+    {
+      "slug": "vsharp-sti",
+      "name": "V-SHARP (STI Suite)",
+      "stage": "bfr",
+      "inputs": [
+        "totalfield",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "STI Suite",
+      "language": "MATLAB",
+      "family": "iterative",
+      "learning": "none",
+      "description": "V-SHARP background field removal from STI Suite v3 (spatially-varying SMV deconvolution), compiled from MATLAB and run on the license-free MATLAB Runtime. Takes the total field and removes the background field to yield the local tissue field.",
+      "citation": "Wu et al., Magn Reson Med 2012",
+      "doi": "10.1002/mrm.23000",
+      "code_url": "https://people.eecs.berkeley.edu/~chunlei.liu/software.html",
+      "license": "See STI Suite license",
+      "authors": [
+        "Bing Wu",
+        "Wei Li",
+        "Arnaud Guidon",
+        "Chunlei Liu"
+      ],
+      "parameters": [
+        {
+          "name": "smvsize",
+          "default": 12,
+          "description": "maximum spherical-mean-value kernel size (voxels) for the SMV deconvolution"
         }
       ],
       "ci_notes": []
@@ -2110,7 +2067,7 @@
       "ci_notes": []
     },
     {
-      "slug": "wh-qsm",
+      "slug": "whqsm-qsmrs",
       "name": "WH-QSM",
       "stage": "dipole",
       "inputs": [

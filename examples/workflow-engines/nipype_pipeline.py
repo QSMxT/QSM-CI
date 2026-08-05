@@ -25,10 +25,10 @@ def main() -> None:
     p.add_argument("--runner", default="docker", help="docker · podman · apptainer · local")
     a = p.parse_args()
 
-    fm = Node(FieldMapping(slug="romeo-fieldmap", phase=a.phase, magnitude=a.magnitude,
+    fm = Node(FieldMapping(slug="romeo-qsmrs", phase=a.phase, magnitude=a.magnitude,
                            mask=a.mask, params=a.params, runner=a.runner), name="fm")
-    bfr = Node(BackgroundRemoval(slug="vsharp", mask=a.mask, params=a.params, runner=a.runner), name="bfr")
-    dip = Node(DipoleInversion(slug="rts", mask=a.mask, params=a.params, runner=a.runner,
+    bfr = Node(BackgroundRemoval(slug="vsharp-qsmrs", mask=a.mask, params=a.params, runner=a.runner), name="bfr")
+    dip = Node(DipoleInversion(slug="rts-qsmrs", mask=a.mask, params=a.params, runner=a.runner,
                                out=a.out), name="dip")
 
     wf = Workflow(name="qsm")

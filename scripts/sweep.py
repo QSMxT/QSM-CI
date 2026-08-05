@@ -49,46 +49,46 @@ from pipeline import (  # noqa: E402  reuse the exact isolated-scoring machinery
 # Baselines (current defaults) are included so the sweep re-measures them under identical scoring.
 GRIDS: dict[str, dict[str, list]] = {
     # --- dipole stage (fast qsmxt inversions) ---
-    "tkd":      {"threshold": [0.05, 0.08, 0.1, 0.13, 0.16, 0.2, 0.25, 0.3]},
-    "tsvd":     {"threshold": [0.05, 0.08, 0.1, 0.13, 0.16, 0.2, 0.25, 0.3]},
-    "tikhonov": {"lambda": [1e-5, 3e-5, 1e-4, 3e-4, 1e-3, 3e-3, 1e-2]},
-    "medi":     {"lambda": [3e-5, 1e-4, 3e-4, 1e-3, 3e-3, 1e-2]},
-    "tv":       {"lambda": [1e-5, 3e-5, 1e-4, 3e-4, 1e-3, 3e-3]},
-    "nltv":     {"lambda": [1e-5, 3e-5, 1e-4, 3e-4, 1e-3, 3e-3]},
-    "rts":      {"delta": [0.3, 0.6, 1.0, 1.5, 2.0, 3.0], "mu": [1.0]},
+    "tkd-qsmrs":      {"threshold": [0.05, 0.08, 0.1, 0.13, 0.16, 0.2, 0.25, 0.3]},
+    "tsvd-qsmrs":     {"threshold": [0.05, 0.08, 0.1, 0.13, 0.16, 0.2, 0.25, 0.3]},
+    "tikhonov-qsmrs": {"lambda": [1e-5, 3e-5, 1e-4, 3e-4, 1e-3, 3e-3, 1e-2]},
+    "medi-qsmrs":     {"lambda": [3e-5, 1e-4, 3e-4, 1e-3, 3e-3, 1e-2]},
+    "tv-qsmrs":       {"lambda": [1e-5, 3e-5, 1e-4, 3e-4, 1e-3, 3e-3]},
+    "nltv-qsmrs":     {"lambda": [1e-5, 3e-5, 1e-4, 3e-4, 1e-3, 3e-3]},
+    "rts-qsmrs":      {"delta": [0.3, 0.6, 1.0, 1.5, 2.0, 3.0], "mu": [1.0]},
     # --- background-field removal (already scores high; sweep reg/threshold anyway) ---
-    "resharp":  {"radius": [8.0, 12.0, 15.0, 20.0], "tik_reg": [1e-4, 1e-3, 5e-3]},
-    "sharp":    {"threshold": [0.01, 0.02, 0.05, 0.1]},
-    "vsharp":   {"threshold": [0.01, 0.02, 0.05, 0.1]},
+    "resharp-qsmrs":  {"radius": [8.0, 12.0, 15.0, 20.0], "tik_reg": [1e-4, 1e-3, 5e-3]},
+    "sharp-qsmrs":    {"threshold": [0.01, 0.02, 0.05, 0.1]},
+    "vsharp-qsmrs":   {"threshold": [0.01, 0.02, 0.05, 0.1]},
     # --- bfr+dipole single-step spans (the over-regularised ones) ---
-    "tgv":      {"alpha1": [0.0002, 0.0004, 0.0006, 0.001], "alpha0": [0.0008, 0.0015, 0.0025]},
-    "matlab-medi": {"lambda": [100, 300, 600, 1000], "smv_radius": [3, 5]},
+    "tgv-qsmrs":      {"alpha1": [0.0002, 0.0004, 0.0006, 0.001], "alpha0": [0.0008, 0.0015, 0.0025]},
+    "medi-cornell": {"lambda": [100, 300, 600, 1000], "smv_radius": [3, 5]},
     # --- unwrap+bfr ---
-    "harperella":  {"radius": [3.0, 5.0, 8.0]},
-    "iharperella": {"radius": [3.0, 5.0, 8.0]},
+    "harperella-qsmrs":  {"radius": [3.0, 5.0, 8.0]},
+    "iharperella-qsmrs": {"radius": [3.0, 5.0, 8.0]},
     # --- chi-separation (iterative only; run with --dataset data/sim/chisep) ---
     # wavesep: wavelet-L1 sparsity weight (primary knob) x proximal-gradient step. Dr is left at the
     # phantom's known kernel (137) — sweeping a physical constant on the phantom that defines it is
     # circular, and it's exposed for callers who want it. max_iter (convergence) held at default.
     "wavesep":       {"lambda": [0.005, 0.01, 0.02, 0.04, 0.08], "alpha": [0.1, 0.2, 0.4]},
     # chi-sep-medi: MEDI data-fidelity/morphology regularisation weight (params.lambda).
-    "chi-sep-medi":  {"lambda": [0.1, 0.3, 1.0, 3.0, 10.0]},
+    "chisep-medi":  {"lambda": [0.1, 0.3, 1.0, 3.0, 10.0]},
     # chi-sep-ilsqr: padding for the in-house QSM_iLSQR step (boundary/wrap artifacts). A numerical
     # knob rather than a regularisation one, but it's the only lever the black-box toolbox exposes.
-    "chi-sep-ilsqr": {"pad_size": [8, 12, 16, 20]},
+    "chisep-ilsqr": {"pad_size": [8, 12, 16, 20]},
 }
 
 # Round-2 refinement: extend the axes where round-1's best sat on a grid edge, so the true optimum
 # isn't clipped. Only these slugs are re-run (with --refine).
 REFINE: dict[str, dict[str, list]] = {
-    "tgv":     {"alpha1": [0.00003, 0.00006, 0.0001, 0.00015, 0.0002], "alpha0": [0.0015]},
-    "tsvd":    {"threshold": [0.02, 0.03, 0.04, 0.05, 0.06]},
-    "nltv":    {"lambda": [3e-3, 1e-2, 3e-2, 1e-1]},
-    "sharp":   {"threshold": [0.003, 0.005, 0.008, 0.01]},
-    "vsharp":  {"threshold": [0.1, 0.15, 0.2, 0.3]},
-    "harperella": {"radius": [1.0, 2.0, 3.0]},
+    "tgv-qsmrs":     {"alpha1": [0.00003, 0.00006, 0.0001, 0.00015, 0.0002], "alpha0": [0.0015]},
+    "tsvd-qsmrs":    {"threshold": [0.02, 0.03, 0.04, 0.05, 0.06]},
+    "nltv-qsmrs":    {"lambda": [3e-3, 1e-2, 3e-2, 1e-1]},
+    "sharp-qsmrs":   {"threshold": [0.003, 0.005, 0.008, 0.01]},
+    "vsharp-qsmrs":  {"threshold": [0.1, 0.15, 0.2, 0.3]},
+    "harperella-qsmrs": {"radius": [1.0, 2.0, 3.0]},
     # λ climbs to 0.546 at 450 but diverges hard by 600 — pin the peak in the pre-cliff window.
-    "matlab-medi": {"lambda": [460, 480, 500, 520, 540, 560], "smv_radius": [5]},
+    "medi-cornell": {"lambda": [460, 480, 500, 520, 540, 560], "smv_radius": [5]},
     # --- chi-separation round-2 (PROVISIONAL: re-center on round-1's best before use) ---
     # Finer log-brackets around each method's primary regularisation knob. Unlike the entries above —
     # which were narrowed to where round-1 actually peaked — these are seeded from the round-1 grid's
@@ -96,7 +96,7 @@ REFINE: dict[str, dict[str, list]] = {
     # Once round-1 exists, re-center on its best (and pin wavesep's alpha to round-1's best alpha, not
     # the 0.2 default assumed here). pad_size (ilsqr) is already dense in round-1, so it has no round-2.
     "wavesep":      {"lambda": [0.008, 0.012, 0.016, 0.02, 0.028, 0.04, 0.06], "alpha": [0.2]},
-    "chi-sep-medi": {"lambda": [0.3, 0.5, 0.7, 1.0, 1.5, 2.0, 3.0]},
+    "chisep-medi": {"lambda": [0.3, 0.5, 0.7, 1.0, 1.5, 2.0, 3.0]},
 }
 
 _print_lock = threading.Lock()

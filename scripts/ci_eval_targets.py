@@ -13,7 +13,7 @@ A slug needs a smoke run iff, relative to the base ref, either:
     image, inputs, produces, parameters, smoke_box, … — anything that changes execution), or
   - the method is new (no algorithm.yml at the base).
 
-Output: a compact JSON array of slugs to stdout, e.g. `["tkd","sharp"]` — ready for a matrix.
+Output: a compact JSON array of slugs to stdout, e.g. `["tkd-qsmrs","sharp-qsmrs"]` — ready for a matrix.
 
     python scripts/ci_eval_targets.py --base origin/main
 
@@ -36,7 +36,7 @@ import yaml
 COSMETIC_KEYS = {
     "name", "language", "family", "learning", "engine", "description", "citation", "doi",
     "authors", "license", "code_url", "domain", "ci_notes", "tags", "notes", "references", "tuned",
-    "tuning",
+    "tuning", "algorithm", "variant", "source",
 }
 
 

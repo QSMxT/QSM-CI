@@ -1,0 +1,46 @@
+name: MEDI (QSM.rs)
+slug: medi-qsmrs
+algorithm: medi
+source: qsmrs
+stage: dipole
+language: Rust
+family: iterative
+learning: none
+engine: QSMxT / QSM.rs
+description: >
+  Morphology Enabled Dipole Inversion: magnitude-guided edge regularization.
+citation: Liu et al., NeuroImage 2012
+authors:
+- name: Jing Liu
+- name: Tian Liu
+- name: Ludovic de Rochefort
+- name: James Ledoux
+- name: Ildar Khalidov
+- name: Weiwei Chen
+- name: A. John Tsiouris
+- name: Cynthia Wisnieff
+- name: Pascal Spincemaille
+- name: Martin R. Prince
+- name: Yi Wang
+doi: 10.1016/j.neuroimage.2011.08.082
+code_url: https://github.com/astewartau/QSM.rs
+license: MIT
+image: ghcr.io/astewartau/qsm-ci/qsmxt:v9.4.0
+run: bash run.sh
+# MEDI uses magnitude for its morphological (edge) weighting — the plain dipole stage doesn't take
+# magnitude, so this method opts it in as an optional input (surfaced by `qsm-ci run medi`).
+optional_inputs:
+  - magnitude
+parameters:
+  - name: lambda
+    default: 1e-4
+    tuned:
+      sim: 3e-4
+      invivo: 0.01
+    description: regularization
+
+# Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
+tuning:
+  date: 2026-08
+  status: tuned
+  note: "Swept lambda on sim+invivo (2026-08). Tuned both: sim 3e-4, invivo 0.01 (+0.35 xSIM)."

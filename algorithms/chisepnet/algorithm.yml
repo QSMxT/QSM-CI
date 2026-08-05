@@ -1,0 +1,34 @@
+name: χ-sepnet
+slug: chisepnet
+algorithm: chisepnet
+source: snu
+stage: chi-separation
+language: Python
+family: deep-learning
+learning: pretrained
+inputs: [localfield, chimap, r2prime, mask]  # the artifacts this method actually reads (a subset of the stage's inputs)
+engine: χ-separation toolbox
+description: >
+  χ-sepnet — a deep-learning χ-separation method (SNU-LIST). A 3D network maps the local field,
+  χ_total and R2′ to the paramagnetic (χ+) and diamagnetic (χ−) source maps. Run here via ONNX
+  (onnxruntime), 192×192×128 sliding-window patches, Dr = 114 Hz/ppm.
+authors:
+- name: Minjun Kim
+- name: Hyeong-Geol Shin
+- name: Jongho Lee
+doi: 10.1016/j.neuroimage.2021.118371
+citation: Shin et al., NeuroImage 2021 (χ-separation); χ-sepnet, SNU-LIST
+code_url: https://github.com/SNU-LIST/chi-separation
+license: academic use; toolbox obtained via the SNU-LIST Google Form
+image: ghcr.io/astewartau/qsm-ci/chi-sepnet:v1
+run: bash run.sh
+parameters:
+  - name: Dr
+    default: 114.0
+    description: >
+      Relaxivity (Hz/ppm) used to scale R2' into the network's R2'/Dr input channel. The network was
+      trained at Dr=114 (its COSMOS-referenced value), so moving it feeds off-distribution inputs — this
+      is a research knob, not an accuracy-tuning target. (No patch/overlap knob: the ONNX graph fixes the
+      192×192×128 input, and the weights fix everything else.)
+# Produces two source maps: chi-para (χ+) and chi-dia (χ−). Weights (ONNX) not committed; the image
+# would bundle them. Runs via `--runner local` for the PoC (XSEP_PYTHON = an onnxruntime venv).

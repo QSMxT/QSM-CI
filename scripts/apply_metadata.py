@@ -19,42 +19,42 @@ ROOT = Path(__file__).resolve().parent.parent
 #   learning: none | pretrained | untrained
 META = {
     # --- QSMxT / QSM.rs (Rust) -------------------------------------------------------------
-    "vsharp":      ("Rust", "iterative", "none", None),
-    "sharp":       ("Rust", "iterative", "none", None),
-    "resharp":     ("Rust", "iterative", "none", None),
-    "pdf":         ("Rust", "iterative", "none", None),
-    "lbv":         ("Rust", "iterative", "none", None),
-    "ismv":        ("Rust", "iterative", "none", None),
-    "harperella":  ("Rust", "iterative", "none", None),
-    "iharperella": ("Rust", "iterative", "none", None),
-    "rts":         ("Rust", "iterative", "none", None),
-    "tv":          ("Rust", "iterative", "none", None),
-    "tkd":         ("Rust", "direct",    "none", None),
-    "tsvd":        ("Rust", "direct",    "none", None),
-    "tikhonov":    ("Rust", "direct",    "none", None),
-    "nltv":        ("Rust", "iterative", "none", None),
-    "medi":        ("Rust", "iterative", "none", None),
-    "ilsqr":       ("Rust", "iterative", "none", None),
-    "ndi":         ("Rust", "iterative", "none", None),
-    "fansi":       ("Rust", "iterative", "none", None),
-    "fansi-tgv":   ("Rust", "iterative", "none", None),
-    "l1-qsm":      ("Rust", "iterative", "none", None),
-    "wh-qsm":      ("Rust", "iterative", "none", None),
-    "hd-qsm":      ("Rust", "iterative", "none", None),
-    "tgv":         ("Rust", "iterative", "none", None),
-    "qsmart":      ("Rust", "iterative", "none", None),
+    "vsharp-qsmrs":      ("Rust", "iterative", "none", None),
+    "sharp-qsmrs":       ("Rust", "iterative", "none", None),
+    "resharp-qsmrs":     ("Rust", "iterative", "none", None),
+    "pdf-qsmrs":         ("Rust", "iterative", "none", None),
+    "lbv-qsmrs":         ("Rust", "iterative", "none", None),
+    "ismv-qsmrs":        ("Rust", "iterative", "none", None),
+    "harperella-qsmrs":  ("Rust", "iterative", "none", None),
+    "iharperella-qsmrs": ("Rust", "iterative", "none", None),
+    "rts-qsmrs":         ("Rust", "iterative", "none", None),
+    "tv-qsmrs":          ("Rust", "iterative", "none", None),
+    "tkd-qsmrs":         ("Rust", "direct",    "none", None),
+    "tsvd-qsmrs":        ("Rust", "direct",    "none", None),
+    "tikhonov-qsmrs":    ("Rust", "direct",    "none", None),
+    "nltv-qsmrs":        ("Rust", "iterative", "none", None),
+    "medi-qsmrs":        ("Rust", "iterative", "none", None),
+    "ilsqr-qsmrs":       ("Rust", "iterative", "none", None),
+    "ndi-qsmrs":         ("Rust", "iterative", "none", None),
+    "fansi-nltv-qsmrs":       ("Rust", "iterative", "none", None),
+    "fansi-nltgv-qsmrs":   ("Rust", "iterative", "none", None),
+    "l1qsm-qsmrs":      ("Rust", "iterative", "none", None),
+    "whqsm-qsmrs":      ("Rust", "iterative", "none", None),
+    "hdqsm-qsmrs":      ("Rust", "iterative", "none", None),
+    "tgv-qsmrs":         ("Rust", "iterative", "none", None),
+    "qsmart-qsmrs":      ("Rust", "iterative", "none", None),
     # romeo runs via the QSM.rs engine (its `engine:` was blank) -> Rust group.
-    "romeo-fieldmap": ("Rust", "direct", "none", "QSMxT / QSM.rs"),
+    "romeo-qsmrs": ("Rust", "direct", "none", "QSMxT / QSM.rs"),
     # --- MATLAB ----------------------------------------------------------------------------
     "amp-pe":                 ("MATLAB", "bayesian",  "none", "AMP-PE (author code)"),
-    "matlab-medi":            ("MATLAB", "iterative", "none", "MEDI toolbox"),
-    "matlab-tkd":             ("MATLAB", "direct",    "none", "MATLAB reference"),
-    "matlab-sti-ilsqr":       ("MATLAB", "iterative", "none", "STI Suite"),
-    "matlab-sti-star":        ("MATLAB", "iterative", "none", "STI Suite"),
-    "matlab-sti-vsharp":      ("MATLAB", "iterative", "none", "STI Suite"),
+    "medi-cornell":            ("MATLAB", "iterative", "none", "MEDI toolbox"),
+    "tkd-qsmci":             ("MATLAB", "direct",    "none", "MATLAB reference"),
+    "ilsqr-sti":       ("MATLAB", "iterative", "none", "STI Suite"),
+    "star-sti":        ("MATLAB", "iterative", "none", "STI Suite"),
+    "vsharp-sti":      ("MATLAB", "iterative", "none", "STI Suite"),
     "matlab-sti-iharperella": ("MATLAB", "iterative", "none", "STI Suite"),
-    "chi-sep-ilsqr":          ("MATLAB", "iterative", "none", None),  # engine already set
-    "chi-sep-medi":           ("MATLAB", "iterative", "none", None),
+    "chisep-ilsqr":          ("MATLAB", "iterative", "none", None),  # engine already set
+    "chisep-medi":           ("MATLAB", "iterative", "none", None),
     "decompose-qsm":          ("MATLAB", "iterative", "none", None),
     # --- Python (deep learning + numerical) ------------------------------------------------
     "qsmnet":       ("Python", "deep-learning", "pretrained", "original author code"),
@@ -69,12 +69,12 @@ META = {
     "iqsm-plus":    ("Python", "deep-learning", "pretrained", "original author code"),
     "iqsm":         ("Python", "deep-learning", "pretrained", None),  # engine 'iQSM (PyTorch)'
     "bfrnet":       ("Python", "deep-learning", "pretrained", None),  # engine 'ONNX Runtime'
-    "chi-sepnet":   ("Python", "deep-learning", "pretrained", None),  # engine chi-sep χ-sepnet
+    "chisepnet":   ("Python", "deep-learning", "pretrained", None),  # engine chi-sep χ-sepnet
     "susep-net":    ("Python", "deep-learning", "pretrained", None),  # engine SUSEP-Net
     "inr-qsm":      ("Python", "deep-learning", "untrained",  "original author code"),
     "modip":        ("Python", "deep-learning", "untrained",  "original author code"),
     "wavesep":      ("Python", "iterative",     "none",       None),  # engine WaveSep
-    "laplacian-fieldmap": ("Python", "direct",  "none",       "QSM-CI reference"),
+    "laplacian-qsmci": ("Python", "direct",  "none",       "QSM-CI reference"),
 }
 
 

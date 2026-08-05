@@ -1,0 +1,42 @@
+name: TFI
+slug: tfi-qsmrs
+algorithm: tfi
+source: qsmrs
+stage: bfr+dipole
+language: Rust
+family: iterative
+learning: none
+engine: QSMxT / QSM.rs
+description: >
+  Preconditioned Total Field Inversion: a single-step method that inverts the total field directly
+  to susceptibility over the whole field-of-view, jointly performing background-field removal and
+  dipole inversion. Uses a preconditioner (χ = P·y, larger outside the brain) so the large
+  out-of-brain background susceptibility is well-conditioned, with MEDI-style L1 morphology
+  regularization.
+authors:
+- name: Zhe Liu
+- name: Youngwook Kee
+- name: Dong Zhou
+- name: Yi Wang
+- name: Pascal Spincemaille
+doi: 10.1002/mrm.26946
+citation: Liu et al., Magn Reson Med 2017;78(1):303-315
+code_url: https://github.com/astewartau/QSM.rs
+license: MIT
+image: ghcr.io/astewartau/qsm-ci/qsmxt:v9.11.0
+run: bash run.sh
+parameters:
+- name: lambda
+  default: 7.5e-5
+  tuned:
+    sim: 1e-5
+  description: data-fidelity weight (matches MEDI's default; larger = closer data fit, less regularization)
+- name: precond
+  default: 30
+  description: preconditioner — susceptibility scaling outside the brain mask (Liu 2017 uses ~30 for in-vivo air)
+
+# Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
+tuning:
+  date: 2026-08
+  status: tuned
+  note: "Swept lambda on sim (span; sim-only). Tuned sim: 1e-5."
