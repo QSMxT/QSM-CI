@@ -282,6 +282,11 @@ def discover_algorithms(track: str = "sim") -> list[dict]:
             # Optional per-method smoke-crop size (voxels): a slow per-voxel method (e.g. DECOMPOSE)
             # can shrink the --smoke gate's central box so the PR check stays fast; None = CLI default.
             "smoke_box": doc.get("smoke_box"),
+            # Optional per-method parameter overrides applied ONLY on the --smoke gate (merged over the
+            # variant's params before the run). Lets an expensive iterative/DL method cut its work for
+            # the "does it run?" PR check while score.yml (no --smoke) still uses the full defaults —
+            # e.g. MoDIP caps its per-subject optimization to a few epochs here, 500 when scored.
+            "smoke_params": doc.get("smoke_params") or {},
         })
     return algos
 
@@ -615,9 +620,14 @@ def do_isolated(task, args, gt_sources, gt, mask):
     odir = args.work / f"iso_{a['slug']}{idsfx}_out"
     try:
         prepare_input(a["consumes"], gt_sources, idir)
+        run_overrides = overrides
         if args.smoke:
             _smoke_crop(idir, a["consumes"], a.get("smoke_box") or args.smoke_box)
-        rt = run_algo(a, idir, odir, args.runner, overrides)
+            # Fold in any --smoke-only param overrides (e.g. MoDIP's few-epoch cap) on top of the
+            # variant's params. score.yml runs without --smoke, so it keeps the full defaults.
+            if a.get("smoke_params"):
+                run_overrides = {**(overrides or {}), **a["smoke_params"]}
+        rt = run_algo(a, idir, odir, args.runner, run_overrides)
         prods = a["produces"]
         if args.smoke:  # smoke: prove it runs + emits a valid output, don't score
             return [_smoke_check(a, idsfx, variant, odir, rt, args)]

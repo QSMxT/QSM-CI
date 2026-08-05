@@ -32,10 +32,20 @@ license: none declared (no LICENSE in repo); academic use, cite the paper
 image: ghcr.io/astewartau/qsm-ci/modip:v2
 run: bash run.sh
 smoke_box: 32   # PR --smoke gate fits a 32^3 central box (fast); full score.yml run is unaffected
-# Runs on the public runner but with the full 6-h GitHub cap (not the 180-min default) and its own
-# container, since the per-subject CPU optimization (epoch_num iterations) exceeds 180 min but fits
-# the 16 GB hosted box at base=32. Avoids depending on the private self-hosted runners.
-runner: hosted-long
+# --smoke gate (evaluate.yml) only needs to prove the method RUNS + emits a valid χ map, not that it
+# converged — so cap the per-subject optimization to a handful of epochs there. At 32^3 that turns a
+# ~3.3 h CPU run into a couple of minutes, keeping the PR check well under the evaluate time limit.
+# score.yml runs WITHOUT --smoke, so it ignores this and uses the full epoch_num default (500).
+smoke_params:
+  epoch_num: 10
+# Full scoring runs on QSM-CI's self-hosted runners: the full 500-epoch per-subject CPU optimization
+# on the uncropped grids does not fit the hosted 6-h cap, so route score.yml's real run to the
+# private box (more RAM / no hosted wall-clock pressure) rather than hosted-long.
+runner: self-hosted
+# The full CPU run normally finishes in a few hours (a recorded in-vivo score took ~2.4 h) but the
+# self-hosted box is shared, so give it generous headroom past the 6-h default rather than let
+# contention DNF it. Only honored on self-hosted (GitHub allows long jobs there); hosted stays 6 h.
+timeout_minutes: 720
 # Notes on how QSM-CI runs this method vs. its reference (shown on the submission page).
 ci_notes:
 - >

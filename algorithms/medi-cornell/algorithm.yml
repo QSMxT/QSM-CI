@@ -3,6 +3,14 @@ slug: medi-cornell
 algorithm: medi
 source: cornell
 stage: dipole
+# MEDI is a morphology-enabled dipole inversion: on top of the plain dipole inputs
+# (localfield + mask + params) it also reads the magnitude to build the edge/morphology
+# gradient mask (see the `percentage` parameter). `optional_inputs` adds magnitude to
+# this method's input contract only — the harness mounts it and passes --magnitude, and
+# other dipole methods are unaffected. Without it, recon.m fails on a missing
+# /input/magnitude.nii.gz.
+optional_inputs:
+- magnitude
 language: MATLAB
 family: iterative
 learning: none
