@@ -81,6 +81,13 @@ def targets(base: str) -> list[str]:
                                      capture_output=True).returncode == 0
         if not head_exists:
             continue
+        # A method may opt out of CI runs entirely with `ci_skip: true` (e.g. it needs a runner tier
+        # QSM-CI doesn't have yet — DIP-UP is GPU-only). Never smoke it; discover_algorithms() skips it
+        # too, so a smoke job would only DNF the runner. Flipping ci_skip back to false is itself a
+        # non-cosmetic yml change, so re-enabling picks the method back up on the next diff.
+        head_doc = _load(_git("show", f"HEAD:{spec}"))
+        if isinstance(head_doc, dict) and head_doc.get("ci_skip"):
+            continue
         # Any non-yml change under the method → execution could differ → smoke it.
         if any(f != "algorithm.yml" for f in files):
             out.append(slug)

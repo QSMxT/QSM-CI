@@ -97,6 +97,12 @@ algorithms/susep-net/Dockerfile
 algorithms/wavesep/wavesep/
 algorithms/wavesep/Dockerfile
 
+# mSMV: upstream code (no license declared — academic use, cite the paper) is fetched at build time
+# and baked into the compiled recon binary (see BUILD.md), so it isn't committed; shims/ IS committed
+# (ours). Dockerfile gitignored so CI pulls the prebuilt MCR image. (nifti/ already ignored above.)
+algorithms/msmv/msmv_code/
+algorithms/msmv/Dockerfile
+
 # chi-separation MATLAB methods: the SNU-LIST chi-separation toolbox (obtained via Google Form, academic
 # use) is a build-time dep baked into the compiled recon binary, never committed. shims/ IS committed
 # (ours). Dockerfiles gitignored so CI pulls the prebuilt MCR image (see each BUILD.md).

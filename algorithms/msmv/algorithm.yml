@@ -1,0 +1,54 @@
+name: mSMV
+slug: msmv
+algorithm: msmv
+source: agr78
+stage: bfr
+language: MATLAB
+family: direct
+learning: none
+inputs: [totalfield, mask, params]
+engine: Independent
+description: >
+  Maximum Spherical Mean Value (mSMV) filtering. mSMV removes residual harmonic background field near
+  the brain boundary — the main source of QSM shadow artifacts — via the maximum-value corollary of
+  Green's theorem, preserving the edge of the brain WITHOUT eroding the mask. It is normally a
+  refinement applied after a primary background-field removal; here it is packaged as a self-contained
+  total->local BFR using the upstream function's prefilter=1 mode, which first performs a Spherical
+  Mean Value (SMV) primary background removal (RDF - SMV(RDF), radius mm) and then the mSMV boundary
+  shadow correction. So this submission is the composition SMV + mSMV. The field is converted ppm->rad
+  for filtering (mSMV's threshold is defined in radians) and back to ppm on output. The vessel-mask
+  step (which needs an R2* map) is skipped, per upstream behaviour when R2* is unavailable. Compiled
+  from MATLAB and run on the license-free MATLAB Runtime.
+authors:
+- name: Alexandra G. Roberts
+- name: Dominick J. Romano
+- name: Mert Şişman
+- name: Alexey V. Dimov
+- name: Thanh D. Nguyen
+- name: Ilhami Kovanlikaya
+- name: Susan A. Gauthier
+- name: Yi Wang
+- name: Pascal Spincemaille
+doi: 10.1002/mrm.29963
+citation: >
+  Roberts A.G. et al., "Maximum spherical mean value filtering for whole-brain QSM", Magnetic
+  Resonance in Medicine 2024;91(4):1586-1597.
+code_url: https://github.com/agr78/mSMV
+# No license declared upstream (README asks only that the paper be cited). Treated as academic-use;
+# the upstream code is a build-time dep baked into the image, not redistributed in this repo.
+license: none
+image: ghcr.io/astewartau/qsm-ci/msmv:v1
+run: bash run.sh
+matlab:
+  entry: recon.m
+  runtime: r2026a
+parameters:
+- name: radius
+  default: 5
+  description: SMV prefilter kernel radius (mm) — sets the primary background removal + the mSMV kernel (paper default 5)
+- name: maxk
+  default: 5
+  description: maximum number of residual-field removal iterations (paper default 5)
+- name: simulated_TE
+  default: 0.008
+  description: echo time (s) used for the ppm<->radian conversion; sets the operating point of mSMV's radian shadow threshold

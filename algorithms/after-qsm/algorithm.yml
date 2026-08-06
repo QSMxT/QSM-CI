@@ -1,0 +1,72 @@
+name: AFTER-QSM
+slug: after-qsm
+algorithm: after-qsm
+source: sunhongfu
+stage: dipole
+language: Python
+family: deep-learning
+learning: pretrained
+engine: Independent
+# The wrapper reads the local field (ppm) and the acquisition geometry (voxel size + B0 direction)
+# from params (via the QSM-CI env vars). It does NOT read mask.nii.gz — AFTER-QSM's inference derives
+# its own brain mask from the nonzero voxels of the input field — so mask is intentionally omitted.
+inputs: [localfield, params]
+description: >
+  AFTER-QSM (Affine Transformation Edited and Refined) — a pretrained, affine-equivariant deep neural
+  network for QSM dipole inversion that is robust to ARBITRARY head orientation and ANISOTROPIC
+  resolution (down to 0.6 mm isotropic), where axial-trained networks fail. It (1) affine-transforms
+  the input local field into the network's canonical axial / 0.6 mm frame, (2) runs a U-net for coarse
+  dipole inversion, (3) inverse-affine-transforms back, then (4) runs a Residual-Dense refinement
+  network to deblur and correct susceptibility underestimation from the affine resampling. Consumes
+  the local (tissue) field in ppm and produces susceptibility (ppm), on the input affine. The voxel
+  size and B0 direction (z-projections) are passed to the affine stage from params. GPU-only in
+  practice (8 GB+ VRAM); see the ci_skip note below.
+authors:
+- name: Xiong Z.
+- name: Gao Y.
+- name: Liu F.
+- name: Sun H.
+doi: 10.1016/j.neuroimage.2022.119655
+code_url: https://github.com/sunhongfu/AFTER-QSM
+# The AFTER-QSM repo ships NO LICENSE file (confirmed). Treat as academic use; cite the paper. The
+# pretrained checkpoint (checkpoints/AFTER-QSM.pkl, ~34 MB) is committed directly in the repo and baked
+# in at build time.
+license: none declared (no LICENSE in repo); academic use, cite the paper
+image: ghcr.io/astewartau/qsm-ci/after-qsm:v1
+run: bash run.sh
+# runner: gpu records the requirement — AFTER-QSM runs two 3-D CNNs plus full-volume affine grid
+# resampling; the reference recommends an 8 GB+ VRAM NVIDIA GPU. QSM-CI has no GPU runner yet, and on
+# CPU the paired nets + full-volume 3-D affine transforms do not fit the hosted budget (they would blow
+# the 180-min limit). There is no GPU route in score.yml today.
+runner: gpu
+# ci_skip: true keeps the submission in the repo (code, committed weights, provenance all reviewable)
+# but tells the scorer NOT to run it — discover_algorithms() in scripts/pipeline.py skips it in every
+# mode (shard sweep, --focus, composed, local) and ci_eval_targets.py drops it from the PR smoke
+# matrix, so it never DNFs a runner. UN-SKIP (set false / remove) once a GPU runner exists, add a GPU
+# route to score.yml, then let CI score it. Until then it is present-but-unscored (absent from the
+# leaderboard).
+ci_skip: true
+# Notes on how QSM-CI runs this method vs. its reference (shown on the submission page).
+ci_notes:
+- >
+  Units: the QSM-CI localfield is already in ppm. AFTER-QSM is trained on χ (ppm) forward-projected
+  through the UNNORMALIZED dipole kernel, so it expects a ppm field; it is fed straight through with no
+  rescaling, and the output susceptibility (ppm) is written on the input affine.
+- >
+  AFTER-QSM outputs a coarse (blur) and a refined (deblur) map; QSM-CI publishes the REFINED (deblur)
+  map as the canonical chimap.
+- >
+  Voxel size and B0 direction are forwarded from params (QSMCI_VOXEL_SIZE / QSMCI_B0_DIR) into the
+  network's affine-transformation stage; mask is not consumed (AFTER-QSM derives its own from the
+  nonzero field).
+- >
+  Executed with GPU when the runner exposes one, else CPU. The reference recommends an 8 GB+ VRAM GPU;
+  CPU runtime is substantially longer and not comparable to GPU timings — hence ci_skip until a GPU
+  runner exists.
+parameters:
+- name: segment_num
+  default: 3
+  description: >
+    Step-2 refinement memory/quality knob — the number of slabs the refinement network processes the
+    volume in. Repo default 3; larger values reduce peak VRAM (the reference suggests 8 for <12 GB, 4
+    for <24 GB) at a small boundary-continuity cost.

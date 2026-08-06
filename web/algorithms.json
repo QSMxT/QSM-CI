@@ -1,6 +1,44 @@
 {
   "algorithms": [
     {
+      "slug": "after-qsm",
+      "name": "AFTER-QSM",
+      "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "Independent",
+      "language": "Python",
+      "family": "deep-learning",
+      "learning": "pretrained",
+      "description": "AFTER-QSM (Affine Transformation Edited and Refined) \u2014 a pretrained, affine-equivariant deep neural network for QSM dipole inversion that is robust to ARBITRARY head orientation and ANISOTROPIC resolution (down to 0.6 mm isotropic), where axial-trained networks fail. It (1) affine-transforms the input local field into the network's canonical axial / 0.6 mm frame, (2) runs a U-net for coarse dipole inversion, (3) inverse-affine-transforms back, then (4) runs a Residual-Dense refinement network to deblur and correct susceptibility underestimation from the affine resampling. Consumes the local (tissue) field in ppm and produces susceptibility (ppm), on the input affine. The voxel size and B0 direction (z-projections) are passed to the affine stage from params. GPU-only in practice (8 GB+ VRAM); see the ci_skip note below.",
+      "citation": null,
+      "doi": "10.1016/j.neuroimage.2022.119655",
+      "code_url": "https://github.com/sunhongfu/AFTER-QSM",
+      "license": "none declared (no LICENSE in repo); academic use, cite the paper",
+      "authors": [
+        "Xiong Z.",
+        "Gao Y.",
+        "Liu F.",
+        "Sun H."
+      ],
+      "parameters": [
+        {
+          "name": "segment_num",
+          "default": 3,
+          "description": "Step-2 refinement memory/quality knob \u2014 the number of slabs the refinement network processes the volume in. Repo default 3; larger values reduce peak VRAM (the reference suggests 8 for <12 GB, 4 for <24 GB) at a small boundary-continuity cost.\n"
+        }
+      ],
+      "ci_notes": [
+        "Units: the QSM-CI localfield is already in ppm. AFTER-QSM is trained on \u03c7 (ppm) forward-projected through the UNNORMALIZED dipole kernel, so it expects a ppm field; it is fed straight through with no rescaling, and the output susceptibility (ppm) is written on the input affine.\n",
+        "AFTER-QSM outputs a coarse (blur) and a refined (deblur) map; QSM-CI publishes the REFINED (deblur) map as the canonical chimap.\n",
+        "Voxel size and B0 direction are forwarded from params (QSMCI_VOXEL_SIZE / QSMCI_B0_DIR) into the network's affine-transformation stage; mask is not consumed (AFTER-QSM derives its own from the nonzero field).\n",
+        "Executed with GPU when the runner exposes one, else CPU. The reference recommends an 8 GB+ VRAM GPU; CPU runtime is substantially longer and not comparable to GPU timings \u2014 hence ci_skip until a GPU runner exists.\n"
+      ]
+    },
+    {
       "slug": "amp-pe",
       "name": "AMP-PE",
       "stage": "dipole",
@@ -259,6 +297,72 @@
       ],
       "parameters": [],
       "ci_notes": []
+    },
+    {
+      "slug": "dip-up",
+      "name": "DIP-UP",
+      "stage": "field-mapping",
+      "inputs": [
+        "phase",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "Independent",
+      "language": "Python",
+      "family": "deep-learning",
+      "learning": "pretrained + test-time deep-image-prior refinement",
+      "description": "DIP-UP \u2014 deep-learning PHASE UNWRAPPING packaged as a field-mapping submission. A PRETRAINED 3-D CNN predicts the per-voxel integer wrap-count of a single-echo wrapped phase (two base variants: PHU-NET3D = 2 input channels [wrapped phase + its Laplacian], the paper default; PhaseNet3D = 1 channel [wrapped phase]); a TEST-TIME Deep-Image-Prior (DIP) loop then fine-tunes that network on the specific input under a Laplacian-consistency loss and a masked total-variation loss. DIP-UP only unwraps ONE echo, so this wrapper runs it on EACH echo and then does the standard per-voxel linear fit of unwrapped phase over TE, normalized by B0, to produce the total field in ppm \u2014 the SAME echo-fit + ppm math as the reference laplacian-fieldmap / romeo-fieldmap submissions. The novelty benchmarked is DIP-UP's unwrap operator swapped in for the Laplacian/ROMEO unwrap; the downstream echo-fit is identical. GPU-capable, CPU-optional (the reference recommends a 16\u201324 GB GPU; see README RUNTIME/GPU CAVEAT). DOMAIN-SHIFT CAVEAT: the base net was trained on real brain GRE phase at a specific resolution/TE/field, so its wrap-count prediction may not transfer to the sim phantom's wrap patterns \u2014 see README.",
+      "citation": null,
+      "doi": "10.3390/info16070592",
+      "code_url": "https://github.com/sunhongfu/DIP-UP",
+      "license": "none declared (no LICENSE in repo); academic use, cite the paper",
+      "authors": [
+        "Zhu X.",
+        "Gao Y.",
+        "Xiong Z.",
+        "Jiang W.",
+        "Liu F.",
+        "Sun H."
+      ],
+      "parameters": [
+        {
+          "name": "variant",
+          "default": "PHU-NET3D",
+          "description": "Base network. PHU-NET3D (2-channel [wrapped phase + Laplacian], width 64) is the paper default and generally most accurate; PhaseNet3D (1-channel [wrapped phase], width 48) is the lighter variant.\n"
+        },
+        {
+          "name": "iterations",
+          "default": 100,
+          "description": "Test-time DIP refinement iterations PER ECHO (the repo's Demo/inference uses 2000; reduced here as the main runtime knob). More iterations refine the unwrap further at higher cost.\n"
+        },
+        {
+          "name": "lr",
+          "default": 1e-06,
+          "description": "RMSprop learning rate for the DIP refinement (reference default 1e-6)."
+        },
+        {
+          "name": "lr_decay",
+          "default": 1,
+          "description": "Reference 'vlr' schedule \u2014 multiply the LR by 0.9 every 10 iterations (1 = on, 0 = constant LR).\n"
+        },
+        {
+          "name": "tv_weight",
+          "default": 1.0,
+          "description": "Weight on the masked total-variation term of the DIP loss (loss = tv_weight\u00b7TV + Laplacian). The reference uses 1.0 and does not tune it; exposed for experimentation.\n"
+        },
+        {
+          "name": "shift_base",
+          "default": 5,
+          "description": "Wrap-class zero-offset: the 9-class softmax expected count is shifted by this base so counts span roughly [-5, +3] (reference default 5). Rarely changed.\n"
+        }
+      ],
+      "ci_notes": [
+        "DIP-UP is a single-echo PHASE-UNWRAPPING network; it does not itself produce a total field. QSM-CI runs it per echo and appends the standard multi-echo linear phase-fit + B0 normalization (identical to laplacian-fieldmap / romeo-fieldmap) to obtain totalfield in ppm.\n",
+        "The DIP-UP repo does not ship the Unet_blocks.py its network classes import; it is reconstructed in this submission to be byte-compatible with the released checkpoints (PHU-NET3D width 64, PhaseNet3D width 48), and the repo's hard-coded layer-width constant is patched to match each checkpoint.\n",
+        "Executed with GPU when the runner exposes one, else CPU. The reference recommends a 16\u201324 GB GPU; CPU runtime is substantially longer and not comparable to GPU timings.\n",
+        "DOMAIN SHIFT: the base net was trained on real brain phase at a specific resolution/TE/field. On the simulation phantom (different wrap patterns / per-echo TEs) the pretrained wrap-count predictor may not transfer; the DIP refinement is seeded by it. A poor field-mapping score can reflect this transfer gap rather than an implementation error.\n"
+      ]
     },
     {
       "slug": "fansi-nltgv-qsmrs",
@@ -1180,6 +1284,55 @@
         "Wei H."
       ],
       "parameters": [],
+      "ci_notes": []
+    },
+    {
+      "slug": "msmv",
+      "name": "mSMV",
+      "stage": "bfr",
+      "inputs": [
+        "totalfield",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "Independent",
+      "language": "MATLAB",
+      "family": "direct",
+      "learning": "none",
+      "description": "Maximum Spherical Mean Value (mSMV) filtering. mSMV removes residual harmonic background field near the brain boundary \u2014 the main source of QSM shadow artifacts \u2014 via the maximum-value corollary of Green's theorem, preserving the edge of the brain WITHOUT eroding the mask. It is normally a refinement applied after a primary background-field removal; here it is packaged as a self-contained total->local BFR using the upstream function's prefilter=1 mode, which first performs a Spherical Mean Value (SMV) primary background removal (RDF - SMV(RDF), radius mm) and then the mSMV boundary shadow correction. So this submission is the composition SMV + mSMV. The field is converted ppm->rad for filtering (mSMV's threshold is defined in radians) and back to ppm on output. The vessel-mask step (which needs an R2* map) is skipped, per upstream behaviour when R2* is unavailable. Compiled from MATLAB and run on the license-free MATLAB Runtime.",
+      "citation": "Roberts A.G. et al., \"Maximum spherical mean value filtering for whole-brain QSM\", Magnetic Resonance in Medicine 2024;91(4):1586-1597.\n",
+      "doi": "10.1002/mrm.29963",
+      "code_url": "https://github.com/agr78/mSMV",
+      "license": "none",
+      "authors": [
+        "Alexandra G. Roberts",
+        "Dominick J. Romano",
+        "Mert \u015ei\u015fman",
+        "Alexey V. Dimov",
+        "Thanh D. Nguyen",
+        "Ilhami Kovanlikaya",
+        "Susan A. Gauthier",
+        "Yi Wang",
+        "Pascal Spincemaille"
+      ],
+      "parameters": [
+        {
+          "name": "radius",
+          "default": 5,
+          "description": "SMV prefilter kernel radius (mm) \u2014 sets the primary background removal + the mSMV kernel (paper default 5)"
+        },
+        {
+          "name": "maxk",
+          "default": 5,
+          "description": "maximum number of residual-field removal iterations (paper default 5)"
+        },
+        {
+          "name": "simulated_TE",
+          "default": 0.008,
+          "description": "echo time (s) used for the ppm<->radian conversion; sets the operating point of mSMV's radian shadow threshold"
+        }
+      ],
       "ci_notes": []
     },
     {
