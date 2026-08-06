@@ -1,0 +1,35 @@
+name: iQFM
+slug: iqfm
+algorithm: iqfm
+source: sunhongfu
+stage: unwrap+bfr
+language: Python
+family: deep-learning
+learning: pretrained
+engine: Independent
+inputs: [phase, magnitude, mask, params]  # magnitude drives multi-echo magnitude x TE^2 weighting; mask is required by iQFM
+description: >
+  iQFM — instant tissue (local) field mapping from raw MRI phase using Laplacian-enabled deep neural
+  networks (LoT-Unet). It is the tissue-field output of the same network/repo as iQSM: a single deep
+  network maps raw wrapped phase directly to the local field, performing phase unwrapping and
+  background-field removal in one pass (the iQSM submission runs the same repo with --no-iqfm to skip
+  exactly this output). Multi-echo phase is reconstructed per echo and combined with magnitude x TE^2
+  weighting. Output tissue field is B0-normalized (ppm). Runs CPU-only with a CPU-only PyTorch wheel;
+  pretrained weights (HuggingFace sunhongfu/iQSM) are baked into the image.
+authors:
+- name: Gao Y.
+- name: Xiong Z.
+- name: Fazlollahi A.
+- name: Nestor P.J.
+- name: Vegh V.
+- name: Nasrallah F.
+- name: Winter C.
+- name: Pike G.B.
+- name: Crozier S.
+- name: Liu F.
+- name: Sun H.
+doi: 10.1016/j.neuroimage.2022.119410
+code_url: https://github.com/sunhongfu/iQSM
+license: See repository (used with author permission)
+image: ghcr.io/astewartau/qsm-ci/iqfm:v1
+run: bash run.sh
