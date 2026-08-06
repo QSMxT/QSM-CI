@@ -1,0 +1,97 @@
+name: DIP-UP
+slug: dip-up
+algorithm: dip-up
+source: sunhongfu
+stage: field-mapping
+language: Python
+family: deep-learning
+# Pretrained base net (wrap-count predictor) + a test-time Deep-Image-Prior refinement fine-tuned on
+# each input. Not purely pretrained (there is per-input optimization), not purely untrained (the base
+# net ships as a checkpoint) — record both honestly.
+learning: pretrained + test-time deep-image-prior refinement
+engine: Independent
+inputs: [phase, mask, params]  # the artifacts this method actually reads (a subset of the stage's inputs)
+description: >
+  DIP-UP — deep-learning PHASE UNWRAPPING packaged as a field-mapping submission. A PRETRAINED 3-D
+  CNN predicts the per-voxel integer wrap-count of a single-echo wrapped phase (two base variants:
+  PHU-NET3D = 2 input channels [wrapped phase + its Laplacian], the paper default; PhaseNet3D = 1
+  channel [wrapped phase]); a TEST-TIME Deep-Image-Prior (DIP) loop then fine-tunes that network on
+  the specific input under a Laplacian-consistency loss and a masked total-variation loss. DIP-UP only
+  unwraps ONE echo, so this wrapper runs it on EACH echo and then does the standard per-voxel linear
+  fit of unwrapped phase over TE, normalized by B0, to produce the total field in ppm — the SAME
+  echo-fit + ppm math as the reference laplacian-fieldmap / romeo-fieldmap submissions. The novelty
+  benchmarked is DIP-UP's unwrap operator swapped in for the Laplacian/ROMEO unwrap; the downstream
+  echo-fit is identical. GPU-capable, CPU-optional (the reference recommends a 16–24 GB GPU; see
+  README RUNTIME/GPU CAVEAT). DOMAIN-SHIFT CAVEAT: the base net was trained on real brain GRE phase at
+  a specific resolution/TE/field, so its wrap-count prediction may not transfer to the sim phantom's
+  wrap patterns — see README.
+authors:
+- name: Zhu X.
+- name: Gao Y.
+- name: Xiong Z.
+- name: Jiang W.
+- name: Liu F.
+- name: Sun H.
+doi: 10.3390/info16070592
+code_url: https://github.com/sunhongfu/DIP-UP
+# The DIP-UP repo ships NO LICENSE file. Treat as academic use; cite the paper.
+license: none declared (no LICENSE in repo); academic use, cite the paper
+image: ghcr.io/astewartau/qsm-ci/dip-up:v1
+run: bash run.sh
+# runner: gpu records the requirement — DIP-UP's per-echo test-time DIP loop over a large 3-D net
+# needs a GPU. QSM-CI has no GPU runner yet, and on CPU it cannot finish even one echo in a usable
+# time (a local smoke test pinned ~10 cores for 25 min with no first-echo output — it would blow the
+# 180-min hosted budget many times over). There is no GPU route in score.yml today.
+runner: gpu
+# ci_skip: true keeps the submission in the repo (code, weights, provenance all reviewable) but tells
+# the scorer NOT to run it — discover_algorithms() in scripts/pipeline.py skips it in every mode
+# (shard sweep, --focus, composed, local) and ci_eval_targets.py drops it from the PR smoke matrix, so
+# it never DNFs a runner. UN-SKIP (set false / remove) once a GPU runner exists, add a GPU route to
+# score.yml, then let CI score it. Until then it is present-but-unscored (absent from the leaderboard).
+ci_skip: true
+# Notes on how QSM-CI runs this method vs. its reference (shown on the submission page).
+ci_notes:
+- >
+  DIP-UP is a single-echo PHASE-UNWRAPPING network; it does not itself produce a total field. QSM-CI
+  runs it per echo and appends the standard multi-echo linear phase-fit + B0 normalization
+  (identical to laplacian-fieldmap / romeo-fieldmap) to obtain totalfield in ppm.
+- >
+  The DIP-UP repo does not ship the Unet_blocks.py its network classes import; it is reconstructed in
+  this submission to be byte-compatible with the released checkpoints (PHU-NET3D width 64, PhaseNet3D
+  width 48), and the repo's hard-coded layer-width constant is patched to match each checkpoint.
+- >
+  Executed with GPU when the runner exposes one, else CPU. The reference recommends a 16–24 GB GPU;
+  CPU runtime is substantially longer and not comparable to GPU timings.
+- >
+  DOMAIN SHIFT: the base net was trained on real brain phase at a specific resolution/TE/field. On the
+  simulation phantom (different wrap patterns / per-echo TEs) the pretrained wrap-count predictor may
+  not transfer; the DIP refinement is seeded by it. A poor field-mapping score can reflect this
+  transfer gap rather than an implementation error.
+parameters:
+- name: variant
+  default: PHU-NET3D
+  description: >
+    Base network. PHU-NET3D (2-channel [wrapped phase + Laplacian], width 64) is the paper default and
+    generally most accurate; PhaseNet3D (1-channel [wrapped phase], width 48) is the lighter variant.
+- name: iterations
+  default: 100
+  description: >
+    Test-time DIP refinement iterations PER ECHO (the repo's Demo/inference uses 2000; reduced here as
+    the main runtime knob). More iterations refine the unwrap further at higher cost.
+- name: lr
+  default: 1.0e-6
+  description: RMSprop learning rate for the DIP refinement (reference default 1e-6).
+- name: lr_decay
+  default: 1
+  description: >
+    Reference 'vlr' schedule — multiply the LR by 0.9 every 10 iterations (1 = on, 0 = constant LR).
+- name: tv_weight
+  default: 1.0
+  description: >
+    Weight on the masked total-variation term of the DIP loss (loss = tv_weight·TV + Laplacian). The
+    reference uses 1.0 and does not tune it; exposed for experimentation.
+- name: shift_base
+  default: 5
+  description: >
+    Wrap-class zero-offset: the 9-class softmax expected count is shifted by this base so counts span
+    roughly [-5, +3] (reference default 5). Rarely changed.

@@ -256,6 +256,13 @@ def discover_algorithms(track: str = "sim") -> list[dict]:
             continue
         if not isinstance(doc, dict) or doc.get("stage") is None:
             continue
+        # A submission may declare `ci_skip: true` to stay in the repo (reviewable code/weights) but
+        # NOT be scored — e.g. it needs a runner tier QSM-CI doesn't have yet (DIP-UP is GPU-only; CPU
+        # is impractical). Discovery is the single choke point for every mode (shard sweep, --focus,
+        # composed, local), so skipping here makes the method invisible to the whole scorer. Un-skip
+        # once the required runner exists.
+        if doc.get("ci_skip"):
+            continue
         s = _yaml_scalar(doc["stage"])
         image = doc.get("image")
         # Mirror runner._consumes EXACTLY so the scorer mounts + passes only the flags `qsm-ci run`
