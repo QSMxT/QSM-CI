@@ -33,3 +33,9 @@ code_url: https://github.com/sunhongfu/iQSM
 license: See repository (used with author permission)
 image: ghcr.io/astewartau/qsm-ci/iqfm:v1
 run: bash run.sh
+# iQFM is unwrap+bfr (produces a local field), so its focused rescore composes the field against the
+# whole dipole set (~27 CPU methods, incl. slow MEDI/FANSI/MATLAB). That row doesn't fit the hosted
+# 180-min cap at 2 containers — the unsharded focus job timed out mid-MEDI (run 31077670193). Route to
+# the 31 GB self-hosted runners (360-min cap, 4 concurrent containers) so the full row completes. Only
+# 2 self-hosted jobs run at once.
+runner: self-hosted
