@@ -100,6 +100,66 @@
       "ci_notes": []
     },
     {
+      "slug": "apart-qsm",
+      "name": "APART-QSM",
+      "stage": "chi-separation",
+      "inputs": [
+        "localfield",
+        "r2prime",
+        "chimap",
+        "magnitude",
+        "mask",
+        "params"
+      ],
+      "domain": "chisep",
+      "engine": "Independent",
+      "language": "MATLAB",
+      "family": "iterative",
+      "learning": "none",
+      "description": "APART-QSM \u2014 an improved sub-voxel quantitative susceptibility mapping for susceptibility source separation using an iterative data-fitting method. A GRE-based (signal-domain) classical source separation: it alternately solves a voxel-wise magnitude-decay kernel (the \"a-map\") and the sub-voxel \u03c7+ (paramagnetic, iron) / \u03c7\u2212 (diamagnetic, myelin/calcium) split via TV-regularised dipole inversion over the multi-echo complex GRE signal. Handles an arbitrary number of complex GRE measurements; supports single- and multi-orientation \u2014 QSM-CI runs it SINGLE-ORIENTATION on the chisep phantom. Reads the multi-echo magnitude + the provided local field, R2\u2032 and \u03c7_total, and writes the two source maps. Li/Wang et al., NeuroImage 2023.",
+      "citation": "Li Z. et al., \"APART-QSM: An improved sub-voxel quantitative susceptibility mapping for susceptibility source separation using an iterative data fitting method\", NeuroImage 2023;274:120148.\n",
+      "doi": "10.1016/j.neuroimage.2023.120148",
+      "code_url": "https://github.com/AMRI-Lab/APART-QSM",
+      "license": "none declared (no LICENSE in repo); academic use, cite the paper",
+      "authors": [
+        "Zhenghao Li",
+        "Ruimin Feng",
+        "Qiangqiang Liu",
+        "Jianxun Feng",
+        "Guangbin Lao",
+        "Mengqi Zhang",
+        "Hongjiang Wei"
+      ],
+      "parameters": [
+        {
+          "name": "a",
+          "default": 137,
+          "description": "Magnitude decay kernel (Hz/ppm) initialising the voxel-wise a-map. The APART demo uses 323.5 at 3T; our chisep phantom's R2\u2032 model uses a single Dr=137 Hz/ppm kernel (data/sim/chisep/README.md), so we default to 137.\n"
+        },
+        {
+          "name": "tol_a",
+          "default": 0.3,
+          "description": "Tolerance on the a-map relative change between consecutive iterations (reference default 0.3)."
+        },
+        {
+          "name": "lambda_r2prime",
+          "default": 0.1,
+          "description": "Scaling weight of the R2\u2032-related data term (reference default 0.1)."
+        },
+        {
+          "name": "lambda_chi",
+          "default": 10,
+          "description": "Scaling weight of the \u03c7 (susceptibility) data-fidelity term (reference default 10, single-ori)."
+        },
+        {
+          "name": "lambda_TV",
+          "default": 1,
+          "description": "Total-variation regularisation weight on the source maps (reference default 1, single-ori)."
+        }
+      ],
+      "ci_notes": []
+    },
+    {
       "slug": "autoqsm",
       "name": "AutoQSM",
       "stage": "bfr+dipole",
