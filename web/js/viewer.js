@@ -241,12 +241,15 @@ function currentCombo() {
 }
 function runItem(r, activeId) {
   const active = r && r.id === activeId;
-  // χ-separation rows carry no plain xsim; show the mean of the χ+ and χ− xSIM instead.
+  // χ-separation rows carry no plain xsim; headline the mean χ+/χ− detrended NRMSE (the leaderboard's
+  // ranking metric — scale-independent and, unlike xSIM, sensitive to the anisotropy magnitude error).
   const m = (r && r.metrics) || {};
-  const xs = m.xsim != null ? m.xsim
-    : (m.para_xsim != null && m.dia_xsim != null ? (m.para_xsim + m.dia_xsim) / 2
-    : (r ? val(r, "xsim") : null));
-  const label = r ? (r.status === "DNF" ? "DNF" : fmt(xs, "xsim")) : "—";
+  let hv, hk = "xsim";
+  if (m.xsim != null) hv = m.xsim;
+  else if (m.para_nrmse_detrend != null && m.dia_nrmse_detrend != null) { hv = (m.para_nrmse_detrend + m.dia_nrmse_detrend) / 2; hk = "nrmse_detrend"; }
+  else if (m.para_xsim != null && m.dia_xsim != null) hv = (m.para_xsim + m.dia_xsim) / 2;
+  else hv = r ? val(r, "xsim") : null;
+  const label = r ? (r.status === "DNF" ? "DNF" : fmt(hv, hk)) : "—";
   const dis = !r || r.status === "DNF";
   return `<button data-id="${r ? r.id : ""}"
     class="run-item w-full text-left rounded-lg px-2.5 py-1.5 text-sm flex items-center justify-between gap-2 transition

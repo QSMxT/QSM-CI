@@ -19,7 +19,13 @@
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.15.12/dist/cdn.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-  <script>window.addEventListener("DOMContentLoaded",function(){document.querySelectorAll("pre code.language-bash").forEach(function(el){if(window.hljs)window.hljs.highlightElement(el);});});</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script>window.addEventListener("DOMContentLoaded",function(){
+    document.querySelectorAll("pre code.language-bash").forEach(function(el){if(window.hljs)window.hljs.highlightElement(el);});
+    if(window.renderMathInElement)renderMathInElement(document.body,{delimiters:[{left:"$$",right:"$$",display:true},{left:"\\(",right:"\\)",display:false}],throwOnError:false});
+  });</script>
   <style>
     [x-cloak]{display:none!important}
 
@@ -679,7 +685,7 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
                   <span x-show="r.status==='DNF'" class="ml-2 rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold text-gray-500">DNF</span>
                 </td>
                 <template x-for="c in chisepDisplayCols()" :key="c.key">
-                  <td class="px-4 py-3 text-right tabular-nums group-hover:bg-emerald-50/40" :class="(chisepSort===c.key || c.key==='avg') ? 'font-semibold text-gray-900' : 'text-gray-600'" x-text="chiFmt(chiVal(r, c.key), c.key)"></td>
+                  <td class="px-4 py-3 text-right tabular-nums group-hover:bg-emerald-50/40" :class="(chisepSort===c.key || c.key==='avg_ndt') ? 'font-semibold text-gray-900' : 'text-gray-600'" x-text="chiFmt(chiVal(r, c.key), c.key)"></td>
                 </template>
               </tr>
             </template>
@@ -710,46 +716,66 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
       <div x-show="chisepView==='info'" x-cloak class="info mt-6 space-y-8">
         <div>
           <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">&chi;-separation (2026)</h2>
-          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">Susceptibility source separation splits the net susceptibility &chi; into a paramagnetic part &chi;&#8314; (iron) and a diamagnetic part &chi;&#8315; (myelin, calcium). On this dataset each method is fed the ground-truth local field, R2&prime; and &chi;<sub>total</sub>, and its recovered &chi;&#8314; and &chi;&#8315; maps are scored separately. It extends the in-silico Challenge&nbsp;2.0 phantom, so the susceptibility ground truth is the same one behind the In&nbsp;silico dataset.</p>
+          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">Susceptibility source separation splits the net susceptibility &chi; into a paramagnetic part &chi;&#8314; (iron) and a diamagnetic part &chi;&#8315; (myelin, calcium). Plain QSM measures only their signed sum, &chi;<sub>total</sub> = &chi;&#8314; + &chi;&#8315;, in which the two partly cancel, so it cannot tell them apart. The reversible relaxation rate R2&prime; responds instead to their combined magnitude, |&chi;&#8314;| + |&chi;&#8315;|. Having both the signed sum and the magnitude gives two independent constraints per voxel, which is what makes the sources recoverable. Each method is given &chi;<sub>total</sub>, R2&prime; and the local field, and must produce &chi;&#8314; and &chi;&#8315;, which are scored separately.</p>
         </div>
         <div>
           <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">The phantom</h3>
-          <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">The &chi;-separation phantom is generated with <a href="https://github.com/astewartau/qsm-forward" class="text-emerald-600 hover:underline">qsm-forward</a>, which ports and extends the neuropoly Susceptibility-Separation-Phantom (<a href="https://doi.org/10.64898/2026.04.07.716972" class="text-emerald-600 hover:underline">Ridani et&nbsp;al., 2026</a>), itself an extension of the Challenge&nbsp;2.0 head phantom. It adds three things the plain QSM phantom lacks: the &chi;&#8314;/&chi;&#8315; source maps (the scoring targets), an R2&prime; map, and a source-separation-aware signal model. The &chi;&#8314;/&chi;&#8315; split and relaxation model follow the reference phantom; qsm-forward additionally offers a matched spin-echo acquisition and a multi-compartment signal model.</p>
+          <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">The &chi;-separation phantom implements the Susceptibility-Separation-Phantom of <a href="https://doi.org/10.64898/2026.04.07.716972" class="text-emerald-600 hover:underline">Ridani et&nbsp;al. (2026)</a> on the Challenge&nbsp;2.0 head model (<a href="https://doi.org/10.1002/mrm.28716" class="text-emerald-600 hover:underline">Marques et&nbsp;al., 2021</a>), via <a href="https://github.com/astewartau/qsm-forward" class="text-emerald-600 hover:underline">qsm-forward</a>. It adds the &chi;&#8314;/&chi;&#8315; source maps (the scoring targets) and an R2&prime; map, and simulates the multi-echo GRE and spin-echo signals from them. &chi;&#8314; and &chi;&#8315; are built per tissue and summed to give &chi;<sub>total</sub>, so the net susceptibility comes from the same anatomy as the In&nbsp;silico dataset.</p>
         </div>
         <div>
           <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">The forward model</h3>
-          <h4 class="mt-3 font-semibold text-gray-900 dark:text-gray-100">Relaxation: R2, R2*, and R2&prime;</h4>
-          <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">The gradient-echo magnitude decays at R2* = R2 + R2&prime;. R2 is the irreversible rate; R2&prime; is the reversible rate from static field inhomogeneity around susceptibility sources, and it is the channel source separation draws on. The phantom simulates R2 independently from per-tissue literature T2 values and adds it to R2&prime; to reach R2*, with no fixed ratio between them (the common &kappa; shortcut, R2* &asymp; 1.9&middot;R2&prime; from <a href="https://doi.org/10.3390/tomography8030127" class="text-emerald-600 hover:underline">Dimov et&nbsp;al., 2022</a>, is avoided because it makes recovering R2&prime; = R2* &minus; R2 degenerate). The R2&prime; map is shipped directly as a provided input; qsm-forward can instead simulate a matched spin echo (<code>--save-se</code>) that lets a method derive R2&prime; from paired GRE/SE data (Stoll,&nbsp;2025), a capability this dataset does not currently ship.</p>
-          <h4 class="mt-5 font-semibold text-gray-900 dark:text-gray-100">The relaxivity D<sub>r</sub></h4>
-          <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">Relaxivity converts a susceptibility source into the reversible relaxation it produces. &chi;-separation uses a single kernel shared by both source types:</p>
-          <pre class="mt-3 overflow-x-auto rounded-xl bg-gray-900 p-4 text-sm text-gray-100"><code class="language-plaintext">R2&prime; = D_r &middot; ( |&chi;&#8314;| + |&chi;&#8315;| ),   D_r = 137 Hz/ppm</code></pre>
-          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">One kernel for both, because in the static-dephasing regime (<a href="https://doi.org/10.1002/mrm.1910320610" class="text-emerald-600 hover:underline">Yablonskiy &amp; Haacke, 1994</a>) reversible relaxation depends on the magnitude of the field perturbation, not its sign. D<sub>r</sub> = 137&nbsp;Hz/ppm is the value <a href="https://doi.org/10.1016/j.neuroimage.2021.118371" class="text-emerald-600 hover:underline">Shin et&nbsp;al. (2021)</a> measured. A split (D<sub>r</sub>&#8314; &ne; D<sub>r</sub>&#8315;) is left off by default, since the two relaxivities are not recoverable from one QSM and one R2&prime; map; it stays available as an opt-in (<code>--dr-neg</code>) for sensitivity studies.</p>
-          <h4 class="mt-5 font-semibold text-gray-900 dark:text-gray-100">The multi-compartment magnitude</h4>
-          <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">Field-domain methods need only R2&prime; and the field. Signal-domain separators (e.g. DECOMPOSE) fit the multi-echo complex signal per voxel, where a plain mono-exponential decay carries nothing to separate. With <code>--chisep-multicompartment</code> the voxel magnitude becomes the modulus of a sum of compartments:</p>
-          <pre class="mt-3 overflow-x-auto rounded-xl bg-gray-900 p-4 text-sm text-gray-100"><code class="language-plaintext">S(TE) = | C&#8330;&middot;e^(&minus;(R2 + D_r|&chi;&#8314;| + i&middot;&omega;&middot;&chi;&#8314;)&middot;TE)
-        + C&#8331;&middot;e^(&minus;(R2 + D_r|&chi;&#8315;| + i&middot;&omega;&middot;&chi;&#8315;)&middot;TE)
-        +  C&#8320;&middot;e^(&minus;R2&middot;TE) |,     &omega; = (2/3)&middot;&gamma;&middot;B&#8320;</code></pre>
-          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">Each compartment is a static-dephasing exponential with its own decay and off-resonance, so the pools beat against each other and give the non-mono-exponential magnitude those methods rely on. The rates reuse the same D<sub>r</sub> kernel as R2&prime;, so the effective R2* is unchanged and field-domain methods see identical inputs; only the shape of the decay is enriched. It defaults to off.</p>
+          <h4 class="mt-3 font-semibold text-gray-900 dark:text-gray-100">Building &chi;&#8314; and &chi;&#8315;</h4>
+          <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">Each tissue is assigned literature &chi;&#8314; and &chi;&#8315; values (&chi;&#8314;<sub>lit</sub>, &chi;&#8315;<sub>lit</sub>), with within-tissue texture from the acquired R1 and R2* maps:</p>
+          <div class="mt-3 overflow-x-auto text-gray-800 dark:text-gray-100">$$\begin{aligned} \chi^+ &= \chi^+_{\text{lit}} + a^+\,(R_2^* - \overline{R_2^*}) + b^+\,(R_1 - \overline{R_1}) \\ \chi^- &= \chi^-_{\text{lit}} + a^-\,(R_2^* - \overline{R_2^*}) + b^-\,(R_1 - \overline{R_1}) \end{aligned}$$</div>
+          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">where the bar denotes a tissue-mean (\(\overline{R_2^*}\) and \(\overline{R_1}\) are the average R2* and R1 over that tissue, so each texture term is this voxel&rsquo;s deviation from the tissue average), and the modulation coefficients a and b are set per tissue and per source. Summing the two gives &chi;<sub>total</sub>.</p>
+          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">&chi;<sub>total</sub> is one of the two constraints from above; the other is R2&prime;, which relates to the source magnitudes through a relaxivity D<sub>r</sub>:</p>
+          <div class="mt-3 overflow-x-auto text-gray-800 dark:text-gray-100">$$R_2' = D_r \,\big(\, |\chi^+| + |\chi^-| \,\big)$$</div>
+          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">If D<sub>r</sub> were a single known constant, the two would solve directly, a closed-form null solution:</p>
+          <div class="mt-3 overflow-x-auto text-gray-800 dark:text-gray-100">$$\begin{aligned} \chi^+ &= \tfrac{1}{2}\big(\chi_{\text{tot}} + R_2'/D_r\big) \\ \chi^- &= \tfrac{1}{2}\big(\chi_{\text{tot}} - R_2'/D_r\big) \end{aligned}$$</div>
+          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">This null solution is a useful baseline: it adds nothing beyond the standard assumption, so any method should at least match it. Real separation is harder because the true relaxivity is not a single known constant. Its main complication, described next, is that the myelin relaxivity depends on fibre orientation, which a single-orientation acquisition cannot observe; it also differs between iron and myelin, but that is a smaller, calibratable offset. That orientation dependence is why &chi;&#8315; is the harder map to recover, and it is what the standard separation model (which assumes isotropic sources) leaves out.</p>
+          <h4 class="mt-5 font-semibold text-gray-900 dark:text-gray-100">White-matter anisotropy</h4>
+          <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">Myelin is magnetically anisotropic, so in white matter &chi;&#8315; depends on the angle &theta; between the nerve fibre and B&#8320;, taken from the diffusion V1 eigenvector:</p>
+          <div class="mt-3 overflow-x-auto text-gray-800 dark:text-gray-100">$$\chi^- = \Delta\chi \,\cos^2\!\theta + \chi_0$$</div>
+          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">where &Delta;&chi; is the myelin susceptibility anisotropy (susceptibility along the fibre minus across it) and &chi;&#8320; the orientation-independent part, both per tract. A single-orientation acquisition cannot observe &theta;, so the myelin relaxivity D<sub>r</sub>&#8315;(&theta;) is unknown per voxel, which is what breaks the null solution for &chi;&#8315;. Iron is modelled as isotropic spheres and carries no such term.</p>
+          <h4 class="mt-5 font-semibold text-gray-900 dark:text-gray-100">R2&prime; and the relaxivity D<sub>r</sub></h4>
+          <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">The true relaxivity is source-dependent, so R2&prime; is built as</p>
+          <div class="mt-3 overflow-x-auto text-gray-800 dark:text-gray-100">$$R_2' = D_r^+\,|\chi^+| + D_r^-(\theta)\,|\chi^-|, \qquad D_r^-(\theta) \propto \sin^2\!\theta$$</div>
+          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">D<sub>r</sub> comes from the static-dephasing model (<a href="https://doi.org/10.1002/mrm.1910320610" class="text-emerald-600 hover:underline">Yablonskiy &amp; Haacke, 1994</a>): spheres for &chi;&#8314;, cylinders for &chi;&#8315;, giving D<sub>r</sub>&#8314; = 107.84&middot;B&#8320; for iron and D<sub>r</sub>&#8315; = 133.77&middot;sin&sup2;&theta;&middot;B&#8320; for myelin (755 and 936&middot;sin&sup2;&theta; Hz/ppm at 7&nbsp;T). These grow with field and run about 5&times; higher than measured in&nbsp;vivo &mdash; not an error, but the idealisation the model makes: static dephasing assumes perfectly static spins around ideal spheres/cylinders, whereas real tissue has diffusion averaging and heterogeneous microstructure that lower the <em>effective</em> relaxivity, so empirical calibrations (e.g. Shin&nbsp;et&nbsp;al.) land well below the theoretical value.</p>
+          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">The <em>fixed</em> setting (default) rescales both by a single factor so the iron value matches the measured D<sub>r</sub>&#8314; = 137&nbsp;Hz/ppm (<a href="https://doi.org/10.1016/j.neuroimage.2021.118371" class="text-emerald-600 hover:underline">Shin et&nbsp;al., 2021</a>); the same factor puts the myelin value at D<sub>r</sub>&#8315; = 170&middot;sin&sup2;&theta; (0 to 170 across fibre angles). These are field-independent. The <em>scaled</em> setting keeps the static-dephasing values above instead. Both share the same &chi;&#8314;/&chi;&#8315; ground truth.</p>
+          <p class="mt-2 text-sm text-gray-500 dark:text-gray-400 leading-relaxed"><strong>Why fixed?</strong> Methods assume D<sub>r</sub>&nbsp;&asymp;&nbsp;137, so this scores separation rather than D<sub>r</sub> calibration; the scaled 755 would penalise methods on scale alone. <em>Scaled</em> is field-physical and matches the reference, but is less comparable across methods.</p>
+          <h4 class="mt-5 font-semibold text-gray-900 dark:text-gray-100">The signal</h4>
+          <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">The simulated multi-echo GRE magnitude carries the separated sources through R2&prime; rather than a single lumped R2*, so its decay is written directly in terms of &chi;&#8314; and &chi;&#8315;:</p>
+          <div class="mt-3 overflow-x-auto text-gray-800 dark:text-gray-100">$$S(\mathrm{TE}) = M_0\,\exp\!\big[-\mathrm{TE}\,\big(\underbrace{R_2}_{\text{irreversible}} + \underbrace{D_r^+|\chi^+| + D_r^-(\theta)\,|\chi^-|}_{R_2'}\big)\big]$$</div>
+          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">so the effective decay rate is R2* = R2 + R2&prime;. A matched spin-echo removes the reversible term and decays with R2 alone (\(S(\mathrm{TE}) = M_0\,e^{-\mathrm{TE}\,R_2}\)), letting a signal-domain method estimate R2&prime; = R2* &minus; R2 itself instead of relying on the provided R2&prime; map.</p>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Differences from the reference phantom</h3>
+          <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">The &chi;&#8314;/&chi;&#8315; construction and white-matter anisotropy (including the seeded R1-weighted noise) reproduce <a href="https://doi.org/10.64898/2026.04.07.716972" class="text-emerald-600 hover:underline">Ridani et&nbsp;al. (2026)</a>. Three aspects differ:</p>
+          <ul class="mt-2 list-disc pl-5 space-y-1 text-gray-600 dark:text-gray-400 leading-relaxed">
+            <li><strong>Dr magnitude.</strong> The <em>fixed</em> D<sub>r</sub>&#8314; = 137&nbsp;Hz/ppm (above), not the reference&rsquo;s field-scaled &asymp;&nbsp;755 at 7&nbsp;T. Only R2&prime; / signal magnitude change; the &chi;&#8314;/&chi;&#8315; ground truth is identical.</li>
+            <li><strong>Provided maps masked to the brain.</strong> The &chi;<sub>total</sub>, R2&prime; and local-field <em>inputs</em> and the ground truth are restricted to the brain (a real QSM is brain-masked); the raw phase, magnitude and spin-echo keep the whole-head background field, so full pipelines can still unwrap and remove it. The reference ships every map whole-head.</li>
+            <li><strong>Sign enforced.</strong> &chi;&#8314; is clamped &ge;&nbsp;0 and &chi;&#8315; &le;&nbsp;0 (a source map cannot flip sign); this nudges ~7% of &chi;&#8314; voxels by &le;&nbsp;0.03&nbsp;ppm.</li>
+          </ul>
         </div>
         <div>
           <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Reproduce the phantom</h3>
-          <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">From the same Challenge&nbsp;2.0 maps, add the source-separation outputs:</p>
-          <pre class="mt-3 overflow-x-auto rounded-xl bg-gray-900 p-4 text-sm text-gray-100"><code class="language-bash">qsm-forward head ./qsm-challenge-2.0 bids_chisep \
-  --save-field --save-chi-pos --save-chi-neg --save-r2prime \
-  --chisep-signal --chisep-multicompartment</code></pre>
-          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed"><code>--save-chi-pos</code>/<code>--save-chi-neg</code> write the scoring targets, <code>--save-r2prime</code> the provided R2&prime; input, and the <code>--chisep-*</code> flags select the source-separation signal model. qsm-forward writes a standard BIDS tree; point <a href="running.html" class="text-emerald-600 hover:underline"><code>qsm-ci run</code></a> straight at the NIfTIs.</p>
+          <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">qsm-forward builds the phantom from a data directory holding the Challenge&nbsp;2.0 tissue-property maps and diffusion V1 eigenvector. Request those from the Donders repository (<a href="https://data.ru.nl/collections/di/dccn/DSC_3015069.02_542" class="text-emerald-600 hover:underline break-words">data.ru.nl/&hellip;/DSC_3015069.02_542</a>, DOI <a href="https://doi.org/10.34973/m20r-jt17" class="text-emerald-600 hover:underline">10.34973/m20r-jt17</a>), and add the white-matter tract mask from the <a href="https://github.com/neuropoly/Susceptibility-Separation-Phantom" class="text-emerald-600 hover:underline">Susceptibility-Separation-Phantom</a> repository (Ridani et&nbsp;al.). Then generate (7&nbsp;T, 4 echoes, 1&nbsp;mm):</p>
+          <pre class="mt-3 overflow-x-auto rounded-xl bg-gray-900 p-4 text-sm text-gray-100"><code class="language-bash">qsm-forward chi-sep data/ bids/
+# --dr-model scaled   field-scaled static-dephasing relaxivity (default: fixed)
+# --isotropic         disable white-matter anisotropy
+# --no-brain-mask     keep every map whole-head</code></pre>
+          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">This writes a standard BIDS tree (the &chi;&#8314;/&chi;&#8315; targets, &chi;<sub>total</sub>, R2&prime;, local field, and the multi-echo GRE and spin-echo signals). QSM-CI wraps it with <a href="https://github.com/astewartau/qsm-ci" class="text-emerald-600 hover:underline"><code>scripts/gen_chisep.py</code></a>, which applies the brain-masking of the provided maps and flattens the tree into the dataset layout; point <a href="running.html" class="text-emerald-600 hover:underline"><code>qsm-ci run</code></a> straight at the NIfTIs.</p>
         </div>
         <div>
           <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Citations</h3>
           <ul class="mt-2 list-disc pl-5 space-y-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
             <li><strong>Separation phantom:</strong> Ridani S., De&nbsp;Leener B., Alonso-Ortiz E. &ldquo;A realistic in-silico brain phantom for quantifying susceptibility anisotropy-induced error in susceptibility separation.&rdquo; <em>bioRxiv</em> 2026. <a href="https://doi.org/10.64898/2026.04.07.716972" class="text-emerald-600 hover:underline">doi:10.64898/2026.04.07.716972</a>.</li>
+            <li><strong>Head model:</strong> Marques J.P., Meineke J., Milovic C., et&nbsp;al. &ldquo;QSM reconstruction challenge 2.0: a realistic in silico head phantom for MRI data simulation and evaluation of susceptibility mapping procedures.&rdquo; <em>Magn Reson Med</em> 2021;86(1):526&ndash;542. <a href="https://doi.org/10.1002/mrm.28716" class="text-emerald-600 hover:underline">doi:10.1002/mrm.28716</a>.</li>
             <li><strong>&chi;-separation model &amp; D<sub>r</sub>:</strong> Shin H.G., Lee J., Yun Y.H., et&nbsp;al. &ldquo;&chi;-separation: Magnetic susceptibility source separation toward iron and myelin mapping in the brain.&rdquo; <em>NeuroImage</em> 2021;240:118371. <a href="https://doi.org/10.1016/j.neuroimage.2021.118371" class="text-emerald-600 hover:underline">doi:10.1016/j.neuroimage.2021.118371</a>.</li>
             <li><strong>Static-dephasing regime:</strong> Yablonskiy D.A., Haacke E.M. &ldquo;Theory of NMR signal behavior in magnetically inhomogeneous tissues: the static dephasing regime.&rdquo; <em>Magn Reson Med</em> 1994;32(6):749&ndash;763. <a href="https://doi.org/10.1002/mrm.1910320610" class="text-emerald-600 hover:underline">doi:10.1002/mrm.1910320610</a>.</li>
             <li><strong>DECOMPOSE:</strong> Chen J., et&nbsp;al. &ldquo;Decompose QSM to sub-voxel diamagnetic and paramagnetic components based on gradient-echo MRI data.&rdquo; <em>NeuroImage</em> 2021. <a href="https://doi.org/10.1016/j.neuroimage.2021.118735" class="text-emerald-600 hover:underline">doi:10.1016/j.neuroimage.2021.118735</a>.</li>
             <li><strong>SUSEP-Net:</strong> Li, Gao, Sun, et&nbsp;al. &ldquo;SUSEP-Net: simulation-supervised contrastive learning for susceptibility source separation via a sub-voxel QSM network.&rdquo; arXiv:2506.13293, 2025. <a href="https://doi.org/10.48550/arXiv.2506.13293" class="text-emerald-600 hover:underline">doi:10.48550/arXiv.2506.13293</a>.</li>
             <li><strong>WaveSep:</strong> Fang Z., Shin H.G., van&nbsp;Zijl P., Li X., Sulam J. &ldquo;WaveSep: A Flexible Wavelet-Based Approach for Source Separation in Susceptibility Imaging.&rdquo; <em>MLCN, MICCAI</em> 2023. <a href="https://doi.org/10.1007/978-3-031-44858-4_6" class="text-emerald-600 hover:underline">doi:10.1007/978-3-031-44858-4_6</a>.</li>
-            <li><strong>&kappa; approximation:</strong> Dimov A.V., et&nbsp;al. &ldquo;Magnetic susceptibility source separation solely from gradient echo data: histological validation.&rdquo; <em>Tomography</em> 2022;8(3):1544&ndash;1551. <a href="https://doi.org/10.3390/tomography8030127" class="text-emerald-600 hover:underline">doi:10.3390/tomography8030127</a>.</li>
-            <li><strong>&chi;-sep spin-echo model:</strong> Stoll&nbsp;P. &ldquo;Development of a Deep Learning Framework for Iron and Myelin Mapping from Quantitative Susceptibility Maps.&rdquo; MSc thesis, ETH&nbsp;Zurich, 2025.</li>
           </ul>
         </div>
       </div>
@@ -933,16 +959,19 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
     // χ-separation metric catalog (para_*/dia_* aren't in the global METRICS registry). Drives the
     // customisable column picker + table. `f` is the formatter kind: xsim / pct / num / sec.
     const CHISEP_COLS = [
-      { key: "avg",                 label: "Avg xSIM",        better: "higher", f: "xsim", tip: "Mean of the χ+ and χ− xSIM: the headline combined source-separation score. Higher is better." },
+      { key: "avg_ndt",             label: "Avg detr. NRMSE", better: "lower",  f: "pct",  tip: "Mean of the χ+ and χ− linearly-detrended NRMSE: the headline source-separation error, scale-independent (fair to a method's assumed Dr) and — unlike xSIM — sensitive to the magnitude error white-matter anisotropy induces. Lower is better." },
+      { key: "avg",                 label: "Avg xSIM",        better: "higher", f: "xsim", tip: "Mean of the χ+ and χ− xSIM. Structural similarity only: lenient to the magnitude error anisotropy causes (the do-nothing null solve scores ~0.75 here), so it is not the ranking metric. Higher is better." },
       { key: "para_xsim",           label: "χ+ xSIM",         better: "higher", f: "xsim", tip: "Structural similarity of the χ+ (paramagnetic, iron) map vs ground truth. Higher is better." },
-      { key: "para_nrmse",          label: "χ+ NRMSE",        better: "lower",  f: "pct",  tip: "Normalised RMS error of χ+ vs ground truth (%). Lower is better." },
+      { key: "para_nrmse",          label: "χ+ NRMSE",        better: "lower",  f: "pct",  tip: "Demeaned normalised RMS error of χ+ vs ground truth (%). Lower is better." },
+      { key: "para_nrmse_detrend",  label: "χ+ detr. NRMSE",  better: "lower",  f: "pct",  tip: "χ+ NRMSE after correcting a global linear scale (independent of a method's assumed Dr). Lower is better." },
       { key: "para_nrmse_dgm",      label: "χ+ DGM NRMSE",    better: "lower",  f: "pct",  tip: "χ+ error in deep gray matter (iron) (%). Lower is better." },
       { key: "para_dgm_linearity",  label: "χ+ DGM linearity", better: "lower", f: "num",  tip: "|1 − slope| of χ+ across DGM iron regions; 0 = perfect iron quantification. Lower is better." },
       { key: "para_nrmse_blood",    label: "χ+ vein NRMSE",   better: "lower",  f: "pct",  tip: "χ+ error in venous blood (%). Lower is better." },
       { key: "para_calc_leak",      label: "χ+ Ca leak",      better: "lower",  f: "num",  tip: "Mean |χ+| in the calcification (should be ~0): calcium wrongly bleeding into the paramagnetic map. Lower is better." },
       { key: "para_leak",           label: "χ−→χ+ leak",      better: "lower",  f: "num",  tip: "Whole-brain leakage: fraction of χ− (diamagnetic) signal bleeding into the χ+ map. 0 = clean. Lower is better." },
       { key: "dia_xsim",            label: "χ− xSIM",         better: "higher", f: "xsim", tip: "Structural similarity of the χ− (diamagnetic, myelin/calcium) map vs ground truth. Higher is better." },
-      { key: "dia_nrmse",           label: "χ− NRMSE",        better: "lower",  f: "pct",  tip: "Normalised RMS error of χ− vs ground truth (%). Lower is better." },
+      { key: "dia_nrmse",           label: "χ− NRMSE",        better: "lower",  f: "pct",  tip: "Demeaned normalised RMS error of χ− vs ground truth (%). Lower is better." },
+      { key: "dia_nrmse_detrend",   label: "χ− detr. NRMSE",  better: "lower",  f: "pct",  tip: "χ− NRMSE after correcting a global linear scale (independent of a method's assumed Dr). The map anisotropy makes hardest. Lower is better." },
       { key: "dia_calc_moment_dev", label: "χ− Ca dev",       better: "lower",  f: "num",  tip: "Deviation of the recovered calcification's susceptibility moment. Lower is better." },
       { key: "dia_calc_streak",     label: "χ− streak",       better: "lower",  f: "num",  tip: "Streaking-artifact level around the calcification. Lower is better." },
       { key: "dia_iron_leak",       label: "χ− Fe leak",      better: "lower",  f: "num",  tip: "Mean |χ−| in DGM/veins (should be ~0): iron wrongly bleeding into the diamagnetic map. Lower is better." },
@@ -998,8 +1027,8 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
         stage: "dipole", fmap: "gt", variant: "default",
         metric: "xsim", sortKey: "xsim", sortDir: "desc", filter: "",
         colMenu: false, stageMenu: false, fmapMenu: false, metricMenu: false, selectedCols: ["nrmse", "correlation", "xsim", "runtime_s"],
-        chisepSort: "avg", chisepDir: "desc", chisepColMenu: false, chisepCols: CHISEP_COLS,
-        chisepSelectedCols: ["avg", "para_xsim", "para_nrmse", "para_leak", "dia_xsim", "dia_nrmse", "dia_leak", "runtime_s"],
+        chisepSort: "avg_ndt", chisepDir: "asc", chisepColMenu: false, chisepCols: CHISEP_COLS,
+        chisepSelectedCols: ["avg_ndt", "avg", "para_nrmse_detrend", "para_leak", "dia_nrmse_detrend", "dia_leak", "runtime_s"],
         invivoSortKey: "nrmse", invivoDir: "asc",   // in-vivo default sort: COSMOS NRMSE (2016 headline)
         invivoColMenu: false, invivoSelectedCols: INVIVO_COLS.map((c) => c.key),   // in-vivo metric column picker (all shown by default)
         // findings state
@@ -1118,6 +1147,7 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
         chiVal(r, k) {
           const m = r.metrics || {};
           if (k === "avg") return (m.para_xsim != null && m.dia_xsim != null) ? (m.para_xsim + m.dia_xsim) / 2 : null;
+          if (k === "avg_ndt") return (m.para_nrmse_detrend != null && m.dia_nrmse_detrend != null) ? (m.para_nrmse_detrend + m.dia_nrmse_detrend) / 2 : null;
           return val(r, k);
         },
         chiFmt(v, key) {
@@ -1128,7 +1158,7 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
         },
         chisepDisplayCols() {
           const sel = CHISEP_COLS.filter((c) => this.chisepSelectedCols.includes(c.key));
-          return sel.length ? sel : CHISEP_COLS.filter((c) => c.key === "avg");
+          return sel.length ? sel : CHISEP_COLS.filter((c) => c.key === "avg_ndt");
         },
         toggleChisepCol(k) {
           this.chisepSelectedCols = this.chisepSelectedCols.includes(k)
