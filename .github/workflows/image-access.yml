@@ -45,7 +45,15 @@ jobs:
           slugs=$(git diff --name-only origin/${{ github.base_ref }}... \
                   | grep '^algorithms/' | cut -d/ -f2 | grep -v '^_' | sort -u \
                   | while read -r s; do
-                      if [ -f "algorithms/$s/algorithm.yml" ]; then echo "$s"; fi
+                      f="algorithms/$s/algorithm.yml"
+                      [ -f "$f" ] || continue
+                      # A parked submission (ci_skip: true) is never run or scored, so its image need
+                      # not exist / be pullable yet — mirror the evaluate.yml + discover_algorithms skip.
+                      if grep -qiE '^ci_skip:[[:space:]]*true\b' "$f"; then
+                        echo "::notice::$s is ci_skip (parked) — image not required, skipping gate" >&2
+                        continue
+                      fi
+                      echo "$s"
                     done)
 
           if [ -z "$slugs" ]; then
