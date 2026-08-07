@@ -1,0 +1,76 @@
+name: APART-QSM
+slug: apart-qsm
+stage: chi-separation
+language: MATLAB
+family: iterative
+learning: none
+engine: Independent
+inputs: [magnitude, localfield, r2prime, chimap, mask, params]  # GRE-based signal-domain source separation
+description: >
+  APART-QSM — an improved sub-voxel quantitative susceptibility mapping for susceptibility source
+  separation using an iterative data-fitting method. A GRE-based (signal-domain) classical source
+  separation: it alternately solves a voxel-wise magnitude-decay kernel (the "a-map") and the
+  sub-voxel χ+ (paramagnetic, iron) / χ− (diamagnetic, myelin/calcium) split via TV-regularised
+  dipole inversion over the multi-echo complex GRE signal. Handles an arbitrary number of complex GRE
+  measurements; supports single- and multi-orientation — QSM-CI runs it SINGLE-ORIENTATION on the
+  chisep phantom. Reads the multi-echo magnitude + the provided local field, R2′ and χ_total, and
+  writes the two source maps. Li/Wang et al., NeuroImage 2023.
+authors:
+- name: Zhenghao Li
+- name: Ruimin Feng
+- name: Qiangqiang Liu
+- name: Jianxun Feng
+- name: Guangbin Lao
+- name: Mengqi Zhang
+- name: Hongjiang Wei
+doi: 10.1016/j.neuroimage.2023.120148
+citation: >
+  Li Z. et al., "APART-QSM: An improved sub-voxel quantitative susceptibility mapping for
+  susceptibility source separation using an iterative data fitting method", NeuroImage 2023;274:120148.
+code_url: https://github.com/AMRI-Lab/APART-QSM
+# The APART-QSM repo ships NO LICENSE file. Treat as academic use; cite the paper.
+license: none declared (no LICENSE in repo); academic use, cite the paper
+image: ghcr.io/astewartau/qsm-ci/apart-qsm:v1
+run: bash run.sh
+runner: self-hosted   # iterative per-voxel a-map fit + repeated dipole inversions — slow, needs a long cap
+smoke_box: 24         # the iterative fit is slow: the PR --smoke gate limits to a 24³ central box (full score.yml run is unaffected)
+# ci_skip: true keeps this parked scaffold in the repo but tells the scorer NOT to run it — it CANNOT
+# run yet (the core solver is missing; see BLOCKER below). discover_algorithms() in scripts/pipeline.py
+# skips it in every mode and ci_eval_targets.py drops it from the PR smoke matrix. UN-SKIP once the
+# solver is obtained and dropped into apart_core/ (see BUILD.md §0), then let CI compile+score it.
+ci_skip: true
+matlab:
+  entry: recon.m
+  runtime: r2023b
+parameters:
+- name: a
+  default: 137
+  description: >
+    Magnitude decay kernel (Hz/ppm) initialising the voxel-wise a-map. The APART demo uses 323.5 at 3T;
+    our chisep phantom's R2′ model uses a single Dr=137 Hz/ppm kernel (data/sim/chisep/README.md), so
+    we default to 137.
+- name: tol_a
+  default: 0.3
+  description: Tolerance on the a-map relative change between consecutive iterations (reference default 0.3).
+- name: lambda_r2prime
+  default: 0.1
+  description: Scaling weight of the R2′-related data term (reference default 0.1).
+- name: lambda_chi
+  default: 10
+  description: Scaling weight of the χ (susceptibility) data-fidelity term (reference default 10, single-ori).
+- name: lambda_TV
+  default: 1
+  description: Total-variation regularisation weight on the source maps (reference default 1, single-ori).
+# ==================================== BLOCKER — MISSING CORE ====================================
+# The public APART-QSM repo (commit c49bad4) ships ONLY the demos + published helpers (dipole_kernel,
+# gradient_mask_all, @TVOP) and .mat test data — the core solver apart_qsm_single_ori is NOT
+# distributed. This submission is authored to the published call convention but is NOT runnable until
+# that solver is obtained from the authors and placed at $APART_CORE / apart_core/. See BUILD.md §0.
+# Do NOT compile the mcc binary, build the image, or score until the core is in place.
+# ================================================================================================
+# Inputs (isolated eval, fed ground truth): multi-echo magnitude + local field (ppm) + R2′ (Hz) +
+# χ_total (chimap, ppm) + mask + params. GRE-based/signal-domain, but adapted to consume the stage's
+# provided local field (converted to per-echo local phase, χ echo-independent) rather than raw phase,
+# so it isolates APART's separation step from upstream unwrap/BFR/QSM error and needs no `phase` input.
+# Produces chi-para (χ+) and chi-dia (χ−, positive magnitude). Compile the mcc binary + GHCR image on
+# Bunya (Optimization Toolbox required at compile), then this scores on the chisep phantom via score.yml.
