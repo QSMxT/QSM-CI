@@ -48,10 +48,15 @@ def echo_key(path: str) -> int:
     return int(m.group(1)) if m else 0
 
 
-def stack_echoes(anat: Path, part: str) -> tuple[np.ndarray, np.ndarray]:
-    files = sorted(glob.glob(str(anat / f"*part-{part}_MEGRE.nii*")), key=echo_key)
+def stack_echoes(anat: Path, part: str, suffix: str = "MEGRE", required: bool = True):
+    files = sorted(glob.glob(str(anat / f"*part-{part}_{suffix}.nii*")), key=echo_key)
     if not files:
-        raise SystemExit(f"no {part} echoes in {anat}")
+        # single-echo files carry no part-<x> tag
+        files = sorted(glob.glob(str(anat / f"*_{suffix}.nii*")), key=echo_key)
+    if not files:
+        if required:
+            raise SystemExit(f"no {part} {suffix} echoes in {anat}")
+        return None, None
     imgs = [nib.load(f) for f in files]
     data = np.stack([im.get_fdata(dtype=np.float64) for im in imgs], axis=-1)
     return data, imgs[0].affine
@@ -62,12 +67,19 @@ def params_from_sidecars(anat: Path) -> dict:
     sides = [json.load(open(f)) for f in files]
     s0 = sides[0]
     vox = s0.get("VoxelSize") or [1.0, 1.0, 1.0]
-    return {
+    params = {
         "TE": [s["EchoTime"] for s in sides],
         "B0": s0["MagneticFieldStrength"],
         "B0_dir": list(s0.get("B0_dir", [0, 0, 1])),
         "voxel_size": [float(v) for v in vox],
     }
+    # Optional matched spin-echo acquisition (magnitude decays with R2, not R2*).
+    se = sorted(glob.glob(str(anat / "*_MESE.json")), key=echo_key)
+    if se:
+        se_sides = [json.load(open(f)) for f in se]
+        params["se_TE"] = [s["EchoTime"] for s in se_sides]
+        params["se_TR"] = se_sides[0].get("RepetitionTime")
+    return params
 
 
 def save(path: Path, data: np.ndarray, affine: np.ndarray) -> None:
@@ -93,6 +105,11 @@ def main() -> None:
     mag, _ = stack_echoes(anat, "mag")
     save(out / "inputs" / "phase.nii.gz", phase, aff)
     save(out / "inputs" / "magnitude.nii.gz", mag, aff)
+    # optional matched multi-echo spin-echo magnitude (for methods that estimate R2' = R2* - R2)
+    se_mag, se_aff = stack_echoes(anat, "mag", suffix="MESE", required=False)
+    if se_mag is not None:
+        save(out / "inputs" / "se_magnitude.nii.gz", se_mag, se_aff)
+        print(f"  (packed {se_mag.shape[-1]}-echo spin-echo magnitude)")
     mask = nib.load(str(deriv / f"{pre}_mask.nii"))
     save(out / "inputs" / "mask.nii.gz", mask.get_fdata(), mask.affine)
     (out / "inputs").mkdir(parents=True, exist_ok=True)
