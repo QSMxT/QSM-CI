@@ -29,6 +29,7 @@ license: GPL-3.0
 image: ghcr.io/astewartau/qsm-ci/decompose-qsm:v2
 run: bash run.sh
 runner: self-hosted   # per-voxel non-linear fit (parfor); ~31 min on 48 cores — needs a many-core runner + long cap
+timeout_minutes: 720  # full runs have taken 114–342 min on the shared self-hosted box and hit the 360 default; give ample headroom (cf. modip)
 smoke_box: 24         # per-voxel fit is slow: the PR --smoke gate fits only a 24³ central box (full score.yml run is unaffected)
 matlab:
   entry: recon.m
