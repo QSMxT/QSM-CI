@@ -12,7 +12,11 @@ multi-echo magnitude, and must recover the paramagnetic (χ+) and diamagnetic (�
   R2′ + QSM; GRE-based methods (APART-QSM, DECOMPOSE) opt into the raw multi-echo `phase`/`magnitude`
   and do their own field mapping / QSM; the spin-echo is optional — its magnitude decays with R2 (not
   R2*), so a method can estimate R2′ = R2* − R2 itself from the GRE/SE pair rather than using the
-  provided R2′, or feed the SE to a model that requires it.
+  provided R2′, or feed the SE to a model that requires it. `fiber_angle.nii.gz` (degrees, WM only) is
+  an OPTIONAL input: the fibre-to-B0 angle θ from the diffusion V1 eigenvector — the orientation a real
+  DTI acquisition provides. White-matter χ− is anisotropic (χ− = Δχ·cos²θ + χ₀, D_r−(θ) ∝ sin²θ), and θ
+  is unobservable from single-orientation data, so a method that consumes `fiber_angle` can recover WM
+  χ− that an isotropic single-orientation method cannot. Ignore it for the "hard" (no-DTI) scenario.
 - `groundtruth/` — scored against: `chi-para.nii.gz` (χ+), `chi-dia.nii.gz` (χ−, stored as a positive
   magnitude), plus `chimap.nii.gz` and `dseg.nii.gz`.
 
