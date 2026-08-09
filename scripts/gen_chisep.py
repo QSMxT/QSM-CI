@@ -84,6 +84,27 @@ def write_maps_dataset(out: Path, chi_total, r2prime, mask, chi_pos, chi_neg, af
     save("groundtruth/chi-dia.nii.gz", np.abs(chi_neg))
 
 
+def write_fiber_angle(out: Path, v1, b0_dir, affine, header, out_shape, brain_mask):
+    """Write inputs/fiber_angle.nii.gz — the fibre-to-B0 angle (degrees) from the diffusion V1
+    eigenvector, resampled to the dataset grid and brain-masked. This is the orientation information a
+    real DTI acquisition provides; an anisotropy-aware χ-separation method can use it (D_r-(θ) ∝ sin²θ)
+    to recover white-matter χ-, which a single-orientation isotropic method cannot. An OPTIONAL input:
+    only physically meaningful in white matter (~0 elsewhere)."""
+    from scipy.ndimage import zoom
+    b0 = np.asarray(b0_dir, float); b0 = b0 / (np.linalg.norm(b0) + 1e-12)
+    norm = np.linalg.norm(v1, axis=-1)
+    cos = np.abs((v1 * b0).sum(-1)) / np.where(norm > 1e-6, norm, 1.0)
+    ang = np.degrees(np.arccos(np.clip(cos, 0.0, 1.0))).astype(np.float32)
+    ang[norm <= 1e-6] = 0.0
+    if ang.shape != tuple(out_shape):
+        ang = zoom(ang, [out_shape[i] / ang.shape[i] for i in range(3)], order=1).astype(np.float32)
+    ang *= (brain_mask > 0)
+    p = out / "inputs" / "fiber_angle.nii.gz"
+    p.parent.mkdir(parents=True, exist_ok=True)
+    nib.save(nib.Nifti1Image(ang, affine, header), str(p))
+    print(f"  wrote {p.name} (fibre-to-B0 angle in deg; optional WM-anisotropy input)")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--qsmf-data", type=Path, default=Path.home() / "repos/qsm/qsm-forward/data")
@@ -135,6 +156,9 @@ def main() -> None:
         b = 1.0 if args.full_head else mask.astype(np.float32)
         write_maps_dataset(args.out, chi_total * b, r2prime * b, mask,
                            chi_pos * b, chi_neg * b, tp.nii_affine, tp.nii_header)
+        if aniso and tp.v1 is not None:
+            write_fiber_angle(args.out, tp.v1.get_fdata(), B0_DIR, tp.nii_affine, tp.nii_header,
+                              mask.shape, (mask if args.full_head else mask).astype(np.float32))
         print(f"--maps-only: wrote maps dataset to {args.out} (no field/signal sim).")
     else:
         print("Simulating field + χ-separation GRE signal...")
@@ -163,6 +187,10 @@ def main() -> None:
         if not args.full_head:
             mask_derived_to_brain(args.out)
             print("Masked derived maps + ground truth to the brain (raw phase/magnitude kept whole-head).")
+        if aniso and tp.v1 is not None:  # optional DTI-orientation input, on the packed (downsampled) grid
+            mimg = nib.load(str(args.out / "inputs" / "mask.nii.gz"))
+            write_fiber_angle(args.out, tp.v1.get_fdata(), B0_DIR, mimg.affine, mimg.header,
+                              mimg.shape, mimg.get_fdata())
         print("Done. Re-score methods after regenerating.")
 
     if args.validate:
