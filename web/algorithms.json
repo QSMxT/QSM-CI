@@ -298,6 +298,32 @@
       "ci_notes": []
     },
     {
+      "slug": "chisep-null",
+      "name": "Null baseline (closed-form)",
+      "stage": "chi-separation",
+      "inputs": [
+        "r2prime",
+        "chimap",
+        "mask",
+        "params"
+      ],
+      "domain": "chisep",
+      "engine": "Independent",
+      "language": "Python",
+      "family": "direct",
+      "learning": "none",
+      "description": "The closed-form analytic null baseline for \u03c7-separation: per voxel it solves the benchmark's own two source-model equations (\u03c7+ + \u03c7- = \u03c7_total; Dr+\u00b7\u03c7+ + Dr-\u00b7|\u03c7-| = R2') exactly from the two provided inputs \u2014 no dipole inversion, no regularisation, no learning. Relaxivities are the field-scaled literature calibration (Dr+ = 137\u00b7B0/3 Hz/ppm, Shin 2021; Dr- via the Yablonskiy-Haacke cylinder/sphere static-dephasing ratio). On an isotropic single-kernel phantom this inverts the phantom's own arithmetic and is EXACT; wherever tissue physics departs from that arithmetic (e.g. mechanistic, orientation-dependent white-matter R2') it fails in a structured way. Its score is the benchmark's honest floor: a real method demonstrates separation skill only by beating it.",
+      "citation": "model equations from Shin et al., NeuroImage 2021; kernel ratio from Yablonskiy & Haacke, MRM 1994 (10.1002/mrm.1910320610)",
+      "doi": "10.1016/j.neuroimage.2021.118371",
+      "code_url": "https://github.com/QSMxT/QSM-CI",
+      "license": "MIT",
+      "authors": [
+        "QSM-CI"
+      ],
+      "parameters": [],
+      "ci_notes": []
+    },
+    {
       "slug": "chisepnet",
       "name": "\u03c7-sepnet",
       "stage": "chi-separation",
