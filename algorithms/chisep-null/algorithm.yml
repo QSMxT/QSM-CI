@@ -1,0 +1,28 @@
+name: Null baseline (closed-form)
+slug: chisep-null
+algorithm: "null"
+source: qsmci
+stage: chi-separation
+language: Python
+family: direct
+learning: none
+engine: Independent
+inputs: [chimap, r2prime, mask, params]  # the artifacts this method actually reads (a subset of the stage's inputs)
+description: >
+  The closed-form analytic null baseline for χ-separation: per voxel it solves the benchmark's own
+  two source-model equations (χ+ + χ- = χ_total; Dr+·χ+ + Dr-·|χ-| = R2') exactly from the two
+  provided inputs — no dipole inversion, no regularisation, no learning. Relaxivities are the
+  field-scaled literature calibration (Dr+ = 137·B0/3 Hz/ppm, Shin 2021; Dr- via the
+  Yablonskiy-Haacke cylinder/sphere static-dephasing ratio). On an isotropic single-kernel phantom
+  this inverts the phantom's own arithmetic and is EXACT; wherever tissue physics departs from that
+  arithmetic (e.g. mechanistic, orientation-dependent white-matter R2') it fails in a structured
+  way. Its score is the benchmark's honest floor: a real method demonstrates separation skill only
+  by beating it.
+authors:
+- name: QSM-CI
+doi: 10.1016/j.neuroimage.2021.118371
+citation: model equations from Shin et al., NeuroImage 2021; kernel ratio from Yablonskiy & Haacke, MRM 1994 (10.1002/mrm.1910320610)
+code_url: https://github.com/QSMxT/QSM-CI
+license: MIT
+image: ghcr.io/astewartau/qsm-ci/py-ref:v1
+run: bash run.sh
