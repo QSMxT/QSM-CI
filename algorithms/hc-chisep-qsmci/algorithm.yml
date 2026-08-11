@@ -23,12 +23,7 @@ description: >
   χ+ = R2'/Dr+, |χ−| = χ+ − χ_total (Dr− = 0 outside myelinated WM, the Ridani et al. relaxivity
   convention). Dr+ is self-calibrated from the inputs (robust lower envelope of R2'/χ_total;
   fallback 137·B0/3 Hz/ppm, Shin 2021). Falls back to the closed-form solve everywhere when no
-  hollow-cylinder-consistent voxels are found. Pure Python on CPU — no weights, no network.
-  MATCHED-MODEL CAVEAT: the forward family (hollow-cylinder pools with qsm-forward's WM_HC_PARAMS,
-  the MWF↔χ− anchor, and the Ridani Dr convention) is the same published model family the phantom
-  generator implements, so HC-ChiSep should be read as the reference/mechanistic baseline for this
-  benchmark — an upper reference for what the inputs support when the model class is right — not as
-  a model-agnostic competitor.
+  hollow-cylinder-consistent voxels are found.
 authors:
 - name: Ashley Stewart
 doi: null
