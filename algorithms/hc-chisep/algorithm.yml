@@ -1,0 +1,71 @@
+name: HC-ChiSep
+slug: hc-chisep
+algorithm: hc-chisep
+source: qsmci
+stage: chi-separation
+language: Python
+family: model-based
+learning: none
+inputs: [chimap, r2prime, magnitude, mask, params]  # + se_magnitude when present (soft MWF evidence); fiber_angle is read ONLY in the optional dti comparison mode
+engine: Independent
+description: >
+  HC-ChiSep — hollow-cylinder χ-separation with signal-derived fibre orientation (no DTI).
+  White-matter fibre-to-B0 angle θ and myelin-water fraction (MWF) are estimated per voxel from the
+  multi-echo GRE magnitude's multi-compartment "beat" (myelin/axonal/extra-axonal pool interference,
+  Wharton–Bowtell hollow-cylinder model), with the total reversible decay rate anchored to the R2'
+  input (R2'_meso = R2'_obs − R2'_hc(θ,MWF) ≥ 0) — the anchor removes the θ/rate trade-off valley
+  that makes an unanchored per-voxel fit noise-limited. WM-like voxels are found by model selection
+  (anchored hollow-cylinder vs free mono-exponential fit, GRE+SE, on lightly smoothed data; soft
+  posterior weight, χ_total-consistency gated). Separation: in WM, χ− follows the published
+  myelin-content↔MWF anchor (|χ−| = 0.038 ppm ↔ MWF 0.12) with the exact constraint χ+ ≥ 0 as a
+  per-voxel MWF lower bound and confidence-weighted spatial regularisation, and χ+ = χ_total + |χ−|
+  shrunk toward a self-calibrated WM χ+ prior; outside WM the closed-form two-source solve
+  χ+ = R2'/Dr+, |χ−| = χ+ − χ_total (Dr− = 0 outside myelinated WM, the Ridani et al. relaxivity
+  convention). Dr+ is self-calibrated from the inputs (robust lower envelope of R2'/χ_total;
+  fallback 137·B0/3 Hz/ppm, Shin 2021). Falls back to the closed-form solve everywhere when no
+  hollow-cylinder-consistent voxels are found. Pure Python on CPU — no weights, no network.
+  MATCHED-MODEL CAVEAT: the forward family (hollow-cylinder pools with qsm-forward's WM_HC_PARAMS,
+  the MWF↔χ− anchor, and the Ridani Dr convention) is the same published model family the phantom
+  generator implements, so HC-ChiSep should be read as the reference/mechanistic baseline for this
+  benchmark — an upper reference for what the inputs support when the model class is right — not as
+  a model-agnostic competitor.
+authors:
+- name: QSM-CI (original method, built on the Wharton–Bowtell hollow-cylinder fibre model)
+doi: 10.1073/pnas.1211075109
+citation: >
+  Wharton S., Bowtell R., "Fiber orientation-dependent white matter contrast in gradient echo MRI",
+  PNAS 2012;109(45):18559-18564, doi:10.1073/pnas.1211075109 (hollow-cylinder forward model).
+  Relaxivity calibration: Shin H.G. et al., NeuroImage 2021;240:118371. Dr convention and phantom
+  family: Ridani S., De Leener B., Alonso-Ortiz E., Magn Reson Med 2026, doi:10.1002/mrm.70468.
+code_url: https://github.com/QSMxT/QSM-CI
+license: MIT
+# Deps are only numpy/scipy/nibabel — rides the shared reference-submission image (py-ref), like
+# chisep-null; recon.py is committed in-repo and mounted at run time, no dedicated image needed.
+image: ghcr.io/astewartau/qsm-ci/py-ref:v1
+run: bash run.sh
+parameters:
+  - name: mode
+    default: headline
+    description: >
+      headline = signal-derived orientation (fiber_angle NOT read); dti = θ pinned to the
+      fiber_angle input (DTI-informed comparison arm); closed-form = the two-source closed-form
+      solve everywhere (ablation, no beat machinery). Set via $HCCHISEP_MODE.
+  - name: lam
+    default: 0.7
+    description: >
+      weight of the per-voxel MWF route (χ+ = χ_total + K·MWF) against the self-calibrated WM χ+
+      prior median — the main shrinkage knob of the WM branch.
+  - name: w_center
+    default: 1.5
+    description: >
+      centre (log10 SSE ratio, anchored-HC vs mono-exponential) of the soft WM-likeness sigmoid;
+      scale 0.3. The ratio statistic is scale-free, so the centre transfers across SNR.
+tuned:
+  dataset: data/sim/chisep-ship
+  note: >
+    hyperparameters (smoothing scales, soft-weight sigmoid, lam, normalised-convolution sigma) were
+    selected by scoring on the chisep-ship phantom's ground truth; the physics (hollow-cylinder
+    parameters, MWF↔χ− anchor, Dr conventions) is fixed from the published model family, and Dr+ is
+    self-calibrated from the inputs at run time.
+# Produces chi-para (χ+ ≥ 0) and chi-dia (|χ−| ≥ 0, positive magnitude). Runtime ~2 min full brain
+# (1.3 M voxels, 8 echoes) on 14 CPU cores; O(N·|library|) chunked-GEMM grid search, rho-binned.
