@@ -4,6 +4,10 @@
 The submission page fetches this manifest to show what each algorithm is — description, parameters,
 citation/DOI, source, and any `ci_notes` — and the leaderboard uses it to badge methods that carry
 notes on how QSM-CI runs them.
+
+It also embeds the dataset/phantom registry (scripts/datasets.json) as a `datasets` block, so the
+site can label runs by the phantom they were scored on (run rows carry a `phantom` field; absence
+means the track's default phantom) and offer per-phantom filtering where a track has several.
 """
 from __future__ import annotations
 
@@ -110,7 +114,10 @@ def build() -> dict:
         validate(d, meta, valid_stages)
         meta.setdefault("slug", d.name)
         algos.append(entry(meta))
-    return {"algorithms": algos}
+    # The dataset/phantom registry, verbatim — the web needs the label/track/default fields to name
+    # phantoms and pick each track's default (a run row without a `phantom` field is the default).
+    datasets = json.loads((ROOT / "scripts" / "datasets.json").read_text())
+    return {"algorithms": algos, "datasets": datasets}
 
 
 def render(manifest: dict) -> str:

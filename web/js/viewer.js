@@ -6,7 +6,7 @@ import { Niivue } from "https://unpkg.com/@niivue/niivue@0.57.0/dist/index.js";
 import { renderResources } from "./resourceChart.js";
 import { makeWindowControl, winControls } from "./windowControl.js";
 
-const { loadRuns, loadAlgos, loadRegistry, doiFor, METRICS, STAGE_LABEL, val, fmt, robustRange, heatScale } = window.QSM;
+const { loadRuns, loadAlgos, loadDatasets, loadRegistry, doiFor, METRICS, STAGE_LABEL, val, fmt, robustRange, heatScale } = window.QSM;
 
 const STAGE_COLOR = {
   "field-mapping": "bg-indigo-50 text-indigo-700 ring-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-300 dark:ring-indigo-500/20",
@@ -152,7 +152,7 @@ function renderHowToRun() {
   }));
 }
 
-let allRuns = [], algos = [], registry = {};
+let allRuns = [], algos = [], registry = {}, datasetsReg = {};
 let nv = null, run, baseUrl, filter = "", navMode = "stages", domain = "qsm";
 let curBase = "recon";       // base map shown underneath: recon | truth
 let chisepComp = "para";     // χ-separation source shown: para (χ+) | dia (χ−)
@@ -175,6 +175,13 @@ const composedRuns = () => allRuns.filter((r) => r.mode === "composed" && r.comb
 const chisepRuns = () => allRuns.filter((r) => (r.domain === "chisep" || r.stage === "chi-separation")
   && (r.variant || "default") === "default");
 const hasChisep = () => chisepRuns().length > 0;
+// χ-separation phantoms (the chisep-track entries of the dataset registry, shipped in
+// algorithms.json's `datasets` block): a run row's `phantom` field names the phantom it was scored
+// on; absence (older rows) means the track's default phantom.
+const chisepPhantomIds = () => Object.keys(datasetsReg).filter((k) => datasetsReg[k].track === "chisep");
+const chisepDefaultPhantom = () => chisepPhantomIds().find((k) => datasetsReg[k].default) || "chisep";
+const chisepPhantomOf = (r) => (chisepPhantomIds().includes(r.phantom) ? r.phantom : chisepDefaultPhantom());
+const phantomLabel = (p) => (datasetsReg[p] || {}).label || p;
 // In-vivo (2016 challenge) runs: a distinct DATASET (not just a domain) — dipole-only, scored vs
 // COSMOS + STI χ33. One flat list, default variant only, like χ-separation.
 const isInvivo = (r) => r.track === "invivo";
@@ -241,11 +248,12 @@ function currentCombo() {
 }
 function runItem(r, activeId) {
   const active = r && r.id === activeId;
-  // χ-separation rows carry no plain xsim; headline the mean χ+/χ− detrended NRMSE (the leaderboard's
-  // ranking metric — scale-independent and, unlike xSIM, sensitive to the anisotropy magnitude error).
+  // χ-separation rows carry no plain xsim; headline the mean χ+/χ− per-ROI MSPE (the leaderboard's
+  // ranking metric, following Ridani et al. 2026), falling back to detrended NRMSE where MSPE is absent.
   const m = (r && r.metrics) || {};
   let hv, hk = "xsim";
   if (m.xsim != null) hv = m.xsim;
+  else if (m.para_mspe != null && m.dia_mspe != null) { hv = (m.para_mspe + m.dia_mspe) / 2; hk = "mspe"; }
   else if (m.para_nrmse_detrend != null && m.dia_nrmse_detrend != null) { hv = (m.para_nrmse_detrend + m.dia_nrmse_detrend) / 2; hk = "nrmse_detrend"; }
   else if (m.para_xsim != null && m.dia_xsim != null) hv = (m.para_xsim + m.dia_xsim) / 2;
   else hv = r ? val(r, "xsim") : null;
@@ -300,8 +308,15 @@ function chisepHTML() {
   const f = filter.toLowerCase();
   const rs = chisepRuns().filter((r) => !f || r.name.toLowerCase().includes(f));
   if (!rs.length) return `<p class="p-3 text-sm text-gray-400">No χ-separation methods yet.</p>`;
-  const rows = rs.map((r) => runItem(r, run?.id).replace("%NAME%", r.name)).join("");
-  return `<div class="mb-3"><div class="px-2.5 pt-1 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">χ-separation</div>${rows}</div>`;
+  // Group by the phantom each run was scored on (default phantom first). With a single phantom this
+  // renders the one historical "χ-separation" section unchanged.
+  const d = chisepDefaultPhantom();
+  const phs = uniq(rs.map(chisepPhantomOf)).sort((a, b) => (a === d ? -1 : b === d ? 1 : a < b ? -1 : 1));
+  return phs.map((p) => {
+    const rows = rs.filter((r) => chisepPhantomOf(r) === p).map((r) => runItem(r, run?.id).replace("%NAME%", r.name)).join("");
+    const head = phs.length > 1 ? `χ-separation · ${phantomLabel(p)}` : "χ-separation";
+    return `<div class="mb-3"><div class="px-2.5 pt-1 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">${head}</div>${rows}</div>`;
+  }).join("");
 }
 function invivoHTML() {
   const f = filter.toLowerCase();
@@ -459,8 +474,11 @@ async function loadRun() {
   $("sub-title").textContent = run.name;
   const stageCls = STAGE_COLOR[run.stage] || "bg-gray-100 text-gray-600 ring-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-700";
   const ds = DATASET_BADGE[datasetOf(run)];
+  // A χ-separation run on a non-default phantom names that phantom (registry label) in its badge.
+  const dsLabel = (datasetOf(run) === "chisep" && chisepPhantomOf(run) !== chisepDefaultPhantom())
+    ? phantomLabel(chisepPhantomOf(run)) : ds[0];
   $("sub-badges").innerHTML =
-    badge(ds[0], ds[1]) +
+    badge(dsLabel, ds[1]) +
     badge(STAGE_LABEL[run.stage] || run.stage, stageCls) +
     badge(run.mode === "composed" ? "Composed pipeline" : "Isolated", "bg-gray-100 text-gray-600 ring-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-700") +
     (run.status === "DNF" ? badge("DNF", "bg-red-50 text-red-600 ring-red-100 dark:bg-red-500/10 dark:text-red-400 dark:ring-red-500/20") : "") +
@@ -573,6 +591,10 @@ function renderChisepMetrics() {
     const p = r.metrics ? r.metrics.para_xsim : null, d = r.metrics ? r.metrics.dia_xsim : null;
     return (p != null && d != null) ? (p + d) / 2 : null;
   };
+  const avgMspeAcc = (r) => {
+    const p = r.metrics ? r.metrics.para_mspe : null, d = r.metrics ? r.metrics.dia_mspe : null;
+    return (p != null && d != null) ? (p + d) / 2 : null;
+  };
   const rtAcc = (r) => (r.runtime_s == null ? null : r.runtime_s);
   const memAcc = (r) => (r.mem_peak_bytes == null ? null : r.mem_peak_bytes);
   const cpuAcc = (r) => (r.cpu_cores_avg == null ? null : r.cpu_cores_avg);
@@ -583,23 +605,26 @@ function renderChisepMetrics() {
   // rows: [label, accessor, formatKey, arrow, tip]: accessor(r) yields the value for run r (so peers
   // can be ranked the same way), arrow "↑" = higher-is-better.
   const groups = [
-    [null, [["Avg xSIM", avgAcc, "xsim", "↑", "Mean of the χ+ and χ− xSIM: the headline combined score."]]],
+    [null, [["Avg MSPE", avgMspeAcc, "pct", "↓", "Mean of the χ+ and χ− per-ROI MSPE: the headline combined score (Ridani et al. 2026)."]]],
     ["χ+ paramagnetic (iron, veins)", [
+      ["MSPE", mv("para_mspe"), "pct", "↓", "Per-ROI MSPE of χ+ over the iron nuclei + GM (mean squared %-error of ROI means). WM excluded (χ+ ~1 ppb → unstable %)."],
       ["xSIM", mv("para_xsim"), "xsim", "↑", "Structural similarity of χ+ vs ground truth."],
       ["NRMSE", mv("para_nrmse"), "pct", "↓", "Normalised RMS error of χ+ (%)."],
       ["DGM NRMSE", mv("para_nrmse_dgm"), "pct", "↓", "χ+ error in deep gray matter (iron)."],
       ["DGM linearity", mv("para_dgm_linearity"), "num", "↓", "|1 − slope| of χ+ across DGM iron regions; 0 = perfect iron quantification."],
       ["Vein NRMSE", mv("para_nrmse_blood"), "pct", "↓", "χ+ error in venous blood."],
       ["Ca leak", mv("para_calc_leak"), "num", "↓", "Mean |χ+| in the calcification (should be ~0): calcium wrongly bleeding into the paramagnetic map."],
-      ["χ−→χ+ leak", mv("para_leak"), "num", "↓", "Whole-brain regression slope of χ+ on the χ− ground truth: the fraction of diamagnetic signal bleeding into the paramagnetic map (0 = clean). Unlike xSIM it isn't fooled by the shared R2' common mode."],
+      ["χ−→χ+ leak", mv("para_leak"), "num", "↓", "Regression slope of χ+ on the χ− ground truth: how much diamagnetic signal bleeds into the paramagnetic map. 0 = clean; positive = leakage; negative = over-separation (χ+ suppressed where χ− is strong)."],
     ]],
     ["χ− diamagnetic (calcium, myelin)", [
+      ["MSPE", mv("dia_mspe"), "pct", "↓", "Per-ROI MSPE of χ− over the fibre-bundle atlas WM sub-ROIs (Ridani et al. 2026, Fig 3) — the metric anisotropy makes hardest."],
       ["xSIM", mv("dia_xsim"), "xsim", "↑", "Structural similarity of χ− vs ground truth."],
       ["NRMSE", mv("dia_nrmse"), "pct", "↓", "Normalised RMS error of χ− (%)."],
       ["Ca dev", mv("dia_calc_moment_dev"), "num", "↓", "Deviation of the recovered calcification's susceptibility moment."],
       ["Streaking", mv("dia_calc_streak"), "num", "↓", "Streaking-artifact level around the calcification."],
+      ["MEV", mv("dia_mev"), "pct", "↓", "Maximum error variation (Ridani et al. 2026, Fig 5): fractional drop in χ− error from fibres parallel to B0 to perpendicular. A diagnostic of orientation-dependent error, not a ranking metric."],
       ["Fe leak", mv("dia_iron_leak"), "num", "↓", "Mean |χ−| in DGM/veins (should be ~0): iron wrongly bleeding into the diamagnetic map."],
-      ["χ+→χ− leak", mv("dia_leak"), "num", "↓", "Whole-brain regression slope of χ− on the χ+ ground truth: the fraction of paramagnetic signal bleeding into the diamagnetic map (0 = clean). The whole-map counterpart to the DGM iron leakage above; unlike xSIM it isn't fooled by the shared R2' common mode."],
+      ["χ+→χ− leak", mv("dia_leak"), "num", "↓", "Regression slope of χ− on the χ+ ground truth: how much paramagnetic signal bleeds into the diamagnetic map. 0 = clean; positive = leakage; negative = over-separation (χ− suppressed where χ+ is strong)."],
     ]],
     ["Resources", [
       ["Runtime", rtAcc, "sec", "↓", "Wall-clock runtime."],
@@ -613,7 +638,7 @@ function renderChisepMetrics() {
     for (const [label, acc, fk, arrow, tip] of rows) {
       const v = acc(run);
       if (v == null) continue;
-      const hero = label === "Avg xSIM";
+      const hero = label === "Avg MSPE";
       const rk = rankBy(acc, arrow === "↑");
       const rankCell = rk
         ? `<span class="inline-block rounded-md px-1.5 py-0.5 text-xs font-semibold text-white shadow-sm" style="background:${heatScale(rk.t)}" data-tip="Rank ${rk.rank} of ${rk.n} χ-separation methods for ${label}">#${rk.rank}<span class="opacity-70"> / ${rk.n}</span></span>`
@@ -868,7 +893,7 @@ function setErrorColormap() {
 
 // ---- boot -------------------------------------------------------------------
 async function init() {
-  [allRuns, algos, registry] = await Promise.all([loadRuns(), loadAlgos(), loadRegistry()]);
+  [allRuns, algos, registry, datasetsReg] = await Promise.all([loadRuns(), loadAlgos(), loadRegistry(), loadDatasets()]);
   // Accept ?run=<run-id> (e.g. ismv-iso), or a bare slug via ?run= / ?method= (e.g. ?method=ismv,
   // the form Zenodo records link to) → resolve to that algorithm's isolated run.
   const q = new URLSearchParams(location.search);

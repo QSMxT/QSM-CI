@@ -1,0 +1,33 @@
+name: R2*-QSM
+slug: r2star-qsm
+algorithm: r2star-qsm
+source: dimov
+stage: chi-separation
+language: Python
+family: direct
+learning: none
+engine: Independent
+inputs: [magnitude, chimap, mask, params]  # signal-domain: R2* from multi-echo magnitude + provided χ_total
+description: >
+  Susceptibility source separation from gradient-echo data alone (Dimov et al. 2022). R2* is fit
+  from the multi-echo GRE magnitude and combined with the QSM (χ_total) under a single-relaxometric-
+  constant model, R2* = 𝓇·(|χ+| + |χ−|) with χ_total = χ+ + χ−, solved per voxel in closed form
+  (χ+ = (χ_total + R2*/𝓇)/2, |χ−| = (R2*/𝓇 − χ_total)/2) with the physical constraints χ+ ≥ 0,
+  χ− ≤ 0. Unlike the R2'-based methods it needs no separate R2/R2' measurement — the trade-off is
+  that R2* carries the irreversible tissue R2 baseline, which the single constant 𝓇 absorbs
+  (Dimov's empirical 𝓇 = 274 Hz/ppm at 3 T is below the theoretic 321 for this reason). 𝓇 is
+  field-scaled to the acquisition (274·B0/3 Hz/ppm), the method's own assumption rather than a fit
+  to this phantom. This reference implementation is the paper's voxel-level solve; the full method
+  adds a field data-consistency term (auto-satisfied when χ_total is provided) and an edge-masked L1
+  regularisation, omitted here. Pure Python on CPU — no weights, no network.
+authors:
+- name: QSM-CI (implementation of Dimov et al. 2022)
+doi: 10.1111/jon.13014
+citation: >
+  Dimov A.V. et al., "Magnetic Susceptibility Source Separation Solely from Gradient Echo Data:
+  Histological Validation", Tomography 2022;8(3):1544-1551 (and J Neuroimaging 2022,
+  doi:10.1111/jon.13014). R2* susceptibility model: Yablonskiy & Haacke, Magn Reson Med 1994.
+code_url: https://github.com/QSMxT/QSM-CI
+license: MIT
+image: ghcr.io/astewartau/qsm-ci/r2star-qsm:v1
+run: bash run.sh

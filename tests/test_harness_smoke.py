@@ -40,12 +40,13 @@ def _dataset(root: Path, *, sti: bool = False) -> Path:
     return root
 
 
-def _run(dataset: Path, runs_out: Path, work: Path, *, mode: str, track: str, include: str) -> list:
-    env = {**os.environ, "QSMCI_ALGORITHMS_DIR": str(METHODS)}
+def _run(dataset: Path, runs_out: Path, work: Path, *, mode: str, track: str, include: str,
+         extra: tuple = (), env_extra: "dict | None" = None) -> list:
+    env = {**os.environ, "QSMCI_ALGORITHMS_DIR": str(METHODS), **(env_extra or {})}
     subprocess.run(
         [sys.executable, str(ROOT / "scripts" / "pipeline.py"),
          "--dataset", str(dataset), "--mode", mode, "--runner", "local", "--track", track,
-         "--include", include, "--runs-out", str(runs_out), "--work", str(work)],
+         "--include", include, "--runs-out", str(runs_out), "--work", str(work), *extra],
         cwd=str(ROOT), env=env, check=True)
     return json.loads(runs_out.read_text())
 
@@ -69,6 +70,34 @@ def test_composed_matrix_runs(tmp_path):
     composed = [r for r in runs if r.get("mode") == "composed" and r.get("artifact") == "chimap"]
     assert composed, "no composed chimap run produced"
     assert any(r["metrics"].get("correlation", 0) > 0.99 for r in composed)
+
+
+def test_phantom_namespacing(tmp_path):
+    """--phantom on a NON-default phantom must suffix run ids with -<phantom-id> and stamp the rows
+    with a `phantom` field, while the track's default phantom keeps the bare legacy ids — the
+    contract that lets several phantoms of one track coexist in results/index.json."""
+    reg = json.loads((ROOT / "scripts" / "datasets.json").read_text())
+    reg["sim-alt"] = {"track": "sim", "label": "Alt phantom", "osf_file": "x",
+                      "path": "data/sim-alt/scoring", "active": True}
+    regfile = tmp_path / "datasets.json"
+    regfile.write_text(json.dumps(reg))
+    env = {"QSMCI_DATASETS_FILE": str(regfile)}
+    ds = _dataset(tmp_path / "ds")
+
+    # non-default phantom: namespaced ids + phantom field
+    runs = _run(ds, tmp_path / "runs-alt.json", tmp_path / "work-alt",
+                mode="isolated", track="sim", include="cp-method",
+                extra=("--phantom", "sim-alt"), env_extra=env)
+    r = next(r for r in runs if r["slug"] == "cp-method")
+    assert r["id"].endswith("-sim-alt") and r["phantom"] == "sim-alt"
+    assert r["metrics"]["correlation"] > 0.99
+
+    # default phantom: legacy bare ids, but the phantom field is still stamped
+    runs = _run(ds, tmp_path / "runs-def.json", tmp_path / "work-def",
+                mode="isolated", track="sim", include="cp-method",
+                extra=("--phantom", "sim"), env_extra=env)
+    r = next(r for r in runs if r["slug"] == "cp-method")
+    assert r["id"] == "cp-method-iso" and r["phantom"] == "sim"
 
 
 def test_invivo_two_reference_scoring(tmp_path):

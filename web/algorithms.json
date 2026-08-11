@@ -1746,6 +1746,32 @@
       "ci_notes": []
     },
     {
+      "slug": "r2star-qsm",
+      "name": "R2*-QSM",
+      "stage": "chi-separation",
+      "inputs": [
+        "chimap",
+        "magnitude",
+        "mask",
+        "params"
+      ],
+      "domain": "chisep",
+      "engine": "Independent",
+      "language": "Python",
+      "family": "direct",
+      "learning": "none",
+      "description": "Susceptibility source separation from gradient-echo data alone (Dimov et al. 2022). R2* is fit from the multi-echo GRE magnitude and combined with the QSM (\u03c7_total) under a single-relaxometric- constant model, R2* = \ud835\udcc7\u00b7(|\u03c7+| + |\u03c7\u2212|) with \u03c7_total = \u03c7+ + \u03c7\u2212, solved per voxel in closed form (\u03c7+ = (\u03c7_total + R2*/\ud835\udcc7)/2, |\u03c7\u2212| = (R2*/\ud835\udcc7 \u2212 \u03c7_total)/2) with the physical constraints \u03c7+ \u2265 0, \u03c7\u2212 \u2264 0. Unlike the R2'-based methods it needs no separate R2/R2' measurement \u2014 the trade-off is that R2* carries the irreversible tissue R2 baseline, which the single constant \ud835\udcc7 absorbs (Dimov's empirical \ud835\udcc7 = 274 Hz/ppm at 3 T is below the theoretic 321 for this reason). \ud835\udcc7 is field-scaled to the acquisition (274\u00b7B0/3 Hz/ppm), the method's own assumption rather than a fit to this phantom. This reference implementation is the paper's voxel-level solve; the full method adds a field data-consistency term (auto-satisfied when \u03c7_total is provided) and an edge-masked L1 regularisation, omitted here. Pure Python on CPU \u2014 no weights, no network.",
+      "citation": "Dimov A.V. et al., \"Magnetic Susceptibility Source Separation Solely from Gradient Echo Data: Histological Validation\", Tomography 2022;8(3):1544-1551 (and J Neuroimaging 2022, doi:10.1111/jon.13014). R2* susceptibility model: Yablonskiy & Haacke, Magn Reson Med 1994.\n",
+      "doi": "10.1111/jon.13014",
+      "code_url": "https://github.com/QSMxT/QSM-CI",
+      "license": "MIT",
+      "authors": [
+        "QSM-CI (implementation of Dimov et al. 2022)"
+      ],
+      "parameters": [],
+      "ci_notes": []
+    },
+    {
       "slug": "resharp-qsmrs",
       "name": "RESHARP",
       "stage": "bfr",
@@ -1786,6 +1812,32 @@
           "description": "Tikhonov regularization"
         }
       ],
+      "ci_notes": []
+    },
+    {
+      "slug": "ridani-null-qsmci",
+      "name": "Ridani null baseline (region-disjoint closed-form)",
+      "stage": "chi-separation",
+      "inputs": [
+        "r2prime",
+        "chimap",
+        "mask",
+        "params"
+      ],
+      "domain": "chisep",
+      "engine": "Independent",
+      "language": "Python",
+      "family": "direct",
+      "learning": "none",
+      "description": "The closed-form analytic null baseline for the Ridani et al. (2026) phantom family. It inverts the phantom's own region-disjoint, theoretical field-scaled forward model: paramagnetic relaxivity Dr+ = (2\u03c0)\u00b2\u00b7\u03b3\u00b7B0/(9\u221a3) (~107.84\u00b7B0 Hz/ppm) applied outside white matter, diamagnetic relaxivity Dr-(\u03b8) = \u00bd\u00b7\u03b3\u00b72\u03c0\u00b7B0\u00b7sin\u00b2\u03b8 (~133.77\u00b7B0\u00b7sin\u00b2\u03b8) inside white matter (a field-scaled constant when no fibre orientation is available). The white-matter region is read from the provided segmentation (dseg, label 8), and each region is solved with its own closed form (\u03c7+ = R2'/Dr+ outside WM; |\u03c7-| = R2'/Dr- inside WM), so on the isotropic phantom it is EXACT. On the anisotropic phantom, lacking per-voxel \u03b8, it assumes a constant WM Dr- and mis-estimates WM \u03c7- by the orientation modulation \u2014 that residual is the anisotropy signal the benchmark measures. Where an optional fibre-angle input (fiber_angle.nii.gz) is shipped, it uses the orientation-dependent Dr-(\u03b8) and its WM \u03c7- becomes near-exact, quantifying how much that DTI input gives away. Its score is the honest floor for this dataset family: a real method demonstrates separation skill only by beating it without the held-out segmentation. Distinct from chisep-null (which inverts the co-located single-kernel Dr+=137\u00b7B0/3 model); this baseline pairs with the Ridani datasets, as chisep-null pairs with the fixed-Dr \u03c7-sep dataset.",
+      "citation": "Stewart A., \"ridani-null: the region-disjoint closed-form null baseline for the Ridani susceptibility-separation phantom\", QSM-CI, 2026. Forward model: Ridani D., De Leener B., Alonso-Ortiz E., Magn Reson Med 2026, doi:10.1002/mrm.70468; relaxivities Yablonskiy & Haacke, Magn Reson Med 1994, doi:10.1002/mrm.1910320610.\n",
+      "doi": null,
+      "code_url": "https://github.com/QSMxT/QSM-CI",
+      "license": "MIT",
+      "authors": [
+        "Ashley Stewart"
+      ],
+      "parameters": [],
       "ci_notes": []
     },
     {
@@ -2471,5 +2523,61 @@
       "parameters": [],
       "ci_notes": []
     }
-  ]
+  ],
+  "datasets": {
+    "sim": {
+      "track": "sim",
+      "label": "In silico (2019)",
+      "osf_file": "698ac9aecae88916d1e24f69",
+      "path": "data/sim/scoring",
+      "active": true,
+      "default": true
+    },
+    "invivo": {
+      "track": "invivo",
+      "label": "In vivo (2016)",
+      "osf_env": "OSF_FILE_INVIVO",
+      "osf_file": "hw9rn",
+      "path": "data/invivo/scoring",
+      "prepacked": true,
+      "active": true,
+      "default": true
+    },
+    "ridani-3t-iso": {
+      "track": "chisep",
+      "label": "Ridani 3T isotropic",
+      "osf_env": "OSF_FILE_RIDANI_3T_ISO",
+      "prepacked": true,
+      "path": "data/ridani-3t-iso/scoring",
+      "active": true,
+      "default": false
+    },
+    "ridani-3t-aniso": {
+      "track": "chisep",
+      "label": "Ridani 3T anisotropic",
+      "osf_env": "OSF_FILE_RIDANI_3T_ANISO",
+      "prepacked": true,
+      "path": "data/ridani-3t-aniso/scoring",
+      "active": true,
+      "default": false
+    },
+    "ridani-7t-aniso": {
+      "track": "chisep",
+      "label": "Ridani 7T anisotropic",
+      "osf_env": "OSF_FILE_RIDANI_7T_ANISO",
+      "prepacked": true,
+      "path": "data/ridani-7t-aniso/scoring",
+      "active": true,
+      "default": false
+    },
+    "chisep-mc": {
+      "track": "chisep",
+      "label": "\u03c7-sep multicompartment (7T)",
+      "osf_env": "OSF_FILE_CHISEP_MC",
+      "prepacked": true,
+      "path": "data/chisep-mc/scoring",
+      "active": true,
+      "default": true
+    }
+  }
 }

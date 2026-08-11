@@ -116,7 +116,8 @@ def shard_partition(items: "list", spec: "str | None") -> "list":
 
 def eval_argv(python: str, eval_path: Path, recon: Path, truth: Path, kind: str, mask: Path,
               artifact: str, out_json: Path, *, stage: str, name: str, track: str,
-              runtime=None, seg: "Path | None" = None, component: "str | None" = None) -> list[str]:
+              runtime=None, seg: "Path | None" = None, component: "str | None" = None,
+              wm_rois: "Path | None" = None, theta: "Path | None" = None) -> list[str]:
     """Build the `python qsm_eval.py …` argv the scorer subprocess runs.
 
     This is the flag-assembly the three scoring wrappers (pipeline.score, sweep.score_xsim,
@@ -137,4 +138,8 @@ def eval_argv(python: str, eval_path: Path, recon: Path, truth: Path, kind: str,
         cmd += ["--seg", str(seg)]
     if component is not None:  # χ-separation source (para=χ+, dia=χ−) for the source-specific metrics
         cmd += ["--component", component]
+    if wm_rois is not None:  # fibre-bundle atlas WM sub-ROIs for the χ− per-ROI MSPE
+        cmd += ["--wm-rois", str(wm_rois)]
+    if theta is not None:  # fibre-to-B0 angle map for the χ− orientation analysis (MEV)
+        cmd += ["--theta", str(theta)]
     return cmd
