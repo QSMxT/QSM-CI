@@ -60,13 +60,54 @@ def entry(meta: dict) -> dict:
     }
 
 
+# Submission well-formedness rules, enforced HERE (at authoring time, since every submission PR
+# regenerates the manifest) as well as in CI. Keep in sync with tests/test_submissions.py.
+REQUIRED_FIELDS = ("name", "slug", "stage", "image", "run")
+# Sources that carry a codebase reimplementation of a generic technique — tagged into the slug
+# (algorithm[-variant]-source). Branded/unique published methods (any other source) stay bare.
+_TAGGED_SOURCES = {"qsmrs", "sti", "cornell", "qsmci"}
+
+
+def _valid_stages() -> set:
+    stages_yml = yaml.safe_load((ROOT / "stages.yml").read_text())
+    return set(stages_yml.get("stages", {})) | set(stages_yml.get("spans", {}))
+
+
+def validate(d: Path, meta: dict, valid_stages: set) -> None:
+    """Fail fast, with the same messages the CI gate (tests/test_submissions.py) would produce —
+    so a malformed algorithm.yml is caught on the author's machine, not after push."""
+    problems = []
+    for field in REQUIRED_FIELDS:
+        if not meta.get(field):
+            problems.append(f"missing required field '{field}'")
+    if meta.get("stage") and meta["stage"] not in valid_stages:
+        problems.append(f"unknown stage {meta['stage']!r} (valid: {sorted(valid_stages)})")
+    if meta.get("slug") and meta["slug"] != d.name:
+        problems.append(f"slug {meta['slug']!r} must equal the directory name {d.name!r}")
+    algorithm, source, variant = meta.get("algorithm"), meta.get("source"), meta.get("variant")
+    if not (algorithm and source):
+        problems.append("needs 'algorithm' and 'source' fields")
+    else:
+        parts = [algorithm] + ([variant] if variant else []) + ([source] if source in _TAGGED_SOURCES else [])
+        derived = "-".join(parts)
+        if meta.get("slug") != derived:
+            problems.append(
+                f"slug {meta.get('slug')!r} != derived {derived!r} "
+                f"(algorithm={algorithm}, variant={variant}, source={source}; "
+                f"tagged sources {sorted(_TAGGED_SOURCES)} get the -source suffix, branded ones stay bare)")
+    if problems:
+        sys.exit(f"gen_manifest: {d.name}/algorithm.yml is malformed:\n  - " + "\n  - ".join(problems))
+
+
 def build() -> dict:
     algos = []
+    valid_stages = _valid_stages()
     for d in sorted((ROOT / "algorithms").glob("*/")):
         mfile = d / "algorithm.yml"
         if d.name.startswith("_") or not mfile.exists():
             continue
         meta = yaml.safe_load(mfile.read_text())
+        validate(d, meta, valid_stages)
         meta.setdefault("slug", d.name)
         algos.append(entry(meta))
     return {"algorithms": algos}
