@@ -32722,6 +32722,88 @@
         "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/chisep-null-iso__error.nii.gz",
         "error-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/chisep-null-iso__error-dia.nii.gz"
       }
+    },
+    {
+      "id": "chisep-null-qsmci-iso",
+      "slug": "chisep-null-qsmci",
+      "name": "Null baseline (closed-form)",
+      "stage": "chi-separation",
+      "mode": "isolated",
+      "track": "sim",
+      "runtime_s": 12.078428745269775,
+      "variant": "default",
+      "domain": "chisep",
+      "kind": "chisep",
+      "metrics": {
+        "para_nrmse": 26.560239000647574,
+        "para_nrmse_detrend": 25.506971969516105,
+        "para_correlation": 0.9689756159059688,
+        "para_xsim": 0.6425172399950237,
+        "para_nrmse_dgm": 12.071276327074967,
+        "para_dgm_linearity": 0.302748579636841,
+        "para_nrmse_blood": 16.462989728389026,
+        "para_calc_leak": 0.009778272111857817,
+        "dia_nrmse": 36.22349942965692,
+        "dia_nrmse_detrend": 38.48800558455983,
+        "dia_correlation": 0.933262821047509,
+        "dia_xsim": 0.5509880780098495,
+        "dia_calc_moment_dev": 0.12861866800813004,
+        "dia_calc_streak": null,
+        "dia_iron_leak": 0.01658380663263334,
+        "para_leak": 0.0043517543467790345,
+        "dia_leak": -0.044643132052705176
+      },
+      "status": "ok",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/chisep-null-qsmci-iso__resources.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/chisep-null-qsmci-iso__recon.nii.gz",
+        "recon-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/chisep-null-qsmci-iso__recon-dia.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/chisep-null-qsmci-iso__truth.nii.gz",
+        "truth-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/chisep-null-qsmci-iso__truth-dia.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/chisep-null-qsmci-iso__error.nii.gz",
+        "error-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/chisep-null-qsmci-iso__error-dia.nii.gz"
+      }
+    },
+    {
+      "id": "hc-chisep-qsmci-iso",
+      "slug": "hc-chisep-qsmci",
+      "name": "HC-ChiSep",
+      "stage": "chi-separation",
+      "mode": "isolated",
+      "track": "sim",
+      "runtime_s": 49.712907791137695,
+      "variant": "default",
+      "domain": "chisep",
+      "kind": "chisep",
+      "metrics": {
+        "para_nrmse": 21.010308594923824,
+        "para_nrmse_detrend": 21.4899784507153,
+        "para_correlation": 0.9776792442504424,
+        "para_xsim": 0.9012557681210863,
+        "para_nrmse_dgm": 6.708344912312024,
+        "para_dgm_linearity": 0.0009774384339531483,
+        "para_nrmse_blood": 12.101766962562554,
+        "para_calc_leak": 0.007469836889670304,
+        "dia_nrmse": 32.34711644856476,
+        "dia_nrmse_detrend": 31.50272906729845,
+        "dia_correlation": 0.9537911862168139,
+        "dia_xsim": 0.9156011092173393,
+        "dia_calc_moment_dev": 0.12861866800813004,
+        "dia_calc_streak": null,
+        "dia_iron_leak": 0.017976632028128558,
+        "para_leak": -0.04808737064637001,
+        "dia_leak": -0.06456407747028056
+      },
+      "status": "ok",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/hc-chisep-qsmci-iso__resources.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/hc-chisep-qsmci-iso__recon.nii.gz",
+        "recon-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/hc-chisep-qsmci-iso__recon-dia.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/hc-chisep-qsmci-iso__truth.nii.gz",
+        "truth-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/hc-chisep-qsmci-iso__truth-dia.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/hc-chisep-qsmci-iso__error.nii.gz",
+        "error-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/hc-chisep-qsmci-iso__error-dia.nii.gz"
+      }
     }
   ]
 }
