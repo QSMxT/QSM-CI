@@ -83,11 +83,14 @@ def colocation(mask, gt_pos, gt_neg, thresholds=(0.01, 0.02, 0.03, 0.05, 0.10)):
     }
 
 
-def multicompartment_signature(mag, mask, gt_pos, gt_neg, te):
-    """Non-mono-exponential magnitude structure that tracks source content.
+def multicompartment_signature(mag, mask, gt_pos, gt_neg, te, fiber_angle=None, wm=None):
+    """Non-mono-exponential magnitude structure that tracks source content or fibre orientation.
 
     Per-voxel linear fit of log-magnitude vs TE (mono-exponential => zero residual up to noise); a
-    genuine multi-compartment beat leaves a residual that correlates with total source content."""
+    genuine multi-compartment beat leaves a residual. Two detectors: correlation with total source
+    content (χ-driven pools), and — when a fiber_angle input and a WM mask are available —
+    correlation with sin²θ inside WM (the hollow-cylinder beat is θ-driven, which the source-content
+    detector alone misses)."""
     if mag is None or mag.ndim != 4 or mag.shape[-1] < 3:
         return None
     lm = np.log(np.clip(mag, 1e-9, None))
@@ -97,7 +100,14 @@ def multicompartment_signature(mag, mask, gt_pos, gt_neg, te):
     resid = np.sqrt(((lm[mask] - pred) ** 2).mean(axis=1))
     src = (gt_pos + gt_neg)[mask]
     corr = float(np.corrcoef(resid, src)[0, 1]) if resid.std() > 0 and src.std() > 0 else 0.0
-    return {"resid_median": float(np.median(resid)), "corr_with_source": corr}
+    out = {"resid_median": float(np.median(resid)), "corr_with_source": corr}
+    if fiber_angle is not None and wm is not None and wm.any():
+        wm_in_mask = wm[mask]
+        s2 = np.sin(np.radians(fiber_angle[mask][wm_in_mask])) ** 2
+        r_wm = resid[wm_in_mask]
+        out["corr_with_sin2theta_wm"] = (
+            float(np.corrcoef(r_wm, s2)[0, 1]) if r_wm.std() > 0 and s2.std() > 0 else 0.0)
+    return out
 
 
 def main() -> None:
@@ -126,7 +136,11 @@ def main() -> None:
         "null_model": null_model(chi, r2p, mask, gt_pos, gt_neg, dr_values),
         "degeneracy": degeneracy(r2p, mask, gt_pos, gt_neg),
         "colocation": colocation(mask, gt_pos, gt_neg),
-        "multicompartment": multicompartment_signature(mag, mask, gt_pos, gt_neg, te) if te is not None else None,
+        "multicompartment": multicompartment_signature(
+            mag, mask, gt_pos, gt_neg, te,
+            fiber_angle=_load(d / "inputs" / "fiber_angle.nii.gz") if (d / "inputs" / "fiber_angle.nii.gz").exists() else None,
+            wm=(mask & (_load(d / "groundtruth" / "dseg.nii.gz") == 8)) if (d / "groundtruth" / "dseg.nii.gz").exists() else None,
+        ) if te is not None else None,
     }
 
     # ---- human-readable report + verdicts -------------------------------------------------------
@@ -165,9 +179,11 @@ def main() -> None:
 
     m = report["multicompartment"]
     if m is not None:
-        print(f"\n[4] MULTI-COMPARTMENT SIGNATURE  (mono-exp residual vs source content)")
-        print(f"    residual median={m['resid_median']:.4f}   corr_with_source={m['corr_with_source']:.3f}")
-        inert = abs(m["corr_with_source"]) < 0.2
+        print(f"\n[4] MULTI-COMPARTMENT SIGNATURE  (mono-exp residual vs source content / fibre angle)")
+        theta_bit = (f"   corr_with_sin2theta_wm={m['corr_with_sin2theta_wm']:.3f}"
+                     if "corr_with_sin2theta_wm" in m else "")
+        print(f"    residual median={m['resid_median']:.4f}   corr_with_source={m['corr_with_source']:.3f}{theta_bit}")
+        inert = abs(m["corr_with_source"]) < 0.2 and abs(m.get("corr_with_sin2theta_wm", 0.0)) < 0.2
         print(f"    -> {'INERT: ' if inert else ''}the magnitude "
               f"{'carries no' if inert else 'carries'} separable multi-compartment structure.")
     else:
