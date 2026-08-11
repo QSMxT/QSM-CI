@@ -30,7 +30,7 @@ description: >
   benchmark — an upper reference for what the inputs support when the model class is right — not as
   a model-agnostic competitor.
 authors:
-- name: QSM-CI (original method, built on the Wharton–Bowtell hollow-cylinder fibre model)
+- name: Ashley Stewart
 doi: 10.1073/pnas.1211075109
 citation: >
   Wharton S., Bowtell R., "Fiber orientation-dependent white matter contrast in gradient echo MRI",
@@ -39,9 +39,7 @@ citation: >
   family: Ridani S., De Leener B., Alonso-Ortiz E., Magn Reson Med 2026, doi:10.1002/mrm.70468.
 code_url: https://github.com/QSMxT/QSM-CI
 license: MIT
-# Deps are only numpy/scipy/nibabel — rides the shared reference-submission image (py-ref), like
-# chisep-null; recon.py is committed in-repo and mounted at run time, no dedicated image needed.
-image: ghcr.io/astewartau/qsm-ci/py-ref:v1
+image: ghcr.io/astewartau/qsm-ci/hc-chisep-qsmci:v1
 run: bash run.sh
 parameters:
   - name: mode
