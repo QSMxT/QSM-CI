@@ -97,6 +97,16 @@ jobs:
           TASKS=$(python3 - <<'PY'
           import json, os, re, glob
           full = os.environ['FULL'] == 'true'
+          # Dataset/phantom registry — single source of truth for the scoring datasets. A method
+          # family (track) can have several ACTIVE phantoms (e.g. chisep + the ridani variants), and
+          # each gets its own task; the track's default phantom keeps the legacy task/run ids while
+          # the others are namespaced with the phantom id.
+          REG = json.load(open('scripts/datasets.json'))
+          def track_phantoms(track):
+              ph = [k for k, v in REG.items() if v.get('track') == track and v.get('active')]
+              return sorted(ph, key=lambda k: (not REG[k].get('default'), k))  # default first
+          def task_id(prefix, slug, ph):
+              return prefix + slug + ('' if REG[ph].get('default') else '-' + ph)
           # Per-task runner routing, chosen by each method's `runner:` field in its algorithm.yml:
           #   (unset)      -> HOSTED:      ubuntu-latest, 180-min cap, 2 concurrent containers. Default;
           #                   scored inside the parallel shard sweep.
@@ -142,10 +152,16 @@ jobs:
               # `-invivo` id namespace (pipeline.py id_suffix), so they never collide with sim runs.
               return [{'id': 'iv-' + s, 'focus': s, 'phantom': 'invivo', 'track': 'invivo', **route(s)}
                       for s in sorted(slugs) if is_dipole(s) and not s.startswith('_')]
-          def phantom(slug):
-              # Which phantom this method scores on: χ-separation methods use the chisep dataset (χ+/χ−
-              # GT + R2'/χ_total inputs); everything else the QSM sim phantom.
-              return 'chisep' if is_chisep(slug) else 'sim'
+          def phantoms(slug):
+              # Which phantom(s) this method scores on: χ-separation methods run on EVERY active
+              # chisep-track phantom (χ+/χ− GT + R2'/χ_total inputs) — one task per method × phantom;
+              # everything else the QSM sim phantom.
+              return track_phantoms('chisep') if is_chisep(slug) else ['sim']
+          def focus_tasks(slugs):
+              # One focused task per (method, phantom). The default phantom keeps the legacy
+              # 'f-<slug>' task id; extra phantoms get 'f-<slug>-<phantom>'.
+              return [{'id': task_id('f-', s, ph), 'focus': s, 'phantom': ph, **route(s)}
+                      for s in slugs for ph in phantoms(s)]
           def dedicated():
               # Methods that run as their own focused job (not the shard sweep): a non-HOSTED runner OR a
               # χ-separation method (scored on a SEPARATE phantom, isolated-only — can't ride the QSM shard
@@ -164,13 +180,13 @@ jobs:
               ded = dedicated()
               excl = ','.join(ded)
               tasks = [{'id': 's%02d' % i, 'shard': '%d/%d' % (i, N), 'exclude': excl, 'phantom': 'sim', **HOSTED} for i in range(N)]
-              tasks += [{'id': 'f-' + s, 'focus': s, 'phantom': phantom(s), **route(s)} for s in ded]
+              tasks += focus_tasks(ded)
               # In-vivo leaderboard: an extra isolated invivo run of EVERY dipole method.
               all_slugs = [p.split('/')[1] for p in sorted(glob.glob('algorithms/*/algorithm.yml'))]
               tasks += invivo_tasks(all_slugs)
           else:
               slugs = json.loads(os.environ['SLUGS'])
-              tasks = [{'id': 'f-' + s, 'focus': s, 'phantom': phantom(s), **route(s)} for s in slugs]
+              tasks = focus_tasks(slugs)
               # A changed dipole method also re-scores on the in-vivo track.
               tasks += invivo_tasks(slugs)
           print(json.dumps(tasks))
@@ -201,31 +217,58 @@ jobs:
           pip install --upgrade setuptools setuptools_scm wheel
           pip install --no-build-isolation .
 
-      # Per-phantom OSF zip cache key: chisep and invivo each ship their own OSF file (a separate
-      # secret); the QSM sim phantom is the shared bids.zip.
+      # Resolve the task's phantom against the dataset registry (scripts/datasets.json): the
+      # per-phantom OSF zip cache key (osf-<phantom>-<file-id>), the local dataset path, and the
+      # scoring mode. Workflows can't index `secrets` dynamically, so each per-phantom OSF_FILE_*
+      # secret is passed into env here and the registry entry's `osf_env` picks the right one by
+      # name — adding a phantom = a scripts/datasets.json entry + one OSF_FILE_* env line here
+      # and on the fetch step below (named OSF_FILE_<PHANTOM-ID, uppercased, dashes→underscores>).
+      - name: Resolve dataset (scripts/datasets.json)
+        id: ds
+        env:
+          PHANTOM: ${{ matrix.task.phantom || 'sim' }}
+          OSF_FILE_INVIVO: ${{ secrets.OSF_FILE_INVIVO }}   # invivo_qsm2016.zip OSF file id (pre-flattened)
+          OSF_FILE_RIDANI_3T_ISO: ${{ secrets.OSF_FILE_RIDANI_3T_ISO }}      # Ridani 3T isotropic (pre-flattened)
+          OSF_FILE_RIDANI_3T_ANISO: ${{ secrets.OSF_FILE_RIDANI_3T_ANISO }}  # Ridani 3T anisotropic (pre-flattened)
+          OSF_FILE_RIDANI_7T_ANISO: ${{ secrets.OSF_FILE_RIDANI_7T_ANISO }}  # Ridani 7T anisotropic (pre-flattened)
+          OSF_FILE_CHISEP_MC: ${{ secrets.OSF_FILE_CHISEP_MC }}              # χ-sep multicompartment (pre-flattened)
+        run: |
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json, os
+          ph = os.environ['PHANTOM']
+          d = json.load(open('scripts/datasets.json'))[ph]
+          osf = (os.environ.get(d['osf_env']) if d.get('osf_env') else None) or d.get('osf_file') or ''
+          print(f"zipkey=osf-{ph}-{osf}")
+          print(f"path={d['path']}")
+          # χ-separation and in-vivo phantoms are isolated-only (no composed matrix); sim runs both.
+          print("mode=" + ("both" if d['track'] == 'sim' else "isolated"))
+          PY
       - name: Cache OSF dataset zip
         uses: actions/cache@v6
         with:
           path: .osfcache/${{ matrix.task.phantom || 'sim' }}.zip
-          key: ${{ matrix.task.phantom == 'chisep' && format('osf-chisep-{0}', secrets.OSF_FILE_CHISEP) || (matrix.task.phantom == 'invivo' && format('osf-invivo-{0}', secrets.OSF_FILE_INVIVO) || 'osf-bids-698ac9aecae88916d1e24f69') }}
+          key: ${{ steps.ds.outputs.zipkey }}
       - name: Fetch dataset (public inputs + held-out ground truth)
         env:
           OSF_TOKEN: ${{ secrets.OSF_TOKEN }}
-          OSF_FILE_CHISEP: ${{ secrets.OSF_FILE_CHISEP }}   # χ-sep bids.zip OSF file id
           OSF_FILE_INVIVO: ${{ secrets.OSF_FILE_INVIVO }}   # invivo_qsm2016.zip OSF file id (pre-flattened)
+          OSF_FILE_RIDANI_3T_ISO: ${{ secrets.OSF_FILE_RIDANI_3T_ISO }}      # Ridani 3T isotropic (pre-flattened)
+          OSF_FILE_RIDANI_3T_ANISO: ${{ secrets.OSF_FILE_RIDANI_3T_ANISO }}  # Ridani 3T anisotropic (pre-flattened)
+          OSF_FILE_RIDANI_7T_ANISO: ${{ secrets.OSF_FILE_RIDANI_7T_ANISO }}  # Ridani 7T anisotropic (pre-flattened)
+          OSF_FILE_CHISEP_MC: ${{ secrets.OSF_FILE_CHISEP_MC }}              # χ-sep multicompartment (pre-flattened)
           OSF_ZIP: .osfcache/${{ matrix.task.phantom || 'sim' }}.zip
-        run: scripts/fetch_dataset.sh "${{ matrix.task.phantom || 'sim' }}" "data/${{ matrix.task.phantom || 'sim' }}/scoring"
+        run: scripts/fetch_dataset.sh "${{ matrix.task.phantom || 'sim' }}" "${{ steps.ds.outputs.path }}"
 
       - name: Score task ${{ matrix.task.id }}
         run: |
           PH="${{ matrix.task.phantom || 'sim' }}"
-          DS="data/$PH/scoring"
-          # χ-separation and in-vivo are isolated-only (no composed matrix); sim runs both modes.
-          MODE=both; { [ "$PH" = chisep ] || [ "$PH" = invivo ]; } && MODE=isolated
+          DS="${{ steps.ds.outputs.path }}"
+          MODE="${{ steps.ds.outputs.mode }}"
           # Track defaults to $TRACK (sim); an invivo task overrides it so pipeline.py scores against
-          # COSMOS + STI and namespaces its run ids with `-invivo`.
+          # COSMOS + STI and namespaces its run ids with `-invivo`. --phantom namespaces the run ids
+          # of a NON-default phantom with -<phantom-id> (the default phantoms keep the legacy ids).
           TRK="${{ matrix.task.track || '' }}"; [ -z "$TRK" ] && TRK="$TRACK"
-          ARGS="--dataset $DS --mode $MODE --runner docker --track $TRK --emit-volumes --runs-out runs-${{ matrix.task.id }}.json"
+          ARGS="--dataset $DS --phantom $PH --mode $MODE --runner docker --track $TRK --emit-volumes --runs-out runs-${{ matrix.task.id }}.json"
           [ -n "${{ matrix.task.shard }}" ] && ARGS="$ARGS --shard ${{ matrix.task.shard }}"
           [ -n "${{ matrix.task.focus }}" ] && ARGS="$ARGS --focus ${{ matrix.task.focus }}"
           [ -n "${{ matrix.task.exclude }}" ] && ARGS="$ARGS --exclude ${{ matrix.task.exclude }}"

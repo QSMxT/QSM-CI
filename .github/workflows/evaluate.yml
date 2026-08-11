@@ -65,21 +65,27 @@ jobs:
           pip install --upgrade setuptools setuptools_scm wheel   # runner's build tools are too old for setuptools-scm
           pip install --no-build-isolation .                       # build the CLI with the upgraded tools
 
-      # Route each method to the right phantom by its stage: χ-separation methods need the chisep
+      # Route each method to the right phantom by its stage: χ-separation methods need a chisep-track
       # dataset (χ+/χ− ground truth + R2'/χ_total inputs), everything else the QSM scoring phantom.
+      # The PR smoke only ever runs on the track's DEFAULT phantom (scripts/datasets.json `default`) —
+      # score.yml fans the real scoring out across every active phantom on merge.
       - name: Route dataset by stage
         id: route
+        env:
         run: |
           stage=$(sed -nE 's/^stage:[[:space:]]*//p' "algorithms/${{ matrix.slug }}/algorithm.yml" | head -1)
-          if [ "$stage" = "chi-separation" ]; then
-            echo "fetch_track=chisep"          >> "$GITHUB_OUTPUT"
-            echo "dataset=data/chisep/scoring" >> "$GITHUB_OUTPUT"
-            echo "zipkey=osf-chisep-${{ secrets.OSF_FILE_CHISEP }}" >> "$GITHUB_OUTPUT"
-          else
-            echo "fetch_track=sim"             >> "$GITHUB_OUTPUT"
-            echo "dataset=data/sim/scoring"    >> "$GITHUB_OUTPUT"
-            echo "zipkey=osf-bids-698ac9aecae88916d1e24f69" >> "$GITHUB_OUTPUT"
-          fi
+          track=sim; [ "$stage" = "chi-separation" ] && track=chisep
+          STAGE_TRACK="$track" python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json, os
+          reg = json.load(open('scripts/datasets.json'))
+          track = os.environ['STAGE_TRACK']
+          ph = next(k for k, v in reg.items() if v.get('track') == track and v.get('default'))
+          d = reg[ph]
+          osf = (os.environ.get(d['osf_env']) if d.get('osf_env') else None) or d.get('osf_file') or ''
+          print(f"fetch_track={ph}")
+          print(f"dataset={d['path']}")
+          print(f"zipkey=osf-{ph}-{osf}")
+          PY
           # Dipole methods are the only stage scored on the in-vivo track, so only they get the extra
           # invivo smoke leg below.
           echo "is_dipole=$([ "$stage" = dipole ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
@@ -92,7 +98,6 @@ jobs:
       - name: Fetch dataset (public inputs + held-out ground truth)
         env:
           OSF_TOKEN: ${{ secrets.OSF_TOKEN }}
-          OSF_FILE_CHISEP: ${{ secrets.OSF_FILE_CHISEP }}   # χ-sep bids.zip OSF file id (set once uploaded)
           OSF_ZIP: .osfcache/${{ steps.route.outputs.fetch_track }}.zip
         run: scripts/fetch_dataset.sh "${{ steps.route.outputs.fetch_track }}" "${{ steps.route.outputs.dataset }}"
 

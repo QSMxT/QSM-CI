@@ -9,31 +9,46 @@
 #   groundtruth/  held-out targets + isolated-mode input boundaries (totalfield, localfield,
 #                 chimap, dseg) — never committed.
 #
-# Usage: fetch_dataset.sh <track> <dest>
+# Usage: fetch_dataset.sh <phantom> <dest>
+#   <phantom> is a scripts/datasets.json registry key. The legacy track args (sim / invivo)
+#   are themselves registry keys, so existing callers keep working identically.
 # Env:   OSF_TOKEN     (required unless OSF_ZIP is set) — OSF personal access token
-#        OSF_PROJECT   (default y8adf), OSF_FILE (default the bids.zip file id)
-#        OSF_FILE_INVIVO (invivo track) — OSF file id of the pre-flattened invivo_qsm2016.zip
+#        OSF_PROJECT   (default y8adf), OSF_FILE (overrides the registry's file id)
+#        OSF_FILE_*    (per-phantom secrets) — the registry's `osf_env` names which one applies
+#                      (e.g. OSF_FILE_CHISEP_MC for the chisep-mc phantom)
 #        OSF_ZIP       (optional) — persistent path for the download. If it exists it's reused (no
 #                      download); if not, the download is saved there. Point CI's cache at it.
 #
-# Tracks: sim ships as a qsm-forward BIDS tree (flattened here by pack_dataset.py). The chisep and
-# invivo tracks ship ALREADY FLATTENED (inputs/ + groundtruth/ at the zip root — chisep built by
-# gen_chisep.py / pack_dataset.py, invivo by scripts/make_invivo_zip.py), so they skip the BIDS-find
-# + pack step and just unzip straight into $DEST.
+# Phantoms shipping qsm-forward BIDS trees are flattened here by pack_dataset.py (with the registry's
+# `pack_flags`, e.g. --chisep). A registry entry with `prepacked: true` (the 2016 invivo challenge
+# zip, built by scripts/make_invivo_zip.py) ships ALREADY FLATTENED (inputs/ + groundtruth/ at the
+# zip root), so it skips the BIDS-find + pack step and just unzips straight into $DEST.
 set -euo pipefail
 
-TRACK="${1:?track required}"
+TRACK="${1:?phantom (scripts/datasets.json key) required}"
 DEST="${2:?dest dir required}"
 OSF_PROJECT="${OSF_PROJECT:-y8adf}"
-# Dataset zip file id per track. The χ-separation phantom (χ+/χ− sources + R2' derivatives) lives in
-# its own OSF file — set OSF_FILE_CHISEP (or override OSF_FILE). It ships pre-flattened, so PACK_FLAGS
-# is unused for it (kept only for the sim track's BIDS flatten).
-case "$TRACK" in
-  chisep) OSF_FILE="${OSF_FILE:-${OSF_FILE_CHISEP:?set OSF_FILE_CHISEP to the χ-sep dataset OSF file id}}"; PACK_FLAGS="--chisep" ;;
-  invivo) OSF_FILE="${OSF_FILE:-${OSF_FILE_INVIVO:-hw9rn}}"; PACK_FLAGS="" ;;   # invivo_qsm2016.zip (osf.io/hw9rn), pre-flattened
-  *)      OSF_FILE="${OSF_FILE:-698ac9aecae88916d1e24f69}"; PACK_FLAGS="" ;;   # QSM bids
-esac
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# Resolve the phantom in the dataset registry (scripts/datasets.json): its OSF file id (an explicit
+# $OSF_FILE overrides everything; else the env secret named by the entry's `osf_env`; else the
+# literal `osf_file`), its pack_dataset.py flags, and whether the zip is prepacked.
+RESOLVED="$(python3 - "$TRACK" "$SCRIPT_DIR/datasets.json" <<'PY'
+import json, os, sys
+ph, regfile = sys.argv[1], sys.argv[2]
+d = json.load(open(regfile)).get(ph)
+if d is None:
+    sys.exit(f"[fetch_dataset] unknown phantom '{ph}' — add it to scripts/datasets.json")
+osf = os.environ.get("OSF_FILE") or (os.environ.get(d["osf_env"]) if d.get("osf_env") else None) \
+      or d.get("osf_file")
+if not osf:
+    sys.exit(f"[fetch_dataset] no OSF file id for phantom '{ph}' — "
+             f"set {d.get('osf_env', 'OSF_FILE')} (or OSF_FILE)")
+print(f"OSF_FILE={osf}")
+print(f"PACK_FLAGS={d.get('pack_flags', '')}")
+print(f"PREPACKED={'1' if d.get('prepacked') else '0'}")
+PY
+)"
+eval "$RESOLVED"
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
 
@@ -57,10 +72,9 @@ else
   curl -fS --location-trusted -H "Authorization: Bearer ${OSF_TOKEN}" "$url" -o "$zip"
 fi
 
-# The chisep and invivo zips are ALREADY flattened (inputs/ + groundtruth/ at the zip root — chisep
-# from gen_chisep.py/pack_dataset.py, invivo from scripts/make_invivo_zip.py). No BIDS tree, no pack
-# step: just unzip straight into $DEST.
-if [ "$TRACK" = "invivo" ] || [ "$TRACK" = "chisep" ]; then
+# A prepacked zip (registry `prepacked: true`, e.g. the invivo challenge) is ALREADY flattened
+# (inputs/ + groundtruth/ at its root) — no BIDS tree, no pack step. Unzip it straight into $DEST.
+if [ "$PREPACKED" = "1" ]; then
   rm -rf "$DEST"
   mkdir -p "$DEST"
   unzip -q "$zip" -d "$DEST"

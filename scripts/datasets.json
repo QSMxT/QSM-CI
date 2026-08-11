@@ -1,0 +1,56 @@
+{
+  "sim": {
+    "track": "sim",
+    "label": "In silico (2019)",
+    "osf_file": "698ac9aecae88916d1e24f69",
+    "path": "data/sim/scoring",
+    "active": true,
+    "default": true
+  },
+  "invivo": {
+    "track": "invivo",
+    "label": "In vivo (2016)",
+    "osf_env": "OSF_FILE_INVIVO",
+    "osf_file": "hw9rn",
+    "path": "data/invivo/scoring",
+    "prepacked": true,
+    "active": true,
+    "default": true
+  },
+  "ridani-3t-iso": {
+    "track": "chisep",
+    "label": "Ridani 3T isotropic",
+    "osf_env": "OSF_FILE_RIDANI_3T_ISO",
+    "prepacked": true,
+    "path": "data/ridani-3t-iso/scoring",
+    "active": true,
+    "default": false
+  },
+  "ridani-3t-aniso": {
+    "track": "chisep",
+    "label": "Ridani 3T anisotropic",
+    "osf_env": "OSF_FILE_RIDANI_3T_ANISO",
+    "prepacked": true,
+    "path": "data/ridani-3t-aniso/scoring",
+    "active": true,
+    "default": false
+  },
+  "ridani-7t-aniso": {
+    "track": "chisep",
+    "label": "Ridani 7T anisotropic",
+    "osf_env": "OSF_FILE_RIDANI_7T_ANISO",
+    "prepacked": true,
+    "path": "data/ridani-7t-aniso/scoring",
+    "active": true,
+    "default": false
+  },
+  "chisep-mc": {
+    "track": "chisep",
+    "label": "χ-sep multicompartment (7T)",
+    "osf_env": "OSF_FILE_CHISEP_MC",
+    "prepacked": true,
+    "path": "data/chisep-mc/scoring",
+    "active": true,
+    "default": true
+  }
+}

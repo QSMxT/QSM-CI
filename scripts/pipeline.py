@@ -14,6 +14,7 @@ Modes (see stages.yml):
 
 Usage:
   python scripts/pipeline.py --dataset data/sim/dev [--mode isolated|composed|both] [--track sim]
+                             [--phantom <scripts/datasets.json key>]
 """
 
 from __future__ import annotations
@@ -198,6 +199,40 @@ def _emit_composed_resources(run_id: str, stages: list, emit_volumes_on: bool) -
         pass
 
 
+# ---------------------------------------------------------------------------------------------------
+# Dataset / phantom registry (scripts/datasets.json) — the single source of truth for every scoring
+# dataset. Keyed by phantom id; each entry carries the TRACK whose method family runs on it
+# (sim = the QSM pipeline, chisep = χ-separation, invivo = the 2016 dipole challenge), how to locate
+# its OSF zip (osf_file literal id and/or osf_env secret name), its local path, a human label, an
+# `active` flag (only active phantoms get CI matrix entries), and `default: true` on exactly one
+# phantom per track (the default keeps the legacy run-id namespace; the others get a -<phantom>
+# suffix so their runs never collide in results/index.json).
+# ---------------------------------------------------------------------------------------------------
+
+def load_datasets() -> dict:
+    """Load the phantom registry. QSMCI_DATASETS_FILE points it at a fixture registry in tests."""
+    p = Path(os.environ.get("QSMCI_DATASETS_FILE") or (ROOT / "scripts" / "datasets.json"))
+    return json.loads(p.read_text())
+
+
+def default_phantom(track: str) -> "str | None":
+    """The registry key of `track`'s default phantom (the one that keeps legacy run ids)."""
+    for k, v in load_datasets().items():
+        if v.get("track") == track and v.get("default"):
+            return k
+    return None
+
+
+def phantom_suffix(phantom: "str | None") -> str:
+    """Run-id namespace for a phantom: a track's DEFAULT phantom keeps the historical bare ids
+    (backward compatible — a re-score overwrites the existing leaderboard entry in place), while a
+    non-default phantom of the same track appends `-<phantom-id>` so its runs live in a disjoint id
+    space. No phantom given (legacy invocation) means the default phantom: no suffix."""
+    if not phantom:
+        return ""
+    return "" if load_datasets()[phantom].get("default") else f"-{phantom}"
+
+
 def _yaml_scalar(v) -> str:
     """Render a parsed YAML scalar as the bare token the old regex captured (`\\S+`).
 
@@ -209,13 +244,19 @@ def _yaml_scalar(v) -> str:
     return str(v)
 
 
-def _tuned_overrides(doc: dict, dataset: str = "sim") -> dict:
+def _tuned_overrides(doc: dict, dataset: str = "sim", phantom: "str | None" = None) -> dict:
     """Extract `{param: tuned_value}` for a dataset (`sim` / `invivo` / `chisep`) from a parsed
     algorithm.yml `parameters:` block — the settings optimised on that dataset (each parameter may
     carry a `tuned:` alongside its `default:`). `tuned` is either a per-dataset MAP
     (`tuned: {sim: .., invivo: .., chisep: ..}`) or a legacy SCALAR (which applies to the in-silico/sim
     dataset only). So sim keeps reading the existing scalar tunings, and a method only gets an
     in-vivo / chi-sep tuned variant once it declares `tuned.invivo` / `tuned.chisep`.
+
+    With multiple phantoms per track, the map may ALSO be keyed by a specific phantom id
+    (`tuned: {chisep: .., ridani-3t-aniso: ..}`). Lookup order per parameter: the exact `phantom` id
+    key -> the track-family `dataset` key -> the legacy scalar (sim only). So a method tuned on the
+    default chisep phantom keeps applying that tuning to every chisep-track phantom until it declares
+    a phantom-specific value.
 
     Values are returned as strings (they flow into `overrides` -> config.json / `--set`, which expect
     the raw token). YAML handles the unindented list items (`- name:` at column 0, as the MATLAB ymls
@@ -228,17 +269,24 @@ def _tuned_overrides(doc: dict, dataset: str = "sim") -> dict:
         if not isinstance(item, dict) or "name" not in item or "tuned" not in item:
             continue
         t = item["tuned"]
-        val = t.get(dataset) if isinstance(t, dict) else (t if dataset == "sim" else None)
+        if isinstance(t, dict):
+            val = t.get(phantom) if phantom is not None else None
+            if val is None:
+                val = t.get(dataset)
+        else:
+            val = t if dataset == "sim" else None
         if val is None:
             continue
         out[_yaml_scalar(item["name"])] = _yaml_scalar(val)
     return out
 
 
-def discover_algorithms(track: str = "sim") -> list[dict]:
+def discover_algorithms(track: str = "sim", phantom: "str | None" = None) -> list[dict]:
     # `track` selects which dataset's tuned params each method carries: a chi-separation method is only
-    # ever scored on the chisep dataset (→ "chisep"), otherwise the in-vivo run uses "invivo" and
+    # ever scored on a chisep-track phantom (→ "chisep"), otherwise the in-vivo run uses "invivo" and
     # everything else "sim". So the tuned variant a run expands is the one optimised on ITS dataset.
+    # `phantom` (a scripts/datasets.json key) further narrows that: a `tuned:` map keyed with the exact
+    # phantom id wins over the track-family key (see _tuned_overrides).
     algos = []
     # QSMCI_ALGORITHMS_DIR lets a harness test point discovery at a fixture method set (tests/methods)
     # instead of the real algorithms/ tree — so the orchestration (discover -> isolated/composed ->
@@ -285,7 +333,7 @@ def discover_algorithms(track: str = "sim") -> list[dict]:
             "image": _yaml_scalar(image) if image is not None else None,
             "consumes": consumes, "produces": STAGES[s]["produces"],
             "tuned": _tuned_overrides(doc, "chisep" if s == "chi-separation"
-                                      else ("invivo" if track == "invivo" else "sim")),
+                                      else ("invivo" if track == "invivo" else "sim"), phantom),
             # Optional per-method smoke-crop size (voxels): a slow per-voxel method (e.g. DECOMPOSE)
             # can shrink the --smoke gate's central box so the PR check stays fast; None = CLI default.
             "smoke_box": doc.get("smoke_box"),
@@ -378,11 +426,19 @@ def score(recon: Path, artifact: str, gt_dir: Path, mask: Path, out_json: Path, 
     # be meaningless. Withhold the seg for that track → the scorer's no-seg chi branch (global
     # NRMSE/HFEN/correlation/XSIM only), which is exactly the in-vivo metric set.
     use_seg = kind in ("chi", "chisep") and seg.exists() and meta["track"] != "invivo"
+    # χ− per-ROI MSPE + orientation analysis (MEV) need the fibre-bundle WM sub-ROI atlas and the
+    # fibre-to-B0 angle map, shipped in groundtruth as wm_rois.nii.gz / theta.nii.gz (the Ridani
+    # reproduction datasets carry them; others don't → those χ− metrics are simply omitted).
+    dia = kind == "chisep" and component == "dia"
+    wm_rois = gt_dir / "wm_rois.nii.gz"
+    theta = gt_dir / "theta.nii.gz"
     cmd = eval_argv(sys.executable, EVAL, recon, gt_dir / ARTIFACT_FILE[artifact], kind, mask,
                     artifact, out_json, stage=meta["stage"], name=meta["name"], track=meta["track"],
                     runtime=meta.get("runtime"),
                     seg=seg if use_seg else None,
-                    component=component)
+                    component=component,
+                    wm_rois=wm_rois if (dia and wm_rois.exists()) else None,
+                    theta=theta if (dia and theta.exists()) else None)
     subprocess.run(cmd, check=True)
     result = json.loads(out_json.read_text())
     # A scorable recon yields finite metrics; an all-NaN / empty output makes the scorer emit
@@ -445,6 +501,16 @@ def dnf(rid, slug, name, stage, mode, track, combo=None, variant="default"):
     if combo:
         e["combo"] = combo
     return e
+
+
+def _stamp_phantom(rows: list, phantom: "str | None") -> list:
+    """Record which phantom (scripts/datasets.json key) each run row was scored on. Only stamped when
+    --phantom was given; older index entries (and legacy invocations) carry no field, and consumers
+    treat absence as the track's default phantom."""
+    if phantom:
+        for r in rows:
+            r["phantom"] = phantom
+    return rows
 
 
 def _stamp_resource_summary(run):
@@ -622,7 +688,9 @@ def do_isolated(task, args, gt_sources, gt, mask):
     never raises, so _pmap can't be sunk."""
     a, variant, overrides = task
     sfx = "" if variant == "default" else "-tuned"          # variant suffix (work paths)
-    idsfx = sfx + id_suffix(args.track)                     # + track namespace (run ids)
+    # + track namespace + phantom namespace (run ids): the track's default phantom adds nothing
+    # (legacy ids preserved); a non-default phantom appends -<phantom-id>.
+    idsfx = sfx + id_suffix(args.track) + getattr(args, "phantom_sfx", "")
     idir = args.work / f"iso_{a['slug']}{idsfx}_in"
     odir = args.work / f"iso_{a['slug']}{idsfx}_out"
     try:
@@ -679,7 +747,7 @@ def run_isolated(args, algos, gt_sources, gt, mask, iso_target, runs: list) -> N
     iso_tasks = [t for a in iso_algos for t in iso_variants(a)]
     iso_tasks = shard_partition(iso_tasks, args.shard)  # --shard: round-robin over a stable order
     for out in _pmap(iso_tasks, lambda task: do_isolated(task, args, gt_sources, gt, mask)):
-        runs.extend(out)
+        runs.extend(_stamp_phantom(out, getattr(args, "phantom", None)))
     if not args.runs_out:
         flush_index(runs)
 
@@ -735,7 +803,7 @@ def do_dipole(task, args, gt_sources, gt, mask, lf_cache):
     (or a DNF row on failure)."""
     tfk, b, d = task
     combo = f"{b['slug']}+{d['slug']}" if tfk == "gt" else f"{tfk}+{b['slug']}+{d['slug']}"
-    cid = f"{tfk}~{b['slug']}~{d['slug']}-cmp"
+    cid = f"{tfk}~{b['slug']}~{d['slug']}-cmp" + getattr(args, "phantom_sfx", "")
     cinfo = {"field_mapping": tfk, "bfr": b["slug"], "dipole": d["slug"]}
     try:
         lf, bfr_mask, upstream_rt, upstream_trace = lf_cache[(tfk, b["slug"])]
@@ -793,6 +861,7 @@ def do_span(task, args, gt_sources, gt, mask, tf_sources):
         cid = f"{s['slug']}-cmp" if tfk == "gt" else f"{tfk}~{s['slug']}-cmp"
     else:                                       # end-to-end: from GT phase, its own field-mapping
         stage, combo, cid = s["stage"], None, f"{s['slug']}-cmp"
+    cid += getattr(args, "phantom_sfx", "")     # non-default phantom -> disjoint id space
     idir, odir = args.work / f"cmp_{cid}_in", args.work / f"cmp_{cid}_out"
     try:
         prepare_input(s["consumes"], src, idir)
@@ -905,7 +974,7 @@ def run_composed(args, algos, gt_sources, gt, mask, shard_i, shard_n, runs: list
     dip_tasks = [(tfk, b, d) for tfk in tf_sources for b in bfr
                  if (tfk, b["slug"]) in lf_cache for d in dipole]
     for r in _pmap(dip_tasks, lambda task: do_dipole(task, args, gt_sources, gt, mask, lf_cache)):
-        runs.append(r)
+        runs.extend(_stamp_phantom([r], getattr(args, "phantom", None)))
     if not args.runs_out:
         flush_index(runs)
 
@@ -914,12 +983,19 @@ def run_composed(args, algos, gt_sources, gt, mask, shard_i, shard_n, runs: list
     span_tasks = [(s, tfk) for tfk in tf_sources for s in tf_spans if owns_span(tfk, s["slug"])]
     span_tasks += [(s, "gt") for s in e2e_spans]
     for r in _pmap(span_tasks, lambda t: do_span(t, args, gt_sources, gt, mask, tf_sources)):
-        runs.append(r)
+        runs.extend(_stamp_phantom([r], getattr(args, "phantom", None)))
 
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--dataset", type=Path, default=ROOT / "data/sim/dev")
+    ap.add_argument("--dataset", type=Path, default=None,
+                    help="dataset dir with inputs/ + groundtruth/. Default: the --phantom's registry "
+                         "path when --phantom is given, else data/sim/dev")
+    ap.add_argument("--phantom", default=None,
+                    help="which phantom (scripts/datasets.json key) this run scores on. The track's "
+                         "default phantom keeps legacy run ids; a non-default phantom namespaces its "
+                         "run ids with -<phantom-id> and its rows carry a `phantom` field. Omitted = "
+                         "the track's default phantom (legacy behaviour, no field stamped).")
     ap.add_argument("--mode", choices=["isolated", "composed", "both"], default="both")
     ap.add_argument("--runner", choices=["local", "docker", "apptainer"], default="local",
                     help="local runs run.sh directly; docker/apptainer run each submission's image")
@@ -962,11 +1038,25 @@ def main() -> None:
     # over a stable ordering, so the n shards partition the work with no overlap and no gaps.
     shard_i, shard_n = parse_shard(args.shard)
 
+    # --phantom: validate against the registry and derive its run-id namespace ("" for the track's
+    # default phantom, "-<phantom-id>" otherwise) + the dataset path when --dataset wasn't given.
+    if args.phantom:
+        reg = load_datasets()
+        if args.phantom not in reg:
+            raise SystemExit(f"unknown phantom '{args.phantom}' — add it to scripts/datasets.json")
+        args.phantom_sfx = phantom_suffix(args.phantom)
+        if args.dataset is None:
+            args.dataset = ROOT / reg[args.phantom]["path"]
+    else:
+        args.phantom_sfx = ""
+    if args.dataset is None:
+        args.dataset = ROOT / "data/sim/dev"
+
     inputs, gt = args.dataset / "inputs", args.dataset / "groundtruth"
     mask, params = inputs / "mask.nii.gz", inputs / "params.json"
     # GT-backed source map: inputs for raw artifacts, groundtruth for stage boundaries (shared helper).
     gt_sources = _gt_sources(args.dataset)
-    algos = discover_algorithms(args.track)
+    algos = discover_algorithms(args.track, args.phantom)
     if args.include:
         keep = set(args.include.split(","))
         algos = [a for a in algos if a["slug"] in keep]

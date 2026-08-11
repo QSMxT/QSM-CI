@@ -208,7 +208,69 @@ def calcification_metrics(recon, truth, seg) -> tuple[float, float]:
     return moment_dev, streak
 
 
-def chisep_metrics(recon, truth, mask, seg=None, component="para") -> dict:
+# χ+ MSPE is averaged over the ROIs where paramagnetic susceptibility is a meaningful
+# quantification target — the deep-gray-matter iron nuclei plus cortical gray matter. White
+# matter (label 8) is excluded: χ+ there is ~1 ppb, so the percentage error has a near-zero
+# denominator and blows up (the paper notes χ+ MSPE in WM reaches thousands of %). χ− MSPE is
+# averaged over the white-matter sub-ROIs of the fibre-bundle atlas (passed as `wm_rois`).
+MSPE_PARA_ROIS = [1, 2, 3, 4, 5, 6, 7, 9]  # CN,GP,PU,RN,DN,SN,TH,GM (dseg labels; WM=8 excluded)
+
+
+def roi_mspe(recon, truth, labels, ids, sel_mask, min_vox=50, min_mean=5e-3) -> float:
+    """Mean squared percentage error of ROI MEANS (Ridani et al., MRM 10.1002/mrm.70468).
+
+    For each ROI, ((mean_recon - mean_truth) / mean_truth)^2 * 100, averaged across ROIs. This is
+    the paper's headline separation metric — a per-region quantification-bias measure, distinct from
+    the voxelwise NRMSE. ROIs with fewer than `min_vox` voxels or a near-zero truth mean (|mean| <
+    `min_mean` ppm — an unstable percentage denominator) are skipped."""
+    vals = []
+    for lab in ids:
+        sel = (labels == lab) & sel_mask
+        if int(sel.sum()) < min_vox:
+            continue
+        gt_mean = float(truth[sel].mean())
+        if abs(gt_mean) < min_mean:
+            continue
+        vals.append(((float(recon[sel].mean()) - gt_mean) / gt_mean) ** 2 * 100.0)
+    return float(np.mean(vals)) if vals else math.nan
+
+
+def theta_binned_mspe(recon, truth, theta, wm_mask, nbins=9) -> "list[float]":
+    """Voxelwise χ− MSPE in 10° fibre-to-B0 angle bins over the white-matter voxels (Ridani et al.,
+    MRM 10.1002/mrm.70468, Fig 5). Per bin, the per-voxel squared percentage errors are IQR-filtered
+    (1.5×IQR) then averaged. Returns nbins values (bin 0 = 0–10° parallel … bin 8 = 80–90°
+    perpendicular); a bin with too few voxels is NaN."""
+    edges = np.linspace(0, 90, nbins + 1)
+    th = theta[wm_mask]
+    r, g = recon[wm_mask], truth[wm_mask]
+    ok = g != 0
+    th, r, g = th[ok], r[ok], g[ok]
+    spe = ((r - g) / g) ** 2 * 100.0
+    out = []
+    for i in range(nbins):
+        sel = (th >= edges[i]) & (th < edges[i + 1] if i < nbins - 1 else th <= edges[i + 1])
+        v = spe[sel]
+        if v.size < 50:
+            out.append(math.nan)
+            continue
+        q1, q3 = np.percentile(v, [25, 75])
+        iqr = q3 - q1
+        v = v[(v >= q1 - 1.5 * iqr) & (v <= q3 + 1.5 * iqr)]
+        out.append(float(v.mean()))
+    return out
+
+
+def mev_from_profile(profile) -> float:
+    """Maximum error variation MEV = (MSPE_parallel − MSPE_perpendicular)/MSPE_parallel × 100 (Ridani
+    et al. Eq 15): the fractional drop in χ− error from fibres parallel to B0 (first occupied bin) to
+    perpendicular (last occupied bin). Positive ⇒ parallel fibres are harder, as expected."""
+    occ = [v for v in profile if v == v]  # drop NaN bins
+    if len(occ) < 2 or occ[0] == 0:
+        return math.nan
+    return (occ[0] - occ[-1]) / occ[0] * 100.0
+
+
+def chisep_metrics(recon, truth, mask, seg=None, component="para", wm_rois=None, theta=None) -> dict:
     """Metrics for one χ-separation source map.
 
     `component` is 'para' (χ+, paramagnetic — iron in deep gray matter and venous blood) or 'dia' (χ−,
@@ -237,11 +299,31 @@ def chisep_metrics(recon, truth, mask, seg=None, component="para") -> dict:
         out["dgm_linearity"] = dgm_linearity(recon, truth, seg)
         _, out["nrmse_blood"] = nrmse_challenge(recon, truth, blood)
         out["calc_leak"] = leak(calc)
+        # Paper per-ROI MSPE over the iron nuclei + GM (χ+ quantification target).
+        out["mspe"] = roi_mspe(recon, truth, seg, MSPE_PARA_ROIS, m)
     else:  # dia — χ− is a positive magnitude; flip sign so the calcification reads negative
         dev, streak = calcification_metrics(-recon, -truth, seg)
         out["calc_moment_dev"] = dev
         out["calc_streak"] = streak
         out["iron_leak"] = leak(dgm | blood)
+        # Paper per-ROI MSPE over the fibre-bundle atlas WM sub-ROIs (χ− anisotropy target, Fig 3).
+        wm_bundles = None
+        if wm_rois is not None:
+            wr = np.rint(wm_rois).astype(np.int32)
+            ids = sorted(set(np.unique(wr[m])) - {0})
+            out["mspe"] = roi_mspe(recon, truth, wr, ids, m)
+            wm_bundles = m & (wr > 0)
+        # Orientation dependence (Fig 5): θ-binned χ− MSPE profile + MEV, over the WM fibre bundles
+        # (or all WM if no atlas). Needs the fibre-to-B0 angle map θ. Captures the paper's effect and
+        # reproduces its SNR trend; the absolute MEV differs from Fig 5 (voxelwise bins vs their
+        # bundle-averaged ROIs — a ratio of bin errors is sensitive to that granularity).
+        if theta is not None:
+            wmm = wm_bundles if wm_bundles is not None else (m & (seg == 8))
+            wmm = wmm & (theta > 0)
+            if wmm.any():
+                prof = theta_binned_mspe(recon, truth, np.asarray(theta, np.float64), wmm)
+                out["mspe_theta"] = prof
+                out["mev"] = mev_from_profile(prof)
     return out
 
 
@@ -346,6 +428,12 @@ def main() -> None:
     p.add_argument("--component", choices=["para", "dia"], default="para",
                    help="χ-separation source for kind=chisep: para=χ+ (paramagnetic), dia=χ− (diamagnetic)")
     p.add_argument("--seg", type=Path, help="segmentation (enables region metrics for kind=chi/chisep)")
+    p.add_argument("--wm-rois", type=Path, default=None,
+                   help="white-matter sub-ROI label map (fibre-bundle atlas) for the χ− per-ROI MSPE "
+                        "(kind=chisep, component=dia)")
+    p.add_argument("--theta", type=Path, default=None,
+                   help="fibre-to-B0 angle map in degrees for the χ− orientation analysis (θ-binned "
+                        "MSPE profile + MEV; kind=chisep, component=dia)")
     p.add_argument("--mask", type=Path)
     p.add_argument("--track", default="sim", choices=["sim", "invivo"], help="dataset label")
     p.add_argument("--stage", default=None, help="stage/span this run implements (recorded)")
@@ -368,7 +456,9 @@ def main() -> None:
 
     if args.kind == "chisep":
         seg = np.rint(load(args.seg)).astype(np.int32) if args.seg else None
-        metrics = chisep_metrics(recon, truth, mask, seg, args.component)
+        wm_rois = load(args.wm_rois) if args.wm_rois and args.wm_rois.exists() else None
+        theta = load(args.theta) if args.theta and args.theta.exists() else None
+        metrics = chisep_metrics(recon, truth, mask, seg, args.component, wm_rois, theta)
     elif args.kind == "field":
         metrics = field_metrics(recon, truth, mask)
     elif args.seg:  # chi with segmentation -> full challenge suite

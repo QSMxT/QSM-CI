@@ -124,6 +124,10 @@ const MOON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor
 // Metric metadata: label, unit, better direction, decimals, and a plain-language description
 // (surfaced as hover tooltips). Descriptions mirror eval/qsm_eval.py (ported from QSM.rs).
 const METRICS = {
+  mspe:            { label: "MSPE",             unit: "%", better: "lower",  dp: 1,
+    desc: "Mean squared percentage error of ROI means (Ridani et al., MRM 2026): a per-region quantification-bias metric, comparable to the paper's published χ-separation numbers." },
+  mev:             { label: "MEV",              unit: "%", better: "lower",  dp: 1,
+    desc: "Maximum error variation (Ridani et al. 2026, Fig 5): the fractional drop in χ− error from fibres parallel to B0 to perpendicular. High = strongly orientation-dependent error; a diagnostic, not a ranking metric." },
   nrmse:           { label: "NRMSE",            unit: "%", better: "lower",  dp: 1,
     desc: "Normalized root-mean-square error within the mask, after demeaning both maps. 0 = perfect; ~100% ≈ a flat map (the do-nothing baseline)." },
   nrmse_detrend:   { label: "Detrended NRMSE",  unit: "%", better: "lower",  dp: 1,
@@ -178,12 +182,23 @@ async function loadRuns() {
   return (await res.json()).runs || [];
 }
 
-async function loadAlgos() {
-  try {
-    const res = await fetch("algorithms.json", { cache: "no-store" });
-    return (await res.json()).algorithms || [];
-  } catch (e) { return []; }
+// algorithms.json bundles the method manifest AND the dataset/phantom registry (a `datasets` block
+// mirroring scripts/datasets.json) — fetch it once and serve both from the same promise.
+let _algoManifest = null;
+async function loadAlgoManifest() {
+  if (_algoManifest) return _algoManifest;
+  _algoManifest = (async () => {
+    try {
+      const res = await fetch("algorithms.json", { cache: "no-store" });
+      return await res.json();
+    } catch (e) { return {}; }
+  })();
+  return _algoManifest;
 }
+async function loadAlgos() { return (await loadAlgoManifest()).algorithms || []; }
+// Phantom registry: { <phantom-id>: { track, label, default, … } }. A run row's `phantom` field is
+// one of these keys; a row WITHOUT the field was scored on its track's default phantom.
+async function loadDatasets() { return (await loadAlgoManifest()).datasets || {}; }
 
 // The Zenodo method registry (qsm_ci/registry.json), served alongside the site. Maps a method slug
 // to its concept DOI + published versions, so pages can show a citable DOI per method.
@@ -320,4 +335,4 @@ function injectChrome() {
 document.addEventListener("DOMContentLoaded", injectChrome);
 
 // Exposed for module scripts (e.g. the NiiVue viewer, which must be a module for `import`).
-window.QSM = { GH, METRICS, STAGE_LABEL, MEDALS, loadRuns, loadAlgos, loadRegistry, doiFor, val, fmt, fmtDuration, fmtBytes, metricCols, robustRange, heatScale };
+window.QSM = { GH, METRICS, STAGE_LABEL, MEDALS, loadRuns, loadAlgos, loadDatasets, loadRegistry, doiFor, val, fmt, fmtDuration, fmtBytes, metricCols, robustRange, heatScale };
