@@ -50,6 +50,25 @@ Env/flags:
       dti         : θ pinned to the fiber_angle input (DTI-informed comparison arm)
       closed-form : ablation — the closed-form solve everywhere, no beat machinery
   HCCHISEP_DIAG = 1 : also write theta.nii.gz, mwf.nii.gz, beat_weight.nii.gz
+
+Optional χ-map grain reduction (all DEFAULT OFF; the scored submission is the pristine baseline).
+The unregularised split copies R2' input noise identically into χ+ and χ- ("shared grain"); the
+paper metrics are ROI-mean-based so the grain barely affects them. High-level knob:
+  HCCHISEP_SMOOTH = off (default) | auto | on | <λ>
+      off  : pristine baseline (no smoothing)
+      auto : enable ONLY if the R2' input is noisy (χ-grain g = σ_R2'/Dr+ ≥ τ)
+      on   : force the default regulariser; <λ> : force TV joint inversion at that λ
+  HCCHISEP_SMOOTH_TAU (default 0.008 ppm), HCCHISEP_SMOOTH_LAM (default 0.01)
+Recommended opt-in = TV-regularised joint inversion at λ=0.01 (keeps χ+ ROI error negligible,
+slightly improves χ- MSPE on ground truth). Low-level / experimental (env-gated OFF):
+  HCCHISEP_TVINV=1 [+ _LAM/_BETA, _PRIOR=tv|guided]  : TV joint OUTPUT inversion
+  HCCHISEP_HARDCON=1                                  : pin χ+−χ- = χ_total, guided-denoise the R2' DOF
+  HCCHISEP_GUIDE=chitotal|magnitude, _GF_R, _GF_EPS   : guided-filter steering (χ_total anatomy)
+  HCCHISEP_R2DENOISE=off|tv|median [+ _R2STR], _SNRW  : R2'-INPUT denoise (hurts ROI means; kept for
+                                                        reproducibility only)
+NOTE: the guided/hard-constraint variants look cleanest and win phantom χ-, but OVER-SMOOTH in vivo
+(maps smoother than the input QSM, reference-agreement drops) — hence not the default. See
+algorithm.yml `smooth` parameter for the full rationale.
 """
 from __future__ import annotations
 
@@ -60,7 +79,7 @@ import time
 
 import numpy as np
 import nibabel as nib
-from scipy.ndimage import gaussian_filter, median_filter
+from scipy.ndimage import gaussian_filter, median_filter, uniform_filter, laplace
 
 # ---------------------------------------------------------------------------
 # Vendored hollow-cylinder white-matter model.
@@ -236,6 +255,127 @@ def normalise(S):
     return S / np.maximum(S[..., :1], 1e-9)
 
 
+# ---------------------------------------------------------------------------
+# R2' denoising (grain-reduction experiment; env-gated, default off).
+# The unregularised closed-form split copies R2' noise identically into chi+ and
+# chi- (both get +R2'/(Dr+ + Dr-)); denoising R2' before the solve attacks that
+# shared grain at its source. See algorithm.yml / investigation notes.
+# ---------------------------------------------------------------------------
+def _tv_chambolle(image, weight=3.0, eps=2e-4, n_iter_max=60):
+    """Isotropic TV (ROF) denoise via Chambolle's projection, N-D.
+    Vendored from scikit-image (_denoise_tv_chambolle_nd, BSD-3). Larger weight
+    => smoother."""
+    ndim = image.ndim
+    p = np.zeros((ndim,) + image.shape, dtype=image.dtype)
+    g = np.zeros_like(p)
+    d = np.zeros_like(image)
+    out = image
+    E_init = E_prev = None
+    for i in range(n_iter_max):
+        if i > 0:
+            d = -p.sum(0)
+            for ax in range(ndim):
+                sl_d = [slice(None)] * ndim
+                sl_p = [slice(None)] * (ndim + 1)
+                sl_d[ax] = slice(1, None)
+                sl_p[ax + 1] = slice(0, -1)
+                sl_p[0] = ax
+                d[tuple(sl_d)] += p[tuple(sl_p)]
+            out = image + d
+        else:
+            out = image
+        E = (d ** 2).sum()
+        for ax in range(ndim):
+            sl_g = [slice(None)] * (ndim + 1)
+            sl_g[ax + 1] = slice(0, -1)
+            sl_g[0] = ax
+            g[tuple(sl_g)] = np.diff(out, axis=ax)
+        norm = np.sqrt((g ** 2).sum(0))[np.newaxis, ...]
+        E += weight * norm.sum()
+        tau = 1.0 / (2.0 * ndim)
+        norm *= tau / weight
+        norm += 1.0
+        p -= tau * g
+        p /= norm
+        E /= float(image.size)
+        if i == 0:
+            E_init = E_prev = E
+        elif abs(E_prev - E) < eps * E_init:
+            break
+        else:
+            E_prev = E
+    return out
+
+
+def denoise_r2prime(rho, mask, method="off", strength=0.0, snr_weight=None):
+    """Edge-preserving denoise of the R2' map within the brain mask.
+    method: off | median | tv.  snr_weight: optional first-echo magnitude used as
+    an SNR^2 weight in a normalised-convolution pre-pass (low-SNR voxels borrow
+    from high-SNR neighbours before the edge-preserving filter)."""
+    m = mask > 0
+    out = (np.asarray(rho, np.float64) * m).copy()
+    if snr_weight is not None:
+        w = np.clip(np.asarray(snr_weight, np.float64), 0, None)
+        med = float(np.median(w[m])) if m.any() else 1.0
+        w = (w / max(med, 1e-6)) ** 2 * m
+        out = gaussian_filter(out * w, 1.0) / np.maximum(gaussian_filter(w, 1.0), 1e-6)
+        out *= m
+    if method == "median":
+        out = median_filter(out, size=int(strength) if strength >= 2 else 3)
+    elif method == "tv":
+        out = _tv_chambolle(out, weight=strength if strength > 0 else 3.0)
+    return (out * m).astype(np.float32)
+
+
+def noise_sigma(x, mask):
+    """Robust per-voxel noise sigma of a map: MAD of its 6-neighbour Laplacian (which
+    amplifies noise but is sparse on smooth structure/edges; MAD rejects the edges),
+    scaled back out by the Laplacian kernel L2^2 = 42. Used to auto-decide smoothing."""
+    v = laplace(np.asarray(x, np.float64))[mask > 0]
+    return 1.4826 * float(np.median(np.abs(v - np.median(v)))) / np.sqrt(42.0)
+
+
+def guided_filter(src, guide, radius=3, eps=2e-4):
+    """Edge-preserving smoothing of `src` steered by structural `guide` (He et al.,
+    ECCV 2010 / PAMI 2013). Output = local affine model a*guide+b, so it smooths
+    within guide-flat regions but keeps guide edges. Linear+box-mean => ROI-mean
+    preserving. eps sets the guide-edge threshold (in guide units^2)."""
+    box = lambda x: uniform_filter(x, size=2 * radius + 1, mode="nearest")
+    I = np.asarray(guide, np.float64); p = np.asarray(src, np.float64)
+    mI, mp = box(I), box(p)
+    a = (box(I * p) - mI * mp) / (box(I * I) - mI * mI + eps)
+    b = mp - a * mI
+    return box(a) * I + box(b)
+
+
+def tv_joint_inversion(a, c, mask, beta=1.0, lam=0.02, n_outer=80, n_inner=6,
+                       prior="tv", guide=None, gf_r=3, gf_eps=2e-4):
+    """Stage-3 'proper' split: spatially-regularised joint inversion of the closed-form
+    branch. Minimise (1/2)||chi+ - a||^2 + (beta/2)||(chi+ - chi-) - c||^2 + reg,
+    chi+,chi- >= 0, all in ppm units (a = R2'/Dr+, c = chi_total). The chi+ data term
+    keeps ROI means anchored so the split can be denoised/contrast-shaped without the
+    ROI-mean bias input-denoising incurs. Proximal-gradient; the prox is either a
+    Chambolle TV (prior='tv') or a chi_total/magnitude-guided filter (prior='guided',
+    plug-and-play) that steers smoothing onto the QSM anatomy -> 'smooth like chi_total'."""
+    m = mask > 0
+    a = (np.asarray(a, np.float64) * m); c = np.asarray(c, np.float64) * m
+    Xp = np.clip(a, 0, None) * m
+    Xn = np.clip(a - c, 0, None) * m
+    t = 1.0 / (1.0 + 2.0 * beta)          # 1/Lipschitz of the data terms
+
+    def prox(x):
+        if prior == "guided" and guide is not None:
+            return guided_filter(x * m, guide, gf_r, gf_eps) * m
+        return _tv_chambolle(x * m, weight=t * lam, n_iter_max=n_inner) * m
+
+    for _ in range(n_outer):
+        rc = (Xp - Xn) - c
+        Xp = prox(Xp - t * ((Xp - a) + beta * rc))
+        Xn = prox(Xn - t * (-beta * rc))
+        np.clip(Xp, 0, None, out=Xp); np.clip(Xn, 0, None, out=Xn)
+    return (Xp * m).astype(np.float32), (Xn * m).astype(np.float32)
+
+
 def main():
     t_start = time.time()
     in_dir = sys.argv[1] if len(sys.argv) > 1 else "/input"
@@ -263,6 +403,19 @@ def main():
     TEs = np.asarray(params["TE"], float)
     se_TEs = np.asarray(params.get("se_TE", []), float)
 
+    # --- optional R2' denoising (env-gated; default off = baseline unchanged) ----
+    r2den = os.environ.get("HCCHISEP_R2DENOISE", "off").strip().lower()
+    r2str = float(os.environ.get("HCCHISEP_R2STR", "0") or 0)
+    snrw = os.environ.get("HCCHISEP_SNRW", "0") == "1"
+    if r2den != "off" or snrw:
+        m1 = None
+        if snrw:
+            _mp, _ = load("magnitude.nii.gz", required=False)
+            if _mp is not None and _mp.ndim == 4:
+                m1 = _mp[..., 0]
+        rho_map = denoise_r2prime(rho_map, mask, method=r2den, strength=r2str, snr_weight=m1)
+        print(f"[hc-chisep] R2' denoise: method={r2den} strength={r2str} snrw={snrw}")
+
     # --- 1. Dr+ self-calibration (robust lower envelope; inputs only) -----------
     dr_default = 137.0 * B0 / 3.0
     selc = mask & (chimap > 0.02)
@@ -277,7 +430,61 @@ def main():
 
     # --- closed-form two-source solve (Ridani Dr convention: Dr-=0 outside WM) ---
     cf_pos = np.clip(rho_map / dr_pos, 0, None)
-    cf_neg = cf_pos - chimap
+    hardcon = os.environ.get("HCCHISEP_HARDCON", "0") == "1"
+    tvinv = os.environ.get("HCCHISEP_TVINV", "0") == "1"
+    # High-level smart default: HCCHISEP_SMOOTH = auto|off|on|<lam>. Only consulted when
+    # no explicit low-level flag is set (the sweep uses the low-level flags directly).
+    if not hardcon and not tvinv:
+        sm = os.environ.get("HCCHISEP_SMOOTH", "off").strip().lower()
+        tau = float(os.environ.get("HCCHISEP_SMOOTH_TAU", "0.008") or 0.008)
+        lam_d = float(os.environ.get("HCCHISEP_SMOOTH_LAM", "0.01") or 0.01)
+        if sm == "off":
+            pass
+        elif sm in ("on", "auto"):
+            g = noise_sigma(rho_map, mask) / max(dr_pos, 1e-6)   # R2' noise in chi units
+            on = sm == "on" or g >= tau
+            print(f"[hc-chisep] smart-smooth={sm}: R2' chi-grain g={g:.4f} ppm "
+                  f"(tau={tau}) -> {'ON lam=%.3g' % lam_d if on else 'off'}")
+            if on:
+                tvinv = True
+                os.environ["HCCHISEP_TVINV_LAM"] = str(lam_d)
+        else:
+            try:
+                os.environ["HCCHISEP_TVINV_LAM"] = str(float(sm)); tvinv = True
+            except ValueError:
+                pass
+    prior = os.environ.get("HCCHISEP_TVINV_PRIOR", "tv").strip().lower()
+    if hardcon or (tvinv and prior == "guided"):
+        # structural guide (chi_total = smooth QSM anatomy; or normalised magnitude)
+        gk = os.environ.get("HCCHISEP_GUIDE", "chitotal").strip().lower()
+        if gk == "magnitude":
+            _gm, _ = load("magnitude.nii.gz", required=False)
+            if _gm is not None and _gm.ndim == 4:
+                _gm = _gm[..., 0].astype(np.float64)
+                guide = _gm / max(float(np.median(_gm[mask])), 1e-6)
+            else:
+                guide = np.asarray(chimap, np.float64)
+        else:
+            guide = np.asarray(chimap, np.float64)
+        gf_r = int(os.environ.get("HCCHISEP_GF_R", "3"))
+        gf_eps = float(os.environ.get("HCCHISEP_GF_EPS", "2e-4"))
+    if hardcon:
+        # #3: pin chi+ - chi- = chi_total (clean), guided-denoise only the noisy R2' DOF
+        cf_pos = (guided_filter(cf_pos * mask, guide, gf_r, gf_eps) * mask).astype(np.float32)
+        cf_neg = cf_pos - chimap
+        print(f"[hc-chisep] Stage-3 hard-constraint guided denoise: guide={gk} r={gf_r} eps={gf_eps}")
+    elif tvinv:
+        lam = float(os.environ.get("HCCHISEP_TVINV_LAM", "0.02") or 0.02)
+        beta = float(os.environ.get("HCCHISEP_TVINV_BETA", "1.0") or 1.0)
+        if prior == "guided":
+            cf_pos, cf_neg = tv_joint_inversion(cf_pos, chimap, mask, beta=beta, lam=lam,
+                                                prior="guided", guide=guide, gf_r=gf_r, gf_eps=gf_eps)
+            print(f"[hc-chisep] Stage-3 guided joint inversion: guide={gk} r={gf_r} eps={gf_eps} beta={beta}")
+        else:
+            cf_pos, cf_neg = tv_joint_inversion(cf_pos, chimap, mask, beta=beta, lam=lam)
+            print(f"[hc-chisep] Stage-3 TV joint inversion: lam={lam} beta={beta}")
+    else:
+        cf_neg = cf_pos - chimap
     # clamp: chi- >= 0 (chimap constraint wins where the pair is inconsistent)
     fix = cf_neg < 0
     cf_pos = np.where(fix, np.clip(chimap, 0, None), cf_pos)

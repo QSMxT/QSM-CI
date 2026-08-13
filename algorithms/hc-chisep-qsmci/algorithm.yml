@@ -51,6 +51,23 @@ parameters:
     description: >
       centre (log10 SSE ratio, anchored-HC vs mono-exponential) of the soft WM-likeness sigmoid;
       scale 0.3. The ratio statistic is scale-free, so the centre transfers across SNR.
+  - name: smooth
+    default: "off"
+    description: >
+      OPTIONAL grain reduction of the R2'-noise-limited χ maps (set via $HCCHISEP_SMOOTH).
+      off (default) = pristine baseline. auto = enable ONLY if the input R2' is noisy
+      (χ-grain g = σ_R2'/Dr+ ≥ τ, default 0.008 ppm; τ via $HCCHISEP_SMOOTH_TAU); on = force;
+      a float forces TV-regularised joint inversion at that λ ($HCCHISEP_SMOOTH_LAM, default 0.01).
+      Background: the unregularised split copies R2' input noise identically into χ+ and χ- (the
+      "shared grain"); because the paper metrics are ROI-mean-based this grain barely affects them,
+      so the SCORED submission is left as the faithful, noise-carrying baseline (smooth=off). The
+      recommended cosmetic opt-in is TV joint inversion at λ=0.01, which on ground-truth phantoms
+      keeps χ+ ROI error negligible and slightly IMPROVES χ- MSPE. Experimental variants are all
+      env-gated OFF: χ_total-guided filtering ($HCCHISEP_TVINV with _PRIOR=guided, $HCCHISEP_HARDCON,
+      $HCCHISEP_GUIDE/_GF_R/_GF_EPS) and R2'-input denoise ($HCCHISEP_R2DENOISE/_R2STR, $HCCHISEP_SNRW).
+      The guided/hard-constraint ones look cleanest and win phantom χ- but OVER-SMOOTH in vivo (maps
+      smoother than the input QSM, reference-agreement drops) — hence not the default. Input-denoise
+      variants hurt ROI-mean accuracy and are kept only for reproducibility of the investigation.
 tuned:
   dataset: data/sim/chisep-ship
   note: >
