@@ -9,6 +9,40 @@ on:
   pull_request:
 
 jobs:
+  manifest:
+    # Keep web/algorithms.json in sync with algorithms/*/algorithm.yml automatically: regenerate it
+    # and, on same-repo pushes/PRs, commit the refresh back to the branch so nobody has to remember
+    # `python scripts/gen_manifest.py`. Skipped for fork PRs (GITHUB_TOKEN can't push to a fork) —
+    # those must regenerate + commit manually. GITHUB_TOKEN pushes don't re-trigger workflows, so no
+    # loop; the [skip ci] marker is belt-and-suspenders.
+    if: ${{ github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install package
+        run: pip install . pyyaml
+      - name: Regenerate manifest
+        run: python scripts/gen_manifest.py
+      - name: Commit refresh if changed
+        run: |
+          if git diff --quiet web/algorithms.json; then
+            echo "web/algorithms.json already in sync"; exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add web/algorithms.json
+          git commit -m "chore: sync web/algorithms.json [skip ci]"
+          git push
+          echo "committed refreshed web/algorithms.json"
+
   interfaces:
     # Workflow-engine interfaces (qsm_ci.nipype / qsm_ci.pydra) + the `qsm-ci interface` generator,
     # exercised on a qsm-forward phantom with the container-free `local` runner. Fast, secret-free.
