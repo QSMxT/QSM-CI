@@ -154,6 +154,7 @@ function renderHowToRun() {
 
 let allRuns = [], algos = [], registry = {}, datasetsReg = {};
 let nv = null, run, baseUrl, filter = "", navMode = "stages", domain = "qsm";
+let chisepPhantom = null;    // χ-separation phantom preference, remembered as you browse algorithms
 let curBase = "recon";       // base map shown underneath: recon | truth
 let chisepComp = "para";     // χ-separation source shown: para (χ+) | dia (χ−)
 let showError = false;       // whether the error map is overlaid on top of the base
@@ -182,6 +183,21 @@ const chisepPhantomIds = () => Object.keys(datasetsReg).filter((k) => datasetsRe
 const chisepDefaultPhantom = () => chisepPhantomIds().find((k) => datasetsReg[k].default) || "chisep";
 const chisepPhantomOf = (r) => (chisepPhantomIds().includes(r.phantom) ? r.phantom : chisepDefaultPhantom());
 const phantomLabel = (p) => (datasetsReg[p] || {}).label || p;
+// The χ-separation run for a method (`slug`) on a preferred phantom: fall back to the default
+// phantom, then to whatever run exists. Drives both the deduped sidebar list and the phantom switch.
+const chisepRunFor = (slug, phantom) => {
+  const rs = chisepRuns().filter((r) => r.slug === slug);
+  return rs.find((r) => chisepPhantomOf(r) === phantom)
+    || rs.find((r) => chisepPhantomOf(r) === chisepDefaultPhantom())
+    || rs[0];
+};
+// The phantoms a given method was scored on (default phantom first) — the switch appears only for ≥2.
+function chisepPhantomPeers() {
+  if (!run || datasetOf(run) !== "chisep") return [];
+  const d = chisepDefaultPhantom();
+  return uniq(chisepRuns().filter((r) => r.slug === run.slug).map(chisepPhantomOf))
+    .sort((a, b) => (a === d ? -1 : b === d ? 1 : a < b ? -1 : 1));
+}
 // In-vivo (2016 challenge) runs: a distinct DATASET (not just a domain) — dipole-only, scored vs
 // COSMOS + STI χ33. One flat list, default variant only, like χ-separation.
 const isInvivo = (r) => r.track === "invivo";
@@ -308,15 +324,15 @@ function chisepHTML() {
   const f = filter.toLowerCase();
   const rs = chisepRuns().filter((r) => !f || r.name.toLowerCase().includes(f));
   if (!rs.length) return `<p class="p-3 text-sm text-gray-400">No χ-separation methods yet.</p>`;
-  // Group by the phantom each run was scored on (default phantom first). With a single phantom this
-  // renders the one historical "χ-separation" section unchanged.
-  const d = chisepDefaultPhantom();
-  const phs = uniq(rs.map(chisepPhantomOf)).sort((a, b) => (a === d ? -1 : b === d ? 1 : a < b ? -1 : 1));
-  return phs.map((p) => {
-    const rows = rs.filter((r) => chisepPhantomOf(r) === p).map((r) => runItem(r, run?.id).replace("%NAME%", r.name)).join("");
-    const head = phs.length > 1 ? `χ-separation · ${phantomLabel(p)}` : "χ-separation";
-    return `<div class="mb-3"><div class="px-2.5 pt-1 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">${head}</div>${rows}</div>`;
+  // ONE list of methods (deduped by algorithm), regardless of how many phantoms each was scored on.
+  // Each row points at the method's run on the currently-selected phantom (`chisepPhantom`, remembered
+  // as you browse); the phantom selector above the viewer swaps phantom in place. So the row's headline
+  // metric and the volume it opens both track the chosen phantom.
+  const rows = uniq(rs.map((r) => r.slug)).map((slug) => {
+    const r = chisepRunFor(slug, chisepPhantom);
+    return runItem(r, run?.id).replace("%NAME%", r.name);
   }).join("");
+  return `<div class="mb-3"><div class="px-2.5 pt-1 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">χ-separation</div>${rows}</div>`;
 }
 function invivoHTML() {
   const f = filter.toLowerCase();
@@ -368,9 +384,37 @@ function renderDatasetSwitch() {
     b.addEventListener("click", () => switchDataset(b.dataset.switch)));
   el.classList.remove("hidden");
 }
+// In-content phantom switch, shown above the viewer/metrics only for a χ-separation method scored on
+// more than one phantom: swap the phantom, same method. Mirrors renderDatasetSwitch.
+function renderChisepPhantomSwitch() {
+  const el = $("chisep-phantom-switch");
+  if (!el) return;
+  const phs = chisepPhantomPeers();
+  if (phs.length < 2) { el.classList.add("hidden"); el.innerHTML = ""; return; }
+  const cur = chisepPhantomOf(run);
+  const btns = phs.map((p) => {
+    const on = p === cur;
+    return `<button data-phantom="${p}" class="rounded-md px-3 py-1.5 transition ${on
+      ? "bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100"
+      : "text-gray-500 hover:text-gray-700 dark:text-gray-400"}">${phantomLabel(p)}</button>`;
+  }).join("");
+  el.innerHTML = `<div class="flex flex-wrap items-center gap-3">
+    <div class="inline-flex rounded-lg bg-gray-100 p-1 text-xs font-medium dark:bg-gray-800">${btns}</div>
+  </div>`;
+  el.querySelectorAll("[data-phantom]").forEach((b) =>
+    b.addEventListener("click", () => switchChisepPhantom(b.dataset.phantom)));
+  el.classList.remove("hidden");
+}
+// Swap the phantom while keeping the same χ-separation method open (re-selecting its run there).
+function switchChisepPhantom(p) {
+  chisepPhantom = p;
+  const target = run ? chisepRunFor(run.slug, p) : null;
+  if (target) selectRun(target.id);
+}
 function selectRun(id) {
   run = allRuns.find((r) => r.id === id);
   domain = datasetOf(run);   // keep the sidebar on the dataset this run belongs to
+  if (domain === "chisep") chisepPhantom = chisepPhantomOf(run);   // remember the phantom being viewed
   history.replaceState(null, "", "?run=" + encodeURIComponent(id));
   buildSidebar();
   loadRun();
@@ -493,6 +537,7 @@ async function loadRun() {
   renderMethodInfo();
   renderHowToRun();
   renderDatasetSwitch();
+  renderChisepPhantomSwitch();
   renderMetrics();
   // Render the resource graph up front, independent of (and before) the WebGL/NiiVue viewer, so a
   // browser without WebGL2, or a run whose volumes fail to load, still shows the usage trace.
