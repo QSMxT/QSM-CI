@@ -91,8 +91,7 @@ SE_TES = np.array([0.010, 0.030, 0.050, 0.070])  # s, multi-echo spin-echo (magn
 # ships as an input instead) and use the theoretical field-scaled Dr kernels. The default
 # V1 flip applies (their phantom used it — see V1 ORIENTATION above).
 # 3T protocol: TR 50 ms, FA 15, TE1/dTE/TE6 = 3/4/23 ms; 7T: TE1/dTE/TE4 = 4/8/28 ms.
-_RIDANI_COMMON = dict(dr_model="scaled", noiseless=True, no_se=True, r2_input=True, voxel=0.0,
-                      no_fiber_angle=True)
+_RIDANI_COMMON = dict(dr_model="scaled", noiseless=True, no_se=True, r2_input=True, voxel=0.0)
 RIDANI_PRESETS = {
     "ridani-3t-iso":   dict(b0=3.0, tes="3,7,11,15,19,23", isotropic=True, **_RIDANI_COMMON),
     "ridani-3t-aniso": dict(b0=3.0, tes="3,7,11,15,19,23", isotropic=False, **_RIDANI_COMMON),
@@ -112,27 +111,6 @@ def _ds_theta(theta, ds):
     ok = den > 0.5
     out[ok] = num[ok] / den[ok]
     return out
-
-
-def write_fiber_angle(out: Path, v1, b0_dir, affine, header, out_shape, brain_mask):
-    """Write inputs/fiber_angle.nii.gz — the fibre-to-B0 angle (degrees) from the diffusion V1
-    eigenvector, resampled to the dataset grid and brain-masked. This is the orientation information a
-    real DTI acquisition provides; an anisotropy-aware χ-separation method can use it (D_r-(θ) ∝ sin²θ)
-    to recover white-matter χ-, which a single-orientation isotropic method cannot. An OPTIONAL input:
-    only physically meaningful in white matter (~0 elsewhere)."""
-    from scipy.ndimage import zoom
-    b0 = np.asarray(b0_dir, float); b0 = b0 / (np.linalg.norm(b0) + 1e-12)
-    norm = np.linalg.norm(v1, axis=-1)
-    cos = np.abs((v1 * b0).sum(-1)) / np.where(norm > 1e-6, norm, 1.0)
-    ang = np.degrees(np.arccos(np.clip(cos, 0.0, 1.0))).astype(np.float32)
-    ang[norm <= 1e-6] = 0.0
-    if ang.shape != tuple(out_shape):
-        ang = zoom(ang, [out_shape[i] / ang.shape[i] for i in range(3)], order=1).astype(np.float32)
-    ang *= (brain_mask > 0)
-    p = out / "inputs" / "fiber_angle.nii.gz"
-    p.parent.mkdir(parents=True, exist_ok=True)
-    nib.save(nib.Nifti1Image(ang, affine, header), str(p))
-    print(f"  wrote {p.name} (fibre-to-B0 angle in deg; optional WM-anisotropy input)")
 
 
 def mask_derived_to_brain(out: Path):
@@ -209,10 +187,6 @@ def main() -> None:
                     help="skip acquisition noise entirely (the Ridani headline configs are noiseless)")
     ap.add_argument("--no-se", action="store_true",
                     help="skip the matched spin-echo acquisition (the Ridani phantom simulates GRE only)")
-    ap.add_argument("--no-fiber-angle", action="store_true",
-                    help="do not ship inputs/fiber_angle.nii.gz (the DTI orientation input); the Ridani "
-                         "reproduction datasets omit it so orientation cannot be handed to methods — a "
-                         "closed-form null with fiber_angle is near-exact on the anisotropic phantom")
     ap.add_argument("--wm-rois-src", type=Path, default=None,
                     help="fibre-bundle WM sub-ROI atlas (Ridani OSF 9xwhz Masks/WM_fibers_seg.nii.gz) to "
                          "ship as groundtruth/wm_rois.nii.gz — the label map the χ- per-ROI MSPE averages over")
@@ -243,7 +217,7 @@ def main() -> None:
     data = str(args.qsmf_data)
     print(f"Building χ+/χ- (anisotropy={aniso})...")
     # Register V1 to the segmentation (see V1 ORIENTATION) BEFORE it feeds anything — the χ-
-    # anisotropy ground truth, theta and fiber_angle must all use the same registered fibres.
+    # anisotropy ground truth and theta must use the same registered fibres.
     v1_kw = {}
     if not args.no_v1_flip:
         v1_path = args.qsmf_data / "maps" / "V1.nii.gz"
@@ -275,9 +249,6 @@ def main() -> None:
         b = 1.0 if args.full_head else mask.astype(np.float32)
         write_maps_dataset(args.out, chi_total * b, r2prime * b, mask,
                            chi_pos * b, chi_neg * b, tp.nii_affine, tp.nii_header)
-        if aniso and tp.v1 is not None:
-            write_fiber_angle(args.out, tp.v1.get_fdata(), B0_DIR, tp.nii_affine, tp.nii_header,
-                              mask.shape, (mask if args.full_head else mask).astype(np.float32))
         print(f"--maps-only: wrote maps dataset to {args.out} (no field/signal sim).")
     else:
         tmpd = tempfile.mkdtemp()
@@ -374,15 +345,6 @@ def main() -> None:
         if not args.full_head:
             mask_derived_to_brain(args.out)
             print("Masked derived maps + ground truth to the brain (raw phase/magnitude kept whole-head).")
-        if aniso and th1 is not None and not args.no_fiber_angle:  # optional DTI-orientation input
-            # Reuse the SAME resize-path theta the signal uses, so the shipped fiber_angle is
-            # grid-consistent with the simulated anisotropy (an index-space zoom of V1 lands
-            # ~1 voxel off the affine-resized grid).
-            mimg = nib.load(str(args.out / "inputs" / "mask.nii.gz"))
-            ang = (np.nan_to_num(th1) * (mimg.get_fdata() > 0)).astype(np.float32)
-            nib.save(nib.Nifti1Image(ang, mimg.affine, mimg.header),
-                     str(args.out / "inputs" / "fiber_angle.nii.gz"))
-            print("  wrote fiber_angle.nii.gz (resize-path; grid-consistent with the signal theta)")
         print("Done. Re-score methods after regenerating.")
 
     if args.validate:

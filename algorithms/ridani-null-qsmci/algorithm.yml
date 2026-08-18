@@ -7,19 +7,17 @@ language: Python
 family: direct
 learning: none
 engine: Independent
-inputs: [chimap, r2prime, mask, dseg, params]  # + fiber_angle if the dataset ships it (see description)
+inputs: [chimap, r2prime, mask, dseg, params]
 description: >
   The closed-form analytic null baseline for the Ridani et al. (2026) phantom family. It inverts the
   phantom's own region-disjoint, theoretical field-scaled forward model: paramagnetic relaxivity
   Dr+ = (2π)²·γ·B0/(9√3) (~107.84·B0 Hz/ppm) applied outside white matter, diamagnetic relaxivity
-  Dr-(θ) = ½·γ·2π·B0·sin²θ (~133.77·B0·sin²θ) inside white matter (a field-scaled constant when no
-  fibre orientation is available). The white-matter region is read from the provided segmentation
+  Dr-(θ) = ½·γ·2π·B0·sin²θ (~133.77·B0·sin²θ) inside white matter, which the baseline applies as a
+  field-scaled constant since fibre orientation is not provided to methods. The white-matter region is read from the provided segmentation
   (dseg, label 8), and each region is solved with its own closed form (χ+ = R2'/Dr+ outside WM;
   |χ-| = R2'/Dr- inside WM), so on the isotropic phantom it is EXACT. On the anisotropic phantom,
   lacking per-voxel θ, it assumes a constant WM Dr- and mis-estimates WM χ- by the orientation
-  modulation — that residual is the anisotropy signal the benchmark measures. Where an optional
-  fibre-angle input (fiber_angle.nii.gz) is shipped, it uses the orientation-dependent Dr-(θ) and
-  its WM χ- becomes near-exact, quantifying how much that DTI input gives away. Its score is the
+  modulation — that residual is the anisotropy signal the benchmark measures. Its score is the
   honest floor for this dataset family: a real method demonstrates separation skill only by beating
   it without the held-out segmentation. Distinct from chisep-null (which inverts the co-located
   single-kernel Dr+=137·B0/3 model); this baseline pairs with the Ridani datasets, as chisep-null
