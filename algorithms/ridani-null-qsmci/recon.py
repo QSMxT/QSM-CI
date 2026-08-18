@@ -25,15 +25,12 @@ the orientation modulation — that residual IS the anisotropy signal the benchm
 Its score is the honest floor for this dataset family: a real method demonstrates skill only by
 beating it *without* the segmentation.
 
-If a fibre-to-B0 angle map (fiber_angle.nii.gz, degrees) is provided as an input, the
-orientation-dependent Dr-(theta) is used instead of the constant — the null then also knows the
-anisotropy and its WM chi- becomes near-exact, which quantifies how much that optional DTI input
-gives away. If no segmentation is provided at all, ridani-null falls back to the co-located
+If no segmentation is provided at all, ridani-null falls back to the co-located
 two-kernel solve (identical in form to chisep-null) so it never crashes on a non-Ridani dataset.
 
 Usage: recon.py <input-dir> <output-dir>
 Consumes: chimap.nii.gz (ppm), r2prime.nii.gz (Hz), mask.nii.gz, params.json (B0);
-          dseg.nii.gz (segmentation, WM=8) if present; fiber_angle.nii.gz (deg) if present.
+          dseg.nii.gz (segmentation, WM=8) if present.
 Produces: chi-para.nii.gz (chi+ >= 0), chi-dia.nii.gz (|chi-| >= 0)
 """
 import json
@@ -70,16 +67,11 @@ def main() -> None:
         seg = np.round(_load(seg_path)).astype(int)
         wm = seg == WM_LABEL
 
-        # Diamagnetic relaxivity in WM: orientation-dependent if a fibre-angle map is
-        # provided, else the reference's field-scaled constant.
-        fa_path = inp / "fiber_angle.nii.gz"
-        if fa_path.exists():
-            sin2 = np.clip(np.sin(np.deg2rad(_load(fa_path))) ** 2, 1e-3, None)
-            dr_neg = 0.5 * GAMMA_BAR * 2 * np.pi * b0 * sin2           # ~133.77*B0*sin^2(theta)
-            dr_mode = "Dr-(theta) from fiber_angle"
-        else:
-            dr_neg = np.full_like(chi, DR_NEG_CONST_7T * (b0 / 7.0))
-            dr_mode = f"constant Dr- = {DR_NEG_CONST_7T * b0 / 7.0:.1f} Hz/ppm"
+        # Diamagnetic relaxivity in WM: the reference's field-scaled constant. Orientation is
+        # deliberately not available as an input, so WM chi- carries the unmodelled anisotropy
+        # residual the benchmark measures.
+        dr_neg = np.full_like(chi, DR_NEG_CONST_7T * (b0 / 7.0))
+        dr_mode = f"constant Dr- = {DR_NEG_CONST_7T * b0 / 7.0:.1f} Hz/ppm"
 
         dr_neg_wm = np.where(dr_neg > 0, dr_neg, 1.0)
         # Region-disjoint closed form (chi- signed <= 0):
