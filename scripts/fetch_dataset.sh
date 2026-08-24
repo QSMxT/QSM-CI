@@ -46,6 +46,10 @@ if not osf:
 print(f"OSF_FILE={osf}")
 print(f"PACK_FLAGS={d.get('pack_flags', '')}")
 print(f"PREPACKED={'1' if d.get('prepacked') else '0'}")
+# A registry entry may live in a different OSF project than the default (e.g. the public
+# harmonization project); the OSF_PROJECT env still overrides.
+if d.get("osf_project") and not os.environ.get("OSF_PROJECT"):
+    print(f"OSF_PROJECT={d['osf_project']}")
 PY
 )"
 eval "$RESOLVED"

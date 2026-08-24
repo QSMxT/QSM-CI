@@ -136,6 +136,9 @@
       <template x-if="hasInvivo()">
         <button class="dtab" :class="{'dtab-on': dataset==='invivo'}" @click="setDataset('invivo')">In vivo (2016)</button>
       </template>
+      <template x-if="hasRepro()">
+        <button class="dtab" :class="{'dtab-on': dataset==='repro'}" @click="setDataset('repro')">Harmonization (2026)</button>
+      </template>
       <template x-if="hasCross()">
         <button class="dtab" :class="{'dtab-on': dataset==='cross'}" @click="setDataset('cross')">Cross-dataset</button>
       </template>
@@ -953,6 +956,139 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
       </div>
     </section>
 
+    <!-- ===================== HARMONIZATION (2026) ===================== -->
+    <section x-show="dataset==='repro'" x-cloak class="mt-3">
+      <div class="rtabs">
+        <button class="rtab" :class="{'rtab-on': reproView==='info'}" @click="reproView='info'">Info</button>
+        <button class="rtab" :class="{'rtab-on': reproView==='protocols'}" @click="reproView='protocols'">Protocol reproducibility</button>
+        <button class="rtab" :class="{'rtab-on': reproView==='pipelines'}" @click="reproView='pipelines'">Pipeline reproducibility</button>
+      </div>
+
+      <!-- Harmonization · Protocol reproducibility -->
+      <div x-show="reproView==='protocols'" x-cloak>
+        <p class="mt-6 text-sm text-gray-600 dark:text-gray-400 leading-relaxed max-w-3xl">
+          How reproducible is each <em>acquisition protocol</em>, marginalised over reconstruction pipelines?
+          Each cell aggregates the per-ROI orthogonal fit &chi;<sub>B</sub> = a&middot;&chi;<sub>A</sub> + b between two
+          acquisitions; the headline is the slope's deviation from identity |a&minus;1| (in&nbsp;%): within-scanner
+          test&ndash;retest, and across the two scanners. Median [min&ndash;max] across all pipelines.
+        </p>
+        <div class="mt-4 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm whitespace-nowrap">
+              <thead class="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
+                <tr>
+                  <th class="px-5 py-2.5 text-left font-medium">Protocol</th>
+                  <th class="px-4 py-2.5 text-right font-medium"><span class="has-tip" data-tip="Within-scanner run-to-run |a−1|, median across pipelines (range in brackets). Lower is more repeatable.">Test&ndash;retest |a&minus;1|</span></th>
+                  <th class="px-4 py-2.5 text-right font-medium"><span class="has-tip" data-tip="Prisma↔Cima |a−1| for the same protocol and run, median across pipelines (range in brackets). Lower means the protocol travels better between scanners.">Inter-scanner |a&minus;1|</span></th>
+                  <th class="px-4 py-2.5 text-right font-medium"><span class="has-tip" data-tip="Mean inter-scanner Bland–Altman bias across pipelines (ppm).">BA bias</span></th>
+                  <th class="px-4 py-2.5 text-right font-medium">Pipelines</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                <template x-for="row in reproProtoRows()" :key="row.protocol">
+                  <tr>
+                    <td class="px-5 py-3 text-left font-medium text-gray-900" x-text="row.label"></td>
+                    <td class="px-4 py-3 text-right tabular-nums text-gray-700"><span x-text="row.tr"></span></td>
+                    <td class="px-4 py-3 text-right tabular-nums font-semibold text-gray-900"><span x-text="row.inter"></span></td>
+                    <td class="px-4 py-3 text-right tabular-nums text-gray-600" x-text="row.bias"></td>
+                    <td class="px-4 py-3 text-right tabular-nums text-gray-500" x-text="row.n"></td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+          <p x-show="reproProtoRows().length===0" class="px-5 py-10 text-center text-gray-400">
+            Reproducibility results are not computed yet — the reconstruction matrix over all 23 acquisitions is pending.
+          </p>
+        </div>
+      </div><!-- /repro protocols -->
+
+      <!-- Harmonization · Pipeline reproducibility -->
+      <div x-show="reproView==='pipelines'" x-cloak>
+        <div class="mt-6 flex flex-wrap items-center gap-3">
+          <div class="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+            <span>Protocol</span>
+            <select x-model="reproProto" class="rounded-lg border-gray-300 text-sm py-1.5 focus:border-emerald-500 focus:ring-emerald-500">
+              <option value="all">all protocols</option>
+              <template x-for="p in reproProtocols()" :key="p"><option :value="p" x-text="reproProtoLabel(p)"></option></template>
+            </select>
+          </div>
+          <div class="grow"></div>
+          <input x-model="filter" type="search" placeholder="Filter…" class="rounded-lg border-gray-300 text-sm px-3 py-1.5 w-44 focus:border-emerald-500 focus:ring-emerald-500" />
+        </div>
+        <p class="mt-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed max-w-3xl">
+          How reproducible is each <em>reconstruction pipeline</em> across acquisitions of the same head?
+          Mean |a&minus;1| over the pairwise per-ROI orthogonal fits in each comparison class. A pipeline that
+          harmonizes well has a small inter-scanner slope deviation without giving up test&ndash;retest precision.
+        </p>
+        <div class="mt-4 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm whitespace-nowrap">
+              <thead class="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
+                <tr>
+                  <th class="px-4 py-2.5 text-right font-medium" style="min-width:3rem">#</th>
+                  <th class="px-5 py-2.5 text-left font-medium">Pipeline</th>
+                  <th @click="reproSortBy('tr')" class="px-4 py-2.5 text-right font-medium cursor-pointer select-none hover:text-gray-800"><span class="has-tip" data-tip="Within-scanner run-to-run |a−1| (mean over pairs). Lower is more repeatable.">Test&ndash;retest |a&minus;1|</span> <span x-show="reproSortKey==='tr'" x-text="reproDir==='asc'?'↑':'↓'"></span></th>
+                  <th @click="reproSortBy('inter')" class="px-4 py-2.5 text-right font-medium cursor-pointer select-none hover:text-gray-800"><span class="has-tip" data-tip="Prisma↔Cima |a−1| for matched protocol+run (mean over pairs). The harmonization headline.">Inter-scanner |a&minus;1|</span> <span x-show="reproSortKey==='inter'" x-text="reproDir==='asc'?'↑':'↓'"></span></th>
+                  <th @click="reproSortBy('iproto')" class="px-4 py-2.5 text-right font-medium cursor-pointer select-none hover:text-gray-800"><span class="has-tip" data-tip="|a−1| between each protocol and the bridge protocol on the same scanner (mean over pairs).">vs bridge |a&minus;1|</span> <span x-show="reproSortKey==='iproto'" x-text="reproDir==='asc'?'↑':'↓'"></span></th>
+                  <th class="px-4 py-2.5 text-right font-medium"><span class="has-tip" data-tip="Number of pairwise comparisons behind the means.">Pairs</span></th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                <template x-for="(row,i) in reproPipeRows()" :key="row.slug">
+                  <tr>
+                    <td class="px-4 py-3 text-right tabular-nums text-gray-400" x-text="i+1"></td>
+                    <td class="px-5 py-3 text-left font-medium text-gray-900" x-text="row.name"></td>
+                    <td class="px-4 py-3 text-right tabular-nums" :class="reproSortKey==='tr'?'font-semibold text-gray-900':'text-gray-600'" x-text="row.tr"></td>
+                    <td class="px-4 py-3 text-right tabular-nums" :class="reproSortKey==='inter'?'font-semibold text-gray-900':'text-gray-600'" x-text="row.inter"></td>
+                    <td class="px-4 py-3 text-right tabular-nums" :class="reproSortKey==='iproto'?'font-semibold text-gray-900':'text-gray-600'" x-text="row.iproto"></td>
+                    <td class="px-4 py-3 text-right tabular-nums text-gray-500" x-text="row.n"></td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+          <p x-show="reproPipeRows().length===0" class="px-5 py-10 text-center text-gray-400">
+            Reproducibility results are not computed yet — the reconstruction matrix over all 23 acquisitions is pending.
+          </p>
+        </div>
+      </div><!-- /repro pipelines -->
+
+      <!-- Harmonization · Info -->
+      <div x-show="reproView==='info'" x-cloak class="info mt-6 space-y-8">
+        <div>
+          <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">Harmonization &middot; two scanners, four protocols, one head</h2>
+          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">One volunteer, scanned on two Siemens 3&nbsp;T systems at MGH (bays 4&ndash;5: a MAGNETOM Prisma&nbsp;Fit and a MAGNETOM Cima.X), with four multi-echo GRE protocols, three runs each &mdash; 23 acquisitions (one Pulseq offline run could not be reconstructed). There is no ground truth and none is possible; the question is <em>reproducibility</em>: how consistent are a pipeline's susceptibility values across runs, protocols and scanners of the same brain?</p>
+          <p class="mt-4 text-gray-600 dark:text-gray-400 leading-relaxed">The dataset comes from the QSM harmonization initiative of the ISMRM Electro-Magnetic Tissue Properties Study Group (Costagli, Lancione, Bilgic, Robinson, Schweser, Li, and colleagues). Data were acquired by Berkin Bilgic; the analysis method &mdash; per-ROI orthogonal fits &chi;<sub>B</sub>&nbsp;=&nbsp;a&middot;&chi;<sub>A</sub>&nbsp;+&nbsp;b between acquisitions, with |a&minus;1| as the headline &mdash; follows Marta Lancione's two-pipeline analysis, which QSM-CI extends across its full pipeline matrix.</p>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">The four protocols</h3>
+          <div class="mt-3 overflow-x-auto">
+            <table class="w-full text-sm whitespace-nowrap">
+              <thead class="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
+                <tr><th class="px-4 py-2 text-left font-medium">Protocol</th><th class="px-4 py-2 text-left font-medium">Sequence</th><th class="px-4 py-2 text-left font-medium">TEs (ms)</th><th class="px-4 py-2 text-left font-medium">TR / FA</th></tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100 text-gray-600 dark:text-gray-400">
+                <tr><td class="px-4 py-2.5 font-medium text-gray-900 dark:text-gray-100">Bridge</td><td class="px-4 py-2.5">Siemens product GRE implementing the consensus protocol (GRAPPA R=2, 1&nbsp;mm iso)</td><td class="px-4 py-2.5">5 / 11 / 17 / 23 / 29</td><td class="px-4 py-2.5">35&nbsp;ms / 15&deg;</td></tr>
+                <tr><td class="px-4 py-2.5 font-medium text-gray-900 dark:text-gray-100">Local</td><td class="px-4 py-2.5">Each site&rsquo;s optimised protocol: Prisma &mdash; GRE 2&times;2, sum-of-squares; Cima &mdash; 3D-EPI, CAIPIRINHA 3&times;2</td><td class="px-4 py-2.5">Prisma: 7.04 / 13.4 / 19.76 / 26.12<br>Cima: 6.5 / 12 / 17.5 / 23</td><td class="px-4 py-2.5">31&nbsp;ms / 15&deg;</td></tr>
+                <tr><td class="px-4 py-2.5 font-medium text-gray-900 dark:text-gray-100">Pulseq (online)</td><td class="px-4 py-2.5">Vendor-neutral Pulseq consensus sequence (<a href="https://github.com/HarmonizedMRI/megre_label" class="text-emerald-600 hover:underline">HarmonizedMRI/megre_label</a>), Siemens ICE reconstruction</td><td class="px-4 py-2.5">5 / 11 / 17 / 23 / 29</td><td class="px-4 py-2.5">35&nbsp;ms / 15&deg;</td></tr>
+                <tr><td class="px-4 py-2.5 font-medium text-gray-900 dark:text-gray-100">Pulseq (offline)</td><td class="px-4 py-2.5">Same acquisition, offline GRAPPA reconstruction (removes the vendor recon from the chain)</td><td class="px-4 py-2.5">5 / 11 / 17 / 23 / 29</td><td class="px-4 py-2.5">35&nbsp;ms / 15&deg;</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="mt-3 text-sm text-gray-500 dark:text-gray-400 leading-relaxed">Echo times were recovered from the scanners&rsquo; exam-card PDFs and the Pulseq sequence source (the exported DICOM sidecars carry none, and the Pulseq exam cards show placeholder timings). The full recovered acquisition manifest ships with the dataset as <code>protocols.json</code>.</p>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">How it is evaluated</h3>
+          <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">Every QSM-CI pipeline combination (field&nbsp;mapping &times; background&nbsp;removal &times; dipole&nbsp;inversion, plus single-step methods) reconstructs all 23 acquisitions from raw phase. Each &chi; map is rigid-registered to a common target acquisition, referenced to its whole-brain mean, and reduced to per-ROI means over one SynthSeg segmentation (so ROI definitions cannot vary between acquisitions). Every acquisition pair then gets an orthogonal (total-least-squares) fit &chi;<sub>B</sub>&nbsp;=&nbsp;a&middot;&chi;<sub>A</sub>&nbsp;+&nbsp;b: |a&minus;1| measures scale disagreement, b the bias, and Bland&ndash;Altman limits the ROI-level scatter. Test&ndash;retest pairs bound what each protocol/pipeline could possibly achieve across scanners.</p>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Data availability</h3>
+          <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">The dataset is on OSF at <a href="https://osf.io/gkemr/" class="text-emerald-600 hover:underline">osf.io/gkemr</a>: <code>raw/</code> holds the original exports per scanner/protocol (with corrected sidecars, exam-card PDFs and the recovered-parameter manifest), and <code>qsmci-inputs/</code> one prepacked zip per acquisition in the QSM-CI canonical layout (4D magnitude/phase in radians, SynthStrip mask, params.json).</p>
+        </div>
+      </div><!-- /repro info -->
+    </section>
+
     <!-- ===================== CROSS-DATASET ===================== -->
     <section x-show="dataset==='cross'" x-cloak class="mt-3">
       <div class="mt-6">
@@ -1063,6 +1199,8 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         dataset: "sim",
         tab: "leaderboard", lbView: "pipelines", pipeView: "matrix", findView: "pipelines", view: "composed",
         chisepView: "board", invivoView: "board",   // per-dataset Leaderboard / Info subtab
+        // harmonization (repro) dataset state
+        reproView: "protocols", reproData: null, reproProto: "all", reproSortKey: "inter", reproDir: "asc",
         // leaderboard state
         stage: "dipole", fmap: "gt", variant: "default",
         metric: "xsim", sortKey: "xsim", sortDir: "desc", filter: "",
@@ -1083,7 +1221,9 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           if (!this._ready) return;                 // don't write while init() is still restoring state
           const p = new URLSearchParams();
           if (this.dataset !== "sim") p.set("dataset", this.dataset);
-          if (this.dataset === "invivo" || this.dataset === "chisep") {
+          if (this.dataset === "repro") {
+            if (this.reproView !== "protocols") p.set("sub", this.reproView);
+          } else if (this.dataset === "invivo" || this.dataset === "chisep") {
             // these datasets have their own tab set (info / board / findings)
             const v = this.dataset === "invivo" ? this.invivoView : this.chisepView;
             if (v !== "board") p.set("sub", v);
@@ -1125,6 +1265,10 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           if (q.get("dataset") === "invivo" || q.get("tab") === "invivo") this.dataset = "invivo";
           if (q.get("dataset") === "chisep" || q.get("tab") === "chisep") this.dataset = "chisep";
           if (q.get("dataset") === "cross") this.dataset = "cross";
+          if (q.get("dataset") === "repro") {
+            this.dataset = "repro";
+            if (["info", "protocols", "pipelines"].includes(q.get("sub"))) this.reproView = q.get("sub");
+          }
           const t = q.get("tab");
           if (["info", "leaderboard", "findings"].includes(t)) this.tab = t;
           else if (["pipelines", "stages"].includes(t)) this.tab = "leaderboard";
@@ -1142,11 +1286,16 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             // the big reactive trigger, and name-dependent getters (matrix, findings) cache by
             // runs.length — if algos isn't loaded yet when they first compute, algoName() falls back to
             // raw slugs and the cache never refreshes. Assigning algos first avoids that.
-            const [algos, registry, runs, datasetsReg] = await Promise.all([loadAlgos(), loadRegistry(), loadRuns(), loadDatasets()]);
+            const loadRepro = async () => {
+              try { const r = await fetch("results/repro.json", { cache: "no-store" }); return r.ok ? await r.json() : null; }
+              catch { return null; }
+            };
+            const [algos, registry, runs, datasetsReg, repro] = await Promise.all([loadAlgos(), loadRegistry(), loadRuns(), loadDatasets(), loadRepro()]);
             this.algos = algos;
             this.registry = registry;
             this.runs = runs;
             this.datasetsReg = datasetsReg;
+            this.reproData = repro;
             // default phantom selection (deep-linkable via ?phantom=<id>)
             this.chisepPhantom = this.chisepDefaultPhantom();
             if (this.chisepPhantoms().includes(q.get("phantom"))) this.chisepPhantom = q.get("phantom");
@@ -1159,13 +1308,14 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             if (!this.runs.some((r) => r.mode === "composed")) { this.lbView = "stages"; this.syncView(); }
             if (!this.hasChiSep() && this.dataset === "chisep") this.dataset = "sim";
             if (!this.hasInvivo() && this.dataset === "invivo") this.dataset = "sim";
+            if (!this.hasRepro() && this.dataset === "repro") this.dataset = "sim";
             if (!this.hasCross() && this.dataset === "cross") this.dataset = "sim";
           } finally {
             this.loading = false;   // only reveal the empty-state once the fetch has actually resolved
           }
           // Now that state is restored from the URL + data, keep the URL in sync with every tab change.
           this._ready = true;
-          ["dataset", "tab", "lbView", "stage", "pipeView", "findView", "variant", "metric", "fmap", "invivoView", "chisepView"]
+          ["dataset", "tab", "lbView", "stage", "pipeView", "findView", "variant", "metric", "fmap", "invivoView", "chisepView", "reproView"]
             .forEach((k) => this.$watch(k, () => this.syncUrl()));
           this.syncUrl();   // canonicalise (e.g. if an unavailable dataset was reset to sim)
           // findings: delegated click — any injected mark carrying data-run opens that run's page
@@ -1205,6 +1355,82 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         _isInvivo(r) { return r.track === "invivo"; },
         _invivo() { return this.runs.filter((r) => this._isInvivo(r)); },
         hasInvivo() { return this._invivo().length > 0; },
+
+        // ---- harmonization (repro) dataset -----------------------------------------------
+        // Runs carry track==='repro' (per-acquisition recon rows); the pairwise reproducibility
+        // fits live in results/repro.json (written by scripts/repro_eval.py fits).
+        hasRepro() {
+          return !!(this.reproData && Object.keys(this.reproData.pipelines || {}).length) ||
+            this.runs.some((r) => r.track === "repro");
+        },
+        _reproPipes() { return (this.reproData && this.reproData.pipelines) || {}; },
+        reproProtoLabel(p) { return p.replace("pulseq-online", "Pulseq (online)").replace("pulseq-offline", "Pulseq (offline)"); },
+        reproName(slug) { return slug.split("+").map((s) => this.algoName(s)).join(" → "); },
+        // group-key parsers: test_retest / inter_protocol keys are "<scanner>-<protocol>"
+        _reproKeyProto(key) { return key.replace(/^(prisma|cima)-/, ""); },
+        reproProtocols() {
+          const set = new Set();
+          for (const node of Object.values(this._reproPipes()))
+            for (const cls of ["test_retest", "inter_scanner"])
+              for (const key of Object.keys(node[cls] || {}))
+                set.add(cls === "inter_scanner" ? key : this._reproKeyProto(key));
+          return [...set].sort();
+        },
+        // mean |a-1| over the pair metrics in a class, optionally restricted to one protocol
+        _reproClsMean(node, cls, proto, field = "abs_slope_dev") {
+          const vals = [];
+          for (const [key, pairs] of Object.entries(node[cls] || {})) {
+            const p = cls === "inter_scanner" ? key : this._reproKeyProto(key);
+            if (proto !== "all" && p !== proto) continue;
+            for (const m of Object.values(pairs)) if (m[field] != null) vals.push(m[field]);
+          }
+          return vals;
+        },
+        _pct(vals) { return vals.length ? (100 * vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(1) + "%" : "—"; },
+        reproPipeRows() {
+          const rows = [];
+          for (const [slug, node] of Object.entries(this._reproPipes())) {
+            const tr = this._reproClsMean(node, "test_retest", this.reproProto);
+            const inter = this._reproClsMean(node, "inter_scanner", this.reproProto);
+            const ip = this._reproClsMean(node, "inter_protocol", this.reproProto);
+            const name = this.reproName(slug);
+            if (this.filter && !name.toLowerCase().includes(this.filter.toLowerCase())) continue;
+            rows.push({ slug, name, tr: this._pct(tr), inter: this._pct(inter), iproto: this._pct(ip),
+                        n: tr.length + inter.length + ip.length,
+                        _tr: tr, _inter: inter, _ip: ip });
+          }
+          const key = { tr: "_tr", inter: "_inter", iproto: "_ip" }[this.reproSortKey] || "_inter";
+          const mean = (v) => (v.length ? v.reduce((a, b) => a + b, 0) / v.length : Infinity);
+          rows.sort((a, b) => (mean(a[key]) - mean(b[key])) * (this.reproDir === "asc" ? 1 : -1));
+          return rows;
+        },
+        reproSortBy(k) {
+          if (this.reproSortKey === k) this.reproDir = this.reproDir === "asc" ? "desc" : "asc";
+          else { this.reproSortKey = k; this.reproDir = "asc"; }
+        },
+        reproProtoRows() {
+          const med = (v) => { if (!v.length) return null; const s = [...v].sort((a, b) => a - b); return s[Math.floor(s.length / 2)]; };
+          const fmtP = (x) => (x == null ? "—" : (100 * x).toFixed(1) + "%");
+          const rows = [];
+          for (const proto of this.reproProtocols()) {
+            const trM = [], interM = [], biasM = [];
+            for (const node of Object.values(this._reproPipes())) {
+              const tr = this._reproClsMean(node, "test_retest", proto);
+              const inter = this._reproClsMean(node, "inter_scanner", proto);
+              const bias = this._reproClsMean(node, "inter_scanner", proto, "ba_bias_ppm");
+              if (tr.length) trM.push(tr.reduce((a, b) => a + b, 0) / tr.length);
+              if (inter.length) interM.push(inter.reduce((a, b) => a + b, 0) / inter.length);
+              if (bias.length) biasM.push(bias.reduce((a, b) => a + b, 0) / bias.length);
+            }
+            if (!trM.length && !interM.length) continue;
+            const rng = (v) => (v.length > 1 ? ` [${fmtP(Math.min(...v))}–${fmtP(Math.max(...v))}]` : "");
+            rows.push({ protocol: proto, label: this.reproProtoLabel(proto),
+                        tr: fmtP(med(trM)) + rng(trM), inter: fmtP(med(interM)) + rng(interM),
+                        bias: biasM.length ? (biasM.reduce((a, b) => a + b, 0) / biasM.length).toFixed(4) + " ppm" : "—",
+                        n: Math.max(trM.length, interM.length) });
+          }
+          return rows;
+        },
         chiVal(r, k) {
           const m = r.metrics || {};
           if (k === "avg") return (m.para_xsim != null && m.dia_xsim != null) ? (m.para_xsim + m.dia_xsim) / 2 : null;

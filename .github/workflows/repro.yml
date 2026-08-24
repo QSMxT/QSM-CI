@@ -1,0 +1,213 @@
+name: repro
+
+# Harmonization (repro track): reconstruct every pipeline combination over the 23 multi-scanner
+# acquisitions and compute the reproducibility fits — the GitHub-hosted version of the Bunya
+# campaign in scripts/repro_slurm/. workflow_dispatch ONLY: this is a big fan-out (23 acquisitions
+# x N shards, ~10k container runs), not something a push should trigger.
+#
+#   plan      -> one task per (acquisition, shard): {phantom, shard i/N}
+#   score     -> fetch that acquisition's prepacked zip from OSF (public project gkemr), run the
+#                composed matrix from raw phase (no ground truth — runs are collected, not scored),
+#                upload the runs json + collected chimaps as an artifact
+#   evaluate  -> merge run rows, register acquisitions (SimpleITK), SynthSeg the target (docker),
+#                per-ROI stats + ax+b fits (scripts/repro_eval.py), commit results/index.json +
+#                results/repro.json (+ _align) — which feeds the Harmonization tab
+#
+# Excluded from the hosted shards: methods routed `runner: self-hosted`/`hosted-long` in their
+# algorithm.yml (won't fit hosted memory/time), plus inr-qsm + modip (per-subject optimisation is
+# CPU-infeasible at 23x the usual volume count). They can get dedicated follow-up jobs later.
+
+on:
+  workflow_dispatch:
+    inputs:
+      shards:
+        description: "shards per acquisition (jobs = 23 x shards; keep 23*shards <= 256)"
+        default: "6"
+      acquisitions:
+        description: "all | comma-separated acquisition ids (scripts/datasets.json repro keys)"
+        default: "all"
+      dry_run:
+        description: "true = run + evaluate but DON'T commit (upload candidate artifacts instead)"
+        default: "false"
+
+concurrency:
+  group: repro
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  SETUPTOOLS_SCM_PRETEND_VERSION: "0.0.0"
+  QSM_CI_JOBS: "2"   # hosted runners have ~16 GB; 2 concurrent containers is the safe cap
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      tasks: ${{ steps.gen.outputs.tasks }}
+    steps:
+      - uses: actions/checkout@v7
+      - id: gen
+        env:
+          N: ${{ github.event.inputs.shards || '6' }}
+          ACQS: ${{ github.event.inputs.acquisitions || 'all' }}
+        run: |
+          TASKS=$(python3 - <<'PY'
+          import json, os, re, glob
+          REG = json.load(open('scripts/datasets.json'))
+          want = os.environ['ACQS']
+          acqs = sorted(k for k, v in REG.items() if v.get('track') == 'repro' and v.get('active'))
+          if want != 'all':
+              pick = {s.strip() for s in want.split(',')}
+              acqs = [a for a in acqs if a in pick]
+          # Exclude methods the hosted shards can't run (routing mirrors score.yml's dedicated()).
+          heavy = {'inr-qsm', 'modip'}
+          for p in sorted(glob.glob('algorithms/*/algorithm.yml')):
+              slug = p.split('/')[1]
+              if re.search(r'^runner:[ \t]*(self-hosted|hosted-long)', open(p).read(), re.M):
+                  heavy.add(slug)
+          N = int(os.environ['N'])
+          tasks = [{'id': f'{a}-s{i}', 'phantom': a, 'shard': f'{i}/{N}', 'exclude': ','.join(sorted(heavy))}
+                   for a in acqs for i in range(N)]
+          print(json.dumps(tasks))
+          PY
+          )
+          echo "tasks=$TASKS" >>"$GITHUB_OUTPUT"
+          echo "planned $(echo "$TASKS" | python3 -c 'import json,sys; print(len(json.load(sys.stdin)))') tasks"
+
+  score:
+    needs: plan
+    strategy:
+      fail-fast: false
+      matrix:
+        task: ${{ fromJson(needs.plan.outputs.tasks) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install qsm-ci CLI
+        run: |
+          pip install -r eval/requirements.txt
+          pip install --upgrade setuptools setuptools_scm wheel
+          pip install --no-build-isolation .
+
+      - name: Resolve dataset zip (scripts/datasets.json)
+        id: ds
+        env:
+          PHANTOM: ${{ matrix.task.phantom }}
+        run: |
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json, os
+          ph = os.environ['PHANTOM']
+          d = json.load(open('scripts/datasets.json'))[ph]
+          print(f"zipkey=osf-{ph}-{d.get('osf_file', '')}")
+          print(f"path={d['path']}")
+          PY
+      - name: Cache OSF dataset zip
+        uses: actions/cache@v6
+        with:
+          path: .osfcache/${{ matrix.task.phantom }}.zip
+          key: ${{ steps.ds.outputs.zipkey }}
+      - name: Fetch acquisition (public OSF project)
+        env:
+          OSF_TOKEN: ${{ secrets.OSF_TOKEN }}
+          OSF_ZIP: .osfcache/${{ matrix.task.phantom }}.zip
+        run: scripts/fetch_dataset.sh "${{ matrix.task.phantom }}" "${{ steps.ds.outputs.path }}"
+
+      - name: Reconstruct shard ${{ matrix.task.id }}
+        run: |
+          python scripts/pipeline.py \
+            --phantom "${{ matrix.task.phantom }}" --track repro --mode composed --runner docker \
+            --shard "${{ matrix.task.shard }}" \
+            --exclude "${{ matrix.task.exclude }}" \
+            --runs-out "runs-${{ matrix.task.id }}.json"
+
+      # The collected chimaps ARE the payload (there is no per-run score) — evaluate needs them.
+      - uses: actions/upload-artifact@v7
+        with:
+          name: repro-${{ matrix.task.id }}
+          retention-days: 2
+          path: |
+            runs-${{ matrix.task.id }}.json
+            results/*/recon.nii.gz
+
+  evaluate:
+    needs: score
+    if: ${{ always() && needs.score.result != 'skipped' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: repro-*
+          merge-multiple: true
+          path: .
+
+      - name: Deps
+        run: pip install -r eval/requirements.txt SimpleITK
+
+      - name: Fetch all acquisitions (inputs needed for registration)
+        env:
+          OSF_TOKEN: ${{ secrets.OSF_TOKEN }}
+        run: |
+          python3 - <<'PY' | while read -r ph path; do scripts/fetch_dataset.sh "$ph" "$path"; done
+          import json
+          for k, v in sorted(json.load(open('scripts/datasets.json')).items()):
+              if v.get('track') == 'repro' and v.get('active'):
+                  print(k, v['path'])
+          PY
+
+      - name: Merge shard runs into results/index.json
+        run: |
+          cp results/index.json /tmp/base-index.json
+          python3 - <<'PY'
+          import json, glob
+          runs = []
+          for f in sorted(glob.glob("runs-*.json")):
+              runs += json.load(open(f))
+          idx = json.load(open("results/index.json"))
+          ids = {r["id"] for r in runs}
+          merged = [r for r in idx["runs"] if r.get("id") not in ids] + runs
+          json.dump({"generated": None, "runs": merged}, open("results/index.json", "w"), indent=2)
+          dnf = [r["id"] for r in runs if r.get("status") == "DNF"]
+          print(f"merged {len(runs)} repro runs ({len(dnf)} DNF); index now {len(merged)}")
+          PY
+
+      - name: Register + segment + stats + fits
+        run: |
+          python scripts/repro_eval.py register
+          python scripts/repro_eval.py seg          # SynthSeg via docker on the target magnitude
+          python scripts/repro_eval.py stats
+          python scripts/repro_eval.py fits
+
+      - name: Commit results (index + repro fits)
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: |
+          git config user.name  "qsm-ci-bot"
+          git config user.email "qsm-ci@users.noreply.github.com"
+          cp results/index.json /tmp/scored-index.json
+          for attempt in 1 2 3 4 5; do
+            git fetch origin main -q
+            git reset --hard origin/main -q
+            python3 scripts/merge_index.py /tmp/base-index.json /tmp/scored-index.json \
+                    results/index.json results/index.json
+            git add results/index.json results/repro.json results/repro_rois.json
+            git diff --cached --quiet && { echo "no changes to publish"; exit 0; }
+            git commit -q -m "Update harmonization (repro) results"
+            git push && exit 0
+            echo "push attempt $attempt rejected — retrying onto latest main"; sleep $((attempt * 3))
+          done
+          echo "::error::could not push results after 5 attempts"; exit 1
+
+      - name: (dry-run) upload candidate results
+        if: ${{ github.event.inputs.dry_run == 'true' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: repro-candidate
+          path: |
+            results/index.json
+            results/repro.json
+            results/repro_rois.json

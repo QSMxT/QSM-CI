@@ -37804,6 +37804,52 @@
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_msmv_xqsm-cmp__truth.nii.gz",
         "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_msmv_xqsm-cmp__error.nii.gz"
       }
+    },
+    {
+      "name": "romeo-qsmrs+vsharp-qsmrs+rts-qsmrs",
+      "track": "repro",
+      "stage": "field-mapping+bfr+dipole",
+      "mode": "composed",
+      "runtime_s": 52.9,
+      "id": "romeo-qsmrs~vsharp-qsmrs~rts-qsmrs-cmp-cima-bridge-run1",
+      "slug": "romeo-qsmrs+vsharp-qsmrs+rts-qsmrs",
+      "combo": {
+        "field_mapping": "romeo-qsmrs",
+        "bfr": "vsharp-qsmrs",
+        "dipole": "rts-qsmrs"
+      },
+      "status": "ok",
+      "metrics": {
+        "chi_mean": -0.001486,
+        "chi_sd": 0.097297
+      },
+      "phantom": "cima-bridge-run1",
+      "mem_peak_bytes": 1173599813.632,
+      "cpu_cores_avg": 3.545566666666667,
+      "cpu_cores_max": 4.3751
+    },
+    {
+      "name": "romeo-qsmrs+vsharp-qsmrs+rts-qsmrs",
+      "track": "repro",
+      "stage": "field-mapping+bfr+dipole",
+      "mode": "composed",
+      "runtime_s": 46.2,
+      "id": "romeo-qsmrs~vsharp-qsmrs~rts-qsmrs-cmp-prisma-bridge-run1",
+      "slug": "romeo-qsmrs+vsharp-qsmrs+rts-qsmrs",
+      "combo": {
+        "field_mapping": "romeo-qsmrs",
+        "bfr": "vsharp-qsmrs",
+        "dipole": "rts-qsmrs"
+      },
+      "status": "ok",
+      "metrics": {
+        "chi_mean": -0.001502,
+        "chi_sd": 0.097308
+      },
+      "phantom": "prisma-bridge-run1",
+      "mem_peak_bytes": 1171452329.984,
+      "cpu_cores_avg": 4.4098,
+      "cpu_cores_max": 4.5851
     }
   ]
 }
