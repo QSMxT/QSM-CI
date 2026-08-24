@@ -151,11 +151,13 @@ def cmd_seg(args) -> None:
     if dseg.exists() and not args.force:
         print(f"{dseg} exists (use --force to redo)")
         return
-    # SynthSeg (robust mode) on the target magnitude, via docker.
+    # mri_synthseg (robust, contrast-agnostic) on the target magnitude, via the official FreeSurfer
+    # image — mri_synthseg is one of the license-free tools, and it emits standard FreeSurfer aseg
+    # labels (the ids in ROI_LABELS). Runs on any GRE/EPI contrast, which is why it fits here.
     subprocess.run(
         ["docker", "run", "--rm", "--user", f"{os.getuid()}:{os.getgid()}",
-         "-v", f"{ALIGN}:/data", "freesurfer/synthseg:latest",
-         "--i", "/data/target_mag_e1.nii.gz", "--o", "/data/dseg_synthseg.nii.gz",
+         "-v", f"{ALIGN}:/data", args.image,
+         "mri_synthseg", "--i", "/data/target_mag_e1.nii.gz", "--o", "/data/dseg_synthseg.nii.gz",
          "--robust", "--threads", "4"],
         check=True)
     # SynthSeg resamples to its own 1mm grid; bring labels back onto the target grid.
@@ -326,8 +328,10 @@ def main() -> None:
     r = sub.add_parser("register", help="rigid-register acquisitions to the target")
     r.add_argument("--target", default=DEFAULT_TARGET)
     r.add_argument("--force", action="store_true")
-    s = sub.add_parser("seg", help="segment the target (SynthSeg docker) or install --seg")
+    s = sub.add_parser("seg", help="segment the target (mri_synthseg via docker) or install --seg")
     s.add_argument("--seg", type=Path, default=None)
+    s.add_argument("--image", default="freesurfer/freesurfer:7.4.1",
+                   help="FreeSurfer image providing license-free mri_synthseg")
     s.add_argument("--force", action="store_true")
     sub.add_parser("stats", help="per-ROI means for every collected repro run")
     sub.add_parser("fits", help="pairwise ax+b fits -> results/repro.json")

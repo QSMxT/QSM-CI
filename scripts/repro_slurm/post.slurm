@@ -40,15 +40,12 @@ EOF
 
 # ---- reproducibility evaluation ------------------------------------------------------------------
 python scripts/repro_eval.py register
-# SynthSeg (robust) on the registration target, via apptainer; then install on the target grid.
+# mri_synthseg (robust, license-free) on the registration target, via apptainer; then install
+# on the target grid. The official FreeSurfer image ships mri_synthseg.
 if [ ! -f data/harmonization/_align/dseg.nii.gz ]; then
-    apptainer exec docker://freesurfer/synthseg:latest \
+    apptainer exec docker://freesurfer/freesurfer:7.4.1 \
         mri_synthseg --i data/harmonization/_align/target_mag_e1.nii.gz \
-                     --o data/harmonization/_align/dseg_synthseg.nii.gz --robust --threads 8 ||
-    apptainer exec docker://freesurfer/synthseg:latest \
-        python /SynthSeg/scripts/commands/SynthSeg_predict.py \
-               --i data/harmonization/_align/target_mag_e1.nii.gz \
-               --o data/harmonization/_align/dseg_synthseg.nii.gz --robust --threads 8
+                     --o data/harmonization/_align/dseg_synthseg.nii.gz --robust --threads 8
     python - <<'EOF'
 import SimpleITK as sitk
 fixed = sitk.ReadImage("data/harmonization/_align/target_mag_e1.nii.gz")
