@@ -173,6 +173,24 @@ def cmd_seg(args) -> None:
 # stats
 # ---------------------------------------------------------------------------------------------------
 
+def pipeline_identity(r: dict) -> str:
+    """A UNIQUE '+'-joined pipeline id for a collected run — the thing reproducibility groups by.
+
+    A full field-mapping+bfr+dipole run already carries the joined combo as its slug
+    (`romeo-qsmrs+vsharp-qsmrs+rts-qsmrs`), which is unique. But a bfr+dipole / end-to-end SPAN
+    keeps its bare method slug (`nextqsm`) while composing with EVERY field-mapping source, so slug
+    alone collapses `romeo→nextqsm` and `laplacian→nextqsm` into one — distinct pipelines. Prepend
+    the combo's field-mapping so each (field-map, span) is its own pipeline. The '+' join keeps the
+    web's `reproName` (split on '+', name each stage) working unchanged."""
+    combo = r.get("combo") or {}
+    if combo.get("bfr") and combo.get("dipole"):
+        return r["slug"]                       # full fm+bfr+dipole — slug is already the joined combo
+    fm = combo.get("field_mapping")
+    if fm and fm != "gt":                       # a span composed with a field-mapping method
+        return f"{fm}+{r['slug']}"
+    return r["slug"]                            # end-to-end span (its own field-mapping) or single method
+
+
 def _collected_runs() -> list[dict]:
     idx = json.loads((RESULTS / "index.json").read_text()) if (RESULTS / "index.json").exists() else {}
     rows = idx.get("runs", idx) if isinstance(idx, dict) else idx
@@ -215,8 +233,8 @@ def cmd_stats(args) -> None:
             if cov < MIN_ROI_COVERAGE:
                 continue                    # slab coverage differs between acquisitions
             roi_means[str(lab)] = round(float(chi[m & valid].mean() - ref), 6)
-        rows[r["id"]] = {"pipeline": r["slug"], "acq": acq, "ref_mean": round(ref, 6),
-                         "rois": roi_means}
+        rows[r["id"]] = {"pipeline": pipeline_identity(r), "acq": acq,
+                         "ref_mean": round(ref, 6), "rois": roi_means}
         print(f"  {r['id']}: {len(roi_means)} ROIs")
     out = {"target": target, "roi_labels": {str(k): v for k, v in ROI_LABELS.items()},
            "runs": rows}
