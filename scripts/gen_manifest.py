@@ -41,8 +41,9 @@ def entry(meta: dict) -> dict:
         # consumes) — the viewer's "run it yourself" command lists only these flags.
         "inputs": _inputs(meta),
         # Leaderboard / submission-sidebar domain: 'qsm' (the field-mapping→bfr→dipole pipeline) or
-        # 'chisep' (susceptibility source separation). Explicit `domain:` wins; else derived from stage.
-        "domain": meta.get("domain") or ("chisep" if meta.get("stage") == "chi-separation" else "qsm"),
+        # 'chisep' (susceptibility source separation; R2′ generators live there too — they only run
+        # on chisep-track phantoms). Explicit `domain:` wins; else derived from stage.
+        "domain": meta.get("domain") or ("chisep" if meta.get("stage") in ("chi-separation", "r2prime-generation") else "qsm"),
         "engine": meta.get("engine"),
         # Taxonomy axes (controlled vocabularies), used by the site's figures — e.g. the findings
         # runtime chart's colour selector. Value sets are documented in scripts/apply_metadata.py.

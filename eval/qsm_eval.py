@@ -421,10 +421,11 @@ def main() -> None:
     p = argparse.ArgumentParser(description="Score a QSM reconstruction against ground truth (QSM-CI).")
     p.add_argument("--recon", type=Path, help="produced artifact to score")
     p.add_argument("--truth", type=Path, help="ground-truth artifact")
-    p.add_argument("--kind", choices=["field", "chi", "chisep"], default="chi",
-                   help="artifact kind: 'field' (total/local field), 'chi' (susceptibility), or "
+    p.add_argument("--kind", choices=["field", "chi", "chisep", "relaxation"], default="chi",
+                   help="artifact kind: 'field' (total/local field), 'chi' (susceptibility), "
                         "'chisep' (a χ+/χ− source-separation component; with --seg adds source-specific "
-                        "region metrics — DGM/blood for χ+, calcification for χ− — plus a leakage term)")
+                        "region metrics — DGM/blood for χ+, calcification for χ− — plus a leakage term), "
+                        "or 'relaxation' (a generated R2′ map vs the phantom's true R2′; field metric set)")
     p.add_argument("--component", choices=["para", "dia"], default="para",
                    help="χ-separation source for kind=chisep: para=χ+ (paramagnetic), dia=χ− (diamagnetic)")
     p.add_argument("--seg", type=Path, help="segmentation (enables region metrics for kind=chi/chisep)")
@@ -459,7 +460,7 @@ def main() -> None:
         wm_rois = load(args.wm_rois) if args.wm_rois and args.wm_rois.exists() else None
         theta = load(args.theta) if args.theta and args.theta.exists() else None
         metrics = chisep_metrics(recon, truth, mask, seg, args.component, wm_rois, theta)
-    elif args.kind == "field":
+    elif args.kind in ("field", "relaxation"):  # same agreement set; relaxation = a generated R2′ (Hz)
         metrics = field_metrics(recon, truth, mask)
     elif args.seg:  # chi with segmentation -> full challenge suite
         seg = np.rint(load(args.seg)).astype(np.int32)

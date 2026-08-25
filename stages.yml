@@ -30,6 +30,12 @@ stages:
   # Isolated-only (never part of the field-mapping × bfr × dipole composed matrix — its outputs are
   # neither localfield nor chimap, so run_composed skips it).
   chi-separation: { consumes: [localfield, r2prime, chimap, magnitude, mask, params], produces: [chi-para, chi-dia] }
+  # R2′ generation: estimate R2′ from the multi-echo GRE magnitude alone — for the GRE-only condition,
+  # where no spin-echo acquisition provides a measured R2. Scored isolated against the phantom's true
+  # R2′ (an INPUT of the χ-separation datasets, not a groundtruth/ artifact), and composed with each
+  # R2′-consuming χ-separation method (generator output replaces the true r2prime) to measure what a
+  # GRE-only protocol sacrifices.
+  r2prime-generation: { consumes: [magnitude, mask, params], produces: [r2prime] }
 
 # Named contiguous spans, for methods that cross stage boundaries (joint / single-step / phase-domain).
 # A submission may set `stage` to any stage or span name below.
@@ -48,6 +54,8 @@ scoring:
   # calc_streak, iron_leak. 'leak' terms measure cross-contamination into the wrong source.
   chisep: [nrmse, nrmse_detrend, correlation, xsim, nrmse_dgm, dgm_linearity, nrmse_blood, calc_leak,
            calc_moment_dev, calc_streak, iron_leak]
+  # r2prime from a generator, scored against the phantom's true R2′ (field agreement set).
+  relaxation: [nrmse, nrmse_detrend, correlation, xsim]
 
 # Evaluation modes.
 #   isolated  — each stage/span is fed the GROUND-TRUTH artifact(s) it consumes (mounted at run time
