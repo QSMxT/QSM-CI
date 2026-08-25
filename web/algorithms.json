@@ -1776,7 +1776,13 @@
         {
           "name": "fraction",
           "default": 0.52,
-          "description": "The R2\u2032/R2* scaling fraction. 0.52 is the literature value (3T brain average); the true ratio varies by region, field strength and protocol, which is precisely this heuristic's failure mode \u2014 treat as a research knob, not an accuracy-tuning target.\n"
+          "tuned": {
+            "chisep": 0.6,
+            "ridani-3t-iso": 0.8,
+            "ridani-3t-aniso": 0.9,
+            "ridani-7t-aniso": 0.9
+          },
+          "description": "The R2\u2032/R2* scaling fraction. 0.52 is the literature default (an in-vivo 3T brain average, where irreversible R2 dominates R2*); the true ratio varies by region, field strength and protocol, which is precisely this heuristic's failure mode. The tuned values are each phantom's best FIXED fraction (minimum plain NRMSE vs the true R2\u2032 over a dense sweep) \u2014 the ceiling of what any global scaling can achieve there. They sit far above 0.52 on the noiseless Ridani phantoms (R2* = R2 + R2\u2032 exactly, with a large R2\u2032 share), quantifying how protocol-dependent the \"0.52 rule\" really is.\n"
         }
       ],
       "ci_notes": []
