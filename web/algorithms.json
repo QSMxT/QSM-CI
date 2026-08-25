@@ -1751,6 +1751,70 @@
       "ci_notes": []
     },
     {
+      "slug": "r2prime-scaled-qsmci",
+      "name": "R2\u2032 = 0.52\u00b7R2* (scaled)",
+      "stage": "r2prime-generation",
+      "inputs": [
+        "magnitude",
+        "mask",
+        "params"
+      ],
+      "domain": "chisep",
+      "engine": "Independent",
+      "language": "Python",
+      "family": "direct",
+      "learning": "none",
+      "description": "The fixed-fraction R2\u2032 generation heuristic for the GRE-only condition: R2* is fit from the multi-echo GRE magnitude (weighted log-linear least squares) and linearly scaled, R2\u2032 = f\u00b7R2* with the literature f = 0.52 (attributed to Dimov et al.; evaluated in Ji et al., NMR Biomed 2024 and Oliveira Assun\u00e7\u00e3o et al., MRM 2026, where naive fixed scaling propagates large \u03c7-separation errors). This is the cheapest possible R2\u2032 substitute when no spin-echo R2 is measured \u2014 its composed combos put a number on exactly how much that shortcut costs each R2\u2032-consuming \u03c7-separation method, against the same methods fed the true R2\u2032.",
+      "citation": "Ji S. et al., \"Comparison between R2\u2032-based and R2*-based \u03c7-separation methods: A clinical evaluation in patients with multiple sclerosis\", NMR Biomed 2024;37(9):e5167 (doi:10.1002/nbm.5167), which evaluates the R2\u2032 = 0.52\u00b7R2* scaling this submission implements.\n",
+      "doi": null,
+      "code_url": "https://github.com/QSMxT/QSM-CI",
+      "license": "MIT",
+      "authors": [
+        "QSM-CI (heuristic per Dimov et al.)"
+      ],
+      "parameters": [
+        {
+          "name": "fraction",
+          "default": 0.52,
+          "description": "The R2\u2032/R2* scaling fraction. 0.52 is the literature value (3T brain average); the true ratio varies by region, field strength and protocol, which is precisely this heuristic's failure mode \u2014 treat as a research knob, not an accuracy-tuning target.\n"
+        }
+      ],
+      "ci_notes": []
+    },
+    {
+      "slug": "r2primenet",
+      "name": "R2PRIMEnet",
+      "stage": "r2prime-generation",
+      "inputs": [
+        "magnitude",
+        "mask",
+        "params"
+      ],
+      "domain": "chisep",
+      "engine": "\u03c7-separation toolbox",
+      "language": "Python",
+      "family": "deep-learning",
+      "learning": "pretrained",
+      "description": "R2PRIMEnet \u2014 the R2*\u2192R2\u2032 conversion network from the \u03c7-sepnet pipeline (SNU-LIST). When no spin-echo acquisition provides a measured R2 (the GRE-only condition), it synthesizes R2\u2032 from the GRE-derived R2* map: R2* is fit from the multi-echo magnitude and a 3D U-Net (trained on paired R2*/R2\u2032 data at 3T, 1 mm) predicts the reversible component. Run here via ONNX (onnxruntime), 192\u00d7192\u00d7128 sliding-window patches, Dr = 114 Hz/ppm. Composed with the \u03c7-sepnet submission this reproduces the paper's \u03c7-sepnet-R2* variant; composed with the other R2\u2032-consuming methods it measures how far a learned R2\u2032 substitute carries each of them.",
+      "citation": "Kim M. et al., \"\u03c7-sepnet: Deep neural network for magnetic susceptibility source separation\", Human Brain Mapping 2025 (doi:10.1002/hbm.70136) \u2014 R2PRIMEnet is its R2*\u2192R2\u2032 conversion network.\n",
+      "doi": "10.1002/hbm.70136",
+      "code_url": "https://github.com/SNU-LIST/chi_sepnet",
+      "license": "academic use; toolbox obtained via the SNU-LIST Google Form",
+      "authors": [
+        "Minjun Kim",
+        "Sooyeon Ji",
+        "Jongho Lee"
+      ],
+      "parameters": [
+        {
+          "name": "Dr",
+          "default": 114.0,
+          "description": "Relaxivity (Hz/ppm) used to scale R2* into the network's input channel and R2\u2032 back out. The network family was trained at Dr=114 (its COSMOS-referenced value), so moving it feeds off-distribution inputs \u2014 a research knob, not an accuracy-tuning target. (No patch/overlap knob: the ONNX graph fixes the 192\u00d7192\u00d7128 input, and the weights fix everything else.)\n"
+        }
+      ],
+      "ci_notes": []
+    },
+    {
       "slug": "r2star-qsm",
       "name": "R2*-QSM",
       "stage": "chi-separation",

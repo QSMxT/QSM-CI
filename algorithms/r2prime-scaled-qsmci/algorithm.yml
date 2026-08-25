@@ -1,0 +1,36 @@
+name: R2′ = 0.52·R2* (scaled)
+slug: r2prime-scaled-qsmci
+algorithm: r2prime-scaled
+source: qsmci
+stage: r2prime-generation
+language: Python
+family: direct
+learning: none
+engine: Independent
+inputs: [magnitude, mask, params]
+description: >
+  The fixed-fraction R2′ generation heuristic for the GRE-only condition: R2* is fit from the
+  multi-echo GRE magnitude (weighted log-linear least squares) and linearly scaled, R2′ = f·R2*
+  with the literature f = 0.52 (attributed to Dimov et al.; evaluated in Ji et al., NMR Biomed 2024
+  and Oliveira Assunção et al., MRM 2026, where naive fixed scaling propagates large χ-separation
+  errors). This is the cheapest possible R2′ substitute when no spin-echo R2 is measured — its
+  composed combos put a number on exactly how much that shortcut costs each R2′-consuming
+  χ-separation method, against the same methods fed the true R2′.
+authors:
+- name: QSM-CI (heuristic per Dimov et al.)
+doi: null
+citation: >
+  Ji S. et al., "Comparison between R2′-based and R2*-based χ-separation methods: A clinical
+  evaluation in patients with multiple sclerosis", NMR Biomed 2024;37(9):e5167
+  (doi:10.1002/nbm.5167), which evaluates the R2′ = 0.52·R2* scaling this submission implements.
+code_url: https://github.com/QSMxT/QSM-CI
+license: MIT
+image: ghcr.io/astewartau/qsm-ci/r2prime-scaled-qsmci:v1
+run: bash run.sh
+parameters:
+  - name: fraction
+    default: 0.52
+    description: >
+      The R2′/R2* scaling fraction. 0.52 is the literature value (3T brain average); the true ratio
+      varies by region, field strength and protocol, which is precisely this heuristic's failure
+      mode — treat as a research knob, not an accuracy-tuning target.

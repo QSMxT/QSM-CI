@@ -211,6 +211,23 @@ async function loadRegistry() {
   } catch (e) { _registry = {}; }
   return _registry;
 }
+// Per-region descriptive stats for ONE run: { chi|para|dia: { labels: {id: name},
+// recon: {id: {n, mean, std, median}}, truth: {…} } }. Stored per-run (results/<id>/regions.json),
+// published to Hugging Face with the run's volumes and referenced by `run.regions_url` — exactly
+// like resources.json/resources_url — so the all-runs regional data never bloats the committed
+// index or git. Falls back to the local path for `python -m http.server` dev (the file is on disk
+// after a local score/backfill, before it's published). Cached per run id; null when unavailable.
+const _runRegions = new Map();
+async function loadRunRegions(run) {
+  if (!run || !run.id) return null;
+  if (_runRegions.has(run.id)) return _runRegions.get(run.id);
+  const url = run.regions_url || `results/${run.id}/regions.json`;
+  const entry = await fetch(url, { cache: "no-store" })
+    .then((r) => (r.ok ? r.json() : null)).catch(() => null);
+  _runRegions.set(run.id, entry);
+  return entry;
+}
+
 // { concept_doi, version_doi, version, url } for a slug, or null if unpublished.
 function doiFor(registry, slug) {
   const e = registry && registry[slug];
@@ -335,4 +352,4 @@ function injectChrome() {
 document.addEventListener("DOMContentLoaded", injectChrome);
 
 // Exposed for module scripts (e.g. the NiiVue viewer, which must be a module for `import`).
-window.QSM = { GH, METRICS, STAGE_LABEL, MEDALS, loadRuns, loadAlgos, loadDatasets, loadRegistry, doiFor, val, fmt, fmtDuration, fmtBytes, metricCols, robustRange, heatScale };
+window.QSM = { GH, METRICS, STAGE_LABEL, MEDALS, loadRuns, loadAlgos, loadDatasets, loadRegistry, loadRunRegions, doiFor, val, fmt, fmtDuration, fmtBytes, metricCols, robustRange, heatScale };

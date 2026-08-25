@@ -1,0 +1,40 @@
+name: R2PRIMEnet
+slug: r2primenet
+algorithm: r2primenet
+source: snu
+stage: r2prime-generation
+language: Python
+family: deep-learning
+learning: pretrained
+engine: χ-separation toolbox
+inputs: [magnitude, mask, params]
+description: >
+  R2PRIMEnet — the R2*→R2′ conversion network from the χ-sepnet pipeline (SNU-LIST). When no
+  spin-echo acquisition provides a measured R2 (the GRE-only condition), it synthesizes R2′ from
+  the GRE-derived R2* map: R2* is fit from the multi-echo magnitude and a 3D U-Net (trained on
+  paired R2*/R2′ data at 3T, 1 mm) predicts the reversible component. Run here via ONNX
+  (onnxruntime), 192×192×128 sliding-window patches, Dr = 114 Hz/ppm. Composed with the χ-sepnet
+  submission this reproduces the paper's χ-sepnet-R2* variant; composed with the other
+  R2′-consuming methods it measures how far a learned R2′ substitute carries each of them.
+authors:
+- name: Minjun Kim
+- name: Sooyeon Ji
+- name: Jongho Lee
+doi: 10.1002/hbm.70136
+citation: >
+  Kim M. et al., "χ-sepnet: Deep neural network for magnetic susceptibility source separation",
+  Human Brain Mapping 2025 (doi:10.1002/hbm.70136) — R2PRIMEnet is its R2*→R2′ conversion network.
+code_url: https://github.com/SNU-LIST/chi_sepnet
+license: academic use; toolbox obtained via the SNU-LIST Google Form
+image: ghcr.io/astewartau/qsm-ci/r2primenet:v1
+run: bash run.sh
+parameters:
+  - name: Dr
+    default: 114.0
+    description: >
+      Relaxivity (Hz/ppm) used to scale R2* into the network's input channel and R2′ back out. The
+      network family was trained at Dr=114 (its COSMOS-referenced value), so moving it feeds
+      off-distribution inputs — a research knob, not an accuracy-tuning target. (No patch/overlap
+      knob: the ONNX graph fixes the 192×192×128 input, and the weights fix everything else.)
+# Produces r2prime.nii.gz. Weights (ONNX + norm .mat) not committed; the image bundles them — see
+# BUILD.md. Shares the SNU toolbox model dir with the chisepnet submission ($XSEPNET_MODELS).
