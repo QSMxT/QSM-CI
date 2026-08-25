@@ -22,7 +22,7 @@ cd "${SLURM_SUBMIT_DIR:?}"
 export APPTAINER_CACHEDIR=/scratch/user/uqaste15/apptainer_cache
 export APPTAINER_TMPDIR=/scratch/user/uqaste15/apptainer_tmp
 export PROOT_NO_SECCOMP=1
-export QSMCI_SANDBOX_DIR=/scratch/user/uqaste15/apptainer_sandboxes
+export QSMCI_SANDBOX_DIR=/scratch/project_mnt/S0169/qsmci_sif   # prebuilt .sif (incl. inr-qsm/modip)
 export QSMCI_GPU=1            # runner adds apptainer --nv so the CUDA images see the GPU
 export QSM_CI_JOBS=2          # inr-qsm SIREN is memory-hungry; 2 concurrent keeps under 256G
 
