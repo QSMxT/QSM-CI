@@ -227,14 +227,18 @@ def cmd_stats(args) -> None:
         if brain.sum() < 1000:
             print(f"  !! {r['id']}: no usable overlap with target segmentation"); continue
         ref = float(chi[brain].mean())      # whole-brain reference (per Marta's analysis)
-        roi_means = {}
+        roi_means, roi_stats = {}, {}
         for lab, m in roi_masks.items():
             cov = valid[m].mean()
             if cov < MIN_ROI_COVERAGE:
                 continue                    # slab coverage differs between acquisitions
-            roi_means[str(lab)] = round(float(chi[m & valid].mean() - ref), 6)
+            v = chi[m & valid] - ref        # ref-subtracted, same convention as the fitted means
+            roi_means[str(lab)] = round(float(v.mean()), 6)
+            roi_stats[str(lab)] = {"n": int(v.size), "mean": round(float(v.mean()), 6),
+                                   "std": round(float(v.std()), 6),
+                                   "median": round(float(np.median(v)), 6)}
         rows[r["id"]] = {"pipeline": pipeline_identity(r), "acq": acq,
-                         "ref_mean": round(ref, 6), "rois": roi_means}
+                         "ref_mean": round(ref, 6), "rois": roi_means, "roi_stats": roi_stats}
         print(f"  {r['id']}: {len(roi_means)} ROIs")
     out = {"target": target, "roi_labels": {str(k): v for k, v in ROI_LABELS.items()},
            "runs": rows}
@@ -248,10 +252,19 @@ def cmd_stats(args) -> None:
 
 def tls_fit(x: np.ndarray, y: np.ndarray) -> tuple[float, float]:
     """Orthogonal (total-least-squares) line fit y = a x + b — the first principal component of the
-    centred (x, y) cloud, equivalent to MATLAB linortfit2 as used in Marta's analysis."""
+    centred (x, y) cloud, equivalent to MATLAB linortfit2 as used in Marta's analysis.
+
+    Returns (inf, nan) on a degenerate/non-convergent fit (a vertical cloud, or an SVD that fails to
+    converge on pathological input) rather than raising — one bad pipeline pair must not sink the
+    whole fits run."""
+    if not (np.all(np.isfinite(x)) and np.all(np.isfinite(y))):
+        return float("inf"), float("nan")
     xm, ym = x.mean(), y.mean()
     u = np.stack([x - xm, y - ym])
-    _, _, vt = np.linalg.svd(u.T, full_matrices=False)
+    try:
+        _, _, vt = np.linalg.svd(u.T, full_matrices=False)
+    except np.linalg.LinAlgError:
+        return float("inf"), float("nan")
     vx, vy = vt[0]
     if abs(vx) < 1e-12:
         return float("inf"), float("nan")
@@ -260,7 +273,10 @@ def tls_fit(x: np.ndarray, y: np.ndarray) -> tuple[float, float]:
 
 
 def _pair_metrics(vx: dict, vy: dict) -> "dict | None":
-    common = sorted(set(vx) & set(vy))
+    # Only ROIs finite in BOTH acquisitions — a NaN/inf ROI mean (from a pathological recon) would
+    # otherwise crash the SVD or poison the correlation.
+    common = [k for k in sorted(set(vx) & set(vy))
+              if np.isfinite(vx[k]) and np.isfinite(vy[k])]
     if len(common) < MIN_PAIR_ROIS:
         return None
     x = np.array([vx[k] for k in common])
