@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import shutil
 import subprocess
 import time
@@ -84,16 +85,34 @@ def _build_oci(algo: dict, engine: str, log) -> str:
     return tag
 
 
+def _sandbox_name(image: str) -> str:
+    """Filesystem-safe directory name for a prebuilt apptainer sandbox of ``image``."""
+    return re.sub(r"[^A-Za-z0-9._-]", "_", image)
+
+
 def _apptainer_image(algo: dict) -> str:
     """apptainer runs from a docker:// ref or a .sif — it can't build a Dockerfile itself.
 
     A published ``image:`` is used as-is (pulled & converted on the fly) exactly like the docker
     path does — a folder Dockerfile is only the build recipe, never built here. Only when no
-    ``image:`` is set does a local Dockerfile become a hard error (apptainer can't build it)."""
+    ``image:`` is set does a local Dockerfile become a hard error (apptainer can't build it).
+
+    Sandbox override ($QSMCI_SANDBOX_DIR): some hosts' unprivileged apptainer can't build a .sif
+    from an OCI image because the squashfs step runs under proot and the kernel blocks its ptrace
+    (seen on Bunya: ``mksquashfs … proot error: ptrace(TRACEME): Operation not permitted``). A
+    sandbox (image unpacked to a directory, no squashfs) sidesteps that. If QSMCI_SANDBOX_DIR holds
+    a prebuilt sandbox for this image (dir named ``_sandbox_name(image)``), exec it instead of
+    pulling docker://. Absent the env var it's a no-op, so the default pull-and-convert path — and
+    every existing caller — is unchanged."""
     img = algo.get("image")
     if img:
         if "://" in img or img.endswith(".sif") or os.path.exists(img):
             return img
+        sandbox_root = os.environ.get("QSMCI_SANDBOX_DIR")
+        if sandbox_root:
+            cand = os.path.join(sandbox_root, _sandbox_name(img))
+            if os.path.isdir(cand):
+                return cand
         return f"docker://{img}"  # plain registry ref -> pull & convert on the fly
     if (algo["dir"] / "Dockerfile").exists():
         raise SystemExit(
