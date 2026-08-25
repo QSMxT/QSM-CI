@@ -71,7 +71,14 @@ jobs:
       # score.yml fans the real scoring out across every active phantom on merge.
       - name: Route dataset by stage
         id: route
+        # The dangling empty `env:` this block once carried made the whole workflow file unparseable
+        # to GitHub (schema error) — since 2026-08-11 evaluate.yml produced NO pull_request runs (the
+        # PR smoke gate was silently dead) and a phantom zero-job "failure" run on every main push.
+        # The zipkey below reads the secret named by the routed phantom's `osf_env` — only the chisep
+        # default phantom needs one (sim carries a literal `osf_file` id); add its sibling here if the
+        # chisep default ever changes in scripts/datasets.json.
         env:
+          OSF_FILE_CHISEP_MC: ${{ secrets.OSF_FILE_CHISEP_MC }}   # χ-sep multicompartment (pre-flattened)
         run: |
           stage=$(sed -nE 's/^stage:[[:space:]]*//p' "algorithms/${{ matrix.slug }}/algorithm.yml" | head -1)
           track=sim
@@ -99,6 +106,9 @@ jobs:
       - name: Fetch dataset (public inputs + held-out ground truth)
         env:
           OSF_TOKEN: ${{ secrets.OSF_TOKEN }}
+          # fetch_dataset.sh resolves the zip via the routed phantom's `osf_env` secret — without this
+          # a chi-separation / r2prime-generation smoke fails at fetch ("set OSF_FILE_CHISEP_MC").
+          OSF_FILE_CHISEP_MC: ${{ secrets.OSF_FILE_CHISEP_MC }}   # χ-sep multicompartment (pre-flattened)
           OSF_ZIP: .osfcache/${{ steps.route.outputs.fetch_track }}.zip
         run: scripts/fetch_dataset.sh "${{ steps.route.outputs.fetch_track }}" "${{ steps.route.outputs.dataset }}"
 
