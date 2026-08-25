@@ -1097,9 +1097,14 @@ def run_chisep_composed(args, algos, gt_sources, gt, mask, runs: list) -> None:
         if res:
             r2p_cache[res[0]] = (res[1], res[2], res[3])
 
-    # Stage 2 — every (generator, χ-sep method) pair with a live generator, fanned over the pool.
+    # Stage 2 — every (generator, χ-sep method) pair with a live generator, run SERIALLY. A focus
+    # job's pairs are N generators × the SAME method, so fanning them over the pool runs N copies
+    # of that method concurrently — which doubles a memory-heavy DL method's peak and OOM-killed
+    # susep-net's combos on the 16 GB hosted runner (two whole-volume torch containers at once,
+    # exit 137). Parallelism across methods comes from the CI job matrix, not from within one job.
     tasks = [(g["slug"], c) for g, c in pairs if g["slug"] in r2p_cache]
-    for r in _pmap(tasks, lambda t: do_chisep_composed(t, args, gt_sources, gt, mask, r2p_cache)):
+    for t in tasks:
+        r = do_chisep_composed(t, args, gt_sources, gt, mask, r2p_cache)
         runs.extend(_stamp_phantom([r], getattr(args, "phantom", None)))
     if not args.runs_out:
         flush_index(runs)
