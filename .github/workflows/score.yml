@@ -133,17 +133,26 @@ jobs:
               if tmo and tier is SELFHOSTED:
                   tier = {**tier, 'timeout': int(tmo.group(1))}
               return tier
+          def stage_of(slug):
+              try: t = open(f'algorithms/{slug}/algorithm.yml').read()
+              except FileNotFoundError: return None
+              m = re.search(r'^stage:[ \t]*(\S+)', t, re.M)
+              return m.group(1) if m else None
           def is_chisep(slug):
+              # χ-separation methods AND R2′ generators both score on the chisep-track phantoms
+              # (generators: isolated vs the true R2′; combos live in the χ-sep methods' focus jobs).
+              return stage_of(slug) in ('chi-separation', 'r2prime-generation')
+          def consumes_r2prime(slug):
+              # Does this χ-sep method read r2prime? (An explicit `inputs:` without it = GRE-native,
+              # e.g. R2*-QSM/DECOMPOSE — no GRE-only combos, so a generator change never re-runs it.
+              # No `inputs:` line = the stage baseline, which includes r2prime.)
               try: t = open(f'algorithms/{slug}/algorithm.yml').read()
               except FileNotFoundError: return False
-              m = re.search(r'^stage:[ \t]*(\S+)', t, re.M)
-              return bool(m) and m.group(1) == 'chi-separation'
+              m = re.search(r'^inputs:[ \t]*\[([^\]]*)\]', t, re.M)
+              return 'r2prime' in m.group(1) if m else True
           def is_dipole(slug):
               # A dipole method (localfield -> chimap) — the only stage scorable on the in-vivo track.
-              try: t = open(f'algorithms/{slug}/algorithm.yml').read()
-              except FileNotFoundError: return False
-              m = re.search(r'^stage:[ \t]*(\S+)', t, re.M)
-              return bool(m) and m.group(1) == 'dipole'
+              return stage_of(slug) == 'dipole'
           def invivo_tasks(slugs):
               # In-vivo (2016 challenge) leaderboard: each dipole method ALSO runs, isolated, on the
               # invivo dataset (localfield -> chimap, scored vs COSMOS + STI). This is an ADDITIONAL
@@ -186,6 +195,14 @@ jobs:
               tasks += invivo_tasks(all_slugs)
           else:
               slugs = json.loads(os.environ['SLUGS'])
+              # A changed R2′ generator invalidates every GRE-only combo (generator × χ-sep method).
+              # Those combos are owned by the χ-SEP methods' focus jobs (pipeline.run_chisep_composed:
+              # a generator's own focus job is isolated-only, so a full re-run never runs a combo
+              # twice) — so fan a changed generator out into the R2′-consuming χ-sep focus jobs too.
+              if any(stage_of(s) == 'r2prime-generation' for s in slugs):
+                  all_slugs = [p.split('/')[1] for p in sorted(glob.glob('algorithms/*/algorithm.yml'))]
+                  slugs = sorted(set(slugs) | {s for s in all_slugs if not s.startswith('_')
+                                               and stage_of(s) == 'chi-separation' and consumes_r2prime(s)})
               tasks = focus_tasks(slugs)
               # A changed dipole method also re-scores on the in-vivo track.
               tasks += invivo_tasks(slugs)
@@ -240,8 +257,9 @@ jobs:
           osf = (os.environ.get(d['osf_env']) if d.get('osf_env') else None) or d.get('osf_file') or ''
           print(f"zipkey=osf-{ph}-{osf}")
           print(f"path={d['path']}")
-          # χ-separation and in-vivo phantoms are isolated-only (no composed matrix); sim runs both.
-          print("mode=" + ("both" if d['track'] == 'sim' else "isolated"))
+          # sim runs the QSM composed matrix; chisep runs the GRE-only composed matrix (R2′
+          # generators × χ-sep methods); in-vivo is isolated-only (no composable GT boundary).
+          print("mode=" + ("both" if d['track'] in ('sim', 'chisep') else "isolated"))
           PY
       - name: Cache OSF dataset zip
         uses: actions/cache@v6
@@ -319,11 +337,14 @@ jobs:
           runs = []
           for f in sorted(glob.glob("runs-*.json")):
               runs += json.load(open(f))
+          dup = [i for i, c in Counter(r["id"] for r in runs).items() if c > 1]
+          # Dedupe by id (last wins) so two focus jobs that legitimately share a combo (e.g. two
+          # dedicated methods composing with each other) can never write the same id twice.
+          runs = list({r["id"]: r for r in runs}.values())
           idx = json.load(open("results/index.json"))
           ids = {r["id"] for r in runs}
           merged = [r for r in idx["runs"] if r.get("id") not in ids] + runs
           json.dump({"generated": None, "runs": merged}, open("results/index.json", "w"), indent=2)
-          dup = [i for i, c in Counter(r["id"] for r in runs).items() if c > 1]
           dnf = sorted(r["id"] for r in runs if r.get("status") == "DNF")
           print(f"merged {len(runs)} shard runs; index now {len(merged)} total")
           print(f"duplicate ids across shards: {dup or 'none (partition OK)'}")

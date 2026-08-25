@@ -19,6 +19,10 @@ STAGES = {
     # so the composed field-mapping × bfr × dipole matrix skips it.
     "chi-separation": {"consumes": ["localfield", "r2prime", "chimap", "magnitude", "mask", "params"],
                        "produces": ["chi-para", "chi-dia"]},
+    # R2′ generation: estimate R2′ from the multi-echo GRE magnitude alone (the GRE-only condition —
+    # no spin-echo R2). Scored vs the phantom's true R2′, and composed with each R2′-consuming
+    # χ-separation method on the chisep track (pipeline.run_chisep_composed).
+    "r2prime-generation": {"consumes": ["magnitude", "mask", "params"], "produces": ["r2prime"]},
 }
 
 ARTIFACT_FILE = {

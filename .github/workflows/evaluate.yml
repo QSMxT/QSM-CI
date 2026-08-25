@@ -74,7 +74,8 @@ jobs:
         env:
         run: |
           stage=$(sed -nE 's/^stage:[[:space:]]*//p' "algorithms/${{ matrix.slug }}/algorithm.yml" | head -1)
-          track=sim; [ "$stage" = "chi-separation" ] && track=chisep
+          track=sim
+          case "$stage" in chi-separation|r2prime-generation) track=chisep ;; esac
           STAGE_TRACK="$track" python3 - <<'PY' >> "$GITHUB_OUTPUT"
           import json, os
           reg = json.load(open('scripts/datasets.json'))

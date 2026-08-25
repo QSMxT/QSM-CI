@@ -668,7 +668,12 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
             </template>
           </span>
         </template>
-        <template x-if="hasChisepTuned()">
+        <!-- acquisition condition: true R2′ (full protocol) vs a GRE-derived substitute -->
+        <span class="seg">
+          <button class="seg-btn" :class="{'seg-on': chisepCondition==='full'}" @click="chisepCondition='full'" data-tip="Each method is fed the phantom's true R2′ — what a full MEGRE+MESE protocol (measured R2) provides.">MEGRE+MESE</button>
+          <button class="seg-btn" :class="{'seg-on': chisepCondition==='greonly'}" @click="chisepCondition='greonly'" data-tip="No spin-echo R2: every R2′-consuming method is fed the best-performing GRE-derived R2′ substitute (see the R2′ generators table below), alongside the methods that never needed R2′. What you can get away with from a GRE acquisition alone.">GRE-only</button>
+        </span>
+        <template x-if="chisepCondition==='full' && hasChisepTuned()">
           <span class="seg">
             <button class="seg-btn" :class="{'seg-on': variant==='default'}" @click="variant='default'">Defaults</button>
             <button class="seg-btn" :class="{'seg-on': variant==='tuned', 'seg-on-emerald': variant==='tuned'}" @click="variant='tuned'" data-tip="Each χ-separation method's parameters optimised on the χ-separation phantom, maximising source-separation xSIM.">⚙ Tuned</button>
@@ -719,7 +724,8 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
                 <td class="px-4 py-3 text-right tabular-nums text-gray-400 sticky left-0 bg-white group-hover:bg-emerald-50/40" style="min-width:4rem"><span x-text="i+1"></span><span x-show="rankDelta(r.slug,i)!==0" :class="rankDelta(r.slug,i)>0?'text-emerald-600':'text-rose-400'" class="ml-0.5 text-[10px] font-semibold align-top" :title="rankDelta(r.slug,i)>0 ? ('up '+rankDelta(r.slug,i)+' vs default') : ('down '+Math.abs(rankDelta(r.slug,i))+' vs default')" x-text="(rankDelta(r.slug,i)>0?'▲':'▼')+Math.abs(rankDelta(r.slug,i))"></span></td>
                 <td class="px-5 py-3 text-left font-medium text-gray-900 sticky bg-white group-hover:bg-emerald-50/40" style="left:4rem">
                   <span class="mr-1.5 inline-block w-5 text-center" x-text="medal(i)"></span>
-                  <span x-text="r.name"></span>
+                  <span x-text="chisepRowLabel(r)"></span>
+                  <span x-show="chisepCondition==='greonly' && !r.combo" class="ml-2 rounded bg-indigo-50 px-1.5 py-0.5 text-[10px] font-semibold text-indigo-700" data-tip="This method never reads R2′ — it fits the GRE signal directly, so its result is identical under both conditions.">GRE-native</span>
                   <template x-if="r.doi"><a :href="'https://doi.org/'+r.doi" @click.stop target="_blank" rel="noopener" class="ml-2 rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 hover:bg-emerald-100">paper</a></template>
                   <span x-show="r.status==='running'" class="ml-2 rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700 animate-pulse">computing…</span>
                   <span x-show="r.status==='DNF'" class="ml-2 rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold text-gray-500">DNF</span>
@@ -732,7 +738,45 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
           </tbody>
         </table>
         </div>
-        <p x-show="chiSepRows().length===0" class="px-5 py-10 text-center text-gray-400">No chi-separation results yet.</p>
+        <p x-show="chiSepRows().length===0" class="px-5 py-10 text-center text-gray-400" x-text="chisepCondition==='greonly' ? 'No GRE-only results yet.' : 'No chi-separation results yet.'"></p>
+      </div>
+
+      <!-- R2′ generators: how good is each GRE-derived R2′ substitute, against the true R2′? -->
+      <div x-show="chisepCondition==='greonly' && chisepGenRows().length" x-cloak class="mt-8">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">R2′ generators</h3>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Candidate R2′ substitutes, each scored directly against the phantom's true (spin-echo-derived) R2′. The best one — lowest detrended NRMSE — supplies R2′ to every pipeline above (named after each row's &#10229; arrow); the Findings tab compares how far each substitute carries every method.</p>
+      </div>
+      <div x-show="chisepCondition==='greonly' && chisepGenRows().length" x-cloak class="mt-4 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+        <div class="overflow-x-auto">
+        <table class="w-full text-sm whitespace-nowrap">
+          <thead class="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
+            <tr>
+              <th class="px-5 py-3 text-left font-medium">Generator</th>
+              <th class="px-4 py-3 text-right font-medium"><span class="has-tip" data-tip="Demeaned normalised RMS error of the generated R2′ vs the true R2′ (%). Lower is better.">NRMSE</span></th>
+              <th class="px-4 py-3 text-right font-medium"><span class="has-tip" data-tip="NRMSE after correcting a global linear scale — fair to a substitute that is right up to scale. Lower is better.">Detrended</span></th>
+              <th class="px-4 py-3 text-right font-medium"><span class="has-tip" data-tip="Pearson correlation with the true R2′ within the mask. Higher is better.">Corr.</span></th>
+              <th class="px-4 py-3 text-right font-medium"><span class="has-tip" data-tip="Structural similarity with the true R2′. Higher is better.">xSIM</span></th>
+              <th class="px-4 py-3 text-right font-medium">Runtime</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <template x-for="r in chisepGenRows()" :key="r.id">
+              <tr @click="go(r)" class="group cursor-pointer" :class="r.status==='DNF' ? 'opacity-50' : ''">
+                <td class="px-5 py-3 text-left font-medium text-gray-900 group-hover:bg-emerald-50/40">
+                  <span x-text="r.name"></span>
+                  <span x-show="r.slug===chisepBestGen()" class="ml-2 rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700" data-tip="Best fidelity to the true R2â² on this phantom (lowest detrended NRMSE â scale-independent, so a well-scaled copy of R2* can’t win on scale alone) â the leaderboard above feeds this substitute to every R2â²-consuming method.">supplies R2′ above</span>
+                  <span x-show="r.status==='DNF'" class="ml-2 rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold text-gray-500">DNF</span>
+                </td>
+                <td class="px-4 py-3 text-right tabular-nums text-gray-600 group-hover:bg-emerald-50/40" x-text="(r.metrics||{}).nrmse!=null ? (r.metrics.nrmse).toFixed(1)+'%' : '—'"></td>
+                <td class="px-4 py-3 text-right tabular-nums text-gray-600 group-hover:bg-emerald-50/40" x-text="(r.metrics||{}).nrmse_detrend!=null ? (r.metrics.nrmse_detrend).toFixed(1)+'%' : '—'"></td>
+                <td class="px-4 py-3 text-right tabular-nums text-gray-600 group-hover:bg-emerald-50/40" x-text="(r.metrics||{}).correlation!=null ? (r.metrics.correlation).toFixed(3) : '—'"></td>
+                <td class="px-4 py-3 text-right tabular-nums text-gray-600 group-hover:bg-emerald-50/40" x-text="(r.metrics||{}).xsim!=null ? (r.metrics.xsim).toFixed(3) : '—'"></td>
+                <td class="px-4 py-3 text-right tabular-nums text-gray-600 group-hover:bg-emerald-50/40" x-text="r.runtime_s!=null ? fmt(r.runtime_s,'runtime_s') : '—'"></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+        </div>
       </div>
 
       </div><!-- /chisep board -->
@@ -750,6 +794,12 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
         <p class="mt-2 text-sm text-gray-600 leading-relaxed">How much each source map bleeds into the other (regression slope, 0 = clean): iron leaking into the myelin map (x) versus myelin leaking into iron (y). The origin is perfect separation; distance from it is contamination that xSIM can miss.</p>
         <div class="mt-5 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="leakSVG"></div>
       </div>
+
+      <div x-show="greOnlySVG !== null" class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+        <h3 class="text-lg font-semibold text-gray-900">What does dropping the spin-echo cost?</h3>
+        <p class="mt-2 text-sm text-gray-600 leading-relaxed">χ-separation wants R2′ = R2* − R2, and measuring R2 takes a separate (multi-echo) spin-echo acquisition. This figure shows each method's separation error (mean of the χ+ and χ− detrended NRMSE) when fed the true R2′ (<span class="font-medium" style="color:#10b981">●</span> full MEGRE+MESE protocol) versus a GRE-derived substitute — <span class="font-medium" style="color:#6366f1">●</span> R2PRIMEnet (learned R2*→R2′) or <span class="font-medium" style="color:#f59e0b">●</span> the fixed 0.52·R2* scaling. The gap is the price of GRE-only; methods that never read R2′ (<span class="font-medium text-gray-500">◆</span>) pay nothing by construction.</p>
+        <div class="mt-5 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="greOnlySVG"></div>
+      </div>
       </div><!-- /chisep findings -->
 
       <!-- χ-separation · Info -->
@@ -757,6 +807,7 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
         <div>
           <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">&chi;-separation (2026)</h2>
           <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">Susceptibility source separation splits the net susceptibility &chi; into a paramagnetic part &chi;&#8314; (iron) and a diamagnetic part &chi;&#8315; (myelin, calcium). Plain QSM measures only their signed sum, &chi;<sub>total</sub> = &chi;&#8314; + &chi;&#8315;, in which the two partly cancel, so it cannot tell them apart. The reversible relaxation rate R2&prime; responds instead to their combined magnitude, |&chi;&#8314;| + |&chi;&#8315;|. Having both the signed sum and the magnitude gives two independent constraints per voxel, which is what makes the sources recoverable. Each method is given &chi;<sub>total</sub>, R2&prime;, the local field and the multi-echo signals, and must produce &chi;&#8314; and &chi;&#8315;, which are scored separately.</p>
+          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed"><strong>The GRE-only condition.</strong> Measuring R2&prime; = R2* &minus; R2 needs a separate multi-echo spin-echo acquisition for R2 &mdash; often unavailable in practice. The leaderboard&rsquo;s <em>MEGRE+MESE / GRE-only</em> toggle compares each method fed the phantom&rsquo;s true R2&prime; against the same method fed a GRE-derived substitute: an <em>R2&prime; generator</em> (a separate submission stage) estimates R2&prime; from the multi-echo GRE magnitude alone and is composed in front of every R2&prime;-consuming method. The GRE-only leaderboard feeds every method the <em>best-performing</em> generator on that phantom (lowest <em>detrended</em> NRMSE against the true R2&prime;, a scale-independent structural criterion &mdash; the &ldquo;use the best available tool&rdquo; policy a GRE-only protocol would follow); the full generator&nbsp;&times;&nbsp;method grid is scored regardless and compared on the Findings tab. Current generators are R2PRIMEnet (the learned R2*&rarr;R2&prime; conversion from the &chi;-sepnet pipeline, <a href="https://doi.org/10.1002/hbm.70136" class="text-emerald-600 hover:underline">Kim et&nbsp;al., 2025</a> &mdash; composing it with &chi;-sepnet reproduces the paper&rsquo;s &chi;-sepnet-R2* variant) and the fixed 0.52&middot;R2* scaling evaluated by <a href="https://doi.org/10.1002/nbm.5167" class="text-emerald-600 hover:underline">Ji et&nbsp;al. (2024)</a> and <a href="https://doi.org/10.1002/mrm.30238" class="text-emerald-600 hover:underline">Oliveira Assun&ccedil;&atilde;o et&nbsp;al. (2026)</a>. Methods that never read R2&prime; (R2*-QSM, DECOMPOSE) are natively GRE-only and appear unchanged under both conditions. The Findings tab charts what the missing spin-echo costs each method.</p>
         </div>
         <div>
           <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">The phantoms</h3>
@@ -1100,6 +1151,10 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         metric: "xsim", sortKey: "xsim", sortDir: "desc", filter: "",
         colMenu: false, stageMenu: false, fmapMenu: false, metricMenu: false, selectedCols: ["nrmse", "correlation", "xsim", "runtime_s"],
         chisepPhantom: "chisep",   // which chisep-track phantom the board/findings show (re-derived in init)
+        // Acquisition condition: 'full' = each method fed the phantom's true R2′ (needs MEGRE+MESE);
+        // 'greonly' = R2′ replaced by a GRE-derived substitute (the r2prime-generation × chi-separation
+        // composed runs), plus the natively GRE-only methods that never read R2′.
+        chisepCondition: "full",
         chisepSort: "avg_mspe", chisepDir: "asc", chisepColMenu: false, chisepCols: CHISEP_COLS,
         chisepSelectedCols: ["avg_mspe", "para_mspe", "dia_mspe", "avg_ndt", "para_nrmse_detrend", "dia_nrmse_detrend", "runtime_s"],
         invivoSortKey: "nrmse", invivoDir: "asc",   // in-vivo default sort: COSMOS NRMSE (2016 headline)
@@ -1124,6 +1179,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
               if (this.variant !== "default") p.set("variant", this.variant);
               if (this.metric !== "xsim") p.set("metric", this.metric);
             }
+            if (this.dataset === "chisep" && this.chisepCondition !== "full") p.set("cond", this.chisepCondition);
           } else {
             // sim / cross: top tab is info / leaderboard / findings
             if (this.tab !== "leaderboard") p.set("tab", this.tab);
@@ -1169,6 +1225,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           if (q.get("metric") && METRICS[q.get("metric")]) this.metric = q.get("metric");
           if (q.get("fmap")) this.fmap = q.get("fmap");
           if (["board", "info", "findings"].includes(q.get("sub"))) { this.invivoView = q.get("sub"); this.chisepView = q.get("sub"); }
+          if (["full", "greonly"].includes(q.get("cond"))) this.chisepCondition = q.get("cond");
           this.syncView();
           try {
             // Fetch concurrently but assign the name manifest (algos) + registry BEFORE runs: runs is
@@ -1201,7 +1258,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           }
           // Now that state is restored from the URL + data, keep the URL in sync with every tab change.
           this._ready = true;
-          ["dataset", "tab", "lbView", "stage", "pipeView", "findView", "variant", "metric", "fmap", "invivoView", "chisepView"]
+          ["dataset", "tab", "lbView", "stage", "pipeView", "findView", "variant", "metric", "fmap", "invivoView", "chisepView", "chisepCondition"]
             .forEach((k) => this.$watch(k, () => this.syncUrl()));
           // Lazy-load the region stats the first time the Regions findings tab is opened (fresh nav
           // or a deep link that restored findView='regions' above), so the sidecar's ~3.6 MB stays
@@ -1285,6 +1342,55 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         phantomLabel(p) { return ((this.datasetsReg || {})[p] || {}).label || p; },
         _chisep() { return this._chisepAll().filter((r) => this.chisepPhantomOf(r) === this.chisepPhantom); },
         hasChiSep() { return this._chisepAll().length > 0; },
+        // ---- GRE-only condition -----------------------------------------------------------
+        // A χ-sep method is natively GRE-only when its declared inputs never include r2prime
+        // (e.g. R2*-QSM, DECOMPOSE fit the GRE signal directly) — its isolated run IS its
+        // GRE-only run, so it appears unchanged under both conditions.
+        _greNative(slug) { const a = this.algos.find((x) => x.slug === slug); return !!a && a.stage === "chi-separation" && !(a.inputs || []).includes("r2prime"); },
+        _isGreCombo(r) { return r.mode === "composed" && r.combo && r.combo.r2prime_generation; },
+        chisepGenOf(r) { return (r.combo || {}).r2prime_generation || null; },
+        // Row label: a GRE-only combo names the method plus the R2′ generator that fed it.
+        chisepRowLabel(r) { const g = this.chisepGenOf(r); return g ? r.name + " ⟵ " + this.algoName(g) : r.name; },
+        // The board's row pool under the current condition. Full: the isolated χ-sep runs (with the
+        // Defaults/Tuned toggle). GRE-only: ONE row per method — each R2′-consuming method paired
+        // with the best-ranked generator (chisepGenRanking; falling back down the ranking when the
+        // preferred combo is missing or DNF'd, as a practitioner would) — plus the natively GRE-only
+        // methods' isolated runs (default variant — combos have no tuned pass). Every scored
+        // (generator × method) combo remains in the Findings figure and the CSV export.
+        _chisepBoard() {
+          const pool = this._chisep();
+          if (this.chisepCondition !== "greonly")
+            return this.pickVariant(pool.filter((r) => r.mode === "isolated" && r.stage === "chi-separation"));
+          const order = this.chisepGenRanking();
+          const rank = (r) => { const i = order.indexOf(this.chisepGenOf(r)); return i < 0 ? 1e9 : i; };
+          const bySlug = {};
+          pool.filter((r) => this._isGreCombo(r)).forEach((r) => { (bySlug[r.slug] ||= []).push(r); });
+          const picked = Object.values(bySlug).map((list) =>
+            list.slice().sort((a, b) => ((a.status === "DNF") - (b.status === "DNF")) || (rank(a) - rank(b)))[0]);
+          return [
+            ...picked,
+            ...pool.filter((r) => r.mode === "isolated" && r.stage === "chi-separation"
+                                  && (r.variant || "default") === "default" && this._greNative(r.slug)),
+          ];
+        },
+        // R2′ generators (isolated, scored against the phantom's true R2′) for the small table
+        // under the GRE-only board. Sorted by detrended NRMSE — the selection metric (see below).
+        chisepGenRows() {
+          return this._chisep()
+            .filter((r) => r.stage === "r2prime-generation" && r.mode === "isolated" && (r.variant || "default") === "default")
+            .slice().sort((a, b) => (((a.metrics || {}).nrmse_detrend ?? 1e9) - ((b.metrics || {}).nrmse_detrend ?? 1e9)));
+        },
+        // Generator preference order on this phantom: by each generator's own fidelity to the true R2′
+        // (isolated DETRENDED NRMSE, lower first — plain NRMSE would crown any scale-perfect copy of
+        // R2*, e.g. 0.52·R2*, whose structure is untouched; detrending forgives a global scale and
+        // ranks by the structural fidelity that actually distinguishes substitutes). The board's
+        // GRE-only view supplies every method with the best-ranked generator — the "use the best
+        // available R2′ tool" policy a GRE-only protocol would actually follow — not an oracle pick
+        // of whichever combo happens to score best.
+        chisepGenRanking() {
+          return this.chisepGenRows().filter((r) => r.status !== "DNF" && (r.metrics || {}).nrmse_detrend != null).map((r) => r.slug);
+        },
+        chisepBestGen() { return this.chisepGenRanking()[0] || null; },
         // In-vivo (2016 challenge) dipole runs share stage==='dipole' with the sim leaderboard, so
         // every SIM-facing table/matrix/finding must exclude them (track==='invivo'); they live only
         // on their own In-vivo tab. Sim runs carry track==='sim' or (legacy) no track field.
@@ -1326,8 +1432,9 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         },
         chiSepRows() {
           const k = this.chisepSort, dir = this.chisepDir === "asc" ? 1 : -1, f = this.filter.toLowerCase();
-          // one row per method; the Defaults/Tuned toggle (variant) picks default or the chisep-tuned run.
-          return this.pickVariant(this._chisep()).filter((r) => !f || r.name.toLowerCase().includes(f)).slice().sort((a, b) => {
+          // Full: one row per method (Defaults/Tuned toggle). GRE-only: one row per
+          // (generator × method) combo + the natively GRE-only methods (see _chisepBoard).
+          return this._chisepBoard().filter((r) => !f || this.chisepRowLabel(r).toLowerCase().includes(f)).slice().sort((a, b) => {
             const va = this.chiVal(a, k), vb = this.chiVal(b, k);
             if (va == null) return 1; if (vb == null) return -1;
             return (va - vb) * dir;
@@ -1358,7 +1465,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         },
         get chisepDefRanks() {
           return _cache("csdef", [this.chisepSort, this.chisepDir, this.runs.length].join("|"), () =>
-            this._defRanks(this._chisep().filter((r) => (r.variant || "default") === "default"), (a, b) => { const va = this.chiVal(a, this.chisepSort), vb = this.chiVal(b, this.chisepSort); if (va == null) return 1; if (vb == null) return -1; return (va - vb) * (this.chisepDir === "asc" ? 1 : -1); }));
+            this._defRanks(this._chisep().filter((r) => r.mode === "isolated" && r.stage === "chi-separation" && (r.variant || "default") === "default"), (a, b) => { const va = this.chiVal(a, this.chisepSort), vb = this.chiVal(b, this.chisepSort); if (va == null) return 1; if (vb == null) return -1; return (va - vb) * (this.chisepDir === "asc" ? 1 : -1); }));
         },
         get invivoDefRanks() {
           return _cache("ivdef", [this.invivoSortKey, this.invivoDir, this.runs.length].join("|"), () =>
@@ -2354,7 +2461,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         get chisepSVG() {
           return _cache("cs", this.runs.length + "|" + this.chisepPhantom, () => {
             const E = this._esc;
-            const rows = this._chisep().filter((r) => r.metrics && r.metrics.para_xsim != null && r.metrics.dia_xsim != null)
+            const rows = this._chisep().filter((r) => r.mode === "isolated" && r.stage === "chi-separation" && r.metrics && r.metrics.para_xsim != null && r.metrics.dia_xsim != null)
               .map((r) => ({ id: r.id, name: r.name, para: r.metrics.para_xsim, dia: r.metrics.dia_xsim }));
             const w = 560, h = 300, padT = 34, padB = 34, xL = 155, xR = 405;
             if (!rows.length) return "<svg></svg>";
@@ -2380,7 +2487,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         get leakSVG() {
           return _cache("leak", this.runs.length + "|" + this.chisepPhantom, () => {
             const E = this._esc;
-            const rows = this._chisep().filter((r) => r.metrics && r.metrics.para_leak != null && r.metrics.dia_leak != null)
+            const rows = this._chisep().filter((r) => r.mode === "isolated" && r.stage === "chi-separation" && r.metrics && r.metrics.para_leak != null && r.metrics.dia_leak != null)
               .map((r) => ({ id: r.id, name: r.name, px: r.metrics.para_leak, py: r.metrics.dia_leak }));
             const w = 540, h = 380, pad = 46;
             if (!rows.length) return "<svg></svg>";
@@ -2397,6 +2504,57 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
               const x = X(r.px), y = Y(r.py);
               s += `<circle cx="${x}" cy="${y}" r="4.5" fill="#6366f1" opacity="0.85" data-tip="${E(r.name + " — iron→myelin " + r.px.toFixed(3) + " · myelin→iron " + r.py.toFixed(3))}" data-run="${E(r.id)}"/>`;
               s += `<text x="${x + 7}" y="${y + 3}" fill="currentColor" opacity="0.8" style="font-size:10px">${E(r.name)}</text>`;
+            });
+            return s + "</svg>";
+          });
+        },
+
+        // Full-acquisition vs GRE-only dumbbell: per method, the mean χ+/χ− detrended NRMSE with the
+        // true R2′ (isolated) vs each GRE-derived R2′ substitute (its r2prime-generation combos).
+        // Natively GRE-only methods (never read R2′) appear as single diamonds. null = nothing to show
+        // (no combos scored yet on this phantom) — the findings card hides itself.
+        get greOnlySVG() {
+          return _cache("greonly", this.runs.length + "|" + this.chisepPhantom, () => {
+            const E = this._esc;
+            const GEN_C = { "r2primenet": "#6366f1", "r2prime-scaled-qsmci": "#f59e0b" };
+            const ndt = (r) => this.chiVal(r, "avg_ndt");
+            const pool = this._chisep();
+            const iso = pool.filter((r) => r.mode === "isolated" && r.stage === "chi-separation" && (r.variant || "default") === "default" && ndt(r) != null);
+            const combos = pool.filter((r) => this._isGreCombo(r) && ndt(r) != null);
+            if (!combos.length) return null;
+            const rows = iso.map((r) => ({
+              id: r.id, name: r.name, slug: r.slug, full: ndt(r), native: this._greNative(r.slug),
+              gre: combos.filter((c) => c.slug === r.slug).map((c) => ({ id: c.id, gen: this.chisepGenOf(c), v: ndt(c) })),
+            })).filter((r) => r.native || r.gre.length).sort((a, b) => a.full - b.full);
+            if (!rows.length) return null;
+            const rowH = 30, padT = 30, padB = 36, xL = 165, w = 640, xR = w - 24;
+            const h = padT + padB + rows.length * rowH;
+            const vals = rows.flatMap((r) => [r.full, ...r.gre.map((g) => g.v)]);
+            const v1 = Math.max(...vals) * 1.06, v0 = 0;
+            const X = (v) => xL + (v - v0) / (v1 - v0 || 1) * (xR - xL);
+            let s = `<svg width="${w}" height="${h}" style="max-width:100%;height:auto">`;
+            // x axis + gridlines at rounded steps
+            const step = v1 > 200 ? 100 : v1 > 80 ? 50 : v1 > 40 ? 20 : 10;
+            for (let t = 0; t <= v1; t += step) {
+              s += `<line x1="${X(t)}" y1="${padT - 8}" x2="${X(t)}" y2="${h - padB + 4}" stroke="currentColor" opacity="0.08"/>`;
+              s += `<text x="${X(t)}" y="${h - padB + 16}" text-anchor="middle" fill="currentColor" opacity="0.45" style="font-size:9px">${t}%</text>`;
+            }
+            s += `<text x="${(xL + xR) / 2}" y="${h - 6}" text-anchor="middle" fill="currentColor" opacity="0.55" style="font-size:11px;font-weight:600">mean χ+/χ− detrended NRMSE → (lower is better)</text>`;
+            rows.forEach((r, i) => {
+              const y = padT + i * rowH + rowH / 2;
+              s += `<text x="${xL - 9}" y="${y + 3.5}" text-anchor="end" fill="currentColor" opacity="0.8" style="font-size:11px">${E(r.name)}</text>`;
+              if (r.native) {
+                const x = X(r.full);
+                s += `<g data-tip="${E(r.name + " — GRE-native: " + r.full.toFixed(1) + "% under both conditions (never reads R2′)")}" data-run="${E(r.id)}">`;
+                s += `<path d="M ${x} ${y - 5} L ${x + 5} ${y} L ${x} ${y + 5} L ${x - 5} ${y} Z" fill="#9ca3af"/></g>`;
+                return;
+              }
+              const worst = Math.max(...r.gre.map((g) => g.v));
+              s += `<line x1="${X(r.full)}" y1="${y}" x2="${X(worst)}" y2="${y}" stroke="currentColor" opacity="0.2" stroke-width="1.5"/>`;
+              r.gre.forEach((g) => {
+                s += `<circle cx="${X(g.v)}" cy="${y}" r="4" fill="${GEN_C[g.gen] || "#94a3b8"}" opacity="0.9" data-tip="${E(r.name + " ⟵ " + this.algoName(g.gen) + " — " + g.v.toFixed(1) + "% (vs " + r.full.toFixed(1) + "% with true R2′)")}" data-run="${E(g.id)}"/>`;
+              });
+              s += `<circle cx="${X(r.full)}" cy="${y}" r="4.5" fill="#10b981" data-tip="${E(r.name + " — " + r.full.toFixed(1) + "% with the true R2′ (MEGRE+MESE)")}" data-run="${E(r.id)}"/>`;
             });
             return s + "</svg>";
           });

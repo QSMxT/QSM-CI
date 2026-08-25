@@ -346,7 +346,7 @@ def discover_algorithms(track: str = "sim", phantom: "str | None" = None) -> lis
             "name": _yaml_scalar(doc.get("name")) if doc.get("name") is not None else d.name,
             "image": _yaml_scalar(image) if image is not None else None,
             "consumes": consumes, "produces": STAGES[s]["produces"],
-            "tuned": _tuned_overrides(doc, "chisep" if s == "chi-separation"
+            "tuned": _tuned_overrides(doc, "chisep" if s in ("chi-separation", "r2prime-generation")
                                       else ("invivo" if track == "invivo" else "sim"), phantom),
             # Optional per-method smoke-crop size (voxels): a slow per-voxel method (e.g. DECOMPOSE)
             # can shrink the --smoke gate's central box so the PR check stays fast; None = CLI default.
@@ -427,8 +427,12 @@ def _fmt(v, spec: str = ".4f") -> str:
 
 
 def score(recon: Path, artifact: str, gt_dir: Path, mask: Path, out_json: Path, meta: dict,
-          emit_volumes_on: bool = False) -> dict:
+          emit_volumes_on: bool = False, truth: "Path | None" = None) -> dict:
     kind = ARTIFACT_KIND[artifact]
+    # The reference defaults to gt_dir/<canonical file>; `truth` overrides it for artifacts whose
+    # reference is NOT a groundtruth/ file — a generated r2prime scores against the phantom's true
+    # R2′, which is an INPUT of the χ-separation datasets (inputs/r2prime.nii.gz).
+    truth = truth if truth is not None else gt_dir / ARTIFACT_FILE[artifact]
     raw_mask = mask  # the full brain mask, before erosion — used to mask the viewer's error map
     # Score only where the method actually produced a value (its non-zero support), so an eroded
     # rim isn't penalised as error — consistent with masking that rim out of the pipeline.
@@ -446,7 +450,7 @@ def score(recon: Path, artifact: str, gt_dir: Path, mask: Path, out_json: Path, 
     dia = kind == "chisep" and component == "dia"
     wm_rois = gt_dir / "wm_rois.nii.gz"
     theta = gt_dir / "theta.nii.gz"
-    cmd = eval_argv(sys.executable, EVAL, recon, gt_dir / ARTIFACT_FILE[artifact], kind, mask,
+    cmd = eval_argv(sys.executable, EVAL, recon, truth, kind, mask,
                     artifact, out_json, stage=meta["stage"], name=meta["name"], track=meta["track"],
                     runtime=meta.get("runtime"),
                     seg=seg if use_seg else None,
@@ -481,7 +485,7 @@ def score(recon: Path, artifact: str, gt_dir: Path, mask: Path, out_json: Path, 
         # The container runner (docker/podman path) writes resources.json beside the recon in the
         # run's output dir; carry it into results/<id>/ so the web viewer can graph it.
         res = recon.parent / "resources.json"
-        emit_volumes(meta["id"], recon, gt_dir / ARTIFACT_FILE[artifact], raw_mask,
+        emit_volumes(meta["id"], recon, truth, raw_mask,
                      resources=res if res.exists() else None)
     return result
 
@@ -615,29 +619,37 @@ def _chisep_leakage(odir, gt, mask) -> "dict | None":
             "dia_leak":  slope(rd, gd, gp)}   # χ+ (paramagnetic) bleeding INTO the χ− map
 
 
-def _score_chisep(a, sfx, variant, overrides, odir, gt, mask, rt, args):
+def _score_chisep(a, sfx, variant, overrides, odir, gt, mask, rt, args,
+                  rid=None, mode="isolated", stage=None, combo=None):
     """Score a χ-separation run's two source maps (χ+, χ−) and fold them into ONE leaderboard row with
     para_*/dia_* prefixed metrics and domain='chisep' — the chi-sep leaderboard shows one row per
     method with χ+ vs χ− columns, not two separate rows. A DNF in either component marks the row DNF.
 
+    The defaults score an isolated run under the historical `<slug>-iso<sfx>` id; the GRE-only composed
+    matrix (run_chisep_composed) passes its own `rid`, mode="composed", the combined stage string and a
+    `combo` dict ({r2prime_generation, chi_separation}), reusing the same two-component fold.
+
     Metrics per source: xsim/nrmse/correlation, region leakage (dia_iron_leak = mean |χ−| in the
     iron/DGM+vein regions where χ− should be ~0; para_calc_leak = mean |χ+| in calcification), and the
     whole-brain regression leakage (para_leak / dia_leak) from _chisep_leakage."""
-    rid = f"{a['slug']}-iso{sfx}"
+    rid = rid or f"{a['slug']}-iso{sfx}"
+    stage = stage or a["stage"]
     regobj = {}  # accumulate χ+ / χ− region blocks → ONE per-run results/<id>/regions.json below
-    row = {"id": rid, "slug": a["slug"], "name": a.get("name", a["slug"]), "stage": a["stage"], "mode": "isolated",
+    row = {"id": rid, "slug": a["slug"], "name": a.get("name", a["slug"]), "stage": stage, "mode": mode,
            "track": args.track, "runtime_s": rt, "variant": variant, "domain": "chisep",
            "kind": "chisep", "metrics": {}, "status": "ok"}
     if overrides:
         row["params"] = overrides
+    if combo:
+        row["combo"] = combo
     for art in a["produces"]:
         pfx = CHISEP_PREFIX.get(art, art)
-        meta = {"id": f"{rid}-{pfx}", "slug": a["slug"], "name": a["slug"], "stage": a["stage"],
-                "mode": "isolated", "track": args.track, "runtime": rt, "variant": variant}
+        meta = {"id": f"{rid}-{pfx}", "slug": a["slug"], "name": a["slug"], "stage": stage,
+                "mode": mode, "track": args.track, "runtime": rt, "variant": variant}
         # emit_volumes off: the two components would collide on one id; chi-sep viewer volumes are a
         # later feature. We only need each component's metrics here.
         r = score(odir / ARTIFACT_FILE[art], art, gt, mask,
-                  args.work / f"iso_{a['slug']}{sfx}_{pfx}.json", meta, emit_volumes_on=False)
+                  args.work / f"{mode[:3]}_{rid}_{pfx}.json", meta, emit_volumes_on=False)
         for k, v in (r.get("metrics") or {}).items():
             row["metrics"][f"{pfx}_{k}"] = v
         if r.get("regions"):  # per-component regional stats ({'para': …} / {'dia': …})
@@ -647,12 +659,12 @@ def _score_chisep(a, sfx, variant, overrides, odir, gt, mask, rt, args):
         m = r.get("metrics") or {}
         shown = ("DNF" if r.get("status") == "DNF"
                  else f"xsim={_fmt(m.get('xsim'))} nrmse={_fmt(m.get('nrmse'), '.2f')}%")
-        print(f"  isolated  {a['slug']:<16} {variant:<8} {art:<11} {shown}")
+        print(f"  {mode:<9} {rid:<16} {variant:<8} {art:<11} {shown}")
     if row["status"] != "DNF":  # whole-brain χ+↔χ− leakage (needs both GT + both recon maps)
         lk = _chisep_leakage(odir, gt, mask)
         if lk:
             row["metrics"].update(lk)
-            print(f"  isolated  {a['slug']:<16} {variant:<8} {'leakage':<11} "
+            print(f"  {mode:<9} {rid:<16} {variant:<8} {'leakage':<11} "
                   f"para_leak={_fmt(lk['para_leak'])} dia_leak={_fmt(lk['dia_leak'])}")
     # Viewer volumes: emit both sources under the run id (results/<id>/) — χ+ as the plain set and χ−
     # with a "-dia" suffix, so the detail viewer's χ+/χ− toggle can load either. The container runner
@@ -745,8 +757,15 @@ def do_isolated(task, args, gt_sources, gt, mask):
                     "variant": variant}
             if overrides:
                 meta["params"] = overrides
+            # A generated r2prime scores against the phantom's TRUE R2′ — an input of the χ-separation
+            # datasets (gt_sources maps it to inputs/r2prime.nii.gz), not a groundtruth/ file.
             r = score(odir / ARTIFACT_FILE[art], art, gt, mask,
-                      args.work / f"iso_{a['slug']}{idsfx}.json", meta, args.emit_volumes)
+                      args.work / f"iso_{a['slug']}{idsfx}.json", meta, args.emit_volumes,
+                      truth=gt_sources.get(art) if art == "r2prime" else None)
+            if a["stage"] == "r2prime-generation":
+                # Group R2′ generators with the χ-separation family in results/index.json — they only
+                # run on chisep-track phantoms and surface on that leaderboard (stage distinguishes them).
+                r["domain"] = "chisep"
             # In-vivo track: score the SAME chimap against the secondary STI χ33 reference too, and
             # merge its metrics under a `_sti` suffix (nrmse_sti, xsim_sti, …). COSMOS keeps the
             # unsuffixed keys. Skipped silently if chimap-sti.nii.gz isn't shipped (sim untouched).
@@ -946,6 +965,10 @@ def run_composed(args, algos, gt_sources, gt, mask, shard_i, shard_n, runs: list
             bfr, spans = [f], []
         elif "totalfield" in f["produces"]:      # a field-mapping — this map through the matrix
             fmap, spans = [f], []
+        elif f["stage"] in ("chi-separation", "r2prime-generation"):
+            # χ-separation / R2′-generation never enter the QSM matrix; their GRE-only combos are
+            # run_chisep_composed's job (called instead of this on chisep-track phantoms).
+            fmap, bfr, dipole, spans = [], [], [], []
         else:                                     # a bfr+dipole / end-to-end span
             # A bfr+dipole span consumes the total field, so still compose it with every field-mapping
             # (plus gt); an end-to-end span runs from phase, so it has no field-mapping upstream.
@@ -1016,6 +1039,107 @@ def run_composed(args, algos, gt_sources, gt, mask, shard_i, shard_n, runs: list
         runs.extend(_stamp_phantom([r], getattr(args, "phantom", None)))
 
 
+# ---------------------------------------------------------------------------------------------------
+# GRE-only composed evaluation (chisep-track phantoms): r2prime-generation × chi-separation.
+#
+# The GRE-only condition asks: what does χ-separation sacrifice when no spin-echo acquisition provides
+# a measured R2 (so no true R2′ = R2* − R2)? Each R2′ GENERATOR estimates R2′ from the multi-echo GRE
+# magnitude alone; its output then replaces the phantom's true r2prime for every R2′-consuming
+# χ-separation method, with all other inputs unchanged (still the isolated ground-truth boundary).
+# That isolates exactly ONE variable — R2′ fidelity — so a composed run pairs 1:1 with the method's
+# isolated run (same GT everywhere else) and the leaderboard can chart "full acquisition vs GRE-only"
+# per method. χ-sep methods that never read r2prime (e.g. R2*-QSM, DECOMPOSE) are natively GRE-only;
+# their isolated runs already ARE the GRE-only condition, so they get no combos here.
+# ---------------------------------------------------------------------------------------------------
+
+def do_r2gen(g, args, gt_sources):
+    """Run one R2′ generator on the raw GRE inputs, returning (slug, r2prime path, runtime, trace)
+    or None on DNF (its combos are skipped, mirroring a DNF'd field-mapping)."""
+    idir, odir = args.work / f"cmp_r2g_{g['slug']}_in", args.work / f"cmp_r2g_{g['slug']}_out"
+    try:
+        prepare_input(g["consumes"], gt_sources, idir)
+        rt = run_algo(g, idir, odir, args.runner)
+        r2p = odir / ARTIFACT_FILE["r2prime"]
+        if not r2p.exists():
+            raise FileNotFoundError("r2prime.nii.gz not written")
+        return (g["slug"], r2p, rt, [(f"r2prime-generation:{g['slug']}", odir / "resources.json", rt)])
+    except Exception as e:
+        print(f"  composed  r2gen {g['slug']} DNF ({e}) — skipping its pipelines")
+        return None
+
+
+def do_chisep_composed(task, args, gt_sources, gt, mask, r2p_cache):
+    """Run one (R2′ generator, χ-separation method) combo: the generator's cached R2′ replaces the
+    true r2prime, everything else stays at the ground-truth boundary. Scored exactly like an isolated
+    χ-sep run (two components folded into one row) under `<gen>~<sep>-cmp` with mode=composed and
+    combo={r2prime_generation, chi_separation}. The full brain mask is kept — an R2′ of 0 is a valid
+    value, so (unlike an eroding BFR) a generator's zero voxels must not shrink the analysis region."""
+    gk, c = task
+    cid = f"{gk}~{c['slug']}-cmp" + getattr(args, "phantom_sfx", "")
+    combo = {"r2prime_generation": gk, "chi_separation": c["slug"]}
+    stage = "r2prime-generation+chi-separation"
+    try:
+        r2p, gen_rt, gen_trace = r2p_cache[gk]
+        src = dict(gt_sources); src["r2prime"] = r2p
+        idir, odir = args.work / f"cmp_{cid}_in", args.work / f"cmp_{cid}_out"
+        prepare_input(c["consumes"], src, idir)
+        rt = run_algo(c, idir, odir, args.runner)
+        row = _score_chisep(c, "", "default", None, odir, gt, mask, gen_rt + rt, args,
+                            rid=cid, mode="composed", stage=stage, combo=combo)
+        _emit_composed_resources(
+            cid, gen_trace + [(f"chi-separation:{c['slug']}", odir / "resources.json", rt)],
+            args.emit_volumes)
+        return row
+    except Exception as e:
+        print(f"  composed  {cid:<34} DNF ({e})")
+        row = dnf(cid, c["slug"], c.get("name", c["slug"]), stage, "composed", args.track, combo)
+        row["domain"] = "chisep"
+        return row
+
+
+def run_chisep_composed(args, algos, gt_sources, gt, mask, runs: list) -> None:
+    """The GRE-only matrix: every R2′ generator × every R2′-consuming χ-separation method.
+
+    Focus semantics (mirrors score.yml's job ownership so a full re-run never runs a combo twice):
+    a χ-separation method's --focus job owns ALL its combos (every generator × it); a generator's
+    --focus job runs NO combos here (score.yml fans a changed generator out into the χ-sep methods'
+    focus jobs instead). Unfocused runs (local full scoring) enumerate the whole grid, --shard
+    round-robin over (generator, method) pairs; a generator is (re)run in each shard that owns one
+    of its pairs — generators are cheap relative to the χ-sep methods they feed."""
+    gens = sorted((a for a in algos if a["stage"] == "r2prime-generation"), key=lambda a: a["slug"])
+    seps = sorted((a for a in algos if a["stage"] == "chi-separation" and "r2prime" in a["consumes"]),
+                  key=lambda a: a["slug"])
+    if args.focus:
+        f = next((a for a in algos if a["slug"] == args.focus), None)
+        if f is None or f["stage"] != "chi-separation" or "r2prime" not in f["consumes"]:
+            return  # a generator focus (isolated-only here) or a non-χ-sep / GRE-native focus
+        seps = [f]
+    if not gens or not seps:
+        return
+    pairs = shard_partition([(g, c) for g in gens for c in seps], args.shard)
+    if not pairs:
+        return
+
+    # Stage 1 — each generator needed by this shard's pairs runs once on the raw GRE inputs.
+    need = {g["slug"]: g for g, _ in pairs}
+    r2p_cache: dict[str, tuple] = {}
+    for res in _pmap(list(need.values()), lambda g: do_r2gen(g, args, gt_sources)):
+        if res:
+            r2p_cache[res[0]] = (res[1], res[2], res[3])
+
+    # Stage 2 — every (generator, χ-sep method) pair with a live generator, run SERIALLY. A focus
+    # job's pairs are N generators × the SAME method, so fanning them over the pool runs N copies
+    # of that method concurrently — which doubles a memory-heavy DL method's peak and OOM-killed
+    # susep-net's combos on the 16 GB hosted runner (two whole-volume torch containers at once,
+    # exit 137). Parallelism across methods comes from the CI job matrix, not from within one job.
+    tasks = [(g["slug"], c) for g, c in pairs if g["slug"] in r2p_cache]
+    for t in tasks:
+        r = do_chisep_composed(t, args, gt_sources, gt, mask, r2p_cache)
+        runs.extend(_stamp_phantom([r], getattr(args, "phantom", None)))
+    if not args.runs_out:
+        flush_index(runs)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dataset", type=Path, default=None,
@@ -1075,10 +1199,12 @@ def main() -> None:
         if args.phantom not in reg:
             raise SystemExit(f"unknown phantom '{args.phantom}' — add it to scripts/datasets.json")
         args.phantom_sfx = phantom_suffix(args.phantom)
+        args.phantom_track = reg[args.phantom].get("track")
         if args.dataset is None:
             args.dataset = ROOT / reg[args.phantom]["path"]
     else:
         args.phantom_sfx = ""
+        args.phantom_track = None
     if args.dataset is None:
         args.dataset = ROOT / "data/sim/dev"
 
@@ -1116,11 +1242,16 @@ def main() -> None:
     if args.mode in ("isolated", "both"):
         run_isolated(args, algos, gt_sources, gt, mask, iso_target, runs)
 
-    # -------- composed: (field-mapping) x bfr x dipole, chaining real outputs --------
-    # Dependency order is fieldmap -> bfr -> dipole, so each stage is a barrier; but every
-    # combo within a stage is independent, so each stage fans out over the pool.
+    # -------- composed --------
+    # A chisep-track phantom's composed matrix is the GRE-only grid (r2prime-generation ×
+    # chi-separation); everything else runs the QSM matrix ((field-mapping) x bfr x dipole, chaining
+    # real outputs — dependency order fieldmap -> bfr -> dipole, each stage a barrier, every combo
+    # within a stage independent so each stage fans out over the pool).
     if args.mode in ("composed", "both"):
-        run_composed(args, algos, gt_sources, gt, mask, shard_i, shard_n, runs)
+        if args.phantom_track == "chisep":
+            run_chisep_composed(args, algos, gt_sources, gt, mask, runs)
+        else:
+            run_composed(args, algos, gt_sources, gt, mask, shard_i, shard_n, runs)
 
     if args.runs_out:
         args.runs_out.parent.mkdir(parents=True, exist_ok=True)
