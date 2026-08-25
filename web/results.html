@@ -1049,11 +1049,13 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
 
       <!-- Harmonization · Protocol reproducibility -->
       <div x-show="reproView==='protocols'" x-cloak>
-        <p class="mt-6 text-sm text-gray-600 dark:text-gray-400 leading-relaxed max-w-3xl">
+        <p class="mt-6 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
           How reproducible is each <em>acquisition protocol</em>, marginalised over reconstruction pipelines?
           Each cell aggregates the per-ROI orthogonal fit &chi;<sub>B</sub> = a&middot;&chi;<sub>A</sub> + b between two
           acquisitions; the headline is the slope's deviation from identity |a&minus;1| (in&nbsp;%): within-scanner
-          test&ndash;retest, and across the two scanners. Median [min&ndash;max] across all pipelines.
+          test&ndash;retest, and across the two scanners. Median [5th&ndash;95th&nbsp;percentile] across pipelines, using
+          robust statistics &mdash; a degenerate fit (a pipeline whose &chi; values don&rsquo;t track between two
+          acquisitions, giving a non-physical slope) is excluded rather than allowed to blow up the mean.
         </p>
         <div class="mt-4 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
           <div class="overflow-x-auto">
@@ -1099,10 +1101,11 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           <div class="grow"></div>
           <input x-model="filter" type="search" placeholder="Filter…" class="rounded-lg border-gray-300 text-sm px-3 py-1.5 w-44 focus:border-emerald-500 focus:ring-emerald-500" />
         </div>
-        <p class="mt-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed max-w-3xl">
+        <p class="mt-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
           How reproducible is each <em>reconstruction pipeline</em> across acquisitions of the same head?
-          Mean |a&minus;1| over the pairwise per-ROI orthogonal fits in each comparison class. A pipeline that
-          harmonizes well has a small inter-scanner slope deviation without giving up test&ndash;retest precision.
+          Median |a&minus;1| over the pairwise per-ROI orthogonal fits in each comparison class (robust to the
+          occasional degenerate fit). A pipeline that harmonizes well has a small inter-scanner slope deviation
+          without giving up test&ndash;retest precision.
         </p>
         <div class="mt-4 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
           <div class="overflow-x-auto">
@@ -1568,32 +1571,46 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
                 set.add(cls === "inter_scanner" ? key : this._reproKeyProto(key));
           return [...set].sort();
         },
-        // mean |a-1| over the pair metrics in a class, optionally restricted to one protocol
-        _reproClsMean(node, cls, proto, field = "abs_slope_dev") {
+        // Plausibility cap on a per-pair slope-deviation fit: |a-1| > 2 (slope outside [-1, 3]) means
+        // the two acquisitions' ROI values don't track for this pipeline — a degenerate/failed fit,
+        // not a reproducibility measurement. Excluded so it can't blow up a median or (worse) a mean.
+        // (Real inter-scanner slopes go as low as ~0.4 — Mauro's EPI↔ME-GRE — so the cap is generous.)
+        _SLOPE_DEV_CAP: 2,
+        _BIAS_CAP_PPM: 1,   // |Bland-Altman bias| beyond 1 ppm is non-physical for brain ROI χ
+        // finite, in-range per-pair values for a class, optionally restricted to one protocol
+        _reproVals(node, cls, proto, field = "abs_slope_dev") {
+          const cap = field === "abs_slope_dev" ? this._SLOPE_DEV_CAP : (field === "ba_bias_ppm" ? this._BIAS_CAP_PPM : Infinity);
           const vals = [];
           for (const [key, pairs] of Object.entries(node[cls] || {})) {
             const p = cls === "inter_scanner" ? key : this._reproKeyProto(key);
             if (proto !== "all" && p !== proto) continue;
-            for (const m of Object.values(pairs)) if (m[field] != null) vals.push(m[field]);
+            for (const m of Object.values(pairs)) {
+              const v = m[field];
+              if (v == null || !isFinite(v) || Math.abs(v) > cap) continue;
+              vals.push(v);
+            }
           }
           return vals;
         },
-        _pct(vals) { return vals.length ? (100 * vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(1) + "%" : "—"; },
+        _median(v) { if (!v.length) return null; const s = [...v].sort((a, b) => a - b); const m = Math.floor(s.length / 2); return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; },
+        _pctile(v, p) { if (!v.length) return null; const s = [...v].sort((a, b) => a - b); return s[Math.min(s.length - 1, Math.max(0, Math.round((p / 100) * (s.length - 1))))]; },
+        _pct(x) { return x == null ? "—" : (100 * x).toFixed(1) + "%"; },
         reproPipeRows() {
           const rows = [];
           for (const [slug, node] of Object.entries(this._reproPipes())) {
-            const tr = this._reproClsMean(node, "test_retest", this.reproProto);
-            const inter = this._reproClsMean(node, "inter_scanner", this.reproProto);
-            const ip = this._reproClsMean(node, "inter_protocol", this.reproProto);
+            const tr = this._reproVals(node, "test_retest", this.reproProto);
+            const inter = this._reproVals(node, "inter_scanner", this.reproProto);
+            const ip = this._reproVals(node, "inter_protocol", this.reproProto);
             const name = this.reproName(slug);
             if (this.filter && !name.toLowerCase().includes(this.filter.toLowerCase())) continue;
-            rows.push({ slug, name, tr: this._pct(tr), inter: this._pct(inter), iproto: this._pct(ip),
+            rows.push({ slug, name,
+                        tr: this._pct(this._median(tr)), inter: this._pct(this._median(inter)), iproto: this._pct(this._median(ip)),
                         n: tr.length + inter.length + ip.length,
-                        _tr: tr, _inter: inter, _ip: ip });
+                        _tr: this._median(tr), _inter: this._median(inter), _ip: this._median(ip) });
           }
           const key = { tr: "_tr", inter: "_inter", iproto: "_ip" }[this.reproSortKey] || "_inter";
-          const mean = (v) => (v.length ? v.reduce((a, b) => a + b, 0) / v.length : Infinity);
-          rows.sort((a, b) => (mean(a[key]) - mean(b[key])) * (this.reproDir === "asc" ? 1 : -1));
+          const val = (x) => (x == null ? Infinity : x);   // pipelines with no fit sort last
+          rows.sort((a, b) => (val(a[key]) - val(b[key])) * (this.reproDir === "asc" ? 1 : -1));
           return rows;
         },
         reproSortBy(k) {
@@ -1601,24 +1618,23 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           else { this.reproSortKey = k; this.reproDir = "asc"; }
         },
         reproProtoRows() {
-          const med = (v) => { if (!v.length) return null; const s = [...v].sort((a, b) => a - b); return s[Math.floor(s.length / 2)]; };
-          const fmtP = (x) => (x == null ? "—" : (100 * x).toFixed(1) + "%");
           const rows = [];
           for (const proto of this.reproProtocols()) {
-            const trM = [], interM = [], biasM = [];
+            const trM = [], interM = [], biasM = [];   // one robust value per pipeline
             for (const node of Object.values(this._reproPipes())) {
-              const tr = this._reproClsMean(node, "test_retest", proto);
-              const inter = this._reproClsMean(node, "inter_scanner", proto);
-              const bias = this._reproClsMean(node, "inter_scanner", proto, "ba_bias_ppm");
-              if (tr.length) trM.push(tr.reduce((a, b) => a + b, 0) / tr.length);
-              if (inter.length) interM.push(inter.reduce((a, b) => a + b, 0) / inter.length);
-              if (bias.length) biasM.push(bias.reduce((a, b) => a + b, 0) / bias.length);
+              const tr = this._median(this._reproVals(node, "test_retest", proto));
+              const inter = this._median(this._reproVals(node, "inter_scanner", proto));
+              const bias = this._median(this._reproVals(node, "inter_scanner", proto, "ba_bias_ppm"));
+              if (tr != null) trM.push(tr);
+              if (inter != null) interM.push(inter);
+              if (bias != null) biasM.push(bias);
             }
             if (!trM.length && !interM.length) continue;
-            const rng = (v) => (v.length > 1 ? ` [${fmtP(Math.min(...v))}–${fmtP(Math.max(...v))}]` : "");
+            // robust central + spread across pipelines: median [5th–95th percentile]
+            const cell = (v) => v.length ? this._pct(this._median(v)) + (v.length > 1 ? ` [${this._pct(this._pctile(v, 5))}–${this._pct(this._pctile(v, 95))}]` : "") : "—";
             rows.push({ protocol: proto, label: this.reproProtoLabel(proto),
-                        tr: fmtP(med(trM)) + rng(trM), inter: fmtP(med(interM)) + rng(interM),
-                        bias: biasM.length ? (biasM.reduce((a, b) => a + b, 0) / biasM.length).toFixed(4) + " ppm" : "—",
+                        tr: cell(trM), inter: cell(interM),
+                        bias: biasM.length ? this._median(biasM).toFixed(4) + " ppm" : "—",
                         n: Math.max(trM.length, interM.length) });
           }
           return rows;

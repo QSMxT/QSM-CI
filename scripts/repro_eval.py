@@ -63,6 +63,7 @@ ROI_LABELS = {
 }
 MIN_ROI_COVERAGE = 0.90
 MIN_PAIR_ROIS = 8  # a fit over fewer common ROIs than this is too fragile to report
+SLOPE_DEV_CAP = 2.0  # |a-1| beyond this is a degenerate/failed fit, not a reproducibility value
 
 
 def repro_acquisitions() -> dict[str, dict]:
@@ -281,8 +282,14 @@ def _pair_metrics(vx: dict, vy: dict) -> "dict | None":
         return None
     x = np.array([vx[k] for k in common])
     y = np.array([vy[k] for k in common])
+    # A degenerate cloud (one acquisition's ROI values nearly constant — a pipeline that collapsed
+    # its χ contrast) has no dynamic range to fit a slope to; the TLS slope then explodes to a
+    # non-physical value. Reject rather than store a 1e12 "slope". SLOPE_DEV_CAP mirrors the web's
+    # plausibility filter: |a-1| > 2 (slope outside [-1, 3]) is a failed fit, not reproducibility.
+    if x.std() < 1e-6 or y.std() < 1e-6:
+        return None
     a, b = tls_fit(x, y)
-    if not np.isfinite(a):
+    if not np.isfinite(a) or abs(a - 1) > SLOPE_DEV_CAP:
         return None
     diffs = y - x
     r = float(np.corrcoef(x, y)[0, 1]) if len(common) > 2 else float("nan")
@@ -344,10 +351,13 @@ def cmd_fits(args) -> None:
                 if pairs:
                     node["inter_protocol"][f"{sc}-{pr}"] = pairs
 
-        # Headline aggregates: mean |a-1| per comparison class.
+        # Headline aggregate per comparison class: MEDIAN |a-1| (robust — degenerate pairs are
+        # already dropped by _pair_metrics, but the median is the honest central tendency across the
+        # spread of a pipeline's pairs, matching what the web shows). Key kept `_mean_` for backward
+        # compatibility with any existing reader; the value is the median.
         for cls in ("test_retest", "inter_scanner", "inter_protocol"):
             devs = [m["abs_slope_dev"] for grp in node[cls].values() for m in grp.values()]
-            node[f"{cls}_mean_abs_slope_dev"] = round(float(np.mean(devs)), 4) if devs else None
+            node[f"{cls}_mean_abs_slope_dev"] = round(float(np.median(devs)), 4) if devs else None
         out["pipelines"][p] = node
 
     (RESULTS / "repro.json").write_text(json.dumps(out, indent=2) + "\n")
