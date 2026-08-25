@@ -110,6 +110,9 @@ def main() -> int:
         rf = run_dir / "resources.json"
         if rf.exists():
             items.append((rid, "resources", "json", rf))
+        gf = run_dir / "regions.json"   # per-run regional stats; the web fetches one file per run
+        if gf.exists():
+            items.append((rid, "regions", "json", gf))
     if not items:
         print("no volumes on disk — nothing to publish")
         return 0
@@ -145,14 +148,18 @@ def main() -> int:
 
     published = 0
     for rid, kinds in want.items():
-        # The resources trace isn't a NiiVue volume — surface it as its own top-level URL the viewer
-        # graphs, and keep the nii.gz volumes under `volumes` as before.
+        # The resources trace and the per-region stats aren't NiiVue volumes — surface each as its own
+        # top-level URL (the viewer graphs resources; the regional views fetch regions), and keep the
+        # nii.gz volumes under `volumes` as before.
         res_url = kinds.pop("resources", None)
         if res_url:
             by_id[rid]["resources_url"] = res_url
+        reg_url = kinds.pop("regions", None)
+        if reg_url:
+            by_id[rid]["regions_url"] = reg_url
         if kinds:
             by_id[rid]["volumes"] = kinds
-        if res_url or kinds:
+        if res_url or reg_url or kinds:
             published += 1
 
     index.write_text(json.dumps(doc, indent=2) + "\n")

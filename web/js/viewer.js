@@ -6,7 +6,7 @@ import { Niivue } from "https://unpkg.com/@niivue/niivue@0.57.0/dist/index.js";
 import { renderResources } from "./resourceChart.js";
 import { makeWindowControl, winControls } from "./windowControl.js";
 
-const { loadRuns, loadAlgos, loadDatasets, loadRegistry, doiFor, METRICS, STAGE_LABEL, val, fmt, robustRange, heatScale } = window.QSM;
+const { loadRuns, loadAlgos, loadDatasets, loadRegistry, loadRunRegions, doiFor, METRICS, STAGE_LABEL, val, fmt, robustRange, heatScale } = window.QSM;
 
 const STAGE_COLOR = {
   "field-mapping": "bg-indigo-50 text-indigo-700 ring-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-300 dark:ring-indigo-500/20",
@@ -163,6 +163,9 @@ let showError = false;       // whether the error map is overlaid on top of the 
 // re-fetching. activeBaseVol / activeErrVol point the windowing controls at the map currently shown.
 let activeBaseVol = null, activeErrVol = null, residentRunId = null, preloadPromise = null;
 let baseCtl = null, errorCtl = null;         // the two windowing controls (base + error overlay)
+let runRegions = null;       // the CURRENT run's per-region stats { chi|para|dia: {labels, recon, truth} }, or null
+let metricsTab = "metrics";  // Metrics card tab: metrics | regions | error
+let regionComp = "para";     // χ-sep component shown in the region tables (para = χ+, dia = χ−)
 
 const $ = (id) => document.getElementById(id);
 function badge(text, cls) {
@@ -538,7 +541,13 @@ async function loadRun() {
   renderHowToRun();
   renderDatasetSwitch();
   renderChisepPhantomSwitch();
-  renderMetrics();
+  // Metrics card: render the metric table now (tabs hidden), then fetch THIS run's per-region file
+  // (results/<id>/regions.json via HF regions_url, or the local fallback) off the critical path and
+  // reveal the Regions/Error tabs when it arrives. Guard against a fast run-switch resolving stale.
+  runRegions = null;
+  renderMetricsPanel();
+  const wantRegions = run;
+  loadRunRegions(run).then((entry) => { if (run === wantRegions) { runRegions = entry; renderMetricsPanel(); } });
   // Render the resource graph up front, independent of (and before) the WebGL/NiiVue viewer, so a
   // browser without WebGL2, or a run whose volumes fail to load, still shows the usage trace.
   renderResources(run);
@@ -716,6 +725,112 @@ function renderMetrics() {
       <td class="py-2.5 pl-3 text-right">${rankCell}</td>
     </tr>`;
   }).join("") || `<tr><td class="py-3 text-gray-400">No metrics for this run.</td></tr>`;
+}
+
+// ---- per-region stats (Metrics card: Metrics | Regions | Error tabs) ------------------------
+// Fed by this run's results/<id>/regions.json (loadRunRegions): descriptive susceptibility stats
+// (n/mean/std/median, ppm) for the run and its paired ground truth inside every segmented region,
+// under the run's own score mask.
+const REGION_ORDER = ["1", "2", "3", "4", "5", "6", "7", "9", "8", "10", "11", "16", "13", "14", "15"];
+const p3 = (v) => (v < 0 ? "−" : "") + Math.abs(v).toFixed(3);
+
+function renderMetricsPanel() {
+  const entry = runRegions;
+  const tabs = $("metrics-tabs");
+  tabs.classList.toggle("hidden", !entry);
+  // Fall back to the metric table whenever there's no usable region entry — this run has none, OR
+  // the sidecar hasn't finished its lazy load yet. `metricsTab` (which may be a deep-linked
+  // 'regions'/'error') is left UNTOUCHED, so once regions arrive this re-runs and honours it.
+  const tab = entry ? metricsTab : "metrics";
+  tabs.querySelectorAll("[data-mtab]").forEach((b) => {
+    const on = b.dataset.mtab === tab;
+    ["bg-white", "shadow-sm", "text-gray-900", "dark:bg-gray-700", "dark:text-gray-100"].forEach((c) => b.classList.toggle(c, on));
+    ["text-gray-500", "dark:text-gray-400"].forEach((c) => b.classList.toggle(c, !on));
+  });
+  const table = tab === "metrics";
+  $("metrics-table-wrap").classList.toggle("hidden", !table);
+  $("metrics-regions-wrap").classList.toggle("hidden", table);
+  if (table) renderMetrics();
+  else renderRegionTable(entry, tab === "error");
+}
+
+function renderRegionTable(entry, errorMode) {
+  // χ-sep runs carry one block per component (para/dia); QSM runs a single `chi` block.
+  const comps = entry.chi ? null : ["para", "dia"].filter((k) => entry[k]);
+  if (comps && !entry[regionComp]) regionComp = comps[0];
+  const block = entry.chi || entry[regionComp];
+  if (!block || !block.recon) {   // entry present but no usable component (e.g. empty/partial sidecar)
+    $("metrics-sub").textContent = "Per-region statistics unavailable for this run.";
+    $("metrics-regions-wrap").innerHTML = `<p class="py-3 text-sm text-gray-400">No regional statistics for this run.</p>`;
+    return;
+  }
+  $("metrics-sub").textContent = errorMode
+    ? "Per-region quantification error: this run − ground truth, within the run's valid support (ppm)."
+    : "Susceptibility per segmented region — this run vs ground truth, within the run's valid support (ppm).";
+  const ids = REGION_ORDER.filter((k) => block.recon[k] && block.truth[k])
+    .concat(Object.keys(block.recon).filter((k) => !REGION_ORDER.includes(k) && block.truth[k]).sort());
+  let html = "";
+  if (comps) {
+    html += `<div class="mb-3 inline-flex rounded-lg bg-gray-100 p-0.5 text-xs dark:bg-gray-800">` + comps.map((k) =>
+      `<button data-comp="${k}" class="rounded-md px-2.5 py-1 font-medium ${k === regionComp
+        ? "bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100" : "text-gray-500 dark:text-gray-400"}">${k === "para" ? "χ+ para" : "χ− dia"}</button>`).join("") + `</div>`;
+  }
+  if (!ids.length) {
+    $("metrics-regions-wrap").innerHTML = html + `<p class="py-3 text-sm text-gray-400">No regional statistics for this run.</p>`;
+  } else if (errorMode) {
+    const rows = ids.map((k) => {
+      const rc = block.recon[k], gt = block.truth[k];
+      // Divide by |gt.mean| so the % keeps the sign of Δ mean: for a diamagnetic (negative-mean)
+      // region — white matter, bone — dividing by the raw negative mean would flip the sign, showing
+      // an over-estimate as a negative %, contradicting the Δ mean column right beside it.
+      return { k, d: rc.mean - gt.mean, dm: rc.median - gt.median,
+               pct: Math.abs(gt.mean) >= 0.005 ? (rc.mean - gt.mean) / Math.abs(gt.mean) * 100 : null, n: rc.n };
+    });
+    const dmax = Math.max(...rows.map((r) => Math.abs(r.d))) || 1;
+    html += `<table class="w-full text-[11px]"><thead><tr class="text-[10px] uppercase tracking-wide text-gray-400 dark:text-gray-500">
+      <th class="pb-1.5 text-left font-medium">Region</th><th class="whitespace-nowrap pb-1.5 pl-2 text-right font-medium" data-tip="Mean of this run − mean of ground truth in the region (ppm).">Δ mean</th>
+      <th class="whitespace-nowrap pb-1.5 pl-2 text-right font-medium" data-tip="Median of this run − median of ground truth (ppm).">Δ med</th>
+      <th class="whitespace-nowrap pb-1.5 pl-2 text-right font-medium" data-tip="Δ mean as a percentage of the ground-truth mean; blank where the truth mean is near zero (unstable denominator).">Δ %</th>
+      <th class="pb-1.5 pl-2 text-left font-medium" style="width:4.25rem"></th></tr></thead><tbody class="divide-y divide-gray-100 dark:divide-gray-800">`;
+    rows.forEach((r) => {
+      // sqrt scaling: one huge outlier (e.g. the calcification) would otherwise flatten every
+      // other region's bar to invisibility on a linear scale.
+      const bw = Math.sqrt(Math.abs(r.d) / dmax) * 50;
+      const wPos = r.d > 0 ? bw : 0, wNeg = r.d < 0 ? bw : 0;
+      html += `<tr>
+        <td class="py-1.5 pr-1 leading-tight text-gray-500 dark:text-gray-400"><span data-tip="n=${r.n} voxels in this run's support">${block.labels[r.k] || "label-" + r.k}</span></td>
+        <td class="whitespace-nowrap py-1.5 pl-2 text-right tabular-nums font-medium ${Math.abs(r.d) >= 0.01 ? "text-gray-900 dark:text-gray-100" : "text-gray-600 dark:text-gray-300"}">${p3(r.d)}</td>
+        <td class="whitespace-nowrap py-1.5 pl-2 text-right tabular-nums text-gray-600 dark:text-gray-300">${p3(r.dm)}</td>
+        <td class="whitespace-nowrap py-1.5 pl-2 text-right tabular-nums text-gray-600 dark:text-gray-300">${r.pct == null ? "—" : (r.pct > 0 ? "+" : "−") + Math.abs(r.pct).toFixed(0) + "%"}</td>
+        <td class="py-1.5 pl-2" style="width:4.25rem"><div data-tip="under- / over-estimation vs ground truth (bars √-scaled to the largest |Δ mean|)" style="display:flex;align-items:center;height:8px;width:100%">
+          <div style="flex:1;display:flex;justify-content:flex-end"><div style="height:8px;border-radius:3px 0 0 3px;width:${wNeg * 2}%;background:#3b82f6;opacity:.7"></div></div>
+          <div style="width:1px;height:12px;background:#94a3b8;opacity:.55"></div>
+          <div style="flex:1"><div style="height:8px;border-radius:0 3px 3px 0;width:${wPos * 2}%;background:#e11d48;opacity:.7"></div></div>
+        </div></td></tr>`;
+    });
+    html += `</tbody></table><p class="mt-2 text-[11px] text-gray-400"><span style="color:#3b82f6">blue</span> = underestimates the region's χ, <span style="color:#e11d48">red</span> = overestimates.</p>`;
+    $("metrics-regions-wrap").innerHTML = html;
+  } else {
+    // Three columns for a narrow card: Region | This run | Ground truth. Each value cell stacks
+    // "mean ±std" over a smaller "med …" line, so the mean/median/std all fit without five columns.
+    const cell = (s, hero) => `<td class="py-1.5 pl-2 text-right align-top tabular-nums">`
+      + `<div class="whitespace-nowrap ${hero ? "font-medium text-gray-900 dark:text-gray-100" : "text-gray-600 dark:text-gray-300"}">${p3(s.mean)} <span class="font-normal text-gray-400">±${s.std.toFixed(3)}</span></div>`
+      + `<div class="whitespace-nowrap text-[10px] text-gray-400">med ${p3(s.median)}</div></td>`;
+    html += `<table class="w-full text-[11px]"><thead><tr class="text-[10px] uppercase tracking-wide text-gray-400 dark:text-gray-500">
+      <th class="pb-1.5 text-left font-medium">Region</th>
+      <th class="whitespace-nowrap pb-1.5 pl-2 text-right font-medium" data-tip="This run: mean ± std and median (below) of χ over the region (ppm).">This run</th>
+      <th class="whitespace-nowrap pb-1.5 pl-2 text-right font-medium" data-tip="Ground truth in the same voxels: mean ± std and median (below) (ppm).">Ground truth</th></tr></thead><tbody class="divide-y divide-gray-100 dark:divide-gray-800">`;
+    ids.forEach((k) => {
+      const rc = block.recon[k], gt = block.truth[k];
+      html += `<tr>
+        <td class="py-1.5 pr-1 align-top leading-tight text-gray-500 dark:text-gray-400"><span data-tip="n=${rc.n} voxels in this run's support">${block.labels[k] || "label-" + k}</span></td>
+        ${cell(rc, true)}${cell(gt, false)}</tr>`;
+    });
+    html += `</tbody></table>`;
+    $("metrics-regions-wrap").innerHTML = html;
+  }
+  $("metrics-regions-wrap").querySelectorAll("[data-comp]").forEach((b) =>
+    b.addEventListener("click", () => { regionComp = b.dataset.comp; renderRegionTable(entry, errorMode); }));
 }
 
 // ---- controls ---------------------------------------------------------------
@@ -950,6 +1065,8 @@ async function init() {
   domain = datasetOf(run);
   navMode = run.mode === "composed" ? "pipelines" : "stages";
   $("run-filter").addEventListener("input", (e) => { filter = e.target.value; buildSidebar(); });
+  $("metrics-tabs").querySelectorAll("[data-mtab]").forEach((b) =>
+    b.addEventListener("click", () => { metricsTab = b.dataset.mtab; renderMetricsPanel(); }));
   document.querySelectorAll("#nav-toggle button").forEach((b) => b.addEventListener("click", () => { navMode = b.dataset.mode; buildSidebar(); }));
   document.querySelectorAll("#domain-toggle button").forEach((b) => b.addEventListener("click", () => switchDataset(b.dataset.domain)));
   // Deep links: ?layer=truth selects the ground-truth base; ?layer=error (or ?error=1) turns on the
@@ -957,6 +1074,10 @@ async function init() {
   const layer = q.get("layer");
   if (layer === "truth") curBase = "truth";
   if (layer === "error" || q.get("error") === "1") showError = true;
+  // ?mtab=regions|error deep-links a Metrics-card tab. The tab stays remembered through the initial
+  // (pre-regions) render and activates once loadRun fetches THIS run's per-region file (see loadRun);
+  // renderMetricsPanel falls back to the metric table meanwhile.
+  if (["regions", "error"].includes(q.get("mtab"))) metricsTab = q.get("mtab");
   buildSidebar();
   await loadRun();
 }
