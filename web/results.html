@@ -384,6 +384,7 @@
       <div class="subtabs mt-4">
         <button class="subtab" :class="{'subtab-on': findView==='pipelines'}" @click="findView='pipelines'">Pipeline</button>
         <button class="subtab" :class="{'subtab-on': findView==='metrics'}" @click="findView='metrics'">Metric</button>
+        <button class="subtab" :class="{'subtab-on': findView==='regions'}" @click="findView='regions'">Regions</button>
         <button class="subtab" :class="{'subtab-on': findView==='speed'}" @click="findView='speed'">Cost &amp; tuning</button>
         <button class="subtab" :class="{'subtab-on': findView==='explore'}" @click="findView='explore'">Explore</button>
       </div>
@@ -530,6 +531,37 @@
             <p class="mt-2 text-sm text-gray-600 leading-relaxed">Rank agreement (Spearman ρ) between metrics over the isolated dipole methods, sign-aligned so +1 means they reward the same methods. NRMSE, detrended NRMSE and correlation are near-interchangeable; DGM linearity, calcification and runtime are their own axes, so a single headline number can't stand in for them.</p>
             <div class="mt-3 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="corrSVG"></div>
           </div>
+        </div>
+
+        <!-- ---- Regional susceptibility values ---- -->
+        <div x-show="findView==='regions'">
+          <div class="mt-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900">One region, every method</h3>
+                <p class="mt-2 text-sm text-gray-600 leading-relaxed">Reconstructed susceptibility inside a single segmented region, per isolated dipole method: dot = mean, bar = ±1 std, tick = median (ppm). The <span class="font-semibold" style="color:#10b981">green band</span> is ground truth (mean ± std; dashed line = median). Methods are sorted by how far their regional mean lands from the truth — a per-region view of quantification bias that the whole-brain metrics average away.</p>
+              </div>
+              <label class="inline-flex shrink-0 items-center gap-2 text-xs text-gray-500" data-tip="Segmented region of the phantom to compare across methods.">Region
+                <select x-model="regionSel" class="rounded-lg border-gray-300 text-xs py-1 pr-7">
+                  <template x-for="id in regionIds()" :key="id"><option :value="id" :selected="id===regionSel" x-text="regionName(id)"></option></template>
+                </select>
+              </label>
+            </div>
+            <div class="mt-2" x-html="familyLegend"></div>
+            <div class="mt-3 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="regionCompareSVG"></div>
+          </div>
+
+          <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+            <h3 class="text-lg font-semibold text-gray-900">Every method, across every region</h3>
+            <p class="mt-2 text-sm text-gray-600 leading-relaxed">Every isolated dipole method's regional mean (one coloured dot per method) against the <span class="font-semibold text-gray-500">grey</span> ground-truth band (mean ± std; tick = median), for all regions at once. <span class="font-medium">Hover a dot or a legend entry</span> to trace that method across every region; <span class="font-medium">drag the plot sideways</span> to pan the χ axis (calcification sits far to the left). Click a dot to open its page.</p>
+            <!-- inline flex styles: the compiled Tailwind purge drops lg:* responsive utilities, so
+                 the side-by-side layout + legend divider are set inline to survive it. -->
+            <div class="mt-3" style="display:flex;gap:1rem;align-items:flex-start;flex-wrap:wrap">
+              <div class="text-gray-700 dark:text-gray-200" style="flex:1 1 460px;min-width:0;overflow:hidden;user-select:none" x-html="methodRegionsSVG"></div>
+              <div class="text-gray-600 dark:text-gray-300" style="flex:0 0 168px;max-height:440px;overflow-y:auto;border-left:1px solid rgba(148,163,184,.2);padding-left:.75rem" x-html="regionAlgoLegend"></div>
+            </div>
+          </div>
+          <p class="mt-4 text-[11px] text-gray-400">Statistics are computed within each run's own valid support (an eroding method reports over fewer voxels), so the paired ground-truth values can differ slightly between runs. Currently populated for isolated dipole runs; composed pipelines fill in at the next full re-score.</p>
         </div>
 
         <!-- ---- Speed & tuning ---- -->
@@ -1074,6 +1106,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         invivoColMenu: false, invivoSelectedCols: INVIVO_COLS.map((c) => c.key),   // in-vivo metric column picker (all shown by default)
         // findings state
         insightMode: "mean", xMet: "runtime_s", yMet: "xsim", expStage: "dipole",
+        regions: {}, regionSel: "5", _regionsReq: null, _regionsLoaded: false,   // per-region stats sidecar (lazy) + Regions figure-1 selection (5 = dentate nucleus)
 
         // ---- tabs ------------------------------------------------------------------------
         syncView() { this.view = this.lbView === "stages" ? "isolated" : "composed"; },
@@ -1132,7 +1165,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           else if (t === "pipelines" || q.get("view") === "composed") this.lbView = "pipelines";
           if (q.get("variant") === "tuned") this.variant = "tuned";
           if (["matrix", "table"].includes(q.get("pipe"))) this.pipeView = q.get("pipe");
-          if (["pipelines", "metrics", "speed", "explore"].includes(q.get("find"))) this.findView = q.get("find");
+          if (["pipelines", "metrics", "regions", "speed", "explore"].includes(q.get("find"))) this.findView = q.get("find");
           if (q.get("metric") && METRICS[q.get("metric")]) this.metric = q.get("metric");
           if (q.get("fmap")) this.fmap = q.get("fmap");
           if (["board", "info", "findings"].includes(q.get("sub"))) { this.invivoView = q.get("sub"); this.chisepView = q.get("sub"); }
@@ -1147,6 +1180,9 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             this.registry = registry;
             this.runs = runs;
             this.datasetsReg = datasetsReg;
+            // Per-region stats are NOT fetched here — ensureRegions() lazy-loads them (per-run files,
+            // one small results/<id>/regions.json each) the first time the Regions findings tab is
+            // opened, so the common page load stays lean. See the findView watch + deep-link trigger.
             // default phantom selection (deep-linkable via ?phantom=<id>)
             this.chisepPhantom = this.chisepDefaultPhantom();
             if (this.chisepPhantoms().includes(q.get("phantom"))) this.chisepPhantom = q.get("phantom");
@@ -1167,11 +1203,61 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           this._ready = true;
           ["dataset", "tab", "lbView", "stage", "pipeView", "findView", "variant", "metric", "fmap", "invivoView", "chisepView"]
             .forEach((k) => this.$watch(k, () => this.syncUrl()));
+          // Lazy-load the region stats the first time the Regions findings tab is opened (fresh nav
+          // or a deep link that restored findView='regions' above), so the sidecar's ~3.6 MB stays
+          // off the common page load.
+          this.$watch("findView", (v) => { if (v === "regions") this.ensureRegions(); });
+          if (this.tab === "findings" && this.findView === "regions") this.ensureRegions();
           this.syncUrl();   // canonicalise (e.g. if an unavailable dataset was reset to sim)
           // findings: delegated click — any injected mark carrying data-run opens that run's page
+          // (unless a drag-pan just happened on the regions figure — that drag ends in a click we swallow).
+          let _swallowClick = false;
           this.$root.addEventListener("click", (e) => {
+            if (_swallowClick) { _swallowClick = false; return; }
             const el = e.target.closest && e.target.closest("[data-run]");
             if (el && el.dataset.run) location.href = "submission.html?run=" + encodeURIComponent(el.dataset.run);
+          });
+          // Regions figure: hover a dot or legend entry (data-algo) to highlight that method across
+          // every region and dim the rest. Direct opacity toggles (not Alpine state) so it's instant
+          // and never re-renders the SVG; base dot opacity is an SVG attribute, so clearing the inline
+          // style reverts it. Suppressed while dragging so the plot doesn't flicker during a pan.
+          let _hlCur = null;   // currently-highlighted slug — skip redundant full passes while moving within it
+          const hlAlgo = (slug) => {
+            if (slug === _hlCur) return;
+            _hlCur = slug;
+            this.$root.querySelectorAll("[data-algo]").forEach((n) => {
+              if (!slug) { n.style.opacity = ""; return; }
+              n.style.opacity = n.dataset.algo === slug ? "1" : (n.classList.contains("rdot") ? "0.06" : "0.2");
+            });
+          };
+          this.$root.addEventListener("mouseover", (e) => { if (_drag) return; const el = e.target.closest && e.target.closest("[data-algo]"); if (el) hlAlgo(el.dataset.algo); });
+          this.$root.addEventListener("mouseout", (e) => { if (_drag) return; const el = e.target.closest && e.target.closest("[data-algo]"); if (el) hlAlgo(null); });
+          // Regions figure: click-drag to pan the χ axis. The <g class="rpan"> holds the full-domain
+          // content inside a clip; dragging just updates its translate transform (no re-render), so a
+          // clamped-off region like calcification is reachable by dragging. A drag past a few px
+          // swallows the click that follows so it doesn't navigate to a method page.
+          let _drag = null;
+          this.$root.addEventListener("mousedown", (e) => {
+            if (!(e.target.closest && e.target.closest(".rpanhit, .rpan"))) return;
+            const svg = e.target.closest("svg"), pan = svg && svg.querySelector(".rpan");
+            if (!pan) return;
+            _drag = { pan, hit: svg.querySelector(".rpanhit"), x0: e.clientX, p0: parseFloat(pan.dataset.pan) || 0,
+                      min: parseFloat(pan.dataset.panmin), max: parseFloat(pan.dataset.panmax), moved: false };
+            if (_drag.hit) _drag.hit.style.cursor = "grabbing";
+            e.preventDefault();
+          });
+          window.addEventListener("mousemove", (e) => {
+            if (!_drag) return;
+            const p = Math.max(_drag.min, Math.min(_drag.max, _drag.p0 + (e.clientX - _drag.x0)));
+            _drag.pan.setAttribute("transform", `translate(${p},0)`);
+            _drag.pan.dataset.pan = p;
+            if (Math.abs(e.clientX - _drag.x0) > 4) _drag.moved = true;
+          });
+          window.addEventListener("mouseup", () => {
+            if (!_drag) return;
+            if (_drag.hit) _drag.hit.style.cursor = "grab";
+            if (_drag.moved) _swallowClick = true;
+            _drag = null;
           });
         },
 
@@ -1974,6 +2060,209 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
                 s += `<text x="${x + cw / 2}" y="${y + ch / 2 + 3}" text-anchor="middle" fill="${hc.text}" style="font-size:9.5px">${fmt(v, k).replace("%", "")}</text>`;
               });
             });
+            return s + "</svg>";
+          });
+        },
+
+        // ==================================================================================
+        //  FINDINGS · Regions — per-region susceptibility values vs ground truth, fed by per-run
+        //  results/<id>/regions.json files ({ chi: { labels, recon, truth } }); ensureRegions()
+        //  fetches the isolated-dipole set in parallel into this.regions ({ id: entry }).
+        // ==================================================================================
+        // Lazy-load (once) the per-run regional stats for the runs the findings figures compare — the
+        // isolated dipole set — each from its own results/<id>/regions.json (HF or local fallback), in
+        // parallel, then assemble the { id: entry } map the figures read. Only these ~26 small files
+        // are fetched (not the whole 900-run corpus). Assigning this.regions is a reactive trigger, so
+        // the getters re-run and the figures draw; then reconcile the region selector.
+        ensureRegions() {
+          if (this._regionsReq) return this._regionsReq;
+          const runs = this._isoDip();
+          this._regionsReq = Promise.all(runs.map((r) =>
+            loadRunRegions(r).then((entry) => (entry ? [r.id, entry] : null))
+          )).then((pairs) => {
+            this.regions = Object.fromEntries(pairs.filter(Boolean));
+            this._regionsLoaded = true;
+            // Reconcile the region selector (figure 1): the default "5" (dentate) may be absent in some
+            // dseg; a stale value would leave the <select> model diverged from the shown option.
+            const rids = this.regionIds();
+            if (rids.length && !rids.includes(this.regionSel)) this.regionSel = rids[0];
+          });
+          return this._regionsReq;
+        },
+        _regionEntry(r) { const e = this.regions[r.id]; return (e && e.chi) || null; },
+        _regionRuns() { return this._isoDip().filter((r) => this._regionEntry(r)); },
+        _regionKey() { return [this.regionSel, this.runs.length, Object.keys(this.regions).length].join("|"); },
+        // Anatomical display order: DGM nuclei → thalamus/GM/WM → fluid/vessel/lesion.
+        regionIds() {
+          const order = ["1", "2", "3", "4", "5", "6", "7", "9", "8", "10", "11", "16", "13", "14", "15"];
+          const seen = new Set();
+          this._regionRuns().forEach((r) => Object.keys(this._regionEntry(r).recon).forEach((k) => seen.add(k)));
+          return order.filter((k) => seen.has(k)).concat([...seen].filter((k) => !order.includes(k)).sort());
+        },
+        regionName(id) {
+          for (const r of this._regionRuns()) { const n = this._regionEntry(r).labels[id]; if (n) return n; }
+          return "label-" + id;
+        },
+        _p3(v) { return (v >= 0 ? "" : "−") + Math.abs(v).toFixed(3); },
+        _regionTip(name, st, gt) {
+          return `${name} — mean ${this._p3(st.mean)} ±${st.std.toFixed(3)} ppm, median ${this._p3(st.median)}` +
+                 (gt ? ` · GT ${this._p3(gt.mean)} (Δ ${this._p3(st.mean - gt.mean)}) · n=${st.n}` : ` · n=${st.n}`);
+        },
+
+        get regionCompareSVG() {
+          return _cache("regcmp", this._regionKey(), () => {
+            const E = this._esc, ids = this.regionIds();
+            if (!ids.length) return this._regionsLoaded
+              ? `<p class="text-sm text-gray-400 py-4">No regional statistics for this dataset yet — they populate at the next full re-score.</p>`
+              : `<p class="text-sm text-gray-400 py-4">Loading regional statistics…</p>`;
+            const id = ids.includes(this.regionSel) ? this.regionSel : ids[0];
+            const rows = [];
+            this._regionRuns().forEach((r) => {
+              const e = this._regionEntry(r), rc = e.recon[id], gt = e.truth[id];
+              if (!rc || !gt) return;
+              rows.push({ slug: r.slug, name: this.algoName(r.slug), rc, gt, d: Math.abs(rc.mean - gt.mean) });
+            });
+            if (!rows.length) return "<svg></svg>";
+            rows.sort((a, b) => a.d - b.d);
+            // GT reference band: the run with the largest region support (least-eroded score mask).
+            const ref = rows.reduce((a, c) => (c.gt.n > a.gt.n ? c : a), rows[0]).gt;
+            // Robust range over method means so one broken method can't crush the scale; markers clamp.
+            const [rlo, rhi] = robustRange(rows.map((r) => r.rc.mean));
+            let lo = Math.min(rlo, ref.mean - ref.std * 1.4), hi = Math.max(rhi, ref.mean + ref.std * 1.4);
+            const pad = (hi - lo || 0.01) * 0.08; lo -= pad; hi += pad;
+            const labW = 175, rh = 24, top = 30, padB = 40, w = 720, h = top + rows.length * rh + padB;
+            const SX = (v) => labW + (Math.max(lo, Math.min(hi, v)) - lo) / (hi - lo) * (w - labW - 16);
+            let s = `<svg width="${w}" height="${h}" style="max-width:100%;height:auto">`;
+            // GT band + mean/median reference lines, behind everything
+            s += `<rect x="${SX(ref.mean - ref.std)}" y="${top - 8}" width="${Math.max(1, SX(ref.mean + ref.std) - SX(ref.mean - ref.std))}" height="${rows.length * rh + 8}" fill="#10b981" opacity="0.09" data-tip="ground truth — mean ${this._p3(ref.mean)} ±${ref.std.toFixed(3)} ppm, median ${this._p3(ref.median)} · n=${ref.n}"/>`;
+            s += `<line x1="${SX(ref.mean)}" y1="${top - 8}" x2="${SX(ref.mean)}" y2="${top + rows.length * rh}" stroke="#10b981" stroke-width="1.5" opacity="0.6"/>`;
+            s += `<line x1="${SX(ref.median)}" y1="${top - 8}" x2="${SX(ref.median)}" y2="${top + rows.length * rh}" stroke="#10b981" stroke-width="1" stroke-dasharray="3 3" opacity="0.55"/>`;
+            s += `<text x="${SX(ref.mean)}" y="${top - 14}" text-anchor="middle" fill="#10b981" style="font-size:10px;font-weight:600">ground truth</text>`;
+            // x axis
+            const ay = top + rows.length * rh + 8;
+            s += `<line x1="${labW}" y1="${ay}" x2="${w - 16}" y2="${ay}" stroke="currentColor" opacity="0.2"/>`;
+            [0, 0.25, 0.5, 0.75, 1].forEach((f) => {
+              const v = lo + (hi - lo) * f, x = SX(v);
+              s += `<line x1="${x}" y1="${ay}" x2="${x}" y2="${ay + 4}" stroke="currentColor" opacity="0.3"/>`;
+              s += `<text x="${x}" y="${ay + 16}" text-anchor="middle" fill="currentColor" opacity="0.5" style="font-size:10px">${this._p3(v)}</text>`;
+            });
+            s += `<text x="${(labW + w) / 2}" y="${h - 4}" text-anchor="middle" fill="currentColor" opacity="0.55" style="font-size:11px;font-weight:600">χ in ${E(this.regionName(id))} (ppm) →</text>`;
+            rows.forEach((r, i) => {
+              const y = top + i * rh + rh / 2 - 4, c = this._famC(r.slug);
+              const tip = this._regionTip(r.name, r.rc, r.gt);
+              s += `<text x="${labW - 8}" y="${y + 3}" text-anchor="end" fill="currentColor" opacity="0.8" style="font-size:11px">${E(r.name)}</text>`;
+              s += `<g ${this._pt(r.slug, tip)}>`;
+              s += `<line x1="${SX(r.rc.mean - r.rc.std)}" y1="${y}" x2="${SX(r.rc.mean + r.rc.std)}" y2="${y}" stroke="${c}" stroke-width="2" opacity="0.45"/>`;
+              s += `<line x1="${SX(r.rc.median)}" y1="${y - 5}" x2="${SX(r.rc.median)}" y2="${y + 5}" stroke="${c}" stroke-width="1.5" opacity="0.9"/>`;
+              s += `<circle cx="${SX(r.rc.mean)}" cy="${y}" r="4" fill="${c}" opacity="0.9"/>`;
+              s += `</g>`;
+            });
+            return s + "</svg>";
+          });
+        },
+
+        // A stable distinct colour per isolated-dipole method that has region stats. Evenly-spaced
+        // hues (alternating lightness so neighbours separate); memoised so the legend and the figure
+        // agree and it isn't recomputed per dot.
+        _regionColors() {
+          return _cache("regcolors", [this.runs.length, Object.keys(this.regions).length].join("|"), () => {
+            const slugs = this._regionRuns().map((r) => r.slug).sort();
+            const n = slugs.length || 1, m = {};
+            slugs.forEach((sl, i) => { m[sl] = `hsl(${Math.round((i * 360) / n)} 68% ${i % 2 ? 58 : 68}%)`; });
+            return m;
+          });
+        },
+        // The GT reference block for a region = the run with the largest support (least-eroded mask),
+        // so the grey band is the most complete truth for those voxels.
+        _regionGT(k) {
+          let best = null;
+          this._regionRuns().forEach((r) => { const t = this._regionEntry(r).truth[k];
+            if (t && (!best || t.n > best.n)) best = t; });
+          return best;
+        },
+        get regionAlgoLegend() {
+          const E = this._esc, runs = this._regionRuns();
+          if (!runs.length) return "";
+          const col = this._regionColors();
+          const rows = [...runs].sort((a, b) => val(a, "nrmse") - val(b, "nrmse")).map((r) =>
+            `<div class="flex items-center gap-2 py-[3px] cursor-pointer rounded px-1 -mx-1 hover:bg-gray-50 dark:hover:bg-gray-800" data-algo="${E(r.slug)}" ${this._runId(r.slug) ? `data-run="${this._runId(r.slug)}"` : ""}>`
+            + `<span style="width:9px;height:9px;border-radius:9999px;background:${col[r.slug]};display:inline-block;flex:none"></span>`
+            + `<span class="truncate text-[11px] text-gray-600 dark:text-gray-300">${E(this.algoName(r.slug))}</span></div>`).join("");
+          return `<div class="mb-1 text-[10px] font-semibold uppercase tracking-wide text-gray-400">Methods · best NRMSE first</div>${rows}`;
+        },
+        _niceStep(x) { const p = Math.pow(10, Math.floor(Math.log10(x || 1))); const f = (x || 1) / p; return (f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10) * p; },
+        get methodRegionsSVG() {
+          // keyed on the data only (not figure-1's region selector), so it doesn't re-render on that.
+          return _cache("regmeth", [this.runs.length, Object.keys(this.regions).length].join("|"), () => {
+            const E = this._esc, runs = this._regionRuns();
+            if (!runs.length) return this._regionsLoaded
+              ? `<p class="text-sm text-gray-400 py-4">No regional statistics for this dataset yet — they populate at the next full re-score.</p>`
+              : `<p class="text-sm text-gray-400 py-4">Loading regional statistics…</p>`;
+            const col = this._regionColors(), n = runs.length;
+            const has = (k) => this._regionGT(k) && runs.some((r) => this._regionEntry(r).recon[k]);
+            const ids = this.regionIds().filter(has);
+            if (!ids.length) return "<svg></svg>";
+            // Two ranges: the FULL data domain (every method mean + GT band, incl. the strongly
+            // diamagnetic calcification far to the left), which is drawn in full inside a clipped,
+            // drag-pannable group; and a ROBUST window (the DGM/dentate bulk) that sets the pixels-
+            // per-ppm and the initial pan so the interesting cluster is framed at full detail. Drag
+            // reveals the rest — nothing is clamped, so calcification is reachable, not squashed.
+            const means = [];
+            ids.forEach((k) => runs.forEach((r) => { const rc = this._regionEntry(r).recon[k]; if (rc) means.push(rc.mean); }));
+            ids.forEach((k) => { const gt = this._regionGT(k); means.push(gt.mean - gt.std, gt.mean + gt.std); });
+            const dmin = Math.min(...means), dmax = Math.max(...means);
+            let [rlo, rhi] = robustRange(means); const rpad = (rhi - rlo || 0.01) * 0.06; rlo -= rpad; rhi += rpad;
+            const labW = 150, rh = 30, top = 22, padB = 42, w = 760, plotW = w - labW - 16;
+            const h = top + ids.length * rh + padB, plotH = ids.length * rh + 8, ay = top + ids.length * rh + 8;
+            // Pixels per ppm from the robust window (frames the DGM/dentate bulk at good detail), but
+            // capped so the FULL domain never exceeds ~2.6 window-widths — otherwise the strongly
+            // diamagnetic calcification would sit thousands of px away (dozens of drags). The cap only
+            // bites when an extreme outlier stretches the domain; without one, full robust detail.
+            const ppp = Math.min(plotW / ((rhi - rlo) || 0.01), (2.6 * plotW) / ((dmax - dmin) || 0.01));
+            const CX = (v) => labW + (v - dmin) * ppp;      // content-local x (before pan translate)
+            const contentW = (dmax - dmin) * ppp;
+            const panMax = 0, panMin = Math.min(0, plotW - contentW);   // clamp so you can't drag past the data
+            const panX = Math.max(panMin, Math.min(panMax, -( (rlo - dmin) * ppp )));  // frame the robust window
+            const jit = (i, m) => (m < 2 ? 0 : ((i / (m - 1)) - 0.5) * (rh - 15));      // vertical dot spread
+            const clipId = "rclip";
+            let s = `<svg width="${w}" height="${h}" style="max-width:100%;height:auto">`;
+            s += `<defs><clipPath id="${clipId}"><rect x="${labW}" y="${top - 4}" width="${plotW + 16}" height="${ay + 22 - (top - 4)}"/></clipPath></defs>`;
+            // fixed (non-panning) region labels, row separators, axis baseline + title
+            ids.forEach((k, i) => {
+              const yc = top + i * rh + rh / 2 - 3;
+              s += `<text x="${labW - 8}" y="${yc + 3}" text-anchor="end" fill="currentColor" opacity="0.8" style="font-size:11px">${E(this.regionName(k))}</text>`;
+              if (i) s += `<line x1="${labW}" y1="${top + i * rh - 1}" x2="${w - 16}" y2="${top + i * rh - 1}" stroke="currentColor" opacity="0.05"/>`;
+            });
+            s += `<line x1="${labW}" y1="${ay}" x2="${w - 16}" y2="${ay}" stroke="currentColor" opacity="0.2"/>`;
+            s += `<text x="${(labW + w) / 2}" y="${h - 4}" text-anchor="middle" fill="currentColor" opacity="0.55" style="font-size:11px;font-weight:600">regional χ across methods (ppm) — drag to pan · grey band = ground truth</text>`;
+            // clipped window: a transparent drag surface + the pannable content group
+            s += `<g clip-path="url(#${clipId})">`;
+            s += `<rect class="rpanhit" x="${labW}" y="${top - 4}" width="${plotW + 16}" height="${plotH}" fill="transparent" style="cursor:grab"/>`;
+            s += `<g class="rpan" transform="translate(${panX},0)" data-pan="${panX}" data-panmin="${panMin}" data-panmax="${panMax}">`;
+            // axis ticks across the whole domain (only those inside the clip show; they pan with content)
+            const step = this._niceStep((rhi - rlo) / 5);
+            for (let t = Math.ceil(dmin / step) * step; t <= dmax + 1e-9; t += step) {
+              const x = CX(t);
+              if (Math.abs(t) < 1e-9) s += `<line x1="${x}" y1="${top - 4}" x2="${x}" y2="${ay}" stroke="currentColor" opacity="0.12"/>`;
+              s += `<line x1="${x}" y1="${ay}" x2="${x}" y2="${ay + 4}" stroke="currentColor" opacity="0.3"/>`;
+              s += `<text x="${x}" y="${ay + 16}" text-anchor="middle" fill="currentColor" opacity="0.5" style="font-size:10px">${this._p3(t)}</text>`;
+            }
+            ids.forEach((k, i) => {
+              const yc = top + i * rh + rh / 2 - 3, gt = this._regionGT(k);
+              // grey GT band (mean ± std) + median tick behind the dots
+              s += `<g data-tip="${E(`ground truth · ${this.regionName(k)} — mean ${this._p3(gt.mean)} ±${gt.std.toFixed(3)} ppm, median ${this._p3(gt.median)} · n=${gt.n}`)}">`;
+              s += `<rect x="${CX(gt.mean - gt.std)}" y="${top + i * rh + 2}" width="${Math.max(1, CX(gt.mean + gt.std) - CX(gt.mean - gt.std))}" height="${rh - 4}" fill="#94a3b8" opacity="0.13"/>`;
+              s += `<line x1="${CX(gt.median)}" y1="${top + i * rh + 2}" x2="${CX(gt.median)}" y2="${top + i * rh + rh - 2}" stroke="#94a3b8" stroke-width="1" opacity="0.7"/></g>`;
+              // one coloured dot per method (data-algo drives the hover highlight; data-run opens it)
+              runs.forEach((r, j) => {
+                const rc = this._regionEntry(r).recon[k]; if (!rc) return;
+                const rid = this._runId(r.slug);
+                s += `<circle cx="${CX(rc.mean)}" cy="${yc + jit(j, n)}" r="3.6" fill="${col[r.slug]}" opacity="0.72" class="rdot" data-algo="${E(r.slug)}"`
+                  + (rid ? ` data-run="${rid}"` : "")
+                  + ` data-tip="${E(`${this.algoName(r.slug)} · ${this.regionName(k)} — mean ${this._p3(rc.mean)} ±${rc.std.toFixed(3)} ppm (Δ ${this._p3(rc.mean - gt.mean)})`)}"/>`;
+              });
+            });
+            s += `</g></g>`;   // /rpan /clip
             return s + "</svg>";
           });
         },

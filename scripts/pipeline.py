@@ -73,6 +73,20 @@ def _pmap(items, fn):
 # run_composed() — main() reads it from --emit-volumes and passes it down. No module-global state.
 
 
+def write_run_regions(run_id, regions_obj) -> None:
+    """Write one run's per-region stats to results/<id>/regions.json — the per-run artifact the web
+    submission page fetches, and the findings view pulls per isolated run. It is published to Hugging
+    Face alongside the run's volumes and referenced by `regions_url` in index.json, exactly like
+    resources.json/resources_url — so the ~3.6 MB of all-runs regional data never bloats the committed
+    index or git history. `regions_obj` is the component-keyed block {chi|para|dia: {labels, recon,
+    truth}}; an empty/falsy block writes nothing."""
+    if not regions_obj:
+        return
+    d = ROOT / "results" / run_id
+    d.mkdir(parents=True, exist_ok=True)
+    (d / "regions.json").write_text(json.dumps(regions_obj, indent=2) + "\n")
+
+
 def emit_volumes(run_id, recon, truth, mask=None, resources=None, suffix=""):
     """Write recon / truth / error volumes under results/<run_id>/ for the NiiVue viewer.
 
@@ -441,6 +455,16 @@ def score(recon: Path, artifact: str, gt_dir: Path, mask: Path, out_json: Path, 
                     theta=theta if (dia and theta.exists()) else None)
     subprocess.run(cmd, check=True)
     result = json.loads(out_json.read_text())
+    # Per-region descriptive stats (present when the scorer got a seg): key the block by source —
+    # 'chi' for a QSM map, 'para'/'dia' for a χ-sep component — so every run's `regions` payload has
+    # one shape. It is written to a PER-RUN file results/<id>/regions.json (published to HF with the
+    # run's volumes, then referenced by regions_url in index.json — exactly like resources.json), not
+    # into index.json. For a plain QSM run we write it here and drop it from the row; a χ-sep
+    # component keeps it on the returned row so _score_chisep can fold χ+ and χ− into ONE per-run file.
+    if "regions" in result:
+        result["regions"] = {component or "chi": result["regions"]}
+        if component is None and "id" in meta:
+            write_run_regions(meta["id"], result.pop("regions"))
     # A scorable recon yields finite metrics; an all-NaN / empty output makes the scorer emit
     # null/NaN. Record that as a clear DNF (not a metric-less "ok" row, and without crashing the
     # caller's formatted print) so the failure is legible instead of a cryptic format-string error.
@@ -532,7 +556,9 @@ def _stamp_resource_summary(run):
 
 def flush_index(runs):
     """Merge the current runs into results/index.json (replace matching ids) and write immediately,
-    so a long run's progress is visible on the leaderboard as it goes."""
+    so a long run's progress is visible on the leaderboard as it goes. Per-region stats never travel
+    on the rows — they are written to per-run results/<id>/regions.json files at score time (see
+    write_run_regions) and surfaced via regions_url, so index.json stays lean."""
     idx = ROOT / "results" / "index.json"
     idx.parent.mkdir(parents=True, exist_ok=True)
     for r in runs:
@@ -598,6 +624,7 @@ def _score_chisep(a, sfx, variant, overrides, odir, gt, mask, rt, args):
     iron/DGM+vein regions where χ− should be ~0; para_calc_leak = mean |χ+| in calcification), and the
     whole-brain regression leakage (para_leak / dia_leak) from _chisep_leakage."""
     rid = f"{a['slug']}-iso{sfx}"
+    regobj = {}  # accumulate χ+ / χ− region blocks → ONE per-run results/<id>/regions.json below
     row = {"id": rid, "slug": a["slug"], "name": a.get("name", a["slug"]), "stage": a["stage"], "mode": "isolated",
            "track": args.track, "runtime_s": rt, "variant": variant, "domain": "chisep",
            "kind": "chisep", "metrics": {}, "status": "ok"}
@@ -613,6 +640,8 @@ def _score_chisep(a, sfx, variant, overrides, odir, gt, mask, rt, args):
                   args.work / f"iso_{a['slug']}{sfx}_{pfx}.json", meta, emit_volumes_on=False)
         for k, v in (r.get("metrics") or {}).items():
             row["metrics"][f"{pfx}_{k}"] = v
+        if r.get("regions"):  # per-component regional stats ({'para': …} / {'dia': …})
+            regobj.update(r["regions"])
         if r.get("status") == "DNF":
             row["status"], row["dnf_reason"] = "DNF", r.get("dnf_reason", "")
         m = r.get("metrics") or {}
@@ -634,6 +663,7 @@ def _score_chisep(a, sfx, variant, overrides, odir, gt, mask, rt, args):
         emit_volumes(rid, odir / ARTIFACT_FILE["chi-para"], gt / ARTIFACT_FILE["chi-para"], mask,
                      resources=res if res.exists() else None)
         emit_volumes(rid, odir / ARTIFACT_FILE["chi-dia"], gt / ARTIFACT_FILE["chi-dia"], mask, suffix="-dia")
+    write_run_regions(rid, regobj)  # one per-run file carrying both χ+ and χ− region blocks
     return row
 
 

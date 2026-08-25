@@ -374,6 +374,56 @@ def challenge_metrics(recon, truth, mask, seg) -> dict:
     }
 
 
+# --- per-region descriptive stats ---------------------------------------------------------------
+
+# Head-phantom dseg label names (qsm-forward realistic head model; see data/sim/README.md — labels
+# 1–6 are the DGM nuclei, 12 is unused). An id missing from this map is reported as "label-<id>".
+DSEG_LABELS = {
+    1: "Caudate nucleus", 2: "Globus pallidus", 3: "Putamen", 4: "Red nucleus",
+    5: "Dentate nucleus", 6: "Substantia nigra", 7: "Thalamus", 8: "White matter",
+    9: "Grey matter", 10: "CSF", 11: "Blood", 13: "Bone", 14: "Air", 15: "Muscle",
+    16: "Calcification",
+}
+
+
+def region_stats(vol, seg, mask, min_vox=10) -> dict:
+    """Descriptive statistics per segmentation region: {label: {n, mean, std, median}} over the
+    voxels of each nonzero seg label inside `mask`. Values in the volume's native unit (ppm).
+    Regions with fewer than `min_vox` voxels in the mask are omitted."""
+    out = {}
+    for lab in np.unique(seg[mask]):
+        if lab == 0:
+            continue
+        sel = mask & (seg == lab)
+        n = int(sel.sum())
+        if n < min_vox:
+            continue
+        v = vol[sel]
+        mean, std, med = float(v.mean()), float(v.std()), float(np.median(v))
+        # Skip a region whose stats aren't finite (e.g. a NaN voxel in the volume): json.dumps would
+        # emit a bare `NaN` token — invalid JSON — and the browser's JSON.parse of results/regions.json
+        # then throws, silently wiping ALL regional stats site-wide. Dropping the region keeps the
+        # sidecar valid; a region we can't summarise cleanly is not worth poisoning the file for.
+        if not (math.isfinite(mean) and math.isfinite(std) and math.isfinite(med)):
+            continue
+        out[str(int(lab))] = {"n": n, "mean": round(mean, 6),
+                              "std": round(std, 6), "median": round(med, 6)}
+    return out
+
+
+def region_summary(recon, truth, seg, mask) -> dict:
+    """Per-region descriptive stats for a run: recon and truth, both under the run's SCORE mask.
+    Truth is re-summarised per run on purpose — the score mask is the recon's valid support (e.g.
+    after BFR erosion), so the truth stats are the paired reference for exactly the voxels this run
+    was scored on, not a phantom-wide constant. For a χ− (dia) component both maps are the positive
+    magnitude convention used throughout the scorer."""
+    m = mask > 0
+    rec = region_stats(recon, seg, m)
+    tru = region_stats(truth, seg, m)
+    return {"labels": {k: DSEG_LABELS.get(int(k), f"label-{k}") for k in sorted(rec, key=int)},
+            "recon": rec, "truth": tru}
+
+
 # --- IO + CLI -----------------------------------------------------------------------------------
 
 
@@ -414,6 +464,13 @@ def selfcheck() -> None:
     n, ndt = nrmse_challenge(truth, truth, mask)
     assert abs(n) < 1e-9 and abs(ndt) < 1e-9
     assert abs(hfen(truth, truth, mask)) < 1e-9
+    seg[:8] = 5  # one region: dentate (label 5)
+    rs = region_stats(truth, seg, mask > 0)
+    v = truth[seg == 5]
+    assert rs["5"]["n"] == v.size
+    assert abs(rs["5"]["mean"] - float(v.mean())) < 1e-6
+    assert abs(rs["5"]["median"] - float(np.median(v))) < 1e-6
+    assert abs(rs["5"]["std"] - float(v.std())) < 1e-6
     print("[qsm-eval] selfcheck ok")
 
 
@@ -454,16 +511,20 @@ def main() -> None:
     if recon.shape != truth.shape or recon.shape != mask.shape:
         raise SystemExit(f"shape mismatch: recon {recon.shape}, truth {truth.shape}, mask {mask.shape}")
 
+    regions = None
     if args.kind == "chisep":
         seg = np.rint(load(args.seg)).astype(np.int32) if args.seg else None
         wm_rois = load(args.wm_rois) if args.wm_rois and args.wm_rois.exists() else None
         theta = load(args.theta) if args.theta and args.theta.exists() else None
         metrics = chisep_metrics(recon, truth, mask, seg, args.component, wm_rois, theta)
+        if seg is not None:
+            regions = region_summary(recon, truth, seg, mask)
     elif args.kind == "field":
         metrics = field_metrics(recon, truth, mask)
     elif args.seg:  # chi with segmentation -> full challenge suite
         seg = np.rint(load(args.seg)).astype(np.int32)
         metrics = challenge_metrics(recon, truth, mask, seg)
+        regions = region_summary(recon, truth, seg, mask)
     else:  # chi without segmentation (e.g. in-vivo): no region metrics, but the headline 2016
         # challenge suite still applies — NRMSE (the 2016 headline metric), detrended NRMSE, HFEN
         # (fine-detail error), correlation and XSIM. Region/calcification metrics need the sim
@@ -487,6 +548,8 @@ def main() -> None:
         "runtime_s": args.runtime,
         "metrics": {k: (None if isinstance(v, float) and math.isnan(v) else v) for k, v in metrics.items()},
     }
+    if regions:
+        result["regions"] = regions
     args.out.write_text(json.dumps(result, indent=2) + "\n")
     print(f"[qsm-eval] wrote {args.out}")
 
