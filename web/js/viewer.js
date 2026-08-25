@@ -787,22 +787,22 @@ function renderRegionTable(entry, errorMode) {
                pct: Math.abs(gt.mean) >= 0.005 ? (rc.mean - gt.mean) / Math.abs(gt.mean) * 100 : null, n: rc.n };
     });
     const dmax = Math.max(...rows.map((r) => Math.abs(r.d))) || 1;
-    html += `<table class="w-full text-sm"><thead><tr class="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">
-      <th class="pb-2 text-left font-medium">Region</th><th class="pb-2 text-right font-medium" data-tip="Mean of this run − mean of ground truth in the region (ppm).">Δ mean</th>
-      <th class="pb-2 text-right font-medium" data-tip="Median of this run − median of ground truth (ppm).">Δ median</th>
-      <th class="pb-2 text-right font-medium" data-tip="Δ mean as a percentage of the ground-truth mean; blank where the truth mean is near zero (unstable denominator).">Δ %</th>
-      <th class="pb-2 pl-3 text-left font-medium" style="width:6.5rem"></th></tr></thead><tbody class="divide-y divide-gray-100 dark:divide-gray-800">`;
+    html += `<table class="w-full text-[11px]"><thead><tr class="text-[10px] uppercase tracking-wide text-gray-400 dark:text-gray-500">
+      <th class="pb-1.5 text-left font-medium">Region</th><th class="whitespace-nowrap pb-1.5 pl-2 text-right font-medium" data-tip="Mean of this run − mean of ground truth in the region (ppm).">Δ mean</th>
+      <th class="whitespace-nowrap pb-1.5 pl-2 text-right font-medium" data-tip="Median of this run − median of ground truth (ppm).">Δ med</th>
+      <th class="whitespace-nowrap pb-1.5 pl-2 text-right font-medium" data-tip="Δ mean as a percentage of the ground-truth mean; blank where the truth mean is near zero (unstable denominator).">Δ %</th>
+      <th class="pb-1.5 pl-2 text-left font-medium" style="width:4.25rem"></th></tr></thead><tbody class="divide-y divide-gray-100 dark:divide-gray-800">`;
     rows.forEach((r) => {
       // sqrt scaling: one huge outlier (e.g. the calcification) would otherwise flatten every
       // other region's bar to invisibility on a linear scale.
       const bw = Math.sqrt(Math.abs(r.d) / dmax) * 50;
       const wPos = r.d > 0 ? bw : 0, wNeg = r.d < 0 ? bw : 0;
       html += `<tr>
-        <td class="py-2 text-gray-500 dark:text-gray-400"><span data-tip="n=${r.n} voxels in this run's support">${block.labels[r.k] || "label-" + r.k}</span></td>
-        <td class="py-2 text-right tabular-nums font-medium ${Math.abs(r.d) >= 0.01 ? "text-gray-900 dark:text-gray-100" : "text-gray-600 dark:text-gray-300"}">${p3(r.d)}</td>
-        <td class="py-2 text-right tabular-nums text-gray-600 dark:text-gray-300">${p3(r.dm)}</td>
-        <td class="py-2 text-right tabular-nums text-gray-600 dark:text-gray-300">${r.pct == null ? "—" : (r.pct > 0 ? "+" : "−") + Math.abs(r.pct).toFixed(0) + "%"}</td>
-        <td class="py-2 pl-3" style="width:6.5rem"><div data-tip="under- / over-estimation vs ground truth (bars √-scaled to the largest |Δ mean|)" style="display:flex;align-items:center;height:8px;width:100%">
+        <td class="py-1.5 pr-1 leading-tight text-gray-500 dark:text-gray-400"><span data-tip="n=${r.n} voxels in this run's support">${block.labels[r.k] || "label-" + r.k}</span></td>
+        <td class="whitespace-nowrap py-1.5 pl-2 text-right tabular-nums font-medium ${Math.abs(r.d) >= 0.01 ? "text-gray-900 dark:text-gray-100" : "text-gray-600 dark:text-gray-300"}">${p3(r.d)}</td>
+        <td class="whitespace-nowrap py-1.5 pl-2 text-right tabular-nums text-gray-600 dark:text-gray-300">${p3(r.dm)}</td>
+        <td class="whitespace-nowrap py-1.5 pl-2 text-right tabular-nums text-gray-600 dark:text-gray-300">${r.pct == null ? "—" : (r.pct > 0 ? "+" : "−") + Math.abs(r.pct).toFixed(0) + "%"}</td>
+        <td class="py-1.5 pl-2" style="width:4.25rem"><div data-tip="under- / over-estimation vs ground truth (bars √-scaled to the largest |Δ mean|)" style="display:flex;align-items:center;height:8px;width:100%">
           <div style="flex:1;display:flex;justify-content:flex-end"><div style="height:8px;border-radius:3px 0 0 3px;width:${wNeg * 2}%;background:#3b82f6;opacity:.7"></div></div>
           <div style="width:1px;height:12px;background:#94a3b8;opacity:.55"></div>
           <div style="flex:1"><div style="height:8px;border-radius:0 3px 3px 0;width:${wPos * 2}%;background:#e11d48;opacity:.7"></div></div>
@@ -811,20 +811,20 @@ function renderRegionTable(entry, errorMode) {
     html += `</tbody></table><p class="mt-2 text-[11px] text-gray-400"><span style="color:#3b82f6">blue</span> = underestimates the region's χ, <span style="color:#e11d48">red</span> = overestimates.</p>`;
     $("metrics-regions-wrap").innerHTML = html;
   } else {
-    html += `<table class="w-full text-sm"><thead><tr class="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">
-      <th class="pb-2 text-left font-medium">Region</th>
-      <th class="pb-2 text-right font-medium" data-tip="This run: mean ± std of χ over the region's voxels (ppm).">Mean ± std</th>
-      <th class="pb-2 text-right font-medium" data-tip="This run: median χ (ppm).">Median</th>
-      <th class="pb-2 text-right font-medium" data-tip="Ground truth in the same voxels: mean ± std (ppm).">GT mean ± std</th>
-      <th class="pb-2 text-right font-medium" data-tip="Ground truth median (ppm).">GT med</th></tr></thead><tbody class="divide-y divide-gray-100 dark:divide-gray-800">`;
+    // Three columns for a narrow card: Region | This run | Ground truth. Each value cell stacks
+    // "mean ±std" over a smaller "med …" line, so the mean/median/std all fit without five columns.
+    const cell = (s, hero) => `<td class="py-1.5 pl-2 text-right align-top tabular-nums">`
+      + `<div class="whitespace-nowrap ${hero ? "font-medium text-gray-900 dark:text-gray-100" : "text-gray-600 dark:text-gray-300"}">${p3(s.mean)} <span class="font-normal text-gray-400">±${s.std.toFixed(3)}</span></div>`
+      + `<div class="whitespace-nowrap text-[10px] text-gray-400">med ${p3(s.median)}</div></td>`;
+    html += `<table class="w-full text-[11px]"><thead><tr class="text-[10px] uppercase tracking-wide text-gray-400 dark:text-gray-500">
+      <th class="pb-1.5 text-left font-medium">Region</th>
+      <th class="whitespace-nowrap pb-1.5 pl-2 text-right font-medium" data-tip="This run: mean ± std and median (below) of χ over the region (ppm).">This run</th>
+      <th class="whitespace-nowrap pb-1.5 pl-2 text-right font-medium" data-tip="Ground truth in the same voxels: mean ± std and median (below) (ppm).">Ground truth</th></tr></thead><tbody class="divide-y divide-gray-100 dark:divide-gray-800">`;
     ids.forEach((k) => {
       const rc = block.recon[k], gt = block.truth[k];
       html += `<tr>
-        <td class="py-2 text-gray-500 dark:text-gray-400"><span data-tip="n=${rc.n} voxels in this run's support">${block.labels[k] || "label-" + k}</span></td>
-        <td class="py-2 text-right tabular-nums font-medium text-gray-900 dark:text-gray-100">${p3(rc.mean)} <span class="text-gray-400 font-normal">±${rc.std.toFixed(3)}</span></td>
-        <td class="py-2 text-right tabular-nums text-gray-600 dark:text-gray-300">${p3(rc.median)}</td>
-        <td class="py-2 text-right tabular-nums text-gray-600 dark:text-gray-300">${p3(gt.mean)} <span class="text-gray-400">±${gt.std.toFixed(3)}</span></td>
-        <td class="py-2 text-right tabular-nums text-gray-600 dark:text-gray-300">${p3(gt.median)}</td></tr>`;
+        <td class="py-1.5 pr-1 align-top leading-tight text-gray-500 dark:text-gray-400"><span data-tip="n=${rc.n} voxels in this run's support">${block.labels[k] || "label-" + k}</span></td>
+        ${cell(rc, true)}${cell(gt, false)}</tr>`;
     });
     html += `</tbody></table>`;
     $("metrics-regions-wrap").innerHTML = html;
