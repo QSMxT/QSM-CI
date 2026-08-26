@@ -100,7 +100,7 @@ const STAGE_IO = {
   // directory and scores against a ground-truth directory.
   "chi-separation": { consumes: ["localfield", "r2prime", "chimap", "magnitude", "mask", "params"],
     produces: ["chi-para", "chi-dia"] },
-  // R2′ estimation: multi-echo GRE magnitude in, R2′ (Hz) out — the GRE-only condition's generators.
+  // R2′ estimation: multi-echo GRE magnitude in, R2′ (Hz) out (the GRE-only condition's generators).
   "r2prime-generation": { consumes: ["magnitude", "mask", "params"], produces: "r2prime" },
 };
 const ARTFILE = { phase: "phase.nii.gz", magnitude: "magnitude.nii.gz", mask: "mask.nii.gz",
@@ -382,8 +382,8 @@ function runItem(r, activeId) {
     </button>`;
   }
   let hv, hk = "xsim";
-  // R2′ generators headline their detrended NRMSE — the champion-selection metric on the GRE-only
-  // board — rather than xSIM (which is a secondary agreement number for a relaxation map).
+  // R2′ generators headline their detrended NRMSE (the champion-selection metric on the GRE-only
+  // board) rather than xSIM (which is a secondary agreement number for a relaxation map).
   if (r && r.stage === "r2prime-generation" && m.nrmse_detrend != null) { hv = m.nrmse_detrend; hk = "nrmse_detrend"; }
   else if (m.xsim != null) hv = m.xsim;
   else if (m.para_mspe != null && m.dia_mspe != null) { hv = (m.para_mspe + m.dia_mspe) / 2; hk = "mspe"; }
@@ -452,7 +452,7 @@ function chisepHTML() {
     }).join("");
     return rows ? `<div class="mb-3"><div class="px-2.5 pt-1 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">${label}</div>${rows}</div>` : "";
   };
-  // R2′ generators live on the same phantoms but are their own category — they estimate an input
+  // R2′ generators live on the same phantoms but are their own category: they estimate an input
   // (R2′ from GRE magnitude), they don't separate sources.
   return group("χ-separation", rs.filter((r) => r.stage !== "r2prime-generation"))
        + group("R2′ estimation", rs.filter((r) => r.stage === "r2prime-generation"));
@@ -728,7 +728,7 @@ function variantToggleHTML() {
 
 async function loadRun() {
   $("sub-title").textContent = run.name;
-  // No descriptive badges/meta in the title (dataset / stage / mode / artifact were noise) — keep only a
+  // No descriptive badges/meta in the title (dataset / stage / mode / artifact were noise); keep only a
   // DNF status flag when relevant and the interactive Defaults/Tuned variant toggle.
   $("sub-badges").innerHTML =
     (run.status === "DNF" ? badge("DNF", "bg-red-50 text-red-600 ring-red-100 dark:bg-red-500/10 dark:text-red-400 dark:ring-red-500/20") : "") +
