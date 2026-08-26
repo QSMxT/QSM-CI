@@ -275,6 +275,11 @@ const datasetOf = (r) => r?.track === "repro" ? "repro"
   : isInvivo(r) ? "invivo"
   : (r.domain === "chisep" || r.stage === "chi-separation") ? "chisep" : "qsm";
 const DATASET_LABEL = { invivo: "In vivo (2016)", qsm: "In silico (2019)", chisep: "χ-sep (2026)", repro: "Harmonization (2026)" };
+// The scored phantom a run belongs to, normalising a missing `phantom` to the track default. Metric
+// ranks pool only same-phantom runs: r2prime-generation and χ-separation methods each have one run per
+// phantom, so without this the denominator counts the same method once per phantom (e.g. #x / 12 across
+// six phantoms instead of #x / 2 among the two methods scored on this one).
+const phantomKey = (r) => datasetOf(r) === "chisep" ? chisepPhantomOf(r) : (r?.phantom || "_default");
 
 // The isolated-dipole run for `slug` on a given dataset — the "same algorithm, other dataset" target.
 // Only dipole methods span the 2016/2019 datasets (in-vivo scores dipole only).
@@ -795,7 +800,7 @@ function metricRank(k) {
   // Composed pipelines are ranked within their OWN field-mapping (the leaderboard groups the same
   // way: it shows one field-mapping's bfr×dipole matrix at a time), so the denominator matches the
   // table you clicked from — not the full cross-field-mapping pool of ~845 pipelines.
-  const sameGroup = (r) => (run.combo
+  const sameGroup = (r) => phantomKey(r) === phantomKey(run) && (run.combo
     ? r.mode === "composed" && (r.combo?.field_mapping || "gt") === (run.combo.field_mapping || "gt")
     : r.mode === "isolated" && r.stage === run.stage);
   const peers = allRuns.filter((r) => r.status !== "DNF" && sameGroup(r) && val(r, k) != null);
@@ -817,7 +822,7 @@ function rankBy(accessor, higher) {
   // Composed pipelines are ranked within their OWN field-mapping (the leaderboard groups the same
   // way: it shows one field-mapping's bfr×dipole matrix at a time), so the denominator matches the
   // table you clicked from — not the full cross-field-mapping pool of ~845 pipelines.
-  const sameGroup = (r) => (run.combo
+  const sameGroup = (r) => phantomKey(r) === phantomKey(run) && (run.combo
     ? r.mode === "composed" && (r.combo?.field_mapping || "gt") === (run.combo.field_mapping || "gt")
     : r.mode === "isolated" && r.stage === run.stage);
   const peers = allRuns.filter((r) => r.status !== "DNF" && sameGroup(r) && accessor(r) != null);
@@ -901,7 +906,10 @@ function renderChisepMetrics() {
   $("metrics-body").innerHTML = html || `<tr><td class="py-3 text-gray-400">No metrics for this run.</td></tr>`;
 }
 function renderMetrics() {
-  if (run.domain === "chisep" || run.stage === "chi-separation") { renderChisepMetrics(); return; }
+  // Only genuine χ-separation runs get the χ+/χ− panel. An r2prime-generation run lives in the χ-sep
+  // dataset (domain "chisep") but produces a plain R2′ map scored by nrmse/xsim/correlation — render it
+  // through the ordinary metrics table so those (not an empty χ+/χ− table) show.
+  if (run.stage !== "r2prime-generation" && (run.domain === "chisep" || run.stage === "chi-separation")) { renderChisepMetrics(); return; }
   $("metrics-sub").textContent = run.mode === "composed" ? "Final χ map vs. ground truth" : `${run.artifact || "output"} vs. ground truth`;
   // Include runtime_s (a top-level field, not under run.metrics) via val(), so it's ranked alongside
   // the accuracy metrics. Object.keys(METRICS) keeps it last, matching its registry order.
