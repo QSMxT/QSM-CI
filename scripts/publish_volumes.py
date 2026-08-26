@@ -42,7 +42,12 @@ from huggingface_hub import CommitOperationAdd, HfApi
 
 ROOT = Path(__file__).resolve().parent.parent
 KINDS = ("recon", "truth", "error")
-BATCH = 64  # files per Hub commit — small enough that a failed batch is cheap to retry/skip
+# Files per Hub commit. HuggingFace rate-limits COMMITS to 128/hour per repo, so this must be large
+# enough that a whole publish is a handful of commits, not hundreds (the repro track's ~30k files at
+# 64/commit = 463 commits → 429 Too Many Requests partway). 1000 files/commit → ~30 commits for the
+# full repro set, and a per-job CI publish (one shard, ~100 files) is a single commit. Each commit
+# still preuploads its LFS files individually, so a transient blob failure only retries that blob.
+BATCH = 1000
 
 
 def _name(rid: str, kind: str, ext: str = "nii.gz", sub: str = "") -> str:
