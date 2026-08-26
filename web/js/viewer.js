@@ -57,6 +57,24 @@ function ensureReproRuns(acq) {
   allRuns = allRuns.filter((r) => r.track !== "repro");
   if (reproJson?.pipelines) for (const [pipe, node] of Object.entries(reproJson.pipelines)) allRuns.push(makeReproRun(pipe, acq, node));
 }
+// Fetch repro.json once (null = never tried, {} = tried-and-empty so we don't refetch forever). Loaded
+// eagerly at boot so even a scored (in-silico) pipeline knows whether it has a harmonization analog.
+async function ensureReproJson() {
+  if (reproJson !== null) return reproJson;
+  try { reproJson = await (await fetch("results/repro.json", { cache: "no-store" })).json(); }
+  catch { reproJson = {}; }
+  return reproJson;
+}
+const pipeHasRepro = (pipe) => !!reproJson?.pipelines?.[pipe];
+// Enter the harmonization view for a pipeline IN-PLACE (no page navigation): make sure repro.json and
+// the acquisition's run pool are loaded, then select that pipeline's composed run there.
+async function enterRepro(pipe, acq) {
+  await ensureReproJson();
+  acq = acqExists(acq) ? acq : "cima-bridge-run1";
+  ensureReproRuns(acq);
+  const target = reproRunId(pipe, acq);
+  if (allRuns.some((r) => r.id === target)) selectRun(target);
+}
 const reproAcqOpts = () => Object.entries(datasetsReg).filter(([, v]) => v.track === "repro")
   .map(([id, v]) => ({ id, label: v.label || id })).sort((a, b) => a.id.localeCompare(b.id));
 const REPRO_SCANNERS = ["prisma", "cima"];
@@ -273,16 +291,16 @@ function datasetPeers() {
 // Switch dataset while keeping the same algorithm open when it exists on the target (re-selecting its
 // run there); otherwise just browse the target dataset's list.
 function switchDataset(dom) {
-  // Harmonization: enter it for the current pipeline (a composed run's slug IS the pipeline id).
+  // Harmonization: enter it in-place for the current pipeline (a composed run's slug IS the pipeline id).
   if (dom === "repro") {
     const pipe = reproMode ? reproPipe : (run?.mode === "composed" ? run.slug : null);
-    if (pipe) location.href = `?pipeline=${encodeURIComponent(pipe)}&dataset=repro&acq=cima-bridge-run1`;
+    if (pipe) enterRepro(pipe, reproAcq);
     return;
   }
-  // Leaving harmonization back to a scored dataset: the same pipeline's in-silico composed run.
+  // Leaving harmonization back to a scored dataset: the same pipeline's in-silico composed run, in-place.
   if (reproMode) {
     const simId = simRunIdOf(reproPipe);
-    if (dom === "qsm" && allRuns.some((r) => r.id === simId)) location.href = "?run=" + encodeURIComponent(simId);
+    if (dom === "qsm" && allRuns.some((r) => r.id === simId)) selectRun(simId);
     return;
   }
   const peer = run ? dipoleRunOn(run.slug, dom) : null;
@@ -449,44 +467,55 @@ function buildSidebar() {
     : (navMode === "stages" ? stagesHTML() : pipelinesHTML());
   $("run-list").querySelectorAll(".run-item").forEach((b) => b.addEventListener("click", () => { if (b.dataset.id) selectRun(b.dataset.id); }));
 }
-// In-content dataset switch, shown above the viewer/metrics only for a dipole method that has an
-// isolated run on more than one dataset (In vivo 2016 / In silico 2019): swap dataset, same method.
-// Harmonization view: a dataset toggle (In silico ⇄ Harmonization) plus scanner/protocol/run pickers
-// for the acquisition, rendered into the same #dataset-switch slot the in-silico/in-vivo toggle uses.
-function renderReproSwitch() {
+// In-content dataset switch for a COMPOSED pipeline, shown above the viewer/metrics: toggle the SAME
+// pipeline between its in-silico (2019) score and its harmonization (2026) reproducibility view, and —
+// in harmonization view — pick the scanner/protocol/run acquisition. Both directions switch IN-PLACE
+// via selectRun (no page navigation), and the toggle renders on BOTH sides so you can go back. Rendered
+// into the same #dataset-switch slot the dipole 2016⇄2019 toggle uses.
+function renderPipelineDatasetSwitch() {
   const el = $("dataset-switch");
   if (!el) return;
-  const parts = reproAcq.split("-");
-  const scanner = parts[0], runNo = parts[parts.length - 1], proto = parts.slice(1, -1).join("-");
-  const simId = simRunIdOf(reproPipe);
+  const inRepro = reproMode;
+  const pipe = inRepro ? reproPipe : run.slug;
+  const simId = simRunIdOf(pipe);
   const hasSim = allRuns.some((r) => r.id === simId);
-  const tbtn = (dom, label, active, extra) =>
-    `<button ${extra} class="rounded-md px-3 py-1.5 transition ${active
+  const hasRepro = pipeHasRepro(pipe);
+  const acq = acqExists(reproAcq) ? reproAcq : "cima-bridge-run1";
+  const parts = acq.split("-");
+  const scanner = parts[0], runNo = parts[parts.length - 1], proto = parts.slice(1, -1).join("-");
+  const tbtn = (key, label, active, enabled, tip) =>
+    `<button data-ds="${key}" ${enabled ? "" : `disabled title="${tip}"`} class="rounded-md px-3 py-1.5 transition ${active
       ? "bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100"
-      : "text-gray-500 hover:text-gray-700 dark:text-gray-400"}">${label}</button>`;
+      : enabled ? "text-gray-500 hover:text-gray-700 dark:text-gray-400"
+                : "text-gray-300 dark:text-gray-600 cursor-not-allowed"}">${label}</button>`;
   const sel = (id, opts, cur) =>
     `<select data-repro="${id}" class="rounded-lg border-gray-300 text-xs py-1 dark:bg-gray-800 dark:border-gray-700">`
     + opts.map((o) => `<option value="${o.v}" ${o.v === cur ? "selected" : ""}>${o.l}</option>`).join("") + `</select>`;
-  el.innerHTML = `<div class="flex flex-wrap items-center gap-3">
-    <span class="text-xs font-semibold uppercase tracking-wide text-gray-400">Dataset</span>
-    <div class="inline-flex rounded-lg bg-gray-100 p-1 text-xs font-medium dark:bg-gray-800">
-      ${tbtn("qsm", "In silico (2019)", false, hasSim ? `data-sim="${simId}"` : "disabled title='this pipeline has no in-silico run'")}
-      ${tbtn("repro", "Harmonization (2026)", true, "")}
-    </div>
-    <span class="text-xs text-gray-400 dark:text-gray-500">same pipeline — switch the dataset it ran on</span>
-    <div class="ml-auto flex items-center gap-2">
+  // Acquisition pickers only make sense in the harmonization view; the in-silico side has one dataset.
+  const pickers = inRepro ? `<div class="ml-auto flex items-center gap-2">
       ${sel("scanner", REPRO_SCANNERS.map((s) => ({ v: s, l: s === "cima" ? "Cima.X" : "Prisma" })), scanner)}
       ${sel("proto", REPRO_PROTOS.map((p) => ({ v: p, l: p.replace("pulseq-online", "Pulseq online").replace("pulseq-offline", "Pulseq offline") })), proto)}
       ${sel("run", REPRO_RUNS.map((r) => ({ v: r, l: r })), runNo)}
+    </div>` : "";
+  el.innerHTML = `<div class="flex flex-wrap items-center gap-3">
+    <span class="text-xs font-semibold uppercase tracking-wide text-gray-400">Dataset</span>
+    <div class="inline-flex rounded-lg bg-gray-100 p-1 text-xs font-medium dark:bg-gray-800">
+      ${tbtn("qsm", "In silico (2019)", !inRepro, hasSim, "this pipeline has no in-silico run")}
+      ${tbtn("repro", "Harmonization (2026)", inRepro, hasRepro, "this pipeline has no harmonization result")}
     </div>
+    <span class="text-xs text-gray-400 dark:text-gray-500">same pipeline — switch the dataset it ran on</span>
+    ${pickers}
   </div>`;
-  const simBtn = el.querySelector("[data-sim]");
-  if (simBtn) simBtn.addEventListener("click", () => { location.href = "?run=" + encodeURIComponent(simBtn.dataset.sim); });
+  el.querySelectorAll("[data-ds]").forEach((b) => b.addEventListener("click", () => {
+    const key = b.dataset.ds;
+    if (key === "qsm" && inRepro && hasSim) selectRun(simId);
+    else if (key === "repro" && !inRepro && hasRepro) enterRepro(pipe, reproAcq);
+  }));
   el.querySelectorAll("[data-repro]").forEach((s) => s.addEventListener("change", () => {
     const g = (k) => el.querySelector(`[data-repro="${k}"]`).value;
-    const acq = `${g("scanner")}-${g("proto")}-${g("run")}`;
-    ensureReproRuns(acq);                       // regenerate the pool for the new acquisition
-    selectRun(reproRunId(reproPipe, acq));      // reopen the same pipeline there
+    const a = `${g("scanner")}-${g("proto")}-${g("run")}`;
+    ensureReproRuns(a);                       // regenerate the pool for the new acquisition
+    selectRun(reproRunId(pipe, a));           // reopen the same pipeline there
   }));
   el.classList.remove("hidden");
 }
@@ -511,7 +540,9 @@ function renderReproStats() {
 }
 
 function renderDatasetSwitch() {
-  if (reproMode) return renderReproSwitch();
+  // A composed pipeline (in harmonization OR in-silico) toggles the same pipeline between its 2019
+  // score and its 2026 reproducibility view — whenever it exists on the other side.
+  if (reproMode || (run?.mode === "composed" && pipeHasRepro(run.slug))) return renderPipelineDatasetSwitch();
   const el = $("dataset-switch");
   if (!el) return;
   const peers = datasetPeers();
@@ -1218,6 +1249,7 @@ function setErrorColormap() {
 // ---- boot -------------------------------------------------------------------
 async function init() {
   [allRuns, algos, registry, datasetsReg] = await Promise.all([loadRuns(), loadAlgos(), loadRegistry(), loadDatasets()]);
+  await ensureReproJson();   // eager so an in-silico pipeline can offer its harmonization analog
   const q = new URLSearchParams(location.search);
   // Shared control handlers (used by every dataset, harmonization included).
   $("run-filter").addEventListener("input", (e) => { filter = e.target.value; buildSidebar(); });
@@ -1232,7 +1264,6 @@ async function init() {
   if (q.get("pipeline") && q.get("dataset") === "repro") {
     reproPipe = q.get("pipeline");
     reproAcq = acqExists(q.get("acq")) ? q.get("acq") : "cima-bridge-run1";
-    try { reproJson = await (await fetch("results/repro.json", { cache: "no-store" })).json(); } catch { reproJson = null; }
     ensureReproRuns(reproAcq);
     domain = "repro"; navMode = "pipelines"; reproMode = true;
     run = allRuns.find((r) => r.id === reproRunId(reproPipe, reproAcq)) || composedRuns()[0];
