@@ -45,8 +45,20 @@ KINDS = ("recon", "truth", "error")
 BATCH = 64  # files per Hub commit — small enough that a failed batch is cheap to retry/skip
 
 
-def _name(rid: str, kind: str, ext: str = "nii.gz") -> str:
-    return f"{rid}__{kind}.{ext}".replace("~", "_").replace("+", "_")
+def _name(rid: str, kind: str, ext: str = "nii.gz", sub: str = "") -> str:
+    # HuggingFace rejects a push once any directory holds >10,000 files. The flat root fills up
+    # (sim/invivo/chisep already ~10k), so high-volume tracks shard into a subdirectory (`sub`, e.g.
+    # "repro/<acquisition>/") — a few hundred files each. `sub` is a clean path; only the id part
+    # needs the ~/+ sanitising.
+    return sub + f"{rid}__{kind}.{ext}".replace("~", "_").replace("+", "_")
+
+
+def _subdir(row: dict) -> str:
+    """Repo subdirectory for a run's volumes: repro runs shard by acquisition (thousands of files
+    would otherwise blow HF's 10k-per-directory limit); every other track keeps the flat root."""
+    if row.get("track") == "repro" and row.get("phantom"):
+        return f"repro/{row['phantom']}/"
+    return ""
 
 
 def _url(repo: str, name: str) -> str:
@@ -115,24 +127,25 @@ def main() -> int:
     # Gather every artifact that belongs to a run in the index: the NIfTI volumes plus, when present,
     # the small resources.json memory/CPU trace. Each item carries its extension so a non-nii.gz
     # artifact (the JSON trace) is named and URL'd correctly.
-    items: list[tuple[str, str, str, Path]] = []  # (rid, kind, ext, path)
+    items: list[tuple[str, str, str, Path, str]] = []  # (rid, kind, ext, path, sub)
     for run_dir in sorted(results.glob("*/")):
         rid = run_dir.name
         if rid not in by_id:
             continue
+        sub = _subdir(by_id[rid])
         for kind in KINDS:
             # χ-separation writes a second "-dia" volume set (recon-dia/truth-dia/error-dia) for its χ−
             # source alongside the plain χ+ set; publish both so the viewer's χ+/χ− toggle can load either.
             for sfx in ("", "-dia"):
                 f = run_dir / f"{kind}{sfx}.nii.gz"
                 if f.exists():
-                    items.append((rid, kind + sfx, "nii.gz", f))
+                    items.append((rid, kind + sfx, "nii.gz", f, sub))
         rf = run_dir / "resources.json"
         if rf.exists():
-            items.append((rid, "resources", "json", rf))
+            items.append((rid, "resources", "json", rf, sub))
         gf = run_dir / "regions.json"   # per-run regional stats; the web fetches one file per run
         if gf.exists():
-            items.append((rid, "regions", "json", gf))
+            items.append((rid, "regions", "json", gf, sub))
     if not items:
         print("no volumes on disk — nothing to publish")
         return 0
@@ -143,15 +156,15 @@ def main() -> int:
     consecutive_fail = 0
     for start in range(0, len(items), BATCH):
         batch = items[start:start + BATCH]
-        ops = [CommitOperationAdd(path_in_repo=_name(rid, kind, ext), path_or_fileobj=str(path))
-               for rid, kind, ext, path in batch]
+        ops = [CommitOperationAdd(path_in_repo=_name(rid, kind, ext, sub), path_or_fileobj=str(path))
+               for rid, kind, ext, path, sub in batch]
         desc = f"batch {start // BATCH + 1}/{(len(items) + BATCH - 1) // BATCH}"
         try:
             _retry(desc, lambda o=ops, d=desc: api.create_commit(
                 repo, repo_type="dataset", operations=o,
                 commit_message=f"publish volumes ({d})"))
-            for rid, kind, ext, _ in batch:
-                want.setdefault(rid, {})[kind] = _url(repo, _name(rid, kind, ext))
+            for rid, kind, ext, _, sub in batch:
+                want.setdefault(rid, {})[kind] = _url(repo, _name(rid, kind, ext, sub))
             consecutive_fail = 0
             print(f"  ✓ {desc} ({min(start + BATCH, len(items))}/{len(items)})", flush=True)
         except Exception as exc:  # noqa: BLE001 — best-effort per batch
