@@ -652,11 +652,17 @@ async function loadRun() {
   // reveal the Regions/Error tabs when it arrives. Guard against a fast run-switch resolving stale.
   runRegions = null;
   renderMetricsPanel();
-  const wantRegions = run;
-  loadRunRegions(run).then((entry) => { if (run === wantRegions) { runRegions = entry; renderMetricsPanel(); } });
-  // Render the resource graph up front, independent of (and before) the WebGL/NiiVue viewer, so a
-  // browser without WebGL2, or a run whose volumes fail to load, still shows the usage trace.
-  renderResources(run);
+  // A synthesised repro run has no per-region file or resource trace on the Hub — skip those fetches
+  // (they'd 404) and hide the resources panel.
+  if (reproMode) {
+    $("resources-panel")?.classList.add("hidden");
+  } else {
+    const wantRegions = run;
+    loadRunRegions(run).then((entry) => { if (run === wantRegions) { runRegions = entry; renderMetricsPanel(); } });
+    // Render the resource graph up front, independent of (and before) the WebGL/NiiVue viewer, so a
+    // browser without WebGL2, or a run whose volumes fail to load, still shows the usage trace.
+    renderResources(run);
+  }
 
   const note = $("viewer-note"), canvas = $("gl1"), controls = $("viewer-controls"), layerRow = $("layer-row");
   const hide = (el, h) => { el.style.display = h ? "none" : ""; };
