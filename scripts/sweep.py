@@ -76,6 +76,16 @@ GRIDS: dict[str, dict[str, list]] = {
     # chi-sep-ilsqr: padding for the in-house QSM_iLSQR step (boundary/wrap artifacts). A numerical
     # knob rather than a regularisation one, but it's the only lever the black-box toolbox exposes.
     "chisep-ilsqr": {"pad_size": [8, 12, 16, 20]},
+    # --- r2prime-generation (run once per chisep-track phantom dataset) ---
+    # The fixed R2'/R2* scaling. Objective: MINIMISE plain NRMSE vs the phantom's true R2' — the
+    # detrended NRMSE is scale-invariant, so `fraction` cannot move it by construction (a global
+    # scale is exactly what detrending removes); plain NRMSE is the absolute-agreement metric this
+    # knob exists for. 0.52 is the literature baseline (in-vivo 3T, R2-dominated); the noiseless
+    # Ridani phantoms (R2* = R2 + R2' exactly, large R2' share) optimise near 0.8-0.9 and the
+    # Stewart multicompartment phantom near 0.6 — measured on the exact OSF scoring sets, with the
+    # swept 0.52 baseline matching the published leaderboard values to within 0.1 pp.
+    "r2prime-scaled-qsmci": {"fraction": [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45,
+                                          0.5, 0.52, 0.6, 0.7, 0.8, 0.9, 1.0, 1.15, 1.3]},
 }
 
 # Round-2 refinement: extend the axes where round-1's best sat on a grid edge, so the true optimum
@@ -112,13 +122,24 @@ def fmt(v) -> str:
     return f"{v:g}" if isinstance(v, float) else str(v)
 
 
-def score_xsim(recon: Path, artifact: str, gt: Path, mask: Path, work: Path) -> dict:
-    """Valid-mask + qsm_eval, identical to pipeline.score; returns the metrics dict."""
-    kind = {"totalfield": "field", "localfield": "field", "chimap": "chi"}[artifact]
-    sm = _valid_mask(recon, mask, work.with_suffix(".scoremask.nii.gz"))
-    out_json = work.with_suffix(".score.json")
+def score_xsim(recon: Path, artifact: str, gt: Path, mask: Path, work: Path,
+               truth: "Path | None" = None) -> dict:
+    """Valid-mask + qsm_eval, identical to pipeline.score; returns the metrics dict.
+
+    Work files APPEND their extension to `work`'s name (never with_suffix): a tag like
+    "fraction-0.45" has pathlib suffix ".45", so with_suffix collapsed 0.4/0.45/0.5 onto one
+    "...fraction-0.score.json" and concurrent grid points raced on it, silently cross-reading
+    each other's scores.
+
+    `truth` overrides the reference path for artifacts whose reference is not a groundtruth/ file —
+    a generated r2prime scores against the phantom's true R2' (inputs/r2prime.nii.gz), mirroring
+    pipeline.score's own truth override."""
+    kind = {"totalfield": "field", "localfield": "field", "chimap": "chi",
+            "r2prime": "relaxation"}[artifact]
+    sm = _valid_mask(recon, mask, work.parent / (work.name + ".scoremask.nii.gz"))
+    out_json = work.parent / (work.name + ".score.json")
     seg = gt / "dseg.nii.gz"
-    cmd = eval_argv(sys.executable, EVAL, recon, gt / ARTIFACT_FILE[artifact], kind, sm,
+    cmd = eval_argv(sys.executable, EVAL, recon, truth or (gt / ARTIFACT_FILE[artifact]), kind, sm,
                     artifact, out_json, stage="sweep", name="sweep", track="sim",
                     seg=seg if (kind == "chi" and seg.exists()) else None)
     subprocess.run(cmd, check=True, capture_output=True)
@@ -141,8 +162,8 @@ def score_chisep(odir: Path, gt: Path, mask: Path, work: Path) -> dict:
     out: dict = {}
     for art, comp in (("chi-para", "para"), ("chi-dia", "dia")):
         recon = odir / ARTIFACT_FILE[art]
-        sm = _valid_mask(recon, mask, work.with_suffix(f".{comp}.scoremask.nii.gz"))
-        out_json = work.with_suffix(f".{comp}.score.json")
+        sm = _valid_mask(recon, mask, work.parent / (work.name + f".{comp}.scoremask.nii.gz"))
+        out_json = work.parent / (work.name + f".{comp}.score.json")
         cmd = eval_argv(sys.executable, EVAL, recon, gt / ARTIFACT_FILE[art], "chisep", sm,
                         art, out_json, stage="sweep", name="sweep", track="chisep",
                         seg=seg if seg.exists() else None, component=comp)
@@ -184,8 +205,11 @@ def run_one(algo: dict, override: dict, src: dict, gt_dir: Path, work: Path) -> 
         else:
             produced = algo["produces"][0]
             m = score_xsim(odir / ARTIFACT_FILE[produced], produced,
-                           gt_dir, src["mask"], work / f"{slug}__{tag}")
+                           gt_dir, src["mask"], work / f"{slug}__{tag}",
+                           truth=src.get(produced) if produced == "r2prime" else None)
             rec.update(status="ok", xsim=m.get("xsim"), nrmse=m.get("nrmse"), runtime=time.time() - t0)
+            if produced == "r2prime":  # full relaxation agreement set for the harvest report
+                rec.update(nrmse_detrend=m.get("nrmse_detrend"), correlation=m.get("correlation"))
     except subprocess.CalledProcessError as e:
         rec.update(status="DNF", error=(e.stderr or "")[-400:])
     except Exception as e:  # noqa: BLE001
@@ -239,11 +263,20 @@ def main() -> None:
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(results, indent=2) + "\n")
 
-    print("\n=== best grid point per algorithm (xSIM) ===")
+    print("\n=== best grid point per algorithm (xSIM; R2' generators minimise NRMSE) ===")
     for slug in want:
         rs = [r for r in results if r["slug"] == slug and r.get("status") == "ok"]
         if not rs:
             print(f"{slug:<14} all DNF"); continue
+        # An R2' generator's objective is absolute agreement with the true R2' — minimise plain
+        # NRMSE (see the GRIDS comment: detrended NRMSE is blind to the very scale being tuned).
+        if rs[0].get("stage") == "r2prime-generation":
+            rs.sort(key=lambda r: r["nrmse"] if r.get("nrmse") is not None else 1e18)
+            best, worst = rs[0], rs[-1]
+            print(f"{slug:<14} best nrmse={best['nrmse']:.2f}% @ {best['tag']:<26} "
+                  f"(range {best['nrmse']:.2f}–{worst['nrmse']:.2f}% over {len(rs)} pts; "
+                  f"xsim={_f4(best.get('xsim'))} corr={_f4(best.get('correlation'))})")
+            continue
         rs.sort(key=lambda r: r["xsim"], reverse=True)
         best, worst = rs[0], rs[-1]
         # χ-separation optimises the mean of χ+/χ− xSIM — show both components on the winning point so

@@ -746,7 +746,15 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
 
       <!-- R2′ generators: how good is each GRE-derived R2′ substitute, against the true R2′? -->
       <div x-show="chisepCondition==='greonly' && chisepGenRows().length" x-cloak class="mt-8">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">R2′ generators</h3>
+        <div class="flex flex-wrap items-center gap-3">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">R2′ generators</h3>
+          <template x-if="hasChisepGenTuned()">
+            <span class="seg">
+              <button class="seg-btn" :class="{'seg-on': chisepGenVariant==='default'}" @click="chisepGenVariant='default'">Defaults</button>
+              <button class="seg-btn" :class="{'seg-on': chisepGenVariant==='tuned', 'seg-on-emerald': chisepGenVariant==='tuned'}" @click="chisepGenVariant='tuned'" data-tip="Each generator's parameters optimised on this phantom against the true R2′ (e.g. the scaled generator's per-phantom best fraction). Display-only: the pipelines above and the champion pick always use the defaults; combos are only ever run with default generator parameters.">⚙ Tuned</button>
+            </span>
+          </template>
+        </div>
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Candidate R2′ substitutes, each scored directly against the phantom's true (spin-echo-derived) R2′. The best one (lowest detrended NRMSE) supplies R2′ to every pipeline above (named after each row's &#10229; arrow); the Findings tab compares how far each substitute carries every method.</p>
       </div>
       <div x-show="chisepCondition==='greonly' && chisepGenRows().length" x-cloak class="mt-4 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
@@ -764,10 +772,10 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
           </thead>
           <tbody class="divide-y divide-gray-100">
             <template x-for="r in chisepGenRows()" :key="r.id">
-              <tr @click="go(r)" class="group cursor-pointer" :class="r.status==='DNF' ? 'opacity-50' : ''">
+              <tr @click="go(r)" class="group cursor-pointer" :class="(r.status==='DNF' ? 'opacity-50 ' : '') + (r.variant==='tuned' ? 'tuned-row' : '')">
                 <td class="px-5 py-3 text-left font-medium text-gray-900 group-hover:bg-emerald-50/40">
                   <span x-text="r.name"></span>
-                  <span x-show="r.slug===chisepBestGen()" class="ml-2 rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700" data-tip="Best fidelity to the true R2â² on this phantom (lowest detrended NRMSE â scale-independent, so a well-scaled copy of R2* can’t win on scale alone) â the leaderboard above feeds this substitute to every R2â²-consuming method.">supplies R2′ above</span>
+                  <span x-show="r.slug===chisepBestGen()" class="ml-2 rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700" data-tip="Best fidelity to the true R2′ on this phantom (lowest detrended NRMSE — scale-independent, so a well-scaled copy of R2* can't win on scale alone) — the leaderboard above feeds this substitute (at default parameters) to every R2′-consuming method.">supplies R2′ above</span>
                   <span x-show="r.status==='DNF'" class="ml-2 rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold text-gray-500">DNF</span>
                 </td>
                 <td class="px-4 py-3 text-right tabular-nums text-gray-600 group-hover:bg-emerald-50/40" x-text="(r.metrics||{}).nrmse!=null ? (r.metrics.nrmse).toFixed(1)+'%' : '—'"></td>
@@ -1379,6 +1387,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         // 'greonly' = R2′ replaced by a GRE-derived substitute (the r2prime-generation × chi-separation
         // composed runs), plus the natively GRE-only methods that never read R2′.
         chisepCondition: "full",
+        chisepGenVariant: "default",   // R2' generators table pill (display-only; combos stay default)
         chisepSort: "avg_mspe", chisepDir: "asc", chisepColMenu: false, chisepCols: CHISEP_COLS,
         chisepSelectedCols: ["avg_mspe", "para_mspe", "dia_mspe", "avg_ndt", "para_nrmse_detrend", "dia_nrmse_detrend", "runtime_s"],
         invivoSortKey: "nrmse", invivoDir: "asc",   // in-vivo default sort: COSMOS NRMSE (2016 headline)
@@ -1614,10 +1623,21 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         },
         // R2′ generators (isolated, scored against the phantom's true R2′) for the small table
         // under the GRE-only board. Sorted by detrended NRMSE, the selection metric (see below).
-        chisepGenRows() {
-          return this._chisep()
-            .filter((r) => r.stage === "r2prime-generation" && r.mode === "isolated" && (r.variant || "default") === "default")
-            .slice().sort((a, b) => (((a.metrics || {}).nrmse_detrend ?? 1e9) - ((b.metrics || {}).nrmse_detrend ?? 1e9)));
+        // The table has its OWN Defaults/Tuned pill (chisepGenVariant): tuned generator rows (e.g.
+        // r2prime-scaled's per-phantom swept fraction) are display-only; champion selection and the
+        // board's combos stay DEFAULT-based (combos are only ever run with default generator params),
+        // so chisepGenRanking() pins variant "default" regardless of the pill.
+        _chisepGenPool(variant) {
+          const pool = this._chisep().filter((r) => r.stage === "r2prime-generation" && r.mode === "isolated");
+          const by = {};
+          pool.forEach((r) => { (by[r.slug] ||= {})[r.variant || "default"] = r; });
+          return Object.values(by).map((v) => (variant === "tuned" ? v.tuned || v.default : v.default))
+            .filter(Boolean)
+            .sort((a, b) => (((a.metrics || {}).nrmse_detrend ?? 1e9) - ((b.metrics || {}).nrmse_detrend ?? 1e9)));
+        },
+        chisepGenRows() { return this._chisepGenPool(this.chisepGenVariant); },
+        hasChisepGenTuned() {
+          return this._chisep().some((r) => r.stage === "r2prime-generation" && r.variant === "tuned");
         },
         // Generator preference order on this phantom: by each generator's own fidelity to the true R2′
         // (isolated DETRENDED NRMSE, lower first; plain NRMSE would crown any scale-perfect copy of
@@ -1627,7 +1647,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         // available R2′ tool" policy a GRE-only protocol would actually follow), not an oracle pick
         // of whichever combo happens to score best.
         chisepGenRanking() {
-          return this.chisepGenRows().filter((r) => r.status !== "DNF" && (r.metrics || {}).nrmse_detrend != null).map((r) => r.slug);
+          return this._chisepGenPool("default").filter((r) => r.status !== "DNF" && (r.metrics || {}).nrmse_detrend != null).map((r) => r.slug);
         },
         chisepBestGen() { return this.chisepGenRanking()[0] || null; },
         // In-vivo (2016 challenge) dipole runs share stage==='dipole' with the sim leaderboard, so

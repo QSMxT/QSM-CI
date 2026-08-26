@@ -1776,7 +1776,13 @@
         {
           "name": "fraction",
           "default": 0.52,
-          "description": "The R2\u2032/R2* scaling fraction. 0.52 is the literature value (3T brain average); the true ratio varies by region, field strength and protocol, which is precisely this heuristic's failure mode \u2014 treat as a research knob, not an accuracy-tuning target.\n"
+          "tuned": {
+            "chisep": 0.6,
+            "ridani-3t-iso": 0.8,
+            "ridani-3t-aniso": 0.9,
+            "ridani-7t-aniso": 0.9
+          },
+          "description": "The R2\u2032/R2* scaling fraction. 0.52 is the literature default (an in-vivo 3T brain average, where irreversible R2 dominates R2*); the true ratio varies by region, field strength and protocol, which is precisely this heuristic's failure mode. The tuned values are each phantom's best FIXED fraction (minimum plain NRMSE vs the true R2\u2032 over a dense sweep) \u2014 the ceiling of what any global scaling can achieve there. They sit far above 0.52 on the noiseless Ridani phantoms (R2* = R2 + R2\u2032 exactly, with a large R2\u2032 share), quantifying how protocol-dependent the \"0.52 rule\" really is.\n"
         }
       ],
       "ci_notes": []
@@ -1812,6 +1818,32 @@
           "description": "Relaxivity (Hz/ppm) used to scale R2* into the network's input channel and R2\u2032 back out. The network family was trained at Dr=114 (its COSMOS-referenced value), so moving it feeds off-distribution inputs \u2014 a research knob, not an accuracy-tuning target. (No patch/overlap knob: the ONNX graph fixes the 192\u00d7192\u00d7128 input, and the weights fix everything else.)\n"
         }
       ],
+      "ci_notes": []
+    },
+    {
+      "slug": "r2primenet-7t",
+      "name": "R2PRIMEnet-7T",
+      "stage": "r2prime-generation",
+      "inputs": [
+        "magnitude",
+        "mask",
+        "params"
+      ],
+      "domain": "chisep",
+      "engine": "R2PRIMENET_7T",
+      "language": "Python",
+      "family": "deep-learning",
+      "learning": "pretrained",
+      "description": "R2PRIMEnet-7T \u2014 the 7T-specific R2*\u2192R2\u2032 conversion network (Jiye Kim, SNU-LIST), from the in-vivo high-resolution 7T \u03c7-separation pipeline. Where the 3T R2PRIMEnet was trained on 3T acquisitions, this U-Net was trained on paired 7T R2* / R2\u2032 data: R2* is fit from the multi-echo magnitude, scaled by the family's Dr = 114 and z-scored per the released normalisation stats, and the network predicts R2\u2032 in the 3T domain (its training reference \u2014 R2\u2032 scales ~linearly with B0), which is rescaled \u00d7(B0/3) to the acquisition's native field for the benchmark. Run via ONNX (onnxruntime), 192\u00d7192\u00d7128 sliding-window patches (dims multiples of 64, matching the network's four pooling levels). On 3T phantoms its input is off-distribution by construction \u2014 an informative failure mode rather than a defect.",
+      "citation": "Kim J. et al., \"In-vivo high-resolution \u03c7-separation at 7T\" (arXiv:2410.12239) \u2014 R2PRIMEnet-7T is its 7T R2*\u2192R2\u2032 conversion network (github.com/SNU-LIST/R2PRIMENET_7T).\n",
+      "doi": "10.48550/arXiv.2410.12239",
+      "code_url": "https://github.com/SNU-LIST/R2PRIMENET_7T",
+      "license": "academic and research use (\u00a9 Jiye Kim, SNU-LIST)",
+      "authors": [
+        "Jiye Kim",
+        "Jongho Lee"
+      ],
+      "parameters": [],
       "ci_notes": []
     },
     {

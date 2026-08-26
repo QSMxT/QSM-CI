@@ -174,6 +174,7 @@ const STAGE_LABEL = {
   "unwrap+bfr": "Unwrapping + background removal",
   "end-to-end": "End-to-end",
   "chi-separation": "Source separation",
+  "r2prime-generation": "R2′ estimation",
 };
 const MEDALS = ["🥇", "🥈", "🥉"];
 
