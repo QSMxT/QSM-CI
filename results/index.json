@@ -5019,31 +5019,32 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 64.05823493003845,
+      "runtime_s": 47.2990505695343,
       "metrics": {
-        "nrmse": 74.55170610472686,
-        "nrmse_detrend": 110.7676777108861,
-        "nrmse_tissue": 115.316972730609,
-        "nrmse_blood": 231.52316924851192,
-        "nrmse_dgm": 71.08117710496549,
-        "dgm_linearity": 0.21485935503987819,
-        "calc_moment_dev": 19.693643003702164,
-        "calc_streak": 0.06620988684164159,
-        "correlation": 0.670108269254276,
-        "xsim": 0.31209203019422543,
-        "hfen": 59.41261379070712
+        "nrmse": 74.55170655340491,
+        "nrmse_detrend": 110.76767758222958,
+        "nrmse_tissue": 115.31697379025219,
+        "nrmse_blood": 231.52316793972645,
+        "nrmse_dgm": 71.08117043862919,
+        "dgm_linearity": 0.21485927870877097,
+        "calc_moment_dev": 19.69363959133625,
+        "calc_streak": 0.06620984855947454,
+        "correlation": 0.6701082696831007,
+        "xsim": 0.31209194785267863,
+        "hfen": 59.412614448213134
       },
       "status": "ok",
       "id": "iqsm-cmp",
       "slug": "iqsm",
       "mode": "composed",
+      "phantom": "sim",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/iqsm-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/iqsm-cmp__regions.json",
       "volumes": {
         "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/iqsm-cmp__recon.nii.gz",
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/iqsm-cmp__truth.nii.gz",
         "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/iqsm-cmp__error.nii.gz"
-      },
-      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/iqsm-cmp__regions.json"
+      }
     },
     {
       "name": "FANSI (nlTV)",
@@ -22863,7 +22864,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 106.57135844230652,
+      "runtime_s": 69.56409907341003,
       "metrics": {
         "nrmse": 74.55170655340491,
         "nrmse_detrend": 110.76767758222958,
@@ -22882,7 +22883,9 @@
       "slug": "iqsm",
       "mode": "isolated",
       "variant": "default",
+      "phantom": "sim",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/iqsm-iso__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/iqsm-iso__regions.json",
       "volumes": {
         "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/iqsm-iso__recon.nii.gz",
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/iqsm-iso__truth.nii.gz",
