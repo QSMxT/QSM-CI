@@ -23,25 +23,39 @@ const DATASET_BADGE = {
   repro:  ["Harmonization (2026)", "bg-sky-50 text-sky-700 ring-sky-200 dark:bg-sky-500/10 dark:text-sky-300 dark:ring-sky-500/20"],
 };
 
-// ── Harmonization (repro) mode ─────────────────────────────────────────────────────────────────
-// The repro track has no per-run leaderboard entry — a pipeline's reconstruction lives on the
-// public HF volumes archive at a DETERMINISTIC path (repro/<acq>/<pipeline>-cmp-<acq>__recon.nii.gz,
-// matching pipeline.py's run id + publish_volumes' naming). The submission page enters this mode via
-// ?pipeline=<id>&dataset=repro&acq=<acquisition>: it synthesises a recon-only run object and swaps
-// the ground-truth machinery (truth layer, accuracy metrics) for the pipeline's reproducibility
-// stats + an acquisition picker. Everything below is gated on `reproMode`, so the normal path is
-// byte-identical.
+// ── Harmonization (repro) dataset ──────────────────────────────────────────────────────────────
+// The repro track is a first-class dataset here: for the current acquisition we synthesise one
+// composed-run object per pipeline (from repro.json) and splice them into allRuns, so the SAME
+// pipelines sidebar / selectRun / method-card machinery renders it exactly like in-silico. There's
+// no ground truth, so those runs are recon-only (χ map streamed from the deterministic HF path
+// repro/<acq>/<pipeline>-cmp-<acq>__recon.nii.gz) and carry reproducibility stats instead of accuracy
+// metrics. The scanner/protocol/run pickers just regenerate the pool for a different acquisition.
 const HF_VOL_BASE = "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/";
 let reproMode = false, reproPipe = "", reproAcq = "", reproJson = null;
 const reproReconUrl = (pipe, acq) => `${HF_VOL_BASE}repro/${acq}/${pipe.replaceAll("+", "_")}-cmp-${acq}__recon.nii.gz`;
 const simRunIdOf = (pipe) => `${pipe.replaceAll("+", "~")}-cmp`;   // the same pipeline's in-silico composed run id
-function reproRunObj(pipe, acq) {
+const reproRunId = (pipe, acq) => `${pipe.replaceAll("+", "~")}-cmp-${acq}`;
+// Headline "score" for a repro run row: median inter-scanner |a-1| (lower is better).
+const reproHeadline = (node) => node ? {
+  repro_inter: node.inter_scanner_mean_abs_slope_dev,
+  repro_tr: node.test_retest_mean_abs_slope_dev,
+  repro_vsbridge: node.inter_protocol_mean_abs_slope_dev } : {};
+function makeReproRun(pipe, acq, node) {
+  // pipeline id parts = stages: 3 → field-mapping+bfr+dipole; 2 → field-mapping + a bfr+dipole span;
+  // 1 → an end-to-end span. Matches how pipeline.py builds the combo, so the matrix axes line up.
   const parts = pipe.split("+");
-  const combo = parts.length >= 3 ? { field_mapping: parts[0], bfr: parts[1], dipole: parts.slice(2).join("+") } : null;
-  return { id: `${pipe.replaceAll("+", "~")}-cmp-${acq}`, slug: pipe,
-           name: parts.map(algoName).join(" → "), track: "repro", phantom: acq,
-           mode: "composed", stage: "field-mapping+bfr+dipole", status: "ok",
-           combo, metrics: {}, volumes: { recon: reproReconUrl(pipe, acq) } };
+  let combo = null, slug = pipe, stage = "end-to-end";
+  if (parts.length === 3) { combo = { field_mapping: parts[0], bfr: parts[1], dipole: parts[2] }; stage = "field-mapping+bfr+dipole"; }
+  else if (parts.length === 2) { combo = { field_mapping: parts[0] }; slug = parts[1]; stage = "field-mapping+bfr+dipole"; }
+  return { id: reproRunId(pipe, acq), slug, name: parts.map(algoName).join(" → "),
+           pipelineId: pipe, track: "repro", phantom: acq, mode: "composed", stage, combo,
+           status: "ok", metrics: reproHeadline(node), volumes: { recon: reproReconUrl(pipe, acq) } };
+}
+// (Re)generate the harmonization run pool for one acquisition and splice it into allRuns.
+function ensureReproRuns(acq) {
+  reproAcq = acq;
+  allRuns = allRuns.filter((r) => r.track !== "repro");
+  if (reproJson?.pipelines) for (const [pipe, node] of Object.entries(reproJson.pipelines)) allRuns.push(makeReproRun(pipe, acq, node));
 }
 const reproAcqOpts = () => Object.entries(datasetsReg).filter(([, v]) => v.track === "repro")
   .map(([id, v]) => ({ id, label: v.label || id })).sort((a, b) => a.id.localeCompare(b.id));
@@ -203,7 +217,10 @@ function badge(text, cls) {
 
 // ---- sidebar ----------------------------------------------------------------
 const uniq = (arr) => [...new Set(arr)];
-const composedRuns = () => allRuns.filter((r) => r.mode === "composed" && r.combo);
+// Composed pipelines for the OPEN dataset. Scoping by datasetOf keeps the in-silico matrix and the
+// harmonization matrix (synthetic repro runs, see ensureReproRuns) as separate pools that the same
+// pipelinesHTML renders identically — the two Pipelines sidebars are one code path.
+const composedRuns = () => allRuns.filter((r) => r.mode === "composed" && r.combo && datasetOf(r) === domain);
 // χ-separation methods (a distinct domain): one flat list, default variant only.
 const chisepRuns = () => allRuns.filter((r) => (r.domain === "chisep" || r.stage === "chi-separation")
   && (r.variant || "default") === "default");
@@ -281,6 +298,7 @@ function switchDataset(dom) {
 const combinedRuns = () => {
   const bySlug = {};
   for (const r of allRuns) {
+    if (datasetOf(r) !== domain) continue;  // same-dataset scoping as composedRuns
     if (r.combo) continue;  // matrix combos carry stage bfr+dipole too; they belong on the axes
     if (r.variant === "tuned") continue;  // tuned variants are reached via the toggle, not the list
     if (r.stage !== "bfr+dipole" && r.stage !== "end-to-end") continue;
@@ -312,6 +330,17 @@ function runItem(r, activeId) {
   // χ-separation rows carry no plain xsim; headline the mean χ+/χ− per-ROI MSPE (the leaderboard's
   // ranking metric, following Ridani et al. 2026), falling back to detrended NRMSE where MSPE is absent.
   const m = (r && r.metrics) || {};
+  // Harmonization rows headline the inter-scanner |a−1| (reproducibility, lower better) as a %.
+  if (r && r.track === "repro") {
+    const label = m.repro_inter != null ? (100 * m.repro_inter).toFixed(1) + "%" : "—";
+    const active = r.id === activeId;
+    return `<button data-id="${r.id}"
+      class="run-item w-full text-left rounded-lg px-2.5 py-1.5 text-sm flex items-center justify-between gap-2 transition
+        ${active ? "bg-indigo-50 text-indigo-700 font-medium dark:bg-indigo-500/15 dark:text-indigo-300" : "text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800"}">
+      <span class="truncate">%NAME%</span>
+      <span class="shrink-0 tabular-nums text-xs ${active ? "text-indigo-500" : "text-gray-400"}" title="inter-scanner |a−1|">${label}</span>
+    </button>`;
+  }
   let hv, hk = "xsim";
   if (m.xsim != null) hv = m.xsim;
   else if (m.para_mspe != null && m.dia_mspe != null) { hv = (m.para_mspe + m.dia_mspe) / 2; hk = "mspe"; }
@@ -386,23 +415,6 @@ function invivoHTML() {
   const rows = rs.map((r) => runItem(r, run?.id).replace("%NAME%", r.name)).join("");
   return `<div class="mb-3"><div class="px-2.5 pt-1 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">In vivo (2016) · dipole</div>${rows}</div>`;
 }
-// The pipeline stages of the open harmonization run, as sidebar rows — one per stage algorithm,
-// clickable through to that method's own (in-silico) page where it exists.
-function reproStagesHTML() {
-  const parts = reproPipe.split("+");
-  const roles = parts.length === 3 ? ["Field mapping", "Background removal", "Dipole inversion"]
-    : parts.length === 2 ? ["Field mapping", "bfr + dipole"] : ["End-to-end"];
-  const rows = parts.map((slug, i) => {
-    const iso = allRuns.some((r) => r.slug === slug && r.mode === "isolated");
-    return `<button data-method="${iso ? slug : ""}" class="run-item w-full text-left rounded-lg px-2.5 py-2 flex flex-col gap-0.5 transition ${iso
-      ? "hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer" : "cursor-default"}">
-      <span class="text-[10px] font-semibold uppercase tracking-wide text-gray-400">${roles[i] || "Stage"}</span>
-      <span class="text-sm text-gray-700 dark:text-gray-300">${algoName(slug)}${iso ? "" : ` <span class="text-gray-300 dark:text-gray-600">·</span>`}</span>
-    </button>`;
-  }).join("");
-  return `<p class="px-2 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">Pipeline stages</p>${rows}`;
-}
-
 function buildSidebar() {
   // Fall back to the in-silico dataset if the selected one has no runs (not in repro mode, which is
   // its own dataset).
@@ -423,17 +435,11 @@ function buildSidebar() {
   });
   $("domain-toggle")?.classList.remove("hidden");
 
-  if (reproMode) {   // sidebar = the pipeline's constituent stage algorithms
-    $("nav-toggle")?.classList.add("hidden");
-    $("run-filter")?.classList.add("hidden");
-    $("run-list").innerHTML = reproStagesHTML();
-    $("run-list").querySelectorAll("[data-method]").forEach((b) =>
-      b.addEventListener("click", () => { if (b.dataset.method) location.href = "?method=" + encodeURIComponent(b.dataset.method); }));
-    return;
-  }
   $("run-filter")?.classList.remove("hidden");
-  // The Stages/Pipelines split is meaningless for the flat χ-separation / in-vivo lists; hide it there.
-  const flat = domain === "chisep" || domain === "invivo";
+  // Harmonization is composed-only, so it's always the Pipelines matrix (no Stages split). The
+  // χ-separation / in-vivo lists are flat too. Everything else keeps the Stages/Pipelines toggle.
+  if (domain === "repro") navMode = "pipelines";
+  const flat = domain === "chisep" || domain === "invivo" || domain === "repro";
   $("nav-toggle")?.classList.toggle("hidden", flat);
   document.querySelectorAll("#nav-toggle button").forEach((b) =>
     b.className = "flex-1 rounded-md px-2 py-1 transition " +
@@ -479,10 +485,8 @@ function renderReproSwitch() {
   el.querySelectorAll("[data-repro]").forEach((s) => s.addEventListener("change", () => {
     const g = (k) => el.querySelector(`[data-repro="${k}"]`).value;
     const acq = `${g("scanner")}-${g("proto")}-${g("run")}`;
-    reproAcq = acq;
-    run = reproRunObj(reproPipe, acq);
-    history.replaceState(null, "", `?pipeline=${encodeURIComponent(reproPipe)}&dataset=repro&acq=${acq}`);
-    loadRun();
+    ensureReproRuns(acq);                       // regenerate the pool for the new acquisition
+    selectRun(reproRunId(reproPipe, acq));      // reopen the same pipeline there
   }));
   el.classList.remove("hidden");
 }
@@ -557,9 +561,16 @@ function switchChisepPhantom(p) {
 }
 function selectRun(id) {
   run = allRuns.find((r) => r.id === id);
+  if (!run) return;
   domain = datasetOf(run);   // keep the sidebar on the dataset this run belongs to
-  if (domain === "chisep") chisepPhantom = chisepPhantomOf(run);   // remember the phantom being viewed
-  history.replaceState(null, "", "?run=" + encodeURIComponent(id));
+  reproMode = domain === "repro";
+  if (reproMode) {
+    reproPipe = run.pipelineId; reproAcq = run.phantom;   // deep-link by pipeline + acquisition
+    history.replaceState(null, "", `?pipeline=${encodeURIComponent(reproPipe)}&dataset=repro&acq=${reproAcq}`);
+  } else {
+    if (domain === "chisep") chisepPhantom = chisepPhantomOf(run);   // remember the phantom being viewed
+    history.replaceState(null, "", "?run=" + encodeURIComponent(id));
+  }
   buildSidebar();
   loadRun();
 }
@@ -624,10 +635,6 @@ function methodCard(a) {
 }
 function renderMethodInfo() {
   const el = $("method-info");
-  if (reproMode) {   // a pipeline (3 stages), not one method — name the stage chain
-    el.innerHTML = `<p class="text-sm text-gray-500 dark:text-gray-400">Pipeline: <span class="font-medium text-gray-700 dark:text-gray-300">${reproPipe.split("+").map(algoName).join(" → ")}</span>, reconstructed on <span class="font-medium text-gray-700 dark:text-gray-300">${(datasetsReg[reproAcq] || {}).label || reproAcq}</span>. No ground truth exists for in-vivo acquisitions, so this shows the χ map and the pipeline's cross-acquisition reproducibility.</p>`;
-    return;
-  }
   const bySlug = Object.fromEntries(algos.map((a) => [a.slug, a]));
   const cards = [];
   if (run.combo) {
@@ -1211,24 +1218,32 @@ function setErrorColormap() {
 // ---- boot -------------------------------------------------------------------
 async function init() {
   [allRuns, algos, registry, datasetsReg] = await Promise.all([loadRuns(), loadAlgos(), loadRegistry(), loadDatasets()]);
-  // Accept ?run=<run-id> (e.g. ismv-iso), or a bare slug via ?run= / ?method= (e.g. ?method=ismv,
-  // the form Zenodo records link to) → resolve to that algorithm's isolated run.
   const q = new URLSearchParams(location.search);
-  // Harmonization (repro) entry: ?pipeline=<id>&dataset=repro&acq=<acquisition>. No index.json run —
-  // synthesise a recon-only run from the deterministic HF path and render the repro view.
+  // Shared control handlers (used by every dataset, harmonization included).
+  $("run-filter").addEventListener("input", (e) => { filter = e.target.value; buildSidebar(); });
+  $("metrics-tabs").querySelectorAll("[data-mtab]").forEach((b) =>
+    b.addEventListener("click", () => { metricsTab = b.dataset.mtab; renderMetricsPanel(); }));
+  document.querySelectorAll("#nav-toggle button").forEach((b) => b.addEventListener("click", () => { navMode = b.dataset.mode; buildSidebar(); }));
+  document.querySelectorAll("#domain-toggle button").forEach((b) => b.addEventListener("click", () => switchDataset(b.dataset.domain)));
+
+  // Harmonization entry: ?pipeline=<id>&dataset=repro&acq=<acquisition>. Generate the acquisition's
+  // pipeline pool (see ensureReproRuns) and open the requested pipeline — from here it's the same
+  // Pipelines machinery as in-silico.
   if (q.get("pipeline") && q.get("dataset") === "repro") {
-    reproMode = true;
     reproPipe = q.get("pipeline");
     reproAcq = acqExists(q.get("acq")) ? q.get("acq") : "cima-bridge-run1";
     try { reproJson = await (await fetch("results/repro.json", { cache: "no-store" })).json(); } catch { reproJson = null; }
-    run = reproRunObj(reproPipe, reproAcq);
-    domain = "repro";
-    document.querySelectorAll("#domain-toggle button").forEach((b) =>
-      b.addEventListener("click", () => switchDataset(b.dataset.domain)));
+    ensureReproRuns(reproAcq);
+    domain = "repro"; navMode = "pipelines"; reproMode = true;
+    run = allRuns.find((r) => r.id === reproRunId(reproPipe, reproAcq)) || composedRuns()[0];
+    if (!run) { $("sub-title").textContent = "No harmonization results yet"; return; }
     buildSidebar();
     await loadRun();
     return;
   }
+
+  // Accept ?run=<run-id> (e.g. ismv-iso), or a bare slug via ?run= / ?method= (e.g. ?method=ismv,
+  // the form Zenodo records link to) → resolve to that algorithm's isolated run.
   const want = q.get("run") || q.get("method");
   run = allRuns.find((r) => r.id === want)
     || allRuns.find((r) => r.mode === "isolated" && r.slug === want)
@@ -1236,11 +1251,6 @@ async function init() {
   if (!run) { $("sub-title").textContent = "No runs"; return; }
   domain = datasetOf(run);
   navMode = run.mode === "composed" ? "pipelines" : "stages";
-  $("run-filter").addEventListener("input", (e) => { filter = e.target.value; buildSidebar(); });
-  $("metrics-tabs").querySelectorAll("[data-mtab]").forEach((b) =>
-    b.addEventListener("click", () => { metricsTab = b.dataset.mtab; renderMetricsPanel(); }));
-  document.querySelectorAll("#nav-toggle button").forEach((b) => b.addEventListener("click", () => { navMode = b.dataset.mode; buildSidebar(); }));
-  document.querySelectorAll("#domain-toggle button").forEach((b) => b.addEventListener("click", () => switchDataset(b.dataset.domain)));
   // Deep links: ?layer=truth selects the ground-truth base; ?layer=error (or ?error=1) turns on the
   // error overlay. Applied before the first render so loadRun picks them up.
   const layer = q.get("layer");
