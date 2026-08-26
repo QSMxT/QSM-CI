@@ -137,7 +137,8 @@ const QSMXT_FLAG = {
 function renderHowToRun() {
   const el = $("how-to-run");
   if (!el) return;
-  if (reproMode) { el.classList.add("hidden"); return; }
+  // Harmonization runs carry the same combo as an in-silico composed pipeline, so the same command
+  // generation applies — the section renders identically (bring your own NIfTIs; no ground truth to score).
   const bySlug = Object.fromEntries(algos.map((a) => [a.slug, a]));
   const stageOf = (s) => (bySlug[s] ? bySlug[s].stage : null);
   const isQsmRs = (slug) => { const a = bySlug[slug]; return !!(a && a.engine && a.engine.includes("QSM.rs")); };
@@ -516,12 +517,10 @@ function renderPipelineDatasetSwitch() {
       ${sel("run", REPRO_RUNS.map((r) => ({ v: r, l: r })), runNo)}
     </div>` : "";
   el.innerHTML = `<div class="flex flex-wrap items-center gap-3">
-    <span class="text-xs font-semibold uppercase tracking-wide text-gray-400">Dataset</span>
     <div class="inline-flex rounded-lg bg-gray-100 p-1 text-xs font-medium dark:bg-gray-800">
       ${tbtn("qsm", "In silico (2019)", !inRepro, hasSim, "this pipeline has no in-silico run")}
       ${tbtn("repro", "Harmonization (2026)", inRepro, hasRepro, "this pipeline has no harmonization result")}
     </div>
-    <span class="text-xs text-gray-400 dark:text-gray-500">same pipeline — switch the dataset it ran on</span>
     ${pickers}
   </div>`;
   el.querySelectorAll("[data-ds]").forEach((b) => b.addEventListener("click", () => {
@@ -573,9 +572,7 @@ function renderDatasetSwitch() {
       : "text-gray-500 hover:text-gray-700 dark:text-gray-400"}">${DATASET_LABEL[p.dom]}</button>`;
   }).join("");
   el.innerHTML = `<div class="flex flex-wrap items-center gap-3">
-    <span class="text-xs font-semibold uppercase tracking-wide text-gray-400">Dataset</span>
     <div class="inline-flex rounded-lg bg-gray-100 p-1 text-xs font-medium dark:bg-gray-800">${btns}</div>
-    <span class="text-xs text-gray-400 dark:text-gray-500">same method — switch the dataset it was scored on</span>
   </div>`;
   el.querySelectorAll("[data-switch]").forEach((b) =>
     b.addEventListener("click", () => switchDataset(b.dataset.switch)));
