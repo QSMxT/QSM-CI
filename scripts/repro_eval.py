@@ -90,6 +90,39 @@ def first_echo_magnitude(acq_path: Path) -> "nib.Nifti1Image":
 # register
 # ---------------------------------------------------------------------------------------------------
 
+def _register_one(key, moving_path, fixed, tfm_path, is_target, sitk) -> str:
+    """Rigid-register one acquisition's first-echo magnitude to `fixed` (the target); write the
+    transform to tfm_path. The target itself gets the identity. Shared by the whole-index `register`
+    command and the per-job `stats --runs` path (which registers just its own acquisition)."""
+    if is_target:
+        sitk.WriteTransform(sitk.Euler3DTransform(), str(tfm_path))
+        return "identity (target)"
+    mov_nii = tfm_path.parent / f"_mov_{key}.nii.gz"
+    nib.save(first_echo_magnitude(moving_path), str(mov_nii))
+    moving = sitk.ReadImage(str(mov_nii), sitk.sitkFloat32)
+    init = sitk.CenteredTransformInitializer(
+        fixed, moving, sitk.Euler3DTransform(),
+        sitk.CenteredTransformInitializerFilter.GEOMETRY)
+    reg = sitk.ImageRegistrationMethod()
+    # Mattes MI: robust to the contrast differences between protocols (GRE vs EPI, different TEs)
+    reg.SetMetricAsMattesMutualInformation(numberOfHistogramBins=64)
+    reg.SetMetricSamplingStrategy(reg.RANDOM)
+    reg.SetMetricSamplingPercentage(0.2, seed=42)
+    reg.SetInterpolator(sitk.sitkLinear)
+    reg.SetOptimizerAsRegularStepGradientDescent(
+        learningRate=1.0, minStep=1e-4, numberOfIterations=300,
+        relaxationFactor=0.6, gradientMagnitudeTolerance=1e-6)
+    reg.SetOptimizerScalesFromPhysicalShift()
+    reg.SetShrinkFactorsPerLevel([4, 2, 1])
+    reg.SetSmoothingSigmasPerLevel([2, 1, 0])
+    reg.SmoothingSigmasAreSpecifiedInPhysicalUnitsOn()
+    reg.SetInitialTransform(init, inPlace=False)
+    tfm = reg.Execute(fixed, moving)
+    sitk.WriteTransform(tfm, str(tfm_path))
+    mov_nii.unlink()
+    return f"metric={reg.GetMetricValue():.4f} ({reg.GetOptimizerIteration()} iters)"
+
+
 def cmd_register(args) -> None:
     import SimpleITK as sitk  # deferred: only this stage needs it
 
@@ -103,39 +136,19 @@ def cmd_register(args) -> None:
     nib.save(first_echo_magnitude(acqs[args.target]["path"]), str(tgt_nii))
     fixed = sitk.ReadImage(str(tgt_nii), sitk.sitkFloat32)
 
+    # Prep-only: just the target grid (+ its identity transform) so a one-time `prep` job can build
+    # the reference frame (target_mag_e1 + dseg via seg) without fetching all 23 acquisitions — the
+    # per-job `stats --runs` path registers each acquisition to this target itself.
+    if getattr(args, "target_only", False):
+        sitk.WriteTransform(sitk.Euler3DTransform(), str(ALIGN / f"{args.target}.tfm"))
+        print(f"  {args.target}: target grid written (target-only)")
+        return
+
     for key, acq in sorted(acqs.items()):
         tfm_path = ALIGN / f"{key}.tfm"
         if tfm_path.exists() and not args.force:
             continue
-        if key == args.target:
-            sitk.WriteTransform(sitk.Euler3DTransform(), str(tfm_path))
-            print(f"  {key}: identity (target)")
-            continue
-        mov_nii = ALIGN / f"_mov_{key}.nii.gz"
-        nib.save(first_echo_magnitude(acq["path"]), str(mov_nii))
-        moving = sitk.ReadImage(str(mov_nii), sitk.sitkFloat32)
-        init = sitk.CenteredTransformInitializer(
-            fixed, moving, sitk.Euler3DTransform(),
-            sitk.CenteredTransformInitializerFilter.GEOMETRY)
-        reg = sitk.ImageRegistrationMethod()
-        # Mattes MI: robust to the contrast differences between protocols (GRE vs EPI, different TEs)
-        reg.SetMetricAsMattesMutualInformation(numberOfHistogramBins=64)
-        reg.SetMetricSamplingStrategy(reg.RANDOM)
-        reg.SetMetricSamplingPercentage(0.2, seed=42)
-        reg.SetInterpolator(sitk.sitkLinear)
-        reg.SetOptimizerAsRegularStepGradientDescent(
-            learningRate=1.0, minStep=1e-4, numberOfIterations=300,
-            relaxationFactor=0.6, gradientMagnitudeTolerance=1e-6)
-        reg.SetOptimizerScalesFromPhysicalShift()
-        reg.SetShrinkFactorsPerLevel([4, 2, 1])
-        reg.SetSmoothingSigmasPerLevel([2, 1, 0])
-        reg.SmoothingSigmasAreSpecifiedInPhysicalUnitsOn()
-        reg.SetInitialTransform(init, inPlace=False)
-        tfm = reg.Execute(fixed, moving)
-        sitk.WriteTransform(tfm, str(tfm_path))
-        mov_nii.unlink()
-        print(f"  {key}: metric={reg.GetMetricValue():.4f} "
-              f"({reg.GetOptimizerIteration()} iters)")
+        print(f"  {key}: {_register_one(key, acq['path'], fixed, tfm_path, key == args.target, sitk)}")
 
 
 # ---------------------------------------------------------------------------------------------------
@@ -200,47 +213,88 @@ def _collected_runs() -> list[dict]:
             and (RESULTS / r["id"] / "recon.nii.gz").exists()]
 
 
+def _roi_row(rid, acq, fixed, dseg, roi_masks, tfm, sitk) -> "dict | None":
+    """Per-ROI ref-subtracted χ means (+ n/mean/std/median) for one run's recon, resampled into
+    target space with `tfm`. Returns the row dict, or None if the recon is missing or barely overlaps
+    the segmentation. The single per-recon computation shared by whole-index and per-job stats."""
+    recon_p = RESULTS / rid / "recon.nii.gz"
+    if not recon_p.exists():
+        return None
+    recon = sitk.ReadImage(str(recon_p), sitk.sitkFloat32)
+    chi = sitk.GetArrayFromImage(sitk.Resample(recon, fixed, tfm, sitk.sitkLinear, 0.0))
+    valid = np.isfinite(chi) & (np.abs(chi) > 0)   # the recon's own support = its valid region
+    brain = valid & (dseg > 0)
+    if brain.sum() < 1000:
+        return None
+    ref = float(chi[brain].mean())                 # whole-brain reference (per Marta's analysis)
+    roi_means, roi_stats = {}, {}
+    for lab, m in roi_masks.items():
+        cov = valid[m].mean()
+        if cov < MIN_ROI_COVERAGE:
+            continue                                # slab coverage differs between acquisitions
+        v = chi[m & valid] - ref                    # ref-subtracted, same convention as the fits
+        roi_means[str(lab)] = round(float(v.mean()), 6)
+        roi_stats[str(lab)] = {"n": int(v.size), "mean": round(float(v.mean()), 6),
+                               "std": round(float(v.std()), 6),
+                               "median": round(float(np.median(v)), 6)}
+    return {"acq": acq, "ref_mean": round(ref, 6), "rois": roi_means, "roi_stats": roi_stats}
+
+
+def _stats_setup(sitk):
+    """Load the shared target grid + segmentation + ROI masks (target.json / target_mag_e1 / dseg)."""
+    target = json.loads((ALIGN / "target.json").read_text())["target"]
+    fixed = sitk.ReadImage(str(ALIGN / "target_mag_e1.nii.gz"), sitk.sitkFloat32)
+    dseg = np.rint(sitk.GetArrayFromImage(sitk.ReadImage(str(ALIGN / "dseg.nii.gz")))).astype(int)
+    roi_masks = {lab: dseg == lab for lab in ROI_LABELS if (dseg == lab).sum() >= 50}
+    return target, fixed, dseg, roi_masks
+
+
 def cmd_stats(args) -> None:
     import SimpleITK as sitk
 
-    target = json.loads((ALIGN / "target.json").read_text())["target"]
-    fixed = sitk.ReadImage(str(ALIGN / "target_mag_e1.nii.gz"), sitk.sitkFloat32)
-    dseg = np.rint(sitk.GetArrayFromImage(
-        sitk.ReadImage(str(ALIGN / "dseg.nii.gz")))).astype(int)
-    roi_masks = {lab: dseg == lab for lab in ROI_LABELS if (dseg == lab).sum() >= 50}
-
-    runs = _collected_runs()
+    target, fixed, dseg, roi_masks = _stats_setup(sitk)
     acqs = repro_acquisitions()
+
+    # Per-job (CI-scale) path: compute ROI means for just the runs in a pipeline.py --runs-out file
+    # and write them BACK into that file, registering this file's acquisition(s) on the fly. Each
+    # score job does this on its own recons, so the evaluate job never needs the volumes — only the
+    # tiny runs-JSON with `rois` travels onward. The target grid + dseg come from a one-time prep.
+    if getattr(args, "runs", None):
+        rows = json.loads(Path(args.runs).read_text())
+        tcache = {}
+        n = 0
+        for r in rows:
+            acq = r.get("phantom")
+            if r.get("track") != "repro" or r.get("status") != "ok" or acq not in acqs:
+                continue
+            if acq not in tcache:                  # register this acquisition to the target once
+                tfm_path = ALIGN / f"{acq}.tfm"
+                if not tfm_path.exists():
+                    _register_one(acq, acqs[acq]["path"], fixed, tfm_path, acq == target, sitk)
+                tcache[acq] = sitk.ReadTransform(str(tfm_path))
+            row = _roi_row(r["id"], acq, fixed, dseg, roi_masks, tcache[acq], sitk)
+            if row:
+                r["pipeline"] = pipeline_identity(r)
+                r["ref_mean"], r["rois"], r["roi_stats"] = row["ref_mean"], row["rois"], row["roi_stats"]
+                n += 1
+        Path(args.runs).write_text(json.dumps(rows, indent=2) + "\n")
+        print(f"per-job stats: {n} runs -> {args.runs}")
+        return
+
+    # Whole-index (Bunya) path: every collected run -> results/repro_rois.json.
     rows = {}
-    for r in runs:
+    for r in _collected_runs():
         acq = r["phantom"]
         if acq not in acqs:
             continue
         tfm_path = ALIGN / f"{acq}.tfm"
         if not tfm_path.exists():
             print(f"  !! no transform for {acq} — run `register` first"); continue
-        tfm = sitk.ReadTransform(str(tfm_path))
-        recon = sitk.ReadImage(str(RESULTS / r["id"] / "recon.nii.gz"), sitk.sitkFloat32)
-        chi = sitk.GetArrayFromImage(sitk.Resample(recon, fixed, tfm, sitk.sitkLinear, 0.0))
-        # The recon's own support (non-zero, finite) resampled into target space = valid region.
-        valid = np.isfinite(chi) & (np.abs(chi) > 0)
-        brain = valid & (dseg > 0)
-        if brain.sum() < 1000:
-            print(f"  !! {r['id']}: no usable overlap with target segmentation"); continue
-        ref = float(chi[brain].mean())      # whole-brain reference (per Marta's analysis)
-        roi_means, roi_stats = {}, {}
-        for lab, m in roi_masks.items():
-            cov = valid[m].mean()
-            if cov < MIN_ROI_COVERAGE:
-                continue                    # slab coverage differs between acquisitions
-            v = chi[m & valid] - ref        # ref-subtracted, same convention as the fitted means
-            roi_means[str(lab)] = round(float(v.mean()), 6)
-            roi_stats[str(lab)] = {"n": int(v.size), "mean": round(float(v.mean()), 6),
-                                   "std": round(float(v.std()), 6),
-                                   "median": round(float(np.median(v)), 6)}
-        rows[r["id"]] = {"pipeline": pipeline_identity(r), "acq": acq,
-                         "ref_mean": round(ref, 6), "rois": roi_means, "roi_stats": roi_stats}
-        print(f"  {r['id']}: {len(roi_means)} ROIs")
+        row = _roi_row(r["id"], acq, fixed, dseg, roi_masks, sitk.ReadTransform(str(tfm_path)), sitk)
+        if row is None:
+            print(f"  !! {r['id']}: no usable recon/overlap"); continue
+        rows[r["id"]] = {"pipeline": pipeline_identity(r), **row}
+        print(f"  {r['id']}: {len(row['rois'])} ROIs")
     out = {"target": target, "roi_labels": {str(k): v for k, v in ROI_LABELS.items()},
            "runs": rows}
     (RESULTS / "repro_rois.json").write_text(json.dumps(out, indent=2) + "\n")
@@ -300,12 +354,27 @@ def _pair_metrics(vx: dict, vy: dict) -> "dict | None":
             "n_rois": len(common)}
 
 
+def _roi_source() -> tuple[str, list[dict]]:
+    """Where the per-run ROI means come from: results/repro_rois.json (the whole-index Bunya stats
+    output) when present, else the run rows in results/index.json that carry a `rois` field (the
+    per-job CI flow, where each score job wrote its own ROI means and they were merged into index).
+    Returns (target, [rows with pipeline/acq/rois])."""
+    rj = RESULTS / "repro_rois.json"
+    if rj.exists():
+        data = json.loads(rj.read_text())
+        return data["target"], list(data["runs"].values())
+    idx = json.loads((RESULTS / "index.json").read_text())
+    rows = idx.get("runs", idx) if isinstance(idx, dict) else idx
+    target = json.loads((ALIGN / "target.json").read_text())["target"] if (ALIGN / "target.json").exists() else None
+    return target, [r for r in rows if r.get("track") == "repro" and r.get("rois") and r.get("pipeline")]
+
+
 def cmd_fits(args) -> None:
-    data = json.loads((RESULTS / "repro_rois.json").read_text())
+    target, rows = _roi_source()
     acqs = repro_acquisitions()
     # (pipeline, acq-id) -> roi means
     by_pa: dict[tuple, dict] = {}
-    for row in data["runs"].values():
+    for row in rows:
         by_pa[(row["pipeline"], row["acq"])] = row["rois"]
     pipelines = sorted({p for p, _ in by_pa})
     scanners = ("prisma", "cima")
@@ -315,7 +384,7 @@ def cmd_fits(args) -> None:
     def rois(p, scanner, protocol, run):
         return by_pa.get((p, f"{scanner}-{protocol}-{run}"))
 
-    out = {"target": data["target"], "pipelines": {}}
+    out = {"target": target, "pipelines": {}}
     for p in pipelines:
         node = {"test_retest": {}, "inter_scanner": {}, "inter_protocol": {}}
         # test-retest: same scanner+protocol, run pairs
@@ -371,13 +440,20 @@ def main() -> None:
     sub = ap.add_subparsers(dest="cmd", required=True)
     r = sub.add_parser("register", help="rigid-register acquisitions to the target")
     r.add_argument("--target", default=DEFAULT_TARGET)
+    r.add_argument("--target-only", action="store_true",
+                   help="write only the target grid (for a one-time prep job); per-job stats registers "
+                        "each acquisition itself")
     r.add_argument("--force", action="store_true")
     s = sub.add_parser("seg", help="segment the target (mri_synthseg via docker) or install --seg")
     s.add_argument("--seg", type=Path, default=None)
     s.add_argument("--image", default="freesurfer/freesurfer:7.4.1",
                    help="FreeSurfer image providing license-free mri_synthseg")
     s.add_argument("--force", action="store_true")
-    sub.add_parser("stats", help="per-ROI means for every collected repro run")
+    st = sub.add_parser("stats", help="per-ROI means for every collected repro run")
+    st.add_argument("--runs", default=None,
+                    help="per-job: compute ROI means for the runs in this pipeline.py --runs-out "
+                         "file and write them back into it (registers its acquisition on the fly), "
+                         "instead of the whole index -> repro_rois.json")
     sub.add_parser("fits", help="pairwise ax+b fits -> results/repro.json")
     args = ap.parse_args()
     {"register": cmd_register, "seg": cmd_seg, "stats": cmd_stats, "fits": cmd_fits}[args.cmd](args)

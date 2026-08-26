@@ -75,14 +75,34 @@ def main() -> int:
         print("! HF_VOLUMES_REPO and HF_TOKEN must be set", file=sys.stderr)
         return 1
 
-    results = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "results"
-    index = results / "index.json"
-    if not index.exists():
-        print("no results/index.json — nothing to publish")
-        return 0
+    # Positional: the results dir. Optional `--runs FILE`: publish ONLY the runs listed in a
+    # pipeline.py `--runs-out` file and write the volume URLs back into THAT file (not index.json).
+    # This is the scale-ready path — each score job uploads its own slice straight to the Hub and
+    # passes on a tiny runs-JSON that already carries the `volumes` URLs, so no volume data is ever
+    # gathered centrally (no artifact hop, no 90 GB through one runner). The merge step then just
+    # unions these runs-JSONs into index.json. Without --runs it keeps the original behaviour:
+    # publish every volume under results/ for the runs in results/index.json, patching index.json.
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    runs_file = None
+    if "--runs" in sys.argv:
+        runs_file = Path(sys.argv[sys.argv.index("--runs") + 1])
+    results = Path(args[0]) if args else ROOT / "results"
 
-    doc = json.loads(index.read_text())
-    by_id = {r["id"]: r for r in doc.get("runs", [])}
+    if runs_file is not None:
+        if not runs_file.exists():
+            print(f"no {runs_file} — nothing to publish")
+            return 0
+        rows = json.loads(runs_file.read_text())          # a bare list (pipeline.py --runs-out)
+        target, is_index = runs_file, False
+    else:
+        index = results / "index.json"
+        if not index.exists():
+            print("no results/index.json — nothing to publish")
+            return 0
+        doc = json.loads(index.read_text())
+        rows = doc.get("runs", [])                         # index.json is {"generated":…, "runs":[…]}
+        target, is_index = index, True
+    by_id = {r["id"]: r for r in rows}
 
     api = HfApi(token=token)
     try:
@@ -162,8 +182,11 @@ def main() -> int:
         if res_url or reg_url or kinds:
             published += 1
 
-    index.write_text(json.dumps(doc, indent=2) + "\n")
-    print(f"published volumes for {published} runs -> {index}")
+    # Write the URLs back into whichever file sourced the ids: the central index.json (dict), or the
+    # per-job runs-JSON (bare list) whose rows we patched in place via by_id.
+    payload = doc if is_index else rows
+    target.write_text(json.dumps(payload, indent=2) + "\n")
+    print(f"published volumes for {published} runs -> {target}")
     return 0
 
 
