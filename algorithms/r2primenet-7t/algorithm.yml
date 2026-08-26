@@ -1,0 +1,36 @@
+name: R2PRIMEnet-7T
+slug: r2primenet-7t
+algorithm: r2primenet
+variant: 7t
+source: snu
+stage: r2prime-generation
+language: Python
+family: deep-learning
+learning: pretrained
+engine: R2PRIMENET_7T
+inputs: [magnitude, mask, params]
+description: >
+  R2PRIMEnet-7T — the 7T-specific R2*→R2′ conversion network (Jiye Kim, SNU-LIST), from the
+  in-vivo high-resolution 7T χ-separation pipeline. Where the 3T R2PRIMEnet was trained on 3T
+  acquisitions, this U-Net was trained on paired 7T R2* / R2′ data: R2* is fit from the multi-echo
+  magnitude, scaled by the family's Dr = 114 and z-scored per the released normalisation stats,
+  and the network predicts R2′ in the 3T domain (its training reference — R2′ scales ~linearly
+  with B0), which is rescaled ×(B0/3) to the acquisition's native field for the benchmark. Run via
+  ONNX (onnxruntime), 192×192×128 sliding-window patches (dims multiples of 64, matching the
+  network's four pooling levels). On 3T phantoms its input is off-distribution by construction —
+  an informative failure mode rather than a defect.
+authors:
+- name: Jiye Kim
+- name: Jongho Lee
+doi: 10.48550/arXiv.2410.12239
+citation: >
+  Kim J. et al., "In-vivo high-resolution χ-separation at 7T" (arXiv:2410.12239) — R2PRIMEnet-7T
+  is its 7T R2*→R2′ conversion network (github.com/SNU-LIST/R2PRIMENET_7T).
+code_url: https://github.com/SNU-LIST/R2PRIMENET_7T
+license: academic and research use (© Jiye Kim, SNU-LIST)
+image: ghcr.io/astewartau/qsm-ci/r2primenet-7t:v1
+run: bash run.sh
+# Produces r2prime.nii.gz. Weights (ONNX exported from the public checkpoint + norm .mat) are
+# gitignored and baked into the image — see BUILD.md. No parameters: Dr = 114 and the 3T output
+# domain are baked into the trained weights; the only free choice, native-field rescaling, follows
+# params.json B0 directly.
