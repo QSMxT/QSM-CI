@@ -1214,6 +1214,13 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           </div>
         </div>
 
+        <!-- Figure 2b · reproducibility vs accuracy, per method, all stages -->
+        <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Reproducible <em>and</em> accurate? Every method, both axes</h3>
+          <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Each point is a method, placed by its median <span x-text="_reproMetricLabel()"></span> |a&minus;1| across every pipeline it appears in (y, lower is more reproducible) against its median in-silico (2019) xSIM over those same pipelines (x, higher is more accurate). Coloured by stage &mdash; field mapping, background removal, and the final &chi;-producing step (dipole inversion plus combined bf-removal+dipole and end-to-end methods). The bottom-right corner is the sweet spot: reproducible <em>and</em> accurate. Hover any point for its numbers. Methods with no in-silico run (e.g. iQFM) are omitted.</p>
+          <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="reproVsAccuracySVG"></div>
+        </div>
+
         <!-- Figure 3 · reproducibility frontier -->
         <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
           <div class="flex flex-wrap items-baseline justify-between gap-3">
@@ -1883,6 +1890,73 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
               s += `<g data-tip="${this._esc(`${r.name}: median ${(r.med * 100).toFixed(1)}% [IQR ${(r.q1 * 100).toFixed(1)}–${(r.q3 * 100).toFixed(1)}%] over ${r.n} pipelines`)}">`;
               s += `<line x1="${X(r.q1)}" y1="${y}" x2="${X(r.q3)}" y2="${y}" stroke="${c}" stroke-width="3" opacity="0.3" stroke-linecap="round"/>`;
               s += `<circle cx="${X(r.med)}" cy="${y}" r="3.6" fill="${c}"/></g>`;
+            });
+            return s + "</svg>";
+          });
+        },
+        // Reproducibility vs accuracy, one point per stage-method. x = median in-silico xSIM (accuracy),
+        // y = median reproducibility |a−1| (the selected metric), each marginalised over every pipeline
+        // the method appears in. Coloured by stage; field-mapping/bfr use the 3-part factorial component,
+        // the "dipole" group is the pipeline's final χ-producing step (dipole + combined + end-to-end).
+        get reproVsAccuracySVG() {
+          const mk = this.reproFindMetric;
+          return _cache("reproVA", mk + "|" + Object.keys(this._reproPipes()).length + "|" + this.algos.length, () => {
+            const simX = this._simXsimMap();
+            const grp = {};
+            const add = (stage, slug, r, x) => {
+              if (!slug) return;
+              const k = stage + "|" + slug;
+              (grp[k] ||= { stage, slug, repro: [], xsim: [] });
+              if (r != null) grp[k].repro.push(r);
+              if (x != null) grp[k].xsim.push(x);
+            };
+            for (const st of this._reproPipeStats()) {
+              const xs = simX.get(st.slug);
+              add("field_mapping", st.field_mapping, st[mk], xs);
+              add("bfr", st.bfr, st[mk], xs);
+              if (CHI_STAGES.has(this._stageOf(st.final))) add("dipole", st.final, st[mk], xs);
+            }
+            const SC = { field_mapping: "#10b981", bfr: "#e11d48", dipole: "#f59e0b" };
+            const SL = { field_mapping: "Field mapping", bfr: "Background removal", dipole: "Dipole / χ-map" };
+            const pts = Object.values(grp).map((g) => ({ stage: g.stage, slug: g.slug, name: this.algoName(g.slug),
+              x: this._median(g.xsim), y: this._median(g.repro), n: g.repro.length })).filter((p) => p.x != null && p.y != null);
+            if (pts.length < 3) return `<svg width="640" height="120"><text x="320" y="60" text-anchor="middle" fill="currentColor" opacity="0.4" style="font-size:12px">Not enough methods with both an in-silico score and a reproducibility fit yet.</text></svg>`;
+            const w = 760, h = 500, padL = 62, padR = 152, padT = 22, padB = 52;
+            const xmax = Math.max(...pts.map((p) => p.x)) * 1.06 || 0.1, ymax = Math.max(...pts.map((p) => p.y)) * 1.06 || 0.1;
+            const X = (v) => padL + v / xmax * (w - padL - padR), Y = (v) => h - padB - v / ymax * (h - padT - padB);
+            let s = `<svg width="${w}" height="${h}" style="max-width:100%;height:auto">`;
+            s += `<line x1="${padL}" y1="${h - padB}" x2="${w - padR}" y2="${h - padB}" stroke="currentColor" opacity="0.25"/>`;
+            s += `<line x1="${padL}" y1="${padT}" x2="${padL}" y2="${h - padB}" stroke="currentColor" opacity="0.25"/>`;
+            for (let i = 0; i <= 4; i++) {
+              const f = i / 4, vx = f * xmax, x = X(vx);
+              s += `<line x1="${x}" y1="${padT}" x2="${x}" y2="${h - padB}" stroke="currentColor" opacity="0.05"/>`;
+              s += `<text x="${x}" y="${h - padB + 15}" text-anchor="middle" fill="currentColor" opacity="0.45" style="font-size:9px">${vx.toFixed(2)}</text>`;
+              const vy = f * ymax, y = Y(vy);
+              s += `<line x1="${padL}" y1="${y}" x2="${w - padR}" y2="${y}" stroke="currentColor" opacity="0.05"/>`;
+              s += `<text x="${padL - 7}" y="${y + 3}" text-anchor="end" fill="currentColor" opacity="0.45" style="font-size:9px">${(vy * 100).toFixed(0)}%</text>`;
+            }
+            s += `<text x="${(padL + w - padR) / 2}" y="${h - 6}" text-anchor="middle" fill="currentColor" opacity="0.6" style="font-size:11px">In-silico xSIM (accuracy) →</text>`;
+            s += `<text transform="translate(15,${(padT + h - padB) / 2}) rotate(-90)" text-anchor="middle" fill="currentColor" opacity="0.6" style="font-size:11px">${this._reproMetricLabel()} |a−1| — lower is more reproducible</text>`;
+            s += `<text x="${w - padR - 6}" y="${h - padB - 6}" text-anchor="end" fill="#10b981" opacity="0.8" style="font-size:10px;font-weight:600">reproducible &amp; accurate ◢</text>`;
+            let ly = padT + 8;
+            for (const st of ["field_mapping", "bfr", "dipole"]) {
+              s += `<circle cx="${w - padR + 16}" cy="${ly}" r="4" fill="${SC[st]}"/><text x="${w - padR + 24}" y="${ly + 3}" fill="currentColor" opacity="0.78" style="font-size:10px">${this._esc(SL[st])}</text>`;
+              ly += 16;
+            }
+            // Every method is a hoverable dot; persistent labels are de-conflicted on a coarse grid
+            // (one label per cell, prioritising the best trade-off toward the bottom-right) so dense
+            // clusters don't pile into an unreadable heap. Hover any unlabelled dot for its name/numbers.
+            const gw = 62, gh = 11, taken = new Set(), labelled = new Set();
+            [...pts].sort((a, b) => (b.x / xmax - b.y / ymax) - (a.x / xmax - a.y / ymax)).forEach((p) => {
+              const cell = Math.round((X(p.x) + 5) / gw) + ":" + Math.round(Y(p.y) / gh);
+              if (!taken.has(cell)) { taken.add(cell); labelled.add(p.slug); }
+            });
+            pts.forEach((p) => {
+              const c = SC[p.stage], px = X(p.x), py = Y(p.y);
+              s += `<g data-tip="${this._esc(`${p.name} (${SL[p.stage]}): xSIM ${p.x.toFixed(3)}, ${this._reproMetricLabel()} |a−1| ${(p.y * 100).toFixed(1)}%, over ${p.n} pipelines`)}">`;
+              s += `<circle cx="${px}" cy="${py}" r="3.4" fill="${c}" opacity="0.9"/>`;
+              if (labelled.has(p.slug)) s += `<text x="${px + 5}" y="${py + 3}" fill="${c}" opacity="0.72" style="font-size:8px">${this._esc(p.name)}</text>`;
+              s += `</g>`;
             });
             return s + "</svg>";
           });
