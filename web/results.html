@@ -1107,9 +1107,16 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
               <template x-for="p in reproProtocols()" :key="p"><option :value="p" x-text="reproProtoLabel(p)"></option></template>
             </select>
           </div>
+          <div class="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+            <span class="has-tip" data-tip="Hide pipelines whose in-silico (2019) xSIM is below this accuracy floor (and those with no in-silico run). Combine with the sort to find the most reproducible pipeline that still clears the bar.">Min in-silico xSIM</span>
+            <input type="range" min="0" :max="reproXsimMax()" step="0.01" x-model.number="reproMinXsim" class="w-32 accent-emerald-500" />
+            <span class="tabular-nums font-medium text-gray-700 dark:text-gray-200 w-8" x-text="reproMinXsim>0 ? reproMinXsim.toFixed(2) : 'off'"></span>
+            <button x-show="reproMinXsim>0" @click="reproMinXsim=0" class="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" title="clear the accuracy floor">clear</button>
+          </div>
           <div class="grow"></div>
           <input x-model="filter" type="search" placeholder="Filter…" class="rounded-lg border-gray-300 text-sm px-3 py-1.5 w-44 focus:border-emerald-500 focus:ring-emerald-500" />
         </div>
+        <p x-show="reproMinXsim>0" class="mt-2 text-xs text-emerald-700 dark:text-emerald-400"><span x-text="reproPipeRows().length"></span> pipeline(s) with in-silico xSIM &ge; <span x-text="reproMinXsim.toFixed(2)"></span>, ranked by reproducibility.</p>
         <p class="mt-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
           How reproducible is each <em>reconstruction pipeline</em> across acquisitions of the same head?
           Median |a&minus;1| over the pairwise per-ROI orthogonal fits in each comparison class (robust to the
@@ -1376,7 +1383,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         tab: "leaderboard", lbView: "pipelines", pipeView: "matrix", findView: "pipelines", view: "composed",
         chisepView: "board", invivoView: "board",   // per-dataset Leaderboard / Info subtab
         // harmonization (repro) dataset state
-        reproView: "protocols", reproData: null, reproProto: "all", reproSortKey: "inter", reproDir: "asc",
+        reproView: "protocols", reproData: null, reproProto: "all", reproSortKey: "inter", reproDir: "asc", reproMinXsim: 0,
         reproFindMetric: "inter", reproHighlight: "",   // Findings: which repro class the figures key on + frontier highlight
         // leaderboard state
         stage: "dipole", fmap: "gt", variant: "default",
@@ -1717,6 +1724,11 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             return m;
           });
         },
+        // Slider ceiling for the in-silico-xSIM accuracy floor: the best pipeline's xSIM, rounded up.
+        reproXsimMax() {
+          const vals = [...this._simXsimMap().values()];
+          return vals.length ? Math.ceil(Math.max(...vals) * 20) / 20 : 0.4;   // nearest 0.05
+        },
         reproPipeRows() {
           const rows = [];
           const simX = this._simXsimMap();
@@ -1727,6 +1739,10 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             const name = this.reproName(slug);
             if (this.filter && !name.toLowerCase().includes(this.filter.toLowerCase())) continue;
             const xs = simX.get(slug);
+            // Accuracy floor: with a min-xSIM set, drop pipelines below it (and those with no in-silico
+            // run, whose accuracy can't be confirmed) so the reproducibility sort surfaces the most
+            // reproducible pipeline that still clears the accuracy bar.
+            if (this.reproMinXsim > 0 && (xs == null || xs < this.reproMinXsim)) continue;
             rows.push({ slug, name,
                         tr: this._pct(this._median(tr)), inter: this._pct(this._median(inter)), iproto: this._pct(this._median(ip)),
                         xsim: xs == null ? "—" : fmt(xs, "xsim"),
