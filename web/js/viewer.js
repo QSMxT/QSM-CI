@@ -20,7 +20,35 @@ const DATASET_BADGE = {
   qsm:    ["In silico (2019)", "bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/20"],
   chisep: ["χ-separation",     "bg-indigo-50 text-indigo-700 ring-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-300 dark:ring-indigo-500/20"],
   invivo: ["In vivo (2016)",   "bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/20"],
+  repro:  ["Harmonization (2026)", "bg-sky-50 text-sky-700 ring-sky-200 dark:bg-sky-500/10 dark:text-sky-300 dark:ring-sky-500/20"],
 };
+
+// ── Harmonization (repro) mode ─────────────────────────────────────────────────────────────────
+// The repro track has no per-run leaderboard entry — a pipeline's reconstruction lives on the
+// public HF volumes archive at a DETERMINISTIC path (repro/<acq>/<pipeline>-cmp-<acq>__recon.nii.gz,
+// matching pipeline.py's run id + publish_volumes' naming). The submission page enters this mode via
+// ?pipeline=<id>&dataset=repro&acq=<acquisition>: it synthesises a recon-only run object and swaps
+// the ground-truth machinery (truth layer, accuracy metrics) for the pipeline's reproducibility
+// stats + an acquisition picker. Everything below is gated on `reproMode`, so the normal path is
+// byte-identical.
+const HF_VOL_BASE = "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/";
+let reproMode = false, reproPipe = "", reproAcq = "", reproJson = null;
+const reproReconUrl = (pipe, acq) => `${HF_VOL_BASE}repro/${acq}/${pipe.replaceAll("+", "_")}-cmp-${acq}__recon.nii.gz`;
+const simRunIdOf = (pipe) => `${pipe.replaceAll("+", "~")}-cmp`;   // the same pipeline's in-silico composed run id
+function reproRunObj(pipe, acq) {
+  const parts = pipe.split("+");
+  const combo = parts.length >= 3 ? { field_mapping: parts[0], bfr: parts[1], dipole: parts.slice(2).join("+") } : null;
+  return { id: `${pipe.replaceAll("+", "~")}-cmp-${acq}`, slug: pipe,
+           name: parts.map(algoName).join(" → "), track: "repro", phantom: acq,
+           mode: "composed", stage: "field-mapping+bfr+dipole", status: "ok",
+           combo, metrics: {}, volumes: { recon: reproReconUrl(pipe, acq) } };
+}
+const reproAcqOpts = () => Object.entries(datasetsReg).filter(([, v]) => v.track === "repro")
+  .map(([id, v]) => ({ id, label: v.label || id })).sort((a, b) => a.id.localeCompare(b.id));
+const REPRO_SCANNERS = ["prisma", "cima"];
+const REPRO_PROTOS = ["bridge", "local", "pulseq-online", "pulseq-offline"];
+const REPRO_RUNS = ["run1", "run2", "run3"];
+const acqExists = (id) => reproAcqOpts().some((a) => a.id === id);
 
 // Stage I/O for generating "how to run" qsm-ci commands (mirrors stages.yml; magnitude is optional
 // and omitted for brevity). Each stage's output filename is the next stage's input, so a composed
@@ -73,6 +101,7 @@ const QSMXT_FLAG = {
 function renderHowToRun() {
   const el = $("how-to-run");
   if (!el) return;
+  if (reproMode) { el.classList.add("hidden"); return; }
   const bySlug = Object.fromEntries(algos.map((a) => [a.slug, a]));
   const stageOf = (s) => (bySlug[s] ? bySlug[s].stage : null);
   const isQsmRs = (slug) => { const a = bySlug[slug]; return !!(a && a.engine && a.engine.includes("QSM.rs")); };
@@ -207,9 +236,10 @@ const isInvivo = (r) => r.track === "invivo";
 const invivoRuns = () => allRuns.filter((r) => isInvivo(r) && (r.variant || "default") === "default");
 const hasInvivo = () => invivoRuns().length > 0;
 // Which dataset/domain sidebar view a run belongs to.
-const datasetOf = (r) => isInvivo(r) ? "invivo"
+const datasetOf = (r) => r?.track === "repro" ? "repro"
+  : isInvivo(r) ? "invivo"
   : (r.domain === "chisep" || r.stage === "chi-separation") ? "chisep" : "qsm";
-const DATASET_LABEL = { invivo: "In vivo (2016)", qsm: "In silico (2019)", chisep: "χ-sep (2026)" };
+const DATASET_LABEL = { invivo: "In vivo (2016)", qsm: "In silico (2019)", chisep: "χ-sep (2026)", repro: "Harmonization (2026)" };
 
 // The isolated-dipole run for `slug` on a given dataset — the "same algorithm, other dataset" target.
 // Only dipole methods span the 2016/2019 datasets (in-vivo scores dipole only).
@@ -345,6 +375,16 @@ function invivoHTML() {
   return `<div class="mb-3"><div class="px-2.5 pt-1 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">In vivo (2016) · dipole</div>${rows}</div>`;
 }
 function buildSidebar() {
+  // Harmonization mode has no leaderboard list to browse — the acquisition pickers live in the
+  // dataset switch. Collapse the sidebar to a short note.
+  if (reproMode) {
+    const list = $("run-list");
+    if (list) list.innerHTML = `<p class="px-2 py-3 text-xs text-gray-400 dark:text-gray-500">Harmonization pipeline. Use the dataset toggle and the scanner/protocol/run pickers above the viewer, or switch to <em>In silico (2019)</em> to see this pipeline scored against ground truth.</p>`;
+    $("nav-toggle")?.classList.add("hidden");
+    $("domain-toggle")?.classList.add("hidden");
+    $("run-filter")?.parentElement?.classList.add("hidden");
+    return;
+  }
   // Fall back to the in-silico dataset if the selected one has no runs.
   if (domain === "chisep" && !hasChisep()) domain = "qsm";
   if (domain === "invivo" && !hasInvivo()) domain = "qsm";
@@ -366,7 +406,69 @@ function buildSidebar() {
 }
 // In-content dataset switch, shown above the viewer/metrics only for a dipole method that has an
 // isolated run on more than one dataset (In vivo 2016 / In silico 2019): swap dataset, same method.
+// Harmonization view: a dataset toggle (In silico ⇄ Harmonization) plus scanner/protocol/run pickers
+// for the acquisition, rendered into the same #dataset-switch slot the in-silico/in-vivo toggle uses.
+function renderReproSwitch() {
+  const el = $("dataset-switch");
+  if (!el) return;
+  const parts = reproAcq.split("-");
+  const scanner = parts[0], runNo = parts[parts.length - 1], proto = parts.slice(1, -1).join("-");
+  const simId = simRunIdOf(reproPipe);
+  const hasSim = allRuns.some((r) => r.id === simId);
+  const tbtn = (dom, label, active, extra) =>
+    `<button ${extra} class="rounded-md px-3 py-1.5 transition ${active
+      ? "bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100"
+      : "text-gray-500 hover:text-gray-700 dark:text-gray-400"}">${label}</button>`;
+  const sel = (id, opts, cur) =>
+    `<select data-repro="${id}" class="rounded-lg border-gray-300 text-xs py-1 dark:bg-gray-800 dark:border-gray-700">`
+    + opts.map((o) => `<option value="${o.v}" ${o.v === cur ? "selected" : ""}>${o.l}</option>`).join("") + `</select>`;
+  el.innerHTML = `<div class="flex flex-wrap items-center gap-3">
+    <span class="text-xs font-semibold uppercase tracking-wide text-gray-400">Dataset</span>
+    <div class="inline-flex rounded-lg bg-gray-100 p-1 text-xs font-medium dark:bg-gray-800">
+      ${tbtn("qsm", "In silico (2019)", false, hasSim ? `data-sim="${simId}"` : "disabled title='this pipeline has no in-silico run'")}
+      ${tbtn("repro", "Harmonization (2026)", true, "")}
+    </div>
+    <span class="text-xs text-gray-400 dark:text-gray-500">same pipeline — switch the dataset it ran on</span>
+    <div class="ml-auto flex items-center gap-2">
+      ${sel("scanner", REPRO_SCANNERS.map((s) => ({ v: s, l: s === "cima" ? "Cima.X" : "Prisma" })), scanner)}
+      ${sel("proto", REPRO_PROTOS.map((p) => ({ v: p, l: p.replace("pulseq-online", "Pulseq online").replace("pulseq-offline", "Pulseq offline") })), proto)}
+      ${sel("run", REPRO_RUNS.map((r) => ({ v: r, l: r })), runNo)}
+    </div>
+  </div>`;
+  const simBtn = el.querySelector("[data-sim]");
+  if (simBtn) simBtn.addEventListener("click", () => { location.href = "?run=" + encodeURIComponent(simBtn.dataset.sim); });
+  el.querySelectorAll("[data-repro]").forEach((s) => s.addEventListener("change", () => {
+    const g = (k) => el.querySelector(`[data-repro="${k}"]`).value;
+    const acq = `${g("scanner")}-${g("proto")}-${g("run")}`;
+    reproAcq = acq;
+    run = reproRunObj(reproPipe, acq);
+    history.replaceState(null, "", `?pipeline=${encodeURIComponent(reproPipe)}&dataset=repro&acq=${acq}`);
+    loadRun();
+  }));
+  el.classList.remove("hidden");
+}
+
+// Reproducibility stats for the open pipeline (from repro.json) in place of the accuracy metrics.
+function renderReproStats() {
+  $("metrics-tabs")?.classList.add("hidden");
+  $("metrics-regions-wrap")?.classList.add("hidden");
+  const node = reproJson?.pipelines?.[reproPipe];
+  $("metrics-sub").textContent = "Reproducibility of this pipeline across the harmonization acquisitions — orthogonal per-ROI ax+b fits, |a−1| (median).";
+  const pct = (v) => (v == null ? "—" : (100 * v).toFixed(1) + "%");
+  const row = (label, v, tip) =>
+    `<tr class="border-t border-gray-100 dark:border-gray-800"><td class="py-1.5 pr-3 text-gray-600 dark:text-gray-300"><span class="has-tip" data-tip="${tip}">${label}</span></td>`
+    + `<td class="py-1.5 text-right tabular-nums font-medium text-gray-900 dark:text-gray-100">${pct(v)}</td></tr>`;
+  const body = node
+    ? row("Test–retest |a−1|", node.test_retest_mean_abs_slope_dev, "Within-scanner run-to-run, median over pairs. Lower = more repeatable.")
+      + row("Inter-scanner |a−1|", node.inter_scanner_mean_abs_slope_dev, "Prisma↔Cima for matched protocol+run. The harmonization headline.")
+      + row("vs bridge |a−1|", node.inter_protocol_mean_abs_slope_dev, "Each protocol vs the bridge protocol, same scanner.")
+    : `<tr><td class="py-3 text-gray-400" colspan="2">No reproducibility summary for this pipeline yet.</td></tr>`;
+  $("metrics-body").innerHTML = body;
+  const wrap = $("metrics-table-wrap"); if (wrap) wrap.classList.remove("hidden");
+}
+
 function renderDatasetSwitch() {
+  if (reproMode) return renderReproSwitch();
   const el = $("dataset-switch");
   if (!el) return;
   const peers = datasetPeers();
@@ -483,6 +585,10 @@ function methodCard(a) {
 }
 function renderMethodInfo() {
   const el = $("method-info");
+  if (reproMode) {   // a pipeline (3 stages), not one method — name the stage chain
+    el.innerHTML = `<p class="text-sm text-gray-500 dark:text-gray-400">Pipeline: <span class="font-medium text-gray-700 dark:text-gray-300">${reproPipe.split("+").map(algoName).join(" → ")}</span>, reconstructed on <span class="font-medium text-gray-700 dark:text-gray-300">${(datasetsReg[reproAcq] || {}).label || reproAcq}</span>. No ground truth exists for in-vivo acquisitions, so this shows the χ map and the pipeline's cross-acquisition reproducibility.</p>`;
+    return;
+  }
   const bySlug = Object.fromEntries(algos.map((a) => [a.slug, a]));
   const cards = [];
   if (run.combo) {
@@ -581,7 +687,12 @@ async function loadRun() {
   if (!hasError) showError = false;
   $("t-error").disabled = !hasError;
   $("t-error").checked = showError;
+  // Harmonization runs are recon-only (no ground truth / error) — force the recon base.
+  if (reproMode) { curBase = "recon"; $("t-error").closest("label")?.classList.add("hidden"); }
   setLayerActive(curBase);
+  // Hide the Ground-truth layer button AFTER setLayerActive (it rewrites every button's className),
+  // so nothing can switch the base to a nonexistent truth volume.
+  if (reproMode) $("layer-tabs")?.querySelector('[data-layer="truth"]')?.classList.add("hidden");
   // χ-separation runs get a χ+ / χ− source toggle; other runs hide it.
   $("chisep-tabs").classList.toggle("hidden", !isChisepRun());
   if (isChisepRun()) setChisepActive(chisepComp);
@@ -735,6 +846,7 @@ const REGION_ORDER = ["1", "2", "3", "4", "5", "6", "7", "9", "8", "10", "11", "
 const p3 = (v) => (v < 0 ? "−" : "") + Math.abs(v).toFixed(3);
 
 function renderMetricsPanel() {
+  if (reproMode) return renderReproStats();
   const entry = runRegions;
   const tabs = $("metrics-tabs");
   tabs.classList.toggle("hidden", !entry);
@@ -1057,6 +1169,20 @@ async function init() {
   // Accept ?run=<run-id> (e.g. ismv-iso), or a bare slug via ?run= / ?method= (e.g. ?method=ismv,
   // the form Zenodo records link to) → resolve to that algorithm's isolated run.
   const q = new URLSearchParams(location.search);
+  // Harmonization (repro) entry: ?pipeline=<id>&dataset=repro&acq=<acquisition>. No index.json run —
+  // synthesise a recon-only run from the deterministic HF path and render the repro view.
+  if (q.get("pipeline") && q.get("dataset") === "repro") {
+    reproMode = true;
+    reproPipe = q.get("pipeline");
+    reproAcq = acqExists(q.get("acq")) ? q.get("acq") : "cima-bridge-run1";
+    try { reproJson = await (await fetch("results/repro.json", { cache: "no-store" })).json(); } catch { reproJson = null; }
+    run = reproRunObj(reproPipe, reproAcq);
+    domain = "repro";
+    $("run-filter")?.addEventListener("input", () => {});
+    buildSidebar();
+    await loadRun();
+    return;
+  }
   const want = q.get("run") || q.get("method");
   run = allRuns.find((r) => r.id === want)
     || allRuns.find((r) => r.mode === "isolated" && r.slug === want)

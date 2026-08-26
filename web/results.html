@@ -16,11 +16,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
   <script src="js/app.js"></script>
-  <!-- Repro reconstruction viewer (NiiVue ES module) bridged onto window for the Alpine component -->
-  <script type="module">
-    import { initReproViewer, loadReproPair, setReproWindow, reconUrl } from "./js/reproViewer.js";
-    window.reproViewer = { initReproViewer, loadReproPair, setReproWindow, reconUrl };
-  </script>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.15.12/dist/cdn.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
@@ -1050,52 +1045,6 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         <button class="rtab" :class="{'rtab-on': reproView==='info'}" @click="reproView='info'">Info</button>
         <button class="rtab" :class="{'rtab-on': reproView==='protocols'}" @click="reproView='protocols'">Protocol reproducibility</button>
         <button class="rtab" :class="{'rtab-on': reproView==='pipelines'}" @click="reproView='pipelines'">Pipeline reproducibility</button>
-        <button class="rtab" :class="{'rtab-on': reproView==='recons'}" @click="reproView='recons'; $nextTick(() => reproLoadRecons())">Reconstructions</button>
-      </div>
-
-      <!-- Harmonization · Reconstructions (side-by-side χ maps across acquisitions) -->
-      <div x-show="reproView==='recons'" x-cloak>
-        <p class="mt-6 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-          Reproducibility is visual as much as numeric: does a pipeline produce the <em>same</em> susceptibility map
-          on two acquisitions of the same head? Pick a pipeline and two acquisitions (e.g. the two scanners) to
-          compare its &chi; maps side by side — crosshair-synced, streamed from the public volume archive.
-        </p>
-        <div class="mt-4 flex flex-wrap items-end gap-3">
-          <label class="flex flex-col gap-1 text-xs text-gray-500">Pipeline
-            <select :value="reproVpipe" @change="reproVpipe=$event.target.value; reproLoadRecons()" class="rounded-lg border-gray-300 text-sm py-1.5" style="width:22rem;max-width:100%">
-              <template x-for="o in reproPipeOptions()" :key="o.id"><option :value="o.id" :selected="o.id===reproVpipe" x-text="o.name"></option></template>
-            </select>
-          </label>
-          <label class="flex flex-col gap-1 text-xs text-gray-500">Acquisition A
-            <select :value="reproAcqA" @change="reproAcqA=$event.target.value; reproLoadRecons()" class="rounded-lg border-gray-300 text-sm py-1.5">
-              <template x-for="a in reproAcqOptions()" :key="a.id"><option :value="a.id" :selected="a.id===reproAcqA" x-text="a.label"></option></template>
-            </select>
-          </label>
-          <label class="flex flex-col gap-1 text-xs text-gray-500">Acquisition B
-            <select :value="reproAcqB" @change="reproAcqB=$event.target.value; reproLoadRecons()" class="rounded-lg border-gray-300 text-sm py-1.5">
-              <template x-for="a in reproAcqOptions()" :key="a.id"><option :value="a.id" :selected="a.id===reproAcqB" x-text="a.label"></option></template>
-            </select>
-          </label>
-          <label class="flex flex-col gap-1 text-xs text-gray-500">Window &plusmn;<span x-text="reproWin.toFixed(2)"></span> ppm
-            <input type="range" min="0.03" max="0.30" step="0.01" x-model.number="reproWin"
-                   @input="window.reproViewer && window.reproViewer.setReproWindow(reproWin)" class="w-40 accent-emerald-600" />
-          </label>
-        </div>
-        <div class="mt-4" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1rem">
-          <div class="overflow-hidden rounded-2xl border border-gray-200 bg-black shadow-sm">
-            <div class="flex items-center justify-between px-3 py-1.5 text-xs text-gray-300 bg-gray-900">
-              <span x-text="reproAcqLabel(reproAcqA)"></span><span id="repro-status-a" class="text-amber-400"></span>
-            </div>
-            <canvas id="repro-gl-a" height="360" class="w-full" style="aspect-ratio:1/1"></canvas>
-          </div>
-          <div class="overflow-hidden rounded-2xl border border-gray-200 bg-black shadow-sm">
-            <div class="flex items-center justify-between px-3 py-1.5 text-xs text-gray-300 bg-gray-900">
-              <span x-text="reproAcqLabel(reproAcqB)"></span><span id="repro-status-b" class="text-amber-400"></span>
-            </div>
-            <canvas id="repro-gl-b" height="360" class="w-full" style="aspect-ratio:1/1"></canvas>
-          </div>
-        </div>
-        <p class="mt-3 text-xs text-gray-400">Gray χ map in ppm (window slider above). Crosshairs are synced across the two panels. A blank panel with a note means that pipeline didn&rsquo;t produce a map for that acquisition.</p>
       </div>
 
       <!-- Harmonization · Protocol reproducibility -->
@@ -1173,13 +1122,13 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
               </thead>
               <tbody class="divide-y divide-gray-100">
                 <template x-for="(row,i) in reproPipeRows()" :key="row.slug">
-                  <tr>
-                    <td class="px-4 py-3 text-right tabular-nums text-gray-400" x-text="i+1"></td>
-                    <td class="px-5 py-3 text-left font-medium text-gray-900" x-text="row.name"></td>
-                    <td class="px-4 py-3 text-right tabular-nums" :class="reproSortKey==='tr'?'font-semibold text-gray-900':'text-gray-600'" x-text="row.tr"></td>
-                    <td class="px-4 py-3 text-right tabular-nums" :class="reproSortKey==='inter'?'font-semibold text-gray-900':'text-gray-600'" x-text="row.inter"></td>
-                    <td class="px-4 py-3 text-right tabular-nums" :class="reproSortKey==='iproto'?'font-semibold text-gray-900':'text-gray-600'" x-text="row.iproto"></td>
-                    <td class="px-4 py-3 text-right tabular-nums text-gray-500" x-text="row.n"></td>
+                  <tr @click="goRepro(row.slug)" class="group cursor-pointer">
+                    <td class="px-4 py-3 text-right tabular-nums text-gray-400 group-hover:bg-emerald-50/40" x-text="i+1"></td>
+                    <td class="px-5 py-3 text-left font-medium text-gray-900 group-hover:bg-emerald-50/40 group-hover:text-emerald-700" x-text="row.name"></td>
+                    <td class="px-4 py-3 text-right tabular-nums group-hover:bg-emerald-50/40" :class="reproSortKey==='tr'?'font-semibold text-gray-900':'text-gray-600'" x-text="row.tr"></td>
+                    <td class="px-4 py-3 text-right tabular-nums group-hover:bg-emerald-50/40" :class="reproSortKey==='inter'?'font-semibold text-gray-900':'text-gray-600'" x-text="row.inter"></td>
+                    <td class="px-4 py-3 text-right tabular-nums group-hover:bg-emerald-50/40" :class="reproSortKey==='iproto'?'font-semibold text-gray-900':'text-gray-600'" x-text="row.iproto"></td>
+                    <td class="px-4 py-3 text-right tabular-nums text-gray-500 group-hover:bg-emerald-50/40" x-text="row.n"></td>
                   </tr>
                 </template>
               </tbody>
@@ -1338,7 +1287,6 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         chisepView: "board", invivoView: "board",   // per-dataset Leaderboard / Info subtab
         // harmonization (repro) dataset state
         reproView: "protocols", reproData: null, reproProto: "all", reproSortKey: "inter", reproDir: "asc",
-        reproVpipe: "", reproAcqA: "prisma-bridge-run1", reproAcqB: "cima-bridge-run1", reproWin: 0.12,
         // leaderboard state
         stage: "dipole", fmap: "gt", variant: "default",
         metric: "xsim", sortKey: "xsim", sortDir: "desc", filter: "",
@@ -1411,7 +1359,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           if (q.get("dataset") === "cross") this.dataset = "cross";
           if (q.get("dataset") === "repro") {
             this.dataset = "repro";
-            if (["info", "protocols", "pipelines", "recons"].includes(q.get("sub"))) this.reproView = q.get("sub");
+            if (["info", "protocols", "pipelines"].includes(q.get("sub"))) this.reproView = q.get("sub");
           }
           const t = q.get("tab");
           if (["info", "leaderboard", "findings"].includes(t)) this.tab = t;
@@ -1691,31 +1639,13 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           }
           return rows;
         },
-        // ---- Reconstructions viewer ----
-        // Pipelines to choose from, ordered by inter-scanner reproducibility (best first) so the
-        // default is the most reproducible pipeline.
-        reproPipeOptions() {
-          return Object.keys(this._reproPipes())
-            .map((id) => ({ id, name: this.reproName(id),
-                            _s: this._median(this._reproVals(this._reproPipes()[id], "inter_scanner", "all")) ?? Infinity }))
-            .sort((a, b) => a._s - b._s);
-        },
-        // The 23 repro acquisitions (id + human label) from the embedded dataset registry.
-        reproAcqOptions() {
-          return Object.entries(this.datasetsReg || {})
-            .filter(([, v]) => v.track === "repro")
-            .map(([id, v]) => ({ id, label: v.label || id }))
-            .sort((a, b) => a.id.localeCompare(b.id));
-        },
-        reproAcqLabel(id) { return (this.datasetsReg?.[id]?.label) || id; },
-        reproLoadRecons() {
-          if (!window.reproViewer) return;              // module still loading
-          window.reproViewer.initReproViewer();
-          if (!this.reproVpipe) {                        // default to the most reproducible pipeline
-            const opts = this.reproPipeOptions();
-            this.reproVpipe = opts.length ? opts[0].id : "";
-          }
-          if (this.reproVpipe) window.reproViewer.loadReproPair(this.reproVpipe, this.reproAcqA, this.reproAcqB, this.reproWin);
+        // Open a repro pipeline on the submission page, defaulting to the harmonization dataset with
+        // the registration-target acquisition selected (the page's dataset toggle + acquisition
+        // dropdowns then switch scanner/protocol/run, or back to the in-silico scoring of the same
+        // pipeline).
+        goRepro(pipelineId) {
+          location.href = "submission.html?pipeline=" + encodeURIComponent(pipelineId)
+            + "&dataset=repro&acq=cima-bridge-run1";
         },
         chiVal(r, k) {
           const m = r.metrics || {};
