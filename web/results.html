@@ -1118,6 +1118,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
                   <th @click="reproSortBy('tr')" class="px-4 py-2.5 text-right font-medium cursor-pointer select-none hover:text-gray-800"><span class="has-tip" data-tip="Within-scanner run-to-run |a−1| (mean over pairs). Lower is more repeatable.">Test&ndash;retest |a&minus;1|</span> <span x-show="reproSortKey==='tr'" x-text="reproDir==='asc'?'↑':'↓'"></span></th>
                   <th @click="reproSortBy('inter')" class="px-4 py-2.5 text-right font-medium cursor-pointer select-none hover:text-gray-800"><span class="has-tip" data-tip="Prisma↔Cima |a−1| for matched protocol+run (mean over pairs). The harmonization headline.">Inter-scanner |a&minus;1|</span> <span x-show="reproSortKey==='inter'" x-text="reproDir==='asc'?'↑':'↓'"></span></th>
                   <th @click="reproSortBy('iproto')" class="px-4 py-2.5 text-right font-medium cursor-pointer select-none hover:text-gray-800"><span class="has-tip" data-tip="|a−1| between each protocol and the bridge protocol on the same scanner (mean over pairs).">vs bridge |a&minus;1|</span> <span x-show="reproSortKey==='iproto'" x-text="reproDir==='asc'?'↑':'↓'"></span></th>
+                  <th @click="reproSortBy('xsim')" class="px-4 py-2.5 text-right font-medium cursor-pointer select-none hover:text-gray-800 border-l border-gray-200"><span class="has-tip" data-tip="In-silico (2019) accuracy of the same pipeline: xSIM against ground truth on the phantom, higher is better. Blank if that pipeline has no in-silico run.">In-silico xSIM</span> <span x-show="reproSortKey==='xsim'" x-text="reproDir==='asc'?'↑':'↓'"></span></th>
                   <th class="px-4 py-2.5 text-right font-medium"><span class="has-tip" data-tip="Number of pairwise comparisons behind the means.">Pairs</span></th>
                 </tr>
               </thead>
@@ -1129,6 +1130,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
                     <td class="px-4 py-3 text-right tabular-nums group-hover:bg-emerald-50/40" :class="reproSortKey==='tr'?'font-semibold text-gray-900':'text-gray-600'" x-text="row.tr"></td>
                     <td class="px-4 py-3 text-right tabular-nums group-hover:bg-emerald-50/40" :class="reproSortKey==='inter'?'font-semibold text-gray-900':'text-gray-600'" x-text="row.inter"></td>
                     <td class="px-4 py-3 text-right tabular-nums group-hover:bg-emerald-50/40" :class="reproSortKey==='iproto'?'font-semibold text-gray-900':'text-gray-600'" x-text="row.iproto"></td>
+                    <td class="px-4 py-3 text-right tabular-nums border-l border-gray-100 group-hover:bg-emerald-50/40" :class="reproSortKey==='xsim'?'font-semibold text-gray-900':'text-gray-600'" x-text="row.xsim"></td>
                     <td class="px-4 py-3 text-right tabular-nums text-gray-500 group-hover:bg-emerald-50/40" x-text="row.n"></td>
                   </tr>
                 </template>
@@ -1679,27 +1681,51 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         _median(v) { if (!v.length) return null; const s = [...v].sort((a, b) => a - b); const m = Math.floor(s.length / 2); return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; },
         _pctile(v, p) { if (!v.length) return null; const s = [...v].sort((a, b) => a - b); return s[Math.min(s.length - 1, Math.max(0, Math.round((p / 100) * (s.length - 1))))]; },
         _pct(x) { return x == null ? "—" : (100 * x).toFixed(1) + "%"; },
+        // In-silico (2019) accuracy of each pipeline: xSIM of its ground-truth-scored composed run,
+        // keyed by the harmonization pipeline slug (`fm+bfr+dipole`). Lets the reproducibility table
+        // show accuracy alongside repeatability. Missing (e.g. a pipeline with no in-silico run) → absent.
+        _simXsimMap() {
+          return _cache("simXsim", this.runs.length, () => {
+            const m = new Map();
+            for (const r of this.runs) {
+              if (r.mode === "composed" && r.combo && !r.combo.chi_separation && typeof r.id === "string" && r.id.endsWith("-cmp")) {
+                const v = val(r, "xsim");
+                if (v != null) m.set(r.id.slice(0, -4).replaceAll("~", "+"), v);
+              }
+            }
+            return m;
+          });
+        },
         reproPipeRows() {
           const rows = [];
+          const simX = this._simXsimMap();
           for (const [slug, node] of Object.entries(this._reproPipes())) {
             const tr = this._reproVals(node, "test_retest", this.reproProto);
             const inter = this._reproVals(node, "inter_scanner", this.reproProto);
             const ip = this._reproVals(node, "inter_protocol", this.reproProto);
             const name = this.reproName(slug);
             if (this.filter && !name.toLowerCase().includes(this.filter.toLowerCase())) continue;
+            const xs = simX.get(slug);
             rows.push({ slug, name,
                         tr: this._pct(this._median(tr)), inter: this._pct(this._median(inter)), iproto: this._pct(this._median(ip)),
+                        xsim: xs == null ? "—" : fmt(xs, "xsim"),
                         n: tr.length + inter.length + ip.length,
-                        _tr: this._median(tr), _inter: this._median(inter), _ip: this._median(ip) });
+                        _tr: this._median(tr), _inter: this._median(inter), _ip: this._median(ip), _xsim: xs == null ? null : xs });
           }
-          const key = { tr: "_tr", inter: "_inter", iproto: "_ip" }[this.reproSortKey] || "_inter";
-          const val = (x) => (x == null ? Infinity : x);   // pipelines with no fit sort last
-          rows.sort((a, b) => (val(a[key]) - val(b[key])) * (this.reproDir === "asc" ? 1 : -1));
+          const key = { tr: "_tr", inter: "_inter", iproto: "_ip", xsim: "_xsim" }[this.reproSortKey] || "_inter";
+          const dir = this.reproDir === "asc" ? 1 : -1;
+          rows.sort((a, b) => {   // pipelines with no value for the sorted column always sort last
+            const av = a[key], bv = b[key];
+            if (av == null && bv == null) return 0;
+            if (av == null) return 1;
+            if (bv == null) return -1;
+            return (av - bv) * dir;
+          });
           return rows;
         },
         reproSortBy(k) {
           if (this.reproSortKey === k) this.reproDir = this.reproDir === "asc" ? "desc" : "asc";
-          else { this.reproSortKey = k; this.reproDir = "asc"; }
+          else { this.reproSortKey = k; this.reproDir = k === "xsim" ? "desc" : "asc"; }   // xSIM: higher is better
         },
         reproProtoRows() {
           const rows = [];

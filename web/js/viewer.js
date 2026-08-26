@@ -717,24 +717,14 @@ function variantToggleHTML() {
 
 async function loadRun() {
   $("sub-title").textContent = run.name;
-  const stageCls = STAGE_COLOR[run.stage] || "bg-gray-100 text-gray-600 ring-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-700";
-  const ds = DATASET_BADGE[datasetOf(run)];
-  // A χ-separation run on a non-default phantom names that phantom (registry label) in its badge.
-  const dsLabel = (datasetOf(run) === "chisep" && chisepPhantomOf(run) !== chisepDefaultPhantom())
-    ? phantomLabel(chisepPhantomOf(run)) : ds[0];
+  // No descriptive badges/meta in the title (dataset / stage / mode / artifact were noise) — keep only a
+  // DNF status flag when relevant and the interactive Defaults/Tuned variant toggle.
   $("sub-badges").innerHTML =
-    badge(dsLabel, ds[1]) +
-    badge(STAGE_LABEL[run.stage] || run.stage, stageCls) +
-    badge(run.mode === "composed" ? "Composed pipeline" : "Isolated", "bg-gray-100 text-gray-600 ring-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-700") +
     (run.status === "DNF" ? badge("DNF", "bg-red-50 text-red-600 ring-red-100 dark:bg-red-500/10 dark:text-red-400 dark:ring-red-500/20") : "") +
     variantToggleHTML();
   $("sub-badges").querySelectorAll("[data-variant-id]").forEach((b) =>
     b.addEventListener("click", () => selectRun(b.dataset.variantId)));
-  const bits = [];
-  if (isInvivo(run)) bits.push("2016 challenge · scored vs COSMOS + STI χ33 (no true χ in vivo)");
-  if (run.artifact) bits.push(`scored artifact <code class="text-gray-700 dark:text-gray-300">${run.artifact}</code>`);
-  if (run.image) bits.push(`image <code class="text-gray-700 dark:text-gray-300">${run.image}</code>`);
-  $("sub-meta").innerHTML = bits.join(" · ");
+  $("sub-meta").innerHTML = "";
   renderMethodInfo();
   renderHowToRun();
   renderDatasetSwitch();
