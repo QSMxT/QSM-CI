@@ -36,6 +36,8 @@ const STAGE_IO = {
   // directory and scores against a ground-truth directory.
   "chi-separation": { consumes: ["localfield", "r2prime", "chimap", "magnitude", "mask", "params"],
     produces: ["chi-para", "chi-dia"] },
+  // R2′ estimation: multi-echo GRE magnitude in, R2′ (Hz) out — the GRE-only condition's generators.
+  "r2prime-generation": { consumes: ["magnitude", "mask", "params"], produces: "r2prime" },
 };
 const ARTFILE = { phase: "phase.nii.gz", magnitude: "magnitude.nii.gz", mask: "mask.nii.gz",
   params: "params.json", totalfield: "totalfield.nii.gz", localfield: "localfield.nii.gz",
@@ -271,7 +273,10 @@ function runItem(r, activeId) {
   // ranking metric, following Ridani et al. 2026), falling back to detrended NRMSE where MSPE is absent.
   const m = (r && r.metrics) || {};
   let hv, hk = "xsim";
-  if (m.xsim != null) hv = m.xsim;
+  // R2′ generators headline their detrended NRMSE — the champion-selection metric on the GRE-only
+  // board — rather than xSIM (which is a secondary agreement number for a relaxation map).
+  if (r && r.stage === "r2prime-generation" && m.nrmse_detrend != null) { hv = m.nrmse_detrend; hk = "nrmse_detrend"; }
+  else if (m.xsim != null) hv = m.xsim;
   else if (m.para_mspe != null && m.dia_mspe != null) { hv = (m.para_mspe + m.dia_mspe) / 2; hk = "mspe"; }
   else if (m.para_nrmse_detrend != null && m.dia_nrmse_detrend != null) { hv = (m.para_nrmse_detrend + m.dia_nrmse_detrend) / 2; hk = "nrmse_detrend"; }
   else if (m.para_xsim != null && m.dia_xsim != null) hv = (m.para_xsim + m.dia_xsim) / 2;
@@ -331,11 +336,17 @@ function chisepHTML() {
   // Each row points at the method's run on the currently-selected phantom (`chisepPhantom`, remembered
   // as you browse); the phantom selector above the viewer swaps phantom in place. So the row's headline
   // metric and the volume it opens both track the chosen phantom.
-  const rows = uniq(rs.map((r) => r.slug)).map((slug) => {
-    const r = chisepRunFor(slug, chisepPhantom);
-    return runItem(r, run?.id).replace("%NAME%", r.name);
-  }).join("");
-  return `<div class="mb-3"><div class="px-2.5 pt-1 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">χ-separation</div>${rows}</div>`;
+  const group = (label, pool) => {
+    const rows = uniq(pool.map((r) => r.slug)).map((slug) => {
+      const r = chisepRunFor(slug, chisepPhantom);
+      return runItem(r, run?.id).replace("%NAME%", r.name);
+    }).join("");
+    return rows ? `<div class="mb-3"><div class="px-2.5 pt-1 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">${label}</div>${rows}</div>` : "";
+  };
+  // R2′ generators live on the same phantoms but are their own category — they estimate an input
+  // (R2′ from GRE magnitude), they don't separate sources.
+  return group("χ-separation", rs.filter((r) => r.stage !== "r2prime-generation"))
+       + group("R2′ estimation", rs.filter((r) => r.stage === "r2prime-generation"));
 }
 function invivoHTML() {
   const f = filter.toLowerCase();
@@ -707,8 +718,13 @@ function renderChisepMetrics() {
   $("metrics-body").innerHTML = html || `<tr><td class="py-3 text-gray-400">No metrics for this run.</td></tr>`;
 }
 function renderMetrics() {
-  if (run.domain === "chisep" || run.stage === "chi-separation") { renderChisepMetrics(); return; }
-  $("metrics-sub").textContent = run.mode === "composed" ? "Final χ map vs. ground truth" : `${run.artifact || "output"} vs. ground truth`;
+  // R2′ generators are single-map runs (r2prime vs the phantom's true R2′) — the default renderer
+  // fits (their nrmse/nrmse_detrend/correlation/xsim are plain METRICS keys); only χ-separation
+  // outputs (isolated methods AND the GRE-only composed combos) get the paired χ+/χ− table.
+  if ((run.domain === "chisep" || run.stage === "chi-separation") && run.stage !== "r2prime-generation") { renderChisepMetrics(); return; }
+  $("metrics-sub").textContent = run.stage === "r2prime-generation"
+    ? "Generated R2′ vs. the phantom's true (spin-echo-derived) R2′"
+    : run.mode === "composed" ? "Final χ map vs. ground truth" : `${run.artifact || "output"} vs. ground truth`;
   // Include runtime_s (a top-level field, not under run.metrics) via val(), so it's ranked alongside
   // the accuracy metrics. Object.keys(METRICS) keeps it last, matching its registry order.
   const order = Object.keys(METRICS).filter((k) => val(run, k) != null);
@@ -928,7 +944,12 @@ function wireControls() {
 }
 
 // Volumes are served from the Hugging Face Hub (run.volumes[kind]); fall back to local results/<id>/ for dev.
-const isChisepRun = () => run && (run.domain === "chisep" || run.stage === "chi-separation");
+// R2′ generators share the chisep DOMAIN (they only run on chisep-track phantoms) but are NOT
+// χ-separation runs: one single-map output (r2prime, Hz), no χ+/χ− pair. Composed GRE-only combos
+// (stage "r2prime-generation+chi-separation") DO produce the pair, so only the bare generator stage
+// is excluded here.
+const isR2pRun = () => run && run.stage === "r2prime-generation";
+const isChisepRun = () => run && (run.domain === "chisep" || run.stage === "chi-separation") && !isR2pRun();
 // χ-separation writes a second set of volumes for the χ− source with a "-dia" suffix
 // (recon-dia.nii.gz, truth-dia.nii.gz, error-dia.nii.gz); the χ+ set uses the plain names. HF-backed
 // runs expose each as its own run.volumes key (recon / recon-dia / …); dev falls back to local files.
