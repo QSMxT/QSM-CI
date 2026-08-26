@@ -138,6 +138,14 @@ jobs:
               except FileNotFoundError: return None
               m = re.search(r'^stage:[ \t]*(\S+)', t, re.M)
               return m.group(1) if m else None
+          def is_skipped(slug):
+              # ci_skip'd submissions (e.g. apart-qsm: core solver not distributed) are invisible to
+              # pipeline.py discovery, so any task for them is a guaranteed no-op — don't burn a
+              # runner slot (they were getting self-hosted focus jobs on every full re-run and every
+              # generator fan-out).
+              try: t = open(f'algorithms/{slug}/algorithm.yml').read()
+              except FileNotFoundError: return True
+              return bool(re.search(r'^ci_skip:[ \t]*true', t, re.M))
           def is_chisep(slug):
               # χ-separation methods AND R2′ generators both score on the chisep-track phantoms
               # (generators: isolated vs the true R2′; combos live in the χ-sep methods' focus jobs).
@@ -160,7 +168,7 @@ jobs:
               # its own --focus job with --track invivo on the 'invivo' phantom. Its runs get the
               # `-invivo` id namespace (pipeline.py id_suffix), so they never collide with sim runs.
               return [{'id': 'iv-' + s, 'focus': s, 'phantom': 'invivo', 'track': 'invivo', **route(s)}
-                      for s in sorted(slugs) if is_dipole(s) and not s.startswith('_')]
+                      for s in sorted(slugs) if is_dipole(s) and not s.startswith('_') and not is_skipped(s)]
           def phantoms(slug):
               # Which phantom(s) this method scores on: χ-separation methods run on EVERY active
               # chisep-track phantom (χ+/χ− GT + R2'/χ_total inputs) — one task per method × phantom;
@@ -168,9 +176,10 @@ jobs:
               return track_phantoms('chisep') if is_chisep(slug) else ['sim']
           def focus_tasks(slugs):
               # One focused task per (method, phantom). The default phantom keeps the legacy
-              # 'f-<slug>' task id; extra phantoms get 'f-<slug>-<phantom>'.
+              # 'f-<slug>' task id; extra phantoms get 'f-<slug>-<phantom>'. ci_skip'd methods are
+              # dropped — pipeline discovery skips them, so their jobs run nothing.
               return [{'id': task_id('f-', s, ph), 'focus': s, 'phantom': ph, **route(s)}
-                      for s in slugs for ph in phantoms(s)]
+                      for s in slugs if not is_skipped(s) for ph in phantoms(s)]
           def dedicated():
               # Methods that run as their own focused job (not the shard sweep): a non-HOSTED runner OR a
               # χ-separation method (scored on a SEPARATE phantom, isolated-only — can't ride the QSM shard
@@ -202,7 +211,8 @@ jobs:
               if any(stage_of(s) == 'r2prime-generation' for s in slugs):
                   all_slugs = [p.split('/')[1] for p in sorted(glob.glob('algorithms/*/algorithm.yml'))]
                   slugs = sorted(set(slugs) | {s for s in all_slugs if not s.startswith('_')
-                                               and stage_of(s) == 'chi-separation' and consumes_r2prime(s)})
+                                               and stage_of(s) == 'chi-separation' and consumes_r2prime(s)
+                                               and not is_skipped(s)})
               tasks = focus_tasks(slugs)
               # A changed dipole method also re-scores on the in-vivo track.
               tasks += invivo_tasks(slugs)
