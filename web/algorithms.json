@@ -1821,6 +1821,32 @@
       "ci_notes": []
     },
     {
+      "slug": "r2primenet-7t",
+      "name": "R2PRIMEnet-7T",
+      "stage": "r2prime-generation",
+      "inputs": [
+        "magnitude",
+        "mask",
+        "params"
+      ],
+      "domain": "chisep",
+      "engine": "R2PRIMENET_7T",
+      "language": "Python",
+      "family": "deep-learning",
+      "learning": "pretrained",
+      "description": "R2PRIMEnet-7T \u2014 the 7T-specific R2*\u2192R2\u2032 conversion network (Jiye Kim, SNU-LIST), from the in-vivo high-resolution 7T \u03c7-separation pipeline. Where the 3T R2PRIMEnet was trained on 3T acquisitions, this U-Net was trained on paired 7T R2* / R2\u2032 data: R2* is fit from the multi-echo magnitude, scaled by the family's Dr = 114 and z-scored per the released normalisation stats, and the network predicts R2\u2032 in the 3T domain (its training reference \u2014 R2\u2032 scales ~linearly with B0), which is rescaled \u00d7(B0/3) to the acquisition's native field for the benchmark. Run via ONNX (onnxruntime), 192\u00d7192\u00d7128 sliding-window patches (dims multiples of 64, matching the network's four pooling levels). On 3T phantoms its input is off-distribution by construction \u2014 an informative failure mode rather than a defect.",
+      "citation": "Kim J. et al., \"In-vivo high-resolution \u03c7-separation at 7T\" (arXiv:2410.12239) \u2014 R2PRIMEnet-7T is its 7T R2*\u2192R2\u2032 conversion network (github.com/SNU-LIST/R2PRIMENET_7T).\n",
+      "doi": "10.48550/arXiv.2410.12239",
+      "code_url": "https://github.com/SNU-LIST/R2PRIMENET_7T",
+      "license": "academic and research use (\u00a9 Jiye Kim, SNU-LIST)",
+      "authors": [
+        "Jiye Kim",
+        "Jongho Lee"
+      ],
+      "parameters": [],
+      "ci_notes": []
+    },
+    {
       "slug": "r2star-qsm",
       "name": "R2*-QSM",
       "stage": "chi-separation",
