@@ -38,10 +38,16 @@ def test_registry_entries_are_well_formed():
 
 
 def test_exactly_one_default_phantom_per_track():
+    # A no-ground-truth track (pipeline.NO_GT_TRACKS, e.g. repro) has NO default on purpose: its
+    # composed run ids would otherwise drop the -<phantom> suffix and collide with the sim track's
+    # composed ids (both build fm~bfr~dipole-cmp ids). Every one of its phantoms is namespaced.
     reg = _registry()
     tracks = {d["track"] for d in reg.values()}
     for t in tracks:
         defaults = [k for k, d in reg.items() if d["track"] == t and d.get("default")]
+        if t in pipeline.NO_GT_TRACKS:
+            assert defaults == [], f"track {t}: no-GT tracks must have no default phantom, got {defaults}"
+            continue
         assert len(defaults) == 1, f"track {t}: expected exactly one default phantom, got {defaults}"
         assert reg[defaults[0]].get("active"), f"track {t}: default phantom {defaults[0]} is inactive"
 

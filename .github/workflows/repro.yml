@@ -1,0 +1,324 @@
+name: repro
+
+# Harmonization (repro track) — the GitHub Actions counterpart to the Bunya campaign
+# (scripts/repro_slurm/). Mirrors the in-silico score.yml: incremental re-scoring when an ALGORITHM
+# changes (only the pipelines that use it, across all acquisitions), a full re-run when the
+# SCORER/pipeline changes, automatic HuggingFace volume publishing, and an index.json + repro.json
+# commit that redeploys the site.
+#
+# SCALE-READY DATA FLOW — no volume ever gathers centrally:
+#   Each `score` job reconstructs its shard, publishes its OWN recon volumes straight to HuggingFace
+#   (publish_volumes.py --runs), and computes its OWN per-ROI stats (repro_eval.py stats --runs).
+#   Only a tiny runs-JSON (metrics + volume URLs + ROI means) travels onward. `evaluate` merges those
+#   and does the lightweight pairwise fits — so 90 GB of χ maps never touches a runner's disk or the
+#   artifact store. This is what makes it scale to self-hosted GPU runners.
+#
+# ┌─ WHY AUTO-TRIGGER IS OFF ─────────────────────────────────────────────────────────────────────┐
+# │ The full matrix is ~15k container runs (23 acquisitions × ~660 pipelines). GitHub-HOSTED runners │
+# │ (2-core, 6 h cap) can't do that in sane time — the compute needs self-hosted hardware. The       │
+# │ workflow is written and TESTED-READY: uncomment the `push:` trigger and set include_gpu=true      │
+# │ once self-hosted GPU runners exist, and it behaves exactly like the in-silico track. Until then,  │
+# │ run it by hand (workflow_dispatch); do heavy full runs on Bunya.                                  │
+# └────────────────────────────────────────────────────────────────────────────────────────────────┘
+#
+#   scope    -> full (scorer/pipeline changed, or scope=all) vs affected slugs (changed algorithms)
+#   prep     -> build the reference frame once: target grid + SynthSeg dseg (artifact for the rest)
+#   plan     -> full: acquisition × shard matrix; affected: acquisition × --focus-per-slug
+#   score    -> reconstruct; publish own volumes to HF; compute own ROI stats; emit small runs-JSON
+#   evaluate -> merge runs-JSON -> index.json; pairwise fits -> repro.json; commit (redeploys site)
+
+on:
+  workflow_dispatch:
+    inputs:
+      scope:
+        description: "all | auto (diff since last commit) | comma-separated slugs"
+        default: "all"
+      shards:
+        description: "shards per acquisition for a FULL run (hosted jobs = 23 × shards)"
+        default: "6"
+      acquisitions:
+        description: "all | comma-separated acquisition ids (scripts/datasets.json repro keys)"
+        default: "all"
+      include_gpu:
+        description: "true = also run inr-qsm/modip + any runner:self-hosted method (needs self-hosted GPU runners)"
+        default: "false"
+      publish_hf:
+        description: "true = each score job publishes its recon volumes to HuggingFace"
+        default: "true"
+      dry_run:
+        description: "true = run + evaluate but DON'T commit (upload candidate artifacts)"
+        default: "false"
+  # ── ENABLE WHEN THE COMPUTE INFRA IS READY (same incremental behaviour as the in-silico track) ──
+  # push:
+  #   branches: [main]
+  #   paths:
+  #     - "algorithms/**"
+  #     - "eval/**"
+  #     - "scripts/pipeline.py"
+  #     - "scripts/repro_eval.py"
+  #     - "stages.yml"
+
+concurrency:
+  group: repro
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  SETUPTOOLS_SCM_PRETEND_VERSION: "0.0.0"
+  QSM_CI_JOBS: "2"
+
+jobs:
+  scope:
+    runs-on: ubuntu-latest
+    outputs:
+      full: ${{ steps.decide.outputs.full }}
+      slugs: ${{ steps.decide.outputs.slugs }}
+    steps:
+      - uses: actions/checkout@v7
+        with: { fetch-depth: 0 }
+      - id: decide
+        env:
+          SCOPE: ${{ github.event.inputs.scope || 'auto' }}
+        run: |
+          if [ "$SCOPE" = "all" ]; then
+            echo "full=true"  >>"$GITHUB_OUTPUT"; echo "slugs=[]" >>"$GITHUB_OUTPUT"; exit 0
+          fi
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "$SCOPE" != "auto" ]; then
+            echo "full=false" >>"$GITHUB_OUTPUT"
+            echo "slugs=$(echo "$SCOPE" | tr ', ' '\n' | grep . | jq -R . | jq -sc .)" >>"$GITHUB_OUTPUT"; exit 0
+          fi
+          changed=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} 2>/dev/null \
+                    || git diff --name-only HEAD~1 HEAD)
+          if echo "$changed" | grep -qE '^(eval/|scripts/pipeline\.py|scripts/repro_eval\.py|stages\.yml)'; then
+            echo "full=true"  >>"$GITHUB_OUTPUT"; echo "slugs=[]" >>"$GITHUB_OUTPUT"
+          else
+            slugs=$(echo "$changed" | grep '^algorithms/' | cut -d/ -f2 | grep -v '^_' | sort -u | jq -R . | jq -sc .)
+            echo "full=false" >>"$GITHUB_OUTPUT"; echo "slugs=$slugs" >>"$GITHUB_OUTPUT"
+          fi
+
+  # Build the shared reference frame ONCE — target grid + SynthSeg segmentation — and hand it to
+  # every score job as an artifact, so ROI extraction is identical across acquisitions and no job
+  # re-runs SynthSeg. (data/**/_align is .nii.gz, gitignored — the site keeps volumes off git.)
+  prep:
+    needs: scope
+    if: needs.scope.outputs.full == 'true' || needs.scope.outputs.slugs != '[]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Deps
+        run: |
+          pip install -r eval/requirements.txt SimpleITK
+          pip install --upgrade setuptools setuptools_scm wheel
+          pip install --no-build-isolation .
+      - name: Fetch the target acquisition
+        run: |
+          python3 - <<'PY' | while read -r ph path; do scripts/fetch_dataset.sh "$ph" "$path"; done
+          import json
+          reg = json.load(open('scripts/datasets.json'))
+          # the repro track's registration target (repro_eval.DEFAULT_TARGET)
+          print('cima-bridge-run1', reg['cima-bridge-run1']['path'])
+          PY
+      - name: Build reference frame (target grid + SynthSeg dseg)
+        run: |
+          python scripts/repro_eval.py register --target-only
+          python scripts/repro_eval.py seg          # SynthSeg via docker freesurfer/freesurfer
+      - uses: actions/upload-artifact@v7
+        with:
+          name: repro-align
+          retention-days: 2
+          path: data/harmonization/_align/*
+
+  plan:
+    needs: scope
+    if: needs.scope.outputs.full == 'true' || needs.scope.outputs.slugs != '[]'
+    runs-on: ubuntu-latest
+    outputs:
+      tasks: ${{ steps.gen.outputs.tasks }}
+    steps:
+      - uses: actions/checkout@v7
+      - id: gen
+        env:
+          FULL: ${{ needs.scope.outputs.full }}
+          SLUGS: ${{ needs.scope.outputs.slugs }}
+          N: ${{ github.event.inputs.shards || '6' }}
+          ACQS: ${{ github.event.inputs.acquisitions || 'all' }}
+          INCLUDE_GPU: ${{ github.event.inputs.include_gpu || 'false' }}
+        run: |
+          TASKS=$(python3 - <<'PY'
+          import json, os, re, glob
+          full = os.environ['FULL'] == 'true'
+          include_gpu = os.environ['INCLUDE_GPU'] == 'true'
+          REG = json.load(open('scripts/datasets.json'))
+          want = os.environ['ACQS']
+          acqs = sorted(k for k, v in REG.items() if v.get('track') == 'repro' and v.get('active'))
+          if want != 'all':
+              pick = {s.strip() for s in want.split(',')}
+              acqs = [a for a in acqs if a in pick]
+          HOSTED     = {'runs_on': 'ubuntu-latest', 'timeout': 300, 'gpu': '0'}
+          SELFHOSTED = {'runs_on': ['self-hosted', 'Linux', 'X64'], 'timeout': 720, 'gpu': '1'}
+          def self_hosted(slug):
+              try: t = open(f'algorithms/{slug}/algorithm.yml').read()
+              except FileNotFoundError: return False
+              return bool(re.search(r'^runner:[ \t]*(self-hosted|hosted-long)', t, re.M)) or slug in ('inr-qsm', 'modip')
+          heavy = sorted(s for p in glob.glob('algorithms/*/algorithm.yml')
+                         for s in [p.split('/')[1]] if not s.startswith('_') and self_hosted(s))
+          N = int(os.environ['N'])
+          tasks = []
+          if full:
+              excl = ','.join(heavy)
+              tasks += [{'id': f'{a}-s{i}', 'phantom': a, 'shard': f'{i}/{N}', 'exclude': excl, **HOSTED}
+                        for a in acqs for i in range(N)]
+              if include_gpu:
+                  tasks += [{'id': f'{a}-{s}', 'phantom': a, 'focus': s, **SELFHOSTED}
+                            for a in acqs for s in heavy]
+          else:
+              slugs = json.loads(os.environ['SLUGS'])
+              for a in acqs:
+                  for s in slugs:
+                      if self_hosted(s):
+                          if include_gpu:
+                              tasks.append({'id': f'{a}-{s}', 'phantom': a, 'focus': s, **SELFHOSTED})
+                      else:
+                          tasks.append({'id': f'{a}-{s}', 'phantom': a, 'focus': s, **HOSTED})
+          print(json.dumps(tasks))
+          PY
+          )
+          echo "tasks=$TASKS" >>"$GITHUB_OUTPUT"
+          echo "planned $(echo "$TASKS" | python3 -c 'import json,sys; print(len(json.load(sys.stdin)))') tasks"
+
+  score:
+    needs: [scope, prep, plan]
+    strategy:
+      fail-fast: false
+      matrix:
+        task: ${{ fromJson(needs.plan.outputs.tasks) }}
+    runs-on: ${{ matrix.task.runs_on }}
+    timeout-minutes: ${{ matrix.task.timeout }}
+    env:
+      QSMCI_GPU: ${{ matrix.task.gpu }}   # self-hosted GPU jobs -> 1 -> docker/apptainer --gpus
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
+        with: { name: repro-align, path: data/harmonization/_align }
+
+      - name: Install qsm-ci CLI + eval deps
+        run: |
+          pip install -r eval/requirements.txt huggingface_hub SimpleITK
+          pip install --upgrade setuptools setuptools_scm wheel
+          pip install --no-build-isolation .
+
+      - name: Resolve dataset zip (scripts/datasets.json)
+        id: ds
+        env:
+          PHANTOM: ${{ matrix.task.phantom }}
+        run: |
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json, os
+          ph = os.environ['PHANTOM']
+          d = json.load(open('scripts/datasets.json'))[ph]
+          print(f"zipkey=osf-{ph}-{d.get('osf_file', '')}")
+          print(f"path={d['path']}")
+          PY
+      - name: Cache OSF dataset zip
+        uses: actions/cache@v6
+        with:
+          path: .osfcache/${{ matrix.task.phantom }}.zip
+          key: ${{ steps.ds.outputs.zipkey }}
+      - name: Fetch acquisition (public OSF project — tokenless)
+        env:
+          OSF_ZIP: .osfcache/${{ matrix.task.phantom }}.zip
+        run: scripts/fetch_dataset.sh "${{ matrix.task.phantom }}" "${{ steps.ds.outputs.path }}"
+
+      - name: Reconstruct ${{ matrix.task.id }}
+        run: |
+          ARGS="--phantom ${{ matrix.task.phantom }} --track repro --mode composed --runner docker"
+          ARGS="$ARGS --runs-out runs-${{ matrix.task.id }}.json"
+          [ -n "${{ matrix.task.shard }}" ]   && ARGS="$ARGS --shard ${{ matrix.task.shard }}"
+          [ -n "${{ matrix.task.focus }}" ]   && ARGS="$ARGS --focus ${{ matrix.task.focus }}"
+          [ -n "${{ matrix.task.exclude }}" ] && ARGS="$ARGS --exclude ${{ matrix.task.exclude }}"
+          echo "== pipeline.py $ARGS"
+          python scripts/pipeline.py $ARGS
+
+      # Publish THIS job's recon volumes straight to HuggingFace and stamp the URLs into its runs-JSON
+      # — no volume artifact, nothing gathered centrally. (Same repo + mechanism as the in-silico track.)
+      - name: Publish this shard's volumes to Hugging Face
+        if: ${{ github.event.inputs.publish_hf != 'false' && github.event.inputs.dry_run != 'true' }}
+        continue-on-error: true
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_VOLUMES_REPO: ${{ vars.HF_VOLUMES_REPO }}
+        run: python scripts/publish_volumes.py results --runs runs-${{ matrix.task.id }}.json
+
+      # Compute THIS shard's per-ROI stats (registers its acquisition to the shared target) and write
+      # them into the runs-JSON, so evaluate never needs the recon volumes.
+      - name: Per-ROI stats for this shard
+        run: python scripts/repro_eval.py stats --runs runs-${{ matrix.task.id }}.json
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: repro-${{ matrix.task.id }}
+          retention-days: 2
+          path: runs-${{ matrix.task.id }}.json   # tiny — metrics + volume URLs + ROI means
+
+  evaluate:
+    needs: [scope, prep, score]
+    if: ${{ always() && needs.scope.result == 'success' && needs.score.result != 'skipped' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
+        with: { pattern: repro-*, merge-multiple: true, path: . }
+
+      - name: Deps
+        run: pip install -r eval/requirements.txt
+
+      - name: Merge shard runs into results/index.json (carrying volume URLs + ROI means)
+        run: |
+          cp results/index.json /tmp/base-index.json
+          python3 - <<'PY'
+          import json, glob
+          runs = []
+          for f in sorted(glob.glob("runs-*.json")):
+              runs += json.load(open(f))
+          idx = json.load(open("results/index.json"))
+          ids = {r["id"] for r in runs}
+          merged = [r for r in idx["runs"] if r.get("id") not in ids] + runs
+          json.dump({"generated": None, "runs": merged}, open("results/index.json", "w"), indent=2)
+          dnf = [r["id"] for r in runs if r.get("status") == "DNF"]
+          print(f"merged {len(runs)} repro runs ({len(dnf)} DNF); index now {len(merged)}")
+          PY
+
+      # No recons on disk — fits reads the ROI means straight from the merged index.json run rows.
+      - name: Pairwise fits -> results/repro.json
+        run: python scripts/repro_eval.py fits
+
+      - name: Commit results (index + repro fits + volume URLs)
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: |
+          git config user.name  "qsm-ci-bot"
+          git config user.email "qsm-ci@users.noreply.github.com"
+          cp results/index.json /tmp/scored-index.json
+          for attempt in 1 2 3 4 5; do
+            git fetch origin main -q
+            git reset --hard origin/main -q
+            python3 scripts/merge_index.py /tmp/base-index.json /tmp/scored-index.json \
+                    results/index.json results/index.json
+            git add results/index.json results/repro.json
+            git diff --cached --quiet && { echo "no changes to publish"; exit 0; }
+            git commit -q -m "Update harmonization (repro) results"
+            git push && exit 0
+            echo "push attempt $attempt rejected — retrying onto latest main"; sleep $((attempt * 3))
+          done
+          echo "::error::could not push results after 5 attempts"; exit 1
+
+      - name: (dry-run) upload candidate results
+        if: ${{ github.event.inputs.dry_run == 'true' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: repro-candidate
+          path: |
+            results/index.json
+            results/repro.json

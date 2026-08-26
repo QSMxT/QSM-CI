@@ -498,6 +498,46 @@ def id_suffix(track: str) -> str:
     return "" if track == "sim" else f"-{track}"
 
 
+# Tracks with NO ground truth (e.g. `repro` — the multi-scanner harmonization acquisitions): the
+# composed matrix runs from raw inputs only (no gt total-field source), and each run's χ map is
+# validated + archived by collect() instead of scored — the evaluation happens ACROSS runs
+# (test-retest / inter-scanner agreement), after all acquisitions are reconstructed.
+NO_GT_TRACKS = {"repro"}
+
+
+def collect(recon: Path, mask: Path, meta: dict) -> dict:
+    """No-ground-truth 'scoring': validate one run's χ map and archive it for cross-run analysis.
+
+    Reproducibility-track runs are compared with EACH OTHER (same subject, different scanner/
+    protocol/run), so there is nothing to score per run. Check the output is usable, record cheap
+    within-mask stats, and keep the chimap under results/<id>/recon.nii.gz where the reproducibility
+    evaluator and the web viewer find it."""
+    import nibabel as nib
+    import numpy as np
+    row = {"name": meta["name"], "track": meta["track"], "stage": meta["stage"],
+           "mode": meta["mode"], "runtime_s": round(meta.get("runtime") or 0.0, 1)}
+    row.update({k: meta[k] for k in ("id", "slug", "variant", "params", "combo") if k in meta})
+    try:
+        data = nib.load(str(recon)).get_fdata()
+        m = nib.load(str(mask)).get_fdata() > 0.5
+        vals = data[m][np.isfinite(data[m])]
+        if vals.size == 0 or not np.any(vals):
+            row.update({"status": "DNF", "dnf_reason": "non-finite output (unusable)"})
+            return row
+        row["status"] = "ok"
+        row["metrics"] = {"chi_mean": round(float(vals.mean()), 6),
+                          "chi_sd": round(float(vals.std()), 6)}
+        d = ROOT / "results" / meta["id"]
+        d.mkdir(parents=True, exist_ok=True)
+        shutil.copy(recon, d / "recon.nii.gz")
+        res = recon.parent / "resources.json"
+        if res.exists():
+            shutil.copy(res, d / "resources.json")
+    except Exception as e:  # noqa: BLE001 — one bad run must not sink the batch
+        row.update({"status": "DNF", "dnf_reason": str(e)})
+    return row
+
+
 # Secondary reference for the in-vivo track: the STI χ33 map is scored by re-running the SAME dipole
 # recon through the scorer against groundtruth/chimap-sti.nii.gz, and its metrics are merged into the
 # primary (COSMOS) run under a `_sti` suffix. There is no second recon — just a second scoring pass.
@@ -866,8 +906,11 @@ def do_dipole(task, args, gt_sources, gt, mask, lf_cache):
         meta = {"id": cid, "slug": combo, "name": combo,
                 "stage": "bfr+dipole" if tfk == "gt" else "field-mapping+bfr+dipole",
                 "mode": "composed", "track": args.track, "runtime": upstream_rt + rt, "combo": cinfo}
-        r = score(odir / "chimap.nii.gz", "chimap", gt, mask,
-                  args.work / f"cmp_{cid}.json", meta, args.emit_volumes)
+        if args.track in NO_GT_TRACKS:
+            r = collect(odir / "chimap.nii.gz", mask, meta)
+        else:
+            r = score(odir / "chimap.nii.gz", "chimap", gt, mask,
+                      args.work / f"cmp_{cid}.json", meta, args.emit_volumes)
         # The submission page for this composed run must graph the WHOLE pipeline, so overwrite
         # the single-stage resources.json emit_volumes() copied (the dipole's alone) with the
         # concatenation of every stage's trace, in execution order, with cumulative offsets —
@@ -875,9 +918,12 @@ def do_dipole(task, args, gt_sources, gt, mask, lf_cache):
         _emit_composed_resources(
             cid, upstream_trace + [(f"dipole:{d['slug']}", odir / "resources.json", rt)],
             args.emit_volumes)
-        m = r["metrics"]
+        m = r.get("metrics") or {}
         if r.get("status") == "DNF":
             print(f"  composed  {combo:<34} DNF ({r.get('dnf_reason','')})")
+        elif args.track in NO_GT_TRACKS:
+            print(f"  composed  {combo:<34} chimap collected "
+                  f"(mean={_fmt(m.get('chi_mean'))} sd={_fmt(m.get('chi_sd'))})")
         else:
             print(f"  composed  {combo:<34} chimap xsim={_fmt(m.get('xsim'))} "
                   f"nrmse_dt={_fmt(m.get('nrmse_detrend'), '.2f')}%")
@@ -919,17 +965,23 @@ def do_span(task, args, gt_sources, gt, mask, tf_sources):
                 "mode": "composed", "track": args.track, "runtime": upstream_rt + rt}
         if combo is not None:
             meta["combo"] = combo
-        r = score(odir / "chimap.nii.gz", "chimap", gt, mask,
-                  args.work / f"cmp_{cid}.json", meta, args.emit_volumes)
+        if args.track in NO_GT_TRACKS:
+            r = collect(odir / "chimap.nii.gz", mask, meta)
+        else:
+            r = score(odir / "chimap.nii.gz", "chimap", gt, mask,
+                      args.work / f"cmp_{cid}.json", meta, args.emit_volumes)
         # A field-mapping-composed span is a two-stage pipeline, so its viewer trace concatenates the
         # field-mapping stage with the span (matching runtime_s); a gt/end-to-end span is a single run.
         if upstream_trace:
             _emit_composed_resources(
                 cid, upstream_trace + [(f"{s['stage']}:{s['slug']}", odir / "resources.json", rt)],
                 args.emit_volumes)
-        m = r["metrics"]
+        m = r.get("metrics") or {}
         if r.get("status") == "DNF":
             print(f"  composed  {cid:<34} DNF ({r.get('dnf_reason','')})")
+        elif args.track in NO_GT_TRACKS:
+            print(f"  composed  {cid:<34} chimap collected "
+                  f"(mean={_fmt(m.get('chi_mean'))} sd={_fmt(m.get('chi_sd'))})")
         else:
             print(f"  composed  {cid:<34} chimap xsim={_fmt(m.get('xsim'))} "
                   f"nrmse_dt={_fmt(m.get('nrmse_detrend'), '.2f')}%")
@@ -975,10 +1027,14 @@ def run_composed(args, algos, gt_sources, gt, mask, shard_i, shard_n, runs: list
             bfr, dipole, spans = [], [], [f]
             fmap = [a for a in algos if "totalfield" in a["produces"]] if "totalfield" in f["consumes"] else []
 
+    # A no-ground-truth track has no gt total field to chain from: every pipeline starts from a
+    # real field-mapping submission (or is an end-to-end span running from raw phase).
+    no_gt = args.track in NO_GT_TRACKS
+
     # --shard: own each composed COLUMN = (totalfield-source, bfr) via round-robin over a stable
     # ordering. A column's bfr localfield is computed in exactly one shard (no cross-shard bfr
     # recomputation); a field-map runs only in shards that own a column consuming it.
-    fm_keys = ["gt"] + sorted(f["slug"] for f in fmap)
+    fm_keys = ([] if no_gt else ["gt"]) + sorted(f["slug"] for f in fmap)
     col_owner = {(tfk, bs): idx for idx, (tfk, bs)
                  in enumerate((tfk, b["slug"]) for tfk in fm_keys for b in sorted(bfr, key=lambda x: x["slug"]))}
     owns_col = lambda tfk, bs: _owns(col_owner.get((tfk, bs), 0))
@@ -1006,7 +1062,8 @@ def run_composed(args, algos, gt_sources, gt, mask, shard_i, shard_n, runs: list
     # where stage-traces is the ordered list of (name, resources.json path, duration s) for every
     # stage run so far — so the composed run can concatenate the whole pipeline's memory/CPU trace
     # (not just the final stage's). The ground-truth field ran no stage, so its list is empty.
-    tf_sources: dict[str, tuple] = {"gt": (gt / ARTIFACT_FILE["totalfield"], mask, 0.0, [])}
+    tf_sources: dict[str, tuple] = {} if no_gt else {
+        "gt": (gt / ARTIFACT_FILE["totalfield"], mask, 0.0, [])}
 
     for res in _pmap(fmap, lambda f: do_fieldmap(f, args, gt_sources, mask)):
         if res:
@@ -1234,6 +1291,12 @@ def main() -> None:
         if args.mode != "isolated":
             print("[invivo] only the dipole stage is scored — forcing --mode isolated")
             args.mode = "isolated"
+    # A no-ground-truth track (see NO_GT_TRACKS) has no stage boundaries to feed isolated runs, so
+    # only the composed matrix — real field-mapping -> bfr -> dipole chains plus spans, all from raw
+    # inputs — is meaningful. Runs are collected (validated + archived), not scored.
+    if args.track in NO_GT_TRACKS and args.mode != "composed":
+        print(f"[{args.track}] no ground truth — forcing --mode composed (runs collected, not scored)")
+        args.mode = "composed"
     print(f"discovered {len(algos)} submissions:",
           ", ".join(f"{a['slug']}[{a['stage']}]" for a in algos))
     runs: list[dict] = []

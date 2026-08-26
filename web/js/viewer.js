@@ -14,13 +14,77 @@ const STAGE_COLOR = {
   dipole: "bg-fuchsia-50 text-fuchsia-700 ring-fuchsia-100 dark:bg-fuchsia-500/10 dark:text-fuchsia-300 dark:ring-fuchsia-500/20",
 };
 
-// Which dataset a run was scored on — shown as the leading badge on the detail page so an in-vivo
+// Which dataset a run was scored on, shown as the leading badge on the detail page so an in-vivo
 // (2016) run is never mistaken for an in-silico (2019) one. Amber for in-vivo matches results.html.
 const DATASET_BADGE = {
   qsm:    ["In silico (2019)", "bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/20"],
   chisep: ["χ-separation",     "bg-indigo-50 text-indigo-700 ring-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-300 dark:ring-indigo-500/20"],
   invivo: ["In vivo (2016)",   "bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/20"],
+  repro:  ["Harmonization (2026)", "bg-sky-50 text-sky-700 ring-sky-200 dark:bg-sky-500/10 dark:text-sky-300 dark:ring-sky-500/20"],
 };
+
+// ── Harmonization (repro) dataset ──────────────────────────────────────────────────────────────
+// The repro track is a first-class dataset here: for the current acquisition we synthesise one
+// composed-run object per pipeline (from repro.json) and splice them into allRuns, so the SAME
+// pipelines sidebar / selectRun / method-card machinery renders it exactly like in-silico. There's
+// no ground truth, so those runs are recon-only (χ map streamed from the deterministic HF path
+// repro/<acq>/<pipeline>-cmp-<acq>__recon.nii.gz) and carry reproducibility stats instead of accuracy
+// metrics. The scanner/protocol/run pickers just regenerate the pool for a different acquisition.
+const HF_VOL_BASE = "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/";
+let reproMode = false, reproPipe = "", reproAcq = "", reproJson = null;
+const reproReconUrl = (pipe, acq) => `${HF_VOL_BASE}repro/${acq}/${pipe.replaceAll("+", "_")}-cmp-${acq}__recon.nii.gz`;
+const simRunIdOf = (pipe) => `${pipe.replaceAll("+", "~")}-cmp`;   // the same pipeline's in-silico composed run id
+const reproRunId = (pipe, acq) => `${pipe.replaceAll("+", "~")}-cmp-${acq}`;
+// Headline "score" for a repro run row: median inter-scanner |a-1| (lower is better).
+const reproHeadline = (node) => node ? {
+  repro_inter: node.inter_scanner_mean_abs_slope_dev,
+  repro_tr: node.test_retest_mean_abs_slope_dev,
+  repro_vsbridge: node.inter_protocol_mean_abs_slope_dev } : {};
+function makeReproRun(pipe, acq, node) {
+  // pipeline id parts = stages: 3 → field-mapping+bfr+dipole; 2 → field-mapping + a bfr+dipole span;
+  // 1 → an end-to-end span. Matches how pipeline.py builds the combo, so the matrix axes line up.
+  const parts = pipe.split("+");
+  let combo = null, slug = pipe, stage = "end-to-end";
+  if (parts.length === 3) { combo = { field_mapping: parts[0], bfr: parts[1], dipole: parts[2] }; stage = "field-mapping+bfr+dipole"; }
+  else if (parts.length === 2) { combo = { field_mapping: parts[0] }; slug = parts[1]; stage = "field-mapping+bfr+dipole"; }
+  return { id: reproRunId(pipe, acq), slug, name: parts.map(algoName).join(" → "),
+           pipelineId: pipe, track: "repro", phantom: acq, mode: "composed", stage, combo,
+           status: "ok", metrics: reproHeadline(node), volumes: { recon: reproReconUrl(pipe, acq) } };
+}
+// (Re)generate the harmonization run pool for one acquisition and splice it into allRuns.
+function ensureReproRuns(acq) {
+  reproAcq = acq;
+  allRuns = allRuns.filter((r) => r.track !== "repro");
+  if (reproJson?.pipelines) for (const [pipe, node] of Object.entries(reproJson.pipelines)) allRuns.push(makeReproRun(pipe, acq, node));
+}
+// Fetch repro.json once (null = never tried, {} = tried-and-empty so we don't refetch forever). Loaded
+// eagerly at boot so even a scored (in-silico) pipeline knows whether it has a harmonization analog.
+async function ensureReproJson() {
+  if (reproJson !== null) return reproJson;
+  try { reproJson = await (await fetch("results/repro.json", { cache: "no-store" })).json(); }
+  catch { reproJson = {}; }
+  return reproJson;
+}
+const pipeHasRepro = (pipe) => !!reproJson?.pipelines?.[pipe];
+const hasRepro = () => !!reproJson?.pipelines && Object.keys(reproJson.pipelines).length > 0;
+// Enter the harmonization view IN-PLACE (no page navigation): make sure repro.json and the
+// acquisition's run pool are loaded, then select `pipe`'s composed run there. `pipe` may be null (or
+// a pipeline with no harmonization analog) when entering from an isolated run; fall back to the first
+// available harmonization pipeline so the dataset tab is never a dead end.
+async function enterRepro(pipe, acq) {
+  await ensureReproJson();
+  acq = acqExists(acq) ? acq : "cima-bridge-run1";
+  ensureReproRuns(acq);
+  let target = pipe ? reproRunId(pipe, acq) : null;
+  if (!target || !allRuns.some((r) => r.id === target)) target = allRuns.find((r) => r.track === "repro")?.id;
+  if (target) selectRun(target);
+}
+const reproAcqOpts = () => Object.entries(datasetsReg).filter(([, v]) => v.track === "repro")
+  .map(([id, v]) => ({ id, label: v.label || id })).sort((a, b) => a.id.localeCompare(b.id));
+const REPRO_SCANNERS = ["prisma", "cima"];
+const REPRO_PROTOS = ["bridge", "local", "pulseq-online", "pulseq-offline"];
+const REPRO_RUNS = ["run1", "run2", "run3"];
+const acqExists = (id) => reproAcqOpts().some((a) => a.id === id);
 
 // Stage I/O for generating "how to run" qsm-ci commands (mirrors stages.yml; magnitude is optional
 // and omitted for brevity). Each stage's output filename is the next stage's input, so a composed
@@ -36,7 +100,7 @@ const STAGE_IO = {
   // directory and scores against a ground-truth directory.
   "chi-separation": { consumes: ["localfield", "r2prime", "chimap", "magnitude", "mask", "params"],
     produces: ["chi-para", "chi-dia"] },
-  // R2′ estimation: multi-echo GRE magnitude in, R2′ (Hz) out — the GRE-only condition's generators.
+  // R2′ estimation: multi-echo GRE magnitude in, R2′ (Hz) out (the GRE-only condition's generators).
   "r2prime-generation": { consumes: ["magnitude", "mask", "params"], produces: "r2prime" },
 };
 const ARTFILE = { phase: "phase.nii.gz", magnitude: "magnitude.nii.gz", mask: "mask.nii.gz",
@@ -75,6 +139,8 @@ const QSMXT_FLAG = {
 function renderHowToRun() {
   const el = $("how-to-run");
   if (!el) return;
+  // Harmonization runs carry the same combo as an in-silico composed pipeline, so the same command
+  // generation applies: the section renders identically (bring your own NIfTIs; no ground truth to score).
   const bySlug = Object.fromEntries(algos.map((a) => [a.slug, a]));
   const stageOf = (s) => (bySlug[s] ? bySlug[s].stage : null);
   const isQsmRs = (slug) => { const a = bySlug[slug]; return !!(a && a.engine && a.engine.includes("QSM.rs")); };
@@ -176,7 +242,10 @@ function badge(text, cls) {
 
 // ---- sidebar ----------------------------------------------------------------
 const uniq = (arr) => [...new Set(arr)];
-const composedRuns = () => allRuns.filter((r) => r.mode === "composed" && r.combo);
+// Composed pipelines for the OPEN dataset. Scoping by datasetOf keeps the in-silico matrix and the
+// harmonization matrix (synthetic repro runs, see ensureReproRuns) as separate pools that the same
+// pipelinesHTML renders identically; the two Pipelines sidebars are one code path.
+const composedRuns = () => allRuns.filter((r) => r.mode === "composed" && r.combo && datasetOf(r) === domain);
 // χ-separation methods (a distinct domain): one flat list, default variant only.
 const chisepRuns = () => allRuns.filter((r) => (r.domain === "chisep" || r.stage === "chi-separation")
   && (r.variant || "default") === "default");
@@ -196,24 +265,30 @@ const chisepRunFor = (slug, phantom) => {
     || rs.find((r) => chisepPhantomOf(r) === chisepDefaultPhantom())
     || rs[0];
 };
-// The phantoms a given method was scored on (default phantom first) — the switch appears only for ≥2.
+// The phantoms a given method was scored on (default phantom first); the switch appears only for ≥2.
 function chisepPhantomPeers() {
   if (!run || datasetOf(run) !== "chisep") return [];
   const d = chisepDefaultPhantom();
   return uniq(chisepRuns().filter((r) => r.slug === run.slug).map(chisepPhantomOf))
     .sort((a, b) => (a === d ? -1 : b === d ? 1 : a < b ? -1 : 1));
 }
-// In-vivo (2016 challenge) runs: a distinct DATASET (not just a domain) — dipole-only, scored vs
+// In-vivo (2016 challenge) runs: a distinct DATASET (not just a domain), dipole-only, scored vs
 // COSMOS + STI χ33. One flat list, default variant only, like χ-separation.
 const isInvivo = (r) => r.track === "invivo";
 const invivoRuns = () => allRuns.filter((r) => isInvivo(r) && (r.variant || "default") === "default");
 const hasInvivo = () => invivoRuns().length > 0;
 // Which dataset/domain sidebar view a run belongs to.
-const datasetOf = (r) => isInvivo(r) ? "invivo"
+const datasetOf = (r) => r?.track === "repro" ? "repro"
+  : isInvivo(r) ? "invivo"
   : (r.domain === "chisep" || r.stage === "chi-separation") ? "chisep" : "qsm";
-const DATASET_LABEL = { invivo: "In vivo (2016)", qsm: "In silico (2019)", chisep: "χ-sep (2026)" };
+const DATASET_LABEL = { invivo: "In vivo (2016)", qsm: "In silico (2019)", chisep: "χ-sep (2026)", repro: "Harmonization (2026)" };
+// The scored phantom a run belongs to, normalising a missing `phantom` to the track default. Metric
+// ranks pool only same-phantom runs: r2prime-generation and χ-separation methods each have one run per
+// phantom, so without this the denominator counts the same method once per phantom (e.g. #x / 12 across
+// six phantoms instead of #x / 2 among the two methods scored on this one).
+const phantomKey = (r) => datasetOf(r) === "chisep" ? chisepPhantomOf(r) : (r?.phantom || "_default");
 
-// The isolated-dipole run for `slug` on a given dataset — the "same algorithm, other dataset" target.
+// The isolated-dipole run for `slug` on a given dataset: the "same algorithm, other dataset" target.
 // Only dipole methods span the 2016/2019 datasets (in-vivo scores dipole only).
 function dipoleRunOn(slug, dom) {
   if (dom === "invivo") return invivoRuns().find((r) => r.slug === slug);
@@ -228,6 +303,28 @@ function datasetPeers() {
 // Switch dataset while keeping the same algorithm open when it exists on the target (re-selecting its
 // run there); otherwise just browse the target dataset's list.
 function switchDataset(dom) {
+  // Harmonization: enter it in-place. Keep the same pipeline open when the current run is a composed
+  // one (its slug IS the pipeline id); from an isolated run there's no analog, so enterRepro(null)
+  // opens the first harmonization pipeline instead.
+  if (dom === "repro") {
+    const pipe = reproMode ? reproPipe : (run?.mode === "composed" ? run.slug : null);
+    enterRepro(pipe, reproAcq);
+    return;
+  }
+  // Leaving harmonization for any scored dataset. Prefer the SAME pipeline's in-silico composed run
+  // (keep the method open); otherwise open the target dataset's first run so the tab just browses it.
+  // selectRun re-derives domain and clears reproMode, so this fully transitions out of harmonization.
+  if (reproMode) {
+    if (dom === "qsm") {
+      const simId = simRunIdOf(reproPipe);
+      if (allRuns.some((r) => r.id === simId)) { selectRun(simId); return; }
+    }
+    const first = dom === "invivo" ? invivoRuns()[0]
+      : dom === "chisep" ? chisepRuns()[0]
+      : allRuns.find((r) => !isInvivo(r) && datasetOf(r) === dom);
+    if (first) selectRun(first.id);
+    return;
+  }
   const peer = run ? dipoleRunOn(run.slug, dom) : null;
   if (peer) { selectRun(peer.id); return; }  // selectRun re-derives `domain` from the chosen run
   domain = dom;
@@ -241,6 +338,7 @@ function switchDataset(dom) {
 const combinedRuns = () => {
   const bySlug = {};
   for (const r of allRuns) {
+    if (datasetOf(r) !== domain) continue;  // same-dataset scoping as composedRuns
     if (r.combo) continue;  // matrix combos carry stage bfr+dipole too; they belong on the axes
     if (r.variant === "tuned") continue;  // tuned variants are reached via the toggle, not the list
     if (r.stage !== "bfr+dipole" && r.stage !== "end-to-end") continue;
@@ -253,7 +351,7 @@ const fmapsList = () => {
   return s.includes("gt") ? ["gt", ...s.filter((x) => x !== "gt")] : s;
 };
 // Single-step spans (bfr+dipole / end-to-end, e.g. TGV/MEDI/AutoQSM) have a composed run with no
-// bfr/dipole in the combo — filter those out so they don't add an empty "Undefined" row to the axes.
+// bfr/dipole in the combo, so filter those out so they don't add an empty "Undefined" row to the axes.
 const bfrList = () => uniq(composedRuns().map((r) => r.combo.bfr).filter(Boolean));
 const dipoleList = () => uniq(composedRuns().map((r) => r.combo.dipole).filter(Boolean));
 const findPipeline = (f, b, d) => composedRuns().find((r) =>
@@ -272,9 +370,20 @@ function runItem(r, activeId) {
   // χ-separation rows carry no plain xsim; headline the mean χ+/χ− per-ROI MSPE (the leaderboard's
   // ranking metric, following Ridani et al. 2026), falling back to detrended NRMSE where MSPE is absent.
   const m = (r && r.metrics) || {};
+  // Harmonization rows headline the inter-scanner |a−1| (reproducibility, lower better) as a %.
+  if (r && r.track === "repro") {
+    const label = m.repro_inter != null ? (100 * m.repro_inter).toFixed(1) + "%" : "—";
+    const active = r.id === activeId;
+    return `<button data-id="${r.id}"
+      class="run-item w-full text-left rounded-lg px-2.5 py-1.5 text-sm flex items-center justify-between gap-2 transition
+        ${active ? "bg-indigo-50 text-indigo-700 font-medium dark:bg-indigo-500/15 dark:text-indigo-300" : "text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800"}">
+      <span class="truncate">%NAME%</span>
+      <span class="shrink-0 tabular-nums text-xs ${active ? "text-indigo-500" : "text-gray-400"}" title="inter-scanner |a−1|">${label}</span>
+    </button>`;
+  }
   let hv, hk = "xsim";
-  // R2′ generators headline their detrended NRMSE — the champion-selection metric on the GRE-only
-  // board — rather than xSIM (which is a secondary agreement number for a relaxation map).
+  // R2′ generators headline their detrended NRMSE (the champion-selection metric on the GRE-only
+  // board) rather than xSIM (which is a secondary agreement number for a relaxation map).
   if (r && r.stage === "r2prime-generation" && m.nrmse_detrend != null) { hv = m.nrmse_detrend; hk = "nrmse_detrend"; }
   else if (m.xsim != null) hv = m.xsim;
   else if (m.para_mspe != null && m.dia_mspe != null) { hv = (m.para_mspe + m.dia_mspe) / 2; hk = "mspe"; }
@@ -343,7 +452,7 @@ function chisepHTML() {
     }).join("");
     return rows ? `<div class="mb-3"><div class="px-2.5 pt-1 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">${label}</div>${rows}</div>` : "";
   };
-  // R2′ generators live on the same phantoms but are their own category — they estimate an input
+  // R2′ generators live on the same phantoms but are their own category: they estimate an input
   // (R2′ from GRE magnitude), they don't separate sources.
   return group("χ-separation", rs.filter((r) => r.stage !== "r2prime-generation"))
        + group("R2′ estimation", rs.filter((r) => r.stage === "r2prime-generation"));
@@ -356,16 +465,29 @@ function invivoHTML() {
   return `<div class="mb-3"><div class="px-2.5 pt-1 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">In vivo (2016) · dipole</div>${rows}</div>`;
 }
 function buildSidebar() {
-  // Fall back to the in-silico dataset if the selected one has no runs.
-  if (domain === "chisep" && !hasChisep()) domain = "qsm";
-  if (domain === "invivo" && !hasInvivo()) domain = "qsm";
-  // Dataset toggle: the χ-separation and In-vivo buttons appear only when such runs exist.
-  document.querySelectorAll("#domain-toggle button").forEach((b) =>
-    b.className = "flex-1 rounded-md px-2 py-1 transition "
-      + ((b.dataset.domain === "chisep" && !hasChisep()) || (b.dataset.domain === "invivo" && !hasInvivo()) ? "hidden " : "")
-      + (b.dataset.domain === domain ? "bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100" : "text-gray-500 hover:text-gray-700 dark:text-gray-400"));
-  // The Stages/Pipelines split is meaningless for the flat χ-separation / in-vivo lists; hide it there.
-  const flat = domain === "chisep" || domain === "invivo";
+  // Fall back to the in-silico dataset if the selected one has no runs (not in repro mode, which is
+  // its own dataset).
+  if (!reproMode) {
+    if (domain === "chisep" && !hasChisep()) domain = "qsm";
+    if (domain === "invivo" && !hasInvivo()) domain = "qsm";
+  }
+  // Dataset toggle: one button per dataset. In silico is always shown; χ-sep / In-vivo / Harm. 2026
+  // appear whenever that dataset has any runs (harmonization = repro.json has pipelines), so the tab is
+  // always available to browse, not gated on the currently-open run.
+  document.querySelectorAll("#domain-toggle button").forEach((b) => {
+    const hide = (b.dataset.domain === "chisep" && !hasChisep())
+      || (b.dataset.domain === "invivo" && !hasInvivo())
+      || (b.dataset.domain === "repro" && !hasRepro());
+    b.className = "flex-1 rounded-md px-2 py-1 transition " + (hide ? "hidden " : "")
+      + (b.dataset.domain === domain ? "bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100" : "text-gray-500 hover:text-gray-700 dark:text-gray-400");
+  });
+  $("domain-toggle")?.classList.remove("hidden");
+
+  $("run-filter")?.classList.remove("hidden");
+  // Harmonization is composed-only, so it's always the Pipelines matrix (no Stages split). The
+  // χ-separation / in-vivo lists are flat too. Everything else keeps the Stages/Pipelines toggle.
+  if (domain === "repro") navMode = "pipelines";
+  const flat = domain === "chisep" || domain === "invivo" || domain === "repro";
   $("nav-toggle")?.classList.toggle("hidden", flat);
   document.querySelectorAll("#nav-toggle button").forEach((b) =>
     b.className = "flex-1 rounded-md px-2 py-1 transition " +
@@ -375,9 +497,80 @@ function buildSidebar() {
     : (navMode === "stages" ? stagesHTML() : pipelinesHTML());
   $("run-list").querySelectorAll(".run-item").forEach((b) => b.addEventListener("click", () => { if (b.dataset.id) selectRun(b.dataset.id); }));
 }
-// In-content dataset switch, shown above the viewer/metrics only for a dipole method that has an
-// isolated run on more than one dataset (In vivo 2016 / In silico 2019): swap dataset, same method.
+// In-content dataset switch for a COMPOSED pipeline, shown above the viewer/metrics: toggle the SAME
+// pipeline between its in-silico (2019) score and its harmonization (2026) reproducibility view, and,
+// in harmonization view, pick the scanner/protocol/run acquisition. Both directions switch IN-PLACE
+// via selectRun (no page navigation), and the toggle renders on BOTH sides so you can go back. Rendered
+// into the same #dataset-switch slot the dipole 2016⇄2019 toggle uses.
+function renderPipelineDatasetSwitch() {
+  const el = $("dataset-switch");
+  if (!el) return;
+  const inRepro = reproMode;
+  const pipe = inRepro ? reproPipe : run.slug;
+  const simId = simRunIdOf(pipe);
+  const hasSim = allRuns.some((r) => r.id === simId);
+  const hasRepro = pipeHasRepro(pipe);
+  const acq = acqExists(reproAcq) ? reproAcq : "cima-bridge-run1";
+  const parts = acq.split("-");
+  const scanner = parts[0], runNo = parts[parts.length - 1], proto = parts.slice(1, -1).join("-");
+  const tbtn = (key, label, active, enabled, tip) =>
+    `<button data-ds="${key}" ${enabled ? "" : `disabled title="${tip}"`} class="rounded-md px-3 py-1.5 transition ${active
+      ? "bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100"
+      : enabled ? "text-gray-500 hover:text-gray-700 dark:text-gray-400"
+                : "text-gray-300 dark:text-gray-600 cursor-not-allowed"}">${label}</button>`;
+  const sel = (id, opts, cur) =>
+    `<select data-repro="${id}" class="rounded-lg border-gray-300 text-xs py-1 dark:bg-gray-800 dark:border-gray-700">`
+    + opts.map((o) => `<option value="${o.v}" ${o.v === cur ? "selected" : ""}>${o.l}</option>`).join("") + `</select>`;
+  // Acquisition pickers only make sense in the harmonization view; the in-silico side has one dataset.
+  const pickers = inRepro ? `<div class="ml-auto flex items-center gap-2">
+      ${sel("scanner", REPRO_SCANNERS.map((s) => ({ v: s, l: s === "cima" ? "Cima.X" : "Prisma" })), scanner)}
+      ${sel("proto", REPRO_PROTOS.map((p) => ({ v: p, l: p.replace("pulseq-online", "Pulseq online").replace("pulseq-offline", "Pulseq offline") })), proto)}
+      ${sel("run", REPRO_RUNS.map((r) => ({ v: r, l: r })), runNo)}
+    </div>` : "";
+  el.innerHTML = `<div class="flex flex-wrap items-center gap-3">
+    <div class="inline-flex rounded-lg bg-gray-100 p-1 text-xs font-medium dark:bg-gray-800">
+      ${tbtn("qsm", "In silico (2019)", !inRepro, hasSim, "this pipeline has no in-silico run")}
+      ${tbtn("repro", "Harmonization (2026)", inRepro, hasRepro, "this pipeline has no harmonization result")}
+    </div>
+    ${pickers}
+  </div>`;
+  el.querySelectorAll("[data-ds]").forEach((b) => b.addEventListener("click", () => {
+    const key = b.dataset.ds;
+    if (key === "qsm" && inRepro && hasSim) selectRun(simId);
+    else if (key === "repro" && !inRepro && hasRepro) enterRepro(pipe, reproAcq);
+  }));
+  el.querySelectorAll("[data-repro]").forEach((s) => s.addEventListener("change", () => {
+    const g = (k) => el.querySelector(`[data-repro="${k}"]`).value;
+    const a = `${g("scanner")}-${g("proto")}-${g("run")}`;
+    ensureReproRuns(a);                       // regenerate the pool for the new acquisition
+    selectRun(reproRunId(pipe, a));           // reopen the same pipeline there
+  }));
+  el.classList.remove("hidden");
+}
+
+// Reproducibility stats for the open pipeline (from repro.json) in place of the accuracy metrics.
+function renderReproStats() {
+  $("metrics-tabs")?.classList.add("hidden");
+  $("metrics-regions-wrap")?.classList.add("hidden");
+  const node = reproJson?.pipelines?.[reproPipe];
+  $("metrics-sub").textContent = "Reproducibility of this pipeline across the harmonization acquisitions: orthogonal per-ROI ax+b fits, |a−1| (median).";
+  const pct = (v) => (v == null ? "—" : (100 * v).toFixed(1) + "%");
+  const row = (label, v, tip) =>
+    `<tr class="border-t border-gray-100 dark:border-gray-800"><td class="py-1.5 pr-3 text-gray-600 dark:text-gray-300"><span class="has-tip" data-tip="${tip}">${label}</span></td>`
+    + `<td class="py-1.5 text-right tabular-nums font-medium text-gray-900 dark:text-gray-100">${pct(v)}</td></tr>`;
+  const body = node
+    ? row("Test–retest |a−1|", node.test_retest_mean_abs_slope_dev, "Within-scanner run-to-run, median over pairs. Lower = more repeatable.")
+      + row("Inter-scanner |a−1|", node.inter_scanner_mean_abs_slope_dev, "Prisma↔Cima for matched protocol+run. The harmonization headline.")
+      + row("vs bridge |a−1|", node.inter_protocol_mean_abs_slope_dev, "Each protocol vs the bridge protocol, same scanner.")
+    : `<tr><td class="py-3 text-gray-400" colspan="2">No reproducibility summary for this pipeline yet.</td></tr>`;
+  $("metrics-body").innerHTML = body;
+  const wrap = $("metrics-table-wrap"); if (wrap) wrap.classList.remove("hidden");
+}
+
 function renderDatasetSwitch() {
+  // A composed pipeline (in harmonization OR in-silico) toggles the same pipeline between its 2019
+  // score and its 2026 reproducibility view, whenever it exists on the other side.
+  if (reproMode || (run?.mode === "composed" && pipeHasRepro(run.slug))) return renderPipelineDatasetSwitch();
   const el = $("dataset-switch");
   if (!el) return;
   const peers = datasetPeers();
@@ -390,9 +583,7 @@ function renderDatasetSwitch() {
       : "text-gray-500 hover:text-gray-700 dark:text-gray-400"}">${DATASET_LABEL[p.dom]}</button>`;
   }).join("");
   el.innerHTML = `<div class="flex flex-wrap items-center gap-3">
-    <span class="text-xs font-semibold uppercase tracking-wide text-gray-400">Dataset</span>
     <div class="inline-flex rounded-lg bg-gray-100 p-1 text-xs font-medium dark:bg-gray-800">${btns}</div>
-    <span class="text-xs text-gray-400 dark:text-gray-500">same method — switch the dataset it was scored on</span>
   </div>`;
   el.querySelectorAll("[data-switch]").forEach((b) =>
     b.addEventListener("click", () => switchDataset(b.dataset.switch)));
@@ -427,9 +618,16 @@ function switchChisepPhantom(p) {
 }
 function selectRun(id) {
   run = allRuns.find((r) => r.id === id);
+  if (!run) return;
   domain = datasetOf(run);   // keep the sidebar on the dataset this run belongs to
-  if (domain === "chisep") chisepPhantom = chisepPhantomOf(run);   // remember the phantom being viewed
-  history.replaceState(null, "", "?run=" + encodeURIComponent(id));
+  reproMode = domain === "repro";
+  if (reproMode) {
+    reproPipe = run.pipelineId; reproAcq = run.phantom;   // deep-link by pipeline + acquisition
+    history.replaceState(null, "", `?pipeline=${encodeURIComponent(reproPipe)}&dataset=repro&acq=${reproAcq}`);
+  } else {
+    if (domain === "chisep") chisepPhantom = chisepPhantomOf(run);   // remember the phantom being viewed
+    history.replaceState(null, "", "?run=" + encodeURIComponent(id));
+  }
   buildSidebar();
   loadRun();
 }
@@ -530,24 +728,14 @@ function variantToggleHTML() {
 
 async function loadRun() {
   $("sub-title").textContent = run.name;
-  const stageCls = STAGE_COLOR[run.stage] || "bg-gray-100 text-gray-600 ring-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-700";
-  const ds = DATASET_BADGE[datasetOf(run)];
-  // A χ-separation run on a non-default phantom names that phantom (registry label) in its badge.
-  const dsLabel = (datasetOf(run) === "chisep" && chisepPhantomOf(run) !== chisepDefaultPhantom())
-    ? phantomLabel(chisepPhantomOf(run)) : ds[0];
+  // No descriptive badges/meta in the title (dataset / stage / mode / artifact were noise); keep only a
+  // DNF status flag when relevant and the interactive Defaults/Tuned variant toggle.
   $("sub-badges").innerHTML =
-    badge(dsLabel, ds[1]) +
-    badge(STAGE_LABEL[run.stage] || run.stage, stageCls) +
-    badge(run.mode === "composed" ? "Composed pipeline" : "Isolated", "bg-gray-100 text-gray-600 ring-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-700") +
     (run.status === "DNF" ? badge("DNF", "bg-red-50 text-red-600 ring-red-100 dark:bg-red-500/10 dark:text-red-400 dark:ring-red-500/20") : "") +
     variantToggleHTML();
   $("sub-badges").querySelectorAll("[data-variant-id]").forEach((b) =>
     b.addEventListener("click", () => selectRun(b.dataset.variantId)));
-  const bits = [];
-  if (isInvivo(run)) bits.push("2016 challenge · scored vs COSMOS + STI χ33 (no true χ in vivo)");
-  if (run.artifact) bits.push(`scored artifact <code class="text-gray-700 dark:text-gray-300">${run.artifact}</code>`);
-  if (run.image) bits.push(`image <code class="text-gray-700 dark:text-gray-300">${run.image}</code>`);
-  $("sub-meta").innerHTML = bits.join(" · ");
+  $("sub-meta").innerHTML = "";
   renderMethodInfo();
   renderHowToRun();
   renderDatasetSwitch();
@@ -557,11 +745,17 @@ async function loadRun() {
   // reveal the Regions/Error tabs when it arrives. Guard against a fast run-switch resolving stale.
   runRegions = null;
   renderMetricsPanel();
-  const wantRegions = run;
-  loadRunRegions(run).then((entry) => { if (run === wantRegions) { runRegions = entry; renderMetricsPanel(); } });
-  // Render the resource graph up front, independent of (and before) the WebGL/NiiVue viewer, so a
-  // browser without WebGL2, or a run whose volumes fail to load, still shows the usage trace.
-  renderResources(run);
+  // A synthesised repro run has no per-region file or resource trace on the Hub, so skip those fetches
+  // (they'd 404) and hide the resources panel.
+  if (reproMode) {
+    $("resources-panel")?.classList.add("hidden");
+  } else {
+    const wantRegions = run;
+    loadRunRegions(run).then((entry) => { if (run === wantRegions) { runRegions = entry; renderMetricsPanel(); } });
+    // Render the resource graph up front, independent of (and before) the WebGL/NiiVue viewer, so a
+    // browser without WebGL2, or a run whose volumes fail to load, still shows the usage trace.
+    renderResources(run);
+  }
 
   const note = $("viewer-note"), canvas = $("gl1"), controls = $("viewer-controls"), layerRow = $("layer-row");
   const hide = (el, h) => { el.style.display = h ? "none" : ""; };
@@ -592,7 +786,12 @@ async function loadRun() {
   if (!hasError) showError = false;
   $("t-error").disabled = !hasError;
   $("t-error").checked = showError;
+  // Harmonization runs are recon-only (no ground truth / error), so force the recon base.
+  if (reproMode) { curBase = "recon"; $("t-error").closest("label")?.classList.add("hidden"); }
   setLayerActive(curBase);
+  // Hide the Ground-truth layer button AFTER setLayerActive (it rewrites every button's className),
+  // so nothing can switch the base to a nonexistent truth volume.
+  if (reproMode) $("layer-tabs")?.querySelector('[data-layer="truth"]')?.classList.add("hidden");
   // χ-separation runs get a χ+ / χ− source toggle; other runs hide it.
   $("chisep-tabs").classList.toggle("hidden", !isChisepRun());
   if (isChisepRun()) setChisepActive(chisepComp);
@@ -611,8 +810,8 @@ function metricRank(k) {
   if (v == null) return null;
   // Composed pipelines are ranked within their OWN field-mapping (the leaderboard groups the same
   // way: it shows one field-mapping's bfr×dipole matrix at a time), so the denominator matches the
-  // table you clicked from — not the full cross-field-mapping pool of ~845 pipelines.
-  const sameGroup = (r) => (run.combo
+  // table you clicked from, not the full cross-field-mapping pool of ~845 pipelines.
+  const sameGroup = (r) => phantomKey(r) === phantomKey(run) && (run.combo
     ? r.mode === "composed" && (r.combo?.field_mapping || "gt") === (run.combo.field_mapping || "gt")
     : r.mode === "isolated" && r.stage === run.stage);
   const peers = allRuns.filter((r) => r.status !== "DNF" && sameGroup(r) && val(r, k) != null);
@@ -633,8 +832,8 @@ function rankBy(accessor, higher) {
   if (v == null) return null;
   // Composed pipelines are ranked within their OWN field-mapping (the leaderboard groups the same
   // way: it shows one field-mapping's bfr×dipole matrix at a time), so the denominator matches the
-  // table you clicked from — not the full cross-field-mapping pool of ~845 pipelines.
-  const sameGroup = (r) => (run.combo
+  // table you clicked from, not the full cross-field-mapping pool of ~845 pipelines.
+  const sameGroup = (r) => phantomKey(r) === phantomKey(run) && (run.combo
     ? r.mode === "composed" && (r.combo?.field_mapping || "gt") === (run.combo.field_mapping || "gt")
     : r.mode === "isolated" && r.stage === run.stage);
   const peers = allRuns.filter((r) => r.status !== "DNF" && sameGroup(r) && accessor(r) != null);
@@ -682,7 +881,7 @@ function renderChisepMetrics() {
       ["χ−→χ+ leak", mv("para_leak"), "num", "↓", "Regression slope of χ+ on the χ− ground truth: how much diamagnetic signal bleeds into the paramagnetic map. 0 = clean; positive = leakage; negative = over-separation (χ+ suppressed where χ− is strong)."],
     ]],
     ["χ− diamagnetic (calcium, myelin)", [
-      ["MSPE", mv("dia_mspe"), "pct", "↓", "Per-ROI MSPE of χ− over the fibre-bundle atlas WM sub-ROIs (Ridani et al. 2026, Fig 3) — the metric anisotropy makes hardest."],
+      ["MSPE", mv("dia_mspe"), "pct", "↓", "Per-ROI MSPE of χ− over the fibre-bundle atlas WM sub-ROIs (Ridani et al. 2026, Fig 3): the metric anisotropy makes hardest."],
       ["xSIM", mv("dia_xsim"), "xsim", "↑", "Structural similarity of χ− vs ground truth."],
       ["NRMSE", mv("dia_nrmse"), "pct", "↓", "Normalised RMS error of χ− (%)."],
       ["Ca dev", mv("dia_calc_moment_dev"), "num", "↓", "Deviation of the recovered calcification's susceptibility moment."],
@@ -693,7 +892,7 @@ function renderChisepMetrics() {
     ]],
     ["Resources", [
       ["Runtime", rtAcc, "sec", "↓", "Wall-clock runtime."],
-      ["Peak memory", memAcc, "bytes", "↓", "Peak resident memory (max RSS) sampled while the method runs — the RAM it needs to fit."],
+      ["Peak memory", memAcc, "bytes", "↓", "Peak resident memory (max RSS) sampled while the method runs: the RAM it needs to fit."],
       ["Avg CPU", cpuAcc, "cores", "↑", "Average CPU cores busy over the run (CPU-time ÷ wall-time): how well it parallelises. ~1 = single-threaded."],
     ]],
   ];
@@ -718,7 +917,7 @@ function renderChisepMetrics() {
   $("metrics-body").innerHTML = html || `<tr><td class="py-3 text-gray-400">No metrics for this run.</td></tr>`;
 }
 function renderMetrics() {
-  // R2′ generators are single-map runs (r2prime vs the phantom's true R2′) — the default renderer
+  // R2′ generators are single-map runs (r2prime vs the phantom's true R2′): the default renderer
   // fits (their nrmse/nrmse_detrend/correlation/xsim are plain METRICS keys); only χ-separation
   // outputs (isolated methods AND the GRE-only composed combos) get the paired χ+/χ− table.
   if ((run.domain === "chisep" || run.stage === "chi-separation") && run.stage !== "r2prime-generation") { renderChisepMetrics(); return; }
@@ -751,10 +950,11 @@ const REGION_ORDER = ["1", "2", "3", "4", "5", "6", "7", "9", "8", "10", "11", "
 const p3 = (v) => (v < 0 ? "−" : "") + Math.abs(v).toFixed(3);
 
 function renderMetricsPanel() {
+  if (reproMode) return renderReproStats();
   const entry = runRegions;
   const tabs = $("metrics-tabs");
   tabs.classList.toggle("hidden", !entry);
-  // Fall back to the metric table whenever there's no usable region entry — this run has none, OR
+  // Fall back to the metric table whenever there's no usable region entry: this run has none, OR
   // the sidecar hasn't finished its lazy load yet. `metricsTab` (which may be a deep-linked
   // 'regions'/'error') is left UNTOUCHED, so once regions arrive this re-runs and honours it.
   const tab = entry ? metricsTab : "metrics";
@@ -782,7 +982,7 @@ function renderRegionTable(entry, errorMode) {
   }
   $("metrics-sub").textContent = errorMode
     ? "Per-region quantification error: this run − ground truth, within the run's valid support (ppm)."
-    : "Susceptibility per segmented region — this run vs ground truth, within the run's valid support (ppm).";
+    : "Susceptibility per segmented region: this run vs ground truth, within the run's valid support (ppm).";
   const ids = REGION_ORDER.filter((k) => block.recon[k] && block.truth[k])
     .concat(Object.keys(block.recon).filter((k) => !REGION_ORDER.includes(k) && block.truth[k]).sort());
   let html = "";
@@ -797,7 +997,7 @@ function renderRegionTable(entry, errorMode) {
     const rows = ids.map((k) => {
       const rc = block.recon[k], gt = block.truth[k];
       // Divide by |gt.mean| so the % keeps the sign of Δ mean: for a diamagnetic (negative-mean)
-      // region — white matter, bone — dividing by the raw negative mean would flip the sign, showing
+      // region (white matter, bone), dividing by the raw negative mean would flip the sign, showing
       // an over-estimate as a negative %, contradicting the Δ mean column right beside it.
       return { k, d: rc.mean - gt.mean, dm: rc.median - gt.median,
                pct: Math.abs(gt.mean) >= 0.005 ? (rc.mean - gt.mean) / Math.abs(gt.mean) * 100 : null, n: rc.n };
@@ -1037,7 +1237,7 @@ async function refreshView() {
   nv.updateGLVolume();
   // A new run can have a different geometry (in-vivo 160³ vs in-silico 164×205×205). NiiVue keeps its
   // 2D pan/zoom and crosshair across volume swaps, so a fresh volume was being rendered through the
-  // previous one's pan — cutting part of it off, worse each time you toggled datasets. Reset the pan/
+  // previous one's pan, cutting part of it off, worse each time you toggled datasets. Reset the pan/
   // zoom and recentre the crosshair whenever the run changes.
   if (runChanged) {
     try {
@@ -1075,9 +1275,32 @@ function setErrorColormap() {
 // ---- boot -------------------------------------------------------------------
 async function init() {
   [allRuns, algos, registry, datasetsReg] = await Promise.all([loadRuns(), loadAlgos(), loadRegistry(), loadDatasets()]);
+  await ensureReproJson();   // eager so an in-silico pipeline can offer its harmonization analog
+  const q = new URLSearchParams(location.search);
+  // Shared control handlers (used by every dataset, harmonization included).
+  $("run-filter").addEventListener("input", (e) => { filter = e.target.value; buildSidebar(); });
+  $("metrics-tabs").querySelectorAll("[data-mtab]").forEach((b) =>
+    b.addEventListener("click", () => { metricsTab = b.dataset.mtab; renderMetricsPanel(); }));
+  document.querySelectorAll("#nav-toggle button").forEach((b) => b.addEventListener("click", () => { navMode = b.dataset.mode; buildSidebar(); }));
+  document.querySelectorAll("#domain-toggle button").forEach((b) => b.addEventListener("click", () => switchDataset(b.dataset.domain)));
+
+  // Harmonization entry: ?pipeline=<id>&dataset=repro&acq=<acquisition>. Generate the acquisition's
+  // pipeline pool (see ensureReproRuns) and open the requested pipeline. From here it's the same
+  // Pipelines machinery as in-silico.
+  if (q.get("pipeline") && q.get("dataset") === "repro") {
+    reproPipe = q.get("pipeline");
+    reproAcq = acqExists(q.get("acq")) ? q.get("acq") : "cima-bridge-run1";
+    ensureReproRuns(reproAcq);
+    domain = "repro"; navMode = "pipelines"; reproMode = true;
+    run = allRuns.find((r) => r.id === reproRunId(reproPipe, reproAcq)) || composedRuns()[0];
+    if (!run) { $("sub-title").textContent = "No harmonization results yet"; return; }
+    buildSidebar();
+    await loadRun();
+    return;
+  }
+
   // Accept ?run=<run-id> (e.g. ismv-iso), or a bare slug via ?run= / ?method= (e.g. ?method=ismv,
   // the form Zenodo records link to) → resolve to that algorithm's isolated run.
-  const q = new URLSearchParams(location.search);
   const want = q.get("run") || q.get("method");
   run = allRuns.find((r) => r.id === want)
     || allRuns.find((r) => r.mode === "isolated" && r.slug === want)
@@ -1085,11 +1308,6 @@ async function init() {
   if (!run) { $("sub-title").textContent = "No runs"; return; }
   domain = datasetOf(run);
   navMode = run.mode === "composed" ? "pipelines" : "stages";
-  $("run-filter").addEventListener("input", (e) => { filter = e.target.value; buildSidebar(); });
-  $("metrics-tabs").querySelectorAll("[data-mtab]").forEach((b) =>
-    b.addEventListener("click", () => { metricsTab = b.dataset.mtab; renderMetricsPanel(); }));
-  document.querySelectorAll("#nav-toggle button").forEach((b) => b.addEventListener("click", () => { navMode = b.dataset.mode; buildSidebar(); }));
-  document.querySelectorAll("#domain-toggle button").forEach((b) => b.addEventListener("click", () => switchDataset(b.dataset.domain)));
   // Deep links: ?layer=truth selects the ground-truth base; ?layer=error (or ?error=1) turns on the
   // error overlay. Applied before the first render so loadRun picks them up.
   const layer = q.get("layer");

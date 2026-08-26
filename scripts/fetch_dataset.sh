@@ -46,6 +46,11 @@ if not osf:
 print(f"OSF_FILE={osf}")
 print(f"PACK_FLAGS={d.get('pack_flags', '')}")
 print(f"PREPACKED={'1' if d.get('prepacked') else '0'}")
+print(f"PUBLIC={'1' if d.get('osf_public') else '0'}")
+# A registry entry may live in a different OSF project than the default (e.g. the public
+# harmonization project); the OSF_PROJECT env still overrides.
+if d.get("osf_project") and not os.environ.get("OSF_PROJECT"):
+    print(f"OSF_PROJECT={d['osf_project']}")
 PY
 )"
 eval "$RESOLVED"
@@ -56,20 +61,34 @@ zip="${OSF_ZIP:-$tmp/bids.zip}"
 if [ -f "$zip" ]; then
   echo "[fetch_dataset] using cached zip $zip"
 else
-  : "${OSF_TOKEN:?OSF_TOKEN must be set (or provide an existing OSF_ZIP)}"
+  # A public project (e.g. the harmonization dataset) needs no token; a private one (the QSM.rs
+  # reference data) does. Only require OSF_TOKEN when the registry entry isn't flagged public.
+  if [ "${PUBLIC:-0}" != "1" ]; then
+    : "${OSF_TOKEN:?OSF_TOKEN must be set (or provide an existing OSF_ZIP)}"
+  fi
   echo "[fetch_dataset] downloading ${OSF_PROJECT}/${OSF_FILE} from OSF"
   mkdir -p "$(dirname "$zip")"
   # A 24-hex string is a waterbutler file id (osfstorage path); anything shorter is a file GUID,
   # downloaded via osf.io/<guid>/download. Both authenticate with the OSF token for a private project.
-  if [[ "$OSF_FILE" =~ ^[0-9a-f]{24}$ ]]; then
+  # A PUBLIC project's file id downloads tokenless via osf.io/download/<id>/ (the bare waterbutler
+  # URL only 302-redirects and then 400s without auth, so use the public download endpoint instead).
+  if [ "${PUBLIC:-0}" = "1" ] && [[ "$OSF_FILE" =~ ^[0-9a-f]{24}$ ]]; then
+    url="https://osf.io/download/${OSF_FILE}/"
+  elif [[ "$OSF_FILE" =~ ^[0-9a-f]{24}$ ]]; then
     url="https://files.osf.io/v1/resources/${OSF_PROJECT}/providers/osfstorage/${OSF_FILE}"
   else
     url="https://osf.io/${OSF_FILE}/download"
   fi
   # --location-trusted: a GUID download redirects osf.io -> files.osf.io (-> signed storage); keep the
   # OSF token across those hops so a private-project file still authenticates. (Harmless for the direct
-  # waterbutler URL, and the signed storage URL just ignores the extra header.)
-  curl -fS --location-trusted -H "Authorization: Bearer ${OSF_TOKEN}" "$url" -o "$zip"
+  # waterbutler URL, and the signed storage URL just ignores the extra header.) Send the auth header
+  # ONLY when a token is set — an empty `Authorization: Bearer ` header makes OSF 400 the public
+  # download endpoint, so a tokenless public fetch must omit it entirely.
+  if [ -n "${OSF_TOKEN:-}" ]; then
+    curl -fS --location-trusted -H "Authorization: Bearer ${OSF_TOKEN}" "$url" -o "$zip"
+  else
+    curl -fS --location-trusted "$url" -o "$zip"
+  fi
 fi
 
 # A prepacked zip (registry `prepacked: true`, e.g. the invivo challenge) is ALREADY flattened
