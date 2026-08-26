@@ -1192,7 +1192,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             <div class="mt-1 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="reproAttribSVG('field_mapping')"></div>
             <div class="mt-5 text-xs font-semibold uppercase tracking-wide text-gray-400">Background removal</div>
             <div class="mt-1 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="reproAttribSVG('bfr')"></div>
-            <div class="mt-5 text-xs font-semibold uppercase tracking-wide text-gray-400">Dipole inversion</div>
+            <div class="mt-5 text-xs font-semibold uppercase tracking-wide text-gray-400">Dipole inversion <span class="font-normal normal-case text-gray-400">— incl. combined bf-removal+dipole &amp; end-to-end (TGV, NeXtQSM, iQSM…)</span></div>
             <div class="mt-1 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="reproAttribSVG('dipole')"></div>
           </div>
         </div>
@@ -1354,6 +1354,9 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
       const DL = new Set(["qsmnet","qsmnet-plus","qsmgan","xqsm","lpcnn","modl-qsm","hdqsm-qsmrs","ir2qsm","iqsm","iqsm+","autoqsm","inr-qsm","modip","deepqsm"]);
       const DIRECT = new Set(["tkd-qsmrs","tkd-qsmci","tsvd-qsmrs","tikhonov-qsmrs"]);
       const FAM = { dl: { label: "Deep learning", c: "#6366f1" }, iter: { label: "Iterative", c: "#10b981" }, direct: { label: "Direct / k-space", c: "#f59e0b" } };
+      // Stages whose method produces the final χ map (i.e. performs dipole inversion): a pure dipole step,
+      // a combined background-removal+dipole method (TGV/NeXtQSM/…), or an end-to-end method (iQSM/…).
+      const CHI_STAGES = new Set(["dipole", "bfr+dipole", "end-to-end"]);
 
       return {
         METRICS, STAGE_LABEL, MEDALS, fmt, val, INVIVO_COLS,
@@ -1731,15 +1734,19 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
 
         // ---- Harmonization · Findings (all live from reproData) --------------------------------
         _reproMetricLabel() { return { inter: "inter-scanner", tr: "test–retest", ip: "vs-bridge" }[this.reproFindMetric]; },
-        // One robust scalar per FULL-FACTORIAL (fm+bfr+dipole) pipeline for each repro class — the raw
-        // material for the attribution figures. Median over the (capped, finite) per-pair |a−1| fits.
+        _stageOf(slug) { const a = this.algos.find((x) => x.slug === slug); return a && a.stage; },
+        // One robust scalar per pipeline for each repro class — the raw material for the attribution
+        // figures. `field_mapping`/`bfr`/`dipole` are set only for the 3-part factorial matrix (which the
+        // variance decomposition and the fm/bfr panels use); `final` is the last (χ-producing) step of
+        // ANY pipeline, so the dipole panel can also credit combined bfr+dipole and end-to-end methods.
         _reproPipeStats() {
           return _cache("reproStats", Object.keys(this._reproPipes()).length + "|" + this.algos.length, () => {
             const out = [];
             for (const [slug, node] of Object.entries(this._reproPipes())) {
               const parts = slug.split("+");
-              if (parts.length !== 3) continue;   // only the field-mapping × bfr × dipole matrix is factorial
-              out.push({ slug, name: this.reproName(slug), field_mapping: parts[0], bfr: parts[1], dipole: parts[2],
+              const fac = parts.length === 3;
+              out.push({ slug, name: this.reproName(slug), nparts: parts.length, final: parts[parts.length - 1],
+                field_mapping: fac ? parts[0] : null, bfr: fac ? parts[1] : null, dipole: fac ? parts[2] : null,
                 inter: this._median(this._reproVals(node, "inter_scanner", "all")),
                 tr: this._median(this._reproVals(node, "test_retest", "all")),
                 ip: this._median(this._reproVals(node, "inter_protocol", "all")) });
@@ -1750,7 +1757,12 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         reproMethodsByStage() {
           return _cache("reproMBS", Object.keys(this._reproPipes()).length, () => {
             const st = { field_mapping: new Set(), bfr: new Set(), dipole: new Set() };
-            for (const s of this._reproPipeStats()) { st.field_mapping.add(s.field_mapping); st.bfr.add(s.bfr); st.dipole.add(s.dipole); }
+            for (const s of this._reproPipeStats()) {
+              if (s.field_mapping) st.field_mapping.add(s.field_mapping);
+              if (s.bfr) st.bfr.add(s.bfr);
+              // dipole group = every final χ-producing step (pure dipole + combined bfr+dipole + end-to-end)
+              if (CHI_STAGES.has(this._stageOf(s.final))) st.dipole.add(s.final);
+            }
             const by = (a, b) => this.algoName(a).localeCompare(this.algoName(b));
             return { field_mapping: [...st.field_mapping].sort(by), bfr: [...st.bfr].sort(by), dipole: [...st.dipole].sort(by) };
           });
@@ -1761,7 +1773,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         get reproStageImportance() {
           const mk = this.reproFindMetric;
           return _cache("reproSI", mk + "|" + Object.keys(this._reproPipes()).length, () => {
-            const stats = this._reproPipeStats().filter((s) => s[mk] != null);
+            const stats = this._reproPipeStats().filter((s) => s.nparts === 3 && s[mk] != null);
             if (stats.length < 8) return null;
             const ord = [...stats].sort((a, b) => a[mk] - b[mk]);
             const rank = new Map(); ord.forEach((s, i) => rank.set(s, i + 1));
@@ -1780,7 +1792,15 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           const mk = this.reproFindMetric;
           return _cache("reproAttr_" + stage, mk + "|" + Object.keys(this._reproPipes()).length + "|" + this.algos.length, () => {
             const g = {};
-            for (const s of this._reproPipeStats()) { if (s[mk] == null) continue; (g[s[stage]] ||= []).push(s[mk]); }
+            for (const s of this._reproPipeStats()) {
+              if (s[mk] == null) continue;
+              // Field-mapping / background-removal panels use the 3-part factorial component. The dipole
+              // panel groups by the pipeline's FINAL χ-producing step, so it also credits combined
+              // bfr+dipole and end-to-end methods (TGV, NeXtQSM, iQSM, …), not just pure dipole steps.
+              const key = stage === "dipole" ? (CHI_STAGES.has(this._stageOf(s.final)) ? s.final : null) : s[stage];
+              if (!key) continue;
+              (g[key] ||= []).push(s[mk]);
+            }
             const rows = Object.entries(g).map(([slug, vals]) => ({ slug, name: this.algoName(slug), n: vals.length,
               med: this._median(vals), q1: this._pctile(vals, 25), q3: this._pctile(vals, 75), fam: this._fam(slug) }))
               .filter((r) => r.med != null).sort((a, b) => a.med - b.med);
@@ -1830,7 +1850,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             s += `<text x="${padL + 6}" y="${h - padB - 6}" fill="#10b981" opacity="0.75" style="font-size:10px;font-weight:600">precise &amp; harmonizes</text>`;
             const hc = hl ? FAM[this._fam(hl)].c : "#10b981";
             pts.forEach((p) => {
-              const on = !hl || p.field_mapping === hl || p.bfr === hl || p.dipole === hl;
+              const on = !hl || p.field_mapping === hl || p.bfr === hl || p.dipole === hl || p.final === hl;
               const c = hl ? (on ? hc : "#94a3b8") : "#10b981";
               const r = (hl && on) ? 4.6 : 3;
               const op = hl ? (on ? 0.95 : 0.1) : 0.55;
@@ -1843,7 +1863,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         reproHighlightStats() {
           const hl = this.reproHighlight; if (!hl) return null;
           const on = [], off = [];
-          for (const s of this._reproPipeStats()) { if (s.inter == null) continue; (s.field_mapping === hl || s.bfr === hl || s.dipole === hl ? on : off).push(s.inter); }
+          for (const s of this._reproPipeStats()) { if (s.inter == null) continue; (s.field_mapping === hl || s.bfr === hl || s.dipole === hl || s.final === hl ? on : off).push(s.inter); }
           if (!on.length) return null;
           return { name: this.algoName(hl), n: on.length, withMed: this._pct(this._median(on)), withoutMed: this._pct(this._median(off)) };
         },
