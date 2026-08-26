@@ -179,7 +179,24 @@ const MEDALS = ["🥇", "🥈", "🥉"];
 
 async function loadRuns() {
   const res = await fetch("results/index.json", { cache: "no-store" });
-  return (await res.json()).runs || [];
+  const runs = (await res.json()).runs || [];
+  // Composed pipeline rows are stored with `name` == the raw "a+b+c" slug (pipeline.py). Present them
+  // the readable way the harmonization view already does — "Laplacian field mapping → BFRnet → AMP-PE"
+  // — from the algorithm manifest's display names, so every surface (leaderboard + submission title)
+  // shows the same nice title. Display-only: the stored id/slug/combo are left untouched, so search,
+  // deep links and matrix lookups keep working. A ground-truth field start drops its stage (matching
+  // the stored slug, which omits "gt"); non-pipeline combos (χ-separation) have no +-name and pass through.
+  const nm = new Map((await loadAlgos()).map((a) => [a.slug, a.name || a.slug]));
+  const disp = (slug) => nm.get(slug) || slug;
+  for (const r of runs) {
+    if (r.mode !== "composed" || !r.combo || typeof r.name !== "string" || !r.name.includes("+")) continue;
+    const c = r.combo, segs = [];
+    if (c.field_mapping && c.field_mapping !== "gt") segs.push(disp(c.field_mapping));
+    if (c.bfr) segs.push(disp(c.bfr));
+    if (c.dipole) segs.push(disp(c.dipole));
+    if (segs.length > 1) r.name = segs.join(" → ");
+  }
+  return runs;
 }
 
 // algorithms.json bundles the method manifest AND the dataset/phantom registry (a `datasets` block
