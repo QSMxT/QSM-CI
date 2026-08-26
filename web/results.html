@@ -1597,8 +1597,9 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         _greNative(slug) { const a = this.algos.find((x) => x.slug === slug); return !!a && a.stage === "chi-separation" && !(a.inputs || []).includes("r2prime"); },
         _isGreCombo(r) { return r.mode === "composed" && r.combo && r.combo.r2prime_generation; },
         chisepGenOf(r) { return (r.combo || {}).r2prime_generation || null; },
-        // Row label: a GRE-only combo names the method plus the R2′ generator that fed it.
-        chisepRowLabel(r) { const g = this.chisepGenOf(r); return g ? r.name + " ⟵ " + this.algoName(g) : r.name; },
+        // Row label: just the method name. Under GRE-only every row is fed the SAME champion generator
+        // (named in the R2′ generators section below the board), so repeating it per row is redundant.
+        chisepRowLabel(r) { return r.name; },
         // The board's row pool under the current condition. Full: the isolated χ-sep runs (with the
         // Defaults/Tuned toggle). GRE-only: ONE row per method, each R2′-consuming method paired
         // with the best-ranked generator (chisepGenRanking; falling back down the ranking when the
