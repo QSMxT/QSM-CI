@@ -151,6 +151,14 @@ def _run_container(algo, input_dir, output_dir, runner, log) -> float:
         # Name the container so a background sampler can poll `<engine> stats <name>` for a
         # memory-over-time / CPU-over-time trace (opt-in via $QSMCI_RESOURCES_OUT).
         name = f"qsm-ci-{uuid4().hex[:12]}"
+        # Label the container with the owning GitHub Actions run (when there is one) so a reaper on
+        # a persistent self-hosted box can identify and kill orphans. Cancelling an Actions job kills
+        # this docker CLIENT process but NOT the container (`--rm` only cleans up after exit), so
+        # cancelled runs used to leave MATLAB/DL containers silently consuming the shared runner's
+        # memory for hours — the workflows' "Reap orphaned containers" step keys off this label.
+        label_args = ["--label", "qsmci=1"]
+        if os.environ.get("GITHUB_RUN_ID"):
+            label_args += ["--label", f"qsmci.run={os.environ['GITHUB_RUN_ID']}"]
         res_out = os.environ.get("QSMCI_RESOURCES_OUT")
         sampler = None
         if res_out:
@@ -158,7 +166,7 @@ def _run_container(algo, input_dir, output_dir, runner, log) -> float:
             sampler.start()
         try:
             subprocess.run([
-                runner, "run", "--rm", "--network", "none", "--name", name,
+                runner, "run", "--rm", "--network", "none", "--name", name, *label_args,
                 *_gpu_flags(runner), *id_args, *e_args,
                 "-v", f"{algo['dir']}:/algo:ro",
                 "-v", f"{input_dir}:/input:ro", "-v", f"{output_dir}:/output",
