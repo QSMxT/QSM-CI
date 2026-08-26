@@ -66,14 +66,18 @@ async function ensureReproJson() {
   return reproJson;
 }
 const pipeHasRepro = (pipe) => !!reproJson?.pipelines?.[pipe];
-// Enter the harmonization view for a pipeline IN-PLACE (no page navigation): make sure repro.json and
-// the acquisition's run pool are loaded, then select that pipeline's composed run there.
+const hasRepro = () => !!reproJson?.pipelines && Object.keys(reproJson.pipelines).length > 0;
+// Enter the harmonization view IN-PLACE (no page navigation): make sure repro.json and the
+// acquisition's run pool are loaded, then select `pipe`'s composed run there. `pipe` may be null (or
+// a pipeline with no harmonization analog) when entering from an isolated run — fall back to the first
+// available harmonization pipeline so the dataset tab is never a dead end.
 async function enterRepro(pipe, acq) {
   await ensureReproJson();
   acq = acqExists(acq) ? acq : "cima-bridge-run1";
   ensureReproRuns(acq);
-  const target = reproRunId(pipe, acq);
-  if (allRuns.some((r) => r.id === target)) selectRun(target);
+  let target = pipe ? reproRunId(pipe, acq) : null;
+  if (!target || !allRuns.some((r) => r.id === target)) target = allRuns.find((r) => r.track === "repro")?.id;
+  if (target) selectRun(target);
 }
 const reproAcqOpts = () => Object.entries(datasetsReg).filter(([, v]) => v.track === "repro")
   .map(([id, v]) => ({ id, label: v.label || id })).sort((a, b) => a.id.localeCompare(b.id));
@@ -296,10 +300,12 @@ function datasetPeers() {
 // Switch dataset while keeping the same algorithm open when it exists on the target (re-selecting its
 // run there); otherwise just browse the target dataset's list.
 function switchDataset(dom) {
-  // Harmonization: enter it in-place for the current pipeline (a composed run's slug IS the pipeline id).
+  // Harmonization: enter it in-place. Keep the same pipeline open when the current run is a composed
+  // one (its slug IS the pipeline id); from an isolated run there's no analog, so enterRepro(null)
+  // opens the first harmonization pipeline instead.
   if (dom === "repro") {
     const pipe = reproMode ? reproPipe : (run?.mode === "composed" ? run.slug : null);
-    if (pipe) enterRepro(pipe, reproAcq);
+    enterRepro(pipe, reproAcq);
     return;
   }
   // Leaving harmonization back to a scored dataset: the same pipeline's in-silico composed run, in-place.
@@ -445,14 +451,13 @@ function buildSidebar() {
     if (domain === "chisep" && !hasChisep()) domain = "qsm";
     if (domain === "invivo" && !hasInvivo()) domain = "qsm";
   }
-  // Dataset toggle — one button per dataset. χ-sep / In-vivo appear only when such runs exist;
-  // Harm. 2026 appears when the open run has a harmonization analog (it's a composed pipeline, or
-  // we're already viewing it there).
-  const showRepro = reproMode || run?.mode === "composed";
+  // Dataset toggle — one button per dataset. In silico is always shown; χ-sep / In-vivo / Harm. 2026
+  // appear whenever that dataset has any runs (harmonization = repro.json has pipelines), so the tab is
+  // always available to browse — not gated on the currently-open run.
   document.querySelectorAll("#domain-toggle button").forEach((b) => {
     const hide = (b.dataset.domain === "chisep" && !hasChisep())
       || (b.dataset.domain === "invivo" && !hasInvivo())
-      || (b.dataset.domain === "repro" && !showRepro);
+      || (b.dataset.domain === "repro" && !hasRepro());
     b.className = "flex-1 rounded-md px-2 py-1 transition " + (hide ? "hidden " : "")
       + (b.dataset.domain === domain ? "bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100" : "text-gray-500 hover:text-gray-700 dark:text-gray-400");
   });
