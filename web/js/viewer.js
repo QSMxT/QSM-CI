@@ -256,6 +256,18 @@ function datasetPeers() {
 // Switch dataset while keeping the same algorithm open when it exists on the target (re-selecting its
 // run there); otherwise just browse the target dataset's list.
 function switchDataset(dom) {
+  // Harmonization: enter it for the current pipeline (a composed run's slug IS the pipeline id).
+  if (dom === "repro") {
+    const pipe = reproMode ? reproPipe : (run?.mode === "composed" ? run.slug : null);
+    if (pipe) location.href = `?pipeline=${encodeURIComponent(pipe)}&dataset=repro&acq=cima-bridge-run1`;
+    return;
+  }
+  // Leaving harmonization back to a scored dataset: the same pipeline's in-silico composed run.
+  if (reproMode) {
+    const simId = simRunIdOf(reproPipe);
+    if (dom === "qsm" && allRuns.some((r) => r.id === simId)) location.href = "?run=" + encodeURIComponent(simId);
+    return;
+  }
   const peer = run ? dipoleRunOn(run.slug, dom) : null;
   if (peer) { selectRun(peer.id); return; }  // selectRun re-derives `domain` from the chosen run
   domain = dom;
@@ -374,25 +386,52 @@ function invivoHTML() {
   const rows = rs.map((r) => runItem(r, run?.id).replace("%NAME%", r.name)).join("");
   return `<div class="mb-3"><div class="px-2.5 pt-1 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">In vivo (2016) · dipole</div>${rows}</div>`;
 }
+// The pipeline stages of the open harmonization run, as sidebar rows — one per stage algorithm,
+// clickable through to that method's own (in-silico) page where it exists.
+function reproStagesHTML() {
+  const parts = reproPipe.split("+");
+  const roles = parts.length === 3 ? ["Field mapping", "Background removal", "Dipole inversion"]
+    : parts.length === 2 ? ["Field mapping", "bfr + dipole"] : ["End-to-end"];
+  const rows = parts.map((slug, i) => {
+    const iso = allRuns.some((r) => r.slug === slug && r.mode === "isolated");
+    return `<button data-method="${iso ? slug : ""}" class="run-item w-full text-left rounded-lg px-2.5 py-2 flex flex-col gap-0.5 transition ${iso
+      ? "hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer" : "cursor-default"}">
+      <span class="text-[10px] font-semibold uppercase tracking-wide text-gray-400">${roles[i] || "Stage"}</span>
+      <span class="text-sm text-gray-700 dark:text-gray-300">${algoName(slug)}${iso ? "" : ` <span class="text-gray-300 dark:text-gray-600">·</span>`}</span>
+    </button>`;
+  }).join("");
+  return `<p class="px-2 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">Pipeline stages</p>${rows}`;
+}
+
 function buildSidebar() {
-  // Harmonization mode has no leaderboard list to browse — the acquisition pickers live in the
-  // dataset switch. Collapse the sidebar to a short note.
-  if (reproMode) {
-    const list = $("run-list");
-    if (list) list.innerHTML = `<p class="px-2 py-3 text-xs text-gray-400 dark:text-gray-500">Harmonization pipeline. Use the dataset toggle and the scanner/protocol/run pickers above the viewer, or switch to <em>In silico (2019)</em> to see this pipeline scored against ground truth.</p>`;
+  // Fall back to the in-silico dataset if the selected one has no runs (not in repro mode, which is
+  // its own dataset).
+  if (!reproMode) {
+    if (domain === "chisep" && !hasChisep()) domain = "qsm";
+    if (domain === "invivo" && !hasInvivo()) domain = "qsm";
+  }
+  // Dataset toggle — one button per dataset. χ-sep / In-vivo appear only when such runs exist;
+  // Harm. 2026 appears when the open run has a harmonization analog (it's a composed pipeline, or
+  // we're already viewing it there).
+  const showRepro = reproMode || run?.mode === "composed";
+  document.querySelectorAll("#domain-toggle button").forEach((b) => {
+    const hide = (b.dataset.domain === "chisep" && !hasChisep())
+      || (b.dataset.domain === "invivo" && !hasInvivo())
+      || (b.dataset.domain === "repro" && !showRepro);
+    b.className = "flex-1 rounded-md px-2 py-1 transition " + (hide ? "hidden " : "")
+      + (b.dataset.domain === domain ? "bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100" : "text-gray-500 hover:text-gray-700 dark:text-gray-400");
+  });
+  $("domain-toggle")?.classList.remove("hidden");
+
+  if (reproMode) {   // sidebar = the pipeline's constituent stage algorithms
     $("nav-toggle")?.classList.add("hidden");
-    $("domain-toggle")?.classList.add("hidden");
-    $("run-filter")?.parentElement?.classList.add("hidden");
+    $("run-filter")?.classList.add("hidden");
+    $("run-list").innerHTML = reproStagesHTML();
+    $("run-list").querySelectorAll("[data-method]").forEach((b) =>
+      b.addEventListener("click", () => { if (b.dataset.method) location.href = "?method=" + encodeURIComponent(b.dataset.method); }));
     return;
   }
-  // Fall back to the in-silico dataset if the selected one has no runs.
-  if (domain === "chisep" && !hasChisep()) domain = "qsm";
-  if (domain === "invivo" && !hasInvivo()) domain = "qsm";
-  // Dataset toggle: the χ-separation and In-vivo buttons appear only when such runs exist.
-  document.querySelectorAll("#domain-toggle button").forEach((b) =>
-    b.className = "flex-1 rounded-md px-2 py-1 transition "
-      + ((b.dataset.domain === "chisep" && !hasChisep()) || (b.dataset.domain === "invivo" && !hasInvivo()) ? "hidden " : "")
-      + (b.dataset.domain === domain ? "bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100" : "text-gray-500 hover:text-gray-700 dark:text-gray-400"));
+  $("run-filter")?.classList.remove("hidden");
   // The Stages/Pipelines split is meaningless for the flat χ-separation / in-vivo lists; hide it there.
   const flat = domain === "chisep" || domain === "invivo";
   $("nav-toggle")?.classList.toggle("hidden", flat);
@@ -1184,7 +1223,8 @@ async function init() {
     try { reproJson = await (await fetch("results/repro.json", { cache: "no-store" })).json(); } catch { reproJson = null; }
     run = reproRunObj(reproPipe, reproAcq);
     domain = "repro";
-    $("run-filter")?.addEventListener("input", () => {});
+    document.querySelectorAll("#domain-toggle button").forEach((b) =>
+      b.addEventListener("click", () => switchDataset(b.dataset.domain)));
     buildSidebar();
     await loadRun();
     return;
