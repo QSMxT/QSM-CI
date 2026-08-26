@@ -1120,10 +1120,16 @@ def run_chisep_composed(args, algos, gt_sources, gt, mask, runs: list) -> None:
     if not pairs:
         return
 
-    # Stage 1 — each generator needed by this shard's pairs runs once on the raw GRE inputs.
+    # Stage 1 — each generator needed by this shard's pairs runs once on the raw GRE inputs,
+    # SERIALLY (like stage 2): with three generators, the pool (QSM_CI_JOBS=2) ran the two ONNX
+    # U-Nets (r2primenet + r2primenet-7t) concurrently, and on the 6-echo Ridani phantoms that
+    # OOM-killed every hosted focus job's VM ("runner received a shutdown signal", 24 jobs,
+    # 2026-08-26). Generators are seconds-to-minutes each; cross-method parallelism comes from the
+    # CI job matrix.
     need = {g["slug"]: g for g, _ in pairs}
     r2p_cache: dict[str, tuple] = {}
-    for res in _pmap(list(need.values()), lambda g: do_r2gen(g, args, gt_sources)):
+    for g in need.values():
+        res = do_r2gen(g, args, gt_sources)
         if res:
             r2p_cache[res[0]] = (res[1], res[2], res[3])
 
