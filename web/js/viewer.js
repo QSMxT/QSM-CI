@@ -308,10 +308,18 @@ function switchDataset(dom) {
     enterRepro(pipe, reproAcq);
     return;
   }
-  // Leaving harmonization back to a scored dataset: the same pipeline's in-silico composed run, in-place.
+  // Leaving harmonization for any scored dataset. Prefer the SAME pipeline's in-silico composed run
+  // (keep the method open); otherwise open the target dataset's first run so the tab just browses it.
+  // selectRun re-derives domain and clears reproMode, so this fully transitions out of harmonization.
   if (reproMode) {
-    const simId = simRunIdOf(reproPipe);
-    if (dom === "qsm" && allRuns.some((r) => r.id === simId)) selectRun(simId);
+    if (dom === "qsm") {
+      const simId = simRunIdOf(reproPipe);
+      if (allRuns.some((r) => r.id === simId)) { selectRun(simId); return; }
+    }
+    const first = dom === "invivo" ? invivoRuns()[0]
+      : dom === "chisep" ? chisepRuns()[0]
+      : allRuns.find((r) => !isInvivo(r) && datasetOf(r) === dom);
+    if (first) selectRun(first.id);
     return;
   }
   const peer = run ? dipoleRunOn(run.slug, dom) : null;
