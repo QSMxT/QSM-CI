@@ -71,7 +71,7 @@
     .seg-on-emerald{color:rgb(4 120 87)!important}
     html.dark .seg-on-emerald{color:rgb(52 211 153)!important}
 
-    /* Findings section sub-tabs — same underline language as the top tab bar, one size down so the
+    /* Findings section sub-tabs: same underline language as the top tab bar, one size down so the
        hierarchy still reads. */
     .subtabs{display:flex;flex-wrap:wrap;gap:.15rem;border-bottom:1px solid rgb(229 231 235)}
     html.dark .subtabs{border-color:rgb(31 41 55)}
@@ -158,7 +158,7 @@
 
     <!-- ===================== controls (one unified row) ===================== -->
     <div class="mt-6 flex flex-wrap items-center gap-3">
-      <!-- Unified stage / pipelines selector — replaces the Full pipelines / Stages sub-subtabs.
+      <!-- Unified stage / pipelines selector: replaces the Full pipelines / Stages sub-subtabs.
            "Pipelines" is the first option; the rest are the individual stages. -->
       <div class="relative" @click.outside="stageMenu=false">
         <button @click="stageMenu=!stageMenu" class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
@@ -423,7 +423,7 @@
 
           <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
             <h3 class="text-lg font-semibold text-gray-900">Accurate but fragile, or reliable but modest</h3>
-            <p class="mt-2 text-sm text-gray-600 leading-relaxed">Each dipole method by its mean NRMSE across background-removal partners (x) versus how much that error <em>varies</em> between partners (y). Bottom-left is the sweet spot: accurate <em>and</em> consistent. The networks cluster there — accurate and dependable across upstream partners; the iterative methods scatter — the best few rival the networks, but many degrade sharply with a poor upstream stage.</p>
+            <p class="mt-2 text-sm text-gray-600 leading-relaxed">Each dipole method by its mean NRMSE across background-removal partners (x) versus how much that error <em>varies</em> between partners (y). Bottom-left is the sweet spot: accurate <em>and</em> consistent. The networks cluster there, accurate and dependable across upstream partners; the iterative methods scatter, and while the best few rival the networks, many degrade sharply with a poor upstream stage.</p>
             <div class="mt-2" x-html="familyLegend"></div>
             <div class="mt-2 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="reliabilitySVG"></div>
           </div>
@@ -431,7 +431,7 @@
           <template x-if="pipelineFacts">
             <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
               <h3 class="text-lg font-semibold text-gray-900">Greedy pipeline-building is close, but not optimal</h3>
-              <p class="mt-2 text-sm text-gray-600 leading-relaxed">Picking the strongest method at each stage independently lands within <span class="font-semibold" x-text="pipelineFacts.deltaPct+'%'"></span> NRMSE of the best full pipeline — composition is fairly forgiving. But the two share no methods: stages interact, so the actual best combo isn't the one you'd assemble greedily.</p>
+              <p class="mt-2 text-sm text-gray-600 leading-relaxed">Picking the strongest method at each stage independently lands within <span class="font-semibold" x-text="pipelineFacts.deltaPct+'%'"></span> NRMSE of the best full pipeline; composition is fairly forgiving. But the two share no methods: stages interact, so the actual best combo isn't the one you'd assemble greedily.</p>
               <div class="mt-4 space-y-3">
                 <template x-for="row in [{k:'optimal',lab:'Best full pipeline',c:'#10b981'},{k:'greedy',lab:'Greedy (best method per stage)',c:'#e11d48'}]" :key="row.k">
                   <div>
@@ -476,7 +476,7 @@
           <template x-if="stageImportance">
             <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
               <h3 class="text-lg font-semibold text-gray-900">Which stage decides your result?</h3>
-              <p class="mt-2 text-sm text-gray-600 leading-relaxed">How much the choice at each stage reshuffles the full-pipeline ranking (rank-based, so one broken method can't skew it), across every pipeline. Background removal and dipole inversion matter about equally — each reshuffles the result far more than field mapping. The notable part: the background-removal choice is as influential as the dipole-inversion step the field usually fixates on.</p>
+              <p class="mt-2 text-sm text-gray-600 leading-relaxed">How much the choice at each stage reshuffles the full-pipeline ranking (rank-based, so one broken method can't skew it), across every pipeline. Background removal and dipole inversion matter about equally: each reshuffles the result far more than field mapping. The notable part: the background-removal choice is as influential as the dipole-inversion step the field usually fixates on.</p>
               <div class="mt-4 space-y-3">
                 <template x-for="st in stageImportance" :key="st.f">
                   <div>
@@ -497,20 +497,20 @@
 
           <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
             <h3 class="text-lg font-semibold text-gray-900">Error compounds through the pipeline</h3>
-            <p class="mt-2 text-sm text-gray-600 leading-relaxed">The best achievable xSIM (blue) and the median (green box = interquartile range) at three pipeline depths: dipole inversion alone from the ground-truth local field, then with real background removal added (from the ground-truth total field), then a full pipeline from raw phase. Each real upstream stage roughly halves the median and caps the best — the ceiling falls from <span class="font-semibold">0.78 → 0.68 → 0.39</span>. Upstream error is never recovered downstream, so a method's isolated score badly overstates its end-to-end result.</p>
+            <p class="mt-2 text-sm text-gray-600 leading-relaxed">The best achievable xSIM (blue) and the median (green box = interquartile range) at three pipeline depths: dipole inversion alone from the ground-truth local field, then with real background removal added (from the ground-truth total field), then a full pipeline from raw phase. Each real upstream stage roughly halves the median and caps the best: the ceiling falls from <span class="font-semibold">0.78 → 0.68 → 0.39</span>. Upstream error is never recovered downstream, so a method's isolated score badly overstates its end-to-end result.</p>
             <div class="mt-5 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="cascadeSVG"></div>
           </div>
 
           <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
             <h3 class="text-lg font-semibold text-gray-900">Pick your dipole independently of background removal</h3>
-            <p class="mt-2 text-sm text-gray-600 leading-relaxed">For each dipole method, its rank among dipoles (dot = mean, bar = min–max) across the eight strong background-removal methods. Most bars are tight: the dipole ranking barely shifts with the upstream stage (mean pairwise Spearman ρ ≈ 0.87), so the stages are near-separable — <span class="font-semibold">WH-QSM and HD-QSM lead everywhere, MoDL-QSM/QSMGAN/NLTV trail everywhere</span>. A handful in the middle (xQSM, L1-QSM) swing widely — those are the genuinely upstream-sensitive methods. Coloured by family.</p>
+            <p class="mt-2 text-sm text-gray-600 leading-relaxed">For each dipole method, its rank among dipoles (dot = mean, bar = min–max) across the eight strong background-removal methods. Most bars are tight: the dipole ranking barely shifts with the upstream stage (mean pairwise Spearman ρ ≈ 0.87), so the stages are near-separable: <span class="font-semibold">WH-QSM and HD-QSM lead everywhere, MoDL-QSM/QSMGAN/NLTV trail everywhere</span>. A handful in the middle (xQSM, L1-QSM) swing widely; those are the genuinely upstream-sensitive methods. Coloured by family.</p>
             <div class="mt-2" x-html="familyLegend"></div>
             <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="dipoleStabilitySVG"></div>
           </div>
 
           <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
             <h3 class="text-lg font-semibold text-gray-900">The best background-removal method depends on what you measure</h3>
-            <p class="mt-2 text-sm text-gray-600 leading-relaxed">Each background-removal method's rank (1 = best, <span style="color:#3ba85a" class="font-semibold">green</span> good → <span style="color:#d84a4a" class="font-semibold">red</span> poor) under five metrics, rows sorted by xSIM. The similarity metrics — xSIM, NRMSE, HFEN — are nearly interchangeable (their columns match). But calcification and <em>iron linearity</em> reshuffle the ranking: iron linearity is essentially uncorrelated with similarity (near-zero rank correlation), and the deep-learning <span class="font-semibold">bfrnet</span> is worst-tier on similarity yet best on iron quantification. A single headline number hides which sources a method actually recovers.</p>
+            <p class="mt-2 text-sm text-gray-600 leading-relaxed">Each background-removal method's rank (1 = best, <span style="color:#3ba85a" class="font-semibold">green</span> good → <span style="color:#d84a4a" class="font-semibold">red</span> poor) under five metrics, rows sorted by xSIM. The similarity metrics (xSIM, NRMSE, HFEN) are nearly interchangeable (their columns match). But calcification and <em>iron linearity</em> reshuffle the ranking: iron linearity is essentially uncorrelated with similarity (near-zero rank correlation), and the deep-learning <span class="font-semibold">bfrnet</span> is worst-tier on similarity yet best on iron quantification. A single headline number hides which sources a method actually recovers.</p>
             <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="bfrMetricSVG"></div>
           </div>
         </div>
@@ -519,7 +519,7 @@
         <div x-show="findView==='metrics'">
           <div class="mt-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
             <h3 class="text-lg font-semibold text-gray-900">The best method depends on what you measure</h3>
-            <p class="mt-2 text-sm text-gray-600 leading-relaxed">Isolated dipole methods across five metrics, each normalised so <em>higher is better</em>. Grey lines are all methods; a coloured line is the winner of one axis, showing it gives up ground elsewhere — the global-error (NRMSE / xSIM) leader slips down the calcification axis, and the fast direct methods under-quantify iron in deep grey matter. No single method wins every metric.</p>
+            <p class="mt-2 text-sm text-gray-600 leading-relaxed">Isolated dipole methods across five metrics, each normalised so <em>higher is better</em>. Grey lines are all methods; a coloured line is the winner of one axis, showing it gives up ground elsewhere: the global-error (NRMSE / xSIM) leader slips down the calcification axis, and the fast direct methods under-quantify iron in deep grey matter. No single method wins every metric.</p>
             <div class="mt-2 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="parallelSVG"></div>
           </div>
 
@@ -542,7 +542,7 @@
             <div class="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <h3 class="text-lg font-semibold text-gray-900">One region, every method</h3>
-                <p class="mt-2 text-sm text-gray-600 leading-relaxed">Reconstructed susceptibility inside a single segmented region, per isolated dipole method: dot = mean, bar = ±1 std, tick = median (ppm). The <span class="font-semibold" style="color:#10b981">green band</span> is ground truth (mean ± std; dashed line = median). Methods are sorted by how far their regional mean lands from the truth — a per-region view of quantification bias that the whole-brain metrics average away.</p>
+                <p class="mt-2 text-sm text-gray-600 leading-relaxed">Reconstructed susceptibility inside a single segmented region, per isolated dipole method: dot = mean, bar = ±1 std, tick = median (ppm). The <span class="font-semibold" style="color:#10b981">green band</span> is ground truth (mean ± std; dashed line = median). Methods are sorted by how far their regional mean lands from the truth, a per-region view of quantification bias that the whole-brain metrics average away.</p>
               </div>
               <label class="inline-flex shrink-0 items-center gap-2 text-xs text-gray-500" data-tip="Segmented region of the phantom to compare across methods.">Region
                 <select x-model="regionSel" class="rounded-lg border-gray-300 text-xs py-1 pr-7">
@@ -667,13 +667,13 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
         <template x-if="chisepPhantoms().length > 1">
           <span class="seg">
             <template x-for="p in chisepPhantoms()" :key="p">
-              <button class="seg-btn" :class="{'seg-on': chisepPhantom===p}" @click="chisepPhantom=p" x-text="phantomLabel(p)" data-tip="Which χ-separation phantom the leaderboard shows — each is scored independently."></button>
+              <button class="seg-btn" :class="{'seg-on': chisepPhantom===p}" @click="chisepPhantom=p" x-text="phantomLabel(p)" data-tip="Which χ-separation phantom the leaderboard shows; each is scored independently."></button>
             </template>
           </span>
         </template>
         <!-- acquisition condition: true R2′ (full protocol) vs a GRE-derived substitute -->
         <span class="seg">
-          <button class="seg-btn" :class="{'seg-on': chisepCondition==='full'}" @click="chisepCondition='full'" data-tip="Each method is fed the phantom's true R2′ — what a full MEGRE+MESE protocol (measured R2) provides.">MEGRE+MESE</button>
+          <button class="seg-btn" :class="{'seg-on': chisepCondition==='full'}" @click="chisepCondition='full'" data-tip="Each method is fed the phantom's true R2′, what a full MEGRE+MESE protocol (measured R2) provides.">MEGRE+MESE</button>
           <button class="seg-btn" :class="{'seg-on': chisepCondition==='greonly'}" @click="chisepCondition='greonly'" data-tip="No spin-echo R2: every R2′-consuming method is fed the best-performing GRE-derived R2′ substitute (see the R2′ generators table below), alongside the methods that never needed R2′. What you can get away with from a GRE acquisition alone.">GRE-only</button>
         </span>
         <template x-if="chisepCondition==='full' && hasChisepTuned()">
@@ -728,7 +728,7 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
                 <td class="px-5 py-3 text-left font-medium text-gray-900 sticky bg-white group-hover:bg-emerald-50/40" style="left:4rem">
                   <span class="mr-1.5 inline-block w-5 text-center" x-text="medal(i)"></span>
                   <span x-text="chisepRowLabel(r)"></span>
-                  <span x-show="chisepCondition==='greonly' && !r.combo" class="ml-2 rounded bg-indigo-50 px-1.5 py-0.5 text-[10px] font-semibold text-indigo-700" data-tip="This method never reads R2′ — it fits the GRE signal directly, so its result is identical under both conditions.">GRE-native</span>
+                  <span x-show="chisepCondition==='greonly' && !r.combo" class="ml-2 rounded bg-indigo-50 px-1.5 py-0.5 text-[10px] font-semibold text-indigo-700" data-tip="This method never reads R2′; it fits the GRE signal directly, so its result is identical under both conditions.">GRE-native</span>
                   <template x-if="r.doi"><a :href="'https://doi.org/'+r.doi" @click.stop target="_blank" rel="noopener" class="ml-2 rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 hover:bg-emerald-100">paper</a></template>
                   <span x-show="r.status==='running'" class="ml-2 rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700 animate-pulse">computing…</span>
                   <span x-show="r.status==='DNF'" class="ml-2 rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold text-gray-500">DNF</span>
@@ -747,7 +747,7 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
       <!-- R2′ generators: how good is each GRE-derived R2′ substitute, against the true R2′? -->
       <div x-show="chisepCondition==='greonly' && chisepGenRows().length" x-cloak class="mt-8">
         <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">R2′ generators</h3>
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Candidate R2′ substitutes, each scored directly against the phantom's true (spin-echo-derived) R2′. The best one — lowest detrended NRMSE — supplies R2′ to every pipeline above (named after each row's &#10229; arrow); the Findings tab compares how far each substitute carries every method.</p>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Candidate R2′ substitutes, each scored directly against the phantom's true (spin-echo-derived) R2′. The best one (lowest detrended NRMSE) supplies R2′ to every pipeline above (named after each row's &#10229; arrow); the Findings tab compares how far each substitute carries every method.</p>
       </div>
       <div x-show="chisepCondition==='greonly' && chisepGenRows().length" x-cloak class="mt-4 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
         <div class="overflow-x-auto">
@@ -756,7 +756,7 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
             <tr>
               <th class="px-5 py-3 text-left font-medium">Generator</th>
               <th class="px-4 py-3 text-right font-medium"><span class="has-tip" data-tip="Demeaned normalised RMS error of the generated R2′ vs the true R2′ (%). Lower is better.">NRMSE</span></th>
-              <th class="px-4 py-3 text-right font-medium"><span class="has-tip" data-tip="NRMSE after correcting a global linear scale — fair to a substitute that is right up to scale. Lower is better.">Detrended</span></th>
+              <th class="px-4 py-3 text-right font-medium"><span class="has-tip" data-tip="NRMSE after correcting a global linear scale, fair to a substitute that is right up to scale. Lower is better.">Detrended</span></th>
               <th class="px-4 py-3 text-right font-medium"><span class="has-tip" data-tip="Pearson correlation with the true R2′ within the mask. Higher is better.">Corr.</span></th>
               <th class="px-4 py-3 text-right font-medium"><span class="has-tip" data-tip="Structural similarity with the true R2′. Higher is better.">xSIM</span></th>
               <th class="px-4 py-3 text-right font-medium">Runtime</th>
@@ -800,7 +800,7 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
 
       <div x-show="greOnlySVG !== null" class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
         <h3 class="text-lg font-semibold text-gray-900">What does dropping the spin-echo cost?</h3>
-        <p class="mt-2 text-sm text-gray-600 leading-relaxed">χ-separation wants R2′ = R2* − R2, and measuring R2 takes a separate (multi-echo) spin-echo acquisition. This figure shows each method's separation error (mean of the χ+ and χ− detrended NRMSE) when fed the true R2′ (<span class="font-medium" style="color:#10b981">●</span> full MEGRE+MESE protocol) versus a GRE-derived substitute — <span class="font-medium" style="color:#6366f1">●</span> R2PRIMEnet (learned R2*→R2′) or <span class="font-medium" style="color:#f59e0b">●</span> the fixed 0.52·R2* scaling. The gap is the price of GRE-only; methods that never read R2′ (<span class="font-medium text-gray-500">◆</span>) pay nothing by construction.</p>
+        <p class="mt-2 text-sm text-gray-600 leading-relaxed">χ-separation wants R2′ = R2* − R2, and measuring R2 takes a separate (multi-echo) spin-echo acquisition. This figure shows each method's separation error (mean of the χ+ and χ− detrended NRMSE) when fed the true R2′ (<span class="font-medium" style="color:#10b981">●</span> full MEGRE+MESE protocol) versus a GRE-derived substitute: <span class="font-medium" style="color:#6366f1">●</span> R2PRIMEnet (learned R2*→R2′) or <span class="font-medium" style="color:#f59e0b">●</span> the fixed 0.52·R2* scaling. The gap is the price of GRE-only; methods that never read R2′ (<span class="font-medium text-gray-500">◆</span>) pay nothing by construction.</p>
         <div class="mt-5 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="greOnlySVG"></div>
       </div>
       </div><!-- /chisep findings -->
@@ -810,7 +810,7 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
         <div>
           <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">&chi;-separation (2026)</h2>
           <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">Susceptibility source separation splits the net susceptibility &chi; into a paramagnetic part &chi;&#8314; (iron) and a diamagnetic part &chi;&#8315; (myelin, calcium). Plain QSM measures only their signed sum, &chi;<sub>total</sub> = &chi;&#8314; + &chi;&#8315;, in which the two partly cancel, so it cannot tell them apart. The reversible relaxation rate R2&prime; responds instead to their combined magnitude, |&chi;&#8314;| + |&chi;&#8315;|. Having both the signed sum and the magnitude gives two independent constraints per voxel, which is what makes the sources recoverable. Each method is given &chi;<sub>total</sub>, R2&prime;, the local field and the multi-echo signals, and must produce &chi;&#8314; and &chi;&#8315;, which are scored separately.</p>
-          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed"><strong>The GRE-only condition.</strong> Measuring R2&prime; = R2* &minus; R2 needs a separate multi-echo spin-echo acquisition for R2 &mdash; often unavailable in practice. The leaderboard&rsquo;s <em>MEGRE+MESE / GRE-only</em> toggle compares each method fed the phantom&rsquo;s true R2&prime; against the same method fed a GRE-derived substitute: an <em>R2&prime; generator</em> (a separate submission stage) estimates R2&prime; from the multi-echo GRE magnitude alone and is composed in front of every R2&prime;-consuming method. The GRE-only leaderboard feeds every method the <em>best-performing</em> generator on that phantom (lowest <em>detrended</em> NRMSE against the true R2&prime;, a scale-independent structural criterion &mdash; the &ldquo;use the best available tool&rdquo; policy a GRE-only protocol would follow); the full generator&nbsp;&times;&nbsp;method grid is scored regardless and compared on the Findings tab. Current generators are R2PRIMEnet (the learned R2*&rarr;R2&prime; conversion from the &chi;-sepnet pipeline, <a href="https://doi.org/10.1002/hbm.70136" class="text-emerald-600 hover:underline">Kim et&nbsp;al., 2025</a> &mdash; composing it with &chi;-sepnet reproduces the paper&rsquo;s &chi;-sepnet-R2* variant) and the fixed 0.52&middot;R2* scaling evaluated by <a href="https://doi.org/10.1002/nbm.5167" class="text-emerald-600 hover:underline">Ji et&nbsp;al. (2024)</a> and <a href="https://doi.org/10.1002/mrm.30238" class="text-emerald-600 hover:underline">Oliveira Assun&ccedil;&atilde;o et&nbsp;al. (2026)</a>. Methods that never read R2&prime; (R2*-QSM, DECOMPOSE) are natively GRE-only and appear unchanged under both conditions. The Findings tab charts what the missing spin-echo costs each method.</p>
+          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed"><strong>The GRE-only condition.</strong> Measuring R2&prime; = R2* &minus; R2 needs a separate multi-echo spin-echo acquisition for R2, often unavailable in practice. The leaderboard&rsquo;s <em>MEGRE+MESE / GRE-only</em> toggle compares each method fed the phantom&rsquo;s true R2&prime; against the same method fed a GRE-derived substitute: an <em>R2&prime; generator</em> (a separate submission stage) estimates R2&prime; from the multi-echo GRE magnitude alone and is composed in front of every R2&prime;-consuming method. The GRE-only leaderboard feeds every method the <em>best-performing</em> generator on that phantom (lowest <em>detrended</em> NRMSE against the true R2&prime;, a scale-independent structural criterion, the &ldquo;use the best available tool&rdquo; policy a GRE-only protocol would follow); the full generator&nbsp;&times;&nbsp;method grid is scored regardless and compared on the Findings tab. Current generators are R2PRIMEnet (the learned R2*&rarr;R2&prime; conversion from the &chi;-sepnet pipeline, <a href="https://doi.org/10.1002/hbm.70136" class="text-emerald-600 hover:underline">Kim et&nbsp;al., 2025</a>, where composing it with &chi;-sepnet reproduces the paper&rsquo;s &chi;-sepnet-R2* variant) and the fixed 0.52&middot;R2* scaling evaluated by <a href="https://doi.org/10.1002/nbm.5167" class="text-emerald-600 hover:underline">Ji et&nbsp;al. (2024)</a> and <a href="https://doi.org/10.1002/mrm.30238" class="text-emerald-600 hover:underline">Oliveira Assun&ccedil;&atilde;o et&nbsp;al. (2026)</a>. Methods that never read R2&prime; (R2*-QSM, DECOMPOSE) are natively GRE-only and appear unchanged under both conditions. The Findings tab charts what the missing spin-echo costs each method.</p>
         </div>
         <div>
           <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">The phantoms</h3>
@@ -828,9 +828,9 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
               </tbody>
             </table>
           </div>
-          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">The three Ridani sets are noiseless and gradient-echo-only, with a mono-exponential white-matter decay in which the fibre angle &theta; modulates only the scalar R2&prime;. They deliberately omit a fibre-orientation input so orientation cannot be handed to methods &mdash; a closed-form solver given the fibre angle separates the anisotropic phantom almost exactly.</p>
-          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">The Stewart multicompartment phantom adds a matched spin-echo and replaces that mono-exponential decay with a three-pool hollow-cylinder white-matter signal model (<a href="https://doi.org/10.1073/pnas.1211075109" class="text-emerald-600 hover:underline">Wharton &amp; Bowtell, 2012</a>). Its orientation-dependent pool interference produces a non-mono-exponential GRE decay whose beat encodes the fibre angle, so &theta; can be recovered from the signal itself rather than needing DTI. It is the minimal model in which fibre angle leaves any mark on the signal: mono-exponential decay carries none, and fuller models (fibre dispersion, exchange, diffusion) add realism at the cost of recoverability &mdash; the hollow-cylinder sits at the point where anisotropy is realistic enough to matter yet still cleanly recoverable.</p>
-          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">Across all four, &chi;&#8314; and &chi;&#8315; are built per tissue and summed to give &chi;<sub>total</sub>, so the net susceptibility shares the same anatomy as the In&nbsp;silico dataset. All are generated at 1&nbsp;mm, chosen so that every method &mdash; including the memory-hungry deep-learning ones &mdash; runs within standard CI limits.</p>
+          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">The three Ridani sets are noiseless and gradient-echo-only, with a mono-exponential white-matter decay in which the fibre angle &theta; modulates only the scalar R2&prime;. They deliberately omit a fibre-orientation input so orientation cannot be handed to methods; a closed-form solver given the fibre angle separates the anisotropic phantom almost exactly.</p>
+          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">The Stewart multicompartment phantom adds a matched spin-echo and replaces that mono-exponential decay with a three-pool hollow-cylinder white-matter signal model (<a href="https://doi.org/10.1073/pnas.1211075109" class="text-emerald-600 hover:underline">Wharton &amp; Bowtell, 2012</a>). Its orientation-dependent pool interference produces a non-mono-exponential GRE decay whose beat encodes the fibre angle, so &theta; can be recovered from the signal itself rather than needing DTI. It is the minimal model in which fibre angle leaves any mark on the signal: mono-exponential decay carries none, and fuller models (fibre dispersion, exchange, diffusion) add realism at the cost of recoverability. The hollow-cylinder sits at the point where anisotropy is realistic enough to matter yet still cleanly recoverable.</p>
+          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">Across all four, &chi;&#8314; and &chi;&#8315; are built per tissue and summed to give &chi;<sub>total</sub>, so the net susceptibility shares the same anatomy as the In&nbsp;silico dataset. All are generated at 1&nbsp;mm, chosen so that every method (including the memory-hungry deep-learning ones) runs within standard CI limits.</p>
         </div>
         <div>
           <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">The forward model</h3>
@@ -851,19 +851,19 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
           <h4 class="mt-5 font-semibold text-gray-900 dark:text-gray-100">R2&prime; and the relaxivity D<sub>r</sub></h4>
           <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">The true relaxivity is source-dependent, so R2&prime; is built as</p>
           <div class="mt-3 overflow-x-auto text-gray-800 dark:text-gray-100">$$R_2' = D_r^+\,|\chi^+| + D_r^-(\theta)\,|\chi^-|, \qquad D_r^-(\theta) \propto \sin^2\!\theta$$</div>
-          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">D<sub>r</sub> comes from the static-dephasing model (<a href="https://doi.org/10.1002/mrm.1910320610" class="text-emerald-600 hover:underline">Yablonskiy &amp; Haacke, 1994</a>): spheres for &chi;&#8314;, cylinders for &chi;&#8315;, giving D<sub>r</sub>&#8314; = 107.84&middot;B&#8320; for iron and D<sub>r</sub>&#8315; = 133.77&middot;sin&sup2;&theta;&middot;B&#8320; for myelin (755 and 936&middot;sin&sup2;&theta; Hz/ppm at 7&nbsp;T). These grow with field and run about 5&times; higher than measured in&nbsp;vivo &mdash; not an error, but the idealisation the model makes: static dephasing assumes perfectly static spins around ideal spheres/cylinders, whereas real tissue has diffusion averaging and heterogeneous microstructure that lower the <em>effective</em> relaxivity, so empirical calibrations (e.g. Shin&nbsp;et&nbsp;al.) land well below the theoretical value.</p>
-          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">The three Ridani phantoms use the <em>scaled</em> setting &mdash; the static-dephasing values above, field-consistent and matching the reference exactly. The multicompartment phantom uses a <em>fixed</em> setting: both relaxivities are rescaled by a single factor so the iron value is D<sub>r</sub>&#8314; = 320&nbsp;Hz/ppm (the field-scaled empirical calibration of <a href="https://doi.org/10.1016/j.neuroimage.2021.118371" class="text-emerald-600 hover:underline">Shin et&nbsp;al., 2021</a> at 7&nbsp;T), field-independent, with the same &chi;&#8314;/&chi;&#8315; ground truth.</p>
+          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">D<sub>r</sub> comes from the static-dephasing model (<a href="https://doi.org/10.1002/mrm.1910320610" class="text-emerald-600 hover:underline">Yablonskiy &amp; Haacke, 1994</a>): spheres for &chi;&#8314;, cylinders for &chi;&#8315;, giving D<sub>r</sub>&#8314; = 107.84&middot;B&#8320; for iron and D<sub>r</sub>&#8315; = 133.77&middot;sin&sup2;&theta;&middot;B&#8320; for myelin (755 and 936&middot;sin&sup2;&theta; Hz/ppm at 7&nbsp;T). These grow with field and run about 5&times; higher than measured in&nbsp;vivo. This is not an error, but the idealisation the model makes: static dephasing assumes perfectly static spins around ideal spheres/cylinders, whereas real tissue has diffusion averaging and heterogeneous microstructure that lower the <em>effective</em> relaxivity, so empirical calibrations (e.g. Shin&nbsp;et&nbsp;al.) land well below the theoretical value.</p>
+          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">The three Ridani phantoms use the <em>scaled</em> setting: the static-dephasing values above, field-consistent and matching the reference exactly. The multicompartment phantom uses a <em>fixed</em> setting: both relaxivities are rescaled by a single factor so the iron value is D<sub>r</sub>&#8314; = 320&nbsp;Hz/ppm (the field-scaled empirical calibration of <a href="https://doi.org/10.1016/j.neuroimage.2021.118371" class="text-emerald-600 hover:underline">Shin et&nbsp;al., 2021</a> at 7&nbsp;T), field-independent, with the same &chi;&#8314;/&chi;&#8315; ground truth.</p>
           <p class="mt-2 text-sm text-gray-500 dark:text-gray-400 leading-relaxed"><strong>Scaled vs fixed.</strong> <em>Scaled</em> is field-physical and reproduces Ridani; on such a phantom, methods that assume a lower empirical D<sub>r</sub> carry a scale offset (an informative, real model error). <em>Fixed</em> anchors D<sub>r</sub>&#8314; to the empirical value so the score reflects separation rather than D<sub>r</sub> calibration.</p>
           <h4 class="mt-5 font-semibold text-gray-900 dark:text-gray-100">The signal</h4>
           <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">The simulated multi-echo GRE magnitude carries the separated sources through R2&prime; rather than a single lumped R2*, so its decay is written directly in terms of &chi;&#8314; and &chi;&#8315;:</p>
           <div class="mt-3 overflow-x-auto text-gray-800 dark:text-gray-100">$$S(\mathrm{TE}) = M_0\,\exp\!\big[-\mathrm{TE}\,\big(\underbrace{R_2}_{\text{irreversible}} + \underbrace{D_r^+|\chi^+| + D_r^-(\theta)\,|\chi^-|}_{R_2'}\big)\big]$$</div>
           <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">so the effective decay rate is R2* = R2 + R2&prime;. On the multicompartment phantom the matched spin-echo removes the reversible term and decays with R2 alone (\(S(\mathrm{TE}) = M_0\,e^{-\mathrm{TE}\,R_2}\)), letting a signal-domain method estimate R2&prime; = R2* &minus; R2 itself instead of relying on the provided R2&prime; map.</p>
           <h4 class="mt-5 font-semibold text-gray-900 dark:text-gray-100">The multicompartment signal (χ-sep MC)</h4>
-          <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">On the Ridani phantoms the fibre angle &theta; enters only as a scalar that modulates the white-matter R2&prime; &mdash; so &theta; is <em>not</em> recoverable from a single-orientation acquisition, and white-matter &chi;&#8315; is unbeatable without an external DTI input. The multicompartment phantom removes that ceiling: white matter is modelled as three water pools (myelin, axonal, extra-axonal) with orientation-dependent frequency offsets (a hollow-cylinder model, <a href="https://doi.org/10.1073/pnas.1211075109" class="text-emerald-600 hover:underline">Wharton &amp; Bowtell, 2012</a>). The pools beat against each other, giving a non-mono-exponential magnitude whose shape encodes &theta; and the myelin-water fraction &mdash; so a method can recover both from the GRE signal alone. This makes it the only phantom where anisotropy-aware separation can win without being handed the fibre orientation.</p>
+          <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">On the Ridani phantoms the fibre angle &theta; enters only as a scalar that modulates the white-matter R2&prime;, so &theta; is <em>not</em> recoverable from a single-orientation acquisition, and white-matter &chi;&#8315; is unbeatable without an external DTI input. The multicompartment phantom removes that ceiling: white matter is modelled as three water pools (myelin, axonal, extra-axonal) with orientation-dependent frequency offsets (a hollow-cylinder model, <a href="https://doi.org/10.1073/pnas.1211075109" class="text-emerald-600 hover:underline">Wharton &amp; Bowtell, 2012</a>). The pools beat against each other, giving a non-mono-exponential magnitude whose shape encodes &theta; and the myelin-water fraction, so a method can recover both from the GRE signal alone. This makes it the only phantom where anisotropy-aware separation can win without being handed the fibre orientation.</p>
         </div>
         <div>
           <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Scoring</h3>
-          <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">The headline metric is the <strong>per-ROI MSPE</strong> (mean squared percentage error of ROI means) of <a href="https://doi.org/10.1002/mrm.70468" class="text-emerald-600 hover:underline">Ridani et&nbsp;al. (2026)</a>, so the numbers are directly comparable to the paper: &chi;&#8314; is averaged over the deep-gray-matter iron nuclei and cortical gray matter, &chi;&#8315; over the white-matter fibre bundles of a co-registered atlas. Detrended NRMSE (scale-independent, voxelwise) and xSIM are also reported per source. For the anisotropic phantoms a <strong>MEV</strong> diagnostic (maximum error variation) reports how much the &chi;&#8315; error falls from fibres parallel to B&#8320; to perpendicular. Each phantom also carries a <em>null</em> baseline &mdash; the closed-form solve with the phantom&rsquo;s own assumptions &mdash; that any real method must beat.</p>
+          <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">The headline metric is the <strong>per-ROI MSPE</strong> (mean squared percentage error of ROI means) of <a href="https://doi.org/10.1002/mrm.70468" class="text-emerald-600 hover:underline">Ridani et&nbsp;al. (2026)</a>, so the numbers are directly comparable to the paper: &chi;&#8314; is averaged over the deep-gray-matter iron nuclei and cortical gray matter, &chi;&#8315; over the white-matter fibre bundles of a co-registered atlas. Detrended NRMSE (scale-independent, voxelwise) and xSIM are also reported per source. For the anisotropic phantoms a <strong>MEV</strong> diagnostic (maximum error variation) reports how much the &chi;&#8315; error falls from fibres parallel to B&#8320; to perpendicular. Each phantom also carries a <em>null</em> baseline (the closed-form solve with the phantom&rsquo;s own assumptions) that any real method must beat.</p>
         </div>
         <div>
           <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Differences from the reference phantom</h3>
@@ -872,7 +872,7 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
             <li><strong>Orientation withheld.</strong> No fibre-angle (DTI) input is shipped, so a method cannot be handed the orientation that would make the anisotropic phantom nearly closed-form solvable. It must recover white-matter &chi;&#8315; from the field and R2&prime; alone (or, on the multicompartment phantom, from the signal beat).</li>
             <li><strong>Seeded noise.</strong> The reference&rsquo;s white-matter texture noise is seeded here for reproducibility, so the ground truth is bit-reproducible; the authors&rsquo; unseeded realisation is matched only in distribution.</li>
             <li><strong>Sign enforced.</strong> &chi;&#8314; is clamped &ge;&nbsp;0 and &chi;&#8315; &le;&nbsp;0 (a source map cannot flip sign).</li>
-            <li><strong>Multicompartment (&chi;-sep MC only).</strong> The 7&nbsp;T fixed-D<sub>r</sub> phantom additionally simulates the hollow-cylinder white-matter signal and a matched spin-echo &mdash; a QSM-CI extension beyond the reference&rsquo;s mono-exponential model.</li>
+            <li><strong>Multicompartment (&chi;-sep MC only).</strong> The 7&nbsp;T fixed-D<sub>r</sub> phantom additionally simulates the hollow-cylinder white-matter signal and a matched spin-echo, a QSM-CI extension beyond the reference&rsquo;s mono-exponential model.</li>
           </ul>
           <p class="mt-2 text-sm text-gray-500 dark:text-gray-400 leading-relaxed">The diffusion V1 eigenvector is stored mirrored (L-A-S) relative to the segmentation; qsm-forward flips it to register the fibres, which reproduces the reference&rsquo;s published fibre-angle map exactly. The public reference code omits this flip.</p>
         </div>
@@ -993,8 +993,8 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
       <!-- In vivo · Findings -->
       <div x-show="invivoView==='findings'" x-cloak>
         <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-          <h3 class="text-lg font-semibold text-gray-900">COSMOS vs STI χ33 — the harder reference</h3>
-          <p class="mt-2 text-sm text-gray-600 leading-relaxed">Each method's structural similarity against the two references. Every point sits below the diagonal — STI χ33 is a systematically harder target than COSMOS (roughly +20 NRMSE across the board) — yet the two references rank methods almost identically. Coloured by family; hover for values.</p>
+          <h3 class="text-lg font-semibold text-gray-900">COSMOS vs STI χ33: the harder reference</h3>
+          <p class="mt-2 text-sm text-gray-600 leading-relaxed">Each method's structural similarity against the two references. Every point sits below the diagonal: STI χ33 is a systematically harder target than COSMOS (roughly +20 NRMSE across the board), yet the two references rank methods almost identically. Coloured by family; hover for values.</p>
           <div class="mt-2" x-html="familyLegend"></div>
           <div class="mt-5 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="ivRefScatterSVG"></div>
         </div>
@@ -1011,7 +1011,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         <template x-if="ivTuningRows.rows.length">
           <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
             <h3 class="text-lg font-semibold text-gray-900">Tuning rescues classical methods in vivo</h3>
-            <p class="mt-2 text-sm text-gray-600 leading-relaxed">Isolated dipole xSIM vs COSMOS at default parameters (grey) versus tuned on the in-vivo data (green), ordered by gain. At their defaults the classical iterative methods look far weaker than the pretrained networks; tuned, several leap most of the way to the <span style="color:#6366f1" class="font-semibold">best learned method</span> (dashed). The payoff dwarfs the phantom's — medi and l1-qsm each gain roughly +0.3&nbsp;xSIM — because their defaults are mistuned for real-data noise. Tuning on the scored data is a mild form of overfitting, and only some methods are tunable, so defaults stays the fair cross-method ranking.</p>
+            <p class="mt-2 text-sm text-gray-600 leading-relaxed">Isolated dipole xSIM vs COSMOS at default parameters (grey) versus tuned on the in-vivo data (green), ordered by gain. At their defaults the classical iterative methods look far weaker than the pretrained networks; tuned, several leap most of the way to the <span style="color:#6366f1" class="font-semibold">best learned method</span> (dashed). The payoff dwarfs the phantom's (medi and l1-qsm each gain roughly +0.3&nbsp;xSIM) because their defaults are mistuned for real-data noise. Tuning on the scored data is a mild form of overfitting, and only some methods are tunable, so defaults stays the fair cross-method ranking.</p>
             <div class="mt-5 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="ivTuningSVG"></div>
           </div>
         </template>
@@ -1055,7 +1055,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           Each cell aggregates the per-ROI orthogonal fit &chi;<sub>B</sub> = a&middot;&chi;<sub>A</sub> + b between two
           acquisitions; the headline is the slope's deviation from identity |a&minus;1| (in&nbsp;%): within-scanner
           test&ndash;retest, and across the two scanners. Median [5th&ndash;95th&nbsp;percentile] across pipelines, using
-          robust statistics &mdash; a degenerate fit (a pipeline whose &chi; values don&rsquo;t track between two
+          robust statistics: a degenerate fit (a pipeline whose &chi; values don&rsquo;t track between two
           acquisitions, giving a non-physical slope) is excluded rather than allowed to blow up the mean.
         </p>
         <div class="mt-4 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
@@ -1084,7 +1084,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             </table>
           </div>
           <p x-show="reproProtoRows().length===0" class="px-5 py-10 text-center text-gray-400">
-            Reproducibility results are not computed yet — the reconstruction matrix over all 23 acquisitions is pending.
+            Reproducibility results are not computed yet; the reconstruction matrix over all 23 acquisitions is pending.
           </p>
         </div>
       </div><!-- /repro protocols -->
@@ -1136,7 +1136,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             </table>
           </div>
           <p x-show="reproPipeRows().length===0" class="px-5 py-10 text-center text-gray-400">
-            Reproducibility results are not computed yet — the reconstruction matrix over all 23 acquisitions is pending.
+            Reproducibility results are not computed yet; the reconstruction matrix over all 23 acquisitions is pending.
           </p>
         </div>
       </div><!-- /repro pipelines -->
@@ -1144,8 +1144,8 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
       <!-- Harmonization · Findings (all figures generated live from results/repro.json) -->
       <div x-show="reproView==='findings'" x-cloak>
         <p class="mt-6 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-          The harmonization matrix is a <strong>full factorial</strong> — every field-mapping &times; background-removal
-          &times; dipole combination reconstructed on all acquisitions — so each stage-method's contribution to
+          The harmonization matrix is a <strong>full factorial</strong>: every field-mapping &times; background-removal
+          &times; dipole combination reconstructed on all acquisitions, so each stage-method's contribution to
           reproducibility can be attributed cleanly. Every figure below is computed live from the reconstruction
           results, so it tracks whatever methods and pipelines are currently scored.
         </p>
@@ -1153,9 +1153,9 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         <div class="mt-4 flex flex-wrap items-center gap-3">
           <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Reproducibility metric</span>
           <div class="inline-flex rounded-lg bg-gray-100 p-1 text-xs font-medium dark:bg-gray-800">
-            <button @click="reproFindMetric='inter'" class="rounded-md px-3 py-1.5 transition" :class="reproFindMetric==='inter'?'bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100':'text-gray-500 hover:text-gray-700 dark:text-gray-400'" data-tip="Prisma↔Cima |a−1| for matched protocol+run — the cross-scanner harmonization headline.">Inter-scanner</button>
-            <button @click="reproFindMetric='tr'" class="rounded-md px-3 py-1.5 transition" :class="reproFindMetric==='tr'?'bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100':'text-gray-500 hover:text-gray-700 dark:text-gray-400'" data-tip="Within-scanner run-to-run |a−1| — pure repeatability.">Test&ndash;retest</button>
-            <button @click="reproFindMetric='ip'" class="rounded-md px-3 py-1.5 transition" :class="reproFindMetric==='ip'?'bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100':'text-gray-500 hover:text-gray-700 dark:text-gray-400'" data-tip="Each protocol vs the bridge protocol on the same scanner — the acquisition-protocol effect.">vs bridge</button>
+            <button @click="reproFindMetric='inter'" class="rounded-md px-3 py-1.5 transition" :class="reproFindMetric==='inter'?'bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100':'text-gray-500 hover:text-gray-700 dark:text-gray-400'" data-tip="Prisma↔Cima |a−1| for matched protocol+run: the cross-scanner harmonization headline.">Inter-scanner</button>
+            <button @click="reproFindMetric='tr'" class="rounded-md px-3 py-1.5 transition" :class="reproFindMetric==='tr'?'bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100':'text-gray-500 hover:text-gray-700 dark:text-gray-400'" data-tip="Within-scanner run-to-run |a−1|: pure repeatability.">Test&ndash;retest</button>
+            <button @click="reproFindMetric='ip'" class="rounded-md px-3 py-1.5 transition" :class="reproFindMetric==='ip'?'bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100':'text-gray-500 hover:text-gray-700 dark:text-gray-400'" data-tip="Each protocol vs the bridge protocol on the same scanner: the acquisition-protocol effect.">vs bridge</button>
           </div>
         </div>
 
@@ -1192,7 +1192,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             <div class="mt-1 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="reproAttribSVG('field_mapping')"></div>
             <div class="mt-5 text-xs font-semibold uppercase tracking-wide text-gray-400">Background removal</div>
             <div class="mt-1 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="reproAttribSVG('bfr')"></div>
-            <div class="mt-5 text-xs font-semibold uppercase tracking-wide text-gray-400">Dipole inversion <span class="font-normal normal-case text-gray-400">— incl. combined bf-removal+dipole &amp; end-to-end (TGV, NeXtQSM, iQSM…)</span></div>
+            <div class="mt-5 text-xs font-semibold uppercase tracking-wide text-gray-400">Dipole inversion <span class="font-normal normal-case text-gray-400">(incl. combined bf-removal+dipole &amp; end-to-end: TGV, NeXtQSM, iQSM…)</span></div>
             <div class="mt-1 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="reproAttribSVG('dipole')"></div>
           </div>
         </div>
@@ -1211,7 +1211,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
               </select>
             </div>
           </div>
-          <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Each point is a pipeline: test&ndash;retest |a&minus;1| (run-to-run precision) on x, inter-scanner |a&minus;1| (Prisma&harr;Cima harmonizability) on y. Bottom-left is both precise <em>and</em> harmonizable. Pick a method to light up every pipeline that uses it &mdash; click any point to open it.</p>
+          <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Each point is a pipeline: test&ndash;retest |a&minus;1| (run-to-run precision) on x, inter-scanner |a&minus;1| (Prisma&harr;Cima harmonizability) on y. Bottom-left is both precise <em>and</em> harmonizable. Pick a method to light up every pipeline that uses it; click any point to open it.</p>
           <p x-show="reproHighlightStats()" class="mt-2 text-sm text-gray-700 dark:text-gray-300"><span class="font-semibold" x-text="reproHighlightStats()?.name"></span>: median inter-scanner <span class="font-semibold tabular-nums" x-text="reproHighlightStats()?.withMed"></span> across <span x-text="reproHighlightStats()?.n"></span> pipelines that use it, vs <span class="font-semibold tabular-nums" x-text="reproHighlightStats()?.withoutMed"></span> for those that don't.</p>
           <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="reproFrontierSVG"></div>
         </div>
@@ -1221,8 +1221,8 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
       <div x-show="reproView==='info'" x-cloak class="info mt-6 space-y-8">
         <div>
           <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">Harmonization &middot; two scanners, four protocols, one head</h2>
-          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">One volunteer, scanned on two Siemens 3&nbsp;T systems at MGH (bays 4&ndash;5: a MAGNETOM Prisma&nbsp;Fit and a MAGNETOM Cima.X), with four multi-echo GRE protocols, three runs each &mdash; 23 acquisitions (one Pulseq offline run could not be reconstructed). There is no ground truth and none is possible; the question is <em>reproducibility</em>: how consistent are a pipeline's susceptibility values across runs, protocols and scanners of the same brain?</p>
-          <p class="mt-4 text-gray-600 dark:text-gray-400 leading-relaxed">The dataset comes from the QSM harmonization initiative of the ISMRM Electro-Magnetic Tissue Properties Study Group (Costagli, Lancione, Bilgic, Robinson, Schweser, Li, and colleagues). Data were acquired by Berkin Bilgic; the analysis method &mdash; per-ROI orthogonal fits &chi;<sub>B</sub>&nbsp;=&nbsp;a&middot;&chi;<sub>A</sub>&nbsp;+&nbsp;b between acquisitions, with |a&minus;1| as the headline &mdash; follows Marta Lancione's two-pipeline analysis, which QSM-CI extends across its full pipeline matrix.</p>
+          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">One volunteer, scanned on two Siemens 3&nbsp;T systems at MGH (bays 4&ndash;5: a MAGNETOM Prisma&nbsp;Fit and a MAGNETOM Cima.X), with four multi-echo GRE protocols, three runs each, for 23 acquisitions (one Pulseq offline run could not be reconstructed). There is no ground truth and none is possible; the question is <em>reproducibility</em>: how consistent are a pipeline's susceptibility values across runs, protocols and scanners of the same brain?</p>
+          <p class="mt-4 text-gray-600 dark:text-gray-400 leading-relaxed">The dataset comes from the QSM harmonization initiative of the ISMRM Electro-Magnetic Tissue Properties Study Group (Costagli, Lancione, Bilgic, Robinson, Schweser, Li, and colleagues). Data were acquired by Berkin Bilgic; the analysis method (per-ROI orthogonal fits &chi;<sub>B</sub>&nbsp;=&nbsp;a&middot;&chi;<sub>A</sub>&nbsp;+&nbsp;b between acquisitions, with |a&minus;1| as the headline) follows Marta Lancione's two-pipeline analysis, which QSM-CI extends across its full pipeline matrix.</p>
         </div>
         <div>
           <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">The four protocols</h3>
@@ -1233,7 +1233,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
               </thead>
               <tbody class="divide-y divide-gray-100 text-gray-600 dark:text-gray-400">
                 <tr><td class="px-4 py-2.5 font-medium text-gray-900 dark:text-gray-100">Bridge</td><td class="px-4 py-2.5">Siemens product GRE implementing the consensus protocol (GRAPPA R=2, 1&nbsp;mm iso)</td><td class="px-4 py-2.5">5 / 11 / 17 / 23 / 29</td><td class="px-4 py-2.5">35&nbsp;ms / 15&deg;</td></tr>
-                <tr><td class="px-4 py-2.5 font-medium text-gray-900 dark:text-gray-100">Local</td><td class="px-4 py-2.5">Each site&rsquo;s optimised protocol: Prisma &mdash; GRE 2&times;2, sum-of-squares; Cima &mdash; 3D-EPI, CAIPIRINHA 3&times;2</td><td class="px-4 py-2.5">Prisma: 7.04 / 13.4 / 19.76 / 26.12<br>Cima: 6.5 / 12 / 17.5 / 23</td><td class="px-4 py-2.5">31&nbsp;ms / 15&deg;</td></tr>
+                <tr><td class="px-4 py-2.5 font-medium text-gray-900 dark:text-gray-100">Local</td><td class="px-4 py-2.5">Each site&rsquo;s optimised protocol: Prisma is GRE 2&times;2, sum-of-squares; Cima is 3D-EPI, CAIPIRINHA 3&times;2</td><td class="px-4 py-2.5">Prisma: 7.04 / 13.4 / 19.76 / 26.12<br>Cima: 6.5 / 12 / 17.5 / 23</td><td class="px-4 py-2.5">31&nbsp;ms / 15&deg;</td></tr>
                 <tr><td class="px-4 py-2.5 font-medium text-gray-900 dark:text-gray-100">Pulseq (online)</td><td class="px-4 py-2.5">Vendor-neutral Pulseq consensus sequence (<a href="https://github.com/HarmonizedMRI/megre_label" class="text-emerald-600 hover:underline">HarmonizedMRI/megre_label</a>), Siemens ICE reconstruction</td><td class="px-4 py-2.5">5 / 11 / 17 / 23 / 29</td><td class="px-4 py-2.5">35&nbsp;ms / 15&deg;</td></tr>
                 <tr><td class="px-4 py-2.5 font-medium text-gray-900 dark:text-gray-100">Pulseq (offline)</td><td class="px-4 py-2.5">Same acquisition, offline GRAPPA reconstruction (removes the vendor recon from the chain)</td><td class="px-4 py-2.5">5 / 11 / 17 / 23 / 29</td><td class="px-4 py-2.5">35&nbsp;ms / 15&deg;</td></tr>
               </tbody>
@@ -1273,13 +1273,13 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         </div>
         <div class="mt-8 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
           <h3 class="text-lg font-semibold text-gray-900">Domain robustness by family</h3>
-          <p class="mt-2 text-sm text-gray-600 leading-relaxed">Mean xSIM per method family on each dataset. Deep-learning methods barely drop from phantom to in-vivo; classical iterative and direct methods lose far more — tuned to the idealised phantom, they generalise worse to real 3 T data.</p>
+          <p class="mt-2 text-sm text-gray-600 leading-relaxed">Mean xSIM per method family on each dataset. Deep-learning methods barely drop from phantom to in-vivo; classical iterative and direct methods lose far more: tuned to the idealised phantom, they generalise worse to real 3 T data.</p>
           <div class="mt-5 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="crossBarsSVG"></div>
         </div>
         <template x-if="optShiftRows.length">
           <div class="mt-8 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
             <h3 class="text-lg font-semibold text-gray-900">The tuned optimum moves with the data</h3>
-            <p class="mt-2 text-sm text-gray-600 leading-relaxed">For every dipole method tuned on <em>both</em> datasets, its optimal regularisation strength on the in-silico phantom (left) versus in vivo (right), on a log scale. The in-vivo optimum sits roughly 10–30× higher almost everywhere: real 3&nbsp;T data — with acquisition noise and forward-model mismatch — needs far heavier regularisation than the idealised phantom, so a single &ldquo;recommended&rdquo; value can't serve both. Coloured by family; hover for the shift.</p>
+            <p class="mt-2 text-sm text-gray-600 leading-relaxed">For every dipole method tuned on <em>both</em> datasets, its optimal regularisation strength on the in-silico phantom (left) versus in vivo (right), on a log scale. The in-vivo optimum sits roughly 10–30× higher almost everywhere: real 3&nbsp;T data (with acquisition noise and forward-model mismatch) needs far heavier regularisation than the idealised phantom, so a single &ldquo;recommended&rdquo; value can't serve both. Coloured by family; hover for the shift.</p>
             <div class="mt-2" x-html="familyLegend"></div>
             <div class="mt-5 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="optShiftSVG"></div>
           </div>
@@ -1294,10 +1294,10 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
     // χ-separation metric catalog (para_*/dia_* aren't in the global METRICS registry). Drives the
     // customisable column picker + table. `f` is the formatter kind: xsim / pct / num / sec.
     const CHISEP_COLS = [
-      { key: "avg_mspe",            label: "Avg MSPE",        better: "lower",  f: "pct",  tip: "Mean of the χ+ and χ− per-ROI MSPE (Ridani et al. 2026) — the headline metric, comparable to the paper's published numbers. Lower is better." },
+      { key: "avg_mspe",            label: "Avg MSPE",        better: "lower",  f: "pct",  tip: "Mean of the χ+ and χ− per-ROI MSPE (Ridani et al. 2026), the headline metric, comparable to the paper's published numbers. Lower is better." },
       { key: "para_mspe",           label: "χ+ MSPE",         better: "lower",  f: "pct",  tip: "χ+ per-ROI MSPE over the iron nuclei + GM. WM excluded (χ+ ~1 ppb → unstable %). Lower is better." },
       { key: "dia_mspe",            label: "χ− MSPE",         better: "lower",  f: "pct",  tip: "χ− per-ROI MSPE over the fibre-bundle atlas WM sub-ROIs (Ridani et al. 2026, Fig 3). Lower is better." },
-      { key: "avg_ndt",             label: "Avg detr. NRMSE", better: "lower",  f: "pct",  tip: "Mean of the χ+ and χ− linearly-detrended NRMSE: a voxelwise source-separation error, scale-independent (fair to a method's assumed Dr) and — unlike xSIM — sensitive to the magnitude error white-matter anisotropy induces. Lower is better." },
+      { key: "avg_ndt",             label: "Avg detr. NRMSE", better: "lower",  f: "pct",  tip: "Mean of the χ+ and χ− linearly-detrended NRMSE: a voxelwise source-separation error, scale-independent (fair to a method's assumed Dr) and, unlike xSIM, sensitive to the magnitude error white-matter anisotropy induces. Lower is better." },
       { key: "avg",                 label: "Avg xSIM",        better: "higher", f: "xsim", tip: "Mean of the χ+ and χ− xSIM. Structural similarity only: lenient to the magnitude error anisotropy causes (the do-nothing null solve scores ~0.75 here), so it is not the ranking metric. Higher is better." },
       { key: "para_xsim",           label: "χ+ xSIM",         better: "higher", f: "xsim", tip: "Structural similarity of the χ+ (paramagnetic, iron) map vs ground truth. Higher is better." },
       { key: "para_nrmse",          label: "χ+ NRMSE",        better: "lower",  f: "pct",  tip: "Demeaned normalised RMS error of χ+ vs ground truth (%). Lower is better." },
@@ -1458,7 +1458,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           try {
             // Fetch concurrently but assign the name manifest (algos) + registry BEFORE runs: runs is
             // the big reactive trigger, and name-dependent getters (matrix, findings) cache by
-            // runs.length — if algos isn't loaded yet when they first compute, algoName() falls back to
+            // runs.length: if algos isn't loaded yet when they first compute, algoName() falls back to
             // raw slugs and the cache never refreshes. Assigning algos first avoids that.
             const loadRepro = async () => {
               try { const r = await fetch("results/repro.json", { cache: "no-store" }); return r.ok ? await r.json() : null; }
@@ -1470,7 +1470,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             this.runs = runs;
             this.datasetsReg = datasetsReg;
             this.reproData = repro;
-            // Per-region stats are NOT fetched here — ensureRegions() lazy-loads them (per-run files,
+            // Per-region stats are NOT fetched here; ensureRegions() lazy-loads them (per-run files,
             // one small results/<id>/regions.json each) the first time the Regions findings tab is
             // opened, so the common page load stays lean. See the findView watch + deep-link trigger.
             // default phantom selection (deep-linkable via ?phantom=<id>)
@@ -1500,8 +1500,8 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           this.$watch("findView", (v) => { if (v === "regions") this.ensureRegions(); });
           if (this.tab === "findings" && this.findView === "regions") this.ensureRegions();
           this.syncUrl();   // canonicalise (e.g. if an unavailable dataset was reset to sim)
-          // findings: delegated click — any injected mark carrying data-run opens that run's page
-          // (unless a drag-pan just happened on the regions figure — that drag ends in a click we swallow).
+          // findings: delegated click; any injected mark carrying data-run opens that run's page
+          // (unless a drag-pan just happened on the regions figure, in which case that drag ends in a click we swallow).
           let _swallowClick = false;
           this.$root.addEventListener("click", (e) => {
             if (_swallowClick) { _swallowClick = false; return; }
@@ -1515,7 +1515,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           // every region and dim the rest. Direct opacity toggles (not Alpine state) so it's instant
           // and never re-renders the SVG; base dot opacity is an SVG attribute, so clearing the inline
           // style reverts it. Suppressed while dragging so the plot doesn't flicker during a pan.
-          let _hlCur = null;   // currently-highlighted slug — skip redundant full passes while moving within it
+          let _hlCur = null;   // currently-highlighted slug; skip redundant full passes while moving within it
           const hlAlgo = (slug) => {
             if (slug === _hlCur) return;
             _hlCur = slug;
@@ -1569,7 +1569,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         chisepPhantomIds() { const g = this.datasetsReg || {}; return Object.keys(g).filter((k) => g[k].track === "chisep"); },
         chisepDefaultPhantom() { const g = this.datasetsReg || {}; return this.chisepPhantomIds().find((k) => g[k].default) || "chisep"; },
         chisepPhantomOf(r) { return this.chisepPhantomIds().includes(r.phantom) ? r.phantom : this.chisepDefaultPhantom(); },
-        // phantoms that actually have runs, default phantom first — drives the selector (hidden when
+        // phantoms that actually have runs, default phantom first; drives the selector (hidden when
         // only one phantom has runs).
         chisepPhantoms() {
           const d = this.chisepDefaultPhantom();
@@ -1581,7 +1581,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         hasChiSep() { return this._chisepAll().length > 0; },
         // ---- GRE-only condition -----------------------------------------------------------
         // A χ-sep method is natively GRE-only when its declared inputs never include r2prime
-        // (e.g. R2*-QSM, DECOMPOSE fit the GRE signal directly) — its isolated run IS its
+        // (e.g. R2*-QSM, DECOMPOSE fit the GRE signal directly); its isolated run IS its
         // GRE-only run, so it appears unchanged under both conditions.
         _greNative(slug) { const a = this.algos.find((x) => x.slug === slug); return !!a && a.stage === "chi-separation" && !(a.inputs || []).includes("r2prime"); },
         _isGreCombo(r) { return r.mode === "composed" && r.combo && r.combo.r2prime_generation; },
@@ -1589,10 +1589,10 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         // Row label: a GRE-only combo names the method plus the R2′ generator that fed it.
         chisepRowLabel(r) { const g = this.chisepGenOf(r); return g ? r.name + " ⟵ " + this.algoName(g) : r.name; },
         // The board's row pool under the current condition. Full: the isolated χ-sep runs (with the
-        // Defaults/Tuned toggle). GRE-only: ONE row per method — each R2′-consuming method paired
+        // Defaults/Tuned toggle). GRE-only: ONE row per method, each R2′-consuming method paired
         // with the best-ranked generator (chisepGenRanking; falling back down the ranking when the
-        // preferred combo is missing or DNF'd, as a practitioner would) — plus the natively GRE-only
-        // methods' isolated runs (default variant — combos have no tuned pass). Every scored
+        // preferred combo is missing or DNF'd, as a practitioner would), plus the natively GRE-only
+        // methods' isolated runs (default variant; combos have no tuned pass). Every scored
         // (generator × method) combo remains in the Findings figure and the CSV export.
         _chisepBoard() {
           const pool = this._chisep();
@@ -1611,18 +1611,18 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           ];
         },
         // R2′ generators (isolated, scored against the phantom's true R2′) for the small table
-        // under the GRE-only board. Sorted by detrended NRMSE — the selection metric (see below).
+        // under the GRE-only board. Sorted by detrended NRMSE, the selection metric (see below).
         chisepGenRows() {
           return this._chisep()
             .filter((r) => r.stage === "r2prime-generation" && r.mode === "isolated" && (r.variant || "default") === "default")
             .slice().sort((a, b) => (((a.metrics || {}).nrmse_detrend ?? 1e9) - ((b.metrics || {}).nrmse_detrend ?? 1e9)));
         },
         // Generator preference order on this phantom: by each generator's own fidelity to the true R2′
-        // (isolated DETRENDED NRMSE, lower first — plain NRMSE would crown any scale-perfect copy of
+        // (isolated DETRENDED NRMSE, lower first; plain NRMSE would crown any scale-perfect copy of
         // R2*, e.g. 0.52·R2*, whose structure is untouched; detrending forgives a global scale and
         // ranks by the structural fidelity that actually distinguishes substitutes). The board's
-        // GRE-only view supplies every method with the best-ranked generator — the "use the best
-        // available R2′ tool" policy a GRE-only protocol would actually follow — not an oracle pick
+        // GRE-only view supplies every method with the best-ranked generator (the "use the best
+        // available R2′ tool" policy a GRE-only protocol would actually follow), not an oracle pick
         // of whichever combo happens to score best.
         chisepGenRanking() {
           return this.chisepGenRows().filter((r) => r.status !== "DNF" && (r.metrics || {}).nrmse_detrend != null).map((r) => r.slug);
@@ -1656,9 +1656,9 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           return [...set].sort();
         },
         // Plausibility cap on a per-pair slope-deviation fit: |a-1| > 2 (slope outside [-1, 3]) means
-        // the two acquisitions' ROI values don't track for this pipeline — a degenerate/failed fit,
+        // the two acquisitions' ROI values don't track for this pipeline, a degenerate/failed fit,
         // not a reproducibility measurement. Excluded so it can't blow up a median or (worse) a mean.
-        // (Real inter-scanner slopes go as low as ~0.4 — Mauro's EPI↔ME-GRE — so the cap is generous.)
+        // (Real inter-scanner slopes go as low as ~0.4, e.g. Mauro's EPI↔ME-GRE, so the cap is generous.)
         _SLOPE_DEV_CAP: 2,
         _BIAS_CAP_PPM: 1,   // |Bland-Altman bias| beyond 1 ppm is non-physical for brain ROI χ
         // finite, in-range per-pair values for a class, optionally restricted to one protocol
@@ -1735,7 +1735,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         // ---- Harmonization · Findings (all live from reproData) --------------------------------
         _reproMetricLabel() { return { inter: "inter-scanner", tr: "test–retest", ip: "vs-bridge" }[this.reproFindMetric]; },
         _stageOf(slug) { const a = this.algos.find((x) => x.slug === slug); return a && a.stage; },
-        // One robust scalar per pipeline for each repro class — the raw material for the attribution
+        // One robust scalar per pipeline for each repro class: the raw material for the attribution
         // figures. `field_mapping`/`bfr`/`dipole` are set only for the 3-part factorial matrix (which the
         // variance decomposition and the fm/bfr panels use); `final` is the last (χ-producing) step of
         // ANY pipeline, so the dipole panel can also credit combined bfr+dipole and end-to-end methods.
@@ -1809,7 +1809,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             const maxv = Math.max(...rows.map((r) => r.q3)) * 1.02 || 0.1;
             const X = (v) => padL + (v / maxv) * (w - padL - padR);
             let s = `<svg width="${w}" height="${h}" style="max-width:100%;height:auto">`;
-            s += `<text x="${padL}" y="12" fill="currentColor" opacity="0.5" style="font-size:10px">median ${this._reproMetricLabel()} |a−1| over pipelines using this method (dot), IQR (bar) — lower is more reproducible →</text>`;
+            s += `<text x="${padL}" y="12" fill="currentColor" opacity="0.5" style="font-size:10px">median ${this._reproMetricLabel()} |a−1| over pipelines using this method (dot), IQR (bar); lower is more reproducible →</text>`;
             [0, 0.25, 0.5, 0.75, 1].map((f) => f * maxv).forEach((t) => {
               const x = X(t); s += `<line x1="${x}" y1="${top - 2}" x2="${x}" y2="${h - 16}" stroke="currentColor" opacity="0.07"/>`;
               s += `<text x="${x}" y="${h - 4}" text-anchor="middle" fill="currentColor" opacity="0.4" style="font-size:9px">${(t * 100).toFixed(t < 0.1 ? 1 : 0)}%</text>`;
@@ -1817,7 +1817,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             rows.forEach((r, i) => {
               const y = top + i * rh + rh / 2, c = FAM[r.fam].c;
               s += `<text x="${padL - 10}" y="${y + 3}" text-anchor="end" fill="currentColor" opacity="0.82" style="font-size:10px">${this._esc(r.name)}</text>`;
-              s += `<g data-tip="${this._esc(`${r.name} — median ${(r.med * 100).toFixed(1)}% [IQR ${(r.q1 * 100).toFixed(1)}–${(r.q3 * 100).toFixed(1)}%] over ${r.n} pipelines`)}">`;
+              s += `<g data-tip="${this._esc(`${r.name}: median ${(r.med * 100).toFixed(1)}% [IQR ${(r.q1 * 100).toFixed(1)}–${(r.q3 * 100).toFixed(1)}%] over ${r.n} pipelines`)}">`;
               s += `<line x1="${X(r.q1)}" y1="${y}" x2="${X(r.q3)}" y2="${y}" stroke="${c}" stroke-width="3" opacity="0.3" stroke-linecap="round"/>`;
               s += `<circle cx="${X(r.med)}" cy="${y}" r="3.6" fill="${c}"/></g>`;
             });
@@ -1854,7 +1854,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
               const c = hl ? (on ? hc : "#94a3b8") : "#10b981";
               const r = (hl && on) ? 4.6 : 3;
               const op = hl ? (on ? 0.95 : 0.1) : 0.55;
-              s += `<circle cx="${X(p.tr)}" cy="${Y(p.inter)}" r="${r}" fill="${c}" opacity="${op}" data-repro="${this._esc(p.slug)}" data-tip="${this._esc(`${p.name} — inter-scanner ${(p.inter * 100).toFixed(1)}%, test–retest ${(p.tr * 100).toFixed(1)}%`)}" style="cursor:pointer"/>`;
+              s += `<circle cx="${X(p.tr)}" cy="${Y(p.inter)}" r="${r}" fill="${c}" opacity="${op}" data-repro="${this._esc(p.slug)}" data-tip="${this._esc(`${p.name}: inter-scanner ${(p.inter * 100).toFixed(1)}%, test–retest ${(p.tr * 100).toFixed(1)}%`)}" style="cursor:pointer"/>`;
             });
             return s + "</svg>";
           });
@@ -2132,7 +2132,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
 
         // In-vivo · what tuning buys on real data: default -> tuned xSIM, ordered by gain, with the best
         // pretrained network as a ceiling. Classical methods look weak at defaults and leap toward the
-        // learned ceiling once tuned — the payoff is far larger in vivo than on the phantom.
+        // learned ceiling once tuned; the payoff is far larger in vivo than on the phantom.
         get ivTuningRows() {
           return _cache("ivtune", this.runs.length, () => {
             const by = {};
@@ -2162,7 +2162,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           rows.forEach((r, i) => {
             const y = top + i * rh + rh / 2, xd = X(r.def), xt = X(r.tuned);
             s += `<text x="${padL - 12}" y="${y + 3}" text-anchor="end" fill="currentColor" opacity="0.8" style="font-size:11px">${E(r.name)}</text>`;
-            s += `<g ${this._ptIv(r.slug, `${r.name} — default ${r.def.toFixed(3)} → tuned ${r.tuned.toFixed(3)} xSIM (+${(r.tuned - r.def).toFixed(3)})`)}>`;
+            s += `<g ${this._ptIv(r.slug, `${r.name}: default ${r.def.toFixed(3)} → tuned ${r.tuned.toFixed(3)} xSIM (+${(r.tuned - r.def).toFixed(3)})`)}>`;
             s += `<line x1="${xd}" y1="${y}" x2="${xt}" y2="${y}" stroke="currentColor" opacity="0.25" stroke-width="2"/>`;
             s += `<circle cx="${xd}" cy="${y}" r="4.5" fill="#94a3b8"/>`;
             s += `<circle cx="${xt}" cy="${y}" r="4.5" fill="#10b981"/></g>`;
@@ -2173,7 +2173,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         },
 
         // Cross-dataset · the tuned optimum moves with the data. For each dipole method tuned on BOTH
-        // datasets (same single knob), its in-silico optimum vs its in-vivo optimum on a log axis —
+        // datasets (same single knob), its in-silico optimum vs its in-vivo optimum on a log axis:
         // in vivo sits systematically higher (heavier regularisation for real-data noise).
         get optShiftRows() {
           return _cache("optshift", this.runs.length, () => {
@@ -2217,7 +2217,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           s += `<text x="14" y="${(top + h - bot) / 2}" text-anchor="middle" fill="currentColor" opacity="0.5" style="font-size:10px" transform="rotate(-90 14 ${(top + h - bot) / 2})">tuned parameter value (log) →</text>`;
           rows.forEach((r, i) => {
             const yS = Y(r.sim), yI = Y(r.iv), c = FAM[r.fam].c;
-            s += `<g data-tip="${E(`${r.name} — ${r.key}: ${r.sim} (in-silico) → ${r.iv} (in-vivo), ${(r.iv / r.sim).toFixed(0)}× heavier`)}">`;
+            s += `<g data-tip="${E(`${r.name}, ${r.key}: ${r.sim} (in-silico) → ${r.iv} (in-vivo), ${(r.iv / r.sim).toFixed(0)}× heavier`)}">`;
             s += `<line x1="${xL}" y1="${yS}" x2="${xR}" y2="${yI}" stroke="${c}" stroke-width="1.6" opacity="0.6"/>`;
             s += `<circle cx="${xL}" cy="${yS}" r="3.6" fill="${c}"/><circle cx="${xR}" cy="${yI}" r="3.6" fill="${c}"/>`;
             s += `<text x="${xL - 9}" y="${ly[i] + 3}" text-anchor="end" fill="currentColor" opacity="0.8" style="font-size:11px">${E(r.name)}</text>`;
@@ -2245,7 +2245,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             const lab = new Set([...rows].sort((a, b) => b.x - a.x).slice(0, 3).map((r) => r.slug)); [...rows].sort((a, b) => a.x - b.x).slice(0, 2).forEach((r) => lab.add(r.slug));
             rows.forEach((r) => {
               const x = SX(r.x), y = SY(r.y);
-              s += `<circle cx="${x}" cy="${y}" r="4.5" fill="${FAM[r.fam].c}" opacity="0.85" ${this._ptIv(r.slug, `${r.name} — COSMOS ${r.x.toFixed(2)}, STI ${r.y.toFixed(2)} xSIM`)}/>`;
+              s += `<circle cx="${x}" cy="${y}" r="4.5" fill="${FAM[r.fam].c}" opacity="0.85" ${this._ptIv(r.slug, `${r.name}: COSMOS ${r.x.toFixed(2)}, STI ${r.y.toFixed(2)} xSIM`)}/>`;
               if (lab.has(r.slug)) s += `<text x="${x + 7}" y="${y + 3}" fill="currentColor" opacity="0.8" style="font-size:10px">${E(r.name)}</text>`;
             });
             return s + "</svg>";
@@ -2270,7 +2270,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             const lab = new Set([...rows].sort((a, b) => a.x - b.x).slice(0, 3).map((r) => r.slug)); [...rows].sort((a, b) => b.x - a.x).slice(0, 2).forEach((r) => lab.add(r.slug));
             rows.forEach((r) => {
               const x = SX(r.x), y = SY(r.y);
-              s += `<circle cx="${x}" cy="${y}" r="4.5" fill="${FAM[r.fam].c}" opacity="0.85" ${this._ptIv(r.slug, `${r.name} — NRMSE ${r.x.toFixed(0)}%, HFEN ${r.y.toFixed(0)}%`)}/>`;
+              s += `<circle cx="${x}" cy="${y}" r="4.5" fill="${FAM[r.fam].c}" opacity="0.85" ${this._ptIv(r.slug, `${r.name}: NRMSE ${r.x.toFixed(0)}%, HFEN ${r.y.toFixed(0)}%`)}/>`;
               if (lab.has(r.slug)) s += `<text x="${x + 7}" y="${y + 3}" fill="currentColor" opacity="0.8" style="font-size:10px">${E(r.name)}</text>`;
             });
             return s + "</svg>";
@@ -2298,14 +2298,14 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             s += `<text x="13" y="${(pt + ay) / 2}" text-anchor="middle" fill="currentColor" opacity="0.55" style="font-size:11px;font-weight:600" transform="rotate(-90 13 ${(pt + ay) / 2})">xSIM vs COSMOS</text>`;
             if (front.length > 1) s += `<polyline points="${front.map((p) => p.px + "," + p.py).join(" ")}" fill="none" stroke="#10b981" stroke-width="1.5" opacity="0.5" stroke-dasharray="4 3"/>`;
             pts.forEach((p) => {
-              s += `<circle cx="${p.px}" cy="${p.py}" r="${p.pareto ? 4.5 : 3.5}" fill="${p.pareto ? "#10b981" : "#94a3b8"}" opacity="${p.pareto ? 1 : 0.5}" ${this._ptIv(p.slug, `${p.name} — xSIM ${p.xsim.toFixed(2)}, ${fmt(p.rt, "runtime_s")}`)}/>`;
+              s += `<circle cx="${p.px}" cy="${p.py}" r="${p.pareto ? 4.5 : 3.5}" fill="${p.pareto ? "#10b981" : "#94a3b8"}" opacity="${p.pareto ? 1 : 0.5}" ${this._ptIv(p.slug, `${p.name}: xSIM ${p.xsim.toFixed(2)}, ${fmt(p.rt, "runtime_s")}`)}/>`;
               if (p.pareto) s += `<text x="${p.px + 7}" y="${p.py + 3}" fill="currentColor" opacity="0.85" style="font-size:10px">${E(p.name)}</text>`;
             });
             return s + "</svg>";
           });
         },
 
-        // Cross-dataset · in-silico xSIM vs in-vivo (COSMOS) xSIM, coloured by family — the money shot.
+        // Cross-dataset · in-silico xSIM vs in-vivo (COSMOS) xSIM, coloured by family; the money shot.
         get crossScatterSVG() {
           return _cache("xsc", this.runs.length, () => {
             const E = this._esc, rows = this._crossDip();
@@ -2325,7 +2325,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             [...rows].sort((a, b) => Math.abs(b.si - b.iv) - Math.abs(a.si - a.iv)).slice(0, 4).forEach((r) => lab.add(r.slug));
             rows.forEach((r) => {
               const x = SX(r.si), y = SY(r.iv);
-              s += `<circle cx="${x}" cy="${y}" r="5" fill="${FAM[r.fam].c}" opacity="0.85" ${this._ptIv(r.slug, `${r.name} — silico ${r.si.toFixed(2)}, in-vivo ${r.iv.toFixed(2)} xSIM`)}/>`;
+              s += `<circle cx="${x}" cy="${y}" r="5" fill="${FAM[r.fam].c}" opacity="0.85" ${this._ptIv(r.slug, `${r.name}: silico ${r.si.toFixed(2)}, in-vivo ${r.iv.toFixed(2)} xSIM`)}/>`;
               if (lab.has(r.slug)) s += `<text x="${x + 7}" y="${y + 3}" fill="currentColor" opacity="0.85" style="font-size:10px">${E(r.name)}</text>`;
             });
             return s + "</svg>";
@@ -2345,7 +2345,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             s += `<text x="${xR}" y="22" text-anchor="middle" fill="currentColor" opacity="0.55" style="font-size:11px;font-weight:600">in-vivo (2016) rank</text>`;
             rows.forEach((r) => {
               const yL = top + r.sR * rh, yR = top + r.vR * rh, c = FAM[r.fam].c;
-              s += `<g ${this._ptIv(r.slug, `${r.name} — silico #${r.sR + 1} → in-vivo #${r.vR + 1}`)}>`;
+              s += `<g ${this._ptIv(r.slug, `${r.name}: silico #${r.sR + 1} → in-vivo #${r.vR + 1}`)}>`;
               s += `<line x1="${xL}" y1="${yL}" x2="${xR}" y2="${yR}" stroke="${c}" stroke-width="1.5" opacity="0.6"/>`;
               s += `<circle cx="${xL}" cy="${yL}" r="3.5" fill="${c}"/><circle cx="${xR}" cy="${yR}" r="3.5" fill="${c}"/>`;
               s += `<text x="${xL - 9}" y="${yL + 3.5}" text-anchor="end" fill="currentColor" opacity="0.8" style="font-size:11px">${E(r.name)}</text>`;
@@ -2407,7 +2407,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         },
 
         // Error compounds through the pipeline: the achievable xSIM ceiling (and median) collapses as
-        // each real upstream stage is added — dipole from GT local field, then + background removal from
+        // each real upstream stage is added: dipole from GT local field, then + background removal from
         // GT total field, then + field mapping from raw phase.
         get cascadeSVG() {
           return _cache("cascade", this.runs.length, () => {
@@ -2442,7 +2442,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         },
 
         // Separability: the dipole ranking barely moves across background-removal methods. For each dipole,
-        // its rank range (min–max, dot = mean) across the 8 strong BFRs — tight bars = its standing is
+        // its rank range (min–max, dot = mean) across the 8 strong BFRs; tight bars = its standing is
         // insensitive to the upstream stage (mean pairwise Spearman of the orderings ≈ 0.87).
         get dipoleStabilitySVG() {
           return _cache("dipstab", this.runs.length, () => {
@@ -2464,7 +2464,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             rows.forEach((r, i) => {
               const y = top + i * rh + rh / 2, c = FAM[r.fam].c;
               s += `<text x="${padL - 10}" y="${y + 3}" text-anchor="end" fill="currentColor" opacity="0.8" style="font-size:10px">${this._esc(r.name)}</text>`;
-              s += `<g data-tip="${this._esc(`${r.name} — rank ${r.min}–${r.max} across ${bfrs.length} BFRs (mean ${r.mean.toFixed(1)})`)}">`;
+              s += `<g data-tip="${this._esc(`${r.name}: rank ${r.min}–${r.max} across ${bfrs.length} BFRs (mean ${r.mean.toFixed(1)})`)}">`;
               s += `<line x1="${X(r.min)}" y1="${y}" x2="${X(r.max)}" y2="${y}" stroke="${c}" stroke-width="3" opacity="0.3" stroke-linecap="round"/>`;
               s += `<circle cx="${X(r.mean)}" cy="${y}" r="3.4" fill="${c}"/></g>`;
             });
@@ -2474,7 +2474,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
 
         // Which metric you score by changes which BFR wins: rank of each BFR (rows, sorted by xSIM) under
         // five metrics (cols). xSIM/NRMSE/HFEN columns are near-identical (redundant); calcification and
-        // iron linearity reshuffle — iron linearity is orthogonal to similarity (bfrnet worst-tier on
+        // iron linearity reshuffle: iron linearity is orthogonal to similarity (bfrnet worst-tier on
         // similarity, best on iron).
         get bfrMetricSVG() {
           return _cache("bfrmet", this.runs.length, () => {
@@ -2517,7 +2517,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             s += `<text x="${xR}" y="22" text-anchor="middle" fill="currentColor" opacity="0.55" style="font-size:11px;font-weight:600">composed · real BFR</text>`;
             rows.forEach((r) => {
               const yL = top + r.iR * rh, yR = top + r.cR * rh, d = r.iR - r.cR, c = d > 0 ? "#10b981" : d < 0 ? "#e11d48" : "#94a3b8";
-              s += `<g ${this._pt(r.slug, `${r.name} — isolated ${r.iso.toFixed(1)} → composed ${r.comp.toFixed(1)} NRMSE`)}>`;
+              s += `<g ${this._pt(r.slug, `${r.name}: isolated ${r.iso.toFixed(1)} → composed ${r.comp.toFixed(1)} NRMSE`)}>`;
               s += `<line x1="${xL}" y1="${yL}" x2="${xR}" y2="${yR}" stroke="${c}" stroke-width="1.5" opacity="0.65"/>`;
               s += `<circle cx="${xL}" cy="${yL}" r="3.5" fill="${c}"/><circle cx="${xR}" cy="${yR}" r="3.5" fill="${c}"/>`;
               s += `<text x="${xL - 9}" y="${yL + 3.5}" text-anchor="end" fill="currentColor" opacity="0.8" style="font-size:11px">${E(r.name)}</text>`;
@@ -2556,7 +2556,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             s += `<text x="${padL + 6}" y="${h - padB - 6}" fill="currentColor" opacity="0.4" style="font-size:10px;font-style:italic">accurate &amp; consistent</text>`;
             rows.forEach((r) => {
               const x = SX(r.mean), y = SY(r.sd), c = this._famC(r.slug);
-              s += `<circle cx="${x}" cy="${y}" r="4.5" fill="${c}" opacity="0.85" ${this._pt(r.slug, `${r.name} — mean ${r.mean.toFixed(0)}, spread ±${r.sd.toFixed(0)} NRMSE`)}/>`;
+              s += `<circle cx="${x}" cy="${y}" r="4.5" fill="${c}" opacity="0.85" ${this._pt(r.slug, `${r.name}: mean ${r.mean.toFixed(0)}, spread ±${r.sd.toFixed(0)} NRMSE`)}/>`;
               if (lab.has(r.slug)) s += `<text x="${x + 7}" y="${y + 3}" fill="currentColor" opacity="0.8" style="font-size:10px">${E(r.name)}</text>`;
             });
             return s + "</svg>";
@@ -2603,7 +2603,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
               s += `<text x="${a.x}" y="${yTop - 20}" text-anchor="middle" fill="currentColor" opacity="0.7" style="font-size:11px;font-weight:600">${a.lab}</text>`;
               s += `<text x="${a.x}" y="${yTop - 8}" text-anchor="middle" fill="currentColor" opacity="0.35" style="font-size:9px">best ↑</text>`;
             });
-            const tip = (r) => this.algoName(r.slug) + " — " + ax.map((a) => a.lab + " " + fmt(val(r, a.k), a.k)).join(", ");
+            const tip = (r) => this.algoName(r.slug) + ": " + ax.map((a) => a.lab + " " + fmt(val(r, a.k), a.k)).join(", ");
             methods.forEach((r) => { if (hlS.has(r.slug)) return; s += `<polyline points="${ax.map((a) => a.x + "," + Y(good(r, a))).join(" ")}" fill="none" stroke="currentColor" stroke-width="1" opacity="0.12" ${this._pt(r.slug, tip(r))}/>`; });
             hl.forEach((x) => {
               const pts = ax.map((a) => a.x + "," + Y(good(x.r, a))).join(" ");
@@ -2642,12 +2642,12 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         },
 
         // ==================================================================================
-        //  FINDINGS · Regions — per-region susceptibility values vs ground truth, fed by per-run
+        //  FINDINGS · Regions: per-region susceptibility values vs ground truth, fed by per-run
         //  results/<id>/regions.json files ({ chi: { labels, recon, truth } }); ensureRegions()
         //  fetches the isolated-dipole set in parallel into this.regions ({ id: entry }).
         // ==================================================================================
-        // Lazy-load (once) the per-run regional stats for the runs the findings figures compare — the
-        // isolated dipole set — each from its own results/<id>/regions.json (HF or local fallback), in
+        // Lazy-load (once) the per-run regional stats for the runs the findings figures compare (the
+        // isolated dipole set), each from its own results/<id>/regions.json (HF or local fallback), in
         // parallel, then assemble the { id: entry } map the figures read. Only these ~26 small files
         // are fetched (not the whole 900-run corpus). Assigning this.regions is a reactive trigger, so
         // the getters re-run and the figures draw; then reconcile the region selector.
@@ -2682,7 +2682,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         },
         _p3(v) { return (v >= 0 ? "" : "−") + Math.abs(v).toFixed(3); },
         _regionTip(name, st, gt) {
-          return `${name} — mean ${this._p3(st.mean)} ±${st.std.toFixed(3)} ppm, median ${this._p3(st.median)}` +
+          return `${name}: mean ${this._p3(st.mean)} ±${st.std.toFixed(3)} ppm, median ${this._p3(st.median)}` +
                  (gt ? ` · GT ${this._p3(gt.mean)} (Δ ${this._p3(st.mean - gt.mean)}) · n=${st.n}` : ` · n=${st.n}`);
         },
 
@@ -2690,7 +2690,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           return _cache("regcmp", this._regionKey(), () => {
             const E = this._esc, ids = this.regionIds();
             if (!ids.length) return this._regionsLoaded
-              ? `<p class="text-sm text-gray-400 py-4">No regional statistics for this dataset yet — they populate at the next full re-score.</p>`
+              ? `<p class="text-sm text-gray-400 py-4">No regional statistics for this dataset yet; they populate at the next full re-score.</p>`
               : `<p class="text-sm text-gray-400 py-4">Loading regional statistics…</p>`;
             const id = ids.includes(this.regionSel) ? this.regionSel : ids[0];
             const rows = [];
@@ -2711,7 +2711,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             const SX = (v) => labW + (Math.max(lo, Math.min(hi, v)) - lo) / (hi - lo) * (w - labW - 16);
             let s = `<svg width="${w}" height="${h}" style="max-width:100%;height:auto">`;
             // GT band + mean/median reference lines, behind everything
-            s += `<rect x="${SX(ref.mean - ref.std)}" y="${top - 8}" width="${Math.max(1, SX(ref.mean + ref.std) - SX(ref.mean - ref.std))}" height="${rows.length * rh + 8}" fill="#10b981" opacity="0.09" data-tip="ground truth — mean ${this._p3(ref.mean)} ±${ref.std.toFixed(3)} ppm, median ${this._p3(ref.median)} · n=${ref.n}"/>`;
+            s += `<rect x="${SX(ref.mean - ref.std)}" y="${top - 8}" width="${Math.max(1, SX(ref.mean + ref.std) - SX(ref.mean - ref.std))}" height="${rows.length * rh + 8}" fill="#10b981" opacity="0.09" data-tip="ground truth: mean ${this._p3(ref.mean)} ±${ref.std.toFixed(3)} ppm, median ${this._p3(ref.median)} · n=${ref.n}"/>`;
             s += `<line x1="${SX(ref.mean)}" y1="${top - 8}" x2="${SX(ref.mean)}" y2="${top + rows.length * rh}" stroke="#10b981" stroke-width="1.5" opacity="0.6"/>`;
             s += `<line x1="${SX(ref.median)}" y1="${top - 8}" x2="${SX(ref.median)}" y2="${top + rows.length * rh}" stroke="#10b981" stroke-width="1" stroke-dasharray="3 3" opacity="0.55"/>`;
             s += `<text x="${SX(ref.mean)}" y="${top - 14}" text-anchor="middle" fill="#10b981" style="font-size:10px;font-weight:600">ground truth</text>`;
@@ -2773,7 +2773,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           return _cache("regmeth", [this.runs.length, Object.keys(this.regions).length].join("|"), () => {
             const E = this._esc, runs = this._regionRuns();
             if (!runs.length) return this._regionsLoaded
-              ? `<p class="text-sm text-gray-400 py-4">No regional statistics for this dataset yet — they populate at the next full re-score.</p>`
+              ? `<p class="text-sm text-gray-400 py-4">No regional statistics for this dataset yet; they populate at the next full re-score.</p>`
               : `<p class="text-sm text-gray-400 py-4">Loading regional statistics…</p>`;
             const col = this._regionColors(), n = runs.length;
             const has = (k) => this._regionGT(k) && runs.some((r) => this._regionEntry(r).recon[k]);
@@ -2783,7 +2783,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             // diamagnetic calcification far to the left), which is drawn in full inside a clipped,
             // drag-pannable group; and a ROBUST window (the DGM/dentate bulk) that sets the pixels-
             // per-ppm and the initial pan so the interesting cluster is framed at full detail. Drag
-            // reveals the rest — nothing is clamped, so calcification is reachable, not squashed.
+            // reveals the rest; nothing is clamped, so calcification is reachable, not squashed.
             const means = [];
             ids.forEach((k) => runs.forEach((r) => { const rc = this._regionEntry(r).recon[k]; if (rc) means.push(rc.mean); }));
             ids.forEach((k) => { const gt = this._regionGT(k); means.push(gt.mean - gt.std, gt.mean + gt.std); });
@@ -2792,7 +2792,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             const labW = 150, rh = 30, top = 22, padB = 42, w = 760, plotW = w - labW - 16;
             const h = top + ids.length * rh + padB, plotH = ids.length * rh + 8, ay = top + ids.length * rh + 8;
             // Pixels per ppm from the robust window (frames the DGM/dentate bulk at good detail), but
-            // capped so the FULL domain never exceeds ~2.6 window-widths — otherwise the strongly
+            // capped so the FULL domain never exceeds ~2.6 window-widths; otherwise the strongly
             // diamagnetic calcification would sit thousands of px away (dozens of drags). The cap only
             // bites when an extreme outlier stretches the domain; without one, full robust detail.
             const ppp = Math.min(plotW / ((rhi - rlo) || 0.01), (2.6 * plotW) / ((dmax - dmin) || 0.01));
@@ -2811,7 +2811,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
               if (i) s += `<line x1="${labW}" y1="${top + i * rh - 1}" x2="${w - 16}" y2="${top + i * rh - 1}" stroke="currentColor" opacity="0.05"/>`;
             });
             s += `<line x1="${labW}" y1="${ay}" x2="${w - 16}" y2="${ay}" stroke="currentColor" opacity="0.2"/>`;
-            s += `<text x="${(labW + w) / 2}" y="${h - 4}" text-anchor="middle" fill="currentColor" opacity="0.55" style="font-size:11px;font-weight:600">regional χ across methods (ppm) — drag to pan · grey band = ground truth</text>`;
+            s += `<text x="${(labW + w) / 2}" y="${h - 4}" text-anchor="middle" fill="currentColor" opacity="0.55" style="font-size:11px;font-weight:600">regional χ across methods (ppm) · drag to pan · grey band = ground truth</text>`;
             // clipped window: a transparent drag surface + the pannable content group
             s += `<g clip-path="url(#${clipId})">`;
             s += `<rect class="rpanhit" x="${labW}" y="${top - 4}" width="${plotW + 16}" height="${plotH}" fill="transparent" style="cursor:grab"/>`;
@@ -2827,7 +2827,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             ids.forEach((k, i) => {
               const yc = top + i * rh + rh / 2 - 3, gt = this._regionGT(k);
               // grey GT band (mean ± std) + median tick behind the dots
-              s += `<g data-tip="${E(`ground truth · ${this.regionName(k)} — mean ${this._p3(gt.mean)} ±${gt.std.toFixed(3)} ppm, median ${this._p3(gt.median)} · n=${gt.n}`)}">`;
+              s += `<g data-tip="${E(`ground truth · ${this.regionName(k)}: mean ${this._p3(gt.mean)} ±${gt.std.toFixed(3)} ppm, median ${this._p3(gt.median)} · n=${gt.n}`)}">`;
               s += `<rect x="${CX(gt.mean - gt.std)}" y="${top + i * rh + 2}" width="${Math.max(1, CX(gt.mean + gt.std) - CX(gt.mean - gt.std))}" height="${rh - 4}" fill="#94a3b8" opacity="0.13"/>`;
               s += `<line x1="${CX(gt.median)}" y1="${top + i * rh + 2}" x2="${CX(gt.median)}" y2="${top + i * rh + rh - 2}" stroke="#94a3b8" stroke-width="1" opacity="0.7"/></g>`;
               // one coloured dot per method (data-algo drives the hover highlight; data-run opens it)
@@ -2836,7 +2836,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
                 const rid = this._runId(r.slug);
                 s += `<circle cx="${CX(rc.mean)}" cy="${yc + jit(j, n)}" r="3.6" fill="${col[r.slug]}" opacity="0.72" class="rdot" data-algo="${E(r.slug)}"`
                   + (rid ? ` data-run="${rid}"` : "")
-                  + ` data-tip="${E(`${this.algoName(r.slug)} · ${this.regionName(k)} — mean ${this._p3(rc.mean)} ±${rc.std.toFixed(3)} ppm (Δ ${this._p3(rc.mean - gt.mean)})`)}"/>`;
+                  + ` data-tip="${E(`${this.algoName(r.slug)} · ${this.regionName(k)}: mean ${this._p3(rc.mean)} ±${rc.std.toFixed(3)} ppm (Δ ${this._p3(rc.mean - gt.mean)})`)}"/>`;
               });
             });
             s += `</g></g>`;   // /rpan /clip
@@ -2891,7 +2891,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             s += `<text x="13" y="${(padT + ay) / 2}" text-anchor="middle" fill="currentColor" opacity="0.55" style="font-size:11px;font-weight:600" transform="rotate(-90 13 ${(padT + ay) / 2})">xSIM</text>`;
             if (front.length > 1) s += `<polyline points="${front.map((p) => p.px + "," + p.py).join(" ")}" fill="none" stroke="#10b981" stroke-width="1.5" opacity="0.5" stroke-dasharray="4 3"/>`;
             pts.forEach((p) => {
-              s += `<circle cx="${p.px}" cy="${p.py}" r="${p.pareto ? 4.5 : 3.5}" fill="${p.pareto ? "#10b981" : "#94a3b8"}" opacity="${p.pareto ? 1 : 0.5}" ${this._pt(p.slug, `${p.name} — xSIM ${p.xsim.toFixed(2)}, ${fmt(p.rt, "runtime_s")}`)}/>`;
+              s += `<circle cx="${p.px}" cy="${p.py}" r="${p.pareto ? 4.5 : 3.5}" fill="${p.pareto ? "#10b981" : "#94a3b8"}" opacity="${p.pareto ? 1 : 0.5}" ${this._pt(p.slug, `${p.name}: xSIM ${p.xsim.toFixed(2)}, ${fmt(p.rt, "runtime_s")}`)}/>`;
               if (p.pareto) s += `<text x="${p.px + 7}" y="${p.py + 3}" fill="currentColor" opacity="0.85" style="font-size:10px">${E(p.name)}</text>`;
             });
             return s + "</svg>";
@@ -2918,7 +2918,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           rows.forEach((r, i) => {
             const y = top + i * rh + rh / 2, xd = X(r.def), xt = X(r.tuned);
             s += `<text x="${padL - 12}" y="${y + 3}" text-anchor="end" fill="currentColor" opacity="0.8" style="font-size:11px">${E(r.name)}</text>`;
-            s += `<g ${this._pt(r.slug, `${r.name} — default ${r.def.toFixed(1)} → tuned ${r.tuned.toFixed(1)} NRMSE`)}>`;
+            s += `<g ${this._pt(r.slug, `${r.name}: default ${r.def.toFixed(1)} → tuned ${r.tuned.toFixed(1)} NRMSE`)}>`;
             s += `<line x1="${xd}" y1="${y}" x2="${xt}" y2="${y}" stroke="currentColor" opacity="0.25" stroke-width="2"/>`;
             s += `<circle cx="${xd}" cy="${y}" r="4.5" fill="#94a3b8"/>`;
             s += `<circle cx="${xt}" cy="${y}" r="4.5" fill="#10b981"/></g>`;
@@ -2942,7 +2942,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             s += `<text x="${xR}" y="20" text-anchor="middle" fill="currentColor" opacity="0.55" style="font-size:11px;font-weight:600">χ− (myelin)</text>`;
             rows.forEach((r) => {
               const yP = sy(r.para), yD = sy(r.dia);
-              s += `<g data-tip="${E(r.name + " — χ+ " + r.para.toFixed(2) + " · χ− " + r.dia.toFixed(2) + " xSIM")}" data-run="${E(r.id)}">`;
+              s += `<g data-tip="${E(r.name + ": χ+ " + r.para.toFixed(2) + " · χ− " + r.dia.toFixed(2) + " xSIM")}" data-run="${E(r.id)}">`;
               s += `<line x1="${xL}" y1="${yP}" x2="${xR}" y2="${yD}" stroke="#6366f1" stroke-width="1.5" opacity="0.6"/>`;
               s += `<circle cx="${xL}" cy="${yP}" r="3.5" fill="#6366f1"/><circle cx="${xR}" cy="${yD}" r="3.5" fill="#6366f1"/>`;
               s += `<text x="${xL - 9}" y="${yP + 3.5}" text-anchor="end" fill="currentColor" opacity="0.8" style="font-size:11px">${E(r.name)}</text>`;
@@ -2972,7 +2972,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             s += `<text x="14" y="${(cy0 + cy1) / 2}" text-anchor="middle" fill="currentColor" opacity="0.55" style="font-size:11px;font-weight:600" transform="rotate(-90 14 ${(cy0 + cy1) / 2})">myelin → iron leak →</text>`;
             rows.forEach((r) => {
               const x = X(r.px), y = Y(r.py);
-              s += `<circle cx="${x}" cy="${y}" r="4.5" fill="#6366f1" opacity="0.85" data-tip="${E(r.name + " — iron→myelin " + r.px.toFixed(3) + " · myelin→iron " + r.py.toFixed(3))}" data-run="${E(r.id)}"/>`;
+              s += `<circle cx="${x}" cy="${y}" r="4.5" fill="#6366f1" opacity="0.85" data-tip="${E(r.name + ": iron→myelin " + r.px.toFixed(3) + " · myelin→iron " + r.py.toFixed(3))}" data-run="${E(r.id)}"/>`;
               s += `<text x="${x + 7}" y="${y + 3}" fill="currentColor" opacity="0.8" style="font-size:10px">${E(r.name)}</text>`;
             });
             return s + "</svg>";
@@ -2982,7 +2982,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         // Full-acquisition vs GRE-only dumbbell: per method, the mean χ+/χ− detrended NRMSE with the
         // true R2′ (isolated) vs each GRE-derived R2′ substitute (its r2prime-generation combos).
         // Natively GRE-only methods (never read R2′) appear as single diamonds. null = nothing to show
-        // (no combos scored yet on this phantom) — the findings card hides itself.
+        // (no combos scored yet on this phantom); the findings card hides itself.
         get greOnlySVG() {
           return _cache("greonly", this.runs.length + "|" + this.chisepPhantom, () => {
             const E = this._esc;
@@ -3015,16 +3015,16 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
               s += `<text x="${xL - 9}" y="${y + 3.5}" text-anchor="end" fill="currentColor" opacity="0.8" style="font-size:11px">${E(r.name)}</text>`;
               if (r.native) {
                 const x = X(r.full);
-                s += `<g data-tip="${E(r.name + " — GRE-native: " + r.full.toFixed(1) + "% under both conditions (never reads R2′)")}" data-run="${E(r.id)}">`;
+                s += `<g data-tip="${E(r.name + ", GRE-native: " + r.full.toFixed(1) + "% under both conditions (never reads R2′)")}" data-run="${E(r.id)}">`;
                 s += `<path d="M ${x} ${y - 5} L ${x + 5} ${y} L ${x} ${y + 5} L ${x - 5} ${y} Z" fill="#9ca3af"/></g>`;
                 return;
               }
               const worst = Math.max(...r.gre.map((g) => g.v));
               s += `<line x1="${X(r.full)}" y1="${y}" x2="${X(worst)}" y2="${y}" stroke="currentColor" opacity="0.2" stroke-width="1.5"/>`;
               r.gre.forEach((g) => {
-                s += `<circle cx="${X(g.v)}" cy="${y}" r="4" fill="${GEN_C[g.gen] || "#94a3b8"}" opacity="0.9" data-tip="${E(r.name + " ⟵ " + this.algoName(g.gen) + " — " + g.v.toFixed(1) + "% (vs " + r.full.toFixed(1) + "% with true R2′)")}" data-run="${E(g.id)}"/>`;
+                s += `<circle cx="${X(g.v)}" cy="${y}" r="4" fill="${GEN_C[g.gen] || "#94a3b8"}" opacity="0.9" data-tip="${E(r.name + " ⟵ " + this.algoName(g.gen) + ": " + g.v.toFixed(1) + "% (vs " + r.full.toFixed(1) + "% with true R2′)")}" data-run="${E(g.id)}"/>`;
               });
-              s += `<circle cx="${X(r.full)}" cy="${y}" r="4.5" fill="#10b981" data-tip="${E(r.name + " — " + r.full.toFixed(1) + "% with the true R2′ (MEGRE+MESE)")}" data-run="${E(r.id)}"/>`;
+              s += `<circle cx="${X(r.full)}" cy="${y}" r="4.5" fill="#10b981" data-tip="${E(r.name + ": " + r.full.toFixed(1) + "% with the true R2′ (MEGRE+MESE)")}" data-run="${E(r.id)}"/>`;
             });
             return s + "</svg>";
           });
@@ -3037,7 +3037,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             // Rank-transform NRMSE (1 = best) before the variance decomposition, so a single broken
             // method (e.g. AMP-PE at ~4000% NRMSE on in-silico) can't hijack a raw-variance score and
             // make its stage look all-important. eta^2 on ranks = share of the OUTCOME ORDERING each
-            // stage's choice explains — robust to outliers, and still uses every pipeline.
+            // stage's choice explains: robust to outliers, and still uses every pipeline.
             const ord = [...full].sort((a, b) => val(a, "nrmse") - val(b, "nrmse"));
             const rank = new Map(); ord.forEach((r, i) => rank.set(r, i + 1));
             const rs = full.map((r) => rank.get(r)), gm = rs.reduce((a, c) => a + c, 0) / rs.length;
@@ -3086,7 +3086,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             yticks.forEach((v) => { const y = SY(v); s += `<text x="${padL - 6}" y="${y + 3}" text-anchor="end" fill="currentColor" opacity="0.5" style="font-size:10px">${E(fmt(v, yk))}</text>`; });
             s += `<text x="${(padL + w) / 2}" y="${h - 4}" text-anchor="middle" fill="currentColor" opacity="0.55" style="font-size:11px;font-weight:600">${E(this.metLabel(xk))} · ${better(xk)}</text>`;
             s += `<text x="14" y="${(padT + ayx) / 2}" text-anchor="middle" fill="currentColor" opacity="0.55" style="font-size:11px;font-weight:600" transform="rotate(-90 14 ${(padT + ayx) / 2})">${E(this.metLabel(yk))}</text>`;
-            pts.forEach((p) => { const x = SX(p.x), y = SY(p.y); s += `<circle cx="${x}" cy="${y}" r="4.5" fill="${this._famC(p.slug)}" opacity="0.85" ${this._pt(p.slug, `${p.name} — ${this.metLabel(xk)} ${fmt(p.x, xk)}, ${this.metLabel(yk)} ${fmt(p.y, yk)}`)}/>`; });
+            pts.forEach((p) => { const x = SX(p.x), y = SY(p.y); s += `<circle cx="${x}" cy="${y}" r="4.5" fill="${this._famC(p.slug)}" opacity="0.85" ${this._pt(p.slug, `${p.name}: ${this.metLabel(xk)} ${fmt(p.x, xk)}, ${this.metLabel(yk)} ${fmt(p.y, yk)}`)}/>`; });
             return s + "</svg>";
           });
         },

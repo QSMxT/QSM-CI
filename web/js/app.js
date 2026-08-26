@@ -157,7 +157,7 @@ const METRICS = {
   runtime_s:       { label: "Runtime",          unit: "s", better: "lower",  dp: 1,
     desc: "Wall-clock time to produce this output; for a combined pipeline, the sum of its field-mapping, background-removal and dipole-inversion stages. Measured on GitHub-hosted runners (≈4 vCPU, 16 GB RAM, no GPU, so learning-based methods run on CPU); treat it as relative speed, not an absolute benchmark." },
   mem_peak_bytes:  { label: "Peak memory",       unit: "",  better: "lower",  dp: 0,
-    desc: "Peak resident memory (max RSS) sampled once per second while the method runs — the RAM it needs to fit on a machine. Measured on the CI runners; treat it as relative, not an absolute benchmark." },
+    desc: "Peak resident memory (max RSS) sampled once per second while the method runs: the RAM it needs to fit on a machine. Measured on the CI runners; treat it as relative, not an absolute benchmark." },
   cpu_cores_avg:   { label: "Avg CPU",           unit: " cores", better: "higher", dp: 1,
     desc: "Average CPU cores busy over the run (CPU-time ÷ wall-time): how well the method parallelises. ~1 = single-threaded, higher = more cores used at once. A utilisation indicator, not a quality score; measured on the CI runners." },
 };
@@ -181,8 +181,8 @@ async function loadRuns() {
   const res = await fetch("results/index.json", { cache: "no-store" });
   const runs = (await res.json()).runs || [];
   // Composed pipeline rows are stored with `name` == the raw "a+b+c" slug (pipeline.py). Present them
-  // the readable way the harmonization view already does — "Laplacian field mapping → BFRnet → AMP-PE"
-  // — from the algorithm manifest's display names, so every surface (leaderboard + submission title)
+  // the readable way the harmonization view already does ("Laplacian field mapping → BFRnet → AMP-PE"),
+  // using the algorithm manifest's display names, so every surface (leaderboard + submission title)
   // shows the same nice title. Display-only: the stored id/slug/combo are left untouched, so search,
   // deep links and matrix lookups keep working. A ground-truth field start drops its stage (matching
   // the stored slug, which omits "gt"); non-pipeline combos (χ-separation) have no +-name and pass through.
@@ -200,7 +200,7 @@ async function loadRuns() {
 }
 
 // algorithms.json bundles the method manifest AND the dataset/phantom registry (a `datasets` block
-// mirroring scripts/datasets.json) — fetch it once and serve both from the same promise.
+// mirroring scripts/datasets.json): fetch it once and serve both from the same promise.
 let _algoManifest = null;
 async function loadAlgoManifest() {
   if (_algoManifest) return _algoManifest;
@@ -230,8 +230,8 @@ async function loadRegistry() {
 }
 // Per-region descriptive stats for ONE run: { chi|para|dia: { labels: {id: name},
 // recon: {id: {n, mean, std, median}}, truth: {…} } }. Stored per-run (results/<id>/regions.json),
-// published to Hugging Face with the run's volumes and referenced by `run.regions_url` — exactly
-// like resources.json/resources_url — so the all-runs regional data never bloats the committed
+// published to Hugging Face with the run's volumes and referenced by `run.regions_url`, exactly
+// like resources.json/resources_url, so the all-runs regional data never bloats the committed
 // index or git. Falls back to the local path for `python -m http.server` dev (the file is on disk
 // after a local score/backfill, before it's published). Cached per run id; null when unavailable.
 const _runRegions = new Map();
