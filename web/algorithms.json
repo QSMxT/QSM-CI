@@ -2587,18 +2587,18 @@
       "parameters": [
         {
           "name": "threshold",
-          "default": 0.02,
+          "default": 0.05,
           "description": "deconvolution threshold"
         },
         {
-          "name": "max_radius_factor",
-          "default": 0.5,
-          "description": "\u00d7 min voxel size"
+          "name": "max_radius",
+          "default": 12.0,
+          "description": "max (starting) SMV kernel radius, \u00d7 min voxel size"
         },
         {
-          "name": "min_radius_factor",
-          "default": 0.0,
-          "description": "\u00d7 max voxel size"
+          "name": "min_radius",
+          "default": 1.0,
+          "description": "min radius / step between radii, \u00d7 max voxel size"
         }
       ],
       "ci_notes": []
