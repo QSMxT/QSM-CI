@@ -15,10 +15,13 @@ figures/
 out/
 .sweep/
 
-# Per-run scoring scratch: only results/index.json is tracked (Pages reads it, score.yml commits
-# it). Everything else under results/ is per-run recon/truth/error/resources scratch — never commit.
+# Per-run scoring scratch: only the small aggregated result files are tracked: results/index.json
+# (Pages reads it, score.yml commits it) and results/repro.json (the harmonization reproducibility
+# stats read by the repro dataset views; repro.yml commits it). Everything else under results/ is
+# per-run recon/truth/error/resources scratch (incl. the large repro_rois.json), never committed.
 /results/*
 !/results/index.json
+!/results/repro.json
 
 # Held-out ground truth + generated/downloaded datasets must never be committed
 data/**/groundtruth/
