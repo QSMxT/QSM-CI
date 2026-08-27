@@ -119,5 +119,15 @@ algorithms/chi-sep-ilsqr/Dockerfile
 algorithms/chi-sep-medi/Dockerfile
 algorithms/decompose-qsm/Dockerfile
 
+# QSMART (original toolbox): third-party build-time deps (QSMART .m files + Hongfu Sun's
+# lapunwrap, Frangi filter + curvatures File Exchange code) are fetched at build and baked
+# into the compiled recon binary, never committed (nifti/ and sti/ already ignored above).
+# shims/ IS committed (ours). Dockerfile gitignored so CI pulls the prebuilt MCR+ANTs image
+# (see algorithms/qsmart-matlab/BUILD.md).
+algorithms/qsmart-matlab/qsmart/
+algorithms/qsmart-matlab/frangi/
+algorithms/qsmart-matlab/curvatures/
+algorithms/qsmart-matlab/Dockerfile
+
 # nipype crash dumps from local interface tests
 crash-*.pklz
