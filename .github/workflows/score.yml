@@ -236,6 +236,9 @@ jobs:
     timeout-minutes: ${{ matrix.task.timeout }}
     env:
       QSM_CI_JOBS: ${{ matrix.task.jobs }}
+      # Per-job container tag — qsm_ci.containers labels every container it starts with this, so the
+      # post-job kill step (and the next job's reaper) can identify exactly THIS job's containers.
+      QSMCI_JOB_TAG: ${{ github.run_id }}-${{ matrix.task.id }}
     steps:
       - uses: actions/checkout@v7
 
@@ -252,30 +255,49 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
           RUN_ID: ${{ github.run_id }}
+          QSMCI_JOB_TAG: ${{ github.run_id }}-${{ matrix.task.id }}
         run: |
           command -v docker >/dev/null 2>&1 || exit 0
           python3 - <<'PY'
           import datetime, json, os, subprocess, urllib.request, urllib.error
           def sh(*a):
               return subprocess.run(a, capture_output=True, text=True).stdout.strip()
+          def api(path):
+              req = urllib.request.Request("https://api.github.com" + path,
+                  headers={"Authorization": "Bearer " + os.environ["GH_TOKEN"]})
+              with urllib.request.urlopen(req, timeout=10) as r:
+                  return json.load(r)
           ids = sh("docker", "ps", "-q", "--filter", "label=qsmci").split()
           ids += [i for i in sh("docker", "ps", "-q", "--filter", "name=qsm-ci-").split() if i not in ids]
           now = datetime.datetime.now(datetime.timezone.utc)
+          me, mytag = os.environ["RUN_ID"], os.environ.get("QSMCI_JOB_TAG", "")
+          active_names = None   # in-progress job names of MY run, fetched once on first need
           for c in ids:
               info = json.loads(sh("docker", "inspect", c) or "[]")
               if not info:
                   continue
-              rid = (info[0]["Config"].get("Labels") or {}).get("qsmci.run")
-              if rid == os.environ["RUN_ID"]:
-                  continue
+              labels = info[0]["Config"].get("Labels") or {}
+              rid, jtag = labels.get("qsmci.run"), labels.get("qsmci.job")
               kill = False
-              if rid:
-                  req = urllib.request.Request(
-                      "https://api.github.com/repos/%s/actions/runs/%s" % (os.environ["REPO"], rid),
-                      headers={"Authorization": "Bearer " + os.environ["GH_TOKEN"]})
+              if rid == me:
+                  # Same run: my own / untagged containers are sacrosanct; another job's container is
+                  # kept ONLY while that job is still in progress (else it's a failed sibling's
+                  # leftover — the very orphans that cascaded OOM through a long run's later jobs).
+                  if not jtag or jtag == mytag:
+                      continue
+                  if active_names is None:
+                      try:
+                          active_names = [j["name"] for j in api(f"/repos/{os.environ['REPO']}/actions/runs/{me}/jobs?per_page=100&filter=latest").get("jobs", [])
+                                          if j.get("status") == "in_progress"]
+                      except Exception:
+                          active_names = None
+                  if active_names is None:
+                      continue                          # can't confirm -> keep
+                  sfx = jtag[len(me) + 1:]
+                  kill = not any(("(" + sfx + ",") in n or ("(" + sfx + ")") in n for n in active_names)
+              elif rid:
                   try:
-                      with urllib.request.urlopen(req, timeout=10) as r:
-                          kill = json.load(r).get("status") == "completed"
+                      kill = api(f"/repos/{os.environ['REPO']}/actions/runs/{rid}").get("status") == "completed"
                   except urllib.error.HTTPError as e:
                       kill = e.code == 404              # run gone entirely
                   except Exception:
@@ -284,7 +306,7 @@ jobs:
                   started = info[0]["State"]["StartedAt"][:19] + "+00:00"
                   kill = (now - datetime.datetime.fromisoformat(started)).total_seconds() > 12 * 3600
               if kill:
-                  print("reaping orphaned container %s (run %s)" % (c, rid or "-"))
+                  print("reaping orphaned container %s (run %s, job %s)" % (c, rid or "-", jtag or "-"))
                   sh("docker", "kill", c)
           PY
 
@@ -354,6 +376,18 @@ jobs:
           t0=$(date +%s)
           python scripts/pipeline.py $ARGS
           echo "== task ${{ matrix.task.id }} wall-clock: $(( $(date +%s) - t0 ))s =="
+
+
+      # Belt to the reaper's braces: whatever way this job ends (incl. a failed score step — exit 137
+      # still runs `always()` steps), kill the containers IT started, so a long run's later
+      # self-hosted jobs never inherit them. Only a whole-runner death skips this; the next job's
+      # reaper covers that via the same-run job-tag check.
+      - name: Kill this job's containers
+        if: always()
+        continue-on-error: true
+        run: |
+          command -v docker >/dev/null 2>&1 || exit 0
+          [ -n "$QSMCI_JOB_TAG" ] && docker ps -q --filter "label=qsmci.job=$QSMCI_JOB_TAG" | xargs -r docker kill || true
 
       - uses: actions/upload-artifact@v7
         with:
