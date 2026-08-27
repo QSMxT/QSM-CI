@@ -1,0 +1,60 @@
+name: QSMART (original)
+slug: qsmart-matlab
+algorithm: qsmart
+variant: matlab  # distinguishes the authors' original MATLAB toolbox from the QSM.rs port (qsmart-qsmrs); slug derives to qsmart-matlab
+source: mbciu   # Melbourne Brain Centre Imaging Unit — the authors' original MATLAB toolbox (the QSM.rs port is qsmart-qsmrs)
+stage: end-to-end
+language: MATLAB
+family: iterative
+learning: none
+engine: QSMART toolbox v1.0
+description: >
+  QSMART — the authors' ORIGINAL MATLAB toolbox (v1.0), run as the full pipeline: Laplacian phase
+  unwrapping, magnitude-weighted echo fitting (with its native R_0 reliability mask), Frangi-filter
+  vasculature masking (with N4 bias correction), two-stage spatially-dependent filtering (SDF)
+  background removal, two-stage STI-Suite QSM_iLSQR inversion, and dipole-model offset adjustment.
+  Compiled from MATLAB and run on the license-free MATLAB Runtime (+ ANTs N4 in the image).
+citation: Yaghmaie et al., NeuroImage 2021
+authors:
+- name: Negin Yaghmaie
+- name: Warda T. Syeda
+- name: Chengchuan Wu
+- name: Yicheng Zhang
+- name: Tracy D. Zhang
+- name: Emma L. Burrows
+- name: Amy Brodtmann
+- name: Bradford A. Moffat
+- name: David K. Wright
+- name: Rebecca Glarin
+- name: Scott Kolbe
+- name: Leigh A. Johnston
+doi: 10.1016/j.neuroimage.2020.117701
+code_url: https://github.com/wtsyeda/QSMART
+license: "No license file; author toolbox distribution (QSM_iLSQR: see STI Suite license)"
+image: ghcr.io/astewartau/qsm-ci/matlab-qsmart:v1
+run: bash run.sh
+smoke_box: 32   # PR --smoke gate fits a 32^3 central box (fast); full score.yml run is unaffected
+matlab:
+  entry: recon.m
+  runtime: r2026a
+# Demo_QSMART.m defaults. (The demo's mag_threshold/sph_radius1 are consumed only by the
+# skipped BET brainmask step — QSM-CI mounts the contract mask — so they are not exposed.)
+parameters:
+- name: frangi_scale_min
+  default: 0.5
+  description: Frangi vesselness minimum scale (FrangiScaleRange lower bound, mm)
+- name: frangi_scale_max
+  default: 6
+  description: Frangi vesselness maximum scale (FrangiScaleRange upper bound, mm)
+- name: frangi_scale_ratio
+  default: 0.5
+  description: step between Frangi scales (FrangiScaleRatio)
+- name: frangi_c
+  default: 500
+  description: Frangi structure-vs-noise constant (FrangiC)
+- name: sph_radius_vasculature
+  default: 8
+  description: spherical structuring-element radius (voxels) for the bottom-hat vessel enhancement
+- name: fit_threshold
+  default: 40
+  description: echo-fit residual threshold for the R_0 reliability mask (voxels above are excluded)
