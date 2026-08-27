@@ -1619,6 +1619,74 @@
       "ci_notes": []
     },
     {
+      "slug": "qsmart-matlab",
+      "name": "QSMART (original)",
+      "stage": "end-to-end",
+      "inputs": [
+        "phase",
+        "magnitude",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "QSMART toolbox v1.0",
+      "language": "MATLAB",
+      "family": "iterative",
+      "learning": "none",
+      "description": "QSMART \u2014 the authors' ORIGINAL MATLAB toolbox (v1.0), run as the full pipeline: Laplacian phase unwrapping, magnitude-weighted echo fitting (with its native R_0 reliability mask), Frangi-filter vasculature masking (with N4 bias correction), two-stage spatially-dependent filtering (SDF) background removal, two-stage STI-Suite QSM_iLSQR inversion, and dipole-model offset adjustment. Compiled from MATLAB and run on the license-free MATLAB Runtime (+ ANTs N4 in the image).",
+      "citation": "Yaghmaie et al., NeuroImage 2021",
+      "doi": "10.1016/j.neuroimage.2020.117701",
+      "code_url": "https://github.com/wtsyeda/QSMART",
+      "license": "No license file; author toolbox distribution (QSM_iLSQR: see STI Suite license)",
+      "authors": [
+        "Negin Yaghmaie",
+        "Warda T. Syeda",
+        "Chengchuan Wu",
+        "Yicheng Zhang",
+        "Tracy D. Zhang",
+        "Emma L. Burrows",
+        "Amy Brodtmann",
+        "Bradford A. Moffat",
+        "David K. Wright",
+        "Rebecca Glarin",
+        "Scott Kolbe",
+        "Leigh A. Johnston"
+      ],
+      "parameters": [
+        {
+          "name": "frangi_scale_min",
+          "default": 0.5,
+          "description": "Frangi vesselness minimum scale (FrangiScaleRange lower bound, mm)"
+        },
+        {
+          "name": "frangi_scale_max",
+          "default": 6,
+          "description": "Frangi vesselness maximum scale (FrangiScaleRange upper bound, mm)"
+        },
+        {
+          "name": "frangi_scale_ratio",
+          "default": 0.5,
+          "description": "step between Frangi scales (FrangiScaleRatio)"
+        },
+        {
+          "name": "frangi_c",
+          "default": 500,
+          "description": "Frangi structure-vs-noise constant (FrangiC)"
+        },
+        {
+          "name": "sph_radius_vasculature",
+          "default": 8,
+          "description": "spherical structuring-element radius (voxels) for the bottom-hat vessel enhancement"
+        },
+        {
+          "name": "fit_threshold",
+          "default": 40,
+          "description": "echo-fit residual threshold for the R_0 reliability mask (voxels above are excluded)"
+        }
+      ],
+      "ci_notes": []
+    },
+    {
       "slug": "qsmart-qsmrs",
       "name": "QSMART",
       "stage": "bfr+dipole",
