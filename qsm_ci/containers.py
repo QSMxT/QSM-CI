@@ -181,6 +181,13 @@ def _run_container(algo, input_dir, output_dir, runner, log) -> float:
         label_args = ["--label", "qsmci=1"]
         if os.environ.get("GITHUB_RUN_ID"):
             label_args += ["--label", f"qsmci.run={os.environ['GITHUB_RUN_ID']}"]
+        # Per-JOB tag (workflows set QSMCI_JOB_TAG = <run id>-<matrix id>): the run-level label alone
+        # can't tell a failed job's leftovers from a live sibling job's containers while the run is
+        # still going — observed 2026-08-27: 12-18 h of same-run orphans cascading OOM through every
+        # later self-hosted job of one long full rescore. The job tag lets the post-job kill step and
+        # the pre-job reaper be precise about it.
+        if os.environ.get("QSMCI_JOB_TAG"):
+            label_args += ["--label", f"qsmci.job={os.environ['QSMCI_JOB_TAG']}"]
         res_out = os.environ.get("QSMCI_RESOURCES_OUT")
         sampler = None
         if res_out:
