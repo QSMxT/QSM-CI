@@ -33,6 +33,9 @@ const DATASET_BADGE = {
 const HF_VOL_BASE = "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/";
 let reproMode = false, reproPipe = "", reproAcq = "", reproJson = null;
 const reproReconUrl = (pipe, acq) => `${HF_VOL_BASE}repro/${acq}/${pipe.replaceAll("+", "_")}-cmp-${acq}__recon.nii.gz`;
+// The CPU/RAM sampling trace for this pipeline×acquisition, published to the Hub alongside the recon
+// (same deterministic path). Carries the time series AND the peak-mem / avg-cpu / max-cpu summary.
+const reproResourcesUrl = (pipe, acq) => `${HF_VOL_BASE}repro/${acq}/${pipe.replaceAll("+", "_")}-cmp-${acq}__resources.json`;
 const simRunIdOf = (pipe) => `${pipe.replaceAll("+", "~")}-cmp`;   // the same pipeline's in-silico composed run id
 const reproRunId = (pipe, acq) => `${pipe.replaceAll("+", "~")}-cmp-${acq}`;
 // Headline "score" for a repro run row: median inter-scanner |a-1| (lower is better).
@@ -49,7 +52,8 @@ function makeReproRun(pipe, acq, node) {
   else if (parts.length === 2) { combo = { field_mapping: parts[0] }; slug = parts[1]; stage = "field-mapping+bfr+dipole"; }
   return { id: reproRunId(pipe, acq), slug, name: parts.map(algoName).join(" → "),
            pipelineId: pipe, track: "repro", phantom: acq, mode: "composed", stage, combo,
-           status: "ok", metrics: reproHeadline(node), volumes: { recon: reproReconUrl(pipe, acq) } };
+           status: "ok", metrics: reproHeadline(node), volumes: { recon: reproReconUrl(pipe, acq) },
+           resources_url: reproResourcesUrl(pipe, acq) };
 }
 // (Re)generate the harmonization run pool for one acquisition and splice it into allRuns.
 function ensureReproRuns(acq) {
@@ -549,20 +553,47 @@ function renderPipelineDatasetSwitch() {
 }
 
 // Reproducibility stats for the open pipeline (from repro.json) in place of the accuracy metrics.
+// Rank this pipeline's reproducibility value for `field` among ALL harmonization pipelines (lower
+// |a−1| is better). Same {rank, n, t} shape as metricRank so the rank cell renders identically.
+function reproRank(field) {
+  const v = reproJson?.pipelines?.[reproPipe]?.[field];
+  if (v == null) return null;
+  const vals = Object.values(reproJson.pipelines || {}).map((n) => n[field]).filter((x) => x != null);
+  if (vals.length < 2) return null;
+  const rank = 1 + vals.filter((x) => x < v).length;
+  const [lo, hi] = robustRange(vals);
+  let t = hi === lo ? 0.5 : (v - lo) / (hi - lo);
+  return { rank, n: vals.length, t: 1 - t };   // lower value = higher goodness
+}
 function renderReproStats() {
   $("metrics-tabs")?.classList.add("hidden");
   $("metrics-regions-wrap")?.classList.add("hidden");
   const node = reproJson?.pipelines?.[reproPipe];
   $("metrics-sub").textContent = "Reproducibility of this pipeline across the harmonization acquisitions: orthogonal per-ROI ax+b fits, |a−1| (median).";
-  const pct = (v) => (v == null ? "—" : (100 * v).toFixed(1) + "%");
-  const row = (label, v, tip) =>
-    `<tr class="border-t border-gray-100 dark:border-gray-800"><td class="py-1.5 pr-3 text-gray-600 dark:text-gray-300"><span class="has-tip" data-tip="${tip}">${label}</span></td>`
-    + `<td class="py-1.5 text-right tabular-nums font-medium text-gray-900 dark:text-gray-100">${pct(v)}</td></tr>`;
-  const body = node
-    ? row("Test–retest |a−1|", node.test_retest_mean_abs_slope_dev, "Within-scanner run-to-run, median over pairs. Lower = more repeatable.")
-      + row("Inter-scanner |a−1|", node.inter_scanner_mean_abs_slope_dev, "Prisma↔Cima for matched protocol+run. The harmonization headline.")
-      + row("vs bridge |a−1|", node.inter_protocol_mean_abs_slope_dev, "Each protocol vs the bridge protocol, same scanner.")
-    : `<tr><td class="py-3 text-gray-400" colspan="2">No reproducibility summary for this pipeline yet.</td></tr>`;
+  const rankCell = (rk, label) => rk
+    ? `<span class="inline-block rounded-md px-1.5 py-0.5 text-xs font-semibold text-white shadow-sm" style="background:${heatScale(rk.t)}" data-tip="Rank ${rk.rank} of ${rk.n} harmonization pipelines for ${label}">#${rk.rank}<span class="opacity-70"> / ${rk.n}</span></span>`
+    : `<span class="text-gray-300 dark:text-gray-600">—</span>`;
+  // A reproducibility |a−1| row: value as a %, ranked against every other pipeline.
+  const row = (label, field, tip) => {
+    const v = node ? node[field] : null;
+    return `<tr class="border-t border-gray-100 dark:border-gray-800">`
+      + `<td class="py-2 pr-3 text-gray-600 dark:text-gray-300"><span class="has-tip" data-tip="${tip}">${label}</span></td>`
+      + `<td class="py-2 text-right tabular-nums font-medium text-gray-900 dark:text-gray-100">${v == null ? "—" : (100 * v).toFixed(1) + "%"}</td>`
+      + `<td class="py-2 pl-3 text-right">${rankCell(reproRank(field), label)}</td></tr>`;
+  };
+  // A resource row (runtime / peak memory / avg CPU): value only, folded on from the run's Hub trace.
+  const resRow = (label, v, fk, tip) => v == null ? "" :
+    `<tr class="border-t border-gray-100 dark:border-gray-800"><td class="py-2 pr-3 text-gray-500 dark:text-gray-400"><span class="has-tip" data-tip="${tip}">${label}</span></td>`
+    + `<td class="py-2 text-right tabular-nums font-medium text-gray-700 dark:text-gray-300">${fmt(v, fk)}</td><td></td></tr>`;
+  let body = node
+    ? row("Test–retest |a−1|", "test_retest_mean_abs_slope_dev", "Within-scanner run-to-run, median over pairs. Lower = more repeatable.")
+      + row("Inter-scanner |a−1|", "inter_scanner_mean_abs_slope_dev", "Prisma↔Cima for matched protocol+run. The harmonization headline.")
+      + row("vs bridge |a−1|", "inter_protocol_mean_abs_slope_dev", "Each protocol vs the bridge protocol, same scanner.")
+    : `<tr><td class="py-3 text-gray-400" colspan="3">No reproducibility summary for this pipeline yet.</td></tr>`;
+  const res = resRow("Runtime", run.runtime_s, "runtime_s", "Whole-pipeline wall-clock on this acquisition (from the CPU/RAM trace).")
+    + resRow("Peak memory", run.mem_peak_bytes, "mem_peak_bytes", "Peak resident memory during the run.")
+    + resRow("Avg CPU", run.cpu_cores_avg, "cpu_cores_avg", "Average CPU cores busy over the run.");
+  if (res) body += `<tr><td colspan="3" class="pt-3 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">Resources · ${escapeHtml(phantomLabel(reproAcq) || reproAcq)}</td></tr>` + res;
   $("metrics-body").innerHTML = body;
   const wrap = $("metrics-table-wrap"); if (wrap) wrap.classList.remove("hidden");
 }
@@ -745,10 +776,18 @@ async function loadRun() {
   // reveal the Regions/Error tabs when it arrives. Guard against a fast run-switch resolving stale.
   runRegions = null;
   renderMetricsPanel();
-  // A synthesised repro run has no per-region file or resource trace on the Hub, so skip those fetches
-  // (they'd 404) and hide the resources panel.
+  // A synthesised repro run has no per-region file, so skip regions. It DOES have a resource trace on
+  // the Hub (deterministic resources_url): draw the CPU/RAM graph, and fold its summary (runtime /
+  // peak-mem / avg-cpu) back onto the run so the reproducibility metrics table can list them too.
   if (reproMode) {
-    $("resources-panel")?.classList.add("hidden");
+    renderResources(run);
+    const wantRes = run;
+    fetch(run.resources_url, { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).then((d) => {
+      if (!d || run !== wantRes) return;
+      if (d.t && d.t.length) run.runtime_s = d.t[d.t.length - 1];
+      run.mem_peak_bytes = d.mem_peak_bytes; run.cpu_cores_avg = d.cpu_cores_avg; run.cpu_cores_max = d.cpu_cores_max;
+      renderMetricsPanel();
+    }).catch(() => {});
   } else {
     const wantRegions = run;
     loadRunRegions(run).then((entry) => { if (run === wantRegions) { runRegions = entry; renderMetricsPanel(); } });
