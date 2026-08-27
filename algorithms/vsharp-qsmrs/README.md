@@ -16,8 +16,8 @@ qsmxt bgremove vsharp /input/totalfield.nii.gz -m /input/mask.nii.gz -o /output/
 
 | parameter | default | description |
 |---|---|---|
-| `threshold` | 0.02 | deconvolution threshold |
-| `max_radius_factor` | 0.5 | × min voxel size |
-| `min_radius_factor` | 0.0 | × max voxel size |
+| `threshold` | 0.05 | deconvolution threshold |
+| `max_radius` | 12.0 | max (starting) SMV kernel radius, × min voxel size |
+| `min_radius` | 1.0 | min radius / step between radii, × max voxel size |
 
 _Citations/DOIs are auto-generated best-effort references and should be verified._

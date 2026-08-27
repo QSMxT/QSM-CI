@@ -12,7 +12,7 @@ SET=""
 CFG="$IN/config.json"
 if [ -f "$CFG" ]; then
   V=$(jq -r '.threshold // empty' "$CFG"); [ -n "$V" ] && SET="$SET --threshold $V"
-  V=$(jq -r '.max_radius_factor // empty' "$CFG"); [ -n "$V" ] && SET="$SET --max-radius-factor $V"
-  V=$(jq -r '.min_radius_factor // empty' "$CFG"); [ -n "$V" ] && SET="$SET --min-radius-factor $V"
+  V=$(jq -r '.max_radius // empty' "$CFG"); [ -n "$V" ] && SET="$SET --max-radius $V"
+  V=$(jq -r '.min_radius // empty' "$CFG"); [ -n "$V" ] && SET="$SET --min-radius $V"
 fi
 qsmxt bgremove vsharp "$IN/totalfield.nii.gz" -m "$IN/mask.nii.gz" -o "$OUT/localfield.nii.gz" --b0-direction $B0 $SET
