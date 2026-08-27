@@ -1274,14 +1274,17 @@ async function refreshView() {
   if (activeErrVol) setErrorColormap();   // colormap (+ diverging negative), window, magnitude mode
   baseCtl.setup();                        // reframe the base histogram/window for the active map
   nv.updateGLVolume();
-  // A new run can have a different geometry (in-vivo 160³ vs in-silico 164×205×205). NiiVue keeps its
-  // 2D pan/zoom and crosshair across volume swaps, so a fresh volume was being rendered through the
-  // previous one's pan, cutting part of it off, worse each time you toggled datasets. Reset the pan/
-  // zoom and recentre the crosshair whenever the run changes.
+  // A new run can have a different geometry (in-vivo 160³ vs in-silico 164×205×205, or a harmonization
+  // brain with a different affine). NiiVue keeps its 2D pan/zoom and crosshair across volume swaps, so a
+  // fresh volume renders through the previous one's framing — off-centre, worse each toggle. Recentre
+  // whenever the run changes. Reset BOTH the committed scene pan AND the working-copy uiData.pan2Dxyzmm
+  // (the live drag/zoom buffer): resetting only scene lets a prior pan get re-applied on the next draw.
   if (runChanged) {
     try {
       nv.scene.pan2Dxyzmm = [0, 0, 0, 1];
+      if (nv.uiData) nv.uiData.pan2Dxyzmm = [0, 0, 0, 1];
       nv.scene.crosshairPos = [0.5, 0.5, 0.5];
+      if ("volScaleMultiplier" in nv) nv.volScaleMultiplier = 1;   // also clear any 3D-render zoom
       nv.updateGLVolume();
       nv.drawScene();
     } catch (_) { /* best-effort recentre */ }
