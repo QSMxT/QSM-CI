@@ -44160,6 +44160,75 @@
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_lbv-qsmrs_medi-cornell-cmp__truth.nii.gz",
         "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_lbv-qsmrs_medi-cornell-cmp__error.nii.gz"
       }
+    },
+    {
+      "name": "QSMART (original)",
+      "track": "sim",
+      "stage": "end-to-end",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 699.5600960254669,
+      "metrics": {
+        "nrmse": 93.61043245755918,
+        "nrmse_detrend": 243.19971192674836,
+        "nrmse_tissue": 270.85580087615955,
+        "nrmse_blood": 586.3059433794213,
+        "nrmse_dgm": 112.90273249682505,
+        "dgm_linearity": 0.5373789256231523,
+        "calc_moment_dev": 45.65364498645067,
+        "calc_streak": 0.1598451222478825,
+        "correlation": 0.380291094508745,
+        "xsim": 0.1370073562269851,
+        "hfen": 98.50140988196023
+      },
+      "status": "ok",
+      "id": "qsmart-matlab-iso",
+      "slug": "qsmart-matlab",
+      "mode": "isolated",
+      "variant": "default",
+      "phantom": "sim",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/qsmart-matlab-iso__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/qsmart-matlab-iso__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/qsmart-matlab-iso__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/qsmart-matlab-iso__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/qsmart-matlab-iso__error.nii.gz"
+      }
+    },
+    {
+      "name": "QSMART (original)",
+      "track": "sim",
+      "stage": "end-to-end",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 519.0568296909332,
+      "metrics": {
+        "nrmse": 93.61043245755918,
+        "nrmse_detrend": 243.19971192674836,
+        "nrmse_tissue": 270.85580087615955,
+        "nrmse_blood": 586.3059433794213,
+        "nrmse_dgm": 112.90273249682505,
+        "dgm_linearity": 0.5373789256231523,
+        "calc_moment_dev": 45.65364498645067,
+        "calc_streak": 0.1598451222478825,
+        "correlation": 0.380291094508745,
+        "xsim": 0.1370073562269851,
+        "hfen": 98.50140988196023
+      },
+      "status": "ok",
+      "id": "qsmart-matlab-cmp",
+      "slug": "qsmart-matlab",
+      "mode": "composed",
+      "phantom": "sim",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/qsmart-matlab-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/qsmart-matlab-cmp__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/qsmart-matlab-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/qsmart-matlab-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/qsmart-matlab-cmp__error.nii.gz"
+      }
     }
   ]
 }
