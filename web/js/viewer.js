@@ -842,8 +842,15 @@ async function loadRun() {
 }
 
 // Rank this run's value for metric `k` among comparable runs (same job: composed pipelines together,
-// or isolated runs sharing this run's stage). Returns { rank, n, t } where t is 0..1 goodness for
+// or isolated runs sharing this run's job). Returns { rank, n, t } where t is 0..1 goodness for
 // colour, or null when there's nothing to compare against.
+// Every stage that outputs a susceptibility map competes in ONE rank pool: a pure dipole step, a
+// combined bfr+dipole method (TGV, NeXtQSM, …) and an end-to-end method (iQSM, …) all produce a
+// χ map scored against the same ground truth, so their ranks are computed against each other
+// rather than per stage. The stage split stays for categorisation/navigation only.
+const CHI_RANK_STAGES = new Set(["dipole", "bfr+dipole", "end-to-end"]);
+const sameRankStage = (r, run) =>
+  CHI_RANK_STAGES.has(run.stage) ? CHI_RANK_STAGES.has(r.stage) : r.stage === run.stage;
 function metricRank(k) {
   const meta = METRICS[k], v = val(run, k);   // val() also reaches top-level fields (e.g. runtime_s)
   if (v == null) return null;
@@ -852,7 +859,7 @@ function metricRank(k) {
   // table you clicked from, not the full cross-field-mapping pool of ~845 pipelines.
   const sameGroup = (r) => phantomKey(r) === phantomKey(run) && (run.combo
     ? r.mode === "composed" && (r.combo?.field_mapping || "gt") === (run.combo.field_mapping || "gt")
-    : r.mode === "isolated" && r.stage === run.stage);
+    : r.mode === "isolated" && sameRankStage(r, run));
   const peers = allRuns.filter((r) => r.status !== "DNF" && sameGroup(r) && val(r, k) != null);
   if (peers.length < 2) return null;
   const higher = meta.better !== "lower";
@@ -874,7 +881,7 @@ function rankBy(accessor, higher) {
   // table you clicked from, not the full cross-field-mapping pool of ~845 pipelines.
   const sameGroup = (r) => phantomKey(r) === phantomKey(run) && (run.combo
     ? r.mode === "composed" && (r.combo?.field_mapping || "gt") === (run.combo.field_mapping || "gt")
-    : r.mode === "isolated" && r.stage === run.stage);
+    : r.mode === "isolated" && sameRankStage(r, run));
   const peers = allRuns.filter((r) => r.status !== "DNF" && sameGroup(r) && accessor(r) != null);
   if (peers.length < 2) return null;
   const rank = 1 + peers.filter((r) => (higher ? accessor(r) > v : accessor(r) < v)).length;
@@ -966,7 +973,9 @@ function renderMetrics() {
   // Include runtime_s (a top-level field, not under run.metrics) via val(), so it's ranked alongside
   // the accuracy metrics. Object.keys(METRICS) keeps it last, matching its registry order.
   const order = Object.keys(METRICS).filter((k) => val(run, k) != null);
-  const groupLabel = run.combo ? "composed pipelines" : `isolated ${STAGE_LABEL[run.stage] || run.stage} methods`;
+  const groupLabel = run.combo ? "composed pipelines"
+    : CHI_RANK_STAGES.has(run.stage) ? "isolated χ-map methods (dipole, bfr+dipole, end-to-end)"
+    : `isolated ${STAGE_LABEL[run.stage] || run.stage} methods`;
   $("metrics-body").innerHTML = order.map((k) => {
     const meta = METRICS[k], arrow = meta.better === "higher" ? "↑" : "↓", hero = k === "xsim" || k === "nrmse";
     const rk = metricRank(k);
