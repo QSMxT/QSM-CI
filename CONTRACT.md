@@ -19,6 +19,11 @@ isolation *and* to test how different stages combine.
 | `field-mapping` | `phase`, `magnitude`, `mask`, `params` | `totalfield` |
 | `bfr` | `totalfield`, `mask`, `params` | `localfield` |
 | `dipole` | `localfield`, `mask`, `params` | `chimap` |
+| `brain-extraction` | `magnitude`, `params` | `mask` |
+
+`brain-extraction` is a standalone stage that *produces* the `mask` every other stage consumes — for
+datasets that ship without a mask. Its output is not a scored ground-truth artifact, so it doesn't
+enter the composed matrix.
 
 Spans (declare one of these if your method crosses stages):
 

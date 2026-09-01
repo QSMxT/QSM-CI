@@ -1,0 +1,20 @@
+name: HD-BET brain extraction
+slug: hd-bet-qsmci
+algorithm: hd-bet
+source: qsmci
+stage: brain-extraction
+language: Python
+family: direct
+learning: supervised
+engine: HD-BET
+inputs: [magnitude]  # the artifacts this method actually reads (a subset of the stage's inputs)
+description: Brain mask via the HD-BET CNN, run on the first-echo magnitude. Standalone
+  `brain-extraction`-stage submission (multi-echo magnitude -> binary brain mask).
+authors:
+- name: Isensee et al.
+  affiliation: DKFZ
+doi: 10.1002/hbm.24750
+code_url: https://github.com/MIC-DKFZ/HD-BET
+license: Apache-2.0
+image: ghcr.io/astewartau/qsm-ci/hd-bet:v1
+run: bash run.sh

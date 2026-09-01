@@ -167,12 +167,14 @@ def _inputs_summary(slug: str, algo: dict) -> str:
     prods = STAGES[stage]["produces"]
     produced = prods[0]
     needs_echo = "phase" in consumes
+    img_inputs = [a for a in consumes if a != "params"]
     lines = [f"{algo['name']}  —  {stage} stage   ({', '.join(consumes)} → {', '.join(prods)})", "",
              "Image inputs (provide each as a file):"]
     for art in consumes:
         if art == "params":
             continue
-        opt = "  [optional]" if art in OPTIONAL_ARTIFACTS else ""
+        # a normally-optional artifact is required when it's the stage's sole image input (see parser).
+        opt = "  [optional]" if (art in OPTIONAL_ARTIFACTS and img_inputs != [art]) else ""
         lines.append(f"  --{art} PATH".ljust(22) + f"{ARTIFACT_FILE[art]} (NIfTI){opt}")
     if needs_echo:
         lines += ["", "Acquisition parameters — give a params.json OR the flags (either works):",
@@ -189,7 +191,8 @@ def _inputs_summary(slug: str, algo: dict) -> str:
                   "  --b0-dir X Y Z".ljust(22) + "unit B0 direction (default: 0 0 1)",
                   "  --voxel-size X Y Z".ljust(22) + "mm (default: from the input header)",
                   "  --params PATH".ljust(22) + "params.json or a BIDS sidecar (optional)"]
-    req_imgs = [a for a in consumes if a not in OPTIONAL_ARTIFACTS and a != "params"]
+    img_inputs = [a for a in consumes if a != "params"]
+    req_imgs = [a for a in img_inputs if a not in OPTIONAL_ARTIFACTS or img_inputs == [a]]
     example = " ".join(f"--{a} {a}.nii.gz" for a in req_imgs)
     if needs_echo:
         example += " --te 0.004 0.012 0.02 0.028 --field-strength 7"
@@ -288,12 +291,16 @@ def _build_run_parser(slug: str, algo: dict) -> argparse.ArgumentParser:
         prog=f"qsm-ci run {slug}", description=desc,
         epilog=_manifest_epilog(algo), formatter_class=_HelpFmt)
     p.add_argument("slug", help=argparse.SUPPRESS)  # already known; keep argparse happy
+    # An artifact that's normally optional (magnitude/phase) becomes required when it is the stage's
+    # sole image input — the stage can't run without it (e.g. brain-extraction, which reads only the
+    # magnitude). Elsewhere magnitude stays optional (MEDI opts into it; plain TKD ignores it).
+    img_inputs = [a for a in consumes if a != "params"]
     for art in consumes:
         if art == "params":
             p.add_argument("--params", metavar="PATH", required=False,
                            help="params.json or a BIDS MEGRE sidecar — or use the acquisition flags below")
             continue
-        req = art not in OPTIONAL_ARTIFACTS
+        req = art not in OPTIONAL_ARTIFACTS or img_inputs == [art]
         if art in STACKABLE_ARTIFACTS:
             # multi-echo: accept one 4D file OR several per-echo 3D files (BIDS-style), stacked to 4D.
             p.add_argument(f"--{art}", metavar="PATH", nargs="+", required=req,

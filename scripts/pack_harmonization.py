@@ -27,15 +27,14 @@ into the raw tree. A magnitude-decay sanity check validates the echo ordering.
 Usage:
     python scripts/pack_harmonization.py [--raw DIR] [--out DIR] [--only ID] [--no-mask]
 
-Masks come from SynthStrip (docker: freesurfer/synthstrip) on the first-echo magnitude;
---no-mask skips that step (rerun later to fill in).
+Masks come from the QSM-CI HD-BET masking stage (`qsm-ci run hd-bet-qsmci`) on the packed
+magnitude; --no-mask skips that step (rerun later to fill in).
 """
 
 from __future__ import annotations
 
 import argparse
 import json
-import os
 import re
 import subprocess
 import sys
@@ -237,26 +236,32 @@ def pack_acquisition(scanner: str, protocol: str, run: str, out_root: Path) -> d
             "shape": list(mag.shape), "decay_mean": decay, "monotone_decay": monotone, **params}
 
 
-def synthstrip_mask(acq_out: Path) -> None:
-    """Brain mask from SynthStrip (docker) on the first-echo magnitude."""
-    mask_path = acq_out / "inputs" / "mask.nii.gz"
+def hdbet_mask(acq_out: Path, qsm_ci: str = "qsm-ci") -> None:
+    """Brain mask via the QSM-CI HD-BET masking stage (`qsm-ci run hd-bet-qsmci`).
+
+    Runs the containerised `brain-extraction` stage on the packed magnitude (its
+    extract.py uses the first echo). Set QSMCI_GPU=1 in the environment to run HD-BET
+    on GPU. Needs the `ghcr.io/astewartau/qsm-ci/hd-bet:v1` image available to the
+    runner — typically done on the recompute host (Bunya/CI), not this box.
+    """
+    inputs = acq_out / "inputs"
+    mask_path = inputs / "mask.nii.gz"
     if mask_path.exists():
         return
-    mag = nib.load(str(acq_out / "inputs" / "magnitude.nii.gz"))
-    e1 = acq_out / "inputs" / "_e1_tmp.nii.gz"
-    nib.save(nib.Nifti1Image(np.asanyarray(mag.dataobj)[..., 0].astype(np.float32), mag.affine), str(e1))
     try:
         subprocess.run(
-            ["docker", "run", "--rm", "--user", f"{os.getuid()}:{os.getgid()}",
-             "-v", f"{acq_out.resolve() / 'inputs'}:/data",
-             "freesurfer/synthstrip", "-i", "/data/_e1_tmp.nii.gz", "-m", "/data/mask.nii.gz"],
+            [qsm_ci, "run", "hd-bet-qsmci",
+             "--magnitude", str(inputs / "magnitude.nii.gz"),
+             "--params", str(inputs / "params.json"),
+             "-o", str(mask_path)],
             check=True, capture_output=True, text=True)
-    except subprocess.CalledProcessError as err:
-        print(f"  !! synthstrip failed for {acq_out.name}: {err.stderr[-500:]}")
+    except FileNotFoundError:
+        print(f"  !! {acq_out.name}: '{qsm_ci}' not found — skip masking (run the hd-bet-qsmci stage on the recompute host)")
         return
-    finally:
-        e1.unlink(missing_ok=True)
-    # binarise (synthstrip writes 0/1 already, but be safe) and drop stray values
+    except subprocess.CalledProcessError as err:
+        print(f"  !! hd-bet failed for {acq_out.name}: {(err.stderr or '')[-500:]}")
+        return
+    # binarise defensively (the stage already writes uint8 0/1)
     m = nib.load(str(mask_path))
     data = (np.asanyarray(m.dataobj) > 0.5).astype(np.uint8)
     nib.save(nib.Nifti1Image(data, m.affine), str(mask_path))
@@ -269,7 +274,9 @@ def main() -> None:
     ap.add_argument("--raw", type=Path, default=RAW)
     ap.add_argument("--out", type=Path, default=OUT)
     ap.add_argument("--only", help="pack a single acquisition id, e.g. prisma-bridge-run1")
-    ap.add_argument("--no-mask", action="store_true", help="skip SynthStrip masking")
+    ap.add_argument("--no-mask", action="store_true", help="skip HD-BET masking")
+    ap.add_argument("--qsm-ci", default="qsm-ci",
+                    help="qsm-ci executable used to run the hd-bet-qsmci masking stage")
     args = ap.parse_args()
     RAW = args.raw
 
@@ -298,7 +305,7 @@ def main() -> None:
 
     if not args.no_mask:
         for entry in manifest:
-            synthstrip_mask(args.out / entry["id"])
+            hdbet_mask(args.out / entry["id"], args.qsm_ci)
 
     print(f"\npacked {len(manifest)} acquisitions -> {args.out}")
 

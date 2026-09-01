@@ -36,6 +36,11 @@ stages:
   # R2′-consuming χ-separation method (generator output replaces the true r2prime) to measure what a
   # GRE-only protocol sacrifices.
   r2prime-generation: { consumes: [magnitude, mask, params], produces: [r2prime] }
+  # Brain extraction: derive a binary brain mask from the multi-echo GRE magnitude alone. A standalone
+  # producer of the `mask` artifact (mask is otherwise a provided input to every other stage), used to
+  # generate masks for datasets that ship without one. Isolated-only; `mask` is not a scored groundtruth
+  # artifact, so it never enters the composed matrix.
+  brain-extraction: { consumes: [magnitude, params], produces: [mask] }
 
 # Named contiguous spans, for methods that cross stage boundaries (joint / single-step / phase-domain).
 # A submission may set `stage` to any stage or span name below.
