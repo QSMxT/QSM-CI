@@ -44229,6 +44229,39 @@
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/qsmart-matlab-cmp__truth.nii.gz",
         "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/qsmart-matlab-cmp__error.nii.gz"
       }
+    },
+    {
+      "name": "AMP-PE (QSM.rs)",
+      "track": "invivo",
+      "stage": "dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 164.46304440498352,
+      "metrics": {
+        "nrmse": 91.96741014860106,
+        "nrmse_detrend": 100.20244685763426,
+        "hfen": 74.56052709287708,
+        "correlation": 0.7063913860799744,
+        "xsim": 0.37730594874877477,
+        "nrmse_sti": 111.86853553459851,
+        "nrmse_detrend_sti": 134.8566448844574,
+        "hfen_sti": 95.18127317612868,
+        "correlation_sti": 0.5956358813936258,
+        "xsim_sti": 0.2588515372575477
+      },
+      "status": "ok",
+      "id": "amp-pe-qsmrs-iso-invivo",
+      "slug": "amp-pe-qsmrs",
+      "mode": "isolated",
+      "variant": "default",
+      "phantom": "invivo",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/amp-pe-qsmrs-iso-invivo__resources.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/amp-pe-qsmrs-iso-invivo__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/amp-pe-qsmrs-iso-invivo__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/amp-pe-qsmrs-iso-invivo__error.nii.gz"
+      }
     }
   ]
 }
