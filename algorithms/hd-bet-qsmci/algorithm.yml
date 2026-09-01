@@ -8,8 +8,8 @@ family: direct
 learning: supervised
 engine: HD-BET
 inputs: [magnitude]  # the artifacts this method actually reads (a subset of the stage's inputs)
-description: Brain mask via the HD-BET CNN, run on the first-echo magnitude. Standalone
-  `brain-extraction`-stage submission (multi-echo magnitude -> binary brain mask).
+description: Brain mask via the HD-BET CNN, run on the root-sum-of-squares combined magnitude.
+  Standalone `brain-extraction`-stage submission (multi-echo magnitude -> binary brain mask).
 authors:
 - name: Isensee et al.
   affiliation: DKFZ
