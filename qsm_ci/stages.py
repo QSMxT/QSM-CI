@@ -23,6 +23,10 @@ STAGES = {
     # no spin-echo R2). Scored vs the phantom's true R2′, and composed with each R2′-consuming
     # χ-separation method on the chisep track (pipeline.run_chisep_composed).
     "r2prime-generation": {"consumes": ["magnitude", "mask", "params"], "produces": ["r2prime"]},
+    # Brain extraction: derive a binary brain mask from the multi-echo GRE magnitude alone. Standalone
+    # producer of the `mask` artifact (mask is otherwise a provided input to every other stage), used to
+    # generate masks for datasets that ship without one. mask is not a scored groundtruth artifact.
+    "brain-extraction": {"consumes": ["magnitude", "params"], "produces": ["mask"]},
 }
 
 ARTIFACT_FILE = {

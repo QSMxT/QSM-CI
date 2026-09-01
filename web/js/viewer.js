@@ -106,6 +106,8 @@ const STAGE_IO = {
     produces: ["chi-para", "chi-dia"] },
   // R2′ estimation: multi-echo GRE magnitude in, R2′ (Hz) out (the GRE-only condition's generators).
   "r2prime-generation": { consumes: ["magnitude", "mask", "params"], produces: "r2prime" },
+  // Brain extraction: magnitude in, binary mask out (the Harmonization dataset's masking step).
+  "brain-extraction": { consumes: ["magnitude", "params"], produces: "mask" },
 };
 const ARTFILE = { phase: "phase.nii.gz", magnitude: "magnitude.nii.gz", mask: "mask.nii.gz",
   params: "params.json", totalfield: "totalfield.nii.gz", localfield: "localfield.nii.gz",
@@ -151,12 +153,19 @@ function renderHowToRun() {
 
   // ---- QSM-CI command (reproduces the scored artifact) ----
   const lines = [];
+  // Harmonization (repro) reconstructions begin by making the brain mask with HD-BET — the masking
+  // method that dataset uses. In-silico masks come from the phantom, so this step is repro-only.
+  if (datasetOf(run) === "repro") lines.push(runLine("hd-bet-qsmci", "brain-extraction", false, ["magnitude"]));
   if (run.combo) {
     const { field_mapping: fm, bfr, dipole } = run.combo;
     const ins = (s) => bySlug[s] && bySlug[s].inputs;
     if (fm && fm !== "gt" && stageOf(fm)) lines.push(runLine(fm, stageOf(fm), false, ins(fm)));
     if (bfr && stageOf(bfr)) lines.push(runLine(bfr, stageOf(bfr), false, ins(bfr)));
     if (dipole && stageOf(dipole)) lines.push(runLine(dipole, stageOf(dipole), true, ins(dipole)));
+    // 2-part pipeline (field-mapping + a bfr+dipole/end-to-end span, e.g. autoqsm/nextqsm/tgv/qsmart):
+    // the span slug lives in run.slug, not combo.{bfr,dipole} — emit it so the span step isn't dropped.
+    if (!bfr && !dipole && run.slug && run.slug !== fm && stageOf(run.slug))
+      lines.push(runLine(run.slug, stageOf(run.slug), true, ins(run.slug)));
   } else if (bySlug[run.slug]) {
     lines.push(runLine(run.slug, run.stage, true, bySlug[run.slug].inputs));
   }

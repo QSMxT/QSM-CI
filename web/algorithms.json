@@ -652,6 +652,29 @@
       "ci_notes": []
     },
     {
+      "slug": "hd-bet-qsmci",
+      "name": "HD-BET brain extraction",
+      "stage": "brain-extraction",
+      "inputs": [
+        "magnitude"
+      ],
+      "domain": "qsm",
+      "engine": "HD-BET",
+      "language": "Python",
+      "family": "direct",
+      "learning": "supervised",
+      "description": "Brain mask via the HD-BET CNN, run on the root-sum-of-squares combined magnitude. Standalone `brain-extraction`-stage submission (multi-echo magnitude -> binary brain mask).",
+      "citation": null,
+      "doi": "10.1002/hbm.24750",
+      "code_url": "https://github.com/MIC-DKFZ/HD-BET",
+      "license": "Apache-2.0",
+      "authors": [
+        "Isensee et al."
+      ],
+      "parameters": [],
+      "ci_notes": []
+    },
+    {
       "slug": "hdqsm-qsmrs",
       "name": "HD-QSM",
       "stage": "dipole",
@@ -2024,7 +2047,7 @@
       "language": "Rust",
       "family": "direct",
       "learning": "none",
-      "description": "Multi-echo B0 field mapping by ROMEO phase unwrapping (via the QSMxT/QSM.rs engine) with a per-voxel linear fit of unwrapped phase over echoes. Alternative to Laplacian field mapping.",
+      "description": "Combined multi-echo B0 field mapping by ROMEO (via the QSMxT/QSM.rs engine, `qsmxt fieldmap romeo`) \u2014 MCPC-3D-S phase-offset removal, template/temporal multi-echo unwrapping, and a magnitude/TE-weighted B0 estimate. Alternative to Laplacian field mapping.",
       "citation": null,
       "doi": "10.1002/mrm.28563",
       "code_url": "https://github.com/astewartau/QSM.rs",
