@@ -1,0 +1,54 @@
+name: AMP-PE (QSM.rs)
+slug: amp-pe-qsmrs
+algorithm: amp-pe
+source: qsmrs
+stage: dipole
+language: Rust
+family: bayesian
+learning: none
+engine: QSMxT / QSM.rs
+description: >
+  Approximate Message Passing with Parameter Estimation: a probabilistic Bayesian dipole inversion.
+  MAP estimation over the nonlinear complex-exponential forward model with a Laplace sparse-wavelet
+  prior and a two-component Gaussian-mixture noise model, with all distribution parameters estimated
+  automatically (tuning-free). Rust port in QSM.rs, verified against the original MATLAB
+  (github.com/EmoryCN2L/QSM_AMP_PE) to nrmse ~1e-6 / corr ~1.0 on matched inputs.
+authors:
+- name: Shuai Huang
+- name: James J. Lah
+- name: Jason W. Allen
+- name: Deqiang Qiu
+doi: 10.1002/mrm.29722
+citation: Huang et al., Magn Reson Med 2023;90(4):1414-1430
+code_url: https://github.com/astewartau/QSM.rs
+license: MIT
+image: ghcr.io/astewartau/qsm-ci/qsmxt:v9.14.0
+run: bash run.sh
+# AMP-PE's nonlinear formulation uses the magnitude to weight the data term and to build a wavelet
+# morphology mask that injects anatomical edges into the prior. The plain dipole stage doesn't take
+# magnitude, so (like MEDI) it opts in as an optional input; without it the method still runs with
+# uniform weights and no morphology mask.
+optional_inputs:
+  - magnitude
+parameters:
+- name: wave_order
+  default: 1
+  description: Daubechies wavelet order (1=db1, best for straight B0; 2=db2 for oblique acquisitions)
+- name: nlevel
+  default: 3
+  description: number of levels in the 3D wavelet transform
+- name: wave_pec
+  default: 0.85
+  description: fraction of magnitude wavelet coefficients kept in the morphology mask (anatomical prior)
+- name: simulated_te
+  default: 0.008
+  description: echo time (s) used to simulate the phase from the local field; sets the wrapped-model operating point
+- name: max_linearization_ite
+  default: 25
+  description: linearization steps per reconstruction stage (preliminary and final)
+- name: damp_rate_sig
+  default: 0.01
+  description: AMP signal-update damping (0-1); heavier damping is more stable but slower to converge
+- name: damp_rate_par
+  default: 0.1
+  description: AMP parameter-estimation (kappa) damping for the noise/signal variance updates (0-1)
