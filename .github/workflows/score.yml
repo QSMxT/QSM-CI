@@ -179,8 +179,26 @@ jobs:
               # One focused task per (method, phantom). The default phantom keeps the legacy
               # 'f-<slug>' task id; extra phantoms get 'f-<slug>-<phantom>'. ci_skip'd methods are
               # dropped — pipeline discovery skips them, so their jobs run nothing.
-              return [{'id': task_id('f-', s, ph), 'focus': s, 'phantom': ph, **route(s)}
-                      for s in slugs if not is_skipped(s) for ph in phantoms(s)]
+              #
+              # A NON-dipole focus (e.g. a bfr/span like iqfm) pins its own stage while EVERY dipole
+              # varies. Dipoles that carry their own `runner:` (self-hosted) already run as their own
+              # dedicated focus jobs AND are the heavy ones (inr-qsm/modip are CPU-infeasible — can run
+              # for hours); running them inside a bfr focus job just overruns its wall-clock cap
+              # (observed: f-iqfm cancelled at the 360-min cap, saving nothing, so iqfm's combos with
+              # the ~30 normal dipoles never landed). Exclude those heavy dipoles from a non-dipole
+              # focus — their bfr combos are owned by their own focus jobs. Dipole focus jobs keep the
+              # full bfr set (that's how a dipole's combo with a dedicated bfr like iqfm is produced).
+              heavy_dipoles = ','.join(s for s in dedicated() if is_dipole(s) and not is_skipped(s))
+              tasks = []
+              for s in slugs:
+                  if is_skipped(s):
+                      continue
+                  for ph in phantoms(s):
+                      t = {'id': task_id('f-', s, ph), 'focus': s, 'phantom': ph, **route(s)}
+                      if heavy_dipoles and not is_dipole(s) and not is_chisep(s):
+                          t['exclude'] = heavy_dipoles
+                      tasks.append(t)
+              return tasks
           def dedicated():
               # Methods that run as their own focused job (not the shard sweep): a non-HOSTED runner OR a
               # χ-separation method (scored on a SEPARATE phantom, isolated-only — can't ride the QSM shard
