@@ -44237,15 +44237,15 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 190.17921137809753,
+      "runtime_s": 280.1440315246582,
       "metrics": {
-        "nrmse": 91.96741014860106,
-        "nrmse_detrend": 100.20244685763426,
-        "hfen": 74.56052709287708,
-        "correlation": 0.7063913860799744,
-        "xsim": 0.37730594874877477,
+        "nrmse": 91.96741014860103,
+        "nrmse_detrend": 100.20244685763427,
+        "hfen": 74.56052709287707,
+        "correlation": 0.7063913860799742,
+        "xsim": 0.3773059487487747,
         "nrmse_sti": 111.86853553459851,
-        "nrmse_detrend_sti": 134.8566448844574,
+        "nrmse_detrend_sti": 134.85664488445744,
         "hfen_sti": 95.18127317612868,
         "correlation_sti": 0.5956358813936258,
         "xsim_sti": 0.2588515372575477
@@ -44261,6 +44261,1445 @@
         "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/amp-pe-qsmrs-iso-invivo__recon.nii.gz",
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/amp-pe-qsmrs-iso-invivo__truth.nii.gz",
         "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/amp-pe-qsmrs-iso-invivo__error.nii.gz"
+      }
+    },
+    {
+      "name": "AMP-PE (QSM.rs)",
+      "track": "sim",
+      "stage": "dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 375.370920419693,
+      "metrics": {
+        "nrmse": 52.47826608673199,
+        "nrmse_detrend": 61.649096434301256,
+        "nrmse_tissue": 59.08953571670011,
+        "nrmse_blood": 122.36415913337386,
+        "nrmse_dgm": 33.166862179105635,
+        "dgm_linearity": 0.10052255286831668,
+        "calc_moment_dev": 11.239202782511711,
+        "calc_streak": 0.02927058337224041,
+        "correlation": 0.851237683727229,
+        "xsim": 0.6528487613912314,
+        "hfen": 94.70734856400357
+      },
+      "status": "ok",
+      "id": "amp-pe-qsmrs-iso",
+      "slug": "amp-pe-qsmrs",
+      "mode": "isolated",
+      "variant": "default",
+      "phantom": "sim",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/amp-pe-qsmrs-iso__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/amp-pe-qsmrs-iso__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/amp-pe-qsmrs-iso__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/amp-pe-qsmrs-iso__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/amp-pe-qsmrs-iso__error.nii.gz"
+      }
+    },
+    {
+      "name": "bfrnet+amp-pe-qsmrs",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 819.5917592048645,
+      "metrics": {
+        "nrmse": 69.0588140353798,
+        "nrmse_detrend": 95.48297401562836,
+        "nrmse_tissue": 105.28927029383235,
+        "nrmse_blood": 136.85230062441335,
+        "nrmse_dgm": 46.07461022131316,
+        "dgm_linearity": 0.06968279062433991,
+        "calc_moment_dev": 37.61541461199522,
+        "calc_streak": 0.053608173105211536,
+        "correlation": 0.7232528420958465,
+        "xsim": 0.4576164479155533,
+        "hfen": 96.52092072375817
+      },
+      "status": "ok",
+      "id": "gt~bfrnet~amp-pe-qsmrs-cmp",
+      "slug": "bfrnet+amp-pe-qsmrs",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "bfrnet",
+        "dipole": "amp-pe-qsmrs"
+      },
+      "phantom": "sim",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_bfrnet_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_bfrnet_amp-pe-qsmrs-cmp__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_bfrnet_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_bfrnet_amp-pe-qsmrs-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_bfrnet_amp-pe-qsmrs-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "harperella-qsmrs+amp-pe-qsmrs",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 558.0763142108917,
+      "metrics": {
+        "nrmse": 118.14862565145475,
+        "nrmse_detrend": 208.92027962224046,
+        "nrmse_tissue": 255.58994106517153,
+        "nrmse_blood": 451.47228535905657,
+        "nrmse_dgm": 62.7179610359196,
+        "dgm_linearity": 0.054967628662772716,
+        "calc_moment_dev": 19.68736844137311,
+        "calc_streak": 0.03892282369036613,
+        "correlation": 0.4317422138173261,
+        "xsim": 0.17351701629290064,
+        "hfen": 98.54712957413416
+      },
+      "status": "ok",
+      "id": "gt~harperella-qsmrs~amp-pe-qsmrs-cmp",
+      "slug": "harperella-qsmrs+amp-pe-qsmrs",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "harperella-qsmrs",
+        "dipole": "amp-pe-qsmrs"
+      },
+      "phantom": "sim",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella-qsmrs_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella-qsmrs_amp-pe-qsmrs-cmp__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella-qsmrs_amp-pe-qsmrs-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_harperella-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "iharperella-qsmrs+amp-pe-qsmrs",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 563.3054354190826,
+      "metrics": {
+        "nrmse": 79.79618509561514,
+        "nrmse_detrend": 126.25185514498533,
+        "nrmse_tissue": 131.6071971147806,
+        "nrmse_blood": 295.8073170121972,
+        "nrmse_dgm": 72.98992154592845,
+        "dgm_linearity": 0.28107345721911514,
+        "calc_moment_dev": 21.095132865011692,
+        "calc_streak": 0.0404928043902915,
+        "correlation": 0.6208961127031305,
+        "xsim": 0.27766049360552675,
+        "hfen": 96.70574041883167
+      },
+      "status": "ok",
+      "id": "gt~iharperella-qsmrs~amp-pe-qsmrs-cmp",
+      "slug": "iharperella-qsmrs+amp-pe-qsmrs",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "iharperella-qsmrs",
+        "dipole": "amp-pe-qsmrs"
+      },
+      "phantom": "sim",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella-qsmrs_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella-qsmrs_amp-pe-qsmrs-cmp__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella-qsmrs_amp-pe-qsmrs-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iharperella-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "iqfm+amp-pe-qsmrs",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 707.2373602390289,
+      "metrics": {
+        "nrmse": 76.58390348323074,
+        "nrmse_detrend": 116.46941612499317,
+        "nrmse_tissue": 120.99214893813624,
+        "nrmse_blood": 250.3920115417665,
+        "nrmse_dgm": 71.52040242582541,
+        "dgm_linearity": 0.2002714319899187,
+        "calc_moment_dev": 20.630233861505985,
+        "calc_streak": 0.07078480296154514,
+        "correlation": 0.6514260581488481,
+        "xsim": 0.3372791779810852,
+        "hfen": 58.275259076152636
+      },
+      "status": "ok",
+      "id": "gt~iqfm~amp-pe-qsmrs-cmp",
+      "slug": "iqfm+amp-pe-qsmrs",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "iqfm",
+        "dipole": "amp-pe-qsmrs"
+      },
+      "phantom": "sim",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iqfm_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iqfm_amp-pe-qsmrs-cmp__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iqfm_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iqfm_amp-pe-qsmrs-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_iqfm_amp-pe-qsmrs-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "ismv-qsmrs+amp-pe-qsmrs",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 530.1138105392456,
+      "metrics": {
+        "nrmse": 57.44446186006057,
+        "nrmse_detrend": 70.17742935319761,
+        "nrmse_tissue": 72.6878768230875,
+        "nrmse_blood": 123.07359687122121,
+        "nrmse_dgm": 36.867669499971655,
+        "dgm_linearity": 0.15014847270884557,
+        "calc_moment_dev": 9.655298739671707,
+        "calc_streak": 0.02736664588253694,
+        "correlation": 0.818549030329592,
+        "xsim": 0.6119478648261489,
+        "hfen": 36.84059118947418
+      },
+      "status": "ok",
+      "id": "gt~ismv-qsmrs~amp-pe-qsmrs-cmp",
+      "slug": "ismv-qsmrs+amp-pe-qsmrs",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "ismv-qsmrs",
+        "dipole": "amp-pe-qsmrs"
+      },
+      "phantom": "sim",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_ismv-qsmrs_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_ismv-qsmrs_amp-pe-qsmrs-cmp__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_ismv-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_ismv-qsmrs_amp-pe-qsmrs-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_ismv-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "lbv-qsmrs+amp-pe-qsmrs",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 526.5361921787262,
+      "metrics": {
+        "nrmse": 64.84039455482184,
+        "nrmse_detrend": 83.32967170060165,
+        "nrmse_tissue": 89.32725312400989,
+        "nrmse_blood": 141.6040603588619,
+        "nrmse_dgm": 36.07420973155525,
+        "dgm_linearity": 0.16055536332074327,
+        "calc_moment_dev": 10.129624385386705,
+        "calc_streak": 0.027717688334462677,
+        "correlation": 0.7682351138188437,
+        "xsim": 0.516223775809085,
+        "hfen": 83.424760941975
+      },
+      "status": "ok",
+      "id": "gt~lbv-qsmrs~amp-pe-qsmrs-cmp",
+      "slug": "lbv-qsmrs+amp-pe-qsmrs",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "lbv-qsmrs",
+        "dipole": "amp-pe-qsmrs"
+      },
+      "phantom": "sim",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_lbv-qsmrs_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_lbv-qsmrs_amp-pe-qsmrs-cmp__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_lbv-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_lbv-qsmrs_amp-pe-qsmrs-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_lbv-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "msmv+amp-pe-qsmrs",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 952.2959322929382,
+      "metrics": {
+        "nrmse": 115.5167952182121,
+        "nrmse_detrend": 266.311291708695,
+        "nrmse_tissue": 329.6175209167344,
+        "nrmse_blood": 266.2760197023999,
+        "nrmse_dgm": 101.32660597980865,
+        "dgm_linearity": 0.4117948009805956,
+        "calc_moment_dev": 18.229116044938564,
+        "calc_streak": 0.03748552464306159,
+        "correlation": 0.3515341248216631,
+        "xsim": 0.1882958923437141,
+        "hfen": 83.59468261487415
+      },
+      "status": "ok",
+      "id": "gt~msmv~amp-pe-qsmrs-cmp",
+      "slug": "msmv+amp-pe-qsmrs",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "msmv",
+        "dipole": "amp-pe-qsmrs"
+      },
+      "phantom": "sim",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_msmv_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_msmv_amp-pe-qsmrs-cmp__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_msmv_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_msmv_amp-pe-qsmrs-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_msmv_amp-pe-qsmrs-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "pdf-qsmrs+amp-pe-qsmrs",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 890.7232666015625,
+      "metrics": {
+        "nrmse": 68.06436083670039,
+        "nrmse_detrend": 91.74193754450451,
+        "nrmse_tissue": 90.63888661246884,
+        "nrmse_blood": 178.74075368052914,
+        "nrmse_dgm": 36.4127020946212,
+        "dgm_linearity": 0.13893659870591235,
+        "calc_moment_dev": 10.837223377078772,
+        "calc_streak": 0.03213505106388788,
+        "correlation": 0.7368777979094303,
+        "xsim": 0.5128599064229761,
+        "hfen": 96.29519267846307
+      },
+      "status": "ok",
+      "id": "gt~pdf-qsmrs~amp-pe-qsmrs-cmp",
+      "slug": "pdf-qsmrs+amp-pe-qsmrs",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "pdf-qsmrs",
+        "dipole": "amp-pe-qsmrs"
+      },
+      "phantom": "sim",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_pdf-qsmrs_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_pdf-qsmrs_amp-pe-qsmrs-cmp__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_pdf-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_pdf-qsmrs_amp-pe-qsmrs-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_pdf-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "resharp-qsmrs+amp-pe-qsmrs",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 518.2324314117432,
+      "metrics": {
+        "nrmse": 60.54208021180137,
+        "nrmse_detrend": 76.06602627976199,
+        "nrmse_tissue": 79.99307607490431,
+        "nrmse_blood": 126.25968538079124,
+        "nrmse_dgm": 39.594273818179175,
+        "dgm_linearity": 0.14927179347293906,
+        "calc_moment_dev": 11.003174811601639,
+        "calc_streak": 0.02691803916177603,
+        "correlation": 0.7959089633713972,
+        "xsim": 0.5673644492672254,
+        "hfen": 36.98696234347273
+      },
+      "status": "ok",
+      "id": "gt~resharp-qsmrs~amp-pe-qsmrs-cmp",
+      "slug": "resharp-qsmrs+amp-pe-qsmrs",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "resharp-qsmrs",
+        "dipole": "amp-pe-qsmrs"
+      },
+      "phantom": "sim",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_resharp-qsmrs_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_resharp-qsmrs_amp-pe-qsmrs-cmp__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_resharp-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_resharp-qsmrs_amp-pe-qsmrs-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_resharp-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "sharp-qsmrs+amp-pe-qsmrs",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 502.523166179657,
+      "metrics": {
+        "nrmse": 62.021153346537915,
+        "nrmse_detrend": 78.99596883158112,
+        "nrmse_tissue": 83.93283947766035,
+        "nrmse_blood": 127.75696798042149,
+        "nrmse_dgm": 40.28807552936412,
+        "dgm_linearity": 0.15208437878489944,
+        "calc_moment_dev": 11.286956861615181,
+        "calc_streak": 0.03121094347381783,
+        "correlation": 0.784697253691443,
+        "xsim": 0.5528400507396286,
+        "hfen": 36.49876321062425
+      },
+      "status": "ok",
+      "id": "gt~sharp-qsmrs~amp-pe-qsmrs-cmp",
+      "slug": "sharp-qsmrs+amp-pe-qsmrs",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "sharp-qsmrs",
+        "dipole": "amp-pe-qsmrs"
+      },
+      "phantom": "sim",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_sharp-qsmrs_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_sharp-qsmrs_amp-pe-qsmrs-cmp__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_sharp-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_sharp-qsmrs_amp-pe-qsmrs-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_sharp-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "vsharp-qsmrs+amp-pe-qsmrs",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 518.5175096988678,
+      "metrics": {
+        "nrmse": 64.52554988182435,
+        "nrmse_detrend": 84.04124443820895,
+        "nrmse_tissue": 86.76722420669165,
+        "nrmse_blood": 149.83584977511686,
+        "nrmse_dgm": 37.27394067977754,
+        "dgm_linearity": 0.1737031521002088,
+        "calc_moment_dev": 10.328276839107275,
+        "calc_streak": 0.029308344956359738,
+        "correlation": 0.7655493387290221,
+        "xsim": 0.5264594187893121,
+        "hfen": 84.35371046184686
+      },
+      "status": "ok",
+      "id": "gt~vsharp-qsmrs~amp-pe-qsmrs-cmp",
+      "slug": "vsharp-qsmrs+amp-pe-qsmrs",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "vsharp-qsmrs",
+        "dipole": "amp-pe-qsmrs"
+      },
+      "phantom": "sim",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_vsharp-qsmrs_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_vsharp-qsmrs_amp-pe-qsmrs-cmp__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_vsharp-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_vsharp-qsmrs_amp-pe-qsmrs-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_vsharp-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "vsharp-sti+amp-pe-qsmrs",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 928.129823923111,
+      "metrics": {
+        "nrmse": 67.89055294209506,
+        "nrmse_detrend": 92.38067219004367,
+        "nrmse_tissue": 101.06817658317723,
+        "nrmse_blood": 142.24159732281458,
+        "nrmse_dgm": 51.47525481503202,
+        "dgm_linearity": 0.13380454439618794,
+        "calc_moment_dev": 10.98362872004509,
+        "calc_streak": 0.029598066868075847,
+        "correlation": 0.7345362121220596,
+        "xsim": 0.48898744860697496,
+        "hfen": 51.99169689944912
+      },
+      "status": "ok",
+      "id": "gt~vsharp-sti~amp-pe-qsmrs-cmp",
+      "slug": "vsharp-sti+amp-pe-qsmrs",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "vsharp-sti",
+        "dipole": "amp-pe-qsmrs"
+      },
+      "phantom": "sim",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_vsharp-sti_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_vsharp-sti_amp-pe-qsmrs-cmp__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_vsharp-sti_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_vsharp-sti_amp-pe-qsmrs-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_vsharp-sti_amp-pe-qsmrs-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-qsmci+bfrnet+amp-pe-qsmrs",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 847.2387006282806,
+      "metrics": {
+        "nrmse": 87.60017663168732,
+        "nrmse_detrend": 163.64261683785116,
+        "nrmse_tissue": 155.33924778404634,
+        "nrmse_blood": 478.72061027336184,
+        "nrmse_dgm": 82.48369494659148,
+        "dgm_linearity": 0.35258863791853867,
+        "calc_moment_dev": 30.052233453840017,
+        "calc_streak": 0.08339114925159176,
+        "correlation": 0.5214355013568487,
+        "xsim": 0.2723875502630242,
+        "hfen": 97.97846680652748
+      },
+      "status": "ok",
+      "id": "laplacian-qsmci~bfrnet~amp-pe-qsmrs-cmp",
+      "slug": "laplacian-qsmci+bfrnet+amp-pe-qsmrs",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-qsmci",
+        "bfr": "bfrnet",
+        "dipole": "amp-pe-qsmrs"
+      },
+      "phantom": "sim",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_bfrnet_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_bfrnet_amp-pe-qsmrs-cmp__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_bfrnet_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_bfrnet_amp-pe-qsmrs-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_bfrnet_amp-pe-qsmrs-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-qsmci+harperella-qsmrs+amp-pe-qsmrs",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 603.0866708755493,
+      "metrics": {
+        "nrmse": 118.14862565145475,
+        "nrmse_detrend": 208.92027962224046,
+        "nrmse_tissue": 255.58994106517153,
+        "nrmse_blood": 451.47228535905657,
+        "nrmse_dgm": 62.7179610359196,
+        "dgm_linearity": 0.054967628662772716,
+        "calc_moment_dev": 19.68736844137311,
+        "calc_streak": 0.03892282369036613,
+        "correlation": 0.4317422138173261,
+        "xsim": 0.17351701629290064,
+        "hfen": 98.54712957413416
+      },
+      "status": "ok",
+      "id": "laplacian-qsmci~harperella-qsmrs~amp-pe-qsmrs-cmp",
+      "slug": "laplacian-qsmci+harperella-qsmrs+amp-pe-qsmrs",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-qsmci",
+        "bfr": "harperella-qsmrs",
+        "dipole": "amp-pe-qsmrs"
+      },
+      "phantom": "sim",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_harperella-qsmrs_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_harperella-qsmrs_amp-pe-qsmrs-cmp__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_harperella-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_harperella-qsmrs_amp-pe-qsmrs-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_harperella-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-qsmci+iharperella-qsmrs+amp-pe-qsmrs",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 600.4764275550842,
+      "metrics": {
+        "nrmse": 79.79618509561514,
+        "nrmse_detrend": 126.25185514498533,
+        "nrmse_tissue": 131.6071971147806,
+        "nrmse_blood": 295.8073170121972,
+        "nrmse_dgm": 72.98992154592845,
+        "dgm_linearity": 0.28107345721911514,
+        "calc_moment_dev": 21.095132865011692,
+        "calc_streak": 0.0404928043902915,
+        "correlation": 0.6208961127031305,
+        "xsim": 0.27766049360552675,
+        "hfen": 96.70574041883167
+      },
+      "status": "ok",
+      "id": "laplacian-qsmci~iharperella-qsmrs~amp-pe-qsmrs-cmp",
+      "slug": "laplacian-qsmci+iharperella-qsmrs+amp-pe-qsmrs",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-qsmci",
+        "bfr": "iharperella-qsmrs",
+        "dipole": "amp-pe-qsmrs"
+      },
+      "phantom": "sim",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iharperella-qsmrs_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iharperella-qsmrs_amp-pe-qsmrs-cmp__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iharperella-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iharperella-qsmrs_amp-pe-qsmrs-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iharperella-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-qsmci+iqfm+amp-pe-qsmrs",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 697.4382364749908,
+      "metrics": {
+        "nrmse": 76.58390348323074,
+        "nrmse_detrend": 116.46941612499317,
+        "nrmse_tissue": 120.99214893813624,
+        "nrmse_blood": 250.3920115417665,
+        "nrmse_dgm": 71.52040242582541,
+        "dgm_linearity": 0.2002714319899187,
+        "calc_moment_dev": 20.630233861505985,
+        "calc_streak": 0.07078480296154514,
+        "correlation": 0.6514260581488481,
+        "xsim": 0.3372791779810852,
+        "hfen": 58.275259076152636
+      },
+      "status": "ok",
+      "id": "laplacian-qsmci~iqfm~amp-pe-qsmrs-cmp",
+      "slug": "laplacian-qsmci+iqfm+amp-pe-qsmrs",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-qsmci",
+        "bfr": "iqfm",
+        "dipole": "amp-pe-qsmrs"
+      },
+      "phantom": "sim",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iqfm_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iqfm_amp-pe-qsmrs-cmp__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iqfm_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iqfm_amp-pe-qsmrs-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iqfm_amp-pe-qsmrs-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-qsmci+ismv-qsmrs+amp-pe-qsmrs",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 579.813460111618,
+      "metrics": {
+        "nrmse": 78.08383721002664,
+        "nrmse_detrend": 119.03212823389796,
+        "nrmse_tissue": 120.33990530225444,
+        "nrmse_blood": 298.2366527947568,
+        "nrmse_dgm": 90.36986289211879,
+        "dgm_linearity": 0.41271048017939427,
+        "calc_moment_dev": 30.10541597381234,
+        "calc_streak": 0.08434165462358896,
+        "correlation": 0.6432411589551305,
+        "xsim": 0.33315666727369647,
+        "hfen": 61.975858254133065
+      },
+      "status": "ok",
+      "id": "laplacian-qsmci~ismv-qsmrs~amp-pe-qsmrs-cmp",
+      "slug": "laplacian-qsmci+ismv-qsmrs+amp-pe-qsmrs",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-qsmci",
+        "bfr": "ismv-qsmrs",
+        "dipole": "amp-pe-qsmrs"
+      },
+      "phantom": "sim",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_amp-pe-qsmrs-cmp__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_amp-pe-qsmrs-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-qsmci+lbv-qsmrs+amp-pe-qsmrs",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 587.1758439540863,
+      "metrics": {
+        "nrmse": 149.59883961723366,
+        "nrmse_detrend": 332.5800699870735,
+        "nrmse_tissue": 412.4905163933561,
+        "nrmse_blood": 770.7966449683089,
+        "nrmse_dgm": 158.27905946458932,
+        "dgm_linearity": 0.5917981605714046,
+        "calc_moment_dev": 30.302275605499748,
+        "calc_streak": 0.08268127796879492,
+        "correlation": 0.2879447974497493,
+        "xsim": 0.10455877715257363,
+        "hfen": 104.23652289314073
+      },
+      "status": "ok",
+      "id": "laplacian-qsmci~lbv-qsmrs~amp-pe-qsmrs-cmp",
+      "slug": "laplacian-qsmci+lbv-qsmrs+amp-pe-qsmrs",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-qsmci",
+        "bfr": "lbv-qsmrs",
+        "dipole": "amp-pe-qsmrs"
+      },
+      "phantom": "sim",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_amp-pe-qsmrs-cmp__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_amp-pe-qsmrs-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-qsmci+msmv+amp-pe-qsmrs",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 603.217658996582,
+      "metrics": {
+        "nrmse": 204.98823306235923,
+        "nrmse_detrend": 1149.9924343927726,
+        "nrmse_tissue": 1028.859566423983,
+        "nrmse_blood": 2589.66808612809,
+        "nrmse_dgm": 137.73605124043627,
+        "dgm_linearity": 0.43505740921995384,
+        "calc_moment_dev": 36.505496583878994,
+        "calc_streak": 0.06709778991993806,
+        "correlation": 0.08663018200942145,
+        "xsim": 0.07459220083263876,
+        "hfen": 107.7716476631051
+      },
+      "status": "ok",
+      "id": "laplacian-qsmci~msmv~amp-pe-qsmrs-cmp",
+      "slug": "laplacian-qsmci+msmv+amp-pe-qsmrs",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-qsmci",
+        "bfr": "msmv",
+        "dipole": "amp-pe-qsmrs"
+      },
+      "phantom": "sim",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_msmv_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_msmv_amp-pe-qsmrs-cmp__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_msmv_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_msmv_amp-pe-qsmrs-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_msmv_amp-pe-qsmrs-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-qsmci+pdf-qsmrs+amp-pe-qsmrs",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 1140.9825503826141,
+      "metrics": {
+        "nrmse": 95.55696337363055,
+        "nrmse_detrend": 182.6343034452452,
+        "nrmse_tissue": 177.60749328171644,
+        "nrmse_blood": 549.6993755279539,
+        "nrmse_dgm": 90.01122922756534,
+        "dgm_linearity": 0.42805407408171003,
+        "calc_moment_dev": 31.198386758565903,
+        "calc_streak": 0.07203280308280066,
+        "correlation": 0.4802628107642727,
+        "xsim": 0.222394274815658,
+        "hfen": 98.73384256738125
+      },
+      "status": "ok",
+      "id": "laplacian-qsmci~pdf-qsmrs~amp-pe-qsmrs-cmp",
+      "slug": "laplacian-qsmci+pdf-qsmrs+amp-pe-qsmrs",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-qsmci",
+        "bfr": "pdf-qsmrs",
+        "dipole": "amp-pe-qsmrs"
+      },
+      "phantom": "sim",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_amp-pe-qsmrs-cmp__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_amp-pe-qsmrs-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-qsmci+resharp-qsmrs+amp-pe-qsmrs",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 570.7754642963409,
+      "metrics": {
+        "nrmse": 75.02948289160389,
+        "nrmse_detrend": 112.48740649763668,
+        "nrmse_tissue": 109.78506548147574,
+        "nrmse_blood": 281.62098808318876,
+        "nrmse_dgm": 79.84088249193178,
+        "dgm_linearity": 0.3714451055070048,
+        "calc_moment_dev": 30.791485734283924,
+        "calc_streak": 0.08761747568194252,
+        "correlation": 0.6644053852335727,
+        "xsim": 0.340867062952286,
+        "hfen": 60.88620956985008
+      },
+      "status": "ok",
+      "id": "laplacian-qsmci~resharp-qsmrs~amp-pe-qsmrs-cmp",
+      "slug": "laplacian-qsmci+resharp-qsmrs+amp-pe-qsmrs",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-qsmci",
+        "bfr": "resharp-qsmrs",
+        "dipole": "amp-pe-qsmrs"
+      },
+      "phantom": "sim",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_amp-pe-qsmrs-cmp__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_amp-pe-qsmrs-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-qsmci+sharp-qsmrs+amp-pe-qsmrs",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 557.7351424694061,
+      "metrics": {
+        "nrmse": 81.10504543670756,
+        "nrmse_detrend": 130.26047905064678,
+        "nrmse_tissue": 129.06303100235817,
+        "nrmse_blood": 323.60164681845447,
+        "nrmse_dgm": 91.36131051187891,
+        "dgm_linearity": 0.35323407244340665,
+        "calc_moment_dev": 32.050694569945335,
+        "calc_streak": 0.08943196965317252,
+        "correlation": 0.6089439245086204,
+        "xsim": 0.3148144064097843,
+        "hfen": 61.913853641488195
+      },
+      "status": "ok",
+      "id": "laplacian-qsmci~sharp-qsmrs~amp-pe-qsmrs-cmp",
+      "slug": "laplacian-qsmci+sharp-qsmrs+amp-pe-qsmrs",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-qsmci",
+        "bfr": "sharp-qsmrs",
+        "dipole": "amp-pe-qsmrs"
+      },
+      "phantom": "sim",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_amp-pe-qsmrs-cmp__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_amp-pe-qsmrs-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-qsmci+vsharp-qsmrs+amp-pe-qsmrs",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 558.0837519168854,
+      "metrics": {
+        "nrmse": 100.09307435015822,
+        "nrmse_detrend": 195.72771399611477,
+        "nrmse_tissue": 203.317354056512,
+        "nrmse_blood": 468.13915286265853,
+        "nrmse_dgm": 121.30550187381435,
+        "dgm_linearity": 0.5041256555020813,
+        "calc_moment_dev": 31.704680509865284,
+        "calc_streak": 0.07139608485763026,
+        "correlation": 0.45497177659061694,
+        "xsim": 0.19324007305806867,
+        "hfen": 92.60614282741932
+      },
+      "status": "ok",
+      "id": "laplacian-qsmci~vsharp-qsmrs~amp-pe-qsmrs-cmp",
+      "slug": "laplacian-qsmci+vsharp-qsmrs+amp-pe-qsmrs",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-qsmci",
+        "bfr": "vsharp-qsmrs",
+        "dipole": "amp-pe-qsmrs"
+      },
+      "phantom": "sim",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_vsharp-qsmrs_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_vsharp-qsmrs_amp-pe-qsmrs-cmp__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_vsharp-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_vsharp-qsmrs_amp-pe-qsmrs-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_vsharp-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-qsmci+vsharp-sti+amp-pe-qsmrs",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 574.2592957019806,
+      "metrics": {
+        "nrmse": 83.43355982406281,
+        "nrmse_detrend": 147.98472595313962,
+        "nrmse_tissue": 147.29003205644787,
+        "nrmse_blood": 391.35555694651424,
+        "nrmse_dgm": 92.18763221265985,
+        "dgm_linearity": 0.3667344158382225,
+        "calc_moment_dev": 30.126274961978197,
+        "calc_streak": 0.07817428073234432,
+        "correlation": 0.5598970821618693,
+        "xsim": 0.2916283018476514,
+        "hfen": 71.13518942094245
+      },
+      "status": "ok",
+      "id": "laplacian-qsmci~vsharp-sti~amp-pe-qsmrs-cmp",
+      "slug": "laplacian-qsmci+vsharp-sti+amp-pe-qsmrs",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-qsmci",
+        "bfr": "vsharp-sti",
+        "dipole": "amp-pe-qsmrs"
+      },
+      "phantom": "sim",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_vsharp-sti_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_vsharp-sti_amp-pe-qsmrs-cmp__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_vsharp-sti_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_vsharp-sti_amp-pe-qsmrs-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_vsharp-sti_amp-pe-qsmrs-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-qsmrs+bfrnet+amp-pe-qsmrs",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 839.9378478527069,
+      "metrics": {
+        "nrmse": 84.25077910278519,
+        "nrmse_detrend": 146.29444778598338,
+        "nrmse_tissue": 148.0943454275167,
+        "nrmse_blood": 330.11491490743725,
+        "nrmse_dgm": 73.39107893820567,
+        "dgm_linearity": 0.16708084172802828,
+        "calc_moment_dev": 28.016948230564594,
+        "calc_streak": 0.07757065738050227,
+        "correlation": 0.5643140883483344,
+        "xsim": 0.28525608448465933,
+        "hfen": 97.65638361545395
+      },
+      "status": "ok",
+      "id": "romeo-qsmrs~bfrnet~amp-pe-qsmrs-cmp",
+      "slug": "romeo-qsmrs+bfrnet+amp-pe-qsmrs",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-qsmrs",
+        "bfr": "bfrnet",
+        "dipole": "amp-pe-qsmrs"
+      },
+      "phantom": "sim",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_amp-pe-qsmrs-cmp__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_amp-pe-qsmrs-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_amp-pe-qsmrs-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-qsmrs+harperella-qsmrs+amp-pe-qsmrs",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 566.9374837875366,
+      "metrics": {
+        "nrmse": 118.14862565145475,
+        "nrmse_detrend": 208.92027962224046,
+        "nrmse_tissue": 255.58994106517153,
+        "nrmse_blood": 451.47228535905657,
+        "nrmse_dgm": 62.7179610359196,
+        "dgm_linearity": 0.054967628662772716,
+        "calc_moment_dev": 19.68736844137311,
+        "calc_streak": 0.03892282369036613,
+        "correlation": 0.4317422138173261,
+        "xsim": 0.17351701629290064,
+        "hfen": 98.54712957413416
+      },
+      "status": "ok",
+      "id": "romeo-qsmrs~harperella-qsmrs~amp-pe-qsmrs-cmp",
+      "slug": "romeo-qsmrs+harperella-qsmrs+amp-pe-qsmrs",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-qsmrs",
+        "bfr": "harperella-qsmrs",
+        "dipole": "amp-pe-qsmrs"
+      },
+      "phantom": "sim",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_harperella-qsmrs_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_harperella-qsmrs_amp-pe-qsmrs-cmp__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_harperella-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_harperella-qsmrs_amp-pe-qsmrs-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_harperella-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-qsmrs+iharperella-qsmrs+amp-pe-qsmrs",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 568.2544047832489,
+      "metrics": {
+        "nrmse": 79.79618509561514,
+        "nrmse_detrend": 126.25185514498533,
+        "nrmse_tissue": 131.6071971147806,
+        "nrmse_blood": 295.8073170121972,
+        "nrmse_dgm": 72.98992154592845,
+        "dgm_linearity": 0.28107345721911514,
+        "calc_moment_dev": 21.095132865011692,
+        "calc_streak": 0.0404928043902915,
+        "correlation": 0.6208961127031305,
+        "xsim": 0.27766049360552675,
+        "hfen": 96.70574041883167
+      },
+      "status": "ok",
+      "id": "romeo-qsmrs~iharperella-qsmrs~amp-pe-qsmrs-cmp",
+      "slug": "romeo-qsmrs+iharperella-qsmrs+amp-pe-qsmrs",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-qsmrs",
+        "bfr": "iharperella-qsmrs",
+        "dipole": "amp-pe-qsmrs"
+      },
+      "phantom": "sim",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_iharperella-qsmrs_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_iharperella-qsmrs_amp-pe-qsmrs-cmp__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_iharperella-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_iharperella-qsmrs_amp-pe-qsmrs-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_iharperella-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-qsmrs+iqfm+amp-pe-qsmrs",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 656.5817363262177,
+      "metrics": {
+        "nrmse": 76.58390348323074,
+        "nrmse_detrend": 116.46941612499317,
+        "nrmse_tissue": 120.99214893813624,
+        "nrmse_blood": 250.3920115417665,
+        "nrmse_dgm": 71.52040242582541,
+        "dgm_linearity": 0.2002714319899187,
+        "calc_moment_dev": 20.630233861505985,
+        "calc_streak": 0.07078480296154514,
+        "correlation": 0.6514260581488481,
+        "xsim": 0.3372791779810852,
+        "hfen": 58.275259076152636
+      },
+      "status": "ok",
+      "id": "romeo-qsmrs~iqfm~amp-pe-qsmrs-cmp",
+      "slug": "romeo-qsmrs+iqfm+amp-pe-qsmrs",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-qsmrs",
+        "bfr": "iqfm",
+        "dipole": "amp-pe-qsmrs"
+      },
+      "phantom": "sim",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_iqfm_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_iqfm_amp-pe-qsmrs-cmp__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_iqfm_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_iqfm_amp-pe-qsmrs-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_iqfm_amp-pe-qsmrs-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-qsmrs+ismv-qsmrs+amp-pe-qsmrs",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 528.9416043758392,
+      "metrics": {
+        "nrmse": 76.57150882432563,
+        "nrmse_detrend": 112.91752991048523,
+        "nrmse_tissue": 126.08106886268024,
+        "nrmse_blood": 189.3432040614491,
+        "nrmse_dgm": 71.07233100616334,
+        "dgm_linearity": 0.20269130693035997,
+        "calc_moment_dev": 11.644463293254368,
+        "calc_streak": 0.036593562407303395,
+        "correlation": 0.662988173787812,
+        "xsim": 0.2923143143247053,
+        "hfen": 60.5151882724111
+      },
+      "status": "ok",
+      "id": "romeo-qsmrs~ismv-qsmrs~amp-pe-qsmrs-cmp",
+      "slug": "romeo-qsmrs+ismv-qsmrs+amp-pe-qsmrs",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-qsmrs",
+        "bfr": "ismv-qsmrs",
+        "dipole": "amp-pe-qsmrs"
+      },
+      "phantom": "sim",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_ismv-qsmrs_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_ismv-qsmrs_amp-pe-qsmrs-cmp__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_ismv-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_ismv-qsmrs_amp-pe-qsmrs-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_ismv-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-qsmrs+lbv-qsmrs+amp-pe-qsmrs",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 528.2618882656097,
+      "metrics": {
+        "nrmse": 111.32038535380391,
+        "nrmse_detrend": 192.56736091825638,
+        "nrmse_tissue": 234.6886371756395,
+        "nrmse_blood": 305.59089702896364,
+        "nrmse_dgm": 85.0451086692959,
+        "dgm_linearity": 0.2118208416225592,
+        "calc_moment_dev": 10.794466383755207,
+        "calc_streak": 0.03861365363853316,
+        "correlation": 0.46086282661355066,
+        "xsim": 0.19364079460727926,
+        "hfen": 93.82471757718773
+      },
+      "status": "ok",
+      "id": "romeo-qsmrs~lbv-qsmrs~amp-pe-qsmrs-cmp",
+      "slug": "romeo-qsmrs+lbv-qsmrs+amp-pe-qsmrs",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-qsmrs",
+        "bfr": "lbv-qsmrs",
+        "dipole": "amp-pe-qsmrs"
+      },
+      "phantom": "sim",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_lbv-qsmrs_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_lbv-qsmrs_amp-pe-qsmrs-cmp__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_lbv-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_lbv-qsmrs_amp-pe-qsmrs-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_lbv-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-qsmrs+msmv+amp-pe-qsmrs",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 540.5797822475433,
+      "metrics": {
+        "nrmse": 215.49603623767496,
+        "nrmse_detrend": 727.7066289439601,
+        "nrmse_tissue": 959.3813413978633,
+        "nrmse_blood": 964.6441143102163,
+        "nrmse_dgm": 111.79309898308946,
+        "dgm_linearity": 0.3586618303575626,
+        "calc_moment_dev": 22.328153610229492,
+        "calc_streak": 0.03512506034677807,
+        "correlation": 0.13613862483514538,
+        "xsim": 0.07721128731744081,
+        "hfen": 108.9129379324696
+      },
+      "status": "ok",
+      "id": "romeo-qsmrs~msmv~amp-pe-qsmrs-cmp",
+      "slug": "romeo-qsmrs+msmv+amp-pe-qsmrs",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-qsmrs",
+        "bfr": "msmv",
+        "dipole": "amp-pe-qsmrs"
+      },
+      "phantom": "sim",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_msmv_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_msmv_amp-pe-qsmrs-cmp__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_msmv_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_msmv_amp-pe-qsmrs-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_msmv_amp-pe-qsmrs-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-qsmrs+pdf-qsmrs+amp-pe-qsmrs",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 971.570024728775,
+      "metrics": {
+        "nrmse": 101.58851108736765,
+        "nrmse_detrend": 185.08912073909616,
+        "nrmse_tissue": 210.11378995198794,
+        "nrmse_blood": 367.36065881973946,
+        "nrmse_dgm": 68.58396545280848,
+        "dgm_linearity": 0.165854538010213,
+        "calc_moment_dev": 13.333994962275028,
+        "calc_streak": 0.04383736743876833,
+        "correlation": 0.47533981527498936,
+        "xsim": 0.2104024324321163,
+        "hfen": 98.64432747098495
+      },
+      "status": "ok",
+      "id": "romeo-qsmrs~pdf-qsmrs~amp-pe-qsmrs-cmp",
+      "slug": "romeo-qsmrs+pdf-qsmrs+amp-pe-qsmrs",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-qsmrs",
+        "bfr": "pdf-qsmrs",
+        "dipole": "amp-pe-qsmrs"
+      },
+      "phantom": "sim",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_pdf-qsmrs_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_pdf-qsmrs_amp-pe-qsmrs-cmp__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_pdf-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_pdf-qsmrs_amp-pe-qsmrs-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_pdf-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-qsmrs+resharp-qsmrs+amp-pe-qsmrs",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 528.8559262752533,
+      "metrics": {
+        "nrmse": 73.07926303157363,
+        "nrmse_detrend": 104.79371416946115,
+        "nrmse_tissue": 113.13373206587907,
+        "nrmse_blood": 186.9790182266362,
+        "nrmse_dgm": 70.27181006559285,
+        "dgm_linearity": 0.22857119002304227,
+        "calc_moment_dev": 14.45970643311739,
+        "calc_streak": 0.044576862921546,
+        "correlation": 0.6903660567720908,
+        "xsim": 0.348475133996063,
+        "hfen": 54.58792219869257
+      },
+      "status": "ok",
+      "id": "romeo-qsmrs~resharp-qsmrs~amp-pe-qsmrs-cmp",
+      "slug": "romeo-qsmrs+resharp-qsmrs+amp-pe-qsmrs",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-qsmrs",
+        "bfr": "resharp-qsmrs",
+        "dipole": "amp-pe-qsmrs"
+      },
+      "phantom": "sim",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_resharp-qsmrs_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_resharp-qsmrs_amp-pe-qsmrs-cmp__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_resharp-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_resharp-qsmrs_amp-pe-qsmrs-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_resharp-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-qsmrs+sharp-qsmrs+amp-pe-qsmrs",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 509.67527532577515,
+      "metrics": {
+        "nrmse": 75.67993511857098,
+        "nrmse_detrend": 110.91932274422695,
+        "nrmse_tissue": 118.55482339142924,
+        "nrmse_blood": 195.8692182566902,
+        "nrmse_dgm": 69.41455675552427,
+        "dgm_linearity": 0.17835330216314782,
+        "calc_moment_dev": 18.057973571121693,
+        "calc_streak": 0.05051944907567979,
+        "correlation": 0.6696030475613111,
+        "xsim": 0.3258218864076484,
+        "hfen": 54.028748426050456
+      },
+      "status": "ok",
+      "id": "romeo-qsmrs~sharp-qsmrs~amp-pe-qsmrs-cmp",
+      "slug": "romeo-qsmrs+sharp-qsmrs+amp-pe-qsmrs",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-qsmrs",
+        "bfr": "sharp-qsmrs",
+        "dipole": "amp-pe-qsmrs"
+      },
+      "phantom": "sim",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_sharp-qsmrs_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_sharp-qsmrs_amp-pe-qsmrs-cmp__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_sharp-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_sharp-qsmrs_amp-pe-qsmrs-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_sharp-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-qsmrs+vsharp-qsmrs+amp-pe-qsmrs",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 522.5657825469971,
+      "metrics": {
+        "nrmse": 93.03086673090903,
+        "nrmse_detrend": 162.04868801205137,
+        "nrmse_tissue": 176.59363172863792,
+        "nrmse_blood": 260.8725059390545,
+        "nrmse_dgm": 86.16421929229448,
+        "dgm_linearity": 0.360685713710722,
+        "calc_moment_dev": 9.77016369253397,
+        "calc_streak": 0.03630430055808009,
+        "correlation": 0.525154914282489,
+        "xsim": 0.18218805694015985,
+        "hfen": 89.56442328353538
+      },
+      "status": "ok",
+      "id": "romeo-qsmrs~vsharp-qsmrs~amp-pe-qsmrs-cmp",
+      "slug": "romeo-qsmrs+vsharp-qsmrs+amp-pe-qsmrs",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-qsmrs",
+        "bfr": "vsharp-qsmrs",
+        "dipole": "amp-pe-qsmrs"
+      },
+      "phantom": "sim",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_vsharp-qsmrs_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_vsharp-qsmrs_amp-pe-qsmrs-cmp__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_vsharp-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_vsharp-qsmrs_amp-pe-qsmrs-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_vsharp-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-qsmrs+vsharp-sti+amp-pe-qsmrs",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 540.7810204029083,
+      "metrics": {
+        "nrmse": 79.00476614334585,
+        "nrmse_detrend": 127.16150585179241,
+        "nrmse_tissue": 137.88574994424553,
+        "nrmse_blood": 241.21557325416697,
+        "nrmse_dgm": 79.52407611742333,
+        "dgm_linearity": 0.21604704853521095,
+        "calc_moment_dev": 15.539622783660889,
+        "calc_streak": 0.045821578827933224,
+        "correlation": 0.6181554970936992,
+        "xsim": 0.31100395800311464,
+        "hfen": 64.41172765513662
+      },
+      "status": "ok",
+      "id": "romeo-qsmrs~vsharp-sti~amp-pe-qsmrs-cmp",
+      "slug": "romeo-qsmrs+vsharp-sti+amp-pe-qsmrs",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-qsmrs",
+        "bfr": "vsharp-sti",
+        "dipole": "amp-pe-qsmrs"
+      },
+      "phantom": "sim",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_vsharp-sti_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_vsharp-sti_amp-pe-qsmrs-cmp__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_vsharp-sti_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_vsharp-sti_amp-pe-qsmrs-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_vsharp-sti_amp-pe-qsmrs-cmp__error.nii.gz"
       }
     }
   ]
