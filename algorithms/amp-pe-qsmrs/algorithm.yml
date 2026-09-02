@@ -24,6 +24,10 @@ code_url: https://github.com/astewartau/QSM.rs
 license: MIT
 image: ghcr.io/astewartau/qsm-ci/qsmxt:v9.14.0
 run: bash run.sh
+# Heavy iterative dipole: the sim composed matrix is ~27 combos (field-mapping x bfr) of slow AMP-PE
+# inversions, which overruns the default 180-min hosted tier (observed: sim scoring cancelled at the
+# cap). Route to the self-hosted box (360-min cap, more cores/RAM) like apart-qsm / decompose-qsm.
+runner: self-hosted
 # AMP-PE's nonlinear formulation uses the magnitude to weight the data term and to build a wavelet
 # morphology mask that injects anatomical edges into the prior. The plain dipole stage doesn't take
 # magnitude, so (like MEDI) it opts in as an optional input; without it the method still runs with
