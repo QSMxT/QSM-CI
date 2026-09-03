@@ -42,6 +42,13 @@
     @keyframes spin { to { transform: rotate(360deg); } }
     /* intensity readout pill: hide until NiiVue populates it (avoids an empty box) */
     #intensity:empty { display: none; }
+    /* Fullscreen: the whole viewer section goes fullscreen (canvas + histogram + controls stay usable).
+       The canvas wrapper grows to fill the leftover height; NiiVue's ResizeObserver on it repaints the
+       GL canvas. !important overrides the wrapper's inline height:480px. */
+    #viewer-section:fullscreen { display: flex; flex-direction: column; border-radius: 0; overflow-y: auto; }
+    #viewer-section:fullscreen #viewer-canvas-wrap { flex: 1 1 auto; height: auto !important; min-height: 0; }
+    /* hover for the fullscreen button (hover:bg-black/70 + hover:text-white aren't in the purged CSS) */
+    #fullscreen-btn:hover { background: rgba(0,0,0,0.7); color: #fff; }
   </style>
   <link rel="stylesheet" href="https://unpkg.com/uplot@1.6.32/dist/uPlot.min.css">
   <script src="https://unpkg.com/uplot@1.6.32/dist/uPlot.iife.min.js"></script>
@@ -102,12 +109,18 @@
         <div id="chisep-phantom-switch" class="mt-6 hidden"></div>
 
         <div class="mt-6 grid xl:grid-cols-5 gap-6">
-          <section class="xl:col-span-3 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+          <section id="viewer-section" class="xl:col-span-3 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
             <!-- canvas -->
-            <div class="relative rounded-xl overflow-hidden bg-black" style="height:480px">
+            <div id="viewer-canvas-wrap" class="relative rounded-xl overflow-hidden bg-black" style="height:480px">
               <canvas id="gl1" class="absolute inset-0 h-full w-full block"></canvas>
               <!-- intensity readout floats over the canvas so a long value string never reflows the layout -->
               <div id="intensity" class="pointer-events-none absolute top-2 left-2 z-10 max-w-[calc(100%-1rem)] truncate rounded-md bg-black/50 px-2 py-0.5 text-xs tabular-nums text-gray-200 backdrop-blur-sm"></div>
+              <!-- fullscreen toggle: takes the whole viewer section (canvas + histogram + controls) fullscreen -->
+              <button id="fullscreen-btn" type="button" title="Fullscreen — Shift+scroll to zoom · Shift+drag to pan"
+                class="absolute top-2 right-2 z-20 rounded-md bg-black/50 p-1.5 text-gray-200 backdrop-blur-sm transition">
+                <svg id="fs-icon-open" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V5a1 1 0 0 1 1-1h4M15 4h4a1 1 0 0 1 1 1v4M20 15v4a1 1 0 0 1-1 1h-4M9 20H5a1 1 0 0 1-1-1v-4"/></svg>
+                <svg id="fs-icon-close" width="16" height="16" class="hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4v4a1 1 0 0 1-1 1H4M20 9h-4a1 1 0 0 1-1-1V4M15 20v-4a1 1 0 0 1 1-1h4M4 15h4a1 1 0 0 1 1 1v4"/></svg>
+              </button>
               <div id="viewer-loading" class="absolute inset-0 z-10 hidden items-center justify-center gap-3 bg-black/40 backdrop-blur-sm text-sm font-medium text-gray-100">
                 <span class="spinner"></span> Loading volume…
               </div>
@@ -143,6 +156,8 @@
                   <label class="flex items-center gap-1.5"><input id="t-crosshair" type="checkbox" class="accent-emerald-600" checked /> Crosshair</label>
                   <label class="flex items-center gap-1.5"><input id="t-interp" type="checkbox" class="accent-emerald-600" /> Smooth</label>
                 </div>
+                <!-- discoverability hint for the modifier-key interactions (scroll alone still changes slice) -->
+                <span class="ml-auto text-xs text-gray-400 dark:text-gray-500">Scroll = slice · <span class="whitespace-nowrap">Shift+scroll = zoom</span> · <span class="whitespace-nowrap">Shift+drag = pan</span></span>
               </div>
               <!-- windowing: one section per shown map (base, then error overlay) -->
               <div class="space-y-3">
