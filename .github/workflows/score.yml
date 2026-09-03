@@ -27,6 +27,9 @@ on:
       scope:
         description: "all | <comma-separated slugs> (default: auto-detect from the diff)"
         default: "auto"
+      include:
+        description: "MANUAL recovery only: comma-separated slugs; re-score ONLY the composed pipelines they form (gt is always a field source, so 'bfrnet,medi-cornell' -> gt~bfrnet~medi-cornell; add a field-mapping slug for its prefix). Use to refill a combo that DNF'd on a transient/infra failure. Overrides scope. NOT for algorithm changes — those must re-score the full matrix."
+        default: ""
       shards:
         description: "number of parallel shards for a full re-run"
         default: "12"
@@ -58,11 +61,20 @@ jobs:
     outputs:
       full: ${{ steps.decide.outputs.full }}
       slugs: ${{ steps.decide.outputs.slugs }}
+      include: ${{ steps.decide.outputs.include }}
     steps:
       - uses: actions/checkout@v7
         with: { fetch-depth: 0 }
       - id: decide
         run: |
+          echo "include=" >>"$GITHUB_OUTPUT"   # default; the manual-recovery branch below overrides it
+          # MANUAL single-combo recovery (workflow_dispatch include=): re-score ONLY the combos those
+          # slugs form, nothing else. Wins over scope/auto. For refilling a combo that DNF'd on a
+          # transient failure — NOT the automated path (an algorithm change re-scores the full matrix).
+          include="${{ github.event.inputs.include }}"
+          if [ -n "$include" ]; then
+            echo "include=$include" >>"$GITHUB_OUTPUT"; echo "full=false" >>"$GITHUB_OUTPUT"; echo "slugs=[]" >>"$GITHUB_OUTPUT"; exit 0
+          fi
           scope="${{ github.event.inputs.scope }}"
           if [ "$scope" = "all" ]; then
             echo "full=true"  >>"$GITHUB_OUTPUT"; echo "slugs=[]" >>"$GITHUB_OUTPUT"; exit 0
@@ -83,7 +95,7 @@ jobs:
   # Turn the scope into a matrix of parallel tasks: full -> N shards; focused -> one job per slug.
   plan:
     needs: scope
-    if: needs.scope.outputs.full == 'true' || needs.scope.outputs.slugs != '[]'
+    if: needs.scope.outputs.full == 'true' || needs.scope.outputs.slugs != '[]' || needs.scope.outputs.include != ''
     runs-on: ubuntu-latest
     outputs:
       tasks: ${{ steps.gen.outputs.tasks }}
@@ -93,11 +105,13 @@ jobs:
         env:
           FULL: ${{ needs.scope.outputs.full }}
           SLUGS: ${{ needs.scope.outputs.slugs }}
+          INCLUDE: ${{ needs.scope.outputs.include }}
           N: ${{ github.event.inputs.shards || '12' }}
         run: |
           TASKS=$(python3 - <<'PY'
           import json, os, re, glob
           full = os.environ['FULL'] == 'true'
+          include = os.environ.get('INCLUDE', '')
           # Dataset/phantom registry — single source of truth for the scoring datasets. A method
           # family (track) can have several ACTIVE phantoms (e.g. chisep + the ridani variants), and
           # each gets its own task; the track's default phantom keeps the legacy task/run ids while
@@ -211,7 +225,13 @@ jobs:
                   if not slug.startswith('_') and (route(slug) is not HOSTED or is_chisep(slug)):
                       out.append(slug)
               return out
-          if full:
+          if include:
+              # MANUAL single-combo recovery (workflow_dispatch include=): ONE hosted composed task
+              # restricted to these slugs via pipeline.py --include, so it re-scores only the combos they
+              # form (e.g. bfrnet,medi-cornell -> gt~bfrnet~medi-cornell) and nothing else. For refilling a
+              # combo that DNF'd on a transient/infra failure; never the automated path.
+              tasks = [{'id': 'manual-include', 'include': include, 'mode': 'composed', 'phantom': 'sim', **HOSTED}]
+          elif full:
               # Full re-run: hosted shards score the whole QSM matrix MINUS the dedicated methods
               # (pipeline.py --exclude), and each dedicated method runs as its own focused job on its
               # chosen runner + phantom (--focus). Union = the full matrix, every method scored correctly.
@@ -384,6 +404,7 @@ jobs:
           PH="${{ matrix.task.phantom || 'sim' }}"
           DS="${{ steps.ds.outputs.path }}"
           MODE="${{ steps.ds.outputs.mode }}"
+          [ -n "${{ matrix.task.mode }}" ] && MODE="${{ matrix.task.mode }}"   # manual-include task pins 'composed'
           # Track defaults to $TRACK (sim); an invivo task overrides it so pipeline.py scores against
           # COSMOS + STI and namespaces its run ids with `-invivo`. --phantom namespaces the run ids
           # of a NON-default phantom with -<phantom-id> (the default phantoms keep the legacy ids).
@@ -392,6 +413,7 @@ jobs:
           [ -n "${{ matrix.task.shard }}" ] && ARGS="$ARGS --shard ${{ matrix.task.shard }}"
           [ -n "${{ matrix.task.focus }}" ] && ARGS="$ARGS --focus ${{ matrix.task.focus }}"
           [ -n "${{ matrix.task.exclude }}" ] && ARGS="$ARGS --exclude ${{ matrix.task.exclude }}"
+          [ -n "${{ matrix.task.include }}" ] && ARGS="$ARGS --include ${{ matrix.task.include }}"
           echo "== task ${{ matrix.task.id }}: pipeline.py $ARGS =="
           t0=$(date +%s)
           python scripts/pipeline.py $ARGS
