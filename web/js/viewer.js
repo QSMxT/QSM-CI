@@ -876,6 +876,27 @@ async function loadRun() {
       onLocationChange: (d) => { $("intensity").innerHTML = d.string; },
     });
     await nv.attachTo("gl1");
+    // Shift+scroll = zoom the 2D view; shift+drag already pans natively (NiiVue routes shift+left-drag
+    // to its center-button pan handler). NiiVue's own wheel handler ignores modifiers and only zooms
+    // in dragMode 'pan' (which would kill plain slice-scrolling), so we gate zoom on Shift ourselves.
+    // Capture phase on the wrapper: with Shift we do the zoom and stop the event before NiiVue's
+    // canvas listener fires (else it would also scroll a slice); without Shift we let it through.
+    (canvas.parentElement || canvas).addEventListener("wheel", (e) => {
+      if (!e.shiftKey) return;                 // plain scroll → NiiVue changes slice, unchanged
+      e.preventDefault(); e.stopPropagation();
+      // Mirror NiiVue's zoom-about-crosshair math (pan2Dxyzmm[3] is the 2D zoom scale).
+      const dir = e.deltaY < 0 ? 1 : -1;       // scroll up → zoom in
+      let zoom = nv.scene.pan2Dxyzmm[3] * (1 + 0.1 * dir);
+      zoom = Math.round(zoom * 10) / 10;
+      if (zoom < 0.1) return;                   // don't invert/collapse the view
+      const dz = nv.scene.pan2Dxyzmm[3] - zoom;
+      nv.scene.pan2Dxyzmm[3] = zoom;
+      const mm = nv.frac2mm(nv.scene.crosshairPos);
+      nv.scene.pan2Dxyzmm[0] += dz * mm[0];
+      nv.scene.pan2Dxyzmm[1] += dz * mm[1];
+      nv.scene.pan2Dxyzmm[2] += dz * mm[2];
+      nv.drawScene();
+    }, { capture: true, passive: false });
     nv.addColormap("errpos", ERR_POS_CMAP);   // signed error map: over-estimate (red), under-estimate (blue)
     nv.addColormap("errneg", ERR_NEG_CMAP);
     nv.setSliceType(nv.sliceTypeMultiplanar);
@@ -1255,6 +1276,21 @@ function wireControls() {
   });
   const redrawAll = () => winControls.forEach((c) => c.redraw());
   window.addEventListener("resize", redrawAll);
+  // Fullscreen: take the whole viewer section (canvas + histogram + controls) fullscreen, not just the
+  // canvas, so windowing/tabs stay usable. NiiVue's ResizeObserver on the canvas wrapper repaints the GL
+  // canvas when it grows; the histograms only relayout on window resize, so nudge them after the switch.
+  const fsSection = $("viewer-section"), fsBtn = $("fullscreen-btn");
+  fsBtn?.addEventListener("click", () => {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else fsSection?.requestFullscreen?.();
+  });
+  document.addEventListener("fullscreenchange", () => {
+    const on = document.fullscreenElement === fsSection;
+    $("fs-icon-open").classList.toggle("hidden", on);
+    $("fs-icon-close").classList.toggle("hidden", !on);
+    fsBtn.title = on ? "Exit fullscreen" : "Fullscreen — Shift+scroll to zoom · Shift+drag to pan";
+    setTimeout(() => { redrawAll(); nv?.drawScene(); }, 60);
+  });
   // theme toggle flips html.dark without reloading; recolour every histogram
   new MutationObserver(redrawAll).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
   nv.setInterpolation(true);
