@@ -45032,6 +45032,45 @@
         "dipole": "xqsm"
       },
       "phantom": "sim"
+    },
+    {
+      "name": "bfrnet+medi-cornell",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 1027.1151266098022,
+      "metrics": {
+        "nrmse": 73.9930151034093,
+        "nrmse_detrend": 108.64365908501581,
+        "nrmse_tissue": 136.78279934053876,
+        "nrmse_blood": 141.82289127738431,
+        "nrmse_dgm": 49.004266529220025,
+        "dgm_linearity": 0.0740008824520928,
+        "calc_moment_dev": 34.37347091734409,
+        "calc_streak": 0.03326657238434278,
+        "correlation": 0.6772319582384227,
+        "xsim": 0.31177507043209074,
+        "hfen": 97.21390443312708
+      },
+      "status": "ok",
+      "id": "gt~bfrnet~medi-cornell-cmp",
+      "slug": "bfrnet+medi-cornell",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "bfrnet",
+        "dipole": "medi-cornell"
+      },
+      "phantom": "sim",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_bfrnet_medi-cornell-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_bfrnet_medi-cornell-cmp__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_bfrnet_medi-cornell-cmp__recon.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_bfrnet_medi-cornell-cmp__truth.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_bfrnet_medi-cornell-cmp__error.nii.gz"
+      }
     }
   ]
 }
