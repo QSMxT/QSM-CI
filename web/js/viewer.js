@@ -59,6 +59,7 @@ function makeReproRun(pipe, acq, node) {
   else if (parts.length === 2) { combo = { field_mapping: parts[0] }; slug = parts[1]; stage = "field-mapping+bfr+dipole"; }
   return { id: reproRunId(pipe, acq), slug, name: parts.map(algoName).join(" → "),
            pipelineId: pipe, track: "repro", phantom: acq, mode: "composed", stage, combo,
+           kind: "chi",   // every harmonization pipeline outputs a susceptibility map → default window ±0.1 ppm
            status: "ok", metrics: reproHeadline(node),
            volumes: { recon: reproReconUrl(pipe, acq), magnitude: reproMagnitudeUrl(acq) },
            resources_url: reproResourcesUrl(pipe, acq), regions_url: reproRegionsUrl(pipe, acq) };
