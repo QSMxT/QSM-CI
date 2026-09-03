@@ -13,8 +13,11 @@ jobs:
     # Keep web/algorithms.json in sync with algorithms/*/algorithm.yml automatically: regenerate it
     # and, on same-repo pushes/PRs, commit the refresh back to the branch so nobody has to remember
     # `python scripts/gen_manifest.py`. Skipped for fork PRs (GITHUB_TOKEN can't push to a fork) —
-    # those must regenerate + commit manually. GITHUB_TOKEN pushes don't re-trigger workflows, so no
-    # loop; the [skip ci] marker is belt-and-suspenders.
+    # those must regenerate + commit manually. No loop: GITHUB_TOKEN pushes don't re-trigger workflows,
+    # and `git diff --quiet` below no-ops when the manifest is already in sync.
+    # DO NOT add "[skip ci]" to the sync commit message: a squash merge folds every branch commit's
+    # message into the merge commit, so that token would land on main and suppress score.yml/ci/pipeline
+    # for the whole merge — silently skipping the scoring of the very algorithm the PR changed.
     if: ${{ github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: ubuntu-latest
     permissions:
@@ -39,7 +42,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add web/algorithms.json
-          git commit -m "chore: sync web/algorithms.json [skip ci]"
+          git commit -m "chore: sync web/algorithms.json"
           git push
           echo "committed refreshed web/algorithms.json"
 
