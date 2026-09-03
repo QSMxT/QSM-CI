@@ -16,12 +16,14 @@ out/
 .sweep/
 
 # Per-run scoring scratch: only the small aggregated result files are tracked: results/index.json
-# (Pages reads it, score.yml commits it) and results/repro.json (the harmonization reproducibility
-# stats read by the repro dataset views; repro.yml commits it). Everything else under results/ is
-# per-run recon/truth/error/resources scratch (incl. the large repro_rois.json), never committed.
+# (Pages reads it, score.yml commits it), results/repro.json (the harmonization reproducibility
+# stats read by the repro dataset views; repro.yml commits it), and results/repro_regions.json (the
+# compact per-run regional aggregate the harmonization Findings figures read). Everything else under
+# results/ is per-run recon/truth/error/resources scratch (incl. the large repro_rois.json).
 /results/*
 !/results/index.json
 !/results/repro.json
+!/results/repro_regions.json
 
 # Held-out ground truth + generated/downloaded datasets must never be committed
 data/**/groundtruth/

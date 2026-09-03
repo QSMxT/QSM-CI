@@ -277,7 +277,7 @@
                       </button>
                     </template>
                     <template x-if="g.t==='empty'">
-                      <div class="flex h-9 w-full items-center justify-center rounded-md border border-dashed border-gray-200 text-gray-300 text-xs">—</div>
+                      <div class="flex h-9 w-full items-center justify-center rounded-md border border-dashed border-gray-200 text-gray-300 text-xs">, </div>
                     </template>
                   </div>
                 </template>
@@ -778,11 +778,11 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
                   <span x-show="r.slug===chisepBestGen()" class="ml-2 rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700" data-tip="Best fidelity to the true R2′ on this phantom (lowest detrended NRMSE: scale-independent, so a well-scaled copy of R2* can't win on scale alone); the leaderboard above feeds this substitute (at default parameters) to every R2′-consuming method.">supplies R2′ above</span>
                   <span x-show="r.status==='DNF'" class="ml-2 rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold text-gray-500">DNF</span>
                 </td>
-                <td class="px-4 py-3 text-right tabular-nums text-gray-600 group-hover:bg-emerald-50/40" x-text="(r.metrics||{}).nrmse!=null ? (r.metrics.nrmse).toFixed(1)+'%' : '—'"></td>
-                <td class="px-4 py-3 text-right tabular-nums text-gray-600 group-hover:bg-emerald-50/40" x-text="(r.metrics||{}).nrmse_detrend!=null ? (r.metrics.nrmse_detrend).toFixed(1)+'%' : '—'"></td>
-                <td class="px-4 py-3 text-right tabular-nums text-gray-600 group-hover:bg-emerald-50/40" x-text="(r.metrics||{}).correlation!=null ? (r.metrics.correlation).toFixed(3) : '—'"></td>
-                <td class="px-4 py-3 text-right tabular-nums text-gray-600 group-hover:bg-emerald-50/40" x-text="(r.metrics||{}).xsim!=null ? (r.metrics.xsim).toFixed(3) : '—'"></td>
-                <td class="px-4 py-3 text-right tabular-nums text-gray-600 group-hover:bg-emerald-50/40" x-text="r.runtime_s!=null ? fmt(r.runtime_s,'runtime_s') : '—'"></td>
+                <td class="px-4 py-3 text-right tabular-nums text-gray-600 group-hover:bg-emerald-50/40" x-text="(r.metrics||{}).nrmse!=null ? (r.metrics.nrmse).toFixed(1)+'%' : ', '"></td>
+                <td class="px-4 py-3 text-right tabular-nums text-gray-600 group-hover:bg-emerald-50/40" x-text="(r.metrics||{}).nrmse_detrend!=null ? (r.metrics.nrmse_detrend).toFixed(1)+'%' : ', '"></td>
+                <td class="px-4 py-3 text-right tabular-nums text-gray-600 group-hover:bg-emerald-50/40" x-text="(r.metrics||{}).correlation!=null ? (r.metrics.correlation).toFixed(3) : ', '"></td>
+                <td class="px-4 py-3 text-right tabular-nums text-gray-600 group-hover:bg-emerald-50/40" x-text="(r.metrics||{}).xsim!=null ? (r.metrics.xsim).toFixed(3) : ', '"></td>
+                <td class="px-4 py-3 text-right tabular-nums text-gray-600 group-hover:bg-emerald-50/40" x-text="r.runtime_s!=null ? fmt(r.runtime_s,'runtime_s') : ', '"></td>
               </tr>
             </template>
           </tbody>
@@ -1167,20 +1167,18 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           results, so it tracks whatever methods and pipelines are currently scored.
         </p>
 
-        <div class="mt-4 flex flex-wrap items-center gap-3">
-          <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Reproducibility metric</span>
-          <div class="inline-flex rounded-lg bg-gray-100 p-1 text-xs font-medium dark:bg-gray-800">
-            <button @click="reproFindMetric='inter'" class="rounded-md px-3 py-1.5 transition" :class="reproFindMetric==='inter'?'bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100':'text-gray-500 hover:text-gray-700 dark:text-gray-400'" data-tip="Prisma↔Cima |a−1| for matched protocol+run: the cross-scanner harmonization headline.">Inter-scanner</button>
-            <button @click="reproFindMetric='tr'" class="rounded-md px-3 py-1.5 transition" :class="reproFindMetric==='tr'?'bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100':'text-gray-500 hover:text-gray-700 dark:text-gray-400'" data-tip="Within-scanner run-to-run |a−1|: pure repeatability.">Test&ndash;retest</button>
-            <button @click="reproFindMetric='ip'" class="rounded-md px-3 py-1.5 transition" :class="reproFindMetric==='ip'?'bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100':'text-gray-500 hover:text-gray-700 dark:text-gray-400'" data-tip="Each protocol vs the bridge protocol on the same scanner: the acquisition-protocol effect.">vs bridge</button>
-          </div>
-        </div>
+        <p class="mt-4 text-sm text-gray-500 dark:text-gray-400 leading-relaxed">Each figure below that can be read three ways carries its own <span class="font-medium">Inter-scanner / Test&ndash;retest / vs bridge</span> toggle, so you can flip a single figure and watch it change. Figures tied to a specific axis (scanner bias, χ&ndash;iron, protocol deviation, contrast) have no toggle by design.</p>
 
         <!-- Figure 1 · variance decomposition (headline) -->
         <template x-if="reproStageImportance">
           <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Which stage decides reproducibility?</h3>
-            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">How much each stage's method choice reshuffles the full-pipeline <span x-text="_reproMetricLabel()"></span> |a&minus;1| ranking, across every pipeline in the factorial (rank-based &eta;&sup2;, so one degenerate fit can't dominate). A larger share means that stage's choice matters more for <span x-text="_reproMetricLabel()"></span> reproducibility.</p>
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">How much each stage's method choice reshuffles the full-pipeline <span x-text="_reproMetricLabel(reproMetric.vd)"></span> |a&minus;1| ranking, across every pipeline in the factorial (rank-based &eta;&sup2;, so one degenerate fit can't dominate). A larger share means that stage's choice matters more for <span x-text="_reproMetricLabel(reproMetric.vd)"></span> reproducibility.</p>
+            <div class="mt-3 inline-flex rounded-lg bg-gray-100 p-1 text-xs font-medium dark:bg-gray-800">
+              <button @click="reproMetric.vd='inter'" class="rounded-md px-2.5 py-1 transition" :class="reproMetric.vd==='inter'?'bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100':'text-gray-500 hover:text-gray-700 dark:text-gray-400'">Inter-scanner</button>
+              <button @click="reproMetric.vd='tr'" class="rounded-md px-2.5 py-1 transition" :class="reproMetric.vd==='tr'?'bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100':'text-gray-500 hover:text-gray-700 dark:text-gray-400'">Test&ndash;retest</button>
+              <button @click="reproMetric.vd='ip'" class="rounded-md px-2.5 py-1 transition" :class="reproMetric.vd==='ip'?'bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100':'text-gray-500 hover:text-gray-700 dark:text-gray-400'">vs bridge</button>
+            </div>
             <div class="mt-4 space-y-3">
               <template x-for="st in reproStageImportance" :key="st.f">
                 <div>
@@ -1202,7 +1200,12 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         <!-- Figure 2 · per-stage attribution -->
         <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
           <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Which methods are most reproducible, stage by stage?</h3>
-          <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">For each method, its median <span x-text="_reproMetricLabel()"></span> |a&minus;1| marginalised over every pipeline it appears in (dot), with the interquartile spread (bar) showing how much its partner stages swing it. Lower is more reproducible. Coloured by family; hover for the numbers.</p>
+          <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">For each method, its median <span x-text="_reproMetricLabel(reproMetric.attr)"></span> |a&minus;1| marginalised over every pipeline it appears in (dot), with the interquartile spread (bar) showing how much its partner stages swing it. Lower is more reproducible. Coloured by family; hover for the numbers.</p>
+          <div class="mt-3 inline-flex rounded-lg bg-gray-100 p-1 text-xs font-medium dark:bg-gray-800">
+            <button @click="reproMetric.attr='inter'" class="rounded-md px-2.5 py-1 transition" :class="reproMetric.attr==='inter'?'bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100':'text-gray-500 hover:text-gray-700 dark:text-gray-400'">Inter-scanner</button>
+            <button @click="reproMetric.attr='tr'" class="rounded-md px-2.5 py-1 transition" :class="reproMetric.attr==='tr'?'bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100':'text-gray-500 hover:text-gray-700 dark:text-gray-400'">Test&ndash;retest</button>
+            <button @click="reproMetric.attr='ip'" class="rounded-md px-2.5 py-1 transition" :class="reproMetric.attr==='ip'?'bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100':'text-gray-500 hover:text-gray-700 dark:text-gray-400'">vs bridge</button>
+          </div>
           <div class="mt-2" x-html="familyLegend"></div>
           <div class="mt-4">
             <div class="text-xs font-semibold uppercase tracking-wide text-gray-400">Field mapping</div>
@@ -1217,7 +1220,12 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         <!-- Figure 2b · reproducibility vs accuracy, per method, all stages -->
         <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
           <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Reproducible <em>and</em> accurate? Every method, both axes</h3>
-          <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Each point is a method, placed by its median <span x-text="_reproMetricLabel()"></span> |a&minus;1| across every pipeline it appears in (y, lower is more reproducible) against its median in-silico (2019) xSIM over those same pipelines (x, higher is more accurate). Coloured by stage &mdash; field mapping, background removal, and the final &chi;-producing step (dipole inversion plus combined bf-removal+dipole and end-to-end methods). The bottom-right corner is the sweet spot: reproducible <em>and</em> accurate. Hover any point for its numbers.<span x-show="reproAccOmitted()>0"> <span x-text="reproAccOmitted()"></span> method(s) with a reproducibility fit but no in-silico run are omitted (no accuracy value to place them).</span></p>
+          <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Each point is a method, placed by its median <span x-text="_reproMetricLabel(reproMetric.va)"></span> |a&minus;1| across every pipeline it appears in (y, lower is more reproducible) against its median in-silico (2019) xSIM over those same pipelines (x, higher is more accurate). Coloured by stage: field mapping, background removal, and the final &chi;-producing step (dipole inversion plus combined bf-removal+dipole and end-to-end methods). The bottom-right corner is the sweet spot: reproducible <em>and</em> accurate. Hover any point for its numbers.<span x-show="reproAccOmitted()>0"> <span x-text="reproAccOmitted()"></span> method(s) with a reproducibility fit but no in-silico run are omitted (no accuracy value to place them).</span></p>
+          <div class="mt-3 inline-flex rounded-lg bg-gray-100 p-1 text-xs font-medium dark:bg-gray-800">
+            <button @click="reproMetric.va='inter'" class="rounded-md px-2.5 py-1 transition" :class="reproMetric.va==='inter'?'bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100':'text-gray-500 hover:text-gray-700 dark:text-gray-400'">Inter-scanner</button>
+            <button @click="reproMetric.va='tr'" class="rounded-md px-2.5 py-1 transition" :class="reproMetric.va==='tr'?'bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100':'text-gray-500 hover:text-gray-700 dark:text-gray-400'">Test&ndash;retest</button>
+            <button @click="reproMetric.va='ip'" class="rounded-md px-2.5 py-1 transition" :class="reproMetric.va==='ip'?'bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100':'text-gray-500 hover:text-gray-700 dark:text-gray-400'">vs bridge</button>
+          </div>
           <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="reproVsAccuracySVG"></div>
         </div>
 
@@ -1238,6 +1246,74 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Each point is a pipeline: test&ndash;retest |a&minus;1| (run-to-run precision) on x, inter-scanner |a&minus;1| (Prisma&harr;Cima harmonizability) on y. Bottom-left is both precise <em>and</em> harmonizable. Pick a method to light up every pipeline that uses it; click any point to open it.</p>
           <p x-show="reproHighlightStats()" class="mt-2 text-sm text-gray-700 dark:text-gray-300"><span class="font-semibold" x-text="reproHighlightStats()?.name"></span>: median inter-scanner <span class="font-semibold tabular-nums" x-text="reproHighlightStats()?.withMed"></span> across <span x-text="reproHighlightStats()?.n"></span> pipelines that use it, vs <span class="font-semibold tabular-nums" x-text="reproHighlightStats()?.withoutMed"></span> for those that don't.</p>
           <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="reproFrontierSVG"></div>
+        </div>
+
+        <!-- ===== Regional-reproducibility figures (deep-grey nuclei, live from repro_regions.json) ===== -->
+
+        <!-- Fig R1 · region × dipole inter-scanner |Δχ| heatmap -->
+        <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Where does harmonization fail? Region &times; <span x-text="_rgAxisLabel(reproHeatAxis)"></span></h3>
+          <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Median |&Delta;&chi;| for each nucleus, per <span x-text="_rgAxisLabel(reproHeatAxis)"></span>, marginalised over the other pipeline stages and protocols. Green = the region's mean &chi; agrees across the selected acquisition pair; red = it doesn't. Columns sorted best&rarr;worst.</p>
+          <div class="mt-3 flex flex-wrap items-center gap-2">
+          <div class="inline-flex rounded-lg bg-gray-100 p-1 text-xs font-medium dark:bg-gray-800">
+            <button @click="reproHeatAxis='dipole'" class="rounded-md px-2.5 py-1 transition" :class="reproHeatAxis==='dipole'?'bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100':'text-gray-500 hover:text-gray-700 dark:text-gray-400'">Dipole</button>
+            <button @click="reproHeatAxis='bfr'" class="rounded-md px-2.5 py-1 transition" :class="reproHeatAxis==='bfr'?'bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100':'text-gray-500 hover:text-gray-700 dark:text-gray-400'">Background removal</button>
+            <button @click="reproHeatAxis='field_mapping'" class="rounded-md px-2.5 py-1 transition" :class="reproHeatAxis==='field_mapping'?'bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100':'text-gray-500 hover:text-gray-700 dark:text-gray-400'">Field mapping</button>
+          </div>
+          <div class="inline-flex rounded-lg bg-gray-100 p-1 text-xs font-medium dark:bg-gray-800">
+            <button @click="reproMetric.heat='inter'" class="rounded-md px-2.5 py-1 transition" :class="reproMetric.heat==='inter'?'bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100':'text-gray-500 hover:text-gray-700 dark:text-gray-400'">Inter-scanner</button>
+            <button @click="reproMetric.heat='tr'" class="rounded-md px-2.5 py-1 transition" :class="reproMetric.heat==='tr'?'bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100':'text-gray-500 hover:text-gray-700 dark:text-gray-400'">Test&ndash;retest</button>
+            <button @click="reproMetric.heat='ip'" class="rounded-md px-2.5 py-1 transition" :class="reproMetric.heat==='ip'?'bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100':'text-gray-500 hover:text-gray-700 dark:text-gray-400'">vs bridge</button>
+          </div>
+          </div>
+          <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="reproRegHeatSVG"></div>
+        </div>
+
+        <!-- Fig R2 · scanner-bias forest per region -->
+        <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Does one scanner read a nucleus systematically higher?</h3>
+          <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Forest plot of Cima &minus; Prisma mean-&chi; bias per region (matched protocol + run), median &plusmn; IQR across all pipelines. Deep-grey nuclei are bold. A dot off the dashed zero line is a systematic cross-scanner offset.</p>
+          <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="reproRegBiasSVG"></div>
+        </div>
+
+        <!-- Fig R3 · χ–iron calibration per scanner -->
+        <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">&chi;&ndash;iron calibration: do the scanners agree?</h3>
+          <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Median &chi; per deep-grey nucleus vs literature non-heme iron, one regression per scanner. The slope is &chi;-sensitivity to iron; matching slopes and overlapping points mean the scanners are harmonized on the iron axis. A tight <em>linear</em> &chi;&ndash;iron relation is <em>expected</em> (it&rsquo;s one of QSM&rsquo;s foundational validations), so this is a physical-plausibility &amp; agreement check, not a precise calibration (n&nbsp;=&nbsp;5 nuclei, and the iron values are fixed <em>population</em> constants, not this subject&rsquo;s). Iron (µg&nbsp;Fe/g&nbsp;wet&nbsp;wt) from <a href="https://doi.org/10.1111/j.1471-4159.1958.tb12607.x" class="text-emerald-600 hover:underline">Hallgren &amp; Sourander 1958</a>: pallidum&nbsp;213, putamen&nbsp;133, caudate&nbsp;93, ventral&nbsp;DC&nbsp;(SN/RN)&nbsp;~190, thalamus&nbsp;~55.</p>
+          <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="reproRegIronSVG"></div>
+        </div>
+
+        <!-- Fig R4 · protocol × region deviation from consensus -->
+        <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Which protocol shifts which region?</h3>
+          <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Each protocol's per-region mean-&chi; deviation from the cross-protocol consensus (same scanner/run/pipeline), averaged over everything else. This is a <em>signed</em> map: <span class="font-medium">pale/near-white = the protocol agrees with the consensus (good)</span>; saturated <span style="color:#2563eb" class="font-medium">blue</span> = it reads that region <em>lower</em>, saturated <span style="color:#dc2626" class="font-medium">red</span> = <em>higher</em>. So both strong colours mean the protocol <em>shifts</em> that region, just in opposite directions (e.g. whether Pulseq pulls a nucleus up or down versus bridge/local).</p>
+          <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="reproRegProtoSVG"></div>
+        </div>
+
+        <!-- Fig R5 · stage attribution in deep grey -->
+        <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Which stage drives deep-grey variability?</h3>
+          <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">For 3-stage pipelines, swap the method at one stage while holding the other two plus the acquisition fixed, and measure the spread of deep-grey mean &chi;. A taller bar means that stage moves the clinically-relevant &chi; more, attributing reproducibility to unwrapping vs background removal vs dipole inversion.</p>
+          <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="reproRegStageSVG"></div>
+        </div>
+
+        <!-- Fig R6 · adjacent-nucleus contrast across scanners -->
+        <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Is inter-nucleus contrast preserved across scanners?</h3>
+          <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">The &chi; difference between neighbouring nuclei on Cima (y) vs Prisma (x), one dot per pipeline &times; protocol &times; run. On the dashed identity line the contrast (e.g. pallidum&minus;putamen) reproduces across scanners; scatter off it means the contrast a clinician reads changes with the scanner even when global &chi; looks fine.</p>
+          <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="reproRegContrastSVG"></div>
+        </div>
+
+        <!-- Fig R7 · global metric vs deep-grey regional agreement -->
+        <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Does the headline metric reflect the clinical regions?</h3>
+          <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Each pipeline's whole-brain inter-scanner slope-deviation (today's harmonization headline) vs its deep-grey regional &chi; agreement. A tight correlation means the global number is a good proxy; scatter means pipelines can look harmonized globally yet disagree in the nuclei that matter (or vice versa).</p>
+          <div class="mt-3 inline-flex rounded-lg bg-gray-100 p-1 text-xs font-medium dark:bg-gray-800">
+            <button @click="reproMetric.glob='inter'" class="rounded-md px-2.5 py-1 transition" :class="reproMetric.glob==='inter'?'bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100':'text-gray-500 hover:text-gray-700 dark:text-gray-400'">Inter-scanner</button>
+            <button @click="reproMetric.glob='tr'" class="rounded-md px-2.5 py-1 transition" :class="reproMetric.glob==='tr'?'bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100':'text-gray-500 hover:text-gray-700 dark:text-gray-400'">Test&ndash;retest</button>
+            <button @click="reproMetric.glob='ip'" class="rounded-md px-2.5 py-1 transition" :class="reproMetric.glob==='ip'?'bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100':'text-gray-500 hover:text-gray-700 dark:text-gray-400'">vs bridge</button>
+          </div>
+          <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="reproRegGlobalSVG"></div>
         </div>
       </div><!-- /repro findings -->
 
@@ -1267,7 +1343,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         </div>
         <div>
           <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">How it is evaluated</h3>
-          <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">Every QSM-CI pipeline combination (field&nbsp;mapping &times; background&nbsp;removal &times; dipole&nbsp;inversion, plus single-step methods) reconstructs all 23 acquisitions from raw phase. Each &chi; map is rigid-registered to a common target acquisition, referenced to its whole-brain mean, and reduced to per-ROI means over one SynthSeg segmentation (so ROI definitions cannot vary between acquisitions). Every acquisition pair then gets an orthogonal (total-least-squares) fit &chi;<sub>B</sub>&nbsp;=&nbsp;a&middot;&chi;<sub>A</sub>&nbsp;+&nbsp;b: |a&minus;1| measures scale disagreement, b the bias, and Bland&ndash;Altman limits the ROI-level scatter. Test&ndash;retest pairs bound what each protocol/pipeline could possibly achieve across scanners.</p>
+          <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">Every QSM-CI pipeline combination (field&nbsp;mapping &times; background&nbsp;removal &times; dipole&nbsp;inversion, plus single-step methods) reconstructs all 23 acquisitions from raw phase. Each &chi; map is rigid-registered to a common target acquisition, referenced to its whole-brain mean, and reduced to per-ROI means over one SynthSeg segmentation (FreeSurfer <code>mri_synthseg</code>, which is license-free and emits standard FreeSurfer <em>aseg</em> labels (the deep-grey nuclei used in the regional Findings figures below), so ROI definitions cannot vary between acquisitions). Every acquisition pair then gets an orthogonal (total-least-squares) fit &chi;<sub>B</sub>&nbsp;=&nbsp;a&middot;&chi;<sub>A</sub>&nbsp;+&nbsp;b: |a&minus;1| measures scale disagreement, b the bias, and Bland&ndash;Altman limits the ROI-level scatter. Test&ndash;retest pairs bound what each protocol/pipeline could possibly achieve across scanners.</p>
         </div>
         <div>
           <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Data availability</h3>
@@ -1391,7 +1467,8 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         chisepView: "board", invivoView: "board",   // per-dataset Leaderboard / Info subtab
         // harmonization (repro) dataset state
         reproView: "protocols", reproData: null, reproProto: "all", reproSortKey: "inter", reproDir: "asc", reproMinXsim: 0,
-        reproFindMetric: "inter", reproHighlight: "",   // Findings: which repro class the figures key on + frontier highlight
+        reproMetric: { vd: "inter", attr: "inter", va: "inter", heat: "inter", glob: "inter" }, reproHeatAxis: "dipole", reproHighlight: "",   // Findings: per-figure repro class + heatmap stage axis + frontier highlight
+        reproRegions: null, reproRegLoading: false,   // regional-reproducibility sidecar (per-run per-aseg-region mean χ, lazy-loaded when Findings opens)
         // leaderboard state
         stage: "dipole", fmap: "gt", variant: "default",
         metric: "xsim", sortKey: "xsim", sortDir: "desc", filter: "",
@@ -1524,6 +1601,9 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           // off the common page load.
           this.$watch("findView", (v) => { if (v === "regions") this.ensureRegions(); });
           if (this.tab === "findings" && this.findView === "regions") this.ensureRegions();
+          // Same lazy pattern for the harmonization regional Findings figures (repro_regions.json, ~4 MB).
+          this.$watch("reproView", (v) => { if (v === "findings") this.ensureReproRegions(); });
+          if (this.dataset === "repro" && this.reproView === "findings") this.ensureReproRegions();
           this.syncUrl();   // canonicalise (e.g. if an unavailable dataset was reset to sim)
           // findings: delegated click; any injected mark carrying data-run opens that run's page
           // (unless a drag-pan just happened on the regions figure, in which case that drag ends in a click we swallow).
@@ -1715,7 +1795,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         },
         _median(v) { if (!v.length) return null; const s = [...v].sort((a, b) => a - b); const m = Math.floor(s.length / 2); return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; },
         _pctile(v, p) { if (!v.length) return null; const s = [...v].sort((a, b) => a - b); return s[Math.min(s.length - 1, Math.max(0, Math.round((p / 100) * (s.length - 1))))]; },
-        _pct(x) { return x == null ? "—" : (100 * x).toFixed(1) + "%"; },
+        _pct(x) { return x == null ? ", " : (100 * x).toFixed(1) + "%"; },
         // In-silico (2019) accuracy of each pipeline: xSIM of its ground-truth-scored composed run,
         // keyed by the harmonization pipeline slug (`fm+bfr+dipole`). Lets the reproducibility table
         // show accuracy alongside repeatability. Missing (e.g. a pipeline with no in-silico run) → absent.
@@ -1752,7 +1832,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             if (this.reproMinXsim > 0 && (xs == null || xs < this.reproMinXsim)) continue;
             rows.push({ slug, name,
                         tr: this._pct(this._median(tr)), inter: this._pct(this._median(inter)), iproto: this._pct(this._median(ip)),
-                        xsim: xs == null ? "—" : fmt(xs, "xsim"),
+                        xsim: xs == null ? ", " : fmt(xs, "xsim"),
                         n: tr.length + inter.length + ip.length,
                         _tr: this._median(tr), _inter: this._median(inter), _ip: this._median(ip), _xsim: xs == null ? null : xs });
           }
@@ -1785,10 +1865,10 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             }
             if (!trM.length && !interM.length) continue;
             // robust central + spread across pipelines: median [5th–95th percentile]
-            const cell = (v) => v.length ? this._pct(this._median(v)) + (v.length > 1 ? ` [${this._pct(this._pctile(v, 5))}–${this._pct(this._pctile(v, 95))}]` : "") : "—";
+            const cell = (v) => v.length ? this._pct(this._median(v)) + (v.length > 1 ? ` [${this._pct(this._pctile(v, 5))}–${this._pct(this._pctile(v, 95))}]` : "") : ", ";
             rows.push({ protocol: proto, label: this.reproProtoLabel(proto),
                         tr: cell(trM), inter: cell(interM),
-                        bias: biasM.length ? this._median(biasM).toFixed(4) + " ppm" : "—",
+                        bias: biasM.length ? this._median(biasM).toFixed(4) + " ppm" : ", ",
                         n: Math.max(trM.length, interM.length) });
           }
           return rows;
@@ -1803,7 +1883,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         },
 
         // ---- Harmonization · Findings (all live from reproData) --------------------------------
-        _reproMetricLabel() { return { inter: "inter-scanner", tr: "test–retest", ip: "vs-bridge" }[this.reproFindMetric]; },
+        _reproMetricLabel(k) { return { inter: "inter-scanner", tr: "test–retest", ip: "vs-bridge" }[k || "inter"]; },
         _stageOf(slug) { const a = this.algos.find((x) => x.slug === slug); return a && a.stage; },
         // One robust scalar per pipeline for each repro class: the raw material for the attribution
         // figures. `field_mapping`/`bfr`/`dipole` are set only for the 3-part factorial matrix (which the
@@ -1841,7 +1921,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         // choice explains. Ranks (not raw values) so a single degenerate pipeline can't hijack the score;
         // the complete factorial makes the three shares unconfounded.
         get reproStageImportance() {
-          const mk = this.reproFindMetric;
+          const mk = this.reproMetric.vd;
           return _cache("reproSI", mk + "|" + Object.keys(this._reproPipes()).length, () => {
             const stats = this._reproPipeStats().filter((s) => s.nparts === 3 && s[mk] != null);
             if (stats.length < 8) return null;
@@ -1859,7 +1939,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         // Per-stage marginal attribution: each method's median |a−1| over all its partner pipelines (dot),
         // with the IQR (bar). One horizontal panel per stage. Coloured by family.
         reproAttribSVG(stage) {
-          const mk = this.reproFindMetric;
+          const mk = this.reproMetric.attr;
           return _cache("reproAttr_" + stage, mk + "|" + Object.keys(this._reproPipes()).length + "|" + this.algos.length, () => {
             const g = {};
             for (const s of this._reproPipeStats()) {
@@ -1879,7 +1959,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             const maxv = Math.max(...rows.map((r) => r.q3)) * 1.02 || 0.1;
             const X = (v) => padL + (v / maxv) * (w - padL - padR);
             let s = `<svg width="${w}" height="${h}" style="max-width:100%;height:auto">`;
-            s += `<text x="${padL}" y="12" fill="currentColor" opacity="0.5" style="font-size:10px">median ${this._reproMetricLabel()} |a−1| over pipelines using this method (dot), IQR (bar); lower is more reproducible →</text>`;
+            s += `<text x="${padL}" y="12" fill="currentColor" opacity="0.5" style="font-size:10px">median ${this._reproMetricLabel(mk)} |a−1| over pipelines using this method (dot), IQR (bar); lower is more reproducible →</text>`;
             [0, 0.25, 0.5, 0.75, 1].map((f) => f * maxv).forEach((t) => {
               const x = X(t); s += `<line x1="${x}" y1="${top - 2}" x2="${x}" y2="${h - 16}" stroke="currentColor" opacity="0.07"/>`;
               s += `<text x="${x}" y="${h - 4}" text-anchor="middle" fill="currentColor" opacity="0.4" style="font-size:9px">${(t * 100).toFixed(t < 0.1 ? 1 : 0)}%</text>`;
@@ -1899,10 +1979,10 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         // the method appears in. Coloured by stage; field-mapping/bfr use the 3-part factorial component,
         // the "dipole" group is the pipeline's final χ-producing step (dipole + combined + end-to-end).
         // Per-method points for the reproducibility-vs-accuracy scatter, plus how many methods have a
-        // reproducibility fit but no in-silico score (so are OMITTED from the accuracy axis) — surfaced
+        // reproducibility fit but no in-silico score (so are OMITTED from the accuracy axis), surfaced
         // in the caption instead of naming any method, since coverage is data-driven and changes.
         _reproAccPoints() {
-          const mk = this.reproFindMetric;
+          const mk = this.reproMetric.va;
           return _cache("reproAccPts", mk + "|" + Object.keys(this._reproPipes()).length + "|" + this.algos.length, () => {
             const simX = this._simXsimMap();
             const grp = {};
@@ -1927,7 +2007,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         },
         reproAccOmitted() { return this._reproAccPoints().omitted; },
         get reproVsAccuracySVG() {
-          return _cache("reproVA", this.reproFindMetric + "|" + Object.keys(this._reproPipes()).length + "|" + this.algos.length, () => {
+          return _cache("reproVA", this.reproMetric.va + "|" + Object.keys(this._reproPipes()).length + "|" + this.algos.length, () => {
             const pts = this._reproAccPoints().pts;
             const SC = { field_mapping: "#10b981", bfr: "#e11d48", dipole: "#f59e0b" };
             const SL = { field_mapping: "Field mapping", bfr: "Background removal", dipole: "Dipole / χ-map" };
@@ -1947,7 +2027,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
               s += `<text x="${padL - 7}" y="${y + 3}" text-anchor="end" fill="currentColor" opacity="0.45" style="font-size:9px">${(vy * 100).toFixed(0)}%</text>`;
             }
             s += `<text x="${(padL + w - padR) / 2}" y="${h - 6}" text-anchor="middle" fill="currentColor" opacity="0.6" style="font-size:11px">In-silico xSIM (accuracy) →</text>`;
-            s += `<text transform="translate(15,${(padT + h - padB) / 2}) rotate(-90)" text-anchor="middle" fill="currentColor" opacity="0.6" style="font-size:11px">${this._reproMetricLabel()} |a−1| — lower is more reproducible</text>`;
+            s += `<text transform="translate(15,${(padT + h - padB) / 2}) rotate(-90)" text-anchor="middle" fill="currentColor" opacity="0.6" style="font-size:11px">${this._reproMetricLabel(this.reproMetric.va)} |a−1|, lower is more reproducible</text>`;
             s += `<text x="${w - padR - 6}" y="${h - padB - 6}" text-anchor="end" fill="#10b981" opacity="0.8" style="font-size:10px;font-weight:600">reproducible &amp; accurate ◢</text>`;
             let ly = padT + 8;
             for (const st of ["field_mapping", "bfr", "dipole"]) {
@@ -1964,7 +2044,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             });
             pts.forEach((p) => {
               const c = SC[p.stage], px = X(p.x), py = Y(p.y);
-              s += `<g data-tip="${this._esc(`${p.name} (${SL[p.stage]}): xSIM ${p.x.toFixed(3)}, ${this._reproMetricLabel()} |a−1| ${(p.y * 100).toFixed(1)}%, over ${p.n} pipelines`)}">`;
+              s += `<g data-tip="${this._esc(`${p.name} (${SL[p.stage]}): xSIM ${p.x.toFixed(3)}, ${this._reproMetricLabel(this.reproMetric.va)} |a−1| ${(p.y * 100).toFixed(1)}%, over ${p.n} pipelines`)}">`;
               s += `<circle cx="${px}" cy="${py}" r="3.4" fill="${c}" opacity="0.9"/>`;
               if (labelled.has(p.slug)) s += `<text x="${px + 5}" y="${py + 3}" fill="${c}" opacity="0.72" style="font-size:8px">${this._esc(p.name)}</text>`;
               s += `</g>`;
@@ -2007,6 +2087,384 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             return s + "</svg>";
           });
         },
+        // ==================================================================================
+        // Harmonization · REGIONAL Findings figures (7). All live from this.reproRegions
+        // (results/repro_regions.json): per (pipeline × acquisition) run, per-aseg-region mean χ
+        // already in ppb (L/R merged). Ported faithfully from scripts build_figs.py; the only
+        // difference is the data source (values are pre-aggregated & already in ppb, so no *1000).
+        // ==================================================================================
+        // ---- constants (mirror build_figs.py) ----
+        get _rgOrder() { return ["Pallidum", "Putamen", "Caudate", "VentralDC", "Thalamus", "Accumbens", "Hippocampus", "Amygdala", "Brain-Stem", "Cerebellum-WM", "Cerebellum-Ctx", "Cerebral-WM", "Cortex"]; },
+        get _rgDeep() { return ["Pallidum", "Putamen", "Caudate", "VentralDC", "Thalamus", "Accumbens"]; },
+        get _rgIron() { return { Pallidum: 213, Putamen: 133, Caudate: 93, VentralDC: 190, Thalamus: 55 }; },
+        get _rgProtos() { return ["bridge", "local", "pulseq-offline", "pulseq-online"]; },
+        get _rgScanners() { return ["cima", "prisma"]; },
+        // Parse an acquisition id like "cima-pulseq-offline-run2" → {scanner,proto,run}. Mirrors
+        // build_figs.parse_acq: split off the trailing "-run<N>", then the leading scanner token; the
+        // remainder is the protocol (which may itself contain a hyphen, e.g. "pulseq-offline").
+        _rgParseAcq(a) {
+          const i = a.lastIndexOf("-run");
+          const base = a.slice(0, i), run = "run" + a.slice(i + 4);
+          const j = base.indexOf("-");
+          return { scanner: base.slice(0, j), proto: base.slice(j + 1), run };
+        },
+        // Index the sidecar into rmean[pipe][acq] = { struct: chi_ppb }. Also expose each run's parsed
+        // dipole (last stage) + acq parse. Memoised on the run count so it only rebuilds on (re)load.
+        _rgParse() {
+          return _cache("rgParse", (this.reproRegions?.runs?.length || 0), () => {
+            const rmean = {};
+            for (const r of (this.reproRegions?.runs || [])) {
+              if (!r || !r.p || !r.a || !r.m) continue;
+              (rmean[r.p] || (rmean[r.p] = {}))[r.a] = r.m;
+            }
+            return rmean;
+          });
+        },
+        _rgLastStage(p) { return p.split("+").pop(); },
+        // ---- pairing generators (return arrays of [acqA, acqB]); mirror build_figs.py exactly ----
+        _rgInterScannerPairs() {
+          const out = [];
+          for (const P of this._rgProtos) for (const R of ["run1", "run2", "run3"]) out.push([`cima-${P}-${R}`, `prisma-${P}-${R}`]);
+          return out;
+        },
+        _rgTestRetestPairs() {
+          const out = [], runs3 = ["run1", "run2", "run3"];
+          for (const S of this._rgScanners) for (const P of this._rgProtos) {
+            const runs = runs3.map((r) => `${S}-${P}-${r}`);
+            for (let i = 0; i < runs.length; i++) for (let k = i + 1; k < runs.length; k++) out.push([runs[i], runs[k]]);
+          }
+          return out;
+        },
+        _rgVsBridgePairs() {
+          const out = [];
+          for (const S of this._rgScanners) for (const R of ["run1", "run2", "run3"]) for (const P of this._rgProtos) {
+            if (P === "bridge") continue;
+            out.push([`${S}-${P}-${R}`, `${S}-bridge-${R}`]);
+          }
+          return out;
+        },
+        // pairing generator + repro.json slope-dev field for a given metric key (inter/tr/ip)
+        _rgPairsFor(mk) { return mk === "tr" ? this._rgTestRetestPairs() : mk === "ip" ? this._rgVsBridgePairs() : this._rgInterScannerPairs(); },
+        _rgSlopeField(mk) { return { inter: "inter_scanner_mean_abs_slope_dev", tr: "test_retest_mean_abs_slope_dev", ip: "inter_protocol_mean_abs_slope_dev" }[mk || "inter"]; },
+        _rgPairLabel(mk) { return { inter: "Cima↔Prisma", tr: "run↔run", ip: "protocol↔bridge" }[mk || "inter"]; },
+        // the method slug at a given pipeline stage axis (dipole=last χ-producing step; bfr/field_mapping
+        // only exist in the 3-part factorial). null → the pipeline has no distinct method at that axis.
+        _rgStageOf(pipe, axis) {
+          const parts = pipe.split("+");
+          if (axis === "bfr") return parts.length === 3 ? parts[1] : null;
+          if (axis === "field_mapping") return parts.length >= 2 ? parts[0] : null;
+          return parts[parts.length - 1];   // dipole / final χ-producing step
+        },
+        _rgAxisLabel(axis) { return { dipole: "dipole method", bfr: "background-removal method", field_mapping: "field-mapping method" }[axis || "dipole"]; },
+        // sequential green(good/low)→amber→red(high/bad) for |Δχ| heatmaps
+        _rgColSeq(v, vmin, vmax) {
+          if (v == null) return "#e5e7eb";
+          const t = Math.max(0, Math.min(1, (v - vmin) / (vmax - vmin + 1e-9)));
+          const stops = [[0, [16, 185, 129]], [0.5, [245, 193, 7]], [1, [239, 68, 68]]];
+          for (let i = 0; i < stops.length - 1; i++) {
+            const [t0, c0] = stops[i], [t1, c1] = stops[i + 1];
+            if (t <= t1) { const f = (t - t0) / (t1 - t0 + 1e-9); return "#" + c0.map((a, k) => Math.round(a + (c1[k] - a) * f).toString(16).padStart(2, "0")).join(""); }
+          }
+          return "#ef4444";
+        },
+        // diverging blue(−)/white(0)/red(+) for deviation heatmaps
+        _rgColDiv(v, vmax) {
+          const t = Math.max(-1, Math.min(1, v / (vmax + 1e-9)));
+          const c = [255, 255, 255], d = t >= 0 ? [220, 38, 38] : [37, 99, 235], f = Math.abs(t);
+          return "#" + c.map((a, k) => Math.round(a + (d[k] - a) * f).toString(16).padStart(2, "0")).join("");
+        },
+        get _rgDepKey() { return (this.reproRegions?.runs?.length || 0) + "|" + this.algos.length; },
+        _rgLoading(w, h) { return `<svg width="${w}" height="${h}" style="max-width:100%;height:auto"><text x="${w / 2}" y="${h / 2}" text-anchor="middle" fill="currentColor" opacity="0.4" style="font-size:12px">loading regional data…</text></svg>`; },
+
+        // FIG 1 · region × dipole inter-scanner |Δχ| heatmap
+        get reproRegHeatSVG() {
+          return _cache("rgHeat", this._rgDepKey + "|" + this.reproMetric.heat + "|" + this.reproHeatAxis, () => {
+            if (!this.reproRegions) return this._rgLoading(520, 460);
+            const mk = this.reproMetric.heat, axis = this.reproHeatAxis;
+            const rmean = this._rgParse(), ORDER = this._rgOrder, pairs = this._rgPairsFor(mk);
+            const dipVals = {};   // stage-method -> struct -> [|Δχ| ppb]
+            for (const pipe in rmean) {
+              const d = this._rgStageOf(pipe, axis); if (!d) continue;
+              const acqs = rmean[pipe];
+              (dipVals[d] || (dipVals[d] = {}));
+              for (const [a, b] of pairs) {
+                if (acqs[a] && acqs[b]) for (const s of ORDER) {
+                  if (acqs[a][s] != null && acqs[b][s] != null) (dipVals[d][s] || (dipVals[d][s] = [])).push(Math.abs(acqs[a][s] - acqs[b][s]));
+                }
+              }
+            }
+            let dips = Object.keys(dipVals).filter((d) => Object.values(dipVals[d]).reduce((n, v) => n + v.length, 0) >= 20);
+            const dipMed = {};
+            for (const d of dips) dipMed[d] = this._median([].concat(...Object.values(dipVals[d])));
+            dips.sort((a, b) => dipMed[a] - dipMed[b]);
+            const regs = ORDER.filter((s) => dips.some((d) => dipVals[d][s]));
+            if (!dips.length || !regs.length) return `<svg width="520" height="80"><text x="260" y="40" text-anchor="middle" fill="currentColor" opacity="0.4" style="font-size:12px">Not enough inter-scanner pairs yet.</text></svg>`;
+            const allv = [];
+            for (const d of dips) for (const s of regs) if (dipVals[d][s]) allv.push(this._median(dipVals[d][s]));
+            const sorted = [...allv].sort((a, b) => a - b);
+            const vmin = sorted[0], vmax = sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * 0.95))];
+            const cw = 30, ch = 26, lx = 150, ty = 158, W = lx + dips.length * cw + 96, H = ty + regs.length * ch + 34;
+            let s = `<svg width="${W}" height="${H}" style="display:block">`;
+            dips.forEach((d, j) => {
+              const x = lx + j * cw + cw / 2;
+              s += `<text x="${x}" y="${ty - 6}" transform="rotate(-55 ${x} ${ty - 6})" text-anchor="start" fill="currentColor" opacity="0.7" style="font-size:10px">${this._esc(this.algoName(d))}</text>`;
+            });
+            regs.forEach((reg, i) => {
+              const y = ty + i * ch, deep = this._rgDeep.includes(reg);
+              s += `<text x="${lx - 8}" y="${y + ch / 2 + 4}" text-anchor="end" fill="currentColor" opacity="${deep ? 0.92 : 0.7}" style="font-size:10px;font-weight:${deep ? 600 : 400}">${this._esc(reg)}</text>`;
+              dips.forEach((d, j) => {
+                const vs = dipVals[d][reg]; if (!vs) return;
+                const m = this._median(vs), x = lx + j * cw;
+                s += `<g data-tip="${this._esc(`${reg} / ${this.algoName(d)}: median |Δχ| ${m.toFixed(1)} ppb (n=${vs.length})`)}"><rect x="${x}" y="${y}" width="${cw - 2}" height="${ch - 2}" rx="3" fill="${this._rgColSeq(m, vmin, vmax)}"/></g>`;
+              });
+            });
+            s += `<text x="${lx}" y="${H - 8}" fill="currentColor" opacity="0.5" style="font-size:10px">colour = median |Δχ| ${this._rgPairLabel(mk)} (ppb): green good (${vmin.toFixed(0)}) → red poor (${vmax.toFixed(0)})</text>`;
+            return s + "</svg>";
+          });
+        },
+
+        // FIG 2 · scanner-bias forest per region (Cima − Prisma, median ± IQR)
+        get reproRegBiasSVG() {
+          return _cache("rgBias", this._rgDepKey, () => {
+            if (!this.reproRegions) return this._rgLoading(760, 460);
+            const rmean = this._rgParse(), ORDER = this._rgOrder, pairs = this._rgInterScannerPairs();
+            const bias = {};
+            for (const pipe in rmean) {
+              const acqs = rmean[pipe];
+              for (const [a, b] of pairs) if (acqs[a] && acqs[b]) for (const s of ORDER) {
+                if (acqs[a][s] != null && acqs[b][s] != null) (bias[s] || (bias[s] = [])).push(acqs[a][s] - acqs[b][s]);
+              }
+            }
+            const regs = ORDER.filter((s) => (bias[s] || []).length >= 20);
+            if (!regs.length) return `<svg width="760" height="80"><text x="380" y="40" text-anchor="middle" fill="currentColor" opacity="0.4" style="font-size:12px">Not enough inter-scanner pairs yet.</text></svg>`;
+            const med = {}, q1 = {}, q3 = {};
+            for (const s of regs) { med[s] = this._median(bias[s]); q1[s] = this._pctile(bias[s], 25); q3[s] = this._pctile(bias[s], 75); }
+            const lo = Math.min(...regs.map((s) => q1[s])), hi = Math.max(...regs.map((s) => q3[s]));
+            const span = Math.max(Math.abs(lo), Math.abs(hi)) * 1.1 || 1;
+            const W = 760, rowh = 30, lx = 150, H = 40 + regs.length * rowh + 32, x0 = lx, x1 = W - 30;
+            const cx = (v) => x0 + (v + span) / (2 * span) * (x1 - x0);
+            let s = `<svg width="${W}" height="${H}" style="max-width:100%;height:auto">`;
+            s += `<line x1="${cx(0)}" y1="30" x2="${cx(0)}" y2="${H - 30}" stroke="currentColor" opacity="0.35" stroke-dasharray="3 3"/>`;
+            s += `<text x="${cx(0)}" y="24" text-anchor="middle" fill="currentColor" opacity="0.6" style="font-size:10px">Cima higher →  |  ← Prisma higher</text>`;
+            regs.forEach((reg, i) => {
+              const y = 40 + i * rowh + rowh / 2, deep = this._rgDeep.includes(reg);
+              s += `<text x="${lx - 10}" y="${y + 4}" text-anchor="end" fill="currentColor" opacity="${deep ? 0.92 : 0.6}" style="font-size:11px;font-weight:${deep ? 600 : 400}">${this._esc(reg)}</text>`;
+              s += `<line x1="${cx(q1[reg])}" y1="${y}" x2="${cx(q3[reg])}" y2="${y}" stroke="currentColor" opacity="0.4" stroke-width="2"/>`;
+              const col = Math.abs(med[reg]) < span * 0.12 ? "#059669" : "#dc2626";
+              s += `<g data-tip="${this._esc(`${reg}: bias ${med[reg] >= 0 ? "+" : ""}${med[reg].toFixed(1)} ppb [IQR ${q1[reg] >= 0 ? "+" : ""}${q1[reg].toFixed(1)}, ${q3[reg] >= 0 ? "+" : ""}${q3[reg].toFixed(1)}]`)}"><circle cx="${cx(med[reg])}" cy="${y}" r="5" fill="${col}"/></g>`;
+            });
+            [-span, -span / 2, 0, span / 2, span].forEach((gx) => {
+              s += `<text x="${cx(gx)}" y="${H - 14}" text-anchor="middle" fill="currentColor" opacity="0.45" style="font-size:10px">${gx >= 0 ? "+" : ""}${gx.toFixed(0)}</text>`;
+            });
+            s += `<text x="${(x0 + x1) / 2}" y="${H - 2}" text-anchor="middle" fill="currentColor" opacity="0.5" style="font-size:10px">inter-scanner χ bias (ppb), median ± IQR over pipelines×protocols×runs</text>`;
+            return s + "</svg>";
+          });
+        },
+
+        // FIG 3 · χ–iron calibration, one OLS regression per scanner
+        get reproRegIronSVG() {
+          return _cache("rgIron", this._rgDepKey, () => {
+            if (!this.reproRegions) return this._rgLoading(560, 420);
+            const rmean = this._rgParse(), IRON = this._rgIron, SCAN = this._rgScanners;
+            const vals = {};   // scanner -> struct -> [chi ppb]
+            for (const sc of SCAN) vals[sc] = {};
+            for (const pipe in rmean) {
+              const acqs = rmean[pipe];
+              for (const acq in acqs) {
+                const { scanner } = this._rgParseAcq(acq); if (!vals[scanner]) continue;
+                for (const s in IRON) if (acqs[acq][s] != null) (vals[scanner][s] || (vals[scanner][s] = [])).push(acqs[acq][s]);
+              }
+            }
+            const pts = {};
+            for (const sc of SCAN) { pts[sc] = {}; for (const s in vals[sc]) if (vals[sc][s].length) pts[sc][s] = this._median(vals[sc][s]); }
+            const ally = [].concat(...SCAN.map((sc) => Object.values(pts[sc])));
+            if (ally.length < 3) return `<svg width="560" height="80"><text x="280" y="40" text-anchor="middle" fill="currentColor" opacity="0.4" style="font-size:12px">Not enough deep-grey data yet.</text></svg>`;
+            const xs = Object.values(IRON), xmin = 0, xmax = Math.max(...xs) * 1.1;
+            const ymin = Math.min(...ally) - 10, ymax = Math.max(...ally) + 10;
+            const W = 560, H = 420, pad = 60;
+            const X = (v) => pad + (v - xmin) / (xmax - xmin) * (W - 2 * pad), Y = (v) => H - pad - (v - ymin) / (ymax - ymin) * (H - 2 * pad);
+            const col = { cima: "#2563eb", prisma: "#db2777" };
+            let s = `<svg width="${W}" height="${H}" style="max-width:100%;height:auto">`;
+            s += `<line x1="${pad}" y1="${H - pad}" x2="${W - pad}" y2="${H - pad}" stroke="currentColor" opacity="0.3"/><line x1="${pad}" y1="${pad}" x2="${pad}" y2="${H - pad}" stroke="currentColor" opacity="0.3"/>`;
+            s += `<text x="${W / 2}" y="${H - 18}" text-anchor="middle" fill="currentColor" opacity="0.6" style="font-size:11px">literature iron (µg Fe / g wet wt)</text>`;
+            s += `<text transform="translate(16,${H / 2}) rotate(-90)" text-anchor="middle" fill="currentColor" opacity="0.6" style="font-size:11px">median χ (ppb)</text>`;
+            SCAN.forEach((sc, i) => { const ly = pad + 4 + i * 17; s += `<rect x="${pad + 10}" y="${ly}" width="11" height="11" rx="2" fill="${col[sc]}"/><text x="${pad + 26}" y="${ly + 10}" fill="currentColor" opacity="0.8" style="font-size:11px">${sc[0].toUpperCase() + sc.slice(1)}</text>`; });
+            for (const sc of SCAN) {
+              const X_ = [], Y_ = [];
+              for (const s2 in IRON) if (pts[sc][s2] != null) { X_.push(IRON[s2]); Y_.push(pts[sc][s2]); }
+              if (X_.length < 2) continue;
+              const n = X_.length, mx = X_.reduce((a, c) => a + c, 0) / n, my = Y_.reduce((a, c) => a + c, 0) / n;
+              const b = X_.reduce((acc, a, k) => acc + (a - mx) * (Y_[k] - my), 0) / X_.reduce((acc, a) => acc + (a - mx) ** 2, 0);
+              const a0 = my - b * mx;
+              s += `<line x1="${X(xmin)}" y1="${Y(a0 + b * xmin)}" x2="${X(xmax)}" y2="${Y(a0 + b * xmax)}" stroke="${col[sc]}" stroke-width="2" opacity="0.6"/>`;
+              for (const s2 in IRON) if (pts[sc][s2] != null) s += `<g data-tip="${this._esc(`${sc} ${s2}: ${pts[sc][s2].toFixed(0)} ppb @ ${IRON[s2]} iron`)}"><circle cx="${X(IRON[s2])}" cy="${Y(pts[sc][s2])}" r="5" fill="${col[sc]}"/></g>`;
+              s += `<text x="${W - pad - 4}" y="${pad + 12 + SCAN.indexOf(sc) * 15}" text-anchor="end" fill="${col[sc]}" style="font-size:10px">${sc[0].toUpperCase() + sc.slice(1)} slope ${b.toFixed(3)} ppb/iron</text>`;
+            }
+            for (const s2 in IRON) if (pts.cima[s2] != null) s += `<text x="${X(IRON[s2]) + 7}" y="${Y(pts.cima[s2]) + 3}" fill="currentColor" opacity="0.55" style="font-size:10px">${this._esc(s2)}</text>`;
+            return s + "</svg>";
+          });
+        },
+
+        // FIG 4 · protocol × region deviation-from-consensus heatmap (diverging)
+        get reproRegProtoSVG() {
+          return _cache("rgProto", this._rgDepKey, () => {
+            if (!this.reproRegions) return this._rgLoading(720, 240);
+            const rmean = this._rgParse(), ORDER = this._rgOrder, PROTOS = this._rgProtos, SCAN = this._rgScanners;
+            const dev = {};   // proto -> struct -> [dev ppb]
+            for (const P of PROTOS) dev[P] = {};
+            for (const pipe in rmean) {
+              const acqs = rmean[pipe];
+              for (const sc of SCAN) for (const R of ["run1", "run2", "run3"]) {
+                const present = {};
+                for (const P of PROTOS) { const v = acqs[`${sc}-${P}-${R}`]; if (v) present[P] = v; }
+                const keys = Object.keys(present);
+                if (keys.length < 2) continue;
+                for (const s of ORDER) {
+                  const xs = keys.filter((P) => present[P][s] != null).map((P) => present[P][s]);
+                  if (xs.length < 2) continue;
+                  const cons = xs.reduce((a, c) => a + c, 0) / xs.length;
+                  for (const P of keys) if (present[P][s] != null) (dev[P][s] || (dev[P][s] = [])).push(present[P][s] - cons);
+                }
+              }
+            }
+            const regs = ORDER.filter((s) => PROTOS.some((P) => (dev[P][s] || []).length >= 10));
+            if (!regs.length) return `<svg width="720" height="80"><text x="360" y="40" text-anchor="middle" fill="currentColor" opacity="0.4" style="font-size:12px">Not enough multi-protocol coverage yet.</text></svg>`;
+            const mean = (v) => v.reduce((a, c) => a + c, 0) / v.length;
+            const md = {};
+            for (const P of PROTOS) { md[P] = {}; for (const s of regs) md[P][s] = (dev[P][s] && dev[P][s].length) ? mean(dev[P][s]) : null; }
+            let vmax = 0;
+            for (const P of PROTOS) for (const s of regs) if (md[P][s] != null) vmax = Math.max(vmax, Math.abs(md[P][s]));
+            vmax = vmax || 1;
+            const cw = 52, ch = 30, lx = 150, ty = 60, W = lx + regs.length * cw + 20, H = ty + PROTOS.length * ch + 40;
+            let s = `<svg width="${W}" height="${H}" style="max-width:100%;height:auto">`;
+            regs.forEach((reg, j) => {
+              const x = lx + j * cw + cw / 2;
+              s += `<text x="${x}" y="${ty - 8}" transform="rotate(-40 ${x} ${ty - 8})" text-anchor="start" fill="currentColor" opacity="0.7" style="font-size:10px">${this._esc(reg)}</text>`;
+            });
+            PROTOS.forEach((P, i) => {
+              const y = ty + i * ch;
+              s += `<text x="${lx - 10}" y="${y + ch / 2 + 4}" text-anchor="end" fill="currentColor" opacity="0.82" style="font-size:11px">${this._esc(P)}</text>`;
+              regs.forEach((reg, j) => {
+                const v = md[P][reg]; if (v == null) return; const x = lx + j * cw;
+                s += `<g data-tip="${this._esc(`${P} / ${reg}: ${v >= 0 ? "+" : ""}${v.toFixed(1)} ppb vs consensus`)}"><rect x="${x}" y="${y}" width="${cw - 2}" height="${ch - 2}" rx="3" fill="${this._rgColDiv(v, vmax)}"/></g>`;
+              });
+            });
+            s += `<text x="${lx}" y="${H - 12}" fill="currentColor" opacity="0.5" style="font-size:10px">Δ vs cross-protocol consensus (ppb): pale = agrees · blue lower · red higher (±${vmax.toFixed(0)})</text>`;
+            return s + "</svg>";
+          });
+        },
+
+        // FIG 5 · stage attribution: deep-grey χ spread when only one stage varies (3-stage pipelines)
+        get reproRegStageSVG() {
+          return _cache("rgStage", this._rgDepKey, () => {
+            if (!this.reproRegions) return this._rgLoading(460, 320);
+            const rmean = this._rgParse(), DEEP = this._rgDeep;
+            const three = Object.keys(rmean).filter((p) => p.split("+").length === 3);
+            const pstdev = (v) => { const m = v.reduce((a, c) => a + c, 0) / v.length; return Math.sqrt(v.reduce((a, c) => a + (c - m) ** 2, 0) / v.length); };
+            const contrib = { unwrap: [], bfr: [], dipole: [] };
+            [["unwrap", 0], ["bfr", 1], ["dipole", 2]].forEach(([tgt, idx]) => {
+              const groups = {};   // "key||acq" -> struct -> [chi]
+              for (const pipe of three) {
+                const parts = pipe.split("+");
+                const key = parts.filter((_, k) => k !== idx).join("+");
+                const acqs = rmean[pipe];
+                for (const acq in acqs) {
+                  const gk = key + "||" + acq, g = groups[gk] || (groups[gk] = {});
+                  for (const s of DEEP) if (acqs[acq][s] != null) (g[s] || (g[s] = [])).push(acqs[acq][s]);
+                }
+              }
+              const spreads = [];
+              for (const gk in groups) for (const s in groups[gk]) if (groups[gk][s].length >= 2) spreads.push(pstdev(groups[gk][s]));
+              contrib[tgt] = spreads;
+            });
+            const order = ["unwrap", "bfr", "dipole"];
+            const meds = order.map((k) => contrib[k].length ? this._median(contrib[k]) : 0);
+            if (!three.length || meds.every((m) => m === 0)) return `<svg width="460" height="80"><text x="230" y="40" text-anchor="middle" fill="currentColor" opacity="0.4" style="font-size:12px">No 3-stage pipelines with deep-grey data yet.</text></svg>`;
+            const W = 460, H = 320, pad = 60, bw = 90, vmax = Math.max(...meds) * 1.25 || 1, Yb = H - pad;
+            const X = (i) => pad + i * (bw + 40) + 20;
+            const col = { unwrap: "#0ea5e9", bfr: "#8b5cf6", dipole: "#f59e0b" };
+            let s = `<svg width="${W}" height="${H}" style="max-width:100%;height:auto">`;
+            s += `<line x1="${pad - 10}" y1="${Yb}" x2="${W - 20}" y2="${Yb}" stroke="currentColor" opacity="0.3"/>`;
+            order.forEach((k, i) => {
+              const hgt = meds[i] / vmax * (H - 2 * pad), x = X(i);
+              s += `<g data-tip="${this._esc(`${k}: median deep-grey χ spread ${meds[i].toFixed(1)} ppb when only this stage varies`)}"><rect x="${x}" y="${Yb - hgt}" width="${bw}" height="${hgt}" rx="4" fill="${col[k]}"/></g>`;
+              s += `<text x="${x + bw / 2}" y="${Yb + 16}" text-anchor="middle" fill="currentColor" opacity="0.82" style="font-size:11px">${k}</text>`;
+              s += `<text x="${x + bw / 2}" y="${Yb - hgt - 6}" text-anchor="middle" fill="currentColor" opacity="0.6" style="font-size:11px">${meds[i].toFixed(1)}</text>`;
+            });
+            s += `<text transform="translate(16,${H / 2}) rotate(-90)" text-anchor="middle" fill="currentColor" opacity="0.6" style="font-size:11px">median deep-grey χ spread (ppb)</text>`;
+            return s + "</svg>";
+          });
+        },
+
+        // FIG 6 · adjacent-nucleus contrast preserved across scanners (Cima y vs Prisma x)
+        get reproRegContrastSVG() {
+          return _cache("rgContrast", this._rgDepKey, () => {
+            if (!this.reproRegions) return this._rgLoading(460, 460);
+            const rmean = this._rgParse(), pairs = this._rgInterScannerPairs();
+            const nucPairs = [["Pallidum", "Putamen"], ["Pallidum", "Thalamus"], ["Putamen", "Caudate"]];
+            const col = ["#dc2626", "#2563eb", "#059669"];
+            const data = nucPairs.map(() => []);
+            for (const pipe in rmean) {
+              const acqs = rmean[pipe];
+              for (const [a, b] of pairs) if (acqs[a] && acqs[b]) nucPairs.forEach(([ra, rb], pi) => {
+                if (acqs[a][ra] != null && acqs[a][rb] != null && acqs[b][ra] != null && acqs[b][rb] != null) {
+                  const ca = acqs[a][ra] - acqs[a][rb], cb = acqs[b][ra] - acqs[b][rb];
+                  data[pi].push([cb, ca]);   // x=prisma, y=cima
+                }
+              });
+            }
+            const allv = [].concat(...data.map((d) => [].concat(...d)));
+            if (allv.length < 3) return `<svg width="460" height="80"><text x="230" y="40" text-anchor="middle" fill="currentColor" opacity="0.4" style="font-size:12px">Not enough inter-scanner pairs yet.</text></svg>`;
+            let lo = Math.min(...allv), hi = Math.max(...allv); const sp = hi - lo; lo -= sp * 0.05; hi += sp * 0.05;
+            const W = 460, H = 460, pad = 60;
+            const X = (v) => pad + (v - lo) / (hi - lo) * (W - 2 * pad), Y = (v) => H - pad - (v - lo) / (hi - lo) * (H - 2 * pad);
+            let s = `<svg width="${W}" height="${H}" style="max-width:100%;height:auto">`;
+            s += `<line x1="${X(lo)}" y1="${Y(lo)}" x2="${X(hi)}" y2="${Y(hi)}" stroke="currentColor" opacity="0.35" stroke-dasharray="4 4"/>`;
+            s += `<line x1="${pad}" y1="${H - pad}" x2="${W - pad}" y2="${H - pad}" stroke="currentColor" opacity="0.3"/><line x1="${pad}" y1="${pad}" x2="${pad}" y2="${H - pad}" stroke="currentColor" opacity="0.3"/>`;
+            s += `<text x="${W / 2}" y="${H - 16}" text-anchor="middle" fill="currentColor" opacity="0.6" style="font-size:11px">Prisma contrast (ppb)</text>`;
+            s += `<text transform="translate(16,${H / 2}) rotate(-90)" text-anchor="middle" fill="currentColor" opacity="0.6" style="font-size:11px">Cima contrast (ppb)</text>`;
+            nucPairs.forEach(([ra, rb], pi) => {
+              const c = col[pi];
+              data[pi].slice(0, 400).forEach(([x, y]) => { s += `<circle cx="${X(x)}" cy="${Y(y)}" r="2.4" fill="${c}" opacity="0.5"/>`; });
+              s += `<circle cx="${pad + 12}" cy="${pad + pi * 18}" r="4" fill="${c}"/><text x="${pad + 22}" y="${pad + 4 + pi * 18}" fill="currentColor" opacity="0.82" style="font-size:11px">${this._esc(ra)}−${this._esc(rb)}</text>`;
+            });
+            return s + "</svg>";
+          });
+        },
+
+        // FIG 7 · whole-brain slope-dev (headline metric) vs deep-grey median |Δχ|, per pipeline
+        get reproRegGlobalSVG() {
+          return _cache("rgGlobal", this._rgDepKey + "|" + this.reproMetric.glob + "|" + Object.keys(this._reproPipes()).length, () => {
+            if (!this.reproRegions) return this._rgLoading(560, 420);
+            const mk = this.reproMetric.glob, slopeField = this._rgSlopeField(mk);
+            const rmean = this._rgParse(), DEEP = this._rgDeep, pairs = this._rgPairsFor(mk);
+            const REPRO = this._reproPipes();
+            const pts = [];
+            for (const pipe in rmean) {
+              const rep = REPRO[pipe]; if (!rep || rep[slopeField] == null) continue;
+              const gd = rep[slopeField], acqs = rmean[pipe], diffs = [];
+              for (const [a, b] of pairs) if (acqs[a] && acqs[b]) for (const s of DEEP) if (acqs[a][s] != null && acqs[b][s] != null) diffs.push(Math.abs(acqs[a][s] - acqs[b][s]));
+              if (diffs.length < 10) continue;
+              pts.push([gd * 100, this._median(diffs), this._rgLastStage(pipe)]);
+            }
+            if (pts.length < 3) return `<svg width="560" height="80"><text x="280" y="40" text-anchor="middle" fill="currentColor" opacity="0.4" style="font-size:12px">Not enough pipelines with both metrics yet.</text></svg>`;
+            const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
+            const xmax = [...xs].sort((a, b) => a - b)[Math.floor(xs.length * 0.97)] || Math.max(...xs) || 1;
+            const ymax = [...ys].sort((a, b) => a - b)[Math.floor(ys.length * 0.97)] || Math.max(...ys) || 1;
+            const W = 560, H = 420, pad = 60;
+            const X = (v) => pad + Math.min(v, xmax) / xmax * (W - 2 * pad), Y = (v) => H - pad - Math.min(v, ymax) / ymax * (H - 2 * pad);
+            let s = `<svg width="${W}" height="${H}" style="max-width:100%;height:auto">`;
+            s += `<line x1="${pad}" y1="${H - pad}" x2="${W - pad}" y2="${H - pad}" stroke="currentColor" opacity="0.3"/><line x1="${pad}" y1="${pad}" x2="${pad}" y2="${H - pad}" stroke="currentColor" opacity="0.3"/>`;
+            s += `<text x="${W / 2}" y="${H - 16}" text-anchor="middle" fill="currentColor" opacity="0.6" style="font-size:11px">whole-brain ${this._reproMetricLabel(mk)} |a−1| (%), the current headline metric</text>`;
+            s += `<text transform="translate(16,${H / 2}) rotate(-90)" text-anchor="middle" fill="currentColor" opacity="0.6" style="font-size:11px">deep-grey median |Δχ| (ppb)</text>`;
+            pts.forEach(([x, y, d]) => { s += `<g data-tip="${this._esc(`${this.algoName(d)}: slope-dev ${x.toFixed(1)}%, deep-grey ${y.toFixed(1)} ppb`)}"><circle cx="${X(x)}" cy="${Y(y)}" r="2.6" fill="#6366f1" opacity="0.45"/></g>`; });
+            const n = xs.length, mx = xs.reduce((a, c) => a + c, 0) / n, my = ys.reduce((a, c) => a + c, 0) / n;
+            const r = xs.reduce((acc, a, k) => acc + (a - mx) * (ys[k] - my), 0) / (Math.sqrt(xs.reduce((acc, a) => acc + (a - mx) ** 2, 0) * ys.reduce((acc, a) => acc + (a - my) ** 2, 0)) + 1e-9);
+            s += `<text x="${W - pad}" y="${pad}" text-anchor="end" fill="currentColor" opacity="0.6" style="font-size:11px">Pearson r = ${r.toFixed(2)} · n=${n} pipelines</text>`;
+            return s + "</svg>";
+          });
+        },
+
         // Caption stats for the highlighted method: its cloud's median inter-scanner |a−1| vs the rest.
         reproHighlightStats() {
           const hl = this.reproHighlight; if (!hl) return null;
@@ -2023,7 +2481,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           return val(r, k);
         },
         chiFmt(v, key) {
-          if (v == null) return "—";
+          if (v == null) return ", ";
           const f = (CHISEP_COL[key] || {}).f;
           return f === "pct" ? v.toFixed(1) + "%" : f === "num" ? v.toFixed(3)
             : f === "sec" ? fmt(v, "runtime_s") : fmt(v, "xsim");
@@ -2099,7 +2557,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           else { this.invivoSortKey = k; this.invivoDir = (INVIVO_COL[k] || {}).better === "lower" ? "asc" : "desc"; }
         },
         invFmt(v, key) {
-          if (v == null) return "—";
+          if (v == null) return ", ";
           return (INVIVO_COL[key] || {}).f === "pct" ? v.toFixed(1) + "%" : fmt(v, "xsim");
         },
         invMedal(i) {
@@ -2799,6 +3257,18 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         // parallel, then assemble the { id: entry } map the figures read. Only these ~26 small files
         // are fetched (not the whole 900-run corpus). Assigning this.regions is a reactive trigger, so
         // the getters re-run and the figures draw; then reconcile the region selector.
+        // Lazy-load (once) the harmonization regional sidecar (results/repro_regions.json): every
+        // (pipeline × acquisition) run's per-aseg-region mean χ in ppb. ~4 MB, ~14 k runs, so it stays
+        // off the common page load and is fetched the first time the harmonization Findings tab opens.
+        async ensureReproRegions() {
+          if (this.reproRegions || this.reproRegLoading) return;
+          this.reproRegLoading = true;
+          try {
+            const r = await fetch("results/repro_regions.json", { cache: "no-store" });
+            this.reproRegions = r.ok ? await r.json() : { runs: [] };
+          } catch { this.reproRegions = { runs: [] }; }
+          finally { this.reproRegLoading = false; }
+        },
         ensureRegions() {
           if (this._regionsReq) return this._regionsReq;
           const runs = this._isoDip();
