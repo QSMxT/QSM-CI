@@ -36,6 +36,10 @@ const reproReconUrl = (pipe, acq) => `${HF_VOL_BASE}repro/${acq}/${pipe.replaceA
 // The CPU/RAM sampling trace for this pipeline×acquisition, published to the Hub alongside the recon
 // (same deterministic path). Carries the time series AND the peak-mem / avg-cpu / max-cpu summary.
 const reproResourcesUrl = (pipe, acq) => `${HF_VOL_BASE}repro/${acq}/${pipe.replaceAll("+", "_")}-cmp-${acq}__resources.json`;
+// Per-region susceptibility means for this pipeline×acquisition, published to the Hub alongside the
+// recon (same deterministic path) — powers the Regions tab. No ground truth on the repro track, so the
+// file carries a `chi.recon` block only (no `truth`); a run whose regions file is absent just leaves the tab empty.
+const reproRegionsUrl = (pipe, acq) => `${HF_VOL_BASE}repro/${acq}/${pipe.replaceAll("+", "_")}-cmp-${acq}__regions.json`;
 const simRunIdOf = (pipe) => `${pipe.replaceAll("+", "~")}-cmp`;   // the same pipeline's in-silico composed run id
 const reproRunId = (pipe, acq) => `${pipe.replaceAll("+", "~")}-cmp-${acq}`;
 // Headline "score" for a repro run row: median inter-scanner |a-1| (lower is better).
@@ -53,7 +57,7 @@ function makeReproRun(pipe, acq, node) {
   return { id: reproRunId(pipe, acq), slug, name: parts.map(algoName).join(" → "),
            pipelineId: pipe, track: "repro", phantom: acq, mode: "composed", stage, combo,
            status: "ok", metrics: reproHeadline(node), volumes: { recon: reproReconUrl(pipe, acq) },
-           resources_url: reproResourcesUrl(pipe, acq) };
+           resources_url: reproResourcesUrl(pipe, acq), regions_url: reproRegionsUrl(pipe, acq) };
 }
 // (Re)generate the harmonization run pool for one acquisition and splice it into allRuns.
 function ensureReproRuns(acq) {
@@ -575,9 +579,29 @@ function reproRank(field) {
   return { rank, n: vals.length, t: 1 - t };   // lower value = higher goodness
 }
 function renderReproStats() {
-  $("metrics-tabs")?.classList.add("hidden");
-  $("metrics-regions-wrap")?.classList.add("hidden");
   const node = reproJson?.pipelines?.[reproPipe];
+  const hasRegions = !!(runRegions && runRegions.chi && runRegions.chi.recon);
+  // Reuse the metrics tab strip as Reproducibility | Regions (the repro track has no ground truth, so no
+  // Error tab). The per-region χ means come from the Hub regions.json (loadRunRegions → runRegions).
+  const tabs = $("metrics-tabs");
+  if (tabs) {
+    tabs.classList.toggle("hidden", !hasRegions);
+    const mBtn = tabs.querySelector('[data-mtab="metrics"]'); if (mBtn) mBtn.textContent = "Reproducibility";
+    tabs.querySelector('[data-mtab="error"]')?.classList.add("hidden");
+    if (!hasRegions) metricsTab = "metrics";
+    const tab = metricsTab === "regions" ? "regions" : "metrics";
+    tabs.querySelectorAll("[data-mtab]").forEach((b) => {
+      const on = b.dataset.mtab === tab;
+      ["bg-white", "shadow-sm", "text-gray-900", "dark:bg-gray-700", "dark:text-gray-100"].forEach((c) => b.classList.toggle(c, on));
+      ["text-gray-500", "dark:text-gray-400"].forEach((c) => b.classList.toggle(c, !on));
+    });
+    if (tab === "regions") {
+      $("metrics-table-wrap")?.classList.add("hidden");
+      $("metrics-regions-wrap")?.classList.remove("hidden");
+      return renderReproRegionTable(runRegions.chi);
+    }
+  }
+  $("metrics-regions-wrap")?.classList.add("hidden");
   $("metrics-sub").textContent = "Reproducibility of this pipeline across the harmonization acquisitions: orthogonal per-ROI ax+b fits, |a−1| (median).";
   const rankCell = (rk, label) => rk
     ? `<span class="inline-block rounded-md px-1.5 py-0.5 text-xs font-semibold text-white shadow-sm" style="background:${heatScale(rk.t)}" data-tip="Rank ${rk.rank} of ${rk.n} harmonization pipelines for ${label}">#${rk.rank}<span class="opacity-70"> / ${rk.n}</span></span>`
@@ -605,6 +629,28 @@ function renderReproStats() {
   if (res) body += `<tr><td colspan="3" class="pt-3 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">Resources · ${escapeHtml(phantomLabel(reproAcq) || reproAcq)}</td></tr>` + res;
   $("metrics-body").innerHTML = body;
   const wrap = $("metrics-table-wrap"); if (wrap) wrap.classList.remove("hidden");
+}
+
+// Per-region χ means for a harmonization run: recon-only (no ground truth), aseg-labelled, published to
+// the Hub as regions.json. `block` is the run's `chi` block { labels:{id:name}, recon:{id:{n,mean,std,median}} }.
+function renderReproRegionTable(block) {
+  $("metrics-sub").textContent = "Susceptibility per segmented region on this acquisition (SynthSeg labels): mean ± SD within each ROI (ppm). No ground truth on the harmonization track.";
+  const labels = block.labels || {}, recon = block.recon || {};
+  const ids = Object.keys(recon).sort((a, b) => (labels[a] || a).localeCompare(labels[b] || b));
+  if (!ids.length) {
+    $("metrics-regions-wrap").innerHTML = `<p class="py-3 text-sm text-gray-400">No regional statistics for this run.</p>`;
+    return;
+  }
+  const rows = ids.map((k) => {
+    const r = recon[k];
+    return `<tr class="border-t border-gray-100 dark:border-gray-800">`
+      + `<td class="py-1.5 pr-3 text-gray-600 dark:text-gray-300">${escapeHtml(labels[k] || k)}</td>`
+      + `<td class="py-1.5 text-right tabular-nums font-medium text-gray-900 dark:text-gray-100">${p3(r.mean)}</td>`
+      + `<td class="py-1.5 pl-3 text-right tabular-nums text-gray-500 dark:text-gray-400">${p3(r.std)}</td>`
+      + `<td class="py-1.5 pl-3 text-right tabular-nums text-gray-400 dark:text-gray-500">${r.n.toLocaleString()}</td></tr>`;
+  }).join("");
+  $("metrics-regions-wrap").innerHTML = `<table class="w-full text-sm"><thead><tr class="text-left text-[11px] uppercase tracking-wide text-gray-400">`
+    + `<th class="pb-2">Region</th><th class="pb-2 text-right">Mean</th><th class="pb-2 pl-3 text-right">SD</th><th class="pb-2 pl-3 text-right">Voxels</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
 
 function renderDatasetSwitch() {
@@ -785,11 +831,14 @@ async function loadRun() {
   // reveal the Regions/Error tabs when it arrives. Guard against a fast run-switch resolving stale.
   runRegions = null;
   renderMetricsPanel();
-  // A synthesised repro run has no per-region file, so skip regions. It DOES have a resource trace on
-  // the Hub (deterministic resources_url): draw the CPU/RAM graph, and fold its summary (runtime /
-  // peak-mem / avg-cpu) back onto the run so the reproducibility metrics table can list them too.
+  // A synthesised repro run has its per-region means published to the Hub (deterministic regions_url,
+  // via loadRunRegions) AND a resource trace: draw the CPU/RAM graph, fold its summary (runtime /
+  // peak-mem / avg-cpu) back onto the run so the reproducibility metrics table can list them, and pull
+  // the regions block so the Regions tab works too. (No ground truth here, so the block is recon-only.)
   if (reproMode) {
     renderResources(run);
+    const wantRegions = run;
+    loadRunRegions(run).then((entry) => { if (run === wantRegions) { runRegions = entry; renderMetricsPanel(); } });
     const wantRes = run;
     fetch(run.resources_url, { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).then((d) => {
       if (!d || run !== wantRes) return;
@@ -1010,6 +1059,9 @@ function renderMetricsPanel() {
   if (reproMode) return renderReproStats();
   const entry = runRegions;
   const tabs = $("metrics-tabs");
+  // Undo any repro relabelling: on the sim/accuracy path the first tab is "Metrics" and Error is shown.
+  const mBtn = tabs?.querySelector('[data-mtab="metrics"]'); if (mBtn) mBtn.textContent = "Metrics";
+  tabs?.querySelector('[data-mtab="error"]')?.classList.remove("hidden");
   tabs.classList.toggle("hidden", !entry);
   // Fall back to the metric table whenever there's no usable region entry: this run has none, OR
   // the sidecar hasn't finished its lazy load yet. `metricsTab` (which may be a deep-linked
