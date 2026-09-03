@@ -109,16 +109,18 @@ jobs:
           def task_id(prefix, slug, ph):
               return prefix + slug + ('' if REG[ph].get('default') else '-' + ph)
           # Per-task runner routing, chosen by each method's `runner:` field in its algorithm.yml:
-          #   (unset)      -> HOSTED:      ubuntu-latest, 180-min cap, 2 concurrent containers. Default;
-          #                   scored inside the parallel shard sweep.
-          #   hosted-long  -> HOSTED_LONG: ubuntu-latest but the full 6-h GitHub cap and 1 container
-          #                   (full 16 GB), for methods that FIT hosted memory but exceed 180 min
-          #                   (e.g. modip: a slow per-subject CPU optimization). Its own focused job.
-          #   self-hosted  -> SELFHOSTED:  QSM-CI's 31 GB private runners (more RAM), for methods that
-          #                   OOM the 16 GB hosted box. Its own focused job; only 2 run in parallel.
-          # hosted-long + self-hosted methods run as dedicated --focus jobs and are excluded from the
-          # 180-min shard sweep (which can't give them the time/memory they need).
-          HOSTED      = {'runs_on': 'ubuntu-latest', 'timeout': 180, 'jobs': 2}
+          #   (unset)      -> HOSTED:      ubuntu-latest, 360-min cap (the GitHub 6-h job max), 2 concurrent
+          #                   containers. Default; scored inside the parallel shard sweep.
+          #   hosted-long  -> HOSTED_LONG: ubuntu-latest, same 360-min cap but 1 container (full 16 GB) —
+          #                   for methods that fit hosted memory but OOM when 2 run at once. Its own focused job.
+          #   self-hosted  -> SELFHOSTED:  QSM-CI's 31 GB private runners (more RAM, and the only tier that can
+          #                   exceed the 6-h cap via timeout_minutes), for methods that OOM the 16 GB hosted
+          #                   box. Its own focused job; only 2 run in parallel.
+          # hosted-long + self-hosted methods run as dedicated --focus jobs and are excluded from the shard
+          # sweep. The default cap is the platform max on purpose: timeout-minutes is a KILL deadline, not a
+          # reservation, so a longer cap is free for jobs that finish early — it only lets a genuine hang
+          # squat a runner longer (rare), in exchange for no spurious timeouts and a more robust shard sweep.
+          HOSTED      = {'runs_on': 'ubuntu-latest', 'timeout': 360, 'jobs': 2}
           HOSTED_LONG = {'runs_on': 'ubuntu-latest', 'timeout': 360, 'jobs': 1}
           SELFHOSTED  = {'runs_on': ['self-hosted', 'Linux', 'X64'], 'timeout': 360, 'jobs': 4}
           def route(slug):
