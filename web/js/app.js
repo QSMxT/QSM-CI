@@ -180,15 +180,27 @@ const MEDALS = ["🥇", "🥈", "🥉"];
 
 async function loadRuns() {
   const res = await fetch("results/index.json", { cache: "no-store" });
-  const runs = (await res.json()).runs || [];
+  let runs = (await res.json()).runs || [];
+  const algos = await loadAlgos();
   // Composed pipeline rows are stored with `name` == the raw "a+b+c" slug (pipeline.py). Present them
   // the readable way the harmonization view already does ("Laplacian field mapping → BFRnet → AMP-PE"),
   // using the algorithm manifest's display names, so every surface (leaderboard + submission title)
   // shows the same nice title. Display-only: the stored id/slug/combo are left untouched, so search,
   // deep links and matrix lookups keep working. A ground-truth field start drops its stage (matching
   // the stored slug, which omits "gt"); non-pipeline combos (χ-separation) have no +-name and pass through.
-  const nm = new Map((await loadAlgos()).map((a) => [a.slug, a.name || a.slug]));
+  const nm = new Map(algos.map((a) => [a.slug, a.name || a.slug]));
   const disp = (slug) => nm.get(slug) || slug;
+  // A method flagged `hidden: true` in its algorithm.yml (a retired/parked submission — e.g. amp-pe,
+  // whose original MATLAB build is superseded by the Rust port) keeps its stored results in index.json
+  // so it can be revived, but is dropped from every results surface. Hide a run if it IS that method
+  // (isolated) or if ANY stage of its composed pipeline is that method. Reversible: clear the flag.
+  const hidden = new Set(algos.filter((a) => a.hidden).map((a) => a.slug));
+  if (hidden.size) {
+    runs = runs.filter((r) => {
+      const c = r.combo || {};
+      return !(hidden.has(r.slug) || hidden.has(c.field_mapping) || hidden.has(c.bfr) || hidden.has(c.dipole));
+    });
+  }
   for (const r of runs) {
     if (r.mode !== "composed" || !r.combo || typeof r.name !== "string" || !r.name.includes("+")) continue;
     const c = r.combo, segs = [];

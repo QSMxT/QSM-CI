@@ -62,6 +62,10 @@ def entry(meta: dict) -> dict:
         # Optional notes on how QSM-CI runs this method vs. its reference (e.g. CPU-only execution of
         # a GPU method, model complexity reduced to fit the runner) — shown on the submission page.
         "ci_notes": meta.get("ci_notes") or [],
+        # `hidden: true` retires a submission from the RESULTS surfaces (leaderboard/viewer) while its
+        # stored rows stay in index.json — the web drops any run whose stage is a hidden method
+        # (web/js/app.js loadRuns). Emitted only when set so the manifest diff stays minimal.
+        **({"hidden": True} if meta.get("hidden") else {}),
     }
 
 

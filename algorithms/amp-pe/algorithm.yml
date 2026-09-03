@@ -27,6 +27,15 @@ smoke_box: 32   # PR --smoke gate fits a 32^3 central box (fast); full score.yml
 matlab:
   entry: recon.m
   runtime: r2026a
+# This original Emory MATLAB AMP-PE is superseded by the faithful, numerically-robust Rust port
+# `amp-pe-qsmrs` (QSM.rs), validated equal to it (<0.05% NRMSE on sim-2019) but ~2.7x faster and
+# stable where this build diverges. Two flags retire it without losing its history:
+#   ci_skip: true  — the scorer never RUNS it (its message-passing variance/precision terms diverge to
+#                    NaN on real multi-echo data, and to a huge blow-up on marginal fields e.g. gt~bfrnet).
+#   hidden:  true  — the web DROPS its stored rows from the leaderboard/viewer (kept in index.json so a
+#                    future fix can revive them just by clearing this flag). See web/js/app.js loadRuns.
+ci_skip: true
+hidden: true
 # AMP-PE's nonlinear formulation uses the magnitude to weight the data term and to build a wavelet
 # morphology mask that injects anatomical edges into the prior. The plain dipole stage doesn't take
 # magnitude, so (like MEDI) it opts in as an optional input; without it the method still runs with
