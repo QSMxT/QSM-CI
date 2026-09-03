@@ -40,7 +40,7 @@ smoke_params:
   epoch_num: 10
 # Full scoring runs on QSM-CI's self-hosted runners: the full 500-epoch per-subject CPU optimization
 # on the uncropped grids does not fit the hosted 6-h cap, so route score.yml's real run to the
-# private box (more RAM / no hosted wall-clock pressure) rather than hosted-long.
+# private box (more RAM / no hosted wall-clock pressure) rather than hosted-large.
 runner: self-hosted
 # The full CPU run normally finishes in a few hours (a recorded in-vivo score took ~2.4 h) but the
 # self-hosted box is shared, so give it generous headroom past the 6-h default rather than let

@@ -111,23 +111,23 @@ jobs:
           # Per-task runner routing, chosen by each method's `runner:` field in its algorithm.yml:
           #   (unset)      -> HOSTED:      ubuntu-latest, 360-min cap (the GitHub 6-h job max), 2 concurrent
           #                   containers. Default; scored inside the parallel shard sweep.
-          #   hosted-long  -> HOSTED_LONG: ubuntu-latest, same 360-min cap but 1 container (full 16 GB) —
+          #   hosted-large  -> HOSTED_LARGE: ubuntu-latest, same 360-min cap but 1 container (full 16 GB) —
           #                   for methods that fit hosted memory but OOM when 2 run at once. Its own focused job.
           #   self-hosted  -> SELFHOSTED:  QSM-CI's 31 GB private runners (more RAM, and the only tier that can
           #                   exceed the 6-h cap via timeout_minutes), for methods that OOM the 16 GB hosted
           #                   box. Its own focused job; only 2 run in parallel.
-          # hosted-long + self-hosted methods run as dedicated --focus jobs and are excluded from the shard
+          # hosted-large + self-hosted methods run as dedicated --focus jobs and are excluded from the shard
           # sweep. The default cap is the platform max on purpose: timeout-minutes is a KILL deadline, not a
           # reservation, so a longer cap is free for jobs that finish early — it only lets a genuine hang
           # squat a runner longer (rare), in exchange for no spurious timeouts and a more robust shard sweep.
           HOSTED      = {'runs_on': 'ubuntu-latest', 'timeout': 360, 'jobs': 2}
-          HOSTED_LONG = {'runs_on': 'ubuntu-latest', 'timeout': 360, 'jobs': 1}
+          HOSTED_LARGE = {'runs_on': 'ubuntu-latest', 'timeout': 360, 'jobs': 1}
           SELFHOSTED  = {'runs_on': ['self-hosted', 'Linux', 'X64'], 'timeout': 360, 'jobs': 4}
           def route(slug):
               try: t = open(f'algorithms/{slug}/algorithm.yml').read()
               except FileNotFoundError: return HOSTED
               m = re.search(r'^runner:[ \t]*(\S+)', t, re.M)
-              tier = {'self-hosted': SELFHOSTED, 'hosted-long': HOSTED_LONG}.get(m.group(1) if m else '', HOSTED)
+              tier = {'self-hosted': SELFHOSTED, 'hosted-large': HOSTED_LARGE}.get(m.group(1) if m else '', HOSTED)
               # Optional per-method `timeout_minutes:` override. Only honored on self-hosted, where GitHub
               # lets a job run past the 6-h hosted cap (up to ~5 days) — e.g. modip's full per-subject CPU
               # optimization normally finishes in a few hours but can drift past 6 h under shared-box

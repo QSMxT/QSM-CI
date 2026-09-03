@@ -161,7 +161,7 @@ jobs:
           def self_hosted(slug):
               try: t = open(f'algorithms/{slug}/algorithm.yml').read()
               except FileNotFoundError: return False
-              return bool(re.search(r'^runner:[ \t]*(self-hosted|hosted-long)', t, re.M)) or slug in ('inr-qsm', 'modip')
+              return bool(re.search(r'^runner:[ \t]*(self-hosted|hosted-large)', t, re.M)) or slug in ('inr-qsm', 'modip')
           heavy = sorted(s for p in glob.glob('algorithms/*/algorithm.yml')
                          for s in [p.split('/')[1]] if not s.startswith('_') and self_hosted(s))
           N = int(os.environ['N'])
