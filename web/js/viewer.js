@@ -40,6 +40,9 @@ const reproResourcesUrl = (pipe, acq) => `${HF_VOL_BASE}repro/${acq}/${pipe.repl
 // recon (same deterministic path) — powers the Regions tab. No ground truth on the repro track, so the
 // file carries a `chi.recon` block only (no `truth`); a run whose regions file is absent just leaves the tab empty.
 const reproRegionsUrl = (pipe, acq) => `${HF_VOL_BASE}repro/${acq}/${pipe.replaceAll("+", "_")}-cmp-${acq}__regions.json`;
+// The RSS-combined multi-echo magnitude for this ACQUISITION (one per acq on the Hub, shared by every
+// pipeline of it) — the input structural reference the viewer's Magnitude layer shows next to the recon.
+const reproMagnitudeUrl = (acq) => `${HF_VOL_BASE}repro/${acq}/${acq}__magnitude.nii.gz`;
 const simRunIdOf = (pipe) => `${pipe.replaceAll("+", "~")}-cmp`;   // the same pipeline's in-silico composed run id
 const reproRunId = (pipe, acq) => `${pipe.replaceAll("+", "~")}-cmp-${acq}`;
 // Headline "score" for a repro run row: median inter-scanner |a-1| (lower is better).
@@ -56,7 +59,8 @@ function makeReproRun(pipe, acq, node) {
   else if (parts.length === 2) { combo = { field_mapping: parts[0] }; slug = parts[1]; stage = "field-mapping+bfr+dipole"; }
   return { id: reproRunId(pipe, acq), slug, name: parts.map(algoName).join(" → "),
            pipelineId: pipe, track: "repro", phantom: acq, mode: "composed", stage, combo,
-           status: "ok", metrics: reproHeadline(node), volumes: { recon: reproReconUrl(pipe, acq) },
+           status: "ok", metrics: reproHeadline(node),
+           volumes: { recon: reproReconUrl(pipe, acq), magnitude: reproMagnitudeUrl(acq) },
            resources_url: reproResourcesUrl(pipe, acq), regions_url: reproRegionsUrl(pipe, acq) };
 }
 // (Re)generate the harmonization run pool for one acquisition and splice it into allRuns.
@@ -886,9 +890,11 @@ async function loadRun() {
   // Harmonization runs are recon-only (no ground truth / error), so force the recon base.
   if (reproMode) { curBase = "recon"; $("t-error").closest("label")?.classList.add("hidden"); }
   setLayerActive(curBase);
-  // Hide the Ground-truth layer button AFTER setLayerActive (it rewrites every button's className),
-  // so nothing can switch the base to a nonexistent truth volume.
-  if (reproMode) $("layer-tabs")?.querySelector('[data-layer="truth"]')?.classList.add("hidden");
+  // Toggle the base-layer buttons AFTER setLayerActive (it rewrites every button's className): the
+  // harmonization track is recon-only with a per-acq Magnitude reference — hide Ground-truth, show
+  // Magnitude there; invert everywhere else (so switching back to a sim run restores Ground-truth).
+  $("layer-tabs")?.querySelector('[data-layer="truth"]')?.classList.toggle("hidden", reproMode);
+  $("layer-tabs")?.querySelector('[data-layer="magnitude"]')?.classList.toggle("hidden", !(reproMode && !!run.volumes?.magnitude));
   // χ-separation runs get a χ+ / χ− source toggle; other runs hide it.
   $("chisep-tabs").classList.toggle("hidden", !isChisepRun());
   if (isChisepRun()) setChisepActive(chisepComp);
@@ -1162,9 +1168,12 @@ function renderRegionTable(entry, errorMode) {
 const cap = (s) => s[0].toUpperCase() + s.slice(1);
 const baseVol = () => activeBaseVol || nv.volumes[0];
 function setLayerActive(layer) {
-  $("layer-tabs").querySelectorAll("button").forEach((t) =>
-    t.className = "rounded-md px-3 py-1 transition " +
-      (t.dataset.layer === layer ? "bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100" : "text-gray-500 hover:text-gray-700 dark:text-gray-400"));
+  $("layer-tabs").querySelectorAll("button").forEach((t) => {
+    const wasHidden = t.classList.contains("hidden");   // per-track button visibility (set on run-load);
+    t.className = "rounded-md px-3 py-1 transition " +   // reassigning className would otherwise un-hide it
+      (t.dataset.layer === layer ? "bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100" : "text-gray-500 hover:text-gray-700 dark:text-gray-400");
+    if (wasHidden) t.classList.add("hidden");
+  });
 }
 function setChisepActive(comp) {
   $("chisep-tabs").querySelectorAll("button").forEach((t) =>
@@ -1300,8 +1309,10 @@ async function ensureVolume(role, kind, comp) {
 // Load every candidate map for this run once: all bases first (they sit below), then the error
 // overlays. Kicked off in the background after the first base paints; awaited before an error shows.
 async function preloadAll() {
+  // magnitude = the harmonization per-acq input reference (only repro runs carry volumes.magnitude);
+  // truth = only sim/chisep. Each falls back to a 404 the try/catch skips, so this list is safe for all.
   for (const comp of volComps())
-    for (const kind of ["recon", "truth"]) { try { await ensureVolume("base", kind, comp); } catch (_) { /* 404 → skip */ } }
+    for (const kind of ["recon", "truth", "magnitude"]) { try { await ensureVolume("base", kind, comp); } catch (_) { /* 404 → skip */ } }
   if (runHasError())
     for (const comp of volComps()) { try { await ensureVolume("error", "error", comp); } catch (_) { /* skip */ } }
 }
@@ -1320,7 +1331,7 @@ function applyOpacities() {
 // preloaded volumes; a switch does NOT re-fetch. Only the first view of a run (or a not-yet-preloaded
 // map) actually loads data. On a new run the previous run's volumes are dropped and the set rebuilt.
 async function refreshView() {
-  const baseKind = curBase === "truth" ? "truth" : "recon";
+  const baseKind = (curBase === "truth" || curBase === "magnitude") ? curBase : "recon";
   const runChanged = residentRunId !== run.id;
   if (runChanged) {
     [...nv.volumes].forEach((v) => nv.removeVolumeByUrl(v.url));
