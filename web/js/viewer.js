@@ -37,11 +37,11 @@ const reproReconUrl = (pipe, acq) => `${HF_VOL_BASE}repro/${acq}/${pipe.replaceA
 // (same deterministic path). Carries the time series AND the peak-mem / avg-cpu / max-cpu summary.
 const reproResourcesUrl = (pipe, acq) => `${HF_VOL_BASE}repro/${acq}/${pipe.replaceAll("+", "_")}-cmp-${acq}__resources.json`;
 // Per-region susceptibility means for this pipeline×acquisition, published to the Hub alongside the
-// recon (same deterministic path) — powers the Regions tab. No ground truth on the repro track, so the
+// recon (same deterministic path), powers the Regions tab. No ground truth on the repro track, so the
 // file carries a `chi.recon` block only (no `truth`); a run whose regions file is absent just leaves the tab empty.
 const reproRegionsUrl = (pipe, acq) => `${HF_VOL_BASE}repro/${acq}/${pipe.replaceAll("+", "_")}-cmp-${acq}__regions.json`;
 // The RSS-combined multi-echo magnitude for this ACQUISITION (one per acq on the Hub, shared by every
-// pipeline of it) — the input structural reference the viewer's Magnitude layer shows next to the recon.
+// pipeline of it), the input structural reference the viewer's Magnitude layer shows next to the recon.
 const reproMagnitudeUrl = (acq) => `${HF_VOL_BASE}repro/${acq}/${acq}__magnitude.nii.gz`;
 const simRunIdOf = (pipe) => `${pipe.replaceAll("+", "~")}-cmp`;   // the same pipeline's in-silico composed run id
 const reproRunId = (pipe, acq) => `${pipe.replaceAll("+", "~")}-cmp-${acq}`;
@@ -162,7 +162,7 @@ function renderHowToRun() {
 
   // ---- QSM-CI command (reproduces the scored artifact) ----
   const lines = [];
-  // Harmonization (repro) reconstructions begin by making the brain mask with HD-BET — the masking
+  // Harmonization (repro) reconstructions begin by making the brain mask with HD-BET, the masking
   // method that dataset uses. In-silico masks come from the phantom, so this step is repro-only.
   if (datasetOf(run) === "repro") lines.push(runLine("hd-bet-qsmci", "brain-extraction", false, ["magnitude"]));
   if (run.combo) {
@@ -172,7 +172,7 @@ function renderHowToRun() {
     if (bfr && stageOf(bfr)) lines.push(runLine(bfr, stageOf(bfr), false, ins(bfr)));
     if (dipole && stageOf(dipole)) lines.push(runLine(dipole, stageOf(dipole), true, ins(dipole)));
     // 2-part pipeline (field-mapping + a bfr+dipole/end-to-end span, e.g. autoqsm/nextqsm/tgv/qsmart):
-    // the span slug lives in run.slug, not combo.{bfr,dipole} — emit it so the span step isn't dropped.
+    // the span slug lives in run.slug, not combo.{bfr,dipole}, emit it so the span step isn't dropped.
     if (!bfr && !dipole && run.slug && run.slug !== fm && stageOf(run.slug))
       lines.push(runLine(run.slug, stageOf(run.slug), true, ins(run.slug)));
   } else if (bySlug[run.slug]) {
@@ -244,6 +244,7 @@ function renderHowToRun() {
 
 let allRuns = [], algos = [], registry = {}, datasetsReg = {};
 let nv = null, run, baseUrl, filter = "", navMode = "stages", domain = "qsm";
+let defaultDragMode = null, panOn = false;   // NiiVue drag mode: default (contrast) captured at init; Pan-toggle state
 let chisepPhantom = null;    // χ-separation phantom preference, remembered as you browse algorithms
 let curBase = "recon";       // base map shown underneath: recon | truth
 let chisepComp = "para";     // χ-separation source shown: para (χ+) | dia (χ−)
@@ -394,7 +395,7 @@ function runItem(r, activeId) {
   const m = (r && r.metrics) || {};
   // Harmonization rows headline the inter-scanner |a−1| (reproducibility, lower better) as a %.
   if (r && r.track === "repro") {
-    const label = m.repro_inter != null ? (100 * m.repro_inter).toFixed(1) + "%" : "—";
+    const label = m.repro_inter != null ? (100 * m.repro_inter).toFixed(1) + "%" : ", ";
     const active = r.id === activeId;
     return `<button data-id="${r.id}"
       class="run-item w-full text-left rounded-lg px-2.5 py-1.5 text-sm flex items-center justify-between gap-2 transition
@@ -412,7 +413,7 @@ function runItem(r, activeId) {
   else if (m.para_nrmse_detrend != null && m.dia_nrmse_detrend != null) { hv = (m.para_nrmse_detrend + m.dia_nrmse_detrend) / 2; hk = "nrmse_detrend"; }
   else if (m.para_xsim != null && m.dia_xsim != null) hv = (m.para_xsim + m.dia_xsim) / 2;
   else hv = r ? val(r, "xsim") : null;
-  const label = r ? (r.status === "DNF" ? "DNF" : fmt(hv, hk)) : "—";
+  const label = r ? (r.status === "DNF" ? "DNF" : fmt(hv, hk)) : ", ";
   const dis = !r || r.status === "DNF";
   return `<button data-id="${r ? r.id : ""}"
     class="run-item w-full text-left rounded-lg px-2.5 py-1.5 text-sm flex items-center justify-between gap-2 transition
@@ -610,13 +611,13 @@ function renderReproStats() {
   $("metrics-sub").textContent = "Reproducibility of this pipeline across the harmonization acquisitions: orthogonal per-ROI ax+b fits, |a−1| (median).";
   const rankCell = (rk, label) => rk
     ? `<span class="inline-block rounded-md px-1.5 py-0.5 text-xs font-semibold text-white shadow-sm" style="background:${heatScale(rk.t)}" data-tip="Rank ${rk.rank} of ${rk.n} harmonization pipelines for ${label}">#${rk.rank}<span class="opacity-70"> / ${rk.n}</span></span>`
-    : `<span class="text-gray-300 dark:text-gray-600">—</span>`;
+    : `<span class="text-gray-300 dark:text-gray-600">, </span>`;
   // A reproducibility |a−1| row: value as a %, ranked against every other pipeline.
   const row = (label, field, tip) => {
     const v = node ? node[field] : null;
     return `<tr class="border-t border-gray-100 dark:border-gray-800">`
       + `<td class="py-2 pr-3 text-gray-600 dark:text-gray-300"><span class="has-tip" data-tip="${tip}">${label}</span></td>`
-      + `<td class="py-2 text-right tabular-nums font-medium text-gray-900 dark:text-gray-100">${v == null ? "—" : (100 * v).toFixed(1) + "%"}</td>`
+      + `<td class="py-2 text-right tabular-nums font-medium text-gray-900 dark:text-gray-100">${v == null ? ", " : (100 * v).toFixed(1) + "%"}</td>`
       + `<td class="py-2 pl-3 text-right">${rankCell(reproRank(field), label)}</td></tr>`;
   };
   // A resource row (runtime / peak memory / avg CPU): value only, folded on from the run's Hub trace.
@@ -749,7 +750,7 @@ function methodCard(a) {
   const hasCs  = plist.some((p) => tunedVal(p, "chisep") != null);
   const cell = (v) => v != null
     ? `<span class="text-emerald-600 dark:text-emerald-400">⚙ ${v}</span>`
-    : `<span class="text-gray-300 dark:text-gray-600">—</span>`;
+    : `<span class="text-gray-300 dark:text-gray-600">, </span>`;
   const params = plist.map((p) =>
     `<tr class="border-t border-gray-100 dark:border-gray-800">`
     + `<td class="py-1 pr-3 font-mono text-gray-700 dark:text-gray-300">${p.name}</td>`
@@ -877,6 +878,7 @@ async function loadRun() {
       onLocationChange: (d) => { $("intensity").innerHTML = d.string; },
     });
     await nv.attachTo("gl1");
+    defaultDragMode = nv.opts.dragMode;   // remember the boot dragMode (contrast) so the Pan toggle can restore it
     // Shift+scroll = zoom the 2D view; shift+drag already pans natively (NiiVue routes shift+left-drag
     // to its center-button pan handler). NiiVue's own wheel handler ignores modifiers and only zooms
     // in dragMode 'pan' (which would kill plain slice-scrolling), so we gate zoom on Shift ourselves.
@@ -913,7 +915,7 @@ async function loadRun() {
   if (reproMode) { curBase = "recon"; $("t-error").closest("label")?.classList.add("hidden"); }
   setLayerActive(curBase);
   // Toggle the base-layer buttons AFTER setLayerActive (it rewrites every button's className): the
-  // harmonization track is recon-only with a per-acq Magnitude reference — hide Ground-truth, show
+  // harmonization track is recon-only with a per-acq Magnitude reference, hide Ground-truth, show
   // Magnitude there; invert everywhere else (so switching back to a sim run restores Ground-truth).
   $("layer-tabs")?.querySelector('[data-layer="truth"]')?.classList.toggle("hidden", reproMode);
   $("layer-tabs")?.querySelector('[data-layer="magnitude"]')?.classList.toggle("hidden", !(reproMode && !!run.volumes?.magnitude));
@@ -1038,7 +1040,7 @@ function renderChisepMetrics() {
       const rk = rankBy(acc, arrow === "↑");
       const rankCell = rk
         ? `<span class="inline-block rounded-md px-1.5 py-0.5 text-xs font-semibold text-white shadow-sm" style="background:${heatScale(rk.t)}" data-tip="Rank ${rk.rank} of ${rk.n} χ-separation methods for ${label}">#${rk.rank}<span class="opacity-70"> / ${rk.n}</span></span>`
-        : `<span class="text-gray-300 dark:text-gray-600">—</span>`;
+        : `<span class="text-gray-300 dark:text-gray-600">, </span>`;
       html += `<tr>
         <td class="whitespace-nowrap py-2 text-gray-500 dark:text-gray-400"><span class="has-tip" data-tip="${tip.replace(/"/g, "&quot;")}">${label}</span> <span class="text-gray-300 dark:text-gray-600" title="${arrow === "↑" ? "higher" : "lower"} is better">${arrow}</span></td>
         <td class="py-2 text-right tabular-nums ${hero ? "font-bold text-gray-900 dark:text-gray-100" : "font-medium text-gray-700 dark:text-gray-300"}">${num(v, fk)}</td>
@@ -1067,7 +1069,7 @@ function renderMetrics() {
     const rk = metricRank(k);
     const rankCell = rk
       ? `<span class="inline-block rounded-md px-1.5 py-0.5 text-xs font-semibold text-white shadow-sm" style="background:${heatScale(rk.t)}" data-tip="Rank ${rk.rank} of ${rk.n} ${groupLabel} for ${meta.label}">#${rk.rank}<span class="opacity-70"> / ${rk.n}</span></span>`
-      : `<span class="text-gray-300 dark:text-gray-600">—</span>`;
+      : `<span class="text-gray-300 dark:text-gray-600">, </span>`;
     return `<tr>
       <td class="py-2.5 text-gray-500 dark:text-gray-400"><span class="has-tip" data-tip="${(meta.desc || "").replace(/"/g, "&quot;")}">${meta.label}</span> <span class="text-gray-300 dark:text-gray-600" title="${meta.better} is better">${arrow}</span></td>
       <td class="py-2.5 text-right tabular-nums ${hero ? "font-bold text-gray-900 dark:text-gray-100" : "font-medium text-gray-700 dark:text-gray-300"}">${fmt(val(run, k), k)}</td>
@@ -1154,7 +1156,7 @@ function renderRegionTable(entry, errorMode) {
         <td class="py-1.5 pr-1 leading-tight text-gray-500 dark:text-gray-400"><span data-tip="n=${r.n} voxels in this run's support">${block.labels[r.k] || "label-" + r.k}</span></td>
         <td class="whitespace-nowrap py-1.5 pl-2 text-right tabular-nums font-medium ${Math.abs(r.d) >= 0.01 ? "text-gray-900 dark:text-gray-100" : "text-gray-600 dark:text-gray-300"}">${p3(r.d)}</td>
         <td class="whitespace-nowrap py-1.5 pl-2 text-right tabular-nums text-gray-600 dark:text-gray-300">${p3(r.dm)}</td>
-        <td class="whitespace-nowrap py-1.5 pl-2 text-right tabular-nums text-gray-600 dark:text-gray-300">${r.pct == null ? "—" : (r.pct > 0 ? "+" : "−") + Math.abs(r.pct).toFixed(0) + "%"}</td>
+        <td class="whitespace-nowrap py-1.5 pl-2 text-right tabular-nums text-gray-600 dark:text-gray-300">${r.pct == null ? ", " : (r.pct > 0 ? "+" : "−") + Math.abs(r.pct).toFixed(0) + "%"}</td>
         <td class="py-1.5 pl-2" style="width:4.25rem"><div data-tip="under- / over-estimation vs ground truth (bars √-scaled to the largest |Δ mean|)" style="display:flex;align-items:center;height:8px;width:100%">
           <div style="flex:1;display:flex;justify-content:flex-end"><div style="height:8px;border-radius:3px 0 0 3px;width:${wNeg * 2}%;background:#3b82f6;opacity:.7"></div></div>
           <div style="width:1px;height:12px;background:#94a3b8;opacity:.55"></div>
@@ -1289,8 +1291,65 @@ function wireControls() {
     const on = document.fullscreenElement === fsSection;
     $("fs-icon-open").classList.toggle("hidden", on);
     $("fs-icon-close").classList.toggle("hidden", !on);
-    fsBtn.title = on ? "Exit fullscreen" : "Fullscreen — Shift+scroll to zoom · Shift+drag to pan";
+    fsBtn.title = on ? "Exit fullscreen" : "Fullscreen, click Pan/Zoom, or Shift+scroll / Shift+drag";
     setTimeout(() => { redrawAll(); nv?.drawScene(); }, 60);
+  });
+  // Pan + zoom buttons next to Fullscreen: plain left-click pan (no Shift), and step/reset zoom of the
+  // 2D view. Zoom drives nv.scene.pan2Dxyzmm[3] (the 2D zoom scale), the same knob the Shift+scroll
+  // handler above uses, NOT volScaleMultiplier (that's the 3D-render zoom). Pan toggles the NiiVue
+  // dragMode between the default (contrast) and pan (nv.dragModes.pan = 3), so left-drag pans while ON.
+  // Pan: NiiVue pans natively on Shift+left-drag, its mousedown routes Shift+left to the center-button
+  // (pan) handler, and mouseMove then pans off the stored center-down state (no Shift re-check). So the
+  // Pan toggle simply replays a plain left mousedown AS Shift+left: real panning, crosshair/slice
+  // untouched, and the wheel stays slice-scrolling (NiiVue's dragMode='pan' would hijack it to zoom).
+  // NiiVue's own canvas (nv.gl.canvas); the `canvas` var from loadRun() isn't in this function's scope.
+  const glCanvas = nv.gl.canvas;
+  const panBtn = $("pan-btn");
+  panBtn?.addEventListener("click", () => {
+    panOn = !panOn;
+    panBtn.classList.toggle("is-on", panOn);
+    glCanvas.style.cursor = panOn ? "grab" : "";
+    panBtn.title = panOn ? "Pan: on, left-drag to pan (click to turn off)" : "Pan, enable left-drag panning";
+  });
+  // Capture phase on an ancestor fires before NiiVue's canvas mousedown listener; block the real event
+  // and re-dispatch it to the canvas with shiftKey set. The _synthPan guard keeps the replayed event
+  // (which also passes through this capture listener) from re-entering.
+  let _synthPan = false;
+  (glCanvas.parentElement || glCanvas).addEventListener("mousedown", (e) => {
+    if (!panOn || _synthPan || e.button !== 0 || e.shiftKey) return;
+    e.stopImmediatePropagation(); e.preventDefault();
+    _synthPan = true;
+    glCanvas.dispatchEvent(new MouseEvent("mousedown", {
+      bubbles: true, cancelable: true, view: window,
+      clientX: e.clientX, clientY: e.clientY, screenX: e.screenX, screenY: e.screenY,
+      button: 0, buttons: 1, shiftKey: true,
+    }));
+    _synthPan = false;
+    glCanvas.style.cursor = "grabbing";
+  }, { capture: true });
+  window.addEventListener("mouseup", () => { if (panOn) glCanvas.style.cursor = "grab"; });
+  const zoom2D = (factor) => {
+    if (!nv) return;
+    let zoom = nv.scene.pan2Dxyzmm[3] * factor;
+    zoom = Math.min(8, Math.max(0.5, zoom));            // clamp to a sane 2D-zoom range
+    zoom = Math.round(zoom * 100) / 100;
+    // Zoom about the crosshair, mirroring the Shift+scroll handler's math.
+    const dz = nv.scene.pan2Dxyzmm[3] - zoom;
+    nv.scene.pan2Dxyzmm[3] = zoom;
+    const mm = nv.frac2mm(nv.scene.crosshairPos);
+    nv.scene.pan2Dxyzmm[0] += dz * mm[0];
+    nv.scene.pan2Dxyzmm[1] += dz * mm[1];
+    nv.scene.pan2Dxyzmm[2] += dz * mm[2];
+    nv.drawScene();
+  };
+  $("zoom-in-btn")?.addEventListener("click", () => zoom2D(1.2));
+  $("zoom-out-btn")?.addEventListener("click", () => zoom2D(1 / 1.2));
+  $("zoom-reset-btn")?.addEventListener("click", () => {
+    if (!nv) return;
+    if (typeof nv.scene.pan2Dxyzmm !== "undefined") nv.scene.pan2Dxyzmm = [0, 0, 0, 1];   // reset 2D pan + zoom
+    if (nv.uiData) nv.uiData.pan2Dxyzmm = [0, 0, 0, 1];        // clear the in-flight working copy too
+    if ("volScaleMultiplier" in nv) nv.volScaleMultiplier = 1; // also clear any 3D-render zoom
+    nv.drawScene();
   });
   // theme toggle flips html.dark without reloading; recolour every histogram
   new MutationObserver(redrawAll).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
@@ -1394,7 +1453,7 @@ async function refreshView() {
   nv.updateGLVolume();
   // A new run can have a different geometry (in-vivo 160³ vs in-silico 164×205×205, or a harmonization
   // brain with a different affine). NiiVue keeps its 2D pan/zoom and crosshair across volume swaps, so a
-  // fresh volume renders through the previous one's framing — off-centre, worse each toggle. Recentre
+  // fresh volume renders through the previous one's framing, off-centre, worse each toggle. Recentre
   // whenever the run changes. Reset BOTH the committed scene pan AND the working-copy uiData.pan2Dxyzmm
   // (the live drag/zoom buffer): resetting only scene lets a prior pan get re-applied on the next draw.
   if (runChanged) {

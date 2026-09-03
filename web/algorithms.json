@@ -2,7 +2,7 @@
   "algorithms": [
     {
       "slug": "after-qsm",
-      "name": "AFTER-QSM",
+      "name": "AFTER-QSM (PyTorch)",
       "stage": "dipole",
       "inputs": [
         "localfield",
@@ -40,7 +40,7 @@
     },
     {
       "slug": "amp-pe",
-      "name": "AMP-PE",
+      "name": "AMP-PE (MATLAB)",
       "stage": "dipole",
       "inputs": [
         "localfield",
@@ -167,7 +167,7 @@
     },
     {
       "slug": "apart-qsm",
-      "name": "APART-QSM",
+      "name": "APART-QSM (MATLAB)",
       "stage": "chi-separation",
       "inputs": [
         "localfield",
@@ -227,7 +227,7 @@
     },
     {
       "slug": "autoqsm",
-      "name": "AutoQSM",
+      "name": "AutoQSM (TensorFlow)",
       "stage": "bfr+dipole",
       "inputs": [
         "totalfield",
@@ -257,7 +257,7 @@
     },
     {
       "slug": "bfrnet",
-      "name": "BFRnet",
+      "name": "BFRnet (ONNX)",
       "stage": "bfr",
       "inputs": [
         "totalfield",
@@ -391,7 +391,7 @@
     },
     {
       "slug": "chisepnet",
-      "name": "\u03c7-sepnet",
+      "name": "\u03c7-sepnet (\u03c7-separation)",
       "stage": "chi-separation",
       "inputs": [
         "localfield",
@@ -425,7 +425,7 @@
     },
     {
       "slug": "decompose-qsm",
-      "name": "DECOMPOSE-QSM",
+      "name": "DECOMPOSE-QSM (MATLAB)",
       "stage": "chi-separation",
       "inputs": [
         "chimap",
@@ -452,7 +452,7 @@
     },
     {
       "slug": "dip-up",
-      "name": "DIP-UP",
+      "name": "DIP-UP (PyTorch)",
       "stage": "field-mapping",
       "inputs": [
         "phase",
@@ -518,7 +518,7 @@
     },
     {
       "slug": "fansi-nltgv-qsmrs",
-      "name": "FANSI (nlTGV)",
+      "name": "FANSI-nlTGV (QSM.rs)",
       "stage": "dipole",
       "inputs": [
         "localfield",
@@ -575,7 +575,7 @@
     },
     {
       "slug": "fansi-nltv-qsmrs",
-      "name": "FANSI (nlTV)",
+      "name": "FANSI-nlTV (QSM.rs)",
       "stage": "dipole",
       "inputs": [
         "localfield",
@@ -623,7 +623,7 @@
     },
     {
       "slug": "harperella-qsmrs",
-      "name": "HARPERELLA",
+      "name": "HARPERELLA (QSM.rs)",
       "stage": "unwrap+bfr",
       "inputs": [
         "phase",
@@ -671,7 +671,7 @@
     },
     {
       "slug": "hc-chisep-qsmci",
-      "name": "HC-ChiSep",
+      "name": "HC-ChiSep (QSM-CI)",
       "stage": "chi-separation",
       "inputs": [
         "r2prime",
@@ -719,7 +719,7 @@
     },
     {
       "slug": "hd-bet-qsmci",
-      "name": "HD-BET brain extraction",
+      "name": "HD-BET (PyTorch)",
       "stage": "brain-extraction",
       "inputs": [
         "magnitude"
@@ -742,7 +742,7 @@
     },
     {
       "slug": "hdqsm-qsmrs",
-      "name": "HD-QSM",
+      "name": "HD-QSM (QSM.rs)",
       "stage": "dipole",
       "inputs": [
         "localfield",
@@ -790,7 +790,7 @@
     },
     {
       "slug": "iharperella-qsmrs",
-      "name": "iHARPERELLA",
+      "name": "iHARPERELLA (QSM.rs)",
       "stage": "unwrap+bfr",
       "inputs": [
         "phase",
@@ -918,7 +918,7 @@
     },
     {
       "slug": "inr-qsm",
-      "name": "INR-QSM",
+      "name": "INR-QSM (PyTorch)",
       "stage": "dipole",
       "inputs": [
         "localfield",
@@ -996,7 +996,7 @@
     },
     {
       "slug": "iqfm",
-      "name": "iQFM",
+      "name": "iQFM (PyTorch)",
       "stage": "unwrap+bfr",
       "inputs": [
         "phase",
@@ -1032,7 +1032,7 @@
     },
     {
       "slug": "iqsm",
-      "name": "iQSM",
+      "name": "iQSM (PyTorch)",
       "stage": "end-to-end",
       "inputs": [
         "phase",
@@ -1068,7 +1068,7 @@
     },
     {
       "slug": "iqsm-plus",
-      "name": "iQSM+",
+      "name": "iQSM+ (PyTorch)",
       "stage": "end-to-end",
       "inputs": [
         "phase",
@@ -1103,7 +1103,7 @@
     },
     {
       "slug": "ir2qsm",
-      "name": "IR2QSM",
+      "name": "IR2QSM (PyTorch)",
       "stage": "dipole",
       "inputs": [
         "localfield",
@@ -1138,7 +1138,7 @@
     },
     {
       "slug": "ismv-qsmrs",
-      "name": "iSMV",
+      "name": "iSMV (QSM.rs)",
       "stage": "bfr",
       "inputs": [
         "totalfield",
@@ -1183,7 +1183,7 @@
     },
     {
       "slug": "l1qsm-qsmrs",
-      "name": "L1-QSM",
+      "name": "L1-QSM (QSM.rs)",
       "stage": "dipole",
       "inputs": [
         "localfield",
@@ -1236,7 +1236,7 @@
     },
     {
       "slug": "laplacian-qsmci",
-      "name": "Laplacian field mapping",
+      "name": "Laplacian (QSM-CI)",
       "stage": "field-mapping",
       "inputs": [
         "phase",
@@ -1261,7 +1261,7 @@
     },
     {
       "slug": "lbv-qsmrs",
-      "name": "LBV",
+      "name": "LBV (QSM.rs)",
       "stage": "bfr",
       "inputs": [
         "totalfield",
@@ -1295,7 +1295,7 @@
     },
     {
       "slug": "lpcnn",
-      "name": "LPCNN",
+      "name": "LPCNN (PyTorch)",
       "stage": "dipole",
       "inputs": [
         "localfield",
@@ -1324,7 +1324,7 @@
     },
     {
       "slug": "medi-cornell",
-      "name": "MEDI (Cornell)",
+      "name": "MEDI (MEDI toolbox)",
       "stage": "dipole",
       "inputs": [
         "localfield",
@@ -1427,7 +1427,7 @@
     },
     {
       "slug": "modip",
-      "name": "MoDIP",
+      "name": "MoDIP (PyTorch)",
       "stage": "dipole",
       "inputs": [
         "localfield",
@@ -1476,7 +1476,7 @@
     },
     {
       "slug": "modl-qsm",
-      "name": "MoDL-QSM",
+      "name": "MoDL-QSM (TensorFlow)",
       "stage": "dipole",
       "inputs": [
         "localfield",
@@ -1511,7 +1511,7 @@
     },
     {
       "slug": "ndi-qsmrs",
-      "name": "NDI",
+      "name": "NDI (QSM.rs)",
       "stage": "dipole",
       "inputs": [
         "localfield",
@@ -1550,7 +1550,7 @@
     },
     {
       "slug": "nextqsm",
-      "name": "NeXtQSM",
+      "name": "NeXtQSM (TensorFlow)",
       "stage": "bfr+dipole",
       "inputs": [
         "totalfield",
@@ -1581,7 +1581,7 @@
     },
     {
       "slug": "nltv-qsmrs",
-      "name": "NLTV",
+      "name": "NLTV (QSM.rs)",
       "stage": "dipole",
       "inputs": [
         "localfield",
@@ -1623,7 +1623,7 @@
     },
     {
       "slug": "pdf-qsmrs",
-      "name": "PDF",
+      "name": "PDF (QSM.rs)",
       "stage": "bfr",
       "inputs": [
         "totalfield",
@@ -1660,7 +1660,7 @@
     },
     {
       "slug": "qsmart-matlab",
-      "name": "QSMART (original)",
+      "name": "QSMART (MATLAB)",
       "stage": "end-to-end",
       "inputs": [
         "phase",
@@ -1728,7 +1728,7 @@
     },
     {
       "slug": "qsmart-qsmrs",
-      "name": "QSMART",
+      "name": "QSMART (QSM.rs)",
       "stage": "bfr+dipole",
       "inputs": [
         "totalfield",
@@ -1765,7 +1765,7 @@
     },
     {
       "slug": "qsmgan",
-      "name": "QSMGAN",
+      "name": "QSMGAN (PyTorch)",
       "stage": "dipole",
       "inputs": [
         "localfield",
@@ -1793,7 +1793,7 @@
     },
     {
       "slug": "qsmnet",
-      "name": "QSMnet",
+      "name": "QSMnet (TensorFlow)",
       "stage": "dipole",
       "inputs": [
         "localfield",
@@ -1829,7 +1829,7 @@
     },
     {
       "slug": "qsmnet-plus",
-      "name": "QSMnet+",
+      "name": "QSMnet+ (TensorFlow)",
       "stage": "dipole",
       "inputs": [
         "localfield",
@@ -1897,7 +1897,7 @@
     },
     {
       "slug": "r2primenet",
-      "name": "R2PRIMEnet",
+      "name": "R2PRIMEnet (\u03c7-separation)",
       "stage": "r2prime-generation",
       "inputs": [
         "magnitude",
@@ -1930,7 +1930,7 @@
     },
     {
       "slug": "r2primenet-7t",
-      "name": "R2PRIMEnet-7T",
+      "name": "R2PRIMEnet-7T (PyTorch)",
       "stage": "r2prime-generation",
       "inputs": [
         "magnitude",
@@ -1956,7 +1956,7 @@
     },
     {
       "slug": "r2star-qsm",
-      "name": "R2*-QSM",
+      "name": "R2*-QSM (Python)",
       "stage": "chi-separation",
       "inputs": [
         "chimap",
@@ -1982,7 +1982,7 @@
     },
     {
       "slug": "resharp-qsmrs",
-      "name": "RESHARP",
+      "name": "RESHARP (QSM.rs)",
       "stage": "bfr",
       "inputs": [
         "totalfield",
@@ -2051,7 +2051,7 @@
     },
     {
       "slug": "romeo-qsmrs",
-      "name": "ROMEO field mapping",
+      "name": "ROMEO (QSM.rs)",
       "stage": "field-mapping",
       "inputs": [
         "phase",
@@ -2077,7 +2077,7 @@
     },
     {
       "slug": "rts-qsmrs",
-      "name": "RTS",
+      "name": "RTS (QSM.rs)",
       "stage": "dipole",
       "inputs": [
         "localfield",
@@ -2120,7 +2120,7 @@
     },
     {
       "slug": "sharp-qsmrs",
-      "name": "SHARP",
+      "name": "SHARP (QSM.rs)",
       "stage": "bfr",
       "inputs": [
         "totalfield",
@@ -2190,7 +2190,7 @@
     },
     {
       "slug": "susep-net",
-      "name": "SUSEP-Net",
+      "name": "SUSEP-Net (PyTorch)",
       "stage": "chi-separation",
       "inputs": [
         "localfield",
@@ -2219,7 +2219,7 @@
     },
     {
       "slug": "tfi-qsmrs",
-      "name": "TFI",
+      "name": "TFI (QSM.rs)",
       "stage": "bfr+dipole",
       "inputs": [
         "totalfield",
@@ -2263,7 +2263,7 @@
     },
     {
       "slug": "tgv-qsmrs",
-      "name": "TGV",
+      "name": "TGV (QSM.rs)",
       "stage": "bfr+dipole",
       "inputs": [
         "totalfield",
@@ -2316,7 +2316,7 @@
     },
     {
       "slug": "tikhonov-qsmrs",
-      "name": "Tikhonov",
+      "name": "Tikhonov (QSM.rs)",
       "stage": "dipole",
       "inputs": [
         "localfield",
@@ -2425,7 +2425,7 @@
     },
     {
       "slug": "tsvd-qsmrs",
-      "name": "TSVD",
+      "name": "TSVD (QSM.rs)",
       "stage": "dipole",
       "inputs": [
         "localfield",
@@ -2461,7 +2461,7 @@
     },
     {
       "slug": "tv-qsmrs",
-      "name": "TV (ADMM)",
+      "name": "TV-ADMM (QSM.rs)",
       "stage": "dipole",
       "inputs": [
         "localfield",
@@ -2591,7 +2591,7 @@
     },
     {
       "slug": "wavesep",
-      "name": "WaveSep",
+      "name": "WaveSep (Python)",
       "stage": "chi-separation",
       "inputs": [
         "r2prime",
@@ -2647,7 +2647,7 @@
     },
     {
       "slug": "whqsm-qsmrs",
-      "name": "WH-QSM",
+      "name": "WH-QSM (QSM.rs)",
       "stage": "dipole",
       "inputs": [
         "localfield",
@@ -2702,7 +2702,7 @@
     },
     {
       "slug": "xqsm",
-      "name": "xQSM",
+      "name": "xQSM (PyTorch)",
       "stage": "dipole",
       "inputs": [
         "localfield",
