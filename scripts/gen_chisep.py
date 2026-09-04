@@ -17,7 +17,21 @@ Departures from Ridani-as-published that remain on by default: the matched spin-
 
 THE QSM-CI SHIPPING CONFIGURATION is explicit:
   python scripts/gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
-      --tes 3,9,15,21,27,33,39,45 --out data/sim/chisep-ship
+      --tes 3,9,15,21,27,33,39,45 \
+      --wm-rois-src <Masks/WM_fibers_seg.nii.gz from OSF 9xwhz> \
+      --out data/sim/chisep-ship
+
+  --wm-rois-src is REQUIRED to match what is shipped: all four OSF phantoms (chisep-mc and the
+  three ridani-* presets) carry groundtruth/wm_rois.nii.gz, and it is only written when this flag
+  is passed (the presets do NOT set it). Omitting it yields a phantom that still scores, but
+  silently drops the per-ROI MSPE metric (pipeline.py passes wm_rois only `if wm_rois.exists()`).
+  The atlas is Ridani et al.'s own public file (OSF project 9xwhz, Masks/WM_fibers_seg.nii.gz,
+  168130 bytes, md5 06b1aec8b2a8a001e7e856c6c1fddcf0); scripts/mirror_ridani_osf.py mirrors that
+  whole project locally if you want it on disk. It is NOT redistributed in our y8adf zips — those
+  ship only the resampled groundtruth/wm_rois.nii.gz, which is on the phantom grid, not the
+  256x320x320 native grid --wm-rois-src expects.
+  Verified 2026-09-04: with this flag the shipping config reproduces the OSF chisep-mc phantom
+  byte-for-byte (13/14 files; inputs/phase.nii.gz differs in 50 of 55.1M voxels by <=1 float32 ULP).
 
 Susceptibility-to-R2' relaxivity (Dr) magnitude, selected with --dr-model (both keep the same
 orientation-dependent sin^2(theta) shape for Dr-; they differ only in absolute magnitude):
