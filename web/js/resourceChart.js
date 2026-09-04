@@ -42,13 +42,17 @@ export async function renderResources(run) {
   const fmtT = (v) => `${v}s`;
   // Adaptive GB precision: a near-constant ~0.16 GB trace needs decimals; a 12 GB one doesn't.
   const fmtGB = (v) => { const a = Math.abs(v); const d = a >= 100 ? 0 : a >= 10 ? 1 : a >= 1 ? 2 : 3; return `${v.toFixed(d)} GB`; };
-  // Human-readable stage label, e.g. "bfr:pdf" -> "Background removal · pdf".
-  const stageLabel = (name) => {
+  // Human-readable stage labels for e.g. "bfr:pdf-qsmrs", longest first: the band is drawn with the
+  // most detailed variant that fits its width. A stage's share of the band is its share of the
+  // RUNTIME, so a fast stage next to a slow one gets a narrow band — dropping the label entirely
+  // there (as a single fixed variant does) leaves the one stage you can't identify unlabelled.
+  const KMAP = { field_mapping: "Field mapping", "field-mapping": "Field mapping",
+                 unwrap: "Unwrapping", bfr: "Background removal", dipole: "Dipole inversion" };
+  const KSHORT = { field_mapping: "Field", "field-mapping": "Field", unwrap: "Unwrap", bfr: "BFR", dipole: "Dipole" };
+  const stageLabels = (name) => {
     const [kind, algo] = String(name || "").split(":");
-    const KMAP = { field_mapping: "Field mapping", "field-mapping": "Field mapping",
-                   unwrap: "Unwrapping", bfr: "Background removal", dipole: "Dipole inversion" };
     const k = KMAP[kind] || (kind || "stage");
-    return algo ? `${k} · ${algo}` : k;
+    return [algo ? `${k} · ${algo}` : k, k, KSHORT[kind]].filter((t, i, a) => t && a.indexOf(t) === i);
   };
   // Two y-scales: "mem" (GB, left) and "cpu" (cores, right). uPlot maps each series to its scale.
   const opts = {
@@ -111,9 +115,9 @@ export async function renderResources(run) {
             const x0 = u.valToPos(stages[i].t_start, "x", true);
             const x1 = u.valToPos(stages[i].t_end, "x", true);
             if (!isFinite(x0) || !isFinite(x1)) continue;
-            const label = stageLabel(stages[i].name);
+            const label = stageLabels(stages[i].name).find((t) => (x1 - x0) >= ctx.measureText(t).width + 14);
+            if (!label) continue;   // even the abbreviation doesn't fit: a sliver of a stage
             const w = ctx.measureText(label).width;
-            if ((x1 - x0) < w + 14) continue;
             const tx = (x0 + x1) / 2 - w / 2, ty = u.bbox.top + 6;
             ctx.globalAlpha = 1;
             ctx.fillStyle = dark ? "rgba(15,23,42,0.78)" : "rgba(255,255,255,0.82)";
