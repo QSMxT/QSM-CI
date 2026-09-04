@@ -81,12 +81,13 @@ async function ensureReproJson() {
   if (reproJson !== null) return reproJson;
   try { reproJson = await (await fetch("results/repro.json", { cache: "no-store" })).json(); }
   catch { reproJson = {}; }
-  // Keep only pipelines whose every step is a live method. repro.json is written once per harvest and
-  // keeps scoring methods that have since left the manifest — retired outright (msmv) or flagged
-  // `hidden` (the MATLAB amp-pe, superseded by the Rust port). loadRuns() applies the same rule to the
-  // in-silico runs; skipping it here doesn't just show a dead method, it lets its unscored rows bleed
-  // into the axes that cross it (every background-removal row is a pipeline ending in the DEFAULT
-  // dipole method, so a dead default blanks the whole axis).
+  // Keep only pipelines whose every step is a live, visible method. The harvest (repro_eval.py) now
+  // drops methods RETIRED from the manifest, so what's left to filter here are the ones deliberately
+  // kept but hidden — a parked submission like the MATLAB amp-pe, whose data stays in repro.json so
+  // it can be revived. loadRuns() applies the same rule to the in-silico runs, and skipping it
+  // doesn't just show a parked method: it lets its rows bleed into the axes that cross it (every
+  // background-removal row is a pipeline ending in the DEFAULT dipole method, so a parked default
+  // blanks the whole axis). The retired case is still handled, for a payload written before this.
   if (algos.length && reproJson?.pipelines) reproJson.pipelines = Object.fromEntries(
     Object.entries(reproJson.pipelines).filter(([pipe]) => pipe.split("+").every(liveAlgo)));
   return reproJson;
@@ -182,8 +183,11 @@ function renderHowToRun() {
   // pipelineSteps() covers every shape: the matrix combo, a 2-part field-mapping + span pipeline
   // (whose span lives in run.slug, or, on the harmonization track, only in pipelineId), and a
   // single isolated method.
+  // ...and the last step is scored against a ground truth — except on the harmonization track, which
+  // is in-vivo data with none, so no --truth flag exists to offer there.
+  const scored = datasetOf(run) !== "repro";
   const steps = pipelineSteps(run).filter((s) => bySlug[s] && stageOf(s));
-  steps.forEach((s, i) => lines.push(runLine(s, stageOf(s), i === steps.length - 1, bySlug[s].inputs)));
+  steps.forEach((s, i) => lines.push(runLine(s, stageOf(s), scored && i === steps.length - 1, bySlug[s].inputs)));
   if (!lines.length) { el.classList.add("hidden"); return; }
   const ciCmd = "pip install qsm-ci\n" + lines.join("\n");
   const chained = lines.length > 1;
@@ -212,8 +216,8 @@ function renderHowToRun() {
   const tabBtn = (key, label, active) =>
     `<button data-tab="${key}" class="rounded-md px-3 py-1 transition ${active ? "bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100" : "text-gray-500 hover:text-gray-700 dark:text-gray-400"}">${label}</button>`;
 
-  const ciDesc = `Reproduce the scored artifact with the <a href="running.html" class="text-emerald-600 hover:underline"><code>qsm-ci</code></a> CLI:
-      bring your own NIfTIs${chained ? ", chained stage by stage," : ""} or make a phantom with <code>qsm-forward</code>. Drop <code>--truth</code> to run without scoring.`;
+  const ciDesc = `Reproduce ${scored ? "the scored artifact" : "this reconstruction"} with the <a href="running.html" class="text-emerald-600 hover:underline"><code>qsm-ci</code></a> CLI:
+      bring your own NIfTIs${chained ? ", chained stage by stage," : ""} or make a phantom with <code>qsm-forward</code>.${scored ? " Drop <code>--truth</code> to run without scoring." : ""}`;
   const xtDesc = `Run this ${steps.length > 1 ? "pipeline" : "method"} end-to-end on your own BIDS data with
       <a href="https://qsmxt.github.io" class="text-emerald-600 hover:underline">QSMxT</a> (unwrapping, background removal and dipole
       inversion in one command), on the same <a href="https://github.com/astewartau/QSM.rs" class="text-emerald-600 hover:underline">QSM.rs</a> engine QSM-CI uses.`;

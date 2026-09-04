@@ -9,11 +9,21 @@ re-running it on each harmonization publish keeps the figures current.
 
 Usage: python scripts/gen_repro_regions.py [in=results/repro_rois.json] [out=results/repro_regions.json]
 """
-import json, sys, math
+import json, sys, math, os
 from collections import defaultdict
 
 IN = sys.argv[1] if len(sys.argv) > 1 else "results/repro_rois.json"
 OUT = sys.argv[2] if len(sys.argv) > 2 else "results/repro_regions.json"
+MANIFEST = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "web", "algorithms.json")
+
+# Methods the manifest still defines. A method REMOVED from algorithms.json (msmv) is gone from
+# QSM-CI, so its runs shouldn't be republished here on every harvest; `hidden: true` is the other
+# state — parked but revivable (the MATLAB amp-pe) — and those stay, hidden by the web. Same rule as
+# repro_eval.py's live_algo_slugs(), duplicated rather than imported so this stays a dependency-free
+# post-processing step.
+LIVE = ({a["slug"] for a in json.load(open(MANIFEST)).get("algorithms", []) if a.get("slug")}
+        if os.path.exists(MANIFEST) else set())
+retired = set()
 
 # aseg id -> L/R-merged structure (matches ROI_LABELS in scripts/repro_eval.py)
 GROUP = {
@@ -33,6 +43,9 @@ for r in (runs_in.values() if isinstance(runs_in, dict) else runs_in):
     rs = r.get("roi_stats"); pipe = r.get("pipeline"); acq = r.get("acq")
     if not rs or not pipe or not acq:
         continue
+    if LIVE and not all(s in LIVE for s in pipe.split("+")):
+        retired.update(s for s in pipe.split("+") if s not in LIVE)
+        continue
     agg = defaultdict(lambda: [0.0, 0.0])
     for aid, s in rs.items():
         struct = ID2STRUCT.get(str(aid)); m = s.get("mean")
@@ -47,4 +60,6 @@ doc = {"target": src.get("target") if isinstance(src, dict) else None,
        "structures": list(GROUP.keys()), "runs": out}
 with open(OUT, "w") as fh:
     json.dump(doc, fh, separators=(",", ":"))
+if retired:
+    print(f"skipped runs built on methods no longer in algorithms.json: {', '.join(sorted(retired))}")
 print(f"wrote {OUT}: {len(out)} runs")

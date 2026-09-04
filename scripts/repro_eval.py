@@ -369,6 +369,32 @@ def _roi_source() -> tuple[str, list[dict]]:
     return target, [r for r in rows if r.get("track") == "repro" and r.get("rois") and r.get("pipeline")]
 
 
+def live_algo_slugs() -> set[str]:
+    """Method slugs the manifest still defines.
+
+    A method REMOVED from web/algorithms.json is gone from QSM-CI (msmv), so re-publishing its
+    pipelines on every harvest would keep a retired method alive on the site. `hidden: true` is a
+    different state — a parked submission (the MATLAB amp-pe, superseded by the Rust port but kept
+    revivable) — so those stay in the payload and the web keeps them out of sight.
+    """
+    p = ROOT / "web" / "algorithms.json"
+    if not p.exists():
+        return set()
+    return {a["slug"] for a in json.loads(p.read_text()).get("algorithms", []) if a.get("slug")}
+
+
+def drop_retired(pipelines: list[str], live: set[str], what: str) -> list[str]:
+    """Filter '+'-joined pipeline ids to those built only from methods still in the manifest."""
+    if not live:                                   # no manifest to check against: publish everything
+        return pipelines
+    kept = [p for p in pipelines if all(s in live for s in p.split("+"))]
+    gone = sorted({s for p in pipelines if p not in set(kept) for s in p.split("+") if s not in live})
+    if gone:
+        print(f"skipping {len(pipelines) - len(kept)} {what} built on methods no longer in "
+              f"algorithms.json: {', '.join(gone)}")
+    return kept
+
+
 def cmd_fits(args) -> None:
     target, rows = _roi_source()
     acqs = repro_acquisitions()
@@ -376,7 +402,7 @@ def cmd_fits(args) -> None:
     by_pa: dict[tuple, dict] = {}
     for row in rows:
         by_pa[(row["pipeline"], row["acq"])] = row["rois"]
-    pipelines = sorted({p for p, _ in by_pa})
+    pipelines = drop_retired(sorted({p for p, _ in by_pa}), live_algo_slugs(), "pipeline(s)")
     scanners = ("prisma", "cima")
     protocols = sorted({a["protocol"] for a in acqs.values()})
     runs_ids = ("run1", "run2", "run3")

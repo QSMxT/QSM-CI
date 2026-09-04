@@ -1759,11 +1759,12 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           return !!(this.reproData && Object.keys(this.reproData.pipelines || {}).length) ||
             this.runs.some((r) => r.track === "repro");
         },
-        // Harmonization pipelines, filtered to methods QSM-CI still ships. repro.json is written once
-        // per harvest and keeps scoring methods that have since left the manifest — retired outright
-        // (msmv) or flagged `hidden` (the MATLAB amp-pe, superseded by the Rust port). loadRuns()
-        // applies the same rule to the in-silico runs; this is the one chokepoint every harmonization
-        // table, chart and finding reads, so filtering here covers all of them.
+        // Harmonization pipelines, filtered to methods QSM-CI still ships. The harvest (repro_eval.py)
+        // drops methods RETIRED from the manifest, so what's filtered here are the ones deliberately
+        // kept but `hidden` — a parked submission like the MATLAB amp-pe, whose data stays in
+        // repro.json so it can be revived. loadRuns() applies the same rule to the in-silico runs;
+        // this is the one chokepoint every harmonization table, chart and finding reads, so filtering
+        // here covers all of them (and still catches a retired method in an older payload).
         _reproPipes() {
           const raw = (this.reproData && this.reproData.pipelines) || {};
           return _cache("reproLive", Object.keys(raw).length + "|" + this.algos.length, () => {
