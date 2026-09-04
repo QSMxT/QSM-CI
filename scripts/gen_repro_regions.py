@@ -56,6 +56,17 @@ for r in (runs_in.values() if isinstance(runs_in, dict) else runs_in):
     if means:
         out.append({"p": pipe, "a": acq, "m": means})
 
+# Don't overwrite a good payload with an empty one. The usual cause is an input written before
+# _roi_row() started emitting `roi_stats` (it carries only `rois`, the plain means): re-run
+# `repro_eval.py stats` where the recons live to refresh it, rather than shipping 0 runs.
+if not out:
+    stale = any(r.get("rois") and not r.get("roi_stats")
+                for r in (runs_in.values() if isinstance(runs_in, dict) else runs_in))
+    sys.exit(f"no runs to write — refusing to overwrite {OUT}.\n" + (
+        f"{IN} has `rois` but no `roi_stats`: it predates the per-ROI stats field. "
+        "Re-run `python scripts/repro_eval.py stats` where the harmonization recons live."
+        if stale else f"{IN} yielded no usable rows."))
+
 doc = {"target": src.get("target") if isinstance(src, dict) else None,
        "structures": list(GROUP.keys()), "runs": out}
 with open(OUT, "w") as fh:

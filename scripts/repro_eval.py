@@ -295,6 +295,14 @@ def cmd_stats(args) -> None:
             print(f"  !! {r['id']}: no usable recon/overlap"); continue
         rows[r["id"]] = {"pipeline": pipeline_identity(r), **row}
         print(f"  {r['id']}: {len(row['rois'])} ROIs")
+    # Refuse to overwrite a real payload with an empty one. This command needs the harmonization
+    # recons (results/<id>/recon.nii.gz) and the registration products under data/harmonization/_align,
+    # which live on the HPC side — off it, `_collected_runs()` matches nothing and writing the result
+    # would silently destroy the file the fits and the regional payload are built from.
+    if not rows:
+        sys.exit("no runs with a local recon.nii.gz — refusing to overwrite results/repro_rois.json.\n"
+                 "Run this where the harmonization recons and data/harmonization/_align live "
+                 "(scripts/repro_slurm/post.slurm), not on a checkout without the volumes.")
     out = {"target": target, "roi_labels": {str(k): v for k, v in ROI_LABELS.items()},
            "runs": rows}
     (RESULTS / "repro_rois.json").write_text(json.dumps(out, indent=2) + "\n")
