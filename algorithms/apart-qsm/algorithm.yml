@@ -49,7 +49,7 @@ parameters:
   default: 137
   description: >
     Magnitude decay kernel (Hz/ppm) initialising the voxel-wise a-map. The APART demo uses 323.5 at 3T;
-    our chisep phantom's R2′ model uses a single Dr=137 Hz/ppm kernel (data/sim/chisep/README.md), so
+    our chisep phantom's R2′ model uses a single Dr=137 Hz/ppm kernel (data/README.md), so
     we default to 137.
 - name: tol_a
   default: 0.3
