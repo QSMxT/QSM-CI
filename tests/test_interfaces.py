@@ -5,7 +5,9 @@ The interfaces just wrap `qsm-ci run <slug>`, so we exercise them against the ti
 methods in tests/methods/ (cp-bfr, cp-method) across **every runner** — docker, podman, apptainer,
 and the container-free `local`. Inputs come from a qsm-forward phantom when `QSMCI_PHANTOM` points at
 a packed dataset (see scripts/pack_dataset.py) — that's what CI does — otherwise a minimal synthetic
-phantom is built inline so the test also runs standalone.
+phantom is built inline so the passthrough tests also run standalone. Tests that run a *real*
+algorithm and score it against ground truth take the `real_phantom` fixture, which skips when
+`QSMCI_PHANTOM` is unset.
 
 Running this file requires the package installed (so `qsm-ci` is on PATH), the `[nipype]` and
 `[pydra]` extras, and the runners under test — the CI `interfaces` job provides all of them.
@@ -46,9 +48,12 @@ def phantom(tmp_path_factory) -> dict:
     d = tmp_path_factory.mktemp("phantom")
     aff = np.eye(4)
     rng = np.random.default_rng(0)
-    field = (rng.standard_normal((16, 16, 16)) * 0.05).astype("float32")
     paths = {}
+    # A separate draw per volume. The passthrough tests each assert against one *specific* input, so
+    # identical volumes would make those assertions non-discriminating: a mis-wired chain that fed
+    # the wrong artifact through would still pass. Distinct noise makes the wiring observable.
     for name in ("totalfield", "localfield", "chimap_truth"):
+        field = (rng.standard_normal((16, 16, 16)) * 0.05).astype("float32")
         p = d / f"{name}.nii.gz"
         nib.save(nib.Nifti1Image(field, aff), str(p))
         paths[name] = str(p)
@@ -60,6 +65,23 @@ def phantom(tmp_path_factory) -> dict:
                                   "voxel_size": [1, 1, 1]}))
     paths["params"] = str(params)
     return paths
+
+
+@pytest.fixture(scope="session")
+def real_phantom(request) -> dict:
+    """`phantom`, but only when it really came from $QSMCI_PHANTOM.
+
+    The synthetic fallback writes unrelated white noise to totalfield, localfield and chimap_truth.
+    That is exactly right for the passthrough methods — output == input is the expectation, and the
+    voxel contents never matter — but meaningless for a real algorithm scored against chimap_truth:
+    no reconstruction correlates with noise that is not the field it was given. Tests that actually
+    reconstruct and score take this fixture instead of `phantom`.
+    """
+    if not os.environ.get("QSMCI_PHANTOM"):
+        pytest.skip("QSMCI_PHANTOM unset — this test scores a real reconstruction against ground "
+                    "truth, which the synthetic fallback phantom cannot provide (CI packs a "
+                    "qsm-forward dataset with scripts/pack_dataset.py)")
+    return request.getfixturevalue("phantom")
 
 
 def _assert_copy(out: Path, source: str) -> None:
@@ -101,7 +123,7 @@ def test_nipype_chain_bfr_dipole(runner, phantom, tmp_path):
     _assert_copy(chi, phantom["totalfield"])  # copied twice, so chimap == totalfield
 
 
-def test_nipype_real_dipole_docker(phantom, tmp_path):
+def test_nipype_real_dipole_docker(real_phantom, tmp_path):
     """A *real* algorithm (tkd, run in the qsmxt container) through the nipype interface: it consumes
     the qsm-forward mask and produces a genuine χ map, scored against the phantom's ground truth.
 
@@ -113,11 +135,11 @@ def test_nipype_real_dipole_docker(phantom, tmp_path):
     from qsm_ci.nipype import DipoleInversion
 
     out = tmp_path / "chimap.nii.gz"
-    DipoleInversion(slug=TKD, localfield=phantom["localfield"], mask=phantom["mask"],
-                    params=phantom["params"], runner="docker", out=str(out)).run()
+    DipoleInversion(slug=TKD, localfield=real_phantom["localfield"], mask=real_phantom["mask"],
+                    params=real_phantom["params"], runner="docker", out=str(out)).run()
     recon = qsm_eval.load(str(out))
-    truth = qsm_eval.load(phantom["chimap_truth"])
-    mask = qsm_eval.load(phantom["mask"]) > 0.5
+    truth = qsm_eval.load(real_phantom["chimap_truth"])
+    mask = qsm_eval.load(real_phantom["mask"]) > 0.5
     assert out.exists() and recon.shape == truth.shape
     assert np.isfinite(recon).all() and recon.std() > 0            # a real, non-trivial reconstruction
     assert qsm_eval.correlation(recon, truth, mask) > 0.8          # actually matches the ground truth
