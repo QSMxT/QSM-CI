@@ -95,6 +95,16 @@
           "name": "max_linearization_ite",
           "default": 25,
           "description": "linearization steps per reconstruction stage (preliminary and final)"
+        },
+        {
+          "name": "damp_rate_sig",
+          "default": 0.01,
+          "description": "AMP signal-update damping (0-1). The default 0.01 is very heavy damping; the message-passing variance/precision terms can still diverge to NaN on QSM data (breaking the convergence check so it never early-stops). Higher values (e.g. 0.3-0.5) damp less and may converge faster/cleaner.\n"
+        },
+        {
+          "name": "damp_rate_par",
+          "default": 0.1,
+          "description": "AMP parameter-estimation (kappa) damping for the noise/signal variance updates (0-1)."
         }
       ],
       "ci_notes": [],
