@@ -56,8 +56,8 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install package + interface extras + qsm-forward
-        run: pip install ".[nipype,pydra]" pytest pyyaml qsm-forward
+      - name: Install package + test extra (nipype, pydra, qsm-forward)
+        run: pip install ".[test]"
 
       - name: Install apptainer  # docker + podman are preinstalled on ubuntu-latest
         run: |
@@ -74,14 +74,9 @@ jobs:
           printf '[engine]\nruntime = "runc"\n' > ~/.config/containers/containers.conf
           podman info --format '{{.Host.OCIRuntime.Name}}' || true
 
-      - name: Generate a qsm-forward phantom
-        run: |
-          qsm-forward simple /tmp/bids --resolution 40 40 40 --save-field
-          python scripts/pack_dataset.py /tmp/bids /tmp/phantom
-
+      # No phantom step: the suite builds its own with qsm-forward (~1s), so CI exercises the very
+      # path a contributor hits locally instead of a CI-only one that could rot unnoticed.
       - name: Interface tests (stubs × docker·podman·apptainer·local + a real tkd run + generator)
-        env:
-          QSMCI_PHANTOM: /tmp/phantom
         run: pytest -q tests/test_interfaces.py
 
   cli:
