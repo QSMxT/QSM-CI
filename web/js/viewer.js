@@ -43,6 +43,14 @@ const reproRegionsUrl = (pipe, acq) => `${HF_VOL_BASE}repro/${acq}/${pipe.replac
 // The RSS-combined multi-echo magnitude for this ACQUISITION (one per acq on the Hub, shared by every
 // pipeline of it), the input structural reference the viewer's Magnitude layer shows next to the recon.
 const reproMagnitudeUrl = (acq) => `${HF_VOL_BASE}repro/${acq}/${acq}__magnitude.nii.gz`;
+// The two INTERMEDIATE maps of a harmonization pipeline, published next to the recon. Both are
+// per-COLUMN artifacts, not per-pipeline: the total field belongs to the field-mapping method alone,
+// and the local field to the (field-mapping, background-removal) pair — every pipeline built on that
+// column streams the same file, which is why regenerating them costs 26 runs per acquisition rather
+// than 660. A pipeline that skips a stage simply has no URL for it: a bfr+dipole span
+// (romeo-qsmrs+tgv-qsmrs) has a field map but no local field, and an end-to-end method (iqsm) neither.
+const reproTotalfieldUrl = (fm, acq) => `${HF_VOL_BASE}repro/${acq}/${fm}__totalfield.nii.gz`;
+const reproLocalfieldUrl = (fm, bfr, acq) => `${HF_VOL_BASE}repro/${acq}/${fm}_${bfr}__localfield.nii.gz`;
 const simRunIdOf = (pipe) => `${pipe.replaceAll("+", "~")}-cmp`;   // the same pipeline's in-silico composed run id
 const reproRunId = (pipe, acq) => `${pipe.replaceAll("+", "~")}-cmp-${acq}`;
 // Headline "score" for a repro run row: median inter-scanner |a-1| (lower is better).
@@ -66,7 +74,11 @@ function makeReproRun(pipe, acq, node) {
            pipelineId: pipe, track: "repro", phantom: acq, mode: "composed", stage, combo,
            kind: "chi",   // every harmonization pipeline outputs a susceptibility map → default window ±0.1 ppm
            status: "ok", metrics: reproHeadline(node),
-           volumes: { recon: reproReconUrl(pipe, acq), magnitude: reproMagnitudeUrl(acq) },
+           volumes: { recon: reproReconUrl(pipe, acq), magnitude: reproMagnitudeUrl(acq),
+                      // parts[0] is the field-mapping stage (3- and 2-part pipelines); parts[1] is the
+                      // background removal (3-part only). An end-to-end pipeline has neither.
+                      ...(parts.length >= 2 ? { totalfield: reproTotalfieldUrl(parts[0], acq) } : {}),
+                      ...(parts.length === 3 ? { localfield: reproLocalfieldUrl(parts[0], parts[1], acq) } : {}) },
            resources_url: reproResourcesUrl(pipe, acq), regions_url: reproRegionsUrl(pipe, acq) };
 }
 // (Re)generate the harmonization run pool for one acquisition and splice it into allRuns.
@@ -255,7 +267,10 @@ let allRuns = [], algos = [], registry = {}, datasetsReg = {};
 let nv = null, run, baseUrl, filter = "", navMode = "stages", domain = "qsm";
 let defaultDragMode = null, panOn = false;   // NiiVue drag mode: default (contrast) captured at init; Pan-toggle state
 let chisepPhantom = null;    // χ-separation phantom preference, remembered as you browse algorithms
-let curBase = "recon";       // base map shown underneath: recon | truth
+// Base map shown underneath, and the default the layer strip opens on: the QSM ("recon") this page
+// is about. The others are recon | truth | magnitude | totalfield | localfield, each shown only on a
+// track that has it (see layerAvailable). It persists across run switches when the new run has it.
+let curBase = "recon";
 let chisepComp = "para";     // χ-separation source shown: para (χ+) | dia (χ−)
 let showError = false;       // whether the error map is overlaid on top of the base
 // Preload model: every candidate map (recon/truth[/-dia] + error[/-dia]) is loaded ONCE into
@@ -1038,14 +1053,24 @@ async function loadRun() {
   if (!hasError) showError = false;
   $("t-error").disabled = !hasError;
   $("t-error").checked = showError;
-  // Harmonization runs are recon-only (no ground truth / error), so force the recon base.
-  if (reproMode) { curBase = "recon"; $("t-error").closest("label")?.classList.add("hidden"); }
+  // Harmonization runs have no ground truth / error, so drop the error overlay.
+  if (reproMode) $("t-error").closest("label")?.classList.add("hidden");
+  // The base layer persists across run switches, so it has to be one THIS run actually has —
+  // swapping acquisition on the same pipeline keeps you on Field map, but moving to a pipeline
+  // without that stage (or off the harmonization track entirely) falls back to the reconstruction
+  // rather than requesting a map that was never published.
+  if (!layerAvailable(curBase)) curBase = "recon";
+  // An intermediate carried over from the previous run needs its file CONFIRMED before the first
+  // paint — the URL is derived from the pipeline id, so a column that DNF'd would otherwise 404 into
+  // the "volumes aren't available" note. Probes are cached, so this awaits at most once per map.
+  if ((curBase === "totalfield" || curBase === "localfield") && !await probeVolume(run.volumes[curBase])) curBase = "recon";
   setLayerActive(curBase);
   // Toggle the base-layer buttons AFTER setLayerActive (it rewrites every button's className): the
   // harmonization track is recon-only with a per-acq Magnitude reference, hide Ground-truth, show
   // Magnitude there; invert everywhere else (so switching back to a sim run restores Ground-truth).
   $("layer-tabs")?.querySelector('[data-layer="truth"]')?.classList.toggle("hidden", reproMode);
   $("layer-tabs")?.querySelector('[data-layer="magnitude"]')?.classList.toggle("hidden", !(reproMode && !!run.volumes?.magnitude));
+  revealReproLayers(++layerToken);   // async: the intermediates appear once their file is confirmed
   // χ-separation runs get a χ+ / χ− source toggle; other runs hide it.
   $("chisep-tabs").classList.toggle("hidden", !isChisepRun());
   if (isChisepRun()) setChisepActive(chisepComp);
@@ -1495,12 +1520,59 @@ const isChisepRun = () => run && (run.domain === "chisep" || run.stage === "chi-
 // (recon-dia.nii.gz, truth-dia.nii.gz, error-dia.nii.gz); the χ+ set uses the plain names. HF-backed
 // runs expose each as its own run.volumes key (recon / recon-dia / …); dev falls back to local files.
 const volKey = (kind, comp) => kind + (comp === "dia" ? "-dia" : "");
+// Every map the layer strip can put underneath (anything else means the reconstruction).
+const BASE_KINDS = new Set(["truth", "magnitude", "totalfield", "localfield"]);
 function volUrlFor(kind, comp) {
   const key = volKey(kind, comp);
   if (run && run.volumes && run.volumes[key]) return run.volumes[key];
   return baseUrl + key + ".nii.gz";
 }
 const runHasError = () => !run.volumes || !!run.volumes.error;
+
+// ── Harmonization intermediates: field map + local field ───────────────────────────────────────
+// These are the only optional layers whose presence can't be read off the run object alone: the URL
+// is derivable from the pipeline id, but a column that DNF'd (or an acquisition whose intermediates
+// haven't been published yet) has no file behind it. So HEAD-probe once per URL, cache the verdict,
+// and reveal the tab only on a hit — a miss leaves the tab absent, exactly like Ground truth on a
+// track with no ground truth. HF's `resolve/` endpoint answers HEAD with CORS headers, and any
+// failure (404, offline, CORS) is read as "not available".
+const volProbes = new Map();   // url -> Promise<boolean>
+const probeVolume = (url) => {
+  if (!volProbes.has(url)) volProbes.set(url, fetch(url, { method: "HEAD" }).then((r) => r.ok).catch(() => false));
+  return volProbes.get(url);
+};
+// Whether a base layer exists for the open run — the same rule the tab strip is toggled by: ground
+// truth on every track that has one, and the magnitude reference plus the two intermediates only on
+// the harmonization track, and only when the run advertises that URL.
+const layerAvailable = (kind) => kind === "recon" ? true
+  : kind === "truth" ? !reproMode
+  : reproMode && !!run?.volumes?.[kind];
+// Bumped on every run load so a probe that resolves late can't un-hide a tab on a run since replaced.
+let layerToken = 0;
+// Which stage of the open pipeline wrote each intermediate — named in the tab's tooltip, since the
+// map belongs to that ONE method rather than to the pipeline as a whole.
+// Indexed by position in the pipeline id, the same way the URLs above are built, so the tooltip and
+// the file it describes can't drift. (Not run.combo: a 2-part pipeline leaves that null — see
+// makeReproRun — but its pipeline id still names both steps.)
+const INTERMEDIATE_STAGE = {
+  totalfield: [0, "Total field, written by the field-mapping stage"],
+  localfield: [1, "Local (tissue) field, written by the background-removal stage"],
+};
+async function revealReproLayers(token) {
+  const btns = ["totalfield", "localfield"].map((k) => [k, $("layer-tabs")?.querySelector(`[data-layer="${k}"]`)]);
+  for (const [, b] of btns) b?.classList.add("hidden");   // hide synchronously; reveal on a confirmed hit
+  for (const [kind, btn] of btns) {
+    const url = reproMode ? run?.volumes?.[kind] : null;
+    if (!btn || !url) continue;
+    const ok = await probeVolume(url);
+    if (token !== layerToken) return;                     // a different run is open now
+    if (!ok) continue;
+    const [step, label] = INTERMEDIATE_STAGE[kind];
+    const by = run.pipelineId?.split("+")[step];
+    btn.title = by ? `${label} (${algoName(by)})` : label;
+    btn.classList.remove("hidden");
+  }
+}
 const volComps = () => (isChisepRun() ? ["para", "dia"] : ["para"]);
 const residentByUrl = (u) => nv.volumes.find((v) => v.url === u);
 
@@ -1538,9 +1610,15 @@ async function ensureVolume(role, kind, comp) {
 // overlays. Kicked off in the background after the first base paints; awaited before an error shows.
 async function preloadAll() {
   // magnitude = the harmonization per-acq input reference (only repro runs carry volumes.magnitude);
-  // truth = only sim/chisep. Each falls back to a 404 the try/catch skips, so this list is safe for all.
+  // truth = only sim/chisep. An HF-backed run advertises exactly which maps exist, so skip the ones it
+  // doesn't rather than spending a 404 on each; a dev run with no `volumes` map tries them all and lets
+  // the try/catch swallow the misses. The field-map / local-field intermediates are deliberately NOT
+  // preloaded — they're a deep-dive click, not the default view, and each is another brain volume.
   for (const comp of volComps())
-    for (const kind of ["recon", "truth", "magnitude"]) { try { await ensureVolume("base", kind, comp); } catch (_) { /* 404 → skip */ } }
+    for (const kind of ["recon", "truth", "magnitude"]) {
+      if (run.volumes && kind !== "recon" && !run.volumes[volKey(kind, comp)]) continue;
+      try { await ensureVolume("base", kind, comp); } catch (_) { /* 404 → skip */ }
+    }
   if (runHasError())
     for (const comp of volComps()) { try { await ensureVolume("error", "error", comp); } catch (_) { /* skip */ } }
 }
@@ -1559,7 +1637,7 @@ function applyOpacities() {
 // preloaded volumes; a switch does NOT re-fetch. Only the first view of a run (or a not-yet-preloaded
 // map) actually loads data. On a new run the previous run's volumes are dropped and the set rebuilt.
 async function refreshView() {
-  const baseKind = (curBase === "truth" || curBase === "magnitude") ? curBase : "recon";
+  const baseKind = BASE_KINDS.has(curBase) ? curBase : "recon";
   const runChanged = residentRunId !== run.id;
   if (runChanged) {
     [...nv.volumes].forEach((v) => nv.removeVolumeByUrl(v.url));
