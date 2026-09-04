@@ -376,7 +376,7 @@ def challenge_metrics(recon, truth, mask, seg) -> dict:
 
 # --- per-region descriptive stats ---------------------------------------------------------------
 
-# Head-phantom dseg label names (qsm-forward realistic head model; see data/sim/README.md — labels
+# Head-phantom dseg label names (qsm-forward realistic head model; see data/README.md — labels
 # 1–6 are the DGM nuclei, 12 is unused). An id missing from this map is reported as "label-<id>".
 DSEG_LABELS = {
     1: "Caudate nucleus", 2: "Globus pallidus", 3: "Putamen", 4: "Red nucleus",

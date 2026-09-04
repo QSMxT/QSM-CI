@@ -39,7 +39,7 @@ Stage `chi-separation` — declares `inputs: [magnitude, localfield, r2prime, ch
 - The demo's `r2_img` is passed as the provided `r2prime.nii.gz` (Hz). If the obtained solver expects
   R2 (total) rather than R2′, revisit this — the chisep phantom only provides R2′.
 - Magnitude-decay kernel `params.a` defaults to the phantom's `Dr = 137 Hz/ppm`
-  (data/sim/chisep/README.md), not the demo's 3T value of 323.5.
+  (data/README.md), not the demo's 3T value of 323.5.
 
 ## Vendored deps (committed here)
 - `apart_utils/` — the repo's published single-orientation helpers: `dipole_kernel.m`,

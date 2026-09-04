@@ -953,7 +953,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             </template>
           </div>
         </div>
-        <button @click="downloadCSV(csvRowsInvivo(), 'qsm-ci_in-vivo-2016.csv')" data-tip="Download every method and all fields (all metrics vs COSMOS + STI, runtime, peak memory, avg/peak CPU) as CSV" class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+        <button @click="downloadCSV(csvRowsInvivo(), 'qsm-ci_in-vivo-2016.csv', CSV_RENAME_INVIVO)" data-tip="Download every method and all fields (all metrics vs COSMOS + STI, runtime, peak memory, avg/peak CPU) as CSV" class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" stroke-linecap="round" stroke-linejoin="round"/></svg>
           CSV
         </button>
@@ -2584,7 +2584,12 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           const s = typeof v === "number" ? String(v) : String(v);
           return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
         },
-        downloadCSV(rows, filename) {
+        // In-vivo metric keys are only unambiguous next to the table's grouped header: the bare
+        // `nrmse`/`xsim` are vs COSMOS and the `_sti` ones are vs the STI chi-33 map, but a
+        // downloaded file carries none of that context. Rename on EXPORT only — the stored keys in
+        // results/index.json are untouched, so nothing else has to change.
+        CSV_RENAME_INVIVO: (k) => (/_sti$/.test(k) ? k.replace(/_sti$/, "_chi33") : k + "_cosmos"),
+        downloadCSV(rows, filename, renameMetric) {
           rows = (rows || []).filter(Boolean);
           if (!rows.length) return;
           const ID = ["name", "slug", "stage", "mode", "variant", "track", "status", "id", "image"];
@@ -2596,14 +2601,17 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           const metricKeys = [], seen = new Set();
           rows.forEach((r) => Object.keys(r.metrics || {}).forEach((k) => { if (!seen.has(k)) { seen.add(k); metricKeys.push(k); } }));
           metricKeys.sort();
+          // Header label per metric column (export-only rename); `cell` still reads the raw key.
+          const label = (k) => (renameMetric ? renameMetric(k) : k);
           const cols = [...ID, ...COMBO, ...RES, ...metricKeys];
+          const header = [...ID, ...COMBO, ...RES, ...metricKeys.map(label)];
           const cell = (r, c) =>
             c === "combo_field_mapping" ? this._csvCell(r.combo && (r.combo.field_mapping || "gt"))
             : c === "combo_bfr" ? this._csvCell(r.combo && r.combo.bfr)
             : c === "combo_dipole" ? this._csvCell(r.combo && r.combo.dipole)
             : (ID.includes(c) || RES.includes(c)) ? this._csvCell(r[c])
             : this._csvCell((r.metrics || {})[c]);
-          const csv = [cols.join(","), ...rows.map((r) => cols.map((c) => cell(r, c)).join(","))].join("\n");
+          const csv = [header.join(","), ...rows.map((r) => cols.map((c) => cell(r, c)).join(","))].join("\n");
           const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
           const a = document.createElement("a");
           a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();

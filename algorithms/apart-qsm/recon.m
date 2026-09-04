@@ -89,7 +89,7 @@ function recon(inp, out)
     params.B0            = B0;
     params.B0_dir        = b0d;
     % magnitude decay kernel (Hz/ppm). The demo uses 323.5 at 3T; our chisep phantom's R2′ model uses
-    % a single Dr=137 Hz/ppm kernel (data/sim/chisep/README.md). Default to the phantom's value.
+    % a single Dr=137 Hz/ppm kernel (data/README.md). Default to the phantom's value.
     params.a             = gv('a', 137);
     params.tol_a         = gv('tol_a', 0.3);
     params.lambda_r2prime = gv('lambda_r2prime', 0.1);
