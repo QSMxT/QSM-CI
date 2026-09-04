@@ -36,6 +36,34 @@ under `results/<run-id>/recon.nii.gz` (scratch).
 `repro_eval.py register` (rigid, SimpleITK), SynthSeg on the target magnitude via apptainer,
 `repro_eval.py stats` and `fits`, and tars the take-home payload.
 
+## Viewer intermediates (field map + local field)
+
+The submission page can show a harmonization pipeline's upstream stages next to its reconstruction:
+the field-mapping stage's **total field** and the background-removal stage's **local field**. Those
+maps live in the matrix's work dirs, which `matrix*.slurm` deletes, so they are regenerated on their
+own:
+
+```bash
+INTER=$(sbatch --parsable scripts/repro_slurm/intermediates.slurm)          # 23 acquisitions
+sbatch --dependency=afterany:$INTER scripts/repro_slurm/publish_intermediates.slurm
+```
+
+`intermediates.slurm` runs `pipeline.py --columns-only --emit-intermediates`, which stops after the
+field-mapping and background-removal stages. They are per-COLUMN, not per-pipeline — one total field
+per field-mapping method, one local field per (field-mapping, bfr) pair — so this is **26 runs per
+acquisition** (2 field maps + 2x12 local fields), not the 660-pipeline matrix. Each lands in
+`results/_intermediates/<acq>/` under the basename it takes on the Hub:
+
+```
+<field-mapping>__totalfield.nii.gz
+<field-mapping>_<bfr>__localfield.nii.gz
+```
+
+`publish_intermediates.slurm` uploads them into the same `repro/<acq>/` directory as the recons, where
+`web/js/viewer.js` derives their URLs from the pipeline id. The viewer HEAD-probes each URL and shows
+the tab only on a hit, so a pipeline with no such stage (a bfr+dipole span, an end-to-end method) and
+an acquisition that hasn't been published yet both just show fewer tabs.
+
 ## Bring the results home
 
 ```bash

@@ -87,6 +87,26 @@ def write_run_regions(run_id, regions_obj) -> None:
     (d / "regions.json").write_text(json.dumps(regions_obj, indent=2) + "\n")
 
 
+# Where a composed pipeline's INTERMEDIATE maps are staged for publishing. Unlike recon/truth/error
+# these don't belong to a run — the total field belongs to the field-mapping method and the local
+# field to the (field-mapping, background-removal) pair, so every pipeline built on that column shares
+# one file. They are keyed by column and namespaced by phantom, and named with the basename they take
+# on the Hub, so publishing is a straight directory upload.
+INTERMEDIATE_DIR = "_intermediates"
+
+
+def emit_intermediate(phantom: str, name: str, src: Path) -> None:
+    """Stage one per-column intermediate map under results/_intermediates/<phantom>/<name>.nii.gz.
+
+    Best-effort and idempotent: two shards owning different columns of the same field-mapping method
+    both write that method's total field, and the copy is small next to the run itself."""
+    if not phantom or not Path(src).exists():
+        return
+    d = ROOT / "results" / INTERMEDIATE_DIR / phantom
+    d.mkdir(parents=True, exist_ok=True)
+    shutil.copy(src, d / f"{name}.nii.gz")
+
+
 def emit_volumes(run_id, recon, truth, mask=None, resources=None, suffix=""):
     """Write recon / truth / error volumes under results/<run_id>/ for the NiiVue viewer.
 
@@ -849,6 +869,30 @@ def run_isolated(args, algos, gt_sources, gt, mask, iso_target, runs: list) -> N
 # the GT source map, the GT dir, the raw mask, the caches) is now passed explicitly.
 # ---------------------------------------------------------------------------------------------------
 
+def tf_emit_owner(col_owner, span_owner, owns_col, owns_span) -> set:
+    """--emit-intermediates: which total-field sources THIS shard is responsible for publishing.
+
+    The viewer's intermediate maps are per COLUMN, not per pipeline, so each must be written once per
+    acquisition however the matrix is split up. A bfr's localfield already is: its column belongs to
+    exactly one shard. A field map is not — it is RE-RUN in every shard that owns a column consuming
+    it. So pin publication to the shard owning the FIRST column that consumes it (bfr columns in
+    their stable order, then span columns): across the n shards each field map is written exactly
+    once, for any n. Sharding off owns every column, so every source comes back.
+
+    A --focus run isn't sharded, so it publishes every field map it built. When the focus is a bfr
+    those are unchanged, and re-publishing them is near-free (identical content is deduplicated
+    Hub-side) — and it keeps the set self-healing if one ever went missing. What the caller should
+    avoid is emitting from a run that rebuilds the upstream purely to feed something else: repro.yml
+    only passes --emit-intermediates when the changed slug is itself a field-mapping or bfr method."""
+    first = {}
+    for tfk, bs in col_owner:
+        first.setdefault(tfk, ("col", tfk, bs))
+    for tfk, ss in span_owner:
+        first.setdefault(tfk, ("span", tfk, ss))
+    return {tfk for tfk, (kind, t, x) in first.items()
+            if (owns_col(t, x) if kind == "col" else owns_span(t, x))}
+
+
 def do_fieldmap(f, args, gt_sources, mask):
     """Run one field-mapping submission on raw inputs, returning
     (slug, totalfield, valid-mask, runtime, trace) or None on DNF."""
@@ -1047,6 +1091,10 @@ def run_composed(args, algos, gt_sources, gt, mask, shard_i, shard_n, runs: list
     span_owner = {(tfk, s["slug"]): idx for idx, (tfk, s)
                   in enumerate((tfk, s) for tfk in fm_keys for s in tf_spans)}
     owns_span = lambda tfk, ss: _owns(span_owner.get((tfk, ss), 0))
+    # --emit-intermediates: which field maps THIS shard publishes (see tf_emit_owner).
+    emit_inter = getattr(args, "emit_intermediates", False)
+    emit_tf = tf_emit_owner(col_owner, span_owner, owns_col, owns_span) if emit_inter else set()
+
     if shard_n is not None:
         needed_fm = {tfk for (tfk, bs) in col_owner if tfk != "gt" and owns_col(tfk, bs)}
         needed_fm |= {tfk for (tfk, ss) in span_owner if tfk != "gt" and owns_span(tfk, ss)}
@@ -1068,6 +1116,8 @@ def run_composed(args, algos, gt_sources, gt, mask, shard_i, shard_n, runs: list
     for res in _pmap(fmap, lambda f: do_fieldmap(f, args, gt_sources, mask)):
         if res:
             tf_sources[res[0]] = (res[1], res[2], res[3], res[4])
+            if res[0] in emit_tf:
+                emit_intermediate(args.phantom, f"{res[0]}__totalfield", res[1])
 
     # Stage 2 — bfr: localfield for each (totalfield source, bfr), keyed (tfk, bfr slug).
     # Each entry caches (localfield, valid-region mask, cumulative runtime s) so the dipole
@@ -1079,6 +1129,16 @@ def run_composed(args, algos, gt_sources, gt, mask, shard_i, shard_n, runs: list
     for res in _pmap(bfr_tasks, lambda task: do_bfr(task, args, gt_sources)):
         if res:
             lf_cache[res[0]] = res[1]
+            if emit_inter:   # this shard owns the column, so this is the only place it is written
+                emit_intermediate(args.phantom, f"{res[0][0]}_{res[0][1]}__localfield", res[1][0])
+
+    # --columns-only stops here: the two upstream stages ARE the whole job when all we want is the
+    # per-column total field / local field for the viewer. That is 2 + 2x12 = 26 runs per harmonization
+    # acquisition instead of the 660-pipeline matrix, because the dipole stage is what multiplies out.
+    if getattr(args, "columns_only", False):
+        print(f"  columns-only: {len(tf_sources)} field map(s), {len(lf_cache)} local field(s) — "
+              "skipping the dipole stage and spans")
+        return
 
     # Stage 3 — dipole: invert each cached localfield with every dipole method.
     dip_tasks = [(tfk, b, d) for tfk in tf_sources for b in bfr
@@ -1245,6 +1305,15 @@ def main() -> None:
                          "full-resolution reconstruction or the (score.yml-duplicated) scoring.")
     ap.add_argument("--smoke-box", type=int, default=96,
                     help="central crop size per spatial axis for --smoke (default 96)")
+    ap.add_argument("--emit-intermediates", action="store_true",
+                    help="stage each composed COLUMN's intermediate map (the field-mapping stage's "
+                         "totalfield, the background-removal stage's localfield) under "
+                         "results/_intermediates/<phantom>/ for publishing to the viewer. Requires "
+                         "--phantom (the files are namespaced by acquisition).")
+    ap.add_argument("--columns-only", action="store_true",
+                    help="run only the field-mapping and background-removal stages, then stop — no "
+                         "dipole inversion, no spans, no result rows. Paired with "
+                         "--emit-intermediates this regenerates just the viewer's intermediate maps.")
     ap.add_argument("--fail-on-dnf", action="store_true",
                     help="exit non-zero if any run in scope DNF'd (a submission that couldn't run or "
                          "produce a scorable artifact). Used by evaluate.yml so a broken run.sh / crash "
@@ -1270,6 +1339,15 @@ def main() -> None:
         args.phantom_track = None
     if args.dataset is None:
         args.dataset = ROOT / "data/sim/dev"
+    if args.emit_intermediates and not args.phantom:
+        raise SystemExit("--emit-intermediates needs --phantom: the intermediates are shared across "
+                         "pipelines and namespaced by acquisition")
+    if args.columns_only and args.mode != "composed":
+        # The columns exist only in the composed matrix; an isolated run would be computed and then
+        # thrown away, since --columns-only writes no result rows.
+        print("[columns-only] the field-mapping/background-removal columns are composed — forcing "
+              "--mode composed")
+        args.mode = "composed"
 
     inputs, gt = args.dataset / "inputs", args.dataset / "groundtruth"
     mask, params = inputs / "mask.nii.gz", inputs / "params.json"
@@ -1321,6 +1399,13 @@ def main() -> None:
             run_chisep_composed(args, algos, gt_sources, gt, mask, runs)
         else:
             run_composed(args, algos, gt_sources, gt, mask, shard_i, shard_n, runs)
+
+    # --columns-only produces intermediate MAPS, not scored runs; there is nothing to merge, and
+    # writing an empty runs list would churn index.json (or hand the caller an empty shard file).
+    if args.columns_only:
+        print("\ncolumns-only: no result rows to write "
+              f"(intermediates under results/{INTERMEDIATE_DIR}/{args.phantom or '<phantom>'}/)")
+        return
 
     if args.runs_out:
         args.runs_out.parent.mkdir(parents=True, exist_ok=True)

@@ -10,6 +10,10 @@ name: score
 # Scope:
 #   - a changed algorithm  -> that algorithm's isolated run + every composed combo that includes it
 #   - changed scorer / orchestration (eval, pipeline, stages) -> a full re-run of everything
+#   - `[skip score]` in the commit message -> no rescore at all, for a change that touches one of
+#     those paths but provably can't move a number (a new opt-in flag, a docstring, a comment).
+#     Unlike GitHub's own skip token it stops ONLY this workflow, so the tests still run and the
+#     Pages deploy still fires.
 
 on:
   push:
@@ -82,6 +86,18 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "$scope" ] && [ "$scope" != "auto" ]; then
             echo "full=false" >>"$GITHUB_OUTPUT"
             echo "slugs=$(echo "$scope" | tr ', ' '\n' | grep . | jq -R . | jq -sc .)" >>"$GITHUB_OUTPUT"; exit 0
+          fi
+          # `[skip score]` in the pushed commit message: this push touched a scored path but cannot
+          # move any number — an added opt-in flag, a docstring, a comment, a refactor behind a
+          # default-off branch. GitHub's own skip token would also stop the rescore, but it suppresses
+          # EVERY workflow on the push, so the tests wouldn't run and the site wouldn't redeploy.
+          # This stops the rescore and nothing else. Read via `git log` rather than the event payload
+          # so a crafted commit message can't be interpolated into this shell. Push only — a manual
+          # dispatch ignores it, so `scope=all` is always the escape hatch.
+          if [ "${{ github.event_name }}" = "push" ] \
+             && git log -1 --format=%B "${{ github.sha }}" | grep -qF '[skip score]'; then
+            echo "::notice::[skip score] in the commit message — skipping the rescore. Dispatch with scope=all to force one."
+            echo "full=false" >>"$GITHUB_OUTPUT"; echo "slugs=[]" >>"$GITHUB_OUTPUT"; exit 0
           fi
           changed=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} 2>/dev/null \
                     || git diff --name-only HEAD~1 HEAD)

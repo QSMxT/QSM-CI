@@ -21,11 +21,23 @@ name: repro
 # │ run it by hand (workflow_dispatch); do heavy full runs on Bunya.                                  │
 # └────────────────────────────────────────────────────────────────────────────────────────────────┘
 #
-#   scope    -> full (scorer/pipeline changed, or scope=all) vs affected slugs (changed algorithms)
+#   scope    -> full (scorer/pipeline changed, or scope=all) vs affected slugs (changed algorithms);
+#               `[skip score]` in the commit message skips the run entirely (see score.yml)
 #   prep     -> build the reference frame once: target grid + SynthSeg dseg (artifact for the rest)
 #   plan     -> full: acquisition × shard matrix; affected: acquisition × --focus-per-slug
 #   score    -> reconstruct; publish own volumes to HF; compute own ROI stats; emit small runs-JSON
 #   evaluate -> merge runs-JSON -> index.json; pairwise fits -> repro.json; commit (redeploys site)
+#
+# VIEWER INTERMEDIATES (the submission page's Field map / Local field layers) ride along for free.
+# They are per COLUMN, not per pipeline — one total field per field-mapping method, one local field
+# per (field-mapping, bfr) pair — so an acquisition's several hundred pipelines collapse to
+# F + F*B files (a couple of dozen), and no job runs a single extra container to produce them: the
+# score jobs already compute those columns on the way to the dipole stage, and `--emit-intermediates`
+# just keeps the two upstream artifacts instead of discarding them. Publication is
+# deduplicated the same way: a localfield's column belongs to exactly one shard, and a field map
+# (which every shard consuming it re-runs) is published only by the shard owning its first consuming
+# column — see pipeline.py's tf_emit_owner. Incremental runs only emit when the changed slug is
+# upstream (field-mapping / bfr), since a dipole change leaves both maps byte-identical.
 
 on:
   workflow_dispatch:
@@ -43,7 +55,7 @@ on:
         description: "true = also run inr-qsm/modip + any runner:self-hosted method (needs self-hosted GPU runners)"
         default: "false"
       publish_hf:
-        description: "true = each score job publishes its recon volumes to HuggingFace"
+        description: "true = each score job publishes its recon volumes (+ its share of the viewer's field-map/local-field intermediates) to HuggingFace"
         default: "true"
       dry_run:
         description: "true = run + evaluate but DON'T commit (upload candidate artifacts)"
@@ -88,6 +100,18 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "$SCOPE" != "auto" ]; then
             echo "full=false" >>"$GITHUB_OUTPUT"
             echo "slugs=$(echo "$SCOPE" | tr ', ' '\n' | grep . | jq -R . | jq -sc .)" >>"$GITHUB_OUTPUT"; exit 0
+          fi
+          # `[skip score]` in the pushed commit message: this push touched a scored path but cannot
+          # move any number — an added opt-in flag, a docstring, a comment, a refactor behind a
+          # default-off branch. GitHub's own skip token would also stop the rescore, but it suppresses
+          # EVERY workflow on the push, so the tests wouldn't run and the site wouldn't redeploy.
+          # This stops the rescore and nothing else. Read via `git log` rather than the event payload
+          # so a crafted commit message can't be interpolated into this shell. Push only — a manual
+          # dispatch ignores it, so `scope=all` is always the escape hatch.
+          if [ "${{ github.event_name }}" = "push" ] \
+             && git log -1 --format=%B "${{ github.sha }}" | grep -qF '[skip score]'; then
+            echo "::notice::[skip score] in the commit message — skipping the rescore. Dispatch with scope=all to force one."
+            echo "full=false" >>"$GITHUB_OUTPUT"; echo "slugs=[]" >>"$GITHUB_OUTPUT"; exit 0
           fi
           changed=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} 2>/dev/null \
                     || git diff --name-only HEAD~1 HEAD)
@@ -162,26 +186,41 @@ jobs:
               try: t = open(f'algorithms/{slug}/algorithm.yml').read()
               except FileNotFoundError: return False
               return bool(re.search(r'^runner:[ \t]*(self-hosted|hosted-large)', t, re.M)) or slug in ('inr-qsm', 'modip')
+          # The viewer's Field map / Local field layers come from the two UPSTREAM stages. A full
+          # shard computes them anyway, so it always emits; a --focus job only does when the changed
+          # slug is one of those stages — re-emitting after a dipole change would re-upload bytes
+          # identical to what is already on the Hub, once per acquisition.
+          UPSTREAM = ('field-mapping', 'bfr', 'unwrap+bfr')
+          def upstream(slug):
+              try: t = open(f'algorithms/{slug}/algorithm.yml').read()
+              except FileNotFoundError: return False
+              m = re.search(r'^stage:[ \t]*(\S+)', t, re.M)
+              return bool(m) and m.group(1).strip('"\'') in UPSTREAM
           heavy = sorted(s for p in glob.glob('algorithms/*/algorithm.yml')
                          for s in [p.split('/')[1]] if not s.startswith('_') and self_hosted(s))
           N = int(os.environ['N'])
           tasks = []
           if full:
               excl = ','.join(heavy)
-              tasks += [{'id': f'{a}-s{i}', 'phantom': a, 'shard': f'{i}/{N}', 'exclude': excl, **HOSTED}
+              tasks += [{'id': f'{a}-s{i}', 'phantom': a, 'shard': f'{i}/{N}', 'exclude': excl,
+                         'intermediates': 'true', **HOSTED}
                         for a in acqs for i in range(N)]
               if include_gpu:
-                  tasks += [{'id': f'{a}-{s}', 'phantom': a, 'focus': s, **SELFHOSTED}
+                  # every heavy method is a dipole/end-to-end one, so it publishes no intermediates
+                  tasks += [{'id': f'{a}-{s}', 'phantom': a, 'focus': s, 'intermediates': 'false', **SELFHOSTED}
                             for a in acqs for s in heavy]
           else:
               slugs = json.loads(os.environ['SLUGS'])
               for a in acqs:
                   for s in slugs:
+                      inter = 'true' if upstream(s) else 'false'
                       if self_hosted(s):
                           if include_gpu:
-                              tasks.append({'id': f'{a}-{s}', 'phantom': a, 'focus': s, **SELFHOSTED})
+                              tasks.append({'id': f'{a}-{s}', 'phantom': a, 'focus': s,
+                                            'intermediates': inter, **SELFHOSTED})
                       else:
-                          tasks.append({'id': f'{a}-{s}', 'phantom': a, 'focus': s, **HOSTED})
+                          tasks.append({'id': f'{a}-{s}', 'phantom': a, 'focus': s,
+                                        'intermediates': inter, **HOSTED})
           print(json.dumps(tasks))
           PY
           )
@@ -238,6 +277,9 @@ jobs:
           [ -n "${{ matrix.task.shard }}" ]   && ARGS="$ARGS --shard ${{ matrix.task.shard }}"
           [ -n "${{ matrix.task.focus }}" ]   && ARGS="$ARGS --focus ${{ matrix.task.focus }}"
           [ -n "${{ matrix.task.exclude }}" ] && ARGS="$ARGS --exclude ${{ matrix.task.exclude }}"
+          # Keep this job's share of the viewer's field-map / local-field maps (no extra containers:
+          # these are the upstream stages it already runs), deduplicated across shards by pipeline.py.
+          [ "${{ matrix.task.intermediates }}" = "true" ] && ARGS="$ARGS --emit-intermediates"
           echo "== pipeline.py $ARGS"
           python scripts/pipeline.py $ARGS
 
@@ -250,6 +292,17 @@ jobs:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           HF_VOLUMES_REPO: ${{ vars.HF_VOLUMES_REPO }}
         run: python scripts/publish_volumes.py results --runs runs-${{ matrix.task.id }}.json
+
+      # The submission viewer's Field map / Local field layers: this job's share of the per-column
+      # intermediates, into the same repro/<acq>/ directory as the recons. The URLs are derived from
+      # the pipeline id client-side, so nothing has to be threaded through the runs-JSON.
+      - name: Publish this shard's intermediates to Hugging Face
+        if: ${{ matrix.task.intermediates == 'true' && github.event.inputs.publish_hf != 'false' && github.event.inputs.dry_run != 'true' }}
+        continue-on-error: true
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_VOLUMES_REPO: ${{ vars.HF_VOLUMES_REPO }}
+        run: python scripts/publish_repro_intermediates.py results --acq ${{ matrix.task.phantom }}
 
       # Compute THIS shard's per-ROI stats (registers its acquisition to the shared target) and write
       # them into the runs-JSON, so evaluate never needs the recon volumes.

@@ -154,9 +154,18 @@
             <!-- layer selector (beneath the viewer) -->
             <div id="layer-row" class="mt-4 flex flex-wrap items-center gap-3">
               <div class="inline-flex rounded-lg bg-gray-100 p-1 text-sm font-medium dark:bg-gray-800" id="layer-tabs">
-                <button data-layer="recon" class="rounded-md px-3 py-1 transition">Reconstruction</button>
-                <button data-layer="truth" class="rounded-md px-3 py-1 transition">Ground truth</button>
+                <!-- Pipeline order, left to right: the input magnitude, then each stage's output,
+                     ending at the QSM this page is about, with the reference it is scored against
+                     last. Magnitude and the two intermediates are Harmonization-only; the
+                     intermediates are per-COLUMN artifacts shared by every pipeline built on them,
+                     and each is revealed only once its file is confirmed present on the Hub (a
+                     bfr+dipole span or an end-to-end method produces no local field, so that button
+                     simply never appears). QSM is the default base map — see curBase in viewer.js. -->
                 <button data-layer="magnitude" class="rounded-md px-3 py-1 transition hidden">Magnitude</button>
+                <button data-layer="totalfield" class="rounded-md px-3 py-1 transition hidden">Field map</button>
+                <button data-layer="localfield" class="rounded-md px-3 py-1 transition hidden">Local field</button>
+                <button data-layer="recon" class="rounded-md px-3 py-1 transition">QSM</button>
+                <button data-layer="truth" class="rounded-md px-3 py-1 transition">Ground truth</button>
               </div>
               <!-- χ-separation source toggle (χ+ vs χ−); shown only for chi-separation runs -->
               <div class="hidden inline-flex rounded-lg bg-gray-100 p-1 text-sm font-medium dark:bg-gray-800" id="chisep-tabs">
