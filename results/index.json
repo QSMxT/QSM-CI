@@ -45096,6 +45096,63 @@
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_bfrnet_medi-cornell-cmp__truth.nii.gz",
         "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/gt_bfrnet_medi-cornell-cmp__error.nii.gz"
       }
+    },
+    {
+      "id": "decompose-qsm-iso-ridani-7t-aniso",
+      "slug": "decompose-qsm",
+      "name": "DECOMPOSE-QSM (MATLAB)",
+      "stage": "chi-separation",
+      "mode": "isolated",
+      "track": "sim",
+      "runtime_s": 28651.21450996399,
+      "variant": "default",
+      "domain": "chisep",
+      "kind": "chisep",
+      "metrics": {
+        "para_nrmse": 83.34705001034354,
+        "para_nrmse_detrend": 149.1491099925505,
+        "para_correlation": 0.5568852713888863,
+        "para_xsim": 0.35686872025272964,
+        "para_nrmse_dgm": 437.41113913881304,
+        "para_dgm_linearity": 1.1930829032194292,
+        "para_nrmse_blood": 904.4467548380047,
+        "para_calc_leak": 0.0017938561201378018,
+        "para_mspe": 46.747246425365645,
+        "dia_nrmse": 68.1414871303246,
+        "dia_nrmse_detrend": 73.34629842257073,
+        "dia_correlation": 0.8063551378760386,
+        "dia_xsim": 0.435630917395244,
+        "dia_calc_moment_dev": 0.32541206265159417,
+        "dia_calc_streak": null,
+        "dia_iron_leak": 0.0029492028021742113,
+        "dia_mspe": 17.04566879673156,
+        "dia_mspe_theta": [
+          17.285432720388254,
+          13.406725470721957,
+          8.086609787718487,
+          5.828672586160076,
+          5.951865239405752,
+          5.6901827215653045,
+          6.797022111813727,
+          4.3737518135455895,
+          2.159994583487052
+        ],
+        "dia_mev": 87.50396001981872,
+        "para_leak": -0.49434767395905266,
+        "dia_leak": -0.12672341696385803
+      },
+      "status": "ok",
+      "phantom": "ridani-7t-aniso",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/decompose-qsm-iso-ridani-7t-aniso__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/decompose-qsm-iso-ridani-7t-aniso__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/decompose-qsm-iso-ridani-7t-aniso__recon.nii.gz",
+        "recon-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/decompose-qsm-iso-ridani-7t-aniso__recon-dia.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/decompose-qsm-iso-ridani-7t-aniso__truth.nii.gz",
+        "truth-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/decompose-qsm-iso-ridani-7t-aniso__truth-dia.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/decompose-qsm-iso-ridani-7t-aniso__error.nii.gz",
+        "error-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/decompose-qsm-iso-ridani-7t-aniso__error-dia.nii.gz"
+      }
     }
   ]
 }
