@@ -202,12 +202,19 @@ async function loadRuns() {
     });
   }
   for (const r of runs) {
-    if (r.mode !== "composed" || !r.combo || typeof r.name !== "string" || !r.name.includes("+")) continue;
-    const c = r.combo, segs = [];
-    if (c.field_mapping && c.field_mapping !== "gt") segs.push(disp(c.field_mapping));
-    if (c.bfr) segs.push(disp(c.bfr));
-    if (c.dipole) segs.push(disp(c.dipole));
-    if (segs.length > 1) r.name = segs.join(" → ");
+    if (r.mode === "composed" && r.combo && typeof r.name === "string" && r.name.includes("+")) {
+      const c = r.combo, segs = [];
+      if (c.field_mapping && c.field_mapping !== "gt") segs.push(disp(c.field_mapping));
+      if (c.bfr) segs.push(disp(c.bfr));
+      if (c.dipole) segs.push(disp(c.dipole));
+      if (segs.length > 1) { r.name = segs.join(" → "); continue; }
+    }
+    // A single-method row (an isolated run, or a composed run of one span) carries the name it was
+    // SCORED under, which is a snapshot: index.json rows keep e.g. "TV (ADMM)" or "BFRnet" long after
+    // algorithms.json settled on "TV-ADMM (QSM.rs)" / "BFRnet (ONNX)". Take the manifest's name so one
+    // method reads the same on every surface — the same reason the composed chain above is rebuilt
+    // from it. Unknown slugs (a method dropped from the manifest) keep whatever they were stored with.
+    if (nm.has(r.slug)) r.name = nm.get(r.slug);
   }
   return runs;
 }

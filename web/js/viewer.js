@@ -56,7 +56,12 @@ function makeReproRun(pipe, acq, node) {
   const parts = pipe.split("+");
   let combo = null, slug = pipe, stage = "end-to-end";
   if (parts.length === 3) { combo = { field_mapping: parts[0], bfr: parts[1], dipole: parts[2] }; stage = "field-mapping+bfr+dipole"; }
-  else if (parts.length === 2) { combo = { field_mapping: parts[0] }; slug = parts[1]; stage = "field-mapping+bfr+dipole"; }
+  // 2 parts = a field mapping method + a single span (bfr+dipole like QSMART/TGV/TFI, or end-to-end
+  // like NeXtQSM/AutoQSM). There is no bfr/dipole pair to hang on the matrix axes, so leave `combo`
+  // null and carry the span's OWN stage: that routes the row to the sidebar's combined-methods group
+  // (spanRuns/spanSlugs) instead of the matrix, which would otherwise drop it from the dataset.
+  // The field-mapping step is not lost — `pipelineId` still names the whole pipeline (pipelineSteps).
+  else if (parts.length === 2) { slug = parts[1]; stage = algoStage(parts[1]) || "bfr+dipole"; }
   return { id: reproRunId(pipe, acq), slug, name: parts.map(algoName).join(" → "),
            pipelineId: pipe, track: "repro", phantom: acq, mode: "composed", stage, combo,
            kind: "chi",   // every harmonization pipeline outputs a susceptibility map → default window ±0.1 ppm
@@ -76,6 +81,15 @@ async function ensureReproJson() {
   if (reproJson !== null) return reproJson;
   try { reproJson = await (await fetch("results/repro.json", { cache: "no-store" })).json(); }
   catch { reproJson = {}; }
+  // Keep only pipelines whose every step is a live, visible method. The harvest (repro_eval.py) now
+  // drops methods RETIRED from the manifest, so what's left to filter here are the ones deliberately
+  // kept but hidden — a parked submission like the MATLAB amp-pe, whose data stays in repro.json so
+  // it can be revived. loadRuns() applies the same rule to the in-silico runs, and skipping it
+  // doesn't just show a parked method: it lets its rows bleed into the axes that cross it (every
+  // background-removal row is a pipeline ending in the DEFAULT dipole method, so a parked default
+  // blanks the whole axis). The retired case is still handled, for a payload written before this.
+  if (algos.length && reproJson?.pipelines) reproJson.pipelines = Object.fromEntries(
+    Object.entries(reproJson.pipelines).filter(([pipe]) => pipe.split("+").every(liveAlgo)));
   return reproJson;
 }
 const pipeHasRepro = (pipe) => !!reproJson?.pipelines?.[pipe];
@@ -154,8 +168,8 @@ const QSMXT_FLAG = {
 function renderHowToRun() {
   const el = $("how-to-run");
   if (!el) return;
-  // Harmonization runs carry the same combo as an in-silico composed pipeline, so the same command
-  // generation applies: the section renders identically (bring your own NIfTIs; no ground truth to score).
+  // Harmonization runs describe the same method chain as an in-silico composed pipeline, so the same
+  // command generation applies: the section renders identically (bring your own NIfTIs; nothing to score).
   const bySlug = Object.fromEntries(algos.map((a) => [a.slug, a]));
   const stageOf = (s) => (bySlug[s] ? bySlug[s].stage : null);
   const isQsmRs = (slug) => { const a = bySlug[slug]; return !!(a && a.engine && a.engine.includes("QSM.rs")); };
@@ -165,34 +179,29 @@ function renderHowToRun() {
   // Harmonization (repro) reconstructions begin by making the brain mask with HD-BET, the masking
   // method that dataset uses. In-silico masks come from the phantom, so this step is repro-only.
   if (datasetOf(run) === "repro") lines.push(runLine("hd-bet-qsmci", "brain-extraction", false, ["magnitude"]));
-  if (run.combo) {
-    const { field_mapping: fm, bfr, dipole } = run.combo;
-    const ins = (s) => bySlug[s] && bySlug[s].inputs;
-    if (fm && fm !== "gt" && stageOf(fm)) lines.push(runLine(fm, stageOf(fm), false, ins(fm)));
-    if (bfr && stageOf(bfr)) lines.push(runLine(bfr, stageOf(bfr), false, ins(bfr)));
-    if (dipole && stageOf(dipole)) lines.push(runLine(dipole, stageOf(dipole), true, ins(dipole)));
-    // 2-part pipeline (field-mapping + a bfr+dipole/end-to-end span, e.g. autoqsm/nextqsm/tgv/qsmart):
-    // the span slug lives in run.slug, not combo.{bfr,dipole}, emit it so the span step isn't dropped.
-    if (!bfr && !dipole && run.slug && run.slug !== fm && stageOf(run.slug))
-      lines.push(runLine(run.slug, stageOf(run.slug), true, ins(run.slug)));
-  } else if (bySlug[run.slug]) {
-    lines.push(runLine(run.slug, run.stage, true, bySlug[run.slug].inputs));
-  }
+  // One line per method step, in pipeline order; only the last is scored against a ground truth.
+  // pipelineSteps() covers every shape: the matrix combo, a 2-part field-mapping + span pipeline
+  // (whose span lives in run.slug, or, on the harmonization track, only in pipelineId), and a
+  // single isolated method.
+  // ...and the last step is scored against a ground truth — except on the harmonization track, which
+  // is in-vivo data with none, so no --truth flag exists to offer there.
+  const scored = datasetOf(run) !== "repro";
+  const steps = pipelineSteps(run).filter((s) => bySlug[s] && stageOf(s));
+  steps.forEach((s, i) => lines.push(runLine(s, stageOf(s), scored && i === steps.length - 1, bySlug[s].inputs)));
   if (!lines.length) { el.classList.add("hidden"); return; }
   const ciCmd = "pip install qsm-ci\n" + lines.join("\n");
   const chained = lines.length > 1;
 
   // ---- QSMxT command (only when every method step is QSM.rs-backed) ----
   const xtCmd = (() => {
+    if (!steps.length || !steps.every(isQsmRs)) return null;   // every step must run on the QSM.rs engine
     const parts = ["qsmxt run /path/to/bids /path/to/output"];
-    if (run.combo) {
-      const { field_mapping: fm, bfr, dipole } = run.combo;
-      if (!isQsmRs(bfr) || !isQsmRs(dipole)) return null;
-      if (fm && fm !== "gt") { if (!isQsmRs(fm)) return null; parts.push(`--unwrapping-algorithm ${fm.replace(/-fieldmap$/, "")}`); }
-      parts.push(`--bf-algorithm ${bfr}`, `--qsm-algorithm ${dipole}`);
-    } else {
-      if (!isQsmRs(run.slug) || !QSMXT_FLAG[run.stage]) return null;
-      parts.push(`${QSMXT_FLAG[run.stage]} ${run.slug}`);
+    for (const s of steps) {
+      const st = stageOf(s);
+      // Field mapping is the one stage QSMxT names by unwrapping algorithm, not by method slug.
+      if (st === "field-mapping") parts.push(`--unwrapping-algorithm ${s.replace(/-fieldmap$/, "")}`);
+      else if (QSMXT_FLAG[st]) parts.push(`${QSMXT_FLAG[st]} ${s}`);
+      else return null;   // a stage QSMxT has no flag for → no equivalent command
     }
     return parts.join(" \\\n  ");
   })();
@@ -207,9 +216,9 @@ function renderHowToRun() {
   const tabBtn = (key, label, active) =>
     `<button data-tab="${key}" class="rounded-md px-3 py-1 transition ${active ? "bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100" : "text-gray-500 hover:text-gray-700 dark:text-gray-400"}">${label}</button>`;
 
-  const ciDesc = `Reproduce the scored artifact with the <a href="running.html" class="text-emerald-600 hover:underline"><code>qsm-ci</code></a> CLI:
-      bring your own NIfTIs${chained ? ", chained stage by stage," : ""} or make a phantom with <code>qsm-forward</code>. Drop <code>--truth</code> to run without scoring.`;
-  const xtDesc = `Run this ${run.combo ? "pipeline" : "method"} end-to-end on your own BIDS data with
+  const ciDesc = `Reproduce ${scored ? "the scored artifact" : "this reconstruction"} with the <a href="running.html" class="text-emerald-600 hover:underline"><code>qsm-ci</code></a> CLI:
+      bring your own NIfTIs${chained ? ", chained stage by stage," : ""} or make a phantom with <code>qsm-forward</code>.${scored ? " Drop <code>--truth</code> to run without scoring." : ""}`;
+  const xtDesc = `Run this ${steps.length > 1 ? "pipeline" : "method"} end-to-end on your own BIDS data with
       <a href="https://qsmxt.github.io" class="text-emerald-600 hover:underline">QSMxT</a> (unwrapping, background removal and dipole
       inversion in one command), on the same <a href="https://github.com/astewartau/QSM.rs" class="text-emerald-600 hover:underline">QSM.rs</a> engine QSM-CI uses.`;
 
@@ -323,14 +332,32 @@ function datasetPeers() {
   if (!run || run.stage !== "dipole" || run.mode !== "isolated") return [];
   return ["invivo", "qsm"].map((d) => ({ dom: d, run: dipoleRunOn(run.slug, d) })).filter((p) => p.run);
 }
+// The sidebar's dataset tabs BROWSE: they re-point the run list and nothing else. What's open in the
+// content stays open — moving the current method/pipeline to another dataset is the job of the toggle
+// above the viewer (switchDataset), which is a deliberate act on one run, not a change of listing.
+// Harmonization is the only dataset whose runs are synthesized rather than loaded, so its pool has to
+// be generated before its list can render.
+async function browseDataset(dom) {
+  if (dom === "repro") {
+    await ensureReproJson();
+    ensureReproRuns(acqExists(reproAcq) ? reproAcq : "cima-bridge-run1");
+  }
+  domain = dom;
+  buildSidebar();
+}
 // Switch dataset while keeping the same algorithm open when it exists on the target (re-selecting its
 // run there); otherwise just browse the target dataset's list.
 function switchDataset(dom) {
+  // The in-vivo (2016) challenge scored ONE stage — dipole inversion, isolated runs only — so Stages
+  // is the only sidebar view that can show it (the Stages/Pipelines toggle is hidden while it's open).
+  // Set the subtab on the way in, so toggling back to In silico (2019) lands on the stage list holding
+  // the method you were looking at, not on the pipeline matrix it isn't in.
+  if (dom === "invivo") navMode = "stages";
   // Harmonization: enter it in-place. Keep the same pipeline open when the current run is a composed
-  // one (its slug IS the pipeline id); from an isolated run there's no analog, so enterRepro(null)
-  // opens the first harmonization pipeline instead.
+  // one; from an isolated run there's no analog, so enterRepro(null) opens the first harmonization
+  // pipeline instead.
   if (dom === "repro") {
-    const pipe = reproMode ? reproPipe : (run?.mode === "composed" ? run.slug : null);
+    const pipe = reproMode ? reproPipe : pipelineIdOf(run);
     enterRepro(pipe, reproAcq);
     return;
   }
@@ -353,22 +380,29 @@ function switchDataset(dom) {
   domain = dom;
   buildSidebar();
 }
-// Combined single-step methods (bfr+dipole / end-to-end, e.g. NeXtQSM/TGV/QSMART/MEDI/iQSM) go
-// straight to a chi map in one step, so they have no fmap×bfr×dipole combo and are missed by the
-// matrix axes. Surface them as their own Pipelines group: one run per slug, preferring the composed
-// representation. (unwrap+bfr methods produce localfield, not chi, so they sit on the matrix's
-// background-removal axis instead and are excluded here.)
-const combinedRuns = () => {
-  const bySlug = {};
-  for (const r of allRuns) {
-    if (datasetOf(r) !== domain) continue;  // same-dataset scoping as composedRuns
-    if (r.combo) continue;  // matrix combos carry stage bfr+dipole too; they belong on the axes
-    if (r.variant === "tuned") continue;  // tuned variants are reached via the toggle, not the list
-    if (r.stage !== "bfr+dipole" && r.stage !== "end-to-end") continue;
-    if (!bySlug[r.slug] || r.mode === "composed") bySlug[r.slug] = r;
-  }
-  return Object.values(bySlug);
-};
+// Span methods (bfr+dipole / end-to-end, e.g. NeXtQSM/TGV/QSMART/iQSM) go straight to a χ map in one
+// step, so they have no bfr/dipole pair for the matrix axes. Every run of one, in any field-mapping
+// context: the isolated run, the ground-truth-field composed run, and one per field-mapping method.
+// (unwrap+bfr methods produce localfield, not χ, so they sit on the matrix's background-removal axis
+// instead and are excluded here.) Their OWN stage comes from the manifest, since a composed run is
+// stamped with the pipeline's stage ("field-mapping+bfr+dipole"), not the span's.
+const SPAN_STAGES = ["bfr+dipole", "end-to-end"];
+const spanRuns = () => allRuns.filter((r) => datasetOf(r) === domain
+  && (r.variant || "default") === "default"       // tuned variants are reached via the toggle
+  && !r.combo?.bfr && !r.combo?.dipole            // a full combo belongs on the axes
+  && SPAN_STAGES.includes(algoStage(r.slug)));
+// One row per METHOD in each span group (not one per combination): the list stays put while the
+// field-mapping axis changes underneath it, exactly like the bfr and dipole axes.
+const spanSlugs = (stage) => uniq(spanRuns().filter((r) => algoStage(r.slug) === stage).map((r) => r.slug));
+// The field-mapping method a run was paired with ("gt" = none/ground truth), read from its steps so
+// it works for a matrix combo, a 2-part in-silico pipeline and a harmonization row alike.
+const fmapOf = (r) => { const st = pipelineSteps(r); return st.length > 1 && algoStage(st[0]) === "field-mapping" ? st[0] : "gt"; };
+// A bfr+dipole span still consumes a field map, so it pairs with the field-mapping axis: resolve the
+// row against the CURRENT field mapping (undefined → the axis renders it greyed, as for any pairing
+// that wasn't run). End-to-end methods take raw phase, so they have no field-mapping choice at all.
+const findSpan = (fmap, slug) => spanRuns().find((r) => r.slug === slug && r.mode === "composed" && fmapOf(r) === fmap);
+const findEndToEnd = (slug) => spanRuns().find((r) => r.slug === slug && r.mode === "composed")
+  || spanRuns().find((r) => r.slug === slug);
 const fmapsList = () => {
   const s = uniq(composedRuns().map((r) => r.combo.field_mapping || "gt"));
   return s.includes("gt") ? ["gt", ...s.filter((x) => x !== "gt")] : s;
@@ -380,12 +414,44 @@ const dipoleList = () => uniq(composedRuns().map((r) => r.combo.dipole).filter(B
 const findPipeline = (f, b, d) => composedRuns().find((r) =>
   (r.combo.field_mapping || "gt") === f && r.combo.bfr === b && r.combo.dipole === d);
 const algoName = (slug) => { const a = algos.find((x) => x.slug === slug); return (a && a.name) || slug; };
-const fmapName = (m) => (m === "gt" ? "ground truth" : algoName(m));
+const algoStage = (slug) => { const a = algos.find((x) => x.slug === slug); return a && a.stage; };
+// A method still shipped by QSM-CI: present in the manifest and not hidden. Mirrors loadRuns()'s
+// hidden-slug filter, which drops the same methods from the in-silico runs.
+const liveAlgo = (slug) => { const a = algos.find((x) => x.slug === slug); return !!a && !a.hidden; };
+// The ordered method slugs a run is made of. A matrix combo names its stages explicitly; a 2-part
+// pipeline (field mapping + a bfr+dipole/end-to-end span) keeps the span in `slug`, and on the
+// harmonization track carries no combo at all — there the whole pipeline lives in `pipelineId`.
+// Anything else is a single method. Drops "gt" (no field-mapping step) and repeats.
+const pipelineSteps = (r) => {
+  if (!r) return [];
+  const c = r.combo;
+  const raw = c ? [c.field_mapping, c.bfr, c.dipole, (!c.bfr && !c.dipole) ? r.slug : null]
+    : r.pipelineId ? r.pipelineId.split("+") : [r.slug];
+  return raw.filter((x, i, a) => x && x !== "gt" && a.indexOf(x) === i);
+};
+// The "a+b+c" pipeline id of a composed run, the key both repro.json and the in-silico run ids use.
+// Derived from the steps rather than `slug`, which holds only the span for a 2-part pipeline.
+const pipelineIdOf = (r) => r?.pipelineId || (r?.mode === "composed" ? pipelineSteps(r).join("+") : null);
+const fmapName = (m) => (m === "gt" ? "Ground truth" : algoName(m));
+// Every sidebar list is ordered the same way — alphabetically by the name shown, ignoring case and
+// accents, digits compared as numbers — so switching tab, dataset or stage never reshuffles it.
+const NAME_COLLATOR = new Intl.Collator(undefined, { sensitivity: "base", numeric: true });
+const byName = (nameOf) => (a, b) => NAME_COLLATOR.compare(nameOf(a), nameOf(b));
 
 function currentCombo() {
-  if (run?.combo) return { fmap: run.combo.field_mapping || "gt", bfr: run.combo.bfr, dipole: run.combo.dipole };
+  // Only a run from the dataset being listed says anything about ITS axes. While browsing another one
+  // (the tabs don't change what's open) fall back to that dataset's defaults, rather than resolving
+  // every row against a combo it has no runs for — e.g. a ground-truth field mapping, which the
+  // harmonization track has none of, would grey out its whole matrix.
+  const cur = datasetOf(run) === domain ? run : null;
+  // A bfr+dipole span stands in for BOTH the bfr and dipole axes, so what it selects is a field
+  // mapping + itself: report the pairing it was opened with (`span`) and the bfr/dipole axes fall
+  // back to their defaults, so clicking one of those is what leaves the span behind.
+  if (cur?.mode === "composed" && !cur.combo?.bfr && !cur.combo?.dipole && algoStage(cur.slug) === "bfr+dipole")
+    return { fmap: fmapOf(cur), bfr: bfrList()[0], dipole: dipoleList()[0], span: cur.slug };
+  if (cur?.combo) return { fmap: cur.combo.field_mapping || "gt", bfr: cur.combo.bfr, dipole: cur.combo.dipole };
   const c = { fmap: fmapsList()[0], bfr: bfrList()[0], dipole: dipoleList()[0] };
-  if (run?.mode === "isolated") { if (run.stage === "dipole") c.dipole = run.slug; if (run.stage === "bfr") c.bfr = run.slug; }
+  if (cur?.mode === "isolated") { if (cur.stage === "dipole") c.dipole = cur.slug; if (cur.stage === "bfr") c.bfr = cur.slug; }
   return c;
 }
 function runItem(r, activeId) {
@@ -395,7 +461,7 @@ function runItem(r, activeId) {
   const m = (r && r.metrics) || {};
   // Harmonization rows headline the inter-scanner |a−1| (reproducibility, lower better) as a %.
   if (r && r.track === "repro") {
-    const label = m.repro_inter != null ? (100 * m.repro_inter).toFixed(1) + "%" : ", ";
+    const label = m.repro_inter != null ? (100 * m.repro_inter).toFixed(1) + "%" : "—";
     const active = r.id === activeId;
     return `<button data-id="${r.id}"
       class="run-item w-full text-left rounded-lg px-2.5 py-1.5 text-sm flex items-center justify-between gap-2 transition
@@ -413,7 +479,7 @@ function runItem(r, activeId) {
   else if (m.para_nrmse_detrend != null && m.dia_nrmse_detrend != null) { hv = (m.para_nrmse_detrend + m.dia_nrmse_detrend) / 2; hk = "nrmse_detrend"; }
   else if (m.para_xsim != null && m.dia_xsim != null) hv = (m.para_xsim + m.dia_xsim) / 2;
   else hv = r ? val(r, "xsim") : null;
-  const label = r ? (r.status === "DNF" ? "DNF" : fmt(hv, hk)) : ", ";
+  const label = r ? (r.status === "DNF" ? "DNF" : fmt(hv, hk)) : "—";
   const dis = !r || r.status === "DNF";
   return `<button data-id="${r ? r.id : ""}"
     class="run-item w-full text-left rounded-lg px-2.5 py-1.5 text-sm flex items-center justify-between gap-2 transition
@@ -422,41 +488,60 @@ function runItem(r, activeId) {
     <span class="shrink-0 tabular-nums text-xs ${dis ? "text-gray-300 dark:text-gray-600" : active ? "text-indigo-500" : "text-gray-400"}">${label}</span>
   </button>`;
 }
+// Which sidebar groups are collapsed, by key. Module-level so the state survives buildSidebar(),
+// which rebuilds the whole list on every selection.
+const collapsedGroups = new Set();
+// One sidebar group: a header that toggles its rows. `rows` is the already-rendered run items; an
+// empty group renders nothing, exactly as before.
+function groupHTML(key, label, rows) {
+  if (!rows) return "";
+  // A collapsed group opens while a filter is active — otherwise typing a method name that lives in
+  // one would look like the search found nothing. Clearing the filter restores the collapsed state.
+  const off = !filter && collapsedGroups.has(key);
+  // The chevron's size and rotation are inline: styles.css is a pre-built purge, so utilities it
+  // doesn't already contain (w-3, -rotate-90) would silently do nothing.
+  return `<div class="mb-3"><button data-group="${key}" class="group-toggle flex w-full items-center px-2.5 pt-1 pb-1 text-left text-[11px] font-semibold uppercase tracking-wide text-gray-400 transition hover:text-gray-600 dark:hover:text-gray-300">
+      <svg viewBox="0 0 20 20" fill="currentColor" style="width:9px;height:9px;flex:none;margin-right:.4rem;transition:transform .15s ease;transform:rotate(${off ? "-90deg" : "0deg"})"><path d="M4 6.5h12L10 14z"/></svg>
+      <span>${label}</span></button><div${off ? " hidden" : ""}>${rows}</div></div>`;
+}
 function stagesHTML() {
   const f = filter.toLowerCase();
   // Pipeline order: field mapping → background removal → dipole inversion, then the combined
   // single-method spans (bfr+dipole like TGV/QSMART/MEDI, unwrap+bfr like HARPERELLA, end-to-end).
   return ["field-mapping", "bfr", "dipole", "bfr+dipole", "unwrap+bfr", "end-to-end"].map((s) => {
-    const rs = allRuns.filter((r) => r.mode === "isolated" && r.stage === s && (r.variant || "default") === "default" && !isInvivo(r) && (!f || r.name.toLowerCase().includes(f)));
-    if (!rs.length) return "";
-    const rows = rs.map((r) => runItem(r, run?.id).replace("%NAME%", r.name)).join("");
-    return `<div class="mb-3"><div class="px-2.5 pt-1 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">${STAGE_LABEL[s] || s}</div>${rows}</div>`;
+    const rs = allRuns.filter((r) => r.mode === "isolated" && r.stage === s && (r.variant || "default") === "default" && !isInvivo(r) && (!f || r.name.toLowerCase().includes(f)))
+      .sort(byName((r) => r.name));
+    return groupHTML("stage:" + s, STAGE_LABEL[s] || s, rs.map((r) => runItem(r, run?.id).replace("%NAME%", r.name)).join(""));
   }).join("") || `<p class="p-3 text-sm text-gray-400">No matches.</p>`;
 }
 function pipelinesHTML() {
   const cur = currentCombo();
   const f = filter.toLowerCase();
-  const axis = (title, methods, kind) => {
-    const rows = methods.filter((m) => { const nm = kind === "fmap" ? fmapName(m) : algoName(m); return !f || nm.toLowerCase().includes(f); }).map((m) => {
-      const rn = kind === "fmap" ? findPipeline(m, cur.bfr, cur.dipole)
+  const axis = (title, methods, kind) => {   // key by axis, not title, so the collapsed state is stable
+    const label = (m) => (kind === "fmap" ? fmapName(m) : algoName(m));
+    const rows = methods.filter((m) => !f || label(m).toLowerCase().includes(f)).sort(byName(label)).map((m) => {
+      // With a bfr+dipole span selected, the field-mapping axis re-pairs THAT span (ROMEO → QSMART,
+      // Laplacian → QSMART); otherwise it swaps the field mapping of the bfr×dipole combo.
+      const rn = kind === "fmap" ? (cur.span ? findSpan(m, cur.span) : findPipeline(m, cur.bfr, cur.dipole))
         : kind === "bfr" ? findPipeline(cur.fmap, m, cur.dipole) : findPipeline(cur.fmap, cur.bfr, m);
-      return runItem(rn, run?.id).replace("%NAME%", kind === "fmap" ? fmapName(m) : algoName(m));
+      return runItem(rn, run?.id).replace("%NAME%", label(m));
     }).join("");
-    return `<div class="mb-3"><div class="px-2.5 pt-1 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">${title}</div>${rows}</div>`;
+    return groupHTML("axis:" + kind, title, rows);
   };
   const matrix = composedRuns().length
     ? axis("Field mapping", fmapsList(), "fmap") + axis("Background removal", bfrList(), "bfr") + axis("Dipole inversion", dipoleList(), "dipole")
     : "";
   // Single-step χ producers, grouped by their self-described stage (not hardcoded per method): the
   // same split as the Stages view and the leaderboard: bfr+dipole and end-to-end are distinct spans.
-  const combined = combinedRuns().filter((r) => !f || r.name.toLowerCase().includes(f));
-  const combinedGroup = (stage) => {
-    const rs = combined.filter((r) => r.stage === stage);
-    return rs.length
-      ? `<div class="mb-3"><div class="px-2.5 pt-1 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">${STAGE_LABEL[stage] || stage}</div>${rs.map((r) => runItem(r, run?.id).replace("%NAME%", r.name)).join("")}</div>`
-      : "";
+  // Each is a group of METHODS, like the axes above — a bfr+dipole method resolves against the
+  // current field mapping (so picking one leaves the field-mapping axis in charge of the other half),
+  // an end-to-end method takes raw phase and has no field mapping to pick.
+  const spanGroup = (stage) => {
+    const slugs = spanSlugs(stage).filter((m) => !f || algoName(m).toLowerCase().includes(f)).sort(byName(algoName));
+    return groupHTML("span:" + stage, STAGE_LABEL[stage] || stage,
+      slugs.map((m) => runItem(stage === "bfr+dipole" ? findSpan(cur.fmap, m) : findEndToEnd(m), run?.id).replace("%NAME%", algoName(m))).join(""));
   };
-  const combinedSection = combinedGroup("bfr+dipole") + combinedGroup("end-to-end");
+  const combinedSection = spanGroup("bfr+dipole") + spanGroup("end-to-end");
   return (matrix + combinedSection) ||
     `<p class="p-3 text-sm text-gray-400">No pipeline combinations available yet; the composed matrix is computed by the nightly job.</p>`;
 }
@@ -468,24 +553,29 @@ function chisepHTML() {
   // Each row points at the method's run on the currently-selected phantom (`chisepPhantom`, remembered
   // as you browse); the phantom selector above the viewer swaps phantom in place. So the row's headline
   // metric and the volume it opens both track the chosen phantom.
-  const group = (label, pool) => {
-    const rows = uniq(pool.map((r) => r.slug)).map((slug) => {
-      const r = chisepRunFor(slug, chisepPhantom);
-      return runItem(r, run?.id).replace("%NAME%", r.name);
-    }).join("");
-    return rows ? `<div class="mb-3"><div class="px-2.5 pt-1 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">${label}</div>${rows}</div>` : "";
-  };
+  const group = (key, label, pool) => groupHTML(key, label,
+    uniq(pool.map((r) => r.slug)).map((slug) => chisepRunFor(slug, chisepPhantom))
+      .sort(byName((r) => r.name))
+      .map((r) => runItem(r, run?.id).replace("%NAME%", r.name)).join(""));
   // R2′ generators live on the same phantoms but are their own category: they estimate an input
   // (R2′ from GRE magnitude), they don't separate sources.
-  return group("χ-separation", rs.filter((r) => r.stage !== "r2prime-generation"))
-       + group("R2′ estimation", rs.filter((r) => r.stage === "r2prime-generation"));
+  return group("chisep:sep", "χ-separation", rs.filter((r) => r.stage !== "r2prime-generation"))
+       + group("chisep:r2p", "R2′ estimation", rs.filter((r) => r.stage === "r2prime-generation"));
 }
 function invivoHTML() {
   const f = filter.toLowerCase();
-  const rs = invivoRuns().filter((r) => !f || r.name.toLowerCase().includes(f));
+  const rs = invivoRuns().filter((r) => !f || r.name.toLowerCase().includes(f)).sort(byName((r) => r.name));
   if (!rs.length) return `<p class="p-3 text-sm text-gray-400">No in-vivo runs yet.</p>`;
-  const rows = rs.map((r) => runItem(r, run?.id).replace("%NAME%", r.name)).join("");
-  return `<div class="mb-3"><div class="px-2.5 pt-1 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">In vivo (2016) · dipole</div>${rows}</div>`;
+  return groupHTML("invivo:dipole", STAGE_LABEL.dipole,
+    rs.map((r) => runItem(r, run?.id).replace("%NAME%", r.name)).join(""));
+}
+// Mark the tab the open page comes from. The mark IS the amber label colour applied in buildSidebar —
+// nothing is added to the tab, so no label can be pushed onto a second line; this only carries the
+// explanation. Reached only when that tab isn't the one being browsed: when it is, it's the selected
+// tab and there's nothing to disambiguate.
+function markHome(btn, on) {
+  if (on) btn.title = "The page you're viewing comes from here";
+  else btn.removeAttribute("title");
 }
 function buildSidebar() {
   // Fall back to the in-silico dataset if the selected one has no runs (not in repro mode, which is
@@ -497,29 +587,71 @@ function buildSidebar() {
   // Dataset toggle: one button per dataset. In silico is always shown; χ-sep / In-vivo / Harm. 2026
   // appear whenever that dataset has any runs (harmonization = repro.json has pipelines), so the tab is
   // always available to browse, not gated on the currently-open run.
+  // Where the OPEN page lives, which the tabs no longer follow: an amber dot marks the dataset (and
+  // the Stages/Pipelines view) the run on screen belongs to, so a sidebar listing something else is
+  // never mistaken for what's rendered. When you're browsing its own dataset the dot simply sits on
+  // the selected tab.
+  const homeDom = run ? datasetOf(run) : null;
+  const homeMode = run ? (run.mode === "composed" ? "pipelines" : "stages") : null;
   document.querySelectorAll("#domain-toggle button").forEach((b) => {
     const hide = (b.dataset.domain === "chisep" && !hasChisep())
       || (b.dataset.domain === "invivo" && !hasInvivo())
       || (b.dataset.domain === "repro" && !hasRepro());
+    const home = b.dataset.domain === homeDom;
     b.className = "flex-1 rounded-md px-2 py-1 transition " + (hide ? "hidden " : "")
-      + (b.dataset.domain === domain ? "bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100" : "text-gray-500 hover:text-gray-700 dark:text-gray-400");
+      + (b.dataset.domain === domain ? "bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100"
+        : home ? "text-amber-600 hover:text-amber-700 dark:text-amber-400"
+        : "text-gray-500 hover:text-gray-700 dark:text-gray-400");
+    markHome(b, home);
   });
   $("domain-toggle")?.classList.remove("hidden");
 
   $("run-filter")?.classList.remove("hidden");
   // Harmonization is composed-only, so it's always the Pipelines matrix (no Stages split). The
   // χ-separation / in-vivo lists are flat too. Everything else keeps the Stages/Pipelines toggle.
-  if (domain === "repro") navMode = "pipelines";
+  // `mode` is the view this dataset can show; `navMode` (the remembered choice) is left alone, so
+  // browsing through harmonization and back doesn't silently move you off the Stages list.
+  const mode = domain === "repro" ? "pipelines" : navMode;
   const flat = domain === "chisep" || domain === "invivo" || domain === "repro";
   $("nav-toggle")?.classList.toggle("hidden", flat);
-  document.querySelectorAll("#nav-toggle button").forEach((b) =>
+  document.querySelectorAll("#nav-toggle button").forEach((b) => {
+    // The view that lists the open run: a composed pipeline lives in Pipelines, an isolated method in
+    // Stages. Only meaningful for the run's own dataset — marking Pipelines while you browse another
+    // dataset's list would point at a row that isn't there.
+    const home = domain === homeDom && b.dataset.mode === homeMode;
     b.className = "flex-1 rounded-md px-2 py-1 transition " +
-      (b.dataset.mode === navMode ? "bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100" : "text-gray-500 hover:text-gray-700 dark:text-gray-400"));
+      (b.dataset.mode === mode ? "bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100"
+        : home ? "text-amber-600 hover:text-amber-700 dark:text-amber-400"
+        : "text-gray-500 hover:text-gray-700 dark:text-gray-400");
+    markHome(b, home);
+  });
   $("run-list").innerHTML = domain === "chisep" ? chisepHTML()
     : domain === "invivo" ? invivoHTML()
-    : (navMode === "stages" ? stagesHTML() : pipelinesHTML());
+    : (mode === "stages" ? stagesHTML() : pipelinesHTML());
   $("run-list").querySelectorAll(".run-item").forEach((b) => b.addEventListener("click", () => { if (b.dataset.id) selectRun(b.dataset.id); }));
+  // Collapse/expand a group in place (no re-render), remembering the state for the next buildSidebar.
+  $("run-list").querySelectorAll(".group-toggle").forEach((b) => b.addEventListener("click", () => {
+    const off = !collapsedGroups.has(b.dataset.group);
+    collapsedGroups[off ? "add" : "delete"](b.dataset.group);
+    b.nextElementSibling.hidden = off;
+    b.querySelector("svg").style.transform = `rotate(${off ? "-90deg" : "0deg"})`;
+    fitSidebar();
+  }));
+  fitSidebar();
 }
+// Keep the sidebar inside the window: the run list gets whatever room is left below its own top edge
+// and scrolls internally. Measured rather than a fixed max-height, because that top moves — the aside
+// is sticky (it rises to the sticky offset as the page scrolls) and the header above the list changes
+// height between datasets (the Stages/Pipelines toggle is hidden on the flat ones).
+let fitLast = "";
+function fitSidebar() {
+  const nav = $("run-list");
+  if (!nav) return;
+  const h = Math.max(160, window.innerHeight - nav.getBoundingClientRect().top - 16) + "px";
+  if (h !== fitLast) { fitLast = h; nav.style.maxHeight = h; }   // only touch style when it changes
+}
+addEventListener("resize", fitSidebar);
+addEventListener("scroll", fitSidebar, { passive: true });   // the sticky aside rises as you scroll
 // In-content dataset switch for a COMPOSED pipeline, shown above the viewer/metrics: toggle the SAME
 // pipeline between its in-silico (2019) score and its harmonization (2026) reproducibility view, and,
 // in harmonization view, pick the scanner/protocol/run acquisition. Both directions switch IN-PLACE
@@ -529,7 +661,7 @@ function renderPipelineDatasetSwitch() {
   const el = $("dataset-switch");
   if (!el) return;
   const inRepro = reproMode;
-  const pipe = inRepro ? reproPipe : run.slug;
+  const pipe = inRepro ? reproPipe : pipelineIdOf(run);
   const simId = simRunIdOf(pipe);
   const hasSim = allRuns.some((r) => r.id === simId);
   const hasRepro = pipeHasRepro(pipe);
@@ -611,7 +743,7 @@ function renderReproStats() {
   $("metrics-sub").textContent = "Reproducibility of this pipeline across the harmonization acquisitions: orthogonal per-ROI ax+b fits, |a−1| (median).";
   const rankCell = (rk, label) => rk
     ? `<span class="inline-block rounded-md px-1.5 py-0.5 text-xs font-semibold text-white shadow-sm" style="background:${heatScale(rk.t)}" data-tip="Rank ${rk.rank} of ${rk.n} harmonization pipelines for ${label}">#${rk.rank}<span class="opacity-70"> / ${rk.n}</span></span>`
-    : `<span class="text-gray-300 dark:text-gray-600">, </span>`;
+    : `<span class="text-gray-300 dark:text-gray-600">—</span>`;
   // A reproducibility |a−1| row: value as a %, ranked against every other pipeline.
   const row = (label, field, tip) => {
     const v = node ? node[field] : null;
@@ -662,7 +794,7 @@ function renderReproRegionTable(block) {
 function renderDatasetSwitch() {
   // A composed pipeline (in harmonization OR in-silico) toggles the same pipeline between its 2019
   // score and its 2026 reproducibility view, whenever it exists on the other side.
-  if (reproMode || (run?.mode === "composed" && pipeHasRepro(run.slug))) return renderPipelineDatasetSwitch();
+  if (reproMode || (run?.mode === "composed" && pipeHasRepro(pipelineIdOf(run)))) return renderPipelineDatasetSwitch();
   const el = $("dataset-switch");
   if (!el) return;
   const peers = datasetPeers();
@@ -750,7 +882,7 @@ function methodCard(a) {
   const hasCs  = plist.some((p) => tunedVal(p, "chisep") != null);
   const cell = (v) => v != null
     ? `<span class="text-emerald-600 dark:text-emerald-400">⚙ ${v}</span>`
-    : `<span class="text-gray-300 dark:text-gray-600">, </span>`;
+    : `<span class="text-gray-300 dark:text-gray-600">—</span>`;
   const params = plist.map((p) =>
     `<tr class="border-t border-gray-100 dark:border-gray-800">`
     + `<td class="py-1 pr-3 font-mono text-gray-700 dark:text-gray-300">${p.name}</td>`
@@ -786,12 +918,7 @@ function renderMethodInfo() {
   const el = $("method-info");
   const bySlug = Object.fromEntries(algos.map((a) => [a.slug, a]));
   const cards = [];
-  if (run.combo) {
-    for (const s of [run.combo.field_mapping, run.combo.bfr, run.combo.dipole])
-      if (s && s !== "gt" && bySlug[s]) cards.push(methodCard(bySlug[s]));
-  } else if (bySlug[run.slug]) {
-    cards.push(methodCard(bySlug[run.slug]));
-  }
+  for (const s of pipelineSteps(run)) if (bySlug[s]) cards.push(methodCard(bySlug[s]));
   el.innerHTML = cards.join('<div class="border-t border-gray-100 dark:border-gray-800 pt-2"></div>');
   el.style.display = cards.length ? "" : "none";
 }
@@ -1040,7 +1167,7 @@ function renderChisepMetrics() {
       const rk = rankBy(acc, arrow === "↑");
       const rankCell = rk
         ? `<span class="inline-block rounded-md px-1.5 py-0.5 text-xs font-semibold text-white shadow-sm" style="background:${heatScale(rk.t)}" data-tip="Rank ${rk.rank} of ${rk.n} χ-separation methods for ${label}">#${rk.rank}<span class="opacity-70"> / ${rk.n}</span></span>`
-        : `<span class="text-gray-300 dark:text-gray-600">, </span>`;
+        : `<span class="text-gray-300 dark:text-gray-600">—</span>`;
       html += `<tr>
         <td class="whitespace-nowrap py-2 text-gray-500 dark:text-gray-400"><span class="has-tip" data-tip="${tip.replace(/"/g, "&quot;")}">${label}</span> <span class="text-gray-300 dark:text-gray-600" title="${arrow === "↑" ? "higher" : "lower"} is better">${arrow}</span></td>
         <td class="py-2 text-right tabular-nums ${hero ? "font-bold text-gray-900 dark:text-gray-100" : "font-medium text-gray-700 dark:text-gray-300"}">${num(v, fk)}</td>
@@ -1069,7 +1196,7 @@ function renderMetrics() {
     const rk = metricRank(k);
     const rankCell = rk
       ? `<span class="inline-block rounded-md px-1.5 py-0.5 text-xs font-semibold text-white shadow-sm" style="background:${heatScale(rk.t)}" data-tip="Rank ${rk.rank} of ${rk.n} ${groupLabel} for ${meta.label}">#${rk.rank}<span class="opacity-70"> / ${rk.n}</span></span>`
-      : `<span class="text-gray-300 dark:text-gray-600">, </span>`;
+      : `<span class="text-gray-300 dark:text-gray-600">—</span>`;
     return `<tr>
       <td class="py-2.5 text-gray-500 dark:text-gray-400"><span class="has-tip" data-tip="${(meta.desc || "").replace(/"/g, "&quot;")}">${meta.label}</span> <span class="text-gray-300 dark:text-gray-600" title="${meta.better} is better">${arrow}</span></td>
       <td class="py-2.5 text-right tabular-nums ${hero ? "font-bold text-gray-900 dark:text-gray-100" : "font-medium text-gray-700 dark:text-gray-300"}">${fmt(val(run, k), k)}</td>
@@ -1377,9 +1504,14 @@ const runHasError = () => !run.volumes || !!run.volumes.error;
 const volComps = () => (isChisepRun() ? ["para", "dia"] : ["para"]);
 const residentByUrl = (u) => nv.volumes.find((v) => v.url === u);
 
-// Per-source display window: χ+ [0,0.1], χ− [0,0.05]; plain χ maps ±0.1 ppm; fields/other auto.
-function windowFor(vol, comp) {
-  if (run.kind === "chi") { vol.cal_min = -0.1; vol.cal_max = 0.1; }
+// Per-source display window, applied to susceptibility maps only (the recon and its ground truth):
+// χ+ [0,0.1], χ− [0,0.05]; plain χ maps ±0.1 ppm. Every other map — the magnitude structural
+// reference, field maps, R2′ — carries arbitrary units a ppm window would black out, so it gets the
+// robust auto window instead.
+const isChiMap = (kind) => kind === "recon" || kind === "truth";
+function windowFor(vol, kind, comp) {
+  if (!isChiMap(kind)) autoWin(vol);
+  else if (run.kind === "chi") { vol.cal_min = -0.1; vol.cal_max = 0.1; }
   else if (isChisepRun()) { vol.cal_min = 0; vol.cal_max = comp === "dia" ? 0.05 : 0.1; }
   else autoWin(vol);
 }
@@ -1398,7 +1530,7 @@ async function ensureVolume(role, kind, comp) {
   v = residentByUrl(url);
   if (!v) return null;
   v.__role = role; v.__kind = kind; v.__comp = comp;
-  if (role === "base") windowFor(v, comp);
+  if (role === "base") windowFor(v, kind, comp);
   return v;
 }
 
@@ -1501,7 +1633,7 @@ async function init() {
   $("metrics-tabs").querySelectorAll("[data-mtab]").forEach((b) =>
     b.addEventListener("click", () => { metricsTab = b.dataset.mtab; renderMetricsPanel(); }));
   document.querySelectorAll("#nav-toggle button").forEach((b) => b.addEventListener("click", () => { navMode = b.dataset.mode; buildSidebar(); }));
-  document.querySelectorAll("#domain-toggle button").forEach((b) => b.addEventListener("click", () => switchDataset(b.dataset.domain)));
+  document.querySelectorAll("#domain-toggle button").forEach((b) => b.addEventListener("click", () => browseDataset(b.dataset.domain)));
 
   // Harmonization entry: ?pipeline=<id>&dataset=repro&acq=<acquisition>. Generate the acquisition's
   // pipeline pool (see ensureReproRuns) and open the requested pipeline. From here it's the same

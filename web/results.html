@@ -185,12 +185,12 @@
           <span>Field mapping</span>
           <div class="relative" @click.outside="fmapMenu=false">
             <button @click="fmapMenu=!fmapMenu" class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
-              <span x-text="fmap==='gt' ? 'ground truth' : algoName(fmap)"></span>
+              <span x-text="fmap==='gt' ? 'Ground truth' : algoName(fmap)"></span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
             <div x-show="fmapMenu" x-cloak class="absolute left-0 z-20 mt-2 w-56 rounded-xl border border-gray-200 bg-white p-1.5 shadow-lg" style="display:none">
               <template x-for="f in fmaps()" :key="f">
-                <button @click="fmap=f; fmapMenu=false" class="flex w-full items-center rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-gray-50" :class="fmap===f ? 'font-semibold text-emerald-700' : 'text-gray-600'" x-text="f==='gt' ? 'ground truth' : algoName(f)"></button>
+                <button @click="fmap=f; fmapMenu=false" class="flex w-full items-center rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-gray-50" :class="fmap===f ? 'font-semibold text-emerald-700' : 'text-gray-600'" x-text="f==='gt' ? 'Ground truth' : algoName(f)"></button>
               </template>
             </div>
           </div>
@@ -1765,7 +1765,20 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           return !!(this.reproData && Object.keys(this.reproData.pipelines || {}).length) ||
             this.runs.some((r) => r.track === "repro");
         },
-        _reproPipes() { return (this.reproData && this.reproData.pipelines) || {}; },
+        // Harmonization pipelines, filtered to methods QSM-CI still ships. The harvest (repro_eval.py)
+        // drops methods RETIRED from the manifest, so what's filtered here are the ones deliberately
+        // kept but `hidden` — a parked submission like the MATLAB amp-pe, whose data stays in
+        // repro.json so it can be revived. loadRuns() applies the same rule to the in-silico runs;
+        // this is the one chokepoint every harmonization table, chart and finding reads, so filtering
+        // here covers all of them (and still catches a retired method in an older payload).
+        _reproPipes() {
+          const raw = (this.reproData && this.reproData.pipelines) || {};
+          return _cache("reproLive", Object.keys(raw).length + "|" + this.algos.length, () => {
+            if (!this.algos.length) return raw;   // manifest not in yet: don't blank the whole view
+            const live = new Set(this.algos.filter((a) => !a.hidden).map((a) => a.slug));
+            return Object.fromEntries(Object.entries(raw).filter(([pipe]) => pipe.split("+").every((s) => live.has(s))));
+          });
+        },
         reproProtoLabel(p) { return p.replace("pulseq-online", "Pulseq (online)").replace("pulseq-offline", "Pulseq (offline)"); },
         reproName(slug) { return slug.split("+").map((s) => this.algoName(s)).join(" → "); },
         // group-key parsers: test_retest / inter_protocol keys are "<scanner>-<protocol>"
@@ -2708,7 +2721,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         //  FINDINGS
         // ==================================================================================
         _esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); },
-        disp(slug) { return slug === "gt" ? "ground truth" : this.algoName(slug); },
+        disp(slug) { return slug === "gt" ? "Ground truth" : this.algoName(slug); },
         _fam(slug) { return DL.has(slug) ? "dl" : DIRECT.has(slug) ? "direct" : "iter"; },
         _famC(slug) { return FAM[this._fam(slug)].c; },
         _runId(slug) { const r = this.runs.find((x) => x.mode === "isolated" && !this._isInvivo(x) && x.stage === "dipole" && x.slug === slug && (x.variant || "default") === "default"); return r ? r.id : ""; },
