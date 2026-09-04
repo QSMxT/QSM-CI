@@ -887,11 +887,17 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
         <div>
           <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Reproduce the phantoms</h3>
           <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">qsm-forward builds the phantoms from a data directory holding the Challenge&nbsp;2.0 tissue-property maps and diffusion V1 eigenvector. Request those from the Donders repository (<a href="https://data.ru.nl/collections/di/dccn/DSC_3015069.02_542" class="text-emerald-600 hover:underline break-words">data.ru.nl/&hellip;/DSC_3015069.02_542</a>, DOI <a href="https://doi.org/10.34973/m20r-jt17" class="text-emerald-600 hover:underline">10.34973/m20r-jt17</a>), and add the white-matter tract mask from the <a href="https://github.com/neuropoly/Susceptibility-Separation-Phantom" class="text-emerald-600 hover:underline">Susceptibility-Separation-Phantom</a> repository (Ridani et&nbsp;al.). QSM-CI&rsquo;s <a href="https://github.com/astewartau/qsm-ci" class="text-emerald-600 hover:underline"><code>scripts/gen_chisep.py</code></a> then generates each phantom from a preset:</p>
-          <pre class="mt-3 overflow-x-auto rounded-xl bg-gray-900 p-4 text-sm text-gray-100"><code class="language-bash">gen_chisep.py --preset ridani-3t-iso    --out data/ridani-3t-iso
-gen_chisep.py --preset ridani-3t-aniso  --out data/ridani-3t-aniso
-gen_chisep.py --preset ridani-7t-aniso  --out data/ridani-7t-aniso
+          <pre class="mt-3 overflow-x-auto rounded-xl bg-gray-900 p-4 text-sm text-gray-100"><code class="language-bash"># The fibre-bundle atlas: Masks/WM_fibers_seg.nii.gz from the Ridani et al. OSF project
+# (osf.io/9xwhz, 168 KB, md5 06b1aec8b2a8a001e7e856c6c1fddcf0). Every shipped phantom carries it
+# resampled as groundtruth/wm_rois.nii.gz — the label map the χ- per-ROI MSPE averages over — so
+# --wm-rois-src is required to reproduce them fully.
+ROIS=/path/to/WM_fibers_seg.nii.gz
+
+gen_chisep.py --preset ridani-3t-iso    --wm-rois-src $ROIS --out data/ridani-3t-iso
+gen_chisep.py --preset ridani-3t-aniso  --wm-rois-src $ROIS --out data/ridani-3t-aniso
+gen_chisep.py --preset ridani-7t-aniso  --wm-rois-src $ROIS --out data/ridani-7t-aniso
 gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
-    --tes 3,9,15,21,27,33,39,45 --out data/chisep-mc   # χ-sep MC</code></pre>
+    --tes 3,9,15,21,27,33,39,45 --wm-rois-src $ROIS --out data/chisep-mc   # χ-sep MC</code></pre>
           <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">Each preset sets the field, echo train, isotropy and relaxivity, simulates the signals and flattens the result into the dataset layout (public <code>inputs/</code>, held-out <code>groundtruth/</code>); point <a href="running.html" class="text-emerald-600 hover:underline"><code>qsm-ci run</code></a> straight at the NIfTIs.</p>
         </div>
         <div>
