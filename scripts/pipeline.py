@@ -107,18 +107,44 @@ def emit_intermediate(phantom: str, name: str, src: Path) -> None:
     shutil.copy(src, d / f"{name}.nii.gz")
 
 
+# Where the ground-truth volumes the viewer shows are staged for publishing. ONE copy per
+# (phantom, artifact) — results/_truth/<phantom>/<artifact>.nii.gz — not one per run: every run on a
+# phantom scores against the same truth, and publish_volumes.py uploads it to the Hub once as
+# truth/<phantom>/<artifact>.nii.gz. Each run dir gets a tiny truth.ref pointer (the path relative to
+# results/) so the publisher knows which shared file a run's `volumes.truth` URL must point at.
+TRUTH_DIR = "_truth"
+
+
+def _stage_truth(truth: Path) -> Path:
+    """Copy `truth` (…/<phantom>/{groundtruth,inputs}/<artifact>.nii.gz) into the shared
+    results/_truth/<phantom>/<artifact>.nii.gz slot, once, and return that path."""
+    truth = Path(truth)
+    phantom = truth.parent.parent.name          # data/<phantom>/groundtruth/chimap.nii.gz -> <phantom>
+    dest = ROOT / "results" / TRUTH_DIR / phantom / truth.name
+    if not dest.exists():
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy(truth, dest)
+    return dest
+
+
 def emit_volumes(run_id, recon, truth, mask=None, resources=None, suffix=""):
-    """Write recon / truth / error volumes under results/<run_id>/ for the NiiVue viewer.
+    """Write recon / error volumes under results/<run_id>/ for the NiiVue viewer, plus a pointer to
+    the run's (shared) ground-truth volume.
 
     The error map is the signed difference recon - truth, zeroed outside the raw brain mask so the
     background stays clean (the viewer shows it with a diverging red↔blue colormap). `suffix` names a
     second volume set on the same run — χ-separation uses "-dia" for its χ− source so the viewer's
-    χ+/χ− toggle can load recon-dia.nii.gz etc. alongside the plain χ+ set."""
+    χ+/χ− toggle can load recon-dia.nii.gz etc. alongside the plain χ+ set.
+
+    The truth itself is NOT copied per run (it used to be, which put hundreds of identical copies
+    of each phantom's χ map on the Hub): it is staged once via _stage_truth and the run dir carries
+    truth{suffix}.ref = its path relative to results/."""
     import nibabel as nib
     d = ROOT / "results" / run_id
     d.mkdir(parents=True, exist_ok=True)
     shutil.copy(recon, d / f"recon{suffix}.nii.gz")
-    shutil.copy(truth, d / f"truth{suffix}.nii.gz")
+    shared = _stage_truth(truth)
+    (d / f"truth{suffix}.ref").write_text(shared.relative_to(ROOT / "results").as_posix() + "\n")
     if resources is not None and Path(resources).exists():
         shutil.copy(resources, d / "resources.json")  # memory/CPU-over-time trace for the graph
     r, t = nib.load(str(recon)), nib.load(str(truth))

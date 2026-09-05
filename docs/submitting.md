@@ -116,7 +116,7 @@ python scripts/pipeline.py --dataset data/sim/dev --mode both --runner docker
 qsm-ci submit <your-slug>        # commit on a branch + open the PR (uses gh if present)
 ```
 
-QSM-CI runs your stage **isolated** on the held-out ground-truth boundary (no network, time-limited),
+QSM-CI runs your stage **isolated** on the ground-truth boundary (no network, time-limited),
 scores it, and comments the metrics on your PR. The full **composition matrix** (your stage against
 everyone else's) refreshes on the [leaderboard](https://qsmxt.github.io/QSM-CI/). The
 authoritative score always comes from CI — it holds the real, hidden scoring phantom — but running

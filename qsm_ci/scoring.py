@@ -62,7 +62,7 @@ def gt_sources(dataset: Path) -> dict[str, Path]:
     Each artifact resolves to `<dataset>/inputs/<file>` when that file exists, else
     `<dataset>/groundtruth/<file>` — so an isolated run is fed the exact artifact its stage consumes,
     whichever side of the boundary it lives on. For the QSM sim datasets that means raw acquisition
-    (phase/magnitude/mask/params) from inputs/ and the held-out stage boundaries
+    (phase/magnitude/mask/params) from inputs/ and the stage boundaries
     (totalfield/localfield/chimap) from groundtruth/. For the χ-separation dataset the local field,
     R2′ and χ_total are *provided* inputs, so they resolve from inputs/ (the phantom's true maps),
     while the scored χ+/χ− source maps stay in groundtruth/.
@@ -71,7 +71,7 @@ def gt_sources(dataset: Path) -> dict[str, Path]:
     # Raw acquisition / provided-relaxation artifacts are always public inputs.
     raw = {"phase": "phase.nii.gz", "magnitude": "magnitude.nii.gz", "mask": "mask.nii.gz",
            "params": "params.json", "r2prime": "r2prime.nii.gz"}
-    # Stage boundaries are held-out ground truth for the QSM pipeline, but *provided* inputs for the
+    # Stage boundaries are ground truth for the QSM pipeline, but *provided* inputs for the
     # χ-separation dataset (the phantom's true local field / χ_total). Prefer inputs/ when present.
     boundary = {"totalfield": "totalfield.nii.gz", "localfield": "localfield.nii.gz",
                 "chimap": "chimap.nii.gz"}

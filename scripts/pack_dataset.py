@@ -10,7 +10,7 @@ stages.yml / CONTRACT.md):
 
 `inputs/` is the public boundary for the field-mapping / end-to-end stage. `groundtruth/` holds the
 per-stage scoring targets *and* the boundaries mounted (at run time only) as isolated-mode inputs to
-downstream stages. For the scoring phantom, `groundtruth/` is held out (OSF); for a dev phantom it
+downstream stages. For the scoring phantom, `groundtruth/` comes from the OSF zip (not committed); for a dev phantom it
 may be released openly.
 
 Usage:

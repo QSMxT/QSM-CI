@@ -152,9 +152,13 @@ Two modes (see [`stages.yml`](stages.yml)):
 ### Integrity — what your container does and doesn't see
 
 - Your container receives the artifacts your stage **consumes**. In isolated mode these are
-  ground-truth boundaries, mounted **at run time** from held-out data.
+  ground-truth boundaries, mounted **at run time** from the dataset's `groundtruth/`.
 - Your container **never** receives the artifact it is supposed to **produce** (its scoring target),
-  and has **no network**, so it cannot see or exfiltrate the answer.
+  and has **no network**, so a run cannot read its own answer.
 - Scoring against ground truth happens in a separate step your container never touches.
+- The ground truth itself is **public**: the results viewer shows it next to every reconstruction,
+  and each phantom's truth is published once to the Hugging Face volumes repo. QSM-CI is a
+  benchmark, not a blind challenge — submissions are reviewed as pull requests, and a method has to
+  generalise across every dataset it is scored on.
 
 This is what keeps scores honest while still letting stages be tested in isolation.

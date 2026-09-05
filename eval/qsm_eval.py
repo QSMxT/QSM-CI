@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """qsm-eval — the QSM-CI scorer.
 
-Loads a reconstruction and the (held-out) ground truth, computes the challenge metrics, and writes
+Loads a reconstruction and the ground truth, computes the challenge metrics, and writes
 `metrics.json` (plus an optional center-slice figure). This is the *only* place ground truth is
 read, keeping it out of submitters' containers.
 

@@ -22,8 +22,10 @@ Every dataset is one directory with two halves (see [`../stages.yml`](../stages.
                          (a `dipole` submission is fed the true localfield, etc.)
 ```
 
-`groundtruth/` is **held out and never committed**. Submissions never receive `OSF_TOKEN`, so a
-container cannot fetch it.
+`groundtruth/` is **never committed to this repo** (the OSF zip is the source; submissions never
+receive `OSF_TOKEN`, so a container cannot fetch it at run time). It is not secret, though: the
+results viewer shows the truth beside every reconstruction, and each phantom's truth is published
+once to the Hugging Face volumes repo as `truth/<phantom>/<artifact>.nii.gz`.
 
 ## The registry
 
