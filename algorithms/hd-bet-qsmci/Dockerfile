@@ -6,7 +6,10 @@ FROM ghcr.io/astewartau/qsm-ci/py-ref:v1
 # installing torch alone lets HD-BET pull an incompatible torchvision from PyPI, which breaks with
 # "operator torchvision::nms does not exist"); then HD-BET from PyPI.
 RUN pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu torch torchvision \
-    && pip install --no-cache-dir HD-BET
+    && pip install --no-cache-dir HD-BET \
+    && pip install --no-cache-dir scipy   # extract.py's signal-gated erosion (ndimage); already
+                                          # pulled in transitively by nnU-Net, declared here so a
+                                          # future HD-BET dependency change can't silently drop it
 
 # HD-BET reads its weights from `os.path.expanduser('~')/hd-bet_params` — i.e. $HOME, with no env
 # override. The qsm-ci runner runs containers as an arbitrary non-root user (docker --user), which
