@@ -239,8 +239,8 @@ def pack_acquisition(scanner: str, protocol: str, run: str, out_root: Path) -> d
 def hdbet_mask(acq_out: Path, qsm_ci: str = "qsm-ci") -> None:
     """Brain mask via the QSM-CI HD-BET masking stage (`qsm-ci run hd-bet-qsmci`).
 
-    Runs the containerised `brain-extraction` stage on the packed magnitude (its
-    extract.py uses the first echo). Set QSMCI_GPU=1 in the environment to run HD-BET
+    Runs the containerised `brain-extraction` stage on the packed magnitude (its extract.py
+    combines echoes by root-sum-of-squares). Set QSMCI_GPU=1 in the environment to run HD-BET
     on GPU. Needs the `ghcr.io/astewartau/qsm-ci/hd-bet:v1` image available to the
     runner — typically done on the recompute host (Bunya/CI), not this box.
     """
@@ -250,9 +250,11 @@ def hdbet_mask(acq_out: Path, qsm_ci: str = "qsm-ci") -> None:
         return
     try:
         subprocess.run(
+            # No --params: hd-bet-qsmci declares `inputs: [magnitude]`, and the runner builds the
+            # CLI from a method's declared inputs, so this stage takes no params.json. Passing one
+            # is an argparse error, which this function would swallow as "hd-bet failed".
             [qsm_ci, "run", "hd-bet-qsmci",
              "--magnitude", str(inputs / "magnitude.nii.gz"),
-             "--params", str(inputs / "params.json"),
              "-o", str(mask_path)],
             check=True, capture_output=True, text=True)
     except FileNotFoundError:
