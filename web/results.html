@@ -564,7 +564,7 @@
               <div class="text-gray-600 dark:text-gray-300" style="flex:0 0 168px;max-height:440px;overflow-y:auto;border-left:1px solid rgba(148,163,184,.2);padding-left:.75rem" x-html="regionAlgoLegend"></div>
             </div>
           </div>
-          <p class="mt-4 text-[11px] text-gray-400">Statistics are computed within each run's own valid support (an eroding method reports over fewer voxels), so the paired ground-truth values can differ slightly between runs. Currently populated for isolated dipole runs; composed pipelines fill in at the next full re-score.</p>
+          <p class="mt-4 text-[11px] text-gray-400">Statistics are computed over the full brain mask (a voxel an eroding method dropped counts as zero), so from the next full re-score the paired ground-truth values are identical for every run on a phantom; runs scored earlier used each run's own valid support and can differ slightly. Currently populated for isolated dipole runs; composed pipelines fill in at the next full re-score.</p>
         </div>
 
         <!-- ---- Speed & tuning ---- -->

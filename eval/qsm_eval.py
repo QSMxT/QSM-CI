@@ -412,11 +412,12 @@ def region_stats(vol, seg, mask, min_vox=10) -> dict:
 
 
 def region_summary(recon, truth, seg, mask) -> dict:
-    """Per-region descriptive stats for a run: recon and truth, both under the run's SCORE mask.
-    Truth is re-summarised per run on purpose — the score mask is the recon's valid support (e.g.
-    after BFR erosion), so the truth stats are the paired reference for exactly the voxels this run
-    was scored on, not a phantom-wide constant. For a χ− (dia) component both maps are the positive
-    magnitude convention used throughout the scorer."""
+    """Per-region descriptive stats for a run: recon and truth, both under the run's score mask.
+    Truth is re-summarised per run so the truth stats are the paired reference for exactly the voxels
+    this run was scored on. (Since every run is scored over the full brain mask that is the same
+    reference for every run on a phantom; rows scored before that change used the recon's own valid
+    support, e.g. after BFR erosion, and can differ slightly.) For a χ− (dia) component both maps are
+    the positive magnitude convention used throughout the scorer."""
     m = mask > 0
     rec = region_stats(recon, seg, m)
     tru = region_stats(truth, seg, m)
@@ -512,6 +513,22 @@ def main() -> None:
     if recon.shape != truth.shape or recon.shape != mask.shape:
         raise SystemExit(f"shape mismatch: recon {recon.shape}, truth {truth.shape}, mask {mask.shape}")
 
+    # Score over the WHOLE mask. A voxel the method dropped (an eroded rim comes back as zeros) or
+    # failed on (NaN/inf) is scored as 0 against the full truth value there, so a method that covers
+    # the brain beats an equally accurate one that erodes it. `coverage` — the fraction of the mask
+    # carrying a finite, non-zero value — is reported alongside, so a drop in xSIM can be read as
+    # "missing brain" rather than "wrong values". (Scoring used to be restricted to the recon's own
+    # non-zero support, which made erosion free.)
+    # Both maps are zeroed OUTSIDE the mask first. xSIM and HFEN are neighbourhood filters run over the
+    # whole volume before masking, so anything beyond the brain edge (a phantom's skull/air χ that a
+    # method never sees, or a method's own out-of-mask garbage) would otherwise bleed into the score at
+    # the boundary — a bit-perfect recon of a phantom with non-zero χ outside the mask scored xSIM 0.76.
+    # With both maps sharing the same hard edge, the edge cancels and only in-mask differences count.
+    m = mask > 0
+    recon = np.where(m & np.isfinite(recon), recon, 0.0)
+    truth = np.where(m, truth, 0.0)
+    coverage = float(((recon != 0) & m).sum() / m.sum()) if m.any() else math.nan
+
     regions = None
     if args.kind == "chisep":
         seg = np.rint(load(args.seg)).astype(np.int32) if args.seg else None
@@ -538,6 +555,7 @@ def main() -> None:
             "correlation": correlation(recon, truth, mask),
             "xsim": xsim(recon, truth, mask),
         }
+    metrics["coverage"] = coverage
 
     result = {
         "name": args.name,

@@ -448,8 +448,9 @@ def _valid_mask(volume: Path, base_mask: Path, out: Path) -> Path:
     Eroding stages (SHARP/V-SHARP/RESHARP/iSMV, Laplacian field-mapping, …) zero exactly the voxels
     they drop, so a field/χ's non-zero support IS the stage's valid region. Threading this as the
     mask into the next stage stops a dipole from deconvolving a zero-field rim (which smears a blurry
-    boundary), and scoring within it stops that rim being counted as error. Empty output → keep the
-    base mask so it still scores (badly) rather than crashing."""
+    boundary). It is NOT the score mask: every run is scored over the full brain mask, so the rim a
+    pipeline lost along the way counts against its final map. Empty output → keep the base mask so
+    the next stage still runs rather than crashing."""
     import nibabel as nib
     import numpy as np
     v = nib.load(str(volume))
@@ -479,10 +480,12 @@ def score(recon: Path, artifact: str, gt_dir: Path, mask: Path, out_json: Path, 
     # reference is NOT a groundtruth/ file — a generated r2prime scores against the phantom's true
     # R2′, which is an INPUT of the χ-separation datasets (inputs/r2prime.nii.gz).
     truth = truth if truth is not None else gt_dir / ARTIFACT_FILE[artifact]
-    raw_mask = mask  # the full brain mask, before erosion — used to mask the viewer's error map
-    # Score only where the method actually produced a value (its non-zero support), so an eroded
-    # rim isn't penalised as error — consistent with masking that rim out of the pipeline.
-    mask = _valid_mask(recon, mask, out_json.parent / (out_json.stem + "_scoremask.nii.gz"))
+    raw_mask = mask  # the full brain mask — also masks the viewer's error map
+    # Score over the FULL brain mask: a voxel the method dropped (an eroded rim) or failed on counts
+    # as error against the truth there, so covering the brain is rewarded over eroding it. (Runs used
+    # to be scored only on their own non-zero support, which made erosion free; the scorer now also
+    # reports `coverage` so the two effects can be told apart.) The valid-support mask is still what
+    # a composed pipeline threads into its NEXT stage — see _valid_mask.
     seg = gt_dir / "dseg.nii.gz"
     component = {"chi-para": "para", "chi-dia": "dia"}.get(artifact)  # χ-sep source for region metrics
     # The in-vivo (2016 challenge) dataset DOES ship a dseg, but it follows a different label scheme
@@ -519,7 +522,13 @@ def score(recon: Path, artifact: str, gt_dir: Path, mask: Path, out_json: Path, 
     # null/NaN. Record that as a clear DNF (not a metric-less "ok" row, and without crashing the
     # caller's formatted print) so the failure is legible instead of a cryptic format-string error.
     primary = (result.get("metrics") or {}).get("xsim" if kind in ("chi", "chisep") else "nrmse")
-    if _finite(primary):
+    coverage = (result.get("metrics") or {}).get("coverage")
+    if _finite(coverage) and coverage == 0:
+        # Non-finite / all-zero voxels are scored as 0 (see qsm_eval), so an entirely empty map would
+        # otherwise land as a legitimately terrible score instead of the failure it is.
+        result["status"] = "DNF"
+        result["dnf_reason"] = "empty output (no finite non-zero voxel inside the mask)"
+    elif _finite(primary):
         result["status"] = "ok"
     else:
         result["status"] = "DNF"
@@ -600,8 +609,7 @@ def score_secondary(recon: Path, gt_dir: Path, mask: Path, out_json: Path, meta:
     if not ref.exists():
         return {}
     kind = ARTIFACT_KIND["chimap"]
-    smask = _valid_mask(recon, mask, out_json.parent / (out_json.stem + "_scoremask.nii.gz"))
-    cmd = eval_argv(sys.executable, EVAL, recon, ref, kind, smask, "chimap", out_json,
+    cmd = eval_argv(sys.executable, EVAL, recon, ref, kind, mask, "chimap", out_json,  # full mask, as score()
                     stage=meta["stage"], name=meta["name"], track=meta["track"],
                     runtime=meta.get("runtime"))
     subprocess.run(cmd, check=True)
