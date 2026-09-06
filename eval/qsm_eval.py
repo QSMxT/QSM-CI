@@ -475,6 +475,62 @@ def selfcheck() -> None:
     print("[qsm-eval] selfcheck ok")
 
 
+def score_arrays(recon, truth, mask, kind: str = "chi", seg=None, component: str = "para",
+                 wm_rois=None, theta=None) -> "tuple[dict, dict | None]":
+    """THE scorer entry point — what the CI pipeline (via main) and `qsm-ci run --truth` both call,
+    so a number printed locally is the number the leaderboard would publish.
+
+    `kind` selects the metric set: 'field' / 'relaxation' (total/local field, generated R2′: global
+    agreement), 'chi' (χ: the 2016-challenge suite, plus region metrics when `seg` is given) or
+    'chisep' (one χ+/χ− source component, `component`; `seg`/`wm_rois`/`theta` add its region and
+    orientation metrics). `seg` is an integer label map. Returns (metrics, regions-or-None).
+
+    Scoring is over the WHOLE mask. A voxel the method dropped (an eroded rim comes back as zeros)
+    or failed on (NaN/inf) is scored as 0 against the full truth value there, so a method that
+    covers the brain beats an equally accurate one that erodes it. `coverage` — the fraction of the
+    mask carrying a finite, non-zero value — is reported alongside, so a drop in xSIM can be read as
+    "missing brain" rather than "wrong values". (Scoring used to be restricted to the recon's own
+    non-zero support, which made erosion free.)
+
+    Both maps are zeroed OUTSIDE the mask first. xSIM and HFEN are neighbourhood filters run over
+    the whole volume before masking, so anything beyond the brain edge (a phantom's skull/air χ that
+    a method never sees, or a method's own out-of-mask garbage) would otherwise bleed into the score
+    at the boundary — a bit-perfect recon of a phantom with non-zero χ outside the mask scored xSIM
+    0.76. With both maps sharing the same hard edge, the edge cancels and only in-mask differences
+    count."""
+    if recon.shape != truth.shape or recon.shape != mask.shape:
+        raise ValueError(f"shape mismatch: recon {recon.shape}, truth {truth.shape}, mask {mask.shape}")
+    m = mask > 0
+    recon = np.where(m & np.isfinite(recon), recon, 0.0)
+    truth = np.where(m, truth, 0.0)
+    coverage = float(((recon != 0) & m).sum() / m.sum()) if m.any() else math.nan
+
+    regions = None
+    if kind == "chisep":
+        metrics = chisep_metrics(recon, truth, mask, seg, component, wm_rois, theta)
+        if seg is not None:
+            regions = region_summary(recon, truth, seg, mask)
+    elif kind in ("field", "relaxation"):  # same agreement set; relaxation = a generated R2′ (Hz)
+        metrics = field_metrics(recon, truth, mask)
+    elif seg is not None:  # chi with segmentation -> full challenge suite
+        metrics = challenge_metrics(recon, truth, mask, seg)
+        regions = region_summary(recon, truth, seg, mask)
+    else:  # chi without segmentation (e.g. in-vivo): no region metrics, but the headline 2016
+        # challenge suite still applies — NRMSE (the 2016 headline metric), detrended NRMSE, HFEN
+        # (fine-detail error), correlation and XSIM. Region/calcification metrics need the sim
+        # segmentation scheme, which the in-vivo dseg does not follow, so they are omitted.
+        nrmse, nrmse_dt = nrmse_challenge(recon, truth, mask)
+        metrics = {
+            "nrmse": nrmse,
+            "nrmse_detrend": nrmse_dt,
+            "hfen": hfen(recon, truth, mask),
+            "correlation": correlation(recon, truth, mask),
+            "xsim": xsim(recon, truth, mask),
+        }
+    metrics["coverage"] = coverage
+    return metrics, regions
+
+
 def main() -> None:
     p = argparse.ArgumentParser(description="Score a QSM reconstruction against ground truth (QSM-CI).")
     p.add_argument("--recon", type=Path, help="produced artifact to score")
@@ -512,50 +568,11 @@ def main() -> None:
     recon, truth, mask = load(args.recon), load(args.truth), load(args.mask)
     if recon.shape != truth.shape or recon.shape != mask.shape:
         raise SystemExit(f"shape mismatch: recon {recon.shape}, truth {truth.shape}, mask {mask.shape}")
-
-    # Score over the WHOLE mask. A voxel the method dropped (an eroded rim comes back as zeros) or
-    # failed on (NaN/inf) is scored as 0 against the full truth value there, so a method that covers
-    # the brain beats an equally accurate one that erodes it. `coverage` — the fraction of the mask
-    # carrying a finite, non-zero value — is reported alongside, so a drop in xSIM can be read as
-    # "missing brain" rather than "wrong values". (Scoring used to be restricted to the recon's own
-    # non-zero support, which made erosion free.)
-    # Both maps are zeroed OUTSIDE the mask first. xSIM and HFEN are neighbourhood filters run over the
-    # whole volume before masking, so anything beyond the brain edge (a phantom's skull/air χ that a
-    # method never sees, or a method's own out-of-mask garbage) would otherwise bleed into the score at
-    # the boundary — a bit-perfect recon of a phantom with non-zero χ outside the mask scored xSIM 0.76.
-    # With both maps sharing the same hard edge, the edge cancels and only in-mask differences count.
-    m = mask > 0
-    recon = np.where(m & np.isfinite(recon), recon, 0.0)
-    truth = np.where(m, truth, 0.0)
-    coverage = float(((recon != 0) & m).sum() / m.sum()) if m.any() else math.nan
-
-    regions = None
-    if args.kind == "chisep":
-        seg = np.rint(load(args.seg)).astype(np.int32) if args.seg else None
-        wm_rois = load(args.wm_rois) if args.wm_rois and args.wm_rois.exists() else None
-        theta = load(args.theta) if args.theta and args.theta.exists() else None
-        metrics = chisep_metrics(recon, truth, mask, seg, args.component, wm_rois, theta)
-        if seg is not None:
-            regions = region_summary(recon, truth, seg, mask)
-    elif args.kind in ("field", "relaxation"):  # same agreement set; relaxation = a generated R2′ (Hz)
-        metrics = field_metrics(recon, truth, mask)
-    elif args.seg:  # chi with segmentation -> full challenge suite
-        seg = np.rint(load(args.seg)).astype(np.int32)
-        metrics = challenge_metrics(recon, truth, mask, seg)
-        regions = region_summary(recon, truth, seg, mask)
-    else:  # chi without segmentation (e.g. in-vivo): no region metrics, but the headline 2016
-        # challenge suite still applies — NRMSE (the 2016 headline metric), detrended NRMSE, HFEN
-        # (fine-detail error), correlation and XSIM. Region/calcification metrics need the sim
-        # segmentation scheme, which the in-vivo dseg does not follow, so they are omitted.
-        nrmse, nrmse_dt = nrmse_challenge(recon, truth, mask)
-        metrics = {
-            "nrmse": nrmse,
-            "nrmse_detrend": nrmse_dt,
-            "hfen": hfen(recon, truth, mask),
-            "correlation": correlation(recon, truth, mask),
-            "xsim": xsim(recon, truth, mask),
-        }
-    metrics["coverage"] = coverage
+    seg = np.rint(load(args.seg)).astype(np.int32) if args.seg else None
+    wm_rois = load(args.wm_rois) if args.wm_rois and args.wm_rois.exists() else None
+    theta = load(args.theta) if args.theta and args.theta.exists() else None
+    metrics, regions = score_arrays(recon, truth, mask, args.kind, seg=seg, component=args.component,
+                                    wm_rois=wm_rois, theta=theta)
 
     result = {
         "name": args.name,

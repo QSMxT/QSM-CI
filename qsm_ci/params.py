@@ -18,10 +18,8 @@ from pathlib import Path
 
 from .stages import STAGES
 
-# Consumed artifacts that aren't required to run a stage (only some methods use them, e.g. MEDI
-# uses magnitude; plain TKD does not; GRE-based χ-separation methods like APART-QSM/DECOMPOSE opt into
-# raw multi-echo phase). Everything else the stage consumes is required.
-OPTIONAL_ARTIFACTS = {"magnitude", "phase"}
+# Which consumed artifacts a method can run without is ONE rule, stages.is_optional — shared with the
+# help text and the workflow-engine wrappers so they can't disagree.
 
 # Multi-echo artifacts: a stage wants one 4D NIfTI (x,y,z,echo), but a caller with BIDS data has one
 # 3D file per echo. These flags accept several files and we stack them into the 4D artifact.
@@ -29,7 +27,7 @@ STACKABLE_ARTIFACTS = {"phase", "magnitude"}
 
 
 def _nifti_voxel_size(path) -> "list[float] | None":
-    """Read pixdim[1:4] (mm) straight from a NIfTI-1 header — no nibabel dependency."""
+    """Read pixdim[1:4] (mm) straight from a NIfTI-1 or NIfTI-2 header — no nibabel dependency."""
     if not path or not Path(path).exists():
         return None
     opener = gzip.open if str(path).endswith(".gz") else open
@@ -38,14 +36,46 @@ def _nifti_voxel_size(path) -> "list[float] | None":
             hdr = f.read(352)
         if len(hdr) < 352:
             return None
-        for endian in ("<", ">"):  # header endianness is whichever makes sizeof_hdr == 348
-            if struct.unpack(endian + "i", hdr[0:4])[0] == 348:
+        for endian in ("<", ">"):  # header endianness is whichever makes sizeof_hdr match
+            size = struct.unpack(endian + "i", hdr[0:4])[0]
+            if size == 348:      # NIfTI-1: pixdim = 8 x float32 at byte 76
                 pixdim = struct.unpack(endian + "8f", hdr[76:108])
-                vs = [abs(pixdim[1]), abs(pixdim[2]), abs(pixdim[3])]
-                return vs if all(v > 0 for v in vs) else None
-    except Exception:  # noqa: BLE001 — best-effort; caller falls back to a default
+            elif size == 540:    # NIfTI-2: pixdim = 8 x float64 at byte 104
+                pixdim = struct.unpack(endian + "8d", hdr[104:168])
+            else:
+                continue
+            vs = [abs(pixdim[1]), abs(pixdim[2]), abs(pixdim[3])]
+            return vs if all(v > 0 for v in vs) else None
+    except Exception:  # noqa: BLE001 — unreadable header; the caller decides what that means
         return None
     return None
+
+
+def _primary_path(args, consumes: list):
+    """The first consumed image input the caller supplied — whose header gives the voxel size.
+    A multi-echo flag (--phase/--magnitude, nargs="+") holds a LIST of files; any echo's header
+    describes the same grid, so take the first. Never a list, never params."""
+    for art in consumes:
+        if art == "params":
+            continue
+        v = getattr(args, art, None)
+        if v:
+            return v[0] if isinstance(v, (list, tuple)) else v
+    return None
+
+
+def _voxel_size(args, consumes: list, fallback=None) -> list:
+    """Voxel size for params.json: --voxel-size if given, else the primary input's NIfTI header,
+    else `fallback` (a BIDS sidecar's VoxelSize). Refuses to guess: a silent 1 mm default would
+    change the dipole kernel without a word, so an unreadable header is an error."""
+    if args.voxel_size is not None:
+        return list(args.voxel_size)
+    primary = _primary_path(args, consumes)
+    voxel = _nifti_voxel_size(primary) or fallback
+    if not voxel:
+        raise SystemExit(f"could not read the voxel size from the NIfTI header of {primary} — "
+                         "pass --voxel-size X Y Z (mm).")
+    return list(voxel)
 
 
 def _place_input(src, dest: Path) -> None:
@@ -112,11 +142,7 @@ def _params_dict(args, stage: str) -> dict:
     if b0 is None:
         b0 = 3.0  # unused by BFR/dipole; a contract placeholder
     b0_dir = list(args.b0_dir) if args.b0_dir is not None else [0.0, 0.0, 1.0]
-    if args.voxel_size is not None:
-        voxel = list(args.voxel_size)
-    else:
-        primary = getattr(args, consumes[0], None)
-        voxel = _nifti_voxel_size(primary) or [1.0, 1.0, 1.0]
+    voxel = _voxel_size(args, consumes)
     return {"TE": [float(t) for t in te], "B0": float(b0),
             "B0_dir": [float(x) for x in b0_dir], "voxel_size": [float(v) for v in voxel]}
 
@@ -163,19 +189,16 @@ def _sidecar_to_params(path: Path, obj: dict, args, stage: str) -> dict:
     `VoxelSize` is only a fallback. Any explicit acquisition flag the user passed wins.
     """
     consumes = STAGES[stage]["consumes"]
-    primary = getattr(args, consumes[0], None)
     te = _sidecar_te(path)
     b0 = obj.get("MagneticFieldStrength", 3.0)
     b0_dir = obj.get("B0_dir") or [0.0, 0.0, 1.0]
-    voxel = _nifti_voxel_size(primary) or obj.get("VoxelSize") or [1.0, 1.0, 1.0]
+    voxel = _voxel_size(args, consumes, fallback=obj.get("VoxelSize"))
     if args.te:
         te = args.te
     if args.field_strength is not None:
         b0 = args.field_strength
     if args.b0_dir is not None:
         b0_dir = args.b0_dir
-    if args.voxel_size is not None:
-        voxel = args.voxel_size
     te = _ensure_te(te, stage)  # BFR/dipole: nominal placeholder if the sidecar carried no TE
     return {"TE": [float(t) for t in te], "B0": float(b0),
             "B0_dir": [float(x) for x in b0_dir], "voxel_size": [float(v) for v in voxel]}

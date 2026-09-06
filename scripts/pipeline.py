@@ -386,7 +386,7 @@ def discover_algorithms(track: str = "sim", phantom: "str | None" = None) -> lis
         else:
             opt = doc.get("optional_inputs")
             optional = [_yaml_scalar(a) for a in opt] if isinstance(opt, list) else []
-            consumes = base + [a for a in optional if a not in base]
+            consumes = base + [a for a in optional if a in ARTIFACT_FILE and a not in base]
         algos.append({
             "slug": d.name, "dir": d, "stage": s,
             "name": _yaml_scalar(doc.get("name")) if doc.get("name") is not None else d.name,

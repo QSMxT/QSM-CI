@@ -19,10 +19,10 @@ from pathlib import Path
 from .containers import (RUNNERS, _run_container, check_docker,  # noqa: F401 — check_docker re-exported for back-compat
                          check_runner)
 from .resources import _ResourceSampler  # noqa: F401 — re-exported for the sampler regression test
-from .params import (OPTIONAL_ARTIFACTS, STACKABLE_ARTIFACTS, _looks_like_sidecar,
+from .params import (STACKABLE_ARTIFACTS, _looks_like_sidecar,
                      _params_dict, _params_summary, _place_echoes,
                      _place_input, _sidecar_to_params)
-from .stages import ARTIFACT_FILE, ARTIFACT_KIND, STAGES
+from .stages import ARTIFACT_FILE, ARTIFACT_KIND, STAGES, is_optional, scorable
 
 
 def _consumes(algo: dict) -> list:
@@ -33,14 +33,15 @@ def _consumes(algo: dict) -> list:
     so a chi-separation net that ignores `magnitude` doesn't advertise `--magnitude`. Without it we
     fall back to the stage's full `consumes` plus any `optional_inputs:` the method opts into — the
     additive default (the plain `dipole` stage takes only the local field; MEDI opts into magnitude
-    for data-consistency weighting so only *its* help lists --magnitude)."""
+    for data-consistency weighting so only *its* help lists --magnitude; a GRE-based χ-separation
+    method opts into raw multi-echo phase). Opted-in artifacts are optional (stages.is_optional)."""
     base = STAGES[algo["stage"]]["consumes"]
     explicit = algo.get("inputs")
     if explicit:
         want = set(explicit)
         return [a for a in base if a in want]  # stage order; only what the method declares it reads
     extra = [a for a in (algo.get("optional_inputs") or [])
-             if a in OPTIONAL_ARTIFACTS and a not in base]
+             if a in ARTIFACT_FILE and a not in base]
     return base + extra
 
 
@@ -167,14 +168,12 @@ def _inputs_summary(slug: str, algo: dict) -> str:
     prods = STAGES[stage]["produces"]
     produced = prods[0]
     needs_echo = "phase" in consumes
-    img_inputs = [a for a in consumes if a != "params"]
     lines = [f"{algo['name']}  —  {stage} stage   ({', '.join(consumes)} → {', '.join(prods)})", "",
              "Image inputs (provide each as a file):"]
     for art in consumes:
         if art == "params":
             continue
-        # a normally-optional artifact is required when it's the stage's sole image input (see parser).
-        opt = "  [optional]" if (art in OPTIONAL_ARTIFACTS and img_inputs != [art]) else ""
+        opt = "  [optional]" if is_optional(stage, art, consumes) else ""
         lines.append(f"  --{art} PATH".ljust(22) + f"{ARTIFACT_FILE[art]} (NIfTI){opt}")
     if needs_echo:
         lines += ["", "Acquisition parameters — give a params.json OR the flags (either works):",
@@ -187,29 +186,33 @@ def _inputs_summary(slug: str, algo: dict) -> str:
         # BFR/dipole take a field already in ppm — echo times and field strength don't enter the
         # maths (the dipole kernel depends only on B0 direction + voxel size), so all of these are
         # optional with sane defaults; a bare run works.
-        lines += ["", "Acquisition parameters (optional — a ppm field; echo times / field strength aren't used):",
+        lines += ["", "Acquisition parameters (optional — echo times / field strength aren't used by this stage):",
                   "  --b0-dir X Y Z".ljust(22) + "unit B0 direction (default: 0 0 1)",
                   "  --voxel-size X Y Z".ljust(22) + "mm (default: from the input header)",
                   "  --params PATH".ljust(22) + "params.json or a BIDS sidecar (optional)"]
-    img_inputs = [a for a in consumes if a != "params"]
-    req_imgs = [a for a in img_inputs if a not in OPTIONAL_ARTIFACTS or img_inputs == [a]]
+    req_imgs = [a for a in consumes if a != "params" and not is_optional(stage, a, consumes)]
     example = " ".join(f"--{a} {a}.nii.gz" for a in req_imgs)
     if needs_echo:
         example += " --te 0.004 0.012 0.02 0.028 --field-strength 7"
     if len(prods) == 1:
         lines += ["", "Output:",
                   "  -o PATH".ljust(22) + f"where to write {produced}.nii.gz "
-                  f"(default: ./{produced}.nii.gz; a directory is fine)",
+                  f"(default: ./{produced}.nii.gz; a directory is fine — end it with a slash "
+                  "if it doesn't exist yet)",
                   "",
-                  f"Example:  qsm-ci run {slug} {example}",
-                  f"Add  --truth {produced}.nii.gz  [--seg dseg.nii.gz]  to score the output."]
+                  f"Example:  qsm-ci run {slug} {example}"]
+        if scorable(stage):
+            lines.append(f"Add  --truth {produced}.nii.gz  [--seg dseg.nii.gz]  to score the output.")
     else:
         outs = ", ".join(f"{p}.nii.gz" for p in prods)
         lines += ["", "Output:",
                   "  -o DIR".ljust(22) + f"directory to write {outs} into (default: current dir)",
                   "",
-                  f"Example:  qsm-ci run {slug} {example} -o out/",
-                  f"Add  --truth GT_DIR/  (a folder holding {outs}) to score each output."]
+                  f"Example:  qsm-ci run {slug} {example} -o out/"]
+        if scorable(stage):
+            lines.append(f"Add  --truth GT_DIR/  (a folder holding {outs}) to score each output.")
+    if not scorable(stage):
+        lines.append(f"({produced} has no metric set — this stage's output is not scored.)")
     lines.append(f"See   qsm-ci run {slug} --help  for runner/scoring options and method parameters.")
     return "\n".join(lines)
 
@@ -221,22 +224,20 @@ def list_command(argv=None, log=print) -> int:
 
 
 def _score(recon: Path, artifact: str, truth: Path, mask: Path, seg: "Path | None") -> dict:
+    """Score one produced artifact exactly as CI would: same entry point (qsm_eval.score_arrays),
+    same metric set per artifact kind — field / relaxation (R2′) / χ / a χ-sep component."""
     from . import qsm_eval
     kind = ARTIFACT_KIND[artifact]
     r, t, m = qsm_eval.load(recon), qsm_eval.load(truth), qsm_eval.load(mask)
     if r.shape != t.shape or r.shape != m.shape:
         raise SystemExit(f"shape mismatch: recon {r.shape}, truth {t.shape}, mask {m.shape}")
-    if kind == "chisep":
-        import numpy as np
-        component = {"chi-para": "para", "chi-dia": "dia"}.get(artifact, "para")
-        segd = np.rint(qsm_eval.load(seg)).astype("int32") if (seg and Path(seg).exists()) else None
-        return qsm_eval.chisep_metrics(r, t, m, segd, component)
-    if kind == "field":
-        return qsm_eval.field_metrics(r, t, m)
+    segd = None
     if seg and Path(seg).exists():
         import numpy as np
-        return qsm_eval.challenge_metrics(r, t, m, np.rint(qsm_eval.load(seg)).astype("int32"))
-    return {"correlation": qsm_eval.correlation(r, t, m), "xsim": qsm_eval.xsim(r, t, m)}
+        segd = np.rint(qsm_eval.load(seg)).astype("int32")
+    component = {"chi-para": "para", "chi-dia": "dia"}.get(artifact, "para")
+    metrics, _ = qsm_eval.score_arrays(r, t, m, kind, seg=segd, component=component)
+    return metrics
 
 
 def _print_metrics(name, stage, artifact, runtime, metrics, log):
@@ -291,16 +292,15 @@ def _build_run_parser(slug: str, algo: dict) -> argparse.ArgumentParser:
         prog=f"qsm-ci run {slug}", description=desc,
         epilog=_manifest_epilog(algo), formatter_class=_HelpFmt)
     p.add_argument("slug", help=argparse.SUPPRESS)  # already known; keep argparse happy
-    # An artifact that's normally optional (magnitude/phase) becomes required when it is the stage's
-    # sole image input — the stage can't run without it (e.g. brain-extraction, which reads only the
-    # magnitude). Elsewhere magnitude stays optional (MEDI opts into it; plain TKD ignores it).
-    img_inputs = [a for a in consumes if a != "params"]
+    # Required-ness is stages.is_optional — the one rule shared with the help text and the
+    # workflow-engine wrappers (phase is required for any stage that consumes it; magnitude is
+    # optional unless it is the stage's sole image input; opted-in extras are optional).
     for art in consumes:
         if art == "params":
             p.add_argument("--params", metavar="PATH", required=False,
                            help="params.json or a BIDS MEGRE sidecar — or use the acquisition flags below")
             continue
-        req = art not in OPTIONAL_ARTIFACTS or img_inputs == [art]
+        req = not is_optional(stage, art, consumes)
         if art in STACKABLE_ARTIFACTS:
             # multi-echo: accept one 4D file OR several per-echo 3D files (BIDS-style), stacked to 4D.
             p.add_argument(f"--{art}", metavar="PATH", nargs="+", required=req,
@@ -320,20 +320,65 @@ def _build_run_parser(slug: str, algo: dict) -> argparse.ArgumentParser:
                      help="voxel size in mm (default: read from the input NIfTI header)")
     if len(prods) == 1:
         p.add_argument("-o", "--out", metavar="PATH", default=f"{produced}.nii.gz",
-                       help="where to write the produced artifact (a file, or a directory)")
-        p.add_argument("--truth", metavar="PATH", help=f"ground-truth {produced} to score against")
+                       help="where to write the produced artifact: a file, or a directory (an existing "
+                            "one, or a path ending in a slash to be created)")
+        if scorable(stage):
+            p.add_argument("--truth", metavar="PATH", help=f"ground-truth {produced} to score against")
     else:
         outs = ", ".join(f"{a}.nii.gz" for a in prods)
         p.add_argument("-o", "--out", metavar="DIR", default=".",
                        help=f"directory to write the produced artifacts into ({outs})")
-        p.add_argument("--truth", metavar="DIR",
-                       help=f"ground-truth directory holding {outs} to score each output against")
-    p.add_argument("--seg", metavar="PATH", help="segmentation (enables full χ region metrics)")
+        if scorable(stage):
+            p.add_argument("--truth", metavar="DIR",
+                           help=f"ground-truth directory holding {outs} to score each output against")
+    if scorable(stage):
+        p.add_argument("--seg", metavar="PATH", help="segmentation (enables full χ region metrics)")
     p.add_argument("--runner", choices=list(RUNNERS), default="docker",
                    help="docker/podman/apptainer run the image; local runs run.sh on the host")
     p.add_argument("--set", action="append", default=[], dest="overrides", metavar="NAME=VALUE",
                    help="override a method parameter (repeatable); valid names listed below")
     return p
+
+
+# Options of the run parser that take values, so the slug can be found before the stage (and hence
+# the parser) is known: `qsm-ci run --runner local ./my-method --localfield lf.nii.gz` must resolve
+# `./my-method`, not `local`. Artifact flags and --te are nargs="+" (swallow every following
+# non-flag token); --b0-dir/--voxel-size take three; the rest take one. `--opt=value` takes none.
+_ONE_VALUE = {"--runner", "--set", "-o", "--out", "--truth", "--seg", "--params", "--field-strength", "--b0"}
+_THREE_VALUES = {"--b0-dir", "--voxel-size"}
+_GREEDY = {"--te"} | {f"--{a}" for a in ARTIFACT_FILE}
+
+
+def _find_slug(argv: list) -> "str | None":
+    """The first positional token of a `qsm-ci run` argv that is not the value of a preceding option."""
+    i = 0
+    while i < len(argv):
+        a = argv[i]
+        if not a.startswith("-"):
+            return a
+        if "=" in a:
+            i += 1
+        elif a in _THREE_VALUES:
+            i += 4
+        elif a in _GREEDY:
+            i += 1
+            while i < len(argv) and not argv[i].startswith("-"):
+                i += 1
+        elif a in _ONE_VALUE:
+            i += 2
+        else:
+            i += 1
+    return None
+
+
+def _out_path(out: str, artifact: str, multi: bool) -> Path:
+    """Where `-o` puts a produced artifact. A multi-output stage always writes into a directory. A
+    single output honours `-o <file>`, an existing directory, or a not-yet-existing directory given
+    with a trailing slash — `Path("out/")` silently drops the slash, so without this rule `-o out/`
+    used to write a FILE named `out`."""
+    p = Path(out)
+    as_dir = multi or p.is_dir() or out.endswith(("/", os.sep))
+    return p / ARTIFACT_FILE[artifact] if as_dir else p
 
 
 def _coerce(v: str):
@@ -364,7 +409,7 @@ def _overrides(algo: dict, items: list) -> dict:
 def run_command(argv, log=print) -> int:
     """Dispatch `qsm-ci run ...` with flags derived from the submission's stage."""
     has_help = any(a in ("-h", "--help") for a in argv)
-    slug = next((a for a in argv if not a.startswith("-")), None)
+    slug = _find_slug(argv)
 
     # No slug (incl. bare `--help`): show what you can run instead of a dead-end usage line.
     if not slug:
@@ -465,26 +510,26 @@ def run_command(argv, log=print) -> int:
         # Copy every produced artifact out. Single-output stages honour `-o <file>` (a directory is
         # also accepted); a multi-output stage (χ-separation) always writes each canonical file into
         # the `-o <dir>` directory.
-        out_arg = Path(args.out)
         written = {}
         for art in prods:
             src = odir / ARTIFACT_FILE[art]
             if not src.exists():
                 raise SystemExit(f"submission did not write {ARTIFACT_FILE[art]} to /output")
-            dest = out_arg / ARTIFACT_FILE[art] if (multi or out_arg.is_dir()) else out_arg
+            dest = _out_path(args.out, art, multi)
             dest.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy(src, dest)
             written[art] = dest
             log(f"✓ wrote {dest}  ({runtime:.1f}s)")
 
-        if args.truth:
+        if getattr(args, "truth", None):
             # Single output: `--truth <file>` (a directory is also accepted). Multi-output: `--truth
             # <dir>` holding each ground-truth by canonical name; score every produced artifact.
+            # (Only scorable stages define --truth/--seg — see stages.scorable.)
             truth = Path(args.truth)
             for art in prods:
                 tpath = truth / ARTIFACT_FILE[art] if (multi or truth.is_dir()) else truth
                 metrics = _score(written[art], art, tpath, Path(args.mask), args.seg)
                 _print_metrics(algo["name"], stage, art, runtime, metrics, log)
-        else:
+        elif scorable(stage):
             log("  (no --truth given → not scored)")
     return 0
