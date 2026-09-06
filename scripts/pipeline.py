@@ -521,14 +521,11 @@ def score(recon: Path, artifact: str, gt_dir: Path, mask: Path, out_json: Path, 
     # A scorable recon yields finite metrics; an all-NaN / empty output makes the scorer emit
     # null/NaN. Record that as a clear DNF (not a metric-less "ok" row, and without crashing the
     # caller's formatted print) so the failure is legible instead of a cryptic format-string error.
+    # An empty / all-NaN map is NOT a DNF: qsm_eval scores missing voxels as 0, so it lands as a real
+    # row with coverage 0 and a near-zero score — which says exactly what happened, whereas "DNF"
+    # reads as a crash. DNF is kept for outputs the scorer genuinely cannot evaluate.
     primary = (result.get("metrics") or {}).get("xsim" if kind in ("chi", "chisep") else "nrmse")
-    coverage = (result.get("metrics") or {}).get("coverage")
-    if _finite(coverage) and coverage == 0:
-        # Non-finite / all-zero voxels are scored as 0 (see qsm_eval), so an entirely empty map would
-        # otherwise land as a legitimately terrible score instead of the failure it is.
-        result["status"] = "DNF"
-        result["dnf_reason"] = "empty output (no finite non-zero voxel inside the mask)"
-    elif _finite(primary):
+    if _finite(primary):
         result["status"] = "ok"
     else:
         result["status"] = "DNF"
