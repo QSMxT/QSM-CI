@@ -103,12 +103,14 @@ def _registry_algorithms() -> "list[tuple[str, str, str]]":
     """(slug, stage, name) from the shipped Zenodo registry — the published methods a bare
     pip install can fetch and run, used when there's no local checkout."""
     try:
-        from .registry import load_mapping
+        from .registry import is_published, load_mapping
         mapping = load_mapping()
     except Exception:  # noqa: BLE001 — best-effort; an unreadable registry just yields nothing
         return []
+    # Only methods with a Zenodo deposit are runnable from a bare install; a registered-but-unpublished
+    # entry (versions: {}) would be listed and then fail to resolve.
     return [(slug, mapping[slug].get("stage") or "?", mapping[slug].get("name") or slug)
-            for slug in sorted(mapping)]
+            for slug in sorted(mapping) if is_published(mapping[slug])]
 
 
 def _list_algorithms() -> "list[tuple[str, str, str]]":
