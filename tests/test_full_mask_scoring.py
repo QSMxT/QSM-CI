@@ -84,3 +84,75 @@ def test_field_kind_reports_coverage_too(tmp_path, phantom):
     truth, mask = phantom
     m = _score(tmp_path, truth * mask, truth, mask, kind="field")
     assert m["coverage"] == 1.0 and "nrmse" in m and "xsim" in m
+
+
+# --- per-region quantification: linearity, R² and bias across regions (issue #186) ---------------
+
+def _seg(shape=(14, 14, 14)):
+    """Six labelled blocks, big enough to clear region_stats' min_vox."""
+    seg = np.zeros(shape, "int32")
+    for i in range(6):
+        seg[2:-2, 2:-2, 2 + i * 2:4 + i * 2] = i + 1
+    return seg
+
+
+def _regions(recon, truth, seg, mask):
+    from importlib import import_module
+    import sys
+    sys.path.insert(0, str(ROOT / "eval"))
+    qe = import_module("qsm_eval")
+    return qe.region_regression(recon, truth, seg, mask)
+
+
+def test_region_regression_is_perfect_for_an_exact_recon():
+    seg = _seg()
+    mask = seg > 0
+    rng = np.random.default_rng(2)
+    truth = np.zeros(seg.shape)
+    for lab in range(1, 7):                      # a distinct mean per region, plus texture
+        truth[seg == lab] = 0.02 * lab + rng.normal(0, 0.002, (seg == lab).sum())
+    m = _regions(truth, truth, seg, mask)
+    assert m["region_linearity"] < 1e-9 and m["region_r2"] > 0.999
+    assert abs(m["region_bias"]) < 1e-9
+
+
+def test_region_regression_catches_a_global_scale_error_that_xsim_would_forgive():
+    """A recon at 80% of truth everywhere: perfectly correlated (R² = 1) but slope 0.8 and a
+    negative bias — the failure this metric exists to surface."""
+    seg = _seg()
+    mask = seg > 0
+    truth = np.zeros(seg.shape)
+    for lab in range(1, 7):
+        truth[seg == lab] = 0.02 * lab
+    m = _regions(0.8 * truth, truth, seg, mask)
+    assert m["region_linearity"] == pytest.approx(0.2, abs=1e-6)
+    assert m["region_r2"] > 0.999          # still perfectly linear, just mis-scaled
+    assert m["region_bias"] < 0            # systematic under-estimation
+
+
+def test_region_r2_collapses_when_regional_values_do_not_track_the_truth():
+    seg = _seg()
+    mask = seg > 0
+    rng = np.random.default_rng(3)
+    truth = np.zeros(seg.shape)
+    for lab in range(1, 7):
+        truth[seg == lab] = 0.02 * lab
+    recon = np.zeros(seg.shape)
+    for lab in range(1, 7):                      # region means unrelated to the truth's ordering
+        recon[seg == lab] = rng.permutation([0.10, 0.01, 0.07, 0.02, 0.09, 0.03])[lab - 1]
+    assert _regions(recon, truth, seg, mask)["region_r2"] < 0.5
+
+
+def test_region_metrics_reach_the_scored_output(tmp_path, phantom):
+    """The three keys ride out of the scorer on the χ path whenever a segmentation is given."""
+    truth, mask = phantom
+    seg = _seg(truth.shape)
+    out = tmp_path / "score.json"
+    subprocess.run([sys.executable, str(EVAL),
+                    "--recon", str(_save(tmp_path / "r.nii.gz", truth * mask)),
+                    "--truth", str(_save(tmp_path / "t.nii.gz", truth)),
+                    "--mask", str(_save(tmp_path / "m.nii.gz", mask)),
+                    "--seg", str(_save(tmp_path / "s.nii.gz", seg)),
+                    "--kind", "chi", "--out", str(out)], check=True, capture_output=True)
+    metrics = json.loads(out.read_text())["metrics"]
+    assert {"region_linearity", "region_r2", "region_bias"} <= set(metrics)

@@ -278,6 +278,7 @@ def chisep_metrics(recon, truth, mask, seg=None, component="para", wm_rois=None,
     the sources, the QSM region metrics apply to the source that owns each feature: χ+ carries the DGM
     iron and venous blood; χ− carries the calcification. The base agreement set
     (nrmse/nrmse_detrend/correlation/xsim) is always reported; with a segmentation we add:
+      both: region_linearity, region_r2, region_bias         (quantification across regions)
       χ+ : nrmse_dgm, dgm_linearity, nrmse_blood, calc_leak  (calcium wrongly bleeding INTO χ+)
       χ− : calc_moment_dev, calc_streak, iron_leak           (iron/veins wrongly bleeding INTO χ−)
     'leak' is the mean |recon| in the region owned by the OTHER source (which should be ~0 here) — a
@@ -293,6 +294,11 @@ def chisep_metrics(recon, truth, mask, seg=None, component="para", wm_rois=None,
 
     def leak(sel):  # contamination: mean |recon| where this source should be ~0
         return float(np.abs(recon[sel]).mean()) if sel.any() else math.nan
+
+    # Quantification linearity + bias across regions, for whichever source this is. χ− is the one
+    # these expose most sharply: it commonly posts a fair xSIM with region_r2 near 0, i.e. its
+    # regional values do not track the truth at all.
+    out.update(region_regression(recon, truth, seg, mask))
 
     if component == "para":
         _, out["nrmse_dgm"] = nrmse_challenge(recon, truth, dgm)
@@ -371,6 +377,8 @@ def challenge_metrics(recon, truth, mask, seg) -> dict:
         "correlation": correlation(recon, truth, mask),
         "xsim": xsim(recon, truth, mask),
         "hfen": hfen(recon, truth, mask),
+        # Quantification linearity + bias across ALL regions (dgm_linearity is the DGM-only slope).
+        **region_regression(recon, truth, seg, mask),
     }
 
 
@@ -423,6 +431,44 @@ def region_summary(recon, truth, seg, mask) -> dict:
     tru = region_stats(truth, seg, m)
     return {"labels": {k: DSEG_LABELS.get(int(k), f"label-{k}") for k in sorted(rec, key=int)},
             "recon": rec, "truth": tru}
+
+
+def region_regression(recon, truth, seg, mask, min_vox=50) -> dict:
+    """Quantification linearity and bias ACROSS regions: one least-squares fit of each region's mean
+    reconstructed value against its mean ground-truth value.
+
+    Global NRMSE/xSIM hide two systematic failures. A method can carry a consistent scale error
+    (every region recovered at 80% of truth) or a bias that grows with the true value (high-χ regions
+    like the dentate under-recovered while low-χ ones look fine), and still post a respectable
+    similarity score. One fit over the per-region means exposes both:
+
+      region_linearity  |1 - slope| of the fit, so 0 is best — the same convention as dgm_linearity,
+                        which is this fit restricted to the six DGM nuclei.
+      region_r2         R² of the fit: how much of the across-region variation the reconstruction
+                        actually explains. A method can score a decent xSIM and still sit near 0
+                        here (χ− typically does), which says its regional values are not tracking
+                        the truth at all.
+      region_bias       mean signed difference of the region means (recon − truth), in the map's
+                        unit; negative = systematic under-estimation. This is the Bland-Altman bias.
+                        The per-region differences it averages over are published per run in
+                        regions.json, so the full Bland-Altman plot can be drawn from that.
+
+    Regions are the ones region_stats reports (what the Regions tab shows), so only regions with at
+    least `min_vox` voxels inside the score mask count; a fit needs at least three of them."""
+    m = mask > 0
+    rec = region_stats(recon, seg, m, min_vox=min_vox)
+    tru = region_stats(truth, seg, m, min_vox=min_vox)
+    labels = [k for k in tru if k in rec]
+    if len(labels) < 3:
+        return {"region_linearity": math.nan, "region_r2": math.nan, "region_bias": math.nan}
+    x = np.array([tru[k]["mean"] for k in labels], dtype=float)   # ground-truth region means
+    y = np.array([rec[k]["mean"] for k in labels], dtype=float)   # reconstructed region means
+    slope, intercept = linear_fit(x, y)
+    ss_tot = float(((y - y.mean()) ** 2).sum())
+    ss_res = float(((y - (slope * x + intercept)) ** 2).sum())
+    return {"region_linearity": abs(1.0 - slope),
+            "region_r2": (1.0 - ss_res / ss_tot) if ss_tot > 1e-30 else math.nan,
+            "region_bias": float((y - x).mean())}
 
 
 # --- IO + CLI -----------------------------------------------------------------------------------
