@@ -2730,12 +2730,16 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         // ==================================================================================
         //  FINDINGS
         // ==================================================================================
-        _esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); },
+        // Escapes for HTML text AND for attribute values: every _esc call site below sits inside a
+        // `data-tip="..."` / `data-algo="..."` attribute of an x-html-injected SVG, and the strings it
+        // carries include manifest-sourced method names. Without the quote escapes a name containing a
+        // double quote closes the attribute and injects markup into the findings charts.
+        _esc(s) { return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); },
         disp(slug) { return slug === "gt" ? "Ground truth" : this.algoName(slug); },
         _fam(slug) { return DL.has(slug) ? "dl" : DIRECT.has(slug) ? "direct" : "iter"; },
         _famC(slug) { return FAM[this._fam(slug)].c; },
         _runId(slug) { const r = this.runs.find((x) => x.mode === "isolated" && !this._isInvivo(x) && x.stage === "dipole" && x.slug === slug && (x.variant || "default") === "default"); return r ? r.id : ""; },
-        _pt(slug, tip) { const id = this._runId(slug); return `data-tip="${this._esc(tip)}"` + (id ? ` data-run="${id}"` : ""); },
+        _pt(slug, tip) { const id = this._runId(slug); return `data-tip="${this._esc(tip)}"` + (id ? ` data-run="${this._esc(id)}"` : ""); },
         _heat(t) {
           const st = [[190,107,107],[196,158,96],[110,168,134]];
           const x = Math.max(0, Math.min(1, t)) * 2, i = Math.min(1, Math.floor(x)), f = x - i;
@@ -2765,7 +2769,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           return Object.values(by);
         },
         _ivRunId(slug) { const r = this.runs.find((x) => this._isInvivo(x) && x.mode === "isolated" && x.slug === slug && (x.variant || "default") === "default"); return r ? r.id : ""; },
-        _ptIv(slug, tip) { const id = this._ivRunId(slug); return `data-tip="${this._esc(tip)}"` + (id ? ` data-run="${id}"` : ""); },
+        _ptIv(slug, tip) { const id = this._ivRunId(slug); return `data-tip="${this._esc(tip)}"` + (id ? ` data-run="${this._esc(id)}"` : ""); },
         hasCross() { return this._isoDip().length > 0 && this.hasInvivo(); },
         _crossDip() {
           const iv = {}; this._ivDip().forEach((r) => { iv[r.slug] = r; });
@@ -3417,7 +3421,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           if (!runs.length) return "";
           const col = this._regionColors();
           const rows = [...runs].sort((a, b) => val(a, "nrmse") - val(b, "nrmse")).map((r) =>
-            `<div class="flex items-center gap-2 py-[3px] cursor-pointer rounded px-1 -mx-1 hover:bg-gray-50 dark:hover:bg-gray-800" data-algo="${E(r.slug)}" ${this._runId(r.slug) ? `data-run="${this._runId(r.slug)}"` : ""}>`
+            `<div class="flex items-center gap-2 py-[3px] cursor-pointer rounded px-1 -mx-1 hover:bg-gray-50 dark:hover:bg-gray-800" data-algo="${E(r.slug)}" ${this._runId(r.slug) ? `data-run="${E(this._runId(r.slug))}"` : ""}>`
             + `<span style="width:9px;height:9px;border-radius:9999px;background:${col[r.slug]};display:inline-block;flex:none"></span>`
             + `<span class="truncate text-[11px] text-gray-600 dark:text-gray-300">${E(this.algoName(r.slug))}</span></div>`).join("");
           return `<div class="mb-1 text-[10px] font-semibold uppercase tracking-wide text-gray-400">Methods · best NRMSE first</div>${rows}`;

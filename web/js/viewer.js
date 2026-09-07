@@ -148,7 +148,29 @@ const ARTFILE = { phase: "phase.nii.gz", magnitude: "magnitude.nii.gz", mask: "m
   params: "params.json", totalfield: "totalfield.nii.gz", localfield: "localfield.nii.gz",
   chimap: "chimap.nii.gz", r2prime: "r2prime.nii.gz", "chi-para": "chi-para.nii.gz",
   "chi-dia": "chi-dia.nii.gz" };
-const escapeHtml = (s) => s.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+// Escape for HTML text AND for attribute values. Contributor-authored manifest fields
+// (algorithms/<slug>/algorithm.yml -> web/algorithms.json) and Hub-hosted region labels are
+// interpolated into innerHTML throughout this file, so a merged submission must not be able to
+// inject markup. Quotes are escaped too because the same helper is used inside `attr="${...}"`,
+// where &<> alone would not close the hole. Non-strings (a numeric parameter default, null) are
+// coerced rather than throwing.
+const escapeHtml = (s) => String(s ?? "").replace(/[&<>"']/g, (c) =>
+  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+// Only absolute http(s) URLs reach an href. A contributor-supplied `code_url` (or a registry DOI
+// URL) could otherwise be `javascript:...`, which runs on click with the page's own origin.
+// Returns "" for anything else, which the callers treat as "no link". `URL` also percent-encodes
+// quotes and spaces in the path, so a DOI pasted with junk in it cannot break out of the attribute.
+const safeUrl = (u) => {
+  if (!u) return "";
+  try {
+    const p = new URL(String(u));
+    return (p.protocol === "http:" || p.protocol === "https:") ? p.href : "";
+  } catch { return ""; }
+};
+// Substitute a method label into an already-rendered run row. The function replacer is required:
+// String.replace interprets `$&`, `$\`` and `$'` in a *string* replacement, so a method named
+// "A $& B" would otherwise splice the matched text back into the row.
+const withName = (html, name) => html.replace("%NAME%", () => escapeHtml(name));
 
 function runLine(slug, stage, truth, inputs) {
   const io = STAGE_IO[stage];
@@ -478,7 +500,7 @@ function runItem(r, activeId) {
   if (r && r.track === "repro") {
     const label = m.repro_inter != null ? (100 * m.repro_inter).toFixed(1) + "%" : "—";
     const active = r.id === activeId;
-    return `<button data-id="${r.id}"
+    return `<button data-id="${escapeHtml(r.id)}"
       class="run-item w-full text-left rounded-lg px-2.5 py-1.5 text-sm flex items-center justify-between gap-2 transition
         ${active ? "bg-indigo-50 text-indigo-700 font-medium dark:bg-indigo-500/15 dark:text-indigo-300" : "text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800"}">
       <span class="truncate">%NAME%</span>
@@ -496,7 +518,7 @@ function runItem(r, activeId) {
   else hv = r ? val(r, "xsim") : null;
   const label = r ? (r.status === "DNF" ? "DNF" : fmt(hv, hk)) : "—";
   const dis = !r || r.status === "DNF";
-  return `<button data-id="${r ? r.id : ""}"
+  return `<button data-id="${r ? escapeHtml(r.id) : ""}"
     class="run-item w-full text-left rounded-lg px-2.5 py-1.5 text-sm flex items-center justify-between gap-2 transition
       ${active ? "bg-indigo-50 text-indigo-700 font-medium dark:bg-indigo-500/15 dark:text-indigo-300" : "text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800"} ${!r ? "opacity-40 cursor-default" : ""}">
     <span class="truncate">%NAME%</span>
@@ -528,7 +550,7 @@ function stagesHTML() {
   return ["field-mapping", "bfr", "dipole", "bfr+dipole", "unwrap+bfr", "end-to-end"].map((s) => {
     const rs = allRuns.filter((r) => r.mode === "isolated" && r.stage === s && (r.variant || "default") === "default" && !isInvivo(r) && (!f || r.name.toLowerCase().includes(f)))
       .sort(byName((r) => r.name));
-    return groupHTML("stage:" + s, STAGE_LABEL[s] || s, rs.map((r) => runItem(r, run?.id).replace("%NAME%", r.name)).join(""));
+    return groupHTML("stage:" + s, STAGE_LABEL[s] || s, rs.map((r) => withName(runItem(r, run?.id), r.name)).join(""));
   }).join("") || `<p class="p-3 text-sm text-gray-400">No matches.</p>`;
 }
 function pipelinesHTML() {
@@ -541,7 +563,7 @@ function pipelinesHTML() {
       // Laplacian → QSMART); otherwise it swaps the field mapping of the bfr×dipole combo.
       const rn = kind === "fmap" ? (cur.span ? findSpan(m, cur.span) : findPipeline(m, cur.bfr, cur.dipole))
         : kind === "bfr" ? findPipeline(cur.fmap, m, cur.dipole) : findPipeline(cur.fmap, cur.bfr, m);
-      return runItem(rn, run?.id).replace("%NAME%", label(m));
+      return withName(runItem(rn, run?.id), label(m));
     }).join("");
     return groupHTML("axis:" + kind, title, rows);
   };
@@ -556,7 +578,7 @@ function pipelinesHTML() {
   const spanGroup = (stage) => {
     const slugs = spanSlugs(stage).filter((m) => !f || algoName(m).toLowerCase().includes(f)).sort(byName(algoName));
     return groupHTML("span:" + stage, STAGE_LABEL[stage] || stage,
-      slugs.map((m) => runItem(stage === "bfr+dipole" ? findSpan(cur.fmap, m) : findEndToEnd(m), run?.id).replace("%NAME%", algoName(m))).join(""));
+      slugs.map((m) => withName(runItem(stage === "bfr+dipole" ? findSpan(cur.fmap, m) : findEndToEnd(m), run?.id), algoName(m))).join(""));
   };
   const combinedSection = spanGroup("bfr+dipole") + spanGroup("end-to-end");
   return (matrix + combinedSection) ||
@@ -573,7 +595,7 @@ function chisepHTML() {
   const group = (key, label, pool) => groupHTML(key, label,
     uniq(pool.map((r) => r.slug)).map((slug) => chisepRunFor(slug, chisepPhantom))
       .sort(byName((r) => r.name))
-      .map((r) => runItem(r, run?.id).replace("%NAME%", r.name)).join(""));
+      .map((r) => withName(runItem(r, run?.id), r.name)).join(""));
   // R2′ generators live on the same phantoms but are their own category: they estimate an input
   // (R2′ from GRE magnitude), they don't separate sources.
   return group("chisep:sep", "χ-separation", rs.filter((r) => r.stage !== "r2prime-generation"))
@@ -584,7 +606,7 @@ function invivoHTML() {
   const rs = invivoRuns().filter((r) => !f || r.name.toLowerCase().includes(f)).sort(byName((r) => r.name));
   if (!rs.length) return `<p class="p-3 text-sm text-gray-400">No in-vivo runs yet.</p>`;
   return groupHTML("invivo:dipole", STAGE_LABEL.dipole,
-    rs.map((r) => runItem(r, run?.id).replace("%NAME%", r.name)).join(""));
+    rs.map((r) => withName(runItem(r, run?.id), r.name)).join(""));
 }
 // Mark the tab the open page comes from. The mark IS the amber label colour applied in buildSidebar —
 // nothing is added to the tab, so no label can be pushed onto a second line; this only carries the
@@ -840,9 +862,9 @@ function renderChisepPhantomSwitch() {
   const cur = chisepPhantomOf(run);
   const btns = phs.map((p) => {
     const on = p === cur;
-    return `<button data-phantom="${p}" class="rounded-md px-3 py-1.5 transition ${on
+    return `<button data-phantom="${escapeHtml(p)}" class="rounded-md px-3 py-1.5 transition ${on
       ? "bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100"
-      : "text-gray-500 hover:text-gray-700 dark:text-gray-400"}">${phantomLabel(p)}</button>`;
+      : "text-gray-500 hover:text-gray-700 dark:text-gray-400"}">${escapeHtml(phantomLabel(p))}</button>`;
   }).join("");
   el.innerHTML = `<div class="flex flex-wrap items-center gap-3">
     <div class="inline-flex rounded-lg bg-gray-100 p-1 text-xs font-medium dark:bg-gray-800">${btns}</div>
@@ -878,9 +900,15 @@ function methodCard(a) {
   if (!a) return "";
   const links = [];
   const zdoi = doiFor(registry, a.slug);
-  if (zdoi) links.push(`<a href="${zdoi.url}" class="text-emerald-600 hover:underline" title="Cite this QSM-CI submission (Zenodo v${zdoi.version})">submission doi</a>`);
-  if (a.doi) links.push(`<a href="https://doi.org/${a.doi}" class="text-indigo-600 hover:underline">paper doi</a>`);
-  if (a.code_url) links.push(`<a href="${a.code_url}" class="text-indigo-600 hover:underline">source code</a>`);
+  // Every href is scheme-checked (safeUrl) before it is escaped into the attribute: `code_url` and
+  // the paper DOI are contributor-authored, so `javascript:` must not survive into a link. A URL that
+  // fails the check simply yields no link rather than a dead or dangerous one.
+  const zurl = zdoi && safeUrl(zdoi.url);
+  if (zurl) links.push(`<a href="${escapeHtml(zurl)}" class="text-emerald-600 hover:underline" title="Cite this QSM-CI submission (Zenodo v${escapeHtml(zdoi.version)})">submission doi</a>`);
+  const durl = a.doi && safeUrl("https://doi.org/" + a.doi);
+  if (durl) links.push(`<a href="${escapeHtml(durl)}" class="text-indigo-600 hover:underline">paper doi</a>`);
+  const curl = safeUrl(a.code_url);
+  if (curl) links.push(`<a href="${escapeHtml(curl)}" class="text-indigo-600 hover:underline">source code</a>`);
   // A parameter may carry a `tuned:` value: the setting optimised on the QSM-CI scoring phantom,
   // shown next to the method's usual `default:`. Only disclosed (submission page); the leaderboard
   // still ranks methods at their defaults.
@@ -898,16 +926,16 @@ function methodCard(a) {
   const hasIv  = plist.some((p) => tunedVal(p, "invivo") != null);
   const hasCs  = plist.some((p) => tunedVal(p, "chisep") != null);
   const cell = (v) => v != null
-    ? `<span class="text-emerald-600 dark:text-emerald-400">⚙ ${v}</span>`
+    ? `<span class="text-emerald-600 dark:text-emerald-400">⚙ ${escapeHtml(v)}</span>`
     : `<span class="text-gray-300 dark:text-gray-600">—</span>`;
   const params = plist.map((p) =>
     `<tr class="border-t border-gray-100 dark:border-gray-800">`
-    + `<td class="py-1 pr-3 font-mono text-gray-700 dark:text-gray-300">${p.name}</td>`
-    + `<td class="py-1 pr-3 tabular-nums text-gray-500 dark:text-gray-400">${p.default}</td>`
+    + `<td class="py-1 pr-3 font-mono text-gray-700 dark:text-gray-300">${escapeHtml(p.name)}</td>`
+    + `<td class="py-1 pr-3 tabular-nums text-gray-500 dark:text-gray-400">${escapeHtml(p.default)}</td>`
     + (hasSim ? `<td class="py-1 pr-3 tabular-nums">${cell(tunedVal(p, "sim"))}</td>` : "")
     + (hasIv  ? `<td class="py-1 pr-3 tabular-nums">${cell(tunedVal(p, "invivo"))}</td>` : "")
     + (hasCs  ? `<td class="py-1 pr-3 tabular-nums">${cell(tunedVal(p, "chisep"))}</td>` : "")
-    + `<td class="py-1 text-gray-400 dark:text-gray-500">${p.description || ""}</td></tr>`
+    + `<td class="py-1 text-gray-400 dark:text-gray-500">${escapeHtml(p.description || "")}</td></tr>`
   ).join("");
   const th = (lab, tip) => `<th class="py-1 pr-3 font-normal"><span class="has-tip text-emerald-600 dark:text-emerald-400" data-tip="${tip}">${lab}</span></th>`;
   const paramHead = (hasSim || hasIv || hasCs)
@@ -919,16 +947,16 @@ function methodCard(a) {
     : "";
   return `<div>
     <div class="flex items-baseline gap-2">
-      <span class="font-medium text-gray-900 dark:text-gray-100">${a.name}</span>
-      <span class="text-xs text-gray-400">${a.stage ? (STAGE_LABEL[a.stage] || a.stage) : ""}</span>
+      <span class="font-medium text-gray-900 dark:text-gray-100">${escapeHtml(a.name)}</span>
+      <span class="text-xs text-gray-400">${a.stage ? escapeHtml(STAGE_LABEL[a.stage] || a.stage) : ""}</span>
     </div>
-    <p class="mt-0.5 text-sm text-gray-600 dark:text-gray-400">${a.description || ""}</p>
+    <p class="mt-0.5 text-sm text-gray-600 dark:text-gray-400">${escapeHtml(a.description || "")}</p>
     ${(a.ci_notes && a.ci_notes.length) ? `<div class="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
       <div class="flex items-center gap-1.5 font-semibold"><span aria-hidden="true">⚠</span> How QSM-CI runs this</div>
-      <ul class="mt-1 list-disc space-y-0.5 pl-4 marker:text-amber-400">${a.ci_notes.map((n) => `<li>${n}</li>`).join("")}</ul>
+      <ul class="mt-1 list-disc space-y-0.5 pl-4 marker:text-amber-400">${a.ci_notes.map((n) => `<li>${escapeHtml(n)}</li>`).join("")}</ul>
     </div>` : ""}
     ${params ? `<table class="mt-2 w-full text-xs">${paramHead}<tbody>${params}</tbody></table>` : ""}
-    ${(a.citation || links.length) ? `<p class="mt-1.5 text-xs text-gray-400 dark:text-gray-500">${a.citation || ""} ${links.length ? "· " + links.join(" · ") : ""}</p>` : ""}
+    ${(a.citation || links.length) ? `<p class="mt-1.5 text-xs text-gray-400 dark:text-gray-500">${escapeHtml(a.citation || "")} ${links.length ? "· " + links.join(" · ") : ""}</p>` : ""}
   </div>`;
 }
 function renderMethodInfo() {
@@ -1307,7 +1335,7 @@ function renderRegionTable(entry, errorMode) {
       const bw = Math.sqrt(Math.abs(r.d) / dmax) * 50;
       const wPos = r.d > 0 ? bw : 0, wNeg = r.d < 0 ? bw : 0;
       html += `<tr>
-        <td class="py-1.5 pr-1 leading-tight text-gray-500 dark:text-gray-400"><span data-tip="n=${r.n} voxels in this run's support">${block.labels[r.k] || "label-" + r.k}</span></td>
+        <td class="py-1.5 pr-1 leading-tight text-gray-500 dark:text-gray-400"><span data-tip="n=${r.n} voxels in this run's support">${escapeHtml(block.labels[r.k] || "label-" + r.k)}</span></td>
         <td class="whitespace-nowrap py-1.5 pl-2 text-right tabular-nums font-medium ${Math.abs(r.d) >= 0.01 ? "text-gray-900 dark:text-gray-100" : "text-gray-600 dark:text-gray-300"}">${p3(r.d)}</td>
         <td class="whitespace-nowrap py-1.5 pl-2 text-right tabular-nums text-gray-600 dark:text-gray-300">${p3(r.dm)}</td>
         <td class="whitespace-nowrap py-1.5 pl-2 text-right tabular-nums text-gray-600 dark:text-gray-300">${r.pct == null ? ", " : (r.pct > 0 ? "+" : "−") + Math.abs(r.pct).toFixed(0) + "%"}</td>
@@ -1332,7 +1360,7 @@ function renderRegionTable(entry, errorMode) {
     ids.forEach((k) => {
       const rc = block.recon[k], gt = block.truth[k];
       html += `<tr>
-        <td class="py-1.5 pr-1 align-top leading-tight text-gray-500 dark:text-gray-400"><span data-tip="n=${rc.n} voxels in this run's support">${block.labels[k] || "label-" + k}</span></td>
+        <td class="py-1.5 pr-1 align-top leading-tight text-gray-500 dark:text-gray-400"><span data-tip="n=${rc.n} voxels in this run's support">${escapeHtml(block.labels[k] || "label-" + k)}</span></td>
         ${cell(rc, true)}${cell(gt, false)}</tr>`;
     });
     html += `</tbody></table>`;
