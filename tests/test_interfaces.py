@@ -11,6 +11,15 @@ nothing is skipped or stood in for.
 Running this file requires the package installed (so `qsm-ci` is on PATH), the test extra
 (`pip install -e ".[test]"` — nipype, pydra and qsm-forward), and the runners under test:
 docker, podman and apptainer. Anything missing is a hard failure, not a skip.
+
+Missing a runner on your own box? Deselect it *explicitly*, per invocation:
+
+    pytest tests/test_interfaces.py -k "not podman"
+
+which reports "deselected" rather than "skipped" — you chose to exclude it; the suite did not
+quietly decide a missing tool means the test no longer counts. Keep that on the command line: CI
+runs this file bare, so a missing runner or extra there is a hard failure, and putting the flag in
+pytest's `addopts` would silently apply it in CI too.
 """
 
 from __future__ import annotations
