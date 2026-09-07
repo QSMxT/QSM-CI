@@ -557,8 +557,10 @@
           <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
             <h3 class="text-lg font-semibold text-gray-900">Every method, across every region</h3>
             <p class="mt-2 text-sm text-gray-600 leading-relaxed">Every isolated dipole method's regional mean (one coloured dot per method) against the <span class="font-semibold text-gray-500">grey</span> ground-truth band (mean ± std; tick = median), for all regions at once. <span class="font-medium">Hover a dot or a legend entry</span> to trace that method across every region; <span class="font-medium">drag the plot sideways</span> to pan the χ axis (calcification sits far to the left). Click a dot to open its page.</p>
-            <!-- inline flex styles: the compiled Tailwind purge drops lg:* responsive utilities, so
-                 the side-by-side layout + legend divider are set inline to survive it. -->
+            <!-- inline flex styles for the side-by-side plot + legend. (These were once blamed on
+                 "the purge dropping lg:* utilities"; the real cause was a stale committed styles.css,
+                 now rebuilt by ci.yml's manifest job. Left inline — they work and the layout is
+                 untested with classes — but any literal utility class would be present now.) -->
             <div class="mt-3" style="display:flex;gap:1rem;align-items:flex-start;flex-wrap:wrap">
               <div class="text-gray-700 dark:text-gray-200" style="flex:1 1 460px;min-width:0;overflow:hidden;user-select:none" x-html="methodRegionsSVG"></div>
               <div class="text-gray-600 dark:text-gray-300" style="flex:0 0 168px;max-height:440px;overflow-y:auto;border-left:1px solid rgba(148,163,184,.2);padding-left:.75rem" x-html="regionAlgoLegend"></div>

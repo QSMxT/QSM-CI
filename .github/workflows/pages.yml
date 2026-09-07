@@ -1,7 +1,8 @@
 name: pages
 
 # Deploy the static leaderboard (web/ + results/) to GitHub Pages.
-# No build step — the site is vanilla HTML/JS and reads results/index.json at runtime.
+# The site is vanilla HTML/JS that reads results/index.json at runtime; the only build step is the
+# Tailwind compile below (the committed web/styles.css is kept in sync by ci.yml's `manifest` job).
 
 on:
   push:
@@ -53,8 +54,11 @@ jobs:
         run: |
           mkdir -p _site
           cp -r web/* _site/
+          # `npm ci` above left web/node_modules/ (16 MB, ~1350 files) and the copy just took it — it
+          # was being deployed with the site. Drop it and the other build-only files.
+          rm -rf _site/node_modules _site/src _site/package.json _site/package-lock.json _site/tailwind.config.js
           cp -r results _site/results
-          cp -r docs _site/docs           # the Submit page renders docs/submitting.md
+          cp -r docs _site/docs           # nothing on the site links here any more; kept so old /docs/ links resolve
           rm -rf _site/examples; cp -r examples _site/examples   # Run page showcases the engine examples
           rm -f _site/registry.json; cp qsm_ci/registry.json _site/registry.json  # method DOIs (drop the web/ symlink first)
 

@@ -10,11 +10,14 @@ on:
 
 jobs:
   manifest:
-    # Keep web/algorithms.json in sync with algorithms/*/algorithm.yml automatically: regenerate it
-    # and, on same-repo pushes/PRs, commit the refresh back to the branch so nobody has to remember
-    # `python scripts/gen_manifest.py`. Skipped for fork PRs (GITHUB_TOKEN can't push to a fork) —
-    # those must regenerate + commit manually. No loop: GITHUB_TOKEN pushes don't re-trigger workflows,
-    # and `git diff --quiet` below no-ops when the manifest is already in sync.
+    # Keep the two generated web files in sync automatically — web/algorithms.json (from
+    # algorithms/*/algorithm.yml) and web/styles.css (the Tailwind build of the markup) — and, on
+    # same-repo pushes/PRs, commit the refresh back to the branch so nobody has to remember
+    # `python scripts/gen_manifest.py` or `npm run build:css`. (A stale committed styles.css made
+    # local dev render differently from Pages, and had already provoked inline-style workarounds
+    # blamed on "the purge".) Skipped for fork PRs (GITHUB_TOKEN can't push to a fork) — those must
+    # regenerate + commit manually. No loop: GITHUB_TOKEN pushes don't re-trigger workflows, and
+    # `git diff --quiet` below no-ops when both files are already in sync.
     # DO NOT add "[skip ci]" to the sync commit message: a squash merge folds every branch commit's
     # message into the merge commit, so that token would land on main and suppress score.yml/ci/pipeline
     # for the whole merge — silently skipping the scoring of the very algorithm the PR changed.
@@ -30,21 +33,29 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
       - name: Install package
         run: pip install . pyyaml
       - name: Regenerate manifest
         run: python scripts/gen_manifest.py
+      - name: Rebuild Tailwind CSS
+        working-directory: web
+        run: |
+          npm ci
+          npm run build:css
       - name: Commit refresh if changed
         run: |
-          if git diff --quiet web/algorithms.json; then
-            echo "web/algorithms.json already in sync"; exit 0
+          if git diff --quiet web/algorithms.json web/styles.css; then
+            echo "web/algorithms.json and web/styles.css already in sync"; exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add web/algorithms.json
-          git commit -m "chore: sync web/algorithms.json"
+          git add web/algorithms.json web/styles.css
+          git commit -m "chore: sync generated web files (algorithms.json, styles.css)"
           git push
-          echo "committed refreshed web/algorithms.json"
+          echo "committed refreshed generated web files"
 
   interfaces:
     # Workflow-engine interfaces (qsm_ci.nipype / qsm_ci.pydra) + the `qsm-ci interface` generator,

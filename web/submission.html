@@ -47,7 +47,8 @@
        GL canvas. !important overrides the wrapper's inline height:480px. */
     #viewer-section:fullscreen { display: flex; flex-direction: column; border-radius: 0; overflow-y: auto; }
     #viewer-section:fullscreen #viewer-canvas-wrap { flex: 1 1 auto; height: auto !important; min-height: 0; }
-    /* hover for the fullscreen button (hover:bg-black/70 + hover:text-white aren't in the purged CSS) */
+    /* hover for the fullscreen button. (Once "not in the purged CSS" — a stale committed styles.css;
+       the build is kept in sync by ci.yml now and carries both utilities. Harmless to keep.) */
     #fullscreen-btn:hover { background: rgba(0,0,0,0.7); color: #fff; }
     /* pan + zoom buttons: same icon-button look as Fullscreen; .is-on marks the engaged Pan toggle */
     #pan-btn:hover, #zoom-in-btn:hover, #zoom-out-btn:hover, #zoom-reset-btn:hover { background: rgba(0,0,0,0.7); color: #fff; }
