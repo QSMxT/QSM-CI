@@ -93,6 +93,8 @@ jobs:
       - id: decide
         env:
           SCOPE: ${{ github.event.inputs.scope || 'auto' }}
+          BEFORE: ${{ github.event.before }}   # the push's previous head; empty on workflow_dispatch
+          EVENT: ${{ github.event_name }}
         run: |
           if [ "$SCOPE" = "all" ]; then
             echo "full=true"  >>"$GITHUB_OUTPUT"; echo "slugs=[]" >>"$GITHUB_OUTPUT"; exit 0
@@ -113,8 +115,16 @@ jobs:
             echo "::notice::[skip score] in the commit message — skipping the rescore. Dispatch with scope=all to force one."
             echo "full=false" >>"$GITHUB_OUTPUT"; echo "slugs=[]" >>"$GITHUB_OUTPUT"; exit 0
           fi
-          changed=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} 2>/dev/null \
-                    || git diff --name-only HEAD~1 HEAD)
+          # Diff base: the push's previous head. On a manual dispatch it is EMPTY, and a force-push
+          # can leave it unknown — and `git diff "" <sha>` does not fail, it diffs the worktree against
+          # <sha> (nothing), so scope=auto used to schedule zero methods and go green. Fall back to
+          # HEAD~1: for a merge commit that is main-before-the-merge, i.e. "what the last merge changed".
+          before="$BEFORE"
+          if [ -z "$before" ] || ! git cat-file -e "$before^{commit}" 2>/dev/null; then before="HEAD~1"; fi
+          changed=$(git diff --name-only "$before" HEAD)
+          if [ "$EVENT" = "workflow_dispatch" ] && [ -z "$changed" ]; then
+            echo "::warning::scope=auto: nothing changed in $before..HEAD — nothing to score. Dispatch with scope=all or a slug list."
+          fi
           if echo "$changed" | grep -qE '^(eval/|scripts/pipeline\.py|scripts/repro_eval\.py|stages\.yml)'; then
             echo "full=true"  >>"$GITHUB_OUTPUT"; echo "slugs=[]" >>"$GITHUB_OUTPUT"
           else
@@ -354,11 +364,16 @@ jobs:
           git config user.name  "qsm-ci-bot"
           git config user.email "qsm-ci@users.noreply.github.com"
           cp results/index.json /tmp/scored-index.json
+          # repro.json is tracked, so the `git reset --hard` below would silently revert the fits
+          # just computed (it did, for every run before this: the file never made it to main).
+          # Park it with the index and put it back after the reset.
+          cp results/repro.json /tmp/scored-repro.json
           for attempt in 1 2 3 4 5; do
             git fetch origin main -q
             git reset --hard origin/main -q
             python3 scripts/merge_index.py /tmp/base-index.json /tmp/scored-index.json \
                     results/index.json results/index.json
+            cp /tmp/scored-repro.json results/repro.json
             git add results/index.json results/repro.json
             git diff --cached --quiet && { echo "no changes to publish"; exit 0; }
             git commit -q -m "Update harmonization (repro) results"

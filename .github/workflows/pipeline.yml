@@ -16,9 +16,11 @@ on:
       - "tests/test_pipeline.py"
       # Only the three methods this engine-parity test actually runs — not every submission. A change
       # to an unrelated method (e.g. a χ-separation one) can't affect the romeo→vsharp→rts engine check.
-      - "algorithms/romeo-fieldmap/**"
-      - "algorithms/vsharp/**"
-      - "algorithms/rts/**"
+      # These MUST match the slugs tests/test_pipeline.py uses (they were the pre-rename names
+      # romeo-fieldmap/vsharp/rts for a while, so a PR touching any of the three never triggered this).
+      - "algorithms/romeo-qsmrs/**"
+      - "algorithms/vsharp-qsmrs/**"
+      - "algorithms/rts-qsmrs/**"
       - ".github/workflows/pipeline.yml"
 
 jobs:

@@ -73,14 +73,28 @@ def parse_target(target: str) -> "tuple[str, object]":
     return "slug", t
 
 
+def latest_version(entry: "dict | None") -> "dict | None":
+    """The entry's latest published version record, or None when it has none yet. A method can sit
+    in the registry before its first Zenodo deposit (`versions: {}`, no `latest` — apart-qsm at the
+    time of writing); publish-zenodo.py writes that shape, so every lookup must tolerate it rather
+    than KeyError on 'latest'."""
+    if not entry:
+        return None
+    ver = entry.get("latest")
+    versions = entry.get("versions") or {}
+    return versions.get(ver) if ver else None
+
+
+def is_published(entry: "dict | None") -> bool:
+    return latest_version(entry) is not None
+
+
 def _record_id(kind: str, value: object, mapping: dict) -> "str | None":
     if kind == "recid":
         return str(value)
     if kind == "slug":
-        entry = mapping.get(value)
-        if not entry:
-            return None
-        return entry["versions"][entry["latest"]]["record_id"]
+        lv = latest_version(mapping.get(value))
+        return lv["record_id"] if lv else None
     if kind == "version":
         slug, ver = value  # type: ignore[misc]
         entry = mapping.get(slug)
@@ -93,8 +107,8 @@ def _record_id(kind: str, value: object, mapping: dict) -> "str | None":
 def _expected_checksum(kind: str, value: object, mapping: dict) -> "str | None":
     """The sha256 of the method zip recorded in the registry (None for a raw DOI fetch)."""
     if kind == "slug":
-        entry = mapping.get(value)
-        return entry["versions"][entry["latest"]].get("checksum") if entry else None
+        lv = latest_version(mapping.get(value))
+        return lv.get("checksum") if lv else None
     if kind == "version":
         slug, ver = value  # type: ignore[misc]
         entry = mapping.get(slug)
@@ -108,11 +122,11 @@ def describe(target: str) -> "dict | None":
     mapping = load_mapping()
     if kind == "slug":
         entry = mapping.get(value)
-        if not entry:
+        lv = latest_version(entry)
+        if not lv:
             return None
-        ver = entry["latest"]
-        return {"slug": value, "version": ver, "concept_doi": entry.get("concept_doi"),
-                **entry["versions"][ver]}
+        return {"slug": value, "version": entry["latest"], "concept_doi": entry.get("concept_doi"),
+                **lv}
     if kind == "version":
         slug, ver = value  # type: ignore[misc]
         entry = mapping.get(slug)
@@ -129,6 +143,9 @@ def resolve(target: str, log=print) -> "Path | None":
     mapping = load_mapping()
     recid = _record_id(kind, value, mapping)
     if recid is None:
+        if kind == "slug" and value in mapping:   # registered, but nothing deposited on Zenodo yet
+            log(f"  '{value}' is in the registry but has no published version yet — run it from a "
+                f"repository checkout (algorithms/{value}) instead.")
         return None
     return _fetch_record(recid, _expected_checksum(kind, value, mapping), log)
 

@@ -64,8 +64,10 @@ scoring:
 
 # Evaluation modes.
 #   isolated  — each stage/span is fed the GROUND-TRUTH artifact(s) it consumes (mounted at run time
-#               from held-out GT, never published), and each produced artifact is scored against GT.
-#               Gives fair per-stage leaderboards.
+#               from the dataset's groundtruth/), and each produced artifact is scored against GT.
+#               Gives fair per-stage leaderboards. (The ground truth is public — the viewer shows it,
+#               one copy per phantom on the Hugging Face volumes repo; a container is simply never
+#               handed the artifact it is scored on.)
 #   composed  — stage/span outputs are chained (bfr output -> dipole input, etc.); the final chimap
 #               (and any intermediate) is scored. Enumerates the field-mapping x bfr x dipole matrix
 #               to study how stages interact. Intermediate outputs are cached and reused.

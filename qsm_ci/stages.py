@@ -45,6 +45,35 @@ ARTIFACT_KIND = {"totalfield": "field", "localfield": "field", "chimap": "chi",
 GT_ARTIFACTS = {"totalfield", "localfield", "chimap", "chi-para", "chi-dia"}
 
 
+def is_optional(stage: str, artifact: str, consumes: "list | None" = None) -> bool:
+    """Can a method of this stage run without `artifact`? The ONE rule the CLI parser, its help
+    text and the workflow-engine wrappers all follow.
+
+    - Anything outside the stage contract (a method opted into it via `optional_inputs:`, e.g. a
+      χ-separation net taking raw phase) is optional by definition.
+    - `magnitude` is optional when it is one of several image inputs (MEDI weights with it, plain
+      TKD ignores it) and required when it is the ONLY image input (brain-extraction,
+      r2prime-generation read nothing else).
+    - Everything else in the contract is required — `phase` included: a field-mapping stage cannot
+      run without its phase.
+    `consumes` is the method's actual input list (runner._consumes) when it narrows the contract."""
+    base = STAGES[stage]["consumes"]
+    if artifact not in base:
+        return True
+    if artifact == "magnitude":
+        imgs = [a for a in (consumes or base) if a != "params"]
+        return imgs != ["magnitude"]
+    return False
+
+
+def scorable(stage: str) -> bool:
+    """Whether `qsm-ci run --truth` can score this stage's output: every produced artifact has a
+    metric set AND the stage consumes the brain mask the scorer needs. brain-extraction fails both
+    (its output IS the mask; there is no metric set for one)."""
+    return (all(a in ARTIFACT_KIND for a in STAGES[stage]["produces"])
+            and "mask" in STAGES[stage]["consumes"])
+
+
 def input_artifact(stage: str) -> str:
     """The primary artifact a stage reads (used to label starter templates)."""
     return STAGES[stage]["consumes"][0]

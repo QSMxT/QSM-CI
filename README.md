@@ -3,7 +3,7 @@
 **An open benchmarking platform and leaderboard for Quantitative Susceptibility Mapping (QSM) reconstruction.**
 
 Submit a QSM algorithm — in any language, as a container — and QSM-CI runs it on standardized data,
-scores it against held-out ground truth, and publishes the result to an interactive leaderboard.
+scores it against ground truth, and publishes the result to an interactive leaderboard.
 Every published algorithm gets a citable Zenodo DOI and can be run by anyone with one command.
 
 ## → https://qsmxt.github.io/QSM-CI

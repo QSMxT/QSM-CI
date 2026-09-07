@@ -3,17 +3,24 @@
 in the leaderboard.
 
 The site never serves NIfTI volumes from git or the Pages build — they live on the Hugging Face
-Hub. This uploads every `results/<id>/{recon,truth,error}.nii.gz` written by
-`pipeline.py --emit-volumes` to a PUBLIC dataset repo, then patches `results/index.json` so each
-run carries a `volumes: {kind: url}` map the viewer loads from. Re-runs overwrite the same paths
-(new revision), so it's idempotent — and identical content is deduplicated server-side, so
-re-publishing unchanged volumes is cheap.
+Hub. This uploads every run's `recon`/`error` volumes (plus its resources/regions JSON) written by
+`pipeline.py --emit-volumes`, and each phantom's ground-truth volume ONCE, to a PUBLIC dataset repo,
+then patches `results/index.json` so each run carries a `volumes: {kind: url}` map the viewer loads
+from. Re-runs overwrite the same paths (new revision), so it's idempotent — and identical content is
+deduplicated server-side, so re-publishing unchanged volumes is cheap.
 
-Why HF (and not OSF, which this replaced): volumes are committed in batches of ~64 files per
-commit instead of one HTTP round-trip per file, uploads within a batch run in parallel, and the
-`resolve/` download URLs are CDN-backed and send CORS headers — exactly what the in-browser
-NiiVue viewer needs (OSF's WaterButler links were slow, flaky, and needed an `&direct` CORS
-workaround).
+Ground truth is shared, not per run. Every run on a phantom scores against the same truth, so the
+Hub holds one `truth/<phantom>/<artifact>.nii.gz` per (phantom, artifact) and every run's
+`volumes.truth` URL points at it. pipeline.py stages that file under results/_truth/ and leaves a
+`truth.ref` pointer in each run dir; a legacy per-run `truth.nii.gz` (runs scored before this) is
+still accepted and folded into the same shared file by content hash, so no duplicate ever reaches
+the Hub. (The Hub repo predating this holds hundreds of per-run copies: scripts/dedupe_hf_truth.py
+collapses them.)
+
+Why HF (and not OSF, which this replaced): volumes are committed in batches instead of one HTTP
+round-trip per file, uploads within a batch run in parallel, and the `resolve/` download URLs are
+CDN-backed and send CORS headers — exactly what the in-browser NiiVue viewer needs (OSF's
+WaterButler links were slow, flaky, and needed an `&direct` CORS workaround).
 
 Download URLs are deterministic (`https://huggingface.co/datasets/<repo>/resolve/main/<file>`),
 so they can be recorded even before a batch lands.
@@ -28,20 +35,26 @@ Env:
                      (created automatically as a public dataset repo if it doesn't exist)
 
 Usage:
-  python scripts/publish_volumes.py [results_dir]     # default: ./results
+  python scripts/publish_volumes.py [results_dir]              # default: ./results, patches index.json
+  python scripts/publish_volumes.py results --runs runs.json   # one job's slice (pipeline --runs-out)
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import sys
 import time
 from pathlib import Path
 
-from huggingface_hub import CommitOperationAdd, HfApi
-
 ROOT = Path(__file__).resolve().parent.parent
-KINDS = ("recon", "truth", "error")
+sys.path.insert(0, str(ROOT))
+from qsm_ci.stages import STAGES  # noqa: E402 — the stage graph, for produced-artifact lookups
+
+# Per-run volume kinds. Ground truth is handled separately (shared per phantom, see module doc).
+KINDS = ("recon", "error")
+TRUTH_DIR = "_truth"       # results/_truth/<phantom>/<artifact>.nii.gz, staged by pipeline.py
+TRUTH_PREFIX = "truth/"    # Hub path prefix for the shared truths: truth/<phantom>/<artifact>.nii.gz
 # Files per Hub commit. HuggingFace rate-limits COMMITS to 128/hour per repo, so this must be large
 # enough that a whole publish is a handful of commits, not hundreds (the repro track's ~30k files at
 # 64/commit = 463 commits → 429 Too Many Requests partway). 1000 files/commit → ~30 commits for the
@@ -71,21 +84,109 @@ def _url(repo: str, name: str) -> str:
     return f"https://huggingface.co/datasets/{repo}/resolve/main/{name}"
 
 
+def _sha256(path: Path) -> str:
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def truth_artifact(row: dict, kind: str) -> str | None:
+    """Which canonical artifact a run's `truth` / `truth-dia` volume is: the primary artifact the
+    run's LAST stage produces (a `field-mapping+bfr+dipole` span ends in a dipole -> chimap), or χ−
+    for the `-dia` set. None when the row carries no recognisable stage."""
+    if kind == "truth-dia":
+        return "chi-dia"
+    last = (row.get("stage") or "").split("+")[-1]
+    stage = STAGES.get(last) or STAGES.get(row.get("stage") or "")
+    return stage["produces"][0] if stage else None
+
+
+def truth_name(row: dict, kind: str) -> str:
+    """Hub path for a run's shared ground-truth volume, derived from the row alone (used for legacy
+    per-run truth files that carry no pointer): truth/<phantom>/<artifact>.nii.gz. The QSM sim track's
+    historical rows have no `phantom`; their phantom is the track's default, `sim`."""
+    phantom = row.get("phantom") or row.get("track") or "sim"
+    artifact = truth_artifact(row, kind) or kind
+    return f"{TRUTH_PREFIX}{phantom}/{artifact}.nii.gz"
+
+
+def resolve_truth(run_dir: Path, results: Path, row: dict, kind: str) -> tuple[Path, str] | None:
+    """Locate a run's ground-truth volume and the Hub path it publishes to.
+
+    Preferred: the `truth{sfx}.ref` pointer pipeline.py writes -> the shared results/_truth/… file,
+    published as truth/<phantom>/<artifact>.nii.gz (the pointer's path minus the `_truth/` root).
+    Legacy: a per-run `truth{sfx}.nii.gz`, published under the name derived from the row. Returns
+    None when the run has no truth (a no-ground-truth track, or a DNF)."""
+    sfx = kind[len("truth"):]
+    ref = run_dir / f"truth{sfx}.ref"
+    if ref.exists():
+        rel = ref.read_text().strip()
+        path = results / rel
+        if path.exists():
+            inner = rel[len(TRUTH_DIR) + 1:] if rel.startswith(TRUTH_DIR + "/") else rel
+            return path, TRUTH_PREFIX + inner
+    legacy = run_dir / f"truth{sfx}.nii.gz"
+    if legacy.exists():
+        return legacy, truth_name(row, kind)
+    return None
+
+
+def assign_truth_names(entries: list[tuple[object, str, str]]) -> tuple[dict[str, str], dict[object, str]]:
+    """Give every distinct ground-truth CONTENT one Hub path.
+
+    `entries` is [(key, sha256, wanted_name)]. Returns (by_sha: sha -> hub_name, refs: key -> hub_name).
+    Entries whose bytes hash identical share one name — the first `wanted` seen. Two DIFFERENT contents
+    that both want the same name (a phantom regenerated between rescoring rounds) keep the plain name
+    for the first and get a `-<sha8>` suffix for the rest, so nothing is silently overwritten and every
+    run still points at the bytes it was scored against."""
+    by_sha: dict[str, str] = {}
+    taken: set[str] = set()
+    refs: dict[object, str] = {}
+    for key, sha, wanted in entries:
+        name = by_sha.get(sha)
+        if name is None:
+            name = wanted
+            if name in taken:  # same name, different bytes
+                name = f"{wanted.split('.nii.gz')[0]}-{sha[:8]}.nii.gz"
+            by_sha[sha] = name
+            taken.add(name)
+        refs[key] = name
+    return by_sha, refs
+
+
+def plan_truths(found: list[tuple[str, str, Path, str]]) -> tuple[dict[str, Path], dict[tuple[str, str], str]]:
+    """Collapse every run's truth to one upload per distinct content (see assign_truth_names).
+
+    `found` is [(rid, kind, local_path, wanted_name)]. Returns (uploads: hub_name -> local file,
+    refs: (rid, kind) -> hub_name)."""
+    hashed = {}
+    for _, _, path, _ in found:
+        if path not in hashed:
+            hashed[path] = _sha256(path)
+    by_sha, refs = assign_truth_names([((rid, kind), hashed[path], wanted) for rid, kind, path, wanted in found])
+    uploads: dict[str, Path] = {}
+    for rid, kind, path, _ in found:
+        uploads.setdefault(refs[(rid, kind)], path)
+    return uploads, refs
+
+
 def _retry(desc, fn, attempts=3, base=4.0):
-    """Retry a Hub call a few times on transient failure."""
     for i in range(attempts):
         try:
             return fn()
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:  # noqa: BLE001 — retried, then re-raised
             if i == attempts - 1:
                 raise
             wait = base * (2 ** i)
-            print(f"  ! transient error on {desc} ({exc}); retry {i + 1}/{attempts - 1} in {wait:.0f}s",
-                  file=sys.stderr)
+            print(f"  ! {desc}: {exc} — retry in {wait:.0f}s", file=sys.stderr)
             time.sleep(wait)
 
 
 def main() -> int:
+    from huggingface_hub import CommitOperationAdd, HfApi
+
     repo = os.environ.get("HF_VOLUMES_REPO")
     token = os.environ.get("HF_TOKEN")
     if not repo or not token:
@@ -129,49 +230,62 @@ def main() -> int:
               file=sys.stderr)
         return 0
 
-    # Gather every artifact that belongs to a run in the index: the NIfTI volumes plus, when present,
-    # the small resources.json memory/CPU trace. Each item carries its extension so a non-nii.gz
-    # artifact (the JSON trace) is named and URL'd correctly.
-    items: list[tuple[str, str, str, Path, str]] = []  # (rid, kind, ext, path, sub)
+    # Gather every artifact that belongs to a run in the index. Per run: the recon/error NIfTIs,
+    # plus, when present, the small resources.json memory/CPU trace and the regions.json stats.
+    # Shared: each run's ground truth, resolved to ONE upload per distinct content (plan_truths).
+    # `uploads` maps the Hub path to the local file; `refs` says which (run, kind) each path serves —
+    # several runs per truth path, exactly one per anything else.
+    uploads: dict[str, Path] = {}
+    refs: list[tuple[str, str, str]] = []                # (rid, kind, hub_name)
+    truths: list[tuple[str, str, Path, str]] = []        # (rid, kind, local_path, wanted_name)
     for run_dir in sorted(results.glob("*/")):
         rid = run_dir.name
         if rid not in by_id:
             continue
-        sub = _subdir(by_id[rid])
-        for kind in KINDS:
-            # χ-separation writes a second "-dia" volume set (recon-dia/truth-dia/error-dia) for its χ−
-            # source alongside the plain χ+ set; publish both so the viewer's χ+/χ− toggle can load either.
-            for sfx in ("", "-dia"):
+        row = by_id[rid]
+        sub = _subdir(row)
+        # χ-separation writes a second "-dia" volume set (recon-dia/error-dia + a truth-dia pointer)
+        # for its χ− source alongside the plain χ+ set; publish both so the viewer's toggle can load either.
+        for sfx in ("", "-dia"):
+            for kind in KINDS:
                 f = run_dir / f"{kind}{sfx}.nii.gz"
                 if f.exists():
-                    items.append((rid, kind + sfx, "nii.gz", f, sub))
-        rf = run_dir / "resources.json"
-        if rf.exists():
-            items.append((rid, "resources", "json", rf, sub))
-        gf = run_dir / "regions.json"   # per-run regional stats; the web fetches one file per run
-        if gf.exists():
-            items.append((rid, "regions", "json", gf, sub))
-    if not items:
+                    name = _name(rid, kind + sfx, "nii.gz", sub)
+                    uploads[name] = f
+                    refs.append((rid, kind + sfx, name))
+            t = resolve_truth(run_dir, results, row, "truth" + sfx)
+            if t is not None:
+                truths.append((rid, "truth" + sfx, t[0], t[1]))
+        for kind, fname in (("resources", "resources.json"), ("regions", "regions.json")):
+            f = run_dir / fname   # resources: memory/CPU trace; regions: per-run regional stats
+            if f.exists():
+                name = _name(rid, kind, "json", sub)
+                uploads[name] = f
+                refs.append((rid, kind, name))
+    truth_uploads, truth_refs = plan_truths(truths)
+    uploads.update(truth_uploads)
+    refs.extend((rid, kind, name) for (rid, kind), name in truth_refs.items())
+    if not uploads:
         print("no volumes on disk — nothing to publish")
         return 0
-    print(f"uploading {len(items)} artifacts to {repo} in batches of {BATCH}")
+    print(f"uploading {len(uploads)} files to {repo} in batches of {BATCH} "
+          f"({len(truth_uploads)} shared ground-truth volume(s) for {len(truth_refs)} run(s))")
 
-    want: dict[str, dict[str, str]] = {}
+    landed: set[str] = set()
     failed = 0
     consecutive_fail = 0
-    for start in range(0, len(items), BATCH):
-        batch = items[start:start + BATCH]
-        ops = [CommitOperationAdd(path_in_repo=_name(rid, kind, ext, sub), path_or_fileobj=str(path))
-               for rid, kind, ext, path, sub in batch]
-        desc = f"batch {start // BATCH + 1}/{(len(items) + BATCH - 1) // BATCH}"
+    names = sorted(uploads)
+    for start in range(0, len(names), BATCH):
+        batch = names[start:start + BATCH]
+        ops = [CommitOperationAdd(path_in_repo=n, path_or_fileobj=str(uploads[n])) for n in batch]
+        desc = f"batch {start // BATCH + 1}/{(len(names) + BATCH - 1) // BATCH}"
         try:
             _retry(desc, lambda o=ops, d=desc: api.create_commit(
                 repo, repo_type="dataset", operations=o,
                 commit_message=f"publish volumes ({d})"))
-            for rid, kind, ext, _, sub in batch:
-                want.setdefault(rid, {})[kind] = _url(repo, _name(rid, kind, ext, sub))
+            landed.update(batch)
             consecutive_fail = 0
-            print(f"  ✓ {desc} ({min(start + BATCH, len(items))}/{len(items)})", flush=True)
+            print(f"  ✓ {desc} ({min(start + BATCH, len(names))}/{len(names)})", flush=True)
         except Exception as exc:  # noqa: BLE001 — best-effort per batch
             failed += len(batch)
             consecutive_fail += 1
@@ -181,8 +295,13 @@ def main() -> int:
                       "volumes and committing the scores.", file=sys.stderr)
                 break
     if failed:
-        print(f"! {failed} volume(s) failed to upload; committing index.json with the rest",
+        print(f"! {failed} file(s) failed to upload; committing index.json with the rest",
               file=sys.stderr)
+
+    want: dict[str, dict[str, str]] = {}
+    for rid, kind, name in refs:
+        if name in landed:
+            want.setdefault(rid, {})[kind] = _url(repo, name)
 
     published = 0
     for rid, kinds in want.items():

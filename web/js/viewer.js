@@ -513,8 +513,10 @@ function groupHTML(key, label, rows) {
   // A collapsed group opens while a filter is active — otherwise typing a method name that lives in
   // one would look like the search found nothing. Clearing the filter restores the collapsed state.
   const off = !filter && collapsedGroups.has(key);
-  // The chevron's size and rotation are inline: styles.css is a pre-built purge, so utilities it
-  // doesn't already contain (w-3, -rotate-90) would silently do nothing.
+  // The chevron's size and rotation are inline because the rotation is a runtime VALUE (0 / -90deg
+  // per group state), not a class toggle. (styles.css is rebuilt from the markup by ci.yml's
+  // manifest job, so any literal utility class written here would be present — a stale committed
+  // build once made it look otherwise.)
   return `<div class="mb-3"><button data-group="${key}" class="group-toggle flex w-full items-center px-2.5 pt-1 pb-1 text-left text-[11px] font-semibold uppercase tracking-wide text-gray-400 transition hover:text-gray-600 dark:hover:text-gray-300">
       <svg viewBox="0 0 20 20" fill="currentColor" style="width:9px;height:9px;flex:none;margin-right:.4rem;transition:transform .15s ease;transform:rotate(${off ? "-90deg" : "0deg"})"><path d="M4 6.5h12L10 14z"/></svg>
       <span>${label}</span></button><div${off ? " hidden" : ""}>${rows}</div></div>`;
@@ -1525,7 +1527,21 @@ const BASE_KINDS = new Set(["truth", "magnitude", "totalfield", "localfield"]);
 function volUrlFor(kind, comp) {
   const key = volKey(kind, comp);
   if (run && run.volumes && run.volumes[key]) return run.volumes[key];
-  return baseUrl + key + ".nii.gz";
+  const local = run && localTruth.get(`${run.id}/${key}`);
+  return local || baseUrl + key + ".nii.gz";
+}
+// Dev fallback for the ground truth: pipeline.py stages ONE truth per phantom under results/_truth/
+// and leaves a `truth.ref` pointer (path relative to results/) in the run dir instead of a per-run
+// copy. Resolve the pointer once per run so the local truth layer still loads; a run without one
+// (a legacy per-run truth.nii.gz) keeps the plain path.
+const localTruth = new Map();   // `${run.id}/${key}` -> resolved local URL
+async function resolveLocalTruth(kind, comp) {
+  const key = volKey(kind, comp);
+  if (kind !== "truth" || !run || (run.volumes && run.volumes[key]) || localTruth.has(`${run.id}/${key}`)) return;
+  try {
+    const r = await fetch(baseUrl + key + ".ref");
+    if (r.ok) localTruth.set(`${run.id}/${key}`, "results/" + (await r.text()).trim());
+  } catch { /* no pointer: keep the per-run path */ }
 }
 const runHasError = () => !run.volumes || !!run.volumes.error;
 
@@ -1591,6 +1607,7 @@ function windowFor(vol, kind, comp) {
 // Load one candidate map into nv.volumes (hidden) and tag it, unless already resident. `role` is
 // "base" (recon/truth) or "error". All bases are loaded before any error so the error stays on top.
 async function ensureVolume(role, kind, comp) {
+  await resolveLocalTruth(kind, comp);
   const url = volUrlFor(kind, comp);
   let v = residentByUrl(url);
   if (v) return v;

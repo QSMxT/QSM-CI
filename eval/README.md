@@ -1,6 +1,6 @@
 # qsm-eval
 
-The QSM-CI scorer. Loads a reconstruction and the held-out ground truth, computes the challenge
+The QSM-CI scorer. Loads a reconstruction and the ground truth, computes the challenge
 metrics, and writes `metrics.json` (plus an optional slice figure).
 
 Implemented in Python (numpy/scipy/nibabel) so contributors can read and patch the metrics easily,

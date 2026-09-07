@@ -107,18 +107,44 @@ def emit_intermediate(phantom: str, name: str, src: Path) -> None:
     shutil.copy(src, d / f"{name}.nii.gz")
 
 
+# Where the ground-truth volumes the viewer shows are staged for publishing. ONE copy per
+# (phantom, artifact) — results/_truth/<phantom>/<artifact>.nii.gz — not one per run: every run on a
+# phantom scores against the same truth, and publish_volumes.py uploads it to the Hub once as
+# truth/<phantom>/<artifact>.nii.gz. Each run dir gets a tiny truth.ref pointer (the path relative to
+# results/) so the publisher knows which shared file a run's `volumes.truth` URL must point at.
+TRUTH_DIR = "_truth"
+
+
+def _stage_truth(truth: Path) -> Path:
+    """Copy `truth` (…/<phantom>/{groundtruth,inputs}/<artifact>.nii.gz) into the shared
+    results/_truth/<phantom>/<artifact>.nii.gz slot, once, and return that path."""
+    truth = Path(truth)
+    phantom = truth.parent.parent.name          # data/<phantom>/groundtruth/chimap.nii.gz -> <phantom>
+    dest = ROOT / "results" / TRUTH_DIR / phantom / truth.name
+    if not dest.exists():
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy(truth, dest)
+    return dest
+
+
 def emit_volumes(run_id, recon, truth, mask=None, resources=None, suffix=""):
-    """Write recon / truth / error volumes under results/<run_id>/ for the NiiVue viewer.
+    """Write recon / error volumes under results/<run_id>/ for the NiiVue viewer, plus a pointer to
+    the run's (shared) ground-truth volume.
 
     The error map is the signed difference recon - truth, zeroed outside the raw brain mask so the
     background stays clean (the viewer shows it with a diverging red↔blue colormap). `suffix` names a
     second volume set on the same run — χ-separation uses "-dia" for its χ− source so the viewer's
-    χ+/χ− toggle can load recon-dia.nii.gz etc. alongside the plain χ+ set."""
+    χ+/χ− toggle can load recon-dia.nii.gz etc. alongside the plain χ+ set.
+
+    The truth itself is NOT copied per run (it used to be, which put hundreds of identical copies
+    of each phantom's χ map on the Hub): it is staged once via _stage_truth and the run dir carries
+    truth{suffix}.ref = its path relative to results/."""
     import nibabel as nib
     d = ROOT / "results" / run_id
     d.mkdir(parents=True, exist_ok=True)
     shutil.copy(recon, d / f"recon{suffix}.nii.gz")
-    shutil.copy(truth, d / f"truth{suffix}.nii.gz")
+    shared = _stage_truth(truth)
+    (d / f"truth{suffix}.ref").write_text(shared.relative_to(ROOT / "results").as_posix() + "\n")
     if resources is not None and Path(resources).exists():
         shutil.copy(resources, d / "resources.json")  # memory/CPU-over-time trace for the graph
     r, t = nib.load(str(recon)), nib.load(str(truth))
@@ -346,6 +372,9 @@ def discover_algorithms(track: str = "sim", phantom: "str | None" = None) -> lis
         if doc.get("ci_skip"):
             continue
         s = _yaml_scalar(doc["stage"])
+        if s not in STAGES:  # a clear message instead of a KeyError traceback out of discovery
+            raise SystemExit(f"{d.name}/algorithm.yml: stage '{s}' is not a known stage/span "
+                             f"(one of: {', '.join(sorted(STAGES))})")
         image = doc.get("image")
         # Mirror runner._consumes EXACTLY so the scorer mounts + passes only the flags `qsm-ci run`
         # accepts; otherwise it passes a flag the CLI rejects (e.g. --magnitude) and the run DNFs.
@@ -360,7 +389,7 @@ def discover_algorithms(track: str = "sim", phantom: "str | None" = None) -> lis
         else:
             opt = doc.get("optional_inputs")
             optional = [_yaml_scalar(a) for a in opt] if isinstance(opt, list) else []
-            consumes = base + [a for a in optional if a not in base]
+            consumes = base + [a for a in optional if a in ARTIFACT_FILE and a not in base]
         algos.append({
             "slug": d.name, "dir": d, "stage": s,
             "name": _yaml_scalar(doc.get("name")) if doc.get("name") is not None else d.name,
@@ -388,7 +417,10 @@ def prepare_input(consumes: list[str], sources: dict[str, Path], dest: Path) -> 
     for art in consumes:
         src = sources.get(art)
         if src is None or not Path(src).exists():
-            raise SystemExit(f"missing source artifact '{art}' (looked for {src})")
+            # A plain Exception, NOT SystemExit: every per-run guard is `except Exception`, and a
+            # SystemExit (a BaseException) escaped them all — one method wanting an artifact the
+            # dataset lacks used to kill the whole shard mid-stage with no DNF row and no index flush.
+            raise FileNotFoundError(f"missing source artifact '{art}' (looked for {src})")
         shutil.copy(src, dest / ARTIFACT_FILE[art])
 
 
@@ -422,8 +454,9 @@ def _valid_mask(volume: Path, base_mask: Path, out: Path) -> Path:
     Eroding stages (SHARP/V-SHARP/RESHARP/iSMV, Laplacian field-mapping, …) zero exactly the voxels
     they drop, so a field/χ's non-zero support IS the stage's valid region. Threading this as the
     mask into the next stage stops a dipole from deconvolving a zero-field rim (which smears a blurry
-    boundary), and scoring within it stops that rim being counted as error. Empty output → keep the
-    base mask so it still scores (badly) rather than crashing."""
+    boundary). It is NOT the score mask: every run is scored over the full brain mask, so the rim a
+    pipeline lost along the way counts against its final map. Empty output → keep the base mask so
+    the next stage still runs rather than crashing."""
     import nibabel as nib
     import numpy as np
     v = nib.load(str(volume))
@@ -453,10 +486,12 @@ def score(recon: Path, artifact: str, gt_dir: Path, mask: Path, out_json: Path, 
     # reference is NOT a groundtruth/ file — a generated r2prime scores against the phantom's true
     # R2′, which is an INPUT of the χ-separation datasets (inputs/r2prime.nii.gz).
     truth = truth if truth is not None else gt_dir / ARTIFACT_FILE[artifact]
-    raw_mask = mask  # the full brain mask, before erosion — used to mask the viewer's error map
-    # Score only where the method actually produced a value (its non-zero support), so an eroded
-    # rim isn't penalised as error — consistent with masking that rim out of the pipeline.
-    mask = _valid_mask(recon, mask, out_json.parent / (out_json.stem + "_scoremask.nii.gz"))
+    raw_mask = mask  # the full brain mask — also masks the viewer's error map
+    # Score over the FULL brain mask: a voxel the method dropped (an eroded rim) or failed on counts
+    # as error against the truth there, so covering the brain is rewarded over eroding it. (Runs used
+    # to be scored only on their own non-zero support, which made erosion free; the scorer now also
+    # reports `coverage` so the two effects can be told apart.) The valid-support mask is still what
+    # a composed pipeline threads into its NEXT stage — see _valid_mask.
     seg = gt_dir / "dseg.nii.gz"
     component = {"chi-para": "para", "chi-dia": "dia"}.get(artifact)  # χ-sep source for region metrics
     # The in-vivo (2016 challenge) dataset DOES ship a dseg, but it follows a different label scheme
@@ -492,6 +527,9 @@ def score(recon: Path, artifact: str, gt_dir: Path, mask: Path, out_json: Path, 
     # A scorable recon yields finite metrics; an all-NaN / empty output makes the scorer emit
     # null/NaN. Record that as a clear DNF (not a metric-less "ok" row, and without crashing the
     # caller's formatted print) so the failure is legible instead of a cryptic format-string error.
+    # An empty / all-NaN map is NOT a DNF: qsm_eval scores missing voxels as 0, so it lands as a real
+    # row with coverage 0 and a near-zero score — which says exactly what happened, whereas "DNF"
+    # reads as a crash. DNF is kept for outputs the scorer genuinely cannot evaluate.
     primary = (result.get("metrics") or {}).get("xsim" if kind in ("chi", "chisep") else "nrmse")
     if _finite(primary):
         result["status"] = "ok"
@@ -574,8 +612,7 @@ def score_secondary(recon: Path, gt_dir: Path, mask: Path, out_json: Path, meta:
     if not ref.exists():
         return {}
     kind = ARTIFACT_KIND["chimap"]
-    smask = _valid_mask(recon, mask, out_json.parent / (out_json.stem + "_scoremask.nii.gz"))
-    cmd = eval_argv(sys.executable, EVAL, recon, ref, kind, smask, "chimap", out_json,
+    cmd = eval_argv(sys.executable, EVAL, recon, ref, kind, mask, "chimap", out_json,  # full mask, as score()
                     stage=meta["stage"], name=meta["name"], track=meta["track"],
                     runtime=meta.get("runtime"))
     subprocess.run(cmd, check=True)
@@ -583,12 +620,26 @@ def score_secondary(recon: Path, gt_dir: Path, mask: Path, out_json: Path, meta:
     return {f"{k}{suffix}": v for k, v in metrics.items()}
 
 
-def dnf(rid, slug, name, stage, mode, track, combo=None, variant="default"):
+def dnf(rid, slug, name, stage, mode, track, combo=None, variant="default", reason=None):
+    """A did-not-finish row. `reason` (the exception text, or "upstream … DNF") lands in dnf_reason
+    so the leaderboard can say WHY, not just that it failed."""
     e = {"name": name, "track": track, "stage": stage, "mode": mode,
          "status": "DNF", "metrics": {}, "id": rid, "slug": slug, "variant": variant}
     if combo:
         e["combo"] = combo
+    if reason:
+        e["dnf_reason"] = str(reason)
     return e
+
+
+class Failed:
+    """What a composed upstream stage (field-mapping / bfr / R2′ generation) returns instead of its
+    output when it DNFs: the key its downstream combos are built from, plus the reason — so the
+    caller can emit a DNF row for every pipeline that would have consumed it. Before this, a failed
+    upstream stage simply returned None and its pipelines were skipped, which left every PREVIOUS
+    score for those pipeline ids sitting in index.json as "ok" — indistinguishable from fresh."""
+    def __init__(self, key, reason):
+        self.key, self.reason = key, str(reason)
 
 
 def _stamp_phantom(rows: list, phantom: "str | None") -> list:
@@ -844,8 +895,8 @@ def do_isolated(task, args, gt_sources, gt, mask):
         return out
     except Exception as e:  # DNF — record and continue
         print(f"  isolated  {a['slug']:<16} {variant:<8} DNF ({e})")
-        return [dnf(f"{a['slug']}-iso{idsfx}", a["slug"], a["slug"], a["stage"], "isolated",
-                    args.track, variant=variant)]
+        return [dnf(f"{a['slug']}-iso{idsfx}", a["slug"], a.get("name", a["slug"]), a["stage"],
+                    "isolated", args.track, variant=variant, reason=e)]
 
 
 def run_isolated(args, algos, gt_sources, gt, mask, iso_target, runs: list) -> None:
@@ -906,8 +957,8 @@ def do_fieldmap(f, args, gt_sources, mask):
         trace = [(f"field-mapping:{f['slug']}", odir / "resources.json", fm_rt)]
         return (f["slug"], tf, fm_mask, fm_rt, trace)
     except Exception as e:
-        print(f"  composed  fieldmap {f['slug']} DNF ({e}) — skipping its pipelines")
-        return None
+        print(f"  composed  fieldmap {f['slug']} DNF ({e}) — its pipelines are recorded as DNF")
+        return Failed(f["slug"], e)
 
 
 def do_bfr(task, args, gt_sources):
@@ -926,8 +977,8 @@ def do_bfr(task, args, gt_sources):
         trace = fm_trace + [(f"bfr:{b['slug']}", odir / "resources.json", bfr_rt)]
         return ((tfk, b["slug"]), (lf, bfr_mask, fm_rt + bfr_rt, trace))
     except Exception as e:
-        print(f"  composed  {tfk}+{b['slug']} bfr DNF ({e})")
-        return None
+        print(f"  composed  {tfk}+{b['slug']} bfr DNF ({e}) — its pipelines are recorded as DNF")
+        return Failed((tfk, b["slug"]), e)
 
 
 def do_dipole(task, args, gt_sources, gt, mask, lf_cache):
@@ -938,6 +989,7 @@ def do_dipole(task, args, gt_sources, gt, mask, lf_cache):
     combo = f"{b['slug']}+{d['slug']}" if tfk == "gt" else f"{tfk}+{b['slug']}+{d['slug']}"
     cid = f"{tfk}~{b['slug']}~{d['slug']}-cmp" + getattr(args, "phantom_sfx", "")
     cinfo = {"field_mapping": tfk, "bfr": b["slug"], "dipole": d["slug"]}
+    stage = "bfr+dipole" if tfk == "gt" else "field-mapping+bfr+dipole"
     try:
         lf, bfr_mask, upstream_rt, upstream_trace = lf_cache[(tfk, b["slug"])]
         # Invert within the BFR's eroded region — not the original full mask — so the dipole
@@ -947,8 +999,7 @@ def do_dipole(task, args, gt_sources, gt, mask, lf_cache):
         prepare_input(d["consumes"], src, idir)
         rt = run_algo(d, idir, odir, args.runner)
         # runtime_s is the whole pipeline's wall-clock: field-mapping + BFR (upstream_rt) + dipole.
-        meta = {"id": cid, "slug": combo, "name": combo,
-                "stage": "bfr+dipole" if tfk == "gt" else "field-mapping+bfr+dipole",
+        meta = {"id": cid, "slug": combo, "name": combo, "stage": stage,
                 "mode": "composed", "track": args.track, "runtime": upstream_rt + rt, "combo": cinfo}
         if args.track in NO_GT_TRACKS:
             r = collect(odir / "chimap.nii.gz", mask, meta)
@@ -974,7 +1025,7 @@ def do_dipole(task, args, gt_sources, gt, mask, lf_cache):
         return r
     except Exception as e:
         print(f"  composed  {combo:<34} DNF ({e})")
-        return dnf(cid, combo, combo, "field-mapping+bfr+dipole", "composed", args.track, cinfo)
+        return dnf(cid, combo, combo, stage, "composed", args.track, cinfo, reason=e)
 
 
 def do_span(task, args, gt_sources, gt, mask, tf_sources):
@@ -1032,7 +1083,8 @@ def do_span(task, args, gt_sources, gt, mask, tf_sources):
         return r
     except Exception as e:
         print(f"  composed  {cid:<28} DNF ({e})")
-        return dnf(cid, s["slug"], s.get("name", s["slug"]), stage, "composed", args.track, combo)
+        return dnf(cid, s["slug"], s.get("name", s["slug"]), stage, "composed", args.track, combo,
+                   reason=e)
 
 
 def run_composed(args, algos, gt_sources, gt, mask, shard_i, shard_n, runs: list) -> None:
@@ -1113,8 +1165,11 @@ def run_composed(args, algos, gt_sources, gt, mask, shard_i, shard_n, runs: list
     tf_sources: dict[str, tuple] = {} if no_gt else {
         "gt": (gt / ARTIFACT_FILE["totalfield"], mask, 0.0, [])}
 
+    failed_fm: dict[str, str] = {}          # field-map slug -> reason
     for res in _pmap(fmap, lambda f: do_fieldmap(f, args, gt_sources, mask)):
-        if res:
+        if isinstance(res, Failed):
+            failed_fm[res.key] = res.reason
+        elif res:
             tf_sources[res[0]] = (res[1], res[2], res[3], res[4])
             if res[0] in emit_tf:
                 emit_intermediate(args.phantom, f"{res[0]}__totalfield", res[1])
@@ -1126,11 +1181,47 @@ def run_composed(args, algos, gt_sources, gt, mask, shard_i, shard_n, runs: list
     bfr_tasks = [(tfk, tfp, tf_mask, fm_rt, fm_trace, b)
                  for tfk, (tfp, tf_mask, fm_rt, fm_trace) in tf_sources.items()
                  for b in bfr if owns_col(tfk, b["slug"])]  # --shard: only this shard's columns
+    failed_bfr: dict[tuple, str] = {}       # (tfk, bfr slug) -> reason
     for res in _pmap(bfr_tasks, lambda task: do_bfr(task, args, gt_sources)):
-        if res:
+        if isinstance(res, Failed):
+            failed_bfr[res.key] = res.reason
+        elif res:
             lf_cache[res[0]] = res[1]
             if emit_inter:   # this shard owns the column, so this is the only place it is written
                 emit_intermediate(args.phantom, f"{res[0][0]}_{res[0][1]}__localfield", res[1][0])
+
+    # Every pipeline an upstream DNF took down gets its own DNF row (reason = the upstream failure),
+    # so a re-score REPLACES the previous score for that pipeline id instead of leaving it in
+    # index.json as a stale "ok". Columns are enumerated exactly as the run stages below would have.
+    sfx = getattr(args, "phantom_sfx", "")
+    upstream_dnf: list = []
+    for tfk, why in failed_fm.items():
+        reason = f"upstream field-mapping {tfk} DNF: {why}"
+        for b in bfr:
+            if owns_col(tfk, b["slug"]):
+                for d in dipole:
+                    upstream_dnf.append(dnf(
+                        f"{tfk}~{b['slug']}~{d['slug']}-cmp{sfx}", f"{tfk}+{b['slug']}+{d['slug']}",
+                        f"{tfk}+{b['slug']}+{d['slug']}", "field-mapping+bfr+dipole", "composed",
+                        args.track, {"field_mapping": tfk, "bfr": b["slug"], "dipole": d["slug"]},
+                        reason=reason))
+        for s in tf_spans:
+            if owns_span(tfk, s["slug"]):
+                upstream_dnf.append(dnf(
+                    f"{tfk}~{s['slug']}-cmp{sfx}", s["slug"], s.get("name", s["slug"]),
+                    "field-mapping+bfr+dipole", "composed", args.track, {"field_mapping": tfk},
+                    reason=reason))
+    for (tfk, bs), why in failed_bfr.items():
+        reason = f"upstream bfr {bs} DNF: {why}"
+        for d in dipole:
+            combo = f"{bs}+{d['slug']}" if tfk == "gt" else f"{tfk}+{bs}+{d['slug']}"
+            upstream_dnf.append(dnf(
+                f"{tfk}~{bs}~{d['slug']}-cmp{sfx}", combo, combo,
+                "bfr+dipole" if tfk == "gt" else "field-mapping+bfr+dipole", "composed", args.track,
+                {"field_mapping": tfk, "bfr": bs, "dipole": d["slug"]}, reason=reason))
+    if upstream_dnf:
+        print(f"  composed  {len(upstream_dnf)} pipeline(s) recorded as DNF after an upstream failure")
+        runs.extend(_stamp_phantom(upstream_dnf, getattr(args, "phantom", None)))
 
     # --columns-only stops here: the two upstream stages ARE the whole job when all we want is the
     # per-column total field / local field for the viewer. That is 2 + 2x12 = 26 runs per harmonization
@@ -1181,8 +1272,8 @@ def do_r2gen(g, args, gt_sources):
             raise FileNotFoundError("r2prime.nii.gz not written")
         return (g["slug"], r2p, rt, [(f"r2prime-generation:{g['slug']}", odir / "resources.json", rt)])
     except Exception as e:
-        print(f"  composed  r2gen {g['slug']} DNF ({e}) — skipping its pipelines")
-        return None
+        print(f"  composed  r2gen {g['slug']} DNF ({e}) — its pipelines are recorded as DNF")
+        return Failed(g["slug"], e)
 
 
 def do_chisep_composed(task, args, gt_sources, gt, mask, r2p_cache):
@@ -1209,7 +1300,8 @@ def do_chisep_composed(task, args, gt_sources, gt, mask, r2p_cache):
         return row
     except Exception as e:
         print(f"  composed  {cid:<34} DNF ({e})")
-        row = dnf(cid, c["slug"], c.get("name", c["slug"]), stage, "composed", args.track, combo)
+        row = dnf(cid, c["slug"], c.get("name", c["slug"]), stage, "composed", args.track, combo,
+                  reason=e)
         row["domain"] = "chisep"
         return row
 
@@ -1245,10 +1337,24 @@ def run_chisep_composed(args, algos, gt_sources, gt, mask, runs: list) -> None:
     # CI job matrix.
     need = {g["slug"]: g for g, _ in pairs}
     r2p_cache: dict[str, tuple] = {}
+    failed_gen: dict[str, str] = {}
     for g in need.values():
         res = do_r2gen(g, args, gt_sources)
-        if res:
+        if isinstance(res, Failed):
+            failed_gen[res.key] = res.reason
+        elif res:
             r2p_cache[res[0]] = (res[1], res[2], res[3])
+    # A failed generator's combos become DNF rows (not silent skips), so a re-score replaces their
+    # previous scores instead of leaving stale "ok" rows — same rule as run_composed.
+    sfx = getattr(args, "phantom_sfx", "")
+    for g, c in pairs:
+        if g["slug"] in failed_gen:
+            row = dnf(f"{g['slug']}~{c['slug']}-cmp{sfx}", c["slug"], c.get("name", c["slug"]),
+                      "r2prime-generation+chi-separation", "composed", args.track,
+                      {"r2prime_generation": g["slug"], "chi_separation": c["slug"]},
+                      reason=f"upstream r2prime-generation {g['slug']} DNF: {failed_gen[g['slug']]}")
+            row["domain"] = "chisep"
+            runs.extend(_stamp_phantom([row], getattr(args, "phantom", None)))
 
     # Stage 2 — every (generator, χ-sep method) pair with a live generator, run SERIALLY. A focus
     # job's pairs are N generators × the SAME method, so fanning them over the pool runs N copies

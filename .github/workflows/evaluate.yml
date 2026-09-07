@@ -15,9 +15,10 @@ on:
         description: "Algorithm slug under algorithms/ to evaluate"
         required: true
 
+# Nothing here commits or comments — the gate only runs containers and reads the reaper's run
+# state — so the token is read-only. score.yml is the workflow that writes results.
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
   actions: read   # the orphan-container reaper checks whether a labelled run is still active
 
 env:
@@ -47,9 +48,34 @@ jobs:
             echo "slugs=$slugs" >> "$GITHUB_OUTPUT"
           fi
 
+  # Fork PRs get an explicit, visible skip instead of a silent one (the evaluate job below is gated
+  # off for them). Hosted, no checkout, no secrets — it only prints.
+  fork-notice:
+    needs: discover
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          SLUGS: ${{ needs.discover.outputs.slugs }}   # via env, never interpolated into the script: PR-named dirs
+          REPO: ${{ github.repository }}
+        run: |
+          echo "::notice title=Smoke gate skipped for fork PR::The container smoke test (evaluate) only runs for branches in $REPO because it executes the PR's own scripts on shared self-hosted runners. A maintainer can push this branch into the repository to run it. Changed methods: $SLUGS"
+
+  # Fork PRs never reach the self-hosted runners. This job checks out the PR's merge ref and runs
+  # its scripts/pipeline.py + `pip install .` ON THE HOST (only the method itself is containerised),
+  # with the Docker socket, on a persistent shared box — so a fork PR that edits one file under
+  # algorithms/ could also rewrite pipeline.py and run arbitrary code there. Same-repo branches are
+  # written by collaborators and are fine; `workflow_dispatch` is a maintainer action. A fork
+  # contribution is smoke-tested by a maintainer pushing the branch into this repo (the
+  # `fork-notice` job above says so on the PR's checks). Mirrors the guard ci.yml's manifest job uses.
   evaluate:
     needs: discover
-    if: needs.discover.outputs.slugs != '[]'
+    if: >-
+      needs.discover.outputs.slugs != '[]' &&
+      (github.event_name == 'workflow_dispatch' ||
+      github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: [self-hosted, Linux, X64]
     strategy:
       fail-fast: false
