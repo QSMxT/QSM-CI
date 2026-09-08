@@ -18,11 +18,14 @@ the engine's own container support. The two Python engines ship as ready-to-impo
 
 from __future__ import annotations
 
-from .stages import ARTIFACT_FILE, STAGES, produced_artifact, produced_artifacts
+from .stages import ARTIFACT_FILE, STAGES, is_optional, produced_artifact, produced_artifacts
 
-# Consumed artifacts a stage can run without: magnitude (only some methods use it) and params
-# (a caller may pass acquisition flags instead). Everything else a stage consumes is required.
-OPTIONAL = {"magnitude", "params"}
+
+def _optional(stage: str, artifact: str) -> bool:
+    """Consumed artifacts a stage can run without: the CLI's own rule (stages.is_optional — magnitude
+    when it isn't the sole image input) plus params, which a caller may replace with acquisition
+    flags. Same rule as `qsm-ci run`, so a wrapper never marks required what the CLI would reject."""
+    return artifact == "params" or is_optional(stage, artifact)
 
 CORE_STAGES = ["field-mapping", "bfr", "dipole"]
 ENGINES = ("cwl", "snakemake", "nextflow")
@@ -61,7 +64,7 @@ def _cwl_tool(stage: str, indent: str = "") -> str:
     for art in _consumes(stage):
         # quote the optional type — bare `File?` is ambiguous in YAML flow style. position:2 keeps
         # every flag after the positional slug (position:1), else unpositioned flags sort before it.
-        t = '"File?"' if art in OPTIONAL else "File"
+        t = '"File?"' if _optional(stage, art) else "File"
         lines.append(f"  {art}: {{ type: {t}, inputBinding: {{ prefix: --{art}, position: 2 }} }}")
     default_out = "out" if multi else ARTIFACT_FILE[prods[0]]
     lines.append(
@@ -178,7 +181,7 @@ def _cwl_pipeline(stages: list) -> str:
         out.append("      inputs:")
         out.append(f"        slug: {{ type: string, default: {slug}, inputBinding: {{ position: 1 }} }}")
         for a in STAGES[stage]["consumes"]:
-            t = '"File?"' if a in OPTIONAL else "File"
+            t = '"File?"' if _optional(stage, a) else "File"
             out.append(f"        {a}: {{ type: {t}, inputBinding: {{ prefix: --{a}, position: 2 }} }}")
         out.append(f"        out: {{ type: string, default: {ARTIFACT_FILE[prod]}, inputBinding: {{ prefix: -o, position: 2 }} }}")
         out.append("      outputs:")

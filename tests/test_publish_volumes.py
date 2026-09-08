@@ -1,28 +1,142 @@
-"""Unit tests for the volume-prune logic (scripts/publish_volumes.py).
+"""What publish_volumes.py puts on — and takes off — the Hugging Face volumes repo.
 
-Uploading to the Hub is an UPSERT, so a run that stops being produced keeps its old volume and the
-viewer serves a stale recon forever. `--prune` deletes those. Because it deletes published data,
-its safety scope is what actually matters here: never the flat root, never something the index
-still points at, and never a suspiciously large fraction of a directory.
+Two concerns, both about not letting the Hub drift out of step with the results:
+ground truth is uploaded once per (phantom, artifact) rather than once per run, and `--prune`
+removes volumes that are no longer produced.
+
+## Shared ground truth
+
+Ground truth reaches the Hugging Face volumes repo ONCE per (phantom, artifact), never once per run.
+
+publish_volumes.py used to upload `<run-id>__truth.nii.gz` for every scored run — hundreds of
+byte-identical copies of each phantom's χ map. These pin the sharing rules: the Hub path is derived
+from the phantom and the artifact the run's last stage produces, identical bytes collapse to one
+upload, different bytes for the same name never overwrite each other, and both the new `truth.ref`
+pointer pipeline.py writes and a legacy per-run `truth.nii.gz` resolve to the shared name.
 """
 import importlib.util
 from pathlib import Path
+from types import SimpleNamespace
 
-import pytest
-
-# publish_volumes imports huggingface_hub at module scope. It's an optional dependency (only the
-# publishing path needs it), so skip cleanly rather than reporting a failure on a machine that
-# simply doesn't have it installed.
-pytest.importorskip("huggingface_hub",
-                    reason="huggingface_hub not installed — publish_volumes can't be imported")
-
-_spec = importlib.util.spec_from_file_location(
-    "publish_volumes", Path(__file__).resolve().parent.parent / "scripts" / "publish_volumes.py")
+ROOT = Path(__file__).resolve().parent.parent
+_spec = importlib.util.spec_from_file_location("publish_volumes", ROOT / "scripts" / "publish_volumes.py")
 pv = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(pv)
 
+
+def test_truth_name_is_phantom_and_produced_artifact():
+    assert pv.truth_name({"stage": "dipole", "phantom": "sim"}, "truth") == "truth/sim/chimap.nii.gz"
+    assert pv.truth_name({"stage": "bfr", "phantom": "sim"}, "truth") == "truth/sim/localfield.nii.gz"
+    assert pv.truth_name({"stage": "field-mapping", "phantom": "sim"}, "truth") == "truth/sim/totalfield.nii.gz"
+    # a composed span ends in the dipole stage -> its truth is the chimap
+    assert pv.truth_name({"stage": "field-mapping+bfr+dipole", "phantom": "sim"}, "truth") == "truth/sim/chimap.nii.gz"
+    # χ-separation: the plain set is χ+, the -dia set is χ−
+    assert pv.truth_name({"stage": "chi-separation", "phantom": "chisep-mc"}, "truth") == "truth/chisep-mc/chi-para.nii.gz"
+    assert pv.truth_name({"stage": "chi-separation", "phantom": "chisep-mc"}, "truth-dia") == "truth/chisep-mc/chi-dia.nii.gz"
+
+
+def test_truth_name_defaults_for_historical_sim_rows():
+    # The QSM sim track's early rows carry no `phantom`; they belong to the default `sim` phantom.
+    assert pv.truth_name({"stage": "dipole", "track": "sim"}, "truth") == "truth/sim/chimap.nii.gz"
+    assert pv.truth_name({"stage": "dipole", "track": "invivo"}, "truth") == "truth/invivo/chimap.nii.gz"
+    # An unrecognisable stage still yields a stable, phantom-scoped name rather than crashing.
+    assert pv.truth_name({"stage": "mystery", "phantom": "sim"}, "truth") == "truth/sim/truth.nii.gz"
+
+
+def test_assign_truth_names_shares_identical_content_and_never_overwrites():
+    by_sha, refs = pv.assign_truth_names([
+        ("a", "sha-one", "truth/sim/chimap.nii.gz"),
+        ("b", "sha-one", "truth/sim/chimap.nii.gz"),          # same bytes -> same file
+        ("c", "sha-two", "truth/sim/chimap.nii.gz"),          # same name, different bytes -> suffixed
+        ("d", "sha-three", "truth/sim/localfield.nii.gz"),
+    ])
+    assert refs["a"] == refs["b"] == "truth/sim/chimap.nii.gz"
+    assert refs["c"] == "truth/sim/chimap-sha-two.nii.gz"   # `-<sha[:8]>` suffix
+    assert refs["d"] == "truth/sim/localfield.nii.gz"
+    assert len(by_sha) == 3 and len(set(by_sha.values())) == 3
+
+
+def _nii(path: Path, seed: int):
+    import nibabel as nib
+    import numpy as np
+    rng = np.random.default_rng(seed)
+    nib.save(nib.Nifti1Image(rng.normal(size=(4, 4, 4)).astype("float32"), np.eye(4)), str(path))
+
+
+def test_resolve_truth_pointer_and_legacy_collapse_to_one_upload(tmp_path):
+    results = tmp_path / "results"
+    shared = results / pv.TRUTH_DIR / "sim" / "chimap.nii.gz"
+    shared.parent.mkdir(parents=True)
+    _nii(shared, seed=1)
+    # run A: the pointer pipeline.py now writes; run B: a legacy per-run copy of the SAME truth;
+    # run C: a legacy copy of a DIFFERENT truth (another phantom).
+    for rid in ("a-iso", "b-iso", "c-iso"):
+        (results / rid).mkdir()
+    (results / "a-iso" / "truth.ref").write_text(f"{pv.TRUTH_DIR}/sim/chimap.nii.gz\n")
+    (results / "b-iso" / "truth.nii.gz").write_bytes(shared.read_bytes())
+    _nii(results / "c-iso" / "truth.nii.gz", seed=2)
+    rows = {"a-iso": {"stage": "dipole", "phantom": "sim"},
+            "b-iso": {"stage": "dipole", "phantom": "sim"},
+            "c-iso": {"stage": "dipole", "phantom": "invivo", "track": "invivo"}}
+
+    found = []
+    for rid, row in rows.items():
+        path, wanted = pv.resolve_truth(results / rid, results, row, "truth")
+        found.append((rid, "truth", path, wanted))
+    assert found[0][3] == "truth/sim/chimap.nii.gz"     # from the pointer
+    assert found[1][3] == "truth/sim/chimap.nii.gz"     # derived from the row
+
+    uploads, refs = pv.plan_truths(found)
+    assert set(uploads) == {"truth/sim/chimap.nii.gz", "truth/invivo/chimap.nii.gz"}
+    assert refs[("a-iso", "truth")] == refs[("b-iso", "truth")] == "truth/sim/chimap.nii.gz"
+    assert refs[("c-iso", "truth")] == "truth/invivo/chimap.nii.gz"
+    # a run with no truth at all (DNF / no-ground-truth track) resolves to None
+    (results / "d-iso").mkdir()
+    assert pv.resolve_truth(results / "d-iso", results, {"stage": "dipole"}, "truth") is None
+
+
+def test_emit_volumes_writes_one_shared_truth_and_a_pointer(tmp_path, monkeypatch):
+    """pipeline.emit_volumes stages the truth ONCE per phantom and leaves a pointer per run — the
+    contract publish_volumes.resolve_truth relies on."""
+    _spec = importlib.util.spec_from_file_location("pipeline", ROOT / "scripts" / "pipeline.py")
+    pipeline = importlib.util.module_from_spec(_spec)
+    _spec.loader.exec_module(pipeline)
+    monkeypatch.setattr(pipeline, "ROOT", tmp_path)
+    gt = tmp_path / "data" / "sim" / "groundtruth"
+    gt.mkdir(parents=True)
+    _nii(gt / "chimap.nii.gz", seed=3)
+    recon = tmp_path / "recon.nii.gz"
+    _nii(recon, seed=4)
+    mask = tmp_path / "mask.nii.gz"
+    _nii(mask, seed=5)
+
+    for rid in ("x-iso", "y-iso"):
+        pipeline.emit_volumes(rid, recon, gt / "chimap.nii.gz", mask)
+
+    results = tmp_path / "results"
+    shared = results / pipeline.TRUTH_DIR / "sim" / "chimap.nii.gz"
+    assert shared.read_bytes() == (gt / "chimap.nii.gz").read_bytes()
+    assert not (results / "x-iso" / "truth.nii.gz").exists()          # no per-run copy any more
+    for rid in ("x-iso", "y-iso"):
+        assert (results / rid / "truth.ref").read_text().strip() == f"{pipeline.TRUTH_DIR}/sim/chimap.nii.gz"
+        assert (results / rid / "recon.nii.gz").exists() and (results / rid / "error.nii.gz").exists()
+        path, name = pv.resolve_truth(results / rid, results, {"stage": "dipole", "phantom": "sim"}, "truth")
+        assert (path, name) == (shared, "truth/sim/chimap.nii.gz")
+
+
+# --- --prune ---------------------------------------------------------------------------------
+# Uploading is an upsert, so a run that stops being produced keeps its old volume and the viewer
+# serves a stale recon forever. `--prune` removes those. Because it deletes published data, the
+# safety scope is what these check: never the flat root, never the shared ground truth, never
+# something the index still points at, and never a suspiciously large fraction of a directory.
+
 REPO = "qsmxt/qsm-ci-volumes"
 PREFIX = f"https://huggingface.co/datasets/{REPO}/resolve/main/"
+
+
+# The real delete op needs huggingface_hub; the logic under test does not. Swap in a stand-in so
+# these run anywhere rather than skipping (a skipped safety test protects nothing).
+pv._delete_op = lambda path: SimpleNamespace(path_in_repo=path)
 
 
 class FakeApi:
@@ -78,6 +192,22 @@ def test_other_acquisitions_are_out_of_scope():
                                          "repro/acq1/b__recon.nii.gz"],
                         scopes=("repro/acq1/",))
     assert deleted == ["repro/acq1/gone__recon.nii.gz"]
+
+
+def test_shared_ground_truth_is_never_pruned():
+    """truth/<phantom>/<artifact> is referenced by every run on that phantom, including runs
+    outside this publish, and is deduplicated by content hash. A publish that happens to upload
+    one must not make the whole truth/ tree a prune target — housekeeping there belongs to
+    dedupe_hf_truth.py."""
+    files = ["truth/sim/chimap.nii.gz", "truth/sim/localfield.nii.gz",
+             "repro/acq1/a__recon.nii.gz", "repro/acq1/b__recon.nii.gz",
+             "repro/acq1/gone__recon.nii.gz"]
+    deleted, _ = _prune(files, uploaded=["repro/acq1/a__recon.nii.gz",
+                                         "repro/acq1/b__recon.nii.gz",
+                                         "truth/sim/chimap.nii.gz"],
+                        scopes=("repro/acq1/", "truth/sim/"))
+    assert deleted == ["repro/acq1/gone__recon.nii.gz"]
+    assert not any(f.startswith("truth/") for f in deleted)
 
 
 def test_index_referenced_volume_survives_even_if_not_re_uploaded():

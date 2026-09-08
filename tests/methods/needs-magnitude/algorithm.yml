@@ -1,0 +1,8 @@
+name: Needs Magnitude Test
+slug: needs-magnitude
+stage: dipole
+# Opts into an artifact the harness dataset does NOT ship — exercises the "missing source artifact"
+# path: the run must land as a DNF row, not abort the whole invocation.
+optional_inputs: [magnitude]
+image: bash:latest
+run: bash run.sh

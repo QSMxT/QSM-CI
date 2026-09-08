@@ -47,7 +47,8 @@
        GL canvas. !important overrides the wrapper's inline height:480px. */
     #viewer-section:fullscreen { display: flex; flex-direction: column; border-radius: 0; overflow-y: auto; }
     #viewer-section:fullscreen #viewer-canvas-wrap { flex: 1 1 auto; height: auto !important; min-height: 0; }
-    /* hover for the fullscreen button (hover:bg-black/70 + hover:text-white aren't in the purged CSS) */
+    /* hover for the fullscreen button. (Once "not in the purged CSS" — a stale committed styles.css;
+       the build is kept in sync by ci.yml now and carries both utilities. Harmless to keep.) */
     #fullscreen-btn:hover { background: rgba(0,0,0,0.7); color: #fff; }
     /* pan + zoom buttons: same icon-button look as Fullscreen; .is-on marks the engaged Pan toggle */
     #pan-btn:hover, #zoom-in-btn:hover, #zoom-out-btn:hover, #zoom-reset-btn:hover { background: rgba(0,0,0,0.7); color: #fff; }
@@ -154,9 +155,18 @@
             <!-- layer selector (beneath the viewer) -->
             <div id="layer-row" class="mt-4 flex flex-wrap items-center gap-3">
               <div class="inline-flex rounded-lg bg-gray-100 p-1 text-sm font-medium dark:bg-gray-800" id="layer-tabs">
-                <button data-layer="recon" class="rounded-md px-3 py-1 transition">Reconstruction</button>
-                <button data-layer="truth" class="rounded-md px-3 py-1 transition">Ground truth</button>
+                <!-- Pipeline order, left to right: the input magnitude, then each stage's output,
+                     ending at the QSM this page is about, with the reference it is scored against
+                     last. Magnitude and the two intermediates are Harmonization-only; the
+                     intermediates are per-COLUMN artifacts shared by every pipeline built on them,
+                     and each is revealed only once its file is confirmed present on the Hub (a
+                     bfr+dipole span or an end-to-end method produces no local field, so that button
+                     simply never appears). QSM is the default base map — see curBase in viewer.js. -->
                 <button data-layer="magnitude" class="rounded-md px-3 py-1 transition hidden">Magnitude</button>
+                <button data-layer="totalfield" class="rounded-md px-3 py-1 transition hidden">Field map</button>
+                <button data-layer="localfield" class="rounded-md px-3 py-1 transition hidden">Local field</button>
+                <button data-layer="recon" class="rounded-md px-3 py-1 transition">QSM</button>
+                <button data-layer="truth" class="rounded-md px-3 py-1 transition">Ground truth</button>
               </div>
               <!-- χ-separation source toggle (χ+ vs χ−); shown only for chi-separation runs -->
               <div class="hidden inline-flex rounded-lg bg-gray-100 p-1 text-sm font-medium dark:bg-gray-800" id="chisep-tabs">

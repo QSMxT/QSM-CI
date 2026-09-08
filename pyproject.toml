@@ -25,6 +25,11 @@ pydra = ["pydra>=0.23"]
 # Both Python workflow-engine interfaces in one go. Kept optional (nipype's dependency tree is heavy
 # and most users only use the CLI), but bundled for convenience: pip install "qsm-ci[interfaces]".
 interfaces = ["nipype>=1.8", "pydra>=0.23"]
+# Everything the test suite needs, so a dev box is one command away from a green run:
+#   pip install -e ".[test]"
+# qsm-forward is in here because tests/test_interfaces.py *generates* its phantom with it (~1s)
+# rather than standing in a synthetic one — it is a hard requirement of the suite, not a nicety.
+test = ["pytest", "nipype>=1.8", "pydra>=0.23", "qsm-forward"]
 all = ["pillow", "nipype>=1.8", "pydra>=0.23"]
 
 [project.urls]

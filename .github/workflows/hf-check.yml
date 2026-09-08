@@ -25,7 +25,7 @@ jobs:
           from pathlib import Path
           import nibabel as nib, numpy as np
           d = Path("results/__hfcheck"); d.mkdir(parents=True, exist_ok=True)
-          for k in ("recon", "truth", "error"):
+          for k in ("recon", "error"):   # no truth: that is shared per phantom (truth/<phantom>/…), never synthesised here
               nib.save(nib.Nifti1Image(np.zeros((6, 6, 6), "float32"), np.eye(4)), d / f"{k}.nii.gz")
           Path("results/index.json").write_text(
               json.dumps({"runs": [{"id": "__hfcheck", "slug": "x", "name": "hf-check"}]}))

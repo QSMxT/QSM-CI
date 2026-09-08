@@ -54,7 +54,7 @@ real R1/R2* maps), then ALL maps are image-space-downsampled ONCE to the scoring
 field + GRE + SE signals are simulated NATIVELY at that resolution (no k-space crop anywhere). The
 ground truth is exactly the maps that generated the signal — the signal-derivable R2' = R2*-R2 matches
 the shipped r2prime with corr 1.000 in the noiseless limit (the historical 0.64-mm-sim +
-k-space-crop design mismatched the GT/signal PSFs, corr 0.24 — see STATUS.md). Trade-off: the
+k-space-crop design mismatched the GT/signal PSFs, corr 0.24). Trade-off: the
 signal carries no sub-voxel partial-volume content (a scored phantom cannot have both a clean
 parameter GT and a realistic sub-voxel PV signal).
 
@@ -271,7 +271,7 @@ def main() -> None:
         # simulate field + signal NATIVELY at that resolution so no k-space crop happens anywhere.
         # Every input and the GT then share a single (identity) PSF: the signal-derived
         # R2' = R2*-R2 matches the shipped r2prime exactly in the noiseless limit (corr 1.000; the
-        # historical 0.64-mm-sim + k-space-crop design scored 0.24 — see STATUS.md, removed
+        # historical 0.64-mm-sim + k-space-crop design scored 0.24, removed
         # 2026-08-11), at the cost of sub-voxel partial-volume content in the signal (a scored
         # phantom cannot have both — QSM.rs PSF lessons).
         # --voxel 0 keeps the native grid (no resample at all — the Ridani presets, matching the

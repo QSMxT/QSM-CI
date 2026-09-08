@@ -111,3 +111,31 @@ def test_invivo_two_reference_scoring(tmp_path):
     # primary (COSMOS-equivalent) + secondary (STI) metrics both present
     assert r["metrics"]["correlation"] > 0.99
     assert "nrmse" in r["metrics"] and "nrmse_sti" in r["metrics"]
+
+
+def test_missing_artifact_is_a_dnf_row_not_an_abort(tmp_path):
+    """A method wanting an artifact the dataset lacks used to raise SystemExit out of every per-run
+    guard and kill the whole invocation. It must be ONE DNF row (with the reason) while the other
+    methods in the same run still score."""
+    ds = _dataset(tmp_path / "ds")   # ships no magnitude
+    runs = _run(ds, tmp_path / "runs.json", tmp_path / "work",
+                mode="isolated", track="sim", include="cp-method,needs-magnitude")
+    by_id = {r["id"]: r for r in runs}
+    assert by_id["needs-magnitude-iso"]["status"] == "DNF"
+    assert "magnitude" in by_id["needs-magnitude-iso"]["dnf_reason"]
+    assert by_id["cp-method-iso"]["status"] == "ok"
+
+
+def test_upstream_bfr_failure_records_its_pipelines_as_dnf(tmp_path):
+    """A BFR that fails in the composed matrix must leave a DNF row for every pipeline built on it
+    (so a re-score replaces the old score instead of leaving a stale 'ok'), while pipelines on the
+    healthy BFR still score."""
+    ds = _dataset(tmp_path / "ds")
+    runs = _run(ds, tmp_path / "runs.json", tmp_path / "work",
+                mode="composed", track="sim", include="cp-bfr,fail-bfr,cp-method")
+    by_id = {r["id"]: r for r in runs}
+    bad = by_id["gt~fail-bfr~cp-method-cmp"]
+    assert bad["status"] == "DNF" and bad["stage"] == "bfr+dipole"
+    assert "upstream bfr fail-bfr" in bad["dnf_reason"]
+    assert bad["combo"] == {"field_mapping": "gt", "bfr": "fail-bfr", "dipole": "cp-method"}
+    assert by_id["gt~cp-bfr~cp-method-cmp"]["status"] == "ok"

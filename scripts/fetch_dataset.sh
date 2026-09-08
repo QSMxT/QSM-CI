@@ -6,7 +6,7 @@
 # it (token-gated), unpacks, and flattens it into the QSM-CI artifact layout via pack_dataset.py.
 #
 #   inputs/       public boundary artifacts (phase, magnitude, mask, params.json)
-#   groundtruth/  held-out targets + isolated-mode input boundaries (totalfield, localfield,
+#   groundtruth/  scoring targets + isolated-mode input boundaries (totalfield, localfield,
 #                 chimap, dseg) — never committed.
 #
 # Usage: fetch_dataset.sh <phantom> <dest>

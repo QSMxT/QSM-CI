@@ -4,17 +4,30 @@ interface` generator (CWL / Snakemake / Nextflow).
 The interfaces just wrap `qsm-ci run <slug>`, so we exercise them against the tiny passthrough
 methods in tests/methods/ (cp-bfr, cp-method) across **every runner** — docker, podman, apptainer,
 and the container-free `local`. Inputs come from a qsm-forward phantom when `QSMCI_PHANTOM` points at
-a packed dataset (see scripts/pack_dataset.py) — that's what CI does — otherwise a minimal synthetic
-phantom is built inline so the test also runs standalone.
+a packed dataset (see scripts/pack_dataset.py), otherwise the same phantom is generated here with
+qsm-forward — it takes about a second, so every test runs against real physics on any machine and
+nothing is skipped or stood in for.
 
-Running this file requires the package installed (so `qsm-ci` is on PATH), the `[nipype]` and
-`[pydra]` extras, and the runners under test — the CI `interfaces` job provides all of them.
+Running this file requires the package installed (so `qsm-ci` is on PATH), the test extra
+(`pip install -e ".[test]"` — nipype, pydra and qsm-forward), and the runners under test:
+docker, podman and apptainer. Anything missing is a hard failure, not a skip.
+
+Missing a runner on your own box? Deselect it *explicitly*, per invocation:
+
+    pytest tests/test_interfaces.py -k "not podman"
+
+which reports "deselected" rather than "skipped" — you chose to exclude it; the suite did not
+quietly decide a missing tool means the test no longer counts. Keep that on the command line: CI
+runs this file bare, so a missing runner or extra there is a hard failure, and putting the flag in
+pytest's `addopts` would silently apply it in CI too.
 """
 
 from __future__ import annotations
 
-import json
+import importlib.util
 import os
+import subprocess
+import sys
 from pathlib import Path
 
 import nibabel as nib
@@ -27,39 +40,55 @@ CP_DIPOLE = str((METHODS / "cp-method").resolve())  # dipole: localfield -> chim
 TKD = str((Path(__file__).parent.parent / "algorithms" / "tkd-qsmrs").resolve())  # a real dipole method
 
 RUNNERS = ["docker", "podman", "apptainer", "local"]
+PACK = Path(__file__).parent.parent / "scripts" / "pack_dataset.py"
+
+
+def _run(cmd: list[str], what: str) -> None:
+    """Run a build step, surfacing its output if it fails — a broken phantom must be loud."""
+    r = subprocess.run(cmd, capture_output=True, text=True)
+    if r.returncode != 0:
+        raise RuntimeError(f"{what} failed ({' '.join(cmd)}):\n{r.stdout}\n{r.stderr}")
+
+
+def _build_phantom(dest: Path) -> Path:
+    """Generate the qsm-forward 'simple' phantom and pack it, exactly as CI's job does.
+
+    qsm-forward is invoked through the *running* interpreter rather than a `qsm-forward` on PATH:
+    a stale console script (one whose shebang points at a python that no longer exists) would
+    otherwise shadow a perfectly good install.
+    """
+    if importlib.util.find_spec("qsm_forward") is None:
+        raise RuntimeError(
+            "qsm-forward is not installed, so the interface tests cannot build their phantom.\n"
+            "Install the test extra:  pip install -e \".[test]\""
+        )
+    bids, packed = dest / "bids", dest / "phantom"
+    _run([sys.executable, "-c", "import sys; from qsm_forward.main import main; sys.exit(main())",
+          "simple", str(bids), "--resolution", "40", "40", "40", "--save-field"], "qsm-forward")
+    _run([sys.executable, str(PACK), str(bids), str(packed)], "pack_dataset.py")
+    return packed
 
 
 @pytest.fixture(scope="session")
 def phantom(tmp_path_factory) -> dict:
-    """Canonical-artifact paths. Uses $QSMCI_PHANTOM (a pack_dataset.py output) if set, else builds
-    a tiny synthetic phantom so the test runs without qsm-forward."""
+    """Canonical-artifact paths for a *real* qsm-forward phantom.
+
+    Uses $QSMCI_PHANTOM when set — point it at any pack_dataset.py output to run these against a
+    bigger dataset — and otherwise builds the phantom here, once per session, in about a second.
+    There is deliberately no synthetic stand-in: the passthrough methods do not care what the
+    voxels hold, but test_nipype_real_dipole_docker scores a genuine reconstruction against
+    chimap_truth, and noise is not the field of any susceptibility distribution.
+    """
     env = os.environ.get("QSMCI_PHANTOM")
-    if env:
-        d = Path(env)
-        return {
-            "totalfield": str(d / "groundtruth" / "totalfield.nii.gz"),
-            "localfield": str(d / "groundtruth" / "localfield.nii.gz"),
-            "chimap_truth": str(d / "groundtruth" / "chimap.nii.gz"),
-            "mask": str(d / "inputs" / "mask.nii.gz"),
-            "params": str(d / "inputs" / "params.json"),
-        }
-    d = tmp_path_factory.mktemp("phantom")
-    aff = np.eye(4)
-    rng = np.random.default_rng(0)
-    field = (rng.standard_normal((16, 16, 16)) * 0.05).astype("float32")
-    paths = {}
-    for name in ("totalfield", "localfield", "chimap_truth"):
-        p = d / f"{name}.nii.gz"
-        nib.save(nib.Nifti1Image(field, aff), str(p))
-        paths[name] = str(p)
-    mask = d / "mask.nii.gz"
-    nib.save(nib.Nifti1Image(np.ones((16, 16, 16), "float32"), aff), str(mask))
-    paths["mask"] = str(mask)
-    params = d / "params.json"
-    params.write_text(json.dumps({"TE": [0.004], "B0": 3.0, "B0_dir": [0, 0, 1],
-                                  "voxel_size": [1, 1, 1]}))
-    paths["params"] = str(params)
-    return paths
+    d = Path(env) if env else _build_phantom(tmp_path_factory.mktemp("qsm-forward"))
+    p = {"totalfield": d / "groundtruth" / "totalfield.nii.gz",
+         "localfield": d / "groundtruth" / "localfield.nii.gz",
+         "chimap_truth": d / "groundtruth" / "chimap.nii.gz",
+         "mask": d / "inputs" / "mask.nii.gz",
+         "params": d / "inputs" / "params.json"}
+    for name, path in p.items():
+        assert path.exists(), f"phantom missing {name}: {path}"
+    return {k: str(v) for k, v in p.items()}
 
 
 def _assert_copy(out: Path, source: str) -> None:

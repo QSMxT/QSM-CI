@@ -1,0 +1,7 @@
+name: Failing BFR Test
+slug: fail-bfr
+stage: bfr
+# Always exits non-zero — exercises an UPSTREAM failure in the composed matrix: every pipeline
+# built on it must be recorded as DNF (with the reason), never silently skipped.
+image: bash:latest
+run: bash run.sh

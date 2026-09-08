@@ -150,6 +150,8 @@ const METRICS = {
     desc: "Structural-similarity index tuned for QSM (5×5×5 windows). 1 = identical to the ground truth." },
   hfen:            { label: "HFEN",             unit: "%", better: "lower",  dp: 1,
     desc: "High-Frequency Error Norm (%): error in a Laplacian-of-Gaussian high-pass of the map, i.e. how well fine edges/detail are recovered relative to the ground truth. 0 = perfect. The classic 2016 QSM Reconstruction Challenge fine-detail metric." },
+  coverage:        { label: "Coverage",         unit: "",  better: "higher", dp: 3,
+    desc: "Fraction of the brain mask where the method produced a finite, non-zero value. Every metric is scored over the whole mask, so an eroded rim or a failed region counts as error; coverage says how much of a score drop is missing brain rather than wrong values. 1 = the full mask." },
   para_leak:       { label: "χ−→χ+ leak",       unit: "",  better: "lower",  dp: 3,
     desc: "Whole-brain regression slope of χ+ on the χ− ground truth: the fraction of diamagnetic signal bleeding into the paramagnetic map. 0 = clean; magnitude = contamination. Unlike xSIM it isn't fooled by the shared R2' common mode." },
   dia_leak:        { label: "χ+→χ− leak",       unit: "",  better: "lower",  dp: 3,
