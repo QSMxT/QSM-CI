@@ -8,7 +8,8 @@ family: direct
 learning: supervised
 engine: HD-BET
 inputs: [magnitude]  # the artifacts this method actually reads (a subset of the stage's inputs)
-description: Brain mask via the HD-BET CNN, run on the root-sum-of-squares combined magnitude.
+description: Brain mask via the HD-BET CNN, run on the root-sum-of-squares combined magnitude,
+  with an optional signal-gated erosion that trims only low-signal mask boundary (default off).
   Standalone `brain-extraction`-stage submission (multi-echo magnitude -> binary brain mask).
 authors:
 - name: Isensee et al.
@@ -18,3 +19,46 @@ code_url: https://github.com/MIC-DKFZ/HD-BET
 license: Apache-2.0
 image: ghcr.io/astewartau/qsm-ci/hd-bet:v1
 run: bash run.sh
+
+# Optional signal-gated erosion of the HD-BET mask. OFF by default (erode_threshold: 0), so the
+# published behaviour is a plain HD-BET mask unless a caller opts in.
+#
+# Why it exists: near the sinuses and skull base, T2* dropout leaves mask voxels with no usable
+# signal, and the unreliable field there leaks background-field artefact into QSM. A GLOBAL erosion
+# suppresses it only by peeling the healthy cortex just as hard. This instead strips only BOUNDARY
+# voxels whose signal is low, so it eats inward through the dropout territory and stops as soon as
+# it reaches real signal.
+#
+# Two details that matter (both learned the hard way — see the QSM-CI harmonization notes):
+#   * The RSS is divided by its own heavily-smoothed, mask-normalised self before thresholding, to
+#     remove the RECEIVE-COIL BIAS FIELD. Without that, a global threshold on raw RSS mostly flags
+#     the VERTEX — far from the receive coils, hence dim but perfectly healthy — instead of the
+#     skull-base dropout that is actually the target.
+#   * erode_depth_cap is load-bearing. Sulcal and interhemispheric-fissure CSF is genuinely
+#     low-signal AND connected all the way inward, so an uncapped peel follows it and carves fjords
+#     15-35 voxels deep into healthy cortex. The cap bounds removal depth by construction.
+parameters:
+  - name: erode_global
+    default: 0
+    description: >
+      plain binary erosion iterations applied BEFORE the signal gate. A CNN mask often includes a
+      one-voxel sliver of skull/CSF at the boundary that no signal gate will catch, because that
+      sliver is bright; 1 trims it uniformly. The gate then does the targeted work.
+  - name: erode_threshold
+    default: 0.0
+    description: >
+      signal gate, as a fraction of the in-mask median of the bias-corrected RSS. 0 disables the
+      erosion entirely. 0.8 is the harmonization setting; above ~0.85 it starts over-carving.
+  - name: erode_depth_cap
+    default: 5
+    description: >
+      never remove a voxel more than this many voxels below the original HD-BET surface. Bounds the
+      erosion by construction; 3 is too shallow to clear the skull base, 12 lets raggedness back in.
+  - name: erode_bias_sigma
+    default: 12.0
+    description: gaussian scale (voxels) of the receive-coil bias estimate divided out of the RSS
+  - name: erode_min_cc
+    default: 1000
+    description: >
+      keep every connected component of at least this many voxels, not just the largest — a capped
+      peel can sever small real chunks off thin structures, and dropping those is its own artefact

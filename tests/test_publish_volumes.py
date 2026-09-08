@@ -1,4 +1,12 @@
-"""Ground truth reaches the Hugging Face volumes repo ONCE per (phantom, artifact), never once per run.
+"""What publish_volumes.py puts on — and takes off — the Hugging Face volumes repo.
+
+Two concerns, both about not letting the Hub drift out of step with the results:
+ground truth is uploaded once per (phantom, artifact) rather than once per run, and `--prune`
+removes volumes that are no longer produced.
+
+## Shared ground truth
+
+Ground truth reaches the Hugging Face volumes repo ONCE per (phantom, artifact), never once per run.
 
 publish_volumes.py used to upload `<run-id>__truth.nii.gz` for every scored run — hundreds of
 byte-identical copies of each phantom's χ map. These pin the sharing rules: the Hub path is derived
@@ -8,6 +16,7 @@ pointer pipeline.py writes and a legacy per-run `truth.nii.gz` resolve to the sh
 """
 import importlib.util
 from pathlib import Path
+from types import SimpleNamespace
 
 ROOT = Path(__file__).resolve().parent.parent
 _spec = importlib.util.spec_from_file_location("publish_volumes", ROOT / "scripts" / "publish_volumes.py")
@@ -113,3 +122,136 @@ def test_emit_volumes_writes_one_shared_truth_and_a_pointer(tmp_path, monkeypatc
         assert (results / rid / "recon.nii.gz").exists() and (results / rid / "error.nii.gz").exists()
         path, name = pv.resolve_truth(results / rid, results, {"stage": "dipole", "phantom": "sim"}, "truth")
         assert (path, name) == (shared, "truth/sim/chimap.nii.gz")
+
+
+# --- --prune ---------------------------------------------------------------------------------
+# Uploading is an upsert, so a run that stops being produced keeps its old volume and the viewer
+# serves a stale recon forever. `--prune` removes those. Because it deletes published data, the
+# safety scope is what these check: never the flat root, never the shared ground truth, never
+# something the index still points at, and never a suspiciously large fraction of a directory.
+
+REPO = "qsmxt/qsm-ci-volumes"
+PREFIX = f"https://huggingface.co/datasets/{REPO}/resolve/main/"
+
+
+# The real delete op needs huggingface_hub; the logic under test does not. Swap in a stand-in so
+# these run anywhere rather than skipping (a skipped safety test protects nothing).
+pv._delete_op = lambda path: SimpleNamespace(path_in_repo=path)
+
+
+class FakeApi:
+    """Records deletions instead of performing them."""
+
+    def __init__(self, files):
+        self.files = list(files)
+        self.deleted = []
+
+    def list_repo_files(self, repo, repo_type=None):
+        return list(self.files)
+
+    def create_commit(self, repo, repo_type=None, operations=(), commit_message=""):
+        self.deleted += [op.path_in_repo for op in operations]
+
+
+def _prune(files, uploaded, keep=(), scopes=("repro/acq1/",), dry_run=False, force=False):
+    api = FakeApi(files)
+    n = pv._prune(api, REPO, set(uploaded), set(keep), set(scopes), dry_run, force)
+    return api.deleted, n
+
+
+def test_orphan_in_scope_is_deleted():
+    files = ["repro/acq1/keep__recon.nii.gz", "repro/acq1/also__recon.nii.gz",
+             "repro/acq1/gone__recon.nii.gz"]
+    deleted, n = _prune(files, uploaded=["repro/acq1/keep__recon.nii.gz",
+                                         "repro/acq1/also__recon.nii.gz"])
+    assert deleted == ["repro/acq1/gone__recon.nii.gz"] and n == 1
+
+
+def test_flat_root_is_never_pruned():
+    """The root mixes tracks; a partial index must not be able to delete another track's volumes."""
+    files = ["sim-run__recon.nii.gz", "invivo-run__recon.nii.gz"]
+    deleted, n = _prune(files, uploaded=[], scopes=("",))
+    assert deleted == [] and n == 0
+
+
+def test_root_files_untouched_even_when_a_subdir_is_pruned():
+    files = ["sim-run__recon.nii.gz", "invivo-run__recon.nii.gz",
+             "repro/acq1/a__recon.nii.gz", "repro/acq1/b__recon.nii.gz",
+             "repro/acq1/gone__recon.nii.gz"]
+    deleted, _ = _prune(files, uploaded=["repro/acq1/a__recon.nii.gz",
+                                         "repro/acq1/b__recon.nii.gz"],
+                        scopes=("repro/acq1/", ""))
+    assert deleted == ["repro/acq1/gone__recon.nii.gz"]
+
+
+def test_other_acquisitions_are_out_of_scope():
+    """A publish that touched acq1 must not delete acq2, whose runs it never saw."""
+    files = ["repro/acq1/a__recon.nii.gz", "repro/acq1/b__recon.nii.gz",
+             "repro/acq1/gone__recon.nii.gz", "repro/acq2/live__recon.nii.gz"]
+    deleted, _ = _prune(files, uploaded=["repro/acq1/a__recon.nii.gz",
+                                         "repro/acq1/b__recon.nii.gz"],
+                        scopes=("repro/acq1/",))
+    assert deleted == ["repro/acq1/gone__recon.nii.gz"]
+
+
+def test_shared_ground_truth_is_never_pruned():
+    """truth/<phantom>/<artifact> is referenced by every run on that phantom, including runs
+    outside this publish, and is deduplicated by content hash. A publish that happens to upload
+    one must not make the whole truth/ tree a prune target — housekeeping there belongs to
+    dedupe_hf_truth.py."""
+    files = ["truth/sim/chimap.nii.gz", "truth/sim/localfield.nii.gz",
+             "repro/acq1/a__recon.nii.gz", "repro/acq1/b__recon.nii.gz",
+             "repro/acq1/gone__recon.nii.gz"]
+    deleted, _ = _prune(files, uploaded=["repro/acq1/a__recon.nii.gz",
+                                         "repro/acq1/b__recon.nii.gz",
+                                         "truth/sim/chimap.nii.gz"],
+                        scopes=("repro/acq1/", "truth/sim/"))
+    assert deleted == ["repro/acq1/gone__recon.nii.gz"]
+    assert not any(f.startswith("truth/") for f in deleted)
+
+
+def test_index_referenced_volume_survives_even_if_not_re_uploaded():
+    """A volume can be live in index.json but absent from this machine's results/ dir."""
+    files = ["repro/acq1/a__recon.nii.gz", "repro/acq1/b__recon.nii.gz"]
+    deleted, n = _prune(files, uploaded=["repro/acq1/a__recon.nii.gz"],
+                        keep=["repro/acq1/b__recon.nii.gz"])
+    assert deleted == [] and n == 0
+
+
+def test_large_deletion_is_refused_without_force():
+    files = [f"repro/acq1/r{i}__recon.nii.gz" for i in range(10)]
+    deleted, n = _prune(files, uploaded=["repro/acq1/r0__recon.nii.gz"])
+    assert deleted == [] and n == 0            # 9/10 orphaned -> refused
+
+
+def test_large_deletion_proceeds_with_force():
+    files = [f"repro/acq1/r{i}__recon.nii.gz" for i in range(10)]
+    deleted, n = _prune(files, uploaded=["repro/acq1/r0__recon.nii.gz"], force=True)
+    assert n == 9 and "repro/acq1/r0__recon.nii.gz" not in deleted
+
+
+def test_dry_run_deletes_nothing():
+    files = ["repro/acq1/a__recon.nii.gz", "repro/acq1/b__recon.nii.gz",
+             "repro/acq1/gone__recon.nii.gz"]
+    deleted, n = _prune(files, uploaded=["repro/acq1/a__recon.nii.gz",
+                                         "repro/acq1/b__recon.nii.gz"], dry_run=True)
+    assert deleted == [] and n == 0
+
+
+def test_list_failure_is_survivable():
+    class Broken(FakeApi):
+        def list_repo_files(self, repo, repo_type=None):
+            raise RuntimeError("hub down")
+
+    assert pv._prune(Broken([]), REPO, set(), set(), {"repro/acq1/"}, False, False) == 0
+
+
+def test_indexed_paths_collects_every_url_kind():
+    rows = [{"volumes": {"recon": PREFIX + "a__recon.nii.gz",
+                         "truth": PREFIX + "a__truth.nii.gz"},
+             "resources_url": PREFIX + "a__resources.json",
+             "regions_url": PREFIX + "a__regions.json"},
+            {"volumes": {"recon": "https://elsewhere.example/b.nii.gz"}},   # foreign host ignored
+            {}]                                                            # no volumes at all
+    assert pv._indexed_paths(rows, REPO) == {
+        "a__recon.nii.gz", "a__truth.nii.gz", "a__resources.json", "a__regions.json"}

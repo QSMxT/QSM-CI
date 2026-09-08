@@ -236,23 +236,37 @@ def pack_acquisition(scanner: str, protocol: str, run: str, out_root: Path) -> d
             "shape": list(mag.shape), "decay_mean": decay, "monotone_decay": monotone, **params}
 
 
+# Signal-gated erosion applied to the HD-BET mask (hd-bet-qsmci `parameters:`; off in the
+# submission's defaults, opted into here). Chosen on cima-bridge-run1 against the
+# laplacian -> V-SHARP -> RTS pipeline: at this setting the mask keeps 88.7% of the raw HD-BET
+# volume — the same as a global 3-voxel erosion — but the chi map's SD over a fixed core drops to
+# 0.0315 vs 0.0351, because the erosion is spent on the skull-base dropout instead of uniformly on
+# healthy cortex. Threshold above ~0.85 starts over-carving; the depth cap is what stops the peel
+# following sulcal CSF deep into the brain.
+MASK_EROSION = {"erode_global": 1, "erode_threshold": 0.80, "erode_depth_cap": 5}
+
+
 def hdbet_mask(acq_out: Path, qsm_ci: str = "qsm-ci") -> None:
     """Brain mask via the QSM-CI HD-BET masking stage (`qsm-ci run hd-bet-qsmci`).
 
-    Runs the containerised `brain-extraction` stage on the packed magnitude (its
-    extract.py uses the first echo). Set QSMCI_GPU=1 in the environment to run HD-BET
-    on GPU. Needs the `ghcr.io/astewartau/qsm-ci/hd-bet:v1` image available to the
-    runner — typically done on the recompute host (Bunya/CI), not this box.
+    Runs the containerised `brain-extraction` stage on the packed magnitude (its extract.py
+    combines echoes by root-sum-of-squares), with MASK_EROSION applied. Set QSMCI_GPU=1 in the
+    environment to run HD-BET on GPU. Needs the `ghcr.io/astewartau/qsm-ci/hd-bet:v1` image
+    available to the runner — typically the recompute host (Bunya/CI), not this box.
     """
     inputs = acq_out / "inputs"
     mask_path = inputs / "mask.nii.gz"
     if mask_path.exists():
         return
+    sets = [a for k, v in MASK_EROSION.items() for a in ("--set", f"{k}={v}")]
     try:
         subprocess.run(
+            # No --params: hd-bet-qsmci declares `inputs: [magnitude]`, and the runner builds the
+            # CLI from a method's declared inputs, so this stage takes no params.json. Passing one
+            # is an argparse error, which this function would swallow as "hd-bet failed".
             [qsm_ci, "run", "hd-bet-qsmci",
              "--magnitude", str(inputs / "magnitude.nii.gz"),
-             "--params", str(inputs / "params.json"),
+             *sets,
              "-o", str(mask_path)],
             check=True, capture_output=True, text=True)
     except FileNotFoundError:

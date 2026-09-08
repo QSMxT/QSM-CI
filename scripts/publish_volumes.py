@@ -37,6 +37,13 @@ Env:
 Usage:
   python scripts/publish_volumes.py [results_dir]              # default: ./results, patches index.json
   python scripts/publish_volumes.py results --runs runs.json   # one job's slice (pipeline --runs-out)
+  python scripts/publish_volumes.py --prune [--prune-dry-run]  # also delete orphaned volumes
+
+`--prune` (index mode only) deletes repo files this publish did not produce and index.json does
+not reference. Uploading alone is an UPSERT: a run that stops being produced — a method that DNF'd
+this time but succeeded last time, or one dropped from the matrix — leaves its old volume behind,
+and the viewer serves that stale recon forever. Pruning is what makes a recompute actually replace
+the previous one. See `_prune` for the (deliberately narrow) safety scope.
 """
 from __future__ import annotations
 
@@ -172,6 +179,96 @@ def plan_truths(found: list[tuple[str, str, Path, str]]) -> tuple[dict[str, Path
     return uploads, refs
 
 
+def _delete_op(path: str):
+    """A Hub delete operation. Indirect so the prune tests can exercise the real logic without
+    huggingface_hub installed — the rest of this module already imports it lazily inside main()."""
+    from huggingface_hub import CommitOperationDelete
+    return CommitOperationDelete(path_in_repo=path)
+
+
+def _prune(api, repo, uploaded: set, keep_extra: set, scopes: set, dry_run: bool, force: bool) -> int:
+    """Delete volumes under `scopes` that are no longer produced. Returns the number deleted.
+
+    Uploading is an upsert, so a run that stops being produced keeps its old file forever and the
+    viewer serves a recon computed from inputs that no longer exist. This removes those.
+
+    Four deliberate safety limits, because this deletes published data:
+
+    * **Sharded subdirectories only, never the flat root.** Scope is the set of `sub` prefixes this
+      publish wrote into (e.g. `repro/<acquisition>/`). The flat root mixes tracks whose runs may
+      not be in this results dir at all — pruning it from a partial index would delete another
+      track's volumes.
+    * **Never the shared ground truth.** `truth/<phantom>/<artifact>.nii.gz` is referenced by every
+      run on that phantom, including runs outside this publish, and is deduplicated by content
+      hash. Housekeeping there belongs to scripts/dedupe_hf_truth.py, not here.
+    * **Keep anything index.json still points at.** A volume can be live in the index but absent
+      from this machine's `results/` (published by an earlier job, or cleaned up). Uploaded paths
+      alone are not the keep set; URLs already recorded in the index count too.
+    * **Refuse a suspiciously large deletion** unless `--prune-force`. Losing more than half a
+      scope means the publish set was wrong (a partial index, a failed run), not that half the
+      volumes are genuinely obsolete.
+    """
+    scopes = {s for s in scopes if s and not s.startswith(TRUTH_PREFIX)}
+    if not scopes:
+        print("  prune: nothing to do (no sharded subdirectories in this publish)")
+        return 0
+    try:
+        files = _retry("list_repo_files", lambda: api.list_repo_files(repo, repo_type="dataset"))
+    except Exception as exc:  # noqa: BLE001 — best-effort, same as the upload path
+        print(f"  ! prune: could not list {repo} ({exc}); skipping prune", file=sys.stderr)
+        return 0
+    candidates = {f for f in files
+                  if any(f.startswith(sc) for sc in scopes) and not f.startswith(TRUTH_PREFIX)}
+    orphans = sorted(candidates - uploaded - keep_extra)
+    if not orphans:
+        print(f"  prune: {len(candidates)} file(s) in scope, none orphaned")
+        return 0
+    share = len(orphans) / max(len(candidates), 1)
+    print(f"  prune: {len(orphans)}/{len(candidates)} file(s) in scope are orphaned ({share:.0%})")
+    for f in orphans[:10]:
+        print(f"      - {f}")
+    if len(orphans) > 10:
+        print(f"      … and {len(orphans) - 10} more")
+    if dry_run:
+        print("  prune: --prune-dry-run, deleting nothing")
+        return 0
+    if share > 0.5 and not force:
+        print(f"  ! prune: refusing to delete {share:.0%} of the scope — that usually means the "
+              f"publish set was incomplete, not that the volumes are obsolete. Re-run with "
+              f"--prune-force if this is genuinely intended.", file=sys.stderr)
+        return 0
+    deleted = 0
+    for start in range(0, len(orphans), BATCH):
+        chunk = orphans[start:start + BATCH]
+        ops = [_delete_op(f) for f in chunk]
+        desc = f"prune batch {start // BATCH + 1}/{(len(orphans) + BATCH - 1) // BATCH}"
+        try:
+            _retry(desc, lambda o=ops, d=desc: api.create_commit(
+                repo, repo_type="dataset", operations=o,
+                commit_message=f"prune orphaned volumes ({d})"))
+            deleted += len(chunk)
+            print(f"  ✓ {desc} ({deleted}/{len(orphans)})", flush=True)
+        except Exception as exc:  # noqa: BLE001
+            print(f"  ! {desc} failed: {exc}", file=sys.stderr)
+    return deleted
+
+
+def _indexed_paths(rows: list, repo: str) -> set:
+    """Repo paths that the index already points at — live volumes this publish may not have
+    re-uploaded (published by an earlier job, or no longer on this machine's disk)."""
+    prefix = f"https://huggingface.co/datasets/{repo}/resolve/main/"
+    keep = set()
+    for r in rows:
+        urls = list((r.get("volumes") or {}).values())
+        for k in ("resources_url", "regions_url"):
+            if r.get(k):
+                urls.append(r[k])
+        for u in urls:
+            if isinstance(u, str) and u.startswith(prefix):
+                keep.add(u[len(prefix):])
+    return keep
+
+
 def _retry(desc, fn, attempts=3, base=4.0):
     for i in range(attempts):
         try:
@@ -204,7 +301,21 @@ def main() -> int:
     runs_file = None
     if "--runs" in sys.argv:
         runs_file = Path(sys.argv[sys.argv.index("--runs") + 1])
+        args = [a for a in args if a != str(runs_file)]     # the --runs value is not the results dir
+    prune = "--prune" in sys.argv
+    prune_dry = "--prune-dry-run" in sys.argv
+    prune_force = "--prune-force" in sys.argv
+    if prune_dry:
+        prune = True
     results = Path(args[0]) if args else ROOT / "results"
+
+    # Pruning from a shard would delete every OTHER shard's volumes: a --runs publish knows only
+    # its own slice, so everything else in the scope looks orphaned. Only the index-mode publish
+    # sees the complete picture.
+    if prune and runs_file is not None:
+        print("! --prune is not supported with --runs: a shard publish cannot tell an orphan from "
+              "another shard's volume. Run a full index-mode publish to prune.", file=sys.stderr)
+        return 1
 
     if runs_file is not None:
         if not runs_file.exists():
@@ -324,6 +435,15 @@ def main() -> int:
     payload = doc if is_index else rows
     target.write_text(json.dumps(payload, indent=2) + "\n")
     print(f"published volumes for {published} runs -> {target}")
+
+    if prune:
+        if failed:
+            print("! prune: skipped — some uploads failed this run, so the produced set is "
+                  "incomplete and anything missing would look orphaned.", file=sys.stderr)
+        else:
+            scopes = {n[:n.rindex("/") + 1] for n in uploads if "/" in n}
+            _prune(api, repo, set(landed), _indexed_paths(rows, repo),
+                   scopes, prune_dry, prune_force)
     return 0
 
 

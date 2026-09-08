@@ -5,8 +5,17 @@
 #SBATCH --qos=normal
 #SBATCH --time=24:00:00
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=300G
-#SBATCH --array=0-91%12
+# 64G, not the 300G this used to reserve: across 184 completed tasks of this exact array (same
+# --exclude, same QSM_CI_JOBS) sacct put median MaxRSS at 21.7G and the PEAK at 31.4G, so 300G
+# over-reserved by ~10x. 64G keeps 2x headroom over that peak. If you ever drop the inr-qsm/modip
+# exclusion below, raise this again — inr-qsm's full-volume SIREN is what made the old number look
+# necessary (see matrix_gpu.slurm, which keeps 256G for exactly that reason).
+#SBATCH --mem=64G
+# %40, not %12: the throttle was the only thing limiting concurrency here. Pending tasks sat on
+# reason=JobArrayTaskLimit while the partition had thousands of idle CPUs, and 40 concurrent tasks
+# schedule without trouble. At a ~1.5h median task this is ~3-4h for the 92-task array instead of
+# ~12-14h.
+#SBATCH --array=0-91%40
 #SBATCH --output=slurm-%x-%A_%a.out
 
 # Full-coverage re-run of the composed matrix with the local-sandbox override enabled
