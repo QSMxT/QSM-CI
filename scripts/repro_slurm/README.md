@@ -5,6 +5,32 @@ Runs every QSM-CI pipeline combination over all 23 harmonization acquisitions
 ax+b fits), entirely on Bunya. Only the small JSON payloads come back; the ~10k recon volumes stay
 in scratch.
 
+## Re-sync before every campaign (this bites)
+
+The one-time setup below rsyncs the repo to scratch, and the checkout there then **stays at whatever
+revision it was rsynced at**. It is not a clone: `git pull` is not available, nothing warns you, and
+the jobs happily run months-old code. Every bug in the 2026-09 recompute traces to that:
+
+| stale file on Bunya | what it silently did |
+|---|---|
+| `scripts/publish_volumes.py` | predated `--prune`, so `--prune-dry-run` was filtered out as an unknown flag; the job published, pruned nothing, printed nothing and exited 0 |
+| `web/algorithms.json` (3 weeks old) | `drop_retired` dropped 24 live `amp-pe-qsmrs` pipelines from `repro.json` |
+| `scripts/pipeline.py` | predated `write_run_regions`, so 14,551 runs kept the previous matrix's `regions.json` next to a freshly computed recon |
+
+So **re-run the rsync before each campaign**, and check what actually differs when a result surprises
+you:
+
+```bash
+# from the local checkout — what is Bunya running?
+for f in $(git ls-files scripts | grep '\.py$'); do
+  b=$(ssh bunya "md5sum /scratch/user/uqaste15/qsmci-repro/$f 2>/dev/null | cut -d' ' -f1")
+  [ "$b" != "$(md5sum "$f" | cut -d' ' -f1)" ] && echo "DIFFERS $f"
+done
+```
+
+`web/algorithms.json` matters as much as the scripts: `repro_eval.py fits` uses it to decide which
+pipelines still exist, so a stale copy silently changes the published pipeline set.
+
 ## One-time setup
 
 ```bash
