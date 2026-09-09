@@ -55,6 +55,7 @@ import json
 import os
 import sys
 import time
+from functools import lru_cache
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -337,6 +338,25 @@ def _prune(api, repo, uploaded: set, keep_extra: set, scopes: set, dry_run: bool
 FLAT_COVERAGE_MIN = 0.5
 
 
+@lru_cache(maxsize=1)
+def live_algo_slugs() -> frozenset:
+    """Method slugs web/algorithms.json still defines. Empty when the manifest is absent, which makes
+    the corroboration silently unavailable rather than wrongly claiming everything is retired."""
+    manifest = ROOT / "web" / "algorithms.json"
+    if not manifest.exists():
+        return frozenset()
+    return frozenset(a["slug"] for a in json.loads(manifest.read_text()).get("algorithms", [])
+                     if a.get("slug"))
+
+
+def _leading_slug(rid: str) -> str:
+    """The method slug a run id starts with — everything before the first -iso/-cmp marker."""
+    for marker in ("-cmp", "-iso"):
+        if marker in rid:
+            return rid.split(marker)[0]
+    return rid
+
+
 def flat_orphans(files, known_ids: set, live_paths: set) -> tuple[list, float]:
     """Flat-root run artifacts belonging to no run in `known_ids`, and how much of the flat root the
     supplied indexes explain.
@@ -412,6 +432,15 @@ def _prune_flat(api, repo, rows: list, extra_indexes: list, dry_run: bool) -> in
     for f in orphans:
         by_run.setdefault(f.rsplit("__", 1)[0], []).append(f.rsplit("__", 1)[1])
     print(f"  prune-flat: {len(orphans)} file(s) across {len(by_run)} retired run(s)")
+    # Corroboration, not a gate. "No index mentions it" is an absence; "and its method is not in the
+    # manifest either" is a second, independent reason to believe the run is gone — which is what
+    # separates a genuinely retired generation of runs from an index list that is merely incomplete.
+    # Not a gate because a run may be retired while its method lives on (a rescore under a new id).
+    slugs = live_algo_slugs()
+    retired_slug = sum(1 for rid in by_run if _leading_slug(rid) not in slugs) if slugs else 0
+    if by_run and slugs:
+        print(f"      {retired_slug}/{len(by_run)} of them name a method the manifest no longer "
+              f"defines ({100 * retired_slug / len(by_run):.0f}%)")
     for rid in sorted(by_run)[:10]:
         print(f"      - {rid}: {', '.join(sorted(by_run[rid]))}")
     if len(by_run) > 10:

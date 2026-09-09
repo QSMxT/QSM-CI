@@ -367,3 +367,15 @@ def test_a_superseded_path_the_index_still_references_is_not_pruned():
     deleted, n = _prune(["runA__truth.nii.gz"], uploaded=[], keep=["runA__truth.nii.gz"],
                         superseded=[])
     assert deleted == [] and n == 0
+
+
+def test_leading_slug_extracts_the_method_from_a_run_id():
+    assert pv._leading_slug("nltv-iso-tuned") == "nltv"
+    assert pv._leading_slug("gt~sharp~tkd-cmp") == "gt~sharp~tkd"
+    assert pv._leading_slug("plain") == "plain"
+
+
+def test_live_algo_slugs_reads_the_manifest():
+    slugs = pv.live_algo_slugs()
+    assert "rts-qsmrs" in slugs          # a current slug
+    assert "rts" not in slugs            # its pre-rename name, which the orphans still carry
