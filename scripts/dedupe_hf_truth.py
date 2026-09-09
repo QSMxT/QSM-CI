@@ -15,17 +15,28 @@ writes). This script:
      gets a `-<sha8>` suffix rather than overwriting);
   4. downloads ONE source file per shared name and uploads it under that name (skipped when the
      shared file already exists with the same sha, so re-runs are no-ops);
-  5. deletes every legacy `*__truth*.nii.gz` from the repo (also orphans the index no longer lists);
-  6. rewrites the rows' truth URLs and saves index.json — commit that with git yourself.
+  5. rewrites the rows' truth URLs and saves index.json — commit that with git yourself;
+  6. and ONLY in a second, opt-in pass, removes the per-run copies.
+
+The two passes are separate on purpose. Deleting a file the deployed index still points at breaks
+the site, so the rewritten index has to reach production BEFORE the old files go. See `deletable()`
+for the two guards on what may be removed at all — neither of which the original version had, and
+one of which would have deleted 165 volumes the live site was serving.
 
 Deleted files stay in the repo's git/LFS history until it is squashed: run the squash-volumes
 workflow (scripts/squash_hf_history.py) afterwards if the storage matters.
 
 Env:  HF_TOKEN (write access), HF_VOLUMES_REPO (default qsmxt/qsm-ci-volumes)
 Usage:
-  python scripts/dedupe_hf_truth.py --dry-run          # print the plan, touch nothing
-  python scripts/dedupe_hf_truth.py                     # do it
-  python scripts/dedupe_hf_truth.py --index path.json   # a different index file (default results/index.json)
+  # 1. plan (touches nothing)
+  python scripts/dedupe_hf_truth.py --dry-run --index results/index.json --index /other/index.json
+  # 2. upload the shared files and repoint the FIRST index; commit and deploy it
+  python scripts/dedupe_hf_truth.py --index results/index.json --index /other/index.json
+  # 3. once that index is live, remove the per-run copies
+  python scripts/dedupe_hf_truth.py --index results/index.json --index /other/index.json --delete-legacy
+
+Pass `--index` for EVERY index that references this repo. Anything referenced by any of them is
+protected; anything unaccounted for is reported and kept, never deleted.
 """
 from __future__ import annotations
 
@@ -51,11 +62,53 @@ def _path_of(url: str, repo: str) -> str | None:
     return url[len(base):] if url.startswith(base) else None
 
 
+def deletable(legacy_in_repo, repointed: set, referenced_elsewhere: set,
+              shared_sha: set, sha_of: dict) -> tuple[list, list]:
+    """Split legacy files into (safe to delete, must keep with a reason).
+
+    THREE conditions, all required. The first is the one that matters:
+
+    * **We must have just repointed this exact file's reference.** Deletion is only ever the tail of
+      a repoint we performed, never an inference from silence. The original version deleted whatever
+      the single index it was handed did not mention — but no one index covers this repo. In 2026-09
+      the deployed results/index.json held 1,162 runs and the HPC's held 17,195, with 234 runs in the
+      deployed one and absent from the other; running on the HPC would have destroyed 165 truth
+      volumes the live site was serving. A file nothing we processed references is REPORTED and kept,
+      because "no index I was given mentions it" is not evidence that no index does.
+    * **No other supplied index may reference it** (--index is repeatable), so passing more indexes
+      can only ever protect more files, never fewer.
+    * **Its bytes must already be preserved** under `truth/` with the same sha256, so deletion can
+      never be what loses content, and the pass is safe to repeat or interrupt.
+    """
+    delete, keep = [], []
+    for path in legacy_in_repo:
+        sha = sha_of.get(path)
+        if path in referenced_elsewhere:
+            keep.append((path, "referenced by another index"))
+        elif path not in repointed:
+            keep.append((path, "not repointed by this run — no index I was given references it"))
+        elif sha is None:
+            keep.append((path, "no sha256 (not LFS?) — cannot prove the content is preserved"))
+        elif sha not in shared_sha:
+            keep.append((path, "no shared truth/ file has this content"))
+        else:
+            delete.append(path)
+    return delete, keep
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--dry-run", action="store_true", help="plan only; no uploads, deletes or index write")
-    ap.add_argument("--index", type=Path, default=ROOT / "results" / "index.json")
+    ap.add_argument("--index", type=Path, action="append", dest="indexes", metavar="PATH",
+                    help="an index that references this repo; repeat for every one that does. The "
+                         "FIRST is the one rewritten. Files referenced by any of them are never "
+                         "deleted. (default: results/index.json)")
+    ap.add_argument("--delete-legacy", action="store_true",
+                    help="second phase: remove the per-run copies. Run this only AFTER the rewritten "
+                         "index is deployed, otherwise the live site points at files that are gone.")
     args = ap.parse_args()
+    args.indexes = args.indexes or [ROOT / "results" / "index.json"]
+    args.index = args.indexes[0]
 
     from huggingface_hub import CommitOperationAdd, CommitOperationDelete, HfApi, hf_hub_download
 
@@ -69,7 +122,9 @@ def main() -> int:
     doc = json.loads(args.index.read_text())
     rows = doc["runs"]
 
-    # 1. legacy truth references in the index: (rid, kind) -> repo path
+    # 1. legacy truth references. `legacy_refs` drives the rewrite and so covers only the index being
+    #    rewritten; `referenced` is the union over EVERY index supplied and is what protects files
+    #    from deletion. The two are deliberately different sets.
     legacy_refs: dict[tuple[str, str], str] = {}
     for r in rows:
         for kind in TRUTH_KINDS:
@@ -78,6 +133,20 @@ def main() -> int:
             if path and LEGACY.search(path):
                 legacy_refs[(r["id"], kind)] = path
     print(f"{len(legacy_refs)} legacy per-run truth reference(s) in {args.index}")
+
+    referenced: set[str] = set()
+    for idx in args.indexes:
+        if not idx.exists():
+            sys.exit(f"! {idx} does not exist — refusing to run with an index list I cannot read.")
+        n = 0
+        for r in json.loads(idx.read_text())["runs"]:
+            for kind in TRUTH_KINDS:
+                url = (r.get("volumes") or {}).get(kind)
+                path = _path_of(url, repo) if url else None
+                if path and LEGACY.search(path):
+                    referenced.add(path); n += 1
+        if idx != args.index:
+            print(f"  + {n} legacy reference(s) from {idx} (protected, not rewritten)")
 
     # 2. repo tree with LFS sha256 per file
     sha_of: dict[str, str] = {}
@@ -88,9 +157,6 @@ def main() -> int:
             sha_of[entry.path] = sha
     legacy_in_repo = sorted(p for p in sha_of if LEGACY.search(p))
     print(f"{len(sha_of)} LFS file(s) in {repo}; {len(legacy_in_repo)} legacy per-run truth file(s)")
-    orphans = set(legacy_in_repo) - set(legacy_refs.values())
-    if orphans:
-        print(f"  {len(orphans)} of them are not referenced by the index (orphans) — will be deleted too")
 
     # 3. one shared name per distinct content
     by_id = {r["id"]: r for r in rows}
@@ -116,7 +182,19 @@ def main() -> int:
         n = sum(1 for k, v in refs.items() if v == name)
         state = "create" if name in to_create else "exists"
         print(f"  {state:6s} {name:48s} <- {n:4d} run(s), sha {sha[:12]}")
-    print(f"  delete {len(legacy_in_repo)} legacy file(s)")
+    # The shared files that will exist once step 5 has run, by content — the "bytes are preserved"
+    # guard checks against this, so a first pass plans honestly before anything is uploaded.
+    shared_sha = set(by_sha) | {sha for path, sha in sha_of.items() if path.startswith(TRUTH_PREFIX)}
+    repointed = set(legacy_refs.values())                  # files whose reference this run rewrites
+    others = referenced - repointed                        # held by an index we are NOT rewriting
+    to_delete, kept = deletable(legacy_in_repo, repointed, others, shared_sha, sha_of)
+    print(f"  {len(to_delete)} legacy file(s) are removable; {len(kept)} kept")
+    reasons = Counter(why for _, why in kept)
+    for why, n in reasons.most_common():
+        print(f"      keep {n:5d}: {why}")
+    if not args.delete_legacy:
+        print("  (deleting nothing this pass — rerun with --delete-legacy once the rewritten index "
+              "is DEPLOYED, or the live site will point at files that are gone)")
     dup_names = [n for n, c in Counter(by_sha.values()).items() if c > 1]
     assert not dup_names, dup_names  # assign_truth_names guarantees uniqueness
 
@@ -134,14 +212,18 @@ def main() -> int:
                 print(f"  ↑ {name}  (from {src})")
             api.create_commit(repo, repo_type="dataset", operations=ops,
                               commit_message=f"share ground truth: {len(ops)} file(s) under {TRUTH_PREFIX}")
-    # … then drop every legacy per-run copy.
-    if legacy_in_repo:
-        for start in range(0, len(legacy_in_repo), 1000):
-            chunk = legacy_in_repo[start:start + 1000]
+    # … then drop the per-run copies, but only in the explicit second phase and only those that
+    # cleared BOTH guards. Ordering matters: the index rewritten below has to be deployed before the
+    # files it used to point at are removed, which is why this is opt-in rather than automatic.
+    if args.delete_legacy and to_delete:
+        for start in range(0, len(to_delete), 1000):
+            chunk = to_delete[start:start + 1000]
             api.create_commit(repo, repo_type="dataset",
                               operations=[CommitOperationDelete(path_in_repo=p) for p in chunk],
-                              commit_message=f"remove per-run ground-truth copies ({start + len(chunk)}/{len(legacy_in_repo)})")
-            print(f"  ✗ deleted {start + len(chunk)}/{len(legacy_in_repo)} legacy file(s)")
+                              commit_message=f"remove per-run ground-truth copies ({start + len(chunk)}/{len(to_delete)})")
+            print(f"  ✗ deleted {start + len(chunk)}/{len(to_delete)} legacy file(s)")
+    elif to_delete:
+        print(f"  {len(to_delete)} legacy file(s) left in place (no --delete-legacy)")
 
     # 6. repoint the index
     for (rid, kind), name in refs.items():
