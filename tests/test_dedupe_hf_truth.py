@@ -6,6 +6,7 @@ did not reference. That is only sound if that index is the complete picture, and
 present in the deployed one and absent from the other. Running it on the HPC — which is exactly what
 was about to happen — would have deleted 165 truth volumes the live site was serving.
 """
+import json
 import sys
 from pathlib import Path
 
@@ -13,6 +14,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 import dedupe_hf_truth as dd  # noqa: E402
 
 A = "runA__truth.nii.gz"
+SHARED_URL = "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/p/chimap.nii.gz"
 
 
 def _split(legacy, repointed=(), elsewhere=(), shared_sha=("sha-a",), sha_of=None):
@@ -89,3 +91,33 @@ def test_a_file_both_indexes_reference_is_protected_by_the_other_one():
     delete, keep = _split([shared_by_both], repointed=[shared_by_both], elsewhere=[shared_by_both])
     assert delete == []
     assert keep[0][1] == "referenced by another index"
+
+
+# ---- the repoint record that hands phase 1 off to phase 2 --------------------------------------
+# Without it the delete pass is a no-op forever: it re-reads an index that has ALREADY been
+# rewritten, finds no legacy references, and so has nothing it is allowed to delete.
+
+def test_delete_pass_cannot_rederive_repointed_from_a_rewritten_index(tmp_path):
+    idx = tmp_path / "index.json"
+    idx.write_text(json.dumps({"runs": [{"id": "r", "volumes": {"truth": SHARED_URL}}]}))
+    # the rewritten index mentions no legacy path at all
+    assert dd.load_pending([idx]) == set()
+
+
+def test_pending_record_round_trips(tmp_path):
+    idx = tmp_path / "index.json"
+    dd.pending_path(idx).write_text(json.dumps({"paths": ["runA__truth.nii.gz"]}))
+    assert dd.load_pending([idx]) == {"runA__truth.nii.gz"}
+
+
+def test_pending_records_union_across_indexes(tmp_path):
+    a, b = tmp_path / "a.json", tmp_path / "b.json"
+    dd.pending_path(a).write_text(json.dumps({"paths": ["runA__truth.nii.gz"]}))
+    dd.pending_path(b).write_text(json.dumps({"paths": ["runB__truth.nii.gz"]}))
+    assert dd.load_pending([a, b]) == {"runA__truth.nii.gz", "runB__truth.nii.gz"}
+
+
+def test_a_recorded_path_still_needs_the_other_guards(tmp_path):
+    """The record says a repoint happened; it does not override 'someone else references it'."""
+    delete, keep = _split([A], repointed=[A], elsewhere=[A])
+    assert delete == [] and keep[0][1] == "referenced by another index"

@@ -30,13 +30,16 @@ Env:  HF_TOKEN (write access), HF_VOLUMES_REPO (default qsmxt/qsm-ci-volumes)
 Usage:
   # 1. plan (touches nothing)
   python scripts/dedupe_hf_truth.py --dry-run --index results/index.json --index /other/index.json
-  # 2. upload the shared files and repoint the FIRST index; commit and deploy it
+  # 2. repoint each index in turn (only the FIRST --index is rewritten), committing and deploying
+  #    each. Every pass records what it rewrote in <index>.dedupe-pending.json.
   python scripts/dedupe_hf_truth.py --index results/index.json --index /other/index.json
-  # 3. once that index is live, remove the per-run copies
+  python scripts/dedupe_hf_truth.py --index /other/index.json --index results/index.json
+  # 3. once BOTH are live, remove the per-run copies
   python scripts/dedupe_hf_truth.py --index results/index.json --index /other/index.json --delete-legacy
 
 Pass `--index` for EVERY index that references this repo. Anything referenced by any of them is
-protected; anything unaccounted for is reported and kept, never deleted.
+protected; anything unaccounted for is reported and kept, never deleted. A file both indexes
+reference is only removable once BOTH have been repointed, which is why step 2 runs once per index.
 """
 from __future__ import annotations
 
@@ -60,6 +63,30 @@ TRUTH_KINDS = ("truth", "truth-dia")
 def _path_of(url: str, repo: str) -> str | None:
     base = _url(repo, "")
     return url[len(base):] if url.startswith(base) else None
+
+
+PENDING_SUFFIX = ".dedupe-pending.json"
+
+
+def pending_path(index: "Path") -> "Path":
+    """Where a repoint pass records what it rewrote, for the later delete pass to act on."""
+    return index.with_name(index.name + PENDING_SUFFIX)
+
+
+def load_pending(indexes) -> set:
+    """Legacy paths that an earlier repoint pass rewrote, across every supplied index.
+
+    The delete pass CANNOT re-derive this from the index: by then the index has been rewritten and
+    no longer references any legacy path, so `repointed` would be empty and nothing would ever be
+    deletable. Recording it is also the honest way round — the file is the evidence that a repoint
+    happened, rather than an assumption that one did.
+    """
+    out = set()
+    for idx in indexes:
+        pend = pending_path(idx)
+        if pend.exists():
+            out |= set(json.loads(pend.read_text()).get("paths", []))
+    return out
 
 
 def deletable(legacy_in_repo, repointed: set, referenced_elsewhere: set,
@@ -187,7 +214,17 @@ def main() -> int:
     # The shared files that will exist once step 5 has run, by content — the "bytes are preserved"
     # guard checks against this, so a first pass plans honestly before anything is uploaded.
     shared_sha = set(by_sha) | {sha for path, sha in sha_of.items() if path.startswith(TRUTH_PREFIX)}
-    repointed = set(legacy_refs.values())                  # files whose reference this run rewrites
+    # A repoint pass can act on what it is about to rewrite; a delete pass must use what an earlier
+    # pass RECORDED, because the index it can see no longer mentions any legacy path.
+    if args.delete_legacy:
+        repointed = load_pending(args.indexes)
+        if not repointed:
+            sys.exit(f"! --delete-legacy found no {PENDING_SUFFIX} beside any supplied index. Run the "
+                     f"repoint pass first (and deploy its rewritten index) — deleting without that "
+                     f"record would mean deleting on the assumption a repoint happened.")
+        print(f"  {len(repointed)} path(s) recorded as repointed by an earlier pass")
+    else:
+        repointed = set(legacy_refs.values())
     to_delete, kept = deletable(legacy_in_repo, repointed, referenced_elsewhere, shared_sha, sha_of)
     print(f"  {len(to_delete)} legacy file(s) are removable; {len(kept)} kept")
     reasons = Counter(why for _, why in kept)
@@ -237,8 +274,16 @@ def main() -> int:
         if want in names_now:
             by_id[rid]["volumes"][kind] = _url(repo, want)
     args.index.write_text(json.dumps(doc, indent=2) + "\n")
-    print(f"\nrewrote {len(refs)} truth URL(s) in {args.index} — review and commit it. "
-          "Old blobs remain in repo history until squashed (squash-volumes workflow).")
+    if not args.delete_legacy:
+        pend = pending_path(args.index)
+        prior = set(json.loads(pend.read_text()).get("paths", [])) if pend.exists() else set()
+        pend.write_text(json.dumps(
+            {"repo": repo, "index": str(args.index), "paths": sorted(prior | set(legacy_refs.values()))},
+            indent=2) + "\n")
+        print(f"recorded {len(prior | set(legacy_refs.values()))} repointed path(s) in {pend}")
+    print(f"\nrewrote {len(refs)} truth URL(s) in {args.index} — review and commit it, and DEPLOY it "
+          f"before running --delete-legacy. Old blobs remain in repo history until squashed "
+          f"(squash-volumes workflow).")
     return 0
 
 
