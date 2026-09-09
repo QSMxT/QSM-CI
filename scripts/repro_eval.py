@@ -495,6 +495,44 @@ def cmd_fits(args) -> None:
           f"({rej} rejected fits, {nore} with no reconstruction)")
 
 
+def cmd_run_regions(args) -> None:
+    """Write results/<run_id>/regions.json for every harmonization run, from repro_rois.json.
+
+    The per-run regional artifact the submission page's Regions tab reads normally rides out of
+    pipeline.py during scoring. When the matrix is re-run with a pipeline.py that predates that
+    (as the 2026-09 recompute was), every run keeps the regions.json from the PREVIOUS matrix — a
+    file whose numbers describe recons that no longer exist.
+
+    Nothing has to be recomputed to fix that: `stats` already wrote per-run, per-ROI n/mean/std/median
+    into repro_rois.json's `roi_stats`, which is exactly the block regions.json carries. This is a
+    pure transform of that file, so it costs seconds and cannot disagree with the fits built from the
+    same source.
+    """
+    src = RESULTS / "repro_rois.json"
+    if not src.exists():
+        sys.exit(f"{src} not found — run `repro_eval.py stats` first.")
+    runs = json.loads(src.read_text()).get("runs", {})
+    labels = {str(k): v for k, v in ROI_LABELS.items()}
+    written = skipped = no_stats = 0
+    for run_id, row in runs.items():
+        stats = row.get("roi_stats")
+        if not stats:
+            no_stats += 1
+            continue
+        d = RESULTS / run_id
+        if not d.is_dir():
+            skipped += 1          # scored elsewhere / cleaned up: nothing to attach the file to
+            continue
+        block = {"chi": {"labels": {k: labels[k] for k in stats if k in labels}, "recon": stats}}
+        (d / "regions.json").write_text(json.dumps(block, indent=2) + "\n")
+        written += 1
+    print(f"wrote {written} per-run regions.json from {src}")
+    if skipped:
+        print(f"  {skipped} run(s) had no results/<id>/ directory")
+    if no_stats:
+        print(f"  {no_stats} run(s) had no roi_stats (re-run `stats` for those)")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -516,8 +554,10 @@ def main() -> None:
                          "file and write them back into it (registers its acquisition on the fly), "
                          "instead of the whole index -> repro_rois.json")
     sub.add_parser("fits", help="pairwise ax+b fits -> results/repro.json")
+    sub.add_parser("run-regions", help="per-run results/<id>/regions.json from repro_rois.json")
     args = ap.parse_args()
-    {"register": cmd_register, "seg": cmd_seg, "stats": cmd_stats, "fits": cmd_fits}[args.cmd](args)
+    {"register": cmd_register, "seg": cmd_seg, "stats": cmd_stats, "fits": cmd_fits,
+     "run-regions": cmd_run_regions}[args.cmd](args)
 
 
 if __name__ == "__main__":
