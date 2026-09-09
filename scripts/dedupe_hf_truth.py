@@ -273,7 +273,10 @@ def main() -> int:
         want = truth_name(by_id[rid], kind)
         if want in names_now:
             by_id[rid]["volumes"][kind] = _url(repo, want)
-    args.index.write_text(json.dumps(doc, indent=2) + "\n")
+    if refs or not args.delete_legacy:
+        # A delete pass has nothing to repoint (the index was rewritten by the earlier pass), so it
+        # must not rewrite the file: a no-op write on a committed index shows up as a spurious diff.
+        args.index.write_text(json.dumps(doc, indent=2) + "\n")
     if not args.delete_legacy:
         pend = pending_path(args.index)
         prior = set(json.loads(pend.read_text()).get("paths", [])) if pend.exists() else set()
