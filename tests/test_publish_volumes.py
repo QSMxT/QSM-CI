@@ -153,9 +153,9 @@ class FakeApi:
         self.deleted += [op.path_in_repo for op in operations]
 
 
-def _prune(files, uploaded, keep=(), scopes=("repro/acq1/",), dry_run=False):
+def _prune(files, uploaded, keep=(), scopes=("repro/acq1/",), dry_run=False, superseded=()):
     api = FakeApi(files)
-    n = pv._prune(api, REPO, set(uploaded), set(keep), set(scopes), dry_run)
+    n = pv._prune(api, REPO, set(uploaded), set(keep), set(scopes), dry_run, set(superseded))
     return api.deleted, n
 
 
@@ -311,4 +311,59 @@ def test_run_artifact_rejects_the_shared_intermediate_kinds():
 def test_unrecognised_artifact_kind_is_left_alone_not_deleted():
     # a future artifact this script does not yet know about must not be swept up as an orphan
     deleted, n = _prune(["repro/acq1/pipe-cmp-acq1__somethingnew.nii.gz"], uploaded=[], keep=[])
+    assert deleted == [] and n == 0
+
+
+# ---- flat-root orphans: retired runs, and files a publish supersedes itself --------------------
+# The flat root is outside every sharded prune scope, so nothing could attribute a file there. Two
+# ways it fills up, and they need different evidence: a run RENAMED or RETIRED leaves its volumes
+# (absence-based, hence the coverage precondition), and the shared-truth migration leaves the old
+# per-run copy (positively attributable — this publish wrote its replacement).
+
+FLAT = ["runA__recon.nii.gz", "runA__truth.nii.gz", "gone__recon.nii.gz",
+        "truth/p/chimap.nii.gz", "repro/acq1/x__recon.nii.gz"]
+
+
+def test_flat_orphans_finds_only_retired_runs():
+    orphans, coverage = pv.flat_orphans(FLAT, {"runA"}, set())
+    assert orphans == ["gone__recon.nii.gz"]
+    assert coverage == 2 / 3          # runA's two files of the three flat run artifacts
+
+
+def test_flat_orphans_ignores_shared_truth_and_sharded_paths():
+    orphans, _ = pv.flat_orphans(FLAT, set(), set())
+    assert "truth/p/chimap.nii.gz" not in orphans
+    assert "repro/acq1/x__recon.nii.gz" not in orphans
+
+
+def test_flat_orphans_tolerates_sanitised_run_ids():
+    # index ids use ~ / +, hub names sanitise both to _
+    orphans, _ = pv.flat_orphans(["a_b_c-cmp__recon.nii.gz"], {"a~b~c-cmp"}, set())
+    assert orphans == []
+
+
+def test_flat_orphans_keeps_anything_an_index_still_points_at():
+    orphans, _ = pv.flat_orphans(FLAT, set(), {"gone__recon.nii.gz"})
+    assert "gone__recon.nii.gz" not in orphans
+
+
+def test_flat_coverage_is_a_precondition_on_the_input_not_a_cap_on_the_output():
+    # a correct large cleanup: indexes explain most of the root, few orphans -> high coverage
+    files = [f"run{i}__recon.nii.gz" for i in range(90)] + [f"old{i}__recon.nii.gz" for i in range(10)]
+    _, good = pv.flat_orphans(files, {f"run{i}" for i in range(90)}, set())
+    # an incomplete index list: almost nothing is explained, though the deletion would be just as big
+    _, bad = pv.flat_orphans(files, {"run0"}, set())
+    assert good >= pv.FLAT_COVERAGE_MIN > bad
+
+
+def test_superseded_paths_are_pruned_despite_being_outside_every_scope():
+    deleted, n = _prune(["runA__truth.nii.gz", "repro/acq1/keep__recon.nii.gz"],
+                        uploaded=["repro/acq1/keep__recon.nii.gz"],
+                        superseded=["runA__truth.nii.gz"])
+    assert deleted == ["runA__truth.nii.gz"] and n == 1
+
+
+def test_a_superseded_path_the_index_still_references_is_not_pruned():
+    deleted, n = _prune(["runA__truth.nii.gz"], uploaded=[], keep=["runA__truth.nii.gz"],
+                        superseded=[])
     assert deleted == [] and n == 0
