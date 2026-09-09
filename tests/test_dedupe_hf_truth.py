@@ -76,3 +76,16 @@ def test_legacy_pattern_matches_both_truth_kinds_and_nothing_else():
     assert dd.LEGACY.search("a__truth-dia.nii.gz")
     assert not dd.LEGACY.search("truth/phantom/chimap.nii.gz")
     assert not dd.LEGACY.search("a__recon.nii.gz")
+
+
+def test_a_file_both_indexes_reference_is_protected_by_the_other_one():
+    """The overlap case: rewriting index 1 does not license deleting what index 2 also points at.
+
+    Tempting to compute "referenced elsewhere" as (union of all indexes) - (what we rewrote), which
+    silently strips protection from exactly the files BOTH indexes share — the common case, since
+    two indexes of the same repo overlap heavily.
+    """
+    shared_by_both = A
+    delete, keep = _split([shared_by_both], repointed=[shared_by_both], elsewhere=[shared_by_both])
+    assert delete == []
+    assert keep[0][1] == "referenced by another index"

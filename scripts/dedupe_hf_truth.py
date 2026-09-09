@@ -134,8 +134,11 @@ def main() -> int:
                 legacy_refs[(r["id"], kind)] = path
     print(f"{len(legacy_refs)} legacy per-run truth reference(s) in {args.index}")
 
-    referenced: set[str] = set()
-    for idx in args.indexes:
+    # References held by the indexes we are NOT rewriting. Accumulated separately rather than as
+    # (union - rewritten): a file both indexes point at is still live in the one we do not touch, so
+    # subtracting the rewritten index's references would strip exactly the overlap of its protection.
+    referenced_elsewhere: set[str] = set()
+    for idx in args.indexes[1:]:
         if not idx.exists():
             sys.exit(f"! {idx} does not exist — refusing to run with an index list I cannot read.")
         n = 0
@@ -144,9 +147,8 @@ def main() -> int:
                 url = (r.get("volumes") or {}).get(kind)
                 path = _path_of(url, repo) if url else None
                 if path and LEGACY.search(path):
-                    referenced.add(path); n += 1
-        if idx != args.index:
-            print(f"  + {n} legacy reference(s) from {idx} (protected, not rewritten)")
+                    referenced_elsewhere.add(path); n += 1
+        print(f"  + {n} legacy reference(s) from {idx} (protected, not rewritten)")
 
     # 2. repo tree with LFS sha256 per file
     sha_of: dict[str, str] = {}
@@ -186,8 +188,7 @@ def main() -> int:
     # guard checks against this, so a first pass plans honestly before anything is uploaded.
     shared_sha = set(by_sha) | {sha for path, sha in sha_of.items() if path.startswith(TRUTH_PREFIX)}
     repointed = set(legacy_refs.values())                  # files whose reference this run rewrites
-    others = referenced - repointed                        # held by an index we are NOT rewriting
-    to_delete, kept = deletable(legacy_in_repo, repointed, others, shared_sha, sha_of)
+    to_delete, kept = deletable(legacy_in_repo, repointed, referenced_elsewhere, shared_sha, sha_of)
     print(f"  {len(to_delete)} legacy file(s) are removable; {len(kept)} kept")
     reasons = Counter(why for _, why in kept)
     for why, n in reasons.most_common():
