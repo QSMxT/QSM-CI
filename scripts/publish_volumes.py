@@ -38,6 +38,9 @@ Usage:
   python scripts/publish_volumes.py [results_dir]              # default: ./results, patches index.json
   python scripts/publish_volumes.py results --runs runs.json   # one job's slice (pipeline --runs-out)
   python scripts/publish_volumes.py --prune [--prune-dry-run]  # also delete orphaned volumes
+  python scripts/publish_volumes.py --prune --prune-flat --index /other/index.json
+                                                              # ALSO clean retired runs' volumes
+                                                              # from the flat root (see _prune_flat)
 
 `--prune` (index mode only) deletes repo files this publish did not produce and index.json does
 not reference. Uploading alone is an UPSERT: a run that stops being produced — a method that DNF'd
@@ -52,6 +55,7 @@ import json
 import os
 import sys
 import time
+from functools import lru_cache
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -232,7 +236,13 @@ def _prune_flags(argv: list) -> tuple[bool, bool]:
     return ("--prune" in argv or dry), dry
 
 
-def _prune(api, repo, uploaded: set, keep_extra: set, scopes: set, dry_run: bool) -> int:
+def _extra_indexes(argv: list) -> list:
+    """Every --index PATH given, for the flat-root prune's completeness check."""
+    return [Path(argv[i + 1]) for i, a in enumerate(argv) if a == "--index" and i + 1 < len(argv)]
+
+
+def _prune(api, repo, uploaded: set, keep_extra: set, scopes: set, dry_run: bool,
+           superseded: set = frozenset()) -> int:
     """Delete volumes under `scopes` that are no longer produced. Returns the number deleted.
 
     Uploading is an upsert, so a run that stops being produced keeps its old file forever and the
@@ -284,8 +294,14 @@ def _prune(api, repo, uploaded: set, keep_extra: set, scopes: set, dry_run: bool
             skipped += 1
             continue
         candidates[f] = art
-    orphans = sorted(set(candidates) - uploaded - keep_extra)
+    # `superseded` bypasses the sharded-scope restriction because it does not rest on scope at all:
+    # each of those paths was this run's own previous URL for a run whose replacement we just wrote.
+    orphans = sorted((set(candidates) - uploaded - keep_extra) | set(superseded))
+    for f in superseded:
+        candidates.setdefault(f, (f.rsplit("__", 1)[0], "superseded"))
     extra = f", {skipped} shared/unrecognised file(s) not run artifacts (left alone)" if skipped else ""
+    if superseded:
+        print(f"  prune: {len(superseded)} file(s) superseded by this publish's own repointing")
     if not orphans:
         print(f"  prune: {len(candidates)} run artifact(s) in scope, none orphaned{extra}")
         return 0
@@ -312,6 +328,134 @@ def _prune(api, repo, uploaded: set, keep_extra: set, scopes: set, dry_run: bool
             _retry(desc, lambda o=ops, d=desc: api.create_commit(
                 repo, repo_type="dataset", operations=o,
                 commit_message=f"prune orphaned volumes ({d})"))
+            deleted += len(chunk)
+            print(f"  ✓ {desc} ({deleted}/{len(orphans)})", flush=True)
+        except Exception as exc:  # noqa: BLE001
+            print(f"  ! {desc} failed: {exc}", file=sys.stderr)
+    return deleted
+
+
+FLAT_COVERAGE_MIN = 0.5
+
+
+@lru_cache(maxsize=1)
+def live_algo_slugs() -> frozenset:
+    """Method slugs web/algorithms.json still defines. Empty when the manifest is absent, which makes
+    the corroboration silently unavailable rather than wrongly claiming everything is retired."""
+    manifest = ROOT / "web" / "algorithms.json"
+    if not manifest.exists():
+        return frozenset()
+    return frozenset(a["slug"] for a in json.loads(manifest.read_text()).get("algorithms", [])
+                     if a.get("slug"))
+
+
+def _leading_slug(rid: str) -> str:
+    """The method slug a run id starts with — everything before the first -iso/-cmp marker."""
+    for marker in ("-cmp", "-iso"):
+        if marker in rid:
+            return rid.split(marker)[0]
+    return rid
+
+
+def flat_orphans(files, known_ids: set, live_paths: set) -> tuple[list, float]:
+    """Flat-root run artifacts belonging to no run in `known_ids`, and how much of the flat root the
+    supplied indexes explain.
+
+    This is the one deletion in this file that rests on ABSENCE — a retired or renamed run leaves its
+    volumes behind and there is no positive record that it did. That makes the completeness of
+    `known_ids` load-bearing, and the flat root is shared by every non-repro track, so a single index
+    is not enough: pass every index that references the repo.
+
+    The returned coverage is the share of flat-root artifacts that DO belong to a known run. It is a
+    precondition on the input, not a cap on the output — the distinction that matters, because a
+    "refuse if deleting more than half" rule reads a correct large cleanup and a catastrophic one
+    identically, while low coverage means precisely "the index list I was given does not describe
+    this repo".
+    """
+    known = set(known_ids) | {i.replace("~", "_").replace("+", "_") for i in known_ids}
+    orphans, live = [], 0
+    for f in files:
+        if "/" in f or f.startswith(TRUTH_PREFIX):
+            continue
+        art = _run_artifact(f, "")
+        if art is None:
+            continue                      # not a per-run artifact: the same rule as the sharded prune
+        if art[0] in known or f in live_paths:
+            live += 1
+        else:
+            orphans.append(f)
+    total = live + len(orphans)
+    return sorted(orphans), (live / total if total else 1.0)
+
+
+def _repo_path(url: str, repo: str) -> "str | None":
+    """The in-repo path a download URL points at, or None if it is not this repo's URL."""
+    base = _url(repo, "")
+    return url[len(base):].split("?")[0] if isinstance(url, str) and url.startswith(base) else None
+
+
+def _prune_flat(api, repo, rows: list, extra_indexes: list, dry_run: bool) -> int:
+    """Remove flat-root volumes belonging to runs no index knows about (retired or renamed methods).
+
+    Separate from the sharded prune because the flat root is shared by every non-repro track, so the
+    results dir driving this publish is never the whole picture. Requires `--index` for the other
+    indexes and refuses when they explain too little of what is there.
+    """
+    known = {r.get("id") for r in rows if r.get("id")}
+    live = _indexed_paths(rows, repo)
+    for idx in extra_indexes:
+        if not idx.exists():
+            print(f"! prune-flat: {idx} does not exist — refusing to judge with an index list I "
+                  f"cannot read.", file=sys.stderr)
+            return 0
+        other = json.loads(idx.read_text())
+        other_rows = other["runs"] if isinstance(other, dict) else other
+        known |= {r.get("id") for r in other_rows if r.get("id")}
+        live |= _indexed_paths(other_rows, repo)
+    try:
+        files = _retry("list_repo_files", lambda: api.list_repo_files(repo, repo_type="dataset"))
+    except Exception as exc:  # noqa: BLE001
+        print(f"  ! prune-flat: could not list {repo} ({exc}); skipping", file=sys.stderr)
+        return 0
+    orphans, coverage = flat_orphans(files, known, live)
+    print(f"  prune-flat: {len(known)} run id(s) across {1 + len(extra_indexes)} index file(s) "
+          f"explain {coverage:.0%} of the flat root")
+    if coverage < FLAT_COVERAGE_MIN:
+        print(f"  ! prune-flat: refusing — those indexes explain only {coverage:.0%} of the flat "
+              f"root, so the list is incomplete and live runs would look retired. Pass every index "
+              f"that references {repo} with --index.", file=sys.stderr)
+        return 0
+    if not orphans:
+        print("  prune-flat: nothing orphaned")
+        return 0
+    by_run: dict = {}
+    for f in orphans:
+        by_run.setdefault(f.rsplit("__", 1)[0], []).append(f.rsplit("__", 1)[1])
+    print(f"  prune-flat: {len(orphans)} file(s) across {len(by_run)} retired run(s)")
+    # Corroboration, not a gate. "No index mentions it" is an absence; "and its method is not in the
+    # manifest either" is a second, independent reason to believe the run is gone — which is what
+    # separates a genuinely retired generation of runs from an index list that is merely incomplete.
+    # Not a gate because a run may be retired while its method lives on (a rescore under a new id).
+    slugs = live_algo_slugs()
+    retired_slug = sum(1 for rid in by_run if _leading_slug(rid) not in slugs) if slugs else 0
+    if by_run and slugs:
+        print(f"      {retired_slug}/{len(by_run)} of them name a method the manifest no longer "
+              f"defines ({100 * retired_slug / len(by_run):.0f}%)")
+    for rid in sorted(by_run)[:10]:
+        print(f"      - {rid}: {', '.join(sorted(by_run[rid]))}")
+    if len(by_run) > 10:
+        print(f"      … and {len(by_run) - 10} more run(s)")
+    if dry_run:
+        print("  prune-flat: --prune-dry-run, deleting nothing")
+        return 0
+    deleted = 0
+    for start in range(0, len(orphans), BATCH):
+        chunk = orphans[start:start + BATCH]
+        desc = f"prune-flat batch {start // BATCH + 1}"
+        try:
+            _retry(desc, lambda o=chunk, d=desc: api.create_commit(
+                repo, repo_type="dataset", operations=[_delete_op(f) for f in o],
+                commit_message=f"prune volumes of retired runs ({d})"))
             deleted += len(chunk)
             print(f"  ✓ {desc} ({deleted}/{len(orphans)})", flush=True)
         except Exception as exc:  # noqa: BLE001
@@ -369,6 +513,9 @@ def main() -> int:
         runs_file = Path(sys.argv[sys.argv.index("--runs") + 1])
         args = [a for a in args if a != str(runs_file)]     # the --runs value is not the results dir
     prune, prune_dry = _prune_flags(sys.argv)
+    prune_flat = "--prune-flat" in sys.argv
+    extra_indexes = _extra_indexes(sys.argv)
+    args = [a for a in args if a not in {str(x) for x in extra_indexes}]
     results = Path(args[0]) if args else ROOT / "results"
 
     # Pruning from a shard would delete every OTHER shard's volumes: a --runs publish knows only
@@ -476,6 +623,23 @@ def main() -> int:
         if name in landed:
             want.setdefault(rid, {})[kind] = _url(repo, name)
 
+    # Files THIS publish just replaced for a run it holds: the row pointed at path X for some kind,
+    # it now points at Y, so X is superseded. The shared-ground-truth migration creates one of these
+    # per run it moves (`<rid>__truth.nii.gz` -> `truth/<phantom>/<artifact>.nii.gz`), and since
+    # publishing is an upsert the old copy would otherwise sit on the Hub forever with nothing able
+    # to attribute it — the flat root is outside every sharded prune scope. Captured here because
+    # this is the last moment the previous URL exists, and it is the strongest attribution available:
+    # we know the run, the artifact, and that we wrote its replacement in this same run.
+    superseded: set[str] = set()
+    for rid, kinds in want.items():
+        old_vols = by_id[rid].get("volumes") or {}
+        for kind, url in old_vols.items():
+            if kind not in kinds:
+                continue                       # no replacement written this run — leave it alone
+            path = _repo_path(url, repo)
+            if path and "/" not in path and _url(repo, path) != kinds[kind]:
+                superseded.add(path)
+
     published = 0
     for rid, kinds in want.items():
         # The resources trace and the per-region stats aren't NiiVue volumes — surface each as its own
@@ -511,7 +675,10 @@ def main() -> int:
                   file=sys.stderr)
         else:
             scopes = {n[:n.rindex("/") + 1] for n in uploads if "/" in n}
-            _prune(api, repo, set(landed), _indexed_paths(rows, repo), scopes, prune_dry)
+            _prune(api, repo, set(landed), _indexed_paths(rows, repo), scopes, prune_dry,
+                   superseded - _indexed_paths(rows, repo))
+            if prune_flat:
+                _prune_flat(api, repo, rows, extra_indexes, prune_dry)
     return 0
 
 
