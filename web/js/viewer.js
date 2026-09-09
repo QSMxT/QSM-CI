@@ -54,10 +54,13 @@ const reproLocalfieldUrl = (fm, bfr, acq) => `${HF_VOL_BASE}repro/${acq}/${fm}_$
 const simRunIdOf = (pipe) => `${pipe.replaceAll("+", "~")}-cmp`;   // the same pipeline's in-silico composed run id
 const reproRunId = (pipe, acq) => `${pipe.replaceAll("+", "~")}-cmp-${acq}`;
 // Headline "score" for a repro run row: median inter-scanner |a-1| (lower is better).
+// `{cls}_mean_abs_slope_dev` used to HOLD the median under a misleading name; repro.json now carries
+// both, so read the explicit median key and fall back to the old one for a pre-split payload.
+const reproMed = (node, cls) => node?.[`${cls}_median_abs_slope_dev`] ?? node?.[`${cls}_mean_abs_slope_dev`] ?? null;
 const reproHeadline = (node) => node ? {
-  repro_inter: node.inter_scanner_mean_abs_slope_dev,
-  repro_tr: node.test_retest_mean_abs_slope_dev,
-  repro_vsbridge: node.inter_protocol_mean_abs_slope_dev } : {};
+  repro_inter: reproMed(node, "inter_scanner"),
+  repro_tr: reproMed(node, "test_retest"),
+  repro_vsbridge: reproMed(node, "inter_protocol") } : {};
 function makeReproRun(pipe, acq, node) {
   // pipeline id parts = stages: 3 → field-mapping+bfr+dipole; 2 → field-mapping + a bfr+dipole span;
   // 1 → an end-to-end span. Matches how pipeline.py builds the combo, so the matrix axes line up.
@@ -757,26 +760,34 @@ function renderReproStats() {
     }
   }
   $("metrics-regions-wrap")?.classList.add("hidden");
-  $("metrics-sub").textContent = "Reproducibility of this pipeline across the harmonization acquisitions: orthogonal per-ROI ax+b fits, |a−1| (median).";
+  $("metrics-sub").textContent = "Reproducibility of this pipeline across the harmonization acquisitions: orthogonal per-ROI ax+b fits, |a−1| as median (mean).";
   const rankCell = (rk, label) => rk
     ? `<span class="inline-block rounded-md px-1.5 py-0.5 text-xs font-semibold text-white shadow-sm" style="background:${heatScale(rk.t)}" data-tip="Rank ${rk.rank} of ${rk.n} harmonization pipelines for ${label}">#${rk.rank}<span class="opacity-70"> / ${rk.n}</span></span>`
     : `<span class="text-gray-300 dark:text-gray-600">—</span>`;
-  // A reproducibility |a−1| row: value as a %, ranked against every other pipeline.
-  const row = (label, field, tip) => {
-    const v = node ? node[field] : null;
+  // A reproducibility |a−1| row for one comparison class: the median as the headline with the mean
+  // beside it (they diverge on the bimodal pipelines — reproducible on some protocols, not others),
+  // ranked on the median against every other pipeline.
+  const pctOf = (v) => v == null ? "—" : (100 * v).toFixed(1) + "%";
+  const row = (label, cls, tip) => {
+    const medField = `${cls}_median_abs_slope_dev`;
+    // pre-split payloads carried the median under the `_mean_` name; there is no mean to show there
+    const med = node?.[medField] ?? node?.[`${cls}_mean_abs_slope_dev`] ?? null;
+    const mean = node?.[medField] == null ? null : node?.[`${cls}_mean_abs_slope_dev`] ?? null;
     return `<tr class="border-t border-gray-100 dark:border-gray-800">`
       + `<td class="py-2 pr-3 text-gray-600 dark:text-gray-300"><span class="has-tip" data-tip="${tip}">${label}</span></td>`
-      + `<td class="py-2 text-right tabular-nums font-medium text-gray-900 dark:text-gray-100">${v == null ? ", " : (100 * v).toFixed(1) + "%"}</td>`
-      + `<td class="py-2 pl-3 text-right">${rankCell(reproRank(field), label)}</td></tr>`;
+      + `<td class="py-2 text-right tabular-nums font-medium text-gray-900 dark:text-gray-100">${pctOf(med)}`
+      + (mean == null ? "" : ` <span class="text-xs font-normal text-gray-400" title="mean over pairs">(${pctOf(mean)})</span>`)
+      + `</td>`
+      + `<td class="py-2 pl-3 text-right">${rankCell(reproRank(node?.[medField] != null ? medField : `${cls}_mean_abs_slope_dev`), label)}</td></tr>`;
   };
   // A resource row (runtime / peak memory / avg CPU): value only, folded on from the run's Hub trace.
   const resRow = (label, v, fk, tip) => v == null ? "" :
     `<tr class="border-t border-gray-100 dark:border-gray-800"><td class="py-2 pr-3 text-gray-500 dark:text-gray-400"><span class="has-tip" data-tip="${tip}">${label}</span></td>`
     + `<td class="py-2 text-right tabular-nums font-medium text-gray-700 dark:text-gray-300">${fmt(v, fk)}</td><td></td></tr>`;
   let body = node
-    ? row("Test–retest |a−1|", "test_retest_mean_abs_slope_dev", "Within-scanner run-to-run, median over pairs. Lower = more repeatable.")
-      + row("Inter-scanner |a−1|", "inter_scanner_mean_abs_slope_dev", "Prisma↔Cima for matched protocol+run. The harmonization headline.")
-      + row("vs bridge |a−1|", "inter_protocol_mean_abs_slope_dev", "Each protocol vs the bridge protocol, same scanner.")
+    ? row("Test–retest |a−1|", "test_retest", "Within-scanner run-to-run: median over pairs, mean in grey. Lower = more repeatable.")
+      + row("Inter-scanner |a−1|", "inter_scanner", "Prisma↔Cima for matched protocol+run: median over pairs, mean in grey. The harmonization headline.")
+      + row("vs bridge |a−1|", "inter_protocol", "Each protocol vs the bridge protocol, same scanner: median over pairs, mean in grey.")
     : `<tr><td class="py-3 text-gray-400" colspan="3">No reproducibility summary for this pipeline yet.</td></tr>`;
   const res = resRow("Runtime", run.runtime_s, "runtime_s", "Whole-pipeline wall-clock on this acquisition (from the CPU/RAM trace).")
     + resRow("Peak memory", run.mem_peak_bytes, "mem_peak_bytes", "Peak resident memory during the run.")
