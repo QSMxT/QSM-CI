@@ -34,7 +34,6 @@ IMAGES=(
   ghcr.io/astewartau/qsm-ci/lpcnn:v1
   ghcr.io/astewartau/qsm-ci/matlab-medi:v2
   ghcr.io/astewartau/qsm-ci/modl-qsm:v1
-  ghcr.io/astewartau/qsm-ci/msmv:v1
   ghcr.io/astewartau/qsm-ci/nextqsm:v1
   ghcr.io/astewartau/qsm-ci/qsmgan:v1
   ghcr.io/astewartau/qsm-ci/qsmnet-plus:v1

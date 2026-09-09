@@ -26,7 +26,7 @@ export QSMCI_SANDBOX_DIR=/scratch/project_mnt/S0169/qsmci_sif   # prebuilt .sif 
 export QSMCI_GPU=1            # runner adds apptainer --nv so the CUDA images see the GPU
 export QSM_CI_JOBS=2          # inr-qsm SIREN is memory-hungry; 2 concurrent keeps under 256G
 
-INCLUDE=bfrnet,harperella-qsmrs,iharperella-qsmrs,iqfm,ismv-qsmrs,laplacian-qsmci,lbv-qsmrs,msmv,pdf-qsmrs,resharp-qsmrs,romeo-qsmrs,sharp-qsmrs,vsharp-qsmrs,vsharp-sti,inr-qsm,modip
+INCLUDE=bfrnet,harperella-qsmrs,iharperella-qsmrs,iqfm,ismv-qsmrs,laplacian-qsmci,lbv-qsmrs,pdf-qsmrs,resharp-qsmrs,romeo-qsmrs,sharp-qsmrs,vsharp-qsmrs,vsharp-sti,inr-qsm,modip
 
 N_SHARDS=4
 mapfile -t ACQS < <(python -c "

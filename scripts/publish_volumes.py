@@ -60,6 +60,11 @@ from qsm_ci.stages import STAGES  # noqa: E402 — the stage graph, for produced
 
 # Per-run volume kinds. Ground truth is handled separately (shared per phantom, see module doc).
 KINDS = ("recon", "error")
+# The artifact kinds a RUN owns — every `kind` this script uploads per run: KINDS and their χ-sep
+# "-dia" twins, the truth pointer, and the two JSON sidecars. Prune deletes ONLY these (see
+# _run_artifact): a file whose kind is not in here does not belong to any single run, so no
+# per-run bookkeeping can vouch for it and prune must not judge it.
+RUN_ARTIFACTS = frozenset({"recon", "error", "truth", "resources", "regions"})
 TRUTH_DIR = "_truth"       # results/_truth/<phantom>/<artifact>.nii.gz, staged by pipeline.py
 TRUTH_PREFIX = "truth/"    # Hub path prefix for the shared truths: truth/<phantom>/<artifact>.nii.gz
 # Files per Hub commit. HuggingFace rate-limits COMMITS to 128/hour per repo, so this must be large
@@ -186,7 +191,48 @@ def _delete_op(path: str):
     return CommitOperationDelete(path_in_repo=path)
 
 
-def _prune(api, repo, uploaded: set, keep_extra: set, scopes: set, dry_run: bool, force: bool) -> int:
+def _run_artifact(path: str, sub: str) -> "tuple[str, str] | None":
+    """(run id, kind) if `path` is a per-run artifact, else None.
+
+    Remote names are `<sub><rid>__<kind>.<ext>` (see _name). The kind is what identifies a file as
+    belonging to a run — and it is exactly the discriminator prune needs, because the repo also
+    holds files that belong to NO run and are addressed by naming convention instead of by any URL
+    recorded in index.json:
+
+        repro/<acq>/<acq>__magnitude.nii.gz            one per acquisition
+        repro/<acq>/<fm>__totalfield.nii.gz            one per field-mapping method
+        repro/<acq>/<fm>_<bfr>__localfield.nii.gz      one per (field mapping, bg removal) pair
+
+    Hundreds of pipelines share each of those, so there is no run to record them against; the viewer
+    reconstructs their URLs from the naming pattern (see web/js/viewer.js reproMagnitudeUrl /
+    reproTotalfieldUrl / reproLocalfieldUrl). They are therefore invisible to BOTH of prune's tests —
+    not uploaded by a per-run publish, and never named in index.json — so a keep-set built from runs
+    alone classes all 621 of them as orphans. Restricting prune to recognised run artifacts makes
+    them out of scope by construction rather than by a blacklist that the next shared artifact would
+    silently fall out of.
+    """
+    rest = path[len(sub):] if sub and path.startswith(sub) else path
+    if "__" not in rest:
+        return None
+    rid, tail = rest.rsplit("__", 1)
+    kind = tail.split(".", 1)[0]
+    base = kind[:-4] if kind.endswith("-dia") else kind      # recon-dia / error-dia / truth-dia
+    return (rid, kind) if base in RUN_ARTIFACTS and rid else None
+
+
+def _prune_flags(argv: list) -> tuple[bool, bool]:
+    """(prune, dry_run) from argv.
+
+    `--prune-dry-run` IMPLIES `--prune`. A dry run is the safe thing you reach for first, so it must
+    not be a silent no-op — that is exactly what it was when an older copy of this script (which had
+    no prune at all) was handed the flag: unknown `--` args are filtered out of the positional list,
+    so it published, pruned nothing, printed nothing about pruning, and exited 0.
+    """
+    dry = "--prune-dry-run" in argv
+    return ("--prune" in argv or dry), dry
+
+
+def _prune(api, repo, uploaded: set, keep_extra: set, scopes: set, dry_run: bool) -> int:
     """Delete volumes under `scopes` that are no longer produced. Returns the number deleted.
 
     Uploading is an upsert, so a run that stops being produced keeps its old file forever and the
@@ -204,9 +250,17 @@ def _prune(api, repo, uploaded: set, keep_extra: set, scopes: set, dry_run: bool
     * **Keep anything index.json still points at.** A volume can be live in the index but absent
       from this machine's `results/` (published by an earlier job, or cleaned up). Uploaded paths
       alone are not the keep set; URLs already recorded in the index count too.
-    * **Refuse a suspiciously large deletion** unless `--prune-force`. Losing more than half a
-      scope means the publish set was wrong (a partial index, a failed run), not that half the
-      volumes are genuinely obsolete.
+    * **Only recognised per-run artifacts.** See `_run_artifact`. Prune deletes a file only when it
+      can say which run and which artifact it is; anything it cannot classify is left alone. This
+      replaced a "refuse to delete more than half the scope" rule, which measured the wrong thing:
+      it let a 621-file deletion of live shared intermediates through at 1% of the scope, while it
+      would have blocked the legitimate cleanup of a retired method (~1,200 runs) and pushed the
+      operator towards a --prune-force habit that disables the check exactly when it matters.
+      Proportion of files says nothing about whether a file is needed; attribution does.
+
+    The guard against a PARTIAL publish (the real risk the proportion rule was groping at — a
+    truncated index makes every absent run look retired) lives at the call site, which is where the
+    published-vs-indexed run counts are known.
     """
     scopes = {s for s in scopes if s and not s.startswith(TRUTH_PREFIX)}
     if not scopes:
@@ -217,25 +271,37 @@ def _prune(api, repo, uploaded: set, keep_extra: set, scopes: set, dry_run: bool
     except Exception as exc:  # noqa: BLE001 — best-effort, same as the upload path
         print(f"  ! prune: could not list {repo} ({exc}); skipping prune", file=sys.stderr)
         return 0
-    candidates = {f for f in files
-                  if any(f.startswith(sc) for sc in scopes) and not f.startswith(TRUTH_PREFIX)}
-    orphans = sorted(candidates - uploaded - keep_extra)
+    # Only files prune can positively identify as one run's artifact are even considered. Anything
+    # else in the scope — a shared intermediate, a future artifact kind this script does not know —
+    # is left alone, because run-based bookkeeping cannot speak for it either way.
+    candidates, skipped = {}, 0
+    for f in files:
+        sc = next((sc for sc in scopes if f.startswith(sc)), None)
+        if sc is None or f.startswith(TRUTH_PREFIX):
+            continue
+        art = _run_artifact(f, sc)
+        if art is None:
+            skipped += 1
+            continue
+        candidates[f] = art
+    orphans = sorted(set(candidates) - uploaded - keep_extra)
+    extra = f", {skipped} shared/unrecognised file(s) not run artifacts (left alone)" if skipped else ""
     if not orphans:
-        print(f"  prune: {len(candidates)} file(s) in scope, none orphaned")
+        print(f"  prune: {len(candidates)} run artifact(s) in scope, none orphaned{extra}")
         return 0
-    share = len(orphans) / max(len(candidates), 1)
-    print(f"  prune: {len(orphans)}/{len(candidates)} file(s) in scope are orphaned ({share:.0%})")
-    for f in orphans[:10]:
-        print(f"      - {f}")
-    if len(orphans) > 10:
-        print(f"      … and {len(orphans) - 10} more")
+    # Report by RUN, not by file count: "3 runs retired" is something you can check against what you
+    # changed, where "1% of files" is not. Every deletion names the run it belonged to.
+    by_run = {}
+    for f in orphans:
+        by_run.setdefault(candidates[f][0], []).append(candidates[f][1])
+    print(f"  prune: {len(orphans)} orphaned artifact(s) across {len(by_run)} run(s) "
+          f"of {len(candidates)} in scope{extra}")
+    for rid in sorted(by_run)[:10]:
+        print(f"      - {rid}: {', '.join(sorted(by_run[rid]))}")
+    if len(by_run) > 10:
+        print(f"      … and {len(by_run) - 10} more run(s)")
     if dry_run:
         print("  prune: --prune-dry-run, deleting nothing")
-        return 0
-    if share > 0.5 and not force:
-        print(f"  ! prune: refusing to delete {share:.0%} of the scope — that usually means the "
-              f"publish set was incomplete, not that the volumes are obsolete. Re-run with "
-              f"--prune-force if this is genuinely intended.", file=sys.stderr)
         return 0
     deleted = 0
     for start in range(0, len(orphans), BATCH):
@@ -302,11 +368,7 @@ def main() -> int:
     if "--runs" in sys.argv:
         runs_file = Path(sys.argv[sys.argv.index("--runs") + 1])
         args = [a for a in args if a != str(runs_file)]     # the --runs value is not the results dir
-    prune = "--prune" in sys.argv
-    prune_dry = "--prune-dry-run" in sys.argv
-    prune_force = "--prune-force" in sys.argv
-    if prune_dry:
-        prune = True
+    prune, prune_dry = _prune_flags(sys.argv)
     results = Path(args[0]) if args else ROOT / "results"
 
     # Pruning from a shard would delete every OTHER shard's volumes: a --runs publish knows only
@@ -437,13 +499,19 @@ def main() -> int:
     print(f"published volumes for {published} runs -> {target}")
 
     if prune:
+        # Two preconditions, both about whether this publish saw a COMPLETE picture — because prune
+        # infers "retired" from absence, and an incomplete view makes live runs look retired.
         if failed:
             print("! prune: skipped — some uploads failed this run, so the produced set is "
                   "incomplete and anything missing would look orphaned.", file=sys.stderr)
+        elif published < 0.9 * len(rows):
+            print(f"! prune: skipped — this results directory produced volumes for {published} of "
+                  f"{len(rows)} indexed runs. That is a partial publish, and every run missing from "
+                  f"it would be read as retired. Publish from a complete results dir to prune.",
+                  file=sys.stderr)
         else:
             scopes = {n[:n.rindex("/") + 1] for n in uploads if "/" in n}
-            _prune(api, repo, set(landed), _indexed_paths(rows, repo),
-                   scopes, prune_dry, prune_force)
+            _prune(api, repo, set(landed), _indexed_paths(rows, repo), scopes, prune_dry)
     return 0
 
 

@@ -153,9 +153,9 @@ class FakeApi:
         self.deleted += [op.path_in_repo for op in operations]
 
 
-def _prune(files, uploaded, keep=(), scopes=("repro/acq1/",), dry_run=False, force=False):
+def _prune(files, uploaded, keep=(), scopes=("repro/acq1/",), dry_run=False):
     api = FakeApi(files)
-    n = pv._prune(api, REPO, set(uploaded), set(keep), set(scopes), dry_run, force)
+    n = pv._prune(api, REPO, set(uploaded), set(keep), set(scopes), dry_run)
     return api.deleted, n
 
 
@@ -218,16 +218,6 @@ def test_index_referenced_volume_survives_even_if_not_re_uploaded():
     assert deleted == [] and n == 0
 
 
-def test_large_deletion_is_refused_without_force():
-    files = [f"repro/acq1/r{i}__recon.nii.gz" for i in range(10)]
-    deleted, n = _prune(files, uploaded=["repro/acq1/r0__recon.nii.gz"])
-    assert deleted == [] and n == 0            # 9/10 orphaned -> refused
-
-
-def test_large_deletion_proceeds_with_force():
-    files = [f"repro/acq1/r{i}__recon.nii.gz" for i in range(10)]
-    deleted, n = _prune(files, uploaded=["repro/acq1/r0__recon.nii.gz"], force=True)
-    assert n == 9 and "repro/acq1/r0__recon.nii.gz" not in deleted
 
 
 def test_dry_run_deletes_nothing():
@@ -243,7 +233,7 @@ def test_list_failure_is_survivable():
         def list_repo_files(self, repo, repo_type=None):
             raise RuntimeError("hub down")
 
-    assert pv._prune(Broken([]), REPO, set(), set(), {"repro/acq1/"}, False, False) == 0
+    assert pv._prune(Broken([]), REPO, set(), set(), {"repro/acq1/"}, False) == 0
 
 
 def test_indexed_paths_collects_every_url_kind():
@@ -255,3 +245,70 @@ def test_indexed_paths_collects_every_url_kind():
             {}]                                                            # no volumes at all
     assert pv._indexed_paths(rows, REPO) == {
         "a__recon.nii.gz", "a__truth.nii.gz", "a__resources.json", "a__regions.json"}
+
+
+# ---- prune flag parsing ------------------------------------------------------------------------
+# A dry run is the first thing anyone reaches for before deleting published data, so it must never
+# be a silent no-op. It was exactly that on the HPC side, where an older copy of the script had no
+# prune at all: unknown `--` flags are filtered out of the positional args, so the job published,
+# pruned nothing, printed nothing about pruning, and exited 0.
+
+def test_prune_dry_run_alone_enables_the_prune_path():
+    assert pv._prune_flags(["publish_volumes.py", "results", "--prune-dry-run"]) == (True, True)
+
+
+
+def test_plain_prune_deletes_for_real():
+    assert pv._prune_flags(["publish_volumes.py", "--prune"]) == (True, False)
+
+
+def test_no_prune_flag_means_no_prune():
+    assert pv._prune_flags(["publish_volumes.py", "results"]) == (False, False)
+
+
+def test_prune_substring_does_not_match_the_longer_flags():
+    # "--prune" must be matched as a whole argument, never as a prefix of --prune-dry-run
+    assert pv._prune_flags(["publish_volumes.py", "--prune-dry-run"]) == (True, True)
+
+
+# ---- shared intermediates are addressed by CONVENTION, not by any index URL ---------------------
+# The repo holds three kinds of file that belong to no single run: the acquisition's magnitude, the
+# field-mapping method's total field, and the (field mapping, bg removal) pair's local field.
+# Hundreds of pipelines share each, so nothing records them in index.json — the viewer rebuilds
+# their URLs from the naming pattern. They are therefore invisible to both of prune's tests, and a
+# keep-set built from runs alone called all 621 of them orphans on a live repo.
+
+INTERMEDIATES = ["repro/acq1/acq1__magnitude.nii.gz",
+                 "repro/acq1/laplacian-qsmci__totalfield.nii.gz",
+                 "repro/acq1/laplacian-qsmci_vsharp-qsmrs__localfield.nii.gz"]
+
+
+def test_shared_intermediates_are_never_pruned():
+    deleted, n = _prune(INTERMEDIATES + ["repro/acq1/gone__recon.nii.gz"],
+                        uploaded=[], keep=[])
+    assert deleted == ["repro/acq1/gone__recon.nii.gz"]      # only the run artifact goes
+    assert n == 1
+
+
+def test_intermediates_survive_even_when_nothing_else_is_in_scope():
+    deleted, n = _prune(INTERMEDIATES, uploaded=[], keep=[])
+    assert deleted == [] and n == 0
+
+
+def test_run_artifact_classifies_every_kind_this_script_uploads():
+    for kind in ("recon", "error", "truth", "resources", "regions",
+                 "recon-dia", "error-dia", "truth-dia"):
+        ext = "json" if kind in ("resources", "regions") else "nii.gz"
+        got = pv._run_artifact(f"repro/acq1/some~pipe-cmp-acq1__{kind}.{ext}", "repro/acq1/")
+        assert got == ("some~pipe-cmp-acq1", kind), kind
+
+
+def test_run_artifact_rejects_the_shared_intermediate_kinds():
+    for f in INTERMEDIATES:
+        assert pv._run_artifact(f, "repro/acq1/") is None, f
+
+
+def test_unrecognised_artifact_kind_is_left_alone_not_deleted():
+    # a future artifact this script does not yet know about must not be swept up as an orphan
+    deleted, n = _prune(["repro/acq1/pipe-cmp-acq1__somethingnew.nii.gz"], uploaded=[], keep=[])
+    assert deleted == [] and n == 0

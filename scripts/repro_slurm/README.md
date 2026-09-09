@@ -5,6 +5,47 @@ Runs every QSM-CI pipeline combination over all 23 harmonization acquisitions
 ax+b fits), entirely on Bunya. Only the small JSON payloads come back; the ~10k recon volumes stay
 in scratch.
 
+## What publishes what
+
+Three kinds of harmonization volume belong to no single run and are addressed by NAMING CONVENTION,
+not by any URL in `index.json` — the viewer rebuilds their URLs from the pattern. They therefore have
+their own publishers, and `publish_volumes.py --prune` deliberately does not judge them:
+
+| file | published by |
+|---|---|
+| `repro/<acq>/<acq>__magnitude.nii.gz` | `mag_rss_upload.py` |
+| `repro/<acq>/<fm>__totalfield.nii.gz` | `publish_repro_intermediates.py` (`publish_intermediates.slurm`) |
+| `repro/<acq>/<fm>_<bfr>__localfield.nii.gz` | same |
+
+If you add a fourth such kind, add it to that list and check `publish_volumes.RUN_ARTIFACTS` still
+excludes it — a 2026-09 dry run found prune ready to delete all 621 of these as "orphans".
+
+## Re-sync before every campaign (this bites)
+
+The one-time setup below rsyncs the repo to scratch, and the checkout there then **stays at whatever
+revision it was rsynced at**. It is not a clone: `git pull` is not available, nothing warns you, and
+the jobs happily run months-old code. Every bug in the 2026-09 recompute traces to that:
+
+| stale file on Bunya | what it silently did |
+|---|---|
+| `scripts/publish_volumes.py` | predated `--prune`, so `--prune-dry-run` was filtered out as an unknown flag; the job published, pruned nothing, printed nothing and exited 0 |
+| `web/algorithms.json` (3 weeks old) | `drop_retired` dropped 24 live `amp-pe-qsmrs` pipelines from `repro.json` |
+| `scripts/pipeline.py` | predated `write_run_regions`, so 14,551 runs kept the previous matrix's `regions.json` next to a freshly computed recon |
+
+So **re-run the rsync before each campaign**, and check what actually differs when a result surprises
+you:
+
+```bash
+# from the local checkout — what is Bunya running?
+for f in $(git ls-files scripts | grep '\.py$'); do
+  b=$(ssh bunya "md5sum /scratch/user/uqaste15/qsmci-repro/$f 2>/dev/null | cut -d' ' -f1")
+  [ "$b" != "$(md5sum "$f" | cut -d' ' -f1)" ] && echo "DIFFERS $f"
+done
+```
+
+`web/algorithms.json` matters as much as the scripts: `repro_eval.py fits` uses it to decide which
+pipelines still exist, so a stale copy silently changes the published pipeline set.
+
 ## One-time setup
 
 ```bash
