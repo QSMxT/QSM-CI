@@ -5,6 +5,21 @@ Runs every QSM-CI pipeline combination over all 23 harmonization acquisitions
 ax+b fits), entirely on Bunya. Only the small JSON payloads come back; the ~10k recon volumes stay
 in scratch.
 
+## What publishes what
+
+Three kinds of harmonization volume belong to no single run and are addressed by NAMING CONVENTION,
+not by any URL in `index.json` — the viewer rebuilds their URLs from the pattern. They therefore have
+their own publishers, and `publish_volumes.py --prune` deliberately does not judge them:
+
+| file | published by |
+|---|---|
+| `repro/<acq>/<acq>__magnitude.nii.gz` | `mag_rss_upload.py` |
+| `repro/<acq>/<fm>__totalfield.nii.gz` | `publish_repro_intermediates.py` (`publish_intermediates.slurm`) |
+| `repro/<acq>/<fm>_<bfr>__localfield.nii.gz` | same |
+
+If you add a fourth such kind, add it to that list and check `publish_volumes.RUN_ARTIFACTS` still
+excludes it — a 2026-09 dry run found prune ready to delete all 621 of these as "orphans".
+
 ## Re-sync before every campaign (this bites)
 
 The one-time setup below rsyncs the repo to scratch, and the checkout there then **stays at whatever
