@@ -335,13 +335,18 @@ def tls_fit(x: np.ndarray, y: np.ndarray) -> tuple[float, float]:
     return float(a), float(ym - a * xm)
 
 
-def _pair_metrics(vx: dict, vy: dict) -> "dict | None":
+def _pair_metrics(vx: dict, vy: dict) -> "tuple[dict | None, dict | None]":
+    """(metrics, rejection) for one acquisition pair — exactly one of the two is None.
+
+    The rejection carries the reason and, where there was one, the offending slope, so repro.json can
+    state how often this fires instead of the site having to hand-wave "degenerate fits are excluded".
+    """
     # Only ROIs finite in BOTH acquisitions — a NaN/inf ROI mean (from a pathological recon) would
     # otherwise crash the SVD or poison the correlation.
     common = [k for k in sorted(set(vx) & set(vy))
               if np.isfinite(vx[k]) and np.isfinite(vy[k])]
     if len(common) < MIN_PAIR_ROIS:
-        return None
+        return None, {"why": "too_few_rois", "n_rois": len(common)}
     x = np.array([vx[k] for k in common])
     y = np.array([vy[k] for k in common])
     # A degenerate cloud (one acquisition's ROI values nearly constant — a pipeline that collapsed
@@ -349,17 +354,19 @@ def _pair_metrics(vx: dict, vy: dict) -> "dict | None":
     # non-physical value. Reject rather than store a 1e12 "slope". SLOPE_DEV_CAP mirrors the web's
     # plausibility filter: |a-1| > 2 (slope outside [-1, 3]) is a failed fit, not reproducibility.
     if x.std() < 1e-6 or y.std() < 1e-6:
-        return None
+        return None, {"why": "flat_roi_cloud"}
     a, b = tls_fit(x, y)
-    if not np.isfinite(a) or abs(a - 1) > SLOPE_DEV_CAP:
-        return None
+    if not np.isfinite(a):
+        return None, {"why": "non_finite_slope"}
+    if abs(a - 1) > SLOPE_DEV_CAP:
+        return None, {"why": "slope_cap", "slope": round(float(a), 4), "abs_slope_dev": round(abs(a - 1), 4)}
     diffs = y - x
     r = float(np.corrcoef(x, y)[0, 1]) if len(common) > 2 else float("nan")
     return {"slope": round(a, 4), "intercept_ppm": round(b, 6),
             "abs_slope_dev": round(abs(a - 1), 4), "pearson_r": round(r, 4),
             "ba_bias_ppm": round(float(diffs.mean()), 6),
             "ba_loa_ppm": round(float(1.96 * diffs.std()), 6),
-            "n_rois": len(common)}
+            "n_rois": len(common)}, None
 
 
 def _roi_source() -> tuple[str, list[dict]]:
@@ -415,57 +422,77 @@ def cmd_fits(args) -> None:
     protocols = sorted({a["protocol"] for a in acqs.values()})
     runs_ids = ("run1", "run2", "run3")
 
-    def rois(p, scanner, protocol, run):
-        return by_pa.get((p, f"{scanner}-{protocol}-{run}"))
+    # Every comparison this design calls for, as (class, group, key, acq_a, acq_b). Built once so the
+    # per-pipeline loop can report not just the fits it kept but the ones it could not make, and why.
+    plan: list[tuple[str, str, str, str, str]] = []
+    for sc in scanners:                                        # test-retest: same scanner+protocol
+        for pr in protocols:
+            for i, ra in enumerate(runs_ids):
+                for rb in runs_ids[i + 1:]:
+                    plan.append(("test_retest", f"{sc}-{pr}", f"{ra}-{rb}",
+                                 f"{sc}-{pr}-{ra}", f"{sc}-{pr}-{rb}"))
+    for pr in protocols:                                       # inter-scanner: same protocol+run
+        for run in runs_ids:
+            plan.append(("inter_scanner", pr, run, f"prisma-{pr}-{run}", f"cima-{pr}-{run}"))
+    for sc in scanners:                                        # inter-protocol: each protocol vs bridge
+        for pr in protocols:
+            if pr == "bridge":
+                continue
+            for run in runs_ids:
+                plan.append(("inter_protocol", f"{sc}-{pr}", run, f"{sc}-bridge-{run}", f"{sc}-{pr}-{run}"))
+    # A comparison whose acquisition does not exist at all (prisma pulseq-offline run2 was never
+    # acquired) is not an exclusion, so it is not counted as one anywhere.
+    plan = [c for c in plan if c[3] in acqs and c[4] in acqs]
 
     out = {"target": target, "pipelines": {}}
     for p in pipelines:
         node = {"test_retest": {}, "inter_scanner": {}, "inter_protocol": {}}
-        # test-retest: same scanner+protocol, run pairs
-        for sc in scanners:
-            for pr in protocols:
-                pairs = {}
-                for i, ra in enumerate(runs_ids):
-                    for rb in runs_ids[i + 1:]:
-                        va, vb = rois(p, sc, pr, ra), rois(p, sc, pr, rb)
-                        if va and vb and (m := _pair_metrics(va, vb)):
-                            pairs[f"{ra}-{rb}"] = m
-                if pairs:
-                    node["test_retest"][f"{sc}-{pr}"] = pairs
-        # inter-scanner: same protocol+run, prisma vs cima
-        for pr in protocols:
-            pairs = {}
-            for run in runs_ids:
-                va, vb = rois(p, "prisma", pr, run), rois(p, "cima", pr, run)
-                if va and vb and (m := _pair_metrics(va, vb)):
-                    pairs[run] = m
-            if pairs:
-                node["inter_scanner"][pr] = pairs
-        # inter-protocol: same scanner+run, each protocol vs bridge
-        for sc in scanners:
-            for pr in protocols:
-                if pr == "bridge":
-                    continue
-                pairs = {}
-                for run in runs_ids:
-                    va, vb = rois(p, sc, "bridge", run), rois(p, sc, pr, run)
-                    if va and vb and (m := _pair_metrics(va, vb)):
-                        pairs[run] = m
-                if pairs:
-                    node["inter_protocol"][f"{sc}-{pr}"] = pairs
+        possible = {"test_retest": 0, "inter_scanner": 0, "inter_protocol": 0}
+        rejected: list[dict] = []
+        no_recon = 0
+        for cls, grp, key, a_id, b_id in plan:
+            possible[cls] += 1
+            va, vb = by_pa.get((p, a_id)), by_pa.get((p, b_id))
+            if not va or not vb:
+                no_recon += 1               # this pipeline failed to reconstruct one of the two
+                continue
+            m, rej = _pair_metrics(va, vb)
+            if m:
+                node[cls].setdefault(grp, {})[key] = m
+            else:
+                rejected.append({"class": cls, "group": grp, "pair": key, **rej})
 
-        # Headline aggregate per comparison class: MEDIAN |a-1| (robust — degenerate pairs are
-        # already dropped by _pair_metrics, but the median is the honest central tendency across the
-        # spread of a pipeline's pairs, matching what the web shows). Key kept `_mean_` for backward
-        # compatibility with any existing reader; the value is the median.
+        # Headline aggregates per comparison class. Both are reported because they answer different
+        # questions and, on the bimodal pipelines, disagree: the MEDIAN is the typical pair (robust —
+        # one bad protocol can't move it), the MEAN is the expected error over the whole pair set and
+        # so is the one that notices when a pipeline fails on a subset. Degenerate fits are already
+        # dropped upstream by _pair_metrics, so neither is defending against outright garbage.
+        # `{cls}_mean_abs_slope_dev` was historically the MEDIAN under a misleading name; it is now a
+        # genuine mean, and readers wanting the old value must use `{cls}_median_abs_slope_dev`.
         for cls in ("test_retest", "inter_scanner", "inter_protocol"):
             devs = [m["abs_slope_dev"] for grp in node[cls].values() for m in grp.values()]
-            node[f"{cls}_mean_abs_slope_dev"] = round(float(np.median(devs)), 4) if devs else None
+            node[f"{cls}_median_abs_slope_dev"] = round(float(np.median(devs)), 4) if devs else None
+            node[f"{cls}_mean_abs_slope_dev"] = round(float(np.mean(devs)), 4) if devs else None
+            node[f"{cls}_n_pairs"] = len(devs)
+            node[f"{cls}_n_possible"] = possible[cls]
+        # Per-pipeline so the site can total them over whatever pipelines it is actually showing
+        # (methods retired from the manifest are hidden there) rather than over a fixed headline.
+        node["n_possible"] = sum(possible.values())
+        node["n_rejected"] = len(rejected)
+        node["n_no_recon"] = no_recon
+        node["rejected"] = rejected
         out["pipelines"][p] = node
 
+    out["exclusion_rules"] = {"slope_dev_cap": SLOPE_DEV_CAP, "min_pair_rois": MIN_PAIR_ROIS,
+                             "min_roi_coverage": MIN_ROI_COVERAGE}
     (RESULTS / "repro.json").write_text(json.dumps(out, indent=2) + "\n")
     n = len(out["pipelines"])
+    poss = sum(v["n_possible"] for v in out["pipelines"].values())
+    rej = sum(v["n_rejected"] for v in out["pipelines"].values())
+    nore = sum(v["n_no_recon"] for v in out["pipelines"].values())
     print(f"wrote {RESULTS / 'repro.json'} ({n} pipelines)")
+    print(f"  pairs: {poss - rej - nore} kept of {poss} possible "
+          f"({rej} rejected fits, {nore} with no reconstruction)")
 
 
 def main() -> None:
