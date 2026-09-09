@@ -26,31 +26,46 @@ from pathlib import Path
 import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / "scripts"))
+from pipeline import _tuned_overrides  # noqa: E402  — the canonical tuned-value resolver
 
 
-def declared_tuned(slug: str, track: str) -> dict:
-    """The {param: value} the method currently declares as tuned for `track` (str values, matching how
-    index.json stores run params). Empty if the method/param declares nothing for that track."""
+def declared_tuned(slug: str, dataset: str, phantom: "str | None") -> "dict | None":
+    """What the method currently declares as tuned here, or None when that cannot be determined.
+
+    Resolution is delegated to pipeline._tuned_overrides — the same function that decides which tuned
+    variant gets created in the first place. This module used to reimplement it and had drifted: it
+    looked the value up by TRACK only, while `tuned:` may also be keyed by a specific PHANTOM
+    (`tuned: {chisep: 0.6, ridani-3t-iso: 0.8, ridani-3t-aniso: 0.9}`). Every per-phantom tuned run
+    therefore compared against a declaration that did not exist and was reported stale: on the
+    2026-09 index that was 4 of 4 tuned r2prime-scaled-qsmci runs, all of which match their
+    phantom's declared value exactly. Deleting rows a re-score would immediately recreate is the
+    opposite of this script's purpose, so the lookup has to be the canonical one, not a copy of it.
+
+    None (cannot tell) is deliberately distinct from {} (nothing declared). A missing algorithm.yml
+    means the checkout cannot answer the question, not that the tuning was withdrawn.
+    """
     spec = ROOT / "algorithms" / slug / "algorithm.yml"
     if not spec.exists():
-        return {}
+        return None
     doc = yaml.safe_load(spec.read_text()) or {}
-    out = {}
-    for p in doc.get("parameters") or []:
-        t = p.get("tuned")
-        v = t.get(track) if isinstance(t, dict) else (t if track == "sim" else None)
-        if v is not None:
-            out[str(p["name"])] = str(v)
-    return out
+    return _tuned_overrides(doc, dataset, phantom)
 
 
 def is_stale(run: dict) -> bool:
     """A run is stale iff it's an isolated tuned variant whose params no longer match the declared
-    tuned value for its track (including the case where the declaration was removed entirely)."""
+    tuned value for its dataset and phantom (including the case where the declaration was removed).
+
+    `domain` is preferred over `track` for the dataset key: chi-separation rows are stamped
+    `track: sim` while carrying `domain: chisep`, so keying on track alone looks up the wrong family
+    and finds nothing declared."""
     if run.get("mode") != "isolated" or run.get("variant") != "tuned":
         return False
+    dataset = run.get("domain") or run.get("track") or "sim"
+    declared = declared_tuned(run.get("slug", ""), dataset, run.get("phantom"))
+    if declared is None:
+        return False                      # cannot judge from this checkout — never delete on a guess
     params = {k: str(v) for k, v in (run.get("params") or {}).items()}
-    declared = declared_tuned(run.get("slug", ""), run.get("track", "sim"))
     return not (params and all(declared.get(k) == v for k, v in params.items()))
 
 
