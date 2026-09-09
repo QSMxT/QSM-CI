@@ -38,7 +38,7 @@ SHARD=$((SLURM_ARRAY_TASK_ID % N_SHARDS))
 echo "== acquisition $ACQ shard $SHARD/$N_SHARDS"
 # inr-qsm (per-volume SIREN fit) and modip (per-subject optimisation) are CPU-infeasible at this
 # scale (~400 slow inversions each across the matrix) — they get a dedicated GPU/big-mem campaign
-# later, like scripts/score_dl.slurm did for the sim scoring.
+# later, via matrix_gpu.slurm.
 python scripts/pipeline.py \
     --phantom "$ACQ" --track repro --mode composed --runner apptainer \
     --shard "$SHARD/$N_SHARDS" \
