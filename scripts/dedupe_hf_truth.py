@@ -90,6 +90,7 @@ def load_pending(indexes) -> set:
 
 
 def already_shared(legacy_in_repo, rows, repo: str, sha_of: dict) -> set:
+    """(see below) `rows` must be the runs from EVERY supplied index, not just the rewritten one."""
     """Legacy copies whose run ALREADY points at a shared file carrying identical bytes.
 
     A run migrated by an earlier publish leaves its per-run copy behind with nothing referencing it,
@@ -193,6 +194,16 @@ def main() -> int:
     # References held by the indexes we are NOT rewriting. Accumulated separately rather than as
     # (union - rewritten): a file both indexes point at is still live in the one we do not touch, so
     # subtracting the rewritten index's references would strip exactly the overlap of its protection.
+    # Runs from every supplied index. `already_shared` needs all of them: a run whose migration left
+    # a copy behind may live in an index this pass is not rewriting, and looking at only the first one
+    # is exactly the mistake this script was fixed for — made again, here, in the fix itself. It cost
+    # 49 of 75 files on the first real run.
+    all_rows = list(rows)
+    for idx in args.indexes[1:]:
+        if idx.exists():
+            other = json.loads(idx.read_text())
+            all_rows += other["runs"] if isinstance(other, dict) else other
+
     referenced_elsewhere: set[str] = set()
     for idx in args.indexes[1:]:
         if not idx.exists():
@@ -248,7 +259,7 @@ def main() -> int:
     if args.delete_legacy:
         # A file whose run already points at an identical shared file needs no repoint record: the
         # end state is directly verifiable, which is what the record would only have been evidence of.
-        migrated = already_shared(legacy_in_repo, rows, repo, sha_of)
+        migrated = already_shared(legacy_in_repo, all_rows, repo, sha_of)
         if migrated:
             print(f"  {len(migrated)} legacy copy(ies) whose run already points at identical shared bytes")
         repointed = load_pending(args.indexes) | migrated

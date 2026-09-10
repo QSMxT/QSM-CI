@@ -161,3 +161,13 @@ def test_not_detected_when_the_run_is_gone():
 def test_not_detected_without_a_sha_for_either_side():
     assert dd.already_shared([A], _rows(BASE + SHARED_P), REPO, {A: "s1"}) == set()
     assert dd.already_shared([A], _rows(BASE + SHARED_P), REPO, {SHARED_P: "s1"}) == set()
+
+
+def test_already_shared_sees_runs_from_every_index_not_just_the_first():
+    """The regression: on the first real run this matched only 26 of 75 files, because it was handed
+    the rewritten index's runs alone. The other 49 belonged to runs living in the OTHER index —
+    the same "one index is not the whole picture" mistake this whole script was fixed for."""
+    other_index_rows = [{"id": "runA", "volumes": {"truth": BASE + SHARED_P}}]
+    sha = {A: "s1", SHARED_P: "s1"}
+    assert dd.already_shared([A], [], REPO, sha) == set()                 # first index alone: misses it
+    assert dd.already_shared([A], other_index_rows, REPO, sha) == {A}     # union: finds it
