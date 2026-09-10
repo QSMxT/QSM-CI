@@ -106,6 +106,12 @@
       color-mix(in srgb,#be6b6b 38%,#fff),color-mix(in srgb,#c49e60 38%,#fff),color-mix(in srgb,#6ea886 38%,#fff))}
     html.dark .heat-cell{background:var(--heat);color:#fff}
     html.dark .heat-legend{background:linear-gradient(90deg,#be6b6b,#c49e60,#6ea886)}
+    /* Harmonization matrix: second channel. A thin bar along the cell's bottom edge whose length is
+       the pipeline's in-silico xSIM (normalised to the matrix's range), so colour = reproducibility
+       and bar = accuracy can be read together without a second palette. */
+    .acc-track{position:absolute;left:5px;right:5px;bottom:3px;height:3px;border-radius:2px;background:currentColor;opacity:.16;pointer-events:none}
+    .acc-bar{position:absolute;left:5px;bottom:3px;height:3px;border-radius:2px;background:currentColor;opacity:.75;pointer-events:none}
+    .acc-legend{position:relative;display:inline-block;width:5rem;height:3px;border-radius:2px;background:currentColor;opacity:.75}
 
     /* Findings: interactive marks on the x-html-injected SVG. */
     main svg [data-tip]{cursor:pointer}
@@ -1189,7 +1195,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           <div class="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h3 class="font-semibold text-gray-900">Combination matrix</h3>
-              <p class="mt-0.5 text-xs text-gray-500">Dipole inversion <span class="text-gray-400">&darr;</span> &times; background removal <span class="text-gray-400">&rarr;</span> &middot; best combinations top-left &middot; click a cell to inspect the pipeline.</p>
+              <p class="mt-0.5 text-xs text-gray-500">Dipole inversion <span class="text-gray-400">&darr;</span> &times; background removal <span class="text-gray-400">&rarr;</span> &middot; best combinations top-left &middot; bar length = in-silico accuracy &middot; click a cell to inspect the pipeline.</p>
             </div>
             <div class="flex flex-wrap items-center gap-3">
               <div class="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
@@ -1226,6 +1232,9 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
                           class="heat-cell group relative h-9 w-full rounded-md font-semibold text-xs ring-1 ring-black/5 transition hover:z-10 hover:scale-[1.08] hover:shadow-md focus:outline-none"
                           :style="'--heat:'+heatScale(g.heat)">
                           <span x-text="g.text"></span>
+                          <template x-if="g.acc!=null && reproSortKey!=='xsim'">
+                            <span><span class="acc-track"></span><span class="acc-bar" :style="'width:calc((100% - 10px) * '+g.acc+')'"></span></span>
+                          </template>
                         </button>
                       </template>
                       <template x-if="g.t==='empty'"><div class="h-9 rounded-md bg-gray-50"></div></template>
@@ -1240,6 +1249,11 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
                   <span class="heat-legend inline-block h-2.5 w-24 rounded-full"></span>
                   better
                 </span>
+                <span x-show="reproSortKey!=='xsim'" class="inline-flex items-center gap-2 text-gray-500">
+                  <span class="acc-legend"></span>
+                  bar = in-silico xSIM
+                  <span class="tabular-nums" x-text="fmt(reproMatrix.xlo,'xsim')+' – '+fmt(reproMatrix.xhi,'xsim')"></span>
+                </span>
               </div>
 
               <template x-if="reproMatrixOther.length">
@@ -1248,12 +1262,15 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
                   <p class="mt-1 text-xs text-gray-500">These span background removal and dipole inversion in one step (or the whole reconstruction), so they have no cell on the axes above. Same colour scale.</p>
                   <div class="mt-3 flex flex-wrap gap-2">
                     <template x-for="o in reproMatrixOther" :key="o.slug">
-                      <button @click="goRepro(o.slug)" :title="reproName(o.slug)"
-                        class="heat-cell rounded-md px-3 py-2 text-xs font-semibold ring-1 ring-black/5 transition hover:scale-[1.04] hover:shadow-md"
+                      <button @click="goRepro(o.slug)" :title="reproName(o.slug) + (o.acc!=null && reproSortKey!=='xsim' ? ' · in-silico xSIM: '+fmt(_simXsimMap().get(o.slug),'xsim') : '')"
+                        class="heat-cell relative rounded-md px-3 pt-2 pb-3 text-xs font-semibold ring-1 ring-black/5 transition hover:scale-[1.04] hover:shadow-md"
                         :style="'--heat:'+heatScale(o.heat)">
                         <span x-text="o.label"></span>
                         <span class="ml-1.5 opacity-70" x-text="o.endToEnd ? 'end-to-end' : ''"></span>
                         <span class="ml-1.5" x-text="o.text"></span>
+                        <template x-if="o.acc!=null && reproSortKey!=='xsim'">
+                          <span><span class="acc-track"></span><span class="acc-bar" :style="'width:calc((100% - 10px) * '+o.acc+')'"></span></span>
+                        </template>
                       </button>
                     </template>
                   </div>
@@ -2077,6 +2094,12 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             }
             const better = this.REPRO_MATRIX_METRICS[this.reproSortKey]?.better || "lower";
             const [lo, hi] = robustRange(Object.values(by).map((c) => c.v));
+            // Second channel: in-silico xSIM as a bar length, normalised to this matrix's own range so
+            // the bars use the full cell width whatever the population. Clamped: robustRange trims
+            // outliers, so a bar can be pinned to the ends.
+            const [xlo, xhi] = robustRange(Object.values(by).map((c) => simX.get(c.slug)));
+            const acc = (slug) => { const x = simX.get(slug); if (x == null) return null; return xhi === xlo ? 1 : Math.min(1, Math.max(0, (x - xlo) / (xhi - xlo))); };
+            const accTip = (slug) => { const x = simX.get(slug); return this.reproSortKey === "xsim" || x == null ? "" : ` · in-silico xSIM: ${fmt(x, "xsim")}`; };
             // 0 = worst, 1 = best, so heatScale() reads the same way whichever metric is selected
             const good = (c) => { const v = c ? c.v : null; if (v == null) return null; const t = hi === lo ? 0.5 : (v - lo) / (hi - lo); return better === "lower" ? 1 - t : t; };
             const avg = (ks) => { const g = ks.map((k) => good(by[k])).filter((x) => x != null); return g.length ? g.reduce((a, c) => a + c, 0) / g.length : -Infinity; };
@@ -2089,15 +2112,16 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
               cols.forEach((c) => {
                 const cell = by[c + "|" + rw];
                 cells.push(cell && cell.v != null
-                  ? { k: "c|" + c + "|" + rw, t: "cell", slug: cell.slug, v: cell.v, heat: good(cell),
+                  ? { k: "c|" + c + "|" + rw, t: "cell", slug: cell.slug, v: cell.v, heat: good(cell), acc: acc(cell.slug),
                       text: this.reproSortKey === "xsim" ? fmt(cell.v, "xsim") : this._pct(cell.v),
                       // xSIM is a single in-silico value, not pooled over pairs, so it carries no statistic
                       title: `${this.algoName(c)} → ${this.algoName(rw)} · ${this.REPRO_MATRIX_METRICS[this.reproSortKey].label}` +
-                             (this.reproSortKey === "xsim" ? `: ${fmt(cell.v, "xsim")}` : ` (${this._statLabel()}): ${this._pct(cell.v)}`) }
+                             (this.reproSortKey === "xsim" ? `: ${fmt(cell.v, "xsim")}` : ` (${this._statLabel()}): ${this._pct(cell.v)}`) +
+                             accTip(cell.slug) }
                   : { k: "x|" + c + "|" + rw, t: "empty" });
               });
             });
-            return { rows, cols, cells, lo, hi, n: Object.keys(by).length };
+            return { rows, cols, cells, lo, hi, xlo, xhi, n: Object.keys(by).length };
           });
         },
         // Pipelines with no bfr×dipole pair to hang on the axes: combined spans (TGV, TFI, QSMART)
@@ -2124,7 +2148,11 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             const better = this.REPRO_MATRIX_METRICS[this.reproSortKey]?.better || "lower";
             // share the matrix's colour range so a span's cell is directly comparable to a grid cell
             const m = this.reproMatrix;
-            out.forEach((o) => { const t = m.hi === m.lo ? 0.5 : (o.v - m.lo) / (m.hi - m.lo); o.heat = better === "lower" ? 1 - t : t; });
+            out.forEach((o) => {
+              const t = m.hi === m.lo ? 0.5 : (o.v - m.lo) / (m.hi - m.lo); o.heat = better === "lower" ? 1 - t : t;
+              const x = simX.get(o.slug);   // bar on the grid's xSIM range, so a span's bar is directly comparable
+              o.acc = x == null ? null : (m.xhi === m.xlo ? 1 : Math.min(1, Math.max(0, (x - m.xlo) / (m.xhi - m.xlo))));
+            });
             return out.sort((a, b) => b.heat - a.heat);
           });
         },
