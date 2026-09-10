@@ -12,6 +12,7 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 import time
 from pathlib import Path
 from uuid import uuid4
@@ -67,22 +68,81 @@ def _build_oci(algo: dict, engine: str, log) -> str:
 
     CI must not build containers. Every submission publishes a prebuilt ``image:``; a folder
     Dockerfile is only the build recipe (used out-of-band to produce that image), never built here.
-    Pull the tag; if the pull fails (offline / registry hiccup) fall back to a locally cached copy;
-    if neither is available, stop with a clear message telling the author to build and push first."""
+    Pull the tag (streaming the engine's progress, so a multi-GB pull isn't minutes of silence);
+    if the pull fails fall back to a locally cached copy; if neither is available, stop with the
+    registry's actual error and a message that fits it — a missing tag, a private image / no login,
+    a rate limit, or no network — rather than blaming the author for every failure (#195)."""
     tag = algo.get("image")
     if not tag:
         raise SystemExit(
             "algorithm.yml has no image:. Publish a prebuilt image (build and push it first) and set "
             "image: to its reference — the runner pulls images, it does not build containers.")
     log(f"↓ pulling {tag}")
-    if subprocess.run([engine, "pull", tag], capture_output=True).returncode != 0:
+    rc, err = _pull(engine, tag)
+    if rc != 0:
+        reason = _pull_failure_reason(err)
         # Offline / registry hiccup — fall back to a locally cached copy if one exists.
-        if subprocess.run([engine, "image", "inspect", tag], capture_output=True).returncode != 0:
-            raise SystemExit(
-                f"could not pull {tag} and no local copy is cached. Build and push the image first; "
-                "the runner does not build containers (a folder Dockerfile is only the build recipe).")
-        log(f"  (pull failed — using locally cached {tag})")
+        if subprocess.run([engine, "image", "inspect", tag], capture_output=True).returncode == 0:
+            log(f"  (pull failed: {reason.splitlines()[0]} — using locally cached {tag})")
+            return tag
+        raise SystemExit(f"could not pull {tag}: {reason}\n"
+                         "  No local copy is cached. The runner only pulls prebuilt images — it never "
+                         "builds one (a folder Dockerfile is just the recipe used to publish image:).")
     return tag
+
+
+def _pull(engine: str, tag: str) -> "tuple[int, str]":
+    """`<engine> pull <tag>`, streaming its output live and returning (exit code, stderr text).
+
+    stdout is inherited (docker's layer progress goes there); stderr is teed line by line to our
+    own stderr (podman's progress and every engine's error text go there) and kept so the failure
+    can be classified. Nothing is swallowed."""
+    proc = subprocess.Popen([engine, "pull", tag], stderr=subprocess.PIPE, text=True)
+    lines = []
+    assert proc.stderr is not None
+    for line in proc.stderr:
+        sys.stderr.write(line)
+        sys.stderr.flush()
+        lines.append(line)
+    rc = proc.wait()
+    return rc, "".join(lines)
+
+
+# Registry error text → what actually went wrong. Order matters: Docker Hub's rate-limit message
+# also says "denied", and Docker Hub's not-found message ("pull access denied … repository does
+# not exist or may require 'docker login'") mentions both. First match wins.
+_PULL_ERRORS = (
+    ("rate limit", (r"toomanyrequests", r"rate limit", r"too many requests")),
+    ("not found", (r"manifest unknown", r"not found", r"does not exist", r"name unknown",
+                   r"invalid reference format", r"no such image")),
+    ("auth", (r"unauthorized", r"denied", r"authentication required", r"login")),
+    ("network", (r"no such host", r"dial tcp", r"connection refused", r"timeout", r"timed out",
+                 r"network is unreachable", r"tls handshake", r"proxyconnect", r"i/o timeout")),
+)
+
+
+def _pull_failure_reason(stderr: str) -> str:
+    """A one-paragraph explanation of a failed pull, from the engine's stderr."""
+    text = stderr.strip()
+    # the engine's own words — its last non-empty line is the summary ("Error response from daemon: …")
+    said = next((l.strip() for l in reversed(text.splitlines()) if l.strip()), "no error output")
+    kind = next((k for k, pats in _PULL_ERRORS
+                 if any(re.search(p, text, re.IGNORECASE) for p in pats)), "other")
+    if kind == "rate limit":
+        return (f"the registry is rate-limiting pulls ({said}).\n"
+                "  Wait and retry, or log in to the registry for a higher pull limit.")
+    if kind == "not found":
+        return (f"the registry reports the image as not found ({said}).\n"
+                "  Check image: in algorithm.yml — a typo, a tag that was never pushed, or a private "
+                "image you're not logged in to (`docker login <registry>`).")
+    if kind == "auth":
+        return (f"the registry refused access ({said}).\n"
+                "  If the image is private, log in first (`docker login <registry>`); otherwise check "
+                "image: in algorithm.yml.")
+    if kind == "network":
+        return (f"the registry could not be reached ({said}).\n"
+                "  Check your network / proxy settings and retry.")
+    return f"{said}"
 
 
 def _sandbox_name(image: str) -> str:
@@ -117,11 +177,13 @@ def _apptainer_image(algo: dict) -> str:
             if os.path.isdir(base):             # fall back to an unpacked sandbox dir
                 return base
         return f"docker://{img}"  # plain registry ref -> pull & convert on the fly
-    if (algo["dir"] / "Dockerfile").exists():
-        raise SystemExit(
-            "apptainer can't build a Dockerfile. Build it first with --runner docker/podman, "
-            "or set image: to a prebuilt reference (docker://…, a registry ref, or a .sif).")
-    raise SystemExit("algorithm.yml has no image: for apptainer to run")
+    # No image: at all. The runner never builds containers (with any --runner, #224): the folder
+    # Dockerfile is only the recipe the author builds and pushes out-of-band.
+    recipe = (" A Dockerfile is here, but the runner never builds it — build and push it yourself, then"
+              if (algo["dir"] / "Dockerfile").exists() else " Publish a prebuilt image, then")
+    raise SystemExit(
+        f"algorithm.yml has no image: for apptainer to run.{recipe} set image: to its reference "
+        "(a registry ref, docker://…, or a .sif).")
 
 
 def _param_env(input_dir: Path) -> "dict[str, str]":

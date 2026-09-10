@@ -116,6 +116,10 @@ python scripts/pipeline.py --dataset data/sim/dev --mode both --runner docker
 qsm-ci submit <your-slug>        # commit on a branch + open the PR (uses gh if present)
 ```
 
+It confirms each step (branch, commit, push, open the PR) before doing it. When there is no
+terminal to ask on — a pipe, a script, CI — it stops before touching git unless you pass
+`--yes` (`-y`), which confirms every step up front.
+
 QSM-CI runs your stage **isolated** on the ground-truth boundary (no network, time-limited),
 scores it, and comments the metrics on your PR. The full **composition matrix** (your stage against
 everyone else's) refreshes on the [leaderboard](https://qsmxt.github.io/QSM-CI/). The

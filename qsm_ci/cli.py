@@ -70,11 +70,18 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--version", action="version", version=f"qsm-ci {__version__}")
     sub = p.add_subparsers(dest="cmd", required=True)
 
+    # `choices` so a typo (`--stage foo`, `--lang cobol`) is a usage error listing the valid
+    # values — not a KeyError from the template tables (#191). The interactive path validates the
+    # same lists via scaffold._ask.
+    from .stages import STAGES
+    from .templates import LANGS
     n = sub.add_parser("new", help="scaffold a submission folder")
-    n.add_argument("--stage")
+    n.add_argument("--stage", choices=list(STAGES), metavar="STAGE",
+                   help=f"one of: {', '.join(STAGES)}")
     n.add_argument("--name")
     n.add_argument("--slug")
-    n.add_argument("--lang", default="python")
+    n.add_argument("--lang", choices=list(LANGS), default="python", metavar="LANG",
+                   help=f"one of: {', '.join(LANGS)} (default: %(default)s)")
     n.add_argument("--image")
     n.add_argument("--dir", help="where to create the folder (default: ./algorithms or .)")
     n.add_argument("--force", action="store_true")
@@ -88,6 +95,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     s = sub.add_parser("submit", help="open a pull request adding your submission")
     s.add_argument("slug")
+    s.add_argument("-y", "--yes", action="store_true",
+                   help="answer yes to every confirmation (branch, commit, push, open the PR); "
+                        "required when stdin is not a terminal, which otherwise aborts before doing anything")
     s.set_defaults(func=_cmd_submit)
 
     i = sub.add_parser("interface",

@@ -70,8 +70,17 @@ def write_submission(meta: dict, dest_root: Path, force: bool = False) -> Path:
     return dest
 
 
+def _check_choice(flag: str, value: str, choices) -> None:
+    """Refuse an unknown --stage/--lang with the valid values, before anything is written (#191).
+    The argparse layer already enforces `choices`; this keeps run_new safe for any other caller."""
+    if value not in choices:
+        raise SystemExit(f"{flag} '{value}' is not known — choose one of: {', '.join(choices)}")
+
+
 def run_new(args) -> int:
     if args.name and args.stage:
+        _check_choice("--stage", args.stage, list(STAGES))
+        _check_choice("--lang", args.lang, list(templates.LANGS))
         meta = {
             "stage": args.stage, "name": args.name,
             "slug": args.slug or slugify(args.name), "lang": args.lang,

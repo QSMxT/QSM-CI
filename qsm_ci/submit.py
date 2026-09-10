@@ -3,7 +3,8 @@
 Interactive and fork-aware: it walks you through each step (branch, commit, push, PR) and, when your
 `origin` is the upstream you can't push to, offers to use a fork you already have, create one under
 your GitHub account with `gh`, or push directly if you're a maintainer. Nothing is pushed or opened
-without your confirmation.
+without your confirmation: without a terminal to ask on (a pipe, a script, CI) it stops before doing
+anything unless `--yes` was passed, which confirms every step up front.
 """
 
 from __future__ import annotations
@@ -45,9 +46,17 @@ def _interactive() -> bool:
     return sys.stdin.isatty() and sys.stdout.isatty()
 
 
-def _confirm(question: str, default: bool = True) -> bool:
+NOT_A_TTY = ("✗ stdin is not a terminal, so I can't ask for confirmation — nothing was done.\n"
+             "  Re-run in a terminal, or pass --yes to confirm every step (branch, commit, push, PR) up front.")
+
+
+def _confirm(question: str, default: bool = True, yes: bool = False) -> bool:
+    """Ask, unless --yes was given. Never answers for the user: without a terminal (a pipe, a
+    script, CI) and without --yes this aborts instead of silently taking the default (#197)."""
+    if yes:
+        return True
     if not _interactive():
-        return default
+        raise SystemExit(NOT_A_TTY)
     ans = input(f"{question}{' [Y/n] ' if default else ' [y/N] '}").strip().lower()
     return default if not ans else ans.startswith("y")
 
@@ -104,6 +113,10 @@ def _setup_fork(head_hint: "str | None") -> "tuple[str | None, str | None]":
 
 def run_submit(args) -> int:
     slug = args.slug
+    yes = bool(getattr(args, "yes", False))
+    if not yes and not _interactive():
+        print(NOT_A_TTY)  # decide this before touching git at all
+        return 1
     algo = Path("algorithms") / slug
     if not (algo / "algorithm.yml").exists():
         print(f"! no algorithms/{slug}/algorithm.yml here.")
@@ -126,7 +139,7 @@ def run_submit(args) -> int:
         # origin is already a fork (or some other pushable remote)
         push_remote, head_owner = "origin", origin.split("/")[0]
         print(f"  'origin' is {origin} — I'll push your branch there and open a PR to {UPSTREAM}.")
-        if not _confirm("  Proceed?"):
+        if not _confirm("  Proceed?", yes=yes):
             return 1
     else:
         push_remote, head_owner = _setup_fork(origin.split("/")[0] if origin else None)
@@ -135,18 +148,26 @@ def run_submit(args) -> int:
             return 1
 
     branch = f"submit/{slug}"
-    if not _confirm(f"  Create branch '{branch}' and commit algorithms/{slug}?"):
+    if not _confirm(f"  Create branch '{branch}' and commit algorithms/{slug}?", yes=yes):
         return 1
+    # A failed checkout (dirty tree, conflicting local changes) must stop us here — otherwise the
+    # commit below lands on whatever branch happens to be checked out (#197).
     if _git("rev-parse", "--verify", branch, capture_output=True).returncode == 0:
         print(f"  branch '{branch}' exists — checking it out.")
-        _git("checkout", branch)
+        checkout = _git("checkout", branch)
     else:
-        _git("checkout", "-b", branch)
-    _git("add", str(algo))
+        checkout = _git("checkout", "-b", branch)
+    if checkout.returncode != 0:
+        print(f"! git checkout '{branch}' failed (see git's message above) — nothing was committed. "
+              "Stash or commit your other changes and retry.")
+        return 1
+    if _git("add", str(algo)).returncode != 0:
+        print(f"! git add algorithms/{slug} failed — nothing was committed.")
+        return 1
     if _git("commit", "-m", f"Add {slug} submission", capture_output=True).returncode != 0:
         print("  (nothing new to commit — the folder is already committed on this branch)")
 
-    if not _confirm(f"  Push '{branch}' to '{push_remote}'?"):
+    if not _confirm(f"  Push '{branch}' to '{push_remote}'?", yes=yes):
         print(f"  Skipped. Push later with:  git push -u {push_remote} {branch}")
         return 0
     if _git("push", "-u", push_remote, branch).returncode != 0:
@@ -155,7 +176,7 @@ def run_submit(args) -> int:
         return 1
 
     if _has("gh"):
-        if _confirm("  Open the pull request now (in your browser)?"):
+        if _confirm("  Open the pull request now (in your browser)?", yes=yes):
             print("  opening a PR draft — nothing is submitted until you click Create.")
             subprocess.run(["gh", "pr", "create", "--repo", UPSTREAM, "--head", f"{head_owner}:{branch}",
                             "--web", "--title", f"Add {slug}",
