@@ -12,7 +12,9 @@
       var ds = "sim";
       if (h.indexOf("chi") > -1 || h.indexOf("separation") > -1) ds = "chisep";
       else if (h.indexOf("2016") > -1 || h.indexOf("vivo") > -1 || h.indexOf("cosmos") > -1) ds = "invivo";
-      var tab = ds === "sim" ? "&tab=info" : "";
+      // results.html reads the Info tab from `tab=info` for the in-silico dataset and from `sub=info`
+      // for χ-separation / in-vivo (their own per-dataset tab set) — see results.html init().
+      var tab = ds === "sim" ? "&tab=info" : "&sub=info";
       location.replace("results.html?dataset=" + ds + tab);
     })();
   </script>

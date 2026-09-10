@@ -135,6 +135,12 @@
       <p class="mt-1 text-gray-600 dark:text-gray-400">Every method per stage, every full-pipeline combination, and the patterns behind the numbers.</p>
     </div>
 
+    <!-- Load failure (results/index.json 404/5xx, offline): a visible error instead of the empty
+         "No results for this view yet." state the finally{loading=false} below would otherwise show. -->
+    <div x-show="loadError" x-cloak class="mt-6 rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-700 ring-1 ring-inset ring-red-100 dark:bg-red-500/10 dark:text-red-300 dark:ring-red-500/20" role="alert">
+      Could not load the results: <span x-text="loadError"></span>
+    </div>
+
     <!-- ===================== dataset tabs (top level) ===================== -->
     <div class="dtabs mt-6">
       <template x-if="hasChiSep()">
@@ -1609,6 +1615,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
       return {
         METRICS, STAGE_LABEL, MEDALS, fmt, val, INVIVO_COLS,
         runs: [], registry: {}, algos: [], datasetsReg: {}, loading: true, _ready: false,
+        loadError: "",   // set when the results index can't be fetched; rendered as a banner at the top
         // dataset (top level) + section tab state
         dataset: "sim",
         tab: "leaderboard", lbView: "pipelines", pipeView: "matrix", findView: "pipelines", view: "composed",
@@ -1738,6 +1745,9 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             if (!this.hasInvivo() && this.dataset === "invivo") this.dataset = "sim";
             if (!this.hasRepro() && this.dataset === "repro") this.dataset = "sim";
             if (!this.hasCross() && this.dataset === "cross") this.dataset = "sim";
+          } catch (e) {
+            this.loadError = (e && e.message) || String(e);   // loadRuns() throws on a non-OK fetch
+            console.error(e);
           } finally {
             this.loading = false;   // only reveal the empty-state once the fetch has actually resolved
           }
