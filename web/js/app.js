@@ -181,7 +181,12 @@ const STAGE_LABEL = {
 const MEDALS = ["🥇", "🥈", "🥉"];
 
 async function loadRuns() {
+  // Like loadRegistry(): check res.ok before parsing. A 404/5xx body isn't JSON, and letting
+  // res.json() throw leaves the caller with an opaque SyntaxError; throw a message every page can
+  // render as its error state instead (each caller catches and shows it — no page may sit on
+  // "Loading…" forever).
   const res = await fetch("results/index.json", { cache: "no-store" });
+  if (!res.ok) throw new Error(`could not load results/index.json (HTTP ${res.status})`);
   let runs = (await res.json()).runs || [];
   const algos = await loadAlgos();
   // Composed pipeline rows are stored with `name` == the raw "a+b+c" slug (pipeline.py). Present them

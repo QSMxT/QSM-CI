@@ -1066,8 +1066,9 @@ async function loadRun() {
   if (!hasError) showError = false;
   $("t-error").disabled = !hasError;
   $("t-error").checked = showError;
-  // Harmonization runs have no ground truth / error, so drop the error overlay.
-  if (reproMode) $("t-error").closest("label")?.classList.add("hidden");
+  // Harmonization runs have no ground truth / error, so drop the error overlay. Toggle (not add):
+  // the checkbox has to come BACK when switching in place from a harmonization run to a sim run.
+  $("t-error").closest("label")?.classList.toggle("hidden", reproMode);
   // The base layer persists across run switches, so it has to be one THIS run actually has —
   // swapping acquisition on the same pipeline keeps you on Field map, but moving to a pipeline
   // without that stage (or off the harmonization track entirely) falls back to the reconstruction
@@ -1617,6 +1618,10 @@ function windowFor(vol, kind, comp) {
 
 // Load one candidate map into nv.volumes (hidden) and tag it, unless already resident. `role` is
 // "base" (recon/truth) or "error". All bases are loaded before any error so the error stays on top.
+// Concurrent callers for the same URL (a superseded refreshView() and the one that replaced it, or
+// preloadAll() racing a click) share ONE in-flight load: each would otherwise see nothing resident
+// yet and fetch its own copy, leaving a duplicate volume behind.
+const inflightLoads = new Map();   // url → pending NiiVue load
 async function ensureVolume(role, kind, comp) {
   await resolveLocalTruth(kind, comp);
   const url = volUrlFor(kind, comp);
@@ -1625,8 +1630,13 @@ async function ensureVolume(role, kind, comp) {
   const cmap = role === "error"
     ? (errorCtl.cmapSelect.value === "diverging" ? "errpos" : errorCtl.cmapSelect.value)
     : (baseCtl.cmapSelect.value || "gray");
-  if (!nv.volumes.length) await nv.loadVolumes([{ url, colormap: cmap, opacity: 0 }]);
-  else await nv.addVolumeFromUrl({ url, colormap: cmap, opacity: 0 });
+  if (!inflightLoads.has(url)) {
+    const load = nv.volumes.length
+      ? nv.addVolumeFromUrl({ url, colormap: cmap, opacity: 0 })
+      : nv.loadVolumes([{ url, colormap: cmap, opacity: 0 }]);
+    inflightLoads.set(url, load.finally(() => inflightLoads.delete(url)));
+  }
+  await inflightLoads.get(url);
   v = residentByUrl(url);
   if (!v) return null;
   v.__role = role; v.__kind = kind; v.__comp = comp;
@@ -1664,7 +1674,18 @@ function applyOpacities() {
 // Reconcile the viewer with (curBase, chisepComp, showError) by toggling opacity on the resident,
 // preloaded volumes; a switch does NOT re-fetch. Only the first view of a run (or a not-yet-preloaded
 // map) actually loads data. On a new run the previous run's volumes are dropped and the set rebuilt.
+//
+// Stale-call guard (same token pattern as layerToken / wantRegions): selectRun() fires loadRun()
+// unawaited, so a fast second click starts a second refreshView() while the first is still awaiting
+// its fetch. Without a guard, run B clears nv.volumes, then run A's awaited addVolumeFromUrl resolves
+// and A's continuation sets activeBaseVol to A and paints it — the wrong volume, left resident. Every
+// await is followed by a token check; a superseded call returns without touching nv, activeBaseVol,
+// activeErrVol or the loading spinner (the newest call owns all of those). The volume a superseded
+// call's ensureVolume() had already added stays resident at opacity 0 (applyOpacities hides every
+// non-active volume) until the next run change drops it; it is never selected or shown.
+let viewToken = 0;
 async function refreshView() {
+  const token = ++viewToken;
   const baseKind = BASE_KINDS.has(curBase) ? curBase : "recon";
   const runChanged = residentRunId !== run.id;
   if (runChanged) {
@@ -1676,15 +1697,27 @@ async function refreshView() {
     || (needErr && !residentByUrl(volUrlFor("error", chisepComp)));
   if (pending) setLoading(true);
   try {
-    activeBaseVol = await ensureVolume("base", baseKind, chisepComp);   // the visible map (await)
+    const base = await ensureVolume("base", baseKind, chisepComp);      // the visible map (await)
+    if (token !== viewToken) return;                                    // superseded: a newer call owns the view
+    activeBaseVol = base;
     if (!activeBaseVol) throw new Error("base volume unavailable");     // → loadRun shows the fallback note
     if (!preloadPromise) preloadPromise = preloadAll();                 // background-load the rest
     // Reveal the error windowing section BEFORE setErrorColormap() so its canvas has a non-zero size
     // when the histogram first draws (a hidden display:none element reports clientWidth 0).
     $("win-error-section").classList.toggle("hidden", !showError);
-    if (needErr) { await preloadPromise; activeErrVol = await ensureVolume("error", "error", chisepComp); }
-    else activeErrVol = null;
-  } finally { if (pending) setLoading(false); }
+    if (needErr) {
+      await preloadPromise;
+      if (token !== viewToken) return;
+      const err = await ensureVolume("error", "error", chisepComp);
+      if (token !== viewToken) return;
+      activeErrVol = err;
+    } else activeErrVol = null;
+  } finally {
+    // Only the newest call may clear the spinner: a superseded call bailing out must not hide the
+    // "Loading volume…" overlay the newer (still-fetching) call is showing. The newest call always
+    // clears it, whether or not it fetched anything itself, so a stale call's spinner never sticks.
+    if (token === viewToken) setLoading(false);
+  }
   applyOpacities();
   if (activeErrVol) setErrorColormap();   // colormap (+ diverging negative), window, magnitude mode
   baseCtl.setup();                        // reframe the base histogram/window for the active map
@@ -1730,8 +1763,17 @@ function setErrorColormap() {
 }
 
 // ---- boot -------------------------------------------------------------------
+// The page boots on "Loading…" (sub-title); replace that with a visible error rather than leaving
+// the placeholder up when the results index can't be fetched (404/5xx, offline, bad JSON).
+function showBootError(e) {
+  $("sub-title").textContent = "Could not load results";
+  $("sub-meta").textContent = (e && e.message) || String(e);
+  console.error(e);
+}
 async function init() {
-  [allRuns, algos, registry, datasetsReg] = await Promise.all([loadRuns(), loadAlgos(), loadRegistry(), loadDatasets()]);
+  try {
+    [allRuns, algos, registry, datasetsReg] = await Promise.all([loadRuns(), loadAlgos(), loadRegistry(), loadDatasets()]);
+  } catch (e) { showBootError(e); return; }
   await ensureReproJson();   // eager so an in-silico pipeline can offer its harmonization analog
   const q = new URLSearchParams(location.search);
   // Shared control handlers (used by every dataset, harmonization included).
@@ -1777,4 +1819,4 @@ async function init() {
   buildSidebar();
   await loadRun();
 }
-init();
+init().catch(showBootError);   // anything else that breaks boot: surface it, never an eternal "Loading…"
