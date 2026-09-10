@@ -121,3 +121,43 @@ def test_a_recorded_path_still_needs_the_other_guards(tmp_path):
     """The record says a repoint happened; it does not override 'someone else references it'."""
     delete, keep = _split([A], repointed=[A], elsewhere=[A])
     assert delete == [] and keep[0][1] == "referenced by another index"
+
+
+# ---- copies whose run ALREADY points at a shared file -------------------------------------------
+# A run migrated by an earlier publish leaves its per-run copy behind with nothing referencing it and
+# no repoint record, so it is invisible to deletable() (never repointed) AND to publish_volumes'
+# --prune-flat (the run is live, so not retired). 75 of these survived the 2026-09 collapse.
+
+REPO = "qsmxt/qsm-ci-volumes"
+BASE = f"https://huggingface.co/datasets/{REPO}/resolve/main/"
+SHARED_P = "truth/p/chimap.nii.gz"
+
+
+def _rows(truth_url):
+    return [{"id": "runA", "volumes": {"truth": truth_url}}]
+
+
+def test_detected_when_the_run_points_at_identical_shared_bytes():
+    got = dd.already_shared([A], _rows(BASE + SHARED_P), REPO, {A: "s1", SHARED_P: "s1"})
+    assert got == {A}
+
+
+def test_not_detected_when_the_shared_bytes_differ():
+    """Different content means the run was scored against something else — never delete it."""
+    got = dd.already_shared([A], _rows(BASE + SHARED_P), REPO, {A: "s1", SHARED_P: "s2"})
+    assert got == set()
+
+
+def test_not_detected_when_the_run_still_points_at_the_legacy_file():
+    got = dd.already_shared([A], _rows(BASE + A), REPO, {A: "s1", SHARED_P: "s1"})
+    assert got == set()
+
+
+def test_not_detected_when_the_run_is_gone():
+    """A retired run is --prune-flat's business, and rests on different evidence."""
+    assert dd.already_shared([A], [], REPO, {A: "s1", SHARED_P: "s1"}) == set()
+
+
+def test_not_detected_without_a_sha_for_either_side():
+    assert dd.already_shared([A], _rows(BASE + SHARED_P), REPO, {A: "s1"}) == set()
+    assert dd.already_shared([A], _rows(BASE + SHARED_P), REPO, {SHARED_P: "s1"}) == set()
