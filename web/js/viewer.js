@@ -151,7 +151,12 @@ const ARTFILE = { phase: "phase.nii.gz", magnitude: "magnitude.nii.gz", mask: "m
   params: "params.json", totalfield: "totalfield.nii.gz", localfield: "localfield.nii.gz",
   chimap: "chimap.nii.gz", r2prime: "r2prime.nii.gz", "chi-para": "chi-para.nii.gz",
   "chi-dia": "chi-dia.nii.gz" };
-const escapeHtml = (s) => s.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+// Everything the manifest (algorithms.json ← contributor-authored algorithm.yml), index.json and the
+// Hub-hosted regions.json supply goes through this before it lands in innerHTML. Escapes quotes too, so
+// the same function is safe inside attribute values (data-tip="…", data-id="…").
+const escapeHtml = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+// Only http(s) URLs may become an href; anything else (javascript:, data:, a bare path) is dropped.
+const safeUrl = (u) => (typeof u === "string" && /^https?:\/\//i.test(u.trim())) ? escapeHtml(u.trim()) : null;
 
 function runLine(slug, stage, truth, inputs) {
   const io = STAGE_IO[stage];
@@ -472,8 +477,13 @@ function currentCombo() {
   if (cur?.mode === "isolated") { if (cur.stage === "dipole") c.dipole = cur.slug; if (cur.stage === "bfr") c.bfr = cur.slug; }
   return c;
 }
-function runItem(r, activeId) {
+// One sidebar row. `name` is the label to show (the run's own name, or the axis method's name on the
+// Pipelines view, where `r` may be null for a combination that was never run); it is escaped here, so
+// callers pass it raw. (It used to be spliced in with String.replace("%NAME%", …), which interprets
+// `$&` / `$'` / `` $` `` in a method name as replacement patterns.)
+function runItem(r, activeId, name) {
   const active = r && r.id === activeId;
+  const label_ = escapeHtml(name ?? (r ? r.name : ""));
   // χ-separation rows carry no plain xsim; headline the mean χ+/χ− per-ROI MSPE (the leaderboard's
   // ranking metric, following Ridani et al. 2026), falling back to detrended NRMSE where MSPE is absent.
   const m = (r && r.metrics) || {};
@@ -481,10 +491,10 @@ function runItem(r, activeId) {
   if (r && r.track === "repro") {
     const label = m.repro_inter != null ? (100 * m.repro_inter).toFixed(1) + "%" : "—";
     const active = r.id === activeId;
-    return `<button data-id="${r.id}"
+    return `<button data-id="${escapeHtml(r.id)}"
       class="run-item w-full text-left rounded-lg px-2.5 py-1.5 text-sm flex items-center justify-between gap-2 transition
         ${active ? "bg-indigo-50 text-indigo-700 font-medium dark:bg-indigo-500/15 dark:text-indigo-300" : "text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800"}">
-      <span class="truncate">%NAME%</span>
+      <span class="truncate">${label_}</span>
       <span class="shrink-0 tabular-nums text-xs ${active ? "text-indigo-500" : "text-gray-400"}" title="inter-scanner |a−1|">${label}</span>
     </button>`;
   }
@@ -499,10 +509,10 @@ function runItem(r, activeId) {
   else hv = r ? val(r, "xsim") : null;
   const label = r ? (r.status === "DNF" ? "DNF" : fmt(hv, hk)) : "—";
   const dis = !r || r.status === "DNF";
-  return `<button data-id="${r ? r.id : ""}"
+  return `<button data-id="${r ? escapeHtml(r.id) : ""}"
     class="run-item w-full text-left rounded-lg px-2.5 py-1.5 text-sm flex items-center justify-between gap-2 transition
       ${active ? "bg-indigo-50 text-indigo-700 font-medium dark:bg-indigo-500/15 dark:text-indigo-300" : "text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800"} ${!r ? "opacity-40 cursor-default" : ""}">
-    <span class="truncate">%NAME%</span>
+    <span class="truncate">${label_}</span>
     <span class="shrink-0 tabular-nums text-xs ${dis ? "text-gray-300 dark:text-gray-600" : active ? "text-indigo-500" : "text-gray-400"}">${label}</span>
   </button>`;
 }
@@ -531,7 +541,7 @@ function stagesHTML() {
   return ["field-mapping", "bfr", "dipole", "bfr+dipole", "unwrap+bfr", "end-to-end"].map((s) => {
     const rs = allRuns.filter((r) => r.mode === "isolated" && r.stage === s && (r.variant || "default") === "default" && !isInvivo(r) && (!f || r.name.toLowerCase().includes(f)))
       .sort(byName((r) => r.name));
-    return groupHTML("stage:" + s, STAGE_LABEL[s] || s, rs.map((r) => runItem(r, run?.id).replace("%NAME%", r.name)).join(""));
+    return groupHTML("stage:" + s, STAGE_LABEL[s] || s, rs.map((r) => runItem(r, run?.id, r.name)).join(""));
   }).join("") || `<p class="p-3 text-sm text-gray-400">No matches.</p>`;
 }
 function pipelinesHTML() {
@@ -544,7 +554,7 @@ function pipelinesHTML() {
       // Laplacian → QSMART); otherwise it swaps the field mapping of the bfr×dipole combo.
       const rn = kind === "fmap" ? (cur.span ? findSpan(m, cur.span) : findPipeline(m, cur.bfr, cur.dipole))
         : kind === "bfr" ? findPipeline(cur.fmap, m, cur.dipole) : findPipeline(cur.fmap, cur.bfr, m);
-      return runItem(rn, run?.id).replace("%NAME%", label(m));
+      return runItem(rn, run?.id, label(m));
     }).join("");
     return groupHTML("axis:" + kind, title, rows);
   };
@@ -559,7 +569,7 @@ function pipelinesHTML() {
   const spanGroup = (stage) => {
     const slugs = spanSlugs(stage).filter((m) => !f || algoName(m).toLowerCase().includes(f)).sort(byName(algoName));
     return groupHTML("span:" + stage, STAGE_LABEL[stage] || stage,
-      slugs.map((m) => runItem(stage === "bfr+dipole" ? findSpan(cur.fmap, m) : findEndToEnd(m), run?.id).replace("%NAME%", algoName(m))).join(""));
+      slugs.map((m) => runItem(stage === "bfr+dipole" ? findSpan(cur.fmap, m) : findEndToEnd(m), run?.id, algoName(m))).join(""));
   };
   const combinedSection = spanGroup("bfr+dipole") + spanGroup("end-to-end");
   return (matrix + combinedSection) ||
@@ -576,7 +586,7 @@ function chisepHTML() {
   const group = (key, label, pool) => groupHTML(key, label,
     uniq(pool.map((r) => r.slug)).map((slug) => chisepRunFor(slug, chisepPhantom))
       .sort(byName((r) => r.name))
-      .map((r) => runItem(r, run?.id).replace("%NAME%", r.name)).join(""));
+      .map((r) => runItem(r, run?.id, r.name)).join(""));
   // R2′ generators live on the same phantoms but are their own category: they estimate an input
   // (R2′ from GRE magnitude), they don't separate sources.
   return group("chisep:sep", "χ-separation", rs.filter((r) => r.stage !== "r2prime-generation"))
@@ -587,7 +597,7 @@ function invivoHTML() {
   const rs = invivoRuns().filter((r) => !f || r.name.toLowerCase().includes(f)).sort(byName((r) => r.name));
   if (!rs.length) return `<p class="p-3 text-sm text-gray-400">No in-vivo runs yet.</p>`;
   return groupHTML("invivo:dipole", STAGE_LABEL.dipole,
-    rs.map((r) => runItem(r, run?.id).replace("%NAME%", r.name)).join(""));
+    rs.map((r) => runItem(r, run?.id, r.name)).join(""));
 }
 // Mark the tab the open page comes from. The mark IS the amber label colour applied in buildSidebar —
 // nothing is added to the tab, so no label can be pushed onto a second line; this only carries the
@@ -853,7 +863,7 @@ function renderChisepPhantomSwitch() {
     const on = p === cur;
     return `<button data-phantom="${p}" class="rounded-md px-3 py-1.5 transition ${on
       ? "bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100"
-      : "text-gray-500 hover:text-gray-700 dark:text-gray-400"}">${phantomLabel(p)}</button>`;
+      : "text-gray-500 hover:text-gray-700 dark:text-gray-400"}">${escapeHtml(phantomLabel(p))}</button>`;
   }).join("");
   el.innerHTML = `<div class="flex flex-wrap items-center gap-3">
     <div class="inline-flex rounded-lg bg-gray-100 p-1 text-xs font-medium dark:bg-gray-800">${btns}</div>
@@ -889,9 +899,14 @@ function methodCard(a) {
   if (!a) return "";
   const links = [];
   const zdoi = doiFor(registry, a.slug);
-  if (zdoi) links.push(`<a href="${zdoi.url}" class="text-emerald-600 hover:underline" title="Cite this QSM-CI submission (Zenodo v${zdoi.version})">submission doi</a>`);
-  if (a.doi) links.push(`<a href="https://doi.org/${a.doi}" class="text-indigo-600 hover:underline">paper doi</a>`);
-  if (a.code_url) links.push(`<a href="${a.code_url}" class="text-indigo-600 hover:underline">source code</a>`);
+  // Every field below is contributor-authored (algorithm.yml → algorithms.json) or registry data:
+  // escaped into text/attributes, and only http(s) URLs become links.
+  const E = escapeHtml;
+  const zurl = zdoi && safeUrl(zdoi.url);
+  if (zurl) links.push(`<a href="${zurl}" class="text-emerald-600 hover:underline" title="Cite this QSM-CI submission (Zenodo v${E(zdoi.version)})">submission doi</a>`);
+  if (a.doi) links.push(`<a href="https://doi.org/${E(encodeURI(String(a.doi)))}" class="text-indigo-600 hover:underline">paper doi</a>`);
+  const curl = safeUrl(a.code_url);
+  if (curl) links.push(`<a href="${curl}" class="text-indigo-600 hover:underline">source code</a>`);
   // A parameter may carry a `tuned:` value: the setting optimised on the QSM-CI scoring phantom,
   // shown next to the method's usual `default:`. Only disclosed (submission page); the leaderboard
   // still ranks methods at their defaults.
@@ -909,16 +924,16 @@ function methodCard(a) {
   const hasIv  = plist.some((p) => tunedVal(p, "invivo") != null);
   const hasCs  = plist.some((p) => tunedVal(p, "chisep") != null);
   const cell = (v) => v != null
-    ? `<span class="text-emerald-600 dark:text-emerald-400">⚙ ${v}</span>`
+    ? `<span class="text-emerald-600 dark:text-emerald-400">⚙ ${E(v)}</span>`
     : `<span class="text-gray-300 dark:text-gray-600">—</span>`;
   const params = plist.map((p) =>
     `<tr class="border-t border-gray-100 dark:border-gray-800">`
-    + `<td class="py-1 pr-3 font-mono text-gray-700 dark:text-gray-300">${p.name}</td>`
-    + `<td class="py-1 pr-3 tabular-nums text-gray-500 dark:text-gray-400">${p.default}</td>`
+    + `<td class="py-1 pr-3 font-mono text-gray-700 dark:text-gray-300">${E(p.name)}</td>`
+    + `<td class="py-1 pr-3 tabular-nums text-gray-500 dark:text-gray-400">${E(p.default)}</td>`
     + (hasSim ? `<td class="py-1 pr-3 tabular-nums">${cell(tunedVal(p, "sim"))}</td>` : "")
     + (hasIv  ? `<td class="py-1 pr-3 tabular-nums">${cell(tunedVal(p, "invivo"))}</td>` : "")
     + (hasCs  ? `<td class="py-1 pr-3 tabular-nums">${cell(tunedVal(p, "chisep"))}</td>` : "")
-    + `<td class="py-1 text-gray-400 dark:text-gray-500">${p.description || ""}</td></tr>`
+    + `<td class="py-1 text-gray-400 dark:text-gray-500">${E(p.description || "")}</td></tr>`
   ).join("");
   const th = (lab, tip) => `<th class="py-1 pr-3 font-normal"><span class="has-tip text-emerald-600 dark:text-emerald-400" data-tip="${tip}">${lab}</span></th>`;
   const paramHead = (hasSim || hasIv || hasCs)
@@ -930,16 +945,16 @@ function methodCard(a) {
     : "";
   return `<div>
     <div class="flex items-baseline gap-2">
-      <span class="font-medium text-gray-900 dark:text-gray-100">${a.name}</span>
-      <span class="text-xs text-gray-400">${a.stage ? (STAGE_LABEL[a.stage] || a.stage) : ""}</span>
+      <span class="font-medium text-gray-900 dark:text-gray-100">${E(a.name)}</span>
+      <span class="text-xs text-gray-400">${a.stage ? E(STAGE_LABEL[a.stage] || a.stage) : ""}</span>
     </div>
-    <p class="mt-0.5 text-sm text-gray-600 dark:text-gray-400">${a.description || ""}</p>
+    <p class="mt-0.5 text-sm text-gray-600 dark:text-gray-400">${E(a.description || "")}</p>
     ${(a.ci_notes && a.ci_notes.length) ? `<div class="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
       <div class="flex items-center gap-1.5 font-semibold"><span aria-hidden="true">⚠</span> How QSM-CI runs this</div>
-      <ul class="mt-1 list-disc space-y-0.5 pl-4 marker:text-amber-400">${a.ci_notes.map((n) => `<li>${n}</li>`).join("")}</ul>
+      <ul class="mt-1 list-disc space-y-0.5 pl-4 marker:text-amber-400">${a.ci_notes.map((n) => `<li>${E(n)}</li>`).join("")}</ul>
     </div>` : ""}
     ${params ? `<table class="mt-2 w-full text-xs">${paramHead}<tbody>${params}</tbody></table>` : ""}
-    ${(a.citation || links.length) ? `<p class="mt-1.5 text-xs text-gray-400 dark:text-gray-500">${a.citation || ""} ${links.length ? "· " + links.join(" · ") : ""}</p>` : ""}
+    ${(a.citation || links.length) ? `<p class="mt-1.5 text-xs text-gray-400 dark:text-gray-500">${E(a.citation || "")} ${links.length ? "· " + links.join(" · ") : ""}</p>` : ""}
   </div>`;
 }
 function renderMethodInfo() {
@@ -982,7 +997,6 @@ async function loadRun() {
     variantToggleHTML();
   $("sub-badges").querySelectorAll("[data-variant-id]").forEach((b) =>
     b.addEventListener("click", () => selectRun(b.dataset.variantId)));
-  $("sub-meta").innerHTML = "";
   renderMethodInfo();
   renderHowToRun();
   renderDatasetSwitch();
@@ -1319,7 +1333,7 @@ function renderRegionTable(entry, errorMode) {
       const bw = Math.sqrt(Math.abs(r.d) / dmax) * 50;
       const wPos = r.d > 0 ? bw : 0, wNeg = r.d < 0 ? bw : 0;
       html += `<tr>
-        <td class="py-1.5 pr-1 leading-tight text-gray-500 dark:text-gray-400"><span data-tip="n=${r.n} voxels in this run's support">${block.labels[r.k] || "label-" + r.k}</span></td>
+        <td class="py-1.5 pr-1 leading-tight text-gray-500 dark:text-gray-400"><span data-tip="n=${r.n} voxels in this run's support">${escapeHtml(block.labels[r.k] || "label-" + r.k)}</span></td>
         <td class="whitespace-nowrap py-1.5 pl-2 text-right tabular-nums font-medium ${Math.abs(r.d) >= 0.01 ? "text-gray-900 dark:text-gray-100" : "text-gray-600 dark:text-gray-300"}">${p3(r.d)}</td>
         <td class="whitespace-nowrap py-1.5 pl-2 text-right tabular-nums text-gray-600 dark:text-gray-300">${p3(r.dm)}</td>
         <td class="whitespace-nowrap py-1.5 pl-2 text-right tabular-nums text-gray-600 dark:text-gray-300">${r.pct == null ? ", " : (r.pct > 0 ? "+" : "−") + Math.abs(r.pct).toFixed(0) + "%"}</td>
@@ -1344,7 +1358,7 @@ function renderRegionTable(entry, errorMode) {
     ids.forEach((k) => {
       const rc = block.recon[k], gt = block.truth[k];
       html += `<tr>
-        <td class="py-1.5 pr-1 align-top leading-tight text-gray-500 dark:text-gray-400"><span data-tip="n=${rc.n} voxels in this run's support">${block.labels[k] || "label-" + k}</span></td>
+        <td class="py-1.5 pr-1 align-top leading-tight text-gray-500 dark:text-gray-400"><span data-tip="n=${rc.n} voxels in this run's support">${escapeHtml(block.labels[k] || "label-" + k)}</span></td>
         ${cell(rc, true)}${cell(gt, false)}</tr>`;
     });
     html += `</tbody></table>`;
