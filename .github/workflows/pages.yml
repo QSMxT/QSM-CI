@@ -66,6 +66,19 @@ jobs:
           rm -rf _site/examples; cp -r examples _site/examples   # Run page showcases the engine examples
           rm -f _site/registry.json; cp qsm_ci/registry.json _site/registry.json  # method DOIs (drop the web/ symlink first)
 
+      # Cache-busting. Pages serves everything with max-age=600, and the JSON is fetched with
+      # cache:"no-store" — so for up to ten minutes after a deploy a viewer could run the OLD app.js /
+      # viewer.js / styles.css against the NEW index.json. Stamp the commit onto every local script and
+      # stylesheet reference (and the ES-module imports inside js/, which the browser also caches), so a
+      # deploy is a new URL. Done here on the assembled copy only: the source files stay unstamped so
+      # `python3 -m http.server` on web/ keeps working unchanged.
+      - name: Stamp local JS/CSS references with the commit
+        run: |
+          v="${GITHUB_SHA::8}"
+          sed -i -E "s#(src|href)=\"(js/[A-Za-z0-9_./-]+\.js|styles\.css)\"#\1=\"\2?v=$v\"#g" _site/*.html
+          sed -i -E "s#from \"(\./[A-Za-z0-9_./-]+\.js)\"#from \"\1?v=$v\"#g" _site/js/*.js
+          grep -o '"[A-Za-z0-9_./-]*\.\(js\|css\)?v=[0-9a-f]*"' _site/*.html _site/js/*.js | sort | uniq -c
+
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with: { path: _site }

@@ -16,12 +16,14 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
   <script src="js/app.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.15.12/dist/cdn.min.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
-  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <!-- Third-party assets are pinned AND subresource-integrity checked (tests/test_web_sri.py). To bump a
+       version, recompute: curl -s <url> | openssl dgst -sha384 -binary | openssl base64 -A -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.15.12/dist/cdn.min.js" integrity="sha384-pb6hrQvo4s23cEUFtj0CZkzGE3jyK3pj26RIupXXxhSrrcUA/Cn0lZgcCrGH0t6L" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" integrity="sha384-wH75j6z1lH97ZOpMOInqhgKzFkAInZPPSPlZpYKYTOqsaizPvhQZmAtLcPKXpLyH" crossorigin="anonymous" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha384-F/bZzf7p3Joyp5psL90p/p89AZJsndkSoGwRpXcZhleCWhd8SnRuoYo4d0yirjJp" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+" crossorigin="anonymous" />
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous"></script>
   <script>window.addEventListener("DOMContentLoaded",function(){
     document.querySelectorAll("pre code.language-bash").forEach(function(el){if(window.hljs)window.hljs.highlightElement(el);});
     if(window.renderMathInElement)renderMathInElement(document.body,{delimiters:[{left:"$$",right:"$$",display:true},{left:"\\(",right:"\\)",display:false}],throwOnError:false});
@@ -91,6 +93,16 @@
     tr.tuned-row td:first-child{background:rgb(245 254 249);box-shadow:inset 3px 0 0 rgb(5 150 105/.6)}
     html.dark tr.tuned-row td{background:rgb(16 185 129/.08)}
     html.dark tr.tuned-row td:first-child{background:rgb(17 37 40);box-shadow:inset 3px 0 0 rgb(52 211 153/.55)}
+
+    /* Keyboard focus. Leaderboard rows are role=link (Tab to reach, Enter/Space to open): styled per-cell
+       for the same sticky-first-cell reason as tuned rows. Findings marks (data-run / data-repro) are
+       made focusable at render time (see init); the outline works on SVG elements in current browsers
+       and the stroke is the belt-and-braces for the ones where it doesn't. */
+    tr[role=link]:focus{outline:none}
+    tr[role=link]:focus-visible td{background:rgb(209 250 229/.7)}
+    tr[role=link]:focus-visible td:first-child{box-shadow:inset 3px 0 0 rgb(5 150 105)}
+    html.dark tr[role=link]:focus-visible td{background:rgb(16 185 129/.18)}
+    [data-run]:focus-visible,[data-repro]:focus-visible{outline:2px solid rgb(5 150 105);outline-offset:2px;stroke:rgb(5 150 105);stroke-width:2.5px}
 
     /* The pipeline table is one long name plus six numeric columns — wider than the 72rem page. Break
        it out towards the viewport so the whole row fits on a large screen. Nothing wraps: on a screen
@@ -362,7 +374,7 @@
             </thead>
             <tbody class="divide-y divide-gray-100">
               <template x-for="(r, i) in rows" :key="r.id">
-                <tr @click="go(r)" class="group cursor-pointer" :class="(r.status==='DNF' ? 'opacity-50 ' : '') + (r.variant==='tuned' ? 'tuned-row' : '')">
+                <tr @click="go(r)" @keydown.enter.prevent="go(r)" @keydown.space.prevent="go(r)" role="link" :tabindex="r.status==='DNF' ? -1 : 0" :aria-disabled="r.status==='DNF'" class="group cursor-pointer" :class="(r.status==='DNF' ? 'opacity-50 ' : '') + (r.variant==='tuned' ? 'tuned-row' : '')">
                   <td class="px-4 py-3 text-right tabular-nums text-gray-400 sticky left-0 bg-white group-hover:bg-emerald-50/40" style="min-width:4rem"><span x-text="i+1"></span><span x-show="rankDelta(r.slug,i)!==0" :class="rankDelta(r.slug,i)>0?'text-emerald-600':'text-rose-400'" class="ml-0.5 text-[10px] font-semibold align-top" :title="rankDelta(r.slug,i)>0 ? ('up '+rankDelta(r.slug,i)+' vs default') : ('down '+Math.abs(rankDelta(r.slug,i))+' vs default')" x-text="(rankDelta(r.slug,i)>0?'▲':'▼')+Math.abs(rankDelta(r.slug,i))"></span></td>
                   <td class="px-5 py-3 text-left font-medium text-gray-900 sticky bg-white group-hover:bg-emerald-50/40" style="left:4rem">
                     <span class="mr-1.5 inline-block w-5 text-center" x-text="medal(i)"></span>
@@ -739,7 +751,7 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
           </thead>
           <tbody class="divide-y divide-gray-100">
             <template x-for="(r,i) in chiSepRows()" :key="r.id">
-              <tr @click="go(r)" class="group cursor-pointer" :class="(r.status==='DNF' ? 'opacity-50 ' : '') + (r.variant==='tuned' ? 'tuned-row' : '')">
+              <tr @click="go(r)" @keydown.enter.prevent="go(r)" @keydown.space.prevent="go(r)" role="link" :tabindex="r.status==='DNF' ? -1 : 0" :aria-disabled="r.status==='DNF'" class="group cursor-pointer" :class="(r.status==='DNF' ? 'opacity-50 ' : '') + (r.variant==='tuned' ? 'tuned-row' : '')">
                 <td class="px-4 py-3 text-right tabular-nums text-gray-400 sticky left-0 bg-white group-hover:bg-emerald-50/40" style="min-width:4rem"><span x-text="i+1"></span><span x-show="rankDelta(r.slug,i)!==0" :class="rankDelta(r.slug,i)>0?'text-emerald-600':'text-rose-400'" class="ml-0.5 text-[10px] font-semibold align-top" :title="rankDelta(r.slug,i)>0 ? ('up '+rankDelta(r.slug,i)+' vs default') : ('down '+Math.abs(rankDelta(r.slug,i))+' vs default')" x-text="(rankDelta(r.slug,i)>0?'▲':'▼')+Math.abs(rankDelta(r.slug,i))"></span></td>
                 <td class="px-5 py-3 text-left font-medium text-gray-900 sticky bg-white group-hover:bg-emerald-50/40" style="left:4rem">
                   <span class="mr-1.5 inline-block w-5 text-center" x-text="medal(i)"></span>
@@ -788,7 +800,7 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
           </thead>
           <tbody class="divide-y divide-gray-100">
             <template x-for="r in chisepGenRows()" :key="r.id">
-              <tr @click="go(r)" class="group cursor-pointer" :class="(r.status==='DNF' ? 'opacity-50 ' : '') + (r.variant==='tuned' ? 'tuned-row' : '')">
+              <tr @click="go(r)" @keydown.enter.prevent="go(r)" @keydown.space.prevent="go(r)" role="link" :tabindex="r.status==='DNF' ? -1 : 0" :aria-disabled="r.status==='DNF'" class="group cursor-pointer" :class="(r.status==='DNF' ? 'opacity-50 ' : '') + (r.variant==='tuned' ? 'tuned-row' : '')">
                 <td class="px-5 py-3 text-left font-medium text-gray-900 group-hover:bg-emerald-50/40">
                   <span x-text="r.name"></span>
                   <span x-show="r.slug===chisepBestGen()" class="ml-2 rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700" data-tip="Best fidelity to the true R2′ on this phantom (lowest detrended NRMSE: scale-independent, so a well-scaled copy of R2* can't win on scale alone); the leaderboard above feeds this substitute (at default parameters) to every R2′-consuming method.">supplies R2′ above</span>
@@ -1006,7 +1018,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             </thead>
             <tbody class="divide-y divide-gray-100">
               <template x-for="(r,i) in invivoRows()" :key="r.id">
-                <tr @click="go(r)" class="group cursor-pointer" :class="(r.status==='DNF' ? 'opacity-50 ' : '') + (r.variant==='tuned' ? 'tuned-row' : '')">
+                <tr @click="go(r)" @keydown.enter.prevent="go(r)" @keydown.space.prevent="go(r)" role="link" :tabindex="r.status==='DNF' ? -1 : 0" :aria-disabled="r.status==='DNF'" class="group cursor-pointer" :class="(r.status==='DNF' ? 'opacity-50 ' : '') + (r.variant==='tuned' ? 'tuned-row' : '')">
                   <td class="px-4 py-3 text-right tabular-nums text-gray-400 sticky left-0 bg-white group-hover:bg-emerald-50/40" style="min-width:4rem"><span x-text="i+1"></span><span x-show="rankDelta(r.slug,i)!==0" :class="rankDelta(r.slug,i)>0?'text-emerald-600':'text-rose-400'" class="ml-0.5 text-[10px] font-semibold align-top" :title="rankDelta(r.slug,i)>0 ? ('up '+rankDelta(r.slug,i)+' vs default') : ('down '+Math.abs(rankDelta(r.slug,i))+' vs default')" x-text="(rankDelta(r.slug,i)>0?'▲':'▼')+Math.abs(rankDelta(r.slug,i))"></span></td>
                   <td class="px-5 py-3 text-left font-medium text-gray-900 sticky bg-white group-hover:bg-emerald-50/40" style="left:4rem">
                     <span class="mr-1.5 inline-block w-5 text-center" x-text="invMedal(i)"></span>
@@ -1282,7 +1294,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
               </thead>
               <tbody class="divide-y divide-gray-100">
                 <template x-for="(row,i) in reproPipeRows()" :key="row.slug">
-                  <tr @click="goRepro(row.slug)" class="group cursor-pointer">
+                  <tr @click="goRepro(row.slug)" @keydown.enter.prevent="goRepro(row.slug)" @keydown.space.prevent="goRepro(row.slug)" role="link" tabindex="0" class="group cursor-pointer">
                     <td class="px-4 py-3 text-right tabular-nums text-gray-400 group-hover:bg-emerald-50/40" x-text="i+1"></td>
                     <td class="px-5 py-3 text-left font-medium text-gray-900 group-hover:bg-emerald-50/40 group-hover:text-emerald-700" x-text="row.name"></td>
                     <td class="px-4 py-3 text-right tabular-nums group-hover:bg-emerald-50/40" :class="reproSortKey==='tr'?'font-semibold text-gray-900':'text-gray-600'"><span x-text="row.tr"></span> <span class="text-xs text-gray-400" :title="_altStatLabel()" x-text="row.trAlt"></span></td>
@@ -1604,10 +1616,12 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         if (c && c.key === key) return c.val;
         const val = fn(); _memo[name] = { key, val }; return val;
       };
-      // approximate method-family taxonomy (for findings colouring only). Unknown → iterative.
-      const DL = new Set(["qsmnet","qsmnet-plus","qsmgan","xqsm","lpcnn","modl-qsm","hdqsm-qsmrs","ir2qsm","iqsm","iqsm+","autoqsm","inr-qsm","modip","deepqsm"]);
-      const DIRECT = new Set(["tkd-qsmrs","tkd-qsmci","tsvd-qsmrs","tikhonov-qsmrs"]);
+      // Method-family colouring for the findings figures. The family itself comes from each method's
+      // manifest `family:` (algorithm.yml → algorithms.json) via _fam(); these are the three buckets the
+      // figures draw: deep-learning → dl, direct → direct, everything else (iterative, bayesian,
+      // model-based, undeclared) → iter.
       const FAM = { dl: { label: "Deep learning", c: "#6366f1" }, iter: { label: "Iterative", c: "#10b981" }, direct: { label: "Direct / k-space", c: "#f59e0b" } };
+      const FAM_OF = { "deep-learning": "dl", direct: "direct" };
       // Stages whose method produces the final χ map (i.e. performs dipole inversion): a pure dipole step,
       // a combined background-removal+dipole method (TGV/NeXtQSM/…), or an end-to-end method (iQSM/…).
       const CHI_STAGES = new Set(["dipole", "bfr+dipole", "end-to-end"]);
@@ -1775,6 +1789,30 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             const rp = e.target.closest && e.target.closest("[data-repro]");
             if (rp && rp.dataset.repro) this.goRepro(rp.dataset.repro);
           });
+          // Keyboard equivalent of the delegated click: every injected mark is focusable (below), and
+          // Enter/Space on a focused mark opens the same page the click would.
+          this.$root.addEventListener("keydown", (e) => {
+            if (e.key !== "Enter" && e.key !== " ") return;
+            const el = e.target;
+            if (!el.matches || !el.matches("[data-run],[data-repro]")) return;
+            e.preventDefault();
+            if (el.dataset.run) location.href = "submission.html?run=" + encodeURIComponent(el.dataset.run);
+            else if (el.dataset.repro) this.goRepro(el.dataset.repro);
+          });
+          // The figures are SVG strings dropped in via x-html, so their marks are plain <circle>/<g>
+          // elements: mouse-only and invisible to keyboard and screen-reader users. Rather than editing
+          // every figure builder, make each mark a focusable link as it lands in the DOM, named by the
+          // tooltip text it already carries. Runs once per render (childList mutations), so cheap.
+          const a11y = (root) => {
+            const q = root.querySelectorAll ? root.querySelectorAll("[data-run]:not([tabindex]),[data-repro]:not([tabindex])") : [];
+            q.forEach((n) => {
+              n.setAttribute("tabindex", "0"); n.setAttribute("role", "link");
+              const tip = n.getAttribute("data-tip") || n.textContent.trim();
+              if (tip && !n.hasAttribute("aria-label")) n.setAttribute("aria-label", tip);
+            });
+          };
+          a11y(this.$root);
+          new MutationObserver((muts) => muts.forEach((m) => m.addedNodes.forEach(a11y))).observe(this.$root, { childList: true, subtree: true });
           // Regions figure: hover a dot or legend entry (data-algo) to highlight that method across
           // every region and dim the rest. Direct opacity toggles (not Alpine state) so it's instant
           // and never re-renders the SVG; base dot opacity is an SVG attribute, so clearing the inline
@@ -2305,8 +2343,11 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
               const yc = padT + i * rh + rh / 2 - 6;
               // `rdot` opts this dot into the shared hover-highlight (data-algo): hovering one pipeline
               // lights it in every protocol row and dims the rest of the cloud hard enough to see it.
+              // tabindex=-1 keeps this ~2000-dot cloud out of the Tab order (the a11y pass in init()
+              // makes every other data-run/data-repro mark focusable); the table below carries the
+              // same pipelines as keyboard-reachable rows.
               r.pts.forEach((p) => {
-                s += `<circle class="rdot" data-algo="${this._esc(p.slug)}" data-repro="${this._esc(p.slug)}" `
+                s += `<circle class="rdot" tabindex="-1" data-algo="${this._esc(p.slug)}" data-repro="${this._esc(p.slug)}" `
                    + `data-tip="${this._esc(`${this.reproName(p.slug)} — ${r.label}: ${fmtv(p.v)}`)}" `
                    + `cx="${X(p.v)}" cy="${yc + this._jitter(p.slug) * 14}" r="1.9" fill="${C}" opacity="0.16"/>`;
               });
@@ -3183,9 +3224,17 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         // ==================================================================================
         //  FINDINGS
         // ==================================================================================
-        _esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); },
+        // Escapes for BOTH text and attribute context: every figure interpolates method names (from
+        // the manifest) into data-tip="…" / data-algo="…" / aria-label="…" as well as into <text>.
+        _esc(s) { return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); },
         disp(slug) { return slug === "gt" ? "Ground truth" : this.algoName(slug); },
-        _fam(slug) { return DL.has(slug) ? "dl" : DIRECT.has(slug) ? "direct" : "iter"; },
+        // A composed "a+b+c" slug is classed by its final (χ-producing) step, which is what every
+        // family-coloured figure is about; isolated rows and combo.dipole are single slugs already.
+        _fam(slug) {
+          const s = String(slug || "").split("+").pop();
+          const a = this.algos.find((x) => x.slug === s);
+          return FAM_OF[a && a.family] || "iter";
+        },
         _famC(slug) { return FAM[this._fam(slug)].c; },
         _runId(slug) { const r = this.runs.find((x) => x.mode === "isolated" && !this._isInvivo(x) && x.stage === "dipole" && x.slug === slug && (x.variant || "default") === "default"); return r ? r.id : ""; },
         _pt(slug, tip) { const id = this._runId(slug); return `data-tip="${this._esc(tip)}"` + (id ? ` data-run="${id}"` : ""); },
@@ -3230,7 +3279,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         // pretrained network as a ceiling. Classical methods look weak at defaults and leap toward the
         // learned ceiling once tuned; the payoff is far larger in vivo than on the phantom.
         get ivTuningRows() {
-          return _cache("ivtune", this.runs.length, () => {
+          return _cache("ivtune", this.runs.length + "|" + this.algos.length, () => {
             const by = {};
             this._invivo().filter((r) => r.mode === "isolated" && r.stage === "dipole" && val(r, "xsim") != null)
               .forEach((r) => { (by[r.slug] ||= {})[r.variant || "default"] = val(r, "xsim"); });
@@ -3272,7 +3321,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         // datasets (same single knob), its in-silico optimum vs its in-vivo optimum on a log axis:
         // in vivo sits systematically higher (heavier regularisation for real-data noise).
         get optShiftRows() {
-          return _cache("optshift", this.runs.length, () => {
+          return _cache("optshift", this.runs.length + "|" + this.algos.length, () => {
             const pick = (inv) => {
               const by = {};
               this.runs.filter((r) => r.mode === "isolated" && r.stage === "dipole" && r.variant === "tuned" && this._isInvivo(r) === inv && r.params && Object.keys(r.params).length === 1)
@@ -3325,7 +3374,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
 
         // In-vivo · COSMOS vs STI reference agreement (points below the diagonal = STI is the harder target).
         get ivRefScatterSVG() {
-          return _cache("ivref", this.runs.length, () => {
+          return _cache("ivref", this.runs.length + "|" + this.algos.length, () => {
             const E = this._esc;
             const rows = this._ivDip().map((r) => ({ slug: r.slug, name: this.algoName(r.slug), x: val(r, "xsim"), y: val(r, "xsim_sti"), fam: this._fam(r.slug) })).filter((p) => p.x != null && p.y != null);
             if (rows.length < 2) return "<svg></svg>";
@@ -3350,7 +3399,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
 
         // In-vivo · do the two agreement metrics (NRMSE, HFEN) rank methods the same?
         get ivHfenNrmseSVG() {
-          return _cache("ivhn", this.runs.length, () => {
+          return _cache("ivhn", this.runs.length + "|" + this.algos.length, () => {
             const E = this._esc;
             const rows = this._ivDip().map((r) => ({ slug: r.slug, name: this.algoName(r.slug), x: val(r, "nrmse"), y: val(r, "hfen"), fam: this._fam(r.slug) })).filter((p) => p.x != null && p.y != null);
             if (rows.length < 2) return "<svg></svg>";
@@ -3403,7 +3452,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
 
         // Cross-dataset · in-silico xSIM vs in-vivo (COSMOS) xSIM, coloured by family; the money shot.
         get crossScatterSVG() {
-          return _cache("xsc", this.runs.length, () => {
+          return _cache("xsc", this.runs.length + "|" + this.algos.length, () => {
             const E = this._esc, rows = this._crossDip();
             if (rows.length < 3) return "<svg></svg>";
             const w = 720, h = 460, pl = 52, pr = 20, pt = 22, pb = 46;
@@ -3430,7 +3479,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
 
         // Cross-dataset · rank slope chart (in-silico rank → in-vivo rank), lines coloured by family.
         get crossBumpSVG() {
-          return _cache("xbump", this.runs.length, () => {
+          return _cache("xbump", this.runs.length + "|" + this.algos.length, () => {
             const E = this._esc, rows = this._crossDip();
             if (rows.length < 3) return "<svg></svg>";
             [...rows].sort((a, b) => b.si - a.si).forEach((r, i) => { r.sR = i; });
@@ -3454,7 +3503,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
 
         // Cross-dataset · mean xSIM by family on each dataset (the robustness gap).
         get crossBarsSVG() {
-          return _cache("xbar", this.runs.length, () => {
+          return _cache("xbar", this.runs.length + "|" + this.algos.length, () => {
             const E = this._esc, rows = this._crossDip();
             if (rows.length < 3) return "<svg></svg>";
             const order = ["dl", "iter", "direct"];
@@ -3588,7 +3637,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           });
         },
         get dipoleStabilitySVG() {
-          return _cache("dipstab", this.runs.length, () => {
+          return _cache("dipstab", this.runs.length + "|" + this.algos.length, () => {
             const { bfrs, rows } = this._dipoleStability();
             if (bfrs.length < 3) return "<svg></svg>";
             const n = rows.length, rh = 17, top = 42, padL = 134, padR = 28, w = 620, h = top + n * rh + 18, maxr = n;
