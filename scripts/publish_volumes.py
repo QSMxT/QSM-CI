@@ -388,6 +388,17 @@ def flat_orphans(files, known_ids: set, live_paths: set) -> tuple[list, float]:
     return sorted(orphans), (live / total if total else 1.0)
 
 
+def _annotate(msg: str) -> None:
+    """Surface a problem where CI actually shows it — an annotation on the run, not just stderr."""
+    if os.environ.get("GITHUB_ACTIONS"):
+        print(f"::error title=Incomplete volume publish::{msg}")
+        summary = os.environ.get("GITHUB_STEP_SUMMARY")
+        if summary:
+            with open(summary, "a") as fh:
+                fh.write(f"\n> **Incomplete volume publish** — {msg}\n")
+    print(f"! {msg}", file=sys.stderr)
+
+
 def _repo_path(url: str, repo: str) -> "str | None":
     """The in-repo path a download URL points at, or None if it is not this repo's URL."""
     base = _url(repo, "")
@@ -679,6 +690,21 @@ def main() -> int:
                    superseded - _indexed_paths(rows, repo))
             if prune_flat:
                 _prune_flat(api, repo, rows, extra_indexes, prune_dry)
+
+    if failed:
+        # Committing the index without these runs' URLs is deliberate — losing a whole rescore
+        # because the Hub was briefly down would be worse. What was wrong is that it happened
+        # SILENTLY: rc=0 under `continue-on-error: true` is a green job whose only trace is a `!`
+        # line in a log nobody reads, and nothing retries short of another full rescore. On a
+        # 47-batch publish one failed batch is ~1,000 runs quietly missing their volumes.
+        missing = sorted({rid for rid, _, name in refs if name not in landed})
+        _annotate(f"{failed} volume file(s) failed to upload; {len(missing)} run(s) have no volume "
+                  f"URLs in index.json and need a re-publish")
+        (target.parent / "publish-incomplete.json").write_text(json.dumps(
+            {"failed_files": failed, "runs": missing}, indent=2) + "\n")
+        print(f"! {len(missing)} run(s) left without volume URLs — listed in "
+              f"{target.parent / 'publish-incomplete.json'}", file=sys.stderr)
+        return 2                      # distinct from 1 (hard error): index written, volumes partial
     return 0
 
 

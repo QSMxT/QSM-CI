@@ -497,13 +497,13 @@
 
           <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
             <h3 class="text-lg font-semibold text-gray-900">Error compounds through the pipeline</h3>
-            <p class="mt-2 text-sm text-gray-600 leading-relaxed">The best achievable xSIM (blue) and the median (green box = interquartile range) at three pipeline depths: dipole inversion alone from the ground-truth local field, then with real background removal added (from the ground-truth total field), then a full pipeline from raw phase. Each real upstream stage roughly halves the median and caps the best: the ceiling falls from <span class="font-semibold">0.78 → 0.68 → 0.39</span>. Upstream error is never recovered downstream, so a method's isolated score badly overstates its end-to-end result.</p>
+            <p class="mt-2 text-sm text-gray-600 leading-relaxed">The best achievable xSIM (blue) and the median (green box = interquartile range) at three pipeline depths: dipole inversion alone from the ground-truth local field, then with real background removal added (from the ground-truth total field), then a full pipeline from raw phase. Each real upstream stage roughly halves the median and caps the best: the ceiling falls from <span class="font-semibold" x-text="cascadeCeilings()"></span>. Upstream error is never recovered downstream, so a method's isolated score badly overstates its end-to-end result.</p>
             <div class="mt-5 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="cascadeSVG"></div>
           </div>
 
           <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
             <h3 class="text-lg font-semibold text-gray-900">Pick your dipole independently of background removal</h3>
-            <p class="mt-2 text-sm text-gray-600 leading-relaxed">For each dipole method, its rank among dipoles (dot = mean, bar = min–max) across the eight strong background-removal methods. Most bars are tight: the dipole ranking barely shifts with the upstream stage (mean pairwise Spearman ρ ≈ 0.87), so the stages are near-separable: <span class="font-semibold">WH-QSM and HD-QSM lead everywhere, MoDL-QSM/QSMGAN/NLTV trail everywhere</span>. A handful in the middle (xQSM, L1-QSM) swing widely; those are the genuinely upstream-sensitive methods. Coloured by family.</p>
+            <p class="mt-2 text-sm text-gray-600 leading-relaxed">For each dipole method, its rank among dipoles (dot = mean, bar = min–max) across the <span x-text="_dipoleStability().bfrs.length"></span> strong background-removal methods. Most bars are tight: the dipole ranking barely shifts with the upstream stage (mean pairwise Spearman &rho; &asymp; <span x-text="_dipoleStability().spearman?.toFixed(2) ?? '&mdash;'"></span>), so the stages are near-separable: <span class="font-semibold"><span x-text="_names(_dipoleStability().lead)"></span> lead everywhere, <span x-text="_names(_dipoleStability().trail)"></span> trail everywhere</span>. A handful in the middle (<span x-text="_names(_dipoleStability().swing)"></span>) swing widely; those are the genuinely upstream-sensitive methods. Coloured by family.</p>
             <div class="mt-2" x-html="familyLegend"></div>
             <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="dipoleStabilitySVG"></div>
           </div>
@@ -3600,14 +3600,28 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         // Error compounds through the pipeline: the achievable xSIM ceiling (and median) collapses as
         // each real upstream stage is added: dipole from GT local field, then + background removal from
         // GT total field, then + field mapping from raw phase.
-        get cascadeSVG() {
-          return _cache("cascade", this.runs.length, () => {
+        // Cascade statistics, separate from the drawing so the prose beside the figure can quote the
+        // SAME numbers instead of a copy that drifts at the next rescore.
+        _cascadeCols() {
+          return _cache("cascadeCols", this.runs.length, () => {
             const xs = (f) => this.runs.filter(f).map((r) => val(r, "xsim")).filter((v) => v != null);
             const iso = xs((r) => r.mode === "isolated" && !this._isInvivo(r) && !this._isChisep(r) && r.stage === "dipole" && (r.variant || "default") === "default");
             const bd = xs((r) => r.mode === "composed" && r.stage === "bfr+dipole" && r.status !== "DNF");
             const fl = xs((r) => r.mode === "composed" && r.stage === "field-mapping+bfr+dipole" && r.status !== "DNF");
             const stat = (a) => { const s = [...a].sort((x, y) => x - y); const q = (p) => { const i = p * (s.length - 1), lo = Math.floor(i); return s[lo] + (i - lo) * ((s[lo + 1] ?? s[lo]) - s[lo]); }; return { n: s.length, best: s[s.length - 1], q75: q(.75), med: q(.5), q25: q(.25) }; };
-            const cols = [{ lab: "dipole only", sub: "ground-truth local field", d: stat(iso) }, { lab: "+ background removal", sub: "ground-truth total field", d: stat(bd) }, { lab: "+ field mapping", sub: "raw phase", d: stat(fl) }];
+            return [{ lab: "dipole only", sub: "ground-truth local field", d: stat(iso) },
+                    { lab: "+ background removal", sub: "ground-truth total field", d: stat(bd) },
+                    { lab: "+ field mapping", sub: "raw phase", d: stat(fl) }];
+          });
+        },
+        // "0.78 → 0.68 → 0.39" as the data says it, or "—" until the runs are loaded.
+        cascadeCeilings() {
+          const c = this._cascadeCols();
+          return c.some((x) => !x.d.n) ? "—" : c.map((x) => x.d.best.toFixed(2)).join(" → ");
+        },
+        get cascadeSVG() {
+          return _cache("cascade", this.runs.length, () => {
+            const cols = this._cascadeCols();
             if (cols.some((c) => !c.d.n)) return "<svg></svg>";
             const w = 640, h = 410, padT = 52, padB = 66, hi = 0.82;
             const Y = (v) => padT + (hi - v) / hi * (h - padT - padB);
@@ -3635,18 +3649,50 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         // Separability: the dipole ranking barely moves across background-removal methods. For each dipole,
         // its rank range (min–max, dot = mean) across the 8 strong BFRs; tight bars = its standing is
         // insensitive to the upstream stage (mean pairwise Spearman of the orderings ≈ 0.87).
-        get dipoleStabilitySVG() {
-          return _cache("dipstab", this.runs.length, () => {
-            const good = new Set(["ismv-qsmrs", "resharp-qsmrs", "sharp-qsmrs", "lbv-qsmrs", "vsharp-qsmrs", "pdf-qsmrs", "vsharp-sti", "bfrnet"]);
+        // The curated "strong background removal" set. Kept explicit (it is an editorial judgement,
+        // not derivable), but INTERSECTED with the manifest so a renamed or removed method drops out
+        // loudly — the count is quoted in the prose from `bfrs.length`, so it cannot silently become
+        // seven while the text still says eight.
+        STRONG_BFR: ["ismv-qsmrs", "resharp-qsmrs", "sharp-qsmrs", "lbv-qsmrs", "vsharp-qsmrs",
+                     "pdf-qsmrs", "vsharp-sti", "bfrnet"],
+        _dipoleStability() {
+          return _cache("dipstabData", this.runs.length + "|" + this.algos.length, () => {
+            const live = new Set(this.algos.map((a) => a.slug));
+            const hidden = new Set(this.algos.filter((a) => a.hidden).map((a) => a.slug));
+            const good = new Set(this.STRONG_BFR.filter((b) => !live.size || live.has(b)));
             const cell = {};
-            this.runs.filter((r) => r.mode === "composed" && r.stage === "bfr+dipole" && r.combo && good.has(r.combo.bfr) && r.combo.dipole && r.combo.dipole !== "amp-pe" && val(r, "xsim") != null)
+            // `hidden` methods are parked submissions the site keeps out of sight; excluding them by
+            // manifest flag rather than by a hard-coded slug means the exclusion survives a rename.
+            this.runs.filter((r) => r.mode === "composed" && r.stage === "bfr+dipole" && r.combo && good.has(r.combo.bfr) && r.combo.dipole && !hidden.has(r.combo.dipole) && val(r, "xsim") != null)
               .forEach((r) => { (cell[r.combo.bfr] ||= {})[r.combo.dipole] = val(r, "xsim"); });
-            const bfrs = Object.keys(cell); if (bfrs.length < 3) return "<svg></svg>";
+            const bfrs = Object.keys(cell);
             const ranks = {};
             bfrs.forEach((b) => { Object.keys(cell[b]).sort((a, c) => cell[b][c] - cell[b][a]).forEach((dp, i) => { (ranks[dp] ||= []).push(i + 1); }); });
             const rows = Object.entries(ranks).filter(([, v]) => v.length === bfrs.length)
-              .map(([dp, v]) => ({ slug: dp, name: this.algoName(dp), min: Math.min(...v), max: Math.max(...v), mean: v.reduce((a, c) => a + c, 0) / v.length, fam: this._fam(dp) }))
+              .map(([dp, v]) => ({ slug: dp, name: this.algoName(dp), ranks: v, min: Math.min(...v), max: Math.max(...v), mean: v.reduce((a, c) => a + c, 0) / v.length, fam: this._fam(dp) }))
               .sort((a, b) => a.mean - b.mean);
+            // mean pairwise Spearman across the BFRs' dipole orderings. The values ARE ranks already,
+            // so Spearman is Pearson on them; this is the "stages are near-separable" claim measured
+            // rather than asserted.
+            const rhos = [];
+            for (let i = 0; i < bfrs.length; i++) for (let j = i + 1; j < bfrs.length; j++) {
+              const a = rows.map((r) => r.ranks[i]), b = rows.map((r) => r.ranks[j]);
+              const ma = a.reduce((x, y) => x + y, 0) / a.length, mb = b.reduce((x, y) => x + y, 0) / b.length;
+              let num = 0, da = 0, db = 0;
+              for (let k = 0; k < a.length; k++) { const u = a[k] - ma, v = b[k] - mb; num += u * v; da += u * u; db += v * v; }
+              if (da && db) rhos.push(num / Math.sqrt(da * db));
+            }
+            const spearman = rhos.length ? rhos.reduce((x, y) => x + y, 0) / rhos.length : null;
+            const swing = [...rows].sort((x, y) => (y.max - y.min) - (x.max - x.min));
+            // trail worst-first: "X, Y, Z trail everywhere" reads more naturally led by the worst
+            return { bfrs, rows, spearman, lead: rows.slice(0, 2), trail: rows.slice(-3).reverse(), swing: swing.slice(0, 2) };
+          });
+        },
+        _names(list) { return list.map((r) => r.name).join(", ") || "—"; },
+        get dipoleStabilitySVG() {
+          return _cache("dipstab", this.runs.length, () => {
+            const { bfrs, rows } = this._dipoleStability();
+            if (bfrs.length < 3) return "<svg></svg>";
             const n = rows.length, rh = 17, top = 42, padL = 134, padR = 28, w = 620, h = top + n * rh + 18, maxr = n;
             const X = (r) => padL + (r - 1) / (maxr - 1) * (w - padL - padR);
             let s = `<svg width="${w}" height="${h}" style="max-width:100%;height:auto">`;
