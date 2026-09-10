@@ -497,13 +497,13 @@
 
           <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
             <h3 class="text-lg font-semibold text-gray-900">Error compounds through the pipeline</h3>
-            <p class="mt-2 text-sm text-gray-600 leading-relaxed">The best achievable xSIM (blue) and the median (green box = interquartile range) at three pipeline depths: dipole inversion alone from the ground-truth local field, then with real background removal added (from the ground-truth total field), then a full pipeline from raw phase. Each real upstream stage roughly halves the median and caps the best: the ceiling falls from <span class="font-semibold" x-text="cascadeCeilings()"></span>. Upstream error is never recovered downstream, so a method's isolated score badly overstates its end-to-end result.</p>
+            <p class="mt-2 text-sm text-gray-600 leading-relaxed">The best achievable xSIM (blue) and the median (green box = interquartile range) at three pipeline depths: dipole inversion alone from the ground-truth local field, then with real background removal added (from the ground-truth total field), then a full pipeline from raw phase. Each real upstream stage roughly halves the median and pulls the ceiling down with it. Upstream error is never recovered downstream, so a method's isolated score badly overstates its end-to-end result.</p>
             <div class="mt-5 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="cascadeSVG"></div>
           </div>
 
           <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
             <h3 class="text-lg font-semibold text-gray-900">Pick your dipole independently of background removal</h3>
-            <p class="mt-2 text-sm text-gray-600 leading-relaxed">For each dipole method, its rank among dipoles (dot = mean, bar = min–max) across the <span x-text="_dipoleStability().bfrs.length"></span> strong background-removal methods. Most bars are tight: the dipole ranking barely shifts with the upstream stage (mean pairwise Spearman &rho; &asymp; <span x-text="_dipoleStability().spearman?.toFixed(2) ?? '&mdash;'"></span>), so the stages are near-separable: <span class="font-semibold"><span x-text="_names(_dipoleStability().lead)"></span> lead everywhere, <span x-text="_names(_dipoleStability().trail)"></span> trail everywhere</span>. A handful in the middle (<span x-text="_names(_dipoleStability().swing)"></span>) swing widely; those are the genuinely upstream-sensitive methods. Coloured by family.</p>
+            <p class="mt-2 text-sm text-gray-600 leading-relaxed">For each dipole method, its rank among dipoles (dot = mean, bar = min–max) across the strong background-removal methods. Most bars are tight: the dipole ranking barely shifts with the upstream stage, so the stages are near-separable &mdash; the methods at the top lead wherever they sit, and those at the bottom trail wherever they sit. The few with wide bars swing; those are the genuinely upstream-sensitive methods. Coloured by family.</p>
             <div class="mt-2" x-html="familyLegend"></div>
             <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="dipoleStabilitySVG"></div>
           </div>
@@ -3614,11 +3614,6 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
                     { lab: "+ field mapping", sub: "raw phase", d: stat(fl) }];
           });
         },
-        // "0.78 → 0.68 → 0.39" as the data says it, or "—" until the runs are loaded.
-        cascadeCeilings() {
-          const c = this._cascadeCols();
-          return c.some((x) => !x.d.n) ? "—" : c.map((x) => x.d.best.toFixed(2)).join(" → ");
-        },
         get cascadeSVG() {
           return _cache("cascade", this.runs.length, () => {
             const cols = this._cascadeCols();
@@ -3648,7 +3643,8 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
 
         // Separability: the dipole ranking barely moves across background-removal methods. For each dipole,
         // its rank range (min–max, dot = mean) across the 8 strong BFRs; tight bars = its standing is
-        // insensitive to the upstream stage (mean pairwise Spearman of the orderings ≈ 0.87).
+        // insensitive to the upstream stage. The mean pairwise Spearman of the orderings is computed
+        // and drawn on the figure's own caption rather than quoted in prose, so it cannot go stale.
         // The curated "strong background removal" set. Kept explicit (it is an editorial judgement,
         // not derivable), but INTERSECTED with the manifest so a renamed or removed method drops out
         // loudly — the count is quoted in the prose from `bfrs.length`, so it cannot silently become
@@ -3683,12 +3679,9 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
               if (da && db) rhos.push(num / Math.sqrt(da * db));
             }
             const spearman = rhos.length ? rhos.reduce((x, y) => x + y, 0) / rhos.length : null;
-            const swing = [...rows].sort((x, y) => (y.max - y.min) - (x.max - x.min));
-            // trail worst-first: "X, Y, Z trail everywhere" reads more naturally led by the worst
-            return { bfrs, rows, spearman, lead: rows.slice(0, 2), trail: rows.slice(-3).reverse(), swing: swing.slice(0, 2) };
+            return { bfrs, rows, spearman };
           });
         },
-        _names(list) { return list.map((r) => r.name).join(", ") || "—"; },
         get dipoleStabilitySVG() {
           return _cache("dipstab", this.runs.length, () => {
             const { bfrs, rows } = this._dipoleStability();
@@ -3696,7 +3689,9 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             const n = rows.length, rh = 17, top = 42, padL = 134, padR = 28, w = 620, h = top + n * rh + 18, maxr = n;
             const X = (r) => padL + (r - 1) / (maxr - 1) * (w - padL - padR);
             let s = `<svg width="${w}" height="${h}" style="max-width:100%;height:auto">`;
-            s += `<text x="${padL}" y="18" fill="currentColor" opacity="0.5" style="font-size:10px">rank among dipoles (1 = best), across ${bfrs.length} background-removal methods →</text>`;
+            const { spearman } = this._dipoleStability();
+            const rho = spearman == null ? "" : ` · mean pairwise Spearman ρ ${spearman.toFixed(2)}`;
+            s += `<text x="${padL}" y="18" fill="currentColor" opacity="0.5" style="font-size:10px">rank among dipoles (1 = best), across ${bfrs.length} background-removal methods${rho} →</text>`;
             [1, 5, 10, 15, 20].forEach((g) => { if (g <= maxr) { const x = X(g); s += `<line x1="${x}" y1="${top - 4}" x2="${x}" y2="${h - 14}" stroke="currentColor" opacity="0.08"/>`; s += `<text x="${x}" y="${h - 4}" text-anchor="middle" fill="currentColor" opacity="0.4" style="font-size:9px">${g}</text>`; } });
             rows.forEach((r, i) => {
               const y = top + i * rh + rh / 2, c = FAM[r.fam].c;
