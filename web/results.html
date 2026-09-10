@@ -1106,9 +1106,18 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
 
       <!-- Harmonization · Protocol reproducibility -->
       <div x-show="reproView==='protocols'" x-cloak>
-        <p class="mt-6 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+        <div class="mt-6 flex flex-wrap items-center gap-3">
+          <div class="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+            <span class="has-tip" data-tip="Absolute |a−1| scores any slope error the same way. Signed a−1 keeps the direction: each fit is y = a·x + b with x the first acquisition of the pair (Prisma, the earlier run, or the bridge protocol), so a positive value means the second reads higher (Cima above Prisma, a later run above an earlier one, a protocol above the bridge). Pooling signed values lets opposite-direction errors cancel, so a pipeline can look better here than under |a−1|: that gap is scatter rather than bias. Ranking and colour always use the magnitude.">Slope error</span>
+            <span class="seg">
+              <button class="seg-btn" :class="{'seg-on': !reproSigned}" @click="reproSigned=false">|a&minus;1|</button>
+              <button class="seg-btn" :class="{'seg-on': reproSigned}" @click="reproSigned=true">a&minus;1</button>
+            </span>
+          </div>
+        </div>
+        <p class="mt-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
           How reproducible is each <em>acquisition protocol</em>, marginalised over reconstruction pipelines?
-          Slope deviation |a&minus;1| across all <span x-text="reproExcl().pipelines"></span> pipelines,
+          Slope deviation <span x-text="_devLabel()">|a&minus;1|</span> across all <span x-text="reproExcl().pipelines"></span> pipelines,
           as median&nbsp;(mean)&nbsp;[5th&ndash;95th&nbsp;percentile].
         </p>
 
@@ -1120,7 +1129,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
               <template x-for="k in ['inter','tr','ip','bias']" :key="k">
                 <button @click="reproMetric.proto=k" class="rounded-md px-2.5 py-1 transition"
                         :class="reproMetric.proto===k?'bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100':'text-gray-500 hover:text-gray-700 dark:text-gray-400'"
-                        x-text="REPRO_PROTO_METRICS[k].label"></button>
+                        x-text="_protoM(k).label"></button>
               </template>
             </div>
           </div>
@@ -1138,8 +1147,8 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
               <thead class="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
                 <tr>
                   <th class="px-5 py-2.5 text-left font-medium">Protocol</th>
-                  <th class="px-4 py-2.5 text-right font-medium"><span class="has-tip" data-tip="Within-scanner run-to-run |a−1| across pipelines: median (mean) [5th–95th percentile]. Lower is more repeatable.">Test&ndash;retest |a&minus;1|</span></th>
-                  <th class="px-4 py-2.5 text-right font-medium"><span class="has-tip" data-tip="Prisma↔Cima |a−1| for the same protocol and run, across pipelines: median (mean) [5th–95th percentile]. Lower means the protocol travels better between scanners.">Inter-scanner |a&minus;1|</span></th>
+                  <th class="px-4 py-2.5 text-right font-medium"><span class="has-tip" :data-tip="_devText('Within-scanner run-to-run |a−1| across pipelines: median (mean) [5th–95th percentile]. Lower is more repeatable.')">Test&ndash;retest <span x-text="_devLabel()">|a&minus;1|</span></span></th>
+                  <th class="px-4 py-2.5 text-right font-medium"><span class="has-tip" :data-tip="_devText('Prisma↔Cima |a−1| for the same protocol and run, across pipelines: median (mean) [5th–95th percentile]. Lower means the protocol travels better between scanners.')">Inter-scanner <span x-text="_devLabel()">|a&minus;1|</span></span></th>
                   <th class="px-4 py-2.5 text-right font-medium"><span class="has-tip" data-tip="Inter-scanner Bland–Altman bias across pipelines (ppm): median (mean). Signed, so zero is the target.">BA bias</span></th>
                   <th class="px-4 py-2.5 text-right font-medium">Pipelines</th>
                 </tr>
@@ -1186,6 +1195,13 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
               <button class="seg-btn" :class="{'seg-on': reproStat==='mean'}" @click="reproStat='mean'">Mean</button>
             </span>
           </div>
+          <div class="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+            <span class="has-tip" data-tip="Absolute |a−1| scores any slope error the same way. Signed a−1 keeps the direction: each fit is y = a·x + b with x the first acquisition of the pair (Prisma, the earlier run, or the bridge protocol), so a positive value means the second reads higher (Cima above Prisma, a later run above an earlier one, a protocol above the bridge). Pooling signed values lets opposite-direction errors cancel, so a pipeline can look better here than under |a−1|: that gap is scatter rather than bias. Ranking and colour always use the magnitude.">Slope error</span>
+            <span class="seg">
+              <button class="seg-btn" :class="{'seg-on': !reproSigned}" @click="reproSigned=false">|a&minus;1|</button>
+              <button class="seg-btn" :class="{'seg-on': reproSigned}" @click="reproSigned=true">a&minus;1</button>
+            </span>
+          </div>
           <div class="grow"></div>
           <input x-show="reproPipeView==='table'" x-model="filter" type="search" placeholder="Filter…" class="rounded-lg border-gray-300 text-sm px-3 py-1.5 w-44 focus:border-emerald-500 focus:ring-emerald-500" />
           <span class="seg">
@@ -1219,7 +1235,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
               <div class="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                 <span>Colour by</span>
                 <select x-model="reproSortKey" class="rounded-lg border-gray-300 text-sm py-1.5 focus:border-emerald-500 focus:ring-emerald-500">
-                  <template x-for="k in ['inter','tr','iproto','xsim']" :key="k"><option :value="k" x-text="REPRO_MATRIX_METRICS[k].label"></option></template>
+                  <template x-for="k in ['inter','tr','iproto','xsim']" :key="k"><option :value="k" x-text="_devText(REPRO_MATRIX_METRICS[k].label)"></option></template>
                 </select>
               </div>
             </div>
@@ -1302,9 +1318,9 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
                 <tr>
                   <th class="px-4 py-2.5 text-right font-medium" style="min-width:3rem">#</th>
                   <th class="px-5 py-2.5 text-left font-medium">Pipeline</th>
-                  <th @click="reproSortBy('tr')" class="px-4 py-2.5 text-right font-medium cursor-pointer select-none hover:text-gray-800"><span class="has-tip" :data-tip="`Within-scanner run-to-run |a−1|, ${_statLabel()} over pairs (${_altStatLabel()} in grey). Lower is more repeatable.`">Test&ndash;retest |a&minus;1|</span> <span x-show="reproSortKey==='tr'" x-text="reproDir==='asc'?'↑':'↓'"></span></th>
-                  <th @click="reproSortBy('inter')" class="px-4 py-2.5 text-right font-medium cursor-pointer select-none hover:text-gray-800"><span class="has-tip" :data-tip="`Prisma↔Cima |a−1| for matched protocol+run, ${_statLabel()} over pairs (${_altStatLabel()} in grey). The harmonization headline.`">Inter-scanner |a&minus;1|</span> <span x-show="reproSortKey==='inter'" x-text="reproDir==='asc'?'↑':'↓'"></span></th>
-                  <th @click="reproSortBy('iproto')" class="px-4 py-2.5 text-right font-medium cursor-pointer select-none hover:text-gray-800"><span class="has-tip" :data-tip="`|a−1| between each protocol and the bridge protocol on the same scanner, ${_statLabel()} over pairs (${_altStatLabel()} in grey).`">vs bridge |a&minus;1|</span> <span x-show="reproSortKey==='iproto'" x-text="reproDir==='asc'?'↑':'↓'"></span></th>
+                  <th @click="reproSortBy('tr')" class="px-4 py-2.5 text-right font-medium cursor-pointer select-none hover:text-gray-800"><span class="has-tip" :data-tip="`Within-scanner run-to-run ${_devLabel()}, ${_statLabel()} over pairs (${_altStatLabel()} in grey). Lower is more repeatable.`">Test&ndash;retest <span x-text="_devLabel()">|a&minus;1|</span></span> <span x-show="reproSortKey==='tr'" x-text="reproDir==='asc'?'↑':'↓'"></span></th>
+                  <th @click="reproSortBy('inter')" class="px-4 py-2.5 text-right font-medium cursor-pointer select-none hover:text-gray-800"><span class="has-tip" :data-tip="`Prisma↔Cima ${_devLabel()} for matched protocol+run, ${_statLabel()} over pairs (${_altStatLabel()} in grey). The harmonization headline.`">Inter-scanner <span x-text="_devLabel()">|a&minus;1|</span></span> <span x-show="reproSortKey==='inter'" x-text="reproDir==='asc'?'↑':'↓'"></span></th>
+                  <th @click="reproSortBy('iproto')" class="px-4 py-2.5 text-right font-medium cursor-pointer select-none hover:text-gray-800"><span class="has-tip" :data-tip="`${_devLabel()} between each protocol and the bridge protocol on the same scanner, ${_statLabel()} over pairs (${_altStatLabel()} in grey).`">vs bridge <span x-text="_devLabel()">|a&minus;1|</span></span> <span x-show="reproSortKey==='iproto'" x-text="reproDir==='asc'?'↑':'↓'"></span></th>
                   <th @click="reproSortBy('xsim')" class="px-4 py-2.5 text-right font-medium cursor-pointer select-none hover:text-gray-800 border-l border-gray-200"><span class="has-tip" data-tip="In-silico (2019) accuracy of the same pipeline: xSIM against ground truth on the phantom, higher is better. Blank if that pipeline has no in-silico run.">In-silico xSIM</span> <span x-show="reproSortKey==='xsim'" x-text="reproDir==='asc'?'↑':'↓'"></span></th>
                   <th class="px-4 py-2.5 text-right font-medium"><span class="has-tip" data-tip="Number of pairwise comparisons behind the statistics.">Pairs</span></th>
                 </tr>
@@ -1654,6 +1670,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         // harmonization (repro) dataset state
         reproView: "protocols", reproData: null, reproProto: "all", reproSortKey: "inter", reproDir: "asc", reproMinXsim: 0,
         reproStat: "median", reproPipeView: "matrix", reproFmap: "",   // pipelines subtab: median|mean, matrix|table, matrix field-mapping axis ("" = first available)
+        reproSigned: false,   // protocols + pipelines subtabs: show the signed slope deviation a−1 instead of |a−1|
         reproMetric: { vd: "inter", attr: "inter", va: "inter", heat: "inter", glob: "inter", proto: "inter" }, reproHeatAxis: "dipole", reproHighlight: "",   // Findings: per-figure repro class + heatmap stage axis + frontier highlight
         reproRegions: null, reproRegLoading: false,   // regional-reproducibility sidecar (per-run per-aseg-region mean χ, lazy-loaded when Findings opens)
         // leaderboard state
@@ -1684,6 +1701,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           if (this.dataset !== "sim") p.set("dataset", this.dataset);
           if (this.dataset === "repro") {
             if (this.reproView !== "protocols") p.set("sub", this.reproView);
+            if (this.reproSigned) p.set("signed", "1");
           } else if (this.dataset === "invivo" || this.dataset === "chisep") {
             // these datasets have their own tab set (info / board / findings)
             const v = this.dataset === "invivo" ? this.invivoView : this.chisepView;
@@ -1730,6 +1748,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           if (q.get("dataset") === "repro") {
             this.dataset = "repro";
             if (["info", "protocols", "pipelines", "findings"].includes(q.get("sub"))) this.reproView = q.get("sub");
+            if (q.get("signed") === "1") this.reproSigned = true;
           }
           const t = q.get("tab");
           if (["info", "leaderboard", "findings"].includes(t)) this.tab = t;
@@ -2007,13 +2026,15 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         _BIAS_CAP_PPM: 1,   // |Bland-Altman bias| beyond 1 ppm is non-physical for brain ROI χ
         // finite, in-range per-pair values for a class, optionally restricted to one protocol
         _reproVals(node, cls, proto, field = "abs_slope_dev") {
-          const cap = field === "abs_slope_dev" ? this._SLOPE_DEV_CAP : (field === "ba_bias_ppm" ? this._BIAS_CAP_PPM : Infinity);
+          const cap = (field === "abs_slope_dev" || field === "slope_dev") ? this._SLOPE_DEV_CAP : (field === "ba_bias_ppm" ? this._BIAS_CAP_PPM : Infinity);
           const vals = [];
           for (const [key, pairs] of Object.entries(node[cls] || {})) {
             const p = cls === "inter_scanner" ? key : this._reproKeyProto(key);
             if (proto !== "all" && p !== proto) continue;
             for (const m of Object.values(pairs)) {
-              const v = m[field];
+              // "slope_dev" is the signed deviation a−1, derived here from the stored slope so the
+              // same plausibility cap applies to both forms.
+              const v = field === "slope_dev" ? (m.slope == null ? null : m.slope - 1) : m[field];
               if (v == null || !isFinite(v) || Math.abs(v) > cap) continue;
               vals.push(v);
             }
@@ -2027,11 +2048,24 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         // subset of protocols (the two diverge on the bimodal pipelines, so both are offered).
         _stat(v) { return this.reproStat === "mean" ? this._mean(v) : this._median(v); },
         _altStat(v) { return this.reproStat === "mean" ? this._median(v) : this._mean(v); },
-        _altCell(v) { const a = this._altStat(v); return a == null ? "" : "(" + this._pct(a) + ")"; },
+        _altCell(v) { const a = this._altStat(v); return a == null ? "" : "(" + this._pctDev(a) + ")"; },
         _statLabel() { return this.reproStat === "mean" ? "mean" : "median"; },
         _altStatLabel() { return this.reproStat === "mean" ? "median" : "mean"; },
         _pctile(v, p) { if (!v.length) return null; const s = [...v].sort((a, b) => a - b); return s[Math.min(s.length - 1, Math.max(0, Math.round((p / 100) * (s.length - 1))))]; },
         _pct(x) { return x == null ? "—" : (100 * x).toFixed(1) + "%"; },
+        // Absolute vs signed slope deviation on the protocol + pipeline reproducibility tabs. The fit is
+        // y = a·x + b with x the FIRST acquisition of the pair (Prisma, the earlier run, or the bridge
+        // protocol) and y the second, so a−1 > 0 means the second reads higher. Ranking, sorting and
+        // matrix colour always use the magnitude: a large negative bias is not "better" than zero.
+        _devField() { return this.reproSigned ? "slope_dev" : "abs_slope_dev"; },
+        _devLabel() { return this.reproSigned ? "a−1" : "|a−1|"; },
+        _devText(str) { return this.reproSigned ? str.replace(/\|a−1\|/g, "a−1") : str; },
+        _mag(x) { return x == null ? null : (this.reproSigned ? Math.abs(x) : x); },
+        _pctDev(x) {
+          if (x == null) return "—";
+          const n = 100 * x, t = Math.abs(n).toFixed(1) + "%";
+          return this.reproSigned && Math.abs(n) >= 0.05 ? (n < 0 ? "−" : "+") + t : t;
+        },
         // In-silico (2019) accuracy of each pipeline: xSIM of its ground-truth-scored composed run,
         // keyed by the harmonization pipeline slug (`fm+bfr+dipole`). Lets the reproducibility table
         // show accuracy alongside repeatability. Missing (e.g. a pipeline with no in-silico run) → absent.
@@ -2056,9 +2090,10 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           const rows = [];
           const simX = this._simXsimMap();
           for (const [slug, node] of Object.entries(this._reproPipes())) {
-            const tr = this._reproVals(node, "test_retest", this.reproProto);
-            const inter = this._reproVals(node, "inter_scanner", this.reproProto);
-            const ip = this._reproVals(node, "inter_protocol", this.reproProto);
+            const f = this._devField();
+            const tr = this._reproVals(node, "test_retest", this.reproProto, f);
+            const inter = this._reproVals(node, "inter_scanner", this.reproProto, f);
+            const ip = this._reproVals(node, "inter_protocol", this.reproProto, f);
             const name = this.reproName(slug);
             if (this.filter && !name.toLowerCase().includes(this.filter.toLowerCase())) continue;
             const xs = simX.get(slug);
@@ -2067,7 +2102,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             // reproducible pipeline that still clears the accuracy bar.
             if (this.reproMinXsim > 0 && (xs == null || xs < this.reproMinXsim)) continue;
             rows.push({ slug, name,
-                        tr: this._pct(this._stat(tr)), inter: this._pct(this._stat(inter)), iproto: this._pct(this._stat(ip)),
+                        tr: this._pctDev(this._stat(tr)), inter: this._pctDev(this._stat(inter)), iproto: this._pctDev(this._stat(ip)),
                         // the OTHER statistic, shown small beside each value so both are always visible
                         trAlt: this._altCell(tr), interAlt: this._altCell(inter), iprotoAlt: this._altCell(ip),
                         xsim: xs == null ? "—" : fmt(xs, "xsim"),
@@ -2077,7 +2112,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           const key = { tr: "_tr", inter: "_inter", iproto: "_ip", xsim: "_xsim" }[this.reproSortKey] || "_inter";
           const dir = this.reproDir === "asc" ? 1 : -1;
           rows.sort((a, b) => {   // pipelines with no value for the sorted column always sort last
-            const av = a[key], bv = b[key];
+            const av = key === "_xsim" ? a[key] : this._mag(a[key]), bv = key === "_xsim" ? b[key] : this._mag(b[key]);
             if (av == null && bv == null) return 0;
             if (av == null) return 1;
             if (bv == null) return -1;
@@ -2101,7 +2136,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         _reproCellVal(slug, node, simX) {
           if (this.reproSortKey === "xsim") return simX.get(slug) ?? null;
           const cls = this._reproClsOf(this.reproSortKey) || "inter_scanner";
-          return this._stat(this._reproVals(node, cls, this.reproProto));
+          return this._stat(this._reproVals(node, cls, this.reproProto, this._devField()));
         },
         // Field-mapping methods that actually appear as the first stage of a 3-part pipeline.
         reproFmaps() {
@@ -2114,7 +2149,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           return fms.includes(this.reproFmap) ? this.reproFmap : (fms[0] || "");
         },
         get reproMatrix() {
-          const key = [this.reproFmap, this.reproSortKey, this.reproStat, this.reproProto, this.reproMinXsim,
+          const key = [this.reproFmap, this.reproSortKey, this.reproStat, this.reproProto, this.reproMinXsim, this.reproSigned,
                        Object.keys(this._reproPipes()).length, this.algos.length].join("|");
           return _cache("reproMatrix", key, () => {
             const pipes = this._reproPipes(), simX = this._simXsimMap(), fm = this._reproFmap();
@@ -2131,7 +2166,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
               by[q[1] + "|" + q[2]] = { slug, v: this._reproCellVal(slug, node, simX) };
             }
             const better = this.REPRO_MATRIX_METRICS[this.reproSortKey]?.better || "lower";
-            const [lo, hi] = robustRange(Object.values(by).map((c) => c.v));
+            const [lo, hi] = robustRange(Object.values(by).map((c) => this._mag(c.v)));
             // Second channel: in-silico xSIM as a bar length, normalised to this matrix's own range so
             // the bars use the full cell width whatever the population. Clamped: robustRange trims
             // outliers, so a bar can be pinned to the ends.
@@ -2139,7 +2174,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             const acc = (slug) => { const x = simX.get(slug); if (x == null) return null; return xhi === xlo ? 1 : Math.min(1, Math.max(0, (x - xlo) / (xhi - xlo))); };
             const accTip = (slug) => { const x = simX.get(slug); return this.reproSortKey === "xsim" || x == null ? "" : ` · in-silico xSIM: ${fmt(x, "xsim")}`; };
             // 0 = worst, 1 = best, so heatScale() reads the same way whichever metric is selected
-            const good = (c) => { const v = c ? c.v : null; if (v == null) return null; const t = hi === lo ? 0.5 : (v - lo) / (hi - lo); return better === "lower" ? 1 - t : t; };
+            const good = (c) => { const v = c ? this._mag(c.v) : null; if (v == null) return null; const t = hi === lo ? 0.5 : (v - lo) / (hi - lo); return better === "lower" ? 1 - t : t; };
             const avg = (ks) => { const g = ks.map((k) => good(by[k])).filter((x) => x != null); return g.length ? g.reduce((a, c) => a + c, 0) / g.length : -Infinity; };
             const rows = dips.slice().sort((a, b) => avg(bfrs.map((x) => x + "|" + b)) - avg(bfrs.map((x) => x + "|" + a)));
             const cols = bfrs.slice().sort((a, b) => avg(dips.map((x) => b + "|" + x)) - avg(dips.map((x) => a + "|" + x)));
@@ -2151,10 +2186,10 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
                 const cell = by[c + "|" + rw];
                 cells.push(cell && cell.v != null
                   ? { k: "c|" + c + "|" + rw, t: "cell", slug: cell.slug, v: cell.v, heat: good(cell), acc: acc(cell.slug),
-                      text: this.reproSortKey === "xsim" ? fmt(cell.v, "xsim") : this._pct(cell.v),
+                      text: this.reproSortKey === "xsim" ? fmt(cell.v, "xsim") : this._pctDev(cell.v),
                       // xSIM is a single in-silico value, not pooled over pairs, so it carries no statistic
-                      title: `${this.algoName(c)} → ${this.algoName(rw)} · ${this.REPRO_MATRIX_METRICS[this.reproSortKey].label}` +
-                             (this.reproSortKey === "xsim" ? `: ${fmt(cell.v, "xsim")}` : ` (${this._statLabel()}): ${this._pct(cell.v)}`) +
+                      title: `${this.algoName(c)} → ${this.algoName(rw)} · ${this._devText(this.REPRO_MATRIX_METRICS[this.reproSortKey].label)}` +
+                             (this.reproSortKey === "xsim" ? `: ${fmt(cell.v, "xsim")}` : ` (${this._statLabel()}): ${this._pctDev(cell.v)}`) +
                              accTip(cell.slug) }
                   : { k: "x|" + c + "|" + rw, t: "empty" });
               });
@@ -2166,7 +2201,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         // and end-to-end methods (iQSM). Shown as a strip under the matrix so the view still covers
         // every pipeline the table lists.
         get reproMatrixOther() {
-          const key = [this.reproFmap, this.reproSortKey, this.reproStat, this.reproProto, this.reproMinXsim,
+          const key = [this.reproFmap, this.reproSortKey, this.reproStat, this.reproProto, this.reproMinXsim, this.reproSigned,
                        Object.keys(this._reproPipes()).length, this.algos.length].join("|");
           return _cache("reproMatrixOther", key, () => {
             const pipes = this._reproPipes(), simX = this._simXsimMap(), fm = this._reproFmap();
@@ -2181,13 +2216,13 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
               if (v == null) continue;
               out.push({ slug, label: this.algoName(q[q.length - 1]), v,
                          endToEnd: q.length === 1,
-                         text: this.reproSortKey === "xsim" ? fmt(v, "xsim") : this._pct(v) });
+                         text: this.reproSortKey === "xsim" ? fmt(v, "xsim") : this._pctDev(v) });
             }
             const better = this.REPRO_MATRIX_METRICS[this.reproSortKey]?.better || "lower";
             // share the matrix's colour range so a span's cell is directly comparable to a grid cell
             const m = this.reproMatrix;
             out.forEach((o) => {
-              const t = m.hi === m.lo ? 0.5 : (o.v - m.lo) / (m.hi - m.lo); o.heat = better === "lower" ? 1 - t : t;
+              const t = m.hi === m.lo ? 0.5 : (this._mag(o.v) - m.lo) / (m.hi - m.lo); o.heat = better === "lower" ? 1 - t : t;
               const x = simX.get(o.slug);   // bar on the grid's xSIM range, so a span's bar is directly comparable
               o.acc = x == null ? null : (m.xhi === m.xlo ? 1 : Math.min(1, Math.max(0, (x - m.xlo) / (m.xhi - m.xlo))));
             });
@@ -2253,11 +2288,19 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         },
         // One value per pipeline per protocol: the pipeline's pairs for that protocol, pooled with the
         // chosen statistic. The figure then summarises ACROSS pipelines (that is what the box shows).
+        // The metric spec with the signed toggle applied: the slope-deviation metrics switch field,
+        // become signed (zero-anchored axis, ranked by distance from zero) and relabel; BA bias is
+        // signed already and untouched.
+        _protoM(mk) {
+          const M = this.REPRO_PROTO_METRICS[mk];
+          if (M.field !== "abs_slope_dev" || !this.reproSigned) return M;
+          return { ...M, field: "slope_dev", signed: true, label: this._devText(M.label) };
+        },
         _reproProtoDist() {
           const mk = this.reproMetric.proto;
-          const key = [mk, Object.keys(this._reproPipes()).length, this.algos.length].join("|");
+          const key = [mk, this.reproSigned, Object.keys(this._reproPipes()).length, this.algos.length].join("|");
           return _cache("reproProtoDist", key, () => {
-            const M = this.REPRO_PROTO_METRICS[mk];
+            const M = this._protoM(mk);
             const out = [];
             for (const proto of this.reproProtocols()) {
               const pts = [];
@@ -2334,9 +2377,9 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         },
         get reproProtoDistSVG() {
           const mk = this.reproMetric.proto;
-          const key = [mk, Object.keys(this._reproPipes()).length, this.algos.length].join("|");
+          const key = [mk, this.reproSigned, Object.keys(this._reproPipes()).length, this.algos.length].join("|");
           return _cache("reproProtoDistSVG", key, () => {
-            const M = this.REPRO_PROTO_METRICS[mk], rows = this._reproProtoDist();
+            const M = this._protoM(mk), rows = this._reproProtoDist();
             if (!rows.length) return `<svg viewBox="0 0 640 40" style="width:100%;height:auto"><text x="20" y="24" fill="currentColor" opacity="0.4" style="font-size:12px">No reproducibility fits yet.</text></svg>`;
             const { W, padL, padR, padT, rh, footer } = this.PROTO_GEOM;
             const H = padT + rows.length * rh + footer;
@@ -2397,8 +2440,8 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           for (const proto of this.reproProtocols()) {
             const trM = [], interM = [], biasM = [];   // one robust value per pipeline (median over its pairs)
             for (const node of Object.values(this._reproPipes())) {
-              const tr = this._median(this._reproVals(node, "test_retest", proto));
-              const inter = this._median(this._reproVals(node, "inter_scanner", proto));
+              const tr = this._median(this._reproVals(node, "test_retest", proto, this._devField()));
+              const inter = this._median(this._reproVals(node, "inter_scanner", proto, this._devField()));
               const bias = this._median(this._reproVals(node, "inter_scanner", proto, "ba_bias_ppm"));
               if (tr != null) trM.push(tr);
               if (inter != null) interM.push(inter);
@@ -2408,8 +2451,8 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             // Across pipelines: median [5th–95th percentile], with the mean in parentheses. The two
             // diverge wherever a minority of pipelines fails on a protocol — the figure below shows
             // that as an amber diamond sitting well right of the median line.
-            const cell = (v) => !v.length ? "—" : this._pct(this._median(v))
-              + (v.length > 1 ? ` (${this._pct(this._mean(v))}) [${this._pct(this._pctile(v, 5))}–${this._pct(this._pctile(v, 95))}]` : "");
+            const cell = (v) => !v.length ? "—" : this._pctDev(this._median(v))
+              + (v.length > 1 ? ` (${this._pctDev(this._mean(v))}) [${this._pctDev(this._pctile(v, 5))}${this.reproSigned ? " to " : "–"}${this._pctDev(this._pctile(v, 95))}]` : "");
             rows.push({ protocol: proto, label: this.reproProtoLabel(proto),
                         tr: cell(trM), inter: cell(interM),
                         bias: biasM.length ? this._median(biasM).toFixed(4) + " ppm (" + this._mean(biasM).toFixed(4) + ")" : "—",
