@@ -9,6 +9,10 @@ on:
 
 # Own group (NOT "score") — entering the score group would cancel a queued rescore. Only dispatch
 # this once the score queue is drained, so it never squashes mid-publish.
+defaults:
+  run:
+    shell: bash
+
 concurrency:
   group: squash-volumes
   cancel-in-progress: false

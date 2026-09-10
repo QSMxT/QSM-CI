@@ -23,6 +23,10 @@ on:
       - "algorithms/rts-qsmrs/**"
       - ".github/workflows/pipeline.yml"
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   end-to-end:
     runs-on: ubuntu-latest

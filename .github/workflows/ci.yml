@@ -8,6 +8,10 @@ on:
   push:
   pull_request:
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   manifest:
     # Keep the two generated web files in sync automatically — web/algorithms.json (from

@@ -19,6 +19,10 @@ on:
 # same containers on the SHARED self-hosted runners, and the superseded ones keep going — so a PR
 # with a few quick corrections can occupy the fleet for most of a day proving something about code
 # nobody is going to merge. The newest push is the only one whose answer matters.
+defaults:
+  run:
+    shell: bash
+
 concurrency:
   group: evaluate-${{ github.event.pull_request.number || github.event.inputs.slug || github.ref }}
   cancel-in-progress: true
