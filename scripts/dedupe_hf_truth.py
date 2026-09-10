@@ -89,6 +89,35 @@ def load_pending(indexes) -> set:
     return out
 
 
+def already_shared(legacy_in_repo, rows, repo: str, sha_of: dict) -> set:
+    """Legacy copies whose run ALREADY points at a shared file carrying identical bytes.
+
+    A run migrated by an earlier publish leaves its per-run copy behind with nothing referencing it,
+    and no repoint record exists because no pass here rewrote it. Those files are invisible to both
+    `deletable()` (never repointed) and publish_volumes' --prune-flat (the run is live, so not
+    retired) — 75 of them on the live repo after the 2026-09 collapse.
+
+    The evidence here is stronger than a repoint record rather than weaker: instead of trusting that
+    some pass rewrote a URL, it checks the END STATE directly — the run exists, its current truth URL
+    is a shared `truth/…` path, and that shared file's sha256 equals this legacy file's. So the bytes
+    are provably still served under the name the run actually uses.
+    """
+    base = _url(repo, "")
+    out = set()
+    by_id = {r["id"]: r for r in rows}
+    for path in legacy_in_repo:
+        rid, tail = path.rsplit("__", 1)
+        kind = tail.split(".", 1)[0]
+        row = by_id.get(rid) or by_id.get(rid.replace("_", "~"))
+        if row is None:
+            continue                                   # run is gone: not this function's case
+        url = (row.get("volumes") or {}).get(kind)
+        cur = url[len(base):].split("?")[0] if isinstance(url, str) and url.startswith(base) else None
+        if cur and cur.startswith(TRUTH_PREFIX) and sha_of.get(cur) and sha_of.get(cur) == sha_of.get(path):
+            out.add(path)
+    return out
+
+
 def deletable(legacy_in_repo, repointed: set, referenced_elsewhere: set,
               shared_sha: set, sha_of: dict) -> tuple[list, list]:
     """Split legacy files into (safe to delete, must keep with a reason).
@@ -217,9 +246,15 @@ def main() -> int:
     # A repoint pass can act on what it is about to rewrite; a delete pass must use what an earlier
     # pass RECORDED, because the index it can see no longer mentions any legacy path.
     if args.delete_legacy:
-        repointed = load_pending(args.indexes)
+        # A file whose run already points at an identical shared file needs no repoint record: the
+        # end state is directly verifiable, which is what the record would only have been evidence of.
+        migrated = already_shared(legacy_in_repo, rows, repo, sha_of)
+        if migrated:
+            print(f"  {len(migrated)} legacy copy(ies) whose run already points at identical shared bytes")
+        repointed = load_pending(args.indexes) | migrated
         if not repointed:
-            sys.exit(f"! --delete-legacy found no {PENDING_SUFFIX} beside any supplied index. Run the "
+            sys.exit(f"! --delete-legacy found no {PENDING_SUFFIX} beside any supplied index, and no "
+                     f"legacy copy whose run already points at identical shared bytes. Run the "
                      f"repoint pass first (and deploy its rewritten index) — deleting without that "
                      f"record would mean deleting on the assumption a repoint happened.")
         print(f"  {len(repointed)} path(s) recorded as repointed by an earlier pass")
