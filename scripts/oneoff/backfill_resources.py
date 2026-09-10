@@ -8,7 +8,7 @@ trace — the local results/<id>/resources.json if present, else the published `
 Idempotent and re-runnable: a run that already carries `cpu_cores_avg` is skipped unless --force, so
 after a CI rescore lands you can simply re-run this to fill in the freshly-scored runs.
 
-  python scripts/backfill_resources.py [--force] [--workers N]
+  python scripts/oneoff/backfill_resources.py [--force] [--workers N]
 """
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[2]  # scripts/oneoff/ -> repo root
 INDEX = ROOT / "results" / "index.json"
 
 FIELDS = ("mem_peak_bytes", "cpu_cores_avg", "cpu_cores_max")

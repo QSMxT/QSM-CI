@@ -18,7 +18,7 @@ export HF_TOKEN="${HF_QSMXT_KEY:-}"
 export HF_VOLUMES_REPO=qsmxt/qsm-ci-volumes
 if [ -z "$HF_TOKEN" ]; then echo "ERROR: HF_TOKEN empty"; exit 1; fi
 cp results/index.json results/index.json.pre-dedupe.bak
-python3 scripts/dedupe_hf_truth.py \
+python3 scripts/oneoff/dedupe_hf_truth.py \
     --index results/index.json \
     --index /scratch/user/uqaste15/qsmci-repro/results/_site_index.json
 echo "DEDUPE_HPC_DONE rc=$?"

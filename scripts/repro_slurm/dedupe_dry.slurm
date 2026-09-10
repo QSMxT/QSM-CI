@@ -17,6 +17,6 @@ eval "$(grep '^export HF_QSMXT_KEY=' ~/.bashrc)" 2>/dev/null || true
 export HF_TOKEN="${HF_QSMXT_KEY:-}"
 export HF_VOLUMES_REPO=qsmxt/qsm-ci-volumes
 if [ -z "$HF_TOKEN" ]; then echo "ERROR: HF_TOKEN empty"; exit 1; fi
-python3 scripts/dedupe_hf_truth.py --dry-run \
+python3 scripts/oneoff/dedupe_hf_truth.py --dry-run \
     --index /scratch/user/uqaste15/qsmci-repro/results/_site_index.json --index results/index.json
 echo "DEDUPE_DRY_DONE rc=$?"

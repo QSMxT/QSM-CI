@@ -13,7 +13,7 @@ import os
 import stat
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[2]  # scripts/oneoff/ -> repo root
 IMAGE = "ghcr.io/astewartau/qsm-ci/qsmxt:v9.9.0"
 QSM_RS = "https://github.com/astewartau/QSM.rs"
 QSMXT = "https://github.com/QSMxT/QSMxT"

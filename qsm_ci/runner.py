@@ -17,8 +17,9 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from .containers import (RUNNERS, _run_container, check_docker,  # noqa: F401 — check_docker re-exported for back-compat
-                         check_runner)
+import yaml
+
+from .containers import RUNNERS, _run_container, check_runner
 from .resources import _ResourceSampler  # noqa: F401 — re-exported for the sampler regression test
 from .params import (STACKABLE_ARTIFACTS, _looks_like_sidecar,
                      _params_dict, _params_summary, _place_echoes,
@@ -50,10 +51,6 @@ def _parse_manifest(algo_dir: Path) -> dict:
     spec = algo_dir / "algorithm.yml"
     if not spec.exists():
         raise SystemExit(f"no algorithm.yml in {algo_dir}")
-    try:
-        import yaml
-    except ImportError:
-        raise SystemExit("PyYAML is required to read algorithm.yml — pip install pyyaml")
     meta = yaml.safe_load(spec.read_text()) or {}
     stage = meta.get("stage")
     if stage not in STAGES:
@@ -126,14 +123,8 @@ def _list_algorithms() -> "list[tuple[str, str, str]]":
     for d in sorted(root.iterdir()):
         if d.name.startswith("_") or not (d / "algorithm.yml").exists():
             continue
-        stage = name = ""
-        for line in (d / "algorithm.yml").read_text().splitlines():
-            s = line.strip()
-            if s.startswith("stage:") and not stage:
-                stage = s.split(":", 1)[1].strip()
-            elif s.startswith("name:") and not name:
-                name = s.split(":", 1)[1].strip().strip('"\'')
-        out.append((d.name, stage or "?", name or d.name))
+        meta = yaml.safe_load((d / "algorithm.yml").read_text()) or {}
+        out.append((d.name, str(meta.get("stage") or "?"), str(meta.get("name") or d.name)))
     return out
 
 
