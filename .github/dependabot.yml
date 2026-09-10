@@ -1,0 +1,11 @@
+# Keep the third-party GitHub Actions in .github/workflows/ current (actions/checkout, setup-python,
+# upload-artifact, …). One grouped PR a week for all of them rather than one PR per action.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      github-actions:
+        patterns: ["*"]

@@ -12,6 +12,10 @@ defaults:
   run:
     shell: bash
 
+# Nothing here touches the repo — it only talks to Hugging Face (HF_TOKEN) — so the token is read-only.
+permissions:
+  contents: read
+
 jobs:
   check:
     runs-on: ubuntu-latest

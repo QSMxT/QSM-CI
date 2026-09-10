@@ -12,6 +12,10 @@ defaults:
   run:
     shell: bash
 
+# Read-only token by default; only the `manifest` job commits (job-level `contents: write` there).
+permissions:
+  contents: read
+
 jobs:
   manifest:
     # Keep the two generated web files in sync automatically — web/algorithms.json (from
