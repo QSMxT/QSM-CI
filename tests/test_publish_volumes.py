@@ -379,3 +379,34 @@ def test_live_algo_slugs_reads_the_manifest():
     slugs = pv.live_algo_slugs()
     assert "rts-qsmrs" in slugs          # a current slug
     assert "rts" not in slugs            # its pre-rename name, which the orphans still carry
+
+
+# ---- a partial publish must not look like a clean one ------------------------------------------
+# Committing index.json without the failed runs' URLs is deliberate: losing a whole rescore because
+# the Hub blinked would be worse. The defect was that it was SILENT — rc=0 under
+# `continue-on-error: true` is a green job, and nothing retries short of another full rescore.
+
+def test_exit_code_distinguishes_partial_from_clean_and_from_hard_error():
+    # 0 clean, 2 index written but volumes partial, 1 reserved for a hard error
+    import inspect
+    src = inspect.getsource(pv.main)
+    assert "return 2" in src, "a partial publish must not return 0"
+    assert src.count("return 1") >= 1, "hard errors still return 1"
+
+
+def test_annotate_emits_a_github_error_when_running_in_actions(monkeypatch, capsys, tmp_path):
+    summary = tmp_path / "summary.md"
+    monkeypatch.setenv("GITHUB_ACTIONS", "true")
+    monkeypatch.setenv("GITHUB_STEP_SUMMARY", str(summary))
+    pv._annotate("17 run(s) have no volume URLs")
+    out = capsys.readouterr()
+    assert "::error title=Incomplete volume publish::" in out.out
+    assert "17 run(s) have no volume URLs" in summary.read_text()
+
+
+def test_annotate_is_quiet_outside_actions(monkeypatch, capsys):
+    monkeypatch.delenv("GITHUB_ACTIONS", raising=False)
+    pv._annotate("something")
+    out = capsys.readouterr()
+    assert "::error" not in out.out
+    assert "something" in out.err          # still reported, just not as an annotation
