@@ -4,7 +4,8 @@ name: repro
 # (scripts/repro_slurm/). Mirrors the in-silico score.yml: incremental re-scoring when an ALGORITHM
 # changes (only the pipelines that use it, across all acquisitions), a full re-run when the
 # SCORER/pipeline changes, automatic HuggingFace volume publishing, and an index.json + repro.json
-# commit that redeploys the site.
+# commit (pages.yml redeploys the site when this workflow completes — its workflow_run trigger —
+# because a GITHUB_TOKEN push raises no `push` event).
 #
 # SCALE-READY DATA FLOW — no volume ever gathers centrally:
 #   Each `score` job reconstructs its shard, publishes its OWN recon volumes straight to HuggingFace
@@ -26,7 +27,8 @@ name: repro
 #   prep     -> build the reference frame once: target grid + SynthSeg dseg (artifact for the rest)
 #   plan     -> full: acquisition × shard matrix; affected: acquisition × --focus-per-slug
 #   score    -> reconstruct; publish own volumes to HF; compute own ROI stats; emit small runs-JSON
-#   evaluate -> merge runs-JSON -> index.json; pairwise fits -> repro.json; commit (redeploys site)
+#   evaluate -> merge runs-JSON -> index.json; pairwise fits -> repro.json; commit (pages.yml then
+#               redeploys the site via its workflow_run trigger)
 #
 # VIEWER INTERMEDIATES (the submission page's Field map / Local field layers) ride along for free.
 # They are per COLUMN, not per pipeline — one total field per field-mapping method, one local field
@@ -78,8 +80,10 @@ concurrency:
   group: repro
   cancel-in-progress: false
 
+# Read-only token by default: the scope/prep/plan/score jobs only run containers and pass small
+# artifacts around. Only `evaluate` commits (job-level `contents: write` there).
 permissions:
-  contents: write
+  contents: read
 
 env:
   SETUPTOOLS_SCM_PRETEND_VERSION: "0.0.0"
@@ -99,11 +103,12 @@ jobs:
           SCOPE: ${{ github.event.inputs.scope || 'auto' }}
           BEFORE: ${{ github.event.before }}   # the push's previous head; empty on workflow_dispatch
           EVENT: ${{ github.event_name }}
+          SHA: ${{ github.sha }}
         run: |
           if [ "$SCOPE" = "all" ]; then
             echo "full=true"  >>"$GITHUB_OUTPUT"; echo "slugs=[]" >>"$GITHUB_OUTPUT"; exit 0
           fi
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "$SCOPE" != "auto" ]; then
+          if [ "$EVENT" = "workflow_dispatch" ] && [ "$SCOPE" != "auto" ]; then
             echo "full=false" >>"$GITHUB_OUTPUT"
             echo "slugs=$(echo "$SCOPE" | tr ', ' '\n' | { grep . || true; } | jq -R . | jq -sc .)" >>"$GITHUB_OUTPUT"; exit 0
           fi
@@ -114,8 +119,8 @@ jobs:
           # This stops the rescore and nothing else. Read via `git log` rather than the event payload
           # so a crafted commit message can't be interpolated into this shell. Push only — a manual
           # dispatch ignores it, so `scope=all` is always the escape hatch.
-          if [ "${{ github.event_name }}" = "push" ] \
-             && git log -1 --format=%B "${{ github.sha }}" | grep -qF '[skip score]'; then
+          if [ "$EVENT" = "push" ] \
+             && git log -1 --format=%B "$SHA" | grep -qF '[skip score]'; then
             echo "::notice::[skip score] in the commit message — skipping the rescore. Dispatch with scope=all to force one."
             echo "full=false" >>"$GITHUB_OUTPUT"; echo "slugs=[]" >>"$GITHUB_OUTPUT"; exit 0
           fi
@@ -252,6 +257,10 @@ jobs:
     timeout-minutes: ${{ matrix.task.timeout }}
     env:
       QSMCI_GPU: ${{ matrix.task.gpu }}   # self-hosted GPU jobs -> 1 -> docker/apptainer --gpus
+      # Matrix values derive from the dispatch inputs (acquisitions / scope slugs): they reach the
+      # shell through env, never interpolated into a `run:` script.
+      TASK_ID: ${{ matrix.task.id }}
+      PHANTOM: ${{ matrix.task.phantom }}
     steps:
       - uses: actions/checkout@v7
       - uses: actions/download-artifact@v8
@@ -265,8 +274,6 @@ jobs:
 
       - name: Resolve dataset zip (scripts/datasets.json)
         id: ds
-        env:
-          PHANTOM: ${{ matrix.task.phantom }}
         run: |
           python3 - <<'PY' >> "$GITHUB_OUTPUT"
           import json, os
@@ -283,18 +290,24 @@ jobs:
       - name: Fetch acquisition (public OSF project — tokenless)
         env:
           OSF_ZIP: .osfcache/${{ matrix.task.phantom }}.zip
-        run: scripts/fetch_dataset.sh "${{ matrix.task.phantom }}" "${{ steps.ds.outputs.path }}"
+          DS_PATH: ${{ steps.ds.outputs.path }}
+        run: scripts/fetch_dataset.sh "$PHANTOM" "$DS_PATH"
 
       - name: Reconstruct ${{ matrix.task.id }}
+        env:
+          SHARD: ${{ matrix.task.shard }}
+          FOCUS: ${{ matrix.task.focus }}
+          EXCLUDE: ${{ matrix.task.exclude }}
+          INTERMEDIATES: ${{ matrix.task.intermediates }}
         run: |
-          ARGS="--phantom ${{ matrix.task.phantom }} --track repro --mode composed --runner docker"
-          ARGS="$ARGS --runs-out runs-${{ matrix.task.id }}.json"
-          [ -n "${{ matrix.task.shard }}" ]   && ARGS="$ARGS --shard ${{ matrix.task.shard }}"
-          [ -n "${{ matrix.task.focus }}" ]   && ARGS="$ARGS --focus ${{ matrix.task.focus }}"
-          [ -n "${{ matrix.task.exclude }}" ] && ARGS="$ARGS --exclude ${{ matrix.task.exclude }}"
+          ARGS="--phantom $PHANTOM --track repro --mode composed --runner docker"
+          ARGS="$ARGS --runs-out runs-$TASK_ID.json"
+          [ -n "$SHARD" ]   && ARGS="$ARGS --shard $SHARD"
+          [ -n "$FOCUS" ]   && ARGS="$ARGS --focus $FOCUS"
+          [ -n "$EXCLUDE" ] && ARGS="$ARGS --exclude $EXCLUDE"
           # Keep this job's share of the viewer's field-map / local-field maps (no extra containers:
           # these are the upstream stages it already runs), deduplicated across shards by pipeline.py.
-          [ "${{ matrix.task.intermediates }}" = "true" ] && ARGS="$ARGS --emit-intermediates"
+          [ "$INTERMEDIATES" = "true" ] && ARGS="$ARGS --emit-intermediates"
           echo "== pipeline.py $ARGS"
           python scripts/pipeline.py $ARGS
 
@@ -306,7 +319,7 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           HF_VOLUMES_REPO: ${{ vars.HF_VOLUMES_REPO }}
-        run: python scripts/publish_volumes.py results --runs runs-${{ matrix.task.id }}.json
+        run: python scripts/publish_volumes.py results --runs "runs-$TASK_ID.json"
 
       # The submission viewer's Field map / Local field layers: this job's share of the per-column
       # intermediates, into the same repro/<acq>/ directory as the recons. The URLs are derived from
@@ -317,12 +330,12 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           HF_VOLUMES_REPO: ${{ vars.HF_VOLUMES_REPO }}
-        run: python scripts/publish_repro_intermediates.py results --acq ${{ matrix.task.phantom }}
+        run: python scripts/publish_repro_intermediates.py results --acq "$PHANTOM"
 
       # Compute THIS shard's per-ROI stats (registers its acquisition to the shared target) and write
       # them into the runs-JSON, so evaluate never needs the recon volumes.
       - name: Per-ROI stats for this shard
-        run: python scripts/repro_eval.py stats --runs runs-${{ matrix.task.id }}.json
+        run: python scripts/repro_eval.py stats --runs "runs-$TASK_ID.json"
 
       - uses: actions/upload-artifact@v7
         with:
@@ -335,6 +348,8 @@ jobs:
     if: ${{ always() && needs.scope.result == 'success' && needs.score.result != 'skipped' }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    permissions:
+      contents: write   # the only job that commits (results/index.json + results/repro.json)
     steps:
       - uses: actions/checkout@v7
       - uses: actions/download-artifact@v8

@@ -11,12 +11,18 @@ on:
       - "web/**"
       - "results/**"
       - ".github/workflows/pages.yml"
-  # The `score` job commits results/index.json with the default GITHUB_TOKEN, whose pushes do
-  # NOT trigger the `push` event above — so deploy explicitly once scoring finishes.
+  # These workflows commit site content with the default GITHUB_TOKEN, whose pushes do NOT raise
+  # the `push` event above — so deploy explicitly once each of them finishes:
+  #   score          -> results/index.json (the in-silico leaderboard)
+  #   repro          -> results/index.json + results/repro.json (the harmonization track)
+  #   publish-zenodo -> qsm_ci/registry.json (method DOIs, served as /registry.json). Its commit
+  #                     also carries GitHub's skip token, which stops push-triggered workflows but
+  #                     not a workflow_run.
+  # No `branches:` filter: it matches the triggering run's HEAD BRANCH, and a release-triggered
+  # publish-zenodo runs on the release tag, not main — the deploy job's `if` filters instead.
   workflow_run:
-    workflows: ["score"]
+    workflows: ["score", "repro", "publish-zenodo"]
     types: [completed]
-    branches: [main]
   workflow_dispatch:
 
 defaults:
@@ -34,6 +40,13 @@ concurrency:
 
 jobs:
   deploy:
+    # workflow_run fires for ANY completed run of the workflows above, wherever it was dispatched
+    # from. Only deploy for runs that could have committed to main: dispatched on main, or a
+    # release-triggered publish-zenodo (its head branch is the release tag, and it pushes to main).
+    if: >-
+      github.event_name != 'workflow_run' ||
+      github.event.workflow_run.head_branch == 'main' ||
+      github.event.workflow_run.event == 'release'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -65,6 +78,19 @@ jobs:
           cp -r docs _site/docs           # nothing on the site links here any more; kept so old /docs/ links resolve
           rm -rf _site/examples; cp -r examples _site/examples   # Run page showcases the engine examples
           rm -f _site/registry.json; cp qsm_ci/registry.json _site/registry.json  # method DOIs (drop the web/ symlink first)
+
+      # Cache-busting. Pages serves everything with max-age=600, and the JSON is fetched with
+      # cache:"no-store" — so for up to ten minutes after a deploy a viewer could run the OLD app.js /
+      # viewer.js / styles.css against the NEW index.json. Stamp the commit onto every local script and
+      # stylesheet reference (and the ES-module imports inside js/, which the browser also caches), so a
+      # deploy is a new URL. Done here on the assembled copy only: the source files stay unstamped so
+      # `python3 -m http.server` on web/ keeps working unchanged.
+      - name: Stamp local JS/CSS references with the commit
+        run: |
+          v="${GITHUB_SHA::8}"
+          sed -i -E "s#(src|href)=\"(js/[A-Za-z0-9_./-]+\.js|styles\.css)\"#\1=\"\2?v=$v\"#g" _site/*.html
+          sed -i -E "s#from \"(\./[A-Za-z0-9_./-]+\.js)\"#from \"\1?v=$v\"#g" _site/js/*.js
+          grep -o '"[A-Za-z0-9_./-]*\.\(js\|css\)?v=[0-9a-f]*"' _site/*.html _site/js/*.js | sort | uniq -c
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3

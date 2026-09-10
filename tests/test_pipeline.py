@@ -36,10 +36,19 @@ ALGOS = str((REPO / "algorithms").resolve())
 EXAMPLES = REPO / "examples" / "workflow-engines"       # the tested artifacts ARE the shipped examples
 FM, BFR, DIP = "romeo-qsmrs", "vsharp-qsmrs", "rts-qsmrs"   # (baked into the example pipelines)
 
-# So bare slugs resolve inside isolated Nextflow/CWL work dirs (and for the in-process engines).
-# PYDRA_PLUGIN=serial keeps the pydra example deterministic here (no multiprocessing).
-os.environ.setdefault("QSMCI_ALGORITHMS", ALGOS)
-ENV = {**os.environ, "QSMCI_ALGORITHMS": ALGOS, "PYDRA_PLUGIN": "serial"}
+
+@pytest.fixture
+def env(monkeypatch) -> dict:
+    """The environment every engine runs the shipped example under. QSMCI_ALGORITHMS points at the
+    checkout so bare slugs resolve inside isolated Nextflow/CWL work dirs (and for the in-process
+    engines); PYDRA_PLUGIN=serial keeps the pydra example deterministic (no multiprocessing).
+
+    Set per test via monkeypatch — never at import: a module-level `os.environ.setdefault` here
+    leaked the repo checkout into every later test's runner._algorithms_root(), so a test meaning to
+    exercise the bare-install (no ./algorithms) path could silently see the checkout instead."""
+    monkeypatch.setenv("QSMCI_ALGORITHMS", ALGOS)
+    monkeypatch.setenv("PYDRA_PLUGIN", "serial")
+    return dict(os.environ)
 
 # Floors calibrated from the real OSF challenge phantom: romeo-qsmrs → vsharp-qsmrs → rts-qsmrs scores
 # corr≈0.44, xsim≈0.22. These gate against a *broken* pipeline (units bug / mis-wire → corr≈0),
@@ -65,49 +74,49 @@ def phantom() -> dict:
 
 # --- one runner per engine; each runs the SHIPPED example file and returns the produced chimap ---
 
-def _py_example(script: str, phantom, wd) -> str:
+def _py_example(script: str, phantom, wd, env: dict) -> str:
     wd.mkdir(parents=True, exist_ok=True)
     chi = wd / "chimap.nii.gz"
     subprocess.run([sys.executable, str(EXAMPLES / script),
                     "--phase", phantom["phase"], "--magnitude", phantom["magnitude"],
                     "--mask", phantom["mask"], "--params", phantom["params"],
-                    "--out", str(chi), "--runner", "docker"], check=True, env=ENV, cwd=str(wd))
+                    "--out", str(chi), "--runner", "docker"], check=True, env=env, cwd=str(wd))
     return str(chi)
 
 
-def _nipype(phantom, wd) -> str:
-    return _py_example("nipype_pipeline.py", phantom, wd)
+def _nipype(phantom, wd, env) -> str:
+    return _py_example("nipype_pipeline.py", phantom, wd, env)
 
 
-def _pydra(phantom, wd) -> str:
-    return _py_example("pydra_pipeline.py", phantom, wd)
+def _pydra(phantom, wd, env) -> str:
+    return _py_example("pydra_pipeline.py", phantom, wd, env)
 
 
-def _cwl(phantom, wd) -> str:
+def _cwl(phantom, wd, env) -> str:
     wd.mkdir(parents=True, exist_ok=True)
     subprocess.run([_bin("cwltool"), "--preserve-environment", "QSMCI_ALGORITHMS",
                     "--outdir", str(wd), str(EXAMPLES / "pipeline.cwl"),
                     "--phase", phantom["phase"], "--magnitude", phantom["magnitude"],
-                    "--mask", phantom["mask"], "--params", phantom["params"]], check=True, env=ENV)
+                    "--mask", phantom["mask"], "--params", phantom["params"]], check=True, env=env)
     return str(wd / "chimap.nii.gz")
 
 
-def _snakemake(phantom, wd) -> str:
+def _snakemake(phantom, wd, env) -> str:
     wd.mkdir(parents=True, exist_ok=True)
     shutil.copy(EXAMPLES / "Snakefile", wd / "Snakefile")
     for key, canon in [("phase", "phase.nii.gz"), ("magnitude", "magnitude.nii.gz"),
                        ("mask", "mask.nii.gz"), ("params", "params.json")]:
         shutil.copy(phantom[key], wd / canon)
-    subprocess.run([_bin("snakemake"), "-c1", "chimap.nii.gz"], cwd=str(wd), check=True, env=ENV)
+    subprocess.run([_bin("snakemake"), "-c1", "chimap.nii.gz"], cwd=str(wd), check=True, env=env)
     return str(wd / "chimap.nii.gz")
 
 
-def _nextflow(phantom, wd) -> str:
+def _nextflow(phantom, wd, env) -> str:
     wd.mkdir(parents=True, exist_ok=True)
     subprocess.run([_bin("nextflow"), "run", str(EXAMPLES / "pipeline.nf"),
                     "--phase", phantom["phase"], "--magnitude", phantom["magnitude"],
                     "--mask", phantom["mask"], "--params", phantom["params"],
-                    "--outdir", str(wd / "out")], cwd=str(wd), check=True, env=ENV)
+                    "--outdir", str(wd / "out")], cwd=str(wd), check=True, env=env)
     return str(wd / "out" / "chimap.nii.gz")
 
 
@@ -120,8 +129,8 @@ def _bin(name: str) -> str:
 ENGINES = {"nipype": _nipype, "pydra": _pydra, "cwl": _cwl, "snakemake": _snakemake, "nextflow": _nextflow}
 
 
-def test_end_to_end_pipeline_all_engines(phantom, tmp_path):
-    chi = {eng: run(phantom, tmp_path / eng) for eng, run in ENGINES.items()}
+def test_end_to_end_pipeline_all_engines(phantom, env, tmp_path):
+    chi = {eng: run(phantom, tmp_path / eng, env) for eng, run in ENGINES.items()}
 
     ref = qsm_eval.load(chi["nipype"])
     truth = qsm_eval.load(phantom["chimap_truth"])

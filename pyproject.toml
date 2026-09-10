@@ -48,6 +48,12 @@ packages = ["qsm_ci"]
 # without a repo checkout (see qsm_ci/registry.py).
 qsm_ci = ["registry.json"]
 
+# The tests import the standalone scripts (scripts/scoring.py directly; scripts/pipeline.py through
+# the session fixture in tests/conftest.py) — put scripts/ on sys.path for the test session so they
+# resolve without every test file exec'ing its own copy.
+[tool.pytest.ini_options]
+pythonpath = ["scripts"]
+
 # Version is derived from the git tag at build time (setuptools-scm) — CI never rewrites source.
 # A GitHub Release with tag `vX.Y.Z` -> wheel version `X.Y.Z`; untagged dev builds get a 0.0.x.devN.
 [tool.setuptools_scm]

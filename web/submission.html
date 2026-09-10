@@ -8,8 +8,15 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
   <script src="js/app.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <!-- Third-party assets are pinned AND subresource-integrity checked (tests/test_web_sri.py). To bump a
+       version, recompute: curl -s <url> | openssl dgst -sha384 -binary | openssl base64 -A -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" integrity="sha384-wH75j6z1lH97ZOpMOInqhgKzFkAInZPPSPlZpYKYTOqsaizPvhQZmAtLcPKXpLyH" crossorigin="anonymous" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha384-F/bZzf7p3Joyp5psL90p/p89AZJsndkSoGwRpXcZhleCWhd8SnRuoYo4d0yirjJp" crossorigin="anonymous"></script>
+  <!-- NiiVue is an ES module imported from js/viewer.js, where an import statement can carry no hash. The
+       modulepreload below fetches the same URL WITH integrity first; the module map is keyed by URL, so the
+       later import reuses that checked fetch (and fails if the check failed). Bumping the version means
+       changing BOTH this href and the import in js/viewer.js (test_web_sri.py pins them together). -->
+  <link rel="modulepreload" href="https://unpkg.com/@niivue/niivue@0.57.0/dist/index.js" integrity="sha384-G4VGFD+GlcBaC7mVX9HPxlLvosr47k0YUf4iiFQ6/SGIaxp8e5WGFPTeBV+P7QQl" crossorigin="anonymous" />
   <style>
     .hljs { background: transparent; padding: 0; }
     main pre { border: 1px solid rgba(148,163,184,0.18); box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
@@ -55,9 +62,9 @@
     #pan-btn.is-on { background: rgba(16,185,129,0.85); color: #fff; }
     #pan-btn.is-on:hover { background: rgba(16,185,129,1); }
   </style>
-  <link rel="stylesheet" href="https://unpkg.com/uplot@1.6.32/dist/uPlot.min.css">
-  <script src="https://unpkg.com/uplot@1.6.32/dist/uPlot.iife.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.15.12/dist/cdn.min.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/uplot@1.6.32/dist/uPlot.min.css" integrity="sha384-IfV0B7MIOYuO95kO9G5ySKPz/85zqFNOAs8iy4tkK5zd9izhJAB8b7lHrwYqqmYE" crossorigin="anonymous">
+  <script src="https://unpkg.com/uplot@1.6.32/dist/uPlot.iife.min.js" integrity="sha384-Gx3t0zdBAuQOuvvmaLZj7HKEiSgWTAs+VdtNY7wt19QDPTDQjFIwAuXDj0zeN00c" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.15.12/dist/cdn.min.js" integrity="sha384-pb6hrQvo4s23cEUFtj0CZkzGE3jyK3pj26RIupXXxhSrrcUA/Cn0lZgcCrGH0t6L" crossorigin="anonymous"></script>
 </head>
 <body class="font-sans text-gray-900 bg-gray-50 antialiased dark:bg-gray-950 dark:text-gray-100">
   <header id="site-nav"></header>

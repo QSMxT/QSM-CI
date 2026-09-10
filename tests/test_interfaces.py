@@ -69,6 +69,25 @@ def _build_phantom(dest: Path) -> Path:
     return packed
 
 
+def _with_background(totalfield: Path, dest: Path) -> Path:
+    """The phantom's total field plus a deterministic background term, written to `dest`.
+
+    qsm-forward's 'simple' phantom has no background source, so its total and local fields are the
+    SAME voxels. With them equal, test_nipype_chain_bfr_dipole (chimap must equal the total field
+    after two copies) could not tell a correctly wired bfr -> dipole edge from one that fed the
+    dipole the ground-truth local field, and test_nipype_dipole would pass if handed the total
+    field. A smooth offset-plus-ramp — the shape a real background field has — makes the total field
+    its own volume; the local field and χ map are untouched, so the real-reconstruction test still
+    scores against the phantom's physics. Never written into the source dataset ($QSMCI_PHANTOM may
+    be someone's real data)."""
+    img = nib.load(str(totalfield))
+    tf = img.get_fdata()
+    ramp = sum(0.02 * ax / max(n - 1, 1)
+               for ax, n in zip(np.indices(tf.shape, dtype=float), tf.shape))
+    nib.save(nib.Nifti1Image((tf + 0.05 + ramp).astype(np.float32), img.affine), str(dest))
+    return dest
+
+
 @pytest.fixture(scope="session")
 def phantom(tmp_path_factory) -> dict:
     """Canonical-artifact paths for a *real* qsm-forward phantom.
@@ -78,9 +97,14 @@ def phantom(tmp_path_factory) -> dict:
     There is deliberately no synthetic stand-in: the passthrough methods do not care what the
     voxels hold, but test_nipype_real_dipole_docker scores a genuine reconstruction against
     chimap_truth, and noise is not the field of any susceptibility distribution.
+
+    The total field handed out is the phantom's plus a background term (see _with_background), and
+    the three ground-truth volumes are asserted pairwise different — by the same tolerance
+    _assert_copy uses — so the copy assertions can only be satisfied by the right artifact.
     """
     env = os.environ.get("QSMCI_PHANTOM")
-    d = Path(env) if env else _build_phantom(tmp_path_factory.mktemp("qsm-forward"))
+    work = tmp_path_factory.mktemp("qsm-forward")
+    d = Path(env) if env else _build_phantom(work)
     p = {"totalfield": d / "groundtruth" / "totalfield.nii.gz",
          "localfield": d / "groundtruth" / "localfield.nii.gz",
          "chimap_truth": d / "groundtruth" / "chimap.nii.gz",
@@ -88,6 +112,14 @@ def phantom(tmp_path_factory) -> dict:
          "params": d / "inputs" / "params.json"}
     for name, path in p.items():
         assert path.exists(), f"phantom missing {name}: {path}"
+    p["totalfield"] = _with_background(p["totalfield"], work / "totalfield.nii.gz")
+    vols = {k: nib.load(str(p[k])).get_fdata() for k in ("totalfield", "localfield", "chimap_truth")}
+    for a, b in (("totalfield", "localfield"), ("localfield", "chimap_truth"),
+                 ("totalfield", "chimap_truth")):
+        assert vols[a].shape == vols[b].shape
+        assert not np.allclose(vols[a], vols[b]), (
+            f"{a} and {b} hold the same voxels — a passthrough chain fed the wrong one of them "
+            "would still satisfy _assert_copy")
     return {k: str(v) for k, v in p.items()}
 
 

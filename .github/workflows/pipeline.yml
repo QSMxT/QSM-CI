@@ -27,6 +27,9 @@ defaults:
   run:
     shell: bash
 
+permissions:
+  contents: read   # runs the engines and reads the OSF dataset; commits nothing
+
 jobs:
   end-to-end:
     runs-on: ubuntu-latest
@@ -50,13 +53,27 @@ jobs:
       - name: Install CWL / Snakemake / Nextflow engines
         # cwltool + snakemake are CLI tools the test only invokes via PATH, so install them isolated
         # (pipx) — co-resolving them with nipype/pydra makes pip backtrack to an ancient, unbuildable
-        # cwltool. Nextflow is a standalone binary (needs the JVM above).
+        # cwltool. Nextflow is a standalone launcher (needs the JVM above): a PINNED release asset,
+        # checksum-verified, instead of `curl get.nextflow.io | bash` (an unpinned installer with no
+        # integrity check, which also fetched whatever version was current that day). The `-dist`
+        # asset bundles every dependency, so nothing further is downloaded at first run. To bump:
+        # pick a stable tag at https://github.com/nextflow-io/nextflow/releases and take the
+        # `nextflow-<ver>-dist` asset's sha256 from the release page's digest (or `sha256sum` a fresh
+        # download). NB 26.04+ enables the strict syntax parser by default — `nextflow lint
+        # examples/workflow-engines/pipeline.nf` must stay clean.
+        env:
+          NEXTFLOW_VERSION: "26.04.6"
+          NEXTFLOW_SHA256: "182a63c74074e2dc7956ffa3c8cd59de952ed2c44394e21faf5e1736b945444c"
         run: |
           pipx install cwltool
           pipx install snakemake
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-          curl -s https://get.nextflow.io | bash
+          curl -fsSL --retry 5 --retry-all-errors --retry-delay 5 -o nextflow \
+            "https://github.com/nextflow-io/nextflow/releases/download/v${NEXTFLOW_VERSION}/nextflow-${NEXTFLOW_VERSION}-dist"
+          echo "${NEXTFLOW_SHA256}  nextflow" | sha256sum -c -
+          chmod +x nextflow
           sudo mv nextflow /usr/local/bin/
+          nextflow -version
 
       - name: Cache OSF dataset zip
         uses: actions/cache@v6

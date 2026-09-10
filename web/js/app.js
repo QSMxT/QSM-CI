@@ -117,6 +117,13 @@ const MOON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor
   });
   document.addEventListener("mouseout", (e) => { const t = e.target.closest?.("[data-tip]"); if (t === cur && !t?.contains(e.relatedTarget)) hide(); });
   document.addEventListener("mousedown", hide, true);
+  // Keyboard: a focused [data-tip] element (the findings marks are focusable links) shows its tip
+  // anchored below its box, so Tab-ing through a figure reads the same values hovering does.
+  document.addEventListener("focusin", (e) => {
+    const t = e.target.closest?.("[data-tip]"); if (!t) return;
+    const b = t.getBoundingClientRect(); show(t, b.left + b.width / 2, b.bottom);
+  });
+  document.addEventListener("focusout", (e) => { if (e.target.closest?.("[data-tip]") === cur) hide(); });
   const s = document.createElement("style"); s.textContent = css;
   document.addEventListener("DOMContentLoaded", () => document.head.appendChild(s));
 })();

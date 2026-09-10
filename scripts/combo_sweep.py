@@ -39,7 +39,7 @@ EVAL = ROOT / "eval" / "qsm_eval.py"
 # scripts/ for the pipeline chain machinery we still reuse.
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
-from qsm_ci.scoring import gt_sources, eval_argv  # noqa: E402  shared primitives
+from scoring import gt_sources, eval_argv  # noqa: E402  shared primitives
 from pipeline import (  # noqa: E402  reuse the exact composed-chain machinery
     ARTIFACT_FILE, discover_algorithms, prepare_input, run_algo, _valid_mask,
 )

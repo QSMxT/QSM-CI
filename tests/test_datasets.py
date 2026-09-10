@@ -7,17 +7,13 @@ embeds it in web/algorithms.json for the site. These tests pin its shape (so a m
 here, not mid-rescore) and the id-suffix / tuned-parameter fallback semantics that keep existing
 published run ids stable.
 """
-import importlib.util
 import json
 from pathlib import Path
 
 import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
-
-_spec = importlib.util.spec_from_file_location("pipeline", ROOT / "scripts" / "pipeline.py")
-pipeline = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(pipeline)
+# scripts/pipeline.py comes in through the session-scoped `pipeline` fixture (tests/conftest.py).
 
 
 def _registry() -> dict:
@@ -37,7 +33,7 @@ def test_registry_entries_are_well_formed():
             f"{ph}: needs osf_file (literal id) and/or osf_env (secret name)"
 
 
-def test_exactly_one_default_phantom_per_track():
+def test_exactly_one_default_phantom_per_track(pipeline):
     # A no-ground-truth track (pipeline.NO_GT_TRACKS, e.g. repro) has NO default on purpose: its
     # composed run ids would otherwise drop the -<phantom> suffix and collide with the sim track's
     # composed ids (both build fm~bfr~dipole-cmp ids). Every one of its phantoms is namespaced.
@@ -64,7 +60,7 @@ def test_legacy_track_args_are_registry_keys():
 
 # ---- pipeline.py: id namespacing ------------------------------------------------------------
 
-def test_default_phantoms_keep_legacy_ids():
+def test_default_phantoms_keep_legacy_ids(pipeline):
     # The default phantom of every track adds NO id suffix — existing published run ids survive.
     reg = _registry()
     assert pipeline.phantom_suffix(None) == ""
@@ -73,7 +69,7 @@ def test_default_phantoms_keep_legacy_ids():
             assert pipeline.phantom_suffix(ph) == "", f"default phantom {ph} must not suffix ids"
 
 
-def test_non_default_phantom_suffixes_ids(tmp_path, monkeypatch):
+def test_non_default_phantom_suffixes_ids(pipeline, tmp_path, monkeypatch):
     reg = _registry()
     reg["ridani-3t-iso"] = {"track": "chisep", "label": "Ridani 3T iso",
                             "osf_env": "OSF_FILE_RIDANI_3T_ISO",
@@ -86,7 +82,7 @@ def test_non_default_phantom_suffixes_ids(tmp_path, monkeypatch):
     assert pipeline.default_phantom("chisep") == "chisep-mc"  # default phantom of the chisep track
 
 
-def test_unknown_phantom_raises():
+def test_unknown_phantom_raises(pipeline):
     with pytest.raises(KeyError):
         pipeline.phantom_suffix("nope-not-a-phantom")
 
@@ -100,17 +96,17 @@ DOC = {"parameters": [
 ]}
 
 
-def test_tuned_exact_phantom_key_wins():
+def test_tuned_exact_phantom_key_wins(pipeline):
     assert pipeline._tuned_overrides(DOC, "chisep", "ridani-3t-iso") == {"lam": "3"}
 
 
-def test_tuned_falls_back_to_track_key():
+def test_tuned_falls_back_to_track_key(pipeline):
     # A phantom with no tuned entry of its own inherits the track-family tuning.
     assert pipeline._tuned_overrides(DOC, "chisep", "ridani-7t-aniso") == {"lam": "2"}
     assert pipeline._tuned_overrides(DOC, "chisep") == {"lam": "2"}
 
 
-def test_tuned_legacy_scalar_is_sim_only():
+def test_tuned_legacy_scalar_is_sim_only(pipeline):
     assert pipeline._tuned_overrides(DOC, "sim") == {"mu": "5", "tol": "7"}
     assert pipeline._tuned_overrides(DOC, "sim", "sim") == {"mu": "5", "tol": "7"}
     assert pipeline._tuned_overrides(DOC, "invivo") == {"tol": "8"}

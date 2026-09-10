@@ -31,11 +31,13 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   publish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write   # commits the updated registry back to main
     steps:
       - uses: actions/checkout@v7
         with:
@@ -47,8 +49,10 @@ jobs:
 
       - name: Resolve target
         id: t
+        env:
+          TARGET: ${{ github.event.inputs.target }}   # dispatch input: via env, never interpolated into the script
         run: |
-          target="${{ github.event.inputs.target }}"
+          target="$TARGET"
           [ -z "$target" ] && target="production"   # release runs publish to production
           if [ "$target" = "production" ]; then
             echo "base=https://zenodo.org" >> "$GITHUB_OUTPUT"
@@ -62,13 +66,18 @@ jobs:
       - name: Publish methods to Zenodo (${{ steps.t.outputs.target }})
         env:
           ZENODO_TOKEN: ${{ steps.t.outputs.target == 'production' && secrets.ZENODO_TOKEN || secrets.ZENODO_SANDBOX_TOKEN }}
+          ZENODO_BASE: ${{ steps.t.outputs.base }}
+          MAPPING: ${{ steps.t.outputs.mapping }}
+          ONLY: ${{ github.event.inputs.only }}   # dispatch input (optional slug); empty on release runs
         run: |
+          only=()
+          [ -n "$ONLY" ] && only=(--only "$ONLY")
           python3 .github/scripts/publish-zenodo.py \
             --zenodo-token "$ZENODO_TOKEN" \
-            --zenodo-base-url "${{ steps.t.outputs.base }}" \
-            --mapping "${{ steps.t.outputs.mapping }}" \
+            --zenodo-base-url "$ZENODO_BASE" \
+            --mapping "$MAPPING" \
             --site-base-url "https://qsmxt.github.io/QSM-CI" \
-            ${{ github.event.inputs.only && format('--only {0}', github.event.inputs.only) || '' }}
+            "${only[@]}"
 
       - name: Commit updated registry
         # always() so a partial failure (some methods errored) still commits the ones that DID
@@ -83,5 +92,17 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add "$MAPPING"
-          git commit -m "chore: update Zenodo method registry [skip ci]"
-          git push
+          git commit -q -m "chore: update Zenodo method registry [skip ci]"
+          # Bot "Update results" commits land on main all the time. A single `git push` races them:
+          # when one lands mid-publish the push is rejected and the DOIs just minted on Zenodo never
+          # reach the registry (a re-run would mint duplicates). So, like score.yml's commit loop,
+          # re-fetch and retry — here by rebasing the one registry commit onto the latest main.
+          # Only this workflow writes the registry (and it has its own concurrency group), so the
+          # rebase can't conflict; if it somehow does, stop loudly rather than guess.
+          for attempt in 1 2 3 4 5; do
+            git fetch origin main -q
+            git rebase -q origin/main || { git rebase --abort; echo "::error::registry commit does not rebase onto main"; exit 1; }
+            git push origin HEAD:main && exit 0
+            echo "push attempt $attempt rejected — rebasing onto latest main"; sleep $((attempt * 3))
+          done
+          echo "::error::could not push the registry after 5 attempts — the minted DOIs are in this job's log"; exit 1

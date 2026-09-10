@@ -1,5 +1,7 @@
-"""Shared scoring/sweep primitives — one home for the helpers that scripts/pipeline.py,
-scripts/sweep.py and scripts/combo_sweep.py used to each keep their own copy of.
+"""Shared scoring/sweep primitives — one home for the helpers that pipeline.py, sweep.py and
+combo_sweep.py (this directory) used to each keep their own copy of. Nothing in the `qsm_ci` package
+uses these, so they live with the scripts rather than shipping in the wheel; the scripts put this
+directory on sys.path and `from scoring import …`, and the tests get it via pytest's `pythonpath`.
 
 These are the pure-ish building blocks around *running* a submission and *scoring* its artifact:
 
