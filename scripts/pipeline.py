@@ -42,10 +42,13 @@ EVAL = ROOT / "eval" / "qsm_eval.py"
 # not). qsm_ci.stages is pure literals — no yaml/heavy deps.
 sys.path.insert(0, str(ROOT))
 from qsm_ci.stages import STAGES, ARTIFACT_FILE, ARTIFACT_KIND  # noqa: E402
-# Shared scoring/sweep primitives (also used by scripts/sweep.py + combo_sweep.py) — one home for the
-# `qsm-ci run` argv builder, the GT source map, the --shard partition, and the qsm_eval argv, so the
-# scorer and the sweeps can't drift. Pure literals/argv assembly — no heavy deps at import.
-from qsm_ci.scoring import (  # noqa: E402
+# Shared scoring/sweep primitives (scripts/scoring.py, also used by sweep.py + combo_sweep.py) — one
+# home for the `qsm-ci run` argv builder, the GT source map, the --shard partition, and the qsm_eval
+# argv, so the scorer and the sweeps can't drift. Pure literals/argv assembly — no heavy deps at
+# import. scripts/ goes on sys.path too so this resolves however the script is loaded (run as
+# `python scripts/pipeline.py`, or exec'd from its file by the tests).
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from scoring import (  # noqa: E402
     cli_run_argv, gt_sources as _gt_sources, parse_shard, shard_owns, shard_partition, eval_argv,
 )
 
@@ -1087,14 +1090,27 @@ def do_span(task, args, gt_sources, gt, mask, tf_sources):
                    reason=e)
 
 
-def run_composed(args, algos, gt_sources, gt, mask, shard_i, shard_n, runs: list) -> None:
-    """Composed: (field-mapping) x bfr x dipole, chaining real outputs, plus spans.
+class ComposedPlan:
+    """What run_composed will run, and which of it THIS shard owns — see plan_composed."""
 
-    Preserves the exact stage ordering, the --focus pinning, the --shard COLUMN partition (a column =
-    (totalfield-source, bfr); its bfr localfield is computed in exactly one shard), the bfr-output
-    caching reused across dipole methods (the N×M matrix), and the _pmap fan-out per stage. Appends
-    result rows to `runs` and flushes the index (unless writing a shard file) after the dipole stage,
-    exactly as before."""
+    def __init__(self, *, fmap, bfr, dipole, tf_spans, e2e_spans, no_gt, fm_keys, col_owner,
+                 span_owner, owns_col, owns_span):
+        self.fmap, self.bfr, self.dipole = fmap, bfr, dipole
+        self.tf_spans, self.e2e_spans = tf_spans, e2e_spans
+        self.no_gt, self.fm_keys = no_gt, fm_keys
+        self.col_owner, self.span_owner = col_owner, span_owner
+        self.owns_col, self.owns_span = owns_col, owns_span
+
+
+def plan_composed(algos, focus, track, shard_i, shard_n) -> ComposedPlan:
+    """The pure half of run_composed: which submissions enter the matrix (after --focus pinning), the
+    total-field sources, the stable COLUMN ordering the --shard partition runs over, and which
+    columns this shard owns. No I/O, so tests can check the ownership arithmetic directly.
+
+    `fmap` (field-mapping methods) and `e2e_spans` come back already pruned to this shard: a field
+    map runs only in shards that own a column consuming it, and end-to-end spans are round-robined
+    like isolated runs. `col_owner` / `span_owner` keep the FULL ordering (every shard must agree on
+    it) and `owns_col(tfk, bfr_slug)` / `owns_span(tfk, span_slug)` answer for this shard."""
     def _owns(index):
         return shard_owns(index, shard_i, shard_n)
 
@@ -1103,8 +1119,8 @@ def run_composed(args, algos, gt_sources, gt, mask, shard_i, shard_n, runs: list
     dipole = [a for a in algos if a["stage"] == "dipole"]
     spans = [a for a in algos if "chimap" in a["produces"] and a["stage"] != "dipole"]
 
-    if args.focus:  # pin the focus's own stage to it; every combo that includes it still runs
-        f = next((a for a in algos if a["slug"] == args.focus), None)
+    if focus:  # pin the focus's own stage to it; every combo that includes it still runs
+        f = next((a for a in algos if a["slug"] == focus), None)
         if f is None:
             fmap, bfr, dipole, spans = [], [], [], []
         elif f["stage"] == "dipole":
@@ -1125,7 +1141,7 @@ def run_composed(args, algos, gt_sources, gt, mask, shard_i, shard_n, runs: list
 
     # A no-ground-truth track has no gt total field to chain from: every pipeline starts from a
     # real field-mapping submission (or is an end-to-end span running from raw phase).
-    no_gt = args.track in NO_GT_TRACKS
+    no_gt = track in NO_GT_TRACKS
 
     # --shard: own each composed COLUMN = (totalfield-source, bfr) via round-robin over a stable
     # ordering. A column's bfr localfield is computed in exactly one shard (no cross-shard bfr
@@ -1143,15 +1159,33 @@ def run_composed(args, algos, gt_sources, gt, mask, shard_i, shard_n, runs: list
     span_owner = {(tfk, s["slug"]): idx for idx, (tfk, s)
                   in enumerate((tfk, s) for tfk in fm_keys for s in tf_spans)}
     owns_span = lambda tfk, ss: _owns(span_owner.get((tfk, ss), 0))
-    # --emit-intermediates: which field maps THIS shard publishes (see tf_emit_owner).
-    emit_inter = getattr(args, "emit_intermediates", False)
-    emit_tf = tf_emit_owner(col_owner, span_owner, owns_col, owns_span) if emit_inter else set()
 
     if shard_n is not None:
         needed_fm = {tfk for (tfk, bs) in col_owner if tfk != "gt" and owns_col(tfk, bs)}
         needed_fm |= {tfk for (tfk, ss) in span_owner if tfk != "gt" and owns_span(tfk, ss)}
         fmap = [f for f in fmap if f["slug"] in needed_fm]
-        e2e_spans = shard_partition(e2e_spans, args.shard)
+        e2e_spans = [s for idx, s in enumerate(e2e_spans) if _owns(idx)]  # == shard_partition
+
+    return ComposedPlan(fmap=fmap, bfr=bfr, dipole=dipole, tf_spans=tf_spans, e2e_spans=e2e_spans,
+                        no_gt=no_gt, fm_keys=fm_keys, col_owner=col_owner, span_owner=span_owner,
+                        owns_col=owns_col, owns_span=owns_span)
+
+
+def run_composed(args, algos, gt_sources, gt, mask, shard_i, shard_n, runs: list) -> None:
+    """Composed: (field-mapping) x bfr x dipole, chaining real outputs, plus spans.
+
+    Preserves the exact stage ordering, the --focus pinning, the --shard COLUMN partition (a column =
+    (totalfield-source, bfr); its bfr localfield is computed in exactly one shard), the bfr-output
+    caching reused across dipole methods (the N×M matrix), and the _pmap fan-out per stage. Appends
+    result rows to `runs` and flushes the index (unless writing a shard file) after the dipole stage,
+    exactly as before. The selection/ownership arithmetic is plan_composed's."""
+    plan = plan_composed(algos, args.focus, args.track, shard_i, shard_n)
+    fmap, bfr, dipole, tf_spans, e2e_spans = plan.fmap, plan.bfr, plan.dipole, plan.tf_spans, plan.e2e_spans
+    no_gt, owns_col, owns_span = plan.no_gt, plan.owns_col, plan.owns_span
+    # --emit-intermediates: which field maps THIS shard publishes (see tf_emit_owner).
+    emit_inter = getattr(args, "emit_intermediates", False)
+    emit_tf = (tf_emit_owner(plan.col_owner, plan.span_owner, owns_col, owns_span)
+               if emit_inter else set())
 
     # Stage 1 — totalfield sources: the ground-truth field ("gt") plus each field-mapping
     # submission's output (run on raw inputs), so the matrix can start from raw phase.

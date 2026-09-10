@@ -40,7 +40,7 @@ EVAL = ROOT / "eval" / "qsm_eval.py"
 # pipeline.py). scripts/ is on the path too for the pipeline helpers we still reuse (run_algo etc.).
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
-from qsm_ci.scoring import cli_run_argv, gt_sources, eval_argv  # noqa: E402  shared primitives
+from scoring import cli_run_argv, gt_sources, eval_argv  # noqa: E402  shared primitives
 from pipeline import (  # noqa: E402  reuse the exact isolated-scoring machinery
     ARTIFACT_FILE, ARTIFACT_KIND, discover_algorithms, prepare_input, _valid_mask,
 )

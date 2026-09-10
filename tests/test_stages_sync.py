@@ -7,7 +7,6 @@ When they disagree, the scorer and the CLI mount/accept different inputs: e.g. p
 run` that rejected it and every dipole method DNF'd. These tests fail the PR instead — update the
 drifted copy to match stages.yml.
 """
-import importlib.util
 from pathlib import Path
 
 import yaml
@@ -24,13 +23,6 @@ _EXPECTED_STAGES = {
 _EXPECTED_FILES = {name: spec["file"] for name, spec in _YML["artifacts"].items() if "file" in spec}
 
 
-def _load_pipeline():
-    spec = importlib.util.spec_from_file_location("pipeline", ROOT / "scripts" / "pipeline.py")
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    return mod
-
-
 def test_cli_stages_match_yaml():
     assert pystages.STAGES == _EXPECTED_STAGES, (
         "qsm_ci/stages.py STAGES drifted from stages.yml (stages + spans) — update it to match."
@@ -43,8 +35,7 @@ def test_cli_artifact_files_match_yaml():
     )
 
 
-def test_scorer_stages_match_yaml():
-    pipeline = _load_pipeline()
+def test_scorer_stages_match_yaml(pipeline):
     assert pipeline.STAGES == _EXPECTED_STAGES, (
         "scripts/pipeline.py STAGES drifted from stages.yml — update it (this is what made every "
         "dipole method DNF when the CLI and scorer disagreed on --magnitude)."
