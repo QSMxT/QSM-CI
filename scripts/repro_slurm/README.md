@@ -20,6 +20,32 @@ their own publishers, and `publish_volumes.py --prune` deliberately does not jud
 If you add a fourth such kind, add it to that list and check `publish_volumes.RUN_ARTIFACTS` still
 excludes it — a 2026-09 dry run found prune ready to delete all 621 of these as "orphans".
 
+## Everything runs through sbatch
+
+Bunya's login node is shared, so anything that lists a 57k-file repo, uploads gigabytes, or takes
+more than a few seconds belongs in a batch job — including the "just a dry run" ones, which still
+publish in full because `--prune-dry-run` suppresses deletion only. Every job here is an sbatch
+script for that reason; the login node is for `squeue`, `sacct`, `sbatch` and reading logs.
+
+## Collapsing the ground-truth copies (2026-09, done once)
+
+The Hub accumulated per-run copies of each phantom's ground truth, plus the volumes of runs since
+renamed or retired. Clearing it is a five-step sequence, and the ORDER is what keeps the site
+working — an index that still points at a file must be repointed and DEPLOYED before that file goes:
+
+| step | job | what |
+|---|---|---|
+| 1 | `flat_run.slurm` | `--prune --prune-flat`: volumes of retired runs |
+| 2 | `dedupe_repoint.slurm` | upload shared truth, repoint the DEPLOYED index → commit + deploy |
+| 3 | `dedupe_repoint_hpc.slurm` | repoint the HPC index (releases what it protected) |
+| 4 | `dedupe_delete.slurm` | `--delete-legacy`: the per-run copies |
+| 5 | `squash.slurm` | reclaim the LFS objects (Hub quota lags ~36h) |
+
+`*_dry.slurm` are the dry-run counterparts. Run them and READ THEM: step 1's dry run is what caught
+`--prune` proposing to delete 621 live shared intermediates, and a dry run of the old dedupe found it
+about to delete 165 volumes the site was serving. A file both indexes reference needs BOTH repointed
+before it can go, which is why steps 2 and 3 are separate.
+
 ## Re-sync before every campaign (this bites)
 
 The one-time setup below rsyncs the repo to scratch, and the checkout there then **stays at whatever
