@@ -1,4 +1,4 @@
-"""Unit tests for the shared scoring/sweep primitives in qsm_ci.scoring.
+"""Unit tests for the shared scoring/sweep primitives in scripts/scoring.py.
 
 These cover the PURE helpers only — no Docker, no dataset, no scientific stack. They pin the exact
 argv/mapping/partition behaviour the three scripts (pipeline.py, sweep.py, combo_sweep.py) used to
@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from qsm_ci.scoring import (
+from scoring import (  # scripts/ is on sys.path via pyproject [tool.pytest.ini_options] pythonpath
     cli_run_argv, eval_argv, gt_sources, parse_shard, shard_owns, shard_partition,
 )
 from qsm_ci.stages import ARTIFACT_FILE as AF
@@ -197,9 +197,12 @@ def test_eval_argv_pipeline_chi_with_runtime_and_seg():
 def test_eval_argv_no_runtime_no_seg():
     argv = eval_argv("py", Path("/e.py"), Path("/r"), Path("/t"), "field", Path("/m"),
                      "localfield", Path("/o"), stage="sweep", name="sweep", track="sim")
-    assert "--runtime" not in argv and "--seg" not in argv
-    assert argv[-3:] == ["--name", "sweep", "--track"] or argv[-1] == "sim"
-    assert argv[-6:] == ["--stage", "sweep", "--name", "sweep", "--track", "sim"]
+    # The whole argv, so nothing optional sneaks in anywhere and `--track sim` is the exact tail.
+    assert argv == [
+        "py", "/e.py", "--recon", "/r", "--truth", "/t", "--kind", "field", "--mask", "/m",
+        "--artifact", "localfield", "--out", "/o", "--stage", "sweep", "--name", "sweep",
+        "--track", "sim",
+    ]
 
 
 def test_eval_argv_seg_without_runtime():

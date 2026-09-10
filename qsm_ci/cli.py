@@ -4,6 +4,7 @@
   qsm-ci new                 scaffold a submission folder (interactive)
   qsm-ci run <slug> ...      run one stage on explicit input files; score it with --truth
   qsm-ci submit <slug>       open a pull request adding your submission
+  qsm-ci interface <engine>  generate a workflow-engine wrapper (cwl / snakemake / nextflow)
   qsm-ci doctor              check your environment
 
 Start with `qsm-ci list` to see the slugs, then `qsm-ci run <slug>` to see the inputs that
@@ -22,6 +23,23 @@ from . import __version__
 def _cmd_new(args) -> int:
     from .scaffold import run_new
     return run_new(args)
+
+
+def _cmd_list(args) -> int:
+    from .runner import list_command
+    return list_command()
+
+
+def _cmd_run(args) -> int:
+    """`qsm-ci run <slug> …` — hand the raw tail to the stage-aware run parser (see build_parser)."""
+    from .runner import run_command
+    try:
+        return run_command(list(args.args))
+    except SystemExit as e:
+        if isinstance(e.code, int):
+            return e.code
+        print(f"✗ {e}", file=sys.stderr)
+        return 1
 
 
 def _cmd_submit(args) -> int:
@@ -87,11 +105,26 @@ def build_parser() -> argparse.ArgumentParser:
     n.add_argument("--force", action="store_true")
     n.set_defaults(func=_cmd_new)
 
-    sub.add_parser("list", help="list the reference algorithms you can run")
+    lst = sub.add_parser("list", help="list the reference algorithms you can run",
+                         description="List the reference algorithms `qsm-ci run` can run: every "
+                                     "submission in ./algorithms (or $QSMCI_ALGORITHMS), else the "
+                                     "published methods fetched from Zenodo.")
+    lst.set_defaults(func=_cmd_list)
 
-    # `run` parses its own (stage-dependent) flags — register it just for help/usage listing.
-    sub.add_parser("run", add_help=False,
-                   help="run one stage on explicit files (qsm-ci run <slug> for the inputs it needs)")
+    # `run` is a passthrough: its flags depend on the chosen method's stage, so the real parser is
+    # built per slug in runner.run_command (`qsm-ci run <slug> --help` shows it). This entry exists
+    # so `qsm-ci --help` lists the command and `qsm-ci run --help` explains where the flags live;
+    # it takes the whole tail verbatim (no -h of its own — `--help` belongs to the run parser).
+    # main() dispatches `run` before argparse ever sees it, because argparse.REMAINDER only works
+    # once a positional has been seen (`qsm-ci run --runner local <slug>` would be rejected here).
+    r = sub.add_parser("run", add_help=False,
+                       help="run one stage on explicit files (qsm-ci run <slug> for the inputs it needs)",
+                       description="Run one method on explicit input files. The flags are derived from "
+                                   "the method's stage, so see `qsm-ci run <slug> --help` for them; "
+                                   "`qsm-ci run` alone lists the methods you can run.")
+    r.add_argument("args", nargs=argparse.REMAINDER, metavar="<slug> [--<artifact> PATH ...]",
+                   help="see `qsm-ci run <slug> --help`")
+    r.set_defaults(func=_cmd_run)
 
     s = sub.add_parser("submit", help="open a pull request adding your submission")
     s.add_argument("slug")
@@ -118,20 +151,12 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv=None) -> int:
     argv = list(sys.argv[1:] if argv is None else argv)
 
-    # `run` has dynamic, stage-derived flags — dispatch it before argparse sees the unknown flags.
+    # `run` has dynamic, stage-derived flags — dispatch it before argparse sees them. The parser's
+    # `run` entry (a REMAINDER passthrough) would reject a tail that starts with an option, e.g.
+    # `qsm-ci run --runner local <slug>` or `qsm-ci run --help`, so the whole tail goes straight to
+    # runner.run_command, which handles both `--help` forms itself.
     if argv and argv[0] == "run":
-        from .runner import run_command
-        try:
-            return run_command(argv[1:])
-        except SystemExit as e:
-            if isinstance(e.code, int):
-                return e.code
-            print(f"✗ {e}", file=sys.stderr)
-            return 1
-
-    if argv and argv[0] == "list":
-        from .runner import list_command
-        return list_command(argv[1:])
+        return _cmd_run(argparse.Namespace(args=argv[1:]))
 
     args = build_parser().parse_args(argv)
     return args.func(args)
