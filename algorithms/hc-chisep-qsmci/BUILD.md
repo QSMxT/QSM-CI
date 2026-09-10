@@ -1,4 +1,4 @@
-# Building the hc-chisep image
+# Building the hc-chisep-qsmci image
 
 hc-chisep is fully self-contained: `recon.py` vendors the handful of hollow-cylinder model
 functions it needs (ported from qsm-forward, which implements Wharton & Bowtell, PNAS 2012,
@@ -18,7 +18,7 @@ ENTRYPOINT ["bash", "run.sh"]
 ```
 
 ```bash
-docker build -t ghcr.io/astewartau/qsm-ci/hc-chisep:v1 algorithms/hc-chisep
+docker build -t ghcr.io/astewartau/qsm-ci/hc-chisep:v1 algorithms/hc-chisep-qsmci
 docker push  ghcr.io/astewartau/qsm-ci/hc-chisep:v1   # make the GHCR package public
 ```
 
@@ -26,7 +26,7 @@ docker push  ghcr.io/astewartau/qsm-ci/hc-chisep:v1   # make the GHCR package pu
 
 ```bash
 HCCHISEP_PYTHON=/path/to/python-with-numpy-scipy-nibabel \
-bash algorithms/hc-chisep/run.sh data/sim/chisep-ship/inputs /tmp/hc-chisep-out
+bash algorithms/hc-chisep-qsmci/run.sh data/sim/chisep-ship/inputs /tmp/hc-chisep-out
 ```
 
 Runs in ~2 minutes full brain (1.3 M voxels, 8 echoes) on 14 CPU cores. Modes via

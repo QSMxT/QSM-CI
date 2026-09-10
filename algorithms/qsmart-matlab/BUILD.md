@@ -1,4 +1,4 @@
-# Building matlab-qsmart (compiled MATLAB → MATLAB Runtime + ANTs N4)
+# Building qsmart-matlab (compiled MATLAB → MATLAB Runtime + ANTs N4)
 
 Compile `recon.m` on a machine with **MATLAB + MATLAB Compiler** (R2026a). Same patterns as
 `../medi-cornell/BUILD.md` (bundled NIfTI toolbox, OS gzip, no JVM) and `../ilsqr-sti/BUILD.md`

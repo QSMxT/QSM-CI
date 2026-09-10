@@ -1,7 +1,7 @@
-# Building chi-sep-ilsqr (compiled MATLAB → MATLAB Runtime)
+# Building chisep-ilsqr (compiled MATLAB → MATLAB Runtime)
 
 Compile `recon.m` on a machine with **MATLAB + MATLAB Compiler** (R2026a). The result runs license-free
-on the MATLAB Runtime. Same pattern as `../matlab-sti-ilsqr/BUILD.md` (bundled NIfTI + STI Suite `.p` +
+on the MATLAB Runtime. Same pattern as `../ilsqr-sti/BUILD.md` (bundled NIfTI + STI Suite `.p` +
 IPT/SPT shims), plus the **SNU-LIST chi-separation toolbox** (`chi_sep_iLSQR`, obfuscated `.p`).
 
 Stage: `chi-separation` — consumes `localfield` (ppm) + `r2prime` (Hz) + `magnitude` + `mask` + `params`;
@@ -10,12 +10,12 @@ see recon.m note), runs `chi_sep_iLSQR` → `chi-para` (χ+) + `chi-dia` (χ−)
 
 ## 1. Fetch build-time deps (not committed; `shims/` IS committed — it's ours)
 ```bash
-cp -r /path/to/NIfTI_20140122                                 algorithms/chi-sep-ilsqr/nifti
-cp -r /path/to/STISuite_V3.0/Core_Functions_P                 algorithms/chi-sep-ilsqr/sti
+cp -r /path/to/NIfTI_20140122                                 algorithms/chisep-ilsqr/nifti
+cp -r /path/to/STISuite_V3.0/Core_Functions_P                 algorithms/chisep-ilsqr/sti
 # chi-separation toolbox (obtained via SNU-LIST Google Form) — only functions/ + utils/ are needed:
-mkdir -p algorithms/chi-sep-ilsqr/chisep
-cp -r /path/to/Chisep_Toolbox_v1.1.3/functions               algorithms/chi-sep-ilsqr/chisep/functions
-cp -r /path/to/Chisep_Toolbox_v1.1.3/utils                   algorithms/chi-sep-ilsqr/chisep/utils
+mkdir -p algorithms/chisep-ilsqr/chisep
+cp -r /path/to/Chisep_Toolbox_v1.1.3/functions               algorithms/chisep-ilsqr/chisep/functions
+cp -r /path/to/Chisep_Toolbox_v1.1.3/utils                   algorithms/chisep-ilsqr/chisep/utils
 ```
 `sti/` and `chisep/` hold obfuscated `.p` (real code) that mcc can't trace into, so they're force-bundled
 with `-a` below. `shims/` replaces the Image Processing + Signal Processing Toolbox functions the `.p`
@@ -24,7 +24,7 @@ MATLAB Runtime ships neither toolbox.
 
 ## 2. Compile
 ```bash
-cd algorithms/chi-sep-ilsqr
+cd algorithms/chisep-ilsqr
 matlab -batch "addpath('shims'); addpath('nifti'); addpath('sti'); addpath(genpath('chisep')); \
   mcc('-m','recon.m','-a','sti','-a','chisep','-a','shims','-o','recon','-d','.')"
 ```

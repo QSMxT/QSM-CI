@@ -33,7 +33,7 @@ import onnxruntime as ort
 
 # Declared parameters (see algorithm.yml). Defaults tile the challenge volume into 128^3 patches with
 # 32-voxel overlap (~5.3 GB peak, local field within corr 0.992 of the whole-volume result). Override
-# per run: `qsm-ci run algorithms/bfrnet --set patch_size=160` (bigger = closer to whole-volume,
+# per run: `qsm-ci run bfrnet --set patch_size=160` (bigger = closer to whole-volume,
 # more RAM), or `--set patch_size=0` to run the whole volume in one pass (needs ~19 GB for the
 # challenge volume). Resolved from QSMCI_SET_<NAME> / config.json, exactly like the other subs.
 PATCH_DEFAULT = 128

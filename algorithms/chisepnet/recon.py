@@ -51,7 +51,7 @@ MODELS = _models_dir()
 
 def read_dr():
     """Dr (Hz/ppm) used to scale R2' into the network's input channel. Overridable via
-    `qsm-ci run chi-sepnet --set Dr=...` (arrives as /input/config.json), else the trained default 114.
+    `qsm-ci run chisepnet --set Dr=...` (arrives as /input/config.json), else the trained default 114.
     NB: the net was trained at Dr=114 — moving it feeds off-distribution inputs, so this is a research
     knob, not an accuracy-tuning target."""
     p = os.path.join(IN, "config.json")

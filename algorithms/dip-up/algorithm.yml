@@ -19,7 +19,7 @@ description: >
   the specific input under a Laplacian-consistency loss and a masked total-variation loss. DIP-UP only
   unwraps ONE echo, so this wrapper runs it on EACH echo and then does the standard per-voxel linear
   fit of unwrapped phase over TE, normalized by B0, to produce the total field in ppm — the SAME
-  echo-fit + ppm math as the reference laplacian-fieldmap / romeo-fieldmap submissions. The novelty
+  echo-fit + ppm math as the reference laplacian-qsmci / romeo-qsmrs submissions. The novelty
   benchmarked is DIP-UP's unwrap operator swapped in for the Laplacian/ROMEO unwrap; the downstream
   echo-fit is identical. GPU-capable, CPU-optional (the reference recommends a 16–24 GB GPU; see
   README RUNTIME/GPU CAVEAT). DOMAIN-SHIFT CAVEAT: the base net was trained on real brain GRE phase at
@@ -54,7 +54,7 @@ ci_notes:
 - >
   DIP-UP is a single-echo PHASE-UNWRAPPING network; it does not itself produce a total field. QSM-CI
   runs it per echo and appends the standard multi-echo linear phase-fit + B0 normalization
-  (identical to laplacian-fieldmap / romeo-fieldmap) to obtain totalfield in ppm.
+  (identical to laplacian-qsmci / romeo-qsmrs) to obtain totalfield in ppm.
 - >
   The DIP-UP repo does not ship the Unet_blocks.py its network classes import; it is reconstructed in
   this submission to be byte-compatible with the released checkpoints (PHU-NET3D width 64, PhaseNet3D

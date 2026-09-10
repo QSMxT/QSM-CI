@@ -34,7 +34,7 @@ parameters:
     a Hann window. Larger patches see more context and track the whole-volume result more closely
     (local field: 128^3 -> corr 0.992 vs whole-volume) at higher memory. Set 0 to run the whole
     volume in one pass (needs ~19 GB RAM — for a machine with the memory, e.g. `qsm-ci run
-    algorithms/bfrnet --set patch_size=0`).
+    bfrnet --set patch_size=0`).
 - name: overlap
   default: 32
   description: >

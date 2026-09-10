@@ -7,14 +7,14 @@ so they're gitignored and baked into the image at build time. The `Dockerfile` i
 CI pulls the prebuilt image rather than building it.
 
 ```bash
-# from the repo root, with the two model files present in algorithms/chi-sepnet/
-docker build -t ghcr.io/astewartau/qsm-ci/chi-sepnet:v1 algorithms/chi-sepnet
+# from the repo root, with the two model files present in algorithms/chisepnet/
+docker build -t ghcr.io/astewartau/qsm-ci/chi-sepnet:v1 algorithms/chisepnet
 docker push  ghcr.io/astewartau/qsm-ci/chi-sepnet:v1   # make the GHCR package public
 ```
 
 Smoke test (docker runner):
 ```bash
-python -m qsm_ci.cli run chi-sepnet \
+python -m qsm_ci.cli run chisepnet \
   --localfield data/sim/chisep/inputs/localfield.nii.gz \
   --chimap     data/sim/chisep/inputs/chimap.nii.gz \
   --r2prime    data/sim/chisep/inputs/r2prime.nii.gz \

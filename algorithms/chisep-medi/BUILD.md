@@ -1,7 +1,7 @@
-# Building chi-sep-medi (compiled MATLAB → MATLAB Runtime)
+# Building chisep-medi (compiled MATLAB → MATLAB Runtime)
 
 Compile `recon.m` on a machine with **MATLAB + MATLAB Compiler** (R2026a). The result runs license-free
-on the MATLAB Runtime. Same pattern as `../chi-sep-ilsqr/BUILD.md`, but the core solver is `chi_sep_MEDI`
+on the MATLAB Runtime. Same pattern as `../chisep-ilsqr/BUILD.md`, but the core solver is `chi_sep_MEDI`
 (morphology-enabled dipole inversion) and the extra toolbox is the **Cornell MEDI toolbox** (not STI Suite).
 
 Stage: `chi-separation` — consumes `localfield` (ppm) + `r2prime` (Hz) + `chimap` (χ_total, ppm) +
@@ -11,14 +11,14 @@ directly (no in-house STI-Suite QSM needed) and converges fast (~10 s).
 
 ## 1. Fetch build-time deps (not committed; `shims/` IS committed — it's ours)
 ```bash
-cp -r /path/to/NIfTI_20140122                        algorithms/chi-sep-medi/nifti
-cp -r /path/to/MEDI_toolbox/functions                algorithms/chi-sep-medi/medi
+cp -r /path/to/NIfTI_20140122                        algorithms/chisep-medi/nifti
+cp -r /path/to/MEDI_toolbox/functions                algorithms/chisep-medi/medi
 # store_CG_results is only referenced by an unused MEDI_L1 debug branch — add a no-op stub so mcc resolves it:
-printf 'function store_CG_results(varargin)\nend\n' > algorithms/chi-sep-medi/medi/store_CG_results.m
+printf 'function store_CG_results(varargin)\nend\n' > algorithms/chisep-medi/medi/store_CG_results.m
 # chi-separation toolbox (obtained via SNU-LIST Google Form) — only functions/ + utils/ are needed:
-mkdir -p algorithms/chi-sep-medi/chisep
-cp -r /path/to/Chisep_Toolbox_v1.1.3/functions       algorithms/chi-sep-medi/chisep/functions
-cp -r /path/to/Chisep_Toolbox_v1.1.3/utils           algorithms/chi-sep-medi/chisep/utils
+mkdir -p algorithms/chisep-medi/chisep
+cp -r /path/to/Chisep_Toolbox_v1.1.3/functions       algorithms/chisep-medi/chisep/functions
+cp -r /path/to/Chisep_Toolbox_v1.1.3/utils           algorithms/chisep-medi/chisep/utils
 ```
 `chisep/` holds obfuscated `.p` (`chi_sep_MEDI`) that mcc can't trace into — and it calls the MEDI
 toolbox internally — so both `chisep` and `medi` are force-bundled with `-a` below. `shims/` replaces
@@ -26,7 +26,7 @@ the IPT/SPT functions the `.p` call (`padarray`, morphology, `tukeywin`/`hann`/`
 
 ## 2. Compile
 ```bash
-cd algorithms/chi-sep-medi
+cd algorithms/chisep-medi
 matlab -batch "addpath('shims'); addpath('nifti'); addpath('medi'); addpath(genpath('chisep')); \
   mcc('-m','recon.m','-a','medi','-a','chisep','-a','shims','-o','recon','-d','.')"
 ```

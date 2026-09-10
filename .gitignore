@@ -73,17 +73,19 @@ algorithms/*/sti/
 algorithms/*/sti_support/
 # Compiled-MATLAB submissions ship as prebuilt+pushed GHCR images (the Dockerfile bakes a
 # licensed mcc binary that CI cannot reproduce), so CI must PULL image: rather than build the
-# Dockerfile. Keeping the Dockerfile out of the checkout makes pipeline.build_env pull it.
-# (Dockerfile content is documented in each submission's BUILD.md.)
-algorithms/matlab-*/Dockerfile
-# New compiled-MATLAB submissions (clean names, not matlab-*) + IR2QSM (a baked pretrained checkpoint
-# CI cannot reproduce — the authors' single-file Drive link is quota-blocked). Same rule: CI PULLs
-# the pushed image, so keep their Dockerfiles out of the checkout.
-algorithms/fansi/Dockerfile
-algorithms/ndi/Dockerfile
-algorithms/l1-qsm/Dockerfile
-algorithms/wh-qsm/Dockerfile
-algorithms/hd-qsm/Dockerfile
+# Dockerfile. The runner never builds one anyway — qsm_ci/containers._build_oci only pulls `image:` —
+# so a folder Dockerfile is just the recipe for the pushed image; it stays out of the checkout and
+# is documented in each submission's BUILD.md instead. Explicit list (the former matlab-* folders):
+algorithms/tkd-qsmci/Dockerfile
+algorithms/ilsqr-sti/Dockerfile
+algorithms/star-sti/Dockerfile
+algorithms/vsharp-sti/Dockerfile
+algorithms/medi-cornell/Dockerfile
+# IR2QSM: a baked pretrained checkpoint CI cannot reproduce (the authors' single-file Drive link is
+# quota-blocked). Same rule: CI PULLs the pushed image, so keep its Dockerfile out of the checkout.
+# (The compiled-MATLAB FANSI/NDI/L1-QSM/WH-QSM/HD-QSM submissions once listed here were replaced by
+# QSM.rs ports — fansi-*-qsmrs, ndi-qsmrs, l1qsm-qsmrs, whqsm-qsmrs, hdqsm-qsmrs — which run on the
+# shared qsmxt image with no Dockerfile.)
 algorithms/ir2qsm/Dockerfile
 # AMP-PE: the upstream MIT solver (amp_pe_qsm/, functions/) is a build-time dep fetched via
 # git clone and baked into the compiled recon binary (see BUILD.md), so it isn't committed; its
@@ -96,7 +98,7 @@ algorithms/amp-pe/functions/
 algorithms/*/*.mat
 algorithms/*/*.pth
 algorithms/*/*.onnx
-algorithms/chi-sepnet/Dockerfile
+algorithms/chisepnet/Dockerfile
 algorithms/susep-net/Dockerfile
 # r2primenet: SNU toolbox weights baked into the pushed image (see its BUILD.md); Dockerfile
 # gitignored so CI pulls the prebuilt image. (*.onnx / *.mat already ignored above.)
@@ -109,18 +111,12 @@ algorithms/r2primenet-7t/Dockerfile
 algorithms/wavesep/wavesep/
 algorithms/wavesep/Dockerfile
 
-# mSMV: upstream code (no license declared — academic use, cite the paper) is fetched at build time
-# and baked into the compiled recon binary (see BUILD.md), so it isn't committed; shims/ IS committed
-# (ours). Dockerfile gitignored so CI pulls the prebuilt MCR image. (nifti/ already ignored above.)
-algorithms/msmv/msmv_code/
-algorithms/msmv/Dockerfile
-
 # chi-separation MATLAB methods: the SNU-LIST chi-separation toolbox (obtained via Google Form, academic
 # use) is a build-time dep baked into the compiled recon binary, never committed. shims/ IS committed
 # (ours). Dockerfiles gitignored so CI pulls the prebuilt MCR image (see each BUILD.md).
 algorithms/*/chisep/
-algorithms/chi-sep-ilsqr/Dockerfile
-algorithms/chi-sep-medi/Dockerfile
+algorithms/chisep-ilsqr/Dockerfile
+algorithms/chisep-medi/Dockerfile
 algorithms/decompose-qsm/Dockerfile
 
 # QSMART (original toolbox): third-party build-time deps (QSMART .m files + Hongfu Sun's

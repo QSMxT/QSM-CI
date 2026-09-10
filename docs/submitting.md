@@ -56,10 +56,18 @@ implement one stage, or a span for methods that cross boundaries. See
 | `unwrap+bfr` | `phase`, `magnitude`, `mask`, `params` | `localfield` |
 | `bfr+dipole` | `totalfield`, `mask`, `params`, `magnitude` | `chimap` |
 | `end-to-end` | `phase`, `magnitude`, `mask`, `params` | `chimap` |
+| `chi-separation` | `localfield`, `r2prime`, `chimap`, `magnitude`, `mask`, `params` | `chi-para`, `chi-dia` |
+| `r2prime-generation` | `magnitude`, `mask`, `params` | `r2prime` |
+| `brain-extraction` | `magnitude`, `params` | `mask` |
 
-All fields and χ are **ppm**. Your stage is scored two ways: **isolated** (fed the ground-truth
-input boundary) and **composed** (chained with other people's stages — e.g. every BFR × your
-dipole).
+All fields and χ maps (`chimap`, `chi-para`, `chi-dia`) are **ppm**; `r2prime` is a relaxation rate
+in **Hz**. Your stage is scored two ways: **isolated** (fed the ground-truth input boundary) and
+**composed** (chained with other people's stages — e.g. every BFR × your dipole). `chi-separation`
+(susceptibility source separation: χ+ and χ− from the local field, R2′, χ_total and multi-echo
+magnitude — most methods read a subset, declared under `inputs:`), `r2prime-generation` (R2′ from the
+GRE magnitude alone, for the GRE-only condition) and `brain-extraction` (a mask from the magnitude)
+are isolated-only; a generated `r2prime` is additionally composed with each R2′-consuming
+χ-separation method. See [`../CONTRACT.md`](../CONTRACT.md).
 
 ## 2. Provide your code + an environment (you don't bake an image)
 
@@ -69,19 +77,25 @@ image with your code inside. Two ways to specify the environment (see [../CONTRA
 
 - **Point at a base image** — set `image:` to a container that already has what you need (the shared
   `py-ref` deps image, a Neurodesk MATLAB Runtime container, etc.). No build at all.
-- **Add a `Dockerfile`** — start `FROM` any base and install/download dependencies (including
-  toolboxes; the build phase has network). Do **not** `COPY` your code — it's mounted.
+- **Write a `Dockerfile`** — start `FROM` any base and install/download dependencies (including
+  toolboxes and weights), then build and push the image yourself and point `image:` at the pushed
+  tag. QSM-CI **pulls** images; it never builds them (`qsm_ci/containers.py`). Keep the Dockerfile
+  in your folder as the recipe, but do **not** `COPY` your code — it's mounted.
 
 Your `run.sh` reads the consumed artifacts from `/input` and writes the produced artifact(s) to
 `/output`. At run time there is **no network**, so anything your code needs must already be in the
 environment.
 
 Working templates to copy:
-- Python `dipole`: [`algorithms/tkd`](../algorithms/tkd) — just `recon.py` + `run.sh`, `image:`
-  pointing at the shared deps base. No Dockerfile.
-- MATLAB compiled to the free MATLAB Runtime: [`algorithms/matlab-tkd`](../algorithms/matlab-tkd) —
+- Python on the shared base image: [`algorithms/laplacian-qsmci`](../algorithms/laplacian-qsmci)
+  (`field-mapping`) — just `recon.py` + `run.sh`, `image:` pointing at the shared `py-ref` deps
+  image. No Dockerfile.
+- A one-line `run.sh` over a ready tool image: [`algorithms/tkd-qsmrs`](../algorithms/tkd-qsmrs)
+  (`dipole`, QSM.rs via the `qsmxt` image).
+- MATLAB compiled to the free MATLAB Runtime: [`algorithms/tkd-qsmci`](../algorithms/tkd-qsmci) —
   `recon.m` + a `matlab:` block; compiled once (license at build time only). See [matlab.md](matlab.md).
-- BFR: [`algorithms/sharp`](../algorithms/sharp).
+- BFR: [`algorithms/sharp-qsmrs`](../algorithms/sharp-qsmrs).
+- χ-separation (two output maps, an `inputs:` subset): [`algorithms/chisepnet`](../algorithms/chisepnet).
 
 ## 3. Add your submission folder
 
@@ -89,8 +103,9 @@ Copy a reference folder to `algorithms/<your-slug>/` and edit:
 
 - **`algorithm.yml`** — one manifest: name, authors, DOI, license, your `stage:`, your `image:`,
   the `run:` command, and any `parameters:`.
-- Bake your code into the image (or, like the reference algos, keep `recon.*` + `run.sh` in the
-  folder and a small `Dockerfile` that copies them onto a base image).
+- Keep your code (`recon.*`, `run.sh`) in the folder — it is mounted at `/algo` at run time, never
+  baked into an image. The only things that go into an image are the *environment*: dependencies,
+  network weights, or a compiled MATLAB binary (see [matlab.md](matlab.md)).
 
 ## 4. Run it locally
 

@@ -35,8 +35,9 @@ is what the `field-mapping` stage is scored on. So this wrapper:
 2. performs the standard **per-voxel linear fit** of unwrapped phase vs TE — `slope =
    cov(TE, φ)/var(TE)` (rad/s) — and normalizes Hz → ppm by `B0` (`GAMMA = 42.576 MHz/T`).
 
-Steps (2) are **identical** to `algorithms/laplacian-fieldmap/recon.py` and
-`algorithms/romeo-fieldmap/recon.py`; only the unwrap operator (Laplacian/ROMEO → DIP-UP) changes.
+Step (2) is **identical** to the echo fit in `algorithms/laplacian-qsmci/recon.py` (the reference
+Laplacian field-mapping submission; the ROMEO submission, `algorithms/romeo-qsmrs`, has since moved
+to QSMxT's weighted multi-echo combination); only the unwrap operator (Laplacian → DIP-UP) changes.
 This is exactly what is being benchmarked: DIP-UP's unwrap swapped into the reference field-mapping
 pipeline. Output `totalfield.nii.gz` (ppm) is written on the input phase affine.
 

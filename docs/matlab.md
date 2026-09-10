@@ -7,7 +7,7 @@ MATLAB QSM code is welcome. The scoring run is offline (`--network none`), so th
   MATLAB Compiler once — the **only** place a license is needed, at *build* time on your own machine.
   The standalone binary runs on the **free MATLAB Runtime**, so scoring stays
   fully offline and license-free, and any toolbox (SEPIA, MEDI, STI Suite, chi-separation) works
-  because `mcc` bundles it. This is the [`matlab-tkd`](../algorithms/matlab-tkd) template, and what
+  because `mcc` bundles it. This is the [`tkd-qsmci`](../algorithms/tkd-qsmci) template, and what
   `qsm-ci new --lang matlab` scaffolds.
 - **Full MATLAB at run time (Option B).** A licensed MATLAB container runs raw `.m` + toolboxes with
   no compilation, but needs a **license at run time**, which the offline run phase can't reach over a
@@ -37,7 +37,7 @@ RUN chmod +x /opt/qsm-ci/recon
 
 Point `algorithm.yml`'s `image:` at that tag. QSM-CI mounts your `run.sh` at `/algo` and runs
 `/opt/qsm-ci/recon /input /output` with `--network none`. Full recipe + version-pinning:
-[`algorithms/matlab-tkd/BUILD.md`](../algorithms/matlab-tkd/BUILD.md).
+[`algorithms/tkd-qsmci/BUILD.md`](../algorithms/tkd-qsmci/BUILD.md).
 
 **What lands where:** your PR holds only text — `algorithm.yml`, `run.sh`, `recon.m` (source), `BUILD.md`.
 The compiled binary is **not** committed; it ships inside the image you push, and QSM-CI pulls that image.
@@ -72,5 +72,6 @@ at it and write a thin `run.sh` mapping `/input`/`/output` onto its CLI — ofte
 - No network at scoring time — everything the algorithm needs must be in the environment.
 - Keep to the [contract](../CONTRACT.md): produce your stage's artifact(s) in **ppm** on the
   `mask.nii.gz` grid.
-- MCR versions and env vars: Neurodesk `matlabmcr` template
-  (`~/repos/neurodesk/neurocontainers/builder/templates/matlabmcr.yaml`).
+- MCR versions and env vars: the `matlabmcr` template in Neurodesk's
+  [neurocontainers](https://github.com/NeuroDesk/neurocontainers) repository
+  (`builder/templates/matlabmcr.yaml` in a checkout).
