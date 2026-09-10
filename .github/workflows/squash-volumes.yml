@@ -7,15 +7,20 @@ name: Squash volume history
 on:
   workflow_dispatch:
 
-# Own group (NOT "score") — entering the score group would cancel a queued rescore. Only dispatch
-# this once the score queue is drained, so it never squashes mid-publish.
 defaults:
   run:
     shell: bash
 
+# Own group (NOT "score") — entering the score group would cancel a queued rescore. Only dispatch
+# this once the score queue is drained, so it never squashes mid-publish.
 concurrency:
   group: squash-volumes
   cancel-in-progress: false
+
+# Nothing here touches the repo — it only rewrites the Hugging Face dataset (HF_TOKEN) — so the
+# token is read-only.
+permissions:
+  contents: read
 
 jobs:
   squash:

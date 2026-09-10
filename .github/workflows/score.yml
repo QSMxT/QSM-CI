@@ -41,18 +41,20 @@ on:
         description: "true = score + merge but DON'T publish volumes or commit (upload a candidate index artifact instead)"
         default: "false"
 
-# One rescore at a time — a new run queues behind the in-progress one instead of racing it (the merge
-# job commits results/index.json, so overlapping runs could clobber each other / fail to push).
 defaults:
   run:
     shell: bash
 
+# One rescore at a time — a new run queues behind the in-progress one instead of racing it (the merge
+# job commits results/index.json, so overlapping runs could clobber each other / fail to push).
 concurrency:
   group: score
   cancel-in-progress: false
 
+# Read-only token by default: the scope/plan/score jobs only run method containers and pass
+# artifacts around. Only `merge` commits (job-level `contents: write` there).
 permissions:
-  contents: write
+  contents: read
   actions: read   # the orphan-container reaper checks whether a labelled run is still active
 
 env:
@@ -77,20 +79,24 @@ jobs:
         env:
           BEFORE: ${{ github.event.before }}   # the push's previous head; empty on workflow_dispatch
           EVENT: ${{ github.event_name }}
+          SHA: ${{ github.sha }}
+          # Dispatch inputs: via env, never interpolated into the script (free-text fields).
+          INCLUDE: ${{ github.event.inputs.include }}
+          SCOPE: ${{ github.event.inputs.scope }}
         run: |
           echo "include=" >>"$GITHUB_OUTPUT"   # default; the manual-recovery branch below overrides it
           # MANUAL single-combo recovery (workflow_dispatch include=): re-score ONLY the combos those
           # slugs form, nothing else. Wins over scope/auto. For refilling a combo that DNF'd on a
           # transient failure — NOT the automated path (an algorithm change re-scores the full matrix).
-          include="${{ github.event.inputs.include }}"
+          include="$INCLUDE"
           if [ -n "$include" ]; then
             echo "include=$include" >>"$GITHUB_OUTPUT"; echo "full=false" >>"$GITHUB_OUTPUT"; echo "slugs=[]" >>"$GITHUB_OUTPUT"; exit 0
           fi
-          scope="${{ github.event.inputs.scope }}"
+          scope="$SCOPE"
           if [ "$scope" = "all" ]; then
             echo "full=true"  >>"$GITHUB_OUTPUT"; echo "slugs=[]" >>"$GITHUB_OUTPUT"; exit 0
           fi
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "$scope" ] && [ "$scope" != "auto" ]; then
+          if [ "$EVENT" = "workflow_dispatch" ] && [ -n "$scope" ] && [ "$scope" != "auto" ]; then
             echo "full=false" >>"$GITHUB_OUTPUT"
             echo "slugs=$(echo "$scope" | tr ', ' '\n' | { grep . || true; } | jq -R . | jq -sc .)" >>"$GITHUB_OUTPUT"; exit 0
           fi
@@ -101,8 +107,8 @@ jobs:
           # This stops the rescore and nothing else. Read via `git log` rather than the event payload
           # so a crafted commit message can't be interpolated into this shell. Push only — a manual
           # dispatch ignores it, so `scope=all` is always the escape hatch.
-          if [ "${{ github.event_name }}" = "push" ] \
-             && git log -1 --format=%B "${{ github.sha }}" | grep -qF '[skip score]'; then
+          if [ "$EVENT" = "push" ] \
+             && git log -1 --format=%B "$SHA" | grep -qF '[skip score]'; then
             echo "::notice::[skip score] in the commit message — skipping the rescore. Dispatch with scope=all to force one."
             echo "full=false" >>"$GITHUB_OUTPUT"; echo "slugs=[]" >>"$GITHUB_OUTPUT"; exit 0
           fi
@@ -312,6 +318,10 @@ jobs:
       # Per-job container tag — qsm_ci.containers labels every container it starts with this, so the
       # post-job kill step (and the next job's reaper) can identify exactly THIS job's containers.
       QSMCI_JOB_TAG: ${{ github.run_id }}-${{ matrix.task.id }}
+      # Matrix values derive from the dispatch inputs (scope / include slugs): they reach the shell
+      # through env, never interpolated into a `run:` script.
+      TASK_ID: ${{ matrix.task.id }}
+      PHANTOM: ${{ matrix.task.phantom || 'sim' }}
     steps:
       - uses: actions/checkout@v7
 
@@ -398,7 +408,6 @@ jobs:
       - name: Resolve dataset (scripts/datasets.json)
         id: ds
         env:
-          PHANTOM: ${{ matrix.task.phantom || 'sim' }}
           OSF_FILE_INVIVO: ${{ secrets.OSF_FILE_INVIVO }}   # invivo_qsm2016.zip OSF file id (pre-flattened)
           OSF_FILE_RIDANI_3T_ISO: ${{ secrets.OSF_FILE_RIDANI_3T_ISO }}      # Ridani 3T isotropic (pre-flattened)
           OSF_FILE_RIDANI_3T_ANISO: ${{ secrets.OSF_FILE_RIDANI_3T_ANISO }}  # Ridani 3T anisotropic (pre-flattened)
@@ -430,27 +439,35 @@ jobs:
           OSF_FILE_RIDANI_7T_ANISO: ${{ secrets.OSF_FILE_RIDANI_7T_ANISO }}  # Ridani 7T anisotropic (pre-flattened)
           OSF_FILE_CHISEP_MC: ${{ secrets.OSF_FILE_CHISEP_MC }}              # χ-sep multicompartment (pre-flattened)
           OSF_ZIP: .osfcache/${{ matrix.task.phantom || 'sim' }}.zip
-        run: scripts/fetch_dataset.sh "${{ matrix.task.phantom || 'sim' }}" "${{ steps.ds.outputs.path }}"
+          DS_PATH: ${{ steps.ds.outputs.path }}
+        run: scripts/fetch_dataset.sh "$PHANTOM" "$DS_PATH"
 
       - name: Score task ${{ matrix.task.id }}
+        env:
+          DS_PATH: ${{ steps.ds.outputs.path }}
+          DS_MODE: ${{ steps.ds.outputs.mode }}
+          TASK_MODE: ${{ matrix.task.mode }}
+          TASK_TRACK: ${{ matrix.task.track }}
+          SHARD: ${{ matrix.task.shard }}
+          FOCUS: ${{ matrix.task.focus }}
+          EXCLUDE: ${{ matrix.task.exclude }}
+          INCLUDE: ${{ matrix.task.include }}
         run: |
-          PH="${{ matrix.task.phantom || 'sim' }}"
-          DS="${{ steps.ds.outputs.path }}"
-          MODE="${{ steps.ds.outputs.mode }}"
-          [ -n "${{ matrix.task.mode }}" ] && MODE="${{ matrix.task.mode }}"   # manual-include task pins 'composed'
+          MODE="$DS_MODE"
+          [ -n "$TASK_MODE" ] && MODE="$TASK_MODE"   # manual-include task pins 'composed'
           # Track defaults to $TRACK (sim); an invivo task overrides it so pipeline.py scores against
           # COSMOS + STI and namespaces its run ids with `-invivo`. --phantom namespaces the run ids
           # of a NON-default phantom with -<phantom-id> (the default phantoms keep the legacy ids).
-          TRK="${{ matrix.task.track || '' }}"; [ -z "$TRK" ] && TRK="$TRACK"
-          ARGS="--dataset $DS --phantom $PH --mode $MODE --runner docker --track $TRK --emit-volumes --runs-out runs-${{ matrix.task.id }}.json"
-          [ -n "${{ matrix.task.shard }}" ] && ARGS="$ARGS --shard ${{ matrix.task.shard }}"
-          [ -n "${{ matrix.task.focus }}" ] && ARGS="$ARGS --focus ${{ matrix.task.focus }}"
-          [ -n "${{ matrix.task.exclude }}" ] && ARGS="$ARGS --exclude ${{ matrix.task.exclude }}"
-          [ -n "${{ matrix.task.include }}" ] && ARGS="$ARGS --include ${{ matrix.task.include }}"
-          echo "== task ${{ matrix.task.id }}: pipeline.py $ARGS =="
+          TRK="$TASK_TRACK"; [ -z "$TRK" ] && TRK="$TRACK"
+          ARGS="--dataset $DS_PATH --phantom $PHANTOM --mode $MODE --runner docker --track $TRK --emit-volumes --runs-out runs-$TASK_ID.json"
+          [ -n "$SHARD" ] && ARGS="$ARGS --shard $SHARD"
+          [ -n "$FOCUS" ] && ARGS="$ARGS --focus $FOCUS"
+          [ -n "$EXCLUDE" ] && ARGS="$ARGS --exclude $EXCLUDE"
+          [ -n "$INCLUDE" ] && ARGS="$ARGS --include $INCLUDE"
+          echo "== task $TASK_ID: pipeline.py $ARGS =="
           t0=$(date +%s)
           python scripts/pipeline.py $ARGS
-          echo "== task ${{ matrix.task.id }} wall-clock: $(( $(date +%s) - t0 ))s =="
+          echo "== task $TASK_ID wall-clock: $(( $(date +%s) - t0 ))s =="
 
 
       # Belt to the reaper's braces: whatever way this job ends (incl. a failed score step — exit 137
@@ -484,6 +501,8 @@ jobs:
     # was skipped (nothing changed).
     if: ${{ always() && needs.scope.result == 'success' && needs.score.result != 'skipped' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: write   # the only job that commits (results/index.json)
     steps:
       - uses: actions/checkout@v7
       - uses: actions/download-artifact@v8
