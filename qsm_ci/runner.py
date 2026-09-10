@@ -14,6 +14,7 @@ import json
 import math
 import os
 import shutil
+import subprocess
 from pathlib import Path
 
 from .containers import (RUNNERS, _run_container, check_docker,  # noqa: F401 — check_docker re-exported for back-compat
@@ -225,18 +226,34 @@ def list_command(argv=None, log=print) -> int:
     return 0
 
 
+def _load_nifti(path, what: str, header_only: bool = False):
+    """qsm_eval.load with a message instead of nibabel's traceback when the file isn't a NIfTI —
+    a `--truth chi.txt`, a missing file, or a method that wrote garbage to /output (#194).
+    header_only just opens the file (no voxel read) — a cheap pre-flight check before a long run."""
+    from . import qsm_eval
+    try:
+        if header_only:
+            import nibabel as nib
+            return nib.load(str(path))
+        return qsm_eval.load(path)
+    except Exception as e:  # noqa: BLE001 — ImageFileError, BadGzipFile, FileNotFoundError, …
+        raise SystemExit(f"{what} is not a readable NIfTI: {path}  ({e.__class__.__name__}: {e})")
+
+
 def _score(recon: Path, artifact: str, truth: Path, mask: Path, seg: "Path | None") -> dict:
     """Score one produced artifact exactly as CI would: same entry point (qsm_eval.score_arrays),
     same metric set per artifact kind — field / relaxation (R2′) / χ / a χ-sep component."""
     from . import qsm_eval
     kind = ARTIFACT_KIND[artifact]
-    r, t, m = qsm_eval.load(recon), qsm_eval.load(truth), qsm_eval.load(mask)
+    r = _load_nifti(recon, f"the method's output {ARTIFACT_FILE[artifact]}")
+    t = _load_nifti(truth, "--truth")
+    m = _load_nifti(mask, "--mask")
     if r.shape != t.shape or r.shape != m.shape:
         raise SystemExit(f"shape mismatch: recon {r.shape}, truth {t.shape}, mask {m.shape}")
     segd = None
     if seg and Path(seg).exists():
         import numpy as np
-        segd = np.rint(qsm_eval.load(seg)).astype("int32")
+        segd = np.rint(_load_nifti(seg, "--seg")).astype("int32")
     component = {"chi-para": "para", "chi-dia": "dia"}.get(artifact, "para")
     metrics, _ = qsm_eval.score_arrays(r, t, m, kind, seg=segd, component=component)
     return metrics
@@ -507,7 +524,26 @@ def run_command(argv, log=print) -> int:
         if cfg:
             (idir / "config.json").write_text(json.dumps(cfg, indent=2) + "\n")
 
-        runtime = _run_container(algo, idir, odir, args.runner, log)
+        # Pre-flight the scoring inputs so a bad --truth/--seg is rejected before a long run, not
+        # after it (the same check _score repeats when it actually loads them).
+        truth_paths = {}
+        if getattr(args, "truth", None):
+            truth = Path(args.truth)
+            for art in prods:
+                truth_paths[art] = truth / ARTIFACT_FILE[art] if (multi or truth.is_dir()) else truth
+                _load_nifti(truth_paths[art], "--truth", header_only=True)
+            if args.seg:
+                _load_nifti(args.seg, "--seg", header_only=True)
+
+        try:
+            runtime = _run_container(algo, idir, odir, args.runner, log)
+        except subprocess.CalledProcessError as e:
+            # The method's stdout/stderr stream straight to the terminal (nothing is captured), so
+            # the cause is already on screen — say so instead of dumping a traceback (#194).
+            where = "run.sh" if args.runner == "local" else f"the container ({args.runner})"
+            log(f"✗ {algo['name']} failed: {where} exited with status {e.returncode}.")
+            log("  Its stdout/stderr is printed above — the method's own error message is there.")
+            return 1
 
         # Copy every produced artifact out. Single-output stages honour `-o <file>` (a directory is
         # also accepted); a multi-output stage (χ-separation) always writes each canonical file into
@@ -523,14 +559,12 @@ def run_command(argv, log=print) -> int:
             written[art] = dest
             log(f"✓ wrote {dest}  ({runtime:.1f}s)")
 
-        if getattr(args, "truth", None):
+        if truth_paths:
             # Single output: `--truth <file>` (a directory is also accepted). Multi-output: `--truth
             # <dir>` holding each ground-truth by canonical name; score every produced artifact.
             # (Only scorable stages define --truth/--seg — see stages.scorable.)
-            truth = Path(args.truth)
             for art in prods:
-                tpath = truth / ARTIFACT_FILE[art] if (multi or truth.is_dir()) else truth
-                metrics = _score(written[art], art, tpath, Path(args.mask), args.seg)
+                metrics = _score(written[art], art, truth_paths[art], Path(args.mask), args.seg)
                 _print_metrics(algo["name"], stage, art, runtime, metrics, log)
         elif scorable(stage):
             log("  (no --truth given → not scored)")

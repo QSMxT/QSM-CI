@@ -251,7 +251,8 @@ RUN chmod +x /opt/qsm-ci/recon
       </p>
       <pre class="overflow-x-auto rounded-xl bg-gray-900 p-4 text-sm text-gray-100"><code>qsm-ci submit &lt;your-method&gt;</code></pre>
       <p class="text-sm text-gray-600 dark:text-gray-400">
-        It walks you through each step and confirms before anything leaves your machine. You need a
+        It walks you through each step and confirms before anything leaves your machine (from a script
+        or a pipe, where it can't ask, it stops unless you pass <code>--yes</code>). You need a
         <strong>fork</strong> of QSM-CI to open a PR; if you don't have one, <code>qsm-ci submit</code> can create
         it for you with the GitHub CLI (or take the URL of one you already have).
       </p>
