@@ -70,6 +70,10 @@ on:
   #     - "scripts/repro_eval.py"
   #     - "stages.yml"
 
+defaults:
+  run:
+    shell: bash
+
 concurrency:
   group: repro
   cancel-in-progress: false
@@ -101,7 +105,7 @@ jobs:
           fi
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "$SCOPE" != "auto" ]; then
             echo "full=false" >>"$GITHUB_OUTPUT"
-            echo "slugs=$(echo "$SCOPE" | tr ', ' '\n' | grep . | jq -R . | jq -sc .)" >>"$GITHUB_OUTPUT"; exit 0
+            echo "slugs=$(echo "$SCOPE" | tr ', ' '\n' | { grep . || true; } | jq -R . | jq -sc .)" >>"$GITHUB_OUTPUT"; exit 0
           fi
           # `[skip score]` in the pushed commit message: this push touched a scored path but cannot
           # move any number — an added opt-in flag, a docstring, a comment, a refactor behind a
@@ -128,7 +132,8 @@ jobs:
           if echo "$changed" | grep -qE '^(eval/|scripts/pipeline\.py|scripts/repro_eval\.py|stages\.yml)'; then
             echo "full=true"  >>"$GITHUB_OUTPUT"; echo "slugs=[]" >>"$GITHUB_OUTPUT"
           else
-            slugs=$(echo "$changed" | grep '^algorithms/' | cut -d/ -f2 | grep -v '^_' | sort -u | jq -R . | jq -sc .)
+            # no algorithms/ path in this push is normal, not a failure — see `|| true`
+            slugs=$(echo "$changed" | { grep '^algorithms/' || true; } | cut -d/ -f2 | { grep -v '^_' || true; } | sort -u | jq -R . | jq -sc .)
             echo "full=false" >>"$GITHUB_OUTPUT"; echo "slugs=$slugs" >>"$GITHUB_OUTPUT"
           fi
 

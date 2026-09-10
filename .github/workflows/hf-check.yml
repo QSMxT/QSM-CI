@@ -8,6 +8,10 @@ name: hf-check
 on:
   workflow_dispatch:
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   check:
     runs-on: ubuntu-latest

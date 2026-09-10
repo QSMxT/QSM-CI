@@ -22,6 +22,10 @@ name: image-access
 on:
   pull_request:
 
+defaults:
+  run:
+    shell: bash
+
 permissions:
   contents: read
 
@@ -43,7 +47,7 @@ jobs:
           # no algorithm.yml, e.g. a DELETED submission. Under `bash -e` that aborts the step
           # before any image is checked. `if` keeps the loop's exit status clean.
           slugs=$(git diff --name-only origin/${{ github.base_ref }}... \
-                  | grep '^algorithms/' | cut -d/ -f2 | grep -v '^_' | sort -u \
+                  | { grep '^algorithms/' || true; } | cut -d/ -f2 | { grep -v '^_' || true; } | sort -u \
                   | while read -r s; do
                       f="algorithms/$s/algorithm.yml"
                       [ -f "$f" ] || continue

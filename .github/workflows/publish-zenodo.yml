@@ -22,6 +22,10 @@ on:
         description: "Publish just this slug (optional)"
         required: false
 
+defaults:
+  run:
+    shell: bash
+
 concurrency:
   group: publish-zenodo
   cancel-in-progress: false
