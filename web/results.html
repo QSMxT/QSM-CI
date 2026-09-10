@@ -92,6 +92,14 @@
     html.dark tr.tuned-row td{background:rgb(16 185 129/.08)}
     html.dark tr.tuned-row td:first-child{background:rgb(17 37 40);box-shadow:inset 3px 0 0 rgb(52 211 153/.55)}
 
+    /* The pipeline table is one long name plus six numeric columns — wider than the 72rem page. Break
+       it out towards the viewport so the whole row fits on a large screen. Nothing wraps: on a screen
+       too narrow for the row the table scrolls horizontally, which is the honest outcome for tabular
+       data and preferable to breaking a pipeline name across lines. */
+    .repro-wide{width:min(96vw,1500px);max-width:none;margin-left:50%;transform:translateX(-50%)}
+    /* Narrower than the page container itself, there is nothing to break out of. */
+    @media (max-width:75rem){.repro-wide{width:100%;margin-left:0;transform:none}}
+
     /* Combination-matrix cells (heatScale() supplies --heat; pastel wash in light, as-is in dark). */
     .heat-cell{background:color-mix(in srgb,var(--heat) 38%,#fff);color:color-mix(in srgb,var(--heat) 55%,#1f2937)}
     .heat-legend{background:linear-gradient(90deg,
@@ -1086,7 +1094,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">How wide is the spread, protocol by protocol?</h3>
             <div class="inline-flex rounded-lg bg-gray-100 p-1 text-xs font-medium dark:bg-gray-800">
               <template x-for="k in ['inter','tr','ip','bias']" :key="k">
-                <button @click="reproMetric.proto=k; reproProtoZoom=null" class="rounded-md px-2.5 py-1 transition"
+                <button @click="reproMetric.proto=k" class="rounded-md px-2.5 py-1 transition"
                         :class="reproMetric.proto===k?'bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100':'text-gray-500 hover:text-gray-700 dark:text-gray-400'"
                         x-text="REPRO_PROTO_METRICS[k].label"></button>
               </template>
@@ -1098,11 +1106,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             works for most pipelines and fails for a few.
           </p>
           <div class="mt-4 text-gray-700 dark:text-gray-200" x-html="reproProtoDistSVG"></div>
-          <div class="mt-2 flex items-center justify-between text-[11px] text-gray-400">
-            <span>Scroll to zoom, drag to pan, hover a dot for its pipeline, click to open it.</span>
-            <button x-show="reproProtoZoom" @click="reproProtoZoom=null; _applyProtoZoom()"
-                    class="rounded-md px-2 py-0.5 ring-1 ring-gray-300 hover:text-gray-600 dark:ring-gray-700">Reset zoom</button>
-          </div>
+          <p class="mt-2 text-[11px] text-gray-400">Hover a dot for its pipeline, or click to open it.</p>
         </div>
         <div class="mt-4 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
           <div class="overflow-x-auto">
@@ -1255,7 +1259,8 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             No pipelines match the current field mapping and accuracy floor.
           </p>
         </div>
-        <div x-show="reproPipeView==='table'" x-cloak class="mt-4 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+        <div x-show="reproPipeView==='table'" x-cloak
+             class="repro-wide mt-4 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
           <div class="overflow-x-auto">
             <table class="w-full text-sm whitespace-nowrap">
               <thead class="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
@@ -1292,15 +1297,6 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
 
       <!-- Harmonization · Findings (all figures generated live from results/repro.json) -->
       <div x-show="reproView==='findings'" x-cloak>
-        <p class="mt-6 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-          The harmonization matrix is a <strong>full factorial</strong>: every field-mapping &times; background-removal
-          &times; dipole combination reconstructed on all acquisitions, so each stage-method's contribution to
-          reproducibility can be attributed cleanly. Every figure below is computed live from the reconstruction
-          results, so it tracks whatever methods and pipelines are currently scored.
-        </p>
-
-        <p class="mt-4 text-sm text-gray-500 dark:text-gray-400 leading-relaxed">Each figure below that can be read three ways carries its own <span class="font-medium">Inter-scanner / Test&ndash;retest / vs bridge</span> toggle, so you can flip a single figure and watch it change. Figures tied to a specific axis (scanner bias, χ&ndash;iron, protocol deviation, contrast) have no toggle by design.</p>
-
         <!-- Figure 1 · variance decomposition (headline) -->
         <template x-if="reproStageImportance">
           <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
@@ -1782,38 +1778,8 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
               n.style.opacity = n.dataset.algo === slug ? "1" : (n.classList.contains("rdot") ? "0.06" : "0.2");
             });
           };
-          this.$root.addEventListener("mouseover", (e) => { if (_drag || _pz) return; const el = e.target.closest && e.target.closest("[data-algo]"); if (el) hlAlgo(el.dataset.algo); });
-          this.$root.addEventListener("mouseout", (e) => { if (_drag || _pz) return; const el = e.target.closest && e.target.closest("[data-algo]"); if (el) hlAlgo(null); });
-          // Protocol distribution figure: scroll to zoom the x-axis about the cursor, drag to pan.
-          // Marks re-map by attribute (see _applyProtoZoom) rather than by a group transform, so a
-          // rebuild is never needed mid-gesture and dots keep their true size at every zoom level.
-          // wheel is non-passive so a zoom over the plot doesn't also scroll the page.
-          this.$root.addEventListener("wheel", (e) => {
-            const svg = e.target.closest && e.target.closest("svg.pzoom");
-            if (!svg) return;
-            e.preventDefault();
-            this._protoZoomBy(svg, Math.exp(e.deltaY * 0.0015), e.clientX);
-          }, { passive: false });
-          let _pz = null;
-          this.$root.addEventListener("mousedown", (e) => {
-            const svg = e.target.closest && e.target.closest("svg.pzoom");
-            if (!svg || e.button !== 0) return;
-            _pz = { svg, x: e.clientX, moved: false };
-            const hit = svg.querySelector(".pz-hit"); if (hit) hit.style.cursor = "grabbing";
-            e.preventDefault();
-          });
-          window.addEventListener("mousemove", (e) => {
-            if (!_pz) return;
-            if (Math.abs(e.clientX - _pz.x) > 2) _pz.moved = true;
-            this._protoPanBy(_pz.svg, e.clientX - _pz.x);
-            _pz.x = e.clientX;
-          });
-          window.addEventListener("mouseup", () => {
-            if (!_pz) return;
-            const hit = _pz.svg.querySelector(".pz-hit"); if (hit) hit.style.cursor = "grab";
-            if (_pz.moved) _swallowClick = true;   // a pan must not open the pipeline under the cursor
-            _pz = null;
-          });
+          this.$root.addEventListener("mouseover", (e) => { if (_drag) return; const el = e.target.closest && e.target.closest("[data-algo]"); if (el) hlAlgo(el.dataset.algo); });
+          this.$root.addEventListener("mouseout", (e) => { if (_drag) return; const el = e.target.closest && e.target.closest("[data-algo]"); if (el) hlAlgo(null); });
           // Regions figure: click-drag to pan the χ axis. The <g class="rpan"> holds the full-domain
           // content inside a clip; dragging just updates its translate transform (no re-render), so a
           // clamped-off region like calcification is reachable by dragging. A drag past a few px
@@ -2265,7 +2231,6 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         // Plot geometry, shared by the renderer and the zoom/pan updater. The SVG carries a viewBox
         // and width:100%, so these are design units that scale to whatever width the card gives it.
         PROTO_GEOM: { W: 1000, padL: 152, padR: 34, padT: 40, rh: 66, footer: 34 },
-        reproProtoZoom: null,        // null = fit the data; else the [lo,hi] x-domain the user zoomed to
         // Default x-domain: the whiskers, not the extremes, so one runaway pipeline can't squash every
         // box. Dots outside it are drawn where they belong and hidden by the clip — zooming out reveals them.
         _protoDomain(rows, M) {
@@ -2273,12 +2238,6 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           let lo = M.signed ? Math.min(0, ...ends) : 0, hi = Math.max(...ends);
           const pad = (hi - lo) * 0.08 || 0.01;
           return [M.signed ? lo - pad : lo, hi + pad];
-        },
-        // Full extent of the data, the limit on how far out the user can zoom.
-        _protoFullDomain(rows, M) {
-          const all = rows.flatMap((r) => r.pts.map((p) => p.v));
-          const lo = Math.min(...all), hi = Math.max(...all), pad = (hi - lo) * 0.04 || 0.01;
-          return [M.signed || lo < 0 ? lo - pad : 0, hi + pad];
         },
         // The tick layer, rebuilt on every zoom step so the tick VALUES stay round as the span changes
         // (moving fixed ticks would leave you reading 3.7%, 7.4%, 11.1% …).
@@ -2305,15 +2264,11 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             if (!rows.length) return `<svg viewBox="0 0 640 40" style="width:100%;height:auto"><text x="20" y="24" fill="currentColor" opacity="0.4" style="font-size:12px">No reproducibility fits yet.</text></svg>`;
             const { W, padL, padR, padT, rh, footer } = this.PROTO_GEOM;
             const H = padT + rows.length * rh + footer;
-            const [lo, hi] = this._protoDomain(rows, M), [flo, fhi] = this._protoFullDomain(rows, M);
+            const [lo, hi] = this._protoDomain(rows, M);
             const X = (v) => padL + ((v - lo) / (hi - lo)) * (W - padL - padR);
             const fmtv = (v) => M.pct ? (100 * v).toFixed(1) + "%" : v.toFixed(4) + " ppm";
             const C = "#0ea5e9", clip = "pzc" + mk;
-            // `data-dx` (and `data-dx2` for spans) is the mark's position in DATA space; the zoom/pan
-            // updater re-maps those through the current domain, so nothing is ever transform-scaled
-            // and dot radii / stroke widths never distort.
-            let s = `<svg class="pzoom" viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;touch-action:none;user-select:none"`
-                  + ` data-lo="${lo}" data-hi="${hi}" data-flo="${flo}" data-fhi="${fhi}" data-h="${H}" data-mk="${mk}">`;
+            let s = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">`;
             s += `<defs><clipPath id="${clip}"><rect x="${padL}" y="${padT - 12}" width="${W - padL - padR}" height="${H - padT - 12}"/></clipPath></defs>`;
             // key: draw the marks themselves so the shapes are matched to their names
             const kx = padL;
@@ -2334,90 +2289,30 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
               s += `<text x="${padL - 14}" y="${yc + 3}" text-anchor="end" fill="currentColor" opacity="0.85" style="font-size:12px;font-weight:600">${this._esc(r.label)}</text>`;
               s += `<text x="${padL - 14}" y="${yc + 17}" text-anchor="end" fill="currentColor" opacity="0.4" style="font-size:10px">${r.n} pipelines</text>`;
             });
-            s += `<g class="pz-ticks">${this._protoTicks(lo, hi, M, H)}</g>`;
+            s += this._protoTicks(lo, hi, M, H);
             s += `<g clip-path="url(#${clip})">`;
-            s += `<rect class="pz-hit" x="${padL}" y="${padT - 12}" width="${W - padL - padR}" height="${H - padT - 12}" fill="transparent" style="cursor:grab"/>`;
             rows.forEach((r, i) => {
               const yc = padT + i * rh + rh / 2 - 6;
               // `rdot` opts this dot into the shared hover-highlight (data-algo): hovering one pipeline
               // lights it in every protocol row and dims the rest of the cloud hard enough to see it.
               r.pts.forEach((p) => {
-                s += `<circle class="rdot" data-dx="${p.v}" data-algo="${this._esc(p.slug)}" data-repro="${this._esc(p.slug)}" `
+                s += `<circle class="rdot" data-algo="${this._esc(p.slug)}" data-repro="${this._esc(p.slug)}" `
                    + `data-tip="${this._esc(`${this.reproName(p.slug)} — ${r.label}: ${fmtv(p.v)}`)}" `
                    + `cx="${X(p.v)}" cy="${yc + this._jitter(p.slug) * 14}" r="1.9" fill="${C}" opacity="0.16"/>`;
               });
               const bt = yc - 15, bb = yc + 15;
               s += `<g data-tip="${this._esc(`${r.label} — ${M.label}: median ${fmtv(r.med)}, mean ${fmtv(r.mean)}, IQR ${fmtv(r.q1)}–${fmtv(r.q3)}, 5th–95th ${fmtv(r.p5)}–${fmtv(r.p95)}, over ${r.n} pipelines`)}">`;
-              s += `<line data-dx="${r.p5}" data-dx2="${r.p95}" x1="${X(r.p5)}" y1="${yc}" x2="${X(r.p95)}" y2="${yc}" stroke="currentColor" opacity="0.55"/>`;
-              [r.p5, r.p95].forEach((v) => { s += `<line data-dx="${v}" x1="${X(v)}" y1="${yc - 7}" x2="${X(v)}" y2="${yc + 7}" stroke="currentColor" opacity="0.55"/>`; });
-              s += `<rect data-dx="${r.q1}" data-dx2="${r.q3}" x="${X(r.q1)}" y="${bt}" width="${Math.max(1, X(r.q3) - X(r.q1))}" height="${bb - bt}" rx="2" fill="none" stroke="${C}" stroke-opacity="0.9" stroke-width="1.4"/>`;
-              s += `<line data-dx="${r.med}" x1="${X(r.med)}" y1="${bt}" x2="${X(r.med)}" y2="${bb}" stroke="${C}" stroke-width="3"/>`;
-              s += `<path class="pz-mean" data-dx="${r.mean}" data-dy="${yc}" d="${this._diamond(X(r.mean), yc)}" fill="#f59e0b" stroke="#fff" stroke-width="0.9"/>`;
+              s += `<line x1="${X(r.p5)}" y1="${yc}" x2="${X(r.p95)}" y2="${yc}" stroke="currentColor" opacity="0.55"/>`;
+              [r.p5, r.p95].forEach((v) => { s += `<line x1="${X(v)}" y1="${yc - 7}" x2="${X(v)}" y2="${yc + 7}" stroke="currentColor" opacity="0.55"/>`; });
+              s += `<rect x="${X(r.q1)}" y="${bt}" width="${Math.max(1, X(r.q3) - X(r.q1))}" height="${bb - bt}" rx="2" fill="none" stroke="${C}" stroke-opacity="0.9" stroke-width="1.4"/>`;
+              s += `<line x1="${X(r.med)}" y1="${bt}" x2="${X(r.med)}" y2="${bb}" stroke="${C}" stroke-width="3"/>`;
+              s += `<path d="${this._diamond(X(r.mean), yc)}" fill="#f59e0b" stroke="#fff" stroke-width="0.9"/>`;
               s += `</g>`;
             });
             return s + `</g></svg>`;
           });
         },
         _diamond(x, y) { return `M ${x} ${y - 7} L ${x + 6} ${y} L ${x} ${y + 7} L ${x - 6} ${y} Z`; },
-        // Re-map every x-driven mark through the current domain. Attribute writes only — no group
-        // transform — so circles stay round and stroke widths stay put at any zoom level.
-        _applyProtoZoom() {
-          const svg = this.$root.querySelector("svg.pzoom");
-          if (!svg) return;
-          const { W, padL, padR } = this.PROTO_GEOM;
-          const z = this.reproProtoZoom;
-          const lo = z ? z[0] : parseFloat(svg.dataset.lo), hi = z ? z[1] : parseFloat(svg.dataset.hi);
-          const X = (v) => padL + ((v - lo) / (hi - lo)) * (W - padL - padR);
-          svg.querySelectorAll("[data-dx]").forEach((el) => {
-            const x = X(parseFloat(el.dataset.dx)), x2 = el.dataset.dx2 != null ? X(parseFloat(el.dataset.dx2)) : null;
-            if (el.tagName === "circle") el.setAttribute("cx", x);
-            else if (el.tagName === "rect") { el.setAttribute("x", x); el.setAttribute("width", Math.max(1, x2 - x)); }
-            else if (el.tagName === "path") el.setAttribute("d", this._diamond(x, parseFloat(el.dataset.dy)));
-            else if (el.tagName === "text") el.setAttribute("x", x);
-            else { el.setAttribute("x1", x); el.setAttribute("x2", x2 == null ? x : x2); }
-          });
-          const ticks = svg.querySelector(".pz-ticks");
-          if (ticks) ticks.innerHTML = this._protoTicks(lo, hi, this.REPRO_PROTO_METRICS[svg.dataset.mk],
-                                                        parseFloat(svg.dataset.h));
-        },
-        // Wheel = zoom about the cursor; drag = pan. Both clamp to the full data extent, so you can
-        // never lose the plot off-screen or zoom out past where the data actually is.
-        _protoZoomBy(svg, factor, anchorClientX) {
-          const { W, padL, padR } = this.PROTO_GEOM;
-          const r = svg.getBoundingClientRect();
-          const z = this.reproProtoZoom;
-          const lo = z ? z[0] : parseFloat(svg.dataset.lo), hi = z ? z[1] : parseFloat(svg.dataset.hi);
-          const flo = parseFloat(svg.dataset.flo), fhi = parseFloat(svg.dataset.fhi);
-          // cursor position in design units → the data value it is sitting on, which must not move
-          const ux = ((anchorClientX - r.left) / r.width) * W;
-          const t = Math.min(1, Math.max(0, (ux - padL) / (W - padL - padR)));
-          const at = lo + t * (hi - lo);
-          // Zooming OUT widens past the default view towards the full data extent, which is how the
-          // pipelines beyond the whiskers become reachable. It never collapses back to null: null means
-          // "the fitted default", which is NARROWER than the full extent, so snapping to it on zoom-out
-          // would jump the view inwards. Only Reset returns to the default.
-          let span = (hi - lo) * factor;
-          span = Math.min(fhi - flo, Math.max((fhi - flo) / 500, span));
-          let nlo = at - t * span, nhi = nlo + span;
-          if (nlo < flo) { nlo = flo; nhi = flo + span; }
-          if (nhi > fhi) { nhi = fhi; nlo = fhi - span; }
-          this.reproProtoZoom = [nlo, nhi];
-          this._applyProtoZoom();
-        },
-        _protoPanBy(svg, dxClient) {
-          const { W, padL, padR } = this.PROTO_GEOM;
-          const r = svg.getBoundingClientRect();
-          // A drag straight from the fitted view adopts that view as the starting window, so panning
-          // works without having to zoom first.
-          const z = this.reproProtoZoom || [parseFloat(svg.dataset.lo), parseFloat(svg.dataset.hi)];
-          const flo = parseFloat(svg.dataset.flo), fhi = parseFloat(svg.dataset.fhi);
-          const perPx = (z[1] - z[0]) / (W - padL - padR) * (W / r.width);
-          let lo = z[0] - dxClient * perPx, hi = lo + (z[1] - z[0]);
-          if (lo < flo) { hi += flo - lo; lo = flo; }
-          if (hi > fhi) { lo -= hi - fhi; hi = fhi; }
-          this.reproProtoZoom = [lo, hi];
-          this._applyProtoZoom();
-        },
         reproProtoRows() {
           const rows = [];
           for (const proto of this.reproProtocols()) {
