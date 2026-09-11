@@ -29,13 +29,13 @@ workflow (scripts/squash_hf_history.py) afterwards if the storage matters.
 Env:  HF_TOKEN (write access), HF_VOLUMES_REPO (default qsmxt/qsm-ci-volumes)
 Usage:
   # 1. plan (touches nothing)
-  python scripts/dedupe_hf_truth.py --dry-run --index results/index.json --index /other/index.json
+  python scripts/oneoff/dedupe_hf_truth.py --dry-run --index results/index.json --index /other/index.json
   # 2. repoint each index in turn (only the FIRST --index is rewritten), committing and deploying
   #    each. Every pass records what it rewrote in <index>.dedupe-pending.json.
-  python scripts/dedupe_hf_truth.py --index results/index.json --index /other/index.json
-  python scripts/dedupe_hf_truth.py --index /other/index.json --index results/index.json
+  python scripts/oneoff/dedupe_hf_truth.py --index results/index.json --index /other/index.json
+  python scripts/oneoff/dedupe_hf_truth.py --index /other/index.json --index results/index.json
   # 3. once BOTH are live, remove the per-run copies
-  python scripts/dedupe_hf_truth.py --index results/index.json --index /other/index.json --delete-legacy
+  python scripts/oneoff/dedupe_hf_truth.py --index results/index.json --index /other/index.json --delete-legacy
 
 Pass `--index` for EVERY index that references this repo. Anything referenced by any of them is
 protected; anything unaccounted for is reported and kept, never deleted. A file both indexes
@@ -52,7 +52,7 @@ import tempfile
 from collections import Counter
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[2]  # scripts/oneoff/ -> repo root
 sys.path.insert(0, str(ROOT / "scripts"))
 from publish_volumes import TRUTH_PREFIX, _url, assign_truth_names, truth_name  # noqa: E402
 

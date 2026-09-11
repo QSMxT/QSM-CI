@@ -29,19 +29,40 @@ once to the Hugging Face volumes repo as `truth/<phantom>/<artifact>.nii.gz`.
 
 ## The registry
 
-[`scripts/datasets.json`](../scripts/datasets.json) is the source of truth: each entry gives a
-`track`, a `path`, and where its zip lives on OSF — either a literal `osf_file` id, or an `osf_env`
-naming the CI secret that carries it (e.g. `OSF_FILE_CHISEP_MC`).
+[`scripts/datasets.json`](../scripts/datasets.json) is the source of truth — 29 entries: one `sim`,
+one `invivo`, four `chisep` phantoms, and the 23 `repro` (harmonization) acquisitions. Every entry
+carries:
+
+- `track` — `sim`, `invivo`, `chisep` or `repro` — and `label`, the name the site shows.
+- `path` — where `fetch_dataset.sh` unpacks it (`data/<name>/scoring`; `data/harmonization/<acq>`
+  for the repro track).
+- Where its zip lives on OSF: a literal `osf_file` id and/or an `osf_env` naming the CI secret that
+  carries it (e.g. `OSF_FILE_CHISEP_MC`). An entry outside the default project `y8adf` adds
+  `osf_project`; the harmonization entries live in the public project `gkemr` and are flagged
+  `osf_public: true`, which lets `fetch_dataset.sh` download them without a token.
+- `active` — whether CI scores it — and `default`, the track's primary phantom (runs on any other
+  phantom get a `-<phantom>` suffix on their id). Exactly one active default per track, enforced by
+  `tests/test_datasets.py`.
+- `prepacked: true` when the zip already holds `inputs/` (+ `groundtruth/`) at its root. Every
+  entry except `sim` is prepacked.
+- `group` (repro entries only) — the acquisition family, `harmonization`, which the site uses to
+  group those 23 acquisitions.
+
+[`scripts/gen_manifest.py`](../scripts/gen_manifest.py) embeds the whole registry into
+`web/algorithms.json` as its `datasets` block; that is how the site labels and filters runs by
+phantom.
 
 ```bash
-scripts/fetch_dataset.sh <registry-key> <dest>     # OSF_TOKEN required
+scripts/fetch_dataset.sh <registry-key> <dest>     # OSF_TOKEN required unless the entry is osf_public
 ```
 
 Two shapes of zip:
 
-- **BIDS tree** — a `qsm-forward` output; `fetch_dataset.sh` finds the BIDS root and flattens it with
-  [`scripts/pack_dataset.py`](../scripts/pack_dataset.py) (plus the entry's `pack_flags`, e.g. `--chisep`).
-- **`prepacked: true`** — already `inputs/` + `groundtruth/` at the zip root, so it just unzips.
+- **BIDS tree** — a `qsm-forward` output (only `sim` today); `fetch_dataset.sh` finds the BIDS root
+  and flattens it with [`scripts/pack_dataset.py`](../scripts/pack_dataset.py). An entry may add
+  `pack_flags` (extra `pack_dataset.py` arguments such as `--chisep`); `fetch_dataset.sh` honours
+  the key, but no current entry sets it — the χ-separation phantoms ship prepacked.
+- **`prepacked: true`** — already flattened at the zip root, so it just unzips.
 
 `OSF_ZIP=<path>` reuses an existing download instead of re-fetching; CI points its cache there.
 
@@ -84,3 +105,21 @@ metric keys, STI χ33 the `_sti` ones (the CSV export renames these to `_cosmos`
 
 The shipped `dseg.nii.gz` uses the challenge's own 0–11 label scheme, **not** the sim phantom's, so
 it is not used for scoring.
+
+## Harmonization (`repro`, 23 acquisitions)
+
+The no-ground-truth reproducibility track: one subject scanned on two Siemens 3 T scanners
+(`prisma` = MAGNETOM Prisma Fit, `cima` = MAGNETOM Cima.X) with four protocols (`bridge`, `local`,
+`pulseq_online`, `pulseq_offline`), three runs each. Registry keys are `<scanner>-<protocol>-run<n>`,
+all `group: harmonization`, `default: false`, prepacked, in the public OSF project `gkemr`
+([`scripts/osf_harmonization_files.json`](../scripts/osf_harmonization_files.json) records each
+upload's file id).
+
+Packed from the raw MGH export by
+[`scripts/pack_harmonization.py`](../scripts/pack_harmonization.py) — which recovers the echo times
+the sidecars lack from the exam-card PDFs and the Pulseq sequence definition — and uploaded by
+[`scripts/publish_harmonization_osf.sh`](../scripts/publish_harmonization_osf.sh). Each zip holds
+`inputs/` only: there is no `groundtruth/`. Scoring is cross-acquisition agreement per pipeline,
+computed by [`scripts/repro_eval.py`](../scripts/repro_eval.py) (register → stats → fits) into
+`results/repro.json`; the Bunya job sequence that runs the full matrix is documented in
+[`scripts/repro_slurm/README.md`](../scripts/repro_slurm/README.md).

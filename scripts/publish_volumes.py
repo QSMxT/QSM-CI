@@ -14,7 +14,7 @@ Hub holds one `truth/<phantom>/<artifact>.nii.gz` per (phantom, artifact) and ev
 `volumes.truth` URL points at it. pipeline.py stages that file under results/_truth/ and leaves a
 `truth.ref` pointer in each run dir; a legacy per-run `truth.nii.gz` (runs scored before this) is
 still accepted and folded into the same shared file by content hash, so no duplicate ever reaches
-the Hub. (The Hub repo predating this holds hundreds of per-run copies: scripts/dedupe_hf_truth.py
+the Hub. (The Hub repo predating this holds hundreds of per-run copies: scripts/oneoff/dedupe_hf_truth.py
 collapses them.)
 
 Why HF (and not OSF, which this replaced): volumes are committed in batches instead of one HTTP
@@ -313,7 +313,7 @@ def _prune(api, repo, uploaded: set, keep_extra: set, scopes: set, dry_run: bool
       track's volumes.
     * **Never the shared ground truth.** `truth/<phantom>/<artifact>.nii.gz` is referenced by every
       run on that phantom, including runs outside this publish, and is deduplicated by content
-      hash. Housekeeping there belongs to scripts/dedupe_hf_truth.py, not here.
+      hash. Housekeeping there belongs to scripts/oneoff/dedupe_hf_truth.py, not here.
     * **Keep anything index.json still points at.** A volume can be live in the index but absent
       from this machine's `results/` (published by an earlier job, or cleaned up). Uploaded paths
       alone are not the keep set; URLs already recorded in the index count too.

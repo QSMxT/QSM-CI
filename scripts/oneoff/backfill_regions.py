@@ -28,7 +28,7 @@ from pathlib import Path
 import nibabel as nib
 import numpy as np
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[2]  # scripts/oneoff/ -> repo root
 sys.path.insert(0, str(ROOT / "eval"))
 from qsm_eval import region_summary  # noqa: E402
 
