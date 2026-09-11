@@ -23,11 +23,28 @@ CDN-backed and send CORS headers — exactly what the in-browser NiiVue viewer n
 WaterButler links were slow, flaky, and needed an `&direct` CORS workaround).
 
 Download URLs are deterministic (`https://huggingface.co/datasets/<repo>/resolve/main/<file>`),
-so they can be recorded even before a batch lands.
+but a URL is only recorded once its file has landed (or an earlier copy is known to be there — see
+below), so index.json never points at a file the Hub does not hold.
+
+Layout. The Hub rejects a whole commit once any directory in the repo holds more than 10,000 files
+(HF_DIR_CAP), so a full directory does not fail one file — it fails every file in the batch, on every
+publish, until something is deleted. That is what happened to the flat root in September 2026: two
+rescores lost ~250 in-silico runs' viewer volumes to "too many files per directory". Per-run
+artifacts therefore never go in the root. Repro runs live under `repro/<acquisition>/` (the viewer
+builds those URLs from that pattern); every other run under `runs/<phantom>/<hh>/`, `<hh>` being the
+first two hex digits of sha1(run id) — 256 buckets per phantom, so no realistic matrix gets near the
+cap. The root still holds the per-run files published before sharding. Rows keep pointing at them
+until a rescore republishes the run into its bucket, and a `--prune` publish then deletes the flat
+copy as superseded.
 
 Best-effort: a batch that fails after a few retries is skipped, never aborting the publish — the
 leaderboard scores live in index.json (committed by the workflow regardless). A circuit breaker
-bails out early if the Hub is genuinely down, so we never grind for hours.
+bails out early if the Hub is genuinely down, so we never grind for hours. A run whose upload did not
+land keeps its viewer where it can: if the Hub already holds an earlier publish of that artifact (at
+the same path, or at its pre-sharding flat path) the row points there and is flagged
+`volumes_stale`, which the viewer discloses. Only a run with no earlier copy at all loses its URLs,
+and those are listed in publish-incomplete.json. `--relink` applies the same recovery to an index
+after the fact, without uploading anything.
 
 Env:
   HF_TOKEN           Hugging Face token with write access (repo Settings -> Actions secret)
@@ -41,12 +58,43 @@ Usage:
   python scripts/publish_volumes.py --prune --prune-flat --index /other/index.json
                                                               # ALSO clean retired runs' volumes
                                                               # from the flat root (see _prune_flat)
+  python scripts/publish_volumes.py --relink                   # no upload: point scored rows that
+                                                              # lost their URLs back at copies the
+                                                              # Hub already holds (see _relink)
+  python scripts/publish_volumes.py --prune-repro [--prune-dry-run]
+                                                              # harmonization track: delete every
+                                                              # repro/<acq>/ file no live pipeline
+                                                              # can name (see _prune_repro)
 
-`--prune` (index mode only) deletes repo files this publish did not produce and index.json does
-not reference. Uploading alone is an UPSERT: a run that stops being produced — a method that DNF'd
-this time but succeeded last time, or one dropped from the matrix — leaves its old volume behind,
-and the viewer serves that stale recon forever. Pruning is what makes a recompute actually replace
-the previous one. See `_prune` for the (deliberately narrow) safety scope.
+`--prune` (index mode only; score.yml's merge job passes it) is the automated housekeeping, and it
+never deletes a file that is the only copy a row points at. Two kinds of deletion, on different
+evidence:
+
+  * REPLACED — positive attribution: this publish landed a run artifact whose previous copy sat at
+    another path (the pre-sharding flat copy, or a per-run truth the shared truth replaced). The old
+    path is deleted on every publish, partial or not, because we know its replacement is there.
+  * RETIRED — absence: a run artifact in a bucket this publish wrote to that no row in index.json
+    references and this publish did not produce (a method dropped from the matrix, a renamed id).
+    Only after a publish whose every upload landed, so a failure can never be read as retirement.
+
+The harmonization track is judged differently, because it is addressed differently: results/repro.json
+names every live pipeline (repro_eval.py drops methods retired from the manifest), and the viewer
+derives every URL from pipeline id × acquisition — recon and sidecars per pipeline, a total field per
+field-mapping method, a local field per (field-mapping, bfr) pair, a magnitude per acquisition. So
+`--prune-repro` (repro.yml's evaluate job) rebuilds that exact name set, under the acquisitions
+scripts/datasets.json knows, and judges what falls outside it by the manifest, the way
+repro_eval.drop_retired does: a file naming a method web/algorithms.json no longer defines is
+RETIRED and deleted; one built only from live methods is merely UNHARVESTED — a GPU method whose
+runs were published but never got ROI stats, a parked submission — and is kept, because it is the
+only copy of that output and becomes reachable the moment a stats pass runs. An acquisition
+directory the registry does not know is reported and left alone, and a pipeline list that explains
+too little of what is there is refused as not describing the repo (FLAT_COVERAGE_MIN).
+
+A run whose latest upload failed keeps pointing at its earlier copy (`volumes_stale`), and
+`_indexed_paths` exempts everything a row points at from both kinds, so that copy survives until a
+later publish lands the replacement — at which point it is REPLACED and goes. Deleting a path does
+not free its storage on the Hub (git keeps the old LFS object until the history is squashed), so
+score.yml squashes after every full rescore. See `_prune` and `_prune_flat`.
 """
 from __future__ import annotations
 
@@ -77,22 +125,31 @@ TRUTH_PREFIX = "truth/"    # Hub path prefix for the shared truths: truth/<phant
 # full repro set, and a per-job CI publish (one shard, ~100 files) is a single commit. Each commit
 # still preuploads its LFS files individually, so a transient blob failure only retries that blob.
 BATCH = 1000
+# The Hub rejects any commit that would leave a directory holding more than this many files.
+HF_DIR_CAP = 10_000
+RUNS_PREFIX = "runs/"      # every non-repro run: runs/<phantom>/<hh>/<rid>__<kind>.<ext> (see _subdir)
+SHARD_HEX = 2              # <hh> = this many leading hex digits of sha1(run id): 16**2 = 256 buckets
 
 
 def _name(rid: str, kind: str, ext: str = "nii.gz", sub: str = "") -> str:
-    # HuggingFace rejects a push once any directory holds >10,000 files. The flat root fills up
-    # (sim/invivo/chisep already ~10k), so high-volume tracks shard into a subdirectory (`sub`, e.g.
-    # "repro/<acquisition>/") — a few hundred files each. `sub` is a clean path; only the id part
-    # needs the ~/+ sanitising.
+    # `sub` is the run's shard directory (see _subdir) and already a clean path; only the id part
+    # needs the ~/+ sanitising. sub="" gives the flat-root name runs were published under before
+    # sharding, which _earlier_copies still looks for.
     return sub + f"{rid}__{kind}.{ext}".replace("~", "_").replace("+", "_")
 
 
 def _subdir(row: dict) -> str:
-    """Repo subdirectory for a run's volumes: repro runs shard by acquisition (thousands of files
-    would otherwise blow HF's 10k-per-directory limit); every other track keeps the flat root."""
+    """Repo subdirectory for a run's volumes — never the root, which is what hit HF_DIR_CAP.
+
+    Repro runs shard by acquisition: `repro/<acq>/`, a pattern web/js/viewer.js builds URLs from, so
+    it must not change. Every other run goes to `runs/<phantom>/<hh>/`, bucketed by a hash of the run
+    id so the bucket is derivable from the id alone and fills evenly however the matrix grows. The
+    phantom defaults the same way truth_name's does (historical sim rows carry none)."""
     if row.get("track") == "repro" and row.get("phantom"):
         return f"repro/{row['phantom']}/"
-    return ""
+    phantom = row.get("phantom") or row.get("track") or "sim"
+    bucket = hashlib.sha1(row["id"].encode()).hexdigest()[:SHARD_HEX]
+    return f"{RUNS_PREFIX}{phantom}/{bucket}/"
 
 
 def _url(repo: str, name: str) -> str:
@@ -268,12 +325,13 @@ def _prune(api, repo, uploaded: set, keep_extra: set, scopes: set, dry_run: bool
       operator towards a --prune-force habit that disables the check exactly when it matters.
       Proportion of files says nothing about whether a file is needed; attribution does.
 
-    The guard against a PARTIAL publish (the real risk the proportion rule was groping at — a
-    truncated index makes every absent run look retired) lives at the call site, which is where the
-    published-vs-indexed run counts are known.
+    `scopes` drives the absence-based (RETIRED) deletions; the call site passes none after a partial
+    publish, so a failed upload can never be read as retirement. `superseded` (REPLACED) is judged
+    on its own evidence and is deleted either way — the call site has already removed anything a
+    row still points at, which is what keeps a `volumes_stale` fallback copy alive.
     """
     scopes = {s for s in scopes if s and not s.startswith(TRUTH_PREFIX)}
-    if not scopes:
+    if not scopes and not superseded:
         print("  prune: nothing to do (no sharded subdirectories in this publish)")
         return 0
     try:
@@ -295,8 +353,11 @@ def _prune(api, repo, uploaded: set, keep_extra: set, scopes: set, dry_run: bool
             continue
         candidates[f] = art
     # `superseded` bypasses the sharded-scope restriction because it does not rest on scope at all:
-    # each of those paths was this run's own previous URL for a run whose replacement we just wrote.
-    orphans = sorted((set(candidates) - uploaded - keep_extra) | set(superseded))
+    # each of those paths was this run's own previous URL (or pre-sharding flat copy) for a run whose
+    # replacement we just wrote. Only the ones actually on the Hub: deleting a missing path would
+    # fail the whole prune commit.
+    superseded = set(superseded) & set(files)
+    orphans = sorted((set(candidates) - uploaded - keep_extra) | superseded)
     for f in superseded:
         candidates.setdefault(f, (f.rsplit("__", 1)[0], "superseded"))
     extra = f", {skipped} shared/unrecognised file(s) not run artifacts (left alone)" if skipped else ""
@@ -319,20 +380,7 @@ def _prune(api, repo, uploaded: set, keep_extra: set, scopes: set, dry_run: bool
     if dry_run:
         print("  prune: --prune-dry-run, deleting nothing")
         return 0
-    deleted = 0
-    for start in range(0, len(orphans), BATCH):
-        chunk = orphans[start:start + BATCH]
-        ops = [_delete_op(f) for f in chunk]
-        desc = f"prune batch {start // BATCH + 1}/{(len(orphans) + BATCH - 1) // BATCH}"
-        try:
-            _retry(desc, lambda o=ops, d=desc: api.create_commit(
-                repo, repo_type="dataset", operations=o,
-                commit_message=f"prune orphaned volumes ({d})"))
-            deleted += len(chunk)
-            print(f"  ✓ {desc} ({deleted}/{len(orphans)})", flush=True)
-        except Exception as exc:  # noqa: BLE001
-            print(f"  ! {desc} failed: {exc}", file=sys.stderr)
-    return deleted
+    return _delete_batches(api, repo, orphans, "prune")
 
 
 FLAT_COVERAGE_MIN = 0.5
@@ -459,19 +507,168 @@ def _prune_flat(api, repo, rows: list, extra_indexes: list, dry_run: bool) -> in
     if dry_run:
         print("  prune-flat: --prune-dry-run, deleting nothing")
         return 0
+    return _delete_batches(api, repo, orphans, "prune-flat")
+
+
+def _delete_batches(api, repo, paths: list, what: str) -> int:
+    """Delete `paths` in BATCH-sized commits, best-effort per batch (like uploads). Returns how many went."""
     deleted = 0
-    for start in range(0, len(orphans), BATCH):
-        chunk = orphans[start:start + BATCH]
-        desc = f"prune-flat batch {start // BATCH + 1}"
+    for start in range(0, len(paths), BATCH):
+        chunk = paths[start:start + BATCH]
+        desc = f"{what} batch {start // BATCH + 1}/{(len(paths) + BATCH - 1) // BATCH}"
         try:
             _retry(desc, lambda o=chunk, d=desc: api.create_commit(
                 repo, repo_type="dataset", operations=[_delete_op(f) for f in o],
-                commit_message=f"prune volumes of retired runs ({d})"))
+                commit_message=f"{what}: delete {len(o)} file(s) ({d})"))
             deleted += len(chunk)
-            print(f"  ✓ {desc} ({deleted}/{len(orphans)})", flush=True)
+            print(f"  ✓ {desc} ({deleted}/{len(paths)})", flush=True)
         except Exception as exc:  # noqa: BLE001
             print(f"  ! {desc} failed: {exc}", file=sys.stderr)
     return deleted
+
+
+# ── Harmonization (repro) track ──────────────────────────────────────────────────────────────────
+# Nothing here is addressed by a URL in an index: the viewer derives every harmonization URL from a
+# pipeline id and an acquisition (web/js/viewer.js reproReconUrl & co.), and results/repro.json is the
+# list of live pipelines. Liveness is therefore DERIVED, the same way, and must stay byte-identical
+# to those derivations — a drift here deletes live files (the 621-intermediate near-miss of 2026-09).
+REPRO_PREFIX = "repro/"
+REPRO_RUN_KINDS = (("recon", "nii.gz"), ("resources", "json"), ("regions", "json"))  # per pipeline×acq
+REPRO_SHARED_KINDS = ("totalfield", "localfield", "magnitude")                       # per column / acq
+REPRO_KINDS = frozenset(k for k, _ in REPRO_RUN_KINDS) | frozenset(REPRO_SHARED_KINDS)
+
+
+def repro_acq_ids() -> frozenset:
+    """Harmonization acquisition ids: the repro-track keys of scripts/datasets.json, the registry
+    repro_eval.py and the site both read."""
+    reg = json.loads((ROOT / "scripts" / "datasets.json").read_text())
+    return frozenset(k for k, v in reg.items() if v.get("track") == "repro")
+
+
+def repro_live_names(pipelines, acqs) -> set:
+    """Every Hub path the harmonization viewer can ask for, for these pipelines × acquisitions.
+
+    Mirrors viewer.js exactly: `repro/<acq>/<pipe with + → _>-cmp-<acq>__{recon,resources,regions}`,
+    `<fm>__totalfield` for any pipeline with an upstream field-mapping stage (2- and 3-part ids),
+    `<fm>_<bfr>__localfield` for a full 3-part pipeline, and `<acq>__magnitude` per acquisition."""
+    live = set()
+    for acq in acqs:
+        d = f"{REPRO_PREFIX}{acq}/"
+        live.add(f"{d}{acq}__magnitude.nii.gz")
+        for p in pipelines:
+            parts = p.split("+")
+            rid = p.replace("+", "_") + f"-cmp-{acq}"
+            for kind, ext in REPRO_RUN_KINDS:
+                live.add(f"{d}{rid}__{kind}.{ext}")
+            if len(parts) >= 2:
+                live.add(f"{d}{parts[0]}__totalfield.nii.gz")
+            if len(parts) == 3:
+                live.add(f"{d}{parts[0]}_{parts[1]}__localfield.nii.gz")
+    return live
+
+
+def repro_orphans(files, live: set, acqs, live_slugs) -> tuple[list, list, float, set]:
+    """(retired, unharvested, coverage, unknown acquisition dirs) among the harmonization files.
+
+    Judged: files directly under `repro/<acq>/` for a KNOWN acquisition whose kind is one this track
+    publishes. Anything else — a kind this script does not know, a file without the `__kind` marker,
+    a directory not in the registry — is left alone and (for directories) reported: deleting a whole
+    acquisition should be a deliberate act, not a side effect of a registry edit.
+
+    A judged file no live pipeline can name is RETIRED only if it names a method outside
+    `live_slugs` (the manifest) — the rule repro_eval.drop_retired applies to pipelines. Otherwise it
+    is UNHARVESTED: every method in it is live, only the ROI stats/fits that would put it in repro.json
+    are missing (a GPU method run without a stats pass, a parked submission). Those are kept; they
+    are the only copy. Methods are read off the name as `_`-separated slugs, which is unambiguous
+    while no slug contains `_` (the caller checks). Coverage is the share of judged files repro.json
+    explains: a precondition on the INPUT (see flat_orphans), not a cap on the output."""
+    retired, unharvested, kept, unknown = [], [], 0, set()
+    for f in files:
+        if not f.startswith(REPRO_PREFIX):
+            continue
+        rest = f[len(REPRO_PREFIX):]
+        if "/" not in rest:
+            continue
+        acq, base = rest.split("/", 1)
+        if "/" in base or "__" not in base:
+            continue
+        if acq not in acqs:
+            unknown.add(acq)
+            continue
+        stem, tail = base.rsplit("__", 1)
+        if tail.split(".", 1)[0] not in REPRO_KINDS:
+            continue
+        if f in live:
+            kept += 1
+            continue
+        methods = stem[: -len(f"-cmp-{acq}")] if stem.endswith(f"-cmp-{acq}") else stem
+        (unharvested if all(m in live_slugs for m in methods.split("_")) else retired).append(f)
+    total = kept + len(retired) + len(unharvested)
+    return sorted(retired), sorted(unharvested), (kept / total if total else 1.0), unknown
+
+
+def _prune_repro(api, repo, repro_json: Path, acqs, dry_run: bool) -> int:
+    """--prune-repro: delete harmonization volumes no live pipeline can name. Returns the count."""
+    if not repro_json.exists():
+        print(f"! prune-repro: {repro_json} does not exist", file=sys.stderr)
+        return 0
+    pipelines = sorted(json.loads(repro_json.read_text()).get("pipelines") or {})
+    if not pipelines:
+        print("! prune-repro: repro.json names no pipelines — refusing to treat that as 'everything "
+              "is retired'.", file=sys.stderr)
+        return 0
+    slugs = live_algo_slugs()
+    if not slugs:
+        print("! prune-repro: web/algorithms.json names no methods — cannot tell retired from "
+              "unharvested; refusing.", file=sys.stderr)
+        return 0
+    if any("_" in s for s in slugs):
+        print(f"! prune-repro: a method slug contains '_' ({[s for s in slugs if '_' in s]}), so "
+              f"methods cannot be read off a file name unambiguously; refusing.", file=sys.stderr)
+        return 0
+    try:
+        files = _retry("list_repo_files", lambda: api.list_repo_files(repo, repo_type="dataset"))
+    except Exception as exc:  # noqa: BLE001
+        print(f"  ! prune-repro: could not list {repo} ({exc}); skipping", file=sys.stderr)
+        return 0
+    live = repro_live_names(pipelines, acqs)
+    orphans, unharvested, coverage, unknown = repro_orphans(files, live, acqs, slugs)
+    print(f"  prune-repro: {len(pipelines)} live pipeline(s) × {len(acqs)} acquisition(s) explain "
+          f"{coverage:.0%} of the harmonization files")
+    if unharvested:
+        by_u: dict = {}
+        for f in unharvested:
+            by_u.setdefault(f.rsplit("/", 1)[1].rsplit("__", 1)[0].split("-cmp-")[0], []).append(f)
+        print(f"  prune-repro: {len(unharvested)} file(s) across {len(by_u)} pipeline/column(s) are "
+              f"built only from live methods but absent from repro.json (no ROI stats yet, or parked) "
+              f"— kept, they are the only copy")
+        for k in sorted(by_u)[:5]:
+            print(f"      - {k}: {len(by_u[k])} file(s)")
+        if len(by_u) > 5:
+            print(f"      … and {len(by_u) - 5} more")
+    if unknown:
+        print(f"  prune-repro: {len(unknown)} acquisition dir(s) not in scripts/datasets.json, left "
+              f"alone: {', '.join(sorted(unknown))}")
+    if coverage < FLAT_COVERAGE_MIN:
+        print(f"  ! prune-repro: refusing — the pipeline list explains only {coverage:.0%} of what is "
+              f"there, so it does not describe this repo (a broken harvest?).", file=sys.stderr)
+        return 0
+    if not orphans:
+        print("  prune-repro: nothing orphaned")
+        return 0
+    by_pipe: dict = {}
+    for f in orphans:
+        by_pipe.setdefault(f.rsplit("/", 1)[1].rsplit("__", 1)[0].split("-cmp-")[0], []).append(f)
+    print(f"  prune-repro: {len(orphans)} file(s) across {len(by_pipe)} retired pipeline/column(s) "
+          f"(each names a method the manifest no longer defines)")
+    for k in sorted(by_pipe)[:10]:
+        print(f"      - {k}: {len(by_pipe[k])} file(s)")
+    if len(by_pipe) > 10:
+        print(f"      … and {len(by_pipe) - 10} more")
+    if dry_run:
+        print("  prune-repro: --prune-dry-run, deleting nothing")
+        return 0
+    return _delete_batches(api, repo, orphans, "prune-repro")
 
 
 def _indexed_paths(rows: list, repo: str) -> set:
@@ -488,6 +685,102 @@ def _indexed_paths(rows: list, repo: str) -> set:
             if isinstance(u, str) and u.startswith(prefix):
                 keep.add(u[len(prefix):])
     return keep
+
+
+# Per-run artifacts a scored row can carry, for --relink. The "-dia" pair is χ-separation's χ− set.
+RUN_KINDS = (("recon", "nii.gz"), ("error", "nii.gz"), ("resources", "json"), ("regions", "json"))
+DIA_KINDS = (("recon-dia", "nii.gz"), ("error-dia", "nii.gz"))
+SIDECARS = ("resources", "regions")   # JSON sidecars: top-level `<kind>_url`, not under `volumes`
+
+
+def _is_chisep(row: dict) -> bool:
+    """Whether a run writes the χ− "-dia" set — the viewer's isChisepRun rule. A bare R2′ generator
+    shares the chisep domain but produces one map."""
+    return ((row.get("domain") == "chisep" or row.get("stage") == "chi-separation")
+            and row.get("stage") != "r2prime-generation")
+
+
+def _earlier_copies(name: str) -> tuple:
+    """Hub paths that may hold an earlier publish of the artifact at `name`, in order of preference:
+    the path itself (the same run published there before), then — for a bucketed run artifact — the
+    flat-root path it was published under before sharding."""
+    return (name, name.rsplit("/", 1)[-1]) if name.startswith(RUNS_PREFIX) else (name,)
+
+
+def fallback_urls(missing, existing: set, repo: str) -> dict:
+    """{rid: {kind: url}} for each (rid, kind, name) in `missing` that has an earlier copy among the
+    Hub's `existing` paths. Anything with no copy is left out: no URL beats a URL that 404s."""
+    out: dict = {}
+    for rid, kind, name in missing:
+        hit = next((p for p in _earlier_copies(name) if p in existing), None)
+        if hit:
+            out.setdefault(rid, {})[kind] = _url(repo, hit)
+    return out
+
+
+def _has_url(row: dict, kind: str) -> bool:
+    return bool(row.get(f"{kind}_url") if kind in SIDECARS else (row.get("volumes") or {}).get(kind))
+
+
+def relink_urls(rows: list, existing: set, repo: str) -> dict:
+    """What --relink would restore: for every SCORED row, each per-run artifact it has no URL for
+    but the Hub holds a copy of. DNF rows are skipped — an earlier success's recon must never be
+    shown for a run that failed. Ground truth is not touched: it is shared, and always recorded."""
+    missing = []
+    for row in rows:
+        if row.get("status") != "ok":
+            continue
+        for kind, ext in RUN_KINDS + (DIA_KINDS if _is_chisep(row) else ()):
+            if not _has_url(row, kind):
+                missing.append((row["id"], kind, _name(row["id"], kind, ext, _subdir(row))))
+    return fallback_urls(missing, existing, repo)
+
+
+def _apply_urls(row: dict, kinds: dict, replace: bool) -> None:
+    """Record {kind: url} on a row: the JSON sidecars as top-level `<kind>_url` (the viewer graphs
+    resources and fetches regions), the NIfTIs under `volumes`. `replace` swaps the whole `volumes`
+    map (a publish states what the run has now); otherwise the new kinds are merged in."""
+    kinds = dict(kinds)
+    for k in SIDECARS:
+        url = kinds.pop(k, None)
+        if url:
+            row[f"{k}_url"] = url
+    if kinds:
+        row["volumes"] = kinds if replace else {**(row.get("volumes") or {}), **kinds}
+
+
+def _relink(index: Path, repo: str, token) -> int:
+    """--relink: point scored rows that lost their volume URLs back at copies already on the Hub.
+
+    The recovery a partial publish needs after the fact — e.g. the September 2026 rescores, whose
+    rejected batches left ~200 runs' files on the Hub but their URLs out of index.json. Uploads
+    nothing and needs no write token (the volumes repo is public). Relinked rows are flagged
+    `volumes_stale`: the copy is from an earlier publish than the metrics beside it, and the next
+    successful publish of the run clears the flag."""
+    from huggingface_hub import HfApi
+    doc = json.loads(index.read_text())
+    rows = doc["runs"] if isinstance(doc, dict) else doc
+    try:
+        existing = set(_retry("list_repo_files", lambda: HfApi(token=token).list_repo_files(
+            repo, repo_type="dataset")))
+    except Exception as exc:  # noqa: BLE001
+        print(f"! could not list {repo} ({exc})", file=sys.stderr)
+        return 1
+    found = relink_urls(rows, existing, repo)
+    by_id = {r["id"]: r for r in rows}
+    for rid, kinds in found.items():
+        _apply_urls(by_id[rid], kinds, replace=False)
+        by_id[rid]["volumes_stale"] = True
+    index.write_text(json.dumps(doc, indent=2) + "\n")
+    print(f"relinked {len(found)} run(s) to copies already on {repo} (flagged volumes_stale)")
+    bare = sorted(r["id"] for r in rows
+                  if r.get("status") == "ok" and not (r.get("volumes") or {}).get("recon"))
+    if bare:
+        print(f"! {len(bare)} scored run(s) still have no reconstruction anywhere on the Hub — only "
+              f"a rescore that publishes them can fix these:", file=sys.stderr)
+        for rid in bare:
+            print(f"    {rid}", file=sys.stderr)
+    return 0
 
 
 def _retry(desc, fn, attempts=3, base=4.0):
@@ -507,7 +800,8 @@ def main() -> int:
 
     repo = os.environ.get("HF_VOLUMES_REPO")
     token = os.environ.get("HF_TOKEN")
-    if not repo or not token:
+    relink = "--relink" in sys.argv
+    if not repo or not (token or relink):          # --relink only reads the (public) repo
         print("! HF_VOLUMES_REPO and HF_TOKEN must be set", file=sys.stderr)
         return 1
 
@@ -528,6 +822,17 @@ def main() -> int:
     extra_indexes = _extra_indexes(sys.argv)
     args = [a for a in args if a not in {str(x) for x in extra_indexes}]
     results = Path(args[0]) if args else ROOT / "results"
+    if relink:
+        if runs_file is not None or prune:
+            print("! --relink works on results/index.json alone; drop --runs/--prune", file=sys.stderr)
+            return 1
+        return _relink(results / "index.json", repo, token)
+    if "--prune-repro" in sys.argv:
+        if runs_file is not None or "--prune" in sys.argv:
+            print("! --prune-repro stands alone (with --prune-dry-run at most)", file=sys.stderr)
+            return 1
+        _prune_repro(HfApi(token=token), repo, results / "repro.json", repro_acq_ids(), prune_dry)
+        return 0
 
     # Pruning from a shard would delete every OTHER shard's volumes: a --runs publish knows only
     # its own slice, so everything else in the scope looks orphaned. Only the index-mode publish
@@ -650,22 +955,36 @@ def main() -> int:
             path = _repo_path(url, repo)
             if path and "/" not in path and _url(repo, path) != kinds[kind]:
                 superseded.add(path)
+    # The same attribution for the move out of the flat root, which the loop above cannot see when
+    # the row arrives without its old URLs (score.yml's merge replaces each rescored row wholesale):
+    # a run artifact that just landed in its bucket supersedes the flat copy of the same name.
+    # _prune only deletes those that actually exist.
+    superseded |= {name.rsplit("/", 1)[-1] for _, _, name in refs
+                   if name in landed and name.startswith(RUNS_PREFIX)}
+
+    # A run whose upload did not land keeps its viewer if the Hub still holds an earlier publish of
+    # the artifact. Before this, the row lost the URL outright while the file sat on the Hub, working
+    # and unreferenced — how two rescores in September 2026 blanked ~250 runs' viewers.
+    fallback: dict[str, dict[str, str]] = {}
+    if failed:
+        try:
+            existing = set(_retry("list_repo_files", lambda: api.list_repo_files(
+                repo, repo_type="dataset")))
+        except Exception as exc:  # noqa: BLE001 — without a listing, no fallback; still report
+            print(f"  ! could not list {repo} to find earlier copies ({exc})", file=sys.stderr)
+            existing = set()
+        fallback = fallback_urls([ref for ref in refs if ref[2] not in landed], existing, repo)
+        for rid, kinds in fallback.items():
+            want.setdefault(rid, {}).update(kinds)
 
     published = 0
     for rid, kinds in want.items():
-        # The resources trace and the per-region stats aren't NiiVue volumes — surface each as its own
-        # top-level URL (the viewer graphs resources; the regional views fetch regions), and keep the
-        # nii.gz volumes under `volumes` as before.
-        res_url = kinds.pop("resources", None)
-        if res_url:
-            by_id[rid]["resources_url"] = res_url
-        reg_url = kinds.pop("regions", None)
-        if reg_url:
-            by_id[rid]["regions_url"] = reg_url
-        if kinds:
-            by_id[rid]["volumes"] = kinds
-        if res_url or reg_url or kinds:
-            published += 1
+        _apply_urls(by_id[rid], kinds, replace=True)
+        if rid in fallback:
+            by_id[rid]["volumes_stale"] = True     # disclosed by the viewer; see _relink
+        else:
+            by_id[rid].pop("volumes_stale", None)  # everything it points at is this publish's
+        published += 1
 
     # Write the URLs back into whichever file sourced the ids: the central index.json (dict), or the
     # per-job runs-JSON (bare list) whose rows we patched in place via by_id.
@@ -674,22 +993,23 @@ def main() -> int:
     print(f"published volumes for {published} runs -> {target}")
 
     if prune:
-        # Two preconditions, both about whether this publish saw a COMPLETE picture — because prune
-        # infers "retired" from absence, and an incomplete view makes live runs look retired.
+        # Everything a row points at is exempt — computed AFTER the URLs above were written, so a
+        # `volumes_stale` fallback copy counts as live and survives (see the module docstring).
+        live = _indexed_paths(rows, repo)
         if failed:
-            print("! prune: skipped — some uploads failed this run, so the produced set is "
-                  "incomplete and anything missing would look orphaned.", file=sys.stderr)
-        elif published < 0.9 * len(rows):
-            print(f"! prune: skipped — this results directory produced volumes for {published} of "
-                  f"{len(rows)} indexed runs. That is a partial publish, and every run missing from "
-                  f"it would be read as retired. Publish from a complete results dir to prune.",
-                  file=sys.stderr)
+            # REPLACED copies still go (their replacement demonstrably landed); RETIRED is judged by
+            # absence, and after a failed upload absence proves nothing — so no scopes this time.
+            print("! prune: some uploads failed, so only files this publish demonstrably replaced "
+                  "are deleted; retired-run cleanup waits for a clean publish.", file=sys.stderr)
+            scopes = set()
         else:
+            # Liveness comes from the full index (`live`), not from what this results dir produced,
+            # so a focused rescore may prune the buckets it touched: a file there that no row
+            # references and this publish did not write belongs to no run any more.
             scopes = {n[:n.rindex("/") + 1] for n in uploads if "/" in n}
-            _prune(api, repo, set(landed), _indexed_paths(rows, repo), scopes, prune_dry,
-                   superseded - _indexed_paths(rows, repo))
-            if prune_flat:
-                _prune_flat(api, repo, rows, extra_indexes, prune_dry)
+        _prune(api, repo, set(landed), live, scopes, prune_dry, superseded - live)
+        if prune_flat and not failed:
+            _prune_flat(api, repo, rows, extra_indexes, prune_dry)
 
     if failed:
         # Committing the index without these runs' URLs is deliberate — losing a whole rescore
@@ -697,13 +1017,16 @@ def main() -> int:
         # SILENTLY: rc=0 under `continue-on-error: true` is a green job whose only trace is a `!`
         # line in a log nobody reads, and nothing retries short of another full rescore. On a
         # 47-batch publish one failed batch is ~1,000 runs quietly missing their volumes.
-        missing = sorted({rid for rid, _, name in refs if name not in landed})
-        _annotate(f"{failed} volume file(s) failed to upload; {len(missing)} run(s) have no volume "
-                  f"URLs in index.json and need a re-publish")
+        missing = sorted({rid for rid, kind, name in refs
+                          if name not in landed and kind not in fallback.get(rid, {})})
+        stale = sorted(fallback)
+        _annotate(f"{failed} volume file(s) failed to upload; {len(stale)} run(s) kept an earlier "
+                  f"copy already on the Hub (flagged volumes_stale) and {len(missing)} run(s) have "
+                  f"no copy at all — both need a re-publish")
         (target.parent / "publish-incomplete.json").write_text(json.dumps(
-            {"failed_files": failed, "runs": missing}, indent=2) + "\n")
-        print(f"! {len(missing)} run(s) left without volume URLs — listed in "
-              f"{target.parent / 'publish-incomplete.json'}", file=sys.stderr)
+            {"failed_files": failed, "runs": missing, "stale_runs": stale}, indent=2) + "\n")
+        print(f"! {len(missing)} run(s) left without volume URLs, {len(stale)} on stale copies — "
+              f"listed in {target.parent / 'publish-incomplete.json'}", file=sys.stderr)
         return 2                      # distinct from 1 (hard error): index written, volumes partial
     return 0
 
