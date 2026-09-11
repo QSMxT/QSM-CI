@@ -9,7 +9,12 @@ in scratch.
 
 Three kinds of harmonization volume belong to no single run and are addressed by NAMING CONVENTION,
 not by any URL in `index.json` — the viewer rebuilds their URLs from the pattern. They therefore have
-their own publishers, and `publish_volumes.py --prune` deliberately does not judge them:
+their own publishers. `publish_volumes.py --prune` (the per-run, URL-based prune) deliberately does
+not judge them; `--prune-repro` (repro.yml's evaluate job) does, by rebuilding the same pattern from
+`repro.json`'s live pipelines × `scripts/datasets.json`'s acquisitions and deleting what falls
+outside it AND names a method `web/algorithms.json` no longer defines — a retired method's recons
+and the columns only it used. Files of live methods that merely lack ROI stats (unharvested GPU
+runs, parked submissions) are kept:
 
 | file | published by |
 |---|---|

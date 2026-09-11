@@ -116,8 +116,13 @@
       "variant": "default",
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/medi-qsmrs-iso__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/medi-qsmrs-iso__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/medi-qsmrs-iso__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/medi-qsmrs-iso__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "RESHARP (QSM.rs)",
@@ -145,8 +150,12 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/localfield.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/localfield.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/resharp-qsmrs-iso-tuned__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/resharp-qsmrs-iso-tuned__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/resharp-qsmrs-iso-tuned__resources.json",
+      "volumes_stale": true
     },
     {
       "name": "TV-ADMM (QSM.rs)",
@@ -2140,8 +2149,13 @@
       "variant": "default",
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/modl-qsm-iso__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/modl-qsm-iso__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/modl-qsm-iso__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/modl-qsm-iso__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "ROMEO (QSM.rs)",
@@ -2165,8 +2179,12 @@
       "variant": "default",
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/totalfield.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/totalfield.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs-iso__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs-iso__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs-iso__resources.json",
+      "volumes_stale": true
     },
     {
       "name": "TV (ADMM)",
@@ -3519,8 +3537,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iharperella-qsmrs_star-sti-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iharperella-qsmrs_star-sti-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iharperella-qsmrs_star-sti-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iharperella-qsmrs_star-sti-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+iharperella-qsmrs+tkd-qsmci",
@@ -3555,8 +3578,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iharperella-qsmrs_tkd-qsmci-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iharperella-qsmrs_tkd-qsmci-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iharperella-qsmrs_tkd-qsmci-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iharperella-qsmrs_tkd-qsmci-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+iharperella-qsmrs+medi-qsmrs",
@@ -3831,8 +3859,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iharperella-qsmrs_qsmnet-plus-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iharperella-qsmrs_qsmnet-plus-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iharperella-qsmrs_qsmnet-plus-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iharperella-qsmrs_qsmnet-plus-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+iharperella-qsmrs+rts-qsmrs",
@@ -3867,8 +3900,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iharperella-qsmrs_rts-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iharperella-qsmrs_rts-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iharperella-qsmrs_rts-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iharperella-qsmrs_rts-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+iharperella-qsmrs+tikhonov-qsmrs",
@@ -3903,8 +3941,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iharperella-qsmrs_tikhonov-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iharperella-qsmrs_tikhonov-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iharperella-qsmrs_tikhonov-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iharperella-qsmrs_tikhonov-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+iharperella-qsmrs+tkd-qsmrs",
@@ -3939,8 +3982,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iharperella-qsmrs_tkd-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iharperella-qsmrs_tkd-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iharperella-qsmrs_tkd-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iharperella-qsmrs_tkd-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+iharperella-qsmrs+tsvd-qsmrs",
@@ -3975,8 +4023,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iharperella-qsmrs_tsvd-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iharperella-qsmrs_tsvd-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iharperella-qsmrs_tsvd-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iharperella-qsmrs_tsvd-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+iharperella-qsmrs+tv-qsmrs",
@@ -4011,8 +4064,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iharperella-qsmrs_tv-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iharperella-qsmrs_tv-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iharperella-qsmrs_tv-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iharperella-qsmrs_tv-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+iharperella-qsmrs+whqsm-qsmrs",
@@ -4047,8 +4105,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iharperella-qsmrs_whqsm-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iharperella-qsmrs_whqsm-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iharperella-qsmrs_whqsm-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iharperella-qsmrs_whqsm-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+iharperella-qsmrs+xqsm",
@@ -4083,8 +4146,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iharperella-qsmrs_xqsm-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iharperella-qsmrs_xqsm-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iharperella-qsmrs_xqsm-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iharperella-qsmrs_xqsm-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "romeo-qsmrs+ismv-qsmrs+fansi-nltv-qsmrs",
@@ -5150,8 +5218,13 @@
       "variant": "default",
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/ndi-qsmrs-iso__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/ndi-qsmrs-iso__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/ndi-qsmrs-iso__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/ndi-qsmrs-iso__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "RTS (QSM.rs)",
@@ -6209,8 +6282,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_fansi-nltv-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_fansi-nltv-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_fansi-nltv-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_fansi-nltv-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+ismv-qsmrs+fansi-nltgv-qsmrs",
@@ -6245,8 +6323,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_fansi-nltgv-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_fansi-nltgv-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_fansi-nltgv-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_fansi-nltgv-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+ismv-qsmrs+hdqsm-qsmrs",
@@ -6281,8 +6364,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_hdqsm-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_hdqsm-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_hdqsm-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_hdqsm-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+ismv-qsmrs+ilsqr-qsmrs",
@@ -6317,8 +6405,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_ilsqr-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_ilsqr-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_ilsqr-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_ilsqr-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+ismv-qsmrs+ir2qsm",
@@ -6353,8 +6446,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_ir2qsm-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_ir2qsm-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_ir2qsm-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_ir2qsm-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+ismv-qsmrs+l1qsm-qsmrs",
@@ -6389,8 +6487,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_l1qsm-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_l1qsm-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_l1qsm-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_l1qsm-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+ismv-qsmrs+lpcnn",
@@ -6425,8 +6528,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_lpcnn-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_lpcnn-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_lpcnn-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_lpcnn-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+ismv-qsmrs+ilsqr-sti",
@@ -6461,8 +6569,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_ilsqr-sti-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_ilsqr-sti-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_ilsqr-sti-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_ilsqr-sti-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+ismv-qsmrs+star-sti",
@@ -6497,8 +6610,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_star-sti-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_star-sti-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_star-sti-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_star-sti-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+ismv-qsmrs+tkd-qsmci",
@@ -6533,8 +6651,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_tkd-qsmci-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_tkd-qsmci-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_tkd-qsmci-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_tkd-qsmci-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+ismv-qsmrs+medi-qsmrs",
@@ -6569,8 +6692,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_medi-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_medi-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_medi-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_medi-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+ismv-qsmrs+modl-qsm",
@@ -6605,8 +6733,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_modl-qsm-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_modl-qsm-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_modl-qsm-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_modl-qsm-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+ismv-qsmrs+ndi-qsmrs",
@@ -6641,8 +6774,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_ndi-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_ndi-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_ndi-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_ndi-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+ismv-qsmrs+nltv-qsmrs",
@@ -6677,8 +6815,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_nltv-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_nltv-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_nltv-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_nltv-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+ismv-qsmrs+qsmgan",
@@ -6713,8 +6856,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_qsmgan-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_qsmgan-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_qsmgan-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_qsmgan-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+ismv-qsmrs+qsmnet",
@@ -6749,8 +6897,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_qsmnet-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_qsmnet-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_qsmnet-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_qsmnet-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+ismv-qsmrs+qsmnet-plus",
@@ -6785,8 +6938,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_qsmnet-plus-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_qsmnet-plus-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_qsmnet-plus-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_qsmnet-plus-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+ismv-qsmrs+rts-qsmrs",
@@ -6821,8 +6979,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_rts-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_rts-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_rts-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_rts-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+ismv-qsmrs+tikhonov-qsmrs",
@@ -6857,8 +7020,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_tikhonov-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_tikhonov-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_tikhonov-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_tikhonov-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+ismv-qsmrs+tkd-qsmrs",
@@ -6893,8 +7061,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_tkd-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_tkd-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_tkd-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_tkd-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+ismv-qsmrs+tsvd-qsmrs",
@@ -6929,8 +7102,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_tsvd-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_tsvd-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_tsvd-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_tsvd-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+ismv-qsmrs+tv-qsmrs",
@@ -6965,8 +7143,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_tv-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_tv-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_tv-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_tv-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+ismv-qsmrs+whqsm-qsmrs",
@@ -7001,8 +7184,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_whqsm-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_whqsm-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_whqsm-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_whqsm-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+ismv-qsmrs+xqsm",
@@ -7037,8 +7225,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_xqsm-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_xqsm-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_xqsm-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_xqsm-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "romeo-qsmrs+lbv-qsmrs+fansi-nltv-qsmrs",
@@ -7073,8 +7266,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_lbv-qsmrs_fansi-nltv-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_lbv-qsmrs_fansi-nltv-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_lbv-qsmrs_fansi-nltv-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_lbv-qsmrs_fansi-nltv-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "romeo-qsmrs+lbv-qsmrs+fansi-nltgv-qsmrs",
@@ -7109,8 +7307,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_lbv-qsmrs_fansi-nltgv-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_lbv-qsmrs_fansi-nltgv-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_lbv-qsmrs_fansi-nltgv-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_lbv-qsmrs_fansi-nltgv-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "romeo-qsmrs+lbv-qsmrs+hdqsm-qsmrs",
@@ -7145,8 +7348,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_lbv-qsmrs_hdqsm-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_lbv-qsmrs_hdqsm-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_lbv-qsmrs_hdqsm-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_lbv-qsmrs_hdqsm-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "romeo-qsmrs+lbv-qsmrs+ilsqr-qsmrs",
@@ -7181,8 +7389,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_lbv-qsmrs_ilsqr-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_lbv-qsmrs_ilsqr-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_lbv-qsmrs_ilsqr-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_lbv-qsmrs_ilsqr-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "romeo-qsmrs+lbv-qsmrs+ir2qsm",
@@ -7217,8 +7430,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_lbv-qsmrs_ir2qsm-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_lbv-qsmrs_ir2qsm-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_lbv-qsmrs_ir2qsm-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_lbv-qsmrs_ir2qsm-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "romeo-qsmrs+lbv-qsmrs+l1qsm-qsmrs",
@@ -7253,8 +7471,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_lbv-qsmrs_l1qsm-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_lbv-qsmrs_l1qsm-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_lbv-qsmrs_l1qsm-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_lbv-qsmrs_l1qsm-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "romeo-qsmrs+lbv-qsmrs+lpcnn",
@@ -7292,8 +7515,10 @@
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_lbv-qsmrs_lpcnn-cmp__regions.json",
       "volumes": {
         "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_lbv-qsmrs_lpcnn-cmp__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_lbv-qsmrs_lpcnn-cmp__error.nii.gz"
+      },
+      "volumes_stale": true
     },
     {
       "name": "romeo-qsmrs+lbv-qsmrs+ilsqr-sti",
@@ -7328,8 +7553,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_lbv-qsmrs_ilsqr-sti-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_lbv-qsmrs_ilsqr-sti-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_lbv-qsmrs_ilsqr-sti-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_lbv-qsmrs_ilsqr-sti-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "romeo-qsmrs+lbv-qsmrs+star-sti",
@@ -8098,8 +8328,13 @@
       "variant": "default",
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/nextqsm-iso__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/nextqsm-iso__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/nextqsm-iso__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/nextqsm-iso__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "SHARP (QSM.rs)",
@@ -9157,8 +9392,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_fansi-nltv-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_fansi-nltv-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_fansi-nltv-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_fansi-nltv-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+lbv-qsmrs+fansi-nltgv-qsmrs",
@@ -9193,8 +9433,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_fansi-nltgv-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_fansi-nltgv-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_fansi-nltgv-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_fansi-nltgv-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+lbv-qsmrs+hdqsm-qsmrs",
@@ -9229,8 +9474,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_hdqsm-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_hdqsm-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_hdqsm-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_hdqsm-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+lbv-qsmrs+ilsqr-qsmrs",
@@ -9265,8 +9515,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_ilsqr-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_ilsqr-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_ilsqr-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_ilsqr-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+lbv-qsmrs+ir2qsm",
@@ -9301,8 +9556,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_ir2qsm-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_ir2qsm-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_ir2qsm-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_ir2qsm-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+lbv-qsmrs+l1qsm-qsmrs",
@@ -9337,8 +9597,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_l1qsm-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_l1qsm-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_l1qsm-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_l1qsm-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+lbv-qsmrs+lpcnn",
@@ -9373,8 +9638,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_lpcnn-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_lpcnn-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_lpcnn-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_lpcnn-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+lbv-qsmrs+ilsqr-sti",
@@ -9409,8 +9679,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_ilsqr-sti-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_ilsqr-sti-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_ilsqr-sti-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_ilsqr-sti-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+lbv-qsmrs+star-sti",
@@ -9445,8 +9720,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_star-sti-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_star-sti-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_star-sti-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_star-sti-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+lbv-qsmrs+tkd-qsmci",
@@ -9481,8 +9761,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_tkd-qsmci-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_tkd-qsmci-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_tkd-qsmci-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_tkd-qsmci-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+lbv-qsmrs+medi-qsmrs",
@@ -9517,8 +9802,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_medi-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_medi-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_medi-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_medi-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+lbv-qsmrs+modl-qsm",
@@ -9553,8 +9843,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_modl-qsm-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_modl-qsm-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_modl-qsm-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_modl-qsm-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+lbv-qsmrs+ndi-qsmrs",
@@ -9589,8 +9884,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_ndi-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_ndi-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_ndi-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_ndi-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+lbv-qsmrs+nltv-qsmrs",
@@ -9625,8 +9925,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_nltv-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_nltv-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_nltv-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_nltv-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+lbv-qsmrs+qsmgan",
@@ -9661,8 +9966,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_qsmgan-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_qsmgan-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_qsmgan-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_qsmgan-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+lbv-qsmrs+qsmnet",
@@ -9697,8 +10007,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_qsmnet-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_qsmnet-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_qsmnet-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_qsmnet-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+lbv-qsmrs+qsmnet-plus",
@@ -9733,8 +10048,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_qsmnet-plus-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_qsmnet-plus-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_qsmnet-plus-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_qsmnet-plus-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+lbv-qsmrs+rts-qsmrs",
@@ -9769,8 +10089,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_rts-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_rts-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_rts-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_rts-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+lbv-qsmrs+tikhonov-qsmrs",
@@ -9805,8 +10130,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_tikhonov-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_tikhonov-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_tikhonov-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_tikhonov-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+lbv-qsmrs+tkd-qsmrs",
@@ -9841,8 +10171,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_tkd-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_tkd-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_tkd-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_tkd-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+lbv-qsmrs+tsvd-qsmrs",
@@ -9877,8 +10212,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_tsvd-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_tsvd-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_tsvd-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_tsvd-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+lbv-qsmrs+tv-qsmrs",
@@ -9913,8 +10253,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_tv-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_tv-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_tv-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_tv-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+lbv-qsmrs+whqsm-qsmrs",
@@ -9949,8 +10294,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_whqsm-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_whqsm-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_whqsm-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_whqsm-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+lbv-qsmrs+xqsm",
@@ -9985,8 +10335,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_xqsm-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_xqsm-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_xqsm-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_xqsm-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "HARPERELLA",
@@ -10079,8 +10434,13 @@
       "variant": "default",
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/nltv-qsmrs-iso__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/nltv-qsmrs-iso__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/nltv-qsmrs-iso__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/nltv-qsmrs-iso__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "xQSM",
@@ -12068,8 +12428,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/nextqsm-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/nextqsm-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/nextqsm-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/nextqsm-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "HARPERELLA",
@@ -14101,8 +14466,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/qsmart-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/qsmart-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/qsmart-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/qsmart-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "HD-QSM",
@@ -15173,8 +15543,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_fansi-nltv-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_fansi-nltv-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_fansi-nltv-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_fansi-nltv-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+pdf-qsmrs+fansi-nltgv-qsmrs",
@@ -15209,8 +15584,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_fansi-nltgv-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_fansi-nltgv-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_fansi-nltgv-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_fansi-nltgv-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+pdf-qsmrs+hdqsm-qsmrs",
@@ -15245,8 +15625,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_hdqsm-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_hdqsm-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_hdqsm-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_hdqsm-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+pdf-qsmrs+ilsqr-qsmrs",
@@ -15281,8 +15666,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_ilsqr-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_ilsqr-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_ilsqr-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_ilsqr-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+pdf-qsmrs+ir2qsm",
@@ -15317,8 +15707,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_ir2qsm-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_ir2qsm-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_ir2qsm-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_ir2qsm-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+pdf-qsmrs+l1qsm-qsmrs",
@@ -15353,8 +15748,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_l1qsm-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_l1qsm-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_l1qsm-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_l1qsm-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+pdf-qsmrs+lpcnn",
@@ -15389,8 +15789,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_lpcnn-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_lpcnn-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_lpcnn-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_lpcnn-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+pdf-qsmrs+ilsqr-sti",
@@ -15425,8 +15830,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_ilsqr-sti-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_ilsqr-sti-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_ilsqr-sti-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_ilsqr-sti-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+pdf-qsmrs+star-sti",
@@ -15461,8 +15871,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_star-sti-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_star-sti-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_star-sti-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_star-sti-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+pdf-qsmrs+tkd-qsmci",
@@ -15497,8 +15912,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_tkd-qsmci-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_tkd-qsmci-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_tkd-qsmci-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_tkd-qsmci-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+pdf-qsmrs+medi-qsmrs",
@@ -15533,8 +15953,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_medi-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_medi-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_medi-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_medi-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+pdf-qsmrs+modl-qsm",
@@ -15569,8 +15994,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_modl-qsm-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_modl-qsm-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_modl-qsm-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_modl-qsm-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+pdf-qsmrs+ndi-qsmrs",
@@ -15605,8 +16035,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_ndi-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_ndi-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_ndi-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_ndi-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+pdf-qsmrs+nltv-qsmrs",
@@ -15641,8 +16076,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_nltv-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_nltv-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_nltv-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_nltv-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+pdf-qsmrs+qsmgan",
@@ -15677,8 +16117,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_qsmgan-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_qsmgan-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_qsmgan-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_qsmgan-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+pdf-qsmrs+qsmnet",
@@ -15713,8 +16158,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_qsmnet-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_qsmnet-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_qsmnet-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_qsmnet-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+pdf-qsmrs+qsmnet-plus",
@@ -15749,8 +16199,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_qsmnet-plus-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_qsmnet-plus-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_qsmnet-plus-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_qsmnet-plus-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+pdf-qsmrs+rts-qsmrs",
@@ -15785,8 +16240,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_rts-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_rts-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_rts-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_rts-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+pdf-qsmrs+tikhonov-qsmrs",
@@ -15821,8 +16281,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_tikhonov-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_tikhonov-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_tikhonov-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_tikhonov-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+pdf-qsmrs+tkd-qsmrs",
@@ -15857,8 +16322,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_tkd-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_tkd-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_tkd-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_tkd-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+pdf-qsmrs+tsvd-qsmrs",
@@ -15893,8 +16363,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_tsvd-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_tsvd-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_tsvd-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_tsvd-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+pdf-qsmrs+tv-qsmrs",
@@ -15929,8 +16404,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_tv-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_tv-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_tv-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_tv-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+pdf-qsmrs+whqsm-qsmrs",
@@ -15965,8 +16445,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_whqsm-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_whqsm-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_whqsm-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_whqsm-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+pdf-qsmrs+xqsm",
@@ -16001,8 +16486,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_xqsm-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_xqsm-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_xqsm-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_xqsm-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "romeo-qsmrs+resharp-qsmrs+fansi-nltv-qsmrs",
@@ -18092,8 +18582,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_fansi-nltv-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_fansi-nltv-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_fansi-nltv-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_fansi-nltv-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+resharp-qsmrs+fansi-nltgv-qsmrs",
@@ -18128,8 +18623,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_fansi-nltgv-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_fansi-nltgv-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_fansi-nltgv-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_fansi-nltgv-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+resharp-qsmrs+hdqsm-qsmrs",
@@ -18164,8 +18664,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_hdqsm-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_hdqsm-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_hdqsm-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_hdqsm-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+resharp-qsmrs+ilsqr-qsmrs",
@@ -18200,8 +18705,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_ilsqr-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_ilsqr-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_ilsqr-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_ilsqr-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+resharp-qsmrs+ir2qsm",
@@ -18236,8 +18746,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_ir2qsm-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_ir2qsm-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_ir2qsm-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_ir2qsm-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+resharp-qsmrs+l1qsm-qsmrs",
@@ -18272,8 +18787,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_l1qsm-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_l1qsm-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_l1qsm-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_l1qsm-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+resharp-qsmrs+lpcnn",
@@ -18308,8 +18828,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_lpcnn-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_lpcnn-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_lpcnn-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_lpcnn-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+resharp-qsmrs+ilsqr-sti",
@@ -18344,8 +18869,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_ilsqr-sti-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_ilsqr-sti-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_ilsqr-sti-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_ilsqr-sti-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+resharp-qsmrs+star-sti",
@@ -18380,8 +18910,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_star-sti-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_star-sti-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_star-sti-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_star-sti-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+resharp-qsmrs+tkd-qsmci",
@@ -18416,8 +18951,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_tkd-qsmci-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_tkd-qsmci-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_tkd-qsmci-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_tkd-qsmci-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+resharp-qsmrs+medi-qsmrs",
@@ -18452,8 +18992,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_medi-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_medi-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_medi-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_medi-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+resharp-qsmrs+modl-qsm",
@@ -18488,8 +19033,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_modl-qsm-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_modl-qsm-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_modl-qsm-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_modl-qsm-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+resharp-qsmrs+ndi-qsmrs",
@@ -18524,8 +19074,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_ndi-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_ndi-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_ndi-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_ndi-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+resharp-qsmrs+nltv-qsmrs",
@@ -18560,8 +19115,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_nltv-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_nltv-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_nltv-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_nltv-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+resharp-qsmrs+qsmgan",
@@ -18596,8 +19156,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_qsmgan-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_qsmgan-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_qsmgan-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_qsmgan-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+resharp-qsmrs+qsmnet",
@@ -18632,8 +19197,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_qsmnet-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_qsmnet-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_qsmnet-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_qsmnet-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+resharp-qsmrs+qsmnet-plus",
@@ -18668,8 +19238,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_qsmnet-plus-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_qsmnet-plus-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_qsmnet-plus-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_qsmnet-plus-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+resharp-qsmrs+rts-qsmrs",
@@ -18704,8 +19279,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_rts-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_rts-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_rts-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_rts-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+resharp-qsmrs+tikhonov-qsmrs",
@@ -18740,8 +19320,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_tikhonov-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_tikhonov-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_tikhonov-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_tikhonov-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+resharp-qsmrs+tkd-qsmrs",
@@ -18776,8 +19361,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_tkd-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_tkd-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_tkd-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_tkd-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+resharp-qsmrs+tsvd-qsmrs",
@@ -18812,8 +19402,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_tsvd-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_tsvd-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_tsvd-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_tsvd-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+resharp-qsmrs+tv-qsmrs",
@@ -18848,8 +19443,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_tv-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_tv-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_tv-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_tv-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+resharp-qsmrs+whqsm-qsmrs",
@@ -18884,8 +19484,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_whqsm-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_whqsm-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_whqsm-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_whqsm-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+resharp-qsmrs+xqsm",
@@ -18920,8 +19525,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_xqsm-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_xqsm-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_xqsm-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_xqsm-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "romeo-qsmrs+sharp-qsmrs+fansi-nltv-qsmrs",
@@ -20998,8 +21608,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_fansi-nltv-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_fansi-nltv-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_fansi-nltv-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_fansi-nltv-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+sharp-qsmrs+fansi-nltgv-qsmrs",
@@ -21034,8 +21649,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_fansi-nltgv-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_fansi-nltgv-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_fansi-nltgv-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_fansi-nltgv-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+sharp-qsmrs+hdqsm-qsmrs",
@@ -21070,8 +21690,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_hdqsm-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_hdqsm-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_hdqsm-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_hdqsm-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+sharp-qsmrs+ilsqr-qsmrs",
@@ -21106,8 +21731,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_ilsqr-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_ilsqr-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_ilsqr-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_ilsqr-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+sharp-qsmrs+ir2qsm",
@@ -21142,8 +21772,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_ir2qsm-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_ir2qsm-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_ir2qsm-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_ir2qsm-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+sharp-qsmrs+l1qsm-qsmrs",
@@ -21178,8 +21813,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_l1qsm-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_l1qsm-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_l1qsm-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_l1qsm-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+sharp-qsmrs+lpcnn",
@@ -21214,8 +21854,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_lpcnn-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_lpcnn-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_lpcnn-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_lpcnn-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+sharp-qsmrs+ilsqr-sti",
@@ -21250,8 +21895,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_ilsqr-sti-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_ilsqr-sti-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_ilsqr-sti-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_ilsqr-sti-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+sharp-qsmrs+star-sti",
@@ -21286,8 +21936,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_star-sti-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_star-sti-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_star-sti-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_star-sti-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+sharp-qsmrs+tkd-qsmci",
@@ -21322,8 +21977,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_tkd-qsmci-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_tkd-qsmci-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_tkd-qsmci-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_tkd-qsmci-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+sharp-qsmrs+medi-qsmrs",
@@ -21358,8 +22018,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_medi-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_medi-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_medi-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_medi-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+sharp-qsmrs+modl-qsm",
@@ -21394,8 +22059,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_modl-qsm-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_modl-qsm-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_modl-qsm-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_modl-qsm-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+sharp-qsmrs+ndi-qsmrs",
@@ -21430,8 +22100,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_ndi-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_ndi-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_ndi-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_ndi-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+sharp-qsmrs+nltv-qsmrs",
@@ -21466,8 +22141,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_nltv-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_nltv-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_nltv-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_nltv-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+sharp-qsmrs+qsmgan",
@@ -21502,8 +22182,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_qsmgan-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_qsmgan-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_qsmgan-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_qsmgan-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+sharp-qsmrs+qsmnet",
@@ -21538,8 +22223,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_qsmnet-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_qsmnet-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_qsmnet-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_qsmnet-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+sharp-qsmrs+qsmnet-plus",
@@ -21574,8 +22264,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_qsmnet-plus-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_qsmnet-plus-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_qsmnet-plus-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_qsmnet-plus-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+sharp-qsmrs+rts-qsmrs",
@@ -21610,8 +22305,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_rts-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_rts-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_rts-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_rts-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+sharp-qsmrs+tikhonov-qsmrs",
@@ -21646,8 +22346,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_tikhonov-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_tikhonov-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_tikhonov-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_tikhonov-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+sharp-qsmrs+tkd-qsmrs",
@@ -21682,8 +22387,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_tkd-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_tkd-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_tkd-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_tkd-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+sharp-qsmrs+tsvd-qsmrs",
@@ -21718,8 +22428,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_tsvd-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_tsvd-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_tsvd-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_tsvd-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+sharp-qsmrs+tv-qsmrs",
@@ -21754,8 +22469,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_tv-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_tv-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_tv-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_tv-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+sharp-qsmrs+whqsm-qsmrs",
@@ -21790,8 +22510,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_whqsm-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_whqsm-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_whqsm-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_whqsm-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+sharp-qsmrs+xqsm",
@@ -21826,8 +22551,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_xqsm-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_xqsm-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_xqsm-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_xqsm-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "romeo-qsmrs+vsharp-qsmrs+fansi-nltv-qsmrs",
@@ -24896,8 +25626,13 @@
       "variant": "default",
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/qsmnet-plus-iso__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/qsmnet-plus-iso__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/qsmnet-plus-iso__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/qsmnet-plus-iso__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "TSVD (QSM.rs)",
@@ -25989,8 +26724,12 @@
       "variant": "default",
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/localfield.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/localfield.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/resharp-qsmrs-iso__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/resharp-qsmrs-iso__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/resharp-qsmrs-iso__resources.json",
+      "volumes_stale": true
     },
     {
       "name": "TSVD (QSM.rs)",
@@ -27960,8 +28699,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_fansi-nltv-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_fansi-nltv-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_fansi-nltv-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_fansi-nltv-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "romeo-qsmrs+bfrnet+fansi-nltgv-qsmrs",
@@ -27996,8 +28740,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_fansi-nltgv-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_fansi-nltgv-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_fansi-nltgv-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_fansi-nltgv-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "romeo-qsmrs+bfrnet+hdqsm-qsmrs",
@@ -28032,8 +28781,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_hdqsm-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_hdqsm-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_hdqsm-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_hdqsm-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "romeo-qsmrs+bfrnet+ilsqr-qsmrs",
@@ -28068,8 +28822,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_ilsqr-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_ilsqr-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_ilsqr-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_ilsqr-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "romeo-qsmrs+bfrnet+ir2qsm",
@@ -28104,8 +28863,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_ir2qsm-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_ir2qsm-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_ir2qsm-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_ir2qsm-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "romeo-qsmrs+bfrnet+l1qsm-qsmrs",
@@ -28140,8 +28904,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_l1qsm-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_l1qsm-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_l1qsm-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_l1qsm-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "romeo-qsmrs+bfrnet+lpcnn",
@@ -28176,8 +28945,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_lpcnn-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_lpcnn-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_lpcnn-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_lpcnn-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "romeo-qsmrs+bfrnet+ilsqr-sti",
@@ -28212,8 +28986,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_ilsqr-sti-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_ilsqr-sti-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_ilsqr-sti-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_ilsqr-sti-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "romeo-qsmrs+bfrnet+star-sti",
@@ -28248,8 +29027,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_star-sti-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_star-sti-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_star-sti-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_star-sti-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "romeo-qsmrs+bfrnet+tkd-qsmci",
@@ -28284,8 +29068,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_tkd-qsmci-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_tkd-qsmci-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_tkd-qsmci-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_tkd-qsmci-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "romeo-qsmrs+bfrnet+medi-qsmrs",
@@ -28320,8 +29109,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_medi-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_medi-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_medi-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_medi-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "romeo-qsmrs+bfrnet+modl-qsm",
@@ -28356,8 +29150,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_modl-qsm-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_modl-qsm-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_modl-qsm-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_modl-qsm-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "romeo-qsmrs+bfrnet+ndi-qsmrs",
@@ -28392,8 +29191,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_ndi-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_ndi-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_ndi-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_ndi-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "romeo-qsmrs+bfrnet+nltv-qsmrs",
@@ -28428,8 +29232,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_nltv-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_nltv-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_nltv-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_nltv-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "romeo-qsmrs+bfrnet+qsmgan",
@@ -28464,8 +29273,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_qsmgan-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_qsmgan-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_qsmgan-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_qsmgan-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "romeo-qsmrs+bfrnet+qsmnet",
@@ -28500,8 +29314,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_qsmnet-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_qsmnet-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_qsmnet-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_qsmnet-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "romeo-qsmrs+bfrnet+qsmnet-plus",
@@ -28536,8 +29355,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_qsmnet-plus-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_qsmnet-plus-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_qsmnet-plus-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_qsmnet-plus-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "romeo-qsmrs+bfrnet+rts-qsmrs",
@@ -28572,8 +29396,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_rts-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_rts-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_rts-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_rts-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "romeo-qsmrs+bfrnet+tikhonov-qsmrs",
@@ -28608,8 +29437,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_tikhonov-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_tikhonov-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_tikhonov-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_tikhonov-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "romeo-qsmrs+bfrnet+tkd-qsmrs",
@@ -28644,8 +29478,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_tkd-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_tkd-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_tkd-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_tkd-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "romeo-qsmrs+bfrnet+tsvd-qsmrs",
@@ -28680,8 +29519,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_tsvd-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_tsvd-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_tsvd-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_tsvd-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "romeo-qsmrs+bfrnet+tv-qsmrs",
@@ -28716,8 +29560,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_tv-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_tv-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_tv-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_tv-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "romeo-qsmrs+bfrnet+whqsm-qsmrs",
@@ -28752,8 +29601,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_whqsm-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_whqsm-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_whqsm-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_whqsm-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "romeo-qsmrs+bfrnet+xqsm",
@@ -28788,8 +29642,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_xqsm-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_xqsm-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_xqsm-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_xqsm-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+bfrnet+fansi-nltv-qsmrs",
@@ -32573,8 +33432,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_tfi-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_tfi-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_tfi-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_tfi-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "NLTV",
@@ -32795,8 +33659,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/medi-qsmrs-iso-tuned__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/medi-qsmrs-iso-tuned__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/medi-qsmrs-iso-tuned__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/medi-qsmrs-iso-tuned__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "TFI (QSM.rs)",
@@ -33236,8 +34105,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_medi-cornell-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_medi-cornell-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_medi-cornell-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_ismv-qsmrs_medi-cornell-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "romeo-qsmrs+pdf-qsmrs+medi-cornell",
@@ -33352,8 +34226,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_medi-cornell-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_medi-cornell-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_medi-cornell-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_medi-cornell-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "romeo-qsmrs+resharp-qsmrs+medi-cornell",
@@ -33468,8 +34347,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_medi-cornell-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_medi-cornell-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_medi-cornell-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_medi-cornell-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "romeo-qsmrs+sharp-qsmrs+medi-cornell",
@@ -33624,8 +34508,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_medi-cornell-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_medi-cornell-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_medi-cornell-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_medi-cornell-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "romeo-qsmrs+vsharp-qsmrs+medi-cornell",
@@ -33740,8 +34629,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_medi-cornell-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_medi-cornell-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_medi-cornell-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_medi-cornell-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "romeo-qsmrs+vsharp-sti+medi-cornell",
@@ -34012,8 +34906,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_medi-cornell-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_medi-cornell-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_medi-cornell-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_medi-cornell-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "vsharp-sti+medi-cornell",
@@ -37469,8 +38368,15 @@
       "phantom": "chisep-mc",
       "volumes": {
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chi-para.nii.gz",
-        "truth-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chi-dia.nii.gz"
-      }
+        "truth-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chi-dia.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/r2prime-scaled-qsmci_chisep-ilsqr-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/r2prime-scaled-qsmci_chisep-ilsqr-cmp__error.nii.gz",
+        "recon-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/r2prime-scaled-qsmci_chisep-ilsqr-cmp__recon-dia.nii.gz",
+        "error-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/r2prime-scaled-qsmci_chisep-ilsqr-cmp__error-dia.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/r2prime-scaled-qsmci_chisep-ilsqr-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/r2prime-scaled-qsmci_chisep-ilsqr-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "id": "r2primenet~chisep-ilsqr-cmp",
@@ -37526,8 +38432,15 @@
       "phantom": "chisep-mc",
       "volumes": {
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chi-para.nii.gz",
-        "truth-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chi-dia.nii.gz"
-      }
+        "truth-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chi-dia.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/r2primenet_chisep-ilsqr-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/r2primenet_chisep-ilsqr-cmp__error.nii.gz",
+        "recon-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/r2primenet_chisep-ilsqr-cmp__recon-dia.nii.gz",
+        "error-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/r2primenet_chisep-ilsqr-cmp__error-dia.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/r2primenet_chisep-ilsqr-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/r2primenet_chisep-ilsqr-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "id": "r2prime-scaled-qsmci~chisep-medi-cmp-ridani-3t-aniso",
@@ -39175,8 +40088,15 @@
       "phantom": "chisep-mc",
       "volumes": {
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chi-para.nii.gz",
-        "truth-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chi-dia.nii.gz"
-      }
+        "truth-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chi-dia.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/r2primenet-7t_chisep-ilsqr-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/r2primenet-7t_chisep-ilsqr-cmp__error.nii.gz",
+        "recon-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/r2primenet-7t_chisep-ilsqr-cmp__recon-dia.nii.gz",
+        "error-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/r2primenet-7t_chisep-ilsqr-cmp__error-dia.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/r2primenet-7t_chisep-ilsqr-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/r2primenet-7t_chisep-ilsqr-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "id": "r2primenet-7t~chisep-medi-cmp",
@@ -40971,8 +41891,13 @@
       "variant": "default",
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/qsmart-matlab-iso__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/qsmart-matlab-iso__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/qsmart-matlab-iso__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/qsmart-matlab-iso__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "QSMART (MATLAB)",
@@ -41002,8 +41927,13 @@
       "mode": "composed",
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/qsmart-matlab-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/qsmart-matlab-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/qsmart-matlab-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/qsmart-matlab-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "AMP-PE (QSM.rs)",
@@ -43843,8 +44773,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iqfm_medi-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iqfm_medi-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iqfm_medi-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_iqfm_medi-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "laplacian-qsmci+iqfm+modl-qsm",
@@ -44775,8 +45710,13 @@
       },
       "phantom": "sim",
       "volumes": {
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
-      }
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_iqfm_medi-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_iqfm_medi-qsmrs-cmp__error.nii.gz"
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_iqfm_medi-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_iqfm_medi-qsmrs-cmp__regions.json",
+      "volumes_stale": true
     },
     {
       "name": "romeo-qsmrs+iqfm+modl-qsm",

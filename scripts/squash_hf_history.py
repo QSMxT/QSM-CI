@@ -7,10 +7,14 @@ re-publish that regenerates many volumes (e.g. after changing how the error map 
 gigabytes of orphaned old versions counting against the account's storage quota. Collapsing the
 history to a single commit reclaims those old LFS versions.
 
-Run this after a FULL re-publish only (score.yml passes it on full rescores; focused re-publishes
-churn too few files to be worth squashing). It is destructive — history and old LFS versions are
-permanently removed — which is fine here: the volumes are regenerable and nothing needs old
-revisions. The reclaimed quota is reflected on the Hub within ~36h, not immediately.
+The same goes for deletions: `publish_volumes.py --prune` removes a path from the tree, but the LFS
+object behind it stays in history until the history is squashed. So this is the step that actually
+frees storage, and score.yml's merge job runs it after every FULL rescore (focused re-publishes
+churn too few files to be worth it; dispatch hf-housekeeping.yml for a one-off). It is destructive —
+history and old LFS versions are permanently removed — which is fine here: the volumes are
+regenerable and nothing needs old revisions. The reclaimed quota is reflected on the Hub within
+~36h, not immediately. Squashing is a single server-side operation on the branch head; a commit
+another job lands concurrently (repro.yml publishes per shard) simply follows the squashed commit.
 
 Best-effort: any failure is logged and ignored, so storage housekeeping never fails the scoring run.
 

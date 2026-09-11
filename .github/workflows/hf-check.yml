@@ -64,7 +64,7 @@ jobs:
           repo = os.environ["HF_VOLUMES_REPO"]
           ops = [CommitOperationDelete(path_in_repo=f)
                  for f in api.list_repo_files(repo, repo_type="dataset")
-                 if f.startswith("__hfcheck__")]
+                 if f.rsplit("/", 1)[-1].startswith("__hfcheck__")]   # runs are bucketed: runs/<phantom>/<hh>/
           if ops:
               api.create_commit(repo, repo_type="dataset", operations=ops,
                                 commit_message="hf-check cleanup")
