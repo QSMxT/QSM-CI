@@ -503,6 +503,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write   # the only job that commits (results/index.json)
+      actions: read     # the squash step checks whether repro.yml is mid-publish
     steps:
       - uses: actions/checkout@v7
       - uses: actions/download-artifact@v8
@@ -539,13 +540,37 @@ jobs:
           print(f"DNF ({len(dnf)}): {', '.join(dnf) if dnf else 'none'}")
           PY
 
+      # --prune: delete what this publish demonstrably replaced (always), and, after a publish whose
+      # every upload landed, run artifacts in the touched buckets that no index row references any
+      # more (retired methods). A file that is the only copy a row points at is never deleted — a
+      # run whose upload failed keeps its earlier copy (volumes_stale). See publish_volumes.py.
       - name: Publish volumes to Hugging Face
         if: ${{ github.event.inputs.dry_run != 'true' }}
         continue-on-error: true
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           HF_VOLUMES_REPO: ${{ vars.HF_VOLUMES_REPO }}
-        run: python scripts/publish_volumes.py results
+        run: python scripts/publish_volumes.py results --prune
+
+      # Deleting or overwriting a volume leaves its old LFS object in the Hub repo's history; only a
+      # squash frees the storage. A full rescore rewrites every volume, so squash after one (a
+      # focused rescore churns too little to matter). Best-effort, like the publish. The repro
+      # workflow is the only other writer (score runs are serialised by the concurrency group); if
+      # one of its shards is mid-publish, leave the squash to the next full rescore rather than overlap.
+      - name: Squash HF volume history (full rescore)
+        if: ${{ github.event.inputs.dry_run != 'true' && needs.scope.outputs.full == 'true' }}
+        continue-on-error: true
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_VOLUMES_REPO: ${{ vars.HF_VOLUMES_REPO }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          busy=$(gh run list --workflow repro.yml --status in_progress --json databaseId --jq length)
+          if [ "$busy" != "0" ]; then
+            echo "::notice::squash skipped: $busy repro.yml run(s) in progress may be publishing volumes; the next full rescore will squash."
+            exit 0
+          fi
+          python scripts/squash_hf_history.py
 
       - name: Commit results index (triggers the Pages deploy)
         if: ${{ github.event.inputs.dry_run != 'true' }}

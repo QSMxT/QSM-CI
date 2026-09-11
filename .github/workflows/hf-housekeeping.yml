@@ -1,0 +1,80 @@
+name: HF volume housekeeping
+
+# Manual, on-demand: the Hugging Face volumes repo's housekeeping, for when no scoring run is due
+# to do it. score.yml (merge) and repro.yml (evaluate) run the same steps automatically — prune on
+# every run, squash after a full one — but repro.yml is dispatch-only and rare, so a method retired
+# from the manifest can sit on the Hub until someone dispatches this.
+#
+#   prune-repro  delete harmonization files no live pipeline can name AND that name a method the
+#                manifest no longer defines (publish_volumes.py --prune-repro; unharvested live
+#                methods are kept). Dry-run first if in doubt.
+#   squash       collapse the repo's git history — the step that actually frees the storage behind
+#                overwritten and deleted volumes (squash_hf_history.py).
+#
+# Both refuse to overlap a publishing run: they skip if score.yml or repro.yml is in progress.
+on:
+  workflow_dispatch:
+    inputs:
+      prune_repro:
+        description: "true = prune retired harmonization volumes"
+        default: "true"
+      dry_run:
+        description: "true = report what prune would delete, delete nothing, skip the squash"
+        default: "false"
+      squash:
+        description: "true = squash the repo history afterwards (reclaims storage within ~36h)"
+        default: "true"
+
+defaults:
+  run:
+    shell: bash
+
+# Own group (NOT "score"/"repro" — entering theirs would queue behind or cancel a scoring run).
+concurrency:
+  group: hf-housekeeping
+  cancel-in-progress: false
+
+# Nothing here touches this repo — only the Hugging Face dataset (HF_TOKEN); actions:read is for
+# the in-progress check.
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  housekeeping:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - run: pip install --quiet huggingface_hub
+
+      - name: Refuse to overlap a publishing run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for wf in score.yml repro.yml; do
+            busy=$(gh run list --workflow "$wf" --status in_progress --json databaseId --jq length)
+            if [ "$busy" != "0" ]; then
+              echo "::error::$busy $wf run(s) in progress may be publishing volumes — re-dispatch once they finish."
+              exit 1
+            fi
+          done
+
+      - name: Prune retired harmonization volumes
+        if: ${{ github.event.inputs.prune_repro == 'true' }}
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_VOLUMES_REPO: ${{ vars.HF_VOLUMES_REPO }}
+          DRY: ${{ github.event.inputs.dry_run }}
+        run: |
+          flag=""; [ "$DRY" = "true" ] && flag="--prune-dry-run"
+          python scripts/publish_volumes.py --prune-repro $flag
+
+      - name: Squash HF volume history
+        if: ${{ github.event.inputs.squash == 'true' && github.event.inputs.dry_run != 'true' }}
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_VOLUMES_REPO: ${{ vars.HF_VOLUMES_REPO }}
+        run: python scripts/squash_hf_history.py

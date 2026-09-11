@@ -27,8 +27,9 @@ name: repro
 #   prep     -> build the reference frame once: target grid + SynthSeg dseg (artifact for the rest)
 #   plan     -> full: acquisition × shard matrix; affected: acquisition × --focus-per-slug
 #   score    -> reconstruct; publish own volumes to HF; compute own ROI stats; emit small runs-JSON
-#   evaluate -> merge runs-JSON -> index.json; pairwise fits -> repro.json; commit (pages.yml then
-#               redeploys the site via its workflow_run trigger)
+#   evaluate -> merge runs-JSON -> index.json; pairwise fits -> repro.json; prune the volumes of
+#               pipelines repro.json no longer names; squash HF history after a full run; commit
+#               (pages.yml then redeploys the site via its workflow_run trigger)
 #
 # VIEWER INTERMEDIATES (the submission page's Field map / Local field layers) ride along for free.
 # They are per COLUMN, not per pipeline — one total field per field-mapping method, one local field
@@ -350,6 +351,7 @@ jobs:
     timeout-minutes: 60
     permissions:
       contents: write   # the only job that commits (results/index.json + results/repro.json)
+      actions: read     # the squash step checks whether score.yml is mid-publish
     steps:
       - uses: actions/checkout@v7
       - uses: actions/download-artifact@v8
@@ -377,6 +379,40 @@ jobs:
       # No recons on disk — fits reads the ROI means straight from the merged index.json run rows.
       - name: Pairwise fits -> results/repro.json
         run: python scripts/repro_eval.py fits
+
+      # repro.json names every live pipeline (fits drops methods retired from the manifest) and the
+      # viewer derives every harmonization URL from pipeline × acquisition. A file under repro/<acq>/
+      # that no live pipeline can name AND that names a method the manifest no longer defines is
+      # retired — its recon, sidecars, and the per-column intermediates only it used go. One built
+      # only from live methods but absent from repro.json (a GPU method published without a stats
+      # pass, a parked submission) is kept: it is the only copy. Never an acquisition
+      # scripts/datasets.json does not list. See publish_volumes.py --prune-repro.
+      - name: Prune retired harmonization volumes on Hugging Face
+        if: ${{ github.event.inputs.publish_hf != 'false' && github.event.inputs.dry_run != 'true' }}
+        continue-on-error: true
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_VOLUMES_REPO: ${{ vars.HF_VOLUMES_REPO }}
+        run: python scripts/publish_volumes.py --prune-repro
+
+      # Overwritten and deleted volumes keep their LFS objects in the Hub repo's history; only a
+      # squash frees the storage. A full run rewrites ~30k files, so squash after one. The score
+      # workflow is the only other writer (this run's own shards are finished — evaluate needs them);
+      # if it is mid-publish, leave the squash to the next full run rather than overlap.
+      - name: Squash HF volume history (full run)
+        if: ${{ github.event.inputs.publish_hf != 'false' && github.event.inputs.dry_run != 'true' && needs.scope.outputs.full == 'true' }}
+        continue-on-error: true
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_VOLUMES_REPO: ${{ vars.HF_VOLUMES_REPO }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          busy=$(gh run list --workflow score.yml --status in_progress --json databaseId --jq length)
+          if [ "$busy" != "0" ]; then
+            echo "::notice::squash skipped: $busy score.yml run(s) in progress may be publishing volumes; the next full run will squash."
+            exit 0
+          fi
+          python scripts/squash_hf_history.py
 
       - name: Commit results (index + repro fits + volume URLs)
         if: ${{ github.event.inputs.dry_run != 'true' }}

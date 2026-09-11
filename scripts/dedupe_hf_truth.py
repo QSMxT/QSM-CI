@@ -23,7 +23,7 @@ the site, so the rewritten index has to reach production BEFORE the old files go
 for the two guards on what may be removed at all — neither of which the original version had, and
 one of which would have deleted 165 volumes the live site was serving.
 
-Deleted files stay in the repo's git/LFS history until it is squashed: run the squash-volumes
+Deleted files stay in the repo's git/LFS history until it is squashed: run the hf-housekeeping
 workflow (scripts/squash_hf_history.py) afterwards if the storage matters.
 
 Env:  HF_TOKEN (write access), HF_VOLUMES_REPO (default qsmxt/qsm-ci-volumes)
@@ -332,7 +332,7 @@ def main() -> int:
         print(f"recorded {len(prior | set(legacy_refs.values()))} repointed path(s) in {pend}")
     print(f"\nrewrote {len(refs)} truth URL(s) in {args.index} — review and commit it, and DEPLOY it "
           f"before running --delete-legacy. Old blobs remain in repo history until squashed "
-          f"(squash-volumes workflow).")
+          f"(hf-housekeeping workflow).")
     return 0
 
 
