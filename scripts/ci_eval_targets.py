@@ -7,8 +7,9 @@ touch to every algorithm.yml (as the metadata backfill did) otherwise re-smokes 
 zoo for hours, testing nothing.
 
 A slug needs a smoke run iff, relative to the base ref, either:
-  - a non-`algorithm.yml` file under algorithms/<slug>/ changed (run.sh, Dockerfile, weights,
-    config, recon.py, …), or
+  - a non-`algorithm.yml`, non-documentation file under algorithms/<slug>/ changed (run.sh,
+    Dockerfile, weights, config, recon.py, …) — a `.md` edit (BUILD.md, README.md) cannot change
+    how the method runs, so it is ignored, or
   - `algorithm.yml` changed in any field OUTSIDE the cosmetic-metadata allowlist below (stage,
     image, inputs, produces, parameters, smoke_box, … — anything that changes execution), or
   - the method is new (no algorithm.yml at the base).
@@ -38,6 +39,13 @@ COSMETIC_KEYS = {
     "authors", "license", "code_url", "domain", "ci_notes", "tags", "notes", "references", "tuned",
     "tuning", "algorithm", "variant", "source",
 }
+
+
+def is_docs(relpath: str) -> bool:
+    """A documentation file under a method folder. The container mounts the whole folder, but no
+    run.sh/recon.* reads a .md, so editing one cannot change execution — a BUILD.md path fix must not
+    cost a smoke run (qsmart-matlab's 32³ smoke crop DNFs on its own, unrelated to the docs edit)."""
+    return relpath.lower().endswith(".md")
 
 
 def execution_relevant(base_doc: "dict | None", head_doc: "dict | None") -> bool:
@@ -88,11 +96,12 @@ def targets(base: str) -> list[str]:
         head_doc = _load(_git("show", f"HEAD:{spec}"))
         if isinstance(head_doc, dict) and head_doc.get("ci_skip"):
             continue
-        # Any non-yml change under the method → execution could differ → smoke it.
-        if any(f != "algorithm.yml" for f in files):
+        # Any non-yml, non-docs change under the method → execution could differ → smoke it.
+        if any(f != "algorithm.yml" and not is_docs(f) for f in files):
             out.append(slug)
             continue
-        # Only algorithm.yml changed: compare base vs head with cosmetic keys stripped.
+        # Only algorithm.yml and/or docs changed: compare base vs head algorithm.yml with cosmetic
+        # keys stripped (a docs-only change leaves them identical → not relevant).
         base_yaml = _git("show", f"{base}:{spec}")
         head_yaml = _git("show", f"HEAD:{spec}")
         if execution_relevant(_load(base_yaml) if base_yaml else None, _load(head_yaml)):
