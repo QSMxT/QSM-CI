@@ -408,8 +408,38 @@ def discover_algorithms(track: str = "sim", phantom: "str | None" = None) -> lis
             # the "does it run?" PR check while score.yml (no --smoke) still uses the full defaults —
             # e.g. MoDIP caps its per-subject optimization to a few epochs here, 500 when scored.
             "smoke_params": doc.get("smoke_params") or {},
+            # Optional composed-matrix subset for a dipole method too expensive to invert every
+            # (field-map × bfr) column: `compose: {fieldmaps: [gt, romeo-qsmrs], bfrs: [vsharp-qsmrs]}`
+            # keeps only those combos (either key may be omitted = unrestricted). None = the full matrix.
+            "compose": _compose_spec(doc, d.name),
         })
     return algos
+
+
+def _compose_spec(doc: dict, slug: str) -> "dict | None":
+    """Parse `compose:` — see discover_algorithms. Malformed → SystemExit (a silent typo would
+    silently drop a method's whole composed matrix)."""
+    c = doc.get("compose")
+    if c is None:
+        return None
+    if not isinstance(c, dict) or not c or any(k not in ("fieldmaps", "bfrs") for k in c):
+        raise SystemExit(f"{slug}/algorithm.yml: compose: must be a map with fieldmaps: and/or bfrs: lists")
+    out = {}
+    for k in ("fieldmaps", "bfrs"):
+        if k in c:
+            if not isinstance(c[k], list) or not c[k]:
+                raise SystemExit(f"{slug}/algorithm.yml: compose.{k} must be a non-empty list of slugs")
+            out[k] = {_yaml_scalar(x) for x in c[k]}
+    return out
+
+
+def composes(d: dict, tfk: str, bfr_slug: str) -> bool:
+    """May dipole `d` be composed on the (total-field source, bfr) column? Always, unless the method
+    restricts its matrix with `compose:`."""
+    c = d.get("compose")
+    if not c:
+        return True
+    return tfk in c.get("fieldmaps", {tfk}) and bfr_slug in c.get("bfrs", {bfr_slug})
 
 
 def prepare_input(consumes: list[str], sources: dict[str, Path], dest: Path) -> None:
@@ -670,6 +700,41 @@ def _stamp_resource_summary(run):
     for k in ("mem_peak_bytes", "cpu_cores_avg", "cpu_cores_max"):
         if d.get(k):
             run[k] = d[k]
+
+
+class RunsFile(list):
+    """The `runs` list of a --runs-out job, persisted after EVERY append/extend (atomic replace).
+
+    A CI score job is killed at its wall-clock cap, or cancelled when a newer commit supersedes it.
+    The runs file used to be written only at the very end, so a job that had finished 30 of its 34
+    pipelines handed the merge job nothing. Now the rows already scored survive: the merge job
+    publishes them (the row ids are complete, scored results), and `mark_done()` — written only when
+    the run really finished — is what tells it whether the task is complete (see score_state.py)."""
+
+    def __init__(self, path: Path):
+        super().__init__()
+        self.path = path
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        self.flush()
+
+    def flush(self) -> None:
+        tmp = self.path.with_name(self.path.name + ".tmp")
+        tmp.write_text(json.dumps(list(self), indent=2) + "\n")
+        tmp.replace(self.path)
+
+    def append(self, row) -> None:
+        super().append(row)
+        self.flush()
+
+    def extend(self, rows) -> None:
+        super().extend(rows)
+        self.flush()
+
+    def mark_done(self) -> Path:
+        self.flush()
+        marker = self.path.with_suffix(".done")
+        marker.write_text(f"{len(self)}\n")
+        return marker
 
 
 def flush_index(runs):
@@ -1125,6 +1190,13 @@ def plan_composed(algos, focus, track, shard_i, shard_n) -> ComposedPlan:
             fmap, bfr, dipole, spans = [], [], [], []
         elif f["stage"] == "dipole":
             dipole, spans = [f], []
+            # A `compose:`-restricted dipole only needs the columns it will invert: skip computing
+            # the other bfr local fields / field maps in its focus job.
+            c = f.get("compose") or {}
+            if "bfrs" in c:
+                bfr = [b for b in bfr if b["slug"] in c["bfrs"]]
+            if "fieldmaps" in c:
+                fmap = [m for m in fmap if m["slug"] in c["fieldmaps"]]
         elif "localfield" in f["produces"]:      # a bfr (or unwrap+bfr) — this bfr × all dipoles
             bfr, spans = [f], []
         elif "totalfield" in f["produces"]:      # a field-mapping — this map through the matrix
@@ -1234,6 +1306,8 @@ def run_composed(args, algos, gt_sources, gt, mask, shard_i, shard_n, runs: list
         for b in bfr:
             if owns_col(tfk, b["slug"]):
                 for d in dipole:
+                    if not composes(d, tfk, b["slug"]):
+                        continue
                     upstream_dnf.append(dnf(
                         f"{tfk}~{b['slug']}~{d['slug']}-cmp{sfx}", f"{tfk}+{b['slug']}+{d['slug']}",
                         f"{tfk}+{b['slug']}+{d['slug']}", "field-mapping+bfr+dipole", "composed",
@@ -1248,6 +1322,8 @@ def run_composed(args, algos, gt_sources, gt, mask, shard_i, shard_n, runs: list
     for (tfk, bs), why in failed_bfr.items():
         reason = f"upstream bfr {bs} DNF: {why}"
         for d in dipole:
+            if not composes(d, tfk, bs):
+                continue
             combo = f"{bs}+{d['slug']}" if tfk == "gt" else f"{tfk}+{bs}+{d['slug']}"
             upstream_dnf.append(dnf(
                 f"{tfk}~{bs}~{d['slug']}-cmp{sfx}", combo, combo,
@@ -1267,7 +1343,7 @@ def run_composed(args, algos, gt_sources, gt, mask, shard_i, shard_n, runs: list
 
     # Stage 3 — dipole: invert each cached localfield with every dipole method.
     dip_tasks = [(tfk, b, d) for tfk in tf_sources for b in bfr
-                 if (tfk, b["slug"]) in lf_cache for d in dipole]
+                 if (tfk, b["slug"]) in lf_cache for d in dipole if composes(d, tfk, b["slug"])]
     for r in _pmap(dip_tasks, lambda task: do_dipole(task, args, gt_sources, gt, mask, lf_cache)):
         runs.extend(_stamp_phantom([r], getattr(args, "phantom", None)))
     if not args.runs_out:
@@ -1517,7 +1593,9 @@ def main() -> None:
         args.mode = "composed"
     print(f"discovered {len(algos)} submissions:",
           ", ".join(f"{a['slug']}[{a['stage']}]" for a in algos))
-    runs: list[dict] = []
+    # A shard/focus job (--runs-out) persists every row as it lands, so a job killed at its cap or
+    # cancelled by a newer commit still hands merge what it finished (RunsFile).
+    runs: list[dict] = RunsFile(args.runs_out) if args.runs_out else []
     args.work.mkdir(parents=True, exist_ok=True)
 
     # Image resolution (pull, network allowed) is owned by the `qsm-ci` CLI now — each run_algo call
@@ -1548,9 +1626,9 @@ def main() -> None:
         return
 
     if args.runs_out:
-        args.runs_out.parent.mkdir(parents=True, exist_ok=True)
-        args.runs_out.write_text(json.dumps(runs, indent=2) + "\n")
-        print(f"\nwrote {len(runs)} runs to {args.runs_out} (shard output; not merged into index.json)")
+        marker = runs.mark_done()   # rows were flushed as they landed; the marker says "complete"
+        print(f"\nwrote {len(runs)} runs to {args.runs_out} (shard output; not merged into index.json); "
+              f"completion marker {marker.name}")
     else:
         total = flush_index(runs)
         print(f"\nmerged {len(runs)} runs into results/index.json ({total} total)")

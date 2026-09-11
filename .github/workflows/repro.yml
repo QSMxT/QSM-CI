@@ -206,7 +206,9 @@ jobs:
           def self_hosted(slug):
               try: t = open(f'algorithms/{slug}/algorithm.yml').read()
               except FileNotFoundError: return False
-              return bool(re.search(r'^runner:[ \t]*(self-hosted|hosted-large)', t, re.M)) or slug in ('inr-qsm', 'modip')
+              # Any non-hosted tier (self-hosted / hosted-large / manual / gpu) is "heavy" here — see
+              # scripts/score_plan.py for the tiers; manual/gpu is what modip and inr-qsm carry.
+              return bool(re.search(r'^runner:[ \t]*(self-hosted|hosted-large|manual|gpu)', t, re.M))
           # The viewer's Field map / Local field layers come from the two UPSTREAM stages. A full
           # shard computes them anyway, so it always emits; a --focus job only does when the changed
           # slug is one of those stages — re-emitting after a dipole change would re-upload bytes

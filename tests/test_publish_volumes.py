@@ -661,7 +661,7 @@ def test_the_merge_job_prunes_and_squashes_after_a_full_rescore():
     wf = (ROOT / ".github" / "workflows" / "score.yml").read_text()
     assert "python scripts/publish_volumes.py results --prune" in wf
     squash = wf[wf.index("Squash HF volume history"):]
-    assert "needs.scope.outputs.full == 'true'" in squash.split("run:")[0]
+    assert "needs.plan.outputs.full == 'true'" in squash.split("run:")[0]
     assert "python scripts/squash_hf_history.py" in squash
 
 
@@ -821,6 +821,8 @@ def test_repro_evaluate_prunes_and_both_squashes_wait_for_the_other_writer():
     for wf, other in (("score.yml", "repro.yml"), ("repro.yml", "score.yml")):
         txt = (ROOT / ".github" / "workflows" / wf).read_text()
         squash = txt[txt.index("- name: Squash HF volume history"):]
-        assert "needs.scope.outputs.full == 'true'" in squash.split("run:")[0]
+        # score.yml's scope lives in its `plan` job (scripts/score_plan.py); repro.yml keeps `scope`.
+        planner = "plan" if wf == "score.yml" else "scope"
+        assert f"needs.{planner}.outputs.full == 'true'" in squash.split("run:")[0]
         assert f"gh run list --workflow {other} --status in_progress" in squash
         assert "actions: read" in txt
