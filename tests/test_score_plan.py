@@ -234,3 +234,7 @@ def test_the_workflow_wires_the_planner_and_never_queues_whole_runs():
     assert "always()" in merge.split("steps:")[0]
     assert "results/scoring-state.json" in merge and "Wait for older merges" in merge
     assert "include_manual" in wf
+    # rows are stamped with the scoring run, and a newer run's rows/volumes are never overwritten
+    assert "QSMCI_RUN: ${{ github.run_id }}.${{ github.run_attempt }}" in score
+    drop = merge[merge.index("Drop ids a newer run already scored"):merge.index("Publish volumes")]
+    assert "from merge_index import superseded" in drop and "shutil.rmtree" in drop

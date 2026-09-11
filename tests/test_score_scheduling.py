@@ -47,6 +47,18 @@ def test_a_restricted_dipole_focus_job_only_computes_the_columns_it_needs(pipeli
     assert len(plan.bfr) == 3 and len(plan.fmap) == 2                             # unrestricted: everything
 
 
+def test_runsfile_stamps_rows_with_the_ci_run_that_scored_them(pipeline, tmp_path, monkeypatch):
+    monkeypatch.setenv("QSMCI_RUN", "123.2")
+    monkeypatch.setenv("QSMCI_SHA", "abc")
+    runs = pipeline.RunsFile(tmp_path / "runs-f-x.json")
+    runs.append({"id": "a"})
+    runs.extend([{"id": "b"}, {"id": "c", "ci_run": "7.1"}])   # an already-stamped row keeps its stamp
+    assert [(r["ci_run"], r.get("ci_sha")) for r in runs] == [("123.2", "abc"), ("123.2", "abc"), ("7.1", None)]
+    monkeypatch.delenv("QSMCI_RUN")
+    runs.append({"id": "d"})
+    assert "ci_run" not in runs[-1]                              # local runs are unstamped
+
+
 def test_runsfile_persists_every_row_and_marks_completion_only_at_the_end(pipeline, tmp_path):
     out = tmp_path / "shard" / "runs-f-x.json"
     runs = pipeline.RunsFile(out)

@@ -722,12 +722,24 @@ class RunsFile(list):
         tmp.write_text(json.dumps(list(self), indent=2) + "\n")
         tmp.replace(self.path)
 
+    @staticmethod
+    def stamp(row: dict) -> dict:
+        """Tag a row with the CI run that scored it (QSMCI_RUN = "<run id>.<attempt>", QSMCI_SHA =
+        the commit). Score runs overlap, so merge_index.py uses this to make sure an OLDER run's
+        merge landing late never overwrites a NEWER run's row (or its volumes on the Hub)."""
+        run, sha = os.environ.get("QSMCI_RUN"), os.environ.get("QSMCI_SHA")
+        if run and "ci_run" not in row:
+            row["ci_run"] = run
+            if sha:
+                row["ci_sha"] = sha
+        return row
+
     def append(self, row) -> None:
-        super().append(row)
+        super().append(self.stamp(row))
         self.flush()
 
     def extend(self, rows) -> None:
-        super().extend(rows)
+        super().extend(self.stamp(r) for r in rows)
         self.flush()
 
     def mark_done(self) -> Path:

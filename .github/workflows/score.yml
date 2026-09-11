@@ -138,6 +138,10 @@ jobs:
       # Per-job container tag — qsm_ci.containers labels every container it starts with this, so the
       # post-job kill step (and the next job's reaper) can identify exactly THIS job's containers.
       QSMCI_JOB_TAG: ${{ github.run_id }}-${{ matrix.task.id }}
+      # Stamped onto every scored row (pipeline.RunsFile): runs overlap, and merge_index.py uses the
+      # stamp so an older run merging late never overwrites a newer run's rows or volumes.
+      QSMCI_RUN: ${{ github.run_id }}.${{ github.run_attempt }}
+      QSMCI_SHA: ${{ github.sha }}
       # Matrix values derive from the dispatch inputs (scope / include slugs): they reach the shell
       # through env, never interpolated into a `run:` script.
       TASK_ID: ${{ matrix.task.id }}
@@ -389,6 +393,33 @@ jobs:
           print(f"duplicate ids across shards: {dup or 'none (partition OK)'}")
           print(f"DNF ({len(dnf)}): {', '.join(dnf) if dnf else 'none'}")
           print(f"tasks that did NOT complete (rows kept, task re-planned next run): {', '.join(partial) or 'none'}")
+          PY
+
+      # Runs overlap, so a NEWER run may already have published some of the ids this run scored (this
+      # run's copy of that task was cancelled, or simply older). Publishing those volumes would put
+      # stale files on the Hub even though the commit step below refuses the stale rows — so drop
+      # both the rows and their results/<id>/ volumes before publishing. Same rule as merge_index.py.
+      - name: Drop ids a newer run already scored
+        run: |
+          git fetch origin main -q
+          git show origin/main:results/index.json > /tmp/main-index.json
+          python3 - <<'PY'
+          import json, glob, shutil, sys
+          sys.path.insert(0, "scripts")
+          from merge_index import superseded
+          main_by = {r["id"]: r for r in json.load(open("/tmp/main-index.json"))["runs"]}
+          base_by = {r["id"]: r for r in json.load(open("/tmp/base-index.json"))["runs"]}
+          mine = {r["id"]: r for f in sorted(glob.glob("runs-*.json")) for r in json.load(open(f))}
+          stale = sorted(i for i, r in mine.items() if superseded(r, main_by.get(i)))
+          if stale:
+              idx = json.load(open("results/index.json"))
+              # restore the base row (what this run started from) or drop a brand-new id
+              idx["runs"] = [base_by[r["id"]] if r["id"] in stale and r["id"] in base_by else r
+                             for r in idx["runs"] if not (r["id"] in stale and r["id"] not in base_by)]
+              json.dump(idx, open("results/index.json", "w"), indent=2)
+              for i in stale:
+                  shutil.rmtree(f"results/{i}", ignore_errors=True)
+          print(f"ids already scored by a newer run, not published from here: {', '.join(stale) or 'none'}")
           PY
 
       # --prune: delete what this publish demonstrably replaced (always), and, after a publish whose
