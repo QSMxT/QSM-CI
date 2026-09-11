@@ -125,3 +125,30 @@ scores it, and comments the metrics on your PR. The full **composition matrix** 
 everyone else's) refreshes on the [leaderboard](https://qsmxt.github.io/QSM-CI/). The
 authoritative score always comes from CI — it holds the real, hidden scoring phantom — but running
 locally against your own phantom confirms your plumbing and shows roughly where you'd land.
+
+### Where and how long your method runs in CI
+
+Scoring runs on GitHub-hosted runners (16 GB, 6-hour cap per job) by default. If your method needs
+more, declare it in `algorithm.yml` (`runner:` — see `scripts/score_plan.py` for the full rules):
+
+| `runner:` | Runs on | Cap | Scheduled |
+|---|---|---|---|
+| *(unset)* | hosted, 2 containers at a time | 6 h | automatically, inside the parallel shard sweep |
+| `hosted-large` | hosted, 1 container (the full 16 GB) | 6 h | automatically, own job |
+| `self-hosted` | QSM-CI's private 31 GB box | `timeout_minutes:` (default 6 h) | automatically, own job |
+| `manual` / `gpu` | private box | `timeout_minutes:` | **only** when a maintainer dispatches it by name |
+
+`manual` is for methods whose CPU cost cannot fit any cap on the shared box (a per-subject
+optimisation that takes 12+ hours per inversion); `gpu` records a GPU requirement for when a GPU
+runner exists. Two more knobs apply on the self-hosted tiers: `jobs: 1` runs one container at a
+time (use it when a single run already saturates every core), and `manual_phantoms: [...]` makes
+only the listed phantoms dispatch-only. A dipole method may also declare a `compose:` subset
+(`fieldmaps:` / `bfrs:` lists) to be composed with a few reference upstream methods instead of the
+full field-map × background-removal matrix — the leaderboard simply shows the other cells empty.
+
+Rescoring is incremental: a merge to `main` rescores what changed since the last completed
+scoring (a new run of the same method supersedes an older one still in flight), and
+`[skip score]` in a commit message exempts that commit from triggering any rescoring. Manual-tier
+work that a run owed but could not schedule is remembered, so a maintainer dispatch with
+`include_manual=true` (and the default `scope=auto`) runs only the manual tasks that are actually
+due — `scope=all` is the explicit "rescore everything" switch.

@@ -36,9 +36,18 @@ license: none declared (no LICENSE in repo); academic use, cite the paper
 image: ghcr.io/astewartau/qsm-ci/inr-qsm:v2
 run: bash run.sh
 smoke_box: 32   # PR --smoke gate fits a 32^3 central box (fast); full score.yml run is unaffected
-# Route to QSM-CI's 31 GB self-hosted runner: the full-size CPU optimization OOMs GitHub's 16 GB
-# hosted box and needs more than the hosted 180-min budget. Only 2 self-hosted jobs run at once.
-runner: self-hosted
+# MANUAL tier: never scored automatically — dispatch score.yml with scope=inr-qsm (or
+# include_manual=true). Why: the full-size CPU optimization needs the 31 GB self-hosted box
+# (OOMs hosted) AND takes ~17 h per run there (2026-09-08 log: 50 epochs at ~20 min each, two
+# runs contending) against a 6-h cap, and a dipole focus job needs 1 isolated + every composed
+# column. 29 automatic attempts since 2026-07-25 finished 3 times (last 2026-07-25), each failure
+# holding a self-hosted runner for its whole cap. `gpu` is the honest tier once a GPU runner exists.
+runner: manual
+timeout_minutes: 2880   # honored on self-hosted/manual only; ~4 h/run with the box to itself
+jobs: 1                 # one optimization at a time — each one already uses every core
+compose:                # composed only with the GT field map on the two reference BFR methods
+  fieldmaps: [gt]
+  bfrs: [vsharp-qsmrs, pdf-qsmrs]
 # Notes on how QSM-CI runs this method vs. its reference (shown on the submission page).
 ci_notes:
 - >

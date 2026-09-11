@@ -7,13 +7,35 @@ name: score
 # volumes; a single merge job combines them, publishes volumes to Hugging Face, and commits the
 # small results/index.json (which triggers the Pages deploy).
 #
-# Scope:
+# Scope (scripts/score_plan.py — the `plan` job):
+#   - everything changed on main since the last COMPLETED scoring (results/scoring-state.json),
+#     plus whatever an earlier run planned but did not finish, minus what another still-running
+#     score run is already covering at an up-to-date commit. So a cancelled / displaced / timed-out
+#     run's work is picked up by the next run instead of being silently lost.
 #   - a changed algorithm  -> that algorithm's isolated run + every composed combo that includes it
 #   - changed scorer / orchestration (eval, pipeline, stages) -> a full re-run of everything
-#   - `[skip score]` in the commit message -> no rescore at all, for a change that touches one of
-#     those paths but provably can't move a number (a new opt-in flag, a docstring, a comment).
-#     Unlike GitHub's own skip token it stops ONLY this workflow, so the tests still run and the
-#     Pages deploy still fires.
+#   - `[skip score]` in a commit message -> that commit contributes nothing to the scope (per commit,
+#     so it still holds when later real changes are bundled into the same run). Unlike GitHub's own
+#     skip token it stops ONLY scoring: the tests still run and the Pages deploy still fires.
+#   - an algorithm.yml edit that cannot move a number (description, authors, runner tier, …) does
+#     not rescore the method.
+#
+# Concurrency: there is deliberately NO workflow-level group. The old one ("one rescore at a time")
+# queued whole runs behind each other for a day, and GitHub keeps only ONE pending run per group —
+# a third push cancelled the second and its scope was never scored. Instead:
+#   - each score TASK has its own concurrency group (score-<task id>) with cancel-in-progress: a
+#     newer commit's f-medi cancels an older run's f-medi (which was going to be overwritten) and
+#     leaves that run's other tasks alone; unrelated pushes overlap freely.
+#   - a cancelled/timed-out task still uploads the rows it finished (pipeline.py flushes after every
+#     row; the upload runs `if: always()`), and merge publishes them. The `.done` marker says whether
+#     the task completed; the rest becomes `pending` in results/scoring-state.json for the next run.
+#   - merge jobs serialise themselves (lowest run id first) so two never publish/commit at once.
+#
+# Runner tiers (`runner:` in algorithm.yml — see scripts/score_plan.py): hosted (default, inside the
+# shard sweep), hosted-large, self-hosted (own focus job on the private 31 GB box; may exceed 6 h via
+# timeout_minutes:), and manual/gpu — NEVER scheduled automatically, only by a workflow_dispatch that
+# names the slug in `scope` (or include_manual=true). MoDIP and INR-QSM are manual: one inversion takes
+# ~12-17 h on the shared box, so no cap makes them feasible automatically.
 
 on:
   push:
@@ -29,11 +51,14 @@ on:
   workflow_dispatch:
     inputs:
       scope:
-        description: "all | <comma-separated slugs> (default: auto-detect from the diff)"
+        description: "all | <comma-separated slugs> (default: auto = everything unscored since the last completed run). Naming a manual-tier slug (modip, inr-qsm) or a method with manual_phantoms scores it."
         default: "auto"
       include:
         description: "MANUAL recovery only: comma-separated slugs; re-score ONLY the composed pipelines they form (gt is always a field source, so 'bfrnet,medi-cornell' -> gt~bfrnet~medi-cornell; add a field-mapping slug for its prefix). Use to refill a combo that DNF'd on a transient/infra failure. Overrides scope. NOT for algorithm changes — those must re-score the full matrix."
         default: ""
+      include_manual:
+        description: "true = also plan the manual-tier methods / manual phantoms (with scope=all: the WHOLE matrix incl. modip + inr-qsm; expect days of self-hosted time)"
+        default: "false"
       shards:
         description: "number of parallel shards for a full re-run"
         default: "12"
@@ -45,17 +70,11 @@ defaults:
   run:
     shell: bash
 
-# One rescore at a time — a new run queues behind the in-progress one instead of racing it (the merge
-# job commits results/index.json, so overlapping runs could clobber each other / fail to push).
-concurrency:
-  group: score
-  cancel-in-progress: false
-
-# Read-only token by default: the scope/plan/score jobs only run method containers and pass
-# artifacts around. Only `merge` commits (job-level `contents: write` there).
+# Read-only token by default: the plan/score jobs only run method containers and pass artifacts
+# around. Only `merge` commits (job-level `contents: write` there).
 permissions:
   contents: read
-  actions: read   # the orphan-container reaper checks whether a labelled run is still active
+  actions: read   # plan reads other in-progress runs; the orphan-container reaper checks a run's status
 
 env:
   TRACK: sim
@@ -66,251 +85,52 @@ env:
   QSM_CI_JOBS: "2"
 
 jobs:
-  scope:
+  # What to score and where: scripts/score_plan.py (unit-tested in tests/test_score_plan.py).
+  plan:
     runs-on: ubuntu-latest
     outputs:
-      full: ${{ steps.decide.outputs.full }}
-      slugs: ${{ steps.decide.outputs.slugs }}
-      include: ${{ steps.decide.outputs.include }}
+      tasks: ${{ steps.plan.outputs.tasks }}
+      full: ${{ steps.plan.outputs.full }}
+      slugs: ${{ steps.plan.outputs.slugs }}
+      base: ${{ steps.plan.outputs.base }}
+      skipped_manual: ${{ steps.plan.outputs.skipped_manual }}   # manual-tier tasks owed but not scheduled
     steps:
       - uses: actions/checkout@v7
-        with: { fetch-depth: 0 }
-      - id: decide
+        with: { fetch-depth: 0 }   # the scope walks main back to the last completed scoring
+      - id: plan
         env:
-          BEFORE: ${{ github.event.before }}   # the push's previous head; empty on workflow_dispatch
           EVENT: ${{ github.event_name }}
           SHA: ${{ github.sha }}
-          # Dispatch inputs: via env, never interpolated into the script (free-text fields).
-          INCLUDE: ${{ github.event.inputs.include }}
+          BEFORE: ${{ github.event.before }}   # fallback base when there is no scoring-state yet
+          # Dispatch inputs: via env, never interpolated into a script (free-text fields).
           SCOPE: ${{ github.event.inputs.scope }}
+          INCLUDE: ${{ github.event.inputs.include }}
+          INCLUDE_MANUAL: ${{ github.event.inputs.include_manual }}
+          SHARDS: ${{ github.event.inputs.shards }}
+          RUN_ID: ${{ github.run_id }}
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}   # lets the planner skip tasks another running score run already covers
         run: |
-          echo "include=" >>"$GITHUB_OUTPUT"   # default; the manual-recovery branch below overrides it
-          # MANUAL single-combo recovery (workflow_dispatch include=): re-score ONLY the combos those
-          # slugs form, nothing else. Wins over scope/auto. For refilling a combo that DNF'd on a
-          # transient failure — NOT the automated path (an algorithm change re-scores the full matrix).
-          include="$INCLUDE"
-          if [ -n "$include" ]; then
-            echo "include=$include" >>"$GITHUB_OUTPUT"; echo "full=false" >>"$GITHUB_OUTPUT"; echo "slugs=[]" >>"$GITHUB_OUTPUT"; exit 0
-          fi
-          scope="$SCOPE"
-          if [ "$scope" = "all" ]; then
-            echo "full=true"  >>"$GITHUB_OUTPUT"; echo "slugs=[]" >>"$GITHUB_OUTPUT"; exit 0
-          fi
-          if [ "$EVENT" = "workflow_dispatch" ] && [ -n "$scope" ] && [ "$scope" != "auto" ]; then
-            echo "full=false" >>"$GITHUB_OUTPUT"
-            echo "slugs=$(echo "$scope" | tr ', ' '\n' | { grep . || true; } | jq -R . | jq -sc .)" >>"$GITHUB_OUTPUT"; exit 0
-          fi
-          # `[skip score]` in the pushed commit message: this push touched a scored path but cannot
-          # move any number — an added opt-in flag, a docstring, a comment, a refactor behind a
-          # default-off branch. GitHub's own skip token would also stop the rescore, but it suppresses
-          # EVERY workflow on the push, so the tests wouldn't run and the site wouldn't redeploy.
-          # This stops the rescore and nothing else. Read via `git log` rather than the event payload
-          # so a crafted commit message can't be interpolated into this shell. Push only — a manual
-          # dispatch ignores it, so `scope=all` is always the escape hatch.
-          if [ "$EVENT" = "push" ] \
-             && git log -1 --format=%B "$SHA" | grep -qF '[skip score]'; then
-            echo "::notice::[skip score] in the commit message — skipping the rescore. Dispatch with scope=all to force one."
-            echo "full=false" >>"$GITHUB_OUTPUT"; echo "slugs=[]" >>"$GITHUB_OUTPUT"; exit 0
-          fi
-          # Diff base: the push's previous head. On a manual dispatch it is EMPTY, and a force-push
-          # can leave it unknown — and `git diff "" <sha>` does not fail, it diffs the worktree against
-          # <sha> (nothing), so scope=auto (the dispatch default) used to schedule zero methods and go
-          # green. Fall back to HEAD~1: for a merge commit that is main-before-the-merge, i.e. "what
-          # the last merge changed".
-          before="$BEFORE"
-          if [ -z "$before" ] || ! git cat-file -e "$before^{commit}" 2>/dev/null; then before="HEAD~1"; fi
-          changed=$(git diff --name-only "$before" HEAD)
-          if [ "$EVENT" = "workflow_dispatch" ] && [ -z "$changed" ]; then
-            echo "::warning::scope=auto: nothing changed in $before..HEAD — nothing to score. Dispatch with scope=all or a slug list."
-          fi
-          if echo "$changed" | grep -qE '^(eval/|scripts/pipeline\.py|scripts/publish_volumes\.py|stages\.yml)'; then
-            echo "full=true"  >>"$GITHUB_OUTPUT"; echo "slugs=[]" >>"$GITHUB_OUTPUT"
-          else
-            # no algorithms/ path in this push is normal, not a failure — see `|| true`
-            slugs=$(echo "$changed" | { grep '^algorithms/' || true; } | cut -d/ -f2 | { grep -v '^_' || true; } | sort -u | jq -R . | jq -sc .)
-            echo "full=false" >>"$GITHUB_OUTPUT"; echo "slugs=$slugs" >>"$GITHUB_OUTPUT"
-          fi
-
-  # Turn the scope into a matrix of parallel tasks: full -> N shards; focused -> one job per slug.
-  plan:
-    needs: scope
-    if: needs.scope.outputs.full == 'true' || needs.scope.outputs.slugs != '[]' || needs.scope.outputs.include != ''
-    runs-on: ubuntu-latest
-    outputs:
-      tasks: ${{ steps.gen.outputs.tasks }}
-    steps:
-      - uses: actions/checkout@v7   # need algorithm.yml to read each method's `runner:` routing
-      - id: gen
-        env:
-          FULL: ${{ needs.scope.outputs.full }}
-          SLUGS: ${{ needs.scope.outputs.slugs }}
-          INCLUDE: ${{ needs.scope.outputs.include }}
-          N: ${{ github.event.inputs.shards || '12' }}
-        run: |
-          TASKS=$(python3 - <<'PY'
-          import json, os, re, glob
-          full = os.environ['FULL'] == 'true'
-          include = os.environ.get('INCLUDE', '')
-          # Dataset/phantom registry — single source of truth for the scoring datasets. A method
-          # family (track) can have several ACTIVE phantoms (e.g. chisep + the ridani variants), and
-          # each gets its own task; the track's default phantom keeps the legacy task/run ids while
-          # the others are namespaced with the phantom id.
-          REG = json.load(open('scripts/datasets.json'))
-          def track_phantoms(track):
-              ph = [k for k, v in REG.items() if v.get('track') == track and v.get('active')]
-              return sorted(ph, key=lambda k: (not REG[k].get('default'), k))  # default first
-          def task_id(prefix, slug, ph):
-              return prefix + slug + ('' if REG[ph].get('default') else '-' + ph)
-          # Per-task runner routing, chosen by each method's `runner:` field in its algorithm.yml:
-          #   (unset)      -> HOSTED:      ubuntu-latest, 360-min cap (the GitHub 6-h job max), 2 concurrent
-          #                   containers. Default; scored inside the parallel shard sweep.
-          #   hosted-large  -> HOSTED_LARGE: ubuntu-latest, same 360-min cap but 1 container (full 16 GB) —
-          #                   for methods that fit hosted memory but OOM when 2 run at once. Its own focused job.
-          #   self-hosted  -> SELFHOSTED:  QSM-CI's 31 GB private runners (more RAM, and the only tier that can
-          #                   exceed the 6-h cap via timeout_minutes), for methods that OOM the 16 GB hosted
-          #                   box. Its own focused job; only 2 run in parallel.
-          # hosted-large + self-hosted methods run as dedicated --focus jobs and are excluded from the shard
-          # sweep. The default cap is the platform max on purpose: timeout-minutes is a KILL deadline, not a
-          # reservation, so a longer cap is free for jobs that finish early — it only lets a genuine hang
-          # squat a runner longer (rare), in exchange for no spurious timeouts and a more robust shard sweep.
-          HOSTED      = {'runs_on': 'ubuntu-latest', 'timeout': 360, 'jobs': 2}
-          HOSTED_LARGE = {'runs_on': 'ubuntu-latest', 'timeout': 360, 'jobs': 1}
-          SELFHOSTED  = {'runs_on': ['self-hosted', 'Linux', 'X64'], 'timeout': 360, 'jobs': 4}
-          def route(slug):
-              try: t = open(f'algorithms/{slug}/algorithm.yml').read()
-              except FileNotFoundError: return HOSTED
-              m = re.search(r'^runner:[ \t]*(\S+)', t, re.M)
-              tier = {'self-hosted': SELFHOSTED, 'hosted-large': HOSTED_LARGE}.get(m.group(1) if m else '', HOSTED)
-              # Optional per-method `timeout_minutes:` override. Only honored on self-hosted, where GitHub
-              # lets a job run past the 6-h hosted cap (up to ~5 days) — e.g. modip's full per-subject CPU
-              # optimization normally finishes in a few hours but can drift past 6 h under shared-box
-              # contention. Hosted tiers stay hard-capped at 6 h by GitHub, so an override there is ignored.
-              tmo = re.search(r'^timeout_minutes:[ \t]*(\d+)', t, re.M)
-              if tmo and tier is SELFHOSTED:
-                  tier = {**tier, 'timeout': int(tmo.group(1))}
-              return tier
-          def stage_of(slug):
-              try: t = open(f'algorithms/{slug}/algorithm.yml').read()
-              except FileNotFoundError: return None
-              m = re.search(r'^stage:[ \t]*(\S+)', t, re.M)
-              return m.group(1) if m else None
-          def is_skipped(slug):
-              # ci_skip'd submissions (e.g. apart-qsm: core solver not distributed) are invisible to
-              # pipeline.py discovery, so any task for them is a guaranteed no-op — don't burn a
-              # runner slot (they were getting self-hosted focus jobs on every full re-run and every
-              # generator fan-out).
-              try: t = open(f'algorithms/{slug}/algorithm.yml').read()
-              except FileNotFoundError: return True
-              return bool(re.search(r'^ci_skip:[ \t]*true', t, re.M))
-          def is_chisep(slug):
-              # χ-separation methods AND R2′ generators both score on the chisep-track phantoms
-              # (generators: isolated vs the true R2′; combos live in the χ-sep methods' focus jobs).
-              return stage_of(slug) in ('chi-separation', 'r2prime-generation')
-          def consumes_r2prime(slug):
-              # Does this χ-sep method read r2prime? (An explicit `inputs:` without it = GRE-native,
-              # e.g. R2*-QSM/DECOMPOSE — no GRE-only combos, so a generator change never re-runs it.
-              # No `inputs:` line = the stage baseline, which includes r2prime.)
-              try: t = open(f'algorithms/{slug}/algorithm.yml').read()
-              except FileNotFoundError: return False
-              m = re.search(r'^inputs:[ \t]*\[([^\]]*)\]', t, re.M)
-              return 'r2prime' in m.group(1) if m else True
-          def is_dipole(slug):
-              # A dipole method (localfield -> chimap) — the only stage scorable on the in-vivo track.
-              return stage_of(slug) == 'dipole'
-          def invivo_tasks(slugs):
-              # In-vivo (2016 challenge) leaderboard: each dipole method ALSO runs, isolated, on the
-              # invivo dataset (localfield -> chimap, scored vs COSMOS + STI). This is an ADDITIONAL
-              # run of the same dipole methods (not a reroute of a disjoint set like chisep), each as
-              # its own --focus job with --track invivo on the 'invivo' phantom. Its runs get the
-              # `-invivo` id namespace (pipeline.py id_suffix), so they never collide with sim runs.
-              return [{'id': 'iv-' + s, 'focus': s, 'phantom': 'invivo', 'track': 'invivo', **route(s)}
-                      for s in sorted(slugs) if is_dipole(s) and not s.startswith('_') and not is_skipped(s)]
-          def phantoms(slug):
-              # Which phantom(s) this method scores on: χ-separation methods run on EVERY active
-              # chisep-track phantom (χ+/χ− GT + R2'/χ_total inputs) — one task per method × phantom;
-              # everything else the QSM sim phantom.
-              return track_phantoms('chisep') if is_chisep(slug) else ['sim']
-          def focus_tasks(slugs):
-              # One focused task per (method, phantom). The default phantom keeps the legacy
-              # 'f-<slug>' task id; extra phantoms get 'f-<slug>-<phantom>'. ci_skip'd methods are
-              # dropped — pipeline discovery skips them, so their jobs run nothing.
-              #
-              # A NON-dipole focus (e.g. a bfr/span like iqfm) pins its own stage while EVERY dipole
-              # varies. Dipoles that carry their own `runner:` (self-hosted) already run as their own
-              # dedicated focus jobs AND are the heavy ones (inr-qsm/modip are CPU-infeasible — can run
-              # for hours); running them inside a bfr focus job just overruns its wall-clock cap
-              # (observed: f-iqfm cancelled at the 360-min cap, saving nothing, so iqfm's combos with
-              # the ~30 normal dipoles never landed). Exclude those heavy dipoles from a non-dipole
-              # focus — their bfr combos are owned by their own focus jobs. Dipole focus jobs keep the
-              # full bfr set (that's how a dipole's combo with a dedicated bfr like iqfm is produced).
-              heavy_dipoles = ','.join(s for s in dedicated() if is_dipole(s) and not is_skipped(s))
-              tasks = []
-              for s in slugs:
-                  if is_skipped(s):
-                      continue
-                  for ph in phantoms(s):
-                      t = {'id': task_id('f-', s, ph), 'focus': s, 'phantom': ph, **route(s)}
-                      if heavy_dipoles and not is_dipole(s) and not is_chisep(s):
-                          t['exclude'] = heavy_dipoles
-                      tasks.append(t)
-              return tasks
-          def dedicated():
-              # Methods that run as their own focused job (not the shard sweep): a non-HOSTED runner OR a
-              # χ-separation method (scored on a SEPARATE phantom, isolated-only — can't ride the QSM shard
-              # sweep). Both are --exclude'd from the shards and get a --focus job on the right phantom.
-              out = []
-              for p in sorted(glob.glob('algorithms/*/algorithm.yml')):
-                  slug = p.split('/')[1]
-                  if not slug.startswith('_') and (route(slug) is not HOSTED or is_chisep(slug)):
-                      out.append(slug)
-              return out
-          if include:
-              # MANUAL single-combo recovery (workflow_dispatch include=): ONE hosted composed task
-              # restricted to these slugs via pipeline.py --include, so it re-scores only the combos they
-              # form (e.g. bfrnet,medi-cornell -> gt~bfrnet~medi-cornell) and nothing else. For refilling a
-              # combo that DNF'd on a transient/infra failure; never the automated path.
-              tasks = [{'id': 'manual-include', 'include': include, 'mode': 'composed', 'phantom': 'sim', **HOSTED}]
-          elif full:
-              # Full re-run: hosted shards score the whole QSM matrix MINUS the dedicated methods
-              # (pipeline.py --exclude), and each dedicated method runs as its own focused job on its
-              # chosen runner + phantom (--focus). Union = the full matrix, every method scored correctly.
-              N = int(os.environ['N'])
-              ded = dedicated()
-              excl = ','.join(ded)
-              tasks = [{'id': 's%02d' % i, 'shard': '%d/%d' % (i, N), 'exclude': excl, 'phantom': 'sim', **HOSTED} for i in range(N)]
-              tasks += focus_tasks(ded)
-              # In-vivo leaderboard: an extra isolated invivo run of EVERY dipole method.
-              all_slugs = [p.split('/')[1] for p in sorted(glob.glob('algorithms/*/algorithm.yml'))]
-              tasks += invivo_tasks(all_slugs)
-          else:
-              slugs = json.loads(os.environ['SLUGS'])
-              # A changed R2′ generator invalidates every GRE-only combo (generator × χ-sep method).
-              # Those combos are owned by the χ-SEP methods' focus jobs (pipeline.run_chisep_composed:
-              # a generator's own focus job is isolated-only, so a full re-run never runs a combo
-              # twice) — so fan a changed generator out into the R2′-consuming χ-sep focus jobs too.
-              if any(stage_of(s) == 'r2prime-generation' for s in slugs):
-                  all_slugs = [p.split('/')[1] for p in sorted(glob.glob('algorithms/*/algorithm.yml'))]
-                  slugs = sorted(set(slugs) | {s for s in all_slugs if not s.startswith('_')
-                                               and stage_of(s) == 'chi-separation' and consumes_r2prime(s)
-                                               and not is_skipped(s)})
-              tasks = focus_tasks(slugs)
-              # A changed dipole method also re-scores on the in-vivo track.
-              tasks += invivo_tasks(slugs)
-          print(json.dumps(tasks))
-          PY
-          )
-          echo "tasks=$TASKS" >>"$GITHUB_OUTPUT"
-          echo "planned tasks: $TASKS"
+          pip install -q pyyaml
+          python3 scripts/score_plan.py
 
   score:
-    needs: [scope, plan]
+    needs: plan
+    if: needs.plan.outputs.tasks != '[]'
     strategy:
       fail-fast: false
       matrix:
         task: ${{ fromJson(needs.plan.outputs.tasks) }}
+    # One group per TASK: a newer run's copy of this task supersedes an older run's (its rows were
+    # about to be overwritten anyway), and nothing else is touched. The cancelled job still uploads
+    # the rows it finished (see the always() upload below).
+    concurrency:
+      group: score-${{ matrix.task.id }}
+      cancel-in-progress: true
     # Runner, wall-clock budget and intra-job container parallelism are chosen per task by the plan
-    # job (ubuntu-latest/180/2 by default; the 31 GB self-hosted runners/360/4 for `runner: self-hosted`
-    # methods). QSM_CI_JOBS here overrides the workflow-level cap of 2 for self-hosted jobs.
+    # job (ubuntu-latest/360/2 by default; the 31 GB self-hosted runners/360/4 for `runner: self-hosted`
+    # methods, with per-method timeout_minutes:/jobs: overrides). QSM_CI_JOBS here overrides the
+    # workflow-level cap of 2.
     runs-on: ${{ matrix.task.runs_on }}
     timeout-minutes: ${{ matrix.task.timeout }}
     env:
@@ -318,6 +138,10 @@ jobs:
       # Per-job container tag — qsm_ci.containers labels every container it starts with this, so the
       # post-job kill step (and the next job's reaper) can identify exactly THIS job's containers.
       QSMCI_JOB_TAG: ${{ github.run_id }}-${{ matrix.task.id }}
+      # Stamped onto every scored row (pipeline.RunsFile): runs overlap, and merge_index.py uses the
+      # stamp so an older run merging late never overwrites a newer run's rows or volumes.
+      QSMCI_RUN: ${{ github.run_id }}.${{ github.run_attempt }}
+      QSMCI_SHA: ${{ github.sha }}
       # Matrix values derive from the dispatch inputs (scope / include slugs): they reach the shell
       # through env, never interpolated into a `run:` script.
       TASK_ID: ${{ matrix.task.id }}
@@ -481,29 +305,35 @@ jobs:
           command -v docker >/dev/null 2>&1 || exit 0
           [ -n "$QSMCI_JOB_TAG" ] && docker ps -q --filter "label=qsmci.job=$QSMCI_JOB_TAG" | xargs -r docker kill || true
 
+      # ALWAYS upload: pipeline.py flushes runs-<id>.json after every scored row and writes
+      # runs-<id>.done only when the task completed, so a job killed at its cap / cancelled by a newer
+      # commit / failed still hands merge everything it finished — and merge can tell it did not finish.
       - uses: actions/upload-artifact@v7
+        if: always()
         with:
           name: shard-${{ matrix.task.id }}
           retention-days: 1
+          if-no-files-found: ignore   # killed before pipeline.py wrote anything
           path: |
             runs-${{ matrix.task.id }}.json
+            runs-${{ matrix.task.id }}.done
             results
             !results/index.json
+            !results/scoring-state.json
 
   merge:
-    needs: [scope, score]
-    # Publish whatever finished scoring — even if a leg failed or a flaky self-hosted DL job (e.g.
-    # modip) was cancelled/timed out. `merge` downloads the shard artifacts that exist and merges
-    # them into results/index.json by run-id, so a leg that uploaded nothing is simply absent and
-    # keeps its previous score. We need always() here: without it, one cancelled leg skips merge and
-    # blocks the ENTIRE leaderboard publish, including all the hosted results (this is what DNF'd the
-    # BFRnet/resource-graph publish). Still skip when scope failed (nothing was planned) or scoring
-    # was skipped (nothing changed).
-    if: ${{ always() && needs.scope.result == 'success' && needs.score.result != 'skipped' }}
+    needs: [plan, score]
+    # Publish whatever finished scoring — even if a leg failed, timed out, or was cancelled by a newer
+    # run's copy of the same task. merge downloads the shard artifacts that exist and merges their rows
+    # into results/index.json by run-id; a task that uploaded no rows keeps its previous score, and
+    # every task that did not complete (no runs-<id>.done) is recorded as pending in
+    # results/scoring-state.json so the next run plans it again. We need always() here: without it,
+    # one cancelled leg would skip merge and block the ENTIRE publish, including every finished task.
+    if: ${{ always() && needs.plan.result == 'success' && needs.score.result != 'skipped' }}
     runs-on: ubuntu-latest
     permissions:
-      contents: write   # the only job that commits (results/index.json)
-      actions: read     # the squash step checks whether repro.yml is mid-publish
+      contents: write   # the only job that commits (results/index.json + results/scoring-state.json)
+      actions: read     # the merge lock and the squash step look at other runs
     steps:
       - uses: actions/checkout@v7
       - uses: actions/download-artifact@v8
@@ -514,6 +344,29 @@ jobs:
 
       - name: Merge deps
         run: pip install -r eval/requirements.txt huggingface_hub
+
+      # Runs overlap now (no workflow-level concurrency group), so two merges could otherwise publish
+      # volumes and commit at the same time. Wait while an OLDER run's merge job is still in progress
+      # (lowest run id goes first — a total order, so no two merges ever wait on each other). A
+      # concurrency group would do this too, but GitHub cancels the second PENDING run in a group,
+      # which is exactly the silent loss this workflow was rewritten to avoid.
+      - name: Wait for older merges
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          for i in $(seq 1 120); do
+            busy=$(gh api "repos/$REPO/actions/workflows/score.yml/runs?status=in_progress&per_page=50" \
+                     --jq "[.workflow_runs[] | select(.id < ($RUN_ID | tonumber)) | .id] | .[]" \
+                   | while read -r rid; do
+                       gh api "repos/$REPO/actions/runs/$rid/jobs?per_page=100&filter=latest" \
+                         --jq '.jobs[] | select(.name == "merge" and .status == "in_progress") | .run_id'
+                     done | head -1)
+            [ -z "$busy" ] && exit 0
+            echo "merge of run $busy is in progress — waiting (${i}/120)"; sleep 30
+          done
+          echo "::warning::gave up waiting for an older merge after 60 min; proceeding"
 
       - name: Merge shard runs into results/index.json
         run: |
@@ -535,9 +388,38 @@ jobs:
           merged = [r for r in idx["runs"] if r.get("id") not in ids] + runs
           json.dump({"generated": None, "runs": merged}, open("results/index.json", "w"), indent=2)
           dnf = sorted(r["id"] for r in runs if r.get("status") == "DNF")
+          partial = sorted(f[5:-5] for f in glob.glob("runs-*.json") if not glob.glob(f[:-5] + ".done"))
           print(f"merged {len(runs)} shard runs; index now {len(merged)} total")
           print(f"duplicate ids across shards: {dup or 'none (partition OK)'}")
           print(f"DNF ({len(dnf)}): {', '.join(dnf) if dnf else 'none'}")
+          print(f"tasks that did NOT complete (rows kept, task re-planned next run): {', '.join(partial) or 'none'}")
+          PY
+
+      # Runs overlap, so a NEWER run may already have published some of the ids this run scored (this
+      # run's copy of that task was cancelled, or simply older). Publishing those volumes would put
+      # stale files on the Hub even though the commit step below refuses the stale rows — so drop
+      # both the rows and their results/<id>/ volumes before publishing. Same rule as merge_index.py.
+      - name: Drop ids a newer run already scored
+        run: |
+          git fetch origin main -q
+          git show origin/main:results/index.json > /tmp/main-index.json
+          python3 - <<'PY'
+          import json, glob, shutil, sys
+          sys.path.insert(0, "scripts")
+          from merge_index import superseded
+          main_by = {r["id"]: r for r in json.load(open("/tmp/main-index.json"))["runs"]}
+          base_by = {r["id"]: r for r in json.load(open("/tmp/base-index.json"))["runs"]}
+          mine = {r["id"]: r for f in sorted(glob.glob("runs-*.json")) for r in json.load(open(f))}
+          stale = sorted(i for i, r in mine.items() if superseded(r, main_by.get(i)))
+          if stale:
+              idx = json.load(open("results/index.json"))
+              # restore the base row (what this run started from) or drop a brand-new id
+              idx["runs"] = [base_by[r["id"]] if r["id"] in stale and r["id"] in base_by else r
+                             for r in idx["runs"] if not (r["id"] in stale and r["id"] not in base_by)]
+              json.dump(idx, open("results/index.json", "w"), indent=2)
+              for i in stale:
+                  shutil.rmtree(f"results/{i}", ignore_errors=True)
+          print(f"ids already scored by a newer run, not published from here: {', '.join(stale) or 'none'}")
           PY
 
       # --prune: delete what this publish demonstrably replaced (always), and, after a publish whose
@@ -555,41 +437,52 @@ jobs:
       # Deleting or overwriting a volume leaves its old LFS object in the Hub repo's history; only a
       # squash frees the storage. A full rescore rewrites every volume, so squash after one (a
       # focused rescore churns too little to matter). Best-effort, like the publish. The repro
-      # workflow is the only other writer (score runs are serialised by the concurrency group); if
-      # one of its shards is mid-publish, leave the squash to the next full rescore rather than overlap.
+      # workflow and other score runs' merges are the other writers; if one is mid-publish, leave the
+      # squash to the next full rescore rather than overlap.
       - name: Squash HF volume history (full rescore)
-        if: ${{ github.event.inputs.dry_run != 'true' && needs.scope.outputs.full == 'true' }}
+        if: ${{ github.event.inputs.dry_run != 'true' && needs.plan.outputs.full == 'true' }}
         continue-on-error: true
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           HF_VOLUMES_REPO: ${{ vars.HF_VOLUMES_REPO }}
           GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.run_id }}
         run: |
           busy=$(gh run list --workflow repro.yml --status in_progress --json databaseId --jq length)
-          if [ "$busy" != "0" ]; then
-            echo "::notice::squash skipped: $busy repro.yml run(s) in progress may be publishing volumes; the next full rescore will squash."
+          others=$(gh run list --workflow score.yml --status in_progress --json databaseId --jq "[.[] | select(.databaseId != ($RUN_ID | tonumber))] | length")
+          if [ "$busy" != "0" ] || [ "$others" != "0" ]; then
+            echo "::notice::squash skipped: $busy repro.yml + $others other score.yml run(s) in progress may be publishing volumes; the next full rescore will squash."
             exit 0
           fi
           python scripts/squash_hf_history.py
 
-      - name: Commit results index (triggers the Pages deploy)
+      - name: Commit results index + scoring state (triggers the Pages deploy)
         if: ${{ github.event.inputs.dry_run != 'true' }}
+        env:
+          TASKS: ${{ needs.plan.outputs.tasks }}   # via env: derived from free-text dispatch inputs
+          SHA: ${{ github.sha }}
+          SKIPPED_MANUAL: ${{ needs.plan.outputs.skipped_manual }}
         run: |
           git config user.name  "qsm-ci-bot"
           git config user.email "qsm-ci@users.noreply.github.com"
+          printf '%s' "$TASKS" > /tmp/tasks.json
+          printf '%s' "${SKIPPED_MANUAL:-[]}" > /tmp/skipped-manual.json
           # This rescore's scored output (base + freshly scored runs).
           cp results/index.json /tmp/scored-index.json
           # Never `git pull --rebase` results/index.json: a rescore based on a commit before another
           # rescore's results landed conflicts on the same file, leaving the loop stuck on "unmerged
           # files" (the #72 / observed BFRnet-publish failure). Instead, each attempt takes the LATEST
           # index from main and re-applies ONLY the runs THIS rescore changed (by id, via
-          # merge_index.py), so concurrent rescores of different slugs never clobber each other.
+          # merge_index.py), so concurrent rescores of different slugs never clobber each other. The
+          # scoring state is likewise recomputed on top of the latest main each attempt.
           for attempt in 1 2 3 4 5; do
             git fetch origin main -q
-            git reset --hard origin/main -q          # HEAD + results/index.json = latest main
+            git reset --hard origin/main -q          # HEAD + results/* = latest main
             python3 scripts/merge_index.py /tmp/base-index.json /tmp/scored-index.json \
                     results/index.json results/index.json
-            git add results/index.json
+            python3 scripts/score_state.py --state results/scoring-state.json --sha "$SHA" \
+                    --tasks /tmp/tasks.json --done-dir . --skipped-manual /tmp/skipped-manual.json
+            git add results/index.json results/scoring-state.json
             git diff --cached --quiet && { echo "no changes to publish"; exit 0; }
             git commit -q -m "Update results"
             git push && exit 0
@@ -599,7 +492,19 @@ jobs:
 
       - name: (dry-run) upload candidate index instead of committing
         if: ${{ github.event.inputs.dry_run == 'true' }}
+        env:
+          TASKS: ${{ needs.plan.outputs.tasks }}
+          SKIPPED_MANUAL: ${{ needs.plan.outputs.skipped_manual }}
+          SHA: ${{ github.sha }}
+        run: |
+          printf '%s' "$TASKS" > /tmp/tasks.json
+          printf '%s' "${SKIPPED_MANUAL:-[]}" > /tmp/skipped-manual.json
+          python3 scripts/score_state.py --state results/scoring-state.json --sha "$SHA" \
+                  --tasks /tmp/tasks.json --done-dir . --skipped-manual /tmp/skipped-manual.json
+      - if: ${{ github.event.inputs.dry_run == 'true' }}
         uses: actions/upload-artifact@v7
         with:
           name: index-candidate
-          path: results/index.json
+          path: |
+            results/index.json
+            results/scoring-state.json

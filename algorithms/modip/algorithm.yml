@@ -38,14 +38,25 @@ smoke_box: 32   # PR --smoke gate fits a 32^3 central box (fast); full score.yml
 # score.yml runs WITHOUT --smoke, so it ignores this and uses the full epoch_num default (500).
 smoke_params:
   epoch_num: 10
-# Full scoring runs on QSM-CI's self-hosted runners: the full 500-epoch per-subject CPU optimization
-# on the uncropped grids does not fit the hosted 6-h cap, so route score.yml's real run to the
-# private box (more RAM / no hosted wall-clock pressure) rather than hosted-large.
-runner: self-hosted
-# The full CPU run normally finishes in a few hours (a recorded in-vivo score took ~2.4 h) but the
-# self-hosted box is shared, so give it generous headroom past the 6-h default rather than let
-# contention DNF it. Only honored on self-hosted (GitHub allows long jobs there); hosted stays 6 h.
-timeout_minutes: 720
+# MANUAL tier: never scored automatically (not on push, not by a scope=all rescore) — dispatch
+# score.yml with scope=modip (or include_manual=true) to score it. Why: the full 500-epoch
+# per-subject CPU optimization takes ~12 h PER inversion on the shared 16-core self-hosted box
+# (2026-09-07 log: epoch 475/500 at 41 672 s), and a dipole focus job inverts 1 isolated + every
+# composed column. Between 2026-07-25 and 2026-09-10 the automatic job ran 29 times, finished once,
+# and each attempt held a self-hosted runner for its whole cap — so the automatic path was pure
+# waste. `gpu` would be the honest tier once a GPU runner exists (the reference is GPU-oriented).
+runner: manual
+# Only honored on self-hosted/manual (GitHub allows long jobs there); hosted stays 6 h. A manual
+# run is 4 composed + 1 isolated (+ 1 in-vivo) inversions at ~3-5 h each with the box to itself.
+timeout_minutes: 2880
+# One container at a time: an inversion already saturates every core, so 4 concurrent ones just
+# quadruple each one's wall-clock (the 12 h above was measured under exactly that contention).
+jobs: 1
+# Composed-matrix subset: a per-subject optimization cannot afford the full 3 × 11 column matrix,
+# so it is composed only with the ground-truth field map on the two reference BFR methods.
+compose:
+  fieldmaps: [gt]
+  bfrs: [vsharp-qsmrs, pdf-qsmrs]
 # Notes on how QSM-CI runs this method vs. its reference (shown on the submission page).
 ci_notes:
 - >
