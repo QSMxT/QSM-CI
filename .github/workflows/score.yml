@@ -93,6 +93,7 @@ jobs:
       full: ${{ steps.plan.outputs.full }}
       slugs: ${{ steps.plan.outputs.slugs }}
       base: ${{ steps.plan.outputs.base }}
+      skipped_manual: ${{ steps.plan.outputs.skipped_manual }}   # manual-tier tasks owed but not scheduled
     steps:
       - uses: actions/checkout@v7
         with: { fetch-depth: 0 }   # the scope walks main back to the last completed scoring
@@ -429,10 +430,12 @@ jobs:
         env:
           TASKS: ${{ needs.plan.outputs.tasks }}   # via env: derived from free-text dispatch inputs
           SHA: ${{ github.sha }}
+          SKIPPED_MANUAL: ${{ needs.plan.outputs.skipped_manual }}
         run: |
           git config user.name  "qsm-ci-bot"
           git config user.email "qsm-ci@users.noreply.github.com"
           printf '%s' "$TASKS" > /tmp/tasks.json
+          printf '%s' "${SKIPPED_MANUAL:-[]}" > /tmp/skipped-manual.json
           # This rescore's scored output (base + freshly scored runs).
           cp results/index.json /tmp/scored-index.json
           # Never `git pull --rebase` results/index.json: a rescore based on a commit before another
@@ -447,7 +450,7 @@ jobs:
             python3 scripts/merge_index.py /tmp/base-index.json /tmp/scored-index.json \
                     results/index.json results/index.json
             python3 scripts/score_state.py --state results/scoring-state.json --sha "$SHA" \
-                    --tasks /tmp/tasks.json --done-dir .
+                    --tasks /tmp/tasks.json --done-dir . --skipped-manual /tmp/skipped-manual.json
             git add results/index.json results/scoring-state.json
             git diff --cached --quiet && { echo "no changes to publish"; exit 0; }
             git commit -q -m "Update results"
@@ -460,11 +463,13 @@ jobs:
         if: ${{ github.event.inputs.dry_run == 'true' }}
         env:
           TASKS: ${{ needs.plan.outputs.tasks }}
+          SKIPPED_MANUAL: ${{ needs.plan.outputs.skipped_manual }}
           SHA: ${{ github.sha }}
         run: |
           printf '%s' "$TASKS" > /tmp/tasks.json
+          printf '%s' "${SKIPPED_MANUAL:-[]}" > /tmp/skipped-manual.json
           python3 scripts/score_state.py --state results/scoring-state.json --sha "$SHA" \
-                  --tasks /tmp/tasks.json --done-dir .
+                  --tasks /tmp/tasks.json --done-dir . --skipped-manual /tmp/skipped-manual.json
       - if: ${{ github.event.inputs.dry_run == 'true' }}
         uses: actions/upload-artifact@v7
         with:

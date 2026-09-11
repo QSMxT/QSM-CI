@@ -425,11 +425,27 @@ def decide(env: dict, root: Path, reg: dict, state: dict) -> dict:
 
     tasks = plan_tasks(root, reg, full=full, slugs=slugs, include=include, shards=shards,
                        explicit=explicit, include_manual=include_manual)
+    # Manual-tier work this run OWES but is not allowed to schedule. `scored_sha` will advance past
+    # the change that made it due, so it must be remembered explicitly: merge folds it into the
+    # state's `pending_manual`, and an include_manual / explicit dispatch plans it from there —
+    # so "score the manual ones too" means only the ones that actually need it.
+    planned = {t["id"] for t in tasks}
+    would = plan_tasks(root, reg, full=full, slugs=slugs, include=include, shards=shards,
+                       explicit=explicit, include_manual=True) if not include else []
+    skipped_manual = [t["id"] for t in would if t["id"] not in planned]
+    owed = [i for i in state.get("pending_manual", []) if i not in planned]
+    if owed and (include_manual or explicit) and not include:
+        cand = plan_tasks(root, reg, full=False, slugs=all_slugs(root), include_manual=True)
+        extra = [t for t in cand if t["id"] in owed and (include_manual or t.get("focus") in explicit)]
+        if extra:
+            notes.append(f"pending manual tasks carried: {', '.join(t['id'] for t in extra)}")
+            tasks += extra
     dropped: list[str] = []
     if tasks and os.environ.get("GH_TOKEN") and env.get("REPO"):
         others = in_progress_runs(env["REPO"], env.get("RUN_ID", ""))
         tasks, dropped = subtract_in_progress(tasks, sha, others)
-    return {"full": full, "slugs": slugs, "base": base, "tasks": tasks, "dropped": dropped, "notes": notes}
+    return {"full": full, "slugs": slugs, "base": base, "tasks": tasks, "dropped": dropped,
+            "skipped_manual": skipped_manual, "notes": notes}
 
 
 def main() -> None:
@@ -444,11 +460,15 @@ def main() -> None:
         print(f"skipping {x}: already being scored at an up-to-date commit")
     print(f"scope: full={d['full']} slugs={d['slugs']} base={d['base'][:12]}")
     print(f"planned {len(d['tasks'])} task(s): {', '.join(t['id'] for t in d['tasks']) or '-'}")
+    if d["skipped_manual"]:
+        print(f"manual-tier tasks owed but not scheduled (recorded as pending_manual; dispatch with "
+              f"include_manual=true or scope=<slug> to run them): {', '.join(d['skipped_manual'])}")
     with open(os.environ.get("GITHUB_OUTPUT", "/dev/stdout"), "a") as out:
         out.write(f"tasks={json.dumps(d['tasks'])}\n")
         out.write(f"full={'true' if d['full'] else 'false'}\n")
         out.write(f"slugs={json.dumps(d['slugs'])}\n")
         out.write(f"base={d['base']}\n")
+        out.write(f"skipped_manual={json.dumps(d['skipped_manual'])}\n")
 
 
 if __name__ == "__main__":

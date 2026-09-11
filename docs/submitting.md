@@ -148,4 +148,7 @@ full field-map × background-removal matrix — the leaderboard simply shows the
 
 Rescoring is incremental: a merge to `main` rescores what changed since the last completed
 scoring (a new run of the same method supersedes an older one still in flight), and
-`[skip score]` in a commit message exempts that commit from triggering any rescoring.
+`[skip score]` in a commit message exempts that commit from triggering any rescoring. Manual-tier
+work that a run owed but could not schedule is remembered, so a maintainer dispatch with
+`include_manual=true` (and the default `scope=auto`) runs only the manual tasks that are actually
+due — `scope=all` is the explicit "rescore everything" switch.

@@ -167,6 +167,34 @@ def test_decide_carries_pending_work_and_falls_back_without_state(repo, monkeypa
     assert {t["id"] for t in d["tasks"]} == {"f-tkd", "iv-tkd"}  # explicit dispatch ignores pending
 
 
+def test_manual_work_is_remembered_and_include_manual_runs_only_what_is_owed(repo, monkeypatch):
+    """A push changes a manual-tier method: nothing is scheduled for it, but the planner reports
+    the owed tasks (merge records them as pending_manual). Later, scope=auto + include_manual=true
+    plans exactly those — not every manual method, and not nothing because scored_sha moved on."""
+    monkeypatch.delenv("GH_TOKEN", raising=False)
+    c = repo["commit"]
+    (repo["root"] / "slow").mkdir()
+    (repo["root"] / "slow" / "algorithm.yml").write_text("stage: dipole\nimage: x\nrunner: manual\n")
+    (repo["root"] / "slow2").mkdir()
+    (repo["root"] / "slow2" / "algorithm.yml").write_text("stage: dipole\nimage: x\nrunner: manual\n")
+    head = c("add two manual methods")
+    env = {"EVENT": "push", "SHA": head, "BEFORE": repo["base"]}
+    d = sp.decide(env, repo["root"], REG, {})
+    assert d["tasks"] == [] and set(d["skipped_manual"]) == {"f-slow", "iv-slow", "f-slow2", "iv-slow2"}
+    # merge advanced scored_sha past that push, remembering the owed manual tasks; slow2 got done
+    state = {"scored_sha": head, "pending_manual": ["f-slow", "iv-slow"]}
+    d = sp.decide({"EVENT": "workflow_dispatch", "SHA": head, "SCOPE": "auto", "INCLUDE_MANUAL": "true"},
+                  repo["root"], REG, state)
+    assert {t["id"] for t in d["tasks"]} == {"f-slow", "iv-slow"}          # only what is owed
+    assert d["skipped_manual"] == []
+    d = sp.decide({"EVENT": "workflow_dispatch", "SHA": head, "SCOPE": "auto"}, repo["root"], REG, state)
+    assert d["tasks"] == []                                                # still not automatic
+    d = sp.decide({"EVENT": "workflow_dispatch", "SHA": head, "SCOPE": "slow2"}, repo["root"], REG, state)
+    assert {t["id"] for t in d["tasks"]} == {"f-slow2", "iv-slow2"}       # explicit: that slug only
+    d = sp.decide({"EVENT": "workflow_dispatch", "SHA": head, "SCOPE": "all"}, repo["root"], REG, state)
+    assert set(d["skipped_manual"]) == {"f-slow", "iv-slow", "f-slow2", "iv-slow2"}   # a full run owes them all
+
+
 def test_in_progress_coverage_subtracts_only_up_to_date_tasks(repo):
     """Run X is scoring commit A (f-tkd + f-vsharp in flight). A new push B touches vsharp only:
     the planner keeps f-vsharp (X's copy is stale) and drops f-tkd (X covers it at a commit that

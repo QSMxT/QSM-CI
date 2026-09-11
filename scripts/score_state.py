@@ -56,13 +56,18 @@ def completed_slugs(tasks: list[dict], done: set[str]) -> set[str]:
 
 
 def update(cur: dict, sha: str, tasks: list[dict], done: set[str], ancestor=is_ancestor,
-           now: str | None = None) -> dict:
-    """Pure state transition (see module docstring)."""
+           now: str | None = None, skipped_manual: list[str] | None = None) -> dict:
+    """Pure state transition (see module docstring). `skipped_manual` = task ids the planner owed
+    but was not allowed to schedule (manual tier / manual phantom): they are remembered in
+    `pending_manual` until a run that IS allowed to schedule them (include_manual, or the slug named
+    on dispatch) finishes them — `scored_sha` advancing must not make them look scored."""
     p_full, p_slugs = unfinished(tasks, done)
     old_sha = cur.get("scored_sha") or ""
     old_full = bool(cur.get("pending_full"))
     old_slugs = set(cur.get("pending_slugs") or [])
+    old_manual = set(cur.get("pending_manual") or [])
     ran_full = any("shard" in t for t in tasks)
+    planned_done = done & {t["id"] for t in tasks}
     if not old_sha or ancestor(old_sha, sha):
         new_sha = sha
         # A complete shard sweep re-scores the whole hosted matrix, which is what pending_full owed.
@@ -72,13 +77,16 @@ def update(cur: dict, sha: str, tasks: list[dict], done: set[str], ancestor=is_a
         # dedicated ones ran as their own focus tasks and are settled per task above.
         if ran_full and not p_full:
             new_slugs -= {s for s in old_slugs if not any(t.get("focus") == s for t in tasks)}
+        new_manual = (old_manual - planned_done) | set(skipped_manual or [])
     else:
         new_sha = old_sha
         new_full = old_full or p_full
         new_slugs = old_slugs | p_slugs
+        new_manual = old_manual | set(skipped_manual or [])   # never clear from a stale commit
     return {"scored_sha": new_sha, "pending_full": new_full, "pending_slugs": sorted(new_slugs),
+            "pending_manual": sorted(new_manual),
             "updated": now or dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
-            "last_run": {"sha": sha, "planned": len(tasks), "done": len(done & {t["id"] for t in tasks})}}
+            "last_run": {"sha": sha, "planned": len(tasks), "done": len(planned_done)}}
 
 
 def main() -> None:
@@ -87,6 +95,8 @@ def main() -> None:
     ap.add_argument("--sha", required=True, help="the commit this run scored")
     ap.add_argument("--tasks", type=Path, required=True, help="JSON list of the planned tasks")
     ap.add_argument("--done-dir", type=Path, default=Path("."), help="where the runs-<id>.done markers are")
+    ap.add_argument("--skipped-manual", type=Path, default=None,
+                    help="JSON list of manual-tier task ids the planner owed but did not schedule")
     a = ap.parse_args()
     tasks = json.loads(a.tasks.read_text())
     try:
@@ -94,12 +104,14 @@ def main() -> None:
     except (FileNotFoundError, json.JSONDecodeError):
         cur = {}
     done = done_ids(tasks, a.done_dir)
-    new = update(cur if isinstance(cur, dict) else {}, a.sha, tasks, done)
+    skipped = json.loads(a.skipped_manual.read_text()) if a.skipped_manual and a.skipped_manual.exists() else []
+    new = update(cur if isinstance(cur, dict) else {}, a.sha, tasks, done, skipped_manual=skipped)
     a.state.parent.mkdir(parents=True, exist_ok=True)
     a.state.write_text(json.dumps(new, indent=2) + "\n")
     missing = [t["id"] for t in tasks if t["id"] not in done]
     print(f"scoring-state: scored_sha={new['scored_sha'][:12]} pending_full={new['pending_full']} "
-          f"pending_slugs={new['pending_slugs']} ({len(done)}/{len(tasks)} tasks finished"
+          f"pending_slugs={new['pending_slugs']} pending_manual={new['pending_manual']} "
+          f"({len(done)}/{len(tasks)} tasks finished"
           f"{'; unfinished: ' + ', '.join(missing) if missing else ''})")
 
 

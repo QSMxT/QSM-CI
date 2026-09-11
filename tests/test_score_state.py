@@ -56,6 +56,22 @@ def test_an_older_run_publishing_late_only_adds_never_clears():
     assert new["pending_full"] is False
 
 
+def test_owed_manual_tasks_persist_until_a_current_run_finishes_them():
+    cur = {"scored_sha": "old", "pending_manual": ["f-slow", "iv-slow"]}
+    # a run that skipped more manual work adds it; scored_sha moving on does not clear it
+    new = ss.update(cur, "new", FOCUS, done={t["id"] for t in FOCUS}, ancestor=ANCESTOR, now="t",
+                    skipped_manual=["f-slow2"])
+    assert new["pending_manual"] == ["f-slow", "f-slow2", "iv-slow"]
+    # an include_manual run that finished f-slow clears just that
+    manual = [{"id": "f-slow", "focus": "slow"}, {"id": "iv-slow", "focus": "slow", "track": "invivo"}]
+    new = ss.update(new, "new2", manual, done={"f-slow"}, ancestor=ANCESTOR, now="t")
+    assert new["pending_manual"] == ["f-slow2", "iv-slow"]
+    assert new["pending_slugs"] == ["slow"]                        # iv-slow was planned and did not finish
+    # …but a stale (older) run finishing it clears nothing
+    new = ss.update(new, "older", manual, done={"iv-slow"}, ancestor=NOT_ANCESTOR, now="t")
+    assert new["pending_manual"] == ["f-slow2", "iv-slow"]
+
+
 def test_manual_include_recovery_is_never_carried():
     new = ss.update({}, "s", [{"id": "manual-include", "include": "a,b", "mode": "composed"}], done=set(),
                     ancestor=ANCESTOR, now="t")
