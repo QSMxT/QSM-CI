@@ -159,6 +159,9 @@
               </div>
               <div id="viewer-note" class="absolute inset-0 hidden items-center justify-center px-6 text-center text-sm text-gray-400 bg-gray-50 dark:bg-gray-900"></div>
             </div>
+            <!-- A run flagged volumes_stale points at an earlier publish's copy of its maps, because its
+                 latest upload didn't land (scripts/publish_volumes.py). Toggled per run by viewer.js. -->
+            <p id="stale-note" class="hidden mt-3 text-xs text-amber-700 dark:text-amber-400">These maps were published by an earlier scoring run. The latest run's upload didn't complete, so they may not exactly match the metrics shown.</p>
             <!-- layer selector (beneath the viewer) -->
             <div id="layer-row" class="mt-4 flex flex-wrap items-center gap-3">
               <div class="inline-flex rounded-lg bg-gray-100 p-1 text-sm font-medium dark:bg-gray-800" id="layer-tabs">

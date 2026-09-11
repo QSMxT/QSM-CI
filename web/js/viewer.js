@@ -1102,6 +1102,8 @@ async function loadRun() {
   // χ-separation runs get a χ+ / χ− source toggle; other runs hide it.
   $("chisep-tabs").classList.toggle("hidden", !isChisepRun());
   if (isChisepRun()) setChisepActive(chisepComp);
+  // The volumes are an earlier publish's copy (its latest upload failed; see publish_volumes.py).
+  $("stale-note").classList.toggle("hidden", !run.volumes_stale);
   try { await refreshView(); } catch (e) {
     canvas.style.visibility = "hidden";
     note.textContent = "Interactive volumes aren't available for this run.";
