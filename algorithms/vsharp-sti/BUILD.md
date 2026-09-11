@@ -1,17 +1,17 @@
-# Building matlab-sti-vsharp (compiled MATLAB → MATLAB Runtime)
+# Building vsharp-sti (compiled MATLAB → MATLAB Runtime)
 
 Compile `recon.m` on a machine with **MATLAB + MATLAB Compiler** (R2026a). Same patterns as
-`../matlab-tkd/BUILD.md` (bundled NIfTI toolbox, OS gzip, no JVM), plus **STI Suite v3** (obfuscated
+`../tkd-qsmci/BUILD.md` (bundled NIfTI toolbox, OS gzip, no JVM), plus **STI Suite v3** (obfuscated
 `.p` functions) and a small **Image Processing Toolbox shim set** (the MATLAB Runtime does **not**
 include IPT, and STI Suite's `.p` call `padarray` + morphology).
 
-Stage: `bfr` — consumes `totalfield` (ppm) + `mask` + `params`; runs `V_SHARP` → `chimap` (ppm).
+Stage: `bfr` — consumes `totalfield` (ppm) + `mask` + `params`; runs `V_SHARP` → `localfield` (ppm).
 Validated corr **0.992**, NRMSE 0.30 vs GT on `data/sim/dev`.
 
 ## 1. Fetch build-time deps (not committed; `shims/` IS committed — it's ours)
 ```bash
-cp -r /path/to/NIfTI_20140122                          algorithms/matlab-sti-vsharp/nifti
-cp -r /path/to/STISuite_V3.0/Core_Functions_P          algorithms/matlab-sti-vsharp/sti
+cp -r /path/to/NIfTI_20140122                          algorithms/vsharp-sti/nifti
+cp -r /path/to/STISuite_V3.0/Core_Functions_P          algorithms/vsharp-sti/sti
 ```
 `sti/` holds the STI Suite `.p` (real code) + `.m` (help-only stubs). Don't bundle
 `Support_Functions/` wholesale — it contains a corrupt `wavelet_src/sfb3D_A.m` that breaks mcc's
@@ -19,7 +19,7 @@ parser, and V-SHARP doesn't need it.
 
 ## 2. Compile
 ```bash
-cd algorithms/matlab-sti-vsharp
+cd algorithms/vsharp-sti
 matlab -batch "addpath('shims'); addpath('nifti'); addpath('sti'); \
   mcc('-m','recon.m','-a','sti','-a','shims','-o','recon','-d','.')"
 ```

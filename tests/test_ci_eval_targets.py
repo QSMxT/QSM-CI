@@ -39,3 +39,12 @@ def test_new_or_unparseable_method_is_relevant():
 
 def test_identical_docs_not_relevant():
     assert cet.execution_relevant(BASE, dict(BASE)) is False
+
+
+def test_docs_files_are_not_execution_relevant():
+    # A BUILD.md/README.md edit is the one non-yml change that cannot alter how a method runs.
+    assert cet.is_docs("BUILD.md") is True
+    assert cet.is_docs("README.md") is True
+    assert cet.is_docs("notes/DESIGN.MD") is True
+    for f in ("run.sh", "Dockerfile", "recon.py", "recon.m", "weights.onnx", "config.json", "README.md.sh"):
+        assert cet.is_docs(f) is False, f

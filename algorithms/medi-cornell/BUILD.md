@@ -1,23 +1,24 @@
-# Building matlab-medi (compiled MATLAB → MATLAB Runtime)
+# Building medi-cornell (compiled MATLAB → MATLAB Runtime)
 
 Compile `recon.m` on a machine with **MATLAB + MATLAB Compiler** (R2026a). The result runs
-license-free on the MATLAB Runtime. Same patterns as `matlab-tkd` (bundled NIfTI toolbox, OS
-gzip; see `../matlab-tkd/BUILD.md`), plus the Cornell **MEDI toolbox**.
+license-free on the MATLAB Runtime. Same patterns as `tkd-qsmci` (bundled NIfTI toolbox, OS
+gzip; see `../tkd-qsmci/BUILD.md`), plus the Cornell **MEDI toolbox**.
 
-Stage: `bfr+dipole` — consumes `totalfield` (ppm), `magnitude`, `mask`, `params`; PDF background
-removal → `MEDI_L1` → `chimap` (ppm).
+Stage: `dipole` — consumes `localfield` (ppm), `magnitude`, `mask`, `params`; `MEDI_L1` dipole
+inversion on the provided local field → `chimap` (ppm). (The Cornell PDF background-removal step of
+the old `bfr+dipole` variant is gone — see the header of `recon.m`.)
 
 ## 1. Fetch build-time deps (not committed)
 ```bash
-cp -r /path/to/NIfTI_20140122               algorithms/matlab-medi/nifti   # Jimmy Shen toolbox
-cp -r /path/to/MEDI_toolbox/functions       algorithms/matlab-medi/medi    # Cornell MEDI toolbox
+cp -r /path/to/NIfTI_20140122               algorithms/medi-cornell/nifti   # Jimmy Shen toolbox
+cp -r /path/to/MEDI_toolbox/functions       algorithms/medi-cornell/medi    # Cornell MEDI toolbox
 # store_CG_results is only referenced by an unused MEDI_L1 debug branch — add a no-op stub so mcc resolves it:
-printf 'function store_CG_results(varargin)\nend\n' > algorithms/matlab-medi/medi/store_CG_results.m
+printf 'function store_CG_results(varargin)\nend\n' > algorithms/medi-cornell/medi/store_CG_results.m
 ```
 
 ## 2. Compile
 ```bash
-cd algorithms/matlab-medi
+cd algorithms/medi-cornell
 matlab -batch "addpath('nifti'); addpath('medi'); mcc('-m','recon.m','-o','recon','-d','.')"   # -> ./recon
 ```
 mcc traces only the MEDI functions `recon.m` actually calls (PDF, MEDI_L1 and their deps); the

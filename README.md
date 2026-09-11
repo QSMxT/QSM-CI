@@ -20,7 +20,7 @@ Every published algorithm gets a citable Zenodo DOI and can be run by anyone wit
 ```bash
 pip install qsm-ci
 qsm-ci list                                   # the published algorithms you can run
-qsm-ci run sharp --totalfield tf.nii.gz --mask mask.nii.gz
+qsm-ci run sharp-qsmrs --totalfield tf.nii.gz --mask mask.nii.gz
 ```
 
 Algorithms are fetched from Zenodo and run in their pinned container, so results are reproducible.

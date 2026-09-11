@@ -18,7 +18,8 @@ ppm. So this wrapper:
   (1) runs DIP-UP (pretrained net + DIP refinement) on EACH echo's wrapped phase, giving unwrapped
       phase per echo;
   (2) does the per-voxel linear fit of unwrapped phase vs TE and normalizes by B0 to ppm — the SAME
-      echo-fit + ppm math as algorithms/laplacian-fieldmap/recon.py and romeo-fieldmap/recon.py.
+      echo-fit + ppm math as algorithms/laplacian-qsmci/recon.py (the reference field-mapping
+      submission; romeo-qsmrs has since moved to QSMxT's weighted multi-echo combination).
 The novelty benchmarked here is DIP-UP's unwrap operator swapped in for the Laplacian/ROMEO unwrap;
 the downstream echo-fit is identical (GAMMA, slope = cov(TE,phi)/var(TE), Hz -> ppm).
 
@@ -45,7 +46,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-GAMMA = 42.576e6  # Hz/T (identical convention to laplacian-fieldmap / romeo-fieldmap)
+GAMMA = 42.576e6  # Hz/T (identical convention to laplacian-qsmci / romeo-qsmrs)
 
 DIPUP_HOME = os.environ.get("DIPUP_HOME", "/opt/DIP-UP")
 WEIGHTS_DIR = os.environ.get("DIPUP_WEIGHTS", "/opt/dip-up-weights")
@@ -60,7 +61,7 @@ _VARIANTS = {
 
 
 # --------------------------------------------------------------------------------------------------
-# param helpers (mirror the inr-qsm / laplacian-fieldmap conventions)
+# param helpers (mirror the inr-qsm / laplacian-qsmci conventions)
 # --------------------------------------------------------------------------------------------------
 def _load_json(path):
     if os.path.exists(path):
@@ -194,7 +195,7 @@ def _dipup_unwrap_echo(net, in_ch, phase_np, mask_np, device, *, n_iter, lr, lr_
 
 
 # --------------------------------------------------------------------------------------------------
-# main — unwrap every echo with DIP-UP, then echo-fit -> ppm total field (from laplacian-fieldmap)
+# main — unwrap every echo with DIP-UP, then echo-fit -> ppm total field (from laplacian-qsmci)
 # --------------------------------------------------------------------------------------------------
 def main(inp, out):
     cfg = _load_json(os.path.join(inp, "config.json"))
@@ -248,7 +249,7 @@ def main(inp, out):
         axis=-1,
     )
 
-    # --- echo-fit -> ppm total field (identical to laplacian-fieldmap / romeo-fieldmap) ---
+    # --- echo-fit -> ppm total field (identical to laplacian-qsmci / romeo-qsmrs) ---
     dt = TE - TE.mean()
     phibar = unwrapped.mean(axis=3, keepdims=True)
     slope = np.sum(dt[None, None, None, :] * (unwrapped - phibar), axis=3) / np.sum(dt**2)  # rad/s

@@ -4,7 +4,7 @@
 # DIP-UP is a PRETRAINED-net + test-time Deep-Image-Prior PHASE UNWRAPPING method. It unwraps a
 # single echo of wrapped phase; it does NOT itself produce a total field. This wrapper runs DIP-UP on
 # EACH echo, then does the standard per-voxel echo-fit + B0 normalization to a total field in ppm
-# (the same echo-fit math as laplacian-fieldmap / romeo-fieldmap). Stage = field-mapping:
+# (the same echo-fit math as laplacian-qsmci / romeo-qsmrs). Stage = field-mapping:
 #   consumes  phase.nii.gz (multi-echo, rad), mask.nii.gz, params.json   ->   produces  totalfield.nii.gz (ppm)
 #
 # The base-net checkpoints (PHU-NET3D.pth / PhaseNet3D.pth) and the DIP-UP repo network defs are baked

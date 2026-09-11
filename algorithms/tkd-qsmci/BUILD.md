@@ -1,4 +1,4 @@
-# Building matlab-tkd (compiled MATLAB → MATLAB Runtime)
+# Building tkd-qsmci (compiled MATLAB → MATLAB Runtime)
 
 Compile `recon.m` once on a machine with **MATLAB + MATLAB Compiler** (no license needed to *run*
 the result on the free MATLAB Runtime). Proven with R2026a.
@@ -12,12 +12,12 @@ the result on the free MATLAB Runtime). Proven with R2026a.
 ## 1. Fetch the NIfTI toolbox (build-time only; not committed)
 ```bash
 # any copy of the Jimmy Shen "Tools for NIfTI and ANALYZE image" toolbox, e.g.:
-cp -r /path/to/NIfTI_20140122 algorithms/matlab-tkd/nifti
+cp -r /path/to/NIfTI_20140122 algorithms/tkd-qsmci/nifti
 ```
 
 ## 2. Compile
 ```bash
-cd algorithms/matlab-tkd
+cd algorithms/tkd-qsmci
 matlab -batch "addpath('nifti'); mcc('-m','recon.m','-o','recon','-d','.')"   # -> ./recon (ELF binary)
 ```
 

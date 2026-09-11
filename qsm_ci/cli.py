@@ -9,7 +9,7 @@
 
 Start with `qsm-ci list` to see the slugs, then `qsm-ci run <slug>` to see the inputs that
 slug's stage needs. `run` takes a flag per consumed artifact, e.g.
-  qsm-ci run tkd --localfield lf.nii.gz --mask mask.nii.gz --params params.json --truth chi.nii.gz
+  qsm-ci run tkd-qsmrs --localfield lf.nii.gz --mask mask.nii.gz --params params.json --truth chi.nii.gz
 """
 
 from __future__ import annotations

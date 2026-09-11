@@ -19,7 +19,22 @@ isolation *and* to test how different stages combine.
 | `field-mapping` | `phase`, `magnitude`, `mask`, `params` | `totalfield` |
 | `bfr` | `totalfield`, `mask`, `params` | `localfield` |
 | `dipole` | `localfield`, `mask`, `params` | `chimap` |
+| `chi-separation` | `localfield`, `r2prime`, `chimap`, `magnitude`, `mask`, `params` | `chi-para`, `chi-dia` |
+| `r2prime-generation` | `magnitude`, `mask`, `params` | `r2prime` |
 | `brain-extraction` | `magnitude`, `params` | `mask` |
+
+`chi-separation` (susceptibility source separation) splits χ into a paramagnetic (χ+, iron) and a
+diamagnetic (χ−, myelin·calcium) source map from the local field, R2′, χ_total and the multi-echo
+magnitude. It is scored **isolated only**: its outputs are neither `localfield` nor `chimap`, so it
+never enters the field-mapping × bfr × dipole composed matrix. Most methods read a subset of the six
+inputs — declare what your code actually reads under `inputs:` in `algorithm.yml` (e.g.
+`inputs: [localfield, chimap, r2prime, mask]`) and only those are mounted and offered as `qsm-ci run`
+flags.
+
+`r2prime-generation` estimates R2′ from the multi-echo GRE magnitude alone, for the GRE-only
+condition where no spin-echo acquisition provides a measured R2. It is scored isolated against the
+phantom's true R2′ and composed with each R2′-consuming `chi-separation` method (the generated map
+replaces the true `r2prime`), to measure what a GRE-only protocol sacrifices.
 
 `brain-extraction` is a standalone stage that *produces* the `mask` every other stage consumes — for
 datasets that ship without a mask. Its output is not a scored ground-truth artifact, so it doesn't
@@ -47,10 +62,14 @@ artifacts into `/input`, and expects exactly the produced artifacts in `/output`
 | `totalfield` | `totalfield.nii.gz` | **ppm** | 3D |
 | `localfield` | `localfield.nii.gz` | **ppm** | 3D |
 | `chimap` | `chimap.nii.gz` | **ppm** | 3D |
+| `r2prime` | `r2prime.nii.gz` | **Hz** (R2′ = R2* − R2, ≥ 0) | 3D |
+| `chi-para` | `chi-para.nii.gz` | **ppm** (χ+, ≥ 0) | 3D |
+| `chi-dia` | `chi-dia.nii.gz` | **ppm** (\|χ−\|, stored as a positive magnitude) | 3D |
 
-All field maps and the susceptibility map are in **ppm** (normalized by B0). Convert from Hz with
-`ppm = Hz · 1e6 / (γ · B0)`, `γ = 42.576e6` Hz/T. All 3D artifacts share the grid, voxel size, and
-affine of `mask.nii.gz`.
+All field maps and susceptibility maps (`chimap`, `chi-para`, `chi-dia`) are in **ppm** (normalized
+by B0). Convert from Hz with `ppm = Hz · 1e6 / (γ · B0)`, `γ = 42.576e6` Hz/T. `r2prime` is the one
+exception — a relaxation rate in **Hz** (s⁻¹), not normalized. All 3D artifacts share the grid,
+voxel size, and affine of `mask.nii.gz`.
 
 ### `params.json`
 
@@ -112,11 +131,14 @@ convenience.
 Your submission is **code plus an environment**; you do not have to bake your code into a custom
 image. Evaluation is two phases:
 
-**1. Build/setup phase (network ON).** QSM-CI produces your environment image:
-- If your folder has a `Dockerfile`, it is built — start `FROM` any base (a MATLAB Runtime/Python
-  container, a Neurodesk image, …) and install or **download dependencies here** (this is where a
-  MATLAB toolbox like SEPIA gets `git clone`d). Do **not** copy your algorithm code in; it is mounted.
-- Otherwise your `image:` is used directly as the environment (a base that already has what you need).
+**1. Environment phase (network ON — on your machine, not in CI).** `image:` names a prebuilt
+container image. QSM-CI **pulls** that image and never builds one (`qsm_ci/containers.py`):
+- Point `image:` at a base that already has what you need (the shared `py-ref` image, a MATLAB
+  Runtime container, a Neurodesk image, …) — nothing to build.
+- Or write a `Dockerfile` that starts `FROM` any base and installs or **downloads dependencies**
+  (this is where a MATLAB toolbox like SEPIA gets `git clone`d), build and push it yourself, and set
+  `image:` to the pushed tag. Keep the Dockerfile in your folder as the recipe for that image, but do
+  **not** copy your algorithm code in; it is mounted.
 
 **2. Run phase (network OFF).** QSM-CI runs your code in that environment:
 
@@ -136,8 +158,11 @@ docker run --rm --network none \
 - **Output.** Write each produced artifact under its canonical filename to `/output`. A missing,
   misshapen, or unreadable output is a DNF.
 
-So a MATLAB submission is: your `.m` files + either a base MATLAB Runtime `image:`, or a `Dockerfile`
-that starts from one and downloads your toolbox. Nothing is baked by you.
+So a Python submission is: your scripts + `run.sh` in the folder, and an `image:` that has the
+dependencies (a shared base, or one you built from a `Dockerfile` and pushed). A compiled-MATLAB
+submission bakes only the *compiled binary* into a MATLAB Runtime image (see
+[docs/matlab.md](docs/matlab.md)); its `run.sh` and `.m` source still live in the folder and are
+mounted.
 
 ## How your stage is evaluated
 

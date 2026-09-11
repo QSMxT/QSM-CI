@@ -71,7 +71,7 @@ docker push  ghcr.io/astewartau/qsm-ci/apart-qsm:v1        # then make the GHCR 
 ```
 `mcc` needs the **Optimization Toolbox** present at compile (the a-map / dipole fits use it, as in the
 DECOMPOSE build); confirm from the obtained solver whether it also uses the **Image Processing Toolbox**
-(morphology) — if so, either module-load it at compile or add IPT/SPT shims like `chi-sep-medi/shims/`.
+(morphology) — if so, either module-load it at compile or add IPT/SPT shims like `chisep-medi/shims/`.
 Compile on R2023b so the runtime base in the Dockerfile matches.
 
 ## 3. Score on the chisep phantom
