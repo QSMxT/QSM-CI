@@ -16,14 +16,19 @@ description: >
   isolates DECOMPOSE's separation step from any upstream QSM error. Tim Ho's open MATLAB
   re-implementation of DECOMPOSE.
 authors:
+- name: Jingjia Chen
+  note: original DECOMPOSE method
+- name: Nan-Jie Gong
+- name: Khallil Taverna Chaim
+- name: Maria Concepción García Otaduy
+- name: Chunlei Liu
 - name: Tim Ho
   note: open MATLAB implementation
-- name: Chen et al.
-  note: original DECOMPOSE method
-doi: 10.1016/j.neuroimage.2021.118735
+doi: 10.1016/j.neuroimage.2021.118477
 citation: >
-  Chen J. et al., "Decompose quantitative susceptibility mapping (QSM) to sub-voxel diamagnetic and
-  paramagnetic components based on gradient-echo MRI data", NeuroImage 2021.
+  Chen J., Gong N.-J., Chaim K.T., Otaduy M.C.G., Liu C., "Decompose quantitative susceptibility
+  mapping (QSM) to sub-voxel diamagnetic and paramagnetic components based on gradient-echo MRI
+  data", NeuroImage 2021;242:118477.
 code_url: https://github.com/timwahoo/DECOMPOSE-QSM
 license: GPL-3.0
 image: ghcr.io/astewartau/qsm-ci/decompose-qsm:v2
