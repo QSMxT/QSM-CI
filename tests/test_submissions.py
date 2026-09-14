@@ -6,6 +6,7 @@ resulting DNF, so the breakage only shows up as a DNF on the leaderboard *after*
 fails the PR instead, in seconds, with a specific message. (Pullability of the image is gated
 separately by the image-access workflow; the runtime behaviour by evaluate.yml.)
 """
+import os
 import shlex
 from pathlib import Path
 
@@ -18,7 +19,9 @@ ROOT = Path(__file__).resolve().parent.parent
 _STAGES_YML = yaml.safe_load((ROOT / "stages.yml").read_text())
 VALID_STAGES = set(_STAGES_YML.get("stages", {})) | set(_STAGES_YML.get("spans", {}))
 
-REQUIRED_FIELDS = ("name", "slug", "stage", "image", "run")
+# `authors` is required too: the site credits every method by it, and six QSM.rs ports shipped
+# without one (issue #231).
+REQUIRED_FIELDS = ("name", "slug", "stage", "image", "run", "authors")
 # Sources that carry a codebase reimplementation of a generic technique — these get tagged into the
 # slug (algorithm-source). Branded/unique published methods (any other source) stay bare.
 _TAGGED_SOURCES = {"qsmrs", "sti", "cornell", "qsmci"}
@@ -64,4 +67,25 @@ def test_submission_is_wellformed(d):
     assert any((d / t).exists() for t in candidates), (
         f"{d.name}: run {meta['run']!r} references no existing file in the submission dir "
         f"(looked for {candidates})"
+    )
+
+
+@pytest.mark.parametrize("run", sorted((ROOT / "algorithms").glob("*/run.sh")), ids=lambda p: p.parent.name)
+def test_run_script_is_executable(run):
+    """Every algorithms/*/run.sh carries the executable bit. The mode is tracked, so a run.sh committed
+    as 100644 stays non-executable on every checkout: `run: bash run.sh` hides it in CI, but anyone
+    who execs the script directly (or mounts it into a container that does) gets "Permission
+    denied". Nine submissions shipped that way (issue #231)."""
+    assert os.access(run, os.X_OK), (
+        f"{run.parent.name}: run.sh is not executable — chmod +x it (the mode is tracked)"
+    )
+
+
+@pytest.mark.parametrize("d", list(_submission_dirs()), ids=lambda d: d.name)
+def test_submission_has_readme_or_build_notes(d):
+    """Every submission documents itself: a README.md (what it is, how QSM-CI runs it, where the image
+    comes from) or a BUILD.md (how the image/binary is built). Nine shipped with neither (issue #231)."""
+    assert (d / "README.md").exists() or (d / "BUILD.md").exists(), (
+        f"{d.name}: add a README.md (or BUILD.md) — what the method is, its stage and artifacts, "
+        f"how to run it with `qsm-ci run {d.name}`, and where its image comes from"
     )

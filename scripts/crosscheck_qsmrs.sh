@@ -2,7 +2,8 @@
 # Validate qsm-eval against QSM.rs's own ChallengeMetrics on the SAME recon/truth/mask/seg.
 # Both are ports of the same algorithm; this proves they agree numerically (drift guard).
 #
-# Requires: a QSM.rs checkout containing tests/crosscheck.rs (set QSM_RS), and a packed dataset.
+# Requires: a QSM.rs checkout containing tests/crosscheck.rs (set QSM_RS), a packed dataset, and
+# the qsm-ci CLI with a container runtime (step 1 runs the tkd-qsmrs submission in its image).
 # Usage: scripts/crosscheck_qsmrs.sh [dataset-dir]     (default data/sim/scoring)
 set -euo pipefail
 
@@ -13,13 +14,16 @@ TOL="${TOL:-1e-6}"
 tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
 
 [ -f "$QSM_RS/tests/crosscheck.rs" ] || { echo "need QSM.rs with tests/crosscheck.rs (set QSM_RS)"; exit 1; }
+command -v qsm-ci >/dev/null || { echo "need the qsm-ci CLI on PATH (pip install -e $ROOT)"; exit 1; }
 
-# 1. produce a real recon: TKD on the ground-truth local field boundary
-mkdir -p "$tmp/in" "$tmp/out"
-cp "$DATASET/groundtruth/localfield.nii.gz" "$tmp/in/localfield.nii.gz"
-cp "$DATASET/inputs/mask.nii.gz"            "$tmp/in/mask.nii.gz"
-cp "$DATASET/inputs/params.json"            "$tmp/in/params.json"
-python3 "$ROOT/algorithms/tkd/recon.py" "$tmp/in" "$tmp/out"
+# 1. produce a real recon: TKD (the tkd-qsmrs submission, in its pinned container) on the
+#    ground-truth local field boundary. Any real recon would do — the metrics are what's compared.
+mkdir -p "$tmp/out"
+( cd "$ROOT" && qsm-ci run tkd-qsmrs \
+    --localfield "$DATASET/groundtruth/localfield.nii.gz" \
+    --mask "$DATASET/inputs/mask.nii.gz" \
+    --params "$DATASET/inputs/params.json" \
+    -o "$tmp/out/chimap.nii.gz" >/dev/null )
 
 # 2. normalize the 4 compared files to scl_slope=1 (avoid any reader scaling ambiguity)
 python3 - "$tmp" "$DATASET" <<'PY'

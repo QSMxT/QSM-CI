@@ -59,10 +59,6 @@ def check_runner(runner: str) -> bool:
     return _have(runner)
 
 
-def check_docker() -> bool:  # kept for back-compat
-    return check_runner("docker")
-
-
 def _build_oci(algo: dict, engine: str, log) -> str:
     """docker/podman: PULL the submission's prebuilt image: and return its ref — never build.
 

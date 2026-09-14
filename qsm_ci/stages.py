@@ -1,7 +1,9 @@
 """Stage & artifact registry — mirrors ../stages.yml.
 
-Kept as plain Python (like scripts/pipeline.py) so the CLI needs no YAML dependency and works
-standalone once installed. If stages.yml changes, update this too.
+Kept as plain Python tables (like scripts/pipeline.py) so the installed CLI carries the registry
+with it and never has to locate ../stages.yml on disk — pyyaml is a hard dependency anyway
+(runner._parse_manifest reads algorithm.yml with it), so this is about self-containment, not
+avoiding YAML. If stages.yml changes, update this too (tests/test_stages_sync.py checks).
 """
 
 from __future__ import annotations

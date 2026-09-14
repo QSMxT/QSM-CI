@@ -10,7 +10,7 @@ import json
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts" / "oneoff"))
 import dedupe_hf_truth as dd  # noqa: E402
 
 A = "runA__truth.nii.gz"
