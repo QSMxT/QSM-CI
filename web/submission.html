@@ -70,7 +70,10 @@
   <header id="site-nav"></header>
 
   <main class="mx-auto max-w-7xl px-6 py-8">
-    <a href="results.html" class="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 dark:hover:text-gray-200">
+    <!-- href is rewritten by viewer.js (resultsHref) to the results.html view matching the sidebar:
+         dataset, Stages/Pipelines, the open run's stage and field mapping. The plain href here is
+         the no-JS fallback. -->
+    <a id="all-results" href="results.html" class="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 dark:hover:text-gray-200">
       <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
       All results
     </a>

@@ -90,22 +90,29 @@ function ensureReproRuns(acq) {
   allRuns = allRuns.filter((r) => r.track !== "repro");
   if (reproJson?.pipelines) for (const [pipe, node] of Object.entries(reproJson.pipelines)) allRuns.push(makeReproRun(pipe, acq, node));
 }
-// Fetch repro.json once (null = never tried, {} = tried-and-empty so we don't refetch forever). Loaded
-// eagerly at boot so even a scored (in-silico) pipeline knows whether it has a harmonization analog.
-async function ensureReproJson() {
-  if (reproJson !== null) return reproJson;
-  try { reproJson = await (await fetch("results/repro.json", { cache: "no-store" })).json(); }
-  catch { reproJson = {}; }
-  // Keep only pipelines whose every step is a live, visible method. The harvest (repro_eval.py) now
-  // drops methods RETIRED from the manifest, so what's left to filter here are the ones deliberately
-  // kept but hidden — a parked submission like the MATLAB amp-pe, whose data stays in repro.json so
-  // it can be revived. loadRuns() applies the same rule to the in-silico runs, and skipping it
-  // doesn't just show a parked method: it lets its rows bleed into the axes that cross it (every
-  // background-removal row is a pipeline ending in the DEFAULT dipole method, so a parked default
-  // blanks the whole axis). The retired case is still handled, for a payload written before this.
-  if (algos.length && reproJson?.pipelines) reproJson.pipelines = Object.fromEntries(
-    Object.entries(reproJson.pipelines).filter(([pipe]) => pipe.split("+").every(liveAlgo)));
-  return reproJson;
+// Fetch repro.json once (null = never tried, {} = tried-and-empty so we don't refetch forever). Pulled
+// on idle after boot (see init), so a scored (in-silico) pipeline learns whether it has a harmonization
+// analog without the 8.7 MB payload sitting in front of the first render.
+let reproJsonReq = null;   // the one in-flight fetch: memoise the PROMISE, not just the result, so the
+                           // idle prefetch and a user click that races it share a single download.
+function ensureReproJson() {
+  if (reproJson !== null) return Promise.resolve(reproJson);
+  if (reproJsonReq) return reproJsonReq;
+  reproJsonReq = (async () => {
+    try { reproJson = await (await fetch("results/repro.json")).json(); }
+    catch { reproJson = {}; }
+    // Keep only pipelines whose every step is a live, visible method. The harvest (repro_eval.py) now
+    // drops methods RETIRED from the manifest, so what's left to filter here are the ones deliberately
+    // kept but hidden — a parked submission like the MATLAB amp-pe, whose data stays in repro.json so
+    // it can be revived. loadRuns() applies the same rule to the in-silico runs, and skipping it
+    // doesn't just show a parked method: it lets its rows bleed into the axes that cross it (every
+    // background-removal row is a pipeline ending in the DEFAULT dipole method, so a parked default
+    // blanks the whole axis). The retired case is still handled, for a payload written before this.
+    if (algos.length && reproJson?.pipelines) reproJson.pipelines = Object.fromEntries(
+      Object.entries(reproJson.pipelines).filter(([pipe]) => pipe.split("+").every(liveAlgo)));
+    return reproJson;
+  })();
+  return reproJsonReq;
 }
 const pipeHasRepro = (pipe) => !!reproJson?.pipelines?.[pipe];
 const hasRepro = () => !!reproJson?.pipelines && Object.keys(reproJson.pipelines).length > 0;
@@ -668,6 +675,48 @@ function buildSidebar() {
     fitSidebar();
   }));
   fitSidebar();
+  updateResultsLink();
+}
+// The "All results" back-link at the top of the page. Point it at the results.html view the sidebar is
+// currently showing — dataset, Stages vs Pipelines, the open run's stage / field mapping / variant —
+// rather than always dropping the reader on the default in-silico pipeline matrix. Parameter names and
+// the convention that a DEFAULT is written as an absent parameter both mirror results.html's own
+// syncUrl(), so this link and the URL that page would have produced for the same view are identical.
+function resultsHref() {
+  const p = new URLSearchParams();
+  if (domain === "repro") {
+    p.set("dataset", "repro");
+    p.set("sub", "pipelines");            // the harmonization sub-view that lists these pipelines
+  } else if (domain === "invivo" || domain === "chisep") {
+    p.set("dataset", domain);             // both open on their own Leaderboard ("board") by default
+    // chisepPhantom is the remembered BROWSING preference and stays null until you switch phantom or
+    // pick a run through selectRun — the boot path never sets it — so fall back to the open run's own
+    // phantom, the same resolution chisepRunFor() does for the sidebar.
+    if (domain === "chisep") {
+      const ph = chisepPhantom || (run && datasetOf(run) === "chisep" ? chisepPhantomOf(run) : null);
+      if (ph) p.set("phantom", ph);
+    }
+  } else {
+    // In silico. Pipelines is results.html's default view, so it is expressed as the ABSENCE of
+    // ?stage; Stages carries the open run's stage. A composed run while the toggle says Stages has no
+    // stage of its own to name — fall back to the legacy ?view=isolated, which that page still reads,
+    // so the toggle position survives even then.
+    if (navMode === "stages") {
+      const st = run && run.mode === "isolated" ? run.stage : null;
+      if (st) p.set("stage", st); else p.set("view", "isolated");
+    } else if (run && run.mode === "composed") {
+      const f = fmapOf(run);
+      if (f && f !== "gt") p.set("fmap", f);   // the matrix is drawn for one field mapping at a time
+    }
+  }
+  // Tuned results live behind a toggle on both the in-silico and in-vivo boards; carry it across.
+  if (domain !== "repro" && run && run.variant === "tuned") p.set("variant", "tuned");
+  const qs = p.toString();
+  return "results.html" + (qs ? "?" + qs : "");
+}
+function updateResultsLink() {
+  const a = $("all-results");
+  if (a) a.href = resultsHref();
 }
 // Keep the sidebar inside the window: the run list gets whatever room is left below its own top edge
 // and scrolls internally. Measured rather than a fixed max-height, because that top moves — the aside
@@ -1790,7 +1839,15 @@ async function init() {
   try {
     [allRuns, algos, registry, datasetsReg] = await Promise.all([loadRuns(), loadAlgos(), loadRegistry(), loadDatasets()]);
   } catch (e) { showBootError(e); return; }
-  await ensureReproJson();   // eager so an in-silico pipeline can offer its harmonization analog
+  // results/repro.json is 8.7 MB (866 KB gzipped) and only tells this page whether a pipeline has a
+  // harmonization analog, so it is NOT awaited at boot any more — the first run used to render behind
+  // it. Pull it on idle and re-render the two surfaces that read it once it lands. Everything that
+  // NEEDS it (the ?dataset=repro branch below, browseDataset("repro"), enterRepro) awaits it itself.
+  // Go through renderDatasetSwitch (the dispatcher), not renderPipelineDatasetSwitch: only a
+  // composed run with a harmonization analog gets the pipeline switch.
+  (window.requestIdleCallback || ((f) => setTimeout(f, 400)))(() => {
+    ensureReproJson().then(() => { buildSidebar(); if (run) renderDatasetSwitch(); });
+  });
   const q = new URLSearchParams(location.search);
   // Shared control handlers (used by every dataset, harmonization included).
   $("run-filter").addEventListener("input", (e) => { filter = e.target.value; buildSidebar(); });
@@ -1803,6 +1860,7 @@ async function init() {
   // pipeline pool (see ensureReproRuns) and open the requested pipeline. From here it's the same
   // Pipelines machinery as in-silico.
   if (q.get("pipeline") && q.get("dataset") === "repro") {
+    await ensureReproJson();   // the one entry point that needs the payload before it can render
     reproPipe = q.get("pipeline");
     reproAcq = acqExists(q.get("acq")) ? q.get("acq") : "cima-bridge-run1";
     ensureReproRuns(reproAcq);

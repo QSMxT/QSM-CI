@@ -13,7 +13,8 @@
 <body class="font-sans text-gray-900 bg-white antialiased dark:bg-gray-950 dark:text-gray-100">
   <header id="site-nav"></header>
 
-  <main x-data="home()" x-init="init()">
+  <!-- No x-init="init()": Alpine auto-calls the x-data object's init(); naming it again ran it twice. -->
+  <main x-data="home()">
     <!-- Hero -->
     <section class="relative overflow-hidden">
       <div class="absolute inset-0 -z-10 bg-gradient-to-b from-emerald-50/70 to-white dark:from-emerald-500/10 dark:to-gray-950"></div>

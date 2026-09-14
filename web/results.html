@@ -147,7 +147,9 @@
 <body class="font-sans text-gray-900 bg-gray-50 antialiased dark:bg-gray-950 dark:text-gray-100">
   <header id="site-nav"></header>
 
-  <main x-data="results()" x-init="init()" class="mx-auto max-w-6xl px-6 py-10">
+  <!-- No x-init="init()": Alpine calls an x-data object's own init() automatically, so spelling it
+       out here ran the whole boot TWICE (every fetch duplicated, cache:"no-store" defeating dedupe). -->
+  <main x-data="results()" class="mx-auto max-w-6xl px-6 py-10">
     <div>
       <h1 class="text-3xl font-bold tracking-tight">Results</h1>
       <p class="mt-1 text-gray-600 dark:text-gray-400">Every method per stage, every full-pipeline combination, and the patterns behind the numbers.</p>
@@ -177,7 +179,8 @@
     </div>
 
     <!-- ===================== IN SILICO (2019) ===================== -->
-    <div x-show="dataset==='sim'" x-cloak>
+    <template x-if="dataset==='sim'">
+    <div>
     <!-- section tabs -->
     <div class="rtabs mt-3">
       <button class="rtab" :class="{'rtab-on': tab==='info'}" @click="setTab('info')">Info</button>
@@ -186,7 +189,8 @@
     </div>
 
     <!-- ===================== LEADERBOARD (tab) ===================== -->
-    <div x-show="tab==='leaderboard'" x-cloak>
+    <template x-if="tab==='leaderboard'">
+    <div>
 
     <!-- ===================== controls (one unified row) ===================== -->
     <div class="mt-6 flex flex-wrap items-center gap-3">
@@ -263,7 +267,8 @@
     </div>
 
     <!-- ===================== MATRIX ===================== -->
-    <div x-show="lbView==='pipelines' && pipeView==='matrix'" x-cloak>
+    <template x-if="lbView==='pipelines' && pipeView==='matrix'">
+    <div>
         <template x-if="matrix.rows.length">
           <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
             <div class="flex flex-wrap items-center justify-between gap-3">
@@ -359,8 +364,10 @@
         </template>
         <p x-show="!loading && !matrix.rows.length" x-cloak class="mt-6 rounded-2xl border border-gray-200 bg-white px-5 py-10 text-center text-gray-400 shadow-sm">No pipeline combinations for this field mapping yet.</p>
       </div>
+    </template>
     <!-- ===================== TABLE (Leaderboard sub-view + Stages) ===================== -->
-    <div x-show="(lbView==='pipelines'&&pipeView==='table')||lbView==='stages'" x-cloak>
+    <template x-if="(lbView==='pipelines'&&pipeView==='table')||lbView==='stages'">
+    <div x-cloak>
 
       <!-- table -->
       <div class="mt-4 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
@@ -412,10 +419,13 @@
         <p x-show="!loading && rows.length===0" x-cloak class="px-5 py-10 text-center text-gray-400">No results for this view yet.</p>
       </div>
     </div>
+    </template>
     </div><!-- /Leaderboard -->
+    </template>
 
     <!-- ===================== FINDINGS ===================== -->
-    <section x-show="tab==='findings'" x-cloak>
+    <template x-if="tab==='findings'">
+    <section>
       <div class="subtabs mt-4">
         <button class="subtab" :class="{'subtab-on': findView==='pipelines'}" @click="findView='pipelines'">Pipeline</button>
         <button class="subtab" :class="{'subtab-on': findView==='metrics'}" @click="findView='metrics'">Metric</button>
@@ -436,7 +446,8 @@
 
       <div x-show="!loading" x-cloak>
         <!-- ---- Pipelines & composition ---- -->
-        <div x-show="findView==='pipelines'">
+        <template x-if="findView==='pipelines'">
+        <div>
           <div class="mt-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
             <div class="flex flex-wrap items-start justify-between gap-3">
               <div>
@@ -546,9 +557,11 @@
             <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="bfrMetricSVG"></div>
           </div>
         </div>
+        </template>
 
         <!-- ---- Different metrics, different winners ---- -->
-        <div x-show="findView==='metrics'">
+        <template x-if="findView==='metrics'">
+        <div>
           <div class="mt-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
             <h3 class="text-lg font-semibold text-gray-900">The best method depends on what you measure</h3>
             <p class="mt-2 text-sm text-gray-600 leading-relaxed">Isolated dipole methods across five metrics, each normalised so <em>higher is better</em>. Grey lines are all methods; a coloured line is the winner of one axis, showing it gives up ground elsewhere: the global-error (NRMSE / xSIM) leader slips down the calcification axis, and the fast direct methods under-quantify iron in deep grey matter. No single method wins every metric.</p>
@@ -567,9 +580,11 @@
             <div class="mt-3 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="corrSVG"></div>
           </div>
         </div>
+        </template>
 
         <!-- ---- Regional susceptibility values ---- -->
-        <div x-show="findView==='regions'">
+        <template x-if="findView==='regions'">
+        <div>
           <div class="mt-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
             <div class="flex flex-wrap items-start justify-between gap-3">
               <div>
@@ -600,9 +615,11 @@
           </div>
           <p class="mt-4 text-[11px] text-gray-400">Statistics are computed over the full brain mask (a voxel an eroding method dropped counts as zero), so from the next full re-score the paired ground-truth values are identical for every run on a phantom; runs scored earlier used each run's own valid support and can differ slightly. Currently populated for isolated dipole runs; composed pipelines fill in at the next full re-score.</p>
         </div>
+        </template>
 
         <!-- ---- Speed & tuning ---- -->
-        <div x-show="findView==='speed'">
+        <template x-if="findView==='speed'">
+        <div>
           <div class="mt-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
             <h3 class="text-lg font-semibold text-gray-900">Accuracy vs compute</h3>
             <p class="mt-2 text-sm text-gray-600 leading-relaxed">Isolated dipole inversion: structural similarity (xSIM, higher is better) against wall-clock runtime on a log scale. <span style="color:#10b981" class="font-semibold">Green</span> points are Pareto-optimal (nothing is both faster and more accurate); grey points are dominated. Some methods cost minutes for no accuracy gain.</p>
@@ -617,9 +634,11 @@
             </div>
           </template>
         </div>
+        </template>
 
         <!-- ---- Explore ---- -->
-        <div x-show="findView==='explore'">
+        <template x-if="findView==='explore'">
+        <div>
           <div class="mt-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
             <h3 class="text-lg font-semibold text-gray-900">Build your own comparison</h3>
             <p class="mt-2 text-sm text-gray-600 leading-relaxed">Plot any two metrics against each other for any isolated stage. Points are methods, coloured by family; hover to identify, click to open a method. Runtime uses a log scale.</p>
@@ -644,11 +663,14 @@
             <div class="mt-2 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="explorerSVG"></div>
           </div>
         </div>
+        </template>
       </div>
     </section>
+    </template>
 
     <!-- In silico · Info -->
-    <section x-show="tab==='info'" x-cloak class="info mt-6 space-y-8">
+    <template x-if="tab==='info'">
+    <section class="info mt-6 space-y-8">
       <div>
         <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">In silico &middot; QSM Challenge 2.0 (2019)</h2>
         <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">The main dataset is the QSM Reconstruction Challenge 2.0 in-silico head phantom, forward-simulated to a BIDS multi-echo acquisition with <a href="https://github.com/astewartau/qsm-forward" class="text-emerald-600 hover:underline">qsm-forward</a>. Its per-voxel susceptibility is known exactly, so QSM-CI scores each pipeline stage on its own (field mapping, background removal, dipole inversion) rather than only the final map. It backs the Full&nbsp;pipelines, Stages and Findings views.</p>
@@ -683,17 +705,21 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
         </ul>
       </div>
     </section>
+    </template>
     </div><!-- /In silico (2019) -->
+    </template>
 
     <!-- ===================== χ-SEPARATION ===================== -->
-    <section x-show="dataset==='chisep'" x-cloak class="mt-3">
+    <template x-if="dataset==='chisep'">
+    <section class="mt-3">
       <div class="rtabs">
         <button class="rtab" :class="{'rtab-on': chisepView==='info'}" @click="chisepView='info'">Info</button>
         <button class="rtab" :class="{'rtab-on': chisepView==='board'}" @click="chisepView='board'">Leaderboard</button>
         <button class="rtab" :class="{'rtab-on': chisepView==='findings'}" @click="chisepView='findings'">Findings</button>
       </div>
 
-      <div x-show="chisepView==='board'" x-cloak>
+      <template x-if="chisepView==='board'">
+      <div>
 
       <!-- table controls (phantom selector + variant toggle + filter + metric columns) -->
       <div class="mt-6 flex flex-wrap items-center gap-3">
@@ -825,9 +851,11 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
       </div>
 
       </div><!-- /chisep board -->
+      </template>
 
       <!-- χ-separation · Findings (figures split out of the Leaderboard, mirroring the in-silico dataset) -->
-      <div x-show="chisepView==='findings'" x-cloak>
+      <template x-if="chisepView==='findings'">
+      <div>
       <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
         <h3 class="text-lg font-semibold text-gray-900">Myelin (χ−) is harder to recover than iron (χ+)</h3>
         <p class="mt-2 text-sm text-gray-600 leading-relaxed">Structural similarity (xSIM) of the recovered paramagnetic χ+ (iron) source versus the diamagnetic χ− (myelin / calcium) source. Every method drops from left to right, so the diamagnetic map is systematically the harder of the two.</p>
@@ -846,9 +874,11 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
         <div class="mt-5 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="greOnlySVG"></div>
       </div>
       </div><!-- /chisep findings -->
+      </template>
 
       <!-- χ-separation · Info -->
-      <div x-show="chisepView==='info'" x-cloak class="info mt-6 space-y-8">
+      <template x-if="chisepView==='info'">
+      <div class="info mt-6 space-y-8">
         <div>
           <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">&chi;-separation (2026)</h2>
           <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">Susceptibility source separation splits the net susceptibility &chi; into a paramagnetic part &chi;&#8314; (iron) and a diamagnetic part &chi;&#8315; (myelin, calcium). Plain QSM measures only their signed sum, &chi;<sub>total</sub> = &chi;&#8314; + &chi;&#8315;, in which the two partly cancel, so it cannot tell them apart. The reversible relaxation rate R2&prime; responds instead to their combined magnitude, |&chi;&#8314;| + |&chi;&#8315;|. Having both the signed sum and the magnitude gives two independent constraints per voxel, which is what makes the sources recoverable. Each method is given &chi;<sub>total</sub>, R2&prime;, the local field and the multi-echo signals, and must produce &chi;&#8314; and &chi;&#8315;, which are scored separately.</p>
@@ -957,17 +987,21 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           </ul>
         </div>
       </div>
+      </template>
     </section>
+    </template>
 
     <!-- ===================== IN VIVO (2016) ===================== -->
-    <section x-show="dataset==='invivo'" x-cloak class="mt-3">
+    <template x-if="dataset==='invivo'">
+    <section class="mt-3">
       <div class="rtabs">
         <button class="rtab" :class="{'rtab-on': invivoView==='info'}" @click="invivoView='info'">Info</button>
         <button class="rtab" :class="{'rtab-on': invivoView==='board'}" @click="invivoView='board'">Leaderboard</button>
         <button class="rtab" :class="{'rtab-on': invivoView==='findings'}" @click="invivoView='findings'">Findings</button>
       </div>
 
-      <div x-show="invivoView==='board'" x-cloak>
+      <template x-if="invivoView==='board'">
+      <div>
 
       <!-- table -->
       <div class="mt-6 flex flex-wrap items-center gap-3">
@@ -1045,9 +1079,11 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         <p x-show="invivoRows().length===0" class="px-5 py-10 text-center text-gray-400">No in-vivo results yet.</p>
       </div>
       </div><!-- /in-vivo board -->
+      </template>
 
       <!-- In vivo · Findings -->
-      <div x-show="invivoView==='findings'" x-cloak>
+      <template x-if="invivoView==='findings'">
+      <div>
         <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
           <h3 class="text-lg font-semibold text-gray-900">COSMOS vs STI χ33: the harder reference</h3>
           <p class="mt-2 text-sm text-gray-600 leading-relaxed">Each method's structural similarity against the two references. Every point sits below the diagonal: STI χ33 is a systematically harder target than COSMOS (roughly +20 NRMSE across the board), yet the two references rank methods almost identically. Coloured by family; hover for values.</p>
@@ -1072,9 +1108,11 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           </div>
         </template>
       </div><!-- /in-vivo findings -->
+      </template>
 
       <!-- In vivo · Info -->
-      <div x-show="invivoView==='info'" x-cloak class="info mt-6 space-y-8">
+      <template x-if="invivoView==='info'">
+      <div class="info mt-6 space-y-8">
         <div>
           <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">In vivo &middot; 2016 Reconstruction Challenge</h2>
           <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">This dataset is real acquired brain data from the 2016 QSM Reconstruction Challenge: a single-orientation 3&nbsp;T scan of one volunteer. Each method inverts the ground-truth local tissue field to a susceptibility map, scored against two reference reconstructions rather than a true susceptibility (none exists in vivo). Only the dipole-inversion stage is scored, so the ranking reads as agreement with a reference, not accuracy against ground truth.</p>
@@ -1093,10 +1131,13 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           </ul>
         </div>
       </div>
+      </template>
     </section>
+    </template>
 
     <!-- ===================== HARMONIZATION (2026) ===================== -->
-    <section x-show="dataset==='repro'" x-cloak class="mt-3">
+    <template x-if="dataset==='repro'">
+    <section class="mt-3">
       <div class="rtabs">
         <button class="rtab" :class="{'rtab-on': reproView==='info'}" @click="reproView='info'">Info</button>
         <button class="rtab" :class="{'rtab-on': reproView==='protocols'}" @click="reproView='protocols'">Protocol reproducibility</button>
@@ -1105,7 +1146,8 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
       </div>
 
       <!-- Harmonization · Protocol reproducibility -->
-      <div x-show="reproView==='protocols'" x-cloak>
+      <template x-if="reproView==='protocols'">
+      <div>
         <div class="mt-6 flex flex-wrap items-center gap-3">
           <div class="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
             <span class="has-tip" data-tip="Absolute |a−1| scores any slope error the same way. Signed a−1 keeps the direction: each fit is y = a·x + b with x the first acquisition of the pair (Prisma, the earlier run, or the bridge protocol), so a positive value means the second reads higher (Cima above Prisma, a later run above an earlier one, a protocol above the bridge). Pooling signed values lets opposite-direction errors cancel, so a pipeline can look better here than under |a−1|: that gap is scatter rather than bias. Ranking and colour always use the magnitude.">Slope error</span>
@@ -1171,9 +1213,11 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           </p>
         </div>
       </div><!-- /repro protocols -->
+      </template>
 
       <!-- Harmonization · Pipeline reproducibility -->
-      <div x-show="reproView==='pipelines'" x-cloak>
+      <template x-if="reproView==='pipelines'">
+      <div>
         <div class="mt-6 flex flex-wrap items-center gap-3">
           <div class="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
             <span>Protocol</span>
@@ -1344,10 +1388,12 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             Reproducibility results are not computed yet; the reconstruction matrix over all 23 acquisitions is pending.
           </p>
         </div>
+      </template>
       </div><!-- /repro pipelines -->
 
       <!-- Harmonization · Findings (all figures generated live from results/repro.json) -->
-      <div x-show="reproView==='findings'" x-cloak>
+      <template x-if="reproView==='findings'">
+      <div>
         <!-- Figure 1 · variance decomposition (headline) -->
         <template x-if="reproStageImportance">
           <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
@@ -1495,9 +1541,11 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="reproRegGlobalSVG"></div>
         </div>
       </div><!-- /repro findings -->
+      </template>
 
       <!-- Harmonization · Info -->
-      <div x-show="reproView==='info'" x-cloak class="info mt-6 space-y-8">
+      <template x-if="reproView==='info'">
+      <div class="info mt-6 space-y-8">
         <div>
           <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">Harmonization &middot; two scanners, four protocols, one head</h2>
           <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">One volunteer, scanned on two Siemens 3&nbsp;T systems at MGH (bays 4&ndash;5: a MAGNETOM Prisma&nbsp;Fit and a MAGNETOM Cima.X), with four multi-echo GRE protocols, three runs each, for 23 acquisitions (one Pulseq offline run could not be reconstructed). There is no ground truth and none is possible; the question is <em>reproducibility</em>: how consistent are a pipeline's susceptibility values across runs, protocols and scanners of the same brain?</p>
@@ -1549,10 +1597,13 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">The dataset is on OSF at <a href="https://osf.io/gkemr/" class="text-emerald-600 hover:underline">osf.io/gkemr</a>: <code>raw/</code> holds the original exports per scanner/protocol (with corrected sidecars, exam-card PDFs and the recovered-parameter manifest), and <code>qsmci-inputs/</code> one prepacked zip per acquisition in the QSM-CI canonical layout (4D magnitude/phase in radians, SynthStrip mask, params.json).</p>
         </div>
       </div><!-- /repro info -->
+      </template>
     </section>
+    </template>
 
     <!-- ===================== CROSS-DATASET ===================== -->
-    <section x-show="dataset==='cross'" x-cloak class="mt-3">
+    <template x-if="dataset==='cross'">
+    <section class="mt-3">
       <div class="mt-6">
         <div>
           <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">Dipole inversion across datasets</h2>
@@ -1585,6 +1636,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         </template>
       </div>
     </section>
+    </template>
   </main>
 
   <footer id="site-footer"></footer>
@@ -1639,6 +1691,8 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
     // Merged component: the leaderboard (board) state + the findings figures, behind one tab bar.
     // Both halves share the same runs/algos load and the memo cache; tabs drive the leaderboard's
     // composed/isolated `view` via syncView().
+    let _reproReq = null;   // the one in-flight/settled results/repro.json fetch (see ensureRepro)
+
     function results() {
       // Non-reactive memo cache shared by both halves (cache names are disjoint). Alpine getters
       // recompute on EVERY property access, and the matrix + SVG builders are O(all-runs), so each
@@ -1736,7 +1790,10 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           else { this.lbView = "stages"; this.stage = v; this.fixSort(); }
           this.syncView(); this.stageMenu = false;
         },
-        setDataset(d) { this.dataset = d; },
+        setDataset(d) {
+          if (d === "repro") this.ensureRepro();   // no-op once loaded; the idle prefetch usually beat us here
+          this.dataset = d;
+        },
 
         async init() {
           // Deep links: results.html?tab=…; legacy leaderboard.html?view=isolated&stage=…&variant=tuned
@@ -1768,16 +1825,15 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             // the big reactive trigger, and name-dependent getters (matrix, findings) cache by
             // runs.length: if algos isn't loaded yet when they first compute, algoName() falls back to
             // raw slugs and the cache never refreshes. Assigning algos first avoids that.
-            const loadRepro = async () => {
-              try { const r = await fetch("results/repro.json", { cache: "no-store" }); return r.ok ? await r.json() : null; }
-              catch { return null; }
-            };
-            const [algos, registry, runs, datasetsReg, repro] = await Promise.all([loadAlgos(), loadRegistry(), loadRuns(), loadDatasets(), loadRepro()]);
+            const [algos, registry, runs, datasetsReg] = await Promise.all([loadAlgos(), loadRegistry(), loadRuns(), loadDatasets()]);
             this.algos = algos;
             this.registry = registry;
             this.runs = runs;
             this.datasetsReg = datasetsReg;
-            this.reproData = repro;
+            // results/repro.json is 8.7 MB (866 KB gzipped) and only the Harmonization dataset reads it,
+            // so it is NOT awaited here — blocking the first render on it cost ~1.3 s. ensureRepro()
+            // fetches it once; it is kicked off on idle below (so the Harmonization tab appears on its
+            // own shortly after the page is usable) and awaited eagerly when that dataset is opened.
             // Per-region stats are NOT fetched here; ensureRegions() lazy-loads them (per-run files,
             // one small results/<id>/regions.json each) the first time the Regions findings tab is
             // opened, so the common page load stays lean. See the findView watch + deep-link trigger.
@@ -1793,6 +1849,8 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             if (!this.runs.some((r) => r.mode === "composed")) { this.lbView = "stages"; this.syncView(); }
             if (!this.hasChiSep() && this.dataset === "chisep") this.dataset = "sim";
             if (!this.hasInvivo() && this.dataset === "invivo") this.dataset = "sim";
+            // A ?dataset=repro deep link is the one case that needs the payload up front.
+            if (this.dataset === "repro") await this.ensureRepro();
             if (!this.hasRepro() && this.dataset === "repro") this.dataset = "sim";
             if (!this.hasCross() && this.dataset === "cross") this.dataset = "sim";
           } catch (e) {
@@ -1811,6 +1869,10 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           this.$watch("findView", (v) => { if (v === "regions") this.ensureRegions(); });
           if (this.tab === "findings" && this.findView === "regions") this.ensureRegions();
           // Same lazy pattern for the harmonization regional Findings figures (repro_regions.json, ~4 MB).
+          // Pull results/repro.json once the page is idle, so the Harmonization tab appears on its
+          // own without any of it sitting on the first render. setDataset()/the deep link above
+          // share this same promise if the user gets there first.
+          (window.requestIdleCallback || ((f) => setTimeout(f, 400)))(() => this.ensureRepro());
           this.$watch("reproView", (v) => { if (v === "findings") this.ensureReproRegions(); });
           if (this.dataset === "repro" && this.reproView === "findings") this.ensureReproRegions();
           this.syncUrl();   // canonicalise (e.g. if an unavailable dataset was reset to sim)
@@ -3911,11 +3973,25 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         // Lazy-load (once) the harmonization regional sidecar (results/repro_regions.json): every
         // (pipeline × acquisition) run's per-aseg-region mean χ in ppb. ~4 MB, ~14 k runs, so it stays
         // off the common page load and is fetched the first time the harmonization Findings tab opens.
+        // The harmonization payload (results/repro.json, 8.7 MB). Fetched once, off the critical path:
+        // init() kicks this off on idle so the Harmonization tab can appear, and setDataset()/the
+        // deep-link path await it so opening that dataset always has its data. Memoised on the promise,
+        // not the result, so two callers share one fetch.
+        ensureRepro() {
+          // _reproReq is module-scope, NOT a property on this: Alpine's reactive proxy around a Promise
+          // breaks `await` (Promise.prototype.then called on an incompatible receiver).
+          if (_reproReq) return _reproReq;
+          _reproReq = (async () => {
+            try { const r = await fetch("results/repro.json"); return r.ok ? await r.json() : null; }
+            catch { return null; }
+          })().then((d) => { this.reproData = d; return d; });
+          return _reproReq;
+        },
         async ensureReproRegions() {
           if (this.reproRegions || this.reproRegLoading) return;
           this.reproRegLoading = true;
           try {
-            const r = await fetch("results/repro_regions.json", { cache: "no-store" });
+            const r = await fetch("results/repro_regions.json");
             this.reproRegions = r.ok ? await r.json() : { runs: [] };
           } catch { this.reproRegions = { runs: [] }; }
           finally { this.reproRegLoading = false; }
