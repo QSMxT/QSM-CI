@@ -26,6 +26,8 @@ out/
 !/results/index.json
 !/results/repro.json
 !/results/repro_regions.json
+# score.yml's merge job commits scoring-state.json too: what was scored at which SHA (score_state.py).
+!/results/scoring-state.json
 
 # Held-out ground truth + generated/downloaded datasets must never be committed
 data/**/groundtruth/
