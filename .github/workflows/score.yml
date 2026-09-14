@@ -220,7 +220,7 @@ jobs:
       - name: Install qsm-ci CLI + scorer deps
         run: |
           pip install -r eval/requirements.txt huggingface_hub
-          pip install --upgrade setuptools setuptools_scm wheel
+          pip install --upgrade setuptools setuptools_scm vcs-versioning wheel
           pip install --no-build-isolation .
 
       # Resolve the task's phantom against the dataset registry (scripts/datasets.json): the

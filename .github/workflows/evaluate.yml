@@ -180,7 +180,7 @@ jobs:
         # `qsm-ci run …` (one run path, no CI-side container builds).
         run: |
           pip install -r eval/requirements.txt
-          pip install --upgrade setuptools setuptools_scm wheel   # runner's build tools are too old for setuptools-scm
+          pip install --upgrade setuptools setuptools_scm vcs-versioning wheel   # runner's build tools are too old for setuptools-scm
           pip install --no-build-isolation .                       # build the CLI with the upgraded tools
 
       # Route each method to the right phantom by its stage: χ-separation methods need a chisep-track
