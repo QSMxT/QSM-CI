@@ -9,21 +9,30 @@ learning: none
 inputs: [chimap, r2prime, magnitude, mask, params]  # + se_magnitude when present (soft MWF evidence); fiber_angle is read ONLY in the optional dti comparison mode
 engine: Independent
 description: >
-  HC-ChiSep — hollow-cylinder χ-separation with signal-derived fibre orientation (no DTI).
-  White-matter fibre-to-B0 angle θ and myelin-water fraction (MWF) are estimated per voxel from the
-  multi-echo GRE magnitude's multi-compartment "beat" (myelin/axonal/extra-axonal pool interference,
-  Wharton–Bowtell hollow-cylinder model), with the total reversible decay rate anchored to the R2'
-  input (R2'_meso = R2'_obs − R2'_hc(θ,MWF) ≥ 0) — the anchor removes the θ/rate trade-off valley
-  that makes an unanchored per-voxel fit noise-limited. WM-like voxels are found by model selection
-  (anchored hollow-cylinder vs free mono-exponential fit, GRE+SE, on lightly smoothed data; soft
-  posterior weight, χ_total-consistency gated). Separation: in WM, χ− follows the published
-  myelin-content↔MWF anchor (|χ−| = 0.038 ppm ↔ MWF 0.12) with the exact constraint χ+ ≥ 0 as a
-  per-voxel MWF lower bound and confidence-weighted spatial regularisation, and χ+ = χ_total + |χ−|
-  shrunk toward a self-calibrated WM χ+ prior; outside WM the closed-form two-source solve
-  χ+ = R2'/Dr+, |χ−| = χ+ − χ_total (Dr− = 0 outside myelinated WM, the Ridani et al. relaxivity
-  convention). Dr+ is self-calibrated from the inputs (robust lower envelope of R2'/χ_total;
-  fallback 137·B0/3 Hz/ppm, Shin 2021). Falls back to the closed-form solve everywhere when no
-  hollow-cylinder-consistent voxels are found.
+  HC-ChiSep — hollow-cylinder χ-separation with signal-derived fibre orientation (no DTI, no
+  segmentation). White-matter fibre-to-B0 angle θ and myelin-water fraction (MWF) are estimated
+  per voxel from the multi-echo GRE magnitude's multi-compartment "beat" (myelin/axonal/
+  extra-axonal pool interference, Wharton–Bowtell hollow-cylinder model), with the total
+  reversible decay rate anchored to the R2' input (R2'_meso = R2'_obs − R2'_hc(θ,MWF) ≥ 0).
+  WM-like voxels are found by model selection (anchored hollow-cylinder vs free mono-exponential
+  fit) with a soft, χ_total-gated posterior weight. In WM, χ− follows the published
+  myelin-content↔MWF anchor (|χ−| = 0.038 ppm ↔ MWF 0.12) with the exact constraint χ+ ≥ 0 and
+  confidence-weighted spatial regularisation; elsewhere the two-source closed form
+  χ+ = (R2' + Dr−·χ_total)/(Dr+ + Dr−), |χ−| = χ+ − χ_total. Relaxivities are declared
+  parameters (see drp/drn) defaulting to the published Dr+ = 137·B0/3 Hz/ppm (Shin 2021) and
+  Dr− = Dr+. The WM branch runs only when the echo train can resolve a multi-compartment
+  signature (TE span ≥ 30 ms and TE_max ≥ 35 ms, i.e. 3 and 3.5 myelin-water T2); otherwise the
+  method reduces to the closed-form solve.
+  MATCHED-MODEL CAVEAT: the forward family used here (hollow-cylinder pools, the MWF↔χ− anchor)
+  overlaps the published family the χ-separation phantom generators implement, so read phantom
+  scores as "what is recoverable when the model class is right" rather than as a model-agnostic
+  result; prefer the detrended-NRMSE and cross-phantom columns.
+  KNOWN LIMITATIONS: the WM-likeness statistic is weak even where it applies (AUC ≈ 0.73–0.77
+  against single-compartment WM on the one phantom with a simulated beat) because it measures
+  non-mono-exponentiality, which strong static dephasing also produces — treat θ/MWF as
+  low-confidence. The χ_total gate classifies calcification as WM-like. χ+ in the WM branch is
+  shrunk toward a small WM prior, so genuinely elevated WM iron (MS lesion rims, WM iron in
+  neurodegeneration) is suppressed.
 authors:
 - name: Ashley Stewart
 doi: null
@@ -32,9 +41,36 @@ citation: >
   orientation", QSM-CI, 2026. The underlying biophysical models are cited in recon.py.
 code_url: https://github.com/QSMxT/QSM-CI
 license: MIT
-image: ghcr.io/astewartau/qsm-ci/hc-chisep-qsmci:v1
+image: ghcr.io/astewartau/qsm-ci/hc-chisep-qsmci:v2
 run: bash run.sh
 parameters:
+  - name: drp
+    default: 137*B0/3
+    description: >
+      paramagnetic relaxivity Dr+ in Hz/ppm ($HCCHISEP_DRP). Default is the published
+      field-scaled empirical calibration 137·B0/3 (Shin et al. 2021), the same value the rest of
+      the field assumes. `auto` opts into self-calibration (robust lower envelope of R2'/χ_total
+      over χ_total > 0.02 ppm). Self-calibration is NOT the default: it is accurate only where
+      R2' is exact and the forward model is χ+ = R2'/Dr+ in the calibration voxels — on a
+      noiseless phantom it recovers the generator's constant to four significant figures, but
+      with an estimated R2' the same estimator spans 241–755 Hz/ppm on one dataset.
+  - name: drn
+    default: drp
+    description: >
+      diamagnetic relaxivity Dr− in Hz/ppm ($HCCHISEP_DRN), used by the closed-form branch;
+      `drp` (the default) sets it equal to Dr+, the co-located Shin convention; 0 is the Ridani
+      convention (all R2' outside WM is paramagnetic — a statement about tissue composition).
+      Dr− also fixes how the two input channels are weighted: Dr−=0 reads χ+ off R2' alone,
+      Dr−=Dr+ averages R2'/Dr+ with χ_total. Measured on the chisep-mc phantom, Dr−=0 scores
+      better when handed the TRUE R2' (avg MSPE 0.78 vs 2.69) but 10.9× worse once R2' is
+      generated rather than given (8.54 vs 1.94), and 8.6× worse on the Ridani phantoms where
+      Dr+ is mis-specified. The symmetric default is the one that survives an imperfect R2'.
+  - name: force_wm
+    default: 0
+    description: >
+      $HCCHISEP_FORCE_WM=1 runs the WM branch even when the echo train cannot resolve a
+      multi-compartment signature. Diagnostic only — the model-selection statistic cannot
+      separate a myelin beat from static dephasing on a short echo train.
   - name: mode
     default: headline
     description: >

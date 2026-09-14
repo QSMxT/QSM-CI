@@ -1,5 +1,5 @@
 # Self-contained image for the hc-chisep-qsmci submission (recon baked; also runs with the repo dir mounted).
-# Build & push: docker build -t ghcr.io/astewartau/qsm-ci/hc-chisep-qsmci:v1 algorithms/hc-chisep-qsmci
+# Build & push: docker build -t ghcr.io/astewartau/qsm-ci/hc-chisep-qsmci:v2 algorithms/hc-chisep-qsmci
 FROM python:3.12-slim
 LABEL org.opencontainers.image.authors="Ashley Stewart" \
       org.opencontainers.image.source="https://github.com/QSMxT/QSM-CI" \

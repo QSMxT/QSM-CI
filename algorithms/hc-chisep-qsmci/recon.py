@@ -12,8 +12,15 @@ removes the shallow θ/rate trade-off valley that makes an unanchored per-voxel 
 noise-limited.
 
 Pipeline
-  1. Dr+ self-calibration: robust lower-envelope of R2'/χ_total over χ_total>0.02 ppm
-     (falls back to the field-scaled empirical calibration 137·B0/3 Hz/ppm, Shin 2021).
+  0. Protocol adequacy. The WM branch runs only if the echo train can actually resolve a
+     multi-compartment signature: TE span ≥ 3·T2_myelin and TE_max ≥ 3.5·T2_myelin (30 / 35 ms
+     for T2_M = 10 ms). Otherwise the method reduces to the closed-form solve. This is a
+     physical criterion, not a tuned one — see SPAN_MIN_T2M for the measurement behind it.
+  1. Relaxivities. Dr+ and Dr- are declared parameters (HCCHISEP_DRP / HCCHISEP_DRN), default
+     the published field-scaled empirical Dr+ = 137·B0/3 Hz/ppm and Dr- = Dr+ (Shin 2021).
+     HCCHISEP_DRP=auto opts into self-calibration (robust lower envelope of R2'/χ_total over
+     χ_total>0.02 ppm) — accurate only when R2' is exact and matches the assumed forward model,
+     unstable otherwise, hence off by default.
   2. WM-likeness ("beat") evidence by model selection on lightly smoothed data:
      SSE of the anchored hollow-cylinder fit (GRE + optional SE pool-T2 mixture)
      vs a free mono-exponential fit. Soft posterior weight w ∈ [0,1], gated by a
@@ -24,19 +31,29 @@ Pipeline
      normalised-convolution regularisation.
   4. Separation. WM branch: χ− = |χ−_ref|/MWF_ref · MWF (the published myelin-content ↔
      MWF anchor), χ+ = χ_total + χ−, shrunk toward the WM χ+ prior (self-calibrated
-     median). Non-WM branch: the closed-form two-source solve with the phantom family's
-     published relaxivity convention (Ridani et al. 2026: paramagnetic Dr+ everywhere
-     outside WM, diamagnetic dephasing carried by the myelin cylinders only, i.e.
-     Dr− = 0 outside WM): χ+ = R2'/Dr+, χ− = χ+ − χ_total. Soft-blend the branches by w.
-  5. Graceful degradation: if no beat evidence is found (single-compartment data), the
-     WM weight collapses and the method reduces to the closed-form solve everywhere.
+     median). Non-WM branch: the closed-form two-source solve
+     χ+ = (R2' + Dr−·χ_total)/(Dr+ + Dr−), χ− = χ+ − χ_total. Dr−=Dr+ (the default) is the
+     co-located Shin convention; Dr−=0 recovers the Ridani convention, in which all R2'
+     outside WM is paramagnetic and diamagnetic dephasing is carried by the myelin cylinders
+     only. Soft-blend the branches by w.
+  5. Graceful degradation: if the protocol cannot resolve a beat (step 0), or no beat evidence
+     is found, the method reduces to the closed-form solve everywhere.
 
 MATCHED-MODEL CAVEAT (stated prominently, also in algorithm.yml): the forward family
-used here (hollow-cylinder pools with qsm-forward's WM_HC_PARAMS, the MWF ↔ χ− anchor,
-and the Ridani Dr convention) is the same published family the phantom generator
-implements. hc-chisep is therefore the reference/mechanistic baseline for this
-benchmark: it shows what is recoverable when the model class is right, not what a
-model-agnostic method would achieve.
+used here (hollow-cylinder pools with qsm-forward's WM_HC_PARAMS, the MWF ↔ χ− anchor)
+overlaps the published family the χ-separation phantom generators implement. Read the
+phantom scores as "what is recoverable when the model class is right", and prefer the
+detrended-NRMSE and cross-phantom columns over any single matched-model result.
+
+KNOWN LIMITATIONS
+  * The WM-likeness statistic is weak even where it applies: on the one phantom with a
+    genuine simulated beat it reaches only AUC ≈ 0.73–0.77 against single-compartment WM.
+    It measures "how non-mono-exponential is this voxel", and strong static dephasing looks
+    much like a myelin beat — which is why step 0 exists. Treat θ/MWF as low-confidence.
+  * The χ_total gate (CHI_GATE_C) treats any diamagnetic voxel as WM-like, so calcification
+    is classified as WM.
+  * χ+ in the WM branch is shrunk toward a small self-calibrated WM prior, so genuinely
+    elevated WM iron (MS lesion rims, WM iron in neurodegeneration) will be suppressed.
 
 Usage: recon.py <input-dir> <output-dir>
   reads  inputs: chimap.nii.gz (ppm), r2prime.nii.gz (Hz), magnitude.nii.gz (4D GRE),
@@ -45,6 +62,10 @@ Usage: recon.py <input-dir> <output-dir>
   writes chi-para.nii.gz (χ+ ≥ 0), chi-dia.nii.gz (|χ−| ≥ 0)
 
 Env/flags:
+  HCCHISEP_DRP = <Hz/ppm> | auto      paramagnetic relaxivity (default: 137·B0/3, Shin 2021)
+  HCCHISEP_DRN = <Hz/ppm> | drp       diamagnetic relaxivity  (default: drp, Shin convention)
+  HCCHISEP_FORCE_WM = 1               run the WM branch even on an inadequate echo train
+                                      (diagnostic only — see Pipeline step 0)
   HCCHISEP_MODE = headline (default) | dti | closed-form
       headline    : signal-derived orientation (no fiber_angle)
       dti         : θ pinned to the fiber_angle input (DTI-informed comparison arm)
@@ -249,6 +270,33 @@ LAM = 0.7                  # weight of the per-voxel MWF route vs the WM chi+ pr
 NCONV_SIGMA = 1.5          # confidence-weighted regularisation of MWF (voxels)
 W_SUPPORT = 0.02           # fit voxels with WM weight above this
 NO_BEAT_FRAC = 0.01        # if fewer than this fraction is WM-like: closed form only
+# Protocol adequacy for the WM branch, in units of the myelin-water T2 (WM_HC_PARAMS["T2_M"]).
+# The multi-compartment signature this method reads is the myelin pool decaying out from under
+# the axonal/extra-axonal pools, so the echo train has to outlast that pool. Measured on the
+# chisep-mc phantom (a real beat) by decimating its echo train and scoring separability against
+# single-compartment WM: span 18->0.57, 24->0.58, 30->0.63, 36->0.72-0.77 AUC, with TE_max a
+# weaker secondary driver (at span 18, TE_max 21->0.57 vs 39->0.68). Below these the statistic
+# is at chance and the WM branch reads static dephasing rather than myelin.
+SPAN_MIN_T2M = 3.0         # required TE_max - TE_min, in myelin-water T2 units (= 30 ms)
+TEMAX_MIN_T2M = 3.5        # required TE_max,           in myelin-water T2 units (= 35 ms)
+
+
+def protocol_supports_beat(TEs, p=WM_HC_PARAMS):
+    """Can this echo train (seconds) resolve a multi-compartment signature at all?
+
+    Guards the failure mode where the WM branch fires on strong static dephasing rather than a
+    myelin beat: the two are equally non-mono-exponential, and the model-selection statistic
+    cannot separate them when the train ends before the myelin pool has decayed away. Returns
+    (ok, reasons)."""
+    TEs = np.asarray(TEs, float)
+    t2m = p["T2_M"]
+    span, te_max = float(TEs.max() - TEs.min()), float(TEs.max())
+    why = []
+    if span < SPAN_MIN_T2M * t2m:
+        why.append(f"TE span {span*1e3:.0f} ms < {SPAN_MIN_T2M*t2m*1e3:.0f} ms")
+    if te_max < TEMAX_MIN_T2M * t2m:
+        why.append(f"TE_max {te_max*1e3:.0f} ms < {TEMAX_MIN_T2M*t2m*1e3:.0f} ms")
+    return (not why), why
 
 
 def normalise(S):
@@ -416,20 +464,38 @@ def main():
         rho_map = denoise_r2prime(rho_map, mask, method=r2den, strength=r2str, snr_weight=m1)
         print(f"[hc-chisep] R2' denoise: method={r2den} strength={r2str} snrw={snrw}")
 
-    # --- 1. Dr+ self-calibration (robust lower envelope; inputs only) -----------
+    # --- 1. relaxivities (declared parameters; see DRP/DRN in the header) -------
     dr_default = 137.0 * B0 / 3.0
-    selc = mask & (chimap > 0.02)
-    if selc.sum() > 5000:
-        dr_pos = float(np.percentile(rho_map[selc] / chimap[selc], 5))
-        if not (0.3 * dr_default <= dr_pos <= 3.0 * dr_default):
-            # implausible: keep the field-scaled empirical calibration
+    drp_opt = os.environ.get("HCCHISEP_DRP", "").strip().lower()
+    if drp_opt == "auto":
+        # OPT-IN self-calibration. Accurate only where R2' is exact and the forward model is
+        # chi+ = R2'/Dr+ in the calibration voxels; with an estimated R2' it is unstable
+        # (measured spread 241-755 Hz/ppm across R2' sources on one phantom). Not the default.
+        selc = mask & (chimap > 0.02)
+        if selc.sum() > 5000:
+            dr_pos = float(np.percentile(rho_map[selc] / chimap[selc], 5))
+            if not (0.3 * dr_default <= dr_pos <= 3.0 * dr_default):
+                dr_pos = dr_default          # implausible: fall back to the published value
+        else:
             dr_pos = dr_default
+        print(f"[hc-chisep] Dr+ = {dr_pos:.1f} Hz/ppm (SELF-CALIBRATED; published {dr_default:.1f})")
     else:
-        dr_pos = dr_default
-    print(f"[hc-chisep] Dr+ = {dr_pos:.1f} Hz/ppm (field-scaled default {dr_default:.1f})")
+        dr_pos = float(drp_opt) if drp_opt else dr_default
+        print(f"[hc-chisep] Dr+ = {dr_pos:.1f} Hz/ppm (published 137*B0/3 = {dr_default:.1f})")
 
-    # --- closed-form two-source solve (Ridani Dr convention: Dr-=0 outside WM) ---
-    cf_pos = np.clip(rho_map / dr_pos, 0, None)
+    # Dr-: "drp" (default) is the co-located Shin convention; 0 reproduces the Ridani
+    # convention (all R2' outside WM is paramagnetic). Dr- also sets how the two input channels
+    # are weighted -- Dr-=0 reads chi+ off R2' alone, Dr-=Dr+ averages R2'/Dr+ with chi_total --
+    # so it governs robustness to an inaccurate R2' or Dr+. See DRN in the header.
+    drn_opt = os.environ.get("HCCHISEP_DRN", "drp").strip().lower()
+    dr_neg = dr_pos if drn_opt in ("drp", "drplus", "same") else float(drn_opt)
+    print(f"[hc-chisep] Dr- = {dr_neg:.1f} Hz/ppm")
+
+    # --- closed-form two-source solve -------------------------------------------
+    #   R2' = Dr+*chi+ + Dr-*|chi-|,  chi_total = chi+ - |chi-|
+    #   =>  chi+ = (R2' + Dr-*chi_total)/(Dr+ + Dr-)
+    # Dr-=0 recovers chi+ = R2'/Dr+; Dr-=Dr+ recovers chi+ = (R2'/Dr+ + chi_total)/2.
+    cf_pos = np.clip((rho_map + dr_neg * chimap) / (dr_pos + dr_neg), 0, None)
     hardcon = os.environ.get("HCCHISEP_HARDCON", "0") == "1"
     tvinv = os.environ.get("HCCHISEP_TVINV", "0") == "1"
     # High-level smart default: HCCHISEP_SMOOTH = auto|off|on|<lam>. Only consulted when
@@ -499,6 +565,17 @@ def main():
     if mag is None or mag.ndim != 4 or mag.shape[3] != len(TEs):
         print("[hc-chisep] WARNING: no usable multi-echo magnitude; closed-form only")
         save_outputs(out_dir, ref, mask, cf_pos, cf_neg)
+        return
+
+    # --- protocol adequacy: can this echo train resolve a multi-compartment signature? ------
+    ok_proto, why = protocol_supports_beat(TEs)
+    if not ok_proto and os.environ.get("HCCHISEP_FORCE_WM", "0") != "1":
+        print(f"[hc-chisep] protocol cannot resolve the multi-compartment signature "
+              f"({'; '.join(why)}; myelin-water T2 = {WM_HC_PARAMS['T2_M']*1e3:.0f} ms)"
+              f" -> closed-form everywhere")
+        save_outputs(out_dir, ref, mask, cf_pos, cf_neg)
+        print(f"[hc-chisep] done in {time.time()-t_start:.0f}s (closed form, Dr+={dr_pos:.1f}, "
+              f"Dr-={dr_neg:.1f})")
         return
     se_mag, _ = load("se_magnitude.nii.gz", required=False)
     have_se = se_mag is not None and se_mag.ndim == 4 and len(se_TEs) == se_mag.shape[3]
