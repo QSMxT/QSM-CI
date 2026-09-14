@@ -192,7 +192,11 @@ async function loadRuns() {
   // res.json() throw leaves the caller with an opaque SyntaxError; throw a message every page can
   // render as its error state instead (each caller catches and shows it — no page may sit on
   // "Loading…" forever).
-  const res = await fetch("results/index.json", { cache: "no-store" });
+  // No cache:"no-store": Pages serves this with the same max-age=600 as the HTML that reads it, so
+  // letting them age together is what we actually want. "no-store" re-downloaded 240 KB on every
+  // navigation between results.html and submission.html, and could pair NEW data with cached OLD
+  // code — the opposite of the guarantee the commit-stamped script URLs (pages.yml) exist to give.
+  const res = await fetch("results/index.json");
   if (!res.ok) throw new Error(`could not load results/index.json (HTTP ${res.status})`);
   let runs = (await res.json()).runs || [];
   const algos = await loadAlgos();
@@ -240,7 +244,7 @@ async function loadAlgoManifest() {
   if (_algoManifest) return _algoManifest;
   _algoManifest = (async () => {
     try {
-      const res = await fetch("algorithms.json", { cache: "no-store" });
+      const res = await fetch("algorithms.json");
       return await res.json();
     } catch (e) { return {}; }
   })();
@@ -257,7 +261,7 @@ let _registry = null;
 async function loadRegistry() {
   if (_registry) return _registry;
   try {
-    const res = await fetch("registry.json", { cache: "no-store" });
+    const res = await fetch("registry.json");
     _registry = res.ok ? await res.json() : {};
   } catch (e) { _registry = {}; }
   return _registry;
