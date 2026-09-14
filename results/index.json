@@ -32581,7 +32581,7 @@
       "stage": "chi-separation",
       "mode": "isolated",
       "track": "sim",
-      "runtime_s": 14817.698554515839,
+      "runtime_s": 12017.441885948181,
       "variant": "default",
       "domain": "chisep",
       "kind": "chisep",
@@ -32622,13 +32622,15 @@
       },
       "status": "ok",
       "phantom": "chisep-mc",
-      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/decompose-qsm-iso__resources.json",
-      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/decompose-qsm-iso__regions.json",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/chisep-mc/cb/decompose-qsm-iso__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/chisep-mc/cb/decompose-qsm-iso__regions.json",
       "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/decompose-qsm-iso__recon.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/decompose-qsm-iso__error.nii.gz",
-        "recon-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/decompose-qsm-iso__recon-dia.nii.gz",
-        "error-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/decompose-qsm-iso__error-dia.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/chisep-mc/cb/decompose-qsm-iso__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/chisep-mc/cb/decompose-qsm-iso__error.nii.gz",
+        "recon-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/chisep-mc/cb/decompose-qsm-iso__recon-dia.nii.gz",
+        "error-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/chisep-mc/cb/decompose-qsm-iso__error-dia.nii.gz",
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chi-para.nii.gz",
         "truth-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chi-dia.nii.gz"
       }
@@ -44365,7 +44367,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 621.6267037391663,
+      "runtime_s": 389.3974847793579,
       "metrics": {
         "nrmse": 91.96741014860103,
         "nrmse_detrend": 100.20244685763427,
@@ -44386,8 +44388,8 @@
       "mode": "isolated",
       "variant": "default",
       "phantom": "invivo",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/invivo/b5/amp-pe-qsmrs-iso-invivo__resources.json",
       "volumes": {
         "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/invivo/b5/amp-pe-qsmrs-iso-invivo__recon.nii.gz",
@@ -44402,7 +44404,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 657.1471347808838,
+      "runtime_s": 984.0193376541138,
       "metrics": {
         "nrmse": 52.47826608673199,
         "nrmse_detrend": 61.649096434301256,
@@ -44423,8 +44425,8 @@
       "mode": "isolated",
       "variant": "default",
       "phantom": "sim",
-      "ci_run": "34802079080.1",
-      "ci_sha": "4394d4e7ef17d504d159c5910319dbd1d1501f70",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/53/amp-pe-qsmrs-iso__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/53/amp-pe-qsmrs-iso__regions.json",
       "volumes": {
@@ -44440,7 +44442,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1491.232717037201,
+      "runtime_s": 1389.540452003479,
       "metrics": {
         "nrmse": 69.0588140353798,
         "nrmse_detrend": 95.48297401562836,
@@ -44465,6 +44467,8 @@
         "dipole": "amp-pe-qsmrs"
       },
       "phantom": "sim",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/c3/gt_bfrnet_amp-pe-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/c3/gt_bfrnet_amp-pe-qsmrs-cmp__regions.json",
       "volumes": {
@@ -44480,7 +44484,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1082.4682593345642,
+      "runtime_s": 1048.1505649089813,
       "metrics": {
         "nrmse": 118.14862565145475,
         "nrmse_detrend": 208.92027962224046,
@@ -44505,6 +44509,8 @@
         "dipole": "amp-pe-qsmrs"
       },
       "phantom": "sim",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/55/gt_harperella-qsmrs_amp-pe-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/55/gt_harperella-qsmrs_amp-pe-qsmrs-cmp__regions.json",
       "volumes": {
@@ -44520,7 +44526,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1094.3463561534882,
+      "runtime_s": 1053.3124642372131,
       "metrics": {
         "nrmse": 79.79618509561514,
         "nrmse_detrend": 126.25185514498533,
@@ -44545,6 +44551,8 @@
         "dipole": "amp-pe-qsmrs"
       },
       "phantom": "sim",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/96/gt_iharperella-qsmrs_amp-pe-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/96/gt_iharperella-qsmrs_amp-pe-qsmrs-cmp__regions.json",
       "volumes": {
@@ -44560,7 +44568,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1265.7343249320984,
+      "runtime_s": 1170.72043800354,
       "metrics": {
         "nrmse": 80.59201645452809,
         "nrmse_detrend": 133.33685315768918,
@@ -44585,6 +44593,8 @@
         "dipole": "amp-pe-qsmrs"
       },
       "phantom": "sim",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/3a/gt_iqfm_amp-pe-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/3a/gt_iqfm_amp-pe-qsmrs-cmp__regions.json",
       "volumes": {
@@ -44600,7 +44610,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1014.2783575057983,
+      "runtime_s": 943.4435648918152,
       "metrics": {
         "nrmse": 68.02663907262468,
         "nrmse_detrend": 92.80537394325299,
@@ -44625,6 +44635,8 @@
         "dipole": "amp-pe-qsmrs"
       },
       "phantom": "sim",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/ff/gt_ismv-qsmrs_amp-pe-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/ff/gt_ismv-qsmrs_amp-pe-qsmrs-cmp__regions.json",
       "volumes": {
@@ -44640,7 +44652,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1003.8988008499146,
+      "runtime_s": 944.0235838890076,
       "metrics": {
         "nrmse": 66.90022721072113,
         "nrmse_detrend": 88.30470463908634,
@@ -44665,6 +44677,8 @@
         "dipole": "amp-pe-qsmrs"
       },
       "phantom": "sim",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/db/gt_lbv-qsmrs_amp-pe-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/db/gt_lbv-qsmrs_amp-pe-qsmrs-cmp__regions.json",
       "volumes": {
@@ -44680,7 +44694,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1695.222556591034,
+      "runtime_s": 1582.442660331726,
       "metrics": {
         "nrmse": 68.06436083670039,
         "nrmse_detrend": 91.74193754450451,
@@ -44705,6 +44719,8 @@
         "dipole": "amp-pe-qsmrs"
       },
       "phantom": "sim",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/82/gt_pdf-qsmrs_amp-pe-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/82/gt_pdf-qsmrs_amp-pe-qsmrs-cmp__regions.json",
       "volumes": {
@@ -44720,7 +44736,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1022.0864379405975,
+      "runtime_s": 947.4666068553925,
       "metrics": {
         "nrmse": 72.13905198537873,
         "nrmse_detrend": 104.16762473688357,
@@ -44745,6 +44761,8 @@
         "dipole": "amp-pe-qsmrs"
       },
       "phantom": "sim",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/63/gt_resharp-qsmrs_amp-pe-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/63/gt_resharp-qsmrs_amp-pe-qsmrs-cmp__regions.json",
       "volumes": {
@@ -44760,7 +44778,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 990.839174747467,
+      "runtime_s": 867.1660759449005,
       "metrics": {
         "nrmse": 72.82903264631427,
         "nrmse_detrend": 106.24047102499749,
@@ -44785,6 +44803,8 @@
         "dipole": "amp-pe-qsmrs"
       },
       "phantom": "sim",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/77/gt_sharp-qsmrs_amp-pe-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/77/gt_sharp-qsmrs_amp-pe-qsmrs-cmp__regions.json",
       "volumes": {
@@ -44800,7 +44820,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1031.561353445053,
+      "runtime_s": 891.6646144390106,
       "metrics": {
         "nrmse": 69.73251063358329,
         "nrmse_detrend": 97.22492555358942,
@@ -44825,6 +44845,8 @@
         "dipole": "amp-pe-qsmrs"
       },
       "phantom": "sim",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/3c/gt_vsharp-qsmrs_amp-pe-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/3c/gt_vsharp-qsmrs_amp-pe-qsmrs-cmp__regions.json",
       "volumes": {
@@ -44840,7 +44862,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1064.9608879089355,
+      "runtime_s": 909.0103642940521,
       "metrics": {
         "nrmse": 71.73112744635849,
         "nrmse_detrend": 102.85858170957516,
@@ -44865,6 +44887,8 @@
         "dipole": "amp-pe-qsmrs"
       },
       "phantom": "sim",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/05/gt_vsharp-sti_amp-pe-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/05/gt_vsharp-sti_amp-pe-qsmrs-cmp__regions.json",
       "volumes": {
@@ -44880,7 +44904,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1529.5940816402435,
+      "runtime_s": 1371.132378578186,
       "metrics": {
         "nrmse": 87.60017663168732,
         "nrmse_detrend": 163.64261683785116,
@@ -44905,6 +44929,8 @@
         "dipole": "amp-pe-qsmrs"
       },
       "phantom": "sim",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/af/laplacian-qsmci_bfrnet_amp-pe-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/af/laplacian-qsmci_bfrnet_amp-pe-qsmrs-cmp__regions.json",
       "volumes": {
@@ -44920,7 +44946,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1151.9856460094452,
+      "runtime_s": 863.5100343227386,
       "metrics": {
         "nrmse": 118.14862565145475,
         "nrmse_detrend": 208.92027962224046,
@@ -44945,6 +44971,8 @@
         "dipole": "amp-pe-qsmrs"
       },
       "phantom": "sim",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/3f/laplacian-qsmci_harperella-qsmrs_amp-pe-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/3f/laplacian-qsmci_harperella-qsmrs_amp-pe-qsmrs-cmp__regions.json",
       "volumes": {
@@ -44960,7 +44988,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1163.4865951538086,
+      "runtime_s": 850.4877300262451,
       "metrics": {
         "nrmse": 79.79618509561514,
         "nrmse_detrend": 126.25185514498533,
@@ -44985,6 +45013,8 @@
         "dipole": "amp-pe-qsmrs"
       },
       "phantom": "sim",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/6e/laplacian-qsmci_iharperella-qsmrs_amp-pe-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/6e/laplacian-qsmci_iharperella-qsmrs_amp-pe-qsmrs-cmp__regions.json",
       "volumes": {
@@ -45000,7 +45030,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1311.3036673069,
+      "runtime_s": 988.613648891449,
       "metrics": {
         "nrmse": 80.59201645452809,
         "nrmse_detrend": 133.33685315768918,
@@ -45025,6 +45055,8 @@
         "dipole": "amp-pe-qsmrs"
       },
       "phantom": "sim",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/b1/laplacian-qsmci_iqfm_amp-pe-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/b1/laplacian-qsmci_iqfm_amp-pe-qsmrs-cmp__regions.json",
       "volumes": {
@@ -45040,7 +45072,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1089.5531258583069,
+      "runtime_s": 817.9749698638916,
       "metrics": {
         "nrmse": 82.01495239388936,
         "nrmse_detrend": 138.624528914143,
@@ -45065,6 +45097,8 @@
         "dipole": "amp-pe-qsmrs"
       },
       "phantom": "sim",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/44/laplacian-qsmci_ismv-qsmrs_amp-pe-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/44/laplacian-qsmci_ismv-qsmrs_amp-pe-qsmrs-cmp__regions.json",
       "volumes": {
@@ -45080,7 +45114,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1084.8224005699158,
+      "runtime_s": 713.8970229625702,
       "metrics": {
         "nrmse": 146.74650636453796,
         "nrmse_detrend": 334.04982471952343,
@@ -45105,11 +45139,13 @@
         "dipole": "amp-pe-qsmrs"
       },
       "phantom": "sim",
-      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_amp-pe-qsmrs-cmp__resources.json",
-      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_amp-pe-qsmrs-cmp__regions.json",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/b6/laplacian-qsmci_lbv-qsmrs_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/b6/laplacian-qsmci_lbv-qsmrs_amp-pe-qsmrs-cmp__regions.json",
       "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_lbv-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/b6/laplacian-qsmci_lbv-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/b6/laplacian-qsmci_lbv-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz",
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
       }
     },
@@ -45120,7 +45156,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1991.9371166229248,
+      "runtime_s": 1660.84259724617,
       "metrics": {
         "nrmse": 95.55696337363055,
         "nrmse_detrend": 182.6343034452452,
@@ -45145,11 +45181,13 @@
         "dipole": "amp-pe-qsmrs"
       },
       "phantom": "sim",
-      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_amp-pe-qsmrs-cmp__resources.json",
-      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_amp-pe-qsmrs-cmp__regions.json",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/56/laplacian-qsmci_pdf-qsmrs_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/56/laplacian-qsmci_pdf-qsmrs_amp-pe-qsmrs-cmp__regions.json",
       "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_pdf-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/56/laplacian-qsmci_pdf-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/56/laplacian-qsmci_pdf-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz",
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
       }
     },
@@ -45160,7 +45198,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1088.8631751537323,
+      "runtime_s": 753.1662290096283,
       "metrics": {
         "nrmse": 81.63959459804501,
         "nrmse_detrend": 140.44674481983805,
@@ -45185,11 +45223,13 @@
         "dipole": "amp-pe-qsmrs"
       },
       "phantom": "sim",
-      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_amp-pe-qsmrs-cmp__resources.json",
-      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_amp-pe-qsmrs-cmp__regions.json",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/31/laplacian-qsmci_resharp-qsmrs_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/31/laplacian-qsmci_resharp-qsmrs_amp-pe-qsmrs-cmp__regions.json",
       "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_resharp-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/31/laplacian-qsmci_resharp-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/31/laplacian-qsmci_resharp-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz",
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
       }
     },
@@ -45200,7 +45240,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1060.7417509555817,
+      "runtime_s": 713.0442442893982,
       "metrics": {
         "nrmse": 85.72372318745732,
         "nrmse_detrend": 158.33491495796753,
@@ -45225,11 +45265,13 @@
         "dipole": "amp-pe-qsmrs"
       },
       "phantom": "sim",
-      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_amp-pe-qsmrs-cmp__resources.json",
-      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_amp-pe-qsmrs-cmp__regions.json",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/42/laplacian-qsmci_sharp-qsmrs_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/42/laplacian-qsmci_sharp-qsmrs_amp-pe-qsmrs-cmp__regions.json",
       "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_sharp-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/42/laplacian-qsmci_sharp-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/42/laplacian-qsmci_sharp-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz",
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
       }
     },
@@ -45240,7 +45282,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1111.2259681224823,
+      "runtime_s": 1104.5251865386963,
       "metrics": {
         "nrmse": 88.61843810815697,
         "nrmse_detrend": 167.4249646659465,
@@ -45265,11 +45307,13 @@
         "dipole": "amp-pe-qsmrs"
       },
       "phantom": "sim",
-      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_vsharp-qsmrs_amp-pe-qsmrs-cmp__resources.json",
-      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_vsharp-qsmrs_amp-pe-qsmrs-cmp__regions.json",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/fb/laplacian-qsmci_vsharp-qsmrs_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/fb/laplacian-qsmci_vsharp-qsmrs_amp-pe-qsmrs-cmp__regions.json",
       "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_vsharp-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_vsharp-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/fb/laplacian-qsmci_vsharp-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/fb/laplacian-qsmci_vsharp-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz",
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
       }
     },
@@ -45280,7 +45324,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1136.1759507656097,
+      "runtime_s": 1096.691210269928,
       "metrics": {
         "nrmse": 85.10186137030809,
         "nrmse_detrend": 158.7855721345718,
@@ -45305,11 +45349,13 @@
         "dipole": "amp-pe-qsmrs"
       },
       "phantom": "sim",
-      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_vsharp-sti_amp-pe-qsmrs-cmp__resources.json",
-      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_vsharp-sti_amp-pe-qsmrs-cmp__regions.json",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/27/laplacian-qsmci_vsharp-sti_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/27/laplacian-qsmci_vsharp-sti_amp-pe-qsmrs-cmp__regions.json",
       "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_vsharp-sti_amp-pe-qsmrs-cmp__recon.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/laplacian-qsmci_vsharp-sti_amp-pe-qsmrs-cmp__error.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/27/laplacian-qsmci_vsharp-sti_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/27/laplacian-qsmci_vsharp-sti_amp-pe-qsmrs-cmp__error.nii.gz",
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
       }
     },
@@ -45320,7 +45366,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1489.9833915233612,
+      "runtime_s": 1450.8090720176697,
       "metrics": {
         "nrmse": 84.25077910278519,
         "nrmse_detrend": 146.29444778598338,
@@ -45345,11 +45391,13 @@
         "dipole": "amp-pe-qsmrs"
       },
       "phantom": "sim",
-      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_amp-pe-qsmrs-cmp__resources.json",
-      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_amp-pe-qsmrs-cmp__regions.json",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/a3/romeo-qsmrs_bfrnet_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/a3/romeo-qsmrs_bfrnet_amp-pe-qsmrs-cmp__regions.json",
       "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_amp-pe-qsmrs-cmp__recon.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_bfrnet_amp-pe-qsmrs-cmp__error.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/a3/romeo-qsmrs_bfrnet_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/a3/romeo-qsmrs_bfrnet_amp-pe-qsmrs-cmp__error.nii.gz",
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
       }
     },
@@ -45360,7 +45408,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1114.613759279251,
+      "runtime_s": 1093.3481132984161,
       "metrics": {
         "nrmse": 118.14862565145475,
         "nrmse_detrend": 208.92027962224046,
@@ -45385,11 +45433,13 @@
         "dipole": "amp-pe-qsmrs"
       },
       "phantom": "sim",
-      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_harperella-qsmrs_amp-pe-qsmrs-cmp__resources.json",
-      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_harperella-qsmrs_amp-pe-qsmrs-cmp__regions.json",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/53/romeo-qsmrs_harperella-qsmrs_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/53/romeo-qsmrs_harperella-qsmrs_amp-pe-qsmrs-cmp__regions.json",
       "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_harperella-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_harperella-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/53/romeo-qsmrs_harperella-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/53/romeo-qsmrs_harperella-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz",
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
       }
     },
@@ -45400,7 +45450,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1146.43590426445,
+      "runtime_s": 1105.4600462913513,
       "metrics": {
         "nrmse": 79.79618509561514,
         "nrmse_detrend": 126.25185514498533,
@@ -45425,11 +45475,13 @@
         "dipole": "amp-pe-qsmrs"
       },
       "phantom": "sim",
-      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_iharperella-qsmrs_amp-pe-qsmrs-cmp__resources.json",
-      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_iharperella-qsmrs_amp-pe-qsmrs-cmp__regions.json",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/97/romeo-qsmrs_iharperella-qsmrs_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/97/romeo-qsmrs_iharperella-qsmrs_amp-pe-qsmrs-cmp__regions.json",
       "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_iharperella-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_iharperella-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/97/romeo-qsmrs_iharperella-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/97/romeo-qsmrs_iharperella-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz",
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
       }
     },
@@ -45440,7 +45492,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1292.3861246109009,
+      "runtime_s": 1214.555635690689,
       "metrics": {
         "nrmse": 80.59201645452809,
         "nrmse_detrend": 133.33685315768918,
@@ -45465,11 +45517,13 @@
         "dipole": "amp-pe-qsmrs"
       },
       "phantom": "sim",
-      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_iqfm_amp-pe-qsmrs-cmp__resources.json",
-      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_iqfm_amp-pe-qsmrs-cmp__regions.json",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/a7/romeo-qsmrs_iqfm_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/a7/romeo-qsmrs_iqfm_amp-pe-qsmrs-cmp__regions.json",
       "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_iqfm_amp-pe-qsmrs-cmp__recon.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_iqfm_amp-pe-qsmrs-cmp__error.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/a7/romeo-qsmrs_iqfm_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/a7/romeo-qsmrs_iqfm_amp-pe-qsmrs-cmp__error.nii.gz",
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
       }
     },
@@ -45480,7 +45534,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1073.0673837661743,
+      "runtime_s": 1051.3959817886353,
       "metrics": {
         "nrmse": 80.30518815831884,
         "nrmse_detrend": 130.2607237441576,
@@ -45505,11 +45559,13 @@
         "dipole": "amp-pe-qsmrs"
       },
       "phantom": "sim",
-      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_ismv-qsmrs_amp-pe-qsmrs-cmp__resources.json",
-      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_ismv-qsmrs_amp-pe-qsmrs-cmp__regions.json",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/4a/romeo-qsmrs_ismv-qsmrs_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/4a/romeo-qsmrs_ismv-qsmrs_amp-pe-qsmrs-cmp__regions.json",
       "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_ismv-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_ismv-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/4a/romeo-qsmrs_ismv-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/4a/romeo-qsmrs_ismv-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz",
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
       }
     },
@@ -45520,7 +45576,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1081.4646255970001,
+      "runtime_s": 1026.2094583511353,
       "metrics": {
         "nrmse": 110.00251389309294,
         "nrmse_detrend": 194.78008220030654,
@@ -45545,11 +45601,13 @@
         "dipole": "amp-pe-qsmrs"
       },
       "phantom": "sim",
-      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_lbv-qsmrs_amp-pe-qsmrs-cmp__resources.json",
-      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_lbv-qsmrs_amp-pe-qsmrs-cmp__regions.json",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/2c/romeo-qsmrs_lbv-qsmrs_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/2c/romeo-qsmrs_lbv-qsmrs_amp-pe-qsmrs-cmp__regions.json",
       "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_lbv-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_lbv-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/2c/romeo-qsmrs_lbv-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/2c/romeo-qsmrs_lbv-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz",
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
       }
     },
@@ -45560,7 +45618,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1828.7189042568207,
+      "runtime_s": 1806.9137995243073,
       "metrics": {
         "nrmse": 101.58851108736765,
         "nrmse_detrend": 185.08912073909616,
@@ -45585,11 +45643,13 @@
         "dipole": "amp-pe-qsmrs"
       },
       "phantom": "sim",
-      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_pdf-qsmrs_amp-pe-qsmrs-cmp__resources.json",
-      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_pdf-qsmrs_amp-pe-qsmrs-cmp__regions.json",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/31/romeo-qsmrs_pdf-qsmrs_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/31/romeo-qsmrs_pdf-qsmrs_amp-pe-qsmrs-cmp__regions.json",
       "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_pdf-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_pdf-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/31/romeo-qsmrs_pdf-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/31/romeo-qsmrs_pdf-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz",
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
       }
     },
@@ -45600,7 +45660,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1069.674825668335,
+      "runtime_s": 1050.988209247589,
       "metrics": {
         "nrmse": 80.08238144192958,
         "nrmse_detrend": 131.68341303970482,
@@ -45625,11 +45685,13 @@
         "dipole": "amp-pe-qsmrs"
       },
       "phantom": "sim",
-      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_resharp-qsmrs_amp-pe-qsmrs-cmp__resources.json",
-      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_resharp-qsmrs_amp-pe-qsmrs-cmp__regions.json",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/58/romeo-qsmrs_resharp-qsmrs_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/58/romeo-qsmrs_resharp-qsmrs_amp-pe-qsmrs-cmp__regions.json",
       "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_resharp-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_resharp-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/58/romeo-qsmrs_resharp-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/58/romeo-qsmrs_resharp-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz",
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
       }
     },
@@ -45640,7 +45702,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1020.9449903964996,
+      "runtime_s": 990.2155568599701,
       "metrics": {
         "nrmse": 81.69403375997854,
         "nrmse_detrend": 137.26686570236853,
@@ -45665,11 +45727,13 @@
         "dipole": "amp-pe-qsmrs"
       },
       "phantom": "sim",
-      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_sharp-qsmrs_amp-pe-qsmrs-cmp__resources.json",
-      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_sharp-qsmrs_amp-pe-qsmrs-cmp__regions.json",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/75/romeo-qsmrs_sharp-qsmrs_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/75/romeo-qsmrs_sharp-qsmrs_amp-pe-qsmrs-cmp__regions.json",
       "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_sharp-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_sharp-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/75/romeo-qsmrs_sharp-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/75/romeo-qsmrs_sharp-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz",
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
       }
     },
@@ -45680,7 +45744,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1048.2944283485413,
+      "runtime_s": 1033.9416518211365,
       "metrics": {
         "nrmse": 81.93530559879021,
         "nrmse_detrend": 136.44584928767915,
@@ -45705,11 +45769,13 @@
         "dipole": "amp-pe-qsmrs"
       },
       "phantom": "sim",
-      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_vsharp-qsmrs_amp-pe-qsmrs-cmp__resources.json",
-      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_vsharp-qsmrs_amp-pe-qsmrs-cmp__regions.json",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/48/romeo-qsmrs_vsharp-qsmrs_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/48/romeo-qsmrs_vsharp-qsmrs_amp-pe-qsmrs-cmp__regions.json",
       "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_vsharp-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_vsharp-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/48/romeo-qsmrs_vsharp-qsmrs_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/48/romeo-qsmrs_vsharp-qsmrs_amp-pe-qsmrs-cmp__error.nii.gz",
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
       }
     },
@@ -45720,7 +45786,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1058.592606306076,
+      "runtime_s": 1038.356402873993,
       "metrics": {
         "nrmse": 81.13939060433378,
         "nrmse_detrend": 137.22479432175766,
@@ -45745,11 +45811,13 @@
         "dipole": "amp-pe-qsmrs"
       },
       "phantom": "sim",
-      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_vsharp-sti_amp-pe-qsmrs-cmp__resources.json",
-      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_vsharp-sti_amp-pe-qsmrs-cmp__regions.json",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/1c/romeo-qsmrs_vsharp-sti_amp-pe-qsmrs-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/1c/romeo-qsmrs_vsharp-sti_amp-pe-qsmrs-cmp__regions.json",
       "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_vsharp-sti_amp-pe-qsmrs-cmp__recon.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/romeo-qsmrs_vsharp-sti_amp-pe-qsmrs-cmp__error.nii.gz",
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/1c/romeo-qsmrs_vsharp-sti_amp-pe-qsmrs-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/1c/romeo-qsmrs_vsharp-sti_amp-pe-qsmrs-cmp__error.nii.gz",
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chimap.nii.gz"
       }
     },
@@ -45760,7 +45828,7 @@
       "artifact": "localfield",
       "kind": "field",
       "image": null,
-      "runtime_s": 103.90078949928284,
+      "runtime_s": 105.8485631942749,
       "metrics": {
         "nrmse": 75.45191883352678,
         "nrmse_detrend": 112.99707444478409,
@@ -45774,8 +45842,8 @@
       "mode": "isolated",
       "variant": "default",
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/de/iqfm-iso__resources.json",
       "volumes": {
         "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/de/iqfm-iso__recon.nii.gz",
@@ -45822,7 +45890,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1343.4513621330261,
+      "runtime_s": 1605.5245718955994,
       "metrics": {
         "nrmse": 78.05239891861277,
         "nrmse_detrend": 124.4938786584095,
@@ -45847,8 +45915,8 @@
         "dipole": "fansi-nltgv-qsmrs"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/9c/gt_iqfm_fansi-nltgv-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/9c/gt_iqfm_fansi-nltgv-qsmrs-cmp__regions.json",
       "volumes": {
@@ -45864,7 +45932,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 383.4070920944214,
+      "runtime_s": 433.82897877693176,
       "metrics": {
         "nrmse": 76.9504712304569,
         "nrmse_detrend": 120.45331023892739,
@@ -45889,8 +45957,8 @@
         "dipole": "fansi-nltv-qsmrs"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/7d/gt_iqfm_fansi-nltv-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/7d/gt_iqfm_fansi-nltv-qsmrs-cmp__regions.json",
       "volumes": {
@@ -45906,7 +45974,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 233.50635075569153,
+      "runtime_s": 240.77219343185425,
       "metrics": {
         "nrmse": 75.80883717678672,
         "nrmse_detrend": 116.07429872711289,
@@ -45931,8 +45999,8 @@
         "dipole": "hdqsm-qsmrs"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/2a/gt_iqfm_hdqsm-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/2a/gt_iqfm_hdqsm-qsmrs-cmp__regions.json",
       "volumes": {
@@ -45948,7 +46016,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 265.58200883865356,
+      "runtime_s": 272.2310254573822,
       "metrics": {
         "nrmse": 82.34242935694152,
         "nrmse_detrend": 142.6750807261014,
@@ -45973,8 +46041,8 @@
         "dipole": "ilsqr-qsmrs"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/f3/gt_iqfm_ilsqr-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/f3/gt_iqfm_ilsqr-qsmrs-cmp__regions.json",
       "volumes": {
@@ -45990,7 +46058,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 324.5358016490936,
+      "runtime_s": 404.3673458099365,
       "metrics": {
         "nrmse": 79.05583264815809,
         "nrmse_detrend": 128.57193928952364,
@@ -46015,8 +46083,8 @@
         "dipole": "ilsqr-sti"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/91/gt_iqfm_ilsqr-sti-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/91/gt_iqfm_ilsqr-sti-cmp__regions.json",
       "volumes": {
@@ -46032,19 +46100,19 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 271.72121024131775,
+      "runtime_s": 323.6681590080261,
       "metrics": {
-        "nrmse": 78.59122790729502,
-        "nrmse_detrend": 126.12201642165897,
-        "nrmse_tissue": 122.33735189015029,
-        "nrmse_blood": 292.4984146895037,
-        "nrmse_dgm": 70.11163292104456,
-        "dgm_linearity": 0.37842579330073123,
-        "calc_moment_dev": 26.50218028575182,
-        "calc_streak": 0.09350838891840754,
-        "correlation": 0.621288655629802,
-        "xsim": 0.2971657503824084,
-        "hfen": 65.6452784719501,
+        "nrmse": 78.59867280263806,
+        "nrmse_detrend": 126.17318536669863,
+        "nrmse_tissue": 122.39292242389998,
+        "nrmse_blood": 292.6030741258811,
+        "nrmse_dgm": 70.21178122224357,
+        "dgm_linearity": 0.3798808177237323,
+        "calc_moment_dev": 26.484096065163612,
+        "calc_streak": 0.09375985139092609,
+        "correlation": 0.6211339153222167,
+        "xsim": 0.29674338710276343,
+        "hfen": 65.67503986727021,
         "coverage": 0.8532469821465768
       },
       "status": "ok",
@@ -46057,8 +46125,8 @@
         "dipole": "ir2qsm"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/8a/gt_iqfm_ir2qsm-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/8a/gt_iqfm_ir2qsm-cmp__regions.json",
       "volumes": {
@@ -46074,7 +46142,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 316.4648299217224,
+      "runtime_s": 336.67189502716064,
       "metrics": {
         "nrmse": 84.34096495171222,
         "nrmse_detrend": 140.61588627807004,
@@ -46099,8 +46167,8 @@
         "dipole": "l1qsm-qsmrs"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/d0/gt_iqfm_l1qsm-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/d0/gt_iqfm_l1qsm-qsmrs-cmp__regions.json",
       "volumes": {
@@ -46116,7 +46184,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 326.114054441452,
+      "runtime_s": 356.74513006210327,
       "metrics": {
         "nrmse": 76.99719544293666,
         "nrmse_detrend": 120.54384063304505,
@@ -46141,8 +46209,8 @@
         "dipole": "lpcnn"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/dc/gt_iqfm_lpcnn-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/dc/gt_iqfm_lpcnn-cmp__regions.json",
       "volumes": {
@@ -46158,7 +46226,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1252.5781586170197,
+      "runtime_s": 1287.9054505825043,
       "metrics": {
         "nrmse": 80.94351996055352,
         "nrmse_detrend": 137.58614300972073,
@@ -46183,8 +46251,8 @@
         "dipole": "medi-cornell"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/cf/gt_iqfm_medi-cornell-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/cf/gt_iqfm_medi-cornell-cmp__regions.json",
       "volumes": {
@@ -46200,7 +46268,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 242.1778347492218,
+      "runtime_s": 245.97969317436218,
       "metrics": {
         "nrmse": 80.50993267786627,
         "nrmse_detrend": 135.46043052103,
@@ -46225,8 +46293,8 @@
         "dipole": "medi-qsmrs"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/3c/gt_iqfm_medi-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/3c/gt_iqfm_medi-qsmrs-cmp__regions.json",
       "volumes": {
@@ -46242,7 +46310,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 620.5860500335693,
+      "runtime_s": 576.8000931739807,
       "metrics": {
         "nrmse": 88.76569482017484,
         "nrmse_detrend": 192.61787806149715,
@@ -46267,8 +46335,8 @@
         "dipole": "modl-qsm"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/7e/gt_iqfm_modl-qsm-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/7e/gt_iqfm_modl-qsm-cmp__regions.json",
       "volumes": {
@@ -46284,7 +46352,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 388.44678950309753,
+      "runtime_s": 402.103000164032,
       "metrics": {
         "nrmse": 82.67905237050624,
         "nrmse_detrend": 140.39664634444676,
@@ -46309,8 +46377,8 @@
         "dipole": "ndi-qsmrs"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/61/gt_iqfm_ndi-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/61/gt_iqfm_ndi-qsmrs-cmp__regions.json",
       "volumes": {
@@ -46326,7 +46394,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 630.5392982959747,
+      "runtime_s": 633.0650794506073,
       "metrics": {
         "nrmse": 99.93319854659951,
         "nrmse_detrend": 184.4168491079026,
@@ -46351,8 +46419,8 @@
         "dipole": "nltv-qsmrs"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/3c/gt_iqfm_nltv-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/3c/gt_iqfm_nltv-qsmrs-cmp__regions.json",
       "volumes": {
@@ -46368,7 +46436,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 619.4812762737274,
+      "runtime_s": 624.1780951023102,
       "metrics": {
         "nrmse": 88.33695442514457,
         "nrmse_detrend": 165.39585046695564,
@@ -46393,8 +46461,8 @@
         "dipole": "qsmgan"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/34/gt_iqfm_qsmgan-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/34/gt_iqfm_qsmgan-cmp__regions.json",
       "volumes": {
@@ -46410,7 +46478,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 282.78148126602173,
+      "runtime_s": 284.6788363456726,
       "metrics": {
         "nrmse": 80.55659807586771,
         "nrmse_detrend": 134.1414509899077,
@@ -46435,8 +46503,8 @@
         "dipole": "qsmnet"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/f1/gt_iqfm_qsmnet-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/f1/gt_iqfm_qsmnet-cmp__regions.json",
       "volumes": {
@@ -46452,7 +46520,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 269.8017237186432,
+      "runtime_s": 267.2135157585144,
       "metrics": {
         "nrmse": 82.86102274882982,
         "nrmse_detrend": 147.76759413663666,
@@ -46477,8 +46545,8 @@
         "dipole": "qsmnet-plus"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/83/gt_iqfm_qsmnet-plus-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/83/gt_iqfm_qsmnet-plus-cmp__regions.json",
       "volumes": {
@@ -46494,7 +46562,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 201.84971642494202,
+      "runtime_s": 206.79714918136597,
       "metrics": {
         "nrmse": 79.8195970757202,
         "nrmse_detrend": 132.20883353541524,
@@ -46519,8 +46587,8 @@
         "dipole": "rts-qsmrs"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/6f/gt_iqfm_rts-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/6f/gt_iqfm_rts-qsmrs-cmp__regions.json",
       "volumes": {
@@ -46536,7 +46604,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 241.87435126304626,
+      "runtime_s": 250.54608058929443,
       "metrics": {
         "nrmse": 82.29876881740319,
         "nrmse_detrend": 143.38125045543504,
@@ -46561,8 +46629,8 @@
         "dipole": "star-sti"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/ed/gt_iqfm_star-sti-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/ed/gt_iqfm_star-sti-cmp__regions.json",
       "volumes": {
@@ -46578,7 +46646,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 186.01653385162354,
+      "runtime_s": 190.2946834564209,
       "metrics": {
         "nrmse": 80.77122246677675,
         "nrmse_detrend": 136.9984744418181,
@@ -46603,8 +46671,8 @@
         "dipole": "tikhonov-qsmrs"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/ef/gt_iqfm_tikhonov-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/ef/gt_iqfm_tikhonov-qsmrs-cmp__regions.json",
       "volumes": {
@@ -46620,7 +46688,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 205.95016360282898,
+      "runtime_s": 203.8699128627777,
       "metrics": {
         "nrmse": 80.89742973422581,
         "nrmse_detrend": 136.43839697202964,
@@ -46645,8 +46713,8 @@
         "dipole": "tkd-qsmci"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/16/gt_iqfm_tkd-qsmci-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/16/gt_iqfm_tkd-qsmci-cmp__regions.json",
       "volumes": {
@@ -46662,7 +46730,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 186.01242566108704,
+      "runtime_s": 191.14655256271362,
       "metrics": {
         "nrmse": 81.32918398842759,
         "nrmse_detrend": 136.80060375715152,
@@ -46687,8 +46755,8 @@
         "dipole": "tkd-qsmrs"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/c4/gt_iqfm_tkd-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/c4/gt_iqfm_tkd-qsmrs-cmp__regions.json",
       "volumes": {
@@ -46704,7 +46772,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 186.3819706439972,
+      "runtime_s": 191.2797212600708,
       "metrics": {
         "nrmse": 82.54378099812313,
         "nrmse_detrend": 145.4018608906519,
@@ -46729,8 +46797,8 @@
         "dipole": "tsvd-qsmrs"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/7f/gt_iqfm_tsvd-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/7f/gt_iqfm_tsvd-qsmrs-cmp__regions.json",
       "volumes": {
@@ -46746,7 +46814,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 238.9446885585785,
+      "runtime_s": 246.27628326416016,
       "metrics": {
         "nrmse": 78.20510827336751,
         "nrmse_detrend": 125.44786857685256,
@@ -46771,8 +46839,8 @@
         "dipole": "tv-qsmrs"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/68/gt_iqfm_tv-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/68/gt_iqfm_tv-qsmrs-cmp__regions.json",
       "volumes": {
@@ -46788,7 +46856,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 601.588704586029,
+      "runtime_s": 599.6276335716248,
       "metrics": {
         "nrmse": 75.65209980132029,
         "nrmse_detrend": 115.41376018627922,
@@ -46813,8 +46881,8 @@
         "dipole": "whqsm-qsmrs"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/2c/gt_iqfm_whqsm-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/2c/gt_iqfm_whqsm-qsmrs-cmp__regions.json",
       "volumes": {
@@ -46830,7 +46898,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 300.17005228996277,
+      "runtime_s": 283.3761353492737,
       "metrics": {
         "nrmse": 82.75222894026518,
         "nrmse_detrend": 139.18650277828428,
@@ -46855,8 +46923,8 @@
         "dipole": "xqsm"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/2b/gt_iqfm_xqsm-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/2b/gt_iqfm_xqsm-cmp__regions.json",
       "volumes": {
@@ -46904,7 +46972,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1705.3817539215088,
+      "runtime_s": 1763.3182499408722,
       "metrics": {
         "nrmse": 78.05239891861277,
         "nrmse_detrend": 124.4938786584095,
@@ -46929,8 +46997,8 @@
         "dipole": "fansi-nltgv-qsmrs"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/20/laplacian-qsmci_iqfm_fansi-nltgv-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/20/laplacian-qsmci_iqfm_fansi-nltgv-qsmrs-cmp__regions.json",
       "volumes": {
@@ -46946,7 +47014,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 536.9448118209839,
+      "runtime_s": 626.8943786621094,
       "metrics": {
         "nrmse": 76.9504712304569,
         "nrmse_detrend": 120.45331023892739,
@@ -46971,8 +47039,8 @@
         "dipole": "fansi-nltv-qsmrs"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/c5/laplacian-qsmci_iqfm_fansi-nltv-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/c5/laplacian-qsmci_iqfm_fansi-nltv-qsmrs-cmp__regions.json",
       "volumes": {
@@ -46988,7 +47056,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 337.333993434906,
+      "runtime_s": 426.93479323387146,
       "metrics": {
         "nrmse": 75.80883717678672,
         "nrmse_detrend": 116.07429872711289,
@@ -47013,8 +47081,8 @@
         "dipole": "hdqsm-qsmrs"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/91/laplacian-qsmci_iqfm_hdqsm-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/91/laplacian-qsmci_iqfm_hdqsm-qsmrs-cmp__regions.json",
       "volumes": {
@@ -47030,7 +47098,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 361.85084557533264,
+      "runtime_s": 455.58352065086365,
       "metrics": {
         "nrmse": 82.34242935694152,
         "nrmse_detrend": 142.6750807261014,
@@ -47055,8 +47123,8 @@
         "dipole": "ilsqr-qsmrs"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/33/laplacian-qsmci_iqfm_ilsqr-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/33/laplacian-qsmci_iqfm_ilsqr-qsmrs-cmp__regions.json",
       "volumes": {
@@ -47072,7 +47140,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 453.3657109737396,
+      "runtime_s": 544.6512475013733,
       "metrics": {
         "nrmse": 79.05583264815809,
         "nrmse_detrend": 128.57193928952364,
@@ -47097,8 +47165,8 @@
         "dipole": "ilsqr-sti"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/11/laplacian-qsmci_iqfm_ilsqr-sti-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/11/laplacian-qsmci_iqfm_ilsqr-sti-cmp__regions.json",
       "volumes": {
@@ -47114,19 +47182,19 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 376.5326509475708,
+      "runtime_s": 467.59101724624634,
       "metrics": {
-        "nrmse": 78.64483621626722,
-        "nrmse_detrend": 126.39796784766261,
-        "nrmse_tissue": 122.6392676945919,
-        "nrmse_blood": 292.96387637083336,
-        "nrmse_dgm": 70.41839181422249,
-        "dgm_linearity": 0.3798149959846394,
-        "calc_moment_dev": 26.527014181017876,
-        "calc_streak": 0.0934212949862516,
-        "correlation": 0.6204547754802797,
-        "xsim": 0.29615978391914516,
-        "hfen": 65.72522212235526,
+        "nrmse": 78.59962444472812,
+        "nrmse_detrend": 126.21222339617098,
+        "nrmse_tissue": 122.42259367802735,
+        "nrmse_blood": 292.71834879415434,
+        "nrmse_dgm": 70.26343071915402,
+        "dgm_linearity": 0.378411565439181,
+        "calc_moment_dev": 25.441795207560062,
+        "calc_streak": 0.09862701731182803,
+        "correlation": 0.6210158957398922,
+        "xsim": 0.29651399319898597,
+        "hfen": 65.70719046749484,
         "coverage": 0.8532469821465768
       },
       "status": "ok",
@@ -47139,8 +47207,8 @@
         "dipole": "ir2qsm"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/08/laplacian-qsmci_iqfm_ir2qsm-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/08/laplacian-qsmci_iqfm_ir2qsm-cmp__regions.json",
       "volumes": {
@@ -47156,7 +47224,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 398.1353726387024,
+      "runtime_s": 493.9433262348175,
       "metrics": {
         "nrmse": 84.34096495171222,
         "nrmse_detrend": 140.61588627807004,
@@ -47181,8 +47249,8 @@
         "dipole": "l1qsm-qsmrs"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/0b/laplacian-qsmci_iqfm_l1qsm-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/0b/laplacian-qsmci_iqfm_l1qsm-qsmrs-cmp__regions.json",
       "volumes": {
@@ -47198,7 +47266,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 412.9910316467285,
+      "runtime_s": 505.12330079078674,
       "metrics": {
         "nrmse": 76.99719544293666,
         "nrmse_detrend": 120.54384063304505,
@@ -47223,8 +47291,8 @@
         "dipole": "lpcnn"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/fb/laplacian-qsmci_iqfm_lpcnn-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/fb/laplacian-qsmci_iqfm_lpcnn-cmp__regions.json",
       "volumes": {
@@ -47240,7 +47308,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1333.5178501605988,
+      "runtime_s": 1434.9613111019135,
       "metrics": {
         "nrmse": 80.94351996055352,
         "nrmse_detrend": 137.58614300972073,
@@ -47265,8 +47333,8 @@
         "dipole": "medi-cornell"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/ab/laplacian-qsmci_iqfm_medi-cornell-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/ab/laplacian-qsmci_iqfm_medi-cornell-cmp__regions.json",
       "volumes": {
@@ -47282,7 +47350,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 311.97169756889343,
+      "runtime_s": 400.63109397888184,
       "metrics": {
         "nrmse": 80.50993267786627,
         "nrmse_detrend": 135.46043052103,
@@ -47307,8 +47375,8 @@
         "dipole": "medi-qsmrs"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/f8/laplacian-qsmci_iqfm_medi-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/f8/laplacian-qsmci_iqfm_medi-qsmrs-cmp__regions.json",
       "volumes": {
@@ -47324,7 +47392,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 630.8438756465912,
+      "runtime_s": 721.2463448047638,
       "metrics": {
         "nrmse": 88.76569482017484,
         "nrmse_detrend": 192.61787806149715,
@@ -47349,8 +47417,8 @@
         "dipole": "modl-qsm"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/c6/laplacian-qsmci_iqfm_modl-qsm-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/c6/laplacian-qsmci_iqfm_modl-qsm-cmp__regions.json",
       "volumes": {
@@ -47366,7 +47434,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 459.6297278404236,
+      "runtime_s": 550.5339436531067,
       "metrics": {
         "nrmse": 82.67905237050624,
         "nrmse_detrend": 140.39664634444676,
@@ -47391,8 +47459,8 @@
         "dipole": "ndi-qsmrs"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/01/laplacian-qsmci_iqfm_ndi-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/01/laplacian-qsmci_iqfm_ndi-qsmrs-cmp__regions.json",
       "volumes": {
@@ -47408,7 +47476,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 697.5983371734619,
+      "runtime_s": 781.0868797302246,
       "metrics": {
         "nrmse": 99.93319854659951,
         "nrmse_detrend": 184.4168491079026,
@@ -47433,8 +47501,8 @@
         "dipole": "nltv-qsmrs"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/4c/laplacian-qsmci_iqfm_nltv-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/4c/laplacian-qsmci_iqfm_nltv-qsmrs-cmp__regions.json",
       "volumes": {
@@ -47450,7 +47518,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 686.7051029205322,
+      "runtime_s": 791.6718089580536,
       "metrics": {
         "nrmse": 88.33695442514457,
         "nrmse_detrend": 165.39585046695564,
@@ -47475,8 +47543,8 @@
         "dipole": "qsmgan"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/b8/laplacian-qsmci_iqfm_qsmgan-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/b8/laplacian-qsmci_iqfm_qsmgan-cmp__regions.json",
       "volumes": {
@@ -47492,7 +47560,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 347.5483329296112,
+      "runtime_s": 443.89658856391907,
       "metrics": {
         "nrmse": 80.55659807586771,
         "nrmse_detrend": 134.1414509899077,
@@ -47517,8 +47585,8 @@
         "dipole": "qsmnet"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/e4/laplacian-qsmci_iqfm_qsmnet-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/e4/laplacian-qsmci_iqfm_qsmnet-cmp__regions.json",
       "volumes": {
@@ -47534,7 +47602,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 345.49833488464355,
+      "runtime_s": 433.74804425239563,
       "metrics": {
         "nrmse": 82.86102274882982,
         "nrmse_detrend": 147.76759413663666,
@@ -47559,8 +47627,8 @@
         "dipole": "qsmnet-plus"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/19/laplacian-qsmci_iqfm_qsmnet-plus-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/19/laplacian-qsmci_iqfm_qsmnet-plus-cmp__regions.json",
       "volumes": {
@@ -47576,7 +47644,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 273.7866280078888,
+      "runtime_s": 364.64682626724243,
       "metrics": {
         "nrmse": 79.8195970757202,
         "nrmse_detrend": 132.20883353541524,
@@ -47601,8 +47669,8 @@
         "dipole": "rts-qsmrs"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/8d/laplacian-qsmci_iqfm_rts-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/8d/laplacian-qsmci_iqfm_rts-qsmrs-cmp__regions.json",
       "volumes": {
@@ -47618,7 +47686,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 308.15098214149475,
+      "runtime_s": 394.83782410621643,
       "metrics": {
         "nrmse": 82.29876881740319,
         "nrmse_detrend": 143.38125045543504,
@@ -47643,8 +47711,8 @@
         "dipole": "star-sti"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/49/laplacian-qsmci_iqfm_star-sti-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/49/laplacian-qsmci_iqfm_star-sti-cmp__regions.json",
       "volumes": {
@@ -47660,7 +47728,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 257.79695320129395,
+      "runtime_s": 348.00699067115784,
       "metrics": {
         "nrmse": 80.77122246677675,
         "nrmse_detrend": 136.9984744418181,
@@ -47685,8 +47753,8 @@
         "dipole": "tikhonov-qsmrs"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/ef/laplacian-qsmci_iqfm_tikhonov-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/ef/laplacian-qsmci_iqfm_tikhonov-qsmrs-cmp__regions.json",
       "volumes": {
@@ -47702,7 +47770,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 272.1591408252716,
+      "runtime_s": 360.9949071407318,
       "metrics": {
         "nrmse": 80.89742973422581,
         "nrmse_detrend": 136.43839697202964,
@@ -47727,8 +47795,8 @@
         "dipole": "tkd-qsmci"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/8e/laplacian-qsmci_iqfm_tkd-qsmci-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/8e/laplacian-qsmci_iqfm_tkd-qsmci-cmp__regions.json",
       "volumes": {
@@ -47744,7 +47812,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 257.9805386066437,
+      "runtime_s": 347.90336775779724,
       "metrics": {
         "nrmse": 81.32918398842759,
         "nrmse_detrend": 136.80060375715152,
@@ -47769,8 +47837,8 @@
         "dipole": "tkd-qsmrs"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/a2/laplacian-qsmci_iqfm_tkd-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/a2/laplacian-qsmci_iqfm_tkd-qsmrs-cmp__regions.json",
       "volumes": {
@@ -47786,7 +47854,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 258.19667887687683,
+      "runtime_s": 347.4702949523926,
       "metrics": {
         "nrmse": 82.54378099812313,
         "nrmse_detrend": 145.4018608906519,
@@ -47811,8 +47879,8 @@
         "dipole": "tsvd-qsmrs"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/70/laplacian-qsmci_iqfm_tsvd-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/70/laplacian-qsmci_iqfm_tsvd-qsmrs-cmp__regions.json",
       "volumes": {
@@ -47828,7 +47896,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 309.1041841506958,
+      "runtime_s": 400.9064176082611,
       "metrics": {
         "nrmse": 78.20510827336751,
         "nrmse_detrend": 125.44786857685256,
@@ -47853,8 +47921,8 @@
         "dipole": "tv-qsmrs"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/c5/laplacian-qsmci_iqfm_tv-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/c5/laplacian-qsmci_iqfm_tv-qsmrs-cmp__regions.json",
       "volumes": {
@@ -47870,7 +47938,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 670.5185680389404,
+      "runtime_s": 766.9362726211548,
       "metrics": {
         "nrmse": 75.65209980132029,
         "nrmse_detrend": 115.41376018627922,
@@ -47895,8 +47963,8 @@
         "dipole": "whqsm-qsmrs"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/e5/laplacian-qsmci_iqfm_whqsm-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/e5/laplacian-qsmci_iqfm_whqsm-qsmrs-cmp__regions.json",
       "volumes": {
@@ -47912,7 +47980,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 347.3117561340332,
+      "runtime_s": 433.9502191543579,
       "metrics": {
         "nrmse": 82.75222894026518,
         "nrmse_detrend": 139.18650277828428,
@@ -47937,8 +48005,8 @@
         "dipole": "xqsm"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/6c/laplacian-qsmci_iqfm_xqsm-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/6c/laplacian-qsmci_iqfm_xqsm-cmp__regions.json",
       "volumes": {
@@ -47986,7 +48054,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1674.6860644817352,
+      "runtime_s": 1647.1171209812164,
       "metrics": {
         "nrmse": 78.05239891861277,
         "nrmse_detrend": 124.4938786584095,
@@ -48011,8 +48079,8 @@
         "dipole": "fansi-nltgv-qsmrs"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/51/romeo-qsmrs_iqfm_fansi-nltgv-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/51/romeo-qsmrs_iqfm_fansi-nltgv-qsmrs-cmp__regions.json",
       "volumes": {
@@ -48028,7 +48096,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 479.6255533695221,
+      "runtime_s": 478.87296867370605,
       "metrics": {
         "nrmse": 76.9504712304569,
         "nrmse_detrend": 120.45331023892739,
@@ -48053,8 +48121,8 @@
         "dipole": "fansi-nltv-qsmrs"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/52/romeo-qsmrs_iqfm_fansi-nltv-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/52/romeo-qsmrs_iqfm_fansi-nltv-qsmrs-cmp__regions.json",
       "volumes": {
@@ -48070,7 +48138,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 293.0298066139221,
+      "runtime_s": 281.97799038887024,
       "metrics": {
         "nrmse": 75.80883717678672,
         "nrmse_detrend": 116.07429872711289,
@@ -48095,8 +48163,8 @@
         "dipole": "hdqsm-qsmrs"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/1e/romeo-qsmrs_iqfm_hdqsm-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/1e/romeo-qsmrs_iqfm_hdqsm-qsmrs-cmp__regions.json",
       "volumes": {
@@ -48112,7 +48180,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 320.7007658481598,
+      "runtime_s": 306.509685754776,
       "metrics": {
         "nrmse": 82.34242935694152,
         "nrmse_detrend": 142.6750807261014,
@@ -48137,8 +48205,8 @@
         "dipole": "ilsqr-qsmrs"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/9f/romeo-qsmrs_iqfm_ilsqr-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/9f/romeo-qsmrs_iqfm_ilsqr-qsmrs-cmp__regions.json",
       "volumes": {
@@ -48154,7 +48222,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 393.44468212127686,
+      "runtime_s": 384.72757172584534,
       "metrics": {
         "nrmse": 79.05583264815809,
         "nrmse_detrend": 128.57193928952364,
@@ -48179,8 +48247,8 @@
         "dipole": "ilsqr-sti"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/e6/romeo-qsmrs_iqfm_ilsqr-sti-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/e6/romeo-qsmrs_iqfm_ilsqr-sti-cmp__regions.json",
       "volumes": {
@@ -48196,19 +48264,19 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 330.27684116363525,
+      "runtime_s": 320.9769425392151,
       "metrics": {
-        "nrmse": 78.61635306194586,
-        "nrmse_detrend": 126.25433328088845,
-        "nrmse_tissue": 122.50128181348629,
-        "nrmse_blood": 292.75059671869167,
-        "nrmse_dgm": 70.30448733182027,
-        "dgm_linearity": 0.37905506620882945,
-        "calc_moment_dev": 25.426691614091396,
-        "calc_streak": 0.09935272141103993,
-        "correlation": 0.6208886238361682,
-        "xsim": 0.2965818868584604,
-        "hfen": 65.6984647458012,
+        "nrmse": 78.60002220078538,
+        "nrmse_detrend": 126.22222804089893,
+        "nrmse_tissue": 122.44072624463048,
+        "nrmse_blood": 292.9566252604669,
+        "nrmse_dgm": 70.49057723369336,
+        "dgm_linearity": 0.3793942923859335,
+        "calc_moment_dev": 26.579275473952293,
+        "calc_streak": 0.09342881050023916,
+        "correlation": 0.6209856546995414,
+        "xsim": 0.2966918584529428,
+        "hfen": 65.68614248490867,
         "coverage": 0.8532469821465768
       },
       "status": "ok",
@@ -48221,8 +48289,8 @@
         "dipole": "ir2qsm"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/e0/romeo-qsmrs_iqfm_ir2qsm-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/e0/romeo-qsmrs_iqfm_ir2qsm-cmp__regions.json",
       "volumes": {
@@ -48238,7 +48306,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 360.6594762802124,
+      "runtime_s": 350.8065128326416,
       "metrics": {
         "nrmse": 84.34096495171222,
         "nrmse_detrend": 140.61588627807004,
@@ -48263,8 +48331,8 @@
         "dipole": "l1qsm-qsmrs"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/85/romeo-qsmrs_iqfm_l1qsm-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/85/romeo-qsmrs_iqfm_l1qsm-qsmrs-cmp__regions.json",
       "volumes": {
@@ -48280,7 +48348,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 366.282776594162,
+      "runtime_s": 357.747572183609,
       "metrics": {
         "nrmse": 76.99719544293666,
         "nrmse_detrend": 120.54384063304505,
@@ -48305,8 +48373,8 @@
         "dipole": "lpcnn"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/14/romeo-qsmrs_iqfm_lpcnn-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/14/romeo-qsmrs_iqfm_lpcnn-cmp__regions.json",
       "volumes": {
@@ -48322,7 +48390,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1279.173086643219,
+      "runtime_s": 1301.4035575389862,
       "metrics": {
         "nrmse": 80.94351996055352,
         "nrmse_detrend": 137.58614300972073,
@@ -48347,8 +48415,8 @@
         "dipole": "medi-cornell"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/19/romeo-qsmrs_iqfm_medi-cornell-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/19/romeo-qsmrs_iqfm_medi-cornell-cmp__regions.json",
       "volumes": {
@@ -48364,7 +48432,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 265.38972663879395,
+      "runtime_s": 255.70625281333923,
       "metrics": {
         "nrmse": 80.50993267786627,
         "nrmse_detrend": 135.46043052103,
@@ -48389,8 +48457,8 @@
         "dipole": "medi-qsmrs"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/49/romeo-qsmrs_iqfm_medi-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/49/romeo-qsmrs_iqfm_medi-qsmrs-cmp__regions.json",
       "volumes": {
@@ -48406,7 +48474,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 582.930169582367,
+      "runtime_s": 578.1957633495331,
       "metrics": {
         "nrmse": 88.76569482017484,
         "nrmse_detrend": 192.61787806149715,
@@ -48431,8 +48499,8 @@
         "dipole": "modl-qsm"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/0e/romeo-qsmrs_iqfm_modl-qsm-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/0e/romeo-qsmrs_iqfm_modl-qsm-cmp__regions.json",
       "volumes": {
@@ -48448,7 +48516,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 429.4802916049957,
+      "runtime_s": 412.3897068500519,
       "metrics": {
         "nrmse": 82.67905237050624,
         "nrmse_detrend": 140.39664634444676,
@@ -48473,8 +48541,8 @@
         "dipole": "ndi-qsmrs"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/71/romeo-qsmrs_iqfm_ndi-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/71/romeo-qsmrs_iqfm_ndi-qsmrs-cmp__regions.json",
       "volumes": {
@@ -48490,7 +48558,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 665.1680016517639,
+      "runtime_s": 642.6979050636292,
       "metrics": {
         "nrmse": 99.93319854659951,
         "nrmse_detrend": 184.4168491079026,
@@ -48515,8 +48583,8 @@
         "dipole": "nltv-qsmrs"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/5a/romeo-qsmrs_iqfm_nltv-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/5a/romeo-qsmrs_iqfm_nltv-qsmrs-cmp__regions.json",
       "volumes": {
@@ -48532,7 +48600,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 644.1156849861145,
+      "runtime_s": 641.2133312225342,
       "metrics": {
         "nrmse": 88.33695442514457,
         "nrmse_detrend": 165.39585046695564,
@@ -48557,8 +48625,8 @@
         "dipole": "qsmgan"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/f2/romeo-qsmrs_iqfm_qsmgan-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/f2/romeo-qsmrs_iqfm_qsmgan-cmp__regions.json",
       "volumes": {
@@ -48574,7 +48642,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 300.0686776638031,
+      "runtime_s": 294.84002470970154,
       "metrics": {
         "nrmse": 80.55659807586771,
         "nrmse_detrend": 134.1414509899077,
@@ -48599,8 +48667,8 @@
         "dipole": "qsmnet"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/a5/romeo-qsmrs_iqfm_qsmnet-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/a5/romeo-qsmrs_iqfm_qsmnet-cmp__regions.json",
       "volumes": {
@@ -48616,7 +48684,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 286.8216128349304,
+      "runtime_s": 284.7354881763458,
       "metrics": {
         "nrmse": 82.86102274882982,
         "nrmse_detrend": 147.76759413663666,
@@ -48641,8 +48709,8 @@
         "dipole": "qsmnet-plus"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/85/romeo-qsmrs_iqfm_qsmnet-plus-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/85/romeo-qsmrs_iqfm_qsmnet-plus-cmp__regions.json",
       "volumes": {
@@ -48658,7 +48726,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 228.26352834701538,
+      "runtime_s": 216.60062956809998,
       "metrics": {
         "nrmse": 79.8195970757202,
         "nrmse_detrend": 132.20883353541524,
@@ -48683,8 +48751,8 @@
         "dipole": "rts-qsmrs"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/43/romeo-qsmrs_iqfm_rts-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/43/romeo-qsmrs_iqfm_rts-qsmrs-cmp__regions.json",
       "volumes": {
@@ -48700,7 +48768,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 271.5742995738983,
+      "runtime_s": 244.35066604614258,
       "metrics": {
         "nrmse": 82.29876881740319,
         "nrmse_detrend": 143.38125045543504,
@@ -48725,8 +48793,8 @@
         "dipole": "star-sti"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/93/romeo-qsmrs_iqfm_star-sti-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/93/romeo-qsmrs_iqfm_star-sti-cmp__regions.json",
       "volumes": {
@@ -48742,7 +48810,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 213.1257905960083,
+      "runtime_s": 201.23431634902954,
       "metrics": {
         "nrmse": 80.77122246677675,
         "nrmse_detrend": 136.9984744418181,
@@ -48767,8 +48835,8 @@
         "dipole": "tikhonov-qsmrs"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/5f/romeo-qsmrs_iqfm_tikhonov-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/5f/romeo-qsmrs_iqfm_tikhonov-qsmrs-cmp__regions.json",
       "volumes": {
@@ -48784,7 +48852,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 229.62927389144897,
+      "runtime_s": 215.6493158340454,
       "metrics": {
         "nrmse": 80.89742973422581,
         "nrmse_detrend": 136.43839697202964,
@@ -48809,8 +48877,8 @@
         "dipole": "tkd-qsmci"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/f5/romeo-qsmrs_iqfm_tkd-qsmci-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/f5/romeo-qsmrs_iqfm_tkd-qsmci-cmp__regions.json",
       "volumes": {
@@ -48826,7 +48894,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 214.02223014831543,
+      "runtime_s": 201.6313726902008,
       "metrics": {
         "nrmse": 81.32918398842759,
         "nrmse_detrend": 136.80060375715152,
@@ -48851,8 +48919,8 @@
         "dipole": "tkd-qsmrs"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/67/romeo-qsmrs_iqfm_tkd-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/67/romeo-qsmrs_iqfm_tkd-qsmrs-cmp__regions.json",
       "volumes": {
@@ -48868,7 +48936,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 214.03186964988708,
+      "runtime_s": 201.39689564704895,
       "metrics": {
         "nrmse": 82.54378099812313,
         "nrmse_detrend": 145.4018608906519,
@@ -48893,8 +48961,8 @@
         "dipole": "tsvd-qsmrs"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/4d/romeo-qsmrs_iqfm_tsvd-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/4d/romeo-qsmrs_iqfm_tsvd-qsmrs-cmp__regions.json",
       "volumes": {
@@ -48910,7 +48978,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 267.44669556617737,
+      "runtime_s": 256.9511032104492,
       "metrics": {
         "nrmse": 78.20510827336751,
         "nrmse_detrend": 125.44786857685256,
@@ -48935,8 +49003,8 @@
         "dipole": "tv-qsmrs"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/8a/romeo-qsmrs_iqfm_tv-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/8a/romeo-qsmrs_iqfm_tv-qsmrs-cmp__regions.json",
       "volumes": {
@@ -48952,7 +49020,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 607.3304090499878,
+      "runtime_s": 621.2342216968536,
       "metrics": {
         "nrmse": 75.65209980132029,
         "nrmse_detrend": 115.41376018627922,
@@ -48977,8 +49045,8 @@
         "dipole": "whqsm-qsmrs"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/9e/romeo-qsmrs_iqfm_whqsm-qsmrs-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/9e/romeo-qsmrs_iqfm_whqsm-qsmrs-cmp__regions.json",
       "volumes": {
@@ -48994,7 +49062,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 289.64368653297424,
+      "runtime_s": 276.03291630744934,
       "metrics": {
         "nrmse": 82.75222894026518,
         "nrmse_detrend": 139.18650277828428,
@@ -49019,8 +49087,8 @@
         "dipole": "xqsm"
       },
       "phantom": "sim",
-      "ci_run": "34808536405.1",
-      "ci_sha": "af88054641531089d08d89aa268683d1aa95490f",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/8e/romeo-qsmrs_iqfm_xqsm-cmp__resources.json",
       "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/8e/romeo-qsmrs_iqfm_xqsm-cmp__regions.json",
       "volumes": {
@@ -49100,6 +49168,238 @@
       "phantom": "sim",
       "ci_run": "34793236949.1",
       "ci_sha": "8b288c2d9fd2afd8331e6054f25f7f9d7e904123"
+    },
+    {
+      "id": "decompose-qsmrs-iso-ridani-3t-aniso",
+      "slug": "decompose-qsmrs",
+      "name": "DECOMPOSE-QSM (QSM.rs)",
+      "stage": "chi-separation",
+      "mode": "isolated",
+      "track": "sim",
+      "runtime_s": 5335.184535503387,
+      "variant": "default",
+      "domain": "chisep",
+      "kind": "chisep",
+      "metrics": {
+        "para_nrmse": 48.73961405215645,
+        "para_nrmse_detrend": 54.22588503480574,
+        "para_correlation": 0.8790738625592147,
+        "para_xsim": 0.357295059811405,
+        "para_nrmse_dgm": 15.002094302919813,
+        "para_dgm_linearity": 0.053188327488897014,
+        "para_nrmse_blood": 20.770316197296044,
+        "para_calc_leak": 0.0,
+        "para_mspe": 14.440298108191485,
+        "para_coverage": 0.23457065268058738,
+        "dia_nrmse": 74.83957915681691,
+        "dia_nrmse_detrend": 79.70046328210813,
+        "dia_correlation": 0.7820101409931318,
+        "dia_xsim": 0.32771290624247035,
+        "dia_calc_moment_dev": 0.32541206265159417,
+        "dia_calc_streak": null,
+        "dia_iron_leak": 0.0021075854008084528,
+        "dia_mspe": 29.420236403694574,
+        "dia_mspe_theta": [
+          34.84797866116287,
+          34.9364552613408,
+          34.94028801304577,
+          33.13618428521597,
+          9.05841661252936,
+          7.980477301057419,
+          7.643877028939843,
+          5.05933764653592,
+          1.5544413381722115
+        ],
+        "dia_mev": 95.5393644110997,
+        "dia_coverage": 0.3147586052919139,
+        "para_leak": 0.14760102203631248,
+        "dia_leak": -0.08013215957361638
+      },
+      "status": "ok",
+      "phantom": "ridani-3t-aniso",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/ridani-3t-aniso/c8/decompose-qsmrs-iso-ridani-3t-aniso__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/ridani-3t-aniso/c8/decompose-qsmrs-iso-ridani-3t-aniso__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/ridani-3t-aniso/c8/decompose-qsmrs-iso-ridani-3t-aniso__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/ridani-3t-aniso/c8/decompose-qsmrs-iso-ridani-3t-aniso__error.nii.gz",
+        "recon-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/ridani-3t-aniso/c8/decompose-qsmrs-iso-ridani-3t-aniso__recon-dia.nii.gz",
+        "error-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/ridani-3t-aniso/c8/decompose-qsmrs-iso-ridani-3t-aniso__error-dia.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chi-para.nii.gz",
+        "truth-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chi-dia.nii.gz"
+      }
+    },
+    {
+      "id": "decompose-qsmrs-iso-ridani-3t-iso",
+      "slug": "decompose-qsmrs",
+      "name": "DECOMPOSE-QSM (QSM.rs)",
+      "stage": "chi-separation",
+      "mode": "isolated",
+      "track": "sim",
+      "runtime_s": 5363.088877916336,
+      "variant": "default",
+      "domain": "chisep",
+      "kind": "chisep",
+      "metrics": {
+        "para_nrmse": 48.742107914923864,
+        "para_nrmse_detrend": 54.22930706323789,
+        "para_correlation": 0.8790612567501033,
+        "para_xsim": 0.3571056830716795,
+        "para_nrmse_dgm": 15.002094302919813,
+        "para_dgm_linearity": 0.053188327488897014,
+        "para_nrmse_blood": 20.76025254510307,
+        "para_calc_leak": 0.0,
+        "para_mspe": 14.440298108191485,
+        "para_coverage": 0.23418573674390727,
+        "dia_nrmse": 80.58100551610538,
+        "dia_nrmse_detrend": 86.19118077097404,
+        "dia_correlation": 0.7574688299761352,
+        "dia_xsim": 0.33828874426137506,
+        "dia_calc_moment_dev": 0.32541206265159417,
+        "dia_calc_streak": null,
+        "dia_iron_leak": 0.0017951828243933502,
+        "dia_mspe": 15.605089888279231,
+        "dia_coverage": 0.37531204398764906,
+        "para_leak": 0.20641308578151715,
+        "dia_leak": -0.1118570485048713
+      },
+      "status": "ok",
+      "phantom": "ridani-3t-iso",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/ridani-3t-iso/90/decompose-qsmrs-iso-ridani-3t-iso__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/ridani-3t-iso/90/decompose-qsmrs-iso-ridani-3t-iso__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/ridani-3t-iso/90/decompose-qsmrs-iso-ridani-3t-iso__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/ridani-3t-iso/90/decompose-qsmrs-iso-ridani-3t-iso__error.nii.gz",
+        "recon-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/ridani-3t-iso/90/decompose-qsmrs-iso-ridani-3t-iso__recon-dia.nii.gz",
+        "error-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/ridani-3t-iso/90/decompose-qsmrs-iso-ridani-3t-iso__error-dia.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chi-para.nii.gz",
+        "truth-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chi-dia.nii.gz"
+      }
+    },
+    {
+      "id": "decompose-qsmrs-iso-ridani-7t-aniso",
+      "slug": "decompose-qsmrs",
+      "name": "DECOMPOSE-QSM (QSM.rs)",
+      "stage": "chi-separation",
+      "mode": "isolated",
+      "track": "sim",
+      "runtime_s": 3269.9140264987946,
+      "variant": "default",
+      "domain": "chisep",
+      "kind": "chisep",
+      "metrics": {
+        "para_nrmse": 82.35782178358203,
+        "para_nrmse_detrend": 144.0030932698933,
+        "para_correlation": 0.5703875433219834,
+        "para_xsim": 0.3657459094941541,
+        "para_nrmse_dgm": 608.4460425209652,
+        "para_dgm_linearity": 1.1629902432487653,
+        "para_nrmse_blood": 699.3177036718243,
+        "para_calc_leak": 0.0004266867132779832,
+        "para_mspe": 45.202428837863124,
+        "para_coverage": 0.8241992488137427,
+        "dia_nrmse": 67.65647964021719,
+        "dia_nrmse_detrend": 70.79951044601054,
+        "dia_correlation": 0.8161546652601439,
+        "dia_xsim": 0.4521363823362021,
+        "dia_calc_moment_dev": 0.32541206265159417,
+        "dia_calc_streak": null,
+        "dia_iron_leak": 0.003096847768334546,
+        "dia_mspe": 17.108143336345044,
+        "dia_mspe_theta": [
+          8.131857098250398,
+          4.521911623000049,
+          4.0971836032050355,
+          5.058988463558346,
+          6.0836386680048795,
+          6.223519245305223,
+          7.1664174545037795,
+          4.87792720243264,
+          2.6238287251634236
+        ],
+        "dia_mev": 67.73395432971945,
+        "dia_coverage": 0.8318275464569929,
+        "para_leak": -0.48587366666489107,
+        "dia_leak": -0.12070764588396503
+      },
+      "status": "ok",
+      "phantom": "ridani-7t-aniso",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/ridani-7t-aniso/36/decompose-qsmrs-iso-ridani-7t-aniso__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/ridani-7t-aniso/36/decompose-qsmrs-iso-ridani-7t-aniso__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/ridani-7t-aniso/36/decompose-qsmrs-iso-ridani-7t-aniso__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/ridani-7t-aniso/36/decompose-qsmrs-iso-ridani-7t-aniso__error.nii.gz",
+        "recon-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/ridani-7t-aniso/36/decompose-qsmrs-iso-ridani-7t-aniso__recon-dia.nii.gz",
+        "error-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/ridani-7t-aniso/36/decompose-qsmrs-iso-ridani-7t-aniso__error-dia.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chi-para.nii.gz",
+        "truth-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chi-dia.nii.gz"
+      }
+    },
+    {
+      "id": "decompose-qsmrs-iso",
+      "slug": "decompose-qsmrs",
+      "name": "DECOMPOSE-QSM (QSM.rs)",
+      "stage": "chi-separation",
+      "mode": "isolated",
+      "track": "sim",
+      "runtime_s": 1068.8468101024628,
+      "variant": "default",
+      "domain": "chisep",
+      "kind": "chisep",
+      "metrics": {
+        "para_nrmse": 89.30306889114775,
+        "para_nrmse_detrend": 196.74678773670783,
+        "para_correlation": 0.45310000040132875,
+        "para_xsim": 0.2649921260298195,
+        "para_nrmse_dgm": 194.9152993140819,
+        "para_dgm_linearity": 1.2500629594012311,
+        "para_nrmse_blood": 5332.047647038531,
+        "para_calc_leak": 0.003300454254106929,
+        "para_mspe": 61.671844886105724,
+        "para_coverage": 0.6805603772879492,
+        "dia_nrmse": 81.03878265314185,
+        "dia_nrmse_detrend": 98.09024911490097,
+        "dia_correlation": 0.7138906892437318,
+        "dia_xsim": 0.37602896848749406,
+        "dia_calc_moment_dev": 0.12973396212328225,
+        "dia_calc_streak": null,
+        "dia_iron_leak": 0.0033574975626309406,
+        "dia_mspe": 21.53701629873689,
+        "dia_mspe_theta": [
+          7.309637990313993,
+          7.969512196347477,
+          5.3204587035921165,
+          5.607298041690982,
+          8.199394982937275,
+          8.787301955173023,
+          15.127437922207312,
+          26.299094578621265,
+          29.19883722017041
+        ],
+        "dia_mev": -299.4566797817048,
+        "dia_coverage": 0.7197968590366217,
+        "para_leak": -0.42915740609688413,
+        "dia_leak": -0.19090024907369058
+      },
+      "status": "ok",
+      "phantom": "chisep-mc",
+      "ci_run": "34835679530.1",
+      "ci_sha": "6db8ad91c5afb66466eb0b6e4c29938ffbb38bed",
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/chisep-mc/69/decompose-qsmrs-iso__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/chisep-mc/69/decompose-qsmrs-iso__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/chisep-mc/69/decompose-qsmrs-iso__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/chisep-mc/69/decompose-qsmrs-iso__error.nii.gz",
+        "recon-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/chisep-mc/69/decompose-qsmrs-iso__recon-dia.nii.gz",
+        "error-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/chisep-mc/69/decompose-qsmrs-iso__error-dia.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chi-para.nii.gz",
+        "truth-dia": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/chi-dia.nii.gz"
+      }
     }
   ]
 }
