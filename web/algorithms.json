@@ -449,13 +449,17 @@
       "family": "iterative",
       "learning": "none",
       "description": "DECOMPOSE-QSM \u2014 a signal-domain susceptibility source separation. Unlike the R2'-based methods it fits the multi-echo COMPLEX GRE signal per voxel with a 3-stage alternating non-linear least-squares fit (lsqcurvefit) to split \u03c7 into paramagnetic (\u03c7+, iron) and diamagnetic (\u03c7\u2212, myelin/calcium) sources. Uses the provided \u03c7_total (chimap) for the signal's phase term (\u03c7 is echo-independent), which isolates DECOMPOSE's separation step from any upstream QSM error. Tim Ho's open MATLAB re-implementation of DECOMPOSE.",
-      "citation": "Chen J. et al., \"Decompose quantitative susceptibility mapping (QSM) to sub-voxel diamagnetic and paramagnetic components based on gradient-echo MRI data\", NeuroImage 2021.\n",
-      "doi": "10.1016/j.neuroimage.2021.118735",
+      "citation": "Chen J., Gong N.-J., Chaim K.T., Otaduy M.C.G., Liu C., \"Decompose quantitative susceptibility mapping (QSM) to sub-voxel diamagnetic and paramagnetic components based on gradient-echo MRI data\", NeuroImage 2021;242:118477.\n",
+      "doi": "10.1016/j.neuroimage.2021.118477",
       "code_url": "https://github.com/timwahoo/DECOMPOSE-QSM",
       "license": "GPL-3.0",
       "authors": [
-        "Tim Ho",
-        "Chen et al."
+        "Jingjia Chen",
+        "Nan-Jie Gong",
+        "Khallil Taverna Chaim",
+        "Maria Concepci\u00f3n Garc\u00eda Otaduy",
+        "Chunlei Liu",
+        "Tim Ho"
       ],
       "parameters": [],
       "ci_notes": []
