@@ -1,0 +1,82 @@
+name: DECOMPOSE-QSM (QSM.rs)
+slug: decompose-qsmrs
+algorithm: decompose
+source: qsmrs
+stage: chi-separation
+language: Rust
+family: iterative
+learning: none
+inputs: [chimap, magnitude, mask, params]  # signal-domain: provided χ_total (chimap) + multi-echo magnitude
+engine: QSMxT / QSM.rs
+description: >
+  DECOMPOSE-QSM (Chen et al. 2021) — signal-domain susceptibility source separation, as the Rust
+  implementation in QSM.rs exposed by `qsmxt separate decompose`. Unlike the R2'-based methods it
+  fits the multi-echo COMPLEX GRE signal per voxel: a three-stage alternating bounded least-squares
+  fit of {C+, C−, C0, R2*_0, χ+, χ−}, repeated n_inner times, then reconstructs each source from
+  the fitted parameters as a per-compartment phase accumulation. Like the compiled-MATLAB entry
+  (decompose-qsm) the signal's phase term is synthesized from the provided χ_total (chimap) rather
+  than re-derived from raw phase — χ is echo-independent, so this isolates DECOMPOSE's separation
+  step from any upstream QSM error and drops the STI-Suite dependency. Needs no R2' and no local
+  field: χ_total plus the multi-echo magnitude only (GRE-only).
+authors:
+- name: Jingjia Chen
+  note: original DECOMPOSE method
+- name: Nan-Jie Gong
+- name: Khallil Taverna Chaim
+- name: Maria Concepción García Otaduy
+- name: Chunlei Liu
+- name: Tim Ho
+  note: open MATLAB implementation the port follows
+- name: Ashley Stewart
+  note: QSM.rs / QSMxT Rust port
+doi: 10.1016/j.neuroimage.2021.118477
+citation: >
+  Chen J., Gong N.-J., Chaim K.T., Otaduy M.C.G., Liu C., "Decompose quantitative susceptibility
+  mapping (QSM) to sub-voxel diamagnetic and paramagnetic components based on gradient-echo MRI
+  data", NeuroImage 2021;242:118477.
+code_url: https://github.com/astewartau/QSM.rs
+license: MIT
+image: ghcr.io/astewartau/qsm-ci/qsmxt:v9.16.0   # the shared QSMxT engine image; `separate decompose` ships in v9.15.0+
+run: bash run.sh
+parameters:
+- name: n_inner
+  default: 10
+  description: alternating three-stage fit passes per voxel (the reference's inner-iteration count)
+- name: chi_bound
+  default: 0.5
+  description: upper bound on |χ| in the per-voxel fit, ppm (the reference's bound)
+- name: max_lm_iter
+  default: 30
+  description: >
+    max Levenberg-Marquardt iterations per fit stage (the MATLAB reference uses lsqcurvefit's
+    trust-region solve; 30 is ample for these 1-3 parameter fits)
+# Notes on how QSM-CI runs this method vs. its reference (shown on the submission page).
+ci_notes:
+- >
+  The two DECOMPOSE entries use OPPOSITE paramagnetic/diamagnetic output mappings, so their χ+ and
+  χ− maps may disagree — comparing them is a purpose of this submission, not a bug. Both
+  reconstruct each source from the fitted parameters as a per-compartment phase accumulation; what
+  differs is which sub-model carries which source. The MATLAB reference's demo writes DSC→"XPSC"
+  and PSC→"XDSC", and decompose-qsm/recon.m follows that swap (χ+ = |DSC|). The Rust port does not:
+  its module header records that on the qsm-forward phantom the swapped mapping anti-correlates
+  with the ground truth while the physically-consistent one (χ+ = |PSC|, from the paramagnetic
+  sub-model) correlates strongly, so it emits χ+ = |PSC|, χ− = −|DSC|. On an independent synthetic
+  case generated from the paper's own signal model, this port's χ+ correlated +1.000 with the true
+  χ+ and −0.03 with the true χ−. Scoring both entries on the QSM-CI phantoms is the direct test.
+- >
+  Same algorithm as the compiled-MATLAB entry decompose-qsm, in Rust, on the shared QSMxT engine
+  image — no new container image. Measured here at ~1.5e3 fitted voxels/s on a single core
+  (12568-voxel synthetic fit, 6 echoes, n_inner=10, 14-core desktop), i.e. ~15-20 min for the
+  1.31 M-voxel chisep-mc phantom and ~1 h for the 5.0 M-voxel Ridani phantoms, against the MATLAB
+  entry's measured 4.1 h (chisep-mc) / 10.3 h (ridani-3t-aniso) on a 16-core box and a never-finished
+  ridani-3t-iso. run.sh pins the fit to one thread: qsm-core's decompose parallel path measured
+  SLOWER with more threads (1 → 8 threads: 10.9 s → 37.6 s at 12568 voxels, 37.1 s → 205.9 s at
+  42168 voxels, uniform cores at a constant 3.35 GHz), with bit-identical outputs at every thread
+  count, while another rayon method in the same image scales normally. That is an upstream
+  performance bug, not a numerical one; when it is fixed the pin can be dropped and this gets
+  faster again.
+smoke_box: 32   # per-voxel fit: the PR --smoke gate fits a 32³ central box (≈30 s serial); the full score.yml run is unaffected
+# Tier: the default hosted one (no `runner:` / `timeout_minutes:`), unlike the MATLAB entry's
+# self-hosted/720-min/manual_phantoms routing. Serial throughput alone puts the largest scored
+# phantom (ridani-3t-iso, 5.0 M mask voxels, 6 echoes) at ~1 h, ≥5x inside the 360-min hosted cap,
+# and each phantom is its own focus task — so no tier override, and no manual phantom, is warranted.
