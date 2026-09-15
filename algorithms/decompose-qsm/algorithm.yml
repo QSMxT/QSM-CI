@@ -33,6 +33,20 @@ code_url: https://github.com/timwahoo/DECOMPOSE-QSM
 license: GPL-3.0
 image: ghcr.io/astewartau/qsm-ci/decompose-qsm:v2
 run: bash run.sh
+# SUPERSEDED by `decompose-qsmrs`, the QSM.rs/QSMxT Rust port of this same method. Scored head to
+# head on chisep-mc the two agree closely — χ+ corr 0.444 vs 0.453, χ+ xSIM 0.254 vs 0.265, χ− corr
+# 0.708 vs 0.714, χ− xSIM 0.367 vs 0.376 — with the port marginally ahead on every metric and 11x
+# faster (18 min vs 200 min). The port also SCORES the phantoms this entry cannot: it finished all
+# three Ridani sets (55-89 min each), including the isotropic one this entry has never completed
+# (0 of 10 attempts inside its 12 h cap), while this entry DNF'd both anisotropic sets in run
+# 34835679530. Running it costs hours of a shared self-hosted runner to reproduce a result the port
+# already gives. Two flags retire it without losing its history (same pattern as the MATLAB amp-pe):
+#   ci_skip: true  — the scorer never RUNS it again.
+#   hidden:  true  — the web DROPS its stored rows from the leaderboard/viewer (they stay in
+#                    index.json, so clearing this flag revives them). See web/js/app.js loadRuns.
+# The comparison above is one phantom: chisep-mc is the only set on which BOTH have ever scored.
+ci_skip: true
+hidden: true
 runner: self-hosted   # per-voxel non-linear fit (parfor); ~31 min on 48 cores — needs a many-core runner + long cap
 timeout_minutes: 720  # full runs have taken 114–342 min on the shared self-hosted box and hit the 360 default; give ample headroom (cf. modip)
 # The 5M-voxel isotropic Ridani phantom never finished inside 12 h on the shared 16-core box (0 of 10
