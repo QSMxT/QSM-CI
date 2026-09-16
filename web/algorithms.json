@@ -2654,6 +2654,55 @@
       "ci_notes": []
     },
     {
+      "slug": "ukb-qsm",
+      "name": "UK Biobank QSM pipeline",
+      "stage": "end-to-end",
+      "inputs": [
+        "phase",
+        "magnitude",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "UK Biobank + STI Suite",
+      "language": "MATLAB",
+      "family": "iterative",
+      "learning": "none",
+      "description": "The susceptibility pipeline UK Biobank runs on its swMRI data, as published by the Oxford group \u2014 phase-variance masking, Laplacian unwrapping, T2*-weighted echo combination, V-SHARP background removal (12 mm kernel) and iLSQR dipole inversion. Submitted so the reference pipeline behind the UK Biobank susceptibility IDPs can be placed on the same benchmark as everything else. Coil combination (MCPC-3D-S) sits upstream of this stage and is not reproduced, since QSM-CI supplies already-combined phase.",
+      "citation": "Wang et al., Nature Neuroscience 2022",
+      "doi": "10.1038/s41593-022-01074-w",
+      "code_url": "https://git.fmrib.ox.ac.uk/falmagro/uk_biobank_pipeline_v_1.5",
+      "license": "Apache-2.0",
+      "authors": [
+        "Chaoyue Wang",
+        "Benjamin C. Tendler",
+        "Karla L. Miller"
+      ],
+      "parameters": [
+        {
+          "name": "t2star_ms",
+          "default": 40,
+          "description": "assumed T2* in ms, setting the echo weights W_i = TE_i * exp(-TE_i / T2*)"
+        },
+        {
+          "name": "smvsize",
+          "default": 12,
+          "description": "largest V-SHARP SMV kernel radius in mm"
+        },
+        {
+          "name": "padsize",
+          "default": 64,
+          "description": "zero-pad size (voxels, isotropic) used by both the Laplacian unwrap and iLSQR"
+        },
+        {
+          "name": "mask_refine",
+          "default": true,
+          "description": "apply the pipeline's own phase-variance mask trimming; set false to reconstruct strictly inside the mask the dataset supplies"
+        }
+      ],
+      "ci_notes": []
+    },
+    {
       "slug": "vsharp-qsmrs",
       "name": "V-SHARP (QSM.rs)",
       "stage": "bfr",
