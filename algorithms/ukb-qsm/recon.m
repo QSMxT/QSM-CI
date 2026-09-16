@@ -27,7 +27,7 @@ function recon(inp, out)
         error('recon: %d phase volumes but %d echo times', size(phase, 4), numel(TEs));
     end
 
-    % STI Suite's kernels index assuming even matrix dimensions (the same constraint
+    % EDIT (adapter): STI Suite's kernels index assuming even matrix dimensions (the same constraint
     % ilsqr-sti handles). UK Biobank's own 256x288x48 is even throughout, so upstream
     % never meets this; other datasets can be odd. Zero-pad to even before the call and
     % crop back after — lossless for the FFT model, and it leaves the vendored code alone.

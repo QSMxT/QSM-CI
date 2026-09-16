@@ -7,7 +7,8 @@ function [qsm_iLSQR_vsf, mask_vsf] = UKBiobank_QSM_core(phase, mask, TEs, B0, H,
 % The upstream script loads DICOM, combines coils (MCPC-3D-S + PRELUDE) and writes to disk.
 % QSM-CI supplies already-combined phase and handles IO, so only the reconstruction is kept
 % here, with its inputs passed as arguments. Every line below is upstream's except where
-% marked "% EDIT:". The two edits are the ones needed to honour the QSM-CI contract:
+% marked "% EDIT:". Only one thing is edited here — the echo count — plus one thing that is
+% simply absent. Both are needed to honour the QSM-CI contract:
 %
 %   1. multi-echo  — upstream hard-codes phase1/phase2; this takes N echoes. At N = 2 the
 %                    arithmetic is identical to upstream.
