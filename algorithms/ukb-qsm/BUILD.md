@@ -59,7 +59,7 @@ matlab -batch "addpath('shims'); addpath('nifti'); addpath('sti'); addpath('ukb'
 
 ## 3. Bake the image and push
 ```bash
-docker build -t ghcr.io/astewartau/qsm-ci/matlab-ukb-qsm:v1 .
+docker build -t ghcr.io/astewartau/qsm-ci/matlab-ukb-qsm:v1 .   # FROM matlab-runtime:r2026a + COPY recon
 docker push  ghcr.io/astewartau/qsm-ci/matlab-ukb-qsm:v1
 ```
 Then make the GHCR package public.
