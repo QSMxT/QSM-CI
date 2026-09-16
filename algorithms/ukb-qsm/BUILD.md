@@ -9,7 +9,14 @@ IPT).
 
 ## What this reproduces
 
-`UKBiobank_QSM.m` from the Oxford pipeline, from the point where combined phase exists:
+`ukb/UKBiobank_QSM_core.m` is upstream's `UKBiobank_QSM.m` reconstruction lifted **verbatim**;
+`recon.m` is only an adapter that reads the QSM-CI artifacts and calls it. Every divergence from
+upstream carries an `% EDIT:` comment, and there are exactly two — N echoes instead of the
+hard-coded two, and ppm output (upstream's `x1000` lived in its `niftiwrite` call, which is IO and
+outside the lifted region). `ukb/UKBiobank_QSM.m.reference` is the untouched original, so the diff
+is auditable.
+
+The chain, from the point where combined phase exists:
 
 | step | function | settings |
 |---|---|---|
@@ -70,10 +77,51 @@ dropped while a large blob survives, the area threshold is respected, an interio
 filled while a border-connected gap is left open, and 26- versus 6-connectivity separate a
 diagonal voxel pair correctly.
 
-## Validation status
+## Two things that bite when porting this
 
-Not yet scored against ground truth. The MATLAB-only path (`MRPhaseUnwrap`, `V_SHARP`,
-`QSM_iLSQR`) cannot run under Octave because STI Suite ships obfuscated pcode, so the end-to-end
-check needs a MATLAB licence. What has been checked without one: `recon.m` and
-`phasevariance_nonlin_v2.m` parse, the reliability map runs on real phantom geometry, and the
-mask-cleanup sequence behaves as described above. **Score it on `data/sim` before publishing.**
+**STI Suite needs even matrix dimensions.** UK Biobank's own 256x288x48 is even throughout, so
+upstream never meets this; `MRPhaseUnwrap` errors on an odd dimension. `recon.m` zero-pads odd
+dimensions before the call and crops back after — lossless for the FFT model, and it keeps the
+vendored code untouched.
+
+**`phasevariance_nonlin_v2` assumes UK Biobank's voxel geometry.** It computes a kernel offset as
+`(dim - dimX)/2`, which is only an integer for some combinations of matrix size and resolution.
+On a 1 mm isotropic phantom it warns ("Integer operands are required for colon operator") on every
+call and the reliability kernel may be misplaced. This is upstream's limitation, not the port's,
+and it is why `mask_refine` is exposed as a parameter. Reconstructions on non-UKB geometry should
+consider `mask_refine: false`.
+
+## Performance
+
+The shims, not STI Suite, dominate if written naively. A per-voxel flood-fill labeller cost
+**15.5 s per 2-D slice**; the pipeline calls `bwareaopen` twice per slice over 205 slices in each
+of two mask passes, so that alone approached four hours. `qsmci_label` therefore builds its
+neighbour edge list with vectorised array shifts and hands it to base MATLAB's `graph`/`conncomp`,
+and `imfill` skips labelling entirely in favour of a separable geodesic dilation (a 3x3x3 cube is
+separable, so 26-connectivity costs three 1-D dilations, not 26 shifts).
+
+| operation | naive | vectorised | speedup |
+|---|---|---|---|
+| `bwareaopen`, one 164x205 brain slice | 15.5 s | 0.035 s | 443x |
+| `imfill`, 164x205x205 | ~1350 s (est) | 4.1 s | 330x |
+
+Whole pipeline: **531 s** on a 164x205x205x6 phantom, which is then genuinely STI Suite — six
+Laplacian unwraps plus V-SHARP plus iLSQR, each on a grid padded by 64 per side.
+
+## Validation
+
+Run in MATLAB R2026a against the QSM-CI in-silico phantom (`ridani-1mm-3t-iso`, 164x205x205,
+6 echoes), scored with `eval/qsm_eval.py`'s xSIM on the voxel set every candidate covers (88% of
+the dataset mask — UKB's own mask trimming is the binding constraint):
+
+| pipeline | xSIM | NRMSE% | r | scale | sharpness |
+|---|---|---|---|---|---|
+| ground truth | - | - | - | - | 0.111 |
+| **UK Biobank (this submission)** | 0.495 | 60.8 | 0.808 | 0.568 | 0.122 |
+| QSMxT v8.3.2 two-pass | 0.415 | 70.4 | 0.724 | 0.480 | 0.122 |
+| QSM.rs iSMV + WH-QSM | 0.462 | 62.2 | 0.796 | 0.591 | 0.086 |
+
+Sharpness is mean |gradient| over dynamic range, inside the mask. The shims were checked
+separately in Octave and MATLAB: area threshold respected, isolated speck dropped while a large
+blob survives, interior 3-D cavity filled while a border-connected gap stays open, and 26- versus
+6-connectivity separating a diagonal voxel pair.
