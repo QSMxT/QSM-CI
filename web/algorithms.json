@@ -2671,7 +2671,7 @@
       "description": "The susceptibility pipeline UK Biobank runs on its swMRI data, as published by the Oxford group \u2014 phase-variance masking, Laplacian unwrapping, T2*-weighted echo combination, V-SHARP background removal (12 mm kernel) and iLSQR dipole inversion. Submitted so the reference pipeline behind the UK Biobank susceptibility IDPs can be placed on the same benchmark as everything else. Coil combination (MCPC-3D-S) sits upstream of this stage and is not reproduced, since QSM-CI supplies already-combined phase.",
       "citation": "Wang et al., Nature Neuroscience 2022",
       "doi": "10.1038/s41593-022-01074-w",
-      "code_url": "https://git.fmrib.ox.ac.uk/falmagro/uk_biobank_pipeline_v_1.5",
+      "code_url": "https://git.fmrib.ox.ac.uk/cwang/uk_biobank_qsm_pipeline",
       "license": "Apache-2.0",
       "authors": [
         "Chaoyue Wang",
