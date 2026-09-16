@@ -19,7 +19,7 @@ authors:
 - name: Xuanyu Zhu, Yang Gao, Feng Liu, Stuart Crozier, Hongfu Sun
   affiliation: University of Queensland
 doi: 10.1016/j.zemedi.2022.08.001
-citation: Zhu et al., Z Med Phys 2022
+citation: Zhu et al., Z Med Phys 2023
 code_url: https://github.com/sunhongfu/BFRnet
 license: Used with author permission
 image: ghcr.io/astewartau/qsm-ci/bfrnet:v2
@@ -34,7 +34,7 @@ parameters:
     a Hann window. Larger patches see more context and track the whole-volume result more closely
     (local field: 128^3 -> corr 0.992 vs whole-volume) at higher memory. Set 0 to run the whole
     volume in one pass (needs ~19 GB RAM — for a machine with the memory, e.g. `qsm-ci run
-    bfrnet --set patch_size=0`).
+    algorithms/bfrnet --set patch_size=0`).
 - name: overlap
   default: 32
   description: >

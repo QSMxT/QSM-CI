@@ -14,6 +14,7 @@ description: >
   checkpoint. The octave convolution adds an X-shaped multi-resolution feature exchange on a U-net
   backbone with a noise-adding regularization layer. Runs CPU-only with PyTorch (no GPU); the network
   auto zero-pads each dimension to a multiple of 8, so there is no fixed matrix size.
+citation: Gao et al., NMR Biomed 2020
 authors:
 - name: Gao Y.
 - name: Zhu X.

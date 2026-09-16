@@ -14,6 +14,7 @@ description: >
   checkpoint and the output is de-normalized back to ppm. Trained at 1 mm isotropic; each dimension is
   zero-padded to a multiple of 16 for the U-Net's four pool/deconv levels and cropped back afterwards.
   Runs CPU-only on the legacy TensorFlow 1.14 / Python 3.7 stack.
+citation: Yoon et al., NeuroImage 2018
 authors:
 - name: Yoon J.
 - name: Gong E.

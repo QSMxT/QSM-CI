@@ -16,6 +16,7 @@ description: >
   de-normalized back to ppm. Trained at 1 mm isotropic; each dimension is zero-padded to a multiple
   of 16 for the U-Net's four pool/deconv levels and cropped back afterwards. Runs CPU-only on the
   legacy TensorFlow 1.14 / Python 3.7 stack.
+citation: Jung et al., NeuroImage 2020
 authors:
 - name: Jung W.
 - name: Yoon J.

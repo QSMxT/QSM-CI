@@ -13,6 +13,7 @@ description: >
   Consumes the total (tissue) field and produces susceptibility, doing its own background field
   removal (a U-Net) followed by a data-consistent variational-network dipole inversion. Runs
   CPU-only with plain TensorFlow-CPU (no GPU, no ONNX).
+citation: Cognolato et al., Med Image Anal 2023
 authors:
 - name: Cognolato F.
 - name: O'Brien K.

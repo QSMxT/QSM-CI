@@ -16,6 +16,7 @@ description: >
   exactly this output). Multi-echo phase is reconstructed per echo and combined with magnitude x TE^2
   weighting. Output tissue field is B0-normalized (ppm). Runs CPU-only with a CPU-only PyTorch wheel;
   pretrained weights (HuggingFace sunhongfu/iQSM) are baked into the image.
+citation: Gao et al., NeuroImage 2022
 authors:
 - name: Gao Y.
 - name: Xiong Z.

@@ -16,6 +16,7 @@ description: >
   dataset mean/std normalization — the local field in ppm is fed to the net directly and the output is
   already in ppm. Each dimension is zero-padded to a multiple of 8 (the U-net has 3 pool/deconv levels)
   and cropped back afterwards; trained at 1 mm isotropic. Runs CPU-only with PyTorch (no GPU).
+citation: Li et al., Med Phys 2025
 authors:
 - name: Li M.
 - name: Chen C.

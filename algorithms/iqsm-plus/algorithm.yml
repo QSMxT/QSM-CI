@@ -15,6 +15,7 @@ description: >
   reconstruct correctly, not just axial scans. Consumes phase, magnitude, mask and params and
   produces the susceptibility map. Multi-echo phase is handled by the engine's own per-echo inference
   with magnitude x TE^2 weighted combination. Runs CPU-only with a CPU PyTorch wheel (no GPU).
+citation: Gao et al., Med Image Anal 2024
 authors:
 - name: Gao Y.
 - name: Xiong Z.
