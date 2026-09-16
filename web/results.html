@@ -3221,7 +3221,15 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           const good = this.invivoDir === (better === "lower" ? "asc" : "desc");
           return good && i < 3 ? MEDALS[i] : "";
         },
-        doi(r) { return this.view === "isolated" ? doiFor(this.registry, r.slug) : null; },
+        // A submission DOI belongs to one algorithm, so it follows the row's slug rather than the
+        // leaderboard tab. Rows chaining several algorithms carry a composite slug ("a+b+c"), which
+        // is not in the registry, so they still resolve to nothing. An end-to-end submission is
+        // scored as a composed row too, but its slug names one algorithm, so it keeps its DOI.
+        doi(r) {
+          const slug = r && r.slug;
+          if (typeof slug !== "string" || slug.includes("+")) return null;
+          return doiFor(this.registry, slug);
+        },
         stages() { return [...new Set(this.runs.filter((r) => r.mode === "isolated" && !this._isChisep(r) && !this._isInvivo(r)).map((r) => r.stage))]; },
         fmaps() { return [...new Set(this.runs.filter((r) => r.mode === "composed" && r.combo).map((r) => r.combo.field_mapping || "gt"))]; },
         hasTuned() { return this.runs.some((r) => r.variant === "tuned" && !this._isInvivo(r) && !this._isChisep(r)); },
