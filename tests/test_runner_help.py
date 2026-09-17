@@ -116,9 +116,17 @@ def test_dipole_help_is_ppm_aware_and_shows_output():
 
 def test_field_mapping_help_requires_echo_and_b0():
     h = _inputs_summary("laplacian-fieldmap", _algo("field-mapping", "Laplacian"))
-    assert "--te" in h and "[required here]" in h
+    assert "--te" in h and "[required if no sidecar]" in h
     assert "--field-strength" in h
     assert "-o PATH" in h  # output flag shown for every stage
+
+
+def test_field_mapping_help_advertises_sidecar_discovery():
+    """The flags are only required when nothing on disk supplies them — say so, or a BIDS caller
+    retypes echo times they already have (and can mistype the field strength while doing it)."""
+    h = _inputs_summary("laplacian-fieldmap", _algo("field-mapping", "Laplacian"))
+    assert "BIDS sidecar beside the input (automatic)" in h
+    assert "whatever you pass explicitly wins" in h
 
 
 def test_params_summary_omits_unused_fields_for_ppm_stages():

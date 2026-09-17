@@ -137,7 +137,9 @@ def _params_dict(args, stage: str) -> dict:
     if needs_echo and (not te or b0 is None):
         raise SystemExit(
             f"the {stage} stage needs echo times and field strength — pass "
-            "--te SEC [SEC ...] and --field-strength TESLA, or give a --params file.")
+            "--te SEC [SEC ...] and --field-strength TESLA, or give a --params file. "
+            "(A BIDS sidecar named like the input, e.g. sub-01_..._MEGRE.json beside "
+            "sub-01_..._MEGRE.nii.gz, is picked up automatically.)")
     te = _ensure_te(te, stage)  # BFR/dipole: nominal placeholder if omitted (cancels; never empty)
     if b0 is None:
         b0 = 3.0  # unused by BFR/dipole; a contract placeholder
@@ -182,6 +184,45 @@ def _sidecar_te(sidecar_path: Path) -> "list[float]":
     return tes
 
 
+def _sidecar_path_for(nifti_path) -> "Path | None":
+    """The BIDS JSON sidecar that names the same acquisition as this NIfTI, if it is on disk.
+
+    BIDS pairs `<entities>_MEGRE.nii.gz` with `<entities>_MEGRE.json`, so the sidecar is the input
+    path with the image suffix swapped. Only the exact partner is considered — guessing at other
+    JSON in the directory would risk describing a different acquisition.
+    """
+    if not nifti_path:
+        return None
+    p = Path(nifti_path)
+    name = p.name
+    for suffix in (".nii.gz", ".nii"):
+        if name.endswith(suffix):
+            cand = p.with_name(name[: -len(suffix)] + ".json")
+            return cand if cand.exists() else None
+    return None
+
+
+def _discover_sidecar(args, stage: str) -> "tuple[Path, dict] | None":
+    """The acquisition sidecar sitting beside the primary input, when the caller named none.
+
+    A caller with BIDS data already has the echo times and field strength on disk, one JSON per
+    image; making them retype those as --te/--field-strength is busywork that also invites error
+    (a hand-typed `--field-strength 3` against a sidecar reading 2.8946 silently reconstructs the
+    wrong field). Explicit flags and an explicit --params still win: this only fills what was not
+    given. Returns None unless the partner file exists, parses, and looks like a sidecar.
+    """
+    if getattr(args, "params", None):
+        return None  # the caller named a params source; never second-guess it
+    path = _sidecar_path_for(_primary_path(args, STAGES[stage]["consumes"]))
+    if path is None:
+        return None
+    try:
+        obj = json.loads(path.read_text())
+    except Exception:  # noqa: BLE001 — an unreadable neighbour is simply not a sidecar
+        return None
+    return (path, obj) if _looks_like_sidecar(obj) else None
+
+
 def _sidecar_to_params(path: Path, obj: dict, args, stage: str) -> dict:
     """Map a BIDS MEGRE phase sidecar onto the QSM-CI params.json schema.
 
@@ -200,5 +241,11 @@ def _sidecar_to_params(path: Path, obj: dict, args, stage: str) -> dict:
     if args.b0_dir is not None:
         b0_dir = args.b0_dir
     te = _ensure_te(te, stage)  # BFR/dipole: nominal placeholder if the sidecar carried no TE
+    if not te and "phase" in consumes:
+        # _ensure_te refuses to invent an echo time for a phase-consuming stage, so an empty list
+        # here means the sidecar had no EchoTime. Writing TE: [] hands the container an empty array
+        # it will index anyway ("Index exceeds array bounds"); say what is missing instead.
+        raise SystemExit(f"{path} carries no EchoTime, which the {stage} stage needs — "
+                         "pass --te SEC [SEC ...] as well, or point --params at a params.json.")
     return {"TE": [float(t) for t in te], "B0": float(b0),
             "B0_dir": [float(x) for x in b0_dir], "voxel_size": [float(v) for v in voxel]}

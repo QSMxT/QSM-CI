@@ -7,6 +7,7 @@ brain-extraction (no --mask, no metric set), r2prime scored with the χ metric s
 field-mapping, and a valued option before the slug mis-parsed as the slug. One parametrised pass over
 STAGES pins all of them at once.
 """
+import json
 from pathlib import Path
 
 import nibabel as nib
@@ -14,7 +15,8 @@ import numpy as np
 import pytest
 
 from qsm_ci import runner
-from qsm_ci.params import _nifti_voxel_size, _params_dict, _sidecar_to_params
+from qsm_ci.params import (_discover_sidecar, _nifti_voxel_size, _params_dict,
+                           _sidecar_to_params)
 from qsm_ci.stages import ARTIFACT_FILE, ARTIFACT_KIND, STAGES, is_optional, scorable
 
 SHAPE = (6, 6, 6)
@@ -177,3 +179,92 @@ def test_out_path_treats_a_trailing_slash_as_a_directory(tmp_path):
     (tmp_path / "existing").mkdir()
     assert runner._out_path(str(tmp_path / "existing"), "chimap", multi=False) == tmp_path / "existing" / "chimap.nii.gz"
     assert runner._out_path("anything", "chi-dia", multi=True) == Path("anything") / "chi-dia.nii.gz"
+
+
+# --- BIDS sidecar auto-discovery -------------------------------------------------------------
+# A caller with BIDS data has the echo times and field strength on disk already. Requiring them to
+# be retyped as --te/--field-strength is busywork, and a hand-typed field strength that disagrees
+# with the sidecar (3 vs 2.8946) reconstructs the wrong field without a word.
+
+def _bids_pair(dirpath: Path, echo: int, te: float, b0=2.8946, part="phase"):
+    """One BIDS echo: `<...>_MEGRE.nii.gz` and its `<...>_MEGRE.json` partner."""
+    stem = f"sub-01_acq-x_run-1_echo-{echo}_part-{part}_MEGRE"
+    img = _nii(dirpath / f"{stem}.nii.gz", seed=echo)
+    (dirpath / f"{stem}.json").write_text(
+        json.dumps({"EchoTime": te, "MagneticFieldStrength": b0}))
+    return img
+
+
+def _fieldmap_args(tmp_path, images, **over):
+    argv = ["x", "--phase", *images, "--mask", _nii(tmp_path / "mask.nii.gz", value=1.0)]
+    for k, v in over.items():
+        argv += [f"--{k}", *[str(x) for x in (v if isinstance(v, list) else [v])]]
+    return runner._build_run_parser("x", _algo("field-mapping")).parse_args(argv)
+
+
+def test_sidecar_beside_the_input_supplies_te_and_field_strength(tmp_path):
+    imgs = [_bids_pair(tmp_path, i, te) for i, te in enumerate([0.005, 0.011, 0.017], start=1)]
+    args = _fieldmap_args(tmp_path, imgs)
+    found = _discover_sidecar(args, "field-mapping")
+    assert found is not None
+    path, obj = found
+    params = _sidecar_to_params(path, obj, args, "field-mapping")
+    assert params["TE"] == [0.005, 0.011, 0.017]   # every echo, not just the one beside the input
+    assert params["B0"] == 2.8946
+
+
+def test_explicit_flags_beat_the_sidecar(tmp_path):
+    imgs = [_bids_pair(tmp_path, 1, 0.005)]
+    args = _fieldmap_args(tmp_path, imgs, **{"field-strength": 7})
+    path, obj = _discover_sidecar(args, "field-mapping")
+    assert _sidecar_to_params(path, obj, args, "field-mapping")["B0"] == 7.0
+
+
+def test_an_explicit_params_file_disables_discovery(tmp_path):
+    """--params is the caller being specific; never quietly prefer a neighbour to it."""
+    imgs = [_bids_pair(tmp_path, 1, 0.005)]
+    args = _fieldmap_args(tmp_path, imgs, params=str(tmp_path / "params.json"))
+    assert _discover_sidecar(args, "field-mapping") is None
+
+
+def test_no_sidecar_leaves_the_old_behaviour(tmp_path):
+    """A plain NIfTI with no JSON partner still demands --te/--field-strength."""
+    args = _fieldmap_args(tmp_path, [_nii(tmp_path / "phase.nii.gz", n_echo=3)])
+    assert _discover_sidecar(args, "field-mapping") is None
+    with pytest.raises(SystemExit, match="echo times and field strength"):
+        _params_dict(args, "field-mapping")
+
+
+def test_a_neighbour_that_is_not_a_sidecar_is_ignored(tmp_path):
+    """Only the exact partner file counts, and only if it looks like an acquisition sidecar."""
+    img = _nii(tmp_path / "phase.nii.gz", n_echo=3)
+    (tmp_path / "phase.json").write_text(json.dumps({"something": "else"}))
+    assert _discover_sidecar(_fieldmap_args(tmp_path, [img]), "field-mapping") is None
+    (tmp_path / "phase.json").write_text("{not json")
+    assert _discover_sidecar(_fieldmap_args(tmp_path, [img]), "field-mapping") is None
+
+
+def test_a_sidecar_without_an_echo_time_is_an_error_not_an_empty_te(tmp_path):
+    """TE: [] reaches the container as an array it indexes anyway; say what's missing instead."""
+    img = _nii(tmp_path / "sub-01_part-phase_MEGRE.nii.gz", n_echo=3)
+    (tmp_path / "sub-01_part-phase_MEGRE.json").write_text(
+        json.dumps({"MagneticFieldStrength": 3.0}))
+    args = _fieldmap_args(tmp_path, [img])
+    path, obj = _discover_sidecar(args, "field-mapping")
+    with pytest.raises(SystemExit, match="no EchoTime"):
+        _sidecar_to_params(path, obj, args, "field-mapping")
+
+
+def test_discovery_uses_the_first_echo_of_a_multi_echo_flag(tmp_path):
+    """--phase holds a LIST; the sidecar partner is looked for beside its first entry."""
+    imgs = [_bids_pair(tmp_path, i, te) for i, te in enumerate([0.004, 0.009], start=1)]
+    path, _ = _discover_sidecar(_fieldmap_args(tmp_path, imgs), "field-mapping")
+    assert path.name == "sub-01_acq-x_run-1_echo-1_part-phase_MEGRE.json"
+
+
+def test_uncompressed_nifti_finds_its_sidecar_too(tmp_path):
+    img = str(tmp_path / "sub-01_part-phase_MEGRE.nii")
+    _nii(Path(img), n_echo=3)
+    (tmp_path / "sub-01_part-phase_MEGRE.json").write_text(
+        json.dumps({"EchoTime": 0.006, "MagneticFieldStrength": 3.0}))
+    assert _discover_sidecar(_fieldmap_args(tmp_path, [img]), "field-mapping") is not None
