@@ -76,7 +76,11 @@ def image_digest(ref):
 
 def pin_image(algorithm_yml_text):
     """Rewrite `image: repo:tag` → `image: repo@sha256:…`. Returns (text, pinned_ref_or_None)."""
-    m = re.search(r"^image:\s*(\S+)\s*$", algorithm_yml_text, re.M)
+    # `[^\s#]+` rather than `\S+$`: a manifest may document its image inline
+    # (`image: repo:tag   # the shared engine image`), and a trailing comment must not make the
+    # method look imageless — that reads out as "could not resolve its image to a digest" and
+    # silently leaves the submission unpublished (decompose-qsmrs, v0.5.0).
+    m = re.search(r"^image:\s*([^\s#]+)", algorithm_yml_text, re.M)
     if not m:
         return algorithm_yml_text, None
     ref = m.group(1)
