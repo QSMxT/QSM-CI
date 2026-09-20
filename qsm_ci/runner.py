@@ -21,9 +21,10 @@ import yaml
 
 from .containers import RUNNERS, _run_container, check_runner
 from .resources import _ResourceSampler  # noqa: F401 — re-exported for the sampler regression test
-from .params import (STACKABLE_ARTIFACTS, _check_nifti, _discover_sidecar, _looks_like_sidecar,
-                     _params_dict, _params_summary, _place_echoes,
-                     _place_input, _sidecar_to_params)
+from .params import (STACKABLE_ARTIFACTS, _check_nifti, _discover_sidecar,
+                     _looks_like_sidecar, _params_dict, _params_summary,
+                     _place_echoes, _place_input, _sidecar_to_params,
+                     place_nifti, wants_gzip)
 from .stages import ARTIFACT_FILE, ARTIFACT_KIND, STAGES, is_optional, scorable
 
 
@@ -627,8 +628,10 @@ def run_command(argv, log=print) -> int:
             if not src.exists():
                 raise SystemExit(f"submission did not write {ARTIFACT_FILE[art]} to /output")
             dest = _out_path(args.out, art, multi)
-            dest.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy(src, dest)
+            # Honour the format `-o` asked for. Every submission writes `<artifact>.nii.gz` per the
+            # contract, so copying the bytes through meant `-o mask.nii` handed back gzip data under
+            # a .nii name — which this same CLI then refused to read.
+            place_nifti(src, dest, gzipped=wants_gzip(dest))
             written[art] = dest
             log(f"✓ wrote {dest}  ({runtime:.1f}s)")
 

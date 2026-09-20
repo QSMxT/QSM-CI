@@ -30,7 +30,7 @@ def _nifti_voxel_size(path) -> "list[float] | None":
     """Read pixdim[1:4] (mm) straight from a NIfTI-1 or NIfTI-2 header — no nibabel dependency."""
     if not path or not Path(path).exists():
         return None
-    opener = gzip.open if str(path).endswith(".gz") else open
+    opener = gzip.open if _is_gzip(path) else open  # by content: a .nii may hold gzip (see _is_gzip)
     try:
         with opener(path, "rb") as f:
             hdr = f.read(352)
@@ -78,14 +78,47 @@ def _voxel_size(args, consumes: list, fallback=None) -> list:
     return list(voxel)
 
 
-def _place_input(src, dest: Path) -> None:
-    """Put a consumed NIfTI at <name>.nii.gz, gzip-compressing a plain .nii on the way in."""
-    src = str(src)
-    if src.endswith(".nii") and str(dest).endswith(".nii.gz"):
+def _is_gzip(path) -> bool:
+    """Whether a file is actually gzip-compressed, by its magic bytes rather than its name.
+
+    Names lie in both directions, and this tool used to author the lie itself: every submission
+    writes `<artifact>.nii.gz` per the contract, and `-o mask.nii` copied those bytes through
+    unchanged, so the caller got valid gzip data wearing a `.nii` name. Feed that back in and the
+    old suffix test gzipped it a second time; the container gunzipped once and parsed the inner
+    gzip header as a NIfTI one (`sizeof_hdr=559903` is `1f 8b 08 00` read as a little-endian int)."""
+    try:
+        with open(path, "rb") as f:
+            return f.read(2) == b"\x1f\x8b"
+    except OSError:
+        return False
+
+
+def place_nifti(src, dest: Path, *, gzipped: bool) -> None:
+    """Copy a NIfTI to `dest`, compressed or not as `gzipped` asks, whatever the source actually is.
+
+    One converter for both directions: inputs are placed at the canonical `<artifact>.nii.gz`
+    (gzipped=True), outputs at whatever `-o` asked for. Decided by content, so a mislabelled file
+    on either side is handled rather than corrupted."""
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    if _is_gzip(src) == gzipped:
+        shutil.copy(src, dest)
+    elif gzipped:
         with open(src, "rb") as fi, gzip.open(dest, "wb") as fo:
             shutil.copyfileobj(fi, fo)
     else:
-        shutil.copy(src, dest)
+        with gzip.open(src, "rb") as fi, open(dest, "wb") as fo:
+            shutil.copyfileobj(fi, fo)
+
+
+def wants_gzip(dest) -> bool:
+    """Whether `dest`'s name asks for gzip. Only a plain `.nii` asks for uncompressed; everything
+    else (`.nii.gz`, and any other name the canonical filename is appended to) stays compressed."""
+    return not str(dest).endswith(".nii")
+
+
+def _place_input(src, dest: Path) -> None:
+    """Put a consumed NIfTI at the canonical <name>.nii.gz, compressing it if it isn't already."""
+    place_nifti(src, dest, gzipped=True)
 
 
 def _echo_key(path) -> int:
