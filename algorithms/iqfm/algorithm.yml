@@ -8,6 +8,7 @@ family: deep-learning
 learning: pretrained
 engine: Independent
 inputs: [phase, magnitude, mask, params]  # magnitude drives multi-echo magnitude x TE^2 weighting; mask is required by iQFM
+optional_inputs: [magnitude]  # run.sh guards `-f magnitude.nii.gz`; the weighting is skipped when absent
 description: >
   iQFM — instant tissue (local) field mapping from raw MRI phase using Laplacian-enabled deep neural
   networks (LoT-Unet). It is the tissue-field output of the same network/repo as iQSM: a single deep

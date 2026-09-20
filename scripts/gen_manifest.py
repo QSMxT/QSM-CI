@@ -24,9 +24,9 @@ from qsm_ci.stages import STAGES  # noqa: E402
 
 
 def _inputs(meta: dict) -> list:
-    """The artifacts this method actually reads (its declared `inputs:`, else the stage's consumes) —
-    so the site's 'run it yourself' command lists only the flags the method uses. Empty for a method
-    whose stage isn't a known pipeline stage."""
+    """The artifacts this method actually reads (its declared `inputs:`, else the stage's consumes
+    plus any `optional_inputs:`) — so the site's 'run it yourself' command lists only the flags the
+    method uses. Empty for a method whose stage isn't a known pipeline stage."""
     return _consumes(meta) if meta.get("stage") in STAGES else []
 
 
@@ -37,8 +37,9 @@ def entry(meta: dict) -> dict:
         "slug": meta["slug"],
         "name": meta.get("name", meta["slug"]),
         "stage": meta.get("stage"),
-        # The artifacts this method actually consumes (declared `inputs:` ∩ stage, else the full stage
-        # consumes) — the viewer's "run it yourself" command lists only these flags.
+        # The artifacts this method actually consumes — runner._consumes, so a declared `inputs:`
+        # naming something outside the stage contract (MEDI's magnitude) is carried through, not
+        # dropped. The viewer's "run it yourself" command lists exactly these flags.
         "inputs": _inputs(meta),
         # Leaderboard / submission-sidebar domain: 'qsm' (the field-mapping→bfr→dipole pipeline) or
         # 'chisep' (susceptibility source separation; R2′ generators live there too — they only run

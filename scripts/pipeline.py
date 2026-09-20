@@ -41,6 +41,7 @@ EVAL = ROOT / "eval" / "qsm_eval.py"
 # in the interpreter running this script (CI installs it; a bare `python scripts/pipeline.py` may
 # not). qsm_ci.stages is pure literals — no yaml/heavy deps.
 sys.path.insert(0, str(ROOT))
+from qsm_ci.runner import _consumes  # noqa: E402
 from qsm_ci.stages import STAGES, ARTIFACT_FILE, ARTIFACT_KIND  # noqa: E402
 # Shared scoring/sweep primitives (scripts/scoring.py, also used by sweep.py + combo_sweep.py) — one
 # home for the `qsm-ci run` argv builder, the GT source map, the --shard partition, and the qsm_eval
@@ -379,20 +380,18 @@ def discover_algorithms(track: str = "sim", phantom: "str | None" = None) -> lis
             raise SystemExit(f"{d.name}/algorithm.yml: stage '{s}' is not a known stage/span "
                              f"(one of: {', '.join(sorted(STAGES))})")
         image = doc.get("image")
-        # Mirror runner._consumes EXACTLY so the scorer mounts + passes only the flags `qsm-ci run`
-        # accepts; otherwise it passes a flag the CLI rejects (e.g. --magnitude) and the run DNFs.
-        # A method may NARROW its inputs (`inputs:` — the exact artifacts it reads, a subset of the
-        # stage), or ADD optional extras (`optional_inputs:` — e.g. MEDI (dipole) uses magnitude for
-        # edge weighting). `inputs:` wins; else stage baseline + optional extras.
-        base = STAGES[s]["consumes"]
-        explicit = doc.get("inputs")
-        if isinstance(explicit, list):
-            want = {_yaml_scalar(a) for a in explicit}
-            consumes = [a for a in base if a in want]
-        else:
-            opt = doc.get("optional_inputs")
-            optional = [_yaml_scalar(a) for a in opt] if isinstance(opt, list) else []
-            consumes = base + [a for a in optional if a in ARTIFACT_FILE and a not in base]
+        # CALL runner._consumes rather than reimplementing it: the scorer must mount and pass
+        # exactly the flags `qsm-ci run` accepts, or it passes one the CLI rejects (or omits one the
+        # CLI now requires) and the run DNFs. This was a hand-copied mirror until a change to
+        # `inputs:` semantics landed on one side only — an `inputs:` list naming an artifact from
+        # outside the stage contract (MEDI's magnitude) was dropped here, so --magnitude went
+        # unpassed to a CLI that had just started requiring it.
+        def _scalars(key):
+            v = doc.get(key)
+            return [_yaml_scalar(a) for a in v] if isinstance(v, list) else None
+
+        consumes = _consumes({"stage": s, "inputs": _scalars("inputs"),
+                              "optional_inputs": _scalars("optional_inputs")})
         algos.append({
             "slug": d.name, "dir": d, "stage": s,
             "name": _yaml_scalar(doc.get("name")) if doc.get("name") is not None else d.name,

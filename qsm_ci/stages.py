@@ -47,25 +47,47 @@ ARTIFACT_KIND = {"totalfield": "field", "localfield": "field", "chimap": "chi",
 GT_ARTIFACTS = {"totalfield", "localfield", "chimap", "chi-para", "chi-dia"}
 
 
-def is_optional(stage: str, artifact: str, consumes: "list | None" = None) -> bool:
+# Stages with no magnitude-free method: the multi-echo magnitude is not a weighting nicety there,
+# it IS the measurement. r2prime-generation estimates R2' from the signal decay across echoes;
+# chi-separation fits its source model to that decay. brain-extraction derives the mask from it.
+# "Optional when it isn't the only image input" is simply the wrong default for these.
+MAGNITUDE_REQUIRED_STAGES = {"chi-separation", "r2prime-generation", "brain-extraction"}
+
+
+def is_optional(stage: str, artifact: str, consumes: "list | None" = None,
+                *, explicit: bool = False, opted_out: "set | tuple" = ()) -> bool:
     """Can a method of this stage run without `artifact`? The ONE rule the CLI parser, its help
     text and the workflow-engine wrappers all follow.
 
-    - Anything outside the stage contract (a method opted into it via `optional_inputs:`, e.g. a
-      χ-separation net taking raw phase) is optional by definition.
-    - `magnitude` is optional when it is one of several image inputs (MEDI weights with it, plain
-      TKD ignores it) and required when it is the ONLY image input (brain-extraction,
-      r2prime-generation read nothing else).
-    - Everything else in the contract is required — `phase` included: a field-mapping stage cannot
-      run without its phase.
-    `consumes` is the method's actual input list (runner._consumes) when it narrows the contract."""
+    - Anything outside the stage contract is optional by default (a method opted into it via
+      `optional_inputs:`, e.g. a χ-separation net taking raw phase) — unless the method named it in
+      `inputs:`, which makes it a required extra (MEDI cannot run without its magnitude weight).
+    - Everything in the contract other than `magnitude` is required — `phase` included: a
+      field-mapping stage cannot run without its phase.
+    - `magnitude` is the one negotiable input, and the method decides:
+        * required outright on a MAGNITUDE_REQUIRED_STAGES stage;
+        * optional when the method names it in `optional_inputs:` (its code guards for the file
+          being absent) — the explicit opt-out;
+        * required when the method declares an explicit `inputs:` list containing it, because
+          listing an input is saying the code reads it;
+        * otherwise the legacy default: optional unless it is the only image input.
+
+    `consumes` is the method's actual input list (runner._consumes) when it narrows the contract;
+    `explicit` says that list came from a manifest `inputs:` key; `opted_out` is its
+    `optional_inputs:`. The bare three-argument call keeps the stage-level answer."""
     base = STAGES[stage]["consumes"]
+    if artifact in opted_out:
+        return True                       # the method says its code guards for the file being absent
+    if explicit and artifact in (consumes or ()):
+        return False                      # the method named it in `inputs:` — its code reads it
     if artifact not in base:
-        return True
-    if artifact == "magnitude":
-        imgs = [a for a in (consumes or base) if a != "params"]
-        return imgs != ["magnitude"]
-    return False
+        return True                       # opted-in extra, not declared required
+    if artifact != "magnitude":
+        return False
+    if stage in MAGNITUDE_REQUIRED_STAGES:
+        return False
+    imgs = [a for a in (consumes or base) if a != "params"]
+    return imgs != ["magnitude"]
 
 
 def scorable(stage: str) -> bool:

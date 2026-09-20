@@ -21,7 +21,7 @@ import yaml
 
 from .containers import RUNNERS, _run_container, check_runner
 from .resources import _ResourceSampler  # noqa: F401 — re-exported for the sampler regression test
-from .params import (STACKABLE_ARTIFACTS, _discover_sidecar, _looks_like_sidecar,
+from .params import (STACKABLE_ARTIFACTS, _check_nifti, _discover_sidecar, _looks_like_sidecar,
                      _params_dict, _params_summary, _place_echoes,
                      _place_input, _sidecar_to_params)
 from .stages import ARTIFACT_FILE, ARTIFACT_KIND, STAGES, is_optional, scorable
@@ -39,12 +39,23 @@ def _consumes(algo: dict) -> list:
     method opts into raw multi-echo phase). Opted-in artifacts are optional (stages.is_optional)."""
     base = STAGES[algo["stage"]]["consumes"]
     explicit = algo.get("inputs")
-    if explicit:
-        want = set(explicit)
-        return [a for a in base if a in want]  # stage order; only what the method declares it reads
     extra = [a for a in (algo.get("optional_inputs") or [])
              if a in ARTIFACT_FILE and a not in base]
+    if explicit:
+        want = [a for a in explicit if a in ARTIFACT_FILE]
+        # stage order first, then declared extras outside the contract, then opted-in extras
+        return ([a for a in base if a in want] + [a for a in want if a not in base]
+                + [a for a in extra if a not in want])
     return base + extra
+
+
+def _optional(algo: dict, artifact: str, consumes: "list | None" = None) -> bool:
+    """stages.is_optional for a specific method — carries the manifest's two declarations across:
+    an explicit `inputs:` list (naming an input means the code reads it) and `optional_inputs:`
+    (the method guards for the file being absent)."""
+    return is_optional(algo["stage"], artifact, consumes if consumes is not None else _consumes(algo),
+                       explicit=bool(algo.get("inputs")),
+                       opted_out=set(algo.get("optional_inputs") or []))
 
 
 def _parse_manifest(algo_dir: Path) -> dict:
@@ -167,7 +178,7 @@ def _inputs_summary(slug: str, algo: dict) -> str:
     for art in consumes:
         if art == "params":
             continue
-        opt = "  [optional]" if is_optional(stage, art, consumes) else ""
+        opt = "  [optional]" if _optional(algo, art, consumes) else ""
         lines.append(f"  --{art} PATH".ljust(22) + f"{ARTIFACT_FILE[art]} (NIfTI){opt}")
     if needs_echo:
         lines += ["", "Acquisition parameters — from a BIDS sidecar beside the input (automatic),",
@@ -185,7 +196,7 @@ def _inputs_summary(slug: str, algo: dict) -> str:
                   "  --b0-dir X Y Z".ljust(22) + "unit B0 direction (default: 0 0 1)",
                   "  --voxel-size X Y Z".ljust(22) + "mm (default: from the input header)",
                   "  --params PATH".ljust(22) + "params.json or a BIDS sidecar (optional)"]
-    req_imgs = [a for a in consumes if a != "params" and not is_optional(stage, a, consumes)]
+    req_imgs = [a for a in consumes if a != "params" and not _optional(algo, a, consumes)]
     example = " ".join(f"--{a} {a}.nii.gz" for a in req_imgs)
     if needs_echo:
         example += " --te 0.004 0.012 0.02 0.028 --field-strength 7"
@@ -305,13 +316,14 @@ def _build_run_parser(slug: str, algo: dict) -> argparse.ArgumentParser:
     p.add_argument("slug", help=argparse.SUPPRESS)  # already known; keep argparse happy
     # Required-ness is stages.is_optional — the one rule shared with the help text and the
     # workflow-engine wrappers (phase is required for any stage that consumes it; magnitude is
-    # optional unless it is the stage's sole image input; opted-in extras are optional).
+    # required when the method declares it in `inputs:` or the stage cannot run without it, and
+    # optional when the method opts out via `optional_inputs:`; opted-in extras are optional).
     for art in consumes:
         if art == "params":
             p.add_argument("--params", metavar="PATH", required=False,
                            help="params.json or a BIDS MEGRE sidecar — or use the acquisition flags below")
             continue
-        req = not is_optional(stage, art, consumes)
+        req = not _optional(algo, art, consumes)
         if art in STACKABLE_ARTIFACTS:
             # multi-echo: accept one 4D file OR several per-echo 3D files (BIDS-style), stacked to 4D.
             p.add_argument(f"--{art}", metavar="PATH", nargs="+", required=req,
@@ -515,6 +527,7 @@ def run_command(argv, log=print) -> int:
             for pth in paths:
                 if not Path(pth).exists():
                     raise SystemExit(f"--{art} file not found: {pth}")
+            _check_nifti(art, paths)
             if art in STACKABLE_ARTIFACTS:
                 _place_echoes(paths, idir / ARTIFACT_FILE[art], log)
             else:

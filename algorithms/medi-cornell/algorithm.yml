@@ -9,12 +9,11 @@ stage: dipole
 # this method's input contract only — the harness mounts it and passes --magnitude, and
 # other dipole methods are unaffected. Without it, recon.m fails on a missing
 # /input/magnitude.nii.gz.
-optional_inputs:
-- magnitude
 language: MATLAB
 family: iterative
 learning: none
 engine: MEDI toolbox
+inputs: [localfield, mask, params, magnitude]  # recon.m reads magnitude.nii.gz unconditionally for the data-fidelity weight
 description: Morphology Enabled Dipole Inversion (Cornell MEDI toolbox), compiled from
   MATLAB and run on the license-free MATLAB Runtime. Solves the L1 morphology-regularized
   dipole inversion directly on the local (tissue) field (no background-field removal).
