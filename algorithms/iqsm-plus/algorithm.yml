@@ -6,6 +6,7 @@ stage: end-to-end
 language: Python
 family: deep-learning
 learning: pretrained
+inputs: [phase, magnitude, mask, params]  # magnitude drives the per-echo magnitude x TE^2 combination
 engine: Independent
 description: >
   iQSM+ — an orientation-adaptive, single-step deep-learning method that reconstructs susceptibility

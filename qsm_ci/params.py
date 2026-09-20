@@ -93,6 +93,27 @@ def _echo_key(path) -> int:
     return int(m.group(1)) if m else 0
 
 
+# Image artifacts are NIfTI; `params` is the one JSON in the contract. A shell glob written to catch
+# echoes (`*part-phase*`) also sweeps in the BIDS sidecars sitting beside them, and those used to
+# travel all the way to nibabel and surface as a bare ImageFileError traceback. Reject them here,
+# naming what was wrong and the narrower glob that fixes it.
+def _check_nifti(art: str, paths: list) -> None:
+    bad = [str(p) for p in paths if not str(p).endswith((".nii", ".nii.gz"))]
+    if not bad:
+        return
+    shown = "\n".join(f"  {p}" for p in bad[:5])
+    if len(bad) > 5:
+        shown += f"\n  ... and {len(bad) - 5} more"
+    hint = ""
+    if all(p.endswith(".json") for p in bad):
+        hint = ("\nThose are BIDS sidecars, not images — a glob like '*part-phase*' matches the JSON "
+                "as well as the NIfTI. Narrow it to '*part-phase*.nii*'.")
+        if art in STACKABLE_ARTIFACTS:
+            hint += ("\n(No need to pass them: the echo times and field strength are read from the "
+                     "sidecar automatically.)")
+    raise SystemExit(f"--{art} takes NIfTI images (.nii/.nii.gz); these are not:\n{shown}{hint}")
+
+
 def _place_echoes(paths: list, dest: Path, log) -> None:
     """Place a multi-echo artifact: one file goes in as-is; several 3D echoes are stacked into 4D.
 

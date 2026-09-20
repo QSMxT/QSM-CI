@@ -6,6 +6,7 @@ stage: bfr+dipole
 language: Rust
 family: iterative
 learning: none
+optional_inputs: [magnitude]  # run.sh guards `-f magnitude.nii.gz`; runs without the SNR weight when absent
 engine: QSMxT / QSM.rs
 description: >
   Preconditioned Total Field Inversion: a single-step method that inverts the total field directly

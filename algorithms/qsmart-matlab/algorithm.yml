@@ -7,6 +7,7 @@ stage: end-to-end
 language: MATLAB
 family: iterative
 learning: none
+inputs: [phase, magnitude, mask, params]  # recon.m reads magnitude.nii.gz for the weighted echo fit and vasculature mask
 engine: QSMART toolbox v1.0
 description: >
   QSMART — the authors' ORIGINAL MATLAB toolbox (v1.0), run as the full pipeline: Laplacian phase
