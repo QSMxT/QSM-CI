@@ -21,7 +21,7 @@ import yaml
 
 from .containers import RUNNERS, _run_container, check_runner
 from .resources import _ResourceSampler  # noqa: F401 — re-exported for the sampler regression test
-from .params import (STACKABLE_ARTIFACTS, _looks_like_sidecar,
+from .params import (STACKABLE_ARTIFACTS, _discover_sidecar, _looks_like_sidecar,
                      _params_dict, _params_summary, _place_echoes,
                      _place_input, _sidecar_to_params)
 from .stages import ARTIFACT_FILE, ARTIFACT_KIND, STAGES, is_optional, scorable
@@ -170,10 +170,11 @@ def _inputs_summary(slug: str, algo: dict) -> str:
         opt = "  [optional]" if is_optional(stage, art, consumes) else ""
         lines.append(f"  --{art} PATH".ljust(22) + f"{ARTIFACT_FILE[art]} (NIfTI){opt}")
     if needs_echo:
-        lines += ["", "Acquisition parameters — give a params.json OR the flags (either works):",
-                  "  --params PATH".ljust(22) + "params.json (or a BIDS phase sidecar)",
-                  "  --te SEC [SEC ...]".ljust(22) + "echo times, seconds   [required here]",
-                  "  --field-strength T".ljust(22) + "B0 in tesla   [required here]",
+        lines += ["", "Acquisition parameters — from a BIDS sidecar beside the input (automatic),",
+                  "a params.json, or these flags; whatever you pass explicitly wins:",
+                  "  --params PATH".ljust(22) + "params.json or a BIDS phase sidecar",
+                  "  --te SEC [SEC ...]".ljust(22) + "echo times, seconds   [required if no sidecar]",
+                  "  --field-strength T".ljust(22) + "B0 in tesla   [required if no sidecar]",
                   "  --b0-dir X Y Z".ljust(22) + "unit B0 direction (default: 0 0 1)",
                   "  --voxel-size X Y Z".ljust(22) + "mm (default: from the input header)"]
     else:
@@ -496,9 +497,16 @@ def run_command(argv, log=print) -> int:
                     else:
                         shutil.copy(src, dest)  # already a params.json — use verbatim
                 else:
-                    params = _params_dict(args, stage)
+                    found = _discover_sidecar(args, stage)
+                    if found:
+                        src, obj = found
+                        params = _sidecar_to_params(src, obj, args, stage)
+                        log(f"  params (from BIDS sidecar {src.name}): "
+                            + _params_summary(params, stage))
+                    else:
+                        params = _params_dict(args, stage)
+                        log("  params: " + _params_summary(params, stage))
                     dest.write_text(json.dumps(params, indent=2) + "\n")
-                    log("  params: " + _params_summary(params, stage))
                 continue
             value = getattr(args, art, None)
             if not value:
