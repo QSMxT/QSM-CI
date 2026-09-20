@@ -210,3 +210,88 @@ def test_medi_gets_its_magnitude_flag(slug):
         sys.path.pop(0)
     algo = next(a for a in pipeline.discover_algorithms("sim") if a["slug"] == slug)
     assert "magnitude" in algo["consumes"]
+
+
+# ------------------------------------------------ the flag surface a stage-generic caller needs
+
+@pytest.mark.parametrize("path", MANIFESTS, ids=lambda p: p.parent.name)
+def test_every_method_accepts_its_whole_stage_contract(path):
+    """`qsm-ci run <slug>` must accept every flag the method's STAGE contract names, whatever the
+    method narrows itself to with `inputs:`.
+
+    The generated CWL / Snakemake / Nextflow wrappers take the method slug as a RUN-TIME input, so
+    the `dipole` rule emits `--localfield --mask --params` for whatever slug it is handed. While the
+    parser was built from the method's own `inputs:`, handing that rule qsmnet (`inputs: [localfield,
+    mask]`) failed the entire step with `unrecognized arguments: --params`. `inputs:` decides what is
+    MOUNTED (runner._consumes), not what may be named.
+    """
+    algo = _load(path)
+    algo.setdefault("name", path.parent.name)
+    algo.setdefault("slug", path.parent.name)
+    assert algo.get("stage") in STAGES, f"{path.parent.name}: unknown stage {algo.get('stage')!r}"
+
+    parser = runner._build_run_parser(algo["slug"], algo)
+    accepted = {opt for action in parser._actions for opt in action.option_strings}
+    for artifact in STAGES[algo["stage"]]["consumes"]:
+        assert f"--{artifact}" in accepted, (
+            f"{path.parent.name}: the {algo['stage']} contract names {artifact}, so a stage-generic "
+            f"wrapper will pass --{artifact} — this method's parser rejects it")
+
+
+def test_an_unread_input_is_accepted_optional_and_ignored():
+    """Accepting it is not the same as reading it: never required, and never mounted."""
+    algo = {"stage": "dipole", "name": "QSMnet", "slug": "qsmnet",
+            "inputs": ["localfield", "mask"]}
+    assert runner._ignored(algo) == ["params"]
+    assert "params" not in runner._consumes(algo)      # still not mounted
+
+    p = runner._build_run_parser("qsmnet", algo)
+    bare = p.parse_args(["qsmnet", "--localfield", "l.nii.gz", "--mask", "m.nii.gz"])
+    assert bare.params is None                          # accepted, never required
+    given = p.parse_args(["qsmnet", "--localfield", "l.nii.gz", "--mask", "m.nii.gz",
+                          "--params", "p.json"])
+    assert given.params == "p.json"
+
+
+def test_a_flag_outside_the_contract_is_still_rejected():
+    """The surface is the stage contract, not 'anything goes' — dipole doesn't name magnitude, and
+    plain TKD never declared it, so --magnitude is still an error (MEDI, which declares it, gets it:
+    see test_medi_gets_its_magnitude_flag)."""
+    algo = {"stage": "dipole", "name": "TKD", "slug": "tkd-qsmrs"}
+    with pytest.raises(SystemExit):
+        runner._build_run_parser("tkd-qsmrs", algo).parse_args(
+            ["tkd-qsmrs", "--localfield", "l.nii.gz", "--mask", "m.nii.gz",
+             "--magnitude", "m4d.nii.gz"])
+
+
+def test_an_ignored_input_never_reaches_the_method(tmp_path, capsys):
+    """End to end on the `local` runner: --params is accepted, the run succeeds, and no params.json
+    is placed in the input dir the method sees."""
+    import nibabel as nib
+    import numpy as np
+
+    method = tmp_path / "narrow-method"
+    method.mkdir()
+    (method / "algorithm.yml").write_text(
+        "name: Narrow\nslug: narrow-method\nstage: dipole\ninputs: [localfield, mask]\n"
+        "image: bash:latest\nrun: bash run.sh\n")
+    # fails loudly if a params.json it never declared is mounted anyway
+    (method / "run.sh").write_text(
+        '#!/usr/bin/env bash\nset -euo pipefail\nIN="${1:-/input}"; OUT="${2:-/output}"\n'
+        'if [ -e "$IN/params.json" ]; then echo "params.json was mounted" >&2; exit 3; fi\n'
+        'cp "$IN/localfield.nii.gz" "$OUT/chimap.nii.gz"\n')
+
+    for name in ("localfield", "mask"):
+        nib.save(nib.Nifti1Image(np.ones((4, 4, 4), "float32"), np.eye(4)),
+                 str(tmp_path / f"{name}.nii.gz"))
+    (tmp_path / "p.json").write_text('{"TE": [0.004], "B0": 3.0, "B0_dir": [0, 0, 1], '
+                                     '"voxel_size": [1, 1, 1]}')
+
+    rc = runner.run_command([str(method),
+                             "--localfield", str(tmp_path / "localfield.nii.gz"),
+                             "--mask", str(tmp_path / "mask.nii.gz"),
+                             "--params", str(tmp_path / "p.json"),
+                             "--runner", "local", "-o", str(tmp_path / "chimap.nii.gz")])
+    assert rc == 0, "the run must succeed, not reject the flag"
+    assert (tmp_path / "chimap.nii.gz").exists()
+    assert "ignoring --params" in capsys.readouterr().out   # and say so, rather than silently
