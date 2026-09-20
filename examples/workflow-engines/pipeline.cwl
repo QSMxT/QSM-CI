@@ -1,11 +1,12 @@
 cwlVersion: v1.2
 class: Workflow
-# run:  cwltool pipeline.cwl --phase p.nii.gz --magnitude m.nii.gz --mask mask.nii.gz --params p.json
+# run:  cwltool pipeline.cwl --phase p.nii.gz --magnitude m.nii.gz --mask mask.nii.gz
+#       (--magnitude/--params are optional — only some methods read them)
 inputs:
   phase: File
-  magnitude: File
+  magnitude: File?
   mask: File
-  params: File
+  params: File?
 outputs:
   chimap:
     type: File

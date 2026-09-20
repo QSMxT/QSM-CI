@@ -254,3 +254,67 @@ def test_example_pipelines_are_current():
     for fname, engine in [("pipeline.cwl", "cwl"), ("Snakefile", "snakemake"), ("pipeline.nf", "nextflow")]:
         assert (examples / fname).read_text() == generate_pipeline(engine, slugs), (
             f"{fname} is stale — regenerate: qsm-ci interface {engine} --pipeline {','.join(slugs)}")
+
+
+def test_optional_artifacts_are_optional_in_every_engine():
+    """An artifact the stage can run without (`params`, and `magnitude` where it's negotiable) must
+    not be demanded by the wrapper. Snakemake listed it under `input:`, so the rule would not fire
+    until a params.json existed; Nextflow took it as a plain `path`, so a run without one could not
+    be expressed at all. Only CWL honoured `_optional` — now all three do."""
+    import yaml
+
+    from qsm_ci.interfaces import generate, generate_pipeline
+
+    snake = generate("snakemake", stage="dipole", slug="qsmnet")
+    assert 'params="params.json",' not in snake      # not a required input file any more
+    assert "def optional(" in snake                  # the helper that resolves it at run time
+    assert "{params.optional}" in snake              # and it reaches the command line
+
+    nf = generate("nextflow", stage="dipole", slug="qsmnet")
+    assert "\n    path params\n" not in nf           # `params` would shadow Nextflow's own global
+    assert "path params_json" in nf
+    assert "params_json.name == 'NO_FILE' ? '' :" in nf   # sentinel → flag dropped
+
+    wf = list(yaml.safe_load_all(generate_pipeline("cwl", ["romeo-qsmrs", "vsharp-qsmrs",
+                                                           "rts-qsmrs"])))[0]
+    assert wf["inputs"]["params"] == "File?"         # a pipeline of methods reading none still runs
+    assert wf["inputs"]["magnitude"] == "File?"
+    assert wf["inputs"]["phase"] == "File"           # but a required one stays required
+
+
+@pytest.mark.parametrize("slug", ["qsmnet", "xqsm", "tkd-qsmrs", "medi-qsmrs"])
+def test_every_flag_a_wrapper_emits_is_accepted_by_the_method(slug):
+    """The end of the loop: a wrapper takes the slug at RUN time, so every flag it emits for a stage
+    must parse for every method at that stage — including one that narrows its `inputs:`."""
+    import yaml
+
+    from qsm_ci import runner
+    from qsm_ci.interfaces import _consumes as stage_consumes
+
+    algo = yaml.safe_load((Path(__file__).parent.parent / "algorithms" / slug /
+                           "algorithm.yml").read_text())
+    algo.setdefault("name", slug)
+    algo.setdefault("slug", slug)
+    parser = runner._build_run_parser(slug, algo)
+    accepted = {opt for action in parser._actions for opt in action.option_strings}
+    for artifact in stage_consumes(algo["stage"]):
+        assert f"--{artifact}" in accepted, f"a {algo['stage']} wrapper passes --{artifact}; {slug} rejects it"
+
+
+def test_generated_snakefiles_define_every_helper_they_call():
+    """A generated Snakefile must be self-contained. The `optional()` helper was emitted by the
+    per-stage generator and forgotten by the --pipeline one, so the Snakefile called a name that was
+    never defined and snakemake exited 1 at parse time — before running anything, and invisible to
+    every test here, since the end-to-end job is the only one that actually parses a Snakefile."""
+    from qsm_ci.interfaces import generate, generate_pipeline
+
+    texts = {
+        "all stages": generate("snakemake"),
+        "one stage": generate("snakemake", stage="dipole"),
+        "pipeline": generate_pipeline("snakemake", ["romeo-qsmrs", "vsharp-qsmrs", "rts-qsmrs"]),
+    }
+    assert "optional(" in texts["pipeline"], "the guard would pass vacuously — pipeline uses no helper"
+    for what, text in texts.items():
+        if "optional(" in text:
+            assert "def optional(" in text, f"the {what} Snakefile calls optional() without defining it"
+            assert "import os" in text, f"the {what} Snakefile's helper uses os.path without importing os"

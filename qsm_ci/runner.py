@@ -49,6 +49,31 @@ def _consumes(algo: dict) -> list:
     return base + extra
 
 
+def _accepts(algo: dict) -> list:
+    """The artifacts this method's command line ACCEPTS a flag for — the stage contract, plus
+    anything the method itself declares on top of it.
+
+    This is deliberately wider than :func:`_consumes` (what the method READS, and therefore what is
+    mounted into /input). The distinction is what lets a caller be stage-generic: the workflow-engine
+    wrappers take the method `slug` as a *run-time* input, so a Snakemake rule or Nextflow process
+    for the `dipole` stage emits `--localfield --mask --params` whatever slug it is handed. If the
+    accepted flags narrowed with each method, swapping in one that declares `inputs: [localfield,
+    mask]` (qsmnet, xqsm, …) would fail the whole step with `unrecognized arguments: --params`.
+
+    So the command-line surface is the stage's public contract, uniform for every method at that
+    stage; `inputs:` decides what gets mounted, not what may be named. A flag from outside the
+    contract that the method never declared (`--magnitude` to plain TKD) is still rejected."""
+    consumes = _consumes(algo)
+    base = STAGES[algo["stage"]]["consumes"]
+    return base + [a for a in consumes if a not in base]
+
+
+def _ignored(algo: dict) -> list:
+    """Accepted-but-unread artifacts: named by the stage contract, not read by this method."""
+    consumes = _consumes(algo)
+    return [a for a in _accepts(algo) if a not in consumes]
+
+
 def _optional(algo: dict, artifact: str, consumes: "list | None" = None) -> bool:
     """stages.is_optional for a specific method — carries the manifest's two declarations across:
     an explicit `inputs:` list (naming an input means the code reads it) and `optional_inputs:`
@@ -188,6 +213,11 @@ def _inputs_summary(slug: str, algo: dict) -> str:
                   "  --field-strength T".ljust(22) + "B0 in tesla   [required if no sidecar]",
                   "  --b0-dir X Y Z".ljust(22) + "unit B0 direction (default: 0 0 1)",
                   "  --voxel-size X Y Z".ljust(22) + "mm (default: from the input header)"]
+    elif "params" not in consumes:
+        # No params.json is mounted for this method, so the acquisition flags reach nothing. They
+        # are still ACCEPTED (a stage-generic wrapper passes them) — see _accepts — but saying
+        # "optional" here would imply they do something.
+        lines += ["", "Acquisition parameters: none — this method reads no params.json."]
     else:
         # BFR/dipole take a field already in ppm — echo times and field strength don't enter the
         # maths (the dipole kernel depends only on B0 direction + voxel size), so all of these are
@@ -196,6 +226,16 @@ def _inputs_summary(slug: str, algo: dict) -> str:
                   "  --b0-dir X Y Z".ljust(22) + "unit B0 direction (default: 0 0 1)",
                   "  --voxel-size X Y Z".ljust(22) + "mm (default: from the input header)",
                   "  --params PATH".ljust(22) + "params.json or a BIDS sidecar (optional)"]
+    ignored = _ignored(algo)
+    if ignored:
+        # The stage contract is the command-line surface (so one wrapper serves every method at the
+        # stage) — name what this particular method will ignore, rather than leaving it to be found
+        # at run time.
+        lines += ["", "Accepted, then ignored:  " + ", ".join("--" + a for a in ignored),
+                  f"  (the {stage} contract names "
+                  f"{'it' if len(ignored) == 1 else 'them'}, so one workflow wrapper serves every "
+                  f"method at this stage — {slug} doesn't read "
+                  f"{'it' if len(ignored) == 1 else 'them'})"]
     req_imgs = [a for a in consumes if a != "params" and not _optional(algo, a, consumes)]
     example = " ".join(f"--{a} {a}.nii.gz" for a in req_imgs)
     if needs_echo:
@@ -314,24 +354,31 @@ def _build_run_parser(slug: str, algo: dict) -> argparse.ArgumentParser:
         prog=f"qsm-ci run {slug}", description=desc,
         epilog=_manifest_epilog(algo), formatter_class=_HelpFmt)
     p.add_argument("slug", help=argparse.SUPPRESS)  # already known; keep argparse happy
-    # Required-ness is stages.is_optional — the one rule shared with the help text and the
-    # workflow-engine wrappers (phase is required for any stage that consumes it; magnitude is
-    # required when the method declares it in `inputs:` or the stage cannot run without it, and
-    # optional when the method opts out via `optional_inputs:`; opted-in extras are optional).
-    for art in consumes:
+    # The flag SURFACE is the stage contract (_accepts), so a stage-generic caller works with any
+    # slug; required-ness is stages.is_optional (phase is required for any stage that consumes it;
+    # magnitude is required when the method declares it in `inputs:` or the stage cannot run without
+    # it, and optional when the method opts out via `optional_inputs:`; opted-in extras are
+    # optional). An artifact this method doesn't read is accepted but never required — passing it is
+    # how a wrapper stays method-agnostic, and it is ignored rather than mounted.
+    unread = set(_ignored(algo))
+    for art in _accepts(algo):
         if art == "params":
+            note = "" if art not in unread else "  [ignored: this method reads no params.json]"
             p.add_argument("--params", metavar="PATH", required=False,
-                           help="params.json or a BIDS MEGRE sidecar — or use the acquisition flags below")
+                           help="params.json or a BIDS MEGRE sidecar — or use the acquisition "
+                                "flags below" + note)
             continue
-        req = not _optional(algo, art, consumes)
+        req = art not in unread and not _optional(algo, art, consumes)
+        note = ("" if req else
+                "  [ignored: not read by this method]" if art in unread else "  [optional]")
         if art in STACKABLE_ARTIFACTS:
             # multi-echo: accept one 4D file OR several per-echo 3D files (BIDS-style), stacked to 4D.
             p.add_argument(f"--{art}", metavar="PATH", nargs="+", required=req,
                            help=f"{ARTIFACT_FILE[art]} — one 4D file, or per-echo 3D files to stack"
-                                + ("" if req else "  [optional]"))
+                                + note)
         else:
             p.add_argument(f"--{art}", metavar="PATH", required=req,
-                           help=f"{ARTIFACT_FILE[art]} (NIfTI)" + ("" if req else "  [optional]"))
+                           help=f"{ARTIFACT_FILE[art]} (NIfTI)" + note)
     acq = p.add_argument_group("acquisition parameters (build params.json when --params is omitted)")
     acq.add_argument("--te", nargs="+", type=float, metavar="SEC",
                      help="echo times in seconds (required for field-mapping stages)")
@@ -491,6 +538,17 @@ def run_command(argv, log=print) -> int:
     with tempfile.TemporaryDirectory(prefix="qsm-ci-") as td:
         idir, odir = Path(td) / "input", Path(td) / "output"
         idir.mkdir(parents=True)
+        # A stage-generic caller — the workflow-engine wrappers take the method slug at RUN time,
+        # so they pass every flag in the stage contract — may hand us artifacts this method doesn't
+        # read. Those are accepted (else the wrapper breaks on an unrecognized argument) but not
+        # mounted, which must be visible rather than silent.
+        unread = [f"--{a}" for a in _ignored(algo) if getattr(args, a, None)]
+        if "params" not in consumes and any(getattr(args, f, None) for f in
+                                            ("te", "field_strength", "b0_dir", "voxel_size")):
+            unread.append("the acquisition flags")  # they only ever reach a params.json
+        if unread:
+            log(f"  note: {algo['slug']} reads {', '.join(consumes)} — "
+                f"ignoring {', '.join(unread)} (not passed to the container)")
         for art in consumes:
             if art == "params":
                 dest = idir / ARTIFACT_FILE["params"]
@@ -540,6 +598,9 @@ def run_command(argv, log=print) -> int:
         # after it (the same check _score repeats when it actually loads them).
         truth_paths = {}
         if getattr(args, "truth", None):
+            if not getattr(args, "mask", None):
+                raise SystemExit("--truth needs --mask: the metrics are computed inside the brain "
+                                 "mask (this method doesn't read one, but scoring does)")
             truth = Path(args.truth)
             for art in prods:
                 truth_paths[art] = truth / ARTIFACT_FILE[art] if (multi or truth.is_dir()) else truth

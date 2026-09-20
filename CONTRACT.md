@@ -28,8 +28,13 @@ diamagnetic (χ−, myelin·calcium) source map from the local field, R2′, χ_
 magnitude. It is scored **isolated only**: its outputs are neither `localfield` nor `chimap`, so it
 never enters the field-mapping × bfr × dipole composed matrix. Most methods read a subset of the six
 inputs — declare what your code actually reads under `inputs:` in `algorithm.yml` (e.g.
-`inputs: [localfield, chimap, r2prime, mask]`) and only those are mounted and offered as `qsm-ci run`
-flags.
+`inputs: [localfield, chimap, r2prime, mask]`) and only those are mounted into `/input`.
+
+`inputs:` narrows what is **mounted**, not what may be **named**. `qsm-ci run <slug>` accepts a flag
+for every artifact your stage's contract lists, whichever method is being run — a flag for something
+you didn't declare is simply ignored, with a note. That uniformity is what lets one wrapper serve a
+whole stage: the generated CWL / Snakemake / Nextflow wrappers take the method slug as a *run-time*
+input, so the `dipole` rule passes `--localfield --mask --params` whatever slug it is handed.
 
 `r2prime-generation` estimates R2′ from the multi-echo GRE magnitude alone, for the GRE-only
 condition where no spin-echo acquisition provides a measured R2. It is scored isolated against the
