@@ -14,6 +14,7 @@ Two failures motivated this, both hit on real BIDS data:
 """
 import os
 import re
+import sys
 from pathlib import Path
 
 import pytest
@@ -171,3 +172,41 @@ def test_optional_magnitude_is_really_optional(path):
     assert not _reads_magnitude_unconditionally(path.parent), (
         f"{path.parent.name}: --magnitude is optional but the code reads magnitude.nii.gz "
         f"unconditionally; add it to `inputs:` or guard for it")
+
+
+# ------------------------------------------------- the scorer must agree with the CLI, exactly
+
+def test_the_scorer_passes_exactly_the_flags_the_cli_accepts():
+    """`scripts/pipeline.py` decides which `--<artifact>` flags the scored run is given, and the CLI
+    decides which it accepts. These were two hand-copied implementations of one rule, and they drifted
+    the moment `inputs:` semantics changed on one side: an `inputs:` list naming an artifact outside
+    the stage contract (MEDI's magnitude) was dropped by the scorer, so `--magnitude` went unpassed to
+    a CLI that had just started requiring it, and both MEDI submissions DNF'd in CI.
+
+    pipeline.py now calls runner._consumes. This pins that it keeps doing so, for every submission.
+    """
+    sys.path.insert(0, str(ROOT / "scripts"))
+    try:
+        import pipeline
+    finally:
+        sys.path.pop(0)
+
+    discovered = {a["slug"]: a["consumes"] for a in pipeline.discover_algorithms("sim")}
+    assert discovered, "discovery found no submissions"
+    for slug, consumes in discovered.items():
+        algo = _load(ROOT / "algorithms" / slug / "algorithm.yml")
+        assert consumes == runner._consumes(algo), (
+            f"{slug}: the scorer would pass {consumes}, the CLI expects "
+            f"{runner._consumes(algo)}")
+
+
+@pytest.mark.parametrize("slug", ["medi-qsmrs", "medi-cornell"])
+def test_medi_gets_its_magnitude_flag(slug):
+    """The specific regression: a required input from outside the stage contract."""
+    sys.path.insert(0, str(ROOT / "scripts"))
+    try:
+        import pipeline
+    finally:
+        sys.path.pop(0)
+    algo = next(a for a in pipeline.discover_algorithms("sim") if a["slug"] == slug)
+    assert "magnitude" in algo["consumes"]
