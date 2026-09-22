@@ -1154,6 +1154,7 @@ async function loadRun() {
   // The volumes are an earlier publish's copy (its latest upload failed; see publish_volumes.py).
   $("stale-note").classList.toggle("hidden", !run.volumes_stale);
   try { await refreshView(); } catch (e) {
+    console.error("[viewer] volumes failed for run", run.id, e);   // the note below can't say which map
     canvas.style.visibility = "hidden";
     note.textContent = "Interactive volumes aren't available for this run.";
     note.classList.remove("hidden"); note.classList.add("flex");
@@ -1604,6 +1605,11 @@ const BASE_KINDS = new Set(["truth", "magnitude", "totalfield", "localfield"]);
 function volUrlFor(kind, comp) {
   const key = volKey(kind, comp);
   if (run && run.volumes && run.volumes[key]) return run.volumes[key];
+  // An HF-backed run advertises exactly which maps it has. If it doesn't have this source's map, fall
+  // back to the plain (χ+/single-map) key rather than deriving a local path for a file that was never
+  // published: the derived path 404s, and a 404 on the BASE map is what shows the "volumes aren't
+  // available" note. Belt and braces behind activeComp() — it also covers any future key that drifts.
+  if (run && run.volumes && comp === "dia" && run.volumes[kind]) return run.volumes[kind];
   const local = run && localTruth.get(`${run.id}/${key}`);
   return local || baseUrl + key + ".nii.gz";
 }
@@ -1666,6 +1672,12 @@ async function revealReproLayers(token) {
     btn.classList.remove("hidden");
   }
 }
+// The χ± source the OPEN run is actually resolved against. `chisepComp` is remembered as you browse
+// (like chisepPhantom), so a detour through in-silico and back keeps you on χ−; but a run that isn't
+// a χ-separation one has no "-dia" set at all, and asking for one sent the viewer to a map that was
+// never published — a 404 that surfaced as "Interactive volumes aren't available for this run." on a
+// perfectly healthy run. So every URL resolves through this, not through `chisepComp` directly.
+const activeComp = () => (isChisepRun() ? chisepComp : "para");
 const volComps = () => (isChisepRun() ? ["para", "dia"] : ["para"]);
 const residentByUrl = (u) => nv.volumes.find((v) => v.url === u);
 
@@ -1758,11 +1770,12 @@ async function refreshView() {
     residentRunId = run.id; activeBaseVol = activeErrVol = null; preloadPromise = null;
   }
   const needErr = showError && runHasError();
-  const pending = !residentByUrl(volUrlFor(baseKind, chisepComp))
-    || (needErr && !residentByUrl(volUrlFor("error", chisepComp)));
+  const comp = activeComp();
+  const pending = !residentByUrl(volUrlFor(baseKind, comp))
+    || (needErr && !residentByUrl(volUrlFor("error", comp)));
   if (pending) setLoading(true);
   try {
-    const base = await ensureVolume("base", baseKind, chisepComp);      // the visible map (await)
+    const base = await ensureVolume("base", baseKind, comp);            // the visible map (await)
     if (token !== viewToken) return;                                    // superseded: a newer call owns the view
     activeBaseVol = base;
     if (!activeBaseVol) throw new Error("base volume unavailable");     // → loadRun shows the fallback note
@@ -1773,7 +1786,7 @@ async function refreshView() {
     if (needErr) {
       await preloadPromise;
       if (token !== viewToken) return;
-      const err = await ensureVolume("error", "error", chisepComp);
+      const err = await ensureVolume("error", "error", comp);
       if (token !== viewToken) return;
       activeErrVol = err;
     } else activeErrVol = null;
