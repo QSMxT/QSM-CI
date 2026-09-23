@@ -25,6 +25,9 @@ on:
         description: "true = squash the repo history afterwards (reclaims storage within ~36h)"
         default: "true"
 
+# `shell: bash` here is load-bearing, not decoration: naming the shell explicitly makes every
+# `run:` below execute as `bash --noprofile --norc -eo pipefail {0}`, whereas the IMPLICIT
+# default is `bash -e {0}` — fail-fast but pipe-blind, so `a | b` would report only b's status.
 defaults:
   run:
     shell: bash

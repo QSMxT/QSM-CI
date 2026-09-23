@@ -19,7 +19,7 @@ from pathlib import Path
 
 import yaml
 
-from .containers import RUNNERS, _run_container, check_runner
+from .containers import RUNNERS, RunTimeout, _run_container, check_runner, timeout_s
 from .resources import _ResourceSampler  # noqa: F401 — re-exported for the sampler regression test
 from .params import (STACKABLE_ARTIFACTS, _check_nifti, _discover_sidecar,
                      _looks_like_sidecar, _params_dict, _params_summary,
@@ -408,6 +408,9 @@ def _build_run_parser(slug: str, algo: dict) -> argparse.ArgumentParser:
                    help="docker/podman/apptainer run the image; local runs run.sh on the host")
     p.add_argument("--set", action="append", default=[], dest="overrides", metavar="NAME=VALUE",
                    help="override a method parameter (repeatable); valid names listed below")
+    p.add_argument("--timeout", type=float, metavar="MINUTES",
+                   help="wall-clock budget for the run; the container is killed on expiry "
+                        "(default: $QSMCI_TIMEOUT seconds, else CONTRACT's 2 h; 0 = no limit)")
     return p
 
 
@@ -415,7 +418,8 @@ def _build_run_parser(slug: str, algo: dict) -> argparse.ArgumentParser:
 # the parser) is known: `qsm-ci run --runner local ./my-method --localfield lf.nii.gz` must resolve
 # `./my-method`, not `local`. Artifact flags and --te are nargs="+" (swallow every following
 # non-flag token); --b0-dir/--voxel-size take three; the rest take one. `--opt=value` takes none.
-_ONE_VALUE = {"--runner", "--set", "-o", "--out", "--truth", "--seg", "--params", "--field-strength", "--b0"}
+_ONE_VALUE = {"--runner", "--set", "-o", "--out", "--truth", "--seg", "--params", "--field-strength",
+              "--b0", "--timeout"}
 _THREE_VALUES = {"--b0-dir", "--voxel-size"}
 _GREEDY = {"--te"} | {f"--{a}" for a in ARTIFACT_FILE}
 
@@ -610,7 +614,14 @@ def run_command(argv, log=print) -> int:
                 _load_nifti(args.seg, "--seg", header_only=True)
 
         try:
-            runtime = _run_container(algo, idir, odir, args.runner, log)
+            runtime = _run_container(algo, idir, odir, args.runner, log,
+                                     timeout=timeout_s(getattr(args, "timeout", None)))
+        except RunTimeout as e:
+            # The container/process tree is already dead (_run_container kills it before raising),
+            # so this is just the exit path: non-zero, with the reason on one line. The scorer turns
+            # that into a DNF row for this run and keeps going with the rest of the shard.
+            log(f"✗ {algo['name']} failed: {e}")
+            return 1
         except subprocess.CalledProcessError as e:
             # The method's stdout/stderr stream straight to the terminal (nothing is captured), so
             # the cause is already on screen — say so instead of dumping a traceback (#194).

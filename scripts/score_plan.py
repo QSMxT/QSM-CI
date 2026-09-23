@@ -38,7 +38,9 @@ Per-method `runner:` in algorithm.yml:
                                its whole cap and produced nothing. `gpu` also documents the
                                hardware requirement for when a GPU runner exists.
 Per-method overrides, honoured on self-hosted/manual only (hosted tiers are hard-capped by GitHub):
-    timeout_minutes: N   wall-clock cap for the job
+    timeout_minutes: N   wall-clock cap for the job — AND the per-run budget on every tier (see
+                         qsm_ci.containers.timeout_s; without it a single run is capped at the
+                         contract's 2 h and killed with a timeout DNF past that)
     jobs: N              concurrent containers inside the job (default 4 on self-hosted; set 1 for a
                          method that already uses every core, so runs don't contend with each other)
     manual_phantoms: []  phantom ids this method is scored on ONLY when explicitly dispatched (e.g.
@@ -71,7 +73,10 @@ FULL_TRIGGER = re.compile(r"^(eval/|scripts/pipeline\.py|scripts/publish_volumes
 SKIP_TOKEN = "[skip score]"
 # algorithm.yml keys whose edit cannot move a score: the evaluate gate's cosmetic set plus the
 # scheduling knobs this planner reads itself. `compose:` is NOT here — it changes the matrix.
-SCORE_COSMETIC = COSMETIC_KEYS | {"runner", "timeout_minutes", "jobs", "manual_phantoms",
+# `timeout_minutes` is deliberately NOT here: it is also the per-RUN wall-clock budget
+# (qsm_ci.containers.timeout_s), so raising it is exactly how a run that DNF'd on time gets a real
+# score — which makes it outcome-changing, not scheduling-only.
+SCORE_COSMETIC = COSMETIC_KEYS | {"runner", "jobs", "manual_phantoms",
                                   "smoke_box", "smoke_params", "ci_skip_reason"}
 
 HOSTED = {"runs_on": "ubuntu-latest", "timeout": 360, "jobs": 2}

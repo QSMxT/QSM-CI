@@ -153,6 +153,14 @@ more, declare it in `algorithm.yml` (`runner:` — see `scripts/score_plan.py` f
 | `self-hosted` | QSM-CI's private 31 GB box | `timeout_minutes:` (default 6 h) | automatically, own job |
 | `manual` / `gpu` | private box | `timeout_minutes:` | **only** when a maintainer dispatches it by name |
 
+The caps above are per **job** (a job scores many runs). Each individual run is also bounded, by
+the contract's 2-hour wall clock: go over it and that run's container is killed and the run is
+recorded `DNF (timed out)` — the rest of the job carries on. `timeout_minutes:` raises the per-run
+budget on **every** tier (and the job cap on the self-hosted ones), so a method whose single
+inversion legitimately takes longer than 2 h must set it — `decompose-qsm`, `modip` and `inr-qsm`
+already do. (`$QSMCI_TIMEOUT`, in seconds, overrides the default when you run the CLI yourself;
+`qsm-ci run --timeout <minutes>` does the same for one run, and `0` means no limit.)
+
 `manual` is for methods whose CPU cost cannot fit any cap on the shared box (a per-subject
 optimisation that takes 12+ hours per inversion); `gpu` records a GPU requirement for when a GPU
 runner exists. Two more knobs apply on the self-hosted tiers: `jobs: 1` runs one container at a

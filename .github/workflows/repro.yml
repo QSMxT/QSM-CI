@@ -55,7 +55,7 @@ on:
         description: "all | comma-separated acquisition ids (scripts/datasets.json repro keys)"
         default: "all"
       include_gpu:
-        description: "true = also run inr-qsm/modip + any runner:self-hosted method (needs self-hosted GPU runners)"
+        description: "true = also run the non-hosted tiers: runner:self-hosted on the CPU boxes, runner:manual|gpu (inr-qsm, modip) on a 'gpu'-labelled runner"
         default: "false"
       publish_hf:
         description: "true = each score job publishes its recon volumes (+ its share of the viewer's field-map/local-field intermediates) to HuggingFace"
@@ -73,6 +73,9 @@ on:
   #     - "scripts/repro_eval.py"
   #     - "stages.yml"
 
+# `shell: bash` here is load-bearing, not decoration: naming the shell explicitly makes every
+# `run:` below execute as `bash --noprofile --norc -eo pipefail {0}`, whereas the IMPLICIT
+# default is `bash -e {0}` — fail-fast but pipe-blind, so `a | b` would report only b's status.
 defaults:
   run:
     shell: bash
@@ -191,8 +194,16 @@ jobs:
           ACQS: ${{ github.event.inputs.acquisitions || 'all' }}
           INCLUDE_GPU: ${{ github.event.inputs.include_gpu || 'false' }}
         run: |
+          set -euo pipefail
+          pip install -q pyyaml
           TASKS=$(python3 - <<'PY'
-          import json, os, re, glob
+          import json, os, sys
+          from pathlib import Path
+          sys.path.insert(0, 'scripts')
+          # Tier, stage and skip policy come from the in-silico planner rather than a second set of
+          # regexes here, so the two tracks can't drift on what `runner:`/`ci_skip:`/`stage:` mean
+          # (tests/test_score_plan.py).
+          from score_plan import load_spec, tier_of, is_skipped, stage_of
           full = os.environ['FULL'] == 'true'
           include_gpu = os.environ['INCLUDE_GPU'] == 'true'
           REG = json.load(open('scripts/datasets.json'))
@@ -202,45 +213,65 @@ jobs:
               pick = {s.strip() for s in want.split(',')}
               acqs = [a for a in acqs if a in pick]
           HOSTED     = {'runs_on': 'ubuntu-latest', 'timeout': 300, 'gpu': '0'}
-          SELFHOSTED = {'runs_on': ['self-hosted', 'Linux', 'X64'], 'timeout': 720, 'gpu': '1'}
+          # QSM-CI's shared 31 GB boxes carry no `gpu` label and have no GPU: a task landing here
+          # must NOT set QSMCI_GPU=1, or the runner adds `docker --gpus all` / `apptainer --nv` and
+          # every container fails before the method runs.
+          SELFHOSTED = {'runs_on': ['self-hosted', 'Linux', 'X64'], 'timeout': 720, 'gpu': '0'}
+          # `runner: gpu` / `runner: manual` methods (after-qsm, dip-up, inr-qsm, modip) are the ones
+          # whose CPU cost is infeasible (MoDIP ~12 h, INR-QSM ~17 h per inversion), so they ask for
+          # a GPU-labelled pool explicitly. No such runner is registered yet — these tasks stay
+          # queued until one is, which is the honest failure mode; the previous labels ran them on a
+          # GPU-less box instead.
+          GPU        = {'runs_on': ['self-hosted', 'Linux', 'X64', 'gpu'], 'timeout': 720, 'gpu': '1'}
+          ALGOS = Path('algorithms')
+          SPECS = {p.parent.name: load_spec(ALGOS, p.parent.name)
+                   for p in ALGOS.glob('*/algorithm.yml') if not p.parent.name.startswith('_')}
+          def skipped(slug):
+              # `ci_skip: true` means "in the repo, never run by CI" (apart-qsm, decompose-qsm,
+              # after-qsm, dip-up). score.yml filters these; repro used to plan a no-op task per
+              # acquisition for each of them on every full run.
+              return is_skipped(SPECS.get(slug))
           def self_hosted(slug):
-              try: t = open(f'algorithms/{slug}/algorithm.yml').read()
-              except FileNotFoundError: return False
-              # Any non-hosted tier (self-hosted / hosted-large / manual / gpu) is "heavy" here — see
-              # scripts/score_plan.py for the tiers; manual/gpu is what modip and inr-qsm carry.
-              return bool(re.search(r'^runner:[ \t]*(self-hosted|hosted-large|manual|gpu)', t, re.M))
+              # Any non-hosted tier is "heavy" here: it never joins the hosted shard sweep.
+              return tier_of(SPECS.get(slug)) != 'hosted'
+          def route(slug):
+              return GPU if tier_of(SPECS.get(slug)) == 'manual' else SELFHOSTED
           # The viewer's Field map / Local field layers come from the two UPSTREAM stages. A full
           # shard computes them anyway, so it always emits; a --focus job only does when the changed
           # slug is one of those stages — re-emitting after a dipole change would re-upload bytes
           # identical to what is already on the Hub, once per acquisition.
           UPSTREAM = ('field-mapping', 'bfr', 'unwrap+bfr')
           def upstream(slug):
-              try: t = open(f'algorithms/{slug}/algorithm.yml').read()
-              except FileNotFoundError: return False
-              m = re.search(r'^stage:[ \t]*(\S+)', t, re.M)
-              return bool(m) and m.group(1).strip('"\'') in UPSTREAM
-          heavy = sorted(s for p in glob.glob('algorithms/*/algorithm.yml')
-                         for s in [p.split('/')[1]] if not s.startswith('_') and self_hosted(s))
+              return stage_of(SPECS.get(slug)) in UPSTREAM
+          # Everything non-hosted is excluded from the hosted shard sweep; only the ones CI may
+          # actually run get a focus job of their own.
+          heavy = sorted(s for s in SPECS if self_hosted(s))
+          heavy_runnable = [s for s in heavy if not skipped(s)]
           N = int(os.environ['N'])
           tasks = []
           if full:
-              excl = ','.join(heavy)
+              # What a hosted shard must NOT run: the heavy tiers (they get their own focus jobs)
+              # and every ci_skip'd method. pipeline.py's discovery drops the latter too, but saying
+              # so here keeps the plan self-describing rather than relying on a check two files away.
+              excl = ','.join(sorted(set(heavy) | {s for s in SPECS if skipped(s)}))
               tasks += [{'id': f'{a}-s{i}', 'phantom': a, 'shard': f'{i}/{N}', 'exclude': excl,
                          'intermediates': 'true', **HOSTED}
                         for a in acqs for i in range(N)]
               if include_gpu:
                   # every heavy method is a dipole/end-to-end one, so it publishes no intermediates
-                  tasks += [{'id': f'{a}-{s}', 'phantom': a, 'focus': s, 'intermediates': 'false', **SELFHOSTED}
-                            for a in acqs for s in heavy]
+                  tasks += [{'id': f'{a}-{s}', 'phantom': a, 'focus': s, 'intermediates': 'false', **route(s)}
+                            for a in acqs for s in heavy_runnable]
           else:
               slugs = json.loads(os.environ['SLUGS'])
               for a in acqs:
                   for s in slugs:
+                      if skipped(s):
+                          continue
                       inter = 'true' if upstream(s) else 'false'
                       if self_hosted(s):
                           if include_gpu:
                               tasks.append({'id': f'{a}-{s}', 'phantom': a, 'focus': s,
-                                            'intermediates': inter, **SELFHOSTED})
+                                            'intermediates': inter, **route(s)})
                       else:
                           tasks.append({'id': f'{a}-{s}', 'phantom': a, 'focus': s,
                                         'intermediates': inter, **HOSTED})
@@ -259,7 +290,7 @@ jobs:
     runs-on: ${{ matrix.task.runs_on }}
     timeout-minutes: ${{ matrix.task.timeout }}
     env:
-      QSMCI_GPU: ${{ matrix.task.gpu }}   # self-hosted GPU jobs -> 1 -> docker/apptainer --gpus
+      QSMCI_GPU: ${{ matrix.task.gpu }}   # 1 only for tasks routed to the 'gpu'-labelled pool -> docker/apptainer --gpus
       # Matrix values derive from the dispatch inputs (acquisitions / scope slugs): they reach the
       # shell through env, never interpolated into a `run:` script.
       TASK_ID: ${{ matrix.task.id }}
@@ -345,6 +376,19 @@ jobs:
           name: repro-${{ matrix.task.id }}
           retention-days: 2
           path: runs-${{ matrix.task.id }}.json   # tiny — metrics + volume URLs + ROI means
+
+      # A partial publish exits 2 (step goes red, job continues) and writes the affected run ids to
+      # results/publish-incomplete.json. Nothing else carries that file off the runner, so without
+      # this the only trace is the annotation. Recover with `publish_volumes.py <runs-json> --relink`
+      # or a re-dispatch scoped to the affected slugs.
+      - name: Keep the partial-publish report
+        if: ${{ always() && github.event.inputs.dry_run != 'true' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: publish-incomplete-${{ matrix.task.id }}
+          retention-days: 30
+          path: results/publish-incomplete.json
+          if-no-files-found: ignore
 
   evaluate:
     needs: [scope, prep, score]

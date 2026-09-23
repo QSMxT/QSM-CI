@@ -11,6 +11,7 @@ import json
 import os
 import re
 import shutil
+import signal
 import subprocess
 import sys
 import time
@@ -23,6 +24,50 @@ from .stages import ARTIFACT_FILE
 
 RUNNERS = ("docker", "podman", "apptainer", "local")
 _OCI_ENGINES = ("docker", "podman")  # daemonless podman is CLI-compatible with docker
+
+# CONTRACT.md: "Default 2 h wall-clock; exceeding it is a DNF." Enforced here, per RUN, rather than
+# left to the GitHub job timeout — which kills the whole shard, so the other runs sharing it get no
+# DNF rows at all, and leaves the container alive on a self-hosted box (the workflows' reaper step
+# exists because of exactly that).
+DEFAULT_TIMEOUT_S = 7200.0
+# Grace between "the run is over time" and the container actually being gone. `docker kill` is
+# asynchronous and a MATLAB/CUDA image can take a few seconds to unwind.
+_KILL_GRACE_S = 30.0
+
+
+class RunTimeout(RuntimeError):
+    """A submission exceeded its wall-clock budget; its container has been killed."""
+
+
+def timeout_s(override_minutes: "float | None" = None) -> "float | None":
+    """Wall-clock budget for one run, in seconds, or None when disabled.
+
+    Precedence: an explicit per-method override (`timeout_minutes:` in algorithm.yml, or the CLI's
+    ``--timeout``) beats ``$QSMCI_TIMEOUT`` (seconds) beats the 2 h contract default. Either source
+    may be ``0`` to disable the cap — useful when a human is driving a long run by hand and the
+    shell is the supervisor.
+    """
+    if override_minutes is not None:
+        return None if override_minutes <= 0 else float(override_minutes) * 60.0
+    raw = os.environ.get("QSMCI_TIMEOUT", "").strip()
+    if not raw:
+        return DEFAULT_TIMEOUT_S
+    try:
+        v = float(raw)
+    except ValueError:
+        return DEFAULT_TIMEOUT_S
+    return None if v <= 0 else v
+
+
+def _human(seconds: float) -> str:
+    if seconds >= 3600:
+        return f"{seconds / 3600:.1f} h"
+    return f"{seconds / 60:.1f} min" if seconds >= 60 else f"{seconds:.0f}s"
+
+
+def _timeout_msg(limit: float) -> str:
+    return (f"timed out after {_human(limit)} — the CONTRACT wall-clock limit; raise it with "
+            f"`timeout_minutes:` in algorithm.yml or $QSMCI_TIMEOUT")
 
 
 def _gpu_flags(runner: str) -> list[str]:
@@ -264,7 +309,43 @@ def _param_env(input_dir: Path) -> "dict[str, str]":
     return env
 
 
-def _run_container(algo, input_dir, output_dir, runner, log) -> float:
+def _kill_named_container(runner: str, name: str, log) -> None:
+    """Kill an OCI container by name. `subprocess.run(timeout=)` only kills the CLIENT process — the
+    container keeps running (and holding the box's memory), since `--rm` cleans up after exit, not
+    on client death. This is the same asymmetry the orphan reaper deals with after a cancelled job.
+    """
+    try:
+        subprocess.run([runner, "kill", name], capture_output=True, timeout=_KILL_GRACE_S)
+    except Exception as exc:  # noqa: BLE001 — nothing better to do than say so
+        log(f"  ! could not kill container {name}: {exc}")
+
+
+def _kill_process_tree(proc: "subprocess.Popen", log) -> None:
+    """Kill a whole process group (apptainer/local runs are plain process trees, not daemon-owned).
+
+    The children are what actually burn the CPU, and killing only the leader would orphan them.
+    Started with start_new_session=True so the group id is the leader's pid.
+    """
+    for sig in (signal.SIGTERM, signal.SIGKILL):
+        try:
+            os.killpg(os.getpgid(proc.pid), sig)
+        except (ProcessLookupError, PermissionError):
+            return
+        try:
+            proc.wait(timeout=10)
+            return
+        except subprocess.TimeoutExpired:
+            continue
+    log(f"  ! process group {proc.pid} survived SIGKILL")
+
+
+def _run_container(algo, input_dir, output_dir, runner, log, timeout: "float | None" = None) -> float:
+    """Run a submission's run.sh and return its wall-clock seconds.
+
+    `timeout` (seconds, None = uncapped) bounds the run: on expiry the container/process tree is
+    killed and RunTimeout is raised, so the caller records a DNF for THIS run and carries on with
+    the rest of the shard.
+    """
     if output_dir.exists():
         shutil.rmtree(output_dir)
     output_dir.mkdir(parents=True)
@@ -305,7 +386,10 @@ def _run_container(algo, input_dir, output_dir, runner, log) -> float:
                 "-v", f"{algo['dir']}:/algo:ro",
                 "-v", f"{input_dir}:/input:ro", "-v", f"{output_dir}:/output",
                 image, "bash", "/algo/run.sh",
-            ], check=True)
+            ], check=True, timeout=timeout)
+        except subprocess.TimeoutExpired:
+            _kill_named_container(runner, name, log)
+            raise RunTimeout(_timeout_msg(timeout)) from None
         finally:
             if sampler is not None:
                 sampler.stop()
@@ -325,12 +409,16 @@ def _run_container(algo, input_dir, output_dir, runner, log) -> float:
         # apptainer has no `stats`, so sample the process TREE via /proc for the memory/CPU trace
         # (opt-in via $QSMCI_RESOURCES_OUT) — Popen to get the pid, then wait as `run(check=True)` would.
         res_out = os.environ.get("QSMCI_RESOURCES_OUT")
-        proc = subprocess.Popen(cmd)
+        proc = subprocess.Popen(cmd, start_new_session=True)   # own process group, so it can be killed whole
         sampler = _ProcResourceSampler(proc.pid, Path(res_out), interval=1.0) if res_out else None
         if sampler is not None:
             sampler.start()
         try:
-            rc = proc.wait()
+            try:
+                rc = proc.wait(timeout=timeout)
+            except subprocess.TimeoutExpired:
+                _kill_process_tree(proc, log)
+                raise RunTimeout(_timeout_msg(timeout)) from None
             if rc != 0:
                 raise subprocess.CalledProcessError(rc, cmd)
         finally:
@@ -340,6 +428,13 @@ def _run_container(algo, input_dir, output_dir, runner, log) -> float:
                 sampler.write()
     else:  # local
         log("⚙ running run.sh directly (--runner local)")
-        subprocess.run(["bash", str(algo["dir"] / "run.sh"), str(input_dir), str(output_dir)],
-                       check=True, env={**os.environ, **penv})
+        cmd = ["bash", str(algo["dir"] / "run.sh"), str(input_dir), str(output_dir)]
+        proc = subprocess.Popen(cmd, env={**os.environ, **penv}, start_new_session=True)
+        try:
+            rc = proc.wait(timeout=timeout)
+        except subprocess.TimeoutExpired:
+            _kill_process_tree(proc, log)
+            raise RunTimeout(_timeout_msg(timeout)) from None
+        if rc != 0:
+            raise subprocess.CalledProcessError(rc, cmd)
     return time.time() - t0

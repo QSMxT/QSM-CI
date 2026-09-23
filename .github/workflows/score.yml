@@ -66,6 +66,9 @@ on:
         description: "true = score + merge but DON'T publish volumes or commit (upload a candidate index artifact instead)"
         default: "false"
 
+# `shell: bash` here is load-bearing, not decoration: naming the shell explicitly makes every
+# `run:` below execute as `bash --noprofile --norc -eo pipefail {0}`, whereas the IMPLICIT
+# default is `bash -e {0}` — fail-fast but pipe-blind, so `a | b` would report only b's status.
 defaults:
   run:
     shell: bash
@@ -433,6 +436,21 @@ jobs:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           HF_VOLUMES_REPO: ${{ vars.HF_VOLUMES_REPO }}
         run: python scripts/publish_volumes.py results --prune
+
+      # A partial publish exits 2 and writes results/publish-incomplete.json listing the runs that
+      # lost their URLs (`runs`) and the ones now on an older copy (`stale_runs`). The index commit
+      # below never carries that file — results/ is rewritten from origin/main before it pushes — so
+      # keep it here, or the only surviving trace is the annotation. Recover with
+      # `publish_volumes.py results/index.json --relink` (re-points rows at copies already on the
+      # Hub) or a scoped workflow_dispatch rescore of those ids.
+      - name: Keep the partial-publish report
+        if: ${{ always() && github.event.inputs.dry_run != 'true' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: publish-incomplete
+          retention-days: 30
+          path: results/publish-incomplete.json
+          if-no-files-found: ignore
 
       # Deleting or overwriting a volume leaves its old LFS object in the Hub repo's history; only a
       # squash frees the storage. A full rescore rewrites every volume, so squash after one (a

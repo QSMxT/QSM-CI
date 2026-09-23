@@ -147,6 +147,17 @@ def test_cosmetic_algorithm_yml_edits_do_not_rescore_but_matrix_changes_do(repo)
     assert sp.scope_from_files(repo["root"], sp.changed_files(h3, h4), h3, h4) == (False, ["newone"])
 
 
+def test_raising_timeout_minutes_rescores_the_method(repo):
+    """It is also the per-RUN wall-clock budget (qsm_ci.containers.timeout_s), so raising it is how
+    a run that timed out gets a real number — outcome-changing, not a scheduling knob."""
+    assert "timeout_minutes" not in sp.SCORE_COSMETIC
+    c = repo["commit"]
+    spec = (repo["root"] / "tkd" / "algorithm.yml").read_text()
+    h = c("more time", **{"algorithms/tkd/algorithm.yml": spec + "timeout_minutes: 600\n"})
+    assert sp.scope_from_files(repo["root"], sp.changed_files(repo["base"], h), repo["base"], h) \
+        == (False, ["tkd"])
+
+
 def test_decide_carries_pending_work_and_falls_back_without_state(repo, monkeypatch):
     monkeypatch.delenv("GH_TOKEN", raising=False)
     c = repo["commit"]

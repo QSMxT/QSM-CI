@@ -6,38 +6,37 @@ name: ci
 
 on:
   push:
+    branches: [main]
   pull_request:
 
+# `shell: bash` here is load-bearing, not decoration: naming the shell explicitly makes every
+# `run:` below execute as `bash --noprofile --norc -eo pipefail {0}`, whereas the IMPLICIT
+# default is `bash -e {0}` — fail-fast but pipe-blind, so `a | b` would report only b's status.
 defaults:
   run:
     shell: bash
 
-# Read-only token by default; only the `manifest` job commits (job-level `contents: write` there).
+# Read-only token: no job here writes to the repo.
 permissions:
   contents: read
 
 jobs:
   manifest:
-    # Keep the two generated web files in sync automatically — web/algorithms.json (from
-    # algorithms/*/algorithm.yml) and web/styles.css (the Tailwind build of the markup) — and, on
-    # same-repo pushes/PRs, commit the refresh back to the branch so nobody has to remember
-    # `python scripts/gen_manifest.py` or `npm run build:css`. (A stale committed styles.css made
-    # local dev render differently from Pages, and had already provoked inline-style workarounds
-    # blamed on "the purge".) Skipped for fork PRs (GITHUB_TOKEN can't push to a fork) — those must
-    # regenerate + commit manually. No loop: GITHUB_TOKEN pushes don't re-trigger workflows, and
-    # `git diff --quiet` below no-ops when both files are already in sync.
-    # DO NOT add "[skip ci]" to the sync commit message: a squash merge folds every branch commit's
-    # message into the merge commit, so that token would land on main and suppress score.yml/ci/pipeline
-    # for the whole merge — silently skipping the scoring of the very algorithm the PR changed.
-    if: ${{ github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository }}
+    # Verify the two generated web files are in sync with their sources — web/algorithms.json (from
+    # algorithms/*/algorithm.yml) and web/styles.css (the Tailwind build of the markup) — and fail
+    # with the regeneration command when they are not. (A stale committed styles.css made local dev
+    # render differently from Pages, and had already provoked inline-style workarounds blamed on
+    # "the purge".)
+    #
+    # This job used to regenerate and push the refresh back to the branch. Do not reinstate that: a
+    # GITHUB_TOKEN push creates a head SHA on which no workflows run, so every required check
+    # (image-access.yml, the merge gate) sits at "Expected" for that SHA and blocks the merge until
+    # somebody pushes again — which is what bit #190 as soon as the job also started syncing
+    # styles.css. Checking instead of committing also lets the job run identically for fork PRs,
+    # which GITHUB_TOKEN could never push to in the first place.
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v7
-        with:
-          ref: ${{ github.head_ref || github.ref_name }}
-          token: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/setup-python@v7
         with:
           python-version: "3.11"
@@ -53,17 +52,15 @@ jobs:
         run: |
           npm ci
           npm run build:css
-      - name: Commit refresh if changed
+      - name: Check generated web files are in sync
         run: |
+          set -euo pipefail
           if git diff --quiet web/algorithms.json web/styles.css; then
             echo "web/algorithms.json and web/styles.css already in sync"; exit 0
           fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add web/algorithms.json web/styles.css
-          git commit -m "chore: sync generated web files (algorithms.json, styles.css)"
-          git push
-          echo "committed refreshed generated web files"
+          git --no-pager diff --stat web/algorithms.json web/styles.css
+          echo "::error::Generated web files are out of date. Run these, then commit web/algorithms.json and web/styles.css: python scripts/gen_manifest.py && (cd web && npm ci && npm run build:css)"
+          exit 1
 
   interfaces:
     # Workflow-engine interfaces (qsm_ci.nipype / qsm_ci.pydra) + the `qsm-ci interface` generator,
