@@ -42,6 +42,7 @@ EVAL = ROOT / "eval" / "qsm_eval.py"
 # not). qsm_ci.stages is pure literals — no yaml/heavy deps.
 sys.path.insert(0, str(ROOT))
 from qsm_ci.runner import _consumes  # noqa: E402
+from qsm_ci.containers import _human, _kill_process_tree, timeout_s  # noqa: E402
 from qsm_ci.stages import STAGES, ARTIFACT_FILE, ARTIFACT_KIND  # noqa: E402
 # Shared scoring/sweep primitives (scripts/scoring.py, also used by sweep.py + combo_sweep.py) — one
 # home for the `qsm-ci run` argv builder, the GT source map, the --shard partition, and the qsm_eval
@@ -408,6 +409,11 @@ def discover_algorithms(track: str = "sim", phantom: "str | None" = None) -> lis
             # the "does it run?" PR check while score.yml (no --smoke) still uses the full defaults —
             # e.g. MoDIP caps its per-subject optimization to a few epochs here, 500 when scored.
             "smoke_params": doc.get("smoke_params") or {},
+            # Optional per-method wall-clock budget (minutes) for ONE run. Without it a run gets the
+            # CONTRACT default (2 h) — see qsm_ci.containers.timeout_s. score_plan.py reads the same
+            # key for the JOB cap; a method whose single inversion legitimately takes longer than 2 h
+            # must raise both. 0 disables the per-run cap (the job cap still applies).
+            "timeout_minutes": doc.get("timeout_minutes"),
             # Optional composed-matrix subset for a dipole method too expensive to invert every
             # (field-map × bfr) column: `compose: {fieldmaps: [gt, romeo-qsmrs], bfrs: [vsharp-qsmrs]}`
             # keeps only those combos (either key may be omitted = unrestricted). None = the full matrix.
@@ -457,11 +463,34 @@ def prepare_input(consumes: list[str], sources: dict[str, Path], dest: Path) -> 
         shutil.copy(src, dest / ARTIFACT_FILE[art])
 
 
+# How long after the CLI's own deadline the scorer's backstop fires. Only reached when the CLI
+# itself is wedged: normally the CLI kills the container, prints the reason and exits non-zero first.
+_TIMEOUT_GRACE_S = 120.0
+
+
+def _wait(proc: subprocess.Popen, budget: "float | None", limit: "float | None") -> None:
+    """Wait for `proc`, killing its whole process group if `budget` seconds pass.
+
+    Raises TimeoutError (short message — it becomes `dnf_reason`, which the leaderboard shows) or
+    CalledProcessError, both of which the run loops already catch and turn into a DNF row for THIS
+    run. That is the point of enforcing the cap here rather than leaning on the GitHub job timeout,
+    which kills the shard and leaves its other runs with no rows at all.
+    """
+    try:
+        rc = proc.wait(timeout=budget)
+    except subprocess.TimeoutExpired:
+        _kill_process_tree(proc, print)
+        raise TimeoutError(f"timed out after {_human(limit or budget)} wall-clock limit") from None
+    if rc != 0:
+        raise subprocess.CalledProcessError(rc, proc.args)
+
+
 def run_algo(algo: dict, input_dir: Path, output_dir: Path, runner: str = "local",
              overrides: "dict | None" = None) -> float:
     if output_dir.exists():
         shutil.rmtree(output_dir)
     output_dir.mkdir(parents=True)
+    limit = timeout_s(algo.get("timeout_minutes"))
     t0 = time.time()
     if runner != "local":
         # Delegate to the installed `qsm-ci` CLI (a console script) rather than reimplementing the
@@ -471,13 +500,20 @@ def run_algo(algo: dict, input_dir: Path, output_dir: Path, runner: str = "local
         # Ask the CLI's container runner to trace this run's memory/CPU over time into the output dir
         # (resources.json); score()/emit_volumes() later copy it next to the viewer volumes.
         env = {**os.environ, "QSMCI_RESOURCES_OUT": str(output_dir / "resources.json")}
-        subprocess.run(cli_run_argv(algo, input_dir, output_dir, ARTIFACT_FILE, runner, overrides),
-                       check=True, env=env)
+        # The CLI enforces the cap itself (it owns the container name, so it can kill the container
+        # and not just the client). Hand it the per-method budget via the env var it already reads,
+        # and keep an outer cap a grace period later purely as a backstop for a wedged CLI process.
+        # Always set the var, never just inherit it: a method that declares `timeout_minutes: 0`
+        # means "no cap", and leaving an ambient $QSMCI_TIMEOUT in place would re-impose one.
+        env["QSMCI_TIMEOUT"] = "0" if limit is None else str(limit)
+        outer = None if limit is None else limit + _TIMEOUT_GRACE_S
+        _wait(subprocess.Popen(cli_run_argv(algo, input_dir, output_dir, ARTIFACT_FILE, runner,
+                                            overrides), env=env, start_new_session=True), outer, limit)
     else:
         if overrides:  # run.sh reads overrides from $IN/config.json (mirrors `qsm-ci run --set`)
             (input_dir / "config.json").write_text(json.dumps(overrides))
-        subprocess.run(["bash", str(algo["dir"] / "run.sh"), str(input_dir), str(output_dir)],
-                       check=True)
+        _wait(subprocess.Popen(["bash", str(algo["dir"] / "run.sh"), str(input_dir), str(output_dir)],
+                               start_new_session=True), limit, limit)
     return time.time() - t0
 
 
@@ -1622,7 +1658,9 @@ def main() -> None:
         args.mode = "composed"
 
     inputs, gt = args.dataset / "inputs", args.dataset / "groundtruth"
-    mask, params = inputs / "mask.nii.gz", inputs / "params.json"
+    mask = inputs / "mask.nii.gz"
+    # No `params` local here: every consumer reaches acquisition parameters through gt_sources,
+    # which already maps the `params` artifact to inputs/params.json.
     # GT-backed source map: inputs for raw artifacts, groundtruth for stage boundaries (shared helper).
     gt_sources = _gt_sources(args.dataset)
     algos = discover_algorithms(args.track, args.phantom)

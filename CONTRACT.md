@@ -158,7 +158,9 @@ docker run --rm --network none \
 - **Code is mounted**, not baked — your `run.sh`/scripts live in `/algo`.
 - **No network** at run time; everything your algorithm needs must already be in the environment.
 - **Read-only input.** `/input` contains only the artifacts your stage consumes.
-- **Time limit.** Default 2 h wall-clock; exceeding it is a DNF.
+- **Time limit.** Default 2 h wall-clock; exceeding it is a DNF. Enforced per run: the container is
+  killed and that run alone is recorded as a timeout DNF. Raise it with `timeout_minutes:` in
+  `algorithm.yml` (see [docs/submitting.md](docs/submitting.md)).
 - **Exit code.** `0` on success; non-zero is a failed run (DNF).
 - **Output.** Write each produced artifact under its canonical filename to `/output`. A missing,
   misshapen, or unreadable output is a DNF.

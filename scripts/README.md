@@ -10,7 +10,7 @@ full reference — this file only says what each one is for and who calls it.
 |---|---|---|
 | `pipeline.py` | The evaluation runner: discovers submissions under `algorithms/`, runs the isolated + composed matrix on a dataset, scores every artifact with `qsm-eval`, writes `results/` | `score.yml`, `evaluate.yml`, `pipeline.yml`, `repro.yml` |
 | `ci_eval_targets.py` | Decides which *changed* submissions need a per-PR smoke run (a code change, not a metadata-only `algorithm.yml` edit) | `evaluate.yml` |
-| `gen_manifest.py` | **Reads** every `algorithms/*/algorithm.yml` (plus `datasets.json`) and writes `web/algorithms.json`, the manifest the site is built from. Not to be confused with `oneoff/gen_algorithms.py`, which *writes* submission folders | `ci.yml` (manifest sync commit) |
+| `gen_manifest.py` | **Reads** every `algorithms/*/algorithm.yml` (plus `datasets.json`) and writes `web/algorithms.json`, the manifest the site is built from. Not to be confused with `oneoff/gen_algorithms.py`, which *writes* submission folders | `ci.yml` (manifest sync check) |
 | `merge_index.py` | Upserts the runs a rescore changed into the latest `results/index.json` by run id, so concurrent rescores never clobber each other | `score.yml`, `repro.yml` |
 | `publish_volumes.py` | Uploads per-run viewer volumes (and each phantom's truth, once) to the Hugging Face volumes repo and stamps their URLs into the index | `score.yml`, `repro.yml`, `hf-check.yml` |
 | `publish_repro_intermediates.py` | Publishes the harmonization track's shared total-/local-field intermediates to the same HF repo | `repro.yml` |
