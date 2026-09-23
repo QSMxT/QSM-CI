@@ -39,6 +39,19 @@ def test_cli_artifact_files_match_yaml():
     )
 
 
+def test_cli_artifact_units_and_ranks_match_yaml():
+    """The starters quote the unit and branch on the rank, so a drift here scaffolds a submission
+    labelled ppm for a map in Hz, or one that multiplies a 4D volume by the 3D mask."""
+    assert pystages.ARTIFACT_UNIT == {n: s["units"] for n, s in _YML["artifacts"].items()
+                                      if "units" in s}, (
+        "qsm_ci/stages.py ARTIFACT_UNIT drifted from stages.yml artifacts.*.units — update it."
+    )
+    assert pystages.ARTIFACT_NDIM == {n: s["ndim"] for n, s in _YML["artifacts"].items()
+                                      if "ndim" in s}, (
+        "qsm_ci/stages.py ARTIFACT_NDIM drifted from stages.yml artifacts.*.ndim — update it."
+    )
+
+
 def test_scorer_stages_match_yaml(pipeline):
     assert pipeline.STAGES == _EXPECTED_STAGES, (
         "scripts/pipeline.py STAGES drifted from stages.yml — update it (this is what made every "

@@ -38,6 +38,22 @@ ARTIFACT_FILE = {
     "r2prime": "r2prime.nii.gz", "chi-para": "chi-para.nii.gz", "chi-dia": "chi-dia.nii.gz",
 }
 
+# Unit and rank of each canonical artifact — mirrors the `units:`/`ndim:` of stages.yml (checked by
+# tests/test_stages_sync.py). The starters quote the unit so a stage is not labelled ppm when it
+# produces Hz, and ndim is what says which inputs arrive 4D (x,y,z,echo) while every produced
+# artifact is 3D — the reason the generic starter has a multi-echo variant.
+ARTIFACT_UNIT = {
+    "phase": "rad", "magnitude": "a.u.", "mask": "binary",
+    "totalfield": "ppm", "localfield": "ppm", "chimap": "ppm",
+    "r2prime": "Hz", "chi-para": "ppm", "chi-dia": "ppm",
+}
+
+ARTIFACT_NDIM = {
+    "phase": 4, "magnitude": 4, "mask": 3,
+    "totalfield": 3, "localfield": 3, "chimap": 3,
+    "r2prime": 3, "chi-para": 3, "chi-dia": 3,
+}
+
 # how each produced artifact is scored: 'field' (total/local field), 'chi' (susceptibility), or
 # 'chisep' (a single χ+/χ− source-separation component). r2prime is a consumed relaxation input.
 ARTIFACT_KIND = {"totalfield": "field", "localfield": "field", "chimap": "chi",

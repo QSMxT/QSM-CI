@@ -58,3 +58,39 @@ def test_cli_writes_the_superseded_ids(tmp_path):
     out = json.loads((tmp_path / "out.json").read_text())["runs"]
     assert {q["id"]: q["metrics"]["nrmse"] for q in out} == {"x": 3, "z": 1}
     assert "re-applied 1 changed run(s)" in r.stdout and "NOT applied" in r.stdout
+
+
+def test_an_unreadable_scored_index_fails_loudly(tmp_path):
+    """A corrupt SCORED used to read as "no runs": `changed` empty, "re-applied 0 changed run(s)",
+    exit 0, nothing published. A whole rescore lost while the job stayed green."""
+    (tmp_path / "base.json").write_text(json.dumps({"runs": [row("a", 1)]}))
+    (tmp_path / "scored.json").write_text("{truncated")
+    (tmp_path / "current.json").write_text(json.dumps({"runs": [row("a", 1)]}))
+    r = subprocess.run(["python3", str(ROOT / "scripts" / "merge_index.py"),
+                        *(str(tmp_path / f"{n}.json") for n in ("base", "scored", "current", "out"))],
+                       capture_output=True, text=True)
+    assert r.returncode != 0
+    assert "refusing to publish" in r.stderr
+    assert not (tmp_path / "out.json").exists()
+
+
+def test_a_missing_base_is_fine_but_a_missing_scored_is_not(tmp_path):
+    """BASE may legitimately be absent (a first rescore); SCORED may not."""
+    assert mi._runs(str(tmp_path / "nope.json"), required=False) == []
+    try:
+        mi._runs(str(tmp_path / "nope.json"))
+    except SystemExit as e:
+        assert "cannot read" in str(e)
+    else:
+        raise AssertionError("a missing SCORED must not read as 'no runs'")
+
+
+def test_upsert_replaces_in_place_and_appends_new_ids():
+    """The one merge policy — shared with pipeline.flush_index, which used to filter-then-append
+    and so reordered results/index.json on every rescore."""
+    existing = [row("a", 1), row("b", 1), row("c", 1)]
+    merged = mi.upsert(existing, [row("b", 2), row("z", 9)])
+    assert [r["id"] for r in merged] == ["a", "b", "c", "z"]
+    assert merged[1]["metrics"]["nrmse"] == 2
+    assert mi.upsert([], [row("a", 1)]) == [row("a", 1)]
+    assert mi.upsert(existing, []) == existing

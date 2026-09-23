@@ -14,6 +14,7 @@ import shutil
 import subprocess
 import sys
 import time
+from functools import lru_cache
 from pathlib import Path
 from uuid import uuid4
 
@@ -47,16 +48,65 @@ def _have(binary: str) -> bool:
     return shutil.which(binary) is not None
 
 
+# A wedged docker daemon makes `docker version`/`docker info` block forever. These probes only ever
+# inform a choice we have a safe default for, so cap them rather than hanging the whole CLI.
+_PROBE_TIMEOUT = 10.0
+
+
 def check_runner(runner: str) -> bool:
     """Is the tooling for this runner available?"""
     if runner == "local":
         return True
     if runner == "docker":  # also confirm the daemon answers
         try:
-            return subprocess.run(["docker", "version"], capture_output=True).returncode == 0
-        except FileNotFoundError:
+            return subprocess.run(["docker", "version"], capture_output=True,
+                                  timeout=_PROBE_TIMEOUT).returncode == 0
+        except (FileNotFoundError, subprocess.TimeoutExpired):
             return False
     return _have(runner)
+
+
+@lru_cache(maxsize=None)
+def _docker_is_rootless() -> bool:
+    """Is this docker CLI talking to a ROOTLESS daemon?
+
+    A rootless daemon runs inside a user namespace in which the invoking host user is mapped to uid
+    0, so the bind-mounted files you own look root-owned from inside the container. Passing
+    ``--user <host uid>:<host gid>`` there selects a uid that is *unmapped* inside that namespace
+    and every write to /output fails with EACCES. Under a root daemon the opposite holds: without
+    ``--user`` the container writes root-owned files into your bind mount. So the flag is right for
+    one and wrong for the other, and we have to ask which daemon this is.
+
+    Unknown (no docker, probe timed out, old daemon without SecurityOptions) is reported as *not*
+    rootless — the historical behaviour, and the common case."""
+    try:
+        r = subprocess.run(["docker", "info", "-f", "{{join .SecurityOptions \",\"}}"],
+                           capture_output=True, text=True, timeout=_PROBE_TIMEOUT)
+    except (FileNotFoundError, OSError, subprocess.TimeoutExpired):
+        return False
+    return r.returncode == 0 and "rootless" in r.stdout
+
+
+def _user_args(runner: str) -> list[str]:
+    """How to map the invoking user into the container, so /output comes back owned by them.
+
+    ``QSMCI_CONTAINER_USER`` overrides the guess below: ``off`` (or ``none``/``false``/``no``) drops
+    the mapping entirely and lets the engine decide; any other value is passed through verbatim as
+    the ``--user`` argument (e.g. ``1000:1000``, ``root``)."""
+    override = os.environ.get("QSMCI_CONTAINER_USER", "").strip()
+    if override:
+        if override.lower() in ("off", "none", "false", "no"):
+            return []
+        return ["--user", override]
+    if runner == "podman":
+        # rootless podman: keep-id maps your host uid inside, so files written to the /output
+        # bind mount come back owned by you.
+        return ["--userns=keep-id"]
+    if not hasattr(os, "getuid"):
+        return []  # Windows: no POSIX uid/gid to map, and os.getuid does not exist
+    if _docker_is_rootless():
+        return []  # you are already root inside the namespace; --user would break /output writes
+    return ["--user", f"{os.getuid()}:{os.getgid()}"]  # root daemon: run as you directly
 
 
 def _build_oci(algo: dict, engine: str, log) -> str:
@@ -223,10 +273,7 @@ def _run_container(algo, input_dir, output_dir, runner, log) -> float:
     if runner in _OCI_ENGINES:
         image = _build_oci(algo, runner, log)
         log(f"⚙ running container ({runner}: {image})")
-        # rootless podman: keep-id maps your host uid inside, so files written to the /output
-        # bind mount come back owned by you. docker (root daemon): run as your uid directly.
-        id_args = (["--userns=keep-id"] if runner == "podman"
-                   else ["--user", f"{os.getuid()}:{os.getgid()}"])
+        id_args = _user_args(runner)
         e_args = [a for k, v in penv.items() for a in ("-e", f"{k}={v}")]
         # Name the container so a background sampler can poll `<engine> stats <name>` for a
         # memory-over-time / CPU-over-time trace (opt-in via $QSMCI_RESOURCES_OUT).
