@@ -28,11 +28,41 @@ import json
 import sys
 
 
-def _runs(path: str) -> list:
+def _runs(path: str, *, required: bool = True) -> list:
+    """Read the `runs` list out of an index document.
+
+    Only BASE may be absent or empty — a first rescore, or a checkout whose index.json predates the
+    file. SCORED and CURRENT must parse: an unreadable SCORED used to fall through to "no runs",
+    which makes `changed` empty, so the merge job printed "re-applied 0 changed run(s)", exited 0,
+    and published nothing at all while looking green. Losing a whole rescore silently is worse than
+    failing the job."""
     try:
-        return json.loads(open(path).read()).get("runs", [])
-    except Exception:  # noqa: BLE001 — a missing/empty index is just "no runs"
+        doc = json.loads(open(path).read())
+        runs = doc.get("runs", [])
+    except (OSError, ValueError, AttributeError) as e:
+        if required:
+            raise SystemExit(f"merge_index: cannot read {path} ({e.__class__.__name__}: {e}) — "
+                             "refusing to publish a merge that would silently drop this rescore")
         return []
+    if not isinstance(runs, list):
+        if required:
+            raise SystemExit(f"merge_index: {path} has a non-list `runs` — refusing to merge")
+        return []
+    return runs
+
+
+def upsert(existing: list, incoming: list) -> list:
+    """Replace `existing` rows by id with `incoming`, IN PLACE, appending ids that are new.
+
+    The single merge policy, shared by `merge()` here and `pipeline.flush_index` — which used to
+    filter-then-append instead, reordering results/index.json on every rescore."""
+    by_id = {r["id"]: r for r in incoming}
+    seen, merged = set(), []
+    for r in existing:
+        merged.append(by_id.get(r["id"], r))
+        seen.add(r["id"])
+    merged.extend(r for rid, r in by_id.items() if rid not in seen)
+    return merged
 
 
 def run_key(row: dict) -> tuple:
@@ -57,14 +87,7 @@ def merge(base: list, scored: list, current: list) -> tuple[list, list]:
     skipped = sorted(i for i, r in changed.items() if superseded(r, cur_by.get(i)))
     for i in skipped:
         del changed[i]
-    seen, merged = set(), []
-    for r in current:
-        merged.append(changed.get(r["id"], r))
-        seen.add(r["id"])
-    for rid, r in changed.items():
-        if rid not in seen:
-            merged.append(r)
-    return merged, skipped
+    return upsert(current, list(changed.values())), skipped
 
 
 def main() -> int:
@@ -73,14 +96,14 @@ def main() -> int:
     sup_out = sys.argv[sys.argv.index("--superseded-out") + 1] if "--superseded-out" in sys.argv else None
 
     doc = json.loads(open(current_p).read())
-    merged, skipped = merge(_runs(base_p), _runs(scored_p), doc.get("runs", []))
+    merged, skipped = merge(_runs(base_p, required=False), _runs(scored_p), _runs(current_p))
     doc["runs"] = merged
     with open(out_p, "w") as f:
         f.write(json.dumps(doc, indent=2) + "\n")
     if sup_out:
         with open(sup_out, "w") as f:
             f.write(json.dumps(skipped) + "\n")
-    base_by = {r["id"]: r for r in _runs(base_p)}
+    base_by = {r["id"]: r for r in _runs(base_p, required=False)}
     n_changed = len([r for r in _runs(scored_p) if base_by.get(r["id"]) != r and r["id"] not in skipped])
     print(f"re-applied {n_changed} changed run(s); index now has {len(merged)} runs"
           f"{'; NOT applied (a newer run already scored them): ' + ', '.join(skipped) if skipped else ''}")

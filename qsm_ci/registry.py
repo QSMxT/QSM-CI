@@ -150,24 +150,52 @@ def resolve(target: str, log=print) -> "Path | None":
     return _fetch_record(recid, _expected_checksum(kind, value, mapping), log)
 
 
+def _verify_blob(name: str, blob: bytes, stated: "str | None", pinned: "str | None",
+                 recid: str) -> None:
+    """Check one downloaded record file before it is allowed anywhere near the cache.
+
+    Two independent digests, both required where they exist: the one Zenodo states for the file in
+    its record metadata (``<algo>:<hex>``, md5 today), and — for the method zip — the sha256 pinned
+    in the shipped registry, which is what makes a version DOI reproduce byte-for-byte. A file we
+    *cannot* verify is refused rather than trusted: the cache is code we execute, so "no checksum
+    was available for this one" must not pass silently."""
+    if pinned:
+        if hashlib.sha256(blob).hexdigest() != pinned.split(":", 1)[-1]:
+            raise RuntimeError(
+                f"checksum mismatch for {name} (record {recid}): does not match the sha256 pinned "
+                "in the registry")
+    if not stated:
+        raise RuntimeError(
+            f"Zenodo record {recid} states no checksum for {name} — refusing to cache a method file "
+            "we cannot verify")
+    algo, sep, want = stated.partition(":")
+    if not sep:
+        algo, want = "md5", stated
+    try:
+        h = hashlib.new(algo)
+    except ValueError as e:
+        raise RuntimeError(f"cannot verify {name} (record {recid}): unknown digest {algo!r}") from e
+    h.update(blob)
+    if h.hexdigest() != want:
+        raise RuntimeError(f"checksum mismatch for {name} (record {recid})")
+
+
 def _fetch_record(recid: str, sha256: "str | None", log) -> Path:
     dest = _cache_root() / recid
     if (dest / "algorithm.yml").exists():
-        return dest  # already cached
+        return dest  # already cached — and complete, because the cache is only ever filled by rename
 
     log(f"  ↓ fetching method record {recid} from Zenodo")
     meta = json.loads(_http_bytes(ZENODO_RECORD_API.format(recid=recid)).decode())
     tmp = Path(tempfile.mkdtemp(prefix="qsm-ci-zenodo-"))
+    staged = None
     try:
         extracted = tmp
         for f in meta.get("files", []):
-            name = f["key"]
+            name = Path(f["key"]).name  # record keys are flat filenames; never let one walk out of tmp
             blob = _http_bytes(f["links"]["self"])
-            if name.endswith(".zip") and sha256:
-                got = hashlib.sha256(blob).hexdigest()
-                want = sha256.split(":", 1)[-1]
-                if got != want:
-                    raise RuntimeError(f"checksum mismatch for {name} (record {recid})")
+            _verify_blob(name, blob, f.get("checksum"),
+                         sha256 if name.endswith(".zip") else None, recid)
             (tmp / name).write_bytes(blob)
             if name.endswith(".zip"):
                 with zipfile.ZipFile(tmp / name) as z:
@@ -178,11 +206,20 @@ def _fetch_record(recid: str, sha256: "str | None", log) -> Path:
             raise RuntimeError(f"Zenodo record {recid} contains no algorithm.yml")
         src = hits[0].parent
         dest.parent.mkdir(parents=True, exist_ok=True)
+        # Fill the cache by rename, never in place. "Cached" means algorithm.yml exists, so a
+        # copytree interrupted just after landing that one file would leave a permanently cached,
+        # half-copied method that every later run reuses without re-fetching.
+        staged = dest.with_name(f".{dest.name}.{os.getpid()}.tmp")
+        shutil.rmtree(staged, ignore_errors=True)
+        shutil.copytree(src, staged)
         if dest.exists():
             shutil.rmtree(dest)
-        shutil.copytree(src, dest)
+        os.replace(staged, dest)
+        staged = None
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
+        if staged is not None:  # failed partway: leave no half-populated directory behind
+            shutil.rmtree(staged, ignore_errors=True)
     return dest
 
 

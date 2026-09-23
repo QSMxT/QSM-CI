@@ -1,0 +1,9 @@
+name: Full-size Test
+slug: fullsize-method
+stage: dipole
+image: bash:latest
+run: bash run.sh
+description: >
+  Fixture: a method that IGNORES the --smoke crop and writes its output on a different grid. The
+  smoke gate must DNF it. Before the gate checked shape, this passed the PR check and only failed
+  later against the real ground truth.

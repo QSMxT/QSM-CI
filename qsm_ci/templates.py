@@ -6,7 +6,8 @@ keeps the Rust/MATLAB/Julia braces intact.
 
 from __future__ import annotations
 
-from .stages import STAGES, input_artifact, produced_artifact, produced_artifacts
+from .stages import (ARTIFACT_NDIM, ARTIFACT_UNIT, STAGES, input_artifact,
+                     produced_artifact, produced_artifacts)
 
 # stage -> human list of consumed artifacts (for comments)
 CONSUMES = {s: ", ".join(STAGES[s]["consumes"]) for s in STAGES}
@@ -33,8 +34,108 @@ _MAG = {
 }
 
 
+# The `mask` read, injected only into stages that CONSUME a mask. `brain-extraction` produces one
+# instead, so for that stage these are empty and the placeholder below does not reference `mask`.
+_MASK = {
+    "python": '    mask = nib.load(f"{inp}/mask.nii.gz").get_fdata() > 0.5\n',
+    "julia": '    mask = niread(joinpath(inp, "mask.nii.gz")).raw .> 0.5\n',
+    "matlab": "    mask = niftiread(fullfile(inp, 'mask.nii.gz')) > 0.5;\n",
+    "rust": ('    let mask = ReaderOptions::new()\n'
+             '        .read_file(format!("{}/mask.nii.gz", inp))?\n'
+             '        .into_volume().into_ndarray::<f64>()?\n'
+             '        .mapv(|v| if v > 0.5 { 1.0 } else { 0.0 });\n'),
+}
+
+# The placeholder "reconstruction", per language and per stage shape. Three variants:
+#   generic  — a ppm/Hz map in, a map out: multiply by the mask.
+#   echo     — a multi-echo volume in (4D x,y,z,echo), a 3D artifact out: reduce to one echo first.
+#   brain    — magnitude in, the MASK out: there is no mask input to stay inside, so threshold.
+# `phase` and `magnitude` are the only 4D artifacts; every produced artifact is 3D. So the five
+# stages reading one of them need `echo` — the generic starter writes a 4D volume for a 3D
+# artifact and the run fails on the very first multiply.
+_HDR_NOTE = {
+    "python": "",  # only the 4x4 affine is reused, which is rank-independent
+    "julia": "\n    # NOTE: img.header describes the 4D multi-echo input — write a 3D header for a 3D output.",
+    "matlab": "\n    % NOTE: info describes the 4D multi-echo input — set info.ImageSize/PixelDimensions for 3D.",
+    "rust": "\n    // NOTE: `header` describes the 4D multi-echo input — give the writer a 3D header.",
+}
+_PLACEHOLDER = {
+    "python": {
+        "generic": "__OUT__ = __INP__ * mask  # placeholder",
+        "echo": ("echo1 = __INP__[..., 0] if __INP__.ndim == 4 else __INP__  # 4D x,y,z,echo -> 3D\n"
+                 "    __OUT__ = echo1 * mask  # placeholder"),
+        "brain": ("echo1 = __INP__[..., 0] if __INP__.ndim == 4 else __INP__  # 4D x,y,z,echo -> 3D\n"
+                  "    __OUT__ = (echo1 > echo1.mean()).astype(np.float32)  # placeholder"),
+    },
+    "julia": {
+        "generic": "__OUT__ = __INP__ .* mask  # placeholder",
+        "echo": ("echo1 = ndims(__INP__) == 4 ? __INP__[:, :, :, 1] : __INP__  # 4D x,y,z,echo -> 3D\n"
+                 "    __OUT__ = echo1 .* mask  # placeholder"),
+        "brain": ("echo1 = ndims(__INP__) == 4 ? __INP__[:, :, :, 1] : __INP__  # 4D x,y,z,echo -> 3D\n"
+                  "    __OUT__ = Float32.(echo1 .> sum(echo1) / length(echo1))  # placeholder"),
+    },
+    "matlab": {
+        "generic": "__OUT__ = __INP__ .* mask;  % placeholder",
+        "echo": ("echo1 = __INP__(:, :, :, 1);  % 4D x,y,z,echo -> 3D\n"
+                 "    __OUT__ = echo1 .* mask;  % placeholder"),
+        "brain": ("echo1 = __INP__(:, :, :, 1);  % 4D x,y,z,echo -> 3D\n"
+                  "    __OUT__ = single(echo1 > mean(echo1(:)));  % placeholder"),
+    },
+    "rust": {
+        "generic": "let __OUT__ = &__INP__ * &mask; // placeholder",
+        "echo": ("let echo1 = if __INP__.ndim() == 4 {\n"
+                 "        __INP__.index_axis(Axis(3), 0).to_owned()\n"
+                 "    } else { __INP__.clone() }; // 4D x,y,z,echo -> 3D\n"
+                 "    let __OUT__ = &echo1 * &mask; // placeholder"),
+        "brain": ("let echo1 = if __INP__.ndim() == 4 {\n"
+                  "        __INP__.index_axis(Axis(3), 0).to_owned()\n"
+                  "    } else { __INP__.clone() }; // 4D x,y,z,echo -> 3D\n"
+                  "    let thr = echo1.sum() / echo1.len() as f64;\n"
+                 "    let __OUT__ = echo1.mapv(|v| if v > thr { 1.0 } else { 0.0 }); // placeholder"),
+    },
+}
+
+
+def _is_multiecho(stage: str) -> bool:
+    """Does this stage's primary input arrive 4D (x,y,z,echo)? `phase` and `magnitude` do."""
+    return ARTIFACT_NDIM[input_artifact(stage)] == 4
+
+
+def _placeholder(stage: str, lang: str) -> str:
+    """Which placeholder variant this stage needs, plus a header warning where the template reuses
+    the input header verbatim while the input is a 4D multi-echo volume."""
+    if produced_artifact(stage) == "mask":
+        kind = "brain"
+    elif _is_multiecho(stage):
+        kind = "echo"
+    else:
+        return _PLACEHOLDER[lang]["generic"]
+    return _PLACEHOLDER[lang][kind] + _HDR_NOTE[lang]
+
+
 def _mag(stage: str, lang: str) -> str:
-    return _MAG[lang] if "magnitude" in STAGES[stage]["consumes"] else ""
+    """A separate `magnitude` read — only where magnitude is a SECONDARY input (data-fidelity
+    weighting). When it is the stage's primary input (brain-extraction, r2prime-generation) the
+    template already reads it as __INP__, and injecting this would read the same file twice."""
+    if "magnitude" not in STAGES[stage]["consumes"] or input_artifact(stage) == "magnitude":
+        return ""
+    return _MAG[lang]
+
+
+def _mask(stage: str, lang: str) -> str:
+    return _MASK[lang] if "mask" in STAGES[stage]["consumes"] else ""
+
+
+def _todo(stage: str) -> str:
+    """The TODO line: what this stage has to produce, in its own unit — not every stage makes ppm,
+    and brain-extraction has no mask to stay inside because the mask is what it produces."""
+    out = produced_artifact(stage)
+    unit = ARTIFACT_UNIT[out]
+    if out == "mask":
+        return f"Produce {out} ({unit}), 1 inside the brain."
+    if "mask" in STAGES[stage]["consumes"]:
+        return f"Produce {out} ({unit}), within the mask."
+    return f"Produce {out} ({unit})."
 
 
 def _sub(text: str, stage: str, name: str, lang: str) -> str:
@@ -43,6 +144,13 @@ def _sub(text: str, stage: str, name: str, lang: str) -> str:
             .replace("__STAGE__", stage)
             .replace("__C__", CONSUMES[stage])
             .replace("__MAG__", _mag(stage, lang))
+            .replace("__MASK__", _mask(stage, lang))
+            .replace("__TODO__", _todo(stage))
+            .replace("__PLACE__", _placeholder(stage, lang))
+            .replace("__USE__", "use ndarray::Axis;\n"  # only the echo-slicing variants need it
+                     if lang == "rust" and _is_multiecho(stage) else "")
+            .replace("__IU__", ARTIFACT_UNIT[input_artifact(stage)])
+            .replace("__OU__", ARTIFACT_UNIT[produced_artifact(stage)])
             .replace("__INP__", input_artifact(stage))
             .replace("__OUT__", produced_artifact(stage)))
 
@@ -58,10 +166,9 @@ import numpy as np
 
 def main(inp, out):
     # This __STAGE__ stage consumes: __C__  (all in `inp`), and must write __OUT__.nii.gz to `out`.
-    img = nib.load(f"{inp}/__INP__.nii.gz")            # primary input (ppm)
+    img = nib.load(f"{inp}/__INP__.nii.gz")            # primary input (__IU__)
     __INP__ = img.get_fdata().astype(np.float64)
-    mask = nib.load(f"{inp}/mask.nii.gz").get_fdata() > 0.5
-
+__MASK__
     # Acquisition parameters. B0_dir is the unit B0 direction in image space (key for dipole/BFR);
     # also params["voxel_size"] (mm), params["B0"] (tesla), params["TE"] (echo times, s).
     params = json.load(open(f"{inp}/params.json"))
@@ -71,8 +178,8 @@ __MAG__
     cfg = json.load(open(f"{inp}/config.json")) if os.path.exists(f"{inp}/config.json") else {}
     # e.g. threshold = cfg.get("threshold", 0.1)
 
-    # TODO: your reconstruction here. Produce __OUT__ (ppm), within the mask.
-    __OUT__ = __INP__ * mask  # placeholder
+    # TODO: your reconstruction here. __TODO__
+    __PLACE__
 
     nib.save(nib.Nifti1Image(__OUT__.astype(np.float32), img.affine), f"{out}/__OUT__.nii.gz")
 
@@ -85,15 +192,14 @@ _JULIA = '''# __NAME__ — __STAGE__ stage.  consumes: __C__  (all in `inp`); wr
 using NIfTI
 
 function main(inp, out)
-    img = niread(joinpath(inp, "__INP__.nii.gz"))     # primary input (ppm)
+    img = niread(joinpath(inp, "__INP__.nii.gz"))     # primary input (__IU__)
     __INP__ = Float64.(img.raw)
-    mask = niread(joinpath(inp, "mask.nii.gz")).raw .> 0.5
-
+__MASK__
     # params.json (B0_dir = unit B0 direction, voxel_size mm, B0 tesla, TE echo times s) is in `inp`;
     # add JSON.jl to your image to parse it if your method needs those (e.g. B0_dir for dipole/BFR).
 __MAG__
-    # TODO: your reconstruction here. Produce __OUT__ (ppm), within the mask.
-    __OUT__ = __INP__ .* mask  # placeholder
+    # TODO: your reconstruction here. __TODO__
+    __PLACE__
 
     niwrite(joinpath(out, "__OUT__.nii.gz"), NIVolume(img.header, Float32.(__OUT__)))
 end
@@ -103,17 +209,16 @@ main(ARGS[1], ARGS[2])
 
 _MATLAB = '''function recon(inp, out)
 % __NAME__ — __STAGE__ stage.  consumes: __C__  (all in inp); writes __OUT__.nii.gz to out.
-    info = niftiinfo(fullfile(inp, '__INP__.nii.gz'));   % primary input (ppm)
+    info = niftiinfo(fullfile(inp, '__INP__.nii.gz'));   % primary input (__IU__)
     __INP__ = double(niftiread(info));
-    mask = niftiread(fullfile(inp, 'mask.nii.gz')) > 0.5;
-
+__MASK__
     % Acquisition parameters. p.B0_dir = unit B0 direction (key for dipole/BFR);
     % also p.voxel_size (mm), p.B0 (tesla), p.TE (echo times, s).
     p = jsondecode(fileread(fullfile(inp, 'params.json')));
     b0_dir = p.B0_dir(:)';
 __MAG__
-    % TODO: your reconstruction here. Produce __OUT__ (ppm), within the mask.
-    __OUT__ = __INP__ .* mask;  % placeholder
+    % TODO: your reconstruction here. __TODO__
+    __PLACE__
 
     info.Datatype = 'single';
     niftiwrite(single(__OUT__), fullfile(out, '__OUT__.nii'), info, 'Compressed', true);
@@ -123,25 +228,21 @@ end
 _RUST = '''//! __NAME__ — __STAGE__ stage. Reads <in-dir>, writes <out-dir>.
 use std::env;
 use nifti::writer::WriterOptions;
-use nifti::{IntoNdArray, NiftiObject, ReaderOptions};
+__USE__use nifti::{IntoNdArray, NiftiObject, ReaderOptions};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = env::args().collect();
     let (inp, out) = (&args[1], &args[2]);
 
     // This __STAGE__ stage consumes: __C__  (all in `inp`); writes __OUT__.nii.gz to `out`.
-    let obj = ReaderOptions::new().read_file(format!("{}/__INP__.nii.gz", inp))?; // primary (ppm)
+    let obj = ReaderOptions::new().read_file(format!("{}/__INP__.nii.gz", inp))?; // primary (__IU__)
     let header = obj.header().clone();
     let __INP__ = obj.into_volume().into_ndarray::<f64>()?;
-    let mask = ReaderOptions::new()
-        .read_file(format!("{}/mask.nii.gz", inp))?
-        .into_volume().into_ndarray::<f64>()?
-        .mapv(|v| if v > 0.5 { 1.0 } else { 0.0 });
-    // params.json (B0_dir = unit B0 direction, voxel_size mm, B0 tesla, TE echo times s) is at
+__MASK__    // params.json (B0_dir = unit B0 direction, voxel_size mm, B0 tesla, TE echo times s) is at
     // {inp}/params.json; add serde_json to Cargo.toml to parse it (e.g. B0_dir for dipole/BFR).
 __MAG__
-    // TODO: your reconstruction here. Produce __OUT__ (ppm), within the mask.
-    let __OUT__ = &__INP__ * &mask; // placeholder
+    // TODO: your reconstruction here. __TODO__
+    __PLACE__
 
     WriterOptions::new(format!("{}/__OUT__.nii.gz", out))
         .reference_header(&header)

@@ -52,6 +52,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from scoring import (  # noqa: E402
     cli_run_argv, gt_sources as _gt_sources, parse_shard, shard_owns, shard_partition, eval_argv,
 )
+import merge_index  # noqa: E402  (sibling: the one upsert policy for results/index.json)
 
 # Independent submission runs (each a Docker container + a scoring subprocess) are executed
 # concurrently, bounded by QSM_CI_JOBS. The cap is deliberately conservative: MATLAB MCR runs on
@@ -701,6 +702,20 @@ def _stamp_resource_summary(run):
             run[k] = d[k]
 
 
+def _clear_dnf_results(run):
+    """A DNF run must not inherit the PREVIOUS run's artifacts. results/<id>/ is gitignored scratch,
+    but a self-hosted runner reuses its workspace, so the recon/error volumes, resources.json and
+    regions.json of the last successful run of this id are still sitting there. Nothing on the DNF
+    path writes that directory, so publish_volumes.py would upload the old volumes and attach their
+    URLs to the new DNF row, and _stamp_resource_summary would stamp the old peak memory onto it —
+    a failed run showing a working viewer and a plausible memory figure. Delete the directory."""
+    if run.get("status") != "DNF":
+        return
+    d = ROOT / "results" / str(run.get("id") or "")
+    if run.get("id") and d.is_dir():
+        shutil.rmtree(d, ignore_errors=True)
+
+
 class RunsFile(list):
     """The `runs` list of a --runs-out job, persisted after EVERY append/extend (atomic replace).
 
@@ -752,14 +767,17 @@ def flush_index(runs):
     """Merge the current runs into results/index.json (replace matching ids) and write immediately,
     so a long run's progress is visible on the leaderboard as it goes. Per-region stats never travel
     on the rows — they are written to per-run results/<id>/regions.json files at score time (see
-    write_run_regions) and surfaced via regions_url, so index.json stays lean."""
+    write_run_regions) and surfaced via regions_url, so index.json stays lean.
+
+    Upserts through merge_index.upsert — the same routine the CI merge job uses — so a rescore
+    replaces rows where they already sit instead of moving them to the end of the file."""
     idx = ROOT / "results" / "index.json"
     idx.parent.mkdir(parents=True, exist_ok=True)
     for r in runs:
+        _clear_dnf_results(r)
         _stamp_resource_summary(r)
     existing = json.loads(idx.read_text()).get("runs", []) if idx.exists() else []
-    ids = {r["id"] for r in runs}
-    merged = [r for r in existing if r.get("id") not in ids] + runs
+    merged = merge_index.upsert(existing, runs)
     idx.write_text(json.dumps({"generated": None, "runs": merged}, indent=2) + "\n")
     return len(merged)
 
@@ -885,15 +903,37 @@ def _smoke_crop(idir, consumes, box):
         d = np.asarray(im.dataobj)
         sl = tuple(slice((n - box) // 2, (n - box) // 2 + box) if n > box else slice(None)
                    for n in d.shape[:3]) + tuple(slice(None) for _ in d.shape[3:])
-        nib.save(nib.Nifti1Image(d[sl], im.affine, im.header), str(f))
+        # The crop moves the volume's origin, so the affine translation has to move with it —
+        # otherwise every cropped input's header describes a box that is (box-n)/2 voxels off in
+        # each axis, and the cropped inputs silently disagree with each other's world coordinates.
+        aff = im.affine.copy()
+        aff[:3, 3] += im.affine[:3, :3] @ np.array([sl[i].start or 0 for i in range(3)], float)
+        nib.save(nib.Nifti1Image(d[sl], aff, im.header), str(f))
 
 
-def _smoke_check(a, sfx, variant, odir, rt, args):
+def _reference_shape(idir, consumes):
+    """The 3D grid every produced artifact must be on: the mask's, or — for brain-extraction, which
+    produces the mask rather than consuming one — the first three axes of a spatial input."""
+    import nibabel as nib
+    # mask first: it is the grid the contract defines every 3D artifact against.
+    for art in ["mask"] + [c for c in consumes if c not in ("params", "mask")]:
+        f = idir / ARTIFACT_FILE[art]
+        if f.exists():
+            return nib.load(str(f)).shape[:3]
+    return None
+
+
+def _smoke_check(a, sfx, variant, odir, rt, args, idir=None):
     """--smoke gate: the method ran — did it emit each produced artifact as a valid (present, correctly
     shaped, finite, non-empty) volume? No scoring; a crash / missing / empty / non-finite output is a
-    DNF that fails the check. This is what --smoke swaps in for score(): prove it runs, cheaply."""
+    DNF that fails the check. This is what --smoke swaps in for score(): prove it runs, cheaply.
+
+    "Correctly shaped" means exactly the cropped input grid, in 3D. Without that, a method that
+    ignores the crop and reconstructs at full size — or writes a 4D volume for a 3D artifact —
+    passed the PR gate and only failed later, against the real ground truth, in a full rescore."""
     import nibabel as nib
     import numpy as np
+    want = _reference_shape(idir, a["consumes"]) if idir is not None else None
     rid = f"{a['slug']}-iso{sfx}"
     row = {"id": rid, "slug": a["slug"], "name": a.get("name", a["slug"]), "stage": a["stage"],
            "mode": "isolated", "track": args.track, "runtime_s": rt, "variant": variant,
@@ -906,7 +946,12 @@ def _smoke_check(a, sfx, variant, odir, rt, args):
             reason = "not written"
         else:
             d = np.asarray(nib.load(str(f)).dataobj, dtype="float32")
-            reason = "empty / non-finite" if (not np.isfinite(d).any() or not np.any(d != 0)) else None
+            if want is not None and d.shape != tuple(want):
+                reason = f"shape {tuple(d.shape)} != expected {tuple(want)}"
+            elif not np.isfinite(d).any() or not np.any(d != 0):
+                reason = "empty / non-finite"
+            else:
+                reason = None
         print(f"  smoke     {a['slug']:<16} {variant:<8} {art:<11} {'ok' if reason is None else 'DNF (' + reason + ')'}")
         if reason:
             row["status"] = "DNF"
@@ -937,7 +982,7 @@ def do_isolated(task, args, gt_sources, gt, mask):
         rt = run_algo(a, idir, odir, args.runner, run_overrides)
         prods = a["produces"]
         if args.smoke:  # smoke: prove it runs + emits a valid output, don't score
-            return [_smoke_check(a, idsfx, variant, odir, rt, args)]
+            return [_smoke_check(a, idsfx, variant, odir, rt, args, idir)]
         if len(prods) > 1 and all(ARTIFACT_KIND.get(p) == "chisep" for p in prods):
             return [_score_chisep(a, idsfx, variant, overrides, odir, gt, mask, rt, args)]
         out = []
