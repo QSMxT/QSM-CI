@@ -40,7 +40,7 @@ jobs:
         with:
           python-version: "3.11"
 
-      - uses: actions/setup-java@v5       # Nextflow needs a JVM
+      - uses: actions/setup-java@v6       # Nextflow needs a JVM
         with:
           distribution: temurin
           java-version: "17"
