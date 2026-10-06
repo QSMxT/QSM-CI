@@ -1,0 +1,159 @@
+# ONNX model provenance
+
+How every deep-learning model QSM.rs runs was obtained, converted to ONNX, verified, and hosted.
+This is the answer to *"how did you produce/convert this ONNX?"* — each model is reproducible from
+the scripts in this directory plus the sources below.
+
+All models are hosted on OSF project **erv6n** (<https://osf.io/erv6n>), public, direct-download
+`https://osf.io/download/<id>/`. The `sha256` + `bytes` in QSM.rs's `src/models/registry.rs` are the
+authoritative integrity check (the native downloader verifies them).
+
+## Conversion environment
+
+- **PyTorch / MATLAB-ONNX models** (xQSM, SUSEP-Net, iQSM, iQSM+, and the *clean rebuilds* of QSMnet/
+  QSMnet+/AutoQSM): a normal CPU venv — `torch 2.13`, `onnx 1.22`, `onnxruntime 1.29`, `nibabel`,
+  `scipy` (Python 3.14). `torch.onnx.export(..., opset_version=17, dynamo=False)`.
+- **Legacy TensorFlow / Keras** weight extraction: run *inside the QSM-CI Docker images* which pin the
+  original stacks — `ghcr.io/astewartau/qsm-ci/qsmnet:v1` and `qsmnet-plus:v1` (TF 1.14), and
+  `autoqsm:v1` (TF 1.15 / Keras 2.2.5). We only *dump weights + a reference output* from these; the
+  network is rebuilt in PyTorch outside the container (see below).
+
+## The cross-cutting problem, and the recipe
+
+`tract` (the pure-Rust engine QSM.rs uses, chosen so the same code runs in WASM) **cannot execute
+`tf2onnx`-converted TensorFlow graphs** — it fails shape-analysis on the NHWC↔NCHW `Reshape`/
+`Transpose` and dynamic deconv-shape ops `tf2onnx` emits (confirmed for QSMnet: tried dynamic, static/
+onnxsim, `--inputs-as-nchw`; all fail). `onnxruntime` runs them fine, but adding it as a backend means
+a ~15–40 MB native C++ lib and no WASM. So the recipe for legacy-TF models is **not** `tf2onnx`:
+
+> **Rebuild the network in PyTorch, port the original weights into it, validate against a reference
+> output from the original framework, then `torch.onnx.export`.** This yields a clean NCDHW graph
+> tract runs, keeping everything pure-Rust + WASM + tiny-binary.
+
+PyTorch-native models export directly. A few needed in-graph op rewrites so tract can shape-analyse
+them (documented per model, and in each `export_*.py`).
+
+## Per-model record
+
+| Model | Source weights | Approach | Script | tract parity vs ref |
+|-------|----------------|----------|--------|---------------------|
+| **BFRnet** | `algorithms/bfrnet/BFRnet.onnx` (MATLAB `exportONNXNetwork`, see `algorithms/bfrnet/BUILD.md`) | already ONNX — hosted as-is | — | corr 1.000000, 1.4e-7 |
+| **xQSM** | `sunhongfu/xQSM` @ `5d13b36`, GH release `v1.0-demo` `xQSM_invivo.pth` | PyTorch → ONNX (direct) | `export_xqsm.py` | corr 1.000000, 3.2e-7 |
+| **QSMnet** | `qsm-ci/qsmnet:v1` image, ckpt `QSMnet_64-25` (TF 1.14) | clean rebuild: TF→PyTorch | `dump/dump_qsmnet_tf.py` → `export_qsmnet.py` | corr 1.000000, 1.7e-6 |
+| **QSMnet+** | `qsm-ci/qsmnet-plus:v1`, ckpt `QSMnet+_64-25` | clean rebuild (same net, diff norm) | `dump/dump_qsmnet_tf.py` → `export_qsmnet.py` | corr 1.000000, 5e-7 |
+| **AutoQSM** | `qsm-ci/autoqsm:v1`, Keras `model_final_1.hdf5` (TF 1.15) | clean rebuild: Keras→PyTorch | `dump/dump_autoqsm_keras.py` → `export_autoqsm.py` | corr 1.000000, 1.1e-7 |
+| **SUSEP-Net** | `algorithms/susep-net/SUSEPNet.pth` (authors' GDrive) | PyTorch → ONNX (3-in/2-out) | `export_susepnet.py` | corr 1.000000, ~1e-7 |
+| **iQSM** | HF `sunhongfu/iQSM` — `iQSM_50_v2.pth` + `LPLayer_chi_50_v2.pth` | PyTorch → ONNX (min-patch) | `export_iqsm.py` | corr 1.000000, 1.45e-6 |
+| **iQSM+** | HF `sunhongfu/iQSM_Plus` — `iQSM_plus.pth` + `LoTLayer_chi.pth` | PyTorch → ONNX (min-patch) | `export_iqsmplus.py` | corr 1.000000, 1.77e-6 |
+| **iQFM** | `sunhongfu/iQSM` — `iQFM_40_v2.pth` + `LoTLayer_lfs_40_v2.pth` (the `lfs` head) | PyTorch → ONNX (same as iQSM) | `export_iqfm.py` | corr 1.000000, 1.23e-6 |
+| **QSMGAN** | `mmorri10/QSMGAN-LupoLab` — `WGAN_i64o48/net_best.pt` (legacy torch 1.1 ckpt) | PyTorch → ONNX (generator only, 64³→48³) | `export_qsmgan.py` | corr 1.000000, 1.1e-7 |
+| **LPCNN** | `Sulam-Group/LPCNN` — `lpcnn_test_Bmodel.pkl` | PyTorch → ONNX (proximal CNN only; FFT unroll in Rust) | `export_lpcnn.py` | corr 1.000000, 1.8e-7 |
+| **IR2QSM** | `YangGaoUQ/IR2QSM` — `model_IR2Unet.pth` | PyTorch → ONNX (whole IR2U-net; /8 pad + mask in Rust; inference AddNoise pinned off) | `export_ir2qsm.py` | corr 1.000000, 4.9e-6 |
+| **MoDL-QSM** | `qsm-ci/modl-qsm:v1`, Keras `logs/last.h5` (TF 1.15) | dump weights → clean rebuild Keras→PyTorch (CNN prior only; A/Aᴴ unroll in Rust) | `dump/dump_modl_qsm.py` → `export_modl_qsm.py` | corr 1.000000, 5.7e-7 |
+| **χ-sepnet** | SNU-LIST toolbox `240904_xsepnet.onnx` (already ONNX; redistributed with permission) | hosted as-is; norm from `.mat` baked in Rust | `extract_chisepnet_norm.py` | corr 1.000000, 1.3e-7 |
+| **NeXtQSM** | `QSMxT/nextqsm` TF ckpt (OSF `zqfdc`) | Rust hybrid: rebuild both U-Nets + hand-code the VarNet VJP as a forward graph → ONNX → graph surgery; FFT data-consistency + 6-step unroll in Rust | `export_nextqsm.py` → `nextqsm_fold.py` | corr 0.999980, 5e-2 |
+| **HD-BET** | `ghcr.io/astewartau/qsm-ci/hd-bet:v1` — HD-BET 2.0.1 `release_2.0.0/fold_all/checkpoint_final.pth` (Zenodo 14445620, **CC-BY-NC-4.0**) | PyTorch → ONNX via nnU-Net's own `get_network_from_plans` (dynamic spatial axes); nnU-Net pre/post-processing + sliding window in Rust (`bet::hd_bet`) | `export_hdbet.py`, ref `reference/ref_hdbet.py` | mask vs `hd-bet` CLI Dice 0.99999 (9–31 vox) on 3 cases |
+
+NeXtQSM ships **two** ONNX files — `nextqsm-bf.onnx` (BFR U-Net forward) and `nextqsm-vjp.onnx` (the
+regularizer gradient) — registered as one model in registry order (BFR first). Its parity target is
+the genuine `nextqsm` CLI (`predict_all.py`, TensorFlow), not a stored tensor; the ~5e-2 ppm spread is
+inherent TF-vs-tract float32 drift amplified by the chaotic 6-step unroll (a same-engine ONNX-Runtime
+unroll shows the same spread), while the map stays corr > 0.9999. It runs at **full brain resolution**
+on tract in pure Rust (192×256×256 in ~4 min at ~10 GB; TF does it in ~84 s at 8.6 GB) — see the
+ConvTranspose note below for why that took a graph rewrite.
+
+Reference outputs for the parity tests are regenerated by `reference/ref_*.py` (each runs the
+*original* framework's inference on the `data/sim/dev` volume). Every clean rebuild is additionally
+validated weight-for-weight against the original: e.g. torch-vs-Keras single-patch for AutoQSM
+(5e-7), torch-vs-TF for QSMnet (1.4e-5).
+
+## Problems solved (the interesting bits)
+
+- **QSMnet / QSMnet+ (TF1)** — `tf2onnx` output won't run on tract (above). Rebuilt the 3D U-Net in
+  PyTorch. Two gotchas found by stage-by-stage activation diffing: BatchNorm uses a `tf.cond`
+  training/inference switch whose training branch's `Switch`/`Assign` nodes break graph re-import
+  (handled by only *dumping* weights, not freezing); and **QSMnet's LeakyReLU α is 0.1, not TF's 0.2
+  default**. TF conv weights `[k,k,k,in,out]`→torch `[out,in,k,k,k]` (transpose 4,3,0,1,2).
+- **AutoQSM (Keras)** — patch V-Net (64³→32³). Rebuilt in PyTorch (no BatchNorm — simpler). The
+  sliding-window tiling + 8-voxel linear blend is ported into the Rust glue, not the ONNX.
+- **iQSM / iQSM+ (LoT-Unet)** — the LoT layer's in-place boundary-zeroing `out[:,:,[0,h-1]...]=0`
+  breaks tract in *every* in-graph form (ScatterND bakes constant indices → size-locks; `Pad` fails
+  "analyse"; `Slice`+`Concat` fails the `PushSliceUp` pass). Solved by passing the shell mask as a
+  graph **input** `border` and applying `conv*border` (a plain `Mul`); the Rust glue builds `border`.
+  Also learned the hard way: **don't hand-reimplement the model forward for export** — a subtle bug
+  cost hours (nn.Parameter shares storage with `torch.from_numpy`, so `load_state_dict`'s in-place
+  `copy_` silently mutated a module global). Fix: load the *exact* original model and monkeypatch only
+  the one op.
+- **iQSM+ (OA-LFE)** — the orientation blocks build a conv kernel from the B0 direction and convolve
+  each channel with it; `torch.onnx` can't trace the dynamic kernel shape. Since the *same* kernel
+  hits every channel, `conv3d(x, K.repeat(C))` == `conv3d(x.sum(channels), K)` with a static kernel —
+  numerically identical (batch=1) and exportable.
+- **NeXtQSM (TF, variational)** — not a single feed-forward net: a BFR U-Net then a 6-step variational
+  dipole inversion whose update is `x ← x − ∇ₓ(λ·E_D + E_R)`, where `E_R = mean|VarNet(x)|` needs a
+  **backprop through a U-Net**. `torch.onnx` can't export the autograd. Solution: (1) rebuild both
+  U-Nets in PyTorch from the dumped TF weights; (2) hand-code the VarNet VJP `∇ₓ mean|VarNet(x)|` as a
+  *forward* graph (conv/conv-transpose/relu-mask/split), validated to ~1e-5 vs autograd and the TF
+  reference; (3) the FFT data-consistency gradient + unroll live in Rust. The graph returns the
+  **unnormalized** `∇ₓ Σ|VarNet(x)|`; Rust divides by N — keeps the ONNX size-agnostic (no Shape/
+  ReduceProd/Div). TF `SAME` alignment: stride-2 conv pads `(0,1)`, so its transpose is
+  `ConvTranspose(pad0)` + crop-last-voxel (the exact adjoint). tract's optimized path rejects `Pad`
+  ("analyse") and crop `Slice` ("PushSliceUp"), so `nextqsm_fold.py` does **graph surgery**: onnxsim
+  folds `Pad`→`Conv pads`, spatial-crop `Slice`→`ConvTranspose pads` (per-voxel crop, size-agnostic),
+  and `torch.split` channel `Slice`s→`Split`. Result: a pure conv/relu/split graph tract runs on its
+  fast path — no ort, no +28 MB. Fold at static shape (compute crop counts), then re-mark D/H/W
+  symbolic so it stays fully-convolutional.
+- **NeXtQSM — the 43.5 GB ConvTranspose, and why it runs at full res anyway.** The VJP's backprop
+  emits `ConvTranspose` for each conv-adjoint. At full brain resolution (192×256×256) two of these are
+  stride-1 full-res ops, and *both* tract and ONNX Runtime materialize their col2im buffer whole:
+  `12.6M·32·27·4 B = 43.5 GB` → instant OOM (identical failure on both engines; ort is not a fix).
+  A single-op probe pinned it down: at 32ch/full-res a regular `Conv` streams in ~6 GB on tract (~4.5 GB
+  ort), but the stride-1 `ConvTranspose` demands the full 43.5 GB. The fix is exact and weight-preserving:
+  a cross-correlation's adjoint is a cross-correlation with the kernel spatially flipped and its in/out
+  channel axes swapped, so `_adj_same` emits `Conv(x, W.transpose(0,1).flip(2,3,4), pad=1)` instead of
+  `ConvTranspose`. Only the two full-res stride-1 adjoints need it; the stride-2 ones (downsampled input)
+  stay cheap. Result: full-brain NeXtQSM runs on **tract** (pure Rust, WASM-capable) at ~10 GB, and the
+  dev-phantom got ~8× faster as a bonus (138 s → 18 s), since the deconv was both memory-hungry and slow.
+- **NeXtQSM — the buggy reference trap.** The first dumped "reference" trajectory disagreed with the
+  Rust unroll at corr 0.24. Chasing it: the DC-gradient direction matched exactly but was `/151.417`
+  too small — a constant `= √N · 0.14787`. TF's standalone RMSE gradient equals the analytic
+  `100/(‖bf‖·‖u‖)·D(Dx−bf)` (verified 3 ways incl. TF fft-grad conventions), so the *code* uses
+  prefactor 100. Running the genuine `predict_all.py` (TF) confirmed the **real** output matches the
+  prefactor-100 Rust unroll at corr 0.99998, while the stored tensor (buggy dump instrumentation with
+  an extra `/√N·c` on the DC term) only correlated 0.24 with it. Lesson: validate against the *actual
+  package output*, not a hand-dumped intermediate.
+- **LPCNN (learned proximal, unrolled)** — 3-iteration proximal gradient: a k-space dipole
+  data-consistency step then a learned CNN proximal. Only the CNN (`gen`) is ONNX; the FFT
+  data-consistency, the unroll, the trained step size `α=3.7188` and the mean/std normalization live in
+  Rust. The dipole kernel is the **fftfreq/DC-at-corner** convention (unshifted), distinct from
+  NeXtQSM's fftshifted centered kernel — the model's ortho FFT expects DC at the array corner. The
+  Hz↔ppm round-trip cancels, so the field is fed in ppm.
+- **IR2QSM (recurrent, stochastic)** — unlike LPCNN/MoDL the *whole* IR2U-net (depth 4, 4 unrolled
+  iterations, reverse concatenations, recurrent middle) is one ONNX graph; the Rust glue only /8-pads,
+  crops and masks (ppm passthrough, no normalization). The catch: `IR2Unet.forward` has an **ungated**
+  inference-time `AddNoise` (`torch.rand(1) > 0.3` per iteration) making the output mildly stochastic.
+  We **pin it to the noise-free branch** (monkeypatch `AddNoise`→identity) so the export is deterministic
+  and bit-reproducible.
+- **MoDL-QSM (Keras, unrolled model-based)** — 3-iteration model-based gradient descent alternating a
+  learned 2-channel CNN prior with dipole data-consistency (A/Aᴴ). Legacy TF 1.15/Keras 2.2.5, so the
+  QSMnet/AutoQSM recipe applies: **dump weights inside `qsm-ci/modl-qsm:v1`, rebuild the CNN prior in
+  PyTorch, port, export**. Only the prior is ONNX; the FFT A/Aᴴ, the unroll, `α=1.1019` and the
+  per-channel `NormFactor.mat` mean/std live in Rust. The A/Aᴴ ortho FFT's `√N` cancels linearly in both
+  operators, so the crate's standard normalized FFT pair is used unchanged. Output is the STI χ33
+  component. Gotcha (reused): the weight-dump script must not sit on `sys.path[0]` or a stray `inspect.py`
+  shadows stdlib `inspect` and breaks scipy inside the py36 container.
+- **χ-sepnet (SNU-LIST, already ONNX)** — a 192×192×128 3D U-Net mapping z-scored [QSM, field, R2′/Dr]
+  → [χ+, χ−]. The onnx is the SNU-LIST toolbox file itself (not exported by us), hosted with permission;
+  the z-score constants (Dr=114) come from the toolbox `.mat` (`extract_chisepnet_norm.py`) and are baked
+  into the Rust `ChiSepNetNorm`. The Rust glue runs it as an overlapping 0.75-stride sliding window with
+  overlap averaging, then de-normalizes.
+
+## Re-registering after a re-export
+
+Run `make_registry_entry.py <cache-name> <file.onnx> <osf-url>` to print the Rust `WeightFile { … }`
+snippet (sha256 + bytes), paste into `QSM.rs/src/models/registry.rs`. Current OSF ids:
+bfrnet `6a8546e927e06d15b781a605`, xqsm `6a8546cd27e06d15b781a601`, qsmnet `6a854e3fa325bd72433d5cb8`,
+qsmnet-plus `6a85500bd7ccc815476a888c`, susep-net `6a8552a5329b2090036a8920`,
+autoqsm `6a855583bc038122f06a886f`, iqsm `6a8642664b84b0c1461c0a22`, iqsm-plus `6a864b736621f1b55b6c579c`,
+nextqsm-bf `6a8677348d4da2a8c67e7de7`, nextqsm-vjp `6a867742f509e68e077e7d89`,
+iqfm `6a868e0fa3ff03ba60cbf576`, qsmgan `6a8690fb8f5c5cc95cdf4e80`, lpcnn `6a869386d8df0e691f8358ed`,
+ir2qsm `6a8697a178c9afe009df4fcc`, modl-qsm `6a86990685b99bc066df4fae`, chi-sepnet `6a86985039afa3b755835908`.
