@@ -54,6 +54,10 @@ them (documented per model, and in each `export_*.py`).
 | **NeXtQSM** | `QSMxT/nextqsm` TF ckpt (OSF `zqfdc`) | Rust hybrid: rebuild both U-Nets + hand-code the VarNet VJP as a forward graph → ONNX → graph surgery; FFT data-consistency + 6-step unroll in Rust | `export_nextqsm.py` → `nextqsm_fold.py` | corr 0.999980, 5e-2 |
 | **HD-BET** | `ghcr.io/astewartau/qsm-ci/hd-bet:v1` — HD-BET 2.0.1 `release_2.0.0/fold_all/checkpoint_final.pth` (Zenodo 14445620, **CC-BY-NC-4.0**) | PyTorch → ONNX via nnU-Net's own `get_network_from_plans` (dynamic spatial axes); nnU-Net pre/post-processing + sliding window in Rust (`bet::hd_bet`) | `export_hdbet.py`, ref `reference/ref_hdbet.py` | mask vs `hd-bet` CLI Dice 0.99999 (9–31 vox) on 3 cases |
 
+The table above is the *hosted and registered* set. **DIP-UP (PHU-NET3D / PhaseNet3D)** was also
+exported and verified against tract, but is deliberately neither hosted nor registered — see its own
+section below.
+
 NeXtQSM ships **two** ONNX files — `nextqsm-bf.onnx` (BFR U-Net forward) and `nextqsm-vjp.onnx` (the
 regularizer gradient) — registered as one model in registry order (BFR first). Its parity target is
 the genuine `nextqsm` CLI (`predict_all.py`, TensorFlow), not a stored tensor; the ~5e-2 ppm spread is
@@ -146,6 +150,85 @@ validated weight-for-weight against the original: e.g. torch-vs-Keras single-pat
   the z-score constants (Dr=114) come from the toolbox `.mat` (`extract_chisepnet_norm.py`) and are baked
   into the Rust `ChiSepNetNorm`. The Rust glue runs it as an overlapping 0.75-stride sliding window with
   overlap averaging, then de-normalizes.
+
+## DIP-UP (PHU-NET3D / PhaseNet3D) — exported and verified, NOT hosted, NOT registered
+
+Scoping exercise for QSM.rs #123 (a deep-learning phase unwrapper). The export works and `tract`
+runs it; the **measured accuracy does not justify shipping it**, so no weights were uploaded and no
+`registry.rs` entry was added. Full write-up and numbers: QSM.rs `docs/DIPUP_SCOPING.md`.
+Reproduce with `reference/ref_dipup.py` (+ `reference/dipup_baseline.rs`,
+`reference/dipup_tract_parity.rs`).
+
+**What it is.** Zhu et al., *Information* 2025, doi:10.3390/info16070592;
+<https://github.com/sunhongfu/DIP-UP>. A pretrained 3D U-Net classifies each voxel of a *single-echo*
+wrapped phase into one of **9 wrap-count classes**, so unwrapping is `phase + 2π·n` with
+`n = class − shift_base` (`shift_base = 5`, giving `n ∈ [−5, +3]`). Two variants, both EncodingDepth 4
+(so spatial dims must be multiples of **16**):
+
+| variant | input channels | width | params | exported `.onnx` |
+|---|---|---|---|---|
+| PHU-NET3D (paper default) | 2 — wrapped phase + its Laplacian | 64 | 68.72 M | 274 862 616 B, sha256 `3c39349c67ed00ce72bde7cd2a1610290f7f47e161a11e76519caa6a85f4d1fc` |
+| PhaseNet3D | 1 — wrapped phase | 48 | 38.66 M | 154 621 948 B, sha256 `222f44d71795fd537a27625317022d39c7a86cd3e254b02b4d72d18fcd5760ea` |
+
+Source checkpoints are on the authors' Dropbox (linked from the DIP-UP README — the repo carries no
+weights, and Zenodo 22091288 is marked *"Other (Not Open)"*):
+`PHU-NET3D.pth` 274 981 513 B sha256 `ae34eb7c8bc9b59020ca2450bfb822c1334fe92dd0c2cda6062ff8eec087150b`;
+`PhaseNet3D.pth` 154 721 097 B sha256 `1351b0b0e5ecb5433b511afd4ebf5a518c5cbc1c5448ccf490788967b904904b`.
+The repo has **no LICENSE file**.
+
+**The repo does not ship `Unet_blocks.py`.** Both `Unet_{1,2}Chan_9Class.py` do
+`from Unet_blocks import *`, so neither the authors' `Demo_DIP_*.py` nor their `inference.py` runs from
+a clean clone. The block layout is reconstructed in `dipup_net.py` and pinned by
+`load_state_dict(strict=True)` — all 156 keys and every shape match both checkpoints, which leaves no
+freedom in the layout. The repo also hard-codes `initial_num_layers = 64`, but PhaseNet3D is width 48,
+so width is a constructor argument. (QSM-CI's `algorithms/dip-up/Unet_blocks.py` is an independent
+reconstruction and agrees.)
+
+**Export + parity.** `export_dipup.py`, opset 17, `dynamo=False`, dynamic spatial axes, logits out
+(decoding stays in the caller). Exports clean — no graph rewrites needed, unlike the TF-origin models.
+
+| check | PhaseNet3D | PHU-NET3D |
+|---|---|---|
+| torch ↔ onnxruntime, 2 sizes | rel 1.28e-6, argmax exact | rel 1.13e-6, argmax exact |
+| **torch ↔ tract** (`dipup_tract_parity.rs`) | corr 1.00000000, rel 1.57e-6, argmax 0/32768 | corr 1.00000000, rel 1.45e-6, argmax 0/32768 |
+
+Parity is scored **relative**, not absolute: these are unnormalized logits and the two variants differ
+~5× in scale (|logit| reaches ~108 for PHU-NET3D, ~19 for PhaseNet3D), so an absolute 1e-4 tolerance
+flags PHU-NET3D (max|Δ| 1.6e-4) while passing PhaseNet3D at the *same* relative error. The hard gate is
+**argmax exactness** — logit drift that never flips a class cannot change a wrap count.
+
+**Two departures from upstream inference**, both deliberate:
+
+1. **Dropout.** Upstream's `forward` calls `F.dropout(x, 0.2)` with no `training=` argument, so
+   dropout stays **active after `.eval()`** — published inference is stochastic. Measured: two runs on
+   one input disagree on the predicted wrap count at **30% of voxels** (PHU-NET3D) / **22%**
+   (PhaseNet3D). We thread `training=self.training`, so `.eval()` disables it. Standard eval
+   semantics, required for a deterministic graph, and *not* what upstream runs.
+2. **No softmax temperature in the graph.** The authors' `Demo_DIP_*.py` decodes
+   `softmax(logits * 10000)` — effectively a hard argmax — while the repo's own `inference.py` and
+   QSM-CI's wrapper use a plain `softmax(logits)`. Materially different decodings; we emit logits and
+   leave the choice to the caller (on the phantom the two agree to within 0.1 pp).
+
+**The DIP loop is not exported, and cannot be.** The published method wraps the CNN in a test-time
+Deep Image Prior loop — RMSprop on the *network weights* at inference, under masked-TV and
+Laplacian-consistency losses. `tract` does inference only. So what is exported is the
+**PHU-NET3D/PhaseNet3D network**, which must not be labelled "DIP-UP": the authors' reported accuracy
+includes the loop. Note also that the repo's packaged entry point defaults to
+`checkpoint: null  # (null = random init)`, and its docstring says *"the network is jointly trained on
+the input at inference time (no general checkpoint)"* — in that path the loop is the whole method.
+
+**Conventions the public repo leaves ambiguous, settled by measurement** (`ref_dipup.py ablate`):
+
+- *Input must be brain-masked.* The authors' demo derives its mask as `image != 0`, implying
+  pre-masked input. Feeding whole-head phase costs PhaseNet3D ~1.4–9 pp of accuracy.
+- *Sign is as-is.* Flipping the phase sign collapses wrapped-voxel accuracy to under 10%, so our
+  convention matches training.
+- *The Laplacian channel is not recoverable.* Training consumed precomputed `*_wph_10ms_Lap.nii`, and
+  the repo ships `dker.mat` (a 27-point isotropic Laplacian) but no script that builds them. The
+  27-point kernel, QSM-CI's 7-point `torch.roll` stencil, and the sin/cos identity all land within
+  ~2 pp of each other — and **ablating the channel to zeros costs only ~1.5–6 pp**, so PHU-NET3D's
+  second input earns little and its convention cannot be pinned down. (QSM-CI's wrapper uses a kernel
+  that is not the one the repo ships.)
 
 ## Re-registering after a re-export
 
