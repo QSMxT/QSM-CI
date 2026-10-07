@@ -2,22 +2,31 @@
 # them, so a floating lower bound meant two runs of the same method could score differently for no
 # reason the leaderboard records (#211).
 #
-# These were floating (numpy>=1.24, scipy>=1.10, ...) and had already drifted apart in practice: on
-# 2026-09-23 a scoring job resolved numpy 2.5.3 / scipy 1.18.1 under Python 3.12, while the ci.yml
-# jobs pinned to Python 3.11 resolved numpy 2.4.6 / scipy 1.17.1.
+# These were floating (numpy>=1.24, scipy>=1.10, ...) and had already drifted far apart in practice:
+#   * the self-hosted scoring runner offers numpy only up to 2.2.6, i.e. Python 3.10;
+#   * a 2026-09-23 scoring job on ubuntu-latest resolved numpy 2.5.3 / scipy 1.18.1 under 3.12;
+#   * the ci.yml jobs, which pin Python 3.11, resolved numpy 2.4.6 / scipy 1.17.1.
+# Three different numpy minors across the jobs that compute published metrics.
 #
-# The pin is the 3.11-compatible set, NOT the newer one the September scoring job happened to get:
-# numpy 2.5.x and scipy 1.18.x require Python >=3.12, and the workflows here run a mix of 3.11, 3.12
-# and "3.x". Every version below ships wheels for 3.11 through 3.14, so one pin holds whatever
-# interpreter a runner provides. For the scoring environment this is a one-minor-version step back
-# from what it drifted to; it is the first version it is held to deliberately.
+# PREREQUISITE, NOT YET FIXED: none of the jobs that install this file pin a Python version — they
+# all take the runner default (evaluate.yml `evaluate`, score.yml `score`/`merge`, repro.yml
+# `prep`/`score`/`evaluate`). So the interpreter still varies from 3.10 on self-hosted to 3.12 on
+# hosted. Pinning numpy and scipy removes the larger source of numeric drift, but the environment is
+# not fully reproducible until the interpreter is pinned too. That needs its own change, because
+# adding setup-python to the self-hosted scoring job is a runner-side risk, not a one-line edit.
 #
-# Rows already on the leaderboard were produced over months with whatever was current at the time and
-# are NOT rescored, so they are not all mutually comparable at this precision. This pin fixes that
-# going forward rather than retroactively.
+# The versions below are therefore the newest that install on EVERY runner in use: numpy 2.2.6 and
+# scipy 1.15.3 ship wheels for 3.10 through 3.13. Do not raise them to the 2.5.x/1.18.x the hosted
+# runner drifted to — those require Python >=3.12 and break the self-hosted scoring job outright,
+# which is exactly how the first attempt at this pin failed.
 #
-# To move the pin: bump here, rescore (or accept a documented discontinuity), and say so in the PR.
-numpy==2.4.6
-scipy==1.17.1
+# Rows already on the leaderboard were produced over months on whichever runner picked up the task,
+# and are NOT rescored, so they are not all mutually comparable at this precision. This pin fixes
+# that going forward rather than retroactively.
+#
+# To move the pin: check the oldest runner still resolves it, bump here, then rescore or document
+# the discontinuity.
+numpy==2.2.6
+scipy==1.15.3
 nibabel==5.4.2
 pillow==12.3.0
