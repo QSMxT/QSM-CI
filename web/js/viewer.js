@@ -4,9 +4,9 @@
 // in their own modules (resourceChart.js / windowControl.js); this file coordinates them.
 import { Niivue } from "https://unpkg.com/@niivue/niivue@0.57.0/dist/index.js";
 import { renderResources } from "./resourceChart.js";
-import { makeWindowControl, winControls } from "./windowControl.js";
+import { autoWin, makeWindowControl, winControls } from "./windowControl.js";
 
-const { loadRuns, loadAlgos, loadDatasets, loadRegistry, loadRunRegions, doiFor, METRICS, STAGE_LABEL, val, fmt, robustRange, heatScale } = window.QSM;
+const { loadRuns, loadAlgos, loadDatasets, loadRegistry, loadRunRegions, doiFor, METRICS, STAGE_LABEL, val, fmt, robustRange, heatScale, REGION_ORDER } = window.QSM;
 
 const STAGE_COLOR = {
   "field-mapping": "bg-indigo-50 text-indigo-700 ring-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-300 dark:ring-indigo-500/20",
@@ -1172,27 +1172,13 @@ const CHI_RANK_STAGES = new Set(["dipole", "bfr+dipole", "end-to-end"]);
 const sameRankStage = (r, run) =>
   CHI_RANK_STAGES.has(run.stage) ? CHI_RANK_STAGES.has(r.stage) : r.stage === run.stage;
 function metricRank(k) {
-  const meta = METRICS[k], v = val(run, k);   // val() also reaches top-level fields (e.g. runtime_s)
-  if (v == null) return null;
-  // Composed pipelines are ranked within their OWN field-mapping (the leaderboard groups the same
-  // way: it shows one field-mapping's bfr×dipole matrix at a time), so the denominator matches the
-  // table you clicked from, not the full cross-field-mapping pool of ~845 pipelines.
-  const sameGroup = (r) => phantomKey(r) === phantomKey(run) && (run.combo
-    ? r.mode === "composed" && (r.combo?.field_mapping || "gt") === (run.combo.field_mapping || "gt")
-    : r.mode === "isolated" && sameRankStage(r, run));
-  const peers = allRuns.filter((r) => r.status !== "DNF" && sameGroup(r) && val(r, k) != null);
-  if (peers.length < 2) return null;
-  const higher = meta.better !== "lower";
-  const rank = 1 + peers.filter((r) => (higher ? val(r, k) > v : val(r, k) < v)).length;
-  const [lo, hi] = robustRange(peers.map((r) => val(r, k)));
-  let t = hi === lo ? 0.5 : (v - lo) / (hi - lo);
-  if (!higher) t = 1 - t;
-  return { rank, n: peers.length, t };
+  // val() also reaches top-level fields (e.g. runtime_s); rankBy() carries the grouping/goodness logic.
+  return rankBy((r) => val(r, k), METRICS[k].better !== "lower");
 }
 
 // Rank `run` among comparable peers by an arbitrary accessor (r) => value; used for χ-separation,
-// whose paired metrics (para_*/dia_*) and the derived Avg xSIM aren't plain METRICS keys. Same
-// grouping/goodness logic as metricRank(). `higher` = higher-is-better. null if <2 peers to compare.
+// whose paired metrics (para_*/dia_*) and the derived Avg xSIM aren't plain METRICS keys, and by
+// metricRank() for the plain ones. `higher` = higher-is-better. null if <2 peers to compare.
 function rankBy(accessor, higher) {
   const v = accessor(run);
   if (v == null) return null;
@@ -1314,7 +1300,6 @@ function renderMetrics() {
 // Fed by this run's results/<id>/regions.json (loadRunRegions): descriptive susceptibility stats
 // (n/mean/std/median, ppm) for the run and its paired ground truth inside every segmented region,
 // under the run's own score mask.
-const REGION_ORDER = ["1", "2", "3", "4", "5", "6", "7", "9", "8", "10", "11", "16", "13", "14", "15"];
 const p3 = (v) => (v < 0 ? "−" : "") + Math.abs(v).toFixed(3);
 
 function renderMetricsPanel() {
@@ -1441,7 +1426,6 @@ function setViewActive(v) {
     b.className = "rounded-md px-2.5 py-1 transition " +
       (b.dataset.view === v ? "bg-indigo-600 text-white dark:bg-indigo-500" : "text-gray-500 hover:text-gray-700 dark:text-gray-400"));
 }
-function autoWin(vol) { vol.cal_min = vol.robust_min ?? vol.global_min; vol.cal_max = vol.robust_max ?? vol.global_max; }
 
 // Signed error-map colormaps: over-estimate (recon>truth) ramps transparent→red→yellow, under-estimate
 // ramps transparent→blue→cyan. Alpha starts at 0 so the inner window bound (cal_min) is a hard

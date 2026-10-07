@@ -283,6 +283,11 @@ async function loadRunRegions(run) {
   return entry;
 }
 
+// Anatomical display order for those region ids: DGM nuclei → thalamus/GM/WM → fluid/vessel/lesion.
+// Ids absent from a given dseg are skipped; unknown ids sort after these. Shared by the submission
+// page's Regions tab and the leaderboard's regional figures so both read in the same order.
+const REGION_ORDER = ["1", "2", "3", "4", "5", "6", "7", "9", "8", "10", "11", "16", "13", "14", "15"];
+
 // { concept_doi, version_doi, version, url } for a slug, or null if unpublished.
 function doiFor(registry, slug) {
   const e = registry && registry[slug];
@@ -312,6 +317,14 @@ function heatScale(t) {
   const x = Math.max(0, Math.min(1, t)) * 2, i = Math.min(1, Math.floor(x)), f = x - i;
   const c = stops[i].map((a, k) => Math.round(a + (stops[i + 1][k] - a) * f));
   return `rgb(${c[0]},${c[1]},${c[2]})`;
+}
+// Readable ink for text sitting ON one of those fills: dark on the light middle of the ramp, white
+// on the darker ends. Takes the `rgb(r,g,b)` string the scales return, so callers hand back what
+// they already built.
+function heatText(rgb) {
+  const c = rgb.match(/\d+/g).map(Number);
+  const lum = (0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2]) / 255;
+  return lum > 0.62 ? "#1f2937" : "#fff";
 }
 
 // Humanised duration: 3s · 1m 2s · 1h 4m 2s (matches the runtime style used across the leaderboard).
@@ -407,4 +420,4 @@ function injectChrome() {
 document.addEventListener("DOMContentLoaded", injectChrome);
 
 // Exposed for module scripts (e.g. the NiiVue viewer, which must be a module for `import`).
-window.QSM = { GH, METRICS, STAGE_LABEL, MEDALS, loadRuns, loadAlgos, loadDatasets, loadRegistry, loadRunRegions, doiFor, val, fmt, fmtDuration, fmtBytes, metricCols, robustRange, heatScale };
+window.QSM = { GH, METRICS, STAGE_LABEL, MEDALS, loadRuns, loadAlgos, loadDatasets, loadRegistry, loadRunRegions, doiFor, val, fmt, fmtDuration, fmtBytes, metricCols, robustRange, heatScale, heatText, REGION_ORDER };

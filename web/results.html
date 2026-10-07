@@ -3384,18 +3384,16 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         _famC(slug) { return FAM[this._fam(slug)].c; },
         _runId(slug) { const r = this.runs.find((x) => x.mode === "isolated" && !this._isInvivo(x) && x.stage === "dipole" && x.slug === slug && (x.variant || "default") === "default"); return r ? r.id : ""; },
         _pt(slug, tip) { const id = this._runId(slug); return `data-tip="${this._esc(tip)}"` + (id ? ` data-run="${id}"` : ""); },
+        // The shared matrix heat scale (app.js), paired with readable ink for text drawn on top of it.
         _heat(t) {
-          const st = [[190,107,107],[196,158,96],[110,168,134]];
-          const x = Math.max(0, Math.min(1, t)) * 2, i = Math.min(1, Math.floor(x)), f = x - i;
-          const c = st[i].map((a, k) => Math.round(a + (st[i + 1][k] - a) * f));
-          const lum = (0.299*c[0] + 0.587*c[1] + 0.114*c[2]) / 255;
-          return { fill: `rgb(${c[0]},${c[1]},${c[2]})`, text: lum > 0.62 ? "#1f2937" : "#fff" };
+          const fill = heatScale(t);
+          return { fill, text: heatText(fill) };
         },
         _diverge(r) {
           const neg = [225,29,72], mid = [226,232,240], pos = [16,185,129], t = Math.max(-1, Math.min(1, r));
           const c = mid.map((a, k) => Math.round(a + ((t >= 0 ? pos[k] : neg[k]) - a) * Math.abs(t)));
-          const lum = (0.299*c[0] + 0.587*c[1] + 0.114*c[2]) / 255;
-          return { fill: `rgb(${c[0]},${c[1]},${c[2]})`, text: lum > 0.62 ? "#1f2937" : "#fff" };
+          const fill = `rgb(${c[0]},${c[1]},${c[2]})`;
+          return { fill, text: heatText(fill) };
         },
         _spear(xs, ys) {
           const rank = (v) => { const o = [...v.keys()].sort((a, b) => v[a] - v[b]); const rk = Array(v.length); o.forEach((idx, p) => rk[idx] = p); return rk; };
@@ -4027,9 +4025,10 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         _regionEntry(r) { const e = this.regions[r.id]; return (e && e.chi) || null; },
         _regionRuns() { return this._isoDip().filter((r) => this._regionEntry(r)); },
         _regionKey() { return [this.regionSel, this.runs.length, Object.keys(this.regions).length].join("|"); },
-        // Anatomical display order: DGM nuclei → thalamus/GM/WM → fluid/vessel/lesion.
+        // Anatomical display order (REGION_ORDER, shared with the submission page) first, then any
+        // id that order doesn't know about.
         regionIds() {
-          const order = ["1", "2", "3", "4", "5", "6", "7", "9", "8", "10", "11", "16", "13", "14", "15"];
+          const order = REGION_ORDER;
           const seen = new Set();
           this._regionRuns().forEach((r) => Object.keys(this._regionEntry(r).recon).forEach((k) => seen.add(k)));
           return order.filter((k) => seen.has(k)).concat([...seen].filter((k) => !order.includes(k)).sort());
