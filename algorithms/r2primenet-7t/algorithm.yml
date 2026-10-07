@@ -28,7 +28,7 @@ citation: >
   is its 7T R2*→R2′ conversion network (github.com/SNU-LIST/R2PRIMENET_7T).
 code_url: https://github.com/SNU-LIST/R2PRIMENET_7T
 license: academic and research use (© Jiye Kim, SNU-LIST)
-image: ghcr.io/astewartau/qsm-ci/r2primenet-7t:v1
+image: ghcr.io/astewartau/qsm-ci/r2primenet-7t@sha256:7fb63601ab006c42ade8f2f6a5f8d97f190e83655bedc077d2a02947e427e43e   # v1
 run: bash run.sh
 # Produces r2prime.nii.gz. Weights (ONNX exported from the public checkpoint + norm .mat) are
 # gitignored and baked into the image — see BUILD.md. No parameters: Dr = 114 and the 3T output

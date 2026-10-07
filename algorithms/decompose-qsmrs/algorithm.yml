@@ -36,7 +36,7 @@ citation: >
   data", NeuroImage 2021;242:118477.
 code_url: https://github.com/astewartau/QSM.rs
 license: MIT
-image: ghcr.io/astewartau/qsm-ci/qsmxt:v9.16.0   # the shared QSMxT engine image; `separate decompose` ships in v9.15.0+
+image: ghcr.io/astewartau/qsm-ci/qsmxt@sha256:6e54c4b85c16cd592208072cf7c1b55fb14b6ed738223e5c68def2229dd1ebc3   # v9.16.0 — the shared QSMxT engine image; `separate decompose` ships in v9.15.0+
 run: bash run.sh
 parameters:
 - name: n_inner

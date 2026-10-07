@@ -32,7 +32,7 @@ authors:
 doi: 10.1016/j.neuroimage.2020.117701
 code_url: https://github.com/wtsyeda/QSMART
 license: "No license file; author toolbox distribution (QSM_iLSQR: see STI Suite license)"
-image: ghcr.io/astewartau/qsm-ci/matlab-qsmart:v1
+image: ghcr.io/astewartau/qsm-ci/matlab-qsmart@sha256:437824e7fc0511b35c69e0f265ac04601109186efd4d589c09eea1c0416360a5   # v1
 run: bash run.sh
 smoke_box: 96   # PR --smoke gate: the pipeline default. A 32^3 crop is too small for QSMART_SDF's
                 # vessel-curvature step (delaunay needs ≥3 points) and DNF'd every PR since #169;

@@ -31,7 +31,7 @@ citation: >
   data", NeuroImage 2021;242:118477.
 code_url: https://github.com/timwahoo/DECOMPOSE-QSM
 license: GPL-3.0
-image: ghcr.io/astewartau/qsm-ci/decompose-qsm:v2
+image: ghcr.io/astewartau/qsm-ci/decompose-qsm@sha256:a273a9b34f2863e4dac7e0c99f2c90e0dc220c56bf2e0f892c671a16be40112f   # v2
 run: bash run.sh
 # SUPERSEDED by `decompose-qsmrs`, the QSM.rs/QSMxT Rust port of this same method. Scored head to
 # head on chisep-mc the two agree closely — χ+ corr 0.444 vs 0.453, χ+ xSIM 0.254 vs 0.265, χ− corr

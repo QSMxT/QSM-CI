@@ -1,4 +1,23 @@
-numpy>=1.24
-scipy>=1.10
-nibabel>=5.0
-pillow>=10.0
+# Scoring environment, pinned exactly. Metric values depend on the numpy/scipy build that computes
+# them, so a floating lower bound meant two runs of the same method could score differently for no
+# reason the leaderboard records (#211).
+#
+# These were floating (numpy>=1.24, scipy>=1.10, ...) and had already drifted apart in practice: on
+# 2026-09-23 a scoring job resolved numpy 2.5.3 / scipy 1.18.1 under Python 3.12, while the ci.yml
+# jobs pinned to Python 3.11 resolved numpy 2.4.6 / scipy 1.17.1.
+#
+# The pin is the 3.11-compatible set, NOT the newer one the September scoring job happened to get:
+# numpy 2.5.x and scipy 1.18.x require Python >=3.12, and the workflows here run a mix of 3.11, 3.12
+# and "3.x". Every version below ships wheels for 3.11 through 3.14, so one pin holds whatever
+# interpreter a runner provides. For the scoring environment this is a one-minor-version step back
+# from what it drifted to; it is the first version it is held to deliberately.
+#
+# Rows already on the leaderboard were produced over months with whatever was current at the time and
+# are NOT rescored, so they are not all mutually comparable at this precision. This pin fixes that
+# going forward rather than retroactively.
+#
+# To move the pin: bump here, rescore (or accept a documented discontinuity), and say so in the PR.
+numpy==2.4.6
+scipy==1.17.1
+nibabel==5.4.2
+pillow==12.3.0

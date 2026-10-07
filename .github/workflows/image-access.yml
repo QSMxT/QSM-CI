@@ -73,6 +73,18 @@ jobs:
             if [ -z "$img" ]; then
               echo "::error::$slug has no image: in algorithm.yml"; fail=1; continue
             fi
+            # Immutability, not just pullability (#211). A tag can be re-pushed, which would silently
+            # change what a published leaderboard row was produced by; a digest cannot. Note the
+            # digest must be the WHOLE ref — apptainer refuses a combined tag+digest ("Docker
+            # references with both a tag and digest are currently not supported"), so the readable
+            # tag belongs in a trailing comment, which is the convention used across algorithms/.
+            case "$img" in
+              *@sha256:*) : ;;
+              *) echo "::error::$slug image is not pinned by digest: $img"
+                 echo "         use image: <repo>@sha256:<digest> (keep the tag as a trailing # comment)."
+                 echo "         resolve it with: docker manifest inspect $img | head -1"
+                 fail=1; continue ;;
+            esac
             if docker manifest inspect "$img" >/dev/null 2>&1; then
               echo "✓ $slug -> $img (pullable)"
             else

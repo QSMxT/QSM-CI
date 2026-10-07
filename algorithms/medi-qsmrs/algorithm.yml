@@ -26,7 +26,7 @@ authors:
 doi: 10.1016/j.neuroimage.2011.08.082
 code_url: https://github.com/astewartau/QSM.rs
 license: MIT
-image: ghcr.io/astewartau/qsm-ci/qsmxt:v9.16.0
+image: ghcr.io/astewartau/qsm-ci/qsmxt@sha256:6e54c4b85c16cd592208072cf7c1b55fb14b6ed738223e5c68def2229dd1ebc3   # v9.16.0
 run: bash run.sh
 # MEDI uses magnitude for its morphological (edge) weighting — the plain dipole stage doesn't take
 # magnitude, so this method opts it in as an optional input (surfaced by `qsm-ci run medi-qsmrs`).
