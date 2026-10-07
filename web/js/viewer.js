@@ -6,7 +6,7 @@ import { Niivue } from "https://unpkg.com/@niivue/niivue@0.57.0/dist/index.js";
 import { renderResources } from "./resourceChart.js";
 import { autoWin, makeWindowControl, winControls } from "./windowControl.js";
 
-const { loadRuns, loadAlgos, loadDatasets, loadRegistry, loadRunRegions, doiFor, METRICS, STAGE_LABEL, val, fmt, robustRange, heatScale, REGION_ORDER } = window.QSM;
+const { loadRuns, loadAlgos, loadDatasets, loadRegistry, loadRepro, loadRunRegions, doiFor, METRICS, STAGE_LABEL, val, fmt, robustRange, heatScale, REGION_ORDER } = window.QSM;
 
 const STAGE_COLOR = {
   "field-mapping": "bg-indigo-50 text-indigo-700 ring-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-300 dark:ring-indigo-500/20",
@@ -90,29 +90,15 @@ function ensureReproRuns(acq) {
   allRuns = allRuns.filter((r) => r.track !== "repro");
   if (reproJson?.pipelines) for (const [pipe, node] of Object.entries(reproJson.pipelines)) allRuns.push(makeReproRun(pipe, acq, node));
 }
-// Fetch repro.json once (null = never tried, {} = tried-and-empty so we don't refetch forever). Pulled
-// on idle after boot (see init), so a scored (in-silico) pipeline learns whether it has a harmonization
-// analog without the 8.7 MB payload sitting in front of the first render.
-let reproJsonReq = null;   // the one in-flight fetch: memoise the PROMISE, not just the result, so the
-                           // idle prefetch and a user click that races it share a single download.
+// Fetch repro.json once through the shared loader (app.js loadRepro(): one memoised promise, the
+// live/visible-method pipeline filter, {} rather than null on failure so we don't refetch forever),
+// then cache the payload in module scope — the many synchronous readers below (pipeHasRepro,
+// reproRank, renderReproStats, ensureReproRuns) read `reproJson` directly. null = not resolved here
+// yet. Pulled on idle after boot (see init), so a scored (in-silico) pipeline learns whether it has
+// a harmonization analog without the 8.7 MB payload sitting in front of the first render.
 function ensureReproJson() {
   if (reproJson !== null) return Promise.resolve(reproJson);
-  if (reproJsonReq) return reproJsonReq;
-  reproJsonReq = (async () => {
-    try { reproJson = await (await fetch("results/repro.json")).json(); }
-    catch { reproJson = {}; }
-    // Keep only pipelines whose every step is a live, visible method. The harvest (repro_eval.py) now
-    // drops methods RETIRED from the manifest, so what's left to filter here are the ones deliberately
-    // kept but hidden — a parked submission like the MATLAB amp-pe, whose data stays in repro.json so
-    // it can be revived. loadRuns() applies the same rule to the in-silico runs, and skipping it
-    // doesn't just show a parked method: it lets its rows bleed into the axes that cross it (every
-    // background-removal row is a pipeline ending in the DEFAULT dipole method, so a parked default
-    // blanks the whole axis). The retired case is still handled, for a payload written before this.
-    if (algos.length && reproJson?.pipelines) reproJson.pipelines = Object.fromEntries(
-      Object.entries(reproJson.pipelines).filter(([pipe]) => pipe.split("+").every(liveAlgo)));
-    return reproJson;
-  })();
-  return reproJsonReq;
+  return loadRepro().then((d) => (reproJson = d));
 }
 const pipeHasRepro = (pipe) => !!reproJson?.pipelines?.[pipe];
 const hasRepro = () => !!reproJson?.pipelines && Object.keys(reproJson.pipelines).length > 0;
@@ -445,9 +431,6 @@ const findPipeline = (f, b, d) => composedRuns().find((r) =>
   (r.combo.field_mapping || "gt") === f && r.combo.bfr === b && r.combo.dipole === d);
 const algoName = (slug) => { const a = algos.find((x) => x.slug === slug); return (a && a.name) || slug; };
 const algoStage = (slug) => { const a = algos.find((x) => x.slug === slug); return a && a.stage; };
-// A method still shipped by QSM-CI: present in the manifest and not hidden. Mirrors loadRuns()'s
-// hidden-slug filter, which drops the same methods from the in-silico runs.
-const liveAlgo = (slug) => { const a = algos.find((x) => x.slug === slug); return !!a && !a.hidden; };
 // The ordered method slugs a run is made of. A matrix combo names its stages explicitly; a 2-part
 // pipeline (field mapping + a bfr+dipole/end-to-end span) keeps the span in `slug`, and on the
 // harmonization track carries no combo at all — there the whole pipeline lives in `pipelineId`.

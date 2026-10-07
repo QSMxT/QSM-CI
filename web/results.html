@@ -1696,7 +1696,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
     // Merged component: the leaderboard (board) state + the findings figures, behind one tab bar.
     // Both halves share the same runs/algos load and the memo cache; tabs drive the leaderboard's
     // composed/isolated `view` via syncView().
-    let _reproReq = null;   // the one in-flight/settled results/repro.json fetch (see ensureRepro)
+    let _reproReq = null;   // the one in-flight/settled results/repro.json load (see ensureRepro)
 
     function results() {
       // Non-reactive memo cache shared by both halves (cache names are disjoint). Alpine getters
@@ -2059,20 +2059,13 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           return !!(this.reproData && Object.keys(this.reproData.pipelines || {}).length) ||
             this.runs.some((r) => r.track === "repro");
         },
-        // Harmonization pipelines, filtered to methods QSM-CI still ships. The harvest (repro_eval.py)
-        // drops methods RETIRED from the manifest, so what's filtered here are the ones deliberately
-        // kept but `hidden` — a parked submission like the MATLAB amp-pe, whose data stays in
-        // repro.json so it can be revived. loadRuns() applies the same rule to the in-silico runs;
-        // this is the one chokepoint every harmonization table, chart and finding reads, so filtering
-        // here covers all of them (and still catches a retired method in an older payload).
-        _reproPipes() {
-          const raw = (this.reproData && this.reproData.pipelines) || {};
-          return _cache("reproLive", Object.keys(raw).length + "|" + this.algos.length, () => {
-            if (!this.algos.length) return raw;   // manifest not in yet: don't blank the whole view
-            const live = new Set(this.algos.filter((a) => !a.hidden).map((a) => a.slug));
-            return Object.fromEntries(Object.entries(raw).filter(([pipe]) => pipe.split("+").every((s) => live.has(s))));
-          });
-        },
+        // Harmonization pipelines, already filtered to methods QSM-CI still ships: loadRepro() (app.js)
+        // drops any pipeline with a step that is absent from the manifest (RETIRED) or flagged `hidden`
+        // (deliberately kept but parked — e.g. the MATLAB amp-pe, whose data stays in repro.json so it
+        // can be revived), which is the same rule loadRuns() applies to the in-silico runs. The viewer
+        // page shares that one loader, so both pages hide the same pipelines. This stays the single
+        // accessor every harmonization table, chart and finding reads.
+        _reproPipes() { return (this.reproData && this.reproData.pipelines) || {}; },
         reproProtoLabel(p) { return p.replace("pulseq-online", "Pulseq (online)").replace("pulseq-offline", "Pulseq (offline)"); },
         reproName(slug) { return slug.split("+").map((s) => this.algoName(s)).join(" → "); },
         // group-key parsers: test_retest / inter_protocol keys are "<scanner>-<protocol>"
@@ -3984,18 +3977,16 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         // Lazy-load (once) the harmonization regional sidecar (results/repro_regions.json): every
         // (pipeline × acquisition) run's per-aseg-region mean χ in ppb. ~4 MB, ~14 k runs, so it stays
         // off the common page load and is fetched the first time the harmonization Findings tab opens.
-        // The harmonization payload (results/repro.json, 8.7 MB). Fetched once, off the critical path:
-        // init() kicks this off on idle so the Harmonization tab can appear, and setDataset()/the
-        // deep-link path await it so opening that dataset always has its data. Memoised on the promise,
-        // not the result, so two callers share one fetch.
+        // The harmonization payload (results/repro.json, 8.7 MB), from the shared loader (app.js
+        // loadRepro(), which also drops the parked/retired pipelines — see _reproPipes()). Fetched
+        // once, off the critical path: init() kicks this off on idle so the Harmonization tab can
+        // appear, and setDataset()/the deep-link path await it so opening that dataset always has its
+        // data. Memoised on the promise, not the result, so two callers share one fetch.
         ensureRepro() {
           // _reproReq is module-scope, NOT a property on this: Alpine's reactive proxy around a Promise
           // breaks `await` (Promise.prototype.then called on an incompatible receiver).
           if (_reproReq) return _reproReq;
-          _reproReq = (async () => {
-            try { const r = await fetch("results/repro.json"); return r.ok ? await r.json() : null; }
-            catch { return null; }
-          })().then((d) => { this.reproData = d; return d; });
+          _reproReq = loadRepro().then((d) => { this.reproData = d; return d; });
           return _reproReq;
         },
         async ensureReproRegions() {

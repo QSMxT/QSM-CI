@@ -255,6 +255,47 @@ async function loadAlgos() { return (await loadAlgoManifest()).algorithms || [];
 // one of these keys; a row WITHOUT the field was scored on its track's default phantom.
 async function loadDatasets() { return (await loadAlgoManifest()).datasets || {}; }
 
+// The harmonization payload (results/repro.json, 8.7 MB / 866 KB gzipped): { pipelines: { "<a+b+c>":
+// {…} }, exclusion_rules: {…} }, written by scripts/repro_eval.py. Read by BOTH the leaderboard's
+// Harmonization dataset and the submission viewer's repro track, so one loader serves both — the two
+// pages used to keep separately-drifting copies of this.
+// Fetched off the critical path: each page kicks it off on idle (so the Harmonization tab can appear
+// on its own) and awaits it only where it genuinely needs the payload before it can render.
+// Memoised on the PROMISE, not the result, so the idle prefetch and a user click that races it share
+// a single download. {} is the tried-and-failed/empty sentinel, never null, so a consumer reading
+// `.pipelines` without a guard cannot throw; the promise memo is what stops a refetch loop.
+let _repro = null;
+async function loadRepro() {
+  if (_repro) return _repro;
+  _repro = (async () => {
+    let data;
+    // Check res.ok before parsing, like loadRuns(): a 404/5xx body isn't JSON, and letting
+    // res.json() throw would leave the caller with an opaque SyntaxError instead of an empty view.
+    try {
+      const res = await fetch("results/repro.json");
+      data = res.ok ? await res.json() : {};
+    } catch (e) { return {}; }
+    // Keep only pipelines whose every step is a live, visible method. The harvest (repro_eval.py) now
+    // drops methods RETIRED from the manifest, so what's left to filter here are the ones deliberately
+    // kept but hidden — a parked submission like the MATLAB amp-pe, whose data stays in repro.json so
+    // it can be revived. loadRuns() applies the same rule to the in-silico runs, and skipping it
+    // doesn't just show a parked method: it lets its rows bleed into the axes that cross it (every
+    // background-removal row is a pipeline ending in the DEFAULT dipole method, so a parked default
+    // blanks the whole axis). The retired case is still handled, for a payload written before this.
+    // Filtering HERE — the one place the payload enters the site — is what makes the rule hold on
+    // every table, chart and finding of both pages. loadAlgos() is itself memoised, so awaiting the
+    // manifest costs nothing: both pages have already asked for it by the time this resolves.
+    const algos = await loadAlgos();
+    if (algos.length && data && data.pipelines) {
+      const live = new Set(algos.filter((a) => !a.hidden).map((a) => a.slug));
+      data.pipelines = Object.fromEntries(
+        Object.entries(data.pipelines).filter(([pipe]) => pipe.split("+").every((s) => live.has(s))));
+    }
+    return data || {};
+  })();
+  return _repro;
+}
+
 // The Zenodo method registry (qsm_ci/registry.json), served alongside the site. Maps a method slug
 // to its concept DOI + published versions, so pages can show a citable DOI per method.
 let _registry = null;
@@ -420,4 +461,4 @@ function injectChrome() {
 document.addEventListener("DOMContentLoaded", injectChrome);
 
 // Exposed for module scripts (e.g. the NiiVue viewer, which must be a module for `import`).
-window.QSM = { GH, METRICS, STAGE_LABEL, MEDALS, loadRuns, loadAlgos, loadDatasets, loadRegistry, loadRunRegions, doiFor, val, fmt, fmtDuration, fmtBytes, metricCols, robustRange, heatScale, heatText, REGION_ORDER };
+window.QSM = { GH, METRICS, STAGE_LABEL, MEDALS, loadRuns, loadAlgos, loadDatasets, loadRegistry, loadRepro, loadRunRegions, doiFor, val, fmt, fmtDuration, fmtBytes, metricCols, robustRange, heatScale, heatText, REGION_ORDER };
