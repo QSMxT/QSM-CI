@@ -118,6 +118,11 @@
       color-mix(in srgb,#be6b6b 38%,#fff),color-mix(in srgb,#c49e60 38%,#fff),color-mix(in srgb,#6ea886 38%,#fff))}
     html.dark .heat-cell{background:var(--heat);color:#fff}
     html.dark .heat-legend{background:linear-gradient(90deg,#be6b6b,#c49e60,#6ea886)}
+    /* Lower-is-better metrics: the legend reads lo → hi left to right alongside "range lo – hi",
+       so the bar runs best (sage) → worst (red) in that direction. */
+    .heat-legend.rev{background:linear-gradient(270deg,
+      color-mix(in srgb,#be6b6b 38%,#fff),color-mix(in srgb,#c49e60 38%,#fff),color-mix(in srgb,#6ea886 38%,#fff))}
+    html.dark .heat-legend.rev{background:linear-gradient(270deg,#be6b6b,#c49e60,#6ea886)}
     /* Harmonization matrix: second channel. A thin bar along the cell's bottom edge whose length is
        the pipeline's in-silico xSIM (normalised to the matrix's range), so colour = reproducibility
        and bar = accuracy can be read together without a second palette. */
@@ -356,7 +361,7 @@
             <!-- legend -->
             <div class="mt-5 flex items-center gap-3 text-xs text-gray-500">
               <span x-text="(METRICS[metric].better==='higher'?'worse':'better')"></span>
-              <div class="heat-legend h-2.5 w-40 rounded-full ring-1 ring-inset ring-black/5"></div>
+              <div class="heat-legend h-2.5 w-40 rounded-full ring-1 ring-inset ring-black/5" :class="{rev: METRICS[metric].better==='lower'}"></div>
               <span x-text="(METRICS[metric].better==='higher'?'better':'worse')"></span>
               <span class="ml-2 tabular-nums" x-text="'range '+fmt(matrix.lo,metric)+' – '+fmt(matrix.hi,metric)"></span>
             </div>
