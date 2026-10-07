@@ -155,9 +155,16 @@ validated weight-for-weight against the original: e.g. torch-vs-Keras single-pat
 
 Scoping exercise for QSM.rs #123 (a deep-learning phase unwrapper). The export works and `tract`
 runs it; the **measured accuracy does not justify shipping it**, so no weights were uploaded and no
-`registry.rs` entry was added. Full write-up and numbers: QSM.rs `docs/DIPUP_SCOPING.md`.
-Reproduce with `reference/ref_dipup.py` (+ `reference/dipup_baseline.rs`,
-`reference/dipup_tract_parity.rs`).
+`registry.rs` entry was added. Carried through to susceptibility, the pretrained nets give
+χ corr **0.023 / 0.018** against **0.43–0.50** for the three classical unwrappers already in
+qsm-core. Full write-up and numbers: QSM.rs `docs/DIPUP_SCOPING.md`. Reproduce with
+`reference/ref_dipup.py` (+ `reference/dipup_baseline.rs`, `reference/dipup_downstream.rs`,
+`reference/dipup_tract_parity.rs`, `reference/dipup_figure.py`).
+
+Scoring note worth carrying to any future unwrapper: **do not judge one by correlating unwrapped
+phase.** Unwrapping has no unique answer — two results differing by a harmonic field give the same
+local field after background removal. Measured here: Laplacian unwrapping disagrees with ROMEO's
+wrap count at 53.6% of voxels and is last on total field, but **first** on χ. Score at χ.
 
 **What it is.** Zhu et al., *Information* 2025, doi:10.3390/info16070592;
 <https://github.com/sunhongfu/DIP-UP>. A pretrained 3D U-Net classifies each voxel of a *single-echo*
