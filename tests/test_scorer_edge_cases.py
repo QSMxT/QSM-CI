@@ -1,15 +1,25 @@
-"""PINNED behaviour of the scorer's degenerate inputs — what it does today, not what it should do.
+"""PINNED behaviour of the scorer's degenerate inputs.
 
-An empty mask and a constant (flat) reconstruction both reach code paths where "the score" is not
-defined, and `eval/qsm_eval.py` answers them inconsistently: an empty mask gives `correlation` 0.0
-and `xsim` 0.0 but `hfen` NaN and `nrmse_challenge` (NaN, NaN). That matters downstream, because 0.0
-is a legitimate score the leaderboard will rank while NaN is dropped as "not scored" — so the same
-degenerate run is ranked by two metrics and omitted by two others.
+The inconsistency these tests were written to pin (issue #235) is now RESOLVED, and the decision is
+answered by CAUSE rather than by value:
 
-These tests exist to pin that behaviour so it cannot drift silently; they deliberately do NOT assert
-the consistent behaviour. Making the four agree (all-NaN, or all-sentinel) is a scoring-policy
-decision for the maintainer, tracked on issue #235, and would change published numbers. If that
-decision is taken, these expectations are what should be updated with it.
+  * **Nothing to score -> NaN, everywhere.** If the mask leaves no usable voxels, every metric
+    returns NaN. NaN becomes JSON null in `metrics.json` and the site drops a null metric from the
+    table and from every ranking, so such a run is omitted rather than ranked. Before the fix an
+    empty mask gave `correlation` 0.0 and `xsim` 0.0 but `hfen` NaN and `nrmse_challenge`
+    (NaN, NaN) — 0.0 being a perfectly rankable score, the same degenerate run was ranked by two
+    metrics and dropped by the other two. Worse, through `score_arrays` an empty mask also earned
+    `dgm_linearity` 1.0 and the BEST-POSSIBLE `calc_moment_dev` of 0.0, because those two read the
+    segmentation and never saw the score mask at all.
+  * **Scoreable but useless -> its real number, ranked worst.** A constant (flat) reconstruction
+    under a valid mask is a genuine, measurable, bad result: correlation 0.0 (no linear relationship
+    whatsoever), xsim ~0, hfen 100% and NRMSE (100, 100) — the do-nothing baseline. Those must stay
+    numbers so the run ranks last; turning them into NaN would make a useless recon vanish from the
+    leaderboard instead of finishing bottom of it. The expectations below are unchanged.
+
+The guard is `qsm_eval._no_scoreable_voxels`, shared by all four metrics, and it asks for at least
+two in-mask voxels that are finite in both maps (one voxel cannot support a correlation or a
+demeaned norm; see the tests below).
 
 Imported as `from qsm_ci import qsm_eval`, the same path the rest of tests/ uses (the module is the
 symlinked twin of eval/qsm_eval.py, which `eval/test_metrics.py` imports directly as `qsm_eval`).
@@ -48,21 +58,27 @@ def full_mask():
     return np.ones(SHAPE, dtype=bool)
 
 
-# ------------------------------------------------------------------- an empty mask: 0.0 vs NaN
+def _seg():
+    """A segmentation with the six DGM labels and a calcification — the labels `dgm_linearity` and
+    `calcification_metrics` key off, neither of which is given the score mask."""
+    seg = np.zeros(SHAPE, np.int32)
+    for i, label in enumerate([1, 2, 3, 4, 5, 6, 16]):
+        seg.flat[i * 10:i * 10 + 5] = label
+    return seg
 
 
-def test_an_empty_mask_scores_correlation_as_zero_not_nan(recon, truth, empty_mask):
-    """0.0 is the "no linear relationship" sentinel — indistinguishable from a real zero correlation."""
-    assert qe.correlation(recon, truth, empty_mask) == 0.0
+# ------------------------------------------------------- an empty mask: nothing to score, so NaN
 
 
-def test_an_empty_mask_scores_xsim_as_zero_not_nan(recon, truth, empty_mask):
-    """Same sentinel as correlation: xsim returns 0.0 when no window is valid."""
-    assert qe.xsim(recon, truth, empty_mask) == 0.0
+def test_an_empty_mask_scores_correlation_as_nan(recon, truth, empty_mask):
+    assert math.isnan(qe.correlation(recon, truth, empty_mask))
+
+
+def test_an_empty_mask_scores_xsim_as_nan(recon, truth, empty_mask):
+    assert math.isnan(qe.xsim(recon, truth, empty_mask))
 
 
 def test_an_empty_mask_scores_hfen_as_nan(recon, truth, empty_mask):
-    """Inconsistent with correlation/xsim above, and pinned as such (issue #235)."""
     assert math.isnan(qe.hfen(recon, truth, empty_mask))
 
 
@@ -71,37 +87,113 @@ def test_an_empty_mask_scores_both_nrmse_variants_as_nan(recon, truth, empty_mas
     assert math.isnan(plain) and math.isnan(detrended)
 
 
-def test_the_empty_mask_sentinels_are_still_split_two_and_two(recon, truth, empty_mask):
-    """The inconsistency itself, asserted in one place so a future policy change trips exactly one
-    expectation that names the decision instead of four scattered ones."""
-    finite = {
+def test_the_empty_mask_answer_is_nan_in_all_four_metrics(recon, truth, empty_mask):
+    """The resolved policy, asserted in one place: no split between rankable sentinels and NaN, so a
+    run with nothing to score is dropped by every metric rather than ranked by some of them."""
+    scores = {
         "correlation": qe.correlation(recon, truth, empty_mask),
         "xsim": qe.xsim(recon, truth, empty_mask),
-    }
-    nan = {
         "hfen": qe.hfen(recon, truth, empty_mask),
         "nrmse": qe.nrmse_challenge(recon, truth, empty_mask)[0],
+        "nrmse_detrend": qe.nrmse_challenge(recon, truth, empty_mask)[1],
     }
-    assert all(v == 0.0 for v in finite.values()), finite
-    assert all(math.isnan(v) for v in nan.values()), nan
+    assert all(math.isnan(v) for v in scores.values()), scores
 
 
-# ------------------------------------------------- a constant recon: the do-nothing baseline
+@pytest.mark.parametrize("kind,kwargs", [
+    ("chi", {"seg": _seg()}),
+    ("chi", {}),
+    ("field", {}),
+    ("chisep", {"seg": _seg(), "component": "para"}),
+    ("chisep", {"seg": _seg(), "component": "dia"}),
+])
+def test_an_empty_mask_makes_every_published_metric_nan(recon, truth, empty_mask, kind, kwargs):
+    """End to end through the scorer entry point, which is what the leaderboard publishes. Covers the
+    two metrics that take `seg` and not the mask: before the fix an empty mask scored
+    `dgm_linearity` 1.0 (zeroed maps fit a slope of 0, so |1 - slope| = 1) and `calc_moment_dev` 0.0
+    — the best attainable value on a lower-is-better metric, for a run with nothing in it."""
+    metrics, _ = qe.score_arrays(recon.astype(float), truth.astype(float),
+                                 empty_mask.astype(np.uint8), kind, **kwargs)
+    assert metrics, "no metrics returned at all"
+    nonnan = {k: v for k, v in metrics.items() if not (isinstance(v, float) and math.isnan(v))}
+    assert nonnan == {}, nonnan
+
+
+# ------------------------------------------- near-empty masks: the same answer, for the same reason
+
+
+def test_a_single_voxel_mask_scores_nan_everywhere(recon, truth):
+    """One voxel is below the floor at which any of these statistics exists: Pearson's correlation of
+    a single point is 0/0, and demeaning one voxel leaves exactly zero to normalise by. HFEN and
+    xsim would still produce a number from it (both are neighbourhood filters run over the whole
+    volume), but it is a number about the neighbourhood rather than a score of the brain, so the
+    shared guard answers NaN for all four rather than leaving a fresh two-and-two split behind."""
+    one = np.zeros(SHAPE, dtype=bool)
+    one[0, 0, 0] = True
+    assert math.isnan(qe.correlation(recon, truth, one))
+    assert math.isnan(qe.xsim(recon, truth, one))
+    assert math.isnan(qe.hfen(recon, truth, one))
+    assert all(math.isnan(v) for v in qe.nrmse_challenge(recon, truth, one))
+
+
+def test_two_voxels_are_enough_to_be_scored(recon, truth):
+    """The guard is a floor, not a quality bar: two voxels is where the statistics start to exist, so
+    they are computed and reported however ill-conditioned they look."""
+    two = np.zeros(SHAPE, dtype=bool)
+    two[0, 0, 0] = True
+    two[0, 0, 1] = True
+    assert math.isfinite(qe.correlation(recon, truth, two))
+    assert math.isfinite(qe.xsim(recon, truth, two))
+    assert math.isfinite(qe.hfen(recon, truth, two))
+    assert all(math.isfinite(v) for v in qe.nrmse_challenge(recon, truth, two))
+
+
+@pytest.mark.parametrize("which", ["recon", "truth"])
+def test_a_mask_with_no_finite_values_under_it_scores_nan_everywhere(recon, truth, full_mask, which):
+    """A full mask over an all-NaN map has voxels but no usable ones, so it is the same "nothing to
+    score" case. Three of the four metrics used to land on NaN anyway, by propagation through their
+    sums, while xsim returned the 0.0 sentinel; the shared guard makes the answer deliberate.
+
+    Only the all-non-finite case is gated. A map with SOME non-finite voxels is still scored over the
+    whole mask and propagates NaN into its score — it is not quietly scored on its good voxels only.
+    (`score_arrays` zeroes non-finite recon voxels before scoring, by policy, so in the pipeline this
+    case is reachable through the truth.)"""
+    nan_map = np.full(SHAPE, np.nan)
+    r, t = (nan_map, truth) if which == "recon" else (recon, nan_map)
+    assert math.isnan(qe.correlation(r, t, full_mask))
+    assert math.isnan(qe.xsim(r, t, full_mask))
+    assert math.isnan(qe.hfen(r, t, full_mask))
+    assert all(math.isnan(v) for v in qe.nrmse_challenge(r, t, full_mask))
+
+
+def test_a_few_non_finite_voxels_still_propagate_rather_than_being_dropped(recon, truth, full_mask):
+    """The complement of the test above, pinned so the guard is never mistaken for a filter: with
+    enough usable voxels to clear it, a NaN left in the truth poisons the aggregate instead of being
+    excluded from it."""
+    dirty = truth.astype(float).copy()
+    dirty[0, 0, 0] = np.nan
+    assert math.isnan(qe.correlation(recon, dirty, full_mask))
+    assert math.isnan(qe.nrmse_challenge(recon, dirty, full_mask)[0])
+
+
+# ------------------------------------------------- a constant recon: the do-nothing baseline, RANKED
 
 
 @pytest.mark.parametrize("value", [0.5, 0.0, -2.0])
 def test_a_constant_recon_has_zero_correlation(truth, full_mask, value):
     """A flat map has zero variance, so Pearson's denominator is 0 and the guard returns 0.0 — the
-    same value a genuinely uncorrelated recon gets. Any constant scores alike."""
+    same value a genuinely uncorrelated recon gets. Any constant scores alike. 0.0 and not NaN is
+    deliberate: the mask is valid and this is a real measurement of a useless recon, which must rank
+    worst rather than be dropped."""
     const = np.full(SHAPE, value, dtype="float32")
     assert qe.correlation(const, truth, full_mask) == 0.0
 
 
 @pytest.mark.parametrize("value", [0.5, 0.0, -2.0])
 def test_a_constant_recon_scores_xsim_at_essentially_zero(truth, full_mask, value):
-    """NOT the 0.0 sentinel: the windows are valid (den > 0 thanks to c2), so this is a computed
-    score — the covariance term is ~0 for a flat map, leaving a tiny signed residue on either side of
-    zero. Pinned as a magnitude, since the exact value depends on scipy's uniform_filter rounding."""
+    """NOT a sentinel: the windows are valid (den > 0 thanks to c2), so this is a computed score —
+    the covariance term is ~0 for a flat map, leaving a tiny signed residue on either side of zero.
+    Pinned as a magnitude, since the exact value depends on scipy's uniform_filter rounding."""
     const = np.full(SHAPE, value, dtype="float32")
     assert abs(qe.xsim(const, truth, full_mask)) < 1e-4
 
@@ -125,6 +217,17 @@ def test_a_constant_recon_scores_both_nrmse_variants_at_one_hundred_percent(trut
     assert detrended == plain
 
 
+def test_a_constant_recon_is_still_scored_end_to_end(truth, full_mask):
+    """The other half of the decision, through the entry point: a useless-but-scoreable run keeps a
+    full row of numbers, so it is ranked (last) rather than dropped like an unscoreable one."""
+    const = np.full(SHAPE, 0.5)
+    metrics, _ = qe.score_arrays(const, truth.astype(float), full_mask.astype(np.uint8), "chi")
+    assert all(math.isfinite(v) for v in metrics.values()), metrics
+    assert metrics["nrmse"] == pytest.approx(100.0, abs=1e-6)
+    assert metrics["hfen"] == pytest.approx(100.0, abs=1e-6)
+    assert metrics["correlation"] == 0.0
+
+
 # ------------------------------------------------------ a constant truth: nothing to score against
 
 
@@ -137,20 +240,36 @@ def test_a_constant_truth_scores_both_nrmse_variants_as_nan(recon, full_mask, va
     assert math.isnan(plain) and math.isnan(detrended)
 
 
-def test_a_constant_truth_scores_hfen_as_nan_only_when_the_constant_is_exactly_zero(recon, full_mask):
-    """HFEN's guard is on the LoG of the truth, and that is only EXACTLY zero for an all-zero volume.
-    For any other constant, float32 rounding leaves a LoG floor around 1e-8 that clears the 1e-30
-    guard, so the ratio comes back finite and absurd (tens of millions of percent) instead of NaN.
-    Pinned because it is a NaN-vs-huge-number split on the same degenerate input (issue #235)."""
-    zero_truth = np.zeros(SHAPE, dtype="float32")
-    assert math.isnan(qe.hfen(recon, zero_truth, full_mask))
+@pytest.mark.parametrize("value", [0.5, -2.0, 0.0, 1e-9])
+def test_a_constant_truth_scores_hfen_as_nan_for_every_constant(recon, full_mask, value):
+    """Was a NaN-vs-huge-number split on the same degenerate input, and is now NaN throughout.
 
-    flat_truth = np.full(SHAPE, 0.5, dtype="float32")
-    val = qe.hfen(recon, flat_truth, full_mask)
-    assert math.isfinite(val) and val > 1e3        # not a score; a divide-by-rounding-floor artefact
+    HFEN used to guard on the LoG norm of the truth, which is EXACTLY zero only for an all-zero
+    volume: for any other constant the truncated (5σ) LoG kernel's ~1e-5 non-zero sum leaves a floor
+    that clears the 1e-30 guard, and the ratio came back finite and absurd (~4e7 % for 0.5, ~2e16 %
+    for 1e-9 — note it scales with 1/truth, the signature of dividing by rounding noise rather than
+    measuring anything). That was the same "nothing to score" case, not a numeric artefact to be
+    tolerated: a constant truth has no fine detail at all, so the fraction of it recovered is
+    undefined. HFEN now asks the same question NRMSE does — is the demeaned truth norm zero — so the
+    two metrics agree on exactly which inputs are unscoreable."""
+    const_truth = np.full(SHAPE, value, dtype="float32")
+    assert math.isnan(qe.hfen(recon, const_truth, full_mask))
+
+
+def test_a_merely_low_frequency_truth_is_still_scored(full_mask):
+    """The guard is on a CONSTANT truth, not on a smooth one, and this pins that it is not wider than
+    that. A linear ramp has no LoG in its interior (the Laplacian of an affine function is 0), but
+    reflect padding bends it at the volume edge, so the truth really does carry high-frequency
+    energy there and HFEN reports an ordinary percentage against it rather than NaN."""
+    ramp = np.tile(np.linspace(-1.0, 1.0, SHAPE[0])[:, None, None], (1, SHAPE[1], SHAPE[2]))
+    recon = np.random.default_rng(2).standard_normal(SHAPE)
+    val = qe.hfen(recon, ramp, full_mask)
+    assert math.isfinite(val) and 0.0 < val < 1e3, val
 
 
 @pytest.mark.parametrize("value", [0.5, -2.0, 0.0])
 def test_a_constant_truth_has_zero_correlation(recon, full_mask, value):
+    """Unchanged, and deliberately so: as with a constant recon, 0.0 here is the zero-VARIANCE
+    answer under a valid mask, not the no-voxels one."""
     const_truth = np.full(SHAPE, value, dtype="float32")
     assert qe.correlation(recon, const_truth, full_mask) == 0.0
