@@ -17,8 +17,18 @@ Subcommands:
   validate    justify ROMEO as the wrap-count reference (congruence + independent agreement)
   accuracy    per-echo wrap-count accuracy, against the trivial "no wraps" predictor
   ablate      the conventions the public repo does not pin down (masking, sign, Laplacian)
-  fieldmap    the deliverable metric: total field (ppm) after echo fit, vs ground truth
+  fieldmap    total field (ppm) after echo fit, vs ground truth -- a WEAK metric, see below
   dipgap      what the test-time DIP loop adds on top of the pretrained CNN
+  export-unwrapped  write per-echo unwrapped phase as NIfTI, for the downstream comparison
+
+An unwrapper cannot be judged by correlating unwrapped phase or total field: two unwrappings
+differing by a HARMONIC field give the same local field once background removal has run.
+Measured here, Laplacian unwrapping disagrees with ROMEO's wrap count at 53.6% of voxels and
+places last on total field, then places FIRST on chi. Score at chi. The full chain is
+  dipup_baseline.rs            -> classical unwraps (ROMEO / Laplacian / best path)
+  ref_dipup.py export-unwrapped -> the CNN unwraps
+  dipup_downstream.rs           -> echo fit, V-SHARP, RTS, scored against ground truth
+  dipup_figure.py               -> the two figures used in QSM.rs docs/figures/
 """
 import argparse
 import math
@@ -300,6 +310,44 @@ def cmd_dipgap(a):
                   f"{(time.time() - t0) / it:.1f}s/iter", flush=True)
 
 
+
+def cmd_export_unwrapped(a):
+    """Write per-echo unwrapped phase as NIfTI, so the downstream (BFR -> chi) can be scored.
+
+    Correlation of unwrapped phase is a weak metric: two unwrappings may differ by a harmonic
+    field that background-field removal deletes, leaving the local field identical. What the
+    pipeline actually consumes is written here so the comparison can be made where it matters.
+    Also writes the wrap-count difference vs ROMEO, to show whether errors are scattered
+    (2*pi discontinuities, which BFR cannot remove) or spatially coherent (piecewise constant,
+    much more benign).
+    """
+    mask, wrapped, _ = load_phantom(a.bids)
+    aff = nib.load(f"{paths(a.bids)[1]}/sub-1_mask.nii").affine
+    os.makedirs(a.out, exist_ok=True)
+    net = load(a.variant, a.weights)
+    tag = a.variant.replace("-", "").lower()
+    for e, wr in zip((1, 2, 3, 4), wrapped):
+        c = predict(net, a.variant, wr * mask, mask)
+        uw = c * 2 * math.pi + wr
+        nib.save(nib.Nifti1Image(uw.astype(np.float32), aff),
+                 f"{a.out}/uw_{tag}_echo{e}.nii")
+        ref = nib.load(f"{a.baseline}/uw_romeo_echo{e}.nii").get_fdata()
+        d = (c - ref_count(wr, ref, mask)) * mask
+        nib.save(nib.Nifti1Image(d.astype(np.float32), aff),
+                 f"{a.out}/dn_{tag}_echo{e}.nii")
+        # Is the error scattered or coherent? Compare the error's own spatial roughness
+        # against that of a random relabelling with the same marginal distribution.
+        err = (d != 0) & mask
+        nb = np.zeros_like(d, dtype=bool)
+        for ax in range(3):
+            nb |= (np.roll(d, 1, ax) != d) | (np.roll(d, -1, ax) != d)
+        boundary = (nb & mask).sum() / max(mask.sum(), 1)
+        print(f"  echo {e}: |dn|>0 at {err.sum() / mask.sum() * 100:5.2f}% of voxels, "
+              f"dn changes between neighbours at {boundary * 100:5.2f}% "
+              f"(low => coherent regions, high => scattered)", flush=True)
+    print(f"wrote {a.out}/uw_{tag}_echo*.nii and dn_{tag}_echo*.nii")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -335,6 +383,12 @@ def main():
     p.add_argument("--lr", type=float, default=1e-6)
     p.add_argument("--lr-decay", type=int, default=1)
     p.set_defaults(fn=cmd_dipgap)
+
+    p = sub.add_parser("export-unwrapped")
+    p.add_argument("--variant", required=True, choices=sorted(VARIANTS))
+    p.add_argument("--weights", required=True)
+    p.add_argument("--out", required=True)
+    p.set_defaults(fn=cmd_export_unwrapped)
 
     a = ap.parse_args()
     a.fn(a)
