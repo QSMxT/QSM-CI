@@ -1647,50 +1647,29 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
   <footer id="site-footer"></footer>
 
   <script>
-    // χ-separation metric catalog (para_*/dia_* aren't in the global METRICS registry). Drives the
-    // customisable column picker + table. `f` is the formatter kind: xsim / pct / num / sec.
-    const CHISEP_COLS = [
-      { key: "avg_mspe",            label: "Avg MSPE",        better: "lower",  f: "pct",  tip: "Mean of the χ+ and χ− per-ROI MSPE (Ridani et al. 2026), the headline metric, comparable to the paper's published numbers. Lower is better." },
-      { key: "para_mspe",           label: "χ+ MSPE",         better: "lower",  f: "pct",  tip: "χ+ per-ROI MSPE over the iron nuclei + GM. WM excluded (χ+ ~1 ppb → unstable %). Lower is better." },
-      { key: "dia_mspe",            label: "χ− MSPE",         better: "lower",  f: "pct",  tip: "χ− per-ROI MSPE over the fibre-bundle atlas WM sub-ROIs (Ridani et al. 2026, Fig 3). Lower is better." },
-      { key: "avg_ndt",             label: "Avg detr. NRMSE", better: "lower",  f: "pct",  tip: "Mean of the χ+ and χ− linearly-detrended NRMSE: a voxelwise source-separation error, scale-independent (fair to a method's assumed Dr) and, unlike xSIM, sensitive to the magnitude error white-matter anisotropy induces. Lower is better." },
-      { key: "avg",                 label: "Avg xSIM",        better: "higher", f: "xsim", tip: "Mean of the χ+ and χ− xSIM. Structural similarity only: lenient to the magnitude error anisotropy causes (the do-nothing null solve scores ~0.75 here), so it is not the ranking metric. Higher is better." },
-      { key: "para_xsim",           label: "χ+ xSIM",         better: "higher", f: "xsim", tip: "Structural similarity of the χ+ (paramagnetic, iron) map vs ground truth. Higher is better." },
-      { key: "para_nrmse",          label: "χ+ NRMSE",        better: "lower",  f: "pct",  tip: "Demeaned normalised RMS error of χ+ vs ground truth (%). Lower is better." },
-      { key: "para_nrmse_detrend",  label: "χ+ detr. NRMSE",  better: "lower",  f: "pct",  tip: "χ+ NRMSE after correcting a global linear scale (independent of a method's assumed Dr). Lower is better." },
-      { key: "para_nrmse_dgm",      label: "χ+ DGM NRMSE",    better: "lower",  f: "pct",  tip: "χ+ error in deep gray matter (iron) (%). Lower is better." },
-      { key: "para_dgm_linearity",  label: "χ+ DGM linearity", better: "lower", f: "num",  tip: "|1 − slope| of χ+ across DGM iron regions; 0 = perfect iron quantification. Lower is better." },
-      { key: "para_nrmse_blood",    label: "χ+ vein NRMSE",   better: "lower",  f: "pct",  tip: "χ+ error in venous blood (%). Lower is better." },
-      { key: "para_calc_leak",      label: "χ+ Ca leak",      better: "lower",  f: "num",  tip: "Mean |χ+| in the calcification (should be ~0): calcium wrongly bleeding into the paramagnetic map. Lower is better." },
-      { key: "para_leak",           label: "χ−→χ+ leak",      better: "lower",  f: "num",  tip: "Whole-brain leakage: regression slope of χ+ on the χ− ground truth. 0 = clean; positive = χ− bleeds into χ+; negative = over-separation (χ+ suppressed where χ− is strong)." },
-      { key: "dia_xsim",            label: "χ− xSIM",         better: "higher", f: "xsim", tip: "Structural similarity of the χ− (diamagnetic, myelin/calcium) map vs ground truth. Higher is better." },
-      { key: "dia_nrmse",           label: "χ− NRMSE",        better: "lower",  f: "pct",  tip: "Demeaned normalised RMS error of χ− vs ground truth (%). Lower is better." },
-      { key: "dia_nrmse_detrend",   label: "χ− detr. NRMSE",  better: "lower",  f: "pct",  tip: "χ− NRMSE after correcting a global linear scale (independent of a method's assumed Dr). The map anisotropy makes hardest. Lower is better." },
-      { key: "dia_calc_moment_dev", label: "χ− Ca dev",       better: "lower",  f: "num",  tip: "Deviation of the recovered calcification's susceptibility moment. Lower is better." },
-      { key: "dia_calc_streak",     label: "χ− streak",       better: "lower",  f: "num",  tip: "Streaking-artifact level around the calcification. Lower is better." },
-      { key: "dia_mev",             label: "χ− MEV",          better: "lower",  f: "pct",  tip: "Maximum error variation (Ridani et al. 2026, Fig 5): fractional drop in χ− error from fibres parallel to B0 to perpendicular. High = strongly orientation-dependent. A diagnostic, not a ranking metric." },
-      { key: "dia_iron_leak",       label: "χ− Fe leak",      better: "lower",  f: "num",  tip: "Mean |χ−| in DGM/veins (should be ~0): iron wrongly bleeding into the diamagnetic map. Lower is better." },
-      { key: "dia_leak",            label: "χ+→χ− leak",      better: "lower",  f: "num",  tip: "Whole-brain leakage: regression slope of χ− on the χ+ ground truth. 0 = clean; positive = χ+ bleeds into χ−; negative = over-separation (χ− suppressed where χ+ is strong)." },
-      { key: "runtime_s",           label: "Runtime",         better: "lower",  f: "sec",  tip: "Wall-clock runtime." },
-    ];
+    // χ-separation leaderboard columns: CHISEP_ORDER resolved against the shared METRICS registry
+    // (app.js), which carries each key's label, tooltip, unit and decimals. Drives the customisable
+    // column picker + table. Three of those keys are derived (DERIVED_METRICS), so read every value
+    // through metricVal() rather than val().
+    const CHISEP_COLS = metricColumns(CHISEP_ORDER);
     const CHISEP_COL = Object.fromEntries(CHISEP_COLS.map((c) => [c.key, c]));
 
     // In-vivo (2016 challenge) dipole leaderboard columns. Each method is scored against TWO
     // references: COSMOS (primary, unsuffixed metric keys) and STI χ33 (secondary, `_sti` keys, merged
     // in by pipeline.py). `grp` groups the columns under the two-tier "vs COSMOS" / "vs STI χ33"
-    // header; `f` is the formatter kind (xsim / pct). Runtime is rendered separately (shared by both).
-    const INVIVO_COLS = [
-      { key: "nrmse",              grp: "cosmos", label: "NRMSE",     better: "lower",  f: "pct",  tip: "Demeaned normalised RMS error vs the COSMOS reference (%). The headline 2016 challenge metric. Lower is better." },
-      { key: "nrmse_detrend",      grp: "cosmos", label: "Detrended", better: "lower", f: "pct",  tip: "NRMSE vs COSMOS after correcting a global linear scaling (contrast/gain-independent). Lower is better." },
-      { key: "xsim",               grp: "cosmos", label: "xSIM",      better: "higher", f: "xsim", tip: "QSM structural-similarity index vs COSMOS. 1 = identical. Higher is better." },
-      { key: "correlation",        grp: "cosmos", label: "Corr.",     better: "higher", f: "xsim", tip: "Pearson correlation vs COSMOS within the mask. Higher is better." },
-      { key: "hfen",               grp: "cosmos", label: "HFEN",      better: "lower",  f: "pct",  tip: "High-Frequency Error Norm vs COSMOS (%): Laplacian-of-Gaussian high-pass error, i.e. fine-detail fidelity. Lower is better." },
-      { key: "nrmse_sti",          grp: "sti",    label: "NRMSE",     better: "lower",  f: "pct",  tip: "Demeaned NRMSE vs the STI χ33 reference (%). Lower is better." },
-      { key: "nrmse_detrend_sti",  grp: "sti",    label: "Detrended", better: "lower", f: "pct",  tip: "Detrended NRMSE vs STI χ33 (%). Lower is better." },
-      { key: "xsim_sti",           grp: "sti",    label: "xSIM",      better: "higher", f: "xsim", tip: "QSM structural-similarity index vs STI χ33. Higher is better." },
-      { key: "correlation_sti",    grp: "sti",    label: "Corr.",     better: "higher", f: "xsim", tip: "Pearson correlation vs STI χ33. Higher is better." },
-      { key: "hfen_sti",           grp: "sti",    label: "HFEN",      better: "lower",  f: "pct",  tip: "High-Frequency Error Norm vs STI χ33 (%). Lower is better." },
-    ];
+    // header; only the χ33 keys carry it in the registry, since the unsuffixed ones are the plain
+    // in-silico metrics, so an unmarked key here is the COSMOS reference. Those same five keys also
+    // override the registry tooltip, which describes them against a ground truth rather than against
+    // COSMOS. Runtime is rendered separately (shared by both references).
+    const INVIVO_TIP = {
+      nrmse: "Demeaned normalised RMS error vs the COSMOS reference (%). The headline 2016 challenge metric. Lower is better.",
+      nrmse_detrend: "NRMSE vs COSMOS after correcting a global linear scaling (contrast/gain-independent). Lower is better.",
+      xsim: "QSM structural-similarity index vs COSMOS. 1 = identical. Higher is better.",
+      correlation: "Pearson correlation vs COSMOS within the mask. Higher is better.",
+      hfen: "High-Frequency Error Norm vs COSMOS (%): Laplacian-of-Gaussian high-pass error, i.e. fine-detail fidelity. Lower is better.",
+    };
+    const INVIVO_COLS = metricColumns(INVIVO_ORDER, true)
+      .map((c) => ({ ...c, grp: c.grp || "cosmos", tip: INVIVO_TIP[c.key] || c.tip }));
     const INVIVO_COL = Object.fromEntries(INVIVO_COLS.map((c) => [c.key, c]));
 
     // Merged component: the leaderboard (board) state + the findings figures, behind one tab bar.
@@ -1820,7 +1799,9 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           if (q.get("variant") === "tuned") this.variant = "tuned";
           if (["matrix", "table"].includes(q.get("pipe"))) this.pipeView = q.get("pipe");
           if (["pipelines", "metrics", "regions", "speed", "explore"].includes(q.get("find"))) this.findView = q.get("find");
-          if (q.get("metric") && METRICS[q.get("metric")]) this.metric = q.get("metric");
+          // METRIC_ORDER, not METRICS: the registry also holds the χ-separation and STI χ33 keys,
+          // which this (in-silico) matrix has no column for.
+          if (METRIC_ORDER.includes(q.get("metric"))) this.metric = q.get("metric");
           if (q.get("fmap")) this.fmap = q.get("fmap");
           if (["board", "info", "findings"].includes(q.get("sub"))) { this.invivoView = q.get("sub"); this.chisepView = q.get("sub"); }
           if (["full", "greonly"].includes(q.get("cond"))) this.chisepCondition = q.get("cond");
@@ -3127,19 +3108,10 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           if (!on.length) return null;
           return { name: this.algoName(hl), n: on.length, withMed: this._pct(this._median(on)), withoutMed: this._pct(this._median(off)) };
         },
-        chiVal(r, k) {
-          const m = r.metrics || {};
-          if (k === "avg") return (m.para_xsim != null && m.dia_xsim != null) ? (m.para_xsim + m.dia_xsim) / 2 : null;
-          if (k === "avg_ndt") return (m.para_nrmse_detrend != null && m.dia_nrmse_detrend != null) ? (m.para_nrmse_detrend + m.dia_nrmse_detrend) / 2 : null;
-          if (k === "avg_mspe") return (m.para_mspe != null && m.dia_mspe != null) ? (m.para_mspe + m.dia_mspe) / 2 : null;
-          return val(r, k);
-        },
-        chiFmt(v, key) {
-          if (v == null) return ", ";
-          const f = (CHISEP_COL[key] || {}).f;
-          return f === "pct" ? v.toFixed(1) + "%" : f === "num" ? v.toFixed(3)
-            : f === "sec" ? fmt(v, "runtime_s") : fmt(v, "xsim");
-        },
+        // avg / avg_ndt / avg_mspe are derived columns (DERIVED_METRICS): the mean of a para_/dia_ pair,
+        // with no stored field of their own. metricVal() resolves those and plain keys alike.
+        chiVal(r, k) { return metricVal(r, k); },
+        chiFmt(v, key) { return v == null ? ", " : fmt(v, key); },
         chisepDisplayCols() {
           const sel = CHISEP_COLS.filter((c) => this.chisepSelectedCols.includes(c.key));
           return sel.length ? sel : CHISEP_COLS.filter((c) => c.key === "avg_mspe");
@@ -3210,10 +3182,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           if (this.invivoSortKey === k) this.invivoDir = this.invivoDir === "asc" ? "desc" : "asc";
           else { this.invivoSortKey = k; this.invivoDir = (INVIVO_COL[k] || {}).better === "lower" ? "asc" : "desc"; }
         },
-        invFmt(v, key) {
-          if (v == null) return ", ";
-          return (INVIVO_COL[key] || {}).f === "pct" ? v.toFixed(1) + "%" : fmt(v, "xsim");
-        },
+        invFmt(v, key) { return v == null ? ", " : fmt(v, key); },
         invMedal(i) {
           const better = (INVIVO_COL[this.invivoSortKey] || {}).better || "higher";
           const good = this.invivoDir === (better === "lower" ? "asc" : "desc");

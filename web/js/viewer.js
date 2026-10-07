@@ -6,7 +6,7 @@ import { Niivue } from "https://unpkg.com/@niivue/niivue@0.57.0/dist/index.js";
 import { renderResources } from "./resourceChart.js";
 import { autoWin, makeWindowControl, winControls } from "./windowControl.js";
 
-const { loadRuns, loadAlgos, loadDatasets, loadRegistry, loadRepro, loadRunRegions, doiFor, METRICS, STAGE_LABEL, val, fmt, robustRange, heatScale, REGION_ORDER } = window.QSM;
+const { loadRuns, loadAlgos, loadDatasets, loadRegistry, loadRepro, loadRunRegions, doiFor, METRICS, METRIC_ORDER, STAGE_LABEL, val, fmt, metricVal, metricColumns, robustRange, heatScale, REGION_ORDER } = window.QSM;
 
 const STAGE_COLOR = {
   "field-mapping": "bg-indigo-50 text-indigo-700 ring-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-300 dark:ring-indigo-500/20",
@@ -1160,8 +1160,8 @@ function metricRank(k) {
 }
 
 // Rank `run` among comparable peers by an arbitrary accessor (r) => value; used for χ-separation,
-// whose paired metrics (para_*/dia_*) and the derived Avg xSIM aren't plain METRICS keys, and by
-// metricRank() for the plain ones. `higher` = higher-is-better. null if <2 peers to compare.
+// whose Avg MSPE column is derived rather than stored, and by metricRank() for the plain stored
+// keys. `higher` = higher-is-better. null if <2 peers to compare.
 function rankBy(accessor, higher) {
   const v = accessor(run);
   if (v == null) return null;
@@ -1180,71 +1180,44 @@ function rankBy(accessor, higher) {
   return { rank, n: peers.length, t };
 }
 
+// Row order for the χ-separation metric table, as [section heading, metric keys]. The headings name
+// the source, so the rows take each key's short label ("MSPE" under "χ+ paramagnetic"); every other
+// display detail — tooltip, unit, decimals, better direction — comes from the METRICS registry.
+// avg_mspe is derived (DERIVED_METRICS), so values are read through metricVal(), not val().
+const CHISEP_GROUPS = [
+  [null, ["avg_mspe"]],
+  ["χ+ paramagnetic (iron, veins)", [
+    "para_mspe", "para_xsim", "para_nrmse", "para_nrmse_dgm", "para_dgm_linearity",
+    "para_nrmse_blood", "para_calc_leak", "para_leak",
+  ]],
+  ["χ− diamagnetic (calcium, myelin)", [
+    "dia_mspe", "dia_xsim", "dia_nrmse", "dia_calc_moment_dev", "dia_calc_streak",
+    "dia_mev", "dia_iron_leak", "dia_leak",
+  ]],
+  ["Resources", ["runtime_s", "mem_peak_bytes", "cpu_cores_avg"]],
+];
+
 function renderChisepMetrics() {
   // χ-separation runs carry paired, source-specific metrics (para_*/dia_*), not the plain QSM keys.
   // Render them grouped by source: χ+ gets iron/vein metrics, χ− gets calcification metrics, and each
   // gets a leakage (cross-contamination) term.
   $("metrics-sub").textContent = "χ+ / χ− sources vs. ground truth";
-  const mv = (k) => (r) => { const x = r.metrics ? r.metrics[k] : null; return x == null ? null : x; };
-  const avgAcc = (r) => {
-    const p = r.metrics ? r.metrics.para_xsim : null, d = r.metrics ? r.metrics.dia_xsim : null;
-    return (p != null && d != null) ? (p + d) / 2 : null;
-  };
-  const avgMspeAcc = (r) => {
-    const p = r.metrics ? r.metrics.para_mspe : null, d = r.metrics ? r.metrics.dia_mspe : null;
-    return (p != null && d != null) ? (p + d) / 2 : null;
-  };
-  const rtAcc = (r) => (r.runtime_s == null ? null : r.runtime_s);
-  const memAcc = (r) => (r.mem_peak_bytes == null ? null : r.mem_peak_bytes);
-  const cpuAcc = (r) => (r.cpu_cores_avg == null ? null : r.cpu_cores_avg);
-  const num = (v, fk) => v == null ? null
-    : fk === "pct" ? v.toFixed(1) + "%" : fk === "xsim" ? fmt(v, "xsim")
-    : fk === "sec" ? fmt(v, "runtime_s") : fk === "bytes" ? fmt(v, "mem_peak_bytes")
-    : fk === "cores" ? fmt(v, "cpu_cores_avg") : v.toFixed(3);
-  // rows: [label, accessor, formatKey, arrow, tip]: accessor(r) yields the value for run r (so peers
-  // can be ranked the same way), arrow "↑" = higher-is-better.
-  const groups = [
-    [null, [["Avg MSPE", avgMspeAcc, "pct", "↓", "Mean of the χ+ and χ− per-ROI MSPE: the headline combined score (Ridani et al. 2026)."]]],
-    ["χ+ paramagnetic (iron, veins)", [
-      ["MSPE", mv("para_mspe"), "pct", "↓", "Per-ROI MSPE of χ+ over the iron nuclei + GM (mean squared %-error of ROI means). WM excluded (χ+ ~1 ppb → unstable %)."],
-      ["xSIM", mv("para_xsim"), "xsim", "↑", "Structural similarity of χ+ vs ground truth."],
-      ["NRMSE", mv("para_nrmse"), "pct", "↓", "Normalised RMS error of χ+ (%)."],
-      ["DGM NRMSE", mv("para_nrmse_dgm"), "pct", "↓", "χ+ error in deep gray matter (iron)."],
-      ["DGM linearity", mv("para_dgm_linearity"), "num", "↓", "|1 − slope| of χ+ across DGM iron regions; 0 = perfect iron quantification."],
-      ["Vein NRMSE", mv("para_nrmse_blood"), "pct", "↓", "χ+ error in venous blood."],
-      ["Ca leak", mv("para_calc_leak"), "num", "↓", "Mean |χ+| in the calcification (should be ~0): calcium wrongly bleeding into the paramagnetic map."],
-      ["χ−→χ+ leak", mv("para_leak"), "num", "↓", "Regression slope of χ+ on the χ− ground truth: how much diamagnetic signal bleeds into the paramagnetic map. 0 = clean; positive = leakage; negative = over-separation (χ+ suppressed where χ− is strong)."],
-    ]],
-    ["χ− diamagnetic (calcium, myelin)", [
-      ["MSPE", mv("dia_mspe"), "pct", "↓", "Per-ROI MSPE of χ− over the fibre-bundle atlas WM sub-ROIs (Ridani et al. 2026, Fig 3): the metric anisotropy makes hardest."],
-      ["xSIM", mv("dia_xsim"), "xsim", "↑", "Structural similarity of χ− vs ground truth."],
-      ["NRMSE", mv("dia_nrmse"), "pct", "↓", "Normalised RMS error of χ− (%)."],
-      ["Ca dev", mv("dia_calc_moment_dev"), "num", "↓", "Deviation of the recovered calcification's susceptibility moment."],
-      ["Streaking", mv("dia_calc_streak"), "num", "↓", "Streaking-artifact level around the calcification."],
-      ["MEV", mv("dia_mev"), "pct", "↓", "Maximum error variation (Ridani et al. 2026, Fig 5): fractional drop in χ− error from fibres parallel to B0 to perpendicular. A diagnostic of orientation-dependent error, not a ranking metric."],
-      ["Fe leak", mv("dia_iron_leak"), "num", "↓", "Mean |χ−| in DGM/veins (should be ~0): iron wrongly bleeding into the diamagnetic map."],
-      ["χ+→χ− leak", mv("dia_leak"), "num", "↓", "Regression slope of χ− on the χ+ ground truth: how much paramagnetic signal bleeds into the diamagnetic map. 0 = clean; positive = leakage; negative = over-separation (χ− suppressed where χ+ is strong)."],
-    ]],
-    ["Resources", [
-      ["Runtime", rtAcc, "sec", "↓", "Wall-clock runtime."],
-      ["Peak memory", memAcc, "bytes", "↓", "Peak resident memory (max RSS) sampled while the method runs: the RAM it needs to fit."],
-      ["Avg CPU", cpuAcc, "cores", "↑", "Average CPU cores busy over the run (CPU-time ÷ wall-time): how well it parallelises. ~1 = single-threaded."],
-    ]],
-  ];
   let html = "";
-  for (const [header, rows] of groups) {
+  for (const [header, keys] of CHISEP_GROUPS) {
     if (header) html += `<tr><td colspan="3" class="pt-3 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">${header}</td></tr>`;
-    for (const [label, acc, fk, arrow, tip] of rows) {
-      const v = acc(run);
+    for (const { key, label, tip, better } of metricColumns(keys, true)) {
+      const v = metricVal(run, key);
       if (v == null) continue;
-      const hero = label === "Avg MSPE";
-      const rk = rankBy(acc, arrow === "↑");
+      const hero = key === "avg_mspe";
+      const higher = better === "higher";
+      // Rank against the same accessor, so peers are compared on exactly the value shown.
+      const rk = rankBy((r) => metricVal(r, key), higher);
       const rankCell = rk
         ? `<span class="inline-block rounded-md px-1.5 py-0.5 text-xs font-semibold text-white shadow-sm" style="background:${heatScale(rk.t)}" data-tip="Rank ${rk.rank} of ${rk.n} χ-separation methods for ${label}">#${rk.rank}<span class="opacity-70"> / ${rk.n}</span></span>`
         : `<span class="text-gray-300 dark:text-gray-600">—</span>`;
       html += `<tr>
-        <td class="whitespace-nowrap py-2 text-gray-500 dark:text-gray-400"><span class="has-tip" data-tip="${tip.replace(/"/g, "&quot;")}">${label}</span> <span class="text-gray-300 dark:text-gray-600" title="${arrow === "↑" ? "higher" : "lower"} is better">${arrow}</span></td>
-        <td class="py-2 text-right tabular-nums ${hero ? "font-bold text-gray-900 dark:text-gray-100" : "font-medium text-gray-700 dark:text-gray-300"}">${num(v, fk)}</td>
+        <td class="whitespace-nowrap py-2 text-gray-500 dark:text-gray-400"><span class="has-tip" data-tip="${tip.replace(/"/g, "&quot;")}">${label}</span> <span class="text-gray-300 dark:text-gray-600" title="${better} is better">${higher ? "↑" : "↓"}</span></td>
+        <td class="py-2 text-right tabular-nums ${hero ? "font-bold text-gray-900 dark:text-gray-100" : "font-medium text-gray-700 dark:text-gray-300"}">${fmt(v, key)}</td>
         <td class="py-2 pl-3 text-right">${rankCell}</td>
       </tr>`;
     }
@@ -1260,8 +1233,8 @@ function renderMetrics() {
     ? "Generated R2′ vs. the phantom's true (spin-echo-derived) R2′"
     : run.mode === "composed" ? "Final χ map vs. ground truth" : `${run.artifact || "output"} vs. ground truth`;
   // Include runtime_s (a top-level field, not under run.metrics) via val(), so it's ranked alongside
-  // the accuracy metrics. Object.keys(METRICS) keeps it last, matching its registry order.
-  const order = Object.keys(METRICS).filter((k) => val(run, k) != null);
+  // the accuracy metrics. METRIC_ORDER keeps it last, matching the leaderboard's column order.
+  const order = METRIC_ORDER.filter((k) => val(run, k) != null);
   const groupLabel = run.combo ? "composed pipelines"
     : CHI_RANK_STAGES.has(run.stage) ? "isolated χ-map methods (dipole, bfr+dipole, end-to-end)"
     : `isolated ${STAGE_LABEL[run.stage] || run.stage} methods`;

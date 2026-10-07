@@ -130,6 +130,13 @@ const MOON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor
 
 // Metric metadata: label, unit, better direction, decimals, and a plain-language description
 // (surfaced as hover tooltips). Descriptions mirror eval/qsm_eval.py (ported from QSM.rs).
+// Every key here is a field a run can actually carry, under .metrics or (the resource fields) at
+// its top level, so val(run, key) is always the value. Two optional fields serve the tables built
+// by metricColumns():
+//   short  the column header to use where the table's own grouping already supplies the context
+//          ("MSPE" under a "χ+ paramagnetic" heading, where the standalone label is "χ+ MSPE").
+//   grp    the reference tier on the in-vivo board's two-tier header. Only the χ33 keys carry it:
+//          an unsuffixed key there is scored against COSMOS (see INVIVO_COLS in results.html).
 const METRICS = {
   mspe:            { label: "MSPE",             unit: "%", better: "lower",  dp: 1,
     desc: "Mean squared percentage error of ROI means (Ridani et al., MRM 2026): a per-region quantification-bias metric, comparable to the paper's published χ-separation numbers." },
@@ -137,7 +144,7 @@ const METRICS = {
     desc: "Maximum error variation (Ridani et al. 2026, Fig 5): the fractional drop in χ− error from fibres parallel to B0 to perpendicular. High = strongly orientation-dependent error; a diagnostic, not a ranking metric." },
   nrmse:           { label: "NRMSE",            unit: "%", better: "lower",  dp: 1,
     desc: "Normalized root-mean-square error within the mask, after demeaning both maps. 0 = perfect; ~100% ≈ a flat map (the do-nothing baseline)." },
-  nrmse_detrend:   { label: "Detrended NRMSE",  unit: "%", better: "lower",  dp: 1,
+  nrmse_detrend:   { label: "Detrended NRMSE",  unit: "%", better: "lower",  dp: 1, short: "Detrended",
     desc: "NRMSE after correcting a global linear scaling of the reconstruction: measures error independent of overall contrast/gain." },
   nrmse_tissue:    { label: "Tissue NRMSE",     unit: "%", better: "lower",  dp: 1,
     desc: "Demeaned NRMSE restricted to brain-tissue regions (grey + white matter)." },
@@ -151,29 +158,139 @@ const METRICS = {
     desc: "Absolute error in the total susceptibility moment recovered inside the calcification." },
   calc_streak:     { label: "Streak",           unit: "",  better: "lower",  dp: 3,
     desc: "Streaking-artefact level around the calcification: residual spread near its rim, relative to the calcification's mean susceptibility." },
-  correlation:     { label: "Correlation",      unit: "",  better: "higher", dp: 3,
+  correlation:     { label: "Correlation",      unit: "",  better: "higher", dp: 3, short: "Corr.",
     desc: "Pearson correlation between reconstructed and ground-truth χ within the mask. 1 = perfect." },
-  xsim:            { label: "XSIM",             unit: "",  better: "higher", dp: 3,
+  xsim:            { label: "XSIM",             unit: "",  better: "higher", dp: 3, short: "xSIM",
     desc: "Structural-similarity index tuned for QSM (5×5×5 windows). 1 = identical to the ground truth." },
   hfen:            { label: "HFEN",             unit: "%", better: "lower",  dp: 1,
     desc: "High-Frequency Error Norm (%): error in a Laplacian-of-Gaussian high-pass of the map, i.e. how well fine edges/detail are recovered relative to the ground truth. 0 = perfect. The classic 2016 QSM Reconstruction Challenge fine-detail metric." },
   coverage:        { label: "Coverage",         unit: "",  better: "higher", dp: 3,
     desc: "Fraction of the brain mask where the method produced a finite, non-zero value. Every metric is scored over the whole mask, so an eroded rim or a failed region counts as error; coverage says how much of a score drop is missing brain rather than wrong values. 1 = the full mask." },
   para_leak:       { label: "χ−→χ+ leak",       unit: "",  better: "lower",  dp: 3,
-    desc: "Whole-brain regression slope of χ+ on the χ− ground truth: the fraction of diamagnetic signal bleeding into the paramagnetic map. 0 = clean; magnitude = contamination. Unlike xSIM it isn't fooled by the shared R2' common mode." },
+    desc: "Whole-brain regression slope of χ+ on the χ− ground truth: the fraction of diamagnetic signal bleeding into the paramagnetic map. 0 = clean; positive = χ− bleeds into χ+; negative = over-separation (χ+ suppressed where χ− is strong). Unlike xSIM it isn't fooled by the shared R2' common mode." },
   dia_leak:        { label: "χ+→χ− leak",       unit: "",  better: "lower",  dp: 3,
-    desc: "Whole-brain regression slope of χ− on the χ+ ground truth: the fraction of paramagnetic signal bleeding into the diamagnetic map. 0 = clean; magnitude = contamination. Unlike xSIM it isn't fooled by the shared R2' common mode." },
+    desc: "Whole-brain regression slope of χ− on the χ+ ground truth: the fraction of paramagnetic signal bleeding into the diamagnetic map. 0 = clean; positive = χ+ bleeds into χ−; negative = over-separation (χ− suppressed where χ+ is strong). Unlike xSIM it isn't fooled by the shared R2' common mode." },
   runtime_s:       { label: "Runtime",          unit: "s", better: "lower",  dp: 1,
     desc: "Wall-clock time to produce this output; for a combined pipeline, the sum of its field-mapping, background-removal and dipole-inversion stages. Measured on GitHub-hosted runners (≈4 vCPU, 16 GB RAM, no GPU, so learning-based methods run on CPU); treat it as relative speed, not an absolute benchmark." },
   mem_peak_bytes:  { label: "Peak memory",       unit: "",  better: "lower",  dp: 0,
     desc: "Peak resident memory (max RSS) sampled once per second while the method runs: the RAM it needs to fit on a machine. Measured on the CI runners; treat it as relative, not an absolute benchmark." },
   cpu_cores_avg:   { label: "Avg CPU",           unit: " cores", better: "higher", dp: 1,
     desc: "Average CPU cores busy over the run (CPU-time ÷ wall-time): how well the method parallelises. ~1 = single-threaded, higher = more cores used at once. A utilisation indicator, not a quality score; measured on the CI runners." },
+
+  // χ-separation: a method outputs a paramagnetic (χ+) and a diamagnetic (χ−) map, so the accuracy
+  // metrics above are scored per source and stored under a para_/dia_ prefix. para_leak / dia_leak
+  // are the cross-contamination terms and sit above, with the keys they can also appear beside.
+  para_mspe:           { label: "χ+ MSPE",          unit: "%", better: "lower",  dp: 1, short: "MSPE",
+    desc: "Per-ROI MSPE of χ+ (mean squared %-error of ROI means) over the iron nuclei + GM. WM excluded (χ+ ~1 ppb → unstable %). Lower is better." },
+  para_xsim:           { label: "χ+ xSIM",          unit: "",  better: "higher", dp: 3, short: "xSIM",
+    desc: "Structural similarity of the χ+ (paramagnetic, iron) map vs ground truth. Higher is better." },
+  para_nrmse:          { label: "χ+ NRMSE",         unit: "%", better: "lower",  dp: 1, short: "NRMSE",
+    desc: "Demeaned normalised RMS error of χ+ vs ground truth (%). Lower is better." },
+  para_nrmse_detrend:  { label: "χ+ detr. NRMSE",   unit: "%", better: "lower",  dp: 1,
+    desc: "χ+ NRMSE after correcting a global linear scale (independent of a method's assumed Dr). Lower is better." },
+  para_nrmse_dgm:      { label: "χ+ DGM NRMSE",     unit: "%", better: "lower",  dp: 1, short: "DGM NRMSE",
+    desc: "χ+ error in deep gray matter (iron) (%). Lower is better." },
+  para_dgm_linearity:  { label: "χ+ DGM linearity", unit: "",  better: "lower",  dp: 3, short: "DGM linearity",
+    desc: "|1 − slope| of χ+ across DGM iron regions; 0 = perfect iron quantification. Lower is better." },
+  para_nrmse_blood:    { label: "χ+ vein NRMSE",    unit: "%", better: "lower",  dp: 1, short: "Vein NRMSE",
+    desc: "χ+ error in venous blood (%). Lower is better." },
+  para_calc_leak:      { label: "χ+ Ca leak",       unit: "",  better: "lower",  dp: 3, short: "Ca leak",
+    desc: "Mean |χ+| in the calcification (should be ~0): calcium wrongly bleeding into the paramagnetic map. Lower is better." },
+  dia_mspe:            { label: "χ− MSPE",          unit: "%", better: "lower",  dp: 1, short: "MSPE",
+    desc: "Per-ROI MSPE of χ− over the fibre-bundle atlas WM sub-ROIs (Ridani et al. 2026, Fig 3): the metric anisotropy makes hardest. Lower is better." },
+  dia_xsim:            { label: "χ− xSIM",          unit: "",  better: "higher", dp: 3, short: "xSIM",
+    desc: "Structural similarity of the χ− (diamagnetic, myelin/calcium) map vs ground truth. Higher is better." },
+  dia_nrmse:           { label: "χ− NRMSE",         unit: "%", better: "lower",  dp: 1, short: "NRMSE",
+    desc: "Demeaned normalised RMS error of χ− vs ground truth (%). Lower is better." },
+  dia_nrmse_detrend:   { label: "χ− detr. NRMSE",   unit: "%", better: "lower",  dp: 1,
+    desc: "χ− NRMSE after correcting a global linear scale (independent of a method's assumed Dr). The map anisotropy makes hardest. Lower is better." },
+  dia_calc_moment_dev: { label: "χ− Ca dev",        unit: "",  better: "lower",  dp: 3, short: "Ca dev",
+    desc: "Deviation of the recovered calcification's susceptibility moment. Lower is better." },
+  dia_calc_streak:     { label: "χ− streak",        unit: "",  better: "lower",  dp: 3, short: "Streaking",
+    desc: "Streaking-artifact level around the calcification. Lower is better." },
+  dia_mev:             { label: "χ− MEV",           unit: "%", better: "lower",  dp: 1, short: "MEV",
+    desc: "Maximum error variation (Ridani et al. 2026, Fig 5): fractional drop in χ− error from fibres parallel to B0 to perpendicular. High = strongly orientation-dependent; a diagnostic, not a ranking metric." },
+  dia_iron_leak:       { label: "χ− Fe leak",       unit: "",  better: "lower",  dp: 3, short: "Fe leak",
+    desc: "Mean |χ−| in DGM/veins (should be ~0): iron wrongly bleeding into the diamagnetic map. Lower is better." },
+
+  // In vivo (2016 challenge): every method is scored against TWO references, so pipeline.py merges a
+  // second copy of the accuracy metrics under an `_sti` suffix. The unsuffixed keys above carry the
+  // COSMOS (primary) scores; these carry STI χ33.
+  nrmse_sti:           { label: "NRMSE (STI χ33)",     unit: "%", better: "lower",  dp: 1, short: "NRMSE",     grp: "sti",
+    desc: "Demeaned NRMSE vs the STI χ33 reference (%). Lower is better." },
+  nrmse_detrend_sti:   { label: "Detrended NRMSE (STI χ33)", unit: "%", better: "lower", dp: 1, short: "Detrended", grp: "sti",
+    desc: "Detrended NRMSE vs STI χ33 (%). Lower is better." },
+  xsim_sti:            { label: "XSIM (STI χ33)",      unit: "",  better: "higher", dp: 3, short: "xSIM",      grp: "sti",
+    desc: "QSM structural-similarity index vs STI χ33. Higher is better." },
+  correlation_sti:     { label: "Correlation (STI χ33)", unit: "", better: "higher", dp: 3, short: "Corr.",    grp: "sti",
+    desc: "Pearson correlation vs STI χ33. Higher is better." },
+  hfen_sti:            { label: "HFEN (STI χ33)",      unit: "%", better: "lower",  dp: 1, short: "HFEN",      grp: "sti",
+    desc: "High-Frequency Error Norm vs STI χ33 (%). Lower is better." },
 };
-// Metric column order for tables: the METRICS declaration order minus the top-level resource fields
-// (runtime / peak memory / avg CPU), which metricCols() appends as trailing columns in that order.
+// Metric column order for the in-silico tables and the submission-page metric list, written out
+// rather than read off the METRICS declaration order: ordering is data, so adding a key to the
+// registry above can't silently reshuffle every table. The resource fields trail, and metricCols()
+// appends them separately because they live at the top level of a run, not under .metrics.
+const METRIC_ORDER = [
+  "mspe", "mev", "nrmse", "nrmse_detrend", "nrmse_tissue", "nrmse_blood", "nrmse_dgm",
+  "dgm_linearity", "calc_moment_dev", "calc_streak", "correlation", "xsim", "hfen", "coverage",
+  "para_leak", "dia_leak",
+  "runtime_s", "mem_peak_bytes", "cpu_cores_avg",
+];
 const RESOURCE_COLS = ["runtime_s", "mem_peak_bytes", "cpu_cores_avg"];
-const PREFERRED = Object.keys(METRICS).filter((k) => !RESOURCE_COLS.includes(k));
+const PREFERRED = METRIC_ORDER.filter((k) => !RESOURCE_COLS.includes(k));
+
+// Three χ-separation columns are DERIVED: index.json stores only the per-source pair, and the column
+// is its mean. They live beside METRICS rather than in it, because everything that walks METRICS
+// probes val(run, key) for a stored field — a derived key there would read as a metric every run is
+// missing. `from` names the pair to average; metricMeta()/metricVal() then treat stored and derived
+// keys alike, so a table orders, formats, sorts and ranks them without caring which it has.
+const DERIVED_METRICS = {
+  avg_mspe: { label: "Avg MSPE", unit: "%", better: "lower", dp: 1, from: ["para_mspe", "dia_mspe"],
+    desc: "Mean of the χ+ and χ− per-ROI MSPE (Ridani et al. 2026), the headline metric, comparable to the paper's published numbers. Lower is better." },
+  avg_ndt:  { label: "Avg detr. NRMSE", unit: "%", better: "lower", dp: 1, from: ["para_nrmse_detrend", "dia_nrmse_detrend"],
+    desc: "Mean of the χ+ and χ− linearly-detrended NRMSE: a voxelwise source-separation error, scale-independent (fair to a method's assumed Dr) and, unlike xSIM, sensitive to the magnitude error white-matter anisotropy induces. Lower is better." },
+  avg:      { label: "Avg xSIM", unit: "", better: "higher", dp: 3, from: ["para_xsim", "dia_xsim"],
+    desc: "Mean of the χ+ and χ− xSIM. Structural similarity only: lenient to the magnitude error anisotropy causes (the do-nothing null solve scores ~0.75 here), so it is not the ranking metric. Higher is better." },
+};
+
+// Display metadata for any column key, stored or derived; null for a key with neither.
+function metricMeta(key) { return METRICS[key] || DERIVED_METRICS[key] || null; }
+
+// Value of any column key for a run: a derived key is the mean of its stored pair (null unless the
+// whole pair is present), anything else is the stored field.
+function metricVal(run, key) {
+  const d = DERIVED_METRICS[key];
+  if (!d) return val(run, key);
+  const vs = d.from.map((k) => val(run, k));
+  return vs.some((v) => v == null) ? null : vs.reduce((a, b) => a + b, 0) / vs.length;
+}
+
+// Resolve an ordered list of metric keys into the column descriptors a table renders:
+// `label` the header text, `tip` its tooltip, `better` the sort direction, `grp` the reference tier.
+// `grouped` = the table's own headings already name the source or reference, so each column takes
+// its short label ("MSPE" under "χ+ paramagnetic") instead of the standalone one ("χ+ MSPE").
+function metricColumns(keys, grouped) {
+  return keys.map((k) => {
+    const m = metricMeta(k) || {};
+    return { key: k, label: (grouped && m.short) || m.label || k, tip: m.desc || "", better: m.better || "lower", grp: m.grp };
+  });
+}
+
+// Column order for the two leaderboards that score something other than a single χ map against a
+// single ground truth. Both resolve against the registry above via metricColumns().
+const CHISEP_ORDER = [
+  "avg_mspe", "para_mspe", "dia_mspe", "avg_ndt", "avg",
+  "para_xsim", "para_nrmse", "para_nrmse_detrend", "para_nrmse_dgm", "para_dgm_linearity",
+  "para_nrmse_blood", "para_calc_leak", "para_leak",
+  "dia_xsim", "dia_nrmse", "dia_nrmse_detrend", "dia_calc_moment_dev", "dia_calc_streak",
+  "dia_mev", "dia_iron_leak", "dia_leak",
+  "runtime_s",
+];
+const INVIVO_ORDER = [
+  "nrmse", "nrmse_detrend", "xsim", "correlation", "hfen",
+  "nrmse_sti", "nrmse_detrend_sti", "xsim_sti", "correlation_sti", "hfen_sti",
+];
 
 const STAGE_LABEL = {
   "field-mapping": "Field mapping",
@@ -387,7 +504,7 @@ function fmt(v, key) {
   if (v == null) return "—";
   if (key === "runtime_s") return fmtDuration(v);
   if (key === "mem_peak_bytes") return fmtBytes(v);
-  const m = METRICS[key] || { dp: 2, unit: "" };
+  const m = metricMeta(key) || { dp: 2, unit: "" };
   return Number(v).toFixed(m.dp) + (m.unit || "");
 }
 
@@ -461,4 +578,4 @@ function injectChrome() {
 document.addEventListener("DOMContentLoaded", injectChrome);
 
 // Exposed for module scripts (e.g. the NiiVue viewer, which must be a module for `import`).
-window.QSM = { GH, METRICS, STAGE_LABEL, MEDALS, loadRuns, loadAlgos, loadDatasets, loadRegistry, loadRepro, loadRunRegions, doiFor, val, fmt, fmtDuration, fmtBytes, metricCols, robustRange, heatScale, heatText, REGION_ORDER };
+window.QSM = { GH, METRICS, METRIC_ORDER, STAGE_LABEL, MEDALS, loadRuns, loadAlgos, loadDatasets, loadRegistry, loadRepro, loadRunRegions, doiFor, val, fmt, fmtDuration, fmtBytes, metricCols, metricMeta, metricVal, metricColumns, robustRange, heatScale, heatText, REGION_ORDER };
