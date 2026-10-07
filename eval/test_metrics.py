@@ -79,12 +79,14 @@ def test_correlation_honours_the_mask():
 def test_correlation_of_a_constant_is_zero_not_nan():
     """A constant map has zero variance, so the denominator vanishes: 0 by definition (the port
     lands within rounding of it — the n*sum(b^2) - sum(b)^2 form cancels to ~1e-10, not exactly 0),
-    never NaN or a rounding-noise ratio. An empty mask is 0 by definition too."""
+    never NaN or a rounding-noise ratio. An EMPTY mask is a different question with a different
+    answer — nothing to score, so NaN, which the leaderboard drops instead of ranking; see
+    tests/test_scorer_edge_cases.py."""
     x, mask = _field(), _mask()
     for c in (0.3, 1.0, 0.0):
         r = qe.correlation(x, np.full_like(x, c), mask)
         assert np.isfinite(r) and abs(r) < 1e-6, (c, r)
-    assert qe.correlation(x, x, np.zeros_like(mask)) == 0.0
+    assert np.isnan(qe.correlation(x, x, np.zeros_like(mask)))
 
 
 # ----------------------------------------------------------------------------------- xsim

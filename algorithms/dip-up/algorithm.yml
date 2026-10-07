@@ -37,7 +37,7 @@ citation: Zhu et al., Information 2025
 code_url: https://github.com/sunhongfu/DIP-UP
 # The DIP-UP repo ships NO LICENSE file. Treat as academic use; cite the paper.
 license: none declared (no LICENSE in repo); academic use, cite the paper
-image: ghcr.io/astewartau/qsm-ci/dip-up:v1
+image: ghcr.io/astewartau/qsm-ci/dip-up@sha256:f77e939cc42cae5a3f65005704d6d4f08e751799a9ac3237e051355851dfe3fb   # v1
 run: bash run.sh
 # runner: gpu records the requirement — DIP-UP's per-echo test-time DIP loop over a large 3-D net
 # needs a GPU. QSM-CI has no GPU runner yet, and on CPU it cannot finish even one echo in a usable
@@ -61,6 +61,14 @@ ci_notes:
   this submission to be byte-compatible with the released checkpoints (PHU-NET3D width 64, PhaseNet3D
   width 48), and the repo's hard-coded layer-width constant is patched to match each checkpoint.
 - >
+  INPUT MASKING (#282): the wrap-count network is fed BRAIN-MASKED phase (phase x mask, zero outside
+  the brain), matching the authors' demo convention, which recovers its tissue mask as `image != 0`.
+  Earlier revisions of this wrapper passed the raw whole-head phase. PHU-NET3D's Laplacian channel is
+  derived from that masked input; the DIP losses and the masking of the predicted wrap count are
+  unchanged. Measured in #282 on the 7 T simulation phantom (PhaseNet3D, echo 4, pretrained net
+  without the DIP loop): wrap-count accuracy 62.69% -> 71.53% on a 128^3 crop, 70.90% -> 72.31% on a
+  96^3 crop.
+- >
   Executed with GPU when the runner exposes one, else CPU. The reference recommends a 16–24 GB GPU;
   CPU runtime is substantially longer and not comparable to GPU timings.
 - >
@@ -72,8 +80,11 @@ parameters:
 - name: variant
   default: PHU-NET3D
   description: >
-    Base network. PHU-NET3D (2-channel [wrapped phase + Laplacian], width 64) is the paper default and
-    generally most accurate; PhaseNet3D (1-channel [wrapped phase], width 48) is the lighter variant.
+    Base network. PHU-NET3D (2-channel [wrapped phase + Laplacian], width 64) is the paper default;
+    PhaseNet3D (1-channel [wrapped phase], width 48) is the lighter variant. The paper's accuracy
+    ordering was not reproduced here: on the 7 T simulation phantom PhaseNet3D measured better wrap-count
+    accuracy at every echo and a better downstream chi (#282). Treat the default as the paper's, not as
+    the more accurate choice on this benchmark.
 - name: iterations
   default: 100
   description: >

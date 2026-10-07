@@ -30,7 +30,7 @@ citation: Xiong et al., NeuroImage 2024
 code_url: https://github.com/sunhongfu/MoDIP
 # The MoDIP repo ships NO LICENSE file. Treat as academic use; cite the paper.
 license: none declared (no LICENSE in repo); academic use, cite the paper
-image: ghcr.io/astewartau/qsm-ci/modip:v2
+image: ghcr.io/astewartau/qsm-ci/modip@sha256:44fec394890bf036cfddeece880d4d10a272f1e227a8f3febe2d456a80095986   # v2
 run: bash run.sh
 smoke_box: 32   # PR --smoke gate fits a 32^3 central box (fast); full score.yml run is unaffected
 # --smoke gate (evaluate.yml) only needs to prove the method RUNS + emits a valid χ map, not that it

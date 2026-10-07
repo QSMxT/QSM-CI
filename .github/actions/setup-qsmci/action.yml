@@ -1,0 +1,31 @@
+name: Install qsm-ci CLI + deps
+description: >-
+  Install eval/requirements.txt (plus any caller-specified extras) and the qsm-ci CLI itself from
+  the checked-out tree.
+
+inputs:
+  extras:
+    description: >-
+      Extra pip packages to install alongside eval/requirements.txt, space-separated — e.g.
+      "huggingface_hub", "SimpleITK", or "huggingface_hub SimpleITK". Empty installs the
+      requirements file only.
+    required: false
+    default: ""
+
+runs:
+  using: composite
+  steps:
+    # `.` installs the qsm-ci CLI onto PATH — pipeline.py --runner docker delegates each run to
+    # `qsm-ci run …` (one run path, no CI-side container builds).
+    - name: Install qsm-ci CLI + deps
+      # Composite steps do not inherit the caller's `defaults.run`, so every `run:` here names its
+      # shell; `bash` means `bash --noprofile --norc -eo pipefail`, same as the workflows use.
+      shell: bash
+      # The extras reach the shell through env rather than being interpolated into the `run:`
+      # script, the same rule the workflows apply to matrix-derived values.
+      env:
+        EXTRAS: ${{ inputs.extras }}
+      run: |
+        pip install -r eval/requirements.txt $EXTRAS   # unquoted on purpose: EXTRAS is a package list
+        pip install --upgrade setuptools setuptools_scm vcs-versioning wheel   # runner's build tools are too old for setuptools-scm
+        pip install --no-build-isolation .                       # build the CLI with the upgraded tools

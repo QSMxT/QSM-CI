@@ -110,81 +110,40 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      # Persistent self-hosted boxes: cancelling an Actions job kills the docker CLIENT process but
-      # NOT its container (`--rm` only cleans up after exit), so cancelled score runs used to leave
-      # MATLAB/DL containers silently consuming the shared 31 GB runner's memory for hours — until
-      # the oom-killer started taking out OTHER runs' jobs (observed 2026-08-26: ~27 GB of orphans).
-      # Reap running qsm-ci containers whose owning run (the qsmci.run label, stamped by
-      # qsm_ci.containers) is no longer active; unlabeled qsm-ci-* strays are reaped past 12 h.
-      # Anything unconfirmable is kept (fail-safe). No-op on hosted runners (fresh VM every job).
+      # Kill orphaned qsm-ci containers left behind by inactive runs or failed sibling jobs on the
+      # persistent self-hosted box, before this job allocates memory of its own. The reasoning,
+      # the fail-safe rules, and the 12 h stray cutoff live in the action.
+      # continue-on-error stays HERE, not on the action's inner step: a reaper that cannot confirm
+      # anything must not fail the job, and the caller is what decides that.
       - name: Reap orphaned qsm-ci containers (self-hosted)
         continue-on-error: true
-        env:
-          GH_TOKEN: ${{ github.token }}
-          REPO: ${{ github.repository }}
-          RUN_ID: ${{ github.run_id }}
-          QSMCI_JOB_TAG: ${{ github.run_id }}-${{ matrix.slug }}
-        run: |
-          command -v docker >/dev/null 2>&1 || exit 0
-          python3 - <<'PY'
-          import datetime, json, os, subprocess, urllib.request, urllib.error
-          def sh(*a):
-              return subprocess.run(a, capture_output=True, text=True).stdout.strip()
-          def api(path):
-              req = urllib.request.Request("https://api.github.com" + path,
-                  headers={"Authorization": "Bearer " + os.environ["GH_TOKEN"]})
-              with urllib.request.urlopen(req, timeout=10) as r:
-                  return json.load(r)
-          ids = sh("docker", "ps", "-q", "--filter", "label=qsmci").split()
-          ids += [i for i in sh("docker", "ps", "-q", "--filter", "name=qsm-ci-").split() if i not in ids]
-          now = datetime.datetime.now(datetime.timezone.utc)
-          me, mytag = os.environ["RUN_ID"], os.environ.get("QSMCI_JOB_TAG", "")
-          active_names = None   # in-progress job names of MY run, fetched once on first need
-          for c in ids:
-              info = json.loads(sh("docker", "inspect", c) or "[]")
-              if not info:
-                  continue
-              labels = info[0]["Config"].get("Labels") or {}
-              rid, jtag = labels.get("qsmci.run"), labels.get("qsmci.job")
-              kill = False
-              if rid == me:
-                  # Same run: my own / untagged containers are sacrosanct; another job's container is
-                  # kept ONLY while that job is still in progress (else it's a failed sibling's
-                  # leftover — the very orphans that cascaded OOM through a long run's later jobs).
-                  if not jtag or jtag == mytag:
-                      continue
-                  if active_names is None:
-                      try:
-                          active_names = [j["name"] for j in api(f"/repos/{os.environ['REPO']}/actions/runs/{me}/jobs?per_page=100&filter=latest").get("jobs", [])
-                                          if j.get("status") == "in_progress"]
-                      except Exception:
-                          active_names = None
-                  if active_names is None:
-                      continue                          # can't confirm -> keep
-                  sfx = jtag[len(me) + 1:]
-                  kill = not any(("(" + sfx + ",") in n or ("(" + sfx + ")") in n for n in active_names)
-              elif rid:
-                  try:
-                      kill = api(f"/repos/{os.environ['REPO']}/actions/runs/{rid}").get("status") == "completed"
-                  except urllib.error.HTTPError as e:
-                      kill = e.code == 404              # run gone entirely
-                  except Exception:
-                      kill = False                      # can't confirm -> keep
-              else:
-                  started = info[0]["State"]["StartedAt"][:19] + "+00:00"
-                  kill = (now - datetime.datetime.fromisoformat(started)).total_seconds() > 12 * 3600
-              if kill:
-                  print("reaping orphaned container %s (run %s, job %s)" % (c, rid or "-", jtag or "-"))
-                  sh("docker", "kill", c)
-          PY
+        uses: ./.github/actions/reap-containers
+        with:
+          # `matrix` is not visible inside a composite action, so this job's tag is passed in.
+          job-tag: ${{ github.run_id }}-${{ matrix.slug }}
 
-      - name: Install scorer deps
-        # `.` installs the qsm-ci CLI onto PATH — pipeline.py --runner docker delegates each run to
-        # `qsm-ci run …` (one run path, no CI-side container builds).
-        run: |
-          pip install -r eval/requirements.txt
-          pip install --upgrade setuptools setuptools_scm vcs-versioning wheel   # runner's build tools are too old for setuptools-scm
-          pip install --no-build-isolation .                       # build the CLI with the upgraded tools
+      # Pin the INTERPRETER the scoring stack is installed into. eval/requirements.txt pins
+      # numpy/scipy/nibabel/pillow exactly, but no job that installs it used to pin a Python
+      # version — each took its runner's default (3.10 on the self-hosted boxes, 3.12 hosted), so
+      # three different numpy minors were in use across the jobs that compute published metrics
+      # (#211). 3.12 is what the hosted scoring jobs already resolved to, and the pinned numpy
+      # 2.2.6 / scipy 1.15.3 ship wheels for 3.10 through 3.13 — so the dependency pin keeps
+      # working even if this interpreter pin later has to be reverted. Do NOT raise numpy to a
+      # 3.12-only release: that belt-and-braces property is deliberate.
+      #
+      # continue-on-error is load-bearing here: this job always runs on a self-hosted runner, which
+      # may have no Python tool cache, so setup-python has to download the interpreter. If that
+      # fails the job carries on with the runner's default Python — exactly today's behaviour —
+      # instead of taking the gate out entirely, which is how an earlier dependency pin broke every
+      # evaluate job. A fallback is visible rather than silent: scored rows record the interpreter
+      # that actually computed them in `ci_env` (scripts/pipeline.py, RunsFile.stamp).
+      - name: Pin the scoring interpreter
+        continue-on-error: true
+        uses: actions/setup-python@v7
+        with: { python-version: "3.12" }
+
+      - name: Install qsm-ci CLI + deps
+        uses: ./.github/actions/setup-qsmci
 
       # Route each method to the right phantom by its stage: χ-separation methods need a chisep-track
       # dataset (χ+/χ− ground truth + R2'/χ_total inputs), everything else the QSM scoring phantom.
@@ -281,9 +240,12 @@ jobs:
       # still runs `always()` steps), kill the containers IT started, so a long run's later
       # self-hosted jobs never inherit them. Only a whole-runner death skips this; the next job's
       # reaper covers that via the same-run job-tag check.
+      # `if:`/continue-on-error stay HERE: a composite's inner `if:` cannot see the caller's job
+      # status, and an inner continue-on-error would hide the failure inside the action.
       - name: Kill this job's containers
         if: always()
         continue-on-error: true
-        run: |
-          command -v docker >/dev/null 2>&1 || exit 0
-          [ -n "$QSMCI_JOB_TAG" ] && docker ps -q --filter "label=qsmci.job=$QSMCI_JOB_TAG" | xargs -r docker kill || true
+        uses: ./.github/actions/kill-containers
+        with:
+          # `matrix` is not visible inside a composite action, so this job's tag is passed in.
+          job-tag: ${{ github.run_id }}-${{ matrix.slug }}

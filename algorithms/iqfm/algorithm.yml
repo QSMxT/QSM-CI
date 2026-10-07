@@ -33,7 +33,7 @@ doi: 10.1016/j.neuroimage.2022.119410
 citation: Gao et al., NeuroImage 2022
 code_url: https://github.com/sunhongfu/iQSM
 license: See repository (used with author permission)
-image: ghcr.io/astewartau/qsm-ci/iqfm:v1
+image: ghcr.io/astewartau/qsm-ci/iqfm@sha256:980ba446e62fb9c864c231d180ec32ed732e39528e9de8d3a44fc6f9e08b8de6   # v1
 run: bash run.sh
 # iQFM is unwrap+bfr (produces a local field), so its focused rescore composes the field against the
 # whole dipole set (~27 CPU methods, incl. slow MEDI/FANSI/MATLAB). That row doesn't fit the hosted

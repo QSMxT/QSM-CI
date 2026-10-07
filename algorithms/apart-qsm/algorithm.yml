@@ -32,6 +32,10 @@ citation: >
 code_url: https://github.com/AMRI-Lab/APART-QSM
 # The APART-QSM repo ships NO LICENSE file. Treat as academic use; cite the paper.
 license: none declared (no LICENSE in repo); academic use, cite the paper
+# NOT digest-pinned, unlike every other submission (#211): this tag has never been pushed — the
+# registry 404s it — because the image cannot be built until the missing solver lands (BLOCKER
+# below). Nothing pulls it while ci_skip is true. Pin it to a digest when the image is first
+# published, as part of un-skipping this submission.
 image: ghcr.io/astewartau/qsm-ci/apart-qsm:v1
 run: bash run.sh
 runner: self-hosted   # iterative per-voxel a-map fit + repeated dipole inversions — slow, needs a long cap

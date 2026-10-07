@@ -71,7 +71,8 @@ documented so behavior is explicit:
 2. **PHU-NET3D's Laplacian channel is computed in Python.** The repo loaded a precomputed
    `wph_lap*.mat`; here the 2nd input channel is a discrete 3-D Laplacian of the wrapped phase
    (`_laplacian3d`). This matches the intent (wrapped-phase Laplacian) but is not byte-identical to
-   the repo's `.mat` Laplacian.
+   the repo's `.mat` Laplacian. It is taken **after** the brain mask is applied (see
+   *Input masking* below), so channel 2 is the Laplacian of the tensor the network is actually fed.
 3. **`tv_weight` exposed.** The reference loss is `TV + Laplacian` (unit TV weight). `tv_weight` is
    exposed for experimentation; the reference value is `1.0` and is not tuned.
 4. **No `net(...)*10000` softmax temperature.** `Demo_DIP_PHUNET3D.py` scales logits by 1e4 before the
@@ -106,6 +107,18 @@ the reference Laplacian field-mapping (corr +0.62, NRMSE 95% on the full volume)
 here comes from the **DIP optimization**, not the transferred wrap-count prior. More iterations (the
 repo uses 2000) and the full volume are expected to improve this further; those runs are GPU-scale
 (see RUNTIME/GPU CAVEAT) and were not completed on the CPU smoke box.
+
+**Input masking (`#282`).** Part of that transfer gap was self-inflicted: this wrapper used to pass
+the **raw whole-head phase** to the wrap-count net, using `mask.nii.gz` only in the DIP losses and on
+the predicted wrap count. The authors' `Demo_DIP_*.py` recovers its tissue mask as `image != 0`, so
+its input phase was already brain-masked — the pretrained net never saw background phase. The network
+input is now `phase × mask` (zero outside the brain) for **both** variants, and PHU-NET3D's Laplacian
+channel is derived from that masked input. Only the input changed; the losses and the masking of the
+predicted wrap count are untouched. Issue #282 measured the effect on the 7 T simulation phantom
+(PhaseNet3D, echo 4, pretrained net with no DIP loop): wrap-count accuracy **62.69% → 71.53%** on a
+128³ crop and **70.90% → 72.31%** on a 96³ crop, which also moves PhaseNet3D from *below* to *above*
+the trivial "predict no wraps anywhere" baseline. Those are that issue's numbers, not a run of this
+wrapper, and the correlation/NRMSE figures in the paragraph above predate the change.
 
 ## Parameters (`algorithm.yml`)
 

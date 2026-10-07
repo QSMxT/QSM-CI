@@ -1647,56 +1647,35 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
   <footer id="site-footer"></footer>
 
   <script>
-    // χ-separation metric catalog (para_*/dia_* aren't in the global METRICS registry). Drives the
-    // customisable column picker + table. `f` is the formatter kind: xsim / pct / num / sec.
-    const CHISEP_COLS = [
-      { key: "avg_mspe",            label: "Avg MSPE",        better: "lower",  f: "pct",  tip: "Mean of the χ+ and χ− per-ROI MSPE (Ridani et al. 2026), the headline metric, comparable to the paper's published numbers. Lower is better." },
-      { key: "para_mspe",           label: "χ+ MSPE",         better: "lower",  f: "pct",  tip: "χ+ per-ROI MSPE over the iron nuclei + GM. WM excluded (χ+ ~1 ppb → unstable %). Lower is better." },
-      { key: "dia_mspe",            label: "χ− MSPE",         better: "lower",  f: "pct",  tip: "χ− per-ROI MSPE over the fibre-bundle atlas WM sub-ROIs (Ridani et al. 2026, Fig 3). Lower is better." },
-      { key: "avg_ndt",             label: "Avg detr. NRMSE", better: "lower",  f: "pct",  tip: "Mean of the χ+ and χ− linearly-detrended NRMSE: a voxelwise source-separation error, scale-independent (fair to a method's assumed Dr) and, unlike xSIM, sensitive to the magnitude error white-matter anisotropy induces. Lower is better." },
-      { key: "avg",                 label: "Avg xSIM",        better: "higher", f: "xsim", tip: "Mean of the χ+ and χ− xSIM. Structural similarity only: lenient to the magnitude error anisotropy causes (the do-nothing null solve scores ~0.75 here), so it is not the ranking metric. Higher is better." },
-      { key: "para_xsim",           label: "χ+ xSIM",         better: "higher", f: "xsim", tip: "Structural similarity of the χ+ (paramagnetic, iron) map vs ground truth. Higher is better." },
-      { key: "para_nrmse",          label: "χ+ NRMSE",        better: "lower",  f: "pct",  tip: "Demeaned normalised RMS error of χ+ vs ground truth (%). Lower is better." },
-      { key: "para_nrmse_detrend",  label: "χ+ detr. NRMSE",  better: "lower",  f: "pct",  tip: "χ+ NRMSE after correcting a global linear scale (independent of a method's assumed Dr). Lower is better." },
-      { key: "para_nrmse_dgm",      label: "χ+ DGM NRMSE",    better: "lower",  f: "pct",  tip: "χ+ error in deep gray matter (iron) (%). Lower is better." },
-      { key: "para_dgm_linearity",  label: "χ+ DGM linearity", better: "lower", f: "num",  tip: "|1 − slope| of χ+ across DGM iron regions; 0 = perfect iron quantification. Lower is better." },
-      { key: "para_nrmse_blood",    label: "χ+ vein NRMSE",   better: "lower",  f: "pct",  tip: "χ+ error in venous blood (%). Lower is better." },
-      { key: "para_calc_leak",      label: "χ+ Ca leak",      better: "lower",  f: "num",  tip: "Mean |χ+| in the calcification (should be ~0): calcium wrongly bleeding into the paramagnetic map. Lower is better." },
-      { key: "para_leak",           label: "χ−→χ+ leak",      better: "lower",  f: "num",  tip: "Whole-brain leakage: regression slope of χ+ on the χ− ground truth. 0 = clean; positive = χ− bleeds into χ+; negative = over-separation (χ+ suppressed where χ− is strong)." },
-      { key: "dia_xsim",            label: "χ− xSIM",         better: "higher", f: "xsim", tip: "Structural similarity of the χ− (diamagnetic, myelin/calcium) map vs ground truth. Higher is better." },
-      { key: "dia_nrmse",           label: "χ− NRMSE",        better: "lower",  f: "pct",  tip: "Demeaned normalised RMS error of χ− vs ground truth (%). Lower is better." },
-      { key: "dia_nrmse_detrend",   label: "χ− detr. NRMSE",  better: "lower",  f: "pct",  tip: "χ− NRMSE after correcting a global linear scale (independent of a method's assumed Dr). The map anisotropy makes hardest. Lower is better." },
-      { key: "dia_calc_moment_dev", label: "χ− Ca dev",       better: "lower",  f: "num",  tip: "Deviation of the recovered calcification's susceptibility moment. Lower is better." },
-      { key: "dia_calc_streak",     label: "χ− streak",       better: "lower",  f: "num",  tip: "Streaking-artifact level around the calcification. Lower is better." },
-      { key: "dia_mev",             label: "χ− MEV",          better: "lower",  f: "pct",  tip: "Maximum error variation (Ridani et al. 2026, Fig 5): fractional drop in χ− error from fibres parallel to B0 to perpendicular. High = strongly orientation-dependent. A diagnostic, not a ranking metric." },
-      { key: "dia_iron_leak",       label: "χ− Fe leak",      better: "lower",  f: "num",  tip: "Mean |χ−| in DGM/veins (should be ~0): iron wrongly bleeding into the diamagnetic map. Lower is better." },
-      { key: "dia_leak",            label: "χ+→χ− leak",      better: "lower",  f: "num",  tip: "Whole-brain leakage: regression slope of χ− on the χ+ ground truth. 0 = clean; positive = χ+ bleeds into χ−; negative = over-separation (χ− suppressed where χ+ is strong)." },
-      { key: "runtime_s",           label: "Runtime",         better: "lower",  f: "sec",  tip: "Wall-clock runtime." },
-    ];
+    // χ-separation leaderboard columns: CHISEP_ORDER resolved against the shared METRICS registry
+    // (app.js), which carries each key's label, tooltip, unit and decimals. Drives the customisable
+    // column picker + table. Three of those keys are derived (DERIVED_METRICS), so read every value
+    // through metricVal() rather than val().
+    const CHISEP_COLS = metricColumns(CHISEP_ORDER);
     const CHISEP_COL = Object.fromEntries(CHISEP_COLS.map((c) => [c.key, c]));
 
     // In-vivo (2016 challenge) dipole leaderboard columns. Each method is scored against TWO
     // references: COSMOS (primary, unsuffixed metric keys) and STI χ33 (secondary, `_sti` keys, merged
     // in by pipeline.py). `grp` groups the columns under the two-tier "vs COSMOS" / "vs STI χ33"
-    // header; `f` is the formatter kind (xsim / pct). Runtime is rendered separately (shared by both).
-    const INVIVO_COLS = [
-      { key: "nrmse",              grp: "cosmos", label: "NRMSE",     better: "lower",  f: "pct",  tip: "Demeaned normalised RMS error vs the COSMOS reference (%). The headline 2016 challenge metric. Lower is better." },
-      { key: "nrmse_detrend",      grp: "cosmos", label: "Detrended", better: "lower", f: "pct",  tip: "NRMSE vs COSMOS after correcting a global linear scaling (contrast/gain-independent). Lower is better." },
-      { key: "xsim",               grp: "cosmos", label: "xSIM",      better: "higher", f: "xsim", tip: "QSM structural-similarity index vs COSMOS. 1 = identical. Higher is better." },
-      { key: "correlation",        grp: "cosmos", label: "Corr.",     better: "higher", f: "xsim", tip: "Pearson correlation vs COSMOS within the mask. Higher is better." },
-      { key: "hfen",               grp: "cosmos", label: "HFEN",      better: "lower",  f: "pct",  tip: "High-Frequency Error Norm vs COSMOS (%): Laplacian-of-Gaussian high-pass error, i.e. fine-detail fidelity. Lower is better." },
-      { key: "nrmse_sti",          grp: "sti",    label: "NRMSE",     better: "lower",  f: "pct",  tip: "Demeaned NRMSE vs the STI χ33 reference (%). Lower is better." },
-      { key: "nrmse_detrend_sti",  grp: "sti",    label: "Detrended", better: "lower", f: "pct",  tip: "Detrended NRMSE vs STI χ33 (%). Lower is better." },
-      { key: "xsim_sti",           grp: "sti",    label: "xSIM",      better: "higher", f: "xsim", tip: "QSM structural-similarity index vs STI χ33. Higher is better." },
-      { key: "correlation_sti",    grp: "sti",    label: "Corr.",     better: "higher", f: "xsim", tip: "Pearson correlation vs STI χ33. Higher is better." },
-      { key: "hfen_sti",           grp: "sti",    label: "HFEN",      better: "lower",  f: "pct",  tip: "High-Frequency Error Norm vs STI χ33 (%). Lower is better." },
-    ];
+    // header; only the χ33 keys carry it in the registry, since the unsuffixed ones are the plain
+    // in-silico metrics, so an unmarked key here is the COSMOS reference. Those same five keys also
+    // override the registry tooltip, which describes them against a ground truth rather than against
+    // COSMOS. Runtime is rendered separately (shared by both references).
+    const INVIVO_TIP = {
+      nrmse: "Demeaned normalised RMS error vs the COSMOS reference (%). The headline 2016 challenge metric. Lower is better.",
+      nrmse_detrend: "NRMSE vs COSMOS after correcting a global linear scaling (contrast/gain-independent). Lower is better.",
+      xsim: "QSM structural-similarity index vs COSMOS. 1 = identical. Higher is better.",
+      correlation: "Pearson correlation vs COSMOS within the mask. Higher is better.",
+      hfen: "High-Frequency Error Norm vs COSMOS (%): Laplacian-of-Gaussian high-pass error, i.e. fine-detail fidelity. Lower is better.",
+    };
+    const INVIVO_COLS = metricColumns(INVIVO_ORDER, true)
+      .map((c) => ({ ...c, grp: c.grp || "cosmos", tip: INVIVO_TIP[c.key] || c.tip }));
     const INVIVO_COL = Object.fromEntries(INVIVO_COLS.map((c) => [c.key, c]));
 
     // Merged component: the leaderboard (board) state + the findings figures, behind one tab bar.
     // Both halves share the same runs/algos load and the memo cache; tabs drive the leaderboard's
     // composed/isolated `view` via syncView().
-    let _reproReq = null;   // the one in-flight/settled results/repro.json fetch (see ensureRepro)
+    let _reproReq = null;   // the one in-flight/settled results/repro.json load (see ensureRepro)
 
     function results() {
       // Non-reactive memo cache shared by both halves (cache names are disjoint). Alpine getters
@@ -1820,7 +1799,9 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           if (q.get("variant") === "tuned") this.variant = "tuned";
           if (["matrix", "table"].includes(q.get("pipe"))) this.pipeView = q.get("pipe");
           if (["pipelines", "metrics", "regions", "speed", "explore"].includes(q.get("find"))) this.findView = q.get("find");
-          if (q.get("metric") && METRICS[q.get("metric")]) this.metric = q.get("metric");
+          // METRIC_ORDER, not METRICS: the registry also holds the χ-separation and STI χ33 keys,
+          // which this (in-silico) matrix has no column for.
+          if (METRIC_ORDER.includes(q.get("metric"))) this.metric = q.get("metric");
           if (q.get("fmap")) this.fmap = q.get("fmap");
           if (["board", "info", "findings"].includes(q.get("sub"))) { this.invivoView = q.get("sub"); this.chisepView = q.get("sub"); }
           if (["full", "greonly"].includes(q.get("cond"))) this.chisepCondition = q.get("cond");
@@ -2059,20 +2040,13 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           return !!(this.reproData && Object.keys(this.reproData.pipelines || {}).length) ||
             this.runs.some((r) => r.track === "repro");
         },
-        // Harmonization pipelines, filtered to methods QSM-CI still ships. The harvest (repro_eval.py)
-        // drops methods RETIRED from the manifest, so what's filtered here are the ones deliberately
-        // kept but `hidden` — a parked submission like the MATLAB amp-pe, whose data stays in
-        // repro.json so it can be revived. loadRuns() applies the same rule to the in-silico runs;
-        // this is the one chokepoint every harmonization table, chart and finding reads, so filtering
-        // here covers all of them (and still catches a retired method in an older payload).
-        _reproPipes() {
-          const raw = (this.reproData && this.reproData.pipelines) || {};
-          return _cache("reproLive", Object.keys(raw).length + "|" + this.algos.length, () => {
-            if (!this.algos.length) return raw;   // manifest not in yet: don't blank the whole view
-            const live = new Set(this.algos.filter((a) => !a.hidden).map((a) => a.slug));
-            return Object.fromEntries(Object.entries(raw).filter(([pipe]) => pipe.split("+").every((s) => live.has(s))));
-          });
-        },
+        // Harmonization pipelines, already filtered to methods QSM-CI still ships: loadRepro() (app.js)
+        // drops any pipeline with a step that is absent from the manifest (RETIRED) or flagged `hidden`
+        // (deliberately kept but parked — e.g. the MATLAB amp-pe, whose data stays in repro.json so it
+        // can be revived), which is the same rule loadRuns() applies to the in-silico runs. The viewer
+        // page shares that one loader, so both pages hide the same pipelines. This stays the single
+        // accessor every harmonization table, chart and finding reads.
+        _reproPipes() { return (this.reproData && this.reproData.pipelines) || {}; },
         reproProtoLabel(p) { return p.replace("pulseq-online", "Pulseq (online)").replace("pulseq-offline", "Pulseq (offline)"); },
         reproName(slug) { return slug.split("+").map((s) => this.algoName(s)).join(" → "); },
         // group-key parsers: test_retest / inter_protocol keys are "<scanner>-<protocol>"
@@ -3134,19 +3108,10 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           if (!on.length) return null;
           return { name: this.algoName(hl), n: on.length, withMed: this._pct(this._median(on)), withoutMed: this._pct(this._median(off)) };
         },
-        chiVal(r, k) {
-          const m = r.metrics || {};
-          if (k === "avg") return (m.para_xsim != null && m.dia_xsim != null) ? (m.para_xsim + m.dia_xsim) / 2 : null;
-          if (k === "avg_ndt") return (m.para_nrmse_detrend != null && m.dia_nrmse_detrend != null) ? (m.para_nrmse_detrend + m.dia_nrmse_detrend) / 2 : null;
-          if (k === "avg_mspe") return (m.para_mspe != null && m.dia_mspe != null) ? (m.para_mspe + m.dia_mspe) / 2 : null;
-          return val(r, k);
-        },
-        chiFmt(v, key) {
-          if (v == null) return ", ";
-          const f = (CHISEP_COL[key] || {}).f;
-          return f === "pct" ? v.toFixed(1) + "%" : f === "num" ? v.toFixed(3)
-            : f === "sec" ? fmt(v, "runtime_s") : fmt(v, "xsim");
-        },
+        // avg / avg_ndt / avg_mspe are derived columns (DERIVED_METRICS): the mean of a para_/dia_ pair,
+        // with no stored field of their own. metricVal() resolves those and plain keys alike.
+        chiVal(r, k) { return metricVal(r, k); },
+        chiFmt(v, key) { return v == null ? ", " : fmt(v, key); },
         chisepDisplayCols() {
           const sel = CHISEP_COLS.filter((c) => this.chisepSelectedCols.includes(c.key));
           return sel.length ? sel : CHISEP_COLS.filter((c) => c.key === "avg_mspe");
@@ -3217,10 +3182,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           if (this.invivoSortKey === k) this.invivoDir = this.invivoDir === "asc" ? "desc" : "asc";
           else { this.invivoSortKey = k; this.invivoDir = (INVIVO_COL[k] || {}).better === "lower" ? "asc" : "desc"; }
         },
-        invFmt(v, key) {
-          if (v == null) return ", ";
-          return (INVIVO_COL[key] || {}).f === "pct" ? v.toFixed(1) + "%" : fmt(v, "xsim");
-        },
+        invFmt(v, key) { return v == null ? ", " : fmt(v, key); },
         invMedal(i) {
           const better = (INVIVO_COL[this.invivoSortKey] || {}).better || "higher";
           const good = this.invivoDir === (better === "lower" ? "asc" : "desc");
@@ -3384,18 +3346,16 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         _famC(slug) { return FAM[this._fam(slug)].c; },
         _runId(slug) { const r = this.runs.find((x) => x.mode === "isolated" && !this._isInvivo(x) && x.stage === "dipole" && x.slug === slug && (x.variant || "default") === "default"); return r ? r.id : ""; },
         _pt(slug, tip) { const id = this._runId(slug); return `data-tip="${this._esc(tip)}"` + (id ? ` data-run="${id}"` : ""); },
+        // The shared matrix heat scale (app.js), paired with readable ink for text drawn on top of it.
         _heat(t) {
-          const st = [[190,107,107],[196,158,96],[110,168,134]];
-          const x = Math.max(0, Math.min(1, t)) * 2, i = Math.min(1, Math.floor(x)), f = x - i;
-          const c = st[i].map((a, k) => Math.round(a + (st[i + 1][k] - a) * f));
-          const lum = (0.299*c[0] + 0.587*c[1] + 0.114*c[2]) / 255;
-          return { fill: `rgb(${c[0]},${c[1]},${c[2]})`, text: lum > 0.62 ? "#1f2937" : "#fff" };
+          const fill = heatScale(t);
+          return { fill, text: heatText(fill) };
         },
         _diverge(r) {
           const neg = [225,29,72], mid = [226,232,240], pos = [16,185,129], t = Math.max(-1, Math.min(1, r));
           const c = mid.map((a, k) => Math.round(a + ((t >= 0 ? pos[k] : neg[k]) - a) * Math.abs(t)));
-          const lum = (0.299*c[0] + 0.587*c[1] + 0.114*c[2]) / 255;
-          return { fill: `rgb(${c[0]},${c[1]},${c[2]})`, text: lum > 0.62 ? "#1f2937" : "#fff" };
+          const fill = `rgb(${c[0]},${c[1]},${c[2]})`;
+          return { fill, text: heatText(fill) };
         },
         _spear(xs, ys) {
           const rank = (v) => { const o = [...v.keys()].sort((a, b) => v[a] - v[b]); const rk = Array(v.length); o.forEach((idx, p) => rk[idx] = p); return rk; };
@@ -3986,18 +3946,16 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         // Lazy-load (once) the harmonization regional sidecar (results/repro_regions.json): every
         // (pipeline × acquisition) run's per-aseg-region mean χ in ppb. ~4 MB, ~14 k runs, so it stays
         // off the common page load and is fetched the first time the harmonization Findings tab opens.
-        // The harmonization payload (results/repro.json, 8.7 MB). Fetched once, off the critical path:
-        // init() kicks this off on idle so the Harmonization tab can appear, and setDataset()/the
-        // deep-link path await it so opening that dataset always has its data. Memoised on the promise,
-        // not the result, so two callers share one fetch.
+        // The harmonization payload (results/repro.json, 8.7 MB), from the shared loader (app.js
+        // loadRepro(), which also drops the parked/retired pipelines — see _reproPipes()). Fetched
+        // once, off the critical path: init() kicks this off on idle so the Harmonization tab can
+        // appear, and setDataset()/the deep-link path await it so opening that dataset always has its
+        // data. Memoised on the promise, not the result, so two callers share one fetch.
         ensureRepro() {
           // _reproReq is module-scope, NOT a property on this: Alpine's reactive proxy around a Promise
           // breaks `await` (Promise.prototype.then called on an incompatible receiver).
           if (_reproReq) return _reproReq;
-          _reproReq = (async () => {
-            try { const r = await fetch("results/repro.json"); return r.ok ? await r.json() : null; }
-            catch { return null; }
-          })().then((d) => { this.reproData = d; return d; });
+          _reproReq = loadRepro().then((d) => { this.reproData = d; return d; });
           return _reproReq;
         },
         async ensureReproRegions() {
@@ -4027,9 +3985,10 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         _regionEntry(r) { const e = this.regions[r.id]; return (e && e.chi) || null; },
         _regionRuns() { return this._isoDip().filter((r) => this._regionEntry(r)); },
         _regionKey() { return [this.regionSel, this.runs.length, Object.keys(this.regions).length].join("|"); },
-        // Anatomical display order: DGM nuclei → thalamus/GM/WM → fluid/vessel/lesion.
+        // Anatomical display order (REGION_ORDER, shared with the submission page) first, then any
+        // id that order doesn't know about.
         regionIds() {
-          const order = ["1", "2", "3", "4", "5", "6", "7", "9", "8", "10", "11", "16", "13", "14", "15"];
+          const order = REGION_ORDER;
           const seen = new Set();
           this._regionRuns().forEach((r) => Object.keys(this._regionEntry(r).recon).forEach((k) => seen.add(k)));
           return order.filter((k) => seen.has(k)).concat([...seen].filter((k) => !order.includes(k)).sort());

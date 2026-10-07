@@ -24,7 +24,7 @@ citation: >
   source separation via a sub-voxel QSM network", arXiv:2506.13293, 2025.
 code_url: https://github.com/YangGaoUQ/SUSEP-Net
 license: academic use
-image: ghcr.io/astewartau/qsm-ci/susep-net:v1
+image: ghcr.io/astewartau/qsm-ci/susep-net@sha256:b4d175563f6b32f84b3af163a1ac5975cc8397393457c2ef83367db11056d975   # v1
 run: bash run.sh
 # Produces two source maps: chi-para (χ+) and chi-dia (χ−). Weights (SUSEPNet.pth, from the authors'
 # public Google-Drive release) + norm stats are not committed; the image bundles them. Runs via
