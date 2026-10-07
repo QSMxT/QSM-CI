@@ -155,11 +155,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - name: Deps
-        run: |
-          pip install -r eval/requirements.txt SimpleITK
-          pip install --upgrade setuptools setuptools_scm vcs-versioning wheel
-          pip install --no-build-isolation .
+      - name: Install qsm-ci CLI + deps
+        uses: ./.github/actions/setup-qsmci
+        with:
+          extras: SimpleITK
       - name: Fetch the target acquisition
         run: |
           python3 - <<'PY' | while read -r ph path; do scripts/fetch_dataset.sh "$ph" "$path"; done
@@ -300,11 +299,10 @@ jobs:
       - uses: actions/download-artifact@v8
         with: { name: repro-align, path: data/harmonization/_align }
 
-      - name: Install qsm-ci CLI + eval deps
-        run: |
-          pip install -r eval/requirements.txt huggingface_hub SimpleITK
-          pip install --upgrade setuptools setuptools_scm vcs-versioning wheel
-          pip install --no-build-isolation .
+      - name: Install qsm-ci CLI + deps
+        uses: ./.github/actions/setup-qsmci
+        with:
+          extras: huggingface_hub SimpleITK
 
       - name: Resolve dataset zip (scripts/datasets.json)
         id: ds
