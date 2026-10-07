@@ -8,12 +8,11 @@
 #   * the ci.yml jobs, which pin Python 3.11, resolved numpy 2.4.6 / scipy 1.17.1.
 # Three different numpy minors across the jobs that compute published metrics.
 #
-# PREREQUISITE, NOT YET FIXED: none of the jobs that install this file pin a Python version — they
-# all take the runner default (evaluate.yml `evaluate`, score.yml `score`/`merge`, repro.yml
-# `prep`/`score`/`evaluate`). So the interpreter still varies from 3.10 on self-hosted to 3.12 on
-# hosted. Pinning numpy and scipy removes the larger source of numeric drift, but the environment is
-# not fully reproducible until the interpreter is pinned too. That needs its own change, because
-# adding setup-python to the self-hosted scoring job is a runner-side risk, not a one-line edit.
+# The interpreter is pinned too, in the six jobs that install this file (evaluate.yml `evaluate`,
+# score.yml `score`/`merge`, repro.yml `prep`/`score`/`evaluate`): setup-python at 3.12. On the three
+# that can land on a self-hosted or GPU runner that pin is `continue-on-error`, so a runner with no
+# tool cache falls back to its own Python instead of breaking scoring — and `ci_env` on every scored
+# row records which interpreter actually computed it, so that fallback is visible rather than silent.
 #
 # The versions below are therefore the newest that install on EVERY runner in use: numpy 2.2.6 and
 # scipy 1.15.3 ship wheels for 3.10 through 3.13. Do not raise them to the 2.5.x/1.18.x the hosted

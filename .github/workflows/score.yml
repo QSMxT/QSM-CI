@@ -164,6 +164,26 @@ jobs:
           # `matrix` is not visible inside a composite action, so this job's tag is passed in.
           job-tag: ${{ github.run_id }}-${{ matrix.task.id }}
 
+      # Pin the INTERPRETER that computes the published metrics. eval/requirements.txt pins
+      # numpy/scipy/nibabel/pillow exactly, but no job that installs it used to pin a Python
+      # version — each took its runner's default (3.10 on the self-hosted boxes, 3.12 hosted), so
+      # three different numpy minors were in use across the jobs that compute published metrics
+      # (#211). 3.12 is what the hosted scoring jobs already resolved to, and the pinned numpy
+      # 2.2.6 / scipy 1.15.3 ship wheels for 3.10 through 3.13 — so the dependency pin keeps
+      # working even if this interpreter pin later has to be reverted. Do NOT raise numpy to a
+      # 3.12-only release: that belt-and-braces property is deliberate.
+      #
+      # continue-on-error is load-bearing here: `runs_on` comes from the plan job, so this leg can
+      # land on a self-hosted runner with no Python tool cache, where setup-python has to download
+      # the interpreter. If that fails the job carries on with the runner's default Python —
+      # exactly today's behaviour — instead of failing the scoring run, which is how an earlier
+      # dependency pin broke every evaluate job. A fallback is visible rather than silent: every
+      # scored row records the interpreter that actually computed it in `ci_env` (RunsFile.stamp).
+      - name: Pin the scoring interpreter
+        continue-on-error: true
+        uses: actions/setup-python@v7
+        with: { python-version: "3.12" }
+
       - name: Install qsm-ci CLI + deps
         uses: ./.github/actions/setup-qsmci
         with:
@@ -290,6 +310,13 @@ jobs:
           pattern: shard-*
           merge-multiple: true
           path: .
+
+      # Same interpreter as the score legs above (see the rationale there): this job re-derives and
+      # publishes numbers too, so it must not run the pinned numpy/scipy on a different Python.
+      # Hosted-only runner, so no continue-on-error — setup-python is cached here and a failure is
+      # a real failure.
+      - uses: actions/setup-python@v7
+        with: { python-version: "3.12" }
 
       - name: Merge deps
         run: pip install -r eval/requirements.txt huggingface_hub
