@@ -547,7 +547,7 @@
         {
           "name": "variant",
           "default": "PHU-NET3D",
-          "description": "Base network. PHU-NET3D (2-channel [wrapped phase + Laplacian], width 64) is the paper default and generally most accurate; PhaseNet3D (1-channel [wrapped phase], width 48) is the lighter variant.\n"
+          "description": "Base network. PHU-NET3D (2-channel [wrapped phase + Laplacian], width 64) is the paper default; PhaseNet3D (1-channel [wrapped phase], width 48) is the lighter variant. The paper's accuracy ordering was not reproduced here: on the 7 T simulation phantom PhaseNet3D measured better wrap-count accuracy at every echo and a better downstream chi (#282). Treat the default as the paper's, not as the more accurate choice on this benchmark.\n"
         },
         {
           "name": "iterations",
