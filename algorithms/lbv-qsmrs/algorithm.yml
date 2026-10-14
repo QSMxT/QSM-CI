@@ -18,9 +18,9 @@ authors:
 doi: 10.1002/nbm.3064
 code_url: https://github.com/astewartau/QSM.rs
 license: MIT
-image: ghcr.io/astewartau/qsm-ci/qsmxt:v9.4.0
+image: ghcr.io/astewartau/qsm-ci/qsmxt:v10.0.0   # the shared QSMxT engine image
 run: bash run.sh
 parameters:
   - name: tol
-    default: 1e-4
+    default: 1e-6
     description: convergence tolerance

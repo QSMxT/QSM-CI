@@ -13,5 +13,6 @@ CFG="$IN/config.json"
 if [ -f "$CFG" ]; then
   V=$(jq -r '.tol // empty' "$CFG"); [ -n "$V" ] && SET="$SET --tol $V"
   V=$(jq -r '.max_iter // empty' "$CFG"); [ -n "$V" ] && SET="$SET --max-iter $V"
+  V=$(jq -r '.pad_mm // empty' "$CFG"); [ -n "$V" ] && SET="$SET --pad-mm $V"
 fi
 qsmxt invert ilsqr "$IN/localfield.nii.gz" -m "$IN/mask.nii.gz" -o "$OUT/chimap.nii.gz" --b0-direction $B0 $SET

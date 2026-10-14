@@ -16,8 +16,8 @@ qsmxt invert tv /input/localfield.nii.gz -m /input/mask.nii.gz -o /output/chimap
 
 | parameter | default | description |
 |---|---|---|
-| `lambda` | 1e-4 | TV regularization |
-| `rho` | 1.0 | ADMM penalty |
-| `max_iter` | 1000 | iterations |
+| `lambda` | 2e-4 | TV regularization |
+| `rho` | 2e-2 | ADMM penalty |
+| `max_iter` | 250 | iterations |
 
 _Citations/DOIs are auto-generated best-effort references and should be verified._

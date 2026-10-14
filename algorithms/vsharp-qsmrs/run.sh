@@ -7,10 +7,13 @@ IN="${1:-/input}"; OUT="${2:-/output}"
 #   $QSMCI_SET_<NAME>  for each  qsm-ci run --set NAME=VALUE  override
 B0=$(jq -r '.B0_dir | join(" ")' "$IN/params.json")
 
+# QSMxT v10's default: no deconvolution (the SMV high-pass is not undone). `--set deconvolve=true`
+# restores the TSVD deconvolution, where `threshold` applies.
 # Parameter overrides (qsm-ci run --set NAME=VALUE) arrive as /input/config.json.
 SET=""
 CFG="$IN/config.json"
 if [ -f "$CFG" ]; then
+  V=$(jq -r '.deconvolve // empty' "$CFG"); [ -n "$V" ] && SET="$SET --deconvolve $V"
   V=$(jq -r '.threshold // empty' "$CFG"); [ -n "$V" ] && SET="$SET --threshold $V"
   V=$(jq -r '.max_radius // empty' "$CFG"); [ -n "$V" ] && SET="$SET --max-radius $V"
   V=$(jq -r '.min_radius // empty' "$CFG"); [ -n "$V" ] && SET="$SET --min-radius $V"

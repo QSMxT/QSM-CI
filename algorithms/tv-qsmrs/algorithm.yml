@@ -22,20 +22,20 @@ authors:
 doi: 10.1002/mrm.25029
 code_url: https://github.com/astewartau/QSM.rs
 license: MIT
-image: ghcr.io/astewartau/qsm-ci/qsmxt:v9.4.0
+image: ghcr.io/astewartau/qsm-ci/qsmxt:v10.0.0   # the shared QSMxT engine image
 run: bash run.sh
 parameters:
   - name: lambda
-    default: 1e-4
+    default: 2e-4
     tuned:
       sim: 3e-5
       invivo: 3e-4
     description: TV regularization
   - name: rho
-    default: 1.0
+    default: 2e-2
     description: ADMM penalty
   - name: max_iter
-    default: 1000
+    default: 250
     description: iterations
 
 # Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.

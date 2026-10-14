@@ -16,6 +16,6 @@ qsmxt invert tikhonov /input/localfield.nii.gz -m /input/mask.nii.gz -o /output/
 
 | parameter | default | description |
 |---|---|---|
-| `lambda` | 1e-4 | L2 regularization |
+| `lambda` | 0.01 | L2 regularization |
 
 _Citations/DOIs are auto-generated best-effort references and should be verified._

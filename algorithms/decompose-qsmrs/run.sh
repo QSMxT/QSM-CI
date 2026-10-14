@@ -29,8 +29,8 @@ if [ -f "$CFG" ]; then
   V=$(jq -r '.max_lm_iter // empty' "$CFG"); [ -n "$V" ] && SET="$SET --max-lm-iter $V"
 fi
 
-# -o is a PREFIX: the CLI writes {prefix}_paramagnetic.nii, _diamagnetic.nii and _total.nii
-# (uncompressed). Stage them in a scratch dir, then publish the two canonical artifacts gzipped.
+# -o is a PREFIX: the CLI writes {prefix}_desc-paramagnetic_Chimap.nii, _desc-diamagnetic_Chimap.nii
+# and _desc-total_Chimap.nii (uncompressed; the pipeline's BIDS names since qsmxt v10.0.0). Stage them in a scratch dir, then publish the two canonical artifacts gzipped.
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 qsmxt separate decompose \
@@ -40,6 +40,6 @@ qsmxt separate decompose \
 
 # qsmxt already emits χ+ ≥ 0 and the diamagnetic map as the positive magnitude |χ−| (it negates
 # qsm-core's signed χ− in commands/separate.rs::save_result), which is exactly the contract — so
-# these are a straight gzip, no sign flip. _total.nii (the signed net) is not a stage artifact.
-gzip -c "$WORK/dec_paramagnetic.nii" > "$OUT/chi-para.nii.gz"
-gzip -c "$WORK/dec_diamagnetic.nii" > "$OUT/chi-dia.nii.gz"
+# these are a straight gzip, no sign flip. The total map (the signed net) is not a stage artifact.
+gzip -c "$WORK/dec_desc-paramagnetic_Chimap.nii" > "$OUT/chi-para.nii.gz"
+gzip -c "$WORK/dec_desc-diamagnetic_Chimap.nii" > "$OUT/chi-dia.nii.gz"

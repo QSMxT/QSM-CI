@@ -16,7 +16,7 @@ qsmxt bgremove resharp /input/totalfield.nii.gz -m /input/mask.nii.gz -o /output
 
 | parameter | default | description |
 |---|---|---|
-| `radius` | 15.0 | SMV kernel radius (mm) |
-| `tik_reg` | 1e-3 | Tikhonov regularization |
+| `radius` | 6.0 | SMV kernel radius (mm) |
+| `tik_reg` | 1e-4 | Tikhonov regularization |
 
 _Citations/DOIs are auto-generated best-effort references and should be verified._

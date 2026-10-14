@@ -25,20 +25,27 @@ authors:
 doi: 10.1016/j.neuroimage.2015.02.041
 code_url: https://github.com/astewartau/QSM.rs
 license: MIT
-image: ghcr.io/astewartau/qsm-ci/qsmxt:v9.8.0
+image: ghcr.io/astewartau/qsm-ci/qsmxt:v10.0.0   # the shared QSMxT engine image
 run: bash run.sh
 parameters:
   - name: iterations
     default: 1000
     description: iterations
+  # α are in ppm (qsmxt >= v10.0.0), so a value means the same at every TE and field strength. The
+  # defaults are QSMxT's own: the Langkammer/nipype rad-domain α (0.0005 / 0.0015) at the 7 T / 4 ms
+  # reference, ÷ 2π·γ·B0·TE = 7.49. The tuned point predates v10 but was already ppm-valued (run.sh
+  # then passed a TE·B0 with 2π·γ·TE·B0 = 1), so it carries over unchanged; alpha0 is now listed with
+  # it because the default it was swept against (0.0015) is no longer the default.
   - name: alpha1
-    default: 0.0005
+    default: 6.675e-5
     tuned:
       sim: 1.5e-4
-    description: first-order (gradient) weight
+    description: first-order (gradient) weight, ppm
   - name: alpha0
-    default: 0.0015
-    description: second-order weight
+    default: 2.002e-4
+    tuned:
+      sim: 1.5e-3
+    description: second-order weight, ppm
 
 # Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
 tuning:
