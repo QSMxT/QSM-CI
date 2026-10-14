@@ -7,6 +7,7 @@ language: Rust
 family: iterative
 learning: none
 engine: QSMxT / QSM.rs
+qsmxt_args: [--no-medi-smv]   # run.sh passes --smv false; `qsmxt run` MEDI has SMV on by default
 inputs: [localfield, mask, params, magnitude]  # run.sh passes --magnitude unconditionally
 description: >
   Morphology Enabled Dipole Inversion: magnitude-guided edge regularization.
