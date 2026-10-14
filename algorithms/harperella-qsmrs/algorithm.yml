@@ -20,19 +20,19 @@ authors:
 doi: 10.1002/nbm.3056
 code_url: https://github.com/astewartau/QSM.rs
 license: MIT
-image: ghcr.io/astewartau/qsm-ci/qsmxt@sha256:3abc302e02d141f0a410488df197005c1f4443ff6e9a5f0da31aa1c9cb43ff10   # v9.7.0
+image: ghcr.io/astewartau/qsm-ci/qsmxt:v10.0.0   # the shared QSMxT engine image
 run: bash run.sh
 parameters:
   - name: radius
-    default: 5.0
+    default: 10.0
     tuned:
       sim: 3.0
     description: SMV kernel radius (mm)
   - name: max_iter
-    default: 100
+    default: 40
     description: iterations
   - name: tol
-    default: 1e-4
+    default: 1e-6
     description: tolerance
 
 # Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.

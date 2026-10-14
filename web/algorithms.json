@@ -729,7 +729,7 @@
       "parameters": [
         {
           "name": "radius",
-          "default": 5.0,
+          "default": 10.0,
           "tuned": {
             "sim": 3.0
           },
@@ -737,12 +737,12 @@
         },
         {
           "name": "max_iter",
-          "default": 100,
+          "default": 40,
           "description": "iterations"
         },
         {
           "name": "tol",
-          "default": "1e-4",
+          "default": "1e-6",
           "description": "tolerance"
         }
       ],
@@ -1014,18 +1014,13 @@
       ],
       "parameters": [
         {
-          "name": "radius",
-          "default": 5.0,
-          "description": "SMV kernel radius (mm)"
-        },
-        {
           "name": "max_iter",
-          "default": 100,
+          "default": 40,
           "description": "iterations"
         },
         {
           "name": "tol",
-          "default": "1e-4",
+          "default": "1e-6",
           "description": "tolerance"
         }
       ],
