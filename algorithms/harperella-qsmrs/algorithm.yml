@@ -2,14 +2,15 @@ name: HARPERELLA (QSM.rs)
 slug: harperella-qsmrs
 algorithm: harperella
 source: qsmrs
-stage: unwrap+bfr
+stage: bfr
 language: Rust
 family: iterative
 learning: none
-inputs: [phase, mask, params]  # the artifacts this method actually reads (a subset of the stage's inputs)
+inputs: [totalfield, mask]  # the artifacts this method actually reads
 engine: QSMxT / QSM.rs
 description: >
-  Integrated phase unwrapping + background field removal, operating on wrapped phase.
+  Laplacian-based background field removal (HARPERELLA's harmonic phase removal) on the
+  multi-echo total field. The published method also unwraps, starting from one wrapped echo.
 citation: Li et al., NMR Biomed 2014
 authors:
 - name: Wei Li
@@ -25,8 +26,6 @@ run: bash run.sh
 parameters:
   - name: radius
     default: 10.0
-    tuned:
-      sim: 3.0
     description: SMV kernel radius (mm)
   - name: max_iter
     default: 40
@@ -38,5 +37,5 @@ parameters:
 # Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
 tuning:
   date: 2026-08
-  status: tuned
-  note: "Swept radius on sim (sim-only). Tuned sim: radius 3."
+  status: pending
+  note: "Not tuned for this input. The 2026-08 sweep (radius, tuned sim 3) ran on the wrapped first echo; since qsmxt v10.0.0 QSM-CI gives it the multi-echo total field."
