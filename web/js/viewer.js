@@ -5,6 +5,7 @@
 import { Niivue } from "https://unpkg.com/@niivue/niivue@0.57.0/dist/index.js";
 import { renderResources } from "./resourceChart.js";
 import { autoWin, makeWindowControl, winControls } from "./windowControl.js";
+import { qsmxtCommand } from "./qsmxtCommand.js";
 
 const { loadRuns, loadAlgos, loadDatasets, loadRegistry, loadRepro, loadRunRegions, doiFor, METRICS, METRIC_ORDER, STAGE_LABEL, val, fmt, metricVal, metricColumns, robustRange, heatScale, REGION_ORDER } = window.QSM;
 
@@ -171,13 +172,7 @@ function runLine(slug, stage, truth, inputs) {
 
 // The qsm-ci command(s) that reproduce this run: one line for an isolated method, the
 // field-mapping → bfr → dipole chain for a composed pipeline.
-// QSM-CI reproduces the scored artifact; QSMxT runs the same method(s) end-to-end from BIDS. Which
-// slugs QSMxT can run is read from each algorithm's self-described `engine` (contains "QSM.rs"), with no
-// per-method hardcoding, and the qsmxt flag follows from the stage.
-const QSMXT_FLAG = {
-  bfr: "--bf-algorithm", "unwrap+bfr": "--bf-algorithm",
-  dipole: "--qsm-algorithm", "bfr+dipole": "--qsm-algorithm", "end-to-end": "--qsm-algorithm",
-};
+// The equivalent QSMxT command, when there is one, comes from qsmxtCommand.js.
 function renderHowToRun() {
   const el = $("how-to-run");
   if (!el) return;
@@ -185,7 +180,6 @@ function renderHowToRun() {
   // command generation applies: the section renders identically (bring your own NIfTIs; nothing to score).
   const bySlug = Object.fromEntries(algos.map((a) => [a.slug, a]));
   const stageOf = (s) => (bySlug[s] ? bySlug[s].stage : null);
-  const isQsmRs = (slug) => { const a = bySlug[slug]; return !!(a && a.engine && a.engine.includes("QSM.rs")); };
 
   // ---- QSM-CI command (reproduces the scored artifact) ----
   const lines = [];
@@ -205,19 +199,8 @@ function renderHowToRun() {
   const ciCmd = "pip install qsm-ci\n" + lines.join("\n");
   const chained = lines.length > 1;
 
-  // ---- QSMxT command (only when every method step is QSM.rs-backed) ----
-  const xtCmd = (() => {
-    if (!steps.length || !steps.every(isQsmRs)) return null;   // every step must run on the QSM.rs engine
-    const parts = ["qsmxt run /path/to/bids /path/to/output"];
-    for (const s of steps) {
-      const st = stageOf(s);
-      // Field mapping is the one stage QSMxT names by unwrapping algorithm, not by method slug.
-      if (st === "field-mapping") parts.push(`--unwrapping-algorithm ${s.replace(/-fieldmap$/, "")}`);
-      else if (QSMXT_FLAG[st]) parts.push(`${QSMXT_FLAG[st]} ${s}`);
-      else return null;   // a stage QSMxT has no flag for → no equivalent command
-    }
-    return parts.join(" \\\n  ");
-  })();
+  // ---- QSMxT command (only when every method step is QSM.rs-backed and has a qsmxt run flag) ----
+  const xtCmd = qsmxtCommand(steps, bySlug);
 
   el.classList.remove("hidden");  // the div ships with Tailwind `hidden`; clear the class, not just inline style
 
