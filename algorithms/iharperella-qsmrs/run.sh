@@ -3,8 +3,10 @@
 set -euo pipefail
 IN="${1:-/input}"; OUT="${2:-/output}"
 
-# iHARPERELLA operates on the first echo's phase; --te (that echo's TE) and --field-strength convert
-# its tissue-phase output from radians to ppm (qsmxt >= v9.7.0).
+# iHARPERELLA unwraps and removes the background from one WRAPPED echo: the first echo of the 4D
+# phase (qsmxt reads the first volume). Given that echo's --te and --field-strength, qsmxt >= v10.0.0
+# treats the input as wrapped phase in rad and writes the local field in ppm (without both flags it
+# would read the input as an unwrapped total field in ppm instead).
 B0=$(jq -r '.B0' "$IN/params.json")
 TE=$(jq -r '.TE[0]' "$IN/params.json")
 
@@ -12,7 +14,6 @@ TE=$(jq -r '.TE[0]' "$IN/params.json")
 SET=""
 CFG="$IN/config.json"
 if [ -f "$CFG" ]; then
-  V=$(jq -r '.radius // empty' "$CFG"); [ -n "$V" ] && SET="$SET --radius $V"
   V=$(jq -r '.max_iter // empty' "$CFG"); [ -n "$V" ] && SET="$SET --max-iter $V"
   V=$(jq -r '.tol // empty' "$CFG"); [ -n "$V" ] && SET="$SET --tol $V"
 fi

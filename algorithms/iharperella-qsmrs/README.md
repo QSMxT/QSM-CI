@@ -9,15 +9,18 @@ Improved HARPERELLA: iterative integrated unwrapping + background removal on wra
 ## How QSM-CI runs it
 
 ```bash
-qsmxt bgremove iharperella /input/phase.nii.gz -m /input/mask.nii.gz -o /output/localfield.nii.gz --b0-direction <B0>
+qsmxt bgremove iharperella /input/phase.nii.gz -m /input/mask.nii.gz -o /output/localfield.nii.gz --te <TE1> --field-strength <B0>
 ```
+
+iHARPERELLA works on one wrapped echo: qsmxt reads the first volume of the 4D phase, and `--te` (echo 1's
+TE) with `--field-strength` tell it that the input is wrapped phase in rad. The local field is
+written in ppm (qsmxt ≥ v10.0.0).
 
 ## Parameters
 
 | parameter | default | description |
 |---|---|---|
-| `radius` | 5.0 | SMV kernel radius (mm) |
-| `max_iter` | 100 | iterations |
-| `tol` | 1e-4 | tolerance |
+| `max_iter` | 40 | iterations |
+| `tol` | 1e-6 | tolerance |
 
 _Citations/DOIs are auto-generated best-effort references and should be verified._

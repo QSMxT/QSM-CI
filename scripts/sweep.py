@@ -69,7 +69,8 @@ GRIDS: dict[str, dict[str, list]] = {
     "medi-cornell": {"lambda": [100, 300, 600, 1000], "smv_radius": [3, 5]},
     # --- unwrap+bfr ---
     "harperella-qsmrs":  {"radius": [3.0, 5.0, 8.0]},
-    "iharperella-qsmrs": {"radius": [3.0, 5.0, 8.0]},
+    # iharperella-qsmrs: no radius knob (qsmxt v10 removed --iharperella-radius; it never reached
+    # the algorithm), so it is not swept.
     # --- chi-separation (iterative only; run with --dataset data/sim/chisep) ---
     # wavesep: wavelet-L1 sparsity weight (primary knob) x proximal-gradient step. Dr is left at the
     # phantom's known kernel (137) — sweeping a physical constant on the phantom that defines it is
