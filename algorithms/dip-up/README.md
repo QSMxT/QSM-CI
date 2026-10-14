@@ -35,11 +35,10 @@ is what the `field-mapping` stage is scored on. So this wrapper:
 2. performs the standard **per-voxel linear fit** of unwrapped phase vs TE — `slope =
    cov(TE, φ)/var(TE)` (rad/s) — and normalizes Hz → ppm by `B0` (`GAMMA = 42.576 MHz/T`).
 
-Step (2) is **identical** to the echo fit in `algorithms/laplacian-qsmci/recon.py` (the reference
-Laplacian field-mapping submission; the ROMEO submission, `algorithms/romeo-qsmrs`, has since moved
-to QSMxT's weighted multi-echo combination); only the unwrap operator (Laplacian → DIP-UP) changes.
-This is exactly what is being benchmarked: DIP-UP's unwrap swapped into the reference field-mapping
-pipeline. Output `totalfield.nii.gz` (ppm) is written on the input phase affine.
+Step (2) is the plain unweighted linear echo fit that QSM-CI's former in-repo Laplacian reference
+used. The current field-mapping submissions, `algorithms/laplacian-qsmrs` and
+`algorithms/romeo-qsmrs`, both use QSMxT's weighted multi-echo combination instead, so DIP-UP's
+total field differs from theirs in the echo combination as well as in the unwrap operator. Output `totalfield.nii.gz` (ppm) is written on the input phase affine.
 
 ## Units & I/O
 
@@ -102,7 +101,7 @@ legitimate finding and should be reported with numbers, not tuned away.
 (`iterations=0`) does NOT transfer to the phantom: totalfield correlation ≈ **−0.12** (full volume) /
 **−0.19** (48³ crop), NRMSE > 2300%. But the **test-time DIP refinement rescues it**: with just
 `iterations=30` on the 48³ crop, correlation rises to **+0.63** and NRMSE to **123%** — on par with
-the reference Laplacian field-mapping (corr +0.62, NRMSE 95% on the full volume). So the useful signal
+the former in-repo Laplacian field-mapping reference (corr +0.62, NRMSE 95% on the full volume). So the useful signal
 here comes from the **DIP optimization**, not the transferred wrap-count prior. More iterations (the
 repo uses 2000) and the full volume are expected to improve this further; those runs are GPU-scale
 (see RUNTIME/GPU CAVEAT) and were not completed on the CPU smoke box.

@@ -1,0 +1,22 @@
+name: Laplacian (QSM.rs)
+slug: laplacian-qsmrs
+algorithm: laplacian
+source: qsmrs
+stage: field-mapping
+language: Rust
+family: direct
+learning: none
+inputs: [phase, magnitude, mask, params]  # magnitude drives the phase-SNR weights of the B0 average
+engine: QSMxT / QSM.rs
+description: Multi-echo B0 field mapping by Laplacian phase unwrapping (via the QSMxT/QSM.rs engine,
+  `qsmxt fieldmap laplacian`) — each echo unwrapped with a DCT Poisson solve, then combined into a
+  phase-SNR-weighted B0 estimate. Alternative to ROMEO field mapping.
+authors:
+- name: Marvin A. Schofield
+- name: Yimei Zhu
+doi: 10.1364/OL.28.001194
+citation: Schofield & Zhu, Optics Letters 2003
+code_url: https://github.com/astewartau/QSM.rs
+license: MIT
+image: ghcr.io/astewartau/qsm-ci/qsmxt:v10.0.0   # the shared QSMxT engine image
+run: bash run.sh

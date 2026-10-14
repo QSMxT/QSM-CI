@@ -87,9 +87,10 @@ Your `run.sh` reads the consumed artifacts from `/input` and writes the produced
 environment.
 
 Working templates to copy:
-- Python on the shared base image: [`algorithms/laplacian-qsmci`](../algorithms/laplacian-qsmci)
-  (`field-mapping`) — just `recon.py` + `run.sh`, `image:` pointing at the shared `py-ref` deps
-  image. No Dockerfile.
+- Python: [`algorithms/ridani-null-qsmci`](../algorithms/ridani-null-qsmci) (`chi-separation`) —
+  `recon.py` + `run.sh` + a few-line Dockerfile installing numpy/scipy/nibabel.
+- Field mapping: [`algorithms/laplacian-qsmrs`](../algorithms/laplacian-qsmrs) (`field-mapping`,
+  a one-line `qsmxt fieldmap` call on the shared `qsmxt` image).
 - A one-line `run.sh` over a ready tool image: [`algorithms/tkd-qsmrs`](../algorithms/tkd-qsmrs)
   (`dipole`, QSM.rs via the `qsmxt` image).
 - MATLAB compiled to the free MATLAB Runtime: [`algorithms/tkd-qsmci`](../algorithms/tkd-qsmci) —
