@@ -9,7 +9,7 @@ then the echoes are combined into a single B0 estimate. The alternative to `rome
 - **Engine:** QSMxT / [QSM.rs](https://github.com/astewartau/QSM.rs) (Rust), CPU
 - **Reference:** Schofield & Zhu, *Optics Letters* 2003 ·
   doi:[10.1364/OL.28.001194](https://doi.org/10.1364/OL.28.001194)
-- **Image:** `ghcr.io/astewartau/qsm-ci/qsmxt:v9.23.0`, the shared QSMxT engine image
+- **Image:** `ghcr.io/astewartau/qsm-ci/qsmxt:v10.0.0`, the shared QSMxT engine image
   ([`algorithms/_qsmxt`](../_qsmxt))
 
 ## How QSM-CI runs it
