@@ -16,7 +16,8 @@ soon as it reaches real signal.
 off, so the published method is unchanged unless a caller opts in).
 
 All figures below: acquisition `cima-bridge-run1`, pipeline
-`laplacian-qsmci → vsharp-qsmrs → rts-qsmrs`, unless stated otherwise. χ windowed at ±0.12 ppm.
+Laplacian field mapping → `vsharp-qsmrs` → `rts-qsmrs`, unless stated otherwise (the Laplacian
+step was QSM-CI's former in-repo Python implementation, since replaced by `laplacian-qsmrs`). χ windowed at ±0.12 ppm.
 Variant shorthand: `eN` = global erosion by N; `sNN`/`rNN` = signal gate at NN% of the in-mask
 median on raw / coil-debiased RSS; `cN` = depth cap of N voxels.
 

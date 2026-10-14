@@ -16,7 +16,7 @@ IN = sys.argv[1] if len(sys.argv) > 1 else "results/repro_rois.json"
 OUT = sys.argv[2] if len(sys.argv) > 2 else "results/repro_regions.json"
 MANIFEST = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "web", "algorithms.json")
 
-# Methods the manifest still defines. A method REMOVED from algorithms.json (msmv) is gone from
+# Methods the manifest still defines. A method REMOVED from algorithms.json is gone from
 # QSM-CI, so its runs shouldn't be republished here on every harvest; `hidden: true` is the other
 # state — parked but revivable (the MATLAB amp-pe) — and those stay, hidden by the web. Same rule as
 # repro_eval.py's live_algo_slugs(), duplicated rather than imported so this stays a dependency-free

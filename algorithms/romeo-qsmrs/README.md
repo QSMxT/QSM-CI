@@ -3,7 +3,7 @@
 Combined multi-echo B0 field mapping with ROMEO (Dymerska, Eckstein et al., *MRM* 2021) through the
 QSMxT / QSM.rs engine's `qsmxt fieldmap romeo`: MCPC-3D-S phase-offset removal, template/temporal
 multi-echo unwrapping, and a magnitude/TE-weighted B0 estimate (`--b0-estimation weighted-avg`).
-The alternative to `laplacian-qsmci`; it replaced an earlier per-echo unwrap + unweighted linear
+The alternative to `laplacian-qsmrs`; it replaced an earlier per-echo unwrap + unweighted linear
 fit.
 
 - **Stage:** `field-mapping` — reads `phase` (multi-echo), `magnitude`, `mask`, `params`; writes
