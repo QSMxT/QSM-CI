@@ -9,8 +9,7 @@ learning: none
 engine: QSMxT / QSM.rs
 description: >
   Variable-radius SHARP: background removal by SMV filtering with a spatially varying kernel radius
-  (largest kernel that fits at each voxel). Since qsmxt v10.0.0 the SMV high-pass is not
-  deconvolved by default (deconvolve=true restores the TSVD deconvolution).
+  (largest kernel that fits at each voxel), then a truncated-SVD deconvolution of the SMV high-pass.
 citation: Wu et al., Magn Reson Med 2012
 authors:
 - name: Bing Wu
@@ -22,13 +21,14 @@ code_url: https://github.com/astewartau/QSM.rs
 license: MIT
 image: ghcr.io/astewartau/qsm-ci/qsmxt:v10.0.0   # the shared QSMxT engine image
 run: bash run.sh
-# Defaults are qsmxt v10.0.0's (`qsmxt bgremove vsharp`): no deconvolution, radii 12 → 1 mm.
+# Radii are qsmxt v10.0.0's defaults. QSM-CI deconvolves at threshold 0.05; qsmxt v10's own default
+# is no deconvolution (threshold 0.2 when on).
 parameters:
   - name: deconvolve
-    default: false
-    description: undo the SMV high-pass with a truncated-SVD deconvolution (off by default since qsmxt v10.0.0)
+    default: true
+    description: undo the SMV high-pass with a truncated-SVD deconvolution
   - name: threshold
-    default: 0.2
+    default: 0.05
     description: deconvolution (TSVD) threshold; only used with deconvolve=true
   - name: max_radius
     default: 12.0
@@ -39,6 +39,6 @@ parameters:
 
 # Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
 tuning:
-  date: 2026-08
-  status: default-optimal
-  note: "Swept threshold on sim (sim-only); best beat default by only +0.002 (noise). Left at default."
+  date: 2026-10
+  status: tuned
+  note: "Defaults chosen on sim with qsmxt v10.0.0: deconvolve at threshold 0.05 (xSIM 0.845) beat threshold 0.2 (0.820) and no deconvolution (0.803). The 2026-08 threshold sweep ran against a documented default (0.05) the engine never used (0.2)."
