@@ -19,21 +19,23 @@ authors:
 doi: 10.1002/mrm.24998
 code_url: https://github.com/astewartau/QSM.rs
 license: MIT
-image: ghcr.io/astewartau/qsm-ci/qsmxt@sha256:520e9cb1da23a5902f07b2641f01e7b30b8ae001c39176c070a5b38dabf40728   # v9.4.0
+image: ghcr.io/astewartau/qsm-ci/qsmxt:v10.0.0   # the shared QSMxT engine image
 run: bash run.sh
 parameters:
   - name: tol
-    default: 1e-4
+    default: 1e-6
     description: tolerance
   - name: max_iter
-    default: 100
+    default: 50
     description: iterations
-  - name: radius_factor
-    default: 2.0
-    description: × max voxel size
+  - name: radius
+    default: 5.0
+    description: SMV kernel radius (mm)
 
 # Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
 tuning:
   date: 2026-08
   status: default-optimal
   note: "Swept radius_factor on sim (sim-only); non-default grid points DNF'd, default retained."
+  # The DNFs were run.sh passing --radius-factor, a flag `qsmxt bgremove ismv` never accepted. The
+  # parameter is now `radius` (mm, the CLI's --radius), so a radius sweep would actually run.

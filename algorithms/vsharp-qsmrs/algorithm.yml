@@ -8,7 +8,9 @@ family: iterative
 learning: none
 engine: QSMxT / QSM.rs
 description: >
-  Variable-radius SHARP: SMV deconvolution with a spatially varying kernel radius.
+  Variable-radius SHARP: background removal by SMV filtering with a spatially varying kernel radius
+  (largest kernel that fits at each voxel). Since qsmxt v10.0.0 the SMV high-pass is not
+  deconvolved by default (deconvolve=true restores the TSVD deconvolution).
 citation: Wu et al., Magn Reson Med 2012
 authors:
 - name: Bing Wu
@@ -18,20 +20,22 @@ authors:
 doi: 10.1002/mrm.23000
 code_url: https://github.com/astewartau/QSM.rs
 license: MIT
-image: ghcr.io/astewartau/qsm-ci/qsmxt@sha256:42969df4f25d9a15c1b53e7bd4dc4b728e27a3e052ae1e64839aa2186aa8fd4f   # v9.17.0
+image: ghcr.io/astewartau/qsm-ci/qsmxt:v10.0.0   # the shared QSMxT engine image
 run: bash run.sh
-# Defaults confirmed against the pinned image (qsmxt v9.4.0 → QSM.rs v0.15.0 qsm-core v0.18.0):
-# threshold 0.05, max radius 12, min radius / step 1 — verified by reproducing the default output.
+# Defaults are qsmxt v10.0.0's (`qsmxt bgremove vsharp`): no deconvolution, radii 12 → 1 mm.
 parameters:
+  - name: deconvolve
+    default: false
+    description: undo the SMV high-pass with a truncated-SVD deconvolution (off by default since qsmxt v10.0.0)
   - name: threshold
-    default: 0.05
-    description: deconvolution threshold
+    default: 0.2
+    description: deconvolution (TSVD) threshold; only used with deconvolve=true
   - name: max_radius
     default: 12.0
-    description: max (starting) SMV kernel radius, × min voxel size
+    description: largest (starting) SMV kernel radius (mm)
   - name: min_radius
     default: 1.0
-    description: min radius / step between radii, × max voxel size
+    description: smallest SMV kernel radius (mm)
 
 # Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
 tuning:

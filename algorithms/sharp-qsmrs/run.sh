@@ -12,6 +12,6 @@ SET=""
 CFG="$IN/config.json"
 if [ -f "$CFG" ]; then
   V=$(jq -r '.threshold // empty' "$CFG"); [ -n "$V" ] && SET="$SET --threshold $V"
-  V=$(jq -r '.radius_factor // empty' "$CFG"); [ -n "$V" ] && SET="$SET --radius-factor $V"
+  V=$(jq -r '.radius // empty' "$CFG"); [ -n "$V" ] && SET="$SET --radius $V"
 fi
 qsmxt bgremove sharp "$IN/totalfield.nii.gz" -m "$IN/mask.nii.gz" -o "$OUT/localfield.nii.gz" --b0-direction $B0 $SET

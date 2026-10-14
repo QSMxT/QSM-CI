@@ -16,8 +16,8 @@ qsmxt invert rts /input/localfield.nii.gz -m /input/mask.nii.gz -o /output/chima
 
 | parameter | default | description |
 |---|---|---|
-| `delta` | 1.0 | regularization |
-| `mu` | 1.0 | smoothness |
-| `max_iter` | 1000 | iterations |
+| `delta` | 0.15 | regularization |
+| `mu` | 1e5 | smoothness |
+| `max_iter` | 20 | iterations |
 
 _Citations/DOIs are auto-generated best-effort references and should be verified._

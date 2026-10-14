@@ -16,6 +16,6 @@ qsmxt invert tkd /input/localfield.nii.gz -m /input/mask.nii.gz -o /output/chima
 
 | parameter | default | description |
 |---|---|---|
-| `threshold` | 0.1 | k-space threshold |
+| `threshold` | 0.15 | k-space threshold |
 
 _Citations/DOIs are auto-generated best-effort references and should be verified._

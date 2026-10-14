@@ -16,7 +16,7 @@ qsmxt invert nltv /input/localfield.nii.gz -m /input/mask.nii.gz -o /output/chim
 
 | parameter | default | description |
 |---|---|---|
-| `lambda` | 1e-4 | regularization |
-| `max_iter` | 1000 | iterations |
+| `lambda` | 1e-3 | regularization |
+| `max_iter` | 250 | iterations |
 
 _Citations/DOIs are auto-generated best-effort references and should be verified._

@@ -59,8 +59,12 @@ GRIDS: dict[str, dict[str, list]] = {
     # --- background-field removal (already scores high; sweep reg/threshold anyway) ---
     "resharp-qsmrs":  {"radius": [8.0, 12.0, 15.0, 20.0], "tik_reg": [1e-4, 1e-3, 5e-3]},
     "sharp-qsmrs":    {"threshold": [0.01, 0.02, 0.05, 0.1]},
-    "vsharp-qsmrs":   {"threshold": [0.01, 0.02, 0.05, 0.1]},
+    # V-SHARP's threshold is the TSVD deconvolution cut-off, which qsmxt >= v10 applies only with
+    # deconvolve=true (deconvolution is off by default), so the threshold sweep pins it on.
+    "vsharp-qsmrs":   {"deconvolve": ["true"], "threshold": [0.01, 0.02, 0.05, 0.1]},
     # --- bfr+dipole single-step spans (the over-regularised ones) ---
+    # TGV α are ppm (qsmxt >= v10). These grids predate v10 but were already ppm-valued: run.sh then
+    # fed the ppm field through a TE·B0 chosen so 2π·γ·TE·B0 = 1.
     "tgv-qsmrs":      {"alpha1": [0.0002, 0.0004, 0.0006, 0.001], "alpha0": [0.0008, 0.0015, 0.0025]},
     "medi-cornell": {"lambda": [100, 300, 600, 1000], "smv_radius": [3, 5]},
     # --- unwrap+bfr ---
@@ -95,7 +99,7 @@ REFINE: dict[str, dict[str, list]] = {
     "tsvd-qsmrs":    {"threshold": [0.02, 0.03, 0.04, 0.05, 0.06]},
     "nltv-qsmrs":    {"lambda": [3e-3, 1e-2, 3e-2, 1e-1]},
     "sharp-qsmrs":   {"threshold": [0.003, 0.005, 0.008, 0.01]},
-    "vsharp-qsmrs":  {"threshold": [0.1, 0.15, 0.2, 0.3]},
+    "vsharp-qsmrs":  {"deconvolve": ["true"], "threshold": [0.1, 0.15, 0.2, 0.3]},
     "harperella-qsmrs": {"radius": [1.0, 2.0, 3.0]},
     # λ climbs to 0.546 at 450 but diverges hard by 600 — pin the peak in the pre-cliff window.
     "medi-cornell": {"lambda": [460, 480, 500, 520, 540, 560], "smv_radius": [5]},
