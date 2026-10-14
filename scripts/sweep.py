@@ -67,7 +67,7 @@ GRIDS: dict[str, dict[str, list]] = {
     # fed the ppm field through a TE·B0 chosen so 2π·γ·TE·B0 = 1.
     "tgv-qsmrs":      {"alpha1": [0.0002, 0.0004, 0.0006, 0.001], "alpha0": [0.0008, 0.0015, 0.0025]},
     "medi-cornell": {"lambda": [100, 300, 600, 1000], "smv_radius": [3, 5]},
-    # --- unwrap+bfr ---
+    # --- bfr on the total field (HARPERELLA family) ---
     "harperella-qsmrs":  {"radius": [3.0, 5.0, 8.0]},
     # iharperella-qsmrs: no radius knob (qsmxt v10 removed --iharperella-radius; it never reached
     # the algorithm), so it is not swept.

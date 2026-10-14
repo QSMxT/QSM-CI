@@ -703,18 +703,17 @@
     {
       "slug": "harperella-qsmrs",
       "name": "HARPERELLA (QSM.rs)",
-      "stage": "unwrap+bfr",
+      "stage": "bfr",
       "inputs": [
-        "phase",
-        "mask",
-        "params"
+        "totalfield",
+        "mask"
       ],
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",
       "language": "Rust",
       "family": "iterative",
       "learning": "none",
-      "description": "Integrated phase unwrapping + background field removal, operating on wrapped phase.",
+      "description": "Laplacian-based background field removal (HARPERELLA's harmonic phase removal) on the multi-echo total field. The published method also unwraps, starting from one wrapped echo.",
       "citation": "Li et al., NMR Biomed 2014",
       "doi": "10.1002/nbm.3056",
       "code_url": "https://github.com/astewartau/QSM.rs",
@@ -730,9 +729,6 @@
         {
           "name": "radius",
           "default": 10.0,
-          "tuned": {
-            "sim": 3.0
-          },
           "description": "SMV kernel radius (mm)"
         },
         {
@@ -989,19 +985,18 @@
     {
       "slug": "iharperella-qsmrs",
       "name": "iHARPERELLA (QSM.rs)",
-      "stage": "unwrap+bfr",
+      "stage": "bfr",
       "inputs": [
-        "phase",
-        "mask",
-        "params"
+        "totalfield",
+        "mask"
       ],
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",
       "language": "Rust",
       "family": "iterative",
       "learning": "none",
-      "description": "Improved HARPERELLA: iterative integrated unwrapping + background removal on wrapped phase.",
-      "citation": "Li et al., NMR Biomed 2014",
+      "description": "Improved HARPERELLA: background field removal by directly minimising the weighted resulting field, on the multi-echo total field. The published method also unwraps, from one wrapped echo.",
+      "citation": "Li, Wu & Liu, Proc. ISMRM 23 (2015) p. 3313 (iHARPERELLA); Li et al., NMR Biomed 2014 (HARPERELLA)",
       "doi": "10.1002/nbm.3056",
       "code_url": "https://github.com/astewartau/QSM.rs",
       "license": "MIT",

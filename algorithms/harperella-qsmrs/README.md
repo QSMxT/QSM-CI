@@ -1,20 +1,21 @@
 # HARPERELLA
 
-Integrated phase unwrapping + background field removal, operating on wrapped phase.
+Laplacian-based background field removal (HARPERELLA's harmonic phase removal) on the multi-echo total field.
 
-- **Stage:** `unwrap+bfr` (phase → localfield, ppm)
+- **Stage:** `bfr` (totalfield → localfield, ppm)
 - **Engine:** [QSMxT](https://github.com/QSMxT/QSMxT) — the [QSM.rs](https://github.com/astewartau/QSM.rs) Rust implementation
-- **Reference:** Li et al., NeuroImage 2014 · doi:[10.1016/j.neuroimage.2014.08.029](https://doi.org/10.1016/j.neuroimage.2014.08.029)
+- **Reference:** Li et al., NMR Biomed 2014 · doi:[10.1002/nbm.3056](https://doi.org/10.1002/nbm.3056)
 
 ## How QSM-CI runs it
 
 ```bash
-qsmxt bgremove harperella /input/phase.nii.gz -m /input/mask.nii.gz -o /output/localfield.nii.gz --te <TE1> --field-strength <B0>
+qsmxt bgremove harperella /input/totalfield.nii.gz -m /input/mask.nii.gz -o /output/localfield.nii.gz
 ```
 
-HARPERELLA works on one wrapped echo: qsmxt reads the first volume of the 4D phase, and `--te` (echo 1's
-TE) with `--field-strength` tell it that the input is wrapped phase in rad. The local field is
-written in ppm (qsmxt ≥ v10.0.0).
+Without `--te`/`--field-strength`, qsmxt reads the input as an unwrapped total field in ppm, so
+HARPERELLA removes the background from the multi-echo field map, as `qsmxt run` does. The published
+method starts from one wrapped echo and unwraps it at the same time; given `--te` and
+`--field-strength`, qsmxt does that instead.
 
 ## Parameters
 

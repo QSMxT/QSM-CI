@@ -49,7 +49,7 @@ Spans (declare one of these if your method crosses stages):
 
 | Span | Consumes | Produces | Example |
 |------|----------|----------|---------|
-| `unwrap+bfr` | `phase`, `magnitude`, `mask`, `params` | `localfield` | HARPERELLA |
+| `unwrap+bfr` | `phase`, `magnitude`, `mask`, `params` | `localfield` | — |
 | `bfr+dipole` | `totalfield`, `mask`, `params`, `magnitude` | `chimap` | QSMART, TGV |
 | `end-to-end` | `phase`, `magnitude`, `mask`, `params` | `chimap` | TGV |
 

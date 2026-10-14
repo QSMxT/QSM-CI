@@ -2,15 +2,16 @@ name: iHARPERELLA (QSM.rs)
 slug: iharperella-qsmrs
 algorithm: iharperella
 source: qsmrs
-stage: unwrap+bfr
+stage: bfr
 language: Rust
 family: iterative
 learning: none
-inputs: [phase, mask, params]  # the artifacts this method actually reads (a subset of the stage's inputs)
+inputs: [totalfield, mask]  # the artifacts this method actually reads
 engine: QSMxT / QSM.rs
 description: >
-  Improved HARPERELLA: iterative integrated unwrapping + background removal on wrapped phase.
-citation: Li et al., NMR Biomed 2014
+  Improved HARPERELLA: background field removal by directly minimising the weighted resulting
+  field, on the multi-echo total field. The published method also unwraps, from one wrapped echo.
+citation: Li, Wu & Liu, Proc. ISMRM 23 (2015) p. 3313 (iHARPERELLA); Li et al., NMR Biomed 2014 (HARPERELLA)
 authors:
 - name: Wei Li
 - name: Alexandru V. Avram
