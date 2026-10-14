@@ -387,7 +387,7 @@ def _roi_source() -> tuple[str, list[dict]]:
 def live_algo_slugs() -> set[str]:
     """Method slugs the manifest still defines.
 
-    A method REMOVED from web/algorithms.json is gone from QSM-CI (msmv), so re-publishing its
+    A method REMOVED from web/algorithms.json is gone from QSM-CI, so re-publishing its
     pipelines on every harvest would keep a retired method alive on the site. `hidden: true` is a
     different state — a parked submission (the MATLAB amp-pe, superseded by the Rust port but kept
     revivable) — so those stay in the payload and the web keeps them out of sight.

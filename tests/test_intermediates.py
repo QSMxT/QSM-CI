@@ -19,11 +19,11 @@ from __future__ import annotations
 
 import pytest
 
-# The harmonization matrix's real shape: 2 field-mapping methods, 12 background-removal methods,
+# The harmonization matrix's real shape: 2 field-mapping methods, 11 background-removal methods,
 # and the bfr+dipole spans that compose with each field map.
-FM = ["laplacian-qsmci", "romeo-qsmrs"]
+FM = ["laplacian-qsmrs", "romeo-qsmrs"]
 BFR = ["bfrnet", "harperella-qsmrs", "iharperella-qsmrs", "iqfm", "ismv-qsmrs", "lbv-qsmrs",
-       "msmv", "pdf-qsmrs", "resharp-qsmrs", "sharp-qsmrs", "vsharp-qsmrs", "vsharp-sti"]
+       "pdf-qsmrs", "resharp-qsmrs", "sharp-qsmrs", "vsharp-qsmrs", "vsharp-sti"]
 SPANS = ["autoqsm", "nextqsm", "qsmart-qsmrs", "tfi-qsmrs", "tgv-qsmrs"]
 TRACK = "repro"  # harmonization: a no-ground-truth track, so no "gt" total-field source
 
@@ -98,10 +98,11 @@ def test_localfield_columns_partition_across_shards(pipeline):
 
 
 def test_a_shard_only_runs_the_field_maps_its_columns_consume(pipeline):
-    """plan_composed prunes `fmap` to the sources this shard actually needs: with 2 field maps × 12
-    bfr columns split 24 ways, each shard owns one column and so runs exactly one field map."""
-    for i in range(24):
-        p = _plan(pipeline, FM, BFR, [], i, 24)
+    """plan_composed prunes `fmap` to the sources this shard actually needs: with 2 field maps × 11
+    bfr columns split 22 ways, each shard owns one column and so runs exactly one field map."""
+    n = len(FM) * len(BFR)
+    for i in range(n):
+        p = _plan(pipeline, FM, BFR, [], i, n)
         assert [f["slug"] for f in p.fmap] == [next(t for (t, b) in p.col_owner if p.owns_col(t, b))]
 
 

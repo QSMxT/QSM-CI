@@ -74,7 +74,7 @@ META = {
     "inr-qsm":      ("Python", "deep-learning", "untrained",  "original author code"),
     "modip":        ("Python", "deep-learning", "untrained",  "original author code"),
     "wavesep":      ("Python", "iterative",     "none",       None),  # engine WaveSep
-    "laplacian-qsmci": ("Python", "direct",  "none",       "QSM-CI reference"),
+    "laplacian-qsmrs": ("Rust", "direct", "none", "QSMxT / QSM.rs"),
 }
 
 
