@@ -2840,7 +2840,7 @@
       "language": "Rust",
       "family": "iterative",
       "learning": "none",
-      "description": "Variable-radius SHARP: background removal by SMV filtering with a spatially varying kernel radius (largest kernel that fits at each voxel). Since qsmxt v10.0.0 the SMV high-pass is not deconvolved by default (deconvolve=true restores the TSVD deconvolution).",
+      "description": "Variable-radius SHARP: background removal by SMV filtering with a spatially varying kernel radius (largest kernel that fits at each voxel), then a truncated-SVD deconvolution of the SMV high-pass.",
       "citation": "Wu et al., Magn Reson Med 2012",
       "doi": "10.1002/mrm.23000",
       "code_url": "https://github.com/astewartau/QSM.rs",
@@ -2854,12 +2854,12 @@
       "parameters": [
         {
           "name": "deconvolve",
-          "default": false,
-          "description": "undo the SMV high-pass with a truncated-SVD deconvolution (off by default since qsmxt v10.0.0)"
+          "default": true,
+          "description": "undo the SMV high-pass with a truncated-SVD deconvolution"
         },
         {
           "name": "threshold",
-          "default": 0.2,
+          "default": 0.05,
           "description": "deconvolution (TSVD) threshold; only used with deconvolve=true"
         },
         {
