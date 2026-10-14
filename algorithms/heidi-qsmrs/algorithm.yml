@@ -1,0 +1,80 @@
+name: HEIDI (QSM.rs)
+slug: heidi-qsmrs
+algorithm: heidi
+source: qsmrs
+stage: dipole
+language: Rust
+family: iterative
+learning: none
+engine: QSMxT / QSM.rs
+description: >
+  Homogeneity Enabled Incremental Dipole Inversion. HEIDI splits k-space at the dipole cone and
+  treats the halves differently: well-conditioned coefficients (|D(k)| above a threshold) are taken
+  unchanged from a minimally regularised LSQR solution and held as exact constraints, while the
+  ill-conditioned coefficients inside the cone are recovered by minimising a weighted total variation
+  subject to those constraints. The "homogeneity" is that weighting — each gradient direction gets
+  its own mask, built by thresholding the gradient of the field map, so TV is applied where the field
+  is locally flat and released across anatomical edges. Solved with NESTA (Nesterov smoothing with
+  continuation on μ).
+citation: Schweser et al., NeuroImage 2012
+authors:
+- name: Ferdinand Schweser
+- name: Karsten Sommer
+- name: Andreas Deistung
+- name: Jürgen Rainer Reichenbach
+doi: 10.1016/j.neuroimage.2012.05.067
+code_url: https://github.com/astewartau/QSM.rs
+license: MIT
+image: ghcr.io/astewartau/qsm-ci/qsmxt:v10.0.0
+run: bash run.sh
+# HEIDI's seed is an LSQR solve, which takes magnitude as an optional SNR row weight — so the
+# magnitude reaches the cone coefficients HEIDI keeps. Absent, the seed uses uniform weights.
+optional_inputs:
+  - magnitude
+ci_notes:
+  - >
+    The seed is run here exactly as QSMxT's pipeline runs it: minimally regularised LSQR with its
+    output left unmasked, since HEIDI low-passes χ through the dipole cone and a hard mask edge rings.
+  - >
+    Upstream's shipped driver overrides the NESTA tolerance to machine epsilon, which disables early
+    stopping and always burns the full continuation × inner budget. QSM.rs keeps the paper's own
+    1e-3, so the continuation levels settle on their own — minutes rather than hours on a whole brain.
+parameters:
+  - name: cone_threshold
+    default: 0.1
+    description: "|D(k)| above which a coefficient is well-conditioned and kept from the LSQR seed"
+  - name: gradient_threshold
+    default: 3925.2
+    description: >-
+      field-gradient threshold in ppm/mm; below it a direction reads as homogeneous and its TV weight
+      switches on (upstream's 0.00105 in phase/(TE·B0), converted to ppm)
+  - name: gradient_mask_floor
+    default: 0.1
+    description: >-
+      TV weight kept where every direction reads as an edge; 0 reproduces upstream's shipped
+      binarised masks
+  - name: continuation_steps
+    default: 8
+    description: >-
+      NESTA continuation steps on μ — the dominant quality knob, and more is not better
+  - name: inner_iterations
+    default: 500
+    description: accelerated-gradient iterations per continuation step
+  - name: tol
+    default: 1e-3
+    description: relative objective change that ends an inner loop early
+  - name: lsqr_residual_weighting
+    default: field-scaled
+    description: >-
+      residual-field weight w of the LSQR seed; a smaller w leaves more real signal in χ rather than
+      in r, and HEIDI discards the streak-ridden cone anyway
+  - name: lsqr_max_iter
+    default: 400
+    description: LSQR seed iterations
+
+tuning:
+  date: 2026-09
+  status: unswept
+  note: >
+    Not yet swept on QSM-CI data. continuation_steps is the knob to sweep first (qsm-core's own
+    notes report a non-monotonic response on a phantom of this kind), then lsqr_residual_weighting.

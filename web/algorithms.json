@@ -913,6 +913,79 @@
       "ci_notes": []
     },
     {
+      "slug": "heidi-qsmrs",
+      "name": "HEIDI (QSM.rs)",
+      "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params",
+        "magnitude"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "language": "Rust",
+      "family": "iterative",
+      "learning": "none",
+      "description": "Homogeneity Enabled Incremental Dipole Inversion. HEIDI splits k-space at the dipole cone and treats the halves differently: well-conditioned coefficients (|D(k)| above a threshold) are taken unchanged from a minimally regularised LSQR solution and held as exact constraints, while the ill-conditioned coefficients inside the cone are recovered by minimising a weighted total variation subject to those constraints. The \"homogeneity\" is that weighting \u2014 each gradient direction gets its own mask, built by thresholding the gradient of the field map, so TV is applied where the field is locally flat and released across anatomical edges. Solved with NESTA (Nesterov smoothing with continuation on \u03bc).",
+      "citation": "Schweser et al., NeuroImage 2012",
+      "doi": "10.1016/j.neuroimage.2012.05.067",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT",
+      "authors": [
+        "Ferdinand Schweser",
+        "Karsten Sommer",
+        "Andreas Deistung",
+        "J\u00fcrgen Rainer Reichenbach"
+      ],
+      "parameters": [
+        {
+          "name": "cone_threshold",
+          "default": 0.1,
+          "description": "|D(k)| above which a coefficient is well-conditioned and kept from the LSQR seed"
+        },
+        {
+          "name": "gradient_threshold",
+          "default": 3925.2,
+          "description": "field-gradient threshold in ppm/mm; below it a direction reads as homogeneous and its TV weight switches on (upstream's 0.00105 in phase/(TE\u00b7B0), converted to ppm)"
+        },
+        {
+          "name": "gradient_mask_floor",
+          "default": 0.1,
+          "description": "TV weight kept where every direction reads as an edge; 0 reproduces upstream's shipped binarised masks"
+        },
+        {
+          "name": "continuation_steps",
+          "default": 8,
+          "description": "NESTA continuation steps on \u03bc \u2014 the dominant quality knob, and more is not better"
+        },
+        {
+          "name": "inner_iterations",
+          "default": 500,
+          "description": "accelerated-gradient iterations per continuation step"
+        },
+        {
+          "name": "tol",
+          "default": "1e-3",
+          "description": "relative objective change that ends an inner loop early"
+        },
+        {
+          "name": "lsqr_residual_weighting",
+          "default": "field-scaled",
+          "description": "residual-field weight w of the LSQR seed; a smaller w leaves more real signal in \u03c7 rather than in r, and HEIDI discards the streak-ridden cone anyway"
+        },
+        {
+          "name": "lsqr_max_iter",
+          "default": 400,
+          "description": "LSQR seed iterations"
+        }
+      ],
+      "ci_notes": [
+        "The seed is run here exactly as QSMxT's pipeline runs it: minimally regularised LSQR with its output left unmasked, since HEIDI low-passes \u03c7 through the dipole cone and a hard mask edge rings.\n",
+        "Upstream's shipped driver overrides the NESTA tolerance to machine epsilon, which disables early stopping and always burns the full continuation \u00d7 inner budget. QSM.rs keeps the paper's own 1e-3, so the continuation levels settle on their own \u2014 minutes rather than hours on a whole brain.\n"
+      ]
+    },
+    {
       "slug": "iharperella-qsmrs",
       "name": "iHARPERELLA (QSM.rs)",
       "stage": "unwrap+bfr",
@@ -1451,6 +1524,56 @@
         "Sulam J."
       ],
       "parameters": [],
+      "ci_notes": []
+    },
+    {
+      "slug": "lsqr-qsmrs",
+      "name": "LSQR (QSM.rs)",
+      "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params",
+        "magnitude"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "language": "Rust",
+      "family": "iterative",
+      "learning": "none",
+      "description": "Minimally regularised LSQR: the dipole inversion solved as one large least-squares system, leaning on LSQR's minimum-norm property instead of an explicit regularisation term. A residual-field unknown (weight w) absorbs what the dipole model cannot explain, and a single global offset absorbs any constant shift left by background removal. This is the map HEIDI is seeded from.",
+      "citation": "Schweser et al., Medical Physics 2010",
+      "doi": "10.1118/1.3481505",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT",
+      "authors": [
+        "Ferdinand Schweser",
+        "Andreas Deistung",
+        "Berengar Wendel Lehr",
+        "J\u00fcrgen Rainer Reichenbach"
+      ],
+      "parameters": [
+        {
+          "name": "residual_weighting",
+          "default": "field-scaled",
+          "description": "weight w on the residual-field unknowns \u2014 the only thing regularising the solve. Left unset it scales with field strength (0.2/9.4 per tesla, the QUASAR optimum); 0 drops the term and streaks"
+        },
+        {
+          "name": "global_offset",
+          "default": true,
+          "description": "fit a single global field offset alongside \u03c7"
+        },
+        {
+          "name": "tol",
+          "default": "1e-5",
+          "description": "LSQR convergence tolerance"
+        },
+        {
+          "name": "max_iter",
+          "default": 400,
+          "description": "LSQR iterations"
+        }
+      ],
       "ci_notes": []
     },
     {
