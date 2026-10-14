@@ -35,7 +35,5 @@ parameters:
 # Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
 tuning:
   date: 2026-08
-  status: default-optimal
-  note: "Swept radius_factor on sim (sim-only); non-default grid points DNF'd, default retained."
-  # The DNFs were run.sh passing --radius-factor, a flag `qsmxt bgremove ismv` never accepted. The
-  # parameter is now `radius` (mm, the CLI's --radius), so a radius sweep would actually run.
+  status: pending
+  note: "Not tuned. The 2026-08 radius sweep never ran a non-default point: run.sh passed --radius-factor, which qsmxt bgremove ismv never accepted, so every override DNF'd and the default was kept by elimination. Needs a radius sweep."

@@ -33,5 +33,5 @@ parameters:
 # Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
 tuning:
   date: 2026-08
-  status: default-optimal
-  note: "Swept radius on sim (sim-only); default already optimal. Left at default."
+  status: pending
+  note: "Not tuned. The 2026-08 sweep varied radius, which never reached iHARPERELLA (qsm-core ignores it; qsmxt v10 removed the flag), so every grid point was the default. No other parameter has been swept."
