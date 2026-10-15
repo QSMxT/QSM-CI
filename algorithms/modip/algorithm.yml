@@ -54,9 +54,10 @@ timeout_minutes: 2880
 # quadruple each one's wall-clock (the 12 h above was measured under exactly that contention).
 jobs: 1
 # Composed-matrix subset: a per-subject optimization cannot afford the full 3 × 11 column matrix,
-# so it is composed only with the ground-truth field map on the two reference BFR methods.
+# so it is composed only with the two reference BFR methods, on the ground-truth field map and the
+# two QSMxT field maps (a real field map is needed on tracks without ground truth, e.g. repro).
 compose:
-  fieldmaps: [gt]
+  fieldmaps: [gt, romeo-qsmrs, laplacian-qsmrs]
   bfrs: [vsharp-qsmrs, pdf-qsmrs]
 # Notes on how QSM-CI runs this method vs. its reference (shown on the submission page).
 ci_notes:
