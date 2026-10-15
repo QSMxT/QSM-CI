@@ -92,3 +92,13 @@ def test_cli_reads_done_markers_from_the_merged_artifacts(tmp_path, monkeypatch)
     doc = json.loads(state.read_text())
     assert doc["scored_sha"] == "abc" and doc["pending_slugs"] == ["big", "tkd"]   # iv-tkd had no marker either
     assert "unfinished: iv-tkd, f-big" in r.stdout
+
+
+def test_the_merge_job_checks_out_the_history_the_ancestry_check_needs():
+    """The tests above stub `ancestor`; in CI it is `git merge-base --is-ancestor` in score.yml's merge
+    job. A depth-1 checkout can't see the recorded scored_sha, so every merge took the add-only branch
+    and scored_sha sat at 8b288c2d from 2026-09-14 on, complete 92/92 runs included."""
+    wf = (ROOT / ".github" / "workflows" / "score.yml").read_text()
+    merge = wf[wf.index("  merge:"):]
+    checkout = merge[merge.index("actions/checkout"):merge.index("actions/download-artifact")]
+    assert "fetch-depth: 0" in checkout

@@ -305,6 +305,7 @@ jobs:
       actions: read     # the merge lock and the squash step look at other runs
     steps:
       - uses: actions/checkout@v7
+        with: { fetch-depth: 0 }   # score_state.py's is-ancestor check needs the recorded scored_sha
       - uses: actions/download-artifact@v8
         with:
           pattern: shard-*
