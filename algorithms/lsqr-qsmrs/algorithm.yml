@@ -1,0 +1,49 @@
+name: LSQR (QSM.rs)
+slug: lsqr-qsmrs
+algorithm: lsqr
+source: qsmrs
+stage: dipole
+language: Rust
+family: iterative
+learning: none
+engine: QSMxT / QSM.rs
+description: >
+  Minimally regularised LSQR: the dipole inversion solved as one large least-squares system, leaning
+  on LSQR's minimum-norm property instead of an explicit regularisation term. A residual-field
+  unknown (weight w) absorbs what the dipole model cannot explain, and a single global offset
+  absorbs any constant shift left by background removal. This is the map HEIDI is seeded from.
+citation: Schweser et al., Medical Physics 2010
+authors:
+- name: Ferdinand Schweser
+- name: Andreas Deistung
+- name: Berengar Wendel Lehr
+- name: Jürgen Rainer Reichenbach
+doi: 10.1118/1.3481505
+code_url: https://github.com/astewartau/QSM.rs
+license: MIT
+image: ghcr.io/astewartau/qsm-ci/qsmxt:v10.0.0
+run: bash run.sh
+# The residual-field weight is an SNR-style term, so the solve takes magnitude as an optional row
+# weight (normalised to unit mean inside the mask). Absent, the rows are weighted uniformly.
+optional_inputs:
+  - magnitude
+parameters:
+  - name: residual_weighting
+    default: field-scaled
+    description: >-
+      weight w on the residual-field unknowns — the only thing regularising the solve. Left unset it
+      scales with field strength (0.2/9.4 per tesla, the QUASAR optimum); 0 drops the term and streaks
+  - name: global_offset
+    default: true
+    description: fit a single global field offset alongside χ
+  - name: tol
+    default: 1e-5
+    description: LSQR convergence tolerance
+  - name: max_iter
+    default: 400
+    description: LSQR iterations
+
+tuning:
+  date: 2026-09
+  status: unswept
+  note: "Not yet swept. residual_weighting is the knob worth a sweep; it defaults to the field-scaled value."
