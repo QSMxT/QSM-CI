@@ -1,4 +1,31 @@
-numpy>=1.24
-scipy>=1.10
-nibabel>=5.0
-pillow>=10.0
+# Scoring environment, pinned exactly. Metric values depend on the numpy/scipy build that computes
+# them, so a floating lower bound meant two runs of the same method could score differently for no
+# reason the leaderboard records (#211).
+#
+# These were floating (numpy>=1.24, scipy>=1.10, ...) and had already drifted far apart in practice:
+#   * the self-hosted scoring runner offers numpy only up to 2.2.6, i.e. Python 3.10;
+#   * a 2026-09-23 scoring job on ubuntu-latest resolved numpy 2.5.3 / scipy 1.18.1 under 3.12;
+#   * the ci.yml jobs, which pin Python 3.11, resolved numpy 2.4.6 / scipy 1.17.1.
+# Three different numpy minors across the jobs that compute published metrics.
+#
+# The interpreter is pinned too, in the six jobs that install this file (evaluate.yml `evaluate`,
+# score.yml `score`/`merge`, repro.yml `prep`/`score`/`evaluate`): setup-python at 3.12. On the three
+# that can land on a self-hosted or GPU runner that pin is `continue-on-error`, so a runner with no
+# tool cache falls back to its own Python instead of breaking scoring — and `ci_env` on every scored
+# row records which interpreter actually computed it, so that fallback is visible rather than silent.
+#
+# The versions below are therefore the newest that install on EVERY runner in use: numpy 2.2.6 and
+# scipy 1.15.3 ship wheels for 3.10 through 3.13. Do not raise them to the 2.5.x/1.18.x the hosted
+# runner drifted to — those require Python >=3.12 and break the self-hosted scoring job outright,
+# which is exactly how the first attempt at this pin failed.
+#
+# Rows already on the leaderboard were produced over months on whichever runner picked up the task,
+# and are NOT rescored, so they are not all mutually comparable at this precision. This pin fixes
+# that going forward rather than retroactively.
+#
+# To move the pin: check the oldest runner still resolves it, bump here, then rescore or document
+# the discontinuity.
+numpy==2.2.6
+scipy==1.15.3
+nibabel==5.4.2
+pillow==12.3.0

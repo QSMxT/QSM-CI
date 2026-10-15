@@ -153,16 +153,34 @@ def _dipup_unwrap_echo(net, in_ch, phase_np, mask_np, device, *, n_iter, lr, lr_
 
     Pretrained-net wrap-count prediction + test-time DIP refinement (Laplacian + masked-TV losses),
     following the repo's Demo_DIP_*/inference.py: the softmax over 9 wrap classes gives a per-voxel
-    expected count, shifted by `shift_base`, masked, and added (x 2pi) to the wrapped phase.
+    expected count, shifted by `shift_base`, masked, and added (x 2pi) to the wrapped phase. The net
+    is fed BRAIN-MASKED phase (issue #282); the losses and the output still use the raw phase.
     """
     image = torch.from_numpy(phase_np).float().unsqueeze(0).unsqueeze(0).to(device)  # (1,1,X,Y,Z)
     tissue_mask = torch.from_numpy(mask_np.astype(np.float32)).unsqueeze(0).unsqueeze(0).to(device)
 
+    # Pre-mask the NETWORK INPUT (issue #282). This wrapper used to hand the net the raw whole-head
+    # phase, using the mask only in the DIP losses and on the predicted wrap count. The pretrained
+    # net never saw background phase: the authors' Demo_DIP_*.py recovers its tissue mask as
+    # `image != 0`, so its input phase was already brain-masked (zero outside the brain). Matching
+    # that convention removes a domain shift for free — #282 measured PhaseNet3D wrap-count accuracy
+    # at echo 4 rising 62.69% -> 71.53% (128^3 crop) / 70.90% -> 72.31% (96^3 crop) on the sim
+    # phantom. ONLY the input changes here: `image` below still carries the unmasked wrapped phase
+    # for the Laplacian-consistency loss and for rebuilding the unwrapped phase.
+    image_masked = image * tissue_mask
+
     if in_ch == 2:  # PHU-NET3D: 2nd channel is the Laplacian of the wrapped phase
-        lap = _laplacian3d(image)
-        features = torch.cat([image, lap], dim=1)
+        # Laplacian taken AFTER the mask, so channel 2 is the Laplacian of the tensor the net is
+        # actually fed and no out-of-brain phase leaks back in through it (masking afterwards instead
+        # would leave the brain-edge voxels carrying exactly the background phase we are removing).
+        # That does put a step at the mask boundary, but only in a one-voxel rind where the unmasked
+        # alternative is equally out-of-distribution, and #282 measured this channel to earn little
+        # either way (7- vs 27-point kernel within ~2 pp; zeroing it entirely costs ~1.5-6 pp), so
+        # the ordering cannot outweigh the gain from masking channel 1.
+        lap = _laplacian3d(image_masked)
+        features = torch.cat([image_masked, lap], dim=1)
     else:           # PhaseNet3D: wrapped phase only
-        features = image
+        features = image_masked
 
     net.eval()
     opt = optim.RMSprop(net.parameters(), lr=lr)

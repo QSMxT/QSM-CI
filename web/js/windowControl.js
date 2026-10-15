@@ -11,7 +11,8 @@
 // Every live control, so callers can repaint all histograms at once (resize / theme toggle).
 export const winControls = [];
 
-const autoWin = (vol) => { vol.cal_min = vol.robust_min ?? vol.global_min; vol.cal_max = vol.robust_max ?? vol.global_max; };
+// The automatic window the Auto button restores; also used by viewer.js when it (re)loads a volume.
+export const autoWin = (vol) => { vol.cal_min = vol.robust_min ?? vol.global_min; vol.cal_max = vol.robust_max ?? vol.global_max; };
 const fmtWin = (v) => (Math.abs(v) >= 100 ? v.toFixed(0) : Math.abs(v) >= 1 ? v.toFixed(2) : v.toPrecision(2));
 const fmtNum = (v) => String(+Number(v).toPrecision(4));
 

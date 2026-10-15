@@ -21,9 +21,12 @@ from __future__ import annotations
 
 import argparse
 import concurrent.futures as _cf
+import importlib
+import importlib.metadata
 import json
 import math
 import os
+import platform
 import shutil
 import subprocess
 import sys
@@ -752,6 +755,41 @@ def _clear_dnf_results(run):
         shutil.rmtree(d, ignore_errors=True)
 
 
+_SCORING_ENV: "dict | None" = None
+
+
+def scoring_env() -> dict:
+    """The environment that computed this job's metrics: the interpreter plus the numeric stack.
+
+    Read out of the MODULES THAT ARE ACTUALLY LOADED (`numpy.__version__`), not out of
+    eval/requirements.txt — the requirement file states what was asked for, this states what ran.
+    Metric values depend on the numpy/scipy build (#211): the requirements are pinned now, but the
+    jobs that install them historically took whatever interpreter their runner defaulted to (3.10
+    on the self-hosted scoring box, 3.12 hosted), and the rows already on the leaderboard were
+    produced over months across all of them. Stamping it per row is what makes a published number
+    say which environment produced it, and what will show whether an interpreter pin is really in
+    effect on every runner.
+
+    Best-effort per package: a package that is absent or exposes no `__version__` is simply left
+    out rather than sinking a scored row over a version string. Computed once per process."""
+    global _SCORING_ENV
+    if _SCORING_ENV is None:
+        env = {"python": platform.python_version()}
+        # pillow is imported as PIL; qsm_eval's QC renders go through it, so its build is part of
+        # the scoring environment too.
+        for key, mod in (("numpy", "numpy"), ("scipy", "scipy"), ("nibabel", "nibabel"),
+                         ("pillow", "PIL")):
+            try:
+                env[key] = str(importlib.import_module(mod).__version__)
+            except Exception:  # noqa: BLE001 — not installed, or no __version__: fall back to the dist
+                try:
+                    env[key] = importlib.metadata.version(key)
+                except Exception:  # noqa: BLE001 — nothing to record for this package
+                    pass
+        _SCORING_ENV = env
+    return _SCORING_ENV
+
+
 class RunsFile(list):
     """The `runs` list of a --runs-out job, persisted after EVERY append/extend (atomic replace).
 
@@ -775,13 +813,34 @@ class RunsFile(list):
     @staticmethod
     def stamp(row: dict) -> dict:
         """Tag a row with the CI run that scored it (QSMCI_RUN = "<run id>.<attempt>", QSMCI_SHA =
-        the commit). Score runs overlap, so merge_index.py uses this to make sure an OLDER run's
-        merge landing late never overwrites a NEWER run's row (or its volumes on the Hub)."""
+        the commit) AND with the environment that computed its metrics (`ci_env`, see scoring_env).
+
+        Score runs overlap, so merge_index.py uses `ci_run` to make sure an OLDER run's merge
+        landing late never overwrites a NEWER run's row (or its volumes on the Hub).
+
+        `ci_env` goes on the ROW, not once per index.json, deliberately:
+          * index.json is assembled by merge_index.py from the LATEST index on main plus the rows
+            this run changed — a document-level key written here would be read off the current
+            index and dropped, so it could not survive a merge at all;
+          * its rows are not one environment. They are merged from many runs on different runners
+            (self-hosted and hosted, historically different interpreters), so a single index-wide
+            value would be false for most of them;
+          * per row it also stays inside merge_index's changed-row diff: a rescore in a different
+            environment registers as a changed row and is re-applied, instead of silently keeping
+            the old row's provenance.
+        The cost of repeating the same constant is small and bounded: over the current 1168 rows,
+        +8% raw (2.15 -> 2.33 MiB) but only +3 KB gzipped (0.233 -> 0.236 MiB), which is what the
+        website actually downloads.
+
+        Stamped under exactly the same condition as `ci_run` — a CI run id is present, and the row
+        is not already stamped by another run. Local runs stay unstamped (their rows are scratch and
+        are never published) and an already-stamped row keeps the environment it was scored in."""
         run, sha = os.environ.get("QSMCI_RUN"), os.environ.get("QSMCI_SHA")
         if run and "ci_run" not in row:
             row["ci_run"] = run
             if sha:
                 row["ci_sha"] = sha
+            row["ci_env"] = dict(scoring_env())   # a copy per row: rows stay independent documents
         return row
 
     def append(self, row) -> None:

@@ -1,0 +1,33 @@
+name: Kill this job's containers
+description: >-
+  Kill every container this job started, identified by its `qsmci.job` label, so a persistent
+  self-hosted runner's later jobs never inherit them. No-op where docker is absent.
+
+inputs:
+  job-tag:
+    description: >-
+      This job's container tag — `<run_id>-<matrix id>`, the value qsm_ci.containers stamps into
+      each container's `qsmci.job` label. Passed in as an input because the `matrix` context is
+      NOT available inside a composite action.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    # Belt to the reaper's braces: whatever way this job ends (incl. a failed score step — exit 137
+    # still runs `always()` steps), kill the containers IT started, so a long run's later
+    # self-hosted jobs never inherit them. Only a whole-runner death skips this; the next job's
+    # reaper covers that via the same-run job-tag check.
+    #
+    # `if: always()` and `continue-on-error: true` stay at the CALL SITE: a composite action's
+    # inner `if:` cannot see the caller's job status, and an inner `continue-on-error` would hide
+    # the failure inside the action instead of letting the caller decide to tolerate it.
+    - name: Kill this job's containers
+      # Composite steps do not inherit the caller's `defaults.run`, so every `run:` here names its
+      # shell; `bash` means `bash --noprofile --norc -eo pipefail`, same as the workflows use.
+      shell: bash
+      env:
+        QSMCI_JOB_TAG: ${{ inputs.job-tag }}
+      run: |
+        command -v docker >/dev/null 2>&1 || exit 0
+        [ -n "$QSMCI_JOB_TAG" ] && docker ps -q --filter "label=qsmci.job=$QSMCI_JOB_TAG" | xargs -r docker kill || true

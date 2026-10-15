@@ -547,7 +547,7 @@
         {
           "name": "variant",
           "default": "PHU-NET3D",
-          "description": "Base network. PHU-NET3D (2-channel [wrapped phase + Laplacian], width 64) is the paper default and generally most accurate; PhaseNet3D (1-channel [wrapped phase], width 48) is the lighter variant.\n"
+          "description": "Base network. PHU-NET3D (2-channel [wrapped phase + Laplacian], width 64) is the paper default; PhaseNet3D (1-channel [wrapped phase], width 48) is the lighter variant. The paper's accuracy ordering was not reproduced here: on the 7 T simulation phantom PhaseNet3D measured better wrap-count accuracy at every echo and a better downstream chi (#282). Treat the default as the paper's, not as the more accurate choice on this benchmark.\n"
         },
         {
           "name": "iterations",
@@ -578,6 +578,7 @@
       "ci_notes": [
         "DIP-UP is a single-echo PHASE-UNWRAPPING network; it does not itself produce a total field. QSM-CI runs it per echo and appends the standard multi-echo linear phase-fit + B0 normalization (identical to laplacian-qsmci / romeo-qsmrs) to obtain totalfield in ppm.\n",
         "The DIP-UP repo does not ship the Unet_blocks.py its network classes import; it is reconstructed in this submission to be byte-compatible with the released checkpoints (PHU-NET3D width 64, PhaseNet3D width 48), and the repo's hard-coded layer-width constant is patched to match each checkpoint.\n",
+        "INPUT MASKING (#282): the wrap-count network is fed BRAIN-MASKED phase (phase x mask, zero outside the brain), matching the authors' demo convention, which recovers its tissue mask as `image != 0`. Earlier revisions of this wrapper passed the raw whole-head phase. PHU-NET3D's Laplacian channel is derived from that masked input; the DIP losses and the masking of the predicted wrap count are unchanged. Measured in #282 on the 7 T simulation phantom (PhaseNet3D, echo 4, pretrained net without the DIP loop): wrap-count accuracy 62.69% -> 71.53% on a 128^3 crop, 70.90% -> 72.31% on a 96^3 crop.\n",
         "Executed with GPU when the runner exposes one, else CPU. The reference recommends a 16\u201324 GB GPU; CPU runtime is substantially longer and not comparable to GPU timings.\n",
         "DOMAIN SHIFT: the base net was trained on real brain phase at a specific resolution/TE/field. On the simulation phantom (different wrap patterns / per-echo TEs) the pretrained wrap-count predictor may not transfer; the DIP refinement is seeded by it. A poor field-mapping score can reflect this transfer gap rather than an implementation error.\n"
       ]

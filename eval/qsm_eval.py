@@ -20,6 +20,51 @@ from pathlib import Path
 import numpy as np
 from scipy.ndimage import binary_dilation, gaussian_laplace, uniform_filter
 
+# --- "nothing to score" guard -------------------------------------------------------------------
+
+# Every metric below is an aggregate over the in-mask voxels, so they all share one precondition:
+# at least two voxels carrying a usable number. The guard is shared because the ANSWER has to be
+# shared. Downstream, `main` writes NaN as JSON null and the site drops a null metric from the table
+# and from every ranking (`v != null && isFinite(v)` in web/js/app.js), whereas 0.0 is a perfectly
+# rankable score. A run with nothing to score must therefore come back NaN from ALL of them: with a
+# 0.0 sentinel in two metrics and NaN in the other two, one degenerate run used to be ranked by
+# correlation and xSIM while being dropped by HFEN and NRMSE — and an empty mask even collected a
+# BEST-POSSIBLE calc_moment_dev of 0.0 (zeroed maps, no calcification found, zero moment deviation).
+# "Nothing to score" is about the voxels, not the values: a recon that is useless but defined (flat,
+# wrong scale, pure noise) keeps its real number and ranks last, which is the whole point of ranking.
+#
+# Two voxels is the floor at which these statistics exist at all: Pearson's correlation of a single
+# point is 0/0, and demeaning a single voxel leaves exactly zero to normalise by. Below that, any
+# number reported would be an artefact of whichever guard produced it rather than a measurement.
+#
+# Non-finite values are excluded here so that "the mask is non-empty but nothing under it is finite"
+# is answered deliberately rather than incidentally (it used to land as NaN in three metrics by
+# propagation through the sums, and 0.0 in xSIM). This is only a GATE, never the scoring selector:
+# past it, every metric still scores over the WHOLE mask, so a recon with a handful of NaNs left in
+# it propagates NaN into its score instead of being quietly scored on its good voxels alone.
+# (`score_arrays` zeroes non-finite recon voxels before scoring, by policy — a voxel the method
+# failed on counts as 0 against the truth there.)
+
+
+def _no_scoreable_voxels(a: np.ndarray, b: np.ndarray, mask: np.ndarray) -> bool:
+    """True when `mask` leaves fewer than two voxels where both maps are finite."""
+    usable = (mask > 0) & np.isfinite(a) & np.isfinite(b)
+    return int(usable.sum()) < 2
+
+
+def _demeaned_truth_norm(truth_vals: np.ndarray) -> float:
+    """L2 norm of the truth after demeaning — the quantity the %-of-truth metrics divide by.
+
+    Zero means the truth is constant over the scored voxels, so it carries no signal for a relative
+    error to be relative TO and the metric is undefined rather than merely large. Shared by
+    `nrmse_challenge` and `hfen` so the two agree on exactly which inputs are undefined: HFEN used
+    to guard on its own LoG norm, which for a flat truth is not 0 but the ~1e-5 residue of the
+    truncated LoG kernel, cleared the 1e-30 guard, and published tens of millions of percent for the
+    same input NRMSE correctly called NaN."""
+    d = truth_vals - truth_vals.mean()
+    return math.sqrt(float((d * d).sum()))
+
+
 # --- core metrics (ported 1:1 from QSM.rs tests/common/mod.rs) ----------------------------------
 
 
@@ -38,10 +83,14 @@ def linear_fit(x: np.ndarray, y: np.ndarray) -> tuple[float, float]:
 
 
 def correlation(a: np.ndarray, b: np.ndarray, mask: np.ndarray) -> float:
-    """Pearson correlation within the mask."""
+    """Pearson correlation within the mask.
+
+    NaN when there is nothing to score. 0.0 stays reserved for the case where the correlation is
+    undefined for want of VARIANCE (either map flat): that is a real, scoreable "no linear
+    relationship whatsoever" result, so it must rank worst rather than disappear from the table."""
+    if _no_scoreable_voxels(a, b, mask):
+        return math.nan
     m = mask > 0
-    if not m.any():
-        return 0.0
     av, bv = a[m], b[m]
     n = av.size
     num = n * (av * bv).sum() - av.sum() * bv.sum()
@@ -54,7 +103,12 @@ def xsim(a: np.ndarray, b: np.ndarray, mask: np.ndarray) -> float:
 
     Vectorized with truncated boundary windows (out-of-bounds treated as absent), matching the
     per-voxel variable-count neighborhood of the QSM.rs implementation.
+
+    NaN when there is nothing to score. A flat map does NOT land there: c2 keeps the window
+    denominator positive, so a constant recon is scored normally and earns the ~0 it deserves.
     """
+    if _no_scoreable_voxels(a, b, mask):
+        return math.nan
     c1, c2, k = 1e-4, 1e-6, 5
 
     def wsum(x):  # in-bounds neighborhood sum over a 5x5x5 window
@@ -73,18 +127,18 @@ def xsim(a: np.ndarray, b: np.ndarray, mask: np.ndarray) -> float:
     den = (mu_a * mu_a + mu_b * mu_b + c1) * (var_a + var_b + c2)
     valid = (mask > 0) & (den > 0.0)
     if not valid.any():
-        return 0.0
+        return math.nan  # no window left to average: nothing to score, so not a rankable 0.0
     return float(np.mean(num[valid] / den[valid]))
 
 
 def nrmse_challenge(a: np.ndarray, b: np.ndarray, mask: np.ndarray) -> tuple[float, float]:
     """Demeaned NRMSE (%) and linearly-detrended NRMSE (%) within the mask."""
-    m = mask > 0
-    if not m.any():
+    if _no_scoreable_voxels(a, b, mask):
         return math.nan, math.nan
+    m = mask > 0
     recon = a[m] - a[m].mean()
     truth = b[m] - b[m].mean()
-    norm_truth = math.sqrt((truth * truth).sum())
+    norm_truth = _demeaned_truth_norm(b[m])
     if norm_truth < 1e-30:
         return math.nan, math.nan
     nrmse = 100.0 * math.sqrt(((recon - truth) ** 2).sum()) / norm_truth
@@ -106,14 +160,27 @@ def hfen(recon: np.ndarray, truth: np.ndarray, mask: np.ndarray, sigma: float = 
     scipy's `gaussian_laplace` gives the LoG directly (a Gaussian-smoothed Laplacian); a truncate of 5
     at σ=1.5 spans ~15 voxels, matching the reference kernel size. The filter is applied over the whole
     volume (edges need neighbourhood context) but the norms are taken only within the mask."""
+    if _no_scoreable_voxels(recon, truth, mask):
+        return math.nan
     m = mask > 0
-    if not m.any():
+    # A truth that is constant over the scored voxels has no fine detail to recover, so "percent of
+    # it recovered" is undefined — the same input, for the same reason, that makes `nrmse_challenge`
+    # NaN, which is why both ask `_demeaned_truth_norm`. Guarding on the LoG norm alone is not
+    # enough: it is exactly 0 only for an all-zero truth, while any other flat value leaves the
+    # truncated kernel's ~1e-5 relative residue, clears the 1e-30 floor below, and turns a
+    # divide-by-rounding-noise into a published ~4e7 %.
+    if _demeaned_truth_norm(truth[m]) < 1e-30:
         return math.nan
     lr = gaussian_laplace(recon.astype(np.float64), sigma=sigma, truncate=5.0)
     lt = gaussian_laplace(truth.astype(np.float64), sigma=sigma, truncate=5.0)
     err = lr[m] - lt[m]
     denom = math.sqrt(float((lt[m] * lt[m]).sum()))
     if denom < 1e-30:
+        # Belt and braces. The guard above catches every bit-constant truth, so reaching this needs a
+        # varying truth whose in-mask LoG cancels to nothing — contrived, but if it happens there is
+        # still no high-frequency content to score against. A merely SMOOTH truth does not land here
+        # (even a linear ramp, whose LoG is 0 in the interior, is bent by the reflect padding at the
+        # volume edge) and is scored normally.
         return math.nan
     val = 100.0 * math.sqrt(float((err * err).sum())) / denom
     return val if math.isfinite(val) else math.nan
@@ -286,6 +353,9 @@ def chisep_metrics(recon, truth, mask, seg=None, component="para", wm_rois=None,
     if seg is None:
         return out
     m = mask > 0
+    # As in `challenge_metrics`: the two seg-driven metrics below are blind to the score mask, so
+    # they need the shared "nothing to score" gate to answer NaN with everything else.
+    nothing = _no_scoreable_voxels(recon, truth, mask)
     seg = np.rint(seg).astype(np.int32)
     dgm = m & np.isin(seg, [1, 2, 3, 4, 5, 6])
     blood = (dilate_mask_3d((m & (seg == 11)).astype(np.uint8)) > 0) & m
@@ -296,13 +366,14 @@ def chisep_metrics(recon, truth, mask, seg=None, component="para", wm_rois=None,
 
     if component == "para":
         _, out["nrmse_dgm"] = nrmse_challenge(recon, truth, dgm)
-        out["dgm_linearity"] = dgm_linearity(recon, truth, seg)
+        out["dgm_linearity"] = math.nan if nothing else dgm_linearity(recon, truth, seg)
         _, out["nrmse_blood"] = nrmse_challenge(recon, truth, blood)
         out["calc_leak"] = leak(calc)
         # Paper per-ROI MSPE over the iron nuclei + GM (χ+ quantification target).
         out["mspe"] = roi_mspe(recon, truth, seg, MSPE_PARA_ROIS, m)
     else:  # dia — χ− is a positive magnitude; flip sign so the calcification reads negative
-        dev, streak = calcification_metrics(-recon, -truth, seg)
+        dev, streak = ((math.nan, math.nan) if nothing
+                       else calcification_metrics(-recon, -truth, seg))
         out["calc_moment_dev"] = dev
         out["calc_streak"] = streak
         out["iron_leak"] = leak(dgm | blood)
@@ -357,7 +428,14 @@ def challenge_metrics(recon, truth, mask, seg) -> dict:
     dgm = m & np.isin(seg, [1, 2, 3, 4, 5, 6])
     _, nrmse_dgm = nrmse_challenge(recon, truth, dgm)
 
-    calc_dev, calc_streak = calcification_metrics(recon, truth, seg)
+    # `dgm_linearity` and `calcification_metrics` are handed `seg` and never see the score mask, so
+    # an empty mask never reaches their own "no voxels" guards: with both maps zeroed outside the
+    # mask they come back with a rankable |1 - slope| = 1.0 and the best-possible calc_moment_dev of
+    # 0.0. Gate them on the shared test instead of intersecting `seg` with the mask, which would
+    # also move the region metrics of real runs whose labels reach past the mask.
+    nothing = _no_scoreable_voxels(recon, truth, mask)
+    calc_dev, calc_streak = ((math.nan, math.nan) if nothing
+                             else calcification_metrics(recon, truth, seg))
 
     return {
         "nrmse": nrmse,
@@ -365,7 +443,7 @@ def challenge_metrics(recon, truth, mask, seg) -> dict:
         "nrmse_tissue": nrmse_tissue,
         "nrmse_blood": nrmse_blood,
         "nrmse_dgm": nrmse_dgm,
-        "dgm_linearity": dgm_linearity(recon, truth, seg),
+        "dgm_linearity": math.nan if nothing else dgm_linearity(recon, truth, seg),
         "calc_moment_dev": calc_dev,
         "calc_streak": calc_streak,
         "correlation": correlation(recon, truth, mask),
@@ -497,7 +575,14 @@ def score_arrays(recon, truth, mask, kind: str = "chi", seg=None, component: str
     a method never sees, or a method's own out-of-mask garbage) would otherwise bleed into the score
     at the boundary — a bit-perfect recon of a phantom with non-zero χ outside the mask scored xSIM
     0.76. With both maps sharing the same hard edge, the edge cancels and only in-mask differences
-    count."""
+    count.
+
+    If the mask leaves nothing to score (see `_no_scoreable_voxels`) every metric here is NaN, which
+    `main` writes as JSON null and the site drops from the table and the rankings: a run nothing can
+    be said about is omitted, not ranked. `coverage` is the one exception by design — it describes
+    the mask and the recon's support rather than agreement with the truth, so it stays a real
+    fraction wherever the mask has any voxel at all, and is NaN only for the 0/0 of an empty mask.
+    A recon that is scoreable but useless keeps its number and ranks last."""
     if recon.shape != truth.shape or recon.shape != mask.shape:
         raise ValueError(f"shape mismatch: recon {recon.shape}, truth {truth.shape}, mask {mask.shape}")
     m = mask > 0
