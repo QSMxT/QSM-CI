@@ -17,17 +17,17 @@ authors:
 doi: 10.1016/j.neuroimage.2017.11.018
 code_url: https://github.com/astewartau/QSM.rs
 license: MIT
-image: ghcr.io/astewartau/qsm-ci/qsmxt:v9.4.0
+image: ghcr.io/astewartau/qsm-ci/qsmxt:v10.0.0   # the shared QSMxT engine image
 run: bash run.sh
 parameters:
   - name: delta
-    default: 1.0
+    default: 0.15
     description: regularization
   - name: mu
-    default: 1.0
+    default: 1e5
     description: smoothness
   - name: max_iter
-    default: 1000
+    default: 20
     description: iterations
 
 # Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.

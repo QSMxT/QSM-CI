@@ -16,6 +16,6 @@ qsmxt bgremove lbv /input/totalfield.nii.gz -m /input/mask.nii.gz -o /output/loc
 
 | parameter | default | description |
 |---|---|---|
-| `tol` | 1e-4 | convergence tolerance |
+| `tol` | 1e-6 | convergence tolerance |
 
 _Citations/DOIs are auto-generated best-effort references and should be verified._

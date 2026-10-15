@@ -16,6 +16,6 @@ qsmxt invert tsvd /input/localfield.nii.gz -m /input/mask.nii.gz -o /output/chim
 
 | parameter | default | description |
 |---|---|---|
-| `threshold` | 0.1 | singular-value threshold |
+| `threshold` | 0.15 | singular-value threshold |
 
 _Citations/DOIs are auto-generated best-effort references and should be verified._

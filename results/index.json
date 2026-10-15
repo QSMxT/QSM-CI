@@ -9059,39 +9059,6 @@
       }
     },
     {
-      "name": "HARPERELLA (QSM.rs)",
-      "track": "sim",
-      "stage": "unwrap+bfr",
-      "artifact": "localfield",
-      "kind": "field",
-      "image": null,
-      "runtime_s": 33.67913222312927,
-      "metrics": {
-        "nrmse": 112.00679018387447,
-        "nrmse_detrend": 169.51816484758052,
-        "correlation": 0.5080896235035237,
-        "xsim": 0.39905202951426433,
-        "coverage": 1.0
-      },
-      "status": "ok",
-      "id": "harperella-qsmrs-iso-tuned",
-      "slug": "harperella-qsmrs",
-      "mode": "isolated",
-      "variant": "tuned",
-      "params": {
-        "radius": "3.0"
-      },
-      "phantom": "sim",
-      "ci_run": "35886749235.1",
-      "ci_sha": "33846b6d65096eba37af5a0ee0a6d964329985b2",
-      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/d4/harperella-qsmrs-iso-tuned__resources.json",
-      "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/d4/harperella-qsmrs-iso-tuned__recon.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/d4/harperella-qsmrs-iso-tuned__error.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/scoring/localfield.nii.gz"
-      }
-    },
-    {
       "name": "NLTV (QSM.rs)",
       "track": "sim",
       "stage": "dipole",

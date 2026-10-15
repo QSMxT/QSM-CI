@@ -16,7 +16,7 @@ qsmxt bgremove sharp /input/totalfield.nii.gz -m /input/mask.nii.gz -o /output/l
 
 | parameter | default | description |
 |---|---|---|
-| `threshold` | 0.02 | deconvolution threshold |
-| `radius_factor` | 0.5 | × min voxel size |
+| `threshold` | 0.05 | deconvolution threshold |
+| `radius` | 6.0 | SMV kernel radius (mm) |
 
 _Citations/DOIs are auto-generated best-effort references and should be verified._

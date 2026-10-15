@@ -23,15 +23,18 @@ authors:
 doi: 10.1016/j.neuroimage.2014.12.043
 code_url: https://github.com/astewartau/QSM.rs
 license: MIT
-image: ghcr.io/astewartau/qsm-ci/qsmxt:v9.8.0
+image: ghcr.io/astewartau/qsm-ci/qsmxt:v10.0.0   # the shared QSMxT engine image
 run: bash run.sh
 parameters:
   - name: tol
-    default: 1e-4
+    default: 1e-3
     description: tolerance
   - name: max_iter
-    default: 1000
+    default: 100
     description: iterations
+  - name: pad_mm
+    default: 16
+    description: zero-padding per side (mm) before the k-space solve (new in qsmxt v10.0.0)
 
 # Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
 tuning:

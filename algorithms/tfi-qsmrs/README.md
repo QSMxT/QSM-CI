@@ -13,7 +13,7 @@ regularisation weighted by the magnitude.
   which takes the total field in ppm directly (no radians conversion, unlike MEDI)
 - **Reference:** Liu et al., *Magn Reson Med* 2017;78(1):303-315 ·
   doi:[10.1002/mrm.26946](https://doi.org/10.1002/mrm.26946)
-- **Image:** `ghcr.io/astewartau/qsm-ci/qsmxt:v9.11.0`, the shared QSMxT engine image
+- **Image:** `ghcr.io/astewartau/qsm-ci/qsmxt:v10.0.0`, the shared QSMxT engine image
   ([`algorithms/_qsmxt`](../_qsmxt)). This folder has no Dockerfile: `run.sh` is mounted at run
   time.
 

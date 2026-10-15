@@ -2,15 +2,16 @@ name: iHARPERELLA (QSM.rs)
 slug: iharperella-qsmrs
 algorithm: iharperella
 source: qsmrs
-stage: unwrap+bfr
+stage: bfr
 language: Rust
 family: iterative
 learning: none
-inputs: [phase, mask, params]  # the artifacts this method actually reads (a subset of the stage's inputs)
+inputs: [totalfield, mask]  # the artifacts this method actually reads
 engine: QSMxT / QSM.rs
 description: >
-  Improved HARPERELLA: iterative integrated unwrapping + background removal on wrapped phase.
-citation: Li et al., NMR Biomed 2014
+  Improved HARPERELLA: background field removal by directly minimising the weighted resulting
+  field, on the multi-echo total field. The published method also unwraps, from one wrapped echo.
+citation: Li, Wu & Liu, Proc. ISMRM 23 (2015) p. 3313 (iHARPERELLA); Li et al., NMR Biomed 2014 (HARPERELLA)
 authors:
 - name: Wei Li
 - name: Alexandru V. Avram
@@ -20,21 +21,18 @@ authors:
 doi: 10.1002/nbm.3056
 code_url: https://github.com/astewartau/QSM.rs
 license: MIT
-image: ghcr.io/astewartau/qsm-ci/qsmxt:v9.7.0
+image: ghcr.io/astewartau/qsm-ci/qsmxt:v10.0.0   # the shared QSMxT engine image
 run: bash run.sh
 parameters:
-  - name: radius
-    default: 5.0
-    description: SMV kernel radius (mm)
   - name: max_iter
-    default: 100
+    default: 40
     description: iterations
   - name: tol
-    default: 1e-4
+    default: 1e-6
     description: tolerance
 
 # Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
 tuning:
   date: 2026-08
-  status: default-optimal
-  note: "Swept radius on sim (sim-only); default already optimal. Left at default."
+  status: pending
+  note: "Not tuned. The 2026-08 sweep varied radius, which never reached iHARPERELLA (qsm-core ignores it; qsmxt v10 removed the flag), so every grid point was the default. No other parameter has been swept."
