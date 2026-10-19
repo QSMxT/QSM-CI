@@ -15,6 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
+  <script src="js/reproBin.js"></script>
   <script src="js/app.js"></script>
   <!-- Third-party assets are pinned AND subresource-integrity checked (tests/test_web_sri.py). To bump a
        version, recompute: curl -s <url> | openssl dgst -sha384 -binary | openssl base64 -A -->
@@ -1876,8 +1877,8 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             this.registry = registry;
             this.runs = runs;
             this.datasetsReg = datasetsReg;
-            // results/repro.json is 8.7 MB (866 KB gzipped) and only the Harmonization dataset reads it,
-            // so it is NOT awaited here — blocking the first render on it cost ~1.3 s. ensureRepro()
+            // results/repro.json + its fit columns (~1 MB) are read only by the Harmonization dataset,
+            // so they are NOT awaited here — blocking the first render on it cost ~1.3 s. ensureRepro()
             // fetches it once; it is kicked off on idle below (so the Harmonization tab appears on its
             // own shortly after the page is usable) and awaited eagerly when that dataset is opened.
             // Per-region stats are NOT fetched here; ensureRegions() lazy-loads them (per-run files,
@@ -1917,7 +1918,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           // off the common page load.
           this.$watch("findView", (v) => { if (v === "regions") this.ensureRegions(); });
           if (this.tab === "findings" && this.findView === "regions") this.ensureRegions();
-          // Same lazy pattern for the harmonization regional Findings figures (repro_regions.json, ~4 MB).
+          // Same lazy pattern for the harmonization regional Findings figures (repro_regions.json + .bin, ~3 MB).
           // Pull results/repro.json once the page is idle, so the Harmonization tab appears on its
           // own without any of it sitting on the first render. setDataset()/the deep link above
           // share this same promise if the user gets there first.
@@ -2164,15 +2165,16 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         // fit for. The registry lists acquisitions before they are reconstructed; offering a subject
         // with no fits yet would only lead to empty views.
         _reproFitted() {
-          const pipes = this._reproPipes(), M = this._reproMeta();
-          return _cache("reproFitted", [Object.keys(pipes).length, Object.keys(M.groups).length].join("|"), () => {
-            const subjects = new Set(), spairs = new Set();
-            for (const node of Object.values(pipes)) for (const cls of ["test_retest", "inter_scanner", "inter_protocol"])
-              for (const [grp, pairs] of Object.entries(node[cls] || {})) {
-                const g = M.groups[cls + "|" + grp];
-                if (g) subjects.add(g.subject);
-                if (cls === "inter_scanner") for (const key of Object.keys(pairs)) spairs.add(grp + "|" + key);
-              }
+          const pipes = this._reproPipes(), M = this._reproMeta(), D = this.reproData;
+          return _cache("reproFitted", [Object.keys(pipes).length, Object.keys(M.groups).length, !!D?.fits].join("|"), () => {
+            const subjects = new Set(), spairs = new Set(), S = D?.fits?.slope, N = D?.nPairs || 0;
+            const rows = Object.values(pipes).map((n) => n.row);
+            if (S) (D.pairs || []).forEach((p, j) => {
+              if (!rows.some((r) => S[r * N + j] === S[r * N + j])) return;   // NaN: no pipeline has a fit
+              const g = M.groups[p.class + "|" + p.group];
+              if (g) subjects.add(g.subject);
+              if (p.class === "inter_scanner") spairs.add(p.group + "|" + p.key);
+            });
             return { subjects, spairs };
           });
         },
@@ -2224,25 +2226,39 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         // (Real inter-scanner slopes go as low as ~0.4, e.g. Mauro's EPI↔ME-GRE, so the cap is generous.)
         _SLOPE_DEV_CAP: 2,
         _BIAS_CAP_PPM: 1,   // |Bland-Altman bias| beyond 1 ppm is non-physical for brain ROI χ
-        // finite, in-range per-pair values for a class, optionally restricted to one protocol, and
-        // always to the selected subject (and, for inter-scanner, scanner pair). Group membership comes
-        // from `comparisons`; a group it doesn't describe only counts when nothing is filtered.
+        // Indices into repro.json's `pairs` (= columns of the fit arrays) for one class, optionally
+        // restricted to one protocol, and always to the selected subject (and, for inter-scanner,
+        // scanner pair). Group membership comes from `comparisons`; a group it doesn't describe only
+        // counts when nothing is filtered. Shared by every pipeline, so it is worked out once per filter.
+        _reproPairIdx(cls, proto) {
+          const subj = this.reproSubject, sp = cls === "inter_scanner" ? this.reproScanPair : "all";
+          const pairs = this.reproData?.pairs || [];
+          return _cache("reproIdx|" + cls + "|" + proto, [pairs.length, Object.keys(this._reproAcqs()).length, this._reproFKey].join("|"), () => {
+            const M = this._reproMeta(), out = [];
+            pairs.forEach((p, j) => {
+              if (p.class !== cls) return;
+              const g = M.groups[cls + "|" + p.group];
+              if (g ? (subj !== "all" && g.subject !== subj) || (proto !== "all" && g.protocol !== proto)
+                    : (subj !== "all" || proto !== "all" || sp !== "all")) return;
+              if (sp !== "all" && M.spair[p.group + "|" + p.key] !== sp) return;
+              out.push(j);
+            });
+            return out;
+          });
+        },
+        // finite, in-range per-pair values of one pipeline for a class under _reproPairIdx's filters:
+        // a walk along the pipeline's row of the fit column (NaN = no fit for that pair).
         _reproVals(node, cls, proto, field = "abs_slope_dev") {
           const cap = (field === "abs_slope_dev" || field === "slope_dev") ? this._SLOPE_DEV_CAP : (field === "ba_bias_ppm" ? this._BIAS_CAP_PPM : Infinity);
-          const M = this._reproMeta(), subj = this.reproSubject, sp = cls === "inter_scanner" ? this.reproScanPair : "all";
-          const vals = [];
-          for (const [grp, pairs] of Object.entries(node[cls] || {})) {
-            const g = M.groups[cls + "|" + grp];
-            if (g ? (subj !== "all" && g.subject !== subj) || (proto !== "all" && g.protocol !== proto)
-                  : (subj !== "all" || proto !== "all" || sp !== "all")) continue;
-            for (const [key, m] of Object.entries(pairs)) {
-              if (sp !== "all" && M.spair[grp + "|" + key] !== sp) continue;
-              // "slope_dev" is the signed deviation a−1, derived here from the stored slope so the
-              // same plausibility cap applies to both forms.
-              const v = field === "slope_dev" ? (m.slope == null ? null : m.slope - 1) : m[field];
-              if (v == null || !isFinite(v) || Math.abs(v) > cap) continue;
-              vals.push(v);
-            }
+          // "slope_dev" is the signed deviation a−1, derived here from the stored slope so the same
+          // plausibility cap applies to both forms.
+          const D = this.reproData, F = D?.fits?.[field === "slope_dev" ? "slope" : field];
+          if (!F || !node) return [];
+          const base = node.row * D.nPairs, off = field === "slope_dev" ? 1 : 0, vals = [];
+          for (const j of this._reproPairIdx(cls, proto)) {
+            const v = F[base + j] - off;
+            if (!isFinite(v) || Math.abs(v) > cap) continue;
+            vals.push(v);
           }
           return vals;
         },
@@ -2883,9 +2899,11 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         },
         // ==================================================================================
         // Harmonization · REGIONAL Findings figures (7). All live from this.reproRegions
-        // (results/repro_regions.json): per (pipeline × acquisition) run, per-aseg-region mean χ
-        // already in ppb (L/R merged). Ported faithfully from scripts build_figs.py; the only
-        // difference is the data source (values are pre-aggregated & already in ppb, so no *1000).
+        // (results/repro_regions.json + .bin, see loadReproRegions): per (pipeline × acquisition) run,
+        // per-aseg-region mean χ already in ppb (L/R merged), one Float64Array per run indexed by
+        // structure (_rgSI); NaN = no value for that structure. Ported faithfully from scripts
+        // build_figs.py; the only difference is the data source (values are pre-aggregated & already
+        // in ppb, so no *1000).
         // ==================================================================================
         // ---- constants (mirror build_figs.py) ----
         get _rgOrder() { return ["Pallidum", "Putamen", "Caudate", "VentralDC", "Thalamus", "Accumbens", "Hippocampus", "Amygdala", "Brain-Stem", "Cerebellum-WM", "Cerebellum-Ctx", "Cerebral-WM", "Cortex"]; },
@@ -2894,8 +2912,8 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         // Acquisitions (id -> {subject, scanner, protocol, run}) that have regional data, under the
         // subject filter (the registry also lists acquisitions not reconstructed yet).
         _rgAcqs() {
-          return _cache("rgAcqs", [Object.keys(this._reproAcqs()).length, this.reproRegions?.runs?.length || 0, this.reproSubject].join("|"), () => {
-            const have = new Set((this.reproRegions?.runs || []).map((r) => r && r.a)), out = {};
+          return _cache("rgAcqs", [Object.keys(this._reproAcqs()).length, this.reproRegions?.nRuns || 0, this.reproSubject].join("|"), () => {
+            const have = new Set(Object.values(this._rgParse()).flatMap((acqs) => Object.keys(acqs))), out = {};
             for (const [id, a] of Object.entries(this._reproAcqs()))
               if (have.has(id) && (this.reproSubject === "all" || a.subject === this.reproSubject)) out[id] = a;
             return out;
@@ -2905,18 +2923,11 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         // then each traveling head's home scanner before the sites it visited.
         _rgScanners() { return [...new Set(Object.values(this._rgAcqs()).map((a) => a.scanner))]; },
         _rgProtos() { return [...new Set(Object.values(this._rgAcqs()).map((a) => a.protocol))].sort(); },
-        // Index the sidecar into rmean[pipe][acq] = { struct: chi_ppb }. Also expose each run's parsed
-        // dipole (last stage) + acq parse. Memoised on the run count so it only rebuilds on (re)load.
-        _rgParse() {
-          return _cache("rgParse", (this.reproRegions?.runs?.length || 0), () => {
-            const rmean = {};
-            for (const r of (this.reproRegions?.runs || [])) {
-              if (!r || !r.p || !r.a || !r.m) continue;
-              (rmean[r.p] || (rmean[r.p] = {}))[r.a] = r.m;
-            }
-            return rmean;
-          });
-        },
+        // The sidecar's runs as rmean[pipe][acq] = Float64Array of χ ppb by structure index (_rgSI), only
+        // for runs that exist. The raw object, not Alpine's reactive proxy of it: the figures walk every
+        // run, and a proxied lookup per value is what made them slow.
+        _rgParse() { return (this.reproRegions && Alpine.raw(this.reproRegions).runs) || {}; },
+        get _rgSI() { return (this.reproRegions && Alpine.raw(this.reproRegions).si) || {}; },
         _rgLastStage(p) { return p.split("+").pop(); },
         // ---- pairings: the same [acqA, acqB] pairs repro.json fits (its `comparisons`), under the
         //      subject / scanner-pair filters. Within a subject only; A = home scanner, earlier run, or
@@ -2964,7 +2975,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           const c = [255, 255, 255], d = t >= 0 ? [220, 38, 38] : [37, 99, 235], f = Math.abs(t);
           return "#" + c.map((a, k) => Math.round(a + (d[k] - a) * f).toString(16).padStart(2, "0")).join("");
         },
-        get _rgDepKey() { return [this.reproRegions?.runs?.length || 0, this.algos.length, Object.keys(this._reproMeta().pairs).length, this._reproFKey].join("|"); },
+        get _rgDepKey() { return [this.reproRegions?.nRuns || 0, this.algos.length, Object.keys(this._reproMeta().pairs).length, this._reproFKey].join("|"); },
         _rgLoading(w, h) { return `<svg width="${w}" height="${h}" style="max-width:100%;height:auto"><text x="${w / 2}" y="${h / 2}" text-anchor="middle" fill="currentColor" opacity="0.4" style="font-size:12px">loading regional data…</text></svg>`; },
 
         // FIG 1 · region × dipole inter-scanner |Δχ| heatmap
@@ -2972,7 +2983,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           return _cache("rgHeat", this._rgDepKey + "|" + this.reproMetric.heat + "|" + this.reproHeatAxis, () => {
             if (!this.reproRegions) return this._rgLoading(520, 460);
             const mk = this.reproMetric.heat, axis = this.reproHeatAxis;
-            const rmean = this._rgParse(), ORDER = this._rgOrder, pairs = this._rgPairsFor(mk);
+            const rmean = this._rgParse(), SI = this._rgSI, ORDER = this._rgOrder, pairs = this._rgPairsFor(mk);
             const dipVals = {};   // stage-method -> struct -> [|Δχ| ppb]
             for (const pipe in rmean) {
               const d = this._rgStageOf(pipe, axis); if (!d) continue;
@@ -2980,7 +2991,8 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
               (dipVals[d] || (dipVals[d] = {}));
               for (const [a, b] of pairs) {
                 if (acqs[a] && acqs[b]) for (const s of ORDER) {
-                  if (acqs[a][s] != null && acqs[b][s] != null) (dipVals[d][s] || (dipVals[d][s] = [])).push(Math.abs(acqs[a][s] - acqs[b][s]));
+                  const va = acqs[a][SI[s]], vb = acqs[b][SI[s]];
+                  if (isFinite(va) && isFinite(vb)) (dipVals[d][s] || (dipVals[d][s] = [])).push(Math.abs(va - vb));
                 }
               }
             }
@@ -3018,12 +3030,13 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         get reproRegBiasSVG() {
           return _cache("rgBias", this._rgDepKey, () => {
             if (!this.reproRegions) return this._rgLoading(760, 460);
-            const rmean = this._rgParse(), ORDER = this._rgOrder, pairs = this._rgInterScannerPairs();
+            const rmean = this._rgParse(), SI = this._rgSI, ORDER = this._rgOrder, pairs = this._rgInterScannerPairs();
             const bias = {};
             for (const pipe in rmean) {
               const acqs = rmean[pipe];
               for (const [a, b] of pairs) if (acqs[a] && acqs[b]) for (const s of ORDER) {
-                if (acqs[a][s] != null && acqs[b][s] != null) (bias[s] || (bias[s] = [])).push(acqs[b][s] - acqs[a][s]);   // visited − home
+                const va = acqs[a][SI[s]], vb = acqs[b][SI[s]];
+                if (isFinite(va) && isFinite(vb)) (bias[s] || (bias[s] = [])).push(vb - va);   // visited − home
               }
             }
             const regs = ORDER.filter((s) => (bias[s] || []).length >= 20);
@@ -3057,14 +3070,14 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         get reproRegIronSVG() {
           return _cache("rgIron", this._rgDepKey, () => {
             if (!this.reproRegions) return this._rgLoading(560, 420);
-            const rmean = this._rgParse(), IRON = this._rgIron, SCAN = this._rgScanners(), A = this._rgAcqs();
+            const rmean = this._rgParse(), SI = this._rgSI, IRON = this._rgIron, SCAN = this._rgScanners(), A = this._rgAcqs();
             const vals = {};   // scanner -> struct -> [chi ppb]
             for (const sc of SCAN) vals[sc] = {};
             for (const pipe in rmean) {
               const acqs = rmean[pipe];
               for (const acq in acqs) {
                 const scanner = A[acq]?.scanner; if (!scanner || !vals[scanner]) continue;
-                for (const s in IRON) if (acqs[acq][s] != null) (vals[scanner][s] || (vals[scanner][s] = [])).push(acqs[acq][s]);
+                for (const s in IRON) { const v = acqs[acq][SI[s]]; if (isFinite(v)) (vals[scanner][s] || (vals[scanner][s] = [])).push(v); }
               }
             }
             const pts = {};
@@ -3108,7 +3121,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         get reproRegProtoSVG() {
           return _cache("rgProto", this._rgDepKey, () => {
             if (!this.reproRegions) return this._rgLoading(720, 240);
-            const rmean = this._rgParse(), ORDER = this._rgOrder, PROTOS = this._rgProtos(), A = this._rgAcqs();
+            const rmean = this._rgParse(), SI = this._rgSI, ORDER = this._rgOrder, PROTOS = this._rgProtos(), A = this._rgAcqs();
             // one consensus per (subject, scanner, run): the protocols that session acquired
             const sess = {};   // "subject|scanner|run" -> { protocol: acq id }
             for (const [id, a] of Object.entries(A)) (sess[a.subject + "|" + a.scanner + "|" + a.run] ||= {})[a.protocol] = id;
@@ -3122,10 +3135,10 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
                 const keys = Object.keys(present);
                 if (keys.length < 2) continue;
                 for (const s of ORDER) {
-                  const xs = keys.filter((P) => present[P][s] != null).map((P) => present[P][s]);
+                  const k = SI[s], xs = keys.filter((P) => isFinite(present[P][k])).map((P) => present[P][k]);
                   if (xs.length < 2) continue;
                   const cons = xs.reduce((a, c) => a + c, 0) / xs.length;
-                  for (const P of keys) if (present[P][s] != null) (dev[P][s] || (dev[P][s] = [])).push(present[P][s] - cons);
+                  for (const P of keys) if (isFinite(present[P][k])) (dev[P][s] || (dev[P][s] = [])).push(present[P][k] - cons);
                 }
               }
             }
@@ -3160,7 +3173,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         get reproRegStageSVG() {
           return _cache("rgStage", this._rgDepKey, () => {
             if (!this.reproRegions) return this._rgLoading(460, 320);
-            const rmean = this._rgParse(), DEEP = this._rgDeep, A = this._rgAcqs();
+            const rmean = this._rgParse(), SI = this._rgSI, DEEP = this._rgDeep, A = this._rgAcqs();
             const three = Object.keys(rmean).filter((p) => p.split("+").length === 3);
             const pstdev = (v) => { const m = v.reduce((a, c) => a + c, 0) / v.length; return Math.sqrt(v.reduce((a, c) => a + (c - m) ** 2, 0) / v.length); };
             const contrib = { unwrap: [], bfr: [], dipole: [] };
@@ -3173,7 +3186,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
                 for (const acq in acqs) {
                   if (!A[acq]) continue;
                   const gk = key + "||" + acq, g = groups[gk] || (groups[gk] = {});
-                  for (const s of DEEP) if (acqs[acq][s] != null) (g[s] || (g[s] = [])).push(acqs[acq][s]);
+                  for (const s of DEEP) { const v = acqs[acq][SI[s]]; if (isFinite(v)) (g[s] || (g[s] = [])).push(v); }
                 }
               }
               const spreads = [];
@@ -3203,15 +3216,16 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         get reproRegContrastSVG() {
           return _cache("rgContrast", this._rgDepKey, () => {
             if (!this.reproRegions) return this._rgLoading(460, 460);
-            const rmean = this._rgParse(), pairs = this._rgInterScannerPairs();
+            const rmean = this._rgParse(), SI = this._rgSI, pairs = this._rgInterScannerPairs();
             const nucPairs = [["Pallidum", "Putamen"], ["Pallidum", "Thalamus"], ["Putamen", "Caudate"]];
             const col = ["#dc2626", "#2563eb", "#059669"];
             const data = nucPairs.map(() => []);
             for (const pipe in rmean) {
               const acqs = rmean[pipe];
               for (const [a, b] of pairs) if (acqs[a] && acqs[b]) nucPairs.forEach(([ra, rb], pi) => {
-                if (acqs[a][ra] != null && acqs[a][rb] != null && acqs[b][ra] != null && acqs[b][rb] != null) {
-                  const ca = acqs[a][ra] - acqs[a][rb], cb = acqs[b][ra] - acqs[b][rb];
+                const A_ = acqs[a], B_ = acqs[b], i = SI[ra], k = SI[rb];
+                if (isFinite(A_[i]) && isFinite(A_[k]) && isFinite(B_[i]) && isFinite(B_[k])) {
+                  const ca = A_[i] - A_[k], cb = B_[i] - B_[k];
                   data[pi].push([ca, cb]);   // x = home scanner (A), y = visited scanner (B)
                 }
               });
@@ -3246,13 +3260,16 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           return _cache("rgGlobal", this._rgDepKey + "|" + this.reproMetric.glob + "|" + Object.keys(this._reproPipes()).length, () => {
             if (!this.reproRegions) return this._rgLoading(560, 420);
             const mk = this.reproMetric.glob;
-            const rmean = this._rgParse(), DEEP = this._rgDeep, pairs = this._rgPairsFor(mk);
+            const rmean = this._rgParse(), SI = this._rgSI, DEEP = this._rgDeep, pairs = this._rgPairsFor(mk);
             const REPRO = this._reproPipes();
             const pts = [];
             for (const pipe in rmean) {
               const gd = this._rgSlope(REPRO[pipe], mk); if (gd == null) continue;
               const acqs = rmean[pipe], diffs = [];
-              for (const [a, b] of pairs) if (acqs[a] && acqs[b]) for (const s of DEEP) if (acqs[a][s] != null && acqs[b][s] != null) diffs.push(Math.abs(acqs[a][s] - acqs[b][s]));
+              for (const [a, b] of pairs) if (acqs[a] && acqs[b]) for (const s of DEEP) {
+                const va = acqs[a][SI[s]], vb = acqs[b][SI[s]];
+                if (isFinite(va) && isFinite(vb)) diffs.push(Math.abs(va - vb));
+              }
               if (diffs.length < 10) continue;
               pts.push([gd * 100, this._median(diffs), this._rgLastStage(pipe)]);
             }
@@ -4117,10 +4134,10 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         // parallel, then assemble the { id: entry } map the figures read. Only these ~26 small files
         // are fetched (not the whole 900-run corpus). Assigning this.regions is a reactive trigger, so
         // the getters re-run and the figures draw; then reconcile the region selector.
-        // Lazy-load (once) the harmonization regional sidecar (results/repro_regions.json): every
-        // (pipeline × acquisition) run's per-aseg-region mean χ in ppb. ~4 MB, ~14 k runs, so it stays
+        // Lazy-load (once) the harmonization regional sidecar (results/repro_regions.json + .bin): every
+        // (pipeline × acquisition) run's per-aseg-region mean χ in ppb. ~3 MB, ~60 k runs, so it stays
         // off the common page load and is fetched the first time the harmonization Findings tab opens.
-        // The harmonization payload (results/repro.json, 8.7 MB), from the shared loader (app.js
+        // The harmonization payload (results/repro.json + repro_fits.bin), from the shared loader (app.js
         // loadRepro(), which also drops the parked/retired pipelines — see _reproPipes()). Fetched
         // once, off the critical path: init() kicks this off on idle so the Harmonization tab can
         // appear, and setDataset()/the deep-link path await it so opening that dataset always has its
@@ -4129,16 +4146,13 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           // _reproReq is module-scope, NOT a property on this: Alpine's reactive proxy around a Promise
           // breaks `await` (Promise.prototype.then called on an incompatible receiver).
           if (_reproReq) return _reproReq;
-          _reproReq = loadRepro().then((d) => { this.reproData = d; return d; });
+          _reproReq = loadRepro({ fits: true }).then((d) => { this.reproData = d; return d; });
           return _reproReq;
         },
         async ensureReproRegions() {
           if (this.reproRegions || this.reproRegLoading) return;
           this.reproRegLoading = true;
-          try {
-            const r = await fetch("results/repro_regions.json");
-            this.reproRegions = r.ok ? await r.json() : { runs: [] };
-          } catch { this.reproRegions = { runs: [] }; }
+          try { this.reproRegions = await loadReproRegions(); }   // never throws: { runs: {} } when unavailable
           finally { this.reproRegLoading = false; }
         },
         ensureRegions() {

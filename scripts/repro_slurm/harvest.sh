@@ -44,6 +44,6 @@ print(f"repro_rois.json runs: {before} -> {len(doc['runs'])} | distinct pipeline
       f"{len({v['pipeline'] for v in doc['runs'].values()})}")
 PY
 
-# 3) pairwise TLS fits -> results/repro.json  (SLOPE_DEV_CAP already rejects diverged/garbage pairs)
+# 3) pairwise TLS fits -> results/repro.json + repro_fits*.bin  (SLOPE_DEV_CAP already rejects diverged/garbage pairs)
 python scripts/repro_eval.py fits
 echo "HARVEST_DONE $(date +%T)"

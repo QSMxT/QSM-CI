@@ -451,7 +451,7 @@ jobs:
           PY
 
       # No recons on disk — fits reads the ROI means straight from the merged index.json run rows.
-      - name: Pairwise fits -> results/repro.json
+      - name: Pairwise fits -> results/repro.json + repro_fits*.bin
         run: python scripts/repro_eval.py fits
 
       # repro.json names every live pipeline (fits drops methods retired from the manifest) and the
@@ -494,17 +494,17 @@ jobs:
           git config user.name  "qsm-ci-bot"
           git config user.email "qsm-ci@users.noreply.github.com"
           cp results/index.json /tmp/scored-index.json
-          # repro.json is tracked, so the `git reset --hard` below would silently revert the fits
-          # just computed (it did, for every run before this: the file never made it to main).
-          # Park it with the index and put it back after the reset.
-          cp results/repro.json /tmp/scored-repro.json
+          # repro.json and its fit columns are tracked, so the `git reset --hard` below would silently
+          # revert the fits just computed (it did, for every run before this: the file never made it
+          # to main). Park them with the index and put them back after the reset.
+          mkdir -p /tmp/scored-repro && cp results/repro.json results/repro_fits*.bin /tmp/scored-repro/
           for attempt in 1 2 3 4 5; do
             git fetch origin main -q
             git reset --hard origin/main -q
             python3 scripts/merge_index.py /tmp/base-index.json /tmp/scored-index.json \
                     results/index.json results/index.json
-            cp /tmp/scored-repro.json results/repro.json
-            git add results/index.json results/repro.json
+            cp /tmp/scored-repro/* results/
+            git add results/index.json results/repro.json results/repro_fits*.bin
             git diff --cached --quiet && { echo "no changes to publish"; exit 0; }
             git commit -q -m "Update harmonization (repro) results"
             git push && exit 0
@@ -520,3 +520,4 @@ jobs:
           path: |
             results/index.json
             results/repro.json
+            results/repro_fits*.bin

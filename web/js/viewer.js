@@ -97,7 +97,7 @@ function ensureReproRuns(acq) {
 // then cache the payload in module scope — the many synchronous readers below (pipeHasRepro,
 // reproRank, renderReproStats, ensureReproRuns) read `reproJson` directly. null = not resolved here
 // yet. Pulled on idle after boot (see init), so a scored (in-silico) pipeline learns whether it has
-// a harmonization analog without the 8.7 MB payload sitting in front of the first render.
+// a harmonization analog without the payload sitting in front of the first render.
 function ensureReproJson() {
   if (reproJson !== null) return Promise.resolve(reproJson);
   return loadRepro().then((d) => (reproJson = d));
@@ -1806,8 +1806,8 @@ async function init() {
   try {
     [allRuns, algos, registry, datasetsReg] = await Promise.all([loadRuns(), loadAlgos(), loadRegistry(), loadDatasets()]);
   } catch (e) { showBootError(e); return; }
-  // results/repro.json is 8.7 MB (866 KB gzipped) and only tells this page whether a pipeline has a
-  // harmonization analog, so it is NOT awaited at boot any more — the first run used to render behind
+  // results/repro.json only tells this page whether a pipeline has a harmonization analog (and its
+  // summary; the per-pair fit columns are never fetched here), so it is NOT awaited at boot any more — the first run used to render behind
   // it. Pull it on idle and re-render the two surfaces that read it once it lands. Everything that
   // NEEDS it (the ?dataset=repro branch below, browseDataset("repro"), enterRepro) awaits it itself.
   // Go through renderDatasetSwitch (the dispatcher), not renderPipelineDatasetSwitch: only a

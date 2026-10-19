@@ -13,6 +13,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from repro_format import load_regions
+
 ROOT = Path(__file__).resolve().parent.parent
 WEB = ROOT / "web"
 REGISTRY = json.loads((ROOT / "scripts" / "datasets.json").read_text())
@@ -58,7 +60,7 @@ def test_regional_sidecar_carries_acquisition_metadata(tmp_path):
     inp.write_text(json.dumps(src))
     subprocess.run([sys.executable, str(ROOT / "scripts" / "gen_repro_regions.py"), str(inp), str(out)],
                    check=True, capture_output=True)
-    doc = json.loads(out.read_text())
+    doc = load_regions(out)
     assert "target" not in doc
     assert set(doc["acquisitions"]) == set(picked)
     for a in picked:

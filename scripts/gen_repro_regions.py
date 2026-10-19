@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """Compact per-run regional aggregate for the harmonization Findings figures.
 
-Reads results/repro_rois.json (per-run per-aseg-region chi, ~58 MB) and writes
-results/repro_regions.json (~a few MB): for every run, its pipeline, acquisition,
-and L/R-merged mean chi (ppb, 1 dp) per structure. The web computes every regional
-figure live from this one small file, same deploy path as results/repro.json, so
-re-running it on each harmonization publish keeps the figures current.
+Reads results/repro_rois.json (per-run per-aseg-region chi, ~220 MB) and writes
+results/repro_regions.json (a small index) + results/repro_regions.bin: the L/R-merged mean chi
+(ppb, 1 dp) of every structure for every run, as one float32 grid [pipeline x acquisition x
+structure] with NaN where a pipeline has no run (or no value) on an acquisition — the layout
+scripts/repro_format.py describes. The web computes every regional figure live from it, same
+deploy path as results/repro.json, so re-running it on each harmonization publish keeps the
+figures current.
 
 It also carries each acquisition's {subject, scanner, protocol, run} (from scripts/datasets.json)
 and the per-subject registration targets, so the figures pair acquisitions from metadata rather
@@ -15,6 +17,10 @@ Usage: python scripts/gen_repro_regions.py [in=results/repro_rois.json] [out=res
 """
 import json, sys, math, os
 from collections import defaultdict
+from pathlib import Path
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from repro_format import write_columns  # noqa: E402
 
 IN = sys.argv[1] if len(sys.argv) > 1 else "results/repro_rois.json"
 OUT = sys.argv[2] if len(sys.argv) > 2 else "results/repro_regions.json"
@@ -84,10 +90,22 @@ if not targets:   # derive from the registry when the input predates per-subject
     targets = {v["subject"]: k for k, v in sorted(reg.items())
                if v.get("track") == "repro" and v.get("repro_target") and v.get("subject")}
 
-doc = {"targets": targets, "acquisitions": acquisitions,
-       "structures": list(GROUP.keys()), "runs": out}
+structures = list(GROUP.keys())
+pipes, acqs = sorted({r["p"] for r in out}), sorted(seen)
+pi, ai = {p: i for i, p in enumerate(pipes)}, {a: i for i, a in enumerate(acqs)}
+grid = [None] * (len(pipes) * len(acqs) * len(structures))
+for r in out:
+    base = (pi[r["p"]] * len(acqs) + ai[r["a"]]) * len(structures)
+    for k, st in enumerate(structures):
+        grid[base + k] = r["m"].get(st)
+out_path = Path(OUT)
+values = write_columns(out_path.parent, [(out_path.with_suffix(".bin").name, {"chi_ppb": grid})],
+                       (len(pipes), len(acqs), len(structures)), {"chi_ppb": 1})
+doc = {"targets": targets, "acquisitions": acquisitions, "structures": structures,
+       "pipelines": pipes, "acqs": acqs, "values": values}
 with open(OUT, "w") as fh:
     json.dump(doc, fh, separators=(",", ":"))
 if retired:
     print(f"skipped runs built on methods no longer in algorithms.json: {', '.join(sorted(retired))}")
-print(f"wrote {OUT}: {len(out)} runs")
+print(f"wrote {OUT} + {values['files'][0]['file']}: {len(out)} runs "
+      f"({len(pipes)} pipelines x {len(acqs)} acquisitions x {len(structures)} structures)")

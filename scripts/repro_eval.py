@@ -48,6 +48,9 @@ from pathlib import Path
 import nibabel as nib
 import numpy as np
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from repro_format import FIT_DECIMALS, FIT_FILES, SUMMARY_FIELDS, write_columns  # noqa: E402
+
 ROOT = Path(__file__).resolve().parent.parent
 ALIGN = ROOT / "data" / "harmonization" / "_align"
 RESULTS = ROOT / "results"
@@ -520,16 +523,19 @@ def cmd_fits(args) -> None:
     comparisons: dict[str, dict] = {}
     for cls, grp, key, a_id, b_id in plan:
         comparisons.setdefault(cls, {}).setdefault(grp, {})[key] = [a_id, b_id]
-    out = {"targets": subject_targets(acqs),
-           "acquisitions": {k: {f: a[f] for f in ACQ_FIELDS} for k, a in sorted(acqs.items())},
-           "comparisons": comparisons,
-           "pipelines": {}}
-    for p in pipelines:
-        node = {"test_retest": {}, "inter_scanner": {}, "inter_protocol": {}}
+    # Per-pair stats are columns over [pipeline x pair] (repro_format.py), so each pipeline's row is
+    # filled in plan order and a pair without a fit stays None (NaN on disk).
+    n_pairs = len(plan)
+    fields = [f for _, fs in FIT_FILES for f in fs]
+    cols = {f: [None] * (len(pipelines) * n_pairs) for f in fields}
+    summary: dict[str, list] = {f: [] for f in SUMMARY_FIELDS}
+    rejected_by: dict[str, list] = {}
+    for i, p in enumerate(pipelines):
+        devs = {"test_retest": [], "inter_scanner": [], "inter_protocol": []}
         possible = {"test_retest": 0, "inter_scanner": 0, "inter_protocol": 0}
         rejected: list[dict] = []
         no_recon = 0
-        for cls, grp, key, a_id, b_id in plan:
+        for j, (cls, grp, key, a_id, b_id) in enumerate(plan):
             possible[cls] += 1
             va, vb = by_pa.get((p, a_id)), by_pa.get((p, b_id))
             if not va or not vb:
@@ -537,9 +543,11 @@ def cmd_fits(args) -> None:
                 continue
             m, rej = _pair_metrics(va, vb)
             if m:
-                node[cls].setdefault(grp, {})[key] = m
+                for f in fields:
+                    cols[f][i * n_pairs + j] = m[f]
+                devs[cls].append(m["abs_slope_dev"])
             else:
-                rejected.append({"class": cls, "group": grp, "pair": key, **rej})
+                rejected.append({"pair": j, **rej})
 
         # Headline aggregates per comparison class. Both are reported because they answer different
         # questions and, on the bimodal pipelines, disagree: the MEDIAN is the typical pair (robust —
@@ -548,28 +556,35 @@ def cmd_fits(args) -> None:
         # dropped upstream by _pair_metrics, so neither is defending against outright garbage.
         # `{cls}_mean_abs_slope_dev` was historically the MEDIAN under a misleading name; it is now a
         # genuine mean, and readers wanting the old value must use `{cls}_median_abs_slope_dev`.
-        for cls in ("test_retest", "inter_scanner", "inter_protocol"):
-            devs = [m["abs_slope_dev"] for grp in node[cls].values() for m in grp.values()]
-            node[f"{cls}_median_abs_slope_dev"] = round(float(np.median(devs)), 4) if devs else None
-            node[f"{cls}_mean_abs_slope_dev"] = round(float(np.mean(devs)), 4) if devs else None
-            node[f"{cls}_n_pairs"] = len(devs)
-            node[f"{cls}_n_possible"] = possible[cls]
+        for cls, d in devs.items():
+            summary[f"{cls}_median_abs_slope_dev"].append(round(float(np.median(d)), 4) if d else None)
+            summary[f"{cls}_mean_abs_slope_dev"].append(round(float(np.mean(d)), 4) if d else None)
+            summary[f"{cls}_n_pairs"].append(len(d))
+            summary[f"{cls}_n_possible"].append(possible[cls])
         # Per-pipeline so the site can total them over whatever pipelines it is actually showing
         # (methods retired from the manifest are hidden there) rather than over a fixed headline.
-        node["n_possible"] = sum(possible.values())
-        node["n_rejected"] = len(rejected)
-        node["n_no_recon"] = no_recon
-        node["rejected"] = rejected
-        out["pipelines"][p] = node
+        summary["n_possible"].append(sum(possible.values()))
+        summary["n_rejected"].append(len(rejected))
+        summary["n_no_recon"].append(no_recon)
+        if rejected:
+            rejected_by[p] = rejected
 
-    out["exclusion_rules"] = {"slope_dev_cap": SLOPE_DEV_CAP, "min_pair_rois": MIN_PAIR_ROIS,
-                             "min_roi_coverage": MIN_ROI_COVERAGE}
-    (RESULTS / "repro.json").write_text(json.dumps(out, indent=2) + "\n")
-    n = len(out["pipelines"])
-    poss = sum(v["n_possible"] for v in out["pipelines"].values())
-    rej = sum(v["n_rejected"] for v in out["pipelines"].values())
-    nore = sum(v["n_no_recon"] for v in out["pipelines"].values())
-    print(f"wrote {RESULTS / 'repro.json'} ({n} pipelines)")
+    fits = write_columns(RESULTS, [(name, {f: cols[f] for f in fs}) for name, fs in FIT_FILES],
+                         (len(pipelines), n_pairs), {f: FIT_DECIMALS[f] for f in fields})
+    out = {"targets": subject_targets(acqs),
+           "acquisitions": {k: {f: a[f] for f in ACQ_FIELDS} for k, a in sorted(acqs.items())},
+           "comparisons": comparisons,
+           "exclusion_rules": {"slope_dev_cap": SLOPE_DEV_CAP, "min_pair_rois": MIN_PAIR_ROIS,
+                               "min_roi_coverage": MIN_ROI_COVERAGE},
+           "pairs": [{"class": c, "group": g, "key": k, "a": a, "b": b} for c, g, k, a, b in plan],
+           "pipelines": pipelines,
+           "summary": summary,
+           "rejected": rejected_by,
+           "fits": fits}
+    (RESULTS / "repro.json").write_text(json.dumps(out, separators=(",", ":")) + "\n")
+    poss, rej, nore = (sum(summary[f]) for f in ("n_possible", "n_rejected", "n_no_recon"))
+    print(f"wrote {RESULTS / 'repro.json'} + {', '.join(f['file'] for f in fits['files'])} "
+          f"({len(pipelines)} pipelines x {n_pairs} pairs)")
     print(f"  pairs: {poss - rej - nore} kept of {poss} possible "
           f"({rej} rejected fits, {nore} with no reconstruction)")
 

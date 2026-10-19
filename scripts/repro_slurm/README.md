@@ -141,7 +141,7 @@ an acquisition that hasn't been published yet both just show fewer tabs.
 ```bash
 scp bunya:/scratch/user/uqaste15/qsmci-repro/repro_payload.tar.gz /tmp/
 tar -C /home/ashley/repos/qsm/qsmci/qsmci -xzf /tmp/repro_payload.tar.gz
-# payload: results/index.json (merged), results/repro_rois.json, results/repro.json,
+# payload: results/index.json (merged), results/repro_rois.json, results/repro.json + repro_fits*.bin,
 #          data/harmonization/_align/ (transforms + dseg + target)
 ```
 

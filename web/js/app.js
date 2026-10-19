@@ -372,26 +372,49 @@ async function loadAlgos() { return (await loadAlgoManifest()).algorithms || [];
 // one of these keys; a row WITHOUT the field was scored on its track's default phantom.
 async function loadDatasets() { return (await loadAlgoManifest()).datasets || {}; }
 
-// The harmonization payload (results/repro.json, 8.7 MB / 866 KB gzipped): { pipelines: { "<a+b+c>":
-// {…} }, exclusion_rules: {…} }, written by scripts/repro_eval.py. Read by BOTH the leaderboard's
-// Harmonization dataset and the submission viewer's repro track, so one loader serves both — the two
-// pages used to keep separately-drifting copies of this.
+// The harmonization payload: results/repro.json, a ~150 KB index (pair list, per-pipeline summary,
+// rejections), plus its per-pair fit columns in results/repro_fits.bin (float32 [pipeline × pair],
+// ~1 MB), both written by scripts/repro_eval.py; js/reproBin.js decodes them into the object the pages
+// read (see reproFromIndex there). Read by BOTH the leaderboard's Harmonization dataset and the
+// submission viewer's repro track, so one loader serves both — the two pages used to keep
+// separately-drifting copies of this. The viewer needs only the summary, so the fit columns are
+// fetched only for `{ fits: true }`; both calls share the one index download.
 // Fetched off the critical path: each page kicks it off on idle (so the Harmonization tab can appear
 // on its own) and awaits it only where it genuinely needs the payload before it can render.
 // Memoised on the PROMISE, not the result, so the idle prefetch and a user click that races it share
 // a single download. {} is the tried-and-failed/empty sentinel, never null, so a consumer reading
 // `.pipelines` without a guard cannot throw; the promise memo is what stops a refetch loop.
-let _repro = null;
-async function loadRepro() {
-  if (_repro) return _repro;
-  _repro = (async () => {
-    let data;
+let _repro = null, _reproFits = null, _reproIndex = null;
+// The decoded columns `fields` of a binary descriptor whose index was fetched from `url`. The hash goes
+// on the URL so a browser/CDN cache can never pair a new index with an old .bin; the bytes are then
+// checked against it too (where SubtleCrypto exists) so a stale or truncated file reads as missing
+// rather than as wrong numbers.
+async function loadReproColumns(url, desc, fields) {
+  const base = url.slice(0, url.lastIndexOf("/") + 1), buffers = {};
+  await Promise.all(reproBinFiles(desc, fields).map(async (f) => {
+    const res = await fetch(base + f.file + "?v=" + f.sha256.slice(0, 16));
+    if (!res.ok) throw new Error(`${f.file}: HTTP ${res.status}`);
+    const buf = await res.arrayBuffer();
+    if (window.crypto?.subtle) {
+      const hex = [...new Uint8Array(await crypto.subtle.digest("SHA-256", buf))].map((b) => b.toString(16).padStart(2, "0")).join("");
+      if (hex !== f.sha256) throw new Error(`${f.file} does not match ${url} (stale or truncated)`);
+    }
+    buffers[f.file] = buf;
+  }));
+  return reproDecodeColumns(desc, buffers, fields);
+}
+async function loadRepro({ fits = false } = {}) {
+  if (!_repro) _repro = (async () => {
+    let index;
     // Check res.ok before parsing, like loadRuns(): a 404/5xx body isn't JSON, and letting
     // res.json() throw would leave the caller with an opaque SyntaxError instead of an empty view.
     try {
       const res = await fetch("results/repro.json");
-      data = res.ok ? await res.json() : {};
+      index = res.ok ? await res.json() : {};
     } catch (e) { return {}; }
+    if (!index || !index.fits) return {};
+    const data = reproFromIndex(index);
+    _reproIndex = index;
     // Keep only pipelines whose every step is a live, visible method. The harvest (repro_eval.py) now
     // drops methods RETIRED from the manifest, so what's left to filter here are the ones deliberately
     // kept but hidden — a parked submission like the MATLAB amp-pe, whose data stays in repro.json so
@@ -400,17 +423,45 @@ async function loadRepro() {
     // background-removal row is a pipeline ending in the DEFAULT dipole method, so a parked default
     // blanks the whole axis). The retired case is still handled, for a payload written before this.
     // Filtering HERE — the one place the payload enters the site — is what makes the rule hold on
-    // every table, chart and finding of both pages. loadAlgos() is itself memoised, so awaiting the
-    // manifest costs nothing: both pages have already asked for it by the time this resolves.
+    // every table, chart and finding of both pages. Each kept pipeline keeps its `row` into the fit
+    // columns, so they need no filtering. loadAlgos() is itself memoised, so awaiting the manifest
+    // costs nothing: both pages have already asked for it by the time this resolves.
     const algos = await loadAlgos();
-    if (algos.length && data && data.pipelines) {
+    if (algos.length) {
       const live = new Set(algos.filter((a) => !a.hidden).map((a) => a.slug));
       data.pipelines = Object.fromEntries(
         Object.entries(data.pipelines).filter(([pipe]) => pipe.split("+").every((s) => live.has(s))));
     }
-    return data || {};
+    return data;
   })();
-  return _repro;
+  if (!fits) return _repro;
+  if (!_reproFits) _reproFits = (async () => {
+    const data = await _repro;
+    if (!_reproIndex) return data;
+    try {
+      const cols = await loadReproColumns("results/repro.json", _reproIndex.fits, ["slope", "ba_bias_ppm"]);
+      data.fits = reproFromIndex(_reproIndex, cols).fits;
+    } catch (e) { console.error(e); }   // no fits: the views render as empty rather than wrong
+    return data;
+  })();
+  return _reproFits;
+}
+// The harmonization regional payload (results/repro_regions.json index + repro_regions.bin, a float32
+// [pipeline × acquisition × structure] grid of L/R-merged mean χ in ppb, written by
+// scripts/gen_repro_regions.py), decoded by reproRegionsFromIndex. Only the harmonization Findings
+// figures read it. Memoised like loadRepro(); { runs: {} } when unavailable.
+let _reproRegions = null;
+async function loadReproRegions() {
+  if (_reproRegions) return _reproRegions;
+  _reproRegions = (async () => {
+    try {
+      const res = await fetch("results/repro_regions.json");
+      const index = res.ok ? await res.json() : null;
+      if (!index || !index.values) return { runs: {}, nRuns: 0 };
+      return reproRegionsFromIndex(index, await loadReproColumns("results/repro_regions.json", index.values));
+    } catch (e) { console.error(e); return { runs: {}, nRuns: 0 }; }
+  })();
+  return _reproRegions;
 }
 
 // The Zenodo method registry (qsm_ci/registry.json), served alongside the site. Maps a method slug
@@ -631,5 +682,5 @@ function injectChrome() {
 document.addEventListener("DOMContentLoaded", injectChrome);
 
 // Exposed for module scripts (e.g. the NiiVue viewer, which must be a module for `import`).
-window.QSM = { GH, METRICS, METRIC_ORDER, STAGE_LABEL, MEDALS, loadRuns, loadAlgos, loadDatasets, loadRegistry, loadRepro, loadRunRegions, doiFor, val, fmt, fmtDuration, fmtBytes, metricCols, metricMeta, metricVal, metricColumns, robustRange, heatScale, heatText, REGION_ORDER,
+window.QSM = { GH, METRICS, METRIC_ORDER, STAGE_LABEL, MEDALS, loadRuns, loadAlgos, loadDatasets, loadRegistry, loadRepro, loadReproRegions, loadRunRegions, doiFor, val, fmt, fmtDuration, fmtBytes, metricCols, metricMeta, metricVal, metricColumns, robustRange, heatScale, heatText, REGION_ORDER,
   reproScannerLabel, reproScannerLong, reproScannerColour, reproProtoLabel, reproSubjectLabel, reproAcquisitions, reproSubjects, reproTargets };
