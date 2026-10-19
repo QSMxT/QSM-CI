@@ -46,6 +46,13 @@ def entry(meta: dict) -> dict:
         # on chisep-track phantoms). Explicit `domain:` wins; else derived from stage.
         "domain": meta.get("domain") or ("chisep" if meta.get("stage") in ("chi-separation", "r2prime-generation") else "qsm"),
         "engine": meta.get("engine"),
+        # The method's algorithm name, and how QSMxT names it: the viewer builds the equivalent
+        # `qsmxt run` command from these (web/js/qsmxtCommand.js), never from the QSM-CI slug.
+        # `qsmxt_value` overrides `algorithm` where the CLI value differs; `qsmxt_args` adds the
+        # flags `qsmxt run` needs to match how QSM-CI runs the method. Both emitted only when set.
+        "algorithm": meta.get("algorithm"),
+        **({"qsmxt_value": meta["qsmxt_value"]} if meta.get("qsmxt_value") else {}),
+        **({"qsmxt_args": list(meta["qsmxt_args"])} if meta.get("qsmxt_args") else {}),
         # Taxonomy axes (controlled vocabularies), used by the site's figures — e.g. the findings
         # runtime chart's colour selector. Value sets are documented in scripts/oneoff/apply_metadata.py.
         "language": meta.get("language"),   # Rust | MATLAB | Python
