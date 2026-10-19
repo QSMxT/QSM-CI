@@ -1,20 +1,27 @@
 """Binary columnar storage for the harmonization payloads the site reads.
 
-Two payloads, each a small JSON index plus raw float32 files beside it:
+The harmonization acquisitions fall into independent COHORTS, named by each repro-track registry
+entry's `group` (scripts/datasets.json) and described in REPRO_GROUPS below: the EMTP traveling heads
+(`harmonization`) and the MGH pilot (`harmonization-pilot`). Each cohort is its own dataset on the
+site, so each gets its own payload set, named from the cohort's file stem (`repro` for the traveling
+heads, `repro_pilot` for the pilot). Nothing in one cohort's files counts or ranks anything of
+another's. Per cohort, two payloads, each a small JSON index plus raw float32 files beside it:
 
-  results/repro.json          index: targets, acquisitions, comparisons, exclusion_rules, `pairs`
-                              (the ordered comparison list), `pipelines` (ordered ids), `summary`
-                              (per-pipeline headline columns), `rejected`, and `fits` (a descriptor)
-  results/repro_fits.bin      per-pair fit stats the web reads     [field][pipeline][pair]
-  results/repro_fits_extra.bin  the remaining per-pair fit stats   [field][pipeline][pair]
+  results/<stem>.json            index: group, targets, acquisitions, comparisons, exclusion_rules,
+                                 `pairs` (the ordered comparison list), `pipelines` (ordered ids),
+                                 `summary` (per-pipeline headline columns), `rejected`, and `fits`
+                                 (a descriptor)
+  results/<stem>_fits.bin        per-pair fit stats the web reads     [field][pipeline][pair]
+  results/<stem>_fits_extra.bin  the remaining per-pair fit stats     [field][pipeline][pair]
 
-  results/repro_regions.json  index: targets, acquisitions, structures, `pipelines`, `acqs`, `values`
-  results/repro_regions.bin   L/R-merged mean chi (ppb)            [pipeline][acquisition][structure]
+  results/<stem>_regions.json    index: group, targets, acquisitions, structures, `pipelines`, `acqs`,
+                                 `values`
+  results/<stem>_regions.bin     L/R-merged mean chi (ppb)            [pipeline][acquisition][structure]
 
 A descriptor says how to read its files:
 
   {"dtype": "<f4", "shape": [...], "decimals": {field: dp},
-   "files": [{"file": "repro_fits.bin", "fields": ["slope", ...], "bytes": n, "sha256": "..."}]}
+   "files": [{"file": "<stem>_fits.bin", "fields": ["slope", ...], "bytes": n, "sha256": "..."}]}
 
 Each file holds one C-order little-endian float32 block of `shape` per field, in `fields` order; NaN
 means no value (no fit for that pipeline x pair, no run for that pipeline x acquisition). `file` is
@@ -36,10 +43,53 @@ from pathlib import Path
 
 DTYPE = "<f4"
 CLASSES = ("test_retest", "inter_scanner", "inter_protocol")
+
+# The harmonization cohorts, in the order the site shows them (the first is the default). A
+# repro-track registry entry names its cohort in `group`; one without it belongs to DEFAULT_GROUP.
+#   key    the site's dataset key (results.html?dataset=<key>)
+#   label  the dataset tab's name
+#   stem   the payload file stem under results/ (see the module docstring)
+# A new cohort is a new entry here plus its acquisitions' `group`; the writers, the manifest
+# (gen_manifest.py copies this into web/algorithms.json as `repro_groups`) and the site pick it up.
+REPRO_GROUPS = {
+    "harmonization": {"key": "repro", "label": "Harmonization (2026)", "stem": "repro",
+                      "description": "EMTP traveling heads"},
+    "harmonization-pilot": {"key": "repro-pilot", "label": "Harmonization pilot (MGH)",
+                            "stem": "repro_pilot", "description": "MGH pilot"},
+}
+DEFAULT_GROUP = "harmonization"
+
+
+def group_of(entry: dict) -> str:
+    """The cohort a repro-track registry entry belongs to."""
+    return entry.get("group") or DEFAULT_GROUP
+
+
+def fit_files(stem: str) -> tuple:
+    """(file name, fields) per fit-column file of the cohort with this stem."""
+    return tuple((f"{stem}{suffix}", fields) for suffix, fields in FIT_FILE_FIELDS)
+
+
+def payload_names(group: str) -> dict:
+    """The file names (relative to results/) of one cohort's payloads."""
+    stem = REPRO_GROUPS[group]["stem"]
+    return {"repro": f"{stem}.json", "fits": [n for n, _ in fit_files(stem)],
+            "regions": f"{stem}_regions.json", "regions_bin": f"{stem}_regions.bin"}
+
+
+def all_payload_names() -> list:
+    """Every committed harmonization payload file, every cohort (what the workflows commit)."""
+    out = []
+    for g in REPRO_GROUPS:
+        n = payload_names(g)
+        out += [n["repro"], *n["fits"], n["regions"], n["regions_bin"]]
+    return out
+
+
 # Per-pair fit stats and the decimals repro_eval.py rounds them to. The site reads the first file
 # only, so the stats it never shows stay out of its download. |a-1| is not stored: it is |slope-1|.
-FIT_FILES = (("repro_fits.bin", ("slope", "ba_bias_ppm")),
-             ("repro_fits_extra.bin", ("intercept_ppm", "pearson_r", "ba_loa_ppm", "n_rois")))
+FIT_FILE_FIELDS = (("_fits.bin", ("slope", "ba_bias_ppm")),
+                   ("_fits_extra.bin", ("intercept_ppm", "pearson_r", "ba_loa_ppm", "n_rois")))
 FIT_DECIMALS = {"slope": 4, "ba_bias_ppm": 6, "intercept_ppm": 6, "pearson_r": 4, "ba_loa_ppm": 6,
                 "n_rois": 0}
 SUMMARY_FIELDS = tuple(f"{c}_{s}" for c in CLASSES
@@ -108,10 +158,10 @@ def is_binary(doc: dict) -> bool:
 
 
 def load_repro(path) -> dict:
-    """repro.json as the nested per-pipeline structure it used to be stored as:
-    {targets, acquisitions, comparisons, exclusion_rules, pipelines: {id: {<class>: {group: {pair:
-    {slope, intercept_ppm, abs_slope_dev, pearson_r, ba_bias_ppm, ba_loa_ppm, n_rois}}}, <summary>,
-    rejected: [...]}}}. A payload still in that form is returned as it is."""
+    """A cohort's repro payload (results/<stem>.json) as the nested per-pipeline structure it used to
+    be stored as: {group, targets, acquisitions, comparisons, exclusion_rules, pipelines: {id:
+    {<class>: {<comparison group>: {pair: {slope, intercept_ppm, abs_slope_dev, pearson_r,
+    ba_bias_ppm, ba_loa_ppm, n_rois}}}, <summary>, rejected: [...]}}}. A payload still in that form is returned as it is."""
     path = Path(path)
     doc = json.loads(path.read_text())
     if not is_binary(doc):
@@ -137,13 +187,14 @@ def load_repro(path) -> dict:
                              **{k: v for k, v in r.items() if k != "pair"}}
                             for r in doc.get("rejected", {}).get(pid, [])]
         pipelines[pid] = node
-    return {**{k: doc[k] for k in ("targets", "acquisitions", "comparisons") if k in doc},
+    return {**{k: doc[k] for k in ("group", "targets", "acquisitions", "comparisons") if k in doc},
             "pipelines": pipelines, "exclusion_rules": doc.get("exclusion_rules")}
 
 
 def load_regions(path) -> dict:
-    """repro_regions.json as its old run list: {targets, acquisitions, structures,
-    runs: [{p: pipeline, a: acquisition, m: {structure: chi ppb}}]}. Old-form payloads pass through."""
+    """A cohort's regions payload (results/<stem>_regions.json) as its old run list: {group, targets,
+    acquisitions, structures, runs: [{p: pipeline, a: acquisition, m: {structure: chi ppb}}]}.
+    Old-form payloads pass through."""
     path = Path(path)
     doc = json.loads(path.read_text())
     if not is_binary(doc):
@@ -158,5 +209,5 @@ def load_regions(path) -> dict:
             m = {s: vals[base + k] for k, s in enumerate(structs) if vals[base + k] == vals[base + k]}
             if m:
                 runs.append({"p": p, "a": a, "m": m})
-    return {"targets": doc.get("targets"), "acquisitions": doc.get("acquisitions"),
-            "structures": structs, "runs": runs}
+    return {"group": doc.get("group"), "targets": doc.get("targets"),
+            "acquisitions": doc.get("acquisitions"), "structures": structs, "runs": runs}

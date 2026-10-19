@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Reproducibility evaluation for the no-ground-truth harmonization track.
 
-The `repro` track reconstructs each subject from many acquisitions (scanner x protocol x run):
-the MGH pilot (one subject, two Siemens scanners) and the EMTP traveling heads (six subjects, KKI
-Philips plus GE/Siemens/Philips sessions at other sites). There is no truth map; the question is how
+The `repro` track reconstructs each subject from many acquisitions (scanner x protocol x run), in
+two independent cohorts (the registry's `group`, see scripts/repro_format.py REPRO_GROUPS): the EMTP
+traveling heads (six subjects, KKI Philips plus GE/Siemens/Philips sessions at other sites) and the
+MGH pilot (one subject, two Siemens scanners). There is no truth map; the question is how
 reproducible each pipeline's χ values are across acquisitions of the same subject — the analysis Marta Lancione ran with two pipelines (per-ROI orthogonal ax+b fits,
 Bland-Altman agreement), generalized over the whole QSM-CI combination matrix.
 
@@ -21,8 +22,9 @@ Stages (subcommands), all idempotent:
              resample its χ map into target space, reference it to the whole-brain mean, and record
              per-ROI means -> results/repro_rois.json. ROIs with <90% valid coverage are dropped
              (brain coverage differs between acquisitions).
-  fits       Pairwise comparisons per pipeline, always within one subject -> results/repro.json
-             (the web payload):
+  fits       Pairwise comparisons per pipeline, always within one subject, written per cohort
+             -> results/repro.json (traveling heads), results/repro_pilot.json (MGH pilot), each
+             with its fit columns (the web payloads):
                test-retest      same scanner+protocol, run i vs run j
                inter-scanner    same protocol+run, every pair of scanners the subject visited
                inter-protocol   same scanner+run, protocol vs bridge
@@ -49,7 +51,8 @@ import nibabel as nib
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from repro_format import FIT_DECIMALS, FIT_FILES, SUMMARY_FIELDS, write_columns  # noqa: E402
+from repro_format import (FIT_DECIMALS, REPRO_GROUPS, SUMMARY_FIELDS, fit_files, group_of,  # noqa: E402
+                           payload_names, write_columns)
 
 ROOT = Path(__file__).resolve().parent.parent
 ALIGN = ROOT / "data" / "harmonization" / "_align"
@@ -75,7 +78,8 @@ ACQ_FIELDS = ("subject", "scanner", "protocol", "run")
 
 
 def repro_acquisitions() -> dict[str, dict]:
-    """The repro-track registry entries: id -> {subject, scanner, protocol, run, target, path}."""
+    """The repro-track registry entries: id -> {subject, scanner, protocol, run, group, target, path}.
+    `group` is the cohort (repro_format.REPRO_GROUPS) the acquisition belongs to."""
     reg = json.loads((ROOT / "scripts" / "datasets.json").read_text())
     out = {}
     for key, v in reg.items():
@@ -84,9 +88,27 @@ def repro_acquisitions() -> dict[str, dict]:
         missing = [f for f in ACQ_FIELDS if not v.get(f)]
         if missing:
             raise SystemExit(f"repro acquisition {key} lacks {', '.join(missing)} in scripts/datasets.json")
-        out[key] = {**{f: v[f] for f in ACQ_FIELDS}, "target": bool(v.get("repro_target")),
-                    "path": ROOT / v["path"]}
+        if group_of(v) not in REPRO_GROUPS:
+            raise SystemExit(f"repro acquisition {key} names group {group_of(v)!r}, which "
+                             f"scripts/repro_format.py REPRO_GROUPS does not define")
+        out[key] = {**{f: v[f] for f in ACQ_FIELDS}, "group": group_of(v),
+                    "target": bool(v.get("repro_target")), "path": ROOT / v["path"]}
     return out
+
+
+def acquisitions_by_group(acqs: dict[str, dict]) -> dict[str, dict[str, dict]]:
+    """{cohort: {id: acquisition}} in REPRO_GROUPS order, cohorts without acquisitions left out. A
+    subject belongs to exactly one cohort (pairs never cross subjects, so neither may a cohort)."""
+    by: dict[str, dict] = {g: {} for g in REPRO_GROUPS}
+    for k, a in acqs.items():
+        by[a["group"]][k] = a
+    owner: dict[str, str] = {}
+    for g, mine in by.items():
+        for a in mine.values():
+            if owner.setdefault(a["subject"], g) != g:
+                raise SystemExit(f"subject {a['subject']} has acquisitions in two groups "
+                                 f"({owner[a['subject']]}, {g}); a subject belongs to one cohort")
+    return {g: mine for g, mine in by.items() if mine}
 
 
 def subject_targets(acqs: dict[str, dict]) -> dict[str, str]:
@@ -510,14 +532,35 @@ def comparison_plan(acqs: dict[str, dict]) -> list[tuple[str, str, str, str, str
 
 
 def cmd_fits(args) -> None:
+    """One payload set per cohort (repro_format.REPRO_GROUPS): results/<stem>.json + its fit columns.
+    Each cohort's comparisons, summaries, pair counts and rejections cover its own acquisitions only,
+    and its pipelines are the ones with at least one run on them."""
     rows = _roi_source()
     acqs = repro_acquisitions()
     # (pipeline, acq-id) -> roi means
     by_pa: dict[tuple, dict] = {}
     for row in rows:
         by_pa[(row["pipeline"], row["acq"])] = row["rois"]
-    pipelines = drop_retired(sorted({p for p, _ in by_pa}), live_algo_slugs(), "pipeline(s)")
+    live = live_algo_slugs()
+    written = 0
+    for group, mine in acquisitions_by_group(acqs).items():
+        pipelines = drop_retired(sorted({p for p, a in by_pa if a in mine}), live,
+                                 f"{group} pipeline(s)")
+        if not pipelines:
+            # Don't overwrite a cohort's good payload with an empty one (no runs harvested for it yet).
+            print(f"{group}: no runs on its acquisitions — left {payload_names(group)['repro']} as it is")
+            continue
+        write_fits(group, mine, pipelines, by_pa)
+        written += 1
+    if not written:
+        sys.exit("no harmonization runs to fit — nothing written.")
+
+
+def write_fits(group: str, acqs: dict[str, dict], pipelines: list[str], by_pa: dict) -> dict:
+    """Fit every comparison of one cohort (`acqs`) for `pipelines`; write results/<stem>.json and its
+    fit columns. Returns the index written."""
     plan = comparison_plan(acqs)
+    names = payload_names(group)
 
     # The web reads pair membership and acquisition metadata from here rather than parsing ids.
     comparisons: dict[str, dict] = {}
@@ -526,7 +569,8 @@ def cmd_fits(args) -> None:
     # Per-pair stats are columns over [pipeline x pair] (repro_format.py), so each pipeline's row is
     # filled in plan order and a pair without a fit stays None (NaN on disk).
     n_pairs = len(plan)
-    fields = [f for _, fs in FIT_FILES for f in fs]
+    files = fit_files(REPRO_GROUPS[group]["stem"])
+    fields = [f for _, fs in files for f in fs]
     cols = {f: [None] * (len(pipelines) * n_pairs) for f in fields}
     summary: dict[str, list] = {f: [] for f in SUMMARY_FIELDS}
     rejected_by: dict[str, list] = {}
@@ -569,9 +613,10 @@ def cmd_fits(args) -> None:
         if rejected:
             rejected_by[p] = rejected
 
-    fits = write_columns(RESULTS, [(name, {f: cols[f] for f in fs}) for name, fs in FIT_FILES],
+    fits = write_columns(RESULTS, [(name, {f: cols[f] for f in fs}) for name, fs in files],
                          (len(pipelines), n_pairs), {f: FIT_DECIMALS[f] for f in fields})
-    out = {"targets": subject_targets(acqs),
+    out = {"group": group,
+           "targets": subject_targets(acqs),
            "acquisitions": {k: {f: a[f] for f in ACQ_FIELDS} for k, a in sorted(acqs.items())},
            "comparisons": comparisons,
            "exclusion_rules": {"slope_dev_cap": SLOPE_DEV_CAP, "min_pair_rois": MIN_PAIR_ROIS,
@@ -581,12 +626,13 @@ def cmd_fits(args) -> None:
            "summary": summary,
            "rejected": rejected_by,
            "fits": fits}
-    (RESULTS / "repro.json").write_text(json.dumps(out, separators=(",", ":")) + "\n")
+    (RESULTS / names["repro"]).write_text(json.dumps(out, separators=(",", ":")) + "\n")
     poss, rej, nore = (sum(summary[f]) for f in ("n_possible", "n_rejected", "n_no_recon"))
-    print(f"wrote {RESULTS / 'repro.json'} + {', '.join(f['file'] for f in fits['files'])} "
+    print(f"{group}: wrote {RESULTS / names['repro']} + {', '.join(f['file'] for f in fits['files'])} "
           f"({len(pipelines)} pipelines x {n_pairs} pairs)")
     print(f"  pairs: {poss - rej - nore} kept of {poss} possible "
           f"({rej} rejected fits, {nore} with no reconstruction)")
+    return out
 
 
 def cmd_run_regions(args) -> None:
@@ -649,7 +695,7 @@ def main() -> None:
                     help="per-job: compute ROI means for the runs in this pipeline.py --runs-out "
                          "file and write them back into it (registers its acquisition on the fly), "
                          "instead of the whole index -> repro_rois.json")
-    sub.add_parser("fits", help="pairwise ax+b fits -> results/repro.json")
+    sub.add_parser("fits", help="pairwise ax+b fits -> results/<stem>.json per cohort")
     sub.add_parser("run-regions", help="per-run results/<id>/regions.json from repro_rois.json")
     args = ap.parse_args()
     {"register": cmd_register, "seg": cmd_seg, "stats": cmd_stats, "fits": cmd_fits,

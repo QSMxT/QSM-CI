@@ -21,14 +21,14 @@ MODULE = ROOT / "web" / "js" / "reproBin.js"
 # Reads index + .bin files from a results dir and prints what the pages would see, NaN as null.
 SCRIPT = r"""
 const fs = require("fs"), path = require("path");
-const B = require(process.argv[1]), dir = process.argv[2];
+const B = require(process.argv[1]), dir = process.argv[2], reproName = process.argv[3], regionsName = process.argv[4];
 const read = (name) => JSON.parse(fs.readFileSync(path.join(dir, name), "utf8"));
 const buffers = (desc) => Object.fromEntries(B.reproBinFiles(desc).map((f) => {
   const b = fs.readFileSync(path.join(dir, f.file));
   return [f.file, b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength)];
 }));
 const nn = (v) => (v === v ? v : null);
-const idx = read("repro.json"), fits = B.reproFromIndex(idx, B.reproDecodeColumns(idx.fits, buffers(idx.fits)));
+const idx = read(reproName), fits = B.reproFromIndex(idx, B.reproDecodeColumns(idx.fits, buffers(idx.fits)));
 const summaryOnly = B.reproFromIndex(idx);
 const pipes = {};
 for (const [id, node] of Object.entries(fits.pipelines)) {
@@ -36,31 +36,35 @@ for (const [id, node] of Object.entries(fits.pipelines)) {
   pipes[id] = { row: node.row, rejected: node.rejected, n_rejected: node.n_rejected,
                 inter_scanner_median_abs_slope_dev: node.inter_scanner_median_abs_slope_dev, pairs };
 }
-const ri = read("repro_regions.json"), reg = B.reproRegionsFromIndex(ri, B.reproDecodeColumns(ri.values, buffers(ri.values)));
+const ri = read(regionsName), reg = B.reproRegionsFromIndex(ri, B.reproDecodeColumns(ri.values, buffers(ri.values)));
 const runs = [];
 for (const [p, acqs] of Object.entries(reg.runs)) for (const [a, row] of Object.entries(acqs))
   runs.push({ p, a, m: Object.fromEntries(reg.structures.map((s) => [s, nn(row[reg.si[s]])]).filter(([, v]) => v !== null)) });
 let refused = false;
 try { B.reproDecodeColumns(idx.fits, { ...buffers(idx.fits), [idx.fits.files[0].file]: new ArrayBuffer(8) }); } catch (e) { refused = true; }
-console.log(JSON.stringify({ pipes, nPairs: fits.nPairs, summaryOnlyHasFits: "fits" in summaryOnly,
+console.log(JSON.stringify({ group: fits.group, regionsGroup: reg.group, pipes, nPairs: fits.nPairs, summaryOnlyHasFits: "fits" in summaryOnly,
   summaryOnlyPipes: Object.keys(summaryOnly.pipelines), runs, nRuns: reg.nRuns, refused }));
 """
 
 
-@pytest.fixture(scope="module")
-def decoded(repro_payload):
+@pytest.fixture(scope="module", params=list(rf.REPRO_GROUPS))
+def decoded(repro_payload, request):
+    """One cohort's payloads (results/<stem>.json + <stem>_regions.json) as the page code decodes them."""
     node = shutil.which("node")
     if not node:
         pytest.skip("node not installed")
     out, _ = repro_payload
-    res = subprocess.run([node, "-e", SCRIPT, str(MODULE), str(out)], capture_output=True, text=True, check=True)
-    return json.loads(res.stdout), out
+    names = rf.payload_names(request.param)
+    res = subprocess.run([node, "-e", SCRIPT, str(MODULE), str(out), names["repro"], names["regions"]],
+                         capture_output=True, text=True, check=True)
+    return json.loads(res.stdout), out, names
 
 
 def test_js_fit_columns_match_the_python_reader(decoded):
-    js, out = decoded
-    py = rf.load_repro(out / "repro.json")
-    idx = json.loads((out / "repro.json").read_text())
+    js, out, names = decoded
+    py = rf.load_repro(out / names["repro"])
+    idx = json.loads((out / names["repro"]).read_text())
+    assert js["group"] == idx["group"] == py["group"]
     assert list(js["pipes"]) == list(py["pipelines"]) == idx["pipelines"]
     assert js["nPairs"] == len(idx["pairs"])
     n = 0
@@ -78,18 +82,19 @@ def test_js_fit_columns_match_the_python_reader(decoded):
             # every field the JS decoded (incl. the derived |a-1|) is the exact double Python has
             assert vals == {f: m[f] for f in vals}, (pid, p)
             assert set(vals) == set(rf.FIT_DECIMALS) | {"abs_slope_dev"}
-    assert n > 300
+    assert n > 50
 
 
 def test_js_summary_only_load_skips_the_columns(decoded):
-    js, out = decoded
+    js, out, names = decoded
     assert js["summaryOnlyHasFits"] is False
-    assert js["summaryOnlyPipes"] == json.loads((out / "repro.json").read_text())["pipelines"]
+    assert js["summaryOnlyPipes"] == json.loads((out / names["repro"]).read_text())["pipelines"]
 
 
 def test_js_regions_match_the_python_reader(decoded):
-    js, out = decoded
-    py = rf.load_regions(out / "repro_regions.json")
+    js, out, names = decoded
+    py = rf.load_regions(out / names["regions"])
+    assert js["regionsGroup"] == py["group"]
     key = lambda r: (r["p"], r["a"])
     assert sorted(js["runs"], key=key) == sorted(py["runs"], key=key)
     assert js["nRuns"] == len(py["runs"])

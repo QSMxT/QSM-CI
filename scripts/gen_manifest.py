@@ -8,6 +8,10 @@ notes on how QSM-CI runs them.
 It also embeds the dataset/phantom registry (scripts/datasets.json) as a `datasets` block, so the
 site can label runs by the phantom they were scored on (run rows carry a `phantom` field; absence
 means the track's default phantom) and offer per-phantom filtering where a track has several.
+
+And the harmonization cohorts (scripts/repro_format.py REPRO_GROUPS) as a `repro_groups` list, in
+display order: each cohort's site dataset key, tab label and payload paths, so the site shows one
+Harmonization dataset per cohort, each reading only its own payloads.
 """
 from __future__ import annotations
 
@@ -21,6 +25,9 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 from qsm_ci.runner import _consumes  # noqa: E402
 from qsm_ci.stages import STAGES  # noqa: E402
+
+sys.path.insert(0, str(ROOT / "scripts"))
+from repro_format import REPRO_GROUPS, group_of, payload_names  # noqa: E402
 
 
 def _inputs(meta: dict) -> list:
@@ -130,7 +137,25 @@ def build() -> dict:
     # The dataset/phantom registry, verbatim — the web needs the label/track/default fields to name
     # phantoms and pick each track's default (a run row without a `phantom` field is the default).
     datasets = json.loads((ROOT / "scripts" / "datasets.json").read_text())
-    return {"algorithms": algos, "datasets": datasets}
+    return {"algorithms": algos, "datasets": datasets, "repro_groups": repro_groups(datasets)}
+
+
+def repro_groups(datasets: dict) -> list:
+    """The harmonization cohorts that have acquisitions in the registry, in REPRO_GROUPS order:
+    [{id, key, label, description, repro, regions}] (payload paths relative to the site root)."""
+    used = {group_of(v) for v in datasets.values() if v.get("track") == "repro"}
+    unknown = sorted(used - set(REPRO_GROUPS))
+    if unknown:
+        sys.exit(f"gen_manifest: scripts/datasets.json names harmonization group(s) {unknown} that "
+                 "scripts/repro_format.py REPRO_GROUPS does not define")
+    out = []
+    for gid, g in REPRO_GROUPS.items():
+        if gid not in used:
+            continue
+        names = payload_names(gid)
+        out.append({"id": gid, "key": g["key"], "label": g["label"], "description": g["description"],
+                    "repro": "results/" + names["repro"], "regions": "results/" + names["regions"]})
+    return out
 
 
 def render(manifest: dict) -> str:

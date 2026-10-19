@@ -13,6 +13,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+import repro_format as rf
 from repro_format import load_regions
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -46,25 +47,48 @@ def test_every_registry_scanner_has_a_display_label():
 
 
 def test_regional_sidecar_carries_acquisition_metadata(tmp_path):
+    """gen_repro_regions.py writes one regional payload per cohort, each carrying only its own
+    acquisitions' metadata and its own subjects' registration targets."""
     repro = {k: v for k, v in REGISTRY.items() if v.get("track") == "repro"}
     by_subject = {}
     for k, v in repro.items():
         by_subject.setdefault(v["subject"], []).append(k)
-    picked = [ids[0] for ids in by_subject.values()][:2]       # one acquisition from two subjects
+    picked = [ids[0] for ids in by_subject.values()][:3]       # one acquisition from three subjects
+    assert len({rf.group_of(repro[a]) for a in picked}) == 2   # ...spanning both cohorts
     manifest = json.loads((WEB / "algorithms.json").read_text())
     pipe = next(a["slug"] for a in manifest["algorithms"] if a.get("stage") == "end-to-end")
     stats = {"12": {"n": 100, "mean": 0.02}, "13": {"n": 80, "mean": 0.05}}
     src = {"runs": {f"r{i}": {"pipeline": pipe, "acq": a, "rois": {}, "roi_stats": stats}
                     for i, a in enumerate(picked)}}             # no `targets`: derived from the registry
-    inp, out = tmp_path / "rois.json", tmp_path / "regions.json"
+    inp = tmp_path / "rois.json"
     inp.write_text(json.dumps(src))
-    subprocess.run([sys.executable, str(ROOT / "scripts" / "gen_repro_regions.py"), str(inp), str(out)],
+    subprocess.run([sys.executable, str(ROOT / "scripts" / "gen_repro_regions.py"), str(inp), str(tmp_path)],
                    check=True, capture_output=True)
-    doc = load_regions(out)
-    assert "target" not in doc
-    assert set(doc["acquisitions"]) == set(picked)
-    for a in picked:
-        assert doc["acquisitions"][a] == {f: repro[a][f] for f in ("subject", "scanner", "protocol", "run")}
-    targets = {v["subject"]: k for k, v in repro.items() if v.get("repro_target")}
-    assert doc["targets"] == targets
-    assert {r["a"] for r in doc["runs"]} == set(picked)
+    for group in rf.REPRO_GROUPS:
+        mine = [a for a in picked if rf.group_of(repro[a]) == group]
+        doc = load_regions(tmp_path / rf.payload_names(group)["regions"])
+        assert "target" not in doc and doc["group"] == group
+        assert set(doc["acquisitions"]) == set(mine)
+        for a in mine:
+            assert doc["acquisitions"][a] == {f: repro[a][f] for f in ("subject", "scanner", "protocol", "run")}
+        targets = {v["subject"]: k for k, v in repro.items() if v.get("repro_target") and rf.group_of(v) == group}
+        assert doc["targets"] == targets
+        assert {r["a"] for r in doc["runs"]} == set(mine)
+
+
+def test_every_repro_acquisition_names_a_known_cohort():
+    """`group` on every repro-track entry, from REPRO_GROUPS; one subject never spans two cohorts; and
+    the manifest lists the cohorts the site builds its Harmonization datasets from."""
+    repro = {k: v for k, v in REGISTRY.items() if v.get("track") == "repro"}
+    assert all(v.get("group") in rf.REPRO_GROUPS for v in repro.values())
+    owner = {}
+    for v in repro.values():
+        assert owner.setdefault(v["subject"], v["group"]) == v["group"], v["subject"]
+    assert {v["group"] for v in repro.values() if v["subject"] == "mgh"} == {"harmonization-pilot"}
+    assert {v["group"] for v in repro.values() if v["subject"] != "mgh"} == {"harmonization"}
+    manifest = json.loads((WEB / "algorithms.json").read_text())
+    assert [g["id"] for g in manifest["repro_groups"]] == list(rf.REPRO_GROUPS)
+    for g in manifest["repro_groups"]:
+        names = rf.payload_names(g["id"])
+        assert g["key"] == rf.REPRO_GROUPS[g["id"]]["key"]
+        assert g["repro"] == "results/" + names["repro"] and g["regions"] == "results/" + names["regions"]

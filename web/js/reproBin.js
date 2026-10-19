@@ -38,9 +38,10 @@ function reproDecodeColumns(desc, buffers, fields) {
   return out;
 }
 
-// The pipeline payload the pages read, from results/repro.json + the decoded fit columns (or none:
+// The pipeline payload the pages read, from one harmonization cohort's results/<stem>.json (repro.json
+// for the traveling heads, repro_pilot.json for the MGH pilot) + the decoded fit columns (or none:
 // the submission page needs only the per-pipeline summary). Shape:
-//   { targets, acquisitions, comparisons, exclusion_rules,
+//   { group, targets, acquisitions, comparisons, exclusion_rules,
 //     pairs: [{class, group, key, a, b}], nPairs,
 //     pipelines: { id: { row, <summary fields>, rejected: [{class, group, pair, why, …}] } },
 //     fits: { slope, ba_bias_ppm, abs_slope_dev } }   // Float64Array [row * nPairs + pair], NaN = no fit
@@ -55,7 +56,7 @@ function reproFromIndex(index, cols) {
       ({ class: pairs[pair].class, group: pairs[pair].group, pair: pairs[pair].key, ...r }));
     pipelines[id] = node;
   });
-  const out = { targets: index.targets, acquisitions: index.acquisitions, comparisons: index.comparisons,
+  const out = { group: index.group, targets: index.targets, acquisitions: index.acquisitions, comparisons: index.comparisons,
                 exclusion_rules: index.exclusion_rules, pairs, nPairs, pipelines };
   if (cols) {
     // |a−1| is not stored: it is the slope's distance from 1, to the slope's own 4 decimals.
@@ -66,8 +67,8 @@ function reproFromIndex(index, cols) {
   return out;
 }
 
-// The regional payload from results/repro_regions.json + its decoded grid:
-//   { targets, acquisitions, structures, si: {structure: index}, nRuns,
+// The regional payload from a cohort's results/<stem>_regions.json + its decoded grid:
+//   { group, targets, acquisitions, structures, si: {structure: index}, nRuns,
 //     runs: { pipeline: { acq: Float64Array(structures) } } }   // only runs with any value; NaN = none
 // Each run is a view onto one grid row, so indexing it costs no copy.
 function reproRegionsFromIndex(index, cols) {
@@ -83,7 +84,7 @@ function reproRegionsFromIndex(index, cols) {
       }
     });
   });
-  return { targets: index.targets, acquisitions: index.acquisitions, structures: S,
+  return { group: index.group, targets: index.targets, acquisitions: index.acquisitions, structures: S,
            si: Object.fromEntries(S.map((s, k) => [s, k])), runs, nRuns };
 }
 

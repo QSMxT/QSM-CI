@@ -77,9 +77,10 @@ evidence:
     references and this publish did not produce (a method dropped from the matrix, a renamed id).
     Only after a publish whose every upload landed, so a failure can never be read as retirement.
 
-The harmonization track is judged differently, because it is addressed differently: results/repro.json
-names every live pipeline (repro_eval.py drops methods retired from the manifest), and the viewer
-derives every URL from pipeline id × acquisition — recon and sidecars per pipeline, a total field per
+The harmonization track is judged differently, because it is addressed differently: each cohort's
+payload (results/repro.json for the traveling heads, results/repro_pilot.json for the MGH pilot)
+names every live pipeline on that cohort's acquisitions (repro_eval.py drops methods retired from the
+manifest), and the viewer derives every URL from pipeline id × acquisition — recon and sidecars per pipeline, a total field per
 field-mapping method, a local field per (field-mapping, bfr) pair, a magnitude per acquisition. So
 `--prune-repro` (repro.yml's evaluate job) rebuilds that exact name set, under the acquisitions
 scripts/datasets.json knows, and judges what falls outside it by the manifest, the way
@@ -109,6 +110,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 from qsm_ci.stages import STAGES  # noqa: E402 — the stage graph, for produced-artifact lookups
+sys.path.insert(0, str(ROOT / "scripts"))
+from repro_format import group_of, payload_names  # noqa: E402 — the harmonization cohorts' payloads
 
 # Per-run volume kinds. Ground truth is handled separately (shared per phantom, see module doc).
 KINDS = ("recon", "error")
@@ -529,8 +532,8 @@ def _delete_batches(api, repo, paths: list, what: str) -> int:
 
 # ── Harmonization (repro) track ──────────────────────────────────────────────────────────────────
 # Nothing here is addressed by a URL in an index: the viewer derives every harmonization URL from a
-# pipeline id and an acquisition (web/js/viewer.js reproReconUrl & co.), and results/repro.json is the
-# list of live pipelines. Liveness is therefore DERIVED, the same way, and must stay byte-identical
+# pipeline id and an acquisition (web/js/viewer.js reproReconUrl & co.), and each cohort's payload
+# (results/<stem>.json, scripts/repro_format.py) is the list of live pipelines on its acquisitions. Liveness is therefore DERIVED, the same way, and must stay byte-identical
 # to those derivations — a drift here deletes live files (the 621-intermediate near-miss of 2026-09).
 REPRO_PREFIX = "repro/"
 REPRO_RUN_KINDS = (("recon", "nii.gz"), ("resources", "json"), ("regions", "json"))  # per pipeline×acq
@@ -543,6 +546,12 @@ def repro_acq_ids() -> frozenset:
     repro_eval.py and the site both read."""
     reg = json.loads((ROOT / "scripts" / "datasets.json").read_text())
     return frozenset(k for k, v in reg.items() if v.get("track") == "repro")
+
+
+def repro_acq_groups() -> dict:
+    """{acquisition id: cohort} for every harmonization acquisition in scripts/datasets.json."""
+    reg = json.loads((ROOT / "scripts" / "datasets.json").read_text())
+    return {k: group_of(v) for k, v in reg.items() if v.get("track") == "repro"}
 
 
 def repro_live_names(pipelines, acqs) -> set:
@@ -577,11 +586,11 @@ def repro_orphans(files, live: set, acqs, live_slugs) -> tuple[list, list, float
 
     A judged file no live pipeline can name is RETIRED only if it names a method outside
     `live_slugs` (the manifest) — the rule repro_eval.drop_retired applies to pipelines. Otherwise it
-    is UNHARVESTED: every method in it is live, only the ROI stats/fits that would put it in repro.json
-    are missing (a GPU method run without a stats pass, a parked submission). Those are kept; they
-    are the only copy. Methods are read off the name as `_`-separated slugs, which is unambiguous
-    while no slug contains `_` (the caller checks). Coverage is the share of judged files repro.json
-    explains: a precondition on the INPUT (see flat_orphans), not a cap on the output."""
+    is UNHARVESTED: every method in it is live, only the ROI stats/fits that would put it in its
+    cohort's payload are missing (a GPU method run without a stats pass, a parked submission). Those
+    are kept; they are the only copy. Methods are read off the name as `_`-separated slugs, which is
+    unambiguous while no slug contains `_` (the caller checks). Coverage is the share of judged files
+    the payloads explain: a precondition on the INPUT (see flat_orphans), not a cap on the output."""
     retired, unharvested, kept, unknown = [], [], 0, set()
     for f in files:
         if not f.startswith(REPRO_PREFIX):
@@ -607,16 +616,31 @@ def repro_orphans(files, live: set, acqs, live_slugs) -> tuple[list, list, float
     return sorted(retired), sorted(unharvested), (kept / total if total else 1.0), unknown
 
 
-def _prune_repro(api, repo, repro_json: Path, acqs, dry_run: bool) -> int:
-    """--prune-repro: delete harmonization volumes no live pipeline can name. Returns the count."""
-    if not repro_json.exists():
-        print(f"! prune-repro: {repro_json} does not exist", file=sys.stderr)
+def _prune_repro(api, repo, results: Path, acq_groups: dict, dry_run: bool) -> int:
+    """--prune-repro: delete harmonization volumes no live pipeline can name. Returns the count.
+    `acq_groups` is {acquisition: cohort}; each cohort's live pipelines come from its own payload in
+    `results` and name files on its own acquisitions only."""
+    by_group: dict = {}
+    for acq, g in acq_groups.items():
+        by_group.setdefault(g, set()).add(acq)
+    pipes_by_group: dict = {}
+    for g in sorted(by_group):
+        path = Path(results) / payload_names(g)["repro"]
+        if not path.exists():
+            # Without a cohort's list every file on its acquisitions would look orphaned.
+            print(f"! prune-repro: {path} ({g}) does not exist; refusing", file=sys.stderr)
+            return 0
+        pipes = sorted(json.loads(path.read_text()).get("pipelines") or {})
+        if not pipes:
+            print(f"! prune-repro: {path.name} ({g}) names no pipelines — refusing to treat that as "
+                  "'everything is retired'.", file=sys.stderr)
+            return 0
+        pipes_by_group[g] = pipes
+    if not pipes_by_group:
+        print("! prune-repro: scripts/datasets.json lists no harmonization acquisitions", file=sys.stderr)
         return 0
-    pipelines = sorted(json.loads(repro_json.read_text()).get("pipelines") or {})
-    if not pipelines:
-        print("! prune-repro: repro.json names no pipelines — refusing to treat that as 'everything "
-              "is retired'.", file=sys.stderr)
-        return 0
+    acqs = frozenset(acq_groups)
+    pipelines = sorted({p for ps in pipes_by_group.values() for p in ps})
     slugs = live_algo_slugs()
     if not slugs:
         print("! prune-repro: web/algorithms.json names no methods — cannot tell retired from "
@@ -631,16 +655,19 @@ def _prune_repro(api, repo, repro_json: Path, acqs, dry_run: bool) -> int:
     except Exception as exc:  # noqa: BLE001
         print(f"  ! prune-repro: could not list {repo} ({exc}); skipping", file=sys.stderr)
         return 0
-    live = repro_live_names(pipelines, acqs)
+    live = set()
+    for g, pipes in pipes_by_group.items():
+        live |= repro_live_names(pipes, by_group[g])
     orphans, unharvested, coverage, unknown = repro_orphans(files, live, acqs, slugs)
-    print(f"  prune-repro: {len(pipelines)} live pipeline(s) × {len(acqs)} acquisition(s) explain "
-          f"{coverage:.0%} of the harmonization files")
+    print(f"  prune-repro: {len(pipelines)} live pipeline(s) over {len(pipes_by_group)} cohort(s), "
+          f"{len(acqs)} acquisition(s), explain {coverage:.0%} of the harmonization files")
     if unharvested:
         by_u: dict = {}
         for f in unharvested:
             by_u.setdefault(f.rsplit("/", 1)[1].rsplit("__", 1)[0].split("-cmp-")[0], []).append(f)
         print(f"  prune-repro: {len(unharvested)} file(s) across {len(by_u)} pipeline/column(s) are "
-              f"built only from live methods but absent from repro.json (no ROI stats yet, or parked) "
+              f"built only from live methods but absent from their cohort's payload (no ROI stats "
+              f"yet, or parked) "
               f"— kept, they are the only copy")
         for k in sorted(by_u)[:5]:
             print(f"      - {k}: {len(by_u[k])} file(s)")
@@ -831,7 +858,7 @@ def main() -> int:
         if runs_file is not None or "--prune" in sys.argv:
             print("! --prune-repro stands alone (with --prune-dry-run at most)", file=sys.stderr)
             return 1
-        _prune_repro(HfApi(token=token), repo, results / "repro.json", repro_acq_ids(), prune_dry)
+        _prune_repro(HfApi(token=token), repo, results, repro_acq_groups(), prune_dry)
         return 0
 
     # Pruning from a shard would delete every OTHER shard's volumes: a --runs publish knows only

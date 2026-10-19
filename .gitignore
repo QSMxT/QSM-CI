@@ -18,11 +18,12 @@ out/
 .sweep/
 
 # Per-run scoring scratch: only the small aggregated result files are tracked: results/index.json
-# (Pages reads it, score.yml commits it), results/repro.json + repro_fits*.bin (the harmonization
-# reproducibility stats read by the repro dataset views; repro.yml commits them), and
-# results/repro_regions.json + .bin (the per-run regional aggregate the harmonization Findings figures
-# read). Everything else under results/ is per-run recon/truth/error/resources scratch (incl. the
-# large repro_rois.json).
+# (Pages reads it, score.yml commits it) and, per harmonization cohort (scripts/repro_format.py
+# REPRO_GROUPS: stem `repro` = EMTP traveling heads, `repro_pilot` = MGH pilot), results/<stem>.json +
+# <stem>_fits*.bin (the reproducibility stats the cohort's dataset views read; repro.yml commits them)
+# and results/<stem>_regions.json + .bin (the per-run regional aggregate its Findings figures read).
+# Everything else under results/ is per-run recon/truth/error/resources scratch (incl. the large
+# repro_rois.json).
 /results/*
 !/results/index.json
 !/results/repro.json
@@ -30,6 +31,11 @@ out/
 !/results/repro_fits_extra.bin
 !/results/repro_regions.json
 !/results/repro_regions.bin
+!/results/repro_pilot.json
+!/results/repro_pilot_fits.bin
+!/results/repro_pilot_fits_extra.bin
+!/results/repro_pilot_regions.json
+!/results/repro_pilot_regions.bin
 # score.yml's merge job commits scoring-state.json too: what was scored at which SHA (score_state.py).
 !/results/scoring-state.json
 
