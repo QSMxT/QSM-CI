@@ -7,7 +7,7 @@ import { renderResources } from "./resourceChart.js";
 import { autoWin, makeWindowControl, winControls } from "./windowControl.js";
 import { qsmxtCommand } from "./qsmxtCommand.js";
 
-const { loadRuns, loadAlgos, loadDatasets, loadRegistry, loadRepro, loadRunRegions, doiFor, METRICS, METRIC_ORDER, STAGE_LABEL, val, fmt, metricVal, metricColumns, robustRange, heatScale, REGION_ORDER } = window.QSM;
+const { loadRuns, loadAlgos, loadDatasets, loadRegistry, loadRepro, loadRunRegions, doiFor, METRICS, METRIC_ORDER, STAGE_LABEL, val, fmt, metricVal, metricMeta, metricColumns, isRanked, betterHint, robustRange, heatScale, REGION_ORDER } = window.QSM;
 
 const STAGE_COLOR = {
   "field-mapping": "bg-indigo-50 text-indigo-700 ring-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-300 dark:ring-indigo-500/20",
@@ -1138,6 +1138,8 @@ const CHI_RANK_STAGES = new Set(["dipole", "bfr+dipole", "end-to-end"]);
 const sameRankStage = (r, run) =>
   CHI_RANK_STAGES.has(run.stage) ? CHI_RANK_STAGES.has(r.stage) : r.stage === run.stage;
 function metricRank(k) {
+  // A signed metric (better: "none", e.g. dgm_slope) has no better direction, so no rank.
+  if (!isRanked(k)) return null;
   // val() also reaches top-level fields (e.g. runtime_s); rankBy() carries the grouping/goodness logic.
   return rankBy((r) => val(r, k), METRICS[k].better !== "lower");
 }
@@ -1171,7 +1173,7 @@ const CHISEP_GROUPS = [
   [null, ["avg_mspe"]],
   ["χ+ paramagnetic (iron, veins)", [
     "para_mspe", "para_xsim", "para_nrmse", "para_nrmse_dgm", "para_dgm_linearity",
-    "para_nrmse_blood", "para_calc_leak", "para_leak",
+    "para_dgm_slope", "para_dgm_offset_ppm", "para_nrmse_blood", "para_calc_leak", "para_leak",
   ]],
   ["χ− diamagnetic (calcium, myelin)", [
     "dia_mspe", "dia_xsim", "dia_nrmse", "dia_calc_moment_dev", "dia_calc_streak",
@@ -1194,12 +1196,12 @@ function renderChisepMetrics() {
       const hero = key === "avg_mspe";
       const higher = better === "higher";
       // Rank against the same accessor, so peers are compared on exactly the value shown.
-      const rk = rankBy((r) => metricVal(r, key), higher);
+      const rk = isRanked(key) ? rankBy((r) => metricVal(r, key), higher) : null;
       const rankCell = rk
         ? `<span class="inline-block rounded-md px-1.5 py-0.5 text-xs font-semibold text-white shadow-sm" style="background:${heatScale(rk.t)}" data-tip="Rank ${rk.rank} of ${rk.n} χ-separation methods for ${label}">#${rk.rank}<span class="opacity-70"> / ${rk.n}</span></span>`
         : `<span class="text-gray-300 dark:text-gray-600">—</span>`;
       html += `<tr>
-        <td class="whitespace-nowrap py-2 text-gray-500 dark:text-gray-400"><span class="has-tip" data-tip="${tip.replace(/"/g, "&quot;")}">${label}</span> <span class="text-gray-300 dark:text-gray-600" title="${better} is better">${higher ? "↑" : "↓"}</span></td>
+        <td class="whitespace-nowrap py-2 text-gray-500 dark:text-gray-400"><span class="has-tip" data-tip="${tip.replace(/"/g, "&quot;")}">${label}</span> <span class="text-gray-300 dark:text-gray-600" title="${isRanked(key) ? `${better} is better` : "signed: ideal " + metricMeta(key).target + ", not ranked"}">${betterHint(key)}</span></td>
         <td class="py-2 text-right tabular-nums ${hero ? "font-bold text-gray-900 dark:text-gray-100" : "font-medium text-gray-700 dark:text-gray-300"}">${fmt(v, key)}</td>
         <td class="py-2 pl-3 text-right">${rankCell}</td>
       </tr>`;
@@ -1222,13 +1224,13 @@ function renderMetrics() {
     : CHI_RANK_STAGES.has(run.stage) ? "isolated χ-map methods (dipole, bfr+dipole, end-to-end)"
     : `isolated ${STAGE_LABEL[run.stage] || run.stage} methods`;
   $("metrics-body").innerHTML = order.map((k) => {
-    const meta = METRICS[k], arrow = meta.better === "higher" ? "↑" : "↓", hero = k === "xsim" || k === "nrmse";
+    const meta = METRICS[k], arrow = betterHint(k), hero = k === "xsim" || k === "nrmse";
     const rk = metricRank(k);
     const rankCell = rk
       ? `<span class="inline-block rounded-md px-1.5 py-0.5 text-xs font-semibold text-white shadow-sm" style="background:${heatScale(rk.t)}" data-tip="Rank ${rk.rank} of ${rk.n} ${groupLabel} for ${meta.label}">#${rk.rank}<span class="opacity-70"> / ${rk.n}</span></span>`
       : `<span class="text-gray-300 dark:text-gray-600">—</span>`;
     return `<tr>
-      <td class="py-2.5 text-gray-500 dark:text-gray-400"><span class="has-tip" data-tip="${(meta.desc || "").replace(/"/g, "&quot;")}">${meta.label}</span> <span class="text-gray-300 dark:text-gray-600" title="${meta.better} is better">${arrow}</span></td>
+      <td class="py-2.5 text-gray-500 dark:text-gray-400"><span class="has-tip" data-tip="${(meta.desc || "").replace(/"/g, "&quot;")}">${meta.label}</span> <span class="text-gray-300 dark:text-gray-600" title="${isRanked(k) ? `${meta.better} is better` : `signed: ideal ${meta.target}, not ranked`}">${arrow}</span></td>
       <td class="py-2.5 text-right tabular-nums ${hero ? "font-bold text-gray-900 dark:text-gray-100" : "font-medium text-gray-700 dark:text-gray-300"}">${fmt(val(run, k), k)}</td>
       <td class="py-2.5 pl-3 text-right">${rankCell}</td>
     </tr>`;

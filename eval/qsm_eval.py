@@ -186,8 +186,14 @@ def hfen(recon: np.ndarray, truth: np.ndarray, mask: np.ndarray, sigma: float = 
     return val if math.isfinite(val) else math.nan
 
 
-def dgm_linearity(recon: np.ndarray, truth: np.ndarray, seg: np.ndarray) -> float:
-    """|1 - slope| of mean susceptibility across the 6 DGM regions (labels 1-6)."""
+def dgm_fit(recon: np.ndarray, truth: np.ndarray, seg: np.ndarray) -> tuple[float, float]:
+    """(slope, intercept) of the 6 DGM region means (labels 1-6): the reconstructed means regressed
+    (OLS, `linear_fit`) on the true means, recon ≈ slope·truth + intercept, intercept in ppm.
+
+    The SIGNED calibration of deep grey-matter susceptibility: slope < 1 under-estimates the iron
+    contrast between nuclei, slope > 1 over-estimates it, a negative slope inverts it; the intercept
+    is the common offset left after that. (NaN, NaN) with fewer than two labelled regions. A truth
+    whose region means are all equal leaves the fit undefined, and `linear_fit` answers (0, 0)."""
     tmeans, rmeans = [], []
     for label in range(1, 7):
         sel = seg == label
@@ -195,9 +201,23 @@ def dgm_linearity(recon: np.ndarray, truth: np.ndarray, seg: np.ndarray) -> floa
             tmeans.append(truth[sel].mean())
             rmeans.append(recon[sel].mean())
     if len(tmeans) < 2:
-        return math.nan
-    slope, _ = linear_fit(np.array(tmeans), np.array(rmeans))
+        return math.nan, math.nan
+    return linear_fit(np.array(tmeans), np.array(rmeans))
+
+
+def dgm_linearity(recon: np.ndarray, truth: np.ndarray, seg: np.ndarray) -> float:
+    """|1 - slope| of mean susceptibility across the 6 DGM regions (labels 1-6): the unsigned
+    magnitude of `dgm_fit`'s slope error, so it always equals |1 - dgm_slope|."""
+    slope, _ = dgm_fit(recon, truth, seg)
     return abs(1.0 - slope)
+
+
+def dgm_metrics(recon: np.ndarray, truth: np.ndarray, seg: np.ndarray, nothing: bool) -> dict:
+    """The three DGM calibration metrics from ONE `dgm_fit`: dgm_linearity = |1 - slope| (ranked),
+    dgm_slope (signed slope) and dgm_offset_ppm (intercept, ppm). All NaN when `nothing` — the shared
+    "no scoreable voxels" gate: the fit reads `seg`, never the score mask, so it cannot see that."""
+    slope, intercept = (math.nan, math.nan) if nothing else dgm_fit(recon, truth, seg)
+    return {"dgm_linearity": abs(1.0 - slope), "dgm_slope": slope, "dgm_offset_ppm": intercept}
 
 
 def dilate_mask_3d(mask: np.ndarray) -> np.ndarray:
@@ -345,7 +365,8 @@ def chisep_metrics(recon, truth, mask, seg=None, component="para", wm_rois=None,
     the sources, the QSM region metrics apply to the source that owns each feature: χ+ carries the DGM
     iron and venous blood; χ− carries the calcification. The base agreement set
     (nrmse/nrmse_detrend/correlation/xsim) is always reported; with a segmentation we add:
-      χ+ : nrmse_dgm, dgm_linearity, nrmse_blood, calc_leak  (calcium wrongly bleeding INTO χ+)
+      χ+ : nrmse_dgm, dgm_linearity, dgm_slope, dgm_offset_ppm, nrmse_blood,
+           calc_leak  (calcium wrongly bleeding INTO χ+)
       χ− : calc_moment_dev, calc_streak, iron_leak           (iron/veins wrongly bleeding INTO χ−)
     'leak' is the mean |recon| in the region owned by the OTHER source (which should be ~0 here) — a
     direct cross-contamination / separation-fidelity measure, lower is better."""
@@ -366,7 +387,7 @@ def chisep_metrics(recon, truth, mask, seg=None, component="para", wm_rois=None,
 
     if component == "para":
         _, out["nrmse_dgm"] = nrmse_challenge(recon, truth, dgm)
-        out["dgm_linearity"] = math.nan if nothing else dgm_linearity(recon, truth, seg)
+        out.update(dgm_metrics(recon, truth, seg, nothing))
         _, out["nrmse_blood"] = nrmse_challenge(recon, truth, blood)
         out["calc_leak"] = leak(calc)
         # Paper per-ROI MSPE over the iron nuclei + GM (χ+ quantification target).
@@ -428,7 +449,7 @@ def challenge_metrics(recon, truth, mask, seg) -> dict:
     dgm = m & np.isin(seg, [1, 2, 3, 4, 5, 6])
     _, nrmse_dgm = nrmse_challenge(recon, truth, dgm)
 
-    # `dgm_linearity` and `calcification_metrics` are handed `seg` and never see the score mask, so
+    # `dgm_metrics` and `calcification_metrics` are handed `seg` and never see the score mask, so
     # an empty mask never reaches their own "no voxels" guards: with both maps zeroed outside the
     # mask they come back with a rankable |1 - slope| = 1.0 and the best-possible calc_moment_dev of
     # 0.0. Gate them on the shared test instead of intersecting `seg` with the mask, which would
@@ -443,7 +464,7 @@ def challenge_metrics(recon, truth, mask, seg) -> dict:
         "nrmse_tissue": nrmse_tissue,
         "nrmse_blood": nrmse_blood,
         "nrmse_dgm": nrmse_dgm,
-        "dgm_linearity": math.nan if nothing else dgm_linearity(recon, truth, seg),
+        **dgm_metrics(recon, truth, seg, nothing),
         "calc_moment_dev": calc_dev,
         "calc_streak": calc_streak,
         "correlation": correlation(recon, truth, mask),

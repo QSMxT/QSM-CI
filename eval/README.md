@@ -13,6 +13,11 @@ The metrics are a 1:1 port of the QSM.rs reference implementation
 `xsim` (5×5×5 XSIM), `dgm_linearity`, `dilate_mask_3d`, and `calcification_metrics`. Because it is a
 *second* implementation, it must not drift:
 
+`dgm_slope` and `dgm_offset_ppm` are QSM-CI additions with no QSM.rs counterpart: the signed slope
+and intercept (ppm) of the same OLS fit of DGM region means (recon on truth) that `dgm_linearity`
+takes the magnitude of, so `dgm_linearity == |1 - dgm_slope|` exactly. Slope < 1 means the pipeline
+under-estimates DGM susceptibility contrast, > 1 over-estimates it.
+
 - `test_metrics.py` pins the invariants.
 - `qsm_eval.py --selfcheck` runs quick sanity checks.
 - **Cross-checked against QSM.rs** on the head phantom: feeding the same recon/truth/mask/seg to
@@ -57,6 +62,7 @@ Usually you don't call this directly — `scripts/pipeline.py` drives it per pro
   "metrics": {
     "nrmse": 15.2, "nrmse_detrend": 12.4, "nrmse_tissue": 8.9,
     "nrmse_blood": 22.1, "nrmse_dgm": 18.5, "dgm_linearity": 0.02,
+    "dgm_slope": 0.98, "dgm_offset_ppm": 0.003,
     "calc_moment_dev": 0.46, "calc_streak": 0.12,
     "correlation": 0.75, "xsim": 0.81
   }
