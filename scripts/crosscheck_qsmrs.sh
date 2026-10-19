@@ -53,6 +53,8 @@ import json, sys
 py = json.load(open(sys.argv[1]))["metrics"]; rs = json.load(open(sys.argv[2])); tol = float(sys.argv[3])
 worst = 0.0
 for k in py:
+    if k not in rs:  # QSM-CI-only metrics (e.g. the signed dgm_slope/dgm_offset_ppm) have no Rust twin
+        print(f"  {k:16} py={py[k]}  (no QSM.rs counterpart; not compared)"); continue
     rel = abs(py[k] - rs[k]) / (abs(rs[k]) or 1.0); worst = max(worst, rel)
     print(f"  {k:16} py={py[k]:.10g}  rust={rs[k]:.10g}  rel={rel:.1e}")
 print(f"max relative difference: {worst:.2e}  (tol {tol:.0e})")

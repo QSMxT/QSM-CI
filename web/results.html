@@ -262,7 +262,7 @@
                 <label class="flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-sm hover:bg-gray-50 cursor-pointer">
                   <input type="checkbox" class="accent-emerald-600" :checked="selectedCols.includes(c)" @change="toggleCol(c)" />
                   <span x-text="METRICS[c].label" :data-tip="METRICS[c].desc"></span>
-                  <span class="ml-auto text-xs text-gray-400" x-text="METRICS[c].unit || (METRICS[c].better==='higher'?'↑':'↓')"></span>
+                  <span class="ml-auto text-xs text-gray-400" x-text="isRanked(c) ? (METRICS[c].unit || betterHint(c)) : betterHint(c)"></span>
                 </label>
               </template>
             </div>
@@ -289,7 +289,7 @@
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
                   </button>
                   <div x-show="metricMenu" x-cloak class="absolute right-0 z-20 mt-2 w-48 rounded-xl border border-gray-200 bg-white p-1.5 shadow-lg" style="display:none">
-                    <template x-for="c in cols" :key="c">
+                    <template x-for="c in cols.filter(isRanked)" :key="c">
                       <button @click="metric=c; metricMenu=false" class="flex w-full items-center rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-gray-50" :class="metric===c ? 'font-semibold text-emerald-700' : 'text-gray-600'" x-text="METRICS[c].label"></button>
                     </template>
                   </div>
@@ -764,7 +764,7 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
               <label class="flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-sm hover:bg-gray-50 cursor-pointer">
                 <input type="checkbox" class="accent-emerald-600" :checked="chisepSelectedCols.includes(c.key)" @change="toggleChisepCol(c.key)" />
                 <span x-text="c.label" :data-tip="c.tip"></span>
-                <span class="ml-auto text-xs text-gray-400" x-text="c.better==='higher'?'↑':'↓'"></span>
+                <span class="ml-auto text-xs text-gray-400" x-text="betterHint(c.key)"></span>
               </label>
             </template>
           </div>
@@ -791,7 +791,7 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
               <tr @click="go(r)" @keydown.enter.prevent="go(r)" @keydown.space.prevent="go(r)" role="link" :tabindex="r.status==='DNF' ? -1 : 0" :aria-disabled="r.status==='DNF'" class="group cursor-pointer" :class="(r.status==='DNF' ? 'opacity-50 ' : '') + (r.variant==='tuned' ? 'tuned-row' : '')">
                 <td class="px-4 py-3 text-right tabular-nums text-gray-400 sticky left-0 bg-white group-hover:bg-emerald-50/40" style="min-width:4rem"><span x-text="i+1"></span><span x-show="rankDelta(r.slug,i)!==0" :class="rankDelta(r.slug,i)>0?'text-emerald-600':'text-rose-400'" class="ml-0.5 text-[10px] font-semibold align-top" :title="rankDelta(r.slug,i)>0 ? ('up '+rankDelta(r.slug,i)+' vs default') : ('down '+Math.abs(rankDelta(r.slug,i))+' vs default')" x-text="(rankDelta(r.slug,i)>0?'▲':'▼')+Math.abs(rankDelta(r.slug,i))"></span></td>
                 <td class="px-5 py-3 text-left font-medium text-gray-900 sticky bg-white group-hover:bg-emerald-50/40" style="left:4rem">
-                  <span class="mr-1.5 inline-block w-5 text-center" x-text="medal(i)"></span>
+                  <span class="mr-1.5 inline-block w-5 text-center" x-text="chisepMedal(i)"></span>
                   <span x-text="chisepRowLabel(r)"></span>
                   <span x-show="chisepCondition==='greonly' && !r.combo" class="ml-2 rounded bg-indigo-50 px-1.5 py-0.5 text-[10px] font-semibold text-indigo-700" data-tip="This method never reads R2′; it fits the GRE signal directly, so its result is identical under both conditions.">GRE-native</span>
                   <template x-if="r.doi"><a :href="'https://doi.org/'+r.doi" @click.stop target="_blank" rel="noopener" class="ml-2 rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 hover:bg-emerald-100">paper</a></template>
@@ -1699,7 +1699,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
       const CHI_STAGES = new Set(["dipole", "bfr+dipole", "end-to-end"]);
 
       return {
-        METRICS, STAGE_LABEL, MEDALS, fmt, val, INVIVO_COLS,
+        METRICS, STAGE_LABEL, MEDALS, fmt, val, INVIVO_COLS, isRanked, betterHint,
         runs: [], registry: {}, algos: [], datasetsReg: {}, loading: true, _ready: false,
         loadError: "",   // set when the results index can't be fetched; rendered as a banner at the top
         // dataset (top level) + section tab state
@@ -1802,7 +1802,8 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           if (["pipelines", "metrics", "regions", "speed", "explore"].includes(q.get("find"))) this.findView = q.get("find");
           // METRIC_ORDER, not METRICS: the registry also holds the χ-separation and STI χ33 keys,
           // which this (in-silico) matrix has no column for.
-          if (METRIC_ORDER.includes(q.get("metric"))) this.metric = q.get("metric");
+          // isRanked: a signed metric (dgm_slope) has no better direction to colour the matrix by.
+          if (METRIC_ORDER.includes(q.get("metric")) && isRanked(q.get("metric"))) this.metric = q.get("metric");
           if (q.get("fmap")) this.fmap = q.get("fmap");
           if (["board", "info", "findings"].includes(q.get("sub"))) { this.invivoView = q.get("sub"); this.chisepView = q.get("sub"); }
           if (["full", "greonly"].includes(q.get("cond"))) this.chisepCondition = q.get("cond");
@@ -3176,6 +3177,9 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         },
         rankDelta(slug, i) {
           if (this.variant !== "tuned") return 0;
+          // Sorted by a signed, unranked metric (dgm_slope): row order is not a rank, so no movement.
+          const sk = this.dataset === "invivo" ? this.invivoSortKey : this.dataset === "chisep" ? this.chisepSort : this.sortKey;
+          if (!isRanked(sk)) return 0;
           const map = this.dataset === "invivo" ? this.invivoDefRanks : this.dataset === "chisep" ? this.chisepDefRanks : this.simDefRanks;
           const d = map[slug]; return d == null ? 0 : d - (i + 1);   // >0 = moved up (tuning improved rank)
         },
@@ -3325,7 +3329,14 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         },
         fixSort() { if (!this.cols.includes(this.sortKey)) { this.sortKey = "xsim"; this.sortDir = "desc"; } },
         medal(i) {
+          if (!isRanked(this.sortKey)) return "";   // signed metric: sorted, not ranked
           const good = this.sortDir === (METRICS[this.sortKey]?.better === "lower" ? "asc" : "desc");
+          return good && i < 3 ? MEDALS[i] : "";
+        },
+        // χ-separation board: medals follow ITS sort (chisepSort/chisepDir), not the in-silico one.
+        chisepMedal(i) {
+          if (!isRanked(this.chisepSort)) return "";
+          const good = this.chisepDir === ((CHISEP_COL[this.chisepSort] || {}).better === "lower" ? "asc" : "desc");
           return good && i < 3 ? MEDALS[i] : "";
         },
         go(r) { if (r.status !== "DNF") location.href = "submission.html?run=" + encodeURIComponent(r.id); },
@@ -4394,7 +4405,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             const SX = (v) => padL + (tx(v) - ax0) / (ax1 - ax0 || 1) * (w - padL - padR);
             const SY = (v) => h - padB - (ty(v) - ay0) / (ay1 - ay0 || 1) * (h - padT - padB);
             const ayx = h - padB;
-            const better = (k) => (METRICS[k]?.better || "lower") === "higher" ? "higher = better" : "lower = better";
+            const better = (k) => !isRanked(k) && METRICS[k] ? `ideal = ${METRICS[k].target}` : (METRICS[k]?.better || "lower") === "higher" ? "higher = better" : "lower = better";
             const powTicks = (lo, hi) => { const o = []; for (let e = Math.ceil(Math.log10(lo)); e <= Math.floor(Math.log10(hi)); e++) o.push(10 ** e); return o; };
             let s = `<svg width="${w}" height="${h}" style="max-width:100%;height:auto">`;
             s += `<line x1="${padL}" y1="${ayx}" x2="${w - 8}" y2="${ayx}" stroke="currentColor" opacity="0.2"/><line x1="${padL}" y1="${padT}" x2="${padL}" y2="${ayx}" stroke="currentColor" opacity="0.2"/>`;

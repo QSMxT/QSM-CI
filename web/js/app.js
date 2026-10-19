@@ -137,6 +137,11 @@ const MOON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor
 //          ("MSPE" under a "χ+ paramagnetic" heading, where the standalone label is "χ+ MSPE").
 //   grp    the reference tier on the in-vivo board's two-tier header. Only the χ33 keys carry it:
 //          an unsuffixed key there is scored against COSMOS (see INVIVO_COLS in results.html).
+// `better` is "lower" or "higher" for a ranked metric. A SIGNED metric, whose ideal is a value in the
+// middle of its range, has better: "none" and a `target` (the ideal value) instead: it is shown and
+// sortable but never ranked, medalled or heat-coloured, since either direction would reward an
+// error. Its unsigned twin carries the ranking (dgm_slope is informational; dgm_linearity =
+// |1 − dgm_slope| is ranked). Test with isRanked(), label the direction with betterHint().
 const METRICS = {
   mspe:            { label: "MSPE",             unit: "%", better: "lower",  dp: 1,
     desc: "Mean squared percentage error of ROI means (Ridani et al., MRM 2026): a per-region quantification-bias metric, comparable to the paper's published χ-separation numbers." },
@@ -154,6 +159,10 @@ const METRICS = {
     desc: "Demeaned NRMSE restricted to the deep grey-matter nuclei." },
   dgm_linearity:   { label: "DGM linearity",    unit: "",  better: "lower",  dp: 3,
     desc: "|1 − slope| of mean reconstructed vs. true susceptibility across the six deep grey-matter nuclei. 0 = a perfectly linear response." },
+  dgm_slope:       { label: "DGM slope",        unit: "",  better: "none", target: 1, dp: 3,
+    desc: "Signed slope of the deep grey-matter fit behind DGM linearity: mean reconstructed χ regressed on mean true χ across the six nuclei. 1 = calibrated; below 1 under-estimates DGM susceptibility, above 1 over-estimates it, negative inverts it. Informational, not ranked: DGM linearity (= |1 − slope|) is the ranked form." },
+  dgm_offset_ppm:  { label: "DGM offset",       unit: " ppm", better: "none", target: 0, dp: 3,
+    desc: "Intercept of the same deep grey-matter fit (ppm): the shift in the nuclei's mean χ left after the slope. 0 = none; positive reads high, negative reads low. QSM is relative, so this depends on the map's reference level. Informational, not ranked." },
   calc_moment_dev: { label: "Calcification dev.",unit: "", better: "lower",  dp: 2,
     desc: "Absolute error in the total susceptibility moment recovered inside the calcification." },
   calc_streak:     { label: "Streak",           unit: "",  better: "lower",  dp: 3,
@@ -192,6 +201,10 @@ const METRICS = {
     desc: "χ+ error in deep gray matter (iron) (%). Lower is better." },
   para_dgm_linearity:  { label: "χ+ DGM linearity", unit: "",  better: "lower",  dp: 3, short: "DGM linearity",
     desc: "|1 − slope| of χ+ across DGM iron regions; 0 = perfect iron quantification. Lower is better." },
+  para_dgm_slope:      { label: "χ+ DGM slope",     unit: "",  better: "none", target: 1, dp: 3, short: "DGM slope",
+    desc: "Signed slope of mean χ+ vs. true χ+ across the DGM iron regions. 1 = calibrated; below 1 under-estimates iron, above 1 over-estimates it. Informational, not ranked: χ+ DGM linearity (= |1 − slope|) is the ranked form." },
+  para_dgm_offset_ppm: { label: "χ+ DGM offset",    unit: " ppm", better: "none", target: 0, dp: 3, short: "DGM offset",
+    desc: "Intercept of the χ+ DGM fit (ppm): the shift in the nuclei's mean χ+ left after the slope. 0 = none. Informational, not ranked." },
   para_nrmse_blood:    { label: "χ+ vein NRMSE",    unit: "%", better: "lower",  dp: 1, short: "Vein NRMSE",
     desc: "χ+ error in venous blood (%). Lower is better." },
   para_calc_leak:      { label: "χ+ Ca leak",       unit: "",  better: "lower",  dp: 3, short: "Ca leak",
@@ -233,7 +246,7 @@ const METRICS = {
 // appends them separately because they live at the top level of a run, not under .metrics.
 const METRIC_ORDER = [
   "mspe", "mev", "nrmse", "nrmse_detrend", "nrmse_tissue", "nrmse_blood", "nrmse_dgm",
-  "dgm_linearity", "calc_moment_dev", "calc_streak", "correlation", "xsim", "hfen", "coverage",
+  "dgm_linearity", "dgm_slope", "dgm_offset_ppm", "calc_moment_dev", "calc_streak", "correlation", "xsim", "hfen", "coverage",
   "para_leak", "dia_leak",
   "runtime_s", "mem_peak_bytes", "cpu_cores_avg",
 ];
@@ -256,6 +269,16 @@ const DERIVED_METRICS = {
 
 // Display metadata for any column key, stored or derived; null for a key with neither.
 function metricMeta(key) { return METRICS[key] || DERIVED_METRICS[key] || null; }
+
+// Whether a key is ranked (has a better direction). Signed metrics (better: "none") are not; nor is
+// an unknown key. Every rank, medal and heat colour must check this first.
+function isRanked(key) { const m = metricMeta(key); return !!m && (m.better === "lower" || m.better === "higher"); }
+
+// Short direction hint for a column: "↑" / "↓" for a ranked key, "→ 1" (its target) for a signed one.
+function betterHint(key) {
+  const m = metricMeta(key) || {};
+  return m.better === "none" ? `→ ${m.target}` : m.better === "higher" ? "↑" : "↓";
+}
 
 // Value of any column key for a run: a derived key is the mean of its stored pair (null unless the
 // whole pair is present), anything else is the stored field.
@@ -282,7 +305,7 @@ function metricColumns(keys, grouped) {
 const CHISEP_ORDER = [
   "avg_mspe", "para_mspe", "dia_mspe", "avg_ndt", "avg",
   "para_xsim", "para_nrmse", "para_nrmse_detrend", "para_nrmse_dgm", "para_dgm_linearity",
-  "para_nrmse_blood", "para_calc_leak", "para_leak",
+  "para_dgm_slope", "para_dgm_offset_ppm", "para_nrmse_blood", "para_calc_leak", "para_leak",
   "dia_xsim", "dia_nrmse", "dia_nrmse_detrend", "dia_calc_moment_dev", "dia_calc_streak",
   "dia_mev", "dia_iron_leak", "dia_leak",
   "runtime_s",
@@ -501,7 +524,7 @@ function fmtBytes(v) {
 }
 
 function fmt(v, key) {
-  if (v == null) return "—";
+  if (v == null || !isFinite(v)) return "—";
   if (key === "runtime_s") return fmtDuration(v);
   if (key === "mem_peak_bytes") return fmtBytes(v);
   const m = metricMeta(key) || { dp: 2, unit: "" };
@@ -578,4 +601,4 @@ function injectChrome() {
 document.addEventListener("DOMContentLoaded", injectChrome);
 
 // Exposed for module scripts (e.g. the NiiVue viewer, which must be a module for `import`).
-window.QSM = { GH, METRICS, METRIC_ORDER, STAGE_LABEL, MEDALS, loadRuns, loadAlgos, loadDatasets, loadRegistry, loadRepro, loadRunRegions, doiFor, val, fmt, fmtDuration, fmtBytes, metricCols, metricMeta, metricVal, metricColumns, robustRange, heatScale, heatText, REGION_ORDER };
+window.QSM = { GH, METRICS, METRIC_ORDER, STAGE_LABEL, MEDALS, loadRuns, loadAlgos, loadDatasets, loadRegistry, loadRepro, loadRunRegions, doiFor, val, fmt, fmtDuration, fmtBytes, metricCols, metricMeta, metricVal, metricColumns, isRanked, betterHint, robustRange, heatScale, heatText, REGION_ORDER };

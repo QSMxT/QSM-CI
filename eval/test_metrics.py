@@ -21,6 +21,8 @@ QSM.rs port), not from running the code:
   hfen          100 * |LoG(a) - LoG(b)| / |LoG(b)| within the mask: LoG is linear and kills a
                 constant, so a + c -> 0, 2b -> 100, -b -> 200.
   dgm_linearity |1 - slope| of region means: 2b -> 1, b + c -> 0, -b -> 2.
+  dgm_slope /   the SIGNED slope and intercept of that same fit (recon means on truth means):
+  dgm_offset    2b -> (2, 0), -b -> (-1, 0), b + c -> (1, c); always |1 - slope| == dgm_linearity.
 """
 
 import numpy as np
@@ -186,3 +188,55 @@ def test_dgm_linearity_known_values():
     assert abs(qe.dgm_linearity(2.0 * x, x, seg) - 1.0) < 1e-9
     assert abs(qe.dgm_linearity(-x, x, seg) - 2.0) < 1e-9
     assert abs(qe.dgm_linearity(np.where(seg > 0, x, 3.0 * x), x, seg)) < 1e-9
+
+
+def test_dgm_fit_signed_known_values():
+    """The signed fit keeps the direction dgm_linearity throws away: 2x over-estimates (slope 2),
+    -x inverts (slope -1, same |1 - slope| = 2 as a slope of 3 would give), x + c is calibrated in
+    slope and carries the whole error in the intercept."""
+    seg, x = _seg_and_truth()
+    for recon, slope, offset in [(x, 1.0, 0.0), (2.0 * x, 2.0, 0.0), (-x, -1.0, 0.0),
+                                 (x + 0.05, 1.0, 0.05), (0.5 * x - 0.02, 0.5, -0.02),
+                                 (3.0 * x, 3.0, 0.0)]:
+        s, c = qe.dgm_fit(recon, x, seg)
+        assert abs(s - slope) < 1e-9, (slope, s)
+        assert abs(c - offset) < 1e-9, (offset, c)
+    # -x and 3x are indistinguishable to dgm_linearity (both 2) but not to the signed slope.
+    assert abs(qe.dgm_linearity(-x, x, seg) - qe.dgm_linearity(3.0 * x, x, seg)) < 1e-9
+
+
+def test_dgm_linearity_is_abs_one_minus_dgm_slope():
+    """dgm_linearity, dgm_slope and dgm_offset_ppm come from ONE fit: the identity is exact (==), not
+    approximate, on arbitrary data — including through the metric dicts the scorer emits."""
+    seg, x = _seg_and_truth()
+    rng = np.random.default_rng(3)
+    for k in range(5):
+        recon = rng.standard_normal(x.shape) * 0.05 + rng.uniform(-2, 2) * x
+        slope, _ = qe.dgm_fit(recon, x, seg)
+        assert qe.dgm_linearity(recon, x, seg) == abs(1.0 - slope)
+        mask = np.ones(x.shape, np.uint8)
+        for m in (qe.challenge_metrics(recon, x, mask, seg),
+                  qe.chisep_metrics(recon, x, mask, seg, component="para")):
+            assert m["dgm_linearity"] == abs(1.0 - m["dgm_slope"])
+            assert (m["dgm_slope"], m["dgm_offset_ppm"]) == qe.dgm_fit(recon, x, seg)
+
+
+def test_dgm_fit_nan_without_two_regions():
+    seg, x = _seg_and_truth()
+    one = np.where(seg == 1, 1, 0).astype(np.uint8)
+    s, c = qe.dgm_fit(2.0 * x, x, one)
+    assert s != s and c != c
+    assert qe.dgm_linearity(2.0 * x, x, one) != qe.dgm_linearity(2.0 * x, x, one)  # NaN
+
+
+def test_dgm_signed_metrics_follow_the_nothing_to_score_gate():
+    """With nothing to score, all three DGM calibration metrics are NaN together (not a rankable
+    slope of 0 from two zeroed maps), on both the χ and the χ+ path; χ− never emits them."""
+    seg, x = _seg_and_truth()
+    empty = np.zeros(x.shape, np.uint8)
+    for m in (qe.challenge_metrics(x, x, empty, seg),
+              qe.chisep_metrics(x, x, empty, seg, component="para")):
+        for k in ("dgm_linearity", "dgm_slope", "dgm_offset_ppm"):
+            assert m[k] != m[k], k
+    dia = qe.chisep_metrics(x, x, np.ones(x.shape, np.uint8), seg, component="dia")
+    assert "dgm_slope" not in dia and "dgm_offset_ppm" not in dia
