@@ -6,11 +6,14 @@ Reads repro.json (pipelines -> {test_retest,inter_scanner,inter_protocol}_median
 each 3-stage composed pipeline id `fm+bfr+dipole`, and plots reproducibility grouped by each stage,
 plus a one-way variance-explained (eta^2) per stage per metric.
 """
-import json, sys
+import os, sys
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from repro_format import load_repro  # noqa: E402  (reads the binary payload and the older all-JSON one)
 
 args = [a for a in sys.argv[1:]]
 out = args.pop() if args and args[-1].endswith(".png") else "stage_repro.png"
@@ -33,7 +36,7 @@ def parse(pid):
 
 
 def rows_from(path):
-    pipes = json.load(open(path))["pipelines"]
+    pipes = load_repro(path)["pipelines"]
     rows = []
     for pid, node in pipes.items():
         st = parse(pid)

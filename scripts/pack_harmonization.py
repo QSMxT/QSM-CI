@@ -246,7 +246,7 @@ def pack_acquisition(scanner: str, protocol: str, run: str, out_root: Path) -> d
 MASK_EROSION = {"erode_global": 1, "erode_threshold": 0.80, "erode_depth_cap": 5}
 
 
-def hdbet_mask(acq_out: Path, qsm_ci: str = "qsm-ci") -> None:
+def hdbet_mask(acq_out: Path, qsm_ci: str = "qsm-ci", runner: str | None = None) -> None:
     """Brain mask via the QSM-CI HD-BET masking stage (`qsm-ci run hd-bet-qsmci`).
 
     Runs the containerised `brain-extraction` stage on the packed magnitude (its extract.py
@@ -264,7 +264,8 @@ def hdbet_mask(acq_out: Path, qsm_ci: str = "qsm-ci") -> None:
             # No --params: hd-bet-qsmci declares `inputs: [magnitude]`, and the runner builds the
             # CLI from a method's declared inputs, so this stage takes no params.json. Passing one
             # is an argparse error, which this function would swallow as "hd-bet failed".
-            [qsm_ci, "run", "hd-bet-qsmci",
+            # --runner goes AFTER the slug: `qsm-ci run` hands everything past the slug to the method.
+            [qsm_ci, "run", "hd-bet-qsmci", *(["--runner", runner] if runner else []),
              "--magnitude", str(inputs / "magnitude.nii.gz"),
              *sets,
              "-o", str(mask_path)],

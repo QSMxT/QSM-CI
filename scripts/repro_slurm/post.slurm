@@ -40,26 +40,29 @@ EOF
 
 # ---- reproducibility evaluation ------------------------------------------------------------------
 python scripts/repro_eval.py register
-# mri_synthseg (robust, license-free) on the registration target, via the Bunya FreeSurfer MODULE
-# — this node's unprivileged apptainer can't build a SIF from the large FreeSurfer OCI image
+# mri_synthseg (robust, license-free) on each subject's registration target, via the Bunya FreeSurfer
+# MODULE — this node's unprivileged apptainer can't build a SIF from the large FreeSurfer OCI image
 # (mksquashfs proot ptrace failure), so run it natively. Then install on the target grid.
-if [ ! -f data/harmonization/_align/dseg.nii.gz ]; then
+for align in data/harmonization/_align/*/; do
+    [ -f "$align/dseg.nii.gz" ] && continue
     ( source /etc/profile.d/modules.sh && module load freesurfer/7.3.2 && \
-      mri_synthseg --i "$PWD/data/harmonization/_align/target_mag_e1.nii.gz" \
-                   --o "$PWD/data/harmonization/_align/dseg_synthseg.nii.gz" --robust --threads 8 )
-    python - <<'EOF'
+      mri_synthseg --i "$PWD/$align/target_mag_e1.nii.gz" \
+                   --o "$PWD/$align/dseg_synthseg.nii.gz" --robust --threads 8 )
+    python - "$align" <<'EOF'
+import sys
 import SimpleITK as sitk
-fixed = sitk.ReadImage("data/harmonization/_align/target_mag_e1.nii.gz")
-seg = sitk.ReadImage("data/harmonization/_align/dseg_synthseg.nii.gz")
+align = sys.argv[1]
+fixed = sitk.ReadImage(f"{align}/target_mag_e1.nii.gz")
+seg = sitk.ReadImage(f"{align}/dseg_synthseg.nii.gz")
 res = sitk.Resample(seg, fixed, sitk.Transform(), sitk.sitkNearestNeighbor, 0)
-sitk.WriteImage(res, "data/harmonization/_align/dseg.nii.gz")
+sitk.WriteImage(res, f"{align}/dseg.nii.gz")
 EOF
-fi
+done
 python scripts/repro_eval.py stats
 python scripts/repro_eval.py fits
 
 # ---- take-home payload ---------------------------------------------------------------------------
 tar czf repro_payload.tar.gz \
-    results/index.json results/repro_rois.json results/repro.json \
+    results/index.json results/repro_rois.json results/repro.json results/repro_fits*.bin \
     data/harmonization/_align
 echo "payload: $(pwd)/repro_payload.tar.gz"

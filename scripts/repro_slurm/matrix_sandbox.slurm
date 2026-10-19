@@ -33,11 +33,20 @@ export PROOT_NO_SECCOMP=1
 export QSMCI_SANDBOX_DIR=/scratch/project_mnt/S0169/qsmci_sif   # runner execs the prebuilt .sif here
 export QSM_CI_JOBS=4
 
-N_SHARDS=4
+N_SHARDS=${N_SHARDS:-4}
+# RUNS_PREFIX names the shard files (pipeline.py empties its --runs-out file on start, so a campaign
+# that must not overwrite earlier shard files uses its own prefix, e.g. runs-repro-v10). EXTRA_EXCLUDE
+# adds slugs to --exclude (comma-separated). INCLUDE (comma-separated slugs) restricts the run to those
+# stages, e.g. the upstreams plus one newly added dipole; N_SHARDS sets shards per acquisition.
+# Export these in the environment and submit with --export=ALL: sbatch --export=ALL,INCLUDE=a,b
+# splits on the commas and passes only INCLUDE=a.
+# REPRO_ACQS (shell glob, default *) limits the campaign to matching acquisitions, e.g.
+# REPRO_ACQS='s0*' for the EMTP traveling heads; size --array to match (acquisitions x shards).
 mapfile -t ACQS < <(python -c "
-import json
+import fnmatch, json, os
 reg = json.load(open('scripts/datasets.json'))
-print('\n'.join(sorted(k for k, v in reg.items() if v.get('track') == 'repro')))")
+pat = os.environ.get('REPRO_ACQS', '*')
+print('\n'.join(sorted(k for k, v in reg.items() if v.get('track') == 'repro' and fnmatch.fnmatch(k, pat))))")
 ACQ=${ACQS[$((SLURM_ARRAY_TASK_ID / N_SHARDS))]}
 SHARD=$((SLURM_ARRAY_TASK_ID % N_SHARDS))
 
@@ -45,7 +54,9 @@ echo "== [sandbox] acquisition $ACQ shard $SHARD/$N_SHARDS (QSMCI_SANDBOX_DIR=$Q
 python scripts/pipeline.py \
     --phantom "$ACQ" --track repro --mode composed --runner apptainer \
     --shard "$SHARD/$N_SHARDS" \
-    --exclude inr-qsm,modip \
+    --exclude "inr-qsm,modip${EXTRA_EXCLUDE:+,$EXTRA_EXCLUDE}" \
+    ${INCLUDE:+--include "$INCLUDE"} \
     --work ".work-repro-sb-$ACQ-$SHARD" \
-    --runs-out "results/runs-repro-$ACQ-s$SHARD.json"
+    --runs-out "results/${RUNS_PREFIX:-runs-repro}-$ACQ-s$SHARD.json"
+[ "${STREAM_PUBLISH:-0}" = 1 ] && bash scripts/repro_slurm/stream_publish.sh "results/${RUNS_PREFIX:-runs-repro}-$ACQ-s$SHARD.json"
 rm -rf ".work-repro-sb-$ACQ-$SHARD"

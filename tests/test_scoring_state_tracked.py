@@ -9,7 +9,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 COMMITTED_BY_WORKFLOWS = ("results/index.json", "results/scoring-state.json",
-                          "results/repro.json", "results/repro_regions.json")
+                          "results/repro.json", "results/repro_fits.bin", "results/repro_fits_extra.bin",
+                          "results/repro_regions.json", "results/repro_regions.bin")
 
 
 def test_files_the_workflows_commit_are_not_gitignored():

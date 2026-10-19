@@ -1,26 +1,30 @@
 #!/usr/bin/env python3
 """Reproducibility evaluation for the no-ground-truth harmonization track.
 
-The `repro` track reconstructs the SAME subject from many acquisitions (scanner x protocol x run).
-There is no truth map; the question is how reproducible each pipeline's χ values are across
-acquisitions — the analysis Marta Lancione ran with two pipelines (per-ROI orthogonal ax+b fits,
+The `repro` track reconstructs each subject from many acquisitions (scanner x protocol x run):
+the MGH pilot (one subject, two Siemens scanners) and the EMTP traveling heads (six subjects, KKI
+Philips plus GE/Siemens/Philips sessions at other sites). There is no truth map; the question is how
+reproducible each pipeline's χ values are across acquisitions of the same subject — the analysis Marta Lancione ran with two pipelines (per-ROI orthogonal ax+b fits,
 Bland-Altman agreement), generalized over the whole QSM-CI combination matrix.
 
 Stages (subcommands), all idempotent:
 
-  register   Rigid-register every acquisition's first-echo magnitude to the TARGET acquisition's
-             (default cima-bridge-run1). Transforms land in data/harmonization/_align/<acq>.tfm.
+  register   Rigid-register every acquisition's first-echo magnitude to its SUBJECT's target
+             acquisition (the registry entry with `repro_target: true`). Transforms land in
+             data/harmonization/_align/<acq>.tfm, each target's grid in _align/<subject>/.
              Needs SimpleITK.
-  seg        SynthSeg the target's first-echo magnitude -> _align/dseg.nii.gz (docker), or install
-             an externally produced segmentation via --seg. One segmentation defines the ROIs for
-             every comparison (per Marta's method), so ROI definitions can't drift between runs.
+  seg        SynthSeg each target's first-echo magnitude -> _align/<subject>/dseg.nii.gz (docker or
+             apptainer), or install an externally produced segmentation via --seg. One segmentation
+             per subject defines the ROIs for every comparison of that subject (per Marta's method),
+             so ROI definitions can't drift between runs.
   stats      For every collected repro run (results/index.json + results/<id>/recon.nii.gz):
              resample its χ map into target space, reference it to the whole-brain mean, and record
              per-ROI means -> results/repro_rois.json. ROIs with <90% valid coverage are dropped
              (brain coverage differs between acquisitions).
-  fits       Pairwise comparisons per pipeline -> results/repro.json (the web payload):
+  fits       Pairwise comparisons per pipeline, always within one subject -> results/repro.json
+             (the web payload):
                test-retest      same scanner+protocol, run i vs run j
-               inter-scanner    same protocol+run, prisma vs cima
+               inter-scanner    same protocol+run, every pair of scanners the subject visited
                inter-protocol   same scanner+run, protocol vs bridge
              Each pair: orthogonal (total-least-squares) slope a + intercept b — |a-1| is the
              headline —, Pearson r, Bland-Altman bias and limits of agreement.
@@ -37,7 +41,6 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import re
 import subprocess
 import sys
 from pathlib import Path
@@ -45,10 +48,12 @@ from pathlib import Path
 import nibabel as nib
 import numpy as np
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from repro_format import FIT_DECIMALS, FIT_FILES, SUMMARY_FIELDS, write_columns  # noqa: E402
+
 ROOT = Path(__file__).resolve().parent.parent
 ALIGN = ROOT / "data" / "harmonization" / "_align"
 RESULTS = ROOT / "results"
-DEFAULT_TARGET = "cima-bridge-run1"
 
 # SynthSeg labels kept for ROI statistics (cortical/subcortical GM, WM, brainstem, cerebellum —
 # ventricles/CSF excluded). WM ROIs stay in per Marta's finding that they don't behave differently.
@@ -66,19 +71,40 @@ MIN_PAIR_ROIS = 8  # a fit over fewer common ROIs than this is too fragile to re
 SLOPE_DEV_CAP = 2.0  # |a-1| beyond this is a degenerate/failed fit, not a reproducibility value
 
 
+ACQ_FIELDS = ("subject", "scanner", "protocol", "run")
+
+
 def repro_acquisitions() -> dict[str, dict]:
-    """The repro-track phantom registry entries: id -> {scanner, protocol, run, path}."""
+    """The repro-track registry entries: id -> {subject, scanner, protocol, run, target, path}."""
     reg = json.loads((ROOT / "scripts" / "datasets.json").read_text())
     out = {}
     for key, v in reg.items():
         if v.get("track") != "repro":
             continue
-        m = re.match(r"(prisma|cima)-(.+)-(run\d)$", key)
-        if not m:
-            continue
-        out[key] = {"scanner": m.group(1), "protocol": m.group(2), "run": m.group(3),
+        missing = [f for f in ACQ_FIELDS if not v.get(f)]
+        if missing:
+            raise SystemExit(f"repro acquisition {key} lacks {', '.join(missing)} in scripts/datasets.json")
+        out[key] = {**{f: v[f] for f in ACQ_FIELDS}, "target": bool(v.get("repro_target")),
                     "path": ROOT / v["path"]}
     return out
+
+
+def subject_targets(acqs: dict[str, dict]) -> dict[str, str]:
+    """subject -> its registration target acquisition (exactly one `repro_target` per subject)."""
+    targets: dict[str, list[str]] = {}
+    for key, a in acqs.items():
+        targets.setdefault(a["subject"], [])
+        if a["target"]:
+            targets[a["subject"]].append(key)
+    bad = {s: t for s, t in targets.items() if len(t) != 1}
+    if bad:
+        raise SystemExit(f"each subject needs exactly one repro_target acquisition: {bad}")
+    return {s: t[0] for s, t in sorted(targets.items())}
+
+
+def subject_align(subject: str) -> Path:
+    """Per-subject reference frame: target.json, target_mag_e1.nii.gz, dseg.nii.gz."""
+    return ALIGN / subject
 
 
 def first_echo_magnitude(acq_path: Path) -> "nib.Nifti1Image":
@@ -97,7 +123,9 @@ def _register_one(key, moving_path, fixed, tfm_path, is_target, sitk) -> str:
     if is_target:
         sitk.WriteTransform(sitk.Euler3DTransform(), str(tfm_path))
         return "identity (target)"
-    mov_nii = tfm_path.parent / f"_mov_{key}.nii.gz"
+    # Per-process temp names: the shards of one acquisition run `stats --runs` in parallel and may
+    # all register it at once; a shared name let the first to finish delete the others' input.
+    mov_nii = tfm_path.parent / f"_mov_{key}.{os.getpid()}.nii.gz"
     nib.save(first_echo_magnitude(moving_path), str(mov_nii))
     moving = sitk.ReadImage(str(mov_nii), sitk.sitkFloat32)
     init = sitk.CenteredTransformInitializer(
@@ -118,7 +146,9 @@ def _register_one(key, moving_path, fixed, tfm_path, is_target, sitk) -> str:
     reg.SmoothingSigmasAreSpecifiedInPhysicalUnitsOn()
     reg.SetInitialTransform(init, inPlace=False)
     tfm = reg.Execute(fixed, moving)
-    sitk.WriteTransform(tfm, str(tfm_path))
+    tmp_tfm = tfm_path.with_name(f"{tfm_path.stem}.{os.getpid()}.tfm")
+    sitk.WriteTransform(tfm, str(tmp_tfm))
+    os.replace(tmp_tfm, tfm_path)       # atomic: a concurrent shard never reads a half-written .tfm
     mov_nii.unlink()
     return f"metric={reg.GetMetricValue():.4f} ({reg.GetOptimizerIteration()} iters)"
 
@@ -127,28 +157,34 @@ def cmd_register(args) -> None:
     import SimpleITK as sitk  # deferred: only this stage needs it
 
     acqs = repro_acquisitions()
-    if args.target not in acqs:
-        raise SystemExit(f"unknown target '{args.target}'")
-    ALIGN.mkdir(parents=True, exist_ok=True)
-    (ALIGN / "target.json").write_text(json.dumps({"target": args.target}) + "\n")
-
-    tgt_nii = ALIGN / "target_mag_e1.nii.gz"
-    nib.save(first_echo_magnitude(acqs[args.target]["path"]), str(tgt_nii))
-    fixed = sitk.ReadImage(str(tgt_nii), sitk.sitkFloat32)
-
-    # Prep-only: just the target grid (+ its identity transform) so a one-time `prep` job can build
-    # the reference frame (target_mag_e1 + dseg via seg) without fetching all 23 acquisitions — the
-    # per-job `stats --runs` path registers each acquisition to this target itself.
-    if getattr(args, "target_only", False):
-        sitk.WriteTransform(sitk.Euler3DTransform(), str(ALIGN / f"{args.target}.tfm"))
-        print(f"  {args.target}: target grid written (target-only)")
-        return
-
-    for key, acq in sorted(acqs.items()):
-        tfm_path = ALIGN / f"{key}.tfm"
-        if tfm_path.exists() and not args.force:
+    targets = subject_targets(acqs)
+    if args.subject and args.subject not in targets:
+        raise SystemExit(f"unknown subject '{args.subject}' (have {', '.join(targets)})")
+    for subject, target in targets.items():
+        if args.subject and subject != args.subject:
             continue
-        print(f"  {key}: {_register_one(key, acq['path'], fixed, tfm_path, key == args.target, sitk)}")
+        align = subject_align(subject)
+        align.mkdir(parents=True, exist_ok=True)
+        (align / "target.json").write_text(json.dumps({"subject": subject, "target": target}) + "\n")
+        tgt_nii = align / "target_mag_e1.nii.gz"
+        nib.save(first_echo_magnitude(acqs[target]["path"]), str(tgt_nii))
+        fixed = sitk.ReadImage(str(tgt_nii), sitk.sitkFloat32)
+
+        # Prep-only: just the target grid (+ its identity transform) so a one-time `prep` job can
+        # build each reference frame (target_mag_e1 + dseg via seg) without fetching every
+        # acquisition — the per-job `stats --runs` path registers each acquisition itself.
+        if getattr(args, "target_only", False):
+            sitk.WriteTransform(sitk.Euler3DTransform(), str(ALIGN / f"{target}.tfm"))
+            print(f"  {subject}: target grid {target} written (target-only)")
+            continue
+
+        for key, acq in sorted(acqs.items()):
+            if acq["subject"] != subject:
+                continue
+            tfm_path = ALIGN / f"{key}.tfm"
+            if tfm_path.exists() and not args.force:
+                continue
+            print(f"  {key}: {_register_one(key, acq['path'], fixed, tfm_path, key == target, sitk)}")
 
 
 # ---------------------------------------------------------------------------------------------------
@@ -156,31 +192,42 @@ def cmd_register(args) -> None:
 # ---------------------------------------------------------------------------------------------------
 
 def cmd_seg(args) -> None:
-    dseg = ALIGN / "dseg.nii.gz"
-    if args.seg:  # externally produced segmentation of the TARGET first-echo magnitude
+    subjects = subject_targets(repro_acquisitions())
+    if args.seg:  # externally produced segmentation of ONE subject's target first-echo magnitude
+        if not args.subject:
+            raise SystemExit("--seg needs --subject (which subject's target it segments)")
+        dseg = subject_align(args.subject) / "dseg.nii.gz"
         src = nib.load(str(args.seg))
         nib.save(nib.Nifti1Image(np.asanyarray(src.dataobj).astype(np.int16), src.affine), str(dseg))
         print(f"installed {args.seg} -> {dseg}")
         return
-    if dseg.exists() and not args.force:
-        print(f"{dseg} exists (use --force to redo)")
-        return
-    # mri_synthseg (robust, contrast-agnostic) on the target magnitude, via the official FreeSurfer
-    # image — mri_synthseg is one of the license-free tools, and it emits standard FreeSurfer aseg
-    # labels (the ids in ROI_LABELS). Runs on any GRE/EPI contrast, which is why it fits here.
-    subprocess.run(
-        ["docker", "run", "--rm", "--user", f"{os.getuid()}:{os.getgid()}",
-         "-v", f"{ALIGN}:/data", args.image,
-         "mri_synthseg", "--i", "/data/target_mag_e1.nii.gz", "--o", "/data/dseg_synthseg.nii.gz",
-         "--robust", "--threads", "4"],
-        check=True)
-    # SynthSeg resamples to its own 1mm grid; bring labels back onto the target grid.
     import SimpleITK as sitk
-    fixed = sitk.ReadImage(str(ALIGN / "target_mag_e1.nii.gz"))
-    seg = sitk.ReadImage(str(ALIGN / "dseg_synthseg.nii.gz"))
-    res = sitk.Resample(seg, fixed, sitk.Transform(), sitk.sitkNearestNeighbor, 0)
-    sitk.WriteImage(res, str(dseg))
-    print(f"wrote {dseg}")
+    for subject in subjects:
+        if args.subject and subject != args.subject:
+            continue
+        align = subject_align(subject)
+        dseg = align / "dseg.nii.gz"
+        if dseg.exists() and not args.force:
+            print(f"{dseg} exists (use --force to redo)")
+            continue
+        # mri_synthseg (robust, contrast-agnostic) on the target magnitude, via the official
+        # FreeSurfer image — mri_synthseg is one of the license-free tools, and it emits standard
+        # FreeSurfer aseg labels (the ids in ROI_LABELS). Runs on any GRE/EPI contrast, which is
+        # why it fits here.
+        synth = ["mri_synthseg", "--i", "/data/target_mag_e1.nii.gz", "--o", "/data/dseg_synthseg.nii.gz",
+                 "--robust", "--threads", "4"]
+        if args.runner == "apptainer":
+            cmd = ["apptainer", "exec", "--bind", f"{align}:/data", f"docker://{args.image}", *synth]
+        else:
+            cmd = ["docker", "run", "--rm", "--user", f"{os.getuid()}:{os.getgid()}",
+                   "-v", f"{align}:/data", args.image, *synth]
+        subprocess.run(cmd, check=True)
+        # SynthSeg resamples to its own 1mm grid; bring labels back onto the target grid.
+        fixed = sitk.ReadImage(str(align / "target_mag_e1.nii.gz"))
+        seg = sitk.ReadImage(str(align / "dseg_synthseg.nii.gz"))
+        res = sitk.Resample(seg, fixed, sitk.Transform(), sitk.sitkNearestNeighbor, 0)
+        sitk.WriteImage(res, str(dseg))
+        print(f"wrote {dseg}")
 
 
 # ---------------------------------------------------------------------------------------------------
@@ -240,19 +287,29 @@ def _roi_row(rid, acq, fixed, dseg, roi_masks, tfm, sitk) -> "dict | None":
     return {"acq": acq, "ref_mean": round(ref, 6), "rois": roi_means, "roi_stats": roi_stats}
 
 
-def _stats_setup(sitk):
-    """Load the shared target grid + segmentation + ROI masks (target.json / target_mag_e1 / dseg)."""
-    target = json.loads((ALIGN / "target.json").read_text())["target"]
-    fixed = sitk.ReadImage(str(ALIGN / "target_mag_e1.nii.gz"), sitk.sitkFloat32)
-    dseg = np.rint(sitk.GetArrayFromImage(sitk.ReadImage(str(ALIGN / "dseg.nii.gz")))).astype(int)
-    roi_masks = {lab: dseg == lab for lab in ROI_LABELS if (dseg == lab).sum() >= 50}
-    return target, fixed, dseg, roi_masks
+class _Frames:
+    """Each subject's reference frame (target grid + segmentation + ROI masks), loaded on first use
+    so a per-job stats run only reads the subject it needs."""
+
+    def __init__(self, sitk):
+        self.sitk = sitk
+        self._cache: dict[str, tuple] = {}
+
+    def __call__(self, subject: str) -> tuple:
+        if subject not in self._cache:
+            sitk, align = self.sitk, subject_align(subject)
+            target = json.loads((align / "target.json").read_text())["target"]
+            fixed = sitk.ReadImage(str(align / "target_mag_e1.nii.gz"), sitk.sitkFloat32)
+            dseg = np.rint(sitk.GetArrayFromImage(sitk.ReadImage(str(align / "dseg.nii.gz")))).astype(int)
+            roi_masks = {lab: dseg == lab for lab in ROI_LABELS if (dseg == lab).sum() >= 50}
+            self._cache[subject] = (target, fixed, dseg, roi_masks)
+        return self._cache[subject]
 
 
 def cmd_stats(args) -> None:
     import SimpleITK as sitk
 
-    target, fixed, dseg, roi_masks = _stats_setup(sitk)
+    frames = _Frames(sitk)
     acqs = repro_acquisitions()
 
     # Per-job (CI-scale) path: compute ROI means for just the runs in a pipeline.py --runs-out file
@@ -267,7 +324,8 @@ def cmd_stats(args) -> None:
             acq = r.get("phantom")
             if r.get("track") != "repro" or r.get("status") != "ok" or acq not in acqs:
                 continue
-            if acq not in tcache:                  # register this acquisition to the target once
+            target, fixed, dseg, roi_masks = frames(acqs[acq]["subject"])
+            if acq not in tcache:                  # register this acquisition to its target once
                 tfm_path = ALIGN / f"{acq}.tfm"
                 if not tfm_path.exists():
                     _register_one(acq, acqs[acq]["path"], fixed, tfm_path, acq == target, sitk)
@@ -290,6 +348,7 @@ def cmd_stats(args) -> None:
         tfm_path = ALIGN / f"{acq}.tfm"
         if not tfm_path.exists():
             print(f"  !! no transform for {acq} — run `register` first"); continue
+        _, fixed, dseg, roi_masks = frames(acqs[acq]["subject"])
         row = _roi_row(r["id"], acq, fixed, dseg, roi_masks, sitk.ReadTransform(str(tfm_path)), sitk)
         if row is None:
             print(f"  !! {r['id']}: no usable recon/overlap"); continue
@@ -303,7 +362,7 @@ def cmd_stats(args) -> None:
         sys.exit("no runs with a local recon.nii.gz — refusing to overwrite results/repro_rois.json.\n"
                  "Run this where the harmonization recons and data/harmonization/_align live "
                  "(scripts/repro_slurm/post.slurm), not on a checkout without the volumes.")
-    out = {"target": target, "roi_labels": {str(k): v for k, v in ROI_LABELS.items()},
+    out = {"targets": subject_targets(acqs), "roi_labels": {str(k): v for k, v in ROI_LABELS.items()},
            "runs": rows}
     (RESULTS / "repro_rois.json").write_text(json.dumps(out, indent=2) + "\n")
     print(f"wrote {RESULTS / 'repro_rois.json'} ({len(rows)} runs)")
@@ -369,19 +428,17 @@ def _pair_metrics(vx: dict, vy: dict) -> "tuple[dict | None, dict | None]":
             "n_rois": len(common)}, None
 
 
-def _roi_source() -> tuple[str, list[dict]]:
+def _roi_source() -> list[dict]:
     """Where the per-run ROI means come from: results/repro_rois.json (the whole-index Bunya stats
     output) when present, else the run rows in results/index.json that carry a `rois` field (the
     per-job CI flow, where each score job wrote its own ROI means and they were merged into index).
-    Returns (target, [rows with pipeline/acq/rois])."""
+    Returns [rows with pipeline/acq/rois]."""
     rj = RESULTS / "repro_rois.json"
     if rj.exists():
-        data = json.loads(rj.read_text())
-        return data["target"], list(data["runs"].values())
+        return list(json.loads(rj.read_text())["runs"].values())
     idx = json.loads((RESULTS / "index.json").read_text())
     rows = idx.get("runs", idx) if isinstance(idx, dict) else idx
-    target = json.loads((ALIGN / "target.json").read_text())["target"] if (ALIGN / "target.json").exists() else None
-    return target, [r for r in rows if r.get("track") == "repro" and r.get("rois") and r.get("pipeline")]
+    return [r for r in rows if r.get("track") == "repro" and r.get("rois") and r.get("pipeline")]
 
 
 def live_algo_slugs() -> set[str]:
@@ -410,47 +467,75 @@ def drop_retired(pipelines: list[str], live: set[str], what: str) -> list[str]:
     return kept
 
 
+def comparison_plan(acqs: dict[str, dict]) -> list[tuple[str, str, str, str, str]]:
+    """Every comparison the design calls for, as (class, group, key, acq_a, acq_b). Pairs never
+    cross subjects: an inter-scanner comparison is the same person on two scanners.
+
+      test_retest     group <subject>/<scanner>-<protocol>, key <runA>-<runB>
+      inter_scanner   group <subject>/<protocol>,           key <scannerA>-vs-<scannerB>-<run>
+      inter_protocol  group <subject>/<scanner>-<protocol>, key <run>  (protocol vs bridge)
+    """
+    by = {(a["subject"], a["scanner"], a["protocol"], a["run"]): k for k, a in acqs.items()}
+    subjects = sorted({a["subject"] for a in acqs.values()})
+    plan: list[tuple[str, str, str, str, str]] = []
+    for subj in subjects:
+        mine = [a for a in acqs.values() if a["subject"] == subj]
+        # Registry order, not alphabetical: it keeps the pilot's prisma-vs-cima direction and puts
+        # each traveling head's home (KKI) session first, so slopes read "other scanner vs home".
+        scanners = list(dict.fromkeys(a["scanner"] for a in mine))
+        protocols = sorted({a["protocol"] for a in mine})
+        runs = sorted({a["run"] for a in mine})
+        for sc in scanners:                                    # test-retest: same scanner+protocol
+            for pr in protocols:
+                for i, ra in enumerate(runs):
+                    for rb in runs[i + 1:]:
+                        plan.append(("test_retest", f"{subj}/{sc}-{pr}", f"{ra}-{rb}",
+                                     by.get((subj, sc, pr, ra)), by.get((subj, sc, pr, rb))))
+        for pr in protocols:                                   # inter-scanner: same protocol+run
+            for i, sa in enumerate(scanners):
+                for sb in scanners[i + 1:]:
+                    for run in runs:
+                        plan.append(("inter_scanner", f"{subj}/{pr}", f"{sa}-vs-{sb}-{run}",
+                                     by.get((subj, sa, pr, run)), by.get((subj, sb, pr, run))))
+        for sc in scanners:                                    # inter-protocol: each protocol vs bridge
+            for pr in protocols:
+                if pr == "bridge":
+                    continue
+                for run in runs:
+                    plan.append(("inter_protocol", f"{subj}/{sc}-{pr}", run,
+                                 by.get((subj, sc, "bridge", run)), by.get((subj, sc, pr, run))))
+    # A comparison whose acquisition does not exist at all (prisma pulseq-offline run2 was never
+    # acquired) is not an exclusion, so it is not counted as one anywhere.
+    return [c for c in plan if c[3] and c[4]]
+
+
 def cmd_fits(args) -> None:
-    target, rows = _roi_source()
+    rows = _roi_source()
     acqs = repro_acquisitions()
     # (pipeline, acq-id) -> roi means
     by_pa: dict[tuple, dict] = {}
     for row in rows:
         by_pa[(row["pipeline"], row["acq"])] = row["rois"]
     pipelines = drop_retired(sorted({p for p, _ in by_pa}), live_algo_slugs(), "pipeline(s)")
-    scanners = ("prisma", "cima")
-    protocols = sorted({a["protocol"] for a in acqs.values()})
-    runs_ids = ("run1", "run2", "run3")
+    plan = comparison_plan(acqs)
 
-    # Every comparison this design calls for, as (class, group, key, acq_a, acq_b). Built once so the
-    # per-pipeline loop can report not just the fits it kept but the ones it could not make, and why.
-    plan: list[tuple[str, str, str, str, str]] = []
-    for sc in scanners:                                        # test-retest: same scanner+protocol
-        for pr in protocols:
-            for i, ra in enumerate(runs_ids):
-                for rb in runs_ids[i + 1:]:
-                    plan.append(("test_retest", f"{sc}-{pr}", f"{ra}-{rb}",
-                                 f"{sc}-{pr}-{ra}", f"{sc}-{pr}-{rb}"))
-    for pr in protocols:                                       # inter-scanner: same protocol+run
-        for run in runs_ids:
-            plan.append(("inter_scanner", pr, run, f"prisma-{pr}-{run}", f"cima-{pr}-{run}"))
-    for sc in scanners:                                        # inter-protocol: each protocol vs bridge
-        for pr in protocols:
-            if pr == "bridge":
-                continue
-            for run in runs_ids:
-                plan.append(("inter_protocol", f"{sc}-{pr}", run, f"{sc}-bridge-{run}", f"{sc}-{pr}-{run}"))
-    # A comparison whose acquisition does not exist at all (prisma pulseq-offline run2 was never
-    # acquired) is not an exclusion, so it is not counted as one anywhere.
-    plan = [c for c in plan if c[3] in acqs and c[4] in acqs]
-
-    out = {"target": target, "pipelines": {}}
-    for p in pipelines:
-        node = {"test_retest": {}, "inter_scanner": {}, "inter_protocol": {}}
+    # The web reads pair membership and acquisition metadata from here rather than parsing ids.
+    comparisons: dict[str, dict] = {}
+    for cls, grp, key, a_id, b_id in plan:
+        comparisons.setdefault(cls, {}).setdefault(grp, {})[key] = [a_id, b_id]
+    # Per-pair stats are columns over [pipeline x pair] (repro_format.py), so each pipeline's row is
+    # filled in plan order and a pair without a fit stays None (NaN on disk).
+    n_pairs = len(plan)
+    fields = [f for _, fs in FIT_FILES for f in fs]
+    cols = {f: [None] * (len(pipelines) * n_pairs) for f in fields}
+    summary: dict[str, list] = {f: [] for f in SUMMARY_FIELDS}
+    rejected_by: dict[str, list] = {}
+    for i, p in enumerate(pipelines):
+        devs = {"test_retest": [], "inter_scanner": [], "inter_protocol": []}
         possible = {"test_retest": 0, "inter_scanner": 0, "inter_protocol": 0}
         rejected: list[dict] = []
         no_recon = 0
-        for cls, grp, key, a_id, b_id in plan:
+        for j, (cls, grp, key, a_id, b_id) in enumerate(plan):
             possible[cls] += 1
             va, vb = by_pa.get((p, a_id)), by_pa.get((p, b_id))
             if not va or not vb:
@@ -458,9 +543,11 @@ def cmd_fits(args) -> None:
                 continue
             m, rej = _pair_metrics(va, vb)
             if m:
-                node[cls].setdefault(grp, {})[key] = m
+                for f in fields:
+                    cols[f][i * n_pairs + j] = m[f]
+                devs[cls].append(m["abs_slope_dev"])
             else:
-                rejected.append({"class": cls, "group": grp, "pair": key, **rej})
+                rejected.append({"pair": j, **rej})
 
         # Headline aggregates per comparison class. Both are reported because they answer different
         # questions and, on the bimodal pipelines, disagree: the MEDIAN is the typical pair (robust —
@@ -469,28 +556,35 @@ def cmd_fits(args) -> None:
         # dropped upstream by _pair_metrics, so neither is defending against outright garbage.
         # `{cls}_mean_abs_slope_dev` was historically the MEDIAN under a misleading name; it is now a
         # genuine mean, and readers wanting the old value must use `{cls}_median_abs_slope_dev`.
-        for cls in ("test_retest", "inter_scanner", "inter_protocol"):
-            devs = [m["abs_slope_dev"] for grp in node[cls].values() for m in grp.values()]
-            node[f"{cls}_median_abs_slope_dev"] = round(float(np.median(devs)), 4) if devs else None
-            node[f"{cls}_mean_abs_slope_dev"] = round(float(np.mean(devs)), 4) if devs else None
-            node[f"{cls}_n_pairs"] = len(devs)
-            node[f"{cls}_n_possible"] = possible[cls]
+        for cls, d in devs.items():
+            summary[f"{cls}_median_abs_slope_dev"].append(round(float(np.median(d)), 4) if d else None)
+            summary[f"{cls}_mean_abs_slope_dev"].append(round(float(np.mean(d)), 4) if d else None)
+            summary[f"{cls}_n_pairs"].append(len(d))
+            summary[f"{cls}_n_possible"].append(possible[cls])
         # Per-pipeline so the site can total them over whatever pipelines it is actually showing
         # (methods retired from the manifest are hidden there) rather than over a fixed headline.
-        node["n_possible"] = sum(possible.values())
-        node["n_rejected"] = len(rejected)
-        node["n_no_recon"] = no_recon
-        node["rejected"] = rejected
-        out["pipelines"][p] = node
+        summary["n_possible"].append(sum(possible.values()))
+        summary["n_rejected"].append(len(rejected))
+        summary["n_no_recon"].append(no_recon)
+        if rejected:
+            rejected_by[p] = rejected
 
-    out["exclusion_rules"] = {"slope_dev_cap": SLOPE_DEV_CAP, "min_pair_rois": MIN_PAIR_ROIS,
-                             "min_roi_coverage": MIN_ROI_COVERAGE}
-    (RESULTS / "repro.json").write_text(json.dumps(out, indent=2) + "\n")
-    n = len(out["pipelines"])
-    poss = sum(v["n_possible"] for v in out["pipelines"].values())
-    rej = sum(v["n_rejected"] for v in out["pipelines"].values())
-    nore = sum(v["n_no_recon"] for v in out["pipelines"].values())
-    print(f"wrote {RESULTS / 'repro.json'} ({n} pipelines)")
+    fits = write_columns(RESULTS, [(name, {f: cols[f] for f in fs}) for name, fs in FIT_FILES],
+                         (len(pipelines), n_pairs), {f: FIT_DECIMALS[f] for f in fields})
+    out = {"targets": subject_targets(acqs),
+           "acquisitions": {k: {f: a[f] for f in ACQ_FIELDS} for k, a in sorted(acqs.items())},
+           "comparisons": comparisons,
+           "exclusion_rules": {"slope_dev_cap": SLOPE_DEV_CAP, "min_pair_rois": MIN_PAIR_ROIS,
+                               "min_roi_coverage": MIN_ROI_COVERAGE},
+           "pairs": [{"class": c, "group": g, "key": k, "a": a, "b": b} for c, g, k, a, b in plan],
+           "pipelines": pipelines,
+           "summary": summary,
+           "rejected": rejected_by,
+           "fits": fits}
+    (RESULTS / "repro.json").write_text(json.dumps(out, separators=(",", ":")) + "\n")
+    poss, rej, nore = (sum(summary[f]) for f in ("n_possible", "n_rejected", "n_no_recon"))
+    print(f"wrote {RESULTS / 'repro.json'} + {', '.join(f['file'] for f in fits['files'])} "
+          f"({len(pipelines)} pipelines x {n_pairs} pairs)")
     print(f"  pairs: {poss - rej - nore} kept of {poss} possible "
           f"({rej} rejected fits, {nore} with no reconstruction)")
 
@@ -538,13 +632,15 @@ def main() -> None:
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
     r = sub.add_parser("register", help="rigid-register acquisitions to the target")
-    r.add_argument("--target", default=DEFAULT_TARGET)
+    r.add_argument("--subject", default=None, help="only this subject (default: every subject)")
     r.add_argument("--target-only", action="store_true",
                    help="write only the target grid (for a one-time prep job); per-job stats registers "
                         "each acquisition itself")
     r.add_argument("--force", action="store_true")
-    s = sub.add_parser("seg", help="segment the target (mri_synthseg via docker) or install --seg")
+    s = sub.add_parser("seg", help="segment each subject's target (mri_synthseg) or install --seg")
     s.add_argument("--seg", type=Path, default=None)
+    s.add_argument("--subject", default=None, help="only this subject (required with --seg)")
+    s.add_argument("--runner", choices=("docker", "apptainer"), default="docker")
     s.add_argument("--image", default="freesurfer/freesurfer:7.4.1",
                    help="FreeSurfer image providing license-free mri_synthseg")
     s.add_argument("--force", action="store_true")

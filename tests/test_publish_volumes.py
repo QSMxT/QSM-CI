@@ -743,7 +743,10 @@ def test_no_manifest_slug_contains_an_underscore():
 def test_the_real_repro_json_and_registry_derive_soundly():
     pipes = json.loads((ROOT / "results" / "repro.json").read_text())["pipelines"]
     acqs = pv.repro_acq_ids()
-    assert len(acqs) == 23 and all(re.fullmatch(r"(prisma|cima)-.+-run\d", a) for a in acqs)
+    registry = json.loads((ROOT / "scripts" / "datasets.json").read_text())
+    assert acqs == {k for k, v in registry.items() if v.get("track") == "repro"}
+    # Hub names are `<pipe>-cmp-<acq>__<kind>`: an acquisition id must not contain either separator.
+    assert all(re.fullmatch(r"[a-z0-9-]+-run\d", a) and "-cmp-" not in a for a in acqs)
     assert pipes and all(1 <= len(p.split("+")) <= 3 and "_" not in p and "~" not in p for p in pipes)
     assert len(pv.repro_live_names(pipes, acqs)) > 3 * len(pipes) * len(acqs)
     assert all(m in pv.live_algo_slugs() for p in pipes for m in p.split("+"))   # fits already drops retired

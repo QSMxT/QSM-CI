@@ -5,11 +5,14 @@ toward the already-robust ones (vsharp-sti/resharp), which barely move.
 
 Usage: bfr_erosion_figure.py <eroded repro.json> <un-eroded repro.json> <out.png>
 """
-import json, sys, statistics as st
+import os, sys, statistics as st
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from repro_format import load_repro  # noqa: E402  (reads the binary payload and the older all-JSON one)
 
 ero_p, non_p, out = sys.argv[1], sys.argv[2], sys.argv[3]
 # repro.json used to carry the MEDIAN under the `_mean_` name; it now carries both separately.
@@ -18,7 +21,7 @@ KEY = "inter_scanner_median_abs_slope_dev"
 
 
 def bfr_meds(path):
-    p = json.load(open(path))["pipelines"]
+    p = load_repro(path)["pipelines"]
     g = {}
     for pid, node in p.items():
         parts = pid.split("+")

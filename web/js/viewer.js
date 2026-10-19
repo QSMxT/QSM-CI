@@ -7,7 +7,8 @@ import { renderResources } from "./resourceChart.js";
 import { autoWin, makeWindowControl, winControls } from "./windowControl.js";
 import { qsmxtCommand } from "./qsmxtCommand.js";
 
-const { loadRuns, loadAlgos, loadDatasets, loadRegistry, loadRepro, loadRunRegions, doiFor, METRICS, METRIC_ORDER, STAGE_LABEL, val, fmt, metricVal, metricColumns, robustRange, heatScale, REGION_ORDER } = window.QSM;
+const { loadRuns, loadAlgos, loadDatasets, loadRegistry, loadRepro, loadRunRegions, doiFor, METRICS, METRIC_ORDER, STAGE_LABEL, val, fmt, metricVal, metricColumns, robustRange, heatScale, REGION_ORDER,
+  reproScannerLabel, reproProtoLabel, reproSubjectLabel, reproAcquisitions, reproSubjects, reproTargets } = window.QSM;
 
 const STAGE_COLOR = {
   "field-mapping": "bg-indigo-50 text-indigo-700 ring-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-300 dark:ring-indigo-500/20",
@@ -30,7 +31,7 @@ const DATASET_BADGE = {
 // pipelines sidebar / selectRun / method-card machinery renders it exactly like in-silico. There's
 // no ground truth, so those runs are recon-only (χ map streamed from the deterministic HF path
 // repro/<acq>/<pipeline>-cmp-<acq>__recon.nii.gz) and carry reproducibility stats instead of accuracy
-// metrics. The scanner/protocol/run pickers just regenerate the pool for a different acquisition.
+// metrics. The subject/scanner/protocol/run pickers just regenerate the pool for a different acquisition.
 const HF_VOL_BASE = "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/";
 let reproMode = false, reproPipe = "", reproAcq = "", reproJson = null;
 const reproReconUrl = (pipe, acq) => `${HF_VOL_BASE}repro/${acq}/${pipe.replaceAll("+", "_")}-cmp-${acq}__recon.nii.gz`;
@@ -96,7 +97,7 @@ function ensureReproRuns(acq) {
 // then cache the payload in module scope — the many synchronous readers below (pipeHasRepro,
 // reproRank, renderReproStats, ensureReproRuns) read `reproJson` directly. null = not resolved here
 // yet. Pulled on idle after boot (see init), so a scored (in-silico) pipeline learns whether it has
-// a harmonization analog without the 8.7 MB payload sitting in front of the first render.
+// a harmonization analog without the payload sitting in front of the first render.
 function ensureReproJson() {
   if (reproJson !== null) return Promise.resolve(reproJson);
   return loadRepro().then((d) => (reproJson = d));
@@ -109,18 +110,39 @@ const hasRepro = () => !!reproJson?.pipelines && Object.keys(reproJson.pipelines
 // available harmonization pipeline so the dataset tab is never a dead end.
 async function enterRepro(pipe, acq) {
   await ensureReproJson();
-  acq = acqExists(acq) ? acq : "cima-bridge-run1";
+  acq = acqExists(acq) ? acq : reproDefaultAcq();
   ensureReproRuns(acq);
   let target = pipe ? reproRunId(pipe, acq) : null;
   if (!target || !allRuns.some((r) => r.id === target)) target = allRuns.find((r) => r.track === "repro")?.id;
   if (target) selectRun(target);
 }
-const reproAcqOpts = () => Object.entries(datasetsReg).filter(([, v]) => v.track === "repro")
-  .map(([id, v]) => ({ id, label: v.label || id })).sort((a, b) => a.id.localeCompare(b.id));
-const REPRO_SCANNERS = ["prisma", "cima"];
-const REPRO_PROTOS = ["bridge", "local", "pulseq-online", "pulseq-offline"];
-const REPRO_RUNS = ["run1", "run2", "run3"];
-const acqExists = (id) => reproAcqOpts().some((a) => a.id === id);
+// Every harmonization acquisition's {subject, scanner, protocol, run}, from repro.json's
+// `acquisitions` (else the registry): the pickers and defaults read these, never the id's spelling.
+const reproAcqs = () => reproAcquisitions(datasetsReg, reproJson);
+const acqExists = (id) => !!id && !!reproAcqs()[id];
+// The acquisition a harmonization link opens on when none is given: the pilot subject's registration
+// target (cima-bridge-run1, as before), else the first subject's.
+function reproDefaultAcq() {
+  const acqs = reproAcqs(), targets = reproTargets(datasetsReg, reproJson, acqs), subs = reproSubjects(acqs);
+  return targets.mgh || targets[subs[0]] || Object.keys(acqs)[0] || "";
+}
+// Resolve a picker change to a real acquisition. `want` is the full {subject, scanner, protocol, run}
+// the pickers now show and `changed` the field the user moved. Not every combination exists (one
+// subject never went to a site; a run was never acquired), so keep the subject and the changed value
+// fixed and match as many of the other fields as possible, earlier fields first. Moving the subject
+// opens that subject's registration target, then tries to keep scanner/protocol/run.
+function reproResolveAcq(want, changed) {
+  const acqs = reproAcqs(), targets = reproTargets(datasetsReg, reproJson, acqs);
+  const order = ["scanner", "protocol", "run"];
+  let best = null, bestScore = -1;
+  for (const [id, a] of Object.entries(acqs)) {
+    if (a.subject !== want.subject || (changed !== "subject" && a[changed] !== want[changed])) continue;
+    let score = changed === "subject" && id === targets[want.subject] ? 0.5 : 0;
+    order.forEach((f, i) => { if (f !== changed && a[f] === want[f]) score += 2 ** (order.length - i); });
+    if (score > bestScore) { best = id; bestScore = score; }
+  }
+  return best;
+}
 
 // Stage I/O for generating "how to run" qsm-ci commands (mirrors stages.yml; magnitude is optional
 // and omitted for brevity). Each stage's output filename is the next stage's input, so a composed
@@ -339,7 +361,7 @@ function datasetPeers() {
 async function browseDataset(dom) {
   if (dom === "repro") {
     await ensureReproJson();
-    ensureReproRuns(acqExists(reproAcq) ? reproAcq : "cima-bridge-run1");
+    ensureReproRuns(acqExists(reproAcq) ? reproAcq : reproDefaultAcq());
   }
   domain = dom;
   buildSidebar();
@@ -710,9 +732,16 @@ function renderPipelineDatasetSwitch() {
   const simId = simRunIdOf(pipe);
   const hasSim = allRuns.some((r) => r.id === simId);
   const hasRepro = pipeHasRepro(pipe);
-  const acq = acqExists(reproAcq) ? reproAcq : "cima-bridge-run1";
-  const parts = acq.split("-");
-  const scanner = parts[0], runNo = parts[parts.length - 1], proto = parts.slice(1, -1).join("-");
+  const acqs = reproAcqs();
+  const acq = acqExists(reproAcq) ? reproAcq : reproDefaultAcq();
+  const cur = acqs[acq] || {};
+  // Each picker offers only what exists under the pickers to its left: the subject's scanners, that
+  // scanner's protocols, that protocol's runs. reproResolveAcq() handles a move that breaks the chain.
+  const uniq = (f, keep) => [...new Set(Object.values(acqs).filter(keep).map((a) => a[f]))];
+  const subjects = reproSubjects(acqs);
+  const scanners = uniq("scanner", (a) => a.subject === cur.subject);
+  const protos = uniq("protocol", (a) => a.subject === cur.subject && a.scanner === cur.scanner);
+  const runs = uniq("run", (a) => a.subject === cur.subject && a.scanner === cur.scanner && a.protocol === cur.protocol).sort();
   const tbtn = (key, label, active, enabled, tip) =>
     `<button data-ds="${key}" ${enabled ? "" : `disabled title="${tip}"`} class="rounded-md px-3 py-1.5 transition ${active
       ? "bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100"
@@ -723,9 +752,10 @@ function renderPipelineDatasetSwitch() {
     + opts.map((o) => `<option value="${o.v}" ${o.v === cur ? "selected" : ""}>${o.l}</option>`).join("") + `</select>`;
   // Acquisition pickers only make sense in the harmonization view; the in-silico side has one dataset.
   const pickers = inRepro ? `<div class="ml-auto flex items-center gap-2">
-      ${sel("scanner", REPRO_SCANNERS.map((s) => ({ v: s, l: s === "cima" ? "Cima.X" : "Prisma" })), scanner)}
-      ${sel("proto", REPRO_PROTOS.map((p) => ({ v: p, l: p.replace("pulseq-online", "Pulseq online").replace("pulseq-offline", "Pulseq offline") })), proto)}
-      ${sel("run", REPRO_RUNS.map((r) => ({ v: r, l: r })), runNo)}
+      ${subjects.length > 1 ? sel("subject", subjects.map((s) => ({ v: s, l: escapeHtml(reproSubjectLabel(s)) })), cur.subject) : ""}
+      ${sel("scanner", scanners.map((s) => ({ v: s, l: escapeHtml(reproScannerLabel(s)) })), cur.scanner)}
+      ${sel("protocol", protos.map((p) => ({ v: p, l: escapeHtml(reproProtoLabel(p)) })), cur.protocol)}
+      ${sel("run", runs.map((r) => ({ v: r, l: escapeHtml(r) })), cur.run)}
     </div>` : "";
   el.innerHTML = `<div class="flex flex-wrap items-center gap-3">
     <div class="inline-flex rounded-lg bg-gray-100 p-1 text-xs font-medium dark:bg-gray-800">
@@ -740,8 +770,9 @@ function renderPipelineDatasetSwitch() {
     else if (key === "repro" && !inRepro && hasRepro) enterRepro(pipe, reproAcq);
   }));
   el.querySelectorAll("[data-repro]").forEach((s) => s.addEventListener("change", () => {
-    const g = (k) => el.querySelector(`[data-repro="${k}"]`).value;
-    const a = `${g("scanner")}-${g("proto")}-${g("run")}`;
+    const g = (k) => el.querySelector(`[data-repro="${k}"]`)?.value ?? cur[k];
+    const a = reproResolveAcq({ subject: g("subject"), scanner: g("scanner"), protocol: g("protocol"), run: g("run") }, s.dataset.repro);
+    if (!a) return;
     ensureReproRuns(a);                       // regenerate the pool for the new acquisition
     selectRun(reproRunId(pipe, a));           // reopen the same pipeline there
   }));
@@ -811,7 +842,7 @@ function renderReproStats() {
     + `<td class="py-2 text-right tabular-nums font-medium text-gray-700 dark:text-gray-300">${fmt(v, fk)}</td><td></td></tr>`;
   let body = node
     ? row("Test–retest |a−1|", "test_retest", "Within-scanner run-to-run: median over pairs, mean in grey. Lower = more repeatable.")
-      + row("Inter-scanner |a−1|", "inter_scanner", "Prisma↔Cima for matched protocol+run: median over pairs, mean in grey. The harmonization headline.")
+      + row("Inter-scanner |a−1|", "inter_scanner", "The same subject on two scanners, matched protocol+run, pooled over every subject and scanner pair: median over pairs, mean in grey. The harmonization headline.")
       + row("vs bridge |a−1|", "inter_protocol", "Each protocol vs the bridge protocol, same scanner: median over pairs, mean in grey.")
     : `<tr><td class="py-3 text-gray-400" colspan="3">No reproducibility summary for this pipeline yet.</td></tr>`;
   const res = resRow("Runtime", run.runtime_s, "runtime_s", "Whole-pipeline wall-clock on this acquisition (from the CPU/RAM trace).")
@@ -1775,8 +1806,8 @@ async function init() {
   try {
     [allRuns, algos, registry, datasetsReg] = await Promise.all([loadRuns(), loadAlgos(), loadRegistry(), loadDatasets()]);
   } catch (e) { showBootError(e); return; }
-  // results/repro.json is 8.7 MB (866 KB gzipped) and only tells this page whether a pipeline has a
-  // harmonization analog, so it is NOT awaited at boot any more — the first run used to render behind
+  // results/repro.json only tells this page whether a pipeline has a harmonization analog (and its
+  // summary; the per-pair fit columns are never fetched here), so it is NOT awaited at boot any more — the first run used to render behind
   // it. Pull it on idle and re-render the two surfaces that read it once it lands. Everything that
   // NEEDS it (the ?dataset=repro branch below, browseDataset("repro"), enterRepro) awaits it itself.
   // Go through renderDatasetSwitch (the dispatcher), not renderPipelineDatasetSwitch: only a
@@ -1798,11 +1829,12 @@ async function init() {
   if (q.get("pipeline") && q.get("dataset") === "repro") {
     await ensureReproJson();   // the one entry point that needs the payload before it can render
     reproPipe = q.get("pipeline");
-    reproAcq = acqExists(q.get("acq")) ? q.get("acq") : "cima-bridge-run1";
+    reproAcq = acqExists(q.get("acq")) ? q.get("acq") : reproDefaultAcq();
     ensureReproRuns(reproAcq);
     domain = "repro"; navMode = "pipelines"; reproMode = true;
     run = allRuns.find((r) => r.id === reproRunId(reproPipe, reproAcq)) || composedRuns()[0];
     if (!run) { $("sub-title").textContent = "No harmonization results yet"; return; }
+    reproPipe = run.pipelineId;   // an unknown ?pipeline= fell back to the first pipeline: track the one actually open
     buildSidebar();
     await loadRun();
     return;
