@@ -1,8 +1,9 @@
 # Harmonization (repro track) — full matrix on Bunya
 
-Runs every QSM-CI pipeline combination over all 23 harmonization acquisitions
-(`data/harmonization/*`), then the reproducibility evaluation (register → SynthSeg → ROI stats →
-ax+b fits), entirely on Bunya. Only the small JSON payloads come back; the ~10k recon volumes stay
+Runs every QSM-CI pipeline combination over all 95 harmonization acquisitions
+(`data/harmonization/*`: the 72 EMTP traveling-head and 23 MGH pilot acquisitions), then the
+reproducibility evaluation (register → SynthSeg → ROI stats → ax+b fits, per cohort), entirely on
+Bunya. Only the small JSON payloads come back; the ~10k recon volumes stay
 in scratch.
 
 ## What publishes what
@@ -11,7 +12,8 @@ Three kinds of harmonization volume belong to no single run and are addressed by
 not by any URL in `index.json` — the viewer rebuilds their URLs from the pattern. They therefore have
 their own publishers. `publish_volumes.py --prune` (the per-run, URL-based prune) deliberately does
 not judge them; `--prune-repro` (repro.yml's evaluate job) does, by rebuilding the same pattern from
-`repro.json`'s live pipelines × `scripts/datasets.json`'s acquisitions and deleting what falls
+each cohort's live pipelines (`repro.json`, `repro_pilot.json`) × that cohort's acquisitions in
+`scripts/datasets.json` and deleting what falls
 outside it AND names a method `web/algorithms.json` no longer defines — a retired method's recons
 and the columns only it used. Files of live methods that merely lack ROI stats (unharvested GPU
 runs, parked submissions) are kept:
@@ -141,8 +143,11 @@ an acquisition that hasn't been published yet both just show fewer tabs.
 ```bash
 scp bunya:/scratch/user/uqaste15/qsmci-repro/repro_payload.tar.gz /tmp/
 tar -C /home/ashley/repos/qsm/qsmci/qsmci -xzf /tmp/repro_payload.tar.gz
-# payload: results/index.json (merged), results/repro_rois.json, results/repro.json + repro_fits*.bin,
-#          data/harmonization/_align/ (transforms + dseg + target)
+# payload: results/index.json (merged), results/repro_rois.json, per cohort results/repro.json +
+#          repro_fits*.bin (traveling heads) and results/repro_pilot.json + repro_pilot_fits*.bin
+#          (MGH pilot), data/harmonization/_align/ (transforms + dseg + target)
+# then regenerate the regional payloads (results/repro_regions.*, results/repro_pilot_regions.*):
+python scripts/gen_repro_regions.py results/repro_rois.json results
 ```
 
 ## Tuning a running array

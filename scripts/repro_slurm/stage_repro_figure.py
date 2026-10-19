@@ -2,7 +2,9 @@
 """Decompose harmonization reproducibility by pipeline stage (field-mapping / BFR / dipole).
 
 Usage: stage_repro_figure.py repro.json [repro_synthstrip.json] out.png
-Reads repro.json (pipelines -> {test_retest,inter_scanner,inter_protocol}_median_abs_slope_dev), parses
+Reads one harmonization cohort's payload (results/repro.json = EMTP traveling heads, the default;
+results/repro_pilot.json = MGH pilot; cohorts are analysed separately, so pass one cohort's files)
+(pipelines -> {test_retest,inter_scanner,inter_protocol}_median_abs_slope_dev), parses
 each 3-stage composed pipeline id `fm+bfr+dipole`, and plots reproducibility grouped by each stage,
 plus a one-way variance-explained (eta^2) per stage per metric.
 """

@@ -1,5 +1,6 @@
 #!/bin/bash
-# Harvest a matrix campaign -> results/repro.json (+ repro_rois.json). Parallel per-shard ROI means
+# Harvest a matrix campaign -> per-cohort results/repro.json (traveling heads) and
+# results/repro_pilot.json (MGH pilot) (+ repro_rois.json). Parallel per-shard ROI means
 # (each subject's transforms + dseg already built by `repro_eval.py register` + SynthSeg), merged INTO
 # the existing repro_rois.json so earlier campaigns' rows are kept, then pairwise TLS fits.
 #
@@ -44,6 +45,11 @@ print(f"repro_rois.json runs: {before} -> {len(doc['runs'])} | distinct pipeline
       f"{len({v['pipeline'] for v in doc['runs'].values()})}")
 PY
 
-# 3) pairwise TLS fits -> results/repro.json + repro_fits*.bin  (SLOPE_DEV_CAP already rejects diverged/garbage pairs)
+# 3) pairwise TLS fits, one payload per cohort -> results/repro.json + repro_fits*.bin (traveling heads),
+#    results/repro_pilot.json + repro_pilot_fits*.bin (MGH pilot)  (SLOPE_DEV_CAP already rejects
+#    diverged/garbage pairs)
 python scripts/repro_eval.py fits
+# 4) the regional payloads the Findings figures read, per cohort (results/repro_regions.*,
+#    results/repro_pilot_regions.*)
+python scripts/gen_repro_regions.py results/repro_rois.json results
 echo "HARVEST_DONE $(date +%T)"

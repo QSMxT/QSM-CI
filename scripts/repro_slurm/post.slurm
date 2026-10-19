@@ -64,5 +64,6 @@ python scripts/repro_eval.py fits
 # ---- take-home payload ---------------------------------------------------------------------------
 tar czf repro_payload.tar.gz \
     results/index.json results/repro_rois.json results/repro.json results/repro_fits*.bin \
+    results/repro_pilot.json results/repro_pilot_fits*.bin \
     data/harmonization/_align
 echo "payload: $(pwd)/repro_payload.tar.gz"

@@ -4,6 +4,8 @@ Shows erosion 'levelling the field' — the boundary-sensitive BFRs (lbv/harpere
 toward the already-robust ones (vsharp-sti/resharp), which barely move.
 
 Usage: bfr_erosion_figure.py <eroded repro.json> <un-eroded repro.json> <out.png>
+Both payloads must be the same harmonization cohort (repro.json = EMTP traveling heads,
+repro_pilot.json = MGH pilot).
 """
 import os, sys, statistics as st
 import numpy as np
