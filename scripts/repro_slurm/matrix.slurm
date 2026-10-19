@@ -28,10 +28,13 @@ export APPTAINER_CACHEDIR=/scratch/user/uqaste15/apptainer_cache
 export QSM_CI_JOBS=4
 
 N_SHARDS=4
+# REPRO_ACQS (shell glob, default *) limits the campaign to matching acquisitions, e.g.
+# REPRO_ACQS='s0*' for the EMTP traveling heads; size --array to match (acquisitions x shards).
 mapfile -t ACQS < <(python -c "
-import json
+import fnmatch, json, os
 reg = json.load(open('scripts/datasets.json'))
-print('\n'.join(sorted(k for k, v in reg.items() if v.get('track') == 'repro')))")
+pat = os.environ.get('REPRO_ACQS', '*')
+print('\n'.join(sorted(k for k, v in reg.items() if v.get('track') == 'repro' and fnmatch.fnmatch(k, pat))))")
 ACQ=${ACQS[$((SLURM_ARRAY_TASK_ID / N_SHARDS))]}
 SHARD=$((SLURM_ARRAY_TASK_ID % N_SHARDS))
 

@@ -7,6 +7,10 @@ and L/R-merged mean chi (ppb, 1 dp) per structure. The web computes every region
 figure live from this one small file, same deploy path as results/repro.json, so
 re-running it on each harmonization publish keeps the figures current.
 
+It also carries each acquisition's {subject, scanner, protocol, run} (from scripts/datasets.json)
+and the per-subject registration targets, so the figures pair acquisitions from metadata rather
+than by parsing ids.
+
 Usage: python scripts/gen_repro_regions.py [in=results/repro_rois.json] [out=results/repro_regions.json]
 """
 import json, sys, math, os
@@ -14,7 +18,10 @@ from collections import defaultdict
 
 IN = sys.argv[1] if len(sys.argv) > 1 else "results/repro_rois.json"
 OUT = sys.argv[2] if len(sys.argv) > 2 else "results/repro_regions.json"
-MANIFEST = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "web", "algorithms.json")
+_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MANIFEST = os.path.join(_ROOT, "web", "algorithms.json")
+REGISTRY = os.path.join(_ROOT, "scripts", "datasets.json")
+ACQ_FIELDS = ("subject", "scanner", "protocol", "run")
 
 # Methods the manifest still defines. A method REMOVED from algorithms.json is gone from
 # QSM-CI, so its runs shouldn't be republished here on every harvest; `hidden: true` is the other
@@ -67,7 +74,17 @@ if not out:
         "Re-run `python scripts/repro_eval.py stats` where the harmonization recons live."
         if stale else f"{IN} yielded no usable rows."))
 
-doc = {"target": src.get("target") if isinstance(src, dict) else None,
+# Acquisition metadata for every acquisition a run was written for (same fields repro.json carries).
+reg = json.load(open(REGISTRY)) if os.path.exists(REGISTRY) else {}
+seen = {r["a"] for r in out}
+acquisitions = {k: {f: v.get(f) for f in ACQ_FIELDS} for k, v in sorted(reg.items())
+                if v.get("track") == "repro" and k in seen}
+targets = src.get("targets") if isinstance(src, dict) else None
+if not targets:   # derive from the registry when the input predates per-subject targets
+    targets = {v["subject"]: k for k, v in sorted(reg.items())
+               if v.get("track") == "repro" and v.get("repro_target") and v.get("subject")}
+
+doc = {"targets": targets, "acquisitions": acquisitions,
        "structures": list(GROUP.keys()), "runs": out}
 with open(OUT, "w") as fh:
     json.dump(doc, fh, separators=(",", ":"))
