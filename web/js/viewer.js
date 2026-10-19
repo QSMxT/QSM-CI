@@ -7,7 +7,7 @@ import { renderResources } from "./resourceChart.js";
 import { autoWin, makeWindowControl, winControls } from "./windowControl.js";
 import { qsmxtCommand } from "./qsmxtCommand.js";
 
-const { loadRuns, loadAlgos, loadDatasets, loadRegistry, loadRepro, loadRunRegions, doiFor, METRICS, METRIC_ORDER, STAGE_LABEL, val, fmt, metricVal, metricColumns, robustRange, heatScale, REGION_ORDER,
+const { loadRuns, loadAlgos, loadDatasets, loadRegistry, loadRepro, loadReproGroups, reproGroupOf, loadRunRegions, doiFor, METRICS, METRIC_ORDER, STAGE_LABEL, val, fmt, metricVal, metricColumns, robustRange, heatScale, REGION_ORDER,
   reproScannerLabel, reproProtoLabel, reproSubjectLabel, reproAcquisitions, reproSubjects, reproTargets } = window.QSM;
 
 const STAGE_COLOR = {
@@ -27,13 +27,17 @@ const DATASET_BADGE = {
 
 // ── Harmonization (repro) dataset ──────────────────────────────────────────────────────────────
 // The repro track is a first-class dataset here: for the current acquisition we synthesise one
-// composed-run object per pipeline (from repro.json) and splice them into allRuns, so the SAME
+// composed-run object per pipeline (from the payload of the acquisition's cohort: results/repro.json
+// for the traveling heads, results/repro_pilot.json for the MGH pilot) and splice them into allRuns, so the SAME
 // pipelines sidebar / selectRun / method-card machinery renders it exactly like in-silico. There's
 // no ground truth, so those runs are recon-only (χ map streamed from the deterministic HF path
 // repro/<acq>/<pipeline>-cmp-<acq>__recon.nii.gz) and carry reproducibility stats instead of accuracy
 // metrics. The subject/scanner/protocol/run pickers just regenerate the pool for a different acquisition.
 const HF_VOL_BASE = "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/";
-let reproMode = false, reproPipe = "", reproAcq = "", reproJson = null;
+// reproGroups: the harmonization cohorts in display order (loadReproGroups); reproJsons: cohort id ->
+// its payload (summary only), null until loaded. A run's stats and ranks come from its acquisition's
+// cohort alone.
+let reproMode = false, reproPipe = "", reproAcq = "", reproGroups = [], reproJsons = null;
 const reproReconUrl = (pipe, acq) => `${HF_VOL_BASE}repro/${acq}/${pipe.replaceAll("+", "_")}-cmp-${acq}__recon.nii.gz`;
 // The CPU/RAM sampling trace for this pipeline×acquisition, published to the Hub alongside the recon
 // (same deterministic path). Carries the time series AND the peak-mem / avg-cpu / max-cpu summary.
@@ -90,20 +94,36 @@ function makeReproRun(pipe, acq, node) {
 function ensureReproRuns(acq) {
   reproAcq = acq;
   allRuns = allRuns.filter((r) => r.track !== "repro");
-  if (reproJson?.pipelines) for (const [pipe, node] of Object.entries(reproJson.pipelines)) allRuns.push(makeReproRun(pipe, acq, node));
+  const pipes = reproJsonFor(acq).pipelines;
+  if (pipes) for (const [pipe, node] of Object.entries(pipes)) allRuns.push(makeReproRun(pipe, acq, node));
 }
-// Fetch repro.json once through the shared loader (app.js loadRepro(): one memoised promise, the
-// live/visible-method pipeline filter, {} rather than null on failure so we don't refetch forever),
-// then cache the payload in module scope — the many synchronous readers below (pipeHasRepro,
-// reproRank, renderReproStats, ensureReproRuns) read `reproJson` directly. null = not resolved here
-// yet. Pulled on idle after boot (see init), so a scored (in-silico) pipeline learns whether it has
-// a harmonization analog without the payload sitting in front of the first render.
+// Fetch every cohort's payload once through the shared loader (app.js loadRepro(): one memoised
+// promise per cohort, the live/visible-method pipeline filter, {} rather than null on failure so we
+// don't refetch forever), then cache them in module scope — the many synchronous readers below
+// (pipeHasRepro, reproRank, renderReproStats, ensureReproRuns) read `reproJsons` directly. null = not
+// resolved here yet. Pulled on idle after boot (see init), so a scored (in-silico) pipeline learns
+// whether it has a harmonization analog without the payloads sitting in front of the first render.
+let _reproJsonsReq = null;
 function ensureReproJson() {
-  if (reproJson !== null) return Promise.resolve(reproJson);
-  return loadRepro().then((d) => (reproJson = d));
+  if (reproJsons !== null) return Promise.resolve(reproJsons);
+  _reproJsonsReq ||= loadReproGroups().then(async (gs) => {
+    const loaded = await Promise.all(gs.map((g) => loadRepro({ group: g.id })));
+    reproGroups = gs;
+    reproJsons = Object.fromEntries(gs.map((g, i) => [g.id, loaded[i] || {}]));
+    return reproJsons;
+  });
+  return _reproJsonsReq;
 }
-const pipeHasRepro = (pipe) => !!reproJson?.pipelines?.[pipe];
-const hasRepro = () => !!reproJson?.pipelines && Object.keys(reproJson.pipelines).length > 0;
+// The cohort an acquisition belongs to: its registry entry's `group`, else the cohort whose payload
+// lists it.
+function acqGroup(acq) {
+  if (datasetsReg?.[acq]?.track === "repro") return reproGroupOf(datasetsReg[acq]);
+  return reproGroups.find((g) => reproJsons?.[g.id]?.acquisitions?.[acq])?.id || reproGroups[0]?.id;
+}
+const reproJsonFor = (acq) => reproJsons?.[acqGroup(acq)] || {};
+const reproGroupMeta = (id) => reproGroups.find((g) => g.id === id) || { id, key: "repro", label: "Harmonization (2026)" };
+const pipeHasRepro = (pipe) => !!reproJsons && Object.values(reproJsons).some((d) => d?.pipelines?.[pipe]);
+const hasRepro = () => !!reproJsons && Object.values(reproJsons).some((d) => d?.pipelines && Object.keys(d.pipelines).length > 0);
 // Enter the harmonization view IN-PLACE (no page navigation): make sure repro.json and the
 // acquisition's run pool are loaded, then select `pipe`'s composed run there. `pipe` may be null (or
 // a pipeline with no harmonization analog) when entering from an isolated run; fall back to the first
@@ -116,15 +136,20 @@ async function enterRepro(pipe, acq) {
   if (!target || !allRuns.some((r) => r.id === target)) target = allRuns.find((r) => r.track === "repro")?.id;
   if (target) selectRun(target);
 }
-// Every harmonization acquisition's {subject, scanner, protocol, run}, from repro.json's
-// `acquisitions` (else the registry): the pickers and defaults read these, never the id's spelling.
-const reproAcqs = () => reproAcquisitions(datasetsReg, reproJson);
+// Every harmonization acquisition's {subject, scanner, protocol, run}, cohort by cohort in display
+// order (each from its payload's `acquisitions`, else the registry): the pickers and defaults read
+// these, never the id's spelling. The pickers span both cohorts (the MGH pilot is one more subject);
+// the stats panel keeps each cohort's numbers apart.
+const reproAcqs = () => Object.assign({}, ...reproGroups.map((g) => reproAcquisitions(datasetsReg, reproJsons?.[g.id], g.id)));
+const reproAllTargets = (acqs) => Object.assign({}, ...reproGroups.map((g) =>
+  reproTargets(datasetsReg, reproJsons?.[g.id], Object.fromEntries(Object.entries(acqs).filter(([id]) => acqGroup(id) === g.id)), g.id)));
 const acqExists = (id) => !!id && !!reproAcqs()[id];
-// The acquisition a harmonization link opens on when none is given: the pilot subject's registration
-// target (cima-bridge-run1, as before), else the first subject's.
-function reproDefaultAcq() {
-  const acqs = reproAcqs(), targets = reproTargets(datasetsReg, reproJson, acqs), subs = reproSubjects(acqs);
-  return targets.mgh || targets[subs[0]] || Object.keys(acqs)[0] || "";
+// The acquisition a harmonization link opens on when none is given: the first subject's registration
+// target in cohort `gid` (default: the first cohort, the traveling heads).
+function reproDefaultAcq(gid) {
+  const all = reproAcqs(), targets = reproAllTargets(all);
+  const acqs = gid ? Object.fromEntries(Object.entries(all).filter(([id]) => acqGroup(id) === gid)) : all;
+  return targets[reproSubjects(acqs)[0]] || Object.keys(acqs)[0] || "";
 }
 // Resolve a picker change to a real acquisition. `want` is the full {subject, scanner, protocol, run}
 // the pickers now show and `changed` the field the user moved. Not every combination exists (one
@@ -132,7 +157,7 @@ function reproDefaultAcq() {
 // fixed and match as many of the other fields as possible, earlier fields first. Moving the subject
 // opens that subject's registration target, then tries to keep scanner/protocol/run.
 function reproResolveAcq(want, changed) {
-  const acqs = reproAcqs(), targets = reproTargets(datasetsReg, reproJson, acqs);
+  const acqs = reproAcqs(), targets = reproAllTargets(acqs);
   const order = ["scanner", "protocol", "run"];
   let best = null, bestScore = -1;
   for (const [id, a] of Object.entries(acqs)) {
@@ -673,7 +698,8 @@ function buildSidebar() {
 function resultsHref() {
   const p = new URLSearchParams();
   if (domain === "repro") {
-    p.set("dataset", "repro");
+    // the results page shows each cohort as its own dataset: open the one this acquisition is in
+    p.set("dataset", reproJsons ? reproGroupMeta(acqGroup(reproAcq)).key : "repro");
     p.set("sub", "pipelines");            // the harmonization sub-view that lists these pipelines
   } else if (domain === "invivo" || domain === "chisep") {
     p.set("dataset", domain);             // both open on their own Leaderboard ("board") by default
@@ -779,13 +805,15 @@ function renderPipelineDatasetSwitch() {
   el.classList.remove("hidden");
 }
 
-// Reproducibility stats for the open pipeline (from repro.json) in place of the accuracy metrics.
-// Rank this pipeline's reproducibility value for `field` among ALL harmonization pipelines (lower
-// |a−1| is better). Same {rank, n, t} shape as metricRank so the rank cell renders identically.
-function reproRank(field) {
-  const v = reproJson?.pipelines?.[reproPipe]?.[field];
+// Reproducibility stats for the open pipeline (from each cohort's payload) in place of the accuracy
+// metrics. Rank this pipeline's reproducibility value for `field` among the harmonization pipelines
+// of ONE cohort (lower |a−1| is better). Same {rank, n, t} shape as metricRank so the rank cell
+// renders identically.
+function reproRank(field, gid) {
+  const pipes = reproJsons?.[gid]?.pipelines || {};
+  const v = pipes[reproPipe]?.[field];
   if (v == null) return null;
-  const vals = Object.values(reproJson.pipelines || {}).map((n) => n[field]).filter((x) => x != null);
+  const vals = Object.values(pipes).map((n) => n[field]).filter((x) => x != null);
   if (vals.length < 2) return null;
   const rank = 1 + vals.filter((x) => x < v).length;
   const [lo, hi] = robustRange(vals);
@@ -793,7 +821,7 @@ function reproRank(field) {
   return { rank, n: vals.length, t: 1 - t };   // lower value = higher goodness
 }
 function renderReproStats() {
-  const node = reproJson?.pipelines?.[reproPipe];
+  const curGroup = acqGroup(reproAcq);
   const hasRegions = !!(runRegions && runRegions.chi && runRegions.chi.recon);
   // Reuse the metrics tab strip as Reproducibility | Regions (the repro track has no ground truth, so no
   // Error tab). The per-region χ means come from the Hub regions.json (loadRunRegions → runRegions).
@@ -816,15 +844,15 @@ function renderReproStats() {
     }
   }
   $("metrics-regions-wrap")?.classList.add("hidden");
-  $("metrics-sub").textContent = "Reproducibility of this pipeline across the harmonization acquisitions: orthogonal per-ROI ax+b fits, |a−1| as median (mean).";
-  const rankCell = (rk, label) => rk
-    ? `<span class="inline-block rounded-md px-1.5 py-0.5 text-xs font-semibold text-white shadow-sm" style="background:${heatScale(rk.t)}" data-tip="Rank ${rk.rank} of ${rk.n} harmonization pipelines for ${label}">#${rk.rank}<span class="opacity-70"> / ${rk.n}</span></span>`
+  $("metrics-sub").textContent = "Reproducibility of this pipeline within each harmonization dataset (analysed separately): orthogonal per-ROI ax+b fits, |a−1| as median (mean), ranked within that dataset.";
+  const rankCell = (rk, label, gl) => rk
+    ? `<span class="inline-block rounded-md px-1.5 py-0.5 text-xs font-semibold text-white shadow-sm" style="background:${heatScale(rk.t)}" data-tip="Rank ${rk.rank} of ${rk.n} ${escapeHtml(gl)} pipelines for ${label}">#${rk.rank}<span class="opacity-70"> / ${rk.n}</span></span>`
     : `<span class="text-gray-300 dark:text-gray-600">—</span>`;
   // A reproducibility |a−1| row for one comparison class: the median as the headline with the mean
   // beside it (they diverge on the bimodal pipelines — reproducible on some protocols, not others),
   // ranked on the median against every other pipeline.
   const pctOf = (v) => v == null ? "—" : (100 * v).toFixed(1) + "%";
-  const row = (label, cls, tip) => {
+  const row = (node, gid, gl, label, cls, tip) => {
     const medField = `${cls}_median_abs_slope_dev`;
     // pre-split payloads carried the median under the `_mean_` name; there is no mean to show there
     const med = node?.[medField] ?? node?.[`${cls}_mean_abs_slope_dev`] ?? null;
@@ -834,17 +862,28 @@ function renderReproStats() {
       + `<td class="py-2 text-right tabular-nums font-medium text-gray-900 dark:text-gray-100">${pctOf(med)}`
       + (mean == null ? "" : ` <span class="text-xs font-normal text-gray-400" title="mean over pairs">(${pctOf(mean)})</span>`)
       + `</td>`
-      + `<td class="py-2 pl-3 text-right">${rankCell(reproRank(node?.[medField] != null ? medField : `${cls}_mean_abs_slope_dev`), label)}</td></tr>`;
+      + `<td class="py-2 pl-3 text-right">${rankCell(reproRank(node?.[medField] != null ? medField : `${cls}_mean_abs_slope_dev`, gid), label, gl)}</td></tr>`;
   };
   // A resource row (runtime / peak memory / avg CPU): value only, folded on from the run's Hub trace.
   const resRow = (label, v, fk, tip) => v == null ? "" :
     `<tr class="border-t border-gray-100 dark:border-gray-800"><td class="py-2 pr-3 text-gray-500 dark:text-gray-400"><span class="has-tip" data-tip="${tip}">${label}</span></td>`
     + `<td class="py-2 text-right tabular-nums font-medium text-gray-700 dark:text-gray-300">${fmt(v, fk)}</td><td></td></tr>`;
-  let body = node
-    ? row("Test–retest |a−1|", "test_retest", "Within-scanner run-to-run: median over pairs, mean in grey. Lower = more repeatable.")
-      + row("Inter-scanner |a−1|", "inter_scanner", "The same subject on two scanners, matched protocol+run, pooled over every subject and scanner pair: median over pairs, mean in grey. The harmonization headline.")
-      + row("vs bridge |a−1|", "inter_protocol", "Each protocol vs the bridge protocol, same scanner: median over pairs, mean in grey.")
-    : `<tr><td class="py-3 text-gray-400" colspan="3">No reproducibility summary for this pipeline yet.</td></tr>`;
+  // One block per cohort, the open acquisition's cohort first: each is its own dataset with its own
+  // pairs and its own ranking, so their numbers are shown side by side and never pooled.
+  const order = [curGroup, ...reproGroups.map((g) => g.id).filter((id) => id !== curGroup)];
+  let body = "";
+  for (const gid of order) {
+    const G = reproGroupMeta(gid), node = reproJsons?.[gid]?.pipelines?.[reproPipe];
+    body += `<tr><td colspan="3" class="pt-3 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">${escapeHtml(G.label)}`
+      + (G.description ? ` <span class="font-normal normal-case tracking-normal">· ${escapeHtml(G.description)}</span>` : "")
+      + (gid === curGroup ? ` <span class="font-normal normal-case tracking-normal text-amber-600 dark:text-amber-400">· this acquisition</span>` : "")
+      + `</td></tr>`;
+    body += node
+      ? row(node, gid, G.label, "Test–retest |a−1|", "test_retest", "Within-scanner run-to-run: median over pairs, mean in grey. Lower = more repeatable.")
+        + row(node, gid, G.label, "Inter-scanner |a−1|", "inter_scanner", "The same subject on two scanners, matched protocol+run, pooled over every subject and scanner pair of this dataset: median over pairs, mean in grey. The harmonization headline.")
+        + row(node, gid, G.label, "vs bridge |a−1|", "inter_protocol", "Each protocol vs the bridge protocol, same scanner: median over pairs, mean in grey.")
+      : `<tr><td class="py-3 text-gray-400" colspan="3">No reproducibility summary for this pipeline in this dataset.</td></tr>`;
+  }
   const res = resRow("Runtime", run.runtime_s, "runtime_s", "Whole-pipeline wall-clock on this acquisition (from the CPU/RAM trace).")
     + resRow("Peak memory", run.mem_peak_bytes, "mem_peak_bytes", "Peak resident memory during the run.")
     + resRow("Avg CPU", run.cpu_cores_avg, "cpu_cores_avg", "Average CPU cores busy over the run.");
@@ -931,7 +970,8 @@ function selectRun(id) {
   reproMode = domain === "repro";
   if (reproMode) {
     reproPipe = run.pipelineId; reproAcq = run.phantom;   // deep-link by pipeline + acquisition
-    history.replaceState(null, "", `?pipeline=${encodeURIComponent(reproPipe)}&dataset=repro&acq=${reproAcq}`);
+    const key = reproGroupMeta(acqGroup(reproAcq)).key;   // repro (traveling heads) or repro-pilot
+    history.replaceState(null, "", `?pipeline=${encodeURIComponent(reproPipe)}&dataset=${key}&acq=${reproAcq}`);
   } else {
     if (domain === "chisep") chisepPhantom = chisepPhantomOf(run);   // remember the phantom being viewed
     history.replaceState(null, "", "?run=" + encodeURIComponent(id));
@@ -1806,10 +1846,12 @@ async function init() {
   try {
     [allRuns, algos, registry, datasetsReg] = await Promise.all([loadRuns(), loadAlgos(), loadRegistry(), loadDatasets()]);
   } catch (e) { showBootError(e); return; }
-  // results/repro.json only tells this page whether a pipeline has a harmonization analog (and its
-  // summary; the per-pair fit columns are never fetched here), so it is NOT awaited at boot any more — the first run used to render behind
-  // it. Pull it on idle and re-render the two surfaces that read it once it lands. Everything that
-  // NEEDS it (the ?dataset=repro branch below, browseDataset("repro"), enterRepro) awaits it itself.
+  // The harmonization cohorts' payloads (results/repro.json, results/repro_pilot.json) only tell this
+  // page whether a pipeline has a harmonization analog (and its summaries; the per-pair fit columns
+  // are never fetched here), so they are NOT awaited at boot any more — the first run used to render
+  // behind them. Pull them on idle and re-render the two surfaces that read them once they land.
+  // Everything that NEEDS them (the ?dataset=repro branch below, browseDataset("repro"), enterRepro)
+  // awaits them itself.
   // Go through renderDatasetSwitch (the dispatcher), not renderPipelineDatasetSwitch: only a
   // composed run with a harmonization analog gets the pipeline switch.
   (window.requestIdleCallback || ((f) => setTimeout(f, 400)))(() => {
@@ -1823,13 +1865,15 @@ async function init() {
   document.querySelectorAll("#nav-toggle button").forEach((b) => b.addEventListener("click", () => { navMode = b.dataset.mode; buildSidebar(); }));
   document.querySelectorAll("#domain-toggle button").forEach((b) => b.addEventListener("click", () => browseDataset(b.dataset.domain)));
 
-  // Harmonization entry: ?pipeline=<id>&dataset=repro&acq=<acquisition>. Generate the acquisition's
-  // pipeline pool (see ensureReproRuns) and open the requested pipeline. From here it's the same
-  // Pipelines machinery as in-silico.
-  if (q.get("pipeline") && q.get("dataset") === "repro") {
+  // Harmonization entry: ?pipeline=<id>&dataset=<cohort key>&acq=<acquisition> (dataset=repro for the
+  // traveling heads, repro-pilot for the MGH pilot; the acquisition decides which cohort's stats
+  // lead). Generate the acquisition's pipeline pool (see ensureReproRuns) and open the requested
+  // pipeline. From here it's the same Pipelines machinery as in-silico.
+  const dq = q.get("dataset"), reproKey = dq && (await loadReproGroups()).find((g) => g.key === dq);
+  if (q.get("pipeline") && reproKey) {
     await ensureReproJson();   // the one entry point that needs the payload before it can render
     reproPipe = q.get("pipeline");
-    reproAcq = acqExists(q.get("acq")) ? q.get("acq") : reproDefaultAcq();
+    reproAcq = acqExists(q.get("acq")) ? q.get("acq") : reproDefaultAcq(reproKey.id);
     ensureReproRuns(reproAcq);
     domain = "repro"; navMode = "pipelines"; reproMode = true;
     run = allRuns.find((r) => r.id === reproRunId(reproPipe, reproAcq)) || composedRuns()[0];
