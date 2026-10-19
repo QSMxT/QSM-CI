@@ -14,7 +14,8 @@ on:
   # These workflows commit site content with the default GITHUB_TOKEN, whose pushes do NOT raise
   # the `push` event above — so deploy explicitly once each of them finishes:
   #   score          -> results/index.json (the in-silico leaderboard)
-  #   repro          -> results/index.json + results/repro.json (the harmonization track)
+  #   repro          -> results/index.json + each harmonization cohort's results/<stem>.json +
+  #                     <stem>_fits*.bin (repro = traveling heads, repro_pilot = MGH pilot)
   #   publish-zenodo -> qsm_ci/registry.json (method DOIs, served as /registry.json). Its commit
   #                     also carries GitHub's skip token, which stops push-triggered workflows but
   #                     not a workflow_run.
