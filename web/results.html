@@ -15,6 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
+  <script src="js/reproBin.js"></script>
   <script src="js/app.js"></script>
   <!-- Third-party assets are pinned AND subresource-integrity checked (tests/test_web_sri.py). To bump a
        version, recompute: curl -s <url> | openssl dgst -sha384 -binary | openssl base64 -A -->
@@ -175,8 +176,10 @@
       <template x-if="hasInvivo()">
         <button class="dtab" :class="{'dtab-on': dataset==='invivo'}" @click="setDataset('invivo')">In vivo (2016)</button>
       </template>
-      <template x-if="hasRepro()">
-        <button class="dtab" :class="{'dtab-on': dataset==='repro'}" @click="setDataset('repro')">Harmonization (2026)</button>
+      <!-- One Harmonization dataset per cohort (web/algorithms.json `repro_groups`): the traveling heads,
+           then the MGH pilot. Each tab appears once its own payload has loaded. -->
+      <template x-for="g in reproGroups" :key="g.key">
+        <button x-show="hasRepro(g.key)" class="dtab" :class="{'dtab-on': dataset===g.key}" @click="setDataset(g.key)" :title="g.description" x-text="g.label"></button>
       </template>
       <template x-if="hasCross()">
         <button class="dtab" :class="{'dtab-on': dataset==='cross'}" @click="setDataset('cross')">Cross-dataset</button>
@@ -1142,7 +1145,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
     </template>
 
     <!-- ===================== HARMONIZATION (2026) ===================== -->
-    <template x-if="dataset==='repro'">
+    <template x-if="isRepro()">
     <section class="mt-3">
       <div class="rtabs">
         <button class="rtab" :class="{'rtab-on': reproView==='info'}" @click="reproView='info'">Info</button>
@@ -1151,12 +1154,37 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         <button class="rtab" :class="{'rtab-on': reproView==='findings'}" @click="reproView='findings'">Findings</button>
       </div>
 
+      <!-- Subject + scanner-pair filter, shared by every analysis subtab. "All" pools every subject of
+           the open cohort (the headline; never another cohort's); a subject narrows every table and
+           figure to that person's pairs. Pairs never cross subjects, so an inter-scanner value is always
+           one head on two scanners. Each selector shows only when it has a choice to offer; the scope
+           line always says what the views cover. -->
+      <template x-if="reproView!=='info'">
+        <div class="mt-6 flex flex-wrap items-center gap-3">
+          <div x-show="reproSubjectOpts().length>1" class="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+            <span class="has-tip" data-tip="Every comparison is within one subject: test–retest and vs-bridge on one scanner, inter-scanner between two scanners the same person visited. 'All subjects' pools those pairs across subjects (the headline numbers); pick a subject to see only theirs.">Subject</span>
+            <select x-model="reproSubject" class="rounded-lg border-gray-300 text-sm py-1.5 focus:border-emerald-500 focus:ring-emerald-500">
+              <option value="all">all subjects (pooled)</option>
+              <template x-for="o in reproSubjectOpts()" :key="o.v"><option :value="o.v" x-text="o.l" :selected="o.v===reproSubject"></option></template>
+            </select>
+          </div>
+          <div x-show="reproScanPairOpts().length>1" class="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+            <span class="has-tip" data-tip="Restrict the inter-scanner comparisons to one scanner pair (the first is each subject's home scanner). Test–retest and vs-bridge values are unaffected.">Scanner pair</span>
+            <select x-model="reproScanPair" class="rounded-lg border-gray-300 text-sm py-1.5 focus:border-emerald-500 focus:ring-emerald-500">
+              <option value="all">all scanner pairs</option>
+              <template x-for="o in reproScanPairOpts()" :key="o.v"><option :value="o.v" x-text="o.l" :selected="o.v===reproScanPair"></option></template>
+            </select>
+          </div>
+          <span class="text-xs text-gray-400" x-text="reproScopeText()"></span>
+        </div>
+      </template>
+
       <!-- Harmonization · Protocol reproducibility -->
       <template x-if="reproView==='protocols'">
       <div>
         <div class="mt-6 flex flex-wrap items-center gap-3">
           <div class="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-            <span class="has-tip" data-tip="Absolute |a−1| scores any slope error the same way. Signed a−1 keeps the direction: each fit is y = a·x + b with x the first acquisition of the pair (Prisma, the earlier run, or the bridge protocol), so a positive value means the second reads higher (Cima above Prisma, a later run above an earlier one, a protocol above the bridge). Pooling signed values lets opposite-direction errors cancel, so a pipeline can look better here than under |a−1|: that gap is scatter rather than bias. Ranking and colour always use the magnitude.">Slope error</span>
+            <span class="has-tip" data-tip="Absolute |a−1| scores any slope error the same way. Signed a−1 keeps the direction: each fit is y = a·x + b with x the first acquisition of the pair (the subject's home scanner, e.g. Prisma for the MGH pilot and KKI for the traveling heads; the earlier run; or the bridge protocol), so a positive value means the second reads higher (the visited scanner above the home one, a later run above an earlier one, a protocol above the bridge). Pooling signed values lets opposite-direction errors cancel, so a pipeline can look better here than under |a−1|: that gap is scatter rather than bias. Ranking and colour always use the magnitude.">Slope error</span>
             <span class="seg">
               <button class="seg-btn" :class="{'seg-on': !reproSigned}" @click="reproSigned=false">|a&minus;1|</button>
               <button class="seg-btn" :class="{'seg-on': reproSigned}" @click="reproSigned=true">a&minus;1</button>
@@ -1196,7 +1224,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
                 <tr>
                   <th class="px-5 py-2.5 text-left font-medium">Protocol</th>
                   <th class="px-4 py-2.5 text-right font-medium"><span class="has-tip" :data-tip="_devText('Within-scanner run-to-run |a−1| across pipelines: median (mean) [5th–95th percentile]. Lower is more repeatable.')">Test&ndash;retest <span x-text="_devLabel()">|a&minus;1|</span></span></th>
-                  <th class="px-4 py-2.5 text-right font-medium"><span class="has-tip" :data-tip="_devText('Prisma↔Cima |a−1| for the same protocol and run, across pipelines: median (mean) [5th–95th percentile]. Lower means the protocol travels better between scanners.')">Inter-scanner <span x-text="_devLabel()">|a&minus;1|</span></span></th>
+                  <th class="px-4 py-2.5 text-right font-medium"><span class="has-tip" :data-tip="_devText('Scanner↔scanner |a−1| for the same subject, protocol and run, across pipelines: median (mean) [5th–95th percentile]. Lower means the protocol travels better between scanners.')">Inter-scanner <span x-text="_devLabel()">|a&minus;1|</span></span></th>
                   <th class="px-4 py-2.5 text-right font-medium"><span class="has-tip" data-tip="Inter-scanner Bland–Altman bias across pipelines (ppm): median (mean). Signed, so zero is the target.">BA bias</span></th>
                   <th class="px-4 py-2.5 text-right font-medium">Pipelines</th>
                 </tr>
@@ -1215,7 +1243,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             </table>
           </div>
           <p x-show="reproProtoRows().length===0" class="px-5 py-10 text-center text-gray-400">
-            Reproducibility results are not computed yet; the reconstruction matrix over all 23 acquisitions is pending.
+            Reproducibility results are not computed yet; the reconstruction matrix over all <span x-text="reproExcl().acqs"></span> acquisitions is pending.
           </p>
         </div>
       </div><!-- /repro protocols -->
@@ -1246,7 +1274,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             </span>
           </div>
           <div class="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-            <span class="has-tip" data-tip="Absolute |a−1| scores any slope error the same way. Signed a−1 keeps the direction: each fit is y = a·x + b with x the first acquisition of the pair (Prisma, the earlier run, or the bridge protocol), so a positive value means the second reads higher (Cima above Prisma, a later run above an earlier one, a protocol above the bridge). Pooling signed values lets opposite-direction errors cancel, so a pipeline can look better here than under |a−1|: that gap is scatter rather than bias. Ranking and colour always use the magnitude.">Slope error</span>
+            <span class="has-tip" data-tip="Absolute |a−1| scores any slope error the same way. Signed a−1 keeps the direction: each fit is y = a·x + b with x the first acquisition of the pair (the subject's home scanner, e.g. Prisma for the MGH pilot and KKI for the traveling heads; the earlier run; or the bridge protocol), so a positive value means the second reads higher (the visited scanner above the home one, a later run above an earlier one, a protocol above the bridge). Pooling signed values lets opposite-direction errors cancel, so a pipeline can look better here than under |a−1|: that gap is scatter rather than bias. Ranking and colour always use the magnitude.">Slope error</span>
             <span class="seg">
               <button class="seg-btn" :class="{'seg-on': !reproSigned}" @click="reproSigned=false">|a&minus;1|</button>
               <button class="seg-btn" :class="{'seg-on': reproSigned}" @click="reproSigned=true">a&minus;1</button>
@@ -1369,7 +1397,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
                   <th class="px-4 py-2.5 text-right font-medium" style="min-width:3rem">#</th>
                   <th class="px-5 py-2.5 text-left font-medium">Pipeline</th>
                   <th @click="reproSortBy('tr')" class="px-4 py-2.5 text-right font-medium cursor-pointer select-none hover:text-gray-800"><span class="has-tip" :data-tip="`Within-scanner run-to-run ${_devLabel()}, ${_statLabel()} over pairs (${_altStatLabel()} in grey). Lower is more repeatable.`">Test&ndash;retest <span x-text="_devLabel()">|a&minus;1|</span></span> <span x-show="reproSortKey==='tr'" x-text="reproDir==='asc'?'↑':'↓'"></span></th>
-                  <th @click="reproSortBy('inter')" class="px-4 py-2.5 text-right font-medium cursor-pointer select-none hover:text-gray-800"><span class="has-tip" :data-tip="`Prisma↔Cima ${_devLabel()} for matched protocol+run, ${_statLabel()} over pairs (${_altStatLabel()} in grey). The harmonization headline.`">Inter-scanner <span x-text="_devLabel()">|a&minus;1|</span></span> <span x-show="reproSortKey==='inter'" x-text="reproDir==='asc'?'↑':'↓'"></span></th>
+                  <th @click="reproSortBy('inter')" class="px-4 py-2.5 text-right font-medium cursor-pointer select-none hover:text-gray-800"><span class="has-tip" :data-tip="`Scanner↔scanner ${_devLabel()} for the same subject, matched protocol+run, ${_statLabel()} over pairs (${_altStatLabel()} in grey). The harmonization headline.`">Inter-scanner <span x-text="_devLabel()">|a&minus;1|</span></span> <span x-show="reproSortKey==='inter'" x-text="reproDir==='asc'?'↑':'↓'"></span></th>
                   <th @click="reproSortBy('iproto')" class="px-4 py-2.5 text-right font-medium cursor-pointer select-none hover:text-gray-800"><span class="has-tip" :data-tip="`${_devLabel()} between each protocol and the bridge protocol on the same scanner, ${_statLabel()} over pairs (${_altStatLabel()} in grey).`">vs bridge <span x-text="_devLabel()">|a&minus;1|</span></span> <span x-show="reproSortKey==='iproto'" x-text="reproDir==='asc'?'↑':'↓'"></span></th>
                   <th @click="reproSortBy('xsim')" class="px-4 py-2.5 text-right font-medium cursor-pointer select-none hover:text-gray-800 border-l border-gray-200"><span class="has-tip" data-tip="In-silico (2019) accuracy of the same pipeline: xSIM against ground truth on the phantom, higher is better. Blank if that pipeline has no in-silico run.">In-silico xSIM</span> <span x-show="reproSortKey==='xsim'" x-text="reproDir==='asc'?'↑':'↓'"></span></th>
                   <th class="px-4 py-2.5 text-right font-medium"><span class="has-tip" data-tip="Number of pairwise comparisons behind the statistics.">Pairs</span></th>
@@ -1391,13 +1419,13 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             </table>
           </div>
           <p x-show="reproPipeRows().length===0" class="px-5 py-10 text-center text-gray-400">
-            Reproducibility results are not computed yet; the reconstruction matrix over all 23 acquisitions is pending.
+            Reproducibility results are not computed yet; the reconstruction matrix over all <span x-text="reproExcl().acqs"></span> acquisitions is pending.
           </p>
         </div>
       </template>
       </div><!-- /repro pipelines -->
 
-      <!-- Harmonization · Findings (all figures generated live from results/repro.json) -->
+      <!-- Harmonization · Findings (all figures generated live from the open cohort's results/<stem>.json) -->
       <template x-if="reproView==='findings'">
       <div>
         <!-- Figure 1 · variance decomposition (headline) -->
@@ -1474,12 +1502,12 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
               </select>
             </div>
           </div>
-          <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Each point is a pipeline: test&ndash;retest |a&minus;1| (run-to-run precision) on x, inter-scanner |a&minus;1| (Prisma&harr;Cima harmonizability) on y. Bottom-left is both precise <em>and</em> harmonizable. Pick a method to light up every pipeline that uses it; click any point to open it.</p>
+          <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Each point is a pipeline: test&ndash;retest |a&minus;1| (run-to-run precision) on x, inter-scanner |a&minus;1| (the same head on two scanners: harmonizability) on y. Bottom-left is both precise <em>and</em> harmonizable. Pick a method to light up every pipeline that uses it; click any point to open it.</p>
           <p x-show="reproHighlightStats()" class="mt-2 text-sm text-gray-700 dark:text-gray-300"><span class="font-semibold" x-text="reproHighlightStats()?.name"></span>: median inter-scanner <span class="font-semibold tabular-nums" x-text="reproHighlightStats()?.withMed"></span> across <span x-text="reproHighlightStats()?.n"></span> pipelines that use it, vs <span class="font-semibold tabular-nums" x-text="reproHighlightStats()?.withoutMed"></span> for those that don't.</p>
           <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="reproFrontierSVG"></div>
         </div>
 
-        <!-- ===== Regional-reproducibility figures (deep-grey nuclei, live from repro_regions.json) ===== -->
+        <!-- ===== Regional-reproducibility figures (deep-grey nuclei, live from the cohort's <stem>_regions.json) ===== -->
 
         <!-- Fig R1 · region × dipole inter-scanner |Δχ| heatmap -->
         <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
@@ -1503,14 +1531,14 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         <!-- Fig R2 · scanner-bias forest per region -->
         <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
           <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Does one scanner read a nucleus systematically higher?</h3>
-          <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Forest plot of Cima &minus; Prisma mean-&chi; bias per region (matched protocol + run), median &plusmn; IQR across all pipelines. Deep-grey nuclei are bold. A dot off the dashed zero line is a systematic cross-scanner offset.</p>
+          <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Forest plot of <span x-text="_rgPairNames().b"></span> &minus; <span x-text="_rgPairNames().a"></span> mean-&chi; bias per region (same subject, matched protocol + run), median &plusmn; IQR across all pipelines. Deep-grey nuclei are bold. A dot off the dashed zero line is a systematic cross-scanner offset.</p>
           <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="reproRegBiasSVG"></div>
         </div>
 
         <!-- Fig R3 · χ–iron calibration per scanner -->
         <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
           <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">&chi;&ndash;iron calibration: do the scanners agree?</h3>
-          <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Median &chi; per deep-grey nucleus vs literature non-heme iron, one regression per scanner. The slope is &chi;-sensitivity to iron; matching slopes and overlapping points mean the scanners are harmonized on the iron axis. A tight <em>linear</em> &chi;&ndash;iron relation is <em>expected</em> (it&rsquo;s one of QSM&rsquo;s foundational validations), so this is a physical-plausibility &amp; agreement check, not a precise calibration (n&nbsp;=&nbsp;5 nuclei, and the iron values are fixed <em>population</em> constants, not this subject&rsquo;s). Iron (µg&nbsp;Fe/g&nbsp;wet&nbsp;wt) from <a href="https://doi.org/10.1111/j.1471-4159.1958.tb12607.x" class="text-emerald-600 hover:underline">Hallgren &amp; Sourander 1958</a>: pallidum&nbsp;213, putamen&nbsp;133, caudate&nbsp;93, ventral&nbsp;DC&nbsp;(SN/RN)&nbsp;~190, thalamus&nbsp;~55.</p>
+          <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Median &chi; per deep-grey nucleus vs literature non-heme iron, one regression per scanner. The slope is &chi;-sensitivity to iron; matching slopes and overlapping points mean the scanners are harmonized on the iron axis. A tight <em>linear</em> &chi;&ndash;iron relation is <em>expected</em> (it&rsquo;s one of QSM&rsquo;s foundational validations), so this is a physical-plausibility &amp; agreement check, not a precise calibration (n&nbsp;=&nbsp;5 nuclei, and the iron values are fixed <em>population</em> constants, not these subjects&rsquo;). Iron (µg&nbsp;Fe/g&nbsp;wet&nbsp;wt) from <a href="https://doi.org/10.1111/j.1471-4159.1958.tb12607.x" class="text-emerald-600 hover:underline">Hallgren &amp; Sourander 1958</a>: pallidum&nbsp;213, putamen&nbsp;133, caudate&nbsp;93, ventral&nbsp;DC&nbsp;(SN/RN)&nbsp;~190, thalamus&nbsp;~55.</p>
           <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="reproRegIronSVG"></div>
         </div>
 
@@ -1531,7 +1559,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         <!-- Fig R6 · adjacent-nucleus contrast across scanners -->
         <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
           <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Is inter-nucleus contrast preserved across scanners?</h3>
-          <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">The &chi; difference between neighbouring nuclei on Cima (y) vs Prisma (x), one dot per pipeline &times; protocol &times; run. On the dashed identity line the contrast (e.g. pallidum&minus;putamen) reproduces across scanners; scatter off it means the contrast a clinician reads changes with the scanner even when global &chi; looks fine.</p>
+          <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">The &chi; difference between neighbouring nuclei on the <span x-text="_rgPairNames().b"></span> (y) vs the <span x-text="_rgPairNames().a"></span> (x), one dot per pipeline &times; subject &times; protocol &times; run. On the dashed identity line the contrast (e.g. pallidum&minus;putamen) reproduces across scanners; scatter off it means the contrast a clinician reads changes with the scanner even when global &chi; looks fine.</p>
           <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="reproRegContrastSVG"></div>
         </div>
 
@@ -1553,12 +1581,48 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
       <template x-if="reproView==='info'">
       <div class="info mt-6 space-y-8">
         <div>
-          <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">Harmonization &middot; two scanners, four protocols, one head</h2>
-          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">One volunteer, scanned on two Siemens 3&nbsp;T systems at MGH (bays 4&ndash;5: a MAGNETOM Prisma&nbsp;Fit and a MAGNETOM Cima.X), with four multi-echo GRE protocols, three runs each, for 23 acquisitions (one Pulseq offline run could not be reconstructed). There is no ground truth and none is possible; the question is <em>reproducibility</em>: how consistent are a pipeline's susceptibility values across runs, protocols and scanners of the same brain?</p>
-          <p class="mt-4 text-gray-600 dark:text-gray-400 leading-relaxed">The dataset comes from the QSM harmonization initiative of the ISMRM Electro-Magnetic Tissue Properties Study Group (Costagli, Lancione, Bilgic, Robinson, Schweser, Li, and colleagues). Data were acquired by Berkin Bilgic; the analysis method (per-ROI orthogonal fits &chi;<sub>B</sub>&nbsp;=&nbsp;a&middot;&chi;<sub>A</sub>&nbsp;+&nbsp;b between acquisitions, with |a&minus;1| as the headline) follows Marta Lancione's two-pipeline analysis, which QSM-CI extends across its full pipeline matrix.</p>
+          <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">Harmonization &middot; <span x-text="(_reproG() || {}).description"></span> across scanners, protocols and runs</h2>
+          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">The same brains, scanned again and again: <span x-text="reproExcl().subjects"></span> subject<span x-show="reproExcl().subjects!==1">s</span> on <span x-text="reproExcl().scanners"></span> scanners, <span x-text="reproExcl().acqs"></span> multi-echo GRE acquisitions in all. There is no ground truth and none is possible; the question is <em>reproducibility</em>: how consistent are a pipeline's susceptibility values across runs, protocols and scanners of the same brain? Every comparison stays within one subject.</p>
+          <!-- Cohort-specific description. Each cohort is its own dataset (its own tab), analysed
+               separately: no table, ranking or figure here pools it with the other. -->
+          <template x-if="(_reproG() || {}).id === 'harmonization'">
+            <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed"><strong>EMTP traveling heads.</strong> Each subject was scanned at their home site (KKI: Philips Achieva or Ingenia Elition&nbsp;X) and, for four of them, at one or two further sites (Weill Cornell CBIC: GE MR750 and Siemens Prisma&nbsp;Fit; UMass: Siemens Skyra; Hamburg: Philips Ingenia), with the shared bridge protocol and each site's own local protocol, three runs each. The MGH pilot acquisitions are a separate dataset, <a href="?dataset=repro-pilot" @click.prevent="setDataset('repro-pilot')" class="text-emerald-600 hover:underline">Harmonization pilot (MGH)</a>.</p>
+          </template>
+          <template x-if="(_reproG() || {}).id === 'harmonization-pilot'">
+            <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed"><strong>MGH pilot.</strong> One volunteer on two Siemens 3&nbsp;T systems at MGH (bays 4&ndash;5: a MAGNETOM Prisma&nbsp;Fit and a MAGNETOM Cima.X), with four protocols, three runs each (one Pulseq offline run could not be reconstructed). Data acquired by Berkin Bilgic. The EMTP traveling heads are a separate dataset, <a href="?dataset=repro" @click.prevent="setDataset('repro')" class="text-emerald-600 hover:underline">Harmonization (2026)</a>.</p>
+          </template>
+          <p class="mt-4 text-gray-600 dark:text-gray-400 leading-relaxed">The datasets come from the QSM harmonization initiative of the ISMRM Electro-Magnetic Tissue Properties Study Group (Costagli, Lancione, Bilgic, Robinson, Schweser, Li, and colleagues). The analysis method (per-ROI orthogonal fits &chi;<sub>B</sub>&nbsp;=&nbsp;a&middot;&chi;<sub>A</sub>&nbsp;+&nbsp;b between acquisitions, with |a&minus;1| as the headline) follows Marta Lancione's two-pipeline analysis, which QSM-CI extends across its full pipeline matrix.</p>
         </div>
+        <template x-if="reproCoverage().length">
         <div>
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">The four protocols</h3>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Who was scanned where</h3>
+          <div class="mt-3 overflow-x-auto">
+            <table class="w-full text-sm whitespace-nowrap">
+              <thead class="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
+                <tr><th class="px-4 py-2 text-left font-medium">Subject</th><th class="px-4 py-2 text-left font-medium">Scanners (acquisitions)</th><th class="px-4 py-2 text-left font-medium">Protocols</th><th class="px-4 py-2 text-right font-medium">Acquisitions</th></tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100 text-gray-600 dark:text-gray-400">
+                <template x-for="c in reproCoverage()" :key="c.subject">
+                  <tr>
+                    <td class="px-4 py-2.5 font-medium text-gray-900 dark:text-gray-100" x-text="c.label"></td>
+                    <td class="px-4 py-2.5">
+                      <template x-for="sc in c.scanners" :key="sc.tag">
+                        <span class="inline-flex items-center gap-1.5" style="margin-right:.75rem" :title="sc.long"><span class="inline-block rounded-sm" :style="`width:10px;height:10px;background:${sc.c}`"></span><span x-text="sc.label"></span> <span class="text-gray-400" x-text="'('+sc.n+')'"></span></span>
+                      </template>
+                    </td>
+                    <td class="px-4 py-2.5" x-text="c.protocols"></td>
+                    <td class="px-4 py-2.5 text-right tabular-nums" x-text="c.n"></td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+          <p class="mt-3 text-sm text-gray-500 dark:text-gray-400 leading-relaxed">The first scanner listed is the subject's home scanner, the reference side (x) of every inter-scanner fit. <em>Local</em> means each site's own protocol, so it is a different sequence at every site; pooled "local" numbers mix them.</p>
+        </div>
+        </template>
+        <template x-if="(_reproG() || {}).id === 'harmonization-pilot'">
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">The four MGH pilot protocols</h3>
           <div class="mt-3 overflow-x-auto">
             <table class="w-full text-sm whitespace-nowrap">
               <thead class="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
@@ -1574,9 +1638,10 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           </div>
           <p class="mt-3 text-sm text-gray-500 dark:text-gray-400 leading-relaxed">Echo times were recovered from the scanners&rsquo; exam-card PDFs and the Pulseq sequence source (the exported DICOM sidecars carry none, and the Pulseq exam cards show placeholder timings). The full recovered acquisition manifest ships with the dataset as <code>protocols.json</code>.</p>
         </div>
+        </template>
         <div>
           <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">How it is evaluated</h3>
-          <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">Every QSM-CI pipeline combination (field&nbsp;mapping &times; background&nbsp;removal &times; dipole&nbsp;inversion, plus single-step methods) reconstructs all <span x-text="reproExcl().acqs || 23"></span> acquisitions from raw phase. Each &chi; map is rigid-registered to a common target acquisition, referenced to its whole-brain mean, and reduced to per-ROI means over one SynthSeg segmentation (FreeSurfer <code>mri_synthseg</code>, which is license-free and emits standard FreeSurfer <em>aseg</em> labels (the deep-grey nuclei used in the regional Findings figures below), so ROI definitions cannot vary between acquisitions). Every acquisition pair then gets an orthogonal (total-least-squares) fit &chi;<sub>B</sub>&nbsp;=&nbsp;a&middot;&chi;<sub>A</sub>&nbsp;+&nbsp;b: |a&minus;1| measures scale disagreement, b the bias, and Bland&ndash;Altman limits the ROI-level scatter. Test&ndash;retest pairs bound what each protocol/pipeline could possibly achieve across scanners.</p>
+          <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">Every QSM-CI pipeline combination (field&nbsp;mapping &times; background&nbsp;removal &times; dipole&nbsp;inversion, plus single-step methods) reconstructs all <span x-text="reproExcl().acqs"></span> acquisitions from raw phase. Each &chi; map is rigid-registered to its subject's target acquisition, referenced to its whole-brain mean, and reduced to per-ROI means over one SynthSeg segmentation per subject (FreeSurfer <code>mri_synthseg</code>, which is license-free and emits standard FreeSurfer <em>aseg</em> labels (the deep-grey nuclei used in the regional Findings figures below), so ROI definitions cannot vary between a subject's acquisitions). Every acquisition pair then gets an orthogonal (total-least-squares) fit &chi;<sub>B</sub>&nbsp;=&nbsp;a&middot;&chi;<sub>A</sub>&nbsp;+&nbsp;b: |a&minus;1| measures scale disagreement, b the bias, and Bland&ndash;Altman limits the ROI-level scatter. Test&ndash;retest pairs bound what each protocol/pipeline could possibly achieve across scanners.</p>
           <template x-if="reproExcl().possible">
             <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">A fit is rejected outright when its slope is
             non-physical (|a&minus;1|&nbsp;&gt;&nbsp;<span x-text="reproExcl().cap"></span>, i.e. a outside
@@ -1600,7 +1665,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         </div>
         <div>
           <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Data availability</h3>
-          <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">The dataset is on OSF at <a href="https://osf.io/gkemr/" class="text-emerald-600 hover:underline">osf.io/gkemr</a>: <code>raw/</code> holds the original exports per scanner/protocol (with corrected sidecars, exam-card PDFs and the recovered-parameter manifest), and <code>qsmci-inputs/</code> one prepacked zip per acquisition in the QSM-CI canonical layout (4D magnitude/phase in radians, SynthStrip mask, params.json).</p>
+          <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">The datasets are on OSF at <a href="https://osf.io/gkemr/" class="text-emerald-600 hover:underline">osf.io/gkemr</a>: <code>raw/</code> holds the original exports per scanner/protocol (with corrected sidecars, exam-card PDFs and the recovered-parameter manifest), and <code>qsmci-inputs/</code> one prepacked zip per acquisition in the QSM-CI canonical layout (4D magnitude/phase in radians, SynthStrip mask, params.json).</p>
         </div>
       </div><!-- /repro info -->
       </template>
@@ -1676,7 +1741,10 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
     // Merged component: the leaderboard (board) state + the findings figures, behind one tab bar.
     // Both halves share the same runs/algos load and the memo cache; tabs drive the leaderboard's
     // composed/isolated `view` via syncView().
-    let _reproReq = null;   // the one in-flight/settled results/repro.json load (see ensureRepro)
+    // Per harmonization cohort (by id): the in-flight/settled payload load (see ensureRepro) and its
+    // result, and the same for the regional payload (ensureReproRegions). Module scope: these hold
+    // promises and large payloads that must stay out of Alpine's reactive proxy.
+    const _reproReq = new Map(), _reproData = new Map(), _reproRegionsReq = new Map(), _reproRegionsData = new Map();
 
     function results() {
       // Non-reactive memo cache shared by both halves (cache names are disjoint). Alpine getters
@@ -1710,8 +1778,13 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         reproView: "protocols", reproData: null, reproProto: "all", reproSortKey: "inter", reproDir: "asc", reproMinXsim: 0,
         reproStat: "median", reproPipeView: "matrix", reproFmap: "",   // pipelines subtab: median|mean, matrix|table, matrix field-mapping axis ("" = first available)
         reproSigned: false,   // protocols + pipelines subtabs: show the signed slope deviation a−1 instead of |a−1|
+        reproSubject: "all", reproScanPair: "all",   // every analysis subtab: one subject (or all, pooled) and one inter-scanner pair "<a>|<b>" (or all)
         reproMetric: { vd: "inter", attr: "inter", va: "inter", heat: "inter", glob: "inter", proto: "inter" }, reproHeatAxis: "dipole", reproHighlight: "",   // Findings: per-figure repro class + heatmap stage axis + frontier highlight
         reproRegions: null, reproRegLoading: false,   // regional-reproducibility sidecar (per-run per-aseg-region mean χ, lazy-loaded when Findings opens)
+        // The harmonization cohorts (loadReproGroups: web/algorithms.json `repro_groups`), one dataset
+        // each, keyed by `key` (= this.dataset while it is open). reproData / reproRegions always hold
+        // the OPEN cohort's payloads; reproReady[key] says whether a cohort's payload has pipelines.
+        reproGroups: [], reproReady: {},
         // leaderboard state
         stage: "dipole", fmap: "gt", variant: "default",
         metric: "xsim", sortKey: "xsim", sortDir: "desc", filter: "",
@@ -1738,9 +1811,11 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           if (!this._ready) return;                 // don't write while init() is still restoring state
           const p = new URLSearchParams();
           if (this.dataset !== "sim") p.set("dataset", this.dataset);
-          if (this.dataset === "repro") {
+          if (this.isRepro()) {
             if (this.reproView !== "protocols") p.set("sub", this.reproView);
             if (this.reproSigned) p.set("signed", "1");
+            if (this.reproSubject !== "all") p.set("subj", this.reproSubject);
+            if (this.reproScanPair !== "all") p.set("spair", this.reproScanPair);
           } else if (this.dataset === "invivo" || this.dataset === "chisep") {
             // these datasets have their own tab set (info / board / findings)
             const v = this.dataset === "invivo" ? this.invivoView : this.chisepView;
@@ -1776,8 +1851,13 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           this.syncView(); this.stageMenu = false;
         },
         setDataset(d) {
-          if (d === "repro") this.ensureRepro();   // no-op once loaded; the idle prefetch usually beat us here
+          if (d === this.dataset) return;
+          const wasRepro = this.isRepro();
           this.dataset = d;
+          // Each harmonization cohort is its own dataset: entering one (from anywhere, including the
+          // other cohort) swaps in its payloads and starts its filters afresh.
+          if (this.isRepro()) this._activateRepro(true);
+          else if (wasRepro) this._clearReproMemo();
         },
 
         async init() {
@@ -1787,10 +1867,15 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           if (q.get("dataset") === "invivo" || q.get("tab") === "invivo") this.dataset = "invivo";
           if (q.get("dataset") === "chisep" || q.get("tab") === "chisep") this.dataset = "chisep";
           if (q.get("dataset") === "cross") this.dataset = "cross";
-          if (q.get("dataset") === "repro") {
-            this.dataset = "repro";
+          // A harmonization cohort's key (repro, repro-pilot, …): validated once the manifest is in.
+          const dq = q.get("dataset");
+          const reproDeep = dq && !["sim", "invivo", "chisep", "cross"].includes(dq) ? dq : null;
+          if (reproDeep) {
+            this.dataset = reproDeep;
             if (["info", "protocols", "pipelines", "findings"].includes(q.get("sub"))) this.reproView = q.get("sub");
             if (q.get("signed") === "1") this.reproSigned = true;
+            if (q.get("subj")) this.reproSubject = q.get("subj");     // validated once the payload is in (_reproFixFilters)
+            if (q.get("spair")) this.reproScanPair = q.get("spair");
           }
           const t = q.get("tab");
           if (["info", "leaderboard", "findings"].includes(t)) this.tab = t;
@@ -1812,13 +1897,14 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             // the big reactive trigger, and name-dependent getters (matrix, findings) cache by
             // runs.length: if algos isn't loaded yet when they first compute, algoName() falls back to
             // raw slugs and the cache never refreshes. Assigning algos first avoids that.
-            const [algos, registry, runs, datasetsReg] = await Promise.all([loadAlgos(), loadRegistry(), loadRuns(), loadDatasets()]);
+            const [algos, registry, runs, datasetsReg, reproGroups] = await Promise.all([loadAlgos(), loadRegistry(), loadRuns(), loadDatasets(), loadReproGroups()]);
+            this.reproGroups = reproGroups;
             this.algos = algos;
             this.registry = registry;
             this.runs = runs;
             this.datasetsReg = datasetsReg;
-            // results/repro.json is 8.7 MB (866 KB gzipped) and only the Harmonization dataset reads it,
-            // so it is NOT awaited here — blocking the first render on it cost ~1.3 s. ensureRepro()
+            // The harmonization cohorts' payloads (results/<stem>.json + fit columns, <1 MB each) are
+            // read only by the Harmonization datasets, so they are NOT awaited here — blocking the first render on it cost ~1.3 s. ensureRepro()
             // fetches it once; it is kicked off on idle below (so the Harmonization tab appears on its
             // own shortly after the page is usable) and awaited eagerly when that dataset is opened.
             // Per-region stats are NOT fetched here; ensureRegions() lazy-loads them (per-run files,
@@ -1836,9 +1922,9 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             if (!this.runs.some((r) => r.mode === "composed")) { this.lbView = "stages"; this.syncView(); }
             if (!this.hasChiSep() && this.dataset === "chisep") this.dataset = "sim";
             if (!this.hasInvivo() && this.dataset === "invivo") this.dataset = "sim";
-            // A ?dataset=repro deep link is the one case that needs the payload up front.
-            if (this.dataset === "repro") await this.ensureRepro();
-            if (!this.hasRepro() && this.dataset === "repro") this.dataset = "sim";
+            // A ?dataset=repro(-pilot) deep link is the one case that needs the payload up front.
+            if (this.isRepro()) { this._activateRepro(false); await this.ensureRepro(); this._reproFixFilters(); }
+            if (reproDeep && !(this.isRepro() && this.hasRepro(this.dataset))) this.dataset = "sim";
             if (!this.hasCross() && this.dataset === "cross") this.dataset = "sim";
           } catch (e) {
             this.loadError = (e && e.message) || String(e);   // loadRuns() throws on a non-OK fetch
@@ -1848,20 +1934,25 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           }
           // Now that state is restored from the URL + data, keep the URL in sync with every tab change.
           this._ready = true;
-          ["dataset", "tab", "lbView", "stage", "pipeView", "findView", "variant", "metric", "fmap", "invivoView", "chisepView", "chisepCondition", "reproView"]
+          ["dataset", "tab", "lbView", "stage", "pipeView", "findView", "variant", "metric", "fmap", "invivoView", "chisepView", "chisepCondition", "reproView", "reproSubject", "reproScanPair"]
             .forEach((k) => this.$watch(k, () => this.syncUrl()));
+          // A subject that never visited the chosen scanner pair (or never ran the chosen protocol) would
+          // leave every view empty: fall back to "all" for whichever filter no longer applies.
+          this.$watch("reproSubject", () => this._reproFixFilters());
           // Lazy-load the region stats the first time the Regions findings tab is opened (fresh nav
           // or a deep link that restored findView='regions' above), so the sidecar's ~3.6 MB stays
           // off the common page load.
           this.$watch("findView", (v) => { if (v === "regions") this.ensureRegions(); });
           if (this.tab === "findings" && this.findView === "regions") this.ensureRegions();
-          // Same lazy pattern for the harmonization regional Findings figures (repro_regions.json, ~4 MB).
-          // Pull results/repro.json once the page is idle, so the Harmonization tab appears on its
-          // own without any of it sitting on the first render. setDataset()/the deep link above
+          // Same lazy pattern for the harmonization regional Findings figures (the open cohort's
+          // <stem>_regions.json + .bin, ≤2.4 MB). Pull each cohort's results/<stem>.json once the page
+          // is idle, so the Harmonization tabs appear on their own without any of it sitting on the
+          // first render. setDataset()/the deep link above
           // share this same promise if the user gets there first.
-          (window.requestIdleCallback || ((f) => setTimeout(f, 400)))(() => this.ensureRepro());
+          // Every cohort's payload is prefetched (each tab appears once its own has loaded).
+          (window.requestIdleCallback || ((f) => setTimeout(f, 400)))(() => this.reproGroups.forEach((g) => this.ensureRepro(g.key)));
           this.$watch("reproView", (v) => { if (v === "findings") this.ensureReproRegions(); });
-          if (this.dataset === "repro" && this.reproView === "findings") this.ensureReproRegions();
+          if (this.isRepro() && this.reproView === "findings") this.ensureReproRegions();
           this.syncUrl();   // canonicalise (e.g. if an unavailable dataset was reset to sim)
           // findings: delegated click; any injected mark carrying data-run opens that run's page
           // (unless a drag-pan just happened on the regions figure, in which case that drag ends in a click we swallow).
@@ -2036,10 +2127,32 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
 
         // ---- harmonization (repro) dataset -----------------------------------------------
         // Runs carry track==='repro' (per-acquisition recon rows); the pairwise reproducibility
-        // fits live in results/repro.json (written by scripts/repro_eval.py fits).
-        hasRepro() {
-          return !!(this.reproData && Object.keys(this.reproData.pipelines || {}).length) ||
-            this.runs.some((r) => r.track === "repro");
+        // fits live in each cohort's results/<stem>.json (written by scripts/repro_eval.py fits).
+        // ---- cohorts: each harmonization cohort is a dataset of its own ---------------------------
+        _reproG(key = this.dataset) { return this.reproGroups.find((g) => g.key === key) || null; },
+        isRepro(key = this.dataset) { return !!this._reproG(key); },
+        // Whether a cohort's tab is shown: its payload has pipelines (or, before that loads, the index
+        // has per-acquisition runs on its acquisitions).
+        hasRepro(key = this.dataset) {
+          const G = this._reproG(key);
+          if (!G) return false;
+          return !!this.reproReady[key] || this.runs.some((r) => r.track === "repro"
+            && this.datasetsReg[r.phantom] && reproGroupOf(this.datasetsReg[r.phantom]) === G.id);
+        },
+        // Drop every derived harmonization value: they are cached by counts, which two cohorts can share.
+        _clearReproMemo() { for (const k of Object.keys(_memo)) if (/^(repro|rg)[A-Z_|]/.test(k)) delete _memo[k]; },
+        // Make the open cohort's payloads current (fetching any not yet loaded). `fresh`: reset the
+        // filters, which belong to one cohort's subjects and scanners (a deep link restores them
+        // instead, so init passes false).
+        _activateRepro(fresh) {
+          const G = this._reproG();
+          if (!G) return;
+          this._clearReproMemo();
+          this.reproData = _reproData.get(G.id) || null;
+          this.reproRegions = _reproRegionsData.get(G.id) || null;
+          if (fresh) { this.reproSubject = "all"; this.reproScanPair = "all"; this.reproProto = "all"; this.reproFmap = ""; this.reproHighlight = ""; }
+          this.ensureRepro().then(() => { if (this._reproG()?.id === G.id) this._reproFixFilters(); });
+          if (this.reproView === "findings") this.ensureReproRegions();
         },
         // Harmonization pipelines, already filtered to methods QSM-CI still ships: loadRepro() (app.js)
         // drops any pipeline with a step that is absent from the manifest (RETIRED) or flagged `hidden`
@@ -2048,17 +2161,115 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         // page shares that one loader, so both pages hide the same pipelines. This stays the single
         // accessor every harmonization table, chart and finding reads.
         _reproPipes() { return (this.reproData && this.reproData.pipelines) || {}; },
-        reproProtoLabel(p) { return p.replace("pulseq-online", "Pulseq (online)").replace("pulseq-offline", "Pulseq (offline)"); },
+        reproProtoLabel(p) { return reproProtoLabel(p); },
         reproName(slug) { return slug.split("+").map((s) => this.algoName(s)).join(" → "); },
-        // group-key parsers: test_retest / inter_protocol keys are "<scanner>-<protocol>"
-        _reproKeyProto(key) { return key.replace(/^(prisma|cima)-/, ""); },
+        // ---- subjects, scanners and pair membership (all from data, never from id spelling) -------
+        // Every acquisition's {subject, scanner, protocol, run}: repro.json's `acquisitions`, then the
+        // regional sidecar's, then the registry block of algorithms.json.
+        _reproAcqs() {
+          const pa = this.reproData?.acquisitions || {}, ra = this.reproRegions?.acquisitions || {};
+          const gid = this._reproG()?.id;
+          return _cache("reproAcqs", [gid, Object.keys(pa).length, Object.keys(ra).length, Object.keys(this.datasetsReg).length].join("|"),
+            () => reproAcquisitions(this.datasetsReg, { acquisitions: { ...ra, ...pa } }, gid));
+        },
+        _reproTargets() { return reproTargets(this.datasetsReg, this.reproData, this._reproAcqs(), this._reproG()?.id); },
+        // Pair membership from repro.json's `comparisons` ({class: {group: {key: [acqA, acqB]}}}):
+        //   groups["<cls>|<group>"]       = {subject, protocol, scanner}  (protocol = the non-bridge side for inter_protocol)
+        //   pairs["<cls>|<group>|<key>"]  = [acqA, acqB]
+        //   spair["<group>|<key>"]        = "<scannerA>|<scannerB>"  (inter_scanner only; A = the home scanner)
+        _reproMeta() {
+          const cmp = this.reproData?.comparisons || {};
+          return _cache("reproMeta", [Object.keys(cmp).length, Object.keys(this._reproAcqs()).length, !!this.reproData].join("|"), () => {
+            const acqs = this._reproAcqs(), groups = {}, pairs = {}, spair = {};
+            for (const [cls, grps] of Object.entries(cmp)) for (const [grp, keys] of Object.entries(grps || {})) {
+              for (const [key, ab] of Object.entries(keys || {})) {
+                const A = acqs[ab[0]], B = acqs[ab[1]];
+                if (!A || !B) continue;
+                pairs[cls + "|" + grp + "|" + key] = ab;
+                groups[cls + "|" + grp] ||= { subject: A.subject, scanner: A.scanner,
+                                               protocol: cls === "inter_protocol" ? B.protocol : A.protocol };
+                if (cls === "inter_scanner") spair[grp + "|" + key] = A.scanner + "|" + B.scanner;
+              }
+            }
+            return { groups, pairs, spair };
+          });
+        },
+        // The [acqA, acqB] pairs of one class under the current subject / scanner-pair filter.
+        _reproPairs(cls) {
+          const M = this._reproMeta(), subj = this.reproSubject, sp = this.reproScanPair;
+          return _cache("reproPairs_" + cls, [Object.keys(M.pairs).length, this._reproFKey].join("|"), () => {
+            const out = [];
+            for (const [k, ab] of Object.entries(M.pairs)) {
+              const i = k.indexOf("|"), c = k.slice(0, i);
+              if (c !== cls) continue;
+              const rest = k.slice(i + 1), grp = rest.slice(0, rest.lastIndexOf("|"));
+              if (subj !== "all" && M.groups[cls + "|" + grp]?.subject !== subj) continue;
+              if (cls === "inter_scanner" && sp !== "all" && M.spair[rest] !== sp) continue;
+              out.push(ab);
+            }
+            return out;
+          });
+        },
+        // Cache-key fragment for everything the subject / scanner-pair filters change.
+        get _reproFKey() { return this.reproSubject + "|" + this.reproScanPair; },
+        // Subjects and inter-scanner pair keys ("<group>|<key>") that at least one shown pipeline has a
+        // fit for. The registry lists acquisitions before they are reconstructed; offering a subject
+        // with no fits yet would only lead to empty views.
+        _reproFitted() {
+          const pipes = this._reproPipes(), M = this._reproMeta(), D = this.reproData;
+          return _cache("reproFitted", [Object.keys(pipes).length, Object.keys(M.groups).length, !!D?.fits].join("|"), () => {
+            const subjects = new Set(), spairs = new Set(), S = D?.fits?.slope, N = D?.nPairs || 0;
+            const rows = Object.values(pipes).map((n) => n.row);
+            if (S) (D.pairs || []).forEach((p, j) => {
+              if (!rows.some((r) => S[r * N + j] === S[r * N + j])) return;   // NaN: no pipeline has a fit
+              const g = M.groups[p.class + "|" + p.group];
+              if (g) subjects.add(g.subject);
+              if (p.class === "inter_scanner") spairs.add(p.group + "|" + p.key);
+            });
+            return { subjects, spairs };
+          });
+        },
+        reproSubjectOpts() {
+          const fit = this._reproFitted().subjects;
+          return reproSubjects(this._reproAcqs()).filter((s) => fit.has(s)).map((s) => ({ v: s, l: reproSubjectLabel(s) }));
+        },
+        // Scanner pairs with at least one fitted inter-scanner comparison for the selected subject(s).
+        reproScanPairOpts() {
+          const M = this._reproMeta(), fit = this._reproFitted().spairs, seen = new Set();
+          for (const [k, sp] of Object.entries(M.spair)) {
+            if (!fit.has(k)) continue;
+            const grp = k.slice(0, k.lastIndexOf("|"));
+            if (this.reproSubject === "all" || M.groups["inter_scanner|" + grp]?.subject === this.reproSubject) seen.add(sp);
+          }
+          return [...seen].map((v) => { const [a, b] = v.split("|"); return { v, a, b, l: `${reproScannerLabel(a)} vs ${reproScannerLabel(b)}` }; });
+        },
+        reproScopeText() {
+          const acqs = Object.values(this._reproAcqs()).filter((a) => this.reproSubject === "all" || a.subject === this.reproSubject);
+          const subs = new Set(acqs.map((a) => a.subject)), scs = new Set(acqs.map((a) => a.subject + "|" + a.scanner));
+          return `${subs.size} subject${subs.size === 1 ? "" : "s"} · ${scs.size} scanner session${scs.size === 1 ? "" : "s"} · ${acqs.length} acquisitions`;
+        },
+        _reproFixFilters() {
+          const subs = this.reproSubjectOpts().map((o) => o.v);
+          if (this.reproSubject !== "all" && !subs.includes(this.reproSubject)) this.reproSubject = "all";
+          if (this.reproScanPair !== "all" && !this.reproScanPairOpts().some((o) => o.v === this.reproScanPair)) this.reproScanPair = "all";
+          if (this.reproProto !== "all" && !this.reproProtocols().includes(this.reproProto)) this.reproProto = "all";
+        },
+        // Protocols acquired by the selected subject(s).
         reproProtocols() {
-          const set = new Set();
-          for (const node of Object.values(this._reproPipes()))
-            for (const cls of ["test_retest", "inter_scanner"])
-              for (const key of Object.keys(node[cls] || {}))
-                set.add(cls === "inter_scanner" ? key : this._reproKeyProto(key));
-          return [...set].sort();
+          return [...new Set(Object.values(this._reproAcqs())
+            .filter((a) => this.reproSubject === "all" || a.subject === this.reproSubject).map((a) => a.protocol))].sort();
+        },
+        // One row per subject for the Info tab: its scanners (home first) and acquisition counts.
+        reproCoverage() {
+          const acqs = Object.values(this._reproAcqs()), out = [];
+          for (const subject of reproSubjects(this._reproAcqs())) {
+            const mine = acqs.filter((a) => a.subject === subject);
+            const scanners = [...new Set(mine.map((a) => a.scanner))].map((tag) => ({ tag, label: reproScannerLabel(tag),
+              long: reproScannerLong(tag), c: reproScannerColour(tag), n: mine.filter((a) => a.scanner === tag).length }));
+            out.push({ subject, label: reproSubjectLabel(subject), scanners, n: mine.length,
+                       protocols: [...new Set(mine.map((a) => a.protocol))].sort().map(reproProtoLabel).join(", ") });
+          }
+          return out;
         },
         // Plausibility cap on a per-pair slope-deviation fit: |a-1| > 2 (slope outside [-1, 3]) means
         // the two acquisitions' ROI values don't track for this pipeline, a degenerate/failed fit,
@@ -2066,20 +2277,39 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         // (Real inter-scanner slopes go as low as ~0.4, e.g. Mauro's EPI↔ME-GRE, so the cap is generous.)
         _SLOPE_DEV_CAP: 2,
         _BIAS_CAP_PPM: 1,   // |Bland-Altman bias| beyond 1 ppm is non-physical for brain ROI χ
-        // finite, in-range per-pair values for a class, optionally restricted to one protocol
+        // Indices into repro.json's `pairs` (= columns of the fit arrays) for one class, optionally
+        // restricted to one protocol, and always to the selected subject (and, for inter-scanner,
+        // scanner pair). Group membership comes from `comparisons`; a group it doesn't describe only
+        // counts when nothing is filtered. Shared by every pipeline, so it is worked out once per filter.
+        _reproPairIdx(cls, proto) {
+          const subj = this.reproSubject, sp = cls === "inter_scanner" ? this.reproScanPair : "all";
+          const pairs = this.reproData?.pairs || [];
+          return _cache("reproIdx|" + cls + "|" + proto, [pairs.length, Object.keys(this._reproAcqs()).length, this._reproFKey].join("|"), () => {
+            const M = this._reproMeta(), out = [];
+            pairs.forEach((p, j) => {
+              if (p.class !== cls) return;
+              const g = M.groups[cls + "|" + p.group];
+              if (g ? (subj !== "all" && g.subject !== subj) || (proto !== "all" && g.protocol !== proto)
+                    : (subj !== "all" || proto !== "all" || sp !== "all")) return;
+              if (sp !== "all" && M.spair[p.group + "|" + p.key] !== sp) return;
+              out.push(j);
+            });
+            return out;
+          });
+        },
+        // finite, in-range per-pair values of one pipeline for a class under _reproPairIdx's filters:
+        // a walk along the pipeline's row of the fit column (NaN = no fit for that pair).
         _reproVals(node, cls, proto, field = "abs_slope_dev") {
           const cap = (field === "abs_slope_dev" || field === "slope_dev") ? this._SLOPE_DEV_CAP : (field === "ba_bias_ppm" ? this._BIAS_CAP_PPM : Infinity);
-          const vals = [];
-          for (const [key, pairs] of Object.entries(node[cls] || {})) {
-            const p = cls === "inter_scanner" ? key : this._reproKeyProto(key);
-            if (proto !== "all" && p !== proto) continue;
-            for (const m of Object.values(pairs)) {
-              // "slope_dev" is the signed deviation a−1, derived here from the stored slope so the
-              // same plausibility cap applies to both forms.
-              const v = field === "slope_dev" ? (m.slope == null ? null : m.slope - 1) : m[field];
-              if (v == null || !isFinite(v) || Math.abs(v) > cap) continue;
-              vals.push(v);
-            }
+          // "slope_dev" is the signed deviation a−1, derived here from the stored slope so the same
+          // plausibility cap applies to both forms.
+          const D = this.reproData, F = D?.fits?.[field === "slope_dev" ? "slope" : field];
+          if (!F || !node) return [];
+          const base = node.row * D.nPairs, off = field === "slope_dev" ? 1 : 0, vals = [];
+          for (const j of this._reproPairIdx(cls, proto)) {
+            const v = F[base + j] - off;
+            if (!isFinite(v) || Math.abs(v) > cap) continue;
+            vals.push(v);
           }
           return vals;
         },
@@ -2168,7 +2398,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         // axis — field mapping — which is pulled out into a selector rather than a third dimension,
         // exactly as the in-silico matrix does with `fmap`.
         REPRO_MATRIX_METRICS: {
-          inter: { label: "Inter-scanner |a−1|", better: "lower", tip: "Prisma↔Cima for matched protocol+run. The harmonization headline." },
+          inter: { label: "Inter-scanner |a−1|", better: "lower", tip: "The same subject on two scanners, matched protocol+run. The harmonization headline." },
           tr: { label: "Test–retest |a−1|", better: "lower", tip: "Within-scanner run-to-run. Lower = more repeatable." },
           iproto: { label: "vs bridge |a−1|", better: "lower", tip: "Each protocol against the bridge protocol on the same scanner." },
           xsim: { label: "In-silico xSIM", better: "higher", tip: "Accuracy of the same pipeline on the 2019 in-silico phantom. Blank where it has no in-silico run." },
@@ -2191,7 +2421,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           return fms.includes(this.reproFmap) ? this.reproFmap : (fms[0] || "");
         },
         get reproMatrix() {
-          const key = [this.reproFmap, this.reproSortKey, this.reproStat, this.reproProto, this.reproMinXsim, this.reproSigned,
+          const key = [this._reproFKey, this.reproFmap, this.reproSortKey, this.reproStat, this.reproProto, this.reproMinXsim, this.reproSigned,
                        Object.keys(this._reproPipes()).length, this.algos.length].join("|");
           return _cache("reproMatrix", key, () => {
             const pipes = this._reproPipes(), simX = this._simXsimMap(), fm = this._reproFmap();
@@ -2243,7 +2473,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         // and end-to-end methods (iQSM). Shown as a strip under the matrix so the view still covers
         // every pipeline the table lists.
         get reproMatrixOther() {
-          const key = [this.reproFmap, this.reproSortKey, this.reproStat, this.reproProto, this.reproMinXsim, this.reproSigned,
+          const key = [this._reproFKey, this.reproFmap, this.reproSortKey, this.reproStat, this.reproProto, this.reproMinXsim, this.reproSigned,
                        Object.keys(this._reproPipes()).length, this.algos.length].join("|");
           return _cache("reproMatrixOther", key, () => {
             const pipes = this._reproPipes(), simX = this._simXsimMap(), fm = this._reproFmap();
@@ -2281,18 +2511,18 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         reproExcl() {
           const pipes = this._reproPipes();
           return _cache("reproExcl", [Object.keys(pipes).length, this.algos.length,
-                                      Object.keys(this.datasetsReg).length].join("|"), () => {
+                                      Object.keys(this._reproAcqs()).length, Object.keys(this._reproMeta().groups).length].join("|"), () => {
             let possible = 0, rejected = 0, noRecon = 0;
             const byProto = {}, devs = [], why = {};
-            const acqs = Object.values(this.datasetsReg).filter((v) => v.track === "repro").length;
+            const A = Object.values(this._reproAcqs()), M = this._reproMeta();
+            const acqs = A.length, subjects = new Set(A.map((a) => a.subject)).size, scanners = new Set(A.map((a) => a.scanner)).size;
             for (const node of Object.values(pipes)) {
               possible += node.n_possible || 0;
               rejected += node.n_rejected || 0;
               noRecon += node.n_no_recon || 0;
               for (const r of node.rejected || []) {
-                // group keys are "<scanner>-<protocol>" for test-retest / vs-bridge, bare protocol
-                // for inter-scanner; the protocol is what the caveat is about either way
-                const p = r.group.replace(/^(prisma|cima)-/, "");
+                // the protocol is what the caveat is about, whichever class the pair was in
+                const p = M.groups[r.class + "|" + r.group]?.protocol || r.group;
                 byProto[p] = (byProto[p] || 0) + 1;
                 why[r.why] = (why[r.why] || 0) + 1;
                 if (r.abs_slope_dev != null) devs.push(r.abs_slope_dev);
@@ -2301,7 +2531,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             const attempted = possible - noRecon, kept = attempted - rejected;
             const top = Object.entries(byProto).sort((a, b) => b[1] - a[1]);
             return {
-              pipelines: Object.keys(pipes).length, acqs, possible, rejected, noRecon, kept, attempted,
+              pipelines: Object.keys(pipes).length, acqs, subjects, scanners, possible, rejected, noRecon, kept, attempted,
               // pipelines that could not reconstruct an acquisition at all (each loses several pairs)
               noReconPipes: Object.values(pipes).filter((n) => n.n_no_recon).length,
               pctRejected: attempted ? (100 * rejected / attempted) : 0,
@@ -2320,13 +2550,13 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         // the figure can draw a box + whiskers, mark the median AND the mean, and plot every pipeline.
         REPRO_PROTO_METRICS: {
           inter: { label: "Inter-scanner |a−1|", cls: "inter_scanner", field: "abs_slope_dev", pct: true,
-                   tip: "Prisma↔Cima for the same protocol and run. Lower means the protocol travels better between scanners." },
+                   tip: "The same subject on two scanners, same protocol and run. Lower means the protocol travels better between scanners." },
           tr: { label: "Test–retest |a−1|", cls: "test_retest", field: "abs_slope_dev", pct: true,
                 tip: "Within-scanner run-to-run on this protocol. Lower is more repeatable." },
           ip: { label: "vs bridge |a−1|", cls: "inter_protocol", field: "abs_slope_dev", pct: true,
                 tip: "This protocol against the bridge protocol on the same scanner. The bridge protocol has no row: it is the reference." },
           bias: { label: "Inter-scanner BA bias", cls: "inter_scanner", field: "ba_bias_ppm", pct: false, signed: true,
-                  tip: "Bland–Altman bias between scanners (ppm). Signed, so zero is the target and the sign says which scanner reads higher." },
+                  tip: "Bland–Altman bias between scanners (ppm), visited minus home scanner. Signed, so zero is the target and the sign says which scanner reads higher." },
         },
         // One value per pipeline per protocol: the pipeline's pairs for that protocol, pooled with the
         // chosen statistic. The figure then summarises ACROSS pipelines (that is what the box shows).
@@ -2340,7 +2570,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         },
         _reproProtoDist() {
           const mk = this.reproMetric.proto;
-          const key = [mk, this.reproSigned, Object.keys(this._reproPipes()).length, this.algos.length].join("|");
+          const key = [mk, this._reproFKey, this.reproSigned, Object.keys(this._reproPipes()).length, this.algos.length].join("|");
           return _cache("reproProtoDist", key, () => {
             const M = this._protoM(mk);
             const out = [];
@@ -2419,7 +2649,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         },
         get reproProtoDistSVG() {
           const mk = this.reproMetric.proto;
-          const key = [mk, this.reproSigned, Object.keys(this._reproPipes()).length, this.algos.length].join("|");
+          const key = [mk, this._reproFKey, this.reproSigned, Object.keys(this._reproPipes()).length, this.algos.length].join("|");
           return _cache("reproProtoDistSVG", key, () => {
             const M = this._protoM(mk), rows = this._reproProtoDist();
             if (!rows.length) return `<svg viewBox="0 0 640 40" style="width:100%;height:auto"><text x="20" y="24" fill="currentColor" opacity="0.4" style="font-size:12px">No reproducibility fits yet.</text></svg>`;
@@ -2503,12 +2733,15 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           return rows;
         },
         // Open a repro pipeline on the submission page, defaulting to the harmonization dataset with
-        // the registration-target acquisition selected (the page's dataset toggle + acquisition
-        // dropdowns then switch scanner/protocol/run, or back to the in-silico scoring of the same
-        // pipeline).
+        // the selected subject's registration-target acquisition (the cohort's first subject's when all
+        // are pooled); the
+        // page's dataset toggle + acquisition dropdowns then switch subject/scanner/protocol/run, or
+        // back to the in-silico scoring of the same pipeline.
         goRepro(pipelineId) {
+          const t = this._reproTargets(), subs = reproSubjects(this._reproAcqs());
+          const acq = (this.reproSubject !== "all" && t[this.reproSubject]) || t[subs[0]] || "";
           location.href = "submission.html?pipeline=" + encodeURIComponent(pipelineId)
-            + "&dataset=repro&acq=cima-bridge-run1";
+            + "&dataset=" + encodeURIComponent(this.dataset) + (acq ? "&acq=" + encodeURIComponent(acq) : "");
         },
 
         // ---- Harmonization · Findings (all live from reproData) --------------------------------
@@ -2519,7 +2752,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         // variance decomposition and the fm/bfr panels use); `final` is the last (χ-producing) step of
         // ANY pipeline, so the dipole panel can also credit combined bfr+dipole and end-to-end methods.
         _reproPipeStats() {
-          return _cache("reproStats", Object.keys(this._reproPipes()).length + "|" + this.algos.length, () => {
+          return _cache("reproStats", Object.keys(this._reproPipes()).length + "|" + this.algos.length + "|" + this._reproFKey, () => {
             const out = [];
             for (const [slug, node] of Object.entries(this._reproPipes())) {
               const parts = slug.split("+");
@@ -2551,7 +2784,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         // the complete factorial makes the three shares unconfounded.
         get reproStageImportance() {
           const mk = this.reproMetric.vd;
-          return _cache("reproSI", mk + "|" + Object.keys(this._reproPipes()).length, () => {
+          return _cache("reproSI", mk + "|" + Object.keys(this._reproPipes()).length + "|" + this._reproFKey, () => {
             const stats = this._reproPipeStats().filter((s) => s.nparts === 3 && s[mk] != null);
             if (stats.length < 8) return null;
             const ord = [...stats].sort((a, b) => a[mk] - b[mk]);
@@ -2569,7 +2802,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         // with the IQR (bar). One horizontal panel per stage. Coloured by family.
         reproAttribSVG(stage) {
           const mk = this.reproMetric.attr;
-          return _cache("reproAttr_" + stage, mk + "|" + Object.keys(this._reproPipes()).length + "|" + this.algos.length, () => {
+          return _cache("reproAttr_" + stage, mk + "|" + Object.keys(this._reproPipes()).length + "|" + this.algos.length + "|" + this._reproFKey, () => {
             const g = {};
             for (const s of this._reproPipeStats()) {
               if (s[mk] == null) continue;
@@ -2612,7 +2845,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         // in the caption instead of naming any method, since coverage is data-driven and changes.
         _reproAccPoints() {
           const mk = this.reproMetric.va;
-          return _cache("reproAccPts", mk + "|" + Object.keys(this._reproPipes()).length + "|" + this.algos.length, () => {
+          return _cache("reproAccPts", mk + "|" + Object.keys(this._reproPipes()).length + "|" + this.algos.length + "|" + this._reproFKey, () => {
             const simX = this._simXsimMap();
             const grp = {};
             const add = (stage, slug, r, x) => {
@@ -2636,7 +2869,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         },
         reproAccOmitted() { return this._reproAccPoints().omitted; },
         get reproVsAccuracySVG() {
-          return _cache("reproVA", this.reproMetric.va + "|" + Object.keys(this._reproPipes()).length + "|" + this.algos.length, () => {
+          return _cache("reproVA", this.reproMetric.va + "|" + Object.keys(this._reproPipes()).length + "|" + this.algos.length + "|" + this._reproFKey, () => {
             const pts = this._reproAccPoints().pts;
             const SC = { field_mapping: "#10b981", bfr: "#e11d48", dipole: "#f59e0b" };
             const SL = { field_mapping: "Field mapping", bfr: "Background removal", dipole: "Dipole / χ-map" };
@@ -2684,7 +2917,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         // Frontier scatter: test–retest (x) vs inter-scanner (y) |a−1| per pipeline; click → open it.
         // Highlighting a method emphasises every pipeline that uses it and greys the rest.
         get reproFrontierSVG() {
-          return _cache("reproFront", this.reproHighlight + "|" + Object.keys(this._reproPipes()).length + "|" + this.algos.length, () => {
+          return _cache("reproFront", this.reproHighlight + "|" + Object.keys(this._reproPipes()).length + "|" + this.algos.length + "|" + this._reproFKey, () => {
             const pts = this._reproPipeStats().filter((s) => s.tr != null && s.inter != null);
             if (pts.length < 4) return `<svg width="640" height="120"><text x="320" y="60" text-anchor="middle" fill="currentColor" opacity="0.4" style="font-size:12px">Not enough pipelines with both metrics yet.</text></svg>`;
             const hl = this.reproHighlight;
@@ -2718,71 +2951,56 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         },
         // ==================================================================================
         // Harmonization · REGIONAL Findings figures (7). All live from this.reproRegions
-        // (results/repro_regions.json): per (pipeline × acquisition) run, per-aseg-region mean χ
-        // already in ppb (L/R merged). Ported faithfully from scripts build_figs.py; the only
-        // difference is the data source (values are pre-aggregated & already in ppb, so no *1000).
+        // (the open cohort's results/<stem>_regions.json + .bin, see loadReproRegions): per (pipeline × acquisition) run,
+        // per-aseg-region mean χ already in ppb (L/R merged), one Float64Array per run indexed by
+        // structure (_rgSI); NaN = no value for that structure. Ported faithfully from scripts
+        // build_figs.py; the only difference is the data source (values are pre-aggregated & already
+        // in ppb, so no *1000).
         // ==================================================================================
         // ---- constants (mirror build_figs.py) ----
         get _rgOrder() { return ["Pallidum", "Putamen", "Caudate", "VentralDC", "Thalamus", "Accumbens", "Hippocampus", "Amygdala", "Brain-Stem", "Cerebellum-WM", "Cerebellum-Ctx", "Cerebral-WM", "Cortex"]; },
         get _rgDeep() { return ["Pallidum", "Putamen", "Caudate", "VentralDC", "Thalamus", "Accumbens"]; },
         get _rgIron() { return { Pallidum: 213, Putamen: 133, Caudate: 93, VentralDC: 190, Thalamus: 55 }; },
-        get _rgProtos() { return ["bridge", "local", "pulseq-offline", "pulseq-online"]; },
-        get _rgScanners() { return ["cima", "prisma"]; },
-        // Parse an acquisition id like "cima-pulseq-offline-run2" → {scanner,proto,run}. Mirrors
-        // build_figs.parse_acq: split off the trailing "-run<N>", then the leading scanner token; the
-        // remainder is the protocol (which may itself contain a hyphen, e.g. "pulseq-offline").
-        _rgParseAcq(a) {
-          const i = a.lastIndexOf("-run");
-          const base = a.slice(0, i), run = "run" + a.slice(i + 4);
-          const j = base.indexOf("-");
-          return { scanner: base.slice(0, j), proto: base.slice(j + 1), run };
-        },
-        // Index the sidecar into rmean[pipe][acq] = { struct: chi_ppb }. Also expose each run's parsed
-        // dipole (last stage) + acq parse. Memoised on the run count so it only rebuilds on (re)load.
-        _rgParse() {
-          return _cache("rgParse", (this.reproRegions?.runs?.length || 0), () => {
-            const rmean = {};
-            for (const r of (this.reproRegions?.runs || [])) {
-              if (!r || !r.p || !r.a || !r.m) continue;
-              (rmean[r.p] || (rmean[r.p] = {}))[r.a] = r.m;
-            }
-            return rmean;
+        // Acquisitions (id -> {subject, scanner, protocol, run}) that have regional data, under the
+        // subject filter (the registry also lists acquisitions not reconstructed yet).
+        _rgAcqs() {
+          return _cache("rgAcqs", [Object.keys(this._reproAcqs()).length, this.reproRegions?.nRuns || 0, this.reproSubject].join("|"), () => {
+            const have = new Set(Object.values(this._rgParse()).flatMap((acqs) => Object.keys(acqs))), out = {};
+            for (const [id, a] of Object.entries(this._reproAcqs()))
+              if (have.has(id) && (this.reproSubject === "all" || a.subject === this.reproSubject)) out[id] = a;
+            return out;
           });
         },
+        // Scanners present (after the subject filter) in registry order: the pilot's Prisma, Cima.X,
+        // then each traveling head's home scanner before the sites it visited.
+        _rgScanners() { return [...new Set(Object.values(this._rgAcqs()).map((a) => a.scanner))]; },
+        _rgProtos() { return [...new Set(Object.values(this._rgAcqs()).map((a) => a.protocol))].sort(); },
+        // The sidecar's runs as rmean[pipe][acq] = Float64Array of χ ppb by structure index (_rgSI), only
+        // for runs that exist. The raw object, not Alpine's reactive proxy of it: the figures walk every
+        // run, and a proxied lookup per value is what made them slow.
+        _rgParse() { return (this.reproRegions && Alpine.raw(this.reproRegions).runs) || {}; },
+        get _rgSI() { return (this.reproRegions && Alpine.raw(this.reproRegions).si) || {}; },
         _rgLastStage(p) { return p.split("+").pop(); },
-        // ---- pairing generators (return arrays of [acqA, acqB]); mirror build_figs.py exactly ----
-        _rgInterScannerPairs() {
-          const out = [];
-          for (const P of this._rgProtos) for (const R of ["run1", "run2", "run3"]) out.push([`cima-${P}-${R}`, `prisma-${P}-${R}`]);
-          return out;
-        },
-        _rgTestRetestPairs() {
-          const out = [], runs3 = ["run1", "run2", "run3"];
-          for (const S of this._rgScanners) for (const P of this._rgProtos) {
-            const runs = runs3.map((r) => `${S}-${P}-${r}`);
-            for (let i = 0; i < runs.length; i++) for (let k = i + 1; k < runs.length; k++) out.push([runs[i], runs[k]]);
-          }
-          return out;
-        },
-        _rgVsBridgePairs() {
-          const out = [];
-          for (const S of this._rgScanners) for (const R of ["run1", "run2", "run3"]) for (const P of this._rgProtos) {
-            if (P === "bridge") continue;
-            out.push([`${S}-${P}-${R}`, `${S}-bridge-${R}`]);
-          }
-          return out;
-        },
+        // ---- pairings: the same [acqA, acqB] pairs repro.json fits (its `comparisons`), under the
+        //      subject / scanner-pair filters. Within a subject only; A = home scanner, earlier run, or
+        //      bridge protocol. Regional |Δχ| is symmetric; the signed figures read B − A. ----
+        _rgInterScannerPairs() { return this._reproPairs("inter_scanner"); },
+        _rgTestRetestPairs() { return this._reproPairs("test_retest"); },
+        _rgVsBridgePairs() { return this._reproPairs("inter_protocol"); },
         // pairing generator + repro.json slope-dev field for a given metric key (inter/tr/ip)
         _rgPairsFor(mk) { return mk === "tr" ? this._rgTestRetestPairs() : mk === "ip" ? this._rgVsBridgePairs() : this._rgInterScannerPairs(); },
         _rgSlopeCls(mk) { return { inter: "inter_scanner", tr: "test_retest", ip: "inter_protocol" }[mk || "inter"]; },
-        // Headline slope-dev for one pipeline node + metric key. repro.json now carries the median and
-        // the mean under separate keys; `_mean_` alone means a pre-split payload where it WAS the median.
-        _rgSlope(rep, mk, stat = "median") {
-          const cls = this._rgSlopeCls(mk);
-          const v = rep?.[`${cls}_${stat}_abs_slope_dev`];
-          return v != null ? v : (stat === "median" ? rep?.[`${cls}_mean_abs_slope_dev`] ?? null : null);
+        // One pipeline's slope-dev for a metric key, the median over the pairs the filters keep (with
+        // no filter this is the pooled headline repro.json stores).
+        _rgSlope(rep, mk) { return rep ? this._median(this._reproVals(rep, this._rgSlopeCls(mk), "all")) : null; },
+        // Names for the two sides of the inter-scanner pairs in view: the scanners themselves when one
+        // pair is in view (the MGH pilot, or a picked pair), else the roles.
+        _rgPairNames() {
+          const sp = this.reproScanPair !== "all" ? [this.reproScanPair] : this.reproScanPairOpts().map((o) => o.v);
+          if (sp.length === 1) { const [a, b] = sp[0].split("|"); return { a: reproScannerLabel(a), b: reproScannerLabel(b), one: true }; }
+          return { a: "home scanner", b: "visited scanner", one: false };
         },
-        _rgPairLabel(mk) { return { inter: "Cima↔Prisma", tr: "run↔run", ip: "protocol↔bridge" }[mk || "inter"]; },
+        _rgPairLabel(mk) { const n = this._rgPairNames(); return { inter: n.one ? `${n.b}↔${n.a}` : "scanner↔scanner", tr: "run↔run", ip: "protocol↔bridge" }[mk || "inter"]; },
         // the method slug at a given pipeline stage axis (dipole=last χ-producing step; bfr/field_mapping
         // only exist in the 3-part factorial). null → the pipeline has no distinct method at that axis.
         _rgStageOf(pipe, axis) {
@@ -2809,7 +3027,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           const c = [255, 255, 255], d = t >= 0 ? [220, 38, 38] : [37, 99, 235], f = Math.abs(t);
           return "#" + c.map((a, k) => Math.round(a + (d[k] - a) * f).toString(16).padStart(2, "0")).join("");
         },
-        get _rgDepKey() { return (this.reproRegions?.runs?.length || 0) + "|" + this.algos.length; },
+        get _rgDepKey() { return [this.reproRegions?.nRuns || 0, this.algos.length, Object.keys(this._reproMeta().pairs).length, this._reproFKey].join("|"); },
         _rgLoading(w, h) { return `<svg width="${w}" height="${h}" style="max-width:100%;height:auto"><text x="${w / 2}" y="${h / 2}" text-anchor="middle" fill="currentColor" opacity="0.4" style="font-size:12px">loading regional data…</text></svg>`; },
 
         // FIG 1 · region × dipole inter-scanner |Δχ| heatmap
@@ -2817,7 +3035,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           return _cache("rgHeat", this._rgDepKey + "|" + this.reproMetric.heat + "|" + this.reproHeatAxis, () => {
             if (!this.reproRegions) return this._rgLoading(520, 460);
             const mk = this.reproMetric.heat, axis = this.reproHeatAxis;
-            const rmean = this._rgParse(), ORDER = this._rgOrder, pairs = this._rgPairsFor(mk);
+            const rmean = this._rgParse(), SI = this._rgSI, ORDER = this._rgOrder, pairs = this._rgPairsFor(mk);
             const dipVals = {};   // stage-method -> struct -> [|Δχ| ppb]
             for (const pipe in rmean) {
               const d = this._rgStageOf(pipe, axis); if (!d) continue;
@@ -2825,7 +3043,8 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
               (dipVals[d] || (dipVals[d] = {}));
               for (const [a, b] of pairs) {
                 if (acqs[a] && acqs[b]) for (const s of ORDER) {
-                  if (acqs[a][s] != null && acqs[b][s] != null) (dipVals[d][s] || (dipVals[d][s] = [])).push(Math.abs(acqs[a][s] - acqs[b][s]));
+                  const va = acqs[a][SI[s]], vb = acqs[b][SI[s]];
+                  if (isFinite(va) && isFinite(vb)) (dipVals[d][s] || (dipVals[d][s] = [])).push(Math.abs(va - vb));
                 }
               }
             }
@@ -2863,12 +3082,13 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         get reproRegBiasSVG() {
           return _cache("rgBias", this._rgDepKey, () => {
             if (!this.reproRegions) return this._rgLoading(760, 460);
-            const rmean = this._rgParse(), ORDER = this._rgOrder, pairs = this._rgInterScannerPairs();
+            const rmean = this._rgParse(), SI = this._rgSI, ORDER = this._rgOrder, pairs = this._rgInterScannerPairs();
             const bias = {};
             for (const pipe in rmean) {
               const acqs = rmean[pipe];
               for (const [a, b] of pairs) if (acqs[a] && acqs[b]) for (const s of ORDER) {
-                if (acqs[a][s] != null && acqs[b][s] != null) (bias[s] || (bias[s] = [])).push(acqs[a][s] - acqs[b][s]);
+                const va = acqs[a][SI[s]], vb = acqs[b][SI[s]];
+                if (isFinite(va) && isFinite(vb)) (bias[s] || (bias[s] = [])).push(vb - va);   // visited − home
               }
             }
             const regs = ORDER.filter((s) => (bias[s] || []).length >= 20);
@@ -2881,7 +3101,8 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             const cx = (v) => x0 + (v + span) / (2 * span) * (x1 - x0);
             let s = `<svg width="${W}" height="${H}" style="max-width:100%;height:auto">`;
             s += `<line x1="${cx(0)}" y1="30" x2="${cx(0)}" y2="${H - 30}" stroke="currentColor" opacity="0.35" stroke-dasharray="3 3"/>`;
-            s += `<text x="${cx(0)}" y="24" text-anchor="middle" fill="currentColor" opacity="0.6" style="font-size:10px">Cima higher →  |  ← Prisma higher</text>`;
+            const pn = this._rgPairNames();
+            s += `<text x="${cx(0)}" y="24" text-anchor="middle" fill="currentColor" opacity="0.6" style="font-size:10px">${this._esc(`${pn.b} higher →  |  ← ${pn.a} higher`)}</text>`;
             regs.forEach((reg, i) => {
               const y = 40 + i * rowh + rowh / 2, deep = this._rgDeep.includes(reg);
               s += `<text x="${lx - 10}" y="${y + 4}" text-anchor="end" fill="currentColor" opacity="${deep ? 0.92 : 0.6}" style="font-size:11px;font-weight:${deep ? 600 : 400}">${this._esc(reg)}</text>`;
@@ -2892,7 +3113,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             [-span, -span / 2, 0, span / 2, span].forEach((gx) => {
               s += `<text x="${cx(gx)}" y="${H - 14}" text-anchor="middle" fill="currentColor" opacity="0.45" style="font-size:10px">${gx >= 0 ? "+" : ""}${gx.toFixed(0)}</text>`;
             });
-            s += `<text x="${(x0 + x1) / 2}" y="${H - 2}" text-anchor="middle" fill="currentColor" opacity="0.5" style="font-size:10px">inter-scanner χ bias (ppb), median ± IQR over pipelines×protocols×runs</text>`;
+            s += `<text x="${(x0 + x1) / 2}" y="${H - 2}" text-anchor="middle" fill="currentColor" opacity="0.5" style="font-size:10px">inter-scanner χ bias (ppb), median ± IQR over pipelines×subjects×protocols×runs</text>`;
             return s + "</svg>";
           });
         },
@@ -2901,14 +3122,14 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         get reproRegIronSVG() {
           return _cache("rgIron", this._rgDepKey, () => {
             if (!this.reproRegions) return this._rgLoading(560, 420);
-            const rmean = this._rgParse(), IRON = this._rgIron, SCAN = this._rgScanners;
+            const rmean = this._rgParse(), SI = this._rgSI, IRON = this._rgIron, SCAN = this._rgScanners(), A = this._rgAcqs();
             const vals = {};   // scanner -> struct -> [chi ppb]
             for (const sc of SCAN) vals[sc] = {};
             for (const pipe in rmean) {
               const acqs = rmean[pipe];
               for (const acq in acqs) {
-                const { scanner } = this._rgParseAcq(acq); if (!vals[scanner]) continue;
-                for (const s in IRON) if (acqs[acq][s] != null) (vals[scanner][s] || (vals[scanner][s] = [])).push(acqs[acq][s]);
+                const scanner = A[acq]?.scanner; if (!scanner || !vals[scanner]) continue;
+                for (const s in IRON) { const v = acqs[acq][SI[s]]; if (isFinite(v)) (vals[scanner][s] || (vals[scanner][s] = [])).push(v); }
               }
             }
             const pts = {};
@@ -2919,12 +3140,15 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             const ymin = Math.min(...ally) - 10, ymax = Math.max(...ally) + 10;
             const W = 560, H = 420, pad = 60;
             const X = (v) => pad + (v - xmin) / (xmax - xmin) * (W - 2 * pad), Y = (v) => H - pad - (v - ymin) / (ymax - ymin) * (H - 2 * pad);
-            const col = { cima: "#2563eb", prisma: "#db2777" };
+            const col = Object.fromEntries(SCAN.map((sc) => [sc, reproScannerColour(sc)])), lab = (sc) => this._esc(reproScannerLabel(sc));
             let s = `<svg width="${W}" height="${H}" style="max-width:100%;height:auto">`;
             s += `<line x1="${pad}" y1="${H - pad}" x2="${W - pad}" y2="${H - pad}" stroke="currentColor" opacity="0.3"/><line x1="${pad}" y1="${pad}" x2="${pad}" y2="${H - pad}" stroke="currentColor" opacity="0.3"/>`;
             s += `<text x="${W / 2}" y="${H - 18}" text-anchor="middle" fill="currentColor" opacity="0.6" style="font-size:11px">literature iron (µg Fe / g wet wt)</text>`;
             s += `<text transform="translate(16,${H / 2}) rotate(-90)" text-anchor="middle" fill="currentColor" opacity="0.6" style="font-size:11px">median χ (ppb)</text>`;
-            SCAN.forEach((sc, i) => { const ly = pad + 4 + i * 17; s += `<rect x="${pad + 10}" y="${ly}" width="11" height="11" rx="2" fill="${col[sc]}"/><text x="${pad + 26}" y="${ly + 10}" fill="currentColor" opacity="0.8" style="font-size:11px">${sc[0].toUpperCase() + sc.slice(1)}</text>`; });
+            // With the pilot's two scanners each slope is printed top-right; with more, that column would
+            // run into the high-iron points, so the slope moves into the legend line instead.
+            const many = SCAN.length > 2, slope = {};
+            let fits = "";
             for (const sc of SCAN) {
               const X_ = [], Y_ = [];
               for (const s2 in IRON) if (pts[sc][s2] != null) { X_.push(IRON[s2]); Y_.push(pts[sc][s2]); }
@@ -2932,11 +3156,15 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
               const n = X_.length, mx = X_.reduce((a, c) => a + c, 0) / n, my = Y_.reduce((a, c) => a + c, 0) / n;
               const b = X_.reduce((acc, a, k) => acc + (a - mx) * (Y_[k] - my), 0) / X_.reduce((acc, a) => acc + (a - mx) ** 2, 0);
               const a0 = my - b * mx;
-              s += `<line x1="${X(xmin)}" y1="${Y(a0 + b * xmin)}" x2="${X(xmax)}" y2="${Y(a0 + b * xmax)}" stroke="${col[sc]}" stroke-width="2" opacity="0.6"/>`;
-              for (const s2 in IRON) if (pts[sc][s2] != null) s += `<g data-tip="${this._esc(`${sc} ${s2}: ${pts[sc][s2].toFixed(0)} ppb @ ${IRON[s2]} iron`)}"><circle cx="${X(IRON[s2])}" cy="${Y(pts[sc][s2])}" r="5" fill="${col[sc]}"/></g>`;
-              s += `<text x="${W - pad - 4}" y="${pad + 12 + SCAN.indexOf(sc) * 15}" text-anchor="end" fill="${col[sc]}" style="font-size:10px">${sc[0].toUpperCase() + sc.slice(1)} slope ${b.toFixed(3)} ppb/iron</text>`;
+              slope[sc] = b;
+              fits += `<line x1="${X(xmin)}" y1="${Y(a0 + b * xmin)}" x2="${X(xmax)}" y2="${Y(a0 + b * xmax)}" stroke="${col[sc]}" stroke-width="2" opacity="0.6"/>`;
+              for (const s2 in IRON) if (pts[sc][s2] != null) fits += `<g data-tip="${this._esc(`${reproScannerLabel(sc)} ${s2}: ${pts[sc][s2].toFixed(0)} ppb @ ${IRON[s2]} iron`)}"><circle cx="${X(IRON[s2])}" cy="${Y(pts[sc][s2])}" r="5" fill="${col[sc]}"/></g>`;
+              if (!many) fits += `<text x="${W - pad - 4}" y="${pad + 12 + SCAN.indexOf(sc) * 15}" text-anchor="end" fill="${col[sc]}" style="font-size:10px">${lab(sc)} slope ${b.toFixed(3)} ppb/iron</text>`;
             }
-            for (const s2 in IRON) if (pts.cima[s2] != null) s += `<text x="${X(IRON[s2]) + 7}" y="${Y(pts.cima[s2]) + 3}" fill="currentColor" opacity="0.55" style="font-size:10px">${this._esc(s2)}</text>`;
+            SCAN.forEach((sc, i) => { const ly = pad + 4 + i * 17; s += `<rect x="${pad + 10}" y="${ly}" width="11" height="11" rx="2" fill="${col[sc]}"/><text x="${pad + 26}" y="${ly + 10}" fill="currentColor" opacity="0.8" style="font-size:11px">${lab(sc)}${many && slope[sc] != null ? ` · slope ${slope[sc].toFixed(3)}` : ""}</text>`; });
+            s += fits;
+            const ref = pts[SCAN.find((sc) => Object.keys(pts[sc]).length)] || {};   // label the nuclei once, on the first scanner with data
+            for (const s2 in IRON) if (ref[s2] != null) s += `<text x="${X(IRON[s2]) + 7}" y="${Y(ref[s2]) + 3}" fill="currentColor" opacity="0.55" style="font-size:10px">${this._esc(s2)}</text>`;
             return s + "</svg>";
           });
         },
@@ -2945,21 +3173,24 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         get reproRegProtoSVG() {
           return _cache("rgProto", this._rgDepKey, () => {
             if (!this.reproRegions) return this._rgLoading(720, 240);
-            const rmean = this._rgParse(), ORDER = this._rgOrder, PROTOS = this._rgProtos, SCAN = this._rgScanners;
+            const rmean = this._rgParse(), SI = this._rgSI, ORDER = this._rgOrder, PROTOS = this._rgProtos(), A = this._rgAcqs();
+            // one consensus per (subject, scanner, run): the protocols that session acquired
+            const sess = {};   // "subject|scanner|run" -> { protocol: acq id }
+            for (const [id, a] of Object.entries(A)) (sess[a.subject + "|" + a.scanner + "|" + a.run] ||= {})[a.protocol] = id;
             const dev = {};   // proto -> struct -> [dev ppb]
             for (const P of PROTOS) dev[P] = {};
             for (const pipe in rmean) {
               const acqs = rmean[pipe];
-              for (const sc of SCAN) for (const R of ["run1", "run2", "run3"]) {
+              for (const byProto of Object.values(sess)) {
                 const present = {};
-                for (const P of PROTOS) { const v = acqs[`${sc}-${P}-${R}`]; if (v) present[P] = v; }
+                for (const [P, id] of Object.entries(byProto)) { const v = acqs[id]; if (v) present[P] = v; }
                 const keys = Object.keys(present);
                 if (keys.length < 2) continue;
                 for (const s of ORDER) {
-                  const xs = keys.filter((P) => present[P][s] != null).map((P) => present[P][s]);
+                  const k = SI[s], xs = keys.filter((P) => isFinite(present[P][k])).map((P) => present[P][k]);
                   if (xs.length < 2) continue;
                   const cons = xs.reduce((a, c) => a + c, 0) / xs.length;
-                  for (const P of keys) if (present[P][s] != null) (dev[P][s] || (dev[P][s] = [])).push(present[P][s] - cons);
+                  for (const P of keys) if (isFinite(present[P][k])) (dev[P][s] || (dev[P][s] = [])).push(present[P][k] - cons);
                 }
               }
             }
@@ -2979,10 +3210,10 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
             });
             PROTOS.forEach((P, i) => {
               const y = ty + i * ch;
-              s += `<text x="${lx - 10}" y="${y + ch / 2 + 4}" text-anchor="end" fill="currentColor" opacity="0.82" style="font-size:11px">${this._esc(P)}</text>`;
+              s += `<text x="${lx - 10}" y="${y + ch / 2 + 4}" text-anchor="end" fill="currentColor" opacity="0.82" style="font-size:11px">${this._esc(reproProtoLabel(P))}</text>`;
               regs.forEach((reg, j) => {
                 const v = md[P][reg]; if (v == null) return; const x = lx + j * cw;
-                s += `<g data-tip="${this._esc(`${P} / ${reg}: ${v >= 0 ? "+" : ""}${v.toFixed(1)} ppb vs consensus`)}"><rect x="${x}" y="${y}" width="${cw - 2}" height="${ch - 2}" rx="3" fill="${this._rgColDiv(v, vmax)}"/></g>`;
+                s += `<g data-tip="${this._esc(`${reproProtoLabel(P)} / ${reg}: ${v >= 0 ? "+" : ""}${v.toFixed(1)} ppb vs consensus`)}"><rect x="${x}" y="${y}" width="${cw - 2}" height="${ch - 2}" rx="3" fill="${this._rgColDiv(v, vmax)}"/></g>`;
               });
             });
             s += `<text x="${lx}" y="${H - 12}" fill="currentColor" opacity="0.5" style="font-size:10px">Δ vs cross-protocol consensus (ppb): pale = agrees · blue lower · red higher (±${vmax.toFixed(0)})</text>`;
@@ -2994,7 +3225,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         get reproRegStageSVG() {
           return _cache("rgStage", this._rgDepKey, () => {
             if (!this.reproRegions) return this._rgLoading(460, 320);
-            const rmean = this._rgParse(), DEEP = this._rgDeep;
+            const rmean = this._rgParse(), SI = this._rgSI, DEEP = this._rgDeep, A = this._rgAcqs();
             const three = Object.keys(rmean).filter((p) => p.split("+").length === 3);
             const pstdev = (v) => { const m = v.reduce((a, c) => a + c, 0) / v.length; return Math.sqrt(v.reduce((a, c) => a + (c - m) ** 2, 0) / v.length); };
             const contrib = { unwrap: [], bfr: [], dipole: [] };
@@ -3005,8 +3236,9 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
                 const key = parts.filter((_, k) => k !== idx).join("+");
                 const acqs = rmean[pipe];
                 for (const acq in acqs) {
+                  if (!A[acq]) continue;
                   const gk = key + "||" + acq, g = groups[gk] || (groups[gk] = {});
-                  for (const s of DEEP) if (acqs[acq][s] != null) (g[s] || (g[s] = [])).push(acqs[acq][s]);
+                  for (const s of DEEP) { const v = acqs[acq][SI[s]]; if (isFinite(v)) (g[s] || (g[s] = [])).push(v); }
                 }
               }
               const spreads = [];
@@ -3036,32 +3268,39 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         get reproRegContrastSVG() {
           return _cache("rgContrast", this._rgDepKey, () => {
             if (!this.reproRegions) return this._rgLoading(460, 460);
-            const rmean = this._rgParse(), pairs = this._rgInterScannerPairs();
+            const rmean = this._rgParse(), SI = this._rgSI, pairs = this._rgInterScannerPairs();
             const nucPairs = [["Pallidum", "Putamen"], ["Pallidum", "Thalamus"], ["Putamen", "Caudate"]];
             const col = ["#dc2626", "#2563eb", "#059669"];
             const data = nucPairs.map(() => []);
             for (const pipe in rmean) {
               const acqs = rmean[pipe];
               for (const [a, b] of pairs) if (acqs[a] && acqs[b]) nucPairs.forEach(([ra, rb], pi) => {
-                if (acqs[a][ra] != null && acqs[a][rb] != null && acqs[b][ra] != null && acqs[b][rb] != null) {
-                  const ca = acqs[a][ra] - acqs[a][rb], cb = acqs[b][ra] - acqs[b][rb];
-                  data[pi].push([cb, ca]);   // x=prisma, y=cima
+                const A_ = acqs[a], B_ = acqs[b], i = SI[ra], k = SI[rb];
+                if (isFinite(A_[i]) && isFinite(A_[k]) && isFinite(B_[i]) && isFinite(B_[k])) {
+                  const ca = A_[i] - A_[k], cb = B_[i] - B_[k];
+                  data[pi].push([ca, cb]);   // x = home scanner (A), y = visited scanner (B)
                 }
               });
             }
-            const allv = [].concat(...data.map((d) => [].concat(...d)));
-            if (allv.length < 3) return `<svg width="460" height="80"><text x="230" y="40" text-anchor="middle" fill="currentColor" opacity="0.4" style="font-size:12px">Not enough inter-scanner pairs yet.</text></svg>`;
-            let lo = Math.min(...allv), hi = Math.max(...allv); const sp = hi - lo; lo -= sp * 0.05; hi += sp * 0.05;
+            // Loops, not Math.min(...v): with every subject's pairs there are far more points than the
+            // argument-spread limit allows.
+            let lo = Infinity, hi = -Infinity, nv = 0;
+            for (const d of data) for (const [x, y] of d) { lo = Math.min(lo, x, y); hi = Math.max(hi, x, y); nv += 2; }
+            if (nv < 3) return `<svg width="460" height="80"><text x="230" y="40" text-anchor="middle" fill="currentColor" opacity="0.4" style="font-size:12px">Not enough inter-scanner pairs yet.</text></svg>`;
+            const sp = hi - lo; lo -= sp * 0.05; hi += sp * 0.05;
             const W = 460, H = 460, pad = 60;
             const X = (v) => pad + (v - lo) / (hi - lo) * (W - 2 * pad), Y = (v) => H - pad - (v - lo) / (hi - lo) * (H - 2 * pad);
             let s = `<svg width="${W}" height="${H}" style="max-width:100%;height:auto">`;
             s += `<line x1="${X(lo)}" y1="${Y(lo)}" x2="${X(hi)}" y2="${Y(hi)}" stroke="currentColor" opacity="0.35" stroke-dasharray="4 4"/>`;
             s += `<line x1="${pad}" y1="${H - pad}" x2="${W - pad}" y2="${H - pad}" stroke="currentColor" opacity="0.3"/><line x1="${pad}" y1="${pad}" x2="${pad}" y2="${H - pad}" stroke="currentColor" opacity="0.3"/>`;
-            s += `<text x="${W / 2}" y="${H - 16}" text-anchor="middle" fill="currentColor" opacity="0.6" style="font-size:11px">Prisma contrast (ppb)</text>`;
-            s += `<text transform="translate(16,${H / 2}) rotate(-90)" text-anchor="middle" fill="currentColor" opacity="0.6" style="font-size:11px">Cima contrast (ppb)</text>`;
+            const pn = this._rgPairNames();
+            s += `<text x="${W / 2}" y="${H - 16}" text-anchor="middle" fill="currentColor" opacity="0.6" style="font-size:11px">${this._esc(pn.a)} contrast (ppb)</text>`;
+            s += `<text transform="translate(16,${H / 2}) rotate(-90)" text-anchor="middle" fill="currentColor" opacity="0.6" style="font-size:11px">${this._esc(pn.b)} contrast (ppb)</text>`;
             nucPairs.forEach(([ra, rb], pi) => {
               const c = col[pi];
-              data[pi].slice(0, 400).forEach(([x, y]) => { s += `<circle cx="${X(x)}" cy="${Y(y)}" r="2.4" fill="${c}" opacity="0.5"/>`; });
+              // at most ~400 dots per contrast, sampled evenly so every subject and scanner pair shows
+              const step = Math.max(1, Math.ceil(data[pi].length / 400));
+              data[pi].filter((_, k) => k % step === 0).forEach(([x, y]) => { s += `<circle cx="${X(x)}" cy="${Y(y)}" r="2.4" fill="${c}" opacity="0.5"/>`; });
               s += `<circle cx="${pad + 12}" cy="${pad + pi * 18}" r="4" fill="${c}"/><text x="${pad + 22}" y="${pad + 4 + pi * 18}" fill="currentColor" opacity="0.82" style="font-size:11px">${this._esc(ra)}−${this._esc(rb)}</text>`;
             });
             return s + "</svg>";
@@ -3073,13 +3312,16 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           return _cache("rgGlobal", this._rgDepKey + "|" + this.reproMetric.glob + "|" + Object.keys(this._reproPipes()).length, () => {
             if (!this.reproRegions) return this._rgLoading(560, 420);
             const mk = this.reproMetric.glob;
-            const rmean = this._rgParse(), DEEP = this._rgDeep, pairs = this._rgPairsFor(mk);
+            const rmean = this._rgParse(), SI = this._rgSI, DEEP = this._rgDeep, pairs = this._rgPairsFor(mk);
             const REPRO = this._reproPipes();
             const pts = [];
             for (const pipe in rmean) {
               const gd = this._rgSlope(REPRO[pipe], mk); if (gd == null) continue;
               const acqs = rmean[pipe], diffs = [];
-              for (const [a, b] of pairs) if (acqs[a] && acqs[b]) for (const s of DEEP) if (acqs[a][s] != null && acqs[b][s] != null) diffs.push(Math.abs(acqs[a][s] - acqs[b][s]));
+              for (const [a, b] of pairs) if (acqs[a] && acqs[b]) for (const s of DEEP) {
+                const va = acqs[a][SI[s]], vb = acqs[b][SI[s]];
+                if (isFinite(va) && isFinite(vb)) diffs.push(Math.abs(va - vb));
+              }
               if (diffs.length < 10) continue;
               pts.push([gd * 100, this._median(diffs), this._rgLastStage(pipe)]);
             }
@@ -3944,29 +4186,43 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         // parallel, then assemble the { id: entry } map the figures read. Only these ~26 small files
         // are fetched (not the whole 900-run corpus). Assigning this.regions is a reactive trigger, so
         // the getters re-run and the figures draw; then reconcile the region selector.
-        // Lazy-load (once) the harmonization regional sidecar (results/repro_regions.json): every
-        // (pipeline × acquisition) run's per-aseg-region mean χ in ppb. ~4 MB, ~14 k runs, so it stays
-        // off the common page load and is fetched the first time the harmonization Findings tab opens.
-        // The harmonization payload (results/repro.json, 8.7 MB), from the shared loader (app.js
+        // Lazy-load (once per cohort) the harmonization regional sidecar (results/<stem>_regions.json +
+        // .bin): every (pipeline × acquisition) run's per-aseg-region mean χ in ppb. Up to ~2.4 MB and
+        // ~46 k runs, so it stays off the common page load and is fetched the first time that cohort's
+        // Findings tab opens.
+        // The harmonization payload (results/<stem>.json + <stem>_fits.bin), from the shared loader (app.js
         // loadRepro(), which also drops the parked/retired pipelines — see _reproPipes()). Fetched
         // once, off the critical path: init() kicks this off on idle so the Harmonization tab can
         // appear, and setDataset()/the deep-link path await it so opening that dataset always has its
         // data. Memoised on the promise, not the result, so two callers share one fetch.
-        ensureRepro() {
+        // One load per cohort (`key`, default: the open one); the result becomes reproData only while
+        // that cohort is the open dataset.
+        ensureRepro(key = this.dataset) {
           // _reproReq is module-scope, NOT a property on this: Alpine's reactive proxy around a Promise
           // breaks `await` (Promise.prototype.then called on an incompatible receiver).
-          if (_reproReq) return _reproReq;
-          _reproReq = loadRepro().then((d) => { this.reproData = d; return d; });
-          return _reproReq;
+          const G = this._reproG(key);
+          if (!G) return Promise.resolve({});
+          if (_reproReq.has(G.id)) return _reproReq.get(G.id);
+          const req = loadRepro({ fits: true, group: G.id }).then((d) => {
+            _reproData.set(G.id, d);
+            this.reproReady = { ...this.reproReady, [G.key]: Object.keys(d.pipelines || {}).length > 0 };
+            if (this._reproG()?.id === G.id && Alpine.raw(this.reproData) !== d) { this._clearReproMemo(); this.reproData = d; }
+            return d;
+          });
+          _reproReq.set(G.id, req);
+          return req;
         },
         async ensureReproRegions() {
-          if (this.reproRegions || this.reproRegLoading) return;
+          const G = this._reproG();
+          if (!G || this.reproRegions || _reproRegionsReq.has(G.id)) return;
           this.reproRegLoading = true;
+          const req = loadReproRegions({ group: G.id });   // never throws: { runs: {} } when unavailable
+          _reproRegionsReq.set(G.id, req);
           try {
-            const r = await fetch("results/repro_regions.json");
-            this.reproRegions = r.ok ? await r.json() : { runs: [] };
-          } catch { this.reproRegions = { runs: [] }; }
-          finally { this.reproRegLoading = false; }
+            const r = await req;
+            _reproRegionsData.set(G.id, r);
+            if (this._reproG()?.id === G.id) { this._clearReproMemo(); this.reproRegions = r; }
+          } finally { this.reproRegLoading = false; }
         },
         ensureRegions() {
           if (this._regionsReq) return this._regionsReq;

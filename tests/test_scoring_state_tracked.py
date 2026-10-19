@@ -7,9 +7,11 @@ commits needs its own `!` exception."""
 import subprocess
 from pathlib import Path
 
+import repro_format as rf
+
 ROOT = Path(__file__).resolve().parent.parent
 COMMITTED_BY_WORKFLOWS = ("results/index.json", "results/scoring-state.json",
-                          "results/repro.json", "results/repro_regions.json")
+                          *(f"results/{name}" for name in rf.all_payload_names()))   # every harmonization cohort
 
 
 def test_files_the_workflows_commit_are_not_gitignored():

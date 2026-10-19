@@ -14,7 +14,8 @@ full reference — this file only says what each one is for and who calls it.
 | `merge_index.py` | Upserts the runs a rescore changed into the latest `results/index.json` by run id, so concurrent rescores never clobber each other | `score.yml`, `repro.yml` |
 | `publish_volumes.py` | Uploads per-run viewer volumes (and each phantom's truth, once) to the Hugging Face volumes repo and stamps their URLs into the index | `score.yml`, `repro.yml`, `hf-check.yml` |
 | `publish_repro_intermediates.py` | Publishes the harmonization track's shared total-/local-field intermediates to the same HF repo | `repro.yml` |
-| `repro_eval.py` | The no-ground-truth harmonization analysis (`register` / `stats` / `fits`) → `results/repro.json` | `repro.yml`; Bunya via `repro_slurm/` |
+| `repro_eval.py` | The no-ground-truth harmonization analysis (`register` / `stats` / `fits`) → one payload per cohort: `results/repro.json` + `repro_fits*.bin` (EMTP traveling heads), `results/repro_pilot.json` + `repro_pilot_fits*.bin` (MGH pilot) | `repro.yml`; Bunya via `repro_slurm/` |
+| `repro_format.py` | The harmonization cohorts (`REPRO_GROUPS`: each cohort's site dataset key, label and payload file stem) and the binary columnar layout of their payloads (JSON index + float32 `.bin` columns): writer, reader, and `load_repro` / `load_regions` back to the nested form | imported by `repro_eval.py`, `gen_repro_regions.py` |
 | `squash_hf_history.py` | Collapses the HF volumes repo's history to one commit to reclaim LFS storage (old versions and pruned paths stay in history until then). Best-effort: never fails its caller | `score.yml` merge job after every FULL rescore; `hf-housekeeping.yml` (`workflow_dispatch`) for a one-off; `repro_slurm/squash.slurm` on Bunya |
 | `fetch_dataset.sh` | Downloads a registry phantom's zip from OSF and unpacks it into `inputs/` + `groundtruth/` (flattening a BIDS tree with `pack_dataset.py` when needed) | `score.yml`, `evaluate.yml`, `pipeline.yml`, `repro.yml` |
 | `datasets.json` | The dataset/phantom registry — see [`data/README.md`](../data/README.md) | `fetch_dataset.sh`, `pipeline.py`, `gen_manifest.py`, the workflows |
@@ -29,7 +30,7 @@ How each shipped dataset was made; re-run only to rebuild one.
 | `gen_chisep.py` | Reproducible generator for the χ-separation phantoms (`chisep-mc`, `ridani-*`) from the Challenge 2.0 head model; `--validate` runs `validate_phantom.py` on the result |
 | `validate_phantom.py` | Measures whether a χ-separation phantom can discriminate methods (null-model triviality, noise ceiling) before spending hours on real separators |
 | `make_invivo_zip.py` | Packs the 2016 QSM Challenge release into the prepacked in-vivo zip (`invivo`) |
-| `pack_harmonization.py` | Packs the raw MGH two-scanner drop into the 23 prepacked harmonization acquisitions (`repro`), recovering the echo times the sidecars lack |
+| `pack_harmonization.py` | Packs the raw MGH two-scanner drop into the 23 prepacked MGH pilot acquisitions (`repro`, `group: harmonization-pilot`), recovering the echo times the sidecars lack |
 | `publish_harmonization_osf.sh` | Uploads those acquisitions (and the raw exports) to the public OSF project; records file ids in `osf_harmonization_files.json` |
 | `osf_harmonization_files.json` | The OSF file ids of every harmonization upload |
 | `mirror_ridani_osf.py` | Mirrors the Ridani et al. OSF project (9xwhz) locally, with a manifest, as the bit-for-bit reference for the Ridani phantoms |
@@ -51,7 +52,7 @@ How each shipped dataset was made; re-run only to rebuild one.
 |---|---|
 | `crosscheck_qsmrs.sh` | Drift guard: scores one recon with `qsm-eval` and with QSM.rs's own `ChallengeMetrics` and checks they agree (needs a QSM.rs checkout and the `qsm-ci` CLI) |
 | `check_r2prime_consistency.py` | Is a phantom's shipped R2′ ground truth consistent with its shipped GRE/SE signal? (fits R2\* − R2 and correlates) |
-| `gen_repro_regions.py` | Compacts `results/repro_rois.json` into the `results/repro_regions.json` the harmonization Findings figures read; re-run after a harmonization publish |
+| `gen_repro_regions.py` | Compacts `results/repro_rois.json` into one regional payload per cohort (`results/repro_regions.json` + `.bin`, `results/repro_pilot_regions.json` + `.bin`) that the harmonization Findings figures read; re-run after a harmonization publish |
 
 ## HPC (Bunya)
 

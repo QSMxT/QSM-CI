@@ -422,6 +422,7 @@ import json  # noqa: E402
 import re  # noqa: E402
 import sys  # noqa: E402
 from collections import Counter  # noqa: E402
+import repro_format as rf  # noqa: E402
 
 
 def test_repro_runs_keep_the_acquisition_directory_the_viewer_builds_urls_from():
@@ -682,8 +683,9 @@ def test_a_focused_rescore_never_deletes_another_runs_only_copy_in_a_bucket_it_t
 
 
 # ---- harmonization track: liveness is pipeline × acquisition, derived the way the viewer derives URLs --
-# No index row names these files, so --prune-repro rebuilds the viewer's exact name set from
-# repro.json and the acquisition registry. These pin that derivation (a drift here deletes live files).
+# No index row names these files, so --prune-repro rebuilds the viewer's exact name set from each
+# cohort's payload (results/repro.json, results/repro_pilot.json) and the acquisition registry. These
+# pin that derivation (a drift here deletes live files).
 
 ACQS = frozenset({"cima-bridge-run1", "prisma-local-run2"})
 PIPES = ["romeo-qsmrs+vsharp-qsmrs+rts-qsmrs", "laplacian-qsmrs+nextqsm", "iqsm"]
@@ -741,23 +743,34 @@ def test_no_manifest_slug_contains_an_underscore():
 
 
 def test_the_real_repro_json_and_registry_derive_soundly():
-    pipes = json.loads((ROOT / "results" / "repro.json").read_text())["pipelines"]
     acqs = pv.repro_acq_ids()
-    assert len(acqs) == 23 and all(re.fullmatch(r"(prisma|cima)-.+-run\d", a) for a in acqs)
-    assert pipes and all(1 <= len(p.split("+")) <= 3 and "_" not in p and "~" not in p for p in pipes)
-    assert len(pv.repro_live_names(pipes, acqs)) > 3 * len(pipes) * len(acqs)
-    assert all(m in pv.live_algo_slugs() for p in pipes for m in p.split("+"))   # fits already drops retired
+    registry = json.loads((ROOT / "scripts" / "datasets.json").read_text())
+    assert acqs == {k for k, v in registry.items() if v.get("track") == "repro"}
+    groups = pv.repro_acq_groups()
+    assert set(groups) == acqs and set(groups.values()) == {"harmonization", "harmonization-pilot"}
+    # Hub names are `<pipe>-cmp-<acq>__<kind>`: an acquisition id must not contain either separator.
+    assert all(re.fullmatch(r"[a-z0-9-]+-run\d", a) and "-cmp-" not in a for a in acqs)
+    for g in set(groups.values()):
+        pipes = json.loads((ROOT / "results" / rf.payload_names(g)["repro"]).read_text())["pipelines"]
+        mine = {a for a, ga in groups.items() if ga == g}
+        assert pipes and all(1 <= len(p.split("+")) <= 3 and "_" not in p and "~" not in p for p in pipes)
+        assert len(pv.repro_live_names(pipes, mine)) > 3 * len(pipes) * len(mine)
+        assert all(m in pv.live_algo_slugs() for p in pipes for m in p.split("+"))   # fits drops retired
 
 
-def _prune_repro(tmp_path, monkeypatch, hub, pipelines, *argv, slugs=SLUGS):
+def _prune_repro(tmp_path, monkeypatch, hub, pipelines, *argv, slugs=SLUGS, cohorts=None):
+    """--prune-repro over ACQS. `cohorts` = {cohort: (its acquisitions, its payload's pipelines)}; by
+    default every acquisition is in the traveling-head cohort with `pipelines`."""
+    cohorts = cohorts or {"harmonization": (ACQS, pipelines)}
     results = tmp_path / "results"; results.mkdir(exist_ok=True)
-    (results / "repro.json").write_text(json.dumps({"target": "cima-bridge-run1",
-                                                    "pipelines": {p: {} for p in pipelines}}))
+    for g, (_, pipes) in cohorts.items():
+        if pipes is not None:            # None: that cohort's payload is missing
+            (results / rf.payload_names(g)["repro"]).write_text(json.dumps({"group": g, "pipelines": pipes}))
     fake = SimpleNamespace(HfApi=lambda token=None: hub,
                            CommitOperationAdd=lambda path_in_repo, path_or_fileobj:
                            SimpleNamespace(path_in_repo=path_in_repo, path_or_fileobj=path_or_fileobj))
     monkeypatch.setitem(sys.modules, "huggingface_hub", fake)
-    monkeypatch.setattr(pv, "repro_acq_ids", lambda: ACQS)
+    monkeypatch.setattr(pv, "repro_acq_groups", lambda: {a: g for g, (acqs, _) in cohorts.items() for a in acqs})
     monkeypatch.setattr(pv, "live_algo_slugs", lambda: slugs)
     monkeypatch.setattr(pv.time, "sleep", lambda s: None)
     monkeypatch.setenv("HF_VOLUMES_REPO", REPO)
@@ -807,6 +820,35 @@ def test_prune_repro_refuses_an_empty_or_unrepresentative_pipeline_list(tmp_path
     assert hub.files == before
     hub = FakeHub(before)
     _prune_repro(tmp_path, monkeypatch, hub, ["iqsm"])                # explains too little of the repo
+    assert hub.files == before
+
+
+# Two cohorts, each payload naming its own pipelines: liveness is per cohort (its pipelines × its
+# acquisitions), so neither list can vouch for, or condemn, files on the other cohort's acquisitions.
+HEAD_ACQ, PILOT_ACQ = "s002001-kki-achieva-bridge-run1", "cima-bridge-run1"
+COHORTS = {"harmonization": ({HEAD_ACQ}, ["romeo-qsmrs+vsharp-qsmrs+rts-qsmrs", "iqsm"]),
+           "harmonization-pilot": ({PILOT_ACQ}, ["romeo-qsmrs+vsharp-qsmrs+rts-qsmrs"])}
+
+
+def test_prune_repro_judges_each_cohort_by_its_own_payload(tmp_path, monkeypatch):
+    live = (pv.repro_live_names(COHORTS["harmonization"][1], {HEAD_ACQ})
+            | pv.repro_live_names(COHORTS["harmonization-pilot"][1], {PILOT_ACQ}))
+    # iqsm is live on the heads only; its pilot files are built from a live method, so unharvested
+    pilot_iqsm = f"repro/{PILOT_ACQ}/iqsm-cmp-{PILOT_ACQ}__recon.nii.gz"
+    assert pilot_iqsm not in live
+    retired = f"repro/{PILOT_ACQ}/romeo-qsmrs_retired-bfr_rts-qsmrs-cmp-{PILOT_ACQ}__recon.nii.gz"
+    hub = FakeHub(live | {pilot_iqsm, retired})
+    _prune_repro(tmp_path, monkeypatch, hub, None, cohorts=COHORTS)
+    assert live <= hub.files and pilot_iqsm in hub.files and retired not in hub.files
+
+
+def test_prune_repro_refuses_when_a_cohort_payload_is_missing(tmp_path, monkeypatch):
+    """Without the pilot's list every file on its acquisitions would look orphaned."""
+    before = pv.repro_live_names(COHORTS["harmonization"][1], {HEAD_ACQ}) | {
+        f"repro/{PILOT_ACQ}/romeo-qsmrs_retired-bfr_rts-qsmrs-cmp-{PILOT_ACQ}__recon.nii.gz"}
+    hub = FakeHub(before)
+    cohorts = {**COHORTS, "harmonization-pilot": ({PILOT_ACQ}, None)}
+    _prune_repro(tmp_path, monkeypatch, hub, None, cohorts=cohorts)
     assert hub.files == before
 
 

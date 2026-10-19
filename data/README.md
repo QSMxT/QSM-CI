@@ -29,8 +29,8 @@ once to the Hugging Face volumes repo as `truth/<phantom>/<artifact>.nii.gz`.
 
 ## The registry
 
-[`scripts/datasets.json`](../scripts/datasets.json) is the source of truth — 29 entries: one `sim`,
-one `invivo`, four `chisep` phantoms, and the 23 `repro` (harmonization) acquisitions. Every entry
+[`scripts/datasets.json`](../scripts/datasets.json) is the source of truth — 101 entries: one `sim`,
+one `invivo`, four `chisep` phantoms, and the 95 `repro` (harmonization) acquisitions. Every entry
 carries:
 
 - `track` — `sim`, `invivo`, `chisep` or `repro` — and `label`, the name the site shows.
@@ -45,12 +45,16 @@ carries:
   `tests/test_datasets.py`.
 - `prepacked: true` when the zip already holds `inputs/` (+ `groundtruth/`) at its root. Every
   entry except `sim` is prepacked.
-- `group` (repro entries only) — the acquisition family, `harmonization`, which the site uses to
-  group those 23 acquisitions.
+- `group` (repro entries only) — the harmonization cohort: `harmonization` for the 72 EMTP
+  traveling-head acquisitions, `harmonization-pilot` for the 23 MGH pilot acquisitions. Each cohort
+  is analysed on its own and is its own dataset on the site, with its own payloads
+  (`results/repro*.json` for the traveling heads, `results/repro_pilot*.json` for the pilot); the
+  cohorts are defined in `REPRO_GROUPS` in [`scripts/repro_format.py`](../scripts/repro_format.py).
 
 [`scripts/gen_manifest.py`](../scripts/gen_manifest.py) embeds the whole registry into
 `web/algorithms.json` as its `datasets` block; that is how the site labels and filters runs by
-phantom.
+phantom. It also writes the harmonization cohorts there as `repro_groups`, which the site builds its
+Harmonization datasets from.
 
 ```bash
 scripts/fetch_dataset.sh <registry-key> <dest>     # OSF_TOKEN required unless the entry is osf_public
@@ -106,20 +110,30 @@ metric keys, STI χ33 the `_sti` ones (the CSV export renames these to `_cosmos`
 The shipped `dseg.nii.gz` uses the challenge's own 0–11 label scheme, **not** the sim phantom's, so
 it is not used for scoring.
 
-## Harmonization (`repro`, 23 acquisitions)
+## Harmonization (`repro`, 95 acquisitions in two cohorts)
 
-The no-ground-truth reproducibility track: one subject scanned on two Siemens 3 T scanners
-(`prisma` = MAGNETOM Prisma Fit, `cima` = MAGNETOM Cima.X) with four protocols (`bridge`, `local`,
-`pulseq_online`, `pulseq_offline`), three runs each. Registry keys are `<scanner>-<protocol>-run<n>`,
-all `group: harmonization`, `default: false`, prepacked, in the public OSF project `gkemr`
+The no-ground-truth reproducibility track, in two independent cohorts (registry `group`):
+
+- **EMTP traveling heads** (`group: harmonization`, 72 acquisitions): six subjects, each scanned at
+  their home site (KKI Philips) and, for four of them, at one or two further sites (Weill Cornell
+  CBIC GE/Siemens, UMass Siemens, Hamburg Philips), with the bridge and local protocols, three runs
+  each. Registry keys are `<subject>-<scanner>-<protocol>-run<n>` (scanner tags such as
+  `kki-achieva`, `cbic-mr750`). Packed by [`scripts/pack_emtp.py`](../scripts/pack_emtp.py).
+- **MGH pilot** (`group: harmonization-pilot`, 23 acquisitions): one subject on two Siemens 3 T
+  scanners (`prisma` = MAGNETOM Prisma Fit, `cima` = MAGNETOM Cima.X) with four protocols (`bridge`,
+  `local`, `pulseq-online`, `pulseq-offline`), three runs each (one Pulseq offline run could not be
+  reconstructed). Registry keys are `<scanner>-<protocol>-run<n>`.
+
+All are `default: false`, prepacked, in the public OSF project `gkemr`
 ([`scripts/osf_harmonization_files.json`](../scripts/osf_harmonization_files.json) records each
 upload's file id).
 
-Packed from the raw MGH export by
+The MGH pilot was packed from the raw MGH export by
 [`scripts/pack_harmonization.py`](../scripts/pack_harmonization.py) — which recovers the echo times
 the sidecars lack from the exam-card PDFs and the Pulseq sequence definition — and uploaded by
 [`scripts/publish_harmonization_osf.sh`](../scripts/publish_harmonization_osf.sh). Each zip holds
 `inputs/` only: there is no `groundtruth/`. Scoring is cross-acquisition agreement per pipeline,
-computed by [`scripts/repro_eval.py`](../scripts/repro_eval.py) (register → stats → fits) into
-`results/repro.json`; the Bunya job sequence that runs the full matrix is documented in
+computed by [`scripts/repro_eval.py`](../scripts/repro_eval.py) (register → stats → fits) into one
+payload per cohort (`results/repro.json` for the traveling heads, `results/repro_pilot.json` for the
+MGH pilot, each with its fit columns); the Bunya job sequence that runs the full matrix is documented in
 [`scripts/repro_slurm/README.md`](../scripts/repro_slurm/README.md).

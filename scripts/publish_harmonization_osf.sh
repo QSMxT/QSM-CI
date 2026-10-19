@@ -12,11 +12,16 @@
 # registry (scripts/datasets.json osf_file) can be wired afterwards.
 #
 # Usage:
-#   OSF_TOKEN=<personal-access-token> ./scripts/publish_harmonization_osf.sh <osf-project-id>
+#   OSF_TOKEN=<personal-access-token> ./scripts/publish_harmonization_osf.sh <osf-project-id> [acq-glob]
+#
+# [acq-glob] limits the upload to matching acquisitions, e.g. 's0*' for the EMTP traveling heads
+# (default: every acquisition). The pilot's raw exports are uploaded only when that raw tree is
+# present; the EMTP raw drop stays with its provider (KKI) and only its manifest is uploaded.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-PROJECT=${1:?usage: OSF_TOKEN=... $0 <osf-project-id>}
+PROJECT=${1:?usage: OSF_TOKEN=... $0 <osf-project-id> [acq-glob]}
+GLOB=${2:-*}
 : "${OSF_TOKEN:?set OSF_TOKEN (https://osf.io/settings/tokens)}"
 API="https://files.osf.io/v1/resources/$PROJECT/providers/osfstorage"
 AUTH=(-H "Authorization: Bearer $OSF_TOKEN")
@@ -56,17 +61,26 @@ INPUTS_DIR=$(mkfolder qsmci-inputs)
 RAW_DIR=$(mkfolder raw)
 
 echo "== packed QSM-CI inputs (one prepacked zip per acquisition) -> qsmci-inputs/"
-for acq in data/harmonization/*/; do
+for acq in data/harmonization/$GLOB/; do
     id=$(basename "$acq")
     [ "$id" = "_align" ] && continue
+    # Resumable: an acquisition already recorded in $MAP was uploaded by an earlier (interrupted) run.
+    if [ -f "$MAP" ] && python3 -c "import json,sys; sys.exit('$id.zip' not in json.load(open('$MAP')))"; then
+        continue
+    fi
     z="$TMP/$id.zip"
     (cd "$acq" && zip -q -r "$z" inputs)
     upload "$z" "$INPUTS_DIR" "$id.zip"
     rm -f "$z"
 done
 
-echo "== raw acquisitions (corrected sidecars) -> raw/"
+if [ -f data/harmonization/emtp_manifest.json ]; then
+    upload data/harmonization/emtp_manifest.json "$RAW_DIR" emtp_manifest.json
+fi
+
 RAW=data/2026_08_20_bays_4_5_qsm_harmonization
+[ -d "$RAW" ] || { echo "done (no pilot raw tree) — files listed in $MAP; project: https://osf.io/$PROJECT/"; exit 0; }
+echo "== raw acquisitions (corrected sidecars) -> raw/"
 for scanner in prisma cima; do
     for proto in bridge local pulseq_online pulseq_offline; do
         [ -d "$RAW/$scanner/$proto" ] || continue

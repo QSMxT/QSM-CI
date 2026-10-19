@@ -372,45 +372,122 @@ async function loadAlgos() { return (await loadAlgoManifest()).algorithms || [];
 // one of these keys; a row WITHOUT the field was scored on its track's default phantom.
 async function loadDatasets() { return (await loadAlgoManifest()).datasets || {}; }
 
-// The harmonization payload (results/repro.json, 8.7 MB / 866 KB gzipped): { pipelines: { "<a+b+c>":
-// {…} }, exclusion_rules: {…} }, written by scripts/repro_eval.py. Read by BOTH the leaderboard's
-// Harmonization dataset and the submission viewer's repro track, so one loader serves both — the two
-// pages used to keep separately-drifting copies of this.
-// Fetched off the critical path: each page kicks it off on idle (so the Harmonization tab can appear
-// on its own) and awaits it only where it genuinely needs the payload before it can render.
-// Memoised on the PROMISE, not the result, so the idle prefetch and a user click that races it share
-// a single download. {} is the tried-and-failed/empty sentinel, never null, so a consumer reading
-// `.pipelines` without a guard cannot throw; the promise memo is what stops a refetch loop.
-let _repro = null;
-async function loadRepro() {
-  if (_repro) return _repro;
-  _repro = (async () => {
-    let data;
+// The harmonization cohorts, in display order (the first is the default): web/algorithms.json's
+// `repro_groups` (scripts/repro_format.py REPRO_GROUPS via gen_manifest.py), each
+//   { id, key, label, description, repro: "results/<stem>.json", regions: "results/<stem>_regions.json" }
+// `id` is the registry `group` of the cohort's acquisitions, `key` its dataset key on results.html
+// (?dataset=repro is the traveling heads, ?dataset=repro-pilot the MGH pilot). Each cohort is its own
+// dataset: its own payloads, subjects, rankings and figures; nothing pools across cohorts. A manifest
+// predating the field gets the one combined payload under the default cohort.
+const REPRO_DEFAULT_GROUP = "harmonization";
+async function loadReproGroups() {
+  const g = (await loadAlgoManifest()).repro_groups;
+  return Array.isArray(g) && g.length ? g
+    : [{ id: REPRO_DEFAULT_GROUP, key: "repro", label: "Harmonization (2026)", description: "",
+         repro: "results/repro.json", regions: "results/repro_regions.json" }];
+}
+// The cohort a registry entry belongs to (an entry without `group` is in the default cohort).
+function reproGroupOf(entry) { return (entry && entry.group) || REPRO_DEFAULT_GROUP; }
+
+// A cohort's harmonization payload: results/<stem>.json, a ~100 KB index (pair list, per-pipeline
+// summary, rejections), plus its per-pair fit columns in results/<stem>_fits.bin (float32 [pipeline ×
+// pair], <1 MB), both written by scripts/repro_eval.py; js/reproBin.js decodes them into the object
+// the pages read (see reproFromIndex there). Read by BOTH the leaderboard's Harmonization datasets and
+// the submission viewer's repro track, so one loader serves both — the two pages used to keep
+// separately-drifting copies of this. The viewer needs only the summary, so the fit columns are
+// fetched only for `{ fits: true }`; both calls share the one index download.
+// Fetched off the critical path: each page kicks it off on idle (so the Harmonization tabs can appear
+// on their own) and awaits it only where it genuinely needs the payload before it can render.
+// Memoised per cohort on the PROMISE, not the result, so the idle prefetch and a user click that races
+// it share a single download. {} is the tried-and-failed/empty sentinel, never null, so a consumer
+// reading `.pipelines` without a guard cannot throw; the promise memo is what stops a refetch loop.
+const _repro = new Map(), _reproFits = new Map(), _reproIndex = new Map();
+// The decoded columns `fields` of a binary descriptor whose index was fetched from `url`. The hash goes
+// on the URL so a browser/CDN cache can never pair a new index with an old .bin; the bytes are then
+// checked against it too (where SubtleCrypto exists) so a stale or truncated file reads as missing
+// rather than as wrong numbers.
+async function loadReproColumns(url, desc, fields) {
+  const base = url.slice(0, url.lastIndexOf("/") + 1), buffers = {};
+  await Promise.all(reproBinFiles(desc, fields).map(async (f) => {
+    const res = await fetch(base + f.file + "?v=" + f.sha256.slice(0, 16));
+    if (!res.ok) throw new Error(`${f.file}: HTTP ${res.status}`);
+    const buf = await res.arrayBuffer();
+    if (window.crypto?.subtle) {
+      const hex = [...new Uint8Array(await crypto.subtle.digest("SHA-256", buf))].map((b) => b.toString(16).padStart(2, "0")).join("");
+      if (hex !== f.sha256) throw new Error(`${f.file} does not match ${url} (stale or truncated)`);
+    }
+    buffers[f.file] = buf;
+  }));
+  return reproDecodeColumns(desc, buffers, fields);
+}
+async function _reproGroup(group) {
+  const gs = await loadReproGroups();
+  return gs.find((g) => g.id === group) || gs[0];
+}
+// `group` is a cohort id (default: the first cohort, the traveling heads).
+async function loadRepro({ fits = false, group } = {}) {
+  const G = await _reproGroup(group), id = G.id;
+  if (!_repro.has(id)) _repro.set(id, (async () => {
+    let index;
     // Check res.ok before parsing, like loadRuns(): a 404/5xx body isn't JSON, and letting
     // res.json() throw would leave the caller with an opaque SyntaxError instead of an empty view.
     try {
-      const res = await fetch("results/repro.json");
-      data = res.ok ? await res.json() : {};
+      const res = await fetch(G.repro);
+      index = res.ok ? await res.json() : {};
     } catch (e) { return {}; }
+    if (!index || !index.fits) return {};
+    const data = reproFromIndex(index);
+    data.group = data.group || id;
+    _reproIndex.set(id, index);
     // Keep only pipelines whose every step is a live, visible method. The harvest (repro_eval.py) now
     // drops methods RETIRED from the manifest, so what's left to filter here are the ones deliberately
-    // kept but hidden — a parked submission like the MATLAB amp-pe, whose data stays in repro.json so
+    // kept but hidden — a parked submission like the MATLAB amp-pe, whose data stays in the payload so
     // it can be revived. loadRuns() applies the same rule to the in-silico runs, and skipping it
     // doesn't just show a parked method: it lets its rows bleed into the axes that cross it (every
     // background-removal row is a pipeline ending in the DEFAULT dipole method, so a parked default
     // blanks the whole axis). The retired case is still handled, for a payload written before this.
     // Filtering HERE — the one place the payload enters the site — is what makes the rule hold on
-    // every table, chart and finding of both pages. loadAlgos() is itself memoised, so awaiting the
-    // manifest costs nothing: both pages have already asked for it by the time this resolves.
+    // every table, chart and finding of both pages. Each kept pipeline keeps its `row` into the fit
+    // columns, so they need no filtering. loadAlgos() is itself memoised, so awaiting the manifest
+    // costs nothing: both pages have already asked for it by the time this resolves.
     const algos = await loadAlgos();
-    if (algos.length && data && data.pipelines) {
+    if (algos.length) {
       const live = new Set(algos.filter((a) => !a.hidden).map((a) => a.slug));
       data.pipelines = Object.fromEntries(
         Object.entries(data.pipelines).filter(([pipe]) => pipe.split("+").every((s) => live.has(s))));
     }
-    return data || {};
-  })();
-  return _repro;
+    return data;
+  })());
+  if (!fits) return _repro.get(id);
+  if (!_reproFits.has(id)) _reproFits.set(id, (async () => {
+    const data = await _repro.get(id);
+    const index = _reproIndex.get(id);
+    if (!index) return data;
+    try {
+      const cols = await loadReproColumns(G.repro, index.fits, ["slope", "ba_bias_ppm"]);
+      data.fits = reproFromIndex(index, cols).fits;
+    } catch (e) { console.error(e); }   // no fits: the views render as empty rather than wrong
+    return data;
+  })());
+  return _reproFits.get(id);
+}
+// A cohort's regional payload (results/<stem>_regions.json index + .bin, a float32 [pipeline ×
+// acquisition × structure] grid of L/R-merged mean χ in ppb, written by scripts/gen_repro_regions.py),
+// decoded by reproRegionsFromIndex. Only the harmonization Findings figures read it. Memoised per
+// cohort like loadRepro(); { runs: {} } when unavailable.
+const _reproRegions = new Map();
+async function loadReproRegions({ group } = {}) {
+  const G = await _reproGroup(group);
+  if (_reproRegions.has(G.id)) return _reproRegions.get(G.id);
+  _reproRegions.set(G.id, (async () => {
+    try {
+      const res = await fetch(G.regions);
+      const index = res.ok ? await res.json() : null;
+      if (!index || !index.values) return { runs: {}, nRuns: 0 };
+      return reproRegionsFromIndex(index, await loadReproColumns(G.regions, index.values));
+    } catch (e) { console.error(e); return { runs: {}, nRuns: 0 }; }
+  })());
+  return _reproRegions.get(G.id);
 }
 
 // The Zenodo method registry (qsm_ci/registry.json), served alongside the site. Maps a method slug
@@ -483,6 +560,61 @@ function heatText(rgb) {
   const c = rgb.match(/\d+/g).map(Number);
   const lum = (0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2]) / 255;
   return lum > 0.62 ? "#1f2937" : "#fff";
+}
+
+// ---- harmonization (repro) acquisitions ------------------------------------------------------
+// The repro track is many subjects, each scanned on one or more scanners with several protocols and
+// runs, in independent cohorts (loadReproGroups). Every acquisition's {subject, scanner, protocol,
+// run} comes from data (the cohort payload's `acquisitions`, else the registry block in
+// algorithms.json): nothing here parses an acquisition id. This map only supplies display names and colours per scanner tag; an unknown tag falls back to
+// the tag itself and a stable colour from the fallback palette.
+const REPRO_SCANNER_META = {
+  prisma:            { label: "Prisma",          long: "MGH · Siemens MAGNETOM Prisma Fit",       c: "#db2777" },
+  cima:              { label: "Cima.X",          long: "MGH · Siemens MAGNETOM Cima.X",            c: "#2563eb" },
+  "kki-achieva":     { label: "KKI Achieva",     long: "KKI · Philips Achieva",                    c: "#0d9488" },
+  "kki-elition":     { label: "KKI Elition X",   long: "KKI · Philips Ingenia Elition X",          c: "#65a30d" },
+  "cbic-mr750":      { label: "CBIC MR750",      long: "Weill Cornell CBIC · GE MR750",            c: "#d97706" },
+  "cbic-prisma":     { label: "CBIC Prisma Fit", long: "Weill Cornell CBIC · Siemens Prisma Fit",  c: "#9333ea" },
+  "umass-skyra":     { label: "UMass Skyra",     long: "UMass · Siemens Skyra",                    c: "#dc2626" },
+  "hamburg-ingenia": { label: "Hamburg Ingenia", long: "Hamburg · Philips Ingenia",                c: "#0891b2" },
+};
+const REPRO_FALLBACK_COLOURS = ["#4f46e5", "#be123c", "#15803d", "#a16207", "#7c3aed", "#0e7490", "#c2410c", "#475569"];
+const REPRO_SUBJECT_LABEL = { mgh: "MGH pilot" };
+function reproScannerLabel(tag) { return REPRO_SCANNER_META[tag]?.label || tag; }
+function reproScannerLong(tag) { return REPRO_SCANNER_META[tag]?.long || tag; }
+function reproScannerColour(tag) {
+  if (REPRO_SCANNER_META[tag]) return REPRO_SCANNER_META[tag].c;
+  let h = 0;
+  for (let i = 0; i < String(tag).length; i++) h = (h * 31 + String(tag).charCodeAt(i)) >>> 0;
+  return REPRO_FALLBACK_COLOURS[h % REPRO_FALLBACK_COLOURS.length];
+}
+function reproProtoLabel(p) { return String(p).replace("pulseq-online", "Pulseq (online)").replace("pulseq-offline", "Pulseq (offline)"); }
+function reproSubjectLabel(s) { return REPRO_SUBJECT_LABEL[s] || s; }
+// id -> {subject, scanner, protocol, run} for every harmonization acquisition, in REGISTRY order
+// (the order repro_eval.py pairs scanners in: the pilot's Prisma before Cima.X, each traveling
+// head's home KKI session first). `payload` is a cohort's repro or regions payload (either may carry
+// `acquisitions`); registry entries fill in anything the payload lacks. With `group`, only that
+// cohort's registry entries count, so one cohort's views never list another's acquisitions.
+function reproAcquisitions(datasetsReg, payload, group) {
+  const fromPayload = (payload && payload.acquisitions) || {};
+  const out = {};
+  const add = (id, v) => {
+    if (!v || out[id] || !v.subject || !v.scanner || !v.protocol || !v.run) return;
+    out[id] = { subject: v.subject, scanner: v.scanner, protocol: v.protocol, run: v.run };
+  };
+  for (const [id, v] of Object.entries(datasetsReg || {}))
+    if (v.track === "repro" && (!group || reproGroupOf(v) === group)) add(id, fromPayload[id] || v);
+  for (const [id, v] of Object.entries(fromPayload)) add(id, v);
+  return out;
+}
+// Subjects in first-appearance order, and subject -> registration-target acquisition.
+function reproSubjects(acqs) { return [...new Set(Object.values(acqs).map((a) => a.subject))]; }
+function reproTargets(datasetsReg, payload, acqs, group) {
+  const t = { ...((payload && payload.targets) || {}) };
+  for (const [id, v] of Object.entries(datasetsReg || {}))
+    if (v.track === "repro" && (!group || reproGroupOf(v) === group) && v.repro_target && v.subject && !t[v.subject]) t[v.subject] = id;
+  for (const [id, a] of Object.entries(acqs || {})) if (!t[a.subject]) t[a.subject] = id;
+  return t;
 }
 
 // Humanised duration: 3s · 1m 2s · 1h 4m 2s (matches the runtime style used across the leaderboard).
@@ -578,4 +710,5 @@ function injectChrome() {
 document.addEventListener("DOMContentLoaded", injectChrome);
 
 // Exposed for module scripts (e.g. the NiiVue viewer, which must be a module for `import`).
-window.QSM = { GH, METRICS, METRIC_ORDER, STAGE_LABEL, MEDALS, loadRuns, loadAlgos, loadDatasets, loadRegistry, loadRepro, loadRunRegions, doiFor, val, fmt, fmtDuration, fmtBytes, metricCols, metricMeta, metricVal, metricColumns, robustRange, heatScale, heatText, REGION_ORDER };
+window.QSM = { GH, METRICS, METRIC_ORDER, STAGE_LABEL, MEDALS, loadRuns, loadAlgos, loadDatasets, loadRegistry, loadRepro, loadReproRegions, loadReproGroups, reproGroupOf, loadRunRegions, doiFor, val, fmt, fmtDuration, fmtBytes, metricCols, metricMeta, metricVal, metricColumns, robustRange, heatScale, heatText, REGION_ORDER,
+  reproScannerLabel, reproScannerLong, reproScannerColour, reproProtoLabel, reproSubjectLabel, reproAcquisitions, reproSubjects, reproTargets };
