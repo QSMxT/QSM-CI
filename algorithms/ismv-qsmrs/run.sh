@@ -13,6 +13,6 @@ CFG="$IN/config.json"
 if [ -f "$CFG" ]; then
   V=$(jq -r '.tol // empty' "$CFG"); [ -n "$V" ] && SET="$SET --tol $V"
   V=$(jq -r '.max_iter // empty' "$CFG"); [ -n "$V" ] && SET="$SET --max-iter $V"
-  V=$(jq -r '.radius_factor // empty' "$CFG"); [ -n "$V" ] && SET="$SET --radius-factor $V"
+  V=$(jq -r '.radius // empty' "$CFG"); [ -n "$V" ] && SET="$SET --radius $V"
 fi
 qsmxt bgremove ismv "$IN/totalfield.nii.gz" -m "$IN/mask.nii.gz" -o "$OUT/localfield.nii.gz" --b0-direction $B0 $SET

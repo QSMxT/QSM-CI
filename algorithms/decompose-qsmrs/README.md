@@ -30,7 +30,7 @@ DECOMPOSE's separation step is isolated from any upstream QSM error.
   2021;242:118477 · doi:[10.1016/j.neuroimage.2021.118477](https://doi.org/10.1016/j.neuroimage.2021.118477).
   (Note: the sibling `decompose-qsm` manifest carries `10.1016/j.neuroimage.2021.118735`, which
   Crossref resolves to a different NeuroImage paper; 118477 is this article.)
-- **Image:** `ghcr.io/astewartau/qsm-ci/qsmxt:v9.16.0` — the shared QSMxT engine image
+- **Image:** `ghcr.io/astewartau/qsm-ci/qsmxt:v10.0.0` — the shared QSMxT engine image
   ([`algorithms/_qsmxt`](../_qsmxt)), already used by the other QSM.rs ports. No new image and no
   Dockerfile: `run.sh` is mounted at run time.
 - **Runner:** the default hosted tier (see *Runtime* below).
@@ -47,11 +47,12 @@ qsmxt separate decompose --qsm chimap.nii.gz -m mask.nii.gz -o $WORK/dec \
   --field-strength <B0> --b0-direction <B0_dir> [--n-inner N] [--chi-bound PPM] [--max-lm-iter N]
 ```
 
-`-o` is a *prefix*: the CLI writes `{prefix}_paramagnetic.nii`, `{prefix}_diamagnetic.nii` and
-`{prefix}_total.nii`. The diamagnetic map already comes out as the positive magnitude |χ−|
+`-o` is a *prefix*: the CLI writes `{prefix}_desc-paramagnetic_Chimap.nii`,
+`{prefix}_desc-diamagnetic_Chimap.nii` and `{prefix}_desc-total_Chimap.nii` (the pipeline's BIDS
+names, since qsmxt v10.0.0; earlier releases wrote `{prefix}_paramagnetic.nii` etc.). The diamagnetic map already comes out as the positive magnitude |χ−|
 (qsmxt negates qsm-core's signed χ− in `commands/separate.rs::save_result`), which is what
 [`CONTRACT.md`](../../CONTRACT.md) asks for, so publishing is a straight gzip with no sign flip;
-`_total.nii` is not a stage artifact and is dropped.
+the total map is not a stage artifact and is dropped.
 
 Locally:
 

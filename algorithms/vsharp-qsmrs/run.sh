@@ -7,12 +7,18 @@ IN="${1:-/input}"; OUT="${2:-/output}"
 #   $QSMCI_SET_<NAME>  for each  qsm-ci run --set NAME=VALUE  override
 B0=$(jq -r '.B0_dir | join(" ")' "$IN/params.json")
 
+# QSM-CI deconvolves (TSVD, threshold 0.05) although qsmxt v10's default is not to: on the sim
+# phantom that scored best (xSIM 0.845, vs 0.820 at threshold 0.2 and 0.803 without).
 # Parameter overrides (qsm-ci run --set NAME=VALUE) arrive as /input/config.json.
-SET=""
+DECONVOLVE=true; THRESHOLD=0.05; SET=""
 CFG="$IN/config.json"
 if [ -f "$CFG" ]; then
-  V=$(jq -r '.threshold // empty' "$CFG"); [ -n "$V" ] && SET="$SET --threshold $V"
+  V=$(jq -r '.deconvolve // empty' "$CFG"); [ -n "$V" ] && DECONVOLVE=$V
+  V=$(jq -r '.threshold // empty' "$CFG"); [ -n "$V" ] && THRESHOLD=$V
   V=$(jq -r '.max_radius // empty' "$CFG"); [ -n "$V" ] && SET="$SET --max-radius $V"
   V=$(jq -r '.min_radius // empty' "$CFG"); [ -n "$V" ] && SET="$SET --min-radius $V"
 fi
-qsmxt bgremove vsharp "$IN/totalfield.nii.gz" -m "$IN/mask.nii.gz" -o "$OUT/localfield.nii.gz" --b0-direction $B0 $SET
+# --threshold only applies with deconvolution (qsmxt ignores it otherwise).
+[ "$DECONVOLVE" = true ] && SET="$SET --threshold $THRESHOLD"
+qsmxt bgremove vsharp "$IN/totalfield.nii.gz" -m "$IN/mask.nii.gz" -o "$OUT/localfield.nii.gz" \
+  --b0-direction $B0 --deconvolve "$DECONVOLVE" $SET

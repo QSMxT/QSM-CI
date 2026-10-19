@@ -16,8 +16,8 @@ qsmxt bgremove ismv /input/totalfield.nii.gz -m /input/mask.nii.gz -o /output/lo
 
 | parameter | default | description |
 |---|---|---|
-| `tol` | 1e-4 | tolerance |
-| `max_iter` | 100 | iterations |
-| `radius_factor` | 2.0 | × max voxel size |
+| `tol` | 1e-6 | tolerance |
+| `max_iter` | 50 | iterations |
+| `radius` | 5.0 | SMV kernel radius (mm) |
 
 _Citations/DOIs are auto-generated best-effort references and should be verified._

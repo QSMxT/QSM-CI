@@ -46,8 +46,8 @@ smoke_box: 32   # PR --smoke gate fits a 32^3 central box (fast); full score.yml
 runner: manual
 timeout_minutes: 2880   # honored on self-hosted/manual only; ~4 h/run with the box to itself
 jobs: 1                 # one optimization at a time — each one already uses every core
-compose:                # composed only with the GT field map on the two reference BFR methods
-  fieldmaps: [gt]
+compose:                # the two reference BFR methods on the GT field map and the two QSMxT field maps
+  fieldmaps: [gt, romeo-qsmrs, laplacian-qsmrs]   # real field maps keep it on no-GT tracks (repro)
   bfrs: [vsharp-qsmrs, pdf-qsmrs]
 # Notes on how QSM-CI runs this method vs. its reference (shown on the submission page).
 ci_notes:

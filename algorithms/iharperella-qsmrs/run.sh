@@ -1,20 +1,16 @@
 #!/usr/bin/env bash
-# QSM-CI submission — iHARPERELLA (unwrap+bfr stage) via QSMxT / QSM.rs.
+# QSM-CI submission — iHARPERELLA (bfr stage) via QSMxT / QSM.rs.
 set -euo pipefail
 IN="${1:-/input}"; OUT="${2:-/output}"
 
-# iHARPERELLA operates on the first echo's phase; --te (that echo's TE) and --field-strength convert
-# its tissue-phase output from radians to ppm (qsmxt >= v9.7.0).
-B0=$(jq -r '.B0' "$IN/params.json")
-TE=$(jq -r '.TE[0]' "$IN/params.json")
-
+# iHARPERELLA on the multi-echo total field in ppm (no --te/--field-strength, so qsmxt reads the input
+# as an unwrapped field and uses the ordinary Laplacian), as `qsmxt run` does. The published method
+# starts from one wrapped echo instead; on in-vivo data a single echo was far noisier.
 # Parameter overrides (qsm-ci run --set NAME=VALUE) arrive as /input/config.json.
 SET=""
 CFG="$IN/config.json"
 if [ -f "$CFG" ]; then
-  V=$(jq -r '.radius // empty' "$CFG"); [ -n "$V" ] && SET="$SET --radius $V"
   V=$(jq -r '.max_iter // empty' "$CFG"); [ -n "$V" ] && SET="$SET --max-iter $V"
   V=$(jq -r '.tol // empty' "$CFG"); [ -n "$V" ] && SET="$SET --tol $V"
 fi
-qsmxt bgremove iharperella "$IN/phase.nii.gz" -m "$IN/mask.nii.gz" -o "$OUT/localfield.nii.gz" \
-  --te "$TE" --field-strength "$B0" $SET
+qsmxt bgremove iharperella "$IN/totalfield.nii.gz" -m "$IN/mask.nii.gz" -o "$OUT/localfield.nii.gz" $SET
