@@ -18,10 +18,9 @@ description: >
   channel [wrapped phase]); a TEST-TIME Deep-Image-Prior (DIP) loop then fine-tunes that network on
   the specific input under a Laplacian-consistency loss and a masked total-variation loss. DIP-UP only
   unwraps ONE echo, so this wrapper runs it on EACH echo and then does the standard per-voxel linear
-  fit of unwrapped phase over TE, normalized by B0, to produce the total field in ppm — the SAME
-  echo-fit + ppm math as the reference laplacian-qsmci / romeo-qsmrs submissions. The novelty
-  benchmarked is DIP-UP's unwrap operator swapped in for the Laplacian/ROMEO unwrap; the downstream
-  echo-fit is identical. GPU-capable, CPU-optional (the reference recommends a 16–24 GB GPU; see
+  fit of unwrapped phase over TE, normalized by B0, to produce the total field in ppm (unweighted,
+  unlike the weighted multi-echo combination of laplacian-qsmrs / romeo-qsmrs). The novelty
+  benchmarked is DIP-UP's unwrap operator swapped in for the Laplacian/ROMEO unwrap. GPU-capable, CPU-optional (the reference recommends a 16–24 GB GPU; see
   README RUNTIME/GPU CAVEAT). DOMAIN-SHIFT CAVEAT: the base net was trained on real brain GRE phase at
   a specific resolution/TE/field, so its wrap-count prediction may not transfer to the sim phantom's
   wrap patterns — see README.
@@ -55,7 +54,7 @@ ci_notes:
 - >
   DIP-UP is a single-echo PHASE-UNWRAPPING network; it does not itself produce a total field. QSM-CI
   runs it per echo and appends the standard multi-echo linear phase-fit + B0 normalization
-  (identical to laplacian-qsmci / romeo-qsmrs) to obtain totalfield in ppm.
+  (unweighted; laplacian-qsmrs / romeo-qsmrs use QSMxT's weighted combination) to obtain totalfield in ppm.
 - >
   The DIP-UP repo does not ship the Unet_blocks.py its network classes import; it is reconstructed in
   this submission to be byte-compatible with the released checkpoints (PHU-NET3D width 64, PhaseNet3D

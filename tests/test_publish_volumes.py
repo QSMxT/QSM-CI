@@ -279,8 +279,8 @@ def test_prune_substring_does_not_match_the_longer_flags():
 # keep-set built from runs alone called all 621 of them orphans on a live repo.
 
 INTERMEDIATES = ["repro/acq1/acq1__magnitude.nii.gz",
-                 "repro/acq1/laplacian-qsmci__totalfield.nii.gz",
-                 "repro/acq1/laplacian-qsmci_vsharp-qsmrs__localfield.nii.gz"]
+                 "repro/acq1/laplacian-qsmrs__totalfield.nii.gz",
+                 "repro/acq1/laplacian-qsmrs_vsharp-qsmrs__localfield.nii.gz"]
 
 
 def test_shared_intermediates_are_never_pruned():
@@ -686,7 +686,7 @@ def test_a_focused_rescore_never_deletes_another_runs_only_copy_in_a_bucket_it_t
 # repro.json and the acquisition registry. These pin that derivation (a drift here deletes live files).
 
 ACQS = frozenset({"cima-bridge-run1", "prisma-local-run2"})
-PIPES = ["romeo-qsmrs+vsharp-qsmrs+rts-qsmrs", "laplacian-qsmci+nextqsm", "iqsm"]
+PIPES = ["romeo-qsmrs+vsharp-qsmrs+rts-qsmrs", "laplacian-qsmrs+nextqsm", "iqsm"]
 A = "repro/cima-bridge-run1/"
 
 
@@ -694,24 +694,24 @@ def test_repro_live_names_cover_every_kind_the_viewer_derives():
     live = pv.repro_live_names(PIPES, ACQS)
     assert A + "romeo-qsmrs_vsharp-qsmrs_rts-qsmrs-cmp-cima-bridge-run1__recon.nii.gz" in live
     assert A + "romeo-qsmrs_vsharp-qsmrs_rts-qsmrs-cmp-cima-bridge-run1__regions.json" in live
-    assert A + "laplacian-qsmci_nextqsm-cmp-cima-bridge-run1__resources.json" in live
+    assert A + "laplacian-qsmrs_nextqsm-cmp-cima-bridge-run1__resources.json" in live
     assert A + "iqsm-cmp-cima-bridge-run1__recon.nii.gz" in live
-    assert {A + "romeo-qsmrs__totalfield.nii.gz", A + "laplacian-qsmci__totalfield.nii.gz"} <= live
+    assert {A + "romeo-qsmrs__totalfield.nii.gz", A + "laplacian-qsmrs__totalfield.nii.gz"} <= live
     assert A + "romeo-qsmrs_vsharp-qsmrs__localfield.nii.gz" in live
     assert not any("localfield" in n and "nextqsm" in n for n in live)   # a 2-part pipeline has no bfr column
     assert A + "cima-bridge-run1__magnitude.nii.gz" in live
     assert len(live) == 2 * (1 + 3 * 3 + 2 + 1)      # per acq: magnitude, 3 kinds × 3 pipes, 2 tf, 1 lf
 
 
-SLUGS = frozenset({"romeo-qsmrs", "laplacian-qsmci", "vsharp-qsmrs", "rts-qsmrs", "nextqsm", "iqsm", "modip"})
+SLUGS = frozenset({"romeo-qsmrs", "laplacian-qsmrs", "vsharp-qsmrs", "rts-qsmrs", "nextqsm", "iqsm", "modip"})
 
 
 def test_repro_orphans_split_retired_from_merely_unharvested():
     """Retired = no live pipeline names it AND it names a method outside the manifest. A file built
     only from live methods that repro.json lacks (no ROI stats yet) is the only copy: kept."""
     live = pv.repro_live_names(PIPES, ACQS)
-    retired = [A + "romeo-qsmrs_msmv_rts-qsmrs-cmp-cima-bridge-run1__recon.nii.gz",   # msmv: gone
-               A + "romeo-qsmrs_msmv__localfield.nii.gz"]                              # its column
+    retired = [A + "romeo-qsmrs_retired-bfr_rts-qsmrs-cmp-cima-bridge-run1__recon.nii.gz",   # retired-bfr: gone
+               A + "romeo-qsmrs_retired-bfr__localfield.nii.gz"]                              # its column
     unharvested = [A + "romeo-qsmrs_vsharp-qsmrs_modip-cmp-cima-bridge-run1__recon.nii.gz",  # GPU run, no stats
                    A + "romeo-qsmrs_vsharp-qsmrs_modip-cmp-cima-bridge-run1__resources.json"]
     files = sorted(live) + retired + unharvested + [
@@ -766,7 +766,7 @@ def _prune_repro(tmp_path, monkeypatch, hub, pipelines, *argv, slugs=SLUGS):
     return pv.main()
 
 
-RETIRED = A + "romeo-qsmrs_msmv_rts-qsmrs-cmp-cima-bridge-run1__recon.nii.gz"
+RETIRED = A + "romeo-qsmrs_retired-bfr_rts-qsmrs-cmp-cima-bridge-run1__recon.nii.gz"
 
 
 UNHARVESTED = A + "romeo-qsmrs_vsharp-qsmrs_modip-cmp-cima-bridge-run1__recon.nii.gz"

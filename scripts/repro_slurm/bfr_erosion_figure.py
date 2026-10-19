@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 """Dumbbell chart: per-BFR inter-scanner reproducibility, un-eroded vs 1-eroded input mask.
 Shows erosion 'levelling the field' — the boundary-sensitive BFRs (lbv/harperella/vsharp) collapse
-toward the already-robust ones (vsharp-sti/resharp), which barely move. (The original figure
-also showed msmv, since removed from QSM-CI and so absent from any repro.json regenerated after
-2026-09.)
+toward the already-robust ones (vsharp-sti/resharp), which barely move.
 
 Usage: bfr_erosion_figure.py <eroded repro.json> <un-eroded repro.json> <out.png>
 """
