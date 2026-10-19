@@ -7,6 +7,7 @@ language: Rust
 family: iterative
 learning: none
 engine: QSMxT / QSM.rs
+qsmxt_args: [--vsharp-deconvolve true, --vsharp-threshold 0.05]   # run.sh deconvolves at 0.05; `qsmxt run` V-SHARP does not deconvolve by default
 description: >
   Variable-radius SHARP: background removal by SMV filtering with a spatially varying kernel radius
   (largest kernel that fits at each voxel), then a truncated-SVD deconvolution of the SMV high-pass.

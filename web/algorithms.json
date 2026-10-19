@@ -2908,6 +2908,10 @@
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",
       "algorithm": "vsharp",
+      "qsmxt_args": [
+        "--vsharp-deconvolve true",
+        "--vsharp-threshold 0.05"
+      ],
       "language": "Rust",
       "family": "iterative",
       "learning": "none",

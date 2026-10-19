@@ -10,10 +10,8 @@
 // Pure (no DOM), so tests/test_web_qsmxt_command.py can run it under node.
 
 // Stage -> `qsmxt run` flag. Stages missing here have no faithful equivalent:
-// - unwrap+bfr (HARPERELLA, iHARPERELLA): `qsmxt run` always unwraps and fits the field first and
-//   runs `--bf-algorithm harperella` on that unwrapped total field, while QSM-CI runs it on the
-//   wrapped first-echo phase, so the command would describe a different pipeline.
 // - brain-extraction, chi-separation, r2prime-generation: not `qsmxt run` reconstruction stages.
+// HARPERELLA and iHARPERELLA are ordinary bfr steps on the total field, as `qsmxt run` runs them.
 // bfr+dipole (TGV, TFI, QSMART) and end-to-end inversions are a single `--qsm-algorithm`: QSMxT skips
 // its own background-removal stage for them.
 const QSMXT_FLAG = {
