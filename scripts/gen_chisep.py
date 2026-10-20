@@ -11,6 +11,8 @@ THE SHIPPED PHANTOMS are the qsm-forward presets of the same name:
   ridani-3t-iso / -3t-aniso / -7t-aniso   as published by Ridani et al. (noiseless, native grid)
   decompose-3t / -3t-noise       ridani-3t-aniso sources at 1 mm with DECOMPOSE's three-pool
                                  signal (matched to DECOMPOSE, as chisep-mc is to HC-ChiSep)
+  decompose-3t-chen / -chen-noise   the same with Chen et al. 2021's in vivo protocol (16 echoes,
+                                 2.7-46.2 ms)
 
   python scripts/gen_chisep.py --preset chisep-mc \\
       --wm-rois-src <Masks/WM_fibers_seg.nii.gz from OSF 9xwhz> --out data/sim/chisep-mc
@@ -46,20 +48,24 @@ import nibabel as nib
 # Phantoms that also give methods the tissue segmentation (inputs/dseg.nii.gz, a copy of the
 # ground-truth dseg): the Ridani family, whose analytic baseline (ridani-null-qsmci) solves white
 # matter (label 8) separately.
-INPUT_DSEG = ("ridani-3t-iso", "ridani-3t-aniso", "ridani-7t-aniso", "decompose-3t", "decompose-3t-noise")
+INPUT_DSEG = ("ridani-3t-iso", "ridani-3t-aniso", "ridani-7t-aniso", "decompose-3t", "decompose-3t-noise",
+              "decompose-3t-chen", "decompose-3t-chen-noise")
 
 
 def mask_derived_to_brain(out: Path):
     """Restrict the derived maps and ground truth to the brain, leaving the raw
     phase/magnitude (which carry the whole-head background field) untouched."""
     m = nib.load(str(out / "inputs" / "mask.nii.gz")).get_fdata() > 0
-    for rel in ("inputs/chimap.nii.gz", "inputs/r2prime.nii.gz", "inputs/localfield.nii.gz",
+    for rel in ("inputs/chimap.nii.gz", "inputs/chimap-echoes.nii.gz", "inputs/r2prime.nii.gz",
+                "inputs/localfield.nii.gz",
                 "inputs/r2.nii.gz",
                 "groundtruth/chi-para.nii.gz", "groundtruth/chi-dia.nii.gz", "groundtruth/chimap.nii.gz"):
         p = out / rel
         if p.exists():
             im = nib.load(str(p))
-            nib.save(nib.Nifti1Image((im.get_fdata() * m).astype(np.float32), im.affine, im.header), str(p))
+            d = im.get_fdata()
+            mb = m.reshape(m.shape + (1,) * (d.ndim - m.ndim))
+            nib.save(nib.Nifti1Image((d * mb).astype(np.float32), im.affine, im.header), str(p))
 
 
 def write_maps_dataset(out: Path, maps, full_head: bool):
