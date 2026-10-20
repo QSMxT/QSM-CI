@@ -66,6 +66,12 @@ light enough to run locally.
   [3] Shin H.G. et al. NeuroImage 2021;240:118371. doi:10.1016/j.neuroimage.2021.118371
   [4] Yablonskiy D.A., Haacke E.M. Magn Reson Med 1994;32(6):749-763. doi:10.1002/mrm.1910320610
 
+DECOMPOSE-MATCHED PHANTOMS (--preset decompose-3t / decompose-3t-noise; qsm-forward with
+chisep_decompose support): the ridani-3t-aniso sources and protocol at 1 mm, with the GRE signal
+from DECOMPOSE's three-pool model in every voxel. As chisep-mc is for HC-ChiSep, these are matched
+to one method family: read DECOMPOSE's scores on them as "what is recoverable when the model class
+is right". Pass --wm-rois-src as for the other phantoms.
+
 Usage (qsm-forward venv):
   python scripts/gen_chisep.py --maps-only --validate                        # cheap χ+/χ-/R2' check
   python scripts/gen_chisep.py --out data/sim/chisep                         # full sim (compute node)
@@ -110,6 +116,16 @@ RIDANI_PRESETS = {
     "ridani-3t-iso":   dict(b0=3.0, tes="3,7,11,15,19,23", isotropic=True, **_RIDANI_COMMON),
     "ridani-3t-aniso": dict(b0=3.0, tes="3,7,11,15,19,23", isotropic=False, **_RIDANI_COMMON),
     "ridani-7t-aniso": dict(b0=7.0, tes="4,12,20,28", isotropic=False, **_RIDANI_COMMON),
+}
+# DECOMPOSE-matched phantoms: the ridani-3t-aniso sources and protocol, with the GRE signal
+# from DECOMPOSE's three-pool model (paramagnetic, diamagnetic and neutral pools) instead of a
+# mono-exponential decay, at 1 mm. The shipped R2' is derived from that signal. The "-noise"
+# variant adds complex Gaussian noise at peak SNR 100.
+_DECOMPOSE_COMMON = dict(b0=3.0, tes="3,7,11,15,19,23", isotropic=False, dr_model="scaled",
+                         no_se=True, r2_input=True, voxel=1.0, decompose=True)
+DECOMPOSE_PRESETS = {
+    "decompose-3t":       dict(noiseless=True, **_DECOMPOSE_COMMON),
+    "decompose-3t-noise": dict(noiseless=False, **_DECOMPOSE_COMMON),
 }
 
 
@@ -189,6 +205,13 @@ def main() -> None:
                     help="enable the hollow-cylinder 3-pool WM GRE signal (qsm-forward PR #7): θ-dependent "
                          "non-mono-exponential decay makes WM anisotropy recoverable from the signal. "
                          "Native-resolution path only.")
+    ap.add_argument("--decompose", action="store_true",
+                    help="GRE signal from DECOMPOSE's three-pool model (Chen et al. 2021): paramagnetic, "
+                         "diamagnetic and neutral water pools, each with its own decay and frequency, in "
+                         "every voxel; the shipped R2' is derived from that signal. Exclusive with "
+                         "--multicompartment.")
+    ap.add_argument("--decompose-chi-c", type=float, default=None,
+                    help="pool susceptibility |chi_c| in ppm for --decompose (qsm-forward default 0.2)")
     ap.add_argument("--tes", default=None,
                     help="comma-separated GRE TEs in ms (default: 4,12,20,28); e.g. a denser train for "
                          "the multicompartment myelin-water beat")
@@ -207,17 +230,21 @@ def main() -> None:
     ap.add_argument("--r2-input", action="store_true",
                     help="ship the ground-truth R2 map as inputs/r2.nii.gz (the Ridani evaluation "
                          "convention: methods fit R2* from the GRE and use R2' = R2*_fit - R2_GT)")
-    ap.add_argument("--preset", choices=sorted(RIDANI_PRESETS),
+    ap.add_argument("--preset", choices=sorted({**RIDANI_PRESETS, **DECOMPOSE_PRESETS}),
                     help="as-published Ridani et al. (MRM 10.1002/mrm.70468) configurations: sets B0, "
-                         "echo train, iso/aniso, scaled Dr, noiseless, GRE-only + r2 input")
+                         "echo train, iso/aniso, scaled Dr, noiseless, GRE-only + r2 input; or a "
+                         "DECOMPOSE-matched configuration (decompose-3t, decompose-3t-noise)")
     ap.add_argument("--maps-only", action="store_true", help="only build χ+/χ-/R2' (+ maps dataset), no sim")
     ap.add_argument("--validate", action="store_true", help="run validate_phantom.py on the written dataset")
     args = ap.parse_args()
     if args.preset:
-        for k, v in RIDANI_PRESETS[args.preset].items():
+        for k, v in {**RIDANI_PRESETS, **DECOMPOSE_PRESETS}[args.preset].items():
             setattr(args, k, v)
         print(f"Preset {args.preset}: B0={args.b0}T TEs={args.tes} isotropic={args.isotropic} "
-              f"dr_model={args.dr_model} noiseless, GRE-only (+ inputs/r2)")
+              f"dr_model={args.dr_model} noiseless={args.noiseless} decompose={args.decompose}, "
+              f"GRE-only (+ inputs/r2)")
+    if args.decompose and args.multicompartment:
+        sys.exit("--decompose and --multicompartment are separate signal models; pick one.")
 
     try:
         import qsm_forward as q
@@ -325,6 +352,7 @@ def main() -> None:
             save_field=True, save_chi_pos=True, save_chi_neg=True, save_r2prime=True,
             dr_pos_map=dr_pos_sim, dr_neg_map=dr_neg_sim, dr=DR_FIXED_POS,
             chisep_signal=True, chisep_multicompartment=args.multicompartment,
+            chisep_decompose=args.decompose, chisep_decompose_chi_c=args.decompose_chi_c,
             save_se=not args.no_se, save_r2=args.r2_input,
             **extra,
         )
