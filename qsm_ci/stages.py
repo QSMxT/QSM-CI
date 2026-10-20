@@ -36,6 +36,7 @@ ARTIFACT_FILE = {
     "params": "params.json", "totalfield": "totalfield.nii.gz",
     "localfield": "localfield.nii.gz", "chimap": "chimap.nii.gz",
     "r2prime": "r2prime.nii.gz", "chi-para": "chi-para.nii.gz", "chi-dia": "chi-dia.nii.gz",
+    "chimap-echoes": "chimap-echoes.nii.gz",
 }
 
 # Unit and rank of each canonical artifact — mirrors the `units:`/`ndim:` of stages.yml (checked by
@@ -45,14 +46,19 @@ ARTIFACT_FILE = {
 ARTIFACT_UNIT = {
     "phase": "rad", "magnitude": "a.u.", "mask": "binary",
     "totalfield": "ppm", "localfield": "ppm", "chimap": "ppm",
-    "r2prime": "Hz", "chi-para": "ppm", "chi-dia": "ppm",
+    "r2prime": "Hz", "chi-para": "ppm", "chi-dia": "ppm", "chimap-echoes": "ppm",
 }
 
 ARTIFACT_NDIM = {
     "phase": 4, "magnitude": 4, "mask": 3,
     "totalfield": 3, "localfield": 3, "chimap": 3,
-    "r2prime": 3, "chi-para": 3, "chi-dia": 3,
+    "r2prime": 3, "chi-para": 3, "chi-dia": 3, "chimap-echoes": 4,
 }
+
+# Inputs only some datasets provide (the per-echo QSM ships with the χ-separation phantoms that have
+# it). A method opts in via `optional_inputs:`; the scorer mounts the file when the dataset has it and
+# otherwise runs the method without it, so its run.sh must guard for the file being absent.
+DATASET_OPTIONAL_ARTIFACTS = {"chimap-echoes"}
 
 # how each produced artifact is scored: 'field' (total/local field), 'chi' (susceptibility), or
 # 'chisep' (a single χ+/χ− source-separation component). r2prime is a consumed relaxation input.

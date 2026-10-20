@@ -451,7 +451,8 @@
         "chimap",
         "magnitude",
         "mask",
-        "params"
+        "params",
+        "chimap-echoes"
       ],
       "domain": "chisep",
       "engine": "Independent",
@@ -459,7 +460,7 @@
       "language": "MATLAB",
       "family": "iterative",
       "learning": "none",
-      "description": "DECOMPOSE-QSM \u2014 a signal-domain susceptibility source separation. Unlike the R2'-based methods it fits the multi-echo COMPLEX GRE signal per voxel with a 3-stage alternating non-linear least-squares fit (lsqcurvefit) to split \u03c7 into paramagnetic (\u03c7+, iron) and diamagnetic (\u03c7\u2212, myelin/calcium) sources. Uses the provided \u03c7_total (chimap) for the signal's phase term (\u03c7 is echo-independent), which isolates DECOMPOSE's separation step from any upstream QSM error. Tim Ho's open MATLAB re-implementation of DECOMPOSE.",
+      "description": "DECOMPOSE-QSM \u2014 a signal-domain susceptibility source separation. Unlike the R2'-based methods it fits the multi-echo COMPLEX GRE signal per voxel with a 3-stage alternating non-linear least-squares fit (lsqcurvefit) to split \u03c7 into paramagnetic (\u03c7+, iron) and diamagnetic (\u03c7\u2212, myelin/calcium) sources. The fitted data are built from the magnitude and a QSM of each echo, y(t) = M(t)\u00b7exp(\u2212i\u00b7(2/3)\u00b7\u03c7(t)\u00b7\u03b3\u00b7B0\u00b7t) (the paper's Eq. 4), read from the phantom's per-echo QSM (chimap-echoes) when present, else \u03c7_total (chimap) for every echo. \u03c7+ is the PCS (Eq. 6) and \u03c7\u2212 the DCS (Eq. 7), as the paper defines them. Tim Ho's open MATLAB re-implementation of DECOMPOSE.",
       "citation": "Chen J., Gong N.-J., Chaim K.T., Otaduy M.C.G., Liu C., \"Decompose quantitative susceptibility mapping (QSM) to sub-voxel diamagnetic and paramagnetic components based on gradient-echo MRI data\", NeuroImage 2021;242:118477.\n",
       "doi": "10.1016/j.neuroimage.2021.118477",
       "code_url": "https://github.com/timwahoo/DECOMPOSE-QSM",
@@ -484,7 +485,8 @@
         "chimap",
         "magnitude",
         "mask",
-        "params"
+        "params",
+        "chimap-echoes"
       ],
       "domain": "chisep",
       "engine": "QSMxT / QSM.rs",
@@ -492,7 +494,7 @@
       "language": "Rust",
       "family": "iterative",
       "learning": "none",
-      "description": "DECOMPOSE-QSM (Chen et al. 2021) \u2014 signal-domain susceptibility source separation, as the Rust implementation in QSM.rs exposed by `qsmxt separate decompose`. Unlike the R2'-based methods it fits the multi-echo COMPLEX GRE signal per voxel: a three-stage alternating bounded least-squares fit of {C+, C\u2212, C0, R2*_0, \u03c7+, \u03c7\u2212}, repeated n_inner times, then reconstructs each source from the fitted parameters as a per-compartment phase accumulation. Like the compiled-MATLAB entry (decompose-qsm) the signal's phase term is synthesized from the provided \u03c7_total (chimap) rather than re-derived from raw phase \u2014 \u03c7 is echo-independent, so this isolates DECOMPOSE's separation step from any upstream QSM error and drops the STI-Suite dependency. Needs no R2' and no local field: \u03c7_total plus the multi-echo magnitude only (GRE-only).",
+      "description": "DECOMPOSE-QSM (Chen et al. 2021) \u2014 signal-domain susceptibility source separation, as the Rust implementation in QSM.rs exposed by `qsmxt separate decompose`. It fits the multi-echo complex GRE signal per voxel: the data are built from the magnitude and a QSM of each echo, y(t) = M(t)\u00b7exp(\u2212i\u00b7(2/3)\u00b7\u03c7(t)\u00b7\u03b3\u00b7B0\u00b7t) (the paper's Eq. 4), and fitted with a three-stage alternating bounded least-squares of {C+, C\u2212, C0, R2*_0, \u03c7+, \u03c7\u2212}, repeated n_inner times; each source is then reconstructed from the fitted parameters as a per-compartment phase accumulation (\u03c7+ from the paramagnetic sub-model, PCS, Eq. 6; \u03c7\u2212 from the diamagnetic one, DCS, Eq. 7). Reads the per-echo QSM (chimap-echoes) when the phantom provides it; without it, \u03c7_total (chimap) stands in for every echo, which runs but removes the echo dependence the method separates on. Needs no R2' and no local field (GRE-only).",
       "citation": "Chen J., Gong N.-J., Chaim K.T., Otaduy M.C.G., Liu C., \"Decompose quantitative susceptibility mapping (QSM) to sub-voxel diamagnetic and paramagnetic components based on gradient-echo MRI data\", NeuroImage 2021;242:118477.\n",
       "doi": "10.1016/j.neuroimage.2021.118477",
       "code_url": "https://github.com/astewartau/QSM.rs",
@@ -524,7 +526,8 @@
         }
       ],
       "ci_notes": [
-        "The two DECOMPOSE entries use OPPOSITE paramagnetic/diamagnetic output mappings, so their \u03c7+ and \u03c7\u2212 maps may disagree \u2014 comparing them is a purpose of this submission, not a bug. Both reconstruct each source from the fitted parameters as a per-compartment phase accumulation; what differs is which sub-model carries which source. The MATLAB reference's demo writes DSC\u2192\"XPSC\" and PSC\u2192\"XDSC\", and decompose-qsm/recon.m follows that swap (\u03c7+ = |DSC|). The Rust port does not: its module header records that on the qsm-forward phantom the swapped mapping anti-correlates with the ground truth while the physically-consistent one (\u03c7+ = |PSC|, from the paramagnetic sub-model) correlates strongly, so it emits \u03c7+ = |PSC|, \u03c7\u2212 = \u2212|DSC|. On an independent synthetic case generated from the paper's own signal model, this port's \u03c7+ correlated +1.000 with the true \u03c7+ and \u22120.03 with the true \u03c7\u2212. Scoring both entries on the QSM-CI phantoms is the direct test.\n",
+        "Input: the paper requires a TE-dependent QSM (one \u03c7 map per echo). The phantom's chimap-echoes.nii.gz is used when present and the image's qsmxt accepts a 4D --qsm; the pinned v10.0.0 image predates that, so until the image is bumped to a QSMxT release with per-echo input, run.sh falls back to \u03c7_total for every echo and says so in the log.\n",
+        "Output mapping: \u03c7+ = |PCS| (paramagnetic sub-model, Eq. 6) and \u03c7\u2212 = \u2212|DCS| (Eq. 7), as the paper defines them. The MATLAB reference demo writes DSC to the file 'XPSC' and PSC to 'XDSC'; that filename swap is not followed here, nor (since this change) in decompose-qsm/recon.m.\n",
         "Same algorithm as the compiled-MATLAB entry decompose-qsm, in Rust, on the shared QSMxT engine image \u2014 no new container image. Measured here at ~1.5e3 fitted voxels/s on a single core (12568-voxel synthetic fit, 6 echoes, n_inner=10, 14-core desktop), i.e. ~15-20 min for the 1.31 M-voxel chisep-mc phantom and ~1 h for the 5.0 M-voxel Ridani phantoms, against the MATLAB entry's measured 4.1 h (chisep-mc) / 10.3 h (ridani-3t-aniso) on a 16-core box and a never-finished ridani-3t-iso. run.sh pins the fit to one thread: qsm-core's decompose parallel path measured SLOWER with more threads (1 \u2192 8 threads: 10.9 s \u2192 37.6 s at 12568 voxels, 37.1 s \u2192 205.9 s at 42168 voxels, uniform cores at a constant 3.35 GHz), with bit-identical outputs at every thread count, while another rayon method in the same image scales normally. That is an upstream performance bug, not a numerical one; when it is fixed the pin can be dropped and this gets faster again.\n"
       ]
     },

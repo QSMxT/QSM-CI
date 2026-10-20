@@ -547,7 +547,7 @@ def run_command(argv, log=print) -> int:
         # so they pass every flag in the stage contract — may hand us artifacts this method doesn't
         # read. Those are accepted (else the wrapper breaks on an unrecognized argument) but not
         # mounted, which must be visible rather than silent.
-        unread = [f"--{a}" for a in _ignored(algo) if getattr(args, a, None)]
+        unread = [f"--{a}" for a in _ignored(algo) if getattr(args, a.replace("-", "_"), None)]
         if "params" not in consumes and any(getattr(args, f, None) for f in
                                             ("te", "field_strength", "b0_dir", "voxel_size")):
             unread.append("the acquisition flags")  # they only ever reach a params.json
@@ -583,7 +583,7 @@ def run_command(argv, log=print) -> int:
                         log("  params: " + _params_summary(params, stage))
                     dest.write_text(json.dumps(params, indent=2) + "\n")
                 continue
-            value = getattr(args, art, None)
+            value = getattr(args, art.replace("-", "_"), None)   # argparse dest: --chimap-echoes
             if not value:
                 continue  # optional and not supplied
             paths = value if isinstance(value, list) else [value]

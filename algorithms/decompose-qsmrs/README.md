@@ -14,15 +14,25 @@ S(t) = C+·exp(−( a·χ+ + R2*₀ + i·(2/3)·χ+·γ·B0)·t)
 then [χ+, χ−]), repeated `n_inner` times. χ+ and χ− are then reconstructed from the fitted
 parameters as a per-compartment phase accumulation, `−Σ angle(model) / ((2/3)·γ·B0·ΣTE)`.
 
-This is the same algorithm as the compiled-MATLAB entry
-[`decompose-qsm`](../decompose-qsm), and it keeps that entry's one adaptation: the reference
-re-derives a per-echo QSM from raw phase (STI-Suite unwrap → V-SHARP → STAR-QSM) purely to build
-the signal's phase term, but χ is echo-independent and QSM-CI already provides χ_total (`chimap`)
-as a stage input, so the phase is synthesized from that — no phase input, no STI dependency, and
-DECOMPOSE's separation step is isolated from any upstream QSM error.
+The data fitted are built from the magnitude and a QSM reconstructed at each echo, χ(t)
+(the paper's Eq. 4):
 
-- **Stage:** `chi-separation` — reads `chimap` (χ_total, ppm), `magnitude` (4D multi-echo), `mask`,
-  `params` (TE, B0); writes `chi-para.nii.gz` (χ+ ≥ 0) and `chi-dia.nii.gz` (|χ−|, positive
+```
+y(t) = M(t)·exp(−i·(2/3)·χ(t)·γ·B0·t)
+```
+
+The paper is explicit that the TE-dependent QSM is required: sub-voxel compartments make the
+apparent susceptibility drift with TE, and that drift is what the fit separates. The reference
+implementation computes χ(t) with STI Suite per echo (Laplacian unwrapping → V-SHARP → STAR-QSM).
+Here it is the phantom's `chimap-echoes.nii.gz` (4D, one χ map per echo, same echo order as the
+magnitude). A phantom without it falls back to `chimap.nii.gz` (χ_total) for every echo, which
+runs but gives every echo the same apparent χ, so the method loses the echo dependence it relies
+on; `run.sh` logs which input it used.
+
+This is the same algorithm as the compiled-MATLAB entry [`decompose-qsm`](../decompose-qsm).
+
+- **Stage:** `chi-separation` — reads `chimap-echoes` (4D per-echo QSM, ppm; optional, falls back
+  to `chimap`, χ_total), `magnitude` (4D multi-echo), `mask`, `params` (TE, B0); writes `chi-para.nii.gz` (χ+ ≥ 0) and `chi-dia.nii.gz` (|χ−|, positive
   magnitude), both ppm. No `localfield` and no `r2prime` — DECOMPOSE is GRE-only.
 - **Engine:** QSMxT / [QSM.rs](https://github.com/astewartau/QSM.rs) (Rust) —
   `src/separation/decompose.rs`, whose module header documents the model and the output mapping.
@@ -42,10 +52,15 @@ DECOMPOSE's separation step is isolated from any upstream QSM error.
 calls the CLI into a scratch prefix, and gzips the two artifacts into `/output`:
 
 ```bash
-qsmxt separate decompose --qsm chimap.nii.gz -m mask.nii.gz -o $WORK/dec \
+qsmxt separate decompose --qsm chimap-echoes.nii.gz -m mask.nii.gz -o $WORK/dec \
   --magnitude magnitude.nii.gz --echo-times <t1,t2,…> \
   --field-strength <B0> --b0-direction <B0_dir> [--n-inner N] [--chi-bound PPM] [--max-lm-iter N]
 ```
+
+`--qsm` is `chimap-echoes.nii.gz` when the phantom ships it and the image's `qsmxt` accepts a 4D
+`--qsm` (checked from `qsmxt separate decompose --help`), else `chimap.nii.gz`. The pinned
+`qsmxt:v10.0.0` image predates per-echo input, so until it is bumped to a QSMxT release that has
+it, the fallback is what runs.
 
 `-o` is a *prefix*: the CLI writes `{prefix}_desc-paramagnetic_Chimap.nii`,
 `{prefix}_desc-diamagnetic_Chimap.nii` and `{prefix}_desc-total_Chimap.nii` (the pipeline's BIDS
@@ -57,8 +72,8 @@ the total map is not a stage artifact and is dropped.
 Locally:
 
 ```bash
-qsm-ci run decompose-qsmrs --chimap chimap.nii.gz --magnitude magnitude.nii.gz \
-  --mask mask.nii.gz --params params.json -o out/
+qsm-ci run decompose-qsmrs --chimap chimap.nii.gz --chimap-echoes chimap-echoes.nii.gz \
+  --magnitude magnitude.nii.gz --mask mask.nii.gz --params params.json -o out/
 qsm-ci run decompose-qsmrs … --set n_inner=4
 ```
 
@@ -72,23 +87,17 @@ qsm-ci run decompose-qsmrs … --set n_inner=4
 
 Defaults are qsm-core's `DecomposeParams::default()`; no tuned values are declared.
 
-## Output mapping — where this differs from the MATLAB entry
+## Output mapping
 
-The two DECOMPOSE entries deliberately use **opposite** paramagnetic/diamagnetic output mappings,
-so their maps may disagree; scoring both is a purpose of this submission.
+The paper defines the paramagnetic component as the PCS, reconstructed from the paramagnetic-pool
+sub-model (Eq. 6), and the diamagnetic one as the DCS (Eq. 7). This port returns χ+ = |PCS| and
+χ− = −|DCS| (written as |χ−|). The MATLAB reference demo writes DSC to the file `XPSC` and PSC to
+`XDSC`, a filename swap; neither this entry nor [`decompose-qsm/recon.m`](../decompose-qsm/recon.m)
+follows it.
 
-Both reconstruct each source from the same fitted parameters, through a paramagnetic sub-model
-(`pscModel`) and a diamagnetic one (`dscModel`). The MATLAB reference's demo writes DSC→"XPSC" and
-PSC→"XDSC", and [`decompose-qsm/recon.m`](../decompose-qsm/recon.m) follows that swap
-(χ+ = |DSC|). The Rust port does not replicate it: its module header records that on the
-qsm-forward phantom the swapped mapping anti-correlates with ground truth while the
-physically-consistent mapping (χ+ = |PSC|) correlates strongly, so it emits χ+ = |PSC| and
-χ− = −|DSC|. On the independent synthetic case used to validate this submission — a phantom
-generated from the paper's own three-compartment signal model, with known χ+ and χ− — this port's
-χ+ correlated **+1.000** with the true χ+ and −0.03 with the true χ−, and its χ− the other way
-round. That is evidence for the non-swapped mapping, not proof for the QSM-CI phantoms: the MATLAB
-entry's published chisep-mc scores are positively correlated too (χ+ r = 0.44, χ− r = 0.71), so the
-leaderboard comparison is the real test.
+Note that PCS and DCS are voxel-level components: on voxels planted from the paper's own
+three-pool model they track the pool fraction times the pool susceptibility (C+·χ+, C−·χ−), not
+the pool susceptibility itself.
 
 ## Runtime and tier
 

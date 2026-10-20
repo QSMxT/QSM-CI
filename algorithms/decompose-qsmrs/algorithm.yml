@@ -6,18 +6,22 @@ stage: chi-separation
 language: Rust
 family: iterative
 learning: none
-inputs: [chimap, magnitude, mask, params]  # signal-domain: provided χ_total (chimap) + multi-echo magnitude
+inputs: [chimap, magnitude, mask, params]  # signal-domain: QSM + multi-echo magnitude
+# The per-echo QSM DECOMPOSE is defined on. run.sh uses it when the phantom ships it (and the image's
+# qsmxt takes a 4D --qsm); otherwise χ_total (chimap) for every echo, with a note in the log.
+optional_inputs: [chimap-echoes]
 engine: QSMxT / QSM.rs
 description: >
   DECOMPOSE-QSM (Chen et al. 2021) — signal-domain susceptibility source separation, as the Rust
-  implementation in QSM.rs exposed by `qsmxt separate decompose`. Unlike the R2'-based methods it
-  fits the multi-echo COMPLEX GRE signal per voxel: a three-stage alternating bounded least-squares
-  fit of {C+, C−, C0, R2*_0, χ+, χ−}, repeated n_inner times, then reconstructs each source from
-  the fitted parameters as a per-compartment phase accumulation. Like the compiled-MATLAB entry
-  (decompose-qsm) the signal's phase term is synthesized from the provided χ_total (chimap) rather
-  than re-derived from raw phase — χ is echo-independent, so this isolates DECOMPOSE's separation
-  step from any upstream QSM error and drops the STI-Suite dependency. Needs no R2' and no local
-  field: χ_total plus the multi-echo magnitude only (GRE-only).
+  implementation in QSM.rs exposed by `qsmxt separate decompose`. It fits the multi-echo complex
+  GRE signal per voxel: the data are built from the magnitude and a QSM of each echo,
+  y(t) = M(t)·exp(−i·(2/3)·χ(t)·γ·B0·t) (the paper's Eq. 4), and fitted with a three-stage
+  alternating bounded least-squares of {C+, C−, C0, R2*_0, χ+, χ−}, repeated n_inner times; each
+  source is then reconstructed from the fitted parameters as a per-compartment phase accumulation
+  (χ+ from the paramagnetic sub-model, PCS, Eq. 6; χ− from the diamagnetic one, DCS, Eq. 7). Reads
+  the per-echo QSM (chimap-echoes) when the phantom provides it; without it, χ_total (chimap)
+  stands in for every echo, which runs but removes the echo dependence the method separates on.
+  Needs no R2' and no local field (GRE-only).
 authors:
 - name: Jingjia Chen
   note: original DECOMPOSE method
@@ -53,16 +57,14 @@ parameters:
 # Notes on how QSM-CI runs this method vs. its reference (shown on the submission page).
 ci_notes:
 - >
-  The two DECOMPOSE entries use OPPOSITE paramagnetic/diamagnetic output mappings, so their χ+ and
-  χ− maps may disagree — comparing them is a purpose of this submission, not a bug. Both
-  reconstruct each source from the fitted parameters as a per-compartment phase accumulation; what
-  differs is which sub-model carries which source. The MATLAB reference's demo writes DSC→"XPSC"
-  and PSC→"XDSC", and decompose-qsm/recon.m follows that swap (χ+ = |DSC|). The Rust port does not:
-  its module header records that on the qsm-forward phantom the swapped mapping anti-correlates
-  with the ground truth while the physically-consistent one (χ+ = |PSC|, from the paramagnetic
-  sub-model) correlates strongly, so it emits χ+ = |PSC|, χ− = −|DSC|. On an independent synthetic
-  case generated from the paper's own signal model, this port's χ+ correlated +1.000 with the true
-  χ+ and −0.03 with the true χ−. Scoring both entries on the QSM-CI phantoms is the direct test.
+  Input: the paper requires a TE-dependent QSM (one χ map per echo). The phantom's
+  chimap-echoes.nii.gz is used when present and the image's qsmxt accepts a 4D --qsm; the pinned
+  v10.0.0 image predates that, so until the image is bumped to a QSMxT release with per-echo
+  input, run.sh falls back to χ_total for every echo and says so in the log.
+- >
+  Output mapping: χ+ = |PCS| (paramagnetic sub-model, Eq. 6) and χ− = −|DCS| (Eq. 7), as the
+  paper defines them. The MATLAB reference demo writes DSC to the file 'XPSC' and PSC to 'XDSC';
+  that filename swap is not followed here, nor (since this change) in decompose-qsm/recon.m.
 - >
   Same algorithm as the compiled-MATLAB entry decompose-qsm, in Rust, on the shared QSMxT engine
   image — no new container image. Measured here at ~1.5e3 fitted voxels/s on a single core

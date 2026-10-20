@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # QSM-CI submission — DECOMPOSE-QSM (chi-separation stage) via QSMxT / QSM.rs.
-#   consumes chimap.nii.gz (χ_total, ppm), magnitude.nii.gz (4D multi-echo), mask.nii.gz, params.json
+#   consumes chimap-echoes.nii.gz (4D, one χ per echo, ppm) when present, else chimap.nii.gz (χ_total,
+#            ppm); magnitude.nii.gz (4D multi-echo), mask.nii.gz, params.json
 #   produces chi-para.nii.gz (χ+ ≥ 0, ppm), chi-dia.nii.gz (|χ−| ≥ 0, ppm)
 set -euo pipefail
 IN="${1:-/input}"; OUT="${2:-/output}"
@@ -29,12 +30,27 @@ if [ -f "$CFG" ]; then
   V=$(jq -r '.max_lm_iter // empty' "$CFG"); [ -n "$V" ] && SET="$SET --max-lm-iter $V"
 fi
 
+# DECOMPOSE fits each echo's own QSM, χ(t) (Chen 2021, Eq. 4), so give it the per-echo QSM when the
+# phantom ships one and this qsmxt takes it (a 4D --qsm, one map per echo). Otherwise χ_total stands
+# in for every echo, which runs but leaves the method without the echo dependence it separates on.
+QSM="$IN/chimap.nii.gz"
+if [ -f "$IN/chimap-echoes.nii.gz" ]; then
+  if qsmxt separate decompose --help 2>/dev/null | grep -q "one QSM per echo"; then
+    QSM="$IN/chimap-echoes.nii.gz"
+    echo "decompose-qsmrs: per-echo QSM (chimap-echoes.nii.gz)"
+  else
+    echo "decompose-qsmrs: NOTE this qsmxt predates per-echo QSM input; using chimap.nii.gz (χ_total) for every echo"
+  fi
+else
+  echo "decompose-qsmrs: NOTE no chimap-echoes.nii.gz; using chimap.nii.gz (χ_total) for every echo"
+fi
+
 # -o is a PREFIX: the CLI writes {prefix}_desc-paramagnetic_Chimap.nii, _desc-diamagnetic_Chimap.nii
 # and _desc-total_Chimap.nii (uncompressed; the pipeline's BIDS names since qsmxt v10.0.0). Stage them in a scratch dir, then publish the two canonical artifacts gzipped.
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 qsmxt separate decompose \
-  --qsm "$IN/chimap.nii.gz" -m "$IN/mask.nii.gz" -o "$WORK/dec" \
+  --qsm "$QSM" -m "$IN/mask.nii.gz" -o "$WORK/dec" \
   --magnitude "$IN/magnitude.nii.gz" --echo-times "$TE" \
   --field-strength "$B0" --b0-direction $B0DIR $SET
 

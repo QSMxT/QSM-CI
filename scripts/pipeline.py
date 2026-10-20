@@ -46,7 +46,7 @@ EVAL = ROOT / "eval" / "qsm_eval.py"
 sys.path.insert(0, str(ROOT))
 from qsm_ci.runner import _consumes  # noqa: E402
 from qsm_ci.containers import _human, _kill_process_tree, timeout_s  # noqa: E402
-from qsm_ci.stages import STAGES, ARTIFACT_FILE, ARTIFACT_KIND  # noqa: E402
+from qsm_ci.stages import STAGES, ARTIFACT_FILE, ARTIFACT_KIND, DATASET_OPTIONAL_ARTIFACTS  # noqa: E402
 # Shared scoring/sweep primitives (scripts/scoring.py, also used by sweep.py + combo_sweep.py) — one
 # home for the `qsm-ci run` argv builder, the GT source map, the --shard partition, and the qsm_eval
 # argv, so the scorer and the sweeps can't drift. Pure literals/argv assembly — no heavy deps at
@@ -458,6 +458,8 @@ def prepare_input(consumes: list[str], sources: dict[str, Path], dest: Path) -> 
     dest.mkdir(parents=True)
     for art in consumes:
         src = sources.get(art)
+        if art in DATASET_OPTIONAL_ARTIFACTS and (src is None or not Path(src).exists()):
+            continue  # only some datasets ship it; the method runs without it
         if src is None or not Path(src).exists():
             # A plain Exception, NOT SystemExit: every per-run guard is `except Exception`, and a
             # SystemExit (a BaseException) escaped them all — one method wanting an artifact the

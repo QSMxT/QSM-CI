@@ -29,6 +29,10 @@ magnitude. It is scored **isolated only**: its outputs are neither `localfield` 
 never enters the field-mapping × bfr × dipole composed matrix. Most methods read a subset of the six
 inputs — declare what your code actually reads under `inputs:` in `algorithm.yml` (e.g.
 `inputs: [localfield, chimap, r2prime, mask]`) and only those are mounted into `/input`.
+A χ-separation phantom may also ship `chimap-echoes` (a QSM of each echo, for methods defined on
+echo-dependent QSM such as DECOMPOSE-QSM). It is outside the stage contract: opt in with
+`optional_inputs: [chimap-echoes]`, and guard for the file, since it is mounted only when the
+dataset has it.
 
 `inputs:` narrows what is **mounted**, not what may be **named**. `qsm-ci run <slug>` accepts a flag
 for every artifact your stage's contract lists, whichever method is being run — a flag for something
@@ -70,6 +74,7 @@ artifacts into `/input`, and expects exactly the produced artifacts in `/output`
 | `r2prime` | `r2prime.nii.gz` | **Hz** (R2′ = R2* − R2, ≥ 0) | 3D |
 | `chi-para` | `chi-para.nii.gz` | **ppm** (χ+, ≥ 0) | 3D |
 | `chi-dia` | `chi-dia.nii.gz` | **ppm** (\|χ−\|, stored as a positive magnitude) | 3D |
+| `chimap-echoes` | `chimap-echoes.nii.gz` | **ppm** (one χ per echo, echo order of `magnitude`) | 4D `x,y,z,echo` |
 
 All field maps and susceptibility maps (`chimap`, `chi-para`, `chi-dia`) are in **ppm** (normalized
 by B0). Convert from Hz with `ppm = Hz · 1e6 / (γ · B0)`, `γ = 42.576e6` Hz/T. `r2prime` is the one

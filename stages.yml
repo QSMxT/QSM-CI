@@ -20,6 +20,10 @@ artifacts:
   r2prime:     { kind: relaxation, units: Hz,    ndim: 3, file: r2prime.nii.gz }
   chi-para:    { kind: chisep,    units: ppm,    ndim: 3, file: chi-para.nii.gz,   groundtruth: chi-para.nii.gz }
   chi-dia:     { kind: chisep,    units: ppm,    ndim: 3, file: chi-dia.nii.gz,    groundtruth: chi-dia.nii.gz }
+  # Per-echo QSM: one χ map per echo, in the echo order of `magnitude` — the input DECOMPOSE-QSM is
+  # defined on. Provided by the χ-separation phantoms that ship it; outside every stage contract, so
+  # it is mounted only for a method that opts in with `optional_inputs:`, and only when present.
+  chimap-echoes: { kind: chi,     units: ppm,    ndim: 4, file: chimap-echoes.nii.gz }
 
 # The three swappable stages, in pipeline order. `consumes`/`produces` are artifact names.
 stages:

@@ -6,14 +6,16 @@ function recon(inp, out)
 % diamagnetic (χ−) sources: a 3-stage alternating non-linear least-squares fit (lsqcurvefit) of
 % {C+, C−, C0, R2*_0, χ+, χ−}, then reconstructs χ+/χ− from the fitted params.
 %
-% ADAPTATION for QSM-CI: the reference re-derives a per-echo QSM from the raw phase (STI-Suite
-% unwrap → V-SHARP → STAR-QSM) purely to build the signal's phase term. Since χ is echo-independent
-% and QSM-CI already PROVIDES χ_total (chimap.nii.gz) as a stage input, we use that directly — this
-% isolates DECOMPOSE's separation step (its actual contribution) from any STI QSM error, and drops the
-% phase input + the whole STI dependency. The per-voxel fit itself is byte-for-byte the reference.
+% INPUT: DECOMPOSE is defined on a QSM of each echo, χ(t) (Chen 2021, Eq. 4: "it is necessary to use
+% TE-dependent QSM as the input"). The reference computes it per echo with STI Suite (Laplacian unwrap →
+% V-SHARP → STAR-QSM) and builds y_data from QSM_multi(:,:,:,i). Here the per-echo QSM is the phantom's
+% chimap-echoes.nii.gz (4D, one χ per echo, echo order of the magnitude), and y_data is built from it exactly
+% as DECOMPOSE_analysis.m does. A phantom without it falls back to chimap.nii.gz (χ_total) for every echo,
+% with a note: that runs, but without the echo dependence the method separates on. The per-voxel fit is the
+% reference code.
 %
-% Consumes multi-echo magnitude + χ_total (chimap) + mask + params; writes chi-para.nii.gz (χ+) and
-% chi-dia.nii.gz (χ−, positive magnitude). Needs the Optimization Toolbox (lsqcurvefit). The per-voxel
+% Consumes multi-echo magnitude + per-echo QSM (chimap-echoes; else χ_total, chimap) + mask + params; writes
+% chi-para.nii.gz (χ+) and chi-dia.nii.gz (χ−, positive magnitude). Needs the Optimization Toolbox (lsqcurvefit). The per-voxel
 % fit is SLOW; $DECOMPOSE_CROPBOX (central-box side, voxels) limits it for a feasibility/speed run and
 % $DECOMPOSE_NINNER overrides the inner-iteration count (default 10).
     addpath_env('DECOMPOSE_UTILS', true);       % {psc,dsc,signal}Model, objective{1,2,3}, complex_to_real
@@ -25,16 +27,27 @@ function recon(inp, out)
 
     rd = @(f) double(getfield(read_niigz(fullfile(inp, f)), 'img'));
     mag_multi_echo = rd('magnitude.nii.gz');    % [X Y Z TE]
-    chimap = rd('chimap.nii.gz');               % χ_total (ppm) — the provided QSM
     mn = read_niigz(fullfile(inp, 'mask.nii.gz')); mask_brain = double(mn.img) > 0.5;
     mag_multi_echo = mag_multi_echo / max(mag_multi_echo(:));
     [N1, N2, N3, ~] = size(mag_multi_echo);
 
-    % --- complex signal per echo, phase from the provided χ_total (echo-independent χ) ---
+    % --- QSM of each echo, χ(t) (ppm), [X Y Z TE] ---
+    if isfile(fullfile(inp, 'chimap-echoes.nii.gz'))
+        QSM_multi = rd('chimap-echoes.nii.gz');
+        if size(QSM_multi, 4) ~= numel(TE)
+            error('chimap-echoes.nii.gz has %d echoes but params.json lists %d', size(QSM_multi, 4), numel(TE));
+        end
+        fprintf('DECOMPOSE: per-echo QSM (chimap-echoes.nii.gz)\n');
+    else
+        fprintf('DECOMPOSE: NOTE no chimap-echoes.nii.gz; using chimap.nii.gz (chi_total) for every echo\n');
+        QSM_multi = repmat(rd('chimap.nii.gz'), [1 1 1 numel(TE)]);
+    end
+
+    % --- complex signal per echo (Eq. 4), built as DECOMPOSE_analysis.m builds y_data ---
     y_data = zeros(N1, N2, N3, numel(TE));
     for i = 1:numel(TE)
-        y_data(:,:,:,i) = (mag_multi_echo(:,:,:,i) .* ...
-            exp(-1i*(2/3).*chimap*gamma*B0*TE(i))) .* mask_brain;
+        mag = mag_multi_echo(:,:,:,i);
+        y_data(:,:,:,i) = (mag.*exp(-1i*(2/3).*squeeze(QSM_multi(:,:,:,i))*gamma*B0*TE(i))).*mask_brain;
     end
 
     % --- which voxels to fit (optional central-box crop for a feasibility/speed run) ---
@@ -103,16 +116,16 @@ function recon(inp, out)
                 if ~fitmask(i,j,k); continue; end
                 cp = pscModel(TE, Cp(i,j,k), Cm(i,j,k), C0m(i,j,k), chp(i,j,k), chm(i,j,k), R0m(i,j,k), B0);
                 cn = dscModel(TE, Cp(i,j,k), Cm(i,j,k), C0m(i,j,k), chp(i,j,k), chm(i,j,k), R0m(i,j,k), B0);
-                PSC(i,j,k) = -sum(angle(cp))/den;    % χ+
-                DSC(i,j,k) = -sum(angle(cn))/den;    % χ−
+                PSC(i,j,k) = -sum(angle(cp))/den;    % PCS → χ+
+                DSC(i,j,k) = -sum(angle(cn))/den;    % DCS → χ−
             end
         end
     end
-    % Output mapping (verified against GT): the reference's pscModel/dscModel VARIABLE names are the
-    % opposite of the source they recover — its demo writes DSC→"XPSC", PSC→"XDSC" (that swap is
-    % correct, not a typo). So χ+ (paramagnetic) = |DSC| and χ− (diamagnetic) = |PSC|.
-    write_niigz(setimg(mn, single(abs(DSC) .* fitmask)), fullfile(out, 'chi-para.nii.gz'));  % χ+ = |DSC|
-    write_niigz(setimg(mn, single(abs(PSC) .* fitmask)), fullfile(out, 'chi-dia.nii.gz'));   % χ− = |PSC|
+    % Output mapping, as the paper defines it: the paramagnetic component is the PCS, reconstructed from the
+    % paramagnetic-pool sub-model (pscModel, Eq. 6), and the diamagnetic component is the DCS (dscModel, Eq. 7).
+    % The reference demo writes DSC to the file 'XPSC' and PSC to 'XDSC' — a filename swap, not followed here.
+    write_niigz(setimg(mn, single(abs(PSC) .* fitmask)), fullfile(out, 'chi-para.nii.gz'));  % χ+ = |PCS|
+    write_niigz(setimg(mn, single(abs(DSC) .* fitmask)), fullfile(out, 'chi-dia.nii.gz'));   % |χ−| = |DCS|
 end
 function addpath_env(name, recurse)
     d = getenv(name);

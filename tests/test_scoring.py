@@ -99,6 +99,7 @@ def test_gt_sources_mapping():
         "mask": ds / "inputs" / "mask.nii.gz",
         "params": ds / "inputs" / "params.json",
         "r2prime": ds / "inputs" / "r2prime.nii.gz",
+        "chimap-echoes": ds / "inputs" / "chimap-echoes.nii.gz",
         "totalfield": ds / "groundtruth" / "totalfield.nii.gz",
         "localfield": ds / "groundtruth" / "localfield.nii.gz",
         "chimap": ds / "groundtruth" / "chimap.nii.gz",

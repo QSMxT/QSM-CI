@@ -3,15 +3,25 @@
 Signal-domain susceptibility source separation (Chen et al., *NeuroImage* 2021): a three-stage
 alternating non-linear least-squares fit (`lsqcurvefit`) of the multi-echo complex GRE signal, per
 voxel, that splits χ into paramagnetic (χ+, iron) and diamagnetic (χ−, myelin/calcium) components.
-This is Tim Ho's open MATLAB re-implementation (GPL-3.0) with one adaptation for QSM-CI: the
-reference re-derives a per-echo QSM from the raw phase (STI-Suite unwrap → V-SHARP → STAR-QSM)
-purely to build the signal's phase term; since χ is echo-independent and QSM-CI already provides
-χ_total (`chimap`) as a stage input, `recon.m` uses that directly — no phase input, no STI
-dependency, and DECOMPOSE's separation step is isolated from any upstream QSM error. The per-voxel
-fit itself is the reference code (`decompose_utils/`, vendored).
+This is Tim Ho's open MATLAB re-implementation (GPL-3.0). DECOMPOSE is defined on a QSM of
+each echo, χ(t): the paper's Eq. 4 builds the fitted data as
+`y(t) = M(t)·exp(−i·(2/3)·χ(t)·γ·B0·t)` and states that TE-dependent QSM is required. The reference
+computes χ(t) per echo with STI Suite (Laplacian unwrapping → V-SHARP → STAR-QSM); here it is the
+phantom's `chimap-echoes.nii.gz` (4D, one χ per echo, echo order of the magnitude), and `recon.m`
+builds `y_data` from it as `DECOMPOSE_analysis.m` does. A phantom without it falls back to
+`chimap.nii.gz` (χ_total) for every echo, with a note in the log. The per-voxel fit itself is the
+reference code (`decompose_utils/`, vendored).
 
-- **Stage:** `chi-separation` — reads `magnitude` (multi-echo), `chimap` (χ_total), `mask`,
-  `params` (TE, B0); writes `chi-para.nii.gz` (χ+) and `chi-dia.nii.gz` (χ−, positive magnitude), ppm
+Output mapping follows the paper: χ+ is the PCS, from the paramagnetic sub-model (Eq. 6), and χ−
+the DCS (Eq. 7). The reference demo writes DSC to the file `XPSC` and PSC to `XDSC`; that filename
+swap is not followed.
+
+> **The pinned image predates both changes.** It was compiled from the earlier `recon.m` (χ_total
+> only, χ+ = |DSC|) and could not be rebuilt here (no MATLAB on Bunya). Rebuild the `mcc` binary
+> and image before scoring this entry again.
+
+- **Stage:** `chi-separation` — reads `magnitude` (multi-echo), `chimap-echoes` (per-echo QSM,
+  optional) or `chimap` (χ_total), `mask`, `params` (TE, B0); writes `chi-para.nii.gz` (χ+) and `chi-dia.nii.gz` (χ−, positive magnitude), ppm
 - **Engine:** compiled MATLAB — `recon.m` built with `mcc` (Optimization Toolbox needed at compile
   time only) and run on the licence-free MATLAB Runtime R2023b
 - **Reference:** Chen et al., *NeuroImage* 2021 ·
@@ -33,7 +43,8 @@ non-root user with no home — `HOME` at a writable directory. `DECOMPOSE_CROPBO
 voxels) and `DECOMPOSE_NINNER` (inner iterations, default 10) bound the fit for feasibility runs.
 
 ```bash
-qsm-ci run decompose-qsm --magnitude magnitude.nii.gz --chimap chimap.nii.gz --mask mask.nii.gz --params params.json -o out/
+qsm-ci run decompose-qsm --magnitude magnitude.nii.gz --chimap chimap.nii.gz \
+  --chimap-echoes chimap-echoes.nii.gz --mask mask.nii.gz --params params.json -o out/
 ```
 
 With a full MATLAB instead of the Runtime: `matlab -batch "addpath('.'); recon('IN','OUT')"` with

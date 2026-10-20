@@ -24,6 +24,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Callable
 
+# A literal table with no imports of its own, so this adds no cycle and no heavy dependency.
+from qsm_ci.stages import DATASET_OPTIONAL_ARTIFACTS
+
 
 def cli_run_argv(algo: dict, input_dir: Path, output_dir: Path, artifact_file: dict,
                  runner: str = "docker", overrides: "dict | None" = None,
@@ -46,8 +49,8 @@ def cli_run_argv(algo: dict, input_dir: Path, output_dir: Path, artifact_file: d
     argv = ["qsm-ci", "run", str(algo["dir"])]
     for art in algo["consumes"]:
         f = input_dir / artifact_file[art]
-        if art == "magnitude" and not f.exists():
-            continue  # optional — only some methods use it
+        if art in ("magnitude", *DATASET_OPTIONAL_ARTIFACTS) and not f.exists():
+            continue  # optional — only some methods use it / only some datasets ship it
         argv += [f"--{art}", str(f)]
     for k, v in (overrides or {}).items():
         argv += ["--set", f"{k}={fmt(v)}"]
@@ -72,7 +75,8 @@ def gt_sources(dataset: Path) -> dict[str, Path]:
     inputs, gt = dataset / "inputs", dataset / "groundtruth"
     # Raw acquisition / provided-relaxation artifacts are always public inputs.
     raw = {"phase": "phase.nii.gz", "magnitude": "magnitude.nii.gz", "mask": "mask.nii.gz",
-           "params": "params.json", "r2prime": "r2prime.nii.gz"}
+           "params": "params.json", "r2prime": "r2prime.nii.gz",
+           "chimap-echoes": "chimap-echoes.nii.gz"}   # per-echo QSM, shipped by some χ-sep phantoms
     # Stage boundaries are ground truth for the QSM pipeline, but *provided* inputs for the
     # χ-separation dataset (the phantom's true local field / χ_total). Prefer inputs/ when present.
     boundary = {"totalfield": "totalfield.nii.gz", "localfield": "localfield.nii.gz",
