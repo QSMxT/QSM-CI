@@ -27,3 +27,25 @@ def test_every_submission_is_in_the_manifest():
             continue
         slug = (yaml.safe_load(yml.read_text()) or {}).get("slug") or d.name
         assert slug in manifest, f"submission {d.name} (slug {slug}) missing from manifest"
+
+
+def test_gre_only_pairings_are_valid():
+    """Every committed `gre_only:` pairing names a real R2′ generator and sits on a method that reads
+    r2prime — build() would exit otherwise; this pins the specific checks."""
+    gen = {"stage": "r2prime-generation"}
+    ok = {"stage": "chi-separation", "inputs": ["localfield", "chimap", "r2prime", "mask"],
+          "gre_only": {"generator": "gen", "name": "Method-R2*"}}
+    assert gen_manifest.gre_only_problems({"gen": gen, "m": ok}) == []
+    bad = {
+        "unknown generator": {**ok, "gre_only": {"generator": "nope", "name": "x"}},
+        "generator wrong stage": {**ok, "gre_only": {"generator": "m2", "name": "x"}},
+        "no name": {**ok, "gre_only": {"generator": "gen"}},
+        "gre-native method": {**ok, "inputs": ["magnitude", "chimap", "mask"]},
+        "not chi-separation": {**ok, "stage": "dipole"},
+        "unknown key": {**ok, "gre_only": {"generator": "gen", "name": "x", "extra": 1}},
+    }
+    m2 = {"stage": "chi-separation", "inputs": ["r2prime"]}
+    for why, meta in bad.items():
+        assert gen_manifest.gre_only_problems({"gen": gen, "m2": m2, "m": meta}), why
+    pairs = {a["slug"]: a["gre_only"] for a in gen_manifest.build()["algorithms"] if a.get("gre_only")}
+    assert pairs.get("chisepnet", {}).get("generator") == "r2primenet"

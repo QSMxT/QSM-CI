@@ -39,7 +39,20 @@ input, so the `dipole` rule passes `--localfield --mask --params` whatever slug 
 `r2prime-generation` estimates R2′ from the multi-echo GRE magnitude alone, for the GRE-only
 condition where no spin-echo acquisition provides a measured R2. It is scored isolated against the
 phantom's true R2′ and composed with each R2′-consuming `chi-separation` method (the generated map
-replaces the true `r2prime`), to measure what a GRE-only protocol sacrifices.
+replaces the true `r2prime`), to measure what a GRE-only protocol sacrifices. The GRE-only
+leaderboard feeds each method the phantom's best generator. If a method's authors publish their own
+GRE-only pipeline, declare it in the method's `algorithm.yml` and the board uses that pairing,
+under its published name, instead:
+
+```yaml
+gre_only:
+  generator: r2primenet      # an r2prime-generation submission
+  name: χ-sepnet-R2*         # what the pipeline is published as
+  doi: 10.1002/hbm.70136     # optional
+```
+
+`gre_only` only affects the leaderboard and does not trigger a rescore. Every generator × method
+combination is scored either way.
 
 `brain-extraction` is a standalone stage that *produces* the `mask` every other stage consumes — for
 datasets that ship without a mask. Its output is not a scored ground-truth artifact, so it doesn't

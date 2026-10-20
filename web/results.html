@@ -797,6 +797,7 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
                   <span class="mr-1.5 inline-block w-5 text-center" x-text="medal(i)"></span>
                   <span x-text="chisepRowLabel(r)"></span>
                   <span x-show="chisepCondition==='greonly' && !r.combo" class="ml-2 rounded bg-indigo-50 px-1.5 py-0.5 text-[10px] font-semibold text-indigo-700" data-tip="This method never reads R2′; it fits the GRE signal directly, so its result is identical under both conditions.">GRE-native</span>
+                  <span x-show="chisepCondition==='greonly' && _isPublishedPair(r)" class="ml-2 rounded bg-indigo-50 px-1.5 py-0.5 text-[10px] font-semibold text-indigo-700" :data-tip="_isPublishedPair(r) ? ('The authors\' own GRE-only pipeline: ' + r.name + ' fed R2′ from ' + algoName(chisepGenOf(r)) + ', the generator they pair it with, rather than the best generator on this phantom.') : ''">published pipeline</span>
                   <template x-if="r.doi"><a :href="'https://doi.org/'+r.doi" @click.stop target="_blank" rel="noopener" class="ml-2 rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 hover:bg-emerald-100">paper</a></template>
                   <span x-show="r.status==='running'" class="ml-2 rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700 animate-pulse">computing…</span>
                   <span x-show="r.status==='DNF'" class="ml-2 rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold text-gray-500">DNF</span>
@@ -823,7 +824,7 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
             </span>
           </template>
         </div>
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Candidate R2′ substitutes, each scored directly against the phantom's true (spin-echo-derived) R2′. The best one (lowest detrended NRMSE) supplies R2′ to every pipeline above (named after each row's &#10229; arrow); the Findings tab compares how far each substitute carries every method.</p>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Candidate R2′ substitutes, each scored directly against the phantom's true (spin-echo-derived) R2′. The best one (lowest detrended NRMSE) supplies R2′ to every pipeline above, except a method's own published GRE-only pipeline (badged), which keeps the generator its authors pair it with; the Findings tab compares how far each substitute carries every method.</p>
       </div>
       <div x-show="chisepCondition==='greonly' && chisepGenRows().length" x-cloak class="mt-4 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
         <div class="overflow-x-auto">
@@ -890,7 +891,7 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
         <div>
           <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">&chi;-separation (2026)</h2>
           <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">Susceptibility source separation splits the net susceptibility &chi; into a paramagnetic part &chi;&#8314; (iron) and a diamagnetic part &chi;&#8315; (myelin, calcium). Plain QSM measures only their signed sum, &chi;<sub>total</sub> = &chi;&#8314; + &chi;&#8315;, in which the two partly cancel, so it cannot tell them apart. The reversible relaxation rate R2&prime; responds instead to their combined magnitude, |&chi;&#8314;| + |&chi;&#8315;|. Having both the signed sum and the magnitude gives two independent constraints per voxel, which is what makes the sources recoverable. Each method is given &chi;<sub>total</sub>, R2&prime;, the local field and the multi-echo signals, and must produce &chi;&#8314; and &chi;&#8315;, which are scored separately.</p>
-          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed"><strong>The GRE-only condition.</strong> Measuring R2&prime; = R2* &minus; R2 needs a separate multi-echo spin-echo acquisition for R2, often unavailable in practice. The leaderboard&rsquo;s <em>MEGRE+MESE / GRE-only</em> toggle compares each method fed the phantom&rsquo;s true R2&prime; against the same method fed a GRE-derived substitute: an <em>R2&prime; generator</em> (a separate submission stage) estimates R2&prime; from the multi-echo GRE magnitude alone and is composed in front of every R2&prime;-consuming method. The GRE-only leaderboard feeds every method the <em>best-performing</em> generator on that phantom (lowest <em>detrended</em> NRMSE against the true R2&prime;, a scale-independent structural criterion, the &ldquo;use the best available tool&rdquo; policy a GRE-only protocol would follow); the full generator&nbsp;&times;&nbsp;method grid is scored regardless and compared on the Findings tab. Current generators are R2PRIMEnet (the learned R2*&rarr;R2&prime; conversion from the &chi;-sepnet pipeline, <a href="https://doi.org/10.1002/hbm.70136" class="text-emerald-600 hover:underline">Kim et&nbsp;al., 2025</a>, where composing it with &chi;-sepnet reproduces the paper&rsquo;s &chi;-sepnet-R2* variant) and the fixed 0.52&middot;R2* scaling evaluated by <a href="https://doi.org/10.1002/nbm.5167" class="text-emerald-600 hover:underline">Ji et&nbsp;al. (2024)</a> and <a href="https://doi.org/10.1002/mrm.30238" class="text-emerald-600 hover:underline">Oliveira Assun&ccedil;&atilde;o et&nbsp;al. (2026)</a>. Methods that never read R2&prime; (R2*-QSM, DECOMPOSE) are natively GRE-only and appear unchanged under both conditions. The Findings tab charts what the missing spin-echo costs each method.</p>
+          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed"><strong>The GRE-only condition.</strong> Measuring R2&prime; = R2* &minus; R2 needs a separate multi-echo spin-echo acquisition for R2, often unavailable in practice. The leaderboard&rsquo;s <em>MEGRE+MESE / GRE-only</em> toggle compares each method fed the phantom&rsquo;s true R2&prime; against the same method fed a GRE-derived substitute: an <em>R2&prime; generator</em> (a separate submission stage) estimates R2&prime; from the multi-echo GRE magnitude alone and is composed in front of every R2&prime;-consuming method. The GRE-only leaderboard feeds every method the <em>best-performing</em> generator on that phantom (lowest <em>detrended</em> NRMSE against the true R2&prime;, a scale-independent structural criterion, the &ldquo;use the best available tool&rdquo; policy a GRE-only protocol would follow), except where a method&rsquo;s authors publish their own GRE-only pipeline: &chi;-sepnet is always fed R2PRIMEnet and listed as &chi;-sepnet-R2*; the full generator&nbsp;&times;&nbsp;method grid is scored regardless and compared on the Findings tab. Current generators are R2PRIMEnet (the learned R2*&rarr;R2&prime; conversion from the &chi;-sepnet pipeline, <a href="https://doi.org/10.1002/hbm.70136" class="text-emerald-600 hover:underline">Kim et&nbsp;al., 2025</a>) and the fixed 0.52&middot;R2* scaling evaluated by <a href="https://doi.org/10.1002/nbm.5167" class="text-emerald-600 hover:underline">Ji et&nbsp;al. (2024)</a> and <a href="https://doi.org/10.1002/mrm.30238" class="text-emerald-600 hover:underline">Oliveira Assun&ccedil;&atilde;o et&nbsp;al. (2026)</a>. Methods that never read R2&prime; (R2*-QSM, DECOMPOSE) are natively GRE-only and appear unchanged under both conditions. The Findings tab charts what the missing spin-echo costs each method.</p>
         </div>
         <div>
           <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">The phantoms</h3>
@@ -2064,12 +2065,19 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         _greNative(slug) { const a = this.algos.find((x) => x.slug === slug); return !!a && a.stage === "chi-separation" && !(a.inputs || []).includes("r2prime"); },
         _isGreCombo(r) { return r.mode === "composed" && r.combo && r.combo.r2prime_generation; },
         chisepGenOf(r) { return (r.combo || {}).r2prime_generation || null; },
-        // Row label: just the method name. Under GRE-only every row is fed the SAME champion generator
-        // (named in the R2′ generators section below the board), so repeating it per row is redundant.
-        chisepRowLabel(r) { return r.name; },
+        // A method's own published GRE-only pipeline (algorithm.yml `gre_only: {generator, name}`),
+        // e.g. χ-sepnet + R2PRIMEnet = χ-sepnet-R2*. null when the method declares none.
+        _greOnlyPair(slug) { const a = this.algos.find((x) => x.slug === slug); return (a && a.gre_only) || null; },
+        // Is this GRE-only combo the method's published pairing (its declared generator)?
+        _isPublishedPair(r) { const p = this._isGreCombo(r) && this._greOnlyPair(r.slug); return !!p && p.generator === this.chisepGenOf(r); },
+        // Row label: the method name, or under GRE-only the published pipeline's own name when the row
+        // is that pairing (χ-sepnet-R2*). Other rows are fed the SAME champion generator (named in the
+        // R2′ generators section below the board), so repeating it per row is redundant.
+        chisepRowLabel(r) { return this._isPublishedPair(r) ? this._greOnlyPair(r.slug).name : r.name; },
         // The board's row pool under the current condition. Full: the isolated χ-sep runs (with the
         // Defaults/Tuned toggle). GRE-only: ONE row per method, each R2′-consuming method paired
-        // with the best-ranked generator (chisepGenRanking; falling back down the ranking when the
+        // with its own published generator when it declares one (gre_only, e.g. χ-sepnet-R2*), else
+        // the best-ranked generator (chisepGenRanking; falling back down the ranking when the
         // preferred combo is missing or DNF'd, as a practitioner would), plus the natively GRE-only
         // methods' isolated runs (default variant; combos have no tuned pass). Every scored
         // (generator × method) combo remains in the Findings figure and the CSV export.
@@ -2078,7 +2086,10 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
           if (this.chisepCondition !== "greonly")
             return this.pickVariant(pool.filter((r) => r.mode === "isolated" && r.stage === "chi-separation"));
           const order = this.chisepGenRanking();
-          const rank = (r) => { const i = order.indexOf(this.chisepGenOf(r)); return i < 0 ? 1e9 : i; };
+          const rank = (r) => {
+            if (this._isPublishedPair(r)) return -1;   // the authors' own GRE-only pairing comes first
+            const i = order.indexOf(this.chisepGenOf(r)); return i < 0 ? 1e9 : i;
+          };
           const bySlug = {};
           pool.filter((r) => this._isGreCombo(r)).forEach((r) => { (bySlug[r.slug] ||= []).push(r); });
           const picked = Object.values(bySlug).map((list) =>

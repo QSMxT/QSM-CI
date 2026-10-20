@@ -441,7 +441,12 @@
           "description": "Relaxivity (Hz/ppm) used to scale R2' into the network's R2'/Dr input channel. The network was trained at Dr=114 (its COSMOS-referenced value), so moving it feeds off-distribution inputs \u2014 this is a research knob, not an accuracy-tuning target. (No patch/overlap knob: the ONNX graph fixes the 192\u00d7192\u00d7128 input, and the weights fix everything else.)\n"
         }
       ],
-      "ci_notes": []
+      "ci_notes": [],
+      "gre_only": {
+        "generator": "r2primenet",
+        "name": "\u03c7-sepnet-R2*",
+        "doi": "10.1002/hbm.70136"
+      }
     },
     {
       "slug": "decompose-qsm",

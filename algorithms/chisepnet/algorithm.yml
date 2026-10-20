@@ -22,6 +22,13 @@ code_url: https://github.com/SNU-LIST/chi-separation
 license: academic use; toolbox obtained via the SNU-LIST Google Form
 image: ghcr.io/astewartau/qsm-ci/chi-sepnet@sha256:9588a43b6f99e310ef4c16bc26a8dc59751d7527bf62a1d914dfba82c788bc88   # v1
 run: bash run.sh
+# The authors' own GRE-only pipeline: with no spin-echo R2, the toolbox estimates R2′ from R2* with
+# R2PRIMEnet and runs this same network on it, published as χ-sepnet-R2* (Kim et al., HBM 2025).
+# The GRE-only leaderboard pairs χ-sepnet with R2PRIMEnet and shows the row under that name.
+gre_only:
+  generator: r2primenet
+  name: χ-sepnet-R2*
+  doi: 10.1002/hbm.70136
 parameters:
   - name: Dr
     default: 114.0

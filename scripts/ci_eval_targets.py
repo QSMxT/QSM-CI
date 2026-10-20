@@ -37,7 +37,7 @@ import yaml
 COSMETIC_KEYS = {
     "name", "language", "family", "learning", "engine", "description", "citation", "doi",
     "authors", "license", "code_url", "domain", "ci_notes", "tags", "notes", "references", "tuned",
-    "tuning", "algorithm", "variant", "source",
+    "tuning", "algorithm", "variant", "source", "gre_only",
 }
 
 

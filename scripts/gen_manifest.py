@@ -81,6 +81,12 @@ def entry(meta: dict) -> dict:
         # stored rows stay in index.json — the web drops any run whose stage is a hidden method
         # (web/js/app.js loadRuns). Emitted only when set so the manifest diff stays minimal.
         **({"hidden": True} if meta.get("hidden") else {}),
+        # `gre_only: {generator, name}` — an R2′-consuming χ-separation method's own published
+        # GRE-only pipeline: the R2′ generator its authors pair it with when no spin-echo R2 exists,
+        # and the name that pipeline is published under (χ-sepnet + R2PRIMEnet = "χ-sepnet-R2*").
+        # The GRE-only board feeds the method that generator (not the phantom's best one) and shows
+        # the row under that name. Display-only: the full generator × method grid is scored anyway.
+        **({"gre_only": dict(meta["gre_only"])} if meta.get("gre_only") else {}),
     }
 
 
@@ -123,8 +129,32 @@ def validate(d: Path, meta: dict, valid_stages: set) -> None:
         sys.exit(f"gen_manifest: {d.name}/algorithm.yml is malformed:\n  - " + "\n  - ".join(problems))
 
 
+def gre_only_problems(metas: dict) -> list:
+    """Problems with any `gre_only:` pairing, across submissions (slug -> algorithm.yml dict).
+    The pairing must sit on a chi-separation method that reads r2prime (a method that never reads
+    it is already GRE-native), name an existing r2prime-generation submission, and give a name."""
+    out = []
+    for slug, meta in sorted(metas.items()):
+        g = meta.get("gre_only")
+        if g is None:
+            continue
+        if not isinstance(g, dict) or set(g) - {"generator", "name", "doi"}:
+            out.append(f"{slug}: gre_only must be a mapping of generator, name (and optional doi)")
+            continue
+        if meta.get("stage") != "chi-separation":
+            out.append(f"{slug}: gre_only is only meaningful on a chi-separation method")
+        elif "r2prime" not in _inputs(meta):
+            out.append(f"{slug}: gre_only on a method that never reads r2prime (it is GRE-native already)")
+        gen = metas.get(g.get("generator") or "")
+        if not gen or gen.get("stage") != "r2prime-generation":
+            out.append(f"{slug}: gre_only.generator {g.get('generator')!r} is not an r2prime-generation submission")
+        if not str(g.get("name") or "").strip():
+            out.append(f"{slug}: gre_only needs a name (the published name of the GRE-only pipeline)")
+    return out
+
+
 def build() -> dict:
-    algos = []
+    algos, metas = [], {}
     valid_stages = _valid_stages()
     for d in sorted((ROOT / "algorithms").glob("*/")):
         mfile = d / "algorithm.yml"
@@ -133,7 +163,11 @@ def build() -> dict:
         meta = yaml.safe_load(mfile.read_text())
         validate(d, meta, valid_stages)
         meta.setdefault("slug", d.name)
+        metas[meta["slug"]] = meta
         algos.append(entry(meta))
+    problems = gre_only_problems(metas)
+    if problems:
+        sys.exit("gen_manifest: bad gre_only pairing:\n  - " + "\n  - ".join(problems))
     # The dataset/phantom registry, verbatim — the web needs the label/track/default fields to name
     # phantoms and pick each track's default (a run row without a `phantom` field is the default).
     datasets = json.loads((ROOT / "scripts" / "datasets.json").read_text())
