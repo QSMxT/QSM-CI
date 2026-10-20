@@ -129,6 +129,16 @@ def main() -> None:
                 im = nib.load(hit[0])
                 save(out / "inputs" / f"{dst}.nii.gz", im.get_fdata(), im.affine)
         gt = {"Chimap-pos": "chi-para", "Chimap-neg": "chi-dia", "Chimap": "chimap", "dseg": "dseg"}
+        # qsm-forward chi-sep extras, copied with their own dtype and header: the ground-truth R2
+        # (an input under the Ridani R2' = R2*_fit - R2 convention), the fibre-to-B0 angle and the
+        # white-matter sub-ROI atlas (both scoring aids).
+        extras = {"R2map": "inputs/r2", "fibreangle": "groundtruth/theta",
+                  "desc-wmrois_dseg": "groundtruth/wm_rois"}
+        for src, dst in extras.items():
+            hit = glob.glob(str(deriv / f"{pre}_{src}.nii*"))
+            if hit:
+                (out / dst).parent.mkdir(parents=True, exist_ok=True)
+                nib.save(nib.load(hit[0]), str(out / f"{dst}.nii.gz"))
     else:
         gt = {"fieldmap": "totalfield", "fieldmap-local": "localfield", "Chimap": "chimap", "dseg": "dseg"}
     for src, dst in gt.items():
