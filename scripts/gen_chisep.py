@@ -33,6 +33,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -40,6 +41,12 @@ from pathlib import Path
 
 import numpy as np
 import nibabel as nib
+
+
+# Phantoms that also give methods the tissue segmentation (inputs/dseg.nii.gz, a copy of the
+# ground-truth dseg): the Ridani family, whose analytic baseline (ridani-null-qsmci) solves white
+# matter (label 8) separately.
+INPUT_DSEG = ("ridani-3t-iso", "ridani-3t-aniso", "ridani-7t-aniso", "decompose-3t", "decompose-3t-noise")
 
 
 def mask_derived_to_brain(out: Path):
@@ -124,6 +131,8 @@ def main() -> None:
             pack = Path(__file__).with_name("pack_dataset.py")
             print(f"Packing {bids} -> {args.out} ...")
             subprocess.run([sys.executable, str(pack), str(bids), str(args.out), "--chisep"], check=True)
+        if args.preset in INPUT_DSEG:
+            shutil.copyfile(args.out / "groundtruth" / "dseg.nii.gz", args.out / "inputs" / "dseg.nii.gz")
         if not args.full_head:
             mask_derived_to_brain(args.out)
             print("Masked derived maps + ground truth to the brain (raw phase/magnitude kept whole-head).")
