@@ -1,0 +1,51 @@
+name: DECOMPOSE-QSM, complex-signal fit (QSM.rs)
+slug: decompose-complex-qsmrs
+algorithm: decompose
+variant: complex   # fits the measured magnitude + phase (decompose-qsmrs rebuilds the phase from χ_total)
+source: qsmrs
+stage: chi-separation
+language: Rust
+family: iterative
+learning: none
+inputs: [magnitude, phase, mask, params]  # the measured multi-echo signal; no chimap, localfield or r2prime
+engine: QSMxT / QSM.rs
+description: >
+  DECOMPOSE-QSM (Chen et al. 2021) fitted to the measured multi-echo complex GRE signal, as
+  `qsmxt separate decompose-complex`. Each voxel's magnitude and phase are fitted with the paper's
+  three-pool signal model times exp(i(φ0 + Δω·t)): a free phase offset φ0 and frequency Δω absorb
+  the transmit/receive phase and every field not produced inside the voxel (background and
+  neighbouring sources), so no χ_total, local field or background removal is needed. All eight
+  parameters {C+, C−, C0, R2*_0, χc+, χc−, φ0, Δω} are fitted jointly (bounded Levenberg-Marquardt,
+  multi-start), and the sources are the voxel averages χ+ = C+/ΣC·χc+, χ− = C−/ΣC·χc−. GRE-only.
+authors:
+- name: Jingjia Chen
+  note: original DECOMPOSE method
+- name: Nan-Jie Gong
+- name: Khallil Taverna Chaim
+- name: Maria Concepción García Otaduy
+- name: Chunlei Liu
+- name: Ashley Stewart
+  note: QSM.rs / QSMxT complex-signal fit
+doi: 10.1016/j.neuroimage.2021.118477
+citation: >
+  Chen J., Gong N.-J., Chaim K.T., Otaduy M.C.G., Liu C., "Decompose quantitative susceptibility
+  mapping (QSM) to sub-voxel diamagnetic and paramagnetic components based on gradient-echo MRI
+  data", NeuroImage 2021;242:118477.
+code_url: https://github.com/astewartau/QSM.rs
+license: MIT
+# PLACEHOLDER IMAGE. `qsmxt separate decompose-complex` is NOT in this image (qsmxt v10.0.0): it
+# exists only on the QSMxT/QSM.rs `feat/decompose-complex` branches. This entry cannot run until a
+# qsmxt image built from a release containing that subcommand is pushed and pinned here.
+image: ghcr.io/astewartau/qsm-ci/qsmxt@sha256:9258c10e34cd0019dbab12746977813fe0a0b3ad92b13986d1d9ffb2c3326b57   # v10.0.0 — placeholder, see above
+run: bash run.sh
+parameters:
+- name: chi_bound
+  default: 0.5
+  description: upper bound on the pool susceptibilities |χc±| in the fit, ppm
+- name: r2_bound
+  default: 100
+  description: upper bound on the baseline decay rate R2*_0 in the fit, Hz
+- name: max_lm_iter
+  default: 100
+  description: max Levenberg-Marquardt iterations per start
+smoke_box: 32   # per-voxel fit: keep the PR --smoke gate to a 32³ central box
