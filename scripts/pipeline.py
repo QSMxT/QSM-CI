@@ -57,6 +57,7 @@ from scoring import (  # noqa: E402
     cli_run_argv, gt_sources as _gt_sources, parse_shard, shard_owns, shard_partition, eval_argv,
 )
 import merge_index  # noqa: E402  (sibling: the one upsert policy for results/index.json)
+from provenance import method_commit, row_methods  # noqa: E402,F401  (scored_at / method_versions)
 
 # Independent submission runs (each a Docker container + a scoring subprocess) are executed
 # concurrently, bounded by QSM_CI_JOBS. The cap is deliberately conservative: MATLAB MCR runs on
@@ -833,14 +834,21 @@ class RunsFile(list):
         website actually downloads.
 
         Stamped under exactly the same condition as `ci_run` — a CI run id is present, and the row
-        is not already stamped by another run. Local runs stay unstamped (their rows are scratch and
-        are never published) and an already-stamped row keeps the environment it was scored in."""
+        is not already stamped by another run. The same stamp records WHEN the row was scored
+        (`scored_at`, UTC) and which version of each method it ran (`method_versions`, see
+        provenance.py) — the submission page shows both. Local runs stay unstamped (their rows are
+        scratch and are never published) and an already-stamped row keeps the environment it was
+        scored in."""
         run, sha = os.environ.get("QSMCI_RUN"), os.environ.get("QSMCI_SHA")
         if run and "ci_run" not in row:
             row["ci_run"] = run
             if sha:
                 row["ci_sha"] = sha
             row["ci_env"] = dict(scoring_env())   # a copy per row: rows stay independent documents
+            row["scored_at"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+            versions = {s: v for s in row_methods(row) if (v := method_commit(s, sha))}
+            if versions:
+                row["method_versions"] = versions
         return row
 
     def append(self, row) -> None:

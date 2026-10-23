@@ -150,7 +150,10 @@ jobs:
       TASK_ID: ${{ matrix.task.id }}
       PHANTOM: ${{ matrix.task.phantom || 'sim' }}
     steps:
+      # Full history (commits and trees only; blob:none keeps it cheap): RunsFile.stamp records the
+      # last commit touching each scored method's algorithms/<slug>/ as the version it ran.
       - uses: actions/checkout@v7
+        with: { fetch-depth: 0, filter: "blob:none" }
 
       # Kill orphaned qsm-ci containers left behind by inactive runs or failed sibling jobs on the
       # persistent self-hosted box, before this job allocates memory of its own. The reasoning,
@@ -454,6 +457,7 @@ jobs:
           TASKS: ${{ needs.plan.outputs.tasks }}   # via env: derived from free-text dispatch inputs
           SHA: ${{ github.sha }}
           SKIPPED_MANUAL: ${{ needs.plan.outputs.skipped_manual }}
+          GH_TOKEN: ${{ github.token }}   # provenance.py reads each old row's CI run start time
         run: |
           git config user.name  "qsm-ci-bot"
           git config user.email "qsm-ci@users.noreply.github.com"
@@ -472,6 +476,10 @@ jobs:
             git reset --hard origin/main -q          # HEAD + results/* = latest main
             python3 scripts/merge_index.py /tmp/base-index.json /tmp/scored-index.json \
                     results/index.json results/index.json
+            # Date and version any row scored before RunsFile.stamp recorded them (idempotent: a no-op
+            # once every row has them). Done here, on the latest main, so it never conflicts with
+            # another run's results commit. Best-effort: a gh/git hiccup must not block the publish.
+            python3 scripts/provenance.py results/index.json || echo "::warning::provenance backfill failed"
             python3 scripts/score_state.py --state results/scoring-state.json --sha "$SHA" \
                     --tasks /tmp/tasks.json --done-dir . --skipped-manual /tmp/skipped-manual.json
             git add results/index.json results/scoring-state.json

@@ -127,3 +127,31 @@ def test_a_row_carrying_the_scoring_environment_round_trips_through_merge_index(
     # and the newer-run guard still reads `ci_run` with the extra key present
     assert mi.superseded(row("x", e310, "100.1"), row("x", e312, "200.1"))
     assert mi.upsert([row("x", e310)], [])[0]["ci_env"] == e310
+
+
+def test_runsfile_stamps_the_scoring_date_and_method_versions(pipeline, tmp_path, monkeypatch):
+    """The submission page shows when a row was scored and which version of each method it ran."""
+    monkeypatch.setenv("QSMCI_RUN", "900.1")
+    monkeypatch.setenv("QSMCI_SHA", "abc")
+    seen = []
+    monkeypatch.setattr(pipeline, "method_commit",
+                        lambda slug, sha: seen.append((slug, sha)) or {"commit": f"c-{slug}", "date": "2026-10-01T00:00:00Z"})
+    runs = pipeline.RunsFile(tmp_path / "runs-f-ver.json")
+    runs.append({"id": "a", "slug": "romeo+vsharp+tkd", "combo": {"field_mapping": "gt", "bfr": "vsharp", "dipole": "tkd"}})
+    runs.append({"id": "b", "slug": "tkd", "ci_run": "7.1"})            # already stamped: left alone
+    assert runs[0]["scored_at"].endswith("Z")
+    assert list(runs[0]["method_versions"]) == ["vsharp", "tkd"]       # pipeline order, no "gt"
+    assert seen == [("vsharp", "abc"), ("tkd", "abc")]
+    assert "scored_at" not in runs[1] and "method_versions" not in runs[1]
+
+
+def test_method_commit_is_the_last_commit_touching_the_method(pipeline):
+    import subprocess
+    slug = sorted(p.name for p in (pipeline.ROOT / "algorithms").iterdir() if p.is_dir())[0]
+    got = pipeline.method_commit(slug, "HEAD")
+    if got is None:   # not a git checkout (e.g. an sdist): nothing to compare against
+        return
+    want = subprocess.run(["git", "log", "-1", "--format=%H", "--", f"algorithms/{slug}"],
+                          cwd=pipeline.ROOT, capture_output=True, text=True).stdout.strip()
+    assert got["commit"] == want and "T" in got["date"]
+    assert pipeline.method_commit("no-such-method", "HEAD") is None
