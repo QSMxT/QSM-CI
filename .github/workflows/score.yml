@@ -36,6 +36,8 @@ name: score
 # timeout_minutes:), and manual/gpu — NEVER scheduled automatically, only by a workflow_dispatch that
 # names the slug in `scope` (or include_manual=true). MoDIP and INR-QSM are manual: one inversion takes
 # ~12-17 h on the shared box, so no cap makes them feasible automatically.
+# highmem: the runners in repository variable QSMCI_HIGHMEM_RUNNER, dispatch-only, in runs of their
+# own capped at the pool size. Unset: the default hosted tier.
 
 on:
   push:
@@ -97,6 +99,7 @@ jobs:
       slugs: ${{ steps.plan.outputs.slugs }}
       base: ${{ steps.plan.outputs.base }}
       skipped_manual: ${{ steps.plan.outputs.skipped_manual }}   # manual-tier tasks owed but not scheduled
+      max_parallel: ${{ steps.plan.outputs.max_parallel }}   # highmem runs only
     steps:
       - uses: actions/checkout@v7
         with: { fetch-depth: 0 }   # the scope walks main back to the last completed scoring
@@ -113,6 +116,7 @@ jobs:
           RUN_ID: ${{ github.run_id }}
           REPO: ${{ github.repository }}
           GH_TOKEN: ${{ github.token }}   # lets the planner skip tasks another running score run already covers
+          QSMCI_HIGHMEM_RUNNER: ${{ vars.QSMCI_HIGHMEM_RUNNER }}   # unset = hosted
         run: |
           pip install -q pyyaml
           python3 scripts/score_plan.py
@@ -122,6 +126,7 @@ jobs:
     if: needs.plan.outputs.tasks != '[]'
     strategy:
       fail-fast: false
+      max-parallel: ${{ fromJson(needs.plan.outputs.max_parallel || '256') }}   # pool size for highmem, else no cap
       matrix:
         task: ${{ fromJson(needs.plan.outputs.tasks) }}
     # One group per TASK: a newer run's copy of this task supersedes an older run's (its rows were
@@ -132,8 +137,8 @@ jobs:
       cancel-in-progress: true
     # Runner, wall-clock budget and intra-job container parallelism are chosen per task by the plan
     # job (ubuntu-latest/360/2 by default; the 31 GB self-hosted runners/360/4 for `runner: self-hosted`
-    # methods, with per-method timeout_minutes:/jobs: overrides). QSM_CI_JOBS here overrides the
-    # workflow-level cap of 2.
+    # methods, with per-method timeout_minutes:/jobs: overrides; the lent runners/720/1 for
+    # `runner: highmem`). QSM_CI_JOBS here overrides the workflow-level cap of 2.
     runs-on: ${{ matrix.task.runs_on }}
     timeout-minutes: ${{ matrix.task.timeout }}
     env:

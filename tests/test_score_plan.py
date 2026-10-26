@@ -85,6 +85,72 @@ def test_overrides_only_apply_on_self_hosted_tiers_and_skipped_methods_never_run
     assert set(t["s00"]["exclude"].split(",")) >= {"big", "slow", "gpuonly", "chi"}
 
 
+HIGHMEM = {"heavy": "stage: dipole\nimage: x\nrunner: highmem\ntimeout_minutes: 900\njobs: 4\n",
+           "heavychi": "stage: chi-separation\nimage: x\nrunner: highmem\n"}
+LENT = '{"runs_on": "neurodesk-arcrunner-lent-qsmci", "max_parallel": 2}'
+
+
+def test_highmem_is_the_default_tier_until_its_runner_variable_is_set(tmp_path, monkeypatch):
+    root = _algos(tmp_path / "hm", {**BASIC, **HIGHMEM})
+    plain = _algos(tmp_path / "plain", {**BASIC, **{s: b.replace("runner: highmem\n", "") for s, b in HIGHMEM.items()}})
+    focus = ["heavy", "heavychi", "vsharp"]
+    for value in (None, "", "  "):
+        if value is None:
+            monkeypatch.delenv("QSMCI_HIGHMEM_RUNNER", raising=False)
+        else:
+            monkeypatch.setenv("QSMCI_HIGHMEM_RUNNER", value)
+        assert sp.plan_tasks(root, REG, full=True, slugs=[]) == sp.plan_tasks(plain, REG, full=True, slugs=[])
+        assert sp.plan_tasks(root, REG, full=False, slugs=focus) == sp.plan_tasks(plain, REG, full=False, slugs=focus)
+    monkeypatch.setenv("QSMCI_HIGHMEM_RUNNER", "self-hosted, Linux")   # malformed: an error only once a method uses it
+    sp.plan_tasks(plain, REG, full=True, slugs=[])
+
+
+def test_highmem_runs_only_when_dispatched_by_name(tmp_path, monkeypatch):
+    monkeypatch.setenv("QSMCI_HIGHMEM_RUNNER", LENT)
+    root = _algos(tmp_path, {**BASIC, **HIGHMEM})
+    full = {t["id"]: t for t in sp.plan_tasks(root, REG, full=True, slugs=[], include_manual=True)}
+    assert not [i for i in full if "heavy" in i]                       # not automatic, not even with include_manual
+    assert {"heavy", "heavychi"} <= set(full["s00"]["exclude"].split(","))   # and out of the shard sweep
+    assert sp.plan_tasks(root, REG, full=False, slugs=["heavy", "heavychi"]) == []   # a push touching them plans nothing
+    named = sp.plan_tasks(root, REG, full=False, slugs=["heavy", "heavychi"], explicit={"heavy", "heavychi"})
+    assert {t["id"] for t in named} == {"f-heavy", "iv-heavy", "f-heavychi", "f-heavychi-ridani-3t-iso",
+                                        "f-heavychi-ridani-7t-aniso"}
+    lent = {"runs_on": "neurodesk-arcrunner-lent-qsmci", "timeout": 720, "jobs": 1}   # timeout_minutes/jobs don't apply
+    assert all({k: t[k] for k in lent} == lent for t in named)
+
+
+def test_a_highmem_dispatch_is_capped_owes_what_it_skips_and_runs_alone(tmp_path, monkeypatch):
+    monkeypatch.setenv("QSMCI_HIGHMEM_RUNNER", LENT)
+    monkeypatch.delenv("GH_TOKEN", raising=False)
+    root = _algos(tmp_path, {**BASIC, **HIGHMEM})
+    dispatch = {"EVENT": "workflow_dispatch", "SHA": "HEAD"}
+    d = sp.decide({**dispatch, "SCOPE": "heavychi"}, root, REG, {})
+    assert d["max_parallel"] == 2 and len(d["tasks"]) == 3
+    with pytest.raises(ValueError, match="dispatch highmem methods on their own: scope=heavychi"):
+        sp.decide({**dispatch, "SCOPE": "heavychi,tkd"}, root, REG, {})
+    d = sp.decide({**dispatch, "SCOPE": "all"}, root, REG, {})
+    assert d["max_parallel"] is None and {"f-heavy", "iv-heavy", "f-heavychi"} <= set(d["skipped_manual"])
+    # owed highmem work comes back when its method is named, never through include_manual
+    state = {"pending_manual": ["f-heavychi-ridani-3t-iso", "f-slow"]}
+    d = sp.decide({**dispatch, "SCOPE": "tkd", "INCLUDE_MANUAL": "true"}, root, REG, state)
+    assert {t["id"] for t in d["tasks"]} == {"f-tkd", "iv-tkd", "f-slow"} and d["max_parallel"] is None
+    monkeypatch.delenv("QSMCI_HIGHMEM_RUNNER")
+    assert sp.decide({**dispatch, "SCOPE": "heavychi,tkd"}, root, REG, {})["max_parallel"] is None
+
+
+def test_the_highmem_variable_is_a_label_or_a_runs_on_max_parallel_object(monkeypatch):
+    for raw, want in (("lent", {"runs_on": "lent", "max_parallel": 1}),
+                      ('{"runs_on": ["self-hosted", "lent"], "max_parallel": 3}',
+                       {"runs_on": ["self-hosted", "lent"], "max_parallel": 3})):
+        monkeypatch.setenv("QSMCI_HIGHMEM_RUNNER", raw)
+        assert sp.highmem() == want
+    for bad in ("self-hosted, Linux", "{not json", '{"max_parallel": 2}', '{"runs_on": [], "max_parallel": 2}',
+                '{"runs_on": "lent", "max_parallel": 0}', '{"runs_on": "lent", "max_parallel": true}'):
+        monkeypatch.setenv("QSMCI_HIGHMEM_RUNNER", bad)
+        with pytest.raises(ValueError):
+            sp.highmem()
+
+
 # ---------------------------------------------------------------------------------------------- scope
 
 @pytest.fixture
@@ -249,3 +315,12 @@ def test_the_workflow_wires_the_planner_and_never_queues_whole_runs():
     assert "QSMCI_RUN: ${{ github.run_id }}.${{ github.run_attempt }}" in score
     drop = merge[merge.index("Drop ids a newer run already scored"):merge.index("Publish volumes")]
     assert "from merge_index import superseded" in drop and "shutil.rmtree" in drop
+
+
+def test_the_workflow_hands_the_highmem_runner_to_the_planner_and_caps_the_matrix():
+    wf = (ROOT / ".github" / "workflows" / "score.yml").read_text()
+    plan = wf[wf.index("  plan:"):wf.index("  score:")]
+    assert "QSMCI_HIGHMEM_RUNNER: ${{ vars.QSMCI_HIGHMEM_RUNNER }}" in plan
+    assert "max_parallel: ${{ steps.plan.outputs.max_parallel }}" in plan
+    score = wf[wf.index("  score:"):wf.index("  merge:")]
+    assert "max-parallel: ${{ fromJson(needs.plan.outputs.max_parallel || '256') }}" in score

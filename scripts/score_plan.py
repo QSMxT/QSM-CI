@@ -30,6 +30,9 @@ Per-method `runner:` in algorithm.yml:
     hosted-large  HOSTED_LARGE ubuntu-latest, 360-min cap, 1 container (the full 16 GB).
     self-hosted   SELFHOSTED   QSM-CI's private runners (31 GB, the only tier that may exceed 6 h via
                                `timeout_minutes:`). Own focus job; excluded from the shard sweep.
+    highmem       highmem()    the runners in repository variable QSMCI_HIGHMEM_RUNNER, 720-min cap,
+                               1 container. Dispatch-only (named in `scope`), in runs of their own,
+                               capped at max_parallel. Variable unset: identical to (unset).
     manual | gpu  MANUAL       NEVER scheduled automatically (not on push, not by scope=all). Scored
                                only when a workflow_dispatch names the slug in `scope`, or with
                                include_manual=true. For methods whose CPU cost makes them infeasible
@@ -48,8 +51,10 @@ Per-method overrides, honoured on self-hosted/manual only (hosted tiers are hard
                          phantoms stay automatic)
 
 Environment (set by score.yml):
-    EVENT, SHA, BEFORE, SCOPE, INCLUDE, SHARDS, INCLUDE_MANUAL, RUN_ID, REPO, GH_TOKEN (optional)
-Outputs (GITHUB_OUTPUT): tasks=<json list>, full=true|false, slugs=<json list>, base=<sha>
+    EVENT, SHA, BEFORE, SCOPE, INCLUDE, SHARDS, INCLUDE_MANUAL, RUN_ID, REPO, GH_TOKEN (optional),
+    QSMCI_HIGHMEM_RUNNER (optional, see highmem())
+Outputs (GITHUB_OUTPUT): tasks=<json list>, full=true|false, slugs=<json list>, base=<sha>,
+    max_parallel=<n> (only when the run plans highmem tasks)
 """
 from __future__ import annotations
 
@@ -82,7 +87,8 @@ SCORE_COSMETIC = COSMETIC_KEYS | {"runner", "jobs", "manual_phantoms",
 HOSTED = {"runs_on": "ubuntu-latest", "timeout": 360, "jobs": 2}
 HOSTED_LARGE = {"runs_on": "ubuntu-latest", "timeout": 360, "jobs": 1}
 SELFHOSTED = {"runs_on": ["self-hosted", "Linux", "X64"], "timeout": 360, "jobs": 4}
-TIERS = {"": "hosted", "hosted": "hosted", "hosted-large": "hosted-large",
+HIGHMEM_TIMEOUT = 720
+TIERS = {"": "hosted", "hosted": "hosted", "hosted-large": "hosted-large", "highmem": "highmem",
          "self-hosted": "self-hosted", "manual": "manual", "gpu": "manual"}
 
 
@@ -106,14 +112,40 @@ def all_slugs(root: Path) -> list[str]:
     return sorted(p.parent.name for p in root.glob("*/algorithm.yml") if not p.parent.name.startswith("_"))
 
 
+def highmem() -> dict | None:
+    """QSMCI_HIGHMEM_RUNNER: a runner label, or {"runs_on": <label(s)>, "max_parallel": <n>} (default 1).
+    None while unset."""
+    raw = (os.environ.get("QSMCI_HIGHMEM_RUNNER") or "").strip()
+    if not raw:
+        return None
+    cfg = raw
+    if raw.startswith("{"):
+        try:
+            cfg = json.loads(raw)
+        except json.JSONDecodeError:
+            cfg = None
+    runs_on, max_parallel = (cfg.get("runs_on"), cfg.get("max_parallel", 1)) if isinstance(cfg, dict) else (cfg, 1)
+    labels = [runs_on] if isinstance(runs_on, str) else runs_on
+    if not (isinstance(labels, list) and labels
+            and all(isinstance(x, str) and re.fullmatch(r"[^\s,'\"{}\[\]]+", x) for x in labels)
+            and type(max_parallel) is int and max_parallel >= 1):
+        raise ValueError('QSMCI_HIGHMEM_RUNNER must be a runner label or {"runs_on": <label or list>, '
+                         f'"max_parallel": <n>}}, not {raw!r}')
+    return {"runs_on": runs_on, "max_parallel": max_parallel}
+
+
 def tier_of(spec: dict | None) -> str:
     r = _scalar((spec or {}).get("runner")) or ""
-    return TIERS.get(str(r), "hosted")
+    tier = TIERS.get(str(r), "hosted")
+    # highmem is the default tier until its runners are configured
+    return "hosted" if tier == "highmem" and highmem() is None else tier
 
 
 def route(spec: dict | None) -> dict:
     """Runner, cap and intra-job container count for a method's task."""
     tier = tier_of(spec)
+    if tier == "highmem":   # timeout_minutes:/jobs: don't apply
+        return {"runs_on": highmem()["runs_on"], "timeout": HIGHMEM_TIMEOUT, "jobs": 1}
     base = {"hosted": HOSTED, "hosted-large": HOSTED_LARGE, "self-hosted": SELFHOSTED,
             "manual": SELFHOSTED}[tier]
     out = dict(base)
@@ -182,9 +214,10 @@ def dedicated(root: Path) -> list[str]:
 
 def plan_tasks(root: Path, reg: dict, *, full: bool, slugs: list[str], include: str = "",
                shards: int = 12, explicit: set[str] | None = None,
-               include_manual: bool = False) -> list[dict]:
+               include_manual: bool = False, include_highmem: bool = False) -> list[dict]:
     """The matrix for a run. `explicit` = slugs a human named on dispatch: they (and their manual
-    phantoms) are planned even when their tier is manual. `include_manual` lifts that for everyone."""
+    phantoms) are planned even when their tier is manual or highmem. `include_manual` lifts that for
+    the manual tier, `include_highmem` (internal) for highmem."""
     explicit = explicit or set()
     specs = {s: load_spec(root, s) for s in all_slugs(root)}
 
@@ -194,6 +227,8 @@ def plan_tasks(root: Path, reg: dict, *, full: bool, slugs: list[str], include: 
             return False
         wanted = include_manual or slug in explicit
         if tier_of(spec) == "manual" and not wanted:
+            return False
+        if tier_of(spec) == "highmem" and not (include_highmem or slug in explicit):
             return False
         if ph is not None and ph in manual_phantoms(spec) and not wanted:
             return False
@@ -436,12 +471,14 @@ def decide(env: dict, root: Path, reg: dict, state: dict) -> dict:
     # so "score the manual ones too" means only the ones that actually need it.
     planned = {t["id"] for t in tasks}
     would = plan_tasks(root, reg, full=full, slugs=slugs, include=include, shards=shards,
-                       explicit=explicit, include_manual=True) if not include else []
+                       explicit=explicit, include_manual=True, include_highmem=True) if not include else []
     skipped_manual = [t["id"] for t in would if t["id"] not in planned]
+    on_lent = lambda t: bool(t.get("focus")) and tier_of(load_spec(root, t["focus"])) == "highmem"  # noqa: E731
     owed = [i for i in state.get("pending_manual", []) if i not in planned]
     if owed and (include_manual or explicit) and not include:
-        cand = plan_tasks(root, reg, full=False, slugs=all_slugs(root), include_manual=True)
-        extra = [t for t in cand if t["id"] in owed and (include_manual or t.get("focus") in explicit)]
+        cand = plan_tasks(root, reg, full=False, slugs=all_slugs(root), include_manual=True, include_highmem=True)
+        extra = [t for t in cand if t["id"] in owed
+                 and (t.get("focus") in explicit or (include_manual and not on_lent(t)))]
         if extra:
             notes.append(f"pending manual tasks carried: {', '.join(t['id'] for t in extra)}")
             tasks += extra
@@ -449,8 +486,18 @@ def decide(env: dict, root: Path, reg: dict, state: dict) -> dict:
     if tasks and os.environ.get("GH_TOKEN") and env.get("REPO"):
         others = in_progress_runs(env["REPO"], env.get("RUN_ID", ""))
         tasks, dropped = subtract_in_progress(tasks, sha, others)
+    # max-parallel caps the whole matrix, so a highmem run carries highmem tasks only
+    max_parallel = None
+    lent = [t["id"] for t in tasks if on_lent(t)]
+    if lent:
+        rest = [t["id"] for t in tasks if not on_lent(t)]
+        if rest:
+            hm = sorted({t["focus"] for t in tasks if on_lent(t)})
+            raise ValueError(f"dispatch highmem methods on their own: scope={','.join(hm)}, and the rest in "
+                             f"another run (this one also planned {', '.join(rest)})")
+        max_parallel = highmem()["max_parallel"]
     return {"full": full, "slugs": slugs, "base": base, "tasks": tasks, "dropped": dropped,
-            "skipped_manual": skipped_manual, "notes": notes}
+            "skipped_manual": skipped_manual, "notes": notes, "max_parallel": max_parallel}
 
 
 def main() -> None:
@@ -458,22 +505,31 @@ def main() -> None:
            ("EVENT", "SHA", "BEFORE", "SCOPE", "INCLUDE", "SHARDS", "INCLUDE_MANUAL", "RUN_ID", "REPO")}
     root = Path(os.environ.get("QSMCI_ALGORITHMS_DIR") or (ROOT / "algorithms"))
     reg = json.load(open(ROOT / "scripts/datasets.json"))
-    d = decide(env, root, reg, read_state(ROOT / STATE_PATH))
+    try:
+        d = decide(env, root, reg, read_state(ROOT / STATE_PATH))
+    except ValueError as e:   # a mixed highmem dispatch, or a malformed QSMCI_HIGHMEM_RUNNER
+        print(f"::error::{e}")
+        sys.exit(1)
     for n in d["notes"]:
         print(f"::notice::{n}")
     for x in d["dropped"]:
         print(f"skipping {x}: already being scored at an up-to-date commit")
     print(f"scope: full={d['full']} slugs={d['slugs']} base={d['base'][:12]}")
     print(f"planned {len(d['tasks'])} task(s): {', '.join(t['id'] for t in d['tasks']) or '-'}")
+    if d["max_parallel"]:
+        print(f"highmem run: at most {d['max_parallel']} job(s) at a time on the lent runners")
     if d["skipped_manual"]:
-        print(f"manual-tier tasks owed but not scheduled (recorded as pending_manual; dispatch with "
-              f"include_manual=true or scope=<slug> to run them): {', '.join(d['skipped_manual'])}")
+        print(f"manual/highmem-tier tasks owed but not scheduled (recorded as pending_manual; dispatch "
+              f"with include_manual=true or scope=<slug> to run them, highmem ones only by scope=<slug>): "
+              f"{', '.join(d['skipped_manual'])}")
     with open(os.environ.get("GITHUB_OUTPUT", "/dev/stdout"), "a") as out:
         out.write(f"tasks={json.dumps(d['tasks'])}\n")
         out.write(f"full={'true' if d['full'] else 'false'}\n")
         out.write(f"slugs={json.dumps(d['slugs'])}\n")
         out.write(f"base={d['base']}\n")
         out.write(f"skipped_manual={json.dumps(d['skipped_manual'])}\n")
+        if d["max_parallel"]:
+            out.write(f"max_parallel={d['max_parallel']}\n")
 
 
 if __name__ == "__main__":
