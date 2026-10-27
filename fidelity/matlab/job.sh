@@ -65,6 +65,8 @@ setup)
 trace)
     # Which toolbox functions does the code (pcode included) call? Profile one licensed run.
     out="$W/runs/trace"; rm -rf "$out"; mkdir -p "$out"
+    DEPS="$W/deps-trace"; fid_assemble "$DEPS" "$A"
+    if declare -F fid_build_hook >/dev/null; then fid_build_hook "$DEPS"; fi
     mat "fidelity_trace('$FID_INPUT', '$out', '$DEPS', '$A', '$FID_MATLAB_PATH', '$W/reports/trace.txt')"
     ;;
 recon)

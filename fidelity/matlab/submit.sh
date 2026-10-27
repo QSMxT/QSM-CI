@@ -45,7 +45,7 @@ build)
     need_sources
     echo "build $(STEP=build sub build "")" ;;
 trace)
-    : "${FID_CASES:?}"; c=${FID_CASES%% *}
+    need_sources; : "${FID_CASES:?}"; c=${FID_CASES%% *}
     echo "trace $(STEP=trace FID_CASE=${c%%=*} FID_INPUT=${c#*=} sub trace "")" ;;
 setup|runs|compare|all)
     setup=""
