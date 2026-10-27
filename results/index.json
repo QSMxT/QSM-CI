@@ -32527,49 +32527,49 @@
       "stage": "chi-separation",
       "mode": "isolated",
       "track": "sim",
-      "runtime_s": 91.99129509925842,
+      "runtime_s": 112.44408965110779,
       "variant": "default",
       "domain": "chisep",
       "kind": "chisep",
       "metrics": {
-        "para_nrmse": 38.56032496279313,
-        "para_nrmse_detrend": 39.97875301006649,
-        "para_correlation": 0.928544705584176,
-        "para_xsim": 0.7167946202539601,
-        "para_nrmse_dgm": 11.368046314120162,
-        "para_dgm_linearity": 0.1268473615208735,
-        "para_nrmse_blood": 19.372439805011783,
-        "para_calc_leak": 0.012534967274405062,
-        "para_mspe": 5.030996059969112,
+        "para_nrmse": 38.560324998759995,
+        "para_nrmse_detrend": 39.978753089755834,
+        "para_correlation": 0.9285447053291189,
+        "para_xsim": 0.7167946192142101,
+        "para_nrmse_dgm": 11.368046037863044,
+        "para_dgm_linearity": 0.12684734764005756,
+        "para_nrmse_blood": 19.372439790657534,
+        "para_calc_leak": 0.012534967972896993,
+        "para_mspe": 5.03099610466645,
         "para_coverage": 1.0,
-        "dia_nrmse": 55.08779059720148,
-        "dia_nrmse_detrend": 63.30926647427828,
-        "dia_correlation": 0.8449109788811009,
-        "dia_xsim": 0.6386651654079837,
+        "dia_nrmse": 55.087790773608994,
+        "dia_nrmse_detrend": 63.30926674304005,
+        "dia_correlation": 0.844910977854818,
+        "dia_xsim": 0.6386651627420581,
         "dia_calc_moment_dev": 0.12973396212328225,
         "dia_calc_streak": null,
-        "dia_iron_leak": 0.012737408249771563,
-        "dia_mspe": 3.148782448702566,
+        "dia_iron_leak": 0.012737408246483093,
+        "dia_mspe": 3.1487825062139905,
         "dia_mspe_theta": [
-          1.2336241599273021,
-          1.9915143706833351,
-          2.1416760487782116,
-          1.7228733546134158,
-          2.0751230915550813,
-          2.1302685204090275,
-          1.2111088287030447,
-          0.7700135136349809,
-          0.8758447202812832
+          1.2336240334825346,
+          1.9915143585387147,
+          2.1416761354198663,
+          1.7228734490615905,
+          2.0751232119770457,
+          2.130268627342039,
+          1.2111088860999808,
+          0.7700135378371601,
+          0.8758447767443814
         ],
-        "dia_mev": 29.00230485653774,
+        "dia_mev": 29.002293002361363,
         "dia_coverage": 1.0,
-        "para_leak": 0.016364954018549333,
-        "dia_leak": -0.08841858648821506
+        "para_leak": 0.016364958920278457,
+        "dia_leak": -0.08841858640913104
       },
       "status": "ok",
       "phantom": "chisep-mc",
-      "ci_run": "40519507521.1",
-      "ci_sha": "7c830cf7dc2ff45551c80a3ebc5105f22d8a95b2",
+      "ci_run": "40602155895.1",
+      "ci_sha": "a114333d35e37d17832981deea3db2e443e77147",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -32577,7 +32577,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-27T14:19:06Z",
+      "scored_at": "2026-10-27T23:29:24Z",
       "method_versions": {
         "susep-net": {
           "commit": "019f128eda72a337b9d816fc53fe6086a37e85e8",
@@ -39033,8 +39033,8 @@
       "variant": "default",
       "dnf_reason": "Command '['qsm-ci', 'run', '/home/runner/work/QSM-CI/QSM-CI/algorithms/susep-net', '--localfield', '/home/runner/work/QSM-CI/QSM-CI/.work/iso_susep-net-ridani-3t-aniso_in/localfield.nii.gz', '--r2prime', '/home/runner/work/QSM-CI/QSM-CI/.work/iso_susep-net-ridani-3t-aniso_in/r2prime.nii.gz', '--chimap', '/home/runner/work/QSM-CI/QSM-CI/.work/iso_susep-net-ridani-3t-aniso_in/chimap.nii.gz', '--mask', '/home/runner/work/QSM-CI/QSM-CI/.work/iso_susep-net-ridani-3t-aniso_in/mask.nii.gz', '-o', '/home/runner/work/QSM-CI/QSM-CI/.work/iso_susep-net-ridani-3t-aniso_out', '--runner', 'docker']' returned non-zero exit status 1.",
       "phantom": "ridani-3t-aniso",
-      "ci_run": "40527386910.1",
-      "ci_sha": "88a2ce9e9c84d46fd68671bc9748bd2c66798190",
+      "ci_run": "40602155895.1",
+      "ci_sha": "a114333d35e37d17832981deea3db2e443e77147",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -39042,7 +39042,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-27T15:07:15Z",
+      "scored_at": "2026-10-27T23:29:12Z",
       "method_versions": {
         "susep-net": {
           "commit": "019f128eda72a337b9d816fc53fe6086a37e85e8",
@@ -39062,8 +39062,8 @@
       "variant": "default",
       "dnf_reason": "Command '['qsm-ci', 'run', '/home/runner/work/QSM-CI/QSM-CI/algorithms/susep-net', '--localfield', '/home/runner/work/QSM-CI/QSM-CI/.work/iso_susep-net-ridani-3t-iso_in/localfield.nii.gz', '--r2prime', '/home/runner/work/QSM-CI/QSM-CI/.work/iso_susep-net-ridani-3t-iso_in/r2prime.nii.gz', '--chimap', '/home/runner/work/QSM-CI/QSM-CI/.work/iso_susep-net-ridani-3t-iso_in/chimap.nii.gz', '--mask', '/home/runner/work/QSM-CI/QSM-CI/.work/iso_susep-net-ridani-3t-iso_in/mask.nii.gz', '-o', '/home/runner/work/QSM-CI/QSM-CI/.work/iso_susep-net-ridani-3t-iso_out', '--runner', 'docker']' returned non-zero exit status 1.",
       "phantom": "ridani-3t-iso",
-      "ci_run": "40527386910.1",
-      "ci_sha": "88a2ce9e9c84d46fd68671bc9748bd2c66798190",
+      "ci_run": "40602155895.1",
+      "ci_sha": "a114333d35e37d17832981deea3db2e443e77147",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -39071,7 +39071,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-27T15:07:43Z",
+      "scored_at": "2026-10-27T23:28:33Z",
       "method_versions": {
         "susep-net": {
           "commit": "019f128eda72a337b9d816fc53fe6086a37e85e8",
@@ -41606,8 +41606,8 @@
       "dnf_reason": "Command '['qsm-ci', 'run', '/home/runner/work/QSM-CI/QSM-CI/algorithms/susep-net', '--localfield', '/home/runner/work/QSM-CI/QSM-CI/.work/cmp_r2prime-scaled-qsmci~susep-net-cmp-ridani-3t-aniso_in/localfield.nii.gz', '--r2prime', '/home/runner/work/QSM-CI/QSM-CI/.work/cmp_r2prime-scaled-qsmci~susep-net-cmp-ridani-3t-aniso_in/r2prime.nii.gz', '--chimap', '/home/runner/work/QSM-CI/QSM-CI/.work/cmp_r2prime-scaled-qsmci~susep-net-cmp-ridani-3t-aniso_in/chimap.nii.gz', '--mask', '/home/runner/work/QSM-CI/QSM-CI/.work/cmp_r2prime-scaled-qsmci~susep-net-cmp-ridani-3t-aniso_in/mask.nii.gz', '-o', '/home/runner/work/QSM-CI/QSM-CI/.work/cmp_r2prime-scaled-qsmci~susep-net-cmp-ridani-3t-aniso_out', '--runner', 'docker']' returned non-zero exit status 1.",
       "domain": "chisep",
       "phantom": "ridani-3t-aniso",
-      "ci_run": "40527386910.1",
-      "ci_sha": "88a2ce9e9c84d46fd68671bc9748bd2c66798190",
+      "ci_run": "40602155895.1",
+      "ci_sha": "a114333d35e37d17832981deea3db2e443e77147",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -41615,7 +41615,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-27T15:15:09Z",
+      "scored_at": "2026-10-27T23:37:53Z",
       "method_versions": {
         "susep-net": {
           "commit": "019f128eda72a337b9d816fc53fe6086a37e85e8",
@@ -41640,8 +41640,8 @@
       "dnf_reason": "Command '['qsm-ci', 'run', '/home/runner/work/QSM-CI/QSM-CI/algorithms/susep-net', '--localfield', '/home/runner/work/QSM-CI/QSM-CI/.work/cmp_r2primenet~susep-net-cmp-ridani-3t-aniso_in/localfield.nii.gz', '--r2prime', '/home/runner/work/QSM-CI/QSM-CI/.work/cmp_r2primenet~susep-net-cmp-ridani-3t-aniso_in/r2prime.nii.gz', '--chimap', '/home/runner/work/QSM-CI/QSM-CI/.work/cmp_r2primenet~susep-net-cmp-ridani-3t-aniso_in/chimap.nii.gz', '--mask', '/home/runner/work/QSM-CI/QSM-CI/.work/cmp_r2primenet~susep-net-cmp-ridani-3t-aniso_in/mask.nii.gz', '-o', '/home/runner/work/QSM-CI/QSM-CI/.work/cmp_r2primenet~susep-net-cmp-ridani-3t-aniso_out', '--runner', 'docker']' returned non-zero exit status 1.",
       "domain": "chisep",
       "phantom": "ridani-3t-aniso",
-      "ci_run": "40527386910.1",
-      "ci_sha": "88a2ce9e9c84d46fd68671bc9748bd2c66798190",
+      "ci_run": "40602155895.1",
+      "ci_sha": "a114333d35e37d17832981deea3db2e443e77147",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -41649,7 +41649,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-27T15:16:00Z",
+      "scored_at": "2026-10-27T23:38:46Z",
       "method_versions": {
         "susep-net": {
           "commit": "019f128eda72a337b9d816fc53fe6086a37e85e8",
@@ -43264,8 +43264,8 @@
       "dnf_reason": "Command '['qsm-ci', 'run', '/home/runner/work/QSM-CI/QSM-CI/algorithms/susep-net', '--localfield', '/home/runner/work/QSM-CI/QSM-CI/.work/cmp_r2prime-scaled-qsmci~susep-net-cmp-ridani-3t-iso_in/localfield.nii.gz', '--r2prime', '/home/runner/work/QSM-CI/QSM-CI/.work/cmp_r2prime-scaled-qsmci~susep-net-cmp-ridani-3t-iso_in/r2prime.nii.gz', '--chimap', '/home/runner/work/QSM-CI/QSM-CI/.work/cmp_r2prime-scaled-qsmci~susep-net-cmp-ridani-3t-iso_in/chimap.nii.gz', '--mask', '/home/runner/work/QSM-CI/QSM-CI/.work/cmp_r2prime-scaled-qsmci~susep-net-cmp-ridani-3t-iso_in/mask.nii.gz', '-o', '/home/runner/work/QSM-CI/QSM-CI/.work/cmp_r2prime-scaled-qsmci~susep-net-cmp-ridani-3t-iso_out', '--runner', 'docker']' returned non-zero exit status 1.",
       "domain": "chisep",
       "phantom": "ridani-3t-iso",
-      "ci_run": "40527386910.1",
-      "ci_sha": "88a2ce9e9c84d46fd68671bc9748bd2c66798190",
+      "ci_run": "40602155895.1",
+      "ci_sha": "a114333d35e37d17832981deea3db2e443e77147",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -43273,7 +43273,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-27T15:16:30Z",
+      "scored_at": "2026-10-27T23:35:23Z",
       "method_versions": {
         "susep-net": {
           "commit": "019f128eda72a337b9d816fc53fe6086a37e85e8",
@@ -43298,8 +43298,8 @@
       "dnf_reason": "Command '['qsm-ci', 'run', '/home/runner/work/QSM-CI/QSM-CI/algorithms/susep-net', '--localfield', '/home/runner/work/QSM-CI/QSM-CI/.work/cmp_r2primenet~susep-net-cmp-ridani-3t-iso_in/localfield.nii.gz', '--r2prime', '/home/runner/work/QSM-CI/QSM-CI/.work/cmp_r2primenet~susep-net-cmp-ridani-3t-iso_in/r2prime.nii.gz', '--chimap', '/home/runner/work/QSM-CI/QSM-CI/.work/cmp_r2primenet~susep-net-cmp-ridani-3t-iso_in/chimap.nii.gz', '--mask', '/home/runner/work/QSM-CI/QSM-CI/.work/cmp_r2primenet~susep-net-cmp-ridani-3t-iso_in/mask.nii.gz', '-o', '/home/runner/work/QSM-CI/QSM-CI/.work/cmp_r2primenet~susep-net-cmp-ridani-3t-iso_out', '--runner', 'docker']' returned non-zero exit status 1.",
       "domain": "chisep",
       "phantom": "ridani-3t-iso",
-      "ci_run": "40527386910.1",
-      "ci_sha": "88a2ce9e9c84d46fd68671bc9748bd2c66798190",
+      "ci_run": "40602155895.1",
+      "ci_sha": "a114333d35e37d17832981deea3db2e443e77147",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -43307,7 +43307,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-27T15:17:28Z",
+      "scored_at": "2026-10-27T23:35:55Z",
       "method_versions": {
         "susep-net": {
           "commit": "019f128eda72a337b9d816fc53fe6086a37e85e8",
@@ -43327,8 +43327,8 @@
       "variant": "default",
       "dnf_reason": "Command '['qsm-ci', 'run', '/home/runner/work/QSM-CI/QSM-CI/algorithms/susep-net', '--localfield', '/home/runner/work/QSM-CI/QSM-CI/.work/iso_susep-net-ridani-7t-aniso_in/localfield.nii.gz', '--r2prime', '/home/runner/work/QSM-CI/QSM-CI/.work/iso_susep-net-ridani-7t-aniso_in/r2prime.nii.gz', '--chimap', '/home/runner/work/QSM-CI/QSM-CI/.work/iso_susep-net-ridani-7t-aniso_in/chimap.nii.gz', '--mask', '/home/runner/work/QSM-CI/QSM-CI/.work/iso_susep-net-ridani-7t-aniso_in/mask.nii.gz', '-o', '/home/runner/work/QSM-CI/QSM-CI/.work/iso_susep-net-ridani-7t-aniso_out', '--runner', 'docker']' returned non-zero exit status 1.",
       "phantom": "ridani-7t-aniso",
-      "ci_run": "39271854493.1",
-      "ci_sha": "6739aa0f847eb6532c21081d326903cca1ff438c",
+      "ci_run": "40602155895.1",
+      "ci_sha": "a114333d35e37d17832981deea3db2e443e77147",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -43336,11 +43336,11 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-19T14:45:34Z",
+      "scored_at": "2026-10-27T23:28:10Z",
       "method_versions": {
         "susep-net": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "019f128eda72a337b9d816fc53fe6086a37e85e8",
+          "date": "2026-10-26T11:56:50+10:00"
         }
       }
     },
@@ -43361,8 +43361,8 @@
       "dnf_reason": "Command '['qsm-ci', 'run', '/home/runner/work/QSM-CI/QSM-CI/algorithms/susep-net', '--localfield', '/home/runner/work/QSM-CI/QSM-CI/.work/cmp_r2prime-scaled-qsmci~susep-net-cmp-ridani-7t-aniso_in/localfield.nii.gz', '--r2prime', '/home/runner/work/QSM-CI/QSM-CI/.work/cmp_r2prime-scaled-qsmci~susep-net-cmp-ridani-7t-aniso_in/r2prime.nii.gz', '--chimap', '/home/runner/work/QSM-CI/QSM-CI/.work/cmp_r2prime-scaled-qsmci~susep-net-cmp-ridani-7t-aniso_in/chimap.nii.gz', '--mask', '/home/runner/work/QSM-CI/QSM-CI/.work/cmp_r2prime-scaled-qsmci~susep-net-cmp-ridani-7t-aniso_in/mask.nii.gz', '-o', '/home/runner/work/QSM-CI/QSM-CI/.work/cmp_r2prime-scaled-qsmci~susep-net-cmp-ridani-7t-aniso_out', '--runner', 'docker']' returned non-zero exit status 1.",
       "domain": "chisep",
       "phantom": "ridani-7t-aniso",
-      "ci_run": "39271854493.1",
-      "ci_sha": "6739aa0f847eb6532c21081d326903cca1ff438c",
+      "ci_run": "40602155895.1",
+      "ci_sha": "a114333d35e37d17832981deea3db2e443e77147",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -43370,11 +43370,11 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-19T14:45:34Z",
+      "scored_at": "2026-10-27T23:32:13Z",
       "method_versions": {
         "susep-net": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "019f128eda72a337b9d816fc53fe6086a37e85e8",
+          "date": "2026-10-26T11:56:50+10:00"
         }
       }
     },
@@ -43395,8 +43395,8 @@
       "dnf_reason": "Command '['qsm-ci', 'run', '/home/runner/work/QSM-CI/QSM-CI/algorithms/susep-net', '--localfield', '/home/runner/work/QSM-CI/QSM-CI/.work/cmp_r2primenet~susep-net-cmp-ridani-7t-aniso_in/localfield.nii.gz', '--r2prime', '/home/runner/work/QSM-CI/QSM-CI/.work/cmp_r2primenet~susep-net-cmp-ridani-7t-aniso_in/r2prime.nii.gz', '--chimap', '/home/runner/work/QSM-CI/QSM-CI/.work/cmp_r2primenet~susep-net-cmp-ridani-7t-aniso_in/chimap.nii.gz', '--mask', '/home/runner/work/QSM-CI/QSM-CI/.work/cmp_r2primenet~susep-net-cmp-ridani-7t-aniso_in/mask.nii.gz', '-o', '/home/runner/work/QSM-CI/QSM-CI/.work/cmp_r2primenet~susep-net-cmp-ridani-7t-aniso_out', '--runner', 'docker']' returned non-zero exit status 1.",
       "domain": "chisep",
       "phantom": "ridani-7t-aniso",
-      "ci_run": "39271854493.1",
-      "ci_sha": "6739aa0f847eb6532c21081d326903cca1ff438c",
+      "ci_run": "40602155895.1",
+      "ci_sha": "a114333d35e37d17832981deea3db2e443e77147",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -43404,11 +43404,11 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-19T14:45:34Z",
+      "scored_at": "2026-10-27T23:32:37Z",
       "method_versions": {
         "susep-net": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "019f128eda72a337b9d816fc53fe6086a37e85e8",
+          "date": "2026-10-26T11:56:50+10:00"
         }
       }
     },
@@ -43419,44 +43419,44 @@
       "stage": "r2prime-generation+chi-separation",
       "mode": "composed",
       "track": "sim",
-      "runtime_s": 72.32320761680603,
+      "runtime_s": 99.06252765655518,
       "variant": "default",
       "domain": "chisep",
       "kind": "chisep",
       "metrics": {
-        "para_nrmse": 38.553490336347934,
-        "para_nrmse_detrend": 40.185443600208146,
-        "para_correlation": 0.9278821617876228,
-        "para_xsim": 0.7353847739755364,
-        "para_nrmse_dgm": 20.800015517380636,
-        "para_dgm_linearity": 0.1344367400605736,
-        "para_nrmse_blood": 22.47101767610765,
-        "para_calc_leak": 0.013466289189333716,
-        "para_mspe": 3.557468337262762,
+        "para_nrmse": 38.55349042234366,
+        "para_nrmse_detrend": 40.1854437080904,
+        "para_correlation": 0.9278821614412874,
+        "para_xsim": 0.7353847726001574,
+        "para_nrmse_dgm": 20.800015290128847,
+        "para_dgm_linearity": 0.1344367374476091,
+        "para_nrmse_blood": 22.471017760625593,
+        "para_calc_leak": 0.013466288956503073,
+        "para_mspe": 3.5574683662484867,
         "para_coverage": 1.0,
-        "dia_nrmse": 48.8820890666444,
-        "dia_nrmse_detrend": 55.3832465412027,
-        "dia_correlation": 0.8747964313042884,
-        "dia_xsim": 0.7099789815942501,
+        "dia_nrmse": 48.882089343342074,
+        "dia_nrmse_detrend": 55.38324678836372,
+        "dia_correlation": 0.8747964303878993,
+        "dia_xsim": 0.7099789818102044,
         "dia_calc_moment_dev": 0.12973396212328225,
         "dia_calc_streak": null,
-        "dia_iron_leak": 0.013856634820068027,
-        "dia_mspe": 0.6411309205209105,
+        "dia_iron_leak": 0.013856634837250291,
+        "dia_mspe": 0.6411309426169389,
         "dia_mspe_theta": [
-          0.7381311508694663,
-          1.1609472313801636,
-          1.3711418657261583,
-          1.183366125511778,
-          0.8704027091727199,
-          0.6695329546642421,
-          0.6362546044874728,
-          0.7257160471033017,
-          0.7635702980264096
+          0.7381312865211477,
+          1.160947268184456,
+          1.3711418644040878,
+          1.1833661372071709,
+          0.870402640103499,
+          0.6695328864754683,
+          0.636254579201697,
+          0.7257160811578071,
+          0.7635703685985138
         ],
-        "dia_mev": -3.44642644155822,
+        "dia_mev": -3.4464169913812857,
         "dia_coverage": 1.0,
-        "para_leak": 0.03752533045571835,
-        "dia_leak": -0.11074061908384311
+        "para_leak": 0.03752533294546956,
+        "dia_leak": -0.11074062038857223
       },
       "status": "ok",
       "combo": {
@@ -43464,8 +43464,8 @@
         "chi_separation": "susep-net"
       },
       "phantom": "chisep-mc",
-      "ci_run": "40519507521.1",
-      "ci_sha": "7c830cf7dc2ff45551c80a3ebc5105f22d8a95b2",
+      "ci_run": "40602155895.1",
+      "ci_sha": "a114333d35e37d17832981deea3db2e443e77147",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -43473,7 +43473,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-27T14:23:29Z",
+      "scored_at": "2026-10-27T23:34:03Z",
       "method_versions": {
         "susep-net": {
           "commit": "019f128eda72a337b9d816fc53fe6086a37e85e8",
@@ -43498,44 +43498,44 @@
       "stage": "r2prime-generation+chi-separation",
       "mode": "composed",
       "track": "sim",
-      "runtime_s": 131.46765327453613,
+      "runtime_s": 162.4595284461975,
       "variant": "default",
       "domain": "chisep",
       "kind": "chisep",
       "metrics": {
-        "para_nrmse": 42.71245996650137,
-        "para_nrmse_detrend": 46.2992298797809,
-        "para_correlation": 0.9074567576451846,
-        "para_xsim": 0.6685791146873262,
-        "para_nrmse_dgm": 17.48662118181227,
-        "para_dgm_linearity": 0.13599351942787552,
-        "para_nrmse_blood": 23.820498516101356,
-        "para_calc_leak": 0.01370809634681791,
-        "para_mspe": 4.647975045961354,
+        "para_nrmse": 42.71246005382216,
+        "para_nrmse_detrend": 46.299229980330374,
+        "para_correlation": 0.9074567572973031,
+        "para_xsim": 0.6685791130176351,
+        "para_nrmse_dgm": 17.486621249677164,
+        "para_dgm_linearity": 0.13599351699000706,
+        "para_nrmse_blood": 23.82049861758147,
+        "para_calc_leak": 0.013708095842351517,
+        "para_mspe": 4.6479750267473685,
         "para_coverage": 1.0,
-        "dia_nrmse": 56.50058288372963,
-        "dia_nrmse_detrend": 65.64723843922357,
-        "dia_correlation": 0.8359626255257429,
-        "dia_xsim": 0.6280369570113851,
+        "dia_nrmse": 56.50058307232021,
+        "dia_nrmse_detrend": 65.647238656517,
+        "dia_correlation": 0.8359626246923982,
+        "dia_xsim": 0.628036955030922,
         "dia_calc_moment_dev": 0.12973396212328225,
         "dia_calc_streak": null,
-        "dia_iron_leak": 0.0132030714302707,
-        "dia_mspe": 1.5660058645146426,
+        "dia_iron_leak": 0.013203071440784675,
+        "dia_mspe": 1.5660058960268513,
         "dia_mspe_theta": [
-          0.8171309146755246,
-          1.6676842624907107,
-          2.4582984424752845,
-          2.3678593357524584,
-          1.7905121170582865,
-          1.2516012284061377,
-          0.8869982632222443,
-          0.7284954025716859,
-          0.7627101198982021
+          0.8171309871414197,
+          1.6676842685806417,
+          2.4582985710941436,
+          2.36785952022748,
+          1.7905122323294445,
+          1.2516011966371225,
+          0.8869981930335974,
+          0.7284953831636064,
+          0.7627100971217555
         ],
-        "dia_mev": 6.659984807811664,
+        "dia_mev": 6.659995872882699,
         "dia_coverage": 1.0,
-        "para_leak": 0.009405806657531454,
-        "dia_leak": -0.10378476617636084
+        "para_leak": 0.009405808848323625,
+        "dia_leak": -0.10378476616429025
       },
       "status": "ok",
       "combo": {
@@ -43543,8 +43543,8 @@
         "chi_separation": "susep-net"
       },
       "phantom": "chisep-mc",
-      "ci_run": "40519507521.1",
-      "ci_sha": "7c830cf7dc2ff45551c80a3ebc5105f22d8a95b2",
+      "ci_run": "40602155895.1",
+      "ci_sha": "a114333d35e37d17832981deea3db2e443e77147",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -43552,7 +43552,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-27T14:24:39Z",
+      "scored_at": "2026-10-27T23:35:40Z",
       "method_versions": {
         "susep-net": {
           "commit": "019f128eda72a337b9d816fc53fe6086a37e85e8",
@@ -44873,44 +44873,44 @@
       "stage": "r2prime-generation+chi-separation",
       "mode": "composed",
       "track": "sim",
-      "runtime_s": 169.7528202533722,
+      "runtime_s": 192.36077904701233,
       "variant": "default",
       "domain": "chisep",
       "kind": "chisep",
       "metrics": {
-        "para_nrmse": 44.767454851172175,
-        "para_nrmse_detrend": 50.006275754695146,
-        "para_correlation": 0.8944047376137803,
-        "para_xsim": 0.6276254858746683,
-        "para_nrmse_dgm": 19.83947490398653,
-        "para_dgm_linearity": 0.09049113380716245,
-        "para_nrmse_blood": 27.409907771783494,
-        "para_calc_leak": 0.012753559237656495,
-        "para_mspe": 5.6333617102381535,
+        "para_nrmse": 44.76745483850471,
+        "para_nrmse_detrend": 50.00627572933765,
+        "para_correlation": 0.8944047377045056,
+        "para_xsim": 0.6276254862847569,
+        "para_nrmse_dgm": 19.839474649511548,
+        "para_dgm_linearity": 0.09049113126567776,
+        "para_nrmse_blood": 27.409907632473278,
+        "para_calc_leak": 0.012753560091368854,
+        "para_mspe": 5.633361704310902,
         "para_coverage": 1.0,
-        "dia_nrmse": 60.31995652707511,
-        "dia_nrmse_detrend": 69.76067709189802,
-        "dia_correlation": 0.8201529887641303,
-        "dia_xsim": 0.5972211302889574,
+        "dia_nrmse": 60.31995656551984,
+        "dia_nrmse_detrend": 69.76067693559189,
+        "dia_correlation": 0.8201529893656764,
+        "dia_xsim": 0.5972211310835909,
         "dia_calc_moment_dev": 0.12973396212328225,
         "dia_calc_streak": null,
-        "dia_iron_leak": 0.013082574689531981,
-        "dia_mspe": 2.6168852286863276,
+        "dia_iron_leak": 0.01308257469475243,
+        "dia_mspe": 2.6168850839701565,
         "dia_mspe_theta": [
-          0.8517949877618263,
-          1.7801790210886559,
-          2.817439636765503,
-          2.5549254170711326,
-          2.482358849872244,
-          1.836374706108351,
-          1.4614652496531917,
-          0.9997524327303217,
-          0.8660471962056041
+          0.8517949260274876,
+          1.7801790002229259,
+          2.8174397396240645,
+          2.5549255969819598,
+          2.4823588815250335,
+          1.836374753453923,
+          1.4614652532791923,
+          0.9997523940543409,
+          0.8660471326962459
         ],
-        "dia_mev": -1.6731970308051343,
+        "dia_mev": -1.6731969436852856,
         "dia_coverage": 1.0,
-        "para_leak": 0.03326615823968613,
-        "dia_leak": -0.08398020168560799
+        "para_leak": 0.03326615856753592,
+        "dia_leak": -0.08398020012415285
       },
       "status": "ok",
       "combo": {
@@ -44918,8 +44918,8 @@
         "chi_separation": "susep-net"
       },
       "phantom": "chisep-mc",
-      "ci_run": "40519507521.1",
-      "ci_sha": "7c830cf7dc2ff45551c80a3ebc5105f22d8a95b2",
+      "ci_run": "40602155895.1",
+      "ci_sha": "a114333d35e37d17832981deea3db2e443e77147",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -44927,7 +44927,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-27T14:25:47Z",
+      "scored_at": "2026-10-27T23:37:17Z",
       "method_versions": {
         "susep-net": {
           "commit": "019f128eda72a337b9d816fc53fe6086a37e85e8",
@@ -46336,8 +46336,8 @@
       "dnf_reason": "Command '['qsm-ci', 'run', '/home/runner/work/QSM-CI/QSM-CI/algorithms/susep-net', '--localfield', '/home/runner/work/QSM-CI/QSM-CI/.work/cmp_r2primenet-7t~susep-net-cmp-ridani-3t-aniso_in/localfield.nii.gz', '--r2prime', '/home/runner/work/QSM-CI/QSM-CI/.work/cmp_r2primenet-7t~susep-net-cmp-ridani-3t-aniso_in/r2prime.nii.gz', '--chimap', '/home/runner/work/QSM-CI/QSM-CI/.work/cmp_r2primenet-7t~susep-net-cmp-ridani-3t-aniso_in/chimap.nii.gz', '--mask', '/home/runner/work/QSM-CI/QSM-CI/.work/cmp_r2primenet-7t~susep-net-cmp-ridani-3t-aniso_in/mask.nii.gz', '-o', '/home/runner/work/QSM-CI/QSM-CI/.work/cmp_r2primenet-7t~susep-net-cmp-ridani-3t-aniso_out', '--runner', 'docker']' returned non-zero exit status 1.",
       "domain": "chisep",
       "phantom": "ridani-3t-aniso",
-      "ci_run": "40527386910.1",
-      "ci_sha": "88a2ce9e9c84d46fd68671bc9748bd2c66798190",
+      "ci_run": "40602155895.1",
+      "ci_sha": "a114333d35e37d17832981deea3db2e443e77147",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -46345,7 +46345,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-27T15:16:52Z",
+      "scored_at": "2026-10-27T23:39:38Z",
       "method_versions": {
         "susep-net": {
           "commit": "019f128eda72a337b9d816fc53fe6086a37e85e8",
@@ -46370,8 +46370,8 @@
       "dnf_reason": "Command '['qsm-ci', 'run', '/home/runner/work/QSM-CI/QSM-CI/algorithms/susep-net', '--localfield', '/home/runner/work/QSM-CI/QSM-CI/.work/cmp_r2primenet-7t~susep-net-cmp-ridani-3t-iso_in/localfield.nii.gz', '--r2prime', '/home/runner/work/QSM-CI/QSM-CI/.work/cmp_r2primenet-7t~susep-net-cmp-ridani-3t-iso_in/r2prime.nii.gz', '--chimap', '/home/runner/work/QSM-CI/QSM-CI/.work/cmp_r2primenet-7t~susep-net-cmp-ridani-3t-iso_in/chimap.nii.gz', '--mask', '/home/runner/work/QSM-CI/QSM-CI/.work/cmp_r2primenet-7t~susep-net-cmp-ridani-3t-iso_in/mask.nii.gz', '-o', '/home/runner/work/QSM-CI/QSM-CI/.work/cmp_r2primenet-7t~susep-net-cmp-ridani-3t-iso_out', '--runner', 'docker']' returned non-zero exit status 1.",
       "domain": "chisep",
       "phantom": "ridani-3t-iso",
-      "ci_run": "40527386910.1",
-      "ci_sha": "88a2ce9e9c84d46fd68671bc9748bd2c66798190",
+      "ci_run": "40602155895.1",
+      "ci_sha": "a114333d35e37d17832981deea3db2e443e77147",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -46379,7 +46379,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-27T15:18:22Z",
+      "scored_at": "2026-10-27T23:36:40Z",
       "method_versions": {
         "susep-net": {
           "commit": "019f128eda72a337b9d816fc53fe6086a37e85e8",
@@ -46404,8 +46404,8 @@
       "dnf_reason": "Command '['qsm-ci', 'run', '/home/runner/work/QSM-CI/QSM-CI/algorithms/susep-net', '--localfield', '/home/runner/work/QSM-CI/QSM-CI/.work/cmp_r2primenet-7t~susep-net-cmp-ridani-7t-aniso_in/localfield.nii.gz', '--r2prime', '/home/runner/work/QSM-CI/QSM-CI/.work/cmp_r2primenet-7t~susep-net-cmp-ridani-7t-aniso_in/r2prime.nii.gz', '--chimap', '/home/runner/work/QSM-CI/QSM-CI/.work/cmp_r2primenet-7t~susep-net-cmp-ridani-7t-aniso_in/chimap.nii.gz', '--mask', '/home/runner/work/QSM-CI/QSM-CI/.work/cmp_r2primenet-7t~susep-net-cmp-ridani-7t-aniso_in/mask.nii.gz', '-o', '/home/runner/work/QSM-CI/QSM-CI/.work/cmp_r2primenet-7t~susep-net-cmp-ridani-7t-aniso_out', '--runner', 'docker']' returned non-zero exit status 1.",
       "domain": "chisep",
       "phantom": "ridani-7t-aniso",
-      "ci_run": "39271854493.1",
-      "ci_sha": "6739aa0f847eb6532c21081d326903cca1ff438c",
+      "ci_run": "40602155895.1",
+      "ci_sha": "a114333d35e37d17832981deea3db2e443e77147",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -46413,11 +46413,11 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-19T14:45:34Z",
+      "scored_at": "2026-10-27T23:33:02Z",
       "method_versions": {
         "susep-net": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "019f128eda72a337b9d816fc53fe6086a37e85e8",
+          "date": "2026-10-26T11:56:50+10:00"
         }
       }
     },
@@ -46717,7 +46717,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 699.6008467674255,
+      "runtime_s": 563.1080806255341,
       "metrics": {
         "nrmse": 93.61473393500471,
         "nrmse_detrend": 243.25173309567182,
@@ -46738,8 +46738,8 @@
       "mode": "isolated",
       "variant": "default",
       "phantom": "sim",
-      "ci_run": "40527386910.1",
-      "ci_sha": "88a2ce9e9c84d46fd68671bc9748bd2c66798190",
+      "ci_run": "40602155895.1",
+      "ci_sha": "a114333d35e37d17832981deea3db2e443e77147",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -46747,11 +46747,11 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-27T15:17:56Z",
+      "scored_at": "2026-10-27T23:36:45Z",
       "method_versions": {
         "qsmart-matlab": {
-          "commit": "745dd55e0dd7ad5fd58fb1af7146c38a17015343",
-          "date": "2026-10-28T00:47:54+10:00"
+          "commit": "1263e780af0e0f20d973fc470ca3e9d04636f08d",
+          "date": "2026-10-28T02:20:33+10:00"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/86/qsmart-matlab-iso__resources.json",
@@ -46769,7 +46769,7 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 770.6503591537476,
+      "runtime_s": 345.40998578071594,
       "metrics": {
         "nrmse": 93.61473393500471,
         "nrmse_detrend": 243.25173309567182,
@@ -46789,8 +46789,8 @@
       "slug": "qsmart-matlab",
       "mode": "composed",
       "phantom": "sim",
-      "ci_run": "40527386910.1",
-      "ci_sha": "88a2ce9e9c84d46fd68671bc9748bd2c66798190",
+      "ci_run": "40602155895.1",
+      "ci_sha": "a114333d35e37d17832981deea3db2e443e77147",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -46798,11 +46798,11 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-27T17:48:27Z",
+      "scored_at": "2026-10-27T23:42:33Z",
       "method_versions": {
         "qsmart-matlab": {
-          "commit": "745dd55e0dd7ad5fd58fb1af7146c38a17015343",
-          "date": "2026-10-28T00:47:54+10:00"
+          "commit": "1263e780af0e0f20d973fc470ca3e9d04636f08d",
+          "date": "2026-10-28T02:20:33+10:00"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/66/qsmart-matlab-cmp__resources.json",
