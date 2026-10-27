@@ -1,4 +1,4 @@
-function vasc_only = vasculature_mask_qsmci(mag_corr, mask, params)
+function [vasc_only, info] = vasculature_mask_qsmci(mag_corr, mask, params)
 % QSM-CI adaptation of QSMART_toolbox_v1.0/vasculature_mask.m (Yaghmaie et al.,
 % NeuroImage 2021; toolbox by Warda Syeda, Melbourne Brain Centre Imaging Unit).
 % The science is unchanged: mean-echo magnitude -> N4 bias correction -> spherical
@@ -14,7 +14,9 @@ function vasc_only = vasculature_mask_qsmci(mag_corr, mask, params)
 %     bias-free data, but for faithful in-vivo behaviour keep N4 in the image.
 %  2. The eig3volume mex used by FrangiFilter3D is compiled at BUILD time (the original
 %     ran `mex eig3volume.c` at run time, which a deployed MATLAB Runtime cannot do).
-%  3. Debug NIfTI intermediates (test.nii, enhanced.nii, vasc_only.nii) are not written.
+%  3. Debug NIfTI intermediates (test.nii, enhanced.nii, vasc_only.nii) are not written;
+%     the optional second output INFO returns them instead (bothat, vesselness, the Otsu
+%     threshold, and whether N4 ran), for recon.m's QSMCI_INTERMEDIATES.
 
 vox = params.iminfo.resolution;
 imsize = size(mag_corr);
@@ -30,15 +32,18 @@ if n4_missing == 0
     st = system('N4BiasFieldCorrection -i AvgEcho.nii -o AvgEcho_n4.nii');
     if st == 0
         nii = load_nii('AvgEcho_n4.nii');
-        AvgEcho_n4 = double(nii.img);
+        AvgEcho_n4 = nii.img;   % single, as load_nii returns N4's float32 output (the original)
+        n4 = 'applied';
     else
         warning('N4BiasFieldCorrection failed (exit %d); using the uncorrected mean-echo magnitude.', st);
         AvgEcho_n4 = AvgEcho;
+        n4 = 'failed';
     end
 else
     warning(['N4BiasFieldCorrection not found on PATH; skipping the bias-correction ', ...
              'of the mean-echo magnitude (the original QSMART applies ANTs N4 here).']);
     AvgEcho_n4 = AvgEcho;
+    n4 = 'missing';
 end
 
 % Bottom-hat with a spherical structuring element highlights dark tubular structures.
@@ -58,4 +63,7 @@ T = graythresh(enhanced);
 vasc_only(enhanced > T) = 1;
 vasc_only(find(~mask)) = 0;
 vasc_only = double(~vasc_only);
+if nargout > 1
+    info = struct('bothat', test, 'vesselness', enhanced, 'threshold', T, 'n4', n4);
+end
 end
