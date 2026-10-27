@@ -51,7 +51,7 @@ setup|runs|compare|all)
     setup=""
     if [[ $what == setup || $what == all ]]; then
         need_sources
-        setup=$(STEP=setup sub "setup-$FID_TAG" "" --cpus-per-task=2 --mem=8G --time=01:00:00)
+        setup=$(STEP=setup sub "setup-$FID_TAG" "" --cpus-per-task=4 --mem=32G --time=01:00:00)
         echo "setup $setup"
     fi
     [[ $what == setup ]] && exit 0
