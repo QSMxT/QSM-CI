@@ -88,7 +88,8 @@ container)
         "${envargs[@]}" -B "$A:/algo:ro" -B "$FID_INPUT:/input:ro" -B "$out:/output" "$SIF" bash /algo/run.sh
     ;;
 compare)
-    mat "compare_runs('$W/runs/$FID_CASE', '$FID_INPUT/mask.nii.gz', '$W/reports/runs-$FID_CASE.md')"
+    ref=${FID_REF:-real}; rpt="$W/reports/runs-$FID_CASE.md"; [ "$ref" = real ] || rpt="$W/reports/runs-$FID_CASE-vs-$ref.md"
+    mat "compare_runs('$W/runs/$FID_CASE', '$FID_INPUT/mask.nii.gz', '$rpt', '$ref')"
     ;;
 *) echo "unknown STEP $STEP"; exit 2 ;;
 esac

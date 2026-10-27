@@ -16,6 +16,8 @@
 #   FID_TAG     check another copy of the algorithm folder (FID_ALGO_SRC) and/or other sources, as
 #               $FID_ROOT/<slug>/<tag>; its licensed runs are named real-<tag> (setup, runs only)
 #   FID_ALGO_SRC  the algorithm folder to copy (default: algorithms/<slug> in this checkout)
+#   FID_REF     the run compare takes as the reference (default real; e.g. real-<tag>), reported
+#               in reports/runs-<case>-vs-<ref>.md
 #   FID_AFTER   a job id the setup waits for. Converting a Runtime image to a .sif unpacks a few
 #               hundred thousand files, so chain the setups where a file quota is tight.
 #

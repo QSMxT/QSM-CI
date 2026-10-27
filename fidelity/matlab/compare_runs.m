@@ -1,21 +1,21 @@
-function pass = compare_runs(casedir, maskfile, outmd)
+function pass = compare_runs(casedir, maskfile, outmd, ref)
 % Compare the runs of one case (QSMxT/QSM-CI#295, container fidelity).
 %   casedir/<run>/*.nii.gz and casedir/<run>/intermediates/*.nii.gz, for the runs
 %     container    the pinned image on Apptainer (its intermediates if recon.m writes them)
 %     real, real2  licensed MATLAB with the real toolboxes, twice (the run-to-run floor)
 %     real-<tag>   a licensed run with another algorithm copy or other sources (submit.sh FID_TAG)
 %   maskfile  the case's mask.nii.gz (NRMSE is taken inside it)
-% Every output of `real` is compared: the container's, real2's and each real-<tag>'s.
+%   ref       the reference run (default `real`; e.g. a real-<tag> run, submit.sh FID_REF)
+% Every output of the reference is compared: the container's and every other licensed run's.
 % Metrics: NRMSE % = 100 ||a - b|| / ||b|| inside the mask, b = real; max |a - b| over the volume;
 % the number of differing voxels; Dice of the a > 0.5 sets inside the mask when both are binary.
 % PASS: every output real writes exists in the container run and no voxel of it differs.
 % Writes OUTMD (a Markdown table) and the same rows as JSON next to it.
     mask = rd(maskfile) > 0.5;
-    ref = 'real';
+    if nargin < 4 || isempty(ref), ref = 'real'; end
     files = outputs(fullfile(casedir, ref));
-    runs = {'container', 'real2'};
-    extra = dir(fullfile(casedir, 'real-*'));
-    runs = [runs, {extra.name}];
+    extra = dir(fullfile(casedir, 'real*'));
+    runs = [{'container'}, setdiff({extra.name}, {ref}, 'stable')];
     T = struct('a', {}, 'b', {}, 'output', {}, 'nrmse_pct', {}, 'maxabs', {}, 'dice', {}, 'ndiff', {}, ...
                'nvox', {});
     pass = true; missing = {};
