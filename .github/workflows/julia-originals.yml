@@ -1,0 +1,114 @@
+name: julia-originals
+
+# Fidelity of the Julia-original submissions (the authors' Julia packages, QSMxT/QSM-CI#299) on the
+# in-silico phantom, each method in its own hosted job:
+#   determinism  the pinned image twice on the same inputs, bit-identical output (the record in
+#                each algorithm.yml `fidelity:`; the host-Julia comparison is local, see
+#                algorithms/_julia/fidelity/README.md);
+#   pair         a first look at the original against its QSM.rs port (`<algorithm>-qsmrs`):
+#                NRMSE, correlation and max |Δ| inside the mask, at the original's defaults and at
+#                the QSM.rs-matched settings. Reported, never a gate (port parity with thresholds is
+#                the parity workflow's job).
+# The tables go to each job's summary and a `julia-<slug>` artifact.
+
+on:
+  pull_request:
+    paths:
+      - "algorithms/_julia/**"
+      - "algorithms/*-qsmjl/**"
+      - "algorithms/romeo-romeojl/**"
+      - "algorithms/tgv-tgvjl/**"
+      - ".github/workflows/julia-originals.yml"
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: julia-originals-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    outputs:
+      slugs: ${{ steps.s.outputs.slugs }}
+    steps:
+      - uses: actions/checkout@v7
+      - id: s
+        run: |
+          slugs=$(ls algorithms/*/qsmci_io.jl | cut -d/ -f2 | grep -v '^_' | jq -Rnc '[inputs]')
+          echo "slugs=$slugs" >> "$GITHUB_OUTPUT"
+
+  check:
+    needs: discover
+    # The sim phantom is token-gated (OSF), so fork PRs cannot run this; maintainers can push the
+    # branch into the repository.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      matrix:
+        slug: ${{ fromJson(needs.discover.outputs.slugs) }}
+    env:
+      SLUG: ${{ matrix.slug }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with: { python-version: "3.12" }
+      - name: Install qsm-ci CLI + deps
+        uses: ./.github/actions/setup-qsmci
+        with:
+          extras: pyyaml
+      - name: Cache OSF dataset zip
+        uses: actions/cache@v6
+        with:
+          path: .osfcache/sim.zip
+          key: osf-sim-698ac9aecae88916d1e24f69
+      - name: Fetch the in-silico phantom
+        env:
+          OSF_TOKEN: ${{ secrets.OSF_TOKEN }}
+          OSF_ZIP: .osfcache/sim.zip
+        run: scripts/fetch_dataset.sh sim data/sim/scoring
+      # One case directory with every boundary a stage reads: the public inputs plus the
+      # ground-truth total and local fields (the isolated-mode inputs of bfr and dipole).
+      - name: Assemble the case
+        run: |
+          mkdir -p case
+          for f in data/sim/scoring/inputs/* data/sim/scoring/groundtruth/totalfield.nii.gz \
+                   data/sim/scoring/groundtruth/localfield.nii.gz; do
+            ln -s "$PWD/$f" case/
+          done
+          ls -l case
+      - name: Determinism (the image twice, bit-identical)
+        run: |
+          python algorithms/_julia/fidelity/harness.py determinism --case sim=case \
+            --runner docker --slugs "$SLUG" --out out
+      - name: First look against the QSM.rs port
+        if: success() || failure()
+        run: |
+          python algorithms/_julia/fidelity/harness.py pair --case sim=case \
+            --runner docker --slugs "$SLUG" --out out
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "### $SLUG"
+            echo "nproc $(nproc); $(grep -m1 'model name' /proc/cpuinfo)"
+            for f in out/determinism.md out/pair.md; do [ -f "$f" ] && { echo; cat "$f"; }; done
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: julia-${{ matrix.slug }}
+          path: |
+            out/*.json
+            out/*.md
+          if-no-files-found: ignore
