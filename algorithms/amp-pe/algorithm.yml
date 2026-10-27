@@ -27,6 +27,15 @@ smoke_box: 32   # PR --smoke gate fits a 32^3 central box (fast); full score.yml
 matlab:
   entry: recon.m
   runtime: r2026a
+# Container vs the authors' code in licensed MATLAB (QSMxT/QSM-CI#300; fidelity/REPORT.md). Rerun
+# and update whenever the image changes.
+fidelity:
+  date: 2026-10-28
+  image: sha256:0e1f44758045229f3297926a573e5664e6de5d2a895dca2a30d2f2339d507fc1
+  matlab: R2023b Update 5 (23.2.0.2459199), Wavelet Toolbox 23.2
+  tolerance: identical   # final chi (the image writes no intermediates), in silico and in vivo, 8 threads
+  result: pass
+  report: algorithms/amp-pe/fidelity/REPORT.md
 # This original Emory MATLAB AMP-PE is superseded by the faithful, numerically-robust Rust port
 # `amp-pe-qsmrs` (QSM.rs), validated equal to it (<0.05% NRMSE on sim-2019) but ~2.7x faster and
 # stable where this build diverges. Two flags retire it without losing its history:
