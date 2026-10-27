@@ -1,6 +1,7 @@
 name: DECOMPOSE-QSM (MATLAB)
 slug: decompose-qsm
-algorithm: decompose-qsm
+algorithm: decompose
+variant: qsm  # DECOMPOSE-QSM, the authors' MATLAB; same algorithm as the QSM.rs port (decompose-qsmrs), so the two pair for parity; slug derives to decompose-qsm
 source: wahoo
 stage: chi-separation
 language: MATLAB
