@@ -23,6 +23,13 @@ code_url: https://github.com/QSMxT/QSM-CI
 license: MIT
 image: ghcr.io/astewartau/qsm-ci/matlab-tkd@sha256:21bad9447eecae217d3c8683d798d951711f531999f47da47d53b0b1b6d3907c   # v1
 run: bash run.sh
+# Superseded by tkd-qsmjl (QSMxT/QSM-CI#299): TKD's reference is now the original code QSM.rs's port
+# follows (QSM.jl's `tkd`), not this QSM-CI MATLAB re-implementation. Parked, not deleted: it stays
+# the worked example of a compiled-MATLAB submission (docs/matlab.md, docs/submitting.md).
+#   ci_skip: true  - never run or scored again;
+#   hidden:  true  - its stored rows drop off the leaderboard and viewer (kept in index.json).
+ci_skip: true
+hidden: true
 matlab:
   entry: recon.m
   runtime: r2026a
