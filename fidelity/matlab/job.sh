@@ -54,7 +54,11 @@ build)
       echo "## warnings"; grep -iE "warning|not deployable|cannot" "$B/mcc.log" | grep -v "Requirements cannot analyze" | sort | uniq -c
       echo "## recon"; sha256sum out/recon; } > "$W/reports/build.txt"
     cat "$W/reports/build.txt"
-    [ ! -s out/unresolvedSymbols.txt ] || { echo "unresolved symbols"; exit 3; }
+    # Both files hold a header line only when nothing is unresolved or excluded.
+    for f in unresolvedSymbols.txt mccExcludedFiles.log; do
+        n=$(grep -cvE '^(Path|Excluded Files)' "out/$f" || true)
+        [ "$n" -eq 0 ] || { echo "$f lists $n entries"; exit 3; }
+    done
     ;;
 setup)
     [ -s "$SIF" ] || apptainer pull "$SIF" "docker://$FID_IMAGE"
