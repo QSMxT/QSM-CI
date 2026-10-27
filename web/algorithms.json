@@ -1625,7 +1625,7 @@
       "language": "MATLAB",
       "family": "iterative",
       "learning": "none",
-      "description": "Morphology Enabled Dipole Inversion (Cornell MEDI toolbox), compiled from MATLAB and run on the license-free MATLAB Runtime. Solves the L1 morphology-regularized dipole inversion directly on the local (tissue) field (no background-field removal).",
+      "description": "Morphology Enabled Dipole Inversion (Cornell MEDI toolbox 2024.11.26), compiled from MATLAB and run on the license-free MATLAB Runtime. Solves the L1 morphology-regularized dipole inversion directly on the local (tissue) field (no background-field removal).",
       "citation": "Liu et al., NeuroImage 2012",
       "doi": "10.1016/j.neuroimage.2011.08.082",
       "code_url": "http://pre.weill.cornell.edu/mri/pages/qsm.html",
@@ -1646,8 +1646,8 @@
       "parameters": [
         {
           "name": "lambda",
-          "default": 100,
-          "description": "data-fidelity weight (larger = closer data fit, less regularization)"
+          "default": 1000,
+          "description": "data-fidelity weight (larger = closer data fit, less regularization); 1000 is Cornell's default"
         },
         {
           "name": "smv_radius",
