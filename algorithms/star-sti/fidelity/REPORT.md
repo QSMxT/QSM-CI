@@ -6,10 +6,10 @@ is the shared harness [`fidelity/matlab/`](../../../fidelity/matlab/README.md) w
 
 - **Checked:** 2026-10-28, on Slurm compute nodes, 8 CPUs per job.
 - **Licensed MATLAB:** 23.2.0.2459199 (R2023b) Update 5, with the real toolboxes.
-- **Image checked:** `ghcr.io/astewartau/qsm-ci/matlab-sti-star@sha256:77674d0ef999060e6b9afcaea022a69d277958cad40435f8c113b7bc1ea02b84 (`v2`)`.
+- **Image checked:** `ghcr.io/astewartau/qsm-ci/matlab-sti-star@sha256:77674d0ef999060e6b9afcaea022a69d277958cad40435f8c113b7bc1ea02b84` (`v2`).
   - `recon` is compiled with that licensed R2023b against the real toolboxes, with no shims.
   - It runs on the R2023b MATLAB Runtime (23.2.0.3097123 (R2023b) Update 11) under Apptainer.
-- **Previous image:** `ghcr.io/astewartau/qsm-ci/matlab-sti-star@sha256:5815b4190a7ca10a1dd789dc099e20dda4db1304794e81ba36a45ef67077ff8f (`v1`)`.
+- **Previous image:** `ghcr.io/astewartau/qsm-ci/matlab-sti-star@sha256:5815b4190a7ca10a1dd789dc099e20dda4db1304794e81ba36a45ef67077ff8f` (`v1`).
 - **Cases:**
   - `sim`: QSM-CI's in-silico head (QSM Challenge 2.0 simulation: 7 T, 4 echoes, 1 mm, 164×205×205), its ground-truth local field.
   - `invivo`: one EMTP travelling-head acquisition (`s005001-cbic-prisma-bridge-run1`: 3 T, 5 echoes, 1 mm, 184×256×128), with the local field and eroded mask derived once with QSMxT v10.0.0 (ROMEO, V-SHARP; `fidelity/matlab/make_cases.sh`).

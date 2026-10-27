@@ -6,10 +6,10 @@ is the shared harness [`fidelity/matlab/`](../../../fidelity/matlab/README.md) w
 
 - **Checked:** 2026-10-28, on Slurm compute nodes, 8 CPUs per job.
 - **Licensed MATLAB:** 23.2.0.2459199 (R2023b) Update 5, with the real toolboxes.
-- **Image checked:** `ghcr.io/astewartau/qsm-ci/matlab-sti-vsharp@sha256:715c565758a5a64c6df8e73d34a0a62bf7afeb5d6d7feae5f748322cba2504d6 (`v2`)`.
+- **Image checked:** `ghcr.io/astewartau/qsm-ci/matlab-sti-vsharp@sha256:715c565758a5a64c6df8e73d34a0a62bf7afeb5d6d7feae5f748322cba2504d6` (`v2`).
   - `recon` is compiled with that licensed R2023b against the real toolboxes, with no shims.
   - It runs on the R2023b MATLAB Runtime (23.2.0.3097123 (R2023b) Update 11) under Apptainer.
-- **Previous image:** `ghcr.io/astewartau/qsm-ci/matlab-sti-vsharp@sha256:fc9dfbadd1d8402872d9644dfb101959ea158ac6f2907456cbf81fb16b871a40 (`v1`)`.
+- **Previous image:** `ghcr.io/astewartau/qsm-ci/matlab-sti-vsharp@sha256:fc9dfbadd1d8402872d9644dfb101959ea158ac6f2907456cbf81fb16b871a40` (`v1`).
 - **Cases:**
   - `sim`: QSM-CI's in-silico head (QSM Challenge 2.0 simulation: 7 T, 4 echoes, 1 mm, 164×205×205), its ground-truth total field.
   - `invivo`: one EMTP travelling-head acquisition (`s005001-cbic-prisma-bridge-run1`: 3 T, 5 echoes, 1 mm, 184×256×128), with the total field derived once with QSMxT v10.0.0 (ROMEO; `fidelity/matlab/make_cases.sh`).
