@@ -1,11 +1,10 @@
 function T = compare_runs(casedir, maskfile, deps, outmd)
 % Container fidelity (QSMxT/QSM-CI#295, step 2): compare the runs of one case.
 %   casedir/<run>/chimap.nii.gz and casedir/<run>/intermediates/*.nii.gz, runs:
-%     container    the pinned image on Apptainer (final chi only: the image predates the
-%                  intermediates option)
+%     container    the pinned image on Apptainer (with intermediates if the image has the
+%                  QSMCI_INTERMEDIATES option, else the final chi only)
 %     real, real2  licensed MATLAB with the real toolboxes, twice (run-to-run floor)
 %     trace        licensed MATLAB with the shims (+ per-call toolbox comparison)
-%     real-single  real, with the vessel mask in the authors' single precision (informational)
 %     trace-<tag>  trace with another copy of the algorithm folder (submit.sh FID_TAG)
 %   maskfile  the case's mask.nii.gz (NRMSE is taken inside it)
 % Metrics: NRMSE % = 100 ||a - b|| / ||b|| inside the mask, b the reference run; max |a - b| over
@@ -13,11 +12,10 @@ function T = compare_runs(casedir, maskfile, deps, outmd)
 % each set's fraction of the brain mask.
     addpath(fullfile(deps, 'nifti'));
     mask = rd(maskfile) > 0.5;
-    pairs = {'container', 'real',  {'chimap'};
-             'container', 'trace', {'chimap'};
+    pairs = {'container', 'real',  'all';
+             'container', 'trace', 'all';
              'trace',     'real',  'all';
-             'real2',     'real',  'all';
-             'real-single', 'real', 'all'};
+             'real2',     'real',  'all'};
     % Runs of other algorithm copies (submit.sh FID_TAG, e.g. trace-<tag> with proposed shim
     % fixes) are compared with the real-toolbox run too.
     extra = dir(fullfile(casedir, 'trace-*'));
@@ -45,7 +43,7 @@ function T = compare_runs(casedir, maskfile, deps, outmd)
         end
     end
     thr = struct();
-    for run = {'real', 'real2', 'trace', 'real-single'}
+    for run = {'real', 'real2', 'trace'}
         j = fullfile(casedir, run{1}, 'intermediates', 'intermediates.json');
         if exist(j, 'file')
             v = jsondecode(fileread(j));

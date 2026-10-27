@@ -8,7 +8,7 @@
 #   STEP       setup | shims | recon | container | compare
 #   FID_WORK   work dir: deps/ img/ bin/ algo/ runs/<case>/<run>/ reports/
 #   FID_CASE   case name (recon, container, compare); FID_INPUT its contract inputs folder
-#   FID_MODE   recon mode: real | real2 | trace | real-single (run_recon.m)
+#   FID_MODE   recon mode: real | real2 | trace (run_recon.m)
 #   FID_TAG    algorithm copy to use, $FID_WORK/<tag> (default algo); non-default tags get
 #              their own runs/<case>/<mode>-<tag> and reports/*-<tag>
 #   setup only: FID_QSMART FID_SUN FID_STI (sources) and FID_IMAGE (docker ref, by digest)
@@ -18,7 +18,9 @@ TAG=${FID_TAG:-algo}; A="$W/$TAG"; SFX=""; [ "$TAG" = algo ] || SFX="-$TAG"
 FID="$A/fidelity"
 export APPTAINER_CACHEDIR="$W/apptainer-cache" APPTAINER_TMPDIR="$W/apptainer-tmp"
 mkdir -p "$APPTAINER_CACHEDIR" "$APPTAINER_TMPDIR" "$W/reports"
-SIF="$W/img/matlab-qsmart.sif"
+# One .sif per image digest, so a new image is never confused with an old pull.
+SIF="$W/img/matlab-qsmart-$(sed -n 's/.*sha256:\([0-9a-f]\{12\}\).*/\1/p' <<< "$FID_IMAGE").sif"
+[ "$SIF" != "$W/img/matlab-qsmart-.sif" ] || { echo "FID_IMAGE must be pinned by digest"; exit 2; }
 mat() { module load matlab/R2023b; matlab -nodisplay -batch "$1"; }
 echo "STEP=$STEP host=$(hostname) cpus=${SLURM_CPUS_PER_TASK:-?} $(date -Is)"
 
@@ -57,8 +59,10 @@ recon)
     ;;
 container)
     out="$W/runs/$FID_CASE/container"; rm -rf "$out"; mkdir -p "$out"
-    # As qsm_ci/containers.py runs it under apptainer.
-    /usr/bin/time -v apptainer exec --no-home --cleanenv -B "$W/algo:/algo:ro" \
+    # As qsm_ci/containers.py runs it under apptainer, plus recon.m's intermediates (images
+    # built before the option ignore it and give the final chi only).
+    /usr/bin/time -v apptainer exec --no-home --cleanenv --env QSMCI_INTERMEDIATES=/output/intermediates \
+        -B "$W/algo:/algo:ro" \
         -B "$FID_INPUT:/input:ro" -B "$out:/output" "$SIF" bash /algo/run.sh
     ;;
 compare)
