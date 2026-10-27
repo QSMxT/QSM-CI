@@ -25,6 +25,12 @@ function recon(inp, out)
 %
 % Optional <inp>/config.json overrides (declared in algorithm.yml): frangi_scale_min,
 % frangi_scale_max, frangi_scale_ratio, frangi_c, sph_radius_vasculature, fit_threshold.
+%
+% Optional intermediates (fidelity checks, fidelity/README.md): set QSMCI_INTERMEDIATES to a
+% directory, or to 1 for <out>/intermediates. recon then also writes, on the mask grid in
+% float64: vasc_only, bothat, vesselness, R_0, tfs (ppm), lfs1/lfs2 (stage-1/2 local field, ppm),
+% chi1/chi2 (stage-1/2 chi, ppm) and chimap, plus intermediates.json (Otsu threshold, N4 status).
+% Unset (the default), nothing changes.
 
     % ---- acquisition parameters (CONTRACT.md params.json) ----
     p      = jsondecode(fileread(fullfile(inp, 'params.json')));
@@ -77,6 +83,15 @@ function recon(inp, out)
     params.sph_radius_vasculature = double(cfg.sph_radius_vasculature);
     params.fit_threshold          = double(cfg.fit_threshold);
 
+    % ---- optional intermediates (absolute path: the toolbox runs in a scratch dir) ----
+    idir = getenv('QSMCI_INTERMEDIATES');
+    if strcmp(idir, '0'), idir = ''; end
+    if strcmp(idir, '1'), idir = fullfile(out, 'intermediates'); end
+    if ~isempty(idir)
+        if ~startsWith(idir, filesep), idir = fullfile(pwd, idir); end
+        if ~exist(idir, 'dir'), mkdir(idir); end
+    end
+
     % ---- inputs ----
     nmask = read_niigz(fullfile(inp, 'mask.nii.gz'));          % header donor for the output
     mask  = double(double(nmask.img) > 0.5);
@@ -97,7 +112,11 @@ function recon(inp, out)
 
     % Generating mask of vasculature (original vasculature_mask, adapted — see
     % vasculature_mask_qsmci.m for the N4/mex packaging changes)
-    vasc_only = vasculature_mask_qsmci(mag, mask, params);
+    if isempty(idir)
+        vasc_only = vasculature_mask_qsmci(mag, mask, params);
+    else
+        [vasc_only, vinfo] = vasculature_mask_qsmci(mag, mask, params);
+    end
 
     % Phase unwrapping (original unwrap_phase, laplacian method -> lapunwrap)
     unph = unwrap_phase(ph, mask, params.iminfo.resolution, params.ph_unwrap_method);
@@ -124,6 +143,19 @@ function recon(inp, out)
     chi = chi(1:sz0(1), 1:sz0(2), 1:sz0(3));   % crop the even-dim padding
 
     cd(old);
+    if ~isempty(idir)
+        I = struct('vasc_only', vasc_only, 'bothat', vinfo.bothat, 'vesselness', vinfo.vesselness, ...
+                   'R_0', R_0, 'tfs', tfs, 'lfs1', lfs_sdf / params.ppm, 'chi1', chi_iLSQR_1, ...
+                   'lfs2', lfs_sdf_2 / params.ppm, 'chi2', chi_iLSQR_2);
+        for f = fieldnames(I)'
+            write_intermediate(nmask, I.(f{1}), sz0, fullfile(idir, [f{1} '.nii.gz']));
+        end
+        write_intermediate(nmask, chi, sz0, fullfile(idir, 'chimap.nii.gz'));
+        fid = fopen(fullfile(idir, 'intermediates.json'), 'w');
+        fwrite(fid, jsonencode(struct('otsu_threshold', vinfo.threshold, 'n4', vinfo.n4, ...
+            'matlab', version, 'imdilate', which('imdilate'))));
+        fclose(fid);
+    end
     % Preserve the input geometry: write through the mask's untouched header (the bundled
     % make_nii/save_nii would lose the affine).
     nmask.img = single(chi);
@@ -131,6 +163,15 @@ function recon(inp, out)
     nmask.hdr.dime.dim(1) = 3;  nmask.hdr.dime.dim(5) = 1;
     write_niigz(nmask, fullfile(out, 'chimap.nii.gz'));
     disp('--- Process Finished ---');
+end
+
+function write_intermediate(nmask, a, sz0, f)
+    a = double(a);
+    nmask.img = a(1:sz0(1), 1:sz0(2), 1:sz0(3));
+    nmask.hdr.dime.datatype = 64;  nmask.hdr.dime.bitpix = 64;
+    nmask.hdr.dime.dim(1) = 3;  nmask.hdr.dime.dim(5) = 1;
+    nmask.hdr.dime.scl_slope = 1;  nmask.hdr.dime.scl_inter = 0;
+    write_niigz(nmask, f);
 end
 
 function nii = read_niigz(f)
