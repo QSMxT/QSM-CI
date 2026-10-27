@@ -9,6 +9,7 @@ SHARP background field removal (SMV high-pass + TSVD deconvolution), run as the 
 - **Environment:** the shared Julia base image [`algorithms/_julia`](../_julia) (Julia 1.10.11,
   Manifest committed there, packages compiled into a sysimage), pinned by digest in `algorithm.yml`.
 - **QSM.rs port:** [`sharp-qsmrs`](../sharp-qsmrs) (same `algorithm: sharp`).
+- **Parity only:** the reference of the port's parity pair (`parity/thresholds.yml`, [docs/parity.md](../../docs/parity.md)); not scored and not on the leaderboard.
 - **Reference:** Schweser et al., NeuroImage 2011 · doi:[10.1016/j.neuroimage.2010.10.070](https://doi.org/10.1016/j.neuroimage.2010.10.070)
 
 ## How QSM-CI runs it

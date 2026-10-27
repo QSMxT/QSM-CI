@@ -9,6 +9,7 @@ Nonlinear-data-term total-variation dipole inversion by ADMM (Milovic et al. 201
 - **Environment:** the shared Julia base image [`algorithms/_julia`](../_julia) (Julia 1.10.11,
   Manifest committed there, packages compiled into a sysimage), pinned by digest in `algorithm.yml`.
 - **QSM.rs port:** [`nltv-qsmrs`](../nltv-qsmrs) (same `algorithm: nltv`).
+- **Parity only:** the reference of the port's parity pair (`parity/thresholds.yml`, [docs/parity.md](../../docs/parity.md)); not scored and not on the leaderboard.
 - **Reference:** Milovic et al., Magn Reson Med 2018 · doi:[10.1002/mrm.27073](https://doi.org/10.1002/mrm.27073)
 
 ## How QSM-CI runs it

@@ -9,6 +9,7 @@ Thresholded k-space division, run as the original QSM.jl code (`QSM.tkd`, kamesy
 - **Environment:** the shared Julia base image [`algorithms/_julia`](../_julia) (Julia 1.10.11,
   Manifest committed there, packages compiled into a sysimage), pinned by digest in `algorithm.yml`.
 - **QSM.rs port:** [`tkd-qsmrs`](../tkd-qsmrs) (same `algorithm: tkd`).
+- **Parity only:** the reference of the port's parity pair (`parity/thresholds.yml`, [docs/parity.md](../../docs/parity.md)); not scored and not on the leaderboard.
 - **Reference:** Shmueli et al., Magn Reson Med 2009 · doi:[10.1002/mrm.22135](https://doi.org/10.1002/mrm.22135)
 
 ## How QSM-CI runs it

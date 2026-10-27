@@ -9,6 +9,7 @@ Multi-echo B0 field mapping with the original QSM.jl code (fde4b92): `unwrap_lap
 - **Environment:** the shared Julia base image [`algorithms/_julia`](../_julia) (Julia 1.10.11,
   Manifest committed there, packages compiled into a sysimage), pinned by digest in `algorithm.yml`.
 - **QSM.rs port:** [`laplacian-qsmrs`](../laplacian-qsmrs) (same `algorithm: laplacian`).
+- **Parity only:** the reference of the port's parity pair (`parity/thresholds.yml`, [docs/parity.md](../../docs/parity.md)); not scored and not on the leaderboard.
 - **Reference:** Schofield & Zhu, Optics Letters 2003 · doi:[10.1364/OL.28.001194](https://doi.org/10.1364/OL.28.001194)
 
 ## How QSM-CI runs it

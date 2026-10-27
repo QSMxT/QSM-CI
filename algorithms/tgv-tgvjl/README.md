@@ -9,6 +9,7 @@ Single-step TGV-QSM (total field to susceptibility, with its own background remo
 - **Environment:** the shared Julia base image [`algorithms/_julia`](../_julia) (Julia 1.10.11,
   Manifest committed there, packages compiled into a sysimage), pinned by digest in `algorithm.yml`.
 - **QSM.rs port:** [`tgv-qsmrs`](../tgv-qsmrs) (same `algorithm: tgv`).
+- **Parity only:** the reference of the port's parity pair (`parity/thresholds.yml`, [docs/parity.md](../../docs/parity.md)); not scored and not on the leaderboard.
 - **Reference:** Langkammer et al., NeuroImage 2015 · doi:[10.1016/j.neuroimage.2015.02.041](https://doi.org/10.1016/j.neuroimage.2015.02.041)
 
 ## How QSM-CI runs it

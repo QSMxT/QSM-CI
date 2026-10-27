@@ -9,6 +9,7 @@ Iterative spherical mean value background field removal, run as the original QSM
 - **Environment:** the shared Julia base image [`algorithms/_julia`](../_julia) (Julia 1.10.11,
   Manifest committed there, packages compiled into a sysimage), pinned by digest in `algorithm.yml`.
 - **QSM.rs port:** [`ismv-qsmrs`](../ismv-qsmrs) (same `algorithm: ismv`).
+- **Parity only:** the reference of the port's parity pair (`parity/thresholds.yml`, [docs/parity.md](../../docs/parity.md)); not scored and not on the leaderboard.
 - **Reference:** Wen et al., Magn Reson Med 2014 · doi:[10.1002/mrm.24998](https://doi.org/10.1002/mrm.24998)
 
 ## How QSM-CI runs it

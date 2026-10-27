@@ -1734,7 +1734,10 @@ def main() -> None:
     # which already maps the `params` artifact to inputs/params.json.
     # GT-backed source map: inputs for raw artifacts, groundtruth for stage boundaries (shared helper).
     gt_sources = _gt_sources(args.dataset)
-    algos = discover_algorithms(args.track, args.phantom)
+    # The PR smoke gate (--smoke --only SLUG) still proves a parity_only original runs: discovery
+    # leaves those out of scoring, so the gate names its one method explicitly.
+    algos = discover_algorithms(args.track, args.phantom,
+                                include={args.only} if args.smoke and args.only else None)
     if args.include:
         keep = set(args.include.split(","))
         algos = [a for a in algos if a["slug"] in keep]

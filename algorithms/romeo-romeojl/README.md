@@ -9,6 +9,7 @@ Combined multi-echo B0 field mapping with the authors' `romeo` command line (ROM
 - **Environment:** the shared Julia base image [`algorithms/_julia`](../_julia) (Julia 1.10.11,
   Manifest committed there, packages compiled into a sysimage), pinned by digest in `algorithm.yml`.
 - **QSM.rs port:** [`romeo-qsmrs`](../romeo-qsmrs) (same `algorithm: romeo`).
+- **Parity only:** the reference of the port's parity pair (`parity/thresholds.yml`, [docs/parity.md](../../docs/parity.md)); not scored and not on the leaderboard.
 - **Reference:** Dymerska et al., Magn Reson Med 2021 · doi:[10.1002/mrm.28563](https://doi.org/10.1002/mrm.28563)
 
 ## How QSM-CI runs it
