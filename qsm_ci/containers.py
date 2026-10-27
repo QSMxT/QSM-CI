@@ -168,6 +168,12 @@ def _build_oci(algo: dict, engine: str, log) -> str:
         raise SystemExit(
             "algorithm.yml has no image:. Publish a prebuilt image (build and push it first) and set "
             "image: to its reference — the runner pulls images, it does not build containers.")
+    # `qsm-ci run --image` may name an image that exists only locally (built in the same job): use
+    # a local copy as it is rather than asking a registry for a tag it has never seen.
+    if algo.get("image_local_first") and \
+            subprocess.run([engine, "image", "inspect", tag], capture_output=True).returncode == 0:
+        log(f"  using local image {tag}")
+        return tag
     log(f"↓ pulling {tag}")
     rc, err = _pull(engine, tag)
     if rc != 0:

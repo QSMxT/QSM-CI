@@ -409,6 +409,10 @@ def _build_run_parser(slug: str, algo: dict) -> argparse.ArgumentParser:
                    help="docker/podman/apptainer run the image; local runs run.sh on the host")
     p.add_argument("--set", action="append", default=[], dest="overrides", metavar="NAME=VALUE",
                    help="override a method parameter (repeatable); valid names listed below")
+    p.add_argument("--image", metavar="REF",
+                   help="run in this image instead of algorithm.yml's image: (docker/podman/"
+                        "apptainer); a local tag is used without pulling. For trying a method on "
+                        "another build of its environment, e.g. a qsmxt image built from source")
     p.add_argument("--intermediates", metavar="DIR",
                    help="also collect the method's intermediate maps (if it writes any; CONTRACT.md, "
                         "Intermediates) into DIR as <name>.nii.gz")
@@ -423,7 +427,7 @@ def _build_run_parser(slug: str, algo: dict) -> argparse.ArgumentParser:
 # `./my-method`, not `local`. Artifact flags and --te are nargs="+" (swallow every following
 # non-flag token); --b0-dir/--voxel-size take three; the rest take one. `--opt=value` takes none.
 _ONE_VALUE = {"--runner", "--set", "-o", "--out", "--truth", "--seg", "--params", "--field-strength",
-              "--b0", "--timeout", "--intermediates"}
+              "--b0", "--timeout", "--intermediates", "--image"}
 _THREE_VALUES = {"--b0-dir", "--voxel-size"}
 _GREEDY = {"--te"} | {f"--{a}" for a in ARTIFACT_FILE}
 
@@ -542,6 +546,11 @@ def run_command(argv, log=print) -> int:
 
     import tempfile
     log(f"▸ {algo['name']}  [{stage}]  runner={args.runner}")
+    if args.image:
+        if args.runner == "local":
+            raise SystemExit("--image needs a container runner (docker, podman or apptainer)")
+        log(f"  image: {args.image} (in place of {algo.get('image') or 'none'})")
+        algo = {**algo, "image": args.image, "image_local_first": True}
     if cfg:
         log(f"  overrides: {cfg}")
     with tempfile.TemporaryDirectory(prefix="qsm-ci-") as td:
