@@ -141,8 +141,10 @@ another implementation of the same algorithm can be traced to its step (the `par
 ppm, masks as 0/1). When the variable is unset, write none. Names are lower-case with underscores;
 use an artifact name (`totalfield`, `localfield`, `chimap`) for a map that is one, and the same name
 in every implementation of an algorithm, since intermediates are compared by name. QSMART's are
-`totalfield`, `reliability` (R_0), `vessel_mask`, `localfield_stage1`, `chimap_stage1`,
-`localfield_stage2` and `chimap_stage2`. Intermediates are never scored.
+`totalfield`, `reliability` (R_0), `vessel_mask` (1 = vessel), `localfield_stage1`,
+`chimap_stage1`, `localfield_stage2` and `chimap_stage2`. A method whose names differ (an image
+built before this convention) is mapped onto these in `parity/thresholds.yml`. Intermediates are
+never scored.
 
 ## Execution model — environment vs. code
 

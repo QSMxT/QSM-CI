@@ -153,33 +153,70 @@ def test_derived_limits_perfect_agreement():
 # --- pairs / matrix -----------------------------------------------------------------------------
 
 def test_discover_pairs_needs_an_original_and_a_port(tmp_path):
-    for slug, alg, src in (("x-orig", "x", "vendor"), ("x-qsmrs", "x", "qsmrs"),
+    for slug, alg, src in (("x-orig", "x", "vendor"), ("x-jl", "x", "qsmjl"), ("x-qsmrs", "x", "qsmrs"),
                            ("y-a-qsmrs", "y", "qsmrs"), ("y-b-qsmrs", "y", "qsmrs"),
                            ("z-orig", "z", "vendor")):
         (tmp_path / slug).mkdir()
         (tmp_path / slug / "algorithm.yml").write_text(
             yaml.safe_dump({"algorithm": alg, "source": src, "stage": "dipole"}))
-    assert parity.discover_pairs(tmp_path) == {"x": {"original": ["x-orig"], "port": ["x-qsmrs"]}}
+    assert parity.discover_pairs(tmp_path) == {
+        "x": {"original": ["x-jl", "x-orig"], "port": ["x-qsmrs"]}}
 
 
 def test_real_thresholds_name_real_pairs():
-    """Every configured pair must exist in algorithm.yml with those two slugs on the right sides."""
-    pairs, th = parity.discover_pairs(), parity.load_thresholds()
-    assert th.get("qsmart", {}).get("enabled"), "the QSMART pair is the one enabled today"
-    for alg, cfg in th.items():
-        assert alg in pairs, alg
-        assert cfg["reference"] in pairs[alg]["original"], alg
-        assert cfg["candidate"] in pairs[alg]["port"], alg
+    """Every enabled pair matches algorithm.yml: an original and a QSM.rs port of one algorithm.
+    (A disabled pair may name an original that is still on its way, e.g. a Julia one.)"""
+    th, manifests = parity.load_thresholds(), parity._manifests()
+    assert th.get("qsmart", {}).get("enabled"), "the QSMART pair is enabled"
+    datasets = json.loads((ROOT / "scripts" / "datasets.json").read_text())
+    for name, cfg in th.items():
+        if cfg.get("enabled"):
+            assert parity.pair_problems(name, cfg, manifests) == [], name
         for ds, dcfg in (cfg.get("datasets") or {}).items():
-            assert ds in json.loads((ROOT / "scripts" / "datasets.json").read_text()), ds
+            assert ds in datasets, ds
             for side in ("reference", "candidate"):
                 for slug in (dcfg or {}).get(f"{side}_prefix") or []:
                     assert (ROOT / "algorithms" / slug / "algorithm.yml").exists(), slug
-            for key, lim in (dcfg or {}).items():
-                if key in ("chimap",):
-                    parity.check({}, lim)                    # well-formed limit keys
+            parity.check({}, (dcfg or {}).get("chimap"))       # well-formed limit keys
             for lim in ((dcfg or {}).get("intermediates") or {}).values():
                 parity.check({}, lim)
+            if cfg.get("enabled"):
+                assert (dcfg or {}).get("chimap"), f"{name}/{ds}: an enabled pair needs limits"
+
+
+def test_pair_problems():
+    m = {"a-orig": {"algorithm": "a", "source": "vendor"}, "a-jl": {"algorithm": "a", "source": "qsmjl"},
+         "a-qsmrs": {"algorithm": "a", "source": "qsmrs"}, "b-qsmrs": {"algorithm": "b", "source": "qsmrs"}}
+    # either original of an algorithm with two can be the declared reference
+    assert parity.pair_problems("a", {"reference": "a-orig", "candidate": "a-qsmrs"}, m) == []
+    assert parity.pair_problems("a-jl", {"reference": "a-jl", "candidate": "a-qsmrs"}, m) == []
+    assert any("share" in p for p in
+               parity.pair_problems("x", {"reference": "a-orig", "candidate": "b-qsmrs"}, m))
+    assert any("not a QSM.rs port" in p for p in
+               parity.pair_problems("x", {"reference": "a-orig", "candidate": "a-jl"}, m))
+    assert any("is a QSM.rs port" in p for p in
+               parity.pair_problems("x", {"reference": "b-qsmrs", "candidate": "a-qsmrs"}, m))
+    assert any("no algorithms/gone" in p for p in
+               parity.pair_problems("x", {"reference": "gone", "candidate": "a-qsmrs"}, m))
+    rows = parity.pair_listing({"a": {"original": ["a-jl", "a-orig"], "port": ["a-qsmrs"]},
+                                "c": {"original": ["c-o"], "port": ["c-qsmrs"]}},
+                               {"a": {"reference": "a-orig", "candidate": "a-qsmrs", "enabled": True}}, m)
+    assert [(r["pair"], r["algorithm"]) for r in rows] == [("a", "a"), (None, "c")]
+
+
+def test_apply_names_renames_and_complements(tmp_path):
+    inter = tmp_path / "i"
+    mask = np.zeros((4, 4, 4)); mask[1:3, 1:3, 1:3] = 1
+    tissue = mask.copy(); tissue[1, 1, 1] = 0             # one vessel voxel
+    _save(tmp_path / "mask.nii.gz", mask)
+    _save(inter / "tfs.nii.gz", np.ones((4, 4, 4)))
+    _save(inter / "vasc_only.nii.gz", tissue)
+    parity.apply_names(inter, {"tfs": "totalfield", "vasc_only": {"name": "vessel_mask",
+                                                                 "complement": True},
+                               "absent": "whatever"}, tmp_path / "mask.nii.gz")
+    assert sorted(p.name for p in inter.iterdir()) == ["totalfield.nii.gz", "vessel_mask.nii.gz"]
+    vm = parity._load(inter / "vessel_mask.nii.gz")
+    assert vm.sum() == 1 and vm[1, 1, 1] == 1
 
 
 def test_plan_matrix():
@@ -310,3 +347,61 @@ def test_cli_without_intermediates_flag_sets_nothing(tmp_path):
     m = _inter_method(tmp_path)
     assert runner.run_command([str(m), *_bfr_inputs(tmp_path)], log=lambda *_: None) == 0
     assert not (tmp_path / "inter").exists()
+
+
+def test_cli_image_override_needs_a_container_runner(tmp_path):
+    from qsm_ci import runner
+    m = _inter_method(tmp_path)
+    with pytest.raises(SystemExit, match="container runner"):
+        runner.run_command([str(m), *_bfr_inputs(tmp_path), "--image", "x:y"], log=lambda *_: None)
+
+
+def test_cli_image_override_replaces_the_pinned_image(tmp_path, monkeypatch):
+    from qsm_ci import runner
+    seen = {}
+
+    def fake_run(algo, idir, odir, rn, log, timeout=None, intermediates=False):
+        seen.update(algo)
+        odir.mkdir(parents=True, exist_ok=True)
+        import shutil
+        shutil.copy(idir / "totalfield.nii.gz", odir / "localfield.nii.gz")
+        return 0.0
+
+    monkeypatch.setattr(runner, "_run_container", fake_run)
+    monkeypatch.setattr(runner, "check_runner", lambda *a, **k: True)
+    m = _inter_method(tmp_path)
+    args = [a if a != "local" else "docker" for a in _bfr_inputs(tmp_path)]
+    assert runner.run_command([str(m), *args, "--image", "qsmxt-under-test:1"],
+                              log=lambda *_: None) == 0
+    assert seen["image"] == "qsmxt-under-test:1" and seen["image_local_first"]
+
+
+def test_run_side_puts_only_qsmrs_steps_in_the_image_under_test(tmp_path, monkeypatch):
+    """The override must reach every QSM.rs step and no other (discovery drops `source:`)."""
+    import subprocess as sp
+    calls = []
+
+    def fake(argv, env=None, check=False, **kw):
+        if argv[:2] == ["qsm-ci", "run"]:
+            calls.append(argv)
+            out = Path(argv[argv.index("-o") + 1])
+            out.parent.mkdir(parents=True, exist_ok=True)
+            _save(out, np.zeros((4, 4, 4)))
+        return sp.CompletedProcess(argv, 1, "", "")
+
+    monkeypatch.setattr(parity.subprocess, "run", fake)
+    ds = tmp_path / "ds"
+    _save(ds / "inputs" / "mask.nii.gz", np.ones((4, 4, 4)))
+    _save(ds / "inputs" / "phase.nii.gz", np.zeros((4, 4, 4, 2)))
+    _save(ds / "inputs" / "magnitude.nii.gz", np.ones((4, 4, 4, 2)))
+    (ds / "inputs" / "params.json").write_text(json.dumps(
+        {"TE": [0.004, 0.008], "B0": 3, "B0_dir": [0, 0, 1], "voxel_size": [1, 1, 1]}))
+    prov = parity.run_side(["laplacian-qsmrs", "qsmart-qsmrs"], ds, tmp_path / "w", "docker",
+                           qsmrs_image="under-test:1", log=lambda *_: None)
+    assert all(a[a.index("--image") + 1] == "under-test:1" for a in calls) and len(calls) == 2
+    assert [s["image"] for s in prov["steps"]] == ["under-test:1", "under-test:1"]
+    assert (tmp_path / "w" / "intermediates" / "totalfield.nii.gz").exists()   # the prefix's output
+    calls.clear()
+    parity.run_side(["qsmart-matlab"], ds, tmp_path / "w2", "docker", qsmrs_image="under-test:1",
+                    log=lambda *_: None)
+    assert "--image" not in calls[0]

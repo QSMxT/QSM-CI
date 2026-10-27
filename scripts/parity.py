@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
 """Port parity: run two implementations of one algorithm on the same dataset and check they agree.
 
-A *pair* is two submissions with the same `algorithm:` in algorithm.yml, one of them the QSM.rs port
-(`source: qsmrs`) and the other the original (any other source) — e.g. qsmart-matlab vs qsmart-qsmrs.
-`parity/thresholds.yml` names which pairs are checked, which side is the reference, and the limits
-each comparison must stay inside on each dataset (see the comments there).
+A *pair* is two submissions with the same `algorithm:` in algorithm.yml: an original (any source but
+qsmrs), the `reference`, and the QSM.rs port (`source: qsmrs`), the `candidate` — e.g.
+qsmart-matlab vs qsmart-qsmrs. An algorithm may have several originals (an STI Suite and a Julia
+one, say): `parity/thresholds.yml` names the reference of each pair explicitly, so there is no rule
+to guess which original counts. It also says which pairs are enabled and the limits each comparison
+must stay inside on each dataset (see the comments there).
+
+`run --qsmrs-image REF` runs every QSM.rs step (`source: qsmrs`) in REF instead of the image its
+algorithm.yml pins: that is how the workflow checks a QSM.rs/QSMxT build that is not released yet.
 
 Subcommands (the `parity` workflow runs them in this order):
 
@@ -72,39 +77,73 @@ def load_thresholds(path: Path = THRESHOLDS) -> dict:
     return doc.get("pairs") or {}
 
 
+def _manifests(algorithms_dir: Path = ROOT / "algorithms") -> dict:
+    """{slug: algorithm.yml} for every submission folder (ci_skip ones included)."""
+    out = {}
+    for spec in sorted(Path(algorithms_dir).glob("*/algorithm.yml")):
+        if spec.parent.name.startswith("_"):
+            continue
+        try:
+            out[spec.parent.name] = yaml.safe_load(spec.read_text()) or {}
+        except yaml.YAMLError:
+            continue
+    return out
+
+
+def is_port(doc: dict) -> bool:
+    return str(doc.get("source", "")) == "qsmrs"
+
+
 def discover_pairs(algorithms_dir: Path = ROOT / "algorithms") -> dict:
     """{algorithm: {"original": [slugs], "port": [slugs]}} for every `algorithm:` that has both a
     QSM.rs port (`source: qsmrs`) and at least one other implementation. Skipped (`ci_skip`) methods
     are kept: whether a pair runs is thresholds.yml's call, and the listing should show it exists."""
     groups: dict = {}
-    for spec in sorted(Path(algorithms_dir).glob("*/algorithm.yml")):
-        if spec.parent.name.startswith("_"):
-            continue
-        try:
-            doc = yaml.safe_load(spec.read_text()) or {}
-        except yaml.YAMLError:
-            continue
+    for slug, doc in _manifests(algorithms_dir).items():
         alg = doc.get("algorithm")
-        if not alg:
-            continue
-        side = "port" if str(doc.get("source", "")) == "qsmrs" else "original"
-        groups.setdefault(str(alg), {"original": [], "port": []})[side].append(spec.parent.name)
+        if alg:
+            side = "port" if is_port(doc) else "original"
+            groups.setdefault(str(alg), {"original": [], "port": []})[side].append(slug)
     return {a: g for a, g in groups.items() if g["original"] and g["port"]}
 
 
-def pair_listing(pairs: dict, thresholds: dict) -> list:
-    rows = []
-    for alg in sorted(set(pairs) | set(thresholds)):
-        cfg = thresholds.get(alg) or {}
-        found = pairs.get(alg, {"original": [], "port": []})
-        rows.append({
-            "algorithm": alg,
-            "reference": cfg.get("reference") or (found["original"][:1] or [None])[0],
-            "candidate": cfg.get("candidate") or (found["port"][:1] or [None])[0],
-            "enabled": bool(cfg.get("enabled")),
-            "datasets": sorted((cfg.get("datasets") or {}).keys()),
-            "defined": alg in pairs,
-        })
+def pair_problems(name: str, cfg: dict, manifests: dict) -> list:
+    """Why a thresholds.yml pair is not a pair of algorithm.yml entries ([] when it is): the
+    reference must be an original and the candidate a QSM.rs port of the same `algorithm:`."""
+    ref, cand = (cfg or {}).get("reference"), (cfg or {}).get("candidate")
+    if not ref or not cand:
+        return [f"{name}: needs reference: and candidate:"]
+    probs = [f"{name}: no algorithms/{s}/algorithm.yml" for s in (ref, cand) if s not in manifests]
+    if probs:
+        return probs
+    r, c = manifests[ref], manifests[cand]
+    if is_port(r):
+        probs.append(f"{name}: reference {ref} is a QSM.rs port (source: qsmrs), not an original")
+    if not is_port(c):
+        probs.append(f"{name}: candidate {cand} is not a QSM.rs port (source: qsmrs)")
+    if r.get("algorithm") != c.get("algorithm"):
+        probs.append(f"{name}: {ref} is algorithm {r.get('algorithm')!r} but {cand} is "
+                     f"{c.get('algorithm')!r}; a pair shares one algorithm:")
+    return probs
+
+
+def pair_listing(pairs: dict, thresholds: dict, manifests: "dict | None" = None) -> list:
+    """One row per configured pair (with `problems` if it no longer matches algorithm.yml), then one
+    per algorithm that has an original and a port but no pair configured."""
+    manifests = _manifests() if manifests is None else manifests
+    rows, covered = [], set()
+    for name, cfg in sorted(thresholds.items()):
+        cfg = cfg or {}
+        alg = (manifests.get(cfg.get("candidate")) or {}).get("algorithm")
+        covered.add(alg)
+        rows.append({"pair": name, "algorithm": alg, "reference": cfg.get("reference"),
+                     "candidate": cfg.get("candidate"), "enabled": bool(cfg.get("enabled")),
+                     "datasets": sorted((cfg.get("datasets") or {}).keys()),
+                     "problems": pair_problems(name, cfg, manifests)})
+    for alg, g in sorted(pairs.items()):
+        if alg not in covered:
+            rows.append({"pair": None, "algorithm": alg, "originals": g["original"],
+                         "ports": g["port"], "enabled": False, "datasets": []})
     return rows
 
 
@@ -131,10 +170,19 @@ def plan_matrix(thresholds: dict, algorithm: str, dataset: str) -> list:
     return out
 
 
-def pair_config(thresholds: dict, algorithm: str) -> dict:
+def pair_config(thresholds: dict, algorithm: str, manifests: "dict | None" = None,
+                validate: bool = True) -> dict:
+    """A pair's thresholds.yml entry. `validate` also checks it against algorithm.yml (before a
+    run; `compare` works on outputs already written and needs only the names)."""
     cfg = thresholds.get(algorithm)
-    if not cfg or not cfg.get("reference") or not cfg.get("candidate"):
-        raise SystemExit(f"parity/thresholds.yml: pair '{algorithm}' needs reference: and candidate:")
+    if cfg is None:
+        raise SystemExit(f"no pair '{algorithm}' in parity/thresholds.yml")
+    if not validate:
+        manifests = {s: {"algorithm": "x", "source": "qsmrs" if s == cfg.get("candidate") else "o"}
+                     for s in (cfg.get("reference"), cfg.get("candidate")) if s}
+    probs = pair_problems(algorithm, cfg, _manifests() if manifests is None else manifests)
+    if probs:
+        raise SystemExit("parity/thresholds.yml: " + "; ".join(probs))
     return cfg
 
 
@@ -277,7 +325,7 @@ def _fmt(v, metric: str = "") -> str:
 
 
 def render_report(*, algorithm: str, phantom: str, reference: str, candidate: str, verdict: dict,
-                  baseline: bool, unmatched: dict, provenance: dict) -> str:
+                  baseline: bool, unmatched: dict, provenance: dict, note: str = "") -> str:
     maps = verdict["maps"]
     if baseline:
         head = "📏 **Baseline measured** (no limits applied)"
@@ -285,13 +333,21 @@ def render_report(*, algorithm: str, phantom: str, reference: str, candidate: st
         head = "✅ **Parity holds**" if verdict["ok"] else "❌ **Parity regression**"
     lines = [f"## Parity: `{algorithm}` on `{phantom}`", "",
              f"{head} — candidate `{candidate}` vs reference `{reference}`, inside the dataset mask.",
-             ""]
+             ""] + ([note, ""] if note else [])
     for side in ("reference", "candidate"):
         p = provenance.get(side) or {}
-        if p:
-            lines.append(f"- **{side}**: {' → '.join(f'`{s}`' for s in p.get('chain', []))}"
-                         + (f" — image `{p['image']}`" if p.get("image") else "")
-                         + (f" — {p['runtime_s']:.0f} s" if p.get("runtime_s") else ""))
+        if not p:
+            continue
+        lines.append(f"- **{side}**: {' → '.join(f'`{s}`' for s in p.get('chain', []))}"
+                     + (f" — {p['runtime_s']:.0f} s" if p.get("runtime_s") else ""))
+        for st in p.get("steps") or [{"slug": (p.get("chain") or ["?"])[-1], "image": p.get("image")}]:
+            bits = [f"image `{st['image']}`"] if st.get("image") else []
+            bits += [f"`{st['qsmxt']}`"] if st.get("qsmxt") else []
+            bits += [f"ID `{st['id'][:19]}`"] if st.get("id") else []
+            bits += [f"fed the reference's {', '.join(f'`{a}`' for a in st['fed'])}"] \
+                if st.get("fed") else []
+            if bits:
+                lines.append(f"  - `{st['slug']}`: " + ", ".join(bits))
     lines.append("")
     lines += ["| Map | Metric | Value | Limit | |", "|---|---|---|---|---|"]
     for name, v in maps.items():
@@ -342,12 +398,57 @@ def _algo(slug: str) -> dict:
     raise SystemExit(f"no runnable submission '{slug}' under algorithms/ (missing, or ci_skip)")
 
 
+def image_identity(image: "str | None", runner: str) -> dict:
+    """What an image is, for the report: its ID and, for a qsmxt image, `qsmxt --version`. Empty
+    for the `local` runner or an image the engine cannot inspect."""
+    if not image or runner not in ("docker", "podman"):
+        return {}
+    out = {}
+    r = subprocess.run([runner, "image", "inspect", "--format", "{{.Id}}", image],
+                       capture_output=True, text=True)
+    if r.returncode == 0:
+        out["id"] = r.stdout.strip()
+    r = subprocess.run([runner, "run", "--rm", "--network", "none", "--entrypoint", "qsmxt", image,
+                        "--version"], capture_output=True, text=True)
+    if r.returncode == 0 and r.stdout.strip():
+        out["qsmxt"] = r.stdout.strip().splitlines()[0]
+    return out
+
+
+def apply_names(inter: Path, names: "dict | None", mask_path: "Path | None" = None) -> None:
+    """Rename a side's intermediates to the names they are compared under (CONTRACT.md,
+    "Intermediates"), for a method whose own names differ — e.g. a compiled MATLAB image that
+    predates the convention. `names` is {native: canonical} or {native: {name: canonical,
+    complement: true}}; `complement` turns a mask into its complement inside the dataset mask (the
+    original's `vasc_only` is tissue without vessels; `vessel_mask` is the vessels)."""
+    for native, spec in (names or {}).items():
+        src = inter / f"{native}.nii.gz"
+        if not src.exists():
+            continue
+        spec = spec if isinstance(spec, dict) else {"name": spec}
+        dst = inter / f"{spec['name']}.nii.gz"
+        if spec.get("complement"):
+            import nibabel as nib
+            import numpy as np
+            img = nib.load(str(src))
+            m = _load(mask_path) > 0.5
+            out = (m & (np.asanyarray(img.dataobj) < 0.5)).astype(np.uint8)
+            nib.save(nib.Nifti1Image(out, img.affine, img.header), str(dst))
+            src.unlink()
+        else:
+            src.replace(dst)
+
+
 def run_side(chain: list, dataset: Path, out: Path, runner: str, feed: "dict | None" = None,
-             log=print) -> dict:
+             qsmrs_image: "str | None" = None, names: "dict | None" = None, log=print) -> dict:
     """Run `chain` (slugs, in order) on `dataset`; the last slug's produced artifact lands in
     out/<artifact>.nii.gz and every slug's intermediates in out/intermediates/. Each stage's output
-    replaces that artifact as an input of the next, and `feed` ({artifact: path}) overrides inputs
-    first. Returns provenance {chain, image, runtime_s, final}."""
+    replaces that artifact as an input of the next, and is also kept as an intermediate under the
+    artifact's name (e.g. a field-mapping prefix's `totalfield`) unless the method wrote one itself.
+    `feed` ({artifact: path}) overrides inputs first; `qsmrs_image` replaces the image of every
+    QSM.rs step; `names` renames the intermediates afterwards (apply_names).
+    Returns provenance {chain, steps: [{slug, image, …}], image, runtime_s, final}."""
+    import shutil
     import time
     import pipeline
     from scoring import cli_run_argv, gt_sources
@@ -356,27 +457,45 @@ def run_side(chain: list, dataset: Path, out: Path, runner: str, feed: "dict | N
 
     sources = dict(gt_sources(dataset))
     sources.update(feed or {})
+    if feed:
+        first = _algo(chain[0])
+        stray = sorted(set(feed) - set(first["consumes"]))
+        if stray:
+            raise SystemExit(f"feed: {chain[0]} does not consume {', '.join(stray)}")
     out.mkdir(parents=True, exist_ok=True)
     inter = out / "intermediates"
-    t_all, image, final = 0.0, None, None
+    inter.mkdir(exist_ok=True)
+    t_all, final, steps = 0.0, None, []
     for i, slug in enumerate(chain):
         algo = _algo(slug)
         idir, odir = out / f"_in{i}", out / f"_out{i}"
         pipeline.prepare_input(algo["consumes"], sources, idir)
         odir.mkdir(parents=True, exist_ok=True)
         argv = cli_run_argv(algo, idir, odir, ARTIFACT_FILE, runner) + ["--intermediates", str(inter)]
+        image = algo.get("image")
+        # discover_algorithms() keeps no `source`: read it from algorithm.yml.
+        if qsmrs_image and is_port(_manifests().get(slug) or {}):
+            image = qsmrs_image
+            argv += ["--image", qsmrs_image]
         limit = timeout_s(algo.get("timeout_minutes"))
         env = {**os.environ, "QSMCI_TIMEOUT": "0" if limit is None else str(limit)}
         log(f"▸ {slug}: {' '.join(argv)}")
         t0 = time.time()
         subprocess.run(argv, env=env, check=True)
-        t_all += time.time() - t0
+        dt = time.time() - t0
+        t_all += dt
         for art in algo["produces"]:
             sources[art] = odir / ARTIFACT_FILE[art]
-        image, final = algo.get("image"), algo["produces"][0]
-    import shutil
+            if i < len(chain) - 1 and not (inter / ARTIFACT_FILE[art]).exists():
+                shutil.copy(sources[art], inter / ARTIFACT_FILE[art])
+        final = algo["produces"][0]
+        steps.append({"slug": slug, "image": image, "runtime_s": dt,
+                      **({"fed": sorted(feed)} if feed and i == 0 else {}),
+                      **image_identity(image, runner)})
     shutil.copy(sources[final], out / ARTIFACT_FILE[final])
-    prov = {"chain": chain, "image": image, "runtime_s": t_all, "final": final}
+    apply_names(inter, names, Path(dataset) / "inputs" / "mask.nii.gz")
+    prov = {"chain": chain, "steps": steps, "image": steps[-1]["image"], "runtime_s": t_all,
+            "final": final}
     (out / "provenance.json").write_text(json.dumps(prov, indent=2) + "\n")
     return prov
 
@@ -387,10 +506,11 @@ def cmd_run(args) -> int:
     ds_cfg = (cfg.get("datasets") or {}).get(args.phantom) or {}
     work = Path(args.work)
     run_side(side_chain(cfg, "reference", args.phantom), Path(args.dataset), work / "reference",
-             args.runner)
+             args.runner, names=cfg.get("reference_names"))
     # `feed: {totalfield: totalfield}` hands the candidate the reference's intermediate of that name
-    # in place of the dataset's artifact, so both reconstruct from the same input. A declared feed
-    # whose intermediate the reference did not write is an error, never a silent fallback.
+    # (after reference_names) in place of the dataset's artifact, so both reconstruct from the same
+    # input. A declared feed whose intermediate the reference did not write is an error, never a
+    # silent fallback.
     feed = {}
     for art, name in (ds_cfg.get("feed") or {}).items():
         f = work / "reference" / "intermediates" / f"{name}.nii.gz"
@@ -399,7 +519,8 @@ def cmd_run(args) -> int:
                              f"{cfg['reference']} did not write")
         feed[art] = f
     run_side(side_chain(cfg, "candidate", args.phantom), Path(args.dataset), work / "candidate",
-             args.runner, feed=feed)
+             args.runner, feed=feed, qsmrs_image=args.qsmrs_image or None,
+             names=cfg.get("candidate_names"))
     return 0
 
 
@@ -417,6 +538,8 @@ def compare_dirs(ref_dir: Path, cand_dir: Path, mask_path: Path, final: str) -> 
                                    _load(cand_dir / ARTIFACT_FILE[final]), mask)}
     names = {s: {p.name[:-7] for p in (d / "intermediates").glob("*.nii.gz")}
              for s, d in (("reference", ref_dir), ("candidate", cand_dir))}
+    for s in names.values():
+        s.discard(final)   # a copy of the final map (QSMART's recon writes one) is not a step
     for name in sorted(names["reference"] & names["candidate"]):
         results[name] = compare_maps(_load(ref_dir / "intermediates" / f"{name}.nii.gz"),
                                      _load(cand_dir / "intermediates" / f"{name}.nii.gz"), mask)
@@ -427,7 +550,7 @@ def compare_dirs(ref_dir: Path, cand_dir: Path, mask_path: Path, final: str) -> 
 
 def cmd_compare(args) -> int:
     th = load_thresholds(args.thresholds)
-    cfg = pair_config(th, args.algorithm)
+    cfg = pair_config(th, args.algorithm, validate=False)
     ds_cfg = (cfg.get("datasets") or {}).get(args.phantom) or {}
     work = Path(args.work)
     prov = {s: json.loads((work / s / "provenance.json").read_text())
@@ -439,7 +562,7 @@ def cmd_compare(args) -> int:
     report = render_report(algorithm=args.algorithm, phantom=args.phantom,
                            reference=cfg["reference"], candidate=cfg["candidate"], verdict=verdict,
                            baseline=args.baseline, unmatched=unmatched,
-                           provenance={**prov, "final": final})
+                           provenance={**prov, "final": final}, note=args.note)
     print(report)
     if args.report:
         Path(args.report).write_text(report)
@@ -447,6 +570,7 @@ def cmd_compare(args) -> int:
         Path(args.json).write_text(json.dumps({
             "algorithm": args.algorithm, "phantom": args.phantom, "reference": cfg["reference"],
             "candidate": cfg["candidate"], "baseline": args.baseline, "provenance": prov,
+            "note": args.note,
             "unmatched": unmatched, **verdict,
             "suggested": {n: derive_limits(v["metrics"]) for n, v in verdict["maps"].items()},
         }, indent=2, default=str) + "\n")
@@ -480,10 +604,15 @@ def main(argv=None) -> int:
         p.set_defaults(fn=fn)
         if name == "run":
             p.add_argument("--runner", default="docker", choices=["docker", "podman", "apptainer", "local"])
+            p.add_argument("--qsmrs-image", metavar="REF",
+                           help="run every QSM.rs step (source: qsmrs) in this image instead of "
+                                "the one its algorithm.yml pins (e.g. a qsmxt built from a ref)")
         else:
             p.add_argument("--mask", type=Path, help="default: <dataset>/inputs/mask.nii.gz")
             p.add_argument("--baseline", action="store_true",
                            help="measure and suggest limits; never fail on them")
+            p.add_argument("--note", default="", help="a line for the report, e.g. which QSM.rs "
+                                                          "build the candidate ran")
             p.add_argument("--report", type=Path)
             p.add_argument("--json", type=Path)
     args = ap.parse_args(argv)

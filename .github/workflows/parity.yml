@@ -3,20 +3,25 @@ name: parity
 # Port parity: run the original implementation of an algorithm and its QSM.rs port on the same public
 # dataset and check that they agree (QSMxT/QSM-CI#295, step 3). Pairs, which side is the reference,
 # and the limits per dataset live in parity/thresholds.yml; the runs and the comparison are
-# scripts/parity.py (unit-tested in tests/test_parity.py).
+# scripts/parity.py (unit-tested in tests/test_parity.py). docs/parity.md is the guide.
 #
-# Each job runs both containers through `qsm-ci run` — the same run path score.yml uses, pulling the
-# digest-pinned images; nothing is built — then compares the final χ and every intermediate both
-# sides wrote under the same name (CONTRACT.md, "Intermediates") inside the dataset mask. The report
-# is the job summary and an artifact; the job fails when a limit is exceeded.
+# Each job runs both containers through `qsm-ci run` — the same run path score.yml uses — then
+# compares the final χ and every intermediate both sides wrote under the same name (CONTRACT.md,
+# "Intermediates") inside the dataset mask. The report is the job summary and an artifact; the job
+# fails when a limit is exceeded.
 #
-# On demand only. Before a QSM.rs release, call it from the release workflow:
-#     jobs:
-#       parity:
-#         uses: ./.github/workflows/parity.yml
-#         with: { algorithm: enabled, dataset: configured }
-#         secrets: inherit
-# and make the release job `needs: parity`.
+# The QSM.rs side. By default every QSM.rs step (`source: qsmrs`) runs the qsmxt image its
+# algorithm.yml pins. To check the QSM.rs under test instead, pass one of:
+#   qsmrs_ref    a QSM.rs ref: QSMxT (qsmxt_ref, default main) is built with its qsm-core pin moved
+#                to that commit;
+#   qsmxt_ref    a QSMxT ref, built as it is (with the QSM.rs it pins);
+#   qsmxt_image  a prebuilt qsmxt image.
+# A build is the release build (QSMxT's release.yml: cargo build --release, x86_64 musl, default
+# features) in a debian-slim image like algorithms/_qsmxt (parity/qsmxt.Dockerfile).
+#
+# On demand only. Before a QSM.rs release (docs/parity.md, "Before a QSM.rs release"):
+#     gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=enabled -f dataset=configured \
+#       -f qsmrs_ref=<release candidate SHA>
 
 on:
   workflow_dispatch:
@@ -26,15 +31,27 @@ on:
         default: "qsmart"
       dataset:
         description: "scripts/datasets.json key (e.g. sim, s002001-kki-achieva-bridge-run1), or 'configured' for every dataset the pair has limits for"
-        default: "sim"
+        default: "configured"
       baseline:
         description: "true = measure and print suggested limits; never fail on them"
         default: "false"
+      qsmrs_ref:
+        description: "QSM.rs ref (branch, tag or SHA) to test: builds qsmxt with qsm-core at this commit. Empty = the QSM.rs that qsmxt_ref pins"
+        default: ""
+      qsmxt_ref:
+        description: "QSMxT ref to build qsmxt from (default main when qsmrs_ref is set). Empty with no qsmrs_ref = the images algorithm.yml pins"
+        default: ""
+      qsmxt_image:
+        description: "prebuilt qsmxt image for every QSM.rs step instead (overrides the refs)"
+        default: ""
   workflow_call:
     inputs:
       algorithm: { type: string, default: "enabled" }
       dataset: { type: string, default: "configured" }
       baseline: { type: string, default: "false" }
+      qsmrs_ref: { type: string, default: "" }
+      qsmxt_ref: { type: string, default: "" }
+      qsmxt_image: { type: string, default: "" }
 
 # `shell: bash` here is load-bearing, not decoration: naming the shell explicitly makes every
 # `run:` below execute as `bash --noprofile --norc -eo pipefail {0}`, whereas the IMPLICIT
@@ -54,21 +71,92 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.plan.outputs.matrix }}
+      build: ${{ steps.plan.outputs.build }}
     steps:
       - uses: actions/checkout@v7
       - id: plan
         env:
           # Dispatch inputs: via env, never interpolated into a script (free-text fields).
           ALGORITHM: ${{ inputs.algorithm || 'qsmart' }}
-          DATASET: ${{ inputs.dataset || 'sim' }}
+          DATASET: ${{ inputs.dataset || 'configured' }}
+          QSMRS_REF: ${{ inputs.qsmrs_ref }}
+          QSMXT_REF: ${{ inputs.qsmxt_ref }}
+          QSMXT_IMAGE: ${{ inputs.qsmxt_image }}
         run: |
           pip install -q pyyaml
           m=$(python3 scripts/parity.py pairs --matrix --algorithm "$ALGORITHM" --dataset "$DATASET")
           echo "matrix=$m" >> "$GITHUB_OUTPUT"
           echo "$m"
+          # Build qsmxt only when a ref is given and no prebuilt image is.
+          b=false; [ -z "$QSMXT_IMAGE" ] && [ -n "$QSMRS_REF$QSMXT_REF" ] && b=true
+          echo "build=$b" >> "$GITHUB_OUTPUT"
+
+  # qsmxt from source, as QSMxT's release.yml builds its x86_64-unknown-linux-musl asset (the one
+  # algorithms/_qsmxt installs). The binary and what it was built from are handed to the parity
+  # jobs as an artifact; each builds its own small image from it (parity/qsmxt.Dockerfile).
+  qsmxt:
+    needs: plan
+    if: needs.plan.outputs.build == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      QSMRS_REF: ${{ inputs.qsmrs_ref }}
+      QSMXT_REF: ${{ inputs.qsmxt_ref || 'main' }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          repository: QSMxT/QSMxT
+          ref: ${{ inputs.qsmxt_ref || 'main' }}
+          path: qsmxt
+      - name: Move qsm-core to the QSM.rs under test
+        if: inputs.qsmrs_ref != ''
+        working-directory: qsmxt
+        run: |
+          # QSMxT pins qsm-core by git rev in both manifests (they move in lockstep). A tag or branch
+          # is resolved to its commit so the build records exactly what it tested.
+          sha=$(git ls-remote https://github.com/astewartau/QSM.rs.git "$QSMRS_REF" "refs/tags/$QSMRS_REF^{}" | tail -1 | cut -f1)
+          [[ "$QSMRS_REF" =~ ^[0-9a-f]{40}$ ]] && sha="$QSMRS_REF"
+          [ -n "$sha" ] || { echo "::error::QSM.rs ref '$QSMRS_REF' not found"; exit 1; }
+          for f in Cargo.toml crates/qsmxt-engine/Cargo.toml; do
+            sed -i -E "/astewartau\/QSM\.rs/ s/(rev|tag|branch) = \"[^\"]*\"/rev = \"$sha\"/" "$f"
+            grep -n 'QSM.rs.git' "$f"
+          done
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-unknown-linux-musl
+      - name: Install musl tools
+        run: sudo apt-get update && sudo apt-get install -y musl-tools
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: qsmxt -> target
+          key: parity-musl
+      - name: Build release binary
+        working-directory: qsmxt
+        run: cargo build --release --target x86_64-unknown-linux-musl
+      - name: Record what was built
+        working-directory: qsmxt
+        run: |
+          mkdir -p ../qsmxt-build
+          cp target/x86_64-unknown-linux-musl/release/qsmxt ../qsmxt-build/
+          core=$(python3 - <<'PY'
+          import re
+          lock = open("Cargo.lock").read()
+          m = re.search(r'name = "qsm-core"\nversion = "([^"]+)"\nsource = "git\+[^#]+#([0-9a-f]+)"', lock)
+          print(f"{m.group(1)} @ {m.group(2)}" if m else "unknown")
+          PY
+          )
+          printf '%s\n' "QSMxT $QSMXT_REF @ $(git rev-parse HEAD), qsm-core $core" | tee ../qsmxt-build/BUILT_FROM
+          ../qsmxt-build/qsmxt --version
+      - uses: actions/upload-artifact@v7
+        with:
+          name: qsmxt-under-test
+          path: qsmxt-build/
+          retention-days: 7
 
   parity:
-    needs: plan
+    needs: [plan, qsmxt]
+    # Runs after the build, or without it when none was asked for (skipped is not a failure).
+    if: ${{ !cancelled() && needs.plan.result == 'success' && needs.qsmxt.result != 'failure' }}
     strategy:
       fail-fast: false
       matrix:
@@ -78,7 +166,7 @@ jobs:
     env:
       ALGORITHM: ${{ matrix.algorithm }}
       PHANTOM: ${{ matrix.phantom }}
-      BASELINE: ${{ inputs.baseline }}
+      BASELINE: ${{ inputs.baseline || 'false' }}
       # Labels every container this job starts (qsm_ci.containers), as in score.yml.
       QSMCI_JOB_TAG: ${{ github.run_id }}-parity-${{ matrix.algorithm }}-${{ matrix.phantom }}
     steps:
@@ -111,7 +199,6 @@ jobs:
               print(f"zipkey=osf-{ph}-{osf}")
               print(f"zip=.osfcache/{ph}.zip")
           print(f"path={d['path']}")
-          print(f"public={'true' if d.get('osf_public') else 'false'}")
           PY
       - name: Cache OSF dataset zip
         uses: actions/cache@v6
@@ -120,32 +207,57 @@ jobs:
           key: ${{ steps.ds.outputs.zipkey }}
       - name: Fetch dataset
         env:
-          # The sim phantom is token-gated; a public entry (the repro acquisitions) is fetched
-          # without one, since OSF answers 400 to a token it does not accept even on a public file.
-          OSF_TOKEN: ${{ steps.ds.outputs.public != 'true' && secrets.OSF_TOKEN || '' }}
+          OSF_TOKEN: ${{ secrets.OSF_TOKEN }}
           OSF_FILE_INVIVO: ${{ secrets.OSF_FILE_INVIVO }}
           OSF_ZIP: ${{ steps.ds.outputs.zip }}
           DS_PATH: ${{ steps.ds.outputs.path }}
         run: scripts/fetch_dataset.sh "$PHANTOM" "$DS_PATH"
 
+      # The QSM.rs under test: a build from the qsmxt job, or a supplied image; else none, and
+      # each QSM.rs step runs the image its algorithm.yml pins.
+      - uses: actions/download-artifact@v8
+        if: needs.plan.outputs.build == 'true'
+        with:
+          name: qsmxt-under-test
+          path: qsmxt-build
+      - name: QSM.rs under test
+        id: qsmrs
+        env:
+          QSMXT_IMAGE: ${{ inputs.qsmxt_image }}
+        run: |
+          if [ -n "$QSMXT_IMAGE" ]; then
+            docker pull "$QSMXT_IMAGE"
+            echo "image=$QSMXT_IMAGE" >> "$GITHUB_OUTPUT"
+            echo "note=QSM.rs under test: supplied image \`$QSMXT_IMAGE\`" >> "$GITHUB_OUTPUT"
+          elif [ -f qsmxt-build/qsmxt ]; then
+            chmod +x qsmxt-build/qsmxt
+            docker build -q -t qsmxt-under-test:${{ github.run_id }} -f parity/qsmxt.Dockerfile qsmxt-build
+            echo "image=qsmxt-under-test:${{ github.run_id }}" >> "$GITHUB_OUTPUT"
+            echo "note=QSM.rs under test: built from $(cat qsmxt-build/BUILT_FROM)" >> "$GITHUB_OUTPUT"
+          else
+            echo "note=QSM.rs under test: the qsmxt image each algorithm.yml pins" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Run both implementations
         env:
           DS_PATH: ${{ steps.ds.outputs.path }}
+          QSMRS_IMAGE: ${{ steps.qsmrs.outputs.image }}
         run: |
           t0=$(date +%s)
           python scripts/parity.py run --algorithm "$ALGORITHM" --phantom "$PHANTOM" \
-            --dataset "$DS_PATH" --work .parity --runner docker
+            --dataset "$DS_PATH" --work .parity --runner docker --qsmrs-image "$QSMRS_IMAGE"
           echo "== wall-clock: $(( $(date +%s) - t0 ))s =="
 
       - name: Compare
         id: compare
         env:
           DS_PATH: ${{ steps.ds.outputs.path }}
+          NOTE: ${{ steps.qsmrs.outputs.note }}
         run: |
           B=""; [ "$BASELINE" = "true" ] && B="--baseline"
           rc=0
           python scripts/parity.py compare --algorithm "$ALGORITHM" --phantom "$PHANTOM" \
-            --dataset "$DS_PATH" --work .parity $B \
+            --dataset "$DS_PATH" --work .parity $B --note "$NOTE" \
             --report parity-report.md --json parity.json || rc=$?
           cat parity-report.md >> "$GITHUB_STEP_SUMMARY"
           exit $rc
