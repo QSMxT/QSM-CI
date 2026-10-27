@@ -3,21 +3,103 @@
 QSMxT/QSM-CI#295, steps 1–2: does the `qsmart-matlab` container compute what the authors' MATLAB
 computes? To rerun the check, see [`README.md`](README.md).
 
-- **Checked:** 2026-10-27, on Slurm compute nodes.
-- **Licensed MATLAB:** 23.2.0.2459199 (R2023b) Update 5, with Image Processing Toolbox 23.2 and
-  Statistics and Machine Learning Toolbox 23.2.
-- **Image checked:** `ghcr.io/astewartau/qsm-ci/matlab-qsmart@sha256:682a369f5d9bf47870fc911d091e2a9f0ea2c463e8260ba477463660aedcc27a`
-  (`v2`). It was compiled with the same R2023b and runs on the R2023b MATLAB Runtime under
-  Apptainer.
-- **N4:** every run uses the image's own `N4BiasFieldCorrection` (ANTs 2.5.4), so N4 is not a
-  source of difference.
+- **Checked:** 2026-10-28, on Slurm compute nodes, 8 CPUs per job.
+- **Licensed MATLAB:** 23.2.0.2459199 (R2023b) Update 5, with Image Processing Toolbox 23.2.
+- **Image checked:** `ghcr.io/astewartau/qsm-ci/matlab-qsmart@sha256:e0e8bc6957c5346905136bfb02d330ca5f66eab510bf2a9893015a9dc4e0c3f6`
+  (`v3`).
+  - `recon` is compiled with that licensed R2023b against the **real** Image Processing Toolbox,
+    with no shims.
+  - It runs on the R2023b MATLAB Runtime (23.2.0.3097123, Update 11) under Apptainer.
+- **N4:** every run uses the image's own `N4BiasFieldCorrection` (ANTs 2.5.4).
 - **Cases:**
   - `sim`: QSM-CI's in-silico head (QSM Challenge 2.0 simulation: 7 T, 4 echoes, 1 mm,
     164×205×205).
   - `invivo`: one EMTP travelling-head acquisition (3 T, 5 echoes, 184×256×128, with a mask
     that touches the field of view).
 
-## Summary
+## Result: identical
+
+**Every output of the `v3` container is bit-identical to the same `recon.m` run in licensed
+MATLAB with the real toolboxes, in both cases.** That covers every intermediate and the final χ.
+NRMSE and max |Δ| are 0, the masks have Dice 1, and no voxel differs.
+
+| Output | In vivo: container vs real | In silico: container vs real | real2 vs real (both cases) |
+|---|---|---|---|
+| vessel mask `vasc_only` | identical (Dice 1) | identical (Dice 1) | identical |
+| bottom-hat | identical | identical | identical |
+| vesselness | identical | identical | identical |
+| R_0 | identical (no rejects) | identical (Dice 1) | identical |
+| total field | identical | identical | identical |
+| stage-1 local field, χ | identical | identical | identical |
+| stage-2 local field, χ | identical | identical | identical |
+| **final χ** | **identical** | **identical** | identical |
+
+The Otsu threshold on the vesselness is 0 in every run, as in the authors' code.
+
+**Where the toolbox functions resolved.** `recon.m` records this in `intermediates.json`:
+- in the container, `graythresh`, `imbothat`, `imclose`, `imdilate`, `imerode`, `imfilter`,
+  `imgaussfilt3`, `imopen`, `padarray` and `strel` all resolve to
+  `/opt/matlabruntime/R2023b/mcr/toolbox/images/images/`;
+- `prctile` resolves to `…/toolbox/matlab/datafun/`, since it has been core MATLAB since R2022b;
+- in licensed MATLAB, the same functions resolve to its `toolbox/images/images/` and
+  `toolbox/matlab/datafun/`.
+
+STI Suite's `.p` code reaches the same functions, which `recon.m` names in a `%#function` pragma
+because mcc cannot trace into pcode. The build's `unresolvedSymbols.txt` and
+`mccExcludedFiles.log` are empty, and every function is deployable. `requiredMCRProducts.txt`
+lists 35000 35002 35003 35010 (Image Processing) 35117 35180.
+
+**Thread count still matters.** The comparison holds at a fixed thread count. In the v2 check,
+licensed MATLAB at 2 threads vs 8 changed the final χ by about 1.5e-4 % NRMSE (iLSQR); masks and
+fields were identical. Here the container and the licensed runs all used 8 threads (recorded in
+`intermediates.json`). The Runtime (Update 11) and the licensed MATLAB (Update 5) differ in update
+level, with no effect on any output.
+
+**Fidelity record.** `algorithm.yml` records this under `fidelity:`, with the tolerance
+`identical`.
+
+## Deliberate deviations from the authors' code
+
+These are kept in every run, so they don't affect the comparison. The full diff against the
+originals is `$FID_WORK/reports/deviations.diff`.
+
+- `calculate_curvature.m`: guards `max(abs(GC(GC<0)))` for when there are no negative
+  curvatures. The original divides by an empty array.
+- `vasculature_mask.m` → `vasculature_mask_qsmci.m`:
+  - runs `N4BiasFieldCorrection` directly instead of `module load ants/1.9.v4; …`, and falls back
+    with a warning if it's missing;
+  - doesn't run `mex eig3volume.c` at run time (it's compiled at build time);
+  - doesn't write debug NIfTIs;
+  - can return the intermediates as a second output.
+- `FrangiFilter3D.m`: a stray `keyboard` is commented out.
+
+## Slurm jobs (v3)
+
+| What | Job ids |
+|---|---|
+| Compile | 30727525 |
+| Setup and pull | 30727583 |
+| sim: container, real, real2, compare | 30727587–30727590 |
+| invivo: container, real, real2, compare | 30727591–30727594 |
+
+Container wall time was 3.5 min (invivo) and 5.4 min (sim), with a peak RSS of 4.5 GB. Licensed
+`recon.m` took 258–307 s.
+
+## History: v1 and v2 (toolbox shims)
+
+The earlier images ran on toolbox shims, which are now removed from this algorithm. The per-shim
+harness (`shim_fidelity.m`, and the `trace` run that checked every shim call against the
+toolbox) was removed with them. It is in this PR's history at commit 34883c5
+(`algorithms/qsmart-matlab/fidelity/`).
+
+The same border bug is still in the shim copies of six other containers: `ilsqr-sti`,
+`star-sti`, `vsharp-sti`, `chisep-ilsqr`, `chisep-medi` and `ukb-qsm`. Their `imdilate`/`imerode`
+wrap round via `circshift`.
+
+### v2 summary
+
+`v2` is `sha256:682a369f5d9bf47870fc911d091e2a9f0ea2c463e8260ba477463660aedcc27a`: R2023b, the
+border-fixed shims, and the N4 output kept single. It was checked on 2026-10-27.
 
 - **The `v2` container computes what licensed MATLAB with the same code computes, bit for bit.**
   Every intermediate and the final χ are identical to licensed R2023b running `recon.m` with the
@@ -40,11 +122,11 @@ computes? To rerun the check, see [`README.md`](README.md).
   - `vasculature_mask_qsmci.m` cast N4's float32 output to double, unlike the authors' code.
   
   The pinned `v1` image differed from licensed MATLAB by 6.2 % in vivo and 1.9 % in silico
-  (see [History](#history-v1)).
+  (see v1 below).
 
-## Tolerance and verdict
+### v2 tolerance
 
-**PASS.** `algorithm.yml` records this under `fidelity:`. The tolerances are:
+`v2` passed with these tolerances. `v3` replaced it with the bar set at identical output:
 
 | Comparison | Tolerance | In vivo | In silico |
 |---|---|---|---|
@@ -59,7 +141,7 @@ rounding reaches the Otsu-0 vessel mask, and making it bit-exact would mean repr
 internal summation order. One alternative is to compile the real IPT `imfilter` into the binary
 instead of the shim, since the build MATLAB has IPT. That's a design change left open.
 
-## Step 1: shims vs the real toolboxes
+### Step 1: shims vs the real toolboxes
 
 `shim_fidelity.m` calls each shim and its toolbox function on the same inputs, in the forms
 QSMART, Frangi and STI Suite use them: 3-D volumes, even and odd sizes, masks touching the FOV,
@@ -88,7 +170,7 @@ Forms that a shim doesn't support and QSMART doesn't use are reported as INFO an
 | `prctile` | PASS | 5 | rel 2.9e-15 |
 | `strel` | PASS | 4 | identical |
 
-## Step 2: container vs licensed MATLAB
+### Step 2: container vs licensed MATLAB
 
 Each case runs `recon.m` four ways:
 
@@ -139,22 +221,7 @@ toolboxes and the new `vasculature_mask_qsmci.m` (N4 output kept single) is bit-
 every intermediate and in both cases, to the earlier run that emulated the authors' single
 precision by patching the cast out.
 
-## Deliberate deviations from the authors' code
-
-These are kept in every licensed run, so they don't affect the comparison. The full diff against
-the originals is `$FID_WORK/reports/deviations.diff`.
-
-- `calculate_curvature.m`: guards `max(abs(GC(GC<0)))` for the case with no negative
-  curvatures, where the original divides by an empty array.
-- `vasculature_mask.m` → `vasculature_mask_qsmci.m`:
-  - runs `N4BiasFieldCorrection` directly instead of `module load ants/1.9.v4; …`, and falls back
-    with a warning if it's missing;
-  - doesn't run `mex eig3volume.c` at run time, because it's compiled at build time;
-  - doesn't write debug NIfTIs;
-  - can return the intermediates as a second output.
-- `FrangiFilter3D.m`: a stray `keyboard` is commented out.
-
-## History (v1)
+### v1
 
 The first check ran against `v1`:
 - image: `sha256:437824e7fc0511b35c69e0f265ac04601109186efd4d589c09eea1c0416360a5`;
@@ -209,7 +276,7 @@ still in double, matched licensed MATLAB to 2.5e-4 % in vivo and 0.018 % in sili
 **The Runtime itself was never a source of difference.** `v1` matched licensed MATLAB with the
 same shims to 1e-6 % across R2026a vs R2023b. `v2` is identical to it.
 
-## Slurm jobs
+### Slurm jobs (v1, v2)
 
 | What | Job ids |
 |---|---|
