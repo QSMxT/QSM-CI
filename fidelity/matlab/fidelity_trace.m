@@ -21,9 +21,19 @@ function fidelity_trace(inp, outdir, deps, algo, spec, report)
         end
     end
     rows = unique(rows);
+    deprows = {};
+    for k = 1:numel(s.FunctionTable)
+        f = s.FunctionTable(k);
+        if startsWith(f.FileName, [deps filesep])
+            deprows{end+1} = sprintf('%-40s %s', f.FunctionName, f.FileName(numel(deps)+2:end)); %#ok<AGROW>
+        end
+    end
+    deprows = unique(deprows);
     fid = fopen(report, 'w');
     fprintf(fid, '# toolbox functions reached (outside toolbox/matlab), %s\n', version);
     fprintf(fid, '%s\n', rows{:});
+    fprintf(fid, '\n# dependency code reached (MATLAB code only: pcode shows as its own name)\n');
+    fprintf(fid, '%s\n', deprows{:});
     fclose(fid);
     type(report);
 end
