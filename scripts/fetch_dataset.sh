@@ -79,16 +79,22 @@ else
   else
     url="https://osf.io/${OSF_FILE}/download"
   fi
-  # --location-trusted: a GUID download redirects osf.io -> files.osf.io (-> signed storage); keep the
-  # OSF token across those hops so a private-project file still authenticates. (Harmless for the direct
-  # waterbutler URL, and the signed storage URL just ignores the extra header.) Send the auth header
-  # ONLY when a token is set — an empty `Authorization: Bearer ` header makes OSF 400 the public
-  # download endpoint, so a tokenless public fetch must omit it entirely.
-  if [ -n "${OSF_TOKEN:-}" ]; then
-    curl -fS --location-trusted -H "Authorization: Bearer ${OSF_TOKEN}" "$url" -o "$zip"
-  else
-    curl -fS --location-trusted "$url" -o "$zip"
-  fi
+  # A GUID download redirects osf.io -> files.osf.io -> a pre-signed object-storage URL. The OSF
+  # token must reach the OSF hops of a private project, but the storage host rejects a signed URL
+  # that also carries an Authorization header (HTTP 400), so follow the redirects by hand and send
+  # the token only to *.osf.io. Send no auth header at all without a token: an empty
+  # `Authorization: Bearer ` header makes OSF 400 the public download endpoint.
+  hop="$url"
+  for _ in 1 2 3 4 5 6 7 8; do
+    auth=()
+    if [ -n "${OSF_TOKEN:-}" ] && [[ "$hop" =~ ^https://([a-z0-9-]+\.)*osf\.io/ ]]; then
+      auth=(-H "Authorization: Bearer ${OSF_TOKEN}")
+    fi
+    # A redirect's small body is overwritten by the next hop; the last hop's body is the file.
+    hop="$(curl -fS -o "$zip" -w '%{redirect_url}' "${auth[@]}" "$hop")"
+    [ -n "$hop" ] || break
+  done
+  [ -z "$hop" ] || { echo "[fetch_dataset] too many redirects from $url" >&2; exit 1; }
 fi
 
 # A prepacked zip (registry `prepacked: true`, e.g. the invivo challenge) is ALREADY flattened
