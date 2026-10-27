@@ -262,7 +262,7 @@ def test_compare_baseline_never_fails_and_suggests_limits(tmp_path):
     ds, work = _work(tmp_path, cand_shift=0.05)
     t = _thresholds(tmp_path, {})
     rc, rep, js = _compare(tmp_path, ds, work, t, "--baseline")
-    assert rc == 0
+    assert rc == 0 and "❌" not in rep   # a measurement, not a verdict
     block = rep.split("```yaml\n", 1)[1].split("```", 1)[0]
     sugg = yaml.safe_load(block)["datasets"]["sim"]
     assert "nrmse_max" in sugg["chimap"]

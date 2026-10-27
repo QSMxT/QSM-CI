@@ -302,12 +302,13 @@ def render_report(*, algorithm: str, phantom: str, reference: str, candidate: st
         for metric in list(names) + [k for k in by if k not in names]:
             r = by.get(metric)
             lim = f"{r['op']} {_fmt(r['limit'], metric)}" if r else "—"
-            mark = ("✅" if r["ok"] else "❌") if r else ("" if v["status"] != "fail" else "❌")
+            mark = ("" if baseline else ("✅" if r["ok"] else "❌") if r
+                    else ("" if v["status"] != "fail" else "❌"))
             val = m.get(metric, r["value"] if r else None)
             lines.append(f"| {'**' + name + '**' if first else ''} | {metric} | {_fmt(val, metric)} "
                          f"| {lim} | {mark} |")
             first = False
-        if v["status"] == "fail" and not v["limits"]:
+        if v["status"] == "fail" and not v["limits"] and not baseline:
             lines.append(f"| | *no limits in parity/thresholds.yml for `{phantom}`* | | | ❌ |")
     if unmatched.get("reference") or unmatched.get("candidate"):
         lines += ["", "Intermediates written by one side only (not compared): "

@@ -29,9 +29,13 @@ pairs:
     candidate: qsmart-qsmrs    # QSM.rs port via qsmxt (bfr+dipole: total field → χ)
     enabled: true
     datasets:
-      sim: {}
-      # In vivo (EMTP traveling head, KKI Philips 3 T, public). No ground-truth total field, so the
-      # port is fed by Laplacian field mapping (the unwrapping QSMART uses).
+      # Both sides start from phase: the MATLAB is end-to-end, so the port is preceded by Laplacian
+      # field mapping (the unwrapping QSMART uses) rather than given the ground-truth total field.
+      # Once qsmart-matlab writes its total field as an intermediate, `feed: {totalfield: ...}`
+      # replaces the prefix and isolates the port itself.
+      sim:
+        candidate_prefix: [laplacian-qsmrs]
+      # In vivo (EMTP traveling head, KKI Philips 3 T, public).
       s002001-kki-achieva-bridge-run1:
         candidate_prefix: [laplacian-qsmrs]
 

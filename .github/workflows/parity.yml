@@ -163,6 +163,7 @@ jobs:
           name: parity-${{ matrix.algorithm }}-${{ matrix.phantom }}
           retention-days: 30
           if-no-files-found: ignore
+          include-hidden-files: true   # the outputs live under .parity/
           path: |
             parity-report.md
             parity.json
