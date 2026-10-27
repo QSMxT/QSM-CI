@@ -1,7 +1,7 @@
 # qsmart-matlab fidelity report
 
 QSMxT/QSM-CI#295, steps 1–2: does the `qsmart-matlab` container compute what the authors' MATLAB
-computes? To rerun the check, see [`README.md`](README.md).
+computes? To rerun the check, see [`README.md`](README.md) (the shared harness in `fidelity/matlab/`).
 
 - **Checked:** 2026-10-28, on Slurm compute nodes, 8 CPUs per job.
 - **Licensed MATLAB:** 23.2.0.2459199 (R2023b) Update 5, with Image Processing Toolbox 23.2.
