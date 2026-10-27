@@ -88,6 +88,9 @@ everything QSMART + STI Suite call from them: `padarray`, `strel`/`imdilate`/`im
 proximity/filtering smoothing; supports per-axis sigma + 'FilterSize'), `imfilter` (imgaussian.m
 fallback), and `prctile` (Stats; only QSMART's optional adaptive-threshold branches).
 
+Checking the shims against the real toolboxes, and the built container against licensed MATLAB:
+[`fidelity/README.md`](fidelity/README.md). Rerun it whenever a shim or the image changes.
+
 ## 4. Bake the image and push
 
 ```bash
