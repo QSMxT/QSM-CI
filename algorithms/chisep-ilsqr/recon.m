@@ -8,9 +8,25 @@ function recon(inp, out)
 % result (χ+ xsim 0.22); reconstructing the QSM in-house with STI-Suite QSM_iLSQR from the same local
 % field (matching the toolbox's scaling/orientation conventions) gives a real reconstruction (χ+ xsim
 % 0.49, χ− 0.32) and ~70x lower cross-source leakage. So we ignore chimap.nii.gz and derive the QSM here.
+%
+% Bundled at build time (BUILD.md): Jimmy Shen NIfTI toolbox, STI Suite v3 Core_Functions_P and the
+% χ-separation toolbox (both pcode), and the real Image Processing and Signal Processing toolbox
+% functions they call (compiled from licensed MATLAB; the MATLAB Runtime includes their runtime
+% components).
+%
+% Optional intermediates (fidelity checks, ../../fidelity/matlab/README.md): set QSMCI_INTERMEDIATES
+% to a directory, or to 1 for <out>/intermediates. recon then also writes, in float64: the in-house
+% QSM, the noise weighting N_std, the local field in Hz, and chi_sep_iLSQR's third output, plus
+% intermediates.json (MATLAB version, thread count, and where each toolbox function resolved).
+% Unset (the default), nothing changes.
+
+% Toolbox functions the pcode calls, which mcc can't trace into: name them so they are bundled.
+% Found by profiling a licensed run (../../fidelity/matlab/README.md, `trace`); keep
+% toolbox_functions() below in step.
+%#function hann hanning imclose imdilate imerode imopen padarray strel tukeywin
+
     % Local (full-MATLAB) runs point these env vars at the toolboxes; the compiled MCR binary has them
     % baked in at mcc time (see BUILD.md) and leaves the vars unset, so only addpath when non-empty.
-    addpath_env('CHISEP_SHIMS', false);      % padarray/tukeywin/strel shims (no IPT/SPT)
     addpath_env('CHISEP_TOOLBOX', true);     % SNU-LIST chi-separation toolbox
     addpath_env('CHISEP_STISUITE', true);    % STI Suite (QSM_iLSQR)
     addpath_env('CHISEP_NIFTI', false);      % Jimmy Shen NIfTI I/O
@@ -46,7 +62,16 @@ function recon(inp, out)
     N_std = mean(mag(mask)) ./ max(mag, eps); N_std(~mask) = 0;
     option_data.qsm = qsm; option_data.N_std = N_std;
 
-    [x_para, x_dia, ~] = chi_sep_iLSQR(mag, local_field_hz, r2prime, mask, params, option_data);
+    [x_para, x_dia, x_tot] = chi_sep_iLSQR(mag, local_field_hz, r2prime, mask, params, option_data);
+
+    idir = intermediates_dir(out);
+    if ~isempty(idir)
+        write_intermediate(mn, qsm, fullfile(idir, 'qsm.nii.gz'));
+        write_intermediate(mn, N_std, fullfile(idir, 'n_std.nii.gz'));
+        write_intermediate(mn, local_field_hz, fullfile(idir, 'local_field_hz.nii.gz'));
+        write_intermediate(mn, x_tot, fullfile(idir, 'x_tot.nii.gz'));
+        write_meta(idir, struct());
+    end
 
     write_niigz(setimg(mn, single(x_para .* mask)), fullfile(out, 'chi-para.nii.gz'));
     write_niigz(setimg(mn, single(x_dia  .* mask)), fullfile(out, 'chi-dia.nii.gz'));
@@ -67,4 +92,41 @@ function nii = read_niigz(f)
 end
 function write_niigz(nii, f)
     t = [tempname '.nii']; save_untouch_nii(nii, t); system(sprintf('gzip -c ''%s'' > ''%s''', t, f)); delete(t);
+end
+
+function tb = toolbox_functions()
+    tb = {'hann', 'hanning', 'imclose', 'imdilate', 'imerode', 'imopen', 'padarray', 'strel', 'tukeywin'};
+end
+
+function idir = intermediates_dir(out)
+% QSMCI_INTERMEDIATES: a directory, or 1 for <out>/intermediates. Unset or 0: none.
+    idir = getenv('QSMCI_INTERMEDIATES');
+    if strcmp(idir, '0'), idir = ''; end
+    if strcmp(idir, '1'), idir = fullfile(out, 'intermediates'); end
+    if isempty(idir), return; end
+    if ~startsWith(idir, filesep), idir = fullfile(pwd, idir); end
+    if ~exist(idir, 'dir'), mkdir(idir); end
+end
+
+function write_intermediate(tmpl, a, f)
+% One intermediate as float64 NIfTI, through the input's untouched header (affine preserved).
+    a = double(a);
+    tmpl.img = a;
+    tmpl.hdr.dime.datatype = 64;  tmpl.hdr.dime.bitpix = 64;
+    tmpl.hdr.dime.dim(1) = max(3, ndims(a));
+    tmpl.hdr.dime.dim(2:5) = [size(a, 1) size(a, 2) size(a, 3) size(a, 4)];
+    tmpl.hdr.dime.scl_slope = 1;  tmpl.hdr.dime.scl_inter = 0;
+    write_niigz(tmpl, f);
+end
+
+function write_meta(idir, m)
+% intermediates.json: M plus the MATLAB version, the thread count, and where each toolbox
+% function in the %#function pragma resolved.
+    tb = toolbox_functions();
+    m.matlab = version;
+    m.threads = maxNumCompThreads;
+    m.resolved = cell2struct(cellfun(@which, tb, 'UniformOutput', false), tb, 2);
+    fid = fopen(fullfile(idir, 'intermediates.json'), 'w');
+    fwrite(fid, jsonencode(m));
+    fclose(fid);
 end
