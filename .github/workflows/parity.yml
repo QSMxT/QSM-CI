@@ -1,0 +1,162 @@
+name: parity
+
+# Port parity: run the original implementation of an algorithm and its QSM.rs port on the same public
+# dataset and check that they agree (QSMxT/QSM-CI#295, step 3). Pairs, which side is the reference,
+# and the limits per dataset live in parity/thresholds.yml; the runs and the comparison are
+# scripts/parity.py (unit-tested in tests/test_parity.py).
+#
+# Each job runs both containers through `qsm-ci run` — the same run path score.yml uses, pulling the
+# digest-pinned images; nothing is built — then compares the final χ and every intermediate both
+# sides wrote under the same name (CONTRACT.md, "Intermediates") inside the dataset mask. The report
+# is the job summary and an artifact; the job fails when a limit is exceeded.
+#
+# On demand only. Before a QSM.rs release, call it from the release workflow:
+#     jobs:
+#       parity:
+#         uses: ./.github/workflows/parity.yml
+#         with: { algorithm: enabled, dataset: configured }
+#         secrets: inherit
+# and make the release job `needs: parity`.
+
+on:
+  workflow_dispatch:
+    inputs:
+      algorithm:
+        description: "pair in parity/thresholds.yml (e.g. qsmart), or 'enabled' for every enabled pair"
+        default: "qsmart"
+      dataset:
+        description: "scripts/datasets.json key (e.g. sim, s002001-kki-achieva-bridge-run1), or 'configured' for every dataset the pair has limits for"
+        default: "sim"
+      baseline:
+        description: "true = measure and print suggested limits; never fail on them"
+        default: "false"
+  workflow_call:
+    inputs:
+      algorithm: { type: string, default: "enabled" }
+      dataset: { type: string, default: "configured" }
+      baseline: { type: string, default: "false" }
+
+# `shell: bash` here is load-bearing, not decoration: naming the shell explicitly makes every
+# `run:` below execute as `bash --noprofile --norc -eo pipefail {0}`, whereas the IMPLICIT
+# default is `bash -e {0}` — fail-fast but pipe-blind, so `a | b` would report only b's status.
+defaults:
+  run:
+    shell: bash
+
+permissions:
+  contents: read   # runs containers on a dataset and uploads a report; commits nothing
+
+env:
+  SETUPTOOLS_SCM_PRETEND_VERSION: "0.0.0"   # shallow checkout has no tags for setuptools-scm
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v7
+      - id: plan
+        env:
+          # Dispatch inputs: via env, never interpolated into a script (free-text fields).
+          ALGORITHM: ${{ inputs.algorithm || 'qsmart' }}
+          DATASET: ${{ inputs.dataset || 'sim' }}
+        run: |
+          pip install -q pyyaml
+          m=$(python3 scripts/parity.py pairs --matrix --algorithm "$ALGORITHM" --dataset "$DATASET")
+          echo "matrix=$m" >> "$GITHUB_OUTPUT"
+          echo "$m"
+
+  parity:
+    needs: plan
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(needs.plan.outputs.matrix) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    env:
+      ALGORITHM: ${{ matrix.algorithm }}
+      PHANTOM: ${{ matrix.phantom }}
+      BASELINE: ${{ inputs.baseline }}
+      # Labels every container this job starts (qsm_ci.containers), as in score.yml.
+      QSMCI_JOB_TAG: ${{ github.run_id }}-parity-${{ matrix.algorithm }}-${{ matrix.phantom }}
+    steps:
+      - uses: actions/checkout@v7
+
+      # Same interpreter and pinned numpy/scipy as the scoring jobs (score.yml explains why).
+      - uses: actions/setup-python@v7
+        with: { python-version: "3.12" }
+
+      - name: Install qsm-ci CLI + deps
+        uses: ./.github/actions/setup-qsmci
+
+      # Dataset resolution, cache and fetch exactly as score.yml does them (same cache key, so a
+      # zip score.yml already downloaded is reused).
+      - name: Resolve dataset (scripts/datasets.json)
+        id: ds
+        env:
+          OSF_FILE_INVIVO: ${{ secrets.OSF_FILE_INVIVO }}
+        run: |
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json, os
+          ph = os.environ['PHANTOM']
+          d = json.load(open('scripts/datasets.json'))[ph]
+          osf = (os.environ.get(d['osf_env']) if d.get('osf_env') else None) or d.get('osf_file') or ''
+          print(f"zipkey=osf-{ph}-{osf}")
+          print(f"path={d['path']}")
+          PY
+      - name: Cache OSF dataset zip
+        uses: actions/cache@v6
+        with:
+          path: .osfcache/${{ matrix.phantom }}.zip
+          key: ${{ steps.ds.outputs.zipkey }}
+      - name: Fetch dataset
+        env:
+          OSF_TOKEN: ${{ secrets.OSF_TOKEN }}   # the sim phantom is token-gated; the repro acquisitions are public
+          OSF_FILE_INVIVO: ${{ secrets.OSF_FILE_INVIVO }}
+          OSF_ZIP: .osfcache/${{ matrix.phantom }}.zip
+          DS_PATH: ${{ steps.ds.outputs.path }}
+        run: scripts/fetch_dataset.sh "$PHANTOM" "$DS_PATH"
+
+      - name: Run both implementations
+        env:
+          DS_PATH: ${{ steps.ds.outputs.path }}
+        run: |
+          t0=$(date +%s)
+          python scripts/parity.py run --algorithm "$ALGORITHM" --phantom "$PHANTOM" \
+            --dataset "$DS_PATH" --work .parity --runner docker
+          echo "== wall-clock: $(( $(date +%s) - t0 ))s =="
+
+      - name: Compare
+        id: compare
+        env:
+          DS_PATH: ${{ steps.ds.outputs.path }}
+        run: |
+          B=""; [ "$BASELINE" = "true" ] && B="--baseline"
+          rc=0
+          python scripts/parity.py compare --algorithm "$ALGORITHM" --phantom "$PHANTOM" \
+            --dataset "$DS_PATH" --work .parity $B \
+            --report parity-report.md --json parity.json || rc=$?
+          cat parity-report.md >> "$GITHUB_STEP_SUMMARY"
+          exit $rc
+
+      - name: Kill this job's containers
+        if: always()
+        continue-on-error: true
+        uses: ./.github/actions/kill-containers
+        with:
+          job-tag: ${{ github.run_id }}-parity-${{ matrix.algorithm }}-${{ matrix.phantom }}
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: parity-${{ matrix.algorithm }}-${{ matrix.phantom }}
+          retention-days: 30
+          if-no-files-found: ignore
+          path: |
+            parity-report.md
+            parity.json
+            .parity/*/provenance.json
+            .parity/*/*.nii.gz
+            .parity/*/intermediates/*.nii.gz

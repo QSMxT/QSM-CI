@@ -131,6 +131,19 @@ qsmxt invert tkd "$IN/localfield.nii.gz" -m "$IN/mask.nii.gz" -o "$OUT/chimap.ni
 The JSON files above are still written, so parsing them stays valid — the env vars are purely a
 convenience.
 
+### Intermediates (optional)
+
+A method may also write the maps it computes on the way to its output, so that a difference from
+another implementation of the same algorithm can be traced to its step (the `parity` workflow,
+[docs/parity.md](docs/parity.md)). When the caller asks for them (`qsm-ci run --intermediates DIR`),
+`$QSMCI_INTERMEDIATES` names a directory under `/output`; write each map there as
+`<name>.nii.gz`, on the mask's grid, in the units of the artifact it corresponds to (fields and χ in
+ppm, masks as 0/1). When the variable is unset, write none. Names are lower-case with underscores;
+use an artifact name (`totalfield`, `localfield`, `chimap`) for a map that is one, and the same name
+in every implementation of an algorithm, since intermediates are compared by name. QSMART's are
+`totalfield`, `reliability` (R_0), `vessel_mask`, `localfield_stage1`, `chimap_stage1`,
+`localfield_stage2` and `chimap_stage2`. Intermediates are never scored.
+
 ## Execution model — environment vs. code
 
 Your submission is **code plus an environment**; you do not have to bake your code into a custom

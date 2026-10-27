@@ -1,0 +1,43 @@
+# Port parity pairs and the agreement each must keep (scripts/parity.py, .github/workflows/parity.yml).
+#
+# A pair is two submissions with the same `algorithm:` in algorithm.yml: the original
+# (`reference`) and the QSM.rs port (`candidate`). `python scripts/parity.py pairs` lists every pair
+# algorithm.yml defines next to what is configured here.
+#
+#   enabled:   run by `parity.yml` with algorithm=enabled (and, later, before each QSM.rs release).
+#              A disabled pair can still be run by naming it; that is how it gets its first baseline.
+#   datasets:  one entry per scripts/datasets.json key the pair is checked on:
+#     <artifact>:      limits on the final produced artifact (chimap), compared inside the dataset
+#                      mask: nrmse_max (%, ‖cand − ref‖ / ‖ref‖), correlation_min, max_abs_max and
+#                      p99_abs_max (ppm). An enabled pair with no limits for a dataset fails there.
+#     intermediates:   {<name>: limits} for intermediates both sides write under that name
+#                      (CONTRACT.md, "Intermediates"); binary maps take dice_min. An intermediate
+#                      with no limits is reported but never fails.
+#     feed:            {<artifact>: <reference intermediate>} — give the candidate the reference's
+#                      intermediate in place of the dataset's artifact, so both reconstruct from the
+#                      same input. Changing it changes what is measured: re-baseline.
+#     <side>_prefix:   slugs run before that side when the dataset lacks the boundary it consumes.
+#     baseline:        where the limits came from (run, date, image digests). Informational.
+#
+# Limits are today's measured agreement plus a margin (scripts/parity.py derive_limits: NRMSE +10 %
+# +0.5 pp, correlation −0.01, |Δ| +25 %, Dice −0.01). To re-baseline, dispatch parity.yml with
+# baseline=true and paste the block its report prints.
+
+pairs:
+  qsmart:
+    reference: qsmart-matlab   # the authors' QSMART v1.0, compiled (end-to-end: phase → χ)
+    candidate: qsmart-qsmrs    # QSM.rs port via qsmxt (bfr+dipole: total field → χ)
+    enabled: true
+    datasets:
+      sim: {}
+      # In vivo (EMTP traveling head, KKI Philips 3 T, public). No ground-truth total field, so the
+      # port is fed by Laplacian field mapping (the unwrapping QSMART uses).
+      s002001-kki-achieva-bridge-run1:
+        candidate_prefix: [laplacian-qsmrs]
+
+  # Pairs algorithm.yml defines that are not checked yet: off until they have a baseline.
+  ilsqr:  { reference: ilsqr-sti,    candidate: ilsqr-qsmrs,  enabled: false }
+  medi:   { reference: medi-cornell, candidate: medi-qsmrs,   enabled: false }
+  vsharp: { reference: vsharp-sti,   candidate: vsharp-qsmrs, enabled: false }
+  tkd:    { reference: tkd-qsmci,    candidate: tkd-qsmrs,    enabled: false }
+  amp-pe: { reference: amp-pe,       candidate: amp-pe-qsmrs, enabled: false }   # amp-pe is ci_skip
