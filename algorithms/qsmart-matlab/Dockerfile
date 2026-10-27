@@ -1,8 +1,9 @@
 # MCR + ANTs image for the compiled QSMART submission. Build the `recon` binary first (BUILD.md
 # §1–3, licensed MATLAB R2023b + MATLAB Compiler), then:
-#   podman build -t ghcr.io/astewartau/qsm-ci/matlab-qsmart:v2 .
-# The QSMART toolbox, Frangi/curvatures, STI Suite and the shims are baked into `recon` at compile
-# time, so the image only needs the MATLAB Runtime of the compiling release, plus ANTs'
+#   podman build -t ghcr.io/astewartau/qsm-ci/matlab-qsmart:v3 .
+# The QSMART toolbox, Frangi/curvatures, STI Suite and the Image Processing Toolbox functions they
+# call are baked into `recon` at compile time. The image only needs the MATLAB Runtime of the
+# compiling release (which includes the toolboxes' runtime components), plus ANTs'
 # N4BiasFieldCorrection, which vasculature_mask_qsmci.m runs on the mean-echo magnitude.
 # CI never builds this file; it pulls `image:` from algorithm.yml.
 FROM containers.mathworks.com/matlab-runtime:r2023b

@@ -15,8 +15,9 @@ function recon(inp, out)
 % Bundled at build time (see BUILD.md): QSMART toolbox .m files, Jimmy Shen NIfTI
 % toolbox, frangi_filter_version2a (+ precompiled eig3volume/imgaussian mex),
 % curvatures.m (File Exchange), lapunwrap.m (Hongfu Sun, MIT), STI Suite v3
-% Core_Functions_P (QSM_iLSQR — QSMART calls STI Suite's inversion), and shims/ (IPT +
-% Statistics toolbox replacements; the MATLAB build here has neither toolbox).
+% Core_Functions_P (QSM_iLSQR — QSMART calls STI Suite's inversion), and the real Image
+% Processing and Statistics toolbox functions they call (compiled from licensed MATLAB; the
+% MATLAB Runtime includes their runtime components).
 %
 % Units: echofit divides the rad/s field by params.ppm (= gyro*B0/1e6) -> tfs in ppm;
 % QSMART_SDF multiplies back by params.ppm -> rad/s; QSM_iLSQR with 'TE',1000 (ms, i.e.
@@ -31,6 +32,10 @@ function recon(inp, out)
 % float64: vasc_only, bothat, vesselness, R_0, tfs (ppm), lfs1/lfs2 (stage-1/2 local field, ppm),
 % chi1/chi2 (stage-1/2 chi, ppm) and chimap, plus intermediates.json (Otsu threshold, N4 status).
 % Unset (the default), nothing changes.
+
+% Toolbox functions called from STI Suite's .p code, which mcc cannot trace into: name them so
+% they are bundled (the rest are traced from the .m code; listing them too is harmless).
+%#function graythresh imbothat imclose imdilate imerode imfilter imgaussfilt3 imopen padarray prctile strel
 
     % ---- acquisition parameters (CONTRACT.md params.json) ----
     p      = jsondecode(fileread(fullfile(inp, 'params.json')));
@@ -152,8 +157,11 @@ function recon(inp, out)
         end
         write_intermediate(nmask, chi, sz0, fullfile(idir, 'chimap.nii.gz'));
         fid = fopen(fullfile(idir, 'intermediates.json'), 'w');
+        tb = {'graythresh', 'imbothat', 'imclose', 'imdilate', 'imerode', 'imfilter', ...
+              'imgaussfilt3', 'imopen', 'padarray', 'prctile', 'strel'};
         fwrite(fid, jsonencode(struct('otsu_threshold', vinfo.threshold, 'n4', vinfo.n4, ...
-            'matlab', version, 'imdilate', which('imdilate'))));
+            'matlab', version, 'threads', maxNumCompThreads, ...
+            'resolved', cell2struct(cellfun(@which, tb, 'UniformOutput', false), tb, 2))));
         fclose(fid);
     end
     % Preserve the input geometry: write through the mask's untouched header (the bundled

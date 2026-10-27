@@ -4,8 +4,8 @@ function T = compare_runs(casedir, maskfile, deps, outmd)
 %     container    the pinned image on Apptainer (with intermediates if the image has the
 %                  QSMCI_INTERMEDIATES option, else the final chi only)
 %     real, real2  licensed MATLAB with the real toolboxes, twice (run-to-run floor)
-%     trace        licensed MATLAB with the shims (+ per-call toolbox comparison)
-%     trace-<tag>  trace with another copy of the algorithm folder (submit.sh FID_TAG)
+%     real-<tag>   real with another algorithm copy or setting (submit.sh FID_TAG), e.g. a
+%                  different thread count
 %   maskfile  the case's mask.nii.gz (NRMSE is taken inside it)
 % Metrics: NRMSE % = 100 ||a - b|| / ||b|| inside the mask, b the reference run; max |a - b| over
 % the volume; Dice for the masks (vessels = mask & ~vasc_only; R_0 rejects = mask & ~R_0), with
@@ -13,12 +13,9 @@ function T = compare_runs(casedir, maskfile, deps, outmd)
     addpath(fullfile(deps, 'nifti'));
     mask = rd(maskfile) > 0.5;
     pairs = {'container', 'real',  'all';
-             'container', 'trace', 'all';
-             'trace',     'real',  'all';
              'real2',     'real',  'all'};
-    % Runs of other algorithm copies (submit.sh FID_TAG, e.g. trace-<tag> with proposed shim
-    % fixes) are compared with the real-toolbox run too.
-    extra = dir(fullfile(casedir, 'trace-*'));
+    % Tagged runs (submit.sh FID_TAG) are compared with the real-toolbox run too.
+    extra = dir(fullfile(casedir, 'real-*'));
     for k = 1:numel(extra), pairs(end+1, :) = {extra(k).name, 'real', 'all'}; end %#ok<AGROW>
     files = {'vasc_only', 'bothat', 'vesselness', 'R_0', 'tfs', 'lfs1', 'chi1', 'lfs2', 'chi2', 'chimap'};
     T = struct('a', {}, 'b', {}, 'output', {}, 'nrmse_pct', {}, 'maxabs', {}, 'dice', {}, 'ndiff', {}, ...
@@ -43,11 +40,13 @@ function T = compare_runs(casedir, maskfile, deps, outmd)
         end
     end
     thr = struct();
-    for run = {'real', 'real2', 'trace'}
+    res = struct();
+    for run = [{'container', 'real', 'real2'}, {extra.name}]
         j = fullfile(casedir, run{1}, 'intermediates', 'intermediates.json');
         if exist(j, 'file')
             v = jsondecode(fileread(j));
             thr.(strrep(run{1}, '-', '_')) = v.otsu_threshold;
+            if isfield(v, 'resolved'), res.(strrep(run{1}, '-', '_')) = v.resolved; end
         end
     end
     fid = fopen(strrep(outmd, '.md', '.json'), 'w');
@@ -69,22 +68,11 @@ function T = compare_runs(casedir, maskfile, deps, outmd)
         fprintf(fid, '%s\n', strjoin(cellfun(@(n) sprintf('%s %.10g', n, thr.(n)), f, 'UniformOutput', false), ', '));
     end
 
-    % Every shim call the pipeline made (trace runs), per shim and call site.
-    for t = [{'trace'}, {extra.name}]
-        f = fullfile(casedir, t{1}, 'trace', 'trace.tsv');
-        if ~exist(f, 'file'), continue; end
-        L = readcell(f, 'FileType', 'text', 'Delimiter', '\t', 'NumHeaderLines', 1);
-        key = strcat(L(:, 1), '|', L(:, 3));
-        [u, ~, g] = unique(key, 'stable');
-        fprintf(fid, '\nShim calls in `%s` (%d calls; each also run through the toolbox):\n\n', t{1}, size(L, 1));
-        fprintf(fid, '| Shim | Call site | Calls | Not identical | Max abs | Max rel | Example arguments |\n');
-        fprintf(fid, '|---|---|---|---|---|---|---|\n');
-        for k = 1:numel(u)
-            i = find(g == k);
-            ma = max(cell2mat(L(i, 8))); mr = max(cell2mat(L(i, 9)));
-            fprintf(fid, '| `%s` | %s | %d | %d | %s | %s | `%s` |\n', L{i(1), 1}, L{i(1), 3}, numel(i), ...
-                nnz(cell2mat(L(i, 7)) == 0), num(ma), num(mr), L{i(1), 4});
-        end
+    % Where each toolbox function resolved, per run (recon.m records it with the intermediates).
+    for f = fieldnames(res)'
+        fprintf(fid, '\nToolbox functions as `%s` resolved them:\n\n', f{1});
+        r = res.(f{1});
+        for n = fieldnames(r)', fprintf(fid, '- `%s`: `%s`\n', n{1}, r.(n{1})); end
     end
     fprintf('%s\n', fileread(outmd));
 end

@@ -5,10 +5,10 @@
 #SBATCH --time=01:00:00
 # One step of the qsmart-matlab fidelity check, as a Slurm job (submit.sh submits them all).
 # Environment (passed with --export=ALL):
-#   STEP       setup | shims | recon | container | compare
+#   STEP       setup | recon | container | compare
 #   FID_WORK   work dir: deps/ img/ bin/ algo/ runs/<case>/<run>/ reports/
 #   FID_CASE   case name (recon, container, compare); FID_INPUT its contract inputs folder
-#   FID_MODE   recon mode: real | real2 | trace (run_recon.m)
+#   FID_MODE   recon mode: real | real2 (a second real run: the run-to-run floor)
 #   FID_TAG    algorithm copy to use, $FID_WORK/<tag> (default algo); non-default tags get
 #              their own runs/<case>/<mode>-<tag> and reports/*-<tag>
 #   setup only: FID_QSMART FID_SUN FID_STI (sources) and FID_IMAGE (docker ref, by digest)
@@ -46,10 +46,6 @@ EOF
           esac
           diff -u --strip-trailing-cr "$W/deps/originals/$f.m" "$new" || true
       done; } > "$W/reports/deviations.diff"
-    ;;
-shims)
-    mkdir -p "$W/reports/shims$SFX"
-    mat "addpath('$FID'); shim_fidelity('$A/shims', '$W/reports/shims$SFX', '$W/deps')"
     ;;
 recon)
     mode=$FID_MODE; [ "$mode" = real2 ] && mode=real

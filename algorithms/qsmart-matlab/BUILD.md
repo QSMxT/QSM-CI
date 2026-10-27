@@ -1,18 +1,21 @@
 # Building qsmart-matlab (compiled MATLAB → MATLAB Runtime + ANTs N4)
 
-Compile `recon.m` on a machine with **MATLAB + MATLAB Compiler R2023b**, and bake it onto the
+Compile `recon.m` on a machine with **MATLAB + MATLAB Compiler R2023b, with the Image Processing
+Toolbox licensed**, and bake it onto the
 R2023b MATLAB Runtime. R2023b because it is the licensed MATLAB the fidelity check
 ([`fidelity/`](fidelity/README.md)) runs on, so the container and the reference runs share one
 release. Same patterns as
 `../medi-cornell/BUILD.md` (bundled NIfTI toolbox, OS gzip, no JVM) and `../ilsqr-sti/BUILD.md`
-(STI Suite `.p` code + IPT shims), plus the **QSMART v1.0 toolbox** and its Frangi/curvatures
-dependencies with **build-time mex compilation**.
+(STI Suite `.p` code), plus the **QSMART v1.0 toolbox** and its Frangi/curvatures dependencies with
+**build-time mex compilation**. Unlike those, there are no toolbox shims: `recon` is compiled
+against the real Image Processing Toolbox (and `prctile`, which is core MATLAB since R2022b), and
+the MATLAB Runtime image already includes their runtime components.
 
 Stage: `end-to-end` — consumes `phase` (radians, 4-D) + `magnitude` + `mask` + `params`; runs the
 full original QSMART.m pipeline (vasculature mask → Laplacian unwrap → echofit/R_0 → SDF stage 1
 → QSM_iLSQR → SDF stage 2 → QSM_iLSQR → adjust_offset) → `chimap` (ppm).
 
-## 1. Fetch build-time deps (not committed; `shims/`, `recon.m`, `vasculature_mask_qsmci.m` ARE committed — ours)
+## 1. Fetch build-time deps (not committed; `recon.m`, `vasculature_mask_qsmci.m`, `Dockerfile` ARE committed — ours)
 
 ```bash
 cd algorithms/qsmart-matlab
@@ -67,39 +70,36 @@ gcc -O2 -fPIC -shared -std=gnu99 -DMATLAB_MEX_FILE -I$M/extern/include \
 
 `eig3volume` is mandatory (its `.m` is empty — mex-only). `imgaussian.c` is NOT built: it uses the
 legacy 32-bit `int` dims mex API and no longer compiles against modern MATLAB; its `imgaussian.m`
-fallback (running on the bundled `imfilter` shim) is used instead — same separable-Gaussian maths.
+fallback (IPT's `imfilter`) is used instead — as in the original, which only mex-compiles
+`eig3volume`.
 If a mex compile hits path issues on this box, remember to exclude any `eml` paths when adding
 MATLAB paths (known quirk).
 
 ## 3. Compile recon
 
 ```bash
-matlab -batch "addpath('shims','nifti','qsmart','frangi','curvatures','sti'); \
-  mcc('-m','recon.m','-a','sti','-a','shims','-a','frangi','-o','recon','-d','.')"
+matlab -batch "addpath('nifti','qsmart','frangi','curvatures','sti'); \
+  mcc('-m','recon.m','-a','sti','-a','frangi','-o','recon','-d','.')"
 ```
 
-`-a sti` force-bundles every `.p` (mcc can't trace into pcode); `-a shims` bundles the IPT/Stats
-replacements; `-a frangi` bundles the mex binaries + Frangi `.m`s. `recon.m`'s own tracing pulls
-in the qsmart/, nifti/ and curvatures/ functions it calls.
+`-a sti` force-bundles every `.p` (mcc can't trace into pcode); `-a frangi` bundles the mex
+binaries + Frangi `.m`s. `recon.m`'s own tracing pulls in the qsmart/, nifti/ and curvatures/
+functions it calls, and the toolbox functions they call. STI Suite's `.p` code calls toolbox
+functions too (`padarray`, `imclose`, …) that mcc can't see, so `recon.m` names them in a
+`%#function` pragma. Check that `which` resolves `graythresh`, `imbothat`, `imclose`, `imdilate`,
+`imerode`, `imfilter`, `imgaussfilt3`, `imopen`, `padarray` and `strel` to `toolbox/images` and
+`prctile` to `toolbox/matlab`, and that `unresolvedSymbols.txt` and `mccExcludedFiles.log` are
+empty. The container records where each one resolved in `intermediates.json` when run with
+`QSMCI_INTERMEDIATES`.
 
-## Shims (`shims/`)
-
-The MATLAB Runtime image is built without relying on the Image Processing or Statistics toolboxes,
-so `shims/` replaces everything QSMART + STI Suite call from them. `shims/` is first on the path at
-compile time, so the shims are what `mcc` bundles even when the build MATLAB has those toolboxes: `padarray`, `strel`/`imdilate`/`imerode`/`imclose`/
-`imopen` (copied from `../ilsqr-sti/shims/` — QSM_iLSQR's `.p` need them too), plus new here:
-`imbothat` (vessel enhancement), `graythresh` (Otsu on the Frangi map), `imgaussfilt3` (all SDF
-proximity/filtering smoothing; supports per-axis sigma + 'FilterSize'), `imfilter` (imgaussian.m
-fallback), and `prctile` (Stats; only QSMART's optional adaptive-threshold branches).
-
-Checking the shims against the real toolboxes, and the built container against licensed MATLAB:
-[`fidelity/README.md`](fidelity/README.md). Rerun it whenever a shim or the image changes.
+Checking the built container against licensed MATLAB: [`fidelity/README.md`](fidelity/README.md).
+Rerun it whenever `recon.m` or the image changes.
 
 ## 4. Bake the image and push
 
 ```bash
-podman build -t ghcr.io/astewartau/qsm-ci/matlab-qsmart:v2 .     # needs ./recon from §3
-podman push  ghcr.io/astewartau/qsm-ci/matlab-qsmart:v2
+podman build -t ghcr.io/astewartau/qsm-ci/matlab-qsmart:v3 .     # needs ./recon from §3
+podman push  ghcr.io/astewartau/qsm-ci/matlab-qsmart:v3
 ```
 
 Keep the package public, pin `image:` in `algorithm.yml` by the pushed digest, and rerun the
@@ -115,9 +115,9 @@ so the Dockerfile clears `LD_LIBRARY_PATH` around the ANTs download, and install
 Runtime's `LD_LIBRARY_PATH` to child processes). The r2023b base doesn't set `LD_LIBRARY_PATH`
 itself, so the Dockerfile sets it for the compiled binary.
 
-Images: `v1` (R2026a Runtime, shims before the border fix, N4 output cast to double); `v2`
-(R2023b, the fixed shims, N4 output kept single as the original;
-the fidelity check passes, see `fidelity:` in `algorithm.yml`).
+Images: `v1` (R2026a Runtime, toolbox shims, N4 output cast to double); `v2` (R2023b, shims with
+the border fix, N4 output kept single as the original); `v3` (R2023b, the real toolboxes, no
+shims; see `fidelity:` in `algorithm.yml`).
 
 ## Units
 

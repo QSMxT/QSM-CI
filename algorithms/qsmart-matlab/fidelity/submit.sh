@@ -4,10 +4,10 @@
 #
 #   FID_WORK=/path/to/work FID_QSMART=... FID_SUN=... FID_STI=... \
 #   FID_CASES="sim=/path/sim/inputs invivo=/path/acq/inputs" \
-#   SBATCH_ACCOUNT=... SBATCH_PARTITION=... bash submit.sh [setup|shims|runs|compare|all]
+#   SBATCH_ACCOUNT=... SBATCH_PARTITION=... bash submit.sh [setup|runs|compare|all]
 #
-# FID_RUNS limits `runs` to some of: container real real2 trace (default: all).
-# FID_ALGO_SRC checks another copy of the algorithm folder (e.g. proposed shim fixes) into
+# FID_RUNS limits `runs` to some of: container real real2 (default: all).
+# FID_ALGO_SRC checks another copy of the algorithm folder (e.g. a proposed change) into
 # $FID_WORK/<FID_TAG>; FID_TAG (default algo) also names its runs/ and reports/ entries.
 #
 # Copies this algorithm folder to $FID_WORK/algo first, so a run checks exactly this checkout.
@@ -30,18 +30,15 @@ if [[ $what == setup || $what == all ]]; then
     setup=$(STEP=setup sub setup "")
     echo "setup $setup"
 fi
-if [[ $what == shims || $what == all ]]; then
-    echo "shims $(STEP=shims sub shims "$setup")"
-fi
 if [[ $what == runs || $what == all || $what == compare ]]; then
     for c in $FID_CASES; do
         name=${c%%=*}; export FID_CASE=$name FID_INPUT=${c#*=}
         ids=()
         if [[ $what != compare ]]; then
             [[ " ${FID_RUNS:-container} " == *" container "* ]] && ids+=("$(STEP=container sub "$name-container" "$setup")")
-            for m in ${FID_RUNS:-real real2 trace}; do
-                mem=32G; [[ $m == trace ]] && mem=48G   # trace holds shim + toolbox results
-                ids+=("$(STEP=recon FID_MODE=$m sub "$name-$m" "$setup" --mem=$mem)")
+            for m in ${FID_RUNS:-real real2}; do
+                [[ $m == container ]] && continue
+                ids+=("$(STEP=recon FID_MODE=$m sub "$name-$m" "$setup")")
             done
         fi
         dep=$(IFS=:; echo "${ids[*]:-}")
