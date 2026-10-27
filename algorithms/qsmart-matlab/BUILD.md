@@ -1,6 +1,9 @@
 # Building qsmart-matlab (compiled MATLAB → MATLAB Runtime + ANTs N4)
 
-Compile `recon.m` on a machine with **MATLAB + MATLAB Compiler** (R2026a). Same patterns as
+Compile `recon.m` on a machine with **MATLAB + MATLAB Compiler R2023b**, and bake it onto the
+R2023b MATLAB Runtime. R2023b because it is the licensed MATLAB the fidelity check
+([`fidelity/`](fidelity/README.md)) runs on, so the container and the reference runs share one
+release. Same patterns as
 `../medi-cornell/BUILD.md` (bundled NIfTI toolbox, OS gzip, no JVM) and `../ilsqr-sti/BUILD.md`
 (STI Suite `.p` code + IPT shims), plus the **QSMART v1.0 toolbox** and its Frangi/curvatures
 dependencies with **build-time mex compilation**.
@@ -54,9 +57,9 @@ perl -0pi -e 's/scaledGC=GC\.\/max\(abs\(GC\(GC<0\)\)\)\*curvConstant;/negGC=max
 
 ```bash
 matlab -batch "cd frangi; mex eig3volume.c"
-# If mex reports "Supported compiler not detected" (this box: gcc 16 > what R2026a probes for),
+# If mex reports "Supported compiler not detected" (a gcc newer than the release probes for),
 # compile manually against the MATLAB headers — the resulting .mexa64 is what mcc bundles:
-M=/opt/MATLAB/R2026a
+M=/path/to/MATLAB/R2023b
 gcc -O2 -fPIC -shared -std=gnu99 -DMATLAB_MEX_FILE -I$M/extern/include \
     frangi/eig3volume.c -o frangi/eig3volume.mexa64 \
     -L$M/bin/glnxa64 -lmx -lmex -Wl,-rpath,$M/bin/glnxa64
@@ -81,8 +84,9 @@ in the qsmart/, nifti/ and curvatures/ functions it calls.
 
 ## Shims (`shims/`)
 
-The build MATLAB has no Image Processing Toolbox or Statistics Toolbox, so `shims/` replaces
-everything QSMART + STI Suite call from them: `padarray`, `strel`/`imdilate`/`imerode`/`imclose`/
+The MATLAB Runtime image is built without relying on the Image Processing or Statistics toolboxes,
+so `shims/` replaces everything QSMART + STI Suite call from them. `shims/` is first on the path at
+compile time, so the shims are what `mcc` bundles even when the build MATLAB has those toolboxes: `padarray`, `strel`/`imdilate`/`imerode`/`imclose`/
 `imopen` (copied from `../ilsqr-sti/shims/` — QSM_iLSQR's `.p` need them too), plus new here:
 `imbothat` (vessel enhancement), `graythresh` (Otsu on the Frangi map), `imgaussfilt3` (all SDF
 proximity/filtering smoothing; supports per-axis sigma + 'FilterSize'), `imfilter` (imgaussian.m
@@ -94,20 +98,26 @@ Checking the shims against the real toolboxes, and the built container against l
 ## 4. Bake the image and push
 
 ```bash
-docker build -t ghcr.io/astewartau/qsm-ci/matlab-qsmart:v1 .
-docker push  ghcr.io/astewartau/qsm-ci/matlab-qsmart:v1
+podman build -t ghcr.io/astewartau/qsm-ci/matlab-qsmart:v2 .     # needs ./recon from §3
+podman push  ghcr.io/astewartau/qsm-ci/matlab-qsmart:v2
 ```
 
-Then make the GHCR package public. The Dockerfile is the usual MCR bake (`FROM
-containers.mathworks.com/matlab-runtime:r2026a` + `COPY recon`) **plus ANTs
+Keep the package public, pin `image:` in `algorithm.yml` by the pushed digest, and rerun the
+fidelity check. [`Dockerfile`](Dockerfile) is the usual MCR bake (`FROM
+containers.mathworks.com/matlab-runtime:r2023b` + `COPY recon`) **plus ANTs
 N4BiasFieldCorrection** (pinned release zip), which `vasculature_mask_qsmci.m` invokes on the
 mean-echo magnitude exactly like the original toolbox did via `module load ants`. Without N4 on
 PATH the code warns and proceeds uncorrected (fine for simulated, bias-free data only).
 
-The MCR base image puts `/opt/matlabruntime/R2026a/bin/glnxa64` on `LD_LIBRARY_PATH`, whose
-bundled `libcurl.so.4` shadows the system one — so the Dockerfile clears `LD_LIBRARY_PATH`
-around the ANTs download, and installs `N4BiasFieldCorrection` as a wrapper script that does
-the same (MATLAB's `system()` passes the MCR's `LD_LIBRARY_PATH` to child processes).
+The Runtime's own libraries (its bundled `libcurl.so.4` and `libstdc++`) shadow the system ones,
+so the Dockerfile clears `LD_LIBRARY_PATH` around the ANTs download, and installs
+`N4BiasFieldCorrection` as a wrapper script that does the same (MATLAB's `system()` passes the
+Runtime's `LD_LIBRARY_PATH` to child processes). The r2023b base doesn't set `LD_LIBRARY_PATH`
+itself, so the Dockerfile sets it for the compiled binary.
+
+Images: `v1` (R2026a Runtime, shims before the border fix, N4 output cast to double); `v2`
+(R2023b, the fixed shims, N4 output kept single as the original;
+the fidelity check passes, see `fidelity:` in `algorithm.yml`).
 
 ## Units
 
