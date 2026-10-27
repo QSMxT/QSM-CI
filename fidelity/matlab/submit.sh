@@ -16,6 +16,8 @@
 #   FID_TAG     check another copy of the algorithm folder (FID_ALGO_SRC) and/or other sources, as
 #               $FID_ROOT/<slug>/<tag>; its licensed runs are named real-<tag> (setup, runs only)
 #   FID_ALGO_SRC  the algorithm folder to copy (default: algorithms/<slug> in this checkout)
+#   FID_AFTER   a job id the setup waits for. Converting a Runtime image to a .sif unpacks a few
+#               hundred thousand files, so chain the setups where a file quota is tight.
 #
 # `all` = setup, then the runs, then compare. `build` compiles recon against the real toolboxes
 # and leaves it at $FID_ROOT/<slug>/build/out/recon for the image build.
@@ -51,7 +53,7 @@ setup|runs|compare|all)
     setup=""
     if [[ $what == setup || $what == all ]]; then
         need_sources
-        setup=$(STEP=setup sub "setup-$FID_TAG" "" --cpus-per-task=4 --mem=32G --time=01:00:00)
+        setup=$(STEP=setup sub "setup-$FID_TAG" "${FID_AFTER:-}" --cpus-per-task=4 --mem=32G --time=01:00:00)
         echo "setup $setup"
     fi
     [[ $what == setup ]] && exit 0
