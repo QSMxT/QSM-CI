@@ -19,10 +19,9 @@ Rerun it whenever a shim, `recon.m`, `vasculature_mask_qsmci.m` or the image cha
 | `recon trace` | `recon.m` with the shims, where every shim call also runs the toolbox function and logs the difference (`fidelity_trace_setup.m`) | Slurm, licensed MATLAB |
 | `compare` | `compare_runs.m`: NRMSE, max difference and Dice per output | Slurm, licensed MATLAB |
 
-The licensed runs write `recon.m`'s intermediates (`QSMCI_INTERMEDIATES`): vessel mask,
-bottom-hat, vesselness, R_0, total field, and the local field and χ of each SDF stage. The shim run
-against the real-toolbox run therefore shows which step a difference comes from. The container
-image is compared on its final χ only, until it is rebuilt from a `recon.m` that has the option.
+Every run writes `recon.m`'s intermediates (`QSMCI_INTERMEDIATES`): vessel mask, bottom-hat,
+vesselness, R_0, total field, and the local field and χ of each SDF stage. Comparing them shows
+which step a difference comes from. Images built before the option (`v1`) give the final χ only.
 
 ## Running it
 
@@ -50,6 +49,8 @@ into `REPORT.md`.
 - **Shims:** identical results for `strel`, `padarray`, the morphology functions and
   `graythresh`; max relative error ≤ 1e-10 for `imfilter` and `imgaussfilt3` (1e-5 on single-precision input), ≤ 1e-12 for
   `prctile`. Forms a shim doesn't claim to support are reported, not scored.
-- **Container:** the shim run matches the real-toolbox run within the real-toolbox run-to-run
-  floor, and the container's χ matches the licensed runs. When everything passes, record the
-  checked digest in `../algorithm.yml` under `fidelity:`.
+- **Container:** every output (intermediates and final χ) is identical to licensed MATLAB with
+  the shims (`trace`). Against licensed MATLAB with the real toolboxes, the final χ is within
+  0.5 % NRMSE and the masks have Dice ≥ 0.9999. The remaining difference is float32 rounding in
+  `imfilter`, which reaches the Otsu-0 vessel mask; see `REPORT.md`. When everything passes,
+  record the checked digest in `../algorithm.yml` under `fidelity:`.
