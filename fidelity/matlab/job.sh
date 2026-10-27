@@ -42,7 +42,10 @@ build)
     rm -rf "$B/deps/originals"
     cd "$B"
     if declare -F fid_build_hook >/dev/null; then fid_build_hook "$B/deps"; fi
-    mcc_a=""; for d in $FID_MCC_A; do mcc_a+="'-a','deps/$d',"; done
+    # FID_MCC_A: folders under deps/ to force-bundle (pcode, mex), or @<path under matlabroot>.
+    mcc_a=""; for d in $FID_MCC_A; do
+        if [[ $d == @* ]]; then mcc_a+="'-a',fullfile(matlabroot,'${d#@}'),"; else mcc_a+="'-a','deps/$d',"; fi
+    done
     mat "fidelity_build('$B', '$FID_MATLAB_PATH', '$FID_WHICH', {${mcc_a%,}})" 2>&1 | tee "$B/mcc.log"
     { echo "# build $(date -Is) on $(hostname)"; grep -E "^(VERSION|WHICH|PRODUCT|TOOLBOXFILE)" "$B/mcc.log"
       echo "## requiredMCRProducts.txt"; cat out/requiredMCRProducts.txt; echo
