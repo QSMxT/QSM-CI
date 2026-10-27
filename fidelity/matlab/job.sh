@@ -51,7 +51,7 @@ build)
       echo "## requiredMCRProducts.txt"; cat out/requiredMCRProducts.txt; echo
       echo "## unresolvedSymbols.txt"; cat out/unresolvedSymbols.txt 2>/dev/null; echo
       echo "## mccExcludedFiles.log"; cat out/mccExcludedFiles.log 2>/dev/null; echo
-      echo "## warnings"; grep -iE "warning|not deployable|cannot" "$B/mcc.log" | grep -v "Requirements cannot analyze" | sort | uniq -c
+      echo "## warnings"; grep -iE "warning|not deployable|cannot" "$B/mcc.log" | grep -v "Requirements cannot analyze" | sort | uniq -c || true
       echo "## recon"; sha256sum out/recon; } > "$W/reports/build.txt"
     cat "$W/reports/build.txt"
     # Both files hold a header line only when nothing is unresolved or excluded.
