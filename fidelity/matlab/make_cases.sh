@@ -40,4 +40,11 @@ CASE=invivo-dipole; cpi "$C/$CASE" "$T" localfield.nii.gz; cpi "$C/$CASE" "$I" p
 cp "$T/mask_vsharp.nii.gz" "$C/invivo-dipole/mask.nii.gz"
 CASE=invivo-chisep; cpi "$C/$CASE" "$T" localfield.nii.gz r2prime.nii.gz chimap.nii.gz; cpi "$C/$CASE" "$I" params.json magnitude.nii.gz
 cp "$T/mask_vsharp.nii.gz" "$C/invivo-chisep/mask.nii.gz"
+# DECOMPOSE takes log of the signal, and this acquisition's magnitude is exactly 0 in some echoes of
+# masked voxels; the reference fit stops on log(0). invivo-chisep-nz raises those zeros to 1.
+rm -rf "$C/invivo-chisep-nz"; cp -r "$C/invivo-chisep" "$C/invivo-chisep-nz"
+python3 -c "
+import nibabel as nib, numpy as np
+f='$C/invivo-chisep-nz/magnitude.nii.gz'; i=nib.load(f); a=np.asarray(i.dataobj)
+nib.save(nib.Nifti1Image(np.where(a == 0, 1, a).astype(a.dtype), i.affine, i.header), f)"
 ls -la "$C"/*

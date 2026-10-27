@@ -84,5 +84,6 @@ Results: `$FID_ROOT/<slug>/reports/` (`build.txt`, `trace.txt`, `env.json`, `run
 | `sim-bfr`, `sim-dipole` | `bfr`, `dipole` | the in-silico head's ground-truth total and local field |
 | `invivo-bfr`, `invivo-dipole`, `invivo-chisep` | `bfr`, `dipole`, `chi-separation` | derived once from the in vivo acquisition with QSMxT v10.0.0: ROMEO total field, V-SHARP local field and its eroded mask, RTS χ, R2′ = 0.52·R2* |
 | `chisep-mc` | `chi-separation` | QSM-CI's default χ-separation phantom (7 T, 8 echoes) |
+| `invivo-chisep-nz` | `chi-separation` | `invivo-chisep` with the magnitude's zeros raised to 1, for DECOMPOSE (its fit takes `log` of the signal) |
 
 Any fixed input serves a fidelity check, since the container and licensed MATLAB read the same files.
