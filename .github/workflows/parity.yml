@@ -91,8 +91,9 @@ jobs:
       - name: Install qsm-ci CLI + deps
         uses: ./.github/actions/setup-qsmci
 
-      # Dataset resolution, cache and fetch exactly as score.yml does them (same cache key, so a
-      # zip score.yml already downloaded is reused).
+      # Dataset resolution, cache and fetch as score.yml does them. The sim zip is cached under
+      # pipeline.yml's key and path (osf-bids-<file id>, .osfcache/bids.zip): that is the cache the
+      # repo keeps warm, so this job reuses it rather than downloading 500 MB again.
       - name: Resolve dataset (scripts/datasets.json)
         id: ds
         env:
@@ -103,19 +104,27 @@ jobs:
           ph = os.environ['PHANTOM']
           d = json.load(open('scripts/datasets.json'))[ph]
           osf = (os.environ.get(d['osf_env']) if d.get('osf_env') else None) or d.get('osf_file') or ''
-          print(f"zipkey=osf-{ph}-{osf}")
+          if ph == "sim":
+              print(f"zipkey=osf-bids-{osf}")
+              print("zip=.osfcache/bids.zip")
+          else:
+              print(f"zipkey=osf-{ph}-{osf}")
+              print(f"zip=.osfcache/{ph}.zip")
           print(f"path={d['path']}")
+          print(f"public={'true' if d.get('osf_public') else 'false'}")
           PY
       - name: Cache OSF dataset zip
         uses: actions/cache@v6
         with:
-          path: .osfcache/${{ matrix.phantom }}.zip
+          path: ${{ steps.ds.outputs.zip }}
           key: ${{ steps.ds.outputs.zipkey }}
       - name: Fetch dataset
         env:
-          OSF_TOKEN: ${{ secrets.OSF_TOKEN }}   # the sim phantom is token-gated; the repro acquisitions are public
+          # The sim phantom is token-gated; a public entry (the repro acquisitions) is fetched
+          # without one, since OSF answers 400 to a token it does not accept even on a public file.
+          OSF_TOKEN: ${{ steps.ds.outputs.public != 'true' && secrets.OSF_TOKEN || '' }}
           OSF_FILE_INVIVO: ${{ secrets.OSF_FILE_INVIVO }}
-          OSF_ZIP: .osfcache/${{ matrix.phantom }}.zip
+          OSF_ZIP: ${{ steps.ds.outputs.zip }}
           DS_PATH: ${{ steps.ds.outputs.path }}
         run: scripts/fetch_dataset.sh "$PHANTOM" "$DS_PATH"
 
