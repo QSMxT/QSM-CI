@@ -11,6 +11,22 @@ function recon(inp, out)
 %
 % Coil combination (MCPC-3D-S, PRELUDE on the Hermitian inner product) is upstream of this
 % stage; QSM-CI supplies combined phase, so it is not part of the submission.
+%
+% Bundled at build time (BUILD.md): Jimmy Shen NIfTI toolbox, STI Suite v3 Core_Functions_P (pcode),
+% the vendored ukb/ code, and the real Image Processing Toolbox functions they call (compiled from
+% licensed MATLAB; the MATLAB Runtime includes their runtime components).
+%
+% Optional intermediates (fidelity checks, ../../fidelity/matlab/README.md): set QSMCI_INTERMEDIATES
+% to a directory, or to 1 for <out>/intermediates. recon then also writes, in float64 on the input
+% grid: the two phase-variance maps, the trimmed mask, the combined unwrapped phase, V-SHARP's local
+% field and mask, the final mask, and the final χ, plus intermediates.json (the effective TE, MATLAB
+% version, thread count, and where each toolbox function resolved). Unset (the default), nothing
+% changes.
+
+% Toolbox functions STI Suite's pcode calls, which mcc can't trace into: name them so they are
+% bundled (the UKB code's own calls are traced). Found by profiling a licensed run
+% (../../fidelity/matlab/README.md, `trace`); keep toolbox_functions() below in step.
+%#function bwareaopen imclose imdilate imerode imfill padarray strel
 
     p   = jsondecode(fileread(fullfile(inp, 'params.json')));
     H   = p.B0_dir(:)'; H = H / norm(H);
@@ -38,10 +54,21 @@ function recon(inp, out)
         mask  = padarray(mask,  po,     0, 'post');
     end
 
-    [chi, mask_vsf] = UKBiobank_QSM_core(phase, mask, TEs, B0, H, vox);
+    [chi, mask_vsf, I] = UKBiobank_QSM_core(phase, mask, TEs, B0, H, vox);
     chi = double(chi) .* double(mask_vsf);
     if any(po)
         chi = chi(1:sz0(1), 1:sz0(2), 1:sz0(3));
+    end
+
+    idir = intermediates_dir(out);
+    if ~isempty(idir)
+        I.mask_final = mask_vsf;
+        I.chimap = chi;
+        crop = @(a) a(1:sz0(1), 1:sz0(2), 1:sz0(3));
+        for f = {'map', 'map2', 'mask', 'phs_comb', 'dB_vsf', 'mask_vsharp', 'mask_final', 'chimap'}
+            write_intermediate(nii, crop(I.(f{1})), fullfile(idir, [f{1} '.nii.gz']));
+        end
+        write_meta(idir, struct('TE_ms', I.TE));
     end
 
     nii.img = single(chi);
@@ -62,4 +89,41 @@ function write_niigz(nii, f)
     save_untouch_nii(nii, t);
     system(sprintf('gzip -c ''%s'' > ''%s''', t, f));
     delete(t);
+end
+
+function tb = toolbox_functions()
+    tb = {'bwareaopen', 'imclose', 'imdilate', 'imerode', 'imfill', 'padarray', 'strel'};
+end
+
+function idir = intermediates_dir(out)
+% QSMCI_INTERMEDIATES: a directory, or 1 for <out>/intermediates. Unset or 0: none.
+    idir = getenv('QSMCI_INTERMEDIATES');
+    if strcmp(idir, '0'), idir = ''; end
+    if strcmp(idir, '1'), idir = fullfile(out, 'intermediates'); end
+    if isempty(idir), return; end
+    if ~startsWith(idir, filesep), idir = fullfile(pwd, idir); end
+    if ~exist(idir, 'dir'), mkdir(idir); end
+end
+
+function write_intermediate(tmpl, a, f)
+% One intermediate as float64 NIfTI, through the input's untouched header (affine preserved).
+    a = double(a);
+    tmpl.img = a;
+    tmpl.hdr.dime.datatype = 64;  tmpl.hdr.dime.bitpix = 64;
+    tmpl.hdr.dime.dim(1) = max(3, ndims(a));
+    tmpl.hdr.dime.dim(2:5) = [size(a, 1) size(a, 2) size(a, 3) size(a, 4)];
+    tmpl.hdr.dime.scl_slope = 1;  tmpl.hdr.dime.scl_inter = 0;
+    write_niigz(tmpl, f);
+end
+
+function write_meta(idir, m)
+% intermediates.json: M plus the MATLAB version, the thread count, and where each toolbox
+% function in the %#function pragma resolved.
+    tb = toolbox_functions();
+    m.matlab = version;
+    m.threads = maxNumCompThreads;
+    m.resolved = cell2struct(cellfun(@which, tb, 'UniformOutput', false), tb, 2);
+    fid = fopen(fullfile(idir, 'intermediates.json'), 'w');
+    fwrite(fid, jsonencode(m));
+    fclose(fid);
 end
