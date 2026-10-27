@@ -20,6 +20,8 @@ TAG=${FID_TAG:-algo}; A="$W/$TAG"; SFX=""; [ "$TAG" = algo ] || SFX="-$TAG"
 DEPS="$W/deps$SFX"
 # shellcheck source=/dev/null
 source "$A/fidelity/config.sh"
+# Lists may span lines in config.sh; MATLAB gets them on one.
+FID_WHICH=$(echo $FID_WHICH); FID_MATLAB_PATH=$(echo $FID_MATLAB_PATH)
 ROOT=$(dirname "$W")
 export APPTAINER_CACHEDIR="$ROOT/apptainer-cache" APPTAINER_TMPDIR="$ROOT/apptainer-tmp/${SLURM_JOB_ID:-$$}"
 mkdir -p "$APPTAINER_CACHEDIR" "$APPTAINER_TMPDIR" "$W/reports" "$ROOT/img"
