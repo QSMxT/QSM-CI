@@ -2481,6 +2481,38 @@
       "ci_notes": []
     },
     {
+      "slug": "star-qsmrs",
+      "name": "STAR-QSM (QSM.rs)",
+      "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "star",
+      "language": "Rust",
+      "family": "iterative",
+      "learning": "none",
+      "description": "STAR-QSM (streaking artifact reduction) dipole inversion, the QSM.rs port of STI Suite's QSM_star. Its pair is star-sti, the original.",
+      "citation": "Wei et al., NMR Biomed 2015",
+      "doi": "10.1002/nbm.3383",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT",
+      "authors": [
+        "Hongjiang Wei and Chunlei Liu"
+      ],
+      "parameters": [
+        {
+          "name": "te",
+          "default": "sum",
+          "description": "echo time the field is converted to phase at (STAR-QSM's result depends on the phase scale): first, last, spacing (TE2 - TE1), sum (of the echo times), or a time in ms\n"
+        }
+      ],
+      "ci_notes": []
+    },
+    {
       "slug": "star-sti",
       "name": "STAR-QSM (STI Suite)",
       "stage": "dipole",
