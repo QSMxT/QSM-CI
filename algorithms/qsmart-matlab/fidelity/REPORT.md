@@ -58,6 +58,11 @@ level, with no effect on any output.
 **Fidelity record.** `algorithm.yml` records this under `fidelity:`, with the tolerance
 `identical`.
 
+**Rechecked with the shared harness.** The same check, run again on 2026-10-28 through
+`fidelity/matlab/` (QSMxT/QSM-CI#300) against the same `v3` digest, is again identical in every
+output, in both cases (setup 30729509; container 30729510 and 30729514; real, real2 and compare
+30729961–30729966).
+
 ## Deliberate deviations from the authors' code
 
 These are kept in every run, so they don't affect the comparison. The full diff against the
