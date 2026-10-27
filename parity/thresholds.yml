@@ -12,6 +12,18 @@
 #
 #   enabled:          run by `parity.yml` with algorithm=enabled, which is what a QSM.rs release runs.
 #                     A disabled pair can still be run by naming it; that is how it gets a baseline.
+#   blocked_by:       on a disabled pair: the issue that says why its port does not match its
+#                     original yet. The status shows it as a "gap", never as a pass, and it gets no
+#                     limits that would bless the gap.
+#   note:             on a disabled pair without blocked_by: why it is not enabled (status column).
+#   qsmrs_paths:      the QSM.rs source files (or directories) the port's result depends on. A commit
+#                     on QSM.rs main touching any of them makes the last check stale
+#                     (`parity.py status`, rule b). Take them from the module's place in QSM.rs src/
+#                     and what it calls; err on the side of listing a shared file (fft.rs, kernels/).
+#   reference_set:    `--set NAME=VALUE` overrides for the reference / candidate method (not its
+#   candidate_set:    prefix steps), at the pair level or per dataset (the dataset's win): how a
+#                     pair runs both sides with matched settings where their defaults differ (the
+#                     Julia submissions' README "QSM.rs-matched" column). Changing one re-baselines.
 #   reference_names:  {native: compared name} for intermediates the reference writes under other
 #   candidate_names:  names (CONTRACT.md, "Intermediates"); {name: x, complement: true} also turns a
 #                     mask into its complement inside the dataset mask.
@@ -28,6 +40,13 @@
 #     <side>_prefix:  slugs run before that side when the dataset lacks the boundary it consumes.
 #     measured:       the runs the limits came from, and the image each side ran. Informational.
 #
+# Staleness (`parity.py status`, docs/parity.md): an enabled pair's last check on a dataset is stale
+# when the reference image changed, QSM.rs main touched its qsmrs_paths, its settings or limits
+# here changed, it is older than stale_after_days, or it failed.
+stale_after_days: 90
+qsmrs_repo: astewartau/QSM.rs
+qsmrs_branch: main
+
 # Limits are the agreement measured with the QSM.rs under test at the time (the current QSMxT main
 # build, not only the pinned image), plus a margin (scripts/parity.py derive_limits: NRMSE +10 %
 # +0.5 pp, correlation −0.01, |Δ| +25 %, Dice −0.01). A limit is never loosened to hide a gap: a
@@ -39,6 +58,11 @@ pairs:
     reference: qsmart-matlab   # the authors' QSMART v1.0, compiled; bit-identical to licensed MATLAB (v3)
     candidate: qsmart-qsmrs    # QSM.rs port via qsmxt (bfr+dipole: total field → χ)
     enabled: true
+    qsmrs_paths: [src/pipeline/qsmart.rs, src/utils/qsmart.rs, src/utils/vasculature.rs,
+                  src/utils/frangi.rs, src/utils/curvature.rs, src/utils/morphology.rs,
+                  src/bgremove/sdf.rs, src/inversion/ilsqr.rs, src/kernels/, src/fft.rs,
+                  src/utils/padding.rs, src/pipeline/rules.rs, src/pipeline/config.rs,
+                  src/pipeline/referencing.rs]
     # recon.m's intermediate names (fidelity/README.md) → the names they are compared under.
     reference_names:
       tfs: totalfield
@@ -78,11 +102,227 @@ pairs:
           main: "run 40536005482: QSMxT main 8a7072a, qsm-core da928e0 (limits)"
           pinned: "run 40530165113: qsmxt v10.0.0 sha256:9258c10e…, NRMSE 133.8 %, r 0.5346"
 
-  # Pairs algorithm.yml defines that are not checked yet: off until their originals are verified
-  # (MATLAB containers: QSMxT/QSM-CI#300; Julia originals: #299) and they have a baseline.
-  ilsqr:     { reference: ilsqr-sti,     candidate: ilsqr-qsmrs,     enabled: false }   # #300
-  medi:      { reference: medi-cornell,  candidate: medi-qsmrs,      enabled: false }   # #300
-  vsharp:    { reference: vsharp-sti,    candidate: vsharp-qsmrs,    enabled: false }   # #300
-  amp-pe:    { reference: amp-pe,        candidate: amp-pe-qsmrs,    enabled: false }   # #300; amp-pe is ci_skip
-  decompose: { reference: decompose-qsm, candidate: decompose-qsmrs, enabled: false }   # #300; decompose-qsm is ci_skip
-  tkd:       { reference: tkd-qsmjl,     candidate: tkd-qsmrs,       enabled: false }   # #299 (replaces tkd-qsmci)
+  # ---- In vivo inputs. The KKI travelling head has no ground-truth fields, so a pair that starts
+  # from a field gets one from QSM.rs steps run before its reference (`reference_prefix`), and the
+  # candidate is fed exactly what the reference was given (`feed`): both sides start from the same
+  # voxels, and only the pair's own step is compared. Prefix steps run the QSM.rs under test.
+
+  # ---- STI Suite originals (MATLAB, compiled on the real toolboxes; fidelity: QSMxT/QSM-CI#304)
+  ilsqr:
+    reference: ilsqr-sti
+    candidate: ilsqr-qsmrs
+    enabled: false
+    qsmrs_paths: [src/inversion/ilsqr.rs, src/kernels/, src/fft.rs, src/utils/padding.rs,
+                  src/pipeline/inversion.rs, src/pipeline/rules.rs]
+    datasets:
+      sim: {}
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
+        feed: { localfield: localfield }
+  vsharp:
+    reference: vsharp-sti
+    candidate: vsharp-qsmrs
+    enabled: false
+    qsmrs_paths: [src/bgremove/vsharp.rs, src/bgremove/sharp.rs, src/bgremove/smv.rs, src/kernels/,
+                  src/fft.rs, src/pipeline/bg_removal.rs, src/pipeline/rules.rs]
+    # STI Suite's V_SHARP does not deconvolve; QSM.rs's vsharp does by default.
+    candidate_set: { deconvolve: "false" }
+    datasets:
+      sim: {}
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs]
+        feed: { totalfield: totalfield }
+  star:
+    reference: star-sti
+    candidate: star-qsmrs   # ci_skip until a qsmxt release has `qsmxt invert star`: runs against a build
+    enabled: false
+    qsmrs_paths: [src/inversion/star.rs, src/kernels/, src/fft.rs, src/utils/padding.rs,
+                  src/pipeline/inversion.rs, src/pipeline/rules.rs]
+    # star-sti scales the field to phase at the first echo (recon.m); star-qsmrs defaults to the sum.
+    candidate_set: { te: first }
+    datasets:
+      sim: {}
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
+        feed: { localfield: localfield }
+  medi:
+    reference: medi-cornell
+    candidate: medi-qsmrs
+    enabled: false
+    note: "waiting for medi-cornell v4 (MEDI 2024.11.26's own defaults, QSMxT/QSM-CI#309)"
+    qsmrs_paths: [src/inversion/medi.rs, src/inversion/msmv.rs, src/inversion/tfi.rs, src/kernels/,
+                  src/fft.rs, src/utils/gradient.rs, src/pipeline/inversion.rs, src/pipeline/rules.rs]
+
+  # ---- MATLAB originals (QSMxT/QSM-CI#309)
+  amp-pe:
+    reference: amp-pe       # ci_skip for scoring (diverges on real multi-echo data); parity runs it
+    candidate: amp-pe-qsmrs
+    enabled: false
+    qsmrs_paths: [src/inversion/amp_pe.rs, src/inversion/admm.rs, src/utils/wavelet.rs,
+                  src/utils/special.rs, src/kernels/, src/fft.rs, src/pipeline/inversion.rs,
+                  src/pipeline/rules.rs]
+    datasets:
+      sim: {}
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
+        feed: { localfield: localfield }
+  decompose:
+    reference: decompose-qsm   # ci_skip for scoring (hours per run); parity runs it, self-hosted
+    candidate: decompose-qsmrs
+    enabled: false
+    qsmrs_paths: [src/separation/decompose.rs, src/separation/mod.rs, src/pipeline/separation.rs,
+                  src/pipeline/rules.rs]
+    datasets:
+      chisep-mc: {}
+
+  # ---- Julia originals (QSM.jl, ROMEO.jl, TGV.jl in the pinned julia-qsm image; QSMxT/QSM-CI#307).
+  # Parity only: never scored (`parity_only: true`). Matched settings: each README's "QSM.rs-matched"
+  # column.
+  tkd:
+    reference: tkd-qsmjl
+    candidate: tkd-qsmrs
+    enabled: false
+    qsmrs_paths: &tkd_paths [src/inversion/tkd.rs, src/kernels/, src/fft.rs, src/utils/padding.rs,
+                             src/pipeline/inversion.rs, src/pipeline/rules.rs]
+    reference_set: { pad: -1 }
+    datasets:
+      sim: {}
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
+        feed: { localfield: localfield }
+  tsvd:
+    reference: tsvd-qsmjl
+    candidate: tsvd-qsmrs
+    enabled: false
+    qsmrs_paths: *tkd_paths
+    reference_set: { pad: -1 }
+    datasets:
+      sim: {}
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
+        feed: { localfield: localfield }
+  tikhonov:
+    reference: tikhonov-qsmjl
+    candidate: tikhonov-qsmrs
+    enabled: false
+    qsmrs_paths: [src/inversion/tikhonov.rs, src/kernels/, src/fft.rs, src/utils/padding.rs,
+                  src/pipeline/inversion.rs, src/pipeline/rules.rs]
+    reference_set: { pad: -1 }
+    datasets:
+      sim: {}
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
+        feed: { localfield: localfield }
+  tv:
+    reference: tv-qsmjl
+    candidate: tv-qsmrs
+    enabled: false
+    qsmrs_paths: [src/inversion/tv.rs, src/inversion/admm.rs, src/utils/gradient.rs, src/kernels/,
+                  src/fft.rs, src/utils/padding.rs, src/pipeline/inversion.rs, src/pipeline/rules.rs]
+    reference_set: { lambda: 2e-4, pad: -1 }
+    datasets:
+      sim: {}
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
+        feed: { localfield: localfield }
+  nltv:
+    reference: nltv-qsmjl
+    candidate: nltv-qsmrs
+    enabled: false
+    qsmrs_paths: [src/inversion/nltv.rs, src/inversion/admm.rs, src/inversion/ndi.rs,
+                  src/utils/gradient.rs, src/kernels/, src/fft.rs, src/utils/padding.rs,
+                  src/pipeline/inversion.rs, src/pipeline/rules.rs]
+    reference_set: { pad: -1 }
+    datasets:
+      sim: {}
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
+        feed: { localfield: localfield }
+  rts:
+    reference: rts-qsmjl
+    candidate: rts-qsmrs
+    enabled: false
+    qsmrs_paths: [src/inversion/rts.rs, src/utils/gradient.rs, src/kernels/, src/fft.rs,
+                  src/utils/padding.rs, src/pipeline/inversion.rs, src/pipeline/rules.rs]
+    reference_set: { pad: -1 }
+    datasets:
+      sim: {}
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
+        feed: { localfield: localfield }
+  ismv:
+    reference: ismv-qsmjl
+    candidate: ismv-qsmrs
+    enabled: false
+    qsmrs_paths: [src/bgremove/ismv.rs, src/bgremove/smv.rs, src/kernels/, src/fft.rs,
+                  src/pipeline/bg_removal.rs, src/pipeline/rules.rs]
+    # QSM.rs: radius 5 × the largest voxel size (1 mm here), tol 1e-6, 50 iterations.
+    reference_set: { radius: 5, tol: 1e-6, max_iter: 50 }
+    datasets:
+      sim: {}
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs]
+        feed: { totalfield: totalfield }
+  sharp:
+    reference: sharp-qsmjl
+    candidate: sharp-qsmrs
+    enabled: false
+    qsmrs_paths: [src/bgremove/sharp.rs, src/bgremove/smv.rs, src/kernels/, src/fft.rs,
+                  src/pipeline/bg_removal.rs, src/pipeline/rules.rs]
+    reference_set: { radius: 6 }   # QSM.rs: 6 × the smallest voxel size (1 mm here)
+    datasets:
+      sim: {}
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs]
+        feed: { totalfield: totalfield }
+  vsharp-qsmjl:
+    reference: vsharp-qsmjl
+    candidate: vsharp-qsmrs
+    enabled: false
+    qsmrs_paths: [src/bgremove/vsharp.rs, src/bgremove/sharp.rs, src/bgremove/smv.rs, src/kernels/,
+                  src/fft.rs, src/pipeline/bg_removal.rs, src/pipeline/rules.rs]
+    reference_set: { max_radius: 12, min_radius: 1, radius_step: 1 }
+    datasets:
+      sim: {}
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs]
+        feed: { totalfield: totalfield }
+  laplacian:
+    reference: laplacian-qsmjl
+    candidate: laplacian-qsmrs
+    enabled: false
+    qsmrs_paths: [src/unwrap/laplacian.rs, src/kernels/laplacian.rs, src/utils/multi_echo.rs,
+                  src/fft.rs, src/pipeline/field_mapping.rs, src/pipeline/phase_utils.rs,
+                  src/pipeline/rules.rs]
+    reference_set: { mask_phase: "true", demean: "true" }
+    datasets:
+      sim: {}
+      s002001-kki-achieva-bridge-run1: {}
+  romeo:
+    reference: romeo-romeojl
+    candidate: romeo-qsmrs
+    enabled: false
+    qsmrs_paths: [src/unwrap/romeo.rs, src/unwrap/bestpath.rs, src/unwrap/mod.rs, src/region_grow.rs,
+                  src/priority_queue.rs, src/utils/multi_echo.rs, src/pipeline/field_mapping.rs,
+                  src/pipeline/phase_utils.rs, src/pipeline/rules.rs]
+    # QSMxT's ROMEO settings (sigma 4 voxels = 4 mm on these 1 mm datasets).
+    reference_set: { weights: romeo4, individual_unwrapping: "true", correct_global: "true",
+                     phase_offset_sigma_mm: 4 }
+    datasets:
+      sim: {}
+      s002001-kki-achieva-bridge-run1: {}
+  tgv:
+    reference: tgv-tgvjl
+    candidate: tgv-qsmrs
+    enabled: false
+    qsmrs_paths: [src/inversion/tgv.rs, src/utils/gradient.rs, src/utils/morphology.rs,
+                  src/kernels/, src/fft.rs, src/pipeline/inversion.rs, src/pipeline/rules.rs]
+    # α in rad units = QSM.rs's ppm α (α1 6.675e-5, α0 2.002e-4) × 2π·42.5781·B0·TE1.
+    reference_set: { iterations: 1000, laplacian: romeo }
+    datasets:
+      sim:   # 7 T, TE1 4 ms: × 7.4906
+        reference_set: { alpha0: 1.4996e-3, alpha1: 5.0000e-4 }
+      s002001-kki-achieva-bridge-run1:   # B0 3.0008 T, TE1 5.001 ms: × 4.0147
+        reference_prefix: [laplacian-qsmrs]
+        feed: { totalfield: totalfield }
+        reference_set: { alpha0: 8.0375e-4, alpha1: 2.6798e-4 }

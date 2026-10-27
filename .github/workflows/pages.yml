@@ -10,6 +10,7 @@ on:
     paths:
       - "web/**"
       - "results/**"
+      - "parity/status.json"
       - ".github/workflows/pages.yml"
   # These workflows commit site content with the default GITHUB_TOKEN, whose pushes do NOT raise
   # the `push` event above — so deploy explicitly once each of them finishes:
@@ -19,10 +20,11 @@ on:
   #   publish-zenodo -> qsm_ci/registry.json (method DOIs, served as /registry.json). Its commit
   #                     also carries GitHub's skip token, which stops push-triggered workflows but
   #                     not a workflow_run.
+  #   parity, parity-status -> parity/status.json (the Parity page), parity/results.json
   # No `branches:` filter: it matches the triggering run's HEAD BRANCH, and a release-triggered
   # publish-zenodo runs on the release tag, not main — the deploy job's `if` filters instead.
   workflow_run:
-    workflows: ["score", "repro", "publish-zenodo"]
+    workflows: ["score", "repro", "publish-zenodo", "parity", "parity-status"]
     types: [completed]
   workflow_dispatch:
 
@@ -79,6 +81,7 @@ jobs:
           # was being deployed with the site. Drop it and the other build-only files.
           rm -rf _site/node_modules _site/src _site/package.json _site/package-lock.json _site/tailwind.config.js
           cp -r results _site/results
+          mkdir -p _site/parity; cp parity/status.json _site/parity/   # the Parity page (web/parity.html)
           cp -r docs _site/docs           # nothing on the site links here any more; kept so old /docs/ links resolve
           rm -rf _site/examples; cp -r examples _site/examples   # Run page showcases the engine examples
           rm -f _site/registry.json; cp qsm_ci/registry.json _site/registry.json  # method DOIs (drop the web/ symlink first)

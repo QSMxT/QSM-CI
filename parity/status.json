@@ -1,0 +1,419 @@
+{
+ "generated": "2026-10-27",
+ "stale_after_days": 90,
+ "qsmrs": {
+  "repo": "astewartau/QSM.rs",
+  "branch": "main",
+  "checked": false
+ },
+ "stale": [
+  "qsmart"
+ ],
+ "pairs": [
+  {
+   "pair": "qsmart",
+   "algorithm": "qsmart",
+   "reference": "qsmart-matlab",
+   "candidate": "qsmart-qsmrs",
+   "enabled": true,
+   "state": "stale",
+   "datasets": [
+    {
+     "dataset": "s002001-kki-achieva-bridge-run1",
+     "last": null,
+     "stale": true,
+     "reasons": [
+      "never checked"
+     ]
+    },
+    {
+     "dataset": "sim",
+     "last": null,
+     "stale": true,
+     "reasons": [
+      "never checked"
+     ]
+    }
+   ],
+   "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=qsmart -f dataset=configured -f qsmrs_ref=main"
+  },
+  {
+   "pair": "ilsqr",
+   "algorithm": "ilsqr",
+   "reference": "ilsqr-sti",
+   "candidate": "ilsqr-qsmrs",
+   "enabled": false,
+   "state": "off",
+   "datasets": [
+    {
+     "dataset": "s002001-kki-achieva-bridge-run1",
+     "last": null,
+     "stale": false,
+     "reasons": []
+    },
+    {
+     "dataset": "sim",
+     "last": null,
+     "stale": false,
+     "reasons": []
+    }
+   ]
+  },
+  {
+   "pair": "vsharp",
+   "algorithm": "vsharp",
+   "reference": "vsharp-sti",
+   "candidate": "vsharp-qsmrs",
+   "enabled": false,
+   "state": "off",
+   "datasets": [
+    {
+     "dataset": "s002001-kki-achieva-bridge-run1",
+     "last": null,
+     "stale": false,
+     "reasons": []
+    },
+    {
+     "dataset": "sim",
+     "last": null,
+     "stale": false,
+     "reasons": []
+    }
+   ]
+  },
+  {
+   "pair": "star",
+   "algorithm": null,
+   "reference": "star-sti",
+   "candidate": "star-qsmrs",
+   "enabled": false,
+   "state": "off",
+   "datasets": [
+    {
+     "dataset": "s002001-kki-achieva-bridge-run1",
+     "last": null,
+     "stale": false,
+     "reasons": []
+    },
+    {
+     "dataset": "sim",
+     "last": null,
+     "stale": false,
+     "reasons": []
+    }
+   ]
+  },
+  {
+   "pair": "medi",
+   "algorithm": "medi",
+   "reference": "medi-cornell",
+   "candidate": "medi-qsmrs",
+   "enabled": false,
+   "state": "off",
+   "datasets": [],
+   "note": "waiting for medi-cornell v4 (MEDI 2024.11.26's own defaults, QSMxT/QSM-CI#309)"
+  },
+  {
+   "pair": "amp-pe",
+   "algorithm": "amp-pe",
+   "reference": "amp-pe",
+   "candidate": "amp-pe-qsmrs",
+   "enabled": false,
+   "state": "off",
+   "datasets": [
+    {
+     "dataset": "s002001-kki-achieva-bridge-run1",
+     "last": null,
+     "stale": false,
+     "reasons": []
+    },
+    {
+     "dataset": "sim",
+     "last": null,
+     "stale": false,
+     "reasons": []
+    }
+   ]
+  },
+  {
+   "pair": "decompose",
+   "algorithm": "decompose",
+   "reference": "decompose-qsm",
+   "candidate": "decompose-qsmrs",
+   "enabled": false,
+   "state": "off",
+   "datasets": [
+    {
+     "dataset": "chisep-mc",
+     "last": null,
+     "stale": false,
+     "reasons": []
+    }
+   ]
+  },
+  {
+   "pair": "tkd",
+   "algorithm": "tkd",
+   "reference": "tkd-qsmjl",
+   "candidate": "tkd-qsmrs",
+   "enabled": false,
+   "state": "off",
+   "datasets": [
+    {
+     "dataset": "s002001-kki-achieva-bridge-run1",
+     "last": null,
+     "stale": false,
+     "reasons": []
+    },
+    {
+     "dataset": "sim",
+     "last": null,
+     "stale": false,
+     "reasons": []
+    }
+   ]
+  },
+  {
+   "pair": "tsvd",
+   "algorithm": "tsvd",
+   "reference": "tsvd-qsmjl",
+   "candidate": "tsvd-qsmrs",
+   "enabled": false,
+   "state": "off",
+   "datasets": [
+    {
+     "dataset": "s002001-kki-achieva-bridge-run1",
+     "last": null,
+     "stale": false,
+     "reasons": []
+    },
+    {
+     "dataset": "sim",
+     "last": null,
+     "stale": false,
+     "reasons": []
+    }
+   ]
+  },
+  {
+   "pair": "tikhonov",
+   "algorithm": "tikhonov",
+   "reference": "tikhonov-qsmjl",
+   "candidate": "tikhonov-qsmrs",
+   "enabled": false,
+   "state": "off",
+   "datasets": [
+    {
+     "dataset": "s002001-kki-achieva-bridge-run1",
+     "last": null,
+     "stale": false,
+     "reasons": []
+    },
+    {
+     "dataset": "sim",
+     "last": null,
+     "stale": false,
+     "reasons": []
+    }
+   ]
+  },
+  {
+   "pair": "tv",
+   "algorithm": "tv",
+   "reference": "tv-qsmjl",
+   "candidate": "tv-qsmrs",
+   "enabled": false,
+   "state": "off",
+   "datasets": [
+    {
+     "dataset": "s002001-kki-achieva-bridge-run1",
+     "last": null,
+     "stale": false,
+     "reasons": []
+    },
+    {
+     "dataset": "sim",
+     "last": null,
+     "stale": false,
+     "reasons": []
+    }
+   ]
+  },
+  {
+   "pair": "nltv",
+   "algorithm": "nltv",
+   "reference": "nltv-qsmjl",
+   "candidate": "nltv-qsmrs",
+   "enabled": false,
+   "state": "off",
+   "datasets": [
+    {
+     "dataset": "s002001-kki-achieva-bridge-run1",
+     "last": null,
+     "stale": false,
+     "reasons": []
+    },
+    {
+     "dataset": "sim",
+     "last": null,
+     "stale": false,
+     "reasons": []
+    }
+   ]
+  },
+  {
+   "pair": "rts",
+   "algorithm": "rts",
+   "reference": "rts-qsmjl",
+   "candidate": "rts-qsmrs",
+   "enabled": false,
+   "state": "off",
+   "datasets": [
+    {
+     "dataset": "s002001-kki-achieva-bridge-run1",
+     "last": null,
+     "stale": false,
+     "reasons": []
+    },
+    {
+     "dataset": "sim",
+     "last": null,
+     "stale": false,
+     "reasons": []
+    }
+   ]
+  },
+  {
+   "pair": "ismv",
+   "algorithm": "ismv",
+   "reference": "ismv-qsmjl",
+   "candidate": "ismv-qsmrs",
+   "enabled": false,
+   "state": "off",
+   "datasets": [
+    {
+     "dataset": "s002001-kki-achieva-bridge-run1",
+     "last": null,
+     "stale": false,
+     "reasons": []
+    },
+    {
+     "dataset": "sim",
+     "last": null,
+     "stale": false,
+     "reasons": []
+    }
+   ]
+  },
+  {
+   "pair": "sharp",
+   "algorithm": "sharp",
+   "reference": "sharp-qsmjl",
+   "candidate": "sharp-qsmrs",
+   "enabled": false,
+   "state": "off",
+   "datasets": [
+    {
+     "dataset": "s002001-kki-achieva-bridge-run1",
+     "last": null,
+     "stale": false,
+     "reasons": []
+    },
+    {
+     "dataset": "sim",
+     "last": null,
+     "stale": false,
+     "reasons": []
+    }
+   ]
+  },
+  {
+   "pair": "vsharp-qsmjl",
+   "algorithm": "vsharp",
+   "reference": "vsharp-qsmjl",
+   "candidate": "vsharp-qsmrs",
+   "enabled": false,
+   "state": "off",
+   "datasets": [
+    {
+     "dataset": "s002001-kki-achieva-bridge-run1",
+     "last": null,
+     "stale": false,
+     "reasons": []
+    },
+    {
+     "dataset": "sim",
+     "last": null,
+     "stale": false,
+     "reasons": []
+    }
+   ]
+  },
+  {
+   "pair": "laplacian",
+   "algorithm": "laplacian",
+   "reference": "laplacian-qsmjl",
+   "candidate": "laplacian-qsmrs",
+   "enabled": false,
+   "state": "off",
+   "datasets": [
+    {
+     "dataset": "s002001-kki-achieva-bridge-run1",
+     "last": null,
+     "stale": false,
+     "reasons": []
+    },
+    {
+     "dataset": "sim",
+     "last": null,
+     "stale": false,
+     "reasons": []
+    }
+   ]
+  },
+  {
+   "pair": "romeo",
+   "algorithm": "romeo",
+   "reference": "romeo-romeojl",
+   "candidate": "romeo-qsmrs",
+   "enabled": false,
+   "state": "off",
+   "datasets": [
+    {
+     "dataset": "s002001-kki-achieva-bridge-run1",
+     "last": null,
+     "stale": false,
+     "reasons": []
+    },
+    {
+     "dataset": "sim",
+     "last": null,
+     "stale": false,
+     "reasons": []
+    }
+   ]
+  },
+  {
+   "pair": "tgv",
+   "algorithm": "tgv",
+   "reference": "tgv-tgvjl",
+   "candidate": "tgv-qsmrs",
+   "enabled": false,
+   "state": "off",
+   "datasets": [
+    {
+     "dataset": "s002001-kki-achieva-bridge-run1",
+     "last": null,
+     "stale": false,
+     "reasons": []
+    },
+    {
+     "dataset": "sim",
+     "last": null,
+     "stale": false,
+     "reasons": []
+    }
+   ]
+  }
+ ]
+}
