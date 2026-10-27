@@ -27,7 +27,7 @@ set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"; REPO="$(cd "$HERE/../.." && pwd)"
 slug=${1:?usage: submit.sh <slug> [build|trace|setup|runs|compare|all]}; what=${2:-all}
 ALGO="$REPO/algorithms/$slug"
-[ -f "$ALGO/fidelity/config.sh" ] || { echo "no $ALGO/fidelity/config.sh"; exit 2; }
+[ -f "${FID_ALGO_SRC:-$ALGO}/fidelity/config.sh" ] || { echo "no ${FID_ALGO_SRC:-$ALGO}/fidelity/config.sh"; exit 2; }
 : "${FID_ROOT:?}"
 export FID_SLUG=$slug FID_HARNESS="$FID_ROOT/harness" FID_W="$FID_ROOT/$slug"
 export FID_TAG=${FID_TAG:-algo}
