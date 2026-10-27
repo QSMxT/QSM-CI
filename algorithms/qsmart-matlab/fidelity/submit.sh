@@ -6,7 +6,7 @@
 #   FID_CASES="sim=/path/sim/inputs invivo=/path/acq/inputs" \
 #   SBATCH_ACCOUNT=... SBATCH_PARTITION=... bash submit.sh [setup|shims|runs|compare|all]
 #
-# FID_RUNS limits `runs` to some of: container real real2 trace real-single (default: all).
+# FID_RUNS limits `runs` to some of: container real real2 trace (default: all).
 # FID_ALGO_SRC checks another copy of the algorithm folder (e.g. proposed shim fixes) into
 # $FID_WORK/<FID_TAG>; FID_TAG (default algo) also names its runs/ and reports/ entries.
 #
@@ -39,7 +39,7 @@ if [[ $what == runs || $what == all || $what == compare ]]; then
         ids=()
         if [[ $what != compare ]]; then
             [[ " ${FID_RUNS:-container} " == *" container "* ]] && ids+=("$(STEP=container sub "$name-container" "$setup")")
-            for m in ${FID_RUNS:-real real2 trace real-single}; do
+            for m in ${FID_RUNS:-real real2 trace}; do
                 mem=32G; [[ $m == trace ]] && mem=48G   # trace holds shim + toolbox results
                 ids+=("$(STEP=recon FID_MODE=$m sub "$name-$m" "$setup" --mem=$mem)")
             done

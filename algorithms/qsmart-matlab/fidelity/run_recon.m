@@ -4,9 +4,6 @@ function run_recon(mode, inp, outdir, deps, algo)
 %         'shim'        shims/ first on the path, as in the mcc build (BUILD.md §3)
 %         'trace'       like 'shim', with every shim call also checked against the toolbox
 %                       (fidelity_trace_setup.m; log in <outdir>/trace)
-%         'real-single' like 'real', with the vessel mask run in single precision as the
-%                       authors' vasculature_mask.m does (N4's float32 output is not cast to
-%                       double); informational, to size that deviation
 %   inp     contract inputs (phase, magnitude, mask, params.json)
 %   outdir  receives chimap.nii.gz and intermediates/
 %   deps    assemble_deps.sh output (eig3volume mex built)
@@ -20,7 +17,7 @@ function run_recon(mode, inp, outdir, deps, algo)
     addpath(algo);
     addpath(fdir);
     switch mode
-        case {'real', 'real-single'}
+        case 'real'
             % nothing: the toolbox functions resolve
         case 'shim'
             addpath(fullfile(algo, 'shims'));
@@ -28,15 +25,6 @@ function run_recon(mode, inp, outdir, deps, algo)
             fidelity_trace_setup(fullfile(algo, 'shims'), fullfile(outdir, 'trace'));
         otherwise
             error('unknown mode %s', mode);
-    end
-    if strcmp(mode, 'real-single')
-        tmp = tempname; mkdir(tmp);
-        src = fileread(fullfile(algo, 'vasculature_mask_qsmci.m'));
-        n = numel(strfind(src, 'AvgEcho_n4 = double(nii.img);'));
-        assert(n == 1, 'real-single: expected one double() cast of the N4 output');
-        src = strrep(src, 'AvgEcho_n4 = double(nii.img);', 'AvgEcho_n4 = nii.img;  % fidelity: original single precision');
-        fid = fopen(fullfile(tmp, 'vasculature_mask_qsmci.m'), 'w'); fwrite(fid, src); fclose(fid);
-        addpath(tmp);
     end
     rehash;
 

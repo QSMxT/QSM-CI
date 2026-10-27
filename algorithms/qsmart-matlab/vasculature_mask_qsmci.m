@@ -32,7 +32,7 @@ if n4_missing == 0
     st = system('N4BiasFieldCorrection -i AvgEcho.nii -o AvgEcho_n4.nii');
     if st == 0
         nii = load_nii('AvgEcho_n4.nii');
-        AvgEcho_n4 = double(nii.img);
+        AvgEcho_n4 = nii.img;   % single, as load_nii returns N4's float32 output (the original)
         n4 = 'applied';
     else
         warning('N4BiasFieldCorrection failed (exit %d); using the uncorrected mean-echo magnitude.', st);

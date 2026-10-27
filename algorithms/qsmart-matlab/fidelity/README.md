@@ -17,7 +17,6 @@ Rerun it whenever a shim, `recon.m`, `vasculature_mask_qsmci.m` or the image cha
 | `container` | The pinned image under Apptainer, as `qsm_ci/containers.py` runs it | Slurm |
 | `recon real`, `real2` | `recon.m` in licensed MATLAB with the real toolboxes, twice (the run-to-run floor) | Slurm, licensed MATLAB |
 | `recon trace` | `recon.m` with the shims, where every shim call also runs the toolbox function and logs the difference (`fidelity_trace_setup.m`) | Slurm, licensed MATLAB |
-| `recon real-single` | `real` with the vessel mask in single precision, as the authors' `vasculature_mask.m` runs it (informational) | Slurm, licensed MATLAB |
 | `compare` | `compare_runs.m`: NRMSE, max difference and Dice per output | Slurm, licensed MATLAB |
 
 The licensed runs write `recon.m`'s intermediates (`QSMCI_INTERMEDIATES`): vessel mask,
