@@ -216,12 +216,12 @@ def check(metrics: dict, limits: "dict | None") -> list:
 def _round_up(x: float, sig: int = 3) -> float:
     if x <= 0 or not math.isfinite(x):
         return x
-    p = 10 ** (math.floor(math.log10(x)) - sig + 1)
-    return math.ceil(x / p) * p
+    e = math.floor(math.log10(x)) - sig + 1
+    return round(math.ceil(x / 10 ** e) * 10 ** e, max(0, -e))   # round(): no 2.7600000000000002
 
 
 def _round_down(x: float, nd: int = 3) -> float:
-    return math.floor(x * 10 ** nd) / 10 ** nd
+    return round(math.floor(x * 10 ** nd) / 10 ** nd, nd)
 
 
 def derive_limits(metrics: dict) -> dict:
