@@ -90,6 +90,9 @@ algorithms/*/sti_support/
 # fidelity (QSMxT/QSM-CI#300: fidelity/matlab/) commit theirs, as the record of what image: holds;
 # tkd-qsmci's stays out of the checkout and is documented in its BUILD.md.
 algorithms/tkd-qsmci/Dockerfile
+# star-sti: the two STI Suite Support_Functions folders QSM_star needs (see its BUILD.md).
+algorithms/star-sti/kiwi/
+algorithms/star-sti/sparsa/
 # IR2QSM: a baked pretrained checkpoint CI cannot reproduce (the authors' single-file Drive link is
 # quota-blocked). Same rule: CI PULLs the pushed image, so keep its Dockerfile out of the checkout.
 # (The compiled-MATLAB FANSI/NDI/L1-QSM/WH-QSM/HD-QSM submissions once listed here were replaced by
