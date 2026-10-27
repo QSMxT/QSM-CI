@@ -7,7 +7,7 @@ import { renderResources } from "./resourceChart.js";
 import { autoWin, makeWindowControl, winControls } from "./windowControl.js";
 import { qsmxtCommand } from "./qsmxtCommand.js";
 
-const { loadRuns, loadAlgos, loadDatasets, loadRegistry, loadRepro, loadReproGroups, reproGroupOf, loadRunRegions, doiFor, METRICS, METRIC_ORDER, STAGE_LABEL, val, fmt, metricVal, metricColumns, robustRange, heatScale, REGION_ORDER,
+const { GH, loadRuns, loadAlgos, loadDatasets, loadRegistry, loadRepro, loadReproGroups, reproGroupOf, loadRunRegions, doiFor, METRICS, METRIC_ORDER, STAGE_LABEL, val, fmt, metricVal, metricColumns, robustRange, heatScale, REGION_ORDER,
   reproScannerLabel, reproProtoLabel, reproSubjectLabel, reproAcquisitions, reproSubjects, reproTargets } = window.QSM;
 
 const STAGE_COLOR = {
@@ -981,7 +981,31 @@ function selectRun(id) {
 }
 
 // ---- method docs ------------------------------------------------------------
-function methodCard(a) {
+// "19 Oct 2026" for an ISO timestamp (in UTC, so a date never shifts with the viewer's time zone).
+const fmtDate = (iso) => {
+  const d = new Date(iso);
+  return isNaN(d) ? "" : d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+};
+// The version of method `slug` a run scored. The row records the last commit touching
+// algorithms/<slug>/ at the scored commit (method_versions, stamped by pipeline.py); that code first
+// shipped in the earliest Zenodo release published after the commit. A commit newer than every
+// release ran code not yet on Zenodo: shown by its commit instead. null for rows predating the stamp.
+function methodVersion(r, slug) {
+  const mv = r && r.method_versions && r.method_versions[slug];
+  if (!mv || !mv.date) return null;
+  const at = new Date(mv.date);
+  const vs = Object.entries((registry[slug] && registry[slug].versions) || {})
+    .filter(([, v]) => v.updated_at && new Date(v.updated_at) >= at)
+    .sort(([, a], [, b]) => new Date(a.updated_at) - new Date(b.updated_at));
+  if (vs.length) {
+    const [num, v] = vs[0];
+    return { label: `v${num}`, date: v.updated_at, url: v.version_doi ? "https://doi.org/" + v.version_doi : null,
+             tip: `Zenodo release v${num} of this method` };
+  }
+  return { label: mv.commit.slice(0, 7), date: mv.date, url: `${GH}/tree/${mv.commit}/algorithms/${slug}`,
+           tip: "Not yet released on Zenodo: the commit of the method that was scored" };
+}
+function methodCard(a, ver) {
   if (!a) return "";
   const links = [];
   const zdoi = doiFor(registry, a.slug);
@@ -1033,6 +1057,9 @@ function methodCard(a) {
     <div class="flex items-baseline gap-2">
       <span class="font-medium text-gray-900 dark:text-gray-100">${E(a.name)}</span>
       <span class="text-xs text-gray-400">${a.stage ? E(STAGE_LABEL[a.stage] || a.stage) : ""}</span>
+      ${ver ? `<span class="ml-auto text-xs text-gray-400 dark:text-gray-500" title="${E(ver.tip)}">version ${
+        safeUrl(ver.url) ? `<a href="${safeUrl(ver.url)}" class="text-indigo-600 hover:underline">${E(ver.label)}</a>` : E(ver.label)
+      } · ${E(fmtDate(ver.date))}</span>` : ""}
     </div>
     <p class="mt-0.5 text-sm text-gray-600 dark:text-gray-400">${E(a.description || "")}</p>
     ${(a.ci_notes && a.ci_notes.length) ? `<div class="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
@@ -1047,9 +1074,22 @@ function renderMethodInfo() {
   const el = $("method-info");
   const bySlug = Object.fromEntries(algos.map((a) => [a.slug, a]));
   const cards = [];
-  for (const s of pipelineSteps(run)) if (bySlug[s]) cards.push(methodCard(bySlug[s]));
+  for (const s of pipelineSteps(run)) if (bySlug[s]) cards.push(methodCard(bySlug[s], methodVersion(run, s)));
   el.innerHTML = cards.join('<div class="border-t border-gray-100 dark:border-gray-800 pt-2"></div>');
   el.style.display = cards.length ? "" : "none";
+}
+
+// When this result was scored, linked to the CI run that scored it. Hidden for rows predating the
+// stamp and for the synthesised harmonization runs (no index.json row).
+function renderScoredAt() {
+  const el = $("scored-at");
+  if (!el) return;
+  const d = run.scored_at && fmtDate(run.scored_at);
+  if (!d) { el.classList.add("hidden"); el.innerHTML = ""; return; }
+  const rid = String(run.ci_run || "").split(".")[0];
+  el.innerHTML = `Scored ${escapeHtml(d)}` + (/^\d+$/.test(rid)
+    ? ` · <a href="${GH}/actions/runs/${rid}" class="hover:underline">CI run</a>` : "");
+  el.classList.remove("hidden");
 }
 
 // ---- detail + viewer --------------------------------------------------------
@@ -1084,6 +1124,7 @@ async function loadRun() {
   $("sub-badges").querySelectorAll("[data-variant-id]").forEach((b) =>
     b.addEventListener("click", () => selectRun(b.dataset.variantId)));
   renderMethodInfo();
+  renderScoredAt();
   renderHowToRun();
   renderDatasetSwitch();
   renderChisepPhantomSwitch();
