@@ -21,7 +21,7 @@ DEPS="$W/deps$SFX"
 # shellcheck source=/dev/null
 source "$A/fidelity/config.sh"
 ROOT=$(dirname "$W")
-export APPTAINER_CACHEDIR="$ROOT/apptainer-cache" APPTAINER_TMPDIR="$ROOT/apptainer-tmp"
+export APPTAINER_CACHEDIR="$ROOT/apptainer-cache" APPTAINER_TMPDIR="$ROOT/apptainer-tmp/${SLURM_JOB_ID:-$$}"
 mkdir -p "$APPTAINER_CACHEDIR" "$APPTAINER_TMPDIR" "$W/reports" "$ROOT/img"
 # One .sif per image digest, so a new image is never confused with an old pull.
 dig=$(sed -n 's/.*sha256:\([0-9a-f]\{12\}\).*/\1/p' <<< "$FID_IMAGE")
