@@ -5,9 +5,14 @@ function recon(inp, out)
 % (No background-field removal: the local field is provided by the pipeline's bfr stage. The
 % Cornell PDF step used by the old bfr+dipole variant is gone; this is a pure dipole inversion.)
 %
-% Bundled: Jimmy Shen NIfTI toolbox (no Image Processing Toolbox), Cornell MEDI toolbox.
-% OS gunzip/gzip (compiled binaries have no JVM). Optional <inp>/config.json overrides
-% {lambda, smv_radius, merit, percentage, cg_tol}. See BUILD.md.
+% Bundled: Jimmy Shen NIfTI toolbox, Cornell MEDI toolbox 2024.11.26 (the release QSM.rs's MEDI
+% port follows). OS gunzip/gzip (compiled binaries have no JVM). Optional <inp>/config.json
+% overrides {lambda, smv_radius, merit, percentage}. See BUILD.md.
+%
+% Optional intermediates (fidelity checks, ../../fidelity/matlab/README.md): set QSMCI_INTERMEDIATES
+% to a directory, or to 1 for <out>/intermediates. recon then also writes, in float64, what MEDI_L1
+% reads from RDF.mat (RDF, N_std, iMag) and intermediates.json (MATLAB version, thread count).
+% Unset (the default), nothing changes.
 
     p   = jsondecode(fileread(fullfile(inp, 'params.json')));
     b0  = p.B0_dir(:)'; b0 = b0 / norm(b0);
@@ -15,12 +20,13 @@ function recon(inp, out)
     B0T = p.B0;                       % field strength (Tesla)
     TE  = p.TE(:)';                   % echo time(s), seconds
 
-    % lambda=100 (not the Cornell default 1000): the QSM-CI phantom has extreme susceptibility
-    % sources; lambda=1000 makes the Gauss-Newton iteration diverge, lambda=100 converges.
+    % lambda=1000: Cornell's default (MEDI_L1's parse_QSM_input). The field is put on a fixed
+    % reference scale below, so the same lambda holds at any field strength.
     % smv_radius default 0: the input is already a local field (bfr done upstream), so MEDI's own
     % SMV background-suppression is off by default — this is a pure dipole inversion. Still tunable.
-    cfg = struct('lambda', 100, 'smv_radius', 0, 'merit', 0, ...
-                 'percentage', 0.9, 'cg_tol', 0.01);
+    % merit default 0 (model-error reweighting off). MEDI 2024.11.26 turns SMV and merit ON unless
+    % told 'nosmv' / 'nomerit', so both are passed explicitly.
+    cfg = struct('lambda', 1000, 'smv_radius', 0, 'merit', 0, 'percentage', 0.9);
     cf_file = fullfile(inp, 'config.json');
     if exist(cf_file, 'file')
         u = jsondecode(fileread(cf_file));
@@ -64,12 +70,19 @@ function recon(inp, out)
          'matrix_size', 'voxel_size', 'delta_TE', 'CF', 'B0_dir');
 
     args = {'lambda', cfg.lambda, 'percentage', cfg.percentage};
-    if cfg.smv_radius > 0, args = [args, {'smv', cfg.smv_radius}]; end
-    if cfg.merit,          args = [args, {'merit'}]; end
+    if cfg.smv_radius > 0, args = [args, {'smv', cfg.smv_radius}]; else, args = [args, {'nosmv'}]; end
+    if cfg.merit,          args = [args, {'merit'}];               else, args = [args, {'nomerit'}]; end
     chi = MEDI_L1(args{:});                          % susceptibility, ppm
     chi = chi .* Mask;
 
     cd(old);
+    idir = intermediates_dir(out);
+    if ~isempty(idir)
+        write_intermediate(ntf, RDF, fullfile(idir, 'rdf.nii.gz'));
+        write_intermediate(ntf, N_std, fullfile(idir, 'n_std.nii.gz'));
+        write_intermediate(ntf, iMag, fullfile(idir, 'imag.nii.gz'));
+        write_meta(idir, struct('medi_args', {cellfun(@num2str, args, 'UniformOutput', false)}));
+    end
     ntf.img = single(chi);
     ntf.hdr.dime.datatype = 16;  ntf.hdr.dime.bitpix = 32;
     ntf.hdr.dime.dim(1) = 3;  ntf.hdr.dime.dim(5) = 1;
@@ -88,4 +101,42 @@ function write_niigz(nii, f)
     save_untouch_nii(nii, t);
     system(sprintf('gzip -c ''%s'' > ''%s''', t, f));
     delete(t);
+end
+
+function tb = toolbox_functions()
+% No pcode here: mcc traces every call. These record where the MEDI functions resolved.
+    tb = {'MEDI_L1', 'parse_QSM_input', 'gradient_mask', 'dataterm_mask', 'cgsolve'};
+end
+
+function idir = intermediates_dir(out)
+% QSMCI_INTERMEDIATES: a directory, or 1 for <out>/intermediates. Unset or 0: none.
+    idir = getenv('QSMCI_INTERMEDIATES');
+    if strcmp(idir, '0'), idir = ''; end
+    if strcmp(idir, '1'), idir = fullfile(out, 'intermediates'); end
+    if isempty(idir), return; end
+    if ~startsWith(idir, filesep), idir = fullfile(pwd, idir); end
+    if ~exist(idir, 'dir'), mkdir(idir); end
+end
+
+function write_intermediate(tmpl, a, f)
+% One intermediate as float64 NIfTI, through the input's untouched header (affine preserved).
+    a = double(a);
+    tmpl.img = a;
+    tmpl.hdr.dime.datatype = 64;  tmpl.hdr.dime.bitpix = 64;
+    tmpl.hdr.dime.dim(1) = max(3, ndims(a));
+    tmpl.hdr.dime.dim(2:5) = [size(a, 1) size(a, 2) size(a, 3) size(a, 4)];
+    tmpl.hdr.dime.scl_slope = 1;  tmpl.hdr.dime.scl_inter = 0;
+    write_niigz(tmpl, f);
+end
+
+function write_meta(idir, m)
+% intermediates.json: M plus the MATLAB version, the thread count, and where each function in
+% toolbox_functions() resolved.
+    tb = toolbox_functions();
+    m.matlab = version;
+    m.threads = maxNumCompThreads;
+    m.resolved = cell2struct(cellfun(@which, tb, 'UniformOutput', false), tb, 2);
+    fid = fopen(fullfile(idir, 'intermediates.json'), 'w');
+    fwrite(fid, jsonencode(m));
+    fclose(fid);
 end
