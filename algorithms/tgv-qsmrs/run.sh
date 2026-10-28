@@ -25,4 +25,15 @@ if [ -f "$CFG" ]; then
   V=$(jq -r '.alpha1 // empty' "$CFG"); [ -n "$V" ] && SET="$SET --alpha1 $V"
   V=$(jq -r '.alpha0 // empty' "$CFG"); [ -n "$V" ] && SET="$SET --alpha0 $V"
 fi
+
+# QSMxT after v10.0.0 (QSM.rs main, run by the parity workflow's qsmxt builds) ports TGV.jl's
+# qsm_tgv as it is: the field is scaled to phase at an echo time (--te, default the first), α are
+# in the package's rad units at that TE and B0, and the iteration count comes from the voxel size.
+# That CLI needs the field strength and echo times. Until the pin moves to such a release this
+# branch runs only there; the α overrides above then mean rad-unit α (algorithm.yml documents the
+# pinned v10's ppm α), so `--set alpha*` values from v10 do not carry over.
+if qsmxt invert tgv --help 2>/dev/null | grep -q -- '--field-strength'; then
+  FS=$(jq -r '.B0' "$IN/params.json"); TES=$(jq -r '.TE | map(tostring) | join(" ")' "$IN/params.json")
+  SET="$SET --field-strength $FS --echo-times $TES"
+fi
 qsmxt invert tgv "$IN/totalfield.nii.gz" -m "$IN/mask.nii.gz" -o "$OUT/chimap.nii.gz" --b0-direction $B0 $SET
