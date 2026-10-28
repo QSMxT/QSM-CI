@@ -1224,7 +1224,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
                 <tr>
                   <th class="px-5 py-2.5 text-left font-medium">Protocol</th>
                   <th class="px-4 py-2.5 text-right font-medium"><span class="has-tip" :data-tip="_devText('Within-scanner run-to-run |a−1| across pipelines: median (mean) [5th–95th percentile]. Lower is more repeatable.')">Test&ndash;retest <span x-text="_devLabel()">|a&minus;1|</span></span></th>
-                  <th class="px-4 py-2.5 text-right font-medium"><span class="has-tip" :data-tip="_devText('Scanner↔scanner |a−1| for the same subject, protocol and run, across pipelines: median (mean) [5th–95th percentile]. Lower means the protocol travels better between scanners.')">Inter-scanner <span x-text="_devLabel()">|a&minus;1|</span></span></th>
+                  <th class="px-4 py-2.5 text-right font-medium"><span class="has-tip" :data-tip="_devText('Scanner↔scanner |a−1| for the same subject and protocol (every pair of runs), across pipelines: median (mean) [5th–95th percentile]. Lower means the protocol travels better between scanners.')">Inter-scanner <span x-text="_devLabel()">|a&minus;1|</span></span></th>
                   <th class="px-4 py-2.5 text-right font-medium"><span class="has-tip" data-tip="Inter-scanner Bland–Altman bias across pipelines (ppm): median (mean). Signed, so zero is the target.">BA bias</span></th>
                   <th class="px-4 py-2.5 text-right font-medium">Pipelines</th>
                 </tr>
@@ -1397,7 +1397,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
                   <th class="px-4 py-2.5 text-right font-medium" style="min-width:3rem">#</th>
                   <th class="px-5 py-2.5 text-left font-medium">Pipeline</th>
                   <th @click="reproSortBy('tr')" class="px-4 py-2.5 text-right font-medium cursor-pointer select-none hover:text-gray-800"><span class="has-tip" :data-tip="`Within-scanner run-to-run ${_devLabel()}, ${_statLabel()} over pairs (${_altStatLabel()} in grey). Lower is more repeatable.`">Test&ndash;retest <span x-text="_devLabel()">|a&minus;1|</span></span> <span x-show="reproSortKey==='tr'" x-text="reproDir==='asc'?'↑':'↓'"></span></th>
-                  <th @click="reproSortBy('inter')" class="px-4 py-2.5 text-right font-medium cursor-pointer select-none hover:text-gray-800"><span class="has-tip" :data-tip="`Scanner↔scanner ${_devLabel()} for the same subject, matched protocol+run, ${_statLabel()} over pairs (${_altStatLabel()} in grey). The harmonization headline.`">Inter-scanner <span x-text="_devLabel()">|a&minus;1|</span></span> <span x-show="reproSortKey==='inter'" x-text="reproDir==='asc'?'↑':'↓'"></span></th>
+                  <th @click="reproSortBy('inter')" class="px-4 py-2.5 text-right font-medium cursor-pointer select-none hover:text-gray-800"><span class="has-tip" :data-tip="`Scanner↔scanner ${_devLabel()} for the same subject and protocol (every pair of runs), ${_statLabel()} over pairs (${_altStatLabel()} in grey). The harmonization headline.`">Inter-scanner <span x-text="_devLabel()">|a&minus;1|</span></span> <span x-show="reproSortKey==='inter'" x-text="reproDir==='asc'?'↑':'↓'"></span></th>
                   <th @click="reproSortBy('iproto')" class="px-4 py-2.5 text-right font-medium cursor-pointer select-none hover:text-gray-800"><span class="has-tip" :data-tip="`${_devLabel()} between each protocol and the bridge protocol on the same scanner, ${_statLabel()} over pairs (${_altStatLabel()} in grey).`">vs bridge <span x-text="_devLabel()">|a&minus;1|</span></span> <span x-show="reproSortKey==='iproto'" x-text="reproDir==='asc'?'↑':'↓'"></span></th>
                   <th @click="reproSortBy('xsim')" class="px-4 py-2.5 text-right font-medium cursor-pointer select-none hover:text-gray-800 border-l border-gray-200"><span class="has-tip" data-tip="In-silico (2019) accuracy of the same pipeline: xSIM against ground truth on the phantom, higher is better. Blank if that pipeline has no in-silico run.">In-silico xSIM</span> <span x-show="reproSortKey==='xsim'" x-text="reproDir==='asc'?'↑':'↓'"></span></th>
                   <th class="px-4 py-2.5 text-right font-medium"><span class="has-tip" data-tip="Number of pairwise comparisons behind the statistics.">Pairs</span></th>
@@ -1531,7 +1531,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         <!-- Fig R2 · scanner-bias forest per region -->
         <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
           <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Does one scanner read a nucleus systematically higher?</h3>
-          <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Forest plot of <span x-text="_rgPairNames().b"></span> &minus; <span x-text="_rgPairNames().a"></span> mean-&chi; bias per region (same subject, matched protocol + run), median &plusmn; IQR across all pipelines. Deep-grey nuclei are bold. A dot off the dashed zero line is a systematic cross-scanner offset.</p>
+          <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Forest plot of <span x-text="_rgPairNames().b"></span> &minus; <span x-text="_rgPairNames().a"></span> mean-&chi; bias per region (same subject and protocol, every pair of runs), median &plusmn; IQR across all pipelines. Deep-grey nuclei are bold. A dot off the dashed zero line is a systematic cross-scanner offset.</p>
           <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="reproRegBiasSVG"></div>
         </div>
 
@@ -1559,7 +1559,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         <!-- Fig R6 · adjacent-nucleus contrast across scanners -->
         <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
           <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Is inter-nucleus contrast preserved across scanners?</h3>
-          <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">The &chi; difference between neighbouring nuclei on the <span x-text="_rgPairNames().b"></span> (y) vs the <span x-text="_rgPairNames().a"></span> (x), one dot per pipeline &times; subject &times; protocol &times; run. On the dashed identity line the contrast (e.g. pallidum&minus;putamen) reproduces across scanners; scatter off it means the contrast a clinician reads changes with the scanner even when global &chi; looks fine.</p>
+          <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">The &chi; difference between neighbouring nuclei on the <span x-text="_rgPairNames().b"></span> (y) vs the <span x-text="_rgPairNames().a"></span> (x), one dot per pipeline &times; subject &times; protocol &times; pair of runs. On the dashed identity line the contrast (e.g. pallidum&minus;putamen) reproduces across scanners; scatter off it means the contrast a clinician reads changes with the scanner even when global &chi; looks fine.</p>
           <div class="mt-4 overflow-x-auto text-gray-700 dark:text-gray-200" x-html="reproRegContrastSVG"></div>
         </div>
 
@@ -2398,7 +2398,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         // axis — field mapping — which is pulled out into a selector rather than a third dimension,
         // exactly as the in-silico matrix does with `fmap`.
         REPRO_MATRIX_METRICS: {
-          inter: { label: "Inter-scanner |a−1|", better: "lower", tip: "The same subject on two scanners, matched protocol+run. The harmonization headline." },
+          inter: { label: "Inter-scanner |a−1|", better: "lower", tip: "The same subject on two scanners, same protocol, every pair of runs. The harmonization headline." },
           tr: { label: "Test–retest |a−1|", better: "lower", tip: "Within-scanner run-to-run. Lower = more repeatable." },
           iproto: { label: "vs bridge |a−1|", better: "lower", tip: "Each protocol against the bridge protocol on the same scanner." },
           xsim: { label: "In-silico xSIM", better: "higher", tip: "Accuracy of the same pipeline on the 2019 in-silico phantom. Blank where it has no in-silico run." },
@@ -2550,7 +2550,7 @@ gen_chisep.py --multicompartment --dr-model fixed --dr-fixed 320 \
         // the figure can draw a box + whiskers, mark the median AND the mean, and plot every pipeline.
         REPRO_PROTO_METRICS: {
           inter: { label: "Inter-scanner |a−1|", cls: "inter_scanner", field: "abs_slope_dev", pct: true,
-                   tip: "The same subject on two scanners, same protocol and run. Lower means the protocol travels better between scanners." },
+                   tip: "The same subject on two scanners, same protocol, every pair of runs. Lower means the protocol travels better between scanners." },
           tr: { label: "Test–retest |a−1|", cls: "test_retest", field: "abs_slope_dev", pct: true,
                 tip: "Within-scanner run-to-run on this protocol. Lower is more repeatable." },
           ip: { label: "vs bridge |a−1|", cls: "inter_protocol", field: "abs_slope_dev", pct: true,
