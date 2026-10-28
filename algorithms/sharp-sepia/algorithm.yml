@@ -1,0 +1,46 @@
+name: SHARP (SEPIA)
+slug: sharp-sepia
+algorithm: sharp
+variant: sepia  # Tian Liu's SHARP.m as SEPIA runs it; the QSM.rs port of the same method is sharp-qsmrs
+source: sepia
+stage: bfr
+language: MATLAB
+family: direct
+learning: none
+engine: SEPIA db939cc (SHARP.m) + MEDI toolbox 2024.11.26
+description: >
+  SHARP background field removal (spherical-mean-value high-pass + TSVD deconvolution), run as
+  Tian Liu's SHARP.m with the MEDI toolbox's kernels, the way SEPIA runs it (odd dimensions
+  zero-padded, SEPIA's GUI defaults), compiled from MATLAB and run on the license-free MATLAB
+  Runtime.
+citation: Schweser et al., NeuroImage 2011
+authors:
+- name: Ferdinand Schweser
+- name: Andreas Deistung
+- name: Berengar Wendel Lehr
+- name: Jürgen Rainer Reichenbach
+doi: 10.1016/j.neuroimage.2010.10.070
+code_url: https://github.com/kschan0214/sepia
+license: MIT (SEPIA); see the MEDI toolbox license
+image: ghcr.io/astewartau/qsm-ci/matlab-sharp-sepia@sha256:3ad75137e636fac724356641b488ad8cec0f87bb67e7ae0aa1c290f70eac209e   # v1
+run: bash run.sh
+matlab:
+  entry: recon.m
+  runtime: r2023b
+params:
+- name: radius
+  default: 4
+  description: SMV sphere radius, mm (SEPIA's GUI labels it "voxel", but SHARP.m takes mm)
+- name: threshold
+  default: 0.03
+  description: TSVD threshold; frequencies where |1 - S| <= threshold are set to 0
+# Container vs SEPIA's SHARP in licensed MATLAB with the real toolbox (QSMxT/QSM-CI#300;
+# fidelity/REPORT.md). Rerun and update whenever the image changes.
+fidelity:
+  date: 2026-10-28
+  image: sha256:3ad75137e636fac724356641b488ad8cec0f87bb67e7ae0aa1c290f70eac209e
+  matlab: R2023b Update 5 (23.2.0.2459199), Image Processing Toolbox 23.2
+  sources: SEPIA db939cc (SHARP.m, zeropad_odd_dimension.m), MEDI toolbox 2024.11.26 (SMV.m, SMV_kernel.m, sphere_kernel.m)
+  tolerance: identical   # local field (float32 and float64) and SHARP's eroded mask, in silico and in vivo, 8 threads
+  result: pass
+  report: algorithms/sharp-sepia/fidelity/REPORT.md

@@ -2481,6 +2481,46 @@
       "ci_notes": []
     },
     {
+      "slug": "sharp-sepia",
+      "name": "SHARP (SEPIA)",
+      "stage": "bfr",
+      "inputs": [
+        "totalfield",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "SEPIA db939cc (SHARP.m) + MEDI toolbox 2024.11.26",
+      "algorithm": "sharp",
+      "language": "MATLAB",
+      "family": "direct",
+      "learning": "none",
+      "description": "SHARP background field removal (spherical-mean-value high-pass + TSVD deconvolution), run as Tian Liu's SHARP.m with the MEDI toolbox's kernels, the way SEPIA runs it (odd dimensions zero-padded, SEPIA's GUI defaults), compiled from MATLAB and run on the license-free MATLAB Runtime.",
+      "citation": "Schweser et al., NeuroImage 2011",
+      "doi": "10.1016/j.neuroimage.2010.10.070",
+      "code_url": "https://github.com/kschan0214/sepia",
+      "license": "MIT (SEPIA); see the MEDI toolbox license",
+      "authors": [
+        "Ferdinand Schweser",
+        "Andreas Deistung",
+        "Berengar Wendel Lehr",
+        "J\u00fcrgen Rainer Reichenbach"
+      ],
+      "parameters": [
+        {
+          "name": "radius",
+          "default": 4,
+          "description": "SMV sphere radius, mm (SEPIA's GUI labels it \"voxel\", but SHARP.m takes mm)"
+        },
+        {
+          "name": "threshold",
+          "default": 0.03,
+          "description": "TSVD threshold; frequencies where |1 - S| <= threshold are set to 0"
+        }
+      ],
+      "ci_notes": []
+    },
+    {
       "slug": "star-sti",
       "name": "STAR-QSM (STI Suite)",
       "stage": "dipole",
