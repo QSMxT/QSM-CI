@@ -158,15 +158,21 @@ pairs:
   medi:
     reference: medi-cornell
     candidate: medi-qsmrs
-    enabled: false
+    enabled: true
     # medi-cornell v4 (QSMxT/QSM-CI#309) runs MEDI 2024.11.26 at its own defaults, which QSM.rs
     # main's MediParams share (names and values): both sides run their defaults.
     qsmrs_paths: [src/inversion/medi.rs, src/inversion/msmv.rs, src/inversion/tfi.rs, src/kernels/,
                   src/fft.rs, src/utils/gradient.rs, src/utils/morphology.rs, src/utils/r2star.rs,
                   src/utils/mask.rs, src/pipeline/inversion.rs, src/pipeline/rules.rs]
     datasets:
-      sim: {}
+      sim:
+        # Measured: NRMSE 0.0290 %, r 1.000000, max |Δ| 0.00043 ppm, p99 |Δ| 2.2e-05 ppm.
+        chimap: { nrmse_max: 0.532, correlation_min: 0.989, max_abs_max: 0.000535, p99_abs_max: 2.77e-05 }
+        measured: { main: "run 40613723628: QSMxT main 8a7072a, QSM.rs main da928e0; medi-cornell v4 sha256:b81527b0… (limits)" }
       s002001-kki-achieva-bridge-run1:
+        # Measured: NRMSE 0.0039 %, r 1.000000, max |Δ| 0.00017 ppm, p99 |Δ| 5.4e-06 ppm.
+        chimap: { nrmse_max: 0.505, correlation_min: 0.989, max_abs_max: 0.000214, p99_abs_max: 6.75e-06 }
+        measured: { main: "run 40613723628: QSMxT main 8a7072a, QSM.rs main da928e0; medi-cornell v4 sha256:b81527b0… (limits)" }
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
 
@@ -200,73 +206,65 @@ pairs:
   tkd:
     reference: tkd-qsmjl
     candidate: tkd-qsmrs
-    enabled: true
+    enabled: false
+    # Fix pending: QSM.jl's fast-FFT padding by default (draft astewartau/QSM.rs#323, stacked on #321); the matched pad=-1 below is for main. QSMxT main does not build against #321-#323 yet, so they are unmeasured.
+    blocked_by: astewartau/QSM.rs#323
     qsmrs_paths: &tkd_paths [src/inversion/tkd.rs, src/kernels/, src/fft.rs, src/utils/padding.rs,
                              src/pipeline/inversion.rs, src/pipeline/rules.rs]
     reference_set: { pad: -1 }
     datasets:
       sim:
-        # Measured: NRMSE 0 % (identical).
-        chimap: { nrmse_max: 0.5, correlation_min: 0.99, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
-        measured: { main: "run 40605505892: QSMxT main 8a7072a, QSM.rs main da928e0 (limits)" }
+        # QSM.rs main da928e0 (run 40605505892/40607732498), matched settings: NRMSE 0 % (identical).
       s002001-kki-achieva-bridge-run1:
-        # Measured: NRMSE 0.689 %, r 0.99998, max |Δ| 0.00278 ppm, p99 |Δ| 0.00095 ppm.
-        chimap: { nrmse_max: 1.26, correlation_min: 0.989, max_abs_max: 0.00347, p99_abs_max: 0.00119 }
-        measured: { main: "run 40605505892: QSMxT main 8a7072a, QSM.rs main da928e0 (limits)" }
+        # QSM.rs main da928e0 (run 40605505892/40607732498), matched settings: NRMSE 0.689 %, r 0.99998, max |Δ| 0.00278 ppm, p99 |Δ| 0.00095 ppm.
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
   tsvd:
     reference: tsvd-qsmjl
     candidate: tsvd-qsmrs
-    enabled: true
+    enabled: false
+    # Fix pending: QSM.jl's fast-FFT padding by default (draft astewartau/QSM.rs#323, stacked on #321); the matched pad=-1 below is for main. QSMxT main does not build against #321-#323 yet, so they are unmeasured.
+    blocked_by: astewartau/QSM.rs#323
     qsmrs_paths: *tkd_paths
     reference_set: { pad: -1 }
     datasets:
       sim:
-        # Measured: NRMSE 0 % (identical).
-        chimap: { nrmse_max: 0.5, correlation_min: 0.99, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
-        measured: { main: "run 40605505892: QSMxT main 8a7072a, QSM.rs main da928e0 (limits)" }
+        # QSM.rs main da928e0 (run 40605505892/40607732498), matched settings: NRMSE 0 % (identical).
       s002001-kki-achieva-bridge-run1:
-        # Measured: NRMSE 0.570 %, r 0.99998, max |Δ| 0.00205 ppm, p99 |Δ| 0.00060 ppm.
-        chimap: { nrmse_max: 1.13, correlation_min: 0.989, max_abs_max: 0.00256, p99_abs_max: 0.000754 }
-        measured: { main: "run 40605505892: QSMxT main 8a7072a, QSM.rs main da928e0 (limits)" }
+        # QSM.rs main da928e0 (run 40605505892/40607732498), matched settings: NRMSE 0.570 %, r 0.99998, max |Δ| 0.00205 ppm, p99 |Δ| 0.00060 ppm.
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
   tikhonov:
     reference: tikhonov-qsmjl
     candidate: tikhonov-qsmrs
-    enabled: true
+    enabled: false
+    # Fix pending: QSM.jl's fast-FFT padding by default (draft astewartau/QSM.rs#323, stacked on #321); the matched pad=-1 below is for main. QSMxT main does not build against #321-#323 yet, so they are unmeasured.
+    blocked_by: astewartau/QSM.rs#323
     qsmrs_paths: [src/inversion/tikhonov.rs, src/kernels/, src/fft.rs, src/utils/padding.rs,
                   src/pipeline/inversion.rs, src/pipeline/rules.rs]
     reference_set: { pad: -1 }
     datasets:
       sim:
-        # Measured: NRMSE 0 % (identical).
-        chimap: { nrmse_max: 0.5, correlation_min: 0.99, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
-        measured: { main: "run 40605505892: QSMxT main 8a7072a, QSM.rs main da928e0 (limits)" }
+        # QSM.rs main da928e0 (run 40605505892/40607732498), matched settings: NRMSE 0 % (identical).
       s002001-kki-achieva-bridge-run1:
-        # Measured: NRMSE 0.519 %, r 0.99999, max |Δ| 0.00175 ppm, p99 |Δ| 0.00059 ppm.
-        chimap: { nrmse_max: 1.08, correlation_min: 0.989, max_abs_max: 0.00219, p99_abs_max: 0.000737 }
-        measured: { main: "run 40605505892: QSMxT main 8a7072a, QSM.rs main da928e0 (limits)" }
+        # QSM.rs main da928e0 (run 40605505892/40607732498), matched settings: NRMSE 0.519 %, r 0.99999, max |Δ| 0.00175 ppm, p99 |Δ| 0.00059 ppm.
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
   tv:
     reference: tv-qsmjl
     candidate: tv-qsmrs
-    enabled: true
+    enabled: false
+    # Fix pending: QSM.jl's fast-FFT padding by default (draft astewartau/QSM.rs#323, stacked on #321); the matched pad=-1 below is for main. QSMxT main does not build against #321-#323 yet, so they are unmeasured.
+    blocked_by: astewartau/QSM.rs#323
     qsmrs_paths: [src/inversion/tv.rs, src/inversion/admm.rs, src/utils/gradient.rs, src/kernels/,
                   src/fft.rs, src/utils/padding.rs, src/pipeline/inversion.rs, src/pipeline/rules.rs]
     # QSM.rs main has QSM.jl's defaults (λ 1e-3, ρ 100·λ); the README's λ 2e-4 matched v0.39.0.
     reference_set: { pad: -1 }
     datasets:
       sim:
-        # Measured: NRMSE 0 % (identical).
-        chimap: { nrmse_max: 0.5, correlation_min: 0.99, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
-        measured: { main: "run 40607732498: QSMxT main 8a7072a, QSM.rs main da928e0 (limits)" }
+        # QSM.rs main da928e0 (run 40605505892/40607732498), matched settings: NRMSE 0 % (identical).
       s002001-kki-achieva-bridge-run1:
-        # Measured: NRMSE 0.167 %, r 0.999999, max |Δ| 0.00197 ppm, p99 |Δ| 0.00024 ppm.
-        chimap: { nrmse_max: 0.685, correlation_min: 0.989, max_abs_max: 0.00246, p99_abs_max: 0.000298 }
-        measured: { main: "run 40607732498: QSMxT main 8a7072a, QSM.rs main da928e0 (limits)" }
+        # QSM.rs main da928e0 (run 40605505892/40607732498), matched settings: NRMSE 0.167 %, r 0.999999, max |Δ| 0.00197 ppm, p99 |Δ| 0.00024 ppm.
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
   nltv:
@@ -283,38 +281,34 @@ pairs:
   rts:
     reference: rts-qsmjl
     candidate: rts-qsmrs
-    enabled: true
+    enabled: false
+    # Fix pending: QSM.jl's fast-FFT padding by default (draft astewartau/QSM.rs#323, stacked on #321); the matched pad=-1 below is for main. QSMxT main does not build against #321-#323 yet, so they are unmeasured.
+    blocked_by: astewartau/QSM.rs#323
     qsmrs_paths: [src/inversion/rts.rs, src/utils/gradient.rs, src/kernels/, src/fft.rs,
                   src/utils/padding.rs, src/pipeline/inversion.rs, src/pipeline/rules.rs]
     reference_set: { pad: -1 }
     datasets:
       sim:
-        # Measured: NRMSE 0 % (identical).
-        chimap: { nrmse_max: 0.5, correlation_min: 0.99, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
-        measured: { main: "run 40605505892: QSMxT main 8a7072a, QSM.rs main da928e0 (limits)" }
+        # QSM.rs main da928e0 (run 40605505892/40607732498), matched settings: NRMSE 0 % (identical).
       s002001-kki-achieva-bridge-run1:
-        # Measured: NRMSE 1.192 %, r 0.99993, max |Δ| 0.0037 ppm, p99 |Δ| 0.00113 ppm.
-        chimap: { nrmse_max: 1.82, correlation_min: 0.989, max_abs_max: 0.00463, p99_abs_max: 0.00142 }
-        measured: { main: "run 40605505892: QSMxT main 8a7072a, QSM.rs main da928e0 (limits)" }
+        # QSM.rs main da928e0 (run 40605505892/40607732498), matched settings: NRMSE 1.192 %, r 0.99993, max |Δ| 0.0037 ppm, p99 |Δ| 0.00113 ppm.
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
   ismv:
     reference: ismv-qsmjl
     candidate: ismv-qsmrs
-    enabled: true
+    enabled: false
+    # Fix pending: QSM.jl's iSMV defaults (draft astewartau/QSM.rs#322); the matched values below are main's. QSMxT main does not build against #322 yet, so it is unmeasured.
+    blocked_by: astewartau/QSM.rs#322
     qsmrs_paths: [src/bgremove/ismv.rs, src/bgremove/smv.rs, src/kernels/, src/fft.rs,
                   src/pipeline/bg_removal.rs, src/pipeline/rules.rs]
     # QSM.rs: radius 5 × the largest voxel size (1 mm here), tol 1e-6, 50 iterations.
     reference_set: { radius: 5, tol: 1e-6, max_iter: 50 }
     datasets:
       sim:
-        # Measured: NRMSE 4.5e-10 %, max |Δ| 2.9e-11 ppm.
-        localfield: { nrmse_max: 0.501, correlation_min: 0.99, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
-        measured: { main: "run 40605505892: QSMxT main 8a7072a, QSM.rs main da928e0 (limits)" }
+        # QSM.rs main da928e0 (run 40605505892/40607732498), matched settings: NRMSE 4.5e-10 %, max |Δ| 2.9e-11 ppm.
       s002001-kki-achieva-bridge-run1:
-        # Measured: NRMSE 9.8e-09 %, max |Δ| 1.9e-09 ppm.
-        localfield: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
-        measured: { main: "run 40605505892: QSMxT main 8a7072a, QSM.rs main da928e0 (limits)" }
+        # QSM.rs main da928e0 (run 40605505892/40607732498), matched settings: NRMSE 9.8e-09 %, max |Δ| 1.9e-09 ppm.
         reference_prefix: [laplacian-qsmrs]
         feed: { totalfield: totalfield }
   sharp:
