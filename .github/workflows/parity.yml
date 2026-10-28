@@ -97,9 +97,9 @@ jobs:
       - id: plan
         env:
           # Dispatch inputs: via env, never interpolated into a script (free-text fields).
-          ALGORITHM: ${{ inputs.algorithm || 'enabled' }}
+          ALGORITHM: ${{ inputs.algorithm || 'medi' }}
           DATASET: ${{ inputs.dataset || 'configured' }}
-          BASELINE: ${{ inputs.baseline || 'false' }}
+          BASELINE: ${{ inputs.baseline || 'true' }}
           QSMRS_REF: ${{ inputs.qsmrs_ref || 'main' }}
           QSMXT_REF: ${{ inputs.qsmxt_ref }}
           QSMXT_IMAGE: ${{ inputs.qsmxt_image }}
