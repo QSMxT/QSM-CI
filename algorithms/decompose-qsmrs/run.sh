@@ -33,9 +33,16 @@ fi
 # and _desc-total_Chimap.nii (uncompressed; the pipeline's BIDS names since qsmxt v10.0.0). Stage them in a scratch dir, then publish the two canonical artifacts gzipped.
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
+# A qsmxt on QSM.rs#333 or later takes a QSM per echo (--qsm-per-echo). Like decompose-qsm, QSM-CI
+# gives the one provided χ_total at every echo. Older releases (v10.0.0) take --qsm alone.
+PER_ECHO=""
+if qsmxt separate decompose --help 2>/dev/null | grep -q -- '--qsm-per-echo'; then
+  NE="$(jq -r '.TE | length' "$IN/params.json")"
+  PER_ECHO="--qsm-per-echo$(for _ in $(seq "$NE"); do printf ' %s' "$IN/chimap.nii.gz"; done)"
+fi
 qsmxt separate decompose \
   --qsm "$IN/chimap.nii.gz" -m "$IN/mask.nii.gz" -o "$WORK/dec" \
-  --magnitude "$IN/magnitude.nii.gz" --echo-times "$TE" \
+  --magnitude "$IN/magnitude.nii.gz" --echo-times "$TE" $PER_ECHO \
   --field-strength "$B0" --b0-direction $B0DIR $SET
 
 # qsmxt already emits χ+ ≥ 0 and the diamagnetic map as the positive magnitude |χ−| (it negates

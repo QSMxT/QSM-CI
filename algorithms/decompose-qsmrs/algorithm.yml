@@ -48,21 +48,18 @@ parameters:
 - name: max_lm_iter
   default: 30
   description: >
-    max Levenberg-Marquardt iterations per fit stage (the MATLAB reference uses lsqcurvefit's
-    trust-region solve; 30 is ample for these 1-3 parameter fits)
+    max Levenberg-Marquardt iterations per fit stage (the MATLAB reference solves each stage with
+    lsqcurvefit's trust-region solve, MaxIterations 400). qsmxt v10.0.0's default is 30; QSM.rs
+    from astewartau/QSM.rs#333 defaults to 400, which matches the reference far more closely
 # Notes on how QSM-CI runs this method vs. its reference (shown on the submission page).
 ci_notes:
 - >
-  The two DECOMPOSE entries use OPPOSITE paramagnetic/diamagnetic output mappings, so their χ+ and
-  χ− maps may disagree — comparing them is a purpose of this submission, not a bug. Both
-  reconstruct each source from the fitted parameters as a per-compartment phase accumulation; what
-  differs is which sub-model carries which source. The MATLAB reference's demo writes DSC→"XPSC"
-  and PSC→"XDSC", and decompose-qsm/recon.m follows that swap (χ+ = |DSC|). The Rust port does not:
-  its module header records that on the qsm-forward phantom the swapped mapping anti-correlates
-  with the ground truth while the physically-consistent one (χ+ = |PSC|, from the paramagnetic
-  sub-model) correlates strongly, so it emits χ+ = |PSC|, χ− = −|DSC|. On an independent synthetic
-  case generated from the paper's own signal model, this port's χ+ correlated +1.000 with the true
-  χ+ and −0.03 with the true χ−. Scoring both entries on the QSM-CI phantoms is the direct test.
+  Both DECOMPOSE entries give the same χ+ and χ− maps. The MATLAB reference fits the conjugate of
+  the signal (MATLAB's conjugate transpose on ydata), which mirrors the fit exactly, and then
+  writes DSC as χ+; the Rust port fits the signal itself and writes PSC as χ+. The two swaps
+  cancel (astewartau/QSM.rs#333). As in decompose-qsm, the QSM given for every echo's phase is
+  the one provided χ_total (the authors computed a STAR-QSM per echo); a qsmxt with
+  `separate decompose --qsm-per-echo` gets chimap once per echo.
 - >
   Same algorithm as the compiled-MATLAB entry decompose-qsm, in Rust, on the shared QSMxT engine
   image — no new container image. Measured here at ~1.5e3 fitted voxels/s on a single core
