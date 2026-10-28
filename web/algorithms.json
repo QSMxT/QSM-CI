@@ -2508,6 +2508,11 @@
           "name": "te",
           "default": "sum",
           "description": "echo time the field is converted to phase at (STAR-QSM's result depends on the phase scale): first, last, spacing (TE2 - TE1), sum (of the echo times), or a time in ms\n"
+        },
+        {
+          "name": "pad",
+          "default": "8 8 20",
+          "description": "zero padding per side in voxels, x y z, or one number for every axis (STI Suite's 'padsize'; the default is what STI Suite's GUI passes, star-sti's recon.m passes 12 12 12)\n"
         }
       ],
       "ci_notes": []

@@ -14,6 +14,13 @@ SET=""
 CFG="$IN/config.json"
 if [ -f "$CFG" ]; then
   V=$(jq -r '.te // empty' "$CFG"); [ -n "$V" ] && SET="$SET --te $V"
+  # pad: one number (every axis) or three ("12 12 12"), voxels per side.
+  V=$(jq -r '.pad // empty | tostring' "$CFG")
+  if [ -n "$V" ]; then
+    read -r -a P <<< "$V"
+    [ "${#P[@]}" -eq 1 ] && P=("${P[0]}" "${P[0]}" "${P[0]}")
+    SET="$SET --pad ${P[*]}"
+  fi
 fi
 qsmxt invert star "$IN/localfield.nii.gz" -m "$IN/mask.nii.gz" -o "$OUT/chimap.nii.gz" --b0-direction $B0 \
   --field-strength "$FS" --echo-times $TES $SET
