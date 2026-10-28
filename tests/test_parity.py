@@ -147,6 +147,7 @@ def test_derived_limits_perfect_agreement():
     m = {"kind": "continuous", "nrmse": 0.0, "correlation": 1.0, "max_abs": 0.0, "p99_abs": 0.0}
     lim = parity.derive_limits(m)
     assert lim["nrmse_max"] == pytest.approx(0.5)
+    assert lim["max_abs_max"] == lim["p99_abs_max"] == 1e-6   # float noise is not a regression
     assert all(r["ok"] for r in parity.check(m, lim))
 
 

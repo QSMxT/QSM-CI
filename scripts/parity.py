@@ -73,6 +73,10 @@ NRMSE_REL, NRMSE_ABS = 0.10, 0.5        # +10 % of the measured NRMSE, +0.5 perc
 CORR_ABS = 0.01                         # correlation may drop by 0.01
 ABS_REL = 0.25                          # max |Δ| and p99 |Δ| may grow by 25 %
 DICE_ABS = 0.01                         # Dice may drop by 0.01
+# A floor under the |Δ| limits (ppm): a pair that agrees bit for bit today (TKD, Tikhonov on the
+# simulation) would otherwise get a limit of 0, which float noise from a different FFT plan or
+# thread split would fail. 1e-6 ppm is far below anything a real change produces.
+ABS_FLOOR = 1e-6
 
 
 # ---------------------------------------------------------------------------------------------------
@@ -364,8 +368,8 @@ def derive_limits(metrics: dict) -> dict:
     out = {"nrmse_max": _round_up(metrics["nrmse"] * (1 + NRMSE_REL) + NRMSE_ABS)}
     if math.isfinite(metrics.get("correlation", float("nan"))):
         out["correlation_min"] = max(-1.0, _round_down(metrics["correlation"] - CORR_ABS))
-    out["max_abs_max"] = _round_up(metrics["max_abs"] * (1 + ABS_REL))
-    out["p99_abs_max"] = _round_up(metrics["p99_abs"] * (1 + ABS_REL))
+    out["max_abs_max"] = _round_up(max(metrics["max_abs"] * (1 + ABS_REL), ABS_FLOOR))
+    out["p99_abs_max"] = _round_up(max(metrics["p99_abs"] * (1 + ABS_REL), ABS_FLOOR))
     return out
 
 
