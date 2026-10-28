@@ -162,10 +162,9 @@ pairs:
                   src/utils/special.rs, src/kernels/, src/fft.rs, src/pipeline/inversion.rs,
                   src/pipeline/rules.rs]
     datasets:
+      # In silico only: on the KKI travelling head the original was killed (exit 137) on the
+      # self-hosted runner (run 40605505892), as it diverges on real multi-echo data.
       sim: {}
-      s002001-kki-achieva-bridge-run1:
-        reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
-        feed: { localfield: localfield }
   decompose:
     reference: decompose-qsm   # ci_skip for scoring (hours per run); parity runs it, self-hosted
     candidate: decompose-qsmrs
@@ -219,7 +218,8 @@ pairs:
     enabled: false
     qsmrs_paths: [src/inversion/tv.rs, src/inversion/admm.rs, src/utils/gradient.rs, src/kernels/,
                   src/fft.rs, src/utils/padding.rs, src/pipeline/inversion.rs, src/pipeline/rules.rs]
-    reference_set: { lambda: 2e-4, pad: -1 }
+    # QSM.rs main has QSM.jl's defaults (λ 1e-3, ρ 100·λ); the README's λ 2e-4 matched v0.39.0.
+    reference_set: { pad: -1 }
     datasets:
       sim: {}
       s002001-kki-achieva-bridge-run1:
@@ -229,15 +229,13 @@ pairs:
     reference: nltv-qsmjl
     candidate: nltv-qsmrs
     enabled: false
+    # QSM.rs main ports QSM.jl's nltv line for line, with the magnitude as the required data weight
+    # W; nltv-qsmjl runs QSM.jl without W, and nltv-qsmrs's run.sh is still v10.0.0's (no
+    # magnitude, field strength or echo times). Not measurable until both sides take the same W.
+    blocked_by: astewartau/QSM.rs#319
     qsmrs_paths: [src/inversion/nltv.rs, src/inversion/admm.rs, src/inversion/ndi.rs,
                   src/utils/gradient.rs, src/kernels/, src/fft.rs, src/utils/padding.rs,
                   src/pipeline/inversion.rs, src/pipeline/rules.rs]
-    reference_set: { pad: -1 }
-    datasets:
-      sim: {}
-      s002001-kki-achieva-bridge-run1:
-        reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
-        feed: { localfield: localfield }
   rts:
     reference: rts-qsmjl
     candidate: rts-qsmrs
@@ -317,12 +315,13 @@ pairs:
     enabled: false
     qsmrs_paths: [src/inversion/tgv.rs, src/utils/gradient.rs, src/utils/morphology.rs,
                   src/kernels/, src/fft.rs, src/pipeline/inversion.rs, src/pipeline/rules.rs]
-    # α in rad units = QSM.rs's ppm α (α1 6.675e-5, α0 2.002e-4) × 2π·42.5781·B0·TE1.
-    reference_set: { iterations: 1000, laplacian: romeo }
+    # QSM.rs main ports qsm_tgv with the package's defaults (α from get_default_alpha(2), the
+    # voxel-size iteration count, 3 erosions, step 3, the first echo's TE) and, for a field in ppm,
+    # the ordinary discrete Laplacian: the package's `romeo` Laplacian with the unwrapping done.
+    # (The README's matched column, ppm α and 1000 iterations, was for QSM.rs v0.39.0.)
+    reference_set: { laplacian: romeo }
     datasets:
-      sim:   # 7 T, TE1 4 ms: × 7.4906
-        reference_set: { alpha0: 1.4996e-3, alpha1: 5.0000e-4 }
-      s002001-kki-achieva-bridge-run1:   # B0 3.0008 T, TE1 5.001 ms: × 4.0147
+      sim: {}
+      s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs]
         feed: { totalfield: totalfield }
-        reference_set: { alpha0: 8.0375e-4, alpha1: 2.6798e-4 }
