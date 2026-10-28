@@ -13,7 +13,8 @@ A check is **stale** when the reference image changed, QSM.rs `main` changed the
 | `vsharp` | `vsharp-sti` → `vsharp-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | 🚧 gap (STI Suite port gaps (QSM.rs issue to file; QSMxT/QSM-CI parity/status PR)) |
 |  |  | sim | never | — | — | — | 🚧 gap (STI Suite port gaps (QSM.rs issue to file; QSMxT/QSM-CI parity/status PR)) |
 | `star` | `star-sti` → `star-qsmrs` | sim | [2026-10-28](https://github.com/QSMxT/QSM-CI/actions/runs/40610484483) | `da928e0` | ✅ pass | 0.3256% | ✅ current |
-| `medi` | `medi-cornell` → `medi-qsmrs` | — | never | — | — | — | — not enabled (waiting for medi-cornell v4 (MEDI 2024.11.26's own defaults, QSMxT/QSM-CI#309)) |
+| `medi` | `medi-cornell` → `medi-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | — not enabled |
+|  |  | sim | never | — | — | — | — not enabled |
 | `amp-pe` | `amp-pe` → `amp-pe-qsmrs` | sim | never | — | — | — | — not enabled |
 | `decompose` | `decompose-qsm` → `decompose-qsmrs` | chisep-mc | never | — | — | — | — not enabled |
 | `tkd` | `tkd-qsmjl` → `tkd-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-10-28](https://github.com/QSMxT/QSM-CI/actions/runs/40610484483) | `da928e0` | ✅ pass | 0.6894% | ✅ current |
