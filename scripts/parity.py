@@ -703,8 +703,6 @@ def cmd_compare(args) -> int:
 # ---------------------------------------------------------------------------------------------------
 
 RESULTS = ROOT / "parity" / "results.json"
-STATUS_JSON = ROOT / "parity" / "status.json"
-STATUS_MD = ROOT / "parity" / "STATUS.md"
 HISTORY_PER_CHECK = 50   # records kept per pair × dataset in results.json
 REPO = "QSMxT/QSM-CI"
 
@@ -1018,9 +1016,6 @@ def render_status(rows: list, settings: dict, today: str) -> str:
         lines += ["", "Refresh every stale pair against QSM.rs `main`:", "", "```bash",
                   refresh_command(stale), "```"]
     return "\n".join(lines) + "\n"
-
-
-ISSUE_TITLE = "Port parity: stale checks"
 
 
 def render_issue(rows: list, settings: dict, today: str) -> str:
