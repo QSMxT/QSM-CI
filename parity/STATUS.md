@@ -16,7 +16,7 @@ A check is **stale** when the reference image changed, QSM.rs `main` changed the
 | `medi` | `medi-cornell` → `medi-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
 |  |  | sim | never | — | — | — | ⚠️ stale: never checked |
 | `amp-pe` | `amp-pe` → `amp-pe-qsmrs` | sim | never | — | — | — | ⚠️ stale: never checked |
-| `decompose` | `decompose-qsm` → `decompose-qsmrs` | chisep-mc | never | — | — | — | — not enabled |
+| `decompose` | `decompose-qsm` → `decompose-qsmrs` | chisep-mc | never | — | — | — | 🚧 gap (QSMxT/QSM-CI#311) |
 | `wavesep` | `wavesep` → `wavesep-qsmrs` | chisep-mc | never | — | — | — | 🚧 gap (QSMxT/QSM-CI#312) |
 | `tkd` | `tkd-qsmjl` → `tkd-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | 🚧 gap (astewartau/QSM.rs#323) |
 |  |  | sim | never | — | — | — | 🚧 gap (astewartau/QSM.rs#323) |
