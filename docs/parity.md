@@ -44,7 +44,7 @@ step with `source: qsmrs` then runs that image instead of the pinned one, throug
 for each step, the image, its ID and `qsmxt --version`.
 
 Each job runs the reference and then the candidate through `qsm-ci run`, compares them inside the
-dataset mask, and writes a report to the job summary and the `parity-<pair>-<dataset>` artifact (with
+dataset mask, and writes a report to the job summary and the `parity-<key>-<pair>-<dataset>` artifact (`<key>` names the run's selection and QSM.rs build; with
 both outputs and their intermediates). The job fails when a limit is exceeded. Locally, with
 Docker or Podman and the dataset fetched:
 
