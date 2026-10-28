@@ -31,8 +31,9 @@ name: parity
 # Baselines and runs from other branches record nothing.
 
 on:
-  push:   # TEMPORARY (measurement branch only): baselines of every pair against QSM.rs main
+  push:   # TEMPORARY (measurement branch only): a recorded run of the enabled pairs
     branches: [parity/status-measure]
+    paths-ignore: [parity/.status-test]
   workflow_dispatch:
     inputs:
       algorithm:
@@ -96,13 +97,13 @@ jobs:
       - id: plan
         env:
           # Dispatch inputs: via env, never interpolated into a script (free-text fields).
-          ALGORITHM: ${{ inputs.algorithm || 'tv,tgv,vsharp-deconv,ilsqr-pad12,decompose' }}
+          ALGORITHM: ${{ inputs.algorithm || 'enabled' }}
           DATASET: ${{ inputs.dataset || 'configured' }}
-          BASELINE: ${{ inputs.baseline || 'true' }}
+          BASELINE: ${{ inputs.baseline || 'false' }}
           QSMRS_REF: ${{ inputs.qsmrs_ref || 'main' }}
           QSMXT_REF: ${{ inputs.qsmxt_ref }}
           QSMXT_IMAGE: ${{ inputs.qsmxt_image }}
-          RECORD: ${{ inputs.record || 'false' }}
+          RECORD: ${{ inputs.record || 'true' }}
           REF: ${{ github.ref }}
         run: |
           pip install -q pyyaml
@@ -404,7 +405,7 @@ jobs:
     # No concurrency group: GitHub cancels a second pending job in a group, which would drop a
     # run's records. Concurrent writers are handled by the retry below instead.
     env:
-      RECORD_BRANCH: main
+      RECORD_BRANCH: parity/status-measure   # TEMPORARY
     steps:
       - uses: actions/checkout@v7
         with: { ref: "${{ env.RECORD_BRANCH }}" }

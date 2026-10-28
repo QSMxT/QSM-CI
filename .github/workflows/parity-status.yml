@@ -12,6 +12,8 @@ name: parity-status
 #     refresh itself: parity.yml from main against QSM.rs main, which records its results.
 
 on:
+  push:   # TEMPORARY test on the measurement branch
+    branches: [parity/status-measure]
   schedule:
     - cron: "17 3 * * 1"   # Mondays 03:17 UTC
   workflow_dispatch:
@@ -35,7 +37,7 @@ jobs:
       AUTO_REFRESH: ${{ vars.PARITY_AUTO_REFRESH }}
     steps:
       - uses: actions/checkout@v7
-        with: { ref: main }
+        with: { ref: parity/status-measure }   # TEMPORARY
       - run: pip install -q pyyaml
 
       - name: Status
@@ -53,13 +55,13 @@ jobs:
           git config user.email "qsm-ci@users.noreply.github.com"
           cp parity/status.json parity/STATUS.md /tmp/
           for attempt in 1 2 3 4 5; do
-            git fetch origin main -q
-            git reset --hard origin/main -q
+            git fetch origin parity/status-measure -q
+            git reset --hard origin/parity/status-measure -q
             cp /tmp/status.json /tmp/STATUS.md parity/
             git add parity/status.json parity/STATUS.md
             git diff --cached --quiet && { echo "status unchanged"; exit 0; }
             git commit -q -m "Update parity status"
-            git push origin HEAD:main && exit 0
+            git push origin HEAD:parity/status-measure && exit 0
             echo "push attempt $attempt rejected — retrying on latest main"; sleep $((attempt * 3))
           done
           echo "::error::could not push the parity status after 5 attempts"; exit 1
@@ -67,7 +69,7 @@ jobs:
       # One issue, found by its title (open or closed, oldest first), never a second one.
       - name: Tracking issue
         env:
-          TITLE: "Port parity: stale checks"
+          TITLE: "[TEST, ignore] Port parity: stale checks"
         run: |
           num=$(gh issue list -R "$GITHUB_REPOSITORY" --state all --search "\"$TITLE\" in:title" \
                   --json number,title --jq "[.[] | select(.title == env.TITLE)] | sort_by(.number) | .[0].number // empty")
