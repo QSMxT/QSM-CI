@@ -96,7 +96,7 @@ jobs:
       - id: plan
         env:
           # Dispatch inputs: via env, never interpolated into a script (free-text fields).
-          ALGORITHM: ${{ inputs.algorithm || 'qsmart,ilsqr,vsharp,star,amp-pe,tkd,tsvd,tikhonov,tv,nltv,rts,ismv,sharp,vsharp-qsmjl,laplacian,romeo,tgv' }}
+          ALGORITHM: ${{ inputs.algorithm || 'tv,tgv,vsharp-deconv,ilsqr-pad12,decompose' }}
           DATASET: ${{ inputs.dataset || 'configured' }}
           BASELINE: ${{ inputs.baseline || 'true' }}
           QSMRS_REF: ${{ inputs.qsmrs_ref || 'main' }}

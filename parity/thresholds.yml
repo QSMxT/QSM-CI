@@ -325,3 +325,21 @@ pairs:
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs]
         feed: { totalfield: totalfield }
+
+  # TEMPORARY measurement variants (measurement branch only)
+  vsharp-deconv:
+    reference: vsharp-sti
+    candidate: vsharp-qsmrs
+    qsmrs_paths: [src/bgremove/vsharp.rs]
+    datasets:
+      sim: {}
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs]
+        feed: { totalfield: totalfield }
+  ilsqr-pad12:
+    reference: ilsqr-sti
+    candidate: ilsqr-qsmrs
+    qsmrs_paths: [src/inversion/ilsqr.rs]
+    candidate_set: { pad_mm: 12 }
+    datasets:
+      sim: {}
