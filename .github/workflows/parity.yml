@@ -89,6 +89,7 @@ jobs:
       qsmrs_ref: ${{ steps.plan.outputs.qsmrs_ref }}
       qsmxt_ref: ${{ steps.plan.outputs.qsmxt_ref }}
       qsmxt_image: ${{ steps.plan.outputs.qsmxt_image }}
+      key: ${{ steps.plan.outputs.key }}
     steps:
       - uses: actions/checkout@v7
       - id: plan
@@ -112,6 +113,10 @@ jobs:
           b=false; [ -z "$QSMXT_IMAGE" ] && [ -n "$QSMRS_REF$QSMXT_REF" ] && b=true
           # Record: a run from main, or record=true; never a baseline (it applies no limits).
           r=false; { [ "$REF" = refs/heads/main ] || [ "$RECORD" = true ]; } && r=true
+          # Names this run's artifacts by what it tests, so a workflow that calls this one several
+          # times in one run (one call per QSM.rs ref) keeps each call's build and results apart.
+          k="q$(printf '%s|%s|%s|%s|%s' "$QSMRS_REF" "$QSMXT_REF" "$QSMXT_IMAGE" "$ALGORITHM" "$DATASET" | sha1sum | cut -c1-8)"
+          echo "key=$k" >> "$GITHUB_OUTPUT"
           [ "$BASELINE" = true ] && r=false
           { echo "build=$b"; echo "record=$r"; echo "baseline=$BASELINE"
             echo "qsmrs_ref=$QSMRS_REF"; echo "qsmxt_ref=$QSMXT_REF"; echo "qsmxt_image=$QSMXT_IMAGE"
@@ -184,7 +189,7 @@ jobs:
           cat ../qsmxt-build/built.json
       - uses: actions/upload-artifact@v7
         with:
-          name: qsmxt-under-test
+          name: qsmxt-under-test-${{ needs.plan.outputs.key }}
           path: qsmxt-build/
           retention-days: 7
 
@@ -273,7 +278,7 @@ jobs:
       - uses: actions/download-artifact@v8
         if: needs.plan.outputs.build == 'true'
         with:
-          name: qsmxt-under-test
+          name: qsmxt-under-test-${{ needs.plan.outputs.key }}
           path: qsmxt-build
       - name: QSM.rs under test
         id: qsmrs
@@ -327,7 +332,7 @@ jobs:
       - uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: parity-${{ matrix.algorithm }}-${{ matrix.phantom }}
+          name: parity-${{ needs.plan.outputs.key }}-${{ matrix.algorithm }}-${{ matrix.phantom }}
           retention-days: 30
           if-no-files-found: ignore
           include-hidden-files: true   # the outputs live under .parity/
@@ -342,7 +347,7 @@ jobs:
       - uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: parity-result-${{ matrix.algorithm }}-${{ matrix.phantom }}
+          name: parity-result-${{ needs.plan.outputs.key }}-${{ matrix.algorithm }}-${{ matrix.phantom }}
           retention-days: 90
           if-no-files-found: ignore
           path: parity.json
@@ -359,13 +364,13 @@ jobs:
       - uses: actions/download-artifact@v8
         continue-on-error: true   # none at all when every job failed early
         with:
-          pattern: parity-result-*
+          pattern: parity-result-${{ needs.plan.outputs.key }}-*
           path: results
       - uses: actions/download-artifact@v8
         if: needs.plan.outputs.build == 'true'
         continue-on-error: true
         with:
-          name: qsmxt-under-test
+          name: qsmxt-under-test-${{ needs.plan.outputs.key }}
           path: qsmxt-build
       - name: Records and run summary
         env:
@@ -385,7 +390,7 @@ jobs:
           cat summary.md >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v7
         with:
-          name: parity-records
+          name: parity-records-${{ needs.plan.outputs.key }}
           path: parity-records.json
           retention-days: 90
 
@@ -409,7 +414,7 @@ jobs:
       - run: pip install -q pyyaml
       - uses: actions/download-artifact@v8
         with:
-          name: parity-records
+          name: parity-records-${{ needs.plan.outputs.key }}
           path: /tmp/parity
       - name: Commit results and status
         env:

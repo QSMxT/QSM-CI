@@ -688,3 +688,19 @@ def test_touched_matches_files_and_directories():
     files = ["src/kernels/dipole.rs", "src/kernelsX.rs", "src/inversion/p.rs"]
     assert parity.touched(files, ["src/kernels/", "src/inversion/p.rs"]) == [
         "src/kernels/dipole.rs", "src/inversion/p.rs"]
+
+
+def test_multi_output_stage_compares_every_output(tmp_path):
+    """χ-separation writes chi-para and chi-dia: both are final maps with their own limits."""
+    mask = _mask()
+    for side, shift in (("reference", 0.0), ("candidate", 0.5)):
+        d = tmp_path / side
+        _save(d / "chi-para.nii.gz", np.full((6, 6, 6), 2.0))   # not binary (0/1)
+        _save(d / "chi-dia.nii.gz", np.full((6, 6, 6), 2.0) + shift)
+    _save(tmp_path / "mask.nii.gz", mask)
+    res, _ = parity.compare_dirs(tmp_path / "reference", tmp_path / "candidate",
+                                 tmp_path / "mask.nii.gz", ["chi-para", "chi-dia"])
+    assert set(res) == {"chi-para", "chi-dia"}
+    v = parity.evaluate(res, {"chi-para": {"nrmse_max": 1}}, ["chi-para", "chi-dia"])
+    assert v["maps"]["chi-para"]["status"] == "pass"
+    assert v["maps"]["chi-dia"]["status"] == "fail" and not v["ok"]   # no limits on a final map
