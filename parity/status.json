@@ -6,7 +6,13 @@
   "branch": "main",
   "checked": true
  },
- "stale": [],
+ "stale": [
+  "qsmart",
+  "star",
+  "medi",
+  "amp-pe",
+  "laplacian"
+ ],
  "pairs": [
   {
    "pair": "qsmart",
@@ -14,45 +20,26 @@
    "reference": "qsmart-matlab",
    "candidate": "qsmart-qsmrs",
    "enabled": true,
-   "state": "current",
+   "state": "stale",
    "datasets": [
     {
      "dataset": "s002001-kki-achieva-bridge-run1",
-     "last": {
-      "date": "2026-10-28T01:12:06Z",
-      "result": "pass",
-      "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/40610484483",
-      "qsmrs": {
-       "ref": "main",
-       "commit": "da928e0c5bfc7670dc44efe842623f5fe4a591c0",
-       "version": null
-      },
-      "nrmse": 4.618094064977969,
-      "correlation": 0.9989500261388524,
-      "dice": null
-     },
-     "stale": false,
-     "reasons": []
+     "last": null,
+     "stale": true,
+     "reasons": [
+      "never checked"
+     ]
     },
     {
      "dataset": "sim",
-     "last": {
-      "date": "2026-10-28T01:12:06Z",
-      "result": "pass",
-      "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/40610484483",
-      "qsmrs": {
-       "ref": "main",
-       "commit": "da928e0c5bfc7670dc44efe842623f5fe4a591c0",
-       "version": null
-      },
-      "nrmse": 16.70822150276199,
-      "correlation": 0.986173640289164,
-      "dice": null
-     },
-     "stale": false,
-     "reasons": []
+     "last": null,
+     "stale": true,
+     "reasons": [
+      "never checked"
+     ]
     }
-   ]
+   ],
+   "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=qsmart -f dataset=configured -f qsmrs_ref=main"
   },
   {
    "pair": "ilsqr",
@@ -75,7 +62,7 @@
      "reasons": []
     }
    ],
-   "blocked_by": "STI Suite port gaps (QSM.rs issue to file; QSMxT/QSM-CI parity/status PR)"
+   "blocked_by": "QSMxT/QSM-CI#311"
   },
   {
    "pair": "vsharp",
@@ -98,73 +85,72 @@
      "reasons": []
     }
    ],
-   "blocked_by": "STI Suite port gaps (QSM.rs issue to file; QSMxT/QSM-CI parity/status PR)"
+   "blocked_by": "QSMxT/QSM-CI#311"
   },
   {
    "pair": "star",
-   "algorithm": "star",
+   "algorithm": null,
    "reference": "star-sti",
    "candidate": "star-qsmrs",
    "enabled": true,
-   "state": "current",
+   "state": "stale",
    "datasets": [
     {
      "dataset": "sim",
-     "last": {
-      "date": "2026-10-28T01:12:06Z",
-      "result": "pass",
-      "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/40610484483",
-      "qsmrs": {
-       "ref": "main",
-       "commit": "da928e0c5bfc7670dc44efe842623f5fe4a591c0",
-       "version": null
-      },
-      "nrmse": 0.32564341615374043,
-      "correlation": 0.9999947547656654,
-      "dice": null
-     },
-     "stale": false,
-     "reasons": []
+     "last": null,
+     "stale": true,
+     "reasons": [
+      "never checked"
+     ]
     }
-   ]
+   ],
+   "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=star -f dataset=configured -f qsmrs_ref=main"
   },
   {
    "pair": "medi",
    "algorithm": "medi",
    "reference": "medi-cornell",
    "candidate": "medi-qsmrs",
-   "enabled": false,
-   "state": "off",
+   "enabled": true,
+   "state": "stale",
    "datasets": [
     {
      "dataset": "s002001-kki-achieva-bridge-run1",
      "last": null,
-     "stale": false,
-     "reasons": []
+     "stale": true,
+     "reasons": [
+      "never checked"
+     ]
     },
     {
      "dataset": "sim",
      "last": null,
-     "stale": false,
-     "reasons": []
+     "stale": true,
+     "reasons": [
+      "never checked"
+     ]
     }
-   ]
+   ],
+   "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=medi -f dataset=configured -f qsmrs_ref=main"
   },
   {
    "pair": "amp-pe",
    "algorithm": "amp-pe",
    "reference": "amp-pe",
    "candidate": "amp-pe-qsmrs",
-   "enabled": false,
-   "state": "off",
+   "enabled": true,
+   "state": "stale",
    "datasets": [
     {
      "dataset": "sim",
      "last": null,
-     "stale": false,
-     "reasons": []
+     "stale": true,
+     "reasons": [
+      "never checked"
+     ]
     }
-   ]
+   ],
+   "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=amp-pe -f dataset=configured -f qsmrs_ref=main"
   },
   {
    "pair": "decompose",
@@ -183,188 +169,112 @@
    ]
   },
   {
+   "pair": "wavesep",
+   "algorithm": null,
+   "reference": "wavesep",
+   "candidate": "wavesep-qsmrs",
+   "enabled": false,
+   "state": "off",
+   "datasets": [
+    {
+     "dataset": "chisep-mc",
+     "last": null,
+     "stale": false,
+     "reasons": []
+    }
+   ]
+  },
+  {
    "pair": "tkd",
    "algorithm": "tkd",
    "reference": "tkd-qsmjl",
    "candidate": "tkd-qsmrs",
-   "enabled": true,
-   "state": "current",
+   "enabled": false,
+   "state": "gap",
    "datasets": [
     {
      "dataset": "s002001-kki-achieva-bridge-run1",
-     "last": {
-      "date": "2026-10-28T01:12:06Z",
-      "result": "pass",
-      "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/40610484483",
-      "qsmrs": {
-       "ref": "main",
-       "commit": "da928e0c5bfc7670dc44efe842623f5fe4a591c0",
-       "version": null
-      },
-      "nrmse": 0.6893660097929883,
-      "correlation": 0.9999760314886382,
-      "dice": null
-     },
+     "last": null,
      "stale": false,
      "reasons": []
     },
     {
      "dataset": "sim",
-     "last": {
-      "date": "2026-10-28T01:12:06Z",
-      "result": "pass",
-      "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/40610484483",
-      "qsmrs": {
-       "ref": "main",
-       "commit": "da928e0c5bfc7670dc44efe842623f5fe4a591c0",
-       "version": null
-      },
-      "nrmse": 0.0,
-      "correlation": 1.0,
-      "dice": null
-     },
+     "last": null,
      "stale": false,
      "reasons": []
     }
-   ]
+   ],
+   "blocked_by": "astewartau/QSM.rs#323"
   },
   {
    "pair": "tsvd",
    "algorithm": "tsvd",
    "reference": "tsvd-qsmjl",
    "candidate": "tsvd-qsmrs",
-   "enabled": true,
-   "state": "current",
+   "enabled": false,
+   "state": "gap",
    "datasets": [
     {
      "dataset": "s002001-kki-achieva-bridge-run1",
-     "last": {
-      "date": "2026-10-28T01:12:06Z",
-      "result": "pass",
-      "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/40610484483",
-      "qsmrs": {
-       "ref": "main",
-       "commit": "da928e0c5bfc7670dc44efe842623f5fe4a591c0",
-       "version": null
-      },
-      "nrmse": 0.570288200510829,
-      "correlation": 0.9999837038122497,
-      "dice": null
-     },
+     "last": null,
      "stale": false,
      "reasons": []
     },
     {
      "dataset": "sim",
-     "last": {
-      "date": "2026-10-28T01:12:06Z",
-      "result": "pass",
-      "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/40610484483",
-      "qsmrs": {
-       "ref": "main",
-       "commit": "da928e0c5bfc7670dc44efe842623f5fe4a591c0",
-       "version": null
-      },
-      "nrmse": 0.0,
-      "correlation": 1.0,
-      "dice": null
-     },
+     "last": null,
      "stale": false,
      "reasons": []
     }
-   ]
+   ],
+   "blocked_by": "astewartau/QSM.rs#323"
   },
   {
    "pair": "tikhonov",
    "algorithm": "tikhonov",
    "reference": "tikhonov-qsmjl",
    "candidate": "tikhonov-qsmrs",
-   "enabled": true,
-   "state": "current",
+   "enabled": false,
+   "state": "gap",
    "datasets": [
     {
      "dataset": "s002001-kki-achieva-bridge-run1",
-     "last": {
-      "date": "2026-10-28T01:12:06Z",
-      "result": "pass",
-      "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/40610484483",
-      "qsmrs": {
-       "ref": "main",
-       "commit": "da928e0c5bfc7670dc44efe842623f5fe4a591c0",
-       "version": null
-      },
-      "nrmse": 0.5189437748510408,
-      "correlation": 0.9999865078498168,
-      "dice": null
-     },
+     "last": null,
      "stale": false,
      "reasons": []
     },
     {
      "dataset": "sim",
-     "last": {
-      "date": "2026-10-28T01:12:06Z",
-      "result": "pass",
-      "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/40610484483",
-      "qsmrs": {
-       "ref": "main",
-       "commit": "da928e0c5bfc7670dc44efe842623f5fe4a591c0",
-       "version": null
-      },
-      "nrmse": 0.0,
-      "correlation": 1.0,
-      "dice": null
-     },
+     "last": null,
      "stale": false,
      "reasons": []
     }
-   ]
+   ],
+   "blocked_by": "astewartau/QSM.rs#323"
   },
   {
    "pair": "tv",
    "algorithm": "tv",
    "reference": "tv-qsmjl",
    "candidate": "tv-qsmrs",
-   "enabled": true,
-   "state": "current",
+   "enabled": false,
+   "state": "gap",
    "datasets": [
     {
      "dataset": "s002001-kki-achieva-bridge-run1",
-     "last": {
-      "date": "2026-10-28T01:12:06Z",
-      "result": "pass",
-      "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/40610484483",
-      "qsmrs": {
-       "ref": "main",
-       "commit": "da928e0c5bfc7670dc44efe842623f5fe4a591c0",
-       "version": null
-      },
-      "nrmse": 0.16741599153634146,
-      "correlation": 0.9999985928877798,
-      "dice": null
-     },
+     "last": null,
      "stale": false,
      "reasons": []
     },
     {
      "dataset": "sim",
-     "last": {
-      "date": "2026-10-28T01:12:06Z",
-      "result": "pass",
-      "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/40610484483",
-      "qsmrs": {
-       "ref": "main",
-       "commit": "da928e0c5bfc7670dc44efe842623f5fe4a591c0",
-       "version": null
-      },
-      "nrmse": 0.0,
-      "correlation": 1.0,
-      "dice": null
-     },
+     "last": null,
      "stale": false,
      "reasons": []
     }
-   ]
+   ],
+   "blocked_by": "astewartau/QSM.rs#323"
   },
   {
    "pair": "nltv",
@@ -374,99 +284,53 @@
    "enabled": false,
    "state": "gap",
    "datasets": [],
-   "blocked_by": "astewartau/QSM.rs#319"
+   "blocked_by": "astewartau/QSM.rs#323"
   },
   {
    "pair": "rts",
    "algorithm": "rts",
    "reference": "rts-qsmjl",
    "candidate": "rts-qsmrs",
-   "enabled": true,
-   "state": "current",
+   "enabled": false,
+   "state": "gap",
    "datasets": [
     {
      "dataset": "s002001-kki-achieva-bridge-run1",
-     "last": {
-      "date": "2026-10-28T01:12:06Z",
-      "result": "pass",
-      "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/40610484483",
-      "qsmrs": {
-       "ref": "main",
-       "commit": "da928e0c5bfc7670dc44efe842623f5fe4a591c0",
-       "version": null
-      },
-      "nrmse": 1.192206822993803,
-      "correlation": 0.9999288776436344,
-      "dice": null
-     },
+     "last": null,
      "stale": false,
      "reasons": []
     },
     {
      "dataset": "sim",
-     "last": {
-      "date": "2026-10-28T01:12:06Z",
-      "result": "pass",
-      "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/40610484483",
-      "qsmrs": {
-       "ref": "main",
-       "commit": "da928e0c5bfc7670dc44efe842623f5fe4a591c0",
-       "version": null
-      },
-      "nrmse": 0.0,
-      "correlation": 1.0,
-      "dice": null
-     },
+     "last": null,
      "stale": false,
      "reasons": []
     }
-   ]
+   ],
+   "blocked_by": "astewartau/QSM.rs#323"
   },
   {
    "pair": "ismv",
    "algorithm": "ismv",
    "reference": "ismv-qsmjl",
    "candidate": "ismv-qsmrs",
-   "enabled": true,
-   "state": "current",
+   "enabled": false,
+   "state": "gap",
    "datasets": [
     {
      "dataset": "s002001-kki-achieva-bridge-run1",
-     "last": {
-      "date": "2026-10-28T01:12:06Z",
-      "result": "pass",
-      "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/40610484483",
-      "qsmrs": {
-       "ref": "main",
-       "commit": "da928e0c5bfc7670dc44efe842623f5fe4a591c0",
-       "version": null
-      },
-      "nrmse": 9.812074543239303e-09,
-      "correlation": 1.0,
-      "dice": null
-     },
+     "last": null,
      "stale": false,
      "reasons": []
     },
     {
      "dataset": "sim",
-     "last": {
-      "date": "2026-10-28T01:12:06Z",
-      "result": "pass",
-      "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/40610484483",
-      "qsmrs": {
-       "ref": "main",
-       "commit": "da928e0c5bfc7670dc44efe842623f5fe4a591c0",
-       "version": null
-      },
-      "nrmse": 4.490849856407955e-10,
-      "correlation": 1.0,
-      "dice": null
-     },
+     "last": null,
      "stale": false,
      "reasons": []
     }
-   ]
+   ],
+   "blocked_by": "astewartau/QSM.rs#322"
   },
   {
    "pair": "sharp",
@@ -489,7 +353,7 @@
      "reasons": []
     }
    ],
-   "blocked_by": "astewartau/QSM.rs#319"
+   "blocked_by": "astewartau/QSM.rs#321"
   },
   {
    "pair": "vsharp-qsmjl",
@@ -512,7 +376,7 @@
      "reasons": []
     }
    ],
-   "blocked_by": "astewartau/QSM.rs#319"
+   "blocked_by": "astewartau/QSM.rs#321"
   },
   {
    "pair": "laplacian",
@@ -520,45 +384,26 @@
    "reference": "laplacian-qsmjl",
    "candidate": "laplacian-qsmrs",
    "enabled": true,
-   "state": "current",
+   "state": "stale",
    "datasets": [
     {
      "dataset": "s002001-kki-achieva-bridge-run1",
-     "last": {
-      "date": "2026-10-28T01:12:06Z",
-      "result": "pass",
-      "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/40610484483",
-      "qsmrs": {
-       "ref": "main",
-       "commit": "da928e0c5bfc7670dc44efe842623f5fe4a591c0",
-       "version": null
-      },
-      "nrmse": 6.398358493318319e-10,
-      "correlation": 0.9999999999999999,
-      "dice": null
-     },
-     "stale": false,
-     "reasons": []
+     "last": null,
+     "stale": true,
+     "reasons": [
+      "never checked"
+     ]
     },
     {
      "dataset": "sim",
-     "last": {
-      "date": "2026-10-28T01:12:06Z",
-      "result": "pass",
-      "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/40610484483",
-      "qsmrs": {
-       "ref": "main",
-       "commit": "da928e0c5bfc7670dc44efe842623f5fe4a591c0",
-       "version": null
-      },
-      "nrmse": 4.766646207539941e-14,
-      "correlation": 1.0,
-      "dice": null
-     },
-     "stale": false,
-     "reasons": []
+     "last": null,
+     "stale": true,
+     "reasons": [
+      "never checked"
+     ]
     }
-   ]
+   ],
+   "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=laplacian -f dataset=configured -f qsmrs_ref=main"
   },
   {
    "pair": "romeo",
@@ -581,7 +426,7 @@
      "reasons": []
     }
    ],
-   "blocked_by": "astewartau/QSM.rs#319"
+   "blocked_by": "astewartau/QSM.rs#325"
   },
   {
    "pair": "tgv",
@@ -604,45 +449,7 @@
      "reasons": []
     }
    ],
-   "blocked_by": "astewartau/QSM.rs#319"
-  },
-  {
-   "pair": "vsharp-deconv",
-   "algorithm": "vsharp",
-   "reference": "vsharp-sti",
-   "candidate": "vsharp-qsmrs",
-   "enabled": false,
-   "state": "off",
-   "datasets": [
-    {
-     "dataset": "s002001-kki-achieva-bridge-run1",
-     "last": null,
-     "stale": false,
-     "reasons": []
-    },
-    {
-     "dataset": "sim",
-     "last": null,
-     "stale": false,
-     "reasons": []
-    }
-   ]
-  },
-  {
-   "pair": "ilsqr-pad12",
-   "algorithm": "ilsqr",
-   "reference": "ilsqr-sti",
-   "candidate": "ilsqr-qsmrs",
-   "enabled": false,
-   "state": "off",
-   "datasets": [
-    {
-     "dataset": "sim",
-     "last": null,
-     "stale": false,
-     "reasons": []
-    }
-   ]
+   "blocked_by": "astewartau/QSM.rs#324"
   }
  ]
 }

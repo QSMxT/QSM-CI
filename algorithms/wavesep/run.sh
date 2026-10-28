@@ -10,5 +10,8 @@
 set -euo pipefail
 IN="${1:-/input}"; OUT="${2:-/output}"; DIR="$(cd "$(dirname "$0")" && pwd)"
 PY="${XSEP_PYTHON:-python}"
+# One BLAS/OpenMP thread: part of the fidelity record (algorithm.yml `fidelity:`). The output is the
+# same at the default count; fixing it keeps it so.
+export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
 mkdir -p "$OUT"
 "$PY" "$DIR/recon.py" "$IN" "$OUT"

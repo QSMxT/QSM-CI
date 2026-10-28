@@ -6,40 +6,44 @@ A check is **stale** when the reference image changed, QSM.rs `main` changed the
 
 | Pair | Original → port | Dataset | Last check | QSM.rs | Result | NRMSE | Status |
 |---|---|---|---|---|---|---|---|
-| `qsmart` | `qsmart-matlab` → `qsmart-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-10-28](https://github.com/QSMxT/QSM-CI/actions/runs/40610484483) | `da928e0` | ✅ pass | 4.618% | ✅ current |
-|  |  | sim | [2026-10-28](https://github.com/QSMxT/QSM-CI/actions/runs/40610484483) | `da928e0` | ✅ pass | 16.71% | ✅ current |
-| `ilsqr` | `ilsqr-sti` → `ilsqr-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | 🚧 gap (STI Suite port gaps (QSM.rs issue to file; QSMxT/QSM-CI parity/status PR)) |
-|  |  | sim | never | — | — | — | 🚧 gap (STI Suite port gaps (QSM.rs issue to file; QSMxT/QSM-CI parity/status PR)) |
-| `vsharp` | `vsharp-sti` → `vsharp-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | 🚧 gap (STI Suite port gaps (QSM.rs issue to file; QSMxT/QSM-CI parity/status PR)) |
-|  |  | sim | never | — | — | — | 🚧 gap (STI Suite port gaps (QSM.rs issue to file; QSMxT/QSM-CI parity/status PR)) |
-| `star` | `star-sti` → `star-qsmrs` | sim | [2026-10-28](https://github.com/QSMxT/QSM-CI/actions/runs/40610484483) | `da928e0` | ✅ pass | 0.3256% | ✅ current |
-| `medi` | `medi-cornell` → `medi-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | — not enabled |
-|  |  | sim | never | — | — | — | — not enabled |
-| `amp-pe` | `amp-pe` → `amp-pe-qsmrs` | sim | never | — | — | — | — not enabled |
+| `qsmart` | `qsmart-matlab` → `qsmart-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
+|  |  | sim | never | — | — | — | ⚠️ stale: never checked |
+| `ilsqr` | `ilsqr-sti` → `ilsqr-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | 🚧 gap (QSMxT/QSM-CI#311) |
+|  |  | sim | never | — | — | — | 🚧 gap (QSMxT/QSM-CI#311) |
+| `vsharp` | `vsharp-sti` → `vsharp-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | 🚧 gap (QSMxT/QSM-CI#311) |
+|  |  | sim | never | — | — | — | 🚧 gap (QSMxT/QSM-CI#311) |
+| `star` | `star-sti` → `star-qsmrs` | sim | never | — | — | — | ⚠️ stale: never checked |
+| `medi` | `medi-cornell` → `medi-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
+|  |  | sim | never | — | — | — | ⚠️ stale: never checked |
+| `amp-pe` | `amp-pe` → `amp-pe-qsmrs` | sim | never | — | — | — | ⚠️ stale: never checked |
 | `decompose` | `decompose-qsm` → `decompose-qsmrs` | chisep-mc | never | — | — | — | — not enabled |
-| `tkd` | `tkd-qsmjl` → `tkd-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-10-28](https://github.com/QSMxT/QSM-CI/actions/runs/40610484483) | `da928e0` | ✅ pass | 0.6894% | ✅ current |
-|  |  | sim | [2026-10-28](https://github.com/QSMxT/QSM-CI/actions/runs/40610484483) | `da928e0` | ✅ pass | 0% | ✅ current |
-| `tsvd` | `tsvd-qsmjl` → `tsvd-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-10-28](https://github.com/QSMxT/QSM-CI/actions/runs/40610484483) | `da928e0` | ✅ pass | 0.5703% | ✅ current |
-|  |  | sim | [2026-10-28](https://github.com/QSMxT/QSM-CI/actions/runs/40610484483) | `da928e0` | ✅ pass | 0% | ✅ current |
-| `tikhonov` | `tikhonov-qsmjl` → `tikhonov-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-10-28](https://github.com/QSMxT/QSM-CI/actions/runs/40610484483) | `da928e0` | ✅ pass | 0.5189% | ✅ current |
-|  |  | sim | [2026-10-28](https://github.com/QSMxT/QSM-CI/actions/runs/40610484483) | `da928e0` | ✅ pass | 0% | ✅ current |
-| `tv` | `tv-qsmjl` → `tv-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-10-28](https://github.com/QSMxT/QSM-CI/actions/runs/40610484483) | `da928e0` | ✅ pass | 0.1674% | ✅ current |
-|  |  | sim | [2026-10-28](https://github.com/QSMxT/QSM-CI/actions/runs/40610484483) | `da928e0` | ✅ pass | 0% | ✅ current |
-| `nltv` | `nltv-qsmjl` → `nltv-qsmrs` | — | never | — | — | — | 🚧 gap (astewartau/QSM.rs#319) |
-| `rts` | `rts-qsmjl` → `rts-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-10-28](https://github.com/QSMxT/QSM-CI/actions/runs/40610484483) | `da928e0` | ✅ pass | 1.192% | ✅ current |
-|  |  | sim | [2026-10-28](https://github.com/QSMxT/QSM-CI/actions/runs/40610484483) | `da928e0` | ✅ pass | 0% | ✅ current |
-| `ismv` | `ismv-qsmjl` → `ismv-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-10-28](https://github.com/QSMxT/QSM-CI/actions/runs/40610484483) | `da928e0` | ✅ pass | 9.812e-09% | ✅ current |
-|  |  | sim | [2026-10-28](https://github.com/QSMxT/QSM-CI/actions/runs/40610484483) | `da928e0` | ✅ pass | 4.491e-10% | ✅ current |
-| `sharp` | `sharp-qsmjl` → `sharp-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | 🚧 gap (astewartau/QSM.rs#319) |
-|  |  | sim | never | — | — | — | 🚧 gap (astewartau/QSM.rs#319) |
-| `vsharp-qsmjl` | `vsharp-qsmjl` → `vsharp-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | 🚧 gap (astewartau/QSM.rs#319) |
-|  |  | sim | never | — | — | — | 🚧 gap (astewartau/QSM.rs#319) |
-| `laplacian` | `laplacian-qsmjl` → `laplacian-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-10-28](https://github.com/QSMxT/QSM-CI/actions/runs/40610484483) | `da928e0` | ✅ pass | 6.398e-10% | ✅ current |
-|  |  | sim | [2026-10-28](https://github.com/QSMxT/QSM-CI/actions/runs/40610484483) | `da928e0` | ✅ pass | 4.767e-14% | ✅ current |
-| `romeo` | `romeo-romeojl` → `romeo-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | 🚧 gap (astewartau/QSM.rs#319) |
-|  |  | sim | never | — | — | — | 🚧 gap (astewartau/QSM.rs#319) |
-| `tgv` | `tgv-tgvjl` → `tgv-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | 🚧 gap (astewartau/QSM.rs#319) |
-|  |  | sim | never | — | — | — | 🚧 gap (astewartau/QSM.rs#319) |
-| `vsharp-deconv` | `vsharp-sti` → `vsharp-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | — not enabled |
-|  |  | sim | never | — | — | — | — not enabled |
-| `ilsqr-pad12` | `ilsqr-sti` → `ilsqr-qsmrs` | sim | never | — | — | — | — not enabled |
+| `wavesep` | `wavesep` → `wavesep-qsmrs` | chisep-mc | never | — | — | — | — not enabled |
+| `tkd` | `tkd-qsmjl` → `tkd-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | 🚧 gap (astewartau/QSM.rs#323) |
+|  |  | sim | never | — | — | — | 🚧 gap (astewartau/QSM.rs#323) |
+| `tsvd` | `tsvd-qsmjl` → `tsvd-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | 🚧 gap (astewartau/QSM.rs#323) |
+|  |  | sim | never | — | — | — | 🚧 gap (astewartau/QSM.rs#323) |
+| `tikhonov` | `tikhonov-qsmjl` → `tikhonov-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | 🚧 gap (astewartau/QSM.rs#323) |
+|  |  | sim | never | — | — | — | 🚧 gap (astewartau/QSM.rs#323) |
+| `tv` | `tv-qsmjl` → `tv-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | 🚧 gap (astewartau/QSM.rs#323) |
+|  |  | sim | never | — | — | — | 🚧 gap (astewartau/QSM.rs#323) |
+| `nltv` | `nltv-qsmjl` → `nltv-qsmrs` | — | never | — | — | — | 🚧 gap (astewartau/QSM.rs#323) |
+| `rts` | `rts-qsmjl` → `rts-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | 🚧 gap (astewartau/QSM.rs#323) |
+|  |  | sim | never | — | — | — | 🚧 gap (astewartau/QSM.rs#323) |
+| `ismv` | `ismv-qsmjl` → `ismv-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | 🚧 gap (astewartau/QSM.rs#322) |
+|  |  | sim | never | — | — | — | 🚧 gap (astewartau/QSM.rs#322) |
+| `sharp` | `sharp-qsmjl` → `sharp-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | 🚧 gap (astewartau/QSM.rs#321) |
+|  |  | sim | never | — | — | — | 🚧 gap (astewartau/QSM.rs#321) |
+| `vsharp-qsmjl` | `vsharp-qsmjl` → `vsharp-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | 🚧 gap (astewartau/QSM.rs#321) |
+|  |  | sim | never | — | — | — | 🚧 gap (astewartau/QSM.rs#321) |
+| `laplacian` | `laplacian-qsmjl` → `laplacian-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
+|  |  | sim | never | — | — | — | ⚠️ stale: never checked |
+| `romeo` | `romeo-romeojl` → `romeo-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | 🚧 gap (astewartau/QSM.rs#325) |
+|  |  | sim | never | — | — | — | 🚧 gap (astewartau/QSM.rs#325) |
+| `tgv` | `tgv-tgvjl` → `tgv-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | 🚧 gap (astewartau/QSM.rs#324) |
+|  |  | sim | never | — | — | — | 🚧 gap (astewartau/QSM.rs#324) |
+
+Refresh every stale pair against QSM.rs `main`:
+
+```bash
+gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=qsmart,star,medi,amp-pe,laplacian -f dataset=configured -f qsmrs_ref=main
+```

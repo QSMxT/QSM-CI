@@ -8,5 +8,5 @@ permissions:
 jobs:
   main:
     uses: ./.github/workflows/parity.yml
-    with: { algorithm: "decompose", baseline: "true", qsmrs_ref: main }
+    with: { algorithm: "wavesep", baseline: "true", qsmrs_ref: main }
     secrets: inherit
