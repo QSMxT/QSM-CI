@@ -26,7 +26,9 @@ Stages (subcommands), all idempotent:
              -> results/repro.json (traveling heads), results/repro_pilot.json (MGH pilot), each
              with its fit columns (the web payloads):
                test-retest      same scanner+protocol, run i vs run j
-               inter-scanner    same protocol+run, every pair of scanners the subject visited
+               inter-scanner    same protocol, every pair of scanners the subject visited and every
+                                pair of runs (sessions on two scanners are on different days, so run
+                                numbers do not correspond between them)
                inter-protocol   same scanner+run, protocol vs bridge
              Each pair: orthogonal (total-least-squares) slope a + intercept b — |a-1| is the
              headline —, Pearson r, Bland-Altman bias and limits of agreement.
@@ -494,7 +496,7 @@ def comparison_plan(acqs: dict[str, dict]) -> list[tuple[str, str, str, str, str
     cross subjects: an inter-scanner comparison is the same person on two scanners.
 
       test_retest     group <subject>/<scanner>-<protocol>, key <runA>-<runB>
-      inter_scanner   group <subject>/<protocol>,           key <scannerA>-vs-<scannerB>-<run>
+      inter_scanner   group <subject>/<protocol>,           key <scannerA>-vs-<scannerB>-<runA>-<runB>
       inter_protocol  group <subject>/<scanner>-<protocol>, key <run>  (protocol vs bridge)
     """
     by = {(a["subject"], a["scanner"], a["protocol"], a["run"]): k for k, a in acqs.items()}
@@ -513,12 +515,16 @@ def comparison_plan(acqs: dict[str, dict]) -> list[tuple[str, str, str, str, str
                     for rb in runs[i + 1:]:
                         plan.append(("test_retest", f"{subj}/{sc}-{pr}", f"{ra}-{rb}",
                                      by.get((subj, sc, pr, ra)), by.get((subj, sc, pr, rb))))
-        for pr in protocols:                                   # inter-scanner: same protocol+run
+        # inter-scanner: same protocol, every run on one scanner against every run on the other.
+        # The two sessions are on different days, so "run 1" on one scanner has no closer link to
+        # "run 1" on the other than to any other run; pairing all of them avoids an arbitrary choice.
+        for pr in protocols:
             for i, sa in enumerate(scanners):
                 for sb in scanners[i + 1:]:
-                    for run in runs:
-                        plan.append(("inter_scanner", f"{subj}/{pr}", f"{sa}-vs-{sb}-{run}",
-                                     by.get((subj, sa, pr, run)), by.get((subj, sb, pr, run))))
+                    for ra in runs:
+                        for rb in runs:
+                            plan.append(("inter_scanner", f"{subj}/{pr}", f"{sa}-vs-{sb}-{ra}-{rb}",
+                                         by.get((subj, sa, pr, ra)), by.get((subj, sb, pr, rb))))
         for sc in scanners:                                    # inter-protocol: each protocol vs bridge
             for pr in protocols:
                 if pr == "bridge":
