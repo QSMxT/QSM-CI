@@ -1,0 +1,40 @@
+[
+ {
+  "slug": "modip",
+  "image": "ghcr.io/astewartau/qsm-ci/modip@sha256:44fec394890bf036cfddeece880d4d10a272f1e227a8f3febe2d456a80095986",
+  "threads": 4,
+  "seconds": [
+   70.0,
+   3.4
+  ],
+  "identical": false,
+  "spread": {
+   "chimap": {
+    "nrmse_pct": 80.7800830177975,
+    "r": 0.6798317261109104,
+    "max_abs_diff": 0.44566380977630615,
+    "max_abs_diff_rel_pct": 66.5479300090392,
+    "voxels": 32768
+   }
+  }
+ },
+ {
+  "slug": "inr-qsm",
+  "image": "ghcr.io/astewartau/qsm-ci/inr-qsm@sha256:6bfe4b8b1d22b62bbcec2de57af62c872dc9008ffa1c5bd7b18fffb85785fd9a",
+  "threads": 4,
+  "seconds": [
+   83.5,
+   7.3
+  ],
+  "identical": false,
+  "spread": {
+   "chimap": {
+    "nrmse_pct": 0.017384787582907,
+    "r": 0.9999999848707075,
+    "max_abs_diff": 1.531839370727539e-05,
+    "max_abs_diff_rel_pct": 0.0078128087503458,
+    "voxels": 32768
+   }
+  }
+ }
+]

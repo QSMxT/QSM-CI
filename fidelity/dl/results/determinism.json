@@ -1,0 +1,191 @@
+[
+ {
+  "slug": "xqsm",
+  "image": "ghcr.io/astewartau/qsm-ci/xqsm@sha256:f28dabe6f7f41db967133a022f3eb5205d2a2bbb5fab78117d58b1fb84b26444",
+  "threads": 4,
+  "seconds": [
+   20.9,
+   20.3
+  ],
+  "identical": true
+ },
+ {
+  "slug": "qsmnet",
+  "image": "ghcr.io/astewartau/qsm-ci/qsmnet@sha256:7081b0782c7cb23ec8a9fc509af44f7f3a4960eec886299af63dc950c6d0b2c3",
+  "threads": 4,
+  "seconds": [
+   33.1,
+   31.8
+  ],
+  "identical": true
+ },
+ {
+  "slug": "qsmnet-plus",
+  "image": "ghcr.io/astewartau/qsm-ci/qsmnet-plus@sha256:d63e1a6ad3f0e208c9fb45e510c715fe4669cf806c52e47814e80898a4c65ea7",
+  "threads": 4,
+  "seconds": [
+   33.1,
+   32.0
+  ],
+  "identical": true
+ },
+ {
+  "slug": "lpcnn",
+  "image": "ghcr.io/astewartau/qsm-ci/lpcnn@sha256:d0878b2e361437c9f2adc86a45949344fd19b0150e474267bafb18dbb57b2b51",
+  "threads": 4,
+  "seconds": [
+   76.5,
+   44.5
+  ],
+  "identical": true
+ },
+ {
+  "slug": "qsmgan",
+  "image": "ghcr.io/astewartau/qsm-ci/qsmgan@sha256:c7c83e392af271ed21e9a63062fbdc2a4ed2e46547798d81cc1e7e527700d380",
+  "threads": 4,
+  "seconds": [
+   60.6,
+   60.4
+  ],
+  "identical": true
+ },
+ {
+  "slug": "modl-qsm",
+  "image": "ghcr.io/astewartau/qsm-ci/modl-qsm@sha256:75ada9f042b203a3398731efd1a552a974b1176dec8e1e30c683bffdeb73063e",
+  "threads": 4,
+  "seconds": [
+   99.7,
+   88.3
+  ],
+  "identical": true
+ },
+ {
+  "slug": "ir2qsm",
+  "image": "ghcr.io/astewartau/qsm-ci/ir2qsm@sha256:7df8887acc7cdfac4ea3ec845377c3d0b595975c3d240cd1ee63e826908c98ca",
+  "threads": 4,
+  "seconds": [
+   40.3,
+   16.5
+  ],
+  "identical": false,
+  "spread": {
+   "chimap": {
+    "nrmse_pct": 12.646813712169974,
+    "r": 0.9920323328821697,
+    "max_abs_diff": 0.10742521286010742,
+    "max_abs_diff_rel_pct": 2.5407098090478173,
+    "voxels": 1495078
+   }
+  }
+ },
+ {
+  "slug": "autoqsm",
+  "image": "ghcr.io/astewartau/qsm-ci/autoqsm@sha256:8b5e8552a6795a59add02f9ddb392f45c7a8dcb98f465520ecda89a2fa055d54",
+  "threads": 4,
+  "seconds": [
+   68.6,
+   38.9
+  ],
+  "identical": true
+ },
+ {
+  "slug": "nextqsm",
+  "image": "ghcr.io/astewartau/qsm-ci/nextqsm@sha256:015ff4413ee0b8b2f665194b1dc722aca6523f63cf9c5ce1c2fc5ec27891a4e4",
+  "threads": 4,
+  "seconds": [
+   87.6,
+   28.9
+  ],
+  "identical": true
+ },
+ {
+  "slug": "bfrnet",
+  "image": "ghcr.io/astewartau/qsm-ci/bfrnet@sha256:ab939d3759104300dcca11421b020221dcc682bd397d77c656862cc02b5c9891",
+  "threads": 4,
+  "seconds": [
+   67.6,
+   48.3
+  ],
+  "identical": true
+ },
+ {
+  "slug": "hd-bet-qsmci",
+  "image": "ghcr.io/astewartau/qsm-ci/hd-bet@sha256:0a0e31375fbb6c5526eacdcd5d639d4eab52bc01f7cef2cba3bd74d0dc3b038d",
+  "threads": 4,
+  "seconds": [
+   53.2,
+   17.2
+  ],
+  "identical": true
+ },
+ {
+  "slug": "r2primenet",
+  "image": "ghcr.io/astewartau/qsm-ci/r2primenet@sha256:21a051bec5387524e262a1015b84f0d74de2404eec747bae2460617a6f7b2bea",
+  "threads": 4,
+  "seconds": [
+   19.7,
+   12.0
+  ],
+  "identical": true
+ },
+ {
+  "slug": "r2primenet-7t",
+  "image": "ghcr.io/astewartau/qsm-ci/r2primenet-7t@sha256:7fb63601ab006c42ade8f2f6a5f8d97f190e83655bedc077d2a02947e427e43e",
+  "threads": 4,
+  "seconds": [
+   27.3,
+   9.8
+  ],
+  "identical": true
+ },
+ {
+  "slug": "iqsm",
+  "image": "ghcr.io/astewartau/qsm-ci/iqsm@sha256:1777cace0a0207b9433f54e53c53cb02c8b52a33629a1aa18682c8d94e04287a",
+  "threads": 4,
+  "seconds": [
+   50.1,
+   16.3
+  ],
+  "identical": true
+ },
+ {
+  "slug": "iqsm-plus",
+  "image": "ghcr.io/astewartau/qsm-ci/iqsm-plus@sha256:0541a1ba778023a315708be3d6695425bbd31e5ce6711c3b198197256cc11429",
+  "threads": 4,
+  "seconds": [
+   103.4,
+   66.7
+  ],
+  "identical": true
+ },
+ {
+  "slug": "iqfm",
+  "image": "ghcr.io/astewartau/qsm-ci/iqfm@sha256:980ba446e62fb9c864c231d180ec32ed732e39528e9de8d3a44fc6f9e08b8de6",
+  "threads": 4,
+  "seconds": [
+   128.4,
+   37.8
+  ],
+  "identical": true
+ },
+ {
+  "slug": "chisepnet",
+  "image": "ghcr.io/astewartau/qsm-ci/chi-sepnet@sha256:9588a43b6f99e310ef4c16bc26a8dc59751d7527bf62a1d914dfba82c788bc88",
+  "threads": 4,
+  "seconds": [
+   17.6,
+   11.3
+  ],
+  "identical": true
+ },
+ {
+  "slug": "susep-net",
+  "image": "ghcr.io/astewartau/qsm-ci/susep-net@sha256:b4d175563f6b32f84b3af163a1ac5975cc8397393457c2ef83367db11056d975",
+  "threads": 4,
+  "seconds": [
+   41.8,
+   26.0
+  ],
+  "identical": true
+ }
+]

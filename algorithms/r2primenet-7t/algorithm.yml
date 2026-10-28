@@ -30,6 +30,19 @@ code_url: https://github.com/SNU-LIST/R2PRIMENET_7T
 license: academic and research use (© Jiye Kim, SNU-LIST)
 image: ghcr.io/astewartau/qsm-ci/r2primenet-7t@sha256:7fb63601ab006c42ade8f2f6a5f8d97f190e83655bedc077d2a02947e427e43e   # v1
 run: bash run.sh
+# The original, checked (QSMxT/QSM-CI#301): pinned versions and weights, and the same output
+# twice at fixed threads. fidelity/dl/README.md; rerun whenever the image changes.
+fidelity:
+  date: 2026-10-28
+  image: sha256:7fb63601ab006c42ade8f2f6a5f8d97f190e83655bedc077d2a02947e427e43e
+  source: R2PRIMEnet 7T (r2pnet7T.onnx)
+  weights: [r2pnet7T.onnx 1ae017f3]   # sha256 prefixes; full hashes in fidelity/dl/results/weights.sha256
+  python: Python 3.12.14, ONNX Runtime 1.29.0, NumPy 2.5.2
+  threads: 4   # OMP/MKL/OPENBLAS/TF_NUM_*_THREADS set by fidelity/dl/harness.py
+  host: Intel Core i5-11500, podman
+  tolerance: identical   # image twice, 128x160x96 box of prisma-bridge-run1
+  result: pass
+  report: fidelity/dl/README.md
 # Produces r2prime.nii.gz. Weights (ONNX exported from the public checkpoint + norm .mat) are
 # gitignored and baked into the image — see BUILD.md. No parameters: Dr = 114 and the 3T output
 # domain are baked into the trained weights; the only free choice, native-field rescaling, follows

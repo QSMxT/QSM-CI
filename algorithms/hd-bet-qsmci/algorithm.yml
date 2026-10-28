@@ -20,6 +20,19 @@ code_url: https://github.com/MIC-DKFZ/HD-BET
 license: Apache-2.0
 image: ghcr.io/astewartau/qsm-ci/hd-bet@sha256:0a0e31375fbb6c5526eacdcd5d639d4eab52bc01f7cef2cba3bd74d0dc3b038d   # v1
 run: bash run.sh
+# The original, checked (QSMxT/QSM-CI#301): pinned versions and weights, and the same output
+# twice at fixed threads. fidelity/dl/README.md; rerun whenever the image changes.
+fidelity:
+  date: 2026-10-28
+  image: sha256:0a0e31375fbb6c5526eacdcd5d639d4eab52bc01f7cef2cba3bd74d0dc3b038d
+  source: PyPI HD-BET 2.0.1 (release_2.0.0 parameters)
+  weights: [fold_all/checkpoint_final.pth d31dc59b]   # sha256 prefixes; full hashes in fidelity/dl/results/weights.sha256
+  python: Python 3.12.13, PyTorch 2.13.0+cpu, nnU-Net v2 2.8.1
+  threads: 4   # OMP/MKL/OPENBLAS/TF_NUM_*_THREADS set by fidelity/dl/harness.py
+  host: Intel Core i5-11500, podman
+  tolerance: identical   # image twice, 128x160x96 box of prisma-bridge-run1
+  result: pass
+  report: fidelity/dl/README.md
 
 # Optional signal-gated erosion of the HD-BET mask. OFF by default (erode_threshold: 0), so the
 # published behaviour is a plain HD-BET mask unless a caller opts in.
