@@ -13,7 +13,10 @@ B0=$(jq -r '.B0_dir | join(" ")' "$IN/params.json")
 DECONVOLVE=true; THRESHOLD=0.05; SET=""
 CFG="$IN/config.json"
 if [ -f "$CFG" ]; then
-  V=$(jq -r '.deconvolve // empty' "$CFG"); [ -n "$V" ] && DECONVOLVE=$V
+  # Not `.deconvolve // empty`: jq's `//` treats `false` as absent, which silently kept
+  # deconvolve=true for `--set deconvolve=false`.
+  V=$(jq -r 'if has("deconvolve") then .deconvolve | tostring else empty end' "$CFG")
+  [ -n "$V" ] && DECONVOLVE=$V
   V=$(jq -r '.threshold // empty' "$CFG"); [ -n "$V" ] && THRESHOLD=$V
   V=$(jq -r '.max_radius // empty' "$CFG"); [ -n "$V" ] && SET="$SET --max-radius $V"
   V=$(jq -r '.min_radius // empty' "$CFG"); [ -n "$V" ] && SET="$SET --min-radius $V"
