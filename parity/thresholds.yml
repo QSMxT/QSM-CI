@@ -413,3 +413,73 @@ pairs:
     candidate_set: { pad_mm: 12 }
     datasets:
       sim: {}
+  # QSM.rs#319 fix PRs: both sides at their defaults (the PRs give QSM.rs QSM.jl's defaults)
+  sharp-pr:
+    reference: sharp-qsmjl
+    candidate: sharp-qsmrs
+    qsmrs_paths: [src/bgremove/sharp.rs]
+    datasets: &bfr_ds
+      sim: {}
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs]
+        feed: { totalfield: totalfield }
+  vsharp-qsmjl-def:
+    reference: vsharp-qsmjl
+    candidate: vsharp-qsmrs
+    qsmrs_paths: [src/bgremove/vsharp.rs]
+    datasets: *bfr_ds
+  ismv-pr:
+    reference: ismv-qsmjl
+    candidate: ismv-qsmrs
+    qsmrs_paths: [src/bgremove/ismv.rs]
+    datasets: *bfr_ds
+  romeo-def:
+    reference: romeo-romeojl
+    candidate: romeo-qsmrs
+    qsmrs_paths: [src/unwrap/romeo.rs]
+    datasets: { sim: {}, s002001-kki-achieva-bridge-run1: {} }
+  tkd-pr:
+    reference: tkd-qsmjl
+    candidate: tkd-qsmrs
+    qsmrs_paths: [src/inversion/tkd.rs]
+    datasets: &tkd_ds
+      sim: {}
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
+        feed: { localfield: localfield }
+  tsvd-pr:
+    reference: tsvd-qsmjl
+    candidate: tsvd-qsmrs
+    qsmrs_paths: [src/inversion/tsvd.rs]
+    datasets: &tsvd_ds
+      sim: {}
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
+        feed: { localfield: localfield }
+  tikhonov-pr:
+    reference: tikhonov-qsmjl
+    candidate: tikhonov-qsmrs
+    qsmrs_paths: [src/inversion/tikhonov.rs]
+    datasets: &tikhonov_ds
+      sim: {}
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
+        feed: { localfield: localfield }
+  tv-pr:
+    reference: tv-qsmjl
+    candidate: tv-qsmrs
+    qsmrs_paths: [src/inversion/tv.rs]
+    datasets: &tv_ds
+      sim: {}
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
+        feed: { localfield: localfield }
+  rts-pr:
+    reference: rts-qsmjl
+    candidate: rts-qsmrs
+    qsmrs_paths: [src/inversion/rts.rs]
+    datasets: &rts_ds
+      sim: {}
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
+        feed: { localfield: localfield }

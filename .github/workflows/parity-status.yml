@@ -12,8 +12,6 @@ name: parity-status
 #     refresh itself: parity.yml from main against QSM.rs main, which records its results.
 
 on:
-  push:   # TEMPORARY test on the measurement branch
-    branches: [parity/status-measure]
   schedule:
     - cron: "17 3 * * 1"   # Mondays 03:17 UTC
   workflow_dispatch:

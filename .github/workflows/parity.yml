@@ -31,9 +31,6 @@ name: parity
 # Baselines and runs from other branches record nothing.
 
 on:
-  push:   # TEMPORARY (measurement branch only): a recorded run of the enabled pairs
-    branches: [parity/status-measure]
-    paths-ignore: [parity/.status-test]
   workflow_dispatch:
     inputs:
       algorithm:
