@@ -10,18 +10,6 @@ jobs:
     uses: ./.github/workflows/parity.yml
     with: { algorithm: "tgv,romeo-def,sharp-pr,vsharp-qsmjl-def,ismv-pr,tkd-pr,tsvd-pr,tikhonov-pr,tv-pr,rts-pr", baseline: "true", qsmrs_ref: main }
     secrets: inherit
-  pr321:
-    uses: ./.github/workflows/parity.yml
-    with: { algorithm: "sharp,sharp-pr,vsharp-qsmjl,vsharp-qsmjl-def,vsharp,ilsqr", baseline: "true", qsmrs_ref: d07ecf74554d75f1395c581be4980e2ebd5fd660 }
-    secrets: inherit
-  pr322:
-    uses: ./.github/workflows/parity.yml
-    with: { algorithm: "ismv,ismv-pr", baseline: "true", qsmrs_ref: da58a486fc8decce392eee5236969a533b7ca497 }
-    secrets: inherit
-  pr323:
-    uses: ./.github/workflows/parity.yml
-    with: { algorithm: "tkd,tkd-pr,tsvd,tsvd-pr,tikhonov,tikhonov-pr,tv,tv-pr,rts,rts-pr,star", baseline: "true", qsmrs_ref: 2209d723c6f34c3ec05f97508f674d3b93e662f6 }
-    secrets: inherit
   pr324:
     uses: ./.github/workflows/parity.yml
     with: { algorithm: "tgv", baseline: "true", qsmrs_ref: b0f99847e53379aa7a95ea9dd8c67a7e3d14e02b }
