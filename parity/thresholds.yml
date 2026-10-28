@@ -200,6 +200,16 @@ pairs:
     datasets:
       chisep-mc: {}
 
+  # ---- Python originals (QSMxT/QSM-CI#312)
+  wavesep:
+    reference: wavesep        # WaveSep f3a192e, unmodified (fidelity: QSMxT/QSM-CI#312)
+    candidate: wavesep-qsmrs  # added by #312
+    enabled: false            # until a chisep-mc baseline sets its limits
+    qsmrs_paths: [src/separation/wavesep.rs, src/separation/mod.rs, src/pipeline/separation.rs,
+                  src/pipeline/rules.rs]
+    datasets:
+      chisep-mc: {}
+
   # ---- Julia originals (QSM.jl, ROMEO.jl, TGV.jl in the pinned julia-qsm image; QSMxT/QSM-CI#307).
   # Parity only: never scored (`parity_only: true`). Matched settings: each README's "QSM.rs-matched"
   # column.
