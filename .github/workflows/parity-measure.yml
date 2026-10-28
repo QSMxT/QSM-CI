@@ -8,13 +8,5 @@ permissions:
 jobs:
   main:
     uses: ./.github/workflows/parity.yml
-    with: { algorithm: "tgv,romeo-def,sharp-pr,vsharp-qsmjl-def,ismv-pr,tkd-pr,tsvd-pr,tikhonov-pr,tv-pr,rts-pr", baseline: "true", qsmrs_ref: main }
-    secrets: inherit
-  pr324:
-    uses: ./.github/workflows/parity.yml
-    with: { algorithm: "tgv", baseline: "true", qsmrs_ref: b0f99847e53379aa7a95ea9dd8c67a7e3d14e02b }
-    secrets: inherit
-  pr325:
-    uses: ./.github/workflows/parity.yml
-    with: { algorithm: "romeo,romeo-def", baseline: "true", qsmrs_ref: 2ea20c818d9a120132cdf389da89916bf8af967e }
+    with: { algorithm: "decompose", baseline: "true", qsmrs_ref: main }
     secrets: inherit
