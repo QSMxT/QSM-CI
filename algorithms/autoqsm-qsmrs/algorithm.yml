@@ -1,0 +1,32 @@
+name: AutoQSM (QSM.rs)
+slug: autoqsm-qsmrs
+algorithm: autoqsm
+source: qsmrs
+stage: bfr+dipole
+language: Rust
+family: deep-learning
+learning: pretrained
+inputs: [totalfield, mask, params]
+engine: QSMxT / QSM.rs
+description: >
+  AutoQSM as QSM.rs runs it: the authors' trained weights exported to ONNX and run by `qsmxt invert
+  autoqsm` (QSM.rs's ONNX engine, CPU). The QSM.rs port of the `autoqsm` entry, which runs the
+  authors' own code and weights.
+authors:
+- name: Wei H.
+- name: Cao S.
+- name: Zhang Y.
+- name: Guan X.
+- name: Yan F.
+- name: Yeom K.W.
+- name: Liu C.
+- name: Ashley Stewart
+  note: QSM.rs / QSMxT ONNX port
+doi: 10.1016/j.neuroimage.2019.116064
+citation: Wei et al., NeuroImage 2019
+code_url: https://github.com/astewartau/QSM.rs
+license: 'MIT (QSM.rs); the weights keep the original''s terms: none declared; used with author permission'
+# The weights are QSM.rs's ONNX exports (qsmxt/qsm-onnx-weights), baked into the image with
+# algorithms/_qsmxt/models.Dockerfile, since a submission runs with no network.
+image: ghcr.io/astewartau/qsm-ci/qsmxt@sha256:4327e61dec101830cd9620049ea216939ea9bbb235e26688d198d90481c6f7df   # v10.0.0-models
+run: bash run.sh
