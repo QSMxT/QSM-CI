@@ -1,13 +1,17 @@
 {
- "generated": "2026-10-27",
+ "generated": "2026-10-28",
  "stale_after_days": 90,
  "qsmrs": {
   "repo": "astewartau/QSM.rs",
   "branch": "main",
-  "checked": false
+  "checked": true
  },
  "stale": [
-  "qsmart"
+  "qsmart",
+  "star",
+  "medi",
+  "amp-pe",
+  "laplacian"
  ],
  "pairs": [
   {
@@ -43,7 +47,7 @@
    "reference": "ilsqr-sti",
    "candidate": "ilsqr-qsmrs",
    "enabled": false,
-   "state": "off",
+   "state": "gap",
    "datasets": [
     {
      "dataset": "s002001-kki-achieva-bridge-run1",
@@ -57,7 +61,8 @@
      "stale": false,
      "reasons": []
     }
-   ]
+   ],
+   "blocked_by": "STI Suite port gaps (QSM.rs issue to file; QSMxT/QSM-CI parity/status PR)"
   },
   {
    "pair": "vsharp",
@@ -65,7 +70,7 @@
    "reference": "vsharp-sti",
    "candidate": "vsharp-qsmrs",
    "enabled": false,
-   "state": "off",
+   "state": "gap",
    "datasets": [
     {
      "dataset": "s002001-kki-achieva-bridge-run1",
@@ -79,61 +84,73 @@
      "stale": false,
      "reasons": []
     }
-   ]
+   ],
+   "blocked_by": "STI Suite port gaps (QSM.rs issue to file; QSMxT/QSM-CI parity/status PR)"
   },
   {
    "pair": "star",
    "algorithm": null,
    "reference": "star-sti",
    "candidate": "star-qsmrs",
-   "enabled": false,
-   "state": "off",
+   "enabled": true,
+   "state": "stale",
    "datasets": [
-    {
-     "dataset": "s002001-kki-achieva-bridge-run1",
-     "last": null,
-     "stale": false,
-     "reasons": []
-    },
     {
      "dataset": "sim",
      "last": null,
-     "stale": false,
-     "reasons": []
+     "stale": true,
+     "reasons": [
+      "never checked"
+     ]
     }
-   ]
+   ],
+   "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=star -f dataset=configured -f qsmrs_ref=main"
   },
   {
    "pair": "medi",
    "algorithm": "medi",
    "reference": "medi-cornell",
    "candidate": "medi-qsmrs",
-   "enabled": false,
-   "state": "off",
-   "datasets": [],
-   "note": "waiting for medi-cornell v4 (MEDI 2024.11.26's own defaults, QSMxT/QSM-CI#309)"
+   "enabled": true,
+   "state": "stale",
+   "datasets": [
+    {
+     "dataset": "s002001-kki-achieva-bridge-run1",
+     "last": null,
+     "stale": true,
+     "reasons": [
+      "never checked"
+     ]
+    },
+    {
+     "dataset": "sim",
+     "last": null,
+     "stale": true,
+     "reasons": [
+      "never checked"
+     ]
+    }
+   ],
+   "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=medi -f dataset=configured -f qsmrs_ref=main"
   },
   {
    "pair": "amp-pe",
    "algorithm": "amp-pe",
    "reference": "amp-pe",
    "candidate": "amp-pe-qsmrs",
-   "enabled": false,
-   "state": "off",
+   "enabled": true,
+   "state": "stale",
    "datasets": [
-    {
-     "dataset": "s002001-kki-achieva-bridge-run1",
-     "last": null,
-     "stale": false,
-     "reasons": []
-    },
     {
      "dataset": "sim",
      "last": null,
-     "stale": false,
-     "reasons": []
+     "stale": true,
+     "reasons": [
+      "never checked"
+     ]
     }
-   ]
+   ],
+   "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=amp-pe -f dataset=configured -f qsmrs_ref=main"
   },
   {
    "pair": "decompose",
@@ -157,7 +174,7 @@
    "reference": "tkd-qsmjl",
    "candidate": "tkd-qsmrs",
    "enabled": false,
-   "state": "off",
+   "state": "gap",
    "datasets": [
     {
      "dataset": "s002001-kki-achieva-bridge-run1",
@@ -171,7 +188,8 @@
      "stale": false,
      "reasons": []
     }
-   ]
+   ],
+   "blocked_by": "astewartau/QSM.rs#323"
   },
   {
    "pair": "tsvd",
@@ -179,7 +197,7 @@
    "reference": "tsvd-qsmjl",
    "candidate": "tsvd-qsmrs",
    "enabled": false,
-   "state": "off",
+   "state": "gap",
    "datasets": [
     {
      "dataset": "s002001-kki-achieva-bridge-run1",
@@ -193,7 +211,8 @@
      "stale": false,
      "reasons": []
     }
-   ]
+   ],
+   "blocked_by": "astewartau/QSM.rs#323"
   },
   {
    "pair": "tikhonov",
@@ -201,7 +220,7 @@
    "reference": "tikhonov-qsmjl",
    "candidate": "tikhonov-qsmrs",
    "enabled": false,
-   "state": "off",
+   "state": "gap",
    "datasets": [
     {
      "dataset": "s002001-kki-achieva-bridge-run1",
@@ -215,7 +234,8 @@
      "stale": false,
      "reasons": []
     }
-   ]
+   ],
+   "blocked_by": "astewartau/QSM.rs#323"
   },
   {
    "pair": "tv",
@@ -223,7 +243,7 @@
    "reference": "tv-qsmjl",
    "candidate": "tv-qsmrs",
    "enabled": false,
-   "state": "off",
+   "state": "gap",
    "datasets": [
     {
      "dataset": "s002001-kki-achieva-bridge-run1",
@@ -237,7 +257,8 @@
      "stale": false,
      "reasons": []
     }
-   ]
+   ],
+   "blocked_by": "astewartau/QSM.rs#323"
   },
   {
    "pair": "nltv",
@@ -245,21 +266,9 @@
    "reference": "nltv-qsmjl",
    "candidate": "nltv-qsmrs",
    "enabled": false,
-   "state": "off",
-   "datasets": [
-    {
-     "dataset": "s002001-kki-achieva-bridge-run1",
-     "last": null,
-     "stale": false,
-     "reasons": []
-    },
-    {
-     "dataset": "sim",
-     "last": null,
-     "stale": false,
-     "reasons": []
-    }
-   ]
+   "state": "gap",
+   "datasets": [],
+   "blocked_by": "astewartau/QSM.rs#323"
   },
   {
    "pair": "rts",
@@ -267,7 +276,7 @@
    "reference": "rts-qsmjl",
    "candidate": "rts-qsmrs",
    "enabled": false,
-   "state": "off",
+   "state": "gap",
    "datasets": [
     {
      "dataset": "s002001-kki-achieva-bridge-run1",
@@ -281,7 +290,8 @@
      "stale": false,
      "reasons": []
     }
-   ]
+   ],
+   "blocked_by": "astewartau/QSM.rs#323"
   },
   {
    "pair": "ismv",
@@ -289,7 +299,7 @@
    "reference": "ismv-qsmjl",
    "candidate": "ismv-qsmrs",
    "enabled": false,
-   "state": "off",
+   "state": "gap",
    "datasets": [
     {
      "dataset": "s002001-kki-achieva-bridge-run1",
@@ -303,7 +313,8 @@
      "stale": false,
      "reasons": []
     }
-   ]
+   ],
+   "blocked_by": "astewartau/QSM.rs#322"
   },
   {
    "pair": "sharp",
@@ -311,7 +322,7 @@
    "reference": "sharp-qsmjl",
    "candidate": "sharp-qsmrs",
    "enabled": false,
-   "state": "off",
+   "state": "gap",
    "datasets": [
     {
      "dataset": "s002001-kki-achieva-bridge-run1",
@@ -325,7 +336,8 @@
      "stale": false,
      "reasons": []
     }
-   ]
+   ],
+   "blocked_by": "astewartau/QSM.rs#321"
   },
   {
    "pair": "vsharp-qsmjl",
@@ -333,7 +345,7 @@
    "reference": "vsharp-qsmjl",
    "candidate": "vsharp-qsmrs",
    "enabled": false,
-   "state": "off",
+   "state": "gap",
    "datasets": [
     {
      "dataset": "s002001-kki-achieva-bridge-run1",
@@ -347,29 +359,35 @@
      "stale": false,
      "reasons": []
     }
-   ]
+   ],
+   "blocked_by": "astewartau/QSM.rs#321"
   },
   {
    "pair": "laplacian",
    "algorithm": "laplacian",
    "reference": "laplacian-qsmjl",
    "candidate": "laplacian-qsmrs",
-   "enabled": false,
-   "state": "off",
+   "enabled": true,
+   "state": "stale",
    "datasets": [
     {
      "dataset": "s002001-kki-achieva-bridge-run1",
      "last": null,
-     "stale": false,
-     "reasons": []
+     "stale": true,
+     "reasons": [
+      "never checked"
+     ]
     },
     {
      "dataset": "sim",
      "last": null,
-     "stale": false,
-     "reasons": []
+     "stale": true,
+     "reasons": [
+      "never checked"
+     ]
     }
-   ]
+   ],
+   "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=laplacian -f dataset=configured -f qsmrs_ref=main"
   },
   {
    "pair": "romeo",
@@ -377,7 +395,7 @@
    "reference": "romeo-romeojl",
    "candidate": "romeo-qsmrs",
    "enabled": false,
-   "state": "off",
+   "state": "gap",
    "datasets": [
     {
      "dataset": "s002001-kki-achieva-bridge-run1",
@@ -391,7 +409,8 @@
      "stale": false,
      "reasons": []
     }
-   ]
+   ],
+   "blocked_by": "astewartau/QSM.rs#325"
   },
   {
    "pair": "tgv",
@@ -399,7 +418,7 @@
    "reference": "tgv-tgvjl",
    "candidate": "tgv-qsmrs",
    "enabled": false,
-   "state": "off",
+   "state": "gap",
    "datasets": [
     {
      "dataset": "s002001-kki-achieva-bridge-run1",
@@ -413,7 +432,8 @@
      "stale": false,
      "reasons": []
     }
-   ]
+   ],
+   "blocked_by": "astewartau/QSM.rs#324"
   }
  ]
 }
