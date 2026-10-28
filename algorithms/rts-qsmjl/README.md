@@ -9,6 +9,7 @@ Rapid two-step dipole inversion, run as the original QSM.jl code (`QSM.rts`, fde
 - **Environment:** the shared Julia base image [`algorithms/_julia`](../_julia) (Julia 1.10.11,
   Manifest committed there, packages compiled into a sysimage), pinned by digest in `algorithm.yml`.
 - **QSM.rs port:** [`rts-qsmrs`](../rts-qsmrs) (same `algorithm: rts`).
+- **Parity only:** the reference of the port's parity pair (`parity/thresholds.yml`, [docs/parity.md](../../docs/parity.md)); not scored and not on the leaderboard.
 - **Reference:** Kames et al., NeuroImage 2018 · doi:[10.1016/j.neuroimage.2017.11.018](https://doi.org/10.1016/j.neuroimage.2017.11.018)
 
 ## How QSM-CI runs it

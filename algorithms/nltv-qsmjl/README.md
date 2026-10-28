@@ -9,6 +9,7 @@ Nonlinear-data-term total-variation dipole inversion by ADMM (Milovic et al. 201
 - **Environment:** the shared Julia base image [`algorithms/_julia`](../_julia) (Julia 1.10.11,
   Manifest committed there, packages compiled into a sysimage), pinned by digest in `algorithm.yml`.
 - **QSM.rs port:** [`nltv-qsmrs`](../nltv-qsmrs) (same `algorithm: nltv`).
+- **Parity only:** the reference of the port's parity pair (`parity/thresholds.yml`, [docs/parity.md](../../docs/parity.md)); not scored and not on the leaderboard.
 - **Reference:** Milovic et al., Magn Reson Med 2018 · doi:[10.1002/mrm.27073](https://doi.org/10.1002/mrm.27073)
 
 ## How QSM-CI runs it
@@ -37,4 +38,5 @@ the same thing as far as the original allows.
 
 ## Against the QSM.rs port
 
-- `nltv-qsmrs` runs QSM.rs v0.39.0 (QSMxT v10.0.0), whose `nltv` is an iteratively reweighted TV, not this nonlinear-data-term method; no setting of either makes them the same algorithm. QSM.rs later ported QSM.jl's `nltv` line for line (with the magnitude required as `W`); compare against that once QSM-CI's QSMxT image carries it.
+- **Not a parity reference yet.** This entry calls QSM.jl's `nltv` on the local field in ppm and without the data weight `W`. QSM.jl's `nltv` works on the phase in rad (its nonlinear data term is `exp(i·f)`), and QSM.rs's port (astewartau/QSM.rs#323) takes the magnitude as `W` and requires it. QSM.jl's `nltv` also never initialises its `ue` buffer, so on small arrays the result can contain NaN that changes from run to run. The pair stays blocked (parity/thresholds.yml) until this entry passes the phase in rad and the same `W`, and the uninitialised buffer is shown not to matter on the full volume.
+- `nltv-qsmrs` as pinned (QSM.rs v0.39.0, QSMxT v10.0.0) is an iteratively reweighted TV, a different algorithm.

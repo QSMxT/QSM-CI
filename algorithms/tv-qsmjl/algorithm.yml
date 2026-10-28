@@ -27,6 +27,9 @@ code_url: https://github.com/kamesy/QSM.jl
 license: MIT
 image: ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185   # v1
 run: bash run.sh
+# The original, kept as the reference of the QSM.rs port's parity pair (parity/thresholds.yml,
+# docs/parity.md): never scored, never on the site; the PR smoke gate still runs it.
+parity_only: true
 # The original in its own pinned environment (QSMxT/QSM-CI#299): versions pinned (Manifest),
 # output deterministic at the fixed thread count, and the same outside the container with the
 # same Manifest. algorithms/_julia/fidelity/README.md; rerun whenever the image changes.

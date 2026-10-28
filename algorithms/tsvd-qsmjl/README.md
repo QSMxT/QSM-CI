@@ -9,6 +9,7 @@ Truncated singular-value (k-space) division, run as the original QSM.jl code (`Q
 - **Environment:** the shared Julia base image [`algorithms/_julia`](../_julia) (Julia 1.10.11,
   Manifest committed there, packages compiled into a sysimage), pinned by digest in `algorithm.yml`.
 - **QSM.rs port:** [`tsvd-qsmrs`](../tsvd-qsmrs) (same `algorithm: tsvd`).
+- **Parity only:** the reference of the port's parity pair (`parity/thresholds.yml`, [docs/parity.md](../../docs/parity.md)); not scored and not on the leaderboard.
 - **Reference:** Wharton et al., Magn Reson Med 2010 · doi:[10.1002/mrm.22334](https://doi.org/10.1002/mrm.22334)
 
 ## How QSM-CI runs it
