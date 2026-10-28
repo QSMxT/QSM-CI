@@ -159,9 +159,16 @@ pairs:
     reference: medi-cornell
     candidate: medi-qsmrs
     enabled: false
-    note: "waiting for medi-cornell v4 (MEDI 2024.11.26's own defaults, QSMxT/QSM-CI#309)"
+    # medi-cornell v4 (QSMxT/QSM-CI#309) runs MEDI 2024.11.26 at its own defaults, which QSM.rs
+    # main's MediParams share (names and values): both sides run their defaults.
     qsmrs_paths: [src/inversion/medi.rs, src/inversion/msmv.rs, src/inversion/tfi.rs, src/kernels/,
-                  src/fft.rs, src/utils/gradient.rs, src/pipeline/inversion.rs, src/pipeline/rules.rs]
+                  src/fft.rs, src/utils/gradient.rs, src/utils/morphology.rs, src/utils/r2star.rs,
+                  src/utils/mask.rs, src/pipeline/inversion.rs, src/pipeline/rules.rs]
+    datasets:
+      sim: {}
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
+        feed: { localfield: localfield }
 
   # ---- MATLAB originals (QSMxT/QSM-CI#309)
   amp-pe:
