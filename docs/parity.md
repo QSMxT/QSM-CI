@@ -118,7 +118,7 @@ port needs a boundary the dataset does not have and the original does not write.
 
 `parity/thresholds.yml` holds the limits per pair and dataset. They are the agreement measured with
 the current QSMxT main build, plus a margin (`derive_limits`: NRMSE +10 % +0.5 pp, correlation
-−0.01, |Δ| +25 %, Dice −0.01), and the file records the runs and images they came from. A limit is
+−0.01, |Δ| +25 % and at least 1e-6 ppm, Dice −0.01), and the file records the runs and images they came from. A limit is
 never loosened to hide a gap. To set or reset them, dispatch with `baseline=true`: the report prints
 limits derived from what it measured, ready to paste. Re-baseline when either side changes on
 purpose (a new original image, or a QSM.rs change that is meant to move the result), or when

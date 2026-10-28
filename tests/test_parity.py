@@ -147,6 +147,7 @@ def test_derived_limits_perfect_agreement():
     m = {"kind": "continuous", "nrmse": 0.0, "correlation": 1.0, "max_abs": 0.0, "p99_abs": 0.0}
     lim = parity.derive_limits(m)
     assert lim["nrmse_max"] == pytest.approx(0.5)
+    assert lim["max_abs_max"] == lim["p99_abs_max"] == 1e-6   # float noise is not a regression
     assert all(r["ok"] for r in parity.check(m, lim))
 
 
@@ -528,6 +529,8 @@ def test_parse_qsmrs_version():
     assert parity.parse_qsmrs_version(out) == {"qsmrs_version": "0.39.0",
                                                "qsmrs_commit": "42ab620190ad315c9dcf7aa8ec4a036402002b7e"}
     assert parity.parse_qsmrs_version("qsmxt 9\n") == {}
+    assert parity.parse_qsmrs_version("qsmxt 0.0.0\nQSM.rs (qsm-core): rev-da928e0c5bfc7670dc44efe842623f5fe4a591c0\n") \
+        == {"qsmrs_version": None, "qsmrs_commit": "da928e0c5bfc7670dc44efe842623f5fe4a591c0"}
 
 
 # --- run history and staleness ---------------------------------------------------------------------
