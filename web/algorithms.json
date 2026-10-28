@@ -1659,7 +1659,7 @@
       "language": "MATLAB",
       "family": "iterative",
       "learning": "none",
-      "description": "Morphology Enabled Dipole Inversion (Cornell MEDI toolbox 2024.11.26), compiled from MATLAB and run on the license-free MATLAB Runtime. Solves the L1 morphology-regularized dipole inversion directly on the local (tissue) field (no background-field removal).",
+      "description": "Morphology Enabled Dipole Inversion (Cornell MEDI toolbox 2024.11.26) with the toolbox's defaults (SMV, model-error reduction and CSF zero-referencing on), compiled from MATLAB and run on the license-free MATLAB Runtime. Solves the L1 morphology-regularized dipole inversion on the local (tissue) field (no background-field removal).",
       "citation": "Liu et al., NeuroImage 2012",
       "doi": "10.1016/j.neuroimage.2011.08.082",
       "code_url": "http://pre.weill.cornell.edu/mri/pages/qsm.html",
@@ -1681,12 +1681,47 @@
         {
           "name": "lambda",
           "default": 1000,
-          "description": "data-fidelity weight (larger = closer data fit, less regularization); 1000 is Cornell's default"
+          "description": "data-fidelity weight (larger = closer data fit, less regularization)"
+        },
+        {
+          "name": "smv",
+          "default": 1,
+          "description": "MEDI-SMV, 1 on, 0 off ('nosmv'); high-passes the local field with a spherical mean value kernel and fits it with the SMV-filtered dipole kernel, removing residual background near the brain edge"
         },
         {
           "name": "smv_radius",
-          "default": 0,
-          "description": "spherical-mean-value radius (mm) for extra background removal; 0 disables (default now off \u2014 input is already a local field)"
+          "default": 5,
+          "description": "SMV sphere radius (mm); 0 turns SMV off"
+        },
+        {
+          "name": "smv_shrink_mask",
+          "default": 1,
+          "description": "with SMV, invert on the mask eroded by the SMV sphere (1) or on the full mask (0)"
+        },
+        {
+          "name": "merit",
+          "default": 1,
+          "description": "model-error reduction (MERIT), reweighting the noise by the data residual after each iteration; 0 off ('nomerit')"
+        },
+        {
+          "name": "csf",
+          "default": 1,
+          "description": "MEDI+0, zero-referencing to the ventricular CSF (CSF mask from the R2* of the echo magnitudes); needs three or more echoes"
+        },
+        {
+          "name": "lambda_csf",
+          "default": 100,
+          "description": "weight of the CSF zero-reference term"
+        },
+        {
+          "name": "csf_r2s_threshold",
+          "default": 5,
+          "description": "R2* (Hz) below which a voxel is a CSF candidate"
+        },
+        {
+          "name": "csf_erode",
+          "default": 1,
+          "description": "erode the mask by a 10 mm sphere before finding the CSF"
         },
         {
           "name": "percentage",
@@ -1694,9 +1729,34 @@
           "description": "fraction of voxels kept as edges in the morphology gradient mask"
         },
         {
-          "name": "merit",
+          "name": "data_weighting",
+          "default": 1,
+          "description": "data weighting, 1 by the field noise from the echo magnitudes, 0 uniform"
+        },
+        {
+          "name": "max_iter",
+          "default": 10,
+          "description": "maximum Gauss-Newton iterations"
+        },
+        {
+          "name": "tol_norm_ratio",
+          "default": 0.1,
+          "description": "stop when the relative update falls below this"
+        },
+        {
+          "name": "cg_max_iter",
+          "default": 100,
+          "description": "maximum conjugate-gradient iterations per Gauss-Newton step"
+        },
+        {
+          "name": "cg_tol",
+          "default": 0.01,
+          "description": "conjugate-gradient relative residual tolerance"
+        },
+        {
+          "name": "zeropad",
           "default": 0,
-          "description": "model-error reduction (iterative reweighting); 1 enables"
+          "description": "voxels of zeros appended along each axis before the inversion (a number or [x, y, z]); with SMV, odd axes get one more"
         }
       ],
       "ci_notes": []

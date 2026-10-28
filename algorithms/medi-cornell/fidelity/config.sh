@@ -3,7 +3,7 @@ FID_SIF=matlab-medi
 FID_SOURCES="FID_MEDI FID_NIFTI"   # Cornell MEDI toolbox (its folder holding functions/); NIfTI_20140122
 FID_MATLAB_PATH="nifti medi"
 FID_MCC_A=""
-FID_WHICH="MEDI_L1 parse_QSM_input gradient_mask dataterm_mask cgsolve store_CG_results"
+FID_WHICH="MEDI_L1 parse_QSM_input gradient_mask dataterm_mask cgsolve Fit_ppm_complex arlo extract_CSF reg_CSF SMV sphere_kernel store_CG_results"
 
 fid_assemble() {
     local D=$1

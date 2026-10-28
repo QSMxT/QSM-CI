@@ -1,6 +1,6 @@
 # MCR image for the compiled medi-cornell submission. Build the `recon` binary first (BUILD.md: licensed
 # MATLAB R2023b + MATLAB Compiler, with the MEDI toolbox 2024.11.26), then:
-#   podman build -t ghcr.io/astewartau/qsm-ci/matlab-medi:v3 .
+#   podman build -t ghcr.io/astewartau/qsm-ci/matlab-medi:v4 .
 # The MEDI toolbox is baked into `recon` at compile time; the image only needs the MATLAB Runtime
 # of the compiling release. CI never builds this file; it pulls `image:` from algorithm.yml.
 FROM containers.mathworks.com/matlab-runtime:r2023b@sha256:3441eaf9691d81d96322169ffb7a26d7fda2f4b4a9ae3a49d0ac408b05472f25
