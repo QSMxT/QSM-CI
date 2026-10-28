@@ -967,8 +967,7 @@ def pair_status(thresholds: dict, results: dict, manifests: dict, settings: dict
 def _summary(rec: "dict | None") -> "dict | None":
     if not rec:
         return None
-    final = (rec.get("metrics") or {}).get("chimap") or next(iter((rec.get("metrics") or {}).values()),
-                                                             {})
+    final = next(iter((rec.get("metrics") or {}).values()), {})   # the final map comes first
     return {"date": rec.get("date"), "result": rec.get("result"), "run_url": rec.get("run_url"),
             "qsmrs": rec.get("qsmrs"), "nrmse": final.get("nrmse"),
             "correlation": final.get("correlation"), "dice": final.get("dice")}
@@ -1047,7 +1046,7 @@ def render_run_summary(records: list, enabled: list, baseline: bool = False) -> 
     commits = sorted({(r.get("qsmrs") or {}).get("commit") or "?" for r in records})
     lines += ["| Pair | Dataset | Result | QSM.rs | QSMxT | NRMSE | r |", "|---|---|---|---|---|---|---|"]
     for r in records:
-        m = (r.get("metrics") or {}).get("chimap") or {}
+        m = next(iter((r.get("metrics") or {}).values()), {})   # the final map comes first
         res = {"pass": "✅ pass", "fail": "❌ fail", "error": "❌ no result",
                "baseline": "📏 baseline"}.get(r.get("result"), r.get("result"))
         qx = r.get("qsmxt") or {}
