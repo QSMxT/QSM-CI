@@ -6,7 +6,23 @@ on:
 permissions:
   contents: write   # the called workflow's record job asks for it (it does not run: baselines)
 jobs:
-  main:
+  pr321:
     uses: ./.github/workflows/parity.yml
-    with: { algorithm: "wavesep", baseline: "true", qsmrs_ref: main }
+    with: { algorithm: "sharp,vsharp-qsmjl,sharp-pr,vsharp-qsmjl-def", baseline: "true", qsmrs_ref: 2a3a373f1c1484a85f5ef4bae276ece0ea432819 }
+    secrets: inherit
+  pr322:
+    uses: ./.github/workflows/parity.yml
+    with: { algorithm: "ismv,ismv-pr", baseline: "true", qsmrs_ref: f7bceb417a1c899936c81f341697cf45feb144d3 }
+    secrets: inherit
+  pr323:
+    uses: ./.github/workflows/parity.yml
+    with: { algorithm: "tkd,tsvd,tikhonov,tv,rts,tkd-pr,tsvd-pr,tikhonov-pr,tv-pr,rts-pr", baseline: "true", qsmrs_ref: 8e30a541480910d7790ca232ae6ed2817d567fc8 }
+    secrets: inherit
+  pr324:
+    uses: ./.github/workflows/parity.yml
+    with: { algorithm: "tgv", baseline: "true", qsmrs_ref: f47f4f3a3a1c3813818b2199fb42ce32af8655ab }
+    secrets: inherit
+  pr325:
+    uses: ./.github/workflows/parity.yml
+    with: { algorithm: "romeo,romeo-def", baseline: "true", qsmrs_ref: 38bc215cbd1ea97c1c1d70f7407217e058f28de0 }
     secrets: inherit
