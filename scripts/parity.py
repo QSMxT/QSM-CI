@@ -515,11 +515,15 @@ def image_identity(image: "str | None", runner: str) -> dict:
 
 
 def parse_qsmrs_version(text: str) -> dict:
-    """The QSM.rs a qsmxt binary was built with, from its `--version` output (the line
-    `QSM.rs (qsm-core): v0.39.0 (42ab6201…)`): {"qsmrs_version", "qsmrs_commit"}, or {}."""
+    """The QSM.rs a qsmxt binary was built with, from its `--version` output: a release says
+    `QSM.rs (qsm-core): v0.39.0 (42ab6201…)`, a build from a git pin `QSM.rs (qsm-core):
+    rev-da928e0c…`. Returns {"qsmrs_version" (None for a rev), "qsmrs_commit"}, or {}."""
     import re
     m = re.search(r"qsm-core\)?:\s*v?([0-9][^\s(]*)\s*\(([0-9a-f]{7,40})\)", text or "")
-    return {"qsmrs_version": m.group(1), "qsmrs_commit": m.group(2)} if m else {}
+    if m:
+        return {"qsmrs_version": m.group(1), "qsmrs_commit": m.group(2)}
+    m = re.search(r"qsm-core\)?:\s*rev-([0-9a-f]{7,40})", text or "")
+    return {"qsmrs_version": None, "qsmrs_commit": m.group(1)} if m else {}
 
 
 def apply_names(inter: Path, names: "dict | None", mask_path: "Path | None" = None) -> None:
@@ -743,7 +747,9 @@ def make_record(res: "dict | None", *, pair: str, phantom: str, cfg: dict, manif
            "reference": {"slug": ref_slug, "image": ref_image, "digest": image_digest(ref_image)},
            "candidate": {"slug": cand_slug},
            "qsmrs": {"ref": run.get("qsmrs_ref") or None, "commit": build.get("qsmrs_commit"),
-                     "version": build.get("qsmrs_version")},
+                     # a git build's Cargo version is a placeholder (0.0.0 on QSM.rs main)
+                     "version": build.get("qsmrs_version")
+                     if build.get("qsmrs_version") not in (None, "", "0.0.0") else None},
            "qsmxt": {"ref": build.get("qsmxt_ref") or run.get("qsmxt_ref") or None,
                      "commit": build.get("qsmxt_commit")}}
     if res is None:
@@ -759,7 +765,9 @@ def make_record(res: "dict | None", *, pair: str, phantom: str, cfg: dict, manif
     if rst.get("id"):
         rec["reference"]["id"] = rst["id"]
     if cst.get("qsmrs_commit"):
-        rec["qsmrs"].update(commit=cst["qsmrs_commit"], version=cst.get("qsmrs_version"))
+        rec["qsmrs"]["commit"] = cst["qsmrs_commit"]
+        if cst.get("qsmrs_version"):
+            rec["qsmrs"]["version"] = cst["qsmrs_version"]
     if cst.get("set") or rst.get("set"):
         rec["set"] = {k: v for k, v in (("reference", rst.get("set")),
                                         ("candidate", cst.get("set"))) if v}
