@@ -271,6 +271,39 @@
       "ci_notes": []
     },
     {
+      "slug": "autoqsm-qsmrs",
+      "name": "AutoQSM (QSM.rs)",
+      "stage": "bfr+dipole",
+      "inputs": [
+        "totalfield",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "autoqsm",
+      "language": "Rust",
+      "family": "deep-learning",
+      "learning": "pretrained",
+      "description": "AutoQSM as QSM.rs runs it: the authors' trained weights exported to ONNX and run by `qsmxt invert autoqsm` (QSM.rs's ONNX engine, CPU). The QSM.rs port of the `autoqsm` entry, which runs the authors' own code and weights.",
+      "citation": "Wei et al., NeuroImage 2019",
+      "doi": "10.1016/j.neuroimage.2019.116064",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT (QSM.rs); the weights keep the original's terms: none declared; used with author permission",
+      "authors": [
+        "Wei H.",
+        "Cao S.",
+        "Zhang Y.",
+        "Guan X.",
+        "Yan F.",
+        "Yeom K.W.",
+        "Liu C.",
+        "Ashley Stewart"
+      ],
+      "parameters": [],
+      "ci_notes": []
+    },
+    {
       "slug": "bfrnet",
       "name": "BFRnet (ONNX)",
       "stage": "bfr",
@@ -307,6 +340,33 @@
       "ci_notes": [
         "Ported from the authors' MATLAB Deep Learning Toolbox network (BFRnet.mat) via exportONNXNetwork and run with ONNX Runtime. Output matches the MATLAB reference to max |\u0394| \u2248 1e-8. The compiled MATLAB/MCR submission was OOM-killed on the 16 GB hosted runner (DNF); running the ONNX net on the whole 164x205x205 volume also peaks at ~18.7 GB and OOM-kills (exit 137). So inference is tiled over overlapping 128^3 patches (Hann-blended, onnxruntime CPU arena disabled) \u2014 ~5.3 GB peak, local field within corr 0.992 of the whole-volume result \u2014 which scores on the standard hosted runner. Patch size is tunable via the patch_size parameter (0 = whole volume).\n"
       ]
+    },
+    {
+      "slug": "bfrnet-qsmrs",
+      "name": "BFRnet (QSM.rs)",
+      "stage": "bfr",
+      "inputs": [
+        "totalfield",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "bfrnet",
+      "language": "Rust",
+      "family": "deep-learning",
+      "learning": "pretrained",
+      "description": "BFRnet as QSM.rs runs it: the authors' trained weights exported to ONNX and run by `qsmxt bgremove bfrnet` (QSM.rs's ONNX engine, CPU). The QSM.rs port of the `bfrnet` entry, which runs the authors' own code and weights.",
+      "citation": "Zhu et al., Z Med Phys 2022",
+      "doi": "10.1016/j.zemedi.2022.08.001",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT (QSM.rs); the weights keep the original's terms: Used with author permission",
+      "authors": [
+        "Xuanyu Zhu, Yang Gao, Feng Liu, Stuart Crozier, Hongfu Sun",
+        "Ashley Stewart"
+      ],
+      "parameters": [],
+      "ci_notes": []
     },
     {
       "slug": "chisep-ilsqr",
@@ -441,6 +501,37 @@
           "description": "Relaxivity (Hz/ppm) used to scale R2' into the network's R2'/Dr input channel. The network was trained at Dr=114 (its COSMOS-referenced value), so moving it feeds off-distribution inputs \u2014 this is a research knob, not an accuracy-tuning target. (No patch/overlap knob: the ONNX graph fixes the 192\u00d7192\u00d7128 input, and the weights fix everything else.)\n"
         }
       ],
+      "ci_notes": []
+    },
+    {
+      "slug": "chisepnet-qsmrs",
+      "name": "\u03c7-sepnet (QSM.rs)",
+      "stage": "chi-separation",
+      "inputs": [
+        "localfield",
+        "r2prime",
+        "chimap",
+        "mask",
+        "params"
+      ],
+      "domain": "chisep",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "chisepnet",
+      "language": "Rust",
+      "family": "deep-learning",
+      "learning": "pretrained",
+      "description": "\u03c7-sepnet as QSM.rs runs it: the authors' trained weights exported to ONNX and run by `qsmxt separate chi-sepnet` (QSM.rs's ONNX engine, CPU). The QSM.rs port of the `chisepnet` entry, which runs the authors' own code and weights.",
+      "citation": "Shin et al., NeuroImage 2021 (\u03c7-separation); \u03c7-sepnet, SNU-LIST",
+      "doi": "10.1016/j.neuroimage.2021.118371",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT (QSM.rs); the weights keep the original's terms: academic use; toolbox obtained via the SNU-LIST Google Form",
+      "authors": [
+        "Minjun Kim",
+        "Hyeong-Geol Shin",
+        "Jongho Lee",
+        "Ashley Stewart"
+      ],
+      "parameters": [],
       "ci_notes": []
     },
     {
@@ -873,6 +964,31 @@
           "description": "keep every connected component of at least this many voxels, not just the largest \u2014 a capped peel can sever small real chunks off thin structures, and dropping those is its own artefact\n"
         }
       ],
+      "ci_notes": []
+    },
+    {
+      "slug": "hd-bet-qsmrs",
+      "name": "HD-BET (QSM.rs)",
+      "stage": "brain-extraction",
+      "inputs": [
+        "magnitude"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "hd-bet",
+      "language": "Rust",
+      "family": "direct",
+      "learning": "supervised",
+      "description": "HD-BET as QSM.rs runs it: the authors' trained weights exported to ONNX and run by `qsmxt mask hd- bet` (QSM.rs's ONNX engine, CPU). The QSM.rs port of the `hd-bet-qsmci` entry, which runs the authors' own code and weights.",
+      "citation": "Isensee et al., Hum Brain Mapp 2019",
+      "doi": "10.1002/hbm.24750",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT (QSM.rs); the weights keep the original's terms: Apache-2.0",
+      "authors": [
+        "Isensee et al.",
+        "Ashley Stewart"
+      ],
+      "parameters": [],
       "ci_notes": []
     },
     {
@@ -1352,11 +1468,52 @@
         "Sun H.",
         "Gao Y."
       ],
-      "parameters": [],
+      "parameters": [
+        {
+          "name": "add_noise",
+          "default": true,
+          "description": "The decoder's inference-time noise (AddNoise, drawn with probability 0.7 per iteration), on as the authors' code runs it. false makes the output deterministic; QSM.rs's ONNX export of IR2QSM has it off, so the parity workflow compares the port against add_noise=false.\n"
+        }
+      ],
       "ci_notes": [
         "Executed CPU-only on QSM-CI's runners (no GPU). IR2QSM is a GPU-oriented network, so wall-clock runtime here is far longer than a GPU deployment and should not be read as the method's native speed.\n",
-        "The reference injects noise at inference through a CUDA-only operation; QSM-CI patches it to run on CPU, so reconstructions are mildly stochastic and can vary slightly between runs.\n"
+        "The reference injects noise at inference through a CUDA-only operation; QSM-CI patches it to run on CPU, so reconstructions are mildly stochastic and can vary slightly between runs. `add_noise=false` switches that noise off, for a deterministic output.\n"
       ]
+    },
+    {
+      "slug": "ir2qsm-qsmrs",
+      "name": "IR2QSM (QSM.rs)",
+      "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "ir2qsm",
+      "language": "Rust",
+      "family": "deep-learning",
+      "learning": "pretrained",
+      "description": "IR2QSM as QSM.rs runs it: the authors' trained weights exported to ONNX and run by `qsmxt invert ir2qsm` (QSM.rs's ONNX engine, CPU). The QSM.rs port of the `ir2qsm` entry, which runs the authors' own code and weights. Deterministic: the export takes the decoder's noise-free branch, so its counterpart is `ir2qsm` with add_noise=false.",
+      "citation": "Li et al., Med Phys 2025",
+      "doi": "10.1002/mp.17747",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT (QSM.rs); the weights keep the original's terms: No LICENSE file in the upstream repository; academic use only \u2014 cite the paper (arXiv:2406.12300). Confirm terms with the authors before redistribution.",
+      "authors": [
+        "Li M.",
+        "Chen C.",
+        "Xiong Z.",
+        "Liu Y.",
+        "Rong P.",
+        "Shan S.",
+        "Liu F.",
+        "Sun H.",
+        "Gao Y.",
+        "Ashley Stewart"
+      ],
+      "parameters": [],
+      "ci_notes": []
     },
     {
       "slug": "ismv-qsmrs",
@@ -1559,6 +1716,37 @@
       "ci_notes": []
     },
     {
+      "slug": "lpcnn-qsmrs",
+      "name": "LPCNN (QSM.rs)",
+      "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "lpcnn",
+      "language": "Rust",
+      "family": "deep-learning",
+      "learning": "pretrained",
+      "description": "LPCNN as QSM.rs runs it: the authors' trained weights exported to ONNX and run by `qsmxt invert lpcnn` (QSM.rs's ONNX engine, CPU). The QSM.rs port of the `lpcnn` entry, which runs the authors' own code and weights.",
+      "citation": "Lai et al., Lecture Notes in Computer Science 2020",
+      "doi": "10.1007/978-3-030-59713-9_13",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT (QSM.rs); the weights keep the original's terms: none declared; used with author permission",
+      "authors": [
+        "Lai K-W.",
+        "Aggarwal M.",
+        "van Zijl P.",
+        "Li X.",
+        "Sulam J.",
+        "Ashley Stewart"
+      ],
+      "parameters": [],
+      "ci_notes": []
+    },
+    {
       "slug": "lsqr-qsmrs",
       "name": "LSQR (QSM.rs)",
       "stage": "dipole",
@@ -1718,6 +1906,31 @@
       "ci_notes": []
     },
     {
+      "slug": "mindgrab-qsmrs",
+      "name": "MindGrab (QSM.rs)",
+      "stage": "brain-extraction",
+      "inputs": [
+        "magnitude"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "mindgrab",
+      "language": "Rust",
+      "family": "deep-learning",
+      "learning": "pretrained",
+      "description": "MindGrab, the any-contrast skull-stripping MeshNet of brainchop, as QSM.rs runs it: the trained weights exported to ONNX and run by `qsmxt mask mindgrab` (QSM.rs's ONNX engine, CPU), on the whole volume, without test-time augmentation. QSM-CI has no entry for the original yet.",
+      "citation": "Fani et al., arXiv:2506.11860 (2025)",
+      "doi": "10.48550/arXiv.2506.11860",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT (QSM.rs); the weights keep brainchop's terms (MIT)",
+      "authors": [
+        "Fani et al.",
+        "Ashley Stewart"
+      ],
+      "parameters": [],
+      "ci_notes": []
+    },
+    {
       "slug": "modip",
       "name": "MoDIP (PyTorch)",
       "stage": "dipole",
@@ -1804,6 +2017,43 @@
       "ci_notes": []
     },
     {
+      "slug": "modl-qsm-qsmrs",
+      "name": "MoDL-QSM (QSM.rs)",
+      "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "modl-qsm",
+      "language": "Rust",
+      "family": "deep-learning",
+      "learning": "pretrained",
+      "description": "MoDL-QSM as QSM.rs runs it: the authors' trained weights exported to ONNX and run by `qsmxt invert modl-qsm` (QSM.rs's ONNX engine, CPU). The QSM.rs port of the `modl-qsm` entry, which runs the authors' own code and weights.",
+      "citation": "Feng et al., NeuroImage 2021",
+      "doi": "10.1016/j.neuroimage.2021.118376",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT (QSM.rs); the weights keep the original's terms: none declared; used with author permission",
+      "authors": [
+        "Feng R.",
+        "Zhao J.",
+        "Wang H.",
+        "Yang B.",
+        "Feng J.",
+        "Shi Y.",
+        "Zhang M.",
+        "Liu C.",
+        "Zhang Y.",
+        "Zhuang J.",
+        "Wei H.",
+        "Ashley Stewart"
+      ],
+      "parameters": [],
+      "ci_notes": []
+    },
+    {
       "slug": "ndi-qsmrs",
       "name": "NDI (QSM.rs)",
       "stage": "dipole",
@@ -1882,6 +2132,39 @@
         "Laun F.B.",
         "Barth M.",
         "Bollmann S."
+      ],
+      "parameters": [],
+      "ci_notes": []
+    },
+    {
+      "slug": "nextqsm-qsmrs",
+      "name": "NeXtQSM (QSM.rs)",
+      "stage": "bfr+dipole",
+      "inputs": [
+        "totalfield",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "nextqsm",
+      "language": "Rust",
+      "family": "deep-learning",
+      "learning": "pretrained",
+      "description": "NeXtQSM as QSM.rs runs it: the authors' trained weights exported to ONNX and run by `qsmxt invert nextqsm` (QSM.rs's ONNX engine, CPU). The QSM.rs port of the `nextqsm` entry, which runs the authors' own code and weights.",
+      "citation": "Cognolato et al., Med Image Anal 2023",
+      "doi": "10.1016/j.media.2022.102700",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT (QSM.rs); the weights keep the original's terms: MIT",
+      "authors": [
+        "Cognolato F.",
+        "O'Brien K.",
+        "Jin J.",
+        "Robinson S.",
+        "Laun F.B.",
+        "Barth M.",
+        "Bollmann S.",
+        "Ashley Stewart"
       ],
       "parameters": [],
       "ci_notes": []
@@ -2104,6 +2387,37 @@
       "ci_notes": []
     },
     {
+      "slug": "qsmgan-qsmrs",
+      "name": "QSMGAN (QSM.rs)",
+      "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "qsmgan",
+      "language": "Rust",
+      "family": "deep-learning",
+      "learning": "pretrained",
+      "description": "QSMGAN as QSM.rs runs it: the authors' trained weights exported to ONNX and run by `qsmxt invert qsmgan` (QSM.rs's ONNX engine, CPU). The QSM.rs port of the `qsmgan` entry, which runs the authors' own code and weights.",
+      "citation": "Chen et al., NeuroImage 2020",
+      "doi": "10.1016/j.neuroimage.2019.116389",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT (QSM.rs); the weights keep the original's terms: MIT",
+      "authors": [
+        "Chen Y.",
+        "Jakary A.",
+        "Avadiappan S.",
+        "Hess C.P.",
+        "Lupo J.M.",
+        "Ashley Stewart"
+      ],
+      "parameters": [],
+      "ci_notes": []
+    },
+    {
       "slug": "qsmnet",
       "name": "QSMnet (TensorFlow)",
       "stage": "dipole",
@@ -2168,6 +2482,79 @@
         "Nam Y.",
         "Kim E.Y.",
         "Lee J."
+      ],
+      "parameters": [],
+      "ci_notes": []
+    },
+    {
+      "slug": "qsmnet-plus-qsmrs",
+      "name": "QSMnet+ (QSM.rs)",
+      "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "qsmnet-plus",
+      "language": "Rust",
+      "family": "deep-learning",
+      "learning": "pretrained",
+      "description": "QSMnet+ as QSM.rs runs it: the authors' trained weights exported to ONNX and run by `qsmxt invert qsmnet-plus` (QSM.rs's ONNX engine, CPU). The QSM.rs port of the `qsmnet-plus` entry, which runs the authors' own code and weights.",
+      "citation": "Jung et al., NeuroImage 2020",
+      "doi": "10.1016/j.neuroimage.2020.116619",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT (QSM.rs); the weights keep the original's terms: SNU-LIST academic license (LICENSE.pdf); used with author permission",
+      "authors": [
+        "Jung W.",
+        "Yoon J.",
+        "Ji S.",
+        "Choi J.Y.",
+        "Kim J.M.",
+        "Nam Y.",
+        "Kim E.Y.",
+        "Lee J.",
+        "Ashley Stewart"
+      ],
+      "parameters": [],
+      "ci_notes": []
+    },
+    {
+      "slug": "qsmnet-qsmrs",
+      "name": "QSMnet (QSM.rs)",
+      "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "qsmnet",
+      "language": "Rust",
+      "family": "deep-learning",
+      "learning": "pretrained",
+      "description": "QSMnet as QSM.rs runs it: the authors' trained weights exported to ONNX and run by `qsmxt invert qsmnet` (QSM.rs's ONNX engine, CPU). The QSM.rs port of the `qsmnet` entry, which runs the authors' own code and weights.",
+      "citation": "Yoon et al., NeuroImage 2018",
+      "doi": "10.1016/j.neuroimage.2018.06.030",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT (QSM.rs); the weights keep the original's terms: SNU-LIST academic license (LICENSE.pdf); used with author permission",
+      "authors": [
+        "Yoon J.",
+        "Gong E.",
+        "Chatnuntawech I.",
+        "Bilgic B.",
+        "Lee J.",
+        "Jung W.",
+        "Ko J.",
+        "Jung H.",
+        "Setsompop K.",
+        "Zaharchuk G.",
+        "Kim E.Y.",
+        "Pauly J.",
+        "Lee J.",
+        "Ashley Stewart"
       ],
       "parameters": [],
       "ci_notes": []
@@ -2538,6 +2925,38 @@
         "Chunlei Liu",
         "Hongfu Sun",
         "Yang Gao"
+      ],
+      "parameters": [],
+      "ci_notes": []
+    },
+    {
+      "slug": "susep-net-qsmrs",
+      "name": "SUSEP-Net (QSM.rs)",
+      "stage": "chi-separation",
+      "inputs": [
+        "localfield",
+        "r2prime",
+        "chimap",
+        "mask",
+        "params"
+      ],
+      "domain": "chisep",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "susep-net",
+      "language": "Rust",
+      "family": "deep-learning",
+      "learning": "pretrained",
+      "description": "SUSEP-Net as QSM.rs runs it: the authors' trained weights exported to ONNX and run by `qsmxt separate susep-net` (QSM.rs's ONNX engine, CPU). The QSM.rs port of the `susep-net` entry, which runs the authors' own code and weights.",
+      "citation": "Li, Gao, Sun et al., \"SUSEP-Net: simulation-supervised contrastive learning for susceptibility source separation via a sub-voxel QSM network\", arXiv:2506.13293, 2025.\n",
+      "doi": "10.48550/arXiv.2506.13293",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT (QSM.rs); the weights keep the original's terms: academic use",
+      "authors": [
+        "Zhenghao Li",
+        "Chunlei Liu",
+        "Hongfu Sun",
+        "Yang Gao",
+        "Ashley Stewart"
       ],
       "parameters": [],
       "ci_notes": []
@@ -3134,6 +3553,41 @@
         "Crozier S.",
         "Liu F.",
         "Sun H."
+      ],
+      "parameters": [],
+      "ci_notes": []
+    },
+    {
+      "slug": "xqsm-qsmrs",
+      "name": "xQSM (QSM.rs)",
+      "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "xqsm",
+      "language": "Rust",
+      "family": "deep-learning",
+      "learning": "pretrained",
+      "description": "xQSM as QSM.rs runs it: the authors' trained weights exported to ONNX and run by `qsmxt invert xqsm` (QSM.rs's ONNX engine, CPU). The QSM.rs port of the `xqsm` entry, which runs the authors' own code and weights.",
+      "citation": "Gao et al., NMR Biomed 2021",
+      "doi": "10.1002/nbm.4461",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT (QSM.rs); the weights keep the original's terms: Used with author permission (Hongfu Sun); see repository for terms.",
+      "authors": [
+        "Gao Y.",
+        "Zhu X.",
+        "Moffat B.A.",
+        "Glarin R.",
+        "Wilman A.H.",
+        "Pike G.B.",
+        "Crozier S.",
+        "Liu F.",
+        "Sun H.",
+        "Ashley Stewart"
       ],
       "parameters": [],
       "ci_notes": []
