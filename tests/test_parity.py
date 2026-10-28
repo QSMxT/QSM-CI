@@ -173,6 +173,9 @@ def test_real_thresholds_enabled_pairs_track_their_qsmrs_sources():
             assert not cfg.get("blocked_by"), f"{name}: enabled but blocked_by"
 
 
+ARTIFACTS = ("chimap", "localfield", "totalfield", "chi-para", "chi-dia")
+
+
 def test_real_thresholds_name_real_pairs():
     """Every enabled pair matches algorithm.yml: an original and a QSM.rs port of one algorithm.
     (A disabled pair may name an original that is still on its way, e.g. a Julia one.)"""
@@ -187,11 +190,13 @@ def test_real_thresholds_name_real_pairs():
             for side in ("reference", "candidate"):
                 for slug in (dcfg or {}).get(f"{side}_prefix") or []:
                     assert (ROOT / "algorithms" / slug / "algorithm.yml").exists(), slug
-            parity.check({}, (dcfg or {}).get("chimap"))       # well-formed limit keys
+            final = [a for a in ARTIFACTS if a in (dcfg or {})]   # the final map's limits
+            for a in final:
+                parity.check({}, dcfg[a])                         # well-formed limit keys
             for lim in ((dcfg or {}).get("intermediates") or {}).values():
                 parity.check({}, lim)
             if cfg.get("enabled"):
-                assert (dcfg or {}).get("chimap"), f"{name}/{ds}: an enabled pair needs limits"
+                assert final, f"{name}/{ds}: an enabled pair needs limits"
 
 
 def test_pair_problems():
