@@ -373,7 +373,7 @@ def derive_limits(metrics: dict) -> dict:
     return out
 
 
-def evaluate(results: dict, ds_cfg: dict, final: str) -> dict:
+def evaluate(results: dict, ds_cfg: dict, final: "str | list") -> dict:
     """Apply the dataset's limits to every compared map. `results` is {name: metrics} with the final
     artifact under its artifact name (e.g. "chimap") and intermediates under theirs. The final
     artifact's limits are ds_cfg[final]; an intermediate's are ds_cfg["intermediates"][name].
@@ -381,13 +381,15 @@ def evaluate(results: dict, ds_cfg: dict, final: str) -> dict:
     Returns {name: {"metrics", "checks", "status"}} with status "pass", "fail" or "info" (compared
     but no limits configured — reported, never fails), plus "ok": no "fail" anywhere and the final
     artifact has limits. A final artifact without limits is "fail": an enabled pair must say what
-    agreement it expects."""
+    agreement it expects. A stage with several outputs (χ-separation's chi-para and chi-dia) passes
+    them all as `final`: each is a final artifact with its own limits."""
+    finals = [final] if isinstance(final, str) else list(final)
     inter = (ds_cfg or {}).get("intermediates") or {}
     out = {}
     for name, metrics in results.items():
-        limits = (ds_cfg or {}).get(name) if name == final else inter.get(name)
+        limits = (ds_cfg or {}).get(name) if name in finals else inter.get(name)
         rows = check(metrics, limits)
-        if not limits and name == final:
+        if not limits and name in finals:
             status = "fail"
         elif not limits:
             status = "fail" if any(not r["ok"] for r in rows) else "info"
@@ -466,7 +468,7 @@ def render_report(*, algorithm: str, phantom: str, reference: str, candidate: st
         ds = sugg["datasets"][phantom]
         for name, v in maps.items():
             lim = derive_limits(v["metrics"])
-            if name == provenance.get("final"):
+            if name in (provenance.get("finals") or [provenance.get("final")]):
                 ds[name] = lim
             else:
                 ds.setdefault("intermediates", {})[name] = lim
@@ -612,10 +614,12 @@ def run_side(chain: list, dataset: Path, out: Path, runner: str, feed: "dict | N
                       **({"fed": sorted(feed)} if feed and i == 0 else {}),
                       **({"set": sets} if sets else {}),
                       **image_identity(image, runner)})
-    shutil.copy(sources[final], out / ARTIFACT_FILE[final])
+    finals = list(algo["produces"])   # every output of the last step (χ-separation has two)
+    for art in finals:
+        shutil.copy(sources[art], out / ARTIFACT_FILE[art])
     apply_names(inter, names, Path(dataset) / "inputs" / "mask.nii.gz")
     prov = {"chain": chain, "steps": steps, "image": steps[-1]["image"], "runtime_s": t_all,
-            "final": final}
+            "final": final, "finals": finals}
     (out / "provenance.json").write_text(json.dumps(prov, indent=2) + "\n")
     return prov
 
@@ -651,16 +655,19 @@ def _load(path: Path):
     return np.asanyarray(nib.load(str(path)).dataobj)
 
 
-def compare_dirs(ref_dir: Path, cand_dir: Path, mask_path: Path, final: str) -> "tuple[dict, dict]":
-    """({name: metrics}, unmatched) for the final artifact and the intermediates both sides wrote."""
+def compare_dirs(ref_dir: Path, cand_dir: Path, mask_path: Path,
+                 final: "str | list") -> "tuple[dict, dict]":
+    """({name: metrics}, unmatched) for the final artifact(s) and the intermediates both sides
+    wrote."""
+    finals = [final] if isinstance(final, str) else list(final)
     from qsm_ci.stages import ARTIFACT_FILE
     mask = _load(mask_path)
-    results = {final: compare_maps(_load(ref_dir / ARTIFACT_FILE[final]),
-                                   _load(cand_dir / ARTIFACT_FILE[final]), mask)}
+    results = {f: compare_maps(_load(ref_dir / ARTIFACT_FILE[f]), _load(cand_dir / ARTIFACT_FILE[f]),
+                               mask) for f in finals}
     names = {s: {p.name[:-7] for p in (d / "intermediates").glob("*.nii.gz")}
              for s, d in (("reference", ref_dir), ("candidate", cand_dir))}
     for s in names.values():
-        s.discard(final)   # a copy of the final map (QSMART's recon writes one) is not a step
+        s.difference_update(finals)   # a copy of a final map (QSMART's recon writes one) is not a step
     for name in sorted(names["reference"] & names["candidate"]):
         results[name] = compare_maps(_load(ref_dir / "intermediates" / f"{name}.nii.gz"),
                                      _load(cand_dir / "intermediates" / f"{name}.nii.gz"), mask)
@@ -676,14 +683,16 @@ def cmd_compare(args) -> int:
     work = Path(args.work)
     prov = {s: json.loads((work / s / "provenance.json").read_text())
             if (work / s / "provenance.json").exists() else {} for s in ("reference", "candidate")}
-    final = prov["reference"].get("final") or "chimap"
+    final = prov["reference"].get("finals") or prov["reference"].get("final") or "chimap"
     mask = Path(args.mask) if args.mask else Path(args.dataset) / "inputs" / "mask.nii.gz"
     results, unmatched = compare_dirs(work / "reference", work / "candidate", mask, final)
     verdict = evaluate(results, ds_cfg, final)
     report = render_report(algorithm=args.algorithm, phantom=args.phantom,
                            reference=cfg["reference"], candidate=cfg["candidate"], verdict=verdict,
                            baseline=args.baseline, unmatched=unmatched,
-                           provenance={**prov, "final": final}, note=args.note)
+                           provenance={**prov, "final": final if isinstance(final, str) else final[0],
+                                       "finals": [final] if isinstance(final, str) else final},
+                           note=args.note)
     print(report)
     if args.report:
         Path(args.report).write_text(report)

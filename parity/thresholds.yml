@@ -173,15 +173,18 @@ pairs:
   # ---- MATLAB originals (QSMxT/QSM-CI#309)
   amp-pe:
     reference: amp-pe       # ci_skip for scoring (diverges on real multi-echo data); parity runs it
-    candidate: amp-pe-qsmrs
-    enabled: false
+    candidate: amp-pe-qsmrs  # runner: self-hosted, so the pair's job runs there (about 1 h)
+    enabled: true
     qsmrs_paths: [src/inversion/amp_pe.rs, src/inversion/admm.rs, src/utils/wavelet.rs,
                   src/utils/special.rs, src/kernels/, src/fft.rs, src/pipeline/inversion.rs,
                   src/pipeline/rules.rs]
     datasets:
       # In silico only: on the KKI travelling head the original was killed (exit 137) on the
       # self-hosted runner (run 40605505892), as it diverges on real multi-echo data.
-      sim: {}
+      sim:
+        # Measured: NRMSE 0.477 %, r 0.99999, max |Δ| 0.0362 ppm, p99 |Δ| 0.00046 ppm.
+        chimap: { nrmse_max: 1.03, correlation_min: 0.989, max_abs_max: 0.0453, p99_abs_max: 0.000571 }
+        measured: { main: "run 40605505892: QSMxT main 8a7072a, QSM.rs main da928e0 (limits)" }
   decompose:
     reference: decompose-qsm   # ci_skip for scoring (hours per run); parity runs it, self-hosted
     candidate: decompose-qsmrs
@@ -382,11 +385,11 @@ pairs:
     blocked_by: astewartau/QSM.rs#319
     qsmrs_paths: [src/inversion/tgv.rs, src/utils/gradient.rs, src/utils/morphology.rs,
                   src/kernels/, src/fft.rs, src/pipeline/inversion.rs, src/pipeline/rules.rs]
-    # QSM.rs main ports qsm_tgv with the package's defaults (α from get_default_alpha(2), the
+    # QSM.rs ports qsm_tgv with the package's defaults (α from get_default_alpha(2), the
     # voxel-size iteration count, 3 erosions, step 3, the first echo's TE) and, for a field in ppm,
-    # the ordinary discrete Laplacian: the package's `romeo` Laplacian with the unwrapping done.
-    # (The README's matched column, ppm α and 1000 iterations, was for QSM.rs v0.39.0.)
-    reference_set: { laplacian: romeo }
+    # the ordinary discrete Laplacian: tgv-tgvjl's `unwrapped` (the package's laplacian_kernel
+    # without ROMEO's re-unwrap, which adds ±2π jumps to an already unwrapped field).
+    reference_set: { laplacian: unwrapped }
     datasets:
       sim: {}
       s002001-kki-achieva-bridge-run1:
