@@ -115,7 +115,7 @@ pairs:
     enabled: false
     # QSM.rs main da928e0 (runs 40605505892, 40607732498): NRMSE sim 18.0 % (r 0.9837), KKI 17.2 %
     # (r 0.9853), on the same support; --pad-mm 12 (STI's padsize) changes nothing.
-    blocked_by: "STI Suite port gaps (QSM.rs issue to file; QSMxT/QSM-CI parity/status PR)"
+    blocked_by: QSMxT/QSM-CI#311   # STI Suite port gaps; a QSM.rs issue is to be filed (PR body)
     qsmrs_paths: [src/inversion/ilsqr.rs, src/kernels/, src/fft.rs, src/utils/padding.rs,
                   src/pipeline/inversion.rs, src/pipeline/rules.rs]
     datasets:
@@ -129,7 +129,7 @@ pairs:
     enabled: false
     # QSM.rs main da928e0 (runs 40605505892, 40607732498): NRMSE sim 40.7 % (r 0.934), KKI 58.5 %
     # (r 0.882), on the same eroded support; deconvolve false and the default give identical output.
-    blocked_by: "STI Suite port gaps (QSM.rs issue to file; QSMxT/QSM-CI parity/status PR)"
+    blocked_by: QSMxT/QSM-CI#311   # STI Suite port gaps; a QSM.rs issue is to be filed (PR body)
     qsmrs_paths: [src/bgremove/vsharp.rs, src/bgremove/sharp.rs, src/bgremove/smv.rs, src/kernels/,
                   src/fft.rs, src/pipeline/bg_removal.rs, src/pipeline/rules.rs]
     # STI Suite's V_SHARP does not deconvolve; QSM.rs's vsharp does by default.

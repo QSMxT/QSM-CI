@@ -8,10 +8,10 @@ A check is **stale** when the reference image changed, QSM.rs `main` changed the
 |---|---|---|---|---|---|---|---|
 | `qsmart` | `qsmart-matlab` → `qsmart-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
 |  |  | sim | never | — | — | — | ⚠️ stale: never checked |
-| `ilsqr` | `ilsqr-sti` → `ilsqr-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | 🚧 gap (STI Suite port gaps (QSM.rs issue to file; QSMxT/QSM-CI parity/status PR)) |
-|  |  | sim | never | — | — | — | 🚧 gap (STI Suite port gaps (QSM.rs issue to file; QSMxT/QSM-CI parity/status PR)) |
-| `vsharp` | `vsharp-sti` → `vsharp-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | 🚧 gap (STI Suite port gaps (QSM.rs issue to file; QSMxT/QSM-CI parity/status PR)) |
-|  |  | sim | never | — | — | — | 🚧 gap (STI Suite port gaps (QSM.rs issue to file; QSMxT/QSM-CI parity/status PR)) |
+| `ilsqr` | `ilsqr-sti` → `ilsqr-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | 🚧 gap (QSMxT/QSM-CI#311) |
+|  |  | sim | never | — | — | — | 🚧 gap (QSMxT/QSM-CI#311) |
+| `vsharp` | `vsharp-sti` → `vsharp-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | 🚧 gap (QSMxT/QSM-CI#311) |
+|  |  | sim | never | — | — | — | 🚧 gap (QSMxT/QSM-CI#311) |
 | `star` | `star-sti` → `star-qsmrs` | sim | never | — | — | — | ⚠️ stale: never checked |
 | `medi` | `medi-cornell` → `medi-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
 |  |  | sim | never | — | — | — | ⚠️ stale: never checked |
