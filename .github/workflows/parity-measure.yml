@@ -4,7 +4,7 @@ on:
   push:
     branches: [parity/status-measure]
 permissions:
-  contents: read
+  contents: write   # the called workflow's record job asks for it (it does not run: baselines)
 jobs:
   main:
     uses: ./.github/workflows/parity.yml
