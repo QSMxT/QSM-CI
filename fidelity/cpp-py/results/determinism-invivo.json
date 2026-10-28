@@ -1,0 +1,79 @@
+[
+  {
+    "op": "n4",
+    "output": "n4.nii.gz",
+    "image": "ghcr.io/astewartau/qsm-ci/ants-n4:v1",
+    "identical": true,
+    "sha256": "f1b498eeced32a9d13de8e444110c44c38dabb00e3e8567e8ee2490d445a8e9d",
+    "runtime_s": [
+      13.0,
+      13.1
+    ]
+  },
+  {
+    "op": "n4",
+    "output": "n4_bias.nii.gz",
+    "image": "ghcr.io/astewartau/qsm-ci/ants-n4:v1",
+    "identical": true,
+    "sha256": "b6972a70fa95b84ef173bca466e860a02af5f9c0f906a5b3bfdb0a6c9cd3982b",
+    "runtime_s": [
+      13.0,
+      13.1
+    ]
+  },
+  {
+    "op": "bestpath",
+    "output": "bestpath.nii.gz",
+    "image": "ghcr.io/astewartau/qsm-ci/py-originals:v1",
+    "identical": true,
+    "sha256": "b241f3573b29aaff25c1eeef680c5cf837133ef1c34bcd90afdbe276a9ade980",
+    "runtime_s": [
+      2.0,
+      2.0
+    ]
+  },
+  {
+    "op": "gibbs",
+    "output": "gibbs.nii.gz",
+    "image": "ghcr.io/astewartau/qsm-ci/py-originals:v1",
+    "identical": true,
+    "sha256": "5c536851ea25b6475ec80271e9d7bac6a3bad64455f2a83029c9de3d0efc3e15",
+    "runtime_s": [
+      177.3,
+      188.5
+    ]
+  },
+  {
+    "op": "bet-f0.2",
+    "output": "bet02_mask.nii.gz",
+    "image": "localhost/qsm-ci/bet2:d5acd7f",
+    "identical": true,
+    "sha256": "310311303eb179e23d68e847e1da3b9c7f787c0cdc424fd8e37b648573715a72",
+    "runtime_s": [
+      1.4,
+      1.4
+    ]
+  },
+  {
+    "op": "bet-f0.5",
+    "output": "bet05_mask.nii.gz",
+    "image": "localhost/qsm-ci/bet2:d5acd7f",
+    "identical": true,
+    "sha256": "247ab95b4ca681fed9929e96a7c7c98d230e94ac91836003a948b507b6ed9b91",
+    "runtime_s": [
+      1.4,
+      1.3
+    ]
+  },
+  {
+    "op": "mppca",
+    "output": "mppca.nii.gz",
+    "image": "ghcr.io/astewartau/qsm-ci/py-originals:v1",
+    "identical": true,
+    "sha256": "303965d140b6a4fdc34556162950bdc6b2c9d55fa8950309b1c28eaa4f421437",
+    "runtime_s": [
+      228.5,
+      250.1
+    ]
+  }
+]
