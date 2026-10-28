@@ -67,7 +67,7 @@ parameters:
   description: primal-dual step-size multiplier
 - name: laplacian
   default: del
-  description: "phase Laplacian: del (the package default, sin/cos) | romeo (ROMEO unwrap then the discrete Laplacian) | phase3 (the original Python's)"
+  description: "phase Laplacian: del (the package default, sin/cos) | romeo (ROMEO unwrap then the discrete Laplacian) | unwrapped (the package's discrete Laplacian of the phase as given, for an already unwrapped field) | phase3 (the original Python's)"
 - name: correct_laplacian
   default: true
   description: subtract the Laplacian's mean inside the mask
