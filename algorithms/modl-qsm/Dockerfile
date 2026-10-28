@@ -29,7 +29,13 @@ RUN pip install --no-cache-dir \
 
 # Bake the algorithm source (code + logs/last.h5 weights + NormFactor.mat) into the image at
 # /opt/MoDL-QSM. The run phase has no network, so this cannot be fetched at run time.
-RUN git clone --depth 1 https://github.com/Ruimin-Feng/MoDL-QSM /opt/MoDL-QSM
+# Pinned (QSMxT/QSM-CI#301) to what the published image holds, so its scores stand: 111a493
+# (2024-05-04), the head of master then and now. The trained weights (logs/last.h5) are in the repo.
+ARG MODL_QSM_REF=111a4937c5004d63539cb26830f4a083ea9ffc48
+RUN git clone https://github.com/Ruimin-Feng/MoDL-QSM /opt/MoDL-QSM \
+    && git -C /opt/MoDL-QSM checkout "$MODL_QSM_REF" \
+    && echo '9a4896bbb4e9aabcc06d36215201580e07390ace8a44e2e984d346a5e640b311  /opt/MoDL-QSM/logs/last.h5' \
+       | sha256sum -c -
 ENV MODL_QSM_HOME="/opt/MoDL-QSM"
 
 # Force CPU + quiet TensorFlow logging at run time (the repo hardcodes CUDA device 0; override it).
