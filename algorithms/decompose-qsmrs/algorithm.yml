@@ -66,13 +66,9 @@ ci_notes:
   (12568-voxel synthetic fit, 6 echoes, n_inner=10, 14-core desktop), i.e. ~15-20 min for the
   1.31 M-voxel chisep-mc phantom and ~1 h for the 5.0 M-voxel Ridani phantoms, against the MATLAB
   entry's measured 4.1 h (chisep-mc) / 10.3 h (ridani-3t-aniso) on a 16-core box and a never-finished
-  ridani-3t-iso. run.sh pins the fit to one thread: qsm-core's decompose parallel path measured
-  SLOWER with more threads (1 → 8 threads: 10.9 s → 37.6 s at 12568 voxels, 37.1 s → 205.9 s at
-  42168 voxels, uniform cores at a constant 3.35 GHz), with bit-identical outputs at every thread
-  count, while another rayon method in the same image scales normally. That is an upstream
-  performance bug, not a numerical one; when it is fixed the pin can be dropped and this gets
-  faster again.
-smoke_box: 32   # per-voxel fit: the PR --smoke gate fits a 32³ central box (≈30 s serial); the full score.yml run is unaffected
+  ridani-3t-iso. The fit uses every core: an old pin to one thread (qsm-core's loop once got
+  slower with threads, fixed by QSM.rs#93) has been dropped.
+smoke_box: 32   # per-voxel fit: the PR --smoke gate fits a 32³ central box (≈30 s on one core); the full score.yml run is unaffected
 # Tier: the default hosted one (no `runner:` / `timeout_minutes:`), unlike the MATLAB entry's
 # self-hosted/720-min/manual_phantoms routing. Serial throughput alone puts the largest scored
 # phantom (ridani-3t-iso, 5.0 M mask voxels, 6 echoes) at ~1 h, ≥5x inside the 360-min hosted cap,

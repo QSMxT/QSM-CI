@@ -10,15 +10,10 @@ B0="$(jq -r .B0 "$IN/params.json")"
 B0DIR="$(jq -r '.B0_dir | join(" ")' "$IN/params.json")"
 TE="$(jq -r '.TE | join(",")' "$IN/params.json")"   # seconds; the 4D magnitude's echo dim must match
 
-# Run the per-voxel fit SERIALLY. This is not a typo: qsm-core's decompose parallel path scales
-# backwards — measured in this image on one machine (12568-voxel fit, 6 echoes, uniform cores at a
-# constant 3.35 GHz), 1 thread 10.9 s, 4 threads 27.3 s, 8 threads 37.6 s, and at 42168 voxels 1
-# thread 37.1 s vs 8 threads 205.9 s. The outputs are bit-identical at every thread count (max |Δ|
-# = 0), and another rayon method in the same image (`separate hc-chisep`) speeds up normally
-# (3.6 s → 1.4 s, 1 → 8 threads), so this is specific to decompose, not the environment. Serial is
-# therefore both the fastest and the most predictable setting until the upstream loop is fixed;
-# drop this line then. Overridable: RAYON_NUM_THREADS=8 bash run.sh.
-export RAYON_NUM_THREADS="${RAYON_NUM_THREADS:-1}"
+# The per-voxel fit uses every core (rayon's default; RAYON_NUM_THREADS caps it). It used to be
+# pinned to one thread here because qsm-core's DECOMPOSE loop allocated per voxel and the static
+# musl allocator serialised that, so it got slower with threads. QSM.rs#93 made the loop
+# allocation-free; since then it scales and gives bit-identical outputs at any thread count.
 
 # Parameter overrides (qsm-ci run --set NAME=VALUE) arrive as /input/config.json; absent = defaults.
 SET=""
