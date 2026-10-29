@@ -194,17 +194,22 @@ pairs:
   decompose:
     reference: decompose-qsm   # ci_skip for scoring (hours per run); parity runs it, self-hosted
     candidate: decompose-qsmrs
-    enabled: false
-    # Baseline on chisep-mc (run 40618536854: QSMxT main 8a7072a, QSM.rs main da928e0, decompose-qsm
-    # sha256:a273a9b3…, 2 h 22 min on the self-hosted runner): χ+ NRMSE 144 % (r 0.478, max |Δ|
-    # 0.226 ppm, p99 |Δ| 0.104 ppm), χ− 41.8 % (r 0.897, max 0.296, p99 0.039). The port does not
-    # reproduce the original on this phantom. Owner: QSM.rs; an issue there is to be filed (PR body),
-    # so blocked_by points at the parity status PR until it is.
-    blocked_by: QSMxT/QSM-CI#311
+    enabled: true
+    # The port follows the reference (astewartau/QSM.rs#333, #338, #339): principal-branch phases,
+    # a QSM per echo, MATLAB lsqcurvefit's trust-region-reflective solver, and MATLAB's elementary
+    # functions (FDLIBM 5.3). The remainder is rounding in the ~2 % of voxels where a compartment
+    # collapses, where the fit has no unique answer: a 1-ulp change inside QSM.rs moves QSM.rs
+    # against itself by the same amount (χ+ 4.86 %, χ− 4.05 %). MATLAB is bit-repeatable across
+    # CPUs and worker counts. Details: astewartau/QSM.rs#329.
     qsmrs_paths: [src/separation/decompose.rs, src/separation/mod.rs, src/pipeline/separation.rs,
-                  src/pipeline/rules.rs]
+                  src/pipeline/rules.rs, src/solvers/, src/utils/fdlibm.rs]
     datasets:
-      chisep-mc: {}
+      chisep-mc:
+        # Measured: χ+ NRMSE 4.90 %, r 0.9983, max |Δ| 0.045 ppm, p99 |Δ| 0.0020 ppm;
+        # χ− NRMSE 4.22 %, r 0.9986, max 0.035, p99 0.0041 (with #339: 4.89 % / 4.20 %, local run).
+        chi-para: { nrmse_max: 5.9, correlation_min: 0.988, max_abs_max: 0.0561, p99_abs_max: 0.00255 }
+        chi-dia: { nrmse_max: 5.14, correlation_min: 0.988, max_abs_max: 0.0442, p99_abs_max: 0.0051 }
+        measured: { main: "run 40808807722: QSM.rs#338 e8f434c with QSMxT main + #448; decompose-qsm sha256:a273a9b3… (limits)" }
 
   # ---- Python originals (QSMxT/QSM-CI#312)
   wavesep:
