@@ -423,7 +423,8 @@
         "chimap",
         "magnitude",
         "mask",
-        "params"
+        "params",
+        "chimap-echoes"
       ],
       "domain": "chisep",
       "engine": "QSMxT / QSM.rs",
@@ -431,7 +432,7 @@
       "language": "Rust",
       "family": "iterative",
       "learning": "none",
-      "description": "DECOMPOSE-QSM (Chen et al. 2021) \u2014 signal-domain susceptibility source separation, as the Rust implementation in QSM.rs exposed by `qsmxt separate decompose`. Unlike the R2'-based methods it fits the multi-echo COMPLEX GRE signal per voxel: a three-stage alternating bounded least-squares fit of {C+, C\u2212, C0, R2*_0, \u03c7+, \u03c7\u2212}, repeated n_inner times, then reconstructs each source from the fitted parameters as a per-compartment phase accumulation. Like the compiled-MATLAB entry (decompose-qsm) the signal's phase term is synthesized from the provided \u03c7_total (chimap) rather than re-derived from raw phase \u2014 \u03c7 is echo-independent, so this isolates DECOMPOSE's separation step from any upstream QSM error and drops the STI-Suite dependency. Needs no R2' and no local field: \u03c7_total plus the multi-echo magnitude only (GRE-only).",
+      "description": "DECOMPOSE-QSM (Chen et al. 2021) \u2014 signal-domain susceptibility source separation, as the Rust implementation in QSM.rs exposed by `qsmxt separate decompose`. Unlike the R2'-based methods it fits the multi-echo COMPLEX GRE signal per voxel: a three-stage alternating bounded least-squares fit of {C+, C\u2212, C0, R2*_0, \u03c7+, \u03c7\u2212}, repeated n_inner times, then reconstructs each source from the fitted parameters as a per-compartment phase accumulation. Each echo's phase term comes from the provided per-echo \u03c7(TE) (chimap-echoes) where the dataset ships it, else from \u03c7_total (chimap) at every echo, rather than being re-derived from raw phase: this isolates DECOMPOSE's separation step from any upstream QSM error and drops the STI-Suite dependency. Needs no R2' and no local field: \u03c7 plus the multi-echo magnitude only (GRE-only).",
       "citation": "Chen J., Gong N.-J., Chaim K.T., Otaduy M.C.G., Liu C., \"Decompose quantitative susceptibility mapping (QSM) to sub-voxel diamagnetic and paramagnetic components based on gradient-echo MRI data\", NeuroImage 2021;242:118477.\n",
       "doi": "10.1016/j.neuroimage.2021.118477",
       "code_url": "https://github.com/astewartau/QSM.rs",
@@ -463,7 +464,7 @@
         }
       ],
       "ci_notes": [
-        "Both DECOMPOSE entries give the same \u03c7+ and \u03c7\u2212 maps. The MATLAB reference fits the conjugate of the signal (MATLAB's conjugate transpose on ydata), which mirrors the fit exactly, and then writes DSC as \u03c7+; the Rust port fits the signal itself and writes PSC as \u03c7+. The two swaps cancel (astewartau/QSM.rs#333). As in decompose-qsm, the QSM given for every echo's phase is the one provided \u03c7_total (the authors computed a STAR-QSM per echo); a qsmxt with `separate decompose --qsm-per-echo` gets chimap once per echo.\n",
+        "Both DECOMPOSE entries give the same \u03c7+ and \u03c7\u2212 maps. The MATLAB reference fits the conjugate of the signal (MATLAB's conjugate transpose on ydata), which mirrors the fit exactly, and then writes DSC as \u03c7+; the Rust port fits the signal itself and writes PSC as \u03c7+. The two swaps cancel (astewartau/QSM.rs#333). The authors compute a STAR-QSM per echo for each echo's phase. Where the dataset ships the per-echo \u03c7(TE) (`chimap-echoes`), a qsmxt with `separate decompose --qsm-per-echo` gets it; otherwise the one provided \u03c7_total is given at every echo, which carries no echo dependence for the fit.\n",
         "Same algorithm as the compiled-MATLAB entry decompose-qsm, in Rust, on the shared QSMxT engine image \u2014 no new container image. Measured here at ~1.5e3 fitted voxels/s on a single core (12568-voxel synthetic fit, 6 echoes, n_inner=10, 14-core desktop), i.e. ~15-20 min for the 1.31 M-voxel chisep-mc phantom and ~1 h for the 5.0 M-voxel Ridani phantoms, against the MATLAB entry's measured 4.1 h (chisep-mc) / 10.3 h (ridani-3t-aniso) on a 16-core box and a never-finished ridani-3t-iso. The fit uses every core: an old pin to one thread (qsm-core's loop once got slower with threads, fixed by QSM.rs#93) has been dropped.\n"
       ]
     },
