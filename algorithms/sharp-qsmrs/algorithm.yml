@@ -27,6 +27,9 @@ parameters:
   - name: radius
     default: 6.0
     description: SMV kernel radius (mm)
+  - name: variant
+    default: sepia
+    description: "implementation reproduced: sepia (SEPIA's SHARP.m) or qsmjl (QSM.jl's sharp); a parity switch, not a tuning parameter"
 
 # Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
 tuning:

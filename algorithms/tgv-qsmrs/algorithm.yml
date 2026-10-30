@@ -46,6 +46,14 @@ parameters:
     tuned:
       sim: 1.5e-3
     description: second-order weight, ppm
+  # Parity switches (qsmxt invert tgv after v10.0.0): reproduce QuantitativeSusceptibilityMappingTGV.jl
+  # where QSM.rs's default differs. Not tuning parameters.
+  - name: reference_divergence
+    default: false
+    description: TGV.jl's divergence in the w update instead of the exact adjoint (anisotropic voxels only)
+  - name: reference_edge_erosion
+    default: false
+    description: erode the mask as TGV.jl does, not from the array's edge (masks reaching an array face only)
 
 # Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
 tuning:

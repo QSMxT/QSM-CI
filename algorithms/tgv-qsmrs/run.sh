@@ -24,6 +24,12 @@ if [ -f "$CFG" ]; then
   V=$(jq -r '.iterations // empty' "$CFG"); [ -n "$V" ] && SET="$SET --iterations $V"
   V=$(jq -r '.alpha1 // empty' "$CFG"); [ -n "$V" ] && SET="$SET --alpha1 $V"
   V=$(jq -r '.alpha0 // empty' "$CFG"); [ -n "$V" ] && SET="$SET --alpha0 $V"
+  # TGV.jl's divergence and mask erosion, for the tgv-tgvjl parity pair (qsmxt after v10.0.0,
+  # QSMxT/QSMxT#460; an older qsmxt refuses the flag rather than ignoring it).
+  V=$(jq -r 'if has("reference_divergence") then .reference_divergence | tostring else empty end' "$CFG")
+  if [ "$V" = true ]; then SET="$SET --reference-divergence"; fi
+  V=$(jq -r 'if has("reference_edge_erosion") then .reference_edge_erosion | tostring else empty end' "$CFG")
+  if [ "$V" = true ]; then SET="$SET --reference-edge-erosion"; fi
 fi
 
 # QSMxT after v10.0.0 (QSM.rs main, run by the parity workflow's qsmxt builds) ports TGV.jl's

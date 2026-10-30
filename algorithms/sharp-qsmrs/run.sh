@@ -13,5 +13,8 @@ CFG="$IN/config.json"
 if [ -f "$CFG" ]; then
   V=$(jq -r '.threshold // empty' "$CFG"); [ -n "$V" ] && SET="$SET --threshold $V"
   V=$(jq -r '.radius // empty' "$CFG"); [ -n "$V" ] && SET="$SET --radius $V"
+  # sepia (default) or qsmjl, for the sharp-qsmjl parity pair (qsmxt after v10.0.0,
+  # QSMxT/QSMxT#460; an older qsmxt refuses the flag).
+  V=$(jq -r '.variant // empty' "$CFG"); [ -n "$V" ] && SET="$SET --variant $V"
 fi
 qsmxt bgremove sharp "$IN/totalfield.nii.gz" -m "$IN/mask.nii.gz" -o "$OUT/localfield.nii.gz" --b0-direction $B0 $SET
