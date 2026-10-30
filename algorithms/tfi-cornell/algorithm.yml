@@ -1,0 +1,75 @@
+name: TFI (MEDI toolbox)
+slug: tfi-cornell
+algorithm: tfi   # pairs with tfi-qsmrs (QSM.rs's port of MEDI_L1 with a preconditioner)
+source: cornell
+stage: bfr+dipole
+language: MATLAB
+family: iterative
+learning: none
+engine: MEDI toolbox 2024.11.26 (MEDI_L1 with a preconditioner)
+inputs: [totalfield, mask, params, magnitude]  # the magnitudes give the edge mask and the data weight
+description: >
+  Preconditioned Total Field Inversion: the total field inverted over the whole field of view in one
+  step, with a preconditioner that makes the background sources cheap to reach. Run as the Cornell
+  MEDI toolbox 2024.11.26 implements it (MEDI_L1 with a preconditioner), with the paper's
+  preconditioner and linear data term and MEDI_L1's defaults otherwise, compiled from MATLAB and run
+  on the license-free MATLAB Runtime.
+citation: Liu et al., Magn Reson Med 2017;78(1):303-315
+authors:
+- name: Zhe Liu
+- name: Youngwook Kee
+- name: Dong Zhou
+- name: Yi Wang
+- name: Pascal Spincemaille
+doi: 10.1002/mrm.26946
+code_url: http://pre.weill.cornell.edu/mri/pages/qsm.html
+license: See Cornell MEDI toolbox license
+image: ghcr.io/astewartau/qsm-ci/matlab-medi@sha256:ba6b3eb2c7c410cd1f66544dd455060a2da32ab76b9d9029e0b7b9345fb69565   # tfi-v1
+run: bash run.sh
+smoke_box: 32
+matlab:
+  entry: recon.m
+  runtime: r2023b
+# Container vs the authors' code in licensed MATLAB with the real toolboxes (QSMxT/QSM-CI#300;
+# fidelity/REPORT.md). Rerun and update whenever the image changes.
+fidelity:
+  date: 2026-10-30
+  image: sha256:ba6b3eb2c7c410cd1f66544dd455060a2da32ab76b9d9029e0b7b9345fb69565   # tfi-v1
+  matlab: R2023b Update 5 (23.2.0.2459199), Image Processing Toolbox 23.2
+  sources: MEDI toolbox 2024.11.26
+  tolerance: identical   # chi and every intermediate, in silico and in vivo, 8 threads
+  result: pass
+  report: algorithms/tfi-cornell/fidelity/REPORT.md
+# MEDI_L1's defaults (parse_QSM_input.m), except what TFI needs from the paper (Liu et al. 2017):
+# the preconditioner (eq. 3, P_B 30), the linear data term (eq. 5) and no SMV. See BUILD.md.
+parameters:
+- name: lambda
+  default: 1000
+  description: data-fidelity weight
+- name: precond
+  default: 30
+  description: preconditioner value P_B outside the mask (1 inside)
+- name: linear
+  default: 1
+  description: linear data term (1, the paper's eq. 5) or MEDI_L1's exponential one (0)
+- name: merit
+  default: 1
+  description: model-error reduction (MERIT), reweighting the noise by the data residual after each iteration
+- name: percentage
+  default: 0.9
+  description: fraction of voxels kept as edges in the morphology gradient mask
+- name: data_weighting
+  default: 1
+  description: data weighting, 1 by the field noise from the echo magnitudes, 0 uniform
+- name: max_iter
+  default: 10
+  description: maximum Gauss-Newton iterations
+- name: tol_norm_ratio
+  default: 0.1
+  description: stop when the relative update falls below this
+- name: cg_max_iter
+  default: 100
+  description: maximum conjugate-gradient iterations per Gauss-Newton step
+- name: cg_tol
+  default: 0.01
+  description: conjugate-gradient relative residual tolerance

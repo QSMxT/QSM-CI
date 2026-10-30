@@ -64,7 +64,8 @@ All fields and χ maps (`chimap`, `chi-para`, `chi-dia`) are **ppm**; `r2prime` 
 in **Hz**. Your stage is scored two ways: **isolated** (fed the ground-truth input boundary) and
 **composed** (chained with other people's stages — e.g. every BFR × your dipole). `chi-separation`
 (susceptibility source separation: χ+ and χ− from the local field, R2′, χ_total and multi-echo
-magnitude — most methods read a subset, declared under `inputs:`), `r2prime-generation` (R2′ from the
+magnitude — most methods read a subset, declared under `inputs:`; a dataset may also ship the
+optional per-echo χ map `chimap-echoes`), `r2prime-generation` (R2′ from the
 GRE magnitude alone, for the GRE-only condition) and `brain-extraction` (a mask from the magnitude)
 are isolated-only; a generated `r2prime` is additionally composed with each R2′-consuming
 χ-separation method. See [`../CONTRACT.md`](../CONTRACT.md).
