@@ -8,6 +8,22 @@ stages.yml / CONTRACT.md):
     <out>/inputs/       phase.nii.gz  magnitude.nii.gz  mask.nii.gz  params.json
     <out>/groundtruth/  totalfield.nii.gz  localfield.nii.gz  chimap.nii.gz  dseg.nii.gz
 
+A χ-separation phantom (qsm-forward wrote `*_Chimap-pos`, or `--chisep`) packs differently: the local
+field, χ_total and R2′ become inputs/, the χ+/χ− source maps are the scored groundtruth/, and the
+qsm-forward chi-sep extras are carried along when present:
+
+    inputs/r2prime.nii.gz              `*_R2prime` — what methods get (fitted from the simulated
+                                       signal when the phantom was made with r2prime_source=fitted)
+    inputs/r2.nii.gz                   `*_R2map`, the ground-truth R2
+    groundtruth/r2prime-formula.nii.gz `*_desc-formula_R2prime`, the R2′ the phantom imposes
+                                       (R2′ = Dr+|χ+| + Dr−|χ−|). Reference only: never mounted.
+    groundtruth/chisep.json            `*_chisep.json`, the phantom configuration and relaxivity
+    groundtruth/theta.nii.gz           `*_fibreangle`, fibre-to-B0 angle (degrees)
+    groundtruth/wm_rois.nii.gz         `*_desc-wmrois_dseg`, the white-matter sub-ROI atlas
+
+and params.json gains `chisep_dr_hz_per_ppm`, the paramagnetic relaxivity Dr+ the phantom imposes
+(documentation only; no method reads it, they keep their published defaults).
+
 `inputs/` is the public boundary for the field-mapping / end-to-end stage. `groundtruth/` holds the
 per-stage scoring targets *and* the boundaries mounted (at run time only) as isolated-mode inputs to
 downstream stages. For the scoring phantom, `groundtruth/` comes from the OSF zip (not committed); for a dev phantom it
@@ -82,6 +98,15 @@ def params_from_sidecars(anat: Path) -> dict:
     return params
 
 
+def chisep_relaxivity(meta: dict) -> "float | None":
+    """The paramagnetic relaxivity Dr+ (Hz/ppm) a qsm-forward `*_chisep.json` records: `Dr` for a
+    co-located (linear) phantom, where χ+ and χ− share it, or `DrPos` for the region-disjoint Ridani
+    model, whose Dr− is orientation-dependent (its maximum is `DrNegMax` in the same block)."""
+    relax = meta.get("Relaxivity") or {}
+    dr = relax.get("Dr", relax.get("DrPos"))
+    return float(dr) if dr is not None else None
+
+
 def save(path: Path, data: np.ndarray, affine: np.ndarray) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     nib.save(nib.Nifti1Image(data.astype(np.float32), affine), str(path))
@@ -112,12 +137,23 @@ def main() -> None:
         print(f"  (packed {se_mag.shape[-1]}-echo spin-echo magnitude)")
     mask = nib.load(str(deriv / f"{pre}_mask.nii"))
     save(out / "inputs" / "mask.nii.gz", mask.get_fdata(), mask.affine)
-    (out / "inputs").mkdir(parents=True, exist_ok=True)
-    (out / "inputs" / "params.json").write_text(json.dumps(params_from_sidecars(anat), indent=2) + "\n")
+    params = params_from_sidecars(anat)
 
     # χ-separation phantom? (has the paramagnetic/diamagnetic source maps). If so, the local field,
     # χ_total and R2' are PROVIDED inputs (methods invert them), and the scored targets are χ+/χ−.
     chisep = force_chisep or bool(glob.glob(str(deriv / f"{pre}_Chimap-pos.nii*")))
+    meta_json = sorted(glob.glob(str(deriv / f"{pre}_chisep.json"))) if chisep else []
+    if meta_json:
+        # The phantom's configuration ships beside its ground truth; its Dr+ is recorded in
+        # params.json for documentation. No method reads it: they keep their published defaults.
+        meta = json.loads(Path(meta_json[0]).read_text())
+        (out / "groundtruth").mkdir(parents=True, exist_ok=True)
+        (out / "groundtruth" / "chisep.json").write_text(json.dumps(meta, indent=2) + "\n")
+        dr = chisep_relaxivity(meta)
+        if dr is not None:
+            params["chisep_dr_hz_per_ppm"] = dr
+    (out / "inputs").mkdir(parents=True, exist_ok=True)
+    (out / "inputs" / "params.json").write_text(json.dumps(params, indent=2) + "\n")
 
     # groundtruth/  (qsm-forward name -> canonical artifact name)
     if chisep:
@@ -131,7 +167,21 @@ def main() -> None:
             if hit:
                 im = nib.load(hit[0])
                 save(out / "inputs" / f"{dst}.nii.gz", im.get_fdata(), im.affine)
-        gt = {"Chimap-pos": "chi-para", "Chimap-neg": "chi-dia", "Chimap": "chimap", "dseg": "dseg"}
+        # The R2' the phantom imposes (formula) is a reference beside the ground truth, not an input:
+        # inputs/r2prime above is `*_R2prime`, which is fitted from the simulated signal when the
+        # phantom was made with r2prime_source=fitted.
+        gt = {"Chimap-pos": "chi-para", "Chimap-neg": "chi-dia", "Chimap": "chimap", "dseg": "dseg",
+              "desc-formula_R2prime": "r2prime-formula"}
+        # qsm-forward chi-sep extras, copied with their own dtype and header: the ground-truth R2
+        # (an input under the Ridani R2' = R2*_fit - R2 convention), the fibre-to-B0 angle and the
+        # white-matter sub-ROI atlas (both scoring aids).
+        extras = {"R2map": "inputs/r2", "fibreangle": "groundtruth/theta",
+                  "desc-wmrois_dseg": "groundtruth/wm_rois"}
+        for src, dst in extras.items():
+            hit = glob.glob(str(deriv / f"{pre}_{src}.nii*"))
+            if hit:
+                (out / dst).parent.mkdir(parents=True, exist_ok=True)
+                nib.save(nib.load(hit[0]), str(out / f"{dst}.nii.gz"))
     else:
         gt = {"fieldmap": "totalfield", "fieldmap-local": "localfield", "Chimap": "chimap", "dseg": "dseg"}
     for src, dst in gt.items():
