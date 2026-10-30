@@ -28,6 +28,19 @@ code_url: https://github.com/ZhenghanFang/WaveSep
 license: academic use (author permission)
 image: ghcr.io/astewartau/qsm-ci/wavesep@sha256:c96094a98049ccfb9d660a2463ef772502b30dcb412095e45641d67edeb8791a   # v1
 run: bash run.sh
+# The original, checked (QSMxT/QSM-CI#302): the image's WaveSep source is f3a192e unmodified, the
+# output is bit-identical across runs and against a rebuild from the committed Dockerfile, at the
+# fixed thread count run.sh sets. fidelity/cpp-py/README.md; rerun whenever the image changes.
+fidelity:
+  date: 2026-10-28
+  image: sha256:c96094a98049ccfb9d660a2463ef772502b30dcb412095e45641d67edeb8791a
+  source: ZhenghanFang/WaveSep f3a192e (unmodified)
+  python: 3.10.20, NumPy 2.2.6, PyWavelets 1.8.0, SciPy 1.15.3 (Dockerfile)
+  threads: OpenMP/OpenBLAS/MKL 1   # run.sh; output identical at the default count too
+  host: Intel Core i5-11500, podman; rebuild from algorithms/wavesep/Dockerfile
+  tolerance: identical   # image twice, and image vs the rebuild, synthetic χ-separation case
+  result: pass
+  report: fidelity/cpp-py/README.md
 parameters:
   - name: Dr
     default: 137.0
@@ -53,4 +66,5 @@ parameters:
 # (no B0 direction, so single-orientation data needs no reorientation), with a single relaxivity kernel
 # Dr=137 Hz/ppm (the qsm-forward phantom's kernel; override via $WAVESEP_DR or params.json "Dr").
 # The WaveSep source is third-party (no license; used with the author's permission for academic
-# benchmarking) — gitignored and baked into the image, so CI pulls the prebuilt image (see BUILD.md).
+# benchmarking): not in this repository; the Dockerfile clones it into the image at build time, and
+# CI pulls the prebuilt image (see BUILD.md).

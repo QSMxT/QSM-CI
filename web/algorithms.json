@@ -3141,6 +3141,59 @@
       "ci_notes": []
     },
     {
+      "slug": "wavesep-qsmrs",
+      "name": "WaveSep (QSM.rs)",
+      "stage": "chi-separation",
+      "inputs": [
+        "r2prime",
+        "chimap",
+        "mask",
+        "params"
+      ],
+      "domain": "chisep",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "wavesep",
+      "language": "Rust",
+      "family": "iterative",
+      "learning": "none",
+      "description": "WaveSep (Fang et al. 2023) as the Rust implementation in QSM.rs, run by `qsmxt separate wavesep`: \u03c7+ + \u03c7\u2212 \u2248 \u03c7_total and \u03c7+ \u2212 \u03c7\u2212 \u2248 R2'/Dr under a wavelet-domain L1 prior (db4, maximum level), solved by proximal gradient with the authors' defaults (\u03b1 0.2, \u03bb 0.02, \u2264 100 iterations, early stop at a relative change of 1e-3). The QSM.rs port of the `wavesep` entry, which runs the authors' Python solver.",
+      "citation": "Fang, Shin, van Zijl, Li, Sulam, \"WaveSep: A Flexible Wavelet-Based Approach for Source Separation in Susceptibility Imaging\", Machine Learning in Clinical Neuroimaging (MLCN), MICCAI 2023, Springer LNCS.\n",
+      "doi": "10.1007/978-3-031-44858-4_6",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT",
+      "authors": [
+        "Zhenghan Fang",
+        "Hyeong-Geol Shin",
+        "Peter van Zijl",
+        "Xu Li",
+        "Jeremias Sulam",
+        "Ashley Stewart"
+      ],
+      "parameters": [
+        {
+          "name": "Dr",
+          "default": 137.0,
+          "description": "Static-dephasing relaxivity (Hz/ppm), used for both sources as the original does (`--dr-pos`, `--dr-neg`). 137 is the qsm-forward phantom's kernel, the `wavesep` entry's default.\n"
+        },
+        {
+          "name": "lambda",
+          "default": 0.02,
+          "description": "wavelet-domain L1 (soft-thresholding) weight"
+        },
+        {
+          "name": "alpha",
+          "default": 0.2,
+          "description": "proximal-gradient step"
+        },
+        {
+          "name": "max_iter",
+          "default": 100,
+          "description": "maximum proximal-gradient iterations (early stop at a relative change of 1e-3)"
+        }
+      ],
+      "ci_notes": []
+    },
+    {
       "slug": "whqsm-qsmrs",
       "name": "WH-QSM (QSM.rs)",
       "stage": "dipole",
