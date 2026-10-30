@@ -203,16 +203,17 @@ pairs:
                   src/pipeline/inversion.rs, src/pipeline/rules.rs, src/utils/echo_time.rs,
                   src/utils/padding.rs]
     qsmxt_paths: *invert_wiring
-    # star-sti scales the field to phase at the first echo (recon.m); star-qsmrs defaults to the sum.
-    candidate_set: { te: first }
+    # star-sti scales the field to phase at the first echo and pads 12 voxels per side (recon.m);
+    # star-qsmrs defaults to the sum and STI's GUI padding [8 8 20].
+    candidate_set: { te: first, pad: 12 }
     datasets:
       sim:
         # Measured: NRMSE 0.326 %, r 0.999995, max |Δ| 0.00050 ppm, p99 |Δ| 0.00023 ppm.
         chimap: { nrmse_max: 0.859, correlation_min: 0.989, max_abs_max: 0.000623, p99_abs_max: 0.000288 }
         measured: { main: "run 40605505892: QSMxT main 8a7072a, QSM.rs main da928e0 (limits)" }
-      # KKI travelling head: NRMSE 6.68 %, r 0.9983 (run 40605505892) — not a match yet, so no
-      # limits; it joins once the in-vivo difference is explained (the STI Suite gap issue). Config
-      # to run it by name: reference_prefix [laplacian-qsmrs, vsharp-qsmrs], feed {localfield}.
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
+        feed: { localfield: localfield }
   medi:
     reference: medi-cornell
     candidate: medi-qsmrs
