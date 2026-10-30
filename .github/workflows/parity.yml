@@ -19,18 +19,25 @@ name: parity
 # A build is the release build (QSMxT's release.yml: cargo build --release, x86_64 musl, default
 # features) in a debian-slim image like algorithms/_qsmxt (parity/qsmxt.Dockerfile).
 #
-# On demand only. Before a QSM.rs release (docs/parity.md, "Before a QSM.rs release"):
+# On demand only (the weekly parity-status workflow says which pairs need it). Before a QSM.rs
+# release (docs/parity.md, "Before a QSM.rs release"):
 #     gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=enabled -f dataset=configured \
 #       -f qsmrs_ref=<release candidate SHA>
+#
+# After the jobs, `report` writes the run summary (which pairs passed against exactly the QSM.rs
+# commit under test: the release gate's answer). A run from main, or one dispatched with
+# record=true, then has `record` commit one record per pair × dataset to parity/results.json and
+# regenerate parity/status.json and parity/STATUS.md (scripts/parity.py report / record / status).
+# Baselines and runs from other branches record nothing.
 
 on:
   workflow_dispatch:
     inputs:
       algorithm:
-        description: "pair in parity/thresholds.yml (e.g. qsmart), or 'enabled' for every enabled pair"
-        default: "qsmart"
+        description: "pairs in parity/thresholds.yml, comma-separated (e.g. qsmart,ilsqr,tkd), and/or 'enabled' (every enabled pair) / 'all-configured' (every pair with a dataset, enabled or not)"
+        default: "enabled"
       dataset:
-        description: "scripts/datasets.json key (e.g. sim, s002001-kki-achieva-bridge-run1), or 'configured' for every dataset the pair has limits for"
+        description: "scripts/datasets.json keys, comma-separated (e.g. sim, s002001-kki-achieva-bridge-run1), or 'configured' for every dataset each pair has an entry for"
         default: "configured"
       baseline:
         description: "true = measure and print suggested limits; never fail on them"
@@ -44,6 +51,9 @@ on:
       qsmxt_image:
         description: "prebuilt qsmxt image for every QSM.rs step instead (overrides the refs)"
         default: ""
+      record:
+        description: "true = commit this run's results to parity/results.json (runs from main always do; baselines never)"
+        default: "false"
   workflow_call:
     inputs:
       algorithm: { type: string, default: "enabled" }
@@ -52,6 +62,7 @@ on:
       qsmrs_ref: { type: string, default: "" }
       qsmxt_ref: { type: string, default: "" }
       qsmxt_image: { type: string, default: "" }
+      record: { type: string, default: "false" }
 
 # `shell: bash` here is load-bearing, not decoration: naming the shell explicitly makes every
 # `run:` below execute as `bash --noprofile --norc -eo pipefail {0}`, whereas the IMPLICIT
@@ -61,7 +72,7 @@ defaults:
     shell: bash
 
 permissions:
-  contents: read   # runs containers on a dataset and uploads a report; commits nothing
+  contents: read   # only the `record` job commits (job-level contents: write)
 
 env:
   SETUPTOOLS_SCM_PRETEND_VERSION: "0.0.0"   # shallow checkout has no tags for setuptools-scm
@@ -69,27 +80,47 @@ env:
 jobs:
   plan:
     runs-on: ubuntu-latest
+    # Every later job reads the run's settings from here, not from `inputs`.
     outputs:
       matrix: ${{ steps.plan.outputs.matrix }}
       build: ${{ steps.plan.outputs.build }}
+      baseline: ${{ steps.plan.outputs.baseline }}
+      record: ${{ steps.plan.outputs.record }}
+      qsmrs_ref: ${{ steps.plan.outputs.qsmrs_ref }}
+      qsmxt_ref: ${{ steps.plan.outputs.qsmxt_ref }}
+      qsmxt_image: ${{ steps.plan.outputs.qsmxt_image }}
+      key: ${{ steps.plan.outputs.key }}
     steps:
       - uses: actions/checkout@v7
       - id: plan
         env:
           # Dispatch inputs: via env, never interpolated into a script (free-text fields).
-          ALGORITHM: ${{ inputs.algorithm || 'qsmart' }}
+          ALGORITHM: ${{ inputs.algorithm || 'enabled' }}
           DATASET: ${{ inputs.dataset || 'configured' }}
+          BASELINE: ${{ inputs.baseline || 'false' }}
           QSMRS_REF: ${{ inputs.qsmrs_ref }}
           QSMXT_REF: ${{ inputs.qsmxt_ref }}
           QSMXT_IMAGE: ${{ inputs.qsmxt_image }}
+          RECORD: ${{ inputs.record || 'false' }}
+          REF: ${{ github.ref }}
         run: |
           pip install -q pyyaml
+          # Validates every selected pair and dataset before any job starts.
           m=$(python3 scripts/parity.py pairs --matrix --algorithm "$ALGORITHM" --dataset "$DATASET")
           echo "matrix=$m" >> "$GITHUB_OUTPUT"
           echo "$m"
           # Build qsmxt only when a ref is given and no prebuilt image is.
           b=false; [ -z "$QSMXT_IMAGE" ] && [ -n "$QSMRS_REF$QSMXT_REF" ] && b=true
-          echo "build=$b" >> "$GITHUB_OUTPUT"
+          # Record: a run from main, or record=true; never a baseline (it applies no limits).
+          r=false; { [ "$REF" = refs/heads/main ] || [ "$RECORD" = true ]; } && r=true
+          # Names this run's artifacts by what it tests, so a workflow that calls this one several
+          # times in one run (one call per QSM.rs ref) keeps each call's build and results apart.
+          k="q$(printf '%s|%s|%s|%s|%s' "$QSMRS_REF" "$QSMXT_REF" "$QSMXT_IMAGE" "$ALGORITHM" "$DATASET" | sha1sum | cut -c1-8)"
+          echo "key=$k" >> "$GITHUB_OUTPUT"
+          [ "$BASELINE" = true ] && r=false
+          { echo "build=$b"; echo "record=$r"; echo "baseline=$BASELINE"
+            echo "qsmrs_ref=$QSMRS_REF"; echo "qsmxt_ref=$QSMXT_REF"; echo "qsmxt_image=$QSMXT_IMAGE"
+          } | tee -a "$GITHUB_OUTPUT"
 
   # qsmxt from source, as QSMxT's release.yml builds its x86_64-unknown-linux-musl asset (the one
   # algorithms/_qsmxt installs). The binary and what it was built from are handed to the parity
@@ -100,16 +131,16 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 90
     env:
-      QSMRS_REF: ${{ inputs.qsmrs_ref }}
-      QSMXT_REF: ${{ inputs.qsmxt_ref || 'main' }}
+      QSMRS_REF: ${{ needs.plan.outputs.qsmrs_ref }}
+      QSMXT_REF: ${{ needs.plan.outputs.qsmxt_ref || 'main' }}
     steps:
       - uses: actions/checkout@v7
         with:
           repository: QSMxT/QSMxT
-          ref: ${{ inputs.qsmxt_ref || 'main' }}
+          ref: ${{ needs.plan.outputs.qsmxt_ref || 'main' }}
           path: qsmxt
       - name: Move qsm-core to the QSM.rs under test
-        if: inputs.qsmrs_ref != ''
+        if: needs.plan.outputs.qsmrs_ref != ''
         working-directory: qsmxt
         run: |
           # QSMxT pins qsm-core by git rev in both manifests (they move in lockstep). A tag or branch
@@ -146,10 +177,19 @@ jobs:
           PY
           )
           printf '%s\n' "QSMxT $QSMXT_REF @ $(git rev-parse HEAD), qsm-core $core" | tee ../qsmxt-build/BUILT_FROM
-          ../qsmxt-build/qsmxt --version
+          ../qsmxt-build/qsmxt --version | tee ../qsmxt-build/VERSION
+          # The same, for parity.py report (results.json records the commits each check ran).
+          QSMXT_COMMIT=$(git rev-parse HEAD) CORE="$core" python3 - <<'PY' > ../qsmxt-build/built.json
+          import json, os
+          v, _, c = os.environ["CORE"].partition(" @ ")
+          print(json.dumps({"qsmxt_ref": os.environ["QSMXT_REF"], "qsmxt_commit": os.environ["QSMXT_COMMIT"],
+                            "qsmrs_ref": os.environ.get("QSMRS_REF") or None,
+                            "qsmrs_version": v if c else None, "qsmrs_commit": c or None}))
+          PY
+          cat ../qsmxt-build/built.json
       - uses: actions/upload-artifact@v7
         with:
-          name: qsmxt-under-test
+          name: qsmxt-under-test-${{ needs.plan.outputs.key }}
           path: qsmxt-build/
           retention-days: 7
 
@@ -161,19 +201,31 @@ jobs:
       fail-fast: false
       matrix:
         include: ${{ fromJson(needs.plan.outputs.matrix) }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 240
+    # Hosted, unless a side's algorithm.yml routes it to the self-hosted runners (`runner:`); the
+    # cap is that tier's (parity.py _route: 360 min hosted, timeout_minutes self-hosted).
+    runs-on: ${{ matrix.runs_on }}
+    timeout-minutes: ${{ matrix.timeout }}
     env:
       ALGORITHM: ${{ matrix.algorithm }}
       PHANTOM: ${{ matrix.phantom }}
-      BASELINE: ${{ inputs.baseline || 'false' }}
+      BASELINE: ${{ needs.plan.outputs.baseline }}
       # Labels every container this job starts (qsm_ci.containers), as in score.yml.
       QSMCI_JOB_TAG: ${{ github.run_id }}-parity-${{ matrix.algorithm }}-${{ matrix.phantom }}
     steps:
       - uses: actions/checkout@v7
 
-      # Same interpreter and pinned numpy/scipy as the scoring jobs (score.yml explains why).
+      # On a persistent self-hosted runner: clear orphaned qsm-ci containers first (score.yml).
+      - name: Reap orphaned qsm-ci containers (self-hosted)
+        if: ${{ matrix.runs_on != 'ubuntu-latest' }}
+        continue-on-error: true
+        uses: ./.github/actions/reap-containers
+        with:
+          job-tag: ${{ github.run_id }}-parity-${{ matrix.algorithm }}-${{ matrix.phantom }}
+
+      # Same interpreter and pinned numpy/scipy as the scoring jobs (score.yml explains why, and
+      # why a self-hosted runner without the tool cache may fall back to its own Python).
       - uses: actions/setup-python@v7
+        continue-on-error: true
         with: { python-version: "3.12" }
 
       - name: Install qsm-ci CLI + deps
@@ -186,6 +238,10 @@ jobs:
         id: ds
         env:
           OSF_FILE_INVIVO: ${{ secrets.OSF_FILE_INVIVO }}
+          OSF_FILE_RIDANI_3T_ISO: ${{ secrets.OSF_FILE_RIDANI_3T_ISO }}
+          OSF_FILE_RIDANI_3T_ANISO: ${{ secrets.OSF_FILE_RIDANI_3T_ANISO }}
+          OSF_FILE_RIDANI_7T_ANISO: ${{ secrets.OSF_FILE_RIDANI_7T_ANISO }}
+          OSF_FILE_CHISEP_MC: ${{ secrets.OSF_FILE_CHISEP_MC }}
         run: |
           python3 - <<'PY' >> "$GITHUB_OUTPUT"
           import json, os
@@ -209,6 +265,10 @@ jobs:
         env:
           OSF_TOKEN: ${{ secrets.OSF_TOKEN }}
           OSF_FILE_INVIVO: ${{ secrets.OSF_FILE_INVIVO }}
+          OSF_FILE_RIDANI_3T_ISO: ${{ secrets.OSF_FILE_RIDANI_3T_ISO }}
+          OSF_FILE_RIDANI_3T_ANISO: ${{ secrets.OSF_FILE_RIDANI_3T_ANISO }}
+          OSF_FILE_RIDANI_7T_ANISO: ${{ secrets.OSF_FILE_RIDANI_7T_ANISO }}
+          OSF_FILE_CHISEP_MC: ${{ secrets.OSF_FILE_CHISEP_MC }}
           OSF_ZIP: ${{ steps.ds.outputs.zip }}
           DS_PATH: ${{ steps.ds.outputs.path }}
         run: scripts/fetch_dataset.sh "$PHANTOM" "$DS_PATH"
@@ -218,12 +278,12 @@ jobs:
       - uses: actions/download-artifact@v8
         if: needs.plan.outputs.build == 'true'
         with:
-          name: qsmxt-under-test
+          name: qsmxt-under-test-${{ needs.plan.outputs.key }}
           path: qsmxt-build
       - name: QSM.rs under test
         id: qsmrs
         env:
-          QSMXT_IMAGE: ${{ inputs.qsmxt_image }}
+          QSMXT_IMAGE: ${{ needs.plan.outputs.qsmxt_image }}
         run: |
           if [ -n "$QSMXT_IMAGE" ]; then
             docker pull "$QSMXT_IMAGE"
@@ -272,7 +332,7 @@ jobs:
       - uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: parity-${{ matrix.algorithm }}-${{ matrix.phantom }}
+          name: parity-${{ needs.plan.outputs.key }}-${{ matrix.algorithm }}-${{ matrix.phantom }}
           retention-days: 30
           if-no-files-found: ignore
           include-hidden-files: true   # the outputs live under .parity/
@@ -282,3 +342,95 @@ jobs:
             .parity/*/provenance.json
             .parity/*/*.nii.gz
             .parity/*/intermediates/*.nii.gz
+
+      # The verdict alone, small, for the report job (the artifact above holds the volumes too).
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: parity-result-${{ needs.plan.outputs.key }}-${{ matrix.algorithm }}-${{ matrix.phantom }}
+          retention-days: 90
+          if-no-files-found: ignore
+          path: parity.json
+
+  # One record per pair × dataset (a job that ended before `compare` is recorded as an error) and
+  # the run summary: which pairs passed against exactly the QSM.rs commit under test.
+  report:
+    needs: [plan, qsmxt, parity]
+    if: ${{ always() && needs.plan.result == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: pip install -q pyyaml
+      - uses: actions/download-artifact@v8
+        continue-on-error: true   # none at all when every job failed early
+        with:
+          pattern: parity-result-${{ needs.plan.outputs.key }}-*
+          path: results
+      - uses: actions/download-artifact@v8
+        if: needs.plan.outputs.build == 'true'
+        continue-on-error: true
+        with:
+          name: qsmxt-under-test-${{ needs.plan.outputs.key }}
+          path: qsmxt-build
+      - name: Records and run summary
+        env:
+          MATRIX: ${{ needs.plan.outputs.matrix }}
+          BASELINE: ${{ needs.plan.outputs.baseline }}
+          QSMRS_REF: ${{ needs.plan.outputs.qsmrs_ref }}
+          QSMXT_REF: ${{ needs.plan.outputs.qsmxt_ref }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          mkdir -p results
+          B=""; [ "$BASELINE" = true ] && B="--baseline"
+          BUILD=""; [ -f qsmxt-build/built.json ] && BUILD="--build qsmxt-build/built.json"
+          python3 scripts/parity.py report --artifacts results --matrix "$MATRIX" $B $BUILD \
+            --date "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --run-id "$GITHUB_RUN_ID" --run-url "$RUN_URL" \
+            --qsmci-commit "$GITHUB_SHA" --qsmrs-ref "$QSMRS_REF" --qsmxt-ref "$QSMXT_REF" \
+            --out parity-records.json --summary summary.md
+          cat summary.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: parity-records-${{ needs.plan.outputs.key }}
+          path: parity-records.json
+          retention-days: 90
+
+  # Commits the run's records to parity/results.json and regenerates parity/status.json and
+  # parity/STATUS.md, on main. Only for a run from main or with record=true (plan), never a
+  # baseline. The push follows score.yml's merge job: bot identity, contents: write on this job
+  # only, and a retry that re-applies this run's records onto the latest main instead of rebasing.
+  record:
+    needs: [plan, report]
+    if: ${{ always() && needs.plan.outputs.record == 'true' && needs.report.result == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # the only job that commits
+    # No concurrency group: GitHub cancels a second pending job in a group, which would drop a
+    # run's records. Concurrent writers are handled by the retry below instead.
+    env:
+      RECORD_BRANCH: main
+    steps:
+      - uses: actions/checkout@v7
+        with: { ref: "${{ env.RECORD_BRANCH }}" }
+      - run: pip install -q pyyaml
+      - uses: actions/download-artifact@v8
+        with:
+          name: parity-records-${{ needs.plan.outputs.key }}
+          path: /tmp/parity
+      - name: Commit results and status
+        env:
+          GH_TOKEN: ${{ github.token }}   # status asks GitHub what changed in QSM.rs (rule b)
+        run: |
+          git config user.name  "qsm-ci-bot"
+          git config user.email "qsm-ci@users.noreply.github.com"
+          for attempt in 1 2 3 4 5; do
+            git fetch origin "$RECORD_BRANCH" -q
+            git reset --hard "origin/$RECORD_BRANCH" -q
+            python3 scripts/parity.py record --records /tmp/parity/parity-records.json
+            python3 scripts/parity.py status --json parity/status.json --markdown parity/STATUS.md
+            git add parity/results.json parity/status.json parity/STATUS.md
+            git diff --cached --quiet && { echo "nothing to record"; exit 0; }
+            git commit -q -m "Record parity run $GITHUB_RUN_ID"
+            git push origin "HEAD:$RECORD_BRANCH" && exit 0
+            echo "push attempt $attempt rejected — re-applying onto latest $RECORD_BRANCH"; sleep $((attempt * 3))
+          done
+          echo "::error::could not push parity results after 5 attempts"; exit 1
