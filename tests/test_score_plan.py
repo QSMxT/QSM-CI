@@ -307,6 +307,11 @@ def test_the_workflow_wires_the_planner_and_never_queues_whole_runs():
     assert "group: score-${{ matrix.task.id }}" in score and "cancel-in-progress: true" in score
     upload = score[score.index("actions/upload-artifact"):]
     assert "if: always()" in upload and "runs-${{ matrix.task.id }}.done" in upload
+    # the teardown marker is written before the containers are killed, so pipeline.py never
+    # records the kill as a DNF (RunsFile.aborting)
+    mark = score.index('touch "runs-$TASK_ID.aborted"')
+    assert mark < score.index("uses: ./.github/actions/kill-containers") < score.index("actions/upload-artifact")
+    assert "if: always()" in score[score.rindex("- name:", 0, mark):mark]
     merge = wf[wf.index("  merge:"):]
     assert "always()" in merge.split("steps:")[0]
     assert "results/scoring-state.json" in merge and "Wait for older merges" in merge
