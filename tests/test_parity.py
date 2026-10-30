@@ -147,6 +147,7 @@ def test_derived_limits_perfect_agreement():
     m = {"kind": "continuous", "nrmse": 0.0, "correlation": 1.0, "max_abs": 0.0, "p99_abs": 0.0}
     lim = parity.derive_limits(m)
     assert lim["nrmse_max"] == pytest.approx(0.5)
+    assert lim["max_abs_max"] == lim["p99_abs_max"] == 1e-6   # float noise is not a regression
     assert all(r["ok"] for r in parity.check(m, lim))
 
 
@@ -163,6 +164,18 @@ def test_discover_pairs_needs_an_original_and_a_port(tmp_path):
         "x": {"original": ["x-jl", "x-orig"], "port": ["x-qsmrs"]}}
 
 
+def test_real_thresholds_enabled_pairs_track_their_qsmrs_sources():
+    """Staleness rule (b) needs each enabled pair's QSM.rs paths; a gap names what blocks it."""
+    for name, cfg in parity.load_thresholds().items():
+        if cfg.get("enabled"):
+            assert cfg.get("qsmrs_paths"), f"{name}: enabled without qsmrs_paths"
+            assert all(p.startswith("src/") for p in cfg["qsmrs_paths"]), name
+            assert not cfg.get("blocked_by"), f"{name}: enabled but blocked_by"
+
+
+ARTIFACTS = ("chimap", "localfield", "totalfield", "chi-para", "chi-dia")
+
+
 def test_real_thresholds_name_real_pairs():
     """Every enabled pair matches algorithm.yml: an original and a QSM.rs port of one algorithm.
     (A disabled pair may name an original that is still on its way, e.g. a Julia one.)"""
@@ -177,11 +190,13 @@ def test_real_thresholds_name_real_pairs():
             for side in ("reference", "candidate"):
                 for slug in (dcfg or {}).get(f"{side}_prefix") or []:
                     assert (ROOT / "algorithms" / slug / "algorithm.yml").exists(), slug
-            parity.check({}, (dcfg or {}).get("chimap"))       # well-formed limit keys
+            final = [a for a in ARTIFACTS if a in (dcfg or {})]   # the final map's limits
+            for a in final:
+                parity.check({}, dcfg[a])                         # well-formed limit keys
             for lim in ((dcfg or {}).get("intermediates") or {}).values():
                 parity.check({}, lim)
             if cfg.get("enabled"):
-                assert (dcfg or {}).get("chimap"), f"{name}/{ds}: an enabled pair needs limits"
+                assert final, f"{name}/{ds}: an enabled pair needs limits"
 
 
 def test_pair_problems():
@@ -219,15 +234,59 @@ def test_apply_names_renames_and_complements(tmp_path):
     assert vm.sum() == 1 and vm[1, 1, 1] == 1
 
 
+def _pm(th, alg, ds):
+    """plan_matrix without the repo checks, reduced to (pair, dataset)."""
+    return [(j["algorithm"], j["phantom"]) for j in parity.plan_matrix(th, alg, ds, manifests={},
+                                                                         datasets={})]
+
+
 def test_plan_matrix():
     th = {"a": {"enabled": True, "datasets": {"sim": {}, "kki": {}}},
-          "b": {"enabled": False, "datasets": {"sim": {}}}}
-    assert parity.plan_matrix(th, "enabled", "configured") == [
-        {"algorithm": "a", "phantom": "kki"}, {"algorithm": "a", "phantom": "sim"}]
-    assert parity.plan_matrix(th, "b", "sim") == [{"algorithm": "b", "phantom": "sim"}]
-    assert parity.plan_matrix(th, "a", "other") == [{"algorithm": "a", "phantom": "other"}]
+          "b": {"enabled": False, "datasets": {"sim": {}}},
+          "c": {"enabled": False}}
+    assert _pm(th, "enabled", "configured") == [("a", "kki"), ("a", "sim")]
+    assert _pm(th, "b", "sim") == [("b", "sim")]
+    assert _pm(th, "a", "other") == [("a", "other")]
     with pytest.raises(SystemExit):
-        parity.plan_matrix(th, "nope", "sim")
+        _pm(th, "nope", "sim")
+
+
+def test_select_pairs_takes_lists_and_selectors():
+    th = {"a": {"enabled": True, "datasets": {"sim": {}}}, "b": {"datasets": {"sim": {}}},
+          "c": {"enabled": False}}
+    assert parity.select_pairs(th, "b,a") == ["a", "b"]           # thresholds.yml order
+    assert parity.select_pairs(th, " a , a ") == ["a"]            # no duplicates
+    assert parity.select_pairs(th, "all-configured") == ["a", "b"]
+    assert parity.select_pairs(th, "enabled,c") == ["a", "c"]
+    for bad in ("a,nope", "", "qsmart,,x"):
+        with pytest.raises(SystemExit):
+            parity.select_pairs(th, bad)
+
+
+def test_plan_matrix_validates_before_anything_runs():
+    th = {"a": {"reference": "a-orig", "candidate": "a-qsmrs", "datasets": {"sim": {}}},
+          "b": {"reference": "b-orig", "candidate": "a-qsmrs", "datasets": {"sim": {}}}}
+    m = {"a-orig": {"algorithm": "a", "source": "x"}, "a-qsmrs": {"algorithm": "a", "source": "qsmrs"},
+         "b-orig": {"algorithm": "b", "source": "x"}}
+    with pytest.raises(SystemExit, match="shares one algorithm"):
+        parity.plan_matrix(th, "a,b", "configured", manifests=m, datasets={"sim": {}})
+    with pytest.raises(SystemExit, match="not in scripts/datasets.json"):
+        parity.plan_matrix(th, "a", "kki", manifests=m, datasets={"sim": {}})
+
+
+def test_real_matrix_routes_runners():
+    """Every configured pair whose sides are here plans, with a runner and a cap for each job."""
+    th, m = parity.load_thresholds(), parity._manifests()
+    here = [a for a, c in th.items() if c.get("datasets") and not parity.pair_problems(a, c, m)]
+    jobs = parity.plan_matrix(th, ",".join(here), "configured")
+    assert jobs and all(j["runs_on"] and j["timeout"] > 0 for j in jobs)
+
+
+def test_side_set_dataset_wins():
+    cfg = {"reference_set": {"pad": -1, "a": 1}, "datasets": {"kki": {"reference_set": {"a": 2}}}}
+    assert parity.side_set(cfg, "reference", "kki") == {"pad": -1, "a": 2}
+    assert parity.side_set(cfg, "reference", "sim") == {"pad": -1, "a": 1}
+    assert parity.side_set(cfg, "candidate", "sim") == {}
 
 
 def test_side_chain_prefix():
@@ -405,3 +464,243 @@ def test_run_side_puts_only_qsmrs_steps_in_the_image_under_test(tmp_path, monkey
     parity.run_side(["qsmart-matlab"], ds, tmp_path / "w2", "docker", qsmrs_image="under-test:1",
                     log=lambda *_: None)
     assert "--image" not in calls[0]
+
+
+def _fake_qsmci(calls):
+    import subprocess as sp
+
+    def fake(argv, env=None, check=False, **kw):
+        if argv[:2] == ["qsm-ci", "run"]:
+            calls.append(argv)
+            out = Path(argv[argv.index("-o") + 1])
+            out.parent.mkdir(parents=True, exist_ok=True)
+            _save(out, np.zeros((4, 4, 4)))
+        return sp.CompletedProcess(argv, 1, "", "")
+    return fake
+
+
+def _dipole_ds(tmp_path):
+    ds = tmp_path / "ds"
+    _save(ds / "inputs" / "mask.nii.gz", np.ones((4, 4, 4)))
+    _save(ds / "groundtruth" / "localfield.nii.gz", np.zeros((4, 4, 4)))
+    (ds / "inputs" / "params.json").write_text(json.dumps(
+        {"TE": [0.004], "B0": 3, "B0_dir": [0, 0, 1], "voxel_size": [1, 1, 1]}))
+    return ds
+
+
+def test_run_side_sets_only_the_pairs_own_method(tmp_path, monkeypatch):
+    calls = []
+    monkeypatch.setattr(parity.subprocess, "run", _fake_qsmci(calls))
+    ds = _dipole_ds(tmp_path)
+    _save(ds / "groundtruth" / "totalfield.nii.gz", np.zeros((4, 4, 4)))
+    prov = parity.run_side(["vsharp-qsmrs", "tkd-qsmrs"], ds, tmp_path / "w", "docker",
+                           overrides={"threshold": 0.2}, log=lambda *_: None)
+    assert "--set" not in calls[0]
+    assert calls[1][calls[1].index("--set") + 1] == "threshold=0.2"
+    assert prov["steps"][1]["set"] == {"threshold": 0.2} and "set" not in prov["steps"][0]
+
+
+def test_ci_skip_port_runs_only_against_a_qsmxt_build(tmp_path, monkeypatch):
+    """A ci_skip port (its pinned qsmxt lacks it) runs in parity once a build is supplied; scoring
+    discovery still skips it."""
+    import pipeline
+    real = parity._manifests()
+    fake = {**real, "tkd-qsmrs": {**real["tkd-qsmrs"], "ci_skip": True}}
+    monkeypatch.setattr(parity, "_manifests", lambda *a, **k: fake)
+    orig = pipeline.discover_algorithms
+    monkeypatch.setattr(pipeline, "discover_algorithms",
+                        lambda *a, include=None, **k: [x for x in orig(*a, include=include, **k)
+                                                       if x["slug"] != "tkd-qsmrs"
+                                                       or "tkd-qsmrs" in (include or ())])
+    with pytest.raises(SystemExit, match="ci_skip"):
+        parity._algo("tkd-qsmrs")
+    assert parity._algo("tkd-qsmrs", "qsmxt-under-test:1")["slug"] == "tkd-qsmrs"
+
+
+def test_discovery_skips_parity_only_unless_included(tmp_path, monkeypatch):
+    import pipeline
+    for slug, extra in (("m-orig", "parity_only: true\n"), ("m-port", "")):
+        d = tmp_path / slug
+        d.mkdir()
+        (d / "algorithm.yml").write_text(f"name: {slug}\nstage: dipole\nimage: x:y\n{extra}")
+    monkeypatch.setenv("QSMCI_ALGORITHMS_DIR", str(tmp_path))
+    assert [a["slug"] for a in pipeline.discover_algorithms()] == ["m-port"]
+    assert [a["slug"] for a in pipeline.discover_algorithms(include={"m-orig"})] == ["m-orig", "m-port"]
+
+
+def test_parse_qsmrs_version():
+    out = ("qsmxt 10.0.0\nQSM.rs (qsm-core): v0.39.0 (42ab620190ad315c9dcf7aa8ec4a036402002b7e)\n"
+           "deep-learning models: enabled\n")
+    assert parity.parse_qsmrs_version(out) == {"qsmrs_version": "0.39.0",
+                                               "qsmrs_commit": "42ab620190ad315c9dcf7aa8ec4a036402002b7e"}
+    assert parity.parse_qsmrs_version("qsmxt 9\n") == {}
+    assert parity.parse_qsmrs_version("qsmxt 0.0.0\nQSM.rs (qsm-core): rev-da928e0c5bfc7670dc44efe842623f5fe4a591c0\n") \
+        == {"qsmrs_version": None, "qsmrs_commit": "da928e0c5bfc7670dc44efe842623f5fe4a591c0"}
+
+
+# --- run history and staleness ---------------------------------------------------------------------
+
+REF_IMG = "ghcr.io/x/orig@sha256:" + "a" * 64
+CFG = {"reference": "p-orig", "candidate": "p-qsmrs", "enabled": True,
+       "qsmrs_paths": ["src/inversion/p.rs", "src/kernels"],
+       "datasets": {"sim": {"chimap": {"nrmse_max": 2.0}, "measured": {"x": "run 1"}}}}
+MANIFESTS = {"p-orig": {"image": REF_IMG, "algorithm": "p"},
+             "p-qsmrs": {"image": "ghcr.io/x/qsmxt@sha256:" + "b" * 64, "algorithm": "p",
+                         "source": "qsmrs"}}
+
+
+def _parity_json(ok=True, nrmse=1.0):
+    return {"algorithm": "p", "phantom": "sim", "baseline": False, "ok": ok,
+            "maps": {"chimap": {"metrics": {"kind": "continuous", "nrmse": nrmse, "correlation": 0.99,
+                                            "max_abs": 0.1, "p99_abs": 0.01, "nonfinite": 0},
+                                "status": "pass" if ok else "fail", "limits": {"nrmse_max": 2.0},
+                                "checks": [{"metric": "nrmse", "value": nrmse, "op": "<=",
+                                            "limit": 2.0, "ok": ok}]}},
+            "provenance": {"reference": {"steps": [{"slug": "p-orig", "image": REF_IMG, "id": "sha256:r"}]},
+                           "candidate": {"steps": [{"slug": "p-qsmrs", "image": "qsmxt-under-test:9",
+                                                    "id": "sha256:c", "qsmxt": "qsmxt 10.1.0",
+                                                    "qsmrs_version": "0.40.0",
+                                                    "qsmrs_commit": "c" * 40}]}}}
+
+
+RUN = {"date": "2026-10-28T00:00:00Z", "run_id": "1", "run_url": "https://x/1", "qsmci_commit": "q",
+       "qsmrs_ref": "main", "qsmxt_ref": ""}
+
+
+def _rec(res=None, **run):
+    return parity.make_record(res, pair="p", phantom="sim", cfg=CFG, manifests=MANIFESTS,
+                              run={**RUN, **run}, build={"qsmxt_ref": "main", "qsmxt_commit": "d" * 40})
+
+
+def test_make_record_says_what_was_checked():
+    r = _rec(_parity_json())
+    assert r["result"] == "pass" and r["metrics"]["chimap"]["nrmse"] == 1.0
+    assert r["qsmrs"] == {"ref": "main", "commit": "c" * 40, "version": "0.40.0"}
+    assert r["qsmxt"]["commit"] == "d" * 40
+    assert r["candidate"]["digest"] == "sha256:c"            # a local build: its image ID
+    assert r["reference"]["digest"] == "sha256:" + "a" * 64   # pinned by algorithm.yml
+    assert r["thresholds"] == parity.thresholds_version(CFG, "sim")
+    bad = _rec(_parity_json(ok=False, nrmse=3.0))
+    assert bad["result"] == "fail" and "nrmse" in bad["failed"][0]
+    err = _rec(None)
+    assert err["result"] == "error" and err["failed"]
+
+
+def test_thresholds_version_ignores_bookkeeping():
+    v = parity.thresholds_version(CFG, "sim")
+    assert parity.thresholds_version({**CFG, "enabled": False, "qsmrs_paths": []}, "sim") == v
+    moved = {**CFG, "datasets": {"sim": {**CFG["datasets"]["sim"], "measured": {"x": "run 2"}}}}
+    assert parity.thresholds_version(moved, "sim") == v
+    tighter = {**CFG, "datasets": {"sim": {"chimap": {"nrmse_max": 1.5}}}}
+    assert parity.thresholds_version(tighter, "sim") != v
+    assert parity.thresholds_version({**CFG, "candidate_set": {"a": 1}}, "sim") != v
+
+
+def test_merge_records_is_idempotent_and_drops_baselines():
+    a, b = _rec(_parity_json()), _rec(_parity_json(), run_id="2", date="2026-10-29T00:00:00Z")
+    base = {**_rec(_parity_json()), "run_id": "0", "result": "baseline"}
+    res = parity.merge_records({"checks": []}, [a, base])
+    res = parity.merge_records(res, [a, b])
+    assert [r["run_id"] for r in res["checks"]] == ["1", "2"]
+    assert parity.latest_records(res)[("p", "sim")]["run_id"] == "2"
+    many = parity.merge_records({"checks": []}, [{**a, "run_id": str(i), "date": f"2026-10-{i:02d}"}
+                                                 for i in range(1, 8)], keep=3)
+    assert [r["run_id"] for r in many["checks"]] == ["5", "6", "7"]
+
+
+def _why(rec, cfg=CFG, manifests=MANIFESTS, today="2026-10-30", changes=None):
+    st = {"stale_after_days": 90, "qsmrs_repo": "astewartau/QSM.rs", "qsmrs_branch": "main"}
+    return parity.staleness(rec, cfg, "sim", manifests, st, today, changes)
+
+
+def test_staleness_rules():
+    rec = _rec(_parity_json())
+    nothing = lambda c: {"ahead_by": 3, "files": ["src/unwrap/romeo.rs"]}   # noqa: E731
+    assert _why(rec, changes=nothing) == []
+    assert _why(None) == ["never checked"]                                       # (d)
+    new_ref = {**MANIFESTS, "p-orig": {"image": "ghcr.io/x/orig@sha256:" + "e" * 64}}
+    assert "reference image changed" in _why(rec, manifests=new_ref)[0]          # (a)
+    hit = lambda c: {"ahead_by": 2, "files": ["src/kernels/dipole.rs", "README.md"]}  # noqa: E731
+    w = _why(rec, changes=hit)                                                   # (b)
+    assert len(w) == 1 and "src/kernels/dipole.rs" in w[0] and "README" not in w[0]
+    gone = lambda c: {"error": "HTTP 404", "unknown_commit": True}               # noqa: E731
+    assert "not in" in _why(rec, changes=gone)[0]
+    flaky = lambda c: {"error": "timeout"}                                       # noqa: E731
+    assert _why(rec, changes=flaky) == []      # a network error is not a staleness verdict
+    tighter = {**CFG, "datasets": {"sim": {"chimap": {"nrmse_max": 1.5}}}}
+    assert "limits" in _why(rec, cfg=tighter)[0]                                  # (c)
+    assert "days ago" in _why(rec, today="2027-02-28")[0]                         # (d)
+    assert "failed" in _why(_rec(_parity_json(ok=False, nrmse=3)))[0]            # (e)
+    assert "without a result" in _why(_rec(None))[0]
+
+
+def test_pair_status_states_issue_and_table():
+    th = {"p": CFG, "q": {"reference": "q-orig", "candidate": "q-qsmrs", "enabled": False,
+                          "blocked_by": "astewartau/QSM.rs#319", "datasets": {"sim": {}}},
+          "r": {"reference": "r-orig", "candidate": "r-qsmrs", "enabled": False}}
+    results = parity.merge_records({"checks": []}, [_rec(_parity_json())])
+    st = {"stale_after_days": 90, "qsmrs_repo": "astewartau/QSM.rs", "qsmrs_branch": "main"}
+    rows = parity.pair_status(th, results, MANIFESTS, st, "2026-10-30")
+    assert [r["state"] for r in rows] == ["current", "gap", "off"]
+    assert parity.render_issue(rows, st, "2026-10-30") == ""
+    md = parity.render_status(rows, st, "2026-10-30")
+    assert "✅ current" in md and "🚧 gap (astewartau/QSM.rs#319)" in md and "v0.40.0" in md
+    rows = parity.pair_status(th, results, MANIFESTS, st, "2027-06-01")
+    assert rows[0]["state"] == "stale"
+    issue = parity.render_issue(rows, st, "2027-06-01")
+    assert "`p`" in issue and "days ago" in issue
+    assert "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=p -f dataset=configured" in issue
+
+
+def test_report_and_record_cli(tmp_path):
+    th = tmp_path / "t.yml"
+    th.write_text(yaml.safe_dump({"pairs": {"qsmart": parity.load_thresholds()["qsmart"]}}))
+    arts = tmp_path / "arts" / "parity-result-qsmart-sim"
+    arts.mkdir(parents=True)
+    pj = _parity_json()
+    pj.update(algorithm="qsmart", phantom="sim")
+    (arts / "parity.json").write_text(json.dumps(pj))
+    matrix = json.dumps([{"algorithm": "qsmart", "phantom": "sim"},
+                         {"algorithm": "qsmart", "phantom": "s002001-kki-achieva-bridge-run1"}])
+    recs, summ = tmp_path / "recs.json", tmp_path / "summary.md"
+    assert parity.main(["--thresholds", str(th), "report", "--artifacts", str(tmp_path / "arts"),
+                        "--matrix", matrix, "--date", "2026-10-28T00:00:00Z", "--run-id", "7",
+                        "--out", str(recs), "--summary", str(summ)]) == 0
+    r = json.loads(recs.read_text())
+    assert [x["result"] for x in r] == ["pass", "error"]
+    s = summ.read_text()
+    assert "Release gate: not passed" in s and "`" + "c" * 40 + "`" in s
+    results = tmp_path / "results.json"
+    assert parity.main(["record", "--records", str(recs), "--results", str(results)]) == 0
+    assert parity.main(["record", "--records", str(recs), "--results", str(results)]) == 0
+    assert len(json.loads(results.read_text())["checks"]) == 2
+
+
+def test_run_summary_gate_passes_only_on_one_commit_and_every_enabled_pair():
+    ok = _rec(_parity_json())
+    assert "Release gate: passed" in parity.render_run_summary([ok], ["p"])
+    assert "Release gate: not passed" in parity.render_run_summary([ok], ["p", "other"])
+    other = {**ok, "dataset": "kki", "qsmrs": {"commit": "f" * 40}}
+    assert "Release gate: not passed" in parity.render_run_summary([ok, other], ["p"])
+
+
+def test_touched_matches_files_and_directories():
+    files = ["src/kernels/dipole.rs", "src/kernelsX.rs", "src/inversion/p.rs"]
+    assert parity.touched(files, ["src/kernels/", "src/inversion/p.rs"]) == [
+        "src/kernels/dipole.rs", "src/inversion/p.rs"]
+
+
+def test_multi_output_stage_compares_every_output(tmp_path):
+    """χ-separation writes chi-para and chi-dia: both are final maps with their own limits."""
+    mask = _mask()
+    for side, shift in (("reference", 0.0), ("candidate", 0.5)):
+        d = tmp_path / side
+        _save(d / "chi-para.nii.gz", np.full((6, 6, 6), 2.0))   # not binary (0/1)
+        _save(d / "chi-dia.nii.gz", np.full((6, 6, 6), 2.0) + shift)
+    _save(tmp_path / "mask.nii.gz", mask)
+    res, _ = parity.compare_dirs(tmp_path / "reference", tmp_path / "candidate",
+                                 tmp_path / "mask.nii.gz", ["chi-para", "chi-dia"])
+    assert set(res) == {"chi-para", "chi-dia"}
+    v = parity.evaluate(res, {"chi-para": {"nrmse_max": 1}}, ["chi-para", "chi-dia"])
+    assert v["maps"]["chi-para"]["status"] == "pass"
+    assert v["maps"]["chi-dia"]["status"] == "fail" and not v["ok"]   # no limits on a final map
