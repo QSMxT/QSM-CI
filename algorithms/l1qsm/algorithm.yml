@@ -44,7 +44,11 @@ fidelity:
 parameters:
 - name: alpha1
   default: 0.005
-  description: gradient L1 (TV) penalty (no default in nlL1TV.m; QSM.rs's L1QsmParams default)
+  # Our tuning, not the authors': FANSI 93044a3 ships no L1-QSM value (its only nlL1TV call,
+  # script_DICOM_Philips.m:450, reuses a data-driven wTV alpha) and says L1-QSM needs its own
+  # tuning (L442-443). 5e-3 is QSM.rs's L1QsmParams default, from an alpha1 sweep on the EMTP
+  # travelling heads (Ashley, 2026-10-30).
+  description: gradient L1 (TV) penalty; QSM-CI's tuning (EMTP sweep), since FANSI gives none for L1-QSM
 - name: mu1
   default: 100*alpha1
   description: gradient-consistency ADMM weight
