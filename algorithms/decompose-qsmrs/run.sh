@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # QSM-CI submission — DECOMPOSE-QSM (chi-separation stage) via QSMxT / QSM.rs.
-#   consumes chimap.nii.gz (χ_total, ppm), magnitude.nii.gz (4D multi-echo), mask.nii.gz, params.json
+#   consumes chimap.nii.gz (χ_total, ppm), magnitude.nii.gz (4D multi-echo), mask.nii.gz, params.json,
+#            and chimap-echoes.nii.gz (χ(TE), 4D, ppm) when the dataset ships it
 #   produces chi-para.nii.gz (χ+ ≥ 0, ppm), chi-dia.nii.gz (|χ−| ≥ 0, ppm)
 set -euo pipefail
 IN="${1:-/input}"; OUT="${2:-/output}"
@@ -28,12 +29,23 @@ fi
 # and _desc-total_Chimap.nii (uncompressed; the pipeline's BIDS names since qsmxt v10.0.0). Stage them in a scratch dir, then publish the two canonical artifacts gzipped.
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
-# A qsmxt on QSM.rs#333 or later takes a QSM per echo (--qsm-per-echo). Like decompose-qsm, QSM-CI
-# gives the one provided χ_total at every echo. Older releases (v10.0.0) take --qsm alone.
+# DECOMPOSE takes a QSM per echo, χ(TE): the apparent susceptibility each echo's phase gives
+# (Chen et al. 2021, Eq. 4; §4.1 calls it necessary). Its echo dependence is what the fit separates,
+# so the one echo-independent chimap repeated at every echo leaves it nothing to fit.
+#  - The dataset ships chimap-echoes (x,y,z,echo, ppm; CONTRACT.md): pass it, one 4D file.
+#  - It doesn't: fall back to chimap at every echo, as before.
+# A qsmxt on QSM.rs#333 or later takes --qsm-per-echo; older releases (v10.0.0, the pinned image)
+# take --qsm alone and cannot use chimap-echoes (logged).
 PER_ECHO=""
 if qsmxt separate decompose --help 2>/dev/null | grep -q -- '--qsm-per-echo'; then
-  NE="$(jq -r '.TE | length' "$IN/params.json")"
-  PER_ECHO="--qsm-per-echo$(for _ in $(seq "$NE"); do printf ' %s' "$IN/chimap.nii.gz"; done)"
+  if [ -f "$IN/chimap-echoes.nii.gz" ]; then
+    PER_ECHO="--qsm-per-echo $IN/chimap-echoes.nii.gz"
+  else
+    NE="$(jq -r '.TE | length' "$IN/params.json")"
+    PER_ECHO="--qsm-per-echo$(for _ in $(seq "$NE"); do printf ' %s' "$IN/chimap.nii.gz"; done)"
+  fi
+elif [ -f "$IN/chimap-echoes.nii.gz" ]; then
+  echo "decompose-qsmrs: this qsmxt has no --qsm-per-echo; chimap-echoes is ignored" >&2
 fi
 qsmxt separate decompose \
   --qsm "$IN/chimap.nii.gz" -m "$IN/mask.nii.gz" -o "$WORK/dec" \
