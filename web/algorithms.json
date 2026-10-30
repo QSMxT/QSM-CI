@@ -1326,6 +1326,11 @@
       ],
       "parameters": [
         {
+          "name": "variant",
+          "default": "wen2014",
+          "description": "implementation: wen2014 (the authors' iSMV.m) or qsmjl (QSM.jl's ismv); a qsmxt after v10.0.0 (the pinned v10.0.0 has only QSM.jl-style iSMV and no --variant)"
+        },
+        {
           "name": "tol",
           "default": "1e-6",
           "description": "tolerance"
