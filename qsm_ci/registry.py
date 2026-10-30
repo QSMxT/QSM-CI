@@ -75,9 +75,8 @@ def parse_target(target: str) -> "tuple[str, object]":
 
 def latest_version(entry: "dict | None") -> "dict | None":
     """The entry's latest published version record, or None when it has none yet. A method can sit
-    in the registry before its first Zenodo deposit (`versions: {}`, no `latest` — apart-qsm at the
-    time of writing); publish-zenodo.py writes that shape, so every lookup must tolerate it rather
-    than KeyError on 'latest'."""
+    in the registry before its first Zenodo deposit (`versions: {}`, no `latest`); publish-zenodo.py
+    writes that shape, so every lookup must tolerate it rather than KeyError on 'latest'."""
     if not entry:
         return None
     ver = entry.get("latest")

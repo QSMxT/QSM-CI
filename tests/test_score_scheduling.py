@@ -4,7 +4,8 @@
     columns it composes on; every enumeration (focus job, shard, upstream-DNF rows) honours it;
   - RunsFile — a --runs-out job persists every row as it lands and writes a `.done` marker only at
     the end, so a job killed at its cap hands merge what it finished AND merge can tell it did not
-    finish (see scripts/score_state.py).
+    finish (see scripts/score_state.py); once the job is being torn down (cancelled / capped) a DNF
+    is the kill, not the method, and is not recorded.
 """
 from __future__ import annotations
 
@@ -72,6 +73,35 @@ def test_runsfile_persists_every_row_and_marks_completion_only_at_the_end(pipeli
     assert marker == out.with_suffix(".done") and marker.read_text() == "3\n"
     assert not list(out.parent.glob("*.tmp"))                    # atomic replace leaves no temp file
     assert isinstance(runs, list) and len(runs) == 3            # still a plain list for the callers
+
+
+def test_runsfile_does_not_record_the_kills_of_a_cancelled_task_as_dnf(pipeline, tmp_path):
+    """Run 40979461975: superseded tasks' teardown `docker kill`ed their containers, the still-running
+    pipeline.py recorded each `qsm-ci run` exit 1 as DNF, and merge published those rows."""
+    out = tmp_path / "runs-iv-x.json"
+    runs = pipeline.RunsFile(out)
+    timeout = pipeline.dnf("x-timeout", "x", "x", "dipole", "isolated", "invivo",
+                           reason="timed out after 2h wall-clock limit")
+    runs.extend([{"id": "x-ok", "status": "ok"}, timeout])        # before teardown: real results, kept
+    out.with_suffix(".aborted").touch()                            # score.yml, before it kills anything
+    killed = pipeline.dnf("x-tuned", "x", "x", "dipole", "isolated", "invivo",
+                          reason="Command '['qsm-ci', 'run']' returned non-zero exit status 1.")
+    runs.append(killed)
+    runs.extend([killed, {"id": "x-late", "status": "ok"}])       # an ok row finishing now is still a result
+    assert [r["id"] for r in json.loads(out.read_text())] == ["x-ok", "x-timeout", "x-late"]
+    assert runs.mark_done() is None and not out.with_suffix(".done").exists()   # re-planned, not done
+
+
+def test_runsfile_treats_sigint_as_teardown_and_ignores_a_stale_marker(pipeline, tmp_path, monkeypatch):
+    out = tmp_path / "runs-f-x.json"
+    out.with_suffix(".aborted").touch()                            # left by an earlier job (self-hosted)
+    runs = pipeline.RunsFile(out)
+    runs.append({"id": "a", "status": "DNF"})                      # a genuine failure: recorded
+    monkeypatch.setattr(pipeline, "_ABORTING", False)
+    with pytest.raises(KeyboardInterrupt):
+        pipeline._on_sigint(2, None)                               # still interrupts, as before
+    runs.append({"id": "b", "status": "DNF"})
+    assert [r["id"] for r in runs] == ["a"] and runs.mark_done() is None
 
 
 def test_scoring_env_reports_the_modules_that_are_actually_loaded(pipeline):
