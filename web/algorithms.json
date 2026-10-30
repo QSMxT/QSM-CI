@@ -390,7 +390,8 @@
         "chimap",
         "magnitude",
         "mask",
-        "params"
+        "params",
+        "chimap-echoes"
       ],
       "domain": "chisep",
       "engine": "Independent",
@@ -398,7 +399,7 @@
       "language": "MATLAB",
       "family": "iterative",
       "learning": "none",
-      "description": "DECOMPOSE-QSM \u2014 a signal-domain susceptibility source separation. Unlike the R2'-based methods it fits the multi-echo COMPLEX GRE signal per voxel with a 3-stage alternating non-linear least-squares fit (lsqcurvefit) to split \u03c7 into paramagnetic (\u03c7+, iron) and diamagnetic (\u03c7\u2212, myelin/calcium) sources. Uses the provided \u03c7_total (chimap) for the signal's phase term (\u03c7 is echo-independent), which isolates DECOMPOSE's separation step from any upstream QSM error. Tim Ho's open MATLAB re-implementation of DECOMPOSE.",
+      "description": "DECOMPOSE-QSM \u2014 a signal-domain susceptibility source separation. Unlike the R2'-based methods it fits the multi-echo COMPLEX GRE signal per voxel with a 3-stage alternating non-linear least-squares fit (lsqcurvefit) to split \u03c7 into paramagnetic (\u03c7+, iron) and diamagnetic (\u03c7\u2212, myelin/calcium) sources. The signal's phase term uses the per-echo QSM (chimap-echoes) when the dataset provides it, as the method is defined (Chen 2021, Eq. 4), else \u03c7_total (chimap) for every echo. Tim Ho's open MATLAB re-implementation of DECOMPOSE.",
       "citation": "Chen J., Gong N.-J., Chaim K.T., Otaduy M.C.G., Liu C., \"Decompose quantitative susceptibility mapping (QSM) to sub-voxel diamagnetic and paramagnetic components based on gradient-echo MRI data\", NeuroImage 2021;242:118477.\n",
       "doi": "10.1016/j.neuroimage.2021.118477",
       "code_url": "https://github.com/timwahoo/DECOMPOSE-QSM",
