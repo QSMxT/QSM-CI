@@ -606,7 +606,7 @@ def run_side(chain: list, dataset: Path, out: Path, runner: str, feed: "dict | N
     for i, slug in enumerate(chain):
         algo = _algo(slug, qsmrs_image)
         idir, odir = out / f"_in{i}", out / f"_out{i}"
-        pipeline.prepare_input(algo["consumes"], sources, idir)
+        pipeline.prepare_input(algo["consumes"], sources, idir, algo.get("optional", ()))
         odir.mkdir(parents=True, exist_ok=True)
         sets = dict(overrides or {}) if i == len(chain) - 1 else {}
         argv = cli_run_argv(algo, idir, odir, ARTIFACT_FILE, runner, overrides=sets) \

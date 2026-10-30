@@ -20,6 +20,13 @@ artifacts:
   r2prime:     { kind: relaxation, units: Hz,    ndim: 3, file: r2prime.nii.gz }
   chi-para:    { kind: chisep,    units: ppm,    ndim: 3, file: chi-para.nii.gz,   groundtruth: chi-para.nii.gz }
   chi-dia:     { kind: chisep,    units: ppm,    ndim: 3, file: chi-dia.nii.gz,    groundtruth: chi-dia.nii.gz }
+  # The echo-dependent apparent χ(TE): a QSM reconstructed at each echo, stacked (x,y,z,echo) in the
+  # order of params.json TE, ppm. An optional χ-separation input — in no stage's `consumes`, so a
+  # method opts in with `optional_inputs: [chimap-echoes]` and must fall back to chimap when a dataset
+  # doesn't ship it. DECOMPOSE-QSM (Chen et al. 2021, Eq. 4, §4.1) takes a QSM per echo; repeating
+  # the single chimap at every echo gives it no echo dependence to fit. Like chimap, it comes from the
+  # ground-truth boundary in isolated mode (inputs/, else groundtruth/).
+  chimap-echoes: { kind: chi,     units: ppm,    ndim: 4, file: chimap-echoes.nii.gz }
 
 # The three swappable stages, in pipeline order. `consumes`/`produces` are artifact names.
 stages:
