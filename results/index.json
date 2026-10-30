@@ -35251,35 +35251,6 @@
       }
     },
     {
-      "name": "NLTV (QSM.rs)",
-      "track": "invivo",
-      "stage": "dipole",
-      "mode": "isolated",
-      "status": "DNF",
-      "metrics": {},
-      "id": "nltv-qsmrs-iso-tuned-invivo",
-      "slug": "nltv-qsmrs",
-      "variant": "tuned",
-      "dnf_reason": "Command '['qsm-ci', 'run', '/home/runner/work/QSM-CI/QSM-CI/algorithms/nltv-qsmrs', '--localfield', '/home/runner/work/QSM-CI/QSM-CI/.work/iso_nltv-qsmrs-tuned-invivo_in/localfield.nii.gz', '--mask', '/home/runner/work/QSM-CI/QSM-CI/.work/iso_nltv-qsmrs-tuned-invivo_in/mask.nii.gz', '--params', '/home/runner/work/QSM-CI/QSM-CI/.work/iso_nltv-qsmrs-tuned-invivo_in/params.json', '--set', 'lambda=3e-3', '-o', '/home/runner/work/QSM-CI/QSM-CI/.work/iso_nltv-qsmrs-tuned-invivo_out/chimap.nii.gz', '--runner', 'docker']' returned non-zero exit status 1.",
-      "phantom": "invivo",
-      "ci_run": "40979461975.1",
-      "ci_sha": "d96b85f4aea23880ed698e83481b21d277250627",
-      "ci_env": {
-        "python": "3.12.15",
-        "numpy": "2.2.6",
-        "scipy": "1.15.3",
-        "nibabel": "5.4.2",
-        "pillow": "12.3.0"
-      },
-      "scored_at": "2026-10-30T00:29:23Z",
-      "method_versions": {
-        "nltv-qsmrs": {
-          "commit": "6b4f723f8c623d114485f182aa9f14ad5faf1d13",
-          "date": "2026-10-19T11:14:00+10:00"
-        }
-      }
-    },
-    {
       "name": "TV-ADMM (QSM.rs)",
       "track": "invivo",
       "stage": "dipole",
@@ -35699,35 +35670,6 @@
         "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/amp-pe-iso-tuned-invivo__recon.nii.gz",
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/invivo/chimap.nii.gz",
         "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/amp-pe-iso-tuned-invivo__error.nii.gz"
-      }
-    },
-    {
-      "name": "FANSI-nlTGV (QSM.rs)",
-      "track": "invivo",
-      "stage": "dipole",
-      "mode": "isolated",
-      "status": "DNF",
-      "metrics": {},
-      "id": "fansi-nltgv-qsmrs-iso-tuned-invivo",
-      "slug": "fansi-nltgv-qsmrs",
-      "variant": "tuned",
-      "dnf_reason": "Command '['qsm-ci', 'run', '/home/runner/work/QSM-CI/QSM-CI/algorithms/fansi-nltgv-qsmrs', '--localfield', '/home/runner/work/QSM-CI/QSM-CI/.work/iso_fansi-nltgv-qsmrs-tuned-invivo_in/localfield.nii.gz', '--mask', '/home/runner/work/QSM-CI/QSM-CI/.work/iso_fansi-nltgv-qsmrs-tuned-invivo_in/mask.nii.gz', '--params', '/home/runner/work/QSM-CI/QSM-CI/.work/iso_fansi-nltgv-qsmrs-tuned-invivo_in/params.json', '--set', 'alpha1=4e-4', '--set', 'alpha0=8e-4', '-o', '/home/runner/work/QSM-CI/QSM-CI/.work/iso_fansi-nltgv-qsmrs-tuned-invivo_out/chimap.nii.gz', '--runner', 'docker']' returned non-zero exit status 1.",
-      "phantom": "invivo",
-      "ci_run": "40979461975.1",
-      "ci_sha": "d96b85f4aea23880ed698e83481b21d277250627",
-      "ci_env": {
-        "python": "3.12.15",
-        "numpy": "2.2.6",
-        "scipy": "1.15.3",
-        "nibabel": "5.4.2",
-        "pillow": "12.3.0"
-      },
-      "scored_at": "2026-10-30T00:29:24Z",
-      "method_versions": {
-        "fansi-nltgv-qsmrs": {
-          "commit": "4a72b3570a6c9191bd9075de56a4e5c9821bf971",
-          "date": "2026-10-19T14:59:43+10:00"
-        }
       }
     },
     {
