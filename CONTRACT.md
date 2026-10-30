@@ -71,6 +71,7 @@ artifacts into `/input`, and expects exactly the produced artifacts in `/output`
 | `chi-para` | `chi-para.nii.gz` | **ppm** (χ+, ≥ 0) | 3D |
 | `chi-dia` | `chi-dia.nii.gz` | **ppm** (\|χ−\|, stored as a positive magnitude) | 3D |
 | `chimap-echoes` | `chimap-echoes.nii.gz` | **ppm** | 4D `x,y,z,echo` — optional `chi-separation` input, see below |
+| `dseg` | `dseg.nii.gz` | integer labels | 3D — **baselines only**, see below |
 
 All field maps and susceptibility maps (`chimap`, `chi-para`, `chi-dia`) are in **ppm** (normalized
 by B0). Convert from Hz with `ppm = Hz · 1e6 / (γ · B0)`, `γ = 42.576e6` Hz/T. `r2prime` is the one
@@ -84,6 +85,14 @@ its per-echo phase input. Not every χ-separation dataset ships it, so it is in 
 when the file is absent. Like `chimap`, it comes from the ground-truth boundary in isolated mode
 (the dataset's `inputs/`, else `groundtruth/`). `qsm-ci run` accepts it as one 4D file or as one 3D
 map per echo, stacked like `phase`.
+`dseg` is the phantom's tissue segmentation, the labels the scorer's region metrics use. It is
+ground truth, so it belongs to no stage's contract. A method may read it only if it declares
+`baseline: true` in `algorithm.yml`, marking it as a floor or reference rather than a method being
+scored for its own skill (`ridani-null-qsmci` solves white matter separately with it). It is opted
+into with `optional_inputs: [dseg]`. In isolated mode it is mounted from the dataset's `inputs/`,
+else `groundtruth/`, when the dataset has one, and skipped when it doesn't, so the method must
+guard for the file being absent. `qsm-ci run` and the scorer refuse a manifest that names `dseg`
+without `baseline: true` (`stages.yml` `baseline_only`).
 
 ### `params.json`
 
