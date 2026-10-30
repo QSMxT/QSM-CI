@@ -351,7 +351,8 @@ def _tuned_overrides(doc: dict, dataset: str = "sim", phantom: "str | None" = No
     return out
 
 
-def discover_algorithms(track: str = "sim", phantom: "str | None" = None) -> list[dict]:
+def discover_algorithms(track: str = "sim", phantom: "str | None" = None,
+                        include: "set | None" = None) -> list[dict]:
     # `track` selects which dataset's tuned params each method carries: a chi-separation method is only
     # ever scored on a chisep-track phantom (→ "chisep"), otherwise the in-vivo run uses "invivo" and
     # everything else "sim". So the tuned variant a run expands is the one optimised on ITS dataset.
@@ -379,7 +380,10 @@ def discover_algorithms(track: str = "sim", phantom: "str | None" = None) -> lis
         # is impractical). Discovery is the single choke point for every mode (shard sweep, --focus,
         # composed, local), so skipping here makes the method invisible to the whole scorer. Un-skip
         # once the required runner exists.
-        if doc.get("ci_skip"):
+        # `parity_only: true` is the same for scoring: an original kept only as the reference of a
+        # port parity pair (scripts/parity.py, docs/parity.md), never scored. `include` names slugs
+        # to discover whatever these flags say: parity.py runs the pair it was asked to.
+        if (doc.get("ci_skip") or doc.get("parity_only")) and d.name not in (include or ()):
             continue
         s = _yaml_scalar(doc["stage"])
         if s not in STAGES:  # a clear message instead of a KeyError traceback out of discovery
@@ -1730,7 +1734,10 @@ def main() -> None:
     # which already maps the `params` artifact to inputs/params.json.
     # GT-backed source map: inputs for raw artifacts, groundtruth for stage boundaries (shared helper).
     gt_sources = _gt_sources(args.dataset)
-    algos = discover_algorithms(args.track, args.phantom)
+    # The PR smoke gate (--smoke --only SLUG) still proves a parity_only original runs: discovery
+    # leaves those out of scoring, so the gate names its one method explicitly.
+    algos = discover_algorithms(args.track, args.phantom,
+                                include={args.only} if args.smoke and args.only else None)
     if args.include:
         keep = set(args.include.split(","))
         algos = [a for a in algos if a["slug"] in keep]

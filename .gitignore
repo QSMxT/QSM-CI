@@ -90,6 +90,9 @@ algorithms/*/sti_support/
 # fidelity (QSMxT/QSM-CI#300: fidelity/matlab/) commit theirs, as the record of what image: holds;
 # tkd-qsmci's stays out of the checkout and is documented in its BUILD.md.
 algorithms/tkd-qsmci/Dockerfile
+# star-sti: the two STI Suite Support_Functions folders QSM_star needs (see its BUILD.md).
+algorithms/star-sti/kiwi/
+algorithms/star-sti/sparsa/
 # IR2QSM's Dockerfile is committed (QSMxT/QSM-CI#301): it records the pins of the published image.
 # Its checkpoint comes from the authors' Drive link at build time, or by hand (see the Dockerfile).
 # (The compiled-MATLAB FANSI/NDI/L1-QSM/WH-QSM/HD-QSM submissions once listed here were replaced by
@@ -115,7 +118,7 @@ algorithms/r2primenet-7t/Dockerfile
 # WaveSep: third-party source (no license; author permission for academic use only) is baked into the
 # image, not redistributed in the repo. Its Dockerfile is gitignored too so CI pulls the prebuilt image.
 algorithms/wavesep/wavesep/
-algorithms/wavesep/Dockerfile
+# algorithms/wavesep/Dockerfile is committed: it clones the source at build time.
 
 # chi-separation MATLAB methods: the SNU-LIST chi-separation toolbox (obtained via Google Form, academic
 # use) is a build-time dep baked into the compiled recon binary, never committed.
@@ -131,3 +134,4 @@ algorithms/qsmart-matlab/curvatures/
 
 # nipype crash dumps from local interface tests
 crash-*.pklz
+fidelity/cpp-py/qsmrs-probe/target/

@@ -25,6 +25,8 @@ checked directly.
 There are four differences in total. Two are actual code edits, each marked `% EDIT:` in the
 source; the other two are absences, where upstream code simply is not carried over and so there
 is nothing to mark.
+(A third output that copies intermediates out for QSM-CI's fidelity check, marked
+`% EDIT (intermediates)`, changes no computation.)
 
 ### 1. Multi-echo — *code edit*, in the lifted code
 

@@ -611,12 +611,12 @@
         {
           "name": "max_lm_iter",
           "default": 30,
-          "description": "max Levenberg-Marquardt iterations per fit stage (the MATLAB reference uses lsqcurvefit's trust-region solve; 30 is ample for these 1-3 parameter fits)\n"
+          "description": "max Levenberg-Marquardt iterations per fit stage (the MATLAB reference solves each stage with lsqcurvefit's trust-region solve, MaxIterations 400). qsmxt v10.0.0's default is 30; QSM.rs from astewartau/QSM.rs#333 defaults to 400, which matches the reference far more closely\n"
         }
       ],
       "ci_notes": [
-        "The two DECOMPOSE entries use OPPOSITE paramagnetic/diamagnetic output mappings, so their \u03c7+ and \u03c7\u2212 maps may disagree \u2014 comparing them is a purpose of this submission, not a bug. Both reconstruct each source from the fitted parameters as a per-compartment phase accumulation; what differs is which sub-model carries which source. The MATLAB reference's demo writes DSC\u2192\"XPSC\" and PSC\u2192\"XDSC\", and decompose-qsm/recon.m follows that swap (\u03c7+ = |DSC|). The Rust port does not: its module header records that on the qsm-forward phantom the swapped mapping anti-correlates with the ground truth while the physically-consistent one (\u03c7+ = |PSC|, from the paramagnetic sub-model) correlates strongly, so it emits \u03c7+ = |PSC|, \u03c7\u2212 = \u2212|DSC|. On an independent synthetic case generated from the paper's own signal model, this port's \u03c7+ correlated +1.000 with the true \u03c7+ and \u22120.03 with the true \u03c7\u2212. Scoring both entries on the QSM-CI phantoms is the direct test.\n",
-        "Same algorithm as the compiled-MATLAB entry decompose-qsm, in Rust, on the shared QSMxT engine image \u2014 no new container image. Measured here at ~1.5e3 fitted voxels/s on a single core (12568-voxel synthetic fit, 6 echoes, n_inner=10, 14-core desktop), i.e. ~15-20 min for the 1.31 M-voxel chisep-mc phantom and ~1 h for the 5.0 M-voxel Ridani phantoms, against the MATLAB entry's measured 4.1 h (chisep-mc) / 10.3 h (ridani-3t-aniso) on a 16-core box and a never-finished ridani-3t-iso. run.sh pins the fit to one thread: qsm-core's decompose parallel path measured SLOWER with more threads (1 \u2192 8 threads: 10.9 s \u2192 37.6 s at 12568 voxels, 37.1 s \u2192 205.9 s at 42168 voxels, uniform cores at a constant 3.35 GHz), with bit-identical outputs at every thread count, while another rayon method in the same image scales normally. That is an upstream performance bug, not a numerical one; when it is fixed the pin can be dropped and this gets faster again.\n"
+        "Both DECOMPOSE entries give the same \u03c7+ and \u03c7\u2212 maps. The MATLAB reference fits the conjugate of the signal (MATLAB's conjugate transpose on ydata), which mirrors the fit exactly, and then writes DSC as \u03c7+; the Rust port fits the signal itself and writes PSC as \u03c7+. The two swaps cancel (astewartau/QSM.rs#333). As in decompose-qsm, the QSM given for every echo's phase is the one provided \u03c7_total (the authors computed a STAR-QSM per echo); a qsmxt with `separate decompose --qsm-per-echo` gets chimap once per echo.\n",
+        "Same algorithm as the compiled-MATLAB entry decompose-qsm, in Rust, on the shared QSMxT engine image \u2014 no new container image. Measured here at ~1.5e3 fitted voxels/s on a single core (12568-voxel synthetic fit, 6 echoes, n_inner=10, 14-core desktop), i.e. ~15-20 min for the 1.31 M-voxel chisep-mc phantom and ~1 h for the 5.0 M-voxel Ridani phantoms, against the MATLAB entry's measured 4.1 h (chisep-mc) / 10.3 h (ridani-3t-aniso) on a 16-core box and a never-finished ridani-3t-iso. The fit uses every core: an old pin to one thread (qsm-core's loop once got slower with threads, fixed by QSM.rs#93) has been dropped.\n"
       ]
     },
     {
@@ -1813,7 +1813,7 @@
       "language": "MATLAB",
       "family": "iterative",
       "learning": "none",
-      "description": "Morphology Enabled Dipole Inversion (Cornell MEDI toolbox), compiled from MATLAB and run on the license-free MATLAB Runtime. Solves the L1 morphology-regularized dipole inversion directly on the local (tissue) field (no background-field removal).",
+      "description": "Morphology Enabled Dipole Inversion (Cornell MEDI toolbox 2024.11.26) with the toolbox's defaults (SMV, model-error reduction and CSF zero-referencing on), compiled from MATLAB and run on the license-free MATLAB Runtime. Solves the L1 morphology-regularized dipole inversion on the local (tissue) field (no background-field removal).",
       "citation": "Liu et al., NeuroImage 2012",
       "doi": "10.1016/j.neuroimage.2011.08.082",
       "code_url": "http://pre.weill.cornell.edu/mri/pages/qsm.html",
@@ -1834,13 +1834,48 @@
       "parameters": [
         {
           "name": "lambda",
-          "default": 100,
+          "default": 1000,
           "description": "data-fidelity weight (larger = closer data fit, less regularization)"
         },
         {
+          "name": "smv",
+          "default": 1,
+          "description": "MEDI-SMV, 1 on, 0 off ('nosmv'); high-passes the local field with a spherical mean value kernel and fits it with the SMV-filtered dipole kernel, removing residual background near the brain edge"
+        },
+        {
           "name": "smv_radius",
-          "default": 0,
-          "description": "spherical-mean-value radius (mm) for extra background removal; 0 disables (default now off \u2014 input is already a local field)"
+          "default": 5,
+          "description": "SMV sphere radius (mm); 0 turns SMV off"
+        },
+        {
+          "name": "smv_shrink_mask",
+          "default": 1,
+          "description": "with SMV, invert on the mask eroded by the SMV sphere (1) or on the full mask (0)"
+        },
+        {
+          "name": "merit",
+          "default": 1,
+          "description": "model-error reduction (MERIT), reweighting the noise by the data residual after each iteration; 0 off ('nomerit')"
+        },
+        {
+          "name": "csf",
+          "default": 1,
+          "description": "MEDI+0, zero-referencing to the ventricular CSF (CSF mask from the R2* of the echo magnitudes); needs three or more echoes"
+        },
+        {
+          "name": "lambda_csf",
+          "default": 100,
+          "description": "weight of the CSF zero-reference term"
+        },
+        {
+          "name": "csf_r2s_threshold",
+          "default": 5,
+          "description": "R2* (Hz) below which a voxel is a CSF candidate"
+        },
+        {
+          "name": "csf_erode",
+          "default": 1,
+          "description": "erode the mask by a 10 mm sphere before finding the CSF"
         },
         {
           "name": "percentage",
@@ -1848,9 +1883,34 @@
           "description": "fraction of voxels kept as edges in the morphology gradient mask"
         },
         {
-          "name": "merit",
+          "name": "data_weighting",
+          "default": 1,
+          "description": "data weighting, 1 by the field noise from the echo magnitudes, 0 uniform"
+        },
+        {
+          "name": "max_iter",
+          "default": 10,
+          "description": "maximum Gauss-Newton iterations"
+        },
+        {
+          "name": "tol_norm_ratio",
+          "default": 0.1,
+          "description": "stop when the relative update falls below this"
+        },
+        {
+          "name": "cg_max_iter",
+          "default": 100,
+          "description": "maximum conjugate-gradient iterations per Gauss-Newton step"
+        },
+        {
+          "name": "cg_tol",
+          "default": 0.01,
+          "description": "conjugate-gradient relative residual tolerance"
+        },
+        {
+          "name": "zeropad",
           "default": 0,
-          "description": "model-error reduction (iterative reweighting); 1 enables"
+          "description": "voxels of zeros appended along each axis before the inversion (a number or [x, y, z]); with SMV, odd axes get one more"
         }
       ],
       "ci_notes": []
@@ -2868,6 +2928,43 @@
       "ci_notes": []
     },
     {
+      "slug": "star-qsmrs",
+      "name": "STAR-QSM (QSM.rs)",
+      "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "star",
+      "language": "Rust",
+      "family": "iterative",
+      "learning": "none",
+      "description": "STAR-QSM (streaking artifact reduction) dipole inversion, the QSM.rs port of STI Suite's QSM_star. Its pair is star-sti, the original.",
+      "citation": "Wei et al., NMR Biomed 2015",
+      "doi": "10.1002/nbm.3383",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT",
+      "authors": [
+        "Hongjiang Wei and Chunlei Liu"
+      ],
+      "parameters": [
+        {
+          "name": "te",
+          "default": "sum",
+          "description": "echo time the field is converted to phase at (STAR-QSM's result depends on the phase scale): first, last, spacing (TE2 - TE1), sum (of the echo times), or a time in ms\n"
+        },
+        {
+          "name": "pad",
+          "default": "8 8 20",
+          "description": "zero padding per side in voxels, x y z, or one number for every axis (STI Suite's 'padsize'; the default is what STI Suite's GUI passes, star-sti's recon.m passes 12 12 12)\n"
+        }
+      ],
+      "ci_notes": []
+    },
+    {
       "slug": "star-sti",
       "name": "STAR-QSM (STI Suite)",
       "stage": "dipole",
@@ -3133,7 +3230,8 @@
         "Jeff H. Duyn"
       ],
       "parameters": [],
-      "ci_notes": []
+      "ci_notes": [],
+      "hidden": true
     },
     {
       "slug": "tkd-qsmrs",
@@ -3457,6 +3555,59 @@
           "name": "max_iter",
           "default": 100,
           "description": "maximum proximal-gradient iterations (early-stops on convergence, ~12 on the phantom). A pure convergence knob, not a regularisation target.\n"
+        }
+      ],
+      "ci_notes": []
+    },
+    {
+      "slug": "wavesep-qsmrs",
+      "name": "WaveSep (QSM.rs)",
+      "stage": "chi-separation",
+      "inputs": [
+        "r2prime",
+        "chimap",
+        "mask",
+        "params"
+      ],
+      "domain": "chisep",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "wavesep",
+      "language": "Rust",
+      "family": "iterative",
+      "learning": "none",
+      "description": "WaveSep (Fang et al. 2023) as the Rust implementation in QSM.rs, run by `qsmxt separate wavesep`: \u03c7+ + \u03c7\u2212 \u2248 \u03c7_total and \u03c7+ \u2212 \u03c7\u2212 \u2248 R2'/Dr under a wavelet-domain L1 prior (db4, maximum level), solved by proximal gradient with the authors' defaults (\u03b1 0.2, \u03bb 0.02, \u2264 100 iterations, early stop at a relative change of 1e-3). The QSM.rs port of the `wavesep` entry, which runs the authors' Python solver.",
+      "citation": "Fang, Shin, van Zijl, Li, Sulam, \"WaveSep: A Flexible Wavelet-Based Approach for Source Separation in Susceptibility Imaging\", Machine Learning in Clinical Neuroimaging (MLCN), MICCAI 2023, Springer LNCS.\n",
+      "doi": "10.1007/978-3-031-44858-4_6",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT",
+      "authors": [
+        "Zhenghan Fang",
+        "Hyeong-Geol Shin",
+        "Peter van Zijl",
+        "Xu Li",
+        "Jeremias Sulam",
+        "Ashley Stewart"
+      ],
+      "parameters": [
+        {
+          "name": "Dr",
+          "default": 137.0,
+          "description": "Static-dephasing relaxivity (Hz/ppm), used for both sources as the original does (`--dr-pos`, `--dr-neg`). 137 is the qsm-forward phantom's kernel, the `wavesep` entry's default.\n"
+        },
+        {
+          "name": "lambda",
+          "default": 0.02,
+          "description": "wavelet-domain L1 (soft-thresholding) weight"
+        },
+        {
+          "name": "alpha",
+          "default": 0.2,
+          "description": "proximal-gradient step"
+        },
+        {
+          "name": "max_iter",
+          "default": 100,
+          "description": "maximum proximal-gradient iterations (early stop at a relative change of 1e-3)"
         }
       ],
       "ci_notes": []

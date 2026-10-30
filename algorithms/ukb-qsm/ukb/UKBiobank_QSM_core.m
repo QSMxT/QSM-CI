@@ -1,4 +1,4 @@
-function [qsm_iLSQR_vsf, mask_vsf] = UKBiobank_QSM_core(phase, mask, TEs, B0, H, voxsz)
+function [qsm_iLSQR_vsf, mask_vsf, I] = UKBiobank_QSM_core(phase, mask, TEs, B0, H, voxsz)
 % Reconstruction core of UKBiobank_QSM.m, lifted verbatim.
 %
 % Authors: Chaoyue Wang, Benjamin C. Tendler & Karla L. Miller
@@ -14,6 +14,9 @@ function [qsm_iLSQR_vsf, mask_vsf] = UKBiobank_QSM_core(phase, mask, TEs, B0, H,
 %                    arithmetic is identical to upstream.
 %   2. scaling     — upstream's final `niftiwrite(single(qsm * 1000), ...)` wrote ppb; that
 %                    line is IO and is not here, so this returns iLSQR's native ppm.
+%
+% The third output, I, only copies values out for QSM-CI's fidelity checks (each copy is marked
+% "% EDIT (intermediates)"); it changes no computation.
 %
 % TEs in ms, B0 in tesla, H the unit B0 direction, voxsz in mm.
 
@@ -33,6 +36,7 @@ function [qsm_iLSQR_vsf, mask_vsf] = UKBiobank_QSM_core(phase, mask, TEs, B0, H,
         mask(:, :, ii) =~ bwareaopen(~mask(:, :, ii), 50);
     end
     mask = imfill(mask,26,'holes');
+    I.map = map; I.map2 = map2; I.mask = mask;  % EDIT (intermediates)
     % phase unwrap
     % EDIT (multi-echo): upstream unwraps phase1 and phase2; unwrap every echo the same way.
     nEcho = size(phase, 4);
@@ -53,11 +57,13 @@ function [qsm_iLSQR_vsf, mask_vsf] = UKBiobank_QSM_core(phase, mask, TEs, B0, H,
     phs_comb = double(phs_comb / sum(W));
 
     TE = sum(W .* TEs(:)') / sum(W);
+    I.phs_comb = phs_comb; I.TE = TE;  % EDIT (intermediates)
 
     clear phase1 uwphase W TEs T2s combined phase2 phase uwphase1 uwphase2;
     % v-SHARP and Dipole inversion
 
     [dB_vsf, mask_vsf]=V_SHARP(phs_comb, mask, 'voxelsize', voxsz, 'smvsize', 12);
+    I.dB_vsf = dB_vsf; I.mask_vsharp = mask_vsf;  % EDIT (intermediates)
 
     clear mask;
 

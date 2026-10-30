@@ -23,12 +23,21 @@ doi: 10.1016/j.neuroimage.2021.118371
 citation: Shin et al., NeuroImage 2021
 code_url: https://github.com/SNU-LIST/chi-separation
 license: academic use; toolbox obtained via the SNU-LIST Google Form
-image: ghcr.io/astewartau/qsm-ci/chi-sep-ilsqr@sha256:d07d167420d04a26403c20d42d47269ecd95ff354529521dddd282449e6bf35a   # v1
+image: ghcr.io/astewartau/qsm-ci/chi-sep-ilsqr@sha256:0c5bb3a6989a07b8fbb38459d2477df59b28035bc673b98c3f671159ac22769e   # v2
 run: bash run.sh
 runner: highmem
 matlab:
   entry: recon.m
-  runtime: r2026a
+  runtime: r2023b
+# Container vs the authors' code in licensed MATLAB with the real toolboxes (QSMxT/QSM-CI#300;
+# fidelity/REPORT.md). Rerun and update whenever the image changes.
+fidelity:
+  date: 2026-10-28
+  image: sha256:0c5bb3a6989a07b8fbb38459d2477df59b28035bc673b98c3f671159ac22769e
+  matlab: R2023b Update 5 (23.2.0.2459199), Image Processing Toolbox 23.2, Signal Processing Toolbox 23.2
+  tolerance: identical   # chi-para, chi-dia and every intermediate, phantom and in vivo, 8 threads
+  result: pass
+  report: algorithms/chisep-ilsqr/fidelity/REPORT.md
 parameters:
   - name: pad_size
     default: 12
@@ -40,7 +49,3 @@ parameters:
 # Inputs consumed (isolated eval): local field + R2' + mask + magnitude. The QSM is reconstructed
 # in-house (STI-Suite QSM_iLSQR); chimap.nii.gz is intentionally NOT used (see recon.m note).
 # Produces two source maps: chi-para (χ+) and chi-dia (χ−).
-# NOTE: the GHCR image above is not built yet — the SNU-LIST toolbox + STI Suite need a MATLAB license
-# and are obtained via the SNU-LIST Google Form, so this runs via `--runner local` (run.sh) for now.
-# Like the other MATLAB methods, the Dockerfile (once added, via mcc + matlab-runtime) is gitignored so
-# CI pulls the prebuilt image. Runner must have STI Suite on $CHISEP_STISUITE.
