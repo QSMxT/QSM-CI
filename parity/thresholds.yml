@@ -308,7 +308,7 @@ pairs:
   tkd:
     reference: tkd-qsmjl
     candidate: tkd-qsmrs
-    enabled: false
+    enabled: true
     # Both sides at their defaults, QSM.jl's fast-FFT padding included (astewartau/QSM.rs#323;
     # until then the pair set QSM.jl's pad to -1). Measured before the change (run 41019310531,
     # QSM.jl pad -1 vs QSM.rs's padding): NRMSE sim 1.30 %, KKI 6.9e-06 % (the KKI grid needs no padding).
@@ -317,14 +317,20 @@ pairs:
                   src/utils/padding.rs]
     qsmxt_paths: *invert_wiring
     datasets:
-      sim: {}
+      sim:
+        # Measured: identical (NRMSE 0 %).
+        chimap: { nrmse_max: 0.5, correlation_min: 0.99, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
+        measured: { main: "run 41025064947: QSMxT main 007799a, QSM.rs main 7f8271e (limits)" }
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
+        # Measured: NRMSE 6.9e-06 %, r 1.000000, max |Δ| 6.0e-08 ppm, p99 |Δ| 8.1e-09 ppm.
+        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
+        measured: { main: "run 41025064947: QSMxT main 007799a, QSM.rs main 7f8271e (limits)" }
   tsvd:
     reference: tsvd-qsmjl
     candidate: tsvd-qsmrs
-    enabled: false
+    enabled: true
     # Both sides at their defaults, QSM.jl's fast-FFT padding included (astewartau/QSM.rs#323;
     # until then the pair set QSM.jl's pad to -1). Measured before the change (run 41019310531,
     # QSM.jl pad -1 vs QSM.rs's padding): NRMSE sim 2.74 %, KKI 8.1e-06 % (the KKI grid needs no padding).
@@ -333,14 +339,20 @@ pairs:
                   src/utils/padding.rs]
     qsmxt_paths: *invert_wiring
     datasets:
-      sim: {}
+      sim:
+        # Measured: identical (NRMSE 0 %).
+        chimap: { nrmse_max: 0.5, correlation_min: 0.99, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
+        measured: { main: "run 41025064947: QSMxT main 007799a, QSM.rs main 7f8271e (limits)" }
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
+        # Measured: NRMSE 8.1e-06 %, max |Δ| 6.0e-08 ppm, p99 |Δ| 7.5e-09 ppm.
+        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
+        measured: { main: "run 41025064947: QSMxT main 007799a, QSM.rs main 7f8271e (limits)" }
   tikhonov:
     reference: tikhonov-qsmjl
     candidate: tikhonov-qsmrs
-    enabled: false
+    enabled: true
     # Both sides at their defaults, QSM.jl's fast-FFT padding included (astewartau/QSM.rs#323;
     # until then the pair set QSM.jl's pad to -1). Measured before the change (run 41019310531,
     # QSM.jl pad -1 vs QSM.rs's padding): NRMSE sim 0.32 %, KKI 1.3e-05 % (the KKI grid needs no padding).
@@ -349,14 +361,20 @@ pairs:
                   src/utils/padding.rs]
     qsmxt_paths: *invert_wiring
     datasets:
-      sim: {}
+      sim:
+        # Measured: identical (NRMSE 0 %).
+        chimap: { nrmse_max: 0.5, correlation_min: 0.99, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
+        measured: { main: "run 41025064947: QSMxT main 007799a, QSM.rs main 7f8271e (limits)" }
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
+        # Measured: NRMSE 1.3e-05 %, max |Δ| 1.6e-07 ppm, p99 |Δ| 1.5e-08 ppm.
+        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
+        measured: { main: "run 41025064947: QSMxT main 007799a, QSM.rs main 7f8271e (limits)" }
   tv:
     reference: tv-qsmjl
     candidate: tv-qsmrs
-    enabled: false
+    enabled: true
     # Both sides at their defaults, QSM.jl's fast-FFT padding included (astewartau/QSM.rs#323;
     # until then the pair set QSM.jl's pad to -1). Measured before the change (run 41019310531,
     # QSM.jl pad -1 vs QSM.rs's padding): NRMSE sim 0.21 %, KKI 1.2e-05 % (the KKI grid needs no padding).
@@ -366,14 +384,20 @@ pairs:
                   src/utils/padding.rs]
     qsmxt_paths: *invert_wiring
     datasets:
-      sim: {}
+      sim:
+        # Measured: NRMSE 2.0e-16 %, max |Δ| 5.6e-17 ppm.
+        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
+        measured: { main: "run 41025064947: QSMxT main 007799a, QSM.rs main 7f8271e (limits)" }
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
+        # Measured: NRMSE 1.2e-05 %, max |Δ| 1.5e-07 ppm, p99 |Δ| 1.2e-08 ppm.
+        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
+        measured: { main: "run 41025064947: QSMxT main 007799a, QSM.rs main 7f8271e (limits)" }
   nltv:
     reference: nltv-qsmjl
     candidate: nltv-qsmrs
-    enabled: false
+    enabled: true
     # QSM.rs ports QSM.jl's nltv line for line and requires the magnitude for the data weight W.
     # Both sides now take the same inputs: nltv-qsmjl gives QSM.jl the field as phase in rad at
     # TE1 and QSM.rs's W = min(2·mask·mag/max(mag), 1) (its README), and nltv-qsmrs's run.sh
@@ -387,14 +411,20 @@ pairs:
                   src/utils/gradient.rs, src/utils/mask.rs, src/utils/ops.rs, src/utils/padding.rs]
     qsmxt_paths: *invert_wiring
     datasets:
-      sim: {}
+      sim:
+        # Measured: NRMSE 2.7e-10 %, max |Δ| 5.8e-11 ppm.
+        chimap: { nrmse_max: 0.501, correlation_min: 0.99, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
+        measured: { main: "run 41025064947: QSMxT main 007799a, QSM.rs main 7f8271e (limits)" }
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
+        # Measured: NRMSE 9.6e-06 %, max |Δ| 8.9e-08 ppm, p99 |Δ| 8.4e-09 ppm.
+        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
+        measured: { main: "run 41025064947: QSMxT main 007799a, QSM.rs main 7f8271e (limits)" }
   rts:
     reference: rts-qsmjl
     candidate: rts-qsmrs
-    enabled: false
+    enabled: true
     # Both sides at their defaults, QSM.jl's fast-FFT padding included (astewartau/QSM.rs#323;
     # until then the pair set QSM.jl's pad to -1). Measured before the change (run 41019310531,
     # QSM.jl pad -1 vs QSM.rs's padding): NRMSE sim 1.02 %, KKI 5.8e-06 % (the KKI grid needs no padding).
@@ -403,23 +433,31 @@ pairs:
                   src/utils/mask.rs, src/utils/padding.rs]
     qsmxt_paths: *invert_wiring
     datasets:
-      sim: {}
+      sim:
+        # Measured: NRMSE 3.9e-10 %, max |Δ| 1.2e-10 ppm.
+        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
+        measured: { main: "run 41025064947: QSMxT main 007799a, QSM.rs main 7f8271e (limits)" }
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
+        # Measured: NRMSE 5.8e-06 %, max |Δ| 6.0e-08 ppm, p99 |Δ| 7.5e-09 ppm.
+        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
+        measured: { main: "run 41025064947: QSMxT main 007799a, QSM.rs main 7f8271e (limits)" }
   ismv:
     reference: ismv-qsmjl
     candidate: ismv-qsmrs
     enabled: false
     # QSM.rs's default iSMV is now the authors' (the lab's iSMV.m, Wen 2014; astewartau/QSM.rs#322),
     # which no container here runs yet. QSM.jl's ismv is kept as IsmvVariant::QsmJl, at QSM.jl's
-    # defaults (2 × the largest voxel, tol 1e-3, 500 iterations); the candidate selects it, so both
-    # sides run QSM.jl's defaults. With QSM.rs's defaults against QSM.jl (run 41019310531): NRMSE
-    # sim 21.6 %, KKI 266 %, a different method.
+    # defaults (2 × the largest voxel, tol 1e-3, 500 iterations); the candidate selects it. qsmxt
+    # keeps the tolerance and cap at the user's values when the variant changes (it suggests
+    # QSM.jl's by a rule, never silently), so they are set too: both sides run QSM.jl's defaults.
+    # With the variant alone (tol 5e-5, no cap; run 41025625969): NRMSE sim 51.3 %, KKI 364 %. With
+    # QSM.rs's defaults against QSM.jl (run 41019310531): sim 21.6 %, KKI 266 %.
     qsmrs_paths: [src/bgremove/ismv.rs, src/bgremove/smv.rs, src/error.rs, src/fft.rs, src/grid.rs,
                   src/kernels/, src/pipeline/bg_removal.rs, src/pipeline/rules.rs, src/utils/ops.rs]
     qsmxt_paths: &bgremove_wiring [src/cli.rs, src/commands/common.rs, src/commands/bgremove.rs]
-    candidate_set: { variant: qsmjl }
+    candidate_set: { variant: qsmjl, tol: 1e-3, max_iter: 500 }
     datasets:
       sim: {}
       s002001-kki-achieva-bridge-run1:
@@ -430,7 +468,7 @@ pairs:
   sharp:
     reference: sharp-sepia   # SEPIA db939cc SHARP.m + MEDI 2024.11.26 kernels, compiled; identical to licensed MATLAB
     candidate: sharp-qsmrs
-    enabled: false
+    enabled: true
     # Both sides at their defaults (SEPIA's GUI: 4 mm, 0.03).
     qsmrs_paths: &sharp_paths [src/bgremove/sharp.rs, src/bgremove/smv.rs, src/bgremove/vsharp.rs,
                                src/fft.rs, src/grid.rs, src/inversion/medi.rs, src/kernels/,
@@ -438,10 +476,16 @@ pairs:
                                src/utils/padding.rs]
     qsmxt_paths: *bgremove_wiring
     datasets:
-      sim: {}
+      sim:
+        # Measured: NRMSE 1.1e-08 %, max |Δ| 9.3e-10 ppm.
+        localfield: { nrmse_max: 0.501, correlation_min: 0.99, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
+        measured: { main: "run 41025064947: QSMxT main 007799a, QSM.rs main 7f8271e (limits)" }
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs]
         feed: { totalfield: totalfield }
+        # Measured: NRMSE 1.4e-08 %, max |Δ| 1.9e-09 ppm.
+        localfield: { nrmse_max: 0.501, correlation_min: 0.99, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
+        measured: { main: "run 41025064947: QSMxT main 007799a, QSM.rs main 7f8271e (limits)" }
   sharp-qsmjl:
     reference: sharp-qsmjl
     candidate: sharp-qsmrs
