@@ -982,20 +982,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 539.8116195201874,
+      "runtime_s": 349.01208877563477,
       "metrics": {
-        "nrmse": 88.38350770357866,
-        "nrmse_detrend": 187.8843881380095,
-        "nrmse_tissue": 197.46019359238835,
-        "nrmse_blood": 565.0747256852605,
-        "nrmse_dgm": 100.6262493140363,
-        "dgm_linearity": 0.37875579587179464,
-        "calc_moment_dev": 51.286786049604416,
-        "calc_streak": 0.26229349266271623,
-        "correlation": 0.4698381682390484,
-        "xsim": 0.1258956831370575,
-        "hfen": 92.16232962648424,
-        "coverage": 1.0
+        "nrmse": 88.39424092659667,
+        "nrmse_detrend": 187.98974891466406,
+        "nrmse_tissue": 197.50319782722715,
+        "nrmse_blood": 565.9572328873315,
+        "nrmse_dgm": 100.57869661820834,
+        "dgm_linearity": 0.37874845835418036,
+        "calc_moment_dev": 51.286786057055,
+        "calc_streak": 0.2623739933267682,
+        "correlation": 0.4696329331284244,
+        "xsim": 0.1257930351014733,
+        "hfen": 92.17576295141656,
+        "coverage": 0.9819077579491187
       },
       "status": "ok",
       "id": "romeo-qsmrs~iharperella-qsmrs~modl-qsm-cmp",
@@ -1007,8 +1007,8 @@
         "dipole": "modl-qsm"
       },
       "phantom": "sim",
-      "ci_run": "41003358791.1",
-      "ci_sha": "4077c27c24aed2ba5372754b4dfbca45f55877a8",
+      "ci_run": "41108111980.1",
+      "ci_sha": "8613ef207736b1c07132f4831840db84d183909a",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -1016,7 +1016,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-30T07:36:22Z",
+      "scored_at": "2026-10-30T20:34:13Z",
       "method_versions": {
         "romeo-qsmrs": {
           "commit": "6b4f723f8c623d114485f182aa9f14ad5faf1d13",
@@ -1027,8 +1027,8 @@
           "date": "2026-10-19T11:14:00+10:00"
         },
         "modl-qsm": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "166962829802b2e19a76d2fb6167ed511b4fd8d0",
+          "date": "2026-10-30T08:25:15Z"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/f2/romeo-qsmrs_iharperella-qsmrs_modl-qsm-cmp__resources.json",
@@ -1958,19 +1958,19 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 376.1012804508209,
+      "runtime_s": 239.5080337524414,
       "metrics": {
-        "nrmse": 74.44148659102503,
-        "nrmse_detrend": 109.14193212620435,
-        "nrmse_tissue": 116.62831126038911,
-        "nrmse_blood": 199.1121973818077,
-        "nrmse_dgm": 72.5177904068672,
-        "dgm_linearity": 0.2014904389540545,
-        "calc_moment_dev": 25.919515892863274,
-        "calc_streak": 0.041181331228155975,
-        "correlation": 0.6755529167410864,
-        "xsim": 0.2721568941673282,
-        "hfen": 72.3045143095851,
+        "nrmse": 74.44148661874189,
+        "nrmse_detrend": 109.14193199917574,
+        "nrmse_tissue": 116.62831523499196,
+        "nrmse_blood": 199.11218610756566,
+        "nrmse_dgm": 72.517790706449,
+        "dgm_linearity": 0.20149042131033124,
+        "calc_moment_dev": 25.919512555003166,
+        "calc_streak": 0.041181323347408455,
+        "correlation": 0.6755529171685227,
+        "xsim": 0.2721568887497351,
+        "hfen": 72.30451371825032,
         "coverage": 0.9819077579491187
       },
       "status": "ok",
@@ -1979,8 +1979,8 @@
       "mode": "isolated",
       "variant": "default",
       "phantom": "sim",
-      "ci_run": "41003358791.1",
-      "ci_sha": "4077c27c24aed2ba5372754b4dfbca45f55877a8",
+      "ci_run": "41108111980.1",
+      "ci_sha": "8613ef207736b1c07132f4831840db84d183909a",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -1988,11 +1988,11 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-30T04:49:26Z",
+      "scored_at": "2026-10-30T18:39:34Z",
       "method_versions": {
         "modl-qsm": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "166962829802b2e19a76d2fb6167ed511b4fd8d0",
+          "date": "2026-10-30T08:25:15Z"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/fa/modl-qsm-iso__resources.json",
@@ -2769,20 +2769,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 518.0938098430634,
+      "runtime_s": 340.24604058265686,
       "metrics": {
-        "nrmse": 81.50047564476428,
-        "nrmse_detrend": 140.11559616764512,
-        "nrmse_tissue": 159.4514004150708,
-        "nrmse_blood": 260.48257616544157,
-        "nrmse_dgm": 75.34477261356814,
-        "dgm_linearity": 0.2575488761113577,
-        "calc_moment_dev": 26.364536548033357,
-        "calc_streak": 0.04352245821623228,
-        "correlation": 0.5809205377453016,
-        "xsim": 0.20517519578460508,
-        "hfen": 77.36682805118579,
-        "coverage": 1.0
+        "nrmse": 81.28209947036991,
+        "nrmse_detrend": 138.79572710539557,
+        "nrmse_tissue": 157.41223457902737,
+        "nrmse_blood": 259.5044449309582,
+        "nrmse_dgm": 74.98257227311186,
+        "dgm_linearity": 0.2576654201636931,
+        "calc_moment_dev": 26.360641002655026,
+        "calc_streak": 0.04332222835208953,
+        "correlation": 0.5845629314197931,
+        "xsim": 0.20802616531892335,
+        "hfen": 77.32229266306359,
+        "coverage": 0.9819077579491187
       },
       "status": "ok",
       "id": "gt~harperella-qsmrs~modl-qsm-cmp",
@@ -2794,8 +2794,8 @@
         "dipole": "modl-qsm"
       },
       "phantom": "sim",
-      "ci_run": "41003358791.1",
-      "ci_sha": "4077c27c24aed2ba5372754b4dfbca45f55877a8",
+      "ci_run": "41108111980.1",
+      "ci_sha": "8613ef207736b1c07132f4831840db84d183909a",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -2803,15 +2803,15 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-30T07:40:05Z",
+      "scored_at": "2026-10-30T20:34:13Z",
       "method_versions": {
         "harperella-qsmrs": {
           "commit": "6b4f723f8c623d114485f182aa9f14ad5faf1d13",
           "date": "2026-10-19T11:14:00+10:00"
         },
         "modl-qsm": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "166962829802b2e19a76d2fb6167ed511b4fd8d0",
+          "date": "2026-10-30T08:25:15Z"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/b7/gt_harperella-qsmrs_modl-qsm-cmp__resources.json",
@@ -4253,20 +4253,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 285.7740070819855,
+      "runtime_s": 335.0898814201355,
       "metrics": {
-        "nrmse": 89.2572280213522,
-        "nrmse_detrend": 197.7689354683475,
-        "nrmse_tissue": 206.21503597211293,
-        "nrmse_blood": 707.7884483982097,
-        "nrmse_dgm": 99.83138248623519,
-        "dgm_linearity": 0.351844549202308,
+        "nrmse": 89.07105261731787,
+        "nrmse_detrend": 195.83712725672424,
+        "nrmse_tissue": 203.76806913773672,
+        "nrmse_blood": 696.4464117579972,
+        "nrmse_dgm": 99.83463798155594,
+        "dgm_linearity": 0.3518649154397733,
         "calc_moment_dev": 51.287070877850056,
-        "calc_streak": 0.2687147080163634,
-        "correlation": 0.4512360095084666,
-        "xsim": 0.10242528923924923,
-        "hfen": 92.80838373557519,
-        "coverage": 1.0
+        "calc_streak": 0.26872941641389203,
+        "correlation": 0.45477016834915274,
+        "xsim": 0.10351251121124617,
+        "hfen": 92.71360656415546,
+        "coverage": 0.7474441427205659
       },
       "status": "ok",
       "id": "romeo-qsmrs~ismv-qsmrs~modl-qsm-cmp",
@@ -4278,8 +4278,8 @@
         "dipole": "modl-qsm"
       },
       "phantom": "sim",
-      "ci_run": "41044447290.1",
-      "ci_sha": "39cdbab6963789407f0d408c750dd4073d02e9cf",
+      "ci_run": "41108111980.1",
+      "ci_sha": "8613ef207736b1c07132f4831840db84d183909a",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -4287,7 +4287,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-30T12:28:46Z",
+      "scored_at": "2026-10-30T20:34:13Z",
       "method_versions": {
         "romeo-qsmrs": {
           "commit": "6b4f723f8c623d114485f182aa9f14ad5faf1d13",
@@ -4298,8 +4298,8 @@
           "date": "2026-10-30T08:19:02Z"
         },
         "modl-qsm": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "166962829802b2e19a76d2fb6167ed511b4fd8d0",
+          "date": "2026-10-30T08:25:15Z"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/c6/romeo-qsmrs_ismv-qsmrs_modl-qsm-cmp__resources.json",
@@ -5996,20 +5996,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 404.28510904312134,
+      "runtime_s": 336.62940740585327,
       "metrics": {
-        "nrmse": 80.76606888758232,
-        "nrmse_detrend": 135.55303714400364,
-        "nrmse_tissue": 149.2828689575537,
-        "nrmse_blood": 253.7893799682308,
-        "nrmse_dgm": 76.93057345875206,
-        "dgm_linearity": 0.2525205807299046,
-        "calc_moment_dev": 26.248458553105593,
-        "calc_streak": 0.039417516072739855,
-        "correlation": 0.5936560908512787,
-        "xsim": 0.2126310384109497,
-        "hfen": 76.58251135862871,
-        "coverage": 1.0
+        "nrmse": 80.55615764656031,
+        "nrmse_detrend": 134.21803524784497,
+        "nrmse_tissue": 147.32295817968586,
+        "nrmse_blood": 252.8685056423208,
+        "nrmse_dgm": 76.64394651622874,
+        "dgm_linearity": 0.25226746891626883,
+        "calc_moment_dev": 25.983518958091736,
+        "calc_streak": 0.04060961237145538,
+        "correlation": 0.5974598280789917,
+        "xsim": 0.2154987285291684,
+        "hfen": 76.52682241597532,
+        "coverage": 0.9819077579491187
       },
       "status": "ok",
       "id": "gt~iharperella-qsmrs~modl-qsm-cmp",
@@ -6021,8 +6021,8 @@
         "dipole": "modl-qsm"
       },
       "phantom": "sim",
-      "ci_run": "41003358791.1",
-      "ci_sha": "4077c27c24aed2ba5372754b4dfbca45f55877a8",
+      "ci_run": "41108111980.1",
+      "ci_sha": "8613ef207736b1c07132f4831840db84d183909a",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -6030,15 +6030,15 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-30T06:58:01Z",
+      "scored_at": "2026-10-30T20:34:13Z",
       "method_versions": {
         "iharperella-qsmrs": {
           "commit": "6b4f723f8c623d114485f182aa9f14ad5faf1d13",
           "date": "2026-10-19T11:14:00+10:00"
         },
         "modl-qsm": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "166962829802b2e19a76d2fb6167ed511b4fd8d0",
+          "date": "2026-10-30T08:25:15Z"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/1e/gt_iharperella-qsmrs_modl-qsm-cmp__resources.json",
@@ -7480,20 +7480,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 368.37584805488586,
+      "runtime_s": 329.2357668876648,
       "metrics": {
-        "nrmse": 89.53238782752742,
-        "nrmse_detrend": 198.2077865414096,
-        "nrmse_tissue": 211.01447704327538,
-        "nrmse_blood": 586.627197419902,
-        "nrmse_dgm": 106.28666765037286,
-        "dgm_linearity": 0.321015997664047,
-        "calc_moment_dev": 51.28777229785919,
-        "calc_streak": 0.2955105220990655,
-        "correlation": 0.45043981818163414,
-        "xsim": 0.11690382344228098,
-        "hfen": 92.66003432633374,
-        "coverage": 1.0
+        "nrmse": 89.57789743108304,
+        "nrmse_detrend": 198.66347651356475,
+        "nrmse_tissue": 211.47150177818693,
+        "nrmse_blood": 589.0925064277483,
+        "nrmse_dgm": 106.24184231544223,
+        "dgm_linearity": 0.32095576146127436,
+        "calc_moment_dev": 51.28777219355106,
+        "calc_streak": 0.2954250652780641,
+        "correlation": 0.44961566817842025,
+        "xsim": 0.11636238527800351,
+        "hfen": 92.70370401893393,
+        "coverage": 0.9372577953742398
       },
       "status": "ok",
       "id": "romeo-qsmrs~lbv-qsmrs~modl-qsm-cmp",
@@ -7505,8 +7505,8 @@
         "dipole": "modl-qsm"
       },
       "phantom": "sim",
-      "ci_run": "41003358791.1",
-      "ci_sha": "4077c27c24aed2ba5372754b4dfbca45f55877a8",
+      "ci_run": "41108111980.1",
+      "ci_sha": "8613ef207736b1c07132f4831840db84d183909a",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -7514,7 +7514,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-30T06:58:01Z",
+      "scored_at": "2026-10-30T20:34:13Z",
       "method_versions": {
         "romeo-qsmrs": {
           "commit": "6b4f723f8c623d114485f182aa9f14ad5faf1d13",
@@ -7525,8 +7525,8 @@
           "date": "2026-10-19T11:14:00+10:00"
         },
         "modl-qsm": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "166962829802b2e19a76d2fb6167ed511b4fd8d0",
+          "date": "2026-10-30T08:25:15Z"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/20/romeo-qsmrs_lbv-qsmrs_modl-qsm-cmp__resources.json",
@@ -9267,20 +9267,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 317.1833231449127,
+      "runtime_s": 320.9375367164612,
       "metrics": {
-        "nrmse": 82.82521765747838,
-        "nrmse_detrend": 145.57484054739288,
-        "nrmse_tissue": 160.98509575095747,
-        "nrmse_blood": 286.1293857929079,
-        "nrmse_dgm": 77.76176383738077,
-        "dgm_linearity": 0.2416208054869583,
-        "calc_moment_dev": 26.290899668820202,
-        "calc_streak": 0.03882935171362719,
-        "correlation": 0.5662108024842933,
-        "xsim": 0.1744438411011844,
-        "hfen": 79.87054292946566,
-        "coverage": 1.0
+        "nrmse": 82.96958988072595,
+        "nrmse_detrend": 146.2972841525124,
+        "nrmse_tissue": 161.7675765347717,
+        "nrmse_blood": 289.03681611988964,
+        "nrmse_dgm": 77.41220935723454,
+        "dgm_linearity": 0.24170590123494684,
+        "calc_moment_dev": 26.14950080215931,
+        "calc_streak": 0.039347670991080406,
+        "correlation": 0.5643066316173393,
+        "xsim": 0.17517217240495941,
+        "hfen": 80.00246014088361,
+        "coverage": 0.7474441427205659
       },
       "status": "ok",
       "id": "gt~ismv-qsmrs~modl-qsm-cmp",
@@ -9292,8 +9292,8 @@
         "dipole": "modl-qsm"
       },
       "phantom": "sim",
-      "ci_run": "41044447290.1",
-      "ci_sha": "39cdbab6963789407f0d408c750dd4073d02e9cf",
+      "ci_run": "41108111980.1",
+      "ci_sha": "8613ef207736b1c07132f4831840db84d183909a",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -9301,15 +9301,15 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-30T12:28:46Z",
+      "scored_at": "2026-10-30T20:34:13Z",
       "method_versions": {
         "ismv-qsmrs": {
           "commit": "69d384f8d8a60c9b6cf99cd4fe978d7ca1a1518e",
           "date": "2026-10-30T08:19:02Z"
         },
         "modl-qsm": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "166962829802b2e19a76d2fb6167ed511b4fd8d0",
+          "date": "2026-10-30T08:25:15Z"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/ce/gt_ismv-qsmrs_modl-qsm-cmp__resources.json",
@@ -10907,20 +10907,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 314.4195740222931,
+      "runtime_s": 312.7762167453766,
       "metrics": {
-        "nrmse": 80.47562696186937,
-        "nrmse_detrend": 134.30882122977116,
-        "nrmse_tissue": 149.0823013555189,
-        "nrmse_blood": 255.6428211443061,
-        "nrmse_dgm": 75.37949266277619,
-        "dgm_linearity": 0.24024329100959207,
-        "calc_moment_dev": 26.304250265471634,
-        "calc_streak": 0.041860127651714485,
-        "correlation": 0.597200039937182,
-        "xsim": 0.21434901236298476,
-        "hfen": 75.56255341590389,
-        "coverage": 1.0
+        "nrmse": 79.86064776664084,
+        "nrmse_detrend": 130.89484006706354,
+        "nrmse_tissue": 144.89457022037863,
+        "nrmse_blood": 250.82092873568632,
+        "nrmse_dgm": 75.09351065975412,
+        "dgm_linearity": 0.23989370361565188,
+        "calc_moment_dev": 26.320849195122722,
+        "calc_streak": 0.04179190642844259,
+        "correlation": 0.6070820863066319,
+        "xsim": 0.2213802987932019,
+        "hfen": 75.21976320880158,
+        "coverage": 0.9372577953742398
       },
       "status": "ok",
       "id": "gt~lbv-qsmrs~modl-qsm-cmp",
@@ -10932,8 +10932,8 @@
         "dipole": "modl-qsm"
       },
       "phantom": "sim",
-      "ci_run": "41003358791.1",
-      "ci_sha": "4077c27c24aed2ba5372754b4dfbca45f55877a8",
+      "ci_run": "41108111980.1",
+      "ci_sha": "8613ef207736b1c07132f4831840db84d183909a",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -10941,15 +10941,15 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-30T06:14:57Z",
+      "scored_at": "2026-10-30T20:34:13Z",
       "method_versions": {
         "lbv-qsmrs": {
           "commit": "6b4f723f8c623d114485f182aa9f14ad5faf1d13",
           "date": "2026-10-19T11:14:00+10:00"
         },
         "modl-qsm": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "166962829802b2e19a76d2fb6167ed511b4fd8d0",
+          "date": "2026-10-30T08:25:15Z"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/17/gt_lbv-qsmrs_modl-qsm-cmp__resources.json",
@@ -12391,20 +12391,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 294.69505167007446,
+      "runtime_s": 337.48403763771057,
       "metrics": {
-        "nrmse": 90.81605993223579,
-        "nrmse_detrend": 215.973162982379,
-        "nrmse_tissue": 226.15601507244597,
-        "nrmse_blood": 672.3735045882593,
-        "nrmse_dgm": 108.33393229188646,
-        "dgm_linearity": 0.34548530951038336,
+        "nrmse": 90.93661586648004,
+        "nrmse_detrend": 217.48870163319492,
+        "nrmse_tissue": 227.81585901932135,
+        "nrmse_blood": 680.1364867375684,
+        "nrmse_dgm": 108.34408468862891,
+        "dgm_linearity": 0.34550330242673977,
         "calc_moment_dev": 51.28375383466482,
-        "calc_streak": 0.2306573126969304,
-        "correlation": 0.4201665572565464,
-        "xsim": 0.09916932050289792,
-        "hfen": 91.98049339301437,
-        "coverage": 1.0
+        "calc_streak": 0.2305992848944019,
+        "correlation": 0.4177511254677319,
+        "xsim": 0.09778687231720175,
+        "hfen": 92.10765545106968,
+        "coverage": 0.8916212745599973
       },
       "status": "ok",
       "id": "romeo-qsmrs~vsharp-sti~modl-qsm-cmp",
@@ -12416,8 +12416,8 @@
         "dipole": "modl-qsm"
       },
       "phantom": "sim",
-      "ci_run": "41003358791.1",
-      "ci_sha": "4077c27c24aed2ba5372754b4dfbca45f55877a8",
+      "ci_run": "41108111980.1",
+      "ci_sha": "8613ef207736b1c07132f4831840db84d183909a",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -12425,7 +12425,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-30T06:15:28Z",
+      "scored_at": "2026-10-30T20:34:13Z",
       "method_versions": {
         "romeo-qsmrs": {
           "commit": "6b4f723f8c623d114485f182aa9f14ad5faf1d13",
@@ -12436,8 +12436,8 @@
           "date": "2026-10-28T03:50:47+10:00"
         },
         "modl-qsm": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "166962829802b2e19a76d2fb6167ed511b4fd8d0",
+          "date": "2026-10-30T08:25:15Z"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/4d/romeo-qsmrs_vsharp-sti_modl-qsm-cmp__resources.json",
@@ -14082,20 +14082,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 654.3636612892151,
+      "runtime_s": 571.5494725704193,
       "metrics": {
-        "nrmse": 88.64676997482229,
-        "nrmse_detrend": 190.38934552486128,
-        "nrmse_tissue": 203.3014869682241,
-        "nrmse_blood": 552.8160100578297,
-        "nrmse_dgm": 96.28134080180004,
-        "dgm_linearity": 0.3348741657379747,
-        "calc_moment_dev": 51.28872206248343,
-        "calc_streak": 0.2743498862344016,
-        "correlation": 0.4650000919012958,
-        "xsim": 0.11949458780923777,
-        "hfen": 92.42908675322184,
-        "coverage": 1.0
+        "nrmse": 88.6633901085763,
+        "nrmse_detrend": 190.5528546979219,
+        "nrmse_tissue": 203.3961676417573,
+        "nrmse_blood": 553.8409061348864,
+        "nrmse_dgm": 96.26233472103986,
+        "dgm_linearity": 0.33488398934550223,
+        "calc_moment_dev": 51.28895204514265,
+        "calc_streak": 0.2749510904912199,
+        "correlation": 0.46468727377242797,
+        "xsim": 0.11940060609492929,
+        "hfen": 92.44722402930776,
+        "coverage": 0.9819077579491187
       },
       "status": "ok",
       "id": "romeo-qsmrs~pdf-qsmrs~modl-qsm-cmp",
@@ -14107,8 +14107,8 @@
         "dipole": "modl-qsm"
       },
       "phantom": "sim",
-      "ci_run": "41003358791.1",
-      "ci_sha": "4077c27c24aed2ba5372754b4dfbca45f55877a8",
+      "ci_run": "41108111980.1",
+      "ci_sha": "8613ef207736b1c07132f4831840db84d183909a",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -14116,7 +14116,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-30T07:07:44Z",
+      "scored_at": "2026-10-30T20:34:13Z",
       "method_versions": {
         "romeo-qsmrs": {
           "commit": "6b4f723f8c623d114485f182aa9f14ad5faf1d13",
@@ -14127,8 +14127,8 @@
           "date": "2026-10-19T11:14:00+10:00"
         },
         "modl-qsm": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "166962829802b2e19a76d2fb6167ed511b4fd8d0",
+          "date": "2026-10-30T08:25:15Z"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/71/romeo-qsmrs_pdf-qsmrs_modl-qsm-cmp__resources.json",
@@ -15774,20 +15774,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 572.4551937580109,
+      "runtime_s": 313.9492027759552,
       "metrics": {
-        "nrmse": 85.25085621968371,
-        "nrmse_detrend": 162.13335940767936,
-        "nrmse_tissue": 183.4803942780763,
-        "nrmse_blood": 281.04291012869055,
-        "nrmse_dgm": 85.9999977549866,
-        "dgm_linearity": 0.22322192841037714,
-        "calc_moment_dev": 25.503319954499602,
-        "calc_streak": 0.038879674032713654,
-        "correlation": 0.5249562537948596,
-        "xsim": 0.16767374998877105,
-        "hfen": 78.2727310742007,
-        "coverage": 1.0
+        "nrmse": 84.41527024602534,
+        "nrmse_detrend": 155.63976333084955,
+        "nrmse_tissue": 174.97716968424973,
+        "nrmse_blood": 273.2036577615734,
+        "nrmse_dgm": 85.81037461214795,
+        "dgm_linearity": 0.22383454728329322,
+        "calc_moment_dev": 25.512260228395466,
+        "calc_streak": 0.03871834634444087,
+        "correlation": 0.5405505230121315,
+        "xsim": 0.1753749939054581,
+        "hfen": 77.5366240080829,
+        "coverage": 0.8916212745599973
       },
       "status": "ok",
       "id": "gt~vsharp-sti~modl-qsm-cmp",
@@ -15799,8 +15799,8 @@
         "dipole": "modl-qsm"
       },
       "phantom": "sim",
-      "ci_run": "41003358791.1",
-      "ci_sha": "4077c27c24aed2ba5372754b4dfbca45f55877a8",
+      "ci_run": "41108111980.1",
+      "ci_sha": "8613ef207736b1c07132f4831840db84d183909a",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -15808,15 +15808,15 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-30T06:40:31Z",
+      "scored_at": "2026-10-30T20:34:13Z",
       "method_versions": {
         "vsharp-sti": {
           "commit": "f835a7e11e1e9c3a4df4ee4bd31509e5e65bf423",
           "date": "2026-10-28T03:50:47+10:00"
         },
         "modl-qsm": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "166962829802b2e19a76d2fb6167ed511b4fd8d0",
+          "date": "2026-10-30T08:25:15Z"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/9f/gt_vsharp-sti_modl-qsm-cmp__resources.json",
@@ -17258,20 +17258,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 300.6143388748169,
+      "runtime_s": 334.47572803497314,
       "metrics": {
-        "nrmse": 89.92957791478572,
-        "nrmse_detrend": 205.43798510136867,
-        "nrmse_tissue": 215.63393641345874,
-        "nrmse_blood": 713.5163166355323,
-        "nrmse_dgm": 100.34665031175788,
-        "dgm_linearity": 0.3505744218756358,
+        "nrmse": 90.07643948733683,
+        "nrmse_detrend": 207.1401134579171,
+        "nrmse_tissue": 217.90394109175207,
+        "nrmse_blood": 723.6882841998819,
+        "nrmse_dgm": 100.33272289515705,
+        "dgm_linearity": 0.3505142975693849,
         "calc_moment_dev": 51.2853839546442,
-        "calc_streak": 0.2601307194079036,
-        "correlation": 0.4376681310146023,
-        "xsim": 0.09435882258914043,
-        "hfen": 93.0651467775953,
-        "coverage": 1.0
+        "calc_streak": 0.26012789400639114,
+        "correlation": 0.4347537359109115,
+        "xsim": 0.09359274536803469,
+        "hfen": 93.127411353317,
+        "coverage": 0.7034312846544796
       },
       "status": "ok",
       "id": "romeo-qsmrs~resharp-qsmrs~modl-qsm-cmp",
@@ -17283,8 +17283,8 @@
         "dipole": "modl-qsm"
       },
       "phantom": "sim",
-      "ci_run": "41003358791.1",
-      "ci_sha": "4077c27c24aed2ba5372754b4dfbca45f55877a8",
+      "ci_run": "41108111980.1",
+      "ci_sha": "8613ef207736b1c07132f4831840db84d183909a",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -17292,7 +17292,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-30T06:14:57Z",
+      "scored_at": "2026-10-30T20:34:13Z",
       "method_versions": {
         "romeo-qsmrs": {
           "commit": "6b4f723f8c623d114485f182aa9f14ad5faf1d13",
@@ -17303,8 +17303,8 @@
           "date": "2026-10-19T11:14:00+10:00"
         },
         "modl-qsm": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "166962829802b2e19a76d2fb6167ed511b4fd8d0",
+          "date": "2026-10-30T08:25:15Z"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/2d/romeo-qsmrs_resharp-qsmrs_modl-qsm-cmp__resources.json",
@@ -18946,20 +18946,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 668.6052343845367,
+      "runtime_s": 539.9348537921906,
       "metrics": {
-        "nrmse": 80.45565273500539,
-        "nrmse_detrend": 133.5552315483264,
-        "nrmse_tissue": 148.89940994919266,
-        "nrmse_blood": 242.9291979295878,
-        "nrmse_dgm": 75.70721591255497,
-        "dgm_linearity": 0.22894726211397576,
-        "calc_moment_dev": 25.879194756038487,
-        "calc_streak": 0.041928155456831234,
-        "correlation": 0.5993614222639949,
-        "xsim": 0.2100348167837175,
-        "hfen": 75.98021748012144,
-        "coverage": 1.0
+        "nrmse": 80.33523003445114,
+        "nrmse_detrend": 132.68045790443165,
+        "nrmse_tissue": 147.30123712200273,
+        "nrmse_blood": 243.15614234051316,
+        "nrmse_dgm": 75.321252656758,
+        "dgm_linearity": 0.2287964250291149,
+        "calc_moment_dev": 26.132427632808685,
+        "calc_streak": 0.04030952134715899,
+        "correlation": 0.6018845192708555,
+        "xsim": 0.21193194835466422,
+        "hfen": 76.02178352213751,
+        "coverage": 0.9819077579491187
       },
       "status": "ok",
       "id": "gt~pdf-qsmrs~modl-qsm-cmp",
@@ -18971,8 +18971,8 @@
         "dipole": "modl-qsm"
       },
       "phantom": "sim",
-      "ci_run": "41003358791.1",
-      "ci_sha": "4077c27c24aed2ba5372754b4dfbca45f55877a8",
+      "ci_run": "41108111980.1",
+      "ci_sha": "8613ef207736b1c07132f4831840db84d183909a",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -18980,15 +18980,15 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-30T06:51:13Z",
+      "scored_at": "2026-10-30T20:34:13Z",
       "method_versions": {
         "pdf-qsmrs": {
           "commit": "6b4f723f8c623d114485f182aa9f14ad5faf1d13",
           "date": "2026-10-19T11:14:00+10:00"
         },
         "modl-qsm": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "166962829802b2e19a76d2fb6167ed511b4fd8d0",
+          "date": "2026-10-30T08:25:15Z"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/d4/gt_pdf-qsmrs_modl-qsm-cmp__resources.json",
@@ -20430,20 +20430,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 416.52132415771484,
+      "runtime_s": 318.50447487831116,
       "metrics": {
-        "nrmse": 89.95606051336564,
-        "nrmse_detrend": 205.4099894374683,
-        "nrmse_tissue": 213.4972747626058,
-        "nrmse_blood": 720.4276129435983,
-        "nrmse_dgm": 100.41861478279225,
-        "dgm_linearity": 0.3499201668215326,
+        "nrmse": 89.89243551563948,
+        "nrmse_detrend": 204.70601327203192,
+        "nrmse_tissue": 212.59045641777388,
+        "nrmse_blood": 716.989033065993,
+        "nrmse_dgm": 100.36180597436274,
+        "dgm_linearity": 0.34983419891176826,
         "calc_moment_dev": 51.28658512234688,
-        "calc_streak": 0.2811538146486077,
-        "correlation": 0.4377163533756385,
-        "xsim": 0.0957564193274192,
-        "hfen": 93.1800645809026,
-        "coverage": 1.0
+        "calc_streak": 0.281076514039286,
+        "correlation": 0.4389320335447696,
+        "xsim": 0.09615064380458742,
+        "hfen": 93.15296459761672,
+        "coverage": 0.7034312846544796
       },
       "status": "ok",
       "id": "romeo-qsmrs~sharp-qsmrs~modl-qsm-cmp",
@@ -20455,8 +20455,8 @@
         "dipole": "modl-qsm"
       },
       "phantom": "sim",
-      "ci_run": "41003358791.1",
-      "ci_sha": "4077c27c24aed2ba5372754b4dfbca45f55877a8",
+      "ci_run": "41108111980.1",
+      "ci_sha": "8613ef207736b1c07132f4831840db84d183909a",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -20464,19 +20464,19 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-30T06:51:13Z",
+      "scored_at": "2026-10-30T20:34:13Z",
       "method_versions": {
         "romeo-qsmrs": {
           "commit": "6b4f723f8c623d114485f182aa9f14ad5faf1d13",
           "date": "2026-10-19T11:14:00+10:00"
         },
         "sharp-qsmrs": {
-          "commit": "6b4f723f8c623d114485f182aa9f14ad5faf1d13",
-          "date": "2026-10-19T11:14:00+10:00"
+          "commit": "7a9e0818a8cd0b87cca498415b907ce77618546e",
+          "date": "2026-10-30T09:25:45Z"
         },
         "modl-qsm": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "166962829802b2e19a76d2fb6167ed511b4fd8d0",
+          "date": "2026-10-30T08:25:15Z"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/95/romeo-qsmrs_sharp-qsmrs_modl-qsm-cmp__resources.json",
@@ -22133,20 +22133,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 452.499196767807,
+      "runtime_s": 324.34870958328247,
       "metrics": {
-        "nrmse": 84.74960816785651,
-        "nrmse_detrend": 158.03415818342117,
-        "nrmse_tissue": 178.80096635519283,
-        "nrmse_blood": 296.04936186537003,
-        "nrmse_dgm": 79.63534341281066,
-        "dgm_linearity": 0.23820611276181447,
-        "calc_moment_dev": 25.68008977174759,
-        "calc_streak": 0.04031581973704105,
-        "correlation": 0.534715052946427,
-        "xsim": 0.15374692336706114,
-        "hfen": 81.24050196739344,
-        "coverage": 1.0
+        "nrmse": 84.30231997650603,
+        "nrmse_detrend": 154.5280003063966,
+        "nrmse_tissue": 173.54757831822621,
+        "nrmse_blood": 291.89567685963084,
+        "nrmse_dgm": 79.30412557568786,
+        "dgm_linearity": 0.23862595495017835,
+        "calc_moment_dev": 25.706722423434258,
+        "calc_streak": 0.040189506006678706,
+        "correlation": 0.543294528222069,
+        "xsim": 0.15766083669676723,
+        "hfen": 81.073924861773,
+        "coverage": 0.7034312846544796
       },
       "status": "ok",
       "id": "gt~resharp-qsmrs~modl-qsm-cmp",
@@ -22158,8 +22158,8 @@
         "dipole": "modl-qsm"
       },
       "phantom": "sim",
-      "ci_run": "41003358791.1",
-      "ci_sha": "4077c27c24aed2ba5372754b4dfbca45f55877a8",
+      "ci_run": "41108111980.1",
+      "ci_sha": "8613ef207736b1c07132f4831840db84d183909a",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -22167,15 +22167,15 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-30T07:03:46Z",
+      "scored_at": "2026-10-30T20:34:13Z",
       "method_versions": {
         "resharp-qsmrs": {
           "commit": "6b4f723f8c623d114485f182aa9f14ad5faf1d13",
           "date": "2026-10-19T11:14:00+10:00"
         },
         "modl-qsm": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "166962829802b2e19a76d2fb6167ed511b4fd8d0",
+          "date": "2026-10-30T08:25:15Z"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/c3/gt_resharp-qsmrs_modl-qsm-cmp__resources.json",
@@ -23617,20 +23617,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 506.70652532577515,
+      "runtime_s": 331.79611897468567,
       "metrics": {
-        "nrmse": 88.56053702576907,
-        "nrmse_detrend": 190.05163836345548,
-        "nrmse_tissue": 197.02858508338383,
-        "nrmse_blood": 568.5477159991063,
-        "nrmse_dgm": 101.86288867896977,
-        "dgm_linearity": 0.37167020990597166,
-        "calc_moment_dev": 51.28622967004776,
-        "calc_streak": 0.2567778101985602,
-        "correlation": 0.4656473279481465,
-        "xsim": 0.11361421343887222,
-        "hfen": 91.75111086081913,
-        "coverage": 1.0
+        "nrmse": 88.47674843455484,
+        "nrmse_detrend": 189.28855493510684,
+        "nrmse_tissue": 196.22461142894846,
+        "nrmse_blood": 565.1206237746411,
+        "nrmse_dgm": 101.84531003988558,
+        "dgm_linearity": 0.3716941204160097,
+        "calc_moment_dev": 51.286229595541954,
+        "calc_streak": 0.2567040000229312,
+        "correlation": 0.4671155526059724,
+        "xsim": 0.11451339072062947,
+        "hfen": 91.69346468074397,
+        "coverage": 0.9372577953742398
       },
       "status": "ok",
       "id": "romeo-qsmrs~vsharp-qsmrs~modl-qsm-cmp",
@@ -23642,8 +23642,8 @@
         "dipole": "modl-qsm"
       },
       "phantom": "sim",
-      "ci_run": "41003358791.1",
-      "ci_sha": "4077c27c24aed2ba5372754b4dfbca45f55877a8",
+      "ci_run": "41108111980.1",
+      "ci_sha": "8613ef207736b1c07132f4831840db84d183909a",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -23651,19 +23651,19 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-30T07:12:44Z",
+      "scored_at": "2026-10-30T20:34:13Z",
       "method_versions": {
         "romeo-qsmrs": {
           "commit": "6b4f723f8c623d114485f182aa9f14ad5faf1d13",
           "date": "2026-10-19T11:14:00+10:00"
         },
         "vsharp-qsmrs": {
-          "commit": "f72ead2f6a5036b10c33e26d58f2dae89084e0e7",
-          "date": "2026-10-28T15:47:56+10:00"
+          "commit": "7a9e0818a8cd0b87cca498415b907ce77618546e",
+          "date": "2026-10-30T09:25:45Z"
         },
         "modl-qsm": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "166962829802b2e19a76d2fb6167ed511b4fd8d0",
+          "date": "2026-10-30T08:25:15Z"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/73/romeo-qsmrs_vsharp-qsmrs_modl-qsm-cmp__resources.json",
@@ -25317,20 +25317,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 511.175733089447,
+      "runtime_s": 299.82649421691895,
       "metrics": {
-        "nrmse": 84.33545489572487,
-        "nrmse_detrend": 155.39348799876197,
-        "nrmse_tissue": 173.91179011705333,
-        "nrmse_blood": 293.8184138388555,
-        "nrmse_dgm": 79.233100727547,
-        "dgm_linearity": 0.23635534508087785,
-        "calc_moment_dev": 25.722320578992367,
-        "calc_streak": 0.04106047521748465,
-        "correlation": 0.541156472458948,
-        "xsim": 0.15740930645076318,
-        "hfen": 81.06216762552825,
-        "coverage": 1.0
+        "nrmse": 84.04940667535043,
+        "nrmse_detrend": 153.17070485696155,
+        "nrmse_tissue": 170.65814114091592,
+        "nrmse_blood": 291.40050676960965,
+        "nrmse_dgm": 78.86988672793137,
+        "dgm_linearity": 0.23686629536770432,
+        "calc_moment_dev": 25.97633819282055,
+        "calc_streak": 0.03950346008075305,
+        "correlation": 0.5466745088385144,
+        "xsim": 0.16079924646780788,
+        "hfen": 80.97084754388126,
+        "coverage": 0.7034312846544796
       },
       "status": "ok",
       "id": "gt~sharp-qsmrs~modl-qsm-cmp",
@@ -25342,8 +25342,8 @@
         "dipole": "modl-qsm"
       },
       "phantom": "sim",
-      "ci_run": "41003358791.1",
-      "ci_sha": "4077c27c24aed2ba5372754b4dfbca45f55877a8",
+      "ci_run": "41108111980.1",
+      "ci_sha": "8613ef207736b1c07132f4831840db84d183909a",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -25351,15 +25351,15 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-30T07:12:44Z",
+      "scored_at": "2026-10-30T20:34:13Z",
       "method_versions": {
         "sharp-qsmrs": {
-          "commit": "6b4f723f8c623d114485f182aa9f14ad5faf1d13",
-          "date": "2026-10-19T11:14:00+10:00"
+          "commit": "7a9e0818a8cd0b87cca498415b907ce77618546e",
+          "date": "2026-10-30T09:25:45Z"
         },
         "modl-qsm": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "166962829802b2e19a76d2fb6167ed511b4fd8d0",
+          "date": "2026-10-30T08:25:15Z"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/d6/gt_sharp-qsmrs_modl-qsm-cmp__resources.json",
@@ -26957,20 +26957,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 525.2605340480804,
+      "runtime_s": 309.6563985347748,
       "metrics": {
-        "nrmse": 81.06529889629172,
-        "nrmse_detrend": 136.5095117344578,
-        "nrmse_tissue": 151.2865568246443,
-        "nrmse_blood": 256.7237666658761,
-        "nrmse_dgm": 76.99920567324908,
-        "dgm_linearity": 0.2503589107536899,
-        "calc_moment_dev": 26.28970579616725,
-        "calc_streak": 0.03895021226619121,
-        "correlation": 0.5909524916030884,
-        "xsim": 0.2026911666444087,
-        "hfen": 76.60459218813405,
-        "coverage": 1.0
+        "nrmse": 81.05892730161588,
+        "nrmse_detrend": 136.24886328341097,
+        "nrmse_tissue": 150.35761332078093,
+        "nrmse_blood": 258.1830876595843,
+        "nrmse_dgm": 76.67736904611311,
+        "dgm_linearity": 0.2503640898310818,
+        "calc_moment_dev": 26.178394258022305,
+        "calc_streak": 0.03944780779458094,
+        "correlation": 0.5916874632179073,
+        "xsim": 0.20316168406049942,
+        "hfen": 76.72144884337104,
+        "coverage": 0.9372577953742398
       },
       "status": "ok",
       "id": "gt~vsharp-qsmrs~modl-qsm-cmp",
@@ -26982,8 +26982,8 @@
         "dipole": "modl-qsm"
       },
       "phantom": "sim",
-      "ci_run": "41003358791.1",
-      "ci_sha": "4077c27c24aed2ba5372754b4dfbca45f55877a8",
+      "ci_run": "41108111980.1",
+      "ci_sha": "8613ef207736b1c07132f4831840db84d183909a",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -26991,15 +26991,15 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-30T06:36:03Z",
+      "scored_at": "2026-10-30T20:34:13Z",
       "method_versions": {
         "vsharp-qsmrs": {
-          "commit": "f72ead2f6a5036b10c33e26d58f2dae89084e0e7",
-          "date": "2026-10-28T15:47:56+10:00"
+          "commit": "7a9e0818a8cd0b87cca498415b907ce77618546e",
+          "date": "2026-10-30T09:25:45Z"
         },
         "modl-qsm": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "166962829802b2e19a76d2fb6167ed511b4fd8d0",
+          "date": "2026-10-30T08:25:15Z"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/ed/gt_vsharp-qsmrs_modl-qsm-cmp__resources.json",
@@ -28644,20 +28644,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 314.682204246521,
+      "runtime_s": 347.3974323272705,
       "metrics": {
-        "nrmse": 92.3918922081719,
-        "nrmse_detrend": 220.26871409364688,
-        "nrmse_tissue": 234.0699138768809,
-        "nrmse_blood": 591.4712945400819,
-        "nrmse_dgm": 112.17787992540971,
-        "dgm_linearity": 0.46917142111479715,
+        "nrmse": 92.40263077707448,
+        "nrmse_detrend": 220.42934594506875,
+        "nrmse_tissue": 234.19492008195027,
+        "nrmse_blood": 592.4507930323344,
+        "nrmse_dgm": 112.17426270915392,
+        "dgm_linearity": 0.46915412135435963,
         "calc_moment_dev": 51.27972908318043,
-        "calc_streak": 0.22035910762356165,
-        "correlation": 0.4133844401479817,
-        "xsim": 0.11384669335154556,
-        "hfen": 94.08052720010049,
-        "coverage": 1.0
+        "calc_streak": 0.22013580697775212,
+        "correlation": 0.4131346292526723,
+        "xsim": 0.11384081368460738,
+        "hfen": 94.09455325912015,
+        "coverage": 0.9819077579491187
       },
       "status": "ok",
       "id": "romeo-qsmrs~harperella-qsmrs~modl-qsm-cmp",
@@ -28669,8 +28669,8 @@
         "dipole": "modl-qsm"
       },
       "phantom": "sim",
-      "ci_run": "41003358791.1",
-      "ci_sha": "4077c27c24aed2ba5372754b4dfbca45f55877a8",
+      "ci_run": "41108111980.1",
+      "ci_sha": "8613ef207736b1c07132f4831840db84d183909a",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -28678,7 +28678,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-30T05:51:21Z",
+      "scored_at": "2026-10-30T20:34:13Z",
       "method_versions": {
         "romeo-qsmrs": {
           "commit": "6b4f723f8c623d114485f182aa9f14ad5faf1d13",
@@ -28689,8 +28689,8 @@
           "date": "2026-10-19T11:14:00+10:00"
         },
         "modl-qsm": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "166962829802b2e19a76d2fb6167ed511b4fd8d0",
+          "date": "2026-10-30T08:25:15Z"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/e8/romeo-qsmrs_harperella-qsmrs_modl-qsm-cmp__resources.json",
@@ -30136,20 +30136,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 910.667001247406,
+      "runtime_s": 574.853667974472,
       "metrics": {
-        "nrmse": 83.36338762304752,
-        "nrmse_detrend": 149.18239477202457,
-        "nrmse_tissue": 162.5881480729583,
-        "nrmse_blood": 290.1752125855698,
-        "nrmse_dgm": 82.31882535453768,
-        "dgm_linearity": 0.21616886870821295,
-        "calc_moment_dev": 41.91413636575453,
-        "calc_streak": 0.06769465757168508,
-        "correlation": 0.5567995455563616,
-        "xsim": 0.20031223250676192,
-        "hfen": 76.15459162488861,
-        "coverage": 1.0
+        "nrmse": 83.30159619207028,
+        "nrmse_detrend": 148.72682056944475,
+        "nrmse_tissue": 162.05018899844285,
+        "nrmse_blood": 289.57353274835015,
+        "nrmse_dgm": 82.22711516676614,
+        "dgm_linearity": 0.21598676431474306,
+        "calc_moment_dev": 41.98206817358732,
+        "calc_streak": 0.06660833724931256,
+        "correlation": 0.5579746672815195,
+        "xsim": 0.2010114030335822,
+        "hfen": 76.13725925928156,
+        "coverage": 0.9819077579491187
       },
       "status": "ok",
       "id": "gt~bfrnet~modl-qsm-cmp",
@@ -30161,8 +30161,8 @@
         "dipole": "modl-qsm"
       },
       "phantom": "sim",
-      "ci_run": "41003358791.1",
-      "ci_sha": "4077c27c24aed2ba5372754b4dfbca45f55877a8",
+      "ci_run": "41108111980.1",
+      "ci_sha": "8613ef207736b1c07132f4831840db84d183909a",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -30170,15 +30170,15 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-30T07:36:22Z",
+      "scored_at": "2026-10-30T20:34:13Z",
       "method_versions": {
         "bfrnet": {
           "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
           "date": "2026-10-07T03:23:21Z"
         },
         "modl-qsm": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "166962829802b2e19a76d2fb6167ed511b4fd8d0",
+          "date": "2026-10-30T08:25:15Z"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/2d/gt_bfrnet_modl-qsm-cmp__resources.json",
@@ -31620,20 +31620,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 927.4439573287964,
+      "runtime_s": 591.9296474456787,
       "metrics": {
-        "nrmse": 89.73320200765293,
-        "nrmse_detrend": 201.4418536033447,
-        "nrmse_tissue": 212.7269478975861,
-        "nrmse_blood": 497.2041328100249,
-        "nrmse_dgm": 103.80172946544089,
-        "dgm_linearity": 0.33768695556833805,
-        "calc_moment_dev": 48.563256520428695,
-        "calc_streak": 0.16793852305805743,
-        "correlation": 0.44464729211224585,
-        "xsim": 0.11497457520641578,
-        "hfen": 91.40351553866903,
-        "coverage": 1.0
+        "nrmse": 89.7314168656548,
+        "nrmse_detrend": 201.4384391710692,
+        "nrmse_tissue": 212.67081284069315,
+        "nrmse_blood": 497.50869035289014,
+        "nrmse_dgm": 103.7728350881482,
+        "dgm_linearity": 0.33760759000771545,
+        "calc_moment_dev": 48.563566125929356,
+        "calc_streak": 0.1679000407213612,
+        "correlation": 0.4446533388390279,
+        "xsim": 0.11499080214344332,
+        "hfen": 91.40841815257558,
+        "coverage": 0.9819077579491187
       },
       "status": "ok",
       "id": "romeo-qsmrs~bfrnet~modl-qsm-cmp",
@@ -31645,8 +31645,8 @@
         "dipole": "modl-qsm"
       },
       "phantom": "sim",
-      "ci_run": "41003358791.1",
-      "ci_sha": "4077c27c24aed2ba5372754b4dfbca45f55877a8",
+      "ci_run": "41108111980.1",
+      "ci_sha": "8613ef207736b1c07132f4831840db84d183909a",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -31654,7 +31654,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-30T06:40:31Z",
+      "scored_at": "2026-10-30T20:34:13Z",
       "method_versions": {
         "romeo-qsmrs": {
           "commit": "6b4f723f8c623d114485f182aa9f14ad5faf1d13",
@@ -31665,8 +31665,8 @@
           "date": "2026-10-07T03:23:21Z"
         },
         "modl-qsm": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "166962829802b2e19a76d2fb6167ed511b4fd8d0",
+          "date": "2026-10-30T08:25:15Z"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/63/romeo-qsmrs_bfrnet_modl-qsm-cmp__resources.json",
@@ -49349,20 +49349,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 571.3281118869781,
+      "runtime_s": 437.44445967674255,
       "metrics": {
-        "nrmse": 88.76569482017484,
-        "nrmse_detrend": 192.61787806149715,
-        "nrmse_tissue": 201.38984824281556,
-        "nrmse_blood": 558.4385558348878,
-        "nrmse_dgm": 98.45521424367546,
-        "dgm_linearity": 0.3575656787552468,
-        "calc_moment_dev": 44.611250167596154,
-        "calc_streak": 0.140889715819401,
-        "correlation": 0.46076762180807673,
-        "xsim": 0.10952952732927801,
-        "hfen": 91.47128560878625,
-        "coverage": 1.0
+        "nrmse": 88.89752012370445,
+        "nrmse_detrend": 193.93286933068416,
+        "nrmse_tissue": 202.90738502436093,
+        "nrmse_blood": 564.6608120053642,
+        "nrmse_dgm": 98.43611757462709,
+        "dgm_linearity": 0.3575814393035669,
+        "calc_moment_dev": 44.609832771122456,
+        "calc_streak": 0.14070133831285025,
+        "correlation": 0.4583013132483946,
+        "xsim": 0.10838441306917368,
+        "hfen": 91.5949953509325,
+        "coverage": 0.8371423535632454
       },
       "status": "ok",
       "id": "gt~iqfm~modl-qsm-cmp",
@@ -49374,24 +49374,24 @@
         "dipole": "modl-qsm"
       },
       "phantom": "sim",
-      "ci_run": "41003358791.1",
-      "ci_sha": "4077c27c24aed2ba5372754b4dfbca45f55877a8",
+      "ci_run": "41108111980.1",
+      "ci_sha": "8613ef207736b1c07132f4831840db84d183909a",
       "ci_env": {
-        "python": "3.12.16",
+        "python": "3.12.15",
         "numpy": "2.2.6",
         "scipy": "1.15.3",
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-30T08:14:02Z",
+      "scored_at": "2026-10-30T20:34:13Z",
       "method_versions": {
         "iqfm": {
           "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21+00:00"
+          "date": "2026-10-07T03:23:21Z"
         },
         "modl-qsm": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21+00:00"
+          "commit": "166962829802b2e19a76d2fb6167ed511b4fd8d0",
+          "date": "2026-10-30T08:25:15Z"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/7e/gt_iqfm_modl-qsm-cmp__resources.json",
@@ -50921,20 +50921,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 552.0931086540222,
+      "runtime_s": 427.61714601516724,
       "metrics": {
-        "nrmse": 88.76569482017484,
-        "nrmse_detrend": 192.61787806149715,
-        "nrmse_tissue": 201.38984824281556,
-        "nrmse_blood": 558.4385558348878,
-        "nrmse_dgm": 98.45521424367546,
-        "dgm_linearity": 0.3575656787552468,
-        "calc_moment_dev": 44.611250167596154,
-        "calc_streak": 0.140889715819401,
-        "correlation": 0.46076762180807673,
-        "xsim": 0.10952952732927801,
-        "hfen": 91.47128560878625,
-        "coverage": 1.0
+        "nrmse": 88.89752012370445,
+        "nrmse_detrend": 193.93286933068416,
+        "nrmse_tissue": 202.90738502436093,
+        "nrmse_blood": 564.6608120053642,
+        "nrmse_dgm": 98.43611757462709,
+        "dgm_linearity": 0.3575814393035669,
+        "calc_moment_dev": 44.609832771122456,
+        "calc_streak": 0.14070133831285025,
+        "correlation": 0.4583013132483946,
+        "xsim": 0.10838441306917368,
+        "hfen": 91.5949953509325,
+        "coverage": 0.8371423535632454
       },
       "status": "ok",
       "id": "romeo-qsmrs~iqfm~modl-qsm-cmp",
@@ -50946,16 +50946,16 @@
         "dipole": "modl-qsm"
       },
       "phantom": "sim",
-      "ci_run": "41003358791.1",
-      "ci_sha": "4077c27c24aed2ba5372754b4dfbca45f55877a8",
+      "ci_run": "41108111980.1",
+      "ci_sha": "8613ef207736b1c07132f4831840db84d183909a",
       "ci_env": {
-        "python": "3.12.16",
+        "python": "3.12.15",
         "numpy": "2.2.6",
         "scipy": "1.15.3",
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-30T08:14:02Z",
+      "scored_at": "2026-10-30T20:34:13Z",
       "method_versions": {
         "romeo-qsmrs": {
           "commit": "6b4f723f8c623d114485f182aa9f14ad5faf1d13",
@@ -50963,11 +50963,11 @@
         },
         "iqfm": {
           "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21+00:00"
+          "date": "2026-10-07T03:23:21Z"
         },
         "modl-qsm": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21+00:00"
+          "commit": "166962829802b2e19a76d2fb6167ed511b4fd8d0",
+          "date": "2026-10-30T08:25:15Z"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/0e/romeo-qsmrs_iqfm_modl-qsm-cmp__resources.json",
@@ -56707,20 +56707,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 571.2768211364746,
+      "runtime_s": 429.1091465950012,
       "metrics": {
-        "nrmse": 88.76569482017484,
-        "nrmse_detrend": 192.61787806149715,
-        "nrmse_tissue": 201.38984824281556,
-        "nrmse_blood": 558.4385558348878,
-        "nrmse_dgm": 98.45521424367546,
-        "dgm_linearity": 0.3575656787552468,
-        "calc_moment_dev": 44.611250167596154,
-        "calc_streak": 0.140889715819401,
-        "correlation": 0.46076762180807673,
-        "xsim": 0.10952952732927801,
-        "hfen": 91.47128560878625,
-        "coverage": 1.0
+        "nrmse": 88.89752012370445,
+        "nrmse_detrend": 193.93286933068416,
+        "nrmse_tissue": 202.90738502436093,
+        "nrmse_blood": 564.6608120053642,
+        "nrmse_dgm": 98.43611757462709,
+        "dgm_linearity": 0.3575814393035669,
+        "calc_moment_dev": 44.609832771122456,
+        "calc_streak": 0.14070133831285025,
+        "correlation": 0.4583013132483946,
+        "xsim": 0.10838441306917368,
+        "hfen": 91.5949953509325,
+        "coverage": 0.8371423535632454
       },
       "status": "ok",
       "id": "laplacian-qsmrs~iqfm~modl-qsm-cmp",
@@ -56732,16 +56732,16 @@
         "dipole": "modl-qsm"
       },
       "phantom": "sim",
-      "ci_run": "41003358791.1",
-      "ci_sha": "4077c27c24aed2ba5372754b4dfbca45f55877a8",
+      "ci_run": "41108111980.1",
+      "ci_sha": "8613ef207736b1c07132f4831840db84d183909a",
       "ci_env": {
-        "python": "3.12.16",
+        "python": "3.12.15",
         "numpy": "2.2.6",
         "scipy": "1.15.3",
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-30T08:14:02Z",
+      "scored_at": "2026-10-30T20:34:13Z",
       "method_versions": {
         "laplacian-qsmrs": {
           "commit": "1e1036c28fc437ed33839b1663024fa5f4f2738c",
@@ -56749,11 +56749,11 @@
         },
         "iqfm": {
           "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21+00:00"
+          "date": "2026-10-07T03:23:21Z"
         },
         "modl-qsm": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21+00:00"
+          "commit": "166962829802b2e19a76d2fb6167ed511b4fd8d0",
+          "date": "2026-10-30T08:25:15Z"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/e2/laplacian-qsmrs_iqfm_modl-qsm-cmp__resources.json",
@@ -58563,20 +58563,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 507.0896122455597,
+      "runtime_s": 348.11408495903015,
       "metrics": {
-        "nrmse": 88.1124670188016,
-        "nrmse_detrend": 185.1919440224222,
-        "nrmse_tissue": 190.53902334015297,
-        "nrmse_blood": 536.5057054345714,
-        "nrmse_dgm": 99.148064905095,
-        "dgm_linearity": 0.30593855167242046,
-        "calc_moment_dev": 50.73015608161222,
-        "calc_streak": 0.26085440196625176,
-        "correlation": 0.4751354884156087,
-        "xsim": 0.12872572186395098,
-        "hfen": 92.49505852388756,
-        "coverage": 1.0
+        "nrmse": 88.11375805985884,
+        "nrmse_detrend": 185.20837542863026,
+        "nrmse_tissue": 190.5261318578503,
+        "nrmse_blood": 536.8213996094319,
+        "nrmse_dgm": 99.14036714509231,
+        "dgm_linearity": 0.30594910316748536,
+        "calc_moment_dev": 50.73077958077192,
+        "calc_streak": 0.2609859960365713,
+        "correlation": 0.4751028503998947,
+        "xsim": 0.12872397717290904,
+        "hfen": 92.49967151952389,
+        "coverage": 0.9819077579491187
       },
       "status": "ok",
       "id": "laplacian-qsmrs~iharperella-qsmrs~modl-qsm-cmp",
@@ -58588,8 +58588,8 @@
         "dipole": "modl-qsm"
       },
       "phantom": "sim",
-      "ci_run": "41003358791.1",
-      "ci_sha": "4077c27c24aed2ba5372754b4dfbca45f55877a8",
+      "ci_run": "41108111980.1",
+      "ci_sha": "8613ef207736b1c07132f4831840db84d183909a",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -58597,7 +58597,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-30T07:40:05Z",
+      "scored_at": "2026-10-30T20:34:13Z",
       "method_versions": {
         "laplacian-qsmrs": {
           "commit": "1e1036c28fc437ed33839b1663024fa5f4f2738c",
@@ -58608,8 +58608,8 @@
           "date": "2026-10-19T11:14:00+10:00"
         },
         "modl-qsm": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "166962829802b2e19a76d2fb6167ed511b4fd8d0",
+          "date": "2026-10-30T08:25:15Z"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/cd/laplacian-qsmrs_iharperella-qsmrs_modl-qsm-cmp__resources.json",
@@ -60291,20 +60291,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 300.32296419143677,
+      "runtime_s": 337.39818239212036,
       "metrics": {
-        "nrmse": 91.80260233978788,
-        "nrmse_detrend": 228.07519689230597,
-        "nrmse_tissue": 246.38312651888415,
-        "nrmse_blood": 796.7479955622761,
-        "nrmse_dgm": 108.55517370214959,
-        "dgm_linearity": 0.21434171793642476,
-        "calc_moment_dev": 50.87245763570536,
-        "calc_streak": 0.31323907452252064,
-        "correlation": 0.4015504225258015,
-        "xsim": 0.08825792274765895,
-        "hfen": 94.26157131043054,
-        "coverage": 1.0
+        "nrmse": 91.59801660337347,
+        "nrmse_detrend": 225.37640506137203,
+        "nrmse_tissue": 242.6372286454299,
+        "nrmse_blood": 780.7906719452485,
+        "nrmse_dgm": 108.56003183501609,
+        "dgm_linearity": 0.21440839377026555,
+        "calc_moment_dev": 50.870405592024326,
+        "calc_streak": 0.31184839565489403,
+        "correlation": 0.40557181744992593,
+        "xsim": 0.08945691519180862,
+        "hfen": 94.15283127772956,
+        "coverage": 0.7474441427205659
       },
       "status": "ok",
       "id": "laplacian-qsmrs~ismv-qsmrs~modl-qsm-cmp",
@@ -60316,8 +60316,8 @@
         "dipole": "modl-qsm"
       },
       "phantom": "sim",
-      "ci_run": "41044447290.1",
-      "ci_sha": "39cdbab6963789407f0d408c750dd4073d02e9cf",
+      "ci_run": "41108111980.1",
+      "ci_sha": "8613ef207736b1c07132f4831840db84d183909a",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -60325,7 +60325,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-30T12:28:46Z",
+      "scored_at": "2026-10-30T20:34:13Z",
       "method_versions": {
         "laplacian-qsmrs": {
           "commit": "1e1036c28fc437ed33839b1663024fa5f4f2738c",
@@ -60336,8 +60336,8 @@
           "date": "2026-10-30T08:19:02Z"
         },
         "modl-qsm": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "166962829802b2e19a76d2fb6167ed511b4fd8d0",
+          "date": "2026-10-30T08:25:15Z"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/2e/laplacian-qsmrs_ismv-qsmrs_modl-qsm-cmp__resources.json",
@@ -62019,20 +62019,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 366.17020535469055,
+      "runtime_s": 330.04409170150757,
       "metrics": {
-        "nrmse": 112.92759158071512,
-        "nrmse_detrend": 451.53234965335935,
-        "nrmse_tissue": 670.0547654524852,
-        "nrmse_blood": 1060.191963562271,
-        "nrmse_dgm": 160.00050001879836,
-        "dgm_linearity": 0.15476372275487293,
-        "calc_moment_dev": 51.111418013926595,
-        "calc_streak": 0.5868111012325502,
-        "correlation": 0.21622874475147755,
-        "xsim": 0.05226652858231339,
-        "hfen": 113.97426450317832,
-        "coverage": 1.0
+        "nrmse": 112.87731691675123,
+        "nrmse_detrend": 450.204476868414,
+        "nrmse_tissue": 667.4211762806644,
+        "nrmse_blood": 1055.2168790270318,
+        "nrmse_dgm": 159.96987147553386,
+        "dgm_linearity": 0.1548095936015974,
+        "calc_moment_dev": 51.11022371053696,
+        "calc_streak": 0.584165045851769,
+        "correlation": 0.21683656444937088,
+        "xsim": 0.0525703219801833,
+        "hfen": 113.94303734530995,
+        "coverage": 0.9372577953742398
       },
       "status": "ok",
       "id": "laplacian-qsmrs~lbv-qsmrs~modl-qsm-cmp",
@@ -62044,8 +62044,8 @@
         "dipole": "modl-qsm"
       },
       "phantom": "sim",
-      "ci_run": "41003358791.1",
-      "ci_sha": "4077c27c24aed2ba5372754b4dfbca45f55877a8",
+      "ci_run": "41108111980.1",
+      "ci_sha": "8613ef207736b1c07132f4831840db84d183909a",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -62053,7 +62053,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-30T07:07:44Z",
+      "scored_at": "2026-10-30T20:34:13Z",
       "method_versions": {
         "laplacian-qsmrs": {
           "commit": "1e1036c28fc437ed33839b1663024fa5f4f2738c",
@@ -62064,8 +62064,8 @@
           "date": "2026-10-19T11:14:00+10:00"
         },
         "modl-qsm": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "166962829802b2e19a76d2fb6167ed511b4fd8d0",
+          "date": "2026-10-30T08:25:15Z"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/27/laplacian-qsmrs_lbv-qsmrs_modl-qsm-cmp__resources.json",
@@ -63747,20 +63747,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 488.7127890586853,
+      "runtime_s": 601.8110044002533,
       "metrics": {
-        "nrmse": 110.81574006173565,
-        "nrmse_detrend": 377.68963671689266,
-        "nrmse_tissue": 451.85941586611017,
-        "nrmse_blood": 1200.4801490310842,
-        "nrmse_dgm": 112.80544846460276,
-        "dgm_linearity": 0.07586476572837131,
-        "calc_moment_dev": 50.97912795841694,
-        "calc_streak": 0.5525867244488041,
-        "correlation": 0.2559483660784038,
-        "xsim": 0.07878183452528932,
-        "hfen": 102.4941639185453,
-        "coverage": 1.0
+        "nrmse": 110.82764759332952,
+        "nrmse_detrend": 378.3033200093779,
+        "nrmse_tissue": 452.54500413031406,
+        "nrmse_blood": 1203.9403986851648,
+        "nrmse_dgm": 112.81337983627482,
+        "dgm_linearity": 0.07592560786137204,
+        "calc_moment_dev": 50.977744814008474,
+        "calc_streak": 0.5504458231631809,
+        "correlation": 0.2555603045710747,
+        "xsim": 0.07873890014546155,
+        "hfen": 102.52629261256763,
+        "coverage": 0.9819077579491187
       },
       "status": "ok",
       "id": "laplacian-qsmrs~pdf-qsmrs~modl-qsm-cmp",
@@ -63772,8 +63772,8 @@
         "dipole": "modl-qsm"
       },
       "phantom": "sim",
-      "ci_run": "41003358791.1",
-      "ci_sha": "4077c27c24aed2ba5372754b4dfbca45f55877a8",
+      "ci_run": "41108111980.1",
+      "ci_sha": "8613ef207736b1c07132f4831840db84d183909a",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -63781,7 +63781,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-30T06:14:57Z",
+      "scored_at": "2026-10-30T20:34:13Z",
       "method_versions": {
         "laplacian-qsmrs": {
           "commit": "1e1036c28fc437ed33839b1663024fa5f4f2738c",
@@ -63792,8 +63792,8 @@
           "date": "2026-10-19T11:14:00+10:00"
         },
         "modl-qsm": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "166962829802b2e19a76d2fb6167ed511b4fd8d0",
+          "date": "2026-10-30T08:25:15Z"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/ab/laplacian-qsmrs_pdf-qsmrs_modl-qsm-cmp__resources.json",
@@ -65475,20 +65475,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 435.7150273323059,
+      "runtime_s": 331.7601981163025,
       "metrics": {
-        "nrmse": 90.8748187122588,
-        "nrmse_detrend": 216.50927113285059,
-        "nrmse_tissue": 231.51947545284173,
-        "nrmse_blood": 718.6445180468148,
-        "nrmse_dgm": 102.91622443180937,
-        "dgm_linearity": 0.27793396676243076,
-        "calc_moment_dev": 50.76395557937212,
-        "calc_streak": 0.2346334913252654,
-        "correlation": 0.41930927351989156,
-        "xsim": 0.08846988589705913,
-        "hfen": 93.68330538554953,
-        "coverage": 1.0
+        "nrmse": 90.7582059471952,
+        "nrmse_detrend": 215.07930558527488,
+        "nrmse_tissue": 229.5124320575925,
+        "nrmse_blood": 711.2128979742531,
+        "nrmse_dgm": 102.90055112011316,
+        "dgm_linearity": 0.2779463342011457,
+        "calc_moment_dev": 50.76399014517665,
+        "calc_streak": 0.2345914830719969,
+        "correlation": 0.42160289092506914,
+        "xsim": 0.08910576252535092,
+        "hfen": 93.64094564321648,
+        "coverage": 0.7034312846544796
       },
       "status": "ok",
       "id": "laplacian-qsmrs~resharp-qsmrs~modl-qsm-cmp",
@@ -65500,8 +65500,8 @@
         "dipole": "modl-qsm"
       },
       "phantom": "sim",
-      "ci_run": "41003358791.1",
-      "ci_sha": "4077c27c24aed2ba5372754b4dfbca45f55877a8",
+      "ci_run": "41108111980.1",
+      "ci_sha": "8613ef207736b1c07132f4831840db84d183909a",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -65509,7 +65509,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-30T06:51:13Z",
+      "scored_at": "2026-10-30T20:34:13Z",
       "method_versions": {
         "laplacian-qsmrs": {
           "commit": "1e1036c28fc437ed33839b1663024fa5f4f2738c",
@@ -65520,8 +65520,8 @@
           "date": "2026-10-19T11:14:00+10:00"
         },
         "modl-qsm": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "166962829802b2e19a76d2fb6167ed511b4fd8d0",
+          "date": "2026-10-30T08:25:15Z"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/e6/laplacian-qsmrs_resharp-qsmrs_modl-qsm-cmp__resources.json",
@@ -67203,20 +67203,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 416.27548003196716,
+      "runtime_s": 318.43389534950256,
       "metrics": {
-        "nrmse": 90.52390560290824,
-        "nrmse_detrend": 211.96258729036666,
-        "nrmse_tissue": 221.15531751972497,
-        "nrmse_blood": 702.606526799859,
-        "nrmse_dgm": 101.30803966388551,
-        "dgm_linearity": 0.300846239599435,
-        "calc_moment_dev": 50.705001475289464,
-        "calc_streak": 0.2717569505571221,
-        "correlation": 0.4266802685679205,
-        "xsim": 0.09304952345259049,
-        "hfen": 93.42448904780971,
-        "coverage": 1.0
+        "nrmse": 90.52669463931377,
+        "nrmse_detrend": 212.00075497986546,
+        "nrmse_tissue": 221.2004203060568,
+        "nrmse_blood": 703.0969088746176,
+        "nrmse_dgm": 101.2983407567299,
+        "dgm_linearity": 0.300853625680054,
+        "calc_moment_dev": 50.70565780252218,
+        "calc_streak": 0.27199195746428906,
+        "correlation": 0.42661743294602433,
+        "xsim": 0.0930788174318696,
+        "hfen": 93.42744598322064,
+        "coverage": 0.7034312846544796
       },
       "status": "ok",
       "id": "laplacian-qsmrs~sharp-qsmrs~modl-qsm-cmp",
@@ -67228,8 +67228,8 @@
         "dipole": "modl-qsm"
       },
       "phantom": "sim",
-      "ci_run": "41003358791.1",
-      "ci_sha": "4077c27c24aed2ba5372754b4dfbca45f55877a8",
+      "ci_run": "41108111980.1",
+      "ci_sha": "8613ef207736b1c07132f4831840db84d183909a",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -67237,19 +67237,19 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-30T07:03:46Z",
+      "scored_at": "2026-10-30T20:34:13Z",
       "method_versions": {
         "laplacian-qsmrs": {
           "commit": "1e1036c28fc437ed33839b1663024fa5f4f2738c",
           "date": "2026-10-19T11:13:56+10:00"
         },
         "sharp-qsmrs": {
-          "commit": "6b4f723f8c623d114485f182aa9f14ad5faf1d13",
-          "date": "2026-10-19T11:14:00+10:00"
+          "commit": "7a9e0818a8cd0b87cca498415b907ce77618546e",
+          "date": "2026-10-30T09:25:45Z"
         },
         "modl-qsm": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "166962829802b2e19a76d2fb6167ed511b4fd8d0",
+          "date": "2026-10-30T08:25:15Z"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/cb/laplacian-qsmrs_sharp-qsmrs_modl-qsm-cmp__resources.json",
@@ -68985,20 +68985,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 286.42880630493164,
+      "runtime_s": 325.58646059036255,
       "metrics": {
-        "nrmse": 89.02522131779327,
-        "nrmse_detrend": 194.24882938509245,
-        "nrmse_tissue": 197.98946215865448,
-        "nrmse_blood": 559.8585050677905,
-        "nrmse_dgm": 97.91071845576332,
-        "dgm_linearity": 0.2454175476708299,
-        "calc_moment_dev": 50.78412915742956,
-        "calc_streak": 0.24457241837091204,
-        "correlation": 0.4577121272301229,
-        "xsim": 0.10981269993629546,
-        "hfen": 92.47733734955474,
-        "coverage": 1.0
+        "nrmse": 89.04387202474253,
+        "nrmse_detrend": 194.43295758467124,
+        "nrmse_tissue": 198.16177214982122,
+        "nrmse_blood": 561.014338511485,
+        "nrmse_dgm": 97.89030081168758,
+        "dgm_linearity": 0.24538604037814826,
+        "calc_moment_dev": 50.783902291208506,
+        "calc_streak": 0.24452405404047003,
+        "correlation": 0.4573693801769171,
+        "xsim": 0.10959895873745883,
+        "hfen": 92.49494698928585,
+        "coverage": 0.9372577953742398
       },
       "status": "ok",
       "id": "laplacian-qsmrs~vsharp-qsmrs~modl-qsm-cmp",
@@ -69010,8 +69010,8 @@
         "dipole": "modl-qsm"
       },
       "phantom": "sim",
-      "ci_run": "41003358791.1",
-      "ci_sha": "4077c27c24aed2ba5372754b4dfbca45f55877a8",
+      "ci_run": "41108111980.1",
+      "ci_sha": "8613ef207736b1c07132f4831840db84d183909a",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -69019,19 +69019,19 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-30T06:15:28Z",
+      "scored_at": "2026-10-30T20:34:13Z",
       "method_versions": {
         "laplacian-qsmrs": {
           "commit": "1e1036c28fc437ed33839b1663024fa5f4f2738c",
           "date": "2026-10-19T11:13:56+10:00"
         },
         "vsharp-qsmrs": {
-          "commit": "f72ead2f6a5036b10c33e26d58f2dae89084e0e7",
-          "date": "2026-10-28T15:47:56+10:00"
+          "commit": "7a9e0818a8cd0b87cca498415b907ce77618546e",
+          "date": "2026-10-30T09:25:45Z"
         },
         "modl-qsm": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "166962829802b2e19a76d2fb6167ed511b4fd8d0",
+          "date": "2026-10-30T08:25:15Z"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/c6/laplacian-qsmrs_vsharp-qsmrs_modl-qsm-cmp__resources.json",
@@ -70767,20 +70767,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 509.8283658027649,
+      "runtime_s": 334.8443772792816,
       "metrics": {
-        "nrmse": 91.10397874672674,
-        "nrmse_detrend": 219.4181624490314,
-        "nrmse_tissue": 229.6585605808608,
-        "nrmse_blood": 674.8814446220807,
-        "nrmse_dgm": 108.69416208374902,
-        "dgm_linearity": 0.30154088821471603,
-        "calc_moment_dev": 50.74700721073896,
-        "calc_streak": 0.2209242576199686,
-        "correlation": 0.414711725492414,
-        "xsim": 0.09857387399602441,
-        "hfen": 92.44982210895732,
-        "coverage": 1.0
+        "nrmse": 91.20522772314459,
+        "nrmse_detrend": 220.71490951330077,
+        "nrmse_tissue": 231.12224976635707,
+        "nrmse_blood": 681.3547750193366,
+        "nrmse_dgm": 108.69047344335338,
+        "dgm_linearity": 0.3015628600387551,
+        "calc_moment_dev": 50.74675294756889,
+        "calc_streak": 0.2206926588321226,
+        "correlation": 0.4126911956759592,
+        "xsim": 0.09746079598758818,
+        "hfen": 92.55495825699931,
+        "coverage": 0.8916212745599973
       },
       "status": "ok",
       "id": "laplacian-qsmrs~vsharp-sti~modl-qsm-cmp",
@@ -70792,8 +70792,8 @@
         "dipole": "modl-qsm"
       },
       "phantom": "sim",
-      "ci_run": "41003358791.1",
-      "ci_sha": "4077c27c24aed2ba5372754b4dfbca45f55877a8",
+      "ci_run": "41108111980.1",
+      "ci_sha": "8613ef207736b1c07132f4831840db84d183909a",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -70801,7 +70801,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-30T06:36:03Z",
+      "scored_at": "2026-10-30T20:34:13Z",
       "method_versions": {
         "laplacian-qsmrs": {
           "commit": "1e1036c28fc437ed33839b1663024fa5f4f2738c",
@@ -70812,8 +70812,8 @@
           "date": "2026-10-28T03:50:47+10:00"
         },
         "modl-qsm": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "166962829802b2e19a76d2fb6167ed511b4fd8d0",
+          "date": "2026-10-30T08:25:15Z"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/ca/laplacian-qsmrs_vsharp-sti_modl-qsm-cmp__resources.json",
@@ -72701,20 +72701,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 526.7688248157501,
+      "runtime_s": 582.4903934001923,
       "metrics": {
-        "nrmse": 91.1692970382689,
-        "nrmse_detrend": 216.03032095495058,
-        "nrmse_tissue": 231.92735788578037,
-        "nrmse_blood": 557.8204107122863,
-        "nrmse_dgm": 103.71588847042982,
-        "dgm_linearity": 0.3069966245590885,
-        "calc_moment_dev": 50.63590353052132,
-        "calc_streak": 0.2125228925760569,
-        "correlation": 0.42007500763444994,
-        "xsim": 0.10831055110507416,
-        "hfen": 93.01908427189312,
-        "coverage": 1.0
+        "nrmse": 91.14040592369838,
+        "nrmse_detrend": 215.72400253453628,
+        "nrmse_tissue": 231.62979679654808,
+        "nrmse_blood": 556.7782330078045,
+        "nrmse_dgm": 103.7217919344763,
+        "dgm_linearity": 0.3070401272592437,
+        "calc_moment_dev": 50.635684836655855,
+        "calc_streak": 0.21238337634231486,
+        "correlation": 0.4205660526722011,
+        "xsim": 0.10856749879127733,
+        "hfen": 93.00382450814662,
+        "coverage": 0.9819077579491187
       },
       "status": "ok",
       "id": "laplacian-qsmrs~bfrnet~modl-qsm-cmp",
@@ -72726,8 +72726,8 @@
         "dipole": "modl-qsm"
       },
       "phantom": "sim",
-      "ci_run": "41003358791.1",
-      "ci_sha": "4077c27c24aed2ba5372754b4dfbca45f55877a8",
+      "ci_run": "41108111980.1",
+      "ci_sha": "8613ef207736b1c07132f4831840db84d183909a",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -72735,7 +72735,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-30T05:51:21Z",
+      "scored_at": "2026-10-30T20:34:13Z",
       "method_versions": {
         "laplacian-qsmrs": {
           "commit": "1e1036c28fc437ed33839b1663024fa5f4f2738c",
@@ -72746,8 +72746,8 @@
           "date": "2026-10-07T03:23:21Z"
         },
         "modl-qsm": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "166962829802b2e19a76d2fb6167ed511b4fd8d0",
+          "date": "2026-10-30T08:25:15Z"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/8e/laplacian-qsmrs_bfrnet_modl-qsm-cmp__resources.json",
@@ -74429,20 +74429,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 535.4727466106415,
+      "runtime_s": 345.81691670417786,
       "metrics": {
-        "nrmse": 89.13932739389271,
-        "nrmse_detrend": 194.47904107905325,
-        "nrmse_tissue": 207.5209474391868,
-        "nrmse_blood": 580.8556664487822,
-        "nrmse_dgm": 102.58157978721957,
-        "dgm_linearity": 0.2765438480078761,
-        "calc_moment_dev": 50.870652711601,
-        "calc_streak": 0.29972318492573086,
-        "correlation": 0.4572836673316188,
-        "xsim": 0.11900236746099012,
-        "hfen": 93.4224799947229,
-        "coverage": 1.0
+        "nrmse": 89.14239551646155,
+        "nrmse_detrend": 194.51656778880792,
+        "nrmse_tissue": 207.532163463121,
+        "nrmse_blood": 580.979273672149,
+        "nrmse_dgm": 102.58930382691135,
+        "dgm_linearity": 0.27660252026841003,
+        "calc_moment_dev": 50.81995040178299,
+        "calc_streak": 0.31122318741974714,
+        "correlation": 0.4572138902423308,
+        "xsim": 0.11896933077266343,
+        "hfen": 93.42886741385709,
+        "coverage": 0.9819077579491187
       },
       "status": "ok",
       "id": "laplacian-qsmrs~harperella-qsmrs~modl-qsm-cmp",
@@ -74454,8 +74454,8 @@
         "dipole": "modl-qsm"
       },
       "phantom": "sim",
-      "ci_run": "41003358791.1",
-      "ci_sha": "4077c27c24aed2ba5372754b4dfbca45f55877a8",
+      "ci_run": "41108111980.1",
+      "ci_sha": "8613ef207736b1c07132f4831840db84d183909a",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -74463,7 +74463,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-30T07:36:22Z",
+      "scored_at": "2026-10-30T20:34:13Z",
       "method_versions": {
         "laplacian-qsmrs": {
           "commit": "1e1036c28fc437ed33839b1663024fa5f4f2738c",
@@ -74474,8 +74474,8 @@
           "date": "2026-10-19T11:14:00+10:00"
         },
         "modl-qsm": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "166962829802b2e19a76d2fb6167ed511b4fd8d0",
+          "date": "2026-10-30T08:25:15Z"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/91/laplacian-qsmrs_harperella-qsmrs_modl-qsm-cmp__resources.json",
@@ -77466,20 +77466,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 565.1188364028931,
+      "runtime_s": 326.10970878601074,
       "metrics": {
-        "nrmse": 90.0252235335697,
-        "nrmse_detrend": 205.5827012868622,
-        "nrmse_tissue": 211.6974219510552,
-        "nrmse_blood": 714.8674957331846,
-        "nrmse_dgm": 102.24641734136891,
-        "dgm_linearity": 0.36202730396842153,
-        "calc_moment_dev": 51.2866497784853,
-        "calc_streak": 0.27973423781315016,
-        "correlation": 0.43741900754916774,
-        "xsim": 0.1022809251163172,
-        "hfen": 92.73537750964795,
-        "coverage": 1.0
+        "nrmse": 89.91852434902185,
+        "nrmse_detrend": 204.43677867866975,
+        "nrmse_tissue": 210.3158646200122,
+        "nrmse_blood": 708.3230884244964,
+        "nrmse_dgm": 102.20263283355371,
+        "dgm_linearity": 0.36199879601865725,
+        "calc_moment_dev": 51.286649741232395,
+        "calc_streak": 0.27956990201917226,
+        "correlation": 0.4393985420232253,
+        "xsim": 0.10297286786340497,
+        "hfen": 92.66868940292336,
+        "coverage": 0.7794122920731228
       },
       "status": "ok",
       "id": "romeo-qsmrs~sharp-sepia~modl-qsm-cmp",
@@ -77491,8 +77491,8 @@
         "dipole": "modl-qsm"
       },
       "phantom": "sim",
-      "ci_run": "41003358791.1",
-      "ci_sha": "4077c27c24aed2ba5372754b4dfbca45f55877a8",
+      "ci_run": "41108111980.1",
+      "ci_sha": "8613ef207736b1c07132f4831840db84d183909a",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -77500,7 +77500,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-30T07:03:46Z",
+      "scored_at": "2026-10-30T20:34:13Z",
       "method_versions": {
         "romeo-qsmrs": {
           "commit": "6b4f723f8c623d114485f182aa9f14ad5faf1d13",
@@ -77511,8 +77511,8 @@
           "date": "2026-10-28T16:17:49+10:00"
         },
         "modl-qsm": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "166962829802b2e19a76d2fb6167ed511b4fd8d0",
+          "date": "2026-10-30T08:25:15Z"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/c4/romeo-qsmrs_sharp-sepia_modl-qsm-cmp__resources.json",
@@ -79174,20 +79174,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 506.0996022224426,
+      "runtime_s": 325.598920583725,
       "metrics": {
-        "nrmse": 90.47856472815653,
-        "nrmse_detrend": 210.43696615541427,
-        "nrmse_tissue": 216.7537925109086,
-        "nrmse_blood": 693.6654170420929,
-        "nrmse_dgm": 102.65139696378475,
-        "dgm_linearity": 0.3132202695521259,
-        "calc_moment_dev": 50.70703993644565,
-        "calc_streak": 0.27405012721107924,
-        "correlation": 0.42920543448622267,
-        "xsim": 0.10116859227431714,
-        "hfen": 93.06305271046509,
-        "coverage": 1.0
+        "nrmse": 90.43255872933008,
+        "nrmse_detrend": 209.92807270323254,
+        "nrmse_tissue": 216.13191531269106,
+        "nrmse_blood": 691.3205592432486,
+        "nrmse_dgm": 102.62600224973743,
+        "dgm_linearity": 0.31323096509918136,
+        "calc_moment_dev": 50.70836838334799,
+        "calc_streak": 0.2745819979843205,
+        "correlation": 0.4300536476667662,
+        "xsim": 0.10151450206250268,
+        "hfen": 93.03786761570561,
+        "coverage": 0.7794122920731228
       },
       "status": "ok",
       "id": "laplacian-qsmrs~sharp-sepia~modl-qsm-cmp",
@@ -79199,8 +79199,8 @@
         "dipole": "modl-qsm"
       },
       "phantom": "sim",
-      "ci_run": "41003358791.1",
-      "ci_sha": "4077c27c24aed2ba5372754b4dfbca45f55877a8",
+      "ci_run": "41108111980.1",
+      "ci_sha": "8613ef207736b1c07132f4831840db84d183909a",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -79208,7 +79208,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-30T07:12:44Z",
+      "scored_at": "2026-10-30T20:34:13Z",
       "method_versions": {
         "laplacian-qsmrs": {
           "commit": "1e1036c28fc437ed33839b1663024fa5f4f2738c",
@@ -79219,8 +79219,8 @@
           "date": "2026-10-28T16:17:49+10:00"
         },
         "modl-qsm": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "166962829802b2e19a76d2fb6167ed511b4fd8d0",
+          "date": "2026-10-30T08:25:15Z"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/81/laplacian-qsmrs_sharp-sepia_modl-qsm-cmp__resources.json",
@@ -80790,20 +80790,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 299.9589698314667,
+      "runtime_s": 447.8445346355438,
       "metrics": {
-        "nrmse": 84.30459067158586,
-        "nrmse_detrend": 155.73043434951535,
-        "nrmse_tissue": 172.69450891782517,
-        "nrmse_blood": 292.33650432237624,
-        "nrmse_dgm": 80.3852651350959,
-        "dgm_linearity": 0.23884475318502163,
-        "calc_moment_dev": 25.684766497462988,
-        "calc_streak": 0.04120928547837274,
-        "correlation": 0.5403277021648392,
-        "xsim": 0.17024720929036255,
-        "hfen": 79.46199608246455,
-        "coverage": 1.0
+        "nrmse": 83.68752090607138,
+        "nrmse_detrend": 151.28417897275605,
+        "nrmse_tissue": 166.63006681999008,
+        "nrmse_blood": 286.55425629731496,
+        "nrmse_dgm": 79.93287599133302,
+        "dgm_linearity": 0.23891657732553662,
+        "calc_moment_dev": 25.825241670012474,
+        "calc_streak": 0.040408195888052285,
+        "correlation": 0.5514276165199193,
+        "xsim": 0.1755049960392909,
+        "hfen": 79.10232112331472,
+        "coverage": 0.7794122920731228
       },
       "status": "ok",
       "id": "gt~sharp-sepia~modl-qsm-cmp",
@@ -80815,8 +80815,8 @@
         "dipole": "modl-qsm"
       },
       "phantom": "sim",
-      "ci_run": "41003358791.1",
-      "ci_sha": "4077c27c24aed2ba5372754b4dfbca45f55877a8",
+      "ci_run": "41108111980.1",
+      "ci_sha": "8613ef207736b1c07132f4831840db84d183909a",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -80824,15 +80824,15 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-30T06:15:27Z",
+      "scored_at": "2026-10-30T20:34:13Z",
       "method_versions": {
         "sharp-sepia": {
           "commit": "f9ff29f49d30fdec79c33e6978171c9828d9aa99",
           "date": "2026-10-28T16:17:49+10:00"
         },
         "modl-qsm": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "166962829802b2e19a76d2fb6167ed511b4fd8d0",
+          "date": "2026-10-30T08:25:15Z"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/29/gt_sharp-sepia_modl-qsm-cmp__resources.json",
