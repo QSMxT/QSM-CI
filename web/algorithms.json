@@ -699,6 +699,53 @@
       "ci_notes": []
     },
     {
+      "slug": "fit-ppm-complex-qsmrs",
+      "name": "Complex fit + ROMEO (QSM.rs)",
+      "stage": "field-mapping",
+      "inputs": [
+        "phase",
+        "magnitude",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "fit-ppm-complex",
+      "qsmxt_value": "romeo",
+      "qsmxt_args": [
+        "--b0-estimation complex-fit"
+      ],
+      "language": "Rust",
+      "family": "direct",
+      "learning": "none",
+      "description": "MEDI's complex fit of the echoes (QSM.rs's port of Fit_ppm_complex, `qsmxt fieldmap --b0-estimation complex-fit`), unwrapped spatially with ROMEO: QSM.rs does not port MEDI's region-growing unwrapPhase. Its pair is fit-ppm-complex-cornell, compared on the fit itself (ifreq_raw), its noise map (n_std) and ARLO's R2* (r2star), which this entry writes as intermediates.",
+      "citation": "Liu et al., Magn Reson Med 2013;69(2):467-476",
+      "doi": "10.1002/mrm.24272",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT",
+      "authors": [
+        "Tian Liu",
+        "Cynthia Wisnieff",
+        "Min Lou",
+        "Weiwei Chen",
+        "Pascal Spincemaille",
+        "Yi Wang"
+      ],
+      "parameters": [
+        {
+          "name": "reltol",
+          "default": "1e-4",
+          "description": "Gauss-Newton stop, relative to the norm of the initial field estimate"
+        },
+        {
+          "name": "max_iter",
+          "default": 30,
+          "description": "maximum Gauss-Newton iterations of the complex fit"
+        }
+      ],
+      "ci_notes": []
+    },
+    {
       "slug": "harperella-qsmrs",
       "name": "HARPERELLA (QSM.rs)",
       "stage": "bfr",

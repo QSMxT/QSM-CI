@@ -1,0 +1,42 @@
+name: Complex fit + ROMEO (QSM.rs)
+slug: fit-ppm-complex-qsmrs
+algorithm: fit-ppm-complex
+source: qsmrs
+stage: field-mapping
+language: Rust
+family: direct
+learning: none
+inputs: [phase, magnitude, mask, params]
+engine: QSMxT / QSM.rs
+qsmxt_value: romeo   # QSMxT runs the complex fit as ROMEO field mapping with --b0-estimation complex-fit
+qsmxt_args: [--b0-estimation complex-fit]
+description: >
+  MEDI's complex fit of the echoes (QSM.rs's port of Fit_ppm_complex, `qsmxt fieldmap
+  --b0-estimation complex-fit`), unwrapped spatially with ROMEO: QSM.rs does not port MEDI's
+  region-growing unwrapPhase. Its pair is fit-ppm-complex-cornell, compared on the fit itself
+  (ifreq_raw), its noise map (n_std) and ARLO's R2* (r2star), which this entry writes as
+  intermediates.
+citation: Liu et al., Magn Reson Med 2013;69(2):467-476
+authors:
+- name: Tian Liu
+- name: Cynthia Wisnieff
+- name: Min Lou
+- name: Weiwei Chen
+- name: Pascal Spincemaille
+- name: Yi Wang
+doi: 10.1002/mrm.24272
+code_url: https://github.com/astewartau/QSM.rs
+license: MIT
+# `--complex-fit-output` / `--complex-fit-noise-output` are in QSMxT/QSMxT#462, in no release yet:
+# v10.0.0 lacks them. Repin to the first release that has them, then drop ci_skip.
+image: ghcr.io/astewartau/qsm-ci/qsmxt@sha256:9258c10e34cd0019dbab12746977813fe0a0b3ad92b13986d1d9ffb2c3326b57   # v10.0.0
+run: bash run.sh
+ci_skip: true   # until the image has `qsmxt fieldmap --complex-fit-output` (see image:)
+# Fit_ppm_complex's own defaults (as fit-ppm-complex-cornell's).
+parameters:
+- name: reltol
+  default: 1e-4
+  description: Gauss-Newton stop, relative to the norm of the initial field estimate
+- name: max_iter
+  default: 30
+  description: maximum Gauss-Newton iterations of the complex fit

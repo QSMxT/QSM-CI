@@ -247,6 +247,23 @@ pairs:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
 
+  fit-ppm-complex:
+    reference: fit-ppm-complex-cornell   # MEDI 2024.11.26 Fit_ppm_complex + unwrapPhase (#322)
+    candidate: fit-ppm-complex-qsmrs     # ci_skip until a qsmxt release has --complex-fit-output
+    enabled: false
+    # Intermediates only: QSM.rs does not port MEDI's region-growing unwrapPhase (the candidate
+    # unwraps with ROMEO), so the total fields differ by unwrapper and get no limits. What is ported
+    # is compared by name: ifreq_raw (the fit before unwrapping, rad per echo spacing, wrapped),
+    # n_std (its noise map) and r2star (ARLO). Both sides write them in MEDI's units and sign.
+    # Unmeasured: needs a qsmxt build with QSMxT/QSMxT#462; then baseline, and set limits on those
+    # three intermediates.
+    note: intermediates only (ifreq_raw, n_std, r2star); unmeasured until QSMxT/QSMxT#462
+    qsmrs_paths: [src/error.rs, src/pipeline/field_mapping.rs, src/pipeline/phase_utils.rs,
+                  src/pipeline/rules.rs, src/utils/multi_echo.rs, src/utils/r2star.rs]
+    datasets:
+      sim: {}
+      s002001-kki-achieva-bridge-run1: {}
+
   # ---- MATLAB originals (QSMxT/QSM-CI#309)
   amp-pe:
     reference: amp-pe       # ci_skip for scoring (diverges on real multi-echo data); parity runs it
