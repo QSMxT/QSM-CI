@@ -154,17 +154,31 @@ Each pair × dataset keeps its 50 newest records. The same job regenerates
 recorded check still stands. It is **stale** when any of these holds:
 
 - **(a)** the reference image pinned in `algorithm.yml` is not the one last checked;
-- **(b)** QSM.rs `main` has commits touching the pair's `qsmrs_paths` (in `thresholds.yml`) since the
-  QSM.rs commit last checked (GitHub's compare API, at the time `status` runs);
+- **(b)** QSM.rs `main` has commits touching the pair's `qsmrs_paths`, or QSM.rs's `Cargo.lock`
+  (`qsmrs_shared_paths`, every pair), since the QSM.rs commit last checked (GitHub's compare API, at
+  the time `status` runs);
 - **(c)** the pair's settings or limits for that dataset changed since (the thresholds version);
-- **(d)** it was never checked, or last checked more than `stale_after_days` ago (`thresholds.yml`,
-  default 90);
-- **(e)** the last check failed, or ended without a result.
+- **(d)** it was never checked;
+- **(e)** the last check failed, or ended without a result;
+- **(f)** QSMxT `main` has commits touching the pair's `qsmxt_paths` (the CLI and engine files that
+  wire the step its `run.sh` calls), or QSMxT's `Cargo.lock` (`qsmxt_shared_paths`, every pair),
+  since the QSMxT commit last checked: the build's commit, or for a pinned image the release tag
+  its `qsmxt --version` names. `Cargo.lock` counts on both sides because the qsmxt binary takes its
+  dependency versions (rustfft and the rest) from QSMxT's lockfile, not QSM.rs's.
+
+A check does not expire with age: it stands until one of these changes, and a QSM.rs release runs
+every enabled pair anyway (below).
+
+`qsmrs_paths` lists the port's own modules, the `src/pipeline/` files QSMxT calls it through, and
+every module those import, followed through shared code (`fft.rs`, `grid.rs`, `kernels/`,
+`solvers/`, `utils/`, …) but not into another algorithm's module that shared code also serves.
+`thresholds.yml` has the exact rule; recheck a pair's list when its port's imports change.
 
 ```bash
 python scripts/parity.py status                              # the table, to stdout
-python scripts/parity.py status --offline                    # without rule (b): no GitHub calls
-python scripts/parity.py status --json parity/status.json --markdown parity/STATUS.md --issue issue.md
+python scripts/parity.py status --offline                    # without rules (b) and (f): no GitHub calls
+python scripts/parity.py status --json parity/status.json --markdown parity/STATUS.md --issue issue.md \
+    [--badges parity-badges/]
 ```
 
 The **parity-status** workflow runs it every Monday (and on demand), commits the regenerated
@@ -179,6 +193,31 @@ gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=ilsqr,tkd -f dataset=con
 Dispatched on `main` (the default), the refresh records its results, which clears the staleness
 once it passes. With the repository variable `PARITY_AUTO_REFRESH=true` (unset by default) the
 workflow dispatches that refresh itself.
+
+## Badges
+
+Each pair, and each `no_original` entry, has a [shields.io endpoint](https://shields.io/badges/endpoint-badge)
+file, `{"schemaVersion": 1, "label": "parity", "message": …, "color": …}`, published with the site
+at `https://qsmxt.github.io/QSM-CI/parity/badges/<pair>.json`. The QSM.rs README's algorithm tables
+show one per port, linked to the pair's row on the Parity page (`parity.html#pair-<pair>`):
+
+```markdown
+[![parity](https://img.shields.io/endpoint?url=https%3A%2F%2Fqsmxt.github.io%2FQSM-CI%2Fparity%2Fbadges%2Ftkd.json)](https://qsmxt.github.io/QSM-CI/parity.html#pair-tkd)
+```
+
+| Badge | Colour | When |
+|---|---|---|
+| `0.33 % · 30 Oct` / `identical · 30 Oct` | green | enabled, every dataset's last check stands: the worst final-map NRMSE over the datasets (`identical` when bit-identical), dated by the oldest check |
+| `stale · 29 Oct` | orange | enabled, and a check is stale (above); the date of the oldest last check |
+| `failing · 28 Oct` | red | enabled, and a last check failed or ended without a result |
+| `gap · QSM.rs#323` | yellow | not enabled: `blocked_by` a known gap |
+| `not yet checked` | grey | enabled, never checked on any dataset |
+| `not enabled` | grey | not enabled, no known gap |
+| `no original` | grey | a `no_original` entry: no original code exists (QSMxT/QSM-CI#302) |
+
+`not-checked.json` is a generic `not yet checked` badge for a QSM.rs method with no pair here yet.
+The pages workflow writes the files from the `parity/status.json` it deploys (`parity.py badges`),
+so they always match the Parity page; `parity.py status --badges DIR` writes the same files locally.
 
 ## Before a QSM.rs release
 

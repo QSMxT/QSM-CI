@@ -11,6 +11,7 @@ on:
       - "web/**"
       - "results/**"
       - "parity/status.json"
+      - "scripts/parity.py"   # the badge files are written from status.json at deploy
       - ".github/workflows/pages.yml"
   # These workflows commit site content with the default GITHUB_TOKEN, whose pushes do NOT raise
   # the `push` event above — so deploy explicitly once each of them finishes:
@@ -82,6 +83,11 @@ jobs:
           rm -rf _site/node_modules _site/src _site/package.json _site/package-lock.json _site/tailwind.config.js
           cp -r results _site/results
           mkdir -p _site/parity; cp parity/status.json _site/parity/   # the Parity page (web/parity.html)
+          # One shields.io endpoint file per pair at <site>/parity/badges/<pair>.json, which the
+          # QSM.rs README's badges read (docs/parity.md, "Badges"). From the status.json just copied,
+          # so the badges always agree with the page; no GitHub calls here.
+          pip install -q pyyaml
+          python3 scripts/parity.py badges --status parity/status.json --out _site/parity/badges
           cp -r docs _site/docs           # nothing on the site links here any more; kept so old /docs/ links resolve
           rm -rf _site/examples; cp -r examples _site/examples   # Run page showcases the engine examples
           rm -f _site/registry.json; cp qsm_ci/registry.json _site/registry.json  # method DOIs (drop the web/ symlink first)

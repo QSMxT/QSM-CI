@@ -1,8 +1,8 @@
 # Port parity status
 
-Generated 2026-10-28 by `scripts/parity.py status` from `parity/results.json` and `parity/thresholds.yml`; do not edit by hand. How checks run, and what makes one stale: [docs/parity.md](../docs/parity.md).
+Generated 2026-10-30 by `scripts/parity.py status` from `parity/results.json` and `parity/thresholds.yml`; do not edit by hand. How checks run, and what makes one stale: [docs/parity.md](../docs/parity.md).
 
-A check is **stale** when the reference image changed, QSM.rs `main` changed the pair's source files, the pair's limits changed, it is more than 90 days old, or it failed. A **gap** is a pair whose port does not match its original yet: it is not enabled, and has no limits that would pass it.
+A check is **stale** when the reference image changed, QSM.rs `main` changed the port's source files or `Cargo.lock`, QSMxT `main` changed the step's wiring or `Cargo.lock`, the pair's limits changed, or it failed. There is no age limit. A **gap** is a pair whose port does not match its original yet: it is not enabled, and has no limits that would pass it.
 
 | Pair | Original → port | Dataset | Last check | QSM.rs | Result | NRMSE | Status |
 |---|---|---|---|---|---|---|---|
@@ -16,7 +16,7 @@ A check is **stale** when the reference image changed, QSM.rs `main` changed the
 | `medi` | `medi-cornell` → `medi-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
 |  |  | sim | never | — | — | — | ⚠️ stale: never checked |
 | `amp-pe` | `amp-pe` → `amp-pe-qsmrs` | sim | never | — | — | — | ⚠️ stale: never checked |
-| `decompose` | `decompose-qsm` → `decompose-qsmrs` | chisep-mc | never | — | — | — | 🚧 gap (QSMxT/QSM-CI#311) |
+| `decompose` | `decompose-qsm` → `decompose-qsmrs` | chisep-mc | never | — | — | — | ⚠️ stale: never checked |
 | `wavesep` | `wavesep` → `wavesep-qsmrs` | chisep-mc | never | — | — | — | 🚧 gap (QSMxT/QSM-CI#312) |
 | `tkd` | `tkd-qsmjl` → `tkd-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | 🚧 gap (astewartau/QSM.rs#323) |
 |  |  | sim | never | — | — | — | 🚧 gap (astewartau/QSM.rs#323) |
@@ -42,8 +42,20 @@ A check is **stale** when the reference image changed, QSM.rs `main` changed the
 | `tgv` | `tgv-tgvjl` → `tgv-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | 🚧 gap (astewartau/QSM.rs#324) |
 |  |  | sim | never | — | — | — | 🚧 gap (astewartau/QSM.rs#324) |
 
+No original code to check against (QSMxT/QSM-CI#302; tested against ground truth in QSM.rs instead):
+
+| Method | Covers | Note |
+|---|---|---|
+| `cosmos` | COSMOS (`cosmos`, `cosmos_weighted`) |  |
+| `harperella` | HARPERELLA (`harperella`) |  |
+| `prelude` | PRELUDE (`unwrap_prelude`) | clean-room by design |
+| `slicewise-unwrap` | slice-wise (2D) unwrapping (`unwrap_slicewise`, `unwrap_slicewise_multi_echo`) |  |
+| `robust-fit` | robust echo combination (`multi_echo_robust_fit`) |  |
+| `motion-correction` | motion correction (`motion`) |  |
+| `morphology` | erosion / dilation, closing (`erode_mask`, `dilate_mask`, `morphological_close`) |  |
+
 Refresh every stale pair against QSM.rs `main`:
 
 ```bash
-gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=qsmart,star,medi,amp-pe,laplacian -f dataset=configured -f qsmrs_ref=main
+gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=qsmart,star,medi,amp-pe,decompose,laplacian -f dataset=configured -f qsmrs_ref=main
 ```

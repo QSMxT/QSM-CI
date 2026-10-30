@@ -17,9 +17,20 @@
 #                     limits that would bless the gap.
 #   note:             on a disabled pair without blocked_by: why it is not enabled (status column).
 #   qsmrs_paths:      the QSM.rs source files (or directories) the port's result depends on. A commit
-#                     on QSM.rs main touching any of them makes the last check stale
-#                     (`parity.py status`, rule b). Take them from the module's place in QSM.rs src/
-#                     and what it calls; err on the side of listing a shared file (fft.rs, kernels/).
+#                     on QSM.rs main touching any of them (or `qsmrs_shared_paths`) makes the last
+#                     check stale (`parity.py status`, rule b). They are the port's own modules, the
+#                     pipeline files QSMxT calls it through (src/pipeline/, not followed further),
+#                     and every module those import (`use crate::…`, `super::…`, inline
+#                     `crate::…` paths), followed through shared code (fft.rs, grid.rs,
+#                     constants.rs, kernels/, solvers/, utils/) but not into another algorithm's
+#                     module that a shared file also serves (utils/multi_echo.rs imports
+#                     unwrap/romeo.rs; that does not make ROMEO part of MEDI). Another algorithm's
+#                     module the port itself imports is listed (sharp.rs uses inversion/medi.rs's
+#                     sphere kernel). Recheck the list when the port's imports change.
+#   qsmxt_paths:      the QSMxT files that wire the step the port's run.sh calls (`qsmxt invert
+#                     tkd`: the CLI flags and defaults, the subcommand, the engine config it reads).
+#                     A commit on QSMxT main touching any of them (or `qsmxt_shared_paths`) since
+#                     the QSMxT commit last checked makes it stale (rule f). Optional.
 #   reference_set:    `--set NAME=VALUE` overrides for the reference / candidate method (not its
 #   candidate_set:    prefix steps), at the pair level or per dataset (the dataset's win): how a
 #                     pair runs both sides with matched settings where their defaults differ (the
@@ -41,11 +52,39 @@
 #     measured:       the runs the limits came from, and the image each side ran. Informational.
 #
 # Staleness (`parity.py status`, docs/parity.md): an enabled pair's last check on a dataset is stale
-# when the reference image changed, QSM.rs main touched its qsmrs_paths, its settings or limits
-# here changed, it is older than stale_after_days, or it failed.
-stale_after_days: 90
+# when the reference image changed, QSM.rs main touched its qsmrs_paths or Cargo.lock, QSMxT main
+# touched its qsmxt_paths or Cargo.lock, its settings or limits here changed, it was never checked,
+# or it failed. There is no age limit.
 qsmrs_repo: astewartau/QSM.rs
 qsmrs_branch: main
+qsmrs_shared_paths: [Cargo.lock]   # every pair: a dependency update can move any result
+qsmxt_repo: QSMxT/QSMxT
+qsmxt_branch: main
+# The qsmxt binary is built from QSMxT's lockfile (qsm-core is a dependency there, so QSM.rs's own
+# Cargo.lock does not pick the versions of rustfft and the rest in the binary that ran).
+qsmxt_shared_paths: [Cargo.lock]
+# Where the site (and parity/badges/<pair>.json) is published; the QSM.rs README's badges read it.
+site_url: https://qsmxt.github.io/QSM-CI
+
+# QSM.rs methods with no original code to check against (QSMxT/QSM-CI#302): they keep ground-truth
+# tests in QSM.rs instead. Each gets a "no original" row on the Parity page and a badge, never a pair.
+#   covers: the QSM.rs functions (README rows) it stands for; note: optional, shown with it.
+no_original:
+  cosmos:
+    covers: COSMOS (`cosmos`, `cosmos_weighted`)
+  harperella:
+    covers: HARPERELLA (`harperella`)
+  prelude:
+    covers: PRELUDE (`unwrap_prelude`)
+    note: clean-room by design
+  slicewise-unwrap:
+    covers: slice-wise (2D) unwrapping (`unwrap_slicewise`, `unwrap_slicewise_multi_echo`)
+  robust-fit:
+    covers: robust echo combination (`multi_echo_robust_fit`)
+  motion-correction:
+    covers: motion correction (`motion`)
+  morphology:
+    covers: erosion / dilation, closing (`erode_mask`, `dilate_mask`, `morphological_close`)
 
 # Limits are the agreement measured with the QSM.rs under test at the time (the current QSMxT main
 # build, not only the pinned image), plus a margin (scripts/parity.py derive_limits: NRMSE +10 %
@@ -59,11 +98,18 @@ pairs:
     reference: qsmart-matlab   # the authors' QSMART v1.0, compiled; bit-identical to licensed MATLAB (v3)
     candidate: qsmart-qsmrs    # QSM.rs port via qsmxt (bfr+dipole: total field → χ)
     enabled: true
-    qsmrs_paths: [src/pipeline/qsmart.rs, src/utils/qsmart.rs, src/utils/vasculature.rs,
-                  src/utils/frangi.rs, src/utils/curvature.rs, src/utils/morphology.rs,
-                  src/bgremove/sdf.rs, src/inversion/ilsqr.rs, src/kernels/, src/fft.rs,
-                  src/utils/padding.rs, src/pipeline/rules.rs, src/pipeline/config.rs,
-                  src/pipeline/referencing.rs]
+    qsmrs_paths: [src/bgremove/sdf.rs, src/error.rs, src/fft.rs, src/grid.rs,
+                  src/inversion/ilsqr.rs, src/kernels/, src/pipeline/config.rs,
+                  src/pipeline/qsmart.rs, src/pipeline/referencing.rs, src/pipeline/rules.rs,
+                  src/utils/bias_correction.rs, src/utils/connected.rs, src/utils/curvature.rs,
+                  src/utils/frangi.rs, src/utils/morphology.rs,
+                  src/utils/morphology/signal_erosion.rs, src/utils/n4.rs, src/utils/padding.rs,
+                  src/utils/portable_math.rs, src/utils/qsmart.rs, src/utils/threshold.rs,
+                  src/utils/vasculature.rs]
+    qsmxt_paths: &qsmart_wiring [src/cli.rs, src/commands/common.rs, src/commands/qsmart.rs,
+                                 src/pipeline/config.rs, crates/qsmxt-engine/src/config.rs,
+                                 crates/qsmxt-engine/src/bridge.rs,
+                                 crates/qsmxt-engine/src/stages/qsmart.rs]
     # recon.m's intermediate names (fidelity/README.md) → the names they are compared under.
     reference_names:
       tfs: totalfield
@@ -116,8 +162,9 @@ pairs:
     # QSM.rs main da928e0 (runs 40605505892, 40607732498): NRMSE sim 18.0 % (r 0.9837), KKI 17.2 %
     # (r 0.9853), on the same support; --pad-mm 12 (STI's padsize) changes nothing.
     blocked_by: QSMxT/QSM-CI#311   # STI Suite port gaps; a QSM.rs issue is to be filed (PR body)
-    qsmrs_paths: [src/inversion/ilsqr.rs, src/kernels/, src/fft.rs, src/utils/padding.rs,
-                  src/pipeline/inversion.rs, src/pipeline/rules.rs]
+    qsmrs_paths: [src/fft.rs, src/grid.rs, src/inversion/ilsqr.rs, src/kernels/,
+                  src/pipeline/inversion.rs, src/pipeline/rules.rs, src/utils/padding.rs]
+    qsmxt_paths: &invert_wiring [src/cli.rs, src/commands/common.rs, src/commands/invert.rs]
     datasets:
       sim: {}
       s002001-kki-achieva-bridge-run1:
@@ -130,8 +177,12 @@ pairs:
     # QSM.rs main da928e0 (runs 40605505892, 40607732498): NRMSE sim 40.7 % (r 0.934), KKI 58.5 %
     # (r 0.882), on the same eroded support; deconvolve false and the default give identical output.
     blocked_by: QSMxT/QSM-CI#311   # STI Suite port gaps; a QSM.rs issue is to be filed (PR body)
-    qsmrs_paths: [src/bgremove/vsharp.rs, src/bgremove/sharp.rs, src/bgremove/smv.rs, src/kernels/,
-                  src/fft.rs, src/pipeline/bg_removal.rs, src/pipeline/rules.rs]
+    qsmrs_paths: [src/bgremove/sharp.rs, src/bgremove/smv.rs, src/bgremove/vsharp.rs, src/error.rs,
+                  src/fft.rs, src/grid.rs, src/inversion/medi.rs, src/kernels/,
+                  src/pipeline/bg_removal.rs, src/pipeline/rules.rs, src/utils/padding.rs]
+    qsmxt_paths: &bgremove_vsharp_wiring [src/cli.rs, src/commands/common.rs,
+                                          src/commands/bgremove.rs,
+                                          crates/qsmxt-engine/src/config.rs]
     # STI Suite's V_SHARP does not deconvolve; QSM.rs's vsharp does by default.
     candidate_set: { deconvolve: "false" }
     datasets:
@@ -143,8 +194,10 @@ pairs:
     reference: star-sti
     candidate: star-qsmrs   # ci_skip until a qsmxt release has `qsmxt invert star`: runs against a build
     enabled: true
-    qsmrs_paths: [src/inversion/star.rs, src/kernels/, src/fft.rs, src/utils/padding.rs,
-                  src/pipeline/inversion.rs, src/pipeline/rules.rs]
+    qsmrs_paths: [src/fft.rs, src/grid.rs, src/inversion/star.rs, src/kernels/,
+                  src/pipeline/inversion.rs, src/pipeline/rules.rs, src/utils/echo_time.rs,
+                  src/utils/padding.rs]
+    qsmxt_paths: *invert_wiring
     # star-sti scales the field to phase at the first echo (recon.m); star-qsmrs defaults to the sum.
     candidate_set: { te: first }
     datasets:
@@ -161,9 +214,14 @@ pairs:
     enabled: true
     # medi-cornell v4 (QSMxT/QSM-CI#309) runs MEDI 2024.11.26 at its own defaults, which QSM.rs
     # main's MediParams share (names and values): both sides run their defaults.
-    qsmrs_paths: [src/inversion/medi.rs, src/inversion/msmv.rs, src/inversion/tfi.rs, src/kernels/,
-                  src/fft.rs, src/utils/gradient.rs, src/utils/morphology.rs, src/utils/r2star.rs,
-                  src/utils/mask.rs, src/pipeline/inversion.rs, src/pipeline/rules.rs]
+    qsmrs_paths: [src/constants.rs, src/error.rs, src/fft.rs, src/grid.rs, src/inversion/medi.rs,
+                  src/inversion/msmv.rs, src/inversion/tfi.rs, src/kernels/,
+                  src/pipeline/inversion.rs, src/pipeline/rules.rs, src/utils/bias_correction.rs,
+                  src/utils/connected.rs, src/utils/echo_time.rs, src/utils/fibermetric.rs,
+                  src/utils/frangi.rs, src/utils/gradient.rs, src/utils/mask.rs,
+                  src/utils/morphology.rs, src/utils/morphology/signal_erosion.rs,
+                  src/utils/multi_echo.rs, src/utils/r2star.rs]
+    qsmxt_paths: *invert_wiring
     datasets:
       sim:
         # Measured: NRMSE 0.0290 %, r 1.000000, max |Δ| 0.00043 ppm, p99 |Δ| 2.2e-05 ppm.
@@ -181,9 +239,11 @@ pairs:
     reference: amp-pe       # ci_skip for scoring (diverges on real multi-echo data); parity runs it
     candidate: amp-pe-qsmrs  # runner: self-hosted, so the pair's job runs there (about 1 h)
     enabled: true
-    qsmrs_paths: [src/inversion/amp_pe.rs, src/inversion/admm.rs, src/utils/wavelet.rs,
-                  src/utils/special.rs, src/kernels/, src/fft.rs, src/pipeline/inversion.rs,
-                  src/pipeline/rules.rs]
+    qsmrs_paths: [src/constants.rs, src/error.rs, src/fft.rs, src/grid.rs, src/inversion/admm.rs,
+                  src/inversion/amp_pe.rs, src/kernels/, src/pipeline/inversion.rs,
+                  src/pipeline/rules.rs, src/utils/gradient.rs, src/utils/ops.rs,
+                  src/utils/special.rs, src/utils/wavelet.rs]
+    qsmxt_paths: *invert_wiring
     datasets:
       # In silico only: on the KKI travelling head the original was killed (exit 137) on the
       # self-hosted runner (run 40605505892), as it diverges on real multi-echo data.
@@ -201,8 +261,11 @@ pairs:
     # collapses, where the fit has no unique answer: a 1-ulp change inside QSM.rs moves QSM.rs
     # against itself by the same amount (χ+ 4.86 %, χ− 4.05 %). MATLAB is bit-repeatable across
     # CPUs and worker counts. Details: astewartau/QSM.rs#329.
-    qsmrs_paths: [src/separation/decompose.rs, src/separation/mod.rs, src/pipeline/separation.rs,
-                  src/pipeline/rules.rs, src/solvers/, src/utils/fdlibm.rs]
+    qsmrs_paths: [src/error.rs, src/pipeline/rules.rs, src/pipeline/separation.rs,
+                  src/separation/decompose.rs, src/separation/mod.rs, src/solvers/,
+                  src/utils/fdlibm.rs]
+    qsmxt_paths: &separate_wiring [src/cli.rs, src/commands/common.rs, src/commands/separate.rs,
+                                   crates/qsmxt-engine/src/bridge.rs]
     datasets:
       chisep-mc:
         # Measured: χ+ NRMSE 4.90 %, r 0.9983, max |Δ| 0.045 ppm, p99 |Δ| 0.0020 ppm;
@@ -222,8 +285,9 @@ pairs:
     # 0.11 % / 1.1 %, so the port differs from the original on this phantom; cause not found yet
     # (reported on #312). Not enabled until it is.
     blocked_by: QSMxT/QSM-CI#312
-    qsmrs_paths: [src/separation/wavesep.rs, src/separation/mod.rs, src/pipeline/separation.rs,
-                  src/pipeline/rules.rs]
+    qsmrs_paths: [src/error.rs, src/grid.rs, src/pipeline/rules.rs, src/pipeline/separation.rs,
+                  src/separation/mod.rs, src/separation/wavesep.rs, src/utils/wavelet.rs]
+    qsmxt_paths: *separate_wiring
     datasets:
       chisep-mc: {}
 
@@ -238,8 +302,10 @@ pairs:
     # #321); the matched pad=-1 below is for main. QSMxT main does not build against #321-#323 yet
     # (rechecked at 2a3a373 / 8e30a54, run 40620298336), so they are unmeasured.
     blocked_by: astewartau/QSM.rs#323
-    qsmrs_paths: &tkd_paths [src/inversion/tkd.rs, src/kernels/, src/fft.rs, src/utils/padding.rs,
-                             src/pipeline/inversion.rs, src/pipeline/rules.rs]
+    qsmrs_paths: [src/fft.rs, src/grid.rs, src/inversion/tkd.rs, src/kernels/,
+                  src/pipeline/inversion.rs, src/pipeline/rules.rs, src/utils/mask.rs,
+                  src/utils/padding.rs]
+    qsmxt_paths: *invert_wiring
     reference_set: { pad: -1 }
     datasets:
       sim:
@@ -256,7 +322,10 @@ pairs:
     # #321); the matched pad=-1 below is for main. QSMxT main does not build against #321-#323 yet
     # (rechecked at 2a3a373 / 8e30a54, run 40620298336), so they are unmeasured.
     blocked_by: astewartau/QSM.rs#323
-    qsmrs_paths: *tkd_paths
+    qsmrs_paths: [src/fft.rs, src/grid.rs, src/inversion/tkd.rs, src/kernels/,
+                  src/pipeline/inversion.rs, src/pipeline/rules.rs, src/utils/mask.rs,
+                  src/utils/padding.rs]
+    qsmxt_paths: *invert_wiring
     reference_set: { pad: -1 }
     datasets:
       sim:
@@ -273,8 +342,10 @@ pairs:
     # #321); the matched pad=-1 below is for main. QSMxT main does not build against #321-#323 yet
     # (rechecked at 2a3a373 / 8e30a54, run 40620298336), so they are unmeasured.
     blocked_by: astewartau/QSM.rs#323
-    qsmrs_paths: [src/inversion/tikhonov.rs, src/kernels/, src/fft.rs, src/utils/padding.rs,
-                  src/pipeline/inversion.rs, src/pipeline/rules.rs]
+    qsmrs_paths: [src/fft.rs, src/grid.rs, src/inversion/tikhonov.rs, src/kernels/,
+                  src/pipeline/inversion.rs, src/pipeline/rules.rs, src/utils/mask.rs,
+                  src/utils/padding.rs]
+    qsmxt_paths: *invert_wiring
     reference_set: { pad: -1 }
     datasets:
       sim:
@@ -291,8 +362,11 @@ pairs:
     # #321); the matched pad=-1 below is for main. QSMxT main does not build against #321-#323 yet
     # (rechecked at 2a3a373 / 8e30a54, run 40620298336), so they are unmeasured.
     blocked_by: astewartau/QSM.rs#323
-    qsmrs_paths: [src/inversion/tv.rs, src/inversion/admm.rs, src/utils/gradient.rs, src/kernels/,
-                  src/fft.rs, src/utils/padding.rs, src/pipeline/inversion.rs, src/pipeline/rules.rs]
+    qsmrs_paths: [src/constants.rs, src/fft.rs, src/grid.rs, src/inversion/admm.rs,
+                  src/inversion/tv.rs, src/kernels/, src/pipeline/inversion.rs,
+                  src/pipeline/rules.rs, src/utils/gradient.rs, src/utils/mask.rs, src/utils/ops.rs,
+                  src/utils/padding.rs]
+    qsmxt_paths: *invert_wiring
     # QSM.rs main has QSM.jl's defaults (λ 1e-3, ρ 100·λ); the README's λ 2e-4 matched v0.39.0.
     reference_set: { pad: -1 }
     datasets:
@@ -312,9 +386,11 @@ pairs:
     # nltv-qsmjl also calls QSM.jl in ppm, and QSM.jl's nltv leaves `ue` uninitialised (its
     # README). QSM.rs's padding fix for nltv is in draft astewartau/QSM.rs#323.
     blocked_by: astewartau/QSM.rs#323
-    qsmrs_paths: [src/inversion/nltv.rs, src/inversion/admm.rs, src/inversion/ndi.rs,
-                  src/utils/gradient.rs, src/kernels/, src/fft.rs, src/utils/padding.rs,
-                  src/pipeline/inversion.rs, src/pipeline/rules.rs]
+    qsmrs_paths: [src/constants.rs, src/fft.rs, src/grid.rs, src/inversion/admm.rs,
+                  src/inversion/ndi.rs, src/inversion/nltv.rs, src/kernels/,
+                  src/pipeline/inversion.rs, src/pipeline/rules.rs, src/utils/echo_time.rs,
+                  src/utils/gradient.rs, src/utils/mask.rs, src/utils/ops.rs, src/utils/padding.rs]
+    qsmxt_paths: *invert_wiring
   rts:
     reference: rts-qsmjl
     candidate: rts-qsmrs
@@ -323,8 +399,10 @@ pairs:
     # #321); the matched pad=-1 below is for main. QSMxT main does not build against #321-#323 yet
     # (rechecked at 2a3a373 / 8e30a54, run 40620298336), so they are unmeasured.
     blocked_by: astewartau/QSM.rs#323
-    qsmrs_paths: [src/inversion/rts.rs, src/utils/gradient.rs, src/kernels/, src/fft.rs,
-                  src/utils/padding.rs, src/pipeline/inversion.rs, src/pipeline/rules.rs]
+    qsmrs_paths: [src/fft.rs, src/grid.rs, src/inversion/rts.rs, src/kernels/,
+                  src/pipeline/inversion.rs, src/pipeline/rules.rs, src/utils/gradient.rs,
+                  src/utils/mask.rs, src/utils/padding.rs]
+    qsmxt_paths: *invert_wiring
     reference_set: { pad: -1 }
     datasets:
       sim:
@@ -340,8 +418,9 @@ pairs:
     # Fix pending: QSM.jl's iSMV defaults (draft astewartau/QSM.rs#322); the matched values below
     # are main's. QSMxT main does not build against #322 yet (rechecked at f7bceb4, run 40620298336), so it is unmeasured.
     blocked_by: astewartau/QSM.rs#322
-    qsmrs_paths: [src/bgremove/ismv.rs, src/bgremove/smv.rs, src/kernels/, src/fft.rs,
-                  src/pipeline/bg_removal.rs, src/pipeline/rules.rs]
+    qsmrs_paths: [src/bgremove/ismv.rs, src/bgremove/smv.rs, src/error.rs, src/fft.rs, src/grid.rs,
+                  src/kernels/, src/pipeline/bg_removal.rs, src/pipeline/rules.rs, src/utils/ops.rs]
+    qsmxt_paths: &bgremove_wiring [src/cli.rs, src/commands/common.rs, src/commands/bgremove.rs]
     # QSM.rs: radius 5 × the largest voxel size (1 mm here), tol 1e-6, 50 iterations.
     reference_set: { radius: 5, tol: 1e-6, max_iter: 50 }
     datasets:
@@ -360,8 +439,10 @@ pairs:
     # box, edge test and radius default); QSMxT main does not build against it yet (rechecked at 2a3a373, run 40620298336;
     # unmeasured).
     blocked_by: astewartau/QSM.rs#321
-    qsmrs_paths: [src/bgremove/sharp.rs, src/bgremove/smv.rs, src/kernels/, src/fft.rs,
-                  src/pipeline/bg_removal.rs, src/pipeline/rules.rs]
+    qsmrs_paths: [src/bgremove/sharp.rs, src/bgremove/smv.rs, src/fft.rs, src/grid.rs,
+                  src/inversion/medi.rs, src/kernels/, src/pipeline/bg_removal.rs,
+                  src/pipeline/rules.rs, src/utils/padding.rs]
+    qsmxt_paths: *bgremove_wiring
     reference_set: { radius: 6 }   # QSM.rs: 6 × the smallest voxel size (1 mm here)
     datasets:
       sim: {}
@@ -376,8 +457,10 @@ pairs:
     # (r 0.9940), KKI 28.7 % (r 0.9575). Fix pending (draft astewartau/QSM.rs#321); unmeasured,
     # as QSMxT main does not build against it yet (rechecked at 2a3a373, run 40620298336).
     blocked_by: astewartau/QSM.rs#321
-    qsmrs_paths: [src/bgremove/vsharp.rs, src/bgremove/sharp.rs, src/bgremove/smv.rs, src/kernels/,
-                  src/fft.rs, src/pipeline/bg_removal.rs, src/pipeline/rules.rs]
+    qsmrs_paths: [src/bgremove/sharp.rs, src/bgremove/smv.rs, src/bgremove/vsharp.rs, src/error.rs,
+                  src/fft.rs, src/grid.rs, src/inversion/medi.rs, src/kernels/,
+                  src/pipeline/bg_removal.rs, src/pipeline/rules.rs, src/utils/padding.rs]
+    qsmxt_paths: *bgremove_vsharp_wiring
     reference_set: { max_radius: 12, min_radius: 1, radius_step: 1 }
     datasets:
       sim: {}
@@ -388,9 +471,16 @@ pairs:
     reference: laplacian-qsmjl
     candidate: laplacian-qsmrs
     enabled: true
-    qsmrs_paths: [src/unwrap/laplacian.rs, src/kernels/laplacian.rs, src/utils/multi_echo.rs,
-                  src/fft.rs, src/pipeline/field_mapping.rs, src/pipeline/phase_utils.rs,
-                  src/pipeline/rules.rs]
+    qsmrs_paths: [src/error.rs, src/fft.rs, src/grid.rs, src/kernels/laplacian.rs,
+                  src/pipeline/field_mapping.rs, src/pipeline/phase_utils.rs, src/pipeline/rules.rs,
+                  src/unwrap/laplacian.rs, src/utils/bias_correction.rs, src/utils/connected.rs,
+                  src/utils/morphology.rs, src/utils/morphology/signal_erosion.rs,
+                  src/utils/multi_echo.rs]
+    qsmxt_paths: &fieldmap_wiring [src/cli.rs, src/commands/common.rs, src/commands/fieldmap.rs,
+                                   src/pipeline/config.rs, src/pipeline/phase.rs,
+                                   crates/qsmxt-engine/src/config.rs,
+                                   crates/qsmxt-engine/src/bridge.rs,
+                                   crates/qsmxt-engine/src/fieldmap.rs]
     reference_set: { mask_phase: "true", demean: "true" }
     datasets:
       sim:
@@ -411,9 +501,13 @@ pairs:
     # QSM.rs (Float64) does not reproduce; the limits below are that measurement plus the margins.
     # Enable when #325 is merged and QSMxT main moves to it.
     blocked_by: astewartau/QSM.rs#325
-    qsmrs_paths: [src/unwrap/romeo.rs, src/unwrap/bestpath.rs, src/unwrap/mod.rs, src/region_grow.rs,
-                  src/priority_queue.rs, src/utils/multi_echo.rs, src/pipeline/field_mapping.rs,
-                  src/pipeline/phase_utils.rs, src/pipeline/rules.rs]
+    qsmrs_paths: [src/error.rs, src/grid.rs, src/pipeline/field_mapping.rs,
+                  src/pipeline/phase_utils.rs, src/pipeline/rules.rs, src/priority_queue.rs,
+                  src/region_grow.rs, src/unwrap/bestpath.rs, src/unwrap/mod.rs,
+                  src/unwrap/romeo.rs, src/utils/bias_correction.rs, src/utils/connected.rs,
+                  src/utils/morphology.rs, src/utils/morphology/signal_erosion.rs,
+                  src/utils/multi_echo.rs, src/utils/union_find.rs]
+    qsmxt_paths: *fieldmap_wiring
     # QSMxT's ROMEO settings (sigma 4 voxels = 4 mm on these 1 mm datasets).
     reference_set: { weights: romeo4, individual_unwrapping: "true", correct_global: "true",
                      phase_offset_sigma_mm: 4 }
@@ -438,8 +532,13 @@ pairs:
     # bridge.rs and stages/inversion.rs, run 40620298336). Owner: QSMxT (add and expose the option);
     # then measure with it on (and add it to tgv-qsmrs's run.sh).
     blocked_by: astewartau/QSM.rs#324
-    qsmrs_paths: [src/inversion/tgv.rs, src/utils/gradient.rs, src/utils/morphology.rs,
-                  src/kernels/, src/fft.rs, src/pipeline/inversion.rs, src/pipeline/rules.rs]
+    qsmrs_paths: [src/error.rs, src/fft.rs, src/grid.rs, src/inversion/tgv.rs, src/kernels/,
+                  src/pipeline/inversion.rs, src/pipeline/rules.rs, src/utils/bias_correction.rs,
+                  src/utils/connected.rs, src/utils/echo_time.rs, src/utils/gradient.rs,
+                  src/utils/morphology.rs, src/utils/morphology/signal_erosion.rs]
+    qsmxt_paths: &invert_tgv_wiring [src/cli.rs, src/commands/common.rs, src/commands/invert.rs,
+                                     crates/qsmxt-engine/src/config.rs,
+                                     crates/qsmxt-engine/src/stages/inversion.rs]
     # QSM.rs ports qsm_tgv with the package's defaults (α from get_default_alpha(2), the
     # voxel-size iteration count, 3 erosions, step 3, the first echo's TE) and, for a field in ppm,
     # the ordinary discrete Laplacian: tgv-tgvjl's `unwrapped` (the package's laplacian_kernel
