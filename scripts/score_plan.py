@@ -163,7 +163,9 @@ def stage_of(spec: dict | None) -> str | None:
 
 
 def is_skipped(spec: dict | None) -> bool:
-    return spec is None or bool(spec.get("ci_skip"))
+    """Never scored: `ci_skip` (parked) or `parity_only` (an original kept only as the reference of
+    a port parity pair, docs/parity.md)."""
+    return spec is None or bool(spec.get("ci_skip")) or bool(spec.get("parity_only"))
 
 
 def is_chisep(spec) -> bool:
