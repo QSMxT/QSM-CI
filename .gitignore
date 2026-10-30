@@ -83,6 +83,7 @@ algorithms/*/nifti/
 algorithms/*/medi/
 algorithms/*/sti/
 algorithms/*/sti_support/
+algorithms/hdqsm/hdqsm/
 # Compiled-MATLAB submissions ship as prebuilt+pushed GHCR images (the Dockerfile bakes a
 # licensed mcc binary that CI cannot reproduce), so CI must PULL image: rather than build the
 # Dockerfile. The runner never builds one anyway — qsm_ci/containers._build_oci only pulls `image:` —
