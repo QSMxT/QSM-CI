@@ -33,8 +33,8 @@ the same thing as far as the original allows.
 | `tol` | 0.01 |  | stopping tolerance |
 | `max_iter` | 20 |  | maximum ADMM iterations (`maxit`) |
 | `lsmr_iter` | 4 |  | LSMR stopping tolerance in iterations (`lstol`) |
-| `pad` | 0 | -1 | QSM.jl `pad` (all three axes): >= 0 zero-pads to a fast FFT size (QSM.jl default 0: padding only up to that size); -1 does not pad, as QSM.rs |
+| `pad` | 0 |  | QSM.jl `pad` (all three axes): >= 0 zero-pads to a fast FFT size (QSM.jl default 0: padding only up to that size); -1 does not pad. QSM.rs pads the same way by default (astewartau/QSM.rs#323) |
 
 ## Against the QSM.rs port
 
-- QSM.rs uses complex FFTs where QSM.jl uses real-to-complex ones, and does not pad; `--set pad=-1` turns QSM.jl's fast-FFT-size padding off. The FFT type cannot be changed in QSM.jl.
+- The defaults are the same in both, padding included (astewartau/QSM.rs#323); nothing to set. QSM.rs uses complex FFTs where QSM.jl uses real-to-complex ones, and forms the spectra QSM.jl's half spectrum implies (astewartau/QSM.rs#335).

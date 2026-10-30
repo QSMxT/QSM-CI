@@ -86,10 +86,11 @@ runners, with that method's `timeout_minutes`.
 ### Matched settings
 
 When the two implementations' defaults differ, `reference_set` / `candidate_set` (per pair, or per
-dataset) are the `--set NAME=VALUE` overrides that make them compute the same thing: e.g. QSM.jl's
-padding off (`pad: -1`) as in QSM.rs, or TGV.jl's α in rad units for the dataset's field strength
-and first echo time. For a Julia original they are its README's "QSM.rs-matched" column. Only the
-pair's own method gets them; prefix steps run with their defaults.
+dataset) are the `--set NAME=VALUE` overrides that make them compute the same thing: e.g. STI
+Suite's V-SHARP radii for QSM.jl's `vsharp` (`reference_set`), or QSM.jl's iSMV, which QSM.rs keeps
+as an option next to its default (`candidate_set: {variant: qsmjl}`, passed on by the port's
+`run.sh`). For a Julia original they are its README's "QSM.rs-matched" column. Only the pair's own
+method gets them; prefix steps run with their defaults.
 
 ## What is compared
 

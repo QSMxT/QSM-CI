@@ -7,12 +7,12 @@ stage: dipole
 language: Julia
 family: iterative
 learning: none
-inputs: [localfield, mask, params]
+inputs: [localfield, mask, params, magnitude]  # recon.jl makes the data weight W from the magnitude
 engine: QSM.jl v0.5.4 (fde4b92)
 description: >
   Nonlinear-data-term total-variation dipole inversion by ADMM (Milovic et al. 2018), run as the
-  original QSM.jl code (`QSM.nltv`, fde4b92), unweighted (`W` = nothing, QSM.jl's default) on the
-  local field in ppm, as QSM.jl's README pipeline passes it.
+  original QSM.jl code (`QSM.nltv`, fde4b92), on the local field as phase in rad at the first echo
+  time, with the magnitude data weight `W` the QSM.rs port makes (min(2·mask·mag/max(mag), 1)).
 citation: Milovic et al., Magn Reson Med 2018
 authors:
 - name: Carlos Milovic
@@ -67,4 +67,7 @@ parameters:
   description: maximum Newton iterations (`maxitn`)
 - name: pad
   default: 0
-  description: "QSM.jl `pad` (all three axes): >= 0 zero-pads to a fast FFT size (QSM.jl default 0: padding only up to that size); -1 does not pad, as QSM.rs"
+  description: "QSM.jl `pad` (all three axes): >= 0 zero-pads to a fast FFT size (QSM.jl default 0: padding only up to that size); -1 does not pad. QSM.rs pads the same way by default (astewartau/QSM.rs#323)"
+- name: te
+  default: first echo time
+  description: echo time (s) the local field is converted to phase at
