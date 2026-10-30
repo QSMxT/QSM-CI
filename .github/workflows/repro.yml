@@ -239,7 +239,7 @@ jobs:
           SPECS = {p.parent.name: load_spec(ALGOS, p.parent.name)
                    for p in ALGOS.glob('*/algorithm.yml') if not p.parent.name.startswith('_')}
           def skipped(slug):
-              # `ci_skip: true` means "in the repo, never run by CI" (apart-qsm, decompose-qsm,
+              # `ci_skip: true` means "in the repo, never run by CI" (decompose-qsm,
               # after-qsm, dip-up). score.yml filters these; repro used to plan a no-op task per
               # acquisition for each of them on every full run.
               return is_skipped(SPECS.get(slug))
