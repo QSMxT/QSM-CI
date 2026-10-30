@@ -20,14 +20,15 @@ doi: 10.1016/j.neuroimage.2021.118371
 citation: Shin et al., NeuroImage 2021
 code_url: https://github.com/SNU-LIST/chi-separation
 license: academic use; toolbox obtained via the SNU-LIST Google Form
-image: ghcr.io/astewartau/qsm-ci/chi-sep-medi@sha256:06ffc17a55223b05eb1442d9092b751b64a50e0e39320602a289b5c2ca9d2615   # v2. TODO: pin v3 (empty CSF mask, #315) by digest once pushed
+image: ghcr.io/astewartau/qsm-ci/chi-sep-medi@sha256:6cec1e895428f02b4e87cb2b744ca53fdc7146f6280882ca2785bec22a60586b   # v3 (empty CSF mask, #315)
 run: bash run.sh
 runner: highmem
 matlab:
   entry: recon.m
   runtime: r2023b
 # Container vs the authors' code in licensed MATLAB with the real toolboxes (QSMxT/QSM-CI#300;
-# fidelity/REPORT.md). Rerun and update whenever the image changes.
+# fidelity/REPORT.md). Rerun and update whenever the image changes. The record below is v2's; v3's
+# check (same harness, licensed R2023b on Bunya) is pending.
 fidelity:
   date: 2026-10-28
   image: sha256:06ffc17a55223b05eb1442d9092b751b64a50e0e39320602a289b5c2ca9d2615
