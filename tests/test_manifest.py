@@ -6,7 +6,8 @@ parameters, DOI) on the leaderboard + submission pages. It is a generated file
 chore — the `manifest` job in .github/workflows/ci.yml regenerates it and commits the
 refresh back to the branch on same-repo pushes/PRs (fork PRs, which CI can't push to,
 must run `python scripts/gen_manifest.py` and commit). This test just pins that no
-submission is missing from the manifest the generator builds.
+submission is missing from the manifest the generator builds, except a `parity_only` one (a port
+parity reference, never scored, so not on the site).
 """
 import importlib.util
 from pathlib import Path
@@ -25,5 +26,9 @@ def test_every_submission_is_in_the_manifest():
         yml = d / "algorithm.yml"
         if d.name.startswith("_") or not yml.exists():
             continue
-        slug = (yaml.safe_load(yml.read_text()) or {}).get("slug") or d.name
+        doc = yaml.safe_load(yml.read_text()) or {}
+        slug = doc.get("slug") or d.name
+        if doc.get("parity_only"):
+            assert slug not in manifest, f"parity_only {slug} is on the site"
+            continue
         assert slug in manifest, f"submission {d.name} (slug {slug}) missing from manifest"

@@ -4,32 +4,19 @@ WaveSep runs a purely iterative wavelet-domain optimiser on CPU — no MATLAB, n
 pretrained weights** (despite the upstream README saying "PyTorch", the QSM separation path is pure
 NumPy + PyWavelets). The only third-party payload is the WaveSep **source code**
 (https://github.com/ZhenghanFang/WaveSep), which has no license file and is used here with the
-author's permission for academic benchmarking. To avoid redistributing it in this public repo, the
-vendored package (`algorithms/wavesep/wavesep/`) is gitignored (`algorithms/wavesep/wavesep/`) and
-baked into the image at build time. The `Dockerfile` is gitignored too, so CI pulls the prebuilt image
-rather than building it.
-
-## Get the source
-
-Clone the WaveSep repo and vendor its `wavesep` package into this submission folder (pinned commit for
-reproducibility):
-
-```bash
-git clone https://github.com/ZhenghanFang/WaveSep /tmp/WaveSep
-git -C /tmp/WaveSep checkout f3a192efc2ceabcec87ae2b782db6dc80e100043
-rm -rf algorithms/wavesep/wavesep
-cp -r /tmp/WaveSep/wavesep algorithms/wavesep/wavesep
-```
+author's permission for academic benchmarking. To avoid redistributing it in this public repo, it
+is not committed: the committed `Dockerfile` clones it at the pinned commit (f3a192e) into
+`/opt/wavesep` at build time, with Python and every package pinned to what the published v1 image
+holds. A rebuild gives the same output as v1 (fidelity/cpp-py/README.md).
 
 `recon.py` is our own thin wrapper (it imports `wavesep.utils.solver_wavesep_qsm.Solver` and drives it);
-the vendored WaveSep source is used unmodified.
+the WaveSep source is used unmodified.
 
 ## Build + push
 
 ```bash
-# from the repo root, with algorithms/wavesep/wavesep/ present (see "Get the source")
-docker build -t ghcr.io/astewartau/qsm-ci/wavesep:v1 algorithms/wavesep
-docker push  ghcr.io/astewartau/qsm-ci/wavesep:v1   # make the GHCR package public
+podman build -t ghcr.io/astewartau/qsm-ci/wavesep:<tag> algorithms/wavesep
+podman push  ghcr.io/astewartau/qsm-ci/wavesep:<tag>   # then pin the digest in algorithm.yml
 ```
 
 ## Smoke test (docker runner)
@@ -43,7 +30,8 @@ python -m qsm_ci.cli run wavesep \
   -o out/ --truth data/sim/chisep/groundtruth/ --runner docker
 ```
 
-Local run (no docker): clone the source as above, then point `XSEP_PYTHON` at a python with
+Local run (no docker): clone the source (`git clone https://github.com/ZhenghanFang/WaveSep` at
+f3a192e, copy its `wavesep/` next to `recon.py`; gitignored), then point `XSEP_PYTHON` at a python with
 `numpy scipy nibabel PyWavelets scikit-image matplotlib tqdm` and use `--runner local`.
 
 ## Algorithm notes (what WaveSep expects)

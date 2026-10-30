@@ -132,6 +132,10 @@ def build() -> dict:
             continue
         meta = yaml.safe_load(mfile.read_text())
         validate(d, meta, valid_stages)
+        # A parity_only original is never scored and has no results: it is a port parity reference
+        # (docs/parity.md), not a method on the site.
+        if meta.get("parity_only"):
+            continue
         meta.setdefault("slug", d.name)
         algos.append(entry(meta))
     # The dataset/phantom registry, verbatim — the web needs the label/track/default fields to name

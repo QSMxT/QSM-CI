@@ -13,10 +13,11 @@ language: MATLAB
 family: iterative
 learning: none
 engine: MEDI toolbox
-inputs: [localfield, mask, params, magnitude]  # recon.m reads magnitude.nii.gz unconditionally for the data-fidelity weight
-description: Morphology Enabled Dipole Inversion (Cornell MEDI toolbox), compiled from
-  MATLAB and run on the license-free MATLAB Runtime. Solves the L1 morphology-regularized
-  dipole inversion directly on the local (tissue) field (no background-field removal).
+inputs: [localfield, mask, params, magnitude]  # recon.m reads the echo magnitudes for the edge mask, the data weight and the CSF mask
+description: Morphology Enabled Dipole Inversion (Cornell MEDI toolbox 2024.11.26) with the toolbox's
+  defaults (SMV, model-error reduction and CSF zero-referencing on), compiled from MATLAB and run on
+  the license-free MATLAB Runtime. Solves the L1 morphology-regularized dipole inversion on the local
+  (tissue) field (no background-field removal).
 authors:
 - name: Jing Liu
 - name: Tian Liu
@@ -33,28 +34,81 @@ doi: 10.1016/j.neuroimage.2011.08.082
 citation: Liu et al., NeuroImage 2012
 code_url: http://pre.weill.cornell.edu/mri/pages/qsm.html
 license: See Cornell MEDI toolbox license
-image: ghcr.io/astewartau/qsm-ci/matlab-medi@sha256:3747339b38bb93294bbe07c3c5f1b4882ce675b6e57d473e0148b224afd6186d   # v2
+image: ghcr.io/astewartau/qsm-ci/matlab-medi@sha256:b81527b0c5a49a39378700358dd3b0ada3a4a0ed5742715d0d699c99846f0278   # v4
 run: bash run.sh
 smoke_box: 32   # PR --smoke gate fits a 32^3 central box (fast); full score.yml run is unaffected
 matlab:
   entry: recon.m
-  runtime: r2026a
+  runtime: r2023b
+# Container vs the authors' code in licensed MATLAB with the real toolboxes (QSMxT/QSM-CI#300;
+# fidelity/REPORT.md). Rerun and update whenever the image changes.
+fidelity:
+  date: 2026-10-28
+  image: sha256:b81527b0c5a49a39378700358dd3b0ada3a4a0ed5742715d0d699c99846f0278   # v4
+  matlab: R2023b Update 5 (23.2.0.2459199), MEDI toolbox 2024.11.26
+  settings: "defaults, MEDI_L1's own (lambda 1000, SMV 5 mm, MERIT, CSF zero reference)"
+  tolerance: identical   # chi and every intermediate, in silico and in vivo, 8 threads
+  result: pass
+  report: algorithms/medi-cornell/fidelity/REPORT.md
+  history:   # earlier images, each identical to licensed R2023b at its own defaults (REPORT.md)
+  - image: sha256:122ac0095b1472b80f4e5441be2dd87fb6d730c101663365fb88be747ebd24f4   # v3
+    settings: "lambda 1000, nosmv, nomerit, no CSF term"
+    result: pass
 parameters:
+# Every default is what MEDI_L1 (MEDI toolbox 2024.11.26, parse_QSM_input.m) does when the option is
+# not passed, which is also what the toolbox's own pipeline (README.m) runs:
+# MEDI_L1('lambda',1000,'lambda_CSF',100,'merit','smv',5). See BUILD.md.
 - name: lambda
-  default: 100
+  default: 1000
   description: data-fidelity weight (larger = closer data fit, less regularization)
+- name: smv
+  default: 1
+  description: MEDI-SMV, 1 on, 0 off ('nosmv'); high-passes the local field with a spherical mean value kernel and fits it with the SMV-filtered dipole kernel, removing residual background near the brain edge
 - name: smv_radius
-  default: 0
-  description: spherical-mean-value radius (mm) for extra background removal; 0 disables (default now off — input is already a local field)
+  default: 5
+  description: SMV sphere radius (mm); 0 turns SMV off
+- name: smv_shrink_mask
+  default: 1
+  description: with SMV, invert on the mask eroded by the SMV sphere (1) or on the full mask (0)
+- name: merit
+  default: 1
+  description: model-error reduction (MERIT), reweighting the noise by the data residual after each iteration; 0 off ('nomerit')
+- name: csf
+  default: 1
+  description: MEDI+0, zero-referencing to the ventricular CSF (CSF mask from the R2* of the echo magnitudes); needs three or more echoes
+- name: lambda_csf
+  default: 100
+  description: weight of the CSF zero-reference term
+- name: csf_r2s_threshold
+  default: 5
+  description: R2* (Hz) below which a voxel is a CSF candidate
+- name: csf_erode
+  default: 1
+  description: erode the mask by a 10 mm sphere before finding the CSF
 - name: percentage
   default: 0.9
   description: fraction of voxels kept as edges in the morphology gradient mask
-- name: merit
+- name: data_weighting
+  default: 1
+  description: data weighting, 1 by the field noise from the echo magnitudes, 0 uniform
+- name: max_iter
+  default: 10
+  description: maximum Gauss-Newton iterations
+- name: tol_norm_ratio
+  default: 0.1
+  description: stop when the relative update falls below this
+- name: cg_max_iter
+  default: 100
+  description: maximum conjugate-gradient iterations per Gauss-Newton step
+- name: cg_tol
+  default: 0.01
+  description: conjugate-gradient relative residual tolerance
+- name: zeropad
   default: 0
-  description: model-error reduction (iterative reweighting); 1 enables
+  description: voxels of zeros appended along each axis before the inversion (a number or [x, y, z]); with SMV, odd axes get one more
 
 # Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
 tuning:
   date: 2026-08
   status: pending
-  note: "Converted from a bfr+dipole span (PDF+MEDI) to a pure dipole inversion (MEDI_L1 on the local field); the old lambda=520 tuning was for the span and no longer applies. Needs re-sweeping as a dipole method."
+  note: "Converted from a bfr+dipole span (PDF+MEDI) to a pure dipole inversion (MEDI_L1 on the local field); the old lambda=520 tuning was for the span and no longer applies. Default lambda is Cornell's 1000 since v3 (was 100); since v4 every default is MEDI_L1's own (SMV 5 mm, MERIT and CSF zero-referencing on). Needs re-sweeping as a dipole method."

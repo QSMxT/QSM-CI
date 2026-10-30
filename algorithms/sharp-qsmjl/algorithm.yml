@@ -1,0 +1,48 @@
+name: SHARP (QSM.jl)
+slug: sharp-qsmjl
+algorithm: sharp
+variant: qsmjl  # the original Julia package; the QSM.rs port of the same method is sharp-qsmrs
+source: kamesy
+stage: bfr
+language: Julia
+family: direct
+learning: none
+inputs: [totalfield, mask, params]
+engine: QSM.jl v0.5.4 (fde4b92)
+description: >
+  SHARP background field removal (SMV high-pass + TSVD deconvolution), run as the original QSM.jl
+  code (`QSM.sharp`, fde4b92).
+citation: Schweser et al., NeuroImage 2011
+authors:
+- name: Ferdinand Schweser
+- name: Andreas Deistung
+- name: Berengar Wendel Lehr
+- name: Jürgen Rainer Reichenbach
+doi: 10.1016/j.neuroimage.2010.10.070
+code_url: https://github.com/kamesy/QSM.jl
+license: MIT
+image: ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185   # v1
+run: bash run.sh
+# The original, kept as the reference of the QSM.rs port's parity pair (parity/thresholds.yml,
+# docs/parity.md): never scored, never on the site; the PR smoke gate still runs it.
+parity_only: true
+# The original in its own pinned environment (QSMxT/QSM-CI#299): versions pinned (Manifest),
+# output deterministic at the fixed thread count, and the same outside the container with the
+# same Manifest. algorithms/_julia/fidelity/README.md; rerun whenever the image changes.
+fidelity:
+  date: 2026-10-28
+  image: sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185
+  julia: 1.10.11 (Manifest algorithms/_julia/env/Manifest.toml)
+  packages: QSM.jl fde4b92 (0.5.4)
+  threads: 4 Julia, 4 FFTW, 1 BLAS   # run.sh / qsmci_io.jl
+  host: Intel Core i5-11500 (rocketlake, AVX-512), podman; host Julia 1.10.11 without the sysimage
+  tolerance: identical   # image twice, and image vs host Julia with the same Manifest, in vivo
+  result: pass
+  report: algorithms/_julia/fidelity/REPORT.md
+parameters:
+- name: radius
+  default: "18*min(voxel_size)"
+  description: SMV kernel radius, mm (`r`)
+- name: threshold
+  default: 0.05
+  description: deconvolution (TSVD) threshold (`thr`)

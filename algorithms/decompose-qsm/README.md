@@ -18,8 +18,8 @@ fit itself is the reference code (`decompose_utils/`, vendored).
   doi:[10.1016/j.neuroimage.2021.118735](https://doi.org/10.1016/j.neuroimage.2021.118735) ·
   code: https://github.com/timwahoo/DECOMPOSE-QSM
 - **Image:** `ghcr.io/astewartau/qsm-ci/decompose-qsm:v2` — the compiled binary and its
-  dependencies baked at `/opt/qsm-ci/recon` on a MATLAB Runtime base. There is no Dockerfile in
-  this folder: the `mcc` compile and the image build were done on Bunya (see
+  dependencies baked at `/opt/qsm-ci/recon` on a MATLAB Runtime base. The [`Dockerfile`](Dockerfile) is
+  recovered from the image's history; the `mcc` compile and the image build were done on Bunya (see
   [`docs/matlab.md`](../../docs/matlab.md) for the general compiled-MATLAB recipe).
 - **Runner:** `self-hosted` with a 720-min cap — the per-voxel fit took ~31 min on 48 cores and
   2–6 h on the shared self-hosted box. The per-PR smoke gate fits only a 24³ central box

@@ -880,7 +880,7 @@ function renderReproStats() {
       + `</td></tr>`;
     body += node
       ? row(node, gid, G.label, "Test–retest |a−1|", "test_retest", "Within-scanner run-to-run: median over pairs, mean in grey. Lower = more repeatable.")
-        + row(node, gid, G.label, "Inter-scanner |a−1|", "inter_scanner", "The same subject on two scanners, matched protocol+run, pooled over every subject and scanner pair of this dataset: median over pairs, mean in grey. The harmonization headline.")
+        + row(node, gid, G.label, "Inter-scanner |a−1|", "inter_scanner", "The same subject on two scanners, same protocol, every pair of runs, pooled over every subject and scanner pair of this dataset: median over pairs, mean in grey. The harmonization headline.")
         + row(node, gid, G.label, "vs bridge |a−1|", "inter_protocol", "Each protocol vs the bridge protocol, same scanner: median over pairs, mean in grey.")
       : `<tr><td class="py-3 text-gray-400" colspan="3">No reproducibility summary for this pipeline in this dataset.</td></tr>`;
   }

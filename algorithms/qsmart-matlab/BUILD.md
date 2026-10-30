@@ -92,7 +92,8 @@ functions too (`padarray`, `imclose`, …) that mcc can't see, so `recon.m` name
 empty. The container records where each one resolved in `intermediates.json` when run with
 `QSMCI_INTERMEDIATES`.
 
-Checking the built container against licensed MATLAB: [`fidelity/README.md`](fidelity/README.md).
+Checking the built container against licensed MATLAB: [`fidelity/README.md`](fidelity/README.md)
+(the shared harness, `fidelity/matlab/`; `submit.sh qsmart-matlab build` does §1–3 as a Slurm job).
 Rerun it whenever `recon.m` or the image changes.
 
 ## 4. Bake the image and push

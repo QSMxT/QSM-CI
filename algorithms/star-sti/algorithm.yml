@@ -17,11 +17,20 @@ doi: 10.1002/nbm.3383
 citation: Wei et al., NMR Biomed 2015
 code_url: https://people.eecs.berkeley.edu/~chunlei.liu/software.html
 license: See STI Suite license
-image: ghcr.io/astewartau/qsm-ci/matlab-sti-star@sha256:5815b4190a7ca10a1dd789dc099e20dda4db1304794e81ba36a45ef67077ff8f   # v1
+image: ghcr.io/astewartau/qsm-ci/matlab-sti-star@sha256:77674d0ef999060e6b9afcaea022a69d277958cad40435f8c113b7bc1ea02b84   # v2
 run: bash run.sh
 matlab:
   entry: recon.m
-  runtime: r2026a
+  runtime: r2023b
+# Container vs the authors' code in licensed MATLAB with the real toolboxes (QSMxT/QSM-CI#300;
+# fidelity/REPORT.md). Rerun and update whenever the image changes.
+fidelity:
+  date: 2026-10-28
+  image: sha256:77674d0ef999060e6b9afcaea022a69d277958cad40435f8c113b7bc1ea02b84
+  matlab: R2023b Update 5 (23.2.0.2459199), Image Processing Toolbox 23.2
+  tolerance: identical   # chi and the tissue phase, in silico and in vivo, 8 threads
+  result: pass
+  report: algorithms/star-sti/fidelity/REPORT.md
 params:
 - name: padsize
   default: 12

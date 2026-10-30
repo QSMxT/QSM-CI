@@ -1,0 +1,423 @@
+[
+  {
+    "slug": "ismv-qsmjl",
+    "port": "ismv-qsmrs",
+    "case": "invivo",
+    "seconds": {
+      "qsmrs": 9.8,
+      "default": 4.8,
+      "matched": 6.3
+    },
+    "default": {
+      "identical": false,
+      "max_abs_diff": 0.9486937522888184,
+      "sha_a": "7dd7f1098d05be6b",
+      "sha_b": "ed35e10353c77e30",
+      "voxels": 1343142,
+      "nrmse_pct": 50.03250092453694,
+      "correlation": 0.8889879872042137,
+      "max_abs_diff_in_mask": 0.20568352937698364,
+      "settings": []
+    },
+    "matched": {
+      "identical": false,
+      "max_abs_diff": 4.656612873077393e-10,
+      "sha_a": "c00e1930412ed6ca",
+      "sha_b": "ed35e10353c77e30",
+      "voxels": 1343142,
+      "nrmse_pct": 3.054388492670794e-09,
+      "correlation": 0.9999999999999993,
+      "max_abs_diff_in_mask": 4.656612873077393e-10,
+      "settings": [
+        "radius=5",
+        "tol=1e-6",
+        "max_iter=50"
+      ]
+    }
+  },
+  {
+    "slug": "laplacian-qsmjl",
+    "port": "laplacian-qsmrs",
+    "case": "invivo",
+    "seconds": {
+      "qsmrs": 5.6,
+      "default": 7.0,
+      "matched": 8.3
+    },
+    "default": {
+      "identical": false,
+      "max_abs_diff": 0.762308843433857,
+      "sha_a": "8a16ca2955d1a79e",
+      "sha_b": "4209614193699985",
+      "voxels": 1699930,
+      "nrmse_pct": 46.10690259609393,
+      "correlation": 0.9404565219399666,
+      "max_abs_diff_in_mask": 0.762308843433857,
+      "settings": []
+    },
+    "matched": {
+      "identical": false,
+      "max_abs_diff": 1.862645149230957e-09,
+      "sha_a": "168975a86e08e379",
+      "sha_b": "4209614193699985",
+      "voxels": 1699930,
+      "nrmse_pct": 1.3896951629644476e-09,
+      "correlation": 0.9999999999999998,
+      "max_abs_diff_in_mask": 1.862645149230957e-09,
+      "settings": [
+        "mask_phase=true",
+        "demean=true"
+      ]
+    }
+  },
+  {
+    "slug": "nltv-qsmjl",
+    "port": "nltv-qsmrs",
+    "case": "invivo",
+    "seconds": {
+      "qsmrs": 110.2,
+      "default": 27.2,
+      "matched": 27.6
+    },
+    "default": {
+      "identical": false,
+      "max_abs_diff": 1.4514919221401215,
+      "sha_a": "86e90e6cec66236a",
+      "sha_b": "cb059e4e5b829b31",
+      "voxels": 1699930,
+      "nrmse_pct": 84.82373460863225,
+      "correlation": 0.5580317233279835,
+      "max_abs_diff_in_mask": 1.4514919221401215,
+      "settings": []
+    },
+    "matched": {
+      "identical": false,
+      "max_abs_diff": 1.4588243663311005,
+      "sha_a": "6aab62223016d9ba",
+      "sha_b": "cb059e4e5b829b31",
+      "voxels": 1699930,
+      "nrmse_pct": 85.12775257133458,
+      "correlation": 0.5507583614145111,
+      "max_abs_diff_in_mask": 1.4588243663311005,
+      "settings": [
+        "pad=-1"
+      ]
+    }
+  },
+  {
+    "slug": "romeo-romeojl",
+    "port": "romeo-qsmrs",
+    "case": "invivo",
+    "seconds": {
+      "qsmrs": 6.6,
+      "default": 14.4,
+      "matched": 15.2
+    },
+    "default": {
+      "identical": false,
+      "max_abs_diff": 4.00167852640152,
+      "sha_a": "60661a44367a5c1f",
+      "sha_b": "9b36491f2216ba83",
+      "voxels": 1699930,
+      "nrmse_pct": 25.337012357748137,
+      "correlation": 0.966974086004619,
+      "max_abs_diff_in_mask": 4.00167852640152,
+      "settings": []
+    },
+    "matched": {
+      "identical": false,
+      "max_abs_diff": 1.2137636542320251,
+      "sha_a": "00f0d10c565a8c97",
+      "sha_b": "9b36491f2216ba83",
+      "voxels": 1699930,
+      "nrmse_pct": 6.4149436474606665,
+      "correlation": 0.9976257088499073,
+      "max_abs_diff_in_mask": 1.2137636542320251,
+      "settings": [
+        "weights=romeo4",
+        "individual_unwrapping=true",
+        "correct_global=true",
+        "temporal_uncertain_unwrapping=0.5",
+        "phase_offset_sigma_mm=4"
+      ]
+    }
+  },
+  {
+    "slug": "rts-qsmjl",
+    "port": "rts-qsmrs",
+    "case": "invivo",
+    "seconds": {
+      "qsmrs": 7.7,
+      "default": 6.2,
+      "matched": 6.3
+    },
+    "default": {
+      "identical": false,
+      "max_abs_diff": 0.5303767919540405,
+      "sha_a": "f74f5a476691346e",
+      "sha_b": "b0469af293e8ea66",
+      "voxels": 1699930,
+      "nrmse_pct": 30.29623053174593,
+      "correlation": 0.9536621090383655,
+      "max_abs_diff_in_mask": 0.5303767919540405,
+      "settings": []
+    },
+    "matched": {
+      "identical": false,
+      "max_abs_diff": 0.5298020243644714,
+      "sha_a": "fdca9826b058a87c",
+      "sha_b": "b0469af293e8ea66",
+      "voxels": 1699930,
+      "nrmse_pct": 30.290108446758172,
+      "correlation": 0.9536479867982485,
+      "max_abs_diff_in_mask": 0.5298020243644714,
+      "settings": [
+        "pad=-1"
+      ]
+    }
+  },
+  {
+    "slug": "sharp-qsmjl",
+    "port": "sharp-qsmrs",
+    "case": "invivo",
+    "seconds": {
+      "qsmrs": 2.3,
+      "default": 4.3,
+      "matched": 4.1
+    },
+    "default": {
+      "identical": false,
+      "max_abs_diff": 0.44635888934135437,
+      "sha_a": "08e5908c807702d2",
+      "sha_b": "b6421bf8327d143e",
+      "voxels": 627587,
+      "nrmse_pct": 68.4296435450927,
+      "correlation": 0.8677543297213837,
+      "max_abs_diff_in_mask": 0.021668040193617344,
+      "settings": []
+    },
+    "matched": {
+      "identical": false,
+      "max_abs_diff": 0.007763627916574478,
+      "sha_a": "848baaba10dad39f",
+      "sha_b": "b6421bf8327d143e",
+      "voxels": 1275505,
+      "nrmse_pct": 12.583993797245363,
+      "correlation": 0.9922458889840597,
+      "max_abs_diff_in_mask": 0.007763627916574478,
+      "settings": [
+        "radius=6"
+      ]
+    }
+  },
+  {
+    "slug": "tgv-tgvjl",
+    "port": "tgv-qsmrs",
+    "case": "invivo",
+    "seconds": {
+      "qsmrs": 175.8,
+      "default": 557.1,
+      "matched": 326.4
+    },
+    "default": {
+      "identical": false,
+      "max_abs_diff": 2.495265007019043,
+      "sha_a": "3a7922efc9a4bdae",
+      "sha_b": "03fd8617843c4e74",
+      "voxels": 1443191,
+      "nrmse_pct": 66.05219344338843,
+      "correlation": 0.7514501570426907,
+      "max_abs_diff_in_mask": 1.8846144080162048,
+      "settings": []
+    },
+    "matched": {
+      "identical": false,
+      "max_abs_diff": 3.7042160034179688,
+      "sha_a": "b3280478a257812c",
+      "sha_b": "03fd8617843c4e74",
+      "voxels": 1443191,
+      "nrmse_pct": 43.68838659539549,
+      "correlation": 0.9002176886388801,
+      "max_abs_diff_in_mask": 1.6825528740882874,
+      "settings": [
+        "iterations=1000",
+        "laplacian=romeo",
+        "alpha1=0.000258446",
+        "alpha0=0.000775339"
+      ]
+    }
+  },
+  {
+    "slug": "tikhonov-qsmjl",
+    "port": "tikhonov-qsmrs",
+    "case": "invivo",
+    "seconds": {
+      "qsmrs": 2.3,
+      "default": 5.0,
+      "matched": 4.7
+    },
+    "default": {
+      "identical": false,
+      "max_abs_diff": 0.0051977867260575294,
+      "sha_a": "cb959f2d630d14c6",
+      "sha_b": "18fa7c2a81f2300b",
+      "voxels": 1699930,
+      "nrmse_pct": 1.8839517432011204,
+      "correlation": 0.9998230726516438,
+      "max_abs_diff_in_mask": 0.0051977867260575294,
+      "settings": []
+    },
+    "matched": {
+      "identical": true,
+      "max_abs_diff": 0.0,
+      "sha_a": "04790734cb842465",
+      "sha_b": "18fa7c2a81f2300b",
+      "voxels": 1699930,
+      "nrmse_pct": 0.0,
+      "correlation": 1.0,
+      "max_abs_diff_in_mask": 0.0,
+      "settings": [
+        "pad=-1"
+      ]
+    }
+  },
+  {
+    "slug": "tkd-qsmjl",
+    "port": "tkd-qsmrs",
+    "case": "invivo",
+    "seconds": {
+      "qsmrs": 2.0,
+      "default": 4.2,
+      "matched": 4.7
+    },
+    "default": {
+      "identical": false,
+      "max_abs_diff": 0.03466595709323883,
+      "sha_a": "72a98efdfe5a425e",
+      "sha_b": "4b316cf20a1b22a6",
+      "voxels": 1699930,
+      "nrmse_pct": 7.486402986282214,
+      "correlation": 0.9971962777195551,
+      "max_abs_diff_in_mask": 0.03466595709323883,
+      "settings": []
+    },
+    "matched": {
+      "identical": true,
+      "max_abs_diff": 0.0,
+      "sha_a": "72026afd4827b455",
+      "sha_b": "4b316cf20a1b22a6",
+      "voxels": 1699930,
+      "nrmse_pct": 0.0,
+      "correlation": 1.0,
+      "max_abs_diff_in_mask": 0.0,
+      "settings": [
+        "pad=-1"
+      ]
+    }
+  },
+  {
+    "slug": "tsvd-qsmjl",
+    "port": "tsvd-qsmrs",
+    "case": "invivo",
+    "seconds": {
+      "qsmrs": 2.1,
+      "default": 4.3,
+      "matched": 4.3
+    },
+    "default": {
+      "identical": false,
+      "max_abs_diff": 0.05058783199638128,
+      "sha_a": "82e64b54b6ed3b01",
+      "sha_b": "472d5ab180a9b666",
+      "voxels": 1699930,
+      "nrmse_pct": 15.576572470013456,
+      "correlation": 0.9877960232441919,
+      "max_abs_diff_in_mask": 0.05058783199638128,
+      "settings": []
+    },
+    "matched": {
+      "identical": false,
+      "max_abs_diff": 3.637978807091713e-12,
+      "sha_a": "a89f536fa0abd7d9",
+      "sha_b": "472d5ab180a9b666",
+      "voxels": 1699930,
+      "nrmse_pct": 4.650800511402345e-12,
+      "correlation": 1.0,
+      "max_abs_diff_in_mask": 3.637978807091713e-12,
+      "settings": [
+        "pad=-1"
+      ]
+    }
+  },
+  {
+    "slug": "tv-qsmjl",
+    "port": "tv-qsmrs",
+    "case": "invivo",
+    "seconds": {
+      "qsmrs": 16.3,
+      "default": 14.7,
+      "matched": 12.5
+    },
+    "default": {
+      "identical": false,
+      "max_abs_diff": 0.9637359976768494,
+      "sha_a": "2dd09c120f7834c2",
+      "sha_b": "31d8d84a3e7ac6c2",
+      "voxels": 1699930,
+      "nrmse_pct": 50.45617181498805,
+      "correlation": 0.8854437485830801,
+      "max_abs_diff_in_mask": 0.8535520434379578,
+      "settings": []
+    },
+    "matched": {
+      "identical": false,
+      "max_abs_diff": 1.524849772453308,
+      "sha_a": "316f58810f08a137",
+      "sha_b": "31d8d84a3e7ac6c2",
+      "voxels": 1699930,
+      "nrmse_pct": 0.7380133882596882,
+      "correlation": 0.9999727858365506,
+      "max_abs_diff_in_mask": 0.06996440887451172,
+      "settings": [
+        "lambda=2e-4",
+        "pad=-1"
+      ]
+    }
+  },
+  {
+    "slug": "vsharp-qsmjl",
+    "port": "vsharp-qsmrs",
+    "case": "invivo",
+    "seconds": {
+      "qsmrs": 6.4,
+      "default": 5.2,
+      "matched": 5.3
+    },
+    "default": {
+      "identical": false,
+      "max_abs_diff": 0.6920204162597656,
+      "sha_a": "c0973efc129b24f6",
+      "sha_b": "7bee0dd535c25f83",
+      "voxels": 1563968,
+      "nrmse_pct": 39.06732349184544,
+      "correlation": 0.9295177985171297,
+      "max_abs_diff_in_mask": 0.29867473244667053,
+      "settings": []
+    },
+    "matched": {
+      "identical": false,
+      "max_abs_diff": 0.04180893301963806,
+      "sha_a": "b842b252e81d82d6",
+      "sha_b": "7bee0dd535c25f83",
+      "voxels": 1633252,
+      "nrmse_pct": 15.501127735415553,
+      "correlation": 0.988138952480503,
+      "max_abs_diff_in_mask": 0.04180893301963806,
+      "settings": [
+        "max_radius=12",
+        "min_radius=1",
+        "radius_step=1"
+      ]
+    }
+  }
+]
