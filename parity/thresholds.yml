@@ -614,7 +614,9 @@ pairs:
     # mask, the package its whole box, whose rim just outside that mask is compared here inside the
     # dataset mask (sim 41,907 voxels, KKI 46,101). Over the voxels both return, run 41019310531's
     # outputs differ by 3.8e-4 % (sim) / 4.9e-3 % (KKI). `reference_output_box` (QSM.rs#375,
-    # `qsmxt invert tgv --reference-output-box`, QSMxT/QSMxT#465) returns the package's box.
+    # `qsmxt invert tgv --reference-output-box`, QSMxT/QSMxT#465) returns the package's box; with
+    # all three switches (run 41031701965) the pair is at float32 rounding (limits below). Enable
+    # once QSMxT main has #465 (main's qsmxt refuses the setting until then).
     blocked_by: QSMxT/QSMxT#465
     qsmrs_paths: [src/error.rs, src/fft.rs, src/grid.rs, src/inversion/tgv.rs, src/kernels/,
                   src/pipeline/inversion.rs, src/pipeline/rules.rs, src/utils/bias_correction.rs,
@@ -630,7 +632,13 @@ pairs:
     reference_set: { laplacian: unwrapped }
     candidate_set: { reference_divergence: "true", reference_edge_erosion: "true", reference_output_box: "true" }
     datasets:
-      sim: {}
+      sim:
+        # Measured: NRMSE 0.00044 %, r 1.000000, max |Δ| 2.4e-06 ppm, p99 |Δ| 3.3e-07 ppm.
+        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 2.99e-06, p99_abs_max: 1.0e-06 }
+        measured: { pr369: "run 41031701965: QSMxT tgv-output-box-369 43baf55 (QSMxT/QSMxT#465), QSM.rs tgv-output-box-369 40b0dcf (astewartau/QSM.rs#375) (limits)" }
       s002001-kki-achieva-bridge-run1:
+        # Measured: NRMSE 0.0049 %, r 1.000000, max |Δ| 2.5e-05 ppm, p99 |Δ| 6.4e-06 ppm.
+        chimap: { nrmse_max: 0.506, correlation_min: 0.989, max_abs_max: 3.16e-05, p99_abs_max: 8.03e-06 }
+        measured: { pr369: "run 41031701965: QSMxT tgv-output-box-369 43baf55 (QSMxT/QSMxT#465), QSM.rs tgv-output-box-369 40b0dcf (astewartau/QSM.rs#375) (limits)" }
         reference_prefix: [laplacian-qsmrs]
         feed: { totalfield: totalfield }
