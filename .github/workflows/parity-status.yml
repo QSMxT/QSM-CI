@@ -1,0 +1,92 @@
+name: parity-status
+
+# Weekly: is each enabled port parity pair's last check still good? `scripts/parity.py status`
+# applies the staleness rules (docs/parity.md, "Staleness") to parity/results.json, the history the
+# parity workflow records, and asks GitHub what changed in QSM.rs main since each check. This
+# workflow then:
+#   - commits the regenerated parity/status.json and parity/STATUS.md when they change;
+#   - keeps ONE tracking issue up to date: created the first time something is stale, edited on
+#     every run after that, closed when nothing is stale (and reopened, not duplicated, next time).
+#     It lists each stale pair, why, and the `gh workflow run` command that refreshes it;
+#   - with the repository variable PARITY_AUTO_REFRESH=true (off unless set), also dispatches that
+#     refresh itself: parity.yml from main against QSM.rs main, which records its results.
+
+on:
+  schedule:
+    - cron: "17 3 * * 1"   # Mondays 03:17 UTC
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+permissions:
+  contents: read
+
+jobs:
+  status:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # parity/status.json, parity/STATUS.md
+      issues: write     # the tracking issue
+      actions: write    # the optional refresh dispatch
+    env:
+      GH_TOKEN: ${{ github.token }}
+      AUTO_REFRESH: ${{ vars.PARITY_AUTO_REFRESH }}
+    steps:
+      - uses: actions/checkout@v7
+        with: { ref: main }
+      - run: pip install -q pyyaml
+
+      - name: Status
+        id: status
+        run: |
+          python3 scripts/parity.py status --json parity/status.json --markdown parity/STATUS.md \
+            --issue /tmp/issue.md
+          stale=$(python3 -c 'import json; print(",".join(json.load(open("parity/status.json"))["stale"]))')
+          echo "stale=$stale" >> "$GITHUB_OUTPUT"
+          cat parity/STATUS.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Commit the regenerated status
+        run: |
+          git config user.name  "qsm-ci-bot"
+          git config user.email "qsm-ci@users.noreply.github.com"
+          cp parity/status.json parity/STATUS.md /tmp/
+          for attempt in 1 2 3 4 5; do
+            git fetch origin main -q
+            git reset --hard origin/main -q
+            cp /tmp/status.json /tmp/STATUS.md parity/
+            git add parity/status.json parity/STATUS.md
+            git diff --cached --quiet && { echo "status unchanged"; exit 0; }
+            git commit -q -m "Update parity status"
+            git push origin HEAD:main && exit 0
+            echo "push attempt $attempt rejected — retrying on latest main"; sleep $((attempt * 3))
+          done
+          echo "::error::could not push the parity status after 5 attempts"; exit 1
+
+      # One issue, found by its title (open or closed, oldest first), never a second one.
+      - name: Tracking issue
+        env:
+          TITLE: "Port parity: stale checks"
+        run: |
+          num=$(gh issue list -R "$GITHUB_REPOSITORY" --state all --search "\"$TITLE\" in:title" \
+                  --json number,title --jq "[.[] | select(.title == env.TITLE)] | sort_by(.number) | .[0].number // empty")
+          if [ -s /tmp/issue.md ]; then
+            if [ -z "$num" ]; then
+              gh issue create -R "$GITHUB_REPOSITORY" --title "$TITLE" --body-file /tmp/issue.md
+            else
+              gh issue edit "$num" -R "$GITHUB_REPOSITORY" --body-file /tmp/issue.md
+              [ "$(gh issue view "$num" -R "$GITHUB_REPOSITORY" --json state --jq .state)" = OPEN ] \
+                || gh issue reopen "$num" -R "$GITHUB_REPOSITORY"
+            fi
+          elif [ -n "$num" ] && [ "$(gh issue view "$num" -R "$GITHUB_REPOSITORY" --json state --jq .state)" = OPEN ]; then
+            gh issue close "$num" -R "$GITHUB_REPOSITORY" --comment "Every enabled parity pair's last check stands (parity/STATUS.md)."
+          fi
+
+      - name: Refresh the stale pairs (PARITY_AUTO_REFRESH)
+        if: env.AUTO_REFRESH == 'true' && steps.status.outputs.stale != ''
+        env:
+          STALE: ${{ steps.status.outputs.stale }}
+        run: |
+          gh workflow run parity.yml -R "$GITHUB_REPOSITORY" --ref main \
+            -f algorithm="$STALE" -f dataset=configured -f qsmrs_ref=main
