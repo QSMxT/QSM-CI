@@ -1,0 +1,54 @@
+name: Laplacian field mapping (QSM.jl)
+slug: laplacian-qsmjl
+algorithm: laplacian
+variant: qsmjl  # the original Julia package; the QSM.rs port of the same method is laplacian-qsmrs
+source: kamesy
+stage: field-mapping
+language: Julia
+family: direct
+learning: none
+inputs: [phase, magnitude, mask, params]
+engine: QSM.jl v0.5.4 (fde4b92)
+description: >
+  Multi-echo B0 field mapping with the original QSM.jl code (fde4b92): `unwrap_laplacian` on every
+  echo (DCT solver, Neumann boundary on the array), each echo scaled to ppm by its own TE, then
+  QSM.jl's magnitude-weighted echo average `multi_echo_average(...; TEs, W = magnitude)` (or
+  `multi_echo_linear_fit`).
+citation: Schofield & Zhu, Optics Letters 2003
+authors:
+- name: Marvin A. Schofield
+- name: Yimei Zhu
+doi: 10.1364/OL.28.001194
+code_url: https://github.com/kamesy/QSM.jl
+license: MIT
+image: ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185   # v1
+run: bash run.sh
+# The original, kept as the reference of the QSM.rs port's parity pair (parity/thresholds.yml,
+# docs/parity.md): never scored, never on the site; the PR smoke gate still runs it.
+parity_only: true
+# The original in its own pinned environment (QSMxT/QSM-CI#299): versions pinned (Manifest),
+# output deterministic at the fixed thread count, and the same outside the container with the
+# same Manifest. algorithms/_julia/fidelity/README.md; rerun whenever the image changes.
+fidelity:
+  date: 2026-10-28
+  image: sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185
+  julia: 1.10.11 (Manifest algorithms/_julia/env/Manifest.toml)
+  packages: QSM.jl fde4b92 (0.5.4)
+  threads: 4 Julia, 4 FFTW, 1 BLAS   # run.sh / qsmci_io.jl
+  host: Intel Core i5-11500 (rocketlake, AVX-512), podman; host Julia 1.10.11 without the sysimage
+  tolerance: identical   # image twice, and image vs host Julia with the same Manifest, in vivo
+  result: pass
+  report: algorithms/_julia/fidelity/REPORT.md
+parameters:
+- name: solver
+  default: dct
+  description: "Poisson solver: dct | fft | mgpcg. QSM.jl's own default, mgpcg, puts a Dirichlet boundary on the mask and so also removes the harmonic background, which belongs to the bfr stage; dct unwraps only"
+- name: combine
+  default: average
+  description: "echo combination: average (multi_echo_average with TEs and W = magnitude: sum(mag*phase)/sum(mag*TE), the phase-SNR weighting) | linear-fit (multi_echo_linear_fit, W = magnitude, with a phase-offset term)"
+- name: mask_phase
+  default: false
+  description: zero the wrapped phase outside the mask before unwrapping (QSM.jl's README passes the raw phase)
+- name: demean
+  default: false
+  description: "subtract each unwrapped echo's mean inside the mask before combining (QSM-CI glue, not QSM.jl: the DCT solution of each echo is defined only up to a constant)"

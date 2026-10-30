@@ -29,6 +29,8 @@ name: score
 #   - a cancelled/timed-out task still uploads the rows it finished (pipeline.py flushes after every
 #     row; the upload runs `if: always()`), and merge publishes them. The `.done` marker says whether
 #     the task completed; the rest becomes `pending` in results/scoring-state.json for the next run.
+#     The runs it had NOT finished are not rows at all: teardown touches runs-<id>.aborted before it
+#     kills the containers, so pipeline.py does not record the kill as DNF (see RunsFile).
 #   - merge jobs serialise themselves (lowest run id first) so two never publish/commit at once.
 #
 # Runner tiers (`runner:` in algorithm.yml — see scripts/score_plan.py): hosted (default, inside the
@@ -274,6 +276,16 @@ jobs:
       # reaper covers that via the same-run job-tag check.
       # `if:`/continue-on-error stay HERE: a composite's inner `if:` cannot see the caller's job
       # status, and an inner continue-on-error would hide the failure inside the action.
+      # Teardown marker FIRST, kill SECOND. On cancel / at the job cap, pipeline.py can outlive the
+      # score step, and every container killed below makes its `qsm-ci run` exit 1 — which would
+      # be recorded (and uploaded) as a DNF row for a method that was only killed. The exit status
+      # cannot tell that from a real crash (an OOM kill is 137 too), so say it explicitly: from this
+      # marker on, pipeline.py drops DNF rows and writes no `.done` (RunsFile). After a normal or
+      # failed step pipeline.py has already exited, so the marker changes nothing; it is not uploaded.
+      - name: Mark this task as torn down
+        if: always()
+        run: touch "runs-$TASK_ID.aborted"
+
       - name: Kill this job's containers
         if: always()
         continue-on-error: true

@@ -1,0 +1,46 @@
+{
+  "case": "synthetic: sim phantom chi_total (164x205x205, 1 mm), mask = non-zero eroded 3, R2' = 137*(chi+ - chi-) of a smooth synthetic split",
+  "threads": "OMP/OpenBLAS/MKL 1 (unset in v1 runs: identical)",
+  "determinism": {
+    "chi-para": true,
+    "chi-dia": true
+  },
+  "single_thread_vs_default": {
+    "chi-para": true,
+    "chi-dia": true
+  },
+  "rebuild_vs_v1": {
+    "chi-para": true,
+    "chi-dia": true
+  },
+  "pair": {
+    "qsmrs-pinned/chi-para": {
+      "nrmse": 0.11382617461115292,
+      "correlation": 0.9999988452894538,
+      "max_abs": 0.06646060943603516,
+      "p99_abs": 0.02350421747192733,
+      "voxels": 6155028
+    },
+    "qsmrs-pinned/chi-dia": {
+      "nrmse": 1.076032550680529,
+      "correlation": 0.9999349757070354,
+      "max_abs": 0.06349225528538227,
+      "p99_abs": 0.023436277098953722,
+      "voxels": 6155028
+    },
+    "qsmrs-main/chi-para": {
+      "nrmse": 0.11382617461115292,
+      "correlation": 0.9999988452894538,
+      "max_abs": 0.06646060943603516,
+      "p99_abs": 0.02350421747192733,
+      "voxels": 6155028
+    },
+    "qsmrs-main/chi-dia": {
+      "nrmse": 1.076032550680529,
+      "correlation": 0.9999349757070354,
+      "max_abs": 0.06349225528538227,
+      "p99_abs": 0.023436277098953722,
+      "voxels": 6155028
+    }
+  }
+}

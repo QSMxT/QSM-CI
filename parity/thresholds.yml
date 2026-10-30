@@ -1,0 +1,88 @@
+# Port parity pairs and the agreement each must keep (scripts/parity.py, .github/workflows/parity.yml,
+# docs/parity.md).
+#
+# A pair is an original implementation (`reference`) and its QSM.rs port (`candidate`): two
+# submissions with the same `algorithm:` in algorithm.yml, the candidate with `source: qsmrs` and the
+# reference with any other source. The reference is always named here, never inferred, so an
+# algorithm with several originals (e.g. an STI Suite one and a Julia one) is no special case: each
+# original that is checked gets its own entry. Key an entry by the algorithm when it is that
+# algorithm's only pair, else by the reference's slug (e.g. `ilsqr-qsmjl`).
+# `python scripts/parity.py pairs` lists the configured pairs, any that no longer match
+# algorithm.yml, and the algorithms that have an original and a port but no pair here.
+#
+#   enabled:          run by `parity.yml` with algorithm=enabled, which is what a QSM.rs release runs.
+#                     A disabled pair can still be run by naming it; that is how it gets a baseline.
+#   reference_names:  {native: compared name} for intermediates the reference writes under other
+#   candidate_names:  names (CONTRACT.md, "Intermediates"); {name: x, complement: true} also turns a
+#                     mask into its complement inside the dataset mask.
+#   datasets:         one entry per scripts/datasets.json key the pair is checked on:
+#     <artifact>:     limits on the final produced artifact (chimap), compared inside the dataset
+#                     mask: nrmse_max (%, ‖cand − ref‖ / ‖ref‖), correlation_min, max_abs_max and
+#                     p99_abs_max (ppm). An enabled pair with no limits for a dataset fails there.
+#     intermediates:  {<name>: limits} for intermediates both sides write under that name; binary
+#                     maps take dice_min. An intermediate with no limits is reported but never fails.
+#     feed:           {<artifact>: <reference intermediate>}: give the candidate the reference's
+#                     intermediate in place of the dataset's artifact, so the port starts from
+#                     exactly what the original computed and only the steps after it are compared.
+#                     Changing it changes what is measured: re-baseline.
+#     <side>_prefix:  slugs run before that side when the dataset lacks the boundary it consumes.
+#     measured:       the runs the limits came from, and the image each side ran. Informational.
+#
+# Limits are the agreement measured with the QSM.rs under test at the time (the current QSMxT main
+# build, not only the pinned image), plus a margin (scripts/parity.py derive_limits: NRMSE +10 %
+# +0.5 pp, correlation −0.01, |Δ| +25 %, Dice −0.01). A limit is never loosened to hide a gap: a
+# change that makes agreement worse is fixed, or re-baselined with the reason in the PR. To
+# re-baseline, dispatch parity.yml with baseline=true and paste the block its report prints.
+
+pairs:
+  qsmart:
+    reference: qsmart-matlab   # the authors' QSMART v1.0, compiled; bit-identical to licensed MATLAB (v3)
+    candidate: qsmart-qsmrs    # QSM.rs port via qsmxt (bfr+dipole: total field → χ)
+    enabled: true
+    # recon.m's intermediate names (fidelity/README.md) → the names they are compared under.
+    reference_names:
+      tfs: totalfield
+      R_0: reliability
+      vasc_only: { name: vessel_mask, complement: true }   # vasc_only = mask without vessels
+      lfs1: localfield_stage1
+      chi1: chimap_stage1
+      lfs2: localfield_stage2
+      chi2: chimap_stage2
+    datasets:
+      # The port starts from the original's own total field (Laplacian unwrapping + QSMART's
+      # magnitude-weighted echo fit), so the comparison covers QSMART's own steps: vasculature
+      # detection, the two SDF stages, the two iLSQR inversions and the offset adjustment.
+      #
+      # Limits: measured with QSMxT main 8a7072a (qsm-core da928e0) built by this workflow, plus
+      # the margins above. The pinned qsmxt v10.0.0 (QSM.rs v0.39.0) is far outside them (sim NRMSE
+      # 65.9 %, KKI 133.8 %): those runs record the gap, not a limit. Reference image both times:
+      # matlab-qsmart v3, sha256:e0e8bc69… (algorithm.yml).
+      sim:
+        feed: { totalfield: totalfield }
+        # Measured: NRMSE 16.71 %, r 0.9862, max |Δ| 0.283 ppm, p99 |Δ| 0.0100 ppm.
+        # The original leaves 331 voxels out by its echo-fit reliability (R_0); qsmart-qsmrs takes
+        # no R_0, so it reconstructs them too. The gap is mostly where the original's stage 2 runs
+        # (tissue outside its vessel mask, 37 % of the brain: NRMSE 37.4 %; inside the vessel
+        # mask 12.4 %); qsmxt qsmart does not write its stage maps yet, so it is not localised
+        # further.
+        chimap: { nrmse_max: 18.9, correlation_min: 0.976, max_abs_max: 0.354, p99_abs_max: 0.0126 }
+        measured:
+          main: "run 40536005482: QSMxT main 8a7072a, qsm-core da928e0 (limits)"
+          pinned: "run 40530165113: qsmxt v10.0.0 sha256:9258c10e…, NRMSE 65.94 %, r 0.8003"
+      # In vivo (EMTP travelling head, KKI Philips 3 T, public). R_0 rejects no voxel here.
+      s002001-kki-achieva-bridge-run1:
+        feed: { totalfield: totalfield }
+        # Measured: NRMSE 4.618 %, r 0.9990, max |Δ| 0.0640 ppm, p99 |Δ| 0.00435 ppm.
+        chimap: { nrmse_max: 5.58, correlation_min: 0.988, max_abs_max: 0.0801, p99_abs_max: 0.00544 }
+        measured:
+          main: "run 40536005482: QSMxT main 8a7072a, qsm-core da928e0 (limits)"
+          pinned: "run 40530165113: qsmxt v10.0.0 sha256:9258c10e…, NRMSE 133.8 %, r 0.5346"
+
+  # Pairs algorithm.yml defines that are not checked yet: off until their originals are verified
+  # (MATLAB containers: QSMxT/QSM-CI#300; Julia originals: #299) and they have a baseline.
+  ilsqr:     { reference: ilsqr-sti,     candidate: ilsqr-qsmrs,     enabled: false }   # #300
+  medi:      { reference: medi-cornell,  candidate: medi-qsmrs,      enabled: false }   # #300
+  vsharp:    { reference: vsharp-sti,    candidate: vsharp-qsmrs,    enabled: false }   # #300
+  amp-pe:    { reference: amp-pe,        candidate: amp-pe-qsmrs,    enabled: false }   # #300; amp-pe is ci_skip
+  decompose: { reference: decompose-qsm, candidate: decompose-qsmrs, enabled: false }   # #300; decompose-qsm is ci_skip
+  tkd:       { reference: tkd-qsmjl,     candidate: tkd-qsmrs,       enabled: false }   # #299 (replaces tkd-qsmci)

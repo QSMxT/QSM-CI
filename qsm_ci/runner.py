@@ -19,7 +19,8 @@ from pathlib import Path
 
 import yaml
 
-from .containers import RUNNERS, RunTimeout, _run_container, check_runner, timeout_s
+from .containers import (INTERMEDIATES_SUBDIR, RUNNERS, RunTimeout, _run_container, check_runner,
+                         timeout_s)
 from .resources import _ResourceSampler  # noqa: F401 — re-exported for the sampler regression test
 from .params import (STACKABLE_ARTIFACTS, _check_nifti, _discover_sidecar,
                      _looks_like_sidecar, _params_dict, _params_summary,
@@ -408,6 +409,13 @@ def _build_run_parser(slug: str, algo: dict) -> argparse.ArgumentParser:
                    help="docker/podman/apptainer run the image; local runs run.sh on the host")
     p.add_argument("--set", action="append", default=[], dest="overrides", metavar="NAME=VALUE",
                    help="override a method parameter (repeatable); valid names listed below")
+    p.add_argument("--image", metavar="REF",
+                   help="run in this image instead of algorithm.yml's image: (docker/podman/"
+                        "apptainer); a local tag is used without pulling. For trying a method on "
+                        "another build of its environment, e.g. a qsmxt image built from source")
+    p.add_argument("--intermediates", metavar="DIR",
+                   help="also collect the method's intermediate maps (if it writes any; CONTRACT.md, "
+                        "Intermediates) into DIR as <name>.nii.gz")
     p.add_argument("--timeout", type=float, metavar="MINUTES",
                    help="wall-clock budget for the run; the container is killed on expiry "
                         "(default: $QSMCI_TIMEOUT seconds, else CONTRACT's 2 h; 0 = no limit)")
@@ -419,7 +427,7 @@ def _build_run_parser(slug: str, algo: dict) -> argparse.ArgumentParser:
 # `./my-method`, not `local`. Artifact flags and --te are nargs="+" (swallow every following
 # non-flag token); --b0-dir/--voxel-size take three; the rest take one. `--opt=value` takes none.
 _ONE_VALUE = {"--runner", "--set", "-o", "--out", "--truth", "--seg", "--params", "--field-strength",
-              "--b0", "--timeout"}
+              "--b0", "--timeout", "--intermediates", "--image"}
 _THREE_VALUES = {"--b0-dir", "--voxel-size"}
 _GREEDY = {"--te"} | {f"--{a}" for a in ARTIFACT_FILE}
 
@@ -538,6 +546,11 @@ def run_command(argv, log=print) -> int:
 
     import tempfile
     log(f"▸ {algo['name']}  [{stage}]  runner={args.runner}")
+    if args.image:
+        if args.runner == "local":
+            raise SystemExit("--image needs a container runner (docker, podman or apptainer)")
+        log(f"  image: {args.image} (in place of {algo.get('image') or 'none'})")
+        algo = {**algo, "image": args.image, "image_local_first": True}
     if cfg:
         log(f"  overrides: {cfg}")
     with tempfile.TemporaryDirectory(prefix="qsm-ci-") as td:
@@ -615,7 +628,8 @@ def run_command(argv, log=print) -> int:
 
         try:
             runtime = _run_container(algo, idir, odir, args.runner, log,
-                                     timeout=timeout_s(getattr(args, "timeout", None)))
+                                     timeout=timeout_s(getattr(args, "timeout", None)),
+                                     intermediates=bool(args.intermediates))
         except RunTimeout as e:
             # The container/process tree is already dead (_run_container kills it before raising),
             # so this is just the exit path: non-zero, with the reason on one line. The scorer turns
@@ -645,6 +659,16 @@ def run_command(argv, log=print) -> int:
             place_nifti(src, dest, gzipped=wants_gzip(dest))
             written[art] = dest
             log(f"✓ wrote {dest}  ({runtime:.1f}s)")
+
+        if args.intermediates:
+            inter = sorted((odir / INTERMEDIATES_SUBDIR).glob("*.nii.gz"))
+            dest_dir = Path(args.intermediates)
+            dest_dir.mkdir(parents=True, exist_ok=True)
+            for f in inter:
+                shutil.copy(f, dest_dir / f.name)
+            log(f"✓ {len(inter)} intermediate(s) → {dest_dir}"
+                + (f"  ({', '.join(f.name[:-7] for f in inter)})" if inter else
+                   "  (this method writes none)"))
 
         if truth_paths:
             # Single output: `--truth <file>` (a directory is also accepted). Multi-output: `--truth

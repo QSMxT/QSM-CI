@@ -1,0 +1,76 @@
+name: TGV (QuantitativeSusceptibilityMappingTGV.jl)
+slug: tgv-tgvjl
+algorithm: tgv
+variant: tgvjl  # the original Julia package; the QSM.rs port of the same method is tgv-qsmrs
+source: korbinian90
+stage: bfr+dipole
+language: Julia
+family: iterative
+learning: none
+inputs: [totalfield, mask, params]
+engine: QuantitativeSusceptibilityMappingTGV.jl 0.5.2 (6c0886a)
+description: >
+  Single-step TGV-QSM (total field to susceptibility, with its own background removal), run as the
+  Julia package `qsm_tgv` (6c0886a) on CPU threads. The total field (ppm) is turned into phase at
+  one echo time, as the package expects; its α are in the package's own (rad) units.
+citation: Langkammer et al., NeuroImage 2015
+authors:
+- name: Christian Langkammer
+- name: Kristian Bredies
+- name: Benedikt A. Poser
+- name: Markus Barth
+- name: Gernot Reishofer
+- name: Audrey Peiwen Fan
+- name: Berkin Bilgic
+- name: Franz Fazekas
+- name: Caterina Mainero
+- name: Stefan Ropele
+doi: 10.1016/j.neuroimage.2015.02.041
+code_url: https://github.com/korbinian90/QuantitativeSusceptibilityMappingTGV.jl
+license: MIT
+image: ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185   # v1
+run: bash run.sh
+# The original, kept as the reference of the QSM.rs port's parity pair (parity/thresholds.yml,
+# docs/parity.md): never scored, never on the site; the PR smoke gate still runs it.
+parity_only: true
+# The original in its own pinned environment (QSMxT/QSM-CI#299): versions pinned (Manifest),
+# output deterministic at the fixed thread count, and the same outside the container with the
+# same Manifest. algorithms/_julia/fidelity/README.md; rerun whenever the image changes.
+fidelity:
+  date: 2026-10-28
+  image: sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185
+  julia: 1.10.11 (Manifest algorithms/_julia/env/Manifest.toml)
+  packages: QuantitativeSusceptibilityMappingTGV.jl 6c0886a (0.5.2)
+  threads: 4 Julia, 4 FFTW, 1 BLAS   # run.sh / qsmci_io.jl
+  host: Intel Core i5-11500 (rocketlake, AVX-512), podman; host Julia 1.10.11 without the sysimage
+  tolerance: identical   # image twice, and image vs host Julia with the same Manifest, in vivo
+  result: pass
+  report: algorithms/_julia/fidelity/REPORT.md
+parameters:
+- name: regularization
+  default: 2
+  description: "the package's regularization level; sets alpha0/alpha1 when they are not given (2: 0.002 / 0.003)"
+- name: alpha0
+  default: "from regularization (0.002)"
+  description: second-order weight, rad units at the chosen TE and B0
+- name: alpha1
+  default: "from regularization (0.003)"
+  description: first-order (gradient) weight, rad units at the chosen TE and B0
+- name: iterations
+  default: "max(1000, 3200/prod(voxel_size)^0.42)/step_size^0.6"
+  description: iterations (the package's voxel-size formula by default)
+- name: erosions
+  default: 3
+  description: mask erosions
+- name: step_size
+  default: 3
+  description: primal-dual step-size multiplier
+- name: laplacian
+  default: del
+  description: "phase Laplacian: del (the package default, sin/cos) | romeo (ROMEO unwrap then the discrete Laplacian) | unwrapped (the package's discrete Laplacian of the phase as given, for an already unwrapped field) | phase3 (the original Python's)"
+- name: correct_laplacian
+  default: true
+  description: subtract the Laplacian's mean inside the mask
+- name: te
+  default: first echo
+  description: echo time (s) the field is scaled to phase at

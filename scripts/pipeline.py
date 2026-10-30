@@ -28,6 +28,7 @@ import math
 import os
 import platform
 import shutil
+import signal
 import subprocess
 import sys
 import time
@@ -351,7 +352,8 @@ def _tuned_overrides(doc: dict, dataset: str = "sim", phantom: "str | None" = No
     return out
 
 
-def discover_algorithms(track: str = "sim", phantom: "str | None" = None) -> list[dict]:
+def discover_algorithms(track: str = "sim", phantom: "str | None" = None,
+                        include: "set | None" = None) -> list[dict]:
     # `track` selects which dataset's tuned params each method carries: a chi-separation method is only
     # ever scored on a chisep-track phantom (→ "chisep"), otherwise the in-vivo run uses "invivo" and
     # everything else "sim". So the tuned variant a run expands is the one optimised on ITS dataset.
@@ -379,7 +381,10 @@ def discover_algorithms(track: str = "sim", phantom: "str | None" = None) -> lis
         # is impractical). Discovery is the single choke point for every mode (shard sweep, --focus,
         # composed, local), so skipping here makes the method invisible to the whole scorer. Un-skip
         # once the required runner exists.
-        if doc.get("ci_skip"):
+        # `parity_only: true` is the same for scoring: an original kept only as the reference of a
+        # port parity pair (scripts/parity.py, docs/parity.md), never scored. `include` names slugs
+        # to discover whatever these flags say: parity.py runs the pair it was asked to.
+        if (doc.get("ci_skip") or doc.get("parity_only")) and d.name not in (include or ()):
             continue
         s = _yaml_scalar(doc["stage"])
         if s not in STAGES:  # a clear message instead of a KeyError traceback out of discovery
@@ -791,6 +796,17 @@ def scoring_env() -> dict:
     return _SCORING_ENV
 
 
+# Set by _on_sigint: this process is being stopped (Ctrl-C, or a runner that signals the step's
+# process group on cancel). RunsFile then treats the job as torn down, exactly as for the marker.
+_ABORTING = False
+
+
+def _on_sigint(signum, frame):
+    global _ABORTING
+    _ABORTING = True
+    signal.default_int_handler(signum, frame)   # still a KeyboardInterrupt, as before
+
+
 class RunsFile(list):
     """The `runs` list of a --runs-out job, persisted after EVERY append/extend (atomic replace).
 
@@ -798,13 +814,47 @@ class RunsFile(list):
     The runs file used to be written only at the very end, so a job that had finished 30 of its 34
     pipelines handed the merge job nothing. Now the rows already scored survive: the merge job
     publishes them (the row ids are complete, scored results), and `mark_done()` — written only when
-    the run really finished — is what tells it whether the task is complete (see score_state.py)."""
+    the run really finished — is what tells it whether the task is complete (see score_state.py).
+
+    Teardown. When the job is cancelled (a newer run's copy of the task supersedes it) or hits its
+    wall-clock cap, the runner stops the score step's shell but this process can outlive it, and
+    score.yml's always() teardown then `docker kill`s the job's containers. Each killed container
+    makes its `qsm-ci run` exit 1, which the run loops turn into a DNF row ("non-zero exit status
+    1") — and the always() upload ships it, so merge used to publish DNF rows, with no `params`,
+    for methods that were simply killed mid-run (run 40979461975: nltv/fansi-nltgv tuned in-vivo).
+    The exit status cannot tell that kill from a genuine crash: a container that is OOM-killed
+    also exits 137, and the CLI reports both as 1. So teardown is signalled explicitly instead:
+    score.yml touches `runs-<id>.aborted` BEFORE it kills anything (and a SIGINT to this process
+    does the same in-process). From then on a DNF row is not a result — it is dropped, the task
+    gets no `.done` marker, and the id keeps its previous row until the superseding/next run
+    rescores it. Rows scored before teardown, DNF ones included (a per-method timeout from _wait is
+    a real result), are already on disk and are kept; so is an ok row that finishes during it."""
 
     def __init__(self, path: Path):
         super().__init__()
         self.path = path
         self.path.parent.mkdir(parents=True, exist_ok=True)
+        # A self-hosted runner reuses its workspace: an earlier job's marker must not abort this one.
+        self.aborted_marker.unlink(missing_ok=True)
         self.flush()
+
+    @property
+    def aborted_marker(self) -> Path:
+        return self.path.with_suffix(".aborted")
+
+    def aborting(self) -> bool:
+        """True once the job is being torn down (see the class docstring)."""
+        return _ABORTING or self.aborted_marker.exists()
+
+    def _results(self, rows: list) -> list:
+        """The rows that are still results: during teardown a DNF is the kill, not the method."""
+        if not self.aborting():
+            return rows
+        dropped = [r for r in rows if r.get("status") == "DNF"]
+        for r in dropped:
+            print(f"  teardown  {r.get('id')}: DNF during cancellation/cap not recorded "
+                  f"({r.get('dnf_reason', '')}); it keeps its previous row", flush=True)
+        return [r for r in rows if r.get("status") != "DNF"]
 
     def flush(self) -> None:
         tmp = self.path.with_name(self.path.name + ".tmp")
@@ -852,15 +902,21 @@ class RunsFile(list):
         return row
 
     def append(self, row) -> None:
-        super().append(self.stamp(row))
-        self.flush()
+        self.extend([row])
 
     def extend(self, rows) -> None:
+        rows = self._results(list(rows))
+        if not rows:
+            return
         super().extend(self.stamp(r) for r in rows)
         self.flush()
 
-    def mark_done(self) -> Path:
+    def mark_done(self) -> "Path | None":
+        """Write the `.done` marker and return it — or, during teardown, None: a task whose killed
+        runs were dropped is NOT complete, and must be planned again."""
         self.flush()
+        if self.aborting():
+            return None
         marker = self.path.with_suffix(".done")
         marker.write_text(f"{len(self)}\n")
         return marker
@@ -1730,7 +1786,10 @@ def main() -> None:
     # which already maps the `params` artifact to inputs/params.json.
     # GT-backed source map: inputs for raw artifacts, groundtruth for stage boundaries (shared helper).
     gt_sources = _gt_sources(args.dataset)
-    algos = discover_algorithms(args.track, args.phantom)
+    # The PR smoke gate (--smoke --only SLUG) still proves a parity_only original runs: discovery
+    # leaves those out of scoring, so the gate names its one method explicitly.
+    algos = discover_algorithms(args.track, args.phantom,
+                                include={args.only} if args.smoke and args.only else None)
     if args.include:
         keep = set(args.include.split(","))
         algos = [a for a in algos if a["slug"] in keep]
@@ -1757,6 +1816,8 @@ def main() -> None:
     # A shard/focus job (--runs-out) persists every row as it lands, so a job killed at its cap or
     # cancelled by a newer commit still hands merge what it finished (RunsFile).
     runs: list[dict] = RunsFile(args.runs_out) if args.runs_out else []
+    if args.runs_out:
+        signal.signal(signal.SIGINT, _on_sigint)
     args.work.mkdir(parents=True, exist_ok=True)
 
     # Image resolution (pull, network allowed) is owned by the `qsm-ci` CLI now — each run_algo call
@@ -1789,7 +1850,8 @@ def main() -> None:
     if args.runs_out:
         marker = runs.mark_done()   # rows were flushed as they landed; the marker says "complete"
         print(f"\nwrote {len(runs)} runs to {args.runs_out} (shard output; not merged into index.json); "
-              f"completion marker {marker.name}")
+              + (f"completion marker {marker.name}" if marker else
+                 "torn down (cancelled / capped): no completion marker, the task is re-planned"))
     else:
         total = flush_index(runs)
         print(f"\nmerged {len(runs)} runs into results/index.json ({total} total)")

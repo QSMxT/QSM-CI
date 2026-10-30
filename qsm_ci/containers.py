@@ -168,6 +168,12 @@ def _build_oci(algo: dict, engine: str, log) -> str:
         raise SystemExit(
             "algorithm.yml has no image:. Publish a prebuilt image (build and push it first) and set "
             "image: to its reference — the runner pulls images, it does not build containers.")
+    # `qsm-ci run --image` may name an image that exists only locally (built in the same job): use
+    # a local copy as it is rather than asking a registry for a tag it has never seen.
+    if algo.get("image_local_first") and \
+            subprocess.run([engine, "image", "inspect", tag], capture_output=True).returncode == 0:
+        log(f"  using local image {tag}")
+        return tag
     log(f"↓ pulling {tag}")
     rc, err = _pull(engine, tag)
     if rc != 0:
@@ -339,17 +345,31 @@ def _kill_process_tree(proc: "subprocess.Popen", log) -> None:
     log(f"  ! process group {proc.pid} survived SIGKILL")
 
 
-def _run_container(algo, input_dir, output_dir, runner, log, timeout: "float | None" = None) -> float:
+# Where a method writes its optional intermediate maps (CONTRACT.md, "Intermediates"), as a
+# sub-directory of the output mount. The runner sets $QSMCI_INTERMEDIATES to it only when the caller
+# asks for intermediates (`qsm-ci run --intermediates DIR`); a method writes them only when it is set.
+INTERMEDIATES_SUBDIR = "intermediates"
+
+
+def _run_container(algo, input_dir, output_dir, runner, log, timeout: "float | None" = None,
+                   intermediates: bool = False) -> float:
     """Run a submission's run.sh and return its wall-clock seconds.
 
     `timeout` (seconds, None = uncapped) bounds the run: on expiry the container/process tree is
     killed and RunTimeout is raised, so the caller records a DNF for THIS run and carries on with
     the rest of the shard.
+
+    `intermediates` creates <output_dir>/intermediates and points $QSMCI_INTERMEDIATES at it (its
+    path as the method sees it: /output/intermediates in a container, the host path for `local`).
     """
     if output_dir.exists():
         shutil.rmtree(output_dir)
     output_dir.mkdir(parents=True)
     penv = _param_env(input_dir)  # Layer B: acquisition params + overrides as QSMCI_* env vars
+    if intermediates:
+        (output_dir / INTERMEDIATES_SUBDIR).mkdir()
+        penv["QSMCI_INTERMEDIATES"] = (str(output_dir / INTERMEDIATES_SUBDIR) if runner == "local"
+                                       else f"/output/{INTERMEDIATES_SUBDIR}")
     t0 = time.time()
     if runner in _OCI_ENGINES:
         image = _build_oci(algo, runner, log)

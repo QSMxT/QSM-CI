@@ -1,0 +1,224 @@
+[
+  {
+    "op": "n4",
+    "port": "qsm_core::utils::n4 (probe)",
+    "settings": "defaults",
+    "output": "n4.nii.gz",
+    "runtime_s": 8.4,
+    "in_mask": {
+      "nrmse": 3.0931587899913144,
+      "correlation": 0.9993508066357515,
+      "max_abs": 57.2442626953125,
+      "p99_abs": 27.520368041992185,
+      "max_rel": 0.02757566969105512,
+      "identical_frac": 6.294376827281124e-05,
+      "voxels": 1699930
+    },
+    "where_input_gt_0": {
+      "nrmse": 3.041709938052856,
+      "correlation": 0.9999065217751412,
+      "max_abs": 67.6690673828125,
+      "p99_abs": 25.7886962890625,
+      "max_rel": 0.032597499951781024,
+      "identical_frac": 3.7802352667220595e-07,
+      "voxels": 5290676
+    }
+  },
+  {
+    "op": "n4",
+    "port": "qsm_core::utils::n4 (probe)",
+    "settings": "defaults",
+    "output": "n4_bias.nii.gz",
+    "runtime_s": 8.4,
+    "in_mask": {
+      "nrmse": 3.1582551568491333,
+      "correlation": 0.9919809041512422,
+      "max_abs": 0.041122376918792725,
+      "p99_abs": 0.028555989265441895,
+      "max_rel": 0.053782684027364726,
+      "identical_frac": 0.0,
+      "voxels": 1699930
+    },
+    "where_input_gt_0": {
+      "nrmse": 2.378106311290192,
+      "correlation": 0.9982738924082223,
+      "max_abs": 0.042432427406311035,
+      "p99_abs": 0.031217962503433228,
+      "max_rel": 0.054121880475683934,
+      "identical_frac": 3.7802352667220595e-07,
+      "voxels": 5290676
+    }
+  },
+  {
+    "op": "n4",
+    "port": "qsmxt homogeneity --method n4 (localhost/qsmxt-main:da928e0)",
+    "settings": "defaults",
+    "output": "n4.nii.gz",
+    "runtime_s": 7.1,
+    "in_mask": {
+      "nrmse": 3.0938296721405876,
+      "correlation": 0.99935073176448,
+      "max_abs": 57.24542236328125,
+      "p99_abs": 27.52443969726562,
+      "max_rel": 0.027576228325568903,
+      "identical_frac": 6.294376827281124e-05,
+      "voxels": 1699930
+    },
+    "where_input_gt_0": {
+      "nrmse": 3.0422704536173413,
+      "correlation": 0.9999065079531311,
+      "max_abs": 67.670166015625,
+      "p99_abs": 25.791458129882812,
+      "max_rel": 0.03259802918447829,
+      "identical_frac": 1.8901176333610298e-07,
+      "voxels": 5290676
+    }
+  },
+  {
+    "op": "bestpath",
+    "port": "qsm_core::unwrap::unwrap_bestpath (probe)",
+    "settings": "defaults",
+    "output": "bestpath.nii.gz",
+    "runtime_s": 2.3,
+    "in_mask": {
+      "nrmse": 1.1127350161927855e-06,
+      "correlation": 0.9999999999999991,
+      "max_abs": 9.059747938522378e-07,
+      "p99_abs": 6.357301884918343e-08,
+      "max_rel": 4.3308920205766453e-08,
+      "identical_frac": 0.950901507709141,
+      "voxels": 1699930
+    },
+    "wraps": {
+      "identical_frac": 0.950901507709141,
+      "same_wrap_frac": 1.0,
+      "global_offset_2pi": 0,
+      "max_abs_off_2pi": 9.059747938522378e-07,
+      "voxels": 1699930
+    }
+  },
+  {
+    "op": "bet-f0.2",
+    "port": "qsm_core::bet::run_bet (probe)",
+    "settings": "f 0.2, subdivisions 4",
+    "output": "bet_f0.2_s4.nii.gz",
+    "runtime_s": 2.7,
+    "mask": {
+      "dice": 0.9915374465564877,
+      "n_ref": 1798293,
+      "n_cand": 1809956,
+      "differ": 30535
+    }
+  },
+  {
+    "op": "bet-f0.2",
+    "port": "qsm_core::bet::run_bet (probe)",
+    "settings": "f 0.2, subdivisions 5",
+    "output": "bet_f0.2_s5.nii.gz",
+    "runtime_s": 10.5,
+    "mask": {
+      "dice": 0.9912279148619727,
+      "n_ref": 1798293,
+      "n_cand": 1816355,
+      "differ": 31708
+    }
+  },
+  {
+    "op": "bet-f0.5",
+    "port": "qsm_core::bet::run_bet (probe)",
+    "settings": "f 0.5, subdivisions 4",
+    "output": "bet_f0.5_s4.nii.gz",
+    "runtime_s": 3.4,
+    "mask": {
+      "dice": 0.9857119708205541,
+      "n_ref": 1686529,
+      "n_cand": 1707641,
+      "differ": 48496
+    }
+  },
+  {
+    "op": "bet-f0.5",
+    "port": "qsm_core::bet::run_bet (probe)",
+    "settings": "f 0.5, subdivisions 5",
+    "output": "bet_f0.5_s5.nii.gz",
+    "runtime_s": 9.4,
+    "mask": {
+      "dice": 0.9594336057839317,
+      "n_ref": 1686529,
+      "n_cand": 1587092,
+      "differ": 132799
+    }
+  },
+  {
+    "op": "gibbs",
+    "port": "qsm_core::unring::gibbs_unring (probe; 3-D)",
+    "settings": "defaults (DIPY: 2-D, slice_axis 2, n_points 3)",
+    "output": "gibbs.nii.gz",
+    "runtime_s": 30.0,
+    "in_mask": {
+      "nrmse": 2.037424383893149,
+      "correlation": 0.9974723949795123,
+      "max_abs": 322.162234470499,
+      "p99_abs": 18.835753060180863,
+      "max_rel": 0.16383659286848334,
+      "identical_frac": 0.0,
+      "voxels": 8499650
+    },
+    "change_vs_input": {
+      "original": {
+        "nrmse": 4.587720270378494,
+        "correlation": 0.9881843989109785,
+        "max_abs": 1146.994561931122,
+        "p99_abs": 40.01159044489894,
+        "max_rel": 0.4503315908642018,
+        "identical_frac": 0.0,
+        "voxels": 8499650
+      },
+      "port": {
+        "nrmse": 4.651131251897635,
+        "correlation": 0.9879170605841944,
+        "max_abs": 1218.1031494140625,
+        "p99_abs": 40.40974456787109,
+        "max_rel": 0.4782501568174568,
+        "identical_frac": 1.1176930814798256e-05,
+        "voxels": 8499650
+      }
+    }
+  },
+  {
+    "op": "mppca",
+    "port": "qsm_core::denoise::mppca_denoise (probe)",
+    "settings": "patch radius 2, brain mask",
+    "output": "mppca.nii.gz",
+    "runtime_s": 14.7,
+    "in_mask": {
+      "nrmse": 0.9660253003554428,
+      "correlation": 0.9994656698125636,
+      "max_abs": 142.22359220590198,
+      "p99_abs": 9.66777890166252,
+      "max_rel": 0.0553531568507335,
+      "identical_frac": 3.317783673445377e-05,
+      "voxels": 8499650
+    },
+    "change_vs_input": {
+      "original": {
+        "nrmse": 1.8323322263377273,
+        "correlation": 0.9980857239249536,
+        "max_abs": 294.5986121856689,
+        "p99_abs": 16.63099923793692,
+        "max_rel": 0.1156649439284134,
+        "identical_frac": 2.5177507309124494e-05,
+        "voxels": 8499650
+      },
+      "port": {
+        "nrmse": 2.036027882061854,
+        "correlation": 0.9976341354358699,
+        "max_abs": 325.11944580078125,
+        "p99_abs": 18.841163787841793,
+        "max_rel": 0.12764799599559531,
+        "identical_frac": 0.001153812215797121,
+        "voxels": 8499650
+      }
+    }
+  }
+]
