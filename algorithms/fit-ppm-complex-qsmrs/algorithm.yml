@@ -8,6 +8,8 @@ family: direct
 learning: none
 inputs: [phase, magnitude, mask, params]
 engine: QSMxT / QSM.rs
+qsmxt_value: romeo   # QSMxT runs the complex fit as ROMEO field mapping with --b0-estimation complex-fit
+qsmxt_args: [--b0-estimation complex-fit]
 description: >
   MEDI's complex fit of the echoes (QSM.rs's port of Fit_ppm_complex, `qsmxt fieldmap
   --b0-estimation complex-fit`), unwrapped spatially with ROMEO: QSM.rs does not port MEDI's
