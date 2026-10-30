@@ -159,17 +159,27 @@ pairs:
     reference: ilsqr-sti
     candidate: ilsqr-qsmrs
     enabled: false
-    # QSM.rs main da928e0 (runs 40605505892, 40607732498): NRMSE sim 18.0 % (r 0.9837), KKI 17.2 %
-    # (r 0.9853), on the same support; --pad-mm 12 (STI's padsize) changes nothing.
-    blocked_by: QSMxT/QSM-CI#311   # STI Suite port gaps; a QSM.rs issue is to be filed (PR body)
+    # Was sim 18.0 % / KKI 17.2 % NRMSE at QSM.rs da928e0 (40 iterations, the GUI's; the container
+    # runs QSM_iLSQR's own 100, now QSM.rs's default), then 0.99 % / 1.78 % at main 7f8271e (run
+    # 41019608126): FastQSM's kernel closing differed from imclose's. With that fixed and STI's
+    # single-precision solves (astewartau/QSM.rs#329): 0.0024 % / 0.017 % (run 41023159113).
+    blocked_by: astewartau/QSM.rs#329   # the fix's QSM.rs PR, and QSMxT's --precision
     qsmrs_paths: [src/fft.rs, src/grid.rs, src/inversion/ilsqr.rs, src/kernels/,
                   src/pipeline/inversion.rs, src/pipeline/rules.rs, src/utils/padding.rs]
     qsmxt_paths: &invert_wiring [src/cli.rs, src/commands/common.rs, src/commands/invert.rs]
+    # STI runs both LSQR solves in single precision; qsmxt defaults to double.
+    candidate_set: { precision: single }
     datasets:
-      sim: {}
+      sim:
+        # Measured: NRMSE 0.002371 %.
+        chimap: { nrmse_max: 0.503, correlation_min: 0.989, max_abs_max: 0.000113, p99_abs_max: 2.72e-06 }
+        measured: { main: "run 41023159113: QSMxT ilsqr-precision baf0db1, QSM.rs a0afb2a (single by default; limits)" }
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
+        # Measured: NRMSE 0.01666 %.
+        chimap: { nrmse_max: 0.519, correlation_min: 0.989, max_abs_max: 0.000208, p99_abs_max: 2.68e-05 }
+        measured: { main: "run 41023159113: QSMxT ilsqr-precision baf0db1, QSM.rs a0afb2a (single by default; limits)" }
   vsharp:
     reference: vsharp-sti
     candidate: vsharp-qsmrs
@@ -208,12 +218,15 @@ pairs:
     candidate_set: { te: first, pad: 12 }
     datasets:
       sim:
-        # Measured: NRMSE 0.326 %, r 0.999995, max |Δ| 0.00050 ppm, p99 |Δ| 0.00023 ppm.
-        chimap: { nrmse_max: 0.859, correlation_min: 0.989, max_abs_max: 0.000623, p99_abs_max: 0.000288 }
-        measured: { main: "run 40605505892: QSMxT main 8a7072a, QSM.rs main da928e0 (limits)" }
+        # Measured: NRMSE 0.002332 % (0.326 % with STI's GUI padding [8 8 20], run 40605505892).
+        chimap: { nrmse_max: 0.503, correlation_min: 0.989, max_abs_max: 8.95e-05, p99_abs_max: 2.29e-06 }
+        measured: { main: "run 41019608126: QSMxT main 2533f94, QSM.rs main 7f8271e (limits)" }
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
+        # Measured: NRMSE 0.002147 % (6.68 % with STI's GUI padding, run 40605505892).
+        chimap: { nrmse_max: 0.503, correlation_min: 0.989, max_abs_max: 1.64e-05, p99_abs_max: 3.45e-06 }
+        measured: { main: "run 41019608126: QSMxT main 2533f94, QSM.rs main 7f8271e (limits)" }
   medi:
     reference: medi-cornell
     candidate: medi-qsmrs
