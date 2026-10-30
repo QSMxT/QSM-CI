@@ -43,11 +43,13 @@ fidelity:
   report: fidelity/cpp-py/README.md
 parameters:
   - name: Dr
-    default: 137.0
+    default: 137*B0/2.9
     description: >
-      Static-dephasing relaxivity kernel (Hz/ppm) tying R2' to the source magnitude
-      (R2' = Dr·(|χ+|+|χ−|)). 137 is the qsm-forward phantom's kernel (Shin 2022); WaveSep assumes
-      Dr_pos == Dr_neg. Overriding here takes precedence over $WAVESEP_DR and params.json "Dr".
+      Relaxometric constant (Hz/ppm) tying R2' to the source magnitude (R2' = Dr·(|χ+|+|χ−|)); WaveSep
+      assumes Dr_pos == Dr_neg and ships no value (it reads one per dataset). The default is the
+      published χ-separation value for the SNU data WaveSep was built on, 137 Hz/ppm at 3 T (Shin et al.
+      2021), scaled with field as the SNU toolbox does: 137·B0/2.9 (141.7 at 3 T, 330.7 at 7 T).
+      Overriding here takes precedence over $WAVESEP_DR and params.json "Dr".
   - name: lambda
     default: 0.02
     description: wavelet-domain L1 (soft-thresholding) sparsity weight — the primary regularisation knob.
@@ -63,8 +65,8 @@ parameters:
       maximum proximal-gradient iterations (early-stops on convergence, ~12 on the phantom). A pure
       convergence knob, not a regularisation target.
 # Produces two source maps: chi-para (χ+) and chi-dia (χ−). WaveSep's QSM path uses χ_total + R2' only
-# (no B0 direction, so single-orientation data needs no reorientation), with a single relaxivity kernel
-# Dr=137 Hz/ppm (the qsm-forward phantom's kernel; override via $WAVESEP_DR or params.json "Dr").
+# (no B0 direction, so single-orientation data needs no reorientation), with a single relaxometric
+# constant Dr = 137·B0/2.9 Hz/ppm (override via --set Dr, $WAVESEP_DR or params.json "Dr").
 # The WaveSep source is third-party (no license; used with the author's permission for academic
 # benchmarking): not in this repository; the Dockerfile clones it into the image at build time, and
 # CI pulls the prebuilt image (see BUILD.md).
