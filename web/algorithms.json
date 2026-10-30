@@ -657,6 +657,48 @@
       "ci_notes": []
     },
     {
+      "slug": "fit-ppm-complex-cornell",
+      "name": "Complex fit + region growing (MEDI toolbox)",
+      "stage": "field-mapping",
+      "inputs": [
+        "phase",
+        "magnitude",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "MEDI toolbox 2024.11.26 (Fit_ppm_complex, unwrapPhase)",
+      "algorithm": "fit-ppm-complex",
+      "language": "MATLAB",
+      "family": "direct",
+      "learning": "none",
+      "description": "MEDI's field map: a magnitude-weighted nonlinear fit of the complex echoes (Fit_ppm_complex), then region-growing phase unwrapping (unwrapPhase), as the Cornell MEDI toolbox 2024.11.26's pipeline script makes it, compiled from MATLAB and run on the license-free MATLAB Runtime. Needs evenly spaced echoes.",
+      "citation": "Liu et al., Magn Reson Med 2013;69(2):467-476",
+      "doi": "10.1002/mrm.24272",
+      "code_url": "http://pre.weill.cornell.edu/mri/pages/qsm.html",
+      "license": "See Cornell MEDI toolbox license",
+      "authors": [
+        "Tian Liu",
+        "Cynthia Wisnieff",
+        "Min Lou",
+        "Weiwei Chen",
+        "Pascal Spincemaille",
+        "Yi Wang"
+      ],
+      "parameters": [
+        {
+          "name": "reltol",
+          "default": "1e-4",
+          "description": "Gauss-Newton stop, relative to the norm of the initial field estimate"
+        },
+        {
+          "name": "max_iter",
+          "default": 30,
+          "description": "maximum Gauss-Newton iterations of the complex fit"
+        }
+      ],
+      "ci_notes": []
+    },
+    {
       "slug": "harperella-qsmrs",
       "name": "HARPERELLA (QSM.rs)",
       "stage": "bfr",
@@ -1439,6 +1481,66 @@
       "ci_notes": []
     },
     {
+      "slug": "lbv-cornell",
+      "name": "LBV (MEDI toolbox)",
+      "stage": "bfr",
+      "inputs": [
+        "totalfield",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "MEDI toolbox 2024.11.26 (LBV.m, mexMGv6)",
+      "algorithm": "lbv",
+      "language": "MATLAB",
+      "family": "direct",
+      "learning": "none",
+      "description": "Laplacian Boundary Value background field removal, the authors' LBV.m and its full-multigrid solver mexMGv6 (Cornell MEDI toolbox 2024.11.26) with its own defaults, compiled from MATLAB and run on the license-free MATLAB Runtime.",
+      "citation": "Zhou et al., NMR Biomed 2014",
+      "doi": "10.1002/nbm.3064",
+      "code_url": "http://pre.weill.cornell.edu/mri/pages/qsm.html",
+      "license": "See Cornell MEDI toolbox license",
+      "authors": [
+        "Dong Zhou",
+        "Tian Liu",
+        "Pascal Spincemaille",
+        "Yi Wang"
+      ],
+      "parameters": [
+        {
+          "name": "tol",
+          "default": 0.01,
+          "description": "stopping tolerance of the coarsest-grid relaxation (absolute, in radians over the echo spacing)"
+        },
+        {
+          "name": "depth",
+          "default": -1,
+          "description": "multigrid levels; -1 picks log2 of the smallest dimension minus 3"
+        },
+        {
+          "name": "peel",
+          "default": 0,
+          "description": "boundary layers removed beyond the one boundary layer"
+        },
+        {
+          "name": "n1",
+          "default": 30,
+          "description": "relaxations per level before the recursive call"
+        },
+        {
+          "name": "n2",
+          "default": 100,
+          "description": "relaxations per level after the recursive call"
+        },
+        {
+          "name": "n3",
+          "default": 100,
+          "description": "relaxations on the finest grid after the full multigrid cycle"
+        }
+      ],
+      "ci_notes": []
+    },
+    {
       "slug": "lbv-qsmrs",
       "name": "LBV (QSM.rs)",
       "stage": "bfr",
@@ -1931,6 +2033,60 @@
           "name": "max_iter",
           "default": 250,
           "description": "iterations"
+        }
+      ],
+      "ci_notes": []
+    },
+    {
+      "slug": "pdf-cornell",
+      "name": "PDF (MEDI toolbox)",
+      "stage": "bfr",
+      "inputs": [
+        "totalfield",
+        "mask",
+        "params",
+        "magnitude"
+      ],
+      "domain": "qsm",
+      "engine": "MEDI toolbox 2024.11.26",
+      "algorithm": "pdf",
+      "language": "MATLAB",
+      "family": "iterative",
+      "learning": "none",
+      "description": "Projection onto Dipole Fields background field removal, the authors' PDF.m (Cornell MEDI toolbox 2024.11.26) with its own defaults, weighted by the field noise from the echo magnitudes as MEDI's pipeline does, compiled from MATLAB and run on the license-free MATLAB Runtime.",
+      "citation": "Liu et al., NMR Biomed 2011",
+      "doi": "10.1002/nbm.1670",
+      "code_url": "http://pre.weill.cornell.edu/mri/pages/qsm.html",
+      "license": "See Cornell MEDI toolbox license",
+      "authors": [
+        "Tian Liu",
+        "Ildar Khalidov",
+        "Ludovic de Rochefort",
+        "Pascal Spincemaille",
+        "Jing Liu",
+        "A. John Tsiouris",
+        "Yi Wang"
+      ],
+      "parameters": [
+        {
+          "name": "tol",
+          "default": 0.1,
+          "description": "CG stopping tolerance, relative to the noise-weighted field"
+        },
+        {
+          "name": "n_cg",
+          "default": 30,
+          "description": "maximum conjugate-gradient iterations"
+        },
+        {
+          "name": "space",
+          "default": "imagespace",
+          "description": "dipole kernel for an oblique B0, 'imagespace' (FFT of the sampled dipole) or 'kspace'"
+        },
+        {
+          "name": "n_pad",
+          "default": 40,
+          "description": "zero padding (voxels) around the mask's bounding box, where the background sources live"
         }
       ],
       "ci_notes": []
@@ -2628,6 +2784,88 @@
         "Yang Gao"
       ],
       "parameters": [],
+      "ci_notes": []
+    },
+    {
+      "slug": "tfi-cornell",
+      "name": "TFI (MEDI toolbox)",
+      "stage": "bfr+dipole",
+      "inputs": [
+        "totalfield",
+        "mask",
+        "params",
+        "magnitude"
+      ],
+      "domain": "qsm",
+      "engine": "MEDI toolbox 2024.11.26 (MEDI_L1 with a preconditioner)",
+      "algorithm": "tfi",
+      "language": "MATLAB",
+      "family": "iterative",
+      "learning": "none",
+      "description": "Preconditioned Total Field Inversion: the total field inverted over the whole field of view in one step, with a preconditioner that makes the background sources cheap to reach. Run as the Cornell MEDI toolbox 2024.11.26 implements it (MEDI_L1 with a preconditioner), with the paper's preconditioner and linear data term and MEDI_L1's defaults otherwise, compiled from MATLAB and run on the license-free MATLAB Runtime.",
+      "citation": "Liu et al., Magn Reson Med 2017;78(1):303-315",
+      "doi": "10.1002/mrm.26946",
+      "code_url": "http://pre.weill.cornell.edu/mri/pages/qsm.html",
+      "license": "See Cornell MEDI toolbox license",
+      "authors": [
+        "Zhe Liu",
+        "Youngwook Kee",
+        "Dong Zhou",
+        "Yi Wang",
+        "Pascal Spincemaille"
+      ],
+      "parameters": [
+        {
+          "name": "lambda",
+          "default": 1000,
+          "description": "data-fidelity weight"
+        },
+        {
+          "name": "precond",
+          "default": 30,
+          "description": "preconditioner value P_B outside the mask (1 inside)"
+        },
+        {
+          "name": "linear",
+          "default": 1,
+          "description": "linear data term (1, the paper's eq. 5) or MEDI_L1's exponential one (0)"
+        },
+        {
+          "name": "merit",
+          "default": 1,
+          "description": "model-error reduction (MERIT), reweighting the noise by the data residual after each iteration"
+        },
+        {
+          "name": "percentage",
+          "default": 0.9,
+          "description": "fraction of voxels kept as edges in the morphology gradient mask"
+        },
+        {
+          "name": "data_weighting",
+          "default": 1,
+          "description": "data weighting, 1 by the field noise from the echo magnitudes, 0 uniform"
+        },
+        {
+          "name": "max_iter",
+          "default": 10,
+          "description": "maximum Gauss-Newton iterations"
+        },
+        {
+          "name": "tol_norm_ratio",
+          "default": 0.1,
+          "description": "stop when the relative update falls below this"
+        },
+        {
+          "name": "cg_max_iter",
+          "default": 100,
+          "description": "maximum conjugate-gradient iterations per Gauss-Newton step"
+        },
+        {
+          "name": "cg_tol",
+          "default": 0.01,
+          "description": "conjugate-gradient relative residual tolerance"
+        }
+      ],
       "ci_notes": []
     },
     {
