@@ -37,6 +37,15 @@ parameters:
   - name: min_radius
     default: 1.0
     description: smallest SMV kernel radius (mm)
+  - name: radius_step
+    default: 1.0
+    description: step between SMV kernel radii (mm)
+  - name: grid
+    default: isotropic
+    description: "working grid: isotropic (1 mm), native or finest; QSM.jl works on the native grid"
+  - name: ball
+    default: default
+    description: "SMV ball: default (QSM.rs's) or qsmjl (QSM.jl's); a parity switch, not a tuning parameter"
 
 # Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
 tuning:

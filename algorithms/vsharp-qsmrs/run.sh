@@ -20,6 +20,12 @@ if [ -f "$CFG" ]; then
   V=$(jq -r '.threshold // empty' "$CFG"); [ -n "$V" ] && THRESHOLD=$V
   V=$(jq -r '.max_radius // empty' "$CFG"); [ -n "$V" ] && SET="$SET --max-radius $V"
   V=$(jq -r '.min_radius // empty' "$CFG"); [ -n "$V" ] && SET="$SET --min-radius $V"
+  # default or qsmjl (QSM.jl's SMV ball), for the vsharp-qsmjl parity pair (qsmxt after v10.0.0,
+  # QSMxT/QSMxT#460; an older qsmxt refuses the flag).
+  V=$(jq -r '.ball // empty' "$CFG"); [ -n "$V" ] && SET="$SET --ball $V"
+  # Working grid: isotropic (QSM.rs's default, 1 mm), native or finest (qsmxt bgremove vsharp --grid).
+  V=$(jq -r '.grid // empty' "$CFG"); [ -n "$V" ] && SET="$SET --grid $V"
+  V=$(jq -r '.radius_step // empty' "$CFG"); [ -n "$V" ] && SET="$SET --radius-step $V"
 fi
 # --threshold only applies with deconvolution (qsmxt ignores it otherwise).
 [ "$DECONVOLVE" = true ] && SET="$SET --threshold $THRESHOLD"

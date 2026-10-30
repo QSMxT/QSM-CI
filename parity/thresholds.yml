@@ -134,8 +134,11 @@ pairs:
         # The original leaves 331 voxels out by its echo-fit reliability (R_0); qsmart-qsmrs takes
         # no R_0, so it reconstructs them too. The gap is mostly where the original's stage 2 runs
         # (tissue outside its vessel mask, 37 % of the brain: NRMSE 37.4 %; inside the vessel
-        # mask 12.4 %); qsmxt qsmart does not write its stage maps yet, so it is not localised
-        # further.
+        # mask 12.4 %). With `qsmxt qsmart --intermediates` (QSMxT/QSMxT#461; run 41024155554) the
+        # stage maps are compared too: vessel mask Dice 0.988, stage-1 local field 8.89 %, χ1
+        # 11.3 %, stage-2 local field 13.3 %, χ2 33.3 % (KKI: 0.9999, 3.35 %, 4.16 %, 2.33 %,
+        # 5.86 %), so the gap starts in stage 1's SDF. Feeding the original's R_0 (`qsmxt qsmart
+        # --reliability`) needs `feed:` to pass an input that is not a dataset artifact.
         chimap: { nrmse_max: 18.9, correlation_min: 0.976, max_abs_max: 0.354, p99_abs_max: 0.0126 }
         measured:
           main: "run 40536005482: QSMxT main 8a7072a, qsm-core da928e0 (limits)"
@@ -496,13 +499,17 @@ pairs:
     reference: sharp-qsmjl
     candidate: sharp-qsmrs
     enabled: false
-    # QSM.rs keeps QSM.jl's sharp as SharpVariant::QsmJl (astewartau/QSM.rs#321), which matches
-    # QSM.jl to rounding in QSM.rs's own test, but qsmxt cannot select it yet: QSMxT/QSMxT#463.
-    # With QSM.rs's default (SEPIA's SHARP) against QSM.jl's defaults (run 41019310531): NRMSE
-    # sim 26.5 %, KKI 34.5 %, a different method. Then: candidate_set { variant: qsmjl }.
-    blocked_by: QSMxT/QSMxT#463
+    # QSM.rs keeps QSM.jl's sharp as SharpVariant::QsmJl (astewartau/QSM.rs#321). With QSM.rs's
+    # default (SEPIA's SHARP) against QSM.jl's defaults (run 41019310531): NRMSE sim 26.5 %, KKI
+    # 34.5 %, a different method. `qsmxt bgremove sharp --variant qsmjl` (QSMxT/QSMxT#460, which
+    # closes #463) selects it with QSM.jl's own defaults (18 × the smallest voxel, 0.05). Measured
+    # on a #460 build with radius 6 and threshold 0.05 on both sides (run 41024142665): NRMSE sim
+    # 5.2e-9 %, KKI 2.2e-10 %. Enable, with limits from a baseline at these settings, once a
+    # qsmxt with #460 is pinned.
+    blocked_by: QSMxT/QSMxT#460
     qsmrs_paths: *sharp_paths
     qsmxt_paths: *bgremove_wiring
+    candidate_set: { variant: qsmjl }
     datasets:
       sim: {}
       s002001-kki-achieva-bridge-run1:
@@ -514,14 +521,19 @@ pairs:
     enabled: false
     # QSM.rs's V-SHARP uses STI Suite's ball and edge test by default (astewartau/QSM.rs#332);
     # QSM.jl's are VsharpBall::QsmJl, which matches QSM.jl to rounding in QSM.rs's own test, but
-    # qsmxt cannot select it yet: QSMxT/QSMxT#463. With the default ball and STI's radii on both
-    # sides (run 41019310531): NRMSE sim 12.8 % (r 0.992), KKI 13.9 % (r 0.990).
-    blocked_by: QSMxT/QSMxT#463
+    # `qsmxt bgremove vsharp --ball qsmjl` selects it (QSMxT/QSMxT#460, which closes #463). With the
+    # default ball and STI's radii on both sides (run 41019310531): NRMSE sim 12.8 % (r 0.992), KKI
+    # 13.9 % (r 0.990). On a #460 build with the QSM.jl ball (run 41024142665): sim 9.85 %, KKI
+    # 13.5 %; with the native grid as well (run 41028484649) unchanged; with the candidate's radii
+    # and threshold also given explicitly (run 41029942914): sim 5.2e-12 %, KKI 1.19 %. The KKI
+    # 1.19 % is not explained (not a documented original-side floor), so the pair stays disabled.
+    blocked_by: QSMxT/QSMxT#460
     qsmrs_paths: [src/bgremove/sharp.rs, src/bgremove/smv.rs, src/bgremove/vsharp.rs, src/error.rs,
                   src/fft.rs, src/grid.rs, src/inversion/medi.rs, src/kernels/,
                   src/pipeline/bg_removal.rs, src/pipeline/rules.rs, src/utils/padding.rs]
     qsmxt_paths: *bgremove_vsharp_wiring
     reference_set: { max_radius: 12, min_radius: 1, radius_step: 1 }   # QSM.rs's (STI Suite's) radii
+    candidate_set: { ball: qsmjl, grid: native, max_radius: 12, min_radius: 1, radius_step: 1, threshold: 0.05 }
     datasets:
       sim: {}
       s002001-kki-achieva-bridge-run1:
@@ -591,8 +603,9 @@ pairs:
     # NRMSE sim 3.84 % (r 0.9993), KKI 6.74 % (r 0.9977), the same on QSM.rs da928e0, on #324's
     # first head b0f9984 (the package's divergence and edge erosion as the default; run 40616429914)
     # and on main 7f8271e (run 41019310531). So `TgvParams::reference_divergence` /
-    # `reference_edge_erosion` (#324; QSMxT does not expose them, QSMxT/QSMxT#446) are not the cause
-    # here, although QSM.rs matches the package to float32 rounding in its own tests and on the CBIC
+    # `reference_edge_erosion` (#324; `qsmxt invert tgv --reference-divergence
+    # --reference-edge-erosion`, QSMxT/QSMxT#460, set below; run 41024142665 with both on: sim
+    # 3.84 %, KKI 6.74 %, unchanged) are not the cause here, although QSM.rs matches the package to float32 rounding in its own tests and on the CBIC
     # travelling head. Cause to be found: astewartau/QSM.rs#369.
     blocked_by: astewartau/QSM.rs#369
     qsmrs_paths: [src/error.rs, src/fft.rs, src/grid.rs, src/inversion/tgv.rs, src/kernels/,
@@ -607,6 +620,7 @@ pairs:
     # the ordinary discrete Laplacian: tgv-tgvjl's `unwrapped` (the package's laplacian_kernel
     # without ROMEO's re-unwrap, which adds ±2π jumps to an already unwrapped field).
     reference_set: { laplacian: unwrapped }
+    candidate_set: { reference_divergence: "true", reference_edge_erosion: "true" }
     datasets:
       sim: {}
       s002001-kki-achieva-bridge-run1:

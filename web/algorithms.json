@@ -2481,6 +2481,11 @@
           "name": "radius",
           "default": 6.0,
           "description": "SMV kernel radius (mm)"
+        },
+        {
+          "name": "variant",
+          "default": "sepia",
+          "description": "implementation reproduced: sepia (SEPIA's SHARP.m) or qsmjl (QSM.jl's sharp); a parity switch, not a tuning parameter"
         }
       ],
       "ci_notes": []
@@ -2722,6 +2727,16 @@
             "sim": 0.0015
           },
           "description": "second-order weight, ppm"
+        },
+        {
+          "name": "reference_divergence",
+          "default": false,
+          "description": "TGV.jl's divergence in the w update instead of the exact adjoint (anisotropic voxels only)"
+        },
+        {
+          "name": "reference_edge_erosion",
+          "default": false,
+          "description": "erode the mask as TGV.jl does, not from the array's edge (masks reaching an array face only)"
         }
       ],
       "ci_notes": []
@@ -3029,6 +3044,21 @@
           "name": "min_radius",
           "default": 1.0,
           "description": "smallest SMV kernel radius (mm)"
+        },
+        {
+          "name": "radius_step",
+          "default": 1.0,
+          "description": "step between SMV kernel radii (mm)"
+        },
+        {
+          "name": "grid",
+          "default": "isotropic",
+          "description": "working grid: isotropic (1 mm), native or finest; QSM.jl works on the native grid"
+        },
+        {
+          "name": "ball",
+          "default": "default",
+          "description": "SMV ball: default (QSM.rs's) or qsmjl (QSM.jl's); a parity switch, not a tuning parameter"
         }
       ],
       "ci_notes": []
