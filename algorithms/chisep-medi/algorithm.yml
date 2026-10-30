@@ -20,12 +20,21 @@ doi: 10.1016/j.neuroimage.2021.118371
 citation: Shin et al., NeuroImage 2021
 code_url: https://github.com/SNU-LIST/chi-separation
 license: academic use; toolbox obtained via the SNU-LIST Google Form
-image: ghcr.io/astewartau/qsm-ci/chi-sep-medi@sha256:d1f5e3ecb92c9153983c5d82c135cf50e451387a21d5814bdfdd10edc238a5d5   # v1
+image: ghcr.io/astewartau/qsm-ci/chi-sep-medi@sha256:06ffc17a55223b05eb1442d9092b751b64a50e0e39320602a289b5c2ca9d2615   # v2
 run: bash run.sh
 runner: highmem
 matlab:
   entry: recon.m
-  runtime: r2026a
+  runtime: r2023b
+# Container vs the authors' code in licensed MATLAB with the real toolboxes (QSMxT/QSM-CI#300;
+# fidelity/REPORT.md). Rerun and update whenever the image changes.
+fidelity:
+  date: 2026-10-28
+  image: sha256:06ffc17a55223b05eb1442d9092b751b64a50e0e39320602a289b5c2ca9d2615
+  matlab: R2023b Update 5 (23.2.0.2459199), Image Processing Toolbox 23.2, Signal Processing Toolbox 23.2
+  tolerance: identical   # chi-para, chi-dia and every intermediate, phantom and in vivo, 8 threads
+  result: pass
+  report: algorithms/chisep-medi/fidelity/REPORT.md
 parameters:
   - name: lambda
     default: 1
