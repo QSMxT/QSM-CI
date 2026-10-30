@@ -21,11 +21,20 @@ doi: 10.1038/s41593-022-01074-w
 citation: Wang et al., Nature Neuroscience 2022
 code_url: https://git.fmrib.ox.ac.uk/cwang/uk_biobank_qsm_pipeline
 license: Apache-2.0
-image: ghcr.io/astewartau/qsm-ci/matlab-ukb-qsm@sha256:a3aeab5ff603b95288c563a0499d355d8ac564281fae221959b014f644ffa5db   # v1
+image: ghcr.io/astewartau/qsm-ci/matlab-ukb-qsm@sha256:c8a50375ab0b69e8a928a07b1ecef51e533f7948c67b706434284ec6f1e3b9cf   # v2
 run: bash run.sh
 matlab:
   entry: recon.m
-  runtime: r2026a
+  runtime: r2023b
+# Container vs the authors' code in licensed MATLAB with the real toolboxes (QSMxT/QSM-CI#300;
+# fidelity/REPORT.md). Rerun and update whenever the image changes.
+fidelity:
+  date: 2026-10-28
+  image: sha256:c8a50375ab0b69e8a928a07b1ecef51e533f7948c67b706434284ec6f1e3b9cf
+  matlab: R2023b Update 5 (23.2.0.2459199), Image Processing Toolbox 23.2
+  tolerance: identical   # chi and every intermediate, in silico and in vivo, 8 threads
+  result: pass
+  report: algorithms/ukb-qsm/fidelity/REPORT.md
 params:
 - name: t2star_ms
   default: 40

@@ -104,12 +104,11 @@ Measured with this `run.sh` on a 14-core desktop (Intel Core Ultra 7 155U), imag
 | 8 (8 E-cores) | 37.6 s | 334 voxels/s |
 | 14 (all, the engine default) | 87.7–97.4 s | ~140 voxels/s |
 
-More threads is **slower** — measured again at 42,168 voxels (1 thread 37.1 s vs 8 threads
-205.9 s), with core clocks constant at 3.35 GHz in both, bit-identical outputs at every thread
-count, and a control (`qsmxt separate hc-chisep`, same image) scaling normally 3.6 s → 1.4 s from
-1 → 8 threads. So this is an upstream scaling bug in qsm-core's decompose loop, not the
-environment; `run.sh` pins `RAYON_NUM_THREADS=1` (overridable) until it is fixed, which is also the
-fastest setting measured.
+That table is from before QSM.rs#93: the decompose loop then allocated per voxel, the static musl
+allocator serialised those allocations, and more threads was slower. `run.sh` pinned one thread
+for it. The loop has been allocation-free since, and scales with the cores at bit-identical
+outputs (QSMxT v9.16.0 vs the current loop, 3,200 voxels on a 6-core i5-11500: 2.2 s → 6.3 s from
+1 → 8 threads before, 6.9 s → 1.2 s now), so `run.sh` no longer pins it.
 
 At ~1,500 voxels/s on one core, the scored phantoms come out at:
 

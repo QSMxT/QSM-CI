@@ -10,15 +10,10 @@ B0="$(jq -r .B0 "$IN/params.json")"
 B0DIR="$(jq -r '.B0_dir | join(" ")' "$IN/params.json")"
 TE="$(jq -r '.TE | join(",")' "$IN/params.json")"   # seconds; the 4D magnitude's echo dim must match
 
-# Run the per-voxel fit SERIALLY. This is not a typo: qsm-core's decompose parallel path scales
-# backwards — measured in this image on one machine (12568-voxel fit, 6 echoes, uniform cores at a
-# constant 3.35 GHz), 1 thread 10.9 s, 4 threads 27.3 s, 8 threads 37.6 s, and at 42168 voxels 1
-# thread 37.1 s vs 8 threads 205.9 s. The outputs are bit-identical at every thread count (max |Δ|
-# = 0), and another rayon method in the same image (`separate hc-chisep`) speeds up normally
-# (3.6 s → 1.4 s, 1 → 8 threads), so this is specific to decompose, not the environment. Serial is
-# therefore both the fastest and the most predictable setting until the upstream loop is fixed;
-# drop this line then. Overridable: RAYON_NUM_THREADS=8 bash run.sh.
-export RAYON_NUM_THREADS="${RAYON_NUM_THREADS:-1}"
+# The per-voxel fit uses every core (rayon's default; RAYON_NUM_THREADS caps it). It used to be
+# pinned to one thread here because qsm-core's DECOMPOSE loop allocated per voxel and the static
+# musl allocator serialised that, so it got slower with threads. QSM.rs#93 made the loop
+# allocation-free; since then it scales and gives bit-identical outputs at any thread count.
 
 # Parameter overrides (qsm-ci run --set NAME=VALUE) arrive as /input/config.json; absent = defaults.
 SET=""
@@ -33,9 +28,16 @@ fi
 # and _desc-total_Chimap.nii (uncompressed; the pipeline's BIDS names since qsmxt v10.0.0). Stage them in a scratch dir, then publish the two canonical artifacts gzipped.
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
+# A qsmxt on QSM.rs#333 or later takes a QSM per echo (--qsm-per-echo). Like decompose-qsm, QSM-CI
+# gives the one provided χ_total at every echo. Older releases (v10.0.0) take --qsm alone.
+PER_ECHO=""
+if qsmxt separate decompose --help 2>/dev/null | grep -q -- '--qsm-per-echo'; then
+  NE="$(jq -r '.TE | length' "$IN/params.json")"
+  PER_ECHO="--qsm-per-echo$(for _ in $(seq "$NE"); do printf ' %s' "$IN/chimap.nii.gz"; done)"
+fi
 qsmxt separate decompose \
   --qsm "$IN/chimap.nii.gz" -m "$IN/mask.nii.gz" -o "$WORK/dec" \
-  --magnitude "$IN/magnitude.nii.gz" --echo-times "$TE" \
+  --magnitude "$IN/magnitude.nii.gz" --echo-times "$TE" $PER_ECHO \
   --field-strength "$B0" --b0-direction $B0DIR $SET
 
 # qsmxt already emits χ+ ≥ 0 and the diamagnetic map as the positive magnitude |χ−| (it negates
