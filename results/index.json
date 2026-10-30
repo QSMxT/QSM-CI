@@ -35645,20 +35645,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 885.3882205486298,
+      "runtime_s": 1100.4397552013397,
       "metrics": {
-        "nrmse": 78.47183675727568,
-        "nrmse_detrend": 116.52428521134563,
-        "nrmse_tissue": 150.80329894020562,
-        "nrmse_blood": 127.27845027814763,
-        "nrmse_dgm": 45.27571647985726,
-        "dgm_linearity": 0.23706957108410454,
-        "calc_moment_dev": 0.3719460666179657,
-        "calc_streak": 0.01854535267969992,
-        "correlation": 0.6512494297084266,
-        "xsim": 0.3116968707159816,
-        "hfen": 63.03243217956021,
-        "coverage": 1.0
+        "nrmse": 62.66638747250401,
+        "nrmse_detrend": 80.39608989289599,
+        "nrmse_tissue": 81.18155400373816,
+        "nrmse_blood": 133.8325919656529,
+        "nrmse_dgm": 28.63558121764434,
+        "dgm_linearity": 0.10186484841201249,
+        "calc_moment_dev": 15.749701671302319,
+        "calc_streak": 0.026703027332760376,
+        "correlation": 0.7793607022607779,
+        "xsim": 0.19924036125992792,
+        "hfen": 53.2645896197402,
+        "coverage": 0.7544507663184592
       },
       "status": "ok",
       "id": "gt~harperella-qsmrs~medi-cornell-cmp",
@@ -35670,8 +35670,8 @@
         "dipole": "medi-cornell"
       },
       "phantom": "sim",
-      "ci_run": "40527386910.1",
-      "ci_sha": "88a2ce9e9c84d46fd68671bc9748bd2c66798190",
+      "ci_run": "40979426694.1",
+      "ci_sha": "283ae4148992f976aa116f20f008467643f69441",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -35679,15 +35679,15 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-27T17:19:55Z",
+      "scored_at": "2026-10-30T05:52:30Z",
       "method_versions": {
         "harperella-qsmrs": {
           "commit": "6b4f723f8c623d114485f182aa9f14ad5faf1d13",
           "date": "2026-10-19T11:14:00+10:00"
         },
         "medi-cornell": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "0e3f3b6582fac87d84469264606d10b7c9b5e89c",
+          "date": "2026-10-28T10:56:28+10:00"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/cd/gt_harperella-qsmrs_medi-cornell-cmp__resources.json",
@@ -35705,20 +35705,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1030.7171261310577,
+      "runtime_s": 1478.9383783340454,
       "metrics": {
-        "nrmse": 87.3113576738861,
-        "nrmse_detrend": 157.46285264943825,
-        "nrmse_tissue": 175.73025708166014,
-        "nrmse_blood": 335.30639693176676,
-        "nrmse_dgm": 67.10051482648247,
-        "dgm_linearity": 0.25815873031586967,
-        "calc_moment_dev": 16.798354100435972,
-        "calc_streak": 0.037107257235417225,
-        "correlation": 0.5360982482937321,
-        "xsim": 0.2387562855922167,
-        "hfen": 72.12782818881294,
-        "coverage": 1.0
+        "nrmse": 74.83990408660976,
+        "nrmse_detrend": 110.94367657072051,
+        "nrmse_tissue": 109.03150862581764,
+        "nrmse_blood": 258.394980712163,
+        "nrmse_dgm": 65.78012974201643,
+        "dgm_linearity": 0.19583633112012822,
+        "calc_moment_dev": 18.588914923369884,
+        "calc_streak": 0.05265153838774989,
+        "correlation": 0.6695219523041688,
+        "xsim": 0.15841185715431627,
+        "hfen": 66.3059767869308,
+        "coverage": 0.7544507663184592
       },
       "status": "ok",
       "id": "romeo-qsmrs~pdf-qsmrs~medi-cornell-cmp",
@@ -35730,8 +35730,8 @@
         "dipole": "medi-cornell"
       },
       "phantom": "sim",
-      "ci_run": "40527386910.1",
-      "ci_sha": "88a2ce9e9c84d46fd68671bc9748bd2c66798190",
+      "ci_run": "40979426694.1",
+      "ci_sha": "283ae4148992f976aa116f20f008467643f69441",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -35739,7 +35739,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-27T17:19:55Z",
+      "scored_at": "2026-10-30T05:52:30Z",
       "method_versions": {
         "romeo-qsmrs": {
           "commit": "6b4f723f8c623d114485f182aa9f14ad5faf1d13",
@@ -35750,8 +35750,8 @@
           "date": "2026-10-19T11:14:00+10:00"
         },
         "medi-cornell": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "0e3f3b6582fac87d84469264606d10b7c9b5e89c",
+          "date": "2026-10-28T10:56:28+10:00"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/d1/romeo-qsmrs_pdf-qsmrs_medi-cornell-cmp__resources.json",
@@ -35769,20 +35769,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 905.0254330635071,
+      "runtime_s": 1097.6303935050964,
       "metrics": {
-        "nrmse": 69.03114987088826,
-        "nrmse_detrend": 95.40642979519897,
-        "nrmse_tissue": 115.7944932638837,
-        "nrmse_blood": 113.9291911058816,
-        "nrmse_dgm": 47.151068209950864,
-        "dgm_linearity": 0.21799307073483754,
-        "calc_moment_dev": 0.2562671899795532,
-        "calc_streak": 0.017295766371099367,
-        "correlation": 0.7235293984993811,
-        "xsim": 0.35528983872427783,
-        "hfen": 60.17942835873454,
-        "coverage": 1.0
+        "nrmse": 62.66864608133744,
+        "nrmse_detrend": 80.40097637209276,
+        "nrmse_tissue": 81.18935546127265,
+        "nrmse_blood": 133.83037688629358,
+        "nrmse_dgm": 28.6411776698126,
+        "dgm_linearity": 0.10185284588266674,
+        "calc_moment_dev": 15.754780605435371,
+        "calc_streak": 0.026703348838692072,
+        "correlation": 0.7793421052070777,
+        "xsim": 0.19923029108401147,
+        "hfen": 53.26515216062148,
+        "coverage": 0.7544507663184592
       },
       "status": "ok",
       "id": "gt~iharperella-qsmrs~medi-cornell-cmp",
@@ -35794,8 +35794,8 @@
         "dipole": "medi-cornell"
       },
       "phantom": "sim",
-      "ci_run": "40527386910.1",
-      "ci_sha": "88a2ce9e9c84d46fd68671bc9748bd2c66798190",
+      "ci_run": "40979426694.1",
+      "ci_sha": "283ae4148992f976aa116f20f008467643f69441",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -35803,15 +35803,15 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-27T17:32:07Z",
+      "scored_at": "2026-10-30T05:52:30Z",
       "method_versions": {
         "iharperella-qsmrs": {
           "commit": "6b4f723f8c623d114485f182aa9f14ad5faf1d13",
           "date": "2026-10-19T11:14:00+10:00"
         },
         "medi-cornell": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "0e3f3b6582fac87d84469264606d10b7c9b5e89c",
+          "date": "2026-10-28T10:56:28+10:00"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/cc/gt_iharperella-qsmrs_medi-cornell-cmp__resources.json",
@@ -35829,20 +35829,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 744.6254458427429,
+      "runtime_s": 877.688307762146,
       "metrics": {
-        "nrmse": 80.7750625811147,
-        "nrmse_detrend": 137.016345743851,
-        "nrmse_tissue": 139.9242039773846,
-        "nrmse_blood": 338.2656568390892,
-        "nrmse_dgm": 65.71044229803792,
-        "dgm_linearity": 0.22194462963377448,
-        "calc_moment_dev": 16.893551759421825,
-        "calc_streak": 0.04016954754560773,
-        "correlation": 0.5895271518580973,
-        "xsim": 0.22606796189072764,
-        "hfen": 73.29992551152787,
-        "coverage": 0.7175742417502596
+        "nrmse": 82.3708368275486,
+        "nrmse_detrend": 142.1043980068722,
+        "nrmse_tissue": 148.32589041491292,
+        "nrmse_blood": 277.3931609700858,
+        "nrmse_dgm": 67.69399754141186,
+        "dgm_linearity": 0.1909482261770038,
+        "calc_moment_dev": 21.654574029147625,
+        "calc_streak": 0.056145185706122536,
+        "correlation": 0.5754957494561742,
+        "xsim": 0.1302717595173302,
+        "hfen": 78.82788138081904,
+        "coverage": 0.5216565938027662
       },
       "status": "ok",
       "id": "romeo-qsmrs~resharp-qsmrs~medi-cornell-cmp",
@@ -35854,8 +35854,8 @@
         "dipole": "medi-cornell"
       },
       "phantom": "sim",
-      "ci_run": "40527386910.1",
-      "ci_sha": "88a2ce9e9c84d46fd68671bc9748bd2c66798190",
+      "ci_run": "40979426694.1",
+      "ci_sha": "283ae4148992f976aa116f20f008467643f69441",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -35863,7 +35863,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-27T17:32:07Z",
+      "scored_at": "2026-10-30T05:52:30Z",
       "method_versions": {
         "romeo-qsmrs": {
           "commit": "6b4f723f8c623d114485f182aa9f14ad5faf1d13",
@@ -35874,8 +35874,8 @@
           "date": "2026-10-19T11:14:00+10:00"
         },
         "medi-cornell": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "0e3f3b6582fac87d84469264606d10b7c9b5e89c",
+          "date": "2026-10-28T10:56:28+10:00"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/68/romeo-qsmrs_resharp-qsmrs_medi-cornell-cmp__resources.json",
@@ -35893,20 +35893,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 890.2064433097839,
+      "runtime_s": 1081.942949771881,
       "metrics": {
-        "nrmse": 65.7677772084711,
-        "nrmse_detrend": 86.25752928549747,
-        "nrmse_tissue": 97.15214744568028,
-        "nrmse_blood": 119.02638770716597,
-        "nrmse_dgm": 43.685239617496116,
-        "dgm_linearity": 0.18585982959297265,
-        "calc_moment_dev": 0.5623551681637764,
-        "calc_streak": 0.018609108002877732,
-        "correlation": 0.7572203212217671,
-        "xsim": 0.34635122763620607,
-        "hfen": 63.471721297329125,
-        "coverage": 0.7621364593927898
+        "nrmse": 72.59796521273275,
+        "nrmse_detrend": 105.46850476264564,
+        "nrmse_tissue": 113.88627131951503,
+        "nrmse_blood": 151.21209594728637,
+        "nrmse_dgm": 33.03241678692278,
+        "dgm_linearity": 0.10115692624017414,
+        "calc_moment_dev": 14.98016395419836,
+        "calc_streak": 0.03618774637466377,
+        "correlation": 0.6880436260904955,
+        "xsim": 0.19003917492494818,
+        "hfen": 68.71376041051916,
+        "coverage": 0.5583629695021505
       },
       "status": "ok",
       "id": "gt~ismv-qsmrs~medi-cornell-cmp",
@@ -35918,8 +35918,8 @@
         "dipole": "medi-cornell"
       },
       "phantom": "sim",
-      "ci_run": "40527386910.1",
-      "ci_sha": "88a2ce9e9c84d46fd68671bc9748bd2c66798190",
+      "ci_run": "40979426694.1",
+      "ci_sha": "283ae4148992f976aa116f20f008467643f69441",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -35927,15 +35927,15 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-27T17:36:17Z",
+      "scored_at": "2026-10-30T05:52:30Z",
       "method_versions": {
         "ismv-qsmrs": {
           "commit": "6b4f723f8c623d114485f182aa9f14ad5faf1d13",
           "date": "2026-10-19T11:14:00+10:00"
         },
         "medi-cornell": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "0e3f3b6582fac87d84469264606d10b7c9b5e89c",
+          "date": "2026-10-28T10:56:28+10:00"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/df/gt_ismv-qsmrs_medi-cornell-cmp__resources.json",
@@ -35953,20 +35953,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 734.7338783740997,
+      "runtime_s": 853.7658727169037,
       "metrics": {
-        "nrmse": 83.14584070015955,
-        "nrmse_detrend": 147.79907564498004,
-        "nrmse_tissue": 151.84303520912047,
-        "nrmse_blood": 353.612300819248,
-        "nrmse_dgm": 68.57689403745262,
-        "dgm_linearity": 0.22463238871399982,
-        "calc_moment_dev": 19.77585695683956,
-        "calc_streak": 0.04111307134596898,
-        "correlation": 0.5603796138319262,
-        "xsim": 0.2073681871383616,
-        "hfen": 73.4762661854768,
-        "coverage": 0.7175742417502596
+        "nrmse": 82.44202856169044,
+        "nrmse_detrend": 142.62399145641993,
+        "nrmse_tissue": 149.07115697202988,
+        "nrmse_blood": 278.49829698980653,
+        "nrmse_dgm": 66.98315507685344,
+        "dgm_linearity": 0.17273566635843385,
+        "calc_moment_dev": 22.41183214634657,
+        "calc_streak": 0.056119909917842214,
+        "correlation": 0.5740910014997623,
+        "xsim": 0.13285810760309275,
+        "hfen": 78.75746108560914,
+        "coverage": 0.5216565938027662
       },
       "status": "ok",
       "id": "romeo-qsmrs~sharp-qsmrs~medi-cornell-cmp",
@@ -35978,8 +35978,8 @@
         "dipole": "medi-cornell"
       },
       "phantom": "sim",
-      "ci_run": "40527386910.1",
-      "ci_sha": "88a2ce9e9c84d46fd68671bc9748bd2c66798190",
+      "ci_run": "40979426694.1",
+      "ci_sha": "283ae4148992f976aa116f20f008467643f69441",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -35987,7 +35987,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-27T17:36:17Z",
+      "scored_at": "2026-10-30T05:52:30Z",
       "method_versions": {
         "romeo-qsmrs": {
           "commit": "6b4f723f8c623d114485f182aa9f14ad5faf1d13",
@@ -35998,8 +35998,8 @@
           "date": "2026-10-19T11:14:00+10:00"
         },
         "medi-cornell": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "0e3f3b6582fac87d84469264606d10b7c9b5e89c",
+          "date": "2026-10-28T10:56:28+10:00"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/4c/romeo-qsmrs_sharp-qsmrs_medi-cornell-cmp__resources.json",
@@ -36073,20 +36073,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 829.0946371555328,
+      "runtime_s": 1062.3260459899902,
       "metrics": {
-        "nrmse": 69.05537585852238,
-        "nrmse_detrend": 94.12611803056697,
-        "nrmse_tissue": 120.35787913972808,
-        "nrmse_blood": 108.59617737549708,
-        "nrmse_dgm": 43.70754581112019,
-        "dgm_linearity": 0.2037818161117494,
-        "calc_moment_dev": 0.0912492461502552,
-        "calc_streak": 0.017233533447027972,
-        "correlation": 0.7281692070442278,
-        "xsim": 0.33469976017643793,
-        "hfen": 58.17322592385534,
-        "coverage": 0.9543711091798748
+        "nrmse": 64.49266095716123,
+        "nrmse_detrend": 84.3874609833078,
+        "nrmse_tissue": 86.03398580940618,
+        "nrmse_blood": 137.64114100480853,
+        "nrmse_dgm": 29.061740598548,
+        "dgm_linearity": 0.10342158773360899,
+        "calc_moment_dev": 14.42667231708765,
+        "calc_streak": 0.02975752066442124,
+        "correlation": 0.7642445443580522,
+        "xsim": 0.19958140072636651,
+        "hfen": 57.31342459654214,
+        "coverage": 0.7174445318502659
       },
       "status": "ok",
       "id": "gt~lbv-qsmrs~medi-cornell-cmp",
@@ -36098,8 +36098,8 @@
         "dipole": "medi-cornell"
       },
       "phantom": "sim",
-      "ci_run": "40527386910.1",
-      "ci_sha": "88a2ce9e9c84d46fd68671bc9748bd2c66798190",
+      "ci_run": "40979426694.1",
+      "ci_sha": "283ae4148992f976aa116f20f008467643f69441",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -36107,15 +36107,15 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-27T17:15:40Z",
+      "scored_at": "2026-10-30T05:52:30Z",
       "method_versions": {
         "lbv-qsmrs": {
           "commit": "6b4f723f8c623d114485f182aa9f14ad5faf1d13",
           "date": "2026-10-19T11:14:00+10:00"
         },
         "medi-cornell": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "0e3f3b6582fac87d84469264606d10b7c9b5e89c",
+          "date": "2026-10-28T10:56:28+10:00"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/75/gt_lbv-qsmrs_medi-cornell-cmp__resources.json",
@@ -36133,20 +36133,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 986.0442726612091,
+      "runtime_s": 872.1456096172333,
       "metrics": {
-        "nrmse": 83.80223687052843,
-        "nrmse_detrend": 145.08291605705142,
-        "nrmse_tissue": 150.43070670203554,
-        "nrmse_blood": 297.3685935996318,
-        "nrmse_dgm": 73.8208022614461,
-        "dgm_linearity": 0.317280080955598,
-        "calc_moment_dev": 14.73834728449583,
-        "calc_streak": 0.03952170551883971,
-        "correlation": 0.5675130125305997,
-        "xsim": 0.22647833624207583,
-        "hfen": 70.04974316542824,
-        "coverage": 0.9543711091798748
+        "nrmse": 75.93622169739571,
+        "nrmse_detrend": 115.40993561393792,
+        "nrmse_tissue": 114.14067261375034,
+        "nrmse_blood": 267.2336149305578,
+        "nrmse_dgm": 66.66599445333053,
+        "dgm_linearity": 0.20477619084532972,
+        "calc_moment_dev": 20.30639777332544,
+        "calc_streak": 0.055799234347649,
+        "correlation": 0.6548484716595594,
+        "xsim": 0.15594000196815058,
+        "hfen": 69.35156896394231,
+        "coverage": 0.7174445318502659
       },
       "status": "ok",
       "id": "romeo-qsmrs~vsharp-qsmrs~medi-cornell-cmp",
@@ -36158,8 +36158,8 @@
         "dipole": "medi-cornell"
       },
       "phantom": "sim",
-      "ci_run": "40671223614.1",
-      "ci_sha": "e1c013e25bae21806d185cb3bed4b23c2ff42580",
+      "ci_run": "40979426694.1",
+      "ci_sha": "283ae4148992f976aa116f20f008467643f69441",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -36167,7 +36167,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-28T13:02:45Z",
+      "scored_at": "2026-10-30T05:52:30Z",
       "method_versions": {
         "romeo-qsmrs": {
           "commit": "6b4f723f8c623d114485f182aa9f14ad5faf1d13",
@@ -36178,8 +36178,8 @@
           "date": "2026-10-28T15:47:56+10:00"
         },
         "medi-cornell": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "0e3f3b6582fac87d84469264606d10b7c9b5e89c",
+          "date": "2026-10-28T10:56:28+10:00"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/64/romeo-qsmrs_vsharp-qsmrs_medi-cornell-cmp__resources.json",
@@ -36321,20 +36321,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 888.5181033611298,
+      "runtime_s": 1081.243198633194,
       "metrics": {
-        "nrmse": 69.87750002997375,
-        "nrmse_detrend": 95.80359428895623,
-        "nrmse_tissue": 110.29492999457722,
-        "nrmse_blood": 125.1472914309974,
-        "nrmse_dgm": 44.23961682916887,
-        "dgm_linearity": 0.156062900937615,
-        "calc_moment_dev": 0.8187104798853397,
-        "calc_streak": 0.018873031888265144,
-        "correlation": 0.7220954714147267,
-        "xsim": 0.31638887798511967,
-        "hfen": 65.69650555442405,
-        "coverage": 0.7175742417502596
+        "nrmse": 74.73995040777618,
+        "nrmse_detrend": 112.2909103969372,
+        "nrmse_tissue": 123.40635274961913,
+        "nrmse_blood": 155.06299813751468,
+        "nrmse_dgm": 33.57879657572662,
+        "dgm_linearity": 0.10113468515379109,
+        "calc_moment_dev": 14.659790024161339,
+        "calc_streak": 0.03744844045347865,
+        "correlation": 0.6650540397163258,
+        "xsim": 0.17989916731652808,
+        "hfen": 70.94201329661865,
+        "coverage": 0.5216565938027662
       },
       "status": "ok",
       "id": "gt~resharp-qsmrs~medi-cornell-cmp",
@@ -36346,8 +36346,8 @@
         "dipole": "medi-cornell"
       },
       "phantom": "sim",
-      "ci_run": "40527386910.1",
-      "ci_sha": "88a2ce9e9c84d46fd68671bc9748bd2c66798190",
+      "ci_run": "40979426694.1",
+      "ci_sha": "283ae4148992f976aa116f20f008467643f69441",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -36355,15 +36355,15 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-27T16:38:42Z",
+      "scored_at": "2026-10-30T05:52:30Z",
       "method_versions": {
         "resharp-qsmrs": {
           "commit": "6b4f723f8c623d114485f182aa9f14ad5faf1d13",
           "date": "2026-10-19T11:14:00+10:00"
         },
         "medi-cornell": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "0e3f3b6582fac87d84469264606d10b7c9b5e89c",
+          "date": "2026-10-28T10:56:28+10:00"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/f1/gt_resharp-qsmrs_medi-cornell-cmp__resources.json",
@@ -36381,20 +36381,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 927.9002261161804,
+      "runtime_s": 1062.0421063899994,
       "metrics": {
-        "nrmse": 71.19709779785858,
-        "nrmse_detrend": 100.81529269861397,
-        "nrmse_tissue": 119.22008010341254,
-        "nrmse_blood": 127.18403552610735,
-        "nrmse_dgm": 46.225568990109075,
-        "dgm_linearity": 0.1858924829302575,
-        "calc_moment_dev": 1.4077020436525345,
-        "calc_streak": 0.02306701030872256,
-        "correlation": 0.7042301850345086,
-        "xsim": 0.29798356277813925,
-        "hfen": 65.57367510903845,
-        "coverage": 0.7175742417502596
+        "nrmse": 74.91630530217452,
+        "nrmse_detrend": 112.94594729391488,
+        "nrmse_tissue": 124.25017358764468,
+        "nrmse_blood": 155.76904276568587,
+        "nrmse_dgm": 33.76797999456704,
+        "dgm_linearity": 0.0904398997297663,
+        "calc_moment_dev": 14.253131903707981,
+        "calc_streak": 0.04174500885976179,
+        "correlation": 0.6628946707837349,
+        "xsim": 0.18403325640135273,
+        "hfen": 70.86532642131024,
+        "coverage": 0.5216565938027662
       },
       "status": "ok",
       "id": "gt~sharp-qsmrs~medi-cornell-cmp",
@@ -36406,8 +36406,8 @@
         "dipole": "medi-cornell"
       },
       "phantom": "sim",
-      "ci_run": "40527386910.1",
-      "ci_sha": "88a2ce9e9c84d46fd68671bc9748bd2c66798190",
+      "ci_run": "40979426694.1",
+      "ci_sha": "283ae4148992f976aa116f20f008467643f69441",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -36415,15 +36415,15 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-27T16:45:16Z",
+      "scored_at": "2026-10-30T05:52:30Z",
       "method_versions": {
         "sharp-qsmrs": {
           "commit": "6b4f723f8c623d114485f182aa9f14ad5faf1d13",
           "date": "2026-10-19T11:14:00+10:00"
         },
         "medi-cornell": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "0e3f3b6582fac87d84469264606d10b7c9b5e89c",
+          "date": "2026-10-28T10:56:28+10:00"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/64/gt_sharp-qsmrs_medi-cornell-cmp__resources.json",
@@ -36610,20 +36610,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 387.7416114807129,
+      "runtime_s": 1119.4746103286743,
       "metrics": {
-        "nrmse": 122.50612289194821,
-        "nrmse_detrend": 291.47351564760464,
-        "nrmse_tissue": 321.90071848167145,
-        "nrmse_blood": 314.32710479009967,
-        "nrmse_dgm": 116.42938256293044,
-        "dgm_linearity": 0.6927085264679603,
-        "calc_moment_dev": 16.43912734091282,
-        "calc_streak": 0.055338899124448886,
-        "correlation": 0.3245166178454334,
-        "xsim": 0.10158987560089439,
-        "hfen": 76.08483199790989,
-        "coverage": 1.0
+        "nrmse": 74.57458019795877,
+        "nrmse_detrend": 110.27180751756309,
+        "nrmse_tissue": 108.06946870112233,
+        "nrmse_blood": 259.5542610400588,
+        "nrmse_dgm": 65.46764626676367,
+        "dgm_linearity": 0.19085929453090988,
+        "calc_moment_dev": 19.439913637936115,
+        "calc_streak": 0.053968163633054685,
+        "correlation": 0.6717634658149754,
+        "xsim": 0.15767473936669454,
+        "hfen": 66.32849523163388,
+        "coverage": 0.7544507663184592
       },
       "status": "ok",
       "id": "romeo-qsmrs~harperella-qsmrs~medi-cornell-cmp",
@@ -36635,8 +36635,8 @@
         "dipole": "medi-cornell"
       },
       "phantom": "sim",
-      "ci_run": "40527386910.1",
-      "ci_sha": "88a2ce9e9c84d46fd68671bc9748bd2c66798190",
+      "ci_run": "40979426694.1",
+      "ci_sha": "283ae4148992f976aa116f20f008467643f69441",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -36644,7 +36644,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-27T16:32:31Z",
+      "scored_at": "2026-10-30T05:52:30Z",
       "method_versions": {
         "romeo-qsmrs": {
           "commit": "6b4f723f8c623d114485f182aa9f14ad5faf1d13",
@@ -36655,8 +36655,8 @@
           "date": "2026-10-19T11:14:00+10:00"
         },
         "medi-cornell": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "0e3f3b6582fac87d84469264606d10b7c9b5e89c",
+          "date": "2026-10-28T10:56:28+10:00"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/e2/romeo-qsmrs_harperella-qsmrs_medi-cornell-cmp__resources.json",
@@ -36674,20 +36674,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 924.3253645896912,
+      "runtime_s": 1117.2139313220978,
       "metrics": {
-        "nrmse": 84.94280667801159,
-        "nrmse_detrend": 148.64791110727725,
-        "nrmse_tissue": 161.84812436823248,
-        "nrmse_blood": 305.678885314997,
-        "nrmse_dgm": 76.97725762358988,
-        "dgm_linearity": 0.36378937087139385,
-        "calc_moment_dev": 16.28060620650649,
-        "calc_streak": 0.03752960724914459,
-        "correlation": 0.5581785989339495,
-        "xsim": 0.2443854739577015,
-        "hfen": 70.96782441838764,
-        "coverage": 1.0
+        "nrmse": 74.5832997662821,
+        "nrmse_detrend": 110.28927326803189,
+        "nrmse_tissue": 108.05445409321558,
+        "nrmse_blood": 259.899387273569,
+        "nrmse_dgm": 65.46509365482156,
+        "dgm_linearity": 0.19396523499053664,
+        "calc_moment_dev": 19.110926039516926,
+        "calc_streak": 0.053932507250063134,
+        "correlation": 0.6717050838563923,
+        "xsim": 0.15824978366281844,
+        "hfen": 66.27876019292229,
+        "coverage": 0.7544507663184592
       },
       "status": "ok",
       "id": "romeo-qsmrs~iharperella-qsmrs~medi-cornell-cmp",
@@ -36699,8 +36699,8 @@
         "dipole": "medi-cornell"
       },
       "phantom": "sim",
-      "ci_run": "40527386910.1",
-      "ci_sha": "88a2ce9e9c84d46fd68671bc9748bd2c66798190",
+      "ci_run": "40979426694.1",
+      "ci_sha": "283ae4148992f976aa116f20f008467643f69441",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -36708,7 +36708,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-27T17:13:37Z",
+      "scored_at": "2026-10-30T05:52:30Z",
       "method_versions": {
         "romeo-qsmrs": {
           "commit": "6b4f723f8c623d114485f182aa9f14ad5faf1d13",
@@ -36719,8 +36719,8 @@
           "date": "2026-10-19T11:14:00+10:00"
         },
         "medi-cornell": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "0e3f3b6582fac87d84469264606d10b7c9b5e89c",
+          "date": "2026-10-28T10:56:28+10:00"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/01/romeo-qsmrs_iharperella-qsmrs_medi-cornell-cmp__resources.json",
@@ -36790,20 +36790,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 748.6421437263489,
+      "runtime_s": 880.7697951793671,
       "metrics": {
-        "nrmse": 77.61724050284839,
-        "nrmse_detrend": 122.56537034957648,
-        "nrmse_tissue": 119.20181869539485,
-        "nrmse_blood": 350.73896930021033,
-        "nrmse_dgm": 66.33402315733686,
-        "dgm_linearity": 0.2347074504025557,
-        "calc_moment_dev": 11.810661979019642,
-        "calc_streak": 0.032367917654389344,
-        "correlation": 0.6321740242882108,
-        "xsim": 0.23885251755833087,
-        "hfen": 71.14134635412712,
-        "coverage": 0.7621364593927898
+        "nrmse": 80.86676565178452,
+        "nrmse_detrend": 134.93391028864835,
+        "nrmse_tissue": 139.09853041168665,
+        "nrmse_blood": 273.4911507267693,
+        "nrmse_dgm": 67.20531543781222,
+        "dgm_linearity": 0.19197207114693104,
+        "calc_moment_dev": 20.918540015816685,
+        "calc_streak": 0.055467841328446975,
+        "correlation": 0.5954157491934218,
+        "xsim": 0.13876926275902704,
+        "hfen": 77.20384543711928,
+        "coverage": 0.5583629695021505
       },
       "status": "ok",
       "id": "romeo-qsmrs~ismv-qsmrs~medi-cornell-cmp",
@@ -36815,8 +36815,8 @@
         "dipole": "medi-cornell"
       },
       "phantom": "sim",
-      "ci_run": "40527386910.1",
-      "ci_sha": "88a2ce9e9c84d46fd68671bc9748bd2c66798190",
+      "ci_run": "40979426694.1",
+      "ci_sha": "283ae4148992f976aa116f20f008467643f69441",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -36824,7 +36824,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-27T16:28:00Z",
+      "scored_at": "2026-10-30T05:52:30Z",
       "method_versions": {
         "romeo-qsmrs": {
           "commit": "6b4f723f8c623d114485f182aa9f14ad5faf1d13",
@@ -36835,8 +36835,8 @@
           "date": "2026-10-19T11:14:00+10:00"
         },
         "medi-cornell": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "0e3f3b6582fac87d84469264606d10b7c9b5e89c",
+          "date": "2026-10-28T10:56:28+10:00"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/69/romeo-qsmrs_ismv-qsmrs_medi-cornell-cmp__resources.json",
@@ -46559,20 +46559,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 971.6761586666107,
+      "runtime_s": 1008.5820713043213,
       "metrics": {
-        "nrmse": 90.94786824570146,
-        "nrmse_detrend": 151.14905518860994,
-        "nrmse_tissue": 166.44058650535843,
-        "nrmse_blood": 366.39690903756514,
-        "nrmse_dgm": 76.24526544804694,
-        "dgm_linearity": 0.28720742533965526,
-        "calc_moment_dev": 7.8341188579797745,
-        "calc_streak": 0.02493044264491045,
-        "correlation": 0.5517705436405608,
-        "xsim": 0.11962944110597956,
-        "hfen": 76.3023583151048,
-        "coverage": 0.9543711091798748
+        "nrmse": 75.48708885726123,
+        "nrmse_detrend": 113.1676393960092,
+        "nrmse_tissue": 111.39440280980841,
+        "nrmse_blood": 262.59414196197145,
+        "nrmse_dgm": 65.81000898536396,
+        "dgm_linearity": 0.19964030815115452,
+        "calc_moment_dev": 18.86855386197567,
+        "calc_streak": 0.053450918936342434,
+        "correlation": 0.6621657779035793,
+        "xsim": 0.1559153256778055,
+        "hfen": 69.0716718973837,
+        "coverage": 0.7174445318502659
       },
       "status": "ok",
       "id": "romeo-qsmrs~lbv-qsmrs~medi-cornell-cmp",
@@ -46584,8 +46584,8 @@
         "dipole": "medi-cornell"
       },
       "phantom": "sim",
-      "ci_run": "40527386910.1",
-      "ci_sha": "88a2ce9e9c84d46fd68671bc9748bd2c66798190",
+      "ci_run": "40979426694.1",
+      "ci_sha": "283ae4148992f976aa116f20f008467643f69441",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -46593,7 +46593,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-27T17:14:51Z",
+      "scored_at": "2026-10-30T05:52:30Z",
       "method_versions": {
         "romeo-qsmrs": {
           "commit": "6b4f723f8c623d114485f182aa9f14ad5faf1d13",
@@ -46604,8 +46604,8 @@
           "date": "2026-10-19T11:14:00+10:00"
         },
         "medi-cornell": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "0e3f3b6582fac87d84469264606d10b7c9b5e89c",
+          "date": "2026-10-28T10:56:28+10:00"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/8c/romeo-qsmrs_lbv-qsmrs_medi-cornell-cmp__resources.json",
@@ -51401,20 +51401,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 895.0704324245453,
+      "runtime_s": 1588.9759125709534,
       "metrics": {
-        "nrmse": 73.9930151034093,
-        "nrmse_detrend": 108.64365908501577,
-        "nrmse_tissue": 136.78279934053882,
-        "nrmse_blood": 121.65681853088145,
-        "nrmse_dgm": 49.00426652922003,
-        "dgm_linearity": 0.0740008824520928,
-        "calc_moment_dev": 34.37347091734409,
-        "calc_streak": 0.03326657238434278,
-        "correlation": 0.6772319582384226,
-        "xsim": 0.32588523729027324,
-        "hfen": 62.194076700018904,
-        "coverage": 1.0
+        "nrmse": 64.97417476850987,
+        "nrmse_detrend": 85.34243352151968,
+        "nrmse_tissue": 88.4059319612712,
+        "nrmse_blood": 129.76218599203182,
+        "nrmse_dgm": 36.18850423131699,
+        "dgm_linearity": 0.03135287550787924,
+        "calc_moment_dev": 34.87728616595268,
+        "calc_streak": 0.03005421970773885,
+        "correlation": 0.760652464695584,
+        "xsim": 0.18754474292222462,
+        "hfen": 55.43381322675472,
+        "coverage": 0.7544507663184592
       },
       "status": "ok",
       "id": "gt~bfrnet~medi-cornell-cmp",
@@ -51426,8 +51426,8 @@
         "dipole": "medi-cornell"
       },
       "phantom": "sim",
-      "ci_run": "40527386910.1",
-      "ci_sha": "88a2ce9e9c84d46fd68671bc9748bd2c66798190",
+      "ci_run": "40979426694.1",
+      "ci_sha": "283ae4148992f976aa116f20f008467643f69441",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -51435,15 +51435,15 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-27T17:14:51Z",
+      "scored_at": "2026-10-30T05:52:30Z",
       "method_versions": {
         "bfrnet": {
           "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
           "date": "2026-10-07T03:23:21Z"
         },
         "medi-cornell": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "0e3f3b6582fac87d84469264606d10b7c9b5e89c",
+          "date": "2026-10-28T10:56:28+10:00"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/d9/gt_bfrnet_medi-cornell-cmp__resources.json",
@@ -57910,20 +57910,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 635.2759215831757,
+      "runtime_s": 1120.5192067623138,
       "metrics": {
-        "nrmse": 83.66684275995765,
-        "nrmse_detrend": 144.24160445781698,
-        "nrmse_tissue": 148.2521786119288,
-        "nrmse_blood": 301.4596263797987,
-        "nrmse_dgm": 79.70961076318859,
-        "dgm_linearity": 0.3621984292032022,
-        "calc_moment_dev": 27.031498704105612,
-        "calc_streak": 0.050918280950602524,
-        "correlation": 0.569750714976049,
-        "xsim": 0.24598575697676955,
-        "hfen": 73.556591312514,
-        "coverage": 1.0
+        "nrmse": 78.01495982326087,
+        "nrmse_detrend": 119.63740006000633,
+        "nrmse_tissue": 116.61135712786745,
+        "nrmse_blood": 294.44209312260466,
+        "nrmse_dgm": 78.34077404682002,
+        "dgm_linearity": 0.24658487576689425,
+        "calc_moment_dev": 24.535877145826817,
+        "calc_streak": 0.0617021608805058,
+        "correlation": 0.6413273554653823,
+        "xsim": 0.15821926551205867,
+        "hfen": 71.76612534691257,
+        "coverage": 0.7544507663184592
       },
       "status": "ok",
       "id": "laplacian-qsmrs~iharperella-qsmrs~medi-cornell-cmp",
@@ -57935,8 +57935,8 @@
         "dipole": "medi-cornell"
       },
       "phantom": "sim",
-      "ci_run": "40527386910.1",
-      "ci_sha": "88a2ce9e9c84d46fd68671bc9748bd2c66798190",
+      "ci_run": "40979426694.1",
+      "ci_sha": "283ae4148992f976aa116f20f008467643f69441",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -57944,7 +57944,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-27T17:14:51Z",
+      "scored_at": "2026-10-30T05:52:30Z",
       "method_versions": {
         "laplacian-qsmrs": {
           "commit": "1e1036c28fc437ed33839b1663024fa5f4f2738c",
@@ -57955,8 +57955,8 @@
           "date": "2026-10-19T11:14:00+10:00"
         },
         "medi-cornell": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "0e3f3b6582fac87d84469264606d10b7c9b5e89c",
+          "date": "2026-10-28T10:56:28+10:00"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/7d/laplacian-qsmrs_iharperella-qsmrs_medi-cornell-cmp__resources.json",
@@ -59638,20 +59638,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1158.9030327796936,
+      "runtime_s": 1097.6985108852386,
       "metrics": {
-        "nrmse": 92.03949321766713,
-        "nrmse_detrend": 150.23884234641,
-        "nrmse_tissue": 158.03167277281997,
-        "nrmse_blood": 363.99864448942174,
-        "nrmse_dgm": 66.21590115455214,
-        "dgm_linearity": 0.10468371838329504,
-        "calc_moment_dev": 22.08366396278143,
-        "calc_streak": 0.0367554920494099,
-        "correlation": 0.5540892468759784,
-        "xsim": 0.10845554562456922,
-        "hfen": 80.67460134578671,
-        "coverage": 0.7621364593927898
+        "nrmse": 83.2312943447379,
+        "nrmse_detrend": 141.87115911905002,
+        "nrmse_tissue": 145.07770766649378,
+        "nrmse_blood": 301.9379192255301,
+        "nrmse_dgm": 78.4937965922064,
+        "dgm_linearity": 0.2625695356674189,
+        "calc_moment_dev": 24.638388946652412,
+        "calc_streak": 0.06604292214223098,
+        "correlation": 0.5761280062758785,
+        "xsim": 0.1397769468108798,
+        "hfen": 80.60923658993707,
+        "coverage": 0.5583629695021505
       },
       "status": "ok",
       "id": "laplacian-qsmrs~ismv-qsmrs~medi-cornell-cmp",
@@ -59663,8 +59663,8 @@
         "dipole": "medi-cornell"
       },
       "phantom": "sim",
-      "ci_run": "40527386910.1",
-      "ci_sha": "88a2ce9e9c84d46fd68671bc9748bd2c66798190",
+      "ci_run": "40979426694.1",
+      "ci_sha": "283ae4148992f976aa116f20f008467643f69441",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -59672,7 +59672,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-27T17:19:55Z",
+      "scored_at": "2026-10-30T05:52:30Z",
       "method_versions": {
         "laplacian-qsmrs": {
           "commit": "1e1036c28fc437ed33839b1663024fa5f4f2738c",
@@ -59683,8 +59683,8 @@
           "date": "2026-10-19T11:14:00+10:00"
         },
         "medi-cornell": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "0e3f3b6582fac87d84469264606d10b7c9b5e89c",
+          "date": "2026-10-28T10:56:28+10:00"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/9e/laplacian-qsmrs_ismv-qsmrs_medi-cornell-cmp__resources.json",
@@ -61366,20 +61366,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 448.23122382164,
+      "runtime_s": 1096.0309500694275,
       "metrics": {
-        "nrmse": 213.5961420840573,
-        "nrmse_detrend": 346.5420823709019,
-        "nrmse_tissue": 454.3953935622817,
-        "nrmse_blood": 918.7987487764293,
-        "nrmse_dgm": 77.07028649524216,
-        "dgm_linearity": 0.36489590589746124,
-        "calc_moment_dev": 29.38373802602291,
-        "calc_streak": 0.09409291309628735,
-        "correlation": 0.27725263443931963,
-        "xsim": 0.05932325820157265,
-        "hfen": 113.75387966545567,
-        "coverage": 0.9543711091798748
+        "nrmse": 79.28225236040095,
+        "nrmse_detrend": 123.33718870849613,
+        "nrmse_tissue": 121.08911590294244,
+        "nrmse_blood": 297.1573969244446,
+        "nrmse_dgm": 79.34703635258312,
+        "dgm_linearity": 0.2803875953936875,
+        "calc_moment_dev": 22.853747569024566,
+        "calc_streak": 0.05984432436072048,
+        "correlation": 0.629790080139091,
+        "xsim": 0.159359862597342,
+        "hfen": 73.68796989735445,
+        "coverage": 0.7174445318502659
       },
       "status": "ok",
       "id": "laplacian-qsmrs~lbv-qsmrs~medi-cornell-cmp",
@@ -61391,8 +61391,8 @@
         "dipole": "medi-cornell"
       },
       "phantom": "sim",
-      "ci_run": "40527386910.1",
-      "ci_sha": "88a2ce9e9c84d46fd68671bc9748bd2c66798190",
+      "ci_run": "40979426694.1",
+      "ci_sha": "283ae4148992f976aa116f20f008467643f69441",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -61400,7 +61400,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-27T17:32:07Z",
+      "scored_at": "2026-10-30T05:52:30Z",
       "method_versions": {
         "laplacian-qsmrs": {
           "commit": "1e1036c28fc437ed33839b1663024fa5f4f2738c",
@@ -61411,8 +61411,8 @@
           "date": "2026-10-19T11:14:00+10:00"
         },
         "medi-cornell": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "0e3f3b6582fac87d84469264606d10b7c9b5e89c",
+          "date": "2026-10-28T10:56:28+10:00"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/31/laplacian-qsmrs_lbv-qsmrs_medi-cornell-cmp__resources.json",
@@ -63094,20 +63094,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 842.2214779853821,
+      "runtime_s": 1594.2142128944397,
       "metrics": {
-        "nrmse": 225.825179955497,
-        "nrmse_detrend": 445.4461337188549,
-        "nrmse_tissue": 544.1710534026681,
-        "nrmse_blood": 1206.7463399339938,
-        "nrmse_dgm": 84.7266003551762,
-        "dgm_linearity": 0.5124534563023573,
-        "calc_moment_dev": 35.02804963197559,
-        "calc_streak": 0.12220585444694491,
-        "correlation": 0.21904228013755977,
-        "xsim": 0.08965353318892923,
-        "hfen": 105.18546655767398,
-        "coverage": 1.0
+        "nrmse": 79.97856058462432,
+        "nrmse_detrend": 124.54360122352391,
+        "nrmse_tissue": 122.33946009264524,
+        "nrmse_blood": 300.63922839564407,
+        "nrmse_dgm": 80.46144393014158,
+        "dgm_linearity": 0.2570757787323432,
+        "calc_moment_dev": 23.324192889034748,
+        "calc_streak": 0.064484046734078,
+        "correlation": 0.6260879340905835,
+        "xsim": 0.15874068389167056,
+        "hfen": 72.34090402726645,
+        "coverage": 0.7544500033190474
       },
       "status": "ok",
       "id": "laplacian-qsmrs~pdf-qsmrs~medi-cornell-cmp",
@@ -63119,8 +63119,8 @@
         "dipole": "medi-cornell"
       },
       "phantom": "sim",
-      "ci_run": "40527386910.1",
-      "ci_sha": "88a2ce9e9c84d46fd68671bc9748bd2c66798190",
+      "ci_run": "40979426694.1",
+      "ci_sha": "283ae4148992f976aa116f20f008467643f69441",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -63128,7 +63128,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-27T17:36:17Z",
+      "scored_at": "2026-10-30T05:52:30Z",
       "method_versions": {
         "laplacian-qsmrs": {
           "commit": "1e1036c28fc437ed33839b1663024fa5f4f2738c",
@@ -63139,8 +63139,8 @@
           "date": "2026-10-19T11:14:00+10:00"
         },
         "medi-cornell": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "0e3f3b6582fac87d84469264606d10b7c9b5e89c",
+          "date": "2026-10-28T10:56:28+10:00"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/49/laplacian-qsmrs_pdf-qsmrs_medi-cornell-cmp__resources.json",
@@ -64822,20 +64822,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 755.5753493309021,
+      "runtime_s": 1117.8387706279755,
       "metrics": {
-        "nrmse": 86.85825648302196,
-        "nrmse_detrend": 162.48371900920245,
-        "nrmse_tissue": 175.18827980749003,
-        "nrmse_blood": 359.755129279385,
-        "nrmse_dgm": 79.68327312956743,
-        "dgm_linearity": 0.29345425049077634,
-        "calc_moment_dev": 23.78574699163437,
-        "calc_streak": 0.04796102638665525,
-        "correlation": 0.5241355143389196,
-        "xsim": 0.18652785756872628,
-        "hfen": 77.35668349575096,
-        "coverage": 0.7175742417502596
+        "nrmse": 85.39590488060017,
+        "nrmse_detrend": 151.3721497981643,
+        "nrmse_tissue": 157.18243064653356,
+        "nrmse_blood": 305.99614545431257,
+        "nrmse_dgm": 81.27460606820517,
+        "dgm_linearity": 0.2905499276956304,
+        "calc_moment_dev": 24.147307544946674,
+        "calc_streak": 0.07000908060297535,
+        "correlation": 0.5512045366585194,
+        "xsim": 0.12702968401996104,
+        "hfen": 82.2583812888852,
+        "coverage": 0.5216558308033544
       },
       "status": "ok",
       "id": "laplacian-qsmrs~resharp-qsmrs~medi-cornell-cmp",
@@ -64847,8 +64847,8 @@
         "dipole": "medi-cornell"
       },
       "phantom": "sim",
-      "ci_run": "40527386910.1",
-      "ci_sha": "88a2ce9e9c84d46fd68671bc9748bd2c66798190",
+      "ci_run": "40979426694.1",
+      "ci_sha": "283ae4148992f976aa116f20f008467643f69441",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -64856,7 +64856,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-27T17:15:40Z",
+      "scored_at": "2026-10-30T05:52:30Z",
       "method_versions": {
         "laplacian-qsmrs": {
           "commit": "1e1036c28fc437ed33839b1663024fa5f4f2738c",
@@ -64867,8 +64867,8 @@
           "date": "2026-10-19T11:14:00+10:00"
         },
         "medi-cornell": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "0e3f3b6582fac87d84469264606d10b7c9b5e89c",
+          "date": "2026-10-28T10:56:28+10:00"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/db/laplacian-qsmrs_resharp-qsmrs_medi-cornell-cmp__resources.json",
@@ -68332,20 +68332,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 989.7842011451721,
+      "runtime_s": 1094.4874773025513,
       "metrics": {
-        "nrmse": 89.63508275595406,
-        "nrmse_detrend": 162.98834354635233,
-        "nrmse_tissue": 163.68061791145308,
-        "nrmse_blood": 331.0054336830432,
-        "nrmse_dgm": 77.52705671358612,
-        "dgm_linearity": 0.2260607934353639,
-        "calc_moment_dev": 24.27373979240656,
-        "calc_streak": 0.04506389032971641,
-        "correlation": 0.5229570505976943,
-        "xsim": 0.20715044445692177,
-        "hfen": 73.56812408666389,
-        "coverage": 0.9543711091798748
+        "nrmse": 78.99231930152696,
+        "nrmse_detrend": 123.41179040991116,
+        "nrmse_tissue": 120.74698402424777,
+        "nrmse_blood": 298.81334874994053,
+        "nrmse_dgm": 80.43931986660516,
+        "dgm_linearity": 0.2848611387853176,
+        "calc_moment_dev": 24.208419799804688,
+        "calc_streak": 0.06129859739992323,
+        "correlation": 0.6295602940085526,
+        "xsim": 0.1651448002517786,
+        "hfen": 74.00140794504482,
+        "coverage": 0.7174445318502659
       },
       "status": "ok",
       "id": "laplacian-qsmrs~vsharp-qsmrs~medi-cornell-cmp",
@@ -68357,8 +68357,8 @@
         "dipole": "medi-cornell"
       },
       "phantom": "sim",
-      "ci_run": "40671223614.1",
-      "ci_sha": "e1c013e25bae21806d185cb3bed4b23c2ff42580",
+      "ci_run": "40979426694.1",
+      "ci_sha": "283ae4148992f976aa116f20f008467643f69441",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -68366,7 +68366,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-28T13:02:45Z",
+      "scored_at": "2026-10-30T05:52:30Z",
       "method_versions": {
         "laplacian-qsmrs": {
           "commit": "1e1036c28fc437ed33839b1663024fa5f4f2738c",
@@ -68377,8 +68377,8 @@
           "date": "2026-10-28T15:47:56+10:00"
         },
         "medi-cornell": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "0e3f3b6582fac87d84469264606d10b7c9b5e89c",
+          "date": "2026-10-28T10:56:28+10:00"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/17/laplacian-qsmrs_vsharp-qsmrs_medi-cornell-cmp__resources.json",
@@ -70114,20 +70114,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 934.7196323871613,
+      "runtime_s": 1100.9573159217834,
       "metrics": {
-        "nrmse": 83.52426759855088,
-        "nrmse_detrend": 151.87102983632528,
-        "nrmse_tissue": 162.62753167559072,
-        "nrmse_blood": 340.5195699401576,
-        "nrmse_dgm": 79.87491866727612,
-        "dgm_linearity": 0.23653939950821667,
-        "calc_moment_dev": 25.704691044986248,
-        "calc_streak": 0.04486002521323108,
-        "correlation": 0.5499421234154518,
-        "xsim": 0.20784395462459426,
-        "hfen": 72.12563231086494,
-        "coverage": 0.9082951007044774
+        "nrmse": 81.24609733549399,
+        "nrmse_detrend": 134.52163038864975,
+        "nrmse_tissue": 134.19528096149665,
+        "nrmse_blood": 312.30568516697446,
+        "nrmse_dgm": 83.52620839128028,
+        "dgm_linearity": 0.22476965653122216,
+        "calc_moment_dev": 25.046810783445835,
+        "calc_streak": 0.06176275142823405,
+        "correlation": 0.5965917168547169,
+        "xsim": 0.15796895838678354,
+        "hfen": 75.67193631968,
+        "coverage": 0.6788276056239161
       },
       "status": "ok",
       "id": "laplacian-qsmrs~vsharp-sti~medi-cornell-cmp",
@@ -70139,8 +70139,8 @@
         "dipole": "medi-cornell"
       },
       "phantom": "sim",
-      "ci_run": "40979330487.1",
-      "ci_sha": "b45349676af7df5dadecba7fce6cf0422dee5b5d",
+      "ci_run": "40979426694.1",
+      "ci_sha": "283ae4148992f976aa116f20f008467643f69441",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -70148,7 +70148,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-30T03:00:46Z",
+      "scored_at": "2026-10-30T05:52:30Z",
       "method_versions": {
         "laplacian-qsmrs": {
           "commit": "1e1036c28fc437ed33839b1663024fa5f4f2738c",
@@ -70159,8 +70159,8 @@
           "date": "2026-10-28T03:50:47+10:00"
         },
         "medi-cornell": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "0e3f3b6582fac87d84469264606d10b7c9b5e89c",
+          "date": "2026-10-28T10:56:28+10:00"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/34/laplacian-qsmrs_vsharp-sti_medi-cornell-cmp__resources.json",
@@ -72048,20 +72048,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 1422.5606966018677,
+      "runtime_s": 1606.9530057907104,
       "metrics": {
-        "nrmse": 90.44487624171023,
-        "nrmse_detrend": 188.76233062612408,
-        "nrmse_tissue": 222.423710993394,
-        "nrmse_blood": 325.52972813242053,
-        "nrmse_dgm": 75.22527049482342,
-        "dgm_linearity": 0.26805361558463014,
-        "calc_moment_dev": 27.856059826910496,
-        "calc_streak": 0.056908107191926245,
-        "correlation": 0.46813269290797394,
-        "xsim": 0.19117129006977143,
-        "hfen": 74.40163717338191,
-        "coverage": 1.0
+        "nrmse": 79.97231720043969,
+        "nrmse_detrend": 127.74146635417199,
+        "nrmse_tissue": 126.62757022458214,
+        "nrmse_blood": 304.731481936063,
+        "nrmse_dgm": 77.17448185036297,
+        "dgm_linearity": 0.18219084450117662,
+        "calc_moment_dev": 25.194280304014683,
+        "calc_streak": 0.062114089478402634,
+        "correlation": 0.6164168906308581,
+        "xsim": 0.15619930297617343,
+        "hfen": 71.81578585055478,
+        "coverage": 0.7544507663184592
       },
       "status": "ok",
       "id": "laplacian-qsmrs~bfrnet~medi-cornell-cmp",
@@ -72073,8 +72073,8 @@
         "dipole": "medi-cornell"
       },
       "phantom": "sim",
-      "ci_run": "40527386910.1",
-      "ci_sha": "88a2ce9e9c84d46fd68671bc9748bd2c66798190",
+      "ci_run": "40979426694.1",
+      "ci_sha": "283ae4148992f976aa116f20f008467643f69441",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -72082,7 +72082,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-27T17:13:37Z",
+      "scored_at": "2026-10-30T05:52:30Z",
       "method_versions": {
         "laplacian-qsmrs": {
           "commit": "1e1036c28fc437ed33839b1663024fa5f4f2738c",
@@ -72093,8 +72093,8 @@
           "date": "2026-10-07T03:23:21Z"
         },
         "medi-cornell": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "0e3f3b6582fac87d84469264606d10b7c9b5e89c",
+          "date": "2026-10-28T10:56:28+10:00"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/9a/laplacian-qsmrs_bfrnet_medi-cornell-cmp__resources.json",
@@ -73776,20 +73776,20 @@
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 690.2246417999268,
+      "runtime_s": 1115.647742986679,
       "metrics": {
-        "nrmse": 96.09365587474727,
-        "nrmse_detrend": 179.6122903881541,
-        "nrmse_tissue": 215.3177368710373,
-        "nrmse_blood": 384.03068274779326,
-        "nrmse_dgm": 75.36086628032308,
-        "dgm_linearity": 0.3152126444238461,
-        "calc_moment_dev": 27.65831696987152,
-        "calc_streak": 0.05273780397095893,
-        "correlation": 0.4864433826520684,
-        "xsim": 0.19651018430965345,
-        "hfen": 80.60182648020975,
-        "coverage": 1.0
+        "nrmse": 77.97147398585949,
+        "nrmse_detrend": 119.50207345811245,
+        "nrmse_tissue": 116.46431582135162,
+        "nrmse_blood": 294.0456099227491,
+        "nrmse_dgm": 78.3137342329879,
+        "dgm_linearity": 0.24791167085967647,
+        "calc_moment_dev": 24.42044983804226,
+        "calc_streak": 0.061414571969740185,
+        "correlation": 0.6417546010267463,
+        "xsim": 0.15796769906666797,
+        "hfen": 71.71815283940064,
+        "coverage": 0.7544507663184592
       },
       "status": "ok",
       "id": "laplacian-qsmrs~harperella-qsmrs~medi-cornell-cmp",
@@ -73801,8 +73801,8 @@
         "dipole": "medi-cornell"
       },
       "phantom": "sim",
-      "ci_run": "40527386910.1",
-      "ci_sha": "88a2ce9e9c84d46fd68671bc9748bd2c66798190",
+      "ci_run": "40979426694.1",
+      "ci_sha": "283ae4148992f976aa116f20f008467643f69441",
       "ci_env": {
         "python": "3.12.15",
         "numpy": "2.2.6",
@@ -73810,7 +73810,7 @@
         "nibabel": "5.4.2",
         "pillow": "12.3.0"
       },
-      "scored_at": "2026-10-27T16:28:00Z",
+      "scored_at": "2026-10-30T05:52:30Z",
       "method_versions": {
         "laplacian-qsmrs": {
           "commit": "1e1036c28fc437ed33839b1663024fa5f4f2738c",
@@ -73821,8 +73821,8 @@
           "date": "2026-10-19T11:14:00+10:00"
         },
         "medi-cornell": {
-          "commit": "1330f51357739431bdc80a52d5cd6e50c359eb3b",
-          "date": "2026-10-07T03:23:21Z"
+          "commit": "0e3f3b6582fac87d84469264606d10b7c9b5e89c",
+          "date": "2026-10-28T10:56:28+10:00"
         }
       },
       "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/89/laplacian-qsmrs_harperella-qsmrs_medi-cornell-cmp__resources.json",
