@@ -446,7 +446,7 @@ pairs:
   ismv:
     reference: ismv-qsmjl
     candidate: ismv-qsmrs
-    enabled: false
+    enabled: true
     # QSM.rs's default iSMV is now the authors' (the lab's iSMV.m, Wen 2014; astewartau/QSM.rs#322),
     # which no container here runs yet. QSM.jl's ismv is kept as IsmvVariant::QsmJl, at QSM.jl's
     # defaults (2 × the largest voxel, tol 1e-3, 500 iterations); the candidate selects it. qsmxt
@@ -459,10 +459,16 @@ pairs:
     qsmxt_paths: &bgremove_wiring [src/cli.rs, src/commands/common.rs, src/commands/bgremove.rs]
     candidate_set: { variant: qsmjl, tol: 1e-3, max_iter: 500 }
     datasets:
-      sim: {}
+      sim:
+        # Measured: NRMSE 6.0e-09 %, max |Δ| 4.7e-10 ppm.
+        localfield: { nrmse_max: 0.501, correlation_min: 0.99, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
+        measured: { main: "run 41027339410: QSMxT main 007799a, QSM.rs main 7f8271e (limits)" }
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs]
         feed: { totalfield: totalfield }
+        # Measured: NRMSE 2.1e-09 %, max |Δ| 2.3e-10 ppm.
+        localfield: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
+        measured: { main: "run 41027339410: QSMxT main 007799a, QSM.rs main 7f8271e (limits)" }
   # SHARP's reference is Tian Liu's SHARP.m as SEPIA runs it (MATLAB, QSMxT/QSM-CI#319), which
   # QSM.rs's default follows (astewartau/QSM.rs#321); QSM.jl's sharp stays a second pair.
   sharp:
