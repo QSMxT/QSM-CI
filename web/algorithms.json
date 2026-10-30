@@ -2737,6 +2737,11 @@
           "name": "reference_edge_erosion",
           "default": false,
           "description": "erode the mask as TGV.jl does, not from the array's edge (masks reaching an array face only)"
+        },
+        {
+          "name": "reference_output_box",
+          "default": false,
+          "description": "\u03c7 over TGV.jl's whole output box, including the rim just outside the eroded mask"
         }
       ],
       "ci_notes": []

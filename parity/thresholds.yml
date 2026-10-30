@@ -600,14 +600,22 @@ pairs:
     reference: tgv-tgvjl
     candidate: tgv-qsmrs
     enabled: false
-    # NRMSE sim 3.84 % (r 0.9993), KKI 6.74 % (r 0.9977), the same on QSM.rs da928e0, on #324's
-    # first head b0f9984 (the package's divergence and edge erosion as the default; run 40616429914)
-    # and on main 7f8271e (run 41019310531). So `TgvParams::reference_divergence` /
-    # `reference_edge_erosion` (#324; `qsmxt invert tgv --reference-divergence
-    # --reference-edge-erosion`, QSMxT/QSMxT#460, set below; run 41024142665 with both on: sim
-    # 3.84 %, KKI 6.74 %, unchanged) are not the cause here, although QSM.rs matches the package to float32 rounding in its own tests and on the CBIC
-    # travelling head. Cause to be found: astewartau/QSM.rs#369.
-    blocked_by: astewartau/QSM.rs#369
+    # With laplacian=romeo (run 40607732498): sim 59.7 %, from the ±2π jumps ROMEO's re-unwrap adds.
+    # With laplacian=unwrapped, QSM.rs main da928e0 and #324's first head (b0f9984) give the same
+    # result through QSMxT main (run 40616429914): NRMSE sim 3.84 % (r 0.99926), KKI 6.74 %
+    # (r 0.99772). #324, reworked (f47f4f3), keeps QSM.rs's exact adjoint and edge erosion as the
+    # default and reproduces the package with `TgvParams::reference_divergence` and
+    # `reference_edge_erosion` (merged as 1f891b2); its own test matches the package to float32
+    # rounding that way. `qsmxt invert tgv --reference-divergence --reference-edge-erosion` exposes
+    # them (QSMxT/QSMxT#460), and the candidate_set below turns them on. Baseline with both on
+    # (run 41024142665): NRMSE sim 3.84 %, KKI 6.74 %, unchanged: on these 1 mm isotropic datasets
+    # with masks clear of the array faces the two switches change nothing, so the gap is elsewhere.
+    # The gap was the output support (astewartau/QSM.rs#369): QSM.rs returns χ inside the eroded
+    # mask, the package its whole box, whose rim just outside that mask is compared here inside the
+    # dataset mask (sim 41,907 voxels, KKI 46,101). Over the voxels both return, run 41019310531's
+    # outputs differ by 3.8e-4 % (sim) / 4.9e-3 % (KKI). `reference_output_box` (QSM.rs#375,
+    # `qsmxt invert tgv --reference-output-box`, QSMxT/QSMxT#465) returns the package's box.
+    blocked_by: QSMxT/QSMxT#465
     qsmrs_paths: [src/error.rs, src/fft.rs, src/grid.rs, src/inversion/tgv.rs, src/kernels/,
                   src/pipeline/inversion.rs, src/pipeline/rules.rs, src/utils/bias_correction.rs,
                   src/utils/connected.rs, src/utils/echo_time.rs, src/utils/gradient.rs,
@@ -620,7 +628,7 @@ pairs:
     # the ordinary discrete Laplacian: tgv-tgvjl's `unwrapped` (the package's laplacian_kernel
     # without ROMEO's re-unwrap, which adds ±2π jumps to an already unwrapped field).
     reference_set: { laplacian: unwrapped }
-    candidate_set: { reference_divergence: "true", reference_edge_erosion: "true" }
+    candidate_set: { reference_divergence: "true", reference_edge_erosion: "true", reference_output_box: "true" }
     datasets:
       sim: {}
       s002001-kki-achieva-bridge-run1:

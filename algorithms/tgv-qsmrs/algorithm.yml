@@ -54,6 +54,9 @@ parameters:
   - name: reference_edge_erosion
     default: false
     description: erode the mask as TGV.jl does, not from the array's edge (masks reaching an array face only)
+  - name: reference_output_box
+    default: false
+    description: χ over TGV.jl's whole output box, including the rim just outside the eroded mask
 
 # Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
 tuning:
