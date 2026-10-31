@@ -1,0 +1,49 @@
+name: iHARPERELLA (STI Suite)
+slug: iharperella-sti
+algorithm: iharperella   # pairs with iharperella-qsmrs (QSM.rs's port of STI Suite's iHARPERELLA)
+source: sti
+stage: bfr
+language: MATLAB
+family: iterative
+learning: none
+engine: STI Suite 3.0 (iHARPERELLA)
+inputs: [totalfield, mask, params]
+description: >
+  iHARPERELLA background field removal from STI Suite 3.0: the Laplacian of the field inside the
+  brain is kept, its boundary rim cleaned, and the Laplacian inverted over the whole field of view by
+  LSQR. Run on the unwrapped total field (STI Suite 3.0's iHARPERELLA does not unwrap), with its own
+  defaults, compiled from MATLAB and run on the license-free MATLAB Runtime.
+authors:
+- name: Wei Li
+- name: Alexandru V. Avram
+- name: Bing Wu
+- name: Xue Xiao
+- name: Chunlei Liu
+doi: 10.1002/nbm.3056
+citation: Li et al., NMR Biomed 2014
+code_url: https://people.eecs.berkeley.edu/~chunlei.liu/software.html
+license: See STI Suite license
+image: ghcr.io/astewartau/qsm-ci/matlab-sti-iharperella@sha256:40af0c6187c5e57484e9deeba283ef8f37257bd35ee722db8ff415f0923edd65   # v2
+run: bash run.sh
+smoke_box: 32
+matlab:
+  entry: recon.m
+  runtime: r2023b
+# Container vs the authors' code in licensed MATLAB with the real toolboxes (QSMxT/QSM-CI#300;
+# fidelity/REPORT.md). Rerun and update whenever the image changes.
+fidelity:
+  date: 2026-10-30
+  image: sha256:40af0c6187c5e57484e9deeba283ef8f37257bd35ee722db8ff415f0923edd65   # v2
+  matlab: R2023b Update 5 (23.2.0.2459199), Image Processing Toolbox 23.2
+  sources: STI Suite 3.0 Core_Functions_P
+  tolerance: identical   # local field and the unmasked output, in silico and in vivo, 8 threads
+  result: pass
+  report: algorithms/iharperella-sti/fidelity/REPORT.md
+# iHARPERELLA's own defaults (STI Suite 3.0, probed; QSM.rs IharperellaParams). See BUILD.md.
+parameters:
+- name: niter
+  default: 40
+  description: maximum LSQR iterations
+- name: padsize
+  default: 0
+  description: zero padding (voxels per side; the function's default, not STI_Templates.m's 12)

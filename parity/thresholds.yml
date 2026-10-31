@@ -121,35 +121,39 @@ pairs:
       chi2: chimap_stage2
     datasets:
       # The port starts from the original's own total field (Laplacian unwrapping + QSMART's
-      # magnitude-weighted echo fit), so the comparison covers QSMART's own steps: vasculature
-      # detection, the two SDF stages, the two iLSQR inversions and the offset adjustment.
+      # magnitude-weighted echo fit) and its own reliability map R_0 (`qsmxt qsmart --reliability`,
+      # Ashley 2026-10-31; parity only, scoring runs qsmart-qsmrs without one), so the comparison
+      # covers QSMART's own steps: vasculature detection, the two SDF stages, the two iLSQR
+      # inversions and the offset adjustment.
       #
-      # Limits: measured with QSMxT main 8a7072a (qsm-core da928e0) built by this workflow, plus
-      # the margins above. The pinned qsmxt v10.0.0 (QSM.rs v0.39.0) is far outside them (sim NRMSE
-      # 65.9 %, KKI 133.8 %): those runs record the gap, not a limit. Reference image both times:
-      # matlab-qsmart v3, sha256:e0e8bc69… (algorithm.yml).
+      # Limits: re-baselined with the R_0 feed (run 41190547845: QSMxT main 9cfe3f9, qsm-core
+      # 15c938f, built by this workflow), plus the margins above. The same build without the feed
+      # (run 41190566176): sim NRMSE 16.32 %, KKI 0.779 %. The pinned qsmxt v10.0.0 (QSM.rs v0.39.0)
+      # is far outside them (sim NRMSE 65.9 %, KKI 133.8 %, without the feed): those runs record
+      # the gap, not a limit. Reference image: matlab-qsmart v3, sha256:e0e8bc69… (algorithm.yml).
       sim:
-        feed: { totalfield: totalfield }
-        # Measured: NRMSE 16.71 %, r 0.9862, max |Δ| 0.283 ppm, p99 |Δ| 0.0100 ppm.
-        # The original leaves 331 voxels out by its echo-fit reliability (R_0); qsmart-qsmrs takes
-        # no R_0, so it reconstructs them too. The gap is mostly where the original's stage 2 runs
-        # (tissue outside its vessel mask, 37 % of the brain: NRMSE 37.4 %; inside the vessel
-        # mask 12.4 %). With `qsmxt qsmart --intermediates` (QSMxT/QSMxT#461; run 41024155554) the
-        # stage maps are compared too: vessel mask Dice 0.988, stage-1 local field 8.89 %, χ1
-        # 11.3 %, stage-2 local field 13.3 %, χ2 33.3 % (KKI: 0.9999, 3.35 %, 4.16 %, 2.33 %,
-        # 5.86 %), so the gap starts in stage 1's SDF. Feeding the original's R_0 (`qsmxt qsmart
-        # --reliability`) needs `feed:` to pass an input that is not a dataset artifact.
-        chimap: { nrmse_max: 18.9, correlation_min: 0.976, max_abs_max: 0.354, p99_abs_max: 0.0126 }
+        feed: { totalfield: totalfield, reliability: reliability }
+        # Measured: NRMSE 13.45 %, r 0.9909, max |Δ| 0.125 ppm, p99 |Δ| 0.00897 ppm.
+        # R_0 closes stage 1: without it (run 41190566176) the port reconstructed the 331 voxels
+        # the original leaves out, and the stage maps differed from stage 1 on (stage-1 local
+        # field 8.42 %, χ1 10.8 %, stage-2 local field 13.2 %, χ2 33.0 %, final 16.32 %). With it:
+        # stage-1 local field 0.081 %, χ1 0.137 %. What is left is stage 2 (local field 8.54 %,
+        # χ2 27.3 %), which runs outside the vessel mask, and the vessel masks still differ
+        # (Dice 0.988; KKI 0.9999). astewartau/QSM.rs#320: with the original's vessel mask as
+        # well, the whole chain is 0.15 % from MATLAB.
+        chimap: { nrmse_max: 15.3, correlation_min: 0.98, max_abs_max: 0.156, p99_abs_max: 0.0113 }
         measured:
-          main: "run 40536005482: QSMxT main 8a7072a, qsm-core da928e0 (limits)"
+          main: "run 41190547845: QSMxT main 9cfe3f9, qsm-core 15c938f, R_0 fed (limits)"
+          unfed: "run 41190566176: QSMxT main 9cfe3f9, qsm-core 15c938f, no R_0, NRMSE 16.32 %, r 0.9868"
           pinned: "run 40530165113: qsmxt v10.0.0 sha256:9258c10e…, NRMSE 65.94 %, r 0.8003"
-      # In vivo (EMTP travelling head, KKI Philips 3 T, public). R_0 rejects no voxel here.
+      # In vivo (EMTP travelling head, KKI Philips 3 T, public). R_0 rejects no voxel here: the
+      # result is the same with and without the feed (runs 41190547845, 41190566176).
       s002001-kki-achieva-bridge-run1:
-        feed: { totalfield: totalfield }
-        # Measured: NRMSE 4.618 %, r 0.9990, max |Δ| 0.0640 ppm, p99 |Δ| 0.00435 ppm.
-        chimap: { nrmse_max: 5.58, correlation_min: 0.988, max_abs_max: 0.0801, p99_abs_max: 0.00544 }
+        feed: { totalfield: totalfield, reliability: reliability }
+        # Measured: NRMSE 0.779 %, r 1.0000, max |Δ| 0.0455 ppm, p99 |Δ| 0.000446 ppm.
+        chimap: { nrmse_max: 1.36, correlation_min: 0.989, max_abs_max: 0.0569, p99_abs_max: 0.000558 }
         measured:
-          main: "run 40536005482: QSMxT main 8a7072a, qsm-core da928e0 (limits)"
+          main: "run 41190547845: QSMxT main 9cfe3f9, qsm-core 15c938f, R_0 fed (limits)"
           pinned: "run 40530165113: qsmxt v10.0.0 sha256:9258c10e…, NRMSE 133.8 %, r 0.5346"
 
   # ---- In vivo inputs. The KKI travelling head has no ground-truth fields, so a pair that starts
@@ -651,6 +655,10 @@ pairs:
     # `qsmxt invert tgv --reference-output-box`, QSMxT/QSMxT#465) returns the package's box; with
     # all three switches (run 41031701965) the pair is at float32 rounding (limits below). Enable
     # once QSMxT main has #465 (main's qsmxt refuses the setting until then).
+    # max/p99 |Δ| limits: ~10× the derived ones (Ashley, 2026-10-31). The derived limits sat at
+    # float32 rounding (sim max 2.99e-6, p99 1.0e-6; KKI 3.16e-5, 8.03e-6), and the package's
+    # FFTW/SIMD kernels round differently on different CPUs, so a pass must not depend on which
+    # runner the job lands on. NRMSE and correlation keep the derived limits.
     blocked_by: QSMxT/QSMxT#465
     qsmrs_paths: [src/error.rs, src/fft.rs, src/grid.rs, src/inversion/tgv.rs, src/kernels/,
                   src/pipeline/inversion.rs, src/pipeline/rules.rs, src/utils/bias_correction.rs,
@@ -668,11 +676,11 @@ pairs:
     datasets:
       sim:
         # Measured: NRMSE 0.00044 %, r 1.000000, max |Δ| 2.4e-06 ppm, p99 |Δ| 3.3e-07 ppm.
-        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 2.99e-06, p99_abs_max: 1.0e-06 }
+        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 3.0e-05, p99_abs_max: 1.0e-05 }
         measured: { pr369: "run 41031701965: QSMxT tgv-output-box-369 43baf55 (QSMxT/QSMxT#465), QSM.rs tgv-output-box-369 40b0dcf (astewartau/QSM.rs#375) (limits)" }
       s002001-kki-achieva-bridge-run1:
         # Measured: NRMSE 0.0049 %, r 1.000000, max |Δ| 2.5e-05 ppm, p99 |Δ| 6.4e-06 ppm.
-        chimap: { nrmse_max: 0.506, correlation_min: 0.989, max_abs_max: 3.16e-05, p99_abs_max: 8.03e-06 }
+        chimap: { nrmse_max: 0.506, correlation_min: 0.989, max_abs_max: 3.2e-04, p99_abs_max: 8.0e-05 }
         measured: { pr369: "run 41031701965: QSMxT tgv-output-box-369 43baf55 (QSMxT/QSMxT#465), QSM.rs tgv-output-box-369 40b0dcf (astewartau/QSM.rs#375) (limits)" }
         reference_prefix: [laplacian-qsmrs]
         feed: { totalfield: totalfield }

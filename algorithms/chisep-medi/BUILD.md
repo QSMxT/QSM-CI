@@ -50,8 +50,8 @@ matlab -batch "addpath('nifti'); addpath('medi'); addpath(genpath('chisep')); \
 
 ## 3. Bake the image and push
 ```bash
-podman build -t ghcr.io/astewartau/qsm-ci/chi-sep-medi:v2 .   # needs ./recon from §2
-podman push  ghcr.io/astewartau/qsm-ci/chi-sep-medi:v2
+podman build -t ghcr.io/astewartau/qsm-ci/chi-sep-medi:v4 .   # needs ./recon from §2
+podman push  ghcr.io/astewartau/qsm-ci/chi-sep-medi:v4
 ```
 Keep the package public, pin `image:` in `algorithm.yml` by the pushed digest, and rerun the
 fidelity check ([`fidelity/REPORT.md`](fidelity/REPORT.md)). The [`Dockerfile`](Dockerfile) is the
@@ -60,9 +60,17 @@ R2023b Runtime base (pinned by digest) plus `recon`.
 Images: `v1` (R2026a Runtime, IPT/SPT shims whose greyscale `imdilate`/`imerode` wrapped round at the
 volume border; its Dockerfile was `FROM matlab-runtime:r2026a` + `COPY recon` + `chmod +x`); `v2`
 (R2023b, the real toolboxes, no shims; see `fidelity:` in `algorithm.yml`); `v3` (`mask_CSF = []`
-instead of an all-false mask, so MEDI iterates, #315).
+instead of an all-false mask, so MEDI iterates, #315); `v4` (`N_std` from MEDI's `Fit_ppm_complex` on
+the multi-echo magnitude instead of ones, and `params.time_limit = Inf`; build job 31198842).
 
 ## Notes
 - No CSF term: isolated eval provides no CSF mask, so `option_data.mask_CSF = []`, as the toolbox GUI
   passes without one. An all-false mask is not the same: the toolbox's CSF mean over it is NaN, every
   step is lost and the solver returns its initial guess (QSMxT/QSM-CI#315; `v2` did this).
+- `N_std` is MEDI `Fit_ppm_complex`'s error estimate `dp1` from the multi-echo magnitude (zero
+  outside the mask). It depends on the magnitude alone, so the stage needs no phase. The toolbox
+  computes the same map in `Chisep_script.m` (`Preprocessing4Phase`) and in its GUI
+  (`WrapperChisepMEDI`); see `fidelity/REPORT.md`. `v1`–`v3` passed ones.
+- No wall-clock limit: `params.time_limit = Inf`. The toolbox's default stops the Gauss-Newton loop
+  after 1800 s, which would make results depend on the runner's speed. Below the limit, `Inf` gives
+  the same output as the default, bit for bit.
