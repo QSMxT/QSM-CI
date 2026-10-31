@@ -188,7 +188,7 @@ def run_one(algo: dict, override: dict, src: dict, gt_dir: Path, work: Path) -> 
     tag = "__".join(f"{k}-{fmt(v)}" for k, v in override.items()) or "default"
     idir = work / f"{slug}__{tag}__in"
     odir = work / f"{slug}__{tag}__out"
-    prepare_input(algo["consumes"], src, idir)  # stage GT inputs under canonical names
+    prepare_input(algo["consumes"], src, idir, algo.get("optional", ()))  # stage GT inputs under canonical names
     # Shared argv builder — `fmt=fmt` reproduces the sweep's grid-value formatting (a swept float like
     # 8.0 renders as `8`, this script's long-standing behaviour), so the emitted argv is unchanged.
     # For a χ-separation (multi-output) method it hands the CLI the output DIR, not a single file.

@@ -117,6 +117,10 @@ def main():
 
     xpos = (acc[0] * s("x_pos_std") + s("x_pos_mean"))[:X, :Y, :Z] * mask   # χ+
     xneg = (acc[1] * s("x_neg_std") + s("x_neg_mean"))[:X, :Y, :Z] * mask   # χ− (positive magnitude)
+    # Zero-truncation, as the authors' test.py does (pred_x_pos[pred_x_pos < 0] = 0, likewise χ−):
+    # the network has no output activation, so de-normalised magnitudes can come out negative.
+    xpos = np.maximum(xpos, 0.0)
+    xneg = np.maximum(xneg, 0.0)
 
     os.makedirs(OUT, exist_ok=True)
     nib.save(nib.Nifti1Image(xpos.astype(np.float32), fimg.affine, fimg.header),

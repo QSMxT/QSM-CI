@@ -401,13 +401,20 @@ def discover_algorithms(track: str = "sim", phantom: "str | None" = None,
             v = doc.get(key)
             return [_yaml_scalar(a) for a in v] if isinstance(v, list) else None
 
-        consumes = _consumes({"stage": s, "inputs": _scalars("inputs"),
-                              "optional_inputs": _scalars("optional_inputs")})
+        manifest = {"stage": s, "slug": d.name, "inputs": _scalars("inputs"),
+                    "optional_inputs": _scalars("optional_inputs")}
+        consumes = _consumes(manifest)
         algos.append({
             "slug": d.name, "dir": d, "stage": s,
             "name": _yaml_scalar(doc.get("name")) if doc.get("name") is not None else d.name,
             "image": _yaml_scalar(image) if image is not None else None,
             "consumes": consumes, "produces": STAGES[s]["produces"],
+            # Extras that only some datasets ship (an `optional_inputs:` artifact that is in no stage's
+            # contract, e.g. DECOMPOSE's chimap-echoes): mounted when the dataset has one, skipped when it
+            # doesn't (prepare_input / cli_run_argv). A contract artifact such as magnitude stays
+            # required of the dataset, so a dataset missing it is still a DNF, not a silent downgrade.
+            "optional": [a for a in consumes if a in set(manifest["optional_inputs"] or ())
+                         and not any(a in st["consumes"] for st in STAGES.values())],
             "tuned": _tuned_overrides(doc, "chisep" if s in ("chi-separation", "r2prime-generation")
                                       else ("invivo" if track == "invivo" else "sim"), phantom),
             # Optional per-method smoke-crop size (voxels): a slow per-voxel method (e.g. DECOMPOSE)
@@ -457,13 +464,17 @@ def composes(d: dict, tfk: str, bfr_slug: str) -> bool:
     return tfk in c.get("fieldmaps", {tfk}) and bfr_slug in c.get("bfrs", {bfr_slug})
 
 
-def prepare_input(consumes: list[str], sources: dict[str, Path], dest: Path) -> None:
-    """Populate dest with the consumed artifacts under their canonical filenames."""
+def prepare_input(consumes: list[str], sources: dict[str, Path], dest: Path,
+                  optional: "list[str] | tuple" = ()) -> None:
+    """Populate dest with the consumed artifacts under their canonical filenames. An artifact in
+    `optional` (the method's `optional_inputs:`) is skipped when the dataset doesn't have it."""
     if dest.exists():
         shutil.rmtree(dest)
     dest.mkdir(parents=True)
     for art in consumes:
         src = sources.get(art)
+        if (src is None or not Path(src).exists()) and art in optional:
+            continue
         if src is None or not Path(src).exists():
             # A plain Exception, NOT SystemExit: every per-run guard is `except Exception`, and a
             # SystemExit (a BaseException) escaped them all — one method wanting an artifact the
@@ -1130,7 +1141,7 @@ def do_isolated(task, args, gt_sources, gt, mask):
     idir = args.work / f"iso_{a['slug']}{idsfx}_in"
     odir = args.work / f"iso_{a['slug']}{idsfx}_out"
     try:
-        prepare_input(a["consumes"], gt_sources, idir)
+        prepare_input(a["consumes"], gt_sources, idir, a.get("optional", ()))
         run_overrides = overrides
         if args.smoke:
             _smoke_crop(idir, a["consumes"], a.get("smoke_box") or args.smoke_box)
@@ -1615,7 +1626,7 @@ def do_chisep_composed(task, args, gt_sources, gt, mask, r2p_cache):
         r2p, gen_rt, gen_trace = r2p_cache[gk]
         src = dict(gt_sources); src["r2prime"] = r2p
         idir, odir = args.work / f"cmp_{cid}_in", args.work / f"cmp_{cid}_out"
-        prepare_input(c["consumes"], src, idir)
+        prepare_input(c["consumes"], src, idir, c.get("optional", ()))
         rt = run_algo(c, idir, odir, args.runner)
         row = _score_chisep(c, "", "default", None, odir, gt, mask, gen_rt + rt, args,
                             rid=cid, mode="composed", stage=stage, combo=combo)

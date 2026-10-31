@@ -99,6 +99,11 @@ chi = (chi * mask).astype(np.float32)
 
 os.makedirs(OUT, exist_ok=True)
 out_path = os.path.join(OUT, "chimap.nii.gz")
-# Preserve the input grid/affine (all 3D artifacts share mask.nii.gz's geometry).
-nib.Nifti1Image(chi, mask_nii.affine, mask_nii.header).to_filename(out_path)
+# Preserve the input grid/affine (all 3D artifacts share mask.nii.gz's geometry). The mask's header
+# is usually uint8: written through it, nibabel scales χ into 8 bits (1.5 % NRMSE on QSM.rs#330's
+# box), so the output keeps that geometry but is stored as float32.
+out_img = nib.Nifti1Image(chi, mask_nii.affine, mask_nii.header)
+out_img.set_data_dtype(np.float32)
+out_img.header["scl_slope"], out_img.header["scl_inter"] = 1.0, 0.0
+out_img.to_filename(out_path)
 print("MoDL-QSM: wrote", out_path, chi.shape, "ppm", flush=True)

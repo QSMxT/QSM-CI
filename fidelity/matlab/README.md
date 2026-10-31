@@ -81,7 +81,7 @@ Results: `$FID_ROOT/<slug>/reports/` (`build.txt`, `trace.txt`, `env.json`, `run
 |---|---|---|
 | `sim` (end-to-end) | `end-to-end` | QSM-CI's in-silico head (QSM Challenge 2.0 simulation: 7 T, 4 echoes, 1 mm, 164×205×205) |
 | `invivo` (end-to-end) | `end-to-end` | one EMTP travelling-head acquisition (`s005001-cbic-prisma-bridge-run1`: 3 T, 5 echoes, 184×256×128) |
-| `sim-bfr`, `sim-dipole` | `bfr`, `dipole` | the in-silico head's ground-truth total and local field |
+| `sim-bfr`, `sim-dipole` | `bfr` (and `bfr+dipole`), `dipole` | the in-silico head's ground-truth total and local field, with its magnitude (MEDI's PDF and TFI take their noise weighting from it) |
 | `invivo-bfr`, `invivo-dipole`, `invivo-chisep` | `bfr`, `dipole`, `chi-separation` | derived once from the in vivo acquisition with QSMxT v10.0.0: ROMEO total field, V-SHARP local field and its eroded mask, RTS χ, R2′ = 0.52·R2* |
 | `chisep-mc` | `chi-separation` | QSM-CI's default χ-separation phantom (7 T, 8 echoes) |
 | `invivo-chisep-nz` | `chi-separation` | `invivo-chisep` with the magnitude's zeros raised to 1, for DECOMPOSE (its fit takes `log` of the signal) |

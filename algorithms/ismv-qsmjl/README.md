@@ -27,10 +27,10 @@ the same thing as far as the original allows.
 
 | parameter | default | QSM.rs-matched | description |
 |---|---|---|---|
-| `radius` | 2*max(voxel_size) | 5 (QSM.rs: 5 × the largest voxel size, mm) | SMV kernel radius, mm (`r`) |
-| `tol` | 0.001 | 1e-6 | stopping tolerance |
-| `max_iter` | 500 | 50 | maximum iterations (`maxit`) |
+| `radius` | 2*max(voxel_size) |  | SMV kernel radius, mm (`r`) |
+| `tol` | 0.001 |  | stopping tolerance |
+| `max_iter` | 500 |  | maximum iterations (`maxit`) |
 
 ## Against the QSM.rs port
 
-- QSM.rs's iSMV says it follows QSM.jl, but its defaults (radius 5 × the largest voxel size, tol 1e-6, 50 iterations) are not QSM.jl's (2 × the largest voxel size in mm, 1e-3, 500). The matched settings give QSM.jl the QSM.rs values; whether the two stopping rules then agree is what the pair comparison shows.
+- QSM.rs's iSMV follows the authors' paper and code by default (the lab's `iSMV.m`, Wen et al. 2014: 6 voxels, tol 5e-5; astewartau/QSM.rs#322). QSM.jl's `ismv` is kept as `IsmvVariant::QsmJl`, with QSM.jl's defaults; the pair selects it on the QSM.rs side (`candidate_set: {variant: qsmjl}`, `qsmxt bgremove ismv --variant qsmjl`), so nothing is set here.

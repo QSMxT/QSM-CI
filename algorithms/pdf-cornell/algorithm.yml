@@ -1,0 +1,59 @@
+name: PDF (MEDI toolbox)
+slug: pdf-cornell
+algorithm: pdf   # pairs with pdf-qsmrs (QSM.rs's port of PDF.m) in the parity workflow
+source: cornell
+stage: bfr
+language: MATLAB
+family: iterative
+learning: none
+engine: MEDI toolbox 2024.11.26
+# PDF weights the fit by N_std, which MEDI's pipeline takes from Fit_ppm_complex; that depends only
+# on the echo magnitudes, so this method also reads them (required: recon.m stops without them).
+inputs: [totalfield, mask, params, magnitude]
+description: >
+  Projection onto Dipole Fields background field removal, the authors' PDF.m (Cornell MEDI toolbox
+  2024.11.26) with its own defaults, weighted by the field noise from the echo magnitudes as MEDI's
+  pipeline does, compiled from MATLAB and run on the license-free MATLAB Runtime.
+citation: Liu et al., NMR Biomed 2011
+authors:
+- name: Tian Liu
+- name: Ildar Khalidov
+- name: Ludovic de Rochefort
+- name: Pascal Spincemaille
+- name: Jing Liu
+- name: A. John Tsiouris
+- name: Yi Wang
+doi: 10.1002/nbm.1670
+code_url: http://pre.weill.cornell.edu/mri/pages/qsm.html
+license: See Cornell MEDI toolbox license
+image: ghcr.io/astewartau/qsm-ci/matlab-medi@sha256:bfff9adf6acd0001a408322d113ab29353af1eb22dcb84a9fa5fd2af26d5fb34   # pdf-v1
+run: bash run.sh
+smoke_box: 32
+matlab:
+  entry: recon.m
+  runtime: r2023b
+# Container vs the authors' code in licensed MATLAB with the real toolboxes (QSMxT/QSM-CI#300;
+# fidelity/REPORT.md). Rerun and update whenever the image changes.
+fidelity:
+  date: 2026-10-30
+  image: sha256:bfff9adf6acd0001a408322d113ab29353af1eb22dcb84a9fa5fd2af26d5fb34   # pdf-v1
+  matlab: R2023b Update 5 (23.2.0.2459199), Image Processing Toolbox 23.2
+  sources: MEDI toolbox 2024.11.26
+  tolerance: identical   # local field and every intermediate, in silico and in vivo, 8 threads
+  result: pass
+  report: algorithms/pdf-cornell/fidelity/REPORT.md
+# Every default is PDF.m's own (MEDI toolbox 2024.11.26), which is also what MEDI's pipeline script
+# (README.m:124) runs: PDF(iFreq, N_std, Mask, matrix_size, voxel_size, B0_dir). See BUILD.md.
+parameters:
+- name: tol
+  default: 0.1
+  description: CG stopping tolerance, relative to the noise-weighted field
+- name: n_cg
+  default: 30
+  description: maximum conjugate-gradient iterations
+- name: space
+  default: imagespace
+  description: dipole kernel for an oblique B0, 'imagespace' (FFT of the sampled dipole) or 'kspace'
+- name: n_pad
+  default: 40
+  description: zero padding (voxels) around the mask's bounding box, where the background sources live

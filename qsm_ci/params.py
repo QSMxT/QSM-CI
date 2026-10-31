@@ -23,7 +23,8 @@ from .stages import STAGES
 
 # Multi-echo artifacts: a stage wants one 4D NIfTI (x,y,z,echo), but a caller with BIDS data has one
 # 3D file per echo. These flags accept several files and we stack them into the 4D artifact.
-STACKABLE_ARTIFACTS = {"phase", "magnitude"}
+# chimap-echoes (a QSM per echo) is the same shape: one 4D file or one 3D map per echo.
+STACKABLE_ARTIFACTS = {"phase", "magnitude", "chimap-echoes"}
 
 
 def _nifti_voxel_size(path) -> "list[float] | None":

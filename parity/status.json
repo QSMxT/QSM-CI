@@ -1,14 +1,18 @@
 {
- "generated": "2026-10-28",
- "stale_after_days": 90,
+ "generated": "2026-10-30",
  "qsmrs": {
   "repo": "astewartau/QSM.rs",
   "branch": "main",
   "checked": true
  },
+ "qsmxt": {
+  "repo": "QSMxT/QSMxT",
+  "branch": "main",
+  "checked": true
+ },
+ "badges": "https://qsmxt.github.io/QSM-CI/parity/badges/",
  "stale": [
   "qsmart",
-  "star",
   "medi",
   "amp-pe",
   "laplacian"
@@ -21,25 +25,64 @@
    "candidate": "qsmart-qsmrs",
    "enabled": true,
    "state": "stale",
+   "anchor": "pair-qsmart",
    "datasets": [
     {
      "dataset": "s002001-kki-achieva-bridge-run1",
-     "last": null,
+     "last": {
+      "date": "2026-10-30T10:02:18Z",
+      "result": "error",
+      "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41002894810",
+      "qsmrs": {
+       "ref": "main",
+       "commit": "df84af4590fb67a144d9684dac397ab53a5803e3",
+       "version": null
+      },
+      "qsmxt": {
+       "commit": "2533f945f2a2e7aaf9b6956eb36a38b962fde44e"
+      },
+      "nrmse": null,
+      "max_abs": null,
+      "correlation": null,
+      "dice": null
+     },
      "stale": true,
      "reasons": [
-      "never checked"
+      "QSM.rs main changed `src/utils/bias_correction.rs` since the checked df84af4 (7 commits)",
+      "the last check ended without a result"
      ]
     },
     {
      "dataset": "sim",
-     "last": null,
+     "last": {
+      "date": "2026-10-30T10:02:18Z",
+      "result": "pass",
+      "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41002894810",
+      "qsmrs": {
+       "ref": "main",
+       "commit": "df84af4590fb67a144d9684dac397ab53a5803e3",
+       "version": null
+      },
+      "qsmxt": {
+       "commit": "2533f945f2a2e7aaf9b6956eb36a38b962fde44e"
+      },
+      "nrmse": 16.70822150276199,
+      "max_abs": 0.2829992175102234,
+      "correlation": 0.986173640289164,
+      "dice": null
+     },
      "stale": true,
      "reasons": [
-      "never checked"
+      "QSM.rs main changed `src/utils/bias_correction.rs` since the checked df84af4 (7 commits)"
      ]
     }
    ],
-   "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=qsmart -f dataset=configured -f qsmrs_ref=main"
+   "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=qsmart -f dataset=configured -f qsmrs_ref=main",
+   "badge": {
+    "kind": "failing",
+    "message": "failing \u00b7 30 Oct",
+    "color": "red"
+   }
   },
   {
    "pair": "ilsqr",
@@ -48,6 +91,7 @@
    "candidate": "ilsqr-qsmrs",
    "enabled": false,
    "state": "gap",
+   "anchor": "pair-ilsqr",
    "datasets": [
     {
      "dataset": "s002001-kki-achieva-bridge-run1",
@@ -62,7 +106,12 @@
      "reasons": []
     }
    ],
-   "blocked_by": "QSMxT/QSM-CI#311"
+   "blocked_by": "QSMxT/QSM-CI#311",
+   "badge": {
+    "kind": "gap",
+    "message": "gap \u00b7 QSM-CI#311",
+    "color": "yellow"
+   }
   },
   {
    "pair": "vsharp",
@@ -71,6 +120,7 @@
    "candidate": "vsharp-qsmrs",
    "enabled": false,
    "state": "gap",
+   "anchor": "pair-vsharp",
    "datasets": [
     {
      "dataset": "s002001-kki-achieva-bridge-run1",
@@ -85,26 +135,50 @@
      "reasons": []
     }
    ],
-   "blocked_by": "QSMxT/QSM-CI#311"
+   "blocked_by": "QSMxT/QSM-CI#311",
+   "badge": {
+    "kind": "gap",
+    "message": "gap \u00b7 QSM-CI#311",
+    "color": "yellow"
+   }
   },
   {
    "pair": "star",
-   "algorithm": null,
+   "algorithm": "star",
    "reference": "star-sti",
    "candidate": "star-qsmrs",
    "enabled": true,
-   "state": "stale",
+   "state": "current",
+   "anchor": "pair-star",
    "datasets": [
     {
      "dataset": "sim",
-     "last": null,
-     "stale": true,
-     "reasons": [
-      "never checked"
-     ]
+     "last": {
+      "date": "2026-10-30T10:02:18Z",
+      "result": "pass",
+      "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41002894810",
+      "qsmrs": {
+       "ref": "main",
+       "commit": "df84af4590fb67a144d9684dac397ab53a5803e3",
+       "version": null
+      },
+      "qsmxt": {
+       "commit": "2533f945f2a2e7aaf9b6956eb36a38b962fde44e"
+      },
+      "nrmse": 0.32564341615373876,
+      "max_abs": 0.0004980508238077164,
+      "correlation": 0.9999947547656668,
+      "dice": null
+     },
+     "stale": false,
+     "reasons": []
     }
    ],
-   "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=star -f dataset=configured -f qsmrs_ref=main"
+   "badge": {
+    "kind": "current",
+    "message": "0.33 % \u00b7 30 Oct",
+    "color": "brightgreen"
+   }
   },
   {
    "pair": "medi",
@@ -113,25 +187,64 @@
    "candidate": "medi-qsmrs",
    "enabled": true,
    "state": "stale",
+   "anchor": "pair-medi",
    "datasets": [
     {
      "dataset": "s002001-kki-achieva-bridge-run1",
-     "last": null,
+     "last": {
+      "date": "2026-10-30T10:02:18Z",
+      "result": "fail",
+      "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41002894810",
+      "qsmrs": {
+       "ref": "main",
+       "commit": "df84af4590fb67a144d9684dac397ab53a5803e3",
+       "version": null
+      },
+      "qsmxt": {
+       "commit": "2533f945f2a2e7aaf9b6956eb36a38b962fde44e"
+      },
+      "nrmse": 0.027452030932952263,
+      "max_abs": 0.001273512840270996,
+      "correlation": 0.9999999634958423,
+      "dice": null
+     },
      "stale": true,
      "reasons": [
-      "never checked"
+      "QSM.rs main changed `src/utils/bias_correction.rs`, `src/utils/multi_echo.rs` since the checked df84af4 (7 commits)",
+      "the last check failed: chimap max_abs 0.001274 ppm (limit <= 0.000214 ppm)"
      ]
     },
     {
      "dataset": "sim",
-     "last": null,
+     "last": {
+      "date": "2026-10-30T10:02:18Z",
+      "result": "pass",
+      "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41002894810",
+      "qsmrs": {
+       "ref": "main",
+       "commit": "df84af4590fb67a144d9684dac397ab53a5803e3",
+       "version": null
+      },
+      "qsmxt": {
+       "commit": "2533f945f2a2e7aaf9b6956eb36a38b962fde44e"
+      },
+      "nrmse": 0.0289575013255845,
+      "max_abs": 0.0004277825355529785,
+      "correlation": 0.9999999572139011,
+      "dice": null
+     },
      "stale": true,
      "reasons": [
-      "never checked"
+      "QSM.rs main changed `src/utils/bias_correction.rs`, `src/utils/multi_echo.rs` since the checked df84af4 (7 commits)"
      ]
     }
    ],
-   "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=medi -f dataset=configured -f qsmrs_ref=main"
+   "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=medi -f dataset=configured -f qsmrs_ref=main",
+   "badge": {
+    "kind": "failing",
+    "message": "failing \u00b7 30 Oct",
+    "color": "red"
+   }
   },
   {
    "pair": "amp-pe",
@@ -140,42 +253,86 @@
    "candidate": "amp-pe-qsmrs",
    "enabled": true,
    "state": "stale",
+   "anchor": "pair-amp-pe",
    "datasets": [
     {
      "dataset": "sim",
-     "last": null,
+     "last": {
+      "date": "2026-10-30T10:02:18Z",
+      "result": "pass",
+      "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41002894810",
+      "qsmrs": {
+       "ref": "main",
+       "commit": "df84af4590fb67a144d9684dac397ab53a5803e3",
+       "version": null
+      },
+      "qsmxt": {
+       "commit": "2533f945f2a2e7aaf9b6956eb36a38b962fde44e"
+      },
+      "nrmse": 0.47666130458911443,
+      "max_abs": 0.03618806600570679,
+      "correlation": 0.9999886378501645,
+      "dice": null
+     },
      "stale": true,
      "reasons": [
-      "never checked"
+      "QSM.rs main changed `src/inversion/amp_pe.rs`, `src/utils/wavelet.rs` since the checked df84af4 (7 commits)"
      ]
     }
    ],
-   "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=amp-pe -f dataset=configured -f qsmrs_ref=main"
+   "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=amp-pe -f dataset=configured -f qsmrs_ref=main",
+   "badge": {
+    "kind": "stale",
+    "message": "stale \u00b7 30 Oct",
+    "color": "orange"
+   }
   },
   {
    "pair": "decompose",
    "algorithm": "decompose",
    "reference": "decompose-qsm",
    "candidate": "decompose-qsmrs",
-   "enabled": false,
-   "state": "gap",
+   "enabled": true,
+   "state": "current",
+   "anchor": "pair-decompose",
    "datasets": [
     {
      "dataset": "chisep-mc",
-     "last": null,
+     "last": {
+      "date": "2026-10-30T10:02:18Z",
+      "result": "pass",
+      "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41002894810",
+      "qsmrs": {
+       "ref": "main",
+       "commit": "df84af4590fb67a144d9684dac397ab53a5803e3",
+       "version": null
+      },
+      "qsmxt": {
+       "commit": "2533f945f2a2e7aaf9b6956eb36a38b962fde44e"
+      },
+      "nrmse": 4.889516893324397,
+      "max_abs": 0.03532949052682338,
+      "correlation": 0.9983165707505546,
+      "dice": null
+     },
      "stale": false,
      "reasons": []
     }
    ],
-   "blocked_by": "QSMxT/QSM-CI#311"
+   "badge": {
+    "kind": "current",
+    "message": "4.9 % \u00b7 30 Oct",
+    "color": "brightgreen"
+   }
   },
   {
    "pair": "wavesep",
-   "algorithm": null,
+   "algorithm": "wavesep",
    "reference": "wavesep",
    "candidate": "wavesep-qsmrs",
    "enabled": false,
    "state": "gap",
+   "anchor": "pair-wavesep",
    "datasets": [
     {
      "dataset": "chisep-mc",
@@ -184,7 +341,12 @@
      "reasons": []
     }
    ],
-   "blocked_by": "QSMxT/QSM-CI#312"
+   "blocked_by": "QSMxT/QSM-CI#312",
+   "badge": {
+    "kind": "gap",
+    "message": "gap \u00b7 QSM-CI#312",
+    "color": "yellow"
+   }
   },
   {
    "pair": "tkd",
@@ -193,6 +355,7 @@
    "candidate": "tkd-qsmrs",
    "enabled": false,
    "state": "gap",
+   "anchor": "pair-tkd",
    "datasets": [
     {
      "dataset": "s002001-kki-achieva-bridge-run1",
@@ -207,7 +370,12 @@
      "reasons": []
     }
    ],
-   "blocked_by": "astewartau/QSM.rs#323"
+   "blocked_by": "astewartau/QSM.rs#323",
+   "badge": {
+    "kind": "gap",
+    "message": "gap \u00b7 QSM.rs#323",
+    "color": "yellow"
+   }
   },
   {
    "pair": "tsvd",
@@ -216,6 +384,7 @@
    "candidate": "tsvd-qsmrs",
    "enabled": false,
    "state": "gap",
+   "anchor": "pair-tsvd",
    "datasets": [
     {
      "dataset": "s002001-kki-achieva-bridge-run1",
@@ -230,7 +399,12 @@
      "reasons": []
     }
    ],
-   "blocked_by": "astewartau/QSM.rs#323"
+   "blocked_by": "astewartau/QSM.rs#323",
+   "badge": {
+    "kind": "gap",
+    "message": "gap \u00b7 QSM.rs#323",
+    "color": "yellow"
+   }
   },
   {
    "pair": "tikhonov",
@@ -239,6 +413,7 @@
    "candidate": "tikhonov-qsmrs",
    "enabled": false,
    "state": "gap",
+   "anchor": "pair-tikhonov",
    "datasets": [
     {
      "dataset": "s002001-kki-achieva-bridge-run1",
@@ -253,7 +428,12 @@
      "reasons": []
     }
    ],
-   "blocked_by": "astewartau/QSM.rs#323"
+   "blocked_by": "astewartau/QSM.rs#323",
+   "badge": {
+    "kind": "gap",
+    "message": "gap \u00b7 QSM.rs#323",
+    "color": "yellow"
+   }
   },
   {
    "pair": "tv",
@@ -262,6 +442,7 @@
    "candidate": "tv-qsmrs",
    "enabled": false,
    "state": "gap",
+   "anchor": "pair-tv",
    "datasets": [
     {
      "dataset": "s002001-kki-achieva-bridge-run1",
@@ -276,7 +457,12 @@
      "reasons": []
     }
    ],
-   "blocked_by": "astewartau/QSM.rs#323"
+   "blocked_by": "astewartau/QSM.rs#323",
+   "badge": {
+    "kind": "gap",
+    "message": "gap \u00b7 QSM.rs#323",
+    "color": "yellow"
+   }
   },
   {
    "pair": "nltv",
@@ -285,8 +471,14 @@
    "candidate": "nltv-qsmrs",
    "enabled": false,
    "state": "gap",
+   "anchor": "pair-nltv",
    "datasets": [],
-   "blocked_by": "astewartau/QSM.rs#323"
+   "blocked_by": "astewartau/QSM.rs#323",
+   "badge": {
+    "kind": "gap",
+    "message": "gap \u00b7 QSM.rs#323",
+    "color": "yellow"
+   }
   },
   {
    "pair": "rts",
@@ -295,6 +487,7 @@
    "candidate": "rts-qsmrs",
    "enabled": false,
    "state": "gap",
+   "anchor": "pair-rts",
    "datasets": [
     {
      "dataset": "s002001-kki-achieva-bridge-run1",
@@ -309,7 +502,12 @@
      "reasons": []
     }
    ],
-   "blocked_by": "astewartau/QSM.rs#323"
+   "blocked_by": "astewartau/QSM.rs#323",
+   "badge": {
+    "kind": "gap",
+    "message": "gap \u00b7 QSM.rs#323",
+    "color": "yellow"
+   }
   },
   {
    "pair": "ismv",
@@ -318,6 +516,7 @@
    "candidate": "ismv-qsmrs",
    "enabled": false,
    "state": "gap",
+   "anchor": "pair-ismv",
    "datasets": [
     {
      "dataset": "s002001-kki-achieva-bridge-run1",
@@ -332,7 +531,12 @@
      "reasons": []
     }
    ],
-   "blocked_by": "astewartau/QSM.rs#322"
+   "blocked_by": "astewartau/QSM.rs#322",
+   "badge": {
+    "kind": "gap",
+    "message": "gap \u00b7 QSM.rs#322",
+    "color": "yellow"
+   }
   },
   {
    "pair": "sharp",
@@ -341,6 +545,7 @@
    "candidate": "sharp-qsmrs",
    "enabled": false,
    "state": "gap",
+   "anchor": "pair-sharp",
    "datasets": [
     {
      "dataset": "s002001-kki-achieva-bridge-run1",
@@ -355,7 +560,12 @@
      "reasons": []
     }
    ],
-   "blocked_by": "astewartau/QSM.rs#321"
+   "blocked_by": "astewartau/QSM.rs#321",
+   "badge": {
+    "kind": "gap",
+    "message": "gap \u00b7 QSM.rs#321",
+    "color": "yellow"
+   }
   },
   {
    "pair": "vsharp-qsmjl",
@@ -364,6 +574,7 @@
    "candidate": "vsharp-qsmrs",
    "enabled": false,
    "state": "gap",
+   "anchor": "pair-vsharp-qsmjl",
    "datasets": [
     {
      "dataset": "s002001-kki-achieva-bridge-run1",
@@ -378,7 +589,12 @@
      "reasons": []
     }
    ],
-   "blocked_by": "astewartau/QSM.rs#321"
+   "blocked_by": "astewartau/QSM.rs#321",
+   "badge": {
+    "kind": "gap",
+    "message": "gap \u00b7 QSM.rs#321",
+    "color": "yellow"
+   }
   },
   {
    "pair": "laplacian",
@@ -387,25 +603,63 @@
    "candidate": "laplacian-qsmrs",
    "enabled": true,
    "state": "stale",
+   "anchor": "pair-laplacian",
    "datasets": [
     {
      "dataset": "s002001-kki-achieva-bridge-run1",
-     "last": null,
+     "last": {
+      "date": "2026-10-30T10:02:18Z",
+      "result": "pass",
+      "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41002894810",
+      "qsmrs": {
+       "ref": "main",
+       "commit": "df84af4590fb67a144d9684dac397ab53a5803e3",
+       "version": null
+      },
+      "qsmxt": {
+       "commit": "2533f945f2a2e7aaf9b6956eb36a38b962fde44e"
+      },
+      "nrmse": 6.39835849331836e-10,
+      "max_abs": 9.313225746154785e-10,
+      "correlation": 1.0,
+      "dice": null
+     },
      "stale": true,
      "reasons": [
-      "never checked"
+      "QSM.rs main changed `src/utils/bias_correction.rs`, `src/utils/multi_echo.rs` since the checked df84af4 (7 commits)"
      ]
     },
     {
      "dataset": "sim",
-     "last": null,
+     "last": {
+      "date": "2026-10-30T10:02:18Z",
+      "result": "pass",
+      "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41002894810",
+      "qsmrs": {
+       "ref": "main",
+       "commit": "df84af4590fb67a144d9684dac397ab53a5803e3",
+       "version": null
+      },
+      "qsmxt": {
+       "commit": "2533f945f2a2e7aaf9b6956eb36a38b962fde44e"
+      },
+      "nrmse": 4.766646207539972e-14,
+      "max_abs": 2.842170943040401e-14,
+      "correlation": 1.0,
+      "dice": null
+     },
      "stale": true,
      "reasons": [
-      "never checked"
+      "QSM.rs main changed `src/utils/bias_correction.rs`, `src/utils/multi_echo.rs` since the checked df84af4 (7 commits)"
      ]
     }
    ],
-   "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=laplacian -f dataset=configured -f qsmrs_ref=main"
+   "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=laplacian -f dataset=configured -f qsmrs_ref=main",
+   "badge": {
+    "kind": "stale",
+    "message": "stale \u00b7 30 Oct",
+    "color": "orange"
+   }
   },
   {
    "pair": "romeo",
@@ -414,6 +668,7 @@
    "candidate": "romeo-qsmrs",
    "enabled": false,
    "state": "gap",
+   "anchor": "pair-romeo",
    "datasets": [
     {
      "dataset": "s002001-kki-achieva-bridge-run1",
@@ -428,7 +683,12 @@
      "reasons": []
     }
    ],
-   "blocked_by": "astewartau/QSM.rs#325"
+   "blocked_by": "astewartau/QSM.rs#325",
+   "badge": {
+    "kind": "gap",
+    "message": "gap \u00b7 QSM.rs#325",
+    "color": "yellow"
+   }
   },
   {
    "pair": "tgv",
@@ -437,6 +697,7 @@
    "candidate": "tgv-qsmrs",
    "enabled": false,
    "state": "gap",
+   "anchor": "pair-tgv",
    "datasets": [
     {
      "dataset": "s002001-kki-achieva-bridge-run1",
@@ -451,7 +712,110 @@
      "reasons": []
     }
    ],
-   "blocked_by": "astewartau/QSM.rs#324"
+   "blocked_by": "astewartau/QSM.rs#324",
+   "badge": {
+    "kind": "gap",
+    "message": "gap \u00b7 QSM.rs#324",
+    "color": "yellow"
+   }
+  },
+  {
+   "pair": "cosmos",
+   "state": "no-original",
+   "enabled": false,
+   "anchor": "pair-cosmos",
+   "covers": "COSMOS (`cosmos`, `cosmos_weighted`)",
+   "note": null,
+   "datasets": [],
+   "badge": {
+    "kind": "no-original",
+    "message": "no original",
+    "color": "lightgrey"
+   }
+  },
+  {
+   "pair": "harperella",
+   "state": "no-original",
+   "enabled": false,
+   "anchor": "pair-harperella",
+   "covers": "HARPERELLA (`harperella`)",
+   "note": null,
+   "datasets": [],
+   "badge": {
+    "kind": "no-original",
+    "message": "no original",
+    "color": "lightgrey"
+   }
+  },
+  {
+   "pair": "prelude",
+   "state": "no-original",
+   "enabled": false,
+   "anchor": "pair-prelude",
+   "covers": "PRELUDE (`unwrap_prelude`)",
+   "note": "clean-room by design",
+   "datasets": [],
+   "badge": {
+    "kind": "no-original",
+    "message": "no original",
+    "color": "lightgrey"
+   }
+  },
+  {
+   "pair": "slicewise-unwrap",
+   "state": "no-original",
+   "enabled": false,
+   "anchor": "pair-slicewise-unwrap",
+   "covers": "slice-wise (2D) unwrapping (`unwrap_slicewise`, `unwrap_slicewise_multi_echo`)",
+   "note": null,
+   "datasets": [],
+   "badge": {
+    "kind": "no-original",
+    "message": "no original",
+    "color": "lightgrey"
+   }
+  },
+  {
+   "pair": "robust-fit",
+   "state": "no-original",
+   "enabled": false,
+   "anchor": "pair-robust-fit",
+   "covers": "robust echo combination (`multi_echo_robust_fit`)",
+   "note": null,
+   "datasets": [],
+   "badge": {
+    "kind": "no-original",
+    "message": "no original",
+    "color": "lightgrey"
+   }
+  },
+  {
+   "pair": "motion-correction",
+   "state": "no-original",
+   "enabled": false,
+   "anchor": "pair-motion-correction",
+   "covers": "motion correction (`motion`)",
+   "note": null,
+   "datasets": [],
+   "badge": {
+    "kind": "no-original",
+    "message": "no original",
+    "color": "lightgrey"
+   }
+  },
+  {
+   "pair": "morphology",
+   "state": "no-original",
+   "enabled": false,
+   "anchor": "pair-morphology",
+   "covers": "erosion / dilation, closing (`erode_mask`, `dilate_mask`, `morphological_close`)",
+   "note": null,
+   "datasets": [],
+   "badge": {
+    "kind": "no-original",
+    "message": "no original",
+    "color": "lightgrey"
+   }
   }
  ]
 }
