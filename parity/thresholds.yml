@@ -139,8 +139,8 @@ pairs:
         # field 8.42 %, χ1 10.8 %, stage-2 local field 13.2 %, χ2 33.0 %, final 16.32 %). With it:
         # stage-1 local field 0.081 %, χ1 0.137 %. What is left is stage 2 (local field 8.54 %,
         # χ2 27.3 %), which runs outside the vessel mask, and the vessel masks still differ
-        # (Dice 0.988; KKI 0.9999). astewartau/QSM.rs#320: with the original's vessel mask as well the whole
-        # chain is 0.15 % from MATLAB.
+        # (Dice 0.988; KKI 0.9999). astewartau/QSM.rs#320: with the original's vessel mask as
+        # well, the whole chain is 0.15 % from MATLAB.
         chimap: { nrmse_max: 15.3, correlation_min: 0.98, max_abs_max: 0.156, p99_abs_max: 0.0113 }
         measured:
           main: "run 41190547845: QSMxT main 9cfe3f9, qsm-core 15c938f, R_0 fed (limits)"
