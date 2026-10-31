@@ -712,7 +712,10 @@ pairs:
                   src/inversion/tiled.rs, src/models/, src/pipeline/inversion.rs,
                   src/pipeline/rules.rs]
     qsmxt_paths: *invert_wiring
-    datasets: *dl_dipole_datasets
+    # Sim only: on the KKI head the original's TensorFlow graph runs out of memory on a hosted
+    # runner (std::bad_alloc, run 41190020480).
+    datasets:
+      sim: {}
   qsmnet-plus:
     reference: qsmnet-plus
     candidate: qsmnet-plus-qsmrs
@@ -722,7 +725,10 @@ pairs:
                   src/inversion/tiled.rs, src/models/, src/pipeline/inversion.rs,
                   src/pipeline/rules.rs]
     qsmxt_paths: *invert_wiring
-    datasets: *dl_dipole_datasets
+    # Sim only: on the KKI head the original's TensorFlow graph runs out of memory on a hosted
+    # runner (std::bad_alloc, run 41190020480).
+    datasets:
+      sim: {}
   lpcnn:
     reference: lpcnn
     candidate: lpcnn-qsmrs
