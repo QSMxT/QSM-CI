@@ -6,13 +6,15 @@ function recon(inp, out)
 % diamagnetic (χ−) sources: a 3-stage alternating non-linear least-squares fit (lsqcurvefit) of
 % {C+, C−, C0, R2*_0, χ+, χ−}, then reconstructs χ+/χ− from the fitted params.
 %
-% ADAPTATION for QSM-CI: the reference re-derives a per-echo QSM from the raw phase (STI-Suite
-% unwrap → V-SHARP → STAR-QSM) purely to build the signal's phase term. Since χ is echo-independent
-% and QSM-CI already PROVIDES χ_total (chimap.nii.gz) as a stage input, we use that directly — this
-% isolates DECOMPOSE's separation step (its actual contribution) from any STI QSM error, and drops the
-% phase input + the whole STI dependency. The per-voxel fit itself is byte-for-byte the reference.
+% INPUT: DECOMPOSE is defined on a QSM of each echo, χ(TE): Chen 2021, Eq. 4 builds the fitted data
+% as y(TE) = M(TE)·exp(−i·(2/3)·χ(TE)·γ·B0·TE), and the reference computes χ(TE) per echo from the
+% raw phase (STI-Suite unwrap → V-SHARP → STAR-QSM). When the inputs hold chimap-echoes.nii.gz (4D,
+% ppm, one χ per echo in the magnitude's echo order) recon uses χ(TE_i) for echo i. Otherwise it
+% falls back to χ_total (chimap.nii.gz) for every echo, as before. The per-voxel fit itself is
+% byte-for-byte the reference.
 %
-% Consumes multi-echo magnitude + χ_total (chimap) + mask + params; writes chi-para.nii.gz (χ+) and
+% Consumes multi-echo magnitude + chimap-echoes (optional) or χ_total (chimap) + mask + params;
+% writes chi-para.nii.gz (χ+) and
 % chi-dia.nii.gz (χ−, positive magnitude). Needs the Optimization Toolbox (lsqcurvefit). The per-voxel
 % fit is SLOW; $DECOMPOSE_CROPBOX (central-box side, voxels) limits it for a feasibility/speed run and
 % $DECOMPOSE_NINNER overrides the inner-iteration count (default 10).
@@ -25,16 +27,29 @@ function recon(inp, out)
 
     rd = @(f) double(getfield(read_niigz(fullfile(inp, f)), 'img'));
     mag_multi_echo = rd('magnitude.nii.gz');    % [X Y Z TE]
-    chimap = rd('chimap.nii.gz');               % χ_total (ppm) — the provided QSM
     mn = read_niigz(fullfile(inp, 'mask.nii.gz')); mask_brain = double(mn.img) > 0.5;
     mag_multi_echo = mag_multi_echo / max(mag_multi_echo(:));
     [N1, N2, N3, ~] = size(mag_multi_echo);
 
-    % --- complex signal per echo, phase from the provided χ_total (echo-independent χ) ---
+    % --- the QSM of each echo, χ(TE) (ppm): chimap-echoes when given, else χ_total for every echo ---
+    if isfile(fullfile(inp, 'chimap-echoes.nii.gz'))
+        chi_echoes = rd('chimap-echoes.nii.gz');                        % [X Y Z TE]
+        if size(chi_echoes, 4) ~= numel(TE)
+            error('chimap-echoes.nii.gz has %d echoes; params.json lists %d', size(chi_echoes, 4), numel(TE));
+        end
+        fprintf('DECOMPOSE: per-echo QSM (chimap-echoes.nii.gz)\n');
+        chi_te = @(i) chi_echoes(:,:,:,i);
+    else
+        chimap = rd('chimap.nii.gz');                                   % χ_total (ppm)
+        fprintf('DECOMPOSE: no chimap-echoes.nii.gz; chi_total (chimap.nii.gz) for every echo\n');
+        chi_te = @(i) chimap;
+    end
+
+    % --- complex signal per echo (Eq. 4) ---
     y_data = zeros(N1, N2, N3, numel(TE));
     for i = 1:numel(TE)
         y_data(:,:,:,i) = (mag_multi_echo(:,:,:,i) .* ...
-            exp(-1i*(2/3).*chimap*gamma*B0*TE(i))) .* mask_brain;
+            exp(-1i*(2/3).*chi_te(i)*gamma*B0*TE(i))) .* mask_brain;
     end
 
     % --- which voxels to fit (optional central-box crop for a feasibility/speed run) ---

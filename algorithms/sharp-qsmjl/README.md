@@ -27,9 +27,9 @@ the same thing as far as the original allows.
 
 | parameter | default | QSM.rs-matched | description |
 |---|---|---|---|
-| `radius` | 18*min(voxel_size) | 6 (QSM.rs: 6 × the smallest voxel size, mm) | SMV kernel radius, mm (`r`) |
+| `radius` | 18*min(voxel_size) |  | SMV kernel radius, mm (`r`) |
 | `threshold` | 0.05 |  | deconvolution (TSVD) threshold (`thr`) |
 
 ## Against the QSM.rs port
 
-- QSM.rs's `--radius` is a factor of the smallest voxel size (6 by default); QSM.jl's `r` is in mm (18 mm on 1 mm voxels). They agree with `--set radius=6` on 1 mm isotropic voxels.
+- QSM.rs's SHARP follows Tian Liu's `SHARP.m` as SEPIA runs it by default (4 mm, 0.03; astewartau/QSM.rs#321), checked against [`sharp-sepia`](../sharp-sepia) (pair `sharp`). QSM.jl's `sharp` is kept as `SharpVariant::QsmJl` (QSM.jl's defaults), which matches this submission to rounding in QSM.rs's own test; the pair `sharp-qsmjl` waits for qsmxt to expose that variant.

@@ -34,4 +34,6 @@ the same thing as far as the original allows.
 
 ## Against the QSM.rs port
 
-- QSM.jl always deconvolves; `vsharp-qsmrs` runs with `deconvolve: true` and threshold 0.05 too, so only the radii differ (QSM.jl 18 → 2 mm in 2 mm steps on 1 mm voxels, QSM.rs 12 → 1 mm in 1 mm steps). QSM.rs's `deconvolve: false` (STI Suite's behaviour) has no QSM.jl equivalent.
+- QSM.jl always deconvolves; `vsharp-qsmrs` runs with `deconvolve: true` and threshold 0.05 too. QSM.rs's radii are STI Suite's (12 → 1 mm in 1 mm steps), so the matched settings give QSM.jl those.
+- QSM.rs's default ball and edge test are STI Suite's (`VsharpBall::StiSuite`, astewartau/QSM.rs#332); QSM.jl's are `VsharpBall::QsmJl`, which matches this submission to rounding in QSM.rs's own test. The pair waits for qsmxt to expose that option.
+- QSM.rs's `deconvolve: false` (STI Suite's behaviour) has no QSM.jl equivalent.

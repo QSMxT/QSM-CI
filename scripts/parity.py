@@ -26,7 +26,9 @@ Subcommands (the `parity` workflow runs them in this order):
   record   append a run's records to parity/results.json, the history `status` reads.
   status   say, per pair, when it was last checked, against which QSM.rs, with what result, and
            whether that check is stale (see `staleness`); writes parity/status.json, the table in
-           parity/STATUS.md and the tracking issue's body.
+           parity/STATUS.md, the tracking issue's body and (--badges) one shields.io endpoint
+           file per pair.
+  badges   write those badge files from an existing parity/status.json (the site deploy).
 
 Intermediates join by NAME: a method that is run with `qsm-ci run --intermediates DIR` writes
 `$QSMCI_INTERMEDIATES/<name>.nii.gz` (CONTRACT.md, "Intermediates"), and an intermediate is compared
@@ -91,9 +93,25 @@ def load_thresholds(path: Path = THRESHOLDS) -> dict:
 def load_settings(path: Path = THRESHOLDS) -> dict:
     """thresholds.yml's top-level settings (everything but `pairs`), with defaults."""
     doc = yaml.safe_load(Path(path).read_text()) or {}
-    out = {"stale_after_days": 90, "qsmrs_repo": "astewartau/QSM.rs", "qsmrs_branch": "main"}
-    out.update({k: v for k, v in doc.items() if k != "pairs"})
+    out = dict(DEFAULT_SETTINGS)
+    out.update({k: v for k, v in doc.items() if k not in ("pairs", "no_original")})
     return out
+
+
+def load_no_original(path: Path = THRESHOLDS) -> dict:
+    """thresholds.yml's `no_original`: {name: {"covers", "note"}} for QSM.rs methods that have no
+    original code to check against (QSMxT/QSM-CI#302). They get a row and a badge, never a pair."""
+    doc = yaml.safe_load(Path(path).read_text()) or {}
+    return {k: (v or {}) for k, v in (doc.get("no_original") or {}).items()}
+
+
+# thresholds.yml's top-level settings. The `*_shared_paths` apply to every pair on top of its own
+# `qsmrs_paths` / `qsmxt_paths` (rules b and f).
+DEFAULT_SETTINGS = {"qsmrs_repo": "astewartau/QSM.rs", "qsmrs_branch": "main",
+                    "qsmrs_shared_paths": ["Cargo.lock"],
+                    "qsmxt_repo": "QSMxT/QSMxT", "qsmxt_branch": "main",
+                    "qsmxt_shared_paths": ["Cargo.lock"],
+                    "site_url": "https://qsmxt.github.io/QSM-CI"}
 
 
 def _manifests(algorithms_dir: Path = ROOT / "algorithms") -> dict:
@@ -588,7 +606,7 @@ def run_side(chain: list, dataset: Path, out: Path, runner: str, feed: "dict | N
     for i, slug in enumerate(chain):
         algo = _algo(slug, qsmrs_image)
         idir, odir = out / f"_in{i}", out / f"_out{i}"
-        pipeline.prepare_input(algo["consumes"], sources, idir)
+        pipeline.prepare_input(algo["consumes"], sources, idir, algo.get("optional", ()))
         odir.mkdir(parents=True, exist_ok=True)
         sets = dict(overrides or {}) if i == len(chain) - 1 else {}
         argv = cli_run_argv(algo, idir, odir, ARTIFACT_FILE, runner, overrides=sets) \
@@ -717,7 +735,7 @@ REPO = "QSMxT/QSM-CI"
 
 # The pair settings that decide what a check measures and how it is judged. A change to any of them
 # (or to the dataset's entry, limits included) makes the last check stale (rule c). `measured`,
-# `enabled`, `blocked_by` and `qsmrs_paths` are bookkeeping and do not count.
+# `enabled`, `blocked_by`, `qsmrs_paths` and `qsmxt_paths` are bookkeeping and do not count.
 MEASURED_BY = ("reference", "candidate", "reference_names", "candidate_names", "reference_set",
                "candidate_set")
 
@@ -879,17 +897,51 @@ def touched(files: list, paths: list) -> list:
     return [f for f in files if any(f == p or f.startswith(p + "/") for p in ps)]
 
 
+def _changed(changes, commit: "str | None", paths: list, repo: str, branch: str, what: str) -> list:
+    """The staleness reason for one repository's rule (b or f): [] when nothing under `paths`
+    changed on `branch` since `commit`. A network error is not a verdict (no reason)."""
+    if not paths:
+        return []
+    if not commit:
+        return [f"the {what} commit of the last check is not recorded"]
+    c = changes(commit) or {}
+    if c.get("error"):
+        return ([f"the checked {what} commit {_short(commit)} is not in {repo}"]
+                if c.get("unknown_commit") else [])
+    hit = touched(c.get("files") or [], paths)
+    if not hit:
+        return []
+    shown = ", ".join(f"`{f}`" for f in hit[:4]) + (" …" if len(hit) > 4 else "")
+    return [f"{what} {branch} changed {shown} since the checked {_short(commit)} "
+            f"({c.get('ahead_by', '?')} commits)"]
+
+
+def qsmxt_commit(rec: dict) -> "str | None":
+    """The QSMxT commit a check ran: the build's, else the release tag of the pinned image's
+    `qsmxt --version` (e.g. "qsmxt 10.0.0" → v10.0.0), else None."""
+    import re
+    c = (rec.get("qsmxt") or {}).get("commit")
+    if c:
+        return c
+    m = re.search(r"\b(\d+\.\d+\.\d+)\b", str((rec.get("candidate") or {}).get("qsmxt") or ""))
+    return f"v{m.group(1)}" if m else None
+
+
 def staleness(rec: "dict | None", cfg: dict, phantom: str, manifests: dict, settings: dict,
-              today: str, changes=None) -> list:
+              changes=None, qsmxt_changes=None) -> list:
     """Why the last check of a pair on a dataset no longer stands ([] when it does):
 
       (a) the reference image pinned in algorithm.yml is not the one last checked;
-      (b) QSM.rs `main` has commits touching the pair's `qsmrs_paths` since the QSM.rs commit last
-          checked (`changes(commit)` returns github_compare's answer; None skips this rule);
+      (b) QSM.rs `main` has commits touching the pair's `qsmrs_paths`, or `qsmrs_shared_paths`
+          (Cargo.lock), since the QSM.rs commit last checked (`changes(commit)` returns
+          github_compare's answer; None skips this rule);
       (c) the pair's settings or limits for the dataset changed since (thresholds_version);
-      (d) it was never checked, or last checked more than `stale_after_days` ago;
-      (e) the last check failed (or ended without a result)."""
-    from datetime import date
+      (d) it was never checked;
+      (e) the last check failed (or ended without a result);
+      (f) QSMxT `main` has commits touching the pair's `qsmxt_paths`, or `qsmxt_shared_paths`
+          (Cargo.lock), since the QSMxT commit last checked (`qsmxt_changes`; None skips it).
+
+    There is no age limit: a check stands until one of these changes."""
     if rec is None:
         return ["never checked"]
     why = []
@@ -898,88 +950,198 @@ def staleness(rec: "dict | None", cfg: dict, phantom: str, manifests: dict, sett
     if ref_now != ref_then:
         why.append(f"reference image changed: checked {_short(ref_then, 19)}, algorithm.yml "
                    f"pins {_short(ref_now, 19)}")
-    commit = (rec.get("qsmrs") or {}).get("commit")
     if changes is not None:
-        if not commit:
-            why.append("the QSM.rs commit of the last check is not recorded")
-        else:
-            c = changes(commit) or {}
-            if c.get("error"):
-                if c.get("unknown_commit"):
-                    why.append(f"the checked QSM.rs commit {_short(commit)} is not in "
-                               f"{settings['qsmrs_repo']}")
-            else:
-                hit = touched(c.get("files") or [], cfg.get("qsmrs_paths") or [])
-                if hit:
-                    shown = ", ".join(f"`{f}`" for f in hit[:4]) + (" …" if len(hit) > 4 else "")
-                    why.append(f"QSM.rs {settings['qsmrs_branch']} changed {shown} since the "
-                               f"checked {_short(commit)} ({c.get('ahead_by', '?')} commits)")
+        why += _changed(changes, (rec.get("qsmrs") or {}).get("commit"),
+                        list(cfg.get("qsmrs_paths") or []) + list(settings.get("qsmrs_shared_paths") or []),
+                        settings["qsmrs_repo"], settings["qsmrs_branch"], "QSM.rs")
     if rec.get("thresholds") != thresholds_version(cfg, phantom):
         why.append("the pair's settings or limits for this dataset changed since")
-    n = int(settings.get("stale_after_days") or 90)
-    try:
-        age = (date.fromisoformat(today[:10]) - date.fromisoformat((rec.get("date") or "")[:10])).days
-    except ValueError:
-        age = None
-    if age is None or age > n:
-        why.append(f"last checked {age if age is not None else '?'} days ago (limit {n})")
     if rec.get("result") == "error":
         why.append("the last check ended without a result")
     elif rec.get("result") != "pass":
         why.append("the last check failed" + (f": {rec['failed'][0]}" if rec.get("failed") else ""))
+    if qsmxt_changes is not None:
+        why += _changed(qsmxt_changes, qsmxt_commit(rec),
+                        list(cfg.get("qsmxt_paths") or []) + list(settings.get("qsmxt_shared_paths") or []),
+                        settings["qsmxt_repo"], settings["qsmxt_branch"], "QSMxT")
     return why
 
 
-def pair_status(thresholds: dict, results: dict, manifests: dict, settings: dict, today: str,
-                changes=None) -> list:
+def _memo(fn):
+    if fn is None:
+        return None
+    cache: dict = {}
+
+    def get(commit):
+        if commit not in cache:
+            cache[commit] = fn(commit)
+        return cache[commit]
+    return get
+
+
+def anchor(name: str) -> str:
+    """The Parity page's row id for a pair (or a no-original entry): `#pair-<name>`."""
+    return f"pair-{name}"
+
+
+def pair_status(thresholds: dict, results: dict, manifests: dict, settings: dict,
+                changes=None, qsmxt_changes=None, no_original: "dict | None" = None) -> list:
     """One row per configured pair: its state and, per dataset, the last check and why it is
     stale. State: `current` (enabled, every dataset's last check stands), `stale`, `gap` (disabled
     and `blocked_by` a known gap: the port does not match its original yet), `off` (disabled: not
-    verified or not measured yet)."""
+    verified or not measured yet). Then one `no-original` row per `no_original` entry. Every row
+    carries its badge (`badge`)."""
     last = latest_records(results)
-    cache: dict = {}
-
-    def cached(commit):
-        if changes is None:
-            return None
-        if commit not in cache:
-            cache[commit] = changes(commit)
-        return cache[commit]
-
+    changes, qsmxt_changes = _memo(changes), _memo(qsmxt_changes)
     rows = []
     for name, cfg in thresholds.items():
         cfg = cfg or {}
         enabled = bool(cfg.get("enabled"))
-        dss = []
+        dss, recs = [], []
         for ds in sorted((cfg.get("datasets") or {}).keys()):
             rec = last.get((name, ds))
-            why = staleness(rec, cfg, ds, manifests, settings, today,
-                            cached if changes is not None else None) if enabled else []
-            dss.append({"dataset": ds, "last": _summary(rec), "stale": bool(why), "reasons": why})
+            recs.append(rec)
+            why = staleness(rec, cfg, ds, manifests, settings, changes, qsmxt_changes) if enabled else []
+            dss.append({"dataset": ds, "last": _summary(rec, final_maps(cfg, ds)), "stale": bool(why),
+                        "reasons": why})
         if enabled:
             state = "stale" if (not dss or any(d["stale"] for d in dss)) else "current"
         else:
             state = "gap" if cfg.get("blocked_by") else "off"
         row = {"pair": name, "algorithm": (manifests.get(cfg.get("candidate")) or {}).get("algorithm"),
                "reference": cfg.get("reference"), "candidate": cfg.get("candidate"),
-               "enabled": enabled, "state": state, "datasets": dss}
+               "enabled": enabled, "state": state, "anchor": anchor(name), "datasets": dss}
         if cfg.get("blocked_by"):
             row["blocked_by"] = cfg["blocked_by"]
         if cfg.get("note"):
             row["note"] = cfg["note"]
         if state == "stale":
             row["refresh"] = refresh_command([name])
+        row["badge"] = badge(row)
+        rows.append(row)
+    for name, entry in (no_original or {}).items():
+        row = {"pair": name, "state": "no-original", "enabled": False, "anchor": anchor(name),
+               "covers": entry.get("covers"), "note": entry.get("note"), "datasets": []}
+        row["badge"] = badge(row)
         rows.append(row)
     return rows
 
 
-def _summary(rec: "dict | None") -> "dict | None":
+# Datasets-entry keys that are not a final map's limits.
+_NOT_MAPS = {"intermediates", "feed", "measured", "reference_prefix", "candidate_prefix",
+             "reference_set", "candidate_set"}
+
+
+def final_maps(cfg: dict, phantom: str) -> list:
+    """The final maps a pair × dataset has limits on (chimap; chi-para and chi-dia), in order."""
+    ds = ((cfg or {}).get("datasets") or {}).get(phantom) or {}
+    return [k for k, v in ds.items() if k not in _NOT_MAPS and isinstance(v, dict)]
+
+
+def _summary(rec: "dict | None", finals: "list | None" = None) -> "dict | None":
+    """A record as the status shows it. `nrmse` / `max_abs` are the worst over the final maps
+    (`finals`, which have limits; else the record's first map, which is the final one)."""
     if not rec:
         return None
-    final = next(iter((rec.get("metrics") or {}).values()), {})   # the final map comes first
+    metrics = rec.get("metrics") or {}
+    maps = [metrics[n] for n in finals or [] if n in metrics] or [next(iter(metrics.values()), {})]
+    final = maps[0]
+
+    def worst(k):
+        vs = [m[k] for m in maps if m.get(k) is not None]
+        return max(vs) if vs else None
     return {"date": rec.get("date"), "result": rec.get("result"), "run_url": rec.get("run_url"),
-            "qsmrs": rec.get("qsmrs"), "nrmse": final.get("nrmse"),
+            "qsmrs": rec.get("qsmrs"), "qsmxt": {"commit": qsmxt_commit(rec)},
+            "nrmse": worst("nrmse"), "max_abs": worst("max_abs"),
             "correlation": final.get("correlation"), "dice": final.get("dice")}
+
+
+# ---------------------------------------------------------------------------------------------------
+# Badges: one shields.io endpoint file per row (https://shields.io/badges/endpoint-badge), published
+# with the site at <site_url>/parity/badges/<name>.json, which the QSM.rs README shows.
+# ---------------------------------------------------------------------------------------------------
+
+BADGE_COLOR = {"current": "brightgreen", "stale": "orange", "failing": "red", "gap": "yellow",
+               "unchecked": "lightgrey", "off": "lightgrey", "no-original": "lightgrey"}
+
+
+def _day(date: "str | None") -> str:
+    """'2026-10-30T…' → '30 Oct'."""
+    from datetime import date as _date
+    try:
+        d = _date.fromisoformat((date or "")[:10])
+    except ValueError:
+        return "?"
+    return f"{d.day} {d:%b}"
+
+
+def _nrmse_label(v: float) -> str:
+    if v < 0.001:
+        return "< 0.001 %"
+    return f"{float(f'{v:.2g}'):g} %"
+
+
+def badge(row: dict) -> dict:
+    """{"kind", "message", "color"} for a status row:
+      current      green  "<NRMSE> · <date>" (worst final-map NRMSE over the datasets; "identical"
+                          when every map is bit-identical), dated by the oldest of the checks;
+      failing      red    an enabled pair whose last check failed or ended without a result;
+      stale        orange "stale · <date of the oldest last check>";
+      unchecked    grey   an enabled pair never checked on any dataset;
+      gap          yellow a disabled pair `blocked_by` a known gap: "gap · <issue>";
+      off          grey   a disabled pair without a known gap: "not enabled";
+      no-original  grey   a QSM.rs method with no original code to check against."""
+    state = row["state"]
+    lasts = [d["last"] for d in row.get("datasets") or [] if d.get("last")]
+    oldest = min((l.get("date") or "" for l in lasts), default="")
+    if state == "no-original":
+        kind, msg = "no-original", "no original"
+    elif state == "off":
+        kind, msg = "off", "not enabled"
+    elif state == "gap":
+        ref = str(row.get("blocked_by") or "")
+        ref = ref.split("/", 1)[1] if "/" in ref else ref       # QSMxT/QSM-CI#311 → QSM-CI#311
+        kind, msg = "gap", ("gap · " + ref) if ref else "gap"
+    elif not lasts:
+        kind, msg = "unchecked", "not yet checked"
+    elif any(l.get("result") != "pass" for l in lasts):
+        bad = min((l.get("date") or "" for l in lasts if l.get("result") != "pass"), default="")
+        kind, msg = "failing", f"failing · {_day(bad)}"
+    elif state == "stale":
+        kind, msg = "stale", f"stale · {_day(oldest)}"
+    else:
+        nrmse = [l["nrmse"] for l in lasts if l.get("nrmse") is not None]
+        identical = nrmse and all(l.get("nrmse") == 0 and not l.get("max_abs") for l in lasts)
+        kind = "current"
+        msg = ("identical" if identical else _nrmse_label(max(nrmse)) if nrmse else "pass") \
+            + f" · {_day(oldest)}"
+    return {"kind": kind, "message": msg, "color": BADGE_COLOR[kind]}
+
+
+def badge_endpoint(b: dict) -> dict:
+    """The shields.io endpoint JSON for a row's badge."""
+    return {"schemaVersion": 1, "label": "parity", "message": b["message"], "color": b["color"]}
+
+
+GENERIC_BADGES = {   # for a README row with no pair and no no_original entry
+    "not-checked": {"kind": "unchecked", "message": "not yet checked", "color": "lightgrey"},
+}
+
+
+def write_badges(rows: list, out: Path) -> list:
+    """<out>/<name>.json per row, plus the generic ones; returns the names written. Stale files
+    from rows that no longer exist are removed."""
+    out = Path(out)
+    out.mkdir(parents=True, exist_ok=True)
+    want = {r["pair"]: r["badge"] for r in rows}
+    for k, v in GENERIC_BADGES.items():
+        want.setdefault(k, v)
+    for f in out.glob("*.json"):
+        if f.stem not in want:
+            f.unlink()
+    for name, b in want.items():
+        (out / f"{name}.json").write_text(json.dumps(badge_endpoint(b)) + "\n")
+    return sorted(want)
 
 
 STATE_LABEL = {"current": "✅ current", "stale": "⚠️ stale", "gap": "🚧 gap", "off": "— not enabled"}
@@ -987,18 +1149,18 @@ STATE_LABEL = {"current": "✅ current", "stale": "⚠️ stale", "gap": "🚧 g
 
 def render_status(rows: list, settings: dict, today: str) -> str:
     """parity/STATUS.md: the table docs/parity.md links to, regenerated by the parity workflows."""
-    n = settings.get("stale_after_days", 90)
     lines = ["# Port parity status", "",
              f"Generated {today} by `scripts/parity.py status` from `parity/results.json` and "
              "`parity/thresholds.yml`; do not edit by hand. How checks run, and what makes one "
              "stale: [docs/parity.md](../docs/parity.md).", "",
              "A check is **stale** when the reference image changed, QSM.rs `main` changed the "
-             f"pair's source files, the pair's limits changed, it is more than {n} days old, or it "
-             "failed. A **gap** is a pair whose port does not match its original yet: it is not "
+             "port's source files or `Cargo.lock`, QSMxT `main` changed the step's wiring or "
+             "`Cargo.lock`, the pair's limits changed, or it failed. There is no age limit. A **gap** is a pair whose port does not match its original yet: it is not "
              "enabled, and has no limits that would pass it.", "",
              "| Pair | Original → port | Dataset | Last check | QSM.rs | Result | NRMSE | Status |",
              "|---|---|---|---|---|---|---|---|"]
-    for r in rows:
+    pairs = [r for r in rows if r["state"] != "no-original"]
+    for r in pairs:
         dss = r["datasets"] or [{"dataset": "—", "last": None, "stale": r["enabled"],
                                  "reasons": ["no dataset configured"] if r["enabled"] else []}]
         for i, d in enumerate(dss):
@@ -1019,6 +1181,11 @@ def render_status(rows: list, settings: dict, today: str) -> str:
             nrmse = _fmt(last.get("nrmse"), "nrmse") if last.get("nrmse") is not None else "—"
             lines.append(f"| {pair} | {sides} | {d['dataset']} | {when} | {qsmrs} | {res} "
                          f"| {nrmse} | {status} |")
+    none = [r for r in rows if r["state"] == "no-original"]
+    if none:
+        lines += ["", "No original code to check against (QSMxT/QSM-CI#302; tested against ground "
+                  "truth in QSM.rs instead):", "", "| Method | Covers | Note |", "|---|---|---|"]
+        lines += [f"| `{r['pair']}` | {r.get('covers') or ''} | {r.get('note') or ''} |" for r in none]
     stale = [r["pair"] for r in rows if r["state"] == "stale"]
     if stale:
         lines += ["", "Refresh every stale pair against QSM.rs `main`:", "", "```bash",
@@ -1136,16 +1303,21 @@ def cmd_status(args) -> int:
     from datetime import datetime, timezone
     th = load_thresholds(args.thresholds)
     settings = load_settings(args.thresholds)
-    if args.stale_after_days is not None:
-        settings["stale_after_days"] = args.stale_after_days
     today = args.today or datetime.now(timezone.utc).date().isoformat()
     token = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")
-    changes = None if args.offline else (
-        lambda c: github_compare(settings["qsmrs_repo"], c, settings["qsmrs_branch"], token))
-    rows = pair_status(th, load_results(args.results), _manifests(), settings, today, changes)
-    doc = {"generated": today, "stale_after_days": settings["stale_after_days"],
+    changes = qsmxt_changes = None
+    if not args.offline:
+        changes = lambda c: github_compare(settings["qsmrs_repo"], c, settings["qsmrs_branch"], token)  # noqa: E731
+        qsmxt_changes = lambda c: github_compare(settings["qsmxt_repo"], c, settings["qsmxt_branch"],  # noqa: E731
+                                                 token)
+    rows = pair_status(th, load_results(args.results), _manifests(), settings, changes,
+                       qsmxt_changes, load_no_original(args.thresholds))
+    doc = {"generated": today,
            "qsmrs": {"repo": settings["qsmrs_repo"], "branch": settings["qsmrs_branch"],
                      "checked": not args.offline},
+           "qsmxt": {"repo": settings["qsmxt_repo"], "branch": settings["qsmxt_branch"],
+                     "checked": not args.offline},
+           "badges": f"{settings['site_url'].rstrip('/')}/parity/badges/",
            "stale": [r["pair"] for r in rows if r["state"] == "stale"], "pairs": rows}
     if args.json:
         Path(args.json).write_text(json.dumps(doc, indent=1, default=str) + "\n")
@@ -1154,10 +1326,24 @@ def cmd_status(args) -> int:
         Path(args.markdown).write_text(md)
     if args.issue:
         Path(args.issue).write_text(render_issue(rows, settings, today))
-    if not (args.json or args.markdown or args.issue):
+    if args.badges:
+        write_badges(rows, args.badges)
+    if not (args.json or args.markdown or args.issue or args.badges):
         print(md)
     else:
         print(f"stale: {', '.join(doc['stale']) or 'none'}")
+    return 0
+
+
+def cmd_badges(args) -> int:
+    """The badge files from an existing status.json (what pages.yml publishes): no GitHub calls,
+    so the site always shows the badges of the status it serves."""
+    doc = json.loads(Path(args.status).read_text())
+    rows = doc.get("pairs") or []
+    for r in rows:
+        r["badge"] = badge(r)   # from the row, so a change to `badge` shows at the next deploy
+    names = write_badges(rows, args.out)
+    print(f"{len(names)} badge(s) in {args.out}")
     return 0
 
 
@@ -1201,11 +1387,15 @@ def main(argv=None) -> int:
     p.add_argument("--json", type=Path, help="e.g. parity/status.json")
     p.add_argument("--markdown", type=Path, help="e.g. parity/STATUS.md")
     p.add_argument("--issue", type=Path, help="the tracking issue's body (empty: nothing stale)")
-    p.add_argument("--stale-after-days", type=int, help="default: thresholds.yml stale_after_days")
+    p.add_argument("--badges", type=Path, help="write a shields.io endpoint file per pair here")
     p.add_argument("--today", help="YYYY-MM-DD (default: today, UTC)")
     p.add_argument("--offline", action="store_true",
-                   help="skip rule (b): do not ask GitHub what changed in QSM.rs")
+                   help="skip rules (b) and (f): do not ask GitHub what changed in QSM.rs / QSMxT")
     p.set_defaults(fn=cmd_status)
+    p = sub.add_parser("badges", help="the badge files from a status.json (the site deploy)")
+    p.add_argument("--status", type=Path, default=ROOT / "parity" / "status.json")
+    p.add_argument("--out", type=Path, required=True)
+    p.set_defaults(fn=cmd_badges)
     for name, fn in (("run", cmd_run), ("compare", cmd_compare)):
         p = sub.add_parser(name)
         p.add_argument("--algorithm", required=True)

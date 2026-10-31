@@ -28,7 +28,7 @@ the same thing as far as the original allows.
 | parameter | default | QSM.rs-matched | description |
 |---|---|---|---|
 | `threshold` | 0.15 |  | singular-value threshold (`thr`) |
-| `pad` | 0 | -1 | QSM.jl `pad` (all three axes): >= 0 zero-pads to a fast FFT size (QSM.jl default 0: padding only up to that size); -1 does not pad, as QSM.rs |
+| `pad` | 0 |  | QSM.jl `pad` (all three axes): >= 0 zero-pads to a fast FFT size (QSM.jl default 0: padding only up to that size); -1 does not pad. QSM.rs pads the same way by default (astewartau/QSM.rs#323) |
 
 ## Against the QSM.rs port
 
