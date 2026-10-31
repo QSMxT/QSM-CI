@@ -43,8 +43,8 @@ matlab:
 # Container vs the authors' code in licensed MATLAB with the real toolboxes (QSMxT/QSM-CI#295;
 # fidelity/README.md). Rerun and update whenever the image changes.
 fidelity:
-  date: 2026-10-28
-  image: sha256:e0e8bc6957c5346905136bfb02d330ca5f66eab510bf2a9893015a9dc4e0c3f6
+  date: 2026-10-31
+  image: sha256:d27caa66b40247e3a7d14b45bc3bb39f85428c25da93bb5f90ed5de92748effc   # v4 image ID; becomes the registry digest when v4 is pushed
   matlab: R2023b Update 5 (23.2.0.2459199), Image Processing Toolbox 23.2
   tolerance: identical   # final chi and every intermediate, in silico and in vivo, 8 threads
   result: pass

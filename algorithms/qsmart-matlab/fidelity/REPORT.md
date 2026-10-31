@@ -3,12 +3,13 @@
 QSMxT/QSM-CI#295, steps 1–2: does the `qsmart-matlab` container compute what the authors' MATLAB
 computes? To rerun the check, see [`README.md`](README.md) (the shared harness in `fidelity/matlab/`).
 
-- **Checked:** 2026-10-28, on Slurm compute nodes, 8 CPUs per job.
+- **Checked:** 2026-10-31, on Slurm compute nodes, 8 CPUs per job.
 - **Licensed MATLAB:** 23.2.0.2459199 (R2023b) Update 5, with Image Processing Toolbox 23.2.
-- **Image checked:** `ghcr.io/astewartau/qsm-ci/matlab-qsmart@sha256:e0e8bc6957c5346905136bfb02d330ca5f66eab510bf2a9893015a9dc4e0c3f6`
-  (`v3`).
+- **Image checked:** `ghcr.io/astewartau/qsm-ci/matlab-qsmart` `v4` (image ID
+  `sha256:d27caa66b40247e3a7d14b45bc3bb39f85428c25da93bb5f90ed5de92748effc`; registry digest
+  pending the push, then pinned in `algorithm.yml`).
   - `recon` is compiled with that licensed R2023b against the **real** Image Processing Toolbox,
-    with no shims.
+    with no shims (build job 31200811; `recon` sha256 `9773c43e…`).
   - It runs on the R2023b MATLAB Runtime (23.2.0.3097123, Update 11) under Apptainer.
 - **N4:** every run uses the image's own `N4BiasFieldCorrection` (ANTs 2.5.4).
 - **Cases:**
@@ -19,7 +20,7 @@ computes? To rerun the check, see [`README.md`](README.md) (the shared harness i
 
 ## Result: identical
 
-**Every output of the `v3` container is bit-identical to the same `recon.m` run in licensed
+**Every output of the `v4` container is bit-identical to the same `recon.m` run in licensed
 MATLAB with the real toolboxes, in both cases.** That covers every intermediate and the final χ.
 NRMSE and max |Δ| are 0, the masks have Dice 1, and no voxel differs.
 
@@ -55,10 +56,26 @@ fields were identical. Here the container and the licensed runs all used 8 threa
 `intermediates.json`). The Runtime (Update 11) and the licensed MATLAB (Update 5) differ in update
 level, with no effect on any output.
 
+**Against the authors' own code, unpadded.** `v4` runs on the matrix as given, as the authors'
+`QSMART.m` does (v1–v3 zero-padded odd dims to even, which the authors' code never does;
+astewartau/QSM.rs#320). The authors' QSMART v1.0 was also run verbatim in the same licensed R2023b
+on the same `sim` inputs (only N4 swapped for the image's binary, as above;
+`/scratch/user/uqaste15/qsmart-parity/sim-odd/qsmart_odd_ci.m` on Bunya). Every intermediate of the
+`v4` container is identical to it (vessel mask Dice 1, total field, R_0, both local fields and both
+χ: max |Δ| 0); the final χ differs only by its float32 output rounding (max |Δ| 4.3e-9 ppm).
+
+**What dropping the padding changed.** `sim` (164×205×205): the final χ moves by 14.3 % NRMSE from
+`v3`. The padding had changed the vessel mask (Dice 0.988), the Laplacian-unwrapped total field
+(1.8 %), R_0, both SDF stages and both inversions. `invivo` (184×256×128, all even): `v4` is
+bit-identical to `v3`.
+
+**Jobs (v4).** setup 31201202; sim: container 31201203, real 31201204, real2 31201205, compare
+31201206; invivo: 31201207–31201210. Both `runs-<case>.md` read PASS.
+
 **Fidelity record.** `algorithm.yml` records this under `fidelity:`, with the tolerance
 `identical`.
 
-**Rechecked with the shared harness.** The same check, run again on 2026-10-28 through
+**Rechecked with the shared harness (v3).** The same check, run again on 2026-10-28 through
 `fidelity/matlab/` (QSMxT/QSM-CI#300) against the same `v3` digest, is again identical in every
 output, in both cases (setup 30729509; container 30729510 and 30729514; real, real2 and compare
 30729961–30729966).

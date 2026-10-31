@@ -119,6 +119,10 @@ pairs:
       chi1: chimap_stage1
       lfs2: localfield_stage2
       chi2: chimap_stage2
+    # The authors' adjust_offset.m builds its dipole on -N/2:N/2-1, half a step off the FFT grid
+    # when a dimension is odd (the sim, 164×205×205); QSM.rs keeps the FFT grid as its default and
+    # the authors' as an option (astewartau/QSM.rs#386), which the pair turns on. No effect on KKI.
+    candidate_set: { offset_grid: qsmart-reference }
     datasets:
       # The port starts from the original's own total field (Laplacian unwrapping + QSMART's
       # magnitude-weighted echo fit) and its own reliability map R_0 (`qsmxt qsmart --reliability`,
@@ -130,20 +134,25 @@ pairs:
       # 15c938f, built by this workflow), plus the margins above. The same build without the feed
       # (run 41190566176): sim NRMSE 16.32 %, KKI 0.779 %. The pinned qsmxt v10.0.0 (QSM.rs v0.39.0)
       # is far outside them (sim NRMSE 65.9 %, KKI 133.8 %, without the feed): those runs record
-      # the gap, not a limit. Reference image: matlab-qsmart v3, sha256:e0e8bc69… (algorithm.yml).
+      # the gap, not a limit. Reference image: matlab-qsmart v3, sha256:e0e8bc69… (algorithm.yml);
+      # sim re-measured on v4 (below). KKI has all-even dims, so v3 never padded it and v4 runs it
+      # the same; the offset grid has no effect on even dims, so its measurement and limits stand.
       sim:
         feed: { totalfield: totalfield, reliability: reliability }
-        # Measured: NRMSE 13.45 %, r 0.9909, max |Δ| 0.125 ppm, p99 |Δ| 0.00897 ppm.
-        # R_0 closes stage 1: without it (run 41190566176) the port reconstructed the 331 voxels
-        # the original leaves out, and the stage maps differed from stage 1 on (stage-1 local
-        # field 8.42 %, χ1 10.8 %, stage-2 local field 13.2 %, χ2 33.0 %, final 16.32 %). With it:
-        # stage-1 local field 0.081 %, χ1 0.137 %. What is left is stage 2 (local field 8.54 %,
-        # χ2 27.3 %), which runs outside the vessel mask, and the vessel masks still differ
-        # (Dice 0.988; KKI 0.9999). astewartau/QSM.rs#320: with the original's vessel mask as
-        # well, the whole chain is 0.15 % from MATLAB.
-        chimap: { nrmse_max: 15.3, correlation_min: 0.98, max_abs_max: 0.156, p99_abs_max: 0.0113 }
+        # matlab-qsmart v4 (no even-dim padding, as the authors' code) with the candidate on
+        # offset_grid=qsmart-reference (astewartau/QSM.rs#386, QSMxT/QSMxT#468): measured NRMSE
+        # 0.498 %, r 1.0000 (0.99999), max |Δ| 0.0491 ppm, p99 |Δ| 0.000099 ppm; stage-1 local
+        # field 0.075 %, χ1 0.126 %, stage-2 local field 0.300 %, χ2 0.643 %, vessel mask Dice
+        # 0.99999. Same run on the FFT grid (QSM.rs's default): NRMSE 3.57 %. Before (v3, padded):
+        # 13.45 %, r 0.9909, max 0.125, p99 0.00897; stage-2 local field 8.54 %, χ2 27.3 %, vessel
+        # Dice 0.988: the padding changed the original's vessel mask, total field and both stages.
+        # PROPOSED from a local emulation of this pair (qsmxt qsmart on the v4 container's own
+        # totalfield and R_0, which reproduces run 41190547845's 13.455 % exactly on v3);
+        # confirm with parity.yml baseline once the v4 image is published.
+        chimap: { nrmse_max: 1.05, correlation_min: 0.989, max_abs_max: 0.0614, p99_abs_max: 0.000125 }
         measured:
-          main: "run 41190547845: QSMxT main 9cfe3f9, qsm-core 15c938f, R_0 fed (limits)"
+          main: "local emulation, v4 + QSMxT#468 (qsm-core c03d4d0), R_0 fed, qsmart-reference grid (limits, PROPOSED)"
+          v3: "run 41190547845: QSMxT main 9cfe3f9, qsm-core 15c938f, R_0 fed, v3 (padded), NRMSE 13.45 %"
           unfed: "run 41190566176: QSMxT main 9cfe3f9, qsm-core 15c938f, no R_0, NRMSE 16.32 %, r 0.9868"
           pinned: "run 40530165113: qsmxt v10.0.0 sha256:9258c10e…, NRMSE 65.94 %, r 0.8003"
       # In vivo (EMTP travelling head, KKI Philips 3 T, public). R_0 rejects no voxel here: the
