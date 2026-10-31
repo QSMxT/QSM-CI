@@ -1,0 +1,51 @@
+name: LSQR (qsm_heidi)
+slug: lsqr
+algorithm: lsqr   # pairs with lsqr-qsmrs (QSM.rs's port of inversion_lsqr.m) in the parity workflow
+source: heidi     # the authors' qsm_heidi repository
+stage: dipole
+language: MATLAB
+family: iterative
+learning: none
+engine: qsm_heidi 4592631 (inversion_lsqr.m, computesusceptibility_lsqr.m)
+inputs: [localfield, mask, params, magnitude]  # the magnitude weights the LSQR rows
+description: >
+  Minimally regularised LSQR: the dipole inversion solved as one large least-squares system with a
+  residual-field term and a global offset, leaning on LSQR's minimum-norm property instead of an
+  explicit regularisation term. The authors' code (qsm_heidi 4592631) run as its inversion_lsqr.m
+  runs it, compiled from MATLAB and run on the license-free MATLAB Runtime.
+citation: Schweser et al., Medical Physics 2010
+authors:
+- name: Ferdinand Schweser
+- name: Andreas Deistung
+- name: Berengar Wendel Lehr
+- name: Jürgen Rainer Reichenbach
+doi: 10.1118/1.3481505
+code_url: https://gitlab.com/R01NS114227/qsm_heidi
+license: "qsm_heidi LICENSE: non-commercial academic research use (Ferdinand Schweser, 2025)"
+image: ghcr.io/astewartau/qsm-ci/heidi@sha256:be334a2c06cd37474175b98950387fc027c40fddf12066d5b4de8d09f6e7e3a4   # lsqr-v2
+run: bash run.sh
+smoke_box: 32
+matlab:
+  entry: recon.m
+  runtime: r2023b
+# Container vs the authors' code in licensed MATLAB with the real toolboxes (QSMxT/QSM-CI#300;
+# fidelity/REPORT.md). Rerun and update whenever the image changes.
+fidelity:
+  date: 2026-10-31
+  image: sha256:be334a2c06cd37474175b98950387fc027c40fddf12066d5b4de8d09f6e7e3a4   # lsqr-v2
+  matlab: R2023b Update 5 (23.2.0.2459199)
+  sources: qsm_heidi 4592631 (lsqr/computesusceptibility_lsqr.m)
+  tolerance: in vivo identical; in silico chi NRMSE 0.059 % (max 0.0023 ppm; 198 vs 204 LSQR iterations)   # 8 threads
+  result: residual   # in silico only; likely Runtime Update 11 vs licensed Update 5 (REPORT.md), not proven
+  report: algorithms/lsqr/fidelity/REPORT.md
+# inversion_lsqr.m's settings (qsm_heidi 4592631). See BUILD.md.
+parameters:
+- name: residual_weighting
+  default: 0.2
+  description: residual-field weight at 9.4 T, scaled by the field strength (0.2/9.4 per tesla, the QUASAR optimum)
+- name: lsqr_tolerance
+  default: 1e-5
+  description: MATLAB lsqr tolerance
+- name: lsqr_max_iter
+  default: 400
+  description: maximum lsqr iterations
