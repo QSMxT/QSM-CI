@@ -13,9 +13,14 @@ with the sign convention χ+ ≥ 0, χ− ≤ 0 internally. It uses NO B0 direct
 STI path), so single-orientation data needs no reorientation. We store χ− as a POSITIVE magnitude
 (−xn) to match the stage contract.
 
-Dr is the static-dephasing relaxivity (Hz/ppm). We default to Dr=137 — the qsm-forward phantom's single
-kernel (Shin 2021/2022) — so R2'/Dr lands in ppm alongside χ_total. Override with $WAVESEP_DR or a "Dr"
-key in params.json. WaveSep's QSM model assumes Dr_pos == Dr_neg.
+Dr is the relaxometric constant (Hz/ppm) that puts R2'/Dr in ppm alongside χ_total. WaveSep ships no
+value: its driver reads Dr_pos/Dr_neg per dataset from a params.json (wavesep/utils/run_wavesep_qsm.py:18,
+data/yml/template_qsm.yml), and its in-vivo data are the SNU χ-separation data of co-author H.-G. Shin
+(example_qsm.yml: SUB006, χ-sep-COSMOS labels). The published value for that data is χ-separation's own,
+137 Hz/ppm, measured at 3 T (Shin et al. 2021), which the SNU χ-separation toolbox scales linearly with field:
+Dr = 137·B0/2.9 (B0 = CF/42.58e6; QSM.rs src/separation/chi_sep_ilsqr.rs `toolbox_default_dr`). That is
+our default, from params.json "B0": 141.7 Hz/ppm at 3 T, 330.7 at 7 T. Override with --set Dr, $WAVESEP_DR
+or a "Dr" key in params.json. WaveSep's QSM model assumes Dr_pos == Dr_neg.
 
 Vendored WaveSep source (github.com/ZhenghanFang/WaveSep) sits under ./wavesep, used unmodified; used
 with the author's permission for academic benchmarking. Algorithm hyperparameters (alpha=0.2, Lambda=0.02,
@@ -47,7 +52,9 @@ OUT = sys.argv[2] if len(sys.argv) > 2 else "/output"
 # `qsm-ci run wavesep --set <name>=<value>` (arrives as /input/config.json — see read_cfg / dr_value).
 DEFAULT_WAVELET = "db4"
 DEFAULT_ALPHA, DEFAULT_LAMBDA, DEFAULT_MAXIT = 0.2, 0.02, 100
-DEFAULT_DR = 137.0
+# χ-separation's relaxometric constant (Shin et al. 2021) and the field it was measured at, as the SNU
+# toolbox scales it: Dr = 137·B0/2.9 (see the module docstring).
+DR_SHIN_2021, DR_REF_B0 = 137.0, 2.9
 
 
 def load(name):
@@ -78,8 +85,13 @@ def read_cfg():
     return {}
 
 
+def default_dr(b0):
+    """The published Dr scaled to this dataset's field: 137·B0/2.9 Hz/ppm."""
+    return DR_SHIN_2021 * float(b0) / DR_REF_B0
+
+
 def dr_value(params, cfg):
-    # precedence: --set Dr (config.json) > $WAVESEP_DR > params.json "Dr" > repo default
+    # precedence: --set Dr (config.json) > $WAVESEP_DR > params.json "Dr" > 137·B0/2.9
     if cfg.get("Dr") is not None:
         return float(cfg["Dr"])
     env = os.environ.get("WAVESEP_DR")
@@ -87,7 +99,9 @@ def dr_value(params, cfg):
         return float(env)
     if isinstance(params, dict) and params.get("Dr") is not None:
         return float(params["Dr"])
-    return DEFAULT_DR
+    if not isinstance(params, dict) or params.get("B0") is None:
+        sys.exit("wavesep: params.json has no B0; the default Dr (137*B0/2.9) needs it, or pass --set Dr=...")
+    return default_dr(params["B0"])
 
 
 def main():
@@ -124,7 +138,7 @@ def main():
     nib.save(nib.Nifti1Image(xpos, qimg.affine, qimg.header), os.path.join(OUT, "chi-para.nii.gz"))
     nib.save(nib.Nifti1Image(xneg, qimg.affine, qimg.header), os.path.join(OUT, "chi-dia.nii.gz"))
     print(f"wavesep: wrote chi-para/chi-dia {xpos.shape} "
-          f"Dr={Dr} lambda={lam:g} alpha={alpha:g} wavelet={wavelet} max_iter={maxit}", flush=True)
+          f"Dr={Dr:.4g} lambda={lam:g} alpha={alpha:g} wavelet={wavelet} max_iter={maxit}", flush=True)
 
 
 if __name__ == "__main__":

@@ -402,7 +402,7 @@ def discover_algorithms(track: str = "sim", phantom: "str | None" = None,
             return [_yaml_scalar(a) for a in v] if isinstance(v, list) else None
 
         manifest = {"stage": s, "slug": d.name, "inputs": _scalars("inputs"),
-                    "optional_inputs": _scalars("optional_inputs")}
+                    "optional_inputs": _scalars("optional_inputs"), "baseline": doc.get("baseline")}
         consumes = _consumes(manifest)
         algos.append({
             "slug": d.name, "dir": d, "stage": s,
@@ -410,7 +410,8 @@ def discover_algorithms(track: str = "sim", phantom: "str | None" = None,
             "image": _yaml_scalar(image) if image is not None else None,
             "consumes": consumes, "produces": STAGES[s]["produces"],
             # Extras that only some datasets ship (an `optional_inputs:` artifact that is in no stage's
-            # contract, e.g. DECOMPOSE's chimap-echoes): mounted when the dataset has one, skipped when it
+            # contract, e.g. DECOMPOSE's chimap-echoes or a baseline's dseg): mounted when the dataset has one,
+            # skipped when it
             # doesn't (prepare_input / cli_run_argv). A contract artifact such as magnitude stays
             # required of the dataset, so a dataset missing it is still a DNF, not a silent downgrade.
             "optional": [a for a in consumes if a in set(manifest["optional_inputs"] or ())

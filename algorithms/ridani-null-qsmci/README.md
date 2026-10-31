@@ -27,9 +27,12 @@ only by beating it without the held-out segmentation.
 
 `run.sh` calls `python3 recon.py <input-dir> <output-dir>`. It is meant for the `ridani-*`
 phantoms (registry keys in `scripts/datasets.json`). A χ-separation method produces two files, so
-`-o` is a directory; `dseg` is not a stage artifact, so `qsm-ci run` has no flag for it — a run
-without one exercises the co-located fallback.
+`-o` is a directory. `dseg` is an optional input (`optional_inputs: [dseg]`), which the contract
+allows only because this is a baseline (`baseline: true`; CONTRACT.md, Artifacts): the scorer mounts
+the dataset's segmentation when it has one, and a run without `--dseg` exercises the co-located
+fallback.
 
 ```bash
-qsm-ci run ridani-null-qsmci --chimap chimap.nii.gz --r2prime r2prime.nii.gz --mask mask.nii.gz --params params.json -o out/
+qsm-ci run ridani-null-qsmci --chimap chimap.nii.gz --r2prime r2prime.nii.gz --mask mask.nii.gz \
+  --dseg dseg.nii.gz --params params.json -o out/
 ```

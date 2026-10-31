@@ -24,7 +24,7 @@ import yaml
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 from qsm_ci.runner import _consumes  # noqa: E402
-from qsm_ci.stages import STAGES  # noqa: E402
+from qsm_ci.stages import BASELINE_ONLY_ARTIFACTS, STAGES  # noqa: E402
 
 sys.path.insert(0, str(ROOT / "scripts"))
 from repro_format import REPRO_GROUPS, group_of, payload_names  # noqa: E402
@@ -81,6 +81,9 @@ def entry(meta: dict) -> dict:
         # stored rows stay in index.json — the web drops any run whose stage is a hidden method
         # (web/js/app.js loadRuns). Emitted only when set so the manifest diff stays minimal.
         **({"hidden": True} if meta.get("hidden") else {}),
+        # `baseline: true` marks a floor/reference rather than a method scored for its own skill;
+        # only a baseline may read ground-truth inputs such as `dseg` (stages.yml `baseline_only`).
+        **({"baseline": True} if meta.get("baseline") is True else {}),
     }
 
 
@@ -106,6 +109,11 @@ def validate(d: Path, meta: dict, valid_stages: set) -> None:
             problems.append(f"missing required field '{field}'")
     if meta.get("stage") and meta["stage"] not in valid_stages:
         problems.append(f"unknown stage {meta['stage']!r} (valid: {sorted(valid_stages)})")
+    gt_only = BASELINE_ONLY_ARTIFACTS  # stages.yml `baseline_only`
+    declared = set(meta.get("inputs") or []) | set(meta.get("optional_inputs") or [])
+    if declared & gt_only and meta.get("baseline") is not True:
+        problems.append(f"declares {sorted(declared & gt_only)}, ground truth only a "
+                        "`baseline: true` method may read")
     if meta.get("slug") and meta["slug"] != d.name:
         problems.append(f"slug {meta['slug']!r} must equal the directory name {d.name!r}")
     algorithm, source, variant = meta.get("algorithm"), meta.get("source"), meta.get("variant")

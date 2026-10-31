@@ -22,5 +22,10 @@ pretrained weights, no GPU. Converges in roughly a dozen iterations (early stop)
 - The solver supports several head orientations (lists of R2′ + B0 directions) and, since 2025-04,
   `Dr_pos ≠ Dr_neg`. QSM-CI's phantoms are single-orientation, so that multi-orientation advantage
   does not show here; it still leads the iterative χ-separation methods on χ+.
+- **Dr.** WaveSep ships no relaxometric constant: its driver reads `Dr_pos`/`Dr_neg` per dataset
+  (`wavesep/utils/run_wavesep_qsm.py:18`), and its in-vivo data are co-author Shin's SNU
+  χ-separation data. This entry uses that data's published value, 137 Hz/ppm at 3 T (Shin et al.
+  2021), scaled with field as the SNU χ-separation toolbox does: **Dr = 137·B0/2.9** (141.7 Hz/ppm
+  at 3 T, 330.7 at 7 T). Override with `--set Dr=…`.
 - The solver expects LPS-oriented volumes for multi-orientation input; single-orientation data, as
   here, needs no reorientation (see the note at the top of `recon.py`).

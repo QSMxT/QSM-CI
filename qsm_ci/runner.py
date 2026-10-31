@@ -26,7 +26,8 @@ from .params import (STACKABLE_ARTIFACTS, _check_nifti, _discover_sidecar,
                      _looks_like_sidecar, _params_dict, _params_summary,
                      _place_echoes, _place_input, _sidecar_to_params,
                      place_nifti, wants_gzip)
-from .stages import ARTIFACT_FILE, ARTIFACT_KIND, STAGES, is_optional, scorable
+from .stages import (ARTIFACT_FILE, ARTIFACT_KIND, STAGES, check_baseline_only, is_optional,
+                     scorable)
 
 
 def _consumes(algo: dict) -> list:
@@ -38,7 +39,11 @@ def _consumes(algo: dict) -> list:
     fall back to the stage's full `consumes` plus any `optional_inputs:` the method opts into — the
     additive default (the plain `dipole` stage takes only the local field; MEDI opts into magnitude
     for data-consistency weighting so only *its* help lists --magnitude; a GRE-based χ-separation
-    method opts into raw multi-echo phase). Opted-in artifacts are optional (stages.is_optional)."""
+    method opts into raw multi-echo phase). Opted-in artifacts are optional (stages.is_optional).
+
+    A baseline-only artifact (the phantom's `dseg`) is refused unless the manifest says `baseline:
+    true` (stages.check_baseline_only): this is the one place the CLI and the scorer both ask."""
+    check_baseline_only(algo)
     base = STAGES[algo["stage"]]["consumes"]
     explicit = algo.get("inputs")
     extra = [a for a in (algo.get("optional_inputs") or [])

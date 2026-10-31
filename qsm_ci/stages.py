@@ -37,6 +37,7 @@ ARTIFACT_FILE = {
     "localfield": "localfield.nii.gz", "chimap": "chimap.nii.gz",
     "r2prime": "r2prime.nii.gz", "chi-para": "chi-para.nii.gz", "chi-dia": "chi-dia.nii.gz",
     "chimap-echoes": "chimap-echoes.nii.gz",
+    "dseg": "dseg.nii.gz",
 }
 
 # Unit and rank of each canonical artifact — mirrors the `units:`/`ndim:` of stages.yml (checked by
@@ -46,13 +47,13 @@ ARTIFACT_FILE = {
 ARTIFACT_UNIT = {
     "phase": "rad", "magnitude": "a.u.", "mask": "binary",
     "totalfield": "ppm", "localfield": "ppm", "chimap": "ppm",
-    "r2prime": "Hz", "chi-para": "ppm", "chi-dia": "ppm", "chimap-echoes": "ppm",
+    "r2prime": "Hz", "chi-para": "ppm", "chi-dia": "ppm", "chimap-echoes": "ppm", "dseg": "label",
 }
 
 ARTIFACT_NDIM = {
     "phase": 4, "magnitude": 4, "mask": 3,
     "totalfield": 3, "localfield": 3, "chimap": 3,
-    "r2prime": 3, "chi-para": 3, "chi-dia": 3, "chimap-echoes": 4,
+    "r2prime": 3, "chi-para": 3, "chi-dia": 3, "chimap-echoes": 4, "dseg": 3,
 }
 
 # how each produced artifact is scored: 'field' (total/local field), 'chi' (susceptibility), or
@@ -61,7 +62,27 @@ ARTIFACT_KIND = {"totalfield": "field", "localfield": "field", "chimap": "chi",
                  "r2prime": "relaxation", "chi-para": "chisep", "chi-dia": "chisep"}
 
 # artifacts that come from the ground-truth boundary (vs the public raw inputs) in isolated mode
-GT_ARTIFACTS = {"totalfield", "localfield", "chimap", "chi-para", "chi-dia", "chimap-echoes"}
+GT_ARTIFACTS = {"totalfield", "localfield", "chimap", "chi-para", "chi-dia", "chimap-echoes", "dseg"}
+
+# Artifacts only a method marked `baseline: true` in algorithm.yml may declare (stages.yml
+# `baseline_only:`). The phantom's segmentation is ground-truth anatomy: a baseline/floor may use it
+# (ridani-null-qsmci solves white matter separately), a method scored for its own skill may not.
+BASELINE_ONLY_ARTIFACTS = {"dseg"}
+
+
+def check_baseline_only(algo: dict) -> None:
+    """Refuse a manifest that declares a baseline-only artifact without `baseline: true`.
+
+    Called from runner._consumes, which is how both the CLI and the scorer decide what to mount,
+    so an undeclared method can neither be handed the file nor be offered a flag for it."""
+    declared = set(algo.get("inputs") or []) | set(algo.get("optional_inputs") or [])
+    wanted = sorted(declared & BASELINE_ONLY_ARTIFACTS)
+    if wanted and algo.get("baseline") is not True:
+        who = algo.get("slug") or algo.get("name") or "this method"
+        raise SystemExit(
+            f"{who}: {', '.join(wanted)} is ground truth that only a baseline may read; declare "
+            "`baseline: true` in algorithm.yml (and say so in its description), or drop it from "
+            "`inputs:`/`optional_inputs:`")
 
 
 # Stages with no magnitude-free method: the multi-echo magnitude is not a weighting nicety there,

@@ -6,8 +6,14 @@ set -euo pipefail
 IN="${1:-/input}"; OUT="${2:-/output}"
 
 # Parameter overrides (qsm-ci run --set NAME=VALUE) arrive as /input/config.json; absent = the
-# defaults in algorithm.yml (Dr 137, as the `wavesep` entry; the rest are qsmxt's, the authors').
-DR=137.0
+# defaults in algorithm.yml (the rest are qsmxt's, the authors').
+# Dr: the published χ-separation value, 137 Hz/ppm at 3 T (Shin et al. 2021), scaled with field as the
+# SNU χ-separation toolbox does (137·B0/2.9; QSM.rs chi_sep_ilsqr.rs `toolbox_default_dr`), the same
+# default as the `wavesep` entry. WaveSep itself ships no value (it reads Dr per dataset).
+# params.json is parsed here (not $QSMCI_B0) so `bash run.sh` works outside the QSM-CI runner too.
+B0="$(jq -r '.B0 // empty' "$IN/params.json")"
+[ -n "$B0" ] || { echo "wavesep-qsmrs: params.json has no B0 (the default Dr needs it)" >&2; exit 1; }
+DR=$(awk -v b0="$B0" 'BEGIN { printf "%.10g", 137 * b0 / 2.9 }')
 SET=""
 CFG="$IN/config.json"
 if [ -f "$CFG" ]; then
