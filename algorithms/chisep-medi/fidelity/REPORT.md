@@ -4,12 +4,20 @@ QSMxT/QSM-CI#300: does the `chisep-medi` container compute what the authors' MAT
 is the shared harness [`fidelity/matlab/`](../../../fidelity/matlab/README.md) with this algorithm's
 [`config.sh`](config.sh); rerun it whenever `recon.m`, its dependencies or the image change.
 
-- **Checked:** 2026-10-28, on Slurm compute nodes, 8 CPUs per job.
+- **Checked:** 2026-10-31 (`v3`), on Slurm compute nodes, 8 CPUs per job. `v2` was checked on 2026-10-28.
 - **Licensed MATLAB:** 23.2.0.2459199 (R2023b) Update 5, with the real toolboxes.
-- **Image checked:** `ghcr.io/astewartau/qsm-ci/chi-sep-medi@sha256:06ffc17a55223b05eb1442d9092b751b64a50e0e39320602a289b5c2ca9d2615` (`v2`).
-  - `recon` is compiled with that licensed R2023b against the real toolboxes, with no shims.
+- **Image checked:** `ghcr.io/astewartau/qsm-ci/chi-sep-medi@sha256:6cec1e895428f02b4e87cb2b744ca53fdc7146f6280882ca2785bec22a60586b` (`v3`).
+  - `recon` is compiled with that licensed R2023b against the real toolboxes, with no shims, from
+    this folder's `recon.m` (build job 31163532; `recon` sha256 `5717c7e3…dc613269`, the same file in
+    the image and in the build).
   - It runs on the R2023b MATLAB Runtime (23.2.0.3097123 (R2023b) Update 11) under Apptainer.
-- **Previous image:** `ghcr.io/astewartau/qsm-ci/chi-sep-medi@sha256:d1f5e3ecb92c9153983c5d82c135cf50e451387a21d5814bdfdd10edc238a5d5` (`v1`).
+  - The `.sif` was converted from the local image whose id (config digest `sha256:f7a03f912b54…`)
+    is the config of the pushed manifest above, so it holds the same layers.
+- **Licensed code:** the same `recon.m` (`mask_CSF = []`, `lambda_CSF = 1`, #315) with the same
+  χ-separation toolbox, MEDI 2024.11.26 and NIfTI sources as `v2`'s check.
+- **Previous images:** `v2` `sha256:06ffc17a55223b05eb1442d9092b751b64a50e0e39320602a289b5c2ca9d2615`
+  (identical to licensed MATLAB on 2026-10-28, but with an all-false CSF mask the solver returned its
+  initial guess, #315); `v1` `sha256:d1f5e3ecb92c9153983c5d82c135cf50e451387a21d5814bdfdd10edc238a5d5`.
 - **Cases:**
   - `chisep-mc`: QSM-CI's default χ-separation phantom (7 T, 8 echoes, 1 mm, 164×205×205).
   - `invivo`: one EMTP travelling-head acquisition (`s005001-cbic-prisma-bridge-run1`: 3 T, 5 echoes, 1 mm, 184×256×128), with the local field, eroded mask, χ and R2′ (0.52·R2*) derived once with QSMxT v10.0.0 (`fidelity/matlab/make_cases.sh`).
@@ -24,10 +32,25 @@ is the shared harness [`fidelity/matlab/`](../../../fidelity/matlab/README.md) w
 | `intermediates/x_tot.nii.gz` | identical | identical | identical |
 
 NRMSE and max |Δ| are 0 and no voxel differs wherever a cell says identical. The container and the
-licensed runs all used 8 threads (recorded in `intermediates.json`).
+licensed runs all used 8 threads (recorded in `intermediates.json`). `v2`'s check gave the same
+table on 2026-10-28.
+
+**MEDI iterates.** Every `v3` run, container and licensed alike, runs 6 Gauss-Newton iterations, and
+they log the same residual ratios: `res_norm_ratio` 0.0319 then 0.0265 at iterations 5 and 6 on
+`chisep-mc`, 0.0177 then 0.0141 on `invivo`. `v2` stopped after the first with
+`res_norm_ratio: 0.0000`.
 
 **Where the toolbox functions resolved** (`intermediates.json`): in the container, `hann`, `hanning`, `imclose`, `imdilate`, `imerode`, `imopen`, `padarray`, `strel`, `tukeywin` resolve to the Runtime's `toolbox/images/images`, `toolbox/signal/signal`; in licensed MATLAB, to the same folders of its own installation.
 The build's `unresolvedSymbols.txt` and `mccExcludedFiles.log` list nothing, and `requiredMCRProducts.txt` lists 35000, 35002, 35003, 35010, 35108, 35117, 35180.
+
+## What changed from v2
+
+One source change, in `recon.m`: `option_data.mask_CSF = []` instead of `false(size(mask))`, and
+`params.lambda_CSF = 1` (the GUI's value; unused without a CSF mask) instead of 0. With an all-false
+mask the toolbox's CSF mean is NaN, every step became NaN and was rejected, and `chi_sep_MEDI`
+returned its initial guess (QSMxT/QSM-CI#315). An empty mask is what the toolbox's own GUI passes
+when it has none. The licensed runs use the same `recon.m`, so they are the authors' code with that
+change.
 
 ## What changed from v1
 
@@ -54,11 +77,22 @@ follows), its top-level functions only, without `MEDI_L1ss*`: its `bet2/` calls 
 `MEDI_L1ss*` calls the Symbolic Math Toolbox's `heaviside`, neither of which can be deployed. In the
 profiled licensed run `chi_sep_MEDI` reaches no MEDI function at all (its solver and its gradient
 operators are inside `chi_sep_MEDI_func.p`), so the MEDI release doesn't change this output. Its
-log prints `res_norm_ratio: 0.0000` from the first Gauss-Newton iteration on both cases, in the
-container and in licensed MATLAB alike; the outputs are non-zero.
+log printed `res_norm_ratio: 0.0000` from the first Gauss-Newton iteration on both cases, in the
+container and in licensed MATLAB alike: the all-false CSF mask, fixed in `v3`.
 
 
 ## Slurm jobs
+
+`v3` (2026-10-31; work root `matlab-fidelity/v3chk` on Bunya):
+
+| What | Job ids |
+|---|---|
+| Compile (2026-10-30) | 31163532 |
+| Setup | 31191948 |
+| chisep-mc: container, real, real2, compare | 31191949, 31191950, 31191951, 31191952 |
+| invivo: container, real, real2, compare | 31191953, 31191954, 31191955, 31191956 |
+
+`v2` (2026-10-28):
 
 | What | Job ids |
 |---|---|

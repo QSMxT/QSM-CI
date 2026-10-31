@@ -70,11 +70,20 @@ artifacts into `/input`, and expects exactly the produced artifacts in `/output`
 | `r2prime` | `r2prime.nii.gz` | **Hz** (R2′ = R2* − R2, ≥ 0) | 3D |
 | `chi-para` | `chi-para.nii.gz` | **ppm** (χ+, ≥ 0) | 3D |
 | `chi-dia` | `chi-dia.nii.gz` | **ppm** (\|χ−\|, stored as a positive magnitude) | 3D |
+| `chimap-echoes` | `chimap-echoes.nii.gz` | **ppm** | 4D `x,y,z,echo` — optional `chi-separation` input, see below |
 
 All field maps and susceptibility maps (`chimap`, `chi-para`, `chi-dia`) are in **ppm** (normalized
 by B0). Convert from Hz with `ppm = Hz · 1e6 / (γ · B0)`, `γ = 42.576e6` Hz/T. `r2prime` is the one
 exception — a relaxation rate in **Hz** (s⁻¹), not normalized. All 3D artifacts share the grid,
 voxel size, and affine of `mask.nii.gz`.
+
+`chimap-echoes` is the apparent susceptibility at each echo, χ(TE): a QSM per echo, stacked along
+the fourth axis in the order of `params.json` `TE`. DECOMPOSE-QSM (Chen et al. 2021) takes it as
+its per-echo phase input. Not every χ-separation dataset ships it, so it is in no stage's
+`consumes`. A method opts in with `optional_inputs: [chimap-echoes]` and must fall back to `chimap`
+when the file is absent. Like `chimap`, it comes from the ground-truth boundary in isolated mode
+(the dataset's `inputs/`, else `groundtruth/`). `qsm-ci run` accepts it as one 4D file or as one 3D
+map per echo, stacked like `phase`.
 
 ### `params.json`
 

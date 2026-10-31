@@ -191,7 +191,7 @@ const STAGE_IO = {
 const ARTFILE = { phase: "phase.nii.gz", magnitude: "magnitude.nii.gz", mask: "mask.nii.gz",
   params: "params.json", totalfield: "totalfield.nii.gz", localfield: "localfield.nii.gz",
   chimap: "chimap.nii.gz", r2prime: "r2prime.nii.gz", "chi-para": "chi-para.nii.gz",
-  "chi-dia": "chi-dia.nii.gz" };
+  "chi-dia": "chi-dia.nii.gz", "chimap-echoes": "chimap-echoes.nii.gz" };
 // Everything the manifest (algorithms.json ← contributor-authored algorithm.yml), index.json and the
 // Hub-hosted regions.json supply goes through this before it lands in innerHTML. Escapes quotes too, so
 // the same function is safe inside attribute values (data-tip="…", data-id="…").

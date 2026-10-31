@@ -608,15 +608,17 @@ def test_merge_records_is_idempotent_and_drops_baselines():
     assert [r["run_id"] for r in many["checks"]] == ["5", "6", "7"]
 
 
-def _why(rec, cfg=CFG, manifests=MANIFESTS, today="2026-10-30", changes=None):
-    st = {"stale_after_days": 90, "qsmrs_repo": "astewartau/QSM.rs", "qsmrs_branch": "main"}
-    return parity.staleness(rec, cfg, "sim", manifests, st, today, changes)
+ST = {**parity.DEFAULT_SETTINGS}
+
+
+def _why(rec, cfg=CFG, manifests=MANIFESTS, changes=None, qsmxt_changes=None):
+    return parity.staleness(rec, cfg, "sim", manifests, ST, changes, qsmxt_changes)
 
 
 def test_staleness_rules():
     rec = _rec(_parity_json())
     nothing = lambda c: {"ahead_by": 3, "files": ["src/unwrap/romeo.rs"]}   # noqa: E731
-    assert _why(rec, changes=nothing) == []
+    assert _why(rec, changes=nothing, qsmxt_changes=nothing) == []
     assert _why(None) == ["never checked"]                                       # (d)
     new_ref = {**MANIFESTS, "p-orig": {"image": "ghcr.io/x/orig@sha256:" + "e" * 64}}
     assert "reference image changed" in _why(rec, manifests=new_ref)[0]          # (a)
@@ -629,9 +631,50 @@ def test_staleness_rules():
     assert _why(rec, changes=flaky) == []      # a network error is not a staleness verdict
     tighter = {**CFG, "datasets": {"sim": {"chimap": {"nrmse_max": 1.5}}}}
     assert "limits" in _why(rec, cfg=tighter)[0]                                  # (c)
-    assert "days ago" in _why(rec, today="2027-02-28")[0]                         # (d)
     assert "failed" in _why(_rec(_parity_json(ok=False, nrmse=3)))[0]            # (e)
     assert "without a result" in _why(_rec(None))[0]
+
+
+def test_no_age_limit():
+    """A passing check stands however old it is: only a change makes it stale."""
+    old = _rec(_parity_json(), date="2020-01-01T00:00:00Z")
+    nothing = lambda c: {"ahead_by": 900, "files": ["docs/x.md"]}   # noqa: E731
+    assert _why(old, changes=nothing, qsmxt_changes=nothing) == []
+    assert "stale_after_days" not in parity.load_settings()
+
+
+def test_cargo_lock_makes_every_pair_stale():
+    rec = _rec(_parity_json())
+    lock = lambda c: {"ahead_by": 1, "files": ["Cargo.lock"]}   # noqa: E731
+    w = _why(rec, changes=lock)                                                  # (b), QSM.rs
+    assert len(w) == 1 and w[0].startswith("QSM.rs main changed `Cargo.lock`")
+    w = _why(rec, qsmxt_changes=lock)                                            # (f), QSMxT
+    assert len(w) == 1 and w[0].startswith("QSMxT main changed `Cargo.lock`")
+    assert parity.load_settings()["qsmrs_shared_paths"] == ["Cargo.lock"]
+    assert parity.load_settings()["qsmxt_shared_paths"] == ["Cargo.lock"]
+
+
+def test_qsmxt_wiring_rule():
+    cfg = {**CFG, "qsmxt_paths": ["src/commands/invert.rs", "crates/qsmxt-engine/src/stages/"]}
+    rec = _rec(_parity_json())
+    asked = []
+
+    def wiring(c):
+        asked.append(c)
+        return {"ahead_by": 4, "files": ["crates/qsmxt-engine/src/stages/inversion.rs", "src/tui/ui.rs"]}
+    w = _why(rec, cfg=cfg, qsmxt_changes=wiring)                                 # (f)
+    assert len(w) == 1 and "stages/inversion.rs" in w[0] and "tui" not in w[0]
+    assert asked == ["d" * 40]                     # compared from the QSMxT commit the check built
+    tui = lambda c: {"ahead_by": 4, "files": ["src/tui/ui.rs"]}                  # noqa: E731
+    assert _why(rec, cfg=cfg, qsmxt_changes=tui) == []
+    # A pinned image records no build commit: its `qsmxt --version` gives the release tag.
+    pinned = {**rec, "qsmxt": {"ref": None, "commit": None},
+              "candidate": {**rec["candidate"], "qsmxt": "qsmxt 10.0.0"}}
+    asked.clear()
+    _why(pinned, cfg=cfg, qsmxt_changes=wiring)
+    assert asked == ["v10.0.0"]
+    unknown = {**pinned, "candidate": {"slug": "p-qsmrs"}}
+    assert "QSMxT commit of the last check is not recorded" in _why(unknown, cfg=cfg, qsmxt_changes=tui)[0]
 
 
 def test_pair_status_states_issue_and_table():
@@ -639,17 +682,102 @@ def test_pair_status_states_issue_and_table():
                           "blocked_by": "astewartau/QSM.rs#319", "datasets": {"sim": {}}},
           "r": {"reference": "r-orig", "candidate": "r-qsmrs", "enabled": False}}
     results = parity.merge_records({"checks": []}, [_rec(_parity_json())])
-    st = {"stale_after_days": 90, "qsmrs_repo": "astewartau/QSM.rs", "qsmrs_branch": "main"}
-    rows = parity.pair_status(th, results, MANIFESTS, st, "2026-10-30")
-    assert [r["state"] for r in rows] == ["current", "gap", "off"]
-    assert parity.render_issue(rows, st, "2026-10-30") == ""
-    md = parity.render_status(rows, st, "2026-10-30")
+    rows = parity.pair_status(th, results, MANIFESTS, ST,
+                              no_original={"cosmos": {"covers": "COSMOS"}})
+    assert [r["state"] for r in rows] == ["current", "gap", "off", "no-original"]
+    assert [r["anchor"] for r in rows] == ["pair-p", "pair-q", "pair-r", "pair-cosmos"]
+    assert parity.render_issue(rows, ST, "2026-10-30") == ""
+    md = parity.render_status(rows, ST, "2026-10-30")
     assert "✅ current" in md and "🚧 gap (astewartau/QSM.rs#319)" in md and "v0.40.0" in md
-    rows = parity.pair_status(th, results, MANIFESTS, st, "2027-06-01")
+    assert "| `cosmos` | COSMOS |" in md and "days" not in md
+    lock = lambda c: {"ahead_by": 1, "files": ["Cargo.lock"]}   # noqa: E731
+    rows = parity.pair_status(th, results, MANIFESTS, ST, changes=lock)
     assert rows[0]["state"] == "stale"
-    issue = parity.render_issue(rows, st, "2027-06-01")
-    assert "`p`" in issue and "days ago" in issue
+    issue = parity.render_issue(rows, ST, "2026-10-30")
+    assert "`p`" in issue and "Cargo.lock" in issue
     assert "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=p -f dataset=configured" in issue
+
+
+# --- badges ----------------------------------------------------------------------------------------
+
+def _badge(th, recs, **kw):
+    results = parity.merge_records({"checks": []}, recs)
+    rows = parity.pair_status(th, results, MANIFESTS, ST, **kw)
+    return [r["badge"] for r in rows]
+
+
+def test_badges_per_state():
+    two = {**CFG, "datasets": {"sim": CFG["datasets"]["sim"], "kki": CFG["datasets"]["sim"]}}
+    sim = _rec(_parity_json(nrmse=0.326), date="2026-10-30T01:00:00Z")
+    kki = {**_rec(_parity_json(nrmse=0.05), date="2026-10-29T01:00:00Z", run_id="2"), "dataset": "kki"}
+    kki["thresholds"] = parity.thresholds_version(two, "kki")
+    sim["thresholds"] = parity.thresholds_version(two, "sim")
+    # current: the worst NRMSE over the datasets, dated by the oldest check
+    assert _badge({"p": two}, [sim, kki]) == [{"kind": "current", "message": "0.33 % · 29 Oct",
+                                               "color": "brightgreen"}]
+    same = {**sim, "metrics": {"chimap": {**sim["metrics"]["chimap"], "nrmse": 0.0, "max_abs": 0.0}}}
+    assert _badge({"p": CFG}, [{**same, "thresholds": parity.thresholds_version(CFG, "sim")}])[0][
+        "message"] == "identical · 30 Oct"
+    tiny = {**same, "metrics": {"chimap": {**same["metrics"]["chimap"], "nrmse": 5e-14, "max_abs": 3e-14}},
+            "thresholds": parity.thresholds_version(CFG, "sim")}
+    assert _badge({"p": CFG}, [tiny])[0]["message"] == "< 0.001 % · 30 Oct"
+    lock = lambda c: {"ahead_by": 1, "files": ["Cargo.lock"]}   # noqa: E731
+    assert _badge({"p": two}, [sim, kki], changes=lock)[0] == {
+        "kind": "stale", "message": "stale · 29 Oct", "color": "orange"}
+    bad = _rec(_parity_json(ok=False, nrmse=3), date="2026-10-28T00:00:00Z")
+    assert _badge({"p": CFG}, [bad])[0] == {"kind": "failing", "message": "failing · 28 Oct",
+                                           "color": "red"}
+    assert _badge({"p": CFG}, [])[0] == {"kind": "unchecked", "message": "not yet checked",
+                                        "color": "lightgrey"}
+    gap = {**CFG, "enabled": False, "blocked_by": "astewartau/QSM.rs#323"}
+    assert _badge({"p": gap}, [])[0] == {"kind": "gap", "message": "gap · QSM.rs#323", "color": "yellow"}
+    off = {**CFG, "enabled": False}
+    assert _badge({"p": off}, [])[0]["message"] == "not enabled"
+    assert _badge({}, [], no_original={"cosmos": {}})[0] == {
+        "kind": "no-original", "message": "no original", "color": "lightgrey"}
+
+
+def test_decompose_badge_takes_the_worse_map():
+    cfg = {**CFG, "datasets": {"sim": {"chi-para": {"nrmse_max": 6}, "chi-dia": {"nrmse_max": 6},
+                                       "measured": {}}}}
+    rec = _rec(_parity_json())
+    rec["metrics"] = {"chi-para": {"nrmse": 4.9, "max_abs": 0.04}, "chi-dia": {"nrmse": 4.2, "max_abs": 0.03}}
+    rec["thresholds"] = parity.thresholds_version(cfg, "sim")
+    assert _badge({"p": cfg}, [rec])[0]["message"] == "4.9 % · 28 Oct"
+
+
+def test_status_and_badges_cli_write_endpoint_files(tmp_path):
+    th = tmp_path / "t.yml"
+    th.write_text(yaml.safe_dump({"pairs": {"qsmart": parity.load_thresholds()["qsmart"]},
+                                  "no_original": {"cosmos": {"covers": "COSMOS"}}}))
+    status, badges = tmp_path / "status.json", tmp_path / "badges"
+    (badges).mkdir()
+    (badges / "gone.json").write_text("{}")
+    assert parity.main(["--thresholds", str(th), "status", "--offline", "--today", "2026-10-30",
+                        "--results", str(tmp_path / "none.json"), "--json", str(status),
+                        "--badges", str(badges)]) == 0
+    assert sorted(f.name for f in badges.iterdir()) == ["cosmos.json", "not-checked.json", "qsmart.json"]
+    b = json.loads((badges / "qsmart.json").read_text())
+    assert b == {"schemaVersion": 1, "label": "parity", "message": "not yet checked", "color": "lightgrey"}
+    doc = json.loads(status.read_text())
+    assert doc["badges"] == "https://qsmxt.github.io/QSM-CI/parity/badges/"
+    assert "stale_after_days" not in doc
+    out = tmp_path / "site"
+    assert parity.main(["badges", "--status", str(status), "--out", str(out)]) == 0
+    assert json.loads((out / "cosmos.json").read_text())["message"] == "no original"
+
+
+def test_thresholds_paths_and_no_original_are_well_formed():
+    import yaml as _y
+    doc = _y.safe_load(parity.THRESHOLDS.read_text())
+    pairs, none = doc["pairs"], doc.get("no_original") or {}
+    assert not set(pairs) & set(none), "a no_original name is also a pair"
+    assert not (set(pairs) | set(none)) & set(parity.GENERIC_BADGES)
+    for name, cfg in pairs.items():
+        for key in ("qsmrs_paths", "qsmxt_paths"):
+            paths = cfg.get(key)
+            assert isinstance(paths, list) and paths, f"{name}: {key}"
+            assert all(isinstance(x, str) and not x.startswith("/") for x in paths), f"{name}: {key}"
 
 
 def test_report_and_record_cli(tmp_path):

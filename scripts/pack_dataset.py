@@ -121,8 +121,11 @@ def main() -> None:
 
     # groundtruth/  (qsm-forward name -> canonical artifact name)
     if chisep:
-        # χ-sep inputs: local field + χ_total + R2' are given to the method.
-        inp = {"fieldmap-local": "localfield", "Chimap": "chimap", "R2prime": "r2prime"}
+        # χ-sep inputs: local field + χ_total + R2' are given to the method. Chimap-echoes, when
+        # qsm-forward writes it, is the echo-dependent χ(TE), one map per echo (x,y,z,echo; ppm):
+        # the optional `chimap-echoes` input DECOMPOSE-QSM takes as its per-echo QSM (stages.yml).
+        inp = {"fieldmap-local": "localfield", "Chimap": "chimap", "Chimap-echoes": "chimap-echoes",
+               "R2prime": "r2prime"}
         for src, dst in inp.items():
             hit = glob.glob(str(deriv / f"{pre}_{src}.nii*"))
             if hit:

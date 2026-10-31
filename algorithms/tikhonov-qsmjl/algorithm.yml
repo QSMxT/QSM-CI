@@ -50,4 +50,4 @@ parameters:
   description: "regularization matrix: identity | gradient | laplacian (QSM.jl's code default is identity; its docstring's signature line says gradient)"
 - name: pad
   default: 0
-  description: "QSM.jl `pad` (all three axes): >= 0 zero-pads to a fast FFT size (QSM.jl default 0: padding only up to that size); -1 does not pad, as QSM.rs"
+  description: "QSM.jl `pad` (all three axes): >= 0 zero-pads to a fast FFT size (QSM.jl default 0: padding only up to that size); -1 does not pad. QSM.rs pads the same way by default (astewartau/QSM.rs#323)"

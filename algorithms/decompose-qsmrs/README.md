@@ -16,13 +16,16 @@ parameters as a per-compartment phase accumulation, `−Σ angle(model) / ((2/3)
 
 This is the same algorithm as the compiled-MATLAB entry
 [`decompose-qsm`](../decompose-qsm), and it keeps that entry's one adaptation: the reference
-re-derives a per-echo QSM from raw phase (STI-Suite unwrap → V-SHARP → STAR-QSM) purely to build
-the signal's phase term, but χ is echo-independent and QSM-CI already provides χ_total (`chimap`)
-as a stage input, so the phase is synthesized from that — no phase input, no STI dependency, and
-DECOMPOSE's separation step is isolated from any upstream QSM error.
+re-derives a per-echo QSM from raw phase (STI-Suite unwrap → V-SHARP → STAR-QSM) to build the
+signal's phase term. QSM-CI provides that per-echo χ(TE) directly as the optional `chimap-echoes`
+input (x,y,z,echo, ppm), from the ground truth like `chimap`: no phase input, no STI dependency,
+and DECOMPOSE's separation step is isolated from any upstream QSM error. The echo dependence of
+χ(TE) is the information DECOMPOSE fits (Chen et al. 2021, Eq. 4; §4.1), so on a dataset that
+doesn't ship `chimap-echoes` the fallback — the one `chimap` at every echo — leaves it little to
+separate.
 
 - **Stage:** `chi-separation` — reads `chimap` (χ_total, ppm), `magnitude` (4D multi-echo), `mask`,
-  `params` (TE, B0); writes `chi-para.nii.gz` (χ+ ≥ 0) and `chi-dia.nii.gz` (|χ−|, positive
+  `params` (TE, B0), and `chimap-echoes` (χ(TE), 4D, ppm) when the dataset ships it; writes `chi-para.nii.gz` (χ+ ≥ 0) and `chi-dia.nii.gz` (|χ−|, positive
   magnitude), both ppm. No `localfield` and no `r2prime` — DECOMPOSE is GRE-only.
 - **Engine:** QSMxT / [QSM.rs](https://github.com/astewartau/QSM.rs) (Rust) —
   `src/separation/decompose.rs`, whose module header documents the model and the output mapping.
@@ -39,11 +42,13 @@ DECOMPOSE's separation step is isolated from any upstream QSM error.
 
 `run.sh` reads `B0`, `B0_dir` and `TE` from `params.json` with `jq`, forwards any
 `n_inner` / `chi_bound` / `max_lm_iter` overrides from `config.json` (the `qsm-ci run --set` path),
+passes `chimap-echoes.nii.gz` as `--qsm-per-echo` (or `chimap.nii.gz` once per echo when the dataset
+has no `chimap-echoes`; a qsmxt without that flag, such as the pinned v10.0.0, takes `--qsm` alone),
 calls the CLI into a scratch prefix, and gzips the two artifacts into `/output`:
 
 ```bash
 qsmxt separate decompose --qsm chimap.nii.gz -m mask.nii.gz -o $WORK/dec \
-  --magnitude magnitude.nii.gz --echo-times <t1,t2,…> \
+  --magnitude magnitude.nii.gz --echo-times <t1,t2,…> --qsm-per-echo chimap-echoes.nii.gz \
   --field-strength <B0> --b0-direction <B0_dir> [--n-inner N] [--chi-bound PPM] [--max-lm-iter N]
 ```
 
@@ -58,7 +63,7 @@ Locally:
 
 ```bash
 qsm-ci run decompose-qsmrs --chimap chimap.nii.gz --magnitude magnitude.nii.gz \
-  --mask mask.nii.gz --params params.json -o out/
+  --mask mask.nii.gz --params params.json [--chimap-echoes chimap-echoes.nii.gz] -o out/
 qsm-ci run decompose-qsmrs … --set n_inner=4
 ```
 
@@ -71,6 +76,12 @@ qsm-ci run decompose-qsmrs … --set n_inner=4
 | `max_lm_iter` | 30 | max Levenberg–Marquardt iterations per fit stage |
 
 Defaults are qsm-core's `DecomposeParams::default()`; no tuned values are declared.
+
+**At 7 T** (B0 ≥ 6.5 T) the entry also unwraps the phase along the echoes and bounds |χ| at the
+echo-spacing limit, π / ((2/3)·γ·B0·ΔTE_max). These are what QSMxT suggests at 7 T (its rules
+`decompose.unwrap-7t` and `decompose.chi-bound-7t`, QSM.rs#345), and a QSMxT user gets them by
+accepting the suggestion. QSM-CI scores the method as QSMxT runs it. At 3 T the entry runs the
+defaults above, the authors' settings. A `--set chi_bound=…` still overrides the bound.
 
 ## Output mapping — where this differs from the MATLAB entry
 

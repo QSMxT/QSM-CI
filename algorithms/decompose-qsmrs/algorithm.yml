@@ -7,17 +7,20 @@ language: Rust
 family: iterative
 learning: none
 inputs: [chimap, magnitude, mask, params]  # signal-domain: provided χ_total (chimap) + multi-echo magnitude
+# The QSM per echo, χ(TE), DECOMPOSE's phase input (Chen 2021 Eq. 4): mounted when the dataset ships
+# it; run.sh falls back to chimap at every echo without it.
+optional_inputs: [chimap-echoes]
 engine: QSMxT / QSM.rs
 description: >
   DECOMPOSE-QSM (Chen et al. 2021) — signal-domain susceptibility source separation, as the Rust
   implementation in QSM.rs exposed by `qsmxt separate decompose`. Unlike the R2'-based methods it
   fits the multi-echo COMPLEX GRE signal per voxel: a three-stage alternating bounded least-squares
   fit of {C+, C−, C0, R2*_0, χ+, χ−}, repeated n_inner times, then reconstructs each source from
-  the fitted parameters as a per-compartment phase accumulation. Like the compiled-MATLAB entry
-  (decompose-qsm) the signal's phase term is synthesized from the provided χ_total (chimap) rather
-  than re-derived from raw phase — χ is echo-independent, so this isolates DECOMPOSE's separation
+  the fitted parameters as a per-compartment phase accumulation. Each echo's phase term comes from
+  the provided per-echo χ(TE) (chimap-echoes) where the dataset ships it, else from χ_total (chimap)
+  at every echo, rather than being re-derived from raw phase: this isolates DECOMPOSE's separation
   step from any upstream QSM error and drops the STI-Suite dependency. Needs no R2' and no local
-  field: χ_total plus the multi-echo magnitude only (GRE-only).
+  field: χ plus the multi-echo magnitude only (GRE-only).
 authors:
 - name: Jingjia Chen
   note: original DECOMPOSE method
@@ -57,9 +60,10 @@ ci_notes:
   Both DECOMPOSE entries give the same χ+ and χ− maps. The MATLAB reference fits the conjugate of
   the signal (MATLAB's conjugate transpose on ydata), which mirrors the fit exactly, and then
   writes DSC as χ+; the Rust port fits the signal itself and writes PSC as χ+. The two swaps
-  cancel (astewartau/QSM.rs#333). As in decompose-qsm, the QSM given for every echo's phase is
-  the one provided χ_total (the authors computed a STAR-QSM per echo); a qsmxt with
-  `separate decompose --qsm-per-echo` gets chimap once per echo.
+  cancel (astewartau/QSM.rs#333). The authors compute a STAR-QSM per echo for each echo's phase.
+  Where the dataset ships the per-echo χ(TE) (`chimap-echoes`), a qsmxt with
+  `separate decompose --qsm-per-echo` gets it; otherwise the one provided χ_total is given at every
+  echo, which carries no echo dependence for the fit.
 - >
   Same algorithm as the compiled-MATLAB entry decompose-qsm, in Rust, on the shared QSMxT engine
   image — no new container image. Measured here at ~1.5e3 fitted voxels/s on a single core

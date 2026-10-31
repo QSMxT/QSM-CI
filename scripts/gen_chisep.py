@@ -131,13 +131,15 @@ def mask_derived_to_brain(out: Path):
     """Restrict the derived maps and ground truth to the brain, leaving the raw
     phase/magnitude (which carry the whole-head background field) untouched."""
     m = nib.load(str(out / "inputs" / "mask.nii.gz")).get_fdata() > 0
-    for rel in ("inputs/chimap.nii.gz", "inputs/r2prime.nii.gz", "inputs/localfield.nii.gz",
-                "inputs/r2.nii.gz",
+    for rel in ("inputs/chimap.nii.gz", "inputs/chimap-echoes.nii.gz", "inputs/r2prime.nii.gz",
+                "inputs/localfield.nii.gz", "inputs/r2.nii.gz",
                 "groundtruth/chi-para.nii.gz", "groundtruth/chi-dia.nii.gz", "groundtruth/chimap.nii.gz"):
         p = out / rel
         if p.exists():
             im = nib.load(str(p))
-            nib.save(nib.Nifti1Image((im.get_fdata() * m).astype(np.float32), im.affine, im.header), str(p))
+            d = im.get_fdata()
+            mb = m.reshape(m.shape + (1,) * (d.ndim - m.ndim))   # 4D chimap-echoes: every echo
+            nib.save(nib.Nifti1Image((d * mb).astype(np.float32), im.affine, im.header), str(p))
 
 
 def write_maps_dataset(out: Path, chi_total, r2prime, mask, chi_pos, chi_neg, affine, header):

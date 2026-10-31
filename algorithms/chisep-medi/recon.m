@@ -3,8 +3,8 @@ function recon(inp, out)
 % Isolated eval: reads GT local field (ppm) + R2' (Hz) + QSM/chi_total (ppm) + mask + multi-echo
 % magnitude, runs chi_sep_MEDI, writes /output/chi-para.nii.gz (χ+) and chi-dia.nii.gz (χ−, |χ−|).
 % Same input contract as the iLSQR submission; the difference is the MEDI (morphology-enabled dipole)
-% regulariser instead of iLSQR. CSF referencing is disabled (the stage contract provides no CSF mask),
-% which mainly affects the χ_total DC that the local field already constrains.
+% regulariser instead of iLSQR. CSF referencing is off: the stage contract provides no CSF mask, so
+% mask_CSF is empty, as in the toolbox GUI without one.
 %
 % Bundled at build time (BUILD.md): Jimmy Shen NIfTI toolbox, the Cornell MEDI toolbox (2024.11.26),
 % the χ-separation toolbox (pcode), and the real Image Processing and Signal Processing toolbox
@@ -47,9 +47,13 @@ function recon(inp, out)
     local_field_hz = localfield * 1e-6 * CF;        % ppm -> Hz
     N_std = ones(size(mask));
     params.b0_dir = b0d; params.CF = CF; params.voxel_size = vox;
-    params.lambda = lambda; params.lambda_CSF = 0;  % no CSF mask in the contract -> CSF term off
+    params.lambda = lambda; params.lambda_CSF = 1;    % the GUI's value; unused with no CSF mask
     option_data.qsm = qsm; option_data.N_std = N_std;
-    option_data.mask_CSF = false(size(mask));
+    % No CSF mask in the stage contract: pass it empty, as the toolbox's own GUI does when it has
+    % none (WrapperChisepMEDI). chi_sep_MEDI applies its CSF term whenever mask_CSF is non-empty; an
+    % all-false mask makes the CSF mean NaN, NaN*lambda_CSF is NaN even for lambda_CSF = 0, and
+    % every step is lost, so the solver returned its initial guess (QSMxT/QSM-CI#315).
+    option_data.mask_CSF = [];
 
     [x_para, x_dia, x_tot] = chi_sep_MEDI(mag, local_field_hz, r2prime, N_std, mask, params, option_data);
 

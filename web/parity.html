@@ -8,6 +8,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
   <script src="js/app.js"></script>
+  <style>
+    /* A badge in the QSM.rs README links to its pair's row (#pair-<name>). */
+    tr:target, li:target { background-color: rgb(16 185 129 / 0.12); }
+    tr[id], li[id] { scroll-margin-top: 6rem; }
+  </style>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.15.12/dist/cdn.min.js" integrity="sha384-pb6hrQvo4s23cEUFtj0CZkzGE3jyK3pj26RIupXXxhSrrcUA/Cn0lZgcCrGH0t6L" crossorigin="anonymous"></script>
 </head>
 <body class="font-sans text-gray-900 bg-gray-50 antialiased dark:bg-gray-950 dark:text-gray-100">
@@ -34,8 +39,9 @@
         <p class="mt-6 text-sm text-gray-500 dark:text-gray-400">
           Status as of <span x-text="status.generated"></span>. A check is stale when the original's
           image changed, QSM.rs <code x-text="status.qsmrs.branch"></code> changed the port's source
-          files, the pair's limits changed, it is more than <span x-text="status.stale_after_days"></span>
-          days old, or it failed.
+          files or its <code>Cargo.lock</code>, QSMxT changed how it runs the step or its
+          <code>Cargo.lock</code>, the pair's limits changed, or it failed. A check does not expire
+          with age.
         </p>
         <div class="mt-4 overflow-x-auto rounded-xl bg-white ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-800">
           <table class="w-full text-sm">
@@ -52,7 +58,7 @@
             </thead>
             <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
               <template x-for="row in rows()" :key="row.key">
-                <tr class="align-top">
+                <tr class="align-top" :id="row.first ? row.pair.anchor : null">
                   <td class="px-4 py-3 font-medium" x-text="row.first ? row.pair.pair : ''"></td>
                   <td class="px-4 py-3 text-gray-600 dark:text-gray-400">
                     <template x-if="row.first"><span><code x-text="row.pair.reference"></code> → <code x-text="row.pair.candidate"></code></span></template>
@@ -78,6 +84,24 @@
             </tbody>
           </table>
         </div>
+        <template x-if="noOriginal().length">
+          <div>
+            <h2 class="mt-10 text-xl font-semibold tracking-tight">No original to check against</h2>
+            <p class="mt-2 max-w-3xl text-sm text-gray-500 dark:text-gray-400">
+              These QSM.rs methods have no original code to compare with, so they have no parity
+              check; QSM.rs tests them against known answers instead.
+            </p>
+            <ul class="mt-3 space-y-1 text-sm">
+              <template x-for="p in noOriginal()" :key="p.pair">
+                <li class="rounded px-2 py-1" :id="p.anchor">
+                  <span class="font-medium" x-text="p.pair"></span>:
+                  <span class="text-gray-600 dark:text-gray-400" x-text="p.covers"></span>
+                  <template x-if="p.note"><span class="text-gray-500 dark:text-gray-400" x-text="' (' + p.note + ')'"></span></template>
+                </li>
+              </template>
+            </ul>
+          </div>
+        </template>
         <p class="mt-4 text-sm text-gray-500 dark:text-gray-400">
           How the checks run, the limits, and how to rerun one:
           <a href="https://github.com/QSMxT/QSM-CI/blob/main/docs/parity.md" class="text-emerald-600 hover:underline">docs/parity.md</a>.
@@ -98,12 +122,19 @@
             const res = await fetch("parity/status.json", { cache: "no-store" });
             if (!res.ok) throw new Error("HTTP " + res.status);
             this.status = await res.json();
+            // The rows exist only now, so the browser's own jump to #pair-<name> found nothing.
+            this.$nextTick(() => {
+              const el = location.hash && document.getElementById(location.hash.slice(1));
+              if (el) el.scrollIntoView();
+            });
           } catch (e) { this.error = String(e.message || e); }
         },
+        pairs() { return this.status.pairs.filter((p) => p.state !== "no-original"); },
+        noOriginal() { return this.status.pairs.filter((p) => p.state === "no-original"); },
         // One row per pair × dataset; a pair with no dataset configured still gets one row.
         rows() {
           const out = [];
-          for (const p of this.status.pairs) {
+          for (const p of this.pairs()) {
             const dss = p.datasets.length ? p.datasets : [{ dataset: "—", last: null, stale: false, reasons: [] }];
             dss.forEach((ds, i) => out.push({ key: p.pair + "/" + ds.dataset, pair: p, ds, first: i === 0 }));
           }

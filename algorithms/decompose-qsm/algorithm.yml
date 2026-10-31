@@ -8,14 +8,17 @@ language: MATLAB
 family: iterative
 learning: none
 inputs: [magnitude, chimap, mask, params]  # signal-domain: multi-echo magnitude + provided χ_total (chimap)
+# The per-echo QSM χ(TE) DECOMPOSE is defined on (Chen 2021, Eq. 4). recon.m uses it when the
+# dataset ships it, else χ_total (chimap) for every echo.
+optional_inputs: [chimap-echoes]
 engine: Independent
 description: >
   DECOMPOSE-QSM — a signal-domain susceptibility source separation. Unlike the R2'-based methods it
   fits the multi-echo COMPLEX GRE signal per voxel with a 3-stage alternating non-linear least-squares
   fit (lsqcurvefit) to split χ into paramagnetic (χ+, iron) and diamagnetic (χ−, myelin/calcium)
-  sources. Uses the provided χ_total (chimap) for the signal's phase term (χ is echo-independent), which
-  isolates DECOMPOSE's separation step from any upstream QSM error. Tim Ho's open MATLAB
-  re-implementation of DECOMPOSE.
+  sources. The signal's phase term uses the per-echo QSM (chimap-echoes) when the dataset provides
+  it, as the method is defined (Chen 2021, Eq. 4), else χ_total (chimap) for every echo. Tim Ho's
+  open MATLAB re-implementation of DECOMPOSE.
 authors:
 - name: Jingjia Chen
   note: original DECOMPOSE method
@@ -32,7 +35,7 @@ citation: >
   data", NeuroImage 2021;242:118477.
 code_url: https://github.com/timwahoo/DECOMPOSE-QSM
 license: GPL-3.0
-image: ghcr.io/astewartau/qsm-ci/decompose-qsm@sha256:a273a9b34f2863e4dac7e0c99f2c90e0dc220c56bf2e0f892c671a16be40112f   # v2
+image: ghcr.io/astewartau/qsm-ci/decompose-qsm@sha256:39a91b0435d6729cfd4a8c2441ebad1cbfe45c7358ea6d3ca95a1b65ec0e4033   # v3 (per-echo χ, chimap-echoes)
 run: bash run.sh
 # SUPERSEDED by `decompose-qsmrs`, the QSM.rs/QSMxT Rust port of this same method. Scored head to
 # head on chisep-mc the two agree closely — χ+ corr 0.444 vs 0.453, χ+ xSIM 0.254 vs 0.265, χ− corr
@@ -62,10 +65,10 @@ matlab:
 # Container vs the original code in licensed MATLAB (QSMxT/QSM-CI#300; fidelity/REPORT.md). Rerun
 # and update whenever the image changes.
 fidelity:
-  date: 2026-10-28
-  image: sha256:a273a9b34f2863e4dac7e0c99f2c90e0dc220c56bf2e0f892c671a16be40112f
+  date: 2026-10-31
+  image: sha256:39a91b0435d6729cfd4a8c2441ebad1cbfe45c7358ea6d3ca95a1b65ec0e4033
   matlab: R2023b Update 5 (23.2.0.2459199), Optimization Toolbox 23.2, Parallel Computing Toolbox 23.2
-  tolerance: identical   # chi-para and chi-dia (no intermediates) on a 33^3 central box, phantom and in vivo, 8 workers
+  tolerance: identical   # chi-para and chi-dia (no intermediates) on a 33^3 central box, phantom and in vivo, with and without chimap-echoes, 8 workers
   result: pass
   report: algorithms/decompose-qsm/fidelity/REPORT.md
 # Feasibility CONFIRMED on Bunya: full-brain fit ~31 min on 48 cores (job 26707883). Uses the provided

@@ -1,0 +1,60 @@
+name: LBV (MEDI toolbox)
+slug: lbv-cornell
+algorithm: lbv   # pairs with lbv-qsmrs; QSM.rs's LBV solves the same problem by SOR, not this multigrid solver
+source: cornell
+stage: bfr
+language: MATLAB
+family: direct
+learning: none
+engine: MEDI toolbox 2024.11.26 (LBV.m, mexMGv6)
+inputs: [totalfield, mask, params]
+description: >
+  Laplacian Boundary Value background field removal, the authors' LBV.m and its full-multigrid
+  solver mexMGv6 (Cornell MEDI toolbox 2024.11.26) with its own defaults, compiled from MATLAB and
+  run on the license-free MATLAB Runtime.
+citation: Zhou et al., NMR Biomed 2014
+authors:
+- name: Dong Zhou
+- name: Tian Liu
+- name: Pascal Spincemaille
+- name: Yi Wang
+doi: 10.1002/nbm.3064
+code_url: http://pre.weill.cornell.edu/mri/pages/qsm.html
+license: See Cornell MEDI toolbox license
+image: ghcr.io/astewartau/qsm-ci/matlab-medi@sha256:aceec8964177fbce20e46635632be6ae167d6cd395c5e65a3030198ea25fff1f   # lbv-v1
+run: bash run.sh
+smoke_box: 32
+matlab:
+  entry: recon.m
+  runtime: r2023b
+# Container vs the authors' code in licensed MATLAB with the real toolboxes (QSMxT/QSM-CI#300;
+# fidelity/REPORT.md). Rerun and update whenever the image changes.
+fidelity:
+  date: 2026-10-30
+  image: sha256:aceec8964177fbce20e46635632be6ae167d6cd395c5e65a3030198ea25fff1f   # lbv-v1
+  matlab: R2023b Update 5 (23.2.0.2459199)
+  sources: MEDI toolbox 2024.11.26 (LBV.m, mexMGv6.cpp)
+  tolerance: identical   # local field, LBV's interior and every intermediate, in silico and in vivo, 8 threads
+  result: pass
+  report: algorithms/lbv-cornell/fidelity/REPORT.md
+# Every default is LBV.m's own (MEDI toolbox 2024.11.26). MEDI's pipeline script (README.m:129, a
+# commented alternative to PDF) passes tol 0.005. See BUILD.md.
+parameters:
+- name: tol
+  default: 0.01
+  description: stopping tolerance of the coarsest-grid relaxation (absolute, in radians over the echo spacing)
+- name: depth
+  default: -1
+  description: multigrid levels; -1 picks log2 of the smallest dimension minus 3
+- name: peel
+  default: 0
+  description: boundary layers removed beyond the one boundary layer
+- name: n1
+  default: 30
+  description: relaxations per level before the recursive call
+- name: n2
+  default: 100
+  description: relaxations per level after the recursive call
+- name: n3
+  default: 100
+  description: relaxations on the finest grid after the full multigrid cycle
