@@ -8,7 +8,7 @@ is the shared harness [`fidelity/matlab/`](../../../fidelity/matlab/README.md) w
 - **Licensed MATLAB:** 23.2.0.2459199 (R2023b) Update 5, with the real toolboxes.
 - **Image checked:** `ghcr.io/astewartau/qsm-ci/chi-sep-medi@sha256:6cec1e895428f02b4e87cb2b744ca53fdc7146f6280882ca2785bec22a60586b` (`v3`).
   - `recon` is compiled with that licensed R2023b against the real toolboxes, with no shims, from
-    this folder's `recon.m` (build job 31163541; `recon` sha256 `5717c7e3…dc613269`, the same file in
+    this folder's `recon.m` (build job 31163532; `recon` sha256 `5717c7e3…dc613269`, the same file in
     the image and in the build).
   - It runs on the R2023b MATLAB Runtime (23.2.0.3097123 (R2023b) Update 11) under Apptainer.
   - The `.sif` was converted from the local image whose id (config digest `sha256:f7a03f912b54…`)
@@ -87,7 +87,7 @@ container and in licensed MATLAB alike: the all-false CSF mask, fixed in `v3`.
 
 | What | Job ids |
 |---|---|
-| Compile (2026-10-30) | 31163541 |
+| Compile (2026-10-30) | 31163532 |
 | Setup | 31191948 |
 | chisep-mc: container, real, real2, compare | 31191949, 31191950, 31191951, 31191952 |
 | invivo: container, real, real2, compare | 31191953, 31191954, 31191955, 31191956 |
