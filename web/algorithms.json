@@ -3631,7 +3631,7 @@
       "osf_env": "OSF_FILE_RIDANI_3T_ISO",
       "prepacked": true,
       "path": "data/ridani-3t-iso/scoring",
-      "active": true,
+      "active": false,
       "default": false
     },
     "ridani-3t-aniso": {
@@ -3640,7 +3640,7 @@
       "osf_env": "OSF_FILE_RIDANI_3T_ANISO",
       "prepacked": true,
       "path": "data/ridani-3t-aniso/scoring",
-      "active": true,
+      "active": false,
       "default": false
     },
     "ridani-7t-aniso": {
@@ -3649,7 +3649,7 @@
       "osf_env": "OSF_FILE_RIDANI_7T_ANISO",
       "prepacked": true,
       "path": "data/ridani-7t-aniso/scoring",
-      "active": true,
+      "active": false,
       "default": false
     },
     "chisep-mc": {
@@ -3658,8 +3658,57 @@
       "osf_env": "OSF_FILE_CHISEP_MC",
       "prepacked": true,
       "path": "data/chisep-mc/scoring",
+      "active": false,
+      "default": false
+    },
+    "meso-3t": {
+      "track": "chisep",
+      "label": "Mesoscopic 3T",
+      "osf_project": "3afxu",
+      "osf_file": "6ae5f069073ac032cd8ca3e9",
+      "prepacked": true,
+      "path": "data/meso-3t/scoring",
       "active": true,
-      "default": true
+      "default": true,
+      "generator": {
+        "tool": "qsm-forward",
+        "ref": "d709566",
+        "preset": "meso-3t",
+        "wm_rois": true
+      }
+    },
+    "wm-micro-7t": {
+      "track": "chisep",
+      "label": "WM microstructure 7T",
+      "osf_project": "3afxu",
+      "osf_file": "6ae5f09fbfc561b3821d3245",
+      "prepacked": true,
+      "path": "data/wm-micro-7t/scoring",
+      "active": true,
+      "default": false,
+      "generator": {
+        "tool": "qsm-forward",
+        "ref": "d709566",
+        "preset": "wm-micro-7t",
+        "wm_rois": true
+      }
+    },
+    "ridani-3t-aniso-fitted": {
+      "track": "chisep",
+      "label": "Ridani 3T anisotropic (fitted R2\u2032)",
+      "osf_project": "3afxu",
+      "osf_file": "6ae5f0f3e93b8f3f588ca3ba",
+      "prepacked": true,
+      "path": "data/ridani-3t-aniso-fitted/scoring",
+      "active": true,
+      "default": false,
+      "generator": {
+        "tool": "qsm-forward",
+        "ref": "d709566",
+        "preset": "ridani-3t-aniso",
+        "r2prime_source": "fitted",
+        "wm_rois": true
+      }
     },
     "prisma-bridge-run1": {
       "track": "repro",
