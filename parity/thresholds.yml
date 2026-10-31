@@ -532,23 +532,26 @@ pairs:
   sharp-qsmjl:
     reference: sharp-qsmjl
     candidate: sharp-qsmrs
-    enabled: false
-    # QSM.rs keeps QSM.jl's sharp as SharpVariant::QsmJl (astewartau/QSM.rs#321). With QSM.rs's
-    # default (SEPIA's SHARP) against QSM.jl's defaults (run 41019310531): NRMSE sim 26.5 %, KKI
-    # 34.5 %, a different method. `qsmxt bgremove sharp --variant qsmjl` (QSMxT/QSMxT#460, which
-    # closes #463) selects it with QSM.jl's own defaults (18 × the smallest voxel, 0.05). Measured
-    # on a #460 build with radius 6 and threshold 0.05 on both sides (run 41024142665): NRMSE sim
-    # 5.2e-9 %, KKI 2.2e-10 %. Enable, with limits from a baseline at these settings, once a
-    # qsmxt with #460 is pinned.
-    blocked_by: QSMxT/QSMxT#460
+    enabled: true
+    # QSM.rs keeps QSM.jl's sharp as SharpVariant::QsmJl (astewartau/QSM.rs#321), selected by
+    # `qsmxt bgremove sharp --variant qsmjl` (QSMxT/QSMxT#460) with QSM.jl's own defaults (18 × the
+    # smallest voxel, 0.05); both sides run at those. QSM.rs's default (SEPIA's SHARP) is the
+    # `sharp` pair. On KKI the pair measured 2.95 % (run 41191842680) until the Julia glue took the
+    # voxel size from the header as qsmxt does (QSM.jl pads by cld(18, 0.99999994) = 19, not 18).
     qsmrs_paths: *sharp_paths
     qsmxt_paths: *bgremove_wiring
     candidate_set: { variant: qsmjl }
     datasets:
-      sim: {}
+      sim:
+        # Measured: NRMSE 6.3e-12 %, max |Δ| 4.6e-13 ppm.
+        localfield: { nrmse_max: 0.501, correlation_min: 0.99, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
+        measured: { main: "run 41191905549: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs]
         feed: { totalfield: totalfield }
+        # Measured: NRMSE 0 (identical in float32).
+        localfield: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
+        measured: { main: "run 41191905549: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
   vsharp-qsmjl:
     reference: vsharp-qsmjl
     candidate: vsharp-qsmrs
