@@ -59,7 +59,10 @@ R2023b Runtime base (pinned by digest) plus `recon`.
 
 Images: `v1` (R2026a Runtime, IPT/SPT shims whose greyscale `imdilate`/`imerode` wrapped round at the
 volume border; its Dockerfile was `FROM matlab-runtime:r2026a` + `COPY recon` + `chmod +x`); `v2`
-(R2023b, the real toolboxes, no shims; see `fidelity:` in `algorithm.yml`).
+(R2023b, the real toolboxes, no shims; see `fidelity:` in `algorithm.yml`); `v3` (`mask_CSF = []`
+instead of an all-false mask, so MEDI iterates, #315).
 
 ## Notes
-- CSF referencing is disabled (`params.lambda_CSF = 0`) — isolated eval provides no CSF mask.
+- No CSF term: isolated eval provides no CSF mask, so `option_data.mask_CSF = []`, as the toolbox GUI
+  passes without one. An all-false mask is not the same: the toolbox's CSF mean over it is NaN, every
+  step is lost and the solver returns its initial guess (QSMxT/QSM-CI#315; `v2` did this).
