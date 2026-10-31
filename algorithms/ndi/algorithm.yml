@@ -1,0 +1,57 @@
+name: NDI (FANSI toolbox)
+slug: ndi
+algorithm: ndi
+source: fansi   # the authors' FANSI toolbox; pairs with ndi-qsmrs (QSM.rs's port) in the parity workflow
+stage: dipole
+language: MATLAB
+family: iterative
+learning: none
+engine: FANSI toolbox 93044a3 (ndi.m)
+inputs: [localfield, mask, params, magnitude]
+description: >
+  Nonlinear Dipole Inversion: gradient descent on a nonlinear (wrapped-phase) data term with a
+  small Tikhonov term, the authors' ndi.m from the FANSI toolbox (commit 93044a3) with its own
+  defaults, compiled from MATLAB and run on the license-free MATLAB Runtime.
+citation: Polak et al., NMR Biomed 2020
+authors:
+- name: Daniel Polak
+- name: Itthi Chatnuntawech
+- name: Jaeyeon Yoon
+- name: Siddharth Srinivasan Iyer
+- name: Carlos Milovic
+- name: Jongho Lee
+- name: Peter Bachert
+- name: Elfar Adalsteinsson
+- name: Kawin Setsompop
+- name: Berkin Bilgic
+doi: 10.1002/nbm.4271
+code_url: https://gitlab.com/cmilovic/FANSI-toolbox
+license: "No license file; author toolbox distribution"
+image: ghcr.io/astewartau/qsm-ci/ndi@sha256:98f820be521d171c729f96e1deef733ebfad7d8bbb4996693a12187a59719f28   # v2
+run: bash run.sh
+smoke_box: 32
+matlab:
+  entry: recon.m
+  runtime: r2023b
+# Container vs the authors' code in licensed MATLAB with the real toolboxes (QSMxT/QSM-CI#300;
+# fidelity/REPORT.md). Rerun and update whenever the image changes.
+fidelity:
+  date: 2026-10-30
+  image: sha256:98f820be521d171c729f96e1deef733ebfad7d8bbb4996693a12187a59719f28   # v2
+  matlab: R2023b Update 5 (23.2.0.2459199)
+  sources: FANSI-toolbox 93044a3
+  tolerance: identical   # chi and every intermediate, in silico and in vivo, 8 threads
+  result: pass
+  report: algorithms/ndi/fidelity/REPORT.md
+# ndi.m's own defaults where it has them; the field is scaled to radians at the first echo time, as QSM.rs's
+# port does by default. See BUILD.md and recon.m.
+parameters:
+- name: tau
+  default: 2
+  description: gradient-descent step size
+- name: alpha
+  default: 1e-05
+  description: Tikhonov (L2) regularization weight
+- name: max_iter
+  default: 100
+  description: iterations (NDI stops early by iteration count)
