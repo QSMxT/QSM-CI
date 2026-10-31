@@ -1163,6 +1163,62 @@
       "ci_notes": []
     },
     {
+      "slug": "hdqsm",
+      "name": "HD-QSM (authors' code)",
+      "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params",
+        "magnitude"
+      ],
+      "domain": "qsm",
+      "engine": "HD-QSM c456a94 (HDQSM.m)",
+      "algorithm": "hdqsm",
+      "language": "MATLAB",
+      "family": "iterative",
+      "learning": "none",
+      "description": "Hybrid data fidelity QSM: an L1 data-fidelity stage gives a discrepancy weighting for an L2 stage, both with TV regularization solved by ADMM. The authors' HDQSM.m (github.com/mglambert/HD-QSM c456a94), run as its usage example runs it, compiled from MATLAB and run on the license-free MATLAB Runtime.",
+      "citation": "Lambert et al., Magn Reson Med 2022",
+      "doi": "10.1002/mrm.29218",
+      "code_url": "https://github.com/mglambert/HD-QSM",
+      "license": "MIT (HD-QSM)",
+      "authors": [
+        "Mathias Lambert",
+        "Cristian Tejos",
+        "Christian Langkammer",
+        "Carlos Milovic"
+      ],
+      "parameters": [
+        {
+          "name": "alpha_l2",
+          "default": "3e-5",
+          "description": "L2-stage TV weight (the L1 stage uses sqrt(alpha_l2))"
+        },
+        {
+          "name": "mu1_l2",
+          "default": "100*alpha_l2",
+          "description": "L2-stage gradient-consistency ADMM weight (the L1 stage uses sqrt(mu1_l2))"
+        },
+        {
+          "name": "max_iter_l1",
+          "default": 20,
+          "description": "L1-stage iterations"
+        },
+        {
+          "name": "max_iter_l2",
+          "default": 80,
+          "description": "maximum L2-stage iterations"
+        },
+        {
+          "name": "tol_update",
+          "default": "1e-2",
+          "description": "L2-stage stopping tolerance on the relative update (%)"
+        }
+      ],
+      "ci_notes": []
+    },
+    {
       "slug": "hdqsm-qsmrs",
       "name": "HD-QSM (QSM.rs)",
       "stage": "dipole",
