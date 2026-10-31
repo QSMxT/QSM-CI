@@ -8,12 +8,7 @@ QSM.FFTW_NTHREADS[] = NTHREADS
 
 f, _ = readvol("totalfield.nii.gz")
 mask, ref = readmask()
-# The voxel size from the NIfTI header (pixdim, as NIfTI.jl's `voxel_size` gives it), not
-# params.json: QSM.jl pads its box by cld(max(r), minimum(vsz)) voxels, so a header spacing one
-# float32 ulp below 1 mm (0.99999994, the KKI travelling head's z) pads 13 voxels for 12 mm where
-# params.json's 1.0 pads 12, a different periodic deconvolution (1.19 % NRMSE against QSM.rs, which,
-# like any QSMxT user, reads the header). The port is fed the header's value, so the original is too.
-vsz = Tuple(Float64.(ref.header.pixdim[2:4]))
+vsz = voxel_size()
 # QSM.jl's default radii, 18*min(vsz):-2*max(vsz):2*max(vsz) mm, unless overridden.
 function radii(vsz)
     hi = setting("max_radius", 18 * minimum(vsz))
