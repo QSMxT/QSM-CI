@@ -1018,7 +1018,13 @@
         "Isensee et al.",
         "Ashley Stewart"
       ],
-      "parameters": [],
+      "parameters": [
+        {
+          "name": "window",
+          "default": false,
+          "description": "HD-BET's own sliding window (192x192x96 patches, step 0.5) instead of QSM.rs's whole-volume default; the original's way, which the hd-bet parity pair runs\n"
+        }
+      ],
       "ci_notes": []
     },
     {

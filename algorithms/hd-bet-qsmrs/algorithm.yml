@@ -25,3 +25,9 @@ license: 'MIT (QSM.rs); the weights keep the original''s terms: Apache-2.0'
 # algorithms/_qsmxt/models.Dockerfile, since a submission runs with no network.
 image: ghcr.io/astewartau/qsm-ci/qsmxt@sha256:4327e61dec101830cd9620049ea216939ea9bbb235e26688d198d90481c6f7df   # v10.0.0-models
 run: bash run.sh
+parameters:
+  - name: window
+    default: false
+    description: >
+      HD-BET's own sliding window (192x192x96 patches, step 0.5) instead of QSM.rs's whole-volume
+      default; the original's way, which the hd-bet parity pair runs

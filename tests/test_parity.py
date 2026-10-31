@@ -282,6 +282,13 @@ def test_real_matrix_routes_runners():
     assert jobs and all(j["runs_on"] and j["timeout"] > 0 for j in jobs)
 
 
+def test_plan_matrix_flags_pairs_that_need_the_weights():
+    """A pair with `qsmrs_models` asks the workflow to add the ONNX weights to a qsmxt build."""
+    th = {"a": {"qsmrs_models": True, "datasets": {"sim": {}}}, "b": {"datasets": {"sim": {}}}}
+    jobs = parity.plan_matrix(th, "a,b", "configured", manifests={}, datasets={})
+    assert {j["algorithm"]: j["models"] for j in jobs} == {"a": True, "b": False}
+
+
 def test_side_set_dataset_wins():
     cfg = {"reference_set": {"pad": -1, "a": 1}, "datasets": {"kki": {"reference_set": {"a": 2}}}}
     assert parity.side_set(cfg, "reference", "kki") == {"pad": -1, "a": 2}

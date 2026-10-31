@@ -284,6 +284,7 @@ jobs:
         id: qsmrs
         env:
           QSMXT_IMAGE: ${{ needs.plan.outputs.qsmxt_image }}
+          MODELS: ${{ matrix.models }}
         run: |
           if [ -n "$QSMXT_IMAGE" ]; then
             docker pull "$QSMXT_IMAGE"
@@ -291,9 +292,18 @@ jobs:
             echo "note=QSM.rs under test: supplied image \`$QSMXT_IMAGE\`" >> "$GITHUB_OUTPUT"
           elif [ -f qsmxt-build/qsmxt ]; then
             chmod +x qsmxt-build/qsmxt
-            docker build -q -t qsmxt-under-test:${{ github.run_id }} -f parity/qsmxt.Dockerfile qsmxt-build
-            echo "image=qsmxt-under-test:${{ github.run_id }}" >> "$GITHUB_OUTPUT"
-            echo "note=QSM.rs under test: built from $(cat qsmxt-build/BUILT_FROM)" >> "$GITHUB_OUTPUT"
+            img=qsmxt-under-test:${{ github.run_id }}
+            docker build -q -t "$img" -f parity/qsmxt.Dockerfile qsmxt-build
+            note="QSM.rs under test: built from $(cat qsmxt-build/BUILT_FROM)"
+            # A deep-learning pair (`qsmrs_models` in thresholds.yml): the build has no weights and
+            # the run no network, so add them as the pinned -models image has them.
+            if [ "$MODELS" = true ]; then
+              docker build -q -t "$img-models" --build-arg BASE="$img" \
+                -f algorithms/_qsmxt/models.Dockerfile algorithms/_qsmxt
+              img="$img-models"; note="$note, with the ONNX weights of algorithms/_qsmxt/models.Dockerfile"
+            fi
+            echo "image=$img" >> "$GITHUB_OUTPUT"
+            echo "note=$note" >> "$GITHUB_OUTPUT"
           else
             echo "note=QSM.rs under test: the qsmxt image each algorithm.yml pins" >> "$GITHUB_OUTPUT"
           fi

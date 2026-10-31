@@ -31,6 +31,9 @@
 #                     tkd`: the CLI flags and defaults, the subcommand, the engine config it reads).
 #                     A commit on QSMxT main touching any of them (or `qsmxt_shared_paths`) since
 #                     the QSMxT commit last checked makes it stale (rule f). Optional.
+#   qsmrs_models:     true when the QSM.rs side runs a deep-learning model: a qsmxt built from
+#                     source has no weights (and a run no network), so parity.yml adds them with
+#                     algorithms/_qsmxt/models.Dockerfile, as the pinned -models image has them.
 #   reference_set:    `--set NAME=VALUE` overrides for the reference / candidate method (not its
 #   candidate_set:    prefix steps), at the pair level or per dataset (the dataset's win): how a
 #                     pair runs both sides with matched settings where their defaults differ (the
@@ -676,3 +679,168 @@ pairs:
         measured: { pr369: "run 41031701965: QSMxT tgv-output-box-369 43baf55 (QSMxT/QSMxT#465), QSM.rs tgv-output-box-369 40b0dcf (astewartau/QSM.rs#375) (limits)" }
         reference_prefix: [laplacian-qsmrs]
         feed: { totalfield: totalfield }
+
+  # ---- Deep-learning originals (QSMxT/QSM-CI#301; fidelity: fidelity/dl/README.md). The -qsmrs
+  # side runs QSM.rs's ONNX exports of the authors' weights; a qsmxt built from source gets them
+  # from algorithms/_qsmxt/models.Dockerfile (`qsmrs_models`). Root causes of the first-look gaps:
+  # astewartau/QSM.rs#330.
+  xqsm:
+    reference: xqsm
+    candidate: xqsm-qsmrs
+    enabled: false
+    qsmrs_models: true
+    qsmrs_paths: [src/fft.rs, src/grid.rs, src/inversion/tile_budget.rs, src/inversion/tiled.rs,
+                  src/inversion/xqsm.rs, src/models/, src/pipeline/inversion.rs,
+                  src/pipeline/rules.rs]
+    qsmxt_paths: *invert_wiring
+    datasets: &dl_dipole_datasets
+      sim: {}
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
+        feed: { localfield: localfield }
+  qsmnet:
+    reference: qsmnet
+    candidate: qsmnet-qsmrs
+    enabled: false
+    # QSM.rs's export used leaky ReLU where the original's network_info says ReLU (χ ×1.34, 81 % /
+    # 126 % NRMSE). astewartau/QSM.rs#374 re-exports it with ReLU (0.0002 % against the original),
+    # but the file must first replace qsmnet.onnx on HF qsmxt/qsm-onnx-weights; then update
+    # algorithms/_qsmxt/models.sha256 and the HF revision in models.Dockerfile, re-baseline, enable.
+    blocked_by: astewartau/QSM.rs#374
+    qsmrs_models: true
+    qsmrs_paths: [src/fft.rs, src/grid.rs, src/inversion/qsmnet.rs, src/inversion/tile_budget.rs,
+                  src/inversion/tiled.rs, src/models/, src/pipeline/inversion.rs,
+                  src/pipeline/rules.rs]
+    qsmxt_paths: *invert_wiring
+    datasets: *dl_dipole_datasets
+  qsmnet-plus:
+    reference: qsmnet-plus
+    candidate: qsmnet-plus-qsmrs
+    enabled: false
+    qsmrs_models: true
+    qsmrs_paths: [src/fft.rs, src/grid.rs, src/inversion/qsmnet.rs, src/inversion/tile_budget.rs,
+                  src/inversion/tiled.rs, src/models/, src/pipeline/inversion.rs,
+                  src/pipeline/rules.rs]
+    qsmxt_paths: *invert_wiring
+    datasets: *dl_dipole_datasets
+  lpcnn:
+    reference: lpcnn
+    candidate: lpcnn-qsmrs
+    enabled: false
+    qsmrs_models: true
+    qsmrs_paths: [src/fft.rs, src/grid.rs, src/inversion/lpcnn.rs, src/inversion/tile_budget.rs,
+                  src/inversion/tiled.rs, src/models/, src/pipeline/inversion.rs,
+                  src/pipeline/rules.rs]
+    qsmxt_paths: *invert_wiring
+    datasets: *dl_dipole_datasets
+  qsmgan:
+    reference: qsmgan
+    candidate: qsmgan-qsmrs
+    enabled: false
+    qsmrs_models: true
+    qsmrs_paths: [src/fft.rs, src/grid.rs, src/inversion/qsmgan.rs, src/inversion/tile_budget.rs,
+                  src/inversion/tiled.rs, src/models/, src/pipeline/inversion.rs,
+                  src/pipeline/rules.rs]
+    qsmxt_paths: *invert_wiring
+    datasets: *dl_dipole_datasets
+  modl-qsm:
+    reference: modl-qsm
+    candidate: modl-qsm-qsmrs
+    enabled: false
+    # The first look's 1.5–3.8 % was the reference wrapper writing χ through the mask's uint8
+    # header (fixed in QSMxT/QSM-CI#331); with float32 output the port is 0.0002 %.
+    qsmrs_models: true
+    qsmrs_paths: [src/fft.rs, src/grid.rs, src/inversion/modl_qsm.rs, src/inversion/tile_budget.rs,
+                  src/inversion/tiled.rs, src/models/, src/pipeline/inversion.rs,
+                  src/pipeline/rules.rs]
+    qsmxt_paths: *invert_wiring
+    datasets: *dl_dipole_datasets
+  ir2qsm:
+    reference: ir2qsm
+    candidate: ir2qsm-qsmrs
+    enabled: false
+    # The authors' default adds noise in the decoder at inference; QSM.rs's export is the
+    # noise-free branch, so the reference runs with it off.
+    reference_set: { add_noise: "false" }
+    qsmrs_models: true
+    qsmrs_paths: [src/fft.rs, src/grid.rs, src/inversion/ir2qsm.rs, src/inversion/tile_budget.rs,
+                  src/inversion/tiled.rs, src/models/, src/pipeline/inversion.rs,
+                  src/pipeline/rules.rs]
+    qsmxt_paths: *invert_wiring
+    datasets: *dl_dipole_datasets
+  autoqsm:
+    reference: autoqsm
+    candidate: autoqsm-qsmrs
+    enabled: false
+    qsmrs_models: true
+    qsmrs_paths: [src/fft.rs, src/grid.rs, src/inversion/autoqsm.rs, src/inversion/tile_budget.rs,
+                  src/inversion/tiled.rs, src/models/, src/pipeline/inversion.rs,
+                  src/pipeline/rules.rs]
+    qsmxt_paths: *invert_wiring
+    datasets: &dl_totalfield_datasets
+      sim: {}
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs]
+        feed: { totalfield: totalfield }
+  nextqsm:
+    reference: nextqsm
+    candidate: nextqsm-qsmrs
+    enabled: false
+    # astewartau/QSM.rs#367 pads odd axes as the package does (70.6 % → 0.038 % on an odd box).
+    # The package itself moves by ~0.1 % between CPUs (the regulariser's sign(VarNet(x)) flips
+    # near-zero voxels).
+    qsmrs_models: true
+    qsmrs_paths: [src/fft.rs, src/grid.rs, src/inversion/nextqsm.rs, src/inversion/tile_budget.rs,
+                  src/inversion/tiled.rs, src/models/, src/pipeline/inversion.rs,
+                  src/pipeline/rules.rs]
+    qsmxt_paths: *invert_wiring
+    datasets: *dl_totalfield_datasets
+  bfrnet:
+    reference: bfrnet
+    candidate: bfrnet-qsmrs
+    enabled: false
+    # Both run the same ONNX file; the original's wrapper tiles volumes over 128³ to save memory,
+    # QSM.rs runs the whole volume, so the reference runs untiled.
+    reference_set: { patch_size: 0 }
+    qsmrs_models: true
+    qsmrs_paths: [src/bgremove/bfrnet.rs, src/fft.rs, src/grid.rs, src/inversion/tile_budget.rs,
+                  src/inversion/tiled.rs, src/models/, src/pipeline/bg_removal.rs,
+                  src/pipeline/inversion.rs, src/pipeline/rules.rs]
+    qsmxt_paths: *bgremove_wiring
+    datasets: *dl_totalfield_datasets
+  chisepnet:
+    reference: chisepnet
+    candidate: chisepnet-qsmrs
+    enabled: false
+    # Both clip negative χ+ and |χ−| to 0, as the authors' test.py does (QSMxT/QSM-CI#333); the
+    # hosted chi-sepnet.onnx equals the toolbox's 240904_xsepnet.onnx.
+    qsmrs_models: true
+    qsmrs_paths: [src/geometry.rs, src/grid.rs, src/models/, src/pipeline/rules.rs,
+                  src/pipeline/separation.rs, src/separation/chisepnet.rs, src/separation/mod.rs,
+                  src/utils/sliding.rs]
+    qsmxt_paths: *separate_wiring
+    datasets: { chisep-mc: {} }
+  susep-net:
+    reference: susep-net
+    candidate: susep-net-qsmrs
+    enabled: false
+    qsmrs_models: true
+    qsmrs_paths: [src/geometry.rs, src/grid.rs, src/models/, src/pipeline/rules.rs,
+                  src/pipeline/separation.rs, src/separation/chisepnet.rs, src/separation/mod.rs,
+                  src/separation/susep_net.rs, src/utils/sliding.rs]
+    qsmxt_paths: *separate_wiring
+    datasets: { chisep-mc: {} }
+  hd-bet:
+    reference: hd-bet-qsmci
+    candidate: hd-bet-qsmrs
+    enabled: false
+    # The original's sliding window (QSM.rs's default is the whole volume, which differs at Dice
+    # 0.989); no test-time augmentation on either side. The echoes are combined by root-sum-of-
+    # squares on both sides (qsmxt after v10.0.0).
+    candidate_set: { window: "true" }
+    qsmrs_models: true
+    qsmrs_paths: [src/bet/hdbet.rs, src/bet/mod.rs, src/grid.rs, src/io.rs, src/models/,
+                  src/pipeline/masking.rs, src/pipeline/rules.rs, src/utils/morphology.rs,
+                  src/utils/resample.rs]
+    qsmxt_paths: [src/cli.rs, src/commands/common.rs, src/commands/mask.rs]
+    datasets: { s002001-kki-achieva-bridge-run1: {} }
