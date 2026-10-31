@@ -7,7 +7,12 @@ language: Python
 family: direct
 learning: none
 engine: Independent
-inputs: [chimap, r2prime, mask, dseg, params]
+inputs: [chimap, r2prime, mask, params]
+# The phantom's segmentation (white matter = label 8), mounted when the dataset has one; recon.py
+# falls back to the co-located solve without it. dseg is ground truth, so the contract lets only a
+# baseline declare it (stages.yml `baseline_only`).
+optional_inputs: [dseg]
+baseline: true
 description: >
   The closed-form analytic null baseline for the Ridani et al. (2026) phantom family. It inverts the
   phantom's own region-disjoint, theoretical field-scaled forward model: paramagnetic relaxivity

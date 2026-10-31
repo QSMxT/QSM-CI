@@ -94,3 +94,11 @@ def test_submitting_guide_lists_every_stage_and_span():
     assert _table_keys(ROOT / "docs" / "submitting.md", "## 1. Pick your stage") == set(_EXPECTED_STAGES), (
         "docs/submitting.md §1's stage table drifted from stages.yml — add or remove the row."
     )
+
+
+def test_baseline_only_artifacts_match_yaml():
+    """The CLI's refusal list (stages.BASELINE_ONLY_ARTIFACTS) is stages.yml's `baseline_only:`."""
+    assert pystages.BASELINE_ONLY_ARTIFACTS == {
+        n for n, s in _YML["artifacts"].items() if s.get("baseline_only")}, (
+        "qsm_ci/stages.py BASELINE_ONLY_ARTIFACTS drifted from stages.yml artifacts.*.baseline_only."
+    )

@@ -10,6 +10,7 @@ prior (db4, maximum level), solved by proximal gradient with the authors' defaul
 - **Engine:** QSMxT / [QSM.rs](https://github.com/astewartau/QSM.rs), `src/separation/wavesep.rs`.
 - **Original:** [`wavesep`](../wavesep) runs the authors' Python solver; the two entries share
   `algorithm: wavesep`, so they form a port parity pair (docs/parity.md).
-- **Dr:** 137 Hz/ppm for both sources, as the `wavesep` entry (`--set Dr=…`).
+- **Dr:** 137·B0/2.9 Hz/ppm for both sources (141.7 at 3 T, 330.7 at 7 T), as the `wavesep` entry
+  (`--set Dr=…`).
 - **Reference:** Fang, Shin, van Zijl, Li, Sulam, MLCN 2023 ·
   doi:[10.1007/978-3-031-44858-4_6](https://doi.org/10.1007/978-3-031-44858-4_6).
