@@ -28,12 +28,13 @@ bit-repeatable (real2 = real). Both runs report the same residual and regularisa
 (`res_term` 0.01852885243, `reg_term` 9.21658884), so CGS took the same path; the float64 fields differ by
 ~1e-14 relative, a few ulps.
 
-**Cause (likely, not proven):** the container runs the R2023b Runtime at Update 11 and licensed MATLAB is Update 5.
-On Bunya, the Runtime's FFTW (`libmwfftw3.so.3.5.8`), BLAS, LAPACK and MKL libraries are byte-identical to the
-licensed installation's, but `libmwmathcore.so` differs, and the Runtime's `cgs.m` is encrypted, so it can't be
-compared. The residual shows only on the in-silico grid (164×205×205, two odd dimensions); the in-vivo grid
-(184×256×128) is identical. LSQR (`lsqr`) shows the same in-silico-only pattern. A Runtime image at Update 5
-(`containers.mathworks.com/matlab-runtime:r2023b-update-5`) would test this.
+**Cause: the container's operating system, not MATLAB.** `resharp-v2`, the same `recon` on the Update 5 Runtime
+(`containers.mathworks.com/matlab-runtime:r2023b-update-5@sha256:4071c142…`, the licensed build 23.2.0.2459199), gives
+the same numbers as `v1` on Update 11 (jobs 31200795–31200799), so `v1` stays. For LSQR, which shows the same
+in-silico-only pattern, the licensed installation's libraries run inside the image's Ubuntu 22.04 userland reproduce
+the container exactly, and the compiled binary on the RHEL 9 host reproduces licensed MATLAB (`lsqr`'s REPORT.md): a
+system library under MATLAB, most likely glibc's libm, not MATLAB itself. The residual shows only on the in-silico
+grid (164×205×205, two odd dimensions); the in-vivo grid (184×256×128) is identical.
 
 **Where the functions resolved** (`intermediates.json`): `resharp` resolves to the bundled `deps/sun` in the
 container's extracted archive and in licensed MATLAB; `padarray` and `cgs` to the Runtime's
@@ -51,3 +52,4 @@ The build's `unresolvedSymbols.txt` and `mccExcludedFiles.log` list nothing, and
 | Setup | 31158309 (31135468, 31151575: failed setups, rerun) |
 | sim: container, real, real2, compare | 31158310, 31158311, 31158312, 31158313 |
 | invivo: container, real, real2, compare | 31158314, 31158315, 31158316, 31158317 |
+| `resharp-v2` on the Update 5 Runtime (setup, sim and invivo container + compare) | 31200795–31200799 |

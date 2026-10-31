@@ -34,7 +34,7 @@ fidelity:
   matlab: R2023b Update 5 (23.2.0.2459199), Image Processing Toolbox 23.2
   sources: sunhongfu/QSM c75b138 (resharp.m)
   tolerance: in vivo identical; in silico local field NRMSE 1.5e-8 % (max 9.3e-10 ppm), mask identical   # 8 threads
-  result: residual   # in silico only; likely Runtime Update 11 vs licensed Update 5 (REPORT.md), not proven
+  result: residual   # in silico only; the image's Ubuntu userland vs the RHEL host, not MATLAB (REPORT.md)
   report: algorithms/resharp/fidelity/REPORT.md
 # resharp.m's own defaults (l. 24-34, 92). See BUILD.md.
 parameters:
