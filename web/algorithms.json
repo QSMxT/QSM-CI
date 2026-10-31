@@ -1118,6 +1118,11 @@
           "name": "pad_mm",
           "default": 16,
           "description": "zero-padding per side (mm) before the k-space solve (new in qsmxt v10.0.0)"
+        },
+        {
+          "name": "precision",
+          "default": "double",
+          "description": "arithmetic of the two LSQR solves, double or single (the original's); needs a qsmxt with --precision"
         }
       ],
       "ci_notes": []
