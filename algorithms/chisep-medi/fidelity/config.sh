@@ -7,7 +7,7 @@ FID_SOURCES="FID_CHISEP_TB FID_MEDI FID_NIFTI"
 # copies of the NIfTI loaders (and medfilt3), which shadow the others.
 FID_MATLAB_PATH="+chisep medi nifti"
 FID_MCC_A="medi chisep"           # chi_sep_MEDI is pcode and calls MEDI: mcc can't trace into it
-FID_WHICH="chi_sep_MEDI MEDI_L1 load_untouch_nii save_untouch_nii medfilt3 hann hanning imclose imdilate imerode imopen padarray strel tukeywin"
+FID_WHICH="chi_sep_MEDI MEDI_L1 Fit_ppm_complex load_untouch_nii save_untouch_nii medfilt3 hann hanning imclose imdilate imerode imopen padarray strel tukeywin"
 FID_SBATCH="--mem=64G"
 
 fid_assemble() {

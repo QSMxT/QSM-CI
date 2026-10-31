@@ -6,7 +6,10 @@ stage: bfr+dipole
 language: Rust
 family: iterative
 learning: none
-optional_inputs: [magnitude]  # run.sh guards `-f magnitude.nii.gz`; runs without the SNR weight when absent
+# run.sh guards both files. magnitude: runs without the SNR weight when absent. reliability (R_0):
+# only port parity supplies it (the original's own R_0, parity/thresholds.yml `feed:`); without it
+# both stages run over the whole mask.
+optional_inputs: [magnitude, reliability]
 engine: QSMxT / QSM.rs
 description: >
   QSMART: vessel-aware two-stage reconstruction. Consumes the total field and produces

@@ -117,6 +117,12 @@ it is fed the total field from `qsmart-matlab`'s Laplacian unwrapping and echo f
 comparison covers vasculature detection, both SDF stages, both iLSQR inversions and the offset
 adjustment. A feed whose intermediate the reference did not write is an error, not a fallback.
 
+A feed may also name an optional input that no dataset ships, one the candidate's `algorithm.yml`
+opts into with `optional_inputs:` (CONTRACT.md, "Artifacts"). The QSMART pair feeds
+`reliability: reliability` as well: the original's own reliability map R₀ from its echo fit, which
+`qsmart-qsmrs` passes on as `qsmxt qsmart --reliability`, so both sides reconstruct over the same
+voxels. Scoring never mounts it, so the scored `qsmart-qsmrs` runs without one, as before.
+
 `candidate_prefix: [laplacian-qsmrs]` instead runs a field-mapping step first, for a pair whose
 port needs a boundary the dataset does not have and the original does not write.
 
