@@ -27,6 +27,10 @@ artifacts:
   # the single chimap at every echo gives it no echo dependence to fit. Like chimap, it comes from the
   # ground-truth boundary in isolated mode (inputs/, else groundtruth/).
   chimap-echoes: { kind: chi,     units: ppm,    ndim: 4, file: chimap-echoes.nii.gz }
+  # QSMART's reliability map R_0 (1 = reliable echo fit): an optional QSMART input, in no stage's
+  # `consumes` and in no dataset. Only port parity supplies it: the `qsmart` pair feeds the original's
+  # own R_0 to the port (parity/thresholds.yml `feed:`). Scoring never mounts it.
+  reliability:   { kind: mask,    units: binary, ndim: 3, file: reliability.nii.gz }
 
 # The three swappable stages, in pipeline order. `consumes`/`produces` are artifact names.
 stages:

@@ -71,6 +71,7 @@ artifacts into `/input`, and expects exactly the produced artifacts in `/output`
 | `chi-para` | `chi-para.nii.gz` | **ppm** (χ+, ≥ 0) | 3D |
 | `chi-dia` | `chi-dia.nii.gz` | **ppm** (\|χ−\|, stored as a positive magnitude) | 3D |
 | `chimap-echoes` | `chimap-echoes.nii.gz` | **ppm** | 4D `x,y,z,echo` — optional `chi-separation` input, see below |
+| `reliability` | `reliability.nii.gz` | binary uint8 | 3D — optional QSMART input, port parity only, see below |
 
 All field maps and susceptibility maps (`chimap`, `chi-para`, `chi-dia`) are in **ppm** (normalized
 by B0). Convert from Hz with `ppm = Hz · 1e6 / (γ · B0)`, `γ = 42.576e6` Hz/T. `r2prime` is the one
@@ -84,6 +85,12 @@ its per-echo phase input. Not every χ-separation dataset ships it, so it is in 
 when the file is absent. Like `chimap`, it comes from the ground-truth boundary in isolated mode
 (the dataset's `inputs/`, else `groundtruth/`). `qsm-ci run` accepts it as one 4D file or as one 3D
 map per echo, stacked like `phase`.
+
+`reliability` is QSMART's reliability map R₀ (1 = the echo fit is reliable), the `reliability`
+intermediate QSMART writes. No dataset ships it and scoring never mounts it: only port parity
+supplies it, when the `qsmart` pair feeds the original's own R₀ to the QSM.rs port
+([docs/parity.md](docs/parity.md), "Isolating a step"). A method opts in with
+`optional_inputs: [reliability]` and runs without it when the file is absent.
 
 ### `params.json`
 

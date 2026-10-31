@@ -129,7 +129,7 @@ pairs:
       # 65.9 %, KKI 133.8 %): those runs record the gap, not a limit. Reference image both times:
       # matlab-qsmart v3, sha256:e0e8bc69… (algorithm.yml).
       sim:
-        feed: { totalfield: totalfield }
+        feed: { totalfield: totalfield, reliability: reliability }
         # Measured: NRMSE 16.71 %, r 0.9862, max |Δ| 0.283 ppm, p99 |Δ| 0.0100 ppm.
         # The original leaves 331 voxels out by its echo-fit reliability (R_0); qsmart-qsmrs takes
         # no R_0, so it reconstructs them too. The gap is mostly where the original's stage 2 runs
@@ -145,7 +145,7 @@ pairs:
           pinned: "run 40530165113: qsmxt v10.0.0 sha256:9258c10e…, NRMSE 65.94 %, r 0.8003"
       # In vivo (EMTP travelling head, KKI Philips 3 T, public). R_0 rejects no voxel here.
       s002001-kki-achieva-bridge-run1:
-        feed: { totalfield: totalfield }
+        feed: { totalfield: totalfield, reliability: reliability }
         # Measured: NRMSE 4.618 %, r 0.9990, max |Δ| 0.0640 ppm, p99 |Δ| 0.00435 ppm.
         chimap: { nrmse_max: 5.58, correlation_min: 0.988, max_abs_max: 0.0801, p99_abs_max: 0.00544 }
         measured:
