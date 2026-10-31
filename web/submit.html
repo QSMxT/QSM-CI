@@ -108,6 +108,10 @@ qsm-ci doctor            # checks you have what you need (Docker, etc.)</code></
              echo (x, y, z, echo; ppm), for methods that need a QSM per echo. Opt into it with
              <code>optional_inputs: [chimap-echoes]</code>, and fall back to <code>chimap.nii.gz</code>
              when it isn't there.</p>
+          <p>The phantom's tissue segmentation (<code>dseg.nii.gz</code>) is ground truth, so only a
+             <em>baseline</em> may read it: a method that declares <code>baseline: true</code> in
+             <code>algorithm.yml</code> can opt into it with <code>optional_inputs: [dseg]</code>. Every
+             other method is refused it.</p>
           <p><code>params.json</code> carries the scan settings your method may need:</p>
           <pre class="overflow-x-auto rounded-lg bg-gray-900 p-3 text-xs text-gray-100"><code>{ "TE": [0.004, 0.012, 0.020, 0.028],   // echo time(s), seconds
   "B0": 3.0,                            // field strength, tesla

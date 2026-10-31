@@ -59,6 +59,17 @@ def test_submission_is_wellformed(d):
         f"(algorithm={algorithm}, variant={variant}, source={source})"
     )
 
+    # Ground-truth artifacts a baseline may read (stages.yml `baseline_only`, e.g. dseg) need an
+    # explicit `baseline: true` — a boolean, so a quoted "false" can't pass as truthy.
+    if "baseline" in meta:
+        assert isinstance(meta["baseline"], bool), f"{d.name}: `baseline:` must be true or false"
+    gt_only = {n for n, a in _STAGES_YML["artifacts"].items() if a.get("baseline_only")}
+    declared = set(meta.get("inputs") or []) | set(meta.get("optional_inputs") or [])
+    assert not (declared & gt_only) or meta.get("baseline") is True, (
+        f"{d.name}: declares {sorted(declared & gt_only)}, ground truth only a `baseline: true` "
+        "method may read"
+    )
+
     # The `run:` command must reference a script that actually exists in the submission dir
     # (this is what catches a missing/renamed/typo'd run.sh — the exact class of merge-green,
     # score-DNF bug this gate exists for).

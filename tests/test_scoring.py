@@ -103,6 +103,7 @@ def test_gt_sources_mapping():
         "localfield": ds / "groundtruth" / "localfield.nii.gz",
         "chimap": ds / "groundtruth" / "chimap.nii.gz",
         "chimap-echoes": ds / "groundtruth" / "chimap-echoes.nii.gz",
+        "dseg": ds / "groundtruth" / "dseg.nii.gz",
     }
 
 
