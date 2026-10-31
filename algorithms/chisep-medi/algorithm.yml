@@ -27,11 +27,10 @@ matlab:
   entry: recon.m
   runtime: r2023b
 # Container vs the authors' code in licensed MATLAB with the real toolboxes (QSMxT/QSM-CI#300;
-# fidelity/REPORT.md). Rerun and update whenever the image changes. The record below is v2's; v3's
-# check (same harness, licensed R2023b on Bunya) is pending.
+# fidelity/REPORT.md). Rerun and update whenever the image changes.
 fidelity:
-  date: 2026-10-28
-  image: sha256:06ffc17a55223b05eb1442d9092b751b64a50e0e39320602a289b5c2ca9d2615
+  date: 2026-10-31
+  image: sha256:6cec1e895428f02b4e87cb2b744ca53fdc7146f6280882ca2785bec22a60586b
   matlab: R2023b Update 5 (23.2.0.2459199), Image Processing Toolbox 23.2, Signal Processing Toolbox 23.2
   tolerance: identical   # chi-para, chi-dia and every intermediate, phantom and in vivo, 8 threads
   result: pass
