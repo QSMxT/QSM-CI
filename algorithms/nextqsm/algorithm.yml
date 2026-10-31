@@ -27,3 +27,16 @@ code_url: https://github.com/QSMxT/nextqsm
 license: MIT
 image: ghcr.io/astewartau/qsm-ci/nextqsm@sha256:015ff4413ee0b8b2f665194b1dc722aca6523f63cf9c5ce1c2fc5ec27891a4e4   # v1
 run: bash run.sh
+# The original, checked (QSMxT/QSM-CI#301): pinned versions and weights, and the same output
+# twice at fixed threads. fidelity/dl/README.md; rerun whenever the image changes.
+fidelity:
+  date: 2026-10-28
+  image: sha256:015ff4413ee0b8b2f665194b1dc722aca6523f63cf9c5ce1c2fc5ec27891a4e4
+  source: PyPI nextqsm 1.0.6
+  weights: [zdir_calc-HR-vn-nets.weights.h5 e7c6ba36, zdir_calc-HRbf-rmse-weights.weights.h5 7963d53b]   # sha256 prefixes; full hashes in fidelity/dl/results/weights.sha256
+  python: Python 3.8.20, TensorFlow 2.13.1, NumPy 1.24.3
+  threads: 4   # OMP/MKL/OPENBLAS/TF_NUM_*_THREADS set by fidelity/dl/harness.py
+  host: Intel Core i5-11500, podman
+  tolerance: identical   # image twice, 128x160x96 box of prisma-bridge-run1
+  result: pass
+  report: fidelity/dl/README.md

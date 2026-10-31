@@ -31,3 +31,16 @@ code_url: https://github.com/SNU-LIST/QSMnet
 license: SNU-LIST academic license (LICENSE.pdf); used with author permission
 image: ghcr.io/astewartau/qsm-ci/qsmnet-plus@sha256:d63e1a6ad3f0e208c9fb45e510c715fe4669cf806c52e47814e80898a4c65ea7   # v1
 run: bash run.sh
+# The original, checked (QSMxT/QSM-CI#301): pinned versions and weights, and the same output
+# twice at fixed threads. fidelity/dl/README.md; rerun whenever the image changes.
+fidelity:
+  date: 2026-10-28
+  image: sha256:d63e1a6ad3f0e208c9fb45e510c715fe4669cf806c52e47814e80898a4c65ea7
+  source: SNU-LIST/QSMnet f8782ed (unmodified; head of master)
+  weights: [QSMnet+_64-25.data-00000-of-00001 d577e541, QSMnet+_64-25.index f6fe4bd6, QSMnet+_64-25.meta e8cc0511]   # sha256 prefixes; full hashes in fidelity/dl/results/weights.sha256
+  python: Python 3.7.17, TensorFlow 1.14.0, NumPy 1.16.4
+  threads: 4   # OMP/MKL/OPENBLAS/TF_NUM_*_THREADS set by fidelity/dl/harness.py
+  host: Intel Core i5-11500, podman
+  tolerance: identical   # image twice, 128x160x96 box of prisma-bridge-run1
+  result: pass
+  report: fidelity/dl/README.md

@@ -36,6 +36,20 @@ code_url: https://github.com/AMRI-Lab/INR-QSM
 license: none declared (no LICENSE in repo); academic use, cite the paper
 image: ghcr.io/astewartau/qsm-ci/inr-qsm@sha256:6bfe4b8b1d22b62bbcec2de57af62c872dc9008ffa1c5bd7b18fffb85785fd9a   # v2
 run: bash run.sh
+# The original, checked (QSMxT/QSM-CI#301): pinned versions and weights, and the same output
+# twice at fixed threads. fidelity/dl/README.md; rerun whenever the image changes.
+fidelity:
+  date: 2026-10-28
+  image: sha256:6bfe4b8b1d22b62bbcec2de57af62c872dc9008ffa1c5bd7b18fffb85785fd9a
+  source: AMRI-Lab/INR-QSM a8f767a (unmodified; head of main)
+  weights: [transfer_learning/pre_trained_weight_for_transfer_learning.pkl 04ed3afd]   # sha256 prefixes; full hashes in fidelity/dl/results/weights.sha256
+  python: Python 3.10.20, PyTorch 2.13.0, NumPy 2.2.6
+  threads: 4   # OMP/MKL/OPENBLAS/TF_NUM_*_THREADS set by fidelity/dl/harness.py
+  host: Intel Core i5-11500, podman
+  tolerance: run-to-run spread reported   # image twice, 32^3 box of the case
+  result: spread
+  note: "seeded (torch/NumPy 1), yet two 2-epoch runs on a 32^3 box differ by 0.017 % NRMSE (max |Δ| 1.5e-5 ppm): CPU PyTorch's run-to-run floor here"
+  report: fidelity/dl/README.md
 smoke_box: 32   # PR --smoke gate fits a 32^3 central box (fast); full score.yml run is unaffected
 # MANUAL tier: never scored automatically — dispatch score.yml with scope=inr-qsm (or
 # include_manual=true). Why: the full-size CPU optimization needs the 31 GB self-hosted box

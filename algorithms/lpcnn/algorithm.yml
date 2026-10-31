@@ -26,3 +26,17 @@ code_url: https://github.com/Sulam-Group/LPCNN
 license: none declared; used with author permission
 image: ghcr.io/astewartau/qsm-ci/lpcnn@sha256:d0878b2e361437c9f2adc86a45949344fd19b0150e474267bafb18dbb57b2b51   # v1
 run: bash run.sh
+# The original, checked (QSMxT/QSM-CI#301): pinned versions and weights, and the same output
+# twice at fixed threads. fidelity/dl/README.md; rerun whenever the image changes.
+fidelity:
+  date: 2026-10-28
+  image: sha256:d0878b2e361437c9f2adc86a45949344fd19b0150e474267bafb18dbb57b2b51
+  source: Sulam-Group/LPCNN dd1ef2b (unmodified; master's later 39b7820 adds only a uv environment)
+  weights: [lpcnn_test_Bmodel.pkl e302ea3e, lpcnn_test_Emodel.pkl eafd4277]   # sha256 prefixes; full hashes in fidelity/dl/results/weights.sha256
+  python: Python 3.13.14, PyTorch 2.13.0+cpu, NumPy 2.4.4
+  threads: 4   # OMP/MKL/OPENBLAS/TF_NUM_*_THREADS set by fidelity/dl/harness.py
+  host: Intel Core i5-11500, podman
+  tolerance: identical   # image twice, 128x160x96 box of prisma-bridge-run1
+  result: pass
+  note: "also identical against a rebuild from the pinned Dockerfile"
+  report: fidelity/dl/README.md

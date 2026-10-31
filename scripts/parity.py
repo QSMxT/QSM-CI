@@ -233,7 +233,7 @@ def _route(slugs: list, algorithms_dir: Path) -> dict:
 def plan_matrix(thresholds: dict, algorithm: str, dataset: str,
                 manifests: "dict | None" = None, datasets: "dict | None" = None,
                 algorithms_dir: Path = ROOT / "algorithms") -> list:
-    """The workflow's job matrix: one {algorithm, phantom, runs_on, timeout} per selected pair ×
+    """The workflow's job matrix: one {algorithm, phantom, runs_on, timeout, models} per selected pair ×
     dataset.
 
     `algorithm` is a selection (select_pairs). `dataset` is one or more dataset keys
@@ -264,7 +264,10 @@ def plan_matrix(thresholds: dict, algorithm: str, dataset: str,
             route = _route(side_chain(cfg, "reference", d) + side_chain(cfg, "candidate", d),
                            algorithms_dir) if manifests else {"runs_on": "ubuntu-latest",
                                                               "timeout": 360}
-            out.append({"algorithm": a, "phantom": d, **route})
+            # `qsmrs_models`: the QSM.rs side needs the ONNX weights, which a qsmxt built from
+            # source lacks; the workflow adds them (algorithms/_qsmxt/models.Dockerfile).
+            out.append({"algorithm": a, "phantom": d, **route,
+                        "models": bool(cfg.get("qsmrs_models"))})
     return out
 
 

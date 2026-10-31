@@ -34,6 +34,20 @@ license: >
   (arXiv:2406.12300). Confirm terms with the authors before redistribution.
 image: ghcr.io/astewartau/qsm-ci/ir2qsm@sha256:7df8887acc7cdfac4ea3ec845377c3d0b595975c3d240cd1ee63e826908c98ca   # v1
 run: bash run.sh
+# The original, checked (QSMxT/QSM-CI#301): pinned versions and weights, and the same output
+# twice at fixed threads. fidelity/dl/README.md; rerun whenever the image changes.
+fidelity:
+  date: 2026-10-28
+  image: sha256:7df8887acc7cdfac4ea3ec845377c3d0b595975c3d240cd1ee63e826908c98ca
+  source: YangGaoUQ/IR2QSM 1ddb147 (unmodified; head of main)
+  weights: [model_IR2Unet.pth 26e55e56]   # sha256 prefixes; full hashes in fidelity/dl/results/weights.sha256
+  python: Python 3.10.20, PyTorch 2.5.1+cpu, NumPy 2.2.6
+  threads: 4   # OMP/MKL/OPENBLAS/TF_NUM_*_THREADS set by fidelity/dl/harness.py
+  host: Intel Core i5-11500, podman
+  tolerance: identical   # image twice, 128x160x96 box of prisma-bridge-run1
+  result: pass   # identical with add_noise=false
+  note: "with the authors' inference noise on (the default), two runs differ by 12.6 % NRMSE (r 0.992): that spread is this entry's floor"
+  report: fidelity/dl/README.md
 # Notes on how QSM-CI runs this method vs. its reference (shown on the submission page).
 ci_notes:
 - >
@@ -41,4 +55,12 @@ ci_notes:
   runtime here is far longer than a GPU deployment and should not be read as the method's native speed.
 - >
   The reference injects noise at inference through a CUDA-only operation; QSM-CI patches it to run on
-  CPU, so reconstructions are mildly stochastic and can vary slightly between runs.
+  CPU, so reconstructions are mildly stochastic and can vary slightly between runs. `add_noise=false`
+  switches that noise off, for a deterministic output.
+parameters:
+  - name: add_noise
+    default: true
+    description: >
+      The decoder's inference-time noise (AddNoise, drawn with probability 0.7 per iteration), on as
+      the authors' code runs it. false makes the output deterministic; QSM.rs's ONNX export of
+      IR2QSM has it off, so the parity workflow compares the port against add_noise=false.

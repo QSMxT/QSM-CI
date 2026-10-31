@@ -31,6 +31,9 @@
 #                     tkd`: the CLI flags and defaults, the subcommand, the engine config it reads).
 #                     A commit on QSMxT main touching any of them (or `qsmxt_shared_paths`) since
 #                     the QSMxT commit last checked makes it stale (rule f). Optional.
+#   qsmrs_models:     true when the QSM.rs side runs a deep-learning model: a qsmxt built from
+#                     source has no weights (and a run no network), so parity.yml adds them with
+#                     algorithms/_qsmxt/models.Dockerfile, as the pinned -models image has them.
 #   reference_set:    `--set NAME=VALUE` overrides for the reference / candidate method (not its
 #   candidate_set:    prefix steps), at the pair level or per dataset (the dataset's win): how a
 #                     pair runs both sides with matched settings where their defaults differ (the
@@ -680,3 +683,285 @@ pairs:
         measured: { pr369: "run 41031701965: QSMxT tgv-output-box-369 43baf55 (QSMxT/QSMxT#465), QSM.rs tgv-output-box-369 40b0dcf (astewartau/QSM.rs#375) (limits)" }
         reference_prefix: [laplacian-qsmrs]
         feed: { totalfield: totalfield }
+
+  # ---- Deep-learning originals (QSMxT/QSM-CI#301; fidelity: fidelity/dl/README.md). The -qsmrs
+  # side runs QSM.rs's ONNX exports of the authors' weights; a qsmxt built from source gets them
+  # from algorithms/_qsmxt/models.Dockerfile (`qsmrs_models`). Root causes of the first-look gaps:
+  # astewartau/QSM.rs#330.
+  xqsm:
+    reference: xqsm
+    candidate: xqsm-qsmrs
+    enabled: true
+    qsmrs_models: true
+    qsmrs_paths: [src/fft.rs, src/grid.rs, src/inversion/tile_budget.rs, src/inversion/tiled.rs,
+                  src/inversion/xqsm.rs, src/models/, src/pipeline/inversion.rs,
+                  src/pipeline/rules.rs]
+    qsmxt_paths: *invert_wiring
+    datasets:
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
+        feed: { localfield: localfield }
+        # Measured: NRMSE 0.00141 %, r 1.000000, max |Δ| 2.8e-05 ppm, p99 |Δ| 2.5e-06 ppm.
+        chimap: { nrmse_max: 0.502, correlation_min: 0.989, max_abs_max: 3.54e-05, p99_abs_max: 3.11e-06 }
+        measured: { main: "run 41190020480: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
+      sim:
+        # Measured: NRMSE 0.00087 %, r 1.000000, max |Δ| 7.2e-06 ppm, p99 |Δ| 8.2e-07 ppm.
+        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 9e-06, p99_abs_max: 1.03e-06 }
+        measured: { main: "run 41190020480: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
+  qsmnet:
+    reference: qsmnet
+    candidate: qsmnet-qsmrs
+    enabled: false
+    # QSM.rs's export used leaky ReLU where the original's network_info says ReLU (χ ×1.34, 81 % /
+    # 126 % NRMSE). astewartau/QSM.rs#374 re-exports it with ReLU (0.0002 % against the original),
+    # but the file must first replace qsmnet.onnx on HF qsmxt/qsm-onnx-weights; then update
+    # algorithms/_qsmxt/models.sha256 and the HF revision in models.Dockerfile, re-baseline, enable.
+    blocked_by: astewartau/QSM.rs#374
+    qsmrs_models: true
+    qsmrs_paths: [src/fft.rs, src/grid.rs, src/inversion/qsmnet.rs, src/inversion/tile_budget.rs,
+                  src/inversion/tiled.rs, src/models/, src/pipeline/inversion.rs,
+                  src/pipeline/rules.rs]
+    qsmxt_paths: *invert_wiring
+    # Sim only: on the KKI head the original's TensorFlow graph runs out of memory on a hosted
+    # runner (std::bad_alloc, run 41190020480).
+    datasets:
+      sim: {}
+  qsmnet-plus:
+    reference: qsmnet-plus
+    candidate: qsmnet-plus-qsmrs
+    enabled: true
+    qsmrs_models: true
+    qsmrs_paths: [src/fft.rs, src/grid.rs, src/inversion/qsmnet.rs, src/inversion/tile_budget.rs,
+                  src/inversion/tiled.rs, src/models/, src/pipeline/inversion.rs,
+                  src/pipeline/rules.rs]
+    qsmxt_paths: *invert_wiring
+    # Sim only: on the KKI head the original's TensorFlow graph runs out of memory on a hosted
+    # runner (std::bad_alloc, run 41190020480).
+    datasets:
+      sim:
+        # Measured: NRMSE 0.00021 %, r 1.000000, max |Δ| 2e-06 ppm, p99 |Δ| 1.5e-07 ppm.
+        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 2.46e-06, p99_abs_max: 1e-06 }
+        measured: { main: "run 41190020480: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
+  lpcnn:
+    reference: lpcnn
+    candidate: lpcnn-qsmrs
+    enabled: true
+    qsmrs_models: true
+    qsmrs_paths: [src/fft.rs, src/grid.rs, src/inversion/lpcnn.rs, src/inversion/tile_budget.rs,
+                  src/inversion/tiled.rs, src/models/, src/pipeline/inversion.rs,
+                  src/pipeline/rules.rs]
+    qsmxt_paths: *invert_wiring
+    datasets:
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
+        feed: { localfield: localfield }
+        # Measured: NRMSE 0.00765 %, r 1.000000, max |Δ| 2.7e-05 ppm, p99 |Δ| 7.4e-06 ppm.
+        chimap: { nrmse_max: 0.509, correlation_min: 0.989, max_abs_max: 3.39e-05, p99_abs_max: 9.28e-06 }
+        measured: { main: "run 41190020480: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
+      sim:
+        # Measured: NRMSE 3.9e-05 %, r 1.000000, max |Δ| 8.3e-07 ppm, p99 |Δ| 3e-08 ppm.
+        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.05e-06, p99_abs_max: 1e-06 }
+        measured: { main: "run 41190020480: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
+  qsmgan:
+    reference: qsmgan
+    candidate: qsmgan-qsmrs
+    enabled: true
+    qsmrs_models: true
+    qsmrs_paths: [src/fft.rs, src/grid.rs, src/inversion/qsmgan.rs, src/inversion/tile_budget.rs,
+                  src/inversion/tiled.rs, src/models/, src/pipeline/inversion.rs,
+                  src/pipeline/rules.rs]
+    qsmxt_paths: *invert_wiring
+    datasets:
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
+        feed: { localfield: localfield }
+        # Measured: NRMSE 9.4e-05 %, r 1.000000, max |Δ| 1.5e-07 ppm, p99 |Δ| 3.7e-08 ppm.
+        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1e-06, p99_abs_max: 1e-06 }
+        measured: { main: "run 41190020480: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
+      sim:
+        # Measured: NRMSE 0.00564 %, r 1.000000, max |Δ| 0.00059 ppm, p99 |Δ| 3.2e-08 ppm.
+        chimap: { nrmse_max: 0.507, correlation_min: 0.989, max_abs_max: 0.00074, p99_abs_max: 1e-06 }
+        measured: { main: "run 41190020480: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
+  modl-qsm:
+    reference: modl-qsm
+    candidate: modl-qsm-qsmrs
+    enabled: true
+    # The first look's 1.5–3.8 % was the reference wrapper writing χ through the mask's uint8
+    # header (fixed in QSMxT/QSM-CI#331); with float32 output the port is 0.0002 %. Two more wrapper
+    # bugs, fixed here: χ was padded back at the end where model_test had cropped slice 0 of an odd
+    # axis (sim 63 % → 0.014 %), and a float32 header zoom of 0.99999994 sent model_test down its
+    # resampling branch, which feeds the network an all-ones mask (KKI 15 % → 6e-5 %). What is left
+    # on sim is likely the odd grid itself: the original crops it to even, QSM.rs does not.
+    qsmrs_models: true
+    qsmrs_paths: [src/fft.rs, src/grid.rs, src/inversion/modl_qsm.rs, src/inversion/tile_budget.rs,
+                  src/inversion/tiled.rs, src/models/, src/pipeline/inversion.rs,
+                  src/pipeline/rules.rs]
+    qsmxt_paths: *invert_wiring
+    datasets:
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
+        feed: { localfield: localfield }
+        # Measured: NRMSE 5.9e-05 %, r 1.000000, max |Δ| 5.4e-07 ppm, p99 |Δ| 5.2e-08 ppm.
+        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1e-06, p99_abs_max: 1e-06 }
+        measured: { main: "run 41192494905: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
+      sim:
+        # Measured: NRMSE 0.0141 %, r 1.000000, max |Δ| 4.8e-05 ppm, p99 |Δ| 9.1e-06 ppm.
+        chimap: { nrmse_max: 0.516, correlation_min: 0.989, max_abs_max: 5.99e-05, p99_abs_max: 1.14e-05 }
+        measured: { main: "run 41191323183: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
+  ir2qsm:
+    reference: ir2qsm
+    candidate: ir2qsm-qsmrs
+    enabled: true
+    # The authors' default adds noise in the decoder at inference; QSM.rs's export is the
+    # noise-free branch, so the reference runs with it off.
+    reference_set: { add_noise: "false" }
+    qsmrs_models: true
+    qsmrs_paths: [src/fft.rs, src/grid.rs, src/inversion/ir2qsm.rs, src/inversion/tile_budget.rs,
+                  src/inversion/tiled.rs, src/models/, src/pipeline/inversion.rs,
+                  src/pipeline/rules.rs]
+    qsmxt_paths: *invert_wiring
+    datasets:
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
+        feed: { localfield: localfield }
+        # Measured: NRMSE 0.00105 %, r 1.000000, max |Δ| 2.3e-05 ppm, p99 |Δ| 1.3e-06 ppm.
+        chimap: { nrmse_max: 0.502, correlation_min: 0.989, max_abs_max: 2.88e-05, p99_abs_max: 1.6e-06 }
+        measured: { main: "run 41190020480: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
+      sim:
+        # Measured: NRMSE 0.0005 %, r 1.000000, max |Δ| 9.4e-06 ppm, p99 |Δ| 4.1e-07 ppm.
+        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.18e-05, p99_abs_max: 1e-06 }
+        measured: { main: "run 41190020480: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
+  autoqsm:
+    reference: autoqsm
+    candidate: autoqsm-qsmrs
+    enabled: true
+    qsmrs_models: true
+    qsmrs_paths: [src/fft.rs, src/grid.rs, src/inversion/autoqsm.rs, src/inversion/tile_budget.rs,
+                  src/inversion/tiled.rs, src/models/, src/pipeline/inversion.rs,
+                  src/pipeline/rules.rs]
+    qsmxt_paths: *invert_wiring
+    datasets:
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs]
+        feed: { totalfield: totalfield }
+        # Measured: NRMSE 0.00011 %, r 1.000000, max |Δ| 3.5e-07 ppm, p99 |Δ| 8.9e-08 ppm.
+        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1e-06, p99_abs_max: 1e-06 }
+        measured: { main: "run 41190020480: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
+      sim:
+        # Measured: NRMSE 0.00014 %, r 1.000000, max |Δ| 2.8e-07 ppm, p99 |Δ| 8.6e-08 ppm.
+        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1e-06, p99_abs_max: 1e-06 }
+        measured: { main: "run 41190020480: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
+  nextqsm:
+    reference: nextqsm
+    candidate: nextqsm-qsmrs
+    enabled: true
+    # astewartau/QSM.rs#367 pads odd axes as the package does (70.6 % → 0.038 % on an odd box).
+    # The package itself moves by ~0.1 % between CPUs (the regulariser's sign(VarNet(x)) flips
+    # near-zero voxels), which is what is left here: sim 0.016 %, KKI 0.10 % (max |Δ| 0.008 ppm).
+    # Enabled at that level (Ashley, 2026-10-31); max/p99 have ~10× headroom over one runner's
+    # measurement for that CPU spread, as for tgv.
+    qsmrs_models: true
+    qsmrs_paths: [src/fft.rs, src/grid.rs, src/inversion/nextqsm.rs, src/inversion/tile_budget.rs,
+                  src/inversion/tiled.rs, src/models/, src/pipeline/inversion.rs,
+                  src/pipeline/rules.rs]
+    qsmxt_paths: *invert_wiring
+    datasets:
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs]
+        feed: { totalfield: totalfield }
+        # Measured: NRMSE 0.103 %, r 0.999999, max |Δ| 0.0083 ppm, p99 |Δ| 7.2e-05 ppm.
+        chimap: { nrmse_max: 0.613, correlation_min: 0.989, max_abs_max: 0.083, p99_abs_max: 7.2e-04 }
+        measured: { main: "run 41190020480: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
+      sim:
+        # Measured: NRMSE 0.0163 %, r 1.000000, max |Δ| 0.00035 ppm, p99 |Δ| 1.6e-05 ppm.
+        chimap: { nrmse_max: 0.518, correlation_min: 0.989, max_abs_max: 0.0035, p99_abs_max: 1.6e-04 }
+        measured: { main: "run 41190020480: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
+  bfrnet:
+    reference: bfrnet
+    candidate: bfrnet-qsmrs
+    enabled: true
+    # Both run the same ONNX file; the original's wrapper tiles volumes over 128³ to save memory,
+    # QSM.rs runs the whole volume, so the reference runs untiled.
+    reference_set: { patch_size: 0 }
+    qsmrs_models: true
+    qsmrs_paths: [src/bgremove/bfrnet.rs, src/fft.rs, src/grid.rs, src/inversion/tile_budget.rs,
+                  src/inversion/tiled.rs, src/models/, src/pipeline/bg_removal.rs,
+                  src/pipeline/inversion.rs, src/pipeline/rules.rs]
+    qsmxt_paths: *bgremove_wiring
+    datasets:
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs]
+        feed: { totalfield: totalfield }
+        # Measured: NRMSE 0.00016 %, r 1.000000, max |Δ| 2.5e-07 ppm, p99 |Δ| 5.2e-08 ppm.
+        localfield: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1e-06, p99_abs_max: 1e-06 }
+        measured: { main: "run 41190020480: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
+      sim:
+        # Measured: NRMSE 0.00022 %, r 1.000000, max |Δ| 1.1e-06 ppm, p99 |Δ| 4.5e-08 ppm.
+        localfield: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.33e-06, p99_abs_max: 1e-06 }
+        measured: { main: "run 41190020480: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
+  chisepnet:
+    reference: chisepnet
+    candidate: chisepnet-qsmrs
+    enabled: true
+    # Both clip negative χ+ and |χ−| to 0, as the authors' test.py does (QSMxT/QSM-CI#333); the
+    # hosted chi-sepnet.onnx equals the toolbox's 240904_xsepnet.onnx.
+    qsmrs_models: true
+    qsmrs_paths: [src/geometry.rs, src/grid.rs, src/models/, src/pipeline/rules.rs,
+                  src/pipeline/separation.rs, src/separation/chisepnet.rs, src/separation/mod.rs,
+                  src/utils/sliding.rs]
+    qsmxt_paths: *separate_wiring
+    datasets:
+      chisep-mc:
+        # Measured: NRMSE 2.8e-05 %, r 1.000000, max |Δ| 1.5e-07 ppm, p99 |Δ| 3.4e-08 ppm.
+        chi-para: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1e-06, p99_abs_max: 1e-06 }
+        # Measured: NRMSE 2.6e-05 %, r 1.000000, max |Δ| 9.7e-08 ppm, p99 |Δ| 2.6e-08 ppm.
+        chi-dia: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1e-06, p99_abs_max: 1e-06 }
+        measured: { main: "run 41190020480: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
+  susep-net:
+    reference: susep-net
+    candidate: susep-net-qsmrs
+    enabled: true
+    qsmrs_models: true
+    qsmrs_paths: [src/geometry.rs, src/grid.rs, src/models/, src/pipeline/rules.rs,
+                  src/pipeline/separation.rs, src/separation/chisepnet.rs, src/separation/mod.rs,
+                  src/separation/susep_net.rs, src/utils/sliding.rs]
+    qsmxt_paths: *separate_wiring
+    datasets:
+      chisep-mc:
+        # Measured: NRMSE 2.4e-05 %, r 1.000000, max |Δ| 1.3e-07 ppm, p99 |Δ| 2.2e-08 ppm.
+        chi-para: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1e-06, p99_abs_max: 1e-06 }
+        # Measured: NRMSE 2.3e-05 %, r 1.000000, max |Δ| 1.2e-07 ppm, p99 |Δ| 1.9e-08 ppm.
+        chi-dia: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1e-06, p99_abs_max: 1e-06 }
+        measured: { main: "run 41190020480: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
+  hd-bet:
+    reference: hd-bet-qsmci
+    candidate: hd-bet-qsmrs
+    enabled: true
+    # The original's sliding window (QSM.rs's default is the whole volume, which differs at Dice
+    # 0.989); no test-time augmentation on either side. The echoes are combined by root-sum-of-
+    # squares on both sides (qsmxt after v10.0.0).
+    candidate_set: { window: "true" }
+    qsmrs_models: true
+    qsmrs_paths: [src/bet/hdbet.rs, src/bet/mod.rs, src/grid.rs, src/io.rs, src/models/,
+                  src/pipeline/masking.rs, src/pipeline/rules.rs, src/utils/morphology.rs,
+                  src/utils/resample.rs]
+    qsmxt_paths: [src/cli.rs, src/commands/common.rs, src/commands/mask.rs]
+    datasets:
+      s002001-kki-achieva-bridge-run1:
+        # Measured: Dice 1.000000.
+        mask: { dice_min: 0.99 }
+        measured: { main: "run 41190020480: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
+  # No pair yet: iQSM, iQSM+, iQFM and R2PRIMEnet have no -qsmrs entry, because qsmxt exposes them
+  # only through `qsmxt run` (QSMxT subcommands needed). Per echo the ports match the networks to
+  # float32 rounding (astewartau/QSM.rs#330). The echo combination differs by design (3.0–3.4 % with
+  # two echoes), and the authors' own code is not consistent (checked 2026-10-31, sunhongfu/iQSM
+  # 81f5462, sunhongfu/iQSM_Plus 3ba25f5):
+  #   - iQSM and iQFM in MATLAB: echofit(TE·χ, mag, TE), i.e. weights mag·TE² (iQSM
+  #     legacy/matlab/demo_multi_echo.m:155-160 with iQSM_fcns/echofit.m; iQSM_Plus
+  #     legacy/matlab/iQSM.m:262-267, legacy/matlab/iQFM.m:265-270, iQFM_multi_echo.m). QSM.rs's choice.
+  #   - iQSM+ in MATLAB: weights (mag·TE)² (iQSM_Plus legacy/matlab/iQSM_plus.m:273-275).
+  #   - Every Python driver: (mag·TE)² (iQSM run.py:170, app.py:416; iQSM_Plus run.py:199,
+  #     app.py:415), although each prints "Magnitude × TE² weighted averaging". QSM-CI's iqsm,
+  #     iqsm-plus and iqfm entries run these.
+  # So mag·TE² is the authors' MATLAB for iQSM/iQFM, but their iQSM+ (both languages) uses
+  # (mag·TE)². When these pairs exist, compare per echo, or match the reference's weighting.

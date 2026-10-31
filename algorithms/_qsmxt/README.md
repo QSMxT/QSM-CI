@@ -13,3 +13,15 @@ Each submission pins its own image in `image:` by digest (with the tag as a comm
 methods keep running against the release they were scored on. Build a new tag when a submission needs
 a QSMxT version that is not published yet, and push it before the submission merges, since the run
 phase has no network.
+
+## With the deep-learning weights (`models.Dockerfile`)
+
+The QSM.rs ports of the deep-learning models (`xqsm-qsmrs`, `hd-bet-qsmrs`, ...) need qsmxt's ONNX
+weights, which qsmxt would download on first use; the run has no network. `models.Dockerfile` adds
+them to a qsmxt image at `/opt/qsm-models` (`$QSM_MODEL_DIR`), fetched from `qsmxt/qsm-onnx-weights`
+at a pinned commit and checked against `models.sha256` (QSM.rs's registry hashes):
+
+    docker build -f models.Dockerfile -t ghcr.io/astewartau/qsm-ci/qsmxt:v10.0.0-models .
+    docker build -f models.Dockerfile --build-arg BASE=<any qsmxt image> -t <tag> .   # e.g. a source build
+
+`v10.0.0-models` is `sha256:4327e61dec101830cd9620049ea216939ea9bbb235e26688d198d90481c6f7df`.

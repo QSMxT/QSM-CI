@@ -1,0 +1,32 @@
+name: SUSEP-Net (QSM.rs)
+slug: susep-net-qsmrs
+algorithm: susep-net
+source: qsmrs
+stage: chi-separation
+language: Rust
+family: deep-learning
+learning: pretrained
+inputs: [localfield, chimap, r2prime, mask, params]
+engine: QSMxT / QSM.rs
+description: >
+  SUSEP-Net as QSM.rs runs it: the authors' trained weights exported to ONNX and run by `qsmxt
+  separate susep-net` (QSM.rs's ONNX engine, CPU). The QSM.rs port of the `susep-net` entry, which
+  runs the authors' own code and weights.
+authors:
+- name: Zhenghao Li
+- name: Chunlei Liu
+- name: Hongfu Sun
+- name: Yang Gao
+- name: Ashley Stewart
+  note: QSM.rs / QSMxT ONNX port
+doi: 10.48550/arXiv.2506.13293
+citation: 'Li, Gao, Sun et al., "SUSEP-Net: simulation-supervised contrastive learning for susceptibility
+  source separation via a sub-voxel QSM network", arXiv:2506.13293, 2025.
+
+  '
+code_url: https://github.com/astewartau/QSM.rs
+license: 'MIT (QSM.rs); the weights keep the original''s terms: academic use'
+# The weights are QSM.rs's ONNX exports (qsmxt/qsm-onnx-weights), baked into the image with
+# algorithms/_qsmxt/models.Dockerfile, since a submission runs with no network.
+image: ghcr.io/astewartau/qsm-ci/qsmxt@sha256:4327e61dec101830cd9620049ea216939ea9bbb235e26688d198d90481c6f7df   # v10.0.0-models
+run: bash run.sh

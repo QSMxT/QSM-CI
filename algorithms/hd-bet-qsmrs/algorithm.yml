@@ -1,0 +1,33 @@
+name: HD-BET (QSM.rs)
+slug: hd-bet-qsmrs
+algorithm: hd-bet
+source: qsmrs
+stage: brain-extraction
+language: Rust
+family: direct
+learning: supervised
+inputs: [magnitude]
+engine: QSMxT / QSM.rs
+description: >
+  HD-BET as QSM.rs runs it: the authors' trained weights exported to ONNX and run by `qsmxt mask hd-
+  bet` (QSM.rs's ONNX engine, CPU). The QSM.rs port of the `hd-bet-qsmci` entry, which runs the
+  authors' own code and weights.
+authors:
+- name: Isensee et al.
+  affiliation: DKFZ
+- name: Ashley Stewart
+  note: QSM.rs / QSMxT ONNX port
+doi: 10.1002/hbm.24750
+citation: Isensee et al., Hum Brain Mapp 2019
+code_url: https://github.com/astewartau/QSM.rs
+license: 'MIT (QSM.rs); the weights keep the original''s terms: Apache-2.0'
+# The weights are QSM.rs's ONNX exports (qsmxt/qsm-onnx-weights), baked into the image with
+# algorithms/_qsmxt/models.Dockerfile, since a submission runs with no network.
+image: ghcr.io/astewartau/qsm-ci/qsmxt@sha256:4327e61dec101830cd9620049ea216939ea9bbb235e26688d198d90481c6f7df   # v10.0.0-models
+run: bash run.sh
+parameters:
+  - name: window
+    default: false
+    description: >
+      HD-BET's own sliding window (192x192x96 patches, step 0.5) instead of QSM.rs's whole-volume
+      default; the original's way, which the hd-bet parity pair runs

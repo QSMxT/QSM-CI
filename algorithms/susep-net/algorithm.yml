@@ -26,6 +26,20 @@ code_url: https://github.com/YangGaoUQ/SUSEP-Net
 license: academic use
 image: ghcr.io/astewartau/qsm-ci/susep-net@sha256:b4d175563f6b32f84b3af163a1ac5975cc8397393457c2ef83367db11056d975   # v1
 run: bash run.sh
+# The original, checked (QSMxT/QSM-CI#301): pinned versions and weights, and the same output
+# twice at fixed threads. fidelity/dl/README.md; rerun whenever the image changes.
+fidelity:
+  date: 2026-10-28
+  image: sha256:b4d175563f6b32f84b3af163a1ac5975cc8397393457c2ef83367db11056d975
+  source: YangGaoUQ/SUSEP-Net SUSEPNet.pth
+  weights: [SUSEPNet.pth b956a15d]   # sha256 prefixes; full hashes in fidelity/dl/results/weights.sha256
+  python: Python 3.10.20, PyTorch 2.5.1+cpu, NumPy 2.2.6
+  threads: 4   # OMP/MKL/OPENBLAS/TF_NUM_*_THREADS set by fidelity/dl/harness.py
+  host: Intel Core i5-11500, podman
+  tolerance: identical   # image twice, 128x160x96 box of prisma-bridge-run1
+  result: pass
+  note: "identical on the 128x160x96 box; on a 64^3 box two runs differ by 2e-5 % NRMSE (max |Δ| 2e-7 ppm), since recon.py sets PyTorch to every CPU (torch.set_num_threads(os.cpu_count())), not the fixed count"
+  report: fidelity/dl/README.md
 runner: highmem
 # Produces two source maps: chi-para (χ+) and chi-dia (χ−). Weights (SUSEPNet.pth, from the authors'
 # public Google-Drive release) + norm stats are not committed; the image bundles them. Runs via
