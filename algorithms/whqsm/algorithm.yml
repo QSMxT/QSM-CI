@@ -1,0 +1,68 @@
+name: WH-QSM (FANSI toolbox)
+slug: whqsm
+algorithm: whqsm
+source: fansi   # the authors' FANSI toolbox; pairs with whqsm-qsmrs (QSM.rs's port) in the parity workflow
+stage: dipole
+language: MATLAB
+family: iterative
+learning: none
+engine: FANSI toolbox 93044a3 (WH_nlTV.m)
+inputs: [localfield, mask, params]
+description: >
+  Weak-Harmonic QSM: nonlinear TV inversion that jointly estimates a residual harmonic background
+  field, the authors' WH_nlTV.m from the FANSI toolbox (commit 93044a3) with its own defaults,
+  compiled from MATLAB and run on the license-free MATLAB Runtime.
+citation: Milovic et al., Magn Reson Med 2019
+authors:
+- name: Carlos Milovic
+- name: Berkin Bilgic
+- name: Bo Zhao
+- name: Christian Langkammer
+- name: Cristian Tejos
+- name: Julio Acosta-Cabronero
+doi: 10.1002/mrm.27483
+code_url: https://gitlab.com/cmilovic/FANSI-toolbox
+license: "No license file; author toolbox distribution"
+image: ghcr.io/astewartau/qsm-ci/wh-qsm@sha256:f0e2678680d195b13a2de71b180b3177171a2a79840c134f68310cb665fca451   # v2
+run: bash run.sh
+smoke_box: 32
+matlab:
+  entry: recon.m
+  runtime: r2023b
+# Container vs the authors' code in licensed MATLAB with the real toolboxes (QSMxT/QSM-CI#300;
+# fidelity/REPORT.md). Rerun and update whenever the image changes.
+fidelity:
+  date: 2026-10-30
+  image: sha256:f0e2678680d195b13a2de71b180b3177171a2a79840c134f68310cb665fca451   # v2
+  matlab: R2023b Update 5 (23.2.0.2459199)
+  sources: FANSI-toolbox 93044a3
+  tolerance: identical   # chi and every intermediate, in silico and in vivo, 8 threads
+  result: pass
+  report: algorithms/whqsm/fidelity/REPORT.md
+# WH_nlTV.m's own defaults where it has them; the field is scaled to radians at the first echo time, as QSM.rs's
+# port does by default. See BUILD.md and recon.m.
+parameters:
+- name: alpha1
+  default: 0.0002
+  description: gradient L1 (TV) penalty (no default in WH_nlTV.m; FANSI's demos use 2e-4)
+- name: mu1
+  default: 100*alpha1
+  description: gradient-consistency ADMM weight
+- name: mu2
+  default: 1
+  description: fidelity-consistency ADMM weight
+- name: beta
+  default: 150
+  description: harmonic-constraint weight
+- name: muh
+  default: 5
+  description: harmonic ADMM weight
+- name: max_iter
+  default: 150
+  description: maximum ADMM iterations
+- name: tol_update
+  default: 0.1
+  description: stop when the relative update (%) falls below this
+- name: tol_delta
+  default: 1e-06
+  description: Newton tolerance of the nonlinear data step
