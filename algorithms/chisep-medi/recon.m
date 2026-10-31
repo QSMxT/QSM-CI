@@ -4,7 +4,8 @@ function recon(inp, out)
 % magnitude, runs chi_sep_MEDI, writes /output/chi-para.nii.gz (χ+) and chi-dia.nii.gz (χ−, |χ−|).
 % Same input contract as the iLSQR submission; the difference is the MEDI (morphology-enabled dipole)
 % regulariser instead of iLSQR. CSF referencing is off: the stage contract provides no CSF mask, so
-% mask_CSF is empty, as in the toolbox GUI without one.
+% mask_CSF is empty, as in the toolbox GUI without one. N_std is MEDI Fit_ppm_complex's noise map
+% from the multi-echo magnitude, as the toolbox computes it, and there is no wall-clock limit.
 %
 % Bundled at build time (BUILD.md): Jimmy Shen NIfTI toolbox, the Cornell MEDI toolbox (2024.11.26),
 % the χ-separation toolbox (pcode), and the real Image Processing and Signal Processing toolbox
@@ -13,7 +14,7 @@ function recon(inp, out)
 %
 % Optional intermediates (fidelity checks, ../../fidelity/matlab/README.md): set QSMCI_INTERMEDIATES
 % to a directory, or to 1 for <out>/intermediates. recon then also writes, in float64: the local
-% field in Hz and chi_sep_MEDI's third output, plus intermediates.json (MATLAB version, thread count,
+% field in Hz, N_std and chi_sep_MEDI's third output, plus intermediates.json (MATLAB version, thread count,
 % and where each toolbox function resolved). Unset (the default), nothing changes.
 
 % Toolbox functions the pcode calls, which mcc can't trace into: name them so they are bundled.
@@ -45,9 +46,19 @@ function recon(inp, out)
     if isfield(cfg, 'lambda'); lambda = cfg.lambda; else; lambda = 1; end
 
     local_field_hz = localfield * 1e-6 * CF;        % ppm -> Hz
-    N_std = ones(size(mask));
+    % Noise map: MEDI Fit_ppm_complex's a-priori error of the fitted frequency, dp1 =
+    % sqrt(S0 / (S0*S2 - S1^2)) with S_j = sum_k |M_k|^2 k^j over echoes k = 0..n-1. It depends on
+    % the magnitude only, so no phase is needed. The toolbox computes N_std this way in both of its
+    % routes: Chisep_script.m (Preprocessing4Phase) and the GUI, which calls chi_sep_MEDI with it
+    % from the multi-echo magnitude, zero outside the brain mask (probed; fidelity/REPORT.md).
+    [~, N_std] = Fit_ppm_complex(mag4);
+    N_std = N_std .* mask;
     params.b0_dir = b0d; params.CF = CF; params.voxel_size = vox;
     params.lambda = lambda; params.lambda_CSF = 1;    % the GUI's value; unused with no CSF mask
+    % No wall-clock limit: the toolbox stops iterating after params.time_limit seconds (default
+    % 1800), which makes results depend on the runner's speed. Inf lets the solver's own stopping
+    % rules (tolerance, max_iter) decide.
+    params.time_limit = Inf;
     option_data.qsm = qsm; option_data.N_std = N_std;
     % No CSF mask in the stage contract: pass it empty, as the toolbox's own GUI does when it has
     % none (WrapperChisepMEDI). chi_sep_MEDI applies its CSF term whenever mask_CSF is non-empty; an
@@ -60,6 +71,7 @@ function recon(inp, out)
     idir = intermediates_dir(out);
     if ~isempty(idir)
         write_intermediate(mn, local_field_hz, fullfile(idir, 'local_field_hz.nii.gz'));
+        write_intermediate(mn, N_std, fullfile(idir, 'n_std.nii.gz'));
         write_intermediate(mn, x_tot, fullfile(idir, 'x_tot.nii.gz'));
         write_meta(idir, struct());
     end

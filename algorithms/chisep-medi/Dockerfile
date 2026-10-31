@@ -1,7 +1,7 @@
 # MCR image for the compiled chisep-medi submission. Build the `recon` binary first (BUILD.md: licensed
 # MATLAB R2023b + MATLAB Compiler, against the real Image Processing and Signal Processing
 # toolboxes), then:
-#   podman build -t ghcr.io/astewartau/qsm-ci/chi-sep-medi:v2 .
+#   podman build -t ghcr.io/astewartau/qsm-ci/chi-sep-medi:v4 .
 # The χ-separation toolbox, its solver's dependencies and the toolbox functions they call are baked
 # into `recon` at compile time; the image only needs the MATLAB Runtime of the compiling release,
 # which includes the toolboxes' runtime components. CI never builds this file; it pulls `image:`
