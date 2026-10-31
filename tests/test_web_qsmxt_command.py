@@ -62,14 +62,16 @@ def commands():
     singles = {a["slug"]: [a["slug"]] for a in by_slug.values()}
     script = (
         f"import {{ qsmxtCommand }} from {json.dumps(MODULE.as_uri())};\n"
-        "const { bySlug, cases } = JSON.parse(process.argv[1]);\n"
+        "import { readFileSync } from 'node:fs';\n"
+        "const { bySlug, cases } = JSON.parse(readFileSync(0, 'utf8'));\n"
         "const out = {};\n"
         "for (const [k, steps] of Object.entries(cases)) out[k] = qsmxtCommand(steps, bySlug);\n"
         "console.log(JSON.stringify(out));\n"
     )
     payload = json.dumps({"bySlug": by_slug, "cases": {**{f"single:{k}": v for k, v in singles.items()},
                                                       **PIPELINES}})
-    res = subprocess.run([node, "--input-type=module", "-e", script, payload],
+    # On stdin: one argv string is capped at 128 KiB (MAX_ARG_STRLEN), which the manifest outgrew.
+    res = subprocess.run([node, "--input-type=module", "-e", script], input=payload,
                          capture_output=True, text=True, check=True)
     return json.loads(res.stdout), by_slug
 
