@@ -74,7 +74,11 @@ voxel_size = _vec("QSMCI_VOXEL_SIZE", "voxel_size", [1.0, 1.0, 1.0])
 b0_dir = _vec("QSMCI_B0_DIR", "B0_dir", [0.0, 0.0, 1.0])
 
 # Prefer the affine-derived voxel size when params omits it / disagrees, matching the NIfTI grid.
-hdr_zooms = [float(z) for z in localfield_nii.header.get_zooms()[:3]]
+# Rounded to 1e-4 mm: a header stores float32 zooms, so a 1 mm axis can read 0.99999994, and
+# model_test compares voxel_size with 1 exactly. Off by that much it takes its resampling branch,
+# which also feeds the network an all-ones mask instead of the brain mask (15 % NRMSE on the KKI
+# head, whose params.json says 1.0).
+hdr_zooms = [round(float(z), 4) for z in localfield_nii.header.get_zooms()[:3]]
 if hdr_zooms and all(z > 0 for z in hdr_zooms):
     voxel_size = hdr_zooms
 
