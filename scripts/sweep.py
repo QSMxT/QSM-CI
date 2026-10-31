@@ -72,9 +72,9 @@ GRIDS: dict[str, dict[str, list]] = {
     # iharperella-qsmrs: no radius knob (qsmxt v10 removed --iharperella-radius; it never reached
     # the algorithm), so it is not swept.
     # --- chi-separation (iterative only; run with --dataset data/sim/chisep) ---
-    # wavesep: wavelet-L1 sparsity weight (primary knob) x proximal-gradient step. Dr is left at the
-    # phantom's known kernel (137) — sweeping a physical constant on the phantom that defines it is
-    # circular, and it's exposed for callers who want it. max_iter (convergence) held at default.
+    # wavesep: wavelet-L1 sparsity weight (primary knob) x proximal-gradient step. Dr is left at its
+    # published default (137·B0/2.9) — sweeping a physical constant against the phantom that defines
+    # it is circular, and it's exposed for callers who want it. max_iter (convergence) held at default.
     "wavesep":       {"lambda": [0.005, 0.01, 0.02, 0.04, 0.08], "alpha": [0.1, 0.2, 0.4]},
     # chi-sep-medi: MEDI data-fidelity/morphology regularisation weight (params.lambda).
     "chisep-medi":  {"lambda": [0.1, 0.3, 1.0, 3.0, 10.0]},

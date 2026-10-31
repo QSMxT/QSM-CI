@@ -500,6 +500,103 @@ def test_run_side_sets_only_the_pairs_own_method(tmp_path, monkeypatch):
     assert prov["steps"][1]["set"] == {"threshold": 0.2} and "set" not in prov["steps"][0]
 
 
+def _qsmart_ds(tmp_path):
+    ds = tmp_path / "ds"
+    _save(ds / "inputs" / "mask.nii.gz", np.ones((4, 4, 4)))
+    _save(ds / "inputs" / "phase.nii.gz", np.zeros((4, 4, 4, 2)))
+    _save(ds / "inputs" / "magnitude.nii.gz", np.ones((4, 4, 4, 2)))
+    _save(ds / "groundtruth" / "totalfield.nii.gz", np.zeros((4, 4, 4)))
+    (ds / "inputs" / "params.json").write_text(json.dumps(
+        {"TE": [0.004, 0.008], "B0": 3, "B0_dir": [0, 0, 1], "voxel_size": [1, 1, 1]}))
+    return ds
+
+
+def test_qsmart_pair_feeds_the_originals_reliability(tmp_path, monkeypatch):
+    """`feed: {reliability: reliability}`: the original's own R_0 (written as `R_0`, compared as
+    `reliability`) reaches qsmart-qsmrs as `--reliability`, next to the fed total field."""
+    import argparse
+    import subprocess as sp
+    calls = []
+    r0 = np.zeros((4, 4, 4))
+    r0[1:3, 1:3, 1:3] = 1
+
+    def fake(argv, env=None, check=False, **kw):
+        if argv[:2] == ["qsm-ci", "run"]:
+            calls.append(argv)
+            out = Path(argv[argv.index("-o") + 1])
+            _save(out, np.zeros((4, 4, 4)))
+            if argv[2].endswith("qsmart-matlab"):
+                inter = Path(argv[argv.index("--intermediates") + 1])
+                _save(inter / "tfs.nii.gz", np.full((4, 4, 4), 0.5))
+                _save(inter / "R_0.nii.gz", r0)
+        return sp.CompletedProcess(argv, 1, "", "")
+
+    monkeypatch.setattr(parity.subprocess, "run", fake)
+    for ds_key in ("sim", "s002001-kki-achieva-bridge-run1"):
+        calls.clear()
+        work = tmp_path / ds_key
+        args = argparse.Namespace(thresholds=parity.THRESHOLDS, algorithm="qsmart", phantom=ds_key,
+                                  dataset=str(_qsmart_ds(tmp_path / ds_key)), work=str(work),
+                                  runner="docker", qsmrs_image="")
+        assert parity.cmd_run(args) == 0
+        cand = calls[-1]
+        assert cand[2].endswith("qsmart-qsmrs")
+        rel = Path(cand[cand.index("--reliability") + 1])
+        assert rel.name == "reliability.nii.gz"
+        assert np.array_equal(nib.load(str(rel)).get_fdata(), r0)
+        tf = Path(cand[cand.index("--totalfield") + 1])
+        assert np.allclose(nib.load(str(tf)).get_fdata(), 0.5)   # the original's, not the dataset's
+        prov = json.loads((work / "candidate" / "provenance.json").read_text())
+        assert prov["steps"][0]["fed"] == ["reliability", "totalfield"]
+
+
+def test_reliability_is_mounted_only_when_fed(tmp_path, monkeypatch):
+    """Scoring and an unfed parity side never pass R_0: no dataset ships it, and it is optional."""
+    import pipeline
+    from scoring import cli_run_argv, gt_sources
+    from qsm_ci.stages import ARTIFACT_FILE
+    ds = _qsmart_ds(tmp_path)
+    algo = parity._algo("qsmart-qsmrs")
+    assert "reliability" in algo["consumes"] and "reliability" in algo["optional"]
+    idir = tmp_path / "in"
+    pipeline.prepare_input(algo["consumes"], gt_sources(ds), idir, algo["optional"])
+    assert not (idir / "reliability.nii.gz").exists()
+    assert "--reliability" not in cli_run_argv(algo, idir, tmp_path / "out", ARTIFACT_FILE)
+    calls = []
+    monkeypatch.setattr(parity.subprocess, "run", _fake_qsmci(calls))
+    parity.run_side(["qsmart-qsmrs"], ds, tmp_path / "w", "docker", log=lambda *_: None)
+    assert "--reliability" not in calls[0]
+
+
+@pytest.mark.parametrize("fed", [False, True])
+def test_qsmart_qsmrs_run_sh_passes_reliability_when_present(tmp_path, fed):
+    """run.sh hands `qsmxt qsmart --reliability` the mounted R_0, and nothing without one."""
+    import os
+    import shutil
+    import subprocess as sp
+    if not shutil.which("jq"):
+        pytest.skip("run.sh needs jq")
+    inp, out, bin_ = tmp_path / "in", tmp_path / "out", tmp_path / "bin"
+    for d in (inp, out, bin_):
+        d.mkdir()
+    (inp / "params.json").write_text(json.dumps({"TE": [0.004], "B0": 3, "B0_dir": [0, 0, 1]}))
+    if fed:
+        (inp / "reliability.nii.gz").write_bytes(b"r0")
+    log = tmp_path / "argv"
+    stub = bin_ / "qsmxt"
+    stub.write_text(f'#!/bin/sh\n[ "$2" = --help ] && exit 0\nprintf "%s\\n" "$@" > {log}\n')
+    stub.chmod(0o755)
+    env = {**os.environ, "PATH": f"{bin_}:{os.environ['PATH']}"}
+    env.pop("QSMCI_INTERMEDIATES", None)
+    sp.run(["bash", str(ROOT / "algorithms" / "qsmart-qsmrs" / "run.sh"), str(inp), str(out)],
+           env=env, check=True)
+    argv = log.read_text().split("\n")
+    if fed:
+        assert argv[argv.index("--reliability") + 1] == str(inp / "reliability.nii.gz")
+    else:
+        assert "--reliability" not in argv
+
+
 def test_ci_skip_port_runs_only_against_a_qsmxt_build(tmp_path, monkeypatch):
     """A ci_skip port (its pinned qsmxt lacks it) runs in parity once a build is supplied; scoring
     discovery still skips it."""

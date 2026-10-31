@@ -71,6 +71,8 @@ artifacts into `/input`, and expects exactly the produced artifacts in `/output`
 | `chi-para` | `chi-para.nii.gz` | **ppm** (χ+, ≥ 0) | 3D |
 | `chi-dia` | `chi-dia.nii.gz` | **ppm** (\|χ−\|, stored as a positive magnitude) | 3D |
 | `chimap-echoes` | `chimap-echoes.nii.gz` | **ppm** | 4D `x,y,z,echo` — optional `chi-separation` input, see below |
+| `dseg` | `dseg.nii.gz` | integer labels | 3D — **baselines only**, see below |
+| `reliability` | `reliability.nii.gz` | binary uint8 | 3D — optional QSMART input, port parity only, see below |
 
 All field maps and susceptibility maps (`chimap`, `chi-para`, `chi-dia`) are in **ppm** (normalized
 by B0). Convert from Hz with `ppm = Hz · 1e6 / (γ · B0)`, `γ = 42.576e6` Hz/T. `r2prime` is the one
@@ -84,6 +86,20 @@ its per-echo phase input. Not every χ-separation dataset ships it, so it is in 
 when the file is absent. Like `chimap`, it comes from the ground-truth boundary in isolated mode
 (the dataset's `inputs/`, else `groundtruth/`). `qsm-ci run` accepts it as one 4D file or as one 3D
 map per echo, stacked like `phase`.
+`dseg` is the phantom's tissue segmentation, the labels the scorer's region metrics use. It is
+ground truth, so it belongs to no stage's contract. A method may read it only if it declares
+`baseline: true` in `algorithm.yml`, marking it as a floor or reference rather than a method being
+scored for its own skill (`ridani-null-qsmci` solves white matter separately with it). It is opted
+into with `optional_inputs: [dseg]`. In isolated mode it is mounted from the dataset's `inputs/`,
+else `groundtruth/`, when the dataset has one, and skipped when it doesn't, so the method must
+guard for the file being absent. `qsm-ci run` and the scorer refuse a manifest that names `dseg`
+without `baseline: true` (`stages.yml` `baseline_only`).
+
+`reliability` is QSMART's reliability map R₀ (1 = the echo fit is reliable), the `reliability`
+intermediate QSMART writes. No dataset ships it and scoring never mounts it: only port parity
+supplies it, when the `qsmart` pair feeds the original's own R₀ to the QSM.rs port
+([docs/parity.md](docs/parity.md), "Isolating a step"). A method opts in with
+`optional_inputs: [reliability]` and runs without it when the file is absent.
 
 ### `params.json`
 
@@ -102,6 +118,12 @@ map per echo, stacked like `phase`.
 | `B0` | tesla | main field strength |
 | `B0_dir` | unit vector | B0 direction in image coordinates |
 | `voxel_size` | mm | voxel dimensions (x, y, z) |
+
+A χ-separation phantom's `params.json` may also carry `chisep_dr_hz_per_ppm`, the paramagnetic
+relaxivity Dr+ (Hz/ppm) the phantom imposes (R2′ = Dr+·|χ+| + Dr−·|χ−|). It documents the phantom;
+methods should not read it, and the shipped entries don't. A method keeps its own published
+relaxivity, so that every method is scored as published. The full relaxation model is in the
+dataset's `groundtruth/chisep.json`.
 
 ### `config.json` (optional — parameter overrides)
 

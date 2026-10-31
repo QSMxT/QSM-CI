@@ -8,6 +8,7 @@ family: direct
 learning: none
 engine: Independent
 inputs: [chimap, r2prime, mask, params]  # the artifacts this method actually reads (a subset of the stage's inputs)
+baseline: true   # a floor, not a method scored for its own skill (CONTRACT.md, Artifacts)
 description: >
   The closed-form analytic null baseline for χ-separation: per voxel it solves the benchmark's own
   two source-model equations (χ+ + χ- = χ_total; Dr+·χ+ + Dr-·|χ-| = R2') exactly from the two
