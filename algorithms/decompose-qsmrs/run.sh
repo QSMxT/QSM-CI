@@ -47,10 +47,20 @@ if qsmxt separate decompose --help 2>/dev/null | grep -q -- '--qsm-per-echo'; th
 elif [ -f "$IN/chimap-echoes.nii.gz" ]; then
   echo "decompose-qsmrs: this qsmxt has no --qsm-per-echo; chimap-echoes is ignored" >&2
 fi
+# At 7 T, QSMxT's rules decompose.unwrap-7t and decompose.chi-bound-7t (QSM.rs#345, from 6.5 T)
+# suggest unwrapping along the echoes and the echo-spacing χ bound; QSMxT users get them by
+# accepting the suggestion. QSM-CI scores the method as QSMxT runs it, so this entry applies them
+# at 7 T. Below 6.5 T it runs the defaults (the authors' code: no unwrapping, 0.5 ppm bound). A
+# --set chi_bound overrides the bound. A qsmxt without --unwrap-phase (v10.0.0) is left as it is.
+SUGGESTED=""
+if awk -v b="$B0" 'BEGIN{exit !(b >= 6.5)}' && qsmxt separate decompose --help 2>/dev/null | grep -q -- '--unwrap-phase'; then
+  SUGGESTED="--unwrap-phase true"
+  case " $SET " in *" --chi-bound "*) ;; *) SUGGESTED="$SUGGESTED --chi-bound echo-spacing" ;; esac
+fi
 qsmxt separate decompose \
   --qsm "$IN/chimap.nii.gz" -m "$IN/mask.nii.gz" -o "$WORK/dec" \
   --magnitude "$IN/magnitude.nii.gz" --echo-times "$TE" $PER_ECHO \
-  --field-strength "$B0" --b0-direction $B0DIR $SET
+  --field-strength "$B0" --b0-direction $B0DIR $SUGGESTED $SET
 
 # qsmxt already emits χ+ ≥ 0 and the diamagnetic map as the positive magnitude |χ−| (it negates
 # qsm-core's signed χ− in commands/separate.rs::save_result), which is exactly the contract — so
