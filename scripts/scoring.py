@@ -80,6 +80,9 @@ def gt_sources(dataset: Path) -> dict[str, Path]:
     # The echo-dependent χ(TE), one map per echo (x,y,z,echo): an optional χ-separation input that
     # only some datasets ship (DECOMPOSE's per-echo QSM). Resolved like chimap.
     boundary["chimap-echoes"] = "chimap-echoes.nii.gz"
+    # The segmentation: ground truth, mountable only into a `baseline: true` method (stages.yml
+    # `baseline_only`). Some χ-sep zips also carry a copy under inputs/; either works.
+    boundary["dseg"] = "dseg.nii.gz"
     src = {art: inputs / f for art, f in raw.items()}
     src.update({art: (inputs / f if (inputs / f).exists() else gt / f)
                 for art, f in boundary.items()})
