@@ -633,7 +633,7 @@ pairs:
   tgv:
     reference: tgv-tgvjl
     candidate: tgv-qsmrs
-    enabled: false
+    enabled: true
     # With laplacian=romeo (run 40607732498): sim 59.7 %, from the ±2π jumps ROMEO's re-unwrap adds.
     # With laplacian=unwrapped, QSM.rs main da928e0 and #324's first head (b0f9984) give the same
     # result through QSMxT main (run 40616429914): NRMSE sim 3.84 % (r 0.99926), KKI 6.74 %
@@ -649,13 +649,13 @@ pairs:
     # dataset mask (sim 41,907 voxels, KKI 46,101). Over the voxels both return, run 41019310531's
     # outputs differ by 3.8e-4 % (sim) / 4.9e-3 % (KKI). `reference_output_box` (QSM.rs#375,
     # `qsmxt invert tgv --reference-output-box`, QSMxT/QSMxT#465) returns the package's box; with
-    # all three switches (run 41031701965) the pair is at float32 rounding (limits below). Enable
-    # once QSMxT main has #465 (main's qsmxt refuses the setting until then).
+    # all three switches (run 41031701965) the pair is at float32 rounding (limits below). Enabled
+    # once QSMxT main had #465: run 41196090520 (QSMxT main 9cfe3f9, qsm-core 15c938f) passes, NRMSE
+    # sim 0.00038 % (max |Δ| 1.4e-6, p99 3.0e-7 ppm), KKI 0.0049 % (2.5e-5, 6.4e-6 ppm), r 1.000000.
     # max/p99 |Δ| limits: ~10× the derived ones (Ashley, 2026-10-31). The derived limits sat at
     # float32 rounding (sim max 2.99e-6, p99 1.0e-6; KKI 3.16e-5, 8.03e-6), and the package's
     # FFTW/SIMD kernels round differently on different CPUs, so a pass must not depend on which
     # runner the job lands on. NRMSE and correlation keep the derived limits.
-    blocked_by: QSMxT/QSMxT#465
     qsmrs_paths: [src/error.rs, src/fft.rs, src/grid.rs, src/inversion/tgv.rs, src/kernels/,
                   src/pipeline/inversion.rs, src/pipeline/rules.rs, src/utils/bias_correction.rs,
                   src/utils/connected.rs, src/utils/echo_time.rs, src/utils/gradient.rs,
@@ -673,10 +673,12 @@ pairs:
       sim:
         # Measured: NRMSE 0.00044 %, r 1.000000, max |Δ| 2.4e-06 ppm, p99 |Δ| 3.3e-07 ppm.
         chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 3.0e-05, p99_abs_max: 1.0e-05 }
-        measured: { pr369: "run 41031701965: QSMxT tgv-output-box-369 43baf55 (QSMxT/QSMxT#465), QSM.rs tgv-output-box-369 40b0dcf (astewartau/QSM.rs#375) (limits)" }
+        measured: { pr369: "run 41031701965: QSMxT tgv-output-box-369 43baf55 (QSMxT/QSMxT#465), QSM.rs tgv-output-box-369 40b0dcf (astewartau/QSM.rs#375) (limits)",
+                    main: "run 41196090520: QSMxT main 9cfe3f9, qsm-core 15c938f, NRMSE 0.00038 %, pass" }
       s002001-kki-achieva-bridge-run1:
         # Measured: NRMSE 0.0049 %, r 1.000000, max |Δ| 2.5e-05 ppm, p99 |Δ| 6.4e-06 ppm.
         chimap: { nrmse_max: 0.506, correlation_min: 0.989, max_abs_max: 3.2e-04, p99_abs_max: 8.0e-05 }
-        measured: { pr369: "run 41031701965: QSMxT tgv-output-box-369 43baf55 (QSMxT/QSMxT#465), QSM.rs tgv-output-box-369 40b0dcf (astewartau/QSM.rs#375) (limits)" }
+        measured: { pr369: "run 41031701965: QSMxT tgv-output-box-369 43baf55 (QSMxT/QSMxT#465), QSM.rs tgv-output-box-369 40b0dcf (astewartau/QSM.rs#375) (limits)",
+                    main: "run 41196090520: QSMxT main 9cfe3f9, qsm-core 15c938f, NRMSE 0.0049 %, pass" }
         reference_prefix: [laplacian-qsmrs]
         feed: { totalfield: totalfield }
