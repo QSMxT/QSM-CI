@@ -11,6 +11,7 @@ B0=$(jq -r '.B0_dir | join(" ")' "$IN/params.json")
 SET=""
 CFG="$IN/config.json"
 if [ -f "$CFG" ]; then
+  V=$(jq -r '.variant // empty' "$CFG"); [ -n "$V" ] && SET="$SET --variant $V"   # wen2014 | qsmjl
   V=$(jq -r '.tol // empty' "$CFG"); [ -n "$V" ] && SET="$SET --tol $V"
   V=$(jq -r '.max_iter // empty' "$CFG"); [ -n "$V" ] && SET="$SET --max-iter $V"
   V=$(jq -r '.radius // empty' "$CFG"); [ -n "$V" ] && SET="$SET --radius $V"

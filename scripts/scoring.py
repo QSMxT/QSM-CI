@@ -46,8 +46,8 @@ def cli_run_argv(algo: dict, input_dir: Path, output_dir: Path, artifact_file: d
     argv = ["qsm-ci", "run", str(algo["dir"])]
     for art in algo["consumes"]:
         f = input_dir / artifact_file[art]
-        if art == "magnitude" and not f.exists():
-            continue  # optional — only some methods use it
+        if (art == "magnitude" or art in algo.get("optional", ())) and not f.exists():
+            continue  # optional — only some methods use it / not every dataset ships it
         argv += [f"--{art}", str(f)]
     for k, v in (overrides or {}).items():
         argv += ["--set", f"{k}={fmt(v)}"]
@@ -77,6 +77,9 @@ def gt_sources(dataset: Path) -> dict[str, Path]:
     # χ-separation dataset (the phantom's true local field / χ_total). Prefer inputs/ when present.
     boundary = {"totalfield": "totalfield.nii.gz", "localfield": "localfield.nii.gz",
                 "chimap": "chimap.nii.gz"}
+    # The echo-dependent χ(TE), one map per echo (x,y,z,echo): an optional χ-separation input that
+    # only some datasets ship (DECOMPOSE's per-echo QSM). Resolved like chimap.
+    boundary["chimap-echoes"] = "chimap-echoes.nii.gz"
     src = {art: inputs / f for art, f in raw.items()}
     src.update({art: (inputs / f if (inputs / f).exists() else gt / f)
                 for art, f in boundary.items()})

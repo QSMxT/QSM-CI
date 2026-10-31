@@ -95,6 +95,11 @@ All four shipped phantoms carry `groundtruth/wm_rois.nii.gz`, which is only writ
 `--wm-rois-src` is passed — the presets do **not** set it. Omitting it still scores, but silently
 drops the per-ROI MSPE (`pipeline.py` passes `wm_rois` only `if wm_rois.exists()`).
 
+When qsm-forward writes the echo-dependent χ(TE) (`*_Chimap-echoes.nii`), `pack_dataset.py` ships it
+as `inputs/chimap-echoes.nii.gz` (x,y,z,echo, ppm, masked to the brain like `chimap`). It is the
+optional per-echo QSM input DECOMPOSE takes ([`CONTRACT.md`](../CONTRACT.md)). None of the four
+current phantoms carries it, so their DECOMPOSE runs fall back to `chimap` at every echo.
+
 ## In vivo (`invivo`)
 
 2016 QSM Reconstruction Challenge data. Ships **prepacked**, built by

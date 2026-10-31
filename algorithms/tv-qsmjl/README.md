@@ -27,12 +27,12 @@ the same thing as far as the original allows.
 
 | parameter | default | QSM.rs-matched | description |
 |---|---|---|---|
-| `lambda` | 0.001 | 2e-4 | TV regularization |
+| `lambda` | 0.001 |  | TV regularization |
 | `rho` | 100*lambda |  | ADMM penalty |
 | `tol` | 0.001 |  | stopping tolerance |
 | `max_iter` | 250 |  | maximum iterations (`maxit`) |
-| `pad` | 0 | -1 | QSM.jl `pad` (all three axes): >= 0 zero-pads to a fast FFT size (QSM.jl default 0: padding only up to that size); -1 does not pad, as QSM.rs |
+| `pad` | 0 |  | QSM.jl `pad` (all three axes): >= 0 zero-pads to a fast FFT size (QSM.jl default 0: padding only up to that size); -1 does not pad. QSM.rs pads the same way by default (astewartau/QSM.rs#323) |
 
 ## Against the QSM.rs port
 
-- QSM.rs (v0.39.0, QSMxT v10.0.0) defaults to `lambda` 2e-4 and `rho` 2e-2 (= 100·lambda); QSM.jl to 1e-3 and 100·lambda. `--set lambda=2e-4` gives both QSM.rs values.
+- The defaults are the same in both (QSM.rs main: λ 1e-3, ρ 100·λ, QSM.jl's padding, astewartau/QSM.rs#323); nothing to set. `tv-qsmrs`'s pinned qsmxt v10.0.0 (QSM.rs v0.39.0) defaulted to λ 2e-4.

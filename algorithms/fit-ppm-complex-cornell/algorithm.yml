@@ -1,0 +1,50 @@
+name: Complex fit + region growing (MEDI toolbox)
+slug: fit-ppm-complex-cornell
+algorithm: fit-ppm-complex   # no QSM.rs entry in QSM-CI yet (QSMxT: --b0-estimation complex-fit)
+source: cornell
+stage: field-mapping
+language: MATLAB
+family: direct
+learning: none
+engine: MEDI toolbox 2024.11.26 (Fit_ppm_complex, unwrapPhase)
+inputs: [phase, magnitude, params]   # neither step takes the mask
+description: >
+  MEDI's field map: a magnitude-weighted nonlinear fit of the complex echoes (Fit_ppm_complex), then
+  region-growing phase unwrapping (unwrapPhase), as the Cornell MEDI toolbox 2024.11.26's pipeline
+  script makes it, compiled from MATLAB and run on the license-free MATLAB Runtime. Needs evenly
+  spaced echoes.
+citation: Liu et al., Magn Reson Med 2013;69(2):467-476
+authors:
+- name: Tian Liu
+- name: Cynthia Wisnieff
+- name: Min Lou
+- name: Weiwei Chen
+- name: Pascal Spincemaille
+- name: Yi Wang
+doi: 10.1002/mrm.24272
+code_url: http://pre.weill.cornell.edu/mri/pages/qsm.html
+license: See Cornell MEDI toolbox license
+image: ghcr.io/astewartau/qsm-ci/matlab-medi@sha256:7efa4bd641b8311ac97a8a09dd438290f998f8163219b2f5d7ecae777a59811c   # fitppm-v1
+run: bash run.sh
+smoke_box: 32
+matlab:
+  entry: recon.m
+  runtime: r2023b
+# Container vs the authors' code in licensed MATLAB with the real toolboxes (QSMxT/QSM-CI#300;
+# fidelity/REPORT.md). Rerun and update whenever the image changes.
+fidelity:
+  date: 2026-10-30
+  image: sha256:7efa4bd641b8311ac97a8a09dd438290f998f8163219b2f5d7ecae777a59811c   # fitppm-v1
+  matlab: R2023b Update 5 (23.2.0.2459199)
+  sources: MEDI toolbox 2024.11.26 (Fit_ppm_complex.m, unwrapPhase.m, mexUnwrap.c, arlo.m)
+  tolerance: identical   # total field, ARLO's R2* and every intermediate, in silico and in vivo, 8 threads
+  result: pass
+  report: algorithms/fit-ppm-complex-cornell/fidelity/REPORT.md
+# Fit_ppm_complex's own defaults (MEDI toolbox 2024.11.26). See BUILD.md.
+parameters:
+- name: reltol
+  default: 1e-4
+  description: Gauss-Newton stop, relative to the norm of the initial field estimate
+- name: max_iter
+  default: 30
+  description: maximum Gauss-Newton iterations of the complex fit
