@@ -20,7 +20,7 @@ doi: 10.1016/j.neuroimage.2021.118371
 citation: Shin et al., NeuroImage 2021
 code_url: https://github.com/SNU-LIST/chi-separation
 license: academic use; toolbox obtained via the SNU-LIST Google Form
-image: ghcr.io/astewartau/qsm-ci/chi-sep-medi@sha256:6cec1e895428f02b4e87cb2b744ca53fdc7146f6280882ca2785bec22a60586b   # v3 (empty CSF mask, #315)
+image: ghcr.io/astewartau/qsm-ci/chi-sep-medi@sha256:c3afb14130929cb73fd41d9011afcce69634969b73216e996341e9c946fc8d7c   # v4 (Fit_ppm_complex N_std, no time limit)
 run: bash run.sh
 runner: highmem
 matlab:
@@ -30,7 +30,7 @@ matlab:
 # fidelity/REPORT.md). Rerun and update whenever the image changes.
 fidelity:
   date: 2026-10-31
-  image: sha256:6cec1e895428f02b4e87cb2b744ca53fdc7146f6280882ca2785bec22a60586b
+  image: sha256:c3afb14130929cb73fd41d9011afcce69634969b73216e996341e9c946fc8d7c
   matlab: R2023b Update 5 (23.2.0.2459199), Image Processing Toolbox 23.2, Signal Processing Toolbox 23.2
   tolerance: identical   # chi-para, chi-dia and every intermediate, phantom and in vivo, 8 threads
   result: pass
@@ -42,7 +42,9 @@ parameters:
       MEDI data-fidelity / morphology regularisation weight passed to chi_sep_MEDI (params.lambda) —
       the method's primary regularisation knob. Larger = smoother/more-regularised source maps.
       (No CSF term: the isolated-eval stage contract provides no CSF mask, so mask_CSF is empty, as
-      in the toolbox GUI without one.)
+      in the toolbox GUI without one. N_std is MEDI Fit_ppm_complex's noise map from the multi-echo
+      magnitude, as the toolbox computes it; no wall-clock limit, time_limit = Inf.)
 # Inputs consumed (isolated eval, fed ground truth): local field + R2' + QSM + mask + magnitude.
 # Produces two source maps: chi-para (χ+) and chi-dia (χ−). No CSF term (no CSF mask in the stage
-# contract; mask_CSF = [] as in the toolbox GUI). Same GHCR/image caveat as the iLSQR submission — runs via `--runner local`.
+# contract; mask_CSF = [] as in the toolbox GUI). N_std = Fit_ppm_complex's dp1 from the magnitude,
+# as Chisep_script.m and the GUI compute it; params.time_limit = Inf (runner-independent). Same GHCR/image caveat as the iLSQR submission — runs via `--runner local`.

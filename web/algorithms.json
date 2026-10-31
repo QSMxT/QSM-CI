@@ -315,7 +315,7 @@
         {
           "name": "lambda",
           "default": 1,
-          "description": "MEDI data-fidelity / morphology regularisation weight passed to chi_sep_MEDI (params.lambda) \u2014 the method's primary regularisation knob. Larger = smoother/more-regularised source maps. (No CSF term: the isolated-eval stage contract provides no CSF mask, so mask_CSF is empty, as in the toolbox GUI without one.)\n"
+          "description": "MEDI data-fidelity / morphology regularisation weight passed to chi_sep_MEDI (params.lambda) \u2014 the method's primary regularisation knob. Larger = smoother/more-regularised source maps. (No CSF term: the isolated-eval stage contract provides no CSF mask, so mask_CSF is empty, as in the toolbox GUI without one. N_std is MEDI Fit_ppm_complex's noise map from the multi-echo magnitude, as the toolbox computes it; no wall-clock limit, time_limit = Inf.)\n"
         }
       ],
       "ci_notes": []
