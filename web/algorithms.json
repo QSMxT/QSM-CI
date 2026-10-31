@@ -630,6 +630,78 @@
       ]
     },
     {
+      "slug": "fansi-nltgv",
+      "name": "FANSI nlTGV (FANSI toolbox)",
+      "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params",
+        "magnitude"
+      ],
+      "domain": "qsm",
+      "engine": "FANSI toolbox 93044a3 (nlTGV.m)",
+      "algorithm": "fansi",
+      "language": "MATLAB",
+      "family": "iterative",
+      "learning": "none",
+      "description": "Fast Nonlinear Susceptibility Inversion with total-generalized-variation regularization, the authors' nlTGV.m from the FANSI toolbox (commit 93044a3) with its own defaults, compiled from MATLAB and run on the license-free MATLAB Runtime.",
+      "citation": "Milovic et al., Magn Reson Med 2018",
+      "doi": "10.1002/mrm.27073",
+      "code_url": "https://gitlab.com/cmilovic/FANSI-toolbox",
+      "license": "No license file; author toolbox distribution",
+      "authors": [
+        "Carlos Milovic",
+        "Berkin Bilgic",
+        "Bo Zhao",
+        "Julio Acosta-Cabronero",
+        "Cristian Tejos"
+      ],
+      "parameters": [
+        {
+          "name": "alpha1",
+          "default": 0.0002,
+          "description": "first-order (TGV) L1 penalty (no default in nlTGV.m; the toolbox's demos use 2e-4)"
+        },
+        {
+          "name": "alpha0",
+          "default": "2*alpha1",
+          "description": "second-order (curvature) penalty"
+        },
+        {
+          "name": "mu1",
+          "default": "100*alpha1",
+          "description": "first-order ADMM weight"
+        },
+        {
+          "name": "mu0",
+          "default": "2*mu1",
+          "description": "second-order ADMM weight"
+        },
+        {
+          "name": "mu2",
+          "default": 1,
+          "description": "fidelity-consistency ADMM weight"
+        },
+        {
+          "name": "max_iter",
+          "default": 150,
+          "description": "maximum ADMM iterations"
+        },
+        {
+          "name": "tol_update",
+          "default": 0.1,
+          "description": "stop when the relative update (%) falls below this"
+        },
+        {
+          "name": "tol_delta",
+          "default": "1e-06",
+          "description": "Newton tolerance of the nonlinear data step"
+        }
+      ],
+      "ci_notes": []
+    },
+    {
       "slug": "fansi-nltgv-qsmrs",
       "name": "FANSI-nlTGV (QSM.rs)",
       "stage": "dipole",
@@ -690,6 +762,68 @@
           "name": "tol_update",
           "default": 0.1,
           "description": "convergence threshold on the solution update (percent)"
+        }
+      ],
+      "ci_notes": []
+    },
+    {
+      "slug": "fansi-nltv",
+      "name": "FANSI nlTV (FANSI toolbox)",
+      "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params",
+        "magnitude"
+      ],
+      "domain": "qsm",
+      "engine": "FANSI toolbox 93044a3 (nlTV.m)",
+      "algorithm": "fansi",
+      "language": "MATLAB",
+      "family": "iterative",
+      "learning": "none",
+      "description": "Fast Nonlinear Susceptibility Inversion with total-variation regularization (ADMM with a nonlinear, wrapped-phase data term), the authors' nlTV.m from the FANSI toolbox (commit 93044a3) with its own defaults, compiled from MATLAB and run on the license-free MATLAB Runtime.",
+      "citation": "Milovic et al., Magn Reson Med 2018",
+      "doi": "10.1002/mrm.27073",
+      "code_url": "https://gitlab.com/cmilovic/FANSI-toolbox",
+      "license": "No license file; author toolbox distribution",
+      "authors": [
+        "Carlos Milovic",
+        "Berkin Bilgic",
+        "Bo Zhao",
+        "Julio Acosta-Cabronero",
+        "Cristian Tejos"
+      ],
+      "parameters": [
+        {
+          "name": "alpha1",
+          "default": 0.0002,
+          "description": "gradient L1 (TV) penalty (no default in nlTV.m; the toolbox's demos use 2e-4)"
+        },
+        {
+          "name": "mu1",
+          "default": "100*alpha1",
+          "description": "gradient-consistency ADMM weight"
+        },
+        {
+          "name": "mu2",
+          "default": 1,
+          "description": "fidelity-consistency ADMM weight"
+        },
+        {
+          "name": "max_iter",
+          "default": 150,
+          "description": "maximum ADMM iterations"
+        },
+        {
+          "name": "tol_update",
+          "default": 0.1,
+          "description": "stop when the relative update (%) falls below this"
+        },
+        {
+          "name": "tol_delta",
+          "default": "1e-06",
+          "description": "Newton tolerance of the nonlinear data step"
         }
       ],
       "ci_notes": []
@@ -1609,6 +1743,79 @@
       "ci_notes": []
     },
     {
+      "slug": "l1qsm",
+      "name": "L1-QSM (FANSI toolbox)",
+      "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params",
+        "magnitude"
+      ],
+      "domain": "qsm",
+      "engine": "FANSI toolbox 93044a3 (nlL1TV.m)",
+      "algorithm": "l1qsm",
+      "language": "MATLAB",
+      "family": "iterative",
+      "learning": "none",
+      "description": "L1-QSM: nonlinear L1-norm data fidelity with TV regularization, robust to phase inconsistencies, the authors' nlL1TV.m from the FANSI toolbox (commit 93044a3), compiled from MATLAB and run on the license-free MATLAB Runtime.",
+      "citation": "Milovic et al., Magn Reson Med 2022",
+      "doi": "10.1002/mrm.28957",
+      "code_url": "https://gitlab.com/cmilovic/FANSI-toolbox",
+      "license": "No license file; author toolbox distribution",
+      "authors": [
+        "Carlos Milovic",
+        "Mathias Lambert",
+        "Christian Langkammer",
+        "Kristian Bredies",
+        "Pablo Irarrazaval",
+        "Cristian Tejos"
+      ],
+      "parameters": [
+        {
+          "name": "alpha1",
+          "default": 0.005,
+          "description": "gradient L1 (TV) penalty; QSM-CI's tuning (EMTP sweep), since FANSI gives none for L1-QSM"
+        },
+        {
+          "name": "mu1",
+          "default": "100*alpha1",
+          "description": "gradient-consistency ADMM weight"
+        },
+        {
+          "name": "mu2",
+          "default": 1,
+          "description": "ADMM weight"
+        },
+        {
+          "name": "mu3",
+          "default": 1,
+          "description": "L1 fidelity ADMM weight"
+        },
+        {
+          "name": "lambda",
+          "default": 0.8,
+          "description": "scale of the data weight (<1 rejects more inconsistent voxels)"
+        },
+        {
+          "name": "max_iter",
+          "default": 50,
+          "description": "maximum ADMM iterations"
+        },
+        {
+          "name": "tol_update",
+          "default": 1,
+          "description": "stop when the relative update (%) falls below this"
+        },
+        {
+          "name": "tol_delta",
+          "default": "1e-06",
+          "description": "Newton tolerance of the nonlinear data step"
+        }
+      ],
+      "ci_notes": []
+    },
+    {
       "slug": "l1qsm-qsmrs",
       "name": "L1-QSM (QSM.rs)",
       "stage": "dipole",
@@ -2218,6 +2425,58 @@
         "Ashley Stewart"
       ],
       "parameters": [],
+      "ci_notes": []
+    },
+    {
+      "slug": "ndi",
+      "name": "NDI (FANSI toolbox)",
+      "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params",
+        "magnitude"
+      ],
+      "domain": "qsm",
+      "engine": "FANSI toolbox 93044a3 (ndi.m)",
+      "algorithm": "ndi",
+      "language": "MATLAB",
+      "family": "iterative",
+      "learning": "none",
+      "description": "Nonlinear Dipole Inversion: gradient descent on a nonlinear (wrapped-phase) data term with a small Tikhonov term, the authors' ndi.m from the FANSI toolbox (commit 93044a3) with its own defaults, compiled from MATLAB and run on the license-free MATLAB Runtime.",
+      "citation": "Polak et al., NMR Biomed 2020",
+      "doi": "10.1002/nbm.4271",
+      "code_url": "https://gitlab.com/cmilovic/FANSI-toolbox",
+      "license": "No license file; author toolbox distribution",
+      "authors": [
+        "Daniel Polak",
+        "Itthi Chatnuntawech",
+        "Jaeyeon Yoon",
+        "Siddharth Srinivasan Iyer",
+        "Carlos Milovic",
+        "Jongho Lee",
+        "Peter Bachert",
+        "Elfar Adalsteinsson",
+        "Kawin Setsompop",
+        "Berkin Bilgic"
+      ],
+      "parameters": [
+        {
+          "name": "tau",
+          "default": 2,
+          "description": "gradient-descent step size"
+        },
+        {
+          "name": "alpha",
+          "default": "1e-05",
+          "description": "Tikhonov (L2) regularization weight"
+        },
+        {
+          "name": "max_iter",
+          "default": 100,
+          "description": "iterations (NDI stops early by iteration count)"
+        }
+      ],
       "ci_notes": []
     },
     {
@@ -3929,6 +4188,78 @@
           "name": "max_iter",
           "default": 100,
           "description": "maximum proximal-gradient iterations (early stop at a relative change of 1e-3)"
+        }
+      ],
+      "ci_notes": []
+    },
+    {
+      "slug": "whqsm",
+      "name": "WH-QSM (FANSI toolbox)",
+      "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "FANSI toolbox 93044a3 (WH_nlTV.m)",
+      "algorithm": "whqsm",
+      "language": "MATLAB",
+      "family": "iterative",
+      "learning": "none",
+      "description": "Weak-Harmonic QSM: nonlinear TV inversion that jointly estimates a residual harmonic background field, the authors' WH_nlTV.m from the FANSI toolbox (commit 93044a3) with its own defaults, compiled from MATLAB and run on the license-free MATLAB Runtime.",
+      "citation": "Milovic et al., Magn Reson Med 2019",
+      "doi": "10.1002/mrm.27483",
+      "code_url": "https://gitlab.com/cmilovic/FANSI-toolbox",
+      "license": "No license file; author toolbox distribution",
+      "authors": [
+        "Carlos Milovic",
+        "Berkin Bilgic",
+        "Bo Zhao",
+        "Christian Langkammer",
+        "Cristian Tejos",
+        "Julio Acosta-Cabronero"
+      ],
+      "parameters": [
+        {
+          "name": "alpha1",
+          "default": 0.0002,
+          "description": "gradient L1 (TV) penalty (no default in WH_nlTV.m; FANSI's demos use 2e-4)"
+        },
+        {
+          "name": "mu1",
+          "default": "100*alpha1",
+          "description": "gradient-consistency ADMM weight"
+        },
+        {
+          "name": "mu2",
+          "default": 1,
+          "description": "fidelity-consistency ADMM weight"
+        },
+        {
+          "name": "beta",
+          "default": 150,
+          "description": "harmonic-constraint weight"
+        },
+        {
+          "name": "muh",
+          "default": 5,
+          "description": "harmonic ADMM weight"
+        },
+        {
+          "name": "max_iter",
+          "default": 150,
+          "description": "maximum ADMM iterations"
+        },
+        {
+          "name": "tol_update",
+          "default": 0.1,
+          "description": "stop when the relative update (%) falls below this"
+        },
+        {
+          "name": "tol_delta",
+          "default": "1e-06",
+          "description": "Newton tolerance of the nonlinear data step"
         }
       ],
       "ci_notes": []

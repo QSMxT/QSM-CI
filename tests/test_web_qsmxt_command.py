@@ -70,7 +70,7 @@ def commands():
     )
     payload = json.dumps({"bySlug": by_slug, "cases": {**{f"single:{k}": v for k, v in singles.items()},
                                                       **PIPELINES}})
-    # On stdin: one argv string is capped at 128 KiB (MAX_ARG_STRLEN), which the manifest outgrew.
+    # The payload goes on stdin: as an argument it outgrows Linux's 128 KiB per-argument limit.
     res = subprocess.run([node, "--input-type=module", "-e", script], input=payload,
                          capture_output=True, text=True, check=True)
     return json.loads(res.stdout), by_slug
