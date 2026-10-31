@@ -3426,8 +3426,8 @@
       "parameters": [
         {
           "name": "Dr",
-          "default": 137.0,
-          "description": "Static-dephasing relaxivity kernel (Hz/ppm) tying R2' to the source magnitude (R2' = Dr\u00b7(|\u03c7+|+|\u03c7\u2212|)). 137 is the qsm-forward phantom's kernel (Shin 2022); WaveSep assumes Dr_pos == Dr_neg. Overriding here takes precedence over $WAVESEP_DR and params.json \"Dr\".\n"
+          "default": "137*B0/2.9",
+          "description": "Relaxometric constant (Hz/ppm) tying R2' to the source magnitude (R2' = Dr\u00b7(|\u03c7+|+|\u03c7\u2212|)); WaveSep assumes Dr_pos == Dr_neg and ships no value (it reads one per dataset). The default is the published \u03c7-separation value for the SNU data WaveSep was built on, 137 Hz/ppm at 3 T (Shin et al. 2021), scaled with field as the SNU toolbox does: 137\u00b7B0/2.9 (141.7 at 3 T, 330.7 at 7 T). Overriding here takes precedence over $WAVESEP_DR and params.json \"Dr\".\n"
         },
         {
           "name": "lambda",
@@ -3484,8 +3484,8 @@
       "parameters": [
         {
           "name": "Dr",
-          "default": 137.0,
-          "description": "Static-dephasing relaxivity (Hz/ppm), used for both sources as the original does (`--dr-pos`, `--dr-neg`). 137 is the qsm-forward phantom's kernel, the `wavesep` entry's default.\n"
+          "default": "137*B0/2.9",
+          "description": "Relaxometric constant (Hz/ppm), used for both sources as the original does (`--dr-pos`, `--dr-neg`). The default is the `wavesep` entry's: the published \u03c7-separation value 137 Hz/ppm at 3 T (Shin et al. 2021), scaled with field as the SNU toolbox does, 137\u00b7B0/2.9.\n"
         },
         {
           "name": "lambda",
