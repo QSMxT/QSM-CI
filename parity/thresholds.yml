@@ -850,13 +850,12 @@ pairs:
   nextqsm:
     reference: nextqsm
     candidate: nextqsm-qsmrs
-    enabled: false
+    enabled: true
     # astewartau/QSM.rs#367 pads odd axes as the package does (70.6 % → 0.038 % on an odd box).
     # The package itself moves by ~0.1 % between CPUs (the regulariser's sign(VarNet(x)) flips
-    # near-zero voxels).
-    note: >-
-      Above rounding: sim 0.016 % but KKI 0.10 % (max |Δ| 0.008 ppm) on the same runner, about the
-      package's own CPU-to-CPU spread; enabling at these limits is Ashley's call
+    # near-zero voxels), which is what is left here: sim 0.016 %, KKI 0.10 % (max |Δ| 0.008 ppm).
+    # Enabled at that level (Ashley, 2026-10-31); max/p99 have ~10× headroom over one runner's
+    # measurement for that CPU spread, as for tgv.
     qsmrs_models: true
     qsmrs_paths: [src/fft.rs, src/grid.rs, src/inversion/nextqsm.rs, src/inversion/tile_budget.rs,
                   src/inversion/tiled.rs, src/models/, src/pipeline/inversion.rs,
@@ -867,11 +866,11 @@ pairs:
         reference_prefix: [laplacian-qsmrs]
         feed: { totalfield: totalfield }
         # Measured: NRMSE 0.103 %, r 0.999999, max |Δ| 0.0083 ppm, p99 |Δ| 7.2e-05 ppm.
-        chimap: { nrmse_max: 0.613, correlation_min: 0.989, max_abs_max: 0.0104, p99_abs_max: 9.04e-05 }
+        chimap: { nrmse_max: 0.613, correlation_min: 0.989, max_abs_max: 0.083, p99_abs_max: 7.2e-04 }
         measured: { main: "run 41190020480: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
       sim:
         # Measured: NRMSE 0.0163 %, r 1.000000, max |Δ| 0.00035 ppm, p99 |Δ| 1.6e-05 ppm.
-        chimap: { nrmse_max: 0.518, correlation_min: 0.989, max_abs_max: 0.000438, p99_abs_max: 1.95e-05 }
+        chimap: { nrmse_max: 0.518, correlation_min: 0.989, max_abs_max: 0.0035, p99_abs_max: 1.6e-04 }
         measured: { main: "run 41190020480: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
   bfrnet:
     reference: bfrnet
