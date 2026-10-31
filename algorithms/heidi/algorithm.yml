@@ -1,0 +1,56 @@
+name: HEIDI (qsm_heidi)
+slug: heidi
+algorithm: heidi   # pairs with heidi-qsmrs (QSM.rs's port of inversion_heidi.m) in the parity workflow
+source: heidi      # the authors' qsm_heidi repository
+stage: dipole
+language: MATLAB
+family: iterative
+learning: none
+engine: qsm_heidi 4592631 (inversion_lsqr.m, then inversion_heidi.m)
+inputs: [localfield, mask, params, magnitude]  # the magnitude weights the LSQR seed's rows
+description: >
+  Homogeneity Enabled Incremental Dipole Inversion: the well-conditioned k-space coefficients of a
+  minimally regularised LSQR solution are kept, and the dipole cone is filled by a weighted total
+  variation solved with NESTA, where the weights open across edges of the field. The authors' code
+  (qsm_heidi 4592631) run as its pipeline runs it (inversion_lsqr.m, then inversion_heidi.m),
+  compiled from MATLAB and run on the license-free MATLAB Runtime.
+citation: Schweser et al., NeuroImage 2012
+authors:
+- name: Ferdinand Schweser
+- name: Karsten Sommer
+- name: Andreas Deistung
+- name: Jürgen Rainer Reichenbach
+doi: 10.1016/j.neuroimage.2012.05.067
+code_url: https://gitlab.com/R01NS114227/qsm_heidi
+license: "qsm_heidi LICENSE: non-commercial academic research use (Ferdinand Schweser, 2025)"
+image: ghcr.io/astewartau/qsm-ci/heidi@sha256:5eb9366203b482e4a0dfa372b57dc6521db21676e22905351c132b18b2619104   # heidi-v2
+run: bash run.sh
+smoke_box: 32
+timeout_minutes: 240   # NESTA with tolerance eps runs every continuation step to its 500 iterations
+matlab:
+  entry: recon.m
+  runtime: r2023b
+# Container vs the authors' code in licensed MATLAB with the real toolboxes (QSMxT/QSM-CI#300;
+# fidelity/REPORT.md). Rerun and update whenever the image changes.
+fidelity:
+  date: 2026-10-31
+  image: sha256:5eb9366203b482e4a0dfa372b57dc6521db21676e22905351c132b18b2619104   # heidi-v2
+  matlab: R2023b Update 5 (23.2.0.2459199)
+  sources: qsm_heidi 4592631 (heidi/computesusceptibility_heidi.m, lsqr/computesusceptibility_lsqr.m, ITK 3.20 filter)
+  tolerance: in vivo identical; in silico chi NRMSE 0.073 % (max 0.0050 ppm), from the LSQR seed's 0.059 %   # 8 threads
+  result: residual   # in silico only; the image's Ubuntu userland vs the RHEL host, not MATLAB (REPORT.md)
+  report: algorithms/heidi/fidelity/REPORT.md
+# inversion_lsqr.m's and inversion_heidi.m's settings (qsm_heidi 4592631). See BUILD.md.
+parameters:
+- name: cone_threshold
+  default: 0.1
+  description: "|D(k)| above which a coefficient is well-conditioned and kept from the LSQR seed"
+- name: residual_weighting
+  default: 0.2
+  description: LSQR seed's residual-field weight at 9.4 T, scaled by the field strength
+- name: lsqr_tolerance
+  default: 1e-5
+  description: LSQR seed's MATLAB lsqr tolerance
+- name: lsqr_max_iter
+  default: 400
+  description: LSQR seed's maximum lsqr iterations

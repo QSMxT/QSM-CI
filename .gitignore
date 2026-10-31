@@ -84,6 +84,10 @@ algorithms/*/medi/
 algorithms/*/sepia/
 algorithms/*/sti/
 algorithms/*/sti_support/
+# qsm_heidi (lsqr, heidi): its lsqr/ and heidi/ folders and the ITK executable are build-time deps.
+algorithms/*/lsqr/
+algorithms/*/heidi/
+algorithms/heidi/itk/
 # Compiled-MATLAB submissions ship as prebuilt+pushed GHCR images (the Dockerfile bakes a
 # licensed mcc binary that CI cannot reproduce), so CI must PULL image: rather than build the
 # Dockerfile. The runner never builds one anyway — qsm_ci/containers._build_oci only pulls `image:` —
