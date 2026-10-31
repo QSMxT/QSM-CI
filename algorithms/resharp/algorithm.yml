@@ -1,0 +1,49 @@
+name: RESHARP (Hongfu Sun)
+slug: resharp
+algorithm: resharp   # pairs with resharp-qsmrs (QSM.rs's port of resharp.m) in the parity workflow
+source: sunhongfu    # the first author's code, github.com/sunhongfu/QSM
+stage: bfr
+language: MATLAB
+family: iterative
+learning: none
+engine: sunhongfu/QSM c75b138 (background_field_removal/resharp.m)
+inputs: [totalfield, mask, params]
+description: >
+  RESHARP background field removal: spherical-mean-value high-pass of the total field with
+  Tikhonov-regularized deconvolution, solved by conjugate gradients squared. The first author's
+  resharp.m (github.com/sunhongfu/QSM c75b138) with its own defaults, compiled from MATLAB and run
+  on the license-free MATLAB Runtime.
+citation: Sun & Wilman, Magn Reson Med 2014
+authors:
+- name: Hongfu Sun
+- name: Alan H. Wilman
+doi: 10.1002/mrm.24765
+code_url: https://github.com/sunhongfu/QSM
+license: MIT (sunhongfu/QSM)
+image: ghcr.io/astewartau/qsm-ci/resharp@sha256:b147f71e433555c8be550195d16451caa191dacbcbccd3e392e200db8e0d7e2d   # v1
+run: bash run.sh
+smoke_box: 32
+matlab:
+  entry: recon.m
+  runtime: r2023b
+# Container vs the authors' code in licensed MATLAB with the real toolboxes (QSMxT/QSM-CI#300;
+# fidelity/REPORT.md). Rerun and update whenever the image changes.
+fidelity:
+  date: 2026-10-30
+  image: sha256:b147f71e433555c8be550195d16451caa191dacbcbccd3e392e200db8e0d7e2d   # v1
+  matlab: R2023b Update 5 (23.2.0.2459199), Image Processing Toolbox 23.2
+  sources: sunhongfu/QSM c75b138 (resharp.m)
+  tolerance: in vivo identical; in silico local field NRMSE 1.5e-8 % (max 9.3e-10 ppm), mask identical   # 8 threads
+  result: residual   # in silico only; likely Runtime Update 11 vs licensed Update 5 (REPORT.md), not proven
+  report: algorithms/resharp/fidelity/REPORT.md
+# resharp.m's own defaults (l. 24-34, 92). See BUILD.md.
+parameters:
+- name: radius
+  default: 3
+  description: SMV kernel radius, mm (round(radius/voxel) per axis, at least 2 voxels)
+- name: lambda
+  default: 1e-4
+  description: Tikhonov regularization weight
+- name: iterations
+  default: 200
+  description: maximum CGS iterations (tolerance 1e-6)

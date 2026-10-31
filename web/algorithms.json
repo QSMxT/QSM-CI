@@ -2515,6 +2515,49 @@
       "ci_notes": []
     },
     {
+      "slug": "resharp",
+      "name": "RESHARP (Hongfu Sun)",
+      "stage": "bfr",
+      "inputs": [
+        "totalfield",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "sunhongfu/QSM c75b138 (background_field_removal/resharp.m)",
+      "algorithm": "resharp",
+      "language": "MATLAB",
+      "family": "iterative",
+      "learning": "none",
+      "description": "RESHARP background field removal: spherical-mean-value high-pass of the total field with Tikhonov-regularized deconvolution, solved by conjugate gradients squared. The first author's resharp.m (github.com/sunhongfu/QSM c75b138) with its own defaults, compiled from MATLAB and run on the license-free MATLAB Runtime.",
+      "citation": "Sun & Wilman, Magn Reson Med 2014",
+      "doi": "10.1002/mrm.24765",
+      "code_url": "https://github.com/sunhongfu/QSM",
+      "license": "MIT (sunhongfu/QSM)",
+      "authors": [
+        "Hongfu Sun",
+        "Alan H. Wilman"
+      ],
+      "parameters": [
+        {
+          "name": "radius",
+          "default": 3,
+          "description": "SMV kernel radius, mm (round(radius/voxel) per axis, at least 2 voxels)"
+        },
+        {
+          "name": "lambda",
+          "default": "1e-4",
+          "description": "Tikhonov regularization weight"
+        },
+        {
+          "name": "iterations",
+          "default": 200,
+          "description": "maximum CGS iterations (tolerance 1e-6)"
+        }
+      ],
+      "ci_notes": []
+    },
+    {
       "slug": "resharp-qsmrs",
       "name": "RESHARP (QSM.rs)",
       "stage": "bfr",
