@@ -5,9 +5,9 @@ computes? To rerun the check, see [`README.md`](README.md) (the shared harness i
 
 - **Checked:** 2026-10-31, on Slurm compute nodes, 8 CPUs per job.
 - **Licensed MATLAB:** 23.2.0.2459199 (R2023b) Update 5, with Image Processing Toolbox 23.2.
-- **Image checked:** `ghcr.io/astewartau/qsm-ci/matlab-qsmart` `v4` (image ID
-  `sha256:d27caa66b40247e3a7d14b45bc3bb39f85428c25da93bb5f90ed5de92748effc`; registry digest
-  pending the push, then pinned in `algorithm.yml`).
+- **Image checked:** `ghcr.io/astewartau/qsm-ci/matlab-qsmart@sha256:01f36e868bcacf494914b498b8f1cfc39480e533b0b654519e4476c19e532493`
+  (`v4`; image ID `sha256:d27caa66b40247e3a7d14b45bc3bb39f85428c25da93bb5f90ed5de92748effc`, the
+  build that was checked, loaded as a SIF before the push).
   - `recon` is compiled with that licensed R2023b against the **real** Image Processing Toolbox,
     with no shims (build job 31200811; `recon` sha256 `9773c43e…`).
   - It runs on the R2023b MATLAB Runtime (23.2.0.3097123, Update 11) under Apptainer.
