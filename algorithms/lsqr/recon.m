@@ -59,7 +59,12 @@ function recon(inp, out)
 
     % inversion_*.m: crop to the mask's bounding box, then the 40-voxel anti-aliasing frame.
     DEFAULT_ANTIALIASINGFRAMEWIDTH = 40;
-    [suscCompMask, zcInfo] = zealouscrop(Mask);
+    % inversion_*.m call zealouscrop(mask) with no frame value, so it takes the value to crop from the
+    % mask's edge rows: a mask with no zero border (e.g. a box inside the brain) has only "uniform"
+    % all-1 slices and is cropped to 1x1. Frame value 0, as the authors' prepareforconvolution.m crops a
+    % mask (zealouscrop(mask,[],0)), removes only all-0 slices: the same crop whenever the mask has zero
+    % background at the edge (every full-FOV brain mask), and no crop when it has none. BUILD.md.
+    [suscCompMask, zcInfo] = zealouscrop(Mask, [], 0);
     [suscCompMask, pcInfo] = prepareforconvolution(suscCompMask, [], DEFAULT_ANTIALIASINGFRAMEWIDTH);
     magnitude = zealouscrop(magnitude, zcInfo);
     magnitude = prepareforconvolution(magnitude, [], DEFAULT_ANTIALIASINGFRAMEWIDTH);

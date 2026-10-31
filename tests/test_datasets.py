@@ -50,8 +50,8 @@ def test_exactly_one_default_phantom_per_track(pipeline):
 
 def test_legacy_track_args_are_registry_keys():
     # sim/invivo are both a track name AND their track's default phantom id, so callers that pass
-    # the bare track name keep working. (The chisep track's default is a named phantom, chisep-mc,
-    # since the original single 'chisep' phantom was retired.)
+    # the bare track name keep working. (The chisep track's default is a named phantom, meso-3t,
+    # since the original single 'chisep' phantom and then chisep-mc were retired.)
     reg = _registry()
     for legacy in ("sim", "invivo"):
         assert legacy in reg, f"legacy phantom id '{legacy}' missing from the registry"
@@ -78,8 +78,9 @@ def test_non_default_phantom_suffixes_ids(pipeline, tmp_path, monkeypatch):
     f.write_text(json.dumps(reg))
     monkeypatch.setenv("QSMCI_DATASETS_FILE", str(f))
     assert pipeline.phantom_suffix("ridani-3t-iso") == "-ridani-3t-iso"
-    assert pipeline.phantom_suffix("chisep-mc") == ""       # the chisep-track default keeps bare ids
-    assert pipeline.default_phantom("chisep") == "chisep-mc"  # default phantom of the chisep track
+    assert pipeline.phantom_suffix("meso-3t") == ""          # the chisep-track default keeps bare ids
+    assert pipeline.default_phantom("chisep") == "meso-3t"   # default phantom of the chisep track
+    assert pipeline.phantom_suffix("chisep-mc") == "-chisep-mc"  # retired, so namespaced
 
 
 def test_unknown_phantom_raises(pipeline):

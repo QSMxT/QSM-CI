@@ -1,6 +1,6 @@
 # MCR image for the compiled heidi submission. Build the `recon` binary first (BUILD.md: licensed
 # MATLAB R2023b + MATLAB Compiler, with qsm_heidi 4592631), then:
-#   podman build -t ghcr.io/astewartau/qsm-ci/heidi:heidi-v2 .
+#   podman build -t ghcr.io/astewartau/qsm-ci/heidi:heidi-v4 .
 # qsm_heidi's heidi/ and lsqr/ code is baked into `recon` at compile time; the image
 # only needs the MATLAB Runtime of the compiling release, which includes the toolboxes' runtime
 # components. CI never builds this file; it pulls `image:` from algorithm.yml.

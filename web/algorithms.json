@@ -315,7 +315,7 @@
         {
           "name": "lambda",
           "default": 1,
-          "description": "MEDI data-fidelity / morphology regularisation weight passed to chi_sep_MEDI (params.lambda) \u2014 the method's primary regularisation knob. Larger = smoother/more-regularised source maps. (No CSF term: the isolated-eval stage contract provides no CSF mask, so mask_CSF is empty, as in the toolbox GUI without one.)\n"
+          "description": "MEDI data-fidelity / morphology regularisation weight passed to chi_sep_MEDI (params.lambda) \u2014 the method's primary regularisation knob. Larger = smoother/more-regularised source maps. (No CSF term: the isolated-eval stage contract provides no CSF mask, so mask_CSF is empty, as in the toolbox GUI without one. N_std is MEDI Fit_ppm_complex's noise map from the multi-echo magnitude, as the toolbox computes it; no wall-clock limit, time_limit = Inf.)\n"
         }
       ],
       "ci_notes": []
@@ -1126,6 +1126,47 @@
       "ci_notes": []
     },
     {
+      "slug": "iharperella-sti",
+      "name": "iHARPERELLA (STI Suite)",
+      "stage": "bfr",
+      "inputs": [
+        "totalfield",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "STI Suite 3.0 (iHARPERELLA)",
+      "algorithm": "iharperella",
+      "language": "MATLAB",
+      "family": "iterative",
+      "learning": "none",
+      "description": "iHARPERELLA background field removal from STI Suite 3.0: the Laplacian of the field inside the brain is kept, its boundary rim cleaned, and the Laplacian inverted over the whole field of view by LSQR. Run on the unwrapped total field (STI Suite 3.0's iHARPERELLA does not unwrap), with its own defaults, compiled from MATLAB and run on the license-free MATLAB Runtime.",
+      "citation": "Li et al., NMR Biomed 2014",
+      "doi": "10.1002/nbm.3056",
+      "code_url": "https://people.eecs.berkeley.edu/~chunlei.liu/software.html",
+      "license": "See STI Suite license",
+      "authors": [
+        "Wei Li",
+        "Alexandru V. Avram",
+        "Bing Wu",
+        "Xue Xiao",
+        "Chunlei Liu"
+      ],
+      "parameters": [
+        {
+          "name": "niter",
+          "default": 40,
+          "description": "maximum LSQR iterations"
+        },
+        {
+          "name": "padsize",
+          "default": 0,
+          "description": "zero padding (voxels per side; the function's default, not STI_Templates.m's 12)"
+        }
+      ],
+      "ci_notes": []
+    },
+    {
       "slug": "ilsqr-qsmrs",
       "name": "iLSQR (QSM.rs)",
       "stage": "dipole",
@@ -1583,6 +1624,39 @@
         "Yimei Zhu"
       ],
       "parameters": [],
+      "ci_notes": []
+    },
+    {
+      "slug": "laplacian-sti",
+      "name": "Laplacian unwrapping (STI Suite)",
+      "stage": "field-mapping",
+      "inputs": [
+        "phase",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "STI Suite 3.0 (MRPhaseUnwrap)",
+      "algorithm": "laplacian",
+      "language": "MATLAB",
+      "family": "direct",
+      "learning": "none",
+      "description": "Laplacian phase unwrapping from STI Suite 3.0 (MRPhaseUnwrap, Schofield & Zhu's sin/cos identity with an FFT Poisson solve) on the raw multi-echo phase, with the echo combination STI Suite's QSM_GUI applies (the unwrapped echoes summed over the summed echo times), compiled from MATLAB and run on the license-free MATLAB Runtime.",
+      "citation": "Li et al., NeuroImage 2011",
+      "doi": "10.1016/j.neuroimage.2010.11.088",
+      "code_url": "https://people.eecs.berkeley.edu/~chunlei.liu/software.html",
+      "license": "See STI Suite license",
+      "authors": [
+        "Wei Li",
+        "Bing Wu",
+        "Chunlei Liu"
+      ],
+      "parameters": [
+        {
+          "name": "padsize",
+          "default": 12,
+          "description": "zero padding (voxels per side) for the FFT Poisson solve"
+        }
+      ],
       "ci_notes": []
     },
     {
@@ -2357,7 +2431,8 @@
         "totalfield",
         "mask",
         "params",
-        "magnitude"
+        "magnitude",
+        "reliability"
       ],
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",
@@ -2609,6 +2684,49 @@
         "QSM-CI (implementation of Dimov et al. 2022)"
       ],
       "parameters": [],
+      "ci_notes": []
+    },
+    {
+      "slug": "resharp",
+      "name": "RESHARP (Hongfu Sun)",
+      "stage": "bfr",
+      "inputs": [
+        "totalfield",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "sunhongfu/QSM c75b138 (background_field_removal/resharp.m)",
+      "algorithm": "resharp",
+      "language": "MATLAB",
+      "family": "iterative",
+      "learning": "none",
+      "description": "RESHARP background field removal: spherical-mean-value high-pass of the total field with Tikhonov-regularized deconvolution, solved by conjugate gradients squared. The first author's resharp.m (github.com/sunhongfu/QSM c75b138) with its own defaults, compiled from MATLAB and run on the license-free MATLAB Runtime.",
+      "citation": "Sun & Wilman, Magn Reson Med 2014",
+      "doi": "10.1002/mrm.24765",
+      "code_url": "https://github.com/sunhongfu/QSM",
+      "license": "MIT (sunhongfu/QSM)",
+      "authors": [
+        "Hongfu Sun",
+        "Alan H. Wilman"
+      ],
+      "parameters": [
+        {
+          "name": "radius",
+          "default": 3,
+          "description": "SMV kernel radius, mm (round(radius/voxel) per axis, at least 2 voxels)"
+        },
+        {
+          "name": "lambda",
+          "default": "1e-4",
+          "description": "Tikhonov regularization weight"
+        },
+        {
+          "name": "iterations",
+          "default": 200,
+          "description": "maximum CGS iterations (tolerance 1e-6)"
+        }
+      ],
       "ci_notes": []
     },
     {
@@ -3727,7 +3845,7 @@
       "osf_env": "OSF_FILE_RIDANI_3T_ISO",
       "prepacked": true,
       "path": "data/ridani-3t-iso/scoring",
-      "active": true,
+      "active": false,
       "default": false
     },
     "ridani-3t-aniso": {
@@ -3736,7 +3854,7 @@
       "osf_env": "OSF_FILE_RIDANI_3T_ANISO",
       "prepacked": true,
       "path": "data/ridani-3t-aniso/scoring",
-      "active": true,
+      "active": false,
       "default": false
     },
     "ridani-7t-aniso": {
@@ -3745,7 +3863,7 @@
       "osf_env": "OSF_FILE_RIDANI_7T_ANISO",
       "prepacked": true,
       "path": "data/ridani-7t-aniso/scoring",
-      "active": true,
+      "active": false,
       "default": false
     },
     "chisep-mc": {
@@ -3754,8 +3872,57 @@
       "osf_env": "OSF_FILE_CHISEP_MC",
       "prepacked": true,
       "path": "data/chisep-mc/scoring",
+      "active": false,
+      "default": false
+    },
+    "meso-3t": {
+      "track": "chisep",
+      "label": "Mesoscopic 3T",
+      "osf_project": "3afxu",
+      "osf_file": "6ae5f069073ac032cd8ca3e9",
+      "prepacked": true,
+      "path": "data/meso-3t/scoring",
       "active": true,
-      "default": true
+      "default": true,
+      "generator": {
+        "tool": "qsm-forward",
+        "ref": "d709566",
+        "preset": "meso-3t",
+        "wm_rois": true
+      }
+    },
+    "wm-micro-7t": {
+      "track": "chisep",
+      "label": "WM microstructure 7T",
+      "osf_project": "3afxu",
+      "osf_file": "6ae5f09fbfc561b3821d3245",
+      "prepacked": true,
+      "path": "data/wm-micro-7t/scoring",
+      "active": true,
+      "default": false,
+      "generator": {
+        "tool": "qsm-forward",
+        "ref": "d709566",
+        "preset": "wm-micro-7t",
+        "wm_rois": true
+      }
+    },
+    "ridani-3t-aniso-fitted": {
+      "track": "chisep",
+      "label": "Ridani 3T anisotropic (fitted R2\u2032)",
+      "osf_project": "3afxu",
+      "osf_file": "6ae5f0f3e93b8f3f588ca3ba",
+      "prepacked": true,
+      "path": "data/ridani-3t-aniso-fitted/scoring",
+      "active": true,
+      "default": false,
+      "generator": {
+        "tool": "qsm-forward",
+        "ref": "d709566",
+        "preset": "ridani-3t-aniso",
+        "r2prime_source": "fitted",
+        "wm_rois": true
+      }
     },
     "prisma-bridge-run1": {
       "track": "repro",

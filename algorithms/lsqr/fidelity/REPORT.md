@@ -4,13 +4,15 @@ QSMxT/QSM-CI#300: does the `lsqr` container compute what the authors' MATLAB com
 the shared harness [`fidelity/matlab/`](../../../fidelity/matlab/README.md) with this algorithm's
 [`config.sh`](config.sh); rerun it whenever `recon.m`, its dependencies or the image change.
 
-- **Checked:** 2026-10-31, on Slurm compute nodes, 8 CPUs per job.
+- **Checked:** 2026-11-01, on Slurm compute nodes, 8 CPUs per job.
 - **Licensed MATLAB:** 23.2.0.2459199 (R2023b) Update 5, with the real toolboxes.
-- **Image checked:** `ghcr.io/astewartau/qsm-ci/heidi@sha256:be334a2c06cd37474175b98950387fc027c40fddf12066d5b4de8d09f6e7e3a4` (`lsqr-v2`).
+- **Image checked:** `ghcr.io/astewartau/qsm-ci/heidi@sha256:a2deee2d35a926871a838509324014dbc482e4ca5c02fc09b1fed348376a8229` (`lsqr-v4`).
   - `recon` is compiled with that licensed R2023b against the real toolboxes, with no shims.
   - It runs on the R2023b MATLAB Runtime (23.2.0.3097123 (R2023b) Update 11) under Apptainer.
-- **Previous image:** `lsqr-v1` `sha256:b4cab7ed78d98c1a02e0d3c1ae68d2e890fd2fe1c7da358ad90d5091a389c335` wrote the
-  same outputs but never exited (below); `lsqr-v2` only adds `close all force;` at the end of `recon.m`.
+- **Previous images:** `lsqr-v1` `sha256:b4cab7ed78d98c1a02e0d3c1ae68d2e890fd2fe1c7da358ad90d5091a389c335` wrote the
+  same outputs but never exited; `lsqr-v2` `sha256:be334a2c06cd37474175b98950387fc027c40fddf12066d5b4de8d09f6e7e3a4` added
+  `close all force;` (below); `lsqr-v4` also crops the mask with frame value 0, so a mask with no zero border runs
+  (below). Each gave the same numbers on both cases. (`lsqr-v3` was `lsqr-v2` on the Update 5 Runtime, below.)
 - **Sources:** gitlab.com/R01NS114227/qsm_heidi 4592631 (`lsqr/`: `computesusceptibility_lsqr.m` and the helpers it calls).
 - **Cases:**
   - `sim`: QSM-CI's in-silico head (QSM Challenge 2.0 simulation: 7 T, 4 echoes, 1 mm, 164×205×205), its ground-truth local field and its magnitude.
@@ -52,6 +54,13 @@ the residual history. Licensed MATLAB `-batch` exits anyway, but a compiled bina
 open: `lsqr-v1` wrote every output in about 3 minutes and then waited until the job's 2.5 h limit (jobs 31154776,
 31154780). `recon.m` now ends with `close all force;`, after `chimap` is written; the numbers are unchanged.
 
+**Mask with no zero border (fixed in `lsqr-v4`):** `inversion_lsqr.m` crops with `zealouscrop(mask)`, which takes
+the value to crop from the mask's edge rows. QSM-CI's smoke test gives a 32³ box inside the brain, all ones, which
+that call crops to 1×1, so `computesusceptibility_lsqr` stopped with "Index exceeds the number of array elements"
+(licensed MATLAB too). `recon.m` now passes frame value 0, as the authors' `prepareforconvolution.m` crops a mask, so
+only all-0 slices are removed. On both fidelity cases the crop is unchanged (checked on their masks), and the smoke
+box now runs (44 s in licensed MATLAB; BUILD.md).
+
 **Where the functions resolved** (`intermediates.json`): `computesusceptibility_lsqr`, `generateunitdipoleresponse`,
 `zealouscrop`, `prepareforconvolution`, `phase2susceptibilityfactor` and `getconstants` resolve to the bundled
 `deps/lsqr` in the container's extracted archive and in licensed MATLAB; `lsqr` to the Runtime's
@@ -63,10 +72,12 @@ open: `lsqr-v1` wrote every output in about 3 minutes and then waited until the 
 
 | What | Job ids |
 |---|---|
-| Compile | 31198620 (`lsqr-v2`; 31130156: `lsqr-v1`) |
-| Setup | 31198966 |
-| sim: container, real, real2, compare | 31198967, 31198968, 31198969, 31198970 |
-| invivo: container, real, real2, compare | 31198971, 31198972, 31198973, 31198974 |
+| Compile | 31205536 (`lsqr-v4`; 31198620: `lsqr-v2`; 31130156: `lsqr-v1`) |
+| Setup | 31205555 |
+| sim: container, real, real2, compare | 31205556, 31205557, 31205558, 31205559 |
+| invivo: container, real, real2, compare | 31205560, 31205561, 31205562, 31205563 |
+| `lsqr-v2` (setup; sim; invivo) | 31198966; 31198967–31198970; 31198971–31198974 |
 | `lsqr-v1` (container timed out; compared afterwards on its outputs) | 31154775–31154783, compares 31198603, 31198604 |
 | `lsqr-v3` on the Update 5 Runtime (setup, sim and invivo container + compare) | 31200790–31200794 |
 | Probes: compiled `recon` on the host; licensed libraries in the image's userland | 31201080; 31201136 |
+| Smoke box (licensed MATLAB): reproduction; fix check, with the crop on both fidelity masks | 31205390; 31205412 |

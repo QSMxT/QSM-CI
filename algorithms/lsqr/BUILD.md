@@ -30,8 +30,8 @@ list nothing (`submit.sh lsqr build`).
 
 ## 3. Bake the image and push
 ```bash
-podman build -t ghcr.io/astewartau/qsm-ci/heidi:lsqr-v2 .   # needs ./recon and ./LICENSE.qsm_heidi
-podman push  ghcr.io/astewartau/qsm-ci/heidi:lsqr-v2
+podman build -t ghcr.io/astewartau/qsm-ci/heidi:lsqr-v4 .   # needs ./recon and ./LICENSE.qsm_heidi
+podman push  ghcr.io/astewartau/qsm-ci/heidi:lsqr-v4
 ```
 Make the `heidi` package public (a new package starts private; it holds the `lsqr` and `heidi` images), pin `image:` in `algorithm.yml` by the
 pushed digest, and rerun the fidelity check ([`fidelity/REPORT.md`](fidelity/REPORT.md)).
@@ -48,7 +48,7 @@ magnitude, and masks from a step not in the repository). `recon.m` gives its com
   the one `phase2susceptibilityfactor.m` takes (L70-71); LSQR is linear, so it does not change χ.
 - **Mask:** QSM-CI's mask, for `mask_tissue .* mask_phase .* mask`.
 - **Magnitude:** the root sum of squares of the echo magnitudes (QSMxT's combined magnitude).
-- **Grid:** `zealouscrop` to the mask's bounding box and `prepareforconvolution` with the 40-voxel
+- **Grid:** `zealouscrop` to the mask's bounding box (frame value 0; see "Cropping a mask with no zero border" below) and `prepareforconvolution` with the 40-voxel
   anti-aliasing frame, undone at the end.
 - **Options:** `tolerance` 1e-5, `maxit` 400, `offsetUseBool` true, `isFourierDomainFormula` false
   (the dipole sampled in the spatial domain), `residualWeighting` 0.2/9.4·B0, no Tikhonov term,
@@ -65,3 +65,13 @@ magnitude, and masks from a step not in the repository). `recon.m` gives its com
 `computesusceptibility_lsqr.m` ends with an unconditional `figure; plot(...)` of LSQR's residual history. A
 compiled binary does not exit while a figure is open, so `recon.m` ends with `close all force;` once `chimap` is
 written (images before `*-v2` hung until the job's time limit). The numbers are unchanged.
+
+## Cropping a mask with no zero border
+`inversion_*.m` call `zealouscrop(mask)` with no frame value, so `zealouscrop` takes the value to crop from
+the mask's edge rows. That works for a full-FOV brain mask, which has zero background at the edge. A mask
+with no zero border, such as QSM-CI's smoke test (a 32³ box inside the brain, all ones), has only uniform
+all-1 slices: the call crops it to 1×1, and `computesusceptibility_lsqr` stops with "Index exceeds the
+number of array elements" (licensed MATLAB does the same). `recon.m` passes frame value 0, as the
+authors' `prepareforconvolution.m` crops a mask (`zealouscrop(mask, [], 0)`), so only all-0 slices are
+removed. For any mask with zero background at the edge the crop is the same (checked on both fidelity
+cases' masks); a mask with none is not cropped.

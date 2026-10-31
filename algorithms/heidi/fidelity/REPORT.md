@@ -4,13 +4,15 @@ QSMxT/QSM-CI#300: does the `heidi` container compute what the authors' MATLAB co
 the shared harness [`fidelity/matlab/`](../../../fidelity/matlab/README.md) with this algorithm's
 [`config.sh`](config.sh); rerun it whenever `recon.m`, its dependencies or the image change.
 
-- **Checked:** 2026-10-31, on Slurm compute nodes, 8 CPUs per job.
+- **Checked:** 2026-11-01, on Slurm compute nodes, 8 CPUs per job.
 - **Licensed MATLAB:** 23.2.0.2459199 (R2023b) Update 5, with the real toolboxes.
-- **Image checked:** `ghcr.io/astewartau/qsm-ci/heidi@sha256:5eb9366203b482e4a0dfa372b57dc6521db21676e22905351c132b18b2619104` (`heidi-v2`).
+- **Image checked:** `ghcr.io/astewartau/qsm-ci/heidi@sha256:69f572266b7f232d35fc269774f547f2cd81ae4cdb98c1ed35cdd33290a1a1a6` (`heidi-v4`).
   - `recon` is compiled with that licensed R2023b against the real toolboxes, with no shims.
   - It runs on the R2023b MATLAB Runtime (23.2.0.3097123 (R2023b) Update 11) under Apptainer.
-- **Previous image:** `heidi-v1` `sha256:bda981d9481fbb15c21e2233d61b1892ccb3471b15bad7bb3e6ebe89fdf3ed1d` wrote the
-  same outputs but never exited (below); `heidi-v2` only adds `close all force;` at the end of `recon.m`.
+- **Previous images:** `heidi-v1` `sha256:bda981d9481fbb15c21e2233d61b1892ccb3471b15bad7bb3e6ebe89fdf3ed1d` wrote the
+  same outputs but never exited; `heidi-v2` `sha256:5eb9366203b482e4a0dfa372b57dc6521db21676e22905351c132b18b2619104`
+  added `close all force;` (below); `heidi-v4` also crops the mask with frame value 0, so a mask with no zero border
+  runs (below). Each gave the same numbers on both cases. (`heidi-v3` was `heidi-v2` on the Update 5 Runtime.)
 - **Sources:** gitlab.com/R01NS114227/qsm_heidi 4592631 (`heidi/` and `lsqr/`: LSQR's seed, then
   `computesusceptibility_heidi.m`, with the ITK 3.20 `GradientAnisotropicDiffusionImageFilter` the repository ships).
 - **Cases:**
@@ -48,6 +50,12 @@ iteration. The residual shows only on the in-silico grid (164×205×205, two odd
 45 minutes and then waited until the job's 8.5 h limit (jobs 31154794, 31154798). `recon.m` now ends with
 `close all force;`, after `chimap` is written; the container now exits after about 50 minutes.
 
+**Mask with no zero border (fixed in `heidi-v4`):** `inversion_heidi.m` crops with `zealouscrop(mask)`, which a
+mask with no zero border (QSM-CI's smoke box, a 32³ box inside the brain) reduces to 1×1, so the LSQR seed stopped
+with "Index exceeds the number of array elements" (licensed MATLAB too). `recon.m` now passes frame value 0, as the
+authors' `prepareforconvolution.m` crops a mask; the crop is unchanged on both fidelity cases, and the smoke box
+now runs (about 20 minutes in licensed MATLAB at 8 threads; BUILD.md and `../../lsqr/fidelity/REPORT.md`).
+
 **Deviation:** `reppath.m` gets the one line BUILD.md describes (`reports/deviations.diff`), so the compiled binary
 finds the ITK executable at `/opt/heidi-itk`; unset in licensed MATLAB, where `reppath` is the original. Both use the
 same executable and libraries, copied from the repository.
@@ -64,9 +72,11 @@ Runtime's `toolbox/matlab/sparfun` in the container and to the licensed installa
 
 | What | Job ids |
 |---|---|
-| Compile | 31198619 (`heidi-v2`; 31130157: `heidi-v1`) |
-| Setup | 31198957 (31198728: failed pulling the image, rerun) |
-| sim: container, real, real2, compare | 31198958, 31198959, 31198960, 31198961 |
-| invivo: container, real, real2, compare | 31198962, 31198963, 31198964, 31198965 |
+| Compile | 31205535 (`heidi-v4`; 31198619: `heidi-v2`; 31130157: `heidi-v1`) |
+| Setup | 31205564 |
+| sim: container, real, real2, compare | 31205565, 31205566, 31205567, 31205568 |
+| invivo: container, real, real2, compare | 31205569, 31205570, 31205571, 31205572 |
+| `heidi-v2` (setup; sim; invivo) | 31198957 (31198728: failed pulling the image); 31198958–31198961; 31198962–31198965 |
 | `heidi-v1` (container timed out; compared afterwards on its outputs) | 31154793–31154801, compares 31198601, 31198602 |
 | `heidi-v3` on the Update 5 Runtime (setup, sim and invivo container + compare) | 31200800–31200805 |
+| Smoke box (licensed MATLAB): reproduction; fix check | 31205390; 31205412 |

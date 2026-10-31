@@ -23,7 +23,7 @@ authors:
 doi: 10.1016/j.neuroimage.2012.05.067
 code_url: https://gitlab.com/R01NS114227/qsm_heidi
 license: "qsm_heidi LICENSE: non-commercial academic research use (Ferdinand Schweser, 2025)"
-image: ghcr.io/astewartau/qsm-ci/heidi@sha256:5eb9366203b482e4a0dfa372b57dc6521db21676e22905351c132b18b2619104   # heidi-v2
+image: ghcr.io/astewartau/qsm-ci/heidi@sha256:69f572266b7f232d35fc269774f547f2cd81ae4cdb98c1ed35cdd33290a1a1a6   # heidi-v4
 run: bash run.sh
 smoke_box: 32
 timeout_minutes: 240   # NESTA with tolerance eps runs every continuation step to its 500 iterations
@@ -33,8 +33,8 @@ matlab:
 # Container vs the authors' code in licensed MATLAB with the real toolboxes (QSMxT/QSM-CI#300;
 # fidelity/REPORT.md). Rerun and update whenever the image changes.
 fidelity:
-  date: 2026-10-31
-  image: sha256:5eb9366203b482e4a0dfa372b57dc6521db21676e22905351c132b18b2619104   # heidi-v2
+  date: 2026-11-01
+  image: sha256:69f572266b7f232d35fc269774f547f2cd81ae4cdb98c1ed35cdd33290a1a1a6   # heidi-v4
   matlab: R2023b Update 5 (23.2.0.2459199)
   sources: qsm_heidi 4592631 (heidi/computesusceptibility_heidi.m, lsqr/computesusceptibility_lsqr.m, ITK 3.20 filter)
   tolerance: in vivo identical; in silico chi NRMSE 0.073 % (max 0.0050 ppm), from the LSQR seed's 0.059 %   # 8 threads
