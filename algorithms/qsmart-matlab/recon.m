@@ -105,12 +105,10 @@ function recon(inp, out)
     if ndims(ph) == 3,  ph  = reshape(ph,  [size(ph)  1]); end   % single-echo -> 1-echo 4-D
     if ndims(mag) == 3, mag = reshape(mag, [size(mag) 1]); end
 
-    % QSMART/STI assume even matrix dims (adjust_offset's -N/2:N/2-1 k-grid, STI's
-    % calcD2Matrix). Zero-pad odd dims to even (post) and crop back at the end.
-    sz0 = size(mask); po = mod(sz0, 2);
-    ph   = padarray(ph,   po, 0, 'post');
-    mag  = padarray(mag,  po, 0, 'post');
-    mask = padarray(mask, po, 0, 'post');
+    % The matrix is used as given, as the authors' QSMART.m does: no padding of odd dims
+    % (adjust_offset.m and STI's QSM_iLSQR run on odd matrices; padding changed the vessel mask,
+    % the Laplacian-unwrapped field and the final chi; astewartau/QSM.rs#320).
+    sz0 = size(mask);
 
     % ---- run in a scratch dir (the toolbox writes NIfTI intermediates to cwd) ----
     wd = tempname; mkdir(wd); old = cd(wd); cleaner = onCleanup(@() cd(old));
@@ -145,7 +143,6 @@ function recon(inp, out)
     % Combining 2-stage chi maps (returns the offset-adjusted combined map, ppm)
     chi = adjust_offset(mask.*R_0 - vasc_only, lfs_sdf, double(chi_iLSQR_1), double(chi_iLSQR_2), params);
     chi = double(chi) .* mask;
-    chi = chi(1:sz0(1), 1:sz0(2), 1:sz0(3));   % crop the even-dim padding
 
     cd(old);
     if ~isempty(idir)

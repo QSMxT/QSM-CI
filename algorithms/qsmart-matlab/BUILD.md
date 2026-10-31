@@ -99,8 +99,8 @@ Rerun it whenever `recon.m` or the image changes.
 ## 4. Bake the image and push
 
 ```bash
-podman build -t ghcr.io/astewartau/qsm-ci/matlab-qsmart:v3 .     # needs ./recon from §3
-podman push  ghcr.io/astewartau/qsm-ci/matlab-qsmart:v3
+podman build -t ghcr.io/astewartau/qsm-ci/matlab-qsmart:v4 .     # needs ./recon from §3
+podman push  ghcr.io/astewartau/qsm-ci/matlab-qsmart:v4
 ```
 
 Keep the package public, pin `image:` in `algorithm.yml` by the pushed digest, and rerun the
@@ -118,7 +118,8 @@ itself, so the Dockerfile sets it for the compiled binary.
 
 Images: `v1` (R2026a Runtime, toolbox shims, N4 output cast to double); `v2` (R2023b, shims with
 the border fix, N4 output kept single as the original); `v3` (R2023b, the real toolboxes, no
-shims; see `fidelity:` in `algorithm.yml`).
+shims); `v4` (as `v3`, but odd matrix dims are no longer zero-padded to even: the authors'
+code runs on the matrix as given; see `fidelity:` in `algorithm.yml`).
 
 ## Units
 
