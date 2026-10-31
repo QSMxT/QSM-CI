@@ -41,7 +41,7 @@ separate.
 ## How QSM-CI runs it
 
 `run.sh` reads `B0`, `B0_dir` and `TE` from `params.json` with `jq`, forwards any
-`n_inner` / `chi_bound` / `max_lm_iter` overrides from `config.json` (the `qsm-ci run --set` path),
+`n_inner` / `chi_bound` / `unwrap_phase` / `max_lm_iter` overrides from `config.json` (the `qsm-ci run --set` path),
 passes `chimap-echoes.nii.gz` as `--qsm-per-echo` (or `chimap.nii.gz` once per echo when the dataset
 has no `chimap-echoes`; a qsmxt without that flag, such as the pinned v10.0.0, takes `--qsm` alone),
 calls the CLI into a scratch prefix, and gzips the two artifacts into `/output`:
@@ -73,6 +73,7 @@ qsm-ci run decompose-qsmrs … --set n_inner=4
 |---|---|---|
 | `n_inner` | 10 | alternating three-stage fit passes per voxel (the reference's inner-iteration count) |
 | `chi_bound` | 0.5 | upper bound on \|χ\| in the per-voxel fit, ppm |
+| `unwrap_phase` | false | unwrap the phase along the echoes (needs a qsmxt with `--unwrap-phase`) |
 | `max_lm_iter` | 30 | max Levenberg–Marquardt iterations per fit stage |
 
 Defaults are qsm-core's `DecomposeParams::default()`; no tuned values are declared.
@@ -81,7 +82,9 @@ Defaults are qsm-core's `DecomposeParams::default()`; no tuned values are declar
 echo-spacing limit, π / ((2/3)·γ·B0·ΔTE_max). These are what QSMxT suggests at 7 T (its rules
 `decompose.unwrap-7t` and `decompose.chi-bound-7t`, QSM.rs#345), and a QSMxT user gets them by
 accepting the suggestion. QSM-CI scores the method as QSMxT runs it. At 3 T the entry runs the
-defaults above, the authors' settings. A `--set chi_bound=…` still overrides the bound.
+defaults above, the authors' settings. `--set chi_bound=…` and `--set unwrap_phase=…` override
+each suggestion. The parity pair against `decompose-qsm` sets both to the authors' defaults
+(`unwrap_phase=false`, `chi_bound=0.5`), which is what the MATLAB reference runs at any field.
 
 ## Output mapping — where this differs from the MATLAB entry
 

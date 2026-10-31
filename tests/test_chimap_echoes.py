@@ -118,13 +118,16 @@ def test_decompose_qsmrs_opts_in_and_the_flag_is_optional():
     assert not flag.required and flag.nargs == "+"   # one 4D file, or one 3D map per echo
 
 
-def _run_decompose(tmp_path, *, per_echo_flag: bool, echoes: bool, b0: float = 3.0) -> list:
+def _run_decompose(tmp_path, *, per_echo_flag: bool, echoes: bool, b0: float = 3.0,
+                   config: "dict | None" = None) -> list:
     inp, out, bin_ = tmp_path / "in", tmp_path / "out", tmp_path / "bin"
     for d in (inp, out, bin_):
         d.mkdir(exist_ok=True)
     (inp / "params.json").write_text(json.dumps({"TE": TE, "B0": b0, "B0_dir": [0, 0, 1]}))
     if echoes:
         (inp / "chimap-echoes.nii.gz").write_bytes(b"x")
+    if config is not None:
+        (inp / "config.json").write_text(json.dumps(config))
     log = tmp_path / "qsmxt.args"
     help_text = "--qsm-per-echo --unwrap-phase" if per_echo_flag else "--qsm"
     (bin_ / "qsmxt").write_text(
@@ -216,3 +219,14 @@ def test_gen_chisep_masks_every_echo_to_the_brain(tmp_path):
     got = nib.load(str(tmp_path / "inputs" / "chimap-echoes.nii.gz")).get_fdata()
     assert got.shape == shape + (len(TE),)
     np.testing.assert_array_equal(got, np.repeat(mask[..., None], len(TE), axis=-1))
+
+
+@pytest.mark.skipif(shutil.which("jq") is None, reason="run.sh needs jq")
+@pytest.mark.parametrize("unwrap", ["false", False])
+def test_decompose_qsmrs_set_overrides_the_7t_suggestions(tmp_path, unwrap):
+    """The parity pair runs the authors' defaults at 7 T (no unwrapping, 0.5 ppm), as MATLAB does."""
+    args = _run_decompose(tmp_path, per_echo_flag=True, echoes=False, b0=7.0,
+                          config={"unwrap_phase": unwrap, "chi_bound": "0.5"})
+    assert args.count("--unwrap-phase") == 1 and args.count("--chi-bound") == 1
+    assert args[args.index("--unwrap-phase") + 1] == "false"
+    assert args[args.index("--chi-bound") + 1] == "0.5"
