@@ -64,12 +64,11 @@ matlab:
   runtime: r2023b
 # Container vs the original code in licensed MATLAB (QSMxT/QSM-CI#300; fidelity/REPORT.md). Rerun
 # and update whenever the image changes.
-# The fidelity record below is v2's; v3's check (licensed R2023b on Bunya) is pending.
 fidelity:
-  date: 2026-10-28
-  image: sha256:a273a9b34f2863e4dac7e0c99f2c90e0dc220c56bf2e0f892c671a16be40112f
+  date: 2026-10-31
+  image: sha256:39a91b0435d6729cfd4a8c2441ebad1cbfe45c7358ea6d3ca95a1b65ec0e4033
   matlab: R2023b Update 5 (23.2.0.2459199), Optimization Toolbox 23.2, Parallel Computing Toolbox 23.2
-  tolerance: identical   # chi-para and chi-dia (no intermediates) on a 33^3 central box, phantom and in vivo, 8 workers
+  tolerance: identical   # chi-para and chi-dia (no intermediates) on a 33^3 central box, phantom and in vivo, with and without chimap-echoes, 8 workers
   result: pass
   report: algorithms/decompose-qsm/fidelity/REPORT.md
 # Feasibility CONFIRMED on Bunya: full-brain fit ~31 min on 48 cores (job 26707883). Uses the provided
