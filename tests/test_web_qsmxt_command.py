@@ -29,7 +29,7 @@ QSMXT_VALUES = {
                         "star"},  # star: QSMxT main (QSMxT#429), not yet in a release
 }
 # Flags (beyond the algorithm flags) that the command may carry; all exist on `qsmxt run`.
-EXTRA_FLAGS = {"--no-medi-smv", "--vsharp-deconvolve", "--vsharp-threshold"}
+EXTRA_FLAGS = {"--no-medi-smv", "--vsharp-deconvolve", "--vsharp-threshold", "--b0-estimation"}
 
 PIPELINES = {
     "romeo+vsharp+rts": ["romeo-qsmrs", "vsharp-qsmrs", "rts-qsmrs"],

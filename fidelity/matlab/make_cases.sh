@@ -17,7 +17,7 @@
 set -eo pipefail
 C="$FID_ROOT/cases"; mkdir -p "$C"
 cpi() { mkdir -p "$1"; shift; local d=$1; shift; for f in "$@"; do cp "$d/$f" "$C/$CASE/"; done; }
-CASE=sim-bfr;    cpi "$C/$CASE" "$FID_SIM/groundtruth" totalfield.nii.gz; cpi "$C/$CASE" "$FID_SIM/inputs" mask.nii.gz params.json
+CASE=sim-bfr;    cpi "$C/$CASE" "$FID_SIM/groundtruth" totalfield.nii.gz; cpi "$C/$CASE" "$FID_SIM/inputs" mask.nii.gz params.json magnitude.nii.gz
 CASE=sim-dipole; cpi "$C/$CASE" "$FID_SIM/groundtruth" localfield.nii.gz; cpi "$C/$CASE" "$FID_SIM/inputs" mask.nii.gz params.json magnitude.nii.gz
 CASE=chisep-mc;  cpi "$C/$CASE" "$FID_CHISEP" localfield.nii.gz r2prime.nii.gz chimap.nii.gz magnitude.nii.gz mask.nii.gz params.json
 
@@ -35,7 +35,7 @@ tes=$(python3 -c "import json;print(*json.load(open('$I/params.json'))['TE'])")
 q r2star "$I/magnitude.nii.gz" -m "$T/mask_vsharp.nii.gz" -o "$T/r2star.nii.gz" --echo-times $tes
 module load matlab/R2023b
 matlab -nodisplay -batch "i=niftiinfo('$T/r2star.nii.gz'); r=double(niftiread(i)); r=0.52*max(r,0); r(~isfinite(r))=0; i.Datatype='single'; i.BitsPerPixel=32; i.MultiplicativeScaling=1; i.AdditiveOffset=0; niftiwrite(single(r), '$T/r2prime', i, 'Compressed', true);"
-CASE=invivo-bfr;    cpi "$C/$CASE" "$T" totalfield.nii.gz; cpi "$C/$CASE" "$I" mask.nii.gz params.json
+CASE=invivo-bfr;    cpi "$C/$CASE" "$T" totalfield.nii.gz; cpi "$C/$CASE" "$I" mask.nii.gz params.json magnitude.nii.gz
 CASE=invivo-dipole; cpi "$C/$CASE" "$T" localfield.nii.gz; cpi "$C/$CASE" "$I" params.json magnitude.nii.gz
 cp "$T/mask_vsharp.nii.gz" "$C/invivo-dipole/mask.nii.gz"
 CASE=invivo-chisep; cpi "$C/$CASE" "$T" localfield.nii.gz r2prime.nii.gz chimap.nii.gz; cpi "$C/$CASE" "$I" params.json magnitude.nii.gz

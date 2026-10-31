@@ -58,4 +58,4 @@ parameters:
   description: maximum iterations (`maxit`)
 - name: pad
   default: 0
-  description: "QSM.jl `pad` (all three axes): >= 0 zero-pads to a fast FFT size (QSM.jl default 0: padding only up to that size); -1 does not pad, as QSM.rs"
+  description: "QSM.jl `pad` (all three axes): >= 0 zero-pads to a fast FFT size (QSM.jl default 0: padding only up to that size); -1 does not pad. QSM.rs pads the same way by default (astewartau/QSM.rs#323)"

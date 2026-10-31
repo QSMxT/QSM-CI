@@ -424,7 +424,8 @@
         "chimap",
         "magnitude",
         "mask",
-        "params"
+        "params",
+        "chimap-echoes"
       ],
       "domain": "chisep",
       "engine": "QSMxT / QSM.rs",
@@ -432,7 +433,7 @@
       "language": "Rust",
       "family": "iterative",
       "learning": "none",
-      "description": "DECOMPOSE-QSM (Chen et al. 2021) \u2014 signal-domain susceptibility source separation, as the Rust implementation in QSM.rs exposed by `qsmxt separate decompose`. Unlike the R2'-based methods it fits the multi-echo COMPLEX GRE signal per voxel: a three-stage alternating bounded least-squares fit of {C+, C\u2212, C0, R2*_0, \u03c7+, \u03c7\u2212}, repeated n_inner times, then reconstructs each source from the fitted parameters as a per-compartment phase accumulation. Like the compiled-MATLAB entry (decompose-qsm) the signal's phase term is synthesized from the provided \u03c7_total (chimap) rather than re-derived from raw phase \u2014 \u03c7 is echo-independent, so this isolates DECOMPOSE's separation step from any upstream QSM error and drops the STI-Suite dependency. Needs no R2' and no local field: \u03c7_total plus the multi-echo magnitude only (GRE-only).",
+      "description": "DECOMPOSE-QSM (Chen et al. 2021) \u2014 signal-domain susceptibility source separation, as the Rust implementation in QSM.rs exposed by `qsmxt separate decompose`. Unlike the R2'-based methods it fits the multi-echo COMPLEX GRE signal per voxel: a three-stage alternating bounded least-squares fit of {C+, C\u2212, C0, R2*_0, \u03c7+, \u03c7\u2212}, repeated n_inner times, then reconstructs each source from the fitted parameters as a per-compartment phase accumulation. Each echo's phase term comes from the provided per-echo \u03c7(TE) (chimap-echoes) where the dataset ships it, else from \u03c7_total (chimap) at every echo, rather than being re-derived from raw phase: this isolates DECOMPOSE's separation step from any upstream QSM error and drops the STI-Suite dependency. Needs no R2' and no local field: \u03c7 plus the multi-echo magnitude only (GRE-only).",
       "citation": "Chen J., Gong N.-J., Chaim K.T., Otaduy M.C.G., Liu C., \"Decompose quantitative susceptibility mapping (QSM) to sub-voxel diamagnetic and paramagnetic components based on gradient-echo MRI data\", NeuroImage 2021;242:118477.\n",
       "doi": "10.1016/j.neuroimage.2021.118477",
       "code_url": "https://github.com/astewartau/QSM.rs",
@@ -464,7 +465,7 @@
         }
       ],
       "ci_notes": [
-        "Both DECOMPOSE entries give the same \u03c7+ and \u03c7\u2212 maps. The MATLAB reference fits the conjugate of the signal (MATLAB's conjugate transpose on ydata), which mirrors the fit exactly, and then writes DSC as \u03c7+; the Rust port fits the signal itself and writes PSC as \u03c7+. The two swaps cancel (astewartau/QSM.rs#333). As in decompose-qsm, the QSM given for every echo's phase is the one provided \u03c7_total (the authors computed a STAR-QSM per echo); a qsmxt with `separate decompose --qsm-per-echo` gets chimap once per echo.\n",
+        "Both DECOMPOSE entries give the same \u03c7+ and \u03c7\u2212 maps. The MATLAB reference fits the conjugate of the signal (MATLAB's conjugate transpose on ydata), which mirrors the fit exactly, and then writes DSC as \u03c7+; the Rust port fits the signal itself and writes PSC as \u03c7+. The two swaps cancel (astewartau/QSM.rs#333). The authors compute a STAR-QSM per echo for each echo's phase. Where the dataset ships the per-echo \u03c7(TE) (`chimap-echoes`), a qsmxt with `separate decompose --qsm-per-echo` gets it; otherwise the one provided \u03c7_total is given at every echo, which carries no echo dependence for the fit.\n",
         "Same algorithm as the compiled-MATLAB entry decompose-qsm, in Rust, on the shared QSMxT engine image \u2014 no new container image. Measured here at ~1.5e3 fitted voxels/s on a single core (12568-voxel synthetic fit, 6 echoes, n_inner=10, 14-core desktop), i.e. ~15-20 min for the 1.31 M-voxel chisep-mc phantom and ~1 h for the 5.0 M-voxel Ridani phantoms, against the MATLAB entry's measured 4.1 h (chisep-mc) / 10.3 h (ridani-3t-aniso) on a 16-core box and a never-finished ridani-3t-iso. The fit uses every core: an old pin to one thread (qsm-core's loop once got slower with threads, fixed by QSM.rs#93) has been dropped.\n"
       ]
     },
@@ -652,6 +653,95 @@
           "name": "tol_update",
           "default": 0.1,
           "description": "convergence threshold on the solution update (percent)"
+        }
+      ],
+      "ci_notes": []
+    },
+    {
+      "slug": "fit-ppm-complex-cornell",
+      "name": "Complex fit + region growing (MEDI toolbox)",
+      "stage": "field-mapping",
+      "inputs": [
+        "phase",
+        "magnitude",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "MEDI toolbox 2024.11.26 (Fit_ppm_complex, unwrapPhase)",
+      "algorithm": "fit-ppm-complex",
+      "language": "MATLAB",
+      "family": "direct",
+      "learning": "none",
+      "description": "MEDI's field map: a magnitude-weighted nonlinear fit of the complex echoes (Fit_ppm_complex), then region-growing phase unwrapping (unwrapPhase), as the Cornell MEDI toolbox 2024.11.26's pipeline script makes it, compiled from MATLAB and run on the license-free MATLAB Runtime. Needs evenly spaced echoes.",
+      "citation": "Liu et al., Magn Reson Med 2013;69(2):467-476",
+      "doi": "10.1002/mrm.24272",
+      "code_url": "http://pre.weill.cornell.edu/mri/pages/qsm.html",
+      "license": "See Cornell MEDI toolbox license",
+      "authors": [
+        "Tian Liu",
+        "Cynthia Wisnieff",
+        "Min Lou",
+        "Weiwei Chen",
+        "Pascal Spincemaille",
+        "Yi Wang"
+      ],
+      "parameters": [
+        {
+          "name": "reltol",
+          "default": "1e-4",
+          "description": "Gauss-Newton stop, relative to the norm of the initial field estimate"
+        },
+        {
+          "name": "max_iter",
+          "default": 30,
+          "description": "maximum Gauss-Newton iterations of the complex fit"
+        }
+      ],
+      "ci_notes": []
+    },
+    {
+      "slug": "fit-ppm-complex-qsmrs",
+      "name": "Complex fit + ROMEO (QSM.rs)",
+      "stage": "field-mapping",
+      "inputs": [
+        "phase",
+        "magnitude",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "fit-ppm-complex",
+      "qsmxt_value": "romeo",
+      "qsmxt_args": [
+        "--b0-estimation complex-fit"
+      ],
+      "language": "Rust",
+      "family": "direct",
+      "learning": "none",
+      "description": "MEDI's complex fit of the echoes (QSM.rs's port of Fit_ppm_complex, `qsmxt fieldmap --b0-estimation complex-fit`), unwrapped spatially with ROMEO: QSM.rs does not port MEDI's region-growing unwrapPhase. Its pair is fit-ppm-complex-cornell, compared on the fit itself (ifreq_raw), its noise map (n_std) and ARLO's R2* (r2star), which this entry writes as intermediates.",
+      "citation": "Liu et al., Magn Reson Med 2013;69(2):467-476",
+      "doi": "10.1002/mrm.24272",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT",
+      "authors": [
+        "Tian Liu",
+        "Cynthia Wisnieff",
+        "Min Lou",
+        "Weiwei Chen",
+        "Pascal Spincemaille",
+        "Yi Wang"
+      ],
+      "parameters": [
+        {
+          "name": "reltol",
+          "default": "1e-4",
+          "description": "Gauss-Newton stop, relative to the norm of the initial field estimate"
+        },
+        {
+          "name": "max_iter",
+          "default": 30,
+          "description": "maximum Gauss-Newton iterations of the complex fit"
         }
       ],
       "ci_notes": []
@@ -1327,6 +1417,11 @@
       ],
       "parameters": [
         {
+          "name": "variant",
+          "default": "wen2014",
+          "description": "implementation: wen2014 (the authors' iSMV.m) or qsmjl (QSM.jl's ismv); a qsmxt after v10.0.0 (the pinned v10.0.0 has only QSM.jl-style iSMV and no --variant)"
+        },
+        {
           "name": "tol",
           "default": "1e-6",
           "description": "tolerance"
@@ -1431,6 +1526,66 @@
         "Yimei Zhu"
       ],
       "parameters": [],
+      "ci_notes": []
+    },
+    {
+      "slug": "lbv-cornell",
+      "name": "LBV (MEDI toolbox)",
+      "stage": "bfr",
+      "inputs": [
+        "totalfield",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "MEDI toolbox 2024.11.26 (LBV.m, mexMGv6)",
+      "algorithm": "lbv",
+      "language": "MATLAB",
+      "family": "direct",
+      "learning": "none",
+      "description": "Laplacian Boundary Value background field removal, the authors' LBV.m and its full-multigrid solver mexMGv6 (Cornell MEDI toolbox 2024.11.26) with its own defaults, compiled from MATLAB and run on the license-free MATLAB Runtime.",
+      "citation": "Zhou et al., NMR Biomed 2014",
+      "doi": "10.1002/nbm.3064",
+      "code_url": "http://pre.weill.cornell.edu/mri/pages/qsm.html",
+      "license": "See Cornell MEDI toolbox license",
+      "authors": [
+        "Dong Zhou",
+        "Tian Liu",
+        "Pascal Spincemaille",
+        "Yi Wang"
+      ],
+      "parameters": [
+        {
+          "name": "tol",
+          "default": 0.01,
+          "description": "stopping tolerance of the coarsest-grid relaxation (absolute, in radians over the echo spacing)"
+        },
+        {
+          "name": "depth",
+          "default": -1,
+          "description": "multigrid levels; -1 picks log2 of the smallest dimension minus 3"
+        },
+        {
+          "name": "peel",
+          "default": 0,
+          "description": "boundary layers removed beyond the one boundary layer"
+        },
+        {
+          "name": "n1",
+          "default": 30,
+          "description": "relaxations per level before the recursive call"
+        },
+        {
+          "name": "n2",
+          "default": 100,
+          "description": "relaxations per level after the recursive call"
+        },
+        {
+          "name": "n3",
+          "default": 100,
+          "description": "relaxations on the finest grid after the full multigrid cycle"
+        }
+      ],
       "ci_notes": []
     },
     {
@@ -1893,7 +2048,8 @@
       "inputs": [
         "localfield",
         "mask",
-        "params"
+        "params",
+        "magnitude"
       ],
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",
@@ -1925,6 +2081,60 @@
           "name": "max_iter",
           "default": 250,
           "description": "iterations"
+        }
+      ],
+      "ci_notes": []
+    },
+    {
+      "slug": "pdf-cornell",
+      "name": "PDF (MEDI toolbox)",
+      "stage": "bfr",
+      "inputs": [
+        "totalfield",
+        "mask",
+        "params",
+        "magnitude"
+      ],
+      "domain": "qsm",
+      "engine": "MEDI toolbox 2024.11.26",
+      "algorithm": "pdf",
+      "language": "MATLAB",
+      "family": "iterative",
+      "learning": "none",
+      "description": "Projection onto Dipole Fields background field removal, the authors' PDF.m (Cornell MEDI toolbox 2024.11.26) with its own defaults, weighted by the field noise from the echo magnitudes as MEDI's pipeline does, compiled from MATLAB and run on the license-free MATLAB Runtime.",
+      "citation": "Liu et al., NMR Biomed 2011",
+      "doi": "10.1002/nbm.1670",
+      "code_url": "http://pre.weill.cornell.edu/mri/pages/qsm.html",
+      "license": "See Cornell MEDI toolbox license",
+      "authors": [
+        "Tian Liu",
+        "Ildar Khalidov",
+        "Ludovic de Rochefort",
+        "Pascal Spincemaille",
+        "Jing Liu",
+        "A. John Tsiouris",
+        "Yi Wang"
+      ],
+      "parameters": [
+        {
+          "name": "tol",
+          "default": 0.1,
+          "description": "CG stopping tolerance, relative to the noise-weighted field"
+        },
+        {
+          "name": "n_cg",
+          "default": 30,
+          "description": "maximum conjugate-gradient iterations"
+        },
+        {
+          "name": "space",
+          "default": "imagespace",
+          "description": "dipole kernel for an oblique B0, 'imagespace' (FFT of the sampled dipole) or 'kspace'"
+        },
+        {
+          "name": "n_pad",
+          "default": 40,
+          "description": "zero padding (voxels) around the mask's bounding box, where the background sources live"
         }
       ],
       "ci_notes": []
@@ -2476,6 +2686,11 @@
           "name": "radius",
           "default": 6.0,
           "description": "SMV kernel radius (mm)"
+        },
+        {
+          "name": "variant",
+          "default": "sepia",
+          "description": "implementation reproduced: sepia (SEPIA's SHARP.m) or qsmjl (QSM.jl's sharp); a parity switch, not a tuning parameter"
         }
       ],
       "ci_notes": []
@@ -2620,6 +2835,88 @@
       "ci_notes": []
     },
     {
+      "slug": "tfi-cornell",
+      "name": "TFI (MEDI toolbox)",
+      "stage": "bfr+dipole",
+      "inputs": [
+        "totalfield",
+        "mask",
+        "params",
+        "magnitude"
+      ],
+      "domain": "qsm",
+      "engine": "MEDI toolbox 2024.11.26 (MEDI_L1 with a preconditioner)",
+      "algorithm": "tfi",
+      "language": "MATLAB",
+      "family": "iterative",
+      "learning": "none",
+      "description": "Preconditioned Total Field Inversion: the total field inverted over the whole field of view in one step, with a preconditioner that makes the background sources cheap to reach. Run as the Cornell MEDI toolbox 2024.11.26 implements it (MEDI_L1 with a preconditioner), with the paper's preconditioner and linear data term and MEDI_L1's defaults otherwise, compiled from MATLAB and run on the license-free MATLAB Runtime.",
+      "citation": "Liu et al., Magn Reson Med 2017;78(1):303-315",
+      "doi": "10.1002/mrm.26946",
+      "code_url": "http://pre.weill.cornell.edu/mri/pages/qsm.html",
+      "license": "See Cornell MEDI toolbox license",
+      "authors": [
+        "Zhe Liu",
+        "Youngwook Kee",
+        "Dong Zhou",
+        "Yi Wang",
+        "Pascal Spincemaille"
+      ],
+      "parameters": [
+        {
+          "name": "lambda",
+          "default": 1000,
+          "description": "data-fidelity weight"
+        },
+        {
+          "name": "precond",
+          "default": 30,
+          "description": "preconditioner value P_B outside the mask (1 inside)"
+        },
+        {
+          "name": "linear",
+          "default": 1,
+          "description": "linear data term (1, the paper's eq. 5) or MEDI_L1's exponential one (0)"
+        },
+        {
+          "name": "merit",
+          "default": 1,
+          "description": "model-error reduction (MERIT), reweighting the noise by the data residual after each iteration"
+        },
+        {
+          "name": "percentage",
+          "default": 0.9,
+          "description": "fraction of voxels kept as edges in the morphology gradient mask"
+        },
+        {
+          "name": "data_weighting",
+          "default": 1,
+          "description": "data weighting, 1 by the field noise from the echo magnitudes, 0 uniform"
+        },
+        {
+          "name": "max_iter",
+          "default": 10,
+          "description": "maximum Gauss-Newton iterations"
+        },
+        {
+          "name": "tol_norm_ratio",
+          "default": 0.1,
+          "description": "stop when the relative update falls below this"
+        },
+        {
+          "name": "cg_max_iter",
+          "default": 100,
+          "description": "maximum conjugate-gradient iterations per Gauss-Newton step"
+        },
+        {
+          "name": "cg_tol",
+          "default": 0.01,
+          "description": "conjugate-gradient relative residual tolerance"
+        }
+      ],
+      "ci_notes": []
+    },
+    {
       "slug": "tfi-qsmrs",
       "name": "TFI (QSM.rs)",
       "stage": "bfr+dipole",
@@ -2717,6 +3014,21 @@
             "sim": 0.0015
           },
           "description": "second-order weight, ppm"
+        },
+        {
+          "name": "reference_divergence",
+          "default": false,
+          "description": "TGV.jl's divergence in the w update instead of the exact adjoint (anisotropic voxels only)"
+        },
+        {
+          "name": "reference_edge_erosion",
+          "default": false,
+          "description": "erode the mask as TGV.jl does, not from the array's edge (masks reaching an array face only)"
+        },
+        {
+          "name": "reference_output_box",
+          "default": false,
+          "description": "\u03c7 over TGV.jl's whole output box, including the rim just outside the eroded mask"
         }
       ],
       "ci_notes": []
@@ -3024,6 +3336,21 @@
           "name": "min_radius",
           "default": 1.0,
           "description": "smallest SMV kernel radius (mm)"
+        },
+        {
+          "name": "radius_step",
+          "default": 1.0,
+          "description": "step between SMV kernel radii (mm)"
+        },
+        {
+          "name": "grid",
+          "default": "isotropic",
+          "description": "working grid: isotropic (1 mm), native or finest; QSM.jl works on the native grid"
+        },
+        {
+          "name": "ball",
+          "default": "default",
+          "description": "SMV ball: default (QSM.rs's) or qsmjl (QSM.jl's); a parity switch, not a tuning parameter"
         }
       ],
       "ci_notes": []
