@@ -118,15 +118,15 @@ def test_decompose_qsmrs_opts_in_and_the_flag_is_optional():
     assert not flag.required and flag.nargs == "+"   # one 4D file, or one 3D map per echo
 
 
-def _run_decompose(tmp_path, *, per_echo_flag: bool, echoes: bool) -> list:
+def _run_decompose(tmp_path, *, per_echo_flag: bool, echoes: bool, b0: float = 3.0) -> list:
     inp, out, bin_ = tmp_path / "in", tmp_path / "out", tmp_path / "bin"
     for d in (inp, out, bin_):
         d.mkdir(exist_ok=True)
-    (inp / "params.json").write_text(json.dumps({"TE": TE, "B0": 3.0, "B0_dir": [0, 0, 1]}))
+    (inp / "params.json").write_text(json.dumps({"TE": TE, "B0": b0, "B0_dir": [0, 0, 1]}))
     if echoes:
         (inp / "chimap-echoes.nii.gz").write_bytes(b"x")
     log = tmp_path / "qsmxt.args"
-    help_text = "--qsm-per-echo" if per_echo_flag else "--qsm"
+    help_text = "--qsm-per-echo --unwrap-phase" if per_echo_flag else "--qsm"
     (bin_ / "qsmxt").write_text(
         "#!/usr/bin/env bash\n"
         f'case " $* " in *" --help "*) echo "{help_text}"; exit 0;; esac\n'
@@ -163,6 +163,17 @@ def test_decompose_qsmrs_falls_back_to_chimap_per_echo(tmp_path):
 def test_decompose_qsmrs_on_a_qsmxt_without_the_flag(tmp_path):
     args = _run_decompose(tmp_path, per_echo_flag=False, echoes=True)
     assert "--qsm-per-echo" not in args and "--qsm" in args
+
+
+@pytest.mark.skipif(shutil.which("jq") is None, reason="run.sh needs jq")
+def test_decompose_qsmrs_applies_qsmxts_7t_suggestions_only_at_7t(tmp_path):
+    def pair(args, flag):
+        return args[args.index(flag) + 1] if flag in args else None
+    (tmp_path / "3t").mkdir(), (tmp_path / "7t").mkdir()
+    at3 = _run_decompose(tmp_path / "3t", per_echo_flag=True, echoes=False, b0=2.89)
+    at7 = _run_decompose(tmp_path / "7t", per_echo_flag=True, echoes=False, b0=6.98)
+    assert pair(at3, "--unwrap-phase") is None and pair(at3, "--chi-bound") is None
+    assert pair(at7, "--unwrap-phase") == "true" and pair(at7, "--chi-bound") == "echo-spacing"
 
 
 def test_pack_dataset_ships_chimap_echoes(tmp_path):

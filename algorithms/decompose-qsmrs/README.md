@@ -77,6 +77,12 @@ qsm-ci run decompose-qsmrs … --set n_inner=4
 
 Defaults are qsm-core's `DecomposeParams::default()`; no tuned values are declared.
 
+**At 7 T** (B0 ≥ 6.5 T) the entry also unwraps the phase along the echoes and bounds |χ| at the
+echo-spacing limit, π / ((2/3)·γ·B0·ΔTE_max). These are what QSMxT suggests at 7 T (its rules
+`decompose.unwrap-7t` and `decompose.chi-bound-7t`, QSM.rs#345), and a QSMxT user gets them by
+accepting the suggestion. QSM-CI scores the method as QSMxT runs it. At 3 T the entry runs the
+defaults above, the authors' settings. A `--set chi_bound=…` still overrides the bound.
+
 ## Output mapping — where this differs from the MATLAB entry
 
 The two DECOMPOSE entries deliberately use **opposite** paramagnetic/diamagnetic output mappings,
