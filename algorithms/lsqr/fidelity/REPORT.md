@@ -33,12 +33,19 @@ repeatable too (`lsqr-v1` and `lsqr-v2` give the same numbers), but the solver s
 licensed MATLAB converges after 204 iterations (normalised residual 3.281e-4), the container after 198 (3.548e-4).
 In vivo both take 355 iterations to the same residual (5.3223e-4) and every output is identical.
 
-**Cause (likely, not proven):** the container runs the R2023b Runtime at Update 11 and licensed MATLAB is Update 5.
-On Bunya, the Runtime's FFTW (`libmwfftw3.so.3.5.8`), BLAS, LAPACK and MKL libraries are byte-identical to the
-licensed installation's, but `libmwmathcore.so` differs, and the Runtime's `lsqr.m` is encrypted, so it can't be
-compared. A rounding difference early in LSQR's Krylov recurrence is enough to move its stopping iteration. The
-residual shows only on the in-silico grid (164×205×205, two odd dimensions); RESHARP shows the same in-silico-only
-pattern. A Runtime image at Update 5 (`containers.mathworks.com/matlab-runtime:r2023b-update-5`) would test this.
+**Cause: the container's operating system, not MATLAB.** Probed on the in-silico case (all at 8 threads):
+- **Not the Runtime update:** `lsqr-v3`, the same `recon` on the Update 5 Runtime
+  (`containers.mathworks.com/matlab-runtime:r2023b-update-5@sha256:4071c142…`, the licensed build 23.2.0.2459199),
+  gives the same numbers as `lsqr-v2` on Update 11 (198 iterations; jobs 31200790–31200794). `lsqr-v2` stays.
+- **Not compilation:** the compiled `recon` run on the host (RHEL 9, glibc 2.34) against the licensed installation's
+  libraries reproduces licensed MATLAB bit for bit (204 iterations; job 31201080).
+- **The OS userland:** the licensed installation's libraries run inside the image's Ubuntu 22.04 userland (glibc 2.35)
+  reproduce the container bit for bit (198 iterations; job 31201136).
+
+So MATLAB itself is the same; what differs is a system library under it, most likely glibc's libm (MATLAB's
+FFTW, BLAS, LAPACK and MKL are its own and byte-identical). A rounding difference early in LSQR's Krylov recurrence
+moves its stopping iteration. The residual shows only on the in-silico grid (164×205×205, two odd dimensions).
+MathWorks' Runtime images are all Ubuntu-based, so a different base image can't remove it.
 
 **Exit hang (fixed in `lsqr-v2`):** `computesusceptibility_lsqr.m` ends with an unconditional `figure; plot(...)` of
 the residual history. Licensed MATLAB `-batch` exits anyway, but a compiled binary does not exit while a figure is
@@ -61,3 +68,5 @@ open: `lsqr-v1` wrote every output in about 3 minutes and then waited until the 
 | sim: container, real, real2, compare | 31198967, 31198968, 31198969, 31198970 |
 | invivo: container, real, real2, compare | 31198971, 31198972, 31198973, 31198974 |
 | `lsqr-v1` (container timed out; compared afterwards on its outputs) | 31154775–31154783, compares 31198603, 31198604 |
+| `lsqr-v3` on the Update 5 Runtime (setup, sim and invivo container + compare) | 31200790–31200794 |
+| Probes: compiled `recon` on the host; licensed libraries in the image's userland | 31201080; 31201136 |

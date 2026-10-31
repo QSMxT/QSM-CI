@@ -36,7 +36,7 @@ fidelity:
   matlab: R2023b Update 5 (23.2.0.2459199)
   sources: qsm_heidi 4592631 (lsqr/computesusceptibility_lsqr.m)
   tolerance: in vivo identical; in silico chi NRMSE 0.059 % (max 0.0023 ppm; 198 vs 204 LSQR iterations)   # 8 threads
-  result: residual   # in silico only; likely Runtime Update 11 vs licensed Update 5 (REPORT.md), not proven
+  result: residual   # in silico only; the image's Ubuntu userland vs the RHEL host, not MATLAB (REPORT.md)
   report: algorithms/lsqr/fidelity/REPORT.md
 # inversion_lsqr.m's settings (qsm_heidi 4592631). See BUILD.md.
 parameters:

@@ -36,11 +36,12 @@ starts from that seed, so its output differs too; this check can't separate HEID
 difference in silico. In vivo the seed and everything after it are identical, including the ITK gradient-mask
 denoising and NESTA's 8 × 500 iterations.
 
-**Cause (likely, not proven):** the container runs the R2023b Runtime at Update 11 and licensed MATLAB is Update 5.
-On Bunya, the Runtime's FFTW (`libmwfftw3.so.3.5.8`), BLAS, LAPACK and MKL libraries are byte-identical to the
-licensed installation's, but `libmwmathcore.so` differs, and the Runtime's `lsqr.m` is encrypted, so it can't be
-compared. The residual shows only on the in-silico grid (164×205×205, two odd dimensions). A Runtime image at
-Update 5 (`containers.mathworks.com/matlab-runtime:r2023b-update-5`) would test this.
+**Cause: the container's operating system, not MATLAB** (see [`../../lsqr/fidelity/REPORT.md`](../../lsqr/fidelity/REPORT.md)
+for the probes). The same `recon` on the Update 5 Runtime (`heidi-v3`, `containers.mathworks.com/matlab-runtime:r2023b-update-5`)
+gives the same numbers as `heidi-v2` (jobs 31200800–31200805), so `heidi-v2` stays. The licensed installation's
+libraries inside the image's Ubuntu 22.04 userland reproduce the container's LSQR seed, and the compiled binary on the
+RHEL 9 host reproduces licensed MATLAB: a system library under MATLAB, most likely glibc's libm, moves LSQR's stopping
+iteration. The residual shows only on the in-silico grid (164×205×205, two odd dimensions).
 
 **Exit hang (fixed in `heidi-v2`):** LSQR's `computesusceptibility_lsqr.m` ends with an unconditional
 `figure; plot(...)`. A compiled binary does not exit while a figure is open: `heidi-v1` wrote every output in about
@@ -68,3 +69,4 @@ Runtime's `toolbox/matlab/sparfun` in the container and to the licensed installa
 | sim: container, real, real2, compare | 31198958, 31198959, 31198960, 31198961 |
 | invivo: container, real, real2, compare | 31198962, 31198963, 31198964, 31198965 |
 | `heidi-v1` (container timed out; compared afterwards on its outputs) | 31154793–31154801, compares 31198601, 31198602 |
+| `heidi-v3` on the Update 5 Runtime (setup, sim and invivo container + compare) | 31200800–31200805 |
