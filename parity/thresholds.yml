@@ -274,6 +274,9 @@ pairs:
     note: intermediates only (ifreq_raw, n_std, r2star); unmeasured until QSMxT/QSMxT#462
     qsmrs_paths: [src/error.rs, src/pipeline/field_mapping.rs, src/pipeline/phase_utils.rs,
                   src/pipeline/rules.rs, src/utils/multi_echo.rs, src/utils/r2star.rs]
+    # `qsmxt fieldmap --complex-fit-output/--complex-fit-noise-output` (QSMxT/QSMxT#462); written
+    # out because &fieldmap_wiring is defined further down.
+    qsmxt_paths: [src/cli.rs, src/commands/common.rs, src/commands/fieldmap.rs]
     datasets:
       sim: {}
       s002001-kki-achieva-bridge-run1: {}
