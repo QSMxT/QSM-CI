@@ -133,7 +133,8 @@ def mask_derived_to_brain(out: Path):
     m = nib.load(str(out / "inputs" / "mask.nii.gz")).get_fdata() > 0
     for rel in ("inputs/chimap.nii.gz", "inputs/chimap-echoes.nii.gz", "inputs/r2prime.nii.gz",
                 "inputs/localfield.nii.gz", "inputs/r2.nii.gz",
-                "groundtruth/chi-para.nii.gz", "groundtruth/chi-dia.nii.gz", "groundtruth/chimap.nii.gz"):
+                "groundtruth/chi-para.nii.gz", "groundtruth/chi-dia.nii.gz", "groundtruth/chimap.nii.gz",
+                "groundtruth/r2prime-formula.nii.gz"):
         p = out / rel
         if p.exists():
             im = nib.load(str(p))

@@ -112,6 +112,12 @@ without `baseline: true` (`stages.yml` `baseline_only`).
 | `B0_dir` | unit vector | B0 direction in image coordinates |
 | `voxel_size` | mm | voxel dimensions (x, y, z) |
 
+A χ-separation phantom's `params.json` may also carry `chisep_dr_hz_per_ppm`, the paramagnetic
+relaxivity Dr+ (Hz/ppm) the phantom imposes (R2′ = Dr+·|χ+| + Dr−·|χ−|). It documents the phantom;
+methods should not read it, and the shipped entries don't. A method keeps its own published
+relaxivity, so that every method is scored as published. The full relaxation model is in the
+dataset's `groundtruth/chisep.json`.
+
 ### `config.json` (optional — parameter overrides)
 
 A method may declare tunable `parameters:` in its `algorithm.yml` (name, default, description). When a

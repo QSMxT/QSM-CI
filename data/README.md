@@ -100,6 +100,22 @@ as `inputs/chimap-echoes.nii.gz` (x,y,z,echo, ppm, masked to the brain like `chi
 optional per-echo QSM input DECOMPOSE takes ([`CONTRACT.md`](../CONTRACT.md)). None of the four
 current phantoms carries it, so their DECOMPOSE runs fall back to `chimap` at every echo.
 
+A phantom packed from a qsm-forward chi-sep BIDS tree (`qsm-forward chi-sep --preset …`) also
+carries what that tree records about the phantom:
+
+- `inputs/r2prime.nii.gz` is qsm-forward's `*_R2prime`, the R2′ methods are given. With
+  `r2prime_source=fitted` it is fitted from the simulated GRE and spin-echo signal.
+- `groundtruth/r2prime-formula.nii.gz` is `*_desc-formula_R2prime`, the R2′ the phantom imposes
+  (Dr+·|χ+| + Dr−·|χ−|). It is a reference beside the ground truth and is never mounted into a
+  method.
+- `groundtruth/chisep.json` is `*_chisep.json`, the phantom's configuration and relaxivity.
+- `inputs/params.json` gains `chisep_dr_hz_per_ppm`, the imposed Dr+ (`Relaxivity.Dr` for a
+  co-located phantom, `Relaxivity.DrPos` for the Ridani model). It is for documentation and for
+  matching a phantom to a method's assumptions when reading scores. No method reads it; each keeps
+  its published default.
+- `inputs/r2.nii.gz`, `groundtruth/theta.nii.gz` and `groundtruth/wm_rois.nii.gz` come from
+  `*_R2map`, `*_fibreangle` and `*_desc-wmrois_dseg` when the tree has them.
+
 ## In vivo (`invivo`)
 
 2016 QSM Reconstruction Challenge data. Ships **prepacked**, built by
