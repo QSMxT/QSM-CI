@@ -789,7 +789,11 @@ pairs:
                   src/inversion/tiled.rs, src/models/, src/pipeline/inversion.rs,
                   src/pipeline/rules.rs]
     qsmxt_paths: *invert_wiring
-    datasets: *dl_dipole_datasets
+    datasets:
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
+        feed: { localfield: localfield }
+      sim: {}
   ir2qsm:
     reference: ir2qsm
     candidate: ir2qsm-qsmrs
