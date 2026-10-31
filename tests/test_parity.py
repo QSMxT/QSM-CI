@@ -173,7 +173,7 @@ def test_real_thresholds_enabled_pairs_track_their_qsmrs_sources():
             assert not cfg.get("blocked_by"), f"{name}: enabled but blocked_by"
 
 
-ARTIFACTS = ("chimap", "localfield", "totalfield", "chi-para", "chi-dia")
+ARTIFACTS = ("chimap", "localfield", "totalfield", "chi-para", "chi-dia", "mask")
 
 
 def test_real_thresholds_name_real_pairs():

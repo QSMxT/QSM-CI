@@ -687,7 +687,7 @@ pairs:
   xqsm:
     reference: xqsm
     candidate: xqsm-qsmrs
-    enabled: false
+    enabled: true
     qsmrs_models: true
     qsmrs_paths: [src/fft.rs, src/grid.rs, src/inversion/tile_budget.rs, src/inversion/tiled.rs,
                   src/inversion/xqsm.rs, src/models/, src/pipeline/inversion.rs,
@@ -725,7 +725,7 @@ pairs:
   qsmnet-plus:
     reference: qsmnet-plus
     candidate: qsmnet-plus-qsmrs
-    enabled: false
+    enabled: true
     qsmrs_models: true
     qsmrs_paths: [src/fft.rs, src/grid.rs, src/inversion/qsmnet.rs, src/inversion/tile_budget.rs,
                   src/inversion/tiled.rs, src/models/, src/pipeline/inversion.rs,
@@ -741,7 +741,7 @@ pairs:
   lpcnn:
     reference: lpcnn
     candidate: lpcnn-qsmrs
-    enabled: false
+    enabled: true
     qsmrs_models: true
     qsmrs_paths: [src/fft.rs, src/grid.rs, src/inversion/lpcnn.rs, src/inversion/tile_budget.rs,
                   src/inversion/tiled.rs, src/models/, src/pipeline/inversion.rs,
@@ -761,7 +761,7 @@ pairs:
   qsmgan:
     reference: qsmgan
     candidate: qsmgan-qsmrs
-    enabled: false
+    enabled: true
     qsmrs_models: true
     qsmrs_paths: [src/fft.rs, src/grid.rs, src/inversion/qsmgan.rs, src/inversion/tile_budget.rs,
                   src/inversion/tiled.rs, src/models/, src/pipeline/inversion.rs,
@@ -781,9 +781,13 @@ pairs:
   modl-qsm:
     reference: modl-qsm
     candidate: modl-qsm-qsmrs
-    enabled: false
+    enabled: true
     # The first look's 1.5–3.8 % was the reference wrapper writing χ through the mask's uint8
-    # header (fixed in QSMxT/QSM-CI#331); with float32 output the port is 0.0002 %.
+    # header (fixed in QSMxT/QSM-CI#331); with float32 output the port is 0.0002 %. Two more wrapper
+    # bugs, fixed here: χ was padded back at the end where model_test had cropped slice 0 of an odd
+    # axis (sim 63 % → 0.014 %), and a float32 header zoom of 0.99999994 sent model_test down its
+    # resampling branch, which feeds the network an all-ones mask (KKI 15 % → 6e-5 %). What is left
+    # on sim is likely the odd grid itself: the original crops it to even, QSM.rs does not.
     qsmrs_models: true
     qsmrs_paths: [src/fft.rs, src/grid.rs, src/inversion/modl_qsm.rs, src/inversion/tile_budget.rs,
                   src/inversion/tiled.rs, src/models/, src/pipeline/inversion.rs,
@@ -793,11 +797,17 @@ pairs:
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
-      sim: {}
+        # Measured: NRMSE 5.9e-05 %, r 1.000000, max |Δ| 5.4e-07 ppm, p99 |Δ| 5.2e-08 ppm.
+        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1e-06, p99_abs_max: 1e-06 }
+        measured: { main: "run 41192494905: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
+      sim:
+        # Measured: NRMSE 0.0141 %, r 1.000000, max |Δ| 4.8e-05 ppm, p99 |Δ| 9.1e-06 ppm.
+        chimap: { nrmse_max: 0.516, correlation_min: 0.989, max_abs_max: 5.99e-05, p99_abs_max: 1.14e-05 }
+        measured: { main: "run 41191323183: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
   ir2qsm:
     reference: ir2qsm
     candidate: ir2qsm-qsmrs
-    enabled: false
+    enabled: true
     # The authors' default adds noise in the decoder at inference; QSM.rs's export is the
     # noise-free branch, so the reference runs with it off.
     reference_set: { add_noise: "false" }
@@ -820,7 +830,7 @@ pairs:
   autoqsm:
     reference: autoqsm
     candidate: autoqsm-qsmrs
-    enabled: false
+    enabled: true
     qsmrs_models: true
     qsmrs_paths: [src/fft.rs, src/grid.rs, src/inversion/autoqsm.rs, src/inversion/tile_budget.rs,
                   src/inversion/tiled.rs, src/models/, src/pipeline/inversion.rs,
@@ -844,6 +854,9 @@ pairs:
     # astewartau/QSM.rs#367 pads odd axes as the package does (70.6 % → 0.038 % on an odd box).
     # The package itself moves by ~0.1 % between CPUs (the regulariser's sign(VarNet(x)) flips
     # near-zero voxels).
+    note: >-
+      Above rounding: sim 0.016 % but KKI 0.10 % (max |Δ| 0.008 ppm) on the same runner, about the
+      package's own CPU-to-CPU spread; enabling at these limits is Ashley's call
     qsmrs_models: true
     qsmrs_paths: [src/fft.rs, src/grid.rs, src/inversion/nextqsm.rs, src/inversion/tile_budget.rs,
                   src/inversion/tiled.rs, src/models/, src/pipeline/inversion.rs,
@@ -863,7 +876,7 @@ pairs:
   bfrnet:
     reference: bfrnet
     candidate: bfrnet-qsmrs
-    enabled: false
+    enabled: true
     # Both run the same ONNX file; the original's wrapper tiles volumes over 128³ to save memory,
     # QSM.rs runs the whole volume, so the reference runs untiled.
     reference_set: { patch_size: 0 }
@@ -886,7 +899,7 @@ pairs:
   chisepnet:
     reference: chisepnet
     candidate: chisepnet-qsmrs
-    enabled: false
+    enabled: true
     # Both clip negative χ+ and |χ−| to 0, as the authors' test.py does (QSMxT/QSM-CI#333); the
     # hosted chi-sepnet.onnx equals the toolbox's 240904_xsepnet.onnx.
     qsmrs_models: true
@@ -904,7 +917,7 @@ pairs:
   susep-net:
     reference: susep-net
     candidate: susep-net-qsmrs
-    enabled: false
+    enabled: true
     qsmrs_models: true
     qsmrs_paths: [src/geometry.rs, src/grid.rs, src/models/, src/pipeline/rules.rs,
                   src/pipeline/separation.rs, src/separation/chisepnet.rs, src/separation/mod.rs,
@@ -920,7 +933,7 @@ pairs:
   hd-bet:
     reference: hd-bet-qsmci
     candidate: hd-bet-qsmrs
-    enabled: false
+    enabled: true
     # The original's sliding window (QSM.rs's default is the whole volume, which differs at Dice
     # 0.989); no test-time augmentation on either side. The echoes are combined by root-sum-of-
     # squares on both sides (qsmxt after v10.0.0).
