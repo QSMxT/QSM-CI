@@ -33,6 +33,10 @@ artifacts:
   # for its own skill must not, so the CLI and the scorer refuse the declaration on anything else.
   # In isolated mode it comes from the dataset's inputs/dseg.nii.gz, else groundtruth/dseg.nii.gz.
   dseg:        { kind: segmentation, units: label, ndim: 3, file: dseg.nii.gz, baseline_only: true }
+  # QSMART's reliability map R_0 (1 = reliable echo fit): an optional QSMART input, in no stage's
+  # `consumes` and in no dataset. Only port parity supplies it: the `qsmart` pair feeds the original's
+  # own R_0 to the port (parity/thresholds.yml `feed:`). Scoring never mounts it.
+  reliability:   { kind: mask,    units: binary, ndim: 3, file: reliability.nii.gz }
 
 # The three swappable stages, in pipeline order. `consumes`/`produces` are artifact names.
 stages:

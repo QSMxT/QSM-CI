@@ -2260,7 +2260,8 @@
         "totalfield",
         "mask",
         "params",
-        "magnitude"
+        "magnitude",
+        "reliability"
       ],
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",
@@ -2287,7 +2288,13 @@
         "Scott Kolbe",
         "Leigh A. Johnston"
       ],
-      "parameters": [],
+      "parameters": [
+        {
+          "name": "offset_grid",
+          "default": "fft",
+          "description": "k-space grid of the stage combination: fft (QSM.rs's) or qsmart-reference (the authors' adjust_offset.m grid; differs only on odd matrix dims); a parity switch, not a tuning parameter"
+        }
+      ],
       "ci_notes": []
     },
     {

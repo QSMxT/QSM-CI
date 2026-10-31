@@ -1,6 +1,6 @@
 # MCR + ANTs image for the compiled QSMART submission. Build the `recon` binary first (BUILD.md
 # §1–3, licensed MATLAB R2023b + MATLAB Compiler), then:
-#   podman build -t ghcr.io/astewartau/qsm-ci/matlab-qsmart:v3 .
+#   podman build -t ghcr.io/astewartau/qsm-ci/matlab-qsmart:v4 .
 # The QSMART toolbox, Frangi/curvatures, STI Suite and the Image Processing Toolbox functions they
 # call are baked into `recon` at compile time. The image only needs the MATLAB Runtime of the
 # compiling release (which includes the toolboxes' runtime components), plus ANTs'
