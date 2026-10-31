@@ -844,3 +844,17 @@ pairs:
                   src/utils/resample.rs]
     qsmxt_paths: [src/cli.rs, src/commands/common.rs, src/commands/mask.rs]
     datasets: { s002001-kki-achieva-bridge-run1: {} }
+  # No pair yet: iQSM, iQSM+, iQFM and R2PRIMEnet have no -qsmrs entry, because qsmxt exposes them
+  # only through `qsmxt run` (QSMxT subcommands needed). Per echo the ports match the networks to
+  # float32 rounding (astewartau/QSM.rs#330). The echo combination differs by design (3.0–3.4 % with
+  # two echoes), and the authors' own code is not consistent (checked 2026-10-31, sunhongfu/iQSM
+  # 81f5462, sunhongfu/iQSM_Plus 3ba25f5):
+  #   - iQSM and iQFM in MATLAB: echofit(TE·χ, mag, TE), i.e. weights mag·TE² (iQSM
+  #     legacy/matlab/demo_multi_echo.m:155-160 with iQSM_fcns/echofit.m; iQSM_Plus
+  #     legacy/matlab/iQSM.m:262-267, legacy/matlab/iQFM.m:265-270, iQFM_multi_echo.m). QSM.rs's choice.
+  #   - iQSM+ in MATLAB: weights (mag·TE)² (iQSM_Plus legacy/matlab/iQSM_plus.m:273-275).
+  #   - Every Python driver: (mag·TE)² (iQSM run.py:170, app.py:416; iQSM_Plus run.py:199,
+  #     app.py:415), although each prints "Magnitude × TE² weighted averaging". QSM-CI's iqsm,
+  #     iqsm-plus and iqfm entries run these.
+  # So mag·TE² is the authors' MATLAB for iQSM/iQFM, but their iQSM+ (both languages) uses
+  # (mag·TE)². When these pairs exist, compare per echo, or match the reference's weighting.
