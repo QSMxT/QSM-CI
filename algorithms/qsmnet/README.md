@@ -38,7 +38,8 @@ output is masked and written on the input NIfTI's affine/header (voxel size + or
 bash run.sh                      # -> python qsmnet_infer.py localfield.nii.gz mask.nii.gz chimap.nii.gz
 ```
 
-`qsmnet_infer.py` drives the repo's `network_model.qsmnet_deep` (leaky-ReLU) with the baked checkpoint.
+`qsmnet_infer.py` drives the repo's `network_model.qsmnet_deep` with the baked checkpoint, using the
+activation its `network_info` names (ReLU for QSMnet; leaky ReLU is QSMnet+'s).
 
 ## Weights (baked at build time from Google Drive)
 

@@ -715,12 +715,10 @@ pairs:
   qsmnet:
     reference: qsmnet
     candidate: qsmnet-qsmrs
-    enabled: false
+    enabled: true
     # QSM.rs's export used leaky ReLU where the original's network_info says ReLU (χ ×1.34, 81 % /
-    # 126 % NRMSE). astewartau/QSM.rs#374 re-exports it with ReLU (0.0002 % against the original),
-    # but the file must first replace qsmnet.onnx on HF qsmxt/qsm-onnx-weights; then update
-    # algorithms/_qsmxt/models.sha256 and the HF revision in models.Dockerfile, re-baseline, enable.
-    blocked_by: astewartau/QSM.rs#374
+    # 126 % NRMSE). astewartau/QSM.rs#374 re-exported it with ReLU, which replaced qsmnet.onnx on
+    # HF qsmxt/qsm-onnx-weights (commit f9a66810, pinned in algorithms/_qsmxt/models.Dockerfile).
     qsmrs_models: true
     qsmrs_paths: [src/fft.rs, src/grid.rs, src/inversion/qsmnet.rs, src/inversion/tile_budget.rs,
                   src/inversion/tiled.rs, src/models/, src/pipeline/inversion.rs,
@@ -729,7 +727,10 @@ pairs:
     # Sim only: on the KKI head the original's TensorFlow graph runs out of memory on a hosted
     # runner (std::bad_alloc, run 41190020480).
     datasets:
-      sim: {}
+      sim:
+        # Measured: NRMSE 0.000135 %, r 1.000000, max |Δ| 1.9e-06 ppm, p99 |Δ| 9.6e-08 ppm.
+        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 2.39e-06, p99_abs_max: 1e-06 }
+        measured: { main: "run 41256383866: QSMxT main a78074c, QSM.rs main afed56b, HF f9a66810 (limits)" }
   qsmnet-plus:
     reference: qsmnet-plus
     candidate: qsmnet-plus-qsmrs
