@@ -1358,3 +1358,61 @@ def test_rejected_setting_cli(tmp_path, capsys):
     log.write_text("error: unexpected argument '--reliability' found\n")
     assert parity.main(["rejected-setting", "--algorithm", "qsmart", "--log", str(log)]) == 0
     assert capsys.readouterr().out.strip() == ""
+
+
+def test_released_plan_selects_every_enabled_pair_without_a_record(tmp_path, capsys):
+    """A pair with no released record for the current release is due, whatever ran before: another
+    pair's records (e.g. a run that only reached some pairs) do not make the release 'run'."""
+    th = tmp_path / "t.yml"
+    real = parity.load_thresholds()
+    th.write_text(yaml.safe_dump({"pairs": {"star": real["star"], "tkd": real["tkd"]}}))
+    results = tmp_path / "results.json"
+    star = [parity.make_record(_unavailable(), pair="star", phantom=ds, cfg=real["star"],
+                               manifests=parity._manifests(),
+                               run={**RUN, "track": "released", "release": "v10.0.0"})
+            for ds in real["star"]["datasets"]]
+    # tkd ran on one dataset only
+    tkd_ds = sorted(real["tkd"]["datasets"])
+    tkd = [parity.make_record(_parity_json(), pair="tkd", phantom=tkd_ds[0], cfg=real["tkd"],
+                              manifests=parity._manifests(),
+                              run={**RUN, "track": "released", "release": "v10.0.0"})]
+    base = ["--thresholds", str(th), "released-plan", "--offline", "--results", str(results),
+            "--latest-release", "v10.0.0"]
+    results.write_text(json.dumps(parity.merge_records({"checks": []}, star)))
+    assert parity.main(base) == 0
+    assert json.loads(capsys.readouterr().out)["algorithm"] == "tkd"     # never ran at all
+    if len(tkd_ds) > 1:
+        results.write_text(json.dumps(parity.merge_records({"checks": []}, star + tkd)))
+        assert parity.main(base) == 0
+        assert json.loads(capsys.readouterr().out)["algorithm"] == "tkd"   # missing a dataset
+    # records for an older release, or the dev track, never count for this one
+    old = [{**r, "release": "v9.22.0"} for r in star]
+    results.write_text(json.dumps(parity.merge_records({"checks": []}, old + [_rec(_parity_json())])))
+    assert parity.main(base) == 0
+    assert json.loads(capsys.readouterr().out)["algorithm"] == "enabled"
+
+
+def test_released_busy_ignores_cancelled_and_cancelling_runs():
+    runs = [
+        {"id": 1, "display_title": "parity · released v10.0.0 · enabled", "status": "in_progress"},
+        {"id": 2, "display_title": "parity · released v10.0.0 · enabled", "status": "in_progress"},
+        {"id": 3, "display_title": "parity · released v10.0.0 · enabled", "status": "completed",
+         "conclusion": "cancelled"},
+        {"id": 4, "display_title": "parity · released v10.0.0 · enabled", "status": "queued"},
+        {"id": 5, "display_title": "parity · released v10.0.01 · enabled", "status": "queued"},
+        {"id": 6, "display_title": "parity · enabled", "status": "in_progress"},
+        {"id": 7, "display_title": "parity · released v10.0.0 · tkd", "status": "completed",
+         "conclusion": "success"},
+    ]
+    jobs = {1: [{"conclusion": "success"}, {"conclusion": None}],
+            2: [{"conclusion": "success"}, {"conclusion": "cancelled"}]}   # being cancelled
+    assert parity.active_release_runs(runs, "v10.0.0", lambda i: jobs.get(i, [])) == [1, 4]
+    assert parity.active_release_runs([], "v10.0.0", lambda i: []) == []
+
+
+def test_a_cancelled_parity_run_records_nothing():
+    """parity.yml's record job: never for a cancelled run (its unfinished jobs would be recorded
+    as errors, and count as the release's run)."""
+    wf = yaml.safe_load((ROOT / ".github" / "workflows" / "parity.yml").read_text())
+    cond = wf["jobs"]["record"]["if"]
+    assert "!cancelled()" in cond and "always()" not in cond

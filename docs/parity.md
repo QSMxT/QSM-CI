@@ -182,7 +182,7 @@ predates the QSMART fixes (sim NRMSE 65.9 %, KKI 133.8 %) and most ports' parity
 
 ## Recorded results
 
-Every run from `main`, and every run dispatched with `record=true`, commits one record per pair ×
+Every run from `main`, and every run dispatched with `record=true`, unless it was cancelled, commits one record per pair ×
 dataset to [`parity/results.json`](../parity/results.json) (the `record` job, as `qsm-ci-bot`, the
 way score.yml commits `results/index.json`). Baselines, runs from other branches and runs of the
 pinned images record nothing. A record holds:
@@ -267,7 +267,10 @@ compares GitHub's latest QSMxT release with `parity/results.json`: for a release
 dispatches every enabled pair (`-f qsmxt_release=<tag> -f algorithm=enabled`); for the recorded
 latest release, only the pairs whose reference image or settings changed since, or that never ran
 on one of their datasets. It skips the dispatch while a released run for that tag is queued or
-running (parity.yml's run name says `released <tag>`).
+running (parity.yml's run name says `released <tag>`; `parity.py released-busy`), but not for one
+that is cancelled or being cancelled. Every enabled pair with no released record for the release,
+on any of its datasets, is due, whatever was dispatched before. A cancelled parity run records
+nothing (its unfinished jobs would otherwise be recorded as errors and count as the release's run).
 
 ## Badges
 
