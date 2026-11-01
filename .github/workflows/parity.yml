@@ -10,25 +10,35 @@ name: parity
 # "Intermediates") inside the dataset mask. The report is the job summary and an artifact; the job
 # fails when a limit is exceeded.
 #
-# The QSM.rs side. By default every QSM.rs step (`source: qsmrs`) runs the qsmxt image its
-# algorithm.yml pins. To check the QSM.rs under test instead, pass one of:
-#   qsmrs_ref    a QSM.rs ref: QSMxT (qsmxt_ref, default main) is built with its qsm-core pin moved
-#                to that commit;
-#   qsmxt_ref    a QSMxT ref, built as it is (with the QSM.rs it pins);
-#   qsmxt_image  a prebuilt qsmxt image.
-# A build is the release build (QSMxT's release.yml: cargo build --release, x86_64 musl, default
-# features) in a debian-slim image like algorithms/_qsmxt (parity/qsmxt.Dockerfile).
+# The QSM.rs side, and the track a run records on (docs/parity.md, "Tracks"):
+#   qsmxt_release  RELEASED track: a QSMxT release tag (or `latest`). Every QSM.rs step runs the
+#                  qsmxt binary that release ships (its x86_64 musl asset, checked against its
+#                  SHA256SUMS), with the QSM.rs it pins. A pair whose port the release lacks (no such
+#                  subcommand, option or value) is recorded as "not in <tag>", not as a failure.
+#   qsmrs_ref      DEV track: QSMxT (qsmxt_ref, default main) built with its qsm-core pin moved to
+#                  this QSM.rs commit (main, or a release candidate: the QSM.rs release gate);
+#   qsmxt_ref      DEV track: a QSMxT ref, built as it is (with the QSM.rs it pins);
+#   qsmxt_image    DEV track: a prebuilt qsmxt image.
+# With none of them, every QSM.rs step runs the qsmxt image its algorithm.yml pins, and nothing is
+# recorded. A build is the release build (QSMxT's release.yml: cargo build --release, x86_64 musl,
+# default features); a build or a release binary runs in a debian-slim image like
+# algorithms/_qsmxt (parity/qsmxt.Dockerfile).
 #
-# On demand only (the weekly parity-status workflow says which pairs need it). Before a QSM.rs
-# release (docs/parity.md, "Before a QSM.rs release"):
+# Dispatched by hand, by parity-status (PARITY_AUTO_REFRESH: stale dev pairs) and by
+# parity-release (a new QSMxT release, or a released pair whose reference or settings changed).
+# Before a QSM.rs release (docs/parity.md, "Before a QSM.rs release"):
 #     gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=enabled -f dataset=configured \
 #       -f qsmrs_ref=<release candidate SHA>
 #
-# After the jobs, `report` writes the run summary (which pairs passed against exactly the QSM.rs
-# commit under test: the release gate's answer). A run from main, or one dispatched with
-# record=true, then has `record` commit one record per pair × dataset to parity/results.json and
-# regenerate parity/status.json and parity/STATUS.md (scripts/parity.py report / record / status).
-# Baselines and runs from other branches record nothing.
+# After the jobs, `report` writes the run summary (dev: which pairs passed against exactly the
+# QSM.rs commit under test, the release gate's answer; released: what the release passed, failed and
+# lacks). A run from main, or one dispatched with record=true, then has `record` commit one record
+# per pair × dataset to parity/results.json and regenerate parity/status.json and parity/STATUS.md
+# (scripts/parity.py report / record / status). Baselines, runs from other branches and runs of the
+# pinned images record nothing.
+
+# parity-release.yml finds a released run already queued or running by this title.
+run-name: "parity${{ inputs.qsmxt_release && format(' · released {0}', inputs.qsmxt_release) || '' }} · ${{ inputs.algorithm || 'enabled' }}"
 
 on:
   workflow_dispatch:
@@ -42,8 +52,11 @@ on:
       baseline:
         description: "true = measure and print suggested limits; never fail on them"
         default: "false"
+      qsmxt_release:
+        description: "RELEASED track: a QSMxT release tag (e.g. v10.0.0) or 'latest': run the qsmxt that release ships. Not with the three below"
+        default: ""
       qsmrs_ref:
-        description: "QSM.rs ref (branch, tag or SHA) to test: builds qsmxt with qsm-core at this commit. Empty = the QSM.rs that qsmxt_ref pins"
+        description: "DEV track: QSM.rs ref (branch, tag or SHA) to test: builds qsmxt with qsm-core at this commit. Empty = the QSM.rs that qsmxt_ref pins"
         default: ""
       qsmxt_ref:
         description: "QSMxT ref to build qsmxt from (default main when qsmrs_ref is set). Empty with no qsmrs_ref = the images algorithm.yml pins"
@@ -59,6 +72,7 @@ on:
       algorithm: { type: string, default: "enabled" }
       dataset: { type: string, default: "configured" }
       baseline: { type: string, default: "false" }
+      qsmxt_release: { type: string, default: "" }
       qsmrs_ref: { type: string, default: "" }
       qsmxt_ref: { type: string, default: "" }
       qsmxt_image: { type: string, default: "" }
@@ -89,6 +103,8 @@ jobs:
       qsmrs_ref: ${{ steps.plan.outputs.qsmrs_ref }}
       qsmxt_ref: ${{ steps.plan.outputs.qsmxt_ref }}
       qsmxt_image: ${{ steps.plan.outputs.qsmxt_image }}
+      release: ${{ steps.plan.outputs.release }}
+      track: ${{ steps.plan.outputs.track }}
       key: ${{ steps.plan.outputs.key }}
     steps:
       - uses: actions/checkout@v7
@@ -98,33 +114,54 @@ jobs:
           ALGORITHM: ${{ inputs.algorithm || 'enabled' }}
           DATASET: ${{ inputs.dataset || 'configured' }}
           BASELINE: ${{ inputs.baseline || 'false' }}
+          QSMXT_RELEASE: ${{ inputs.qsmxt_release }}
           QSMRS_REF: ${{ inputs.qsmrs_ref }}
           QSMXT_REF: ${{ inputs.qsmxt_ref }}
           QSMXT_IMAGE: ${{ inputs.qsmxt_image }}
           RECORD: ${{ inputs.record || 'false' }}
           REF: ${{ github.ref }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           pip install -q pyyaml
           # Validates every selected pair and dataset before any job starts.
           m=$(python3 scripts/parity.py pairs --matrix --algorithm "$ALGORITHM" --dataset "$DATASET")
           echo "matrix=$m" >> "$GITHUB_OUTPUT"
           echo "$m"
-          # Build qsmxt only when a ref is given and no prebuilt image is.
-          b=false; [ -z "$QSMXT_IMAGE" ] && [ -n "$QSMRS_REF$QSMXT_REF" ] && b=true
-          # Record: a run from main, or record=true; never a baseline (it applies no limits).
+          # The track: released (a QSMxT release's own binary), dev (a build or a supplied image),
+          # or none (the images algorithm.yml pins: not recorded).
+          rel=""; track=none; b=false
+          if [ -n "$QSMXT_RELEASE" ]; then
+            [ -z "$QSMRS_REF$QSMXT_REF$QSMXT_IMAGE" ] || {
+              echo "::error::qsmxt_release runs a release as it ships: no qsmrs_ref, qsmxt_ref or qsmxt_image with it"; exit 1; }
+            if [ "$QSMXT_RELEASE" = latest ]; then
+              rel=$(gh release view -R QSMxT/QSMxT --json tagName -q .tagName)
+            else
+              rel=$(gh release view "$QSMXT_RELEASE" -R QSMxT/QSMxT --json tagName -q .tagName) || {
+                echo "::error::no QSMxT release '$QSMXT_RELEASE'"; exit 1; }
+            fi
+            track=released; b=true    # the qsmxt job fetches the release's binary
+          elif [ -n "$QSMXT_IMAGE" ]; then
+            track=dev
+          elif [ -n "$QSMRS_REF$QSMXT_REF" ]; then
+            track=dev; b=true         # the qsmxt job builds it
+          fi
+          # Record: a run from main, or record=true; never a baseline (it applies no limits), and
+          # never a run of the pinned images (no track).
           r=false; { [ "$REF" = refs/heads/main ] || [ "$RECORD" = true ]; } && r=true
+          [ "$track" = none ] && { [ "$r" = true ] && echo "::notice::pinned images: nothing is recorded (pass qsmxt_release or a ref)"; r=false; }
           # Names this run's artifacts by what it tests, so a workflow that calls this one several
           # times in one run (one call per QSM.rs ref) keeps each call's build and results apart.
-          k="q$(printf '%s|%s|%s|%s|%s' "$QSMRS_REF" "$QSMXT_REF" "$QSMXT_IMAGE" "$ALGORITHM" "$DATASET" | sha1sum | cut -c1-8)"
+          k="q$(printf '%s|%s|%s|%s|%s|%s' "$rel" "$QSMRS_REF" "$QSMXT_REF" "$QSMXT_IMAGE" "$ALGORITHM" "$DATASET" | sha1sum | cut -c1-8)"
           echo "key=$k" >> "$GITHUB_OUTPUT"
           [ "$BASELINE" = true ] && r=false
-          { echo "build=$b"; echo "record=$r"; echo "baseline=$BASELINE"
+          { echo "build=$b"; echo "record=$r"; echo "baseline=$BASELINE"; echo "track=$track"; echo "release=$rel"
             echo "qsmrs_ref=$QSMRS_REF"; echo "qsmxt_ref=$QSMXT_REF"; echo "qsmxt_image=$QSMXT_IMAGE"
           } | tee -a "$GITHUB_OUTPUT"
 
   # qsmxt from source, as QSMxT's release.yml builds its x86_64-unknown-linux-musl asset (the one
-  # algorithms/_qsmxt installs). The binary and what it was built from are handed to the parity
-  # jobs as an artifact; each builds its own small image from it (parity/qsmxt.Dockerfile).
+  # algorithms/_qsmxt installs) — or, on the released track, that asset itself, downloaded from the
+  # release. The binary and what it is are handed to the parity jobs as an artifact; each builds
+  # its own small image from it (parity/qsmxt.Dockerfile).
   qsmxt:
     needs: plan
     if: needs.plan.outputs.build == 'true'
@@ -133,14 +170,42 @@ jobs:
     env:
       QSMRS_REF: ${{ needs.plan.outputs.qsmrs_ref }}
       QSMXT_REF: ${{ needs.plan.outputs.qsmxt_ref || 'main' }}
+      RELEASE: ${{ needs.plan.outputs.release }}
     steps:
+      - name: The release's own binary (released track)
+        if: needs.plan.outputs.release != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p qsmxt-build && cd qsmxt-build
+          a="qsmxt-$RELEASE-x86_64-unknown-linux-musl.tar.gz"
+          gh release download "$RELEASE" -R QSMxT/QSMxT -p "$a" -p SHA256SUMS
+          grep " $a\$" SHA256SUMS | sha256sum -c -
+          tar -xzf "$a" qsmxt && chmod +x qsmxt && rm -f "$a" SHA256SUMS
+          # The tag's commit (the peeled commit of an annotated tag).
+          commit=$(git ls-remote https://github.com/QSMxT/QSMxT.git "refs/tags/$RELEASE" "refs/tags/$RELEASE^{}" \
+                   | sort -k2 | tail -1 | cut -f1)
+          ./qsmxt --version | tee VERSION
+          printf '%s\n' "QSMxT release $RELEASE @ $commit ($(sed -n 2p VERSION))" | tee BUILT_FROM
+          # The QSM.rs the release pins, as its binary reports it ("QSM.rs (qsm-core): v0.39.0 (42ab…)").
+          COMMIT="$commit" python3 - <<'PY' > built.json
+          import json, os, re
+          v = open("VERSION").read()
+          m = re.search(r"qsm-core\)?:\s*v?([0-9][^\s(]*)\s*\(([0-9a-f]{7,40})\)", v)
+          print(json.dumps({"release": os.environ["RELEASE"], "qsmxt_ref": os.environ["RELEASE"],
+                            "qsmxt_commit": os.environ["COMMIT"] or None, "qsmrs_ref": None,
+                            "qsmrs_version": m.group(1) if m else None,
+                            "qsmrs_commit": m.group(2) if m else None}))
+          PY
+          cat built.json
       - uses: actions/checkout@v7
+        if: needs.plan.outputs.release == ''
         with:
           repository: QSMxT/QSMxT
           ref: ${{ needs.plan.outputs.qsmxt_ref || 'main' }}
           path: qsmxt
       - name: Move qsm-core to the QSM.rs under test
-        if: needs.plan.outputs.qsmrs_ref != ''
+        if: needs.plan.outputs.release == '' && needs.plan.outputs.qsmrs_ref != ''
         working-directory: qsmxt
         run: |
           # QSMxT pins qsm-core by git rev in both manifests (they move in lockstep). A tag or branch
@@ -153,18 +218,23 @@ jobs:
             grep -n 'QSM.rs.git' "$f"
           done
       - uses: dtolnay/rust-toolchain@stable
+        if: needs.plan.outputs.release == ''
         with:
           targets: x86_64-unknown-linux-musl
       - name: Install musl tools
+        if: needs.plan.outputs.release == ''
         run: sudo apt-get update && sudo apt-get install -y musl-tools
       - uses: Swatinem/rust-cache@v2
+        if: needs.plan.outputs.release == ''
         with:
           workspaces: qsmxt -> target
           key: parity-musl
       - name: Build release binary
+        if: needs.plan.outputs.release == ''
         working-directory: qsmxt
         run: cargo build --release --target x86_64-unknown-linux-musl
       - name: Record what was built
+        if: needs.plan.outputs.release == ''
         working-directory: qsmxt
         run: |
           mkdir -p ../qsmxt-build
@@ -209,6 +279,7 @@ jobs:
       ALGORITHM: ${{ matrix.algorithm }}
       PHANTOM: ${{ matrix.phantom }}
       BASELINE: ${{ needs.plan.outputs.baseline }}
+      RELEASE: ${{ needs.plan.outputs.release }}
       # Labels every container this job starts (qsm_ci.containers), as in score.yml.
       QSMCI_JOB_TAG: ${{ github.run_id }}-parity-${{ matrix.algorithm }}-${{ matrix.phantom }}
     steps:
@@ -293,23 +364,53 @@ jobs:
             chmod +x qsmxt-build/qsmxt
             docker build -q -t qsmxt-under-test:${{ github.run_id }} -f parity/qsmxt.Dockerfile qsmxt-build
             echo "image=qsmxt-under-test:${{ github.run_id }}" >> "$GITHUB_OUTPUT"
-            echo "note=QSM.rs under test: built from $(cat qsmxt-build/BUILT_FROM)" >> "$GITHUB_OUTPUT"
+            echo "note=QSM.rs under test: $([ -n "$RELEASE" ] || echo 'built from ')$(cat qsmxt-build/BUILT_FROM)" >> "$GITHUB_OUTPUT"
           else
             echo "note=QSM.rs under test: the qsmxt image each algorithm.yml pins" >> "$GITHUB_OUTPUT"
           fi
 
+      # Released track: a release that predates the port (no such qsmxt subcommand) is that
+      # release's result, "not in <tag>", decided before the original runs (which can take hours).
+      - name: Is the port in this release?
+        id: pre
+        if: needs.plan.outputs.release != ''
+        env:
+          QSMRS_IMAGE: ${{ steps.qsmrs.outputs.image }}
+        run: |
+          python scripts/parity.py unavailable --algorithm "$ALGORITHM" --phantom "$PHANTOM" \
+            --release "$RELEASE" --qsmrs-image "$QSMRS_IMAGE" --json parity.json --report parity-report.md
+          if [ -f parity.json ]; then
+            echo "unavailable=true" >> "$GITHUB_OUTPUT"; cat parity-report.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       - name: Run both implementations
+        id: run
+        if: steps.pre.outputs.unavailable != 'true'
         env:
           DS_PATH: ${{ steps.ds.outputs.path }}
           QSMRS_IMAGE: ${{ steps.qsmrs.outputs.image }}
         run: |
           t0=$(date +%s)
-          python scripts/parity.py run --algorithm "$ALGORITHM" --phantom "$PHANTOM" \
-            --dataset "$DS_PATH" --work .parity --runner docker --qsmrs-image "$QSMRS_IMAGE"
+          set +e
+          python -u scripts/parity.py run --algorithm "$ALGORITHM" --phantom "$PHANTOM" \
+            --dataset "$DS_PATH" --work .parity --runner docker --qsmrs-image "$QSMRS_IMAGE" 2>&1 | tee run.log
+          rc=${PIPESTATUS[0]}
+          set -e
           echo "== wall-clock: $(( $(date +%s) - t0 ))s =="
+          # Released track: qsmxt refusing the port's command line (an option or value the release
+          # does not have yet) is also "not in <tag>"; any other failure stays a failure.
+          if [ "$rc" -ne 0 ] && [ -n "$RELEASE" ]; then
+            python scripts/parity.py unavailable --algorithm "$ALGORITHM" --phantom "$PHANTOM" \
+              --release "$RELEASE" --log run.log --json parity.json --report parity-report.md
+            if [ -f parity.json ]; then
+              echo "unavailable=true" >> "$GITHUB_OUTPUT"; cat parity-report.md >> "$GITHUB_STEP_SUMMARY"; exit 0
+            fi
+          fi
+          exit "$rc"
 
       - name: Compare
         id: compare
+        if: steps.pre.outputs.unavailable != 'true' && steps.run.outputs.unavailable != 'true'
         env:
           DS_PATH: ${{ steps.ds.outputs.path }}
           NOTE: ${{ steps.qsmrs.outputs.note }}
@@ -378,12 +479,15 @@ jobs:
           BASELINE: ${{ needs.plan.outputs.baseline }}
           QSMRS_REF: ${{ needs.plan.outputs.qsmrs_ref }}
           QSMXT_REF: ${{ needs.plan.outputs.qsmxt_ref }}
+          TRACK: ${{ needs.plan.outputs.track }}
+          RELEASE: ${{ needs.plan.outputs.release }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           mkdir -p results
           B=""; [ "$BASELINE" = true ] && B="--baseline"
           BUILD=""; [ -f qsmxt-build/built.json ] && BUILD="--build qsmxt-build/built.json"
-          python3 scripts/parity.py report --artifacts results --matrix "$MATRIX" $B $BUILD \
+          T="--track dev"; [ "$TRACK" = released ] && T="--track released --release $RELEASE"
+          python3 scripts/parity.py report --artifacts results --matrix "$MATRIX" $B $BUILD $T \
             --date "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --run-id "$GITHUB_RUN_ID" --run-url "$RUN_URL" \
             --qsmci-commit "$GITHUB_SHA" --qsmrs-ref "$QSMRS_REF" --qsmxt-ref "$QSMXT_REF" \
             --out parity-records.json --summary summary.md

@@ -783,14 +783,21 @@ def test_pair_status_states_issue_and_table():
                               no_original={"cosmos": {"covers": "COSMOS"}})
     assert [r["state"] for r in rows] == ["current", "gap", "off", "no-original"]
     assert [r["anchor"] for r in rows] == ["pair-p", "pair-q", "pair-r", "pair-cosmos"]
-    assert parity.render_issue(rows, ST, "2026-10-30") == ""
-    md = parity.render_status(rows, ST, "2026-10-30")
+
+    def doc(**kw):
+        return parity.status_doc(th, results, MANIFESTS, ST, today="2026-10-30", release=None,
+                                 no_original={"cosmos": {"covers": "COSMOS"}}, **kw)
+    md = parity.render_status(doc())
     assert "✅ current" in md and "🚧 gap (astewartau/QSM.rs#319)" in md and "v0.40.0" in md
     assert "| `cosmos` | COSMOS |" in md and "days" not in md
+    assert "## Released" in md and "## Development" in md
+    # No release known: the released track flags nothing it could run; dev is current.
+    assert parity.render_issue(doc()) == ""
     lock = lambda c: {"ahead_by": 1, "files": ["Cargo.lock"]}   # noqa: E731
-    rows = parity.pair_status(th, results, MANIFESTS, ST, changes=lock)
-    assert rows[0]["state"] == "stale"
-    issue = parity.render_issue(rows, ST, "2026-10-30")
+    d = doc(changes=lock)
+    assert d["tracks"]["dev"]["pairs"][0]["state"] == "stale"
+    issue = parity.render_issue(d)
+    assert "### Development" in issue and "### Released" not in issue
     assert "`p`" in issue and "Cargo.lock" in issue
     assert "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=p -f dataset=configured" in issue
 
@@ -851,17 +858,25 @@ def test_status_and_badges_cli_write_endpoint_files(tmp_path):
     (badges).mkdir()
     (badges / "gone.json").write_text("{}")
     assert parity.main(["--thresholds", str(th), "status", "--offline", "--today", "2026-10-30",
+                        "--latest-release", "v10.0.0",
                         "--results", str(tmp_path / "none.json"), "--json", str(status),
                         "--badges", str(badges)]) == 0
-    assert sorted(f.name for f in badges.iterdir()) == ["cosmos.json", "not-checked.json", "qsmart.json"]
-    b = json.loads((badges / "qsmart.json").read_text())
-    assert b == {"schemaVersion": 1, "label": "parity", "message": "not yet checked", "color": "lightgrey"}
+    assert sorted(str(f.relative_to(badges)) for f in badges.rglob("*.json")) == [
+        "cosmos.json", "dev/cosmos.json", "dev/not-checked.json", "dev/qsmart.json",
+        "not-checked.json", "qsmart.json"]
+    b = json.loads((badges / "qsmart.json").read_text())   # the released track: the README's
+    assert b == {"schemaVersion": 1, "label": "parity", "message": "not checked · v10.0.0",
+                 "color": "lightgrey"}
+    assert json.loads((badges / "dev" / "qsmart.json").read_text())["message"] == "not yet checked"
     doc = json.loads(status.read_text())
     assert doc["badges"] == "https://qsmxt.github.io/QSM-CI/parity/badges/"
+    assert doc["default_track"] == "released" and doc["tracks"]["released"]["release"] == "v10.0.0"
+    assert doc["tracks"]["released"]["release_source"] == "given"
     assert "stale_after_days" not in doc
     out = tmp_path / "site"
     assert parity.main(["badges", "--status", str(status), "--out", str(out)]) == 0
     assert json.loads((out / "cosmos.json").read_text())["message"] == "no original"
+    assert json.loads((out / "dev" / "cosmos.json").read_text())["message"] == "no original"
 
 
 def test_thresholds_paths_and_no_original_are_well_formed():
@@ -929,3 +944,290 @@ def test_multi_output_stage_compares_every_output(tmp_path):
     v = parity.evaluate(res, {"chi-para": {"nrmse_max": 1}}, ["chi-para", "chi-dia"])
     assert v["maps"]["chi-para"]["status"] == "pass"
     assert v["maps"]["chi-dia"]["status"] == "fail" and not v["ok"]   # no limits on a final map
+
+
+# --- tracks: released (a QSMxT release) and dev (QSMxT main × QSM.rs main) -----------------------
+
+def _rel(res=None, release="v10.0.0", **run):
+    """A released-track record: the release's own binary (no qsmrs_ref; qsmxt_ref is the tag)."""
+    return parity.make_record(res, pair="p", phantom="sim", cfg=CFG, manifests=MANIFESTS,
+                              run={**RUN, "qsmrs_ref": "", "track": "released", "release": release,
+                                   **run},
+                              build={"qsmxt_ref": release, "qsmxt_commit": "e" * 40,
+                                     "qsmrs_version": "0.39.0", "qsmrs_commit": "4" * 40})
+
+
+def _unavailable(why="QSMxT v10.0.0 has no `qsmxt invert star` (p-qsmrs)"):
+    return {"algorithm": "p", "phantom": "sim", "baseline": False, "unavailable": why,
+            "provenance": {"candidate": {"steps": [{"slug": "p-qsmrs", "image": "qsmxt-under-test:9",
+                                                    "id": "sha256:c", "qsmxt": "qsmxt 10.0.0",
+                                                    "qsmrs_version": "0.39.0",
+                                                    "qsmrs_commit": "4" * 40}]}}}
+
+
+def test_records_carry_their_track_and_release():
+    assert _rec(_parity_json())["track"] == "dev" and "release" not in _rec(_parity_json())
+    r = _rel(_parity_json())
+    assert r["track"] == "released" and r["release"] == "v10.0.0"
+    assert r["qsmxt"] == {"ref": "v10.0.0", "commit": "e" * 40}
+    assert r["qsmrs"]["commit"] == "c" * 40          # what the binary itself reports wins
+    u = _rel(_unavailable())
+    assert u["result"] == "unavailable" and "invert star" in u["failed"][0]
+    assert u["qsmrs"] == {"ref": None, "commit": "4" * 40, "version": "0.39.0"}
+    assert "metrics" not in u
+
+
+def test_existing_results_are_labelled_by_track():
+    """parity/results.json: every record names its track; a released one names its release, and a
+    dev one was a build of QSMxT main (with qsm-core at QSM.rs main or a release candidate)."""
+    for r in parity.load_results()["checks"]:
+        assert r.get("track") in parity.TRACKS, r.get("run_id")
+        if r["track"] == "released":
+            assert r.get("release") and r["qsmxt"]["ref"] == r["release"]
+        else:
+            assert r["qsmxt"].get("commit") and "release" not in r
+
+
+def test_released_history_keeps_every_release_dev_keeps_fifty():
+    dev = [{**_rec(_parity_json()), "run_id": f"d{i}", "date": f"2026-10-{i:02d}"} for i in range(1, 8)]
+    rel = [{**_rel(_parity_json(), release=t), "run_id": f"r{t}", "date": d}
+           for t, d in (("v9.22.0", "2026-09-23"), ("v10.0.0", "2026-10-15"), ("v10.1.0", "2026-11-02"))]
+    rerun = {**_rel(_parity_json(nrmse=0.5)), "run_id": "again", "date": "2026-11-03"}
+    res = parity.merge_records({"checks": []}, dev + rel + [rerun], keep=3)
+    kept = [(r["track"], r.get("release"), r["run_id"]) for r in res["checks"]]
+    assert [k for k in kept if k[0] == "dev"] == [("dev", None, f"d{i}") for i in (5, 6, 7)]
+    # one record per release (a rerun replaces that release's earlier one), every release kept
+    assert sorted(k[1:] for k in kept if k[0] == "released") == [
+        ("v10.0.0", "again"), ("v10.1.0", "rv10.1.0"), ("v9.22.0", "rv9.22.0")]
+    assert parity.recorded_releases(res) == ["v10.1.0", "v10.0.0", "v9.22.0"]
+    # a record from before the tracks counts as dev
+    old = {k: v for k, v in _rec(_parity_json()).items() if k != "track"}
+    assert parity.merge_records({"checks": []}, [old])["checks"][0]["track"] == "dev"
+    # the tracks never read each other's records
+    assert parity.latest_records(res, "dev")[("p", "sim")]["run_id"] == "d7"
+    assert parity.latest_records(res, "released", "v10.1.0")[("p", "sim")]["run_id"] == "rv10.1.0"
+
+
+def test_release_key_orders_versions():
+    tags = ["v10.0.0", "v9.22.0", "v10.0.1", "v10.1.0-rc1", "v10.1.0", "v9.3.0"]
+    assert sorted(tags, key=parity.release_key) == [
+        "v9.3.0", "v9.22.0", "v10.0.0", "v10.0.1", "v10.1.0-rc1", "v10.1.0"]
+
+
+def test_released_staleness_only_flags_reference_settings_or_a_missing_run():
+    def why(rec, **kw):
+        return parity.released_staleness(rec, kw.get("cfg", CFG), "sim", kw.get("m", MANIFESTS),
+                                         "v10.0.0")
+    assert why(_rel(_parity_json())) == ([], False)
+    assert why(_rel(_parity_json(ok=False, nrmse=3))) == ([], False)   # a failure is a result
+    assert why(_rel(_unavailable())) == ([], False)                   # so is "not in"
+    assert why(None) == (["not run against QSMxT v10.0.0"], True)
+    new_ref = {**MANIFESTS, "p-orig": {"image": "ghcr.io/x/orig@sha256:" + "e" * 64}}
+    w, rerun = why(_rel(_parity_json()), m=new_ref)
+    assert rerun and "reference image changed" in w[0]
+    w, rerun = why(_rel(_parity_json()), cfg={**CFG, "datasets": {"sim": {"chimap": {"nrmse_max": 1}}}})
+    assert rerun and "settings or limits" in w[0]
+    w, rerun = why(_rel(None))
+    assert not rerun and "ended without a result" in w[0]   # flagged, never rerun by itself
+    assert parity.released_staleness(None, CFG, "sim", MANIFESTS, None) == ([], False)
+
+
+def _rel_badge(recs, release="v10.0.0", th=None, **kw):
+    results = parity.merge_records({"checks": []}, recs)
+    rows = parity.pair_status(th or {"p": CFG}, results, MANIFESTS, ST, track="released",
+                              release=release, **kw)
+    return rows[0]["badge"]
+
+
+def test_released_badges_name_the_release():
+    assert _rel_badge([_rel(_parity_json(nrmse=0.326))]) == {
+        "kind": "current", "message": "0.33 % · v10.0.0", "color": "brightgreen"}
+    assert _rel_badge([_rel(_parity_json(ok=False, nrmse=3))])["message"] == "failing · v10.0.0"
+    assert _rel_badge([_rel(_unavailable())]) == {
+        "kind": "unavailable", "message": "not in v10.0.0", "color": "lightgrey"}
+    assert _rel_badge([]) == {"kind": "unchecked", "message": "not checked · v10.0.0",
+                              "color": "lightgrey"}
+    # an older release's result does not count for the latest one
+    assert _rel_badge([_rel(_parity_json(), release="v9.22.0")])["message"] == "not checked · v10.0.0"
+    new_ref = {**MANIFESTS, "p-orig": {"image": "ghcr.io/x/orig@sha256:" + "e" * 64}}
+    rows = parity.pair_status({"p": CFG}, parity.merge_records({"checks": []}, [_rel(_parity_json())]),
+                              new_ref, ST, track="released", release="v10.0.0")
+    assert rows[0]["badge"]["message"] == "stale · v10.0.0"
+    assert rows[0]["refresh"].endswith("-f qsmxt_release=v10.0.0")
+    # the dev track's records never show on the released track
+    assert _rel_badge([_rec(_parity_json())])["kind"] == "unchecked"
+
+
+def test_status_doc_history_and_per_release_badges(tmp_path):
+    recs = [_rel(_parity_json(ok=False, nrmse=3), release="v9.22.0", run_id="a"),
+            _rel(_unavailable(), run_id="b", date="2026-10-29T00:00:00Z"),
+            _rec(_parity_json(nrmse=0.2), run_id="c", date="2026-10-31T00:00:00Z")]
+    results = parity.merge_records({"checks": []}, recs)
+    doc = parity.status_doc({"p": CFG}, results, MANIFESTS, ST, today="2026-11-01",
+                            release="v10.0.0", release_source="github")
+    rel, dev = doc["tracks"]["released"], doc["tracks"]["dev"]
+    assert rel["qsmxt"]["release"] == "v10.0.0" and rel["qsmxt"]["commit"] == "e" * 40
+    assert rel["qsmrs"]["commit"] == "4" * 40 and rel["qsmrs"]["version"] == "0.39.0"
+    assert rel["pairs"][0]["badge"]["message"] == "not in v10.0.0" and rel["stale"] == []
+    assert dev["pairs"][0]["badge"]["message"] == "0.2 % · 31 Oct"
+    assert dev["tested"][0]["qsmrs"]["commit"] == "c" * 40
+    assert doc["releases"] == ["v10.0.0", "v9.22.0"]
+    hist = doc["history"]["p"]
+    assert [(e["release"], e["badge"]["message"]) for e in hist] == [
+        ("v10.0.0", "not in v10.0.0"), ("v9.22.0", "failing · v9.22.0")]
+    assert hist[0]["datasets"][0]["last"]["why"].startswith("QSMxT v10.0.0 has no")
+    out = tmp_path / "b"
+    written = parity.write_badges(doc, out)
+    assert "release/v9.22.0/p.json" in written and "dev/p.json" in written and "p.json" in written
+    assert json.loads((out / "release" / "v9.22.0" / "p.json").read_text())["message"] == \
+        "failing · v9.22.0"
+    md = parity.render_status(doc)
+    assert "## Release history" in md and "| `p` | not in v10.0.0 | failing · v9.22.0 |" in md
+    assert "QSMxT **v10.0.0**" in md and "⚪ not in v10.0.0" in md
+    # the site's deploy rebuilds every badge from the status it serves
+    st = tmp_path / "status.json"
+    st.write_text(json.dumps(doc))
+    site = tmp_path / "site"
+    assert parity.main(["badges", "--status", str(st), "--out", str(site)]) == 0
+    assert json.loads((site / "release" / "v10.0.0" / "p.json").read_text())["message"] == \
+        "not in v10.0.0"
+
+
+def test_issue_has_a_section_per_flagged_track():
+    results = parity.merge_records({"checks": []}, [_rec(_parity_json())])
+    doc = parity.status_doc({"p": CFG}, results, MANIFESTS, ST, today="2026-11-01",
+                            release="v10.0.0")
+    issue = parity.render_issue(doc)
+    assert "### Released: QSMxT v10.0.0" in issue and "not run against QSMxT v10.0.0" in issue
+    assert "-f qsmxt_release=v10.0.0" in issue and "### Development" not in issue
+    results = parity.merge_records(results, [_rel(_parity_json())])
+    doc = parity.status_doc({"p": CFG}, results, MANIFESTS, ST, today="2026-11-01",
+                            release="v10.0.0")
+    assert parity.render_issue(doc) == ""
+
+
+def test_run_summary_for_a_release():
+    recs = [_rel(_parity_json()), {**_rel(_unavailable()), "pair": "q"},
+            {**_rel(_parity_json(ok=False, nrmse=3)), "pair": "r"}]
+    s = parity.render_run_summary(recs, ["p", "q", "r"])
+    assert "Released track: QSMxT **v10.0.0**" in s and "Release gate" not in s
+    assert "passed on every dataset run: `p`." in s and "Failed or no result: `r`." in s
+    assert "Not in v10.0.0: `q`." in s and "invert star" in s
+
+
+def test_port_commands_from_run_sh():
+    sh = ('#!/bin/bash\n# qsmxt invert ignored "x"\n'
+          'if qsmxt invert nltv --help 2>/dev/null | grep -q -- "--magnitude"; then\n'
+          '  exec qsmxt invert nltv "$IN/x" -m "$IN/m"\nfi\n'
+          'qsmxt qsmart "$IN/totalfield.nii.gz" -o "$OUT/x"\n'
+          '    qsmxt r2star "$IN/mag" --echo-times $TES\n'
+          'qsmxt separate decompose \\\n  "$IN/a"\n')
+    assert parity.port_commands(sh) == [["invert", "nltv"], ["qsmart"], ["r2star"],
+                                        ["separate", "decompose"]]
+
+
+def test_every_port_run_sh_names_a_qsmxt_command():
+    for spec in sorted((ROOT / "algorithms").glob("*/algorithm.yml")):
+        doc = yaml.safe_load(spec.read_text()) or {}
+        if parity.is_port(doc) and (spec.parent / "run.sh").exists():
+            assert parity.port_commands((spec.parent / "run.sh").read_text()), spec.parent.name
+
+
+def test_clap_rejection():
+    assert parity.clap_rejection("x\nerror: unrecognized subcommand 'star'\n\n  tip: …") == \
+        "unrecognized subcommand 'star'"
+    assert parity.clap_rejection("error: unexpected argument '--variant' found\n") == \
+        "unexpected argument '--variant' found"
+    assert parity.clap_rejection("error: invalid value 'qsmjl' for '--ball <BALL>'") == \
+        "invalid value 'qsmjl' for '--ball <BALL>'"
+    assert parity.clap_rejection("Traceback …\nValueError: shapes differ") is None
+
+
+def _th_file(tmp_path):
+    th = tmp_path / "t.yml"
+    th.write_text(yaml.safe_dump({"pairs": {"star": parity.load_thresholds()["star"]}}))
+    return th
+
+
+def test_unavailable_cli_before_the_run(tmp_path, monkeypatch):
+    asked = []
+
+    class R:
+        def __init__(self, rc):
+            self.returncode, self.stdout, self.stderr = rc, "", ""
+
+    def fake_run(argv, **kw):
+        asked.append(argv)
+        if "--version" in argv or "inspect" in argv:
+            return R(1)
+        return R(2 if argv[-3:] == ["invert", "star", "--help"] else 0)
+    monkeypatch.setattr(parity.subprocess, "run", fake_run)
+    out = tmp_path / "parity.json"
+    assert parity.main(["--thresholds", str(_th_file(tmp_path)), "unavailable", "--algorithm", "star",
+                        "--release", "v10.0.0", "--qsmrs-image", "rel:1", "--runner", "podman",
+                        "--json", str(out)]) == 0
+    doc = json.loads(out.read_text())
+    assert doc["unavailable"] == "QSMxT v10.0.0 has no `qsmxt invert star` (star-qsmrs)"
+    assert asked[0][:2] == ["podman", "run"] and "rel:1" in asked[0]
+    # a release that has the command: nothing written, the run goes ahead
+    out.unlink()
+    monkeypatch.setattr(parity.subprocess, "run", lambda argv, **kw: R(0))
+    assert parity.main(["--thresholds", str(_th_file(tmp_path)), "unavailable", "--algorithm", "star",
+                        "--release", "v10.0.0", "--qsmrs-image", "rel:1", "--json", str(out)]) == 0
+    assert not out.exists()
+
+
+def test_unavailable_cli_after_a_failed_run(tmp_path):
+    log, out = tmp_path / "run.log", tmp_path / "parity.json"
+    log.write_text("▸ star-qsmrs: qsm-ci run …\nerror: unexpected argument '--pad' found\n")
+    th = _th_file(tmp_path)
+    assert parity.main(["--thresholds", str(th), "unavailable", "--algorithm", "star", "--release",
+                        "v10.0.0", "--log", str(log), "--json", str(out)]) == 0
+    assert "refuses the port's command line: unexpected argument '--pad'" in \
+        json.loads(out.read_text())["unavailable"]
+    out.unlink()
+    log.write_text("subprocess.CalledProcessError: … returned non-zero exit status 137\n")
+    assert parity.main(["--thresholds", str(th), "unavailable", "--algorithm", "star", "--release",
+                        "v10.0.0", "--log", str(log), "--json", str(out)]) == 0
+    assert not out.exists()                      # any other failure stays a failure (an error)
+
+
+def test_report_cli_on_the_released_track(tmp_path):
+    th = _th_file(tmp_path)
+    arts = tmp_path / "arts" / "parity-result-star-sim"
+    arts.mkdir(parents=True)
+    (arts / "parity.json").write_text(json.dumps({**_unavailable(), "algorithm": "star"}))
+    recs = tmp_path / "recs.json"
+    assert parity.main(["--thresholds", str(th), "report", "--artifacts", str(tmp_path / "arts"),
+                        "--matrix", json.dumps([{"algorithm": "star", "phantom": "sim"}]),
+                        "--track", "released", "--release", "v10.0.0", "--run-id", "9",
+                        "--out", str(recs)]) == 0
+    r = json.loads(recs.read_text())[0]
+    assert (r["track"], r["release"], r["result"]) == ("released", "v10.0.0", "unavailable")
+    with pytest.raises(SystemExit):
+        parity.main(["--thresholds", str(th), "report", "--artifacts", str(tmp_path / "arts"),
+                     "--matrix", "[]", "--track", "released"])
+
+
+def test_released_plan(tmp_path, capsys):
+    th, results = _th_file(tmp_path), tmp_path / "results.json"
+    star = parity.load_thresholds()["star"]
+    base = ["--thresholds", str(th), "released-plan", "--offline", "--results", str(results),
+            "--latest-release", "v10.1.0"]
+    assert parity.main(base) == 0
+    plan = json.loads(capsys.readouterr().out)
+    assert plan["release"] == "v10.1.0" and plan["algorithm"] == "enabled"
+    manifests = parity._manifests()
+    recs = [parity.make_record(_unavailable(), pair="star", phantom=ds, cfg=star,
+                               manifests=manifests, run={**RUN, "track": "released",
+                                                         "release": "v10.1.0"})
+            for ds in star["datasets"]]
+    results.write_text(json.dumps(parity.merge_records({"checks": []}, recs)))
+    assert parity.main(base) == 0
+    plan = json.loads(capsys.readouterr().out)
+    assert plan["algorithm"] == ""                      # the release's result stands
+    moved = {**recs[0], "reference": {**recs[0]["reference"], "digest": "sha256:" + "0" * 64}}
+    results.write_text(json.dumps(parity.merge_records({"checks": []}, [moved] + recs[1:])))
+    assert parity.main(base) == 0
+    plan = json.loads(capsys.readouterr().out)
+    assert plan["algorithm"] == "star" and "reference image changed" in plan["why"]
