@@ -1372,6 +1372,11 @@
           "name": "lsqr_max_iter",
           "default": 400,
           "description": "LSQR seed iterations"
+        },
+        {
+          "name": "denoise_reference_itk",
+          "default": false,
+          "description": "ITK 3.20's float arithmetic for the gradient-mask denoising, as the authors' executable runs it (the default computes its conductance scale in double precision)"
         }
       ],
       "ci_notes": [
