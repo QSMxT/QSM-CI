@@ -1,0 +1,69 @@
+name: parity-release
+
+# The released parity track (docs/parity.md, "Tracks"): the latest QSMxT release against each
+# verified original. A release never changes, so it needs a run only when
+#   (a) QSMxT publishes a new release: every enabled pair runs against it; or
+#   (b) a pair's reference image or settings/limits (parity/thresholds.yml) changed since its run
+#       against the latest release, or a dataset of it never ran: that pair runs again.
+# `scripts/parity.py released-plan` says which (from parity/results.json and GitHub's latest QSMxT
+# release); this workflow dispatches parity.yml from main with `qsmxt_release=<tag>`, which records
+# the results, unless a released run for that tag is already queued or running. A run that ended
+# without a result is flagged in the status issue, not rerun here (an error that repeats would loop).
+#
+# Daily, and on demand. QSMxT's release workflow could also notify this one directly with a
+# repository_dispatch of type `qsmxt-release` (it does not today; that would be a QSMxT change).
+
+on:
+  schedule:
+    - cron: "41 4 * * *"   # daily 04:41 UTC
+  repository_dispatch:
+    types: [qsmxt-release]
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write   # dispatch parity.yml
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+        with: { ref: main }
+      - run: pip install -q pyyaml
+      - name: What the released track needs
+        id: plan
+        run: |
+          plan=$(python3 scripts/parity.py released-plan)
+          echo "$plan"
+          python3 - "$plan" <<'PY'
+          import json, os, sys
+          p = json.loads(sys.argv[1])
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"release={p.get('release') or ''}\nalgorithm={p.get('algorithm') or ''}\n")
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as f:
+              f.write(f"### Released parity track\n\n- QSMxT {p.get('release')}: {p.get('why')}\n")
+          PY
+      - name: Dispatch the released run
+        if: steps.plan.outputs.algorithm != ''
+        env:
+          RELEASE: ${{ steps.plan.outputs.release }}
+          ALGORITHM: ${{ steps.plan.outputs.algorithm }}
+        run: |
+          # parity.yml's run-name says "released <tag>": skip if one is already queued or running.
+          busy=$(gh run list -R "$GITHUB_REPOSITORY" -w parity.yml -L 50 --json displayTitle,status \
+                   --jq "[.[] | select(.status != \"completed\" and (.displayTitle | contains(\"released $RELEASE \")))] | length")
+          if [ "$busy" != 0 ]; then
+            echo "a released run for $RELEASE is already queued or running" | tee -a "$GITHUB_STEP_SUMMARY"; exit 0
+          fi
+          gh workflow run parity.yml -R "$GITHUB_REPOSITORY" --ref main \
+            -f qsmxt_release="$RELEASE" -f algorithm="$ALGORITHM" -f dataset=configured
+          echo "dispatched parity.yml: qsmxt_release=$RELEASE algorithm=$ALGORITHM" | tee -a "$GITHUB_STEP_SUMMARY"

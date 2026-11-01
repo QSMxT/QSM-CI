@@ -12,6 +12,7 @@
     /* A badge in the QSM.rs README links to its pair's row (#pair-<name>). */
     tr:target, li:target { background-color: rgb(16 185 129 / 0.12); }
     tr[id], li[id] { scroll-margin-top: 6rem; }
+    [x-cloak] { display: none !important; }
   </style>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.15.12/dist/cdn.min.js" integrity="sha384-pb6hrQvo4s23cEUFtj0CZkzGE3jyK3pj26RIupXXxhSrrcUA/Cn0lZgcCrGH0t6L" crossorigin="anonymous"></script>
 </head>
@@ -19,15 +20,18 @@
   <header id="site-nav"></header>
 
   <!-- parity/status.json: written by scripts/parity.py status (the parity workflow after each
-       recorded run, and parity-status.yml weekly). The deploy copies parity/ next to the site. -->
-  <main class="mx-auto max-w-6xl px-6 py-10" x-data="parityPage()">
+       recorded run, and parity-status.yml weekly). It holds two tracks (docs/parity.md, "Tracks"):
+       `released` (the latest QSMxT release; shown first) and `dev` (QSMxT main × QSM.rs main), and
+       the released track's history per pair. The deploy copies parity/ next to the site.
+       ?track=dev opens the development track; ?release=<tag> an older release. -->
+  <main class="mx-auto max-w-6xl px-4 py-10 sm:px-6" x-data="parityPage()">
     <h1 class="text-3xl font-bold tracking-tight">Port parity</h1>
     <p class="mt-2 max-w-3xl text-gray-600 dark:text-gray-400">
       Several methods here have two implementations: the authors' original and its
       <a href="https://github.com/astewartau/QSM.rs" class="text-emerald-600 hover:underline">QSM.rs</a> port.
       A parity check runs both on the same data and checks they still agree as closely as when the
-      limits were set. This page shows when each pair was last checked, against which QSM.rs, and
-      whether that check still stands.
+      limits were set. <strong>Released</strong> checks what users get: the latest QSMxT release.
+      <strong>Development</strong> checks QSMxT and QSM.rs as they are now, before their next release.
     </p>
 
     <div x-show="error" x-cloak class="mt-6 rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-700 ring-1 ring-inset ring-red-100 dark:bg-red-500/10 dark:text-red-300 dark:ring-red-500/20" role="alert">
@@ -36,43 +40,130 @@
 
     <template x-if="status">
       <div>
-        <p class="mt-6 text-sm text-gray-500 dark:text-gray-400">
-          Status as of <span x-text="status.generated"></span>. A check is stale when the original's
-          image changed, QSM.rs <code x-text="status.qsmrs.branch"></code> changed the port's source
-          files or its <code>Cargo.lock</code>, QSMxT changed how it runs the step or its
-          <code>Cargo.lock</code>, the pair's limits changed, or it failed. A check does not expire
-          with age.
-        </p>
+        <!-- Track toggle -->
+        <div class="mt-6 flex flex-wrap items-center gap-3">
+          <div class="inline-flex rounded-lg bg-gray-100 p-1 dark:bg-gray-800" role="tablist" aria-label="Track">
+            <template x-for="t in ['released', 'dev']" :key="t">
+              <button type="button" role="tab" :aria-selected="track === t" @click="setTrack(t)"
+                      class="rounded-md px-3 py-1.5 text-sm font-semibold transition"
+                      :class="track === t ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-950 dark:text-gray-100' : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100'"
+                      x-text="status.tracks[t].label"></button>
+            </template>
+          </div>
+          <template x-if="track === 'released' && releases().length > 1">
+            <label class="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+              Release
+              <select class="rounded-md border-0 bg-white py-1 pl-2 pr-8 text-sm ring-1 ring-inset ring-gray-200 dark:bg-gray-900 dark:ring-gray-700"
+                      :value="release" @change="setRelease($event.target.value)">
+                <template x-for="r in releases()" :key="r">
+                  <option :value="r" x-text="r + (r === latest() ? ' (latest)' : '')"></option>
+                </template>
+              </select>
+            </label>
+          </template>
+        </div>
+
+        <!-- What this track tested -->
+        <div class="mt-4 rounded-xl bg-white px-4 py-3 text-sm ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-800">
+          <template x-if="track === 'released'">
+            <div>
+              <p class="font-medium">
+                <template x-if="release">
+                  <span>Tested: QSMxT
+                    <a :href="'https://github.com/' + status.tracks.released.qsmxt.repo + '/releases/tag/' + release" class="text-emerald-600 hover:underline" x-text="release"></a><template x-if="tested().qsmxt"><span> (<code x-text="short(tested().qsmxt)"></code>)</span></template>,
+                    the binary the release ships, with QSM.rs
+                    <template x-if="tested().qsmrs"><span><span x-text="tested().qsmrsVersion ? 'v' + tested().qsmrsVersion + ' ' : ''"></span><a :href="'https://github.com/' + status.tracks.released.qsmrs.repo + '/commit/' + tested().qsmrs" class="text-emerald-600 hover:underline"><code x-text="short(tested().qsmrs)"></code></a></span></template>
+                    <template x-if="!tested().qsmrs"><span>as it pins it (not run yet)</span></template>.
+                  </span>
+                </template>
+                <template x-if="!release"><span>No QSMxT release is known yet.</span></template>
+              </p>
+              <p class="mt-1 text-gray-500 dark:text-gray-400">
+                A release does not change, so it is checked once, and again only when a pair's original
+                or its settings change. A failure is that release's result. <em>Not in</em> means the
+                release has no such command or option yet.
+                <template x-if="release && release !== latest()"><span>This is an older release: its results as recorded.</span></template>
+              </p>
+            </div>
+          </template>
+          <template x-if="track === 'dev'">
+            <div>
+              <p class="font-medium">
+                <template x-if="devTested()">
+                  <span>Tested: QSMxT <code>main</code>
+                    <a :href="'https://github.com/' + status.tracks.dev.qsmxt.repo + '/commit/' + devTested().qsmxt.commit" class="text-emerald-600 hover:underline"><code x-text="short(devTested().qsmxt.commit)"></code></a>
+                    with qsm-core at QSM.rs <code>main</code>
+                    <a :href="'https://github.com/' + status.tracks.dev.qsmrs.repo + '/commit/' + devTested().qsmrs.commit" class="text-emerald-600 hover:underline"><code x-text="short(devTested().qsmrs.commit)"></code></a><span x-show="status.tracks.dev.tested.length > 1" x-text="' (some pairs on older builds: see each row)'"></span>.
+                  </span>
+                </template>
+                <template x-if="!devTested()"><span>Nothing recorded yet.</span></template>
+              </p>
+              <p class="mt-1 text-gray-500 dark:text-gray-400">
+                A check is stale when the original's image changed, QSM.rs changed the port's source
+                files or its <code>Cargo.lock</code>, QSMxT changed how it runs the step or its
+                <code>Cargo.lock</code>, the pair's limits changed, or it failed. It does not expire with age.
+              </p>
+            </div>
+          </template>
+          <p class="mt-1 text-xs text-gray-400">Status as of <span x-text="status.generated"></span>.</p>
+        </div>
+
+        <!-- One row per pair × dataset -->
         <div class="mt-4 overflow-x-auto rounded-xl bg-white ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-800">
           <table class="w-full text-sm">
             <thead class="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:bg-gray-950 dark:text-gray-400">
               <tr>
-                <th class="px-4 py-3">Algorithm</th>
-                <th class="px-4 py-3">Original → port</th>
-                <th class="px-4 py-3">Dataset</th>
-                <th class="px-4 py-3">Last check</th>
-                <th class="px-4 py-3">QSM.rs</th>
-                <th class="px-4 py-3">Result</th>
-                <th class="px-4 py-3">Status</th>
+                <th class="px-3 py-3 sm:px-4">Algorithm</th>
+                <th class="hidden px-4 py-3 md:table-cell">Original → port</th>
+                <th class="px-3 py-3 sm:px-4">Dataset</th>
+                <th class="hidden px-4 py-3 sm:table-cell">Checked</th>
+                <th class="hidden px-4 py-3 lg:table-cell">QSM.rs</th>
+                <th class="px-3 py-3 sm:px-4">Result</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
-              <template x-for="row in rows()" :key="row.key">
+              <template x-for="row in rows()" :key="track + '/' + release + '/' + row.key">
                 <tr class="align-top" :id="row.first ? row.pair.anchor : null">
-                  <td class="px-4 py-3 font-medium" x-text="row.first ? row.pair.pair : ''"></td>
-                  <td class="px-4 py-3 text-gray-600 dark:text-gray-400">
+                  <td class="px-3 py-3 font-medium sm:px-4">
+                    <template x-if="row.first">
+                      <div>
+                        <span x-text="row.pair.pair"></span>
+                        <template x-if="track === 'released' && history(row.pair.pair).length">
+                          <button type="button" class="ml-1 text-xs font-normal text-emerald-600 hover:underline" @click="toggle(row.pair.pair)"
+                                  x-text="open[row.pair.pair] ? 'hide history' : 'history'"></button>
+                        </template>
+                        <div class="mt-0.5 text-xs font-normal text-gray-500 md:hidden dark:text-gray-400" x-text="row.pair.reference + ' → ' + row.pair.candidate"></div>
+                        <template x-if="open[row.pair.pair]">
+                          <ul class="mt-2 space-y-1 text-xs font-normal">
+                            <template x-for="h in history(row.pair.pair)" :key="h.release">
+                              <li class="flex flex-wrap items-center gap-1">
+                                <span class="inline-flex items-center rounded-full px-2 py-0.5 font-semibold ring-1 ring-inset" :class="cls(h.badge.kind)" x-text="h.badge.message"></span>
+                                <a :href="h.datasets[0] && h.datasets[0].last && h.datasets[0].last.run_url" class="text-gray-500 hover:underline dark:text-gray-400" x-text="(h.date || '').slice(0, 10)"></a>
+                              </li>
+                            </template>
+                          </ul>
+                        </template>
+                      </div>
+                    </template>
+                  </td>
+                  <td class="hidden px-4 py-3 text-gray-600 md:table-cell dark:text-gray-400">
                     <template x-if="row.first"><span><code x-text="row.pair.reference"></code> → <code x-text="row.pair.candidate"></code></span></template>
                   </td>
-                  <td class="px-4 py-3 text-gray-600 dark:text-gray-400" x-text="row.ds.dataset"></td>
-                  <td class="px-4 py-3 whitespace-nowrap">
+                  <td class="px-3 py-3 text-gray-600 sm:px-4 dark:text-gray-400" x-text="row.ds.dataset"></td>
+                  <td class="hidden whitespace-nowrap px-4 py-3 sm:table-cell">
                     <template x-if="row.ds.last && row.ds.last.run_url"><a :href="row.ds.last.run_url" class="text-emerald-600 hover:underline" x-text="row.ds.last.date.slice(0, 10)"></a></template>
                     <template x-if="row.ds.last && !row.ds.last.run_url"><span x-text="row.ds.last.date.slice(0, 10)"></span></template>
                     <template x-if="!row.ds.last"><span class="text-gray-400">never</span></template>
                   </td>
-                  <td class="px-4 py-3 whitespace-nowrap" x-text="qsmrs(row.ds.last)"></td>
-                  <td class="px-4 py-3 whitespace-nowrap" x-text="result(row.ds.last)"></td>
-                  <td class="px-4 py-3">
-                    <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ring-1 ring-inset" :class="badge(row).cls" x-text="badge(row).label"></span>
+                  <td class="hidden whitespace-nowrap px-4 py-3 lg:table-cell" x-text="qsmrs(row.ds.last)"></td>
+                  <td class="px-3 py-3 sm:px-4">
+                    <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ring-1 ring-inset" :class="cls(dsBadge(row).kind)" x-text="dsBadge(row).label"></span>
+                    <template x-if="row.ds.last && row.ds.last.nrmse != null">
+                      <span class="ml-1 whitespace-nowrap text-xs text-gray-500 dark:text-gray-400" x-text="'NRMSE ' + Number(row.ds.last.nrmse).toPrecision(3) + ' %'"></span>
+                    </template>
+                    <template x-if="row.ds.last && row.ds.last.why">
+                      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400" x-text="row.ds.last.why"></p>
+                    </template>
                     <template x-if="row.ds.reasons && row.ds.reasons.length">
                       <ul class="mt-1 list-disc pl-4 text-xs text-gray-500 dark:text-gray-400">
                         <template x-for="r in row.ds.reasons"><li x-text="r"></li></template>
@@ -84,6 +175,49 @@
             </tbody>
           </table>
         </div>
+
+        <!-- Every release's result per pair -->
+        <template x-if="track === 'released' && releases().length">
+          <div>
+            <h2 class="mt-10 text-xl font-semibold tracking-tight">Release history</h2>
+            <p class="mt-2 max-w-3xl text-sm text-gray-500 dark:text-gray-400">
+              Each QSMxT release's result per pair, newest first. Pick a release to see its full table.
+            </p>
+            <div class="mt-3 overflow-x-auto rounded-xl bg-white ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-800">
+              <table class="w-full text-sm">
+                <thead class="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:bg-gray-950 dark:text-gray-400">
+                  <tr>
+                    <th class="px-3 py-3 sm:px-4">Algorithm</th>
+                    <template x-for="r in releases()" :key="r">
+                      <th class="whitespace-nowrap px-3 py-3 normal-case sm:px-4">
+                        <button type="button" class="hover:underline" :class="r === release ? 'text-emerald-600' : ''" @click="setRelease(r)" x-text="r"></button>
+                      </th>
+                    </template>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                  <template x-for="p in historyPairs()" :key="p">
+                    <tr>
+                      <td class="px-3 py-2 font-medium sm:px-4" x-text="p"></td>
+                      <template x-for="r in releases()" :key="r">
+                        <td class="whitespace-nowrap px-3 py-2 sm:px-4">
+                          <template x-if="cell(p, r)">
+                            <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ring-1 ring-inset" :class="cls(cell(p, r).kind)" x-text="cell(p, r).message"></span>
+                          </template>
+                          <template x-if="!cell(p, r)"><span class="text-gray-400">—</span></template>
+                        </td>
+                      </template>
+                    </tr>
+                  </template>
+                  <template x-if="!historyPairs().length">
+                    <tr><td class="px-3 py-3 text-gray-500 sm:px-4 dark:text-gray-400" :colspan="releases().length + 1">No release has been checked yet.</td></tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </template>
+
         <template x-if="noOriginal().length">
           <div>
             <h2 class="mt-10 text-xl font-semibold tracking-tight">No original to check against</h2>
@@ -103,9 +237,9 @@
           </div>
         </template>
         <p class="mt-4 text-sm text-gray-500 dark:text-gray-400">
-          How the checks run, the limits, and how to rerun one:
+          How the checks run, the two tracks, the limits, and how to rerun one:
           <a href="https://github.com/QSMxT/QSM-CI/blob/main/docs/parity.md" class="text-emerald-600 hover:underline">docs/parity.md</a>.
-          The history behind this table:
+          The history behind these tables:
           <a href="https://github.com/QSMxT/QSM-CI/blob/main/parity/results.json" class="text-emerald-600 hover:underline">parity/results.json</a>.
         </p>
       </div>
@@ -114,14 +248,29 @@
   <footer id="site-footer"></footer>
 
   <script>
+    const BADGE_CLS = {
+      green: "bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/20",
+      orange: "bg-orange-50 text-orange-700 ring-orange-200 dark:bg-orange-500/10 dark:text-orange-300 dark:ring-orange-500/20",
+      red: "bg-red-50 text-red-700 ring-red-200 dark:bg-red-500/10 dark:text-red-300 dark:ring-red-500/20",
+      amber: "bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/20",
+      grey: "bg-gray-50 text-gray-600 ring-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-700",
+    };
+    // badge kinds (scripts/parity.py badge) → colours, as the shields.io badges show them
+    const KIND = { current: "green", stale: "orange", failing: "red", gap: "amber" };
+
     function parityPage() {
+      const q = new URLSearchParams(location.search);
       return {
-        status: null, error: "",
+        status: null, error: "", track: q.get("track") === "dev" ? "dev" : "released",
+        release: q.get("release") || null, open: {},
         async init() {
           try {
             const res = await fetch("parity/status.json", { cache: "no-store" });
             if (!res.ok) throw new Error("HTTP " + res.status);
-            this.status = await res.json();
+            const doc = await res.json();
+            if (!doc.tracks) throw new Error("status.json predates the two tracks");
+            this.status = doc;
+            if (!this.release || !this.releases().includes(this.release)) this.release = this.latest();
             // The rows exist only now, so the browser's own jump to #pair-<name> found nothing.
             this.$nextTick(() => {
               const el = location.hash && document.getElementById(location.hash.slice(1));
@@ -129,8 +278,51 @@
             });
           } catch (e) { this.error = String(e.message || e); }
         },
-        pairs() { return this.status.pairs.filter((p) => p.state !== "no-original"); },
-        noOriginal() { return this.status.pairs.filter((p) => p.state === "no-original"); },
+        latest() { return this.status.tracks.released.release; },
+        // The latest release first, then every release with recorded results, newest first.
+        releases() {
+          const all = [this.latest(), ...(this.status.releases || [])].filter(Boolean);
+          return [...new Set(all)];
+        },
+        syncUrl() {
+          const u = new URL(location.href);
+          u.searchParams.delete("track"); u.searchParams.delete("release");
+          if (this.track === "dev") u.searchParams.set("track", "dev");
+          else if (this.release && this.release !== this.latest()) u.searchParams.set("release", this.release);
+          history.replaceState(null, "", u);
+        },
+        setTrack(t) { this.track = t; this.syncUrl(); },
+        setRelease(r) { this.release = r; this.syncUrl(); },
+        toggle(p) { this.open = { ...this.open, [p]: !this.open[p] }; },
+        short(sha) { return (sha || "").slice(0, 7); },
+        history(pair) { return (this.status.history || {})[pair] || []; },
+        historyPairs() { return Object.keys(this.status.history || {}).sort(); },
+        cell(pair, rel) { const h = this.history(pair).find((e) => e.release === rel); return h && h.badge; },
+        tested() {
+          // the latest release: what status.json says; an older one: what its records say
+          const t = this.status.tracks.released;
+          if (this.release === this.latest()) return { qsmxt: t.qsmxt.commit, qsmrs: t.qsmrs.commit, qsmrsVersion: t.qsmrs.version };
+          for (const entries of Object.values(this.status.history || {})) {
+            const e = entries.find((x) => x.release === this.release);
+            if (e) return { qsmxt: e.qsmxt && e.qsmxt.commit, qsmrs: e.qsmrs && e.qsmrs.commit, qsmrsVersion: e.qsmrs && e.qsmrs.version };
+          }
+          return {};
+        },
+        devTested() { return (this.status.tracks.dev.tested || [])[0]; },
+        // The rows of the selected track; an older release is rebuilt from its history.
+        pairs() {
+          const rows = this.status.tracks[this.track].pairs.filter((p) => p.state !== "no-original");
+          if (this.track !== "released" || this.release === this.latest()) return rows;
+          return rows.map((p) => {
+            const h = this.history(p.pair).find((e) => e.release === this.release);
+            const dss = p.datasets.map((d) => {
+              const got = h && h.datasets.find((x) => x.dataset === d.dataset);
+              return { dataset: d.dataset, last: got ? got.last : null, stale: false, reasons: [] };
+            });
+            return { ...p, datasets: dss };
+          });
+        },
+        noOriginal() { return this.status.tracks.dev.pairs.filter((p) => p.state === "no-original"); },
         // One row per pair × dataset; a pair with no dataset configured still gets one row.
         rows() {
           const out = [];
@@ -145,17 +337,26 @@
           if (!q || !q.commit) return "—";
           return (q.version ? "v" + q.version + " " : "") + q.commit.slice(0, 7);
         },
-        result(last) {
-          if (!last) return "—";
-          const r = { pass: "pass", fail: "fail", error: "no result" }[last.result] || last.result;
-          return last.nrmse != null ? `${r} · NRMSE ${Number(last.nrmse).toPrecision(3)} %` : r;
-        },
-        badge(row) {
-          const p = row.pair;
-          if (p.state === "gap") return { label: "gap · " + (p.blocked_by || ""), cls: "bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/20" };
-          if (p.state === "off") return { label: "not enabled", cls: "bg-gray-50 text-gray-600 ring-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-700" };
-          if (row.ds.stale) return { label: "stale", cls: "bg-red-50 text-red-700 ring-red-200 dark:bg-red-500/10 dark:text-red-300 dark:ring-red-500/20" };
-          return { label: "current", cls: "bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/20" };
+        cls(kind) { return BADGE_CLS[KIND[kind] || "grey"]; },
+        // The badge of one pair × dataset row.
+        dsBadge(row) {
+          const p = row.pair, last = row.ds.last;
+          if (p.state === "gap") return { kind: "gap", label: "gap · " + (p.blocked_by || "") };
+          if (p.state === "off") return { kind: "off", label: "not enabled" };
+          const r = last && last.result;
+          if (this.track === "released") {
+            if (!last) return { kind: "unchecked", label: "not checked" };
+            if (r === "unavailable") return { kind: "unavailable", label: "not in " + (last.release || this.release) };
+            if (r === "fail") return { kind: "failing", label: "fail" };
+            if (r === "error") return { kind: "failing", label: "no result" };
+            if (row.ds.stale) return { kind: "stale", label: "stale" };
+            return { kind: "current", label: "pass" };
+          }
+          if (!last) return { kind: "stale", label: "never checked" };
+          if (r === "fail") return { kind: "failing", label: "fail" };
+          if (r === "error") return { kind: "failing", label: "no result" };
+          if (row.ds.stale) return { kind: "stale", label: "stale" };
+          return { kind: "current", label: "current" };
         },
       };
     }

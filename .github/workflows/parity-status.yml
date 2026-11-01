@@ -1,15 +1,18 @@
 name: parity-status
 
-# Weekly: is each enabled port parity pair's last check still good? `scripts/parity.py status`
-# applies the staleness rules (docs/parity.md, "Staleness") to parity/results.json, the history the
-# parity workflow records, and asks GitHub what changed in QSM.rs main since each check. This
-# workflow then:
+# Weekly: is each enabled port parity pair's last check still good, on both tracks
+# (docs/parity.md, "Tracks")? `scripts/parity.py status` applies the rules to parity/results.json,
+# the history the parity workflow records: on the development track the staleness rules ("Staleness":
+# it asks GitHub what changed in QSM.rs main and QSMxT main since each check); on the released track
+# only a missing or result-less run against the latest QSMxT release, or a reference image or pair
+# setting changed since it. This workflow then:
 #   - commits the regenerated parity/status.json and parity/STATUS.md when they change;
-#   - keeps ONE tracking issue up to date: created the first time something is stale, edited on
-#     every run after that, closed when nothing is stale (and reopened, not duplicated, next time).
-#     It lists each stale pair, why, and the `gh workflow run` command that refreshes it;
-#   - with the repository variable PARITY_AUTO_REFRESH=true (off unless set), also dispatches that
-#     refresh itself: parity.yml from main against QSM.rs main, which records its results.
+#   - keeps ONE tracking issue up to date, with a section per track: created the first time
+#     something is flagged, edited on every run after that, closed when nothing is (and reopened,
+#     not duplicated, next time). It lists each flagged pair, why, and the command that reruns it;
+#   - with the repository variable PARITY_AUTO_REFRESH=true (off unless set), also dispatches the
+#     development refresh itself: parity.yml from main against QSM.rs main, which records its
+#     results. The released track's reruns are parity-release.yml's (daily, always on).
 
 on:
   schedule:
@@ -43,7 +46,7 @@ jobs:
         run: |
           python3 scripts/parity.py status --json parity/status.json --markdown parity/STATUS.md \
             --issue /tmp/issue.md
-          stale=$(python3 -c 'import json; print(",".join(json.load(open("parity/status.json"))["stale"]))')
+          stale=$(python3 -c 'import json; print(",".join(json.load(open("parity/status.json"))["tracks"]["dev"]["stale"]))')
           echo "stale=$stale" >> "$GITHUB_OUTPUT"
           cat parity/STATUS.md >> "$GITHUB_STEP_SUMMARY"
 
@@ -80,7 +83,7 @@ jobs:
                 || gh issue reopen "$num" -R "$GITHUB_REPOSITORY"
             fi
           elif [ -n "$num" ] && [ "$(gh issue view "$num" -R "$GITHUB_REPOSITORY" --json state --jq .state)" = OPEN ]; then
-            gh issue close "$num" -R "$GITHUB_REPOSITORY" --comment "Every enabled parity pair's last check stands (parity/STATUS.md)."
+            gh issue close "$num" -R "$GITHUB_REPOSITORY" --comment "Every enabled parity pair's last check stands on both tracks (parity/STATUS.md)."
           fi
 
       - name: Refresh the stale pairs (PARITY_AUTO_REFRESH)

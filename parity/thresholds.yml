@@ -179,28 +179,27 @@ pairs:
   ilsqr:
     reference: ilsqr-sti
     candidate: ilsqr-qsmrs
-    enabled: false
+    enabled: true
     # Was sim 18.0 % / KKI 17.2 % NRMSE at QSM.rs da928e0 (40 iterations, the GUI's; the container
     # runs QSM_iLSQR's own 100, now QSM.rs's default), then 0.99 % / 1.78 % at main 7f8271e (run
     # 41019608126): FastQSM's kernel closing differed from imclose's. With that fixed
-    # (astewartau/QSM.rs#329): 0.0024 % / 0.017 % at qsmxt's default double precision (run
+    # (astewartau/QSM.rs#372): 0.0024 % / 0.017 % at qsmxt's default double precision (run
     # 41023156365), the same as with STI's single precision (`--set precision=single`, run
     # 41026767896: 0.0024 % / 0.017 %), so the pair checks the default.
-    blocked_by: astewartau/QSM.rs#329   # until QSM.rs main has the fix and QSMxT main builds on it
     qsmrs_paths: [src/fft.rs, src/grid.rs, src/inversion/ilsqr.rs, src/kernels/,
                   src/pipeline/inversion.rs, src/pipeline/rules.rs, src/utils/padding.rs]
     qsmxt_paths: &invert_wiring [src/cli.rs, src/commands/common.rs, src/commands/invert.rs]
     datasets:
       sim:
-        # Measured: NRMSE 0.002378 %.
+        # Measured: NRMSE 0.002378 %, r 1.000000, max |Δ| 9.0e-05 ppm, p99 |Δ| 2.2e-06 ppm.
         chimap: { nrmse_max: 0.503, correlation_min: 0.989, max_abs_max: 0.000113, p99_abs_max: 2.72e-06 }
-        measured: { main: "run 41023156365: QSMxT ilsqr-precision baf0db1, QSM.rs ilsqr-sti-single 6601c82 (limits)" }
+        measured: { main: "run 41256314678: QSMxT main a78074c, QSM.rs main afed56b (limits)" }
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
-        # Measured: NRMSE 0.01666 %.
+        # Measured: NRMSE 0.01666 %, r 1.000000, max |Δ| 1.65e-04 ppm, p99 |Δ| 2.1e-05 ppm.
         chimap: { nrmse_max: 0.519, correlation_min: 0.989, max_abs_max: 0.000207, p99_abs_max: 2.68e-05 }
-        measured: { main: "run 41023156365: QSMxT ilsqr-precision baf0db1, QSM.rs ilsqr-sti-single 6601c82 (limits)" }
+        measured: { main: "run 41256314678: QSMxT main a78074c, QSM.rs main afed56b (limits)" }
   vsharp:
     reference: vsharp-sti
     candidate: vsharp-qsmrs
