@@ -25,7 +25,6 @@ contract allows so that the original unwrapping, echo fitting and reliability ma
 | `mex eig3volume.c` at run time | mex compiled at **build** time | a deployed MATLAB Runtime cannot compile mex |
 | `QSM_iLSQR` from the MATLAB path | STI Suite v3 `Core_Functions_P` bundled at build time | QSMART's inversion is STI Suite's `QSM_iLSQR` (Wei Li / Chunlei Liu) — it is not part of the QSMART repo |
 | `make_nii`/`save_nii` final output | output written through the input mask's **untouched header** | the bundled NIfTI `make_nii` loses the affine |
-| — | odd matrix dims zero-padded to even (and cropped back) | `adjust_offset`'s `-N/2:N/2-1` k-grid and STI's `calcD2Matrix` assume even dims |
 | `calculate_curvature`'s `max(abs(GC(GC<0)))` scale | guarded when `GC<0` is empty (build-time patch, see `BUILD.md`) | simulated phantom masks can have no concave surface points → `max([])` = `[]` → hard error; the guard is a no-op whenever negatives exist |
 | stray `keyboard` in `FrangiFilter3D.m` | commented out (build-time patch) | a leftover debug statement; fatal ("Debugging is not supported") in deployed MCR mode |
 

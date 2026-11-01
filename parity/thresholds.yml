@@ -119,6 +119,10 @@ pairs:
       chi1: chimap_stage1
       lfs2: localfield_stage2
       chi2: chimap_stage2
+    # The authors' adjust_offset.m builds its dipole on -N/2:N/2-1, half a step off the FFT grid
+    # when a dimension is odd (the sim, 164×205×205); QSM.rs keeps the FFT grid as its default and
+    # the authors' as an option (astewartau/QSM.rs#386), which the pair turns on. No effect on KKI.
+    candidate_set: { offset_grid: qsmart-reference }
     datasets:
       # The port starts from the original's own total field (Laplacian unwrapping + QSMART's
       # magnitude-weighted echo fit) and its own reliability map R_0 (`qsmxt qsmart --reliability`,
@@ -130,30 +134,37 @@ pairs:
       # 15c938f, built by this workflow), plus the margins above. The same build without the feed
       # (run 41190566176): sim NRMSE 16.32 %, KKI 0.779 %. The pinned qsmxt v10.0.0 (QSM.rs v0.39.0)
       # is far outside them (sim NRMSE 65.9 %, KKI 133.8 %, without the feed): those runs record
-      # the gap, not a limit. Reference image: matlab-qsmart v3, sha256:e0e8bc69… (algorithm.yml).
+      # the gap, not a limit. Reference image: matlab-qsmart v3, sha256:e0e8bc69… (algorithm.yml);
+      # both datasets re-measured on v4 (below). KKI has all-even dims, so v3 never padded it; it
+      # is unchanged and its limits stand.
       sim:
         feed: { totalfield: totalfield, reliability: reliability }
-        # Measured: NRMSE 13.45 %, r 0.9909, max |Δ| 0.125 ppm, p99 |Δ| 0.00897 ppm.
-        # R_0 closes stage 1: without it (run 41190566176) the port reconstructed the 331 voxels
-        # the original leaves out, and the stage maps differed from stage 1 on (stage-1 local
-        # field 8.42 %, χ1 10.8 %, stage-2 local field 13.2 %, χ2 33.0 %, final 16.32 %). With it:
-        # stage-1 local field 0.081 %, χ1 0.137 %. What is left is stage 2 (local field 8.54 %,
-        # χ2 27.3 %), which runs outside the vessel mask, and the vessel masks still differ
-        # (Dice 0.988; KKI 0.9999). astewartau/QSM.rs#320: with the original's vessel mask as
-        # well, the whole chain is 0.15 % from MATLAB.
-        chimap: { nrmse_max: 15.3, correlation_min: 0.98, max_abs_max: 0.156, p99_abs_max: 0.0113 }
+        # matlab-qsmart v4 (no even-dim padding, as the authors' code) with the candidate on
+        # offset_grid=qsmart-reference (astewartau/QSM.rs#386, QSMxT/QSMxT#468), run 41214814110:
+        # NRMSE 0.359 %, r 1.0000, max |Δ| 0.0310 ppm, p99 |Δ| 0.0000913 ppm; stage-1 local field
+        # 0.075 %, χ1 0.126 %, stage-2 local field 0.202 %, χ2 0.551 %, vessel mask Dice 1.
+        # Identical with qsm-core at QSM.rs main 6500518 (QSMxT/QSMxT#469; run 41214822789). On the
+        # FFT grid (QSM.rs's default; local run) NRMSE is 3.57 %. Before (v3, padded; run
+        # 41190547845): 13.45 %, r 0.9909, max 0.125, p99 0.00897; stage-2 local field 8.54 %, χ2
+        # 27.3 %, vessel Dice 0.988: the padding changed the original's vessel mask, total field and
+        # both stages.
+        chimap: { nrmse_max: 0.895, correlation_min: 0.989, max_abs_max: 0.0388, p99_abs_max: 0.000115 }
         measured:
-          main: "run 41190547845: QSMxT main 9cfe3f9, qsm-core 15c938f, R_0 fed (limits)"
+          main: "run 41214814110: QSMxT main 7daaa49, qsm-core c03d4d0, v4, R_0 fed, qsmart-reference grid (limits)"
+          main-6500518: "run 41214822789: QSMxT#469, qsm-core 6500518, same result"
+          v3: "run 41190547845: QSMxT main 9cfe3f9, qsm-core 15c938f, R_0 fed, v3 (padded), NRMSE 13.45 %"
           unfed: "run 41190566176: QSMxT main 9cfe3f9, qsm-core 15c938f, no R_0, NRMSE 16.32 %, r 0.9868"
           pinned: "run 40530165113: qsmxt v10.0.0 sha256:9258c10e…, NRMSE 65.94 %, r 0.8003"
       # In vivo (EMTP travelling head, KKI Philips 3 T, public). R_0 rejects no voxel here: the
       # result is the same with and without the feed (runs 41190547845, 41190566176).
       s002001-kki-achieva-bridge-run1:
         feed: { totalfield: totalfield, reliability: reliability }
-        # Measured: NRMSE 0.779 %, r 1.0000, max |Δ| 0.0455 ppm, p99 |Δ| 0.000446 ppm.
+        # Measured: NRMSE 0.779 %, r 1.0000, max |Δ| 0.0455 ppm, p99 |Δ| 0.000446 ppm, the same on
+        # v3 and v4 and with either offset grid (all dims even).
         chimap: { nrmse_max: 1.36, correlation_min: 0.989, max_abs_max: 0.0569, p99_abs_max: 0.000558 }
         measured:
           main: "run 41190547845: QSMxT main 9cfe3f9, qsm-core 15c938f, R_0 fed (limits)"
+          v4: "runs 41214814110, 41214822789: v4, qsmart-reference grid, NRMSE 0.779 % (unchanged)"
           pinned: "run 40530165113: qsmxt v10.0.0 sha256:9258c10e…, NRMSE 133.8 %, r 0.5346"
 
   # ---- In vivo inputs. The KKI travelling head has no ground-truth fields, so a pair that starts
