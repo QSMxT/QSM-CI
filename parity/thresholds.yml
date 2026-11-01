@@ -122,6 +122,10 @@ pairs:
       chi1: chimap_stage1
       lfs2: localfield_stage2
       chi2: chimap_stage2
+    # The authors' adjust_offset.m builds its dipole on -N/2:N/2-1, half a step off the FFT grid
+    # when a dimension is odd (the sim, 164×205×205); QSM.rs keeps the FFT grid as its default and
+    # the authors' as an option (astewartau/QSM.rs#386), which the pair turns on. No effect on KKI.
+    candidate_set: { offset_grid: qsmart-reference }
     datasets:
       # The port starts from the original's own total field (Laplacian unwrapping + QSMART's
       # magnitude-weighted echo fit) and its own reliability map R_0 (`qsmxt qsmart --reliability`,
@@ -133,30 +137,37 @@ pairs:
       # 15c938f, built by this workflow), plus the margins above. The same build without the feed
       # (run 41190566176): sim NRMSE 16.32 %, KKI 0.779 %. The pinned qsmxt v10.0.0 (QSM.rs v0.39.0)
       # is far outside them (sim NRMSE 65.9 %, KKI 133.8 %, without the feed): those runs record
-      # the gap, not a limit. Reference image: matlab-qsmart v3, sha256:e0e8bc69… (algorithm.yml).
+      # the gap, not a limit. Reference image: matlab-qsmart v3, sha256:e0e8bc69… (algorithm.yml);
+      # both datasets re-measured on v4 (below). KKI has all-even dims, so v3 never padded it; it
+      # is unchanged and its limits stand.
       sim:
         feed: { totalfield: totalfield, reliability: reliability }
-        # Measured: NRMSE 13.45 %, r 0.9909, max |Δ| 0.125 ppm, p99 |Δ| 0.00897 ppm.
-        # R_0 closes stage 1: without it (run 41190566176) the port reconstructed the 331 voxels
-        # the original leaves out, and the stage maps differed from stage 1 on (stage-1 local
-        # field 8.42 %, χ1 10.8 %, stage-2 local field 13.2 %, χ2 33.0 %, final 16.32 %). With it:
-        # stage-1 local field 0.081 %, χ1 0.137 %. What is left is stage 2 (local field 8.54 %,
-        # χ2 27.3 %), which runs outside the vessel mask, and the vessel masks still differ
-        # (Dice 0.988; KKI 0.9999). astewartau/QSM.rs#320: with the original's vessel mask as
-        # well, the whole chain is 0.15 % from MATLAB.
-        chimap: { nrmse_max: 15.3, correlation_min: 0.98, max_abs_max: 0.156, p99_abs_max: 0.0113 }
+        # matlab-qsmart v4 (no even-dim padding, as the authors' code) with the candidate on
+        # offset_grid=qsmart-reference (astewartau/QSM.rs#386, QSMxT/QSMxT#468), run 41214814110:
+        # NRMSE 0.359 %, r 1.0000, max |Δ| 0.0310 ppm, p99 |Δ| 0.0000913 ppm; stage-1 local field
+        # 0.075 %, χ1 0.126 %, stage-2 local field 0.202 %, χ2 0.551 %, vessel mask Dice 1.
+        # Identical with qsm-core at QSM.rs main 6500518 (QSMxT/QSMxT#469; run 41214822789). On the
+        # FFT grid (QSM.rs's default; local run) NRMSE is 3.57 %. Before (v3, padded; run
+        # 41190547845): 13.45 %, r 0.9909, max 0.125, p99 0.00897; stage-2 local field 8.54 %, χ2
+        # 27.3 %, vessel Dice 0.988: the padding changed the original's vessel mask, total field and
+        # both stages.
+        chimap: { nrmse_max: 0.895, correlation_min: 0.989, max_abs_max: 0.0388, p99_abs_max: 0.000115 }
         measured:
-          main: "run 41190547845: QSMxT main 9cfe3f9, qsm-core 15c938f, R_0 fed (limits)"
+          main: "run 41214814110: QSMxT main 7daaa49, qsm-core c03d4d0, v4, R_0 fed, qsmart-reference grid (limits)"
+          main-6500518: "run 41214822789: QSMxT#469, qsm-core 6500518, same result"
+          v3: "run 41190547845: QSMxT main 9cfe3f9, qsm-core 15c938f, R_0 fed, v3 (padded), NRMSE 13.45 %"
           unfed: "run 41190566176: QSMxT main 9cfe3f9, qsm-core 15c938f, no R_0, NRMSE 16.32 %, r 0.9868"
           pinned: "run 40530165113: qsmxt v10.0.0 sha256:9258c10e…, NRMSE 65.94 %, r 0.8003"
       # In vivo (EMTP travelling head, KKI Philips 3 T, public). R_0 rejects no voxel here: the
       # result is the same with and without the feed (runs 41190547845, 41190566176).
       s002001-kki-achieva-bridge-run1:
         feed: { totalfield: totalfield, reliability: reliability }
-        # Measured: NRMSE 0.779 %, r 1.0000, max |Δ| 0.0455 ppm, p99 |Δ| 0.000446 ppm.
+        # Measured: NRMSE 0.779 %, r 1.0000, max |Δ| 0.0455 ppm, p99 |Δ| 0.000446 ppm, the same on
+        # v3 and v4 and with either offset grid (all dims even).
         chimap: { nrmse_max: 1.36, correlation_min: 0.989, max_abs_max: 0.0569, p99_abs_max: 0.000558 }
         measured:
           main: "run 41190547845: QSMxT main 9cfe3f9, qsm-core 15c938f, R_0 fed (limits)"
+          v4: "runs 41214814110, 41214822789: v4, qsmart-reference grid, NRMSE 0.779 % (unchanged)"
           pinned: "run 40530165113: qsmxt v10.0.0 sha256:9258c10e…, NRMSE 133.8 %, r 0.5346"
 
   # ---- In vivo inputs. The KKI travelling head has no ground-truth fields, so a pair that starts
@@ -309,6 +320,10 @@ pairs:
     reference: decompose-qsm   # ci_skip for scoring (hours per run); parity runs it, self-hosted
     candidate: decompose-qsmrs
     enabled: true
+    # decompose-qsmrs applies QSMxT's 7 T suggestions from 6.5 T (unwrapping + the echo-spacing χ
+    # bound, QSM-CI#344); the MATLAB reference has neither, so the port runs the authors' defaults.
+    # Without this chisep-mc (7 T) gave χ+ NRMSE 143 %, χ− 41 % (run 41189442934).
+    candidate_set: { unwrap_phase: "false", chi_bound: 0.5 }
     # The port follows the reference (astewartau/QSM.rs#333, #338, #339): principal-branch phases,
     # a QSM per echo, MATLAB lsqcurvefit's trust-region-reflective solver, and MATLAB's elementary
     # functions (FDLIBM 5.3). The remainder is rounding in the ~2 % of voxels where a compartment
@@ -539,36 +554,39 @@ pairs:
   sharp-qsmjl:
     reference: sharp-qsmjl
     candidate: sharp-qsmrs
-    enabled: false
-    # QSM.rs keeps QSM.jl's sharp as SharpVariant::QsmJl (astewartau/QSM.rs#321). With QSM.rs's
-    # default (SEPIA's SHARP) against QSM.jl's defaults (run 41019310531): NRMSE sim 26.5 %, KKI
-    # 34.5 %, a different method. `qsmxt bgremove sharp --variant qsmjl` (QSMxT/QSMxT#460, which
-    # closes #463) selects it with QSM.jl's own defaults (18 × the smallest voxel, 0.05). Measured
-    # on a #460 build with radius 6 and threshold 0.05 on both sides (run 41024142665): NRMSE sim
-    # 5.2e-9 %, KKI 2.2e-10 %. Enable, with limits from a baseline at these settings, once a
-    # qsmxt with #460 is pinned.
-    blocked_by: QSMxT/QSMxT#460
+    enabled: true
+    # QSM.rs keeps QSM.jl's sharp as SharpVariant::QsmJl (astewartau/QSM.rs#321), selected by
+    # `qsmxt bgremove sharp --variant qsmjl` (QSMxT/QSMxT#460) with QSM.jl's own defaults (18 × the
+    # smallest voxel, 0.05); both sides run at those. QSM.rs's default (SEPIA's SHARP) is the
+    # `sharp` pair. On KKI the pair measured 2.95 % (run 41191842680) until the Julia glue took the
+    # voxel size from the header as qsmxt does (QSM.jl pads by cld(18, 0.99999994) = 19, not 18).
     qsmrs_paths: *sharp_paths
     qsmxt_paths: *bgremove_wiring
     candidate_set: { variant: qsmjl }
     datasets:
-      sim: {}
+      sim:
+        # Measured: NRMSE 6.3e-12 %, max |Δ| 4.6e-13 ppm.
+        localfield: { nrmse_max: 0.501, correlation_min: 0.99, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
+        measured: { main: "run 41191905549: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs]
         feed: { totalfield: totalfield }
+        # Measured: NRMSE 0 (identical in float32).
+        localfield: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
+        measured: { main: "run 41191905549: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
   vsharp-qsmjl:
     reference: vsharp-qsmjl
     candidate: vsharp-qsmrs
-    enabled: false
+    enabled: true
     # QSM.rs's V-SHARP uses STI Suite's ball and edge test by default (astewartau/QSM.rs#332);
-    # QSM.jl's are VsharpBall::QsmJl, which matches QSM.jl to rounding in QSM.rs's own test, but
-    # `qsmxt bgremove vsharp --ball qsmjl` selects it (QSMxT/QSMxT#460, which closes #463). With the
-    # default ball and STI's radii on both sides (run 41019310531): NRMSE sim 12.8 % (r 0.992), KKI
-    # 13.9 % (r 0.990). On a #460 build with the QSM.jl ball (run 41024142665): sim 9.85 %, KKI
-    # 13.5 %; with the native grid as well (run 41028484649) unchanged; with the candidate's radii
-    # and threshold also given explicitly (run 41029942914): sim 5.2e-12 %, KKI 1.19 %. The KKI
-    # 1.19 % is not explained (not a documented original-side floor), so the pair stays disabled.
-    blocked_by: QSMxT/QSMxT#460
+    # QSM.jl's are VsharpBall::QsmJl, which `qsmxt bgremove vsharp --ball qsmjl` selects
+    # (QSMxT/QSMxT#460). With the default ball and STI's radii on both sides (run 41019310531):
+    # NRMSE sim 12.8 %, KKI 13.9 %; with the QSM.jl ball, the native grid and the candidate's
+    # radii and threshold given explicitly (run 41029942914): sim 5.2e-12 %, KKI 1.19 %. The KKI
+    # 1.19 % was the voxel size: QSM.jl pads its box by cld(max(r), minimum(vsz)) voxels, and the
+    # reference read params.json's 1.0 mm while qsmxt reads the header's z spacing, 0.99999994
+    # (13 voxels of padding instead of 12). The reference now takes the header's voxel size too
+    # (algorithms/vsharp-qsmjl/recon.jl; QSM.rs fixture case in astewartau/QSM.rs#378).
     qsmrs_paths: [src/bgremove/sharp.rs, src/bgremove/smv.rs, src/bgremove/vsharp.rs, src/error.rs,
                   src/fft.rs, src/grid.rs, src/inversion/medi.rs, src/kernels/,
                   src/pipeline/bg_removal.rs, src/pipeline/rules.rs, src/utils/padding.rs]
@@ -576,10 +594,16 @@ pairs:
     reference_set: { max_radius: 12, min_radius: 1, radius_step: 1 }   # QSM.rs's (STI Suite's) radii
     candidate_set: { ball: qsmjl, grid: native, max_radius: 12, min_radius: 1, radius_step: 1, threshold: 0.05 }
     datasets:
-      sim: {}
+      sim:
+        # Measured: NRMSE 5.2e-12 %, max |Δ| 4.5e-13 ppm.
+        localfield: { nrmse_max: 0.501, correlation_min: 0.99, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
+        measured: { main: "run 41190280885: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs]
         feed: { totalfield: totalfield }
+        # Measured: NRMSE 1.1e-11 %, max |Δ| 1.8e-12 ppm.
+        localfield: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
+        measured: { main: "run 41190280885: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
   laplacian:
     reference: laplacian-qsmjl
     candidate: laplacian-qsmrs

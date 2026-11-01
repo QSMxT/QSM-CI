@@ -32,7 +32,7 @@ authors:
 doi: 10.1016/j.neuroimage.2020.117701
 code_url: https://github.com/wtsyeda/QSMART
 license: "No license file; author toolbox distribution (QSM_iLSQR: see STI Suite license)"
-image: ghcr.io/astewartau/qsm-ci/matlab-qsmart@sha256:e0e8bc6957c5346905136bfb02d330ca5f66eab510bf2a9893015a9dc4e0c3f6   # v3
+image: ghcr.io/astewartau/qsm-ci/matlab-qsmart@sha256:01f36e868bcacf494914b498b8f1cfc39480e533b0b654519e4476c19e532493   # v4
 run: bash run.sh
 smoke_box: 96   # PR --smoke gate: the pipeline default. A 32^3 crop is too small for QSMART_SDF's
                 # vessel-curvature step (delaunay needs ≥3 points) and DNF'd every PR since #169;
@@ -43,8 +43,8 @@ matlab:
 # Container vs the authors' code in licensed MATLAB with the real toolboxes (QSMxT/QSM-CI#295;
 # fidelity/README.md). Rerun and update whenever the image changes.
 fidelity:
-  date: 2026-10-28
-  image: sha256:e0e8bc6957c5346905136bfb02d330ca5f66eab510bf2a9893015a9dc4e0c3f6
+  date: 2026-10-31
+  image: sha256:01f36e868bcacf494914b498b8f1cfc39480e533b0b654519e4476c19e532493   # v4 (config sha256:d27caa66b402…, the image the check ran)
   matlab: R2023b Update 5 (23.2.0.2459199), Image Processing Toolbox 23.2
   tolerance: identical   # final chi and every intermediate, in silico and in vivo, 8 threads
   result: pass

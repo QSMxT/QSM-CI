@@ -56,7 +56,10 @@ def _run(algo: Path, tmp_path: Path, config: dict | None) -> str:
     fake.write_text(f'#!/usr/bin/env bash\nprintf "%s\\n" "$*" > "{log}"\n')
     fake.chmod(0o755)
     env = {**os.environ, "PATH": f"{bin_}{os.pathsep}{os.environ['PATH']}"}
-    subprocess.run(["bash", str(algo / "run.sh"), str(inp), str(out)], check=True, env=env,
+    # Only the recorded call matters: a run.sh that then publishes qsmxt's outputs (which the
+    # stand-in doesn't write) fails after it, so the exit status is not checked.
+    log.unlink(missing_ok=True)
+    subprocess.run(["bash", str(algo / "run.sh"), str(inp), str(out)], check=False, env=env,
                    capture_output=True, text=True)
     return log.read_text().strip()
 

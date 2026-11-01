@@ -48,6 +48,11 @@ parameters:
 - name: chi_bound
   default: 0.5
   description: upper bound on |χ| in the per-voxel fit, ppm (the reference's bound)
+- name: unwrap_phase
+  default: false
+  description: >
+    unwrap the phase along the echoes (the authors' code does not; true at B0 >= 6.5 T, as QSMxT
+    suggests there). Needs a qsmxt with --unwrap-phase (not v10.0.0)
 - name: max_lm_iter
   default: 30
   description: >
