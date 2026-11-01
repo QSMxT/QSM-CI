@@ -30,6 +30,15 @@ never enters the field-mapping × bfr × dipole composed matrix. Most methods re
 inputs — declare what your code actually reads under `inputs:` in `algorithm.yml` (e.g.
 `inputs: [localfield, chimap, r2prime, mask]`) and only those are mounted into `/input`.
 
+A χ-separation phantom is scored on two input sets. **Provided** (the default): the phantom's true
+`localfield` and `chimap`, and an `r2prime` fitted from its noiseless signal. **Derived**
+(`scripts/pipeline.py --inputs derived`): every input computed from the phantom's noisy multi-echo
+GRE (and spin echo) by one fixed QSMxT pipeline, the same for every method
+([`scripts/derive_chisep_inputs.py`](scripts/derive_chisep_inputs.py) documents each step). A method
+that opts into `chimap-echoes` gets, on derived inputs, the per-echo STAR-QSM maps and their mean as
+`chimap` (DECOMPOSE-QSM's reference pipeline). Nothing changes for a submission: the same files are
+mounted, from a different source.
+
 `inputs:` narrows what is **mounted**, not what may be **named**. `qsm-ci run <slug>` accepts a flag
 for every artifact your stage's contract lists, whichever method is being run — a flag for something
 you didn't declare is simply ignored, with a note. That uniformity is what lets one wrapper serve a

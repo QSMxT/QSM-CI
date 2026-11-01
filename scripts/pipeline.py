@@ -484,6 +484,35 @@ def prepare_input(consumes: list[str], sources: dict[str, Path], dest: Path,
         shutil.copy(src, dest / ARTIFACT_FILE[art])
 
 
+DERIVED_DIR = "derived"   # <dataset>/derived/{inputs,groundtruth}: scripts/derive_chisep_inputs.py
+# What a method that takes χ(TE) (optional_inputs: [chimap-echoes]) is given as χ_total on derived
+# inputs: the per-echo reconstruction's own QSM (the mean of its echoes' maps), as QSMxT runs DECOMPOSE.
+PERECHO_CHIMAP = "chimap-perecho.nii.gz"
+
+
+def method_sources(gt_sources: dict, algo: dict, inputs: str = "provided") -> dict:
+    """The source map one method is fed. On provided inputs, the dataset's (gt_sources). On derived
+    inputs, the same, except that a method opting into chimap-echoes takes the per-echo pipeline's
+    χ_total with it, so its χ and χ(TE) come from one reconstruction (DECOMPOSE's reference pipeline:
+    STAR-QSM on each echo)."""
+    if inputs != "derived" or "chimap-echoes" not in algo.get("optional", ()):
+        return gt_sources
+    perecho = Path(gt_sources["chimap"]).with_name(PERECHO_CHIMAP)
+    return {**gt_sources, "chimap": perecho} if perecho.exists() else gt_sources
+
+
+def use_derived_inputs(dataset: Path) -> Path:
+    """The dataset dir an `--inputs derived` run reads: <dataset>/derived (inputs/ from
+    scripts/derive_chisep_inputs.py; groundtruth/ the dataset's own)."""
+    der = dataset / DERIVED_DIR
+    if not (der / "inputs" / "params.json").exists():
+        raise SystemExit(f"--inputs derived: {der}/inputs is missing — run "
+                         f"scripts/derive_chisep_inputs.py {dataset} first")
+    if not (der / "groundtruth").exists():
+        raise SystemExit(f"--inputs derived: {der}/groundtruth is missing (a link to ../groundtruth)")
+    return der
+
+
 # How long after the CLI's own deadline the scorer's backstop fires. Only reached when the CLI
 # itself is wedged: normally the CLI kills the container, prints the reason and exits non-zero first.
 _TIMEOUT_GRACE_S = 120.0
@@ -1142,7 +1171,8 @@ def do_isolated(task, args, gt_sources, gt, mask):
     idir = args.work / f"iso_{a['slug']}{idsfx}_in"
     odir = args.work / f"iso_{a['slug']}{idsfx}_out"
     try:
-        prepare_input(a["consumes"], gt_sources, idir, a.get("optional", ()))
+        prepare_input(a["consumes"], method_sources(gt_sources, a, getattr(args, "inputs", "provided")),
+                      idir, a.get("optional", ()))
         run_overrides = overrides
         if args.smoke:
             _smoke_crop(idir, a["consumes"], a.get("smoke_box") or args.smoke_box)
@@ -1202,6 +1232,9 @@ def run_isolated(args, algos, gt_sources, gt, mask, iso_target, runs: list) -> N
     iso_tasks = [t for a in iso_algos for t in iso_variants(a)]
     iso_tasks = shard_partition(iso_tasks, args.shard)  # --shard: round-robin over a stable order
     for out in _pmap(iso_tasks, lambda task: do_isolated(task, args, gt_sources, gt, mask)):
+        if getattr(args, "inputs", "provided") == "derived":
+            for r in out:
+                r["inputs"] = "derived"
         runs.extend(_stamp_phantom(out, getattr(args, "phantom", None)))
     if not args.runs_out:
         flush_index(runs)
@@ -1717,6 +1750,12 @@ def main() -> None:
                          "run ids with -<phantom-id> and its rows carry a `phantom` field. Omitted = "
                          "the track's default phantom (legacy behaviour, no field stamped).")
     ap.add_argument("--mode", choices=["isolated", "composed", "both"], default="both")
+    ap.add_argument("--inputs", choices=["provided", "derived"], default="provided",
+                    help="χ-separation phantoms only. provided (default): the dataset's inputs — the "
+                         "true local field and χ, and an R2' fitted from the noiseless signal. derived: "
+                         "every input computed from the noisy signal by one fixed QSMxT pipeline "
+                         "(<dataset>/derived, built by scripts/derive_chisep_inputs.py). Isolated mode "
+                         "only; run ids gain -der and rows carry inputs=derived.")
     ap.add_argument("--runner", choices=["local", "docker", "apptainer"], default="local",
                     help="local runs run.sh directly; docker/apptainer run each submission's image")
     ap.add_argument("--only", default=None, help="restrict isolated evaluation to this slug")
@@ -1792,6 +1831,14 @@ def main() -> None:
               "--mode composed")
         args.mode = "composed"
 
+    if args.inputs == "derived":
+        if args.phantom_track != "chisep":
+            raise SystemExit("--inputs derived is defined for χ-separation phantoms (--phantom <chisep key>)")
+        if args.mode != "isolated":
+            print("[derived] derived inputs are scored isolated — forcing --mode isolated")
+            args.mode = "isolated"
+        args.dataset = use_derived_inputs(args.dataset)
+        args.phantom_sfx += "-der"   # disjoint ids: a derived row never overwrites a provided-input one
     inputs, gt = args.dataset / "inputs", args.dataset / "groundtruth"
     mask = inputs / "mask.nii.gz"
     # No `params` local here: every consumer reaches acquisition parameters through gt_sources,
