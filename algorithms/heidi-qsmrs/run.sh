@@ -33,6 +33,8 @@ if [ -f "$CFG" ]; then
   V=$(jq -r '.tol // empty' "$CFG");                    [ -n "$V" ] && SET="$SET --heidi-tol $V"
   V=$(jq -r '.lsqr_residual_weighting // empty' "$CFG"); [ -n "$V" ] && SET="$SET --lsqr-residual-weighting $V"
   V=$(jq -r '.lsqr_max_iter // empty' "$CFG");          [ -n "$V" ] && SET="$SET --lsqr-max-iter $V"
+  # A boolean: `// empty` would swallow false, so test the value.
+  if jq -e '.denoise_reference_itk == true' "$CFG" >/dev/null; then SET="$SET --heidi-denoise-reference-itk"; fi
 fi
 
 qsmxt invert heidi "$IN/localfield.nii.gz" -m "$IN/mask.nii.gz" -o "$OUT/chimap.nii.gz" \
