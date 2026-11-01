@@ -317,6 +317,10 @@ pairs:
     reference: decompose-qsm   # ci_skip for scoring (hours per run); parity runs it, self-hosted
     candidate: decompose-qsmrs
     enabled: true
+    # decompose-qsmrs applies QSMxT's 7 T suggestions from 6.5 T (unwrapping + the echo-spacing χ
+    # bound, QSM-CI#344); the MATLAB reference has neither, so the port runs the authors' defaults.
+    # Without this chisep-mc (7 T) gave χ+ NRMSE 143 %, χ− 41 % (run 41189442934).
+    candidate_set: { unwrap_phase: "false", chi_bound: 0.5 }
     # The port follows the reference (astewartau/QSM.rs#333, #338, #339): principal-branch phases,
     # a QSM per echo, MATLAB lsqcurvefit's trust-region-reflective solver, and MATLAB's elementary
     # functions (FDLIBM 5.3). The remainder is rounding in the ~2 % of voxels where a compartment

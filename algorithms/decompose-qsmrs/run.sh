@@ -23,6 +23,9 @@ if [ -f "$CFG" ]; then
   V=$(jq -r '.n_inner // empty' "$CFG");     [ -n "$V" ] && SET="$SET --n-inner $V"
   V=$(jq -r '.chi_bound // empty' "$CFG");   [ -n "$V" ] && SET="$SET --chi-bound $V"
   V=$(jq -r '.max_lm_iter // empty' "$CFG"); [ -n "$V" ] && SET="$SET --max-lm-iter $V"
+  # `// empty` would drop a JSON false, so read unwrap_phase by key.
+  V=$(jq -r 'if has("unwrap_phase") then .unwrap_phase | tostring else empty end' "$CFG")
+  [ -n "$V" ] && SET="$SET --unwrap-phase $V"
 fi
 
 # -o is a PREFIX: the CLI writes {prefix}_desc-paramagnetic_Chimap.nii, _desc-diamagnetic_Chimap.nii
@@ -51,10 +54,12 @@ fi
 # suggest unwrapping along the echoes and the echo-spacing χ bound; QSMxT users get them by
 # accepting the suggestion. QSM-CI scores the method as QSMxT runs it, so this entry applies them
 # at 7 T. Below 6.5 T it runs the defaults (the authors' code: no unwrapping, 0.5 ppm bound). A
-# --set chi_bound overrides the bound. A qsmxt without --unwrap-phase (v10.0.0) is left as it is.
+# --set chi_bound / --set unwrap_phase overrides each suggestion; parity sets both to the authors'
+# defaults, as the MATLAB reference runs (parity/thresholds.yml). A qsmxt without --unwrap-phase
+# (v10.0.0) is left as it is.
 SUGGESTED=""
 if awk -v b="$B0" 'BEGIN{exit !(b >= 6.5)}' && qsmxt separate decompose --help 2>/dev/null | grep -q -- '--unwrap-phase'; then
-  SUGGESTED="--unwrap-phase true"
+  case " $SET " in *" --unwrap-phase "*) ;; *) SUGGESTED="--unwrap-phase true" ;; esac
   case " $SET " in *" --chi-bound "*) ;; *) SUGGESTED="$SUGGESTED --chi-bound echo-spacing" ;; esac
 fi
 qsmxt separate decompose \
