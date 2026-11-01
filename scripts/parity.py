@@ -651,28 +651,63 @@ def run_side(chain: list, dataset: Path, out: Path, runner: str, feed: "dict | N
     return prov
 
 
+def optional_feeds(cfg: dict, phantom: str, manifests: "dict | None" = None) -> list:
+    """The pair's feeds on a dataset that the candidate's first step takes as an `optional_inputs:`
+    artifact (QSMART's `reliability`): the port runs without them, only on a different input."""
+    manifests = _manifests() if manifests is None else manifests
+    feed = ((cfg.get("datasets") or {}).get(phantom) or {}).get("feed") or {}
+    first = side_chain(cfg, "candidate", phantom)[0]
+    optional = set((manifests.get(first) or {}).get("optional_inputs") or [])
+    return sorted(a for a in feed if a in optional)
+
+
+DROPPED = "dropped_feeds.json"   # in the candidate's work dir: feeds a release run went without
+
+
 def cmd_run(args) -> int:
+    """Run the reference, then the candidate. `--candidate-only --drop-optional-feeds` reruns just
+    the candidate without the pair's optional feeds (released track: the release's qsmxt has no
+    option for one, e.g. qsmxt v10.0.0 and `qsmart --reliability`); it exits 3 when there is no
+    optional feed to drop or no reference output to rerun against."""
+    import shutil
     th = load_thresholds(args.thresholds)
     cfg = pair_config(th, args.algorithm)
     ds_cfg = (cfg.get("datasets") or {}).get(args.phantom) or {}
     work = Path(args.work)
-    run_side(side_chain(cfg, "reference", args.phantom), Path(args.dataset), work / "reference",
-             args.runner, qsmrs_image=args.qsmrs_image or None, names=cfg.get("reference_names"),
-             overrides=side_set(cfg, "reference", args.phantom))
+    drop_asked = getattr(args, "drop_optional_feeds", False)
+    drop = optional_feeds(cfg, args.phantom) if drop_asked else []
+    if drop_asked and not drop:
+        print(f"{args.algorithm}: no optional feed to run without")
+        return 3
+    if getattr(args, "candidate_only", False):
+        if not (work / "reference" / "provenance.json").exists():
+            print(f"{args.algorithm}: no reference output in {work} to rerun the candidate against")
+            return 3
+    else:
+        run_side(side_chain(cfg, "reference", args.phantom), Path(args.dataset), work / "reference",
+                 args.runner, qsmrs_image=args.qsmrs_image or None,
+                 names=cfg.get("reference_names"), overrides=side_set(cfg, "reference", args.phantom))
     # `feed: {totalfield: totalfield}` hands the candidate the reference's intermediate of that name
     # (after reference_names) in place of the dataset's artifact, so both reconstruct from the same
     # input. A declared feed whose intermediate the reference did not write is an error, never a
-    # silent fallback.
+    # silent fallback; dropping an optional feed is asked for explicitly and recorded.
     feed = {}
     for art, name in (ds_cfg.get("feed") or {}).items():
+        if art in drop:
+            continue
         f = work / "reference" / "intermediates" / f"{name}.nii.gz"
         if not f.exists():
             raise SystemExit(f"feed: {art} <- reference intermediate '{name}', which "
                              f"{cfg['reference']} did not write")
         feed[art] = f
+    if (work / "candidate").exists():
+        shutil.rmtree(work / "candidate")
     run_side(side_chain(cfg, "candidate", args.phantom), Path(args.dataset), work / "candidate",
              args.runner, feed=feed, qsmrs_image=args.qsmrs_image or None,
              names=cfg.get("candidate_names"), overrides=side_set(cfg, "candidate", args.phantom))
+    if drop:
+        (work / "candidate" / DROPPED).write_text(json.dumps(drop) + "\n")
+        print(f"{args.algorithm}: the candidate ran without the optional feed(s) {', '.join(drop)}")
     return 0
 
 
@@ -711,6 +746,10 @@ def cmd_compare(args) -> int:
     prov = {s: json.loads((work / s / "provenance.json").read_text())
             if (work / s / "provenance.json").exists() else {} for s in ("reference", "candidate")}
     final = prov["reference"].get("finals") or prov["reference"].get("final") or "chimap"
+    dropped = json.loads((work / "candidate" / DROPPED).read_text()) \
+        if (work / "candidate" / DROPPED).exists() else []
+    note = args.note + (f" Run without the optional feed(s) {', '.join(dropped)}: this qsmxt has no "
+                        f"option for them." if dropped else "")
     mask = Path(args.mask) if args.mask else Path(args.dataset) / "inputs" / "mask.nii.gz"
     results, unmatched = compare_dirs(work / "reference", work / "candidate", mask, final)
     verdict = evaluate(results, ds_cfg, final)
@@ -719,7 +758,7 @@ def cmd_compare(args) -> int:
                            baseline=args.baseline, unmatched=unmatched,
                            provenance={**prov, "final": final if isinstance(final, str) else final[0],
                                        "finals": [final] if isinstance(final, str) else final},
-                           note=args.note)
+                           note=note.strip())
     print(report)
     if args.report:
         Path(args.report).write_text(report)
@@ -727,7 +766,7 @@ def cmd_compare(args) -> int:
         Path(args.json).write_text(json.dumps({
             "algorithm": args.algorithm, "phantom": args.phantom, "reference": cfg["reference"],
             "candidate": cfg["candidate"], "baseline": args.baseline, "provenance": prov,
-            "note": args.note,
+            "note": note.strip(), **({"dropped_feeds": dropped} if dropped else {}),
             "unmatched": unmatched, **verdict,
             "suggested": {n: derive_limits(v["metrics"]) for n, v in verdict["maps"].items()},
         }, indent=2, default=str) + "\n")
@@ -841,6 +880,8 @@ def make_record(res: "dict | None", *, pair: str, phantom: str, cfg: dict, manif
         rec["result"] = "unavailable"
         rec["failed"] = [str(res["unavailable"])]
         return rec
+    if res.get("dropped_feeds"):
+        rec["dropped_feeds"] = list(res["dropped_feeds"])
     if cst.get("set") or rst.get("set"):
         rec["set"] = {k: v for k, v in (("reference", rst.get("set")),
                                         ("candidate", cst.get("set"))) if v}
@@ -1165,6 +1206,8 @@ def _summary(rec: "dict | None", finals: "list | None" = None) -> "dict | None":
            "correlation": final.get("correlation"), "dice": final.get("dice")}
     if rec.get("release"):
         out["release"] = rec["release"]
+    if rec.get("dropped_feeds"):
+        out["dropped_feeds"] = rec["dropped_feeds"]
     if rec.get("result") in ("fail", "error", "unavailable") and rec.get("failed"):
         out["why"] = rec["failed"][0]
     return out
@@ -1294,6 +1337,8 @@ def badge(row: dict, track: str = DEV, release: "str | None" = None) -> dict:
       unavailable  grey   "not in v10.0.0": the release has no such command or option;
       stale        orange "stale · v10.0.0": the reference or the pair's settings changed since;
       unchecked    grey   "not checked · v10.0.0": no run against the release yet.
+      A result the release reached without one of the pair's optional feeds (its qsmxt has no option
+      for it) says so: "65.9 % · v10.0.0 · no reliability".
     Both:
       gap          yellow a disabled pair `blocked_by` a known gap: "gap · <issue>";
       off          grey   a disabled pair without a known gap: "not enabled";
@@ -1328,6 +1373,9 @@ def badge(row: dict, track: str = DEV, release: "str | None" = None) -> dict:
         kind = "current"
         msg = ("identical" if identical else _nrmse_label(max(nrmse)) if nrmse else "pass") \
             + f" · {when or _day(oldest)}"
+    dropped = sorted({f for l in lasts for f in l.get("dropped_feeds") or []})
+    if dropped and kind in ("current", "failing", "stale"):
+        msg += " · no " + ", ".join(dropped)     # the release ran without an optional feed
     return {"kind": kind, "message": msg, "color": BADGE_COLOR[kind]}
 
 
@@ -1873,6 +1921,10 @@ def main(argv=None) -> int:
             p.add_argument("--qsmrs-image", metavar="REF",
                            help="run every QSM.rs step (source: qsmrs) in this image instead of "
                                 "the one its algorithm.yml pins (e.g. a qsmxt built from a ref)")
+            p.add_argument("--candidate-only", action="store_true",
+                           help="rerun only the candidate, against the reference output in --work")
+            p.add_argument("--drop-optional-feeds", action="store_true",
+                           help="run the candidate without the pair's optional feeds (exit 3 if none)")
         else:
             p.add_argument("--mask", type=Path, help="default: <dataset>/inputs/mask.nii.gz")
             p.add_argument("--baseline", action="store_true",

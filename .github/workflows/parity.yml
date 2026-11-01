@@ -397,11 +397,27 @@ jobs:
           rc=${PIPESTATUS[0]}
           set -e
           echo "== wall-clock: $(( $(date +%s) - t0 ))s =="
-          # Released track: qsmxt refusing the port's command line (an option or value the release
-          # does not have yet) is also "not in <tag>"; any other failure stays a failure.
+          # Released track, qsmxt refusing the port's command line (clap's errors; the patterns
+          # parity.py clap_rejection matches): first rerun just the candidate without the pair's
+          # optional feeds (an input the release has no option for, e.g. qsmxt v10.0.0 and
+          # `qsmart --reliability`), so the release still gets a number, recorded as run without
+          # them; exit 3 = no optional feed to drop. If it is still refused, the release does not
+          # have the port as checked: "not in <tag>". Any other failure stays a failure.
+          log=run.log
+          if [ "$rc" -ne 0 ] && [ -n "$RELEASE" ] && \
+             grep -qE "error: (unrecognized subcommand|unexpected argument|invalid value) '" run.log; then
+            set +e
+            python -u scripts/parity.py run --algorithm "$ALGORITHM" --phantom "$PHANTOM" \
+              --dataset "$DS_PATH" --work .parity --runner docker --qsmrs-image "$QSMRS_IMAGE" \
+              --candidate-only --drop-optional-feeds 2>&1 | tee run-nofeed.log
+            rc2=${PIPESTATUS[0]}
+            set -e
+            [ "$rc2" -eq 0 ] && { echo "::notice::$ALGORITHM: QSMxT $RELEASE ran without the pair's optional feed(s)"; exit 0; }
+            [ "$rc2" -ne 3 ] && log=run-nofeed.log
+          fi
           if [ "$rc" -ne 0 ] && [ -n "$RELEASE" ]; then
             python scripts/parity.py unavailable --algorithm "$ALGORITHM" --phantom "$PHANTOM" \
-              --release "$RELEASE" --log run.log --json parity.json --report parity-report.md
+              --release "$RELEASE" --log "$log" --json parity.json --report parity-report.md
             if [ -f parity.json ]; then
               echo "unavailable=true" >> "$GITHUB_OUTPUT"; cat parity-report.md >> "$GITHUB_STEP_SUMMARY"; exit 0
             fi
