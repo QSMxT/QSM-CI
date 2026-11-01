@@ -723,7 +723,9 @@ pairs:
                                       crates/qsmxt-engine/src/config.rs]
     datasets:
       sim: {}
-      s002001-kki-achieva-bridge-run1:
+      # In vivo: the fidelity check's case (axial; the original's recon.m runs B0 along z only and
+      # stops on the KKI scan's oblique B0_dir).
+      s005001-cbic-prisma-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
   heidi:
@@ -742,6 +744,8 @@ pairs:
     qsmxt_paths: *invert_lsqr_wiring
     datasets:
       sim: {}
-      s002001-kki-achieva-bridge-run1:
+      # In vivo: the fidelity check's case (axial; the original's recon.m runs B0 along z only and
+      # stops on the KKI scan's oblique B0_dir).
+      s005001-cbic-prisma-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
