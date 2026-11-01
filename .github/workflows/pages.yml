@@ -83,9 +83,11 @@ jobs:
           rm -rf _site/node_modules _site/src _site/package.json _site/package-lock.json _site/tailwind.config.js
           cp -r results _site/results
           mkdir -p _site/parity; cp parity/status.json _site/parity/   # the Parity page (web/parity.html)
-          # One shields.io endpoint file per pair at <site>/parity/badges/<pair>.json, which the
-          # QSM.rs README's badges read (docs/parity.md, "Badges"). From the status.json just copied,
-          # so the badges always agree with the page; no GitHub calls here.
+          # shields.io endpoint files (docs/parity.md, "Badges"): <site>/parity/badges/<pair>.json
+          # (the released track: the latest QSMxT release; the QSM.rs README's badges read these),
+          # dev/<pair>.json (the development track) and release/<tag>/<pair>.json (each release).
+          # From the status.json just copied, so the badges always agree with the page; no GitHub
+          # calls here.
           pip install -q pyyaml
           python3 scripts/parity.py badges --status parity/status.json --out _site/parity/badges
           cp -r docs _site/docs           # nothing on the site links here any more; kept so old /docs/ links resolve
