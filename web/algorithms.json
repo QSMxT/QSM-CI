@@ -961,6 +961,57 @@
       "ci_notes": []
     },
     {
+      "slug": "heidi",
+      "name": "HEIDI (qsm_heidi)",
+      "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params",
+        "magnitude"
+      ],
+      "domain": "qsm",
+      "engine": "qsm_heidi 4592631 (inversion_lsqr.m, then inversion_heidi.m)",
+      "algorithm": "heidi",
+      "language": "MATLAB",
+      "family": "iterative",
+      "learning": "none",
+      "description": "Homogeneity Enabled Incremental Dipole Inversion: the well-conditioned k-space coefficients of a minimally regularised LSQR solution are kept, and the dipole cone is filled by a weighted total variation solved with NESTA, where the weights open across edges of the field. The authors' code (qsm_heidi 4592631) run as its pipeline runs it (inversion_lsqr.m, then inversion_heidi.m), compiled from MATLAB and run on the license-free MATLAB Runtime.",
+      "citation": "Schweser et al., NeuroImage 2012",
+      "doi": "10.1016/j.neuroimage.2012.05.067",
+      "code_url": "https://gitlab.com/R01NS114227/qsm_heidi",
+      "license": "qsm_heidi LICENSE: non-commercial academic research use (Ferdinand Schweser, 2025)",
+      "authors": [
+        "Ferdinand Schweser",
+        "Karsten Sommer",
+        "Andreas Deistung",
+        "J\u00fcrgen Rainer Reichenbach"
+      ],
+      "parameters": [
+        {
+          "name": "cone_threshold",
+          "default": 0.1,
+          "description": "|D(k)| above which a coefficient is well-conditioned and kept from the LSQR seed"
+        },
+        {
+          "name": "residual_weighting",
+          "default": 0.2,
+          "description": "LSQR seed's residual-field weight at 9.4 T, scaled by the field strength"
+        },
+        {
+          "name": "lsqr_tolerance",
+          "default": "1e-5",
+          "description": "LSQR seed's MATLAB lsqr tolerance"
+        },
+        {
+          "name": "lsqr_max_iter",
+          "default": 400,
+          "description": "LSQR seed's maximum lsqr iterations"
+        }
+      ],
+      "ci_notes": []
+    },
+    {
       "slug": "heidi-qsmrs",
       "name": "HEIDI (QSM.rs)",
       "stage": "dipole",
@@ -1731,6 +1782,52 @@
         "Sulam J."
       ],
       "parameters": [],
+      "ci_notes": []
+    },
+    {
+      "slug": "lsqr",
+      "name": "LSQR (qsm_heidi)",
+      "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params",
+        "magnitude"
+      ],
+      "domain": "qsm",
+      "engine": "qsm_heidi 4592631 (inversion_lsqr.m, computesusceptibility_lsqr.m)",
+      "algorithm": "lsqr",
+      "language": "MATLAB",
+      "family": "iterative",
+      "learning": "none",
+      "description": "Minimally regularised LSQR: the dipole inversion solved as one large least-squares system with a residual-field term and a global offset, leaning on LSQR's minimum-norm property instead of an explicit regularisation term. The authors' code (qsm_heidi 4592631) run as its inversion_lsqr.m runs it, compiled from MATLAB and run on the license-free MATLAB Runtime.",
+      "citation": "Schweser et al., Medical Physics 2010",
+      "doi": "10.1118/1.3481505",
+      "code_url": "https://gitlab.com/R01NS114227/qsm_heidi",
+      "license": "qsm_heidi LICENSE: non-commercial academic research use (Ferdinand Schweser, 2025)",
+      "authors": [
+        "Ferdinand Schweser",
+        "Andreas Deistung",
+        "Berengar Wendel Lehr",
+        "J\u00fcrgen Rainer Reichenbach"
+      ],
+      "parameters": [
+        {
+          "name": "residual_weighting",
+          "default": 0.2,
+          "description": "residual-field weight at 9.4 T, scaled by the field strength (0.2/9.4 per tesla, the QUASAR optimum)"
+        },
+        {
+          "name": "lsqr_tolerance",
+          "default": "1e-5",
+          "description": "MATLAB lsqr tolerance"
+        },
+        {
+          "name": "lsqr_max_iter",
+          "default": 400,
+          "description": "maximum lsqr iterations"
+        }
+      ],
       "ci_notes": []
     },
     {
