@@ -51,7 +51,11 @@ function readvol(name)
 end
 
 readmask() = (m = readvol("mask.nii.gz"); (m[1] .> 0.5, m[2]))
-voxel_size() = Tuple(Float64.(PARAMS["voxel_size"]))
+"""Voxel size (mm) from the mask's NIfTI header (`pixdim`), the source qsmxt (and NIfTI.jl's
+`voxel_size`) uses, not params.json: the two can differ in the last float32 bit (the KKI travelling
+head's z is 0.99999994 in the header, 1.0 in params.json), and QSM.jl's SMV box padding,
+`cld(r, minimum(vsz))`, turns that into a different FFT box (vsharp-qsmjl: 1.19 % NRMSE)."""
+voxel_size() = Tuple(Float64.(niread(joinpath(IN, "mask.nii.gz")).header.pixdim[2:4]))
 b0_dir() = (d = Float64.(PARAMS["B0_dir"]); Tuple(d ./ norm(d)))
 echo_times() = Float64.(PARAMS["TE"] isa AbstractVector ? PARAMS["TE"] : [PARAMS["TE"]])
 field_strength() = Float64(PARAMS["B0"])
