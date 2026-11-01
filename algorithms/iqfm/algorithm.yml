@@ -41,3 +41,4 @@ run: bash run.sh
 # the 31 GB self-hosted runners (360-min cap, 4 concurrent containers) so the full row completes. Only
 # 2 self-hosted jobs run at once.
 runner: self-hosted
+timeout_minutes: 720  # its composed combos ran past the 360-min default (score run 41283397664: cancelled at exactly 360 min); as decompose-qsm
