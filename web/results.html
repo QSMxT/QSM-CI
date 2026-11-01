@@ -931,7 +931,7 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
           <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">Relaxivity, fibre-orientation effects and the shape of the decay all come out of the simulation rather than being put in. The paramagnetic relaxivity that results is about 140&nbsp;Hz/ppm at 3&nbsp;T, close to the in-vivo calibration of <a href="https://doi.org/10.1016/j.neuroimage.2021.118371" class="text-emerald-600 hover:underline">Shin et&nbsp;al. (2021)</a>. In white matter, both the field and R2&prime; depend on fibre orientation, as they do in real tissue. The &chi;&#8315; that is scored is the orientation-independent myelin susceptibility. The orientation-dependent apparent &chi;&#8315; is published alongside it. The look-up tables behind the simulation are <a href="https://huggingface.co/datasets/qsmxt/qsm-forward-mesoscopic-luts" class="text-emerald-600 hover:underline">published on Hugging Face</a>.</p>
           <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed"><strong>WM microstructure 7T</strong> stresses the same physics at high field. Here white-matter orientation effects are stronger, and several methods&rsquo; 3&nbsp;T assumptions no longer hold.</p>
           <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed"><strong>Ridani 3T anisotropic</strong> reproduces the published phantom of Ridani et&nbsp;al. (2026), so results are comparable with that paper. R2&prime; is fitted from the signal, as for the other datasets. Its relaxation model is simpler than real tissue: iron relaxes only outside white matter, and myelin only inside it, with an orientation-dependent relaxivity.</p>
-          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed"><strong>Retired datasets.</strong> Ridani 3T isotropic, Ridani 7T anisotropic and the 7&nbsp;T multicompartment phantom are no longer ranked, and their results stay available. The 7&nbsp;T Ridani set duplicated the 3&nbsp;T one for most methods, and the multicompartment phantom&rsquo;s white-matter model was the same as one submitted method&rsquo;s.</p>
+          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed"><strong>Retired datasets.</strong> Ridani 3T isotropic, Ridani 7T anisotropic and the 7&nbsp;T multicompartment phantom are retired: they no longer appear on the leaderboard, and their past results are kept in QSM-CI&rsquo;s results file. The 7&nbsp;T Ridani set duplicated the 3&nbsp;T one for most methods, and the multicompartment phantom&rsquo;s white-matter model was the same as one submitted method&rsquo;s.</p>
         </div>
         <div>
           <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Scoring</h3>
@@ -2027,11 +2027,13 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
         chisepPhantomIds() { const g = this.datasetsReg || {}; return Object.keys(g).filter((k) => g[k].track === "chisep"); },
         chisepDefaultPhantom() { const g = this.datasetsReg || {}; return this.chisepPhantomIds().find((k) => g[k].default) || "chisep"; },
         chisepPhantomOf(r) { return this.chisepPhantomIds().includes(r.phantom) ? r.phantom : this.chisepDefaultPhantom(); },
-        // phantoms that actually have runs, default phantom first; drives the selector (hidden when
-        // only one phantom has runs).
+        // phantoms that actually have runs and are still active in the registry (retired datasets,
+        // `active: false`, keep their rows in results/index.json but leave the board), default
+        // phantom first; drives the selector (hidden when only one phantom has runs).
         chisepPhantoms() {
-          const d = this.chisepDefaultPhantom();
+          const d = this.chisepDefaultPhantom(), g = this.datasetsReg || {};
           return [...new Set(this._chisepAll().map((r) => this.chisepPhantomOf(r)))]
+            .filter((p) => (g[p] || {}).active !== false)
             .sort((a, b) => (a === d ? -1 : b === d ? 1 : a < b ? -1 : 1));
         },
         phantomLabel(p) { return ((this.datasetsReg || {})[p] || {}).label || p; },
