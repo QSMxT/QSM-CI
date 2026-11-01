@@ -203,6 +203,15 @@ def phantoms_for(spec, reg: dict) -> list[str]:
     return track_phantoms(reg, "chisep") if is_chisep(spec) else ["sim"]
 
 
+def input_levels(spec, reg: dict, ph: str) -> list[str]:
+    """The degraded input levels (`input_levels` in scripts/datasets.json, e.g. ["l3"]) a method is
+    also scored at on phantom `ph`: only χ-separation methods read the derived inputs, and only a
+    dataset whose zip ships inputs-<level>/ lists the level."""
+    if stage_of(spec) != "chi-separation":
+        return []
+    return [str(lv) for lv in (reg.get(ph, {}).get("input_levels") or [])]
+
+
 def dedicated(root: Path) -> list[str]:
     """Methods that run as their own focus job rather than inside the shard sweep: any non-hosted
     tier, or a χ-separation-track method (scored on separate phantoms)."""
@@ -239,7 +248,9 @@ def plan_tasks(root: Path, reg: dict, *, full: bool, slugs: list[str], include: 
     ded = dedicated(root)
     heavy_dipoles = ",".join(s for s in ded if is_dipole(specs[s]) and not is_skipped(specs[s]))
 
-    def focus_tasks(sl: list[str]) -> list[dict]:
+    def focus_tasks(sl: list[str], levels_for: "set[str] | None" = None) -> list[dict]:
+        # `levels_for`: the slugs that also get their degraded-input tasks (default: all of `sl`).
+        levels_for = set(sl) if levels_for is None else levels_for
         tasks = []
         for s in sorted(set(sl)):
             spec = specs.get(s)
@@ -254,6 +265,11 @@ def plan_tasks(root: Path, reg: dict, *, full: bool, slugs: list[str], include: 
                 if heavy_dipoles and not is_dipole(spec) and not is_chisep(spec):
                     t["exclude"] = heavy_dipoles
                 tasks.append(t)
+                # Degraded inputs (pipeline.py --inputs <level>): a separate isolated job per level,
+                # so it never lengthens the ground-truth-input job (isolated + GRE-only grid).
+                for lv in (input_levels(spec, reg, ph) if s in levels_for else []):
+                    tasks.append({"id": t["id"] + "-" + lv, "focus": s, "phantom": ph, "inputs": lv,
+                                  "mode": "isolated", **route(spec)})
         return tasks
 
     def invivo_tasks(sl: list[str]) -> list[dict]:
@@ -270,12 +286,14 @@ def plan_tasks(root: Path, reg: dict, *, full: bool, slugs: list[str], include: 
         tasks += invivo_tasks(list(specs))
         return tasks
     sl = list(slugs)
+    changed = set(sl)
     # A changed R2′ generator invalidates every GRE-only combo it forms with the R2′-consuming
-    # χ-sep methods (those combos live in the χ-sep methods' focus jobs).
+    # χ-sep methods (those combos live in the χ-sep methods' focus jobs). Their degraded-input runs
+    # don't involve a generator, so only the methods that changed themselves get those re-planned.
     if any(stage_of(specs.get(s)) == "r2prime-generation" for s in sl):
         sl += [s for s, sp in specs.items() if stage_of(sp) == "chi-separation"
                and consumes_r2prime(sp) and not is_skipped(sp)]
-    return focus_tasks(sl) + invivo_tasks(sl)
+    return focus_tasks(sl, changed) + invivo_tasks(sl)
 
 
 # ---------------------------------------------------------------------------------------------------

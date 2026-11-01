@@ -46,9 +46,13 @@ carries:
 - `generator` (χ-separation entries built from a qsm-forward preset) — `{"tool": "qsm-forward", "ref":
   <commit>, "preset": <name>, …}`: the pinned qsm-forward commit and preset
   [`scripts/gen_chisep_preset.py`](../scripts/gen_chisep_preset.py) regenerates the zip from. Any
-  other key (`r2prime_source`) overrides that preset field; `wm_rois: true` means the dataset ships
-  `groundtruth/wm_rois.nii.gz`. All generators share one ref, enforced by
+  other key (`r2prime_source`, `degrade_levels`) overrides that preset field; `wm_rois: true` means
+  the dataset ships `groundtruth/wm_rois.nii.gz`. All generators share one ref, enforced by
   `tests/test_gen_chisep_preset.py`.
+- `input_levels` (χ-separation entries) — the degraded input levels the zip ships beside its
+  ground-truth inputs, e.g. `["l3"]` for `inputs-l3/` (see [χ-separation](#χ-separation)).
+  `score_plan.py` plans a separate isolated `-l3` scoring job per χ-separation method on each such
+  phantom; it must match the generator's `degrade_levels`, enforced by `tests/test_chisep_l3_inputs.py`.
 - `prepacked: true` when the zip already holds `inputs/` (+ `groundtruth/`) at its root. Every
   entry except `sim` is prepacked.
 - `group` (repro entries only) — the harmonization cohort: `harmonization` for the 72 EMTP
@@ -111,6 +115,32 @@ Retired (`active: false`; their results stay reproducible from their zips): `chi
 [`scripts/gen_chisep.py`](../scripts/gen_chisep.py) — see its docstring for the exact shipping
 invocation. Their R2′ uses source- and orientation-dependent relaxivities,
 `R2' = Dr₊·|χ+| + Dr₋(θ)·|χ−|`; `--dr-model fixed` anchors **Dr₊ = 137 Hz/ppm** (Shin et al. 2021).
+
+### Realistic inputs (L3)
+
+The three ranked phantoms also ship **realistic inputs**: qsm-forward's controlled-degradation level
+L3 (`qsm_forward.degrade`, generator `degrade_levels: ["L3"]`). L3 is the ground truth with the error
+traits of real QSM pipelines added term by term: field-fit noise from the dataset's SNR (and the same
+noise through the inversion into χ), the sub-voxel frequency and low-|k| loss of background removal,
+magic-cone attenuation, low-|k| loss and smoothing of dipole inversion, residual smooth backgrounds,
+a boundary error, a mean reference over a 2 mm-eroded mask, and R2′ fitted from the noisy GRE and
+spin-echo signal. Each parameter is the median over six real QSMxT pipelines (iLSQR, TKD, NLTV, MEDI,
+TFI, iR2QSM) run on `meso-3t`; validated downstream, χ-separation methods fed L3 rank as they do when
+fed real pipeline outputs (Spearman ρ 0.92 on `meso-3t`, 0.89 on `wm-micro-7t`), about 0.02 XSIM
+optimistic. The ground-truth inputs stay as they were and are the upper bound.
+
+```
+inputs-l3/   localfield  chimap  chimap-echoes  r2prime  mask   (.nii.gz, canonical names)
+groundtruth/degradation-l3.json   every parameter, the seed, the qsm-forward version, the calibration spread
+```
+
+`pipeline.py --inputs l3` mounts those five artifacts in place of the ground-truth ones (the raw
+signal, params and dseg are shared), scores against the same ground truth over the same brain mask
+(`inputs/mask.nii.gz`), and writes rows with `-l3` ids and `inputs: "l3"`. L3 always ships
+`chimap-echoes` (per-echo χ, each echo with its own phase noise), so DECOMPOSE gets a per-echo input
+at L3 while it falls back to `chimap` on the ground-truth inputs. `ridani-3t-aniso-fitted` is noiseless
+and GRE-only, so its L3 has the transfer and additive terms but no noise, and its R2′ is the shipped
+one; the calibration was validated on the two mesoscopic phantoms only.
 
 Every χ-separation phantom carries `groundtruth/wm_rois.nii.gz` (`--wm-rois-src` for both
 generators; omitting it still scores, but silently drops the per-ROI MSPE).

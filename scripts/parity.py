@@ -24,11 +24,20 @@ Subcommands (the `parity` workflow runs them in this order):
            against which QSM.rs commit and images, the verdict and metrics) and write the run's
            summary: which pairs passed against exactly the QSM.rs commit under test.
   record   append a run's records to parity/results.json, the history `status` reads.
-  status   say, per pair, when it was last checked, against which QSM.rs, with what result, and
-           whether that check is stale (see `staleness`); writes parity/status.json, the table in
-           parity/STATUS.md, the tracking issue's body and (--badges) one shields.io endpoint
-           file per pair.
+  status   say, per pair and track, when it was last checked, against which QSMxT and QSM.rs,
+           with what result, and whether that check still stands (`staleness`,
+           `released_staleness`); writes parity/status.json, the tables in parity/STATUS.md, the
+           tracking issue's body and (--badges) the shields.io endpoint files.
   badges   write those badge files from an existing parity/status.json (the site deploy).
+
+Two tracks (docs/parity.md, "Tracks"): `released` checks the latest QSMxT release (its shipped
+binary, with the QSM.rs it pins) and keeps every release's result; `dev` checks QSMxT main with
+qsm-core at QSM.rs main (the QSM.rs release gate). Two more subcommands serve the released track:
+
+  unavailable    write the job's result as "not in <release>" when the release has no such
+                 command or option (before the run, or from a failed run's log).
+  released-plan  what parity-release.yml dispatches: a new release, or pairs whose reference or
+                 settings changed since their run against it.
 
 Intermediates join by NAME: a method that is run with `qsm-ci run --intermediates DIR` writes
 `$QSMCI_INTERMEDIATES/<name>.nii.gz` (CONTRACT.md, "Intermediates"), and an intermediate is compared
@@ -642,28 +651,89 @@ def run_side(chain: list, dataset: Path, out: Path, runner: str, feed: "dict | N
     return prov
 
 
+def optional_feeds(cfg: dict, phantom: str, manifests: "dict | None" = None) -> list:
+    """The pair's feeds on a dataset that the candidate's first step takes as an `optional_inputs:`
+    artifact (QSMART's `reliability`): the port runs without them, only on a different input."""
+    manifests = _manifests() if manifests is None else manifests
+    feed = ((cfg.get("datasets") or {}).get(phantom) or {}).get("feed") or {}
+    first = side_chain(cfg, "candidate", phantom)[0]
+    optional = set((manifests.get(first) or {}).get("optional_inputs") or [])
+    return sorted(a for a in feed if a in optional)
+
+
+DROPPED = "dropped_feeds.json"   # in the candidate's work dir: feeds a release run went without
+DROPPED_SETTINGS = "dropped_settings.json"   # … and `candidate_set` settings it went without
+
+
+def rejected_setting(cfg: dict, phantom: str, log: str) -> "str | None":
+    """The pair's `candidate_set` key behind qsmxt's refusal in a run log (clap's `unexpected
+    argument '--qsmart-offset-grid'` or `invalid value 'qsmjl' for '--variant <V>'`): the key whose
+    hyphenated name the refused option contains (offset_grid → --qsmart-offset-grid), the longest if
+    several do; None when no setting matches (the refusal is about the port itself)."""
+    import re
+    hit = clap_rejection(log)
+    if not hit:
+        return None
+    m = re.search(r"'(--[A-Za-z0-9-]+)", hit[hit.find(" for ") :] if " for " in hit else hit)
+    if not m:
+        return None
+    flag = m.group(1).lstrip("-").lower()
+    keys = [k for k in side_set(cfg, "candidate", phantom)
+            if str(k).replace("_", "-").lower() in flag]
+    return max(keys, key=len) if keys else None
+
+
 def cmd_run(args) -> int:
+    """Run the reference, then the candidate. `--candidate-only --drop-optional-feeds` reruns just
+    the candidate without the pair's optional feeds (released track: the release's qsmxt has no
+    option for one, e.g. qsmxt v10.0.0 and `qsmart --reliability`); it exits 3 when there is no
+    optional feed to drop or no reference output to rerun against."""
+    import shutil
     th = load_thresholds(args.thresholds)
     cfg = pair_config(th, args.algorithm)
     ds_cfg = (cfg.get("datasets") or {}).get(args.phantom) or {}
     work = Path(args.work)
-    run_side(side_chain(cfg, "reference", args.phantom), Path(args.dataset), work / "reference",
-             args.runner, qsmrs_image=args.qsmrs_image or None, names=cfg.get("reference_names"),
-             overrides=side_set(cfg, "reference", args.phantom))
+    drop_asked = getattr(args, "drop_optional_feeds", False)
+    drop = optional_feeds(cfg, args.phantom) if drop_asked else []
+    unset = [k for k in (getattr(args, "drop_setting", None) or [])
+             if k in side_set(cfg, "candidate", args.phantom)]
+    if (drop_asked or getattr(args, "drop_setting", None)) and not (drop or unset):
+        print(f"{args.algorithm}: no optional feed or candidate setting to run without")
+        return 3
+    if getattr(args, "candidate_only", False):
+        if not (work / "reference" / "provenance.json").exists():
+            print(f"{args.algorithm}: no reference output in {work} to rerun the candidate against")
+            return 3
+    else:
+        run_side(side_chain(cfg, "reference", args.phantom), Path(args.dataset), work / "reference",
+                 args.runner, qsmrs_image=args.qsmrs_image or None,
+                 names=cfg.get("reference_names"), overrides=side_set(cfg, "reference", args.phantom))
     # `feed: {totalfield: totalfield}` hands the candidate the reference's intermediate of that name
     # (after reference_names) in place of the dataset's artifact, so both reconstruct from the same
     # input. A declared feed whose intermediate the reference did not write is an error, never a
-    # silent fallback.
+    # silent fallback; dropping an optional feed is asked for explicitly and recorded.
     feed = {}
     for art, name in (ds_cfg.get("feed") or {}).items():
+        if art in drop:
+            continue
         f = work / "reference" / "intermediates" / f"{name}.nii.gz"
         if not f.exists():
             raise SystemExit(f"feed: {art} <- reference intermediate '{name}', which "
                              f"{cfg['reference']} did not write")
         feed[art] = f
+    if (work / "candidate").exists():
+        shutil.rmtree(work / "candidate")
     run_side(side_chain(cfg, "candidate", args.phantom), Path(args.dataset), work / "candidate",
              args.runner, feed=feed, qsmrs_image=args.qsmrs_image or None,
-             names=cfg.get("candidate_names"), overrides=side_set(cfg, "candidate", args.phantom))
+             names=cfg.get("candidate_names"),
+             overrides={k: v for k, v in side_set(cfg, "candidate", args.phantom).items()
+                        if k not in unset})
+    if drop:
+        (work / "candidate" / DROPPED).write_text(json.dumps(drop) + "\n")
+        print(f"{args.algorithm}: the candidate ran without the optional feed(s) {', '.join(drop)}")
+    if unset:
+        (work / "candidate" / DROPPED_SETTINGS).write_text(json.dumps(unset) + "\n")
+        print(f"{args.algorithm}: the candidate ran without the setting(s) {', '.join(unset)}")
     return 0
 
 
@@ -702,6 +772,14 @@ def cmd_compare(args) -> int:
     prov = {s: json.loads((work / s / "provenance.json").read_text())
             if (work / s / "provenance.json").exists() else {} for s in ("reference", "candidate")}
     final = prov["reference"].get("finals") or prov["reference"].get("final") or "chimap"
+    def _dropped(name):
+        f = work / "candidate" / name
+        return json.loads(f.read_text()) if f.exists() else []
+    dropped, unset = _dropped(DROPPED), _dropped(DROPPED_SETTINGS)
+    note = args.note + (f" Run without the optional feed(s) {', '.join(dropped)}: this qsmxt has no "
+                        f"option for them." if dropped else "") \
+        + (f" Run without the candidate setting(s) {', '.join(unset)}: this qsmxt has no option "
+           f"for them." if unset else "")
     mask = Path(args.mask) if args.mask else Path(args.dataset) / "inputs" / "mask.nii.gz"
     results, unmatched = compare_dirs(work / "reference", work / "candidate", mask, final)
     verdict = evaluate(results, ds_cfg, final)
@@ -710,7 +788,7 @@ def cmd_compare(args) -> int:
                            baseline=args.baseline, unmatched=unmatched,
                            provenance={**prov, "final": final if isinstance(final, str) else final[0],
                                        "finals": [final] if isinstance(final, str) else final},
-                           note=args.note)
+                           note=note.strip())
     print(report)
     if args.report:
         Path(args.report).write_text(report)
@@ -718,7 +796,8 @@ def cmd_compare(args) -> int:
         Path(args.json).write_text(json.dumps({
             "algorithm": args.algorithm, "phantom": args.phantom, "reference": cfg["reference"],
             "candidate": cfg["candidate"], "baseline": args.baseline, "provenance": prov,
-            "note": args.note,
+            "note": note.strip(), **({"dropped_feeds": dropped} if dropped else {}),
+            **({"dropped_settings": unset} if unset else {}),
             "unmatched": unmatched, **verdict,
             "suggested": {n: derive_limits(v["metrics"]) for n, v in verdict["maps"].items()},
         }, indent=2, default=str) + "\n")
@@ -726,11 +805,40 @@ def cmd_compare(args) -> int:
 
 
 # ---------------------------------------------------------------------------------------------------
+# Tracks. Every record belongs to one of two tracks (docs/parity.md, "Tracks"):
+#   released  a QSMxT release (the binary it ships, with the QSM.rs it pins) against each original.
+#             A release never changes, so it is rerun only for a new release or a changed reference
+#             or pair settings. Every release's records are kept: the history the site shows.
+#   dev       QSMxT main built with qsm-core moved to QSM.rs main (or a release candidate): the QSM.rs
+#             release gate. Stale on any change to the pair's paths; 50 newest records kept.
+# ---------------------------------------------------------------------------------------------------
+
+RELEASED, DEV = "released", "dev"
+TRACKS = (RELEASED, DEV)
+
+
+def record_track(rec: dict) -> str:
+    """A record's track. Records from before the tracks existed were all QSM.rs main × QSMxT main
+    builds (parity/results.json was migrated to say so), so a record without one is `dev`."""
+    return rec.get("track") or DEV
+
+
+def release_key(tag: "str | None") -> tuple:
+    """Sort key for a release tag: v10.0.0 < v10.0.1 < v10.1.0; a pre-release before its release."""
+    import re
+    m = re.match(r"v?(\d+)(?:\.(\d+))?(?:\.(\d+))?(.*)", tag or "")
+    if not m:
+        return (-1, -1, -1, 0, tag or "")
+    return (int(m.group(1)), int(m.group(2) or 0), int(m.group(3) or 0), 0 if m.group(4) else 1,
+            m.group(4))
+
+
+# ---------------------------------------------------------------------------------------------------
 # Run history (parity/results.json) and staleness (parity/status.json, parity/STATUS.md)
 # ---------------------------------------------------------------------------------------------------
 
 RESULTS = ROOT / "parity" / "results.json"
-HISTORY_PER_CHECK = 50   # records kept per pair × dataset in results.json
+HISTORY_PER_CHECK = 50   # dev-track records kept per pair × dataset in results.json
 REPO = "QSMxT/QSM-CI"
 
 # The pair settings that decide what a check measures and how it is judged. A change to any of them
@@ -762,15 +870,17 @@ def make_record(res: "dict | None", *, pair: str, phantom: str, cfg: dict, manif
     """One results.json record for a pair × dataset job of a run.
 
     `res` is the job's parity.json (None when the job ended before `compare`: an error, which
-    counts as a failed check). `run` holds the run's date, id, URL, QSM-CI commit and the
-    qsmrs_ref / qsmxt_ref it was dispatched with; `build` is the qsmxt job's built.json when the
-    run built one. The QSM.rs commit is what the candidate's own qsmxt reports (`qsmxt --version`),
-    so a pinned image is recorded as exactly as a build."""
+    counts as a failed check; `{"unavailable": why}` when the QSMxT release under test has no such
+    command or option, `parity.py unavailable`). `run` holds the run's date, id, URL, QSM-CI
+    commit, track and release, and the qsmrs_ref / qsmxt_ref it was dispatched with; `build` is the
+    qsmxt job's built.json. The QSM.rs commit is what the candidate's own qsmxt reports
+    (`qsmxt --version`), so a release is recorded as exactly as a build."""
     ref_slug, cand_slug = cfg.get("reference"), cfg.get("candidate")
     ref_image = (manifests.get(ref_slug) or {}).get("image")
     build = build or {}
-    rec = {"pair": pair, "dataset": phantom, "date": run.get("date"),
-           "run_id": run.get("run_id"), "run_url": run.get("run_url"),
+    rec = {"pair": pair, "dataset": phantom, "track": run.get("track") or DEV,
+           **({"release": run["release"]} if run.get("release") else {}),
+           "date": run.get("date"), "run_id": run.get("run_id"), "run_url": run.get("run_url"),
            "qsmci_commit": run.get("qsmci_commit"),
            "thresholds": thresholds_version(cfg, phantom),
            "reference": {"slug": ref_slug, "image": ref_image, "digest": image_digest(ref_image)},
@@ -779,8 +889,8 @@ def make_record(res: "dict | None", *, pair: str, phantom: str, cfg: dict, manif
                      # a git build's Cargo version is a placeholder (0.0.0 on QSM.rs main)
                      "version": build.get("qsmrs_version")
                      if build.get("qsmrs_version") not in (None, "", "0.0.0") else None},
-           "qsmxt": {"ref": build.get("qsmxt_ref") or run.get("qsmxt_ref") or None,
-                     "commit": build.get("qsmxt_commit")}}
+           "qsmxt": {"ref": build.get("qsmxt_ref") or run.get("qsmxt_ref") or run.get("release")
+                     or None, "commit": build.get("qsmxt_commit")}}
     if res is None:
         rec["result"] = "error"
         rec["failed"] = ["no comparison: the job failed or was cancelled before `compare` ran"]
@@ -788,15 +898,22 @@ def make_record(res: "dict | None", *, pair: str, phantom: str, cfg: dict, manif
     prov = res.get("provenance") or {}
     cst = ((prov.get("candidate") or {}).get("steps") or [{}])[-1]
     rst = ((prov.get("reference") or {}).get("steps") or [{}])[-1]
-    rec["candidate"].update({"image": cst.get("image"),
-                             "digest": image_digest(cst.get("image")) or cst.get("id"),
-                             "qsmxt": cst.get("qsmxt")})
+    rec["candidate"].update({k: v for k, v in (
+        ("image", cst.get("image")), ("digest", image_digest(cst.get("image")) or cst.get("id")),
+        ("qsmxt", cst.get("qsmxt"))) if v or not res.get("unavailable")})
     if rst.get("id"):
         rec["reference"]["id"] = rst["id"]
     if cst.get("qsmrs_commit"):
         rec["qsmrs"]["commit"] = cst["qsmrs_commit"]
         if cst.get("qsmrs_version"):
             rec["qsmrs"]["version"] = cst["qsmrs_version"]
+    if res.get("unavailable"):
+        rec["result"] = "unavailable"
+        rec["failed"] = [str(res["unavailable"])]
+        return rec
+    for k in ("dropped_feeds", "dropped_settings"):
+        if res.get(k):
+            rec[k] = list(res[k])
     if cst.get("set") or rst.get("set"):
         rec["set"] = {k: v for k, v in (("reference", rst.get("set")),
                                         ("candidate", cst.get("set"))) if v}
@@ -818,35 +935,49 @@ def make_record(res: "dict | None", *, pair: str, phantom: str, cfg: dict, manif
 def load_results(path: Path = RESULTS) -> dict:
     p = Path(path)
     doc = json.loads(p.read_text()) if p.exists() and p.read_text().strip() else {}
-    return {"schema": 1, "checks": list(doc.get("checks") or [])}
+    return {"schema": 2, "checks": list(doc.get("checks") or [])}
 
 
 def merge_records(results: dict, records: list, keep: int = HISTORY_PER_CHECK) -> dict:
     """results.json with `records` added: a record replaces one from the same run, pair and
-    dataset (re-recording a run is a no-op), baselines are left out (they apply no limits), and each
-    pair × dataset keeps its `keep` newest records."""
-    key = lambda r: (r.get("run_id"), r.get("pair"), r.get("dataset"))   # noqa: E731
-    new = [r for r in records if r.get("result") != "baseline"]
+    dataset (re-recording a run is a no-op), and baselines are left out (they apply no limits).
+    Retention differs by track: each dev pair × dataset keeps its `keep` newest records; the
+    released track keeps one record per pair × dataset × release (the newest: a rerun for a changed
+    reference replaces the release's earlier result), for every release."""
+    key = lambda r: (record_track(r), r.get("run_id"), r.get("pair"), r.get("dataset"))  # noqa: E731
+    new = [{**r, "track": record_track(r)} for r in records if r.get("result") != "baseline"]
     seen = {key(r) for r in new}
     checks = [r for r in results.get("checks") or [] if key(r) not in seen] + new
     checks.sort(key=lambda r: (r.get("pair") or "", r.get("dataset") or "", r.get("date") or ""))
     out, count = [], {}
     for r in reversed(checks):
-        k = (r.get("pair"), r.get("dataset"))
+        if record_track(r) == RELEASED:
+            k, limit = (RELEASED, r.get("pair"), r.get("dataset"), r.get("release")), 1
+        else:
+            k, limit = (DEV, r.get("pair"), r.get("dataset")), keep
         count[k] = count.get(k, 0) + 1
-        if count[k] <= keep:
+        if count[k] <= limit:
             out.append(r)
-    return {"schema": 1, "checks": list(reversed(out))}
+    return {"schema": 2, "checks": list(reversed(out))}
 
 
-def latest_records(results: dict) -> dict:
-    """{(pair, dataset): newest record}."""
+def latest_records(results: dict, track: str = DEV, release: "str | None" = None) -> dict:
+    """{(pair, dataset): newest record} of one track (and, for the released track, one release)."""
     out = {}
     for r in results.get("checks") or []:
+        if record_track(r) != track or (release is not None and r.get("release") != release):
+            continue
         k = (r.get("pair"), r.get("dataset"))
         if k not in out or (r.get("date") or "") >= (out[k].get("date") or ""):
             out[k] = r
     return out
+
+
+def recorded_releases(results: dict) -> list:
+    """The QSMxT releases the released track has records for, newest first."""
+    tags = {r.get("release") for r in results.get("checks") or []
+            if record_track(r) == RELEASED and r.get("release")}
+    return sorted(tags, key=release_key, reverse=True)
 
 
 def _short(sha: "str | None", n: int = 7) -> str:
@@ -860,28 +991,37 @@ def _qsmrs_label(rec: "dict | None") -> str:
     return (f"v{q['version']} " if q.get("version") else "") + f"`{_short(q['commit'])}`"
 
 
-def refresh_command(pairs: list, qsmrs_ref: str = "main") -> str:
+def refresh_command(pairs: list, track: str = DEV, release: "str | None" = None,
+                    qsmrs_ref: str = "main") -> str:
+    """The dispatch that refreshes `pairs` on a track: the latest release, or QSM.rs main."""
+    what = f"-f qsmxt_release={release}" if track == RELEASED else f"-f qsmrs_ref={qsmrs_ref}"
     return (f"gh workflow run parity.yml -R {REPO} -f algorithm={','.join(pairs)} "
-            f"-f dataset=configured -f qsmrs_ref={qsmrs_ref}")
+            f"-f dataset=configured {what}")
 
 
-def github_compare(repo: str, base: str, head: str, token: "str | None" = None) -> dict:
-    """The files changed on `head` since `base` (GitHub's compare API, from their merge base):
-    {"ahead_by", "files"} or {"error"}. The API lists at most 300 files; `truncated` says so."""
+def _gh_get(url: str, token: "str | None" = None):
+    """GET a GitHub API URL: (json, None) or (None, (HTTP code or None, message))."""
     import urllib.error
     import urllib.request
-    url = f"https://api.github.com/repos/{repo}/compare/{base}...{head}?per_page=100"
     req = urllib.request.Request(url, headers={"Accept": "application/vnd.github+json",
                                                **({"Authorization": f"Bearer {token}"}
                                                   if token else {})})
     try:
         with urllib.request.urlopen(req, timeout=60) as r:
-            doc = json.load(r)
+            return json.load(r), None
     except urllib.error.HTTPError as e:
-        return {"error": f"compare {_short(base)}...{head}: HTTP {e.code}",
-                "unknown_commit": e.code == 404}
+        return None, (e.code, f"HTTP {e.code}")
     except (urllib.error.URLError, TimeoutError) as e:
-        return {"error": f"compare {_short(base)}...{head}: {e}"}
+        return None, (None, str(e))
+
+
+def github_compare(repo: str, base: str, head: str, token: "str | None" = None) -> dict:
+    """The files changed on `head` since `base` (GitHub's compare API, from their merge base):
+    {"ahead_by", "files"} or {"error"}. The API lists at most 300 files; `truncated` says so."""
+    doc, err = _gh_get(f"https://api.github.com/repos/{repo}/compare/{base}...{head}?per_page=100",
+                       token)
+    if err:
+        return {"error": f"compare {_short(base)}...{head}: {err[1]}", "unknown_commit": err[0] == 404}
     files = set()
     for f in doc.get("files") or []:
         files.add(f.get("filename"))
@@ -889,6 +1029,12 @@ def github_compare(repo: str, base: str, head: str, token: "str | None" = None) 
             files.add(f["previous_filename"])
     return {"ahead_by": doc.get("ahead_by", 0), "files": sorted(x for x in files if x),
             "truncated": len(doc.get("files") or []) >= 300}
+
+
+def github_latest_release(repo: str, token: "str | None" = None) -> "str | None":
+    """The tag of `repo`'s latest release (GitHub's "Latest": not a draft or a pre-release)."""
+    doc, err = _gh_get(f"https://api.github.com/repos/{repo}/releases/latest", token)
+    return None if err else (doc or {}).get("tag_name")
 
 
 def touched(files: list, paths: list) -> list:
@@ -927,9 +1073,18 @@ def qsmxt_commit(rec: dict) -> "str | None":
     return f"v{m.group(1)}" if m else None
 
 
+def _reference_changed(rec: dict, cfg: dict, manifests: dict) -> list:
+    ref_now = image_digest((manifests.get(cfg.get("reference")) or {}).get("image"))
+    ref_then = ((rec.get("reference") or {}).get("digest"))
+    if ref_now != ref_then:
+        return [f"reference image changed: checked {_short(ref_then, 19)}, algorithm.yml "
+                f"pins {_short(ref_now, 19)}"]
+    return []
+
+
 def staleness(rec: "dict | None", cfg: dict, phantom: str, manifests: dict, settings: dict,
               changes=None, qsmxt_changes=None) -> list:
-    """Why the last check of a pair on a dataset no longer stands ([] when it does):
+    """Why the last dev-track check of a pair on a dataset no longer stands ([] when it does):
 
       (a) the reference image pinned in algorithm.yml is not the one last checked;
       (b) QSM.rs `main` has commits touching the pair's `qsmrs_paths`, or `qsmrs_shared_paths`
@@ -944,12 +1099,7 @@ def staleness(rec: "dict | None", cfg: dict, phantom: str, manifests: dict, sett
     There is no age limit: a check stands until one of these changes."""
     if rec is None:
         return ["never checked"]
-    why = []
-    ref_now = image_digest((manifests.get(cfg.get("reference")) or {}).get("image"))
-    ref_then = ((rec.get("reference") or {}).get("digest"))
-    if ref_now != ref_then:
-        why.append(f"reference image changed: checked {_short(ref_then, 19)}, algorithm.yml "
-                   f"pins {_short(ref_now, 19)}")
+    why = _reference_changed(rec, cfg, manifests)
     if changes is not None:
         why += _changed(changes, (rec.get("qsmrs") or {}).get("commit"),
                         list(cfg.get("qsmrs_paths") or []) + list(settings.get("qsmrs_shared_paths") or []),
@@ -965,6 +1115,26 @@ def staleness(rec: "dict | None", cfg: dict, phantom: str, manifests: dict, sett
                         list(cfg.get("qsmxt_paths") or []) + list(settings.get("qsmxt_shared_paths") or []),
                         settings["qsmxt_repo"], settings["qsmxt_branch"], "QSMxT")
     return why
+
+
+def released_staleness(rec: "dict | None", cfg: dict, phantom: str, manifests: dict,
+                       release: "str | None") -> "tuple[list, bool]":
+    """(reasons, rerun) for a pair × dataset on the released track. A release never changes, so
+    only these flag it: no run against the latest release; the reference image or the pair's
+    settings/limits changed since that run (both `rerun`: parity-release.yml reruns them); or that
+    run ended without a result (flagged, not rerun by itself: an error that repeats would loop). A
+    failure, or a port the release does not have, is the release's result, not staleness."""
+    if not release:
+        return [], False     # nothing to run against (offline, with no release recorded yet)
+    if rec is None:
+        return [f"not run against QSMxT {release}"], True
+    why = _reference_changed(rec, cfg, manifests)
+    if rec.get("thresholds") != thresholds_version(cfg, phantom):
+        why.append("the pair's settings or limits for this dataset changed since")
+    rerun = bool(why)
+    if rec.get("result") == "error":
+        why.append(f"the run against {release} ended without a result")
+    return why, rerun
 
 
 def _memo(fn):
@@ -985,25 +1155,37 @@ def anchor(name: str) -> str:
 
 
 def pair_status(thresholds: dict, results: dict, manifests: dict, settings: dict,
-                changes=None, qsmxt_changes=None, no_original: "dict | None" = None) -> list:
-    """One row per configured pair: its state and, per dataset, the last check and why it is
-    stale. State: `current` (enabled, every dataset's last check stands), `stale`, `gap` (disabled
-    and `blocked_by` a known gap: the port does not match its original yet), `off` (disabled: not
-    verified or not measured yet). Then one `no-original` row per `no_original` entry. Every row
-    carries its badge (`badge`)."""
-    last = latest_records(results)
+                changes=None, qsmxt_changes=None, no_original: "dict | None" = None,
+                track: str = DEV, release: "str | None" = None) -> list:
+    """One row per configured pair on one track: its state and, per dataset, the last check and why
+    it is stale. State: `current` (enabled, every dataset's last check stands), `stale`, `gap`
+    (disabled and `blocked_by` a known gap: the port does not match its original yet), `off`
+    (disabled: not verified or not measured yet). Then one `no-original` row per `no_original`
+    entry. Every row carries its badge (`badge`).
+
+    The dev track applies `staleness` to its newest records; the released track reads the records
+    of `release` (the latest QSMxT release) and applies `released_staleness`."""
+    last = latest_records(results, track, release if track == RELEASED else None)
+    if track == RELEASED and not release:
+        last = {}
     changes, qsmxt_changes = _memo(changes), _memo(qsmxt_changes)
     rows = []
     for name, cfg in thresholds.items():
         cfg = cfg or {}
         enabled = bool(cfg.get("enabled"))
-        dss, recs = [], []
+        dss = []
         for ds in sorted((cfg.get("datasets") or {}).keys()):
             rec = last.get((name, ds))
-            recs.append(rec)
-            why = staleness(rec, cfg, ds, manifests, settings, changes, qsmxt_changes) if enabled else []
-            dss.append({"dataset": ds, "last": _summary(rec, final_maps(cfg, ds)), "stale": bool(why),
-                        "reasons": why})
+            d = {"dataset": ds, "last": _summary(rec, final_maps(cfg, ds))}
+            if track == RELEASED:
+                why, rerun = released_staleness(rec, cfg, ds, manifests, release) if enabled \
+                    else ([], False)
+                d["rerun"] = rerun
+            else:
+                why = staleness(rec, cfg, ds, manifests, settings, changes, qsmxt_changes) \
+                    if enabled else []
+            d.update(stale=bool(why), reasons=why)
+            dss.append(d)
         if enabled:
             state = "stale" if (not dss or any(d["stale"] for d in dss)) else "current"
         else:
@@ -1015,14 +1197,14 @@ def pair_status(thresholds: dict, results: dict, manifests: dict, settings: dict
             row["blocked_by"] = cfg["blocked_by"]
         if cfg.get("note"):
             row["note"] = cfg["note"]
-        if state == "stale":
-            row["refresh"] = refresh_command([name])
-        row["badge"] = badge(row)
+        if state == "stale" and (track == DEV or release):
+            row["refresh"] = refresh_command([name], track, release)
+        row["badge"] = badge(row, track, release)
         rows.append(row)
     for name, entry in (no_original or {}).items():
         row = {"pair": name, "state": "no-original", "enabled": False, "anchor": anchor(name),
                "covers": entry.get("covers"), "note": entry.get("note"), "datasets": []}
-        row["badge"] = badge(row)
+        row["badge"] = badge(row, track, release)
         rows.append(row)
     return rows
 
@@ -1050,19 +1232,111 @@ def _summary(rec: "dict | None", finals: "list | None" = None) -> "dict | None":
     def worst(k):
         vs = [m[k] for m in maps if m.get(k) is not None]
         return max(vs) if vs else None
-    return {"date": rec.get("date"), "result": rec.get("result"), "run_url": rec.get("run_url"),
-            "qsmrs": rec.get("qsmrs"), "qsmxt": {"commit": qsmxt_commit(rec)},
-            "nrmse": worst("nrmse"), "max_abs": worst("max_abs"),
-            "correlation": final.get("correlation"), "dice": final.get("dice")}
+    out = {"date": rec.get("date"), "result": rec.get("result"), "run_url": rec.get("run_url"),
+           "qsmrs": rec.get("qsmrs"), "qsmxt": {"commit": qsmxt_commit(rec)},
+           "nrmse": worst("nrmse"), "max_abs": worst("max_abs"),
+           "correlation": final.get("correlation"), "dice": final.get("dice")}
+    if rec.get("release"):
+        out["release"] = rec["release"]
+    for k in ("dropped_feeds", "dropped_settings"):
+        if rec.get(k):
+            out[k] = rec[k]
+    if rec.get("result") in ("fail", "error", "unavailable") and rec.get("failed"):
+        out["why"] = rec["failed"][0]
+    return out
+
+
+def _tested(results: dict, track: str, release: "str | None" = None) -> list:
+    """Which QSMxT / QSM.rs the newest records of a track ran, newest first: [{qsmxt, qsmrs,
+    checks, date}] (a dev check refreshed one pair at a time can be on an older commit)."""
+    groups: dict = {}
+    for rec in latest_records(results, track, release).values():
+        q = rec.get("qsmrs") or {}
+        k = (qsmxt_commit(rec), q.get("commit"))
+        g = groups.setdefault(k, {"qsmxt": {"ref": (rec.get("qsmxt") or {}).get("ref"),
+                                            "commit": k[0]},
+                                  "qsmrs": {"version": q.get("version"), "commit": q.get("commit")},
+                                  "checks": 0, "date": ""})
+        g["checks"] += 1
+        g["date"] = max(g["date"], rec.get("date") or "")
+    return sorted(groups.values(), key=lambda g: g["date"], reverse=True)
+
+
+def release_history(thresholds: dict, results: dict) -> dict:
+    """{pair: [{release, date, qsmxt, qsmrs, datasets: [{dataset, last}], badge}]}, newest release
+    first: every released-track result per pair, for the site's history view and the per-release
+    badges."""
+    per: dict = {}
+    for r in results.get("checks") or []:
+        if record_track(r) == RELEASED and r.get("release"):
+            per.setdefault(r.get("pair"), {}).setdefault(r["release"], []).append(r)
+    out = {}
+    for pair, by_rel in per.items():
+        cfg = thresholds.get(pair) or {}
+        entries = []
+        for tag in sorted(by_rel, key=release_key, reverse=True):
+            recs = sorted(by_rel[tag], key=lambda r: r.get("dataset") or "")
+            dss = [{"dataset": r.get("dataset"), "last": _summary(r, final_maps(cfg, r.get("dataset")))}
+                   for r in recs]
+            row = {"state": "current", "datasets": dss}
+            entries.append({"release": tag, "date": max(r.get("date") or "" for r in recs),
+                            "qsmxt": {"ref": tag, "commit": qsmxt_commit(recs[0])},
+                            "qsmrs": recs[0].get("qsmrs"), "datasets": dss,
+                            "badge": badge(row, RELEASED, tag)})
+        out[pair] = entries
+    return out
+
+
+def status_doc(thresholds: dict, results: dict, manifests: dict, settings: dict, *, today: str,
+               release: "str | None", release_source: str = "", changes=None, qsmxt_changes=None,
+               no_original: "dict | None" = None, checked: bool = False) -> dict:
+    """parity/status.json: both tracks (rows, stale pairs, what each tested), the released-track
+    history per pair, and the releases recorded. The site shows `default_track` first."""
+    rel_rows = pair_status(thresholds, results, manifests, settings, no_original=no_original,
+                           track=RELEASED, release=release)
+    dev_rows = pair_status(thresholds, results, manifests, settings, changes, qsmxt_changes,
+                           no_original, track=DEV)
+    tested = _tested(results, RELEASED, release) if release else []
+    return {
+        "schema": 2, "generated": today, "default_track": RELEASED,
+        "badges": f"{settings['site_url'].rstrip('/')}/parity/badges/",
+        "tracks": {
+            RELEASED: {"label": "Released",
+                       "release": release, "release_source": release_source,
+                       "qsmxt": {"repo": settings["qsmxt_repo"], "release": release,
+                                 "commit": tested[0]["qsmxt"]["commit"] if tested else None},
+                       "qsmrs": {"repo": settings["qsmrs_repo"],
+                                 **(tested[0]["qsmrs"] if tested else {"version": None,
+                                                                       "commit": None})},
+                       "stale": [r["pair"] for r in rel_rows if r["state"] == "stale"],
+                       "rerun": [r["pair"] for r in rel_rows
+                                 if any(d.get("rerun") for d in r["datasets"])],
+                       "pairs": rel_rows},
+            DEV: {"label": "Development",
+                  "qsmrs": {"repo": settings["qsmrs_repo"], "branch": settings["qsmrs_branch"],
+                            "checked": checked},
+                  "qsmxt": {"repo": settings["qsmxt_repo"], "branch": settings["qsmxt_branch"],
+                            "checked": checked},
+                  "tested": _tested(results, DEV),
+                  "stale": [r["pair"] for r in dev_rows if r["state"] == "stale"],
+                  "pairs": dev_rows},
+        },
+        "releases": recorded_releases(results),
+        "history": release_history(thresholds, results),
+    }
 
 
 # ---------------------------------------------------------------------------------------------------
-# Badges: one shields.io endpoint file per row (https://shields.io/badges/endpoint-badge), published
-# with the site at <site_url>/parity/badges/<name>.json, which the QSM.rs README shows.
+# Badges: shields.io endpoint files (https://shields.io/badges/endpoint-badge), published with the
+# site under <site_url>/parity/badges/:
+#   <name>.json                  the released track (the latest QSMxT release): the QSM.rs README's
+#   dev/<name>.json              the development track
+#   release/<tag>/<name>.json    each release's own result
 # ---------------------------------------------------------------------------------------------------
 
 BADGE_COLOR = {"current": "brightgreen", "stale": "orange", "failing": "red", "gap": "yellow",
-               "unchecked": "lightgrey", "off": "lightgrey", "no-original": "lightgrey"}
+               "unchecked": "lightgrey", "off": "lightgrey", "no-original": "lightgrey",
+               "unavailable": "lightgrey"}
 
 
 def _day(date: "str | None") -> str:
@@ -1081,19 +1355,33 @@ def _nrmse_label(v: float) -> str:
     return f"{float(f'{v:.2g}'):g} %"
 
 
-def badge(row: dict) -> dict:
-    """{"kind", "message", "color"} for a status row:
+def badge(row: dict, track: str = DEV, release: "str | None" = None) -> dict:
+    """{"kind", "message", "color"} for a status row.
+
+    Dev track (dated by the oldest last check):
       current      green  "<NRMSE> · <date>" (worst final-map NRMSE over the datasets; "identical"
-                          when every map is bit-identical), dated by the oldest of the checks;
+                          when every map is bit-identical);
       failing      red    an enabled pair whose last check failed or ended without a result;
       stale        orange "stale · <date of the oldest last check>";
-      unchecked    grey   an enabled pair never checked on any dataset;
+      unchecked    grey   an enabled pair never checked on any dataset.
+    Released track (labelled by the release, e.g. v10.0.0):
+      current      green  "<NRMSE> · v10.0.0";
+      failing      red    "failing · v10.0.0";
+      unavailable  grey   "not in v10.0.0": the release has no such command or option;
+      stale        orange "stale · v10.0.0": the reference or the pair's settings changed since;
+      unchecked    grey   "not checked · v10.0.0": no run against the release yet.
+      A result the release reached without one of the pair's optional feeds or `candidate_set`
+      settings (its qsmxt has no option for it) says so: "65.9 % · v10.0.0 · no reliability, no
+      offset_grid".
+    Both:
       gap          yellow a disabled pair `blocked_by` a known gap: "gap · <issue>";
       off          grey   a disabled pair without a known gap: "not enabled";
       no-original  grey   a QSM.rs method with no original code to check against."""
     state = row["state"]
+    released = track == RELEASED
     lasts = [d["last"] for d in row.get("datasets") or [] if d.get("last")]
     oldest = min((l.get("date") or "" for l in lasts), default="")
+    when = (release or "release") if released else None
     if state == "no-original":
         kind, msg = "no-original", "no original"
     elif state == "off":
@@ -1103,18 +1391,27 @@ def badge(row: dict) -> dict:
         ref = ref.split("/", 1)[1] if "/" in ref else ref       # QSMxT/QSM-CI#311 → QSM-CI#311
         kind, msg = "gap", ("gap · " + ref) if ref else "gap"
     elif not lasts:
-        kind, msg = "unchecked", "not yet checked"
-    elif any(l.get("result") != "pass" for l in lasts):
+        kind, msg = "unchecked", (f"not checked · {when}" if released and release
+                                  else "not yet checked")
+    elif any(l.get("result") in ("fail", "error") or (not released and l.get("result") != "pass")
+             for l in lasts):
         bad = min((l.get("date") or "" for l in lasts if l.get("result") != "pass"), default="")
-        kind, msg = "failing", f"failing · {_day(bad)}"
+        kind, msg = "failing", f"failing · {when or _day(bad)}"
+    elif any(l.get("result") == "unavailable" for l in lasts):
+        kind, msg = "unavailable", f"not in {when}"
     elif state == "stale":
-        kind, msg = "stale", f"stale · {_day(oldest)}"
+        kind, msg = "stale", f"stale · {when or _day(oldest)}"
     else:
         nrmse = [l["nrmse"] for l in lasts if l.get("nrmse") is not None]
         identical = nrmse and all(l.get("nrmse") == 0 and not l.get("max_abs") for l in lasts)
         kind = "current"
         msg = ("identical" if identical else _nrmse_label(max(nrmse)) if nrmse else "pass") \
-            + f" · {_day(oldest)}"
+            + f" · {when or _day(oldest)}"
+    # the release ran without an optional feed or a candidate setting its qsmxt has no option for
+    dropped = sorted({f for l in lasts for f in l.get("dropped_feeds") or []}) \
+        + sorted({f for l in lasts for f in l.get("dropped_settings") or []})
+    if dropped and kind in ("current", "failing", "stale"):
+        msg += " · " + ", ".join(f"no {d}" for d in dropped)
     return {"kind": kind, "message": msg, "color": BADGE_COLOR[kind]}
 
 
@@ -1128,47 +1425,75 @@ GENERIC_BADGES = {   # for a README row with no pair and no no_original entry
 }
 
 
-def write_badges(rows: list, out: Path) -> list:
-    """<out>/<name>.json per row, plus the generic ones; returns the names written. Stale files
-    from rows that no longer exist are removed."""
-    out = Path(out)
+def _write_badge_dir(want: dict, out: Path) -> None:
+    """<out>/<name>.json per {name: badge}; other .json files directly in <out> are removed."""
     out.mkdir(parents=True, exist_ok=True)
-    want = {r["pair"]: r["badge"] for r in rows}
-    for k, v in GENERIC_BADGES.items():
-        want.setdefault(k, v)
     for f in out.glob("*.json"):
         if f.stem not in want:
             f.unlink()
     for name, b in want.items():
         (out / f"{name}.json").write_text(json.dumps(badge_endpoint(b)) + "\n")
-    return sorted(want)
+
+
+def write_badges(doc: dict, out: Path) -> list:
+    """Every badge file of a status_doc under `out` (see the section comment); returns the paths
+    written, relative to `out`. Files of pairs, tracks or releases that no longer exist go."""
+    import shutil
+    out = Path(out)
+    written = []
+    for sub, track in (("", RELEASED), ("dev", DEV)):
+        want = {r["pair"]: r["badge"] for r in doc["tracks"][track]["pairs"]}
+        for k, v in GENERIC_BADGES.items():
+            want.setdefault(k, v)
+        _write_badge_dir(want, out / sub if sub else out)
+        written += [f"{sub + '/' if sub else ''}{n}.json" for n in want]
+    if (out / "release").exists():
+        shutil.rmtree(out / "release")
+    for pair, entries in (doc.get("history") or {}).items():
+        for e in entries:
+            d = out / "release" / e["release"]
+            d.mkdir(parents=True, exist_ok=True)
+            (d / f"{pair}.json").write_text(json.dumps(badge_endpoint(e["badge"])) + "\n")
+            written.append(f"release/{e['release']}/{pair}.json")
+    return sorted(written)
 
 
 STATE_LABEL = {"current": "✅ current", "stale": "⚠️ stale", "gap": "🚧 gap", "off": "— not enabled"}
+RESULT_LABEL = {"pass": "✅ pass", "fail": "❌ fail", "error": "❌ error",
+                "unavailable": "⚪ not in release"}
 
 
-def render_status(rows: list, settings: dict, today: str) -> str:
-    """parity/STATUS.md: the table docs/parity.md links to, regenerated by the parity workflows."""
-    lines = ["# Port parity status", "",
-             f"Generated {today} by `scripts/parity.py status` from `parity/results.json` and "
-             "`parity/thresholds.yml`; do not edit by hand. How checks run, and what makes one "
-             "stale: [docs/parity.md](../docs/parity.md).", "",
-             "A check is **stale** when the reference image changed, QSM.rs `main` changed the "
-             "port's source files or `Cargo.lock`, QSMxT `main` changed the step's wiring or "
-             "`Cargo.lock`, the pair's limits changed, or it failed. There is no age limit. A **gap** is a pair whose port does not match its original yet: it is not "
-             "enabled, and has no limits that would pass it.", "",
-             "| Pair | Original → port | Dataset | Last check | QSM.rs | Result | NRMSE | Status |",
+def _tested_line(track: str, block: dict) -> str:
+    if track == RELEASED:
+        rel = block.get("release")
+        if not rel:
+            return "No QSMxT release is known yet."
+        q = block.get("qsmrs") or {}
+        pin = (f"QSM.rs {'v' + q['version'] + ' ' if q.get('version') else ''}`{_short(q['commit'])}`"
+               if q.get("commit") else "the QSM.rs it pins (not recorded yet: no run against it)")
+        return f"Tested: QSMxT **{rel}** (the binary the release ships) with {pin}."
+    tested = block.get("tested") or []
+    if not tested:
+        return "Tested: nothing recorded yet."
+    t = tested[0]
+    more = f" ({len(tested) - 1} older build(s) for pairs not rerun since)" if len(tested) > 1 else ""
+    return (f"Tested: QSMxT main `{_short(t['qsmxt']['commit'])}` with qsm-core at QSM.rs main "
+            f"`{_short(t['qsmrs']['commit'])}`{more}.")
+
+
+def _status_table(rows: list, track: str) -> list:
+    lines = ["| Pair | Original → port | Dataset | Last check | QSM.rs | Result | NRMSE | Status |",
              "|---|---|---|---|---|---|---|---|"]
-    pairs = [r for r in rows if r["state"] != "no-original"]
-    for r in pairs:
+    for r in [r for r in rows if r["state"] != "no-original"]:
         dss = r["datasets"] or [{"dataset": "—", "last": None, "stale": r["enabled"],
                                  "reasons": ["no dataset configured"] if r["enabled"] else []}]
         for i, d in enumerate(dss):
             last = d["last"] or {}
             when = (f"[{last['date'][:10]}]({last['run_url']})" if last.get("run_url")
                     else (last.get("date") or "")[:10]) if last else "never"
-            res = {"pass": "✅ pass", "fail": "❌ fail", "error": "❌ error"}.get(last.get("result"),
-                                                                              "—")
+            res = RESULT_LABEL.get(last.get("result"), "—")
+            if last.get("result") == "unavailable":
+                res = f"⚪ not in {last.get('release') or 'release'}"
             if r["state"] in ("current", "stale"):
                 status = "⚠️ stale: " + "; ".join(d["reasons"]) if d["stale"] else "✅ current"
             elif r["state"] == "gap":
@@ -1181,49 +1506,107 @@ def render_status(rows: list, settings: dict, today: str) -> str:
             nrmse = _fmt(last.get("nrmse"), "nrmse") if last.get("nrmse") is not None else "—"
             lines.append(f"| {pair} | {sides} | {d['dataset']} | {when} | {qsmrs} | {res} "
                          f"| {nrmse} | {status} |")
-    none = [r for r in rows if r["state"] == "no-original"]
+    return lines
+
+
+def render_status(doc: dict) -> str:
+    """parity/STATUS.md: both tracks' tables, regenerated by the parity workflows."""
+    rel, dev = doc["tracks"][RELEASED], doc["tracks"][DEV]
+    tag = rel.get("release")
+    lines = ["# Port parity status", "",
+             f"Generated {doc['generated']} by `scripts/parity.py status` from `parity/results.json` "
+             "and `parity/thresholds.yml`; do not edit by hand. How checks run, the two tracks, and "
+             "what makes a check stale: [docs/parity.md](../docs/parity.md).", "",
+             f"## Released: QSMxT {tag or '(no release yet)'}", "",
+             _tested_line(RELEASED, rel), "",
+             "The latest QSMxT release against each verified original. A release does not change, so "
+             "it is rerun only for a new release, or when a pair's reference image or settings "
+             "change. A failure here is that release's result; **not in** means the release has no "
+             "such command or option yet.", ""]
+    lines += _status_table(rel["pairs"], RELEASED)
+    if rel.get("stale") and tag:
+        lines += ["", f"Run the flagged pairs against {tag}:", "", "```bash",
+                  refresh_command(rel["stale"], RELEASED, tag), "```"]
+    lines += ["", "## Development: QSMxT main × QSM.rs main", "", _tested_line(DEV, dev), "",
+              "A check is **stale** when the reference image changed, QSM.rs `main` changed the "
+              "port's source files or `Cargo.lock`, QSMxT `main` changed the step's wiring or "
+              "`Cargo.lock`, the pair's limits changed, or it failed. There is no age limit. A "
+              "**gap** is a pair whose port does not match its original yet: it is not enabled, "
+              "and has no limits that would pass it.", ""]
+    lines += _status_table(dev["pairs"], DEV)
+    if dev.get("stale"):
+        lines += ["", "Refresh every stale pair against QSM.rs `main`:", "", "```bash",
+                  refresh_command(dev["stale"]), "```"]
+    none = [r for r in dev["pairs"] if r["state"] == "no-original"]
     if none:
-        lines += ["", "No original code to check against (QSMxT/QSM-CI#302; tested against ground "
+        lines += ["", "## No original", "",
+                  "No original code to check against (QSMxT/QSM-CI#302; tested against ground "
                   "truth in QSM.rs instead):", "", "| Method | Covers | Note |", "|---|---|---|"]
         lines += [f"| `{r['pair']}` | {r.get('covers') or ''} | {r.get('note') or ''} |" for r in none]
-    stale = [r["pair"] for r in rows if r["state"] == "stale"]
-    if stale:
-        lines += ["", "Refresh every stale pair against QSM.rs `main`:", "", "```bash",
-                  refresh_command(stale), "```"]
+    hist = doc.get("history") or {}
+    if hist:
+        lines += ["", "## Release history", "", "| Pair | " + " | ".join(doc["releases"]) + " |",
+                  "|---|" + "---|" * len(doc["releases"])]
+        for pair in sorted(hist):
+            by = {e["release"]: e["badge"]["message"] for e in hist[pair]}
+            lines.append(f"| `{pair}` | " + " | ".join(by.get(t, "—") for t in doc["releases"]) + " |")
     return "\n".join(lines) + "\n"
 
 
-def render_issue(rows: list, settings: dict, today: str) -> str:
-    """The tracking issue's body; empty when nothing is stale (the workflow then closes it)."""
-    stale = [r for r in rows if r["state"] == "stale"]
-    if not stale:
+def render_issue(doc: dict) -> str:
+    """The tracking issue's body, one section per track with something flagged; empty when
+    nothing is (the workflow then closes it)."""
+    today = doc["generated"]
+    rel, dev = doc["tracks"][RELEASED], doc["tracks"][DEV]
+    flagged = {t: [r for r in doc["tracks"][t]["pairs"] if r["state"] == "stale"] for t in TRACKS}
+    if not any(flagged.values()):
         return ""
-    lines = [f"<!-- parity-status: kept up to date by .github/workflows/parity-status.yml; edits "
-             f"are overwritten -->",
-             f"**Owner: QSM-CI.** As of {today}, {len(stale)} enabled parity "
-             f"pair{'s are' if len(stale) != 1 else ' is'} stale (rules: docs/parity.md, "
-             f"\"Staleness\"; full table: [parity/STATUS.md](../blob/main/parity/STATUS.md)).", ""]
-    for r in stale:
-        lines.append(f"- **`{r['pair']}`** (`{r['reference']}` → `{r['candidate']}`)")
-        for d in r["datasets"]:
-            if d["stale"]:
-                lines.append(f"  - {d['dataset']}: " + "; ".join(d["reasons"]))
-        lines.append(f"  - refresh: `{r['refresh']}`")
-    lines += ["", "Refresh them all against QSM.rs `main` (a run from `main` records its result, "
-              "and this issue closes when nothing is stale):", "", "```bash",
-              refresh_command([r["pair"] for r in stale]), "```"]
+    lines = ["<!-- parity-status: kept up to date by .github/workflows/parity-status.yml; edits "
+             "are overwritten -->",
+             f"**Owner: QSM-CI.** As of {today} (rules: docs/parity.md, \"Tracks\" and "
+             "\"Staleness\"; full tables: [parity/STATUS.md](../blob/main/parity/STATUS.md)).", ""]
+    tag = rel.get("release")
+    if flagged[RELEASED]:
+        n = len(flagged[RELEASED])
+        lines += [f"### Released: QSMxT {tag}", "",
+                  f"{n} enabled pair{'s need' if n != 1 else ' needs'} a run against {tag} (none "
+                  "yet, or the reference or settings changed since; parity-release.yml reruns "
+                  "those daily) or ended without a result.", ""]
+        for r in flagged[RELEASED]:
+            lines.append(f"- **`{r['pair']}`**: " + "; ".join(
+                f"{d['dataset']}: {', '.join(d['reasons'])}" for d in r["datasets"] if d["stale"]))
+        lines += ["", "```bash", refresh_command([r["pair"] for r in flagged[RELEASED]], RELEASED,
+                                                 tag), "```", ""]
+    if flagged[DEV]:
+        n = len(flagged[DEV])
+        lines += ["### Development: QSMxT main × QSM.rs main", "",
+                  f"{n} enabled pair{'s are' if n != 1 else ' is'} stale.", ""]
+        for r in flagged[DEV]:
+            lines.append(f"- **`{r['pair']}`** (`{r['reference']}` → `{r['candidate']}`)")
+            for d in r["datasets"]:
+                if d["stale"]:
+                    lines.append(f"  - {d['dataset']}: " + "; ".join(d["reasons"]))
+            lines.append(f"  - refresh: `{r['refresh']}`")
+        lines += ["", "Refresh them all against QSM.rs `main` (a run from `main` records its result, "
+                  "and this issue closes when nothing is flagged):", "", "```bash",
+                  refresh_command([r["pair"] for r in flagged[DEV]]), "```"]
     return "\n".join(lines) + "\n"
 
 
 def render_run_summary(records: list, enabled: list, baseline: bool = False) -> str:
-    """The run's summary (the workflow's report job): one row per pair × dataset, then the release
-    gate's answer — which pairs passed against exactly the QSM.rs commit under test."""
+    """The run's summary (the workflow's report job): one row per pair × dataset, then the answer
+    the run's track needs. Dev: the release gate (which pairs passed against exactly the QSM.rs
+    commit under test). Released: what the release passed, failed and does not have."""
     lines = ["## Parity run summary", ""]
+    release = next((r.get("release") for r in records if r.get("release")), None)
+    if release:
+        lines += [f"Released track: QSMxT **{release}**.", ""]
     commits = sorted({(r.get("qsmrs") or {}).get("commit") or "?" for r in records})
     lines += ["| Pair | Dataset | Result | QSM.rs | QSMxT | NRMSE | r |", "|---|---|---|---|---|---|---|"]
     for r in records:
         m = next(iter((r.get("metrics") or {}).values()), {})   # the final map comes first
         res = {"pass": "✅ pass", "fail": "❌ fail", "error": "❌ no result",
+               "unavailable": f"⚪ not in {release}",
                "baseline": "📏 baseline"}.get(r.get("result"), r.get("result"))
         qx = r.get("qsmxt") or {}
         lines.append(f"| `{r['pair']}` | {r['dataset']} | {res} | {_qsmrs_label(r)} "
@@ -1232,6 +1615,20 @@ def render_run_summary(records: list, enabled: list, baseline: bool = False) -> 
     if baseline:
         return "\n".join(lines + ["", "Baseline run: no limits applied, nothing recorded."]) + "\n"
     lines.append("")
+    if release:
+        by = {k: sorted({r["pair"] for r in records if r.get("result") in v})
+              for k, v in (("bad", ("fail", "error")), ("missing", ("unavailable",)))}
+        ok = sorted({r["pair"] for r in records} - set(by["bad"]) - set(by["missing"]))
+        lines.append(f"**QSMxT {release}:** passed on every dataset run: "
+                     + (", ".join(f"`{p}`" for p in ok) or "none") + ".")
+        if by["bad"]:
+            lines.append(f"Failed or no result: {', '.join(f'`{p}`' for p in by['bad'])}.")
+        if by["missing"]:
+            lines.append(f"Not in {release}: {', '.join(f'`{p}`' for p in by['missing'])}.")
+        for r in records:
+            if r.get("result") == "unavailable" and r.get("failed"):
+                lines.append(f"- `{r['pair']}` {r['dataset']}: {r['failed'][0]}")
+        return "\n".join(lines) + "\n"
     for commit in commits:
         rs = [r for r in records if ((r.get("qsmrs") or {}).get("commit") or "?") == commit]
         ver = next(((r.get("qsmrs") or {}).get("version") for r in rs
@@ -1257,6 +1654,93 @@ def render_run_summary(records: list, enabled: list, baseline: bool = False) -> 
     return "\n".join(lines) + "\n"
 
 
+# ---------------------------------------------------------------------------------------------------
+# Released track: does the release have the port at all? (`parity.py unavailable`)
+# ---------------------------------------------------------------------------------------------------
+
+def port_commands(run_sh: str) -> list:
+    """The qsmxt subcommands a port's run.sh calls (`qsmxt invert star …` → ["invert", "star"];
+    `qsmxt qsmart "$IN/…"` → ["qsmart"]), in order, without duplicates. Comment lines are skipped."""
+    import re
+    call = re.compile(r"(?:^|[;&|(!]\s*|\bexec\s+|\bthen\s+|\bif\s+|\$\(\s*)"
+                      r"qsmxt((?:\s+[a-z][a-z0-9-]*){1,2})")
+    out = []
+    for line in run_sh.splitlines():
+        s = line.strip()
+        if s.startswith("#"):
+            continue
+        for m in call.finditer(s):
+            cmd = m.group(1).split()
+            if cmd not in out:
+                out.append(cmd)
+    return out
+
+
+def missing_command(image: str, runner: str, commands: list) -> "str | None":
+    """The first of `commands` the qsmxt in `image` does not have (`qsmxt <cmd> --help` fails), as
+    "qsmxt invert star"; None when it has them all."""
+    for cmd in commands:
+        r = subprocess.run([runner, "run", "--rm", "--network", "none", "--entrypoint", "qsmxt",
+                            image, *cmd, "--help"], capture_output=True, text=True)
+        if r.returncode != 0:
+            return "qsmxt " + " ".join(cmd)
+    return None
+
+
+def clap_rejection(log: str) -> "str | None":
+    """qsmxt's own refusal of a command line, from a run's log: clap's `unrecognized subcommand`,
+    `unexpected argument` or `invalid value` error (a subcommand, option or option value the
+    release does not have); None for any other failure."""
+    import re
+    m = re.search(r"error: (unrecognized subcommand '[^']*'|unexpected argument '[^']*' found"
+                  r"|invalid value '[^']*' for '[^']*')", log or "")
+    return m.group(1) if m else None
+
+
+def cmd_unavailable(args) -> int:
+    """Released track only: write parity.json saying the release does not have the pair's port —
+    before the run (`--qsmrs-image`: a QSM.rs step's subcommand is missing) or after a failed run
+    (`--log`: qsmxt refused the command line). Writes nothing when the port is there (or the
+    failure was something else); exits 0 either way, so the workflow tests for the file."""
+    th = load_thresholds(args.thresholds)
+    cfg = pair_config(th, args.algorithm, validate=False)
+    manifests = _manifests()
+    why = None
+    if args.log:
+        hit = clap_rejection(Path(args.log).read_text(errors="replace"))
+        if hit:
+            why = f"QSMxT {args.release} refuses the port's command line: {hit}"
+    else:
+        slugs = [s for side in ("reference", "candidate") for s in side_chain(cfg, side, args.phantom)
+                 if is_port(manifests.get(s) or {})]
+        for slug in dict.fromkeys(slugs):
+            run_sh = ROOT / "algorithms" / slug / "run.sh"
+            cmds = port_commands(run_sh.read_text()) if run_sh.exists() else []
+            miss = missing_command(args.qsmrs_image, args.runner, cmds)
+            if miss:
+                why = f"QSMxT {args.release} has no `{miss}` ({slug})"
+                break
+    if not why:
+        print(f"{args.algorithm}: the port is in QSMxT {args.release}")
+        return 0
+    print(f"{args.algorithm}: {why}")
+    ident = image_identity(args.qsmrs_image, args.runner) if args.qsmrs_image else {}
+    Path(args.json).write_text(json.dumps({
+        "algorithm": args.algorithm, "phantom": args.phantom, "reference": cfg["reference"],
+        "candidate": cfg["candidate"], "baseline": False, "unavailable": why,
+        "provenance": {"candidate": {"steps": [{"slug": cfg["candidate"],
+                                                "image": args.qsmrs_image, **ident}]}},
+    }, indent=2) + "\n")
+    if args.report:
+        Path(args.report).write_text(f"## Parity: `{args.algorithm}` on {args.phantom}\n\n"
+                                     f"⚪ **Not in QSMxT {args.release}**: {why}.\n")
+    return 0
+
+
+# ---------------------------------------------------------------------------------------------------
+# CLI
+# ---------------------------------------------------------------------------------------------------
+
 def _read_json(p: Path):
     return json.loads(Path(p).read_text()) if p and Path(p).exists() else None
 
@@ -1269,7 +1753,9 @@ def cmd_report(args) -> int:
     build = _read_json(args.build) if args.build else None
     run = {"date": args.date, "run_id": args.run_id, "run_url": args.run_url,
            "qsmci_commit": args.qsmci_commit, "qsmrs_ref": args.qsmrs_ref,
-           "qsmxt_ref": args.qsmxt_ref}
+           "qsmxt_ref": args.qsmxt_ref, "track": args.track, "release": args.release or None}
+    if args.track == RELEASED and not args.release:
+        raise SystemExit("report: the released track needs --release")
     found = {}
     for f in Path(args.artifacts).glob("**/parity.json"):
         d = json.loads(f.read_text())
@@ -1299,6 +1785,19 @@ def cmd_record(args) -> int:
     return 0
 
 
+def latest_release(args, settings: dict, results: dict, token: "str | None") -> "tuple":
+    """(tag, source): `--latest-release`, else GitHub's latest QSMxT release (online), else the
+    newest release the released track has records for."""
+    if getattr(args, "latest_release", None):
+        return args.latest_release, "given"
+    if not getattr(args, "offline", False):
+        tag = github_latest_release(settings["qsmxt_repo"], token)
+        if tag:
+            return tag, "github"
+    rec = recorded_releases(results)
+    return (rec[0], "records") if rec else (None, "")
+
+
 def cmd_status(args) -> int:
     from datetime import datetime, timezone
     th = load_thresholds(args.thresholds)
@@ -1310,28 +1809,25 @@ def cmd_status(args) -> int:
         changes = lambda c: github_compare(settings["qsmrs_repo"], c, settings["qsmrs_branch"], token)  # noqa: E731
         qsmxt_changes = lambda c: github_compare(settings["qsmxt_repo"], c, settings["qsmxt_branch"],  # noqa: E731
                                                  token)
-    rows = pair_status(th, load_results(args.results), _manifests(), settings, changes,
-                       qsmxt_changes, load_no_original(args.thresholds))
-    doc = {"generated": today,
-           "qsmrs": {"repo": settings["qsmrs_repo"], "branch": settings["qsmrs_branch"],
-                     "checked": not args.offline},
-           "qsmxt": {"repo": settings["qsmxt_repo"], "branch": settings["qsmxt_branch"],
-                     "checked": not args.offline},
-           "badges": f"{settings['site_url'].rstrip('/')}/parity/badges/",
-           "stale": [r["pair"] for r in rows if r["state"] == "stale"], "pairs": rows}
+    results = load_results(args.results)
+    release, source = latest_release(args, settings, results, token)
+    doc = status_doc(th, results, _manifests(), settings, today=today, release=release,
+                     release_source=source, changes=changes, qsmxt_changes=qsmxt_changes,
+                     no_original=load_no_original(args.thresholds), checked=not args.offline)
     if args.json:
         Path(args.json).write_text(json.dumps(doc, indent=1, default=str) + "\n")
-    md = render_status(rows, settings, today)
+    md = render_status(doc)
     if args.markdown:
         Path(args.markdown).write_text(md)
     if args.issue:
-        Path(args.issue).write_text(render_issue(rows, settings, today))
+        Path(args.issue).write_text(render_issue(doc))
     if args.badges:
-        write_badges(rows, args.badges)
+        write_badges(doc, args.badges)
     if not (args.json or args.markdown or args.issue or args.badges):
         print(md)
     else:
-        print(f"stale: {', '.join(doc['stale']) or 'none'}")
+        print(f"released {release or '(none)'}: flagged {', '.join(doc['tracks'][RELEASED]['stale']) or 'none'}; "
+              f"dev stale: {', '.join(doc['tracks'][DEV]['stale']) or 'none'}")
     return 0
 
 
@@ -1339,11 +1835,46 @@ def cmd_badges(args) -> int:
     """The badge files from an existing status.json (what pages.yml publishes): no GitHub calls,
     so the site always shows the badges of the status it serves."""
     doc = json.loads(Path(args.status).read_text())
-    rows = doc.get("pairs") or []
-    for r in rows:
-        r["badge"] = badge(r)   # from the row, so a change to `badge` shows at the next deploy
-    names = write_badges(rows, args.out)
+    if "tracks" not in doc:
+        raise SystemExit(f"{args.status}: no `tracks` (a status.json from before the two tracks); "
+                         "regenerate it with `parity.py status`")
+    for track in TRACKS:   # from the rows, so a change to `badge` shows at the next deploy
+        block = doc["tracks"][track]
+        for r in block.get("pairs") or []:
+            r["badge"] = badge(r, track, block.get("release"))
+    for entries in (doc.get("history") or {}).values():
+        for e in entries:
+            e["badge"] = badge({"state": "current", "datasets": e["datasets"]}, RELEASED, e["release"])
+    names = write_badges(doc, args.out)
     print(f"{len(names)} badge(s) in {args.out}")
+    return 0
+
+
+def cmd_released_plan(args) -> int:
+    """What parity-release.yml should dispatch on the released track, as JSON {release, algorithm,
+    why}: every enabled pair for a release with no records yet, else the pairs whose reference image
+    or settings changed since their run against it (or that never ran on a dataset); `algorithm`
+    is empty when nothing needs a run."""
+    th = load_thresholds(args.thresholds)
+    settings = load_settings(args.thresholds)
+    results = load_results(args.results)
+    token = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")
+    release, source = latest_release(args, settings, results, token)
+    if not release:
+        print(json.dumps({"release": None, "algorithm": "", "why": "no QSMxT release found"}))
+        return 0
+    if release not in recorded_releases(results):
+        out = {"release": release, "algorithm": "enabled",
+               "why": f"no released-track records for QSMxT {release} yet"}
+    else:
+        rows = pair_status(th, results, _manifests(), settings, track=RELEASED, release=release)
+        rerun = [r["pair"] for r in rows if any(d.get("rerun") for d in r["datasets"])]
+        out = {"release": release, "algorithm": ",".join(rerun),
+               "why": "; ".join(f"{r['pair']}: " + ", ".join(sorted({x for d in r["datasets"]
+                                                                       for x in d["reasons"]}))
+                                for r in rows if r["pair"] in rerun) or "nothing to rerun"}
+    out["source"] = source
+    print(json.dumps(out))
     return 0
 
 
@@ -1372,8 +1903,9 @@ def main(argv=None) -> int:
                    help="directory holding the jobs' parity.json files (any depth)")
     p.add_argument("--matrix", required=True, help="the run's job matrix (JSON)")
     p.add_argument("--build", type=Path, help="built.json from the qsmxt job, if it ran")
-    for k in ("date", "run-id", "run-url", "qsmci-commit", "qsmrs-ref", "qsmxt-ref"):
+    for k in ("date", "run-id", "run-url", "qsmci-commit", "qsmrs-ref", "qsmxt-ref", "release"):
         p.add_argument(f"--{k}", default="")
+    p.add_argument("--track", choices=TRACKS, default=DEV)
     p.add_argument("--baseline", action="store_true")
     p.add_argument("--out", type=Path, help="write the records (JSON list) here")
     p.add_argument("--summary", type=Path, help="write the run summary (markdown) here")
@@ -1382,20 +1914,45 @@ def main(argv=None) -> int:
     p.add_argument("--records", type=Path, required=True)
     p.add_argument("--results", type=Path, default=RESULTS)
     p.set_defaults(fn=cmd_record)
-    p = sub.add_parser("status", help="last check and staleness per pair")
-    p.add_argument("--results", type=Path, default=RESULTS)
-    p.add_argument("--json", type=Path, help="e.g. parity/status.json")
-    p.add_argument("--markdown", type=Path, help="e.g. parity/STATUS.md")
-    p.add_argument("--issue", type=Path, help="the tracking issue's body (empty: nothing stale)")
-    p.add_argument("--badges", type=Path, help="write a shields.io endpoint file per pair here")
-    p.add_argument("--today", help="YYYY-MM-DD (default: today, UTC)")
-    p.add_argument("--offline", action="store_true",
-                   help="skip rules (b) and (f): do not ask GitHub what changed in QSM.rs / QSMxT")
-    p.set_defaults(fn=cmd_status)
+    for name, fn, hlp in (("status", cmd_status, "last check and staleness per pair, both tracks"),
+                          ("released-plan", cmd_released_plan,
+                           "what the released track needs to run (parity-release.yml)")):
+        p = sub.add_parser(name, help=hlp)
+        p.add_argument("--results", type=Path, default=RESULTS)
+        p.add_argument("--latest-release", help="the latest QSMxT release tag (default: ask GitHub)")
+        p.add_argument("--offline", action="store_true",
+                       help="no GitHub calls: skip rules (b) and (f), and take the latest release "
+                            "from --latest-release or the records")
+        p.set_defaults(fn=fn)
+        if name == "status":
+            p.add_argument("--json", type=Path, help="e.g. parity/status.json")
+            p.add_argument("--markdown", type=Path, help="e.g. parity/STATUS.md")
+            p.add_argument("--issue", type=Path, help="the tracking issue's body (empty: nothing flagged)")
+            p.add_argument("--badges", type=Path, help="write the shields.io endpoint files here")
+            p.add_argument("--today", help="YYYY-MM-DD (default: today, UTC)")
     p = sub.add_parser("badges", help="the badge files from a status.json (the site deploy)")
     p.add_argument("--status", type=Path, default=ROOT / "parity" / "status.json")
     p.add_argument("--out", type=Path, required=True)
     p.set_defaults(fn=cmd_badges)
+    p = sub.add_parser("rejected-setting", help="released track: the candidate_set key a failed "
+                                                "run's qsmxt refused (printed; nothing if none)")
+    p.add_argument("--algorithm", required=True)
+    p.add_argument("--phantom", default="sim")
+    p.add_argument("--log", type=Path, required=True)
+    p.set_defaults(fn=lambda a: print(rejected_setting(
+        pair_config(load_thresholds(a.thresholds), a.algorithm, validate=False), a.phantom,
+        Path(a.log).read_text(errors="replace")) or "") or 0)
+    p = sub.add_parser("unavailable", help="released track: write parity.json if the release lacks "
+                                           "the pair's port")
+    p.add_argument("--algorithm", required=True)
+    p.add_argument("--phantom", default="sim")
+    p.add_argument("--release", required=True)
+    p.add_argument("--qsmrs-image", help="the release's qsmxt image (the check before the run)")
+    p.add_argument("--runner", default="docker", choices=["docker", "podman"])
+    p.add_argument("--log", type=Path, help="a failed run's log (the check after it)")
+    p.add_argument("--json", type=Path, required=True)
+    p.add_argument("--report", type=Path)
+    p.set_defaults(fn=cmd_unavailable)
     for name, fn in (("run", cmd_run), ("compare", cmd_compare)):
         p = sub.add_parser(name)
         p.add_argument("--algorithm", required=True)
@@ -1408,6 +1965,13 @@ def main(argv=None) -> int:
             p.add_argument("--qsmrs-image", metavar="REF",
                            help="run every QSM.rs step (source: qsmrs) in this image instead of "
                                 "the one its algorithm.yml pins (e.g. a qsmxt built from a ref)")
+            p.add_argument("--candidate-only", action="store_true",
+                           help="rerun only the candidate, against the reference output in --work")
+            p.add_argument("--drop-optional-feeds", action="store_true",
+                           help="run the candidate without the pair's optional feeds (exit 3 if "
+                                "nothing is dropped)")
+            p.add_argument("--drop-setting", action="append", metavar="KEY",
+                           help="run the candidate without this candidate_set key (repeatable)")
         else:
             p.add_argument("--mask", type=Path, help="default: <dataset>/inputs/mask.nii.gz")
             p.add_argument("--baseline", action="store_true",
@@ -1417,6 +1981,8 @@ def main(argv=None) -> int:
             p.add_argument("--report", type=Path)
             p.add_argument("--json", type=Path)
     args = ap.parse_args(argv)
+    if args.cmd == "unavailable" and not (args.log or args.qsmrs_image):
+        ap.error("unavailable: give --qsmrs-image (before the run) or --log (after it)")
     return args.fn(args)
 
 

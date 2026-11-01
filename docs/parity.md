@@ -5,8 +5,48 @@ same `algorithm:` in `algorithm.yml` (e.g. `qsmart-matlab` and `qsmart-qsmrs`). 
 workflow runs both on the same dataset and checks that they still agree as well as they did when the
 limits were set. It is the QSM.rs release gate (see the last section).
 
-Where each pair stands (last check, QSM.rs, result, stale or not): [parity/STATUS.md](../parity/STATUS.md),
-and the **Parity** page on the site.
+Where each pair stands (last check, QSMxT and QSM.rs, result, stale or not), per track:
+[parity/STATUS.md](../parity/STATUS.md), and the **Parity** page on the site.
+
+## Tracks
+
+Every recorded check belongs to one of two tracks.
+
+| | **Released** (shown first) | **Development** |
+|---|---|---|
+| QSM.rs side | the latest QSMxT release: the `x86_64-unknown-linux-musl` binary that release ships (checked against its `SHA256SUMS`), with the QSM.rs it pins | QSMxT `main` built with its `qsm-core` pin moved to QSM.rs `main` (or a QSM.rs release candidate: the release gate) |
+| Dispatch | `-f qsmxt_release=<tag>` (or `latest`) | `-f qsmrs_ref=main` (or `qsmxt_ref`, `qsmxt_image`) |
+| A record names | the release tag, its QSMxT commit, and the QSM.rs version and commit its binary reports | the QSMxT and QSM.rs commits |
+| Runs when | QSMxT publishes a release, or a pair's reference image or settings change (`parity-release.yml`, daily) | on demand, when a check is stale (QSM.rs or QSMxT changed the pair's paths; "Staleness") |
+| History | one record per pair × dataset × release, for every release | the 50 newest records per pair × dataset |
+| Badges | `parity/badges/<pair>.json` (the QSM.rs README) and `parity/badges/release/<tag>/<pair>.json` | `parity/badges/dev/<pair>.json` |
+
+A release never changes, so on the released track a failure is that release's result, not
+something to rerun. A pair whose port the release does not have is recorded as **not in
+`<tag>`** (result `unavailable`, a grey badge), not as a failure: before the original runs, the job
+asks the release's qsmxt for each subcommand the port's `run.sh` calls (`qsmxt invert star
+--help`); and if the run then fails because qsmxt refuses the command line (clap's `unrecognized
+subcommand`, `unexpected argument` or `invalid value`: an option or value added after the release,
+such as `--variant qsmjl`), that is recorded the same way. Any other failure is a failure.
+
+One exception keeps a number where the port exists but a pair's extra input does not: when qsmxt
+refuses the command line and the pair feeds the candidate an **optional** input (a `feed:` artifact
+the candidate's `algorithm.yml` lists under `optional_inputs:`, e.g. QSMART's `reliability`, which
+qsmxt v10.0.0 has no `--reliability` for), the job reruns only the candidate without those feeds
+(`parity.py run --candidate-only --drop-optional-feeds`) and compares that. The record says
+`dropped_feeds: [reliability]`, and the badge says so too: `65.9 % · v10.0.0 · no reliability`.
+Required feeds (e.g. a fed total field) are never dropped.
+
+If qsmxt still refuses the command line, the same applies to the pair's `candidate_set` settings
+(the matched settings, e.g. QSMART's `offset_grid: qsmart-reference`, which v10.0.0 has no
+`--qsmart-offset-grid` for): `parity.py rejected-setting` names the setting behind each refusal (the
+key whose hyphenated name the refused option contains), and the candidate is rerun without it, one
+more setting per refusal (`--drop-setting KEY`). The record says `dropped_settings: [offset_grid]`
+and the badge `… · v10.0.0 · no reliability, no offset_grid`. The reference is never rerun, and
+keeps its own settings. A refusal no feed or setting explains (a missing subcommand) is "not in".
+
+Records from before the tracks (the runs of 30 and 31 October 2026) were all QSMxT `main` builds
+with qsm-core at QSM.rs `main`, and are labelled `dev`.
 
 ## Running it
 
@@ -18,6 +58,7 @@ gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=qsmart,ilsqr,tkd       #
 gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=enabled                # every enabled pair (the release gate)
 gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=all-configured -f baseline=true   # every pair, enabled or not
 gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=tkd,tsvd -f dataset=sim -f qsmrs_ref=main
+gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=enabled -f qsmxt_release=latest   # the released track
 ```
 
 | Input | Meaning |
@@ -25,18 +66,21 @@ gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=tkd,tsvd -f dataset=sim 
 | `algorithm` | pairs in `parity/thresholds.yml`, comma-separated (`qsmart,ilsqr,tkd`), and/or `enabled` (every enabled pair) or `all-configured` (every pair with a dataset, enabled or not). Default `enabled`. |
 | `dataset` | `scripts/datasets.json` keys, comma-separated, or `configured` for every dataset each pair has an entry for |
 | `baseline` | `true` measures and prints suggested limits, never fails, and records nothing |
+| `qsmxt_release` | released track: a QSMxT release tag, or `latest`. Not combined with the three below |
 | `qsmrs_ref` | a QSM.rs branch, tag or SHA: QSMxT (`qsmxt_ref`, default `main`) is built with its `qsm-core` pin moved to that commit |
 | `qsmxt_ref` | a QSMxT ref, built with the QSM.rs it pins |
 | `qsmxt_image` | a prebuilt qsmxt image (overrides both refs) |
-| `record` | `true` records the results (see "Recorded results"); a run from `main` always does |
+| `record` | `true` records the results (see "Recorded results"); a run from `main` always does, except a run of the pinned images (no track) |
 
 Every name is checked before any job starts: an unknown pair or dataset, or a pair that no longer
 matches `algorithm.yml`, fails the `plan` job with the reason. A disabled pair runs when named; it
 is only left out of `enabled`. Watch a run with `gh run watch -R QSMxT/QSM-CI --exit-status <id>`
 (`gh run list -R QSMxT/QSM-CI -w parity -L 1` gives the id).
 
-With none of the last three, every QSM.rs step runs the qsmxt image its `algorithm.yml` pins (today
-v10.0.0). With a ref, a `qsmxt` job builds the binary the way QSMxT's release does (`cargo build
+With none of `qsmxt_release`, `qsmrs_ref`, `qsmxt_ref` and `qsmxt_image`, every QSM.rs step runs the
+qsmxt image its `algorithm.yml` pins (today v10.0.0), and nothing is recorded: use `qsmxt_release`
+for a release. With `qsmxt_release`, the `qsmxt` job downloads that release's musl binary instead
+of building one. With a ref, a `qsmxt` job builds the binary the way QSMxT's release does (`cargo build
 --release`, `x86_64-unknown-linux-musl`, default features; the Rust build is cached), and each
 parity job puts it in a debian-slim image like `algorithms/_qsmxt` (`parity/qsmxt.Dockerfile`). Every
 step with `source: qsmrs` then runs that image instead of the pinned one, through `qsm-ci run
@@ -132,33 +176,45 @@ limits derived from what it measured, ready to paste. Re-baseline when either si
 purpose (a new original image, or a QSM.rs change that is meant to move the result), or when
 `feed:` or a `*_prefix:` changes what is measured, and say why in the PR.
 
-With no ref, the QSM.rs steps run the pinned qsmxt v10.0.0 (QSM.rs v0.39.0), which predates the
-QSMART fixes the limits were measured with, so the QSMART pair fails there (sim NRMSE 65.9 %, KKI
-133.8 %). It passes once a QSMxT release with those fixes is pinned.
+Limits are measured on the development track. A release older than the fixes they were measured
+with fails them, which is what the released track should show: QSMxT v10.0.0 (QSM.rs v0.39.0)
+predates the QSMART fixes (sim NRMSE 65.9 %, KKI 133.8 %) and most ports' parity fixes.
 
 ## Recorded results
 
 Every run from `main`, and every run dispatched with `record=true`, commits one record per pair ×
 dataset to [`parity/results.json`](../parity/results.json) (the `record` job, as `qsm-ci-bot`, the
-way score.yml commits `results/index.json`). Baselines and runs from other branches record nothing.
-A record holds:
+way score.yml commits `results/index.json`). Baselines, runs from other branches and runs of the
+pinned images record nothing. A record holds:
 
+- its `track` (`released` or `dev`) and, on the released track, the `release` tag;
 - the date and the run's URL;
-- the result (`pass`, `fail`, or `error` when the job ended before the comparison) and the metrics
-  of every compared map, with the limits that failed;
+- the result (`pass`, `fail`, `unavailable` when the release has no such command or option, or
+  `error` when the job ended before the comparison) and the metrics of every compared map, with
+  the limits that failed;
 - the QSM.rs commit and version the candidate ran (from its own `qsmxt --version`), the QSMxT
   commit (for a build), and the candidate image and its digest;
 - the reference slug, image and digest;
 - the thresholds version: a hash of what the pair measures and the limits it is held to on that
   dataset (`parity.py thresholds_version`).
 
-Each pair × dataset keeps its 50 newest records. The same job regenerates
+On the development track each pair × dataset keeps its 50 newest records; on the released track
+each pair × dataset keeps one record per release (a rerun for a changed reference replaces that
+release's earlier one), for every release. The same job regenerates
 [`parity/STATUS.md`](../parity/STATUS.md) and `parity/status.json` (the site's Parity page).
 
 ## Staleness
 
-`python scripts/parity.py status` says, for each enabled pair and dataset, whether its last
-recorded check still stands. It is **stale** when any of these holds:
+`python scripts/parity.py status` says, for each enabled pair and dataset and each track, whether
+its last recorded check still stands.
+
+On the **released** track only the latest QSMxT release counts (GitHub's latest release; offline,
+`--latest-release` or the newest release recorded). A pair × dataset is flagged when it has no run
+against that release, when the reference image or the pair's settings or limits changed since that
+run (both rerun automatically, below), or when that run ended without a result (flagged for a person:
+an error that repeats is not rerun on its own). A failure or a "not in" is the release's result.
+
+On the **development** track a check is **stale** when any of these holds:
 
 - **(a)** the reference image pinned in `algorithm.yml` is not the one last checked;
 - **(b)** QSM.rs `main` has commits touching the pair's `qsmrs_paths`, or QSM.rs's `Cargo.lock`
@@ -182,16 +238,19 @@ every module those import, followed through shared code (`fft.rs`, `grid.rs`, `k
 `thresholds.yml` has the exact rule; recheck a pair's list when its port's imports change.
 
 ```bash
-python scripts/parity.py status                              # the table, to stdout
+python scripts/parity.py status                              # the tables, to stdout
 python scripts/parity.py status --offline                    # without rules (b) and (f): no GitHub calls
+python scripts/parity.py status --offline --latest-release v10.0.0
+python scripts/parity.py released-plan                       # what parity-release.yml would dispatch
 python scripts/parity.py status --json parity/status.json --markdown parity/STATUS.md --issue issue.md \
     [--badges parity-badges/]
 ```
 
 The **parity-status** workflow runs it every Monday (and on demand), commits the regenerated
-status, and keeps one tracking issue, *Port parity: stale checks*: created the first time a pair is
-stale, edited on every run after, closed when nothing is stale, and reopened (never duplicated)
-next time. It lists each stale pair, why, and the command that refreshes it, e.g.
+status, and keeps one tracking issue, *Port parity: stale checks*, with a section per track:
+created the first time a pair is flagged, edited on every run after, closed when nothing is, and
+reopened (never duplicated) next time. It lists each flagged pair, why, and the command that
+refreshes it, e.g.
 
 ```bash
 gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=ilsqr,tkd -f dataset=configured -f qsmrs_ref=main
@@ -199,14 +258,29 @@ gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=ilsqr,tkd -f dataset=con
 
 Dispatched on `main` (the default), the refresh records its results, which clears the staleness
 once it passes. With the repository variable `PARITY_AUTO_REFRESH=true` (unset by default) the
-workflow dispatches that refresh itself.
+workflow dispatches the development refresh itself.
+
+The **parity-release** workflow runs when QSMxT's release workflow sends a `repository_dispatch` of
+type `qsmxt-release` (QSMxT/QSMxT#470, once QSMxT has its `QSM_CI_DISPATCH_TOKEN` secret), daily as
+a fallback, and on demand. `parity.py released-plan`
+compares GitHub's latest QSMxT release with `parity/results.json`: for a release with no records it
+dispatches every enabled pair (`-f qsmxt_release=<tag> -f algorithm=enabled`); for the recorded
+latest release, only the pairs whose reference image or settings changed since, or that never ran
+on one of their datasets. It skips the dispatch while a released run for that tag is queued or
+running (parity.yml's run name says `released <tag>`).
 
 ## Badges
 
-Each pair, and each `no_original` entry, has a [shields.io endpoint](https://shields.io/badges/endpoint-badge)
-file, `{"schemaVersion": 1, "label": "parity", "message": …, "color": …}`, published with the site
-at `https://qsmxt.github.io/QSM-CI/parity/badges/<pair>.json`. The QSM.rs README's algorithm tables
-show one per port, linked to the pair's row on the Parity page (`parity.html#pair-<pair>`):
+Each pair, and each `no_original` entry, has [shields.io endpoint](https://shields.io/badges/endpoint-badge)
+files, `{"schemaVersion": 1, "label": "parity", "message": …, "color": …}`, published with the site:
+
+- `https://qsmxt.github.io/QSM-CI/parity/badges/<pair>.json`: the released track, the latest QSMxT
+  release (what the QSM.rs README shows);
+- `…/parity/badges/dev/<pair>.json`: the development track;
+- `…/parity/badges/release/<tag>/<pair>.json`: each release's own result, for every recorded release.
+
+The QSM.rs README's algorithm tables show one per port, linked to the pair's row on the Parity page
+(`parity.html#pair-<pair>`; `parity.html?track=dev#pair-<pair>` for the development track):
 
 ```markdown
 [![parity](https://img.shields.io/endpoint?url=https%3A%2F%2Fqsmxt.github.io%2FQSM-CI%2Fparity%2Fbadges%2Ftkd.json)](https://qsmxt.github.io/QSM-CI/parity.html#pair-tkd)
@@ -214,15 +288,22 @@ show one per port, linked to the pair's row on the Parity page (`parity.html#pai
 
 | Badge | Colour | When |
 |---|---|---|
-| `0.33 % · 30 Oct` / `identical · 30 Oct` | green | enabled, every dataset's last check stands: the worst final-map NRMSE over the datasets (`identical` when bit-identical), dated by the oldest check |
-| `stale · 29 Oct` | orange | enabled, and a check is stale (above); the date of the oldest last check |
-| `failing · 28 Oct` | red | enabled, and a last check failed or ended without a result |
+| `0.33 % · v10.0.0` / `identical · v10.0.0` | green | released: enabled, passed on every dataset against the release: the worst final-map NRMSE over the datasets |
+| `failing · v10.0.0` | red | released: a dataset failed against the release, or its run ended without a result |
+| `not in v10.0.0` | grey | released: the release has no such command or option |
+| `stale · v10.0.0` | orange | released: the reference image or the pair's settings changed since the run |
+| `not checked · v10.0.0` | grey | released: no run against the release yet |
+| `0.33 % · 30 Oct` / `identical · 30 Oct` | green | dev: enabled, every dataset's last check stands: the worst final-map NRMSE over the datasets (`identical` when bit-identical), dated by the oldest check |
+| `stale · 29 Oct` | orange | dev: enabled, and a check is stale (above); the date of the oldest last check |
+| `failing · 28 Oct` | red | dev: enabled, and a last check failed or ended without a result |
 | `gap · QSM.rs#323` | yellow | not enabled: `blocked_by` a known gap |
-| `not yet checked` | grey | enabled, never checked on any dataset |
+| `not yet checked` | grey | dev: enabled, never checked on any dataset |
 | `not enabled` | grey | not enabled, no known gap |
 | `no original` | grey | a `no_original` entry: no original code exists (QSMxT/QSM-CI#302) |
 
-`not-checked.json` is a generic `not yet checked` badge for a QSM.rs method with no pair here yet.
+A per-release badge (`release/<tag>/`) is that release's recorded result alone (green, red or "not
+in"), never stale. `not-checked.json` (and `dev/not-checked.json`) is a generic `not yet checked`
+badge for a QSM.rs method with no pair here yet.
 The pages workflow writes the files from the `parity/status.json` it deploys (`parity.py badges`),
 so they always match the Parity page; `parity.py status --badges DIR` writes the same files locally.
 

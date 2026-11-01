@@ -8,12 +8,13 @@ for these datasets. This script only:
      (`{"tool": "qsm-forward", "ref": <commit>, "preset": <name>, ...}`),
   2. refuses to run unless the installed qsm-forward is that pinned commit (pip records it in
      direct_url.json when installed from git; --allow-unpinned skips the check, for development),
-  3. calls `qsm_forward.chisep.generate_chisep_bids` with the preset (and its `r2prime_source`
-     override, if the entry sets one),
+  3. calls `qsm_forward.chisep.generate_chisep_bids` with the preset (and its `r2prime_source` and
+     `degrade_levels` overrides, if the entry sets them: `degrade_levels: ["L3"]` also writes
+     qsm-forward's controlled-degradation inputs, which pack_dataset.py ships as inputs-l3/),
   4. packs the BIDS tree with pack_dataset.py and masks the derived maps and ground truth to the
      brain (gen_chisep.mask_derived_to_brain), as every χ-separation zip is packed,
-  5. with --zip, writes <out>.zip (inputs/ + groundtruth/ at the root, `prepacked: true`) and prints
-     its size and md5 for the OSF upload.
+  5. with --zip, writes <out>.zip (inputs/ + groundtruth/, and any inputs-<level>/, at the root,
+     `prepacked: true`) and prints its size and md5 for the OSF upload.
 
 Install the pinned generator first, e.g.
   pip install "qsm-forward @ git+https://github.com/astewartau/qsm-forward@<ref>"
@@ -77,7 +78,10 @@ def check_pin(ref: str, allow_unpinned: bool = False) -> None:
 
 def preset_overrides(g: dict) -> dict:
     """ChisepConfig overrides the registry entry asks for on top of the named preset."""
-    return {k: g[k] for k in ("r2prime_source",) if k in g}
+    out = {k: g[k] for k in ("r2prime_source",) if k in g}
+    if g.get("degrade_levels"):
+        out["degrade_levels"] = tuple(g["degrade_levels"])
+    return out
 
 
 def generate(g: dict, qsmf_data: Path, bids: Path, wm_rois: "Path | None") -> None:
@@ -105,7 +109,8 @@ def make_zip(out: Path) -> Path:
     z = out.with_suffix(".zip") if out.suffix else Path(str(out) + ".zip")
     if z.exists():
         z.unlink()
-    subprocess.run(["zip", "-qr", "-X", str(z), "inputs", "groundtruth"], cwd=out, check=True)
+    dirs = ["inputs", "groundtruth"] + sorted(p.name for p in out.glob("inputs-*") if p.is_dir())
+    subprocess.run(["zip", "-qr", "-X", str(z), *dirs], cwd=out, check=True)
     md5 = hashlib.md5(z.read_bytes()).hexdigest()
     print(f"{z}  {z.stat().st_size} bytes  md5 {md5}")
     return z

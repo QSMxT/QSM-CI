@@ -21,6 +21,18 @@ qsm-forward chi-sep extras are carried along when present:
     groundtruth/theta.nii.gz           `*_fibreangle`, fibre-to-B0 angle (degrees)
     groundtruth/wm_rois.nii.gz         `*_desc-wmrois_dseg`, the white-matter sub-ROI atlas
 
+When qsm-forward also wrote controlled-degradation inputs (`qsm_forward.degrade`, a preset's
+`degrade_levels`), each level ships beside the ground-truth inputs, under its own directory and the
+canonical artifact names, without changing inputs/:
+
+    inputs-l3/        localfield  chimap  chimap-echoes  r2prime  mask (.nii.gz) — the level's
+                      `*_desc-degradedL3_{fieldmap-local,Chimap,Chimap-echoes,R2prime,mask}`
+    groundtruth/degradation-l3.json   `*_desc-degradedL3_degradation.json`: every parameter, the
+                      seed, the qsm-forward version and the calibration spread. Reference only.
+
+The scorer mounts inputs-<level>/ in place of inputs/ for those five artifacts (pipeline.py
+--inputs <level>); the raw signal, params and the ground truth are shared by every level.
+
 and params.json gains `chisep_dr_hz_per_ppm`, the paramagnetic relaxivity Dr+ the phantom imposes
 (documentation only; no method reads it, they keep their published defaults).
 
@@ -107,6 +119,44 @@ def chisep_relaxivity(meta: dict) -> "float | None":
     return float(dr) if dr is not None else None
 
 
+# qsm-forward degradation outputs (`*_desc-degraded<L>_<name>`) -> canonical artifact names.
+DEGRADED_ARTIFACTS = {"fieldmap-local": "localfield", "Chimap": "chimap", "Chimap-echoes": "chimap-echoes",
+                      "R2prime": "r2prime", "mask": "mask"}
+
+
+def ground_truth_stem(deriv: Path) -> str:
+    """The derivatives' file stem (e.g. `sub-1_run-1`): the prefix of the ground-truth `*_Chimap`.
+    Entity-tagged maps that share the suffix (`*_desc-degradedL3_Chimap`, …) are not the ground truth."""
+    hits = sorted(p for p in glob.glob(str(deriv / "*_Chimap.nii*")) if "_desc-" not in os.path.basename(p))
+    if not hits:
+        raise SystemExit(f"no ground-truth *_Chimap in {deriv}")
+    return os.path.basename(hits[0]).split("_Chimap")[0]
+
+
+def degraded_levels(deriv: Path, pre: str) -> list:
+    """The degradation levels qsm-forward wrote for this phantom (`L3`, …), sorted."""
+    tags = {re.search(r"_desc-degraded(L\d+)_", os.path.basename(p)).group(1)
+            for p in glob.glob(str(deriv / f"{pre}_desc-degradedL*_*.nii*"))}
+    return sorted(tags)
+
+
+def pack_degraded(deriv: Path, pre: str, out: Path) -> None:
+    """Ship each degradation level's inputs as inputs-<level>/ and its sidecar as
+    groundtruth/degradation-<level>.json (see the module docstring)."""
+    for level in degraded_levels(deriv, pre):
+        low = level.lower()
+        for src, dst in DEGRADED_ARTIFACTS.items():
+            hit = glob.glob(str(deriv / f"{pre}_desc-degraded{level}_{src}.nii*"))
+            if hit:
+                im = nib.load(hit[0])
+                save(out / f"inputs-{low}" / f"{dst}.nii.gz", im.get_fdata(), im.affine)
+        side = deriv / f"{pre}_desc-degraded{level}_degradation.json"
+        if side.exists():
+            (out / "groundtruth").mkdir(parents=True, exist_ok=True)
+            (out / "groundtruth" / f"degradation-{low}.json").write_text(side.read_text())
+        print(f"  (packed degraded inputs {level} -> inputs-{low}/)")
+
+
 def save(path: Path, data: np.ndarray, affine: np.ndarray) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     nib.save(nib.Nifti1Image(data.astype(np.float32), affine), str(path))
@@ -123,7 +173,7 @@ def main() -> None:
     if not deriv:
         raise SystemExit("no derivatives/qsm-forward/sub-*/anat (run qsm-forward with save_field=True)")
     deriv = Path(deriv[0])
-    pre = os.path.basename(glob.glob(str(deriv / "*_Chimap.nii*"))[0]).split("_Chimap")[0]
+    pre = ground_truth_stem(deriv)
 
     # inputs/
     phase, aff = stack_echoes(anat, "phase")
@@ -182,6 +232,7 @@ def main() -> None:
             if hit:
                 (out / dst).parent.mkdir(parents=True, exist_ok=True)
                 nib.save(nib.load(hit[0]), str(out / f"{dst}.nii.gz"))
+        pack_degraded(deriv, pre, out)
     else:
         gt = {"fieldmap": "totalfield", "fieldmap-local": "localfield", "Chimap": "chimap", "dseg": "dseg"}
     for src, dst in gt.items():

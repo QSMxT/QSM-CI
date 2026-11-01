@@ -27,8 +27,8 @@ How each shipped dataset was made; re-run only to rebuild one.
 
 | Script | What it does |
 |---|---|
-| `pack_dataset.py` | Flattens a `qsm-forward` BIDS output into the canonical `inputs/` + `groundtruth/` layout (used by `fetch_dataset.sh` and `gen_chisep.py`) |
-| `gen_chisep_preset.py` | Regenerates a ranked χ-separation dataset (`meso-3t`, `wm-micro-7t`, `ridani-3t-aniso-fitted`) from its pinned qsm-forward preset (`datasets.json` `generator`), packs it and, with `--zip`, writes the upload zip with its md5 |
+| `pack_dataset.py` | Flattens a `qsm-forward` BIDS output into the canonical `inputs/` + `groundtruth/` layout, plus `inputs-<level>/` for qsm-forward's degraded inputs (used by `fetch_dataset.sh` and `gen_chisep.py`) |
+| `gen_chisep_preset.py` | Regenerates a ranked χ-separation dataset (`meso-3t`, `wm-micro-7t`, `ridani-3t-aniso-fitted`) from its pinned qsm-forward preset (`datasets.json` `generator`), packs it (with the realistic L3 inputs, `inputs-l3/`) and, with `--zip`, writes the upload zip with its md5 |
 | `gen_chisep.py` | Reproducible generator for the retired χ-separation phantoms (`chisep-mc`, `ridani-*`) from the Challenge 2.0 head model; `--validate` runs `validate_phantom.py` on the result |
 | `validate_phantom.py` | Measures whether a χ-separation phantom can discriminate methods (null-model triviality, noise ceiling) before spending hours on real separators |
 | `make_invivo_zip.py` | Packs the 2016 QSM Challenge release into the prepacked in-vivo zip (`invivo`) |

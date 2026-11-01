@@ -89,6 +89,50 @@ def gt_sources(dataset: Path) -> dict[str, Path]:
     return src
 
 
+# χ-separation input levels. "gt" is the dataset's own inputs (the phantom's true local field and χ,
+# R2′ as shipped, the brain mask): the upper bound. "l3" is qsm-forward's controlled-degradation level
+# L3 (qsm_forward.degrade), calibrated to the outputs of real QSM pipelines: the dataset ships it under
+# inputs-l3/ with the canonical artifact names, and it replaces exactly these artifacts. The raw
+# signal (phase, magnitude), params and the ground-truth dseg are the same at every level.
+INPUT_LEVELS = ("gt", "l3")
+LEVEL_ARTIFACTS = ("localfield", "chimap", "chimap-echoes", "r2prime", "mask")
+
+
+def input_level_dir(dataset: Path, level: str) -> "Path | None":
+    """The directory holding a level's derived inputs (`<dataset>/inputs-<level>`), None for "gt"."""
+    if level not in INPUT_LEVELS:
+        raise ValueError(f"unknown input level {level!r}; choose from {INPUT_LEVELS}")
+    return None if level == "gt" else dataset / f"inputs-{level}"
+
+
+def level_sources(dataset: Path, level: str = "gt") -> dict[str, Path]:
+    """`gt_sources(dataset)` with the level's derived inputs swapped in.
+
+    At "gt" this is exactly gt_sources. At a degraded level every artifact in LEVEL_ARTIFACTS resolves
+    to `<dataset>/inputs-<level>/<file>` and never falls back to the ground truth: a level that does not
+    ship `chimap-echoes` leaves it absent (the optional input is then skipped, and the method falls back
+    to chimap, as on a dataset without it), rather than mixing a ground-truth χ(TE) into degraded
+    inputs. Raises SystemExit when the level's directory or one of its required maps is missing."""
+    src = gt_sources(dataset)
+    d = input_level_dir(dataset, level)
+    if d is None:
+        return src
+    if not d.is_dir():
+        raise SystemExit(f"{dataset} has no {d.name}/: this dataset zip predates the {level} inputs "
+                         "(regenerate it with scripts/gen_chisep_preset.py)")
+    missing = [a for a in LEVEL_ARTIFACTS if a != "chimap-echoes" and not (d / f"{a}.nii.gz").exists()]
+    if missing:
+        raise SystemExit(f"{d} is missing {', '.join(missing)}")
+    src.update({a: d / f"{a}.nii.gz" for a in LEVEL_ARTIFACTS})
+    return src
+
+
+def inputs_suffix(level: str = "gt") -> str:
+    """Run-id namespace for an input level: "gt" keeps the existing ids, any other level appends
+    `-<level>` so its rows sit beside the ground-truth-input rows in results/index.json."""
+    return "" if level == "gt" else f"-{level}"
+
+
 def parse_shard(spec: "str | None") -> "tuple[int | None, int | None]":
     """Parse a `--shard i/n` spec into (i, n), or (None, None) when unset. Raises SystemExit with the
     same message pipeline.py used for an out-of-range spec (0 <= i < n)."""
