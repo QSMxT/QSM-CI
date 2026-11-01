@@ -284,6 +284,55 @@
       "ci_notes": []
     },
     {
+      "slug": "chisep-ilsqr-qsmrs",
+      "name": "\u03c7-separation (iLSQR, QSM.rs)",
+      "stage": "chi-separation",
+      "inputs": [
+        "localfield",
+        "r2prime",
+        "chimap",
+        "mask",
+        "params"
+      ],
+      "domain": "chisep",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "chisep",
+      "language": "Rust",
+      "family": "iterative",
+      "learning": "none",
+      "description": "\u03c7-separation (iLSQR variant) as the Rust port in QSM.rs of the SNU \u03c7-separation toolbox's chi_sep_iLSQR, run by `qsmxt separate chi-sep-ilsqr`: an iLSQR-style solve for \u03c7+ and |\u03c7\u2212| (LSQR, streaking removal, NNLS) from the local field and R2\u2032, started from a QSM. As the `chisep-ilsqr` entry and the toolbox's script, the QSM is made with iLSQR from the local field (`qsmxt invert ilsqr`, QSM.rs's port of STI Suite's QSM_iLSQR).",
+      "citation": "Shin et al., NeuroImage 2021",
+      "doi": "10.1016/j.neuroimage.2021.118371",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT",
+      "authors": [
+        "Hyeong-Geol Shin",
+        "Jingu Lee",
+        "Jongho Lee",
+        "Ashley Stewart"
+      ],
+      "parameters": [
+        {
+          "name": "qsm",
+          "default": "ilsqr",
+          "description": "the QSM chi_sep_iLSQR starts from: ilsqr, made from the local field with iLSQR, as chisep-ilsqr; chimap, the given \u03c7_total (the parity pair feeds chisep-ilsqr's own QSM this way)\n"
+        },
+        {
+          "name": "pad_mm",
+          "default": 12,
+          "description": "zero padding of that iLSQR, mm (chisep-ilsqr pads 12 voxels; the same on 1 mm data)"
+        },
+        {
+          "name": "gamma",
+          "default": 42.576,
+          "description": "\u03b3 in MHz/T, so the central frequency is \u03b3\u00b7B0 (R2\u2032's ppm scale and the default D_r = 137\u00b7B0/2.9). 42.576 is qsmxt's; the chisep-ilsqr wrapper uses 42.5774, which the parity pair sets.\n"
+        }
+      ],
+      "ci_notes": [
+        "Same algorithm and inputs as the compiled-MATLAB entry chisep-ilsqr, in Rust, on the shared QSMxT engine image.\n"
+      ]
+    },
+    {
       "slug": "chisep-medi",
       "name": "\u03c7-separation (MEDI)",
       "stage": "chi-separation",
@@ -319,6 +368,56 @@
         }
       ],
       "ci_notes": []
+    },
+    {
+      "slug": "chisep-medi-qsmrs",
+      "name": "\u03c7-separation (MEDI, QSM.rs)",
+      "stage": "chi-separation",
+      "inputs": [
+        "localfield",
+        "r2prime",
+        "chimap",
+        "magnitude",
+        "mask",
+        "params"
+      ],
+      "domain": "chisep",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "chisep",
+      "language": "Rust",
+      "family": "iterative",
+      "learning": "none",
+      "description": "\u03c7-separation (MEDI variant) as the Rust port in QSM.rs of the SNU \u03c7-separation toolbox's chi_sep_MEDI, run by `qsmxt separate chi-sep-medi`: a Gauss-Newton solve for \u03c7+ and |\u03c7\u2212| from the local field and R2\u2032, with MEDI's edge-masked L1 regulariser, started from \u03c7_total. The QSM.rs port of the `chisep-medi` entry, with its inputs: N_std from the echoes' magnitudes (MEDI Fit_ppm_complex's noise map) and no CSF term.",
+      "citation": "Shin et al., NeuroImage 2021",
+      "doi": "10.1016/j.neuroimage.2021.118371",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT",
+      "authors": [
+        "Hyeong-Geol Shin",
+        "Jingu Lee",
+        "Jongho Lee",
+        "Ashley Stewart"
+      ],
+      "parameters": [
+        {
+          "name": "lambda",
+          "default": 1,
+          "description": "weight of the data terms against the L1 terms (params.lambda), as chisep-medi"
+        },
+        {
+          "name": "csf_mask",
+          "default": "none",
+          "description": "none: no CSF term, as chisep-medi (the stage contract has no CSF mask; the toolbox GUI's mask_CSF = []). r2star: qsmxt's CSF mask from ARLO R2* of the echoes, as the toolbox's Chisep_script.m makes it. none needs a qsmxt with `separate chi-sep-medi --csf-mask` (QSMxT/QSMxT#472).\n"
+        },
+        {
+          "name": "gamma",
+          "default": 42.576,
+          "description": "\u03b3 in MHz/T, so the central frequency is \u03b3\u00b7B0 (the local field's Hz scale and the default D_r = 137\u00b7B0/2.9). 42.576 is qsmxt's; the chisep-medi wrapper uses 42.5774, which the parity pair sets.\n"
+        }
+      ],
+      "ci_notes": [
+        "Same algorithm and inputs as the compiled-MATLAB entry chisep-medi, in Rust, on the shared QSMxT engine image.\n"
+      ]
     },
     {
       "slug": "chisep-null-qsmci",
