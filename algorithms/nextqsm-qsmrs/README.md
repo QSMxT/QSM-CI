@@ -6,7 +6,7 @@ NeXtQSM as QSM.rs runs it: the authors' trained weights exported to ONNX (QSM.rs
 - **Stage:** `bfr+dipole`: reads `totalfield` (ppm) and `mask`; writes `chimap.nii.gz` (ppm).
 - **Engine:** QSMxT / [QSM.rs](https://github.com/astewartau/QSM.rs).
 - **Original:** [`nextqsm`](../nextqsm) runs the authors' own code and weights; the two entries share `algorithm: nextqsm`, so they form a port parity pair. First look: [`fidelity/dl/`](../../fidelity/dl).
-- **Image:** `qsmxt:v10.0.0-models`, the QSMxT v10.0.0 release image with the ONNX weights baked in ([`_qsmxt/models.Dockerfile`](../_qsmxt/models.Dockerfile)), since the run has no network.
+- **Image:** `qsmxt:v10.0.0-models-2`, the QSMxT v10.0.0 release image with the ONNX weights baked in ([`_qsmxt/models.Dockerfile`](../_qsmxt/models.Dockerfile)), since the run has no network.
 - **Reference:** Cognolato et al., Med Image Anal 2023 · doi:[10.1016/j.media.2022.102700](https://doi.org/10.1016/j.media.2022.102700)
 
 ## How QSM-CI runs it

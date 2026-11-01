@@ -112,7 +112,7 @@ A method with `runner: self-hosted` (e.g. `decompose-qsm`) takes its pair's job 
 runners, with that method's `timeout_minutes`.
 
 A deep-learning pair (`qsmrs_models: true`) needs the ONNX weights on the QSM.rs side. The pinned
-`qsmxt:v10.0.0-models` image has them; a qsmxt built from source does not, and a run has no
+`qsmxt:v10.0.0-models-2` image has them; a qsmxt built from source does not, and a run has no
 network, so the workflow layers them onto the build with `algorithms/_qsmxt/models.Dockerfile`.
 
 ### Matched settings

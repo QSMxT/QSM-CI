@@ -7,7 +7,7 @@
 # models.sha256 (copied from QSM.rs's src/models/registry.rs). qsmxt reads them from
 # $QSM_MODEL_DIR.
 #
-#   docker build -f models.Dockerfile -t ghcr.io/astewartau/qsm-ci/qsmxt:v10.0.0-models .
+#   docker build -f models.Dockerfile -t ghcr.io/astewartau/qsm-ci/qsmxt:v10.0.0-models-2 .
 #
 # BASE is the qsmxt image to add them to: by default the release image (algorithms/_qsmxt/Dockerfile),
 # by digest. Any qsmxt image works, e.g. the parity workflow's build from source

@@ -6,7 +6,7 @@ SUSEP-Net as QSM.rs runs it: the authors' trained weights exported to ONNX (QSM.
 - **Stage:** `chi-separation`: reads `localfield` (ppm), `chimap` (χ_total, ppm), `r2prime` (Hz) and `mask`; writes `chi-para.nii.gz` (χ+ ≥ 0) and `chi-dia.nii.gz` (|χ−|), both ppm.
 - **Engine:** QSMxT / [QSM.rs](https://github.com/astewartau/QSM.rs).
 - **Original:** [`susep-net`](../susep-net) runs the authors' own code and weights; the two entries share `algorithm: susep-net`, so they form a port parity pair. First look: [`fidelity/dl/`](../../fidelity/dl).
-- **Image:** `qsmxt:v10.0.0-models`, the QSMxT v10.0.0 release image with the ONNX weights baked in ([`_qsmxt/models.Dockerfile`](../_qsmxt/models.Dockerfile)), since the run has no network.
+- **Image:** `qsmxt:v10.0.0-models-2`, the QSMxT v10.0.0 release image with the ONNX weights baked in ([`_qsmxt/models.Dockerfile`](../_qsmxt/models.Dockerfile)), since the run has no network.
 - **Reference:** Li, Gao, Sun et al., "SUSEP-Net: simulation-supervised contrastive learning for susceptibility source separation via a sub-voxel QSM network", arXiv:2506.13293, 2025. · doi:[10.48550/arXiv.2506.13293](https://doi.org/10.48550/arXiv.2506.13293)
 
 ## How QSM-CI runs it

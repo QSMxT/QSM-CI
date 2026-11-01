@@ -25,6 +25,6 @@ license: MIT (QSM.rs); the weights keep brainchop's terms (MIT)
 # algorithms/_qsmxt/models.Dockerfile, since a submission runs with no network.
 # `qsmxt mask mindgrab` is in QSMxT main but in no release yet: v10.0.0 lacks it. Repin to the first
 # release that has it, then drop ci_skip. The parity workflow runs it with qsmxt built from source.
-image: ghcr.io/astewartau/qsm-ci/qsmxt@sha256:4327e61dec101830cd9620049ea216939ea9bbb235e26688d198d90481c6f7df   # v10.0.0-models
+image: ghcr.io/astewartau/qsm-ci/qsmxt@sha256:3fd27500c18778edc21fd771828573e01c353e4c6147124977293e51256a9053   # v10.0.0-models-2
 run: bash run.sh
 ci_skip: true   # until the image has `qsmxt mask mindgrab` (see image:)

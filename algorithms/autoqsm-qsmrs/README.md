@@ -6,7 +6,7 @@ AutoQSM as QSM.rs runs it: the authors' trained weights exported to ONNX (QSM.rs
 - **Stage:** `bfr+dipole`: reads `totalfield` (ppm) and `mask`; writes `chimap.nii.gz` (ppm).
 - **Engine:** QSMxT / [QSM.rs](https://github.com/astewartau/QSM.rs).
 - **Original:** [`autoqsm`](../autoqsm) runs the authors' own code and weights; the two entries share `algorithm: autoqsm`, so they form a port parity pair. First look: [`fidelity/dl/`](../../fidelity/dl).
-- **Image:** `qsmxt:v10.0.0-models`, the QSMxT v10.0.0 release image with the ONNX weights baked in ([`_qsmxt/models.Dockerfile`](../_qsmxt/models.Dockerfile)), since the run has no network.
+- **Image:** `qsmxt:v10.0.0-models-2`, the QSMxT v10.0.0 release image with the ONNX weights baked in ([`_qsmxt/models.Dockerfile`](../_qsmxt/models.Dockerfile)), since the run has no network.
 - **Reference:** Wei et al., NeuroImage 2019 · doi:[10.1016/j.neuroimage.2019.116064](https://doi.org/10.1016/j.neuroimage.2019.116064)
 
 ## How QSM-CI runs it

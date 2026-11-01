@@ -26,5 +26,5 @@ code_url: https://github.com/astewartau/QSM.rs
 license: 'MIT (QSM.rs); the weights keep the original''s terms: MIT'
 # The weights are QSM.rs's ONNX exports (qsmxt/qsm-onnx-weights), baked into the image with
 # algorithms/_qsmxt/models.Dockerfile, since a submission runs with no network.
-image: ghcr.io/astewartau/qsm-ci/qsmxt@sha256:4327e61dec101830cd9620049ea216939ea9bbb235e26688d198d90481c6f7df   # v10.0.0-models
+image: ghcr.io/astewartau/qsm-ci/qsmxt@sha256:3fd27500c18778edc21fd771828573e01c353e4c6147124977293e51256a9053   # v10.0.0-models-2
 run: bash run.sh

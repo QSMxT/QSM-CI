@@ -21,7 +21,10 @@ weights, which qsmxt would download on first use; the run has no network. `model
 them to a qsmxt image at `/opt/qsm-models` (`$QSM_MODEL_DIR`), fetched from `qsmxt/qsm-onnx-weights`
 at a pinned commit and checked against `models.sha256` (QSM.rs's registry hashes):
 
-    docker build -f models.Dockerfile -t ghcr.io/astewartau/qsm-ci/qsmxt:v10.0.0-models .
+    docker build -f models.Dockerfile -t ghcr.io/astewartau/qsm-ci/qsmxt:v10.0.0-models-2 .
     docker build -f models.Dockerfile --build-arg BASE=<any qsmxt image> -t <tag> .   # e.g. a source build
 
-`v10.0.0-models` is `sha256:4327e61dec101830cd9620049ea216939ea9bbb235e26688d198d90481c6f7df`.
+`v10.0.0-models-2` is `sha256:3fd27500c18778edc21fd771828573e01c353e4c6147124977293e51256a9053` (weights at
+`f9a6681`). Published tags are never overwritten: a weight change gets the next `-models-N` tag.
+The earlier `v10.0.0-models` (`sha256:4327e61d…`, weights at `acc6f02`) holds the old leaky-ReLU
+`qsmnet.onnx` (astewartau/QSM.rs#374); every other file is identical in the two.
