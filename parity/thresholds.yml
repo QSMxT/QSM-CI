@@ -340,6 +340,51 @@ pairs:
         chi-dia: { nrmse_max: 5.14, correlation_min: 0.988, max_abs_max: 0.0442, p99_abs_max: 0.0051 }
         measured: { main: "run 40808807722: QSM.rs#338 e8f434c with QSMxT main + #448; decompose-qsm sha256:a273a9b3… (limits)" }
 
+  # The SNU χ-separation toolbox (chisep-ilsqr v2, chisep-medi v4; fidelity: QSMxT/QSM-CI#306, #351).
+  # Both have `algorithm: chisep`, so each pair is keyed by its reference's slug. Both wrappers set
+  # CF = 42.5774 MHz/T·B0 where qsmxt uses 42.576; the ports run with the wrappers' value
+  # (`gamma`). astewartau/QSM.rs#318.
+  chisep-ilsqr:
+    reference: chisep-ilsqr
+    candidate: chisep-ilsqr-qsmrs
+    enabled: false
+    note: limits from the first recorded run
+    # The original makes its own QSM (STI Suite QSM_iLSQR, single precision) and starts
+    # chi_sep_iLSQR from it; the port is fed that QSM (`feed`), so the pair checks chi_sep_iLSQR
+    # alone. QSM.rs's iLSQR is the `ilsqr` pair's.
+    candidate_set: { qsm: chimap, gamma: 42.5774 }
+    qsmrs_paths: [src/constants.rs, src/error.rs, src/fft.rs, src/grid.rs, src/inversion/ilsqr.rs,
+                  src/inversion/medi.rs, src/kernels/, src/pipeline/rules.rs,
+                  src/pipeline/separation.rs, src/separation/chi_sep_ilsqr.rs,
+                  src/separation/chi_sep_medi.rs, src/separation/mod.rs]
+    qsmxt_paths: *separate_wiring
+    datasets:
+      chisep-mc:
+        feed: { chimap: qsm }
+        # Measured on Bunya (QSM.rs examples/chi_sep_file.rs vs the v2 container's own run, its QSM
+        # fed): χ+ NRMSE 2.6e-6 %, max |Δ| 7.4e-9 ppm; |χ−| 2.6e-6 %, 7.1e-9 ppm (float32 output).
+        chi-para: { nrmse_max: 0.0001, correlation_min: 0.999999, max_abs_max: 1.0e-7, p99_abs_max: 3.0e-8 }
+        chi-dia: { nrmse_max: 0.0001, correlation_min: 0.999999, max_abs_max: 1.0e-7, p99_abs_max: 3.0e-8 }
+  chisep-medi:
+    reference: chisep-medi
+    candidate: chisep-medi-qsmrs
+    enabled: false
+    note: limits from the first recorded run
+    # Both: χ_total as the initial guess, N_std = MEDI Fit_ppm_complex's dp1 from the echoes'
+    # magnitudes (identical to the original's, bit for bit), no CSF term (`csf_mask: none`, the
+    # port's default; needs QSMxT `separate chi-sep-medi --csf-mask`, QSMxT/QSMxT#472).
+    candidate_set: { gamma: 42.5774 }
+    qsmrs_paths: [src/constants.rs, src/error.rs, src/fft.rs, src/grid.rs, src/inversion/medi.rs,
+                  src/kernels/, src/pipeline/rules.rs, src/pipeline/separation.rs,
+                  src/separation/chi_sep_medi.rs, src/separation/mod.rs, src/utils/multi_echo.rs]
+    qsmxt_paths: *separate_wiring
+    datasets:
+      chisep-mc:
+        # chisep-mc's inner CG solves run 42-50 iterations and amplify rounding: the original
+        # itself moves by χ+ 0.37 %, |χ−| 1.13 % between 8 and 4 threads (licensed R2023b), and
+        # QSM.rs by 0.21 % / 0.45 % under a 1-ulp change of CF. Measured on Bunya against the v4
+        # container: χ+ NRMSE 0.175 %, max |Δ| 0.0083 ppm, p99 1.4e-4; |χ−| 0.93 %, 0.0079, 5.3e-4.
+
   # ---- Python originals (QSMxT/QSM-CI#312)
   wavesep:
     reference: wavesep        # WaveSep f3a192e, unmodified (fidelity: QSMxT/QSM-CI#312)
