@@ -1141,6 +1141,11 @@ def test_clap_rejection():
     assert parity.clap_rejection("error: invalid value 'qsmjl' for '--ball <BALL>'") == \
         "invalid value 'qsmjl' for '--ball <BALL>'"
     assert parity.clap_rejection("Traceback …\nValueError: shapes differ") is None
+    # the release's command needs an input the port does not pass (qsmxt v10.0.0's paper-based
+    # chi-sep-ilsqr and --magnitude, run 41283680804)
+    log = ("error: the following required arguments were not provided:\n"
+           "  --magnitude <MAGNITUDE>...\n\nUsage: qsmxt separate chi-sep-ilsqr --qsm <QSM> …\n")
+    assert parity.clap_rejection(log) == "required argument not provided: --magnitude"
 
 
 def _th_file(tmp_path):
@@ -1296,6 +1301,8 @@ def test_rejected_setting_names_the_candidate_set_key():
         == "variant"
     assert parity.rejected_setting(cfg, "sim", "error: unexpected argument '--reliability' found") is None
     assert parity.rejected_setting(cfg, "sim", "error: unrecognized subcommand 'star'") is None
+    assert parity.rejected_setting(cfg, "sim", "error: the following required arguments were not "
+                                   "provided:\n  --qsmart-offset-grid <G>\n") is None
     assert parity.rejected_setting(cfg, "sim", "Traceback: boom") is None
 
 

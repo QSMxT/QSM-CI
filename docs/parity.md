@@ -27,7 +27,10 @@ something to rerun. A pair whose port the release does not have is recorded as *
 asks the release's qsmxt for each subcommand the port's `run.sh` calls (`qsmxt invert star
 --help`); and if the run then fails because qsmxt refuses the command line (clap's `unrecognized
 subcommand`, `unexpected argument` or `invalid value`: an option or value added after the release,
-such as `--variant qsmjl`), that is recorded the same way. Any other failure is a failure.
+such as `--variant qsmjl`), that is recorded the same way. So is clap's `the following required
+arguments were not provided`: the release's command is an earlier port that needs an input the
+current one does not take (qsmxt v10.0.0's paper-based `separate chi-sep-ilsqr --magnitude`, not the
+toolbox port the pair checks). Any other failure is a failure.
 
 One exception keeps a number where the port exists but a pair's extra input does not: when qsmxt
 refuses the command line and the pair feeds the candidate an **optional** input (a `feed:` artifact
