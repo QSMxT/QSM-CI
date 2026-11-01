@@ -367,8 +367,7 @@ pairs:
   chisep-medi:
     reference: chisep-medi
     candidate: chisep-medi-qsmrs
-    enabled: false
-    note: enable once QSMxT/QSMxT#472 (separate chi-sep-medi --csf-mask) is on QSMxT main
+    enabled: true
     # Both: χ_total as the initial guess, N_std = MEDI Fit_ppm_complex's dp1 from the echoes'
     # magnitudes (identical to the original's, bit for bit), no CSF term (`csf_mask: none`, the
     # port's default; needs QSMxT `separate chi-sep-medi --csf-mask`, QSMxT/QSMxT#472).
