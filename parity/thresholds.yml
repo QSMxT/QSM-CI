@@ -226,8 +226,7 @@ pairs:
   iharperella:
     reference: iharperella-sti    # STI Suite 3.0's iHARPERELLA, compiled; identical to licensed MATLAB (v2)
     candidate: iharperella-qsmrs  # QSM.rs's port of it (astewartau/QSM.rs#270), via qsmxt bgremove iharperella
-    enabled: false
-    note: measuring
+    enabled: true
     # Same algorithm: with both sides' defaults (LSQR tol 0.001, no padding; QSM.rs
     # IharperellaParams::default, probed from STI Suite 3.0) the outputs agree to 5e-9 % NRMSE at
     # 5 LSQR iterations and 2e-5 % at 10 (KKI, run locally on the CI's qsmxt build). Past ~10
@@ -250,6 +249,9 @@ pairs:
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs]
         feed: { totalfield: totalfield }
+        # Measured (10 iterations): NRMSE 3.9e-5 %, r 1.000000, max |Δ| 6.0e-08 ppm, p99 |Δ| 3.0e-08 ppm.
+        localfield: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
+        measured: { main: "run 41318552428: QSMxT main 2c1661c, QSM.rs main 92dcc3b; iharperella-sti v2 (limits)" }
   star:
     reference: star-sti
     candidate: star-qsmrs   # ci_skip until a qsmxt release has `qsmxt invert star`: runs against a build
