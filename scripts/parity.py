@@ -662,6 +662,25 @@ def optional_feeds(cfg: dict, phantom: str, manifests: "dict | None" = None) -> 
 
 
 DROPPED = "dropped_feeds.json"   # in the candidate's work dir: feeds a release run went without
+DROPPED_SETTINGS = "dropped_settings.json"   # … and `candidate_set` settings it went without
+
+
+def rejected_setting(cfg: dict, phantom: str, log: str) -> "str | None":
+    """The pair's `candidate_set` key behind qsmxt's refusal in a run log (clap's `unexpected
+    argument '--qsmart-offset-grid'` or `invalid value 'qsmjl' for '--variant <V>'`): the key whose
+    hyphenated name the refused option contains (offset_grid → --qsmart-offset-grid), the longest if
+    several do; None when no setting matches (the refusal is about the port itself)."""
+    import re
+    hit = clap_rejection(log)
+    if not hit:
+        return None
+    m = re.search(r"'(--[A-Za-z0-9-]+)", hit[hit.find(" for ") :] if " for " in hit else hit)
+    if not m:
+        return None
+    flag = m.group(1).lstrip("-").lower()
+    keys = [k for k in side_set(cfg, "candidate", phantom)
+            if str(k).replace("_", "-").lower() in flag]
+    return max(keys, key=len) if keys else None
 
 
 def cmd_run(args) -> int:
@@ -676,8 +695,10 @@ def cmd_run(args) -> int:
     work = Path(args.work)
     drop_asked = getattr(args, "drop_optional_feeds", False)
     drop = optional_feeds(cfg, args.phantom) if drop_asked else []
-    if drop_asked and not drop:
-        print(f"{args.algorithm}: no optional feed to run without")
+    unset = [k for k in (getattr(args, "drop_setting", None) or [])
+             if k in side_set(cfg, "candidate", args.phantom)]
+    if (drop_asked or getattr(args, "drop_setting", None)) and not (drop or unset):
+        print(f"{args.algorithm}: no optional feed or candidate setting to run without")
         return 3
     if getattr(args, "candidate_only", False):
         if not (work / "reference" / "provenance.json").exists():
@@ -704,10 +725,15 @@ def cmd_run(args) -> int:
         shutil.rmtree(work / "candidate")
     run_side(side_chain(cfg, "candidate", args.phantom), Path(args.dataset), work / "candidate",
              args.runner, feed=feed, qsmrs_image=args.qsmrs_image or None,
-             names=cfg.get("candidate_names"), overrides=side_set(cfg, "candidate", args.phantom))
+             names=cfg.get("candidate_names"),
+             overrides={k: v for k, v in side_set(cfg, "candidate", args.phantom).items()
+                        if k not in unset})
     if drop:
         (work / "candidate" / DROPPED).write_text(json.dumps(drop) + "\n")
         print(f"{args.algorithm}: the candidate ran without the optional feed(s) {', '.join(drop)}")
+    if unset:
+        (work / "candidate" / DROPPED_SETTINGS).write_text(json.dumps(unset) + "\n")
+        print(f"{args.algorithm}: the candidate ran without the setting(s) {', '.join(unset)}")
     return 0
 
 
@@ -746,10 +772,14 @@ def cmd_compare(args) -> int:
     prov = {s: json.loads((work / s / "provenance.json").read_text())
             if (work / s / "provenance.json").exists() else {} for s in ("reference", "candidate")}
     final = prov["reference"].get("finals") or prov["reference"].get("final") or "chimap"
-    dropped = json.loads((work / "candidate" / DROPPED).read_text()) \
-        if (work / "candidate" / DROPPED).exists() else []
+    def _dropped(name):
+        f = work / "candidate" / name
+        return json.loads(f.read_text()) if f.exists() else []
+    dropped, unset = _dropped(DROPPED), _dropped(DROPPED_SETTINGS)
     note = args.note + (f" Run without the optional feed(s) {', '.join(dropped)}: this qsmxt has no "
-                        f"option for them." if dropped else "")
+                        f"option for them." if dropped else "") \
+        + (f" Run without the candidate setting(s) {', '.join(unset)}: this qsmxt has no option "
+           f"for them." if unset else "")
     mask = Path(args.mask) if args.mask else Path(args.dataset) / "inputs" / "mask.nii.gz"
     results, unmatched = compare_dirs(work / "reference", work / "candidate", mask, final)
     verdict = evaluate(results, ds_cfg, final)
@@ -767,6 +797,7 @@ def cmd_compare(args) -> int:
             "algorithm": args.algorithm, "phantom": args.phantom, "reference": cfg["reference"],
             "candidate": cfg["candidate"], "baseline": args.baseline, "provenance": prov,
             "note": note.strip(), **({"dropped_feeds": dropped} if dropped else {}),
+            **({"dropped_settings": unset} if unset else {}),
             "unmatched": unmatched, **verdict,
             "suggested": {n: derive_limits(v["metrics"]) for n, v in verdict["maps"].items()},
         }, indent=2, default=str) + "\n")
@@ -880,8 +911,9 @@ def make_record(res: "dict | None", *, pair: str, phantom: str, cfg: dict, manif
         rec["result"] = "unavailable"
         rec["failed"] = [str(res["unavailable"])]
         return rec
-    if res.get("dropped_feeds"):
-        rec["dropped_feeds"] = list(res["dropped_feeds"])
+    for k in ("dropped_feeds", "dropped_settings"):
+        if res.get(k):
+            rec[k] = list(res[k])
     if cst.get("set") or rst.get("set"):
         rec["set"] = {k: v for k, v in (("reference", rst.get("set")),
                                         ("candidate", cst.get("set"))) if v}
@@ -1206,8 +1238,9 @@ def _summary(rec: "dict | None", finals: "list | None" = None) -> "dict | None":
            "correlation": final.get("correlation"), "dice": final.get("dice")}
     if rec.get("release"):
         out["release"] = rec["release"]
-    if rec.get("dropped_feeds"):
-        out["dropped_feeds"] = rec["dropped_feeds"]
+    for k in ("dropped_feeds", "dropped_settings"):
+        if rec.get(k):
+            out[k] = rec[k]
     if rec.get("result") in ("fail", "error", "unavailable") and rec.get("failed"):
         out["why"] = rec["failed"][0]
     return out
@@ -1337,8 +1370,9 @@ def badge(row: dict, track: str = DEV, release: "str | None" = None) -> dict:
       unavailable  grey   "not in v10.0.0": the release has no such command or option;
       stale        orange "stale · v10.0.0": the reference or the pair's settings changed since;
       unchecked    grey   "not checked · v10.0.0": no run against the release yet.
-      A result the release reached without one of the pair's optional feeds (its qsmxt has no option
-      for it) says so: "65.9 % · v10.0.0 · no reliability".
+      A result the release reached without one of the pair's optional feeds or `candidate_set`
+      settings (its qsmxt has no option for it) says so: "65.9 % · v10.0.0 · no reliability, no
+      offset_grid".
     Both:
       gap          yellow a disabled pair `blocked_by` a known gap: "gap · <issue>";
       off          grey   a disabled pair without a known gap: "not enabled";
@@ -1373,9 +1407,11 @@ def badge(row: dict, track: str = DEV, release: "str | None" = None) -> dict:
         kind = "current"
         msg = ("identical" if identical else _nrmse_label(max(nrmse)) if nrmse else "pass") \
             + f" · {when or _day(oldest)}"
-    dropped = sorted({f for l in lasts for f in l.get("dropped_feeds") or []})
+    # the release ran without an optional feed or a candidate setting its qsmxt has no option for
+    dropped = sorted({f for l in lasts for f in l.get("dropped_feeds") or []}) \
+        + sorted({f for l in lasts for f in l.get("dropped_settings") or []})
     if dropped and kind in ("current", "failing", "stale"):
-        msg += " · no " + ", ".join(dropped)     # the release ran without an optional feed
+        msg += " · " + ", ".join(f"no {d}" for d in dropped)
     return {"kind": kind, "message": msg, "color": BADGE_COLOR[kind]}
 
 
@@ -1898,6 +1934,14 @@ def main(argv=None) -> int:
     p.add_argument("--status", type=Path, default=ROOT / "parity" / "status.json")
     p.add_argument("--out", type=Path, required=True)
     p.set_defaults(fn=cmd_badges)
+    p = sub.add_parser("rejected-setting", help="released track: the candidate_set key a failed "
+                                                "run's qsmxt refused (printed; nothing if none)")
+    p.add_argument("--algorithm", required=True)
+    p.add_argument("--phantom", default="sim")
+    p.add_argument("--log", type=Path, required=True)
+    p.set_defaults(fn=lambda a: print(rejected_setting(
+        pair_config(load_thresholds(a.thresholds), a.algorithm, validate=False), a.phantom,
+        Path(a.log).read_text(errors="replace")) or "") or 0)
     p = sub.add_parser("unavailable", help="released track: write parity.json if the release lacks "
                                            "the pair's port")
     p.add_argument("--algorithm", required=True)
@@ -1924,7 +1968,10 @@ def main(argv=None) -> int:
             p.add_argument("--candidate-only", action="store_true",
                            help="rerun only the candidate, against the reference output in --work")
             p.add_argument("--drop-optional-feeds", action="store_true",
-                           help="run the candidate without the pair's optional feeds (exit 3 if none)")
+                           help="run the candidate without the pair's optional feeds (exit 3 if "
+                                "nothing is dropped)")
+            p.add_argument("--drop-setting", action="append", metavar="KEY",
+                           help="run the candidate without this candidate_set key (repeatable)")
         else:
             p.add_argument("--mask", type=Path, help="default: <dataset>/inputs/mask.nii.gz")
             p.add_argument("--baseline", action="store_true",

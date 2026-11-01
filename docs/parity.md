@@ -37,6 +37,14 @@ qsmxt v10.0.0 has no `--reliability` for), the job reruns only the candidate wit
 `dropped_feeds: [reliability]`, and the badge says so too: `65.9 % · v10.0.0 · no reliability`.
 Required feeds (e.g. a fed total field) are never dropped.
 
+If qsmxt still refuses the command line, the same applies to the pair's `candidate_set` settings
+(the matched settings, e.g. QSMART's `offset_grid: qsmart-reference`, which v10.0.0 has no
+`--qsmart-offset-grid` for): `parity.py rejected-setting` names the setting behind each refusal (the
+key whose hyphenated name the refused option contains), and the candidate is rerun without it, one
+more setting per refusal (`--drop-setting KEY`). The record says `dropped_settings: [offset_grid]`
+and the badge `… · v10.0.0 · no reliability, no offset_grid`. The reference is never rerun, and
+keeps its own settings. A refusal no feed or setting explains (a missing subcommand) is "not in".
+
 Records from before the tracks (the runs of 30 and 31 October 2026) were all QSMxT `main` builds
 with qsm-core at QSM.rs `main`, and are labelled `dev`.
 

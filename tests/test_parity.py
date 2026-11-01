@@ -1284,3 +1284,77 @@ def test_release_without_an_optional_feed_reruns_the_candidate_without_it(tmp_pa
     assert parity.cmd_run(tkd) == 3 and not calls
     fresh = argparse.Namespace(**{**vars(args), "work": str(tmp_path / "empty")})
     assert parity.cmd_run(fresh) == 3 and not calls
+
+
+def test_rejected_setting_names_the_candidate_set_key():
+    cfg = {"reference": "a", "candidate": "b", "candidate_set": {"offset_grid": "qsmart-reference",
+                                                                 "grid": "native"},
+           "datasets": {"sim": {"candidate_set": {"variant": "qsmjl"}}}}
+    log = "x\nerror: unexpected argument '--qsmart-offset-grid' found\n"
+    assert parity.rejected_setting(cfg, "sim", log) == "offset_grid"   # the longest match wins
+    assert parity.rejected_setting(cfg, "sim", "error: invalid value 'qsmjl' for '--variant <V>'") \
+        == "variant"
+    assert parity.rejected_setting(cfg, "sim", "error: unexpected argument '--reliability' found") is None
+    assert parity.rejected_setting(cfg, "sim", "error: unrecognized subcommand 'star'") is None
+    assert parity.rejected_setting(cfg, "sim", "Traceback: boom") is None
+
+
+def test_release_without_a_candidate_setting_reruns_the_candidate_without_it(tmp_path, monkeypatch):
+    """After the optional feeds, a `candidate_set` setting the release's qsmxt refuses (QSMART's
+    offset_grid on v10.0.0) is dropped too; record and badge name both, the reference is not rerun."""
+    import argparse
+    import subprocess as sp
+    calls = []
+
+    def fake(argv, env=None, check=False, **kw):
+        if argv[:2] == ["qsm-ci", "run"]:
+            calls.append(argv)
+            out = Path(argv[argv.index("-o") + 1])
+            _save(out, np.zeros((4, 4, 4)))
+            if argv[2].endswith("qsmart-matlab"):
+                inter = Path(argv[argv.index("--intermediates") + 1])
+                _save(inter / "tfs.nii.gz", np.full((4, 4, 4), 0.5))
+                _save(inter / "R_0.nii.gz", np.ones((4, 4, 4)))
+        return sp.CompletedProcess(argv, 1, "", "")
+
+    monkeypatch.setattr(parity.subprocess, "run", fake)
+    work = tmp_path / "w"
+    args = argparse.Namespace(thresholds=parity.THRESHOLDS, algorithm="qsmart", phantom="sim",
+                              dataset=str(_qsmart_ds(tmp_path)), work=str(work), runner="docker",
+                              qsmrs_image="rel:1", candidate_only=False, drop_optional_feeds=False,
+                              drop_setting=None)
+    assert parity.cmd_run(args) == 0
+    assert "offset_grid=qsmart-reference" in calls[-1]
+    calls.clear()
+    args.candidate_only = args.drop_optional_feeds = True
+    args.drop_setting = ["offset_grid", "not_a_setting"]
+    assert parity.cmd_run(args) == 0
+    assert len(calls) == 1 and calls[0][2].endswith("qsmart-qsmrs")
+    assert "--reliability" not in calls[0] and "offset_grid=qsmart-reference" not in calls[0]
+    assert json.loads((work / "candidate" / parity.DROPPED_SETTINGS).read_text()) == ["offset_grid"]
+    pj = tmp_path / "parity.json"
+    parity.main(["compare", "--algorithm", "qsmart", "--phantom", "sim", "--dataset",
+                 str(tmp_path / "ds"), "--work", str(work), "--json", str(pj)])
+    res = json.loads(pj.read_text())
+    assert res["dropped_settings"] == ["offset_grid"] and "candidate setting" in res["note"]
+    rec = parity.make_record(res, pair="qsmart", phantom="sim", cfg=parity.load_thresholds()["qsmart"],
+                             manifests=parity._manifests(),
+                             run={**RUN, "track": "released", "release": "v10.0.0"})
+    assert rec["dropped_feeds"] == ["reliability"] and rec["dropped_settings"] == ["offset_grid"]
+    row = {"state": "current", "datasets": [{"last": parity._summary(rec, ["chimap"])}]}
+    assert parity.badge(row, "released", "v10.0.0")["message"].endswith(
+        " · v10.0.0 · no reliability, no offset_grid")
+    # nothing to drop (tkd has no optional feed and no such setting): exit 3, nothing run
+    none = argparse.Namespace(**{**vars(args), "algorithm": "tkd", "drop_setting": None})
+    calls.clear()
+    assert parity.cmd_run(none) == 3 and not calls
+
+
+def test_rejected_setting_cli(tmp_path, capsys):
+    log = tmp_path / "run.log"
+    log.write_text("error: unexpected argument '--qsmart-offset-grid' found\n")
+    assert parity.main(["rejected-setting", "--algorithm", "qsmart", "--log", str(log)]) == 0
+    assert capsys.readouterr().out.strip() == "offset_grid"
+    log.write_text("error: unexpected argument '--reliability' found\n")
+    assert parity.main(["rejected-setting", "--algorithm", "qsmart", "--log", str(log)]) == 0
+    assert capsys.readouterr().out.strip() == ""
