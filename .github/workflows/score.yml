@@ -252,6 +252,7 @@ jobs:
           FOCUS: ${{ matrix.task.focus }}
           EXCLUDE: ${{ matrix.task.exclude }}
           INCLUDE: ${{ matrix.task.include }}
+          INPUTS: ${{ matrix.task.inputs }}   # χ-sep degraded-input task (l3): pipeline.py --inputs
         run: |
           MODE="$DS_MODE"
           [ -n "$TASK_MODE" ] && MODE="$TASK_MODE"   # manual-include task pins 'composed'
@@ -264,6 +265,9 @@ jobs:
           [ -n "$FOCUS" ] && ARGS="$ARGS --focus $FOCUS"
           [ -n "$EXCLUDE" ] && ARGS="$ARGS --exclude $EXCLUDE"
           [ -n "$INCLUDE" ] && ARGS="$ARGS --include $INCLUDE"
+          # A `-l3` task scores the χ-sep method on the dataset's inputs-l3/ (isolated only; its own
+          # job, so the ground-truth-input job keeps its length). Rows gain -l3 ids + inputs: "l3".
+          [ -n "$INPUTS" ] && ARGS="$ARGS --inputs $INPUTS"
           echo "== task $TASK_ID: pipeline.py $ARGS =="
           t0=$(date +%s)
           python scripts/pipeline.py $ARGS

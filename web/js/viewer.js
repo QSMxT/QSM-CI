@@ -297,7 +297,8 @@ function renderHowToRun() {
 let allRuns = [], algos = [], registry = {}, datasetsReg = {};
 let nv = null, run, baseUrl, filter = "", navMode = "stages", domain = "qsm";
 let defaultDragMode = null, panOn = false;   // NiiVue drag mode: default (contrast) captured at init; Pan-toggle state
-let chisepPhantom = null;    // χ-separation phantom preference, remembered as you browse algorithms
+let chisepPhantom = null;
+let chisepInputs = "gt";      // χ-separation input level being browsed: "gt" (true inputs) or "l3" (realistic)    // χ-separation phantom preference, remembered as you browse algorithms
 // Base map shown underneath, and the default the layer strip opens on: the QSM ("recon") this page
 // is about. The others are recon | truth | magnitude | totalfield | localfield, each shown only on a
 // track that has it (see layerAvailable). It persists across run switches when the new run has it.
@@ -325,8 +326,14 @@ const uniq = (arr) => [...new Set(arr)];
 // pipelinesHTML renders identically; the two Pipelines sidebars are one code path.
 const composedRuns = () => allRuns.filter((r) => r.mode === "composed" && r.combo && datasetOf(r) === domain);
 // χ-separation methods (a distinct domain): one flat list, default variant only.
-const chisepRuns = () => allRuns.filter((r) => (r.domain === "chisep" || r.stage === "chi-separation")
+// A row's `inputs` field names the χ-separation input level it was scored on ("l3" = realistic,
+// degraded inputs); rows without it used the dataset's own ground-truth inputs.
+const chisepInputsOf = (r) => r?.inputs || "gt";
+const CHISEP_INPUTS_LABEL = { gt: "Ground-truth inputs", l3: "Realistic inputs (L3)" };
+const chisepRunsAll = () => allRuns.filter((r) => (r.domain === "chisep" || r.stage === "chi-separation")
   && (r.variant || "default") === "default");
+// The sidebar's method list: one entry per method, from the ground-truth-input runs.
+const chisepRuns = () => chisepRunsAll().filter((r) => chisepInputsOf(r) === "gt");
 const hasChisep = () => chisepRuns().length > 0;
 // χ-separation phantoms (the chisep-track entries of the dataset registry, shipped in
 // algorithms.json's `datasets` block): a run row's `phantom` field names the phantom it was scored
@@ -337,7 +344,12 @@ const chisepPhantomOf = (r) => (chisepPhantomIds().includes(r.phantom) ? r.phant
 const phantomLabel = (p) => (datasetsReg[p] || {}).label || p;
 // The χ-separation run for a method (`slug`) on a preferred phantom: fall back to the default
 // phantom, then to whatever run exists. Drives both the deduped sidebar list and the phantom switch.
-const chisepRunFor = (slug, phantom) => {
+// The preferred input level (`chisepInputs`) is tried first, then the ground-truth inputs.
+const chisepRunFor = (slug, phantom, level = chisepInputs) => {
+  const ph = phantom || chisepDefaultPhantom();
+  const lv = level === "gt" ? null : chisepRunsAll().filter((r) => r.slug === slug && chisepInputsOf(r) === level
+                                                             && chisepPhantomOf(r) === ph)[0];
+  if (lv) return lv;
   const rs = chisepRuns().filter((r) => r.slug === slug);
   return rs.find((r) => chisepPhantomOf(r) === phantom)
     || rs.find((r) => chisepPhantomOf(r) === chisepDefaultPhantom())
@@ -349,6 +361,13 @@ function chisepPhantomPeers() {
   const d = chisepDefaultPhantom();
   return uniq(chisepRuns().filter((r) => r.slug === run.slug).map(chisepPhantomOf))
     .sort((a, b) => (a === d ? -1 : b === d ? 1 : a < b ? -1 : 1));
+}
+// The input levels this method was scored at on the open run's phantom ("gt" first).
+function chisepInputPeers() {
+  if (!run || datasetOf(run) !== "chisep" || run.stage !== "chi-separation") return [];
+  const ph = chisepPhantomOf(run);
+  return uniq(chisepRunsAll().filter((r) => r.slug === run.slug && chisepPhantomOf(r) === ph).map(chisepInputsOf))
+    .sort((a, b) => (a === "gt" ? -1 : b === "gt" ? 1 : a < b ? -1 : 1));
 }
 // In-vivo (2016 challenge) runs: a distinct DATASET (not just a domain), dipole-only, scored vs
 // COSMOS + STI χ33. One flat list, default variant only, like χ-separation.
@@ -364,7 +383,10 @@ const DATASET_LABEL = { invivo: "In vivo (2016)", qsm: "In silico (2019)", chise
 // ranks pool only same-phantom runs: r2prime-generation and χ-separation methods each have one run per
 // phantom, so without this the denominator counts the same method once per phantom (e.g. #x / 12 across
 // six phantoms instead of #x / 2 among the two methods scored on this one).
-const phantomKey = (r) => datasetOf(r) === "chisep" ? chisepPhantomOf(r) : (r?.phantom || "_default");
+// Input levels are ranked apart too: an L3 run competes with the other L3 runs on its phantom.
+const phantomKey = (r) => datasetOf(r) === "chisep"
+  ? chisepPhantomOf(r) + (chisepInputsOf(r) === "gt" ? "" : "|" + chisepInputsOf(r))
+  : (r?.phantom || "_default");
 
 // The isolated-dipole run for `slug` on a given dataset: the "same algorithm, other dataset" target.
 // Only dipole methods span the 2016/2019 datasets (in-vivo scores dipole only).
@@ -709,6 +731,7 @@ function resultsHref() {
     if (domain === "chisep") {
       const ph = chisepPhantom || (run && datasetOf(run) === "chisep" ? chisepPhantomOf(run) : null);
       if (ph) p.set("phantom", ph);
+      if (run && datasetOf(run) === "chisep" && chisepInputsOf(run) !== "gt") p.set("inputs", chisepInputsOf(run));
     }
   } else {
     // In silico. Pipelines is results.html's default view, so it is expressed as the ABSENCE of
@@ -942,25 +965,33 @@ function renderChisepPhantomSwitch() {
   const el = $("chisep-phantom-switch");
   if (!el) return;
   const phs = chisepPhantomPeers();
-  if (phs.length < 2) { el.classList.add("hidden"); el.innerHTML = ""; return; }
-  const cur = chisepPhantomOf(run);
-  const btns = phs.map((p) => {
-    const on = p === cur;
-    return `<button data-phantom="${p}" class="rounded-md px-3 py-1.5 transition ${on
+  const lvs = chisepInputPeers();
+  if (phs.length < 2 && lvs.length < 2) { el.classList.add("hidden"); el.innerHTML = ""; return; }
+  const cur = chisepPhantomOf(run), curLv = chisepInputsOf(run);
+  const btn = (attr, val, on, label) => `<button ${attr}="${val}" class="rounded-md px-3 py-1.5 transition ${on
       ? "bg-white shadow-sm text-gray-900 dark:bg-gray-700 dark:text-gray-100"
-      : "text-gray-500 hover:text-gray-700 dark:text-gray-400"}">${escapeHtml(phantomLabel(p))}</button>`;
-  }).join("");
+      : "text-gray-500 hover:text-gray-700 dark:text-gray-400"}">${escapeHtml(label)}</button>`;
+  const group = (btns) => `<div class="inline-flex rounded-lg bg-gray-100 p-1 text-xs font-medium dark:bg-gray-800">${btns}</div>`;
   el.innerHTML = `<div class="flex flex-wrap items-center gap-3">
-    <div class="inline-flex rounded-lg bg-gray-100 p-1 text-xs font-medium dark:bg-gray-800">${btns}</div>
+    ${phs.length >= 2 ? group(phs.map((p) => btn("data-phantom", p, p === cur, phantomLabel(p))).join("")) : ""}
+    ${lvs.length >= 2 ? group(lvs.map((l) => btn("data-inputs", l, l === curLv, CHISEP_INPUTS_LABEL[l] || l)).join("")) : ""}
   </div>`;
   el.querySelectorAll("[data-phantom]").forEach((b) =>
     b.addEventListener("click", () => switchChisepPhantom(b.dataset.phantom)));
+  el.querySelectorAll("[data-inputs]").forEach((b) =>
+    b.addEventListener("click", () => switchChisepInputs(b.dataset.inputs)));
   el.classList.remove("hidden");
 }
 // Swap the phantom while keeping the same χ-separation method open (re-selecting its run there).
 function switchChisepPhantom(p) {
   chisepPhantom = p;
   const target = run ? chisepRunFor(run.slug, p) : null;
+  if (target) selectRun(target.id);
+}
+// Swap the input level (ground-truth vs realistic inputs) for the same method and phantom.
+function switchChisepInputs(level) {
+  chisepInputs = level;
+  const target = run ? chisepRunFor(run.slug, chisepPhantomOf(run), level) : null;
   if (target) selectRun(target.id);
 }
 function selectRun(id) {
@@ -973,7 +1004,10 @@ function selectRun(id) {
     const key = reproGroupMeta(acqGroup(reproAcq)).key;   // repro (traveling heads) or repro-pilot
     history.replaceState(null, "", `?pipeline=${encodeURIComponent(reproPipe)}&dataset=${key}&acq=${reproAcq}`);
   } else {
-    if (domain === "chisep") chisepPhantom = chisepPhantomOf(run);   // remember the phantom being viewed
+    if (domain === "chisep") {
+      chisepPhantom = chisepPhantomOf(run);   // remember the phantom being viewed
+      chisepInputs = chisepInputsOf(run);     // … and the input level
+    }
     history.replaceState(null, "", "?run=" + encodeURIComponent(id));
   }
   buildSidebar();
@@ -1933,6 +1967,7 @@ async function init() {
     || allRuns.find((r) => r.status !== "DNF") || allRuns[0];
   if (!run) { $("sub-title").textContent = "No runs"; return; }
   domain = datasetOf(run);
+  if (domain === "chisep") chisepInputs = chisepInputsOf(run);   // an L3 link keeps the sidebar on L3 runs
   navMode = run.mode === "composed" ? "pipelines" : "stages";
   // Deep links: ?layer=truth selects the ground-truth base; ?layer=error (or ?error=1) turns on the
   // error overlay. Applied before the first render so loadRun picks them up.

@@ -60,13 +60,15 @@
     "osf_file": "6ae5f069073ac032cd8ca3e9",
     "prepacked": true,
     "path": "data/meso-3t/scoring",
+    "input_levels": ["l3"],
     "active": true,
     "default": true,
     "generator": {
       "tool": "qsm-forward",
-      "ref": "65f093a",
+      "ref": "e270696",
       "preset": "meso-3t",
-      "wm_rois": true
+      "wm_rois": true,
+      "degrade_levels": ["L3"]
     }
   },
   "wm-micro-7t": {
@@ -76,13 +78,15 @@
     "osf_file": "6ae5f09fbfc561b3821d3245",
     "prepacked": true,
     "path": "data/wm-micro-7t/scoring",
+    "input_levels": ["l3"],
     "active": true,
     "default": false,
     "generator": {
       "tool": "qsm-forward",
-      "ref": "65f093a",
+      "ref": "e270696",
       "preset": "wm-micro-7t",
-      "wm_rois": true
+      "wm_rois": true,
+      "degrade_levels": ["L3"]
     }
   },
   "ridani-3t-aniso-fitted": {
@@ -92,14 +96,16 @@
     "osf_file": "6ae5f0f3e93b8f3f588ca3ba",
     "prepacked": true,
     "path": "data/ridani-3t-aniso-fitted/scoring",
+    "input_levels": ["l3"],
     "active": true,
     "default": false,
     "generator": {
       "tool": "qsm-forward",
-      "ref": "65f093a",
+      "ref": "e270696",
       "preset": "ridani-3t-aniso",
       "r2prime_source": "fitted",
-      "wm_rois": true
+      "wm_rois": true,
+      "degrade_levels": ["L3"]
     }
   },
   "prisma-bridge-run1": {
