@@ -1231,3 +1231,56 @@ def test_released_plan(tmp_path, capsys):
     assert parity.main(base) == 0
     plan = json.loads(capsys.readouterr().out)
     assert plan["algorithm"] == "star" and "reference image changed" in plan["why"]
+
+
+def test_release_without_an_optional_feed_reruns_the_candidate_without_it(tmp_path, monkeypatch):
+    """Released track: qsmxt v10.0.0 has no `qsmart --reliability`, so the QSMART pair reruns the
+    candidate without that optional feed (the total field is still fed), and the record and badge
+    say so; a pair without an optional feed has nothing to drop."""
+    import argparse
+    import subprocess as sp
+    calls = []
+
+    def fake(argv, env=None, check=False, **kw):
+        if argv[:2] == ["qsm-ci", "run"]:
+            calls.append(argv)
+            out = Path(argv[argv.index("-o") + 1])
+            _save(out, np.zeros((4, 4, 4)))
+            if argv[2].endswith("qsmart-matlab"):
+                inter = Path(argv[argv.index("--intermediates") + 1])
+                _save(inter / "tfs.nii.gz", np.full((4, 4, 4), 0.5))
+                _save(inter / "R_0.nii.gz", np.ones((4, 4, 4)))
+        return sp.CompletedProcess(argv, 1, "", "")
+
+    monkeypatch.setattr(parity.subprocess, "run", fake)
+    assert parity.optional_feeds(parity.load_thresholds()["qsmart"], "sim") == ["reliability"]
+    assert parity.optional_feeds(parity.load_thresholds()["tkd"], "sim") == []
+    work = tmp_path / "w"
+    args = argparse.Namespace(thresholds=parity.THRESHOLDS, algorithm="qsmart", phantom="sim",
+                              dataset=str(_qsmart_ds(tmp_path)), work=str(work), runner="docker",
+                              qsmrs_image="rel:1", candidate_only=False, drop_optional_feeds=False)
+    assert parity.cmd_run(args) == 0 and "--reliability" in calls[-1]
+    calls.clear()
+    args.candidate_only = args.drop_optional_feeds = True
+    assert parity.cmd_run(args) == 0
+    assert len(calls) == 1 and calls[0][2].endswith("qsmart-qsmrs")    # the reference is not rerun
+    assert "--reliability" not in calls[0] and "--totalfield" in calls[0]
+    assert json.loads((work / "candidate" / parity.DROPPED).read_text()) == ["reliability"]
+    # compare carries it into parity.json, the record and the badge
+    pj = tmp_path / "parity.json"
+    parity.main(["compare", "--algorithm", "qsmart", "--phantom", "sim", "--dataset",
+                 str(tmp_path / "ds"), "--work", str(work), "--json", str(pj)])
+    res = json.loads(pj.read_text())
+    assert res["dropped_feeds"] == ["reliability"] and "without the optional feed" in res["note"]
+    cfg = parity.load_thresholds()["qsmart"]
+    rec = parity.make_record(res, pair="qsmart", phantom="sim", cfg=cfg, manifests=parity._manifests(),
+                             run={**RUN, "track": "released", "release": "v10.0.0"})
+    assert rec["dropped_feeds"] == ["reliability"]
+    row = {"state": "current", "datasets": [{"last": parity._summary(rec, ["chimap"])}]}
+    assert parity.badge(row, "released", "v10.0.0")["message"].endswith(" · v10.0.0 · no reliability")
+    # nothing to drop, or no reference to rerun against: exit 3, nothing run
+    calls.clear()
+    tkd = argparse.Namespace(**{**vars(args), "algorithm": "tkd"})
+    assert parity.cmd_run(tkd) == 3 and not calls
+    fresh = argparse.Namespace(**{**vars(args), "work": str(tmp_path / "empty")})
+    assert parity.cmd_run(fresh) == 3 and not calls

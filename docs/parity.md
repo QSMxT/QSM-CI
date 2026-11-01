@@ -29,6 +29,14 @@ asks the release's qsmxt for each subcommand the port's `run.sh` calls (`qsmxt i
 subcommand`, `unexpected argument` or `invalid value`: an option or value added after the release,
 such as `--variant qsmjl`), that is recorded the same way. Any other failure is a failure.
 
+One exception keeps a number where the port exists but a pair's extra input does not: when qsmxt
+refuses the command line and the pair feeds the candidate an **optional** input (a `feed:` artifact
+the candidate's `algorithm.yml` lists under `optional_inputs:`, e.g. QSMART's `reliability`, which
+qsmxt v10.0.0 has no `--reliability` for), the job reruns only the candidate without those feeds
+(`parity.py run --candidate-only --drop-optional-feeds`) and compares that. The record says
+`dropped_feeds: [reliability]`, and the badge says so too: `65.9 % · v10.0.0 · no reliability`.
+Required feeds (e.g. a fed total field) are never dropped.
+
 Records from before the tracks (the runs of 30 and 31 October 2026) were all QSMxT `main` builds
 with qsm-core at QSM.rs `main`, and are labelled `dev`.
 
