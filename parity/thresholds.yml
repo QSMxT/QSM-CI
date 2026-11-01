@@ -791,14 +791,13 @@ pairs:
   heidi:
     reference: heidi
     candidate: heidi-qsmrs
-    enabled: false
+    enabled: true
     # qsm_heidi 4592631's inversion_lsqr.m, then inversion_heidi.m (heidi-v4; in vivo identical to
     # licensed MATLAB, in silico 0.073 %, inherited from the LSQR seed's 0.059 %,
     # algorithms/heidi/fidelity/REPORT.md). Both sides at their defaults (QSM.rs's HeidiParams are
     # inversion_heidi.m's settings, NESTA's tolerance eps included).
     # Enable once QSMxT main has #471 (with QSM.rs#389): main's qsmxt has no
     # --heidi-denoise-reference-itk until then.
-    blocked_by: QSMxT/QSMxT#471
     # The authors' gradient-mask denoising is ITK 3.20's executable, in float, whose float sum
     # of the mean squared gradient underestimates the conductance scale by about 1 %. QSM.rs
     # computes it in double by default and reproduces the executable with reference_itk
