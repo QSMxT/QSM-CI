@@ -27,8 +27,10 @@ qsmxt. The two entries share `algorithm:`, so the parity workflow can run them a
 The port entries run `qsmxt:v10.0.0-models`: the v10.0.0 release image with the ONNX weights baked
 in ([`algorithms/_qsmxt/models.Dockerfile`](../../algorithms/_qsmxt/models.Dockerfile)), because a
 submission runs with no network. The weights come from `qsmxt/qsm-onnx-weights` at commit
-`acc6f02`, checked against the SHA-256s in QSM.rs's registry
-([`models.sha256`](../../algorithms/_qsmxt/models.sha256)). Any qsmxt image takes the same layer
+`f9a6681`, checked against the SHA-256s in QSM.rs's registry
+([`models.sha256`](../../algorithms/_qsmxt/models.sha256)). That commit replaced `qsmnet.onnx`
+with the ReLU re-export (astewartau/QSM.rs#374); the published `v10.0.0-models` image was built at
+`acc6f02` and still holds the old leaky-ReLU `qsmnet.onnx`. Any qsmxt image takes the same layer
 (`--build-arg BASE=<image>`), and the parity workflow's qsmxt-from-source image needs it for these
 pairs.
 
