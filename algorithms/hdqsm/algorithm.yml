@@ -1,0 +1,58 @@
+name: HD-QSM (authors' code)
+slug: hdqsm
+algorithm: hdqsm   # pairs with hdqsm-qsmrs (QSM.rs's port of HDQSM.m) in the parity workflow
+source: lambert    # the authors' code, github.com/mglambert/HD-QSM
+stage: dipole
+language: MATLAB
+family: iterative
+learning: none
+engine: HD-QSM c456a94 (HDQSM.m)
+inputs: [localfield, mask, params, magnitude]  # the magnitude is the data weight
+description: >
+  Hybrid data fidelity QSM: an L1 data-fidelity stage gives a discrepancy weighting for an L2 stage,
+  both with TV regularization solved by ADMM. The authors' HDQSM.m (github.com/mglambert/HD-QSM
+  c456a94), run as its usage example runs it, compiled from MATLAB and run on the license-free
+  MATLAB Runtime.
+citation: Lambert et al., Magn Reson Med 2022
+authors:
+- name: Mathias Lambert
+- name: Cristian Tejos
+- name: Christian Langkammer
+- name: Carlos Milovic
+doi: 10.1002/mrm.29218
+code_url: https://github.com/mglambert/HD-QSM
+license: MIT (HD-QSM)
+image: ghcr.io/astewartau/qsm-ci/hd-qsm@sha256:79d3ecefcd9ad766502c8ef079bcb1a3408d658cfe27f50bfc6f0b61cba8cb92   # v2
+run: bash run.sh
+smoke_box: 32
+matlab:
+  entry: recon.m
+  runtime: r2023b
+# Container vs the authors' code in licensed MATLAB with the real toolboxes (QSMxT/QSM-CI#300;
+# fidelity/REPORT.md). Rerun and update whenever the image changes.
+fidelity:
+  date: 2026-10-30
+  image: sha256:79d3ecefcd9ad766502c8ef079bcb1a3408d658cfe27f50bfc6f0b61cba8cb92   # v2
+  matlab: R2023b Update 5 (23.2.0.2459199)
+  sources: HD-QSM c456a94 (HDQSM.m), FANSI-toolbox 93044a3 (dipole_kernel_angulated.m)
+  tolerance: identical   # chi and every intermediate, in silico and in vivo, 8 threads
+  result: pass
+  report: algorithms/hdqsm/fidelity/REPORT.md
+# HDQSM.m's own defaults where it has them; alpha_l2 and mu1_l2 (no default in HDQSM.m) are QSM.rs's
+# HdQsmParams. See BUILD.md and recon.m.
+parameters:
+- name: alpha_l2
+  default: 3e-5
+  description: L2-stage TV weight (the L1 stage uses sqrt(alpha_l2))
+- name: mu1_l2
+  default: 100*alpha_l2
+  description: L2-stage gradient-consistency ADMM weight (the L1 stage uses sqrt(mu1_l2))
+- name: max_iter_l1
+  default: 20
+  description: L1-stage iterations
+- name: max_iter_l2
+  default: 80
+  description: maximum L2-stage iterations
+- name: tol_update
+  default: 1e-2
+  description: L2-stage stopping tolerance on the relative update (%)
