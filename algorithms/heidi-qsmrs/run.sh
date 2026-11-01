@@ -37,5 +37,10 @@ if [ -f "$CFG" ]; then
   if jq -e '.denoise_reference_itk == true' "$CFG" >/dev/null; then SET="$SET --heidi-denoise-reference-itk"; fi
 fi
 
+# QSMxT main requires the field strength and echo times; the pinned v10.0.0 doesn't take them.
+SCAN=""
+if qsmxt invert heidi --help 2>/dev/null | grep -q -- '--field-strength'; then
+  SCAN="--field-strength $FIELD --echo-times $TES"
+fi
 qsmxt invert heidi "$IN/localfield.nii.gz" -m "$IN/mask.nii.gz" -o "$OUT/chimap.nii.gz" \
-  --b0-direction $B0 --field-strength "$FIELD" --echo-times $TES $MAG $SET
+  --b0-direction $B0 $SCAN $MAG $SET
