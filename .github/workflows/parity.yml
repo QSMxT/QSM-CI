@@ -397,11 +397,39 @@ jobs:
           rc=${PIPESTATUS[0]}
           set -e
           echo "== wall-clock: $(( $(date +%s) - t0 ))s =="
-          # Released track: qsmxt refusing the port's command line (an option or value the release
-          # does not have yet) is also "not in <tag>"; any other failure stays a failure.
+          # Released track, qsmxt refusing the port's command line (clap's errors; the patterns
+          # parity.py clap_rejection matches): rerun just the candidate (never the reference)
+          # without what the release has no option for, so it still gets a number, recorded as run
+          # without them: first the pair's optional feeds (e.g. qsmxt v10.0.0 and `qsmart
+          # --reliability`), then each `candidate_set` setting a refusal names (parity.py
+          # rejected-setting; e.g. offset_grid → --qsmart-offset-grid), one more per refusal.
+          # Exit 3 = nothing to drop. If it is still refused, the release does not have the port
+          # as checked: "not in <tag>". Any other failure stays a failure.
+          log=run.log
+          clap="error: (unrecognized subcommand|unexpected argument|invalid value) '"
+          if [ "$rc" -ne 0 ] && [ -n "$RELEASE" ] && grep -qE "$clap" run.log; then
+            drops=()
+            for attempt in 1 2 3 4 5 6; do
+              set +e
+              python -u scripts/parity.py run --algorithm "$ALGORITHM" --phantom "$PHANTOM" \
+                --dataset "$DS_PATH" --work .parity --runner docker --qsmrs-image "$QSMRS_IMAGE" \
+                --candidate-only --drop-optional-feeds "${drops[@]}" 2>&1 | tee "run-retry$attempt.log"
+              rc2=${PIPESTATUS[0]}
+              set -e
+              if [ "$rc2" -eq 0 ]; then
+                echo "::notice::$ALGORITHM: QSMxT $RELEASE ran without what it has no option for (${drops[*]:-optional feeds})"
+                exit 0
+              fi
+              [ "$rc2" -ne 3 ] && log="run-retry$attempt.log"
+              # the next setting to drop, from the latest refusal (run.log while nothing could be dropped)
+              key=$(python scripts/parity.py rejected-setting --algorithm "$ALGORITHM" --phantom "$PHANTOM" --log "$log")
+              { [ -z "$key" ] || [[ " ${drops[*]} " == *" $key "* ]] || ! grep -qE "$clap" "$log"; } && break
+              drops+=(--drop-setting "$key")
+            done
+          fi
           if [ "$rc" -ne 0 ] && [ -n "$RELEASE" ]; then
             python scripts/parity.py unavailable --algorithm "$ALGORITHM" --phantom "$PHANTOM" \
-              --release "$RELEASE" --log run.log --json parity.json --report parity-report.md
+              --release "$RELEASE" --log "$log" --json parity.json --report parity-report.md
             if [ -f parity.json ]; then
               echo "unavailable=true" >> "$GITHUB_OUTPUT"; cat parity-report.md >> "$GITHUB_STEP_SUMMARY"; exit 0
             fi
