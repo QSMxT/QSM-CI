@@ -57,6 +57,7 @@ def test_preset_overrides_pass_only_known_keys():
     assert gcp.preset_overrides({"preset": "ridani-3t-aniso", "r2prime_source": "fitted", "wm_rois": True}) \
         == {"r2prime_source": "fitted"}
     assert gcp.preset_overrides({"preset": "meso-3t"}) == {}
+    assert gcp.preset_overrides({"preset": "meso-3t", "degrade_levels": ["L3"]}) == {"degrade_levels": ("L3",)}
 
 
 @pytest.fixture
@@ -80,7 +81,8 @@ def test_main_generates_the_registry_preset_and_packs(stub_qsm_forward, monkeypa
     gcp.main(["ridani-3t-aniso-fitted", "--qsmf-data", str(tmp_path / "head"),
               "--wm-rois-src", str(tmp_path / "rois.nii.gz"), "--out", str(tmp_path / "out"),
               "--bids", str(tmp_path / "bids")])
-    assert stub_qsm_forward["cfg"] == ("cfg", "ridani-3t-aniso", {"r2prime_source": "fitted"})
+    assert stub_qsm_forward["cfg"] == ("cfg", "ridani-3t-aniso",
+                                       {"r2prime_source": "fitted", "degrade_levels": ("L3",)})
     assert stub_qsm_forward["bids"] == str(tmp_path / "bids")
     assert stub_qsm_forward["wm_rois"] == str(tmp_path / "rois.nii.gz")
     assert packed == {"bids": tmp_path / "bids", "out": tmp_path / "out", "ridani": True}
