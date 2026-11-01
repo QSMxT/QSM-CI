@@ -21,13 +21,9 @@
    "stale": [
     "amp-pe",
     "decompose",
-    "chisep-ilsqr",
-    "chisep-medi"
+    "chisep-ilsqr"
    ],
-   "rerun": [
-    "chisep-ilsqr",
-    "chisep-medi"
-   ],
+   "rerun": [],
    "pairs": [
     {
      "pair": "qsmart",
@@ -489,19 +485,37 @@
      "datasets": [
       {
        "dataset": "chisep-mc",
-       "last": null,
-       "rerun": true,
+       "last": {
+        "date": "2026-11-01T07:49:38Z",
+        "result": "error",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41283648997",
+        "qsmrs": {
+         "ref": null,
+         "commit": "42ab620190ad315c9dcf7aa8ec4a036402002b7e",
+         "version": "0.39.0"
+        },
+        "qsmxt": {
+         "commit": "544ef94708904ec84e4f20128a22e99568e08687"
+        },
+        "nrmse": null,
+        "max_abs": null,
+        "correlation": null,
+        "dice": null,
+        "release": "v10.0.0",
+        "why": "no comparison: the job failed or was cancelled before `compare` ran"
+       },
+       "rerun": false,
        "stale": true,
        "reasons": [
-        "not run against QSMxT v10.0.0"
+        "the run against v10.0.0 ended without a result"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=chisep-ilsqr -f dataset=configured -f qsmxt_release=v10.0.0",
      "badge": {
-      "kind": "unchecked",
-      "message": "not checked \u00b7 v10.0.0",
-      "color": "lightgrey"
+      "kind": "failing",
+      "message": "failing \u00b7 v10.0.0",
+      "color": "red"
      }
     },
     {
@@ -510,23 +524,38 @@
      "reference": "chisep-medi",
      "candidate": "chisep-medi-qsmrs",
      "enabled": true,
-     "state": "stale",
+     "state": "current",
      "anchor": "pair-chisep-medi",
      "datasets": [
       {
        "dataset": "chisep-mc",
-       "last": null,
-       "rerun": true,
-       "stale": true,
-       "reasons": [
-        "not run against QSMxT v10.0.0"
-       ]
+       "last": {
+        "date": "2026-11-01T07:49:38Z",
+        "result": "unavailable",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41283648997",
+        "qsmrs": {
+         "ref": null,
+         "commit": "42ab620190ad315c9dcf7aa8ec4a036402002b7e",
+         "version": "0.39.0"
+        },
+        "qsmxt": {
+         "commit": "544ef94708904ec84e4f20128a22e99568e08687"
+        },
+        "nrmse": null,
+        "max_abs": null,
+        "correlation": null,
+        "dice": null,
+        "release": "v10.0.0",
+        "why": "QSMxT v10.0.0 refuses the port's command line: unexpected argument '--echo-times' found"
+       },
+       "rerun": false,
+       "stale": false,
+       "reasons": []
       }
      ],
-     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=chisep-medi -f dataset=configured -f qsmxt_release=v10.0.0",
      "badge": {
-      "kind": "unchecked",
-      "message": "not checked \u00b7 v10.0.0",
+      "kind": "unavailable",
+      "message": "not in v10.0.0",
       "color": "lightgrey"
      }
     },
@@ -2963,6 +2992,94 @@
      "kind": "failing",
      "message": "failing \u00b7 v10.0.0",
      "color": "red"
+    }
+   }
+  ],
+  "chisep-ilsqr": [
+   {
+    "release": "v10.0.0",
+    "date": "2026-11-01T07:49:38Z",
+    "qsmxt": {
+     "ref": "v10.0.0",
+     "commit": "544ef94708904ec84e4f20128a22e99568e08687"
+    },
+    "qsmrs": {
+     "ref": null,
+     "commit": "42ab620190ad315c9dcf7aa8ec4a036402002b7e",
+     "version": "0.39.0"
+    },
+    "datasets": [
+     {
+      "dataset": "chisep-mc",
+      "last": {
+       "date": "2026-11-01T07:49:38Z",
+       "result": "error",
+       "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41283648997",
+       "qsmrs": {
+        "ref": null,
+        "commit": "42ab620190ad315c9dcf7aa8ec4a036402002b7e",
+        "version": "0.39.0"
+       },
+       "qsmxt": {
+        "commit": "544ef94708904ec84e4f20128a22e99568e08687"
+       },
+       "nrmse": null,
+       "max_abs": null,
+       "correlation": null,
+       "dice": null,
+       "release": "v10.0.0",
+       "why": "no comparison: the job failed or was cancelled before `compare` ran"
+      }
+     }
+    ],
+    "badge": {
+     "kind": "failing",
+     "message": "failing \u00b7 v10.0.0",
+     "color": "red"
+    }
+   }
+  ],
+  "chisep-medi": [
+   {
+    "release": "v10.0.0",
+    "date": "2026-11-01T07:49:38Z",
+    "qsmxt": {
+     "ref": "v10.0.0",
+     "commit": "544ef94708904ec84e4f20128a22e99568e08687"
+    },
+    "qsmrs": {
+     "ref": null,
+     "commit": "42ab620190ad315c9dcf7aa8ec4a036402002b7e",
+     "version": "0.39.0"
+    },
+    "datasets": [
+     {
+      "dataset": "chisep-mc",
+      "last": {
+       "date": "2026-11-01T07:49:38Z",
+       "result": "unavailable",
+       "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41283648997",
+       "qsmrs": {
+        "ref": null,
+        "commit": "42ab620190ad315c9dcf7aa8ec4a036402002b7e",
+        "version": "0.39.0"
+       },
+       "qsmxt": {
+        "commit": "544ef94708904ec84e4f20128a22e99568e08687"
+       },
+       "nrmse": null,
+       "max_abs": null,
+       "correlation": null,
+       "dice": null,
+       "release": "v10.0.0",
+       "why": "QSMxT v10.0.0 refuses the port's command line: unexpected argument '--echo-times' found"
+      }
+     }
+    ],
+    "badge": {
+     "kind": "unavailable",
+     "message": "not in v10.0.0",
+     "color": "lightgrey"
     }
    }
   ],

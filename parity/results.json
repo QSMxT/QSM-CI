@@ -118,6 +118,70 @@
    ]
   },
   {
+   "pair": "chisep-ilsqr",
+   "dataset": "chisep-mc",
+   "track": "released",
+   "release": "v10.0.0",
+   "date": "2026-11-01T07:49:38Z",
+   "run_id": "41283648997",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41283648997",
+   "qsmci_commit": "a6c2250e3e6807a8fdecaa450f24a98cf06f75dd",
+   "thresholds": "ad46cffd87fd",
+   "reference": {
+    "slug": "chisep-ilsqr",
+    "image": "ghcr.io/astewartau/qsm-ci/chi-sep-ilsqr@sha256:0c5bb3a6989a07b8fbb38459d2477df59b28035bc673b98c3f671159ac22769e",
+    "digest": "sha256:0c5bb3a6989a07b8fbb38459d2477df59b28035bc673b98c3f671159ac22769e"
+   },
+   "candidate": {
+    "slug": "chisep-ilsqr-qsmrs"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "42ab620190ad315c9dcf7aa8ec4a036402002b7e",
+    "version": "0.39.0"
+   },
+   "qsmxt": {
+    "ref": "v10.0.0",
+    "commit": "544ef94708904ec84e4f20128a22e99568e08687"
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "chisep-medi",
+   "dataset": "chisep-mc",
+   "track": "released",
+   "release": "v10.0.0",
+   "date": "2026-11-01T07:49:38Z",
+   "run_id": "41283648997",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41283648997",
+   "qsmci_commit": "a6c2250e3e6807a8fdecaa450f24a98cf06f75dd",
+   "thresholds": "d3901afd4435",
+   "reference": {
+    "slug": "chisep-medi",
+    "image": "ghcr.io/astewartau/qsm-ci/chi-sep-medi@sha256:c3afb14130929cb73fd41d9011afcce69634969b73216e996341e9c946fc8d7c",
+    "digest": "sha256:c3afb14130929cb73fd41d9011afcce69634969b73216e996341e9c946fc8d7c"
+   },
+   "candidate": {
+    "slug": "chisep-medi-qsmrs"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "42ab620190ad315c9dcf7aa8ec4a036402002b7e",
+    "version": "0.39.0"
+   },
+   "qsmxt": {
+    "ref": "v10.0.0",
+    "commit": "544ef94708904ec84e4f20128a22e99568e08687"
+   },
+   "result": "unavailable",
+   "failed": [
+    "QSMxT v10.0.0 refuses the port's command line: unexpected argument '--echo-times' found"
+   ]
+  },
+  {
    "pair": "decompose",
    "dataset": "chisep-mc",
    "track": "dev",

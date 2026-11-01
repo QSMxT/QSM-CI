@@ -24,8 +24,8 @@ The latest QSMxT release against each verified original. A release does not chan
 |  |  | sim | never | — | — | — | — not enabled (intermediates only (ifreq_raw, n_std, r2star); unmeasured until QSMxT/QSMxT#462) |
 | `amp-pe` | `amp-pe` → `amp-pe-qsmrs` | sim | [2026-11-01](https://github.com/QSMxT/QSM-CI/actions/runs/41274291978) | v0.39.0 `42ab620` | ❌ error | — | ⚠️ stale: the run against v10.0.0 ended without a result |
 | `decompose` | `decompose-qsm` → `decompose-qsmrs` | chisep-mc | [2026-11-01](https://github.com/QSMxT/QSM-CI/actions/runs/41274291978) | v0.39.0 `42ab620` | ❌ error | — | ⚠️ stale: the run against v10.0.0 ended without a result |
-| `chisep-ilsqr` | `chisep-ilsqr` → `chisep-ilsqr-qsmrs` | chisep-mc | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-| `chisep-medi` | `chisep-medi` → `chisep-medi-qsmrs` | chisep-mc | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+| `chisep-ilsqr` | `chisep-ilsqr` → `chisep-ilsqr-qsmrs` | chisep-mc | [2026-11-01](https://github.com/QSMxT/QSM-CI/actions/runs/41283648997) | v0.39.0 `42ab620` | ❌ error | — | ⚠️ stale: the run against v10.0.0 ended without a result |
+| `chisep-medi` | `chisep-medi` → `chisep-medi-qsmrs` | chisep-mc | [2026-11-01](https://github.com/QSMxT/QSM-CI/actions/runs/41283648997) | v0.39.0 `42ab620` | ⚪ not in v10.0.0 | — | ✅ current |
 | `wavesep` | `wavesep` → `wavesep-qsmrs` | chisep-mc | [2026-11-01](https://github.com/QSMxT/QSM-CI/actions/runs/41274291978) | v0.39.0 `42ab620` | ❌ fail | 17.65% | ✅ current |
 | `tkd` | `tkd-qsmjl` → `tkd-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-01](https://github.com/QSMxT/QSM-CI/actions/runs/41274291978) | v0.39.0 `42ab620` | ❌ fail | 0.6929% | ✅ current |
 |  |  | sim | [2026-11-01](https://github.com/QSMxT/QSM-CI/actions/runs/41274291978) | v0.39.0 `42ab620` | ❌ fail | 1.302% | ✅ current |
@@ -57,7 +57,7 @@ The latest QSMxT release against each verified original. A release does not chan
 Run the flagged pairs against v10.0.0:
 
 ```bash
-gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=amp-pe,decompose,chisep-ilsqr,chisep-medi -f dataset=configured -f qsmxt_release=v10.0.0
+gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=amp-pe,decompose,chisep-ilsqr -f dataset=configured -f qsmxt_release=v10.0.0
 ```
 
 ## Development: QSMxT main × QSM.rs main
@@ -137,6 +137,8 @@ No original code to check against (QSMxT/QSM-CI#302; tested against ground truth
 | Pair | v10.0.0 |
 |---|---|
 | `amp-pe` | failing · v10.0.0 |
+| `chisep-ilsqr` | failing · v10.0.0 |
+| `chisep-medi` | not in v10.0.0 |
 | `decompose` | failing · v10.0.0 |
 | `ilsqr` | failing · v10.0.0 |
 | `ismv` | not in v10.0.0 |
