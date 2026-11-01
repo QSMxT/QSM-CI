@@ -9,6 +9,9 @@ IN="${1:-/input}"; OUT="${2:-/output}"
 #   $QSMCI_SET_<NAME>  for each  qsm-ci run --set NAME=VALUE  override
 B0=$(jq -r '.B0_dir | join(" ")' "$IN/params.json")
 FIELD=$(jq -r .B0 "$IN/params.json")   # field strength (T); sets the LSQR seed's residual weighting
+# Every echo time (s): HEIDI converts χ to the authors' phase units at the last one (qsm_heidi's
+# phase2susceptibilityfactor.m), so its result depends on them.
+TES=$(jq -r '.TE | map(tostring) | join(" ")' "$IN/params.json")
 
 # HEIDI takes the local field in ppm and returns χ in ppm. Magnitude, when provided, is an SNR row
 # weight for the LSQR seed — so it reaches the cone coefficients HEIDI keeps. The seed itself is run
@@ -33,4 +36,4 @@ if [ -f "$CFG" ]; then
 fi
 
 qsmxt invert heidi "$IN/localfield.nii.gz" -m "$IN/mask.nii.gz" -o "$OUT/chimap.nii.gz" \
-  --b0-direction $B0 --b0 "$FIELD" $MAG $SET
+  --b0-direction $B0 --field-strength "$FIELD" --echo-times $TES $MAG $SET

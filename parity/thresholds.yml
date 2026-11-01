@@ -708,3 +708,40 @@ pairs:
         measured: { pr369: "run 41031701965: QSMxT tgv-output-box-369 43baf55 (QSMxT/QSMxT#465), QSM.rs tgv-output-box-369 40b0dcf (astewartau/QSM.rs#375) (limits)" }
         reference_prefix: [laplacian-qsmrs]
         feed: { totalfield: totalfield }
+  lsqr:
+    reference: lsqr
+    candidate: lsqr-qsmrs
+    enabled: false
+    # qsm_heidi 4592631's inversion_lsqr.m (lsqr-v4; in vivo identical to licensed MATLAB, in silico
+    # 0.059 % from the image's Ubuntu userland, algorithms/lsqr/fidelity/REPORT.md). Both sides at
+    # their defaults (QSM.rs's LsqrQsmParams are inversion_lsqr.m's settings).
+    note: baselining (astewartau/QSM.rs#366)
+    qsmrs_paths: [src/fft.rs, src/grid.rs, src/inversion/ilsqr.rs, src/inversion/lsqr_qsm.rs,
+                  src/kernels/, src/pipeline/inversion.rs, src/pipeline/rules.rs,
+                  src/utils/mask.rs, src/utils/padding.rs]
+    qsmxt_paths: &invert_lsqr_wiring [src/cli.rs, src/commands/common.rs, src/commands/invert.rs,
+                                      crates/qsmxt-engine/src/config.rs]
+    datasets:
+      sim: {}
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
+        feed: { localfield: localfield }
+  heidi:
+    reference: heidi
+    candidate: heidi-qsmrs
+    enabled: false
+    # qsm_heidi 4592631's inversion_lsqr.m, then inversion_heidi.m (heidi-v4; in vivo identical to
+    # licensed MATLAB, in silico 0.073 %, inherited from the LSQR seed's 0.059 %,
+    # algorithms/heidi/fidelity/REPORT.md). Both sides at their defaults (QSM.rs's HeidiParams are
+    # inversion_heidi.m's settings, NESTA's tolerance eps included).
+    note: baselining (astewartau/QSM.rs#366)
+    qsmrs_paths: [src/fft.rs, src/grid.rs, src/inversion/heidi.rs, src/inversion/ilsqr.rs,
+                  src/inversion/lsqr_qsm.rs, src/kernels/, src/pipeline/inversion.rs,
+                  src/pipeline/rules.rs, src/utils/anisotropic_diffusion.rs,
+                  src/utils/echo_time.rs, src/utils/mask.rs, src/utils/padding.rs]
+    qsmxt_paths: *invert_lsqr_wiring
+    datasets:
+      sim: {}
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
+        feed: { localfield: localfield }
