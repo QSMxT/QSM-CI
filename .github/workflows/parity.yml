@@ -530,9 +530,12 @@ jobs:
   # parity/STATUS.md, on main. Only for a run from main or with record=true (plan), never a
   # baseline. The push follows score.yml's merge job: bot identity, contents: write on this job
   # only, and a retry that re-applies this run's records onto the latest main instead of rebasing.
+  # Not for a cancelled run: its unfinished jobs would be recorded as errors, and on the released
+  # track those records would count as the release's run (parity-release.yml then sees the release
+  # as run and does not dispatch it again). A cancelled run records nothing; rerun it.
   record:
     needs: [plan, report]
-    if: ${{ always() && needs.plan.outputs.record == 'true' && needs.report.result == 'success' }}
+    if: ${{ !cancelled() && needs.plan.outputs.record == 'true' && needs.report.result == 'success' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write   # the only job that commits

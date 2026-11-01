@@ -1878,6 +1878,40 @@ def cmd_released_plan(args) -> int:
     return 0
 
 
+def active_release_runs(runs: list, release: str, jobs_of) -> list:
+    """The ids of parity.yml runs (GitHub API run objects) that are a released run for `release`
+    and still going: queued or in progress, and not being cancelled. GitHub keeps a cancelled run
+    `in_progress` until its jobs stop, so a run with any job already concluded `cancelled` counts
+    as gone (`jobs_of(run_id)` lists its jobs). parity.yml's run name says `released <tag>`."""
+    out = []
+    for r in runs or []:
+        if r.get("status") == "completed" or r.get("conclusion") in ("cancelled", "skipped"):
+            continue
+        if f"released {release} " not in (r.get("display_title") or "") + " ":
+            continue
+        if any(j.get("conclusion") == "cancelled" for j in jobs_of(r.get("id")) or []):
+            continue
+        out.append(r.get("id"))
+    return out
+
+
+def cmd_released_busy(args) -> int:
+    """Print the ids of released parity runs for --release still queued or running (one per line;
+    nothing when none), from GitHub's API. parity-release.yml dispatches only when this is empty."""
+    token = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")
+    base = f"https://api.github.com/repos/{args.repo}/actions"
+    doc, err = _gh_get(f"{base}/workflows/parity.yml/runs?per_page=50", token)
+    if err:
+        raise SystemExit(f"released-busy: listing parity.yml runs: {err[1]}")
+
+    def jobs_of(run_id):
+        d, e = _gh_get(f"{base}/runs/{run_id}/jobs?per_page=100", token)
+        return [] if e else (d or {}).get("jobs") or []
+    for i in active_release_runs((doc or {}).get("workflow_runs") or [], args.release, jobs_of):
+        print(i)
+    return 0
+
+
 def cmd_pairs(args) -> int:
     th = load_thresholds(args.thresholds)
     if args.matrix:
@@ -1930,6 +1964,11 @@ def main(argv=None) -> int:
             p.add_argument("--issue", type=Path, help="the tracking issue's body (empty: nothing flagged)")
             p.add_argument("--badges", type=Path, help="write the shields.io endpoint files here")
             p.add_argument("--today", help="YYYY-MM-DD (default: today, UTC)")
+    p = sub.add_parser("released-busy", help="released parity runs for a release still queued or "
+                                             "running, not being cancelled (parity-release.yml)")
+    p.add_argument("--release", required=True)
+    p.add_argument("--repo", default=REPO)
+    p.set_defaults(fn=cmd_released_busy)
     p = sub.add_parser("badges", help="the badge files from a status.json (the site deploy)")
     p.add_argument("--status", type=Path, default=ROOT / "parity" / "status.json")
     p.add_argument("--out", type=Path, required=True)
