@@ -252,8 +252,9 @@ Dispatched on `main` (the default), the refresh records its results, which clear
 once it passes. With the repository variable `PARITY_AUTO_REFRESH=true` (unset by default) the
 workflow dispatches the development refresh itself.
 
-The **parity-release** workflow runs daily (and on demand, or on a `repository_dispatch` of type
-`qsmxt-release`, which QSMxT's release workflow does not send today). `parity.py released-plan`
+The **parity-release** workflow runs when QSMxT's release workflow sends a `repository_dispatch` of
+type `qsmxt-release` (QSMxT/QSMxT#470, once QSMxT has its `QSM_CI_DISPATCH_TOKEN` secret), daily as
+a fallback, and on demand. `parity.py released-plan`
 compares GitHub's latest QSMxT release with `parity/results.json`: for a release with no records it
 dispatches every enabled pair (`-f qsmxt_release=<tag> -f algorithm=enabled`); for the recorded
 latest release, only the pairs whose reference image or settings changed since, or that never ran
