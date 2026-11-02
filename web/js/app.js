@@ -302,7 +302,6 @@ const STAGE_LABEL = {
   "chi-separation": "Source separation",
   "r2prime-generation": "R2′ estimation",
 };
-const MEDALS = ["🥇", "🥈", "🥉"];
 
 async function loadRuns() {
   // Like loadRegistry(): check res.ok before parsing. A 404/5xx body isn't JSON, and letting
@@ -710,5 +709,5 @@ function injectChrome() {
 document.addEventListener("DOMContentLoaded", injectChrome);
 
 // Exposed for module scripts (e.g. the NiiVue viewer, which must be a module for `import`).
-window.QSM = { GH, METRICS, METRIC_ORDER, STAGE_LABEL, MEDALS, loadRuns, loadAlgos, loadDatasets, loadRegistry, loadRepro, loadReproRegions, loadReproGroups, reproGroupOf, loadRunRegions, doiFor, val, fmt, fmtDuration, fmtBytes, metricCols, metricMeta, metricVal, metricColumns, robustRange, heatScale, heatText, REGION_ORDER,
+window.QSM = { GH, METRICS, METRIC_ORDER, STAGE_LABEL, loadRuns, loadAlgos, loadDatasets, loadRegistry, loadRepro, loadReproRegions, loadReproGroups, reproGroupOf, loadRunRegions, doiFor, val, fmt, fmtDuration, fmtBytes, metricCols, metricMeta, metricVal, metricColumns, robustRange, heatScale, heatText, REGION_ORDER,
   reproScannerLabel, reproScannerLong, reproScannerColour, reproProtoLabel, reproSubjectLabel, reproAcquisitions, reproSubjects, reproTargets };
