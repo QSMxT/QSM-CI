@@ -224,7 +224,7 @@ def dedicated(root: Path) -> list[str]:
 
 
 def plan_tasks(root: Path, reg: dict, *, full: bool, slugs: list[str], include: str = "",
-               shards: int = 12, explicit: set[str] | None = None,
+               shards: int = 24, explicit: set[str] | None = None,
                include_manual: bool = False, include_highmem: bool = False) -> list[dict]:
     """The matrix for a run. `explicit` = slugs a human named on dispatch: they (and their manual
     phantoms) are planned even when their tier is manual or highmem. `include_manual` lifts that for
@@ -448,7 +448,7 @@ def decide(env: dict, root: Path, reg: dict, state: dict) -> dict:
     """The whole decision, as data. Pure given env/root/reg/state except for git (scope diffs)."""
     event, sha = env.get("EVENT", "push"), env["SHA"]
     scope_in, include = (env.get("SCOPE") or "auto").strip(), (env.get("INCLUDE") or "").strip()
-    shards = int(env.get("SHARDS") or 12)
+    shards = int(env.get("SHARDS") or 24)
     include_manual = (env.get("INCLUDE_MANUAL") or "false").lower() == "true"
     explicit: set[str] = set()
     notes: list[str] = []

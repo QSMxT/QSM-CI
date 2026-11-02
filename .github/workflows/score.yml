@@ -64,8 +64,8 @@ on:
         description: "true = also plan the manual-tier methods / manual phantoms (with scope=all: the WHOLE matrix incl. modip + inr-qsm; expect days of self-hosted time)"
         default: "false"
       shards:
-        description: "number of parallel shards for a full re-run"
-        default: "12"
+        description: "number of parallel shards for a full re-run (hosted runners stop at 6 h; at 12, every shard hit that cap on 2026-11-01)"
+        default: "24"
       dry_run:
         description: "true = score + merge but DON'T publish volumes or commit (upload a candidate index artifact instead)"
         default: "false"
