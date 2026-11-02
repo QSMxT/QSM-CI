@@ -29,6 +29,10 @@ if [ -f "$CFG" ]; then
   V=$(jq -r '.cg_max_iter // empty' "$CFG"); [ -n "$V" ] && SET="$SET --cg-max-iter $V"
   V=$(jq -r '.max_iter // empty' "$CFG"); [ -n "$V" ] && SET="$SET --max-iter $V"
   V=$(jq -r '.tol // empty' "$CFG"); [ -n "$V" ] && SET="$SET --tol $V"
+  # Parity switches of `qsmxt invert tfi` (the original's odd-grid dipole kernel and its single
+  # precision; astewartau/QSM.rs#407): `kernel` default|original, `precision` double|single.
+  V=$(jq -r '.kernel // empty' "$CFG"); [ -n "$V" ] && SET="$SET --kernel $V"
+  V=$(jq -r '.precision // empty' "$CFG"); [ -n "$V" ] && SET="$SET --precision $V"
 fi
 
 # QSMxT after v10.0.0 runs TFI as the MEDI toolbox implements it (MEDI_L1 with a preconditioner,

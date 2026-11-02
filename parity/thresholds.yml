@@ -1005,42 +1005,62 @@ pairs:
   resharp:
     reference: resharp
     candidate: resharp-qsmrs
-    enabled: false
-    blocked_by: astewartau/QSM.rs#404
-    # Gap: the solver. resharp.m solves with MATLAB's cgs (converges in 199 iterations on KKI);
-    # the port's CG stops unconverged at 200. A numpy resharp.m with cgs is 0.000 % from the
-    # original, with CG 0.000 % from the port. Eroded masks identical.
+    enabled: true
+    # Gap was the solver: resharp.m solves with MATLAB's cgs (converges in 199 iterations on KKI),
+    # the port ran CG, which stops unconverged at 200 (sim 0.653 %, KKI 3.06 %, run 41384710780).
+    # astewartau/QSM.rs#412 (#404) ports cgs with MATLAB's stopping rules and returned iterate, and
+    # resharp.m's padding, round(r/voxel) ellipsoid and erosion threshold: at the container's own
+    # rounding (run 41404195021; sim 1.5e-8 % is the container's residual against MATLAB).
     qsmrs_paths: [src/bgremove/resharp.rs, src/fft.rs, src/grid.rs, src/kernels/,
-                  src/pipeline/bg_removal.rs, src/pipeline/rules.rs, src/solvers/cg.rs]
+                  src/pipeline/bg_removal.rs, src/pipeline/rules.rs, src/solvers/cgs.rs]
     qsmxt_paths: *bgremove_wiring
     datasets:
       sim:
-        measured: { main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 0.653 %, r 1.0000, max |Δ| 3.1e-4 ppm, p99 1.7e-4 ppm" }
+        # Measured: NRMSE 1.5e-8 %, r 1.000000, max |Δ| 9.3e-10 ppm, p99 |Δ| 0 ppm.
+        localfield: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
+        measured:
+          main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 0.653 %, r 1.0000, max |Δ| 3.1e-4 ppm, p99 1.7e-4 ppm"
+          pr412: "run 41404195021: QSMxT main 865a92f, QSM.rs resharp-cgs-404 34eaec8 (limits)"
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs]
         feed: { totalfield: totalfield }
-        measured: { main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 3.06 %, r 0.9995, max |Δ| 0.0021 ppm, p99 0.0014 ppm" }
+        # Measured: NRMSE 7.7e-9 %, r 1.000000, max |Δ| 9.3e-10 ppm, p99 |Δ| 0 ppm.
+        localfield: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
+        measured:
+          main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 3.06 %, r 0.9995, max |Δ| 0.0021 ppm, p99 0.0014 ppm"
+          pr412: "run 41404195021: QSMxT main 865a92f, QSM.rs resharp-cgs-404 34eaec8 (limits)"
 
   # ---- MEDI toolbox 2024.11.26 originals (MATLAB; fidelity: QSMxT/QSM-CI#322)
   pdf:
     reference: pdf-cornell
     candidate: pdf-qsmrs
-    enabled: false
-    blocked_by: astewartau/QSM.rs#405
-    # KKI (oblique B0, PDF.m's imagespace kernel) is at rounding. Sim (B0 along z, so PDF.m takes
-    # its k-space kernel) is not: 0.68 % at the 30-iteration cap, 2.4e-4 % with n_cg 100 on both
-    # sides (run 41390107544); KKI with space=kspace on both sides 0.74 % (run 41389432873).
+    enabled: true
+    # KKI (oblique B0, PDF.m's imagespace kernel) was at rounding. Sim (B0 along z, so PDF.m's
+    # k-space kernel) was not: 0.68 % at the 30-iteration CG cap (KKI with space=kspace 0.74 %, run
+    # 41389432873). On the k-space path the 30-iteration CG amplifies a ~1e-13 difference in its
+    # first step size to ~10 % by iteration 30; the port's plain inner-product sums carried that
+    # much error, MATLAB's BLAS ddot does not. astewartau/QSM.rs#413 (#405) sums them compensated:
+    # sim 0.0146 % (run 41404199185), inside PDF.m's own spread at the cap (a numpy PDF.m moves
+    # 0.03 % for a 1-ulp input change). Sim max |Δ| has ~5× headroom for that spread across CPUs.
     qsmrs_paths: [src/bgremove/pdf.rs, src/constants.rs, src/error.rs, src/fft.rs, src/grid.rs,
                   src/kernels/, src/pipeline/bg_removal.rs, src/pipeline/rules.rs,
                   src/utils/multi_echo.rs]
     qsmxt_paths: *bgremove_wiring
     datasets:
       sim:
-        measured: { main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 0.684 % (0.689 % in run 41390107544), r 1.0000, max |Δ| 0.049 ppm, p99 2.3e-4 ppm" }
+        # Measured: NRMSE 0.0146 %, r 1.000000, max |Δ| 0.0017 ppm, p99 |Δ| 3.8e-7 ppm.
+        localfield: { nrmse_max: 0.517, correlation_min: 0.989, max_abs_max: 0.01, p99_abs_max: 1.0e-6 }
+        measured:
+          main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 0.684 % (0.689 % in run 41390107544), r 1.0000, max |Δ| 0.049 ppm, p99 2.3e-4 ppm"
+          pr413: "run 41404199185: QSMxT main 865a92f, QSM.rs pdf-kspace-405 47cfce6 (limits)"
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs]
-        measured: { main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 2.1e-5 %, r 1.000000, max |Δ| 9.3e-7 ppm, p99 1.9e-8 ppm" }
         feed: { totalfield: totalfield }
+        # Measured: NRMSE 2.1e-5 %, r 1.000000, max |Δ| 9.3e-7 ppm, p99 |Δ| 1.9e-8 ppm.
+        localfield: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.17e-6, p99_abs_max: 1.0e-6 }
+        measured:
+          main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 2.1e-5 %, r 1.000000, max |Δ| 9.3e-7 ppm, p99 1.9e-8 ppm"
+          pr413: "run 41404199185: QSMxT main 865a92f, QSM.rs pdf-kspace-405 47cfce6 (limits)"
   lbv:
     reference: lbv-cornell
     candidate: lbv-qsmrs
@@ -1063,6 +1083,11 @@ pairs:
     enabled: false
     blocked_by: astewartau/QSM.rs#407
     # Gap: on sim the port's χ is ~0.77× the original's; KKI is close but not at rounding.
+    # Causes (astewartau/QSM.rs#407): MEDI's dipole_kernel.m samples k half a step off the DFT grid
+    # on odd axes (sim is 164×205×205), and MEDI_L1 runs in single precision (tempn =
+    # single(N_std)). QSM.rs keeps the DFT-grid kernel and double precision as defaults and offers
+    # both as parity switches (`qsmxt invert tfi --kernel original --precision single`).
+    candidate_set: { kernel: original, precision: single }
     qsmrs_paths: [src/constants.rs, src/error.rs, src/fft.rs, src/grid.rs, src/inversion/medi.rs,
                   src/inversion/tfi.rs, src/kernels/, src/pipeline/inversion.rs,
                   src/pipeline/rules.rs, src/utils/bias_correction.rs, src/utils/echo_time.rs,
