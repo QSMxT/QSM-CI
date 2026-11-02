@@ -22,7 +22,16 @@ CFG="$IN/config.json"
 if [ -f "$CFG" ]; then
   V=$(jq -r '.n_inner // empty' "$CFG");     [ -n "$V" ] && SET="$SET --n-inner $V"
   V=$(jq -r '.chi_bound // empty' "$CFG");   [ -n "$V" ] && SET="$SET --chi-bound $V"
-  V=$(jq -r '.max_lm_iter // empty' "$CFG"); [ -n "$V" ] && SET="$SET --max-lm-iter $V"
+  # The fit's iteration limit: lsqcurvefit's MaxIterations, `--max-iterations`, in a qsmxt on
+  # QSM.rs#338 or later; the pinned v10.0.0's Levenberg-Marquardt solver calls it `--max-lm-iter`.
+  V=$(jq -r '.max_iterations // empty' "$CFG")
+  if [ -n "$V" ]; then
+    if qsmxt separate decompose --help 2>/dev/null | grep -q -- '--max-iterations'; then
+      SET="$SET --max-iterations $V"
+    else
+      SET="$SET --max-lm-iter $V"
+    fi
+  fi
   # `// empty` would drop a JSON false, so read unwrap_phase by key.
   V=$(jq -r 'if has("unwrap_phase") then .unwrap_phase | tostring else empty end' "$CFG")
   [ -n "$V" ] && SET="$SET --unwrap-phase $V"
