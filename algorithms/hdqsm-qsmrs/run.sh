@@ -17,6 +17,11 @@ fi
 # QSMxT after v10.0.0 weights HD-QSM's data term by the magnitude, mask·mag/max(mag) (HDQSM.m's
 # usage example, astewartau/QSM.rs#241); several echoes are combined by root sum of squares. qsmxt
 # v10.0.0 has no --magnitude.
+# QSMxT after astewartau/QSM.rs#403 takes every echo's magnitude with the echo times and weights by
+# the paper's Eq. 2 combination, sum(TE·mag²)/sum(TE·mag), as the original (HDQSM wrapper) does.
 MAG=""
-if qsmxt invert hdqsm --help 2>/dev/null | grep -q -- '--magnitude'; then MAG="--magnitude $IN/magnitude.nii.gz"; fi
+if qsmxt invert hdqsm --help 2>/dev/null | grep -q -- '--echo-times'; then
+  TES=$(jq -r '.TE | map(tostring) | join(" ")' "$IN/params.json")
+  MAG="--echo-times $TES --magnitude $IN/magnitude.nii.gz"
+elif qsmxt invert hdqsm --help 2>/dev/null | grep -q -- '--magnitude'; then MAG="--magnitude $IN/magnitude.nii.gz"; fi
 qsmxt invert hdqsm "$IN/localfield.nii.gz" -m "$IN/mask.nii.gz" -o "$OUT/chimap.nii.gz" --b0-direction $B0 $MAG $SET
