@@ -11,7 +11,8 @@ inputs: [magnitude, mask, params]
 description: >
   R2PRIMEnet — the R2*→R2′ conversion network from the χ-sepnet pipeline (SNU-LIST). When no
   spin-echo acquisition provides a measured R2 (the GRE-only condition), it synthesizes R2′ from
-  the GRE-derived R2* map: R2* is fit from the multi-echo magnitude and a 3D U-Net (trained on
+  the GRE-derived R2* map: R2* is fit from the multi-echo magnitude with ARLO, as the toolbox's
+  r2star_arlo does (MEDI's arlo.m), and a 3D U-Net (trained on
   paired R2*/R2′ data at 3T, 1 mm) predicts the reversible component. Run here via ONNX
   (onnxruntime), 192×192×128 sliding-window patches, Dr = 114 Hz/ppm. Composed with the χ-sepnet
   submission this reproduces the paper's χ-sepnet-R2* variant; composed with the other
@@ -41,6 +42,12 @@ fidelity:
   tolerance: identical   # image twice, 128x160x96 box of prisma-bridge-run1
   result: pass
   report: fidelity/dl/README.md
+  # R2*: recon.py's fit_r2star replaced a log-linear "ARLO stand-in" (60 % NRMSE from ARLO in vivo)
+  # on 2026-11-02. The toolbox's r2star_arlo.p (v1.1.3), run as a black box in licensed MATLAB
+  # R2023b, is MEDI's arlo.m with TE in ms, 0 outside the mask, negatives kept; fit_r2star equals
+  # it bit for bit (max |Δ| 0) on cases invivo-chisep (184x256x128, 5 echoes) and chisep-mc
+  # (164x205x205, 8 echoes). The image is unchanged: recon.py runs from the mounted folder.
+  r2star: { date: 2026-11-02, reference: "toolbox v1.1.3 r2star_arlo.p, MATLAB R2023b", tolerance: identical, result: pass }
 parameters:
   - name: Dr
     default: 114.0

@@ -1030,6 +1030,26 @@ pairs:
         # Measured: Dice 1.000000.
         mask: { dice_min: 0.99 }
         measured: { main: "run 41190020480: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
+  r2primenet:
+    reference: r2primenet
+    candidate: r2primenet-qsmrs
+    enabled: false
+    note: baseline pending
+    # R2* by ARLO on both sides: the toolbox's r2star_arlo is MEDI's arlo.m (black box, licensed
+    # MATLAB R2023b, 2026-11-02); the entry's recon.py reproduces it bit for bit. QSM.rs sets negative
+    # rates to 0 (its rule for relaxation maps), the toolbox keeps them: the r2star intermediate
+    # differs there only. The weights are trained at 3 T; on the 7 T sim the candidate runs with
+    # ignore_field_mismatch (the reference has no guard), which checks the computation, not a
+    # calibrated R2'.
+    qsmrs_models: true
+    qsmrs_paths: [src/grid.rs, src/models/, src/utils/epg.rs, src/utils/r2primenet.rs,
+                  src/utils/r2star.rs, src/utils/sliding.rs]
+    qsmxt_paths: [src/cli.rs, src/commands/common.rs, src/commands/r2prime.rs,
+                  src/commands/r2star.rs]
+    datasets:
+      s002001-kki-achieva-bridge-run1: {}
+      sim:
+        candidate_set: { ignore_field_mismatch: "true" }
   # iQSM, iQSM+ and iQFM take every echo's wrapped phase (4-D), as the originals do (`run.py
   # --echo_4d`), so the pairs start from the dataset's own inputs: no prefix, no feed. Per echo the
   # ports match the networks to float32 rounding (astewartau/QSM.rs#330). The echo weighting of the
