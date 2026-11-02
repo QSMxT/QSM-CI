@@ -75,17 +75,46 @@ no_original:
   harperella:
     covers: HARPERELLA (`harperella`)
     note: not in STI Suite 3.0 (paper-based); iHARPERELLA is paired with STI Suite's
-  prelude:
-    covers: PRELUDE (`unwrap_prelude`)
-    note: clean-room by design
   slicewise-unwrap:
     covers: slice-wise (2D) unwrapping (`unwrap_slicewise`, `unwrap_slicewise_multi_echo`)
+    note: QSM.rs's own wrapper (any unwrapper per slice, plus an inter-echo 2π pass)
+    # Checked 2026-11-02 (QSMxT/QSM-CI#302): no published method or code does this. The nearest
+    # originals cover one unwrapper each: FSL `prelude -s` (slice-wise PRELUDE; it differs from
+    # QSM.rs's slice-wise PRELUDE: it writes 0 in small in-slice components, 14k/23k in-mask voxels
+    # on sim/KKI, and 0.1–0.6 % of the rest take another wrap count beyond a per-component offset;
+    # fidelity/cpp-py) and CLEARSWI.jl's `laplacianslice` (CLEAR-SWI's own step, ported in
+    # QSM.rs's swi.rs, not here). The inter-echo consistency pass has no published counterpart.
   robust-fit:
     covers: robust echo combination (`multi_echo_robust_fit`)
+    note: QSM.rs's own IRLS fit (Tukey/Huber loss, one robust scale over the mask)
+    # Checked 2026-11-02: no published robust multi-echo field fit with code. The paper the QSM.rs
+    # README cites for it (Biondetti et al., MRM 2022, PMC9545116; code emmabiondetti/multi-echo-qsm)
+    # compares weighted averaging and a non-linear complex fit, not a robust fit. Generic IRLS
+    # routines (MATLAB robustfit, statsmodels RLM) fit one regression at a time with its own scale;
+    # QSM.rs's whole-mask scale, magnitude standardisation and degeneracy guard are its own design.
   motion-correction:
     covers: motion correction (`motion`)
+    note: QSM.rs's own rigid registration (NCC, Powell, pyramid) and complex-domain resampling
+    # Checked 2026-11-02: the module follows no published code. FSL FLIRT/MCFLIRT, ANTs and SPM
+    # register with other cost functions, optimisers and schedules, so they are other algorithms,
+    # not originals of this one; a comparison against them would measure that, not a port.
   morphology:
     covers: erosion / dilation, closing (`erode_mask`, `dilate_mask`, `morphological_close`)
+    note: set definitions, no authored algorithm; identical to scipy.ndimage
+    # Checked 2026-11-02 with fidelity/cpp-py/qsmrs-probe `morph` (QSM.rs a44046e): erode_mask and
+    # dilate_mask equal scipy.ndimage.binary_erosion / binary_dilation (6-connected cross,
+    # `iterations`, border_value 0), and morphological_close equals binary_dilation then
+    # binary_erosion with the same ball (border_value 0), voxel for voxel, on the sim and KKI masks
+    # and on a mask cut to touch the array faces (1, 2 and 5 iterations; radius 1 and 3). MATLAB's
+    # imerode/imdilate(strel('sphere')) variants QSMART uses are checked by the qsmart pair.
+
+# Originals checked outside the parity workflow, as fixture runs (fidelity/cpp-py): their port is
+# not a QSM-CI stage, or their image cannot be published, so they have no pair here and are not
+# `no_original` either. PRELUDE (`unwrap_prelude`): FSL `prelude` (fsl-fugue 2603.0,
+# algorithms/_fsl-prelude, local only under FSL's licence). With FSL's full-3-D mode (`-f`), every
+# in-mask voxel of every echo takes the same wrap count as QSM.rs at 6 and at 8 partitions, on sim
+# (4 echoes) and KKI (5 echoes) (2026-11-02, QSM.rs a44046e); FSL's defaults (8 partitions,
+# regions labelled slice by slice) are not implemented in QSM.rs (astewartau/QSM.rs#397).
 
 # Limits are the agreement measured with the QSM.rs under test at the time (the current QSMxT main
 # build, not only the pinned image), plus a margin (scripts/parity.py derive_limits: NRMSE +10 %

@@ -1,0 +1,24 @@
+[
+  {
+    "op": "prelude",
+    "output": "prelude.nii.gz",
+    "image": "localhost/qsm-ci/fsl-prelude:2603.0",
+    "identical": true,
+    "sha256": "81a263790314feb022f5717b0dd8f50aac9ebb1003e397d3cfdb562963b02c44",
+    "runtime_s": [
+      32.4,
+      33.9
+    ]
+  },
+  {
+    "op": "prelude-fsl-defaults",
+    "output": "prelude_defaults.nii.gz",
+    "image": "localhost/qsm-ci/fsl-prelude:2603.0",
+    "identical": true,
+    "sha256": "44e8682a164ef6c396b700d2cf99425f422b947c32347047f7a0d388a43f053e",
+    "runtime_s": [
+      264.7,
+      253.2
+    ]
+  }
+]
