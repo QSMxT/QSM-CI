@@ -102,6 +102,7 @@ def test_emit_volumes_writes_one_shared_truth_and_a_pointer(tmp_path, monkeypatc
     pipeline = importlib.util.module_from_spec(_spec)
     _spec.loader.exec_module(pipeline)
     monkeypatch.setattr(pipeline, "ROOT", tmp_path)
+    monkeypatch.setenv("QSMCI_DATASETS_FILE", str(ROOT / "scripts" / "datasets.json"))  # ROOT moved
     gt = tmp_path / "data" / "sim" / "groundtruth"
     gt.mkdir(parents=True)
     _nii(gt / "chimap.nii.gz", seed=3)
