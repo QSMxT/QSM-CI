@@ -1047,8 +1047,8 @@ pairs:
     enabled: false
     blocked_by: astewartau/QSM.rs#406
     # Gap: QSM.rs's LBV solves by SOR, not LBV.m's full-multigrid mexMGv6.
-    qsmrs_paths: [src/bgremove/lbv.rs, src/grid.rs, src/pipeline/bg_removal.rs,
-                  src/pipeline/rules.rs]
+    qsmrs_paths: [src/bgremove/lbv.rs, src/constants.rs, src/error.rs, src/grid.rs,
+                  src/utils/echo_time.rs, src/pipeline/bg_removal.rs, src/pipeline/rules.rs]
     qsmxt_paths: *bgremove_wiring
     datasets:
       sim:

@@ -5,7 +5,9 @@ MATLAB Runtime, as `../pdf-cornell/BUILD.md`. The method is the authors' `LBV.m`
 full-multigrid solver `mexMGv6` (Dong Zhou), from the Cornell **MEDI toolbox 2024.11.26**.
 
 Stage: `bfr`. It consumes `totalfield` (ppm), `mask` and `params`, runs `LBV.m` and writes
-`localfield` (ppm), which is 0 outside LBV's interior (the mask minus its boundary layer).
+`localfield` (ppm) as LBV.m returns it: defined on LBV's interior (the mask minus its boundary
+layer), and 0 elsewhere except where mexMGv6's prolongation wrote into the boundary layer and a
+few voxels just outside the mask (about 1–2 % of the field's norm inside the mask).
 
 ## 1. Fetch build-time deps (not committed)
 ```bash
@@ -47,5 +49,11 @@ units, as `README.m` does: radians accumulated over the echo spacing, `field·1e
 (`CF` = 42.576 MHz/T · `B0`, `delta_TE` = `TE(2) − TE(1)`), and converts the result back to ppm.
 The solver computes in single precision.
 
-QSM.rs's LBV (`src/bgremove/lbv.rs`) is not a port of this solver: it solves the same boundary
-value problem by SOR, so its `tol` is not this `tol`.
+With `peel` > 0, mexMGv6 writes the peeled mask to `mask_p<peel>.bin` in the working directory
+(`MG::preProcessing`); where it cannot (the image's working directory is read-only) it closes a
+NULL `FILE*` and MATLAB dies with a segmentation fault. Run the image with a writable working
+directory (e.g. `-w /tmp`) for `peel` > 0.
+
+QSM.rs's LBV (`src/bgremove/lbv.rs`) is a port of this solver (astewartau/QSM.rs#406): its
+single precision is bit-identical to this mex, and its default double precision differs by
+rounding.
