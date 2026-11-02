@@ -564,9 +564,9 @@
           "description": "unwrap the phase along the echoes (the authors' code does not; true at B0 >= 6.5 T, as QSMxT suggests there). Needs a qsmxt with --unwrap-phase (not v10.0.0)\n"
         },
         {
-          "name": "max_lm_iter",
-          "default": 30,
-          "description": "max Levenberg-Marquardt iterations per fit stage (the MATLAB reference solves each stage with lsqcurvefit's trust-region solve, MaxIterations 400). qsmxt v10.0.0's default is 30; QSM.rs from astewartau/QSM.rs#333 defaults to 400, which matches the reference far more closely\n"
+          "name": "max_iterations",
+          "default": 400,
+          "description": "maximum solver iterations of each fit stage (lsqcurvefit's MaxIterations, which the MATLAB reference leaves at 400; `--max-iterations`, QSM.rs#338). The pinned qsmxt v10.0.0 solves each stage by Levenberg-Marquardt instead, with at most 30 iterations by default; there the value is passed as its `--max-lm-iter`\n"
         }
       ],
       "ci_notes": [
