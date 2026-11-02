@@ -41,7 +41,7 @@ separate.
 ## How QSM-CI runs it
 
 `run.sh` reads `B0`, `B0_dir` and `TE` from `params.json` with `jq`, forwards any
-`n_inner` / `chi_bound` / `unwrap_phase` / `max_lm_iter` overrides from `config.json` (the `qsm-ci run --set` path),
+`n_inner` / `chi_bound` / `unwrap_phase` / `max_iterations` overrides from `config.json` (the `qsm-ci run --set` path),
 passes `chimap-echoes.nii.gz` as `--qsm-per-echo` (or `chimap.nii.gz` once per echo when the dataset
 has no `chimap-echoes`; a qsmxt without that flag, such as the pinned v10.0.0, takes `--qsm` alone),
 calls the CLI into a scratch prefix, and gzips the two artifacts into `/output`:
@@ -49,7 +49,7 @@ calls the CLI into a scratch prefix, and gzips the two artifacts into `/output`:
 ```bash
 qsmxt separate decompose --qsm chimap.nii.gz -m mask.nii.gz -o $WORK/dec \
   --magnitude magnitude.nii.gz --echo-times <t1,t2,…> --qsm-per-echo chimap-echoes.nii.gz \
-  --field-strength <B0> --b0-direction <B0_dir> [--n-inner N] [--chi-bound PPM] [--max-lm-iter N]
+  --field-strength <B0> --b0-direction <B0_dir> [--n-inner N] [--chi-bound PPM] [--max-iterations N]
 ```
 
 `-o` is a *prefix*: the CLI writes `{prefix}_desc-paramagnetic_Chimap.nii`,
@@ -74,7 +74,7 @@ qsm-ci run decompose-qsmrs … --set n_inner=4
 | `n_inner` | 10 | alternating three-stage fit passes per voxel (the reference's inner-iteration count) |
 | `chi_bound` | 0.5 | upper bound on \|χ\| in the per-voxel fit, ppm |
 | `unwrap_phase` | false | unwrap the phase along the echoes (needs a qsmxt with `--unwrap-phase`) |
-| `max_lm_iter` | 30 | max Levenberg–Marquardt iterations per fit stage |
+| `max_iterations` | 400 | maximum solver iterations of each fit stage (lsqcurvefit's MaxIterations); passed as `--max-lm-iter` to the pinned v10.0.0, whose Levenberg–Marquardt solver defaults to 30 |
 
 Defaults are qsm-core's `DecomposeParams::default()`; no tuned values are declared.
 
