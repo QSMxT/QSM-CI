@@ -1,6 +1,6 @@
 # Calls QSM.rs's ports of the C++ and Python originals directly, NIfTI in and out, for the first
 # look in fidelity/cpp-py (QSMxT/QSM-CI#302). Only for the ports qsmxt exposes no command for
-# (best-path unwrapping, Gibbs removal, MP-PCA) and for settings qsmxt does not take (BET's
+# (best-path and PRELUDE unwrapping, Gibbs removal, MP-PCA, mask morphology) and for settings qsmxt does not take (BET's
 # subdivisions). qsm-core is pinned to the QSM.rs commit measured; change `rev` to look again.
 [package]
 name = "qsmrs-probe"
@@ -9,8 +9,8 @@ edition = "2021"
 publish = false
 
 [dependencies]
-# QSM.rs main da928e0, the commit QSMxT main pins; `parallel`, as the qsmxt binary builds it.
-qsm-core = { git = "https://github.com/astewartau/QSM.rs.git", rev = "da928e0c5bfc7670dc44efe842623f5fe4a591c0", features = ["parallel"] }
+# QSM.rs main a44046e (PRELUDE and morphology checks, 2026-11-02); `parallel`, as the qsmxt binary builds it.
+qsm-core = { git = "https://github.com/astewartau/QSM.rs.git", rev = "a44046ea02c3c05dc54e370486ee445edc7b5fc5", features = ["parallel"] }
 
 [profile.release]
 opt-level = 3

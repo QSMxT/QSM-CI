@@ -37,6 +37,7 @@ ANTS_IMAGE = ("ghcr.io/astewartau/qsm-ci/ants-n4@sha256:"   # v1
 PY_IMAGE = ("ghcr.io/astewartau/qsm-ci/py-originals@sha256:"   # v1
             "7654140b9e7ff00552590d945db9b8d52c526fd01b8e36d5e1ad524b02b510ed")
 BET_IMAGE = "localhost/qsm-ci/bet2:d5acd7f"   # local only (algorithms/_bet2/README.md)
+PRELUDE_IMAGE = "localhost/qsm-ci/fsl-prelude:2603.0"   # local only (algorithms/_fsl-prelude)
 
 # Each fixture run: the image, the folder mounted at /algo, the command (paths under /in, /out),
 # and the outputs it writes. `needs` names an earlier run whose output becomes an input.
@@ -62,6 +63,21 @@ OPS = {
         "cmd": ["python", "{algo}/mppca.py", "{in}/mag4d.nii.gz", "{out}/mppca.nii.gz",
                 "--mask", "{in}/mask3d.nii.gz"],
         "outputs": ["mppca.nii.gz"],
+    },
+    # FSL prelude on the echo-1 phase: `-f` is full 3-D (the report's algorithm, QSM.rs's port) at
+    # QSM.rs's 6 partitions; `prelude-fsl-defaults` is FSL's own defaults (8 partitions, regions
+    # labelled slice by slice, merged in 3-D), which QSM.rs does not implement.
+    "prelude": {
+        "image": PRELUDE_IMAGE, "algo": "algorithms/_fsl-prelude",
+        "cmd": ["bash", "{algo}/prelude.sh", "{in}/phase1.nii.gz", "{in}/mag1.nii.gz",
+                "{in}/mask3d.nii.gz", "{out}/prelude", "-f", "-n", "6"],
+        "outputs": ["prelude.nii.gz"],
+    },
+    "prelude-fsl-defaults": {
+        "image": PRELUDE_IMAGE, "algo": "algorithms/_fsl-prelude",
+        "cmd": ["bash", "{algo}/prelude.sh", "{in}/phase1.nii.gz", "{in}/mag1.nii.gz",
+                "{in}/mask3d.nii.gz", "{out}/prelude_defaults"],
+        "outputs": ["prelude_defaults.nii.gz"],
     },
     # QSMART's brainmask.m: bet2 -f 0.2 on the N4-corrected echo-1 magnitude. The N4 output is the
     # original's (ANTs), so BET is compared from the same input.
@@ -190,8 +206,8 @@ def cmd_host(a) -> int:
     case, out = Path(a.case).resolve(), Path(a.out).resolve()
     rows = []
     for op in ops_from(a.ops):
-        if op.startswith("bet") and not a.bet2_bin:
-            continue
+        if (op.startswith("bet") and not a.bet2_bin) or op.startswith("prelude"):
+            continue   # bet2 needs --bet2-bin; prelude is FSL's own binary, with no host build
         if op.startswith("bet"):
             _bet_input(case, out, a.runner)
         img = out / "determinism" / op / "run1"
@@ -304,6 +320,17 @@ def cmd_pair(a) -> int:
                      "settings": "defaults", "output": "bestpath.nii.gz", "runtime_s": round(t, 1),
                      "in_mask": compare(load(r / "bestpath.nii.gz"), load(cand / "bestpath.nii.gz"), mask),
                      "wraps": wraps(load(r / "bestpath.nii.gz"), load(cand / "bestpath.nii.gz"), mask)})
+    for op, ref_out, n in (("prelude", "prelude.nii.gz", "6"),
+                           ("prelude-fsl-defaults", "prelude_defaults.nii.gz", "8")):
+        if op not in ops:
+            continue
+        r = need(op)
+        o = cand / f"prelude_n{n}.nii.gz"
+        t = probe(a, "prelude", case / "phase1.nii.gz", case / "mask3d.nii.gz", o, "--n", n)
+        rows.append({"op": op, "port": "qsm_core::unwrap::unwrap_prelude (probe)",
+                     "settings": f"{n} partitions", "output": ref_out, "runtime_s": round(t, 1),
+                     "in_mask": compare(load(r / ref_out), load(o), mask),
+                     "wraps": wraps(load(r / ref_out), load(o), mask)})
     if "gibbs" in ops:
         r = need("gibbs")
         t = probe(a, "gibbs", case / "mag4d.nii.gz", cand / "gibbs.nii.gz")
@@ -363,7 +390,7 @@ def render_pair(rows: list) -> str:
     for r in rows:
         if "wraps" in r:
             w = r["wraps"]
-            md += ["", f"Best-path wraps (in mask, {w['voxels']} voxels): identical "
+            md += ["", f"`{r['op']}` wraps (in mask, {w['voxels']} voxels): identical "
                    f"{100 * w['identical_frac']:.4f} %; same 2π offset as the most common one "
                    f"({w['global_offset_2pi']}·2π) {100 * w['same_wrap_frac']:.4f} %; largest "
                    f"difference that is not a whole number of 2π: {_g(w['max_abs_off_2pi'])} rad."]
