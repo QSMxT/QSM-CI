@@ -400,7 +400,8 @@ def derive_limits(metrics: dict) -> dict:
     return out
 
 
-def evaluate(results: dict, ds_cfg: dict, final: "str | list") -> dict:
+def evaluate(results: dict, ds_cfg: dict, final: "str | list",
+             intermediates_only: bool = False) -> dict:
     """Apply the dataset's limits to every compared map. `results` is {name: metrics} with the final
     artifact under its artifact name (e.g. "chimap") and intermediates under theirs. The final
     artifact's limits are ds_cfg[final]; an intermediate's are ds_cfg["intermediates"][name].
@@ -409,14 +410,20 @@ def evaluate(results: dict, ds_cfg: dict, final: "str | list") -> dict:
     but no limits configured — reported, never fails), plus "ok": no "fail" anywhere and the final
     artifact has limits. A final artifact without limits is "fail": an enabled pair must say what
     agreement it expects. A stage with several outputs (χ-separation's chi-para and chi-dia) passes
-    them all as `final`: each is a final artifact with its own limits."""
+    them all as `final`: each is a final artifact with its own limits.
+
+    `intermediates_only` (the pair's `intermediates_only: true`): the final artifact is not like
+    for like (the port reaches it by another route, e.g. another unwrapper), so it is reported
+    without limits, and the pair needs limits on at least one intermediate instead."""
     finals = [final] if isinstance(final, str) else list(final)
     inter = (ds_cfg or {}).get("intermediates") or {}
     out = {}
     for name, metrics in results.items():
         limits = (ds_cfg or {}).get(name) if name in finals else inter.get(name)
         rows = check(metrics, limits)
-        if not limits and name in finals:
+        if intermediates_only and name in finals:
+            status = "info"
+        elif not limits and name in finals:
             status = "fail"
         elif not limits:
             status = "fail" if any(not r["ok"] for r in rows) else "info"
@@ -424,7 +431,10 @@ def evaluate(results: dict, ds_cfg: dict, final: "str | list") -> dict:
             status = "pass" if all(r["ok"] for r in rows) else "fail"
         out[name] = {"metrics": metrics, "checks": rows, "status": status,
                      "limits": limits or {}}
-    return {"maps": out, "ok": bool(out) and all(v["status"] != "fail" for v in out.values())}
+    ok = bool(out) and all(v["status"] != "fail" for v in out.values())
+    if intermediates_only:   # something with limits must have been compared
+        ok = ok and any(v["limits"] for n, v in out.items() if n not in finals)
+    return {"maps": out, "ok": ok}
 
 
 # ---------------------------------------------------------------------------------------------------
@@ -443,7 +453,8 @@ def _fmt(v, metric: str = "") -> str:
 
 
 def render_report(*, algorithm: str, phantom: str, reference: str, candidate: str, verdict: dict,
-                  baseline: bool, unmatched: dict, provenance: dict, note: str = "") -> str:
+                  baseline: bool, unmatched: dict, provenance: dict, note: str = "",
+                  intermediates_only: bool = False) -> str:
     maps = verdict["maps"]
     if baseline:
         head = "📏 **Baseline measured** (no limits applied)"
@@ -486,6 +497,13 @@ def render_report(*, algorithm: str, phantom: str, reference: str, candidate: st
             first = False
         if v["status"] == "fail" and not v["limits"] and not baseline:
             lines.append(f"| | *no limits in parity/thresholds.yml for `{phantom}`* | | | ❌ |")
+    finals = provenance.get("finals") or [provenance.get("final")]
+    if intermediates_only:
+        lines += ["", "Intermediates-only pair: the final map (" + ", ".join(f"`{f}`" for f in finals)
+                  + ") is reported but not compared against limits; the intermediates are."]
+        if not baseline and not any(v["limits"] for n, v in maps.items() if n not in finals):
+            lines.append(f"❌ No intermediate with limits in parity/thresholds.yml for `{phantom}` "
+                         "was compared.")
     if unmatched.get("reference") or unmatched.get("candidate"):
         lines += ["", "Intermediates written by one side only (not compared): "
                   + "; ".join(f"{s}: {', '.join(f'`{n}`' for n in ns)}"
@@ -495,8 +513,9 @@ def render_report(*, algorithm: str, phantom: str, reference: str, candidate: st
         ds = sugg["datasets"][phantom]
         for name, v in maps.items():
             lim = derive_limits(v["metrics"])
-            if name in (provenance.get("finals") or [provenance.get("final")]):
-                ds[name] = lim
+            if name in finals:
+                if not intermediates_only:
+                    ds[name] = lim
             else:
                 ds.setdefault("intermediates", {})[name] = lim
         lines += ["", "Limits derived from this measurement (paste under the pair in "
@@ -564,7 +583,10 @@ def apply_names(inter: Path, names: "dict | None", mask_path: "Path | None" = No
     "Intermediates"), for a method whose own names differ — e.g. a compiled MATLAB image that
     predates the convention. `names` is {native: canonical} or {native: {name: canonical,
     complement: true}}; `complement` turns a mask into its complement inside the dataset mask (the
-    original's `vasc_only` is tissue without vessels; `vessel_mask` is the vessels)."""
+    original's `vasc_only` is tissue without vessels; `vessel_mask` is the vessels). `clip_min: x`
+    sets values below x to x, for a deviation the port documents (QSM.rs clamps R2* at 0 where
+    MEDI's arlo.m returns negative noise estimates), so the rest is still compared exactly. The
+    canonical name may equal the native one."""
     for native, spec in (names or {}).items():
         src = inter / f"{native}.nii.gz"
         if not src.exists():
@@ -579,6 +601,17 @@ def apply_names(inter: Path, names: "dict | None", mask_path: "Path | None" = No
             out = (m & (np.asanyarray(img.dataobj) < 0.5)).astype(np.uint8)
             nib.save(nib.Nifti1Image(out, img.affine, img.header), str(dst))
             src.unlink()
+        elif spec.get("clip_min") is not None:
+            import nibabel as nib
+            import numpy as np
+            img = nib.load(str(src))
+            out = np.maximum(np.asanyarray(img.dataobj), float(spec["clip_min"]))
+            hdr = img.header.copy()
+            hdr.set_data_dtype(out.dtype)
+            hdr.set_slope_inter(1, 0)   # the data are written as they are (no rescaling)
+            if src != dst:
+                src.unlink()
+            nib.save(nib.Nifti1Image(out, img.affine, hdr), str(dst))
         else:
             src.replace(dst)
 
@@ -782,13 +815,14 @@ def cmd_compare(args) -> int:
            f"for them." if unset else "")
     mask = Path(args.mask) if args.mask else Path(args.dataset) / "inputs" / "mask.nii.gz"
     results, unmatched = compare_dirs(work / "reference", work / "candidate", mask, final)
-    verdict = evaluate(results, ds_cfg, final)
+    verdict = evaluate(results, ds_cfg, final, bool(cfg.get("intermediates_only")))
     report = render_report(algorithm=args.algorithm, phantom=args.phantom,
                            reference=cfg["reference"], candidate=cfg["candidate"], verdict=verdict,
                            baseline=args.baseline, unmatched=unmatched,
                            provenance={**prov, "final": final if isinstance(final, str) else final[0],
                                        "finals": [final] if isinstance(final, str) else final},
-                           note=note.strip())
+                           note=note.strip(),
+                           intermediates_only=bool(cfg.get("intermediates_only")))
     print(report)
     if args.report:
         Path(args.report).write_text(report)
@@ -845,7 +879,7 @@ REPO = "QSMxT/QSM-CI"
 # (or to the dataset's entry, limits included) makes the last check stale (rule c). `measured`,
 # `enabled`, `blocked_by`, `qsmrs_paths` and `qsmxt_paths` are bookkeeping and do not count.
 MEASURED_BY = ("reference", "candidate", "reference_names", "candidate_names", "reference_set",
-               "candidate_set")
+               "candidate_set", "intermediates_only")
 
 
 def thresholds_version(cfg: dict, phantom: str) -> str:
@@ -918,6 +952,8 @@ def make_record(res: "dict | None", *, pair: str, phantom: str, cfg: dict, manif
         rec["set"] = {k: v for k, v in (("reference", rst.get("set")),
                                         ("candidate", cst.get("set"))) if v}
     maps = res.get("maps") or {}
+    if cfg.get("intermediates_only"):   # what is compared first (the run summary shows the first map)
+        maps = dict(sorted(maps.items(), key=lambda kv: not kv[1].get("limits")))
     rec["result"] = "baseline" if res.get("baseline") else ("pass" if res.get("ok") else "fail")
     rec["metrics"] = {n: {k: v["metrics"][k] for k in ("kind",) + CONTINUOUS + BINARY + ("nonfinite",)
                           if k in v["metrics"]} for n, v in maps.items()}
@@ -1215,8 +1251,11 @@ _NOT_MAPS = {"intermediates", "feed", "measured", "reference_prefix", "candidate
 
 
 def final_maps(cfg: dict, phantom: str) -> list:
-    """The final maps a pair × dataset has limits on (chimap; chi-para and chi-dia), in order."""
+    """The final maps a pair × dataset has limits on (chimap; chi-para and chi-dia), in order. For
+    an `intermediates_only` pair, the intermediates it has limits on (what its status shows)."""
     ds = ((cfg or {}).get("datasets") or {}).get(phantom) or {}
+    if (cfg or {}).get("intermediates_only"):
+        return list(ds.get("intermediates") or {})
     return [k for k, v in ds.items() if k not in _NOT_MAPS and isinstance(v, dict)]
 
 

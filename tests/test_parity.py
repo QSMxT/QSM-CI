@@ -126,6 +126,34 @@ def test_evaluate_intermediate_limit_exceeded_fails():
     assert not v["ok"] and v["maps"]["vessel_mask"]["status"] == "fail"
 
 
+def test_evaluate_intermediates_only_reports_the_final_and_needs_an_intermediate_limit():
+    res = {"totalfield": {"kind": "continuous", "nrmse": 80.0},
+           "r2star": {"kind": "continuous", "nrmse": 0.5}}
+    v = parity.evaluate(res, {"intermediates": {"r2star": {"nrmse_max": 1}}}, "totalfield",
+                        intermediates_only=True)
+    assert v["ok"] and v["maps"]["totalfield"]["status"] == "info"
+    v = parity.evaluate(res, {"intermediates": {"r2star": {"nrmse_max": 0.1}}}, "totalfield",
+                        intermediates_only=True)
+    assert not v["ok"]
+    v = parity.evaluate(res, {}, "totalfield", intermediates_only=True)   # nothing held to limits
+    assert not v["ok"]
+
+
+def test_final_maps_of_an_intermediates_only_pair_are_its_limited_intermediates():
+    cfg = {"intermediates_only": True,
+           "datasets": {"sim": {"intermediates": {"ifreq_raw": {"nrmse_max": 1}}}}}
+    assert parity.final_maps(cfg, "sim") == ["ifreq_raw"]
+
+
+def test_apply_names_clip_min_keeps_the_name_and_clamps(tmp_path):
+    import nibabel as nib
+    data = np.array([[[-3.0, 0.5], [2.0, -0.1]]])
+    nib.save(nib.Nifti1Image(data, np.eye(4)), str(tmp_path / "r2star.nii.gz"))
+    parity.apply_names(tmp_path, {"r2star": {"name": "r2star", "clip_min": 0}})
+    out = nib.load(str(tmp_path / "r2star.nii.gz")).get_fdata()
+    assert np.array_equal(out, np.maximum(data, 0))
+
+
 # --- derive_limits ------------------------------------------------------------------------------
 
 def test_derived_limits_pass_the_measurement_they_came_from():
@@ -196,7 +224,8 @@ def test_real_thresholds_name_real_pairs():
             for lim in ((dcfg or {}).get("intermediates") or {}).values():
                 parity.check({}, lim)
             if cfg.get("enabled"):
-                assert final, f"{name}/{ds}: an enabled pair needs limits"
+                held = (dcfg or {}).get("intermediates") if cfg.get("intermediates_only") else final
+                assert held, f"{name}/{ds}: an enabled pair needs limits"
 
 
 def test_pair_problems():

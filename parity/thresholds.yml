@@ -37,7 +37,12 @@
 #                     Julia submissions' README "QSM.rs-matched" column). Changing one re-baselines.
 #   reference_names:  {native: compared name} for intermediates the reference writes under other
 #   candidate_names:  names (CONTRACT.md, "Intermediates"); {name: x, complement: true} also turns a
-#                     mask into its complement inside the dataset mask.
+#                     mask into its complement inside the dataset mask; {name: x, clip_min: v}
+#                     clamps values below v (a deviation the port documents; the name may stay).
+#   intermediates_only: true when the final artifact is not like for like (the port reaches it by
+#                     another route): it is reported without limits, and the pair passes on its
+#                     intermediates' limits (at least one must be compared). The status and badge
+#                     show the worst of those.
 #   datasets:         one entry per scripts/datasets.json key the pair is checked on:
 #     <artifact>:     limits on the final produced artifact (chimap), compared inside the dataset
 #                     mask: nrmse_max (%, ‖cand − ref‖ / ‖ref‖), correlation_min, max_abs_max and
@@ -307,23 +312,42 @@ pairs:
 
   fit-ppm-complex:
     reference: fit-ppm-complex-cornell   # MEDI 2024.11.26 Fit_ppm_complex + unwrapPhase (#322)
-    candidate: fit-ppm-complex-qsmrs     # ci_skip until a qsmxt release has --complex-fit-output
-    enabled: false
+    candidate: fit-ppm-complex-qsmrs     # ci_skip for scoring: v10.0.0 has no complex fit
+    enabled: true
     # Intermediates only: QSM.rs does not port MEDI's region-growing unwrapPhase (the candidate
-    # unwraps with ROMEO), so the total fields differ by unwrapper and get no limits. What is ported
-    # is compared by name: ifreq_raw (the fit before unwrapping, rad per echo spacing, wrapped),
-    # n_std (its noise map) and r2star (ARLO). Both sides write them in MEDI's units and sign.
-    # Unmeasured: needs a qsmxt build with QSMxT/QSMxT#462; then baseline, and set limits on those
-    # three intermediates.
-    note: intermediates only (ifreq_raw, n_std, r2star); unmeasured until QSMxT/QSMxT#462
+    # unwraps with ROMEO), so the total fields differ by unwrapper (sim 3.8 %, KKI 7.6 % NRMSE) and
+    # are reported without limits. What is ported is compared by name: ifreq_raw (the fit before
+    # unwrapping, rad per echo spacing, wrapped), n_std (its noise map) and r2star (ARLO). Both sides
+    # write them in MEDI's units and sign; the candidate writes float32, hence ~2.5e-6 % NRMSE.
+    intermediates_only: true
+    # ARLO: QSM.rs clamps negative R2* at 0 (a documented deviation, src/utils/r2star.rs), where
+    # arlo.m returns negative noise estimates; unclamped the maps differ by exactly those voxels
+    # (sim 4068 voxels, NRMSE 0.91 %, max |Δ| 108 Hz; KKI 18985, 3.87 %, 96 Hz) and agree to float32
+    # rounding everywhere else. The reference's r2star is clamped the same way before comparing.
+    reference_names: { r2star: { name: r2star, clip_min: 0 } }
     qsmrs_paths: [src/error.rs, src/pipeline/field_mapping.rs, src/pipeline/phase_utils.rs,
                   src/pipeline/rules.rs, src/utils/multi_echo.rs, src/utils/r2star.rs]
-    # `qsmxt fieldmap --complex-fit-output/--complex-fit-noise-output` (QSMxT/QSMxT#462); written
-    # out because &fieldmap_wiring is defined further down.
-    qsmxt_paths: [src/cli.rs, src/commands/common.rs, src/commands/fieldmap.rs]
+    # `qsmxt fieldmap --complex-fit-output/--complex-fit-noise-output` (QSMxT/QSMxT#462) and
+    # `qsmxt r2star`; written out because &fieldmap_wiring is defined further down.
+    qsmxt_paths: [src/cli.rs, src/commands/common.rs, src/commands/fieldmap.rs,
+                  src/commands/r2star.rs]
     datasets:
-      sim: {}
-      s002001-kki-achieva-bridge-run1: {}
+      sim:
+        # Measured: ifreq_raw NRMSE 2.55e-06 %, max |Δ| 1.2e-07; n_std 2.51e-06 %, 1.1e-07;
+        # r2star (clamped reference) 2.6e-06 %, max |Δ| 1.5e-05 Hz. All float32 rounding.
+        intermediates:
+          ifreq_raw: { nrmse_max: 0.501, correlation_min: 0.99, max_abs_max: 1.0e-06, p99_abs_max: 1.0e-06 }
+          n_std: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.0e-06, p99_abs_max: 1.0e-06 }
+          r2star: { nrmse_max: 0.501, correlation_min: 0.99, max_abs_max: 1.86e-05, p99_abs_max: 4.08e-06 }
+        measured: { main: "run 41383188529: QSMxT main 865a92f, QSM.rs main a44046e; matlab-medi sha256:7efa4bd6… (limits)" }
+      s002001-kki-achieva-bridge-run1:
+        # Measured: ifreq_raw NRMSE 2.56e-06 %, max |Δ| 1.2e-07; n_std 2.42e-06 %, 5.1e-13;
+        # r2star (clamped reference) 2.5e-06 %, max |Δ| 1.4e-05 Hz.
+        intermediates:
+          ifreq_raw: { nrmse_max: 0.501, correlation_min: 0.99, max_abs_max: 1.0e-06, p99_abs_max: 1.0e-06 }
+          n_std: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.0e-06, p99_abs_max: 1.0e-06 }
+          r2star: { nrmse_max: 0.501, correlation_min: 0.99, max_abs_max: 1.69e-05, p99_abs_max: 2.02e-06 }
+        measured: { main: "run 41383188529: QSMxT main 865a92f, QSM.rs main a44046e; matlab-medi sha256:7efa4bd6… (limits)" }
 
   # ---- MATLAB originals (QSMxT/QSM-CI#309)
   amp-pe:
