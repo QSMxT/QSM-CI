@@ -1038,7 +1038,10 @@ pairs:
     # R2* by ARLO on both sides: the toolbox's r2star_arlo is MEDI's arlo.m (black box, licensed
     # MATLAB R2023b, 2026-11-02); the entry's recon.py reproduces it bit for bit. QSM.rs sets negative
     # rates to 0 (its rule for relaxation maps), the toolbox keeps them: the r2star intermediate
-    # differs there only. The weights are trained at 3 T; on the 7 T sim the candidate runs with
+    # differs there only (KKI: 18,985 of 1.52 M mask voxels; elsewhere identical, run 41474160070).
+    # Through the network that clip alone moves R2' by 3.54 % on KKI (r 0.9989) and 0.39 % on sim,
+    # so the pair feeds the reference's own R2* to the port (`feed`), comparing the network on
+    # identical inputs; the r2star intermediate then shows only the clip. The weights are trained at 3 T; on the 7 T sim the candidate runs with
     # ignore_field_mismatch (the reference has no guard), which checks the computation, not a
     # calibrated R2'.
     qsmrs_models: true
@@ -1047,8 +1050,10 @@ pairs:
     qsmxt_paths: [src/cli.rs, src/commands/common.rs, src/commands/r2prime.rs,
                   src/commands/r2star.rs]
     datasets:
-      s002001-kki-achieva-bridge-run1: {}
+      s002001-kki-achieva-bridge-run1:
+        feed: { r2star: r2star }
       sim:
+        feed: { r2star: r2star }
         candidate_set: { ignore_field_mismatch: "true" }
   # iQSM, iQSM+ and iQFM take every echo's wrapped phase (4-D), as the originals do (`run.py
   # --echo_4d`), so the pairs start from the dataset's own inputs: no prefix, no feed. Per echo the
@@ -1066,21 +1071,25 @@ pairs:
   iqsm:
     reference: iqsm
     candidate: iqsm-qsmrs
-    enabled: false
-    note: baseline pending
+    enabled: true
     qsmrs_models: true
     qsmrs_paths: [src/grid.rs, src/inversion/iqsm.rs, src/inversion/iqsm_echo_weighting.rs,
                   src/inversion/tile_budget.rs, src/inversion/tiled.rs, src/models/,
                   src/pipeline/inversion.rs, src/pipeline/referencing.rs, src/pipeline/rules.rs]
     qsmxt_paths: *invert_wiring
     datasets:
-      sim: {}
-      s002001-kki-achieva-bridge-run1: {}
+      sim:
+        # Measured: NRMSE 0.00028 %, r 1.000000, max |Δ| 1.2e-06 ppm, p99 |Δ| 1.9e-07 ppm.
+        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.54e-06, p99_abs_max: 1e-06 }
+        measured: { main: "run 41474160070: QSMxT main 0c12a84, qsm-core a44046e (limits)" }
+      s002001-kki-achieva-bridge-run1:
+        # Measured: NRMSE 0.00022 %, r 1.000000, max |Δ| 3.0e-06 ppm, p99 |Δ| 2.4e-07 ppm.
+        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 3.75e-06, p99_abs_max: 1e-06 }
+        measured: { main: "run 41474160070: QSMxT main 0c12a84, qsm-core a44046e (limits)" }
   iqsm-plus:
     reference: iqsm-plus
     candidate: iqsm-plus-qsmrs
-    enabled: false
-    note: baseline pending
+    enabled: true
     qsmrs_models: true
     qsmrs_paths: [src/grid.rs, src/inversion/iqsm.rs, src/inversion/iqsm_echo_weighting.rs,
                   src/inversion/iqsm_plus.rs, src/inversion/tile_budget.rs, src/inversion/tiled.rs,
@@ -1088,8 +1097,14 @@ pairs:
                   src/pipeline/rules.rs]
     qsmxt_paths: *invert_wiring
     datasets:
-      sim: {}
-      s002001-kki-achieva-bridge-run1: {}
+      sim:
+        # Measured: NRMSE 0.00015 %, r 1.000000, max |Δ| 1.1e-06 ppm, p99 |Δ| 1.0e-07 ppm.
+        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.39e-06, p99_abs_max: 1e-06 }
+        measured: { main: "run 41474160070: QSMxT main 0c12a84, qsm-core a44046e (limits)" }
+      s002001-kki-achieva-bridge-run1:
+        # Measured: NRMSE 0.00012 %, r 1.000000, max |Δ| 1.3e-06 ppm, p99 |Δ| 1.2e-07 ppm.
+        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.57e-06, p99_abs_max: 1e-06 }
+        measured: { main: "run 41474160070: QSMxT main 0c12a84, qsm-core a44046e (limits)" }
   iqfm:
     reference: iqfm
     candidate: iqfm-qsmrs

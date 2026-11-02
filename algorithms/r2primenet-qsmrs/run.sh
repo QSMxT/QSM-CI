@@ -14,8 +14,13 @@ fi
 
 # R2* by ARLO (MEDI's arlo.m, which the toolbox's r2star_arlo is), 0 outside the mask. QSM.rs sets
 # negative rates to 0, where the toolbox keeps them.
+# Port parity may hand in the original's own R2* (`r2star`, CONTRACT.md); then only the network runs.
 WORK="$(mktemp -d)"
-qsmxt r2star "$IN/magnitude.nii.gz" -m "$IN/mask.nii.gz" -o "$WORK/r2star.nii.gz" --echo-times $TES
+if [ -f "$IN/r2star.nii.gz" ]; then
+  cp "$IN/r2star.nii.gz" "$WORK/r2star.nii.gz"
+else
+  qsmxt r2star "$IN/magnitude.nii.gz" -m "$IN/mask.nii.gz" -o "$WORK/r2star.nii.gz" --echo-times $TES
+fi
 if [ -n "${QSMCI_INTERMEDIATES:-}" ]; then
   mkdir -p "$QSMCI_INTERMEDIATES"; cp "$WORK/r2star.nii.gz" "$QSMCI_INTERMEDIATES/r2star.nii.gz"
 fi

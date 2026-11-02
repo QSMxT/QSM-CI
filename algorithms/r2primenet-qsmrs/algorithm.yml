@@ -7,6 +7,7 @@ language: Rust
 family: deep-learning
 learning: pretrained
 inputs: [magnitude, mask, params]
+optional_inputs: [r2star]   # port parity only: the original's R2* (r2primenet pair `feed`)
 engine: QSMxT / QSM.rs
 description: >
   R2PRIMEnet as QSM.rs runs it: R2* by ARLO from the multi-echo magnitude (`qsmxt r2star`), then
