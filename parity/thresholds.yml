@@ -1081,12 +1081,19 @@ pairs:
     reference: tfi-cornell
     candidate: tfi-qsmrs
     enabled: false
-    blocked_by: astewartau/QSM.rs#407
-    # Gap: on sim the port's χ is ~0.77× the original's; KKI is close but not at rounding.
-    # Causes (astewartau/QSM.rs#407): MEDI's dipole_kernel.m samples k half a step off the DFT grid
-    # on odd axes (sim is 164×205×205), and MEDI_L1 runs in single precision (tempn =
-    # single(N_std)). QSM.rs keeps the DFT-grid kernel and double precision as defaults and offers
-    # both as parity switches (`qsmxt invert tfi --kernel original --precision single`).
+    note: "limits proposed at the original's own rounding spread (astewartau/QSM.rs#407); enable on Ashley's OK"
+    # Was: sim 42.1 % (χ ~0.77×), KKI 1.41 % (run 41384710780). Causes (astewartau/QSM.rs#407):
+    # MEDI's dipole_kernel.m samples k half a step off the DFT grid on odd axes (sim is
+    # 164×205×205), and MEDI_L1 runs in single precision (tempn = single(N_std)). QSM.rs keeps the
+    # DFT-grid kernel and double precision as defaults and offers both as parity switches
+    # (`qsmxt invert tfi --kernel original --precision single`, QSMxT/QSMxT#478); the candidate_set
+    # below turns them on. On the fixture's small odd phantom that matches the container to 4.7e-4.
+    # At full size the original is not reproducible below a few %: its 100-iteration CG solves at
+    # cg_tol 0.01 in single precision amplify rounding. In one container, 1e-7 relative noise on
+    # the total field moves its χ by 1.59 % (sim) / 0.30 % (KKI); the same container on another CPU
+    # (QSM-CI runner against the VM) differs from itself by 2.78 % on KKI. With both switches (run
+    # 41413049827) sim 3.61 %, KKI 1.26 %. Proposed limits: NRMSE ~1.5× the measured plus the
+    # original's cross-CPU spread (sim 6 %, KKI 4 %), max/p99 ~10× the derived (as for TGV).
     candidate_set: { kernel: original, precision: single }
     qsmrs_paths: [src/constants.rs, src/error.rs, src/fft.rs, src/grid.rs, src/inversion/medi.rs,
                   src/inversion/tfi.rs, src/kernels/, src/pipeline/inversion.rs,
@@ -1095,8 +1102,18 @@ pairs:
     qsmxt_paths: *invert_wiring
     datasets:
       sim:
-        measured: { main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 42.1 %, r 0.909, max |Δ| 0.087 ppm, p99 0.034 ppm" }
+        # Measured: NRMSE 3.61 %, r 0.9994, max |Δ| 0.067 ppm, p99 |Δ| 0.0035 ppm (derived: 4.47 %,
+        # 0.0842, 0.00444 ppm).
+        chimap: { nrmse_max: 6.0, correlation_min: 0.989, max_abs_max: 0.84, p99_abs_max: 0.044 }
+        measured:
+          main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 42.1 %, r 0.909, max |Δ| 0.087 ppm, p99 0.034 ppm"
+          pr407: "run 41413049827: QSMxT tfi-parity-options 32ae3f1, QSM.rs tfi-scale-407 5c37be1 (limits)"
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs]
         feed: { totalfield: totalfield }
-        measured: { main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 1.41 %, r 0.9999, max |Δ| 0.143 ppm, p99 0.0040 ppm" }
+        # Measured: NRMSE 1.26 %, r 0.9999, max |Δ| 0.086 ppm, p99 |Δ| 0.0036 ppm (derived: 1.89 %,
+        # 0.108, 0.00456 ppm).
+        chimap: { nrmse_max: 4.0, correlation_min: 0.989, max_abs_max: 1.08, p99_abs_max: 0.046 }
+        measured:
+          main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 1.41 %, r 0.9999, max |Δ| 0.143 ppm, p99 0.0040 ppm"
+          pr407: "run 41413049827: QSMxT tfi-parity-options 32ae3f1, QSM.rs tfi-scale-407 5c37be1 (limits)"
