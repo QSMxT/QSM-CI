@@ -1,0 +1,53 @@
+name: χ-separation (MEDI, QSM.rs)
+slug: chisep-medi-qsmrs
+algorithm: chisep
+variant: medi
+source: qsmrs
+stage: chi-separation
+language: Rust
+family: iterative
+learning: none
+inputs: [localfield, r2prime, chimap, magnitude, mask, params]  # the same as chisep-medi
+engine: QSMxT / QSM.rs
+description: >
+  χ-separation (MEDI variant) as the Rust port in QSM.rs of the SNU χ-separation toolbox's
+  chi_sep_MEDI, run by `qsmxt separate chi-sep-medi`: a Gauss-Newton solve for χ+ and |χ−| from the
+  local field and R2′, with MEDI's edge-masked L1 regulariser, started from χ_total. The QSM.rs port
+  of the `chisep-medi` entry, with its inputs: N_std from the echoes' magnitudes (MEDI
+  Fit_ppm_complex's noise map) and no CSF term.
+authors:
+- name: Hyeong-Geol Shin
+  note: original χ-separation method and toolbox
+- name: Jingu Lee
+- name: Jongho Lee
+- name: Ashley Stewart
+  note: QSM.rs / QSMxT Rust port
+doi: 10.1016/j.neuroimage.2021.118371
+citation: Shin et al., NeuroImage 2021
+code_url: https://github.com/astewartau/QSM.rs
+license: MIT
+# v10.0.0 runs the earlier paper-based port; the toolbox port (astewartau/QSM.rs#328) is in QSMxT
+# main but in no release yet. Repin to the first release that has it, then drop ci_skip.
+image: ghcr.io/astewartau/qsm-ci/qsmxt@sha256:9258c10e34cd0019dbab12746977813fe0a0b3ad92b13986d1d9ffb2c3326b57   # v10.0.0
+run: bash run.sh
+ci_skip: true   # until the image has the toolbox port (see image:)
+parameters:
+- name: lambda
+  default: 1
+  description: weight of the data terms against the L1 terms (params.lambda), as chisep-medi
+- name: csf_mask
+  default: none
+  description: >
+    none: no CSF term, as chisep-medi (the stage contract has no CSF mask; the toolbox GUI's
+    mask_CSF = []). r2star: qsmxt's CSF mask from ARLO R2* of the echoes, as the toolbox's
+    Chisep_script.m makes it. none needs a qsmxt with `separate chi-sep-medi --csf-mask` (QSMxT/QSMxT#472).
+- name: gamma
+  default: 42.576
+  description: >
+    γ in MHz/T, so the central frequency is γ·B0 (the local field's Hz scale and the default
+    D_r = 137·B0/2.9). 42.576 is qsmxt's; the chisep-medi wrapper uses 42.5774, which the parity
+    pair sets.
+ci_notes:
+- >
+  Same algorithm and inputs as the compiled-MATLAB entry chisep-medi, in Rust, on the shared QSMxT
+  engine image.

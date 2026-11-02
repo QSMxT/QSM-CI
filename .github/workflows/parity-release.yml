@@ -10,8 +10,10 @@ name: parity-release
 # the results, unless a released run for that tag is already queued or running. A run that ended
 # without a result is flagged in the status issue, not rerun here (an error that repeats would loop).
 #
-# Daily, and on demand. QSMxT's release workflow could also notify this one directly with a
-# repository_dispatch of type `qsmxt-release` (it does not today; that would be a QSMxT change).
+# Triggers: QSMxT's release workflow sends a repository_dispatch of type `qsmxt-release` (with
+# client_payload.tag) when a release is published (QSMxT/QSMxT#470; needs its
+# QSM_CI_DISPATCH_TOKEN secret). The daily schedule is the fallback, and it can be run on demand.
+# Either way the plan follows GitHub's latest QSMxT release, not the payload.
 
 on:
   schedule:

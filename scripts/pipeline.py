@@ -56,6 +56,7 @@ from qsm_ci.stages import STAGES, ARTIFACT_FILE, ARTIFACT_KIND  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from scoring import (  # noqa: E402
     cli_run_argv, gt_sources as _gt_sources, parse_shard, shard_owns, shard_partition, eval_argv,
+    INPUT_LEVELS, level_sources, inputs_suffix,
 )
 import merge_index  # noqa: E402  (sibling: the one upsert policy for results/index.json)
 from provenance import method_commit, row_methods  # noqa: E402,F401  (scored_at / method_versions)
@@ -742,6 +743,16 @@ def _stamp_phantom(rows: list, phantom: "str | None") -> list:
     return rows
 
 
+def _stamp_inputs(rows: list, level: "str | None") -> list:
+    """Record the χ-separation input level each row was scored on (`inputs: "l3"`). Rows scored on the
+    dataset's own (ground-truth) inputs carry no field, as every existing row; consumers treat absence
+    as "gt"."""
+    if level and level != "gt":
+        for r in rows:
+            r["inputs"] = level
+    return rows
+
+
 def _stamp_resource_summary(run):
     """Copy the resource summary — peak memory, avg + peak CPU — from a run's resources.json onto the
     run row, next to runtime_s, so the leaderboard and findings figures read it directly instead of
@@ -1138,7 +1149,9 @@ def do_isolated(task, args, gt_sources, gt, mask):
     sfx = "" if variant == "default" else "-tuned"          # variant suffix (work paths)
     # + track namespace + phantom namespace (run ids): the track's default phantom adds nothing
     # (legacy ids preserved); a non-default phantom appends -<phantom-id>.
-    idsfx = sfx + id_suffix(args.track) + getattr(args, "phantom_sfx", "")
+    # + input-level namespace: --inputs l3 appends -l3, so degraded-input rows sit beside the
+    # ground-truth-input rows instead of overwriting them.
+    idsfx = sfx + id_suffix(args.track) + getattr(args, "phantom_sfx", "") + getattr(args, "inputs_sfx", "")
     idir = args.work / f"iso_{a['slug']}{idsfx}_in"
     odir = args.work / f"iso_{a['slug']}{idsfx}_out"
     try:
@@ -1200,9 +1213,14 @@ def run_isolated(args, algos, gt_sources, gt, mask, iso_target, runs: list) -> N
     pool, appends the rows to `runs`, and flushes the index unless writing a shard file."""
     iso_algos = [a for a in algos if not (iso_target and a["slug"] != iso_target)]
     iso_tasks = [t for a in iso_algos for t in iso_variants(a)]
+    if getattr(args, "inputs", "gt") != "gt":
+        # Degraded inputs score each method at its published defaults only: the tuned values were
+        # optimised on the ground-truth inputs, and the realistic-input board has no Tuned toggle.
+        iso_tasks = [t for t in iso_tasks if t[1] == "default"]
     iso_tasks = shard_partition(iso_tasks, args.shard)  # --shard: round-robin over a stable order
     for out in _pmap(iso_tasks, lambda task: do_isolated(task, args, gt_sources, gt, mask)):
-        runs.extend(_stamp_phantom(out, getattr(args, "phantom", None)))
+        runs.extend(_stamp_inputs(_stamp_phantom(out, getattr(args, "phantom", None)),
+                                  getattr(args, "inputs", "gt")))
     if not args.runs_out:
         flush_index(runs)
 
@@ -1757,6 +1775,13 @@ def main() -> None:
                     help="run only the field-mapping and background-removal stages, then stop — no "
                          "dipole inversion, no spans, no result rows. Paired with "
                          "--emit-intermediates this regenerates just the viewer's intermediate maps.")
+    ap.add_argument("--inputs", choices=INPUT_LEVELS, default="gt",
+                    help="χ-separation input level (chisep-track phantoms, isolated chi-separation runs "
+                         "only). gt (default): the dataset's own inputs, the phantom's true local field, "
+                         "χ and mask. l3: qsm-forward's controlled-degradation level L3 from the "
+                         "dataset's inputs-l3/ (local field, χ, per-echo χ, R2′ and the eroded mask "
+                         "with the error traits of real QSM pipelines). Run ids gain -l3 and rows carry "
+                         "inputs: \"l3\"; scoring uses the same ground truth and brain mask as gt.")
     ap.add_argument("--fail-on-dnf", action="store_true",
                     help="exit non-zero if any run in scope DNF'd (a submission that couldn't run or "
                          "produce a scorable artifact). Used by evaluate.yml so a broken run.sh / crash "
@@ -1793,11 +1818,26 @@ def main() -> None:
         args.mode = "composed"
 
     inputs, gt = args.dataset / "inputs", args.dataset / "groundtruth"
+    # The SCORING mask: the dataset's brain mask at every input level. A degraded level (--inputs l3)
+    # hands methods its own eroded mask through gt_sources below, but its runs are still scored over
+    # the full brain, as every other run, so an L3 score and a ground-truth-input score cover the same
+    # voxels and differ only by the inputs (the rim the eroded mask drops counts as error for every
+    # method alike, as a real pipeline's erosion would).
     mask = inputs / "mask.nii.gz"
+    args.inputs_sfx = inputs_suffix(args.inputs)
+    if args.inputs != "gt":
+        if args.phantom_track != "chisep":
+            raise SystemExit(f"--inputs {args.inputs} is defined for χ-separation phantoms only "
+                             "(--phantom <chisep-track key>)")
+        if args.mode != "isolated":
+            print(f"[inputs {args.inputs}] degraded inputs score isolated χ-separation runs only — "
+                  "forcing --mode isolated")
+            args.mode = "isolated"
     # No `params` local here: every consumer reaches acquisition parameters through gt_sources,
     # which already maps the `params` artifact to inputs/params.json.
-    # GT-backed source map: inputs for raw artifacts, groundtruth for stage boundaries (shared helper).
-    gt_sources = _gt_sources(args.dataset)
+    # GT-backed source map: inputs for raw artifacts, groundtruth for stage boundaries (shared helper),
+    # with the input level's derived maps swapped in (level_sources; identical to gt_sources at gt).
+    gt_sources = level_sources(args.dataset, args.inputs)
     # The PR smoke gate (--smoke --only SLUG) still proves a parity_only original runs: discovery
     # leaves those out of scoring, so the gate names its one method explicitly.
     algos = discover_algorithms(args.track, args.phantom,
@@ -1808,6 +1848,10 @@ def main() -> None:
     if args.exclude:
         drop = set(args.exclude.split(","))
         algos = [a for a in algos if a["slug"] not in drop]
+    if args.inputs != "gt":
+        # Only χ-separation reads the derived inputs; an R2′ generator reads the signal, which is the
+        # same at every level, so its ground-truth-input run already covers it.
+        algos = [a for a in algos if a["stage"] == "chi-separation"]
     # The in-vivo (2016 challenge) dataset ships only localfield + chimap ground truth, so ONLY the
     # dipole stage is scorable (ppm localfield -> ppm chimap). Restrict to dipole methods and force
     # isolated mode — there is no field-mapping/BFR GT to feed a composed matrix, so composed would
