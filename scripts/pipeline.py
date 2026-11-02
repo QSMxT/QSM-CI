@@ -1241,6 +1241,11 @@ def run_isolated(args, algos, gt_sources, gt, mask, iso_target, runs: list) -> N
     algorithm into its default/tuned variants, applies the --shard round-robin, runs them over the
     pool, appends the rows to `runs`, and flushes the index unless writing a shard file."""
     iso_algos = [a for a in algos if not (iso_target and a["slug"] != iso_target)]
+    if getattr(args, "inputs", "gt") != "gt":
+        # At a degraded level only χ-separation is scored isolated. An R2′ generator reads the raw GRE
+        # magnitude, the same at every level, so its ground-truth-level run already scores it; it is
+        # still in `algos` because it feeds this level's GRE-only grid (run_chisep_composed).
+        iso_algos = [a for a in iso_algos if a["stage"] == "chi-separation"]
     iso_tasks = [t for a in iso_algos for t in iso_variants(a)]
     if getattr(args, "inputs", "gt") != "gt":
         # Degraded inputs score each method at its published defaults only: the tuned values were
@@ -1642,12 +1647,20 @@ def run_composed(args, algos, gt_sources, gt, mask, shard_i, shard_n, runs: list
 # isolated run (same GT everywhere else) and the leaderboard can chart "full acquisition vs GRE-only"
 # per method. χ-sep methods that never read r2prime (e.g. R2*-QSM, DECOMPOSE) are natively GRE-only;
 # their isolated runs already ARE the GRE-only condition, so they get no combos here.
+#
+# The grid exists at every input level. With --inputs l3 "all other inputs" are the level's
+# (inputs-l3/: local field, χ, per-echo χ and the eroded mask), the generators read the same raw
+# (noisy) GRE magnitude with the level's mask, and the generated R2′ replaces the level's fitted
+# r2prime. So an L3 combo pairs 1:1 with the method's L3 isolated run, as a ground-truth combo does
+# with its ground-truth run. Ids gain the level suffix (`<gen>~<sep>-cmp[-<phantom>]-l3`) and rows
+# carry inputs: "l3", so the two grids sit side by side in results/index.json.
 # ---------------------------------------------------------------------------------------------------
 
 def do_r2gen(g, args, gt_sources):
     """Run one R2′ generator on the raw GRE inputs, returning (slug, r2prime path, runtime, trace)
     or None on DNF (its combos are skipped, mirroring a DNF'd field-mapping)."""
-    idir, odir = args.work / f"cmp_r2g_{g['slug']}_in", args.work / f"cmp_r2g_{g['slug']}_out"
+    lv = getattr(args, "phantom_sfx", "") + getattr(args, "inputs_sfx", "")   # keep levels apart in --work
+    idir, odir = args.work / f"cmp_r2g_{g['slug']}{lv}_in", args.work / f"cmp_r2g_{g['slug']}{lv}_out"
     try:
         prepare_input(g["consumes"], gt_sources, idir)
         rt = run_algo(g, idir, odir, args.runner)
@@ -1660,14 +1673,22 @@ def do_r2gen(g, args, gt_sources):
         return Failed(g["slug"], e)
 
 
+def combo_id(gen_slug: str, sep_slug: str, args) -> str:
+    """Run id of a GRE-only combo: `<gen>~<sep>-cmp`, then the phantom namespace (non-default phantoms)
+    and the input-level namespace (-l3), in the same order as an isolated id's suffixes."""
+    return (f"{gen_slug}~{sep_slug}-cmp" + getattr(args, "phantom_sfx", "")
+            + getattr(args, "inputs_sfx", ""))
+
+
 def do_chisep_composed(task, args, gt_sources, gt, mask, r2p_cache):
     """Run one (R2′ generator, χ-separation method) combo: the generator's cached R2′ replaces the
-    true r2prime, everything else stays at the ground-truth boundary. Scored exactly like an isolated
-    χ-sep run (two components folded into one row) under `<gen>~<sep>-cmp` with mode=composed and
+    true r2prime, everything else stays at the input level's boundary (ground truth, or inputs-l3/
+    under --inputs l3). Scored exactly like an isolated χ-sep run (two components folded into one
+    row) under `<gen>~<sep>-cmp[-<phantom>][-l3]` with mode=composed and
     combo={r2prime_generation, chi_separation}. The full brain mask is kept — an R2′ of 0 is a valid
     value, so (unlike an eroding BFR) a generator's zero voxels must not shrink the analysis region."""
     gk, c = task
-    cid = f"{gk}~{c['slug']}-cmp" + getattr(args, "phantom_sfx", "")
+    cid = combo_id(gk, c["slug"], args)
     combo = {"r2prime_generation": gk, "chi_separation": c["slug"]}
     stage = "r2prime-generation+chi-separation"
     try:
@@ -1730,15 +1751,16 @@ def run_chisep_composed(args, algos, gt_sources, gt, mask, runs: list) -> None:
             r2p_cache[res[0]] = (res[1], res[2], res[3])
     # A failed generator's combos become DNF rows (not silent skips), so a re-score replaces their
     # previous scores instead of leaving stale "ok" rows — same rule as run_composed.
-    sfx = getattr(args, "phantom_sfx", "")
+    stamp = lambda rows: _stamp_inputs(_stamp_phantom(rows, getattr(args, "phantom", None)),  # noqa: E731
+                                       getattr(args, "inputs", "gt"))
     for g, c in pairs:
         if g["slug"] in failed_gen:
-            row = dnf(f"{g['slug']}~{c['slug']}-cmp{sfx}", c["slug"], c.get("name", c["slug"]),
+            row = dnf(combo_id(g["slug"], c["slug"], args), c["slug"], c.get("name", c["slug"]),
                       "r2prime-generation+chi-separation", "composed", args.track,
                       {"r2prime_generation": g["slug"], "chi_separation": c["slug"]},
                       reason=f"upstream r2prime-generation {g['slug']} DNF: {failed_gen[g['slug']]}")
             row["domain"] = "chisep"
-            runs.extend(_stamp_phantom([row], getattr(args, "phantom", None)))
+            runs.extend(stamp([row]))
 
     # Stage 2 — every (generator, χ-sep method) pair with a live generator, run SERIALLY. A focus
     # job's pairs are N generators × the SAME method, so fanning them over the pool runs N copies
@@ -1748,7 +1770,7 @@ def run_chisep_composed(args, algos, gt_sources, gt, mask, runs: list) -> None:
     tasks = [(g["slug"], c) for g, c in pairs if g["slug"] in r2p_cache]
     for t in tasks:
         r = do_chisep_composed(t, args, gt_sources, gt, mask, r2p_cache)
-        runs.extend(_stamp_phantom([r], getattr(args, "phantom", None)))
+        runs.extend(stamp([r]))
     if not args.runs_out:
         flush_index(runs)
 
@@ -1805,12 +1827,14 @@ def main() -> None:
                          "dipole inversion, no spans, no result rows. Paired with "
                          "--emit-intermediates this regenerates just the viewer's intermediate maps.")
     ap.add_argument("--inputs", choices=INPUT_LEVELS, default="gt",
-                    help="χ-separation input level (chisep-track phantoms, isolated chi-separation runs "
-                         "only). gt (default): the dataset's own inputs, the phantom's true local field, "
-                         "χ and mask. l3: qsm-forward's controlled-degradation level L3 from the "
-                         "dataset's inputs-l3/ (local field, χ, per-echo χ, R2′ and the eroded mask "
-                         "with the error traits of real QSM pipelines). Run ids gain -l3 and rows carry "
-                         "inputs: \"l3\"; scoring uses the same ground truth and brain mask as gt.")
+                    help="χ-separation input level (chisep-track phantoms: the isolated chi-separation "
+                         "runs and the GRE-only grid). gt (default): the dataset's own inputs, the "
+                         "phantom's true local field, χ and mask. l3: qsm-forward's controlled-degradation "
+                         "level L3 from the dataset's inputs-l3/ (local field, χ, per-echo χ, R2′ and the "
+                         "eroded mask with the error traits of real QSM pipelines); in the GRE-only grid "
+                         "each R2′ generator's output (from the raw magnitude and the L3 mask) replaces "
+                         "the L3 R2′. Run ids gain -l3 and rows carry inputs: \"l3\"; scoring uses the "
+                         "same ground truth and brain mask as gt.")
     ap.add_argument("--fail-on-dnf", action="store_true",
                     help="exit non-zero if any run in scope DNF'd (a submission that couldn't run or "
                          "produce a scorable artifact). Used by evaluate.yml so a broken run.sh / crash "
@@ -1858,10 +1882,6 @@ def main() -> None:
         if args.phantom_track != "chisep":
             raise SystemExit(f"--inputs {args.inputs} is defined for χ-separation phantoms only "
                              "(--phantom <chisep-track key>)")
-        if args.mode != "isolated":
-            print(f"[inputs {args.inputs}] degraded inputs score isolated χ-separation runs only — "
-                  "forcing --mode isolated")
-            args.mode = "isolated"
     # No `params` local here: every consumer reaches acquisition parameters through gt_sources,
     # which already maps the `params` artifact to inputs/params.json.
     # GT-backed source map: inputs for raw artifacts, groundtruth for stage boundaries (shared helper),
@@ -1878,9 +1898,10 @@ def main() -> None:
         drop = set(args.exclude.split(","))
         algos = [a for a in algos if a["slug"] not in drop]
     if args.inputs != "gt":
-        # Only χ-separation reads the derived inputs; an R2′ generator reads the signal, which is the
-        # same at every level, so its ground-truth-input run already covers it.
-        algos = [a for a in algos if a["stage"] == "chi-separation"]
+        # Only χ-separation reads the derived inputs. R2′ generators stay: they read the signal (the
+        # same at every level, so they are not re-scored isolated here, see run_isolated) and feed
+        # this level's GRE-only grid.
+        algos = [a for a in algos if a["stage"] in ("chi-separation", "r2prime-generation")]
     # The in-vivo (2016 challenge) dataset ships only localfield + chimap ground truth, so ONLY the
     # dipole stage is scorable (ppm localfield -> ppm chimap). Restrict to dipole methods and force
     # isolated mode — there is no field-mapping/BFR GT to feed a composed matrix, so composed would

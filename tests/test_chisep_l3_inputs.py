@@ -3,9 +3,10 @@
 qsm-forward's controlled-degradation level L3 (qsm_forward.degrade) is calibrated to real QSM
 pipelines; its physics is tested in qsm-forward. Here: pack_dataset.py ships it as inputs-l3/
 beside the untouched ground-truth inputs, gen_chisep_preset.py asks the generator for it and zips it,
-score_plan.py plans a separate isolated job for it, and pipeline.py --inputs l3 mounts it in place of
-the five derived artifacts, scores on the dataset's brain mask, and namespaces the rows. Tiny volumes
-and a fixture method on the container-free local runner.
+score_plan.py plans a separate job for it, and pipeline.py --inputs l3 mounts it in place of the five
+derived artifacts, scores on the dataset's brain mask, and namespaces the rows. The GRE-only grid runs
+at L3 too: each generator reads the raw magnitude with the L3 mask and its R2′ replaces the L3 one.
+Tiny volumes and fixture methods on the container-free local runner.
 """
 from __future__ import annotations
 
@@ -165,22 +166,26 @@ REG = {"sim": {"track": "sim", "active": True, "default": True},
        "plain": {"track": "chisep", "active": True, "default": False}}
 
 
-def test_planner_adds_one_isolated_l3_job_per_listed_phantom(tmp_path):
+def test_planner_adds_one_l3_job_per_listed_phantom(tmp_path):
     sp = _score_plan()
     root = tmp_path / "algorithms"
-    for slug, body in {"chi": "stage: chi-separation\nimage: x\n",
+    for slug, body in {"chi": "stage: chi-separation\nimage: x\n",   # no inputs: = reads everything
+                       "native": "stage: chi-separation\nimage: x\ninputs: [chimap, magnitude, mask]\n",
                        "gen": "stage: r2prime-generation\nimage: x\n"}.items():
         (root / slug).mkdir(parents=True)
         (root / slug / "algorithm.yml").write_text(body)
     t = {x["id"]: x for x in sp.plan_tasks(root, REG, full=True, slugs=[])}
-    assert {"f-chi", "f-chi-l3", "f-chi-plain", "f-gen", "f-gen-plain"} <= set(t)
+    assert {"f-chi", "f-chi-l3", "f-chi-plain", "f-native-l3", "f-gen", "f-gen-plain"} <= set(t)
     assert "f-chi-plain-l3" not in t and "f-gen-l3" not in t     # not listed / not a χ-sep method
-    assert t["f-chi-l3"]["inputs"] == "l3" and t["f-chi-l3"]["mode"] == "isolated"
-    assert t["f-chi-l3"]["focus"] == "chi" and t["f-chi-l3"]["phantom"] == "meso"
+    assert t["f-chi-l3"]["inputs"] == "l3" and t["f-chi-l3"]["focus"] == "chi"
+    assert t["f-chi-l3"]["phantom"] == "meso"
     assert "inputs" not in t["f-chi"]
-    # a changed R2′ generator re-plans the GRE-only combos, which have no degraded-input runs
+    # an R2′-consuming method's L3 job also runs its GRE-only grid (the dataset's mode, both); a
+    # GRE-native method has none, so its L3 job stays isolated
+    assert "mode" not in t["f-chi-l3"] and t["f-native-l3"]["mode"] == "isolated"
+    # a changed R2′ generator re-plans the GRE-only combos at every level, not the GRE-native jobs
     ids = {x["id"] for x in sp.plan_tasks(root, REG, full=False, slugs=["gen"])}
-    assert "f-chi" in ids and "f-chi-l3" not in ids
+    assert {"f-chi", "f-chi-l3"} <= ids and not ids & {"f-native", "f-native-l3"}
     assert "f-chi-l3" in {x["id"] for x in sp.plan_tasks(root, REG, full=False, slugs=["chi"])}
 
 
@@ -202,6 +207,7 @@ def _chisep_dataset(ds: Path) -> dict:
     v["chimap_l3"] = (v["chimap"] + rng.standard_normal(SHAPE) * 0.02) * l3mask
     v["mask"], v["l3mask"] = mask, l3mask
     _save(ds / "inputs" / "mask.nii.gz", mask)
+    _save(ds / "inputs" / "magnitude.nii.gz", np.ones(SHAPE + (len(TE),)))
     (ds / "inputs" / "params.json").write_text(json.dumps({"TE": TE, "B0": 3.0, "B0_dir": [0, 0, 1],
                                                            "voxel_size": [1, 1, 1]}))
     for f in ("localfield", "r2prime"):
@@ -255,6 +261,62 @@ def test_pipeline_inputs_level_end_to_end(tmp_path, level):
     chi = v["chimap_l3"] if level == "l3" else v["chimap"]
     want = qsm_eval.correlation(chi.astype("float32"), v["para"].astype("float32"), v["mask"])
     assert r["metrics"]["para_correlation"] == pytest.approx(want, abs=1e-5)
+
+
+def _gre_methods(root: Path) -> None:
+    """A fixture R2′ generator (writes 7·mask, so its output is traceable) and an R2′-consuming
+    χ-sep method that writes the R2′ it was handed as χ+ and the χ it was handed as χ−."""
+    g = root / "fx-gen"
+    g.mkdir(parents=True)
+    (g / "algorithm.yml").write_text("name: FX gen\nslug: fx-gen\nstage: r2prime-generation\n"
+                                     "image: bash:latest\nrun: bash run.sh\n")
+    (g / "run.sh").write_text('#!/usr/bin/env bash\nset -euo pipefail\nIN="${1:-/input}"; OUT="${2:-/output}"\n'
+                              'python3 -c "import nibabel as n,sys; m=n.load(sys.argv[1]); '
+                              'n.save(n.Nifti1Image(m.get_fdata()*7, m.affine), sys.argv[2])" '
+                              '"$IN/mask.nii.gz" "$OUT/r2prime.nii.gz"\n')
+    c = root / "r2p-chisep"
+    c.mkdir(parents=True)
+    (c / "algorithm.yml").write_text("name: R2p chisep\nslug: r2p-chisep\nstage: chi-separation\n"
+                                     "inputs: [chimap, r2prime, mask, params]\n"
+                                     "image: bash:latest\nrun: bash run.sh\n")
+    (c / "run.sh").write_text('#!/usr/bin/env bash\nset -euo pipefail\nIN="${1:-/input}"; OUT="${2:-/output}"\n'
+                              'cp "$IN/r2prime.nii.gz" "$OUT/chi-para.nii.gz"\n'
+                              'cp "$IN/chimap.nii.gz" "$OUT/chi-dia.nii.gz"\n')
+
+
+@pytest.mark.parametrize("level", ["gt", "l3"])
+def test_gre_only_grid_runs_at_each_input_level(tmp_path, level):
+    v = _chisep_dataset(tmp_path / "ds")
+    _gre_methods(tmp_path / "algos")
+    reg = {"chisep-fx": {"track": "chisep", "label": "fx", "osf_file": "x", "path": "x", "active": True,
+                         "default": False, "input_levels": ["l3"]}}
+    (tmp_path / "reg.json").write_text(json.dumps(reg))
+    env = {**os.environ, "QSMCI_ALGORITHMS_DIR": str(tmp_path / "algos"),
+           "QSMCI_DATASETS_FILE": str(tmp_path / "reg.json")}
+    work = tmp_path / "work"
+    subprocess.run([sys.executable, str(ROOT / "scripts" / "pipeline.py"), "--dataset", str(tmp_path / "ds"),
+                    "--phantom", "chisep-fx", "--mode", "both", "--runner", "local", "--track", "sim",
+                    "--inputs", level, "--focus", "r2p-chisep", "--runs-out", str(tmp_path / "runs.json"),
+                    "--work", str(work)], cwd=str(ROOT), env=env, check=True, capture_output=True, text=True)
+    by_id = {r["id"]: r for r in json.loads((tmp_path / "runs.json").read_text())}
+    lv = "-l3" if level == "l3" else ""
+    # the method's isolated run and its one combo — the generator is not re-scored at a degraded level
+    want = {f"r2p-chisep-iso-chisep-fx{lv}", f"fx-gen~r2p-chisep-cmp-chisep-fx{lv}"}
+    assert set(by_id) == want, sorted(by_id)
+    cmp = by_id[f"fx-gen~r2p-chisep-cmp-chisep-fx{lv}"]
+    assert cmp["status"] == "ok" and cmp["mode"] == "composed"
+    assert cmp["combo"] == {"r2prime_generation": "fx-gen", "chi_separation": "r2p-chisep"}
+    assert all(r.get("inputs") == (None if level == "gt" else "l3") for r in by_id.values())
+    # the generator read the raw magnitude with the level's mask …
+    gin = work / f"cmp_r2g_fx-gen-chisep-fx{lv}_in"
+    src = tmp_path / "ds" / ("inputs-l3" if level == "l3" else "inputs")
+    assert (gin / "mask.nii.gz").read_bytes() == (src / "mask.nii.gz").read_bytes()
+    assert (gin / "magnitude.nii.gz").read_bytes() == (tmp_path / "ds" / "inputs" / "magnitude.nii.gz").read_bytes()
+    # … and the method got the generator's R2′ (7·level mask) with the rest of the level's inputs
+    cin = work / f"cmp_fx-gen~r2p-chisep-cmp-chisep-fx{lv}_in"
+    r2p = nib.load(str(cin / "r2prime.nii.gz")).get_fdata()
+    assert np.array_equal(r2p, 7 * (v["l3mask"] if level == "l3" else v["mask"]))
+    assert (cin / "chimap.nii.gz").read_bytes() == (src / "chimap.nii.gz").read_bytes()
 
 
 def test_pipeline_refuses_l3_off_the_chisep_track(tmp_path):
