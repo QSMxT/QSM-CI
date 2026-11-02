@@ -13,5 +13,7 @@ CFG="$IN/config.json"
 if [ -f "$CFG" ]; then
   V=$(jq -r '.radius // empty' "$CFG"); [ -n "$V" ] && SET="$SET --radius $V"
   V=$(jq -r '.tik_reg // empty' "$CFG"); [ -n "$V" ] && SET="$SET --tik-reg $V"
+  V=$(jq -r '.tol // empty' "$CFG"); [ -n "$V" ] && SET="$SET --tol $V"
+  V=$(jq -r '.max_iter // empty' "$CFG"); [ -n "$V" ] && SET="$SET --max-iter $V"
 fi
 qsmxt bgremove resharp "$IN/totalfield.nii.gz" -m "$IN/mask.nii.gz" -o "$OUT/localfield.nii.gz" --b0-direction $B0 $SET

@@ -4,6 +4,7 @@ algorithm: fansi
 variant: nltv
 source: qsmrs
 stage: dipole
+inputs: [localfield, mask, params, magnitude]  # run.sh passes --magnitude (the data weight) to a qsmxt that has it
 language: Rust
 family: iterative
 learning: none

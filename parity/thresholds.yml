@@ -857,3 +857,170 @@ pairs:
         # Measured: NRMSE 0.00035 %, r 1.000000, max |Δ| 2.3e-05 ppm, p99 |Δ| 1.8e-07 ppm.
         chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 2.83e-05, p99_abs_max: 1.0e-06 }
         measured: { pr389: "run 41277793603: QSMxT heidi-checkbox b4a8658 (QSMxT/QSMxT#471), QSM.rs heidi-cone-fill 76a8ac4 (astewartau/QSM.rs#389); heidi-v4 sha256:69f57226… (limits)" }
+
+  # ---- FANSI toolbox originals (MATLAB, FANSI 93044a3; fidelity: QSMxT/QSM-CI#325). Every one
+  # converts the local field to radians with FANSI's gyro = 2π·42.58 (QSM.rs: 42.576) and weights
+  # the data by FANSI's in vivo form, min(2·mask·iMag/max(iMag), 1), iMag the root sum of squares
+  # of the echoes, as QSMxT gives the ports. Both sides at their defaults.
+  ndi:
+    reference: ndi
+    candidate: ndi-qsmrs
+    enabled: false
+    note: baseline pending
+    qsmrs_paths: [src/constants.rs, src/fft.rs, src/grid.rs, src/inversion/admm.rs,
+                  src/inversion/ndi.rs, src/kernels/, src/pipeline/inversion.rs,
+                  src/pipeline/rules.rs, src/utils/echo_time.rs, src/utils/gradient.rs,
+                  src/utils/mask.rs, src/utils/ops.rs]
+    qsmxt_paths: *invert_wiring
+    datasets:
+      sim: {}
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
+        feed: { localfield: localfield }
+  fansi-nltv:
+    reference: fansi-nltv
+    candidate: fansi-nltv-qsmrs
+    enabled: false
+    note: baseline pending
+    qsmrs_paths: &fansi_paths [src/constants.rs, src/fft.rs, src/grid.rs, src/inversion/admm.rs,
+                               src/inversion/fansi.rs, src/kernels/, src/pipeline/inversion.rs,
+                               src/pipeline/rules.rs, src/utils/echo_time.rs,
+                               src/utils/gradient.rs, src/utils/mask.rs, src/utils/ops.rs]
+    qsmxt_paths: *invert_wiring
+    datasets:
+      sim: {}
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
+        feed: { localfield: localfield }
+  fansi-nltgv:
+    reference: fansi-nltgv
+    candidate: fansi-nltgv-qsmrs
+    enabled: false
+    note: baseline pending
+    qsmrs_paths: *fansi_paths
+    qsmxt_paths: *invert_wiring
+    datasets:
+      sim: {}
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
+        feed: { localfield: localfield }
+  l1qsm:
+    reference: l1qsm
+    candidate: l1qsm-qsmrs
+    enabled: false
+    note: baseline pending
+    qsmrs_paths: [src/constants.rs, src/fft.rs, src/grid.rs, src/inversion/admm.rs,
+                  src/inversion/l1qsm.rs, src/kernels/, src/pipeline/inversion.rs,
+                  src/pipeline/rules.rs, src/utils/echo_time.rs, src/utils/gradient.rs,
+                  src/utils/mask.rs, src/utils/ops.rs]
+    qsmxt_paths: *invert_wiring
+    datasets:
+      sim: {}
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
+        feed: { localfield: localfield }
+  whqsm:
+    reference: whqsm
+    candidate: whqsm-qsmrs
+    enabled: false
+    note: baseline pending
+    qsmrs_paths: [src/constants.rs, src/fft.rs, src/grid.rs, src/inversion/admm.rs,
+                  src/inversion/whqsm.rs, src/kernels/, src/pipeline/inversion.rs,
+                  src/pipeline/rules.rs, src/utils/echo_time.rs, src/utils/gradient.rs,
+                  src/utils/mask.rs, src/utils/ops.rs]
+    qsmxt_paths: *invert_wiring
+    datasets:
+      sim: {}
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
+        feed: { localfield: localfield }
+
+  # ---- HD-QSM, the authors' HDQSM.m (MATLAB; fidelity: QSMxT/QSM-CI#327)
+  hdqsm:
+    reference: hdqsm
+    candidate: hdqsm-qsmrs
+    enabled: false
+    note: baseline pending
+    qsmrs_paths: [src/constants.rs, src/fft.rs, src/grid.rs, src/inversion/admm.rs,
+                  src/inversion/hdqsm.rs, src/kernels/, src/pipeline/inversion.rs,
+                  src/pipeline/rules.rs, src/utils/gradient.rs, src/utils/mask.rs,
+                  src/utils/ops.rs]
+    qsmxt_paths: *invert_wiring
+    datasets:
+      sim: {}
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
+        feed: { localfield: localfield }
+  # Experiment (not for merge): the candidate weighted by the original's own data weight.
+  hdqsm-weightfeed:
+    reference: hdqsm
+    candidate: hdqsm-qsmrs
+    enabled: false
+    note: experiment
+    qsmrs_paths: [src/inversion/hdqsm.rs]
+    qsmxt_paths: *invert_wiring
+    datasets:
+      sim:
+        feed: { magnitude: weight }
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
+        feed: { localfield: localfield, magnitude: weight }
+
+  # ---- RESHARP, the first author's resharp.m (MATLAB, sunhongfu/QSM c75b138; fidelity: #352)
+  resharp:
+    reference: resharp
+    candidate: resharp-qsmrs
+    enabled: false
+    note: baseline pending
+    qsmrs_paths: [src/bgremove/resharp.rs, src/fft.rs, src/grid.rs, src/kernels/,
+                  src/pipeline/bg_removal.rs, src/pipeline/rules.rs, src/solvers/cg.rs]
+    qsmxt_paths: *bgremove_wiring
+    datasets:
+      sim: {}
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs]
+        feed: { totalfield: totalfield }
+
+  # ---- MEDI toolbox 2024.11.26 originals (MATLAB; fidelity: QSMxT/QSM-CI#322)
+  pdf:
+    reference: pdf-cornell
+    candidate: pdf-qsmrs
+    enabled: false
+    note: baseline pending
+    qsmrs_paths: [src/bgremove/pdf.rs, src/constants.rs, src/error.rs, src/fft.rs, src/grid.rs,
+                  src/kernels/, src/pipeline/bg_removal.rs, src/pipeline/rules.rs,
+                  src/utils/multi_echo.rs]
+    qsmxt_paths: *bgremove_wiring
+    datasets:
+      sim: {}
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs]
+        feed: { totalfield: totalfield }
+  lbv:
+    reference: lbv-cornell
+    candidate: lbv-qsmrs
+    enabled: false
+    note: baseline pending
+    qsmrs_paths: [src/bgremove/lbv.rs, src/grid.rs, src/pipeline/bg_removal.rs,
+                  src/pipeline/rules.rs]
+    qsmxt_paths: *bgremove_wiring
+    datasets:
+      sim: {}
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs]
+        feed: { totalfield: totalfield }
+  tfi:
+    reference: tfi-cornell
+    candidate: tfi-qsmrs
+    enabled: false
+    note: baseline pending
+    qsmrs_paths: [src/constants.rs, src/error.rs, src/fft.rs, src/grid.rs, src/inversion/medi.rs,
+                  src/inversion/tfi.rs, src/kernels/, src/pipeline/inversion.rs,
+                  src/pipeline/rules.rs, src/utils/bias_correction.rs, src/utils/echo_time.rs,
+                  src/utils/morphology.rs, src/utils/multi_echo.rs]
+    qsmxt_paths: *invert_wiring
+    datasets:
+      sim: {}
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs]
+        feed: { totalfield: totalfield }

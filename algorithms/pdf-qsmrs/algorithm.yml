@@ -3,6 +3,7 @@ slug: pdf-qsmrs
 algorithm: pdf
 source: qsmrs
 stage: bfr
+inputs: [totalfield, mask, params, magnitude]  # run.sh passes --magnitude (PDF's noise weight) to a qsmxt that has it
 language: Rust
 family: iterative
 learning: none

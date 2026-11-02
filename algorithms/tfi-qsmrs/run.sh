@@ -20,7 +20,25 @@ CFG="$IN/config.json"
 if [ -f "$CFG" ]; then
   V=$(jq -r '.lambda // empty' "$CFG");  [ -n "$V" ] && SET="$SET --lambda $V"
   V=$(jq -r '.precond // empty' "$CFG"); [ -n "$V" ] && SET="$SET --precond $V"
+  # MEDI_L1's other settings (merit and linear are booleans: `// empty` would swallow false)
+  V=$(jq -r 'if has("merit") then .merit | tostring else empty end' "$CFG"); [ -n "$V" ] && SET="$SET --merit $V"
+  V=$(jq -r 'if has("linear") then .linear | tostring else empty end' "$CFG"); [ -n "$V" ] && SET="$SET --linear $V"
+  V=$(jq -r '.data_weighting // empty' "$CFG"); [ -n "$V" ] && SET="$SET --data-weighting $V"
+  V=$(jq -r '.percentage // empty' "$CFG"); [ -n "$V" ] && SET="$SET --percentage $V"
+  V=$(jq -r '.cg_tol // empty' "$CFG"); [ -n "$V" ] && SET="$SET --cg-tol $V"
+  V=$(jq -r '.cg_max_iter // empty' "$CFG"); [ -n "$V" ] && SET="$SET --cg-max-iter $V"
+  V=$(jq -r '.max_iter // empty' "$CFG"); [ -n "$V" ] && SET="$SET --max-iter $V"
+  V=$(jq -r '.tol // empty' "$CFG"); [ -n "$V" ] && SET="$SET --tol $V"
 fi
 
+# QSMxT after v10.0.0 runs TFI as the MEDI toolbox implements it (MEDI_L1 with a preconditioner,
+# astewartau/QSM.rs#246): λ on MEDI's scale (default 1000), the field in radians over the echo
+# spacing, every echo's magnitude required (edge mask and Fit_ppm_complex's noise weight). It needs
+# the field strength and echo times; a `--set lambda` from the pinned v10.0.0 (λ 7.5e-5 scale) does
+# not carry over. qsmxt v10.0.0 takes no scan parameters.
+SCAN=""
+if qsmxt invert tfi --help 2>/dev/null | grep -q -- '--field-strength'; then
+  SCAN="--field-strength $(jq -r .B0 "$IN/params.json") --echo-times $(jq -r '.TE | map(tostring) | join(" ")' "$IN/params.json")"
+fi
 qsmxt invert tfi "$IN/totalfield.nii.gz" -m "$IN/mask.nii.gz" -o "$OUT/chimap.nii.gz" \
-  --b0-direction $B0 $MAG $SET
+  --b0-direction $B0 $SCAN $MAG $SET
