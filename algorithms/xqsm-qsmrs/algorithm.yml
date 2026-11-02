@@ -1,0 +1,35 @@
+name: xQSM (QSM.rs)
+slug: xqsm-qsmrs
+algorithm: xqsm
+source: qsmrs
+stage: dipole
+language: Rust
+family: deep-learning
+learning: pretrained
+inputs: [localfield, mask, params]
+engine: QSMxT / QSM.rs
+description: >
+  xQSM as QSM.rs runs it: the authors' trained weights exported to ONNX and run by `qsmxt invert
+  xqsm` (QSM.rs's ONNX engine, CPU). The QSM.rs port of the `xqsm` entry, which runs the authors'
+  own code and weights.
+authors:
+- name: Gao Y.
+- name: Zhu X.
+- name: Moffat B.A.
+- name: Glarin R.
+- name: Wilman A.H.
+- name: Pike G.B.
+- name: Crozier S.
+- name: Liu F.
+- name: Sun H.
+- name: Ashley Stewart
+  note: QSM.rs / QSMxT ONNX port
+doi: 10.1002/nbm.4461
+citation: Gao et al., NMR Biomed 2021
+code_url: https://github.com/astewartau/QSM.rs
+license: 'MIT (QSM.rs); the weights keep the original''s terms: Used with author permission (Hongfu
+  Sun); see repository for terms.'
+# The weights are QSM.rs's ONNX exports (qsmxt/qsm-onnx-weights), baked into the image with
+# algorithms/_qsmxt/models.Dockerfile, since a submission runs with no network.
+image: ghcr.io/astewartau/qsm-ci/qsmxt@sha256:3fd27500c18778edc21fd771828573e01c353e4c6147124977293e51256a9053   # v10.0.0-models-2
+run: bash run.sh

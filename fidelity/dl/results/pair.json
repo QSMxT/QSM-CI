@@ -1,0 +1,241 @@
+[
+ {
+  "reference": "xqsm",
+  "candidate": "xqsm-qsmrs",
+  "candidate_image": "localhost/qsmxt-main-models:da928e0",
+  "candidate_seconds": 108.4,
+  "metrics": {
+   "chimap": {
+    "nrmse_pct": 0.00041818718991472917,
+    "r": 0.9999999999912814,
+    "max_abs_diff": 3.1828880310058594e-05,
+    "max_abs_diff_rel_pct": 0.000687549564083276,
+    "voxels": 1495078
+   }
+  }
+ },
+ {
+  "reference": "qsmnet",
+  "candidate": "qsmnet-qsmrs",
+  "candidate_image": "localhost/qsmxt-main-models:da928e0",
+  "candidate_seconds": 38.9,
+  "metrics": {
+   "chimap": {
+    "nrmse_pct": 125.6949635447429,
+    "r": 0.7587181867323002,
+    "max_abs_diff": 0.5077815055847168,
+    "max_abs_diff_rel_pct": 38.81996804418841,
+    "voxels": 1495078
+   }
+  }
+ },
+ {
+  "reference": "qsmnet-plus",
+  "candidate": "qsmnet-plus-qsmrs",
+  "candidate_image": "localhost/qsmxt-main-models:da928e0",
+  "candidate_seconds": 54.5,
+  "metrics": {
+   "chimap": {
+    "nrmse_pct": 0.0002021182708057635,
+    "r": 0.9999999999979334,
+    "max_abs_diff": 4.071742296218872e-06,
+    "max_abs_diff_rel_pct": 0.0003364852737050643,
+    "voxels": 1495078
+   }
+  }
+ },
+ {
+  "reference": "lpcnn",
+  "candidate": "lpcnn-qsmrs",
+  "candidate_image": "localhost/qsmxt-main-models:da928e0",
+  "candidate_seconds": 40.0,
+  "metrics": {
+   "chimap": {
+    "nrmse_pct": 3.171927931536722e-05,
+    "r": 0.9999999999999433,
+    "max_abs_diff": 7.748603820800781e-07,
+    "max_abs_diff_rel_pct": 6.261481389432354e-05,
+    "voxels": 1495078
+   }
+  }
+ },
+ {
+  "reference": "qsmgan",
+  "candidate": "qsmgan-qsmrs",
+  "candidate_image": "localhost/qsmxt-main-models:da928e0",
+  "candidate_seconds": 36.3,
+  "metrics": {
+   "chimap": {
+    "nrmse_pct": 0.00015805301061209027,
+    "r": 0.9999999999987477,
+    "max_abs_diff": 1.5854835510253906e-05,
+    "max_abs_diff_rel_pct": 0.0035817154235533335,
+    "voxels": 1495078
+   }
+  }
+ },
+ {
+  "reference": "modl-qsm",
+  "candidate": "modl-qsm-qsmrs",
+  "candidate_image": "localhost/qsmxt-main-models:da928e0",
+  "candidate_seconds": 75.1,
+  "metrics": {
+   "chimap": {
+    "nrmse_pct": 3.830589766773218,
+    "r": 0.9992571803459245,
+    "max_abs_diff": 0.004210416227579117,
+    "max_abs_diff_rel_pct": 0.2755344657843962,
+    "voxels": 1495078
+   }
+  }
+ },
+ {
+  "reference": "autoqsm",
+  "candidate": "autoqsm-qsmrs",
+  "candidate_image": "localhost/qsmxt-main-models:da928e0",
+  "candidate_seconds": 209.6,
+  "metrics": {
+   "chimap": {
+    "nrmse_pct": 0.00013221181049811402,
+    "r": 0.9999999999991276,
+    "max_abs_diff": 3.390014171600342e-07,
+    "max_abs_diff_rel_pct": 6.598162561091735e-05,
+    "voxels": 1495078
+   }
+  }
+ },
+ {
+  "reference": "nextqsm",
+  "candidate": "nextqsm-qsmrs",
+  "candidate_image": "localhost/qsmxt-main-models:da928e0",
+  "candidate_seconds": 221.7,
+  "metrics": {
+   "chimap": {
+    "nrmse_pct": 0.9749220763741948,
+    "r": 0.9999524753418305,
+    "max_abs_diff": 0.03319886629469693,
+    "max_abs_diff_rel_pct": 3.274847852235531,
+    "voxels": 1495078
+   }
+  }
+ },
+ {
+  "reference": "bfrnet",
+  "candidate": "bfrnet-qsmrs",
+  "candidate_image": "localhost/qsmxt-main-models:da928e0",
+  "candidate_seconds": 200.7,
+  "metrics": {
+   "localfield": {
+    "nrmse_pct": 0.5580850384197272,
+    "r": 0.9999847659698263,
+    "max_abs_diff": 0.007055588066577911,
+    "max_abs_diff_rel_pct": 0.9259318287488258,
+    "voxels": 1495078
+   }
+  }
+ },
+ {
+  "reference": "chisepnet",
+  "candidate": "chisepnet-qsmrs",
+  "candidate_image": "localhost/qsmxt-main-models:da928e0",
+  "candidate_seconds": 64.4,
+  "metrics": {
+   "chi-para": {
+    "nrmse_pct": 2.4903482126846375,
+    "r": 0.9995759408462328,
+    "max_abs_diff": 0.2853921055793762,
+    "max_abs_diff_rel_pct": 12.696497886500204,
+    "voxels": 1495078
+   },
+   "chi-dia": {
+    "nrmse_pct": 1.5093200748795084,
+    "r": 0.9998162131406582,
+    "max_abs_diff": 0.14270436763763428,
+    "max_abs_diff_rel_pct": 6.502511288631323,
+    "voxels": 1495078
+   }
+  }
+ },
+ {
+  "reference": "susep-net",
+  "candidate": "susep-net-qsmrs",
+  "candidate_image": "localhost/qsmxt-main-models:da928e0",
+  "candidate_seconds": 122.0,
+  "metrics": {
+   "chi-para": {
+    "nrmse_pct": 2.5244491314336065e-05,
+    "r": 0.9999999999999579,
+    "max_abs_diff": 1.9073486328125e-06,
+    "max_abs_diff_rel_pct": 5.349941334549553e-05,
+    "voxels": 1495078
+   },
+   "chi-dia": {
+    "nrmse_pct": 2.319999492393744e-05,
+    "r": 0.9999999999999625,
+    "max_abs_diff": 1.1920928955078125e-06,
+    "max_abs_diff_rel_pct": 3.901272220476186e-05,
+    "voxels": 1495078
+   }
+  }
+ },
+ {
+  "reference": "iqsm",
+  "candidate": "qsmxt-run",
+  "candidate_image": "localhost/qsmxt-main-models:da928e0",
+  "candidate_seconds": 80.5,
+  "metrics": {
+   "chimap": {
+    "nrmse_pct": 19.60179088141018,
+    "r": 0.9816004599801127,
+    "max_abs_diff": 0.7358839213848114,
+    "max_abs_diff_rel_pct": 55.18187906570282,
+    "voxels": 1495078
+   }
+  }
+ },
+ {
+  "reference": "iqsm-plus",
+  "candidate": "qsmxt-run",
+  "candidate_image": "localhost/qsmxt-main-models:da928e0",
+  "candidate_seconds": 185.1,
+  "metrics": {
+   "chimap": {
+    "nrmse_pct": 20.73938111402957,
+    "r": 0.9798992485397909,
+    "max_abs_diff": 0.8004469871520996,
+    "max_abs_diff_rel_pct": 67.91615566640083,
+    "voxels": 1495078
+   }
+  }
+ },
+ {
+  "reference": "iqfm",
+  "candidate": "qsmxt-run",
+  "candidate_image": "localhost/qsmxt-main-models:da928e0",
+  "candidate_seconds": 58.7,
+  "metrics": {
+   "localfield": {
+    "nrmse_pct": 20.80425758735153,
+    "r": 0.9760716373693383,
+    "max_abs_diff": 0.29448196291923523,
+    "max_abs_diff_rel_pct": 70.22228965666237,
+    "voxels": 1495078
+   }
+  }
+ },
+ {
+  "reference": "r2primenet",
+  "candidate": "qsmxt-run",
+  "candidate_image": "localhost/qsmxt-main-models:da928e0",
+  "candidate_seconds": 94.5,
+  "metrics": {
+   "r2prime": {
+    "nrmse_pct": 33.516218079996555,
+    "r": 0.9558209372531702,
+    "max_abs_diff": 820.5520324707031,
+    "max_abs_diff_rel_pct": 62.08262086922438,
+    "voxels": 1495078
+   }
+  }
+ }
+]

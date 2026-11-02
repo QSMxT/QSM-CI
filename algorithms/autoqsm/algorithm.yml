@@ -27,3 +27,16 @@ code_url: https://github.com/AMRI-Lab/AutoQSM
 license: none declared; used with author permission
 image: ghcr.io/astewartau/qsm-ci/autoqsm@sha256:8b5e8552a6795a59add02f9ddb392f45c7a8dcb98f465520ecda89a2fa055d54   # v1
 run: bash run.sh
+# The original, checked (QSMxT/QSM-CI#301): pinned versions and weights, and the same output
+# twice at fixed threads. fidelity/dl/README.md; rerun whenever the image changes.
+fidelity:
+  date: 2026-10-28
+  image: sha256:8b5e8552a6795a59add02f9ddb392f45c7a8dcb98f465520ecda89a2fa055d54
+  source: AMRI-Lab/AutoQSM b59f5e7 (unmodified)
+  weights: [models/vnet/model_final_1.hdf5 988a0909]   # sha256 prefixes; full hashes in fidelity/dl/results/weights.sha256
+  python: Python 3.6.15, TensorFlow 1.15.0, Keras 2.2.5
+  threads: 4   # OMP/MKL/OPENBLAS/TF_NUM_*_THREADS set by fidelity/dl/harness.py
+  host: Intel Core i5-11500, podman
+  tolerance: identical   # image twice, 128x160x96 box of prisma-bridge-run1
+  result: pass
+  report: fidelity/dl/README.md

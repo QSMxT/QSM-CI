@@ -38,17 +38,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Default (CUDA) PyTorch wheel + NIfTI/array/matlab-io deps. The CUDA wheel bundles its own CUDA
 # runtime, so it needs only an NVIDIA driver at run time (via --nv/--gpus) and falls back to CPU.
 RUN pip install --no-cache-dir \
-        "torch>=2.1.0" \
+        "torch==2.13.0" \
  && pip install --no-cache-dir \
-        "numpy>=1.23" \
-        "scipy>=1.10" \
-        "nibabel>=5.0"
+        "numpy==2.2.6" \
+        "scipy==1.15.3" \
+        "nibabel==5.4.2"
 
 # Clone INR-QSM (model.py / utils.py are reused by the wrapper; transfer-learning init comes along).
 # Pin a ref for reproducibility (override with --build-arg INR_QSM_REF=<sha>).
-ARG INR_QSM_REF=main
+# Pinned (QSMxT/QSM-CI#301) to what the published image holds, so its scores stand: the head of the
+# default branch then and now.
+ARG INR_QSM_REF=a8f767a136413b2e64575cad694865c542bfee04
 RUN git clone https://github.com/AMRI-Lab/INR-QSM /opt/INR-QSM \
- && git -C /opt/INR-QSM checkout "$INR_QSM_REF"
+ && git -C /opt/INR-QSM checkout "$INR_QSM_REF" \
+ && echo '04ed3afd80c2f8f6397a72b38e2410372cf6985d9984ed0d31246efb04e3fbec  /opt/INR-QSM/inr-qsm/transfer_learning/pre_trained_weight_for_transfer_learning.pkl' \
+    | sha256sum -c -
 # The python package lives in the repo's inr-qsm/ subdir (model.py, utils.py, config.py, main.py).
 ENV INR_QSM_HOME="/opt/INR-QSM/inr-qsm"
 

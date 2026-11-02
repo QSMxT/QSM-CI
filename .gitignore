@@ -101,12 +101,11 @@ algorithms/tkd-qsmci/Dockerfile
 # star-sti: the two STI Suite Support_Functions folders QSM_star needs (see its BUILD.md).
 algorithms/star-sti/kiwi/
 algorithms/star-sti/sparsa/
-# IR2QSM: a baked pretrained checkpoint CI cannot reproduce (the authors' single-file Drive link is
-# quota-blocked). Same rule: CI PULLs the pushed image, so keep its Dockerfile out of the checkout.
+# IR2QSM's Dockerfile is committed (QSMxT/QSM-CI#301): it records the pins of the published image.
+# Its checkpoint comes from the authors' Drive link at build time, or by hand (see the Dockerfile).
 # (The compiled-MATLAB FANSI/NDI/L1-QSM/WH-QSM/HD-QSM submissions once listed here were replaced by
 # QSM.rs ports — fansi-*-qsmrs, ndi-qsmrs, l1qsm-qsmrs, whqsm-qsmrs, hdqsm-qsmrs — which run on the
 # shared qsmxt image with no Dockerfile.)
-algorithms/ir2qsm/Dockerfile
 # AMP-PE: the upstream MIT solver (amp_pe_qsm/, functions/) is a build-time dep fetched via
 # git clone and baked into the compiled recon binary (see BUILD.md), so it isn't committed.
 algorithms/amp-pe/amp_pe_qsm/

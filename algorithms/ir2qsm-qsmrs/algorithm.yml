@@ -1,0 +1,36 @@
+name: IR2QSM (QSM.rs)
+slug: ir2qsm-qsmrs
+algorithm: ir2qsm
+source: qsmrs
+stage: dipole
+language: Rust
+family: deep-learning
+learning: pretrained
+inputs: [localfield, mask, params]
+engine: QSMxT / QSM.rs
+description: >
+  IR2QSM as QSM.rs runs it: the authors' trained weights exported to ONNX and run by `qsmxt invert
+  ir2qsm` (QSM.rs's ONNX engine, CPU). The QSM.rs port of the `ir2qsm` entry, which runs the
+  authors' own code and weights. Deterministic: the export takes the decoder's noise-free branch,
+  so its counterpart is `ir2qsm` with add_noise=false.
+authors:
+- name: Li M.
+- name: Chen C.
+- name: Xiong Z.
+- name: Liu Y.
+- name: Rong P.
+- name: Shan S.
+- name: Liu F.
+- name: Sun H.
+- name: Gao Y.
+- name: Ashley Stewart
+  note: QSM.rs / QSMxT ONNX port
+doi: 10.1002/mp.17747
+citation: Li et al., Med Phys 2025
+code_url: https://github.com/astewartau/QSM.rs
+license: 'MIT (QSM.rs); the weights keep the original''s terms: No LICENSE file in the upstream repository;
+  academic use only — cite the paper (arXiv:2406.12300). Confirm terms with the authors before redistribution.'
+# The weights are QSM.rs's ONNX exports (qsmxt/qsm-onnx-weights), baked into the image with
+# algorithms/_qsmxt/models.Dockerfile, since a submission runs with no network.
+image: ghcr.io/astewartau/qsm-ci/qsmxt@sha256:3fd27500c18778edc21fd771828573e01c353e4c6147124977293e51256a9053   # v10.0.0-models-2
+run: bash run.sh

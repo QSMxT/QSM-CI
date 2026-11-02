@@ -1,0 +1,34 @@
+name: QSMnet+ (QSM.rs)
+slug: qsmnet-plus-qsmrs
+algorithm: qsmnet-plus
+source: qsmrs
+stage: dipole
+language: Rust
+family: deep-learning
+learning: pretrained
+inputs: [localfield, mask, params]
+engine: QSMxT / QSM.rs
+description: >
+  QSMnet+ as QSM.rs runs it: the authors' trained weights exported to ONNX and run by `qsmxt invert
+  qsmnet-plus` (QSM.rs's ONNX engine, CPU). The QSM.rs port of the `qsmnet-plus` entry, which runs
+  the authors' own code and weights.
+authors:
+- name: Jung W.
+- name: Yoon J.
+- name: Ji S.
+- name: Choi J.Y.
+- name: Kim J.M.
+- name: Nam Y.
+- name: Kim E.Y.
+- name: Lee J.
+- name: Ashley Stewart
+  note: QSM.rs / QSMxT ONNX port
+doi: 10.1016/j.neuroimage.2020.116619
+citation: Jung et al., NeuroImage 2020
+code_url: https://github.com/astewartau/QSM.rs
+license: 'MIT (QSM.rs); the weights keep the original''s terms: SNU-LIST academic license (LICENSE.pdf);
+  used with author permission'
+# The weights are QSM.rs's ONNX exports (qsmxt/qsm-onnx-weights), baked into the image with
+# algorithms/_qsmxt/models.Dockerfile, since a submission runs with no network.
+image: ghcr.io/astewartau/qsm-ci/qsmxt@sha256:3fd27500c18778edc21fd771828573e01c353e4c6147124977293e51256a9053   # v10.0.0-models-2
+run: bash run.sh

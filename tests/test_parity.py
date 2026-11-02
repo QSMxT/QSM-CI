@@ -173,7 +173,7 @@ def test_real_thresholds_enabled_pairs_track_their_qsmrs_sources():
             assert not cfg.get("blocked_by"), f"{name}: enabled but blocked_by"
 
 
-ARTIFACTS = ("chimap", "localfield", "totalfield", "chi-para", "chi-dia")
+ARTIFACTS = ("chimap", "localfield", "totalfield", "chi-para", "chi-dia", "mask")
 
 
 def test_real_thresholds_name_real_pairs():
@@ -280,6 +280,13 @@ def test_real_matrix_routes_runners():
     here = [a for a, c in th.items() if c.get("datasets") and not parity.pair_problems(a, c, m)]
     jobs = parity.plan_matrix(th, ",".join(here), "configured")
     assert jobs and all(j["runs_on"] and j["timeout"] > 0 for j in jobs)
+
+
+def test_plan_matrix_flags_pairs_that_need_the_weights():
+    """A pair with `qsmrs_models` asks the workflow to add the ONNX weights to a qsmxt build."""
+    th = {"a": {"qsmrs_models": True, "datasets": {"sim": {}}}, "b": {"datasets": {"sim": {}}}}
+    jobs = parity.plan_matrix(th, "a,b", "configured", manifests={}, datasets={})
+    assert {j["algorithm"]: j["models"] for j in jobs} == {"a": True, "b": False}
 
 
 def test_side_set_dataset_wins():
