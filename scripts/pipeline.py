@@ -127,12 +127,31 @@ def emit_intermediate(phantom: str, name: str, src: Path) -> None:
 TRUTH_DIR = "_truth"
 
 
+def truth_phantom(truth: Path) -> str:
+    """The phantom directory a ground-truth file is staged (and published) under: the
+    scripts/datasets.json key whose `path` is the dataset holding `truth`
+    (<dataset>/{groundtruth,inputs}/<artifact>.nii.gz).
+
+    Every registered dataset lives at data/<key>/scoring, so the dataset dir's own name ("scoring")
+    is the same for all of them. Keying on it put every phantom's truth at truth/scoring/<artifact> on
+    the Hub, where each χ-separation phantom's chi-para / chi-dia overwrote the others' (and the
+    in-vivo chimap collided with the in-silico one), so the viewer could show another phantom's
+    truth. The registry key is unique per phantom, and the same for every input level (gt and l3
+    score against the one groundtruth/ dir). It matches publish_volumes.truth_name, which names a
+    legacy per-run truth by the row's phantom. A dataset outside the registry (data/sim/dev, a test
+    fixture) keeps its own directory name."""
+    ds = Path(truth).parent.parent
+    for key, entry in load_datasets().items():
+        if (ROOT / entry["path"]).resolve() == ds.resolve():
+            return key
+    return ds.name
+
+
 def _stage_truth(truth: Path) -> Path:
-    """Copy `truth` (…/<phantom>/{groundtruth,inputs}/<artifact>.nii.gz) into the shared
-    results/_truth/<phantom>/<artifact>.nii.gz slot, once, and return that path."""
+    """Copy `truth` (<dataset>/{groundtruth,inputs}/<artifact>.nii.gz) into the shared
+    results/_truth/<phantom>/<artifact>.nii.gz slot, once, and return that path (see truth_phantom)."""
     truth = Path(truth)
-    phantom = truth.parent.parent.name          # data/<phantom>/groundtruth/chimap.nii.gz -> <phantom>
-    dest = ROOT / "results" / TRUTH_DIR / phantom / truth.name
+    dest = ROOT / "results" / TRUTH_DIR / truth_phantom(truth) / truth.name
     if not dest.exists():
         dest.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(truth, dest)
