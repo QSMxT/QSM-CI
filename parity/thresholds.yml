@@ -788,3 +788,70 @@ pairs:
         measured: { pr369: "run 41031701965: QSMxT tgv-output-box-369 43baf55 (QSMxT/QSMxT#465), QSM.rs tgv-output-box-369 40b0dcf (astewartau/QSM.rs#375) (limits)" }
         reference_prefix: [laplacian-qsmrs]
         feed: { totalfield: totalfield }
+  lsqr:
+    reference: lsqr
+    candidate: lsqr-qsmrs
+    enabled: true
+    # qsm_heidi 4592631's inversion_lsqr.m (lsqr-v4; in vivo identical to licensed MATLAB, in silico
+    # 0.059 % from the image's Ubuntu userland, algorithms/lsqr/fidelity/REPORT.md). Both sides at
+    # their defaults (QSM.rs's LsqrQsmParams are inversion_lsqr.m's settings).
+    # In silico the gap is LSQR's stopping iteration: MATLAB's lsqr stops after 195 to 204
+    # iterations at tolerance 1e-5 depending on the machine (198 on Bunya, 204 in licensed
+    # MATLAB, 203 and 195 on two runners here). With both sides held to 150 iterations
+    # (tolerance 1e-30; run 41258937310) NRMSE is 0.0014 %, max |Δ| 7.7e-05 ppm. So sim's
+    # max/p99 limits are twice the derived ones, so a pass does not depend on the runner.
+    qsmrs_paths: [src/fft.rs, src/grid.rs, src/inversion/ilsqr.rs, src/inversion/lsqr_qsm.rs,
+                  src/kernels/, src/pipeline/inversion.rs, src/pipeline/rules.rs,
+                  src/utils/mask.rs, src/utils/padding.rs]
+    qsmxt_paths: &invert_lsqr_wiring [src/cli.rs, src/commands/common.rs, src/commands/invert.rs,
+                                      crates/qsmxt-engine/src/config.rs]
+    datasets:
+      sim:
+        # Measured: NRMSE 0.132 %, r 1.000000, max |Δ| 0.0052 ppm, p99 |Δ| 5.2e-05 ppm (MATLAB 203 iterations).
+        chimap: { nrmse_max: 0.646, correlation_min: 0.989, max_abs_max: 0.013, p99_abs_max: 0.000131 }
+        measured: { main: "run 41256482022: QSMxT main a78074c, QSM.rs main afed56b; lsqr-v4 sha256:a2deee2d… (limits)" }
+      # In vivo: the fidelity check's case (axial; the original's recon.m runs B0 along z only and
+      # stops on the KKI scan's oblique B0_dir).
+      s005001-cbic-prisma-bridge-run1:
+        reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
+        feed: { localfield: localfield }
+        # Measured: NRMSE 0.00025 %, r 1.000000, max |Δ| 2.0e-05 ppm, p99 |Δ| 8.2e-08 ppm.
+        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 2.5e-05, p99_abs_max: 1.0e-06 }
+        measured: { main: "run 41257449272: QSMxT main a78074c, QSM.rs main afed56b; lsqr-v4 sha256:a2deee2d… (limits)" }
+  heidi:
+    reference: heidi
+    candidate: heidi-qsmrs
+    enabled: true
+    # qsm_heidi 4592631's inversion_lsqr.m, then inversion_heidi.m (heidi-v4; in vivo identical to
+    # licensed MATLAB, in silico 0.073 %, inherited from the LSQR seed's 0.059 %,
+    # algorithms/heidi/fidelity/REPORT.md). Both sides at their defaults (QSM.rs's HeidiParams are
+    # inversion_heidi.m's settings, NESTA's tolerance eps included).
+    # Enable once QSMxT main has #471 (with QSM.rs#389): main's qsmxt has no
+    # --heidi-denoise-reference-itk until then.
+    # The authors' gradient-mask denoising is ITK 3.20's executable, in float, whose float sum
+    # of the mean squared gradient underestimates the conductance scale by about 1 %. QSM.rs
+    # computes it in double by default and reproduces the executable with reference_itk
+    # (astewartau/QSM.rs#389), which the pair turns on. Without it (run 41257449272, QSM.rs main
+    # afed56b): masks differ at 0.07 % of voxels and chimap NRMSE is 0.635 % sim, 1.64 % in vivo.
+    # With it (run 41277793603: QSMxT heidi-checkbox b4a8658, QSM.rs heidi-cone-fill 76a8ac4) the
+    # pair is at rounding. In silico the LSQR seed's stopping iteration varies with the runner
+    # (the lsqr pair, above), so sim's limits are the lsqr pair's.
+    candidate_set: { denoise_reference_itk: "true" }
+    qsmrs_paths: [src/fft.rs, src/grid.rs, src/inversion/heidi.rs, src/inversion/ilsqr.rs,
+                  src/inversion/lsqr_qsm.rs, src/kernels/, src/pipeline/inversion.rs,
+                  src/pipeline/rules.rs, src/utils/anisotropic_diffusion.rs,
+                  src/utils/echo_time.rs, src/utils/mask.rs, src/utils/padding.rs]
+    qsmxt_paths: *invert_lsqr_wiring
+    datasets:
+      sim:
+        # Measured: NRMSE 0.00045 %, r 1.000000, max |Δ| 3.0e-05 ppm, p99 |Δ| 1.1e-07 ppm (MATLAB's seed 195 iterations).
+        chimap: { nrmse_max: 0.646, correlation_min: 0.989, max_abs_max: 0.013, p99_abs_max: 0.000131 }
+        measured: { pr389: "run 41277793603: QSMxT heidi-checkbox b4a8658 (QSMxT/QSMxT#471), QSM.rs heidi-cone-fill 76a8ac4 (astewartau/QSM.rs#389); heidi-v4 sha256:69f57226… (limits)" }
+      # In vivo: the fidelity check's case (axial; the original's recon.m runs B0 along z only and
+      # stops on the KKI scan's oblique B0_dir).
+      s005001-cbic-prisma-bridge-run1:
+        reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
+        feed: { localfield: localfield }
+        # Measured: NRMSE 0.00035 %, r 1.000000, max |Δ| 2.3e-05 ppm, p99 |Δ| 1.8e-07 ppm.
+        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 2.83e-05, p99_abs_max: 1.0e-06 }
+        measured: { pr389: "run 41277793603: QSMxT heidi-checkbox b4a8658 (QSMxT/QSMxT#471), QSM.rs heidi-cone-fill 76a8ac4 (astewartau/QSM.rs#389); heidi-v4 sha256:69f57226… (limits)" }
