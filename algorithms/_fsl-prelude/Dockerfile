@@ -16,5 +16,5 @@ USER root
 COPY fsl-explicit.lock /opt/fsl-explicit.lock
 RUN micromamba create -y -p /opt/fsl --file /opt/fsl-explicit.lock \
     && micromamba clean -afy \
-    && /opt/fsl/bin/prelude 2>&1 | grep -q "Part of FSL"
+    && { /opt/fsl/bin/prelude 2>&1 || true; } | grep -q "Part of FSL"
 ENV FSLDIR=/opt/fsl FSLOUTPUTTYPE=NIFTI_GZ PATH=/opt/fsl/bin:$PATH
