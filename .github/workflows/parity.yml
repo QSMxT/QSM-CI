@@ -406,7 +406,7 @@ jobs:
           # Exit 3 = nothing to drop. If it is still refused, the release does not have the port
           # as checked: "not in <tag>". Any other failure stays a failure.
           log=run.log
-          clap="error: (unrecognized subcommand|unexpected argument|invalid value) '"
+          clap="error: ((unrecognized subcommand|unexpected argument|invalid value) '|the following required arguments were not provided)"
           if [ "$rc" -ne 0 ] && [ -n "$RELEASE" ] && grep -qE "$clap" run.log; then
             drops=()
             for attempt in 1 2 3 4 5 6; do

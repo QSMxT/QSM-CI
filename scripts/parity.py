@@ -672,7 +672,7 @@ def rejected_setting(cfg: dict, phantom: str, log: str) -> "str | None":
     several do; None when no setting matches (the refusal is about the port itself)."""
     import re
     hit = clap_rejection(log)
-    if not hit:
+    if not hit or hit.startswith("required argument"):   # a missing input: no setting to drop
         return None
     m = re.search(r"'(--[A-Za-z0-9-]+)", hit[hit.find(" for ") :] if " for " in hit else hit)
     if not m:
@@ -1690,11 +1690,20 @@ def missing_command(image: str, runner: str, commands: list) -> "str | None":
 def clap_rejection(log: str) -> "str | None":
     """qsmxt's own refusal of a command line, from a run's log: clap's `unrecognized subcommand`,
     `unexpected argument` or `invalid value` error (a subcommand, option or option value the
-    release does not have); None for any other failure."""
+    release does not have), or its `the following required arguments were not provided` (the
+    release's command needs an input the port no longer passes: an earlier, different port, e.g.
+    qsmxt v10.0.0's paper-based `separate chi-sep-ilsqr --magnitude`); None for any other failure."""
     import re
     m = re.search(r"error: (unrecognized subcommand '[^']*'|unexpected argument '[^']*' found"
                   r"|invalid value '[^']*' for '[^']*')", log or "")
-    return m.group(1) if m else None
+    if m:
+        return m.group(1)
+    m = re.search(r"error: the following required arguments were not provided:\n((?:[ \t]+\S.*\n?)+)",
+                  log or "")
+    if m:
+        args = ", ".join(a.split()[0] for a in m.group(1).splitlines() if a.strip())
+        return f"required argument not provided: {args}"
+    return None
 
 
 def cmd_unavailable(args) -> int:
