@@ -1030,20 +1030,60 @@ pairs:
         # Measured: Dice 1.000000.
         mask: { dice_min: 0.99 }
         measured: { main: "run 41190020480: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
-  # No pair yet: iQSM, iQSM+, iQFM and R2PRIMEnet have no -qsmrs entry, because qsmxt exposes them
-  # only through `qsmxt run` (QSMxT subcommands needed). Per echo the ports match the networks to
-  # float32 rounding (astewartau/QSM.rs#330). The echo combination differs by design (3.0–3.4 % with
-  # two echoes), and the authors' own code is not consistent (checked 2026-10-31, sunhongfu/iQSM
-  # 81f5462, sunhongfu/iQSM_Plus 3ba25f5):
+  # iQSM, iQSM+ and iQFM take every echo's wrapped phase (4-D), as the originals do (`run.py
+  # --echo_4d`), so the pairs start from the dataset's own inputs: no prefix, no feed. Per echo the
+  # ports match the networks to float32 rounding (astewartau/QSM.rs#330). The echo weighting of the
+  # authors' code is not consistent (checked 2026-10-31, sunhongfu/iQSM 81f5462, iQSM_Plus 3ba25f5):
   #   - iQSM and iQFM in MATLAB: echofit(TE·χ, mag, TE), i.e. weights mag·TE² (iQSM
   #     legacy/matlab/demo_multi_echo.m:155-160 with iQSM_fcns/echofit.m; iQSM_Plus
-  #     legacy/matlab/iQSM.m:262-267, legacy/matlab/iQFM.m:265-270, iQFM_multi_echo.m). QSM.rs's choice.
+  #     legacy/matlab/iQSM.m:262-267, legacy/matlab/iQFM.m:265-270, iQFM_multi_echo.m).
   #   - iQSM+ in MATLAB: weights (mag·TE)² (iQSM_Plus legacy/matlab/iQSM_plus.m:273-275).
   #   - Every Python driver: (mag·TE)² (iQSM run.py:170, app.py:416; iQSM_Plus run.py:199,
-  #     app.py:415), although each prints "Magnitude × TE² weighted averaging". QSM-CI's iqsm,
-  #     iqsm-plus and iqfm entries run these.
-  # So mag·TE² is the authors' MATLAB for iQSM/iQFM, but their iQSM+ (both languages) uses
-  # (mag·TE)². When these pairs exist, compare per echo, or match the reference's weighting.
+  #     app.py:415), although each prints "Magnitude × TE² weighted averaging".
+  # QSM-CI's iqsm, iqsm-plus and iqfm entries run the Python drivers, so (mag·TE)² on both sides:
+  # QSM.rs's default since astewartau/QSM.rs#385 / QSMxT/QSMxT#467 (`--echo-weighting mag2-te2`;
+  # the MATLAB mag·TE² is `mag-te2`, an option for iQSM and iQFM only).
+  iqsm:
+    reference: iqsm
+    candidate: iqsm-qsmrs
+    enabled: false
+    note: baseline pending
+    qsmrs_models: true
+    qsmrs_paths: [src/grid.rs, src/inversion/iqsm.rs, src/inversion/iqsm_echo_weighting.rs,
+                  src/inversion/tile_budget.rs, src/inversion/tiled.rs, src/models/,
+                  src/pipeline/inversion.rs, src/pipeline/referencing.rs, src/pipeline/rules.rs]
+    qsmxt_paths: *invert_wiring
+    datasets:
+      sim: {}
+      s002001-kki-achieva-bridge-run1: {}
+  iqsm-plus:
+    reference: iqsm-plus
+    candidate: iqsm-plus-qsmrs
+    enabled: false
+    note: baseline pending
+    qsmrs_models: true
+    qsmrs_paths: [src/grid.rs, src/inversion/iqsm.rs, src/inversion/iqsm_echo_weighting.rs,
+                  src/inversion/iqsm_plus.rs, src/inversion/tile_budget.rs, src/inversion/tiled.rs,
+                  src/models/, src/pipeline/inversion.rs, src/pipeline/referencing.rs,
+                  src/pipeline/rules.rs]
+    qsmxt_paths: *invert_wiring
+    datasets:
+      sim: {}
+      s002001-kki-achieva-bridge-run1: {}
+  iqfm:
+    reference: iqfm
+    candidate: iqfm-qsmrs
+    enabled: false
+    note: baseline pending
+    qsmrs_models: true
+    qsmrs_paths: [src/grid.rs, src/inversion/iqfm.rs, src/inversion/iqsm.rs,
+                  src/inversion/iqsm_echo_weighting.rs, src/inversion/tile_budget.rs,
+                  src/inversion/tiled.rs, src/models/, src/pipeline/inversion.rs,
+                  src/pipeline/rules.rs]
+    qsmxt_paths: *bgremove_wiring
+    datasets:
+      sim: {}
+      s002001-kki-achieva-bridge-run1: {}
   lsqr:
     reference: lsqr
     candidate: lsqr-qsmrs

@@ -20,7 +20,7 @@ qsmxt. The two entries share `algorithm:`, so the parity workflow can run them a
 | SUSEP-Net | `susep-net` | `separate susep-net` | `susep-net-qsmrs` |
 | HD-BET | `hd-bet-qsmci` | `mask hd-bet` | `hd-bet-qsmrs` |
 | MindGrab | none yet | `mask mindgrab` (QSMxT main only) | `mindgrab-qsmrs` (`ci_skip`) |
-| iQSM / iQSM+ / iQFM | `iqsm`, `iqsm-plus`, `iqfm` | only through `qsmxt run` | none yet |
+| iQSM / iQSM+ / iQFM | `iqsm`, `iqsm-plus`, `iqfm` | `invert iqsm`, `invert iqsm-plus`, `bgremove iqfm` (QSMxT main only) | `iqsm-qsmrs`, `iqsm-plus-qsmrs`, `iqfm-qsmrs` (`ci_skip`) |
 | R2PRIMEnet | `r2primenet` | only through `qsmxt run` | none yet |
 | MoDIP, INR-QSM | `modip`, `inr-qsm` | not ported | |
 

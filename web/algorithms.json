@@ -1799,6 +1799,50 @@
       "ci_notes": []
     },
     {
+      "slug": "iqfm-qsmrs",
+      "name": "iQFM (QSM.rs)",
+      "stage": "unwrap+bfr",
+      "inputs": [
+        "phase",
+        "magnitude",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "iqfm",
+      "language": "Rust",
+      "family": "deep-learning",
+      "learning": "pretrained",
+      "description": "iQFM as QSM.rs runs it: the authors' trained weights exported to ONNX and run by `qsmxt bgremove iqfm` (QSM.rs's ONNX engine, CPU), from every echo's wrapped phase to the local field (ppm), each echo through the network, combined with (magnitude \u00d7 TE)\u00b2 weights as the authors' Python code does. The QSM.rs port of the `iqfm` entry, which runs the authors' own code and weights.",
+      "citation": "Gao et al., NeuroImage 2022",
+      "doi": "10.1016/j.neuroimage.2022.119410",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT (QSM.rs); the weights keep the original's terms: See repository (used with author permission)",
+      "authors": [
+        "Gao Y.",
+        "Xiong Z.",
+        "Fazlollahi A.",
+        "Nestor P.J.",
+        "Vegh V.",
+        "Nasrallah F.",
+        "Winter C.",
+        "Pike G.B.",
+        "Crozier S.",
+        "Liu F.",
+        "Sun H.",
+        "Ashley Stewart"
+      ],
+      "parameters": [
+        {
+          "name": "echo_weighting",
+          "default": "mag2-te2",
+          "description": "Echo weighting of the multi-echo combination (`--echo-weighting`): `mag2-te2` = (magnitude \u00d7 TE)\u00b2, the authors' Python code (the original entry's); `mag-te2` = magnitude \u00d7 TE\u00b2, their MATLAB code.\n"
+        }
+      ],
+      "ci_notes": []
+    },
+    {
       "slug": "iqsm",
       "name": "iQSM (PyTorch)",
       "stage": "end-to-end",
@@ -1869,6 +1913,87 @@
         "Sun H."
       ],
       "parameters": [],
+      "ci_notes": []
+    },
+    {
+      "slug": "iqsm-plus-qsmrs",
+      "name": "iQSM+ (QSM.rs)",
+      "stage": "end-to-end",
+      "inputs": [
+        "phase",
+        "magnitude",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "iqsm-plus",
+      "language": "Rust",
+      "family": "deep-learning",
+      "learning": "pretrained",
+      "description": "iQSM+ as QSM.rs runs it: the authors' trained weights exported to ONNX and run by `qsmxt invert iqsm-plus` (QSM.rs's ONNX engine, CPU), from every echo's wrapped phase and the B0 direction, each echo through the network, combined with (magnitude \u00d7 TE)\u00b2 weights as both of the authors' versions do. The QSM.rs port of the `iqsm-plus` entry, which runs the authors' own code and weights.",
+      "citation": "Gao et al., Med Image Anal 2024",
+      "doi": "10.1016/j.media.2024.103160",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT (QSM.rs); the weights keep the original's terms: Used with author permission (no license file in the upstream repository)",
+      "authors": [
+        "Gao Y.",
+        "Xiong Z.",
+        "Shan S.",
+        "Liu Y.",
+        "Rong P.",
+        "Li M.",
+        "Wilman A.H.",
+        "Pike G.B.",
+        "Liu F.",
+        "Sun H.",
+        "Ashley Stewart"
+      ],
+      "parameters": [],
+      "ci_notes": []
+    },
+    {
+      "slug": "iqsm-qsmrs",
+      "name": "iQSM (QSM.rs)",
+      "stage": "end-to-end",
+      "inputs": [
+        "phase",
+        "magnitude",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "iqsm",
+      "language": "Rust",
+      "family": "deep-learning",
+      "learning": "pretrained",
+      "description": "iQSM as QSM.rs runs it: the authors' trained weights exported to ONNX and run by `qsmxt invert iqsm` (QSM.rs's ONNX engine, CPU), from every echo's wrapped phase, each echo through the network, combined with (magnitude \u00d7 TE)\u00b2 weights as the authors' Python code does. The QSM.rs port of the `iqsm` entry, which runs the authors' own code and weights.",
+      "citation": "Gao et al., NeuroImage 2022",
+      "doi": "10.1016/j.neuroimage.2022.119410",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT (QSM.rs); the weights keep the original's terms: See repository (used with author permission)",
+      "authors": [
+        "Gao Y.",
+        "Xiong Z.",
+        "Fazlollahi A.",
+        "Nestor P.J.",
+        "Vegh V.",
+        "Nasrallah F.",
+        "Winter C.",
+        "Pike G.B.",
+        "Crozier S.",
+        "Liu F.",
+        "Sun H.",
+        "Ashley Stewart"
+      ],
+      "parameters": [
+        {
+          "name": "echo_weighting",
+          "default": "mag2-te2",
+          "description": "Echo weighting of the multi-echo combination (`--echo-weighting`): `mag2-te2` = (magnitude \u00d7 TE)\u00b2, the authors' Python code (the original entry's); `mag-te2` = magnitude \u00d7 TE\u00b2, their MATLAB code.\n"
+        }
+      ],
       "ci_notes": []
     },
     {
