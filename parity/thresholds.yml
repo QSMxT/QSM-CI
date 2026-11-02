@@ -866,186 +866,188 @@ pairs:
     reference: ndi
     candidate: ndi-qsmrs
     enabled: false
-    note: baseline pending
+    blocked_by: astewartau/QSM.rs#399
+    # Gap: FANSI's dipole_kernel_angulated (mode 1, the discrete kernel from unit forward
+    # differences), which the original uses, against QSM.rs's continuous kernel. A numpy ndi.m on
+    # the original's own inputs: FANSI kernel 0.0001 % from it, continuous kernel 10.61 %.
     qsmrs_paths: [src/constants.rs, src/fft.rs, src/grid.rs, src/inversion/admm.rs,
                   src/inversion/ndi.rs, src/kernels/, src/pipeline/inversion.rs,
                   src/pipeline/rules.rs, src/utils/echo_time.rs, src/utils/gradient.rs,
                   src/utils/mask.rs, src/utils/ops.rs]
     qsmxt_paths: *invert_wiring
     datasets:
-      sim: {}
+      sim:
+        measured: { main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 10.61 %, r 0.9945, max |Δ| 0.080 ppm, p99 0.0094 ppm" }
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
+        measured: { main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 9.52 %, r 0.9955, max |Δ| 0.107 ppm, p99 0.0115 ppm" }
         feed: { localfield: localfield }
   fansi-nltv:
     reference: fansi-nltv
     candidate: fansi-nltv-qsmrs
     enabled: false
-    note: baseline pending
+    blocked_by: astewartau/QSM.rs#400
+    # Gap: the dipole kernel, as for ndi (astewartau/QSM.rs#399).
     qsmrs_paths: &fansi_paths [src/constants.rs, src/fft.rs, src/grid.rs, src/inversion/admm.rs,
                                src/inversion/fansi.rs, src/kernels/, src/pipeline/inversion.rs,
                                src/pipeline/rules.rs, src/utils/echo_time.rs,
                                src/utils/gradient.rs, src/utils/mask.rs, src/utils/ops.rs]
     qsmxt_paths: *invert_wiring
     datasets:
-      sim: {}
+      sim:
+        measured: { main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 11.04 %, r 0.9941, max |Δ| 0.346 ppm, p99 0.0122 ppm" }
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
+        measured: { main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 9.48 %, r 0.9955, max |Δ| 0.235 ppm, p99 0.0147 ppm" }
         feed: { localfield: localfield }
   fansi-nltgv:
     reference: fansi-nltgv
     candidate: fansi-nltgv-qsmrs
     enabled: false
-    note: baseline pending
+    blocked_by: astewartau/QSM.rs#400
+    # Gap: the dipole kernel, as for ndi (astewartau/QSM.rs#399).
     qsmrs_paths: *fansi_paths
     qsmxt_paths: *invert_wiring
     datasets:
-      sim: {}
+      sim:
+        measured: { main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 11.03 %, r 0.9941, max |Δ| 0.350 ppm, p99 0.0122 ppm" }
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
+        measured: { main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 9.61 %, r 0.9954, max |Δ| 0.235 ppm, p99 0.0148 ppm" }
         feed: { localfield: localfield }
   l1qsm:
     reference: l1qsm
     candidate: l1qsm-qsmrs
     enabled: false
-    note: baseline pending
+    blocked_by: astewartau/QSM.rs#401
+    # Gap: the dipole kernel (astewartau/QSM.rs#399), maybe more.
     qsmrs_paths: [src/constants.rs, src/fft.rs, src/grid.rs, src/inversion/admm.rs,
                   src/inversion/l1qsm.rs, src/kernels/, src/pipeline/inversion.rs,
                   src/pipeline/rules.rs, src/utils/echo_time.rs, src/utils/gradient.rs,
                   src/utils/mask.rs, src/utils/ops.rs]
     qsmxt_paths: *invert_wiring
     datasets:
-      sim: {}
+      sim:
+        measured: { main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 14.39 %, r 0.9898, max |Δ| 0.059 ppm, p99 0.0165 ppm" }
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
+        measured: { main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 15.46 %, r 0.9879, max |Δ| 0.125 ppm, p99 0.0264 ppm" }
         feed: { localfield: localfield }
   whqsm:
     reference: whqsm
     candidate: whqsm-qsmrs
     enabled: false
-    note: baseline pending
+    blocked_by: astewartau/QSM.rs#402
+    # Gap: the dipole kernel (astewartau/QSM.rs#399) and more.
     qsmrs_paths: [src/constants.rs, src/fft.rs, src/grid.rs, src/inversion/admm.rs,
                   src/inversion/whqsm.rs, src/kernels/, src/pipeline/inversion.rs,
                   src/pipeline/rules.rs, src/utils/echo_time.rs, src/utils/gradient.rs,
                   src/utils/mask.rs, src/utils/ops.rs]
     qsmxt_paths: *invert_wiring
     datasets:
-      sim: {}
+      sim:
+        measured: { main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 21.4 %, r 0.978, max |Δ| 0.527 ppm, p99 0.0221 ppm" }
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
+        measured: { main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 50.7 %, r 0.862, max |Δ| 1.20 ppm, p99 0.0891 ppm" }
 
   # ---- HD-QSM, the authors' HDQSM.m (MATLAB; fidelity: QSMxT/QSM-CI#327)
   hdqsm:
     reference: hdqsm
     candidate: hdqsm-qsmrs
     enabled: false
-    note: baseline pending
+    blocked_by: astewartau/QSM.rs#403
+    # Gap: the dipole kernel (HDQSM.m ships none; the original uses FANSI's
+    # dipole_kernel_angulated, astewartau/QSM.rs#399), and the magnitude: the original weights by
+    # the paper's Eq. 2 echo combination, QSMxT gives the port the root sum of squares. Feeding the
+    # port the original's own weight as its magnitude (renormalised over the mask) gives sim 8.10 %,
+    # KKI 5.88 %, so most of the gap is the kernel. The pair runs QSMxT's RSS magnitude until QSM.rs
+    # takes the Eq. 2 combination itself.
     qsmrs_paths: [src/constants.rs, src/fft.rs, src/grid.rs, src/inversion/admm.rs,
                   src/inversion/hdqsm.rs, src/kernels/, src/pipeline/inversion.rs,
                   src/pipeline/rules.rs, src/utils/gradient.rs, src/utils/mask.rs,
                   src/utils/ops.rs]
     qsmxt_paths: *invert_wiring
     datasets:
-      sim: {}
+      sim:
+        measured: { main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 9.08 %, r 0.9960, max |Δ| 0.377 ppm, p99 0.0070 ppm" }
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
-  # Experiment (not for merge): the candidate weighted by the original's own data weight.
-  hdqsm-weightfeed:
-    reference: hdqsm
-    candidate: hdqsm-qsmrs
-    enabled: false
-    note: experiment
-    qsmrs_paths: [src/inversion/hdqsm.rs]
-    qsmxt_paths: *invert_wiring
-    datasets:
-      sim:
-        feed: { magnitude: weight }
-      s002001-kki-achieva-bridge-run1:
-        reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
-        feed: { localfield: localfield, magnitude: weight }
+        measured: { main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 7.07 %, r 0.9975, max |Δ| 0.256 ppm, p99 0.0090 ppm" }
 
   # ---- RESHARP, the first author's resharp.m (MATLAB, sunhongfu/QSM c75b138; fidelity: #352)
   resharp:
     reference: resharp
     candidate: resharp-qsmrs
     enabled: false
-    note: baseline pending
+    blocked_by: astewartau/QSM.rs#404
+    # Gap: the solver. resharp.m solves with MATLAB's cgs (converges in 199 iterations on KKI);
+    # the port's CG stops unconverged at 200. A numpy resharp.m with cgs is 0.000 % from the
+    # original, with CG 0.000 % from the port. Eroded masks identical.
     qsmrs_paths: [src/bgremove/resharp.rs, src/fft.rs, src/grid.rs, src/kernels/,
                   src/pipeline/bg_removal.rs, src/pipeline/rules.rs, src/solvers/cg.rs]
     qsmxt_paths: *bgremove_wiring
     datasets:
-      sim: {}
+      sim:
+        measured: { main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 0.653 %, r 1.0000, max |Δ| 3.1e-4 ppm, p99 1.7e-4 ppm" }
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs]
         feed: { totalfield: totalfield }
+        measured: { main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 3.06 %, r 0.9995, max |Δ| 0.0021 ppm, p99 0.0014 ppm" }
 
   # ---- MEDI toolbox 2024.11.26 originals (MATLAB; fidelity: QSMxT/QSM-CI#322)
   pdf:
     reference: pdf-cornell
     candidate: pdf-qsmrs
     enabled: false
-    note: baseline pending
+    blocked_by: astewartau/QSM.rs#405
+    # KKI (oblique B0, PDF.m's imagespace kernel) is at rounding. Sim (B0 along z, so PDF.m takes
+    # its k-space kernel) is not: 0.68 % at the 30-iteration cap, 2.4e-4 % with n_cg 100 on both
+    # sides (run 41390107544); KKI with space=kspace on both sides 0.74 % (run 41389432873).
     qsmrs_paths: [src/bgremove/pdf.rs, src/constants.rs, src/error.rs, src/fft.rs, src/grid.rs,
                   src/kernels/, src/pipeline/bg_removal.rs, src/pipeline/rules.rs,
                   src/utils/multi_echo.rs]
     qsmxt_paths: *bgremove_wiring
     datasets:
-      sim: {}
+      sim:
+        measured: { main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 0.684 % (0.689 % in run 41390107544), r 1.0000, max |Δ| 0.049 ppm, p99 2.3e-4 ppm" }
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs]
+        measured: { main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 2.1e-5 %, r 1.000000, max |Δ| 9.3e-7 ppm, p99 1.9e-8 ppm" }
         feed: { totalfield: totalfield }
   lbv:
     reference: lbv-cornell
     candidate: lbv-qsmrs
     enabled: false
-    note: baseline pending
+    blocked_by: astewartau/QSM.rs#406
+    # Gap: QSM.rs's LBV solves by SOR, not LBV.m's full-multigrid mexMGv6.
     qsmrs_paths: [src/bgremove/lbv.rs, src/grid.rs, src/pipeline/bg_removal.rs,
                   src/pipeline/rules.rs]
     qsmxt_paths: *bgremove_wiring
     datasets:
-      sim: {}
+      sim:
+        measured: { main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 7.72 %, r 0.9983, max |Δ| 0.021 ppm, p99 0.0022 ppm" }
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs]
+        measured: { main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 24.0 %, r 0.980, max |Δ| 0.063 ppm, p99 0.028 ppm" }
         feed: { totalfield: totalfield }
   tfi:
     reference: tfi-cornell
     candidate: tfi-qsmrs
     enabled: false
-    note: baseline pending
+    blocked_by: astewartau/QSM.rs#407
+    # Gap: on sim the port's χ is ~0.77× the original's; KKI is close but not at rounding.
     qsmrs_paths: [src/constants.rs, src/error.rs, src/fft.rs, src/grid.rs, src/inversion/medi.rs,
                   src/inversion/tfi.rs, src/kernels/, src/pipeline/inversion.rs,
                   src/pipeline/rules.rs, src/utils/bias_correction.rs, src/utils/echo_time.rs,
                   src/utils/morphology.rs, src/utils/multi_echo.rs]
     qsmxt_paths: *invert_wiring
     datasets:
-      sim: {}
+      sim:
+        measured: { main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 42.1 %, r 0.909, max |Δ| 0.087 ppm, p99 0.034 ppm" }
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs]
         feed: { totalfield: totalfield }
-  # Experiments (not for merge): PDF on sim vs KKI.
-  pdf-kspace:
-    reference: pdf-cornell
-    candidate: pdf-qsmrs
-    enabled: false
-    note: experiment
-    qsmrs_paths: [src/bgremove/pdf.rs]
-    qsmxt_paths: *bgremove_wiring
-    reference_set: { space: kspace }
-    candidate_set: { space: kspace }
-    datasets:
-      s002001-kki-achieva-bridge-run1:
-        reference_prefix: [laplacian-qsmrs]
-        feed: { totalfield: totalfield }
-  pdf-ncg100:
-    reference: pdf-cornell
-    candidate: pdf-qsmrs
-    enabled: false
-    note: experiment
-    qsmrs_paths: [src/bgremove/pdf.rs]
-    qsmxt_paths: *bgremove_wiring
-    reference_set: { n_cg: 100 }
-    candidate_set: { n_cg: 100 }
-    datasets:
-      sim: {}
+        measured: { main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 1.41 %, r 0.9999, max |Δ| 0.143 ppm, p99 0.0040 ppm" }
