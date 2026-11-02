@@ -19,7 +19,13 @@ fi
 INTER=""
 if [ -n "${QSMCI_INTERMEDIATES:-}" ]; then
   INTER="$(mktemp -d)"
-  SET="$SET --complex-fit-output $INTER/ifreq_raw.nii --complex-fit-noise-output $INTER/n_std.nii"
+  # --complex-fit-output/--complex-fit-noise-output: QSMxT/QSMxT#462, after v10.0.0 (which has no
+  # --b0-estimation complex-fit at all). A qsmxt without them still writes r2star.
+  if qsmxt fieldmap romeo --help 2>/dev/null | grep -q -- '--complex-fit-output'; then
+    SET="$SET --complex-fit-output $INTER/ifreq_raw.nii --complex-fit-noise-output $INTER/n_std.nii"
+  else
+    echo "fit-ppm-complex-qsmrs: this qsmxt has no --complex-fit-output; ifreq_raw/n_std not written" >&2
+  fi
 fi
 qsmxt fieldmap romeo "$IN/phase.nii.gz" \
   -m "$IN/mask.nii.gz" \
@@ -35,5 +41,6 @@ if [ -n "$INTER" ]; then
     qsmxt r2star "$IN/magnitude.nii.gz" -m "$IN/mask.nii.gz" -o "$INTER/r2star.nii" --echo-times $TES
   fi
   mkdir -p "$QSMCI_INTERMEDIATES"
+  shopt -s nullglob
   for f in "$INTER"/*.nii; do gzip -c "$f" > "$QSMCI_INTERMEDIATES/$(basename "$f").gz"; done
 fi

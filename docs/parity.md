@@ -149,7 +149,14 @@ method gets them; prefix steps run with their defaults.
   counts as an intermediate of that side.
 - `reference_names` / `candidate_names` map a side's own intermediate names onto the compared ones,
   for an implementation that predates the convention (the compiled QSMART writes `tfs`, `R_0`,
-  `vasc_only`, `lfs1`, …).
+  `vasc_only`, `lfs1`, …). `{name: x, clip_min: v}` also clamps a map at v, for a deviation the port
+  documents: QSM.rs clamps R2* at 0 where MEDI's `arlo.m` returns negative noise estimates, so the
+  `fit-ppm-complex` pair clamps the reference's `r2star` and compares the rest exactly.
+- `intermediates_only: true`: the final artifact is not like for like and is reported without
+  limits; the pair passes on its intermediates' limits (at least one must be compared), and its
+  status shows the worst of those. `fit-ppm-complex` is one: QSM.rs unwraps MEDI's complex fit with
+  ROMEO, not MEDI's region-growing `unwrapPhase`, so it is checked on the fit (`ifreq_raw`), its
+  noise map (`n_std`) and ARLO's `r2star`.
 
 ## Isolating a step: `feed`
 
