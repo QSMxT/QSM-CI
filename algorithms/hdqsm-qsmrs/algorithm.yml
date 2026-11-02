@@ -37,6 +37,9 @@ parameters:
   - name: max_iter_l2
     default: 80
     description: stage-2 (L2) iterations
+  - name: tol_update
+    default: 1e-2
+    description: stage-2 stopping tolerance on the relative update (%)
 
 # Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
 tuning:
