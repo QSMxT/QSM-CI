@@ -805,7 +805,7 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
                   <span x-show="r.status==='DNF'" class="ml-2 rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold text-gray-500">DNF</span>
                 </td>
                 <template x-for="c in chisepDisplayCols()" :key="c.key">
-                  <td class="px-4 py-3 text-right tabular-nums group-hover:bg-emerald-50/40" :class="(chisepSort===c.key || c.key==='avg_mspe') ? 'font-semibold text-gray-900' : 'text-gray-600'" x-text="chiFmt(chiVal(r, c.key), c.key)"></td>
+                  <td class="px-4 py-3 text-right tabular-nums group-hover:bg-emerald-50/40" :class="(chisepSort===c.key || c.key==='split_rms_rw') ? 'font-semibold text-gray-900' : 'text-gray-600'" x-text="chiFmt(chiVal(r, c.key), c.key)"></td>
                 </template>
               </tr>
             </template>
@@ -934,8 +934,9 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
         <div>
           <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Scoring</h3>
           <ul class="mt-2 list-disc pl-5 space-y-1 text-gray-600 dark:text-gray-400 leading-relaxed">
-            <li><strong>Metrics:</strong> &chi;&#8314; and &chi;&#8315; are scored separately with xSIM, NRMSE (also detrended), correlation, and the per-ROI mean squared percentage error of Ridani et&nbsp;al. (2026).</li>
-            <li><strong>Why separately:</strong> &chi;&#8315; is consistently the harder map, and a combined score would hide that.</li>
+            <li><strong>Headline, split error:</strong> each method is given &chi;<sub>total</sub>, and most keep it, so an error in &chi;&#8314; comes with the opposite error in &chi;&#8315;. Scoring the two maps separately counts that one error twice. The error at each voxel is therefore split into two parts. The <em>total error</em> is the error in &chi;&#8314;&nbsp;&minus;&nbsp;|&chi;&#8315;|, which comes from the inputs. The <em>split error</em>, &frac12;[(&chi;&#8314; error) + (|&chi;&#8315;| error)], is susceptibility put in the wrong source; it leaves out the error in the total itself, though an input error that a method puts entirely into one source counts half. Both are reported as an RMS in ppb, with each tissue class (iron nuclei, thalamus, white matter, cortical grey matter, CSF, veins) weighted equally, so the iron nuclei, under 2&nbsp;% of the brain, count as much as white matter. The leaderboard ranks by the split error.</li>
+            <li><strong>Region calibration and leakage:</strong> the slope and offset of estimated against true region means (&chi;&#8314; over the iron nuclei; &chi;&#8315; over the white-matter fibre bundles and the iron nuclei, where true |&chi;&#8315;| is 10&ndash;30&nbsp;ppb), the excess of each source over its truth where the other source dominates (&chi;&#8315; in the iron nuclei, &chi;&#8314; in white matter), and a whole-brain regression of each map on the other source&rsquo;s truth.</li>
+            <li><strong>Per-source metrics:</strong> &chi;&#8314; and &chi;&#8315; are also scored separately with xSIM, NRMSE (also detrended), correlation, and the per-ROI mean squared percentage error of Ridani et&nbsp;al. (2026), which compares region means and so is comparable with that paper. xSIM is averaged over the whole brain, where 86&nbsp;% of voxels have &chi;&#8314; below 0.01&nbsp;ppm, so it is lenient to scale errors. The Ridani MSPE scores &chi;&#8315; in white matter only, so it does not see false &chi;&#8315; in the iron nuclei.</li>
             <li><strong>Sign convention:</strong> &chi;&#8315; is stored and shown as a positive magnitude.</li>
             <li><strong>Baselines:</strong> two closed-form baselines are listed but not ranked as methods. The null baseline solves &chi;<sub>total</sub> and R2&prime; per voxel with one fixed relaxivity; the Ridani baseline inverts that phantom&rsquo;s region-split model. A method shows separation skill by beating them.</li>
           </ul>
@@ -1770,8 +1771,10 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
         // isolated at defaults only. The GRE-only grid and the Findings stay on the ground-truth inputs.
         chisepInputs: "gt",
         chisepGenVariant: "default",   // R2' generators table pill (display-only; combos stay default)
-        chisepSort: "avg_mspe", chisepDir: "asc", chisepColMenu: false, chisepCols: CHISEP_COLS,
-        chisepSelectedCols: ["avg_mspe", "para_mspe", "dia_mspe", "avg_ndt", "para_nrmse_detrend", "dia_nrmse_detrend", "runtime_s"],
+        // Headline: region-weighted split error (ascending), with the total error beside it; the
+        // Ridani MSPE and xSIM stay as columns. Shared by both input levels (gt / L3).
+        chisepSort: "split_rms_rw", chisepDir: "asc", chisepColMenu: false, chisepCols: CHISEP_COLS,
+        chisepSelectedCols: ["split_rms_rw", "total_rms_rw", "split_rms", "avg_mspe", "avg", "para_dgm_slope", "dia_wm_slope", "dia_fe_excess", "runtime_s"],
         invivoSortKey: "nrmse", invivoDir: "asc",   // in-vivo default sort: COSMOS NRMSE (2016 headline)
         invivoColMenu: false, invivoSelectedCols: INVIVO_COLS.map((c) => c.key),   // in-vivo metric column picker (all shown by default)
         // findings state
@@ -3343,10 +3346,19 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
         // avg / avg_ndt / avg_mspe are derived columns (DERIVED_METRICS): the mean of a para_/dia_ pair,
         // with no stored field of their own. metricVal() resolves those and plain keys alike.
         chiVal(r, k) { return metricVal(r, k); },
+        // Sort value: |v − target| for signed metrics with an ideal value (slopes, offsets, excess,
+        // leakage), else the value (metricRankVal).
+        chiRankVal(r, k) { return metricRankVal(r, k); },
+        // Rows scored before the split/total error existed carry no value for it; until a board has
+        // any, sort it by the Ridani MSPE (the previous headline) rather than in arbitrary order.
+        chiSortKey(rows) {
+          const k = this.chisepSort;
+          return rows.some((r) => this.chiVal(r, k) != null) ? k : "avg_mspe";
+        },
         chiFmt(v, key) { return v == null ? ", " : fmt(v, key); },
         chisepDisplayCols() {
           const sel = CHISEP_COLS.filter((c) => this.chisepSelectedCols.includes(c.key));
-          return sel.length ? sel : CHISEP_COLS.filter((c) => c.key === "avg_mspe");
+          return sel.length ? sel : CHISEP_COLS.filter((c) => c.key === "split_rms_rw");
         },
         toggleChisepCol(k) {
           this.chisepSelectedCols = this.chisepSelectedCols.includes(k)
@@ -3365,11 +3377,13 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
           else { this.chisepSort = k; this.chisepDir = (CHISEP_COL[k] || {}).better === "lower" ? "asc" : "desc"; }
         },
         chiSepRows() {
-          const k = this.chisepSort, dir = this.chisepDir === "asc" ? 1 : -1, f = this.filter.toLowerCase();
+          const dir = this.chisepDir === "asc" ? 1 : -1, f = this.filter.toLowerCase();
           // Full: one row per method (Defaults/Tuned toggle). GRE-only: one row per
           // (generator × method) combo + the natively GRE-only methods (see _chisepBoard).
-          return this._chisepBoard().filter((r) => !f || this.chisepRowLabel(r).toLowerCase().includes(f)).slice().sort((a, b) => {
-            const va = this.chiVal(a, k), vb = this.chiVal(b, k);
+          const rows = this._chisepBoard().filter((r) => !f || this.chisepRowLabel(r).toLowerCase().includes(f));
+          const k = this.chiSortKey(rows);
+          return rows.slice().sort((a, b) => {
+            const va = this.chiRankVal(a, k), vb = this.chiRankVal(b, k);
             if (va == null) return 1; if (vb == null) return -1;
             return (va - vb) * dir;
           });
@@ -3399,7 +3413,7 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
         },
         get chisepDefRanks() {
           return _cache("csdef", [this.chisepPhantom, this.chisepSort, this.chisepDir, this.runs.length].join("|"), () =>
-            this._defRanks(this._chisep().filter((r) => r.mode === "isolated" && r.stage === "chi-separation" && (r.variant || "default") === "default"), (a, b) => { const va = this.chiVal(a, this.chisepSort), vb = this.chiVal(b, this.chisepSort); if (va == null) return 1; if (vb == null) return -1; return (va - vb) * (this.chisepDir === "asc" ? 1 : -1); }));
+            ((pool) => { const k = this.chiSortKey(pool); return this._defRanks(pool, (a, b) => { const va = this.chiRankVal(a, k), vb = this.chiRankVal(b, k); if (va == null) return 1; if (vb == null) return -1; return (va - vb) * (this.chisepDir === "asc" ? 1 : -1); }); })(this._chisep().filter((r) => r.mode === "isolated" && r.stage === "chi-separation" && (r.variant || "default") === "default")));
         },
         get invivoDefRanks() {
           return _cache("ivdef", [this.invivoSortKey, this.invivoDir, this.runs.length].join("|"), () =>

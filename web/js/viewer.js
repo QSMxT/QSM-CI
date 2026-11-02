@@ -526,8 +526,9 @@ function currentCombo() {
 function runItem(r, activeId, name) {
   const active = r && r.id === activeId;
   const label_ = escapeHtml(name ?? (r ? r.name : ""));
-  // χ-separation rows carry no plain xsim; headline the mean χ+/χ− per-ROI MSPE (the leaderboard's
-  // ranking metric, following Ridani et al. 2026), falling back to detrended NRMSE where MSPE is absent.
+  // χ-separation rows carry no plain xsim; headline the region-weighted split error (the leaderboard's
+  // ranking metric), falling back to the mean χ+/χ− Ridani MSPE for rows scored before it existed,
+  // then to detrended NRMSE.
   const m = (r && r.metrics) || {};
   // Harmonization rows headline the inter-scanner |a−1| (reproducibility, lower better) as a %.
   if (r && r.track === "repro") {
@@ -545,6 +546,7 @@ function runItem(r, activeId, name) {
   // board) rather than xSIM (which is a secondary agreement number for a relaxation map).
   if (r && r.stage === "r2prime-generation" && m.nrmse_detrend != null) { hv = m.nrmse_detrend; hk = "nrmse_detrend"; }
   else if (m.xsim != null) hv = m.xsim;
+  else if (m.split_rms_rw != null) { hv = m.split_rms_rw; hk = "split_rms_rw"; }
   else if (m.para_mspe != null && m.dia_mspe != null) { hv = (m.para_mspe + m.dia_mspe) / 2; hk = "mspe"; }
   else if (m.para_nrmse_detrend != null && m.dia_nrmse_detrend != null) { hv = (m.para_nrmse_detrend + m.dia_nrmse_detrend) / 2; hk = "nrmse_detrend"; }
   else if (m.para_xsim != null && m.dia_xsim != null) hv = (m.para_xsim + m.dia_xsim) / 2;
@@ -1310,18 +1312,20 @@ function rankBy(accessor, higher) {
 }
 
 // Row order for the χ-separation metric table, as [section heading, metric keys]. The headings name
-// the source, so the rows take each key's short label ("MSPE" under "χ+ paramagnetic"); every other
-// display detail — tooltip, unit, decimals, better direction — comes from the METRICS registry.
-// avg_mspe is derived (DERIVED_METRICS), so values are read through metricVal(), not val().
+// the source, so the rows take each key's short label ("Ridani MSPE" under "χ+ paramagnetic"); every
+// other display detail — tooltip, unit, decimals, better direction, target — comes from the METRICS
+// registry. avg_mspe is derived (DERIVED_METRICS), so values are read through metricVal(), not val().
 const CHISEP_GROUPS = [
-  [null, ["avg_mspe"]],
+  [null, ["split_rms_rw", "total_rms_rw", "split_rms", "total_rms", "avg_mspe"]],
   ["χ+ paramagnetic (iron, veins)", [
-    "para_mspe", "para_xsim", "para_nrmse", "para_nrmse_dgm", "para_dgm_linearity",
-    "para_nrmse_blood", "para_calc_leak", "para_leak",
+    "para_xsim", "para_nrmse", "para_correlation", "para_mspe", "para_dgm_slope", "para_dgm_offset",
+    "para_nrmse_dgm", "para_dgm_linearity", "para_nrmse_blood", "para_wm_excess", "para_calc_excess",
+    "para_leak",
   ]],
-  ["χ− diamagnetic (calcium, myelin)", [
-    "dia_mspe", "dia_xsim", "dia_nrmse", "dia_calc_moment_dev", "dia_calc_streak",
-    "dia_mev", "dia_iron_leak", "dia_leak",
+  ["χ− diamagnetic (myelin, calcium)", [
+    "dia_xsim", "dia_nrmse", "dia_correlation", "dia_mspe", "dia_wm_slope", "dia_wm_offset",
+    "dia_dgm_slope", "dia_dgm_offset", "dia_fe_excess", "dia_calc_moment_dev", "dia_calc_streak",
+    "dia_mev", "dia_leak",
   ]],
   ["Resources", ["runtime_s", "mem_peak_bytes", "cpu_cores_avg"]],
 ];
@@ -1337,10 +1341,11 @@ function renderChisepMetrics() {
     for (const { key, label, tip, better } of metricColumns(keys, true)) {
       const v = metricVal(run, key);
       if (v == null) continue;
-      const hero = key === "avg_mspe";
+      const hero = key === "split_rms_rw";
       const higher = better === "higher";
-      // Rank against the same accessor, so peers are compared on exactly the value shown.
-      const rk = rankBy((r) => metricVal(r, key), higher);
+      // Rank on the value shown, or on its distance from the ideal for a signed metric with a
+      // `target` (slopes, offsets, excess, leakage) — metricRankVal.
+      const rk = rankBy((r) => metricRankVal(r, key), higher);
       const rankCell = rk
         ? `<span class="inline-block rounded-md px-1.5 py-0.5 text-xs font-semibold text-white shadow-sm" style="background:${heatScale(rk.t)}" data-tip="Rank ${rk.rank} of ${rk.n} χ-separation methods for ${label}">#${rk.rank}<span class="opacity-70"> / ${rk.n}</span></span>`
         : `<span class="text-gray-300 dark:text-gray-600">—</span>`;

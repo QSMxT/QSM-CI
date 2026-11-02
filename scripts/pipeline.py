@@ -1004,28 +1004,35 @@ def iso_variants(a: dict) -> list:
 CHISEP_PREFIX = {"chi-para": "para", "chi-dia": "dia"}
 
 
-def _chisep_leakage(odir, gt, mask) -> "dict | None":
-    """Whole-brain cross-source leakage for a χ-separation run: {para_leak, dia_leak}.
+def _qsm_eval():
+    """The scorer module (eval/qsm_eval.py), imported in-process for the χ-sep metrics that need both
+    source maps at once (the per-component metrics go through the scorer subprocess in score())."""
+    if str(EVAL.parent) not in sys.path:
+        sys.path.insert(0, str(EVAL.parent))
+    return importlib.import_module("qsm_eval")
 
-    Regress each reconstructed source on BOTH ground-truth sources (recon ≈ a·GT_same + b·GT_other + c)
-    and take the slope `b` on the WRONG source — the fraction of the other source that bleeds into this
-    map (0 = clean separation). Because it controls for the correct source, it isolates true χ+↔χ−
-    contamination, unlike xSIM/NRMSE which are dominated by the shared R2'/2Dr common mode. Needs both
-    GT sources, so it's computed here rather than per-component. Returns None if a map can't be read."""
+
+def _chisep_joint(odir, gt, mask) -> "dict | None":
+    """The χ-separation metrics that need BOTH sources (qsm_eval.chisep_joint_metrics): split vs
+    total error RMS (brain and region-weighted), the whole-brain regression leakage
+    (para_leak / dia_leak) and the regional excess (dia_fe_excess, para_wm_excess,
+    para_calc_excess). Region terms need groundtruth/dseg.nii.gz. Returns None if a map can't be
+    read."""
     import numpy as np
-    import nibabel as nib
-    L = lambda p: np.asarray(nib.load(str(p)).get_fdata(), np.float64)
+    qe = _qsm_eval()
     try:
-        rp, rd = L(odir / ARTIFACT_FILE["chi-para"]), L(odir / ARTIFACT_FILE["chi-dia"])
-        gp, gd = L(gt / ARTIFACT_FILE["chi-para"]), L(gt / ARTIFACT_FILE["chi-dia"])
-        m = L(mask) > 0.5
-    except Exception:  # noqa: BLE001 — a missing/unreadable map just means "no leakage number"
+        rp, rd = qe.load(odir / ARTIFACT_FILE["chi-para"]), qe.load(odir / ARTIFACT_FILE["chi-dia"])
+        gp, gd = qe.load(gt / ARTIFACT_FILE["chi-para"]), qe.load(gt / ARTIFACT_FILE["chi-dia"])
+        m = (qe.load(mask) > 0.5).astype(np.uint8)
+    except Exception:  # noqa: BLE001 — a missing/unreadable map just means "no joint numbers"
         return None
-    def slope(recon, same, other):
-        A = np.c_[same[m], other[m], np.ones(int(m.sum()))]
-        return float(np.linalg.lstsq(A, recon[m], rcond=None)[0][1])
-    return {"para_leak": slope(rp, gp, gd),   # χ− (diamagnetic) bleeding INTO the χ+ map
-            "dia_leak":  slope(rd, gd, gp)}   # χ+ (paramagnetic) bleeding INTO the χ− map
+    seg_p = gt / "dseg.nii.gz"
+    seg = np.rint(qe.load(seg_p)).astype(np.int32) if seg_p.exists() else None
+    if seg is not None and seg.shape != m.shape:
+        seg = None
+    if not (rp.shape == rd.shape == gp.shape == gd.shape == m.shape):
+        return None
+    return qe.chisep_joint_metrics(rp, rd, gp, gd, m, seg)
 
 
 def _score_chisep(a, sfx, variant, overrides, odir, gt, mask, rt, args,
@@ -1038,9 +1045,9 @@ def _score_chisep(a, sfx, variant, overrides, odir, gt, mask, rt, args,
     matrix (run_chisep_composed) passes its own `rid`, mode="composed", the combined stage string and a
     `combo` dict ({r2prime_generation, chi_separation}), reusing the same two-component fold.
 
-    Metrics per source: xsim/nrmse/correlation, region leakage (dia_iron_leak = mean |χ−| in the
-    iron/DGM+vein regions where χ− should be ~0; para_calc_leak = mean |χ+| in calcification), and the
-    whole-brain regression leakage (para_leak / dia_leak) from _chisep_leakage."""
+    Metrics per source (scorer subprocess): xsim/nrmse/correlation, Ridani MSPE, region calibration;
+    then the metrics needing both sources (_chisep_joint): split/total error RMS, the whole-brain
+    regression leakage (para_leak / dia_leak) and the regional excess terms."""
     rid = rid or f"{a['slug']}-iso{sfx}"
     stage = stage or a["stage"]
     regobj = {}  # accumulate χ+ / χ− region blocks → ONE per-run results/<id>/regions.json below
@@ -1069,12 +1076,15 @@ def _score_chisep(a, sfx, variant, overrides, odir, gt, mask, rt, args,
         shown = ("DNF" if r.get("status") == "DNF"
                  else f"xsim={_fmt(m.get('xsim'))} nrmse={_fmt(m.get('nrmse'), '.2f')}%")
         print(f"  {mode:<9} {rid:<16} {variant:<8} {art:<11} {shown}")
-    if row["status"] != "DNF":  # whole-brain χ+↔χ− leakage (needs both GT + both recon maps)
-        lk = _chisep_leakage(odir, gt, mask)
-        if lk:
-            row["metrics"].update(lk)
-            print(f"  {mode:<9} {rid:<16} {variant:<8} {'leakage':<11} "
-                  f"para_leak={_fmt(lk['para_leak'])} dia_leak={_fmt(lk['dia_leak'])}")
+    if row["status"] != "DNF":  # split/total error + leakage (needs both GT + both recon maps)
+        jt = _chisep_joint(odir, gt, mask)
+        if jt:
+            row["metrics"].update({k: (None if isinstance(v, float) and not math.isfinite(v) else v)
+                                   for k, v in jt.items()})
+            print(f"  {mode:<9} {rid:<16} {variant:<8} {'joint':<11} "
+                  f"split_rms_rw={_fmt(jt.get('split_rms_rw'), '.1f')} "
+                  f"total_rms_rw={_fmt(jt.get('total_rms_rw'), '.1f')} "
+                  f"para_leak={_fmt(jt['para_leak'])} dia_leak={_fmt(jt['dia_leak'])}")
     # Viewer volumes: emit both sources under the run id (results/<id>/) — χ+ as the plain set and χ−
     # with a "-dia" suffix, so the detail viewer's χ+/χ− toggle can load either. The container runner
     # writes one resources.json (memory/CPU-over-time) beside the outputs for the whole run; carry it
