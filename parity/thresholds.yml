@@ -1024,3 +1024,28 @@ pairs:
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs]
         feed: { totalfield: totalfield }
+  # Experiments (not for merge): PDF on sim vs KKI.
+  pdf-kspace:
+    reference: pdf-cornell
+    candidate: pdf-qsmrs
+    enabled: false
+    note: experiment
+    qsmrs_paths: [src/bgremove/pdf.rs]
+    qsmxt_paths: *bgremove_wiring
+    reference_set: { space: kspace }
+    candidate_set: { space: kspace }
+    datasets:
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs]
+        feed: { totalfield: totalfield }
+  pdf-ncg100:
+    reference: pdf-cornell
+    candidate: pdf-qsmrs
+    enabled: false
+    note: experiment
+    qsmrs_paths: [src/bgremove/pdf.rs]
+    qsmxt_paths: *bgremove_wiring
+    reference_set: { n_cg: 100 }
+    candidate_set: { n_cg: 100 }
+    datasets:
+      sim: {}
