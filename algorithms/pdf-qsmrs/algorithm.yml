@@ -3,6 +3,7 @@ slug: pdf-qsmrs
 algorithm: pdf
 source: qsmrs
 stage: bfr
+inputs: [totalfield, mask, params, magnitude]  # run.sh passes --magnitude (PDF's noise weight) to a qsmxt that has it
 language: Rust
 family: iterative
 learning: none
@@ -27,3 +28,12 @@ parameters:
   - name: tol
     default: 1e-5
     description: convergence tolerance
+  - name: n_cg
+    default: 30
+    description: maximum conjugate-gradient iterations (PDF.m's n_CG; qsmxt after v10.0.0)
+  - name: space
+    default: image
+    description: dipole kernel for an oblique B0, image or kspace (PDF.m's 'imagespace'/'kspace'; qsmxt after v10.0.0)
+  - name: n_pad
+    default: 40
+    description: zero padding around the mask's bounding box, voxels (PDF.m's n_pad; qsmxt after v10.0.0)

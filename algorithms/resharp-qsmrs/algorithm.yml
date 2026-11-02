@@ -29,6 +29,12 @@ parameters:
     tuned:
       sim: 1e-4
     description: Tikhonov regularization
+  - name: tol
+    default: 1e-6
+    description: relative residual tolerance of the solve
+  - name: max_iter
+    default: 200
+    description: maximum solver iterations
 
 # Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
 tuning:

@@ -721,7 +721,8 @@
       "inputs": [
         "localfield",
         "mask",
-        "params"
+        "params",
+        "magnitude"
       ],
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",
@@ -848,7 +849,8 @@
       "inputs": [
         "localfield",
         "mask",
-        "params"
+        "params",
+        "magnitude"
       ],
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",
@@ -1207,7 +1209,8 @@
       "inputs": [
         "localfield",
         "mask",
-        "params"
+        "params",
+        "magnitude"
       ],
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",
@@ -1250,6 +1253,11 @@
           "name": "max_iter_l2",
           "default": 80,
           "description": "stage-2 (L2) iterations"
+        },
+        {
+          "name": "tol_update",
+          "default": "1e-2",
+          "description": "stage-2 stopping tolerance on the relative update (%)"
         }
       ],
       "ci_notes": []
@@ -1916,7 +1924,8 @@
       "inputs": [
         "localfield",
         "mask",
-        "params"
+        "params",
+        "magnitude"
       ],
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",
@@ -2566,7 +2575,8 @@
       "inputs": [
         "localfield",
         "mask",
-        "params"
+        "params",
+        "magnitude"
       ],
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",
@@ -2747,7 +2757,8 @@
       "inputs": [
         "totalfield",
         "mask",
-        "params"
+        "params",
+        "magnitude"
       ],
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",
@@ -2774,6 +2785,21 @@
           "name": "tol",
           "default": "1e-5",
           "description": "convergence tolerance"
+        },
+        {
+          "name": "n_cg",
+          "default": 30,
+          "description": "maximum conjugate-gradient iterations (PDF.m's n_CG; qsmxt after v10.0.0)"
+        },
+        {
+          "name": "space",
+          "default": "image",
+          "description": "dipole kernel for an oblique B0, image or kspace (PDF.m's 'imagespace'/'kspace'; qsmxt after v10.0.0)"
+        },
+        {
+          "name": "n_pad",
+          "default": 40,
+          "description": "zero padding around the mask's bounding box, voxels (PDF.m's n_pad; qsmxt after v10.0.0)"
         }
       ],
       "ci_notes": []
@@ -3199,6 +3225,16 @@
             "sim": "1e-4"
           },
           "description": "Tikhonov regularization"
+        },
+        {
+          "name": "tol",
+          "default": "1e-6",
+          "description": "relative residual tolerance of the solve"
+        },
+        {
+          "name": "max_iter",
+          "default": 200,
+          "description": "maximum solver iterations"
         }
       ],
       "ci_notes": []
@@ -3610,6 +3646,46 @@
           "name": "precond",
           "default": 30,
           "description": "preconditioner \u2014 susceptibility scaling outside the brain mask (Liu 2017 uses ~30 for in-vivo air)"
+        },
+        {
+          "name": "merit",
+          "default": true,
+          "description": "model-error reduction (MERIT), qsmxt after v10.0.0"
+        },
+        {
+          "name": "linear",
+          "default": true,
+          "description": "the paper's linear data term (false, MEDI_L1's exponential one), qsmxt after v10.0.0"
+        },
+        {
+          "name": "data_weighting",
+          "default": 1,
+          "description": "1 weights the data by the field noise from the echo magnitudes, 0 uniform"
+        },
+        {
+          "name": "percentage",
+          "default": 0.9,
+          "description": "fraction of voxels kept as edges in the gradient mask"
+        },
+        {
+          "name": "cg_tol",
+          "default": 0.01,
+          "description": "conjugate-gradient relative residual tolerance"
+        },
+        {
+          "name": "cg_max_iter",
+          "default": 100,
+          "description": "maximum conjugate-gradient iterations per Gauss-Newton step"
+        },
+        {
+          "name": "max_iter",
+          "default": 10,
+          "description": "maximum Gauss-Newton iterations"
+        },
+        {
+          "name": "tol",
+          "default": 0.1,
+          "description": "Gauss-Newton stop on the relative update"
         }
       ],
       "ci_notes": []
