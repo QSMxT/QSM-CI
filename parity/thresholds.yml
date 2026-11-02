@@ -74,6 +74,7 @@ no_original:
     covers: COSMOS (`cosmos`, `cosmos_weighted`)
   harperella:
     covers: HARPERELLA (`harperella`)
+    note: not in STI Suite 3.0 (paper-based); iHARPERELLA is paired with STI Suite's
   prelude:
     covers: PRELUDE (`unwrap_prelude`)
     note: clean-room by design
@@ -222,6 +223,35 @@ pairs:
         # Measured: NRMSE 0.00022 %, r 1.000000, max |Δ| 4.9e-07 ppm, p99 |Δ| 7.5e-08 ppm.
         localfield: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
         measured: { main: "run 41019310531: QSMxT main 2533f94, QSM.rs main 7f8271e; vsharp-sti v2 (limits)" }
+  iharperella:
+    reference: iharperella-sti    # STI Suite 3.0's iHARPERELLA, compiled; identical to licensed MATLAB (v2)
+    candidate: iharperella-qsmrs  # QSM.rs's port of it (astewartau/QSM.rs#270), via qsmxt bgremove iharperella
+    enabled: true
+    # Same algorithm: with both sides' defaults (LSQR tol 0.001, no padding; QSM.rs
+    # IharperellaParams::default, probed from STI Suite 3.0) the outputs agree to 5e-9 % NRMSE at
+    # 5 LSQR iterations and 2e-5 % at 10 (KKI, run locally on the CI's qsmxt build). Past ~10
+    # iterations LSQR amplifies rounding about 5x per iteration, in the original too: at its
+    # default 40 iterations, STI against itself with a 1-ulp change to the float32 input differs
+    # by 2.4 % (sim cropped to even) and 2.6 % (KKI), and QSM.rs against STI by 4.4 % / 16.7-20.9 %
+    # (run 41315128824: KKI 20.88 %, r 0.979). So the pair checks the algorithm at 10 iterations,
+    # where it is deterministic to rounding; the default 40 only measures the chaos.
+    reference_set: { niter: 10 }
+    candidate_set: { max_iter: 10 }
+    qsmrs_paths: [src/bgremove/iharperella.rs, src/error.rs, src/fft.rs, src/grid.rs,
+                  src/inversion/ilsqr.rs, src/kernels/, src/pipeline/bg_removal.rs,
+                  src/pipeline/rules.rs, src/utils/padding.rs]
+    qsmxt_paths: *bgremove_vsharp_wiring
+    # Not on sim: its 164x205x205 grid has odd dimensions, where STI Suite 3.0's iHARPERELLA does
+    # not remove the background (r 0.10 with the true local field, gradients along the two odd
+    # axes; cropped to 164x204x204 it gives r 0.86, and QSM.rs r 0.86 on the full grid). QSM.rs
+    # keeps working on odd grids (astewartau/QSM.rs#393).
+    datasets:
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs]
+        feed: { totalfield: totalfield }
+        # Measured (10 iterations): NRMSE 3.9e-5 %, r 1.000000, max |Δ| 6.0e-08 ppm, p99 |Δ| 3.0e-08 ppm.
+        localfield: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
+        measured: { main: "run 41318552428: QSMxT main 2c1661c, QSM.rs main 92dcc3b; iharperella-sti v2 (limits)" }
   star:
     reference: star-sti
     candidate: star-qsmrs   # ci_skip until a qsmxt release has `qsmxt invert star`: runs against a build
