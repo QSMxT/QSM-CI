@@ -1033,8 +1033,7 @@ pairs:
   r2primenet:
     reference: r2primenet
     candidate: r2primenet-qsmrs
-    enabled: false
-    note: baseline pending
+    enabled: true
     # R2* by ARLO on both sides: the toolbox's r2star_arlo is MEDI's arlo.m (black box, licensed
     # MATLAB R2023b, 2026-11-02); the entry's recon.py reproduces it bit for bit. QSM.rs sets negative
     # rates to 0 (its rule for relaxation maps), the toolbox keeps them: the r2star intermediate
@@ -1052,9 +1051,17 @@ pairs:
     datasets:
       s002001-kki-achieva-bridge-run1:
         feed: { r2star: r2star }
+        # Measured (fed): NRMSE 2.0e-05 %, r 1.000000, max |Δ| 9.2e-05 Hz, p99 |Δ| 7.6e-06 Hz.
+        # Unfed: R2' 3.54 %, r 0.9989; R2* 3.87 % (the clip of 18,985 negative voxels).
+        r2prime: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 0.000115, p99_abs_max: 9.54e-06 }
+        measured: { main: "run 41547089685: QSMxT main 0c12a84, qsm-core a44046e, reference r2star fed (limits)", unfed: "run 41474160070: same build, unfed: R2* differs at the negative rates only, R2' 3.54 %" }
       sim:
         feed: { r2star: r2star }
         candidate_set: { ignore_field_mismatch: "true" }
+        # Measured (fed): NRMSE 2.0e-05 %, r 1.000000, max |Δ| 1.5e-04 Hz, p99 |Δ| 1.9e-05 Hz.
+        # Unfed: R2' 0.39 %; R2* 0.91 % (the clip).
+        r2prime: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 0.000191, p99_abs_max: 2.39e-05 }
+        measured: { main: "run 41547089685: QSMxT main 0c12a84, qsm-core a44046e, reference r2star fed (limits)", unfed: "run 41474160070: same build, unfed: R2* differs at the negative rates only, R2' 0.39 %" }
   # iQSM, iQSM+ and iQFM take every echo's wrapped phase (4-D), as the originals do (`run.py
   # --echo_4d`), so the pairs start from the dataset's own inputs: no prefix, no feed. Per echo the
   # ports match the networks to float32 rounding (astewartau/QSM.rs#330). The echo weighting of the
