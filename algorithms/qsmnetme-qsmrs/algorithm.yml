@@ -1,0 +1,32 @@
+name: QSMnetME (QSM.rs)
+slug: qsmnetme-qsmrs
+algorithm: qsmnetme
+source: qsmrs
+stage: dipole
+language: Rust
+family: deep-learning
+learning: pretrained
+inputs: [localfield, mask, params]
+engine: QSMxT / QSM.rs
+description: >
+  QSMnetME as QSM.rs runs it: the χ-separation toolbox's network (the toolbox's ONNX graph, spatial
+  axes re-declared dynamic) and its route (rotation into the training frame, 1 mm spline
+  resampling, whole-volume inference, mapped back), run by `qsmxt invert qsmnetme` (QSM.rs's ONNX
+  engine, CPU). The QSM.rs port of the `qsmnetme` entry.
+authors:
+- name: Minjun Kim
+- name: Hyeong-Geol Shin
+- name: Jongho Lee
+- name: Ashley Stewart
+  note: QSM.rs / QSMxT port
+doi: 10.1002/hbm.70136
+citation: Kim et al., Hum Brain Mapp 2025 (χ-sepnet; QSMnetME)
+code_url: https://github.com/astewartau/QSM.rs
+license: 'MIT (QSM.rs); the weights keep the original''s terms: academic use; toolbox obtained via the
+  SNU-LIST Google Form'
+# qsmxt with the weights baked in (algorithms/_qsmxt/models.Dockerfile). `invert qsmnetme` is not in
+# a QSMxT release yet: the parity dev track builds qsmxt from source (qsmrs_models), and this image
+# pin moves to the first release with it.
+image: ghcr.io/astewartau/qsm-ci/qsmxt@sha256:3fd27500c18778edc21fd771828573e01c353e4c6147124977293e51256a9053   # v10.0.0-models-2
+ci_skip: true   # until the image has `qsmxt invert qsmnetme` (see image:)
+run: bash run.sh

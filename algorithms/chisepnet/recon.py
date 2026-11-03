@@ -1,60 +1,36 @@
 #!/usr/bin/env python3
-"""QSM-CI `chi-separation` stage — χ-sepnet (SNU-LIST, deep learning), ONNX inference.
+"""QSM-CI `chi-separation` stage: χ-sepnet (SNU-LIST χ-separation toolbox v1.1.3, deep learning).
 
-Isolated eval: reads the local field (ppm), χ_total/QSM (ppm), R2' (Hz), mask and params, runs the
-trained χ-sepnet network, and writes /output/chi-para.nii.gz (χ+) and chi-dia.nii.gz (χ−).
+The authors' full route, `chi_sepnet_general` (`Chisep_script.m`:177-194, the `resgen = false`
+branch), reproduced in chisep_route.py: the local field, R2′ and mask rotated into the training frame
+(B0 along the third axis, 1 mm), the QSM channel made there by the toolbox's own QSMnetME, χ-sepnet
+on the whole frame, and χ+ / χ− mapped back onto the acquired grid. χ-sepnet-R2′ (the stage gives a
+measured R2′); the toolbox's χ-sepnet-R2* variant (R2PRIMEnet inside the route) is
+`chisep_route.route(..., have_r2prime=False)`.
 
-The network (models/240904_xsepnet.onnx) takes a 3-channel 192x192x128 patch — [QSM, local field,
-R2'/Dr] each z-scored by the training statistics in xsepnet_train_patch_norm_factor*.mat — and
-predicts [χ+, χ−] (z-scored). We run it as an overlapping sliding window over the whole volume and
-average the overlaps, then de-normalise. Dr = 114 Hz/ppm (the network's COSMOS-referenced relaxivity).
+The entry no longer reads chimap.nii.gz: the toolbox makes its own QSM. (Its first version fed the
+stage's χ map as the QSM channel and ran the network on the acquired grid in 192×192×128 patches.)
 
-Units: the network was trained with the field and χ maps in ppm (not Hz) and R2' scaled to a
-ppm-equivalent by dividing by Dr — so we feed localfield/chimap in ppm unchanged and r2prime/Dr.
-
-Model files (ONNX + norm .mat) are baked into the container at $XSEPNET_MODELS; for a local run they
-sit next to this script or in the SNU-LIST toolbox's models/ dir. onnxruntime does the inference, so
-no MATLAB / Deep Learning Toolbox is needed.
+Reads localfield.nii.gz (ppm), r2prime.nii.gz (Hz), mask.nii.gz and params.json (B0, B0_dir); voxel
+sizes from the NIfTI header. Writes chi-para.nii.gz (χ+) and chi-dia.nii.gz (|χ−|), ppm. Dr = 114
+Hz/ppm unless config.json sets Dr (`qsm-ci run chisepnet --set Dr=…`).
 """
 import json
 import os
 import sys
 
-import numpy as np
 import nibabel as nib
-import scipy.io as sio
-import onnxruntime as ort
+import numpy as np
 
-IN = sys.argv[1] if len(sys.argv) > 1 else "/input"
-OUT = sys.argv[2] if len(sys.argv) > 2 else "/output"
-DEFAULT_DR = 114.0    # the network's COSMOS-referenced relaxivity (Hz/ppm) — see read_dr()
-PATCH = (192, 192, 128)
-ONNX = "240904_xsepnet.onnx"
-NORM = "xsepnet_train_patch_norm_factor_inplane_largedegree_romeo_arlo.mat"
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import chisep_route as cr  # noqa: E402
+
+GAMMA_HZ_PER_T = 42.5774806e6
+DEFAULT_DR = 114.0   # Chisep_script.m:186 (the networks were trained on COSMOS maps)
 
 
-def _models_dir():
-    """ONNX model + norm .mat location: $XSEPNET_MODELS (baked in the container), else next to this
-    script (gitignored, local run), else the SNU-LIST toolbox's models/ dir."""
-    env = os.environ.get("XSEPNET_MODELS")
-    if env and os.path.exists(os.path.join(env, ONNX)):
-        return env
-    here = os.path.dirname(os.path.abspath(__file__))
-    if os.path.exists(os.path.join(here, ONNX)):
-        return here
-    tb = os.environ.get("CHISEP_TOOLBOX", "/home/ashley/repos/qsm/chi-separation/Chisep_Toolbox_v1.1.3")
-    return os.path.join(tb, "models")
-
-
-MODELS = _models_dir()
-
-
-def read_dr():
-    """Dr (Hz/ppm) used to scale R2' into the network's input channel. Overridable via
-    `qsm-ci run chisepnet --set Dr=...` (arrives as /input/config.json), else the trained default 114.
-    NB: the net was trained at Dr=114 — moving it feeds off-distribution inputs, so this is a research
-    knob, not an accuracy-tuning target."""
-    p = os.path.join(IN, "config.json")
+def read_dr(inp):
+    p = os.path.join(inp, "config.json")
     if os.path.exists(p):
         with open(p) as f:
             v = json.load(f).get("Dr")
@@ -63,72 +39,26 @@ def read_dr():
     return DEFAULT_DR
 
 
-def load(name):
-    img = nib.load(os.path.join(IN, name))
-    return np.asarray(img.get_fdata(), dtype=np.float64), img
-
-
-def _starts(size, patch):
-    if size <= patch:
-        return [0]
-    st = list(range(0, size - patch + 1, int(patch * 0.75)))
-    if st[-1] != size - patch:
-        st.append(size - patch)
-    return st
-
-
-def main():
-    field, fimg = load("localfield.nii.gz")   # ppm
-    qsm, _ = load("chimap.nii.gz")             # ppm (χ_total)
-    r2p, _ = load("r2prime.nii.gz")            # Hz
-    mask = (load("mask.nii.gz")[0] > 0.5)
-    dr = read_dr()
-
-    N = sio.loadmat(os.path.join(MODELS, NORM))
-    def s(k):
-        return float(N[k].ravel()[0])
-
-    # 3 input channels in the order the network expects: [QSM, field, R2'/Dr], each z-scored.
-    chans = [
-        (qsm - s("cosmos_sus_mean")) / s("cosmos_sus_std"),
-        (field - s("field_mean")) / s("field_std"),
-        ((r2p / dr) - s("r2prime_mean")) / s("r2prime_std"),
-    ]
-    vol = np.stack([c * mask for c in chans]).astype(np.float32)   # (3, X, Y, Z)
-    _, X, Y, Z = vol.shape
-    pad = [max(0, PATCH[k] - (X, Y, Z)[k]) for k in range(3)]
-    volp = np.pad(vol, ((0, 0), (0, pad[0]), (0, pad[1]), (0, pad[2])))
-    _, Xp, Yp, Zp = volp.shape
-
-    sess = ort.InferenceSession(os.path.join(MODELS, ONNX),
-                                providers=["CPUExecutionProvider"])
-    iname = sess.get_inputs()[0].name
-    acc = np.zeros((2, Xp, Yp, Zp), np.float64)
-    wsum = np.zeros((Xp, Yp, Zp), np.float64)
-    for x0 in _starts(Xp, PATCH[0]):
-        for y0 in _starts(Yp, PATCH[1]):
-            for z0 in _starts(Zp, PATCH[2]):
-                sl = (slice(x0, x0 + PATCH[0]), slice(y0, y0 + PATCH[1]), slice(z0, z0 + PATCH[2]))
-                patch = volp[:, sl[0], sl[1], sl[2]][None]
-                out = sess.run(None, {iname: patch.astype(np.float32)})[0][0]
-                acc[:, sl[0], sl[1], sl[2]] += out
-                wsum[sl[0], sl[1], sl[2]] += 1.0
-    acc /= np.maximum(wsum, 1.0)
-
-    xpos = (acc[0] * s("x_pos_std") + s("x_pos_mean"))[:X, :Y, :Z] * mask   # χ+
-    xneg = (acc[1] * s("x_neg_std") + s("x_neg_mean"))[:X, :Y, :Z] * mask   # χ− (positive magnitude)
-    # Zero-truncation, as the authors' test.py does (pred_x_pos[pred_x_pos < 0] = 0, likewise χ−):
-    # the network has no output activation, so de-normalised magnitudes can come out negative.
-    xpos = np.maximum(xpos, 0.0)
-    xneg = np.maximum(xneg, 0.0)
-
-    os.makedirs(OUT, exist_ok=True)
-    nib.save(nib.Nifti1Image(xpos.astype(np.float32), fimg.affine, fimg.header),
-             os.path.join(OUT, "chi-para.nii.gz"))
-    nib.save(nib.Nifti1Image(xneg.astype(np.float32), fimg.affine, fimg.header),
-             os.path.join(OUT, "chi-dia.nii.gz"))
-    print("chi-sepnet: wrote chi-para/chi-dia", xpos.shape, "Dr=%g" % dr, flush=True)
+def main(inp, out):
+    img = nib.load(os.path.join(inp, "localfield.nii.gz"))
+    field = np.asarray(img.get_fdata(), dtype=np.float64)
+    r2p = np.asarray(nib.load(os.path.join(inp, "r2prime.nii.gz")).get_fdata(), dtype=np.float64)
+    mask = np.asarray(nib.load(os.path.join(inp, "mask.nii.gz")).get_fdata()) > 0.5
+    with open(os.path.join(inp, "params.json")) as f:
+        p = json.load(f)
+    cf = GAMMA_HZ_PER_T * float(p.get("B0", 3.0))
+    b0 = np.asarray(p.get("B0_dir", [0.0, 0.0, 1.0]), dtype=np.float64)
+    vs = np.asarray(img.header.get_zooms()[:3], dtype=np.float64)
+    nets = cr.toolbox_nets(which=("qsmnet", "xsepnet"), threads=int(os.environ.get("QSMCI_THREADS", "0")))
+    xp, xn, _, _, _ = cr.route(field * cf * 1e-6, r2p, mask, read_dr(inp), b0, cf, vs, True, nets,
+                               norm=cr.load_norm())
+    os.makedirs(out, exist_ok=True)
+    hdr = img.header.copy()
+    hdr.set_data_dtype(np.float32)
+    for name, v in (("chi-para", xp), ("chi-dia", xn)):
+        nib.save(nib.Nifti1Image(v.astype(np.float32), img.affine, hdr), os.path.join(out, f"{name}.nii.gz"))
+    print("chi-sepnet: wrote chi-para/chi-dia", xp.shape, flush=True)
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1] if len(sys.argv) > 1 else "/input", sys.argv[2] if len(sys.argv) > 2 else "/output")

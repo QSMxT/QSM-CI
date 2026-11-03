@@ -1066,21 +1066,47 @@ pairs:
   chisepnet:
     reference: chisepnet
     candidate: chisepnet-qsmrs
+    # Both sides run the authors' full route (chi_sepnet_general of the toolbox v1.1.3, recovered
+    # from its P-code in licensed MATLAB, astewartau/QSM.rs#377): rotation into the training frame,
+    # 1 mm spline resampling, QSMnetME for the QSM channel, whole frame, mapped back. The reference
+    # (chisep_route.py) matches the toolbox to 1.4e-5–2.1e-5 % NRMSE.
     enabled: true
-    # Both clip negative χ+ and |χ−| to 0, as the authors' test.py does (QSMxT/QSM-CI#333); the
-    # hosted chi-sepnet.onnx equals the toolbox's 240904_xsepnet.onnx.
     qsmrs_models: true
-    qsmrs_paths: [src/geometry.rs, src/grid.rs, src/models/, src/pipeline/rules.rs,
+    qsmrs_paths: [src/grid.rs, src/inversion/qsmnetme.rs, src/models/, src/pipeline/rules.rs,
                   src/pipeline/separation.rs, src/separation/chisepnet.rs, src/separation/mod.rs,
+                  src/utils/chisep_frame.rs, src/utils/interp3.rs, src/utils/r2primenet.rs,
                   src/utils/sliding.rs]
     qsmxt_paths: *separate_wiring
     datasets:
       chisep-mc:
-        # Measured: NRMSE 2.8e-05 %, r 1.000000, max |Δ| 1.5e-07 ppm, p99 |Δ| 3.4e-08 ppm.
-        chi-para: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1e-06, p99_abs_max: 1e-06 }
-        # Measured: NRMSE 2.6e-05 %, r 1.000000, max |Δ| 9.7e-08 ppm, p99 |Δ| 2.6e-08 ppm.
-        chi-dia: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1e-06, p99_abs_max: 1e-06 }
-        measured: { main: "run 41190020480: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
+        # Measured: χ+ NRMSE 4.0e-05 %, r 1.000000, max |Δ| 1.9e-07 ppm, p99 |Δ| 4.5e-08 ppm.
+        chi-para: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.0e-06, p99_abs_max: 1.0e-06 }
+        # Measured: χ− NRMSE 3.8e-05 %, r 1.000000, max |Δ| 1.6e-07 ppm, p99 |Δ| 3.4e-08 ppm.
+        chi-dia: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.0e-06, p99_abs_max: 1.0e-06 }
+        measured: { main: "run 41570674055: QSMxT qsmnetme-377 (QSMxT#480), QSM.rs main 7656a79 (limits)" }
+  qsmnetme:
+    reference: qsmnetme
+    candidate: qsmnetme-qsmrs
+    # QSMnetME by the toolbox's route on both sides (astewartau/QSM.rs#377). The reference is a
+    # Python reproduction of chi_sepnet_general's QSM step (chisep_route.py), verified against the
+    # P-code in licensed MATLAB to 1.7e-5 % NRMSE.
+    enabled: true
+    qsmrs_models: true
+    qsmrs_paths: [src/grid.rs, src/inversion/qsmnetme.rs, src/models/, src/pipeline/inversion.rs,
+                  src/pipeline/rules.rs, src/utils/chisep_frame.rs, src/utils/interp3.rs,
+                  src/utils/sliding.rs]
+    qsmxt_paths: *invert_wiring
+    datasets:
+      sim:
+        # Measured: NRMSE 6.0e-05 %, r 1.000000, max |Δ| 6.3e-07 ppm, p99 |Δ| 4.3e-08 ppm.
+        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.0e-06, p99_abs_max: 1.0e-06 }
+        measured: { main: "run 41569073453: QSMxT qsmnetme-377 (QSMxT#480), QSM.rs qsmnetme-377 6eb018a (limits)" }
+      s002001-kki-achieva-bridge-run1:
+        reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
+        feed: { localfield: localfield }
+        # Measured: NRMSE 9.4e-05 %, r 1.000000, max |Δ| 6.3e-06 ppm, p99 |Δ| 6.0e-08 ppm.
+        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 7.9e-06, p99_abs_max: 1.0e-06 }
+        measured: { main: "run 41569073453: QSMxT qsmnetme-377 (QSMxT#480), QSM.rs qsmnetme-377 6eb018a (limits)" }
   susep-net:
     reference: susep-net
     candidate: susep-net-qsmrs

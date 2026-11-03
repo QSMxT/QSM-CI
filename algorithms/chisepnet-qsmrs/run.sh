@@ -8,8 +8,9 @@ IN="${1:-/input}"; OUT="${2:-/output}"
 B0DIR="${QSMCI_B0_DIR:-0 0 1}"
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
+# The authors' route (QSM.rs's default): QSMnetME makes the QSM channel, so no --qsm.
 qsmxt separate chi-sepnet \
-  --qsm "$IN/chimap.nii.gz" --local-field "$IN/localfield.nii.gz" --r2prime "$IN/r2prime.nii.gz" \
+  --local-field "$IN/localfield.nii.gz" --r2prime "$IN/r2prime.nii.gz" \
   -m "$IN/mask.nii.gz" -o "$WORK/cs" --b0-direction $B0DIR --field-strength "${QSMCI_B0:-3}"
 gzip -c "$WORK/cs_desc-paramagnetic_Chimap.nii" > "$OUT/chi-para.nii.gz"
 gzip -c "$WORK/cs_desc-diamagnetic_Chimap.nii" > "$OUT/chi-dia.nii.gz"

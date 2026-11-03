@@ -6,11 +6,12 @@ stage: chi-separation
 language: Rust
 family: deep-learning
 learning: pretrained
-inputs: [localfield, chimap, r2prime, mask, params]
+inputs: [localfield, r2prime, mask, params]
 engine: QSMxT / QSM.rs
 description: >
-  χ-sepnet as QSM.rs runs it: the authors' trained weights exported to ONNX and run by `qsmxt
-  separate chi-sepnet` (QSM.rs's ONNX engine, CPU). The QSM.rs port of the `chisepnet` entry, which
+  χ-sepnet as QSM.rs runs it: the authors' trained weights and route (rotation into the training
+  frame, 1 mm, the QSM channel from QSMnetME, mapped back) run by `qsmxt separate chi-sepnet`
+  (QSM.rs's ONNX engine, CPU). The QSM.rs port of the `chisepnet` entry, which
   runs the authors' own code and weights.
 authors:
 - name: Minjun Kim
@@ -26,4 +27,7 @@ license: 'MIT (QSM.rs); the weights keep the original''s terms: academic use; to
 # The weights are QSM.rs's ONNX exports (qsmxt/qsm-onnx-weights), baked into the image with
 # algorithms/_qsmxt/models.Dockerfile, since a submission runs with no network.
 image: ghcr.io/astewartau/qsm-ci/qsmxt@sha256:3fd27500c18778edc21fd771828573e01c353e4c6147124977293e51256a9053   # v10.0.0-models-2
+# The route (no --qsm) is not in QSMxT v10.0.0: the parity dev track builds qsmxt from source
+# (qsmrs_models); scoring resumes with the first release that has it.
+ci_skip: true   # until the image has the toolbox route of `qsmxt separate chi-sepnet` (see image:)
 run: bash run.sh
