@@ -4255,6 +4255,48 @@
     "chi-dia nrmse 13.08% (limit <= 0.5%)",
     "chi-dia p99_abs 0.007722 ppm (limit <= 1e-06 ppm)"
    ]
+  },
+  {
+   "pair": "xqsm",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-03T13:28:56Z",
+   "run_id": "41642974449",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41642974449",
+   "qsmci_commit": "5184f353b796dfb9d93656742701abfa3d09d666",
+   "thresholds": "36053456a30b",
+   "reference": {
+    "slug": "xqsm",
+    "image": "ghcr.io/astewartau/qsm-ci/xqsm@sha256:f28dabe6f7f41db967133a022f3eb5205d2a2bbb5fab78117d58b1fb84b26444",
+    "digest": "sha256:f28dabe6f7f41db967133a022f3eb5205d2a2bbb5fab78117d58b1fb84b26444",
+    "id": "sha256:d4ca161af8a2c5465c8c4dd19d2de19f9b50a0b0e52a2d4401126e1be22f1ec5"
+   },
+   "candidate": {
+    "slug": "xqsm-qsmrs",
+    "image": "qsmxt-under-test:41642974449-models",
+    "digest": "sha256:3dbcc06b81086e68880b4b54b52c03b9c2a11cfa9888e83b2ca9a76e5b0504c7",
+    "qsmxt": "qsmxt 0.0.0"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.000865919204080593,
+     "correlation": 0.9999999999635204,
+     "max_abs": 7.197260856628418e-06,
+     "p99_abs": 8.195638656616211e-07,
+     "nonfinite": 0
+    }
+   }
   }
  ]
 }

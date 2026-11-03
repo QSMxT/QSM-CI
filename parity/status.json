@@ -18,8 +18,66 @@
     "version": "0.39.0",
     "commit": "42ab620190ad315c9dcf7aa8ec4a036402002b7e"
    },
-   "stale": [],
-   "rerun": [],
+   "stale": [
+    "xqsm",
+    "qsmnet",
+    "qsmnet-plus",
+    "lpcnn",
+    "qsmgan",
+    "modl-qsm",
+    "ir2qsm",
+    "autoqsm",
+    "nextqsm",
+    "bfrnet",
+    "chisepnet",
+    "qsmnetme",
+    "susep-net",
+    "hd-bet",
+    "mindgrab",
+    "r2primenet",
+    "iqsm",
+    "iqsm-plus",
+    "ndi",
+    "fansi-nltv",
+    "fansi-nltgv",
+    "l1qsm",
+    "whqsm",
+    "hdqsm",
+    "resharp",
+    "pdf",
+    "lbv",
+    "tfi"
+   ],
+   "rerun": [
+    "xqsm",
+    "qsmnet",
+    "qsmnet-plus",
+    "lpcnn",
+    "qsmgan",
+    "modl-qsm",
+    "ir2qsm",
+    "autoqsm",
+    "nextqsm",
+    "bfrnet",
+    "chisepnet",
+    "qsmnetme",
+    "susep-net",
+    "hd-bet",
+    "mindgrab",
+    "r2primenet",
+    "iqsm",
+    "iqsm-plus",
+    "ndi",
+    "fansi-nltv",
+    "fansi-nltgv",
+    "l1qsm",
+    "whqsm",
+    "hdqsm",
+    "resharp",
+    "pdf",
+    "lbv",
+    "tfi"
+   ],
    "pairs": [
     {
      "pair": "qsmart",
@@ -1564,6 +1622,613 @@
      }
     },
     {
+     "pair": "xqsm",
+     "algorithm": "xqsm",
+     "reference": "xqsm",
+     "candidate": "xqsm-qsmrs",
+     "enabled": true,
+     "state": "stale",
+     "anchor": "pair-xqsm",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
+      },
+      {
+       "dataset": "sim",
+       "last": null,
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
+      }
+     ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=xqsm -f dataset=configured -f qsmxt_release=v10.0.0",
+     "badge": {
+      "kind": "unchecked",
+      "message": "not checked \u00b7 v10.0.0",
+      "color": "lightgrey"
+     }
+    },
+    {
+     "pair": "qsmnet",
+     "algorithm": "qsmnet",
+     "reference": "qsmnet",
+     "candidate": "qsmnet-qsmrs",
+     "enabled": true,
+     "state": "stale",
+     "anchor": "pair-qsmnet",
+     "datasets": [
+      {
+       "dataset": "sim",
+       "last": null,
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
+      }
+     ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=qsmnet -f dataset=configured -f qsmxt_release=v10.0.0",
+     "badge": {
+      "kind": "unchecked",
+      "message": "not checked \u00b7 v10.0.0",
+      "color": "lightgrey"
+     }
+    },
+    {
+     "pair": "qsmnet-plus",
+     "algorithm": "qsmnet-plus",
+     "reference": "qsmnet-plus",
+     "candidate": "qsmnet-plus-qsmrs",
+     "enabled": true,
+     "state": "stale",
+     "anchor": "pair-qsmnet-plus",
+     "datasets": [
+      {
+       "dataset": "sim",
+       "last": null,
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
+      }
+     ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=qsmnet-plus -f dataset=configured -f qsmxt_release=v10.0.0",
+     "badge": {
+      "kind": "unchecked",
+      "message": "not checked \u00b7 v10.0.0",
+      "color": "lightgrey"
+     }
+    },
+    {
+     "pair": "lpcnn",
+     "algorithm": "lpcnn",
+     "reference": "lpcnn",
+     "candidate": "lpcnn-qsmrs",
+     "enabled": true,
+     "state": "stale",
+     "anchor": "pair-lpcnn",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
+      },
+      {
+       "dataset": "sim",
+       "last": null,
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
+      }
+     ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=lpcnn -f dataset=configured -f qsmxt_release=v10.0.0",
+     "badge": {
+      "kind": "unchecked",
+      "message": "not checked \u00b7 v10.0.0",
+      "color": "lightgrey"
+     }
+    },
+    {
+     "pair": "qsmgan",
+     "algorithm": "qsmgan",
+     "reference": "qsmgan",
+     "candidate": "qsmgan-qsmrs",
+     "enabled": true,
+     "state": "stale",
+     "anchor": "pair-qsmgan",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
+      },
+      {
+       "dataset": "sim",
+       "last": null,
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
+      }
+     ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=qsmgan -f dataset=configured -f qsmxt_release=v10.0.0",
+     "badge": {
+      "kind": "unchecked",
+      "message": "not checked \u00b7 v10.0.0",
+      "color": "lightgrey"
+     }
+    },
+    {
+     "pair": "modl-qsm",
+     "algorithm": "modl-qsm",
+     "reference": "modl-qsm",
+     "candidate": "modl-qsm-qsmrs",
+     "enabled": true,
+     "state": "stale",
+     "anchor": "pair-modl-qsm",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
+      },
+      {
+       "dataset": "sim",
+       "last": null,
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
+      }
+     ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=modl-qsm -f dataset=configured -f qsmxt_release=v10.0.0",
+     "badge": {
+      "kind": "unchecked",
+      "message": "not checked \u00b7 v10.0.0",
+      "color": "lightgrey"
+     }
+    },
+    {
+     "pair": "ir2qsm",
+     "algorithm": "ir2qsm",
+     "reference": "ir2qsm",
+     "candidate": "ir2qsm-qsmrs",
+     "enabled": true,
+     "state": "stale",
+     "anchor": "pair-ir2qsm",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
+      },
+      {
+       "dataset": "sim",
+       "last": null,
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
+      }
+     ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=ir2qsm -f dataset=configured -f qsmxt_release=v10.0.0",
+     "badge": {
+      "kind": "unchecked",
+      "message": "not checked \u00b7 v10.0.0",
+      "color": "lightgrey"
+     }
+    },
+    {
+     "pair": "autoqsm",
+     "algorithm": "autoqsm",
+     "reference": "autoqsm",
+     "candidate": "autoqsm-qsmrs",
+     "enabled": true,
+     "state": "stale",
+     "anchor": "pair-autoqsm",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
+      },
+      {
+       "dataset": "sim",
+       "last": null,
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
+      }
+     ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=autoqsm -f dataset=configured -f qsmxt_release=v10.0.0",
+     "badge": {
+      "kind": "unchecked",
+      "message": "not checked \u00b7 v10.0.0",
+      "color": "lightgrey"
+     }
+    },
+    {
+     "pair": "nextqsm",
+     "algorithm": "nextqsm",
+     "reference": "nextqsm",
+     "candidate": "nextqsm-qsmrs",
+     "enabled": true,
+     "state": "stale",
+     "anchor": "pair-nextqsm",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
+      },
+      {
+       "dataset": "sim",
+       "last": null,
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
+      }
+     ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=nextqsm -f dataset=configured -f qsmxt_release=v10.0.0",
+     "badge": {
+      "kind": "unchecked",
+      "message": "not checked \u00b7 v10.0.0",
+      "color": "lightgrey"
+     }
+    },
+    {
+     "pair": "bfrnet",
+     "algorithm": "bfrnet",
+     "reference": "bfrnet",
+     "candidate": "bfrnet-qsmrs",
+     "enabled": true,
+     "state": "stale",
+     "anchor": "pair-bfrnet",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
+      },
+      {
+       "dataset": "sim",
+       "last": null,
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
+      }
+     ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=bfrnet -f dataset=configured -f qsmxt_release=v10.0.0",
+     "badge": {
+      "kind": "unchecked",
+      "message": "not checked \u00b7 v10.0.0",
+      "color": "lightgrey"
+     }
+    },
+    {
+     "pair": "chisepnet",
+     "algorithm": "chisepnet",
+     "reference": "chisepnet",
+     "candidate": "chisepnet-qsmrs",
+     "enabled": true,
+     "state": "stale",
+     "anchor": "pair-chisepnet",
+     "datasets": [
+      {
+       "dataset": "chisep-mc",
+       "last": null,
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
+      }
+     ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=chisepnet -f dataset=configured -f qsmxt_release=v10.0.0",
+     "badge": {
+      "kind": "unchecked",
+      "message": "not checked \u00b7 v10.0.0",
+      "color": "lightgrey"
+     }
+    },
+    {
+     "pair": "qsmnetme",
+     "algorithm": "qsmnetme",
+     "reference": "qsmnetme",
+     "candidate": "qsmnetme-qsmrs",
+     "enabled": true,
+     "state": "stale",
+     "anchor": "pair-qsmnetme",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
+      },
+      {
+       "dataset": "sim",
+       "last": null,
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
+      }
+     ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=qsmnetme -f dataset=configured -f qsmxt_release=v10.0.0",
+     "badge": {
+      "kind": "unchecked",
+      "message": "not checked \u00b7 v10.0.0",
+      "color": "lightgrey"
+     }
+    },
+    {
+     "pair": "susep-net",
+     "algorithm": "susep-net",
+     "reference": "susep-net",
+     "candidate": "susep-net-qsmrs",
+     "enabled": true,
+     "state": "stale",
+     "anchor": "pair-susep-net",
+     "datasets": [
+      {
+       "dataset": "chisep-mc",
+       "last": null,
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
+      }
+     ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=susep-net -f dataset=configured -f qsmxt_release=v10.0.0",
+     "badge": {
+      "kind": "unchecked",
+      "message": "not checked \u00b7 v10.0.0",
+      "color": "lightgrey"
+     }
+    },
+    {
+     "pair": "hd-bet",
+     "algorithm": "hd-bet",
+     "reference": "hd-bet-qsmci",
+     "candidate": "hd-bet-qsmrs",
+     "enabled": true,
+     "state": "stale",
+     "anchor": "pair-hd-bet",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
+      }
+     ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=hd-bet -f dataset=configured -f qsmxt_release=v10.0.0",
+     "badge": {
+      "kind": "unchecked",
+      "message": "not checked \u00b7 v10.0.0",
+      "color": "lightgrey"
+     }
+    },
+    {
+     "pair": "mindgrab",
+     "algorithm": "mindgrab",
+     "reference": "mindgrab",
+     "candidate": "mindgrab-qsmrs",
+     "enabled": true,
+     "state": "stale",
+     "anchor": "pair-mindgrab",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
+      }
+     ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=mindgrab -f dataset=configured -f qsmxt_release=v10.0.0",
+     "badge": {
+      "kind": "unchecked",
+      "message": "not checked \u00b7 v10.0.0",
+      "color": "lightgrey"
+     }
+    },
+    {
+     "pair": "r2primenet",
+     "algorithm": "r2primenet",
+     "reference": "r2primenet",
+     "candidate": "r2primenet-qsmrs",
+     "enabled": true,
+     "state": "stale",
+     "anchor": "pair-r2primenet",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
+      },
+      {
+       "dataset": "sim",
+       "last": null,
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
+      }
+     ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=r2primenet -f dataset=configured -f qsmxt_release=v10.0.0",
+     "badge": {
+      "kind": "unchecked",
+      "message": "not checked \u00b7 v10.0.0",
+      "color": "lightgrey"
+     }
+    },
+    {
+     "pair": "iqsm",
+     "algorithm": "iqsm",
+     "reference": "iqsm",
+     "candidate": "iqsm-qsmrs",
+     "enabled": true,
+     "state": "stale",
+     "anchor": "pair-iqsm",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
+      },
+      {
+       "dataset": "sim",
+       "last": null,
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
+      }
+     ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=iqsm -f dataset=configured -f qsmxt_release=v10.0.0",
+     "badge": {
+      "kind": "unchecked",
+      "message": "not checked \u00b7 v10.0.0",
+      "color": "lightgrey"
+     }
+    },
+    {
+     "pair": "iqsm-plus",
+     "algorithm": "iqsm-plus",
+     "reference": "iqsm-plus",
+     "candidate": "iqsm-plus-qsmrs",
+     "enabled": true,
+     "state": "stale",
+     "anchor": "pair-iqsm-plus",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
+      },
+      {
+       "dataset": "sim",
+       "last": null,
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
+      }
+     ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=iqsm-plus -f dataset=configured -f qsmxt_release=v10.0.0",
+     "badge": {
+      "kind": "unchecked",
+      "message": "not checked \u00b7 v10.0.0",
+      "color": "lightgrey"
+     }
+    },
+    {
+     "pair": "iqfm",
+     "algorithm": "iqfm",
+     "reference": "iqfm",
+     "candidate": "iqfm-qsmrs",
+     "enabled": false,
+     "state": "off",
+     "anchor": "pair-iqfm",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "rerun": false,
+       "stale": false,
+       "reasons": []
+      },
+      {
+       "dataset": "sim",
+       "last": null,
+       "rerun": false,
+       "stale": false,
+       "reasons": []
+      }
+     ],
+     "note": "baseline pending",
+     "badge": {
+      "kind": "off",
+      "message": "not enabled",
+      "color": "lightgrey"
+     }
+    },
+    {
      "pair": "lsqr",
      "algorithm": "lsqr",
      "reference": "lsqr",
@@ -1706,30 +2371,34 @@
      "algorithm": "ndi",
      "reference": "ndi",
      "candidate": "ndi-qsmrs",
-     "enabled": false,
-     "state": "gap",
+     "enabled": true,
+     "state": "stale",
      "anchor": "pair-ndi",
      "datasets": [
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": null,
-       "rerun": false,
-       "stale": false,
-       "reasons": []
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
       },
       {
        "dataset": "sim",
        "last": null,
-       "rerun": false,
-       "stale": false,
-       "reasons": []
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
       }
      ],
-     "blocked_by": "astewartau/QSM.rs#399",
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=ndi -f dataset=configured -f qsmxt_release=v10.0.0",
      "badge": {
-      "kind": "gap",
-      "message": "gap \u00b7 QSM.rs#399",
-      "color": "yellow"
+      "kind": "unchecked",
+      "message": "not checked \u00b7 v10.0.0",
+      "color": "lightgrey"
      }
     },
     {
@@ -1737,30 +2406,34 @@
      "algorithm": "fansi",
      "reference": "fansi-nltv",
      "candidate": "fansi-nltv-qsmrs",
-     "enabled": false,
-     "state": "gap",
+     "enabled": true,
+     "state": "stale",
      "anchor": "pair-fansi-nltv",
      "datasets": [
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": null,
-       "rerun": false,
-       "stale": false,
-       "reasons": []
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
       },
       {
        "dataset": "sim",
        "last": null,
-       "rerun": false,
-       "stale": false,
-       "reasons": []
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
       }
      ],
-     "blocked_by": "astewartau/QSM.rs#400",
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=fansi-nltv -f dataset=configured -f qsmxt_release=v10.0.0",
      "badge": {
-      "kind": "gap",
-      "message": "gap \u00b7 QSM.rs#400",
-      "color": "yellow"
+      "kind": "unchecked",
+      "message": "not checked \u00b7 v10.0.0",
+      "color": "lightgrey"
      }
     },
     {
@@ -1768,30 +2441,34 @@
      "algorithm": "fansi",
      "reference": "fansi-nltgv",
      "candidate": "fansi-nltgv-qsmrs",
-     "enabled": false,
-     "state": "gap",
+     "enabled": true,
+     "state": "stale",
      "anchor": "pair-fansi-nltgv",
      "datasets": [
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": null,
-       "rerun": false,
-       "stale": false,
-       "reasons": []
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
       },
       {
        "dataset": "sim",
        "last": null,
-       "rerun": false,
-       "stale": false,
-       "reasons": []
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
       }
      ],
-     "blocked_by": "astewartau/QSM.rs#400",
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=fansi-nltgv -f dataset=configured -f qsmxt_release=v10.0.0",
      "badge": {
-      "kind": "gap",
-      "message": "gap \u00b7 QSM.rs#400",
-      "color": "yellow"
+      "kind": "unchecked",
+      "message": "not checked \u00b7 v10.0.0",
+      "color": "lightgrey"
      }
     },
     {
@@ -1799,30 +2476,34 @@
      "algorithm": "l1qsm",
      "reference": "l1qsm",
      "candidate": "l1qsm-qsmrs",
-     "enabled": false,
-     "state": "gap",
+     "enabled": true,
+     "state": "stale",
      "anchor": "pair-l1qsm",
      "datasets": [
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": null,
-       "rerun": false,
-       "stale": false,
-       "reasons": []
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
       },
       {
        "dataset": "sim",
        "last": null,
-       "rerun": false,
-       "stale": false,
-       "reasons": []
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
       }
      ],
-     "blocked_by": "astewartau/QSM.rs#401",
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=l1qsm -f dataset=configured -f qsmxt_release=v10.0.0",
      "badge": {
-      "kind": "gap",
-      "message": "gap \u00b7 QSM.rs#401",
-      "color": "yellow"
+      "kind": "unchecked",
+      "message": "not checked \u00b7 v10.0.0",
+      "color": "lightgrey"
      }
     },
     {
@@ -1830,30 +2511,34 @@
      "algorithm": "whqsm",
      "reference": "whqsm",
      "candidate": "whqsm-qsmrs",
-     "enabled": false,
-     "state": "gap",
+     "enabled": true,
+     "state": "stale",
      "anchor": "pair-whqsm",
      "datasets": [
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": null,
-       "rerun": false,
-       "stale": false,
-       "reasons": []
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
       },
       {
        "dataset": "sim",
        "last": null,
-       "rerun": false,
-       "stale": false,
-       "reasons": []
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
       }
      ],
-     "blocked_by": "astewartau/QSM.rs#402",
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=whqsm -f dataset=configured -f qsmxt_release=v10.0.0",
      "badge": {
-      "kind": "gap",
-      "message": "gap \u00b7 QSM.rs#402",
-      "color": "yellow"
+      "kind": "unchecked",
+      "message": "not checked \u00b7 v10.0.0",
+      "color": "lightgrey"
      }
     },
     {
@@ -1861,30 +2546,34 @@
      "algorithm": "hdqsm",
      "reference": "hdqsm",
      "candidate": "hdqsm-qsmrs",
-     "enabled": false,
-     "state": "gap",
+     "enabled": true,
+     "state": "stale",
      "anchor": "pair-hdqsm",
      "datasets": [
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": null,
-       "rerun": false,
-       "stale": false,
-       "reasons": []
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
       },
       {
        "dataset": "sim",
        "last": null,
-       "rerun": false,
-       "stale": false,
-       "reasons": []
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
       }
      ],
-     "blocked_by": "astewartau/QSM.rs#403",
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=hdqsm -f dataset=configured -f qsmxt_release=v10.0.0",
      "badge": {
-      "kind": "gap",
-      "message": "gap \u00b7 QSM.rs#403",
-      "color": "yellow"
+      "kind": "unchecked",
+      "message": "not checked \u00b7 v10.0.0",
+      "color": "lightgrey"
      }
     },
     {
@@ -1892,30 +2581,34 @@
      "algorithm": "resharp",
      "reference": "resharp",
      "candidate": "resharp-qsmrs",
-     "enabled": false,
-     "state": "gap",
+     "enabled": true,
+     "state": "stale",
      "anchor": "pair-resharp",
      "datasets": [
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": null,
-       "rerun": false,
-       "stale": false,
-       "reasons": []
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
       },
       {
        "dataset": "sim",
        "last": null,
-       "rerun": false,
-       "stale": false,
-       "reasons": []
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
       }
      ],
-     "blocked_by": "astewartau/QSM.rs#404",
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=resharp -f dataset=configured -f qsmxt_release=v10.0.0",
      "badge": {
-      "kind": "gap",
-      "message": "gap \u00b7 QSM.rs#404",
-      "color": "yellow"
+      "kind": "unchecked",
+      "message": "not checked \u00b7 v10.0.0",
+      "color": "lightgrey"
      }
     },
     {
@@ -1923,30 +2616,34 @@
      "algorithm": "pdf",
      "reference": "pdf-cornell",
      "candidate": "pdf-qsmrs",
-     "enabled": false,
-     "state": "gap",
+     "enabled": true,
+     "state": "stale",
      "anchor": "pair-pdf",
      "datasets": [
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": null,
-       "rerun": false,
-       "stale": false,
-       "reasons": []
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
       },
       {
        "dataset": "sim",
        "last": null,
-       "rerun": false,
-       "stale": false,
-       "reasons": []
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
       }
      ],
-     "blocked_by": "astewartau/QSM.rs#405",
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=pdf -f dataset=configured -f qsmxt_release=v10.0.0",
      "badge": {
-      "kind": "gap",
-      "message": "gap \u00b7 QSM.rs#405",
-      "color": "yellow"
+      "kind": "unchecked",
+      "message": "not checked \u00b7 v10.0.0",
+      "color": "lightgrey"
      }
     },
     {
@@ -1954,30 +2651,34 @@
      "algorithm": "lbv",
      "reference": "lbv-cornell",
      "candidate": "lbv-qsmrs",
-     "enabled": false,
-     "state": "gap",
+     "enabled": true,
+     "state": "stale",
      "anchor": "pair-lbv",
      "datasets": [
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": null,
-       "rerun": false,
-       "stale": false,
-       "reasons": []
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
       },
       {
        "dataset": "sim",
        "last": null,
-       "rerun": false,
-       "stale": false,
-       "reasons": []
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
       }
      ],
-     "blocked_by": "astewartau/QSM.rs#406",
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=lbv -f dataset=configured -f qsmxt_release=v10.0.0",
      "badge": {
-      "kind": "gap",
-      "message": "gap \u00b7 QSM.rs#406",
-      "color": "yellow"
+      "kind": "unchecked",
+      "message": "not checked \u00b7 v10.0.0",
+      "color": "lightgrey"
      }
     },
     {
@@ -1985,30 +2686,34 @@
      "algorithm": "tfi",
      "reference": "tfi-cornell",
      "candidate": "tfi-qsmrs",
-     "enabled": false,
-     "state": "gap",
+     "enabled": true,
+     "state": "stale",
      "anchor": "pair-tfi",
      "datasets": [
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": null,
-       "rerun": false,
-       "stale": false,
-       "reasons": []
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
       },
       {
        "dataset": "sim",
        "last": null,
-       "rerun": false,
-       "stale": false,
-       "reasons": []
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
       }
      ],
-     "blocked_by": "astewartau/QSM.rs#407",
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=tfi -f dataset=configured -f qsmxt_release=v10.0.0",
      "badge": {
-      "kind": "gap",
-      "message": "gap \u00b7 QSM.rs#407",
-      "color": "yellow"
+      "kind": "unchecked",
+      "message": "not checked \u00b7 v10.0.0",
+      "color": "lightgrey"
      }
     },
     {
@@ -2113,6 +2818,18 @@
     {
      "qsmxt": {
       "ref": "main",
+      "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+     },
+     "qsmrs": {
+      "version": null,
+      "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1"
+     },
+     "checks": 1,
+     "date": "2026-11-03T13:28:56Z"
+    },
+    {
+     "qsmxt": {
+      "ref": "main",
       "commit": "9cfe3f9ccb85232d76e14a671f8e6ba3508f861d"
      },
      "qsmrs": {
@@ -2149,8 +2866,36 @@
     "laplacian",
     "romeo",
     "tgv",
+    "xqsm",
+    "qsmnet",
+    "qsmnet-plus",
+    "lpcnn",
+    "qsmgan",
+    "modl-qsm",
+    "ir2qsm",
+    "autoqsm",
+    "nextqsm",
+    "bfrnet",
+    "chisepnet",
+    "qsmnetme",
+    "susep-net",
+    "hd-bet",
+    "mindgrab",
+    "r2primenet",
+    "iqsm",
+    "iqsm-plus",
     "lsqr",
-    "heidi"
+    "heidi",
+    "ndi",
+    "fansi-nltv",
+    "fansi-nltgv",
+    "l1qsm",
+    "whqsm",
+    "hdqsm",
+    "resharp",
+    "pdf",
+    "lbv",
+    "tfi"
    ],
    "pairs": [
     {
@@ -2186,7 +2931,7 @@
         "reference image changed: checked sha256:e0e8bc6957c5, algorithm.yml pins sha256:01f36e868bca",
         "QSM.rs main changed `src/bgremove/sdf.rs`, `src/inversion/ilsqr.rs`, `src/kernels/dipole.rs`, `src/pipeline/config.rs` \u2026 since the checked 15c938f (29 commits)",
         "the pair's settings or limits for this dataset changed since",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` \u2026 since the checked 9cfe3f9 (14 commits)"
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` \u2026 since the checked 9cfe3f9 (15 commits)"
        ]
       },
       {
@@ -2213,7 +2958,7 @@
         "reference image changed: checked sha256:e0e8bc6957c5, algorithm.yml pins sha256:01f36e868bca",
         "QSM.rs main changed `src/bgremove/sdf.rs`, `src/inversion/ilsqr.rs`, `src/kernels/dipole.rs`, `src/pipeline/config.rs` \u2026 since the checked 15c938f (29 commits)",
         "the pair's settings or limits for this dataset changed since",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` \u2026 since the checked 9cfe3f9 (14 commits)"
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` \u2026 since the checked 9cfe3f9 (15 commits)"
        ]
       }
      ],
@@ -2288,7 +3033,7 @@
        "stale": true,
        "reasons": [
         "QSM.rs main changed `src/bgremove/vsharp.rs`, `src/kernels/dipole.rs`, `src/pipeline/bg_removal.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (14 commits)"
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (15 commits)"
        ]
       },
       {
@@ -2313,7 +3058,7 @@
        "stale": true,
        "reasons": [
         "QSM.rs main changed `src/bgremove/vsharp.rs`, `src/kernels/dipole.rs`, `src/pipeline/bg_removal.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (14 commits)"
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (15 commits)"
        ]
       }
      ],
@@ -2380,7 +3125,7 @@
        "stale": true,
        "reasons": [
         "QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits)"
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (15 commits)"
        ]
       },
       {
@@ -2405,7 +3150,7 @@
        "stale": true,
        "reasons": [
         "QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits)"
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (15 commits)"
        ]
       }
      ],
@@ -2447,7 +3192,7 @@
        "stale": true,
        "reasons": [
         "QSM.rs main changed `src/inversion/tfi.rs`, `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` \u2026 since the checked 15c938f (29 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits)"
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (15 commits)"
        ]
       },
       {
@@ -2472,7 +3217,7 @@
        "stale": true,
        "reasons": [
         "QSM.rs main changed `src/inversion/tfi.rs`, `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` \u2026 since the checked 15c938f (29 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits)"
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (15 commits)"
        ]
       }
      ],
@@ -2547,7 +3292,7 @@
        "stale": true,
        "reasons": [
         "QSM.rs main changed `src/inversion/admm.rs`, `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits)"
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (15 commits)"
        ]
       }
      ],
@@ -2592,7 +3337,7 @@
         "QSM.rs main changed `src/pipeline/rules.rs`, `src/pipeline/separation.rs`, `src/separation/decompose.rs`, `src/separation/mod.rs` \u2026 since the checked 15c938f (29 commits)",
         "the pair's settings or limits for this dataset changed since",
         "the last check failed: chi-para correlation 0.4743 (limit >= 0.988)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `src/cli.rs`, `src/commands/separate.rs` since the checked 9cfe3f9 (14 commits)"
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `src/cli.rs`, `src/commands/separate.rs` since the checked 9cfe3f9 (15 commits)"
        ]
       }
      ],
@@ -2684,7 +3429,7 @@
        "stale": true,
        "reasons": [
         "QSM.rs main changed `src/pipeline/rules.rs`, `src/pipeline/separation.rs`, `src/separation/mod.rs` since the checked 15c938f (29 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `src/cli.rs`, `src/commands/separate.rs` since the checked 9cfe3f9 (14 commits)"
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `src/cli.rs`, `src/commands/separate.rs` since the checked 9cfe3f9 (15 commits)"
        ]
       }
      ],
@@ -2726,7 +3471,7 @@
        "stale": true,
        "reasons": [
         "QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits)"
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (15 commits)"
        ]
       },
       {
@@ -2751,7 +3496,7 @@
        "stale": true,
        "reasons": [
         "QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits)"
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (15 commits)"
        ]
       }
      ],
@@ -2793,7 +3538,7 @@
        "stale": true,
        "reasons": [
         "QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits)"
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (15 commits)"
        ]
       },
       {
@@ -2818,7 +3563,7 @@
        "stale": true,
        "reasons": [
         "QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits)"
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (15 commits)"
        ]
       }
      ],
@@ -2860,7 +3605,7 @@
        "stale": true,
        "reasons": [
         "QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits)"
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (15 commits)"
        ]
       },
       {
@@ -2885,7 +3630,7 @@
        "stale": true,
        "reasons": [
         "QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits)"
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (15 commits)"
        ]
       }
      ],
@@ -2927,7 +3672,7 @@
        "stale": true,
        "reasons": [
         "QSM.rs main changed `src/inversion/admm.rs`, `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits)"
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (15 commits)"
        ]
       },
       {
@@ -2952,7 +3697,7 @@
        "stale": true,
        "reasons": [
         "QSM.rs main changed `src/inversion/admm.rs`, `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits)"
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (15 commits)"
        ]
       }
      ],
@@ -2994,7 +3739,7 @@
        "stale": true,
        "reasons": [
         "QSM.rs main changed `src/inversion/admm.rs`, `src/inversion/ndi.rs`, `src/kernels/dipole.rs`, `src/pipeline/inversion.rs` \u2026 since the checked 15c938f (29 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits)"
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (15 commits)"
        ]
       },
       {
@@ -3019,7 +3764,7 @@
        "stale": true,
        "reasons": [
         "QSM.rs main changed `src/inversion/admm.rs`, `src/inversion/ndi.rs`, `src/kernels/dipole.rs`, `src/pipeline/inversion.rs` \u2026 since the checked 15c938f (29 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits)"
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (15 commits)"
        ]
       }
      ],
@@ -3061,7 +3806,7 @@
        "stale": true,
        "reasons": [
         "QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits)"
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (15 commits)"
        ]
       },
       {
@@ -3086,7 +3831,7 @@
        "stale": true,
        "reasons": [
         "QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits)"
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (15 commits)"
        ]
       }
      ],
@@ -3128,7 +3873,7 @@
        "stale": true,
        "reasons": [
         "QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/bg_removal.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (14 commits)"
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (15 commits)"
        ]
       },
       {
@@ -3153,7 +3898,7 @@
        "stale": true,
        "reasons": [
         "QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/bg_removal.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (14 commits)"
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (15 commits)"
        ]
       }
      ],
@@ -3195,7 +3940,7 @@
        "stale": true,
        "reasons": [
         "QSM.rs main changed `src/bgremove/vsharp.rs`, `src/kernels/dipole.rs`, `src/pipeline/bg_removal.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (14 commits)"
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (15 commits)"
        ]
       },
       {
@@ -3220,7 +3965,7 @@
        "stale": true,
        "reasons": [
         "QSM.rs main changed `src/bgremove/vsharp.rs`, `src/kernels/dipole.rs`, `src/pipeline/bg_removal.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (14 commits)"
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (15 commits)"
        ]
       }
      ],
@@ -3328,7 +4073,7 @@
        "stale": true,
        "reasons": [
         "QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/rules.rs`, `src/utils/multi_echo.rs` since the checked 15c938f (29 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `crates/qsmxt-engine/src/fieldmap.rs` \u2026 since the checked 9cfe3f9 (14 commits)"
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `crates/qsmxt-engine/src/fieldmap.rs` \u2026 since the checked 9cfe3f9 (15 commits)"
        ]
       },
       {
@@ -3353,7 +4098,7 @@
        "stale": true,
        "reasons": [
         "QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/rules.rs`, `src/utils/multi_echo.rs` since the checked 15c938f (29 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `crates/qsmxt-engine/src/fieldmap.rs` \u2026 since the checked 9cfe3f9 (14 commits)"
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `crates/qsmxt-engine/src/fieldmap.rs` \u2026 since the checked 9cfe3f9 (15 commits)"
        ]
       }
      ],
@@ -3395,7 +4140,7 @@
        "stale": true,
        "reasons": [
         "QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/rules.rs`, `src/unwrap/bestpath.rs`, `src/unwrap/mod.rs` \u2026 since the checked 15c938f (29 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `crates/qsmxt-engine/src/fieldmap.rs` \u2026 since the checked 9cfe3f9 (14 commits)"
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `crates/qsmxt-engine/src/fieldmap.rs` \u2026 since the checked 9cfe3f9 (15 commits)"
        ]
       },
       {
@@ -3420,7 +4165,7 @@
        "stale": true,
        "reasons": [
         "QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/rules.rs`, `src/unwrap/bestpath.rs`, `src/unwrap/mod.rs` \u2026 since the checked 15c938f (29 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `crates/qsmxt-engine/src/fieldmap.rs` \u2026 since the checked 9cfe3f9 (14 commits)"
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `crates/qsmxt-engine/src/fieldmap.rs` \u2026 since the checked 9cfe3f9 (15 commits)"
        ]
       }
      ],
@@ -3461,6 +4206,595 @@
      "badge": {
       "kind": "unchecked",
       "message": "not yet checked",
+      "color": "lightgrey"
+     }
+    },
+    {
+     "pair": "xqsm",
+     "algorithm": "xqsm",
+     "reference": "xqsm",
+     "candidate": "xqsm-qsmrs",
+     "enabled": true,
+     "state": "stale",
+     "anchor": "pair-xqsm",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
+      },
+      {
+       "dataset": "sim",
+       "last": {
+        "date": "2026-11-03T13:28:56Z",
+        "result": "pass",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41642974449",
+        "qsmrs": {
+         "ref": "main",
+         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "version": null
+        },
+        "qsmxt": {
+         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+        },
+        "nrmse": 0.000865919204080593,
+        "max_abs": 7.197260856628418e-06,
+        "correlation": 0.9999999999635204,
+        "dice": null
+       },
+       "stale": false,
+       "reasons": []
+      }
+     ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=xqsm -f dataset=configured -f qsmrs_ref=main",
+     "badge": {
+      "kind": "stale",
+      "message": "stale \u00b7 3 Nov",
+      "color": "orange"
+     }
+    },
+    {
+     "pair": "qsmnet",
+     "algorithm": "qsmnet",
+     "reference": "qsmnet",
+     "candidate": "qsmnet-qsmrs",
+     "enabled": true,
+     "state": "stale",
+     "anchor": "pair-qsmnet",
+     "datasets": [
+      {
+       "dataset": "sim",
+       "last": null,
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
+      }
+     ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=qsmnet -f dataset=configured -f qsmrs_ref=main",
+     "badge": {
+      "kind": "unchecked",
+      "message": "not yet checked",
+      "color": "lightgrey"
+     }
+    },
+    {
+     "pair": "qsmnet-plus",
+     "algorithm": "qsmnet-plus",
+     "reference": "qsmnet-plus",
+     "candidate": "qsmnet-plus-qsmrs",
+     "enabled": true,
+     "state": "stale",
+     "anchor": "pair-qsmnet-plus",
+     "datasets": [
+      {
+       "dataset": "sim",
+       "last": null,
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
+      }
+     ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=qsmnet-plus -f dataset=configured -f qsmrs_ref=main",
+     "badge": {
+      "kind": "unchecked",
+      "message": "not yet checked",
+      "color": "lightgrey"
+     }
+    },
+    {
+     "pair": "lpcnn",
+     "algorithm": "lpcnn",
+     "reference": "lpcnn",
+     "candidate": "lpcnn-qsmrs",
+     "enabled": true,
+     "state": "stale",
+     "anchor": "pair-lpcnn",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
+      },
+      {
+       "dataset": "sim",
+       "last": null,
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
+      }
+     ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=lpcnn -f dataset=configured -f qsmrs_ref=main",
+     "badge": {
+      "kind": "unchecked",
+      "message": "not yet checked",
+      "color": "lightgrey"
+     }
+    },
+    {
+     "pair": "qsmgan",
+     "algorithm": "qsmgan",
+     "reference": "qsmgan",
+     "candidate": "qsmgan-qsmrs",
+     "enabled": true,
+     "state": "stale",
+     "anchor": "pair-qsmgan",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
+      },
+      {
+       "dataset": "sim",
+       "last": null,
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
+      }
+     ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=qsmgan -f dataset=configured -f qsmrs_ref=main",
+     "badge": {
+      "kind": "unchecked",
+      "message": "not yet checked",
+      "color": "lightgrey"
+     }
+    },
+    {
+     "pair": "modl-qsm",
+     "algorithm": "modl-qsm",
+     "reference": "modl-qsm",
+     "candidate": "modl-qsm-qsmrs",
+     "enabled": true,
+     "state": "stale",
+     "anchor": "pair-modl-qsm",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
+      },
+      {
+       "dataset": "sim",
+       "last": null,
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
+      }
+     ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=modl-qsm -f dataset=configured -f qsmrs_ref=main",
+     "badge": {
+      "kind": "unchecked",
+      "message": "not yet checked",
+      "color": "lightgrey"
+     }
+    },
+    {
+     "pair": "ir2qsm",
+     "algorithm": "ir2qsm",
+     "reference": "ir2qsm",
+     "candidate": "ir2qsm-qsmrs",
+     "enabled": true,
+     "state": "stale",
+     "anchor": "pair-ir2qsm",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
+      },
+      {
+       "dataset": "sim",
+       "last": null,
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
+      }
+     ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=ir2qsm -f dataset=configured -f qsmrs_ref=main",
+     "badge": {
+      "kind": "unchecked",
+      "message": "not yet checked",
+      "color": "lightgrey"
+     }
+    },
+    {
+     "pair": "autoqsm",
+     "algorithm": "autoqsm",
+     "reference": "autoqsm",
+     "candidate": "autoqsm-qsmrs",
+     "enabled": true,
+     "state": "stale",
+     "anchor": "pair-autoqsm",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
+      },
+      {
+       "dataset": "sim",
+       "last": null,
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
+      }
+     ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=autoqsm -f dataset=configured -f qsmrs_ref=main",
+     "badge": {
+      "kind": "unchecked",
+      "message": "not yet checked",
+      "color": "lightgrey"
+     }
+    },
+    {
+     "pair": "nextqsm",
+     "algorithm": "nextqsm",
+     "reference": "nextqsm",
+     "candidate": "nextqsm-qsmrs",
+     "enabled": true,
+     "state": "stale",
+     "anchor": "pair-nextqsm",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
+      },
+      {
+       "dataset": "sim",
+       "last": null,
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
+      }
+     ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=nextqsm -f dataset=configured -f qsmrs_ref=main",
+     "badge": {
+      "kind": "unchecked",
+      "message": "not yet checked",
+      "color": "lightgrey"
+     }
+    },
+    {
+     "pair": "bfrnet",
+     "algorithm": "bfrnet",
+     "reference": "bfrnet",
+     "candidate": "bfrnet-qsmrs",
+     "enabled": true,
+     "state": "stale",
+     "anchor": "pair-bfrnet",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
+      },
+      {
+       "dataset": "sim",
+       "last": null,
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
+      }
+     ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=bfrnet -f dataset=configured -f qsmrs_ref=main",
+     "badge": {
+      "kind": "unchecked",
+      "message": "not yet checked",
+      "color": "lightgrey"
+     }
+    },
+    {
+     "pair": "chisepnet",
+     "algorithm": "chisepnet",
+     "reference": "chisepnet",
+     "candidate": "chisepnet-qsmrs",
+     "enabled": true,
+     "state": "stale",
+     "anchor": "pair-chisepnet",
+     "datasets": [
+      {
+       "dataset": "chisep-mc",
+       "last": null,
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
+      }
+     ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=chisepnet -f dataset=configured -f qsmrs_ref=main",
+     "badge": {
+      "kind": "unchecked",
+      "message": "not yet checked",
+      "color": "lightgrey"
+     }
+    },
+    {
+     "pair": "qsmnetme",
+     "algorithm": "qsmnetme",
+     "reference": "qsmnetme",
+     "candidate": "qsmnetme-qsmrs",
+     "enabled": true,
+     "state": "stale",
+     "anchor": "pair-qsmnetme",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
+      },
+      {
+       "dataset": "sim",
+       "last": null,
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
+      }
+     ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=qsmnetme -f dataset=configured -f qsmrs_ref=main",
+     "badge": {
+      "kind": "unchecked",
+      "message": "not yet checked",
+      "color": "lightgrey"
+     }
+    },
+    {
+     "pair": "susep-net",
+     "algorithm": "susep-net",
+     "reference": "susep-net",
+     "candidate": "susep-net-qsmrs",
+     "enabled": true,
+     "state": "stale",
+     "anchor": "pair-susep-net",
+     "datasets": [
+      {
+       "dataset": "chisep-mc",
+       "last": null,
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
+      }
+     ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=susep-net -f dataset=configured -f qsmrs_ref=main",
+     "badge": {
+      "kind": "unchecked",
+      "message": "not yet checked",
+      "color": "lightgrey"
+     }
+    },
+    {
+     "pair": "hd-bet",
+     "algorithm": "hd-bet",
+     "reference": "hd-bet-qsmci",
+     "candidate": "hd-bet-qsmrs",
+     "enabled": true,
+     "state": "stale",
+     "anchor": "pair-hd-bet",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
+      }
+     ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=hd-bet -f dataset=configured -f qsmrs_ref=main",
+     "badge": {
+      "kind": "unchecked",
+      "message": "not yet checked",
+      "color": "lightgrey"
+     }
+    },
+    {
+     "pair": "mindgrab",
+     "algorithm": "mindgrab",
+     "reference": "mindgrab",
+     "candidate": "mindgrab-qsmrs",
+     "enabled": true,
+     "state": "stale",
+     "anchor": "pair-mindgrab",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
+      }
+     ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=mindgrab -f dataset=configured -f qsmrs_ref=main",
+     "badge": {
+      "kind": "unchecked",
+      "message": "not yet checked",
+      "color": "lightgrey"
+     }
+    },
+    {
+     "pair": "r2primenet",
+     "algorithm": "r2primenet",
+     "reference": "r2primenet",
+     "candidate": "r2primenet-qsmrs",
+     "enabled": true,
+     "state": "stale",
+     "anchor": "pair-r2primenet",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
+      },
+      {
+       "dataset": "sim",
+       "last": null,
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
+      }
+     ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=r2primenet -f dataset=configured -f qsmrs_ref=main",
+     "badge": {
+      "kind": "unchecked",
+      "message": "not yet checked",
+      "color": "lightgrey"
+     }
+    },
+    {
+     "pair": "iqsm",
+     "algorithm": "iqsm",
+     "reference": "iqsm",
+     "candidate": "iqsm-qsmrs",
+     "enabled": true,
+     "state": "stale",
+     "anchor": "pair-iqsm",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
+      },
+      {
+       "dataset": "sim",
+       "last": null,
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
+      }
+     ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=iqsm -f dataset=configured -f qsmrs_ref=main",
+     "badge": {
+      "kind": "unchecked",
+      "message": "not yet checked",
+      "color": "lightgrey"
+     }
+    },
+    {
+     "pair": "iqsm-plus",
+     "algorithm": "iqsm-plus",
+     "reference": "iqsm-plus",
+     "candidate": "iqsm-plus-qsmrs",
+     "enabled": true,
+     "state": "stale",
+     "anchor": "pair-iqsm-plus",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
+      },
+      {
+       "dataset": "sim",
+       "last": null,
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
+      }
+     ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=iqsm-plus -f dataset=configured -f qsmrs_ref=main",
+     "badge": {
+      "kind": "unchecked",
+      "message": "not yet checked",
+      "color": "lightgrey"
+     }
+    },
+    {
+     "pair": "iqfm",
+     "algorithm": "iqfm",
+     "reference": "iqfm",
+     "candidate": "iqfm-qsmrs",
+     "enabled": false,
+     "state": "off",
+     "anchor": "pair-iqfm",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "stale": false,
+       "reasons": []
+      },
+      {
+       "dataset": "sim",
+       "last": null,
+       "stale": false,
+       "reasons": []
+      }
+     ],
+     "note": "baseline pending",
+     "badge": {
+      "kind": "off",
+      "message": "not enabled",
       "color": "lightgrey"
      }
     },
@@ -3535,28 +4869,32 @@
      "algorithm": "ndi",
      "reference": "ndi",
      "candidate": "ndi-qsmrs",
-     "enabled": false,
-     "state": "gap",
+     "enabled": true,
+     "state": "stale",
      "anchor": "pair-ndi",
      "datasets": [
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": null,
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
       },
       {
        "dataset": "sim",
        "last": null,
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
       }
      ],
-     "blocked_by": "astewartau/QSM.rs#399",
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=ndi -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "gap",
-      "message": "gap \u00b7 QSM.rs#399",
-      "color": "yellow"
+      "kind": "unchecked",
+      "message": "not yet checked",
+      "color": "lightgrey"
      }
     },
     {
@@ -3564,28 +4902,32 @@
      "algorithm": "fansi",
      "reference": "fansi-nltv",
      "candidate": "fansi-nltv-qsmrs",
-     "enabled": false,
-     "state": "gap",
+     "enabled": true,
+     "state": "stale",
      "anchor": "pair-fansi-nltv",
      "datasets": [
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": null,
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
       },
       {
        "dataset": "sim",
        "last": null,
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
       }
      ],
-     "blocked_by": "astewartau/QSM.rs#400",
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=fansi-nltv -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "gap",
-      "message": "gap \u00b7 QSM.rs#400",
-      "color": "yellow"
+      "kind": "unchecked",
+      "message": "not yet checked",
+      "color": "lightgrey"
      }
     },
     {
@@ -3593,28 +4935,32 @@
      "algorithm": "fansi",
      "reference": "fansi-nltgv",
      "candidate": "fansi-nltgv-qsmrs",
-     "enabled": false,
-     "state": "gap",
+     "enabled": true,
+     "state": "stale",
      "anchor": "pair-fansi-nltgv",
      "datasets": [
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": null,
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
       },
       {
        "dataset": "sim",
        "last": null,
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
       }
      ],
-     "blocked_by": "astewartau/QSM.rs#400",
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=fansi-nltgv -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "gap",
-      "message": "gap \u00b7 QSM.rs#400",
-      "color": "yellow"
+      "kind": "unchecked",
+      "message": "not yet checked",
+      "color": "lightgrey"
      }
     },
     {
@@ -3622,28 +4968,32 @@
      "algorithm": "l1qsm",
      "reference": "l1qsm",
      "candidate": "l1qsm-qsmrs",
-     "enabled": false,
-     "state": "gap",
+     "enabled": true,
+     "state": "stale",
      "anchor": "pair-l1qsm",
      "datasets": [
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": null,
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
       },
       {
        "dataset": "sim",
        "last": null,
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
       }
      ],
-     "blocked_by": "astewartau/QSM.rs#401",
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=l1qsm -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "gap",
-      "message": "gap \u00b7 QSM.rs#401",
-      "color": "yellow"
+      "kind": "unchecked",
+      "message": "not yet checked",
+      "color": "lightgrey"
      }
     },
     {
@@ -3651,28 +5001,32 @@
      "algorithm": "whqsm",
      "reference": "whqsm",
      "candidate": "whqsm-qsmrs",
-     "enabled": false,
-     "state": "gap",
+     "enabled": true,
+     "state": "stale",
      "anchor": "pair-whqsm",
      "datasets": [
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": null,
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
       },
       {
        "dataset": "sim",
        "last": null,
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
       }
      ],
-     "blocked_by": "astewartau/QSM.rs#402",
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=whqsm -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "gap",
-      "message": "gap \u00b7 QSM.rs#402",
-      "color": "yellow"
+      "kind": "unchecked",
+      "message": "not yet checked",
+      "color": "lightgrey"
      }
     },
     {
@@ -3680,28 +5034,32 @@
      "algorithm": "hdqsm",
      "reference": "hdqsm",
      "candidate": "hdqsm-qsmrs",
-     "enabled": false,
-     "state": "gap",
+     "enabled": true,
+     "state": "stale",
      "anchor": "pair-hdqsm",
      "datasets": [
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": null,
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
       },
       {
        "dataset": "sim",
        "last": null,
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
       }
      ],
-     "blocked_by": "astewartau/QSM.rs#403",
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=hdqsm -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "gap",
-      "message": "gap \u00b7 QSM.rs#403",
-      "color": "yellow"
+      "kind": "unchecked",
+      "message": "not yet checked",
+      "color": "lightgrey"
      }
     },
     {
@@ -3709,28 +5067,32 @@
      "algorithm": "resharp",
      "reference": "resharp",
      "candidate": "resharp-qsmrs",
-     "enabled": false,
-     "state": "gap",
+     "enabled": true,
+     "state": "stale",
      "anchor": "pair-resharp",
      "datasets": [
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": null,
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
       },
       {
        "dataset": "sim",
        "last": null,
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
       }
      ],
-     "blocked_by": "astewartau/QSM.rs#404",
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=resharp -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "gap",
-      "message": "gap \u00b7 QSM.rs#404",
-      "color": "yellow"
+      "kind": "unchecked",
+      "message": "not yet checked",
+      "color": "lightgrey"
      }
     },
     {
@@ -3738,28 +5100,32 @@
      "algorithm": "pdf",
      "reference": "pdf-cornell",
      "candidate": "pdf-qsmrs",
-     "enabled": false,
-     "state": "gap",
+     "enabled": true,
+     "state": "stale",
      "anchor": "pair-pdf",
      "datasets": [
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": null,
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
       },
       {
        "dataset": "sim",
        "last": null,
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
       }
      ],
-     "blocked_by": "astewartau/QSM.rs#405",
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=pdf -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "gap",
-      "message": "gap \u00b7 QSM.rs#405",
-      "color": "yellow"
+      "kind": "unchecked",
+      "message": "not yet checked",
+      "color": "lightgrey"
      }
     },
     {
@@ -3767,28 +5133,32 @@
      "algorithm": "lbv",
      "reference": "lbv-cornell",
      "candidate": "lbv-qsmrs",
-     "enabled": false,
-     "state": "gap",
+     "enabled": true,
+     "state": "stale",
      "anchor": "pair-lbv",
      "datasets": [
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": null,
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
       },
       {
        "dataset": "sim",
        "last": null,
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
       }
      ],
-     "blocked_by": "astewartau/QSM.rs#406",
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=lbv -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "gap",
-      "message": "gap \u00b7 QSM.rs#406",
-      "color": "yellow"
+      "kind": "unchecked",
+      "message": "not yet checked",
+      "color": "lightgrey"
      }
     },
     {
@@ -3796,28 +5166,32 @@
      "algorithm": "tfi",
      "reference": "tfi-cornell",
      "candidate": "tfi-qsmrs",
-     "enabled": false,
-     "state": "gap",
+     "enabled": true,
+     "state": "stale",
      "anchor": "pair-tfi",
      "datasets": [
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": null,
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
       },
       {
        "dataset": "sim",
        "last": null,
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
       }
      ],
-     "blocked_by": "astewartau/QSM.rs#407",
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=tfi -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "gap",
-      "message": "gap \u00b7 QSM.rs#407",
-      "color": "yellow"
+      "kind": "unchecked",
+      "message": "not yet checked",
+      "color": "lightgrey"
      }
     },
     {

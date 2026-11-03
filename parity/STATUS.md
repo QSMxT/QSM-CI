@@ -54,112 +54,182 @@ The latest QSMxT release against each verified original. A release does not chan
 |  |  | sim | [2026-11-01](https://github.com/QSMxT/QSM-CI/actions/runs/41283680804) | v0.39.0 `42ab620` | ❌ fail | 2.566% | ✅ current |
 | `tgv` | `tgv-tgvjl` → `tgv-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41579904769) | v0.39.0 `42ab620` | ❌ fail | 72.64% | ✅ current |
 |  |  | sim | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41579904769) | v0.39.0 `42ab620` | ❌ fail | 50.55% | ✅ current |
+| `xqsm` | `xqsm` → `xqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+|  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+| `qsmnet` | `qsmnet` → `qsmnet-qsmrs` | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+| `qsmnet-plus` | `qsmnet-plus` → `qsmnet-plus-qsmrs` | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+| `lpcnn` | `lpcnn` → `lpcnn-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+|  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+| `qsmgan` | `qsmgan` → `qsmgan-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+|  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+| `modl-qsm` | `modl-qsm` → `modl-qsm-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+|  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+| `ir2qsm` | `ir2qsm` → `ir2qsm-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+|  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+| `autoqsm` | `autoqsm` → `autoqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+|  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+| `nextqsm` | `nextqsm` → `nextqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+|  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+| `bfrnet` | `bfrnet` → `bfrnet-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+|  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+| `chisepnet` | `chisepnet` → `chisepnet-qsmrs` | chisep-mc | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+| `qsmnetme` | `qsmnetme` → `qsmnetme-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+|  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+| `susep-net` | `susep-net` → `susep-net-qsmrs` | chisep-mc | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+| `hd-bet` | `hd-bet-qsmci` → `hd-bet-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+| `mindgrab` | `mindgrab` → `mindgrab-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+| `r2primenet` | `r2primenet` → `r2primenet-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+|  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+| `iqsm` | `iqsm` → `iqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+|  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+| `iqsm-plus` | `iqsm-plus` → `iqsm-plus-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+|  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+| `iqfm` | `iqfm` → `iqfm-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | — not enabled (baseline pending) |
+|  |  | sim | never | — | — | — | — not enabled (baseline pending) |
 | `lsqr` | `lsqr` → `lsqr-qsmrs` | s005001-cbic-prisma-bridge-run1 | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41579904769) | v0.39.0 `42ab620` | ❌ fail | 14.58% | ✅ current |
 |  |  | sim | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41579904769) | v0.39.0 `42ab620` | ❌ fail | 5.557% | ✅ current |
 | `heidi` | `heidi` → `heidi-qsmrs` | s005001-cbic-prisma-bridge-run1 | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41579904769) | v0.39.0 `42ab620` | ❌ fail | 33.13% | ✅ current |
 |  |  | sim | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41579904769) | v0.39.0 `42ab620` | ❌ fail | 30.71% | ✅ current |
-| `ndi` | `ndi` → `ndi-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | 🚧 gap (astewartau/QSM.rs#399) |
-|  |  | sim | never | — | — | — | 🚧 gap (astewartau/QSM.rs#399) |
-| `fansi-nltv` | `fansi-nltv` → `fansi-nltv-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | 🚧 gap (astewartau/QSM.rs#400) |
-|  |  | sim | never | — | — | — | 🚧 gap (astewartau/QSM.rs#400) |
-| `fansi-nltgv` | `fansi-nltgv` → `fansi-nltgv-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | 🚧 gap (astewartau/QSM.rs#400) |
-|  |  | sim | never | — | — | — | 🚧 gap (astewartau/QSM.rs#400) |
-| `l1qsm` | `l1qsm` → `l1qsm-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | 🚧 gap (astewartau/QSM.rs#401) |
-|  |  | sim | never | — | — | — | 🚧 gap (astewartau/QSM.rs#401) |
-| `whqsm` | `whqsm` → `whqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | 🚧 gap (astewartau/QSM.rs#402) |
-|  |  | sim | never | — | — | — | 🚧 gap (astewartau/QSM.rs#402) |
-| `hdqsm` | `hdqsm` → `hdqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | 🚧 gap (astewartau/QSM.rs#403) |
-|  |  | sim | never | — | — | — | 🚧 gap (astewartau/QSM.rs#403) |
-| `resharp` | `resharp` → `resharp-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | 🚧 gap (astewartau/QSM.rs#404) |
-|  |  | sim | never | — | — | — | 🚧 gap (astewartau/QSM.rs#404) |
-| `pdf` | `pdf-cornell` → `pdf-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | 🚧 gap (astewartau/QSM.rs#405) |
-|  |  | sim | never | — | — | — | 🚧 gap (astewartau/QSM.rs#405) |
-| `lbv` | `lbv-cornell` → `lbv-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | 🚧 gap (astewartau/QSM.rs#406) |
-|  |  | sim | never | — | — | — | 🚧 gap (astewartau/QSM.rs#406) |
-| `tfi` | `tfi-cornell` → `tfi-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | 🚧 gap (astewartau/QSM.rs#407) |
-|  |  | sim | never | — | — | — | 🚧 gap (astewartau/QSM.rs#407) |
+| `ndi` | `ndi` → `ndi-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+|  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+| `fansi-nltv` | `fansi-nltv` → `fansi-nltv-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+|  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+| `fansi-nltgv` | `fansi-nltgv` → `fansi-nltgv-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+|  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+| `l1qsm` | `l1qsm` → `l1qsm-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+|  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+| `whqsm` | `whqsm` → `whqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+|  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+| `hdqsm` | `hdqsm` → `hdqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+|  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+| `resharp` | `resharp` → `resharp-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+|  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+| `pdf` | `pdf-cornell` → `pdf-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+|  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+| `lbv` | `lbv-cornell` → `lbv-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+|  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+| `tfi` | `tfi-cornell` → `tfi-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+|  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+
+Run the flagged pairs against v10.0.0:
+
+```bash
+gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=xqsm,qsmnet,qsmnet-plus,lpcnn,qsmgan,modl-qsm,ir2qsm,autoqsm,nextqsm,bfrnet,chisepnet,qsmnetme,susep-net,hd-bet,mindgrab,r2primenet,iqsm,iqsm-plus,ndi,fansi-nltv,fansi-nltgv,l1qsm,whqsm,hdqsm,resharp,pdf,lbv,tfi -f dataset=configured -f qsmxt_release=v10.0.0
+```
 
 ## Development: QSMxT main × QSM.rs main
 
-Tested: QSMxT main `9cfe3f9` with qsm-core at QSM.rs main `15c938f`.
+Tested: QSMxT main `632fed9` with qsm-core at QSM.rs main `cc4ae49` (1 older build(s) for pairs not rerun since).
 
 A check is **stale** when the reference image changed, QSM.rs `main` changed the port's source files or `Cargo.lock`, QSMxT `main` changed the step's wiring or `Cargo.lock`, the pair's limits changed, or it failed. There is no age limit. A **gap** is a pair whose port does not match its original yet: it is not enabled, and has no limits that would pass it.
 
 | Pair | Original → port | Dataset | Last check | QSM.rs | Result | NRMSE | Status |
 |---|---|---|---|---|---|---|---|
-| `qsmart` | `qsmart-matlab` → `qsmart-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 0.7794% | ⚠️ stale: reference image changed: checked sha256:e0e8bc6957c5, algorithm.yml pins sha256:01f36e868bca; QSM.rs main changed `src/bgremove/sdf.rs`, `src/inversion/ilsqr.rs`, `src/kernels/dipole.rs`, `src/pipeline/config.rs` … since the checked 15c938f (29 commits); the pair's settings or limits for this dataset changed since; QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` … since the checked 9cfe3f9 (14 commits) |
-|  |  | sim | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 16.32% | ⚠️ stale: reference image changed: checked sha256:e0e8bc6957c5, algorithm.yml pins sha256:01f36e868bca; QSM.rs main changed `src/bgremove/sdf.rs`, `src/inversion/ilsqr.rs`, `src/kernels/dipole.rs`, `src/pipeline/config.rs` … since the checked 15c938f (29 commits); the pair's settings or limits for this dataset changed since; QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` … since the checked 9cfe3f9 (14 commits) |
+| `qsmart` | `qsmart-matlab` → `qsmart-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 0.7794% | ⚠️ stale: reference image changed: checked sha256:e0e8bc6957c5, algorithm.yml pins sha256:01f36e868bca; QSM.rs main changed `src/bgremove/sdf.rs`, `src/inversion/ilsqr.rs`, `src/kernels/dipole.rs`, `src/pipeline/config.rs` … since the checked 15c938f (29 commits); the pair's settings or limits for this dataset changed since; QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` … since the checked 9cfe3f9 (15 commits) |
+|  |  | sim | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 16.32% | ⚠️ stale: reference image changed: checked sha256:e0e8bc6957c5, algorithm.yml pins sha256:01f36e868bca; QSM.rs main changed `src/bgremove/sdf.rs`, `src/inversion/ilsqr.rs`, `src/kernels/dipole.rs`, `src/pipeline/config.rs` … since the checked 15c938f (29 commits); the pair's settings or limits for this dataset changed since; QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` … since the checked 9cfe3f9 (15 commits) |
 | `ilsqr` | `ilsqr-sti` → `ilsqr-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
 |  |  | sim | never | — | — | — | ⚠️ stale: never checked |
-| `vsharp` | `vsharp-sti` → `vsharp-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 0.0002207% | ⚠️ stale: QSM.rs main changed `src/bgremove/vsharp.rs`, `src/kernels/dipole.rs`, `src/pipeline/bg_removal.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (14 commits) |
-|  |  | sim | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 0.0009001% | ⚠️ stale: QSM.rs main changed `src/bgremove/vsharp.rs`, `src/kernels/dipole.rs`, `src/pipeline/bg_removal.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (14 commits) |
+| `vsharp` | `vsharp-sti` → `vsharp-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 0.0002207% | ⚠️ stale: QSM.rs main changed `src/bgremove/vsharp.rs`, `src/kernels/dipole.rs`, `src/pipeline/bg_removal.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (15 commits) |
+|  |  | sim | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 0.0009001% | ⚠️ stale: QSM.rs main changed `src/bgremove/vsharp.rs`, `src/kernels/dipole.rs`, `src/pipeline/bg_removal.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (15 commits) |
 | `iharperella` | `iharperella-sti` → `iharperella-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
-| `star` | `star-sti` → `star-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 0.002147% | ⚠️ stale: QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits) |
-|  |  | sim | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 0.002332% | ⚠️ stale: QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits) |
-| `medi` | `medi-cornell` → `medi-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 0.02745% | ⚠️ stale: QSM.rs main changed `src/inversion/tfi.rs`, `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` … since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits) |
-|  |  | sim | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 0.02896% | ⚠️ stale: QSM.rs main changed `src/inversion/tfi.rs`, `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` … since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits) |
+| `star` | `star-sti` → `star-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 0.002147% | ⚠️ stale: QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (15 commits) |
+|  |  | sim | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 0.002332% | ⚠️ stale: QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (15 commits) |
+| `medi` | `medi-cornell` → `medi-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 0.02745% | ⚠️ stale: QSM.rs main changed `src/inversion/tfi.rs`, `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` … since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (15 commits) |
+|  |  | sim | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 0.02896% | ⚠️ stale: QSM.rs main changed `src/inversion/tfi.rs`, `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` … since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (15 commits) |
 | `fit-ppm-complex` | `fit-ppm-complex-cornell` → `fit-ppm-complex-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
 |  |  | sim | never | — | — | — | ⚠️ stale: never checked |
-| `amp-pe` | `amp-pe` → `amp-pe-qsmrs` | sim | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 0.4767% | ⚠️ stale: QSM.rs main changed `src/inversion/admm.rs`, `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits) |
-| `decompose` | `decompose-qsm` → `decompose-qsmrs` | chisep-mc | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ❌ fail | 143.2% | ⚠️ stale: QSM.rs main changed `src/pipeline/rules.rs`, `src/pipeline/separation.rs`, `src/separation/decompose.rs`, `src/separation/mod.rs` … since the checked 15c938f (29 commits); the pair's settings or limits for this dataset changed since; the last check failed: chi-para correlation 0.4743 (limit >= 0.988); QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `src/cli.rs`, `src/commands/separate.rs` since the checked 9cfe3f9 (14 commits) |
+| `amp-pe` | `amp-pe` → `amp-pe-qsmrs` | sim | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 0.4767% | ⚠️ stale: QSM.rs main changed `src/inversion/admm.rs`, `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (15 commits) |
+| `decompose` | `decompose-qsm` → `decompose-qsmrs` | chisep-mc | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ❌ fail | 143.2% | ⚠️ stale: QSM.rs main changed `src/pipeline/rules.rs`, `src/pipeline/separation.rs`, `src/separation/decompose.rs`, `src/separation/mod.rs` … since the checked 15c938f (29 commits); the pair's settings or limits for this dataset changed since; the last check failed: chi-para correlation 0.4743 (limit >= 0.988); QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `src/cli.rs`, `src/commands/separate.rs` since the checked 9cfe3f9 (15 commits) |
 | `chisep-ilsqr` | `chisep-ilsqr` → `chisep-ilsqr-qsmrs` | chisep-mc | never | — | — | — | ⚠️ stale: never checked |
 | `chisep-medi` | `chisep-medi` → `chisep-medi-qsmrs` | chisep-mc | never | — | — | — | ⚠️ stale: never checked |
-| `wavesep` | `wavesep` → `wavesep-qsmrs` | chisep-mc | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 0% | ⚠️ stale: QSM.rs main changed `src/pipeline/rules.rs`, `src/pipeline/separation.rs`, `src/separation/mod.rs` since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `src/cli.rs`, `src/commands/separate.rs` since the checked 9cfe3f9 (14 commits) |
-| `tkd` | `tkd-qsmjl` → `tkd-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 6.85e-06% | ⚠️ stale: QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits) |
-|  |  | sim | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 0% | ⚠️ stale: QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits) |
-| `tsvd` | `tsvd-qsmjl` → `tsvd-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 8.149e-06% | ⚠️ stale: QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits) |
-|  |  | sim | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 0% | ⚠️ stale: QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits) |
-| `tikhonov` | `tikhonov-qsmjl` → `tikhonov-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 1.345e-05% | ⚠️ stale: QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits) |
-|  |  | sim | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 0% | ⚠️ stale: QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits) |
-| `tv` | `tv-qsmjl` → `tv-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 1.243e-05% | ⚠️ stale: QSM.rs main changed `src/inversion/admm.rs`, `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits) |
-|  |  | sim | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 2.024e-16% | ⚠️ stale: QSM.rs main changed `src/inversion/admm.rs`, `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits) |
-| `nltv` | `nltv-qsmjl` → `nltv-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 9.626e-06% | ⚠️ stale: QSM.rs main changed `src/inversion/admm.rs`, `src/inversion/ndi.rs`, `src/kernels/dipole.rs`, `src/pipeline/inversion.rs` … since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits) |
-|  |  | sim | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 2.749e-10% | ⚠️ stale: QSM.rs main changed `src/inversion/admm.rs`, `src/inversion/ndi.rs`, `src/kernels/dipole.rs`, `src/pipeline/inversion.rs` … since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits) |
-| `rts` | `rts-qsmjl` → `rts-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 5.777e-06% | ⚠️ stale: QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits) |
-|  |  | sim | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 3.932e-10% | ⚠️ stale: QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits) |
-| `ismv` | `ismv-qsmjl` → `ismv-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 2.064e-09% | ⚠️ stale: QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/bg_removal.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (14 commits) |
-|  |  | sim | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 6.026e-09% | ⚠️ stale: QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/bg_removal.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (14 commits) |
-| `sharp` | `sharp-sepia` → `sharp-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 1.394e-08% | ⚠️ stale: QSM.rs main changed `src/bgremove/vsharp.rs`, `src/kernels/dipole.rs`, `src/pipeline/bg_removal.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (14 commits) |
-|  |  | sim | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 1.058e-08% | ⚠️ stale: QSM.rs main changed `src/bgremove/vsharp.rs`, `src/kernels/dipole.rs`, `src/pipeline/bg_removal.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (14 commits) |
+| `wavesep` | `wavesep` → `wavesep-qsmrs` | chisep-mc | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 0% | ⚠️ stale: QSM.rs main changed `src/pipeline/rules.rs`, `src/pipeline/separation.rs`, `src/separation/mod.rs` since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `src/cli.rs`, `src/commands/separate.rs` since the checked 9cfe3f9 (15 commits) |
+| `tkd` | `tkd-qsmjl` → `tkd-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 6.85e-06% | ⚠️ stale: QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (15 commits) |
+|  |  | sim | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 0% | ⚠️ stale: QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (15 commits) |
+| `tsvd` | `tsvd-qsmjl` → `tsvd-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 8.149e-06% | ⚠️ stale: QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (15 commits) |
+|  |  | sim | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 0% | ⚠️ stale: QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (15 commits) |
+| `tikhonov` | `tikhonov-qsmjl` → `tikhonov-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 1.345e-05% | ⚠️ stale: QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (15 commits) |
+|  |  | sim | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 0% | ⚠️ stale: QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (15 commits) |
+| `tv` | `tv-qsmjl` → `tv-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 1.243e-05% | ⚠️ stale: QSM.rs main changed `src/inversion/admm.rs`, `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (15 commits) |
+|  |  | sim | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 2.024e-16% | ⚠️ stale: QSM.rs main changed `src/inversion/admm.rs`, `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (15 commits) |
+| `nltv` | `nltv-qsmjl` → `nltv-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 9.626e-06% | ⚠️ stale: QSM.rs main changed `src/inversion/admm.rs`, `src/inversion/ndi.rs`, `src/kernels/dipole.rs`, `src/pipeline/inversion.rs` … since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (15 commits) |
+|  |  | sim | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 2.749e-10% | ⚠️ stale: QSM.rs main changed `src/inversion/admm.rs`, `src/inversion/ndi.rs`, `src/kernels/dipole.rs`, `src/pipeline/inversion.rs` … since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (15 commits) |
+| `rts` | `rts-qsmjl` → `rts-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 5.777e-06% | ⚠️ stale: QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (15 commits) |
+|  |  | sim | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 3.932e-10% | ⚠️ stale: QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (15 commits) |
+| `ismv` | `ismv-qsmjl` → `ismv-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 2.064e-09% | ⚠️ stale: QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/bg_removal.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (15 commits) |
+|  |  | sim | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 6.026e-09% | ⚠️ stale: QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/bg_removal.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (15 commits) |
+| `sharp` | `sharp-sepia` → `sharp-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 1.394e-08% | ⚠️ stale: QSM.rs main changed `src/bgremove/vsharp.rs`, `src/kernels/dipole.rs`, `src/pipeline/bg_removal.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (15 commits) |
+|  |  | sim | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 1.058e-08% | ⚠️ stale: QSM.rs main changed `src/bgremove/vsharp.rs`, `src/kernels/dipole.rs`, `src/pipeline/bg_removal.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (15 commits) |
 | `sharp-qsmjl` | `sharp-qsmjl` → `sharp-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
 |  |  | sim | never | — | — | — | ⚠️ stale: never checked |
 | `vsharp-qsmjl` | `vsharp-qsmjl` → `vsharp-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
 |  |  | sim | never | — | — | — | ⚠️ stale: never checked |
-| `laplacian` | `laplacian-qsmjl` → `laplacian-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 6.398e-10% | ⚠️ stale: QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/rules.rs`, `src/utils/multi_echo.rs` since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `crates/qsmxt-engine/src/fieldmap.rs` … since the checked 9cfe3f9 (14 commits) |
-|  |  | sim | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 4.767e-14% | ⚠️ stale: QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/rules.rs`, `src/utils/multi_echo.rs` since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `crates/qsmxt-engine/src/fieldmap.rs` … since the checked 9cfe3f9 (14 commits) |
-| `romeo` | `romeo-romeojl` → `romeo-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 1.498% | ⚠️ stale: QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/rules.rs`, `src/unwrap/bestpath.rs`, `src/unwrap/mod.rs` … since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `crates/qsmxt-engine/src/fieldmap.rs` … since the checked 9cfe3f9 (14 commits) |
-|  |  | sim | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 1.639% | ⚠️ stale: QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/rules.rs`, `src/unwrap/bestpath.rs`, `src/unwrap/mod.rs` … since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `crates/qsmxt-engine/src/fieldmap.rs` … since the checked 9cfe3f9 (14 commits) |
+| `laplacian` | `laplacian-qsmjl` → `laplacian-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 6.398e-10% | ⚠️ stale: QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/rules.rs`, `src/utils/multi_echo.rs` since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `crates/qsmxt-engine/src/fieldmap.rs` … since the checked 9cfe3f9 (15 commits) |
+|  |  | sim | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 4.767e-14% | ⚠️ stale: QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/rules.rs`, `src/utils/multi_echo.rs` since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `crates/qsmxt-engine/src/fieldmap.rs` … since the checked 9cfe3f9 (15 commits) |
+| `romeo` | `romeo-romeojl` → `romeo-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 1.498% | ⚠️ stale: QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/rules.rs`, `src/unwrap/bestpath.rs`, `src/unwrap/mod.rs` … since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `crates/qsmxt-engine/src/fieldmap.rs` … since the checked 9cfe3f9 (15 commits) |
+|  |  | sim | [2026-10-31](https://github.com/QSMxT/QSM-CI/actions/runs/41189442934) | `15c938f` | ✅ pass | 1.639% | ⚠️ stale: QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/rules.rs`, `src/unwrap/bestpath.rs`, `src/unwrap/mod.rs` … since the checked 15c938f (29 commits); QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `crates/qsmxt-engine/src/fieldmap.rs` … since the checked 9cfe3f9 (15 commits) |
 | `tgv` | `tgv-tgvjl` → `tgv-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
 |  |  | sim | never | — | — | — | ⚠️ stale: never checked |
+| `xqsm` | `xqsm` → `xqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
+|  |  | sim | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41642974449) | `cc4ae49` | ✅ pass | 0.0008659% | ✅ current |
+| `qsmnet` | `qsmnet` → `qsmnet-qsmrs` | sim | never | — | — | — | ⚠️ stale: never checked |
+| `qsmnet-plus` | `qsmnet-plus` → `qsmnet-plus-qsmrs` | sim | never | — | — | — | ⚠️ stale: never checked |
+| `lpcnn` | `lpcnn` → `lpcnn-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
+|  |  | sim | never | — | — | — | ⚠️ stale: never checked |
+| `qsmgan` | `qsmgan` → `qsmgan-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
+|  |  | sim | never | — | — | — | ⚠️ stale: never checked |
+| `modl-qsm` | `modl-qsm` → `modl-qsm-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
+|  |  | sim | never | — | — | — | ⚠️ stale: never checked |
+| `ir2qsm` | `ir2qsm` → `ir2qsm-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
+|  |  | sim | never | — | — | — | ⚠️ stale: never checked |
+| `autoqsm` | `autoqsm` → `autoqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
+|  |  | sim | never | — | — | — | ⚠️ stale: never checked |
+| `nextqsm` | `nextqsm` → `nextqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
+|  |  | sim | never | — | — | — | ⚠️ stale: never checked |
+| `bfrnet` | `bfrnet` → `bfrnet-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
+|  |  | sim | never | — | — | — | ⚠️ stale: never checked |
+| `chisepnet` | `chisepnet` → `chisepnet-qsmrs` | chisep-mc | never | — | — | — | ⚠️ stale: never checked |
+| `qsmnetme` | `qsmnetme` → `qsmnetme-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
+|  |  | sim | never | — | — | — | ⚠️ stale: never checked |
+| `susep-net` | `susep-net` → `susep-net-qsmrs` | chisep-mc | never | — | — | — | ⚠️ stale: never checked |
+| `hd-bet` | `hd-bet-qsmci` → `hd-bet-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
+| `mindgrab` | `mindgrab` → `mindgrab-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
+| `r2primenet` | `r2primenet` → `r2primenet-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
+|  |  | sim | never | — | — | — | ⚠️ stale: never checked |
+| `iqsm` | `iqsm` → `iqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
+|  |  | sim | never | — | — | — | ⚠️ stale: never checked |
+| `iqsm-plus` | `iqsm-plus` → `iqsm-plus-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
+|  |  | sim | never | — | — | — | ⚠️ stale: never checked |
+| `iqfm` | `iqfm` → `iqfm-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | — not enabled (baseline pending) |
+|  |  | sim | never | — | — | — | — not enabled (baseline pending) |
 | `lsqr` | `lsqr` → `lsqr-qsmrs` | s005001-cbic-prisma-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
 |  |  | sim | never | — | — | — | ⚠️ stale: never checked |
 | `heidi` | `heidi` → `heidi-qsmrs` | s005001-cbic-prisma-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
 |  |  | sim | never | — | — | — | ⚠️ stale: never checked |
-| `ndi` | `ndi` → `ndi-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | 🚧 gap (astewartau/QSM.rs#399) |
-|  |  | sim | never | — | — | — | 🚧 gap (astewartau/QSM.rs#399) |
-| `fansi-nltv` | `fansi-nltv` → `fansi-nltv-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | 🚧 gap (astewartau/QSM.rs#400) |
-|  |  | sim | never | — | — | — | 🚧 gap (astewartau/QSM.rs#400) |
-| `fansi-nltgv` | `fansi-nltgv` → `fansi-nltgv-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | 🚧 gap (astewartau/QSM.rs#400) |
-|  |  | sim | never | — | — | — | 🚧 gap (astewartau/QSM.rs#400) |
-| `l1qsm` | `l1qsm` → `l1qsm-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | 🚧 gap (astewartau/QSM.rs#401) |
-|  |  | sim | never | — | — | — | 🚧 gap (astewartau/QSM.rs#401) |
-| `whqsm` | `whqsm` → `whqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | 🚧 gap (astewartau/QSM.rs#402) |
-|  |  | sim | never | — | — | — | 🚧 gap (astewartau/QSM.rs#402) |
-| `hdqsm` | `hdqsm` → `hdqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | 🚧 gap (astewartau/QSM.rs#403) |
-|  |  | sim | never | — | — | — | 🚧 gap (astewartau/QSM.rs#403) |
-| `resharp` | `resharp` → `resharp-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | 🚧 gap (astewartau/QSM.rs#404) |
-|  |  | sim | never | — | — | — | 🚧 gap (astewartau/QSM.rs#404) |
-| `pdf` | `pdf-cornell` → `pdf-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | 🚧 gap (astewartau/QSM.rs#405) |
-|  |  | sim | never | — | — | — | 🚧 gap (astewartau/QSM.rs#405) |
-| `lbv` | `lbv-cornell` → `lbv-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | 🚧 gap (astewartau/QSM.rs#406) |
-|  |  | sim | never | — | — | — | 🚧 gap (astewartau/QSM.rs#406) |
-| `tfi` | `tfi-cornell` → `tfi-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | 🚧 gap (astewartau/QSM.rs#407) |
-|  |  | sim | never | — | — | — | 🚧 gap (astewartau/QSM.rs#407) |
+| `ndi` | `ndi` → `ndi-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
+|  |  | sim | never | — | — | — | ⚠️ stale: never checked |
+| `fansi-nltv` | `fansi-nltv` → `fansi-nltv-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
+|  |  | sim | never | — | — | — | ⚠️ stale: never checked |
+| `fansi-nltgv` | `fansi-nltgv` → `fansi-nltgv-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
+|  |  | sim | never | — | — | — | ⚠️ stale: never checked |
+| `l1qsm` | `l1qsm` → `l1qsm-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
+|  |  | sim | never | — | — | — | ⚠️ stale: never checked |
+| `whqsm` | `whqsm` → `whqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
+|  |  | sim | never | — | — | — | ⚠️ stale: never checked |
+| `hdqsm` | `hdqsm` → `hdqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
+|  |  | sim | never | — | — | — | ⚠️ stale: never checked |
+| `resharp` | `resharp` → `resharp-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
+|  |  | sim | never | — | — | — | ⚠️ stale: never checked |
+| `pdf` | `pdf-cornell` → `pdf-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
+|  |  | sim | never | — | — | — | ⚠️ stale: never checked |
+| `lbv` | `lbv-cornell` → `lbv-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
+|  |  | sim | never | — | — | — | ⚠️ stale: never checked |
+| `tfi` | `tfi-cornell` → `tfi-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
+|  |  | sim | never | — | — | — | ⚠️ stale: never checked |
 
 Refresh every stale pair against QSM.rs `main`:
 
 ```bash
-gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=qsmart,ilsqr,vsharp,iharperella,star,medi,fit-ppm-complex,amp-pe,decompose,chisep-ilsqr,chisep-medi,wavesep,tkd,tsvd,tikhonov,tv,nltv,rts,ismv,sharp,sharp-qsmjl,vsharp-qsmjl,laplacian,romeo,tgv,lsqr,heidi -f dataset=configured -f qsmrs_ref=main
+gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=qsmart,ilsqr,vsharp,iharperella,star,medi,fit-ppm-complex,amp-pe,decompose,chisep-ilsqr,chisep-medi,wavesep,tkd,tsvd,tikhonov,tv,nltv,rts,ismv,sharp,sharp-qsmjl,vsharp-qsmjl,laplacian,romeo,tgv,xqsm,qsmnet,qsmnet-plus,lpcnn,qsmgan,modl-qsm,ir2qsm,autoqsm,nextqsm,bfrnet,chisepnet,qsmnetme,susep-net,hd-bet,mindgrab,r2primenet,iqsm,iqsm-plus,lsqr,heidi,ndi,fansi-nltv,fansi-nltgv,l1qsm,whqsm,hdqsm,resharp,pdf,lbv,tfi -f dataset=configured -f qsmrs_ref=main
 ```
 
 ## No original
