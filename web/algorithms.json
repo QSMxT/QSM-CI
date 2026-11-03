@@ -2417,8 +2417,38 @@
       "parameters": [
         {
           "name": "tol",
-          "default": "1e-6",
-          "description": "convergence tolerance"
+          "default": 0.01,
+          "description": "stopping tolerance of the coarsest-grid relaxation, absolute, in radians over the echo spacing (LBV.m's tol; qsmxt v10.0.0's SOR took a relative 1e-6)"
+        },
+        {
+          "name": "depth",
+          "default": -1,
+          "description": "coarsest multigrid level; -1 picks log2 of the smallest dimension minus 3 (LBV.m's depth; qsmxt after v10.0.0)"
+        },
+        {
+          "name": "peel",
+          "default": 0,
+          "description": "boundary layers removed beyond the one boundary layer (LBV.m's peel; qsmxt after v10.0.0)"
+        },
+        {
+          "name": "n1",
+          "default": 30,
+          "description": "relaxations per level before the recursive call (qsmxt after v10.0.0)"
+        },
+        {
+          "name": "n2",
+          "default": 100,
+          "description": "relaxations per level after the recursive call (qsmxt after v10.0.0)"
+        },
+        {
+          "name": "n3",
+          "default": 100,
+          "description": "relaxations on the finest grid after the full multigrid cycle (qsmxt after v10.0.0)"
+        },
+        {
+          "name": "precision",
+          "default": "double",
+          "description": "double, or single as mexMGv6 computes (qsmxt after v10.0.0)"
         }
       ],
       "ci_notes": []

@@ -1540,19 +1540,31 @@ pairs:
   lbv:
     reference: lbv-cornell
     candidate: lbv-qsmrs
-    enabled: false
-    blocked_by: astewartau/QSM.rs#406
-    # Gap: QSM.rs's LBV solves by SOR, not LBV.m's full-multigrid mexMGv6.
-    qsmrs_paths: [src/bgremove/lbv.rs, src/grid.rs, src/pipeline/bg_removal.rs,
-                  src/pipeline/rules.rs]
+    enabled: true
+    # QSM.rs's LBV solved by SOR (7.72 % / 24.0 %). astewartau/QSM.rs#416 (#406) ports LBV.m's
+    # full-multigrid mexMGv6 step for step: its single precision (`--set precision=single`) is
+    # bit-identical to the mex on this sim and in vivo (QSM.rs's fixture and module docs); the
+    # default, double, differs by single precision's rounding, which is what is checked here.
+    qsmrs_paths: [src/bgremove/lbv.rs, src/constants.rs, src/error.rs, src/grid.rs,
+                  src/utils/echo_time.rs, src/pipeline/bg_removal.rs, src/pipeline/rules.rs]
     qsmxt_paths: *bgremove_wiring
     datasets:
       sim:
-        measured: { main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 7.72 %, r 0.9983, max |Δ| 0.021 ppm, p99 0.0022 ppm" }
+        # Measured: NRMSE 7.7e-4 %, r 1.000000, max |Δ| 3.9e-7 ppm, p99 |Δ| 2.4e-7 ppm.
+        localfield: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
+        measured:
+          main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 7.72 %, r 0.9983, max |Δ| 0.021 ppm, p99 0.0022 ppm"
+          pr416: "run 41423039167: QSMxT lbv-multigrid cc5518e, QSM.rs lbv-multigrid-406 90d9ae8 (limits)"
+          dev: "run 41570394775: dev track, QSMxT main 578e39d, QSM.rs main 6508d4e: NRMSE 7.7e-4 %, r 1.000000, max |Δ| 3.9e-7 ppm, p99 2.4e-7 ppm"
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs]
-        measured: { main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 24.0 %, r 0.980, max |Δ| 0.063 ppm, p99 0.028 ppm" }
         feed: { totalfield: totalfield }
+        # Measured: NRMSE 0.0018 %, r 1.000000, max |Δ| 2.0e-6 ppm, p99 |Δ| 1.7e-6 ppm.
+        localfield: { nrmse_max: 0.503, correlation_min: 0.989, max_abs_max: 2.46e-6, p99_abs_max: 2.17e-6 }
+        measured:
+          main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 24.0 %, r 0.980, max |Δ| 0.063 ppm, p99 0.028 ppm"
+          pr416: "run 41423039167: QSMxT lbv-multigrid cc5518e, QSM.rs lbv-multigrid-406 90d9ae8 (limits)"
+          dev: "run 41570394775: dev track, QSMxT main 578e39d, QSM.rs main 6508d4e: NRMSE 0.0018 %, r 1.000000, max |Δ| 2.0e-6 ppm, p99 1.7e-6 ppm"
   tfi:
     reference: tfi-cornell
     candidate: tfi-qsmrs

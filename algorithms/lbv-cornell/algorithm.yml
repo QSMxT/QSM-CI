@@ -1,6 +1,6 @@
 name: LBV (MEDI toolbox)
 slug: lbv-cornell
-algorithm: lbv   # pairs with lbv-qsmrs; QSM.rs's LBV solves the same problem by SOR, not this multigrid solver
+algorithm: lbv   # pairs with lbv-qsmrs, QSM.rs's port of this multigrid solver (astewartau/QSM.rs#406)
 source: cornell
 stage: bfr
 language: MATLAB
