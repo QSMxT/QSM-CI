@@ -37,6 +37,7 @@
     "r2primenet",
     "iqsm",
     "iqsm-plus",
+    "iqfm",
     "ndi",
     "fansi-nltv",
     "fansi-nltgv",
@@ -67,6 +68,7 @@
     "r2primenet",
     "iqsm",
     "iqsm-plus",
+    "iqfm",
     "ndi",
     "fansi-nltv",
     "fansi-nltgv",
@@ -2202,29 +2204,33 @@
      "algorithm": "iqfm",
      "reference": "iqfm",
      "candidate": "iqfm-qsmrs",
-     "enabled": false,
-     "state": "off",
+     "enabled": true,
+     "state": "stale",
      "anchor": "pair-iqfm",
      "datasets": [
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": null,
-       "rerun": false,
-       "stale": false,
-       "reasons": []
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
       },
       {
        "dataset": "sim",
        "last": null,
-       "rerun": false,
-       "stale": false,
-       "reasons": []
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
       }
      ],
-     "note": "baseline pending",
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=iqfm -f dataset=configured -f qsmxt_release=v10.0.0",
      "badge": {
-      "kind": "off",
-      "message": "not enabled",
+      "kind": "unchecked",
+      "message": "not checked \u00b7 v10.0.0",
       "color": "lightgrey"
      }
     },
@@ -2824,8 +2830,8 @@
       "version": null,
       "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1"
      },
-     "checks": 98,
-     "date": "2026-11-03T16:10:24Z"
+     "checks": 100,
+     "date": "2026-11-03T23:45:53Z"
     }
    ],
    "stale": [
@@ -2840,7 +2846,8 @@
     "bfrnet",
     "susep-net",
     "iqsm",
-    "iqsm-plus"
+    "iqsm-plus",
+    "iqfm"
    ],
    "pairs": [
     {
@@ -4223,9 +4230,9 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
-        "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "date": "2026-11-03T23:45:53Z",
+        "result": "fail",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41739482104",
         "qsmrs": {
          "ref": "main",
          "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
@@ -4234,20 +4241,23 @@
         "qsmxt": {
          "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
         },
-        "nrmse": 0.0014089931690850455,
-        "max_abs": 2.8263777494430542e-05,
-        "correlation": 0.9999999998964136,
-        "dice": null
+        "nrmse": 0.001928697546536077,
+        "max_abs": 4.628300666809082e-05,
+        "correlation": 0.9999999998043637,
+        "dice": null,
+        "why": "chimap max_abs 4.628e-05 ppm (limit <= 3.54e-05 ppm)"
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "the last check failed: chimap max_abs 4.628e-05 ppm (limit <= 3.54e-05 ppm)"
+       ]
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
-        "result": "fail",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "date": "2026-11-03T23:45:53Z",
+        "result": "pass",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41739482104",
         "qsmrs": {
          "ref": "main",
          "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
@@ -4259,14 +4269,10 @@
         "nrmse": 0.001641430456129324,
         "max_abs": 1.4964491128921509e-05,
         "correlation": 0.9999999998700017,
-        "dice": null,
-        "why": "chimap max_abs 1.496e-05 ppm (limit <= 9e-06 ppm)"
+        "dice": null
        },
-       "stale": true,
-       "reasons": [
-        "the pair's settings or limits for this dataset changed since",
-        "the last check failed: chimap max_abs 1.496e-05 ppm (limit <= 9e-06 ppm)"
-       ]
+       "stale": false,
+       "reasons": []
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=xqsm -f dataset=configured -f qsmrs_ref=main",
@@ -5212,28 +5218,63 @@
      "algorithm": "iqfm",
      "reference": "iqfm",
      "candidate": "iqfm-qsmrs",
-     "enabled": false,
-     "state": "off",
+     "enabled": true,
+     "state": "stale",
      "anchor": "pair-iqfm",
      "datasets": [
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
-       "last": null,
-       "stale": false,
-       "reasons": []
+       "last": {
+        "date": "2026-11-03T23:45:53Z",
+        "result": "error",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41739482104",
+        "qsmrs": {
+         "ref": "main",
+         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "version": null
+        },
+        "qsmxt": {
+         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+        },
+        "nrmse": null,
+        "max_abs": null,
+        "correlation": null,
+        "dice": null,
+        "why": "no comparison: the job failed or was cancelled before `compare` ran"
+       },
+       "stale": true,
+       "reasons": [
+        "the last check ended without a result"
+       ]
       },
       {
        "dataset": "sim",
-       "last": null,
+       "last": {
+        "date": "2026-11-03T23:45:53Z",
+        "result": "pass",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41739482104",
+        "qsmrs": {
+         "ref": "main",
+         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "version": null
+        },
+        "qsmxt": {
+         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+        },
+        "nrmse": 0.00021601584208528758,
+        "max_abs": 2.8265640139579773e-07,
+        "correlation": 0.9999999999985187,
+        "dice": null
+       },
        "stale": false,
        "reasons": []
       }
      ],
-     "note": "baseline pending",
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=iqfm -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "off",
-      "message": "not enabled",
-      "color": "lightgrey"
+      "kind": "failing",
+      "message": "failing \u00b7 3 Nov",
+      "color": "red"
      }
     },
     {

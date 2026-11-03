@@ -84,8 +84,8 @@ The latest QSMxT release against each verified original. A release does not chan
 |  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
 | `iqsm-plus` | `iqsm-plus` → `iqsm-plus-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
 |  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-| `iqfm` | `iqfm` → `iqfm-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | — not enabled (baseline pending) |
-|  |  | sim | never | — | — | — | — not enabled (baseline pending) |
+| `iqfm` | `iqfm` → `iqfm-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+|  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
 | `lsqr` | `lsqr` → `lsqr-qsmrs` | s005001-cbic-prisma-bridge-run1 | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41579904769) | v0.39.0 `42ab620` | ❌ fail | 14.58% | ✅ current |
 |  |  | sim | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41579904769) | v0.39.0 `42ab620` | ❌ fail | 5.557% | ✅ current |
 | `heidi` | `heidi` → `heidi-qsmrs` | s005001-cbic-prisma-bridge-run1 | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41579904769) | v0.39.0 `42ab620` | ❌ fail | 33.13% | ✅ current |
@@ -114,7 +114,7 @@ The latest QSMxT release against each verified original. A release does not chan
 Run the flagged pairs against v10.0.0:
 
 ```bash
-gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=xqsm,qsmnet,qsmnet-plus,lpcnn,qsmgan,modl-qsm,ir2qsm,autoqsm,nextqsm,bfrnet,chisepnet,qsmnetme,susep-net,hd-bet,mindgrab,r2primenet,iqsm,iqsm-plus,ndi,fansi-nltv,fansi-nltgv,l1qsm,whqsm,hdqsm,resharp,pdf,lbv,tfi -f dataset=configured -f qsmxt_release=v10.0.0
+gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=xqsm,qsmnet,qsmnet-plus,lpcnn,qsmgan,modl-qsm,ir2qsm,autoqsm,nextqsm,bfrnet,chisepnet,qsmnetme,susep-net,hd-bet,mindgrab,r2primenet,iqsm,iqsm-plus,iqfm,ndi,fansi-nltv,fansi-nltgv,l1qsm,whqsm,hdqsm,resharp,pdf,lbv,tfi -f dataset=configured -f qsmxt_release=v10.0.0
 ```
 
 ## Development: QSMxT main × QSM.rs main
@@ -169,8 +169,8 @@ A check is **stale** when the reference image changed, QSM.rs `main` changed the
 |  |  | sim | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 1.639% | ✅ current |
 | `tgv` | `tgv-tgvjl` → `tgv-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 0.0007664% | ✅ current |
 |  |  | sim | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 0.0003827% | ✅ current |
-| `xqsm` | `xqsm` → `xqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 0.001409% | ✅ current |
-|  |  | sim | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ❌ fail | 0.001641% | ⚠️ stale: the pair's settings or limits for this dataset changed since; the last check failed: chimap max_abs 1.496e-05 ppm (limit <= 9e-06 ppm) |
+| `xqsm` | `xqsm` → `xqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41739482104) | `cc4ae49` | ❌ fail | 0.001929% | ⚠️ stale: the last check failed: chimap max_abs 4.628e-05 ppm (limit <= 3.54e-05 ppm) |
+|  |  | sim | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41739482104) | `cc4ae49` | ✅ pass | 0.001641% | ✅ current |
 | `qsmnet` | `qsmnet` → `qsmnet-qsmrs` | sim | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 0.0001346% | ⚠️ stale: the pair's settings or limits for this dataset changed since |
 | `qsmnet-plus` | `qsmnet-plus` → `qsmnet-plus-qsmrs` | sim | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 0.0002059% | ⚠️ stale: the pair's settings or limits for this dataset changed since |
 | `lpcnn` | `lpcnn` → `lpcnn-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 0.007654% | ✅ current |
@@ -199,8 +199,8 @@ A check is **stale** when the reference image changed, QSM.rs `main` changed the
 |  |  | sim | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 0.0002708% | ⚠️ stale: the pair's settings or limits for this dataset changed since |
 | `iqsm-plus` | `iqsm-plus` → `iqsm-plus-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 0.0001157% | ⚠️ stale: the pair's settings or limits for this dataset changed since |
 |  |  | sim | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 0.0001549% | ⚠️ stale: the pair's settings or limits for this dataset changed since |
-| `iqfm` | `iqfm` → `iqfm-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | — not enabled (baseline pending) |
-|  |  | sim | never | — | — | — | — not enabled (baseline pending) |
+| `iqfm` | `iqfm` → `iqfm-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41739482104) | `cc4ae49` | ❌ error | — | ⚠️ stale: the last check ended without a result |
+|  |  | sim | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41739482104) | `cc4ae49` | ✅ pass | 0.000216% | ✅ current |
 | `lsqr` | `lsqr` → `lsqr-qsmrs` | s005001-cbic-prisma-bridge-run1 | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 0.0002515% | ✅ current |
 |  |  | sim | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 0.0003931% | ✅ current |
 | `heidi` | `heidi` → `heidi-qsmrs` | s005001-cbic-prisma-bridge-run1 | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 0.0003489% | ✅ current |
@@ -229,7 +229,7 @@ A check is **stale** when the reference image changed, QSM.rs `main` changed the
 Refresh every stale pair against QSM.rs `main`:
 
 ```bash
-gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=xqsm,qsmnet,qsmnet-plus,lpcnn,qsmgan,modl-qsm,ir2qsm,autoqsm,bfrnet,susep-net,iqsm,iqsm-plus -f dataset=configured -f qsmrs_ref=main
+gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=xqsm,qsmnet,qsmnet-plus,lpcnn,qsmgan,modl-qsm,ir2qsm,autoqsm,bfrnet,susep-net,iqsm,iqsm-plus,iqfm -f dataset=configured -f qsmrs_ref=main
 ```
 
 ## No original
