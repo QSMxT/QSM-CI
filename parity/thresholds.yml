@@ -865,7 +865,7 @@ pairs:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
         # Measured: NRMSE 0.00141 %, r 1.000000, max |Δ| 2.8e-05 ppm, p99 |Δ| 2.5e-06 ppm.
-        chimap: { nrmse_max: 0.502, correlation_min: 0.989, max_abs_max: 3.54e-05, p99_abs_max: 3.11e-06 }
+        chimap: { nrmse_max: 0.502, correlation_min: 0.989, max_abs_max: 8.4e-05, p99_abs_max: 7.5e-06 }
         measured: { main: "run 41190020480: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
       sim:
         # Measured: NRMSE 0.00087 %, r 1.000000, max |Δ| 7.2e-06 ppm, p99 |Δ| 8.2e-07 ppm (runs
@@ -873,7 +873,7 @@ pairs:
         # on another hosted runner with the same code and data (run 41625523205; KKI identical in
         # both). ONNX Runtime's CPU kernels round by instruction set, so the |Δ| limits are derived
         # from the larger run.
-        chimap: { nrmse_max: 0.502, correlation_min: 0.989, max_abs_max: 1.87e-05, p99_abs_max: 1.97e-06 }
+        chimap: { nrmse_max: 0.502, correlation_min: 0.989, max_abs_max: 2.16e-05, p99_abs_max: 2.46e-06 }
         measured: { main: "runs 41190020480, 41625523205, 41642974449: QSMxT main, QSM.rs main (limits)" }
   qsmnet:
     reference: qsmnet
@@ -892,7 +892,7 @@ pairs:
     datasets:
       sim:
         # Measured: NRMSE 0.000135 %, r 1.000000, max |Δ| 1.9e-06 ppm, p99 |Δ| 9.6e-08 ppm.
-        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 2.39e-06, p99_abs_max: 1.0e-06 }
+        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 5.7e-06, p99_abs_max: 1.0e-06 }
         measured: { main: "run 41256383866: QSMxT main a78074c, QSM.rs main afed56b, HF f9a66810 (limits)" }
   qsmnet-plus:
     reference: qsmnet-plus
@@ -908,7 +908,7 @@ pairs:
     datasets:
       sim:
         # Measured: NRMSE 0.00021 %, r 1.000000, max |Δ| 2e-06 ppm, p99 |Δ| 1.5e-07 ppm.
-        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 2.46e-06, p99_abs_max: 1.0e-06 }
+        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 6.0e-06, p99_abs_max: 1.0e-06 }
         measured: { main: "run 41190020480: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
   lpcnn:
     reference: lpcnn
@@ -924,11 +924,11 @@ pairs:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
         # Measured: NRMSE 0.00765 %, r 1.000000, max |Δ| 2.7e-05 ppm, p99 |Δ| 7.4e-06 ppm.
-        chimap: { nrmse_max: 0.509, correlation_min: 0.989, max_abs_max: 3.39e-05, p99_abs_max: 9.28e-06 }
+        chimap: { nrmse_max: 0.509, correlation_min: 0.989, max_abs_max: 8.1e-05, p99_abs_max: 2.22e-05 }
         measured: { main: "run 41190020480: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
       sim:
         # Measured: NRMSE 3.9e-05 %, r 1.000000, max |Δ| 8.3e-07 ppm, p99 |Δ| 3e-08 ppm.
-        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.05e-06, p99_abs_max: 1.0e-06 }
+        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 2.49e-06, p99_abs_max: 1.0e-06 }
         measured: { main: "run 41190020480: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
   qsmgan:
     reference: qsmgan
@@ -948,7 +948,7 @@ pairs:
         measured: { main: "run 41190020480: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
       sim:
         # Measured: NRMSE 0.00564 %, r 1.000000, max |Δ| 0.00059 ppm, p99 |Δ| 3.2e-08 ppm.
-        chimap: { nrmse_max: 0.507, correlation_min: 0.989, max_abs_max: 0.00074, p99_abs_max: 1.0e-06 }
+        chimap: { nrmse_max: 0.507, correlation_min: 0.989, max_abs_max: 0.00177, p99_abs_max: 1.0e-06 }
         measured: { main: "run 41190020480: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
   modl-qsm:
     reference: modl-qsm
@@ -970,11 +970,11 @@ pairs:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
         # Measured: NRMSE 5.9e-05 %, r 1.000000, max |Δ| 5.4e-07 ppm, p99 |Δ| 5.2e-08 ppm.
-        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.0e-06, p99_abs_max: 1.0e-06 }
+        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.62e-06, p99_abs_max: 1.0e-06 }
         measured: { main: "run 41192494905: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
       sim:
         # Measured: NRMSE 0.0141 %, r 1.000000, max |Δ| 4.8e-05 ppm, p99 |Δ| 9.1e-06 ppm.
-        chimap: { nrmse_max: 0.516, correlation_min: 0.989, max_abs_max: 5.99e-05, p99_abs_max: 1.14e-05 }
+        chimap: { nrmse_max: 0.516, correlation_min: 0.989, max_abs_max: 0.000144, p99_abs_max: 2.73e-05 }
         measured: { main: "run 41191323183: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
   ir2qsm:
     reference: ir2qsm
@@ -993,11 +993,11 @@ pairs:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
         # Measured: NRMSE 0.00105 %, r 1.000000, max |Δ| 2.3e-05 ppm, p99 |Δ| 1.3e-06 ppm.
-        chimap: { nrmse_max: 0.502, correlation_min: 0.989, max_abs_max: 2.88e-05, p99_abs_max: 1.6e-06 }
+        chimap: { nrmse_max: 0.502, correlation_min: 0.989, max_abs_max: 6.9e-05, p99_abs_max: 3.9e-06 }
         measured: { main: "run 41190020480: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
       sim:
         # Measured: NRMSE 0.0005 %, r 1.000000, max |Δ| 9.4e-06 ppm, p99 |Δ| 4.1e-07 ppm.
-        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.18e-05, p99_abs_max: 1.0e-06 }
+        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 2.82e-05, p99_abs_max: 1.23e-06 }
         measured: { main: "run 41190020480: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
   autoqsm:
     reference: autoqsm
@@ -1013,7 +1013,7 @@ pairs:
         reference_prefix: [laplacian-qsmrs]
         feed: { totalfield: totalfield }
         # Measured: NRMSE 0.00011 %, r 1.000000, max |Δ| 3.5e-07 ppm, p99 |Δ| 8.9e-08 ppm.
-        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.0e-06, p99_abs_max: 1.0e-06 }
+        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.05e-06, p99_abs_max: 1.0e-06 }
         measured: { main: "run 41190020480: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
       sim:
         # Measured: NRMSE 0.00014 %, r 1.000000, max |Δ| 2.8e-07 ppm, p99 |Δ| 8.6e-08 ppm.
@@ -1065,7 +1065,7 @@ pairs:
         measured: { main: "run 41190020480: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
       sim:
         # Measured: NRMSE 0.00022 %, r 1.000000, max |Δ| 1.1e-06 ppm, p99 |Δ| 4.5e-08 ppm.
-        localfield: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.33e-06, p99_abs_max: 1.0e-06 }
+        localfield: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 3.3e-06, p99_abs_max: 1.0e-06 }
         measured: { main: "run 41190020480: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
   chisepnet:
     reference: chisepnet
@@ -1103,13 +1103,13 @@ pairs:
     datasets:
       sim:
         # Measured: NRMSE 6.0e-05 %, r 1.000000, max |Δ| 6.3e-07 ppm, p99 |Δ| 4.3e-08 ppm.
-        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.0e-06, p99_abs_max: 1.0e-06 }
+        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.89e-06, p99_abs_max: 1.0e-06 }
         measured: { main: "run 41569073453: QSMxT qsmnetme-377 (QSMxT#480), QSM.rs qsmnetme-377 6eb018a (limits)" }
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
         # Measured: NRMSE 9.4e-05 %, r 1.000000, max |Δ| 6.3e-06 ppm, p99 |Δ| 6.0e-08 ppm.
-        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 7.9e-06, p99_abs_max: 1.0e-06 }
+        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.89e-05, p99_abs_max: 1.0e-06 }
         measured: { main: "run 41569073453: QSMxT qsmnetme-377 (QSMxT#480), QSM.rs qsmnetme-377 6eb018a (limits)" }
   susep-net:
     reference: susep-net
@@ -1188,14 +1188,14 @@ pairs:
         feed: { r2star: r2star }
         # Measured (fed): NRMSE 2.0e-05 %, r 1.000000, max |Δ| 9.2e-05 Hz, p99 |Δ| 7.6e-06 Hz.
         # Unfed: R2' 3.54 %, r 0.9989; R2* 3.87 % (the clip of 18,985 negative voxels).
-        r2prime: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 0.000115, p99_abs_max: 9.54e-06 }
+        r2prime: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 0.000276, p99_abs_max: 2.29e-05 }
         measured: { main: "run 41547089685: QSMxT main 0c12a84, qsm-core a44046e, reference r2star fed (limits)", unfed: "run 41474160070: same build, unfed: R2* differs at the negative rates only, R2' 3.54 %" }
       sim:
         feed: { r2star: r2star }
         candidate_set: { ignore_field_mismatch: "true" }
         # Measured (fed): NRMSE 2.0e-05 %, r 1.000000, max |Δ| 1.5e-04 Hz, p99 |Δ| 1.9e-05 Hz.
         # Unfed: R2' 0.39 %; R2* 0.91 % (the clip).
-        r2prime: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 0.000191, p99_abs_max: 2.39e-05 }
+        r2prime: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 0.000458, p99_abs_max: 5.73e-05 }
         measured: { main: "run 41547089685: QSMxT main 0c12a84, qsm-core a44046e, reference r2star fed (limits)", unfed: "run 41474160070: same build, unfed: R2* differs at the negative rates only, R2' 0.39 %" }
   # iQSM, iQSM+ and iQFM take every echo's wrapped phase (4-D), as the originals do (`run.py
   # --echo_4d`), so the pairs start from the dataset's own inputs: no prefix, no feed. Per echo the
@@ -1222,11 +1222,11 @@ pairs:
     datasets:
       sim:
         # Measured: NRMSE 0.00028 %, r 1.000000, max |Δ| 1.2e-06 ppm, p99 |Δ| 1.9e-07 ppm.
-        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.54e-06, p99_abs_max: 1.0e-06 }
+        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 3.6e-06, p99_abs_max: 1.0e-06 }
         measured: { main: "run 41474160070: QSMxT main 0c12a84, qsm-core a44046e (limits)" }
       s002001-kki-achieva-bridge-run1:
         # Measured: NRMSE 0.00022 %, r 1.000000, max |Δ| 3.0e-06 ppm, p99 |Δ| 2.4e-07 ppm.
-        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 3.75e-06, p99_abs_max: 1.0e-06 }
+        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 9.0e-06, p99_abs_max: 1.0e-06 }
         measured: { main: "run 41474160070: QSMxT main 0c12a84, qsm-core a44046e (limits)" }
   iqsm-plus:
     reference: iqsm-plus
@@ -1241,11 +1241,11 @@ pairs:
     datasets:
       sim:
         # Measured: NRMSE 0.00015 %, r 1.000000, max |Δ| 1.1e-06 ppm, p99 |Δ| 1.0e-07 ppm.
-        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.39e-06, p99_abs_max: 1.0e-06 }
+        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 3.3e-06, p99_abs_max: 1.0e-06 }
         measured: { main: "run 41474160070: QSMxT main 0c12a84, qsm-core a44046e (limits)" }
       s002001-kki-achieva-bridge-run1:
         # Measured: NRMSE 0.00012 %, r 1.000000, max |Δ| 1.3e-06 ppm, p99 |Δ| 1.2e-07 ppm.
-        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.57e-06, p99_abs_max: 1.0e-06 }
+        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 3.9e-06, p99_abs_max: 1.0e-06 }
         measured: { main: "run 41474160070: QSMxT main 0c12a84, qsm-core a44046e (limits)" }
   iqfm:
     reference: iqfm

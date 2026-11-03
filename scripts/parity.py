@@ -83,6 +83,11 @@ UNITS = {"nrmse": "%", "max_abs": " ppm", "p99_abs": " ppm"}
 NRMSE_REL, NRMSE_ABS = 0.10, 0.5        # +10 % of the measured NRMSE, +0.5 percentage points
 CORR_ABS = 0.01                         # correlation may drop by 0.01
 ABS_REL = 0.25                          # max |Δ| and p99 |Δ| may grow by 25 %
+# A pair whose QSM.rs side runs a network (`qsmrs_models: true`) gets |Δ| limits of 3× the measured
+# |Δ| instead: ONNX Runtime's CPU kernels round by instruction set, and the same code and data gave
+# xqsm a max |Δ| 2.1× (sim) and 1.6× (KKI) apart on two hosted runners (parity runs 41642974449 /
+# 41625523205, 41190020480 / 41739482104). Its NRMSE and correlation limits are the usual ones.
+ABS_REL_MODELS = 2.0
 DICE_ABS = 0.01                         # Dice may drop by 0.01
 # A floor under the |Δ| limits (ppm): a pair that agrees bit for bit today (TKD, Tikhonov on the
 # simulation) would otherwise get a limit of 0, which float noise from a different FFT plan or
@@ -415,15 +420,17 @@ def _round_down(x: float, nd: int = 3) -> float:
     return round(math.floor(x * 10 ** nd) / 10 ** nd, nd)
 
 
-def derive_limits(metrics: dict) -> dict:
-    """Limits for a baseline: today's measured agreement plus the margins above, rounded outward."""
+def derive_limits(metrics: dict, models: bool = False) -> dict:
+    """Limits for a baseline: today's measured agreement plus the margins above, rounded outward.
+    `models`: the pair's QSM.rs side runs a network (ABS_REL_MODELS)."""
     if metrics.get("kind") == "binary":
         return {"dice_min": max(0.0, _round_down(metrics["dice"] - DICE_ABS))}
     out = {"nrmse_max": _round_up(metrics["nrmse"] * (1 + NRMSE_REL) + NRMSE_ABS)}
     if math.isfinite(metrics.get("correlation", float("nan"))):
         out["correlation_min"] = max(-1.0, _round_down(metrics["correlation"] - CORR_ABS))
-    out["max_abs_max"] = _round_up(max(metrics["max_abs"] * (1 + ABS_REL), ABS_FLOOR))
-    out["p99_abs_max"] = _round_up(max(metrics["p99_abs"] * (1 + ABS_REL), ABS_FLOOR))
+    rel = ABS_REL_MODELS if models else ABS_REL
+    out["max_abs_max"] = _round_up(max(metrics["max_abs"] * (1 + rel), ABS_FLOOR))
+    out["p99_abs_max"] = _round_up(max(metrics["p99_abs"] * (1 + rel), ABS_FLOOR))
     return out
 
 
@@ -481,7 +488,7 @@ def _fmt(v, metric: str = "") -> str:
 
 def render_report(*, algorithm: str, phantom: str, reference: str, candidate: str, verdict: dict,
                   baseline: bool, unmatched: dict, provenance: dict, note: str = "",
-                  intermediates_only: bool = False) -> str:
+                  intermediates_only: bool = False, models: bool = False) -> str:
     maps = verdict["maps"]
     if baseline:
         head = "📏 **Baseline measured** (no limits applied)"
@@ -539,7 +546,7 @@ def render_report(*, algorithm: str, phantom: str, reference: str, candidate: st
         sugg = {"datasets": {phantom: {}}}
         ds = sugg["datasets"][phantom]
         for name, v in maps.items():
-            lim = derive_limits(v["metrics"])
+            lim = derive_limits(v["metrics"], models)
             if name in finals:
                 if not intermediates_only:
                     ds[name] = lim
@@ -849,7 +856,8 @@ def cmd_compare(args) -> int:
                            provenance={**prov, "final": final if isinstance(final, str) else final[0],
                                        "finals": [final] if isinstance(final, str) else final},
                            note=note.strip(),
-                           intermediates_only=bool(cfg.get("intermediates_only")))
+                           intermediates_only=bool(cfg.get("intermediates_only")),
+                           models=bool(cfg.get("qsmrs_models")))
     print(report)
     if args.report:
         Path(args.report).write_text(report)
@@ -860,7 +868,8 @@ def cmd_compare(args) -> int:
             "note": note.strip(), **({"dropped_feeds": dropped} if dropped else {}),
             **({"dropped_settings": unset} if unset else {}),
             "unmatched": unmatched, **verdict,
-            "suggested": {n: derive_limits(v["metrics"]) for n, v in verdict["maps"].items()},
+            "suggested": {n: derive_limits(v["metrics"], bool(cfg.get("qsmrs_models")))
+                          for n, v in verdict["maps"].items()},
         }, indent=2, default=str) + "\n")
     return 0 if (args.baseline or verdict["ok"]) else 1
 
