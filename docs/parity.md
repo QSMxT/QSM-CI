@@ -158,9 +158,10 @@ method gets them; prefix steps run with their defaults.
   `fit-ppm-complex` pair clamps the reference's `r2star` and compares the rest exactly.
 - `intermediates_only: true`: the final artifact is not like for like and is reported without
   limits; the pair passes on its intermediates' limits (at least one must be compared), and its
-  status shows the worst of those. `fit-ppm-complex` is one: QSM.rs unwraps MEDI's complex fit with
-  ROMEO, not MEDI's region-growing `unwrapPhase`, so it is checked on the fit (`ifreq_raw`), its
-  noise map (`n_std`) and ARLO's `r2star`.
+  status shows the worst of those. `fit-ppm-complex` was one while QSM.rs unwrapped MEDI's complex
+  fit only with ROMEO; since QSM.rs ports MEDI's region-growing `unwrapPhase`, the pair runs the
+  candidate with it (`candidate_set: { unwrapping: medi-region-growing }`) and compares the total
+  field as well.
 
 ## Isolating a step: `feed`
 
