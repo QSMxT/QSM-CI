@@ -38,6 +38,10 @@ COSMETIC_KEYS = {
     "name", "language", "family", "learning", "engine", "description", "citation", "doi",
     "authors", "license", "code_url", "domain", "ci_notes", "tags", "notes", "references", "tuned",
     "tuning", "algorithm", "variant", "source",
+    # Records and site-only fields: `fidelity` is the container-vs-licensed-original check's record,
+    # `hidden`/`qsmxt_value`/`qsmxt_args` only feed the website (gen_manifest.py). Re-recording a
+    # fidelity check must not re-smoke (or, via score_plan.py, rescore) the method.
+    "fidelity", "hidden", "qsmxt_value", "qsmxt_args",
 }
 
 
@@ -109,11 +113,41 @@ def targets(base: str) -> list[str]:
     return out
 
 
+# The smoke runs on the runner tier the method is scored on (`runner:` in algorithm.yml, read by
+# score_plan.py): unset/hosted/hosted-large on GitHub's hosted runners, self-hosted/highmem/manual
+# on QSM-CI's self-hosted ones. A method that scores on hosted runners fits on one, and its smoke (a
+# small crop) does too; keeping it off the two shared self-hosted runners stops a long main-branch
+# scoring run from queueing every PR's smoke behind it. highmem smokes on self-hosted rather than on
+# the QSMCI_HIGHMEM_RUNNER pool: the crop needs none of its memory and that pool is lent.
+HOSTED_TIERS = {"hosted", "hosted-large"}
+
+
+def matrix(slugs: list[str]) -> list[dict]:
+    """The evaluate matrix: each slug with the runner its smoke runs on."""
+    from pathlib import Path
+    here = Path(__file__).resolve().parent
+    if str(here) not in sys.path:
+        sys.path.insert(0, str(here))
+    import score_plan  # imports this module; imported here to keep the import one-way at load time
+    root = here.parent / "algorithms"
+    out = []
+    for slug in slugs:
+        spec = score_plan.load_spec(root, slug)
+        tier = str(score_plan._scalar((spec or {}).get("runner")) or "")
+        hosted = score_plan.TIERS.get(tier, "hosted") in HOSTED_TIERS
+        out.append({"slug": slug, "hosted": hosted,
+                    "runs_on": "ubuntu-latest" if hosted else ["self-hosted", "Linux", "X64"]})
+    return out
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--base", required=True, help="base ref to diff against (e.g. origin/main)")
+    ap.add_argument("--matrix", action="store_true",
+                    help="emit [{slug, hosted, runs_on}] (evaluate.yml's matrix) instead of slugs")
     args = ap.parse_args()
-    print(json.dumps(targets(args.base)))
+    slugs = targets(args.base)
+    print(json.dumps(matrix(slugs) if args.matrix else slugs, separators=(",", ":")))
 
 
 if __name__ == "__main__":

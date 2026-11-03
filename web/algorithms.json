@@ -655,9 +655,9 @@
           "description": "unwrap the phase along the echoes (the authors' code does not; true at B0 >= 6.5 T, as QSMxT suggests there). Needs a qsmxt with --unwrap-phase (not v10.0.0)\n"
         },
         {
-          "name": "max_lm_iter",
-          "default": 30,
-          "description": "max Levenberg-Marquardt iterations per fit stage (the MATLAB reference solves each stage with lsqcurvefit's trust-region solve, MaxIterations 400). qsmxt v10.0.0's default is 30; QSM.rs from astewartau/QSM.rs#333 defaults to 400, which matches the reference far more closely\n"
+          "name": "max_iterations",
+          "default": 400,
+          "description": "maximum solver iterations of each fit stage (lsqcurvefit's MaxIterations, which the MATLAB reference leaves at 400; `--max-iterations`, QSM.rs#338). The pinned qsmxt v10.0.0 solves each stage by Levenberg-Marquardt instead, with at most 30 iterations by default; there the value is passed as its `--max-lm-iter`\n"
         }
       ],
       "ci_notes": [
@@ -812,7 +812,8 @@
       "inputs": [
         "localfield",
         "mask",
-        "params"
+        "params",
+        "magnitude"
       ],
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",
@@ -939,7 +940,8 @@
       "inputs": [
         "localfield",
         "mask",
-        "params"
+        "params",
+        "magnitude"
       ],
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",
@@ -1329,7 +1331,8 @@
       "inputs": [
         "localfield",
         "mask",
-        "params"
+        "params",
+        "magnitude"
       ],
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",
@@ -1372,6 +1375,11 @@
           "name": "max_iter_l2",
           "default": 80,
           "description": "stage-2 (L2) iterations"
+        },
+        {
+          "name": "tol_update",
+          "default": "1e-2",
+          "description": "stage-2 stopping tolerance on the relative update (%)"
         }
       ],
       "ci_notes": []
@@ -2079,7 +2087,8 @@
       "inputs": [
         "localfield",
         "mask",
-        "params"
+        "params",
+        "magnitude"
       ],
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",
@@ -2822,7 +2831,8 @@
       "inputs": [
         "localfield",
         "mask",
-        "params"
+        "params",
+        "magnitude"
       ],
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",
@@ -3036,7 +3046,8 @@
       "inputs": [
         "totalfield",
         "mask",
-        "params"
+        "params",
+        "magnitude"
       ],
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",
@@ -3063,6 +3074,21 @@
           "name": "tol",
           "default": "1e-5",
           "description": "convergence tolerance"
+        },
+        {
+          "name": "n_cg",
+          "default": 30,
+          "description": "maximum conjugate-gradient iterations (PDF.m's n_CG; qsmxt after v10.0.0)"
+        },
+        {
+          "name": "space",
+          "default": "image",
+          "description": "dipole kernel for an oblique B0, image or kspace (PDF.m's 'imagespace'/'kspace'; qsmxt after v10.0.0)"
+        },
+        {
+          "name": "n_pad",
+          "default": 40,
+          "description": "zero padding around the mask's bounding box, voxels (PDF.m's n_pad; qsmxt after v10.0.0)"
         }
       ],
       "ci_notes": []
@@ -3592,6 +3618,16 @@
             "sim": "1e-4"
           },
           "description": "Tikhonov regularization"
+        },
+        {
+          "name": "tol",
+          "default": "1e-6",
+          "description": "relative residual tolerance of the solve"
+        },
+        {
+          "name": "max_iter",
+          "default": 200,
+          "description": "maximum solver iterations"
         }
       ],
       "ci_notes": []
@@ -4035,6 +4071,46 @@
           "name": "precond",
           "default": 30,
           "description": "preconditioner \u2014 susceptibility scaling outside the brain mask (Liu 2017 uses ~30 for in-vivo air)"
+        },
+        {
+          "name": "merit",
+          "default": true,
+          "description": "model-error reduction (MERIT), qsmxt after v10.0.0"
+        },
+        {
+          "name": "linear",
+          "default": true,
+          "description": "the paper's linear data term (false, MEDI_L1's exponential one), qsmxt after v10.0.0"
+        },
+        {
+          "name": "data_weighting",
+          "default": 1,
+          "description": "1 weights the data by the field noise from the echo magnitudes, 0 uniform"
+        },
+        {
+          "name": "percentage",
+          "default": 0.9,
+          "description": "fraction of voxels kept as edges in the gradient mask"
+        },
+        {
+          "name": "cg_tol",
+          "default": 0.01,
+          "description": "conjugate-gradient relative residual tolerance"
+        },
+        {
+          "name": "cg_max_iter",
+          "default": 100,
+          "description": "maximum conjugate-gradient iterations per Gauss-Newton step"
+        },
+        {
+          "name": "max_iter",
+          "default": 10,
+          "description": "maximum Gauss-Newton iterations"
+        },
+        {
+          "name": "tol",
+          "default": 0.1,
+          "description": "Gauss-Newton stop on the relative update"
         }
       ],
       "ci_notes": []
@@ -4840,8 +4916,8 @@
     "meso-3t": {
       "track": "chisep",
       "label": "Mesoscopic 3T",
-      "osf_project": "3afxu",
-      "osf_file": "6ae6b00a77f6b115b51d30d9",
+      "osf_project": "8a2uk",
+      "osf_file": "6ae89665067070451dbe0309",
       "prepacked": true,
       "path": "data/meso-3t/scoring",
       "input_levels": [
@@ -4851,7 +4927,7 @@
       "default": true,
       "generator": {
         "tool": "qsm-forward",
-        "ref": "e270696",
+        "ref": "25a03c3",
         "preset": "meso-3t",
         "wm_rois": true,
         "degrade_levels": [
@@ -4862,8 +4938,8 @@
     "wm-micro-7t": {
       "track": "chisep",
       "label": "WM microstructure 7T",
-      "osf_project": "3afxu",
-      "osf_file": "6ae6b049d5a0e7ccd0a954ba",
+      "osf_project": "8a2uk",
+      "osf_file": "6ae896a29ab7081150a954fa",
       "prepacked": true,
       "path": "data/wm-micro-7t/scoring",
       "input_levels": [
@@ -4873,7 +4949,7 @@
       "default": false,
       "generator": {
         "tool": "qsm-forward",
-        "ref": "e270696",
+        "ref": "25a03c3",
         "preset": "wm-micro-7t",
         "wm_rois": true,
         "degrade_levels": [
@@ -4884,8 +4960,8 @@
     "ridani-3t-aniso-fitted": {
       "track": "chisep",
       "label": "Ridani 3T anisotropic (fitted R2\u2032)",
-      "osf_project": "3afxu",
-      "osf_file": "6ae6b0bb8709e89f964d95b1",
+      "osf_project": "8a2uk",
+      "osf_file": "6ae8970756abddd9e3be0384",
       "prepacked": true,
       "path": "data/ridani-3t-aniso-fitted/scoring",
       "input_levels": [
@@ -4895,7 +4971,7 @@
       "default": false,
       "generator": {
         "tool": "qsm-forward",
-        "ref": "e270696",
+        "ref": "25a03c3",
         "preset": "ridani-3t-aniso",
         "r2prime_source": "fitted",
         "wm_rois": true,

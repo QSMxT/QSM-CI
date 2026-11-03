@@ -27,7 +27,10 @@ something to rerun. A pair whose port the release does not have is recorded as *
 asks the release's qsmxt for each subcommand the port's `run.sh` calls (`qsmxt invert star
 --help`); and if the run then fails because qsmxt refuses the command line (clap's `unrecognized
 subcommand`, `unexpected argument` or `invalid value`: an option or value added after the release,
-such as `--variant qsmjl`), that is recorded the same way. Any other failure is a failure.
+such as `--variant qsmjl`), that is recorded the same way. So is clap's `the following required
+arguments were not provided`: the release's command is an earlier port that needs an input the
+current one does not take (qsmxt v10.0.0's paper-based `separate chi-sep-ilsqr --magnitude`, not the
+toolbox port the pair checks). Any other failure is a failure.
 
 One exception keeps a number where the port exists but a pair's extra input does not: when qsmxt
 refuses the command line and the pair feeds the candidate an **optional** input (a `feed:` artifact
@@ -150,7 +153,14 @@ method gets them; prefix steps run with their defaults.
   counts as an intermediate of that side.
 - `reference_names` / `candidate_names` map a side's own intermediate names onto the compared ones,
   for an implementation that predates the convention (the compiled QSMART writes `tfs`, `R_0`,
-  `vasc_only`, `lfs1`, …).
+  `vasc_only`, `lfs1`, …). `{name: x, clip_min: v}` also clamps a map at v, for a deviation the port
+  documents: QSM.rs clamps R2* at 0 where MEDI's `arlo.m` returns negative noise estimates, so the
+  `fit-ppm-complex` pair clamps the reference's `r2star` and compares the rest exactly.
+- `intermediates_only: true`: the final artifact is not like for like and is reported without
+  limits; the pair passes on its intermediates' limits (at least one must be compared), and its
+  status shows the worst of those. `fit-ppm-complex` is one: QSM.rs unwraps MEDI's complex fit with
+  ROMEO, not MEDI's region-growing `unwrapPhase`, so it is checked on the fit (`ifreq_raw`), its
+  noise map (`n_std`) and ARLO's `r2star`.
 
 ## Isolating a step: `feed`
 
@@ -186,7 +196,7 @@ predates the QSMART fixes (sim NRMSE 65.9 %, KKI 133.8 %) and most ports' parity
 
 ## Recorded results
 
-Every run from `main`, and every run dispatched with `record=true`, commits one record per pair ×
+Every run from `main`, and every run dispatched with `record=true`, unless it was cancelled, commits one record per pair ×
 dataset to [`parity/results.json`](../parity/results.json) (the `record` job, as `qsm-ci-bot`, the
 way score.yml commits `results/index.json`). Baselines, runs from other branches and runs of the
 pinned images record nothing. A record holds:
@@ -271,7 +281,10 @@ compares GitHub's latest QSMxT release with `parity/results.json`: for a release
 dispatches every enabled pair (`-f qsmxt_release=<tag> -f algorithm=enabled`); for the recorded
 latest release, only the pairs whose reference image or settings changed since, or that never ran
 on one of their datasets. It skips the dispatch while a released run for that tag is queued or
-running (parity.yml's run name says `released <tag>`).
+running (parity.yml's run name says `released <tag>`; `parity.py released-busy`), but not for one
+that is cancelled or being cancelled. Every enabled pair with no released record for the release,
+on any of its datasets, is due, whatever was dispatched before. A cancelled parity run records
+nothing (its unfinished jobs would otherwise be recorded as errors and count as the release's run).
 
 ## Badges
 

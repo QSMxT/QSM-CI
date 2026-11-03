@@ -126,6 +126,34 @@ def test_evaluate_intermediate_limit_exceeded_fails():
     assert not v["ok"] and v["maps"]["vessel_mask"]["status"] == "fail"
 
 
+def test_evaluate_intermediates_only_reports_the_final_and_needs_an_intermediate_limit():
+    res = {"totalfield": {"kind": "continuous", "nrmse": 80.0},
+           "r2star": {"kind": "continuous", "nrmse": 0.5}}
+    v = parity.evaluate(res, {"intermediates": {"r2star": {"nrmse_max": 1}}}, "totalfield",
+                        intermediates_only=True)
+    assert v["ok"] and v["maps"]["totalfield"]["status"] == "info"
+    v = parity.evaluate(res, {"intermediates": {"r2star": {"nrmse_max": 0.1}}}, "totalfield",
+                        intermediates_only=True)
+    assert not v["ok"]
+    v = parity.evaluate(res, {}, "totalfield", intermediates_only=True)   # nothing held to limits
+    assert not v["ok"]
+
+
+def test_final_maps_of_an_intermediates_only_pair_are_its_limited_intermediates():
+    cfg = {"intermediates_only": True,
+           "datasets": {"sim": {"intermediates": {"ifreq_raw": {"nrmse_max": 1}}}}}
+    assert parity.final_maps(cfg, "sim") == ["ifreq_raw"]
+
+
+def test_apply_names_clip_min_keeps_the_name_and_clamps(tmp_path):
+    import nibabel as nib
+    data = np.array([[[-3.0, 0.5], [2.0, -0.1]]])
+    nib.save(nib.Nifti1Image(data, np.eye(4)), str(tmp_path / "r2star.nii.gz"))
+    parity.apply_names(tmp_path, {"r2star": {"name": "r2star", "clip_min": 0}})
+    out = nib.load(str(tmp_path / "r2star.nii.gz")).get_fdata()
+    assert np.array_equal(out, np.maximum(data, 0))
+
+
 # --- derive_limits ------------------------------------------------------------------------------
 
 def test_derived_limits_pass_the_measurement_they_came_from():
@@ -196,7 +224,8 @@ def test_real_thresholds_name_real_pairs():
             for lim in ((dcfg or {}).get("intermediates") or {}).values():
                 parity.check({}, lim)
             if cfg.get("enabled"):
-                assert final, f"{name}/{ds}: an enabled pair needs limits"
+                held = (dcfg or {}).get("intermediates") if cfg.get("intermediates_only") else final
+                assert held, f"{name}/{ds}: an enabled pair needs limits"
 
 
 def test_pair_problems():
@@ -1148,6 +1177,11 @@ def test_clap_rejection():
     assert parity.clap_rejection("error: invalid value 'qsmjl' for '--ball <BALL>'") == \
         "invalid value 'qsmjl' for '--ball <BALL>'"
     assert parity.clap_rejection("Traceback …\nValueError: shapes differ") is None
+    # the release's command needs an input the port does not pass (qsmxt v10.0.0's paper-based
+    # chi-sep-ilsqr and --magnitude, run 41283680804)
+    log = ("error: the following required arguments were not provided:\n"
+           "  --magnitude <MAGNITUDE>...\n\nUsage: qsmxt separate chi-sep-ilsqr --qsm <QSM> …\n")
+    assert parity.clap_rejection(log) == "required argument not provided: --magnitude"
 
 
 def _th_file(tmp_path):
@@ -1303,6 +1337,8 @@ def test_rejected_setting_names_the_candidate_set_key():
         == "variant"
     assert parity.rejected_setting(cfg, "sim", "error: unexpected argument '--reliability' found") is None
     assert parity.rejected_setting(cfg, "sim", "error: unrecognized subcommand 'star'") is None
+    assert parity.rejected_setting(cfg, "sim", "error: the following required arguments were not "
+                                   "provided:\n  --qsmart-offset-grid <G>\n") is None
     assert parity.rejected_setting(cfg, "sim", "Traceback: boom") is None
 
 
@@ -1365,3 +1401,61 @@ def test_rejected_setting_cli(tmp_path, capsys):
     log.write_text("error: unexpected argument '--reliability' found\n")
     assert parity.main(["rejected-setting", "--algorithm", "qsmart", "--log", str(log)]) == 0
     assert capsys.readouterr().out.strip() == ""
+
+
+def test_released_plan_selects_every_enabled_pair_without_a_record(tmp_path, capsys):
+    """A pair with no released record for the current release is due, whatever ran before: another
+    pair's records (e.g. a run that only reached some pairs) do not make the release 'run'."""
+    th = tmp_path / "t.yml"
+    real = parity.load_thresholds()
+    th.write_text(yaml.safe_dump({"pairs": {"star": real["star"], "tkd": real["tkd"]}}))
+    results = tmp_path / "results.json"
+    star = [parity.make_record(_unavailable(), pair="star", phantom=ds, cfg=real["star"],
+                               manifests=parity._manifests(),
+                               run={**RUN, "track": "released", "release": "v10.0.0"})
+            for ds in real["star"]["datasets"]]
+    # tkd ran on one dataset only
+    tkd_ds = sorted(real["tkd"]["datasets"])
+    tkd = [parity.make_record(_parity_json(), pair="tkd", phantom=tkd_ds[0], cfg=real["tkd"],
+                              manifests=parity._manifests(),
+                              run={**RUN, "track": "released", "release": "v10.0.0"})]
+    base = ["--thresholds", str(th), "released-plan", "--offline", "--results", str(results),
+            "--latest-release", "v10.0.0"]
+    results.write_text(json.dumps(parity.merge_records({"checks": []}, star)))
+    assert parity.main(base) == 0
+    assert json.loads(capsys.readouterr().out)["algorithm"] == "tkd"     # never ran at all
+    if len(tkd_ds) > 1:
+        results.write_text(json.dumps(parity.merge_records({"checks": []}, star + tkd)))
+        assert parity.main(base) == 0
+        assert json.loads(capsys.readouterr().out)["algorithm"] == "tkd"   # missing a dataset
+    # records for an older release, or the dev track, never count for this one
+    old = [{**r, "release": "v9.22.0"} for r in star]
+    results.write_text(json.dumps(parity.merge_records({"checks": []}, old + [_rec(_parity_json())])))
+    assert parity.main(base) == 0
+    assert json.loads(capsys.readouterr().out)["algorithm"] == "enabled"
+
+
+def test_released_busy_ignores_cancelled_and_cancelling_runs():
+    runs = [
+        {"id": 1, "display_title": "parity · released v10.0.0 · enabled", "status": "in_progress"},
+        {"id": 2, "display_title": "parity · released v10.0.0 · enabled", "status": "in_progress"},
+        {"id": 3, "display_title": "parity · released v10.0.0 · enabled", "status": "completed",
+         "conclusion": "cancelled"},
+        {"id": 4, "display_title": "parity · released v10.0.0 · enabled", "status": "queued"},
+        {"id": 5, "display_title": "parity · released v10.0.01 · enabled", "status": "queued"},
+        {"id": 6, "display_title": "parity · enabled", "status": "in_progress"},
+        {"id": 7, "display_title": "parity · released v10.0.0 · tkd", "status": "completed",
+         "conclusion": "success"},
+    ]
+    jobs = {1: [{"conclusion": "success"}, {"conclusion": None}],
+            2: [{"conclusion": "success"}, {"conclusion": "cancelled"}]}   # being cancelled
+    assert parity.active_release_runs(runs, "v10.0.0", lambda i: jobs.get(i, [])) == [1, 4]
+    assert parity.active_release_runs([], "v10.0.0", lambda i: []) == []
+
+
+def test_a_cancelled_parity_run_records_nothing():
+    """parity.yml's record job: never for a cancelled run (its unfinished jobs would be recorded
+    as errors, and count as the release's run)."""
+    wf = yaml.safe_load((ROOT / ".github" / "workflows" / "parity.yml").read_text())
+    cond = wf["jobs"]["record"]["if"]
+    assert "!cancelled()" in cond and "always()" not in cond

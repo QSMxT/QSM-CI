@@ -1,0 +1,48 @@
+[
+  {
+    "op": "prelude",
+    "port": "qsm_core::unwrap::unwrap_prelude (probe)",
+    "settings": "6 partitions",
+    "output": "prelude.nii.gz",
+    "runtime_s": 7.3,
+    "in_mask": {
+      "nrmse": 0.0,
+      "correlation": 1.0,
+      "max_abs": 0.0,
+      "p99_abs": 0.0,
+      "max_rel": 0.0,
+      "identical_frac": 1.0,
+      "voxels": 1699930
+    },
+    "wraps": {
+      "identical_frac": 1.0,
+      "same_wrap_frac": 1.0,
+      "global_offset_2pi": 0,
+      "max_abs_off_2pi": 0.0,
+      "voxels": 1699930
+    }
+  },
+  {
+    "op": "prelude-fsl-defaults",
+    "port": "qsm_core::unwrap::unwrap_prelude (probe)",
+    "settings": "8 partitions",
+    "output": "prelude_defaults.nii.gz",
+    "runtime_s": 9.2,
+    "in_mask": {
+      "nrmse": 4.442609243967473,
+      "correlation": 0.9963327596193737,
+      "max_abs": 6.283185958862305,
+      "p99_abs": 0.0,
+      "max_rel": 0.30228784304592304,
+      "identical_frac": 0.9998017565429165,
+      "voxels": 1699930
+    },
+    "wraps": {
+      "identical_frac": 0.9998017565429165,
+      "same_wrap_frac": 0.9998017565429165,
+      "global_offset_2pi": 0,
+      "max_abs_off_2pi": 6.516827184555041e-07,
+      "voxels": 1699930
+    }
+  }
+]

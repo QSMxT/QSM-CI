@@ -28,6 +28,7 @@ run: bash run.sh
 # inversions, which overruns the default 180-min hosted tier (observed: sim scoring cancelled at the
 # cap). Route to the self-hosted box (360-min cap, more cores/RAM) like decompose-qsm.
 runner: self-hosted
+timeout_minutes: 720  # its composed combos ran past the 360-min default (score run 41283397664: cancelled at exactly 360 min); as decompose-qsm
 # AMP-PE's nonlinear formulation uses the magnitude to weight the data term and to build a wavelet
 # morphology mask that injects anatomical edges into the prior. The plain dipole stage doesn't take
 # magnitude, so (like MEDI) it opts in as an optional input; without it the method still runs with
