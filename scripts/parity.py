@@ -153,13 +153,35 @@ def discover_pairs(algorithms_dir: Path = ROOT / "algorithms") -> dict:
     return {a: g for a, g in groups.items() if g["original"] and g["port"]}
 
 
+def text_limits(node, path: str = "") -> list:
+    """The `<x>_max` / `<x>_min` values under a thresholds.yml pair that are not numbers. YAML 1.1
+    (PyYAML) reads `1e-06` (no dot) as the string "1e-06", so such a limit looks set but compares as
+    text: `check` coerces it, and this reports it so it gets written `1.0e-06`."""
+    out = []
+    if isinstance(node, dict):
+        for k, v in node.items():
+            here = f"{path}.{k}" if path else str(k)
+            if isinstance(k, str) and k.endswith(("_max", "_min")) and not isinstance(v, (dict, list)):
+                if isinstance(v, bool) or not isinstance(v, (int, float)):
+                    out.append(f"{here} is {v!r}, not a number (write an exponent with a dot: 1.0e-06)")
+            else:
+                out += text_limits(v, here)
+    elif isinstance(node, list):
+        for i, v in enumerate(node):
+            out += text_limits(v, f"{path}[{i}]")
+    return out
+
+
 def pair_problems(name: str, cfg: dict, manifests: dict) -> list:
     """Why a thresholds.yml pair is not a pair of algorithm.yml entries ([] when it is): the
-    reference must be an original and the candidate a QSM.rs port of the same `algorithm:`."""
+    reference must be an original and the candidate a QSM.rs port of the same `algorithm:`, and
+    every limit must be a number ([`text_limits`])."""
+    limits = [f"{name}: {p}" for p in text_limits(cfg or {})]
     ref, cand = (cfg or {}).get("reference"), (cfg or {}).get("candidate")
     if not ref or not cand:
-        return [f"{name}: needs reference: and candidate:"]
+        return [f"{name}: needs reference: and candidate:"] + limits
     probs = [f"{name}: no algorithms/{s}/algorithm.yml" for s in (ref, cand) if s not in manifests]
+    probs += limits
     if probs:
         return probs
     r, c = manifests[ref], manifests[cand]

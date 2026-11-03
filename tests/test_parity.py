@@ -228,6 +228,19 @@ def test_real_thresholds_name_real_pairs():
                 assert held, f"{name}/{ds}: an enabled pair needs limits"
 
 
+def test_text_limits_are_problems():
+    # PyYAML reads `1e-06` (no dot) as a string: a limit that looks set but compares as text.
+    import yaml
+    cfg = yaml.safe_load("reference: a\ncandidate: b\nclip_min: 0\ndatasets:\n  sim:\n"
+                         "    nrmse_max: 1e-06\n    correlation_min: 1.0e-06\n"
+                         "    intermediates: {f: {p99_abs_max: 2e-5}}\n")
+    assert parity.text_limits(cfg) == [
+        "datasets.sim.nrmse_max is '1e-06', not a number (write an exponent with a dot: 1.0e-06)",
+        "datasets.sim.intermediates.f.p99_abs_max is '2e-5', not a number "
+        "(write an exponent with a dot: 1.0e-06)"]
+    assert any("nrmse_max is '1e-06'" in p for p in parity.pair_problems("x", cfg, {}))
+
+
 def test_pair_problems():
     m = {"a-orig": {"algorithm": "a", "source": "vendor"}, "a-jl": {"algorithm": "a", "source": "qsmjl"},
          "a-qsmrs": {"algorithm": "a", "source": "qsmrs"}, "b-qsmrs": {"algorithm": "b", "source": "qsmrs"}}
