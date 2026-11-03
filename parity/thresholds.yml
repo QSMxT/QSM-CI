@@ -1088,6 +1088,7 @@ pairs:
         measured:
           main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 7.72 %, r 0.9983, max |Δ| 0.021 ppm, p99 0.0022 ppm"
           pr416: "run 41423039167: QSMxT lbv-multigrid cc5518e, QSM.rs lbv-multigrid-406 90d9ae8 (limits)"
+          dev: "run 41570394775: dev track, QSMxT main 578e39d, QSM.rs main 6508d4e: NRMSE 7.7e-4 %, r 1.000000, max |Δ| 3.9e-7 ppm, p99 2.4e-7 ppm"
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs]
         feed: { totalfield: totalfield }
@@ -1096,6 +1097,7 @@ pairs:
         measured:
           main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 24.0 %, r 0.980, max |Δ| 0.063 ppm, p99 0.028 ppm"
           pr416: "run 41423039167: QSMxT lbv-multigrid cc5518e, QSM.rs lbv-multigrid-406 90d9ae8 (limits)"
+          dev: "run 41570394775: dev track, QSMxT main 578e39d, QSM.rs main 6508d4e: NRMSE 0.0018 %, r 1.000000, max |Δ| 2.0e-6 ppm, p99 1.7e-6 ppm"
   tfi:
     reference: tfi-cornell
     candidate: tfi-qsmrs
