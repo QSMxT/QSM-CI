@@ -12,13 +12,14 @@ SET=""
 CFG="$IN/config.json"
 if [ -f "$CFG" ]; then
   V=$(jq -r '.tol // empty' "$CFG"); [ -n "$V" ] && SET="$SET --tol $V"
-  # LBV.m's other settings (qsmxt after v10.0.0; v10.0.0 refuses them)
-  V=$(jq -r '.depth // empty' "$CFG"); [ -n "$V" ] && [ "$V" != "-1" ] && SET="$SET --depth $V"   # -1: automatic, as LBV.m
-  V=$(jq -r '.peel // empty' "$CFG"); [ -n "$V" ] && SET="$SET --peel $V"
-  V=$(jq -r '.n1 // empty' "$CFG"); [ -n "$V" ] && SET="$SET --n1 $V"
-  V=$(jq -r '.n2 // empty' "$CFG"); [ -n "$V" ] && SET="$SET --n2 $V"
-  V=$(jq -r '.n3 // empty' "$CFG"); [ -n "$V" ] && SET="$SET --n3 $V"
-  V=$(jq -r '.precision // empty' "$CFG"); [ -n "$V" ] && SET="$SET --precision $V"
+  # LBV.m's other settings: only qsmxt after v10.0.0 has them (v10.0.0 refuses the flags, so it
+  # runs without them).
+  HELP=$(qsmxt bgremove lbv --help 2>/dev/null || true)
+  for K in depth peel n1 n2 n3 precision; do
+    V=$(jq -r --arg k "$K" '.[$k] // empty' "$CFG")
+    [ "$K" = depth ] && [ "$V" = "-1" ] && V=""   # -1: automatic, as LBV.m
+    [ -n "$V" ] && grep -q -- "--$K" <<<"$HELP" && SET="$SET --$K $V"
+  done
 fi
 # QSMxT after v10.0.0 ports LBV.m's full multigrid (astewartau/QSM.rs#406), whose tolerance is in
 # radians over the echo spacing: it needs the field strength and echo times. qsmxt v10.0.0 takes
