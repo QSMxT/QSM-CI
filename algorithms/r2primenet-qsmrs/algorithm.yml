@@ -1,0 +1,40 @@
+name: R2PRIMEnet (QSM.rs)
+slug: r2primenet-qsmrs
+algorithm: r2primenet
+source: qsmrs
+stage: r2prime-generation
+language: Rust
+family: deep-learning
+learning: pretrained
+inputs: [magnitude, mask, params]
+optional_inputs: [r2star]   # port parity only: the original's R2* (r2primenet pair `feed`)
+engine: QSMxT / QSM.rs
+description: >
+  R2PRIMEnet as QSM.rs runs it: R2* by ARLO from the multi-echo magnitude (`qsmxt r2star`), then
+  the authors' trained network exported to ONNX and run by `qsmxt r2prime --r2primenet` (QSM.rs's
+  ONNX engine, CPU) on 192×192×128 sliding-window patches. The QSM.rs port of the `r2primenet`
+  entry, which runs the toolbox's model and its ARLO fit.
+authors:
+- name: Minjun Kim
+- name: Sooyeon Ji
+- name: Jongho Lee
+- name: Ashley Stewart
+  note: QSM.rs / QSMxT ONNX port
+doi: 10.1002/hbm.70136
+citation: Kim et al., Human Brain Mapping 2025
+code_url: https://github.com/astewartau/QSM.rs
+license: 'MIT (QSM.rs); the weights keep the original''s terms: academic use (SNU-LIST χ-separation toolbox)'
+# The weights are QSM.rs's ONNX exports (qsmxt/qsm-onnx-weights), baked into the image with
+# algorithms/_qsmxt/models.Dockerfile, since a submission runs with no network.
+# `qsmxt r2prime --r2primenet` is in QSMxT main (QSMxT/QSMxT#460) but in no release yet: v10.0.0
+# lacks it. Repin to the first release that has it, then drop ci_skip. The parity workflow runs it
+# with qsmxt built from source.
+image: ghcr.io/astewartau/qsm-ci/qsmxt@sha256:3fd27500c18778edc21fd771828573e01c353e4c6147124977293e51256a9053   # v10.0.0-models-2
+run: bash run.sh
+ci_skip: true   # until the image has `qsmxt r2prime --r2primenet` (see image:)
+parameters:
+- name: ignore_field_mismatch
+  default: false
+  description: >
+    Run at a field strength other than 3 T, the only one the weights were trained at
+    (`--r2primenet-ignore-field-mismatch`; the R2′ is then uncalibrated). Without it qsmxt refuses.

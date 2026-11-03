@@ -8,8 +8,23 @@ condition), it synthesizes R2′ from the GRE-derived R2* map. Composing this ge
 χ-sepnet submission reproduces the paper's χ-sepnet-R2* variant (the toolbox ships ONE final
 χ-sepnet network — the R2* pipeline differs only in feeding it R2PRIMEnet's synthetic R2′).
 
-Reads the multi-echo GRE magnitude, fits R2* (weighted log-linear least squares, an ARLO stand-in),
-runs R2PRIMEnet, and writes /output/r2prime.nii.gz (Hz).
+Reads the multi-echo GRE magnitude, fits R2* with ARLO as the toolbox does, runs R2PRIMEnet, and
+writes /output/r2prime.nii.gz (Hz).
+
+R2* is the toolbox's own (χ-separation toolbox v1.1.3, `Chisep_script.m` l. 84-93):
+`if use_arlo(TE), r2star = r2star_arlo(mag_multi_echo, TE*1000, mask_brain)`, else `r2star_nnls`.
+Both are P-code; they were run as black boxes in licensed MATLAB R2023b on Bunya (2026-11-02,
+QSMxT/QSM-CI#301):
+  - `r2star_arlo` is MEDI's `arlo.m` (2024.11.26) on the echoes with TE in ms, zero outside the mask,
+    negative rates kept: against `arlo(TE_s, mag)` inside the mask it differs by 0 on the in-vivo
+    chi-separation case (184x256x128, 5 echoes) and by 2e-16 relative on chisep-mc. `fit_r2star`
+    below is `arlo.m` line for line, in float64.
+  - `use_arlo` is true for three or more evenly spaced echoes (spacing equal to about 1e-4 of the
+    unit), when TE is a column vector. (With a row vector, as the script's own header writes TE, it
+    is always false, so the script falls back to NNLS; the GUI path and the network's training used
+    ARLO.) This entry follows ARLO's rule and refuses echo times ARLO would not take, rather than
+    substitute a fit: the toolbox's `r2star_nnls` (a parfor nonlinear fit, non-negative) is not
+    reproduced here.
 
 The network (models/240531_R2PRIMEnet.onnx) takes a single-channel 192x192x128 patch — R2*/Dr
 z-scored by the training statistics in xsepnet_train_patch_norm_factor*.mat — and predicts R2′/Dr
@@ -69,20 +84,43 @@ def read_dr():
     return DEFAULT_DR
 
 
-def fit_r2star(mag, tes):
-    """R2* (Hz) by weighted log-linear least squares over echoes (mag: X,Y,Z,E; tes: E, seconds).
-    Magnitude-weighted so noisy late echoes don't dominate; a robust stand-in for ARLO."""
-    mag = np.clip(np.asarray(mag, np.float64), 1e-9, None)
-    t = np.asarray(tes, np.float64)
-    w = mag ** 2                                   # weight ∝ magnitude² (SNR)
-    logm = np.log(mag)
-    sw = w.sum(-1)
-    tbar = (w * t).sum(-1) / sw
-    lbar = (w * logm).sum(-1) / sw
-    cov = (w * (t - tbar[..., None]) * (logm - lbar[..., None])).sum(-1)
-    var = (w * (t - tbar[..., None]) ** 2).sum(-1)
-    slope = np.divide(cov, var, out=np.zeros_like(cov), where=var > 0)
-    return np.clip(-slope, 0, None)                # R2* = −slope of log-magnitude vs TE
+def evenly_spaced(tes):
+    """`use_arlo`'s rule (toolbox v1.1.3, probed as a black box): three or more echoes, evenly
+    spaced. The probe put its tolerance between 1e-4 and 1e-3 of the spacing's unit (ms):
+    [5 11 17 23 29.0001] passes, 29.001 does not."""
+    t = np.asarray(tes, np.float64) * 1000.0           # ms, as the toolbox passes TE
+    if t.size < 3:
+        return False
+    d = np.diff(t)
+    return bool(np.all(np.abs(d - d[0]) <= 5e-4))
+
+
+def fit_r2star(mag, tes, mask):
+    """R2* (Hz) by ARLO: MEDI's arlo.m (2024.11.26) line for line, which is what the toolbox's
+    r2star_arlo computes (mag: X,Y,Z,E; tes: E, seconds). Negative rates are kept, NaN and Inf are 0
+    (arlo.m), and the map is 0 outside the mask (r2star_arlo)."""
+    y = np.asarray(mag, np.float64)
+    te = np.asarray(tes, np.float64)
+    nte = te.size
+    yy = np.zeros(y.shape[:-1]); yx = np.zeros(y.shape[:-1])
+    beta_yx = np.zeros(y.shape[:-1]); beta_xx = np.zeros(y.shape[:-1])
+    for j in range(nte - 2):
+        alpha = (te[j + 2] - te[j]) * (te[j + 2] - te[j]) / 2 / (te[j + 1] - te[j])
+        tmp = (2 * te[j + 2] * te[j + 2] - te[j] * te[j + 2] - te[j] * te[j]
+               + 3 * te[j] * te[j + 1] - 3 * te[j + 1] * te[j + 2]) / 6
+        beta = tmp / (te[j + 2] - te[j + 1])
+        gamma = tmp / (te[j + 1] - te[j])
+        y1 = (y[..., j] * (te[j + 2] - te[j] - alpha + gamma) + y[..., j + 1] * (alpha - beta - gamma)
+              + y[..., j + 2] * beta)
+        x1 = y[..., j] - y[..., j + 2]
+        yy = yy + y1 * y1
+        yx = yx + y1 * x1
+        beta_yx = beta_yx + beta * y1 * x1
+        beta_xx = beta_xx + beta * x1 * x1
+    with np.errstate(divide="ignore", invalid="ignore"):
+        r2 = (yx + beta_xx) / (beta_yx + yy)
+    r2[~np.isfinite(r2)] = 0.0
+    return r2 * mask
 
 
 def _starts(size, patch):
@@ -103,8 +141,20 @@ def main():
     if mag.ndim != 4 or mag.shape[-1] != len(tes):
         raise SystemExit(f"magnitude {mag.shape} inconsistent with {len(tes)} TEs")
     dr = read_dr()
+    if not evenly_spaced(tes):
+        raise SystemExit(f"r2primenet: the toolbox fits R2* with ARLO only for 3+ evenly spaced "
+                         f"echoes (use_arlo); TE = {list(tes)} s would take its NNLS fit, which this "
+                         f"entry does not reproduce")
 
-    r2s = fit_r2star(mag, tes)                     # Hz
+    r2s = fit_r2star(mag, tes, mask)               # Hz
+    # float32 out, whatever the magnitude's own type (an int16 header would quantise the map).
+    hdr = mag_img.header.copy()
+    hdr.set_data_dtype(np.float32)
+    inter = os.environ.get("QSMCI_INTERMEDIATES")
+    if inter:                                      # CONTRACT.md "Intermediates"
+        os.makedirs(inter, exist_ok=True)
+        nib.save(nib.Nifti1Image(r2s.astype(np.float32), mag_img.affine, hdr),
+                 os.path.join(inter, "r2star.nii.gz"))
 
     N = sio.loadmat(os.path.join(MODELS, NORM))
     def s(k):
@@ -136,7 +186,7 @@ def main():
     r2p = np.clip((acc * s("r2prime_std") + s("r2prime_mean")) * dr, 0, None)[:X, :Y, :Z] * mask
 
     os.makedirs(OUT, exist_ok=True)
-    nib.save(nib.Nifti1Image(r2p.astype(np.float32), mag_img.affine, mag_img.header),
+    nib.save(nib.Nifti1Image(r2p.astype(np.float32), mag_img.affine, hdr),
              os.path.join(OUT, "r2prime.nii.gz"))
     print("r2primenet: R2* mean %.1f Hz -> R2' mean %.1f Hz, Dr=%g"
           % (r2s[mask].mean(), r2p[mask].mean(), dr), flush=True)

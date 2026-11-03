@@ -86,6 +86,7 @@ artifacts into `/input`, and expects exactly the produced artifacts in `/output`
 | `chimap-echoes` | `chimap-echoes.nii.gz` | **ppm** | 4D `x,y,z,echo` — optional `chi-separation` input, see below |
 | `dseg` | `dseg.nii.gz` | integer labels | 3D — **baselines only**, see below |
 | `reliability` | `reliability.nii.gz` | binary uint8 | 3D — optional QSMART input, port parity only, see below |
+| `r2star` | `r2star.nii.gz` | **Hz** | 3D — optional R2PRIMEnet-port input, port parity only, see below |
 
 All field maps and susceptibility maps (`chimap`, `chi-para`, `chi-dia`) are in **ppm** (normalized
 by B0). Convert from Hz with `ppm = Hz · 1e6 / (γ · B0)`, `γ = 42.576e6` Hz/T. `r2prime` is the one
@@ -114,6 +115,12 @@ intermediate QSMART writes. No dataset ships it and scoring never mounts it: onl
 supplies it, when the `qsmart` pair feeds the original's own R₀ to the QSM.rs port
 ([docs/parity.md](docs/parity.md), "Isolating a step"). A method opts in with
 `optional_inputs: [reliability]` and runs without it when the file is absent.
+
+`r2star` is the R2* map (Hz) an R2′ generator fits from the magnitude, the `r2star` intermediate
+the `r2primenet` entry writes. Like `reliability`, no dataset ships it and scoring never mounts it:
+the `r2primenet` pair feeds the original's ARLO fit to the QSM.rs port, so the network is compared
+on identical inputs (QSM.rs sets negative rates to 0, the toolbox keeps them). A method opts in
+with `optional_inputs: [r2star]` and fits its own when the file is absent.
 
 ### `params.json`
 

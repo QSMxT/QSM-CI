@@ -1807,6 +1807,50 @@
       "ci_notes": []
     },
     {
+      "slug": "iqfm-qsmrs",
+      "name": "iQFM (QSM.rs)",
+      "stage": "unwrap+bfr",
+      "inputs": [
+        "phase",
+        "magnitude",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "iqfm",
+      "language": "Rust",
+      "family": "deep-learning",
+      "learning": "pretrained",
+      "description": "iQFM as QSM.rs runs it: the authors' trained weights exported to ONNX and run by `qsmxt bgremove iqfm` (QSM.rs's ONNX engine, CPU), from every echo's wrapped phase to the local field (ppm), each echo through the network, combined with (magnitude \u00d7 TE)\u00b2 weights as the authors' Python code does. The QSM.rs port of the `iqfm` entry, which runs the authors' own code and weights.",
+      "citation": "Gao et al., NeuroImage 2022",
+      "doi": "10.1016/j.neuroimage.2022.119410",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT (QSM.rs); the weights keep the original's terms: See repository (used with author permission)",
+      "authors": [
+        "Gao Y.",
+        "Xiong Z.",
+        "Fazlollahi A.",
+        "Nestor P.J.",
+        "Vegh V.",
+        "Nasrallah F.",
+        "Winter C.",
+        "Pike G.B.",
+        "Crozier S.",
+        "Liu F.",
+        "Sun H.",
+        "Ashley Stewart"
+      ],
+      "parameters": [
+        {
+          "name": "echo_weighting",
+          "default": "mag2-te2",
+          "description": "Echo weighting of the multi-echo combination (`--echo-weighting`): `mag2-te2` = (magnitude \u00d7 TE)\u00b2, the authors' Python code (the original entry's); `mag-te2` = magnitude \u00d7 TE\u00b2, their MATLAB code.\n"
+        }
+      ],
+      "ci_notes": []
+    },
+    {
       "slug": "iqsm",
       "name": "iQSM (PyTorch)",
       "stage": "end-to-end",
@@ -1877,6 +1921,87 @@
         "Sun H."
       ],
       "parameters": [],
+      "ci_notes": []
+    },
+    {
+      "slug": "iqsm-plus-qsmrs",
+      "name": "iQSM+ (QSM.rs)",
+      "stage": "end-to-end",
+      "inputs": [
+        "phase",
+        "magnitude",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "iqsm-plus",
+      "language": "Rust",
+      "family": "deep-learning",
+      "learning": "pretrained",
+      "description": "iQSM+ as QSM.rs runs it: the authors' trained weights exported to ONNX and run by `qsmxt invert iqsm-plus` (QSM.rs's ONNX engine, CPU), from every echo's wrapped phase and the B0 direction, each echo through the network, combined with (magnitude \u00d7 TE)\u00b2 weights as both of the authors' versions do. The QSM.rs port of the `iqsm-plus` entry, which runs the authors' own code and weights.",
+      "citation": "Gao et al., Med Image Anal 2024",
+      "doi": "10.1016/j.media.2024.103160",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT (QSM.rs); the weights keep the original's terms: Used with author permission (no license file in the upstream repository)",
+      "authors": [
+        "Gao Y.",
+        "Xiong Z.",
+        "Shan S.",
+        "Liu Y.",
+        "Rong P.",
+        "Li M.",
+        "Wilman A.H.",
+        "Pike G.B.",
+        "Liu F.",
+        "Sun H.",
+        "Ashley Stewart"
+      ],
+      "parameters": [],
+      "ci_notes": []
+    },
+    {
+      "slug": "iqsm-qsmrs",
+      "name": "iQSM (QSM.rs)",
+      "stage": "end-to-end",
+      "inputs": [
+        "phase",
+        "magnitude",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "iqsm",
+      "language": "Rust",
+      "family": "deep-learning",
+      "learning": "pretrained",
+      "description": "iQSM as QSM.rs runs it: the authors' trained weights exported to ONNX and run by `qsmxt invert iqsm` (QSM.rs's ONNX engine, CPU), from every echo's wrapped phase, each echo through the network, combined with (magnitude \u00d7 TE)\u00b2 weights as the authors' Python code does. The QSM.rs port of the `iqsm` entry, which runs the authors' own code and weights.",
+      "citation": "Gao et al., NeuroImage 2022",
+      "doi": "10.1016/j.neuroimage.2022.119410",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT (QSM.rs); the weights keep the original's terms: See repository (used with author permission)",
+      "authors": [
+        "Gao Y.",
+        "Xiong Z.",
+        "Fazlollahi A.",
+        "Nestor P.J.",
+        "Vegh V.",
+        "Nasrallah F.",
+        "Winter C.",
+        "Pike G.B.",
+        "Crozier S.",
+        "Liu F.",
+        "Sun H.",
+        "Ashley Stewart"
+      ],
+      "parameters": [
+        {
+          "name": "echo_weighting",
+          "default": "mag2-te2",
+          "description": "Echo weighting of the multi-echo combination (`--echo-weighting`): `mag2-te2` = (magnitude \u00d7 TE)\u00b2, the authors' Python code (the original entry's); `mag-te2` = magnitude \u00d7 TE\u00b2, their MATLAB code.\n"
+        }
+      ],
       "ci_notes": []
     },
     {
@@ -2622,6 +2747,30 @@
           "description": "regularization"
         }
       ],
+      "ci_notes": []
+    },
+    {
+      "slug": "mindgrab",
+      "name": "MindGrab (brainchop)",
+      "stage": "brain-extraction",
+      "inputs": [
+        "magnitude"
+      ],
+      "domain": "qsm",
+      "engine": "brainchop-cli (tinygrad)",
+      "algorithm": "mindgrab",
+      "language": "Python",
+      "family": "deep-learning",
+      "learning": "pretrained",
+      "description": "MindGrab, brainchop's any-contrast skull-stripping MeshNet, run by the authors' own pipeline: `brainchop --skull-strip` (brainchop-cli, tinygrad, CPU), which conforms the image to 256\u00b3 at 1 mm (niimath), normalises it by quantiles, runs the network, keeps the largest 26-connected component and reslices the mask back to the input grid. The echoes are combined by root-sum-of-squares first, as for the other brain-extraction entries.",
+      "citation": "Fani et al., arXiv:2506.11860 (2025)",
+      "doi": "10.48550/arXiv.2506.11860",
+      "code_url": "https://github.com/neuroneural/brainchop-cli",
+      "license": "MIT",
+      "authors": [
+        "Fani et al."
+      ],
+      "parameters": [],
       "ci_notes": []
     },
     {
@@ -3462,7 +3611,7 @@
       "language": "Python",
       "family": "deep-learning",
       "learning": "pretrained",
-      "description": "R2PRIMEnet \u2014 the R2*\u2192R2\u2032 conversion network from the \u03c7-sepnet pipeline (SNU-LIST). When no spin-echo acquisition provides a measured R2 (the GRE-only condition), it synthesizes R2\u2032 from the GRE-derived R2* map: R2* is fit from the multi-echo magnitude and a 3D U-Net (trained on paired R2*/R2\u2032 data at 3T, 1 mm) predicts the reversible component. Run here via ONNX (onnxruntime), 192\u00d7192\u00d7128 sliding-window patches, Dr = 114 Hz/ppm. Composed with the \u03c7-sepnet submission this reproduces the paper's \u03c7-sepnet-R2* variant; composed with the other R2\u2032-consuming methods it measures how far a learned R2\u2032 substitute carries each of them.",
+      "description": "R2PRIMEnet \u2014 the R2*\u2192R2\u2032 conversion network from the \u03c7-sepnet pipeline (SNU-LIST). When no spin-echo acquisition provides a measured R2 (the GRE-only condition), it synthesizes R2\u2032 from the GRE-derived R2* map: R2* is fit from the multi-echo magnitude with ARLO, as the toolbox's r2star_arlo does (MEDI's arlo.m), and a 3D U-Net (trained on paired R2*/R2\u2032 data at 3T, 1 mm) predicts the reversible component. Run here via ONNX (onnxruntime), 192\u00d7192\u00d7128 sliding-window patches, Dr = 114 Hz/ppm. Composed with the \u03c7-sepnet submission this reproduces the paper's \u03c7-sepnet-R2* variant; composed with the other R2\u2032-consuming methods it measures how far a learned R2\u2032 substitute carries each of them.",
       "citation": "Kim M. et al., \"\u03c7-sepnet: Deep neural network for magnetic susceptibility source separation\", Human Brain Mapping 2025 (doi:10.1002/hbm.70136) \u2014 R2PRIMEnet is its R2*\u2192R2\u2032 conversion network.\n",
       "doi": "10.1002/hbm.70136",
       "code_url": "https://github.com/SNU-LIST/chi_sepnet",
@@ -3506,6 +3655,42 @@
         "Jongho Lee"
       ],
       "parameters": [],
+      "ci_notes": []
+    },
+    {
+      "slug": "r2primenet-qsmrs",
+      "name": "R2PRIMEnet (QSM.rs)",
+      "stage": "r2prime-generation",
+      "inputs": [
+        "magnitude",
+        "mask",
+        "params",
+        "r2star"
+      ],
+      "domain": "chisep",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "r2primenet",
+      "language": "Rust",
+      "family": "deep-learning",
+      "learning": "pretrained",
+      "description": "R2PRIMEnet as QSM.rs runs it: R2* by ARLO from the multi-echo magnitude (`qsmxt r2star`), then the authors' trained network exported to ONNX and run by `qsmxt r2prime --r2primenet` (QSM.rs's ONNX engine, CPU) on 192\u00d7192\u00d7128 sliding-window patches. The QSM.rs port of the `r2primenet` entry, which runs the toolbox's model and its ARLO fit.",
+      "citation": "Kim et al., Human Brain Mapping 2025",
+      "doi": "10.1002/hbm.70136",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT (QSM.rs); the weights keep the original's terms: academic use (SNU-LIST \u03c7-separation toolbox)",
+      "authors": [
+        "Minjun Kim",
+        "Sooyeon Ji",
+        "Jongho Lee",
+        "Ashley Stewart"
+      ],
+      "parameters": [
+        {
+          "name": "ignore_field_mismatch",
+          "default": false,
+          "description": "Run at a field strength other than 3 T, the only one the weights were trained at (`--r2primenet-ignore-field-mismatch`; the R2\u2032 is then uncalibrated). Without it qsmxt refuses.\n"
+        }
+      ],
       "ci_notes": []
     },
     {

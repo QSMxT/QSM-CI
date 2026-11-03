@@ -37,6 +37,10 @@ artifacts:
   # `consumes` and in no dataset. Only port parity supplies it: the `qsmart` pair feeds the original's
   # own R_0 to the port (parity/thresholds.yml `feed:`). Scoring never mounts it.
   reliability:   { kind: mask,    units: binary, ndim: 3, file: reliability.nii.gz }
+  # The R2* map (Hz) R2PRIMEnet reads: an optional input of the R2PRIMEnet port, in no stage's
+  # `consumes` and in no dataset. Only port parity supplies it: the `r2primenet` pair feeds the
+  # original's own ARLO fit to the port, so the network is compared on identical inputs.
+  r2star:        { kind: relaxation, units: Hz,  ndim: 3, file: r2star.nii.gz }
 
 # The three swappable stages, in pipeline order. `consumes`/`produces` are artifact names.
 stages:
