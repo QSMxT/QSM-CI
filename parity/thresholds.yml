@@ -1033,18 +1033,23 @@ pairs:
   mindgrab:
     reference: mindgrab
     candidate: mindgrab-qsmrs
-    enabled: false
+    enabled: true
     # The original is brainchop-cli 31150c3 (the first commit with the trained head bias,
     # neuroneural/brainchop-cli#60), CPU tinygrad: ~10 min and 2.7 GB peak RSS on the KKI head
-    # (Bunya, 8 CPUs). Both sides combine the echoes by root-sum-of-squares.
-    note: baseline pending
+    # (Bunya, 8 CPUs), 45 min on a hosted runner. Both sides combine the echoes by root-sum-of-squares.
+    # Not bit-identical: 517 of 1.6 M voxels differ over the volume (Dice 0.99984), 28 net inside the
+    # dataset mask (Dice 0.99996; not investigated: tinygrad vs tract float rounding at the logit
+    # threshold, or the conform/reslice port). Limit: ~10x headroom on 1 - Dice.
     qsmrs_models: true
     qsmrs_paths: [src/bet/mindgrab.rs, src/bet/mod.rs, src/grid.rs, src/io.rs, src/models/,
                   src/pipeline/masking.rs, src/pipeline/rules.rs, src/utils/morphology.rs,
                   src/utils/resample.rs]
     qsmxt_paths: [src/cli.rs, src/commands/common.rs, src/commands/mask.rs]
     datasets:
-      s002001-kki-achieva-bridge-run1: {}
+      s002001-kki-achieva-bridge-run1:
+        # Measured: Dice 0.999962 (reference 1,509,401 / candidate 1,509,429 mask voxels).
+        mask: { dice_min: 0.9996 }
+        measured: { main: "run 41556813951: QSMxT main 578e39d, qsm-core 6508d4e, mindgrab v2 (limits)" }
   r2primenet:
     reference: r2primenet
     candidate: r2primenet-qsmrs

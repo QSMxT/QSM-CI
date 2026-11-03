@@ -27,10 +27,14 @@ run: bash run.sh
 # twice. brainchop-cli 31150c3 is the first commit that applies the trained head bias
 # (neuroneural/brainchop-cli#59/#60); every release to 0.2.5 drops it.
 fidelity:
-  date: 2026-11-03   # image built and pinned; determinism run pending
+  date: 2026-11-03
   image: sha256:90e81df79b5ef346a30bff0edd279100a7b2c025c224962aa47f083d90f08d3c
   source: neuroneural/brainchop-cli 31150c3 (unmodified), dependencies from its uv.lock
   weights: [meshnet/mindgrab/model.pth 31f1bda1, model.json e321f270]   # brainchop-models 528f2d8; sha256 prefixes, checked in the Dockerfile
   python: Python 3.12, tinygrad 0.12.0, NumPy 2.4.2, niimath 1.0.20250804
-  tolerance: identical   # image twice
-  result: pending   # not yet run twice: the in-VM run hit the VM's memory; to run on Bunya (apptainer) or Actions
+  threads: 8   # Slurm CPUs; tinygrad's CPU backend
+  host: Bunya (UQ HPC) bun155, apptainer, read-only SIF (job 31574231); v1 also twice (job 31557381)
+  tolerance: identical   # image twice on the KKI s002001 bridge-run1 head (256x256x128, 5 echoes); v2 = v1 byte for byte
+  result: pass
+  runtime: 10-20 min, 2.7 GB peak RSS
+  report: algorithms/mindgrab/README.md
