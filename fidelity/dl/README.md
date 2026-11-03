@@ -19,9 +19,9 @@ qsmxt. The two entries share `algorithm:`, so the parity workflow can run them a
 | χ-sepnet | `chisepnet` | `separate chi-sepnet` | `chisepnet-qsmrs` |
 | SUSEP-Net | `susep-net` | `separate susep-net` | `susep-net-qsmrs` |
 | HD-BET | `hd-bet-qsmci` | `mask hd-bet` | `hd-bet-qsmrs` |
-| MindGrab | none yet | `mask mindgrab` (QSMxT main only) | `mindgrab-qsmrs` (`ci_skip`) |
+| MindGrab | `mindgrab` (brainchop-cli 31150c3; determinism run pending) | `mask mindgrab` (QSMxT main only) | `mindgrab-qsmrs` (`ci_skip`) |
 | iQSM / iQSM+ / iQFM | `iqsm`, `iqsm-plus`, `iqfm` | `invert iqsm`, `invert iqsm-plus`, `bgremove iqfm` (QSMxT main only) | `iqsm-qsmrs`, `iqsm-plus-qsmrs`, `iqfm-qsmrs` (`ci_skip`) |
-| R2PRIMEnet | `r2primenet` | only through `qsmxt run` | none yet |
+| R2PRIMEnet | `r2primenet` (ARLO as the toolbox, 2026-11-02) | `r2prime --r2primenet` (QSMxT main only) | `r2primenet-qsmrs` (`ci_skip`) |
 | MoDIP, INR-QSM | `modip`, `inr-qsm` | not ported | |
 
 The port entries run `qsmxt:v10.0.0-models-2`: the v10.0.0 release image with the ONNX weights baked

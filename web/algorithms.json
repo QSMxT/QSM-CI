@@ -2741,6 +2741,30 @@
       "ci_notes": []
     },
     {
+      "slug": "mindgrab",
+      "name": "MindGrab (brainchop)",
+      "stage": "brain-extraction",
+      "inputs": [
+        "magnitude"
+      ],
+      "domain": "qsm",
+      "engine": "brainchop-cli (tinygrad)",
+      "algorithm": "mindgrab",
+      "language": "Python",
+      "family": "deep-learning",
+      "learning": "pretrained",
+      "description": "MindGrab, brainchop's any-contrast skull-stripping MeshNet, run by the authors' own pipeline: `brainchop --skull-strip` (brainchop-cli, tinygrad, CPU), which conforms the image to 256\u00b3 at 1 mm (niimath), normalises it by quantiles, runs the network, keeps the largest 26-connected component and reslices the mask back to the input grid. The echoes are combined by root-sum-of-squares first, as for the other brain-extraction entries.",
+      "citation": "Fani et al., arXiv:2506.11860 (2025)",
+      "doi": "10.48550/arXiv.2506.11860",
+      "code_url": "https://github.com/neuroneural/brainchop-cli",
+      "license": "MIT",
+      "authors": [
+        "Fani et al."
+      ],
+      "parameters": [],
+      "ci_notes": []
+    },
+    {
       "slug": "mindgrab-qsmrs",
       "name": "MindGrab (QSM.rs)",
       "stage": "brain-extraction",

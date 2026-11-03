@@ -1,0 +1,36 @@
+name: MindGrab (brainchop)
+slug: mindgrab
+algorithm: mindgrab
+source: brainchop
+stage: brain-extraction
+language: Python
+family: deep-learning
+learning: pretrained
+engine: brainchop-cli (tinygrad)
+inputs: [magnitude]  # the artifacts this method actually reads (a subset of the stage's inputs)
+description: >
+  MindGrab, brainchop's any-contrast skull-stripping MeshNet, run by the authors' own pipeline:
+  `brainchop --skull-strip` (brainchop-cli, tinygrad, CPU), which conforms the image to 256³ at 1 mm
+  (niimath), normalises it by quantiles, runs the network, keeps the largest 26-connected component
+  and reslices the mask back to the input grid. The echoes are combined by root-sum-of-squares
+  first, as for the other brain-extraction entries.
+authors:
+- name: Fani et al.
+  note: MindGrab (brainchop)
+doi: 10.48550/arXiv.2506.11860
+citation: Fani et al., arXiv:2506.11860 (2025)
+code_url: https://github.com/neuroneural/brainchop-cli
+license: MIT
+image: ghcr.io/astewartau/qsm-ci/mindgrab@sha256:01c7274a657ee77014e53b6d33d414cfc857ff2c1bc3eb175f043f634b36a479   # v1
+run: bash run.sh
+# The original, checked (QSMxT/QSM-CI#301): pinned code, dependencies and weights; the same output
+# twice. brainchop-cli 31150c3 is the first commit that applies the trained head bias
+# (neuroneural/brainchop-cli#59/#60); every release to 0.2.5 drops it.
+fidelity:
+  date: 2026-11-03   # image built and pinned; determinism run pending
+  image: sha256:01c7274a657ee77014e53b6d33d414cfc857ff2c1bc3eb175f043f634b36a479
+  source: neuroneural/brainchop-cli 31150c3 (unmodified), dependencies from its uv.lock
+  weights: [meshnet/mindgrab/model.pth 31f1bda1, model.json e321f270]   # brainchop-models 528f2d8; sha256 prefixes, checked in the Dockerfile
+  python: Python 3.12, tinygrad 0.12.0, NumPy 2.4.2, niimath 1.0.20250804
+  tolerance: identical   # image twice
+  result: pending   # not yet run twice: the in-VM run hit the VM's memory; to run on Bunya (apptainer) or Actions
