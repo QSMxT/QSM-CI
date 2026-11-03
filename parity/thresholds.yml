@@ -1035,10 +1035,9 @@ pairs:
     candidate: mindgrab-qsmrs
     enabled: false
     # The original is brainchop-cli 31150c3 (the first commit with the trained head bias,
-    # neuroneural/brainchop-cli#60), whose CPU tinygrad run needs far more memory than the network's
-    # size suggests (it took a 31 GB VM down, 2026-11-02); the image (GHCR, new package) is private
-    # until Ashley makes it public. Both sides combine the echoes by root-sum-of-squares.
-    note: baseline pending (image private; memory of the original's tinygrad run)
+    # neuroneural/brainchop-cli#60), CPU tinygrad: ~10 min and 2.7 GB peak RSS on the KKI head
+    # (Bunya, 8 CPUs). Both sides combine the echoes by root-sum-of-squares.
+    note: baseline pending
     qsmrs_models: true
     qsmrs_paths: [src/bet/mindgrab.rs, src/bet/mod.rs, src/grid.rs, src/io.rs, src/models/,
                   src/pipeline/masking.rs, src/pipeline/rules.rs, src/utils/morphology.rs,

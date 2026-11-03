@@ -9,5 +9,5 @@ MindGrab, brainchop's any-contrast skull-stripping MeshNet, run by the authors' 
 - **Port:** [`mindgrab-qsmrs`](../mindgrab-qsmrs) (`qsmxt mask mindgrab`); the pair is `mindgrab` in `parity/thresholds.yml`.
 
 ```bash
-podman build -t ghcr.io/astewartau/qsm-ci/mindgrab:v1 algorithms/mindgrab
+podman build -t ghcr.io/astewartau/qsm-ci/mindgrab:v2 algorithms/mindgrab
 ```

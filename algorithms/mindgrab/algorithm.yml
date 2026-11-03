@@ -21,14 +21,14 @@ doi: 10.48550/arXiv.2506.11860
 citation: Fani et al., arXiv:2506.11860 (2025)
 code_url: https://github.com/neuroneural/brainchop-cli
 license: MIT
-image: ghcr.io/astewartau/qsm-ci/mindgrab@sha256:01c7274a657ee77014e53b6d33d414cfc857ff2c1bc3eb175f043f634b36a479   # v1
+image: ghcr.io/astewartau/qsm-ci/mindgrab@sha256:90e81df79b5ef346a30bff0edd279100a7b2c025c224962aa47f083d90f08d3c   # v2 (v1 + niimath binary on PATH: runs read-only)
 run: bash run.sh
 # The original, checked (QSMxT/QSM-CI#301): pinned code, dependencies and weights; the same output
 # twice. brainchop-cli 31150c3 is the first commit that applies the trained head bias
 # (neuroneural/brainchop-cli#59/#60); every release to 0.2.5 drops it.
 fidelity:
   date: 2026-11-03   # image built and pinned; determinism run pending
-  image: sha256:01c7274a657ee77014e53b6d33d414cfc857ff2c1bc3eb175f043f634b36a479
+  image: sha256:90e81df79b5ef346a30bff0edd279100a7b2c025c224962aa47f083d90f08d3c
   source: neuroneural/brainchop-cli 31150c3 (unmodified), dependencies from its uv.lock
   weights: [meshnet/mindgrab/model.pth 31f1bda1, model.json e321f270]   # brainchop-models 528f2d8; sha256 prefixes, checked in the Dockerfile
   python: Python 3.12, tinygrad 0.12.0, NumPy 2.4.2, niimath 1.0.20250804

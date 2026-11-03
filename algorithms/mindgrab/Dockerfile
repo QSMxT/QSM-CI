@@ -7,7 +7,7 @@
 # Python dependencies are its uv.lock's; the weights are brainchop-models 528f2d8's, checked by
 # SHA-256, and baked in because the run has no network.
 #
-#   podman build -t ghcr.io/astewartau/qsm-ci/mindgrab:v1 algorithms/mindgrab
+#   podman build -t ghcr.io/astewartau/qsm-ci/mindgrab:v2 algorithms/mindgrab
 FROM docker.io/library/python:3.12-slim@sha256:1148dbb014615300fa7e713b2f94f550c0d1c69780c0805f84f093ceee34dd0b
 
 # clang: tinygrad's CPU backend compiles its kernels with it. pigz: niimath's gzip.
@@ -39,3 +39,9 @@ RUN d="$BRAINCHOP_HOME/.cache/brainchop" && mkdir -p "$d/models/mindgrab" \
          d2081bfc952f22938186c38e8c8c971c940714d9b2a7fd67c14756a0eb41415c "$d/models.json" \
        | sha256sum -c - \
     && chmod -R a+rX "$BRAINCHOP_HOME"
+
+# The `niimath` on PATH is pip's console script, whose package chmods the bundled binary on every
+# import, which fails on a read-only image (EROFS under apptainer's SIF). Put the same binary on
+# PATH directly, so nothing writes at run time.
+RUN ln -sf /usr/local/lib/python3.12/site-packages/niimath/bin/niimath /usr/local/bin/niimath \
+    && niimath 2>&1 | head -1
