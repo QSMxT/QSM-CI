@@ -868,9 +868,13 @@ pairs:
         chimap: { nrmse_max: 0.502, correlation_min: 0.989, max_abs_max: 3.54e-05, p99_abs_max: 3.11e-06 }
         measured: { main: "run 41190020480: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
       sim:
-        # Measured: NRMSE 0.00087 %, r 1.000000, max |Δ| 7.2e-06 ppm, p99 |Δ| 8.2e-07 ppm.
-        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 9.0e-06, p99_abs_max: 1.03e-06 }
-        measured: { main: "run 41190020480: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
+        # Measured: NRMSE 0.00087 %, r 1.000000, max |Δ| 7.2e-06 ppm, p99 |Δ| 8.2e-07 ppm (runs
+        # 41190020480 and 41642974449), and NRMSE 0.0016 %, max |Δ| 1.5e-05 ppm, p99 |Δ| 1.6e-06 ppm
+        # on another hosted runner with the same code and data (run 41625523205; KKI identical in
+        # both). ONNX Runtime's CPU kernels round by instruction set, so the |Δ| limits are derived
+        # from the larger run.
+        chimap: { nrmse_max: 0.502, correlation_min: 0.989, max_abs_max: 1.87e-05, p99_abs_max: 1.97e-06 }
+        measured: { main: "runs 41190020480, 41625523205, 41642974449: QSMxT main, QSM.rs main (limits)" }
   qsmnet:
     reference: qsmnet
     candidate: qsmnet-qsmrs
