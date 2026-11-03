@@ -26,7 +26,7 @@ QSMXT_VALUES = {
                         "ilsqr", "lsqr", "heidi", "qsmart", "ndi", "fansi", "fansi-tgv", "l1qsm",
                         "whqsm", "hdqsm", "amp-pe", "xqsm", "qsmnet", "qsmnet-plus", "autoqsm",
                         "qsmgan", "ir2qsm", "lpcnn", "modl-qsm", "nextqsm", "iqsm", "iqsm-plus",
-                        "star"},  # star: QSMxT main (QSMxT#429), not yet in a release
+                        "star", "qsmnetme"},  # star, qsmnetme: QSMxT main (QSMxT#429, #480), not yet in a release
 }
 # Flags (beyond the algorithm flags) that the command may carry; all exist on `qsmxt run`.
 EXTRA_FLAGS = {"--no-medi-smv", "--vsharp-deconvolve", "--vsharp-threshold", "--b0-estimation"}
