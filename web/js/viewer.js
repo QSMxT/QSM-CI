@@ -345,15 +345,20 @@ const phantomLabel = (p) => (datasetsReg[p] || {}).label || p;
 // The χ-separation run for a method (`slug`) on a preferred phantom: fall back to the default
 // phantom, then to whatever run exists. Drives both the deduped sidebar list and the phantom switch.
 // The preferred input level (`chisepInputs`) is tried first, then the ground-truth inputs.
-const chisepRunFor = (slug, phantom, level = chisepInputs) => {
+// A method's GRE-only combos share its slug (at both levels), so among a level's runs the one with
+// the same R2′ generator as `gen` is preferred (switching level keeps the same GRE-only pipeline),
+// else the isolated run.
+const chisepRunFor = (slug, phantom, level = chisepInputs, gen = null) => {
   const ph = phantom || chisepDefaultPhantom();
-  const lv = level === "gt" ? null : chisepRunsAll().filter((r) => r.slug === slug && chisepInputsOf(r) === level
-                                                             && chisepPhantomOf(r) === ph)[0];
+  const pick = (rs) => rs.find((r) => (r.combo?.r2prime_generation || null) === gen)
+    || rs.find((r) => r.mode === "isolated") || rs[0];
+  const lv = level === "gt" ? null : pick(chisepRunsAll().filter((r) => r.slug === slug
+    && chisepInputsOf(r) === level && chisepPhantomOf(r) === ph));
   if (lv) return lv;
   const rs = chisepRuns().filter((r) => r.slug === slug);
-  return rs.find((r) => chisepPhantomOf(r) === phantom)
-    || rs.find((r) => chisepPhantomOf(r) === chisepDefaultPhantom())
-    || rs[0];
+  return pick(rs.filter((r) => chisepPhantomOf(r) === phantom))
+    || pick(rs.filter((r) => chisepPhantomOf(r) === chisepDefaultPhantom()))
+    || pick(rs);
 };
 // The phantoms a given method was scored on (default phantom first); the switch appears only for ≥2.
 function chisepPhantomPeers() {
@@ -362,11 +367,13 @@ function chisepPhantomPeers() {
   return uniq(chisepRuns().filter((r) => r.slug === run.slug).map(chisepPhantomOf))
     .sort((a, b) => (a === d ? -1 : b === d ? 1 : a < b ? -1 : 1));
 }
-// The input levels this method was scored at on the open run's phantom ("gt" first).
+// The input levels this method (or, for a GRE-only combo, this generator × method pipeline) was
+// scored at on the open run's phantom ("gt" first).
 function chisepInputPeers() {
-  if (!run || datasetOf(run) !== "chisep" || run.stage !== "chi-separation") return [];
-  const ph = chisepPhantomOf(run);
-  return uniq(chisepRunsAll().filter((r) => r.slug === run.slug && chisepPhantomOf(r) === ph).map(chisepInputsOf))
+  if (!run || datasetOf(run) !== "chisep" || (run.stage !== "chi-separation" && !run.combo?.chi_separation)) return [];
+  const ph = chisepPhantomOf(run), gen = run.combo?.r2prime_generation || null;
+  return uniq(chisepRunsAll().filter((r) => r.slug === run.slug && chisepPhantomOf(r) === ph
+    && (r.combo?.r2prime_generation || null) === gen).map(chisepInputsOf))
     .sort((a, b) => (a === "gt" ? -1 : b === "gt" ? 1 : a < b ? -1 : 1));
 }
 // In-vivo (2016 challenge) runs: a distinct DATASET (not just a domain), dipole-only, scored vs
@@ -993,7 +1000,7 @@ function switchChisepPhantom(p) {
 // Swap the input level (ground-truth vs realistic inputs) for the same method and phantom.
 function switchChisepInputs(level) {
   chisepInputs = level;
-  const target = run ? chisepRunFor(run.slug, chisepPhantomOf(run), level) : null;
+  const target = run ? chisepRunFor(run.slug, chisepPhantomOf(run), level, run.combo?.r2prime_generation || null) : null;
   if (target) selectRun(target.id);
 }
 function selectRun(id) {

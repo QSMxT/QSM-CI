@@ -50,7 +50,9 @@ use the method's defaults and get ids ending `-l3`.
 `r2prime-generation` estimates R2′ from the multi-echo GRE magnitude alone, for the GRE-only
 condition where no spin-echo acquisition provides a measured R2. It is scored isolated against the
 phantom's true R2′ and composed with each R2′-consuming `chi-separation` method (the generated map
-replaces the true `r2prime`), to measure what a GRE-only protocol sacrifices.
+replaces the true `r2prime`), to measure what a GRE-only protocol sacrifices. The composition runs at
+both input levels: at L3 the generator reads the same raw magnitude with the L3 mask, its map replaces
+the L3 `r2prime`, and the method gets the rest of the L3 inputs (ids ending `-l3`).
 
 `brain-extraction` is a standalone stage that *produces* the `mask` every other stage consumes — for
 datasets that ship without a mask. Its output is not a scored ground-truth artifact, so it doesn't

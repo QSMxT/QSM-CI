@@ -744,9 +744,9 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
           <button class="seg-btn" :class="{'seg-on': chisepInputs==='l3'}" @click="chisepInputs='l3'" data-tip="Each method is fed the inputs a typical real QSM pipeline would hand it: the true maps with the errors of real pipelines added (noise from the dataset's SNR, the losses of background removal and dipole inversion, residual backgrounds, a mean reference, an eroded mask, and R2′ fitted from the noisy signal). The error model is calibrated on six real QSM pipelines, and methods rank on it as they do on real pipeline outputs. Scored against the same ground truth, over the same brain mask, at default settings.">Realistic inputs (L3)</button>
         </span>
         <!-- acquisition condition: true R2′ (full protocol) vs a GRE-derived substitute -->
-        <span class="seg" x-show="chisepInputs==='gt'">
-          <button class="seg-btn" :class="{'seg-on': chisepCondition==='full'}" @click="chisepCondition='full'" data-tip="Each method is fed the phantom's true R2′, what a full MEGRE+MESE protocol (measured R2) provides.">MEGRE+MESE</button>
-          <button class="seg-btn" :class="{'seg-on': chisepCondition==='greonly'}" @click="chisepCondition='greonly'" data-tip="No spin-echo R2: every R2′-consuming method is fed the best-performing GRE-derived R2′ substitute (see the R2′ generators table below), alongside the methods that never needed R2′. What you can get away with from a GRE acquisition alone.">GRE-only</button>
+        <span class="seg">
+          <button class="seg-btn" :class="{'seg-on': chisepCondition==='full'}" @click="chisepCondition='full'" :data-tip="chisepInputs==='l3' ? 'Each method is fed the R2′ a full MEGRE+MESE protocol (measured R2) provides, fitted from the noisy signal, alongside the other realistic inputs.' : 'Each method is fed the phantom\'s true R2′, what a full MEGRE+MESE protocol (measured R2) provides.'">MEGRE+MESE</button>
+          <button class="seg-btn" :class="{'seg-on': chisepCondition==='greonly'}" @click="chisepCondition='greonly'" :data-tip="chisepInputs==='l3' ? 'No spin-echo R2: every R2′-consuming method is fed the best GRE-derived R2′ substitute (see the R2′ generators table below), computed from the same noisy GRE magnitude and the realistic (eroded) mask, alongside the other realistic inputs. The methods that never needed R2′ appear with their realistic-input results.' : 'No spin-echo R2: every R2′-consuming method is fed the best-performing GRE-derived R2′ substitute (see the R2′ generators table below), alongside the methods that never needed R2′. What you can get away with from a GRE acquisition alone.'">GRE-only</button>
         </span>
         <template x-if="chisepInputs==='gt' && chisepCondition==='full' && hasChisepTuned()">
           <span class="seg">
@@ -799,7 +799,7 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
                 <td class="px-4 py-3 text-right tabular-nums text-gray-400 sticky left-0 bg-white group-hover:bg-emerald-50/40" style="min-width:4rem"><span x-text="i+1"></span><span x-show="rankDelta(r.slug,i)!==0" :class="rankDelta(r.slug,i)>0?'text-emerald-600':'text-rose-400'" class="ml-0.5 text-[10px] font-semibold align-top" :title="rankDelta(r.slug,i)>0 ? ('up '+rankDelta(r.slug,i)+' vs default') : ('down '+Math.abs(rankDelta(r.slug,i))+' vs default')" x-text="(rankDelta(r.slug,i)>0?'▲':'▼')+Math.abs(rankDelta(r.slug,i))"></span></td>
                 <td class="px-5 py-3 text-left font-medium text-gray-900 sticky bg-white group-hover:bg-emerald-50/40" style="left:4rem">
                   <span x-text="chisepRowLabel(r)"></span>
-                  <span x-show="chisepInputs==='gt' && chisepCondition==='greonly' && !r.combo" class="ml-2 rounded bg-indigo-50 px-1.5 py-0.5 text-[10px] font-semibold text-indigo-700" data-tip="This method never reads R2′; it fits the GRE signal directly, so its result is identical under both conditions.">GRE-native</span>
+                  <span x-show="chisepCondition==='greonly' && !r.combo" class="ml-2 rounded bg-indigo-50 px-1.5 py-0.5 text-[10px] font-semibold text-indigo-700" data-tip="This method never reads R2′; it fits the GRE signal directly, so its result is identical under both conditions.">GRE-native</span>
                   <template x-if="r.doi"><a :href="'https://doi.org/'+r.doi" @click.stop target="_blank" rel="noopener" class="ml-2 rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 hover:bg-emerald-100">paper</a></template>
                   <span x-show="r.status==='running'" class="ml-2 rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700 animate-pulse">computing…</span>
                   <span x-show="r.status==='DNF'" class="ml-2 rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold text-gray-500">DNF</span>
@@ -812,11 +812,11 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
           </tbody>
         </table>
         </div>
-        <p x-show="chiSepRows().length===0" class="px-5 py-10 text-center text-gray-400" x-text="chisepInputs==='l3' ? 'No realistic-input (L3) results on this phantom yet.' : chisepCondition==='greonly' ? 'No GRE-only results yet.' : 'No chi-separation results yet.'"></p>
+        <p x-show="chiSepRows().length===0" class="px-5 py-10 text-center text-gray-400" x-text="chisepInputs==='l3' ? (chisepCondition==='greonly' ? 'No GRE-only realistic-input (L3) results on this phantom yet.' : 'No realistic-input (L3) results on this phantom yet.') : chisepCondition==='greonly' ? 'No GRE-only results yet.' : 'No chi-separation results yet.'"></p>
       </div>
 
       <!-- R2′ generators: how good is each GRE-derived R2′ substitute, against the true R2′? -->
-      <div x-show="chisepInputs==='gt' && chisepCondition==='greonly' && chisepGenRows().length" x-cloak class="mt-8">
+      <div x-show="chisepCondition==='greonly' && chisepGenRows().length" x-cloak class="mt-8">
         <div class="flex flex-wrap items-center gap-3">
           <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">R2′ generators</h3>
           <template x-if="hasChisepGenTuned()">
@@ -826,9 +826,9 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
             </span>
           </template>
         </div>
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Candidate R2′ substitutes, each scored directly against the phantom's true (spin-echo-derived) R2′. The best one (lowest detrended NRMSE) supplies R2′ to every pipeline above (named after each row's &#10229; arrow); the Findings tab compares how far each substitute carries every method.</p>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Candidate R2′ substitutes, each scored directly against the phantom's true (spin-echo-derived) R2′. The best one (lowest detrended NRMSE) supplies R2′ to every pipeline above; the Findings tab compares how far each substitute carries every method.<span x-show="chisepInputs==='l3'"> A generator reads only the GRE magnitude, which is the same at both input levels, so it is scored once and the same substitute supplies R2′ under both ground-truth and realistic inputs.</span></p>
       </div>
-      <div x-show="chisepInputs==='gt' && chisepCondition==='greonly' && chisepGenRows().length" x-cloak class="mt-4 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+      <div x-show="chisepCondition==='greonly' && chisepGenRows().length" x-cloak class="mt-4 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
         <div class="overflow-x-auto">
         <table class="w-full text-sm whitespace-nowrap">
           <thead class="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
@@ -846,7 +846,7 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
               <tr @click="go(r)" @keydown.enter.prevent="go(r)" @keydown.space.prevent="go(r)" role="link" :tabindex="r.status==='DNF' ? -1 : 0" :aria-disabled="r.status==='DNF'" class="group cursor-pointer" :class="(r.status==='DNF' ? 'opacity-50 ' : '') + (r.variant==='tuned' ? 'tuned-row' : '')">
                 <td class="px-5 py-3 text-left font-medium text-gray-900 group-hover:bg-emerald-50/40">
                   <span x-text="r.name"></span>
-                  <span x-show="r.slug===chisepBestGen()" class="ml-2 rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700" data-tip="Best fidelity to the true R2′ on this phantom (lowest detrended NRMSE: scale-independent, so a well-scaled copy of R2* can't win on scale alone); the leaderboard above feeds this substitute (at default parameters) to every R2′-consuming method.">supplies R2′ above</span>
+                  <span x-show="r.slug===chisepBestGen()" class="ml-2 rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700" data-tip="Best fidelity to the true R2′ on this phantom (lowest detrended NRMSE: scale-independent, so a well-scaled copy of R2* can't win on scale alone); the leaderboard above feeds this substitute (at default parameters) to every R2′-consuming method, under both input levels.">supplies R2′ above</span>
                   <span x-show="r.status==='DNF'" class="ml-2 rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold text-gray-500">DNF</span>
                 </td>
                 <td class="px-4 py-3 text-right tabular-nums text-gray-600 group-hover:bg-emerald-50/40" x-text="(r.metrics||{}).nrmse!=null ? (r.metrics.nrmse).toFixed(1)+'%' : ', '"></td>
@@ -1767,8 +1767,9 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
         // composed runs), plus the natively GRE-only methods that never read R2′.
         chisepCondition: "full",
         // Input level: 'gt' = the phantom's true local field / χ / mask (rows without an `inputs` field);
-        // 'l3' = qsm-forward's realistic degraded inputs (rows with inputs: "l3", ids ending -l3),
-        // isolated at defaults only. The GRE-only grid and the Findings stay on the ground-truth inputs.
+        // 'l3' = qsm-forward's realistic degraded inputs (rows with inputs: "l3", ids ending -l3), at
+        // defaults only: the isolated runs and the GRE-only grid (generator R2′ in place of the L3 R2′).
+        // The Findings stay on the ground-truth inputs.
         chisepInputs: "gt",
         chisepGenVariant: "default",   // R2' generators table pill (display-only; combos stay default)
         // Headline: region-weighted split error (ascending), with the total error beside it; the
@@ -2061,14 +2062,18 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
         // preferred combo is missing or DNF'd, as a practitioner would), plus the natively GRE-only
         // methods' isolated runs (default variant; combos have no tuned pass). Every scored
         // (generator × method) combo remains in the Findings figure and the CSV export.
+        // Realistic inputs (L3): the same two conditions at defaults only (no tuned runs). Its GRE-only
+        // view uses the SAME generator ranking as the ground-truth view (chisepGenRanking, from the
+        // generators' one scoring against the true R2′): a generator reads only the GRE magnitude,
+        // identical at both levels, so the champion is a property of the phantom, and both boards
+        // then compare the same GRE-only pipeline, differing only by the derived inputs.
         _chisepBoard() {
-          // Realistic inputs (L3): one isolated run per method at its defaults (no tuned or GRE-only runs).
-          if (this.chisepInputs === "l3")
-            return this._chisepL3().filter((r) => r.mode === "isolated" && r.stage === "chi-separation"
-                                                  && (r.variant || "default") === "default");
-          const pool = this._chisep();
-          if (this.chisepCondition !== "greonly")
-            return this.pickVariant(pool.filter((r) => r.mode === "isolated" && r.stage === "chi-separation"));
+          const l3 = this.chisepInputs === "l3";
+          const pool = l3 ? this._chisepL3() : this._chisep();
+          if (this.chisepCondition !== "greonly") {
+            const iso = pool.filter((r) => r.mode === "isolated" && r.stage === "chi-separation");
+            return l3 ? iso.filter((r) => (r.variant || "default") === "default") : this.pickVariant(iso);
+          }
           const order = this.chisepGenRanking();
           const rank = (r) => { const i = order.indexOf(this.chisepGenOf(r)); return i < 0 ? 1e9 : i; };
           const bySlug = {};
