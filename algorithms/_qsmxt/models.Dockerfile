@@ -15,7 +15,7 @@
 ARG BASE=ghcr.io/astewartau/qsm-ci/qsmxt@sha256:9258c10e34cd0019dbab12746977813fe0a0b3ad92b13986d1d9ffb2c3326b57
 
 FROM debian:bookworm-slim AS weights
-ARG HF_REVISION=f9a66810b69340778a37994bd743d0e0d6544c37
+ARG HF_REVISION=e7116c8b8be0ad0aa4155d68cb2f9c23363be362
 RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates curl \
     && rm -rf /var/lib/apt/lists/*
 COPY models.sha256 /opt/qsm-models/SHA256SUMS

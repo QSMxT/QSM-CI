@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # QSM-CI χ-sepnet submission (deep learning, ONNX via onnxruntime — no MATLAB).
-#   consumes localfield.nii.gz, chimap.nii.gz, r2prime.nii.gz, magnitude.nii.gz, mask.nii.gz, params.json
+#   consumes localfield.nii.gz, r2prime.nii.gz, mask.nii.gz, params.json (the toolbox's route makes its own QSM)
 #   produces chi-para.nii.gz (χ+), chi-dia.nii.gz (χ−)
-# Model + norm stats are baked into the image at $XSEPNET_MODELS; recon.py falls back to a local copy
+# The toolbox's networks + norm stats are baked into the image at $XSEPNET_MODELS; recon.py falls back to a local copy
 # (next to it) or $CHISEP_TOOLBOX/models outside the container. In the image `python` has onnxruntime;
 # for a local (--runner local) run, set XSEP_PYTHON to a python that does.
 set -euo pipefail
