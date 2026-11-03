@@ -370,6 +370,8 @@ def check(metrics: dict, limits: "dict | None") -> list:
             m, op = key[:-4], ">="
         else:
             raise ValueError(f"unknown limit '{key}' (expected <metric>_max or <metric>_min)")
+        # YAML 1.1 (PyYAML) reads `1e-06` (no dot) as a string; the limit is a number either way.
+        lim = float(lim)
         v = metrics.get(m)
         good = isinstance(v, (int, float)) and math.isfinite(v)
         ok = good and (v <= lim if op == "<=" else v >= lim)
