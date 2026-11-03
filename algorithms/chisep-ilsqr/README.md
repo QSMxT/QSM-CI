@@ -1,4 +1,4 @@
-# χ-separation (iLSQR)
+# χ-separation iLSQR (χ-separation toolbox)
 
 The iLSQR variant of the SNU-LIST χ-separation toolbox: splits net susceptibility into a
 paramagnetic (χ+, iron) and a diamagnetic (χ−, myelin/calcium) source using the local field and an
