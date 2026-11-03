@@ -1472,3 +1472,11 @@ def test_a_cancelled_parity_run_records_nothing():
     wf = yaml.safe_load((ROOT / ".github" / "workflows" / "parity.yml").read_text())
     cond = wf["jobs"]["record"]["if"]
     assert "!cancelled()" in cond and "always()" not in cond
+
+
+def test_derive_limits_gives_networks_room_for_runner_rounding():
+    m = {"nrmse": 0.001, "correlation": 1.0, "max_abs": 1e-05, "p99_abs": 1e-06}
+    # 1.25× / 3× the measured |Δ|, rounded outward.
+    assert 1.25e-05 <= parity.derive_limits(m)["max_abs_max"] < 1.3e-05
+    assert 3e-05 <= parity.derive_limits(m, models=True)["max_abs_max"] < 3.1e-05
+    assert parity.derive_limits(m, models=True)["nrmse_max"] == parity.derive_limits(m)["nrmse_max"]
