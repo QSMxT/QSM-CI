@@ -1246,8 +1246,7 @@ pairs:
   iqfm:
     reference: iqfm
     candidate: iqfm-qsmrs
-    enabled: false
-    note: baseline pending
+    enabled: true
     qsmrs_models: true
     qsmrs_paths: [src/grid.rs, src/inversion/iqfm.rs, src/inversion/iqsm.rs,
                   src/inversion/iqsm_echo_weighting.rs, src/inversion/tile_budget.rs,
@@ -1255,8 +1254,14 @@ pairs:
                   src/pipeline/rules.rs]
     qsmxt_paths: *bgremove_wiring
     datasets:
-      sim: {}
-      s002001-kki-achieva-bridge-run1: {}
+      sim:
+        # Measured: NRMSE 0.00022 %, r 1.000000, max |Δ| 2.8e-07 ppm, p99 |Δ| 4.2e-08 ppm.
+        localfield: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.0e-06, p99_abs_max: 1.0e-06 }
+        measured: { main: "run 41629073160: QSMxT main 632fed9, QSM.rs main cc4ae49 (limits)" }
+      s002001-kki-achieva-bridge-run1:
+        # Measured: NRMSE 0.00018 %, r 1.000000, max |Δ| 2.2e-07 ppm, p99 |Δ| 6.0e-08 ppm.
+        localfield: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.0e-06, p99_abs_max: 1.0e-06 }
+        measured: { main: "run 41629073160: QSMxT main 632fed9, QSM.rs main cc4ae49 (limits)" }
   lsqr:
     reference: lsqr
     candidate: lsqr-qsmrs
