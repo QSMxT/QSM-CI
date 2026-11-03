@@ -48,3 +48,23 @@ def test_docs_files_are_not_execution_relevant():
     assert cet.is_docs("notes/DESIGN.MD") is True
     for f in ("run.sh", "Dockerfile", "recon.py", "recon.m", "weights.onnx", "config.json", "README.md.sh"):
         assert cet.is_docs(f) is False, f
+
+
+def test_fidelity_record_and_site_fields_are_not_relevant():
+    # Re-recording the container's fidelity check, or a website-only field, must not re-smoke.
+    head = {**BASE, "fidelity": {"date": "2026-11-03", "tolerance": "identical"}, "hidden": True,
+            "qsmxt_value": "tkd", "qsmxt_args": ["--x"]}
+    assert cet.execution_relevant(BASE, head) is False
+
+
+def test_smoke_runs_on_the_methods_scoring_tier():
+    # Unset runner: hosted, like its scoring; self-hosted/highmem/manual methods stay self-hosted.
+    root = Path(__file__).resolve().parent.parent / "algorithms"
+    tiers = {p.parent.name: (__import__("yaml").safe_load(p.read_text()) or {}).get("runner")
+             for p in root.glob("*/algorithm.yml") if not p.parent.name.startswith("_")}
+    unset = next(s for s, r in sorted(tiers.items()) if r is None)
+    selfhosted = next(s for s, r in sorted(tiers.items()) if r in ("self-hosted", "highmem", "manual"))
+    m = {t["slug"]: t for t in cet.matrix([unset, selfhosted])}
+    assert m[unset] == {"slug": unset, "hosted": True, "runs_on": "ubuntu-latest"}
+    assert m[selfhosted]["hosted"] is False
+    assert m[selfhosted]["runs_on"] == ["self-hosted", "Linux", "X64"]

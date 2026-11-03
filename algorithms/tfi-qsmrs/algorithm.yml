@@ -35,6 +35,30 @@ parameters:
 - name: precond
   default: 30
   description: preconditioner — susceptibility scaling outside the brain mask (Liu 2017 uses ~30 for in-vivo air)
+- name: merit
+  default: true
+  description: model-error reduction (MERIT), qsmxt after v10.0.0
+- name: linear
+  default: true
+  description: the paper's linear data term (false, MEDI_L1's exponential one), qsmxt after v10.0.0
+- name: data_weighting
+  default: 1
+  description: 1 weights the data by the field noise from the echo magnitudes, 0 uniform
+- name: percentage
+  default: 0.9
+  description: fraction of voxels kept as edges in the gradient mask
+- name: cg_tol
+  default: 0.01
+  description: conjugate-gradient relative residual tolerance
+- name: cg_max_iter
+  default: 100
+  description: maximum conjugate-gradient iterations per Gauss-Newton step
+- name: max_iter
+  default: 10
+  description: maximum Gauss-Newton iterations
+- name: tol
+  default: 0.1
+  description: Gauss-Newton stop on the relative update
 
 # Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
 tuning:
