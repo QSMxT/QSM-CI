@@ -1,6 +1,6 @@
 {
  "schema": 2,
- "generated": "2026-11-02",
+ "generated": "2026-11-03",
  "default_track": "released",
  "badges": "https://qsmxt.github.io/QSM-CI/parity/badges/",
  "tracks": {
@@ -18,20 +18,8 @@
     "version": "0.39.0",
     "commit": "42ab620190ad315c9dcf7aa8ec4a036402002b7e"
    },
-   "stale": [
-    "iharperella",
-    "fit-ppm-complex",
-    "tgv",
-    "lsqr",
-    "heidi"
-   ],
-   "rerun": [
-    "iharperella",
-    "fit-ppm-complex",
-    "tgv",
-    "lsqr",
-    "heidi"
-   ],
+   "stale": [],
+   "rerun": [],
    "pairs": [
     {
      "pair": "qsmart",
@@ -249,24 +237,39 @@
      "reference": "iharperella-sti",
      "candidate": "iharperella-qsmrs",
      "enabled": true,
-     "state": "stale",
+     "state": "current",
      "anchor": "pair-iharperella",
      "datasets": [
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
-       "last": null,
-       "rerun": true,
-       "stale": true,
-       "reasons": [
-        "not run against QSMxT v10.0.0"
-       ]
+       "last": {
+        "date": "2026-11-03T07:33:51Z",
+        "result": "fail",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41579904769",
+        "qsmrs": {
+         "ref": null,
+         "commit": "42ab620190ad315c9dcf7aa8ec4a036402002b7e",
+         "version": "0.39.0"
+        },
+        "qsmxt": {
+         "commit": "544ef94708904ec84e4f20128a22e99568e08687"
+        },
+        "nrmse": 90.19521200084138,
+        "max_abs": 0.30856291856616735,
+        "correlation": 0.43367872249676337,
+        "dice": null,
+        "release": "v10.0.0",
+        "why": "localfield correlation 0.4337 (limit >= 0.989)"
+       },
+       "rerun": false,
+       "stale": false,
+       "reasons": []
       }
      ],
-     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=iharperella -f dataset=configured -f qsmxt_release=v10.0.0",
      "badge": {
-      "kind": "unchecked",
-      "message": "not checked \u00b7 v10.0.0",
-      "color": "lightgrey"
+      "kind": "failing",
+      "message": "failing \u00b7 v10.0.0",
+      "color": "red"
      }
     },
     {
@@ -407,32 +410,63 @@
      "reference": "fit-ppm-complex-cornell",
      "candidate": "fit-ppm-complex-qsmrs",
      "enabled": true,
-     "state": "stale",
+     "state": "current",
      "anchor": "pair-fit-ppm-complex",
      "datasets": [
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
-       "last": null,
-       "rerun": true,
-       "stale": true,
-       "reasons": [
-        "not run against QSMxT v10.0.0"
-       ]
+       "last": {
+        "date": "2026-11-03T07:33:51Z",
+        "result": "unavailable",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41579904769",
+        "qsmrs": {
+         "ref": null,
+         "commit": "42ab620190ad315c9dcf7aa8ec4a036402002b7e",
+         "version": "0.39.0"
+        },
+        "qsmxt": {
+         "commit": "544ef94708904ec84e4f20128a22e99568e08687"
+        },
+        "nrmse": null,
+        "max_abs": null,
+        "correlation": null,
+        "dice": null,
+        "release": "v10.0.0",
+        "why": "QSMxT v10.0.0 refuses the port's command line: invalid value 'complex-fit' for '--b0-estimation <B0_ESTIMATION>'"
+       },
+       "rerun": false,
+       "stale": false,
+       "reasons": []
       },
       {
        "dataset": "sim",
-       "last": null,
-       "rerun": true,
-       "stale": true,
-       "reasons": [
-        "not run against QSMxT v10.0.0"
-       ]
+       "last": {
+        "date": "2026-11-03T07:33:51Z",
+        "result": "unavailable",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41579904769",
+        "qsmrs": {
+         "ref": null,
+         "commit": "42ab620190ad315c9dcf7aa8ec4a036402002b7e",
+         "version": "0.39.0"
+        },
+        "qsmxt": {
+         "commit": "544ef94708904ec84e4f20128a22e99568e08687"
+        },
+        "nrmse": null,
+        "max_abs": null,
+        "correlation": null,
+        "dice": null,
+        "release": "v10.0.0",
+        "why": "QSMxT v10.0.0 refuses the port's command line: invalid value 'complex-fit' for '--b0-estimation <B0_ESTIMATION>'"
+       },
+       "rerun": false,
+       "stale": false,
+       "reasons": []
       }
      ],
-     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=fit-ppm-complex -f dataset=configured -f qsmxt_release=v10.0.0",
      "badge": {
-      "kind": "unchecked",
-      "message": "not checked \u00b7 v10.0.0",
+      "kind": "unavailable",
+      "message": "not in v10.0.0",
       "color": "lightgrey"
      }
     },
@@ -1459,33 +1493,74 @@
      "reference": "tgv-tgvjl",
      "candidate": "tgv-qsmrs",
      "enabled": true,
-     "state": "stale",
+     "state": "current",
      "anchor": "pair-tgv",
      "datasets": [
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
-       "last": null,
-       "rerun": true,
-       "stale": true,
-       "reasons": [
-        "not run against QSMxT v10.0.0"
-       ]
+       "last": {
+        "date": "2026-11-03T07:33:51Z",
+        "result": "fail",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41579904769",
+        "qsmrs": {
+         "ref": null,
+         "commit": "42ab620190ad315c9dcf7aa8ec4a036402002b7e",
+         "version": "0.39.0"
+        },
+        "qsmxt": {
+         "commit": "544ef94708904ec84e4f20128a22e99568e08687"
+        },
+        "nrmse": 72.63639444965858,
+        "max_abs": 0.9448482394218445,
+        "correlation": 0.7890996754984263,
+        "dice": null,
+        "release": "v10.0.0",
+        "dropped_settings": [
+         "reference_divergence",
+         "reference_edge_erosion",
+         "reference_output_box"
+        ],
+        "why": "chimap correlation 0.7891 (limit >= 0.989)"
+       },
+       "rerun": false,
+       "stale": false,
+       "reasons": []
       },
       {
        "dataset": "sim",
-       "last": null,
-       "rerun": true,
-       "stale": true,
-       "reasons": [
-        "not run against QSMxT v10.0.0"
-       ]
+       "last": {
+        "date": "2026-11-03T07:33:51Z",
+        "result": "fail",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41579904769",
+        "qsmrs": {
+         "ref": null,
+         "commit": "42ab620190ad315c9dcf7aa8ec4a036402002b7e",
+         "version": "0.39.0"
+        },
+        "qsmxt": {
+         "commit": "544ef94708904ec84e4f20128a22e99568e08687"
+        },
+        "nrmse": 50.54888536454389,
+        "max_abs": 0.34498172998428345,
+        "correlation": 0.8810711044148845,
+        "dice": null,
+        "release": "v10.0.0",
+        "dropped_settings": [
+         "reference_divergence",
+         "reference_edge_erosion",
+         "reference_output_box"
+        ],
+        "why": "chimap correlation 0.8811 (limit >= 0.989)"
+       },
+       "rerun": false,
+       "stale": false,
+       "reasons": []
       }
      ],
-     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=tgv -f dataset=configured -f qsmxt_release=v10.0.0",
      "badge": {
-      "kind": "unchecked",
-      "message": "not checked \u00b7 v10.0.0",
-      "color": "lightgrey"
+      "kind": "failing",
+      "message": "failing \u00b7 v10.0.0 \u00b7 no reference_divergence, no reference_edge_erosion, no reference_output_box",
+      "color": "red"
      }
     },
     {
@@ -1494,33 +1569,64 @@
      "reference": "lsqr",
      "candidate": "lsqr-qsmrs",
      "enabled": true,
-     "state": "stale",
+     "state": "current",
      "anchor": "pair-lsqr",
      "datasets": [
       {
        "dataset": "s005001-cbic-prisma-bridge-run1",
-       "last": null,
-       "rerun": true,
-       "stale": true,
-       "reasons": [
-        "not run against QSMxT v10.0.0"
-       ]
+       "last": {
+        "date": "2026-11-03T07:33:51Z",
+        "result": "fail",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41579904769",
+        "qsmrs": {
+         "ref": null,
+         "commit": "42ab620190ad315c9dcf7aa8ec4a036402002b7e",
+         "version": "0.39.0"
+        },
+        "qsmxt": {
+         "commit": "544ef94708904ec84e4f20128a22e99568e08687"
+        },
+        "nrmse": 14.580868386521358,
+        "max_abs": 0.12433159351348877,
+        "correlation": 0.9900567259775972,
+        "dice": null,
+        "release": "v10.0.0",
+        "why": "chimap max_abs 0.1243 ppm (limit <= 2.5e-05 ppm)"
+       },
+       "rerun": false,
+       "stale": false,
+       "reasons": []
       },
       {
        "dataset": "sim",
-       "last": null,
-       "rerun": true,
-       "stale": true,
-       "reasons": [
-        "not run against QSMxT v10.0.0"
-       ]
+       "last": {
+        "date": "2026-11-03T07:33:51Z",
+        "result": "fail",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41579904769",
+        "qsmrs": {
+         "ref": null,
+         "commit": "42ab620190ad315c9dcf7aa8ec4a036402002b7e",
+         "version": "0.39.0"
+        },
+        "qsmxt": {
+         "commit": "544ef94708904ec84e4f20128a22e99568e08687"
+        },
+        "nrmse": 5.556700778385699,
+        "max_abs": 0.15832757949829102,
+        "correlation": 0.9987398090594237,
+        "dice": null,
+        "release": "v10.0.0",
+        "why": "chimap max_abs 0.1583 ppm (limit <= 0.013 ppm)"
+       },
+       "rerun": false,
+       "stale": false,
+       "reasons": []
       }
      ],
-     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=lsqr -f dataset=configured -f qsmxt_release=v10.0.0",
      "badge": {
-      "kind": "unchecked",
-      "message": "not checked \u00b7 v10.0.0",
-      "color": "lightgrey"
+      "kind": "failing",
+      "message": "failing \u00b7 v10.0.0",
+      "color": "red"
      }
     },
     {
@@ -1529,33 +1635,380 @@
      "reference": "heidi",
      "candidate": "heidi-qsmrs",
      "enabled": true,
-     "state": "stale",
+     "state": "current",
      "anchor": "pair-heidi",
      "datasets": [
       {
        "dataset": "s005001-cbic-prisma-bridge-run1",
+       "last": {
+        "date": "2026-11-03T07:33:51Z",
+        "result": "fail",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41579904769",
+        "qsmrs": {
+         "ref": null,
+         "commit": "42ab620190ad315c9dcf7aa8ec4a036402002b7e",
+         "version": "0.39.0"
+        },
+        "qsmxt": {
+         "commit": "544ef94708904ec84e4f20128a22e99568e08687"
+        },
+        "nrmse": 33.129493823564,
+        "max_abs": 0.6344689093530178,
+        "correlation": 0.9452301051097408,
+        "dice": null,
+        "release": "v10.0.0",
+        "dropped_settings": [
+         "denoise_reference_itk"
+        ],
+        "why": "chimap correlation 0.9452 (limit >= 0.989)"
+       },
+       "rerun": false,
+       "stale": false,
+       "reasons": []
+      },
+      {
+       "dataset": "sim",
+       "last": {
+        "date": "2026-11-03T07:33:51Z",
+        "result": "fail",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41579904769",
+        "qsmrs": {
+         "ref": null,
+         "commit": "42ab620190ad315c9dcf7aa8ec4a036402002b7e",
+         "version": "0.39.0"
+        },
+        "qsmxt": {
+         "commit": "544ef94708904ec84e4f20128a22e99568e08687"
+        },
+        "nrmse": 30.707244927994996,
+        "max_abs": 0.9969513416290283,
+        "correlation": 0.9805706336576359,
+        "dice": null,
+        "release": "v10.0.0",
+        "dropped_settings": [
+         "denoise_reference_itk"
+        ],
+        "why": "chimap correlation 0.9806 (limit >= 0.989)"
+       },
+       "rerun": false,
+       "stale": false,
+       "reasons": []
+      }
+     ],
+     "badge": {
+      "kind": "failing",
+      "message": "failing \u00b7 v10.0.0 \u00b7 no denoise_reference_itk",
+      "color": "red"
+     }
+    },
+    {
+     "pair": "ndi",
+     "algorithm": "ndi",
+     "reference": "ndi",
+     "candidate": "ndi-qsmrs",
+     "enabled": false,
+     "state": "gap",
+     "anchor": "pair-ndi",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
        "last": null,
-       "rerun": true,
-       "stale": true,
-       "reasons": [
-        "not run against QSMxT v10.0.0"
-       ]
+       "rerun": false,
+       "stale": false,
+       "reasons": []
       },
       {
        "dataset": "sim",
        "last": null,
-       "rerun": true,
-       "stale": true,
-       "reasons": [
-        "not run against QSMxT v10.0.0"
-       ]
+       "rerun": false,
+       "stale": false,
+       "reasons": []
       }
      ],
-     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=heidi -f dataset=configured -f qsmxt_release=v10.0.0",
+     "blocked_by": "astewartau/QSM.rs#399",
      "badge": {
-      "kind": "unchecked",
-      "message": "not checked \u00b7 v10.0.0",
-      "color": "lightgrey"
+      "kind": "gap",
+      "message": "gap \u00b7 QSM.rs#399",
+      "color": "yellow"
+     }
+    },
+    {
+     "pair": "fansi-nltv",
+     "algorithm": "fansi",
+     "reference": "fansi-nltv",
+     "candidate": "fansi-nltv-qsmrs",
+     "enabled": false,
+     "state": "gap",
+     "anchor": "pair-fansi-nltv",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "rerun": false,
+       "stale": false,
+       "reasons": []
+      },
+      {
+       "dataset": "sim",
+       "last": null,
+       "rerun": false,
+       "stale": false,
+       "reasons": []
+      }
+     ],
+     "blocked_by": "astewartau/QSM.rs#400",
+     "badge": {
+      "kind": "gap",
+      "message": "gap \u00b7 QSM.rs#400",
+      "color": "yellow"
+     }
+    },
+    {
+     "pair": "fansi-nltgv",
+     "algorithm": "fansi",
+     "reference": "fansi-nltgv",
+     "candidate": "fansi-nltgv-qsmrs",
+     "enabled": false,
+     "state": "gap",
+     "anchor": "pair-fansi-nltgv",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "rerun": false,
+       "stale": false,
+       "reasons": []
+      },
+      {
+       "dataset": "sim",
+       "last": null,
+       "rerun": false,
+       "stale": false,
+       "reasons": []
+      }
+     ],
+     "blocked_by": "astewartau/QSM.rs#400",
+     "badge": {
+      "kind": "gap",
+      "message": "gap \u00b7 QSM.rs#400",
+      "color": "yellow"
+     }
+    },
+    {
+     "pair": "l1qsm",
+     "algorithm": "l1qsm",
+     "reference": "l1qsm",
+     "candidate": "l1qsm-qsmrs",
+     "enabled": false,
+     "state": "gap",
+     "anchor": "pair-l1qsm",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "rerun": false,
+       "stale": false,
+       "reasons": []
+      },
+      {
+       "dataset": "sim",
+       "last": null,
+       "rerun": false,
+       "stale": false,
+       "reasons": []
+      }
+     ],
+     "blocked_by": "astewartau/QSM.rs#401",
+     "badge": {
+      "kind": "gap",
+      "message": "gap \u00b7 QSM.rs#401",
+      "color": "yellow"
+     }
+    },
+    {
+     "pair": "whqsm",
+     "algorithm": "whqsm",
+     "reference": "whqsm",
+     "candidate": "whqsm-qsmrs",
+     "enabled": false,
+     "state": "gap",
+     "anchor": "pair-whqsm",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "rerun": false,
+       "stale": false,
+       "reasons": []
+      },
+      {
+       "dataset": "sim",
+       "last": null,
+       "rerun": false,
+       "stale": false,
+       "reasons": []
+      }
+     ],
+     "blocked_by": "astewartau/QSM.rs#402",
+     "badge": {
+      "kind": "gap",
+      "message": "gap \u00b7 QSM.rs#402",
+      "color": "yellow"
+     }
+    },
+    {
+     "pair": "hdqsm",
+     "algorithm": "hdqsm",
+     "reference": "hdqsm",
+     "candidate": "hdqsm-qsmrs",
+     "enabled": false,
+     "state": "gap",
+     "anchor": "pair-hdqsm",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "rerun": false,
+       "stale": false,
+       "reasons": []
+      },
+      {
+       "dataset": "sim",
+       "last": null,
+       "rerun": false,
+       "stale": false,
+       "reasons": []
+      }
+     ],
+     "blocked_by": "astewartau/QSM.rs#403",
+     "badge": {
+      "kind": "gap",
+      "message": "gap \u00b7 QSM.rs#403",
+      "color": "yellow"
+     }
+    },
+    {
+     "pair": "resharp",
+     "algorithm": "resharp",
+     "reference": "resharp",
+     "candidate": "resharp-qsmrs",
+     "enabled": false,
+     "state": "gap",
+     "anchor": "pair-resharp",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "rerun": false,
+       "stale": false,
+       "reasons": []
+      },
+      {
+       "dataset": "sim",
+       "last": null,
+       "rerun": false,
+       "stale": false,
+       "reasons": []
+      }
+     ],
+     "blocked_by": "astewartau/QSM.rs#404",
+     "badge": {
+      "kind": "gap",
+      "message": "gap \u00b7 QSM.rs#404",
+      "color": "yellow"
+     }
+    },
+    {
+     "pair": "pdf",
+     "algorithm": "pdf",
+     "reference": "pdf-cornell",
+     "candidate": "pdf-qsmrs",
+     "enabled": false,
+     "state": "gap",
+     "anchor": "pair-pdf",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "rerun": false,
+       "stale": false,
+       "reasons": []
+      },
+      {
+       "dataset": "sim",
+       "last": null,
+       "rerun": false,
+       "stale": false,
+       "reasons": []
+      }
+     ],
+     "blocked_by": "astewartau/QSM.rs#405",
+     "badge": {
+      "kind": "gap",
+      "message": "gap \u00b7 QSM.rs#405",
+      "color": "yellow"
+     }
+    },
+    {
+     "pair": "lbv",
+     "algorithm": "lbv",
+     "reference": "lbv-cornell",
+     "candidate": "lbv-qsmrs",
+     "enabled": false,
+     "state": "gap",
+     "anchor": "pair-lbv",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "rerun": false,
+       "stale": false,
+       "reasons": []
+      },
+      {
+       "dataset": "sim",
+       "last": null,
+       "rerun": false,
+       "stale": false,
+       "reasons": []
+      }
+     ],
+     "blocked_by": "astewartau/QSM.rs#406",
+     "badge": {
+      "kind": "gap",
+      "message": "gap \u00b7 QSM.rs#406",
+      "color": "yellow"
+     }
+    },
+    {
+     "pair": "tfi",
+     "algorithm": "tfi",
+     "reference": "tfi-cornell",
+     "candidate": "tfi-qsmrs",
+     "enabled": false,
+     "state": "gap",
+     "anchor": "pair-tfi",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "rerun": false,
+       "stale": false,
+       "reasons": []
+      },
+      {
+       "dataset": "sim",
+       "last": null,
+       "rerun": false,
+       "stale": false,
+       "reasons": []
+      }
+     ],
+     "blocked_by": "astewartau/QSM.rs#407",
+     "badge": {
+      "kind": "gap",
+      "message": "gap \u00b7 QSM.rs#407",
+      "color": "yellow"
      }
     },
     {
@@ -1731,9 +2184,9 @@
        "stale": true,
        "reasons": [
         "reference image changed: checked sha256:e0e8bc6957c5, algorithm.yml pins sha256:01f36e868bca",
-        "QSM.rs main changed `src/bgremove/sdf.rs`, `src/inversion/ilsqr.rs`, `src/pipeline/config.rs`, `src/pipeline/qsmart.rs` \u2026 since the checked 15c938f (18 commits)",
+        "QSM.rs main changed `src/bgremove/sdf.rs`, `src/inversion/ilsqr.rs`, `src/kernels/dipole.rs`, `src/pipeline/config.rs` \u2026 since the checked 15c938f (29 commits)",
         "the pair's settings or limits for this dataset changed since",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` \u2026 since the checked 9cfe3f9 (9 commits)"
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` \u2026 since the checked 9cfe3f9 (14 commits)"
        ]
       },
       {
@@ -1758,9 +2211,9 @@
        "stale": true,
        "reasons": [
         "reference image changed: checked sha256:e0e8bc6957c5, algorithm.yml pins sha256:01f36e868bca",
-        "QSM.rs main changed `src/bgremove/sdf.rs`, `src/inversion/ilsqr.rs`, `src/pipeline/config.rs`, `src/pipeline/qsmart.rs` \u2026 since the checked 15c938f (18 commits)",
+        "QSM.rs main changed `src/bgremove/sdf.rs`, `src/inversion/ilsqr.rs`, `src/kernels/dipole.rs`, `src/pipeline/config.rs` \u2026 since the checked 15c938f (29 commits)",
         "the pair's settings or limits for this dataset changed since",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` \u2026 since the checked 9cfe3f9 (9 commits)"
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` \u2026 since the checked 9cfe3f9 (14 commits)"
        ]
       }
      ],
@@ -1834,8 +2287,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/bgremove/vsharp.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (9 commits)"
+        "QSM.rs main changed `src/bgremove/vsharp.rs`, `src/kernels/dipole.rs`, `src/pipeline/bg_removal.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (14 commits)"
        ]
       },
       {
@@ -1859,8 +2312,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/bgremove/vsharp.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (9 commits)"
+        "QSM.rs main changed `src/bgremove/vsharp.rs`, `src/kernels/dipole.rs`, `src/pipeline/bg_removal.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (14 commits)"
        ]
       }
      ],
@@ -1926,8 +2379,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (9 commits)"
+        "QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits)"
        ]
       },
       {
@@ -1951,8 +2404,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (9 commits)"
+        "QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits)"
        ]
       }
      ],
@@ -1993,8 +2446,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (9 commits)"
+        "QSM.rs main changed `src/inversion/tfi.rs`, `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` \u2026 since the checked 15c938f (29 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits)"
        ]
       },
       {
@@ -2018,8 +2471,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (9 commits)"
+        "QSM.rs main changed `src/inversion/tfi.rs`, `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` \u2026 since the checked 15c938f (29 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits)"
        ]
       }
      ],
@@ -2093,8 +2546,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (9 commits)"
+        "QSM.rs main changed `src/inversion/admm.rs`, `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits)"
        ]
       }
      ],
@@ -2136,10 +2589,10 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs`, `src/separation/decompose.rs` since the checked 15c938f (18 commits)",
+        "QSM.rs main changed `src/pipeline/rules.rs`, `src/pipeline/separation.rs`, `src/separation/decompose.rs`, `src/separation/mod.rs` \u2026 since the checked 15c938f (29 commits)",
         "the pair's settings or limits for this dataset changed since",
         "the last check failed: chi-para correlation 0.4743 (limit >= 0.988)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `src/cli.rs`, `src/commands/separate.rs` since the checked 9cfe3f9 (9 commits)"
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `src/cli.rs`, `src/commands/separate.rs` since the checked 9cfe3f9 (14 commits)"
        ]
       }
      ],
@@ -2230,8 +2683,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `src/cli.rs`, `src/commands/separate.rs` since the checked 9cfe3f9 (9 commits)"
+        "QSM.rs main changed `src/pipeline/rules.rs`, `src/pipeline/separation.rs`, `src/separation/mod.rs` since the checked 15c938f (29 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `src/cli.rs`, `src/commands/separate.rs` since the checked 9cfe3f9 (14 commits)"
        ]
       }
      ],
@@ -2272,8 +2725,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (9 commits)"
+        "QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits)"
        ]
       },
       {
@@ -2297,8 +2750,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (9 commits)"
+        "QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits)"
        ]
       }
      ],
@@ -2339,8 +2792,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (9 commits)"
+        "QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits)"
        ]
       },
       {
@@ -2364,8 +2817,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (9 commits)"
+        "QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits)"
        ]
       }
      ],
@@ -2406,8 +2859,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (9 commits)"
+        "QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits)"
        ]
       },
       {
@@ -2431,8 +2884,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (9 commits)"
+        "QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits)"
        ]
       }
      ],
@@ -2473,8 +2926,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (9 commits)"
+        "QSM.rs main changed `src/inversion/admm.rs`, `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits)"
        ]
       },
       {
@@ -2498,8 +2951,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (9 commits)"
+        "QSM.rs main changed `src/inversion/admm.rs`, `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits)"
        ]
       }
      ],
@@ -2540,8 +2993,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (9 commits)"
+        "QSM.rs main changed `src/inversion/admm.rs`, `src/inversion/ndi.rs`, `src/kernels/dipole.rs`, `src/pipeline/inversion.rs` \u2026 since the checked 15c938f (29 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits)"
        ]
       },
       {
@@ -2565,8 +3018,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (9 commits)"
+        "QSM.rs main changed `src/inversion/admm.rs`, `src/inversion/ndi.rs`, `src/kernels/dipole.rs`, `src/pipeline/inversion.rs` \u2026 since the checked 15c938f (29 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits)"
        ]
       }
      ],
@@ -2607,8 +3060,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (9 commits)"
+        "QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits)"
        ]
       },
       {
@@ -2632,8 +3085,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (9 commits)"
+        "QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (14 commits)"
        ]
       }
      ],
@@ -2674,8 +3127,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (9 commits)"
+        "QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/bg_removal.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (14 commits)"
        ]
       },
       {
@@ -2699,8 +3152,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (9 commits)"
+        "QSM.rs main changed `src/kernels/dipole.rs`, `src/pipeline/bg_removal.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (14 commits)"
        ]
       }
      ],
@@ -2741,8 +3194,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/bgremove/vsharp.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (9 commits)"
+        "QSM.rs main changed `src/bgremove/vsharp.rs`, `src/kernels/dipole.rs`, `src/pipeline/bg_removal.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (14 commits)"
        ]
       },
       {
@@ -2766,8 +3219,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/bgremove/vsharp.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (9 commits)"
+        "QSM.rs main changed `src/bgremove/vsharp.rs`, `src/kernels/dipole.rs`, `src/pipeline/bg_removal.rs`, `src/pipeline/rules.rs` since the checked 15c938f (29 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (14 commits)"
        ]
       }
      ],
@@ -2874,8 +3327,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` \u2026 since the checked 9cfe3f9 (9 commits)"
+        "QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/rules.rs`, `src/utils/multi_echo.rs` since the checked 15c938f (29 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `crates/qsmxt-engine/src/fieldmap.rs` \u2026 since the checked 9cfe3f9 (14 commits)"
        ]
       },
       {
@@ -2899,8 +3352,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` \u2026 since the checked 9cfe3f9 (9 commits)"
+        "QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/rules.rs`, `src/utils/multi_echo.rs` since the checked 15c938f (29 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `crates/qsmxt-engine/src/fieldmap.rs` \u2026 since the checked 9cfe3f9 (14 commits)"
        ]
       }
      ],
@@ -2941,8 +3394,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` \u2026 since the checked 9cfe3f9 (9 commits)"
+        "QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/rules.rs`, `src/unwrap/bestpath.rs`, `src/unwrap/mod.rs` \u2026 since the checked 15c938f (29 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `crates/qsmxt-engine/src/fieldmap.rs` \u2026 since the checked 9cfe3f9 (14 commits)"
        ]
       },
       {
@@ -2966,8 +3419,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` \u2026 since the checked 9cfe3f9 (9 commits)"
+        "QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/rules.rs`, `src/unwrap/bestpath.rs`, `src/unwrap/mod.rs` \u2026 since the checked 15c938f (29 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `crates/qsmxt-engine/src/fieldmap.rs` \u2026 since the checked 9cfe3f9 (14 commits)"
        ]
       }
      ],
@@ -3075,6 +3528,296 @@
       "kind": "unchecked",
       "message": "not yet checked",
       "color": "lightgrey"
+     }
+    },
+    {
+     "pair": "ndi",
+     "algorithm": "ndi",
+     "reference": "ndi",
+     "candidate": "ndi-qsmrs",
+     "enabled": false,
+     "state": "gap",
+     "anchor": "pair-ndi",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "stale": false,
+       "reasons": []
+      },
+      {
+       "dataset": "sim",
+       "last": null,
+       "stale": false,
+       "reasons": []
+      }
+     ],
+     "blocked_by": "astewartau/QSM.rs#399",
+     "badge": {
+      "kind": "gap",
+      "message": "gap \u00b7 QSM.rs#399",
+      "color": "yellow"
+     }
+    },
+    {
+     "pair": "fansi-nltv",
+     "algorithm": "fansi",
+     "reference": "fansi-nltv",
+     "candidate": "fansi-nltv-qsmrs",
+     "enabled": false,
+     "state": "gap",
+     "anchor": "pair-fansi-nltv",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "stale": false,
+       "reasons": []
+      },
+      {
+       "dataset": "sim",
+       "last": null,
+       "stale": false,
+       "reasons": []
+      }
+     ],
+     "blocked_by": "astewartau/QSM.rs#400",
+     "badge": {
+      "kind": "gap",
+      "message": "gap \u00b7 QSM.rs#400",
+      "color": "yellow"
+     }
+    },
+    {
+     "pair": "fansi-nltgv",
+     "algorithm": "fansi",
+     "reference": "fansi-nltgv",
+     "candidate": "fansi-nltgv-qsmrs",
+     "enabled": false,
+     "state": "gap",
+     "anchor": "pair-fansi-nltgv",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "stale": false,
+       "reasons": []
+      },
+      {
+       "dataset": "sim",
+       "last": null,
+       "stale": false,
+       "reasons": []
+      }
+     ],
+     "blocked_by": "astewartau/QSM.rs#400",
+     "badge": {
+      "kind": "gap",
+      "message": "gap \u00b7 QSM.rs#400",
+      "color": "yellow"
+     }
+    },
+    {
+     "pair": "l1qsm",
+     "algorithm": "l1qsm",
+     "reference": "l1qsm",
+     "candidate": "l1qsm-qsmrs",
+     "enabled": false,
+     "state": "gap",
+     "anchor": "pair-l1qsm",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "stale": false,
+       "reasons": []
+      },
+      {
+       "dataset": "sim",
+       "last": null,
+       "stale": false,
+       "reasons": []
+      }
+     ],
+     "blocked_by": "astewartau/QSM.rs#401",
+     "badge": {
+      "kind": "gap",
+      "message": "gap \u00b7 QSM.rs#401",
+      "color": "yellow"
+     }
+    },
+    {
+     "pair": "whqsm",
+     "algorithm": "whqsm",
+     "reference": "whqsm",
+     "candidate": "whqsm-qsmrs",
+     "enabled": false,
+     "state": "gap",
+     "anchor": "pair-whqsm",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "stale": false,
+       "reasons": []
+      },
+      {
+       "dataset": "sim",
+       "last": null,
+       "stale": false,
+       "reasons": []
+      }
+     ],
+     "blocked_by": "astewartau/QSM.rs#402",
+     "badge": {
+      "kind": "gap",
+      "message": "gap \u00b7 QSM.rs#402",
+      "color": "yellow"
+     }
+    },
+    {
+     "pair": "hdqsm",
+     "algorithm": "hdqsm",
+     "reference": "hdqsm",
+     "candidate": "hdqsm-qsmrs",
+     "enabled": false,
+     "state": "gap",
+     "anchor": "pair-hdqsm",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "stale": false,
+       "reasons": []
+      },
+      {
+       "dataset": "sim",
+       "last": null,
+       "stale": false,
+       "reasons": []
+      }
+     ],
+     "blocked_by": "astewartau/QSM.rs#403",
+     "badge": {
+      "kind": "gap",
+      "message": "gap \u00b7 QSM.rs#403",
+      "color": "yellow"
+     }
+    },
+    {
+     "pair": "resharp",
+     "algorithm": "resharp",
+     "reference": "resharp",
+     "candidate": "resharp-qsmrs",
+     "enabled": false,
+     "state": "gap",
+     "anchor": "pair-resharp",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "stale": false,
+       "reasons": []
+      },
+      {
+       "dataset": "sim",
+       "last": null,
+       "stale": false,
+       "reasons": []
+      }
+     ],
+     "blocked_by": "astewartau/QSM.rs#404",
+     "badge": {
+      "kind": "gap",
+      "message": "gap \u00b7 QSM.rs#404",
+      "color": "yellow"
+     }
+    },
+    {
+     "pair": "pdf",
+     "algorithm": "pdf",
+     "reference": "pdf-cornell",
+     "candidate": "pdf-qsmrs",
+     "enabled": false,
+     "state": "gap",
+     "anchor": "pair-pdf",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "stale": false,
+       "reasons": []
+      },
+      {
+       "dataset": "sim",
+       "last": null,
+       "stale": false,
+       "reasons": []
+      }
+     ],
+     "blocked_by": "astewartau/QSM.rs#405",
+     "badge": {
+      "kind": "gap",
+      "message": "gap \u00b7 QSM.rs#405",
+      "color": "yellow"
+     }
+    },
+    {
+     "pair": "lbv",
+     "algorithm": "lbv",
+     "reference": "lbv-cornell",
+     "candidate": "lbv-qsmrs",
+     "enabled": false,
+     "state": "gap",
+     "anchor": "pair-lbv",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "stale": false,
+       "reasons": []
+      },
+      {
+       "dataset": "sim",
+       "last": null,
+       "stale": false,
+       "reasons": []
+      }
+     ],
+     "blocked_by": "astewartau/QSM.rs#406",
+     "badge": {
+      "kind": "gap",
+      "message": "gap \u00b7 QSM.rs#406",
+      "color": "yellow"
+     }
+    },
+    {
+     "pair": "tfi",
+     "algorithm": "tfi",
+     "reference": "tfi-cornell",
+     "candidate": "tfi-qsmrs",
+     "enabled": false,
+     "state": "gap",
+     "anchor": "pair-tfi",
+     "datasets": [
+      {
+       "dataset": "s002001-kki-achieva-bridge-run1",
+       "last": null,
+       "stale": false,
+       "reasons": []
+      },
+      {
+       "dataset": "sim",
+       "last": null,
+       "stale": false,
+       "reasons": []
+      }
+     ],
+     "blocked_by": "astewartau/QSM.rs#407",
+     "badge": {
+      "kind": "gap",
+      "message": "gap \u00b7 QSM.rs#407",
+      "color": "yellow"
      }
     },
     {
@@ -3346,6 +4089,188 @@
     }
    }
   ],
+  "fit-ppm-complex": [
+   {
+    "release": "v10.0.0",
+    "date": "2026-11-03T07:33:51Z",
+    "qsmxt": {
+     "ref": "v10.0.0",
+     "commit": "544ef94708904ec84e4f20128a22e99568e08687"
+    },
+    "qsmrs": {
+     "ref": null,
+     "commit": "42ab620190ad315c9dcf7aa8ec4a036402002b7e",
+     "version": "0.39.0"
+    },
+    "datasets": [
+     {
+      "dataset": "s002001-kki-achieva-bridge-run1",
+      "last": {
+       "date": "2026-11-03T07:33:51Z",
+       "result": "unavailable",
+       "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41579904769",
+       "qsmrs": {
+        "ref": null,
+        "commit": "42ab620190ad315c9dcf7aa8ec4a036402002b7e",
+        "version": "0.39.0"
+       },
+       "qsmxt": {
+        "commit": "544ef94708904ec84e4f20128a22e99568e08687"
+       },
+       "nrmse": null,
+       "max_abs": null,
+       "correlation": null,
+       "dice": null,
+       "release": "v10.0.0",
+       "why": "QSMxT v10.0.0 refuses the port's command line: invalid value 'complex-fit' for '--b0-estimation <B0_ESTIMATION>'"
+      }
+     },
+     {
+      "dataset": "sim",
+      "last": {
+       "date": "2026-11-03T07:33:51Z",
+       "result": "unavailable",
+       "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41579904769",
+       "qsmrs": {
+        "ref": null,
+        "commit": "42ab620190ad315c9dcf7aa8ec4a036402002b7e",
+        "version": "0.39.0"
+       },
+       "qsmxt": {
+        "commit": "544ef94708904ec84e4f20128a22e99568e08687"
+       },
+       "nrmse": null,
+       "max_abs": null,
+       "correlation": null,
+       "dice": null,
+       "release": "v10.0.0",
+       "why": "QSMxT v10.0.0 refuses the port's command line: invalid value 'complex-fit' for '--b0-estimation <B0_ESTIMATION>'"
+      }
+     }
+    ],
+    "badge": {
+     "kind": "unavailable",
+     "message": "not in v10.0.0",
+     "color": "lightgrey"
+    }
+   }
+  ],
+  "heidi": [
+   {
+    "release": "v10.0.0",
+    "date": "2026-11-03T07:33:51Z",
+    "qsmxt": {
+     "ref": "v10.0.0",
+     "commit": "544ef94708904ec84e4f20128a22e99568e08687"
+    },
+    "qsmrs": {
+     "ref": null,
+     "commit": "42ab620190ad315c9dcf7aa8ec4a036402002b7e",
+     "version": "0.39.0"
+    },
+    "datasets": [
+     {
+      "dataset": "s005001-cbic-prisma-bridge-run1",
+      "last": {
+       "date": "2026-11-03T07:33:51Z",
+       "result": "fail",
+       "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41579904769",
+       "qsmrs": {
+        "ref": null,
+        "commit": "42ab620190ad315c9dcf7aa8ec4a036402002b7e",
+        "version": "0.39.0"
+       },
+       "qsmxt": {
+        "commit": "544ef94708904ec84e4f20128a22e99568e08687"
+       },
+       "nrmse": 33.129493823564,
+       "max_abs": 0.6344689093530178,
+       "correlation": 0.9452301051097408,
+       "dice": null,
+       "release": "v10.0.0",
+       "dropped_settings": [
+        "denoise_reference_itk"
+       ],
+       "why": "chimap correlation 0.9452 (limit >= 0.989)"
+      }
+     },
+     {
+      "dataset": "sim",
+      "last": {
+       "date": "2026-11-03T07:33:51Z",
+       "result": "fail",
+       "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41579904769",
+       "qsmrs": {
+        "ref": null,
+        "commit": "42ab620190ad315c9dcf7aa8ec4a036402002b7e",
+        "version": "0.39.0"
+       },
+       "qsmxt": {
+        "commit": "544ef94708904ec84e4f20128a22e99568e08687"
+       },
+       "nrmse": 30.707244927994996,
+       "max_abs": 0.9969513416290283,
+       "correlation": 0.9805706336576359,
+       "dice": null,
+       "release": "v10.0.0",
+       "dropped_settings": [
+        "denoise_reference_itk"
+       ],
+       "why": "chimap correlation 0.9806 (limit >= 0.989)"
+      }
+     }
+    ],
+    "badge": {
+     "kind": "failing",
+     "message": "failing \u00b7 v10.0.0 \u00b7 no denoise_reference_itk",
+     "color": "red"
+    }
+   }
+  ],
+  "iharperella": [
+   {
+    "release": "v10.0.0",
+    "date": "2026-11-03T07:33:51Z",
+    "qsmxt": {
+     "ref": "v10.0.0",
+     "commit": "544ef94708904ec84e4f20128a22e99568e08687"
+    },
+    "qsmrs": {
+     "ref": null,
+     "commit": "42ab620190ad315c9dcf7aa8ec4a036402002b7e",
+     "version": "0.39.0"
+    },
+    "datasets": [
+     {
+      "dataset": "s002001-kki-achieva-bridge-run1",
+      "last": {
+       "date": "2026-11-03T07:33:51Z",
+       "result": "fail",
+       "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41579904769",
+       "qsmrs": {
+        "ref": null,
+        "commit": "42ab620190ad315c9dcf7aa8ec4a036402002b7e",
+        "version": "0.39.0"
+       },
+       "qsmxt": {
+        "commit": "544ef94708904ec84e4f20128a22e99568e08687"
+       },
+       "nrmse": 90.19521200084138,
+       "max_abs": 0.30856291856616735,
+       "correlation": 0.43367872249676337,
+       "dice": null,
+       "release": "v10.0.0",
+       "why": "localfield correlation 0.4337 (limit >= 0.989)"
+      }
+     }
+    ],
+    "badge": {
+     "kind": "failing",
+     "message": "failing \u00b7 v10.0.0",
+     "color": "red"
+    }
+   }
+  ],
   "ilsqr": [
    {
     "release": "v10.0.0",
@@ -3545,6 +4470,72 @@
      "kind": "current",
      "message": "< 0.001 % \u00b7 v10.0.0",
      "color": "brightgreen"
+    }
+   }
+  ],
+  "lsqr": [
+   {
+    "release": "v10.0.0",
+    "date": "2026-11-03T07:33:51Z",
+    "qsmxt": {
+     "ref": "v10.0.0",
+     "commit": "544ef94708904ec84e4f20128a22e99568e08687"
+    },
+    "qsmrs": {
+     "ref": null,
+     "commit": "42ab620190ad315c9dcf7aa8ec4a036402002b7e",
+     "version": "0.39.0"
+    },
+    "datasets": [
+     {
+      "dataset": "s005001-cbic-prisma-bridge-run1",
+      "last": {
+       "date": "2026-11-03T07:33:51Z",
+       "result": "fail",
+       "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41579904769",
+       "qsmrs": {
+        "ref": null,
+        "commit": "42ab620190ad315c9dcf7aa8ec4a036402002b7e",
+        "version": "0.39.0"
+       },
+       "qsmxt": {
+        "commit": "544ef94708904ec84e4f20128a22e99568e08687"
+       },
+       "nrmse": 14.580868386521358,
+       "max_abs": 0.12433159351348877,
+       "correlation": 0.9900567259775972,
+       "dice": null,
+       "release": "v10.0.0",
+       "why": "chimap max_abs 0.1243 ppm (limit <= 2.5e-05 ppm)"
+      }
+     },
+     {
+      "dataset": "sim",
+      "last": {
+       "date": "2026-11-03T07:33:51Z",
+       "result": "fail",
+       "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41579904769",
+       "qsmrs": {
+        "ref": null,
+        "commit": "42ab620190ad315c9dcf7aa8ec4a036402002b7e",
+        "version": "0.39.0"
+       },
+       "qsmxt": {
+        "commit": "544ef94708904ec84e4f20128a22e99568e08687"
+       },
+       "nrmse": 5.556700778385699,
+       "max_abs": 0.15832757949829102,
+       "correlation": 0.9987398090594237,
+       "dice": null,
+       "release": "v10.0.0",
+       "why": "chimap max_abs 0.1583 ppm (limit <= 0.013 ppm)"
+      }
+     }
+    ],
+    "badge": {
+     "kind": "failing",
+     "message": "failing \u00b7 v10.0.0",
+     "color": "red"
     }
    }
   ],
@@ -4091,6 +5082,82 @@
      "kind": "unavailable",
      "message": "not in v10.0.0",
      "color": "lightgrey"
+    }
+   }
+  ],
+  "tgv": [
+   {
+    "release": "v10.0.0",
+    "date": "2026-11-03T07:33:51Z",
+    "qsmxt": {
+     "ref": "v10.0.0",
+     "commit": "544ef94708904ec84e4f20128a22e99568e08687"
+    },
+    "qsmrs": {
+     "ref": null,
+     "commit": "42ab620190ad315c9dcf7aa8ec4a036402002b7e",
+     "version": "0.39.0"
+    },
+    "datasets": [
+     {
+      "dataset": "s002001-kki-achieva-bridge-run1",
+      "last": {
+       "date": "2026-11-03T07:33:51Z",
+       "result": "fail",
+       "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41579904769",
+       "qsmrs": {
+        "ref": null,
+        "commit": "42ab620190ad315c9dcf7aa8ec4a036402002b7e",
+        "version": "0.39.0"
+       },
+       "qsmxt": {
+        "commit": "544ef94708904ec84e4f20128a22e99568e08687"
+       },
+       "nrmse": 72.63639444965858,
+       "max_abs": 0.9448482394218445,
+       "correlation": 0.7890996754984263,
+       "dice": null,
+       "release": "v10.0.0",
+       "dropped_settings": [
+        "reference_divergence",
+        "reference_edge_erosion",
+        "reference_output_box"
+       ],
+       "why": "chimap correlation 0.7891 (limit >= 0.989)"
+      }
+     },
+     {
+      "dataset": "sim",
+      "last": {
+       "date": "2026-11-03T07:33:51Z",
+       "result": "fail",
+       "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41579904769",
+       "qsmrs": {
+        "ref": null,
+        "commit": "42ab620190ad315c9dcf7aa8ec4a036402002b7e",
+        "version": "0.39.0"
+       },
+       "qsmxt": {
+        "commit": "544ef94708904ec84e4f20128a22e99568e08687"
+       },
+       "nrmse": 50.54888536454389,
+       "max_abs": 0.34498172998428345,
+       "correlation": 0.8810711044148845,
+       "dice": null,
+       "release": "v10.0.0",
+       "dropped_settings": [
+        "reference_divergence",
+        "reference_edge_erosion",
+        "reference_output_box"
+       ],
+       "why": "chimap correlation 0.8811 (limit >= 0.989)"
+      }
+     }
+    ],
+    "badge": {
+     "kind": "failing",
+     "message": "failing \u00b7 v10.0.0 \u00b7 no reference_divergence, no reference_edge_erosion, no reference_output_box",
+     "color": "red"
     }
    }
   ],
