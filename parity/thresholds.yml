@@ -1306,11 +1306,13 @@ pairs:
   ndi:
     reference: ndi
     candidate: ndi-qsmrs
-    enabled: false
-    blocked_by: astewartau/QSM.rs#399
-    # Gap: FANSI's dipole_kernel_angulated (mode 1, the discrete kernel from unit forward
-    # differences), which the original uses, against QSM.rs's continuous kernel. A numpy ndi.m on
-    # the original's own inputs: FANSI kernel 0.0001 % from it, continuous kernel 10.61 %.
+    enabled: true
+    # At rounding since astewartau/QSM.rs#414: FANSI's discrete kernel (dipole_kernel_angulated mode 1,
+    # as the original) was the whole gap (#399; continuous kernel: sim 10.61 %, KKI 9.52 %).
+    # Limits: derived (scripts/parity.py), with max/p99 |Δ| ~10× (the originals iterate in single
+    # precision through MKL's FFTs, which may round differently on another CPU; Ashley, 2026-10-31).
+    # What remains is single vs double precision and FANSI's γ 42.58 vs QSM.rs's 42.576 (no pair
+    # setting needed).
     qsmrs_paths: [src/constants.rs, src/fft.rs, src/grid.rs, src/inversion/admm.rs,
                   src/inversion/ndi.rs, src/kernels/, src/pipeline/inversion.rs,
                   src/pipeline/rules.rs, src/utils/echo_time.rs, src/utils/gradient.rs,
@@ -1318,17 +1320,27 @@ pairs:
     qsmxt_paths: *invert_wiring
     datasets:
       sim:
-        measured: { main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 10.61 %, r 0.9945, max |Δ| 0.080 ppm, p99 0.0094 ppm" }
+        chimap: { nrmse_max: 0.502, correlation_min: 0.989, max_abs_max: 0.00147, p99_abs_max: 1.0e-05 }
+        measured:
+          main: "run 41403629314: QSM.rs fansi-kernel cdf8a44 (astewartau/QSM.rs#414), QSMxT hdqsm-echo-magnitudes (QSMxT/QSMxT#477): NRMSE 0.0011 %, r 1.000000000, max |Δ| 0.000117 ppm, p99 2.09e-07 ppm"
+          dev: "run 41574682988: dev track, QSMxT main 578e39d, QSM.rs main 6508d4e: NRMSE 0.0011 %, r 1.000000, max |Δ| 1.2e-4 ppm, p99 2.1e-7 ppm"
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
-        measured: { main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 9.52 %, r 0.9955, max |Δ| 0.107 ppm, p99 0.0115 ppm" }
+        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 6.47e-05, p99_abs_max: 1.0e-05 }
+        measured:
+          main: "run 41403629314: QSM.rs fansi-kernel cdf8a44 (astewartau/QSM.rs#414), QSMxT hdqsm-echo-magnitudes (QSMxT/QSMxT#477): NRMSE 8.89e-05 %, r 1.000000000, max |Δ| 5.17e-06 ppm, p99 6.33e-08 ppm"
+          dev: "run 41574682988: dev track, QSMxT main 578e39d, QSM.rs main 6508d4e: NRMSE 8.9e-5 %, r 1.000000, max |Δ| 5.2e-6 ppm, p99 6.3e-8 ppm"
         feed: { localfield: localfield }
   fansi-nltv:
     reference: fansi-nltv
     candidate: fansi-nltv-qsmrs
-    enabled: false
-    blocked_by: astewartau/QSM.rs#400
-    # Gap: the dipole kernel, as for ndi (astewartau/QSM.rs#399).
+    enabled: true
+    # At rounding since astewartau/QSM.rs#414: FANSI's discrete kernel was the whole gap (#400;
+    # continuous kernel: sim 11.04 %, KKI 9.48 %).
+    # Limits: derived (scripts/parity.py), with max/p99 |Δ| ~10× (the originals iterate in single
+    # precision through MKL's FFTs, which may round differently on another CPU; Ashley, 2026-10-31).
+    # What remains is single vs double precision and FANSI's γ 42.58 vs QSM.rs's 42.576 (no pair
+    # setting needed).
     qsmrs_paths: &fansi_paths [src/constants.rs, src/fft.rs, src/grid.rs, src/inversion/admm.rs,
                                src/inversion/fansi.rs, src/kernels/, src/pipeline/inversion.rs,
                                src/pipeline/rules.rs, src/utils/echo_time.rs,
@@ -1336,32 +1348,52 @@ pairs:
     qsmxt_paths: *invert_wiring
     datasets:
       sim:
-        measured: { main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 11.04 %, r 0.9941, max |Δ| 0.346 ppm, p99 0.0122 ppm" }
+        chimap: { nrmse_max: 0.508, correlation_min: 0.989, max_abs_max: 0.0106, p99_abs_max: 3.58e-05 }
+        measured:
+          main: "run 41403629314: QSM.rs fansi-kernel cdf8a44 (astewartau/QSM.rs#414), QSMxT hdqsm-echo-magnitudes (QSMxT/QSMxT#477): NRMSE 0.00689 %, r 0.999999998, max |Δ| 0.000843 ppm, p99 2.86e-06 ppm"
+          dev: "run 41570388382: dev track, QSMxT main 578e39d, QSM.rs main 6508d4e: NRMSE 0.0069 %, r 1.000000, max |Δ| 8.4e-4 ppm, p99 2.9e-6 ppm"
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
-        measured: { main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 9.48 %, r 0.9955, max |Δ| 0.235 ppm, p99 0.0147 ppm" }
+        chimap: { nrmse_max: 0.504, correlation_min: 0.989, max_abs_max: 0.000215, p99_abs_max: 4.77e-05 }
+        measured:
+          main: "run 41403629314: QSM.rs fansi-kernel cdf8a44 (astewartau/QSM.rs#414), QSMxT hdqsm-echo-magnitudes (QSMxT/QSMxT#477): NRMSE 0.003 %, r 1.000000000, max |Δ| 1.72e-05 ppm, p99 3.81e-06 ppm"
+          dev: "run 41570388382: dev track, QSMxT main 578e39d, QSM.rs main 6508d4e: NRMSE 0.0030 %, r 1.000000, max |Δ| 1.7e-5 ppm, p99 3.8e-6 ppm"
         feed: { localfield: localfield }
   fansi-nltgv:
     reference: fansi-nltgv
     candidate: fansi-nltgv-qsmrs
-    enabled: false
-    blocked_by: astewartau/QSM.rs#400
-    # Gap: the dipole kernel, as for ndi (astewartau/QSM.rs#399).
+    enabled: true
+    # At rounding since astewartau/QSM.rs#414: FANSI's discrete kernel was the whole gap (#400;
+    # continuous kernel: sim 11.03 %, KKI 9.61 %).
+    # Limits: derived (scripts/parity.py), with max/p99 |Δ| ~10× (the originals iterate in single
+    # precision through MKL's FFTs, which may round differently on another CPU; Ashley, 2026-10-31).
+    # What remains is single vs double precision and FANSI's γ 42.58 vs QSM.rs's 42.576 (no pair
+    # setting needed).
     qsmrs_paths: *fansi_paths
     qsmxt_paths: *invert_wiring
     datasets:
       sim:
-        measured: { main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 11.03 %, r 0.9941, max |Δ| 0.350 ppm, p99 0.0122 ppm" }
+        chimap: { nrmse_max: 0.507, correlation_min: 0.989, max_abs_max: 0.0101, p99_abs_max: 3.44e-05 }
+        measured:
+          main: "run 41403629314: QSM.rs fansi-kernel cdf8a44 (astewartau/QSM.rs#414), QSMxT hdqsm-echo-magnitudes (QSMxT/QSMxT#477): NRMSE 0.00634 %, r 0.999999998, max |Δ| 0.000807 ppm, p99 2.75e-06 ppm"
+          dev: "run 41570388382: dev track, QSMxT main 578e39d, QSM.rs main 6508d4e: NRMSE 0.0063 %, r 1.000000, max |Δ| 8.1e-4 ppm, p99 2.7e-6 ppm"
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
-        measured: { main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 9.61 %, r 0.9954, max |Δ| 0.235 ppm, p99 0.0148 ppm" }
+        chimap: { nrmse_max: 0.505, correlation_min: 0.989, max_abs_max: 0.000225, p99_abs_max: 5.54e-05 }
+        measured:
+          main: "run 41403629314: QSM.rs fansi-kernel cdf8a44 (astewartau/QSM.rs#414), QSMxT hdqsm-echo-magnitudes (QSMxT/QSMxT#477): NRMSE 0.0039 %, r 0.999999999, max |Δ| 1.79e-05 ppm, p99 4.43e-06 ppm"
+          dev: "run 41570388382: dev track, QSMxT main 578e39d, QSM.rs main 6508d4e: NRMSE 0.0039 %, r 1.000000, max |Δ| 1.8e-5 ppm, p99 4.4e-6 ppm"
         feed: { localfield: localfield }
   l1qsm:
     reference: l1qsm
     candidate: l1qsm-qsmrs
-    enabled: false
-    blocked_by: astewartau/QSM.rs#401
-    # Gap: the dipole kernel (astewartau/QSM.rs#399), maybe more.
+    enabled: true
+    # At rounding since astewartau/QSM.rs#414: FANSI's discrete kernel was the whole gap (#401;
+    # continuous kernel: sim 14.39 %, KKI 15.46 %).
+    # Limits: derived (scripts/parity.py), with max/p99 |Δ| ~10× (the originals iterate in single
+    # precision through MKL's FFTs, which may round differently on another CPU; Ashley, 2026-10-31).
+    # What remains is single vs double precision and FANSI's γ 42.58 vs QSM.rs's 42.576 (no pair
+    # setting needed).
     qsmrs_paths: [src/constants.rs, src/fft.rs, src/grid.rs, src/inversion/admm.rs,
                   src/inversion/l1qsm.rs, src/kernels/, src/pipeline/inversion.rs,
                   src/pipeline/rules.rs, src/utils/echo_time.rs, src/utils/gradient.rs,
@@ -1369,17 +1401,29 @@ pairs:
     qsmxt_paths: *invert_wiring
     datasets:
       sim:
-        measured: { main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 14.39 %, r 0.9898, max |Δ| 0.059 ppm, p99 0.0165 ppm" }
+        chimap: { nrmse_max: 0.503, correlation_min: 0.989, max_abs_max: 0.00103, p99_abs_max: 2.52e-05 }
+        measured:
+          main: "run 41403629314: QSM.rs fansi-kernel cdf8a44 (astewartau/QSM.rs#414), QSMxT hdqsm-echo-magnitudes (QSMxT/QSMxT#477): NRMSE 0.0022 %, r 1.000000000, max |Δ| 8.23e-05 ppm, p99 2.01e-06 ppm"
+          dev: "run 41570388382: dev track, QSMxT main 578e39d, QSM.rs main 6508d4e: NRMSE 0.0022 %, r 1.000000, max |Δ| 8.2e-5 ppm, p99 2.0e-6 ppm"
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
-        measured: { main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 15.46 %, r 0.9879, max |Δ| 0.125 ppm, p99 0.0264 ppm" }
+        chimap: { nrmse_max: 0.503, correlation_min: 0.989, max_abs_max: 0.000373, p99_abs_max: 4.74e-05 }
+        measured:
+          main: "run 41403629314: QSM.rs fansi-kernel cdf8a44 (astewartau/QSM.rs#414), QSMxT hdqsm-echo-magnitudes (QSMxT/QSMxT#477): NRMSE 0.00259 %, r 1.000000000, max |Δ| 2.98e-05 ppm, p99 3.78e-06 ppm"
+          dev: "run 41570388382: dev track, QSMxT main 578e39d, QSM.rs main 6508d4e: NRMSE 0.0026 %, r 1.000000, max |Δ| 3.0e-5 ppm, p99 3.8e-6 ppm"
         feed: { localfield: localfield }
   whqsm:
     reference: whqsm
     candidate: whqsm-qsmrs
-    enabled: false
-    blocked_by: astewartau/QSM.rs#402
-    # Gap: the dipole kernel (astewartau/QSM.rs#399) and more.
+    enabled: true
+    # At rounding since astewartau/QSM.rs#414 (#402; before: sim 21.4 %, KKI 50.7 %): FANSI's discrete
+    # kernel, WH_nlTV's flat weight over the whole volume (the port weighted the mask only), and a
+    # Newton safeguard the port adds (sim's field is non-zero outside the mask, where the unguarded
+    # step can bounce; the original happened to settle, the port went NaN).
+    # Limits: derived (scripts/parity.py), with max/p99 |Δ| ~10× (the originals iterate in single
+    # precision through MKL's FFTs, which may round differently on another CPU; Ashley, 2026-10-31).
+    # What remains is single vs double precision and FANSI's γ 42.58 vs QSM.rs's 42.576 (no pair
+    # setting needed).
     qsmrs_paths: [src/constants.rs, src/fft.rs, src/grid.rs, src/inversion/admm.rs,
                   src/inversion/whqsm.rs, src/kernels/, src/pipeline/inversion.rs,
                   src/pipeline/rules.rs, src/utils/echo_time.rs, src/utils/gradient.rs,
@@ -1387,24 +1431,29 @@ pairs:
     qsmxt_paths: *invert_wiring
     datasets:
       sim:
-        measured: { main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 21.4 %, r 0.978, max |Δ| 0.527 ppm, p99 0.0221 ppm" }
+        chimap: { nrmse_max: 0.502, correlation_min: 0.989, max_abs_max: 0.000135, p99_abs_max: 2.39e-05 }
+        measured:
+          main: "run 41403629314: QSM.rs fansi-kernel cdf8a44 (astewartau/QSM.rs#414), QSMxT hdqsm-echo-magnitudes (QSMxT/QSMxT#477): NRMSE 0.00182 %, r 1.000000000, max |Δ| 1.08e-05 ppm, p99 1.91e-06 ppm"
+          dev: "run 41570388382: dev track, QSMxT main 578e39d, QSM.rs main 6508d4e: NRMSE 0.0018 %, r 1.000000, max |Δ| 1.1e-5 ppm, p99 1.9e-6 ppm"
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
-        measured: { main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 50.7 %, r 0.862, max |Δ| 1.20 ppm, p99 0.0891 ppm" }
+        chimap: { nrmse_max: 0.505, correlation_min: 0.989, max_abs_max: 0.000276, p99_abs_max: 7.75e-05 }
+        measured:
+          main: "run 41403629314: QSM.rs fansi-kernel cdf8a44 (astewartau/QSM.rs#414), QSMxT hdqsm-echo-magnitudes (QSMxT/QSMxT#477): NRMSE 0.00382 %, r 0.999999999, max |Δ| 2.21e-05 ppm, p99 6.2e-06 ppm"
+          dev: "run 41570388382: dev track, QSMxT main 578e39d, QSM.rs main 6508d4e: NRMSE 0.0038 %, r 1.000000, max |Δ| 2.2e-5 ppm, p99 6.2e-6 ppm"
 
   # ---- HD-QSM, the authors' HDQSM.m (MATLAB; fidelity: QSMxT/QSM-CI#327)
   hdqsm:
     reference: hdqsm
     candidate: hdqsm-qsmrs
-    enabled: false
-    blocked_by: astewartau/QSM.rs#403
-    # Gap: the dipole kernel (HDQSM.m ships none; the original uses FANSI's
-    # dipole_kernel_angulated, astewartau/QSM.rs#399), and the magnitude: the original weights by
-    # the paper's Eq. 2 echo combination, QSMxT gives the port the root sum of squares. Feeding the
-    # port the original's own weight as its magnitude (renormalised over the mask) gives sim 8.10 %,
-    # KKI 5.88 %, so most of the gap is the kernel. The pair runs QSMxT's RSS magnitude until QSM.rs
-    # takes the Eq. 2 combination itself.
+    enabled: true
+    # At rounding since astewartau/QSM.rs#414 (#403; before: sim 9.08 %, KKI 7.07 %): FANSI's discrete
+    # kernel, the paper's Eq. 2 magnitude computed by QSM.rs from every echo's magnitude (QSMxT gave
+    # the root sum of squares; QSMxT/QSMxT#477 passes the echoes), and the masked input.
+    # Limits: derived (scripts/parity.py), with max/p99 |Δ| ~10× (the originals iterate in single
+    # precision through MKL's FFTs, which may round differently on another CPU; Ashley, 2026-10-31).
+    # What remains is single vs double precision (HD-QSM works in ppm: no γ).
     qsmrs_paths: [src/constants.rs, src/fft.rs, src/grid.rs, src/inversion/admm.rs,
                   src/inversion/hdqsm.rs, src/kernels/, src/pipeline/inversion.rs,
                   src/pipeline/rules.rs, src/utils/gradient.rs, src/utils/mask.rs,
@@ -1412,11 +1461,17 @@ pairs:
     qsmxt_paths: *invert_wiring
     datasets:
       sim:
-        measured: { main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 9.08 %, r 0.9960, max |Δ| 0.377 ppm, p99 0.0070 ppm" }
+        chimap: { nrmse_max: 0.502, correlation_min: 0.989, max_abs_max: 0.00143, p99_abs_max: 1.03e-05 }
+        measured:
+          main: "run 41403629314: QSM.rs fansi-kernel cdf8a44 (astewartau/QSM.rs#414), QSMxT hdqsm-echo-magnitudes (QSMxT/QSMxT#477): NRMSE 0.00148 %, r 1.000000000, max |Δ| 0.000114 ppm, p99 8.23e-07 ppm"
+          dev: "run 41570388382: dev track, QSMxT main 578e39d, QSM.rs main 6508d4e: NRMSE 0.0015 %, r 1.000000, max |Δ| 1.1e-4 ppm, p99 8.2e-7 ppm"
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
-        measured: { main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 7.07 %, r 0.9975, max |Δ| 0.256 ppm, p99 0.0090 ppm" }
+        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 0.000135, p99_abs_max: 1.16e-05 }
+        measured:
+          main: "run 41403629314: QSM.rs fansi-kernel cdf8a44 (astewartau/QSM.rs#414), QSMxT hdqsm-echo-magnitudes (QSMxT/QSMxT#477): NRMSE 0.00086 %, r 1.000000000, max |Δ| 1.08e-05 ppm, p99 9.24e-07 ppm"
+          dev: "run 41570388382: dev track, QSMxT main 578e39d, QSM.rs main 6508d4e: NRMSE 8.6e-4 %, r 1.000000, max |Δ| 1.1e-5 ppm, p99 9.2e-7 ppm"
 
   # ---- RESHARP, the first author's resharp.m (MATLAB, sunhongfu/QSM c75b138; fidelity: #352)
   resharp:
