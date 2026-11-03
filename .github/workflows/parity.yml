@@ -293,6 +293,16 @@ jobs:
         with:
           job-tag: ${{ github.run_id }}-parity-${{ matrix.algorithm }}-${{ matrix.phantom }}
 
+      # On a hosted runner the sim dataset, a MATLAB Runtime image and the qsmxt build together
+      # come close to the free disk: the pdf pair on sim failed twice pulling matlab-medi ("no
+      # space left on device"). Drop toolchains no job here uses.
+      - name: Free disk space (hosted)
+        if: ${{ matrix.runs_on == 'ubuntu-latest' }}
+        continue-on-error: true
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL /usr/local/share/boost
+          df -h /
+
       # Same interpreter and pinned numpy/scipy as the scoring jobs (score.yml explains why, and
       # why a self-hosted runner without the tool cache may fall back to its own Python).
       - uses: actions/setup-python@v7
