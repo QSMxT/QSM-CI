@@ -224,7 +224,7 @@ def dedicated(root: Path) -> list[str]:
 
 
 def plan_tasks(root: Path, reg: dict, *, full: bool, slugs: list[str], include: str = "",
-               shards: int = 12, explicit: set[str] | None = None,
+               shards: int = 24, explicit: set[str] | None = None,
                include_manual: bool = False, include_highmem: bool = False) -> list[dict]:
     """The matrix for a run. `explicit` = slugs a human named on dispatch: they (and their manual
     phantoms) are planned even when their tier is manual or highmem. `include_manual` lifts that for
@@ -248,9 +248,7 @@ def plan_tasks(root: Path, reg: dict, *, full: bool, slugs: list[str], include: 
     ded = dedicated(root)
     heavy_dipoles = ",".join(s for s in ded if is_dipole(specs[s]) and not is_skipped(specs[s]))
 
-    def focus_tasks(sl: list[str], levels_for: "set[str] | None" = None) -> list[dict]:
-        # `levels_for`: the slugs that also get their degraded-input tasks (default: all of `sl`).
-        levels_for = set(sl) if levels_for is None else levels_for
+    def focus_tasks(sl: list[str]) -> list[dict]:
         tasks = []
         for s in sorted(set(sl)):
             spec = specs.get(s)
@@ -265,11 +263,17 @@ def plan_tasks(root: Path, reg: dict, *, full: bool, slugs: list[str], include: 
                 if heavy_dipoles and not is_dipole(spec) and not is_chisep(spec):
                     t["exclude"] = heavy_dipoles
                 tasks.append(t)
-                # Degraded inputs (pipeline.py --inputs <level>): a separate isolated job per level,
-                # so it never lengthens the ground-truth-input job (isolated + GRE-only grid).
-                for lv in (input_levels(spec, reg, ph) if s in levels_for else []):
-                    tasks.append({"id": t["id"] + "-" + lv, "focus": s, "phantom": ph, "inputs": lv,
-                                  "mode": "isolated", **route(spec)})
+                # Degraded inputs (pipeline.py --inputs <level>): a separate job per level, so it
+                # never lengthens the ground-truth-input job. Like that job it runs the method's
+                # isolated run and, for an R2′-consuming method, its GRE-only grid at the level
+                # (every generator × it, mode both); a GRE-native method has no grid, so its level
+                # job stays isolated. No tuned pass at a degraded level, so the level job is the
+                # ground-truth job minus the tuned run and fits the same cap.
+                for lv in input_levels(spec, reg, ph):
+                    lt = {"id": t["id"] + "-" + lv, "focus": s, "phantom": ph, "inputs": lv, **route(spec)}
+                    if not consumes_r2prime(spec):
+                        lt["mode"] = "isolated"
+                    tasks.append(lt)
         return tasks
 
     def invivo_tasks(sl: list[str]) -> list[dict]:
@@ -286,14 +290,13 @@ def plan_tasks(root: Path, reg: dict, *, full: bool, slugs: list[str], include: 
         tasks += invivo_tasks(list(specs))
         return tasks
     sl = list(slugs)
-    changed = set(sl)
     # A changed R2′ generator invalidates every GRE-only combo it forms with the R2′-consuming
-    # χ-sep methods (those combos live in the χ-sep methods' focus jobs). Their degraded-input runs
-    # don't involve a generator, so only the methods that changed themselves get those re-planned.
+    # χ-sep methods, at every input level (those combos live in the χ-sep methods' focus jobs and
+    # their degraded-input jobs), so all of those jobs are re-planned.
     if any(stage_of(specs.get(s)) == "r2prime-generation" for s in sl):
         sl += [s for s, sp in specs.items() if stage_of(sp) == "chi-separation"
                and consumes_r2prime(sp) and not is_skipped(sp)]
-    return focus_tasks(sl, changed) + invivo_tasks(sl)
+    return focus_tasks(sl) + invivo_tasks(sl)
 
 
 # ---------------------------------------------------------------------------------------------------
@@ -448,7 +451,7 @@ def decide(env: dict, root: Path, reg: dict, state: dict) -> dict:
     """The whole decision, as data. Pure given env/root/reg/state except for git (scope diffs)."""
     event, sha = env.get("EVENT", "push"), env["SHA"]
     scope_in, include = (env.get("SCOPE") or "auto").strip(), (env.get("INCLUDE") or "").strip()
-    shards = int(env.get("SHARDS") or 12)
+    shards = int(env.get("SHARDS") or 24)
     include_manual = (env.get("INCLUDE_MANUAL") or "false").lower() == "true"
     explicit: set[str] = set()
     notes: list[str] = []

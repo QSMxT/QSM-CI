@@ -60,9 +60,9 @@ jobs:
           RELEASE: ${{ steps.plan.outputs.release }}
           ALGORITHM: ${{ steps.plan.outputs.algorithm }}
         run: |
-          # parity.yml's run-name says "released <tag>": skip if one is already queued or running.
-          busy=$(gh run list -R "$GITHUB_REPOSITORY" -w parity.yml -L 50 --json displayTitle,status \
-                   --jq "[.[] | select(.status != \"completed\" and (.displayTitle | contains(\"released $RELEASE \")))] | length")
+          # A released run for this tag already queued or running (parity.yml's run name says
+          # "released <tag>") makes this a no-op; one that is cancelled or being cancelled does not.
+          busy=$(python3 scripts/parity.py released-busy --release "$RELEASE" --repo "$GITHUB_REPOSITORY" | wc -l)
           if [ "$busy" != 0 ]; then
             echo "a released run for $RELEASE is already queued or running" | tee -a "$GITHUB_STEP_SUMMARY"; exit 0
           fi
