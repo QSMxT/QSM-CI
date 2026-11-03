@@ -398,7 +398,6 @@
                 <tr @click="go(r)" @keydown.enter.prevent="go(r)" @keydown.space.prevent="go(r)" role="link" :tabindex="r.status==='DNF' ? -1 : 0" :aria-disabled="r.status==='DNF'" class="group cursor-pointer" :class="(r.status==='DNF' ? 'opacity-50 ' : '') + (r.variant==='tuned' ? 'tuned-row' : '')">
                   <td class="px-4 py-3 text-right tabular-nums text-gray-400 sticky left-0 bg-white group-hover:bg-emerald-50/40" style="min-width:4rem"><span x-text="i+1"></span><span x-show="rankDelta(r.slug,i)!==0" :class="rankDelta(r.slug,i)>0?'text-emerald-600':'text-rose-400'" class="ml-0.5 text-[10px] font-semibold align-top" :title="rankDelta(r.slug,i)>0 ? ('up '+rankDelta(r.slug,i)+' vs default') : ('down '+Math.abs(rankDelta(r.slug,i))+' vs default')" x-text="(rankDelta(r.slug,i)>0?'▲':'▼')+Math.abs(rankDelta(r.slug,i))"></span></td>
                   <td class="px-5 py-3 text-left font-medium text-gray-900 sticky bg-white group-hover:bg-emerald-50/40" style="left:4rem">
-                    <span class="mr-1.5 inline-block w-5 text-center" x-text="medal(i)"></span>
                     <span x-text="r.name"></span>
                     <template x-if="doi(r)">
                       <a :href="doi(r).url" @click.stop target="_blank" rel="noopener"
@@ -745,9 +744,9 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
           <button class="seg-btn" :class="{'seg-on': chisepInputs==='l3'}" @click="chisepInputs='l3'" data-tip="Each method is fed the inputs a typical real QSM pipeline would hand it: the true maps with the errors of real pipelines added (noise from the dataset's SNR, the losses of background removal and dipole inversion, residual backgrounds, a mean reference, an eroded mask, and R2′ fitted from the noisy signal). The error model is calibrated on six real QSM pipelines, and methods rank on it as they do on real pipeline outputs. Scored against the same ground truth, over the same brain mask, at default settings.">Realistic inputs (L3)</button>
         </span>
         <!-- acquisition condition: true R2′ (full protocol) vs a GRE-derived substitute -->
-        <span class="seg" x-show="chisepInputs==='gt'">
-          <button class="seg-btn" :class="{'seg-on': chisepCondition==='full'}" @click="chisepCondition='full'" data-tip="Each method is fed the phantom's true R2′, what a full MEGRE+MESE protocol (measured R2) provides.">MEGRE+MESE</button>
-          <button class="seg-btn" :class="{'seg-on': chisepCondition==='greonly'}" @click="chisepCondition='greonly'" data-tip="No spin-echo R2: every R2′-consuming method is fed the best-performing GRE-derived R2′ substitute (see the R2′ generators table below), alongside the methods that never needed R2′. What you can get away with from a GRE acquisition alone.">GRE-only</button>
+        <span class="seg">
+          <button class="seg-btn" :class="{'seg-on': chisepCondition==='full'}" @click="chisepCondition='full'" :data-tip="chisepInputs==='l3' ? 'Each method is fed the R2′ a full MEGRE+MESE protocol (measured R2) provides, fitted from the noisy signal, alongside the other realistic inputs.' : 'Each method is fed the phantom\'s true R2′, what a full MEGRE+MESE protocol (measured R2) provides.'">MEGRE+MESE</button>
+          <button class="seg-btn" :class="{'seg-on': chisepCondition==='greonly'}" @click="chisepCondition='greonly'" :data-tip="chisepInputs==='l3' ? 'No spin-echo R2: every R2′-consuming method is fed the best GRE-derived R2′ substitute (see the R2′ generators table below), computed from the same noisy GRE magnitude and the realistic (eroded) mask, alongside the other realistic inputs. The methods that never needed R2′ appear with their realistic-input results.' : 'No spin-echo R2: every R2′-consuming method is fed the best-performing GRE-derived R2′ substitute (see the R2′ generators table below), alongside the methods that never needed R2′. What you can get away with from a GRE acquisition alone.'">GRE-only</button>
         </span>
         <template x-if="chisepInputs==='gt' && chisepCondition==='full' && hasChisepTuned()">
           <span class="seg">
@@ -799,26 +798,25 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
               <tr @click="go(r)" @keydown.enter.prevent="go(r)" @keydown.space.prevent="go(r)" role="link" :tabindex="r.status==='DNF' ? -1 : 0" :aria-disabled="r.status==='DNF'" class="group cursor-pointer" :class="(r.status==='DNF' ? 'opacity-50 ' : '') + (r.variant==='tuned' ? 'tuned-row' : '')">
                 <td class="px-4 py-3 text-right tabular-nums text-gray-400 sticky left-0 bg-white group-hover:bg-emerald-50/40" style="min-width:4rem"><span x-text="i+1"></span><span x-show="rankDelta(r.slug,i)!==0" :class="rankDelta(r.slug,i)>0?'text-emerald-600':'text-rose-400'" class="ml-0.5 text-[10px] font-semibold align-top" :title="rankDelta(r.slug,i)>0 ? ('up '+rankDelta(r.slug,i)+' vs default') : ('down '+Math.abs(rankDelta(r.slug,i))+' vs default')" x-text="(rankDelta(r.slug,i)>0?'▲':'▼')+Math.abs(rankDelta(r.slug,i))"></span></td>
                 <td class="px-5 py-3 text-left font-medium text-gray-900 sticky bg-white group-hover:bg-emerald-50/40" style="left:4rem">
-                  <span class="mr-1.5 inline-block w-5 text-center" x-text="medal(i)"></span>
                   <span x-text="chisepRowLabel(r)"></span>
-                  <span x-show="chisepInputs==='gt' && chisepCondition==='greonly' && !r.combo" class="ml-2 rounded bg-indigo-50 px-1.5 py-0.5 text-[10px] font-semibold text-indigo-700" data-tip="This method never reads R2′; it fits the GRE signal directly, so its result is identical under both conditions.">GRE-native</span>
+                  <span x-show="chisepCondition==='greonly' && !r.combo" class="ml-2 rounded bg-indigo-50 px-1.5 py-0.5 text-[10px] font-semibold text-indigo-700" data-tip="This method never reads R2′; it fits the GRE signal directly, so its result is identical under both conditions.">GRE-native</span>
                   <template x-if="r.doi"><a :href="'https://doi.org/'+r.doi" @click.stop target="_blank" rel="noopener" class="ml-2 rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 hover:bg-emerald-100">paper</a></template>
                   <span x-show="r.status==='running'" class="ml-2 rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700 animate-pulse">computing…</span>
                   <span x-show="r.status==='DNF'" class="ml-2 rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold text-gray-500">DNF</span>
                 </td>
                 <template x-for="c in chisepDisplayCols()" :key="c.key">
-                  <td class="px-4 py-3 text-right tabular-nums group-hover:bg-emerald-50/40" :class="(chisepSort===c.key || c.key==='avg_mspe') ? 'font-semibold text-gray-900' : 'text-gray-600'" x-text="chiFmt(chiVal(r, c.key), c.key)"></td>
+                  <td class="px-4 py-3 text-right tabular-nums group-hover:bg-emerald-50/40" :class="(chisepSort===c.key || c.key==='split_rms_rw') ? 'font-semibold text-gray-900' : 'text-gray-600'" x-text="chiFmt(chiVal(r, c.key), c.key)"></td>
                 </template>
               </tr>
             </template>
           </tbody>
         </table>
         </div>
-        <p x-show="chiSepRows().length===0" class="px-5 py-10 text-center text-gray-400" x-text="chisepInputs==='l3' ? 'No realistic-input (L3) results on this phantom yet.' : chisepCondition==='greonly' ? 'No GRE-only results yet.' : 'No chi-separation results yet.'"></p>
+        <p x-show="chiSepRows().length===0" class="px-5 py-10 text-center text-gray-400" x-text="chisepInputs==='l3' ? (chisepCondition==='greonly' ? 'No GRE-only realistic-input (L3) results on this phantom yet.' : 'No realistic-input (L3) results on this phantom yet.') : chisepCondition==='greonly' ? 'No GRE-only results yet.' : 'No chi-separation results yet.'"></p>
       </div>
 
       <!-- R2′ generators: how good is each GRE-derived R2′ substitute, against the true R2′? -->
-      <div x-show="chisepInputs==='gt' && chisepCondition==='greonly' && chisepGenRows().length" x-cloak class="mt-8">
+      <div x-show="chisepCondition==='greonly' && chisepGenRows().length" x-cloak class="mt-8">
         <div class="flex flex-wrap items-center gap-3">
           <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">R2′ generators</h3>
           <template x-if="hasChisepGenTuned()">
@@ -828,9 +826,9 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
             </span>
           </template>
         </div>
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Candidate R2′ substitutes, each scored directly against the phantom's true (spin-echo-derived) R2′. The best one (lowest detrended NRMSE) supplies R2′ to every pipeline above (named after each row's &#10229; arrow); the Findings tab compares how far each substitute carries every method.</p>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Candidate R2′ substitutes, each scored directly against the phantom's true (spin-echo-derived) R2′. The best one (lowest detrended NRMSE) supplies R2′ to every pipeline above; the Findings tab compares how far each substitute carries every method.<span x-show="chisepInputs==='l3'"> A generator reads only the GRE magnitude, which is the same at both input levels, so it is scored once and the same substitute supplies R2′ under both ground-truth and realistic inputs.</span></p>
       </div>
-      <div x-show="chisepInputs==='gt' && chisepCondition==='greonly' && chisepGenRows().length" x-cloak class="mt-4 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+      <div x-show="chisepCondition==='greonly' && chisepGenRows().length" x-cloak class="mt-4 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
         <div class="overflow-x-auto">
         <table class="w-full text-sm whitespace-nowrap">
           <thead class="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
@@ -848,7 +846,7 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
               <tr @click="go(r)" @keydown.enter.prevent="go(r)" @keydown.space.prevent="go(r)" role="link" :tabindex="r.status==='DNF' ? -1 : 0" :aria-disabled="r.status==='DNF'" class="group cursor-pointer" :class="(r.status==='DNF' ? 'opacity-50 ' : '') + (r.variant==='tuned' ? 'tuned-row' : '')">
                 <td class="px-5 py-3 text-left font-medium text-gray-900 group-hover:bg-emerald-50/40">
                   <span x-text="r.name"></span>
-                  <span x-show="r.slug===chisepBestGen()" class="ml-2 rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700" data-tip="Best fidelity to the true R2′ on this phantom (lowest detrended NRMSE: scale-independent, so a well-scaled copy of R2* can't win on scale alone); the leaderboard above feeds this substitute (at default parameters) to every R2′-consuming method.">supplies R2′ above</span>
+                  <span x-show="r.slug===chisepBestGen()" class="ml-2 rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700" data-tip="Best fidelity to the true R2′ on this phantom (lowest detrended NRMSE: scale-independent, so a well-scaled copy of R2* can't win on scale alone); the leaderboard above feeds this substitute (at default parameters) to every R2′-consuming method, under both input levels.">supplies R2′ above</span>
                   <span x-show="r.status==='DNF'" class="ml-2 rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold text-gray-500">DNF</span>
                 </td>
                 <td class="px-4 py-3 text-right tabular-nums text-gray-600 group-hover:bg-emerald-50/40" x-text="(r.metrics||{}).nrmse!=null ? (r.metrics.nrmse).toFixed(1)+'%' : ', '"></td>
@@ -904,8 +902,29 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
             <li><strong>R2*-QSM</strong> uses the GRE magnitude instead of R2&prime;.</li>
             <li><strong>DECOMPOSE</strong> fits the multi-echo complex signal and takes a QSM per echo.</li>
           </ul>
-          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed"><strong>Ground-truth and realistic inputs.</strong> By default each method is given the phantom&rsquo;s true local field, &chi;<sub>total</sub> and brain mask, with the R2&prime; the dataset ships. Nothing upstream is in error, so these scores are an upper bound, and they favour methods that trust their inputs voxel by voxel. The leaderboard&rsquo;s <em>Realistic inputs (L3)</em> toggle instead gives every method the inputs a typical real QSM pipeline would produce: the same maps with noise from the dataset&rsquo;s SNR, the losses of background-field removal and dipole inversion (low spatial frequencies, magic-cone attenuation, smoothing), residual smooth backgrounds, an error near the brain boundary, a mean reference, a 2&nbsp;mm-eroded mask, and R2&prime; fitted from the noisy gradient-echo and spin-echo signal. Methods that take a QSM per echo (DECOMPOSE) get one, with its own noise at each echo. Each error term is the median over six real QSMxT pipelines (iLSQR, TKD, NLTV, MEDI, TFI and iR2QSM) measured on the Mesoscopic&nbsp;3T phantom, and the inputs are generated with <a href="https://github.com/astewartau/qsm-forward" class="text-emerald-600 hover:underline">qsm-forward</a>&rsquo;s degradation model. Methods fed these inputs rank almost as they do when fed the outputs of ten real pipelines, four of which were not used for calibration (Spearman &rho; = 0.92 on Mesoscopic&nbsp;3T and 0.89 on WM microstructure&nbsp;7T). Their scores come out about 0.02 xSIM higher, because the model leaves out the non-linear streaking of real inversions. Both input levels are scored against the same ground truth, over the same brain mask, with every method at its default settings. The Ridani phantom is noiseless, so its realistic inputs carry the pipeline errors but no noise.</p>
-          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed"><strong>GRE-only condition.</strong> Without a spin echo there is no measured R2. The GRE-only view feeds every R2&prime;-based method an R2&prime; estimated from the GRE magnitude alone (R2PRIMEnet, or the fixed 0.52&middot;R2* scaling). Methods that never read R2&prime; are unchanged.</p>
+          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed"><strong>GRE-only condition.</strong> Without a spin echo there is no measured R2, and so no measured R2&prime;. The leaderboard&rsquo;s <em>GRE-only</em> view feeds every R2&prime;-based method an R2&prime; estimated from the GRE magnitude alone. Three estimators are scored against the true R2&prime; (R2PRIMEnet, R2PRIMEnet-7T and the fixed 0.52&middot;R2* scaling), and the one closest to it on each phantom (lowest detrended NRMSE) supplies R2&prime; to every method. R2*-QSM and DECOMPOSE never read R2&prime;, so they appear with their usual results.</p>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Ground-truth vs realistic inputs (L3)</h3>
+          <ul class="mt-2 list-disc pl-5 space-y-1 text-gray-600 dark:text-gray-400 leading-relaxed">
+            <li><strong>Ground-truth inputs</strong> (the default) give each method the phantom&rsquo;s true local field, &chi;<sub>total</sub> and brain mask, with the R2&prime; the dataset ships. Nothing upstream is in error.</li>
+            <li><strong>Realistic inputs (L3)</strong> give each method what a typical real QSM pipeline would hand it: the same maps with noise from the dataset&rsquo;s SNR, the losses of background-field removal and dipole inversion (low spatial frequencies, magic-cone attenuation, smoothing), residual smooth backgrounds, an error near the brain boundary, a mean reference, a 2&nbsp;mm-eroded mask, and R2&prime; fitted from the noisy gradient-echo and spin-echo signal. The Ridani phantom is noiseless, so its realistic inputs carry the pipeline errors but no noise.</li>
+            <li><strong>Calibration.</strong> Each error term is the median over six real QSMxT pipelines (iLSQR, TKD, NLTV, MEDI, TFI and iR2QSM) run on the Mesoscopic&nbsp;3T phantom. The spread across the six is recorded with every dataset.</li>
+            <li><strong>Validation.</strong> Methods were also run on the outputs of ten real pipelines, four of which were not used for calibration. Fed the L3 inputs, they rank almost as they do on those real outputs: Spearman &rho; = 0.92 on Mesoscopic&nbsp;3T and 0.89 on WM microstructure&nbsp;7T, and 0.94 on both with DECOMPOSE included. Their scores come out about 0.02 xSIM higher, because the model leaves out the non-linear streaking of real inversions.</li>
+            <li><strong>How to read them.</strong> Ground-truth inputs give an upper bound on what each method can do. They favour methods that trust their inputs voxel by voxel: with exact inputs, a closed-form solve has nothing to correct, while regularised methods pay for their smoothing. L3 is the realistic comparison. Both levels are scored against the same ground truth, over the same full brain mask, with every method at its default settings.</li>
+            <li><strong>Toggles.</strong> The MEGRE+MESE / GRE-only toggle is available under both input levels. Under L3, the GRE-only estimators read the same noisy GRE magnitude with the eroded mask, and the same estimator supplies R2&prime; as under ground-truth inputs. Tuned parameters are shown only under ground-truth inputs, where they were optimised.</li>
+            <li><strong>More detail:</strong> the degradation model is described in qsm-forward&rsquo;s <a href="https://github.com/astewartau/qsm-forward#degraded-derived-inputs" class="text-emerald-600 hover:underline">Degraded derived inputs</a> section, and implemented in <a href="https://github.com/astewartau/qsm-forward/blob/main/qsm_forward/degrade.py" class="text-emerald-600 hover:underline"><code>qsm_forward/degrade.py</code></a>.</li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Per-echo &chi; for DECOMPOSE</h3>
+          <p class="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">DECOMPOSE takes a QSM reconstructed at each echo, and separates the sources from how &chi; changes with echo time. The datasets ship one at both input levels:</p>
+          <ul class="mt-2 list-disc pl-5 space-y-1 text-gray-600 dark:text-gray-400 leading-relaxed">
+            <li><strong>Ground-truth inputs:</strong> the true &chi;, plus the echo dependence that a per-echo STAR-QSM reconstruction finds in the noiseless signal. The same reconstruction of a perfectly linear phase is subtracted, so STAR-QSM&rsquo;s own echo dependence cancels and only the tissue&rsquo;s remains.</li>
+            <li><strong>Realistic inputs (L3):</strong> each echo is degraded like &chi;<sub>total</sub>, with its own noise, plus a smooth per-echo drift calibrated so that the echo dependence matches that of real per-echo pipelines.</li>
+            <li><strong>Ridani 3T anisotropic:</strong> its phase is linear in echo time, so the per-echo &chi; is the same map at every echo.</li>
+          </ul>
+          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">On Mesoscopic&nbsp;3T, DECOMPOSE scores slightly higher on the L3 per-echo &chi; than on the best real per-echo pipeline (mean &chi;&#8314;/&chi;&#8315; xSIM 0.263 against 0.254). This is part of L3&rsquo;s slight optimism, and it is in DECOMPOSE&rsquo;s favour. The DECOMPOSE (QSM.rs) entry reads the per-echo &chi; once QSM-CI moves to the next QSMxT release; until then it is given &chi;<sub>total</sub> at every echo.</p>
         </div>
         <div>
           <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">The datasets</h3>
@@ -926,29 +945,40 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
           <ul class="mt-2 list-disc pl-5 space-y-1 text-gray-600 dark:text-gray-400 leading-relaxed">
             <li><strong>Myelin:</strong> myelinated axons modelled as hollow cylinders, with three water compartments (<a href="https://doi.org/10.1073/pnas.1211075109" class="text-emerald-600 hover:underline">Wharton &amp; Bowtell, 2012</a>).</li>
             <li><strong>Iron:</strong> iron-rich spheres, mostly in 3&nbsp;&micro;m clusters with a share at ferritin scale.</li>
+            <li><strong>Calcification:</strong> the head model&rsquo;s calcification is a purely diamagnetic source, &chi;&#8315; = &minus;3.3&nbsp;ppm (Marques et&nbsp;al., 2021, SIM2), simulated as solid diamagnetic spheres with no water inside.</li>
             <li><strong>Water diffusion:</strong> simulated by Monte Carlo through that geometry.</li>
           </ul>
           <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed">Relaxivity, fibre-orientation effects and the shape of the decay all come out of the simulation rather than being put in. The paramagnetic relaxivity that results is about 140&nbsp;Hz/ppm at 3&nbsp;T, close to the in-vivo calibration of <a href="https://doi.org/10.1016/j.neuroimage.2021.118371" class="text-emerald-600 hover:underline">Shin et&nbsp;al. (2021)</a>. In white matter, both the field and R2&prime; depend on fibre orientation, as they do in real tissue. The &chi;&#8315; that is scored is the orientation-independent myelin susceptibility. The orientation-dependent apparent &chi;&#8315; is published alongside it. The look-up tables behind the simulation are <a href="https://huggingface.co/datasets/qsmxt/qsm-forward-mesoscopic-luts" class="text-emerald-600 hover:underline">published on Hugging Face</a>.</p>
           <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed"><strong>WM microstructure 7T</strong> stresses the same physics at high field. Here white-matter orientation effects are stronger, and several methods&rsquo; 3&nbsp;T assumptions no longer hold.</p>
-          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed"><strong>Ridani 3T anisotropic</strong> reproduces the published phantom of Ridani et&nbsp;al. (2026), so results are comparable with that paper. R2&prime; is fitted from the signal, as for the other datasets. Its relaxation model is simpler than real tissue: iron relaxes only outside white matter, and myelin only inside it, with an orientation-dependent relaxivity.</p>
+          <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed"><strong>Ridani 3T anisotropic</strong> reproduces the published phantom of Ridani et&nbsp;al. (2026), so results are comparable with that paper. R2&prime; is fitted from the signal, as for the other datasets. Its relaxation model is simpler than real tissue: iron relaxes only outside white matter, and myelin only inside it, with an orientation-dependent relaxivity. The published phantom has no calcification, so this dataset has none either.</p>
           <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed"><strong>Retired datasets.</strong> Ridani 3T isotropic, Ridani 7T anisotropic and the 7&nbsp;T multicompartment phantom are retired: they no longer appear on the leaderboard, and their past results are kept in QSM-CI&rsquo;s results file. The 7&nbsp;T Ridani set duplicated the 3&nbsp;T one for most methods, and the multicompartment phantom&rsquo;s white-matter model was the same as one submitted method&rsquo;s.</p>
         </div>
         <div>
           <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Scoring</h3>
           <ul class="mt-2 list-disc pl-5 space-y-1 text-gray-600 dark:text-gray-400 leading-relaxed">
-            <li><strong>Metrics:</strong> &chi;&#8314; and &chi;&#8315; are scored separately with xSIM, NRMSE (also detrended), correlation, and the per-ROI mean squared percentage error of Ridani et&nbsp;al. (2026).</li>
-            <li><strong>Why separately:</strong> &chi;&#8315; is consistently the harder map, and a combined score would hide that.</li>
+            <li><strong>Headline, split error</strong> (ppb, lower is better). Each method is given &chi;<sub>total</sub>, and most keep it, so an error in &chi;&#8314; comes with the opposite error in &chi;&#8315;. Scoring the two maps separately would count that one error twice. The split error, &frac12;[(&chi;&#8314; error) + (|&chi;&#8315;| error)] at each voxel, is susceptibility put in the wrong source. The <em>total error</em>, shown beside it, is the error in &chi;&#8314;&nbsp;&minus;&nbsp;|&chi;&#8315;|, which mostly comes from the inputs. Both are RMS values with each tissue class (iron nuclei, thalamus, white matter, cortical grey matter, CSF, veins) weighted equally, so the iron nuclei, under 2&nbsp;% of the brain, count as much as white matter. The leaderboard is sorted by split error, lowest first.</li>
+            <li><strong>Region calibration:</strong> the slope and offset of estimated against true region means: &chi;&#8314; over the iron nuclei, and &chi;&#8315; over the white-matter fibre bundles and the iron nuclei. A slope of 1 and an offset of 0 are ideal.</li>
+            <li><strong>Leakage:</strong> a whole-brain regression of each map on the other source&rsquo;s truth (0 is ideal), and the excess of each source over its truth where the other source dominates (&chi;&#8315; in the iron nuclei, where true |&chi;&#8315;| is 10&ndash;30&nbsp;ppb, and &chi;&#8314; in white matter).</li>
+            <li><strong>Secondary metrics:</strong> &chi;&#8314; and &chi;&#8315; are also scored separately with xSIM, NRMSE (also detrended) and correlation, and with the per-ROI mean squared percentage error of Ridani et&nbsp;al. (2026), which compares region means and so is comparable with that paper. xSIM is averaged over the whole brain, where 86&nbsp;% of voxels have &chi;&#8314; below 0.01&nbsp;ppm, so it is lenient to scale errors. The Ridani MSPE scores &chi;&#8315; in white matter only, so it does not see false &chi;&#8315; in the iron nuclei.</li>
             <li><strong>Sign convention:</strong> &chi;&#8315; is stored and shown as a positive magnitude.</li>
-            <li><strong>Baselines:</strong> two closed-form baselines are listed but not ranked as methods. The null baseline solves &chi;<sub>total</sub> and R2&prime; per voxel with one fixed relaxivity; the Ridani baseline inverts that phantom&rsquo;s region-split model. A method shows separation skill by beating them.</li>
+            <li><strong>Baselines:</strong> two closed-form baselines are listed and ranked with their numbers, like every method. The null baseline solves &chi;<sub>total</sub> and R2&prime; per voxel with one fixed relaxivity; the Ridani baseline inverts that phantom&rsquo;s region-split model. A method shows separation skill by beating them.</li>
           </ul>
         </div>
         <div>
           <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Caveats</h3>
           <ul class="mt-2 list-disc pl-5 space-y-1 text-gray-600 dark:text-gray-400 leading-relaxed">
-            <li><strong>Ground-truth inputs favour voxel-by-voxel methods.</strong> With exact &chi;<sub>total</sub>, field and R2&prime;, a closed-form solve has nothing to correct, while regularised methods pay for their smoothing, so the baselines can score close to the best methods. Use the realistic-inputs (L3) view for comparisons that reflect real data.</li>
             <li><strong>Learning-based methods</strong> were trained on in-vivo labels (&chi;-sepnet) or on maps derived from another method (SUSEP-Net), at particular field strengths and relaxivities. Results on a 7&nbsp;T or simulated dataset say little about their in-vivo performance.</li>
             <li><strong>DECOMPOSE</strong> depends on how phase evolves within a voxel over the echoes. That echo dependence appears only if water inside an iron or myelin source precesses as the method&rsquo;s model assumes, and only for sources weak enough not to wrap within the echo train. In the mesoscopic datasets, built with standard physics, it is small. Its scores should be read with that in mind.</li>
             <li><strong>Relaxivity matters.</strong> Methods assume different relaxivities: about 114, 142 or 324&nbsp;Hz/ppm at 3&nbsp;T. Part of the spread between methods reflects how close each assumption is to the tissue&rsquo;s effective value, rather than separation quality.</li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Known simplifications</h3>
+          <ul class="mt-2 list-disc pl-5 space-y-1 text-gray-600 dark:text-gray-400 leading-relaxed">
+            <li>The realistic inputs leave out the non-linear streaking of real dipole inversions, including the streaks around calcifications.</li>
+            <li>The realistic inputs are calibrated at 3&nbsp;T on one head anatomy.</li>
+            <li>The mesoscopic phantoms have no vessels.</li>
+            <li>In the iron-rich nuclei, the iron in the simulation adds more R2 than the head model leaves room for. The water&rsquo;s own R2 is held at the CSF value there rather than lowered further, so R2 in those nuclei is slightly higher than in the head model.</li>
           </ul>
         </div>
         <div>
@@ -959,7 +989,7 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
           <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Citations</h3>
           <ul class="mt-2 list-disc pl-5 space-y-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
             <li><strong>Separation phantom:</strong> Ridani D., De&nbsp;Leener B., Alonso-Ortiz E. &ldquo;A realistic in-silico brain phantom for quantifying susceptibility anisotropy-induced error in susceptibility separation.&rdquo; <em>Magn Reson Med</em> 2026. <a href="https://doi.org/10.1002/mrm.70468" class="text-emerald-600 hover:underline">doi:10.1002/mrm.70468</a>.</li>
-            <li><strong>Head model:</strong> Marques J.P., Meineke J., Milovic C., et&nbsp;al. &ldquo;QSM reconstruction challenge 2.0: a realistic in silico head phantom for MRI data simulation and evaluation of susceptibility mapping procedures.&rdquo; <em>Magn Reson Med</em> 2021;86(1):526&ndash;542. <a href="https://doi.org/10.1002/mrm.28716" class="text-emerald-600 hover:underline">doi:10.1002/mrm.28716</a>.</li>
+            <li><strong>Head model and calcification susceptibility (SIM2):</strong> Marques J.P., Meineke J., Milovic C., et&nbsp;al. &ldquo;QSM reconstruction challenge 2.0: a realistic in silico head phantom for MRI data simulation and evaluation of susceptibility mapping procedures.&rdquo; <em>Magn Reson Med</em> 2021;86(1):526&ndash;542. <a href="https://doi.org/10.1002/mrm.28716" class="text-emerald-600 hover:underline">doi:10.1002/mrm.28716</a>.</li>
             <li><strong>&chi;-separation model &amp; D<sub>r</sub>:</strong> Shin H.G., Lee J., Yun Y.H., et&nbsp;al. &ldquo;&chi;-separation: Magnetic susceptibility source separation toward iron and myelin mapping in the brain.&rdquo; <em>NeuroImage</em> 2021;240:118371. <a href="https://doi.org/10.1016/j.neuroimage.2021.118371" class="text-emerald-600 hover:underline">doi:10.1016/j.neuroimage.2021.118371</a>.</li>
             <li><strong>Static-dephasing regime:</strong> Yablonskiy D.A., Haacke E.M. &ldquo;Theory of NMR signal behavior in magnetically inhomogeneous tissues: the static dephasing regime.&rdquo; <em>Magn Reson Med</em> 1994;32(6):749&ndash;763. <a href="https://doi.org/10.1002/mrm.1910320610" class="text-emerald-600 hover:underline">doi:10.1002/mrm.1910320610</a>.</li>
             <li><strong>DECOMPOSE:</strong> Chen J., et&nbsp;al. &ldquo;Decompose QSM to sub-voxel diamagnetic and paramagnetic components based on gradient-echo MRI data.&rdquo; <em>NeuroImage</em> 2021;242:118477. <a href="https://doi.org/10.1016/j.neuroimage.2021.118477" class="text-emerald-600 hover:underline">doi:10.1016/j.neuroimage.2021.118477</a>.</li>
@@ -1044,7 +1074,6 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
                 <tr @click="go(r)" @keydown.enter.prevent="go(r)" @keydown.space.prevent="go(r)" role="link" :tabindex="r.status==='DNF' ? -1 : 0" :aria-disabled="r.status==='DNF'" class="group cursor-pointer" :class="(r.status==='DNF' ? 'opacity-50 ' : '') + (r.variant==='tuned' ? 'tuned-row' : '')">
                   <td class="px-4 py-3 text-right tabular-nums text-gray-400 sticky left-0 bg-white group-hover:bg-emerald-50/40" style="min-width:4rem"><span x-text="i+1"></span><span x-show="rankDelta(r.slug,i)!==0" :class="rankDelta(r.slug,i)>0?'text-emerald-600':'text-rose-400'" class="ml-0.5 text-[10px] font-semibold align-top" :title="rankDelta(r.slug,i)>0 ? ('up '+rankDelta(r.slug,i)+' vs default') : ('down '+Math.abs(rankDelta(r.slug,i))+' vs default')" x-text="(rankDelta(r.slug,i)>0?'▲':'▼')+Math.abs(rankDelta(r.slug,i))"></span></td>
                   <td class="px-5 py-3 text-left font-medium text-gray-900 sticky bg-white group-hover:bg-emerald-50/40" style="left:4rem">
-                    <span class="mr-1.5 inline-block w-5 text-center" x-text="invMedal(i)"></span>
                     <span x-text="r.name"></span>
                     <span x-show="r.status==='DNF'" class="ml-2 rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold text-gray-500">DNF</span>
                   </td>
@@ -1741,7 +1770,7 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
       const CHI_STAGES = new Set(["dipole", "bfr+dipole", "end-to-end"]);
 
       return {
-        METRICS, STAGE_LABEL, MEDALS, fmt, val, INVIVO_COLS,
+        METRICS, STAGE_LABEL, fmt, val, INVIVO_COLS,
         runs: [], registry: {}, algos: [], datasetsReg: {}, loading: true, _ready: false,
         loadError: "",   // set when the results index can't be fetched; rendered as a banner at the top
         // dataset (top level) + section tab state
@@ -1769,12 +1798,15 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
         // composed runs), plus the natively GRE-only methods that never read R2′.
         chisepCondition: "full",
         // Input level: 'gt' = the phantom's true local field / χ / mask (rows without an `inputs` field);
-        // 'l3' = qsm-forward's realistic degraded inputs (rows with inputs: "l3", ids ending -l3),
-        // isolated at defaults only. The GRE-only grid and the Findings stay on the ground-truth inputs.
+        // 'l3' = qsm-forward's realistic degraded inputs (rows with inputs: "l3", ids ending -l3), at
+        // defaults only: the isolated runs and the GRE-only grid (generator R2′ in place of the L3 R2′).
+        // The Findings stay on the ground-truth inputs.
         chisepInputs: "gt",
         chisepGenVariant: "default",   // R2' generators table pill (display-only; combos stay default)
-        chisepSort: "avg_mspe", chisepDir: "asc", chisepColMenu: false, chisepCols: CHISEP_COLS,
-        chisepSelectedCols: ["avg_mspe", "para_mspe", "dia_mspe", "avg_ndt", "para_nrmse_detrend", "dia_nrmse_detrend", "runtime_s"],
+        // Headline: region-weighted split error (ascending), with the total error beside it; the
+        // Ridani MSPE and xSIM stay as columns. Shared by both input levels (gt / L3).
+        chisepSort: "split_rms_rw", chisepDir: "asc", chisepColMenu: false, chisepCols: CHISEP_COLS,
+        chisepSelectedCols: ["split_rms_rw", "total_rms_rw", "split_rms", "avg_mspe", "avg", "para_dgm_slope", "dia_wm_slope", "dia_fe_excess", "runtime_s"],
         invivoSortKey: "nrmse", invivoDir: "asc",   // in-vivo default sort: COSMOS NRMSE (2016 headline)
         invivoColMenu: false, invivoSelectedCols: INVIVO_COLS.map((c) => c.key),   // in-vivo metric column picker (all shown by default)
         // findings state
@@ -2061,14 +2093,18 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
         // preferred combo is missing or DNF'd, as a practitioner would), plus the natively GRE-only
         // methods' isolated runs (default variant; combos have no tuned pass). Every scored
         // (generator × method) combo remains in the Findings figure and the CSV export.
+        // Realistic inputs (L3): the same two conditions at defaults only (no tuned runs). Its GRE-only
+        // view uses the SAME generator ranking as the ground-truth view (chisepGenRanking, from the
+        // generators' one scoring against the true R2′): a generator reads only the GRE magnitude,
+        // identical at both levels, so the champion is a property of the phantom, and both boards
+        // then compare the same GRE-only pipeline, differing only by the derived inputs.
         _chisepBoard() {
-          // Realistic inputs (L3): one isolated run per method at its defaults (no tuned or GRE-only runs).
-          if (this.chisepInputs === "l3")
-            return this._chisepL3().filter((r) => r.mode === "isolated" && r.stage === "chi-separation"
-                                                  && (r.variant || "default") === "default");
-          const pool = this._chisep();
-          if (this.chisepCondition !== "greonly")
-            return this.pickVariant(pool.filter((r) => r.mode === "isolated" && r.stage === "chi-separation"));
+          const l3 = this.chisepInputs === "l3";
+          const pool = l3 ? this._chisepL3() : this._chisep();
+          if (this.chisepCondition !== "greonly") {
+            const iso = pool.filter((r) => r.mode === "isolated" && r.stage === "chi-separation");
+            return l3 ? iso.filter((r) => (r.variant || "default") === "default") : this.pickVariant(iso);
+          }
           const order = this.chisepGenRanking();
           const rank = (r) => { const i = order.indexOf(this.chisepGenOf(r)); return i < 0 ? 1e9 : i; };
           const bySlug = {};
@@ -3346,10 +3382,19 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
         // avg / avg_ndt / avg_mspe are derived columns (DERIVED_METRICS): the mean of a para_/dia_ pair,
         // with no stored field of their own. metricVal() resolves those and plain keys alike.
         chiVal(r, k) { return metricVal(r, k); },
+        // Sort value: |v − target| for signed metrics with an ideal value (slopes, offsets, excess,
+        // leakage), else the value (metricRankVal).
+        chiRankVal(r, k) { return metricRankVal(r, k); },
+        // Rows scored before the split/total error existed carry no value for it; until a board has
+        // any, sort it by the Ridani MSPE (the previous headline) rather than in arbitrary order.
+        chiSortKey(rows) {
+          const k = this.chisepSort;
+          return rows.some((r) => this.chiVal(r, k) != null) ? k : "avg_mspe";
+        },
         chiFmt(v, key) { return v == null ? ", " : fmt(v, key); },
         chisepDisplayCols() {
           const sel = CHISEP_COLS.filter((c) => this.chisepSelectedCols.includes(c.key));
-          return sel.length ? sel : CHISEP_COLS.filter((c) => c.key === "avg_mspe");
+          return sel.length ? sel : CHISEP_COLS.filter((c) => c.key === "split_rms_rw");
         },
         toggleChisepCol(k) {
           this.chisepSelectedCols = this.chisepSelectedCols.includes(k)
@@ -3368,11 +3413,13 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
           else { this.chisepSort = k; this.chisepDir = (CHISEP_COL[k] || {}).better === "lower" ? "asc" : "desc"; }
         },
         chiSepRows() {
-          const k = this.chisepSort, dir = this.chisepDir === "asc" ? 1 : -1, f = this.filter.toLowerCase();
+          const dir = this.chisepDir === "asc" ? 1 : -1, f = this.filter.toLowerCase();
           // Full: one row per method (Defaults/Tuned toggle). GRE-only: one row per
           // (generator × method) combo + the natively GRE-only methods (see _chisepBoard).
-          return this._chisepBoard().filter((r) => !f || this.chisepRowLabel(r).toLowerCase().includes(f)).slice().sort((a, b) => {
-            const va = this.chiVal(a, k), vb = this.chiVal(b, k);
+          const rows = this._chisepBoard().filter((r) => !f || this.chisepRowLabel(r).toLowerCase().includes(f));
+          const k = this.chiSortKey(rows);
+          return rows.slice().sort((a, b) => {
+            const va = this.chiRankVal(a, k), vb = this.chiRankVal(b, k);
             if (va == null) return 1; if (vb == null) return -1;
             return (va - vb) * dir;
           });
@@ -3402,7 +3449,7 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
         },
         get chisepDefRanks() {
           return _cache("csdef", [this.chisepPhantom, this.chisepSort, this.chisepDir, this.runs.length].join("|"), () =>
-            this._defRanks(this._chisep().filter((r) => r.mode === "isolated" && r.stage === "chi-separation" && (r.variant || "default") === "default"), (a, b) => { const va = this.chiVal(a, this.chisepSort), vb = this.chiVal(b, this.chisepSort); if (va == null) return 1; if (vb == null) return -1; return (va - vb) * (this.chisepDir === "asc" ? 1 : -1); }));
+            ((pool) => { const k = this.chiSortKey(pool); return this._defRanks(pool, (a, b) => { const va = this.chiRankVal(a, k), vb = this.chiRankVal(b, k); if (va == null) return 1; if (vb == null) return -1; return (va - vb) * (this.chisepDir === "asc" ? 1 : -1); }); })(this._chisep().filter((r) => r.mode === "isolated" && r.stage === "chi-separation" && (r.variant || "default") === "default")));
         },
         get invivoDefRanks() {
           return _cache("ivdef", [this.invivoSortKey, this.invivoDir, this.runs.length].join("|"), () =>
@@ -3419,11 +3466,6 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
           else { this.invivoSortKey = k; this.invivoDir = (INVIVO_COL[k] || {}).better === "lower" ? "asc" : "desc"; }
         },
         invFmt(v, key) { return v == null ? ", " : fmt(v, key); },
-        invMedal(i) {
-          const better = (INVIVO_COL[this.invivoSortKey] || {}).better || "higher";
-          const good = this.invivoDir === (better === "lower" ? "asc" : "desc");
-          return good && i < 3 ? MEDALS[i] : "";
-        },
         // A submission DOI belongs to one algorithm, so it follows the row's slug rather than the
         // leaderboard tab. Rows chaining several algorithms carry a composite slug ("a+b+c"), which
         // is not in the registry, so they still resolve to nothing. An end-to-end submission is
@@ -3559,10 +3601,6 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
           else { this.sortKey = k; this.sortDir = METRICS[k]?.better === "lower" ? "asc" : "desc"; }
         },
         fixSort() { if (!this.cols.includes(this.sortKey)) { this.sortKey = "xsim"; this.sortDir = "desc"; } },
-        medal(i) {
-          const good = this.sortDir === (METRICS[this.sortKey]?.better === "lower" ? "asc" : "desc");
-          return good && i < 3 ? MEDALS[i] : "";
-        },
         go(r) { if (r.status !== "DNF") location.href = "submission.html?run=" + encodeURIComponent(r.id); },
 
         // ==================================================================================

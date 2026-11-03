@@ -23,6 +23,8 @@ QSM.rs port), not from running the code:
   dgm_linearity |1 - slope| of region means: 2b -> 1, b + c -> 0, -b -> 2.
 """
 
+import math
+
 import numpy as np
 import pytest
 
@@ -186,3 +188,132 @@ def test_dgm_linearity_known_values():
     assert abs(qe.dgm_linearity(2.0 * x, x, seg) - 1.0) < 1e-9
     assert abs(qe.dgm_linearity(-x, x, seg) - 2.0) < 1e-9
     assert abs(qe.dgm_linearity(np.where(seg > 0, x, 3.0 * x), x, seg)) < 1e-9
+
+
+# ------------------------------------------------------------------ χ-separation: split vs total
+#
+# Synthetic two-source phantom on a 16^3 grid: four tissue classes as slabs (iron nuclei, WM,
+# cortical GM, CSF), χ+ and |χ−| in ppm. Expected numbers follow from the definitions in
+# qsm_eval.chisep_joint_metrics: e_split = ½(Δχ+ + Δ|χ−|), e_tot = Δχ+ − Δ|χ−|, RMS in ppb.
+
+_SHAPE = (16, 16, 16)
+
+
+def _chisep_phantom():
+    seg = np.zeros(_SHAPE, np.int32)
+    seg[0:4], seg[4:8], seg[8:12], seg[12:16] = 2, 8, 9, 10  # pallidus, WM, GM, CSF
+    rng = np.random.default_rng(1)
+    para = np.choose(np.searchsorted([2, 8, 9, 10], seg), [0.14, 0.007, 0.034, 0.03]) \
+        + 0.005 * rng.random(_SHAPE)
+    dia = np.choose(np.searchsorted([2, 8, 9, 10], seg), [0.014, 0.037, 0.024, 0.01]) \
+        + 0.005 * rng.random(_SHAPE)
+    return para, dia, seg, _mask(_SHAPE)
+
+
+def test_chisep_perfect_separation_scores_zero():
+    p, d, seg, m = _chisep_phantom()
+    j = qe.chisep_joint_metrics(p, d, p, d, m, seg)
+    for k in ("split_rms", "split_rms_rw", "total_rms", "total_rms_rw",
+              "dia_fe_excess", "para_wm_excess"):
+        assert abs(j[k]) < 1e-9, k
+    assert abs(j["para_leak"]) < 1e-9 and abs(j["dia_leak"]) < 1e-9
+
+
+def test_chisep_pure_total_error_has_no_split_error():
+    """+δ on χ+ and −δ on |χ−| changes only χ+ − |χ−| (by 2δ): split 0, total 2δ."""
+    p, d, seg, m = _chisep_phantom()
+    delta = 0.004
+    j = qe.chisep_joint_metrics(p + delta, d - delta, p, d, m, seg)
+    assert abs(j["split_rms"]) < 1e-9 and abs(j["split_rms_rw"]) < 1e-9
+    assert j["total_rms"] == pytest.approx(2 * delta * 1e3)
+    assert j["total_rms_rw"] == pytest.approx(2 * delta * 1e3)
+
+
+def test_chisep_pure_swap_is_all_split_error():
+    """δ moved into BOTH χ+ and |χ−| keeps the total: split δ, total 0."""
+    p, d, seg, m = _chisep_phantom()
+    delta = 0.006
+    j = qe.chisep_joint_metrics(p + delta, d + delta, p, d, m, seg)
+    assert j["split_rms"] == pytest.approx(delta * 1e3)
+    assert abs(j["total_rms"]) < 1e-9
+
+
+def test_chisep_split_and_total_decompose_the_per_source_errors():
+    """e+² + e−² = 2·e_split² + ½·e_tot² voxelwise, so the brain RMS obey the same identity."""
+    p, d, seg, m = _chisep_phantom()
+    rng = np.random.default_rng(7)
+    rp, rd = p + 0.01 * rng.standard_normal(_SHAPE), d + 0.01 * rng.standard_normal(_SHAPE)
+    j = qe.chisep_joint_metrics(rp, rd, p, d, m, seg)
+    lhs = np.mean((rp - p) ** 2) + np.mean((rd - d) ** 2)
+    assert 1e-6 * (2 * j["split_rms"] ** 2 + 0.5 * j["total_rms"] ** 2) == pytest.approx(lhs)
+
+
+def test_chisep_region_weighting_gives_each_class_equal_weight():
+    """An error confined to the iron slab: the brain RMS dilutes it by its voxel share, the
+    region-weighted RMS by the class count (4 classes present)."""
+    p, d, seg, m = _chisep_phantom()
+    delta = 0.008
+    rp = p + delta * (seg == 2)
+    rd = d + delta * (seg == 2)           # a swap, inside the iron nuclei only
+    j = qe.chisep_joint_metrics(rp, rd, p, d, m, seg)
+    frac = float((seg == 2).mean())       # 4/16
+    assert j["split_rms"] == pytest.approx(delta * 1e3 * np.sqrt(frac))
+    assert j["split_rms_rw"] == pytest.approx(delta * 1e3 * np.sqrt(1 / 4))
+    # Classes with < CHISEP_REGION_MIN_VOX voxels drop out of the weighting rather than dominating it.
+    seg2 = seg.copy()
+    seg2[0, 0, 0] = 11                    # a single "vein" voxel
+    j2 = qe.chisep_joint_metrics(rp, rd, p, d, m, seg2)
+    assert j2["split_rms_rw"] == pytest.approx(j["split_rms_rw"], rel=1e-3)
+
+
+def test_chisep_regional_excess_measures_excess_over_truth():
+    """False χ− in the iron nuclei / false χ+ in WM, signed, against a non-zero truth there."""
+    p, d, seg, m = _chisep_phantom()
+    rd = d + 0.005 * (seg == 2)
+    rp = p - 0.002 * (seg == 8)
+    j = qe.chisep_joint_metrics(rp, rd, p, d, m, seg)
+    assert j["dia_fe_excess"] == pytest.approx(5.0)
+    assert j["para_wm_excess"] == pytest.approx(-2.0)
+    # the old "mean |recon|" leak would have reported the true |χ−| of the nuclei (~16 ppb) for a
+    # perfect recon; the excess is 0 there
+    assert abs(qe.chisep_joint_metrics(p, d, p, d, m, seg)["dia_fe_excess"]) < 1e-9
+
+
+def test_chisep_calcification_metrics_hidden_without_calcification_chi():
+    p, d, seg, m = _chisep_phantom()
+    seg = seg.copy()
+    seg[6:8, 6:8, 6:8] = 16
+    # tissue-like χ in label 16 (as in the current phantoms): no calcification to score
+    assert not qe.calcification_has_chi(d, seg)
+    assert math.isnan(qe.chisep_joint_metrics(p, d, p, d, m, seg)["para_calc_excess"])
+    md = qe.chisep_metrics(d, d, m, seg, component="dia")
+    assert math.isnan(md["calc_moment_dev"]) and math.isnan(md["calc_streak"])
+    # a real calcification (|χ−| 0.3 ppm) brings them back
+    d2 = np.where(seg == 16, 0.3, d)
+    assert qe.calcification_has_chi(d2, seg)
+    assert abs(qe.chisep_joint_metrics(p, d2, p, d2, m, seg)["para_calc_excess"]) < 1e-9
+    assert not math.isnan(qe.chisep_metrics(d2, d2, m, seg, component="dia")["calc_moment_dev"])
+
+
+def test_chisep_region_calibration_slope_and_offset():
+    """Nuclei means mapped through y = 0.8·x + 0.003 ppm → slope 0.8, offset 3 ppb."""
+    seg = np.zeros(_SHAPE, np.int32)
+    for i, lab in enumerate(qe.DGM_NUCLEI):
+        seg[2 * i:2 * i + 2] = lab
+    truth = 0.02 * seg.astype(float)
+    m = _mask(_SHAPE)
+    s, o = qe.region_calibration(0.8 * truth + 0.003, truth, seg, qe.DGM_NUCLEI, m > 0)
+    assert s == pytest.approx(0.8) and o == pytest.approx(3.0)
+    mp = qe.chisep_metrics(truth, truth, m, seg, component="para")
+    assert mp["dgm_slope"] == pytest.approx(1.0) and abs(mp["dgm_offset"]) < 1e-9
+    md = qe.chisep_metrics(truth, truth, m, seg, component="dia", wm_rois=seg)
+    assert md["wm_slope"] == pytest.approx(1.0) and md["dgm_slope"] == pytest.approx(1.0)
+    # flat truth: nothing to calibrate against
+    assert all(math.isnan(v) for v in qe.region_calibration(truth, np.ones(_SHAPE), seg,
+                                                            qe.DGM_NUCLEI, m > 0))
+
+
+def test_chisep_joint_metrics_nothing_to_score_is_nan():
+    p, d, seg, _ = _chisep_phantom()
+    j = qe.chisep_joint_metrics(p, d, p, d, np.zeros(_SHAPE, np.uint8), seg)
+    assert all(math.isnan(v) for v in j.values())

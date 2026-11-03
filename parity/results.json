@@ -307,18 +307,22 @@
    "dataset": "chisep-mc",
    "track": "released",
    "release": "v10.0.0",
-   "date": "2026-11-01T14:21:04Z",
-   "run_id": "41283680804",
-   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41283680804",
-   "qsmci_commit": "a6c2250e3e6807a8fdecaa450f24a98cf06f75dd",
+   "date": "2026-11-02T06:05:52Z",
+   "run_id": "41371103875",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41371103875",
+   "qsmci_commit": "b96ce036a4bfb0ea27d0d56ecb77cfb218ef00c7",
    "thresholds": "60bf8bd33c70",
    "reference": {
     "slug": "decompose-qsm",
     "image": "ghcr.io/astewartau/qsm-ci/decompose-qsm@sha256:39a91b0435d6729cfd4a8c2441ebad1cbfe45c7358ea6d3ca95a1b65ec0e4033",
-    "digest": "sha256:39a91b0435d6729cfd4a8c2441ebad1cbfe45c7358ea6d3ca95a1b65ec0e4033"
+    "digest": "sha256:39a91b0435d6729cfd4a8c2441ebad1cbfe45c7358ea6d3ca95a1b65ec0e4033",
+    "id": "sha256:39a91b0435d6729cfd4a8c2441ebad1cbfe45c7358ea6d3ca95a1b65ec0e4033"
    },
    "candidate": {
-    "slug": "decompose-qsmrs"
+    "slug": "decompose-qsmrs",
+    "image": "qsmxt-under-test:41371103875",
+    "digest": "sha256:4b06d4c7b1a81c8dac906dc1ecfd15dadab4556d1da24d46b4ed49afffeabe12",
+    "qsmxt": "qsmxt 10.0.0"
    },
    "qsmrs": {
     "ref": null,
@@ -329,9 +333,42 @@
     "ref": "v10.0.0",
     "commit": "544ef94708904ec84e4f20128a22e99568e08687"
    },
-   "result": "error",
+   "dropped_settings": [
+    "unwrap_phase"
+   ],
+   "set": {
+    "candidate": {
+     "chi_bound": 0.5
+    }
+   },
+   "result": "fail",
+   "metrics": {
+    "chi-para": {
+     "kind": "continuous",
+     "nrmse": 143.9510547969469,
+     "correlation": 0.47795302070191953,
+     "max_abs": 0.22582211262853136,
+     "p99_abs": 0.10449389186493935,
+     "nonfinite": 0
+    },
+    "chi-dia": {
+     "kind": "continuous",
+     "nrmse": 41.795813510402716,
+     "correlation": 0.8966536383581811,
+     "max_abs": 0.29634490609166525,
+     "p99_abs": 0.03881223827600496,
+     "nonfinite": 0
+    }
+   },
    "failed": [
-    "no comparison: the job failed or was cancelled before `compare` ran"
+    "chi-para correlation 0.478 (limit >= 0.988)",
+    "chi-para max_abs 0.2258 ppm (limit <= 0.0561 ppm)",
+    "chi-para nrmse 144% (limit <= 5.9%)",
+    "chi-para p99_abs 0.1045 ppm (limit <= 0.00255 ppm)",
+    "chi-dia correlation 0.8967 (limit >= 0.988)",
+    "chi-dia max_abs 0.2963 ppm (limit <= 0.0442 ppm)",
+    "chi-dia nrmse 41.8% (limit <= 5.14%)",
+    "chi-dia p99_abs 0.03881 ppm (limit <= 0.0051 ppm)"
    ]
   },
   {

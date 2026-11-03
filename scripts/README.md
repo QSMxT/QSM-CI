@@ -47,6 +47,7 @@ How each shipped dataset was made; re-run only to rebuild one.
 | `combo_sweep.py` | Joint (BFR → dipole) sweep: does a dipole method's isolated-tuned value survive being chained behind a real BFR? → `results/combo_sweep.json` |
 | `combo_sweep_report.py` | Per-cell isolated-vs-in-combination report for the joint sweep |
 | `prune_stale_tuned.py` | Drops `tuned` runs from `results/index.json` whose declared tuned value no longer exists in the method's `algorithm.yml` (tested by `tests/test_prune_stale_tuned.py`) |
+| `rescore_chisep.py` | Recomputes the χ-separation metrics of rows already in `results/index.json` from their published source maps (`volumes.recon` / `recon-dia`) and a local copy of the phantom, without re-running any method (`index --phantom … --dataset … [--write]`); `pair` scores one χ+/χ− pair on disk (tested by `tests/test_chisep_joint_wiring.py`) |
 
 ## Diagnostics
 
