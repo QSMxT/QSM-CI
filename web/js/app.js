@@ -137,8 +137,11 @@ const MOON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor
 //          ("MSPE" under a "χ+ paramagnetic" heading, where the standalone label is "χ+ MSPE").
 //   grp    the reference tier on the in-vivo board's two-tier header. Only the χ33 keys carry it:
 //          an unsuffixed key there is scored against COSMOS (see INVIVO_COLS in results.html).
+//   target the ideal value of a signed metric (1 for a calibration slope, 0 for an offset, excess or
+//          leakage slope): tables then sort and rank by the distance |v − target| (metricRankVal),
+//          while still showing v. A key without `target` ranks by its value.
 const METRICS = {
-  mspe:            { label: "MSPE",             unit: "%", better: "lower",  dp: 1,
+  mspe:            { label: "Ridani MSPE",      unit: "%", better: "lower",  dp: 1,
     desc: "Mean squared percentage error of ROI means (Ridani et al., MRM 2026): a per-region quantification-bias metric, comparable to the paper's published χ-separation numbers." },
   mev:             { label: "MEV",              unit: "%", better: "lower",  dp: 1,
     desc: "Maximum error variation (Ridani et al. 2026, Fig 5): the fractional drop in χ− error from fibres parallel to B0 to perpendicular. High = strongly orientation-dependent error; a diagnostic, not a ranking metric." },
@@ -166,9 +169,9 @@ const METRICS = {
     desc: "High-Frequency Error Norm (%): error in a Laplacian-of-Gaussian high-pass of the map, i.e. how well fine edges/detail are recovered relative to the ground truth. 0 = perfect. The classic 2016 QSM Reconstruction Challenge fine-detail metric." },
   coverage:        { label: "Coverage",         unit: "",  better: "higher", dp: 3,
     desc: "Fraction of the brain mask where the method produced a finite, non-zero value. Every metric is scored over the whole mask, so an eroded rim or a failed region counts as error; coverage says how much of a score drop is missing brain rather than wrong values. 1 = the full mask." },
-  para_leak:       { label: "χ−→χ+ leak",       unit: "",  better: "lower",  dp: 3,
+  para_leak:       { label: "χ−→χ+ leak",       unit: "",  better: "lower",  dp: 3, target: 0,
     desc: "Whole-brain regression slope of χ+ on the χ− ground truth: the fraction of diamagnetic signal bleeding into the paramagnetic map. 0 = clean; positive = χ− bleeds into χ+; negative = over-separation (χ+ suppressed where χ− is strong). Unlike xSIM it isn't fooled by the shared R2' common mode." },
-  dia_leak:        { label: "χ+→χ− leak",       unit: "",  better: "lower",  dp: 3,
+  dia_leak:        { label: "χ+→χ− leak",       unit: "",  better: "lower",  dp: 3, target: 0,
     desc: "Whole-brain regression slope of χ− on the χ+ ground truth: the fraction of paramagnetic signal bleeding into the diamagnetic map. 0 = clean; positive = χ+ bleeds into χ−; negative = over-separation (χ− suppressed where χ+ is strong). Unlike xSIM it isn't fooled by the shared R2' common mode." },
   runtime_s:       { label: "Runtime",          unit: "s", better: "lower",  dp: 1,
     desc: "Wall-clock time to produce this output; for a combined pipeline, the sum of its field-mapping, background-removal and dipole-inversion stages. Measured on GitHub-hosted runners (≈4 vCPU, 16 GB RAM, no GPU, so learning-based methods run on CPU); treat it as relative speed, not an absolute benchmark." },
@@ -180,8 +183,28 @@ const METRICS = {
   // χ-separation: a method outputs a paramagnetic (χ+) and a diamagnetic (χ−) map, so the accuracy
   // metrics above are scored per source and stored under a para_/dia_ prefix. para_leak / dia_leak
   // are the cross-contamination terms and sit above, with the keys they can also appear beside.
-  para_mspe:           { label: "χ+ MSPE",          unit: "%", better: "lower",  dp: 1, short: "MSPE",
-    desc: "Per-ROI MSPE of χ+ (mean squared %-error of ROI means) over the iron nuclei + GM. WM excluded (χ+ ~1 ppb → unstable %). Lower is better." },
+  // The split/total error keys need both sources (qsm_eval.chisep_joint_metrics, whose comments give
+  // the definitions and the reasoning).
+  split_rms_rw:        { label: "Split error",      unit: " ppb", better: "lower", dp: 1,
+    desc: "RMS separation error, weighted by region (ppb). Per voxel, the split error is ½[(χ+ est − true) + (|χ−| est − true)]: the part of the error that moves susceptibility between χ+ and χ− while leaving χ+ − |χ−| alone. It does not count error in the total itself (an input error a method puts entirely into one source counts half here). A method that keeps the total exactly has this one error in both maps, which per-source metrics count twice. The mean squared error is taken in each tissue class (iron nuclei, thalamus, white matter, cortical grey matter, CSF, veins), the classes are averaged with equal weight, and the root is taken, so the iron nuclei (under 2 % of the brain) count as much as white matter. 0 = perfect. Lower is better." },
+  total_rms_rw:        { label: "Total error",      unit: " ppb", better: "lower", dp: 1,
+    desc: "RMS error of the total χ+ − |χ−| against the true total (ppb), weighted by region like the split error. This part does not depend on how the method divides χ between the sources: it comes from the inputs or from the method changing the total it was given. With ground-truth inputs a method that keeps the total it was given scores near 0 (a few ppb on the mesoscopic phantoms, where the χ map carries orientation-dependent χ− that the scored χ− leaves out). Lower is better." },
+  split_rms:           { label: "Split error (brain)", unit: " ppb", better: "lower", dp: 1,
+    desc: "RMS split error over the whole brain mask, every voxel weighted equally (ppb). Dominated by white and cortical grey matter, where χ+ is near 0; the region-weighted split error is the headline. Lower is better." },
+  total_rms:           { label: "Total error (brain)", unit: " ppb", better: "lower", dp: 1,
+    desc: "RMS error of the total χ+ − |χ−| over the whole brain mask, every voxel weighted equally (ppb). Lower is better." },
+  para_mspe:           { label: "χ+ Ridani MSPE",   unit: "%", better: "lower",  dp: 1, short: "Ridani MSPE",
+    desc: "Per-ROI mean squared percentage error of χ+ (Ridani et al., MRM 2026): for each region, the squared relative error of the region's MEAN χ+, averaged over the iron nuclei and cortical grey matter. Comparable to the paper's numbers. Blind spots: errors that cancel within a region, and white matter (left out because χ+ there is near 0). Lower is better." },
+  para_correlation:    { label: "χ+ correlation",   unit: "",  better: "higher", dp: 3, short: "Corr.",
+    desc: "Pearson correlation of the χ+ map with its ground truth within the brain mask. 1 = perfect. Higher is better." },
+  para_dgm_slope:      { label: "χ+ DGM slope",     unit: "",  better: "lower",  dp: 2, short: "DGM slope", target: 1,
+    desc: "Slope of estimated vs true mean χ+ across the six iron nuclei (a line fitted through the region means). 1 = correct contrast between nuclei; below 1 = iron under-estimated in proportion. Ranked by distance from 1." },
+  para_dgm_offset:     { label: "χ+ DGM offset",    unit: " ppb", better: "lower", dp: 1, short: "DGM offset", target: 0,
+    desc: "Offset of that line (ppb): a χ+ bias shared by all the iron nuclei. 0 = none. Ranked by distance from 0." },
+  para_wm_excess:      { label: "χ+ excess in WM",  unit: " ppb", better: "lower", dp: 1, short: "WM excess", target: 0,
+    desc: "Mean of (estimated − true) χ+ in white matter (ppb), where myelin dominates: diamagnetic signal turned into false χ+, or χ+ suppressed there if negative. 0 = none. Ranked by distance from 0." },
+  para_calc_excess:    { label: "χ+ excess in Ca",  unit: " ppb", better: "lower", dp: 1, short: "Ca excess", target: 0,
+    desc: "Mean of (estimated − true) χ+ in the calcification (ppb): calcium turned into false χ+. Shown only for datasets whose calcification carries χ. 0 = none. Ranked by distance from 0." },
   para_xsim:           { label: "χ+ xSIM",          unit: "",  better: "higher", dp: 3, short: "xSIM",
     desc: "Structural similarity of the χ+ (paramagnetic, iron) map vs ground truth. Higher is better." },
   para_nrmse:          { label: "χ+ NRMSE",         unit: "%", better: "lower",  dp: 1, short: "NRMSE",
@@ -194,10 +217,20 @@ const METRICS = {
     desc: "|1 − slope| of χ+ across DGM iron regions; 0 = perfect iron quantification. Lower is better." },
   para_nrmse_blood:    { label: "χ+ vein NRMSE",    unit: "%", better: "lower",  dp: 1, short: "Vein NRMSE",
     desc: "χ+ error in venous blood (%). Lower is better." },
-  para_calc_leak:      { label: "χ+ Ca leak",       unit: "",  better: "lower",  dp: 3, short: "Ca leak",
-    desc: "Mean |χ+| in the calcification (should be ~0): calcium wrongly bleeding into the paramagnetic map. Lower is better." },
-  dia_mspe:            { label: "χ− MSPE",          unit: "%", better: "lower",  dp: 1, short: "MSPE",
-    desc: "Per-ROI MSPE of χ− over the fibre-bundle atlas WM sub-ROIs (Ridani et al. 2026, Fig 3): the metric anisotropy makes hardest. Lower is better." },
+  dia_mspe:            { label: "χ− Ridani MSPE",   unit: "%", better: "lower",  dp: 1, short: "Ridani MSPE",
+    desc: "Per-ROI mean squared percentage error of χ− (Ridani et al., MRM 2026, Fig 3): for each white-matter fibre bundle, the squared relative error of the bundle's MEAN χ−, averaged over the bundles. Comparable to the paper's numbers. Blind spots: it looks only at white matter, so false χ− in the iron nuclei goes unseen, and errors that cancel within a bundle. Lower is better." },
+  dia_correlation:     { label: "χ− correlation",   unit: "",  better: "higher", dp: 3, short: "Corr.",
+    desc: "Pearson correlation of the χ− map with its ground truth within the brain mask. 1 = perfect. Higher is better." },
+  dia_wm_slope:        { label: "χ− WM slope",      unit: "",  better: "lower",  dp: 2, short: "WM slope", target: 1,
+    desc: "Slope of estimated vs true mean |χ−| across the white-matter fibre bundles (a line fitted through the bundle means). 1 = correct myelin contrast; below 1 = flattened. Ranked by distance from 1." },
+  dia_wm_offset:       { label: "χ− WM offset",     unit: " ppb", better: "lower", dp: 1, short: "WM offset", target: 0,
+    desc: "Offset of that line (ppb): a |χ−| bias shared by all the bundles. 0 = none. Ranked by distance from 0." },
+  dia_dgm_slope:       { label: "χ− DGM slope",     unit: "",  better: "lower",  dp: 2, short: "DGM slope", target: 1,
+    desc: "Slope of estimated vs true mean |χ−| across the six iron nuclei, whose true |χ−| is 10–30 ppb, not 0. 1 = correct. The true range is narrow, so read it with the offset. Ranked by distance from 1." },
+  dia_dgm_offset:      { label: "χ− DGM offset",    unit: " ppb", better: "lower", dp: 1, short: "DGM offset", target: 0,
+    desc: "Offset of that line (ppb): a |χ−| bias shared by the iron nuclei. 0 = none. Ranked by distance from 0." },
+  dia_fe_excess:       { label: "χ− excess in iron", unit: " ppb", better: "lower", dp: 1, short: "Fe excess", target: 0,
+    desc: "Mean of (estimated − true) |χ−| in the six iron nuclei (ppb): iron turned into false χ−, or χ− dropped there if negative. Measured against the true |χ−| there, which is 10–30 ppb, not 0. 0 = none. Ranked by distance from 0." },
   dia_xsim:            { label: "χ− xSIM",          unit: "",  better: "higher", dp: 3, short: "xSIM",
     desc: "Structural similarity of the χ− (diamagnetic, myelin/calcium) map vs ground truth. Higher is better." },
   dia_nrmse:           { label: "χ− NRMSE",         unit: "%", better: "lower",  dp: 1, short: "NRMSE",
@@ -205,13 +238,11 @@ const METRICS = {
   dia_nrmse_detrend:   { label: "χ− detr. NRMSE",   unit: "%", better: "lower",  dp: 1,
     desc: "χ− NRMSE after correcting a global linear scale (independent of a method's assumed Dr). The map anisotropy makes hardest. Lower is better." },
   dia_calc_moment_dev: { label: "χ− Ca dev",        unit: "",  better: "lower",  dp: 3, short: "Ca dev",
-    desc: "Deviation of the recovered calcification's susceptibility moment. Lower is better." },
+    desc: "Deviation of the recovered calcification's susceptibility moment. Shown only for datasets whose calcification carries χ. Lower is better." },
   dia_calc_streak:     { label: "χ− streak",        unit: "",  better: "lower",  dp: 3, short: "Streaking",
-    desc: "Streaking-artifact level around the calcification. Lower is better." },
+    desc: "Streaking-artifact level around the calcification. Shown only for datasets whose calcification carries χ. Lower is better." },
   dia_mev:             { label: "χ− MEV",           unit: "%", better: "lower",  dp: 1, short: "MEV",
     desc: "Maximum error variation (Ridani et al. 2026, Fig 5): fractional drop in χ− error from fibres parallel to B0 to perpendicular. High = strongly orientation-dependent; a diagnostic, not a ranking metric." },
-  dia_iron_leak:       { label: "χ− Fe leak",       unit: "",  better: "lower",  dp: 3, short: "Fe leak",
-    desc: "Mean |χ−| in DGM/veins (should be ~0): iron wrongly bleeding into the diamagnetic map. Lower is better." },
 
   // In vivo (2016 challenge): every method is scored against TWO references, so pipeline.py merges a
   // second copy of the accuracy metrics under an `_sti` suffix. The unsuffixed keys above carry the
@@ -246,8 +277,8 @@ const PREFERRED = METRIC_ORDER.filter((k) => !RESOURCE_COLS.includes(k));
 // missing. `from` names the pair to average; metricMeta()/metricVal() then treat stored and derived
 // keys alike, so a table orders, formats, sorts and ranks them without caring which it has.
 const DERIVED_METRICS = {
-  avg_mspe: { label: "Avg MSPE", unit: "%", better: "lower", dp: 1, from: ["para_mspe", "dia_mspe"],
-    desc: "Mean of the χ+ and χ− per-ROI MSPE (Ridani et al. 2026), the headline metric, comparable to the paper's published numbers. Lower is better." },
+  avg_mspe: { label: "Avg Ridani MSPE", unit: "%", better: "lower", dp: 1, from: ["para_mspe", "dia_mspe"],
+    desc: "Mean of the χ+ and χ− per-ROI MSPE of Ridani et al. (MRM 2026): the squared relative error of region MEANS, χ+ over the iron nuclei and cortex, χ− over the white-matter fibre bundles. Comparable to the paper's numbers. Blind spots: false χ− in the iron nuclei (χ− is scored in white matter only), errors that cancel within a region, and, because the given total ties the two maps together, one mis-division is counted in both. Lower is better." },
   avg_ndt:  { label: "Avg detr. NRMSE", unit: "%", better: "lower", dp: 1, from: ["para_nrmse_detrend", "dia_nrmse_detrend"],
     desc: "Mean of the χ+ and χ− linearly-detrended NRMSE: a voxelwise source-separation error, scale-independent (fair to a method's assumed Dr) and, unlike xSIM, sensitive to the magnitude error white-matter anisotropy induces. Lower is better." },
   avg:      { label: "Avg xSIM", unit: "", better: "higher", dp: 3, from: ["para_xsim", "dia_xsim"],
@@ -256,6 +287,13 @@ const DERIVED_METRICS = {
 
 // Display metadata for any column key, stored or derived; null for a key with neither.
 function metricMeta(key) { return METRICS[key] || DERIVED_METRICS[key] || null; }
+
+// Sort/rank value of a column key: |v − target| for a signed metric with an ideal value (see `target`
+// above), else the value itself. Shown values still come from metricVal().
+function metricRankVal(run, key) {
+  const v = metricVal(run, key), t = (metricMeta(key) || {}).target;
+  return v == null || t == null ? v : Math.abs(v - t);
+}
 
 // Value of any column key for a run: a derived key is the mean of its stored pair (null unless the
 // whole pair is present), anything else is the stored field.
@@ -280,11 +318,14 @@ function metricColumns(keys, grouped) {
 // Column order for the two leaderboards that score something other than a single χ map against a
 // single ground truth. Both resolve against the registry above via metricColumns().
 const CHISEP_ORDER = [
+  "split_rms_rw", "total_rms_rw", "split_rms", "total_rms",
   "avg_mspe", "para_mspe", "dia_mspe", "avg_ndt", "avg",
-  "para_xsim", "para_nrmse", "para_nrmse_detrend", "para_nrmse_dgm", "para_dgm_linearity",
-  "para_nrmse_blood", "para_calc_leak", "para_leak",
-  "dia_xsim", "dia_nrmse", "dia_nrmse_detrend", "dia_calc_moment_dev", "dia_calc_streak",
-  "dia_mev", "dia_iron_leak", "dia_leak",
+  "para_xsim", "para_nrmse", "para_nrmse_detrend", "para_correlation",
+  "para_dgm_slope", "para_dgm_offset", "para_nrmse_dgm", "para_dgm_linearity", "para_nrmse_blood",
+  "para_wm_excess", "para_calc_excess", "para_leak",
+  "dia_xsim", "dia_nrmse", "dia_nrmse_detrend", "dia_correlation",
+  "dia_wm_slope", "dia_wm_offset", "dia_dgm_slope", "dia_dgm_offset",
+  "dia_fe_excess", "dia_calc_moment_dev", "dia_calc_streak", "dia_mev", "dia_leak",
   "runtime_s",
 ];
 const INVIVO_ORDER = [
@@ -302,7 +343,6 @@ const STAGE_LABEL = {
   "chi-separation": "Source separation",
   "r2prime-generation": "R2′ estimation",
 };
-const MEDALS = ["🥇", "🥈", "🥉"];
 
 async function loadRuns() {
   // Like loadRegistry(): check res.ok before parsing. A 404/5xx body isn't JSON, and letting
@@ -710,5 +750,5 @@ function injectChrome() {
 document.addEventListener("DOMContentLoaded", injectChrome);
 
 // Exposed for module scripts (e.g. the NiiVue viewer, which must be a module for `import`).
-window.QSM = { GH, METRICS, METRIC_ORDER, STAGE_LABEL, MEDALS, loadRuns, loadAlgos, loadDatasets, loadRegistry, loadRepro, loadReproRegions, loadReproGroups, reproGroupOf, loadRunRegions, doiFor, val, fmt, fmtDuration, fmtBytes, metricCols, metricMeta, metricVal, metricColumns, robustRange, heatScale, heatText, REGION_ORDER,
+window.QSM = { GH, METRICS, METRIC_ORDER, STAGE_LABEL, loadRuns, loadAlgos, loadDatasets, loadRegistry, loadRepro, loadReproRegions, loadReproGroups, reproGroupOf, loadRunRegions, doiFor, val, fmt, fmtDuration, fmtBytes, metricCols, metricMeta, metricVal, metricColumns, robustRange, heatScale, heatText, REGION_ORDER,
   reproScannerLabel, reproScannerLong, reproScannerColour, reproProtoLabel, reproSubjectLabel, reproAcquisitions, reproSubjects, reproTargets };

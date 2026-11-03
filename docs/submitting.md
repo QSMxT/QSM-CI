@@ -70,6 +70,7 @@ GRE magnitude alone, for the GRE-only condition) and `brain-extraction` (a mask 
 are isolated-only; a generated `r2prime` is additionally composed with each R2′-consuming
 χ-separation method. A `chi-separation` method is also scored on realistic inputs (L3): the same
 artifacts with the errors of a typical real QSM pipeline added, so it needs no change to take part.
+The GRE-only composition runs at both levels: at L3 the generated `r2prime` replaces the L3 one.
 See [`../CONTRACT.md`](../CONTRACT.md).
 
 ## 2. Provide your code + an environment (you don't bake an image)

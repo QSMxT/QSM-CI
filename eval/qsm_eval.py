@@ -337,18 +337,59 @@ def mev_from_profile(profile) -> float:
     return (occ[0] - occ[-1]) / occ[0] * 100.0
 
 
+# dseg labels of the deep-grey-matter nuclei (caudate, pallidus, putamen, red nucleus, dentate,
+# substantia nigra): the iron-rich, χ+-dominated region, and where a false χ− (iron mistaken for
+# myelin) shows up.
+DGM_NUCLEI = [1, 2, 3, 4, 5, 6]
+
+# A calcification counts as present only if its true χ− is calcification-like. The current χ-sep
+# phantoms keep the head model's label 16 but give it ordinary tissue χ (|χ−| ≈ 5 ppb in meso-3t),
+# so the calcification metrics would score a lesion that isn't there; they report NaN (hidden on the
+# leaderboard) until a dataset carries a real one. 0.05 ppm is well above any tissue |χ−| in these
+# phantoms (WM ≈ 0.037) and well below a real calcification (−0.1 to −2 ppm).
+CALC_MIN_CHI = 0.05
+
+
+def calcification_has_chi(truth_dia, seg, mask=None) -> bool:
+    """True when label 16 exists and its mean true |χ−| (positive magnitude) reaches CALC_MIN_CHI."""
+    calc = seg == 16
+    if mask is not None:
+        calc &= mask > 0
+    return bool(calc.any()) and float(np.mean(truth_dia[calc])) >= CALC_MIN_CHI
+
+
+def region_calibration(recon, truth, labels, ids, sel_mask, min_vox=10) -> tuple[float, float]:
+    """(slope, offset in ppb) of the least-squares line recon_mean = slope·truth_mean + offset over the
+    ROI means of `ids` (like the QSM track's dgm_linearity, but reporting the slope itself and the
+    offset). 1 and 0 are ideal: slope < 1 is an under-estimated contrast between regions, the offset a
+    bias common to all of them. NaN when fewer than two ROIs qualify or the true means are all equal
+    (no contrast to calibrate against)."""
+    tm, rm = [], []
+    for lab in ids:
+        sel = (labels == lab) & sel_mask
+        if int(sel.sum()) < min_vox:
+            continue
+        tm.append(float(truth[sel].mean()))
+        rm.append(float(recon[sel].mean()))
+    if len(tm) < 2 or np.ptp(tm) < 1e-12:
+        return math.nan, math.nan
+    slope, offset = linear_fit(np.array(tm), np.array(rm))
+    return slope, offset * 1e3
+
+
 def chisep_metrics(recon, truth, mask, seg=None, component="para", wm_rois=None, theta=None) -> dict:
-    """Metrics for one χ-separation source map.
+    """Metrics for ONE χ-separation source map; the metrics that need both sources at once (split vs
+    total error, leakage) are in `chisep_joint_metrics`.
 
     `component` is 'para' (χ+, paramagnetic — iron in deep gray matter and venous blood) or 'dia' (χ−,
-    diamagnetic — calcification/myelin, stored as a POSITIVE magnitude). Because χ-separation isolates
-    the sources, the QSM region metrics apply to the source that owns each feature: χ+ carries the DGM
-    iron and venous blood; χ− carries the calcification. The base agreement set
+    diamagnetic — myelin and calcification, stored as a POSITIVE magnitude). The base agreement set
     (nrmse/nrmse_detrend/correlation/xsim) is always reported; with a segmentation we add:
-      χ+ : nrmse_dgm, dgm_linearity, nrmse_blood, calc_leak  (calcium wrongly bleeding INTO χ+)
-      χ− : calc_moment_dev, calc_streak, iron_leak           (iron/veins wrongly bleeding INTO χ−)
-    'leak' is the mean |recon| in the region owned by the OTHER source (which should be ~0 here) — a
-    direct cross-contamination / separation-fidelity measure, lower is better."""
+      χ+ : nrmse_dgm, dgm_linearity, dgm_slope/dgm_offset, nrmse_blood, mspe
+      χ− : wm_slope/wm_offset (needs wm_rois), dgm_slope/dgm_offset, mspe (needs wm_rois),
+           calc_moment_dev/calc_streak (only when the calcification carries χ), mspe_theta/mev
+    The *_slope/*_offset pairs are the region calibration (`region_calibration`): χ+ over the iron
+    nuclei, χ− over the white-matter fibre bundles and over the nuclei, whose true |χ−| is 10–30 ppb
+    rather than 0, so a method that drops χ− there, or adds iron to it, is caught."""
     out = field_metrics(recon, truth, mask)
     if seg is None:
         return out
@@ -357,32 +398,34 @@ def chisep_metrics(recon, truth, mask, seg=None, component="para", wm_rois=None,
     # they need the shared "nothing to score" gate to answer NaN with everything else.
     nothing = _no_scoreable_voxels(recon, truth, mask)
     seg = np.rint(seg).astype(np.int32)
-    dgm = m & np.isin(seg, [1, 2, 3, 4, 5, 6])
+    dgm = m & np.isin(seg, DGM_NUCLEI)
     blood = (dilate_mask_3d((m & (seg == 11)).astype(np.uint8)) > 0) & m
-    calc = m & (seg == 16)
-
-    def leak(sel):  # contamination: mean |recon| where this source should be ~0
-        return float(np.abs(recon[sel]).mean()) if sel.any() else math.nan
 
     if component == "para":
         _, out["nrmse_dgm"] = nrmse_challenge(recon, truth, dgm)
         out["dgm_linearity"] = math.nan if nothing else dgm_linearity(recon, truth, seg)
+        out["dgm_slope"], out["dgm_offset"] = (
+            (math.nan, math.nan) if nothing else region_calibration(recon, truth, seg, DGM_NUCLEI, m))
         _, out["nrmse_blood"] = nrmse_challenge(recon, truth, blood)
-        out["calc_leak"] = leak(calc)
         # Paper per-ROI MSPE over the iron nuclei + GM (χ+ quantification target).
         out["mspe"] = roi_mspe(recon, truth, seg, MSPE_PARA_ROIS, m)
     else:  # dia — χ− is a positive magnitude; flip sign so the calcification reads negative
-        dev, streak = ((math.nan, math.nan) if nothing
-                       else calcification_metrics(-recon, -truth, seg))
+        if nothing or not calcification_has_chi(truth, seg, mask):
+            dev, streak = math.nan, math.nan
+        else:
+            dev, streak = calcification_metrics(-recon, -truth, seg)
         out["calc_moment_dev"] = dev
         out["calc_streak"] = streak
-        out["iron_leak"] = leak(dgm | blood)
+        out["dgm_slope"], out["dgm_offset"] = (
+            (math.nan, math.nan) if nothing else region_calibration(recon, truth, seg, DGM_NUCLEI, m))
         # Paper per-ROI MSPE over the fibre-bundle atlas WM sub-ROIs (χ− anisotropy target, Fig 3).
         wm_bundles = None
         if wm_rois is not None:
             wr = np.rint(wm_rois).astype(np.int32)
             ids = sorted(set(np.unique(wr[m])) - {0})
             out["mspe"] = roi_mspe(recon, truth, wr, ids, m)
+            out["wm_slope"], out["wm_offset"] = (
+                (math.nan, math.nan) if nothing else region_calibration(recon, truth, wr, ids, m))
             wm_bundles = m & (wr > 0)
         # Orientation dependence (Fig 5): θ-binned χ− MSPE profile + MEV, over the WM fibre bundles
         # (or all WM if no atlas). Needs the fibre-to-B0 angle map θ. Captures the paper's effect and
@@ -395,6 +438,121 @@ def chisep_metrics(recon, truth, mask, seg=None, component="para", wm_rois=None,
                 prof = theta_binned_mspe(recon, truth, np.asarray(theta, np.float64), wmm)
                 out["mspe_theta"] = prof
                 out["mev"] = mev_from_profile(prof)
+    return out
+
+
+# --- χ-separation: metrics that need BOTH sources -------------------------------------------------
+#
+# Why split vs total error. A χ-separation method is handed χ_total (or the local field) and, in most
+# methods, reproduces it: χ+ − |χ−| ≈ χ_total. Its error then has two independent parts:
+#   - a TOTAL error, (χ+ − |χ−|)_est − (χ+ − |χ−|)_true, inherited from the inputs or the dipole fit
+#     and shared by any method fed the same χ_total; and
+#   - a SPLIT error, the part of the error that moves susceptibility between the sources while
+#     leaving the total alone — the thing χ-separation is for.
+# With signed sources (χ− ≤ 0, so χ−_signed = −|χ−|) the per-voxel errors are e+ = Δχ+ and
+# e− = Δχ−_signed = −Δ|χ−|, and
+#     e_tot   = e+ + e−                       = Δχ+ − Δ|χ−|
+#     e_split = ½ (e+ − e−)                    = ½ (Δχ+ + Δ|χ−|)
+# so e+ = e_split + ½e_tot and e− = −e_split + ½e_tot. The two are orthogonal (e+² + e−² =
+# 2·e_split² + ½·e_tot²). A method that keeps the total exactly has e+ = −e− = e_split: one error,
+# which per-source metrics (χ+ NRMSE and χ− NRMSE, or χ+ and χ− MSPE) count twice. A pure swap (δ
+# moved from χ− into χ+, or iron called myelin) has e_tot = 0 and e_split = δ. A total error shared
+# evenly between the signed sources (e+ = e− = ½e_tot) has no split part; one a method puts wholly
+# into χ+ contributes ½|e_tot| to it. So with realistic (erroneous) inputs the split error also
+# measures how a method distributes an input error between the sources, which is a separation
+# decision; e_split itself never counts the change in the total.
+#
+# The true total is taken as χ+_true − |χ−|_true rather than the shipped chimap so the decomposition
+# is exact. On meso-3t/wm-micro-7t the chimap differs from it in white matter by the orientation-
+# dependent part of the apparent χ− (≈ 6 ppb RMS over the brain), because χ− is scored against the
+# orientation-independent myelin χ; a method that reproduces chimap exactly carries that as total
+# error, which is correct for the sources it is scored on and does not touch e_split.
+#
+# Why RMS in ppb, region-weighted. ~86 % of brain voxels have χ+ < 0.01 ppm and the iron nuclei are
+# < 2 % of the brain, so a plain brain RMS is set by white and cortical grey matter. The headline is
+# therefore region-weighted: the mean squared error is taken within each tissue class of
+# CHISEP_REGION_CLASSES, the classes are averaged with equal weight, and the root is taken
+# (sqrt(mean_k MSE_k)). Iron nuclei and WM count as much as cortex. The plain brain RMS is reported
+# beside it. Unlike xSIM (fixed c1/c2 constants, averaged over a mostly near-zero background) this
+# penalises scale errors at full strength, and unlike the Ridani MSPE (relative error of ROI MEANS,
+# χ− over WM bundles only) it sees false χ− inside the iron nuclei and errors that cancel in a mean.
+CHISEP_REGION_CLASSES = {
+    "dgm_nuclei": DGM_NUCLEI,  # iron nuclei (χ+-dominated; true |χ−| 10–30 ppb)
+    "thalamus": [7],           # mixed iron + myelin
+    "wm": [8],                 # myelin (χ−-dominated)
+    "cortical_gm": [9],
+    "csf": [10],
+    "veins": [11],             # venous blood (strongly χ+)
+}
+CHISEP_REGION_MIN_VOX = 50  # a class with fewer voxels in the mask is left out of the weighting
+
+
+def _rms_ppb(e) -> float:
+    return float(np.sqrt(np.mean(e * e))) * 1e3 if e.size else math.nan
+
+
+def _region_weighted_rms_ppb(e, seg, m) -> float:
+    mses = []
+    for ids in CHISEP_REGION_CLASSES.values():
+        sel = m & np.isin(seg, ids)
+        if int(sel.sum()) >= CHISEP_REGION_MIN_VOX:
+            mses.append(float(np.mean(e[sel] ** 2)))
+    return float(np.sqrt(np.mean(mses))) * 1e3 if mses else math.nan
+
+
+def chisep_joint_metrics(rec_para, rec_dia, gt_para, gt_dia, mask, seg=None) -> dict:
+    """Metrics of a χ-separation run that need both sources (all maps in ppm, χ− as a POSITIVE
+    magnitude, as in the outputs and the ground truth).
+
+      split_rms / split_rms_rw    RMS of e_split over the brain / region-weighted (ppb)
+      total_rms / total_rms_rw    RMS of e_tot over the brain / region-weighted (ppb)
+      para_leak / dia_leak        whole-brain regression slope of each recon on the OTHER source's
+                                  truth, controlling for its own (recon ≈ a·GT_same + b·GT_other + c;
+                                  b reported): the fraction of the other source bleeding in
+      dia_fe_excess               mean(|χ−|_est − |χ−|_true) in the iron nuclei (ppb): false χ−
+                                  where iron dominates (the true |χ−| there is not 0)
+      para_wm_excess              mean(χ+_est − χ+_true) in white matter (ppb): false χ+ where myelin
+                                  dominates
+      para_calc_excess            mean(χ+_est − χ+_true) in the calcification (ppb); NaN unless the
+                                  calcification carries χ (see CALC_MIN_CHI)
+    The *_excess terms are signed (0 ideal; negative = that source under-estimated there). The
+    region-weighted RMS and the regional terms need `seg`; without it only the brain RMS and the
+    regression slopes are reported. See the block comment above for the definitions."""
+    m = mask > 0
+    if _no_scoreable_voxels(rec_para, gt_para, mask) or _no_scoreable_voxels(rec_dia, gt_dia, mask):
+        keys = ["split_rms", "total_rms", "para_leak", "dia_leak"]
+        if seg is not None:
+            keys += ["split_rms_rw", "total_rms_rw", "dia_fe_excess", "para_wm_excess", "para_calc_excess"]
+        return {k: math.nan for k in keys}
+    # Same policy as score_arrays: a non-finite recon voxel counts as 0 against the truth.
+    rp = np.where(m & np.isfinite(rec_para), rec_para, 0.0)
+    rd = np.where(m & np.isfinite(rec_dia), rec_dia, 0.0)
+    gp = np.where(m, gt_para, 0.0)
+    gd = np.where(m, gt_dia, 0.0)
+    dp, dd = rp - gp, rd - gd                 # Δχ+, Δ|χ−|
+    e_split = 0.5 * (dp + dd)
+    e_tot = dp - dd
+    out = {"split_rms": _rms_ppb(e_split[m]), "total_rms": _rms_ppb(e_tot[m])}
+
+    def slope(recon, same, other):
+        A = np.c_[same[m], other[m], np.ones(int(m.sum()))]
+        return float(np.linalg.lstsq(A, recon[m], rcond=None)[0][1])
+
+    out["para_leak"] = slope(rp, gp, gd)    # χ− (diamagnetic) bleeding INTO the χ+ map
+    out["dia_leak"] = slope(rd, gd, gp)     # χ+ (paramagnetic) bleeding INTO the χ− map
+    if seg is None:
+        return out
+    seg = np.rint(seg).astype(np.int32)
+    out["split_rms_rw"] = _region_weighted_rms_ppb(e_split, seg, m)
+    out["total_rms_rw"] = _region_weighted_rms_ppb(e_tot, seg, m)
+
+    def excess(d, sel):
+        return float(d[sel].mean()) * 1e3 if sel.any() else math.nan
+
+    out["dia_fe_excess"] = excess(dd, m & np.isin(seg, DGM_NUCLEI))
+    out["para_wm_excess"] = excess(dp, m & (seg == 8))
+    out["para_calc_excess"] = (excess(dp, m & (seg == 16)) if calcification_has_chi(gd, seg, mask)
+                               else math.nan)
     return out
 
 

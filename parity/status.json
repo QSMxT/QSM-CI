@@ -20,13 +20,14 @@
    },
    "stale": [
     "iharperella",
-    "decompose",
+    "fit-ppm-complex",
     "tgv",
     "lsqr",
     "heidi"
    ],
    "rerun": [
     "iharperella",
+    "fit-ppm-complex",
     "tgv",
     "lsqr",
     "heidi"
@@ -405,29 +406,33 @@
      "algorithm": "fit-ppm-complex",
      "reference": "fit-ppm-complex-cornell",
      "candidate": "fit-ppm-complex-qsmrs",
-     "enabled": false,
-     "state": "off",
+     "enabled": true,
+     "state": "stale",
      "anchor": "pair-fit-ppm-complex",
      "datasets": [
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": null,
-       "rerun": false,
-       "stale": false,
-       "reasons": []
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
       },
       {
        "dataset": "sim",
        "last": null,
-       "rerun": false,
-       "stale": false,
-       "reasons": []
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "not run against QSMxT v10.0.0"
+       ]
       }
      ],
-     "note": "intermediates only (ifreq_raw, n_std, r2star); unmeasured until QSMxT/QSMxT#462",
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=fit-ppm-complex -f dataset=configured -f qsmxt_release=v10.0.0",
      "badge": {
-      "kind": "off",
-      "message": "not enabled",
+      "kind": "unchecked",
+      "message": "not checked \u00b7 v10.0.0",
       "color": "lightgrey"
      }
     },
@@ -477,15 +482,15 @@
      "reference": "decompose-qsm",
      "candidate": "decompose-qsmrs",
      "enabled": true,
-     "state": "stale",
+     "state": "current",
      "anchor": "pair-decompose",
      "datasets": [
       {
        "dataset": "chisep-mc",
        "last": {
-        "date": "2026-11-01T14:21:04Z",
-        "result": "error",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41283680804",
+        "date": "2026-11-02T06:05:52Z",
+        "result": "fail",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41371103875",
         "qsmrs": {
          "ref": null,
          "commit": "42ab620190ad315c9dcf7aa8ec4a036402002b7e",
@@ -494,24 +499,24 @@
         "qsmxt": {
          "commit": "544ef94708904ec84e4f20128a22e99568e08687"
         },
-        "nrmse": null,
-        "max_abs": null,
-        "correlation": null,
+        "nrmse": 143.9510547969469,
+        "max_abs": 0.29634490609166525,
+        "correlation": 0.47795302070191953,
         "dice": null,
         "release": "v10.0.0",
-        "why": "no comparison: the job failed or was cancelled before `compare` ran"
+        "dropped_settings": [
+         "unwrap_phase"
+        ],
+        "why": "chi-para correlation 0.478 (limit >= 0.988)"
        },
        "rerun": false,
-       "stale": true,
-       "reasons": [
-        "the run against v10.0.0 ended without a result"
-       ]
+       "stale": false,
+       "reasons": []
       }
      ],
-     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=decompose -f dataset=configured -f qsmxt_release=v10.0.0",
      "badge": {
       "kind": "failing",
-      "message": "failing \u00b7 v10.0.0",
+      "message": "failing \u00b7 v10.0.0 \u00b7 no unwrap_phase",
       "color": "red"
      }
     },
@@ -1582,26 +1587,12 @@
      }
     },
     {
-     "pair": "prelude",
-     "state": "no-original",
-     "enabled": false,
-     "anchor": "pair-prelude",
-     "covers": "PRELUDE (`unwrap_prelude`)",
-     "note": "clean-room by design",
-     "datasets": [],
-     "badge": {
-      "kind": "no-original",
-      "message": "no original",
-      "color": "lightgrey"
-     }
-    },
-    {
      "pair": "slicewise-unwrap",
      "state": "no-original",
      "enabled": false,
      "anchor": "pair-slicewise-unwrap",
      "covers": "slice-wise (2D) unwrapping (`unwrap_slicewise`, `unwrap_slicewise_multi_echo`)",
-     "note": null,
+     "note": "QSM.rs's own wrapper (any unwrapper per slice, plus an inter-echo 2\u03c0 pass)",
      "datasets": [],
      "badge": {
       "kind": "no-original",
@@ -1615,7 +1606,7 @@
      "enabled": false,
      "anchor": "pair-robust-fit",
      "covers": "robust echo combination (`multi_echo_robust_fit`)",
-     "note": null,
+     "note": "QSM.rs's own IRLS fit (Tukey/Huber loss, one robust scale over the mask)",
      "datasets": [],
      "badge": {
       "kind": "no-original",
@@ -1629,7 +1620,7 @@
      "enabled": false,
      "anchor": "pair-motion-correction",
      "covers": "motion correction (`motion`)",
-     "note": null,
+     "note": "QSM.rs's own rigid registration (NCC, Powell, pyramid) and complex-domain resampling",
      "datasets": [],
      "badge": {
       "kind": "no-original",
@@ -1643,7 +1634,7 @@
      "enabled": false,
      "anchor": "pair-morphology",
      "covers": "erosion / dilation, closing (`erode_mask`, `dilate_mask`, `morphological_close`)",
-     "note": null,
+     "note": "set definitions, no authored algorithm; identical to scipy.ndimage",
      "datasets": [],
      "badge": {
       "kind": "no-original",
@@ -1686,6 +1677,7 @@
     "iharperella",
     "star",
     "medi",
+    "fit-ppm-complex",
     "amp-pe",
     "decompose",
     "chisep-ilsqr",
@@ -1739,9 +1731,9 @@
        "stale": true,
        "reasons": [
         "reference image changed: checked sha256:e0e8bc6957c5, algorithm.yml pins sha256:01f36e868bca",
-        "QSM.rs main changed `src/pipeline/config.rs`, `src/pipeline/qsmart.rs`, `src/pipeline/rules.rs`, `src/utils/n4.rs` \u2026 since the checked 15c938f (15 commits)",
+        "QSM.rs main changed `src/bgremove/sdf.rs`, `src/inversion/ilsqr.rs`, `src/pipeline/config.rs`, `src/pipeline/qsmart.rs` \u2026 since the checked 15c938f (18 commits)",
         "the pair's settings or limits for this dataset changed since",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` \u2026 since the checked 9cfe3f9 (8 commits)"
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` \u2026 since the checked 9cfe3f9 (9 commits)"
        ]
       },
       {
@@ -1766,9 +1758,9 @@
        "stale": true,
        "reasons": [
         "reference image changed: checked sha256:e0e8bc6957c5, algorithm.yml pins sha256:01f36e868bca",
-        "QSM.rs main changed `src/pipeline/config.rs`, `src/pipeline/qsmart.rs`, `src/pipeline/rules.rs`, `src/utils/n4.rs` \u2026 since the checked 15c938f (15 commits)",
+        "QSM.rs main changed `src/bgremove/sdf.rs`, `src/inversion/ilsqr.rs`, `src/pipeline/config.rs`, `src/pipeline/qsmart.rs` \u2026 since the checked 15c938f (18 commits)",
         "the pair's settings or limits for this dataset changed since",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` \u2026 since the checked 9cfe3f9 (8 commits)"
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` \u2026 since the checked 9cfe3f9 (9 commits)"
        ]
       }
      ],
@@ -1842,8 +1834,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/bgremove/vsharp.rs`, `src/pipeline/rules.rs` since the checked 15c938f (15 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (8 commits)"
+        "QSM.rs main changed `src/bgremove/vsharp.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (9 commits)"
        ]
       },
       {
@@ -1867,8 +1859,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/bgremove/vsharp.rs`, `src/pipeline/rules.rs` since the checked 15c938f (15 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (8 commits)"
+        "QSM.rs main changed `src/bgremove/vsharp.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (9 commits)"
        ]
       }
      ],
@@ -1934,8 +1926,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (15 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (8 commits)"
+        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (9 commits)"
        ]
       },
       {
@@ -1959,8 +1951,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (15 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (8 commits)"
+        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (9 commits)"
        ]
       }
      ],
@@ -2001,8 +1993,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (15 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (8 commits)"
+        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (9 commits)"
        ]
       },
       {
@@ -2026,8 +2018,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (15 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (8 commits)"
+        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (9 commits)"
        ]
       }
      ],
@@ -2043,27 +2035,31 @@
      "algorithm": "fit-ppm-complex",
      "reference": "fit-ppm-complex-cornell",
      "candidate": "fit-ppm-complex-qsmrs",
-     "enabled": false,
-     "state": "off",
+     "enabled": true,
+     "state": "stale",
      "anchor": "pair-fit-ppm-complex",
      "datasets": [
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": null,
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
       },
       {
        "dataset": "sim",
        "last": null,
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "never checked"
+       ]
       }
      ],
-     "note": "intermediates only (ifreq_raw, n_std, r2star); unmeasured until QSMxT/QSMxT#462",
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=fit-ppm-complex -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "off",
-      "message": "not enabled",
+      "kind": "unchecked",
+      "message": "not yet checked",
       "color": "lightgrey"
      }
     },
@@ -2097,8 +2093,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (15 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (8 commits)"
+        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (9 commits)"
        ]
       }
      ],
@@ -2140,10 +2136,10 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs`, `src/separation/decompose.rs` since the checked 15c938f (15 commits)",
+        "QSM.rs main changed `src/pipeline/rules.rs`, `src/separation/decompose.rs` since the checked 15c938f (18 commits)",
         "the pair's settings or limits for this dataset changed since",
         "the last check failed: chi-para correlation 0.4743 (limit >= 0.988)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `src/cli.rs`, `src/commands/separate.rs` since the checked 9cfe3f9 (8 commits)"
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `src/cli.rs`, `src/commands/separate.rs` since the checked 9cfe3f9 (9 commits)"
        ]
       }
      ],
@@ -2234,8 +2230,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked 15c938f (15 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `src/cli.rs`, `src/commands/separate.rs` since the checked 9cfe3f9 (8 commits)"
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `src/cli.rs`, `src/commands/separate.rs` since the checked 9cfe3f9 (9 commits)"
        ]
       }
      ],
@@ -2276,8 +2272,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (15 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (8 commits)"
+        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (9 commits)"
        ]
       },
       {
@@ -2301,8 +2297,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (15 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (8 commits)"
+        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (9 commits)"
        ]
       }
      ],
@@ -2343,8 +2339,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (15 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (8 commits)"
+        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (9 commits)"
        ]
       },
       {
@@ -2368,8 +2364,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (15 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (8 commits)"
+        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (9 commits)"
        ]
       }
      ],
@@ -2410,8 +2406,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (15 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (8 commits)"
+        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (9 commits)"
        ]
       },
       {
@@ -2435,8 +2431,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (15 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (8 commits)"
+        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (9 commits)"
        ]
       }
      ],
@@ -2477,8 +2473,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (15 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (8 commits)"
+        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (9 commits)"
        ]
       },
       {
@@ -2502,8 +2498,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (15 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (8 commits)"
+        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (9 commits)"
        ]
       }
      ],
@@ -2544,8 +2540,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (15 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (8 commits)"
+        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (9 commits)"
        ]
       },
       {
@@ -2569,8 +2565,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (15 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (8 commits)"
+        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (9 commits)"
        ]
       }
      ],
@@ -2611,8 +2607,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (15 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (8 commits)"
+        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (9 commits)"
        ]
       },
       {
@@ -2636,8 +2632,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (15 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (8 commits)"
+        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked 9cfe3f9 (9 commits)"
        ]
       }
      ],
@@ -2678,8 +2674,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked 15c938f (15 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (8 commits)"
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (9 commits)"
        ]
       },
       {
@@ -2703,8 +2699,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked 15c938f (15 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (8 commits)"
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (9 commits)"
        ]
       }
      ],
@@ -2745,8 +2741,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/bgremove/vsharp.rs`, `src/pipeline/rules.rs` since the checked 15c938f (15 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (8 commits)"
+        "QSM.rs main changed `src/bgremove/vsharp.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (9 commits)"
        ]
       },
       {
@@ -2770,8 +2766,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/bgremove/vsharp.rs`, `src/pipeline/rules.rs` since the checked 15c938f (15 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (8 commits)"
+        "QSM.rs main changed `src/bgremove/vsharp.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked 9cfe3f9 (9 commits)"
        ]
       }
      ],
@@ -2878,8 +2874,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/rules.rs` since the checked 15c938f (15 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` \u2026 since the checked 9cfe3f9 (8 commits)"
+        "QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` \u2026 since the checked 9cfe3f9 (9 commits)"
        ]
       },
       {
@@ -2903,8 +2899,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/rules.rs` since the checked 15c938f (15 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` \u2026 since the checked 9cfe3f9 (8 commits)"
+        "QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` \u2026 since the checked 9cfe3f9 (9 commits)"
        ]
       }
      ],
@@ -2945,8 +2941,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/rules.rs` since the checked 15c938f (15 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` \u2026 since the checked 9cfe3f9 (8 commits)"
+        "QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` \u2026 since the checked 9cfe3f9 (9 commits)"
        ]
       },
       {
@@ -2970,8 +2966,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/rules.rs` since the checked 15c938f (15 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` \u2026 since the checked 9cfe3f9 (8 commits)"
+        "QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/rules.rs` since the checked 15c938f (18 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` \u2026 since the checked 9cfe3f9 (9 commits)"
        ]
       }
      ],
@@ -3110,26 +3106,12 @@
      }
     },
     {
-     "pair": "prelude",
-     "state": "no-original",
-     "enabled": false,
-     "anchor": "pair-prelude",
-     "covers": "PRELUDE (`unwrap_prelude`)",
-     "note": "clean-room by design",
-     "datasets": [],
-     "badge": {
-      "kind": "no-original",
-      "message": "no original",
-      "color": "lightgrey"
-     }
-    },
-    {
      "pair": "slicewise-unwrap",
      "state": "no-original",
      "enabled": false,
      "anchor": "pair-slicewise-unwrap",
      "covers": "slice-wise (2D) unwrapping (`unwrap_slicewise`, `unwrap_slicewise_multi_echo`)",
-     "note": null,
+     "note": "QSM.rs's own wrapper (any unwrapper per slice, plus an inter-echo 2\u03c0 pass)",
      "datasets": [],
      "badge": {
       "kind": "no-original",
@@ -3143,7 +3125,7 @@
      "enabled": false,
      "anchor": "pair-robust-fit",
      "covers": "robust echo combination (`multi_echo_robust_fit`)",
-     "note": null,
+     "note": "QSM.rs's own IRLS fit (Tukey/Huber loss, one robust scale over the mask)",
      "datasets": [],
      "badge": {
       "kind": "no-original",
@@ -3157,7 +3139,7 @@
      "enabled": false,
      "anchor": "pair-motion-correction",
      "covers": "motion correction (`motion`)",
-     "note": null,
+     "note": "QSM.rs's own rigid registration (NCC, Powell, pyramid) and complex-domain resampling",
      "datasets": [],
      "badge": {
       "kind": "no-original",
@@ -3171,7 +3153,7 @@
      "enabled": false,
      "anchor": "pair-morphology",
      "covers": "erosion / dilation, closing (`erode_mask`, `dilate_mask`, `morphological_close`)",
-     "note": null,
+     "note": "set definitions, no authored algorithm; identical to scipy.ndimage",
      "datasets": [],
      "badge": {
       "kind": "no-original",
@@ -3320,7 +3302,7 @@
   "decompose": [
    {
     "release": "v10.0.0",
-    "date": "2026-11-01T14:21:04Z",
+    "date": "2026-11-02T06:05:52Z",
     "qsmxt": {
      "ref": "v10.0.0",
      "commit": "544ef94708904ec84e4f20128a22e99568e08687"
@@ -3334,9 +3316,9 @@
      {
       "dataset": "chisep-mc",
       "last": {
-       "date": "2026-11-01T14:21:04Z",
-       "result": "error",
-       "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41283680804",
+       "date": "2026-11-02T06:05:52Z",
+       "result": "fail",
+       "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41371103875",
        "qsmrs": {
         "ref": null,
         "commit": "42ab620190ad315c9dcf7aa8ec4a036402002b7e",
@@ -3345,18 +3327,21 @@
        "qsmxt": {
         "commit": "544ef94708904ec84e4f20128a22e99568e08687"
        },
-       "nrmse": null,
-       "max_abs": null,
-       "correlation": null,
+       "nrmse": 143.9510547969469,
+       "max_abs": 0.29634490609166525,
+       "correlation": 0.47795302070191953,
        "dice": null,
        "release": "v10.0.0",
-       "why": "no comparison: the job failed or was cancelled before `compare` ran"
+       "dropped_settings": [
+        "unwrap_phase"
+       ],
+       "why": "chi-para correlation 0.478 (limit >= 0.988)"
       }
      }
     ],
     "badge": {
      "kind": "failing",
-     "message": "failing \u00b7 v10.0.0",
+     "message": "failing \u00b7 v10.0.0 \u00b7 no unwrap_phase",
      "color": "red"
     }
    }

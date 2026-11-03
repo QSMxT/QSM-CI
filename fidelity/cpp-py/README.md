@@ -10,6 +10,7 @@ each in a pinned image:
 | DIPY `gibbs_removal` | 1.12.1 | `py-originals` | `utils/gibbs.rs` | fixture run |
 | DIPY `mppca` | 1.12.1 | `py-originals` | `utils/denoise.rs` | fixture run |
 | FSL `bet2` | Bostrix/FSL-BET2 d5acd7f | **local only** ([`algorithms/_bet2`](../../algorithms/_bet2)) | `bet/` | fixture run |
+| FSL `prelude` | fsl-fugue 2603.0 (FSL's conda channel) | **local only** ([`algorithms/_fsl-prelude`](../../algorithms/_fsl-prelude)) | `unwrap/prelude.rs` | fixture run |
 | WaveSep | ZhenghanFang/WaveSep f3a192e | `wavesep` v1 ([`algorithms/wavesep`](../../algorithms/wavesep)) | `separation/wavesep.rs` | QSM-CI stage: `wavesep` / `wavesep-qsmrs` |
 
 ## Why fixture runs
@@ -62,8 +63,9 @@ python fidelity/cpp-py/harness.py pair --case fx --out out \
     --probe fidelity/cpp-py/qsmrs-probe/target/release/qsmrs-probe [--qsmxt-image <qsmxt image>]
 ```
 
-`--ops` picks originals (`n4,bestpath,gibbs,mppca,bet-f0.2,bet-f0.5`). The BET ops need the local
-image (`podman build -t localhost/qsm-ci/bet2:d5acd7f algorithms/_bet2`). `qsmrs-probe` calls
+`--ops` picks originals (`n4,bestpath,gibbs,mppca,bet-f0.2,bet-f0.5,prelude,prelude-fsl-defaults`).
+The BET ops need the local image (`podman build -t localhost/qsm-ci/bet2:d5acd7f algorithms/_bet2`),
+the PRELUDE ops theirs (`podman build -t localhost/qsm-ci/fsl-prelude:2603.0 algorithms/_fsl-prelude`). `qsmrs-probe` calls
 QSM.rs's ports directly, for the ones qsmxt has no command for (best path, Gibbs, MP-PCA) and for
 BET's subdivisions, which `qsmxt mask bet` does not take; N4 also runs through `qsmxt homogeneity
 --method n4` when a qsmxt image is given.
@@ -152,3 +154,47 @@ What the numbers say (owner of each: QSM.rs):
   0.97 %. Matching DIPY needs the overlapping-patch average.
 - **WaveSep is close, not identical** (χ+ 0.11 %, χ− 1.08 %), on the synthetic case only; the
   phantom pair is for the parity workflow.
+
+## PRELUDE (2026-11-02)
+
+FSL's `prelude` (fsl-fugue 2603.0; [`algorithms/_fsl-prelude`](../../algorithms/_fsl-prelude),
+local only) against `unwrap_prelude` at QSM.rs main a44046e (`qsmrs-probe prelude`, the probe now
+pinned there), on the VM (8 cores, podman). QSM.rs's PRELUDE is clean-room (written from Jenkinson's
+report; FSL's source was not read and must not be), so FSL is used as a black box.
+
+**Fidelity.** It is FSL's own binary (`/opt/fsl/bin/prelude` sha256 `42100784…aa1d0dc8`), installed
+from an exact, MD5-checked package list; two image builds gave the same binary and libraries, and
+the image run twice gave identical output (`results/determinism-prelude-invivo.json`). There is
+no host check: there is nothing to build, and a host install would be the same binary.
+
+**Against QSM.rs.** In the mask, per echo; both outputs are defined up to 2π per connected region,
+so wrap counts are compared after the most common offset (`wraps4d.py`):
+
+| case | FSL | QSM.rs | voxels with another wrap count |
+|---|---|---|---|
+| Prisma `prisma-bridge-run1` echo 1 (harness) | `-f -n 6` | 6 partitions | 0 (identical voxel for voxel) |
+| sim, 4 echoes | `-f -n 6` / `-f` | 6 / 8 partitions | 0 on every echo |
+| KKI `s002001-kki-achieva-bridge-run1`, 5 echoes | `-f -n 6` / `-f` | 6 / 8 partitions | 0 on every echo |
+| Prisma echo 1 (harness) | defaults | 8 partitions | 0.020 % |
+| sim | default mode, `-n 6` | 6 partitions | 0, 0.007, 0.023, 0.16 % |
+| KKI | default mode, `-n 6` | 6 partitions | 0.001, 0.0001, 0.004, 10.1, 13.3 % |
+| KKI | defaults | 8 partitions | 0.003, 0, 0.004, 1.47, 10.2 % |
+
+- **`prelude -f` (full 3-D) is the port's algorithm, and they agree exactly.** FSL writes 0 outside
+  the mask (QSM.rs keeps the wrapped input) and puts the median in-mask wrap count at 0, as QSM.rs's
+  `correct_global` does.
+- **FSL's defaults are another algorithm**: 8 partitions (`-v` prints it; QSM.rs uses the report's
+  example, 6) and initial regions labelled slice by slice before a 3-D merge (the default and
+  `--labelslices` give identical output on KKI). On KKI's late echoes that is the better one:
+  the share of voxels whose echo-to-echo step disagrees with the wrapped echo difference is
+  3.45 % on echoes 4 and 5 with FSL's default mode, against 12.4 % / 6.9 % (6 partitions) and
+  4.7 % / 11.9 % (8) with full 3-D labelling, FSL's and QSM.rs's alike. Owner: QSM.rs
+  (astewartau/QSM.rs#397).
+- **`prelude -s`** (everything slice by slice) is not QSM.rs's slice-wise PRELUDE: FSL writes 0 in
+  small in-slice components (14,291 / 23,231 in-mask voxels on sim / KKI) and, beyond a
+  per-component offset, 0.1–0.6 % of the rest take another wrap count. Slice-wise unwrapping stays
+  a `no_original` entry (parity/thresholds.yml).
+
+No parity pair: PRELUDE is not a QSM-CI stage (it unwraps one echo; the contract has no unwrapped
+phase artifact), qsmxt has no PRELUDE command, and the FSL image cannot be published. The FSL runs
+on sim and KKI were `prelude.sh` in the image on the dataset's 4-D phase, magnitude and mask.
