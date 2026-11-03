@@ -932,11 +932,11 @@ pairs:
     qsmxt_paths: *invert_wiring
     datasets:
       sim:
-        chimap: { nrmse_max: 0.502, correlation_min: 0.989, max_abs_max: 0.00147, p99_abs_max: 1e-05 }
+        chimap: { nrmse_max: 0.502, correlation_min: 0.989, max_abs_max: 0.00147, p99_abs_max: 1.0e-05 }
         measured: { main: "run 41403629314: QSM.rs fansi-kernel cdf8a44 (astewartau/QSM.rs#414), QSMxT hdqsm-echo-magnitudes (QSMxT/QSMxT#477): NRMSE 0.0011 %, r 1.000000000, max |Δ| 0.000117 ppm, p99 2.09e-07 ppm" }
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
-        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 6.47e-05, p99_abs_max: 1e-05 }
+        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 6.47e-05, p99_abs_max: 1.0e-05 }
         measured: { main: "run 41403629314: QSM.rs fansi-kernel cdf8a44 (astewartau/QSM.rs#414), QSMxT hdqsm-echo-magnitudes (QSMxT/QSMxT#477): NRMSE 8.89e-05 %, r 1.000000000, max |Δ| 5.17e-06 ppm, p99 6.33e-08 ppm" }
         feed: { localfield: localfield }
   fansi-nltv:
