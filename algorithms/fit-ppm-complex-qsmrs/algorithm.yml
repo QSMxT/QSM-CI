@@ -8,14 +8,15 @@ family: direct
 learning: none
 inputs: [phase, magnitude, mask, params]
 engine: QSMxT / QSM.rs
-qsmxt_value: romeo   # QSMxT runs the complex fit as ROMEO field mapping with --b0-estimation complex-fit
+qsmxt_value: romeo   # QSMxT runs the complex fit as ROMEO field mapping with --b0-estimation complex-fit (the `unwrapping` parameter's default)
 qsmxt_args: [--b0-estimation complex-fit]
 description: >
   MEDI's complex fit of the echoes (QSM.rs's port of Fit_ppm_complex, `qsmxt fieldmap
-  --b0-estimation complex-fit`), unwrapped spatially with ROMEO: QSM.rs does not port MEDI's
-  region-growing unwrapPhase. Its pair is fit-ppm-complex-cornell, compared on the fit itself
-  (ifreq_raw), its noise map (n_std) and ARLO's R2* (r2star), which this entry writes as
-  intermediates.
+  --b0-estimation complex-fit`), unwrapped spatially with ROMEO by default, or with QSM.rs's port
+  of MEDI's region-growing unwrapPhase (`unwrapping: medi-region-growing`), which makes it MEDI's
+  field map. Its pair is fit-ppm-complex-cornell, run with MEDI's region growing and compared on
+  the total field, the fit itself (ifreq_raw), its noise map (n_std) and ARLO's R2* (r2star),
+  which this entry writes as intermediates.
 citation: Liu et al., Magn Reson Med 2013;69(2):467-476
 authors:
 - name: Tian Liu
@@ -41,3 +42,6 @@ parameters:
 - name: max_iter
   default: 30
   description: maximum Gauss-Newton iterations of the complex fit
+- name: unwrapping
+  default: romeo
+  description: "spatial unwrapping of the fit: romeo (QSMxT's default) or medi-region-growing (MEDI's unwrapPhase, as fit-ppm-complex-cornell; needs a qsmxt with `qsmxt fieldmap medi-region-growing`)"
