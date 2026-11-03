@@ -3,7 +3,9 @@ name: evaluate
 # Per-PR SMOKE check of a changed submission: run its stage in its container (no network) on a small
 # central crop of the phantom and verify it emits a valid (present/finite/non-empty) output — a fast
 # gate that the submission actually RUNS. It does NOT score; score.yml does the real scoring + the full
-# composition matrix + leaderboard on merge to main. Runs on Neurodesk's self-hosted ARC runners.
+# composition matrix + leaderboard on merge to main. Each smoke runs on the runner tier its method is
+# scored on (`runner:` in algorithm.yml; scripts/ci_eval_targets.py --matrix): GitHub's hosted runners
+# by default, QSM-CI's self-hosted runners for self-hosted/highmem/manual methods.
 
 on:
   pull_request:
@@ -44,6 +46,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       slugs: ${{ steps.changed.outputs.slugs }}
+      matrix: ${{ steps.changed.outputs.matrix }}
     steps:
       - uses: actions/checkout@v7
         with: { fetch-depth: 0 }
@@ -57,15 +60,17 @@ jobs:
           BASE_REF: ${{ github.base_ref }}
         run: |
           if [ "$EVENT" = "workflow_dispatch" ]; then
-            echo "slugs=$(jq -cn --arg s "$SLUG" '[$s]')" >> "$GITHUB_OUTPUT"
+            slugs=$(jq -cn --arg s "$SLUG" '[$s]')
           else
             # Only smoke methods whose EXECUTION could have changed vs the base — a metadata-only
             # algorithm.yml edit (taxonomy/description/citation) must NOT re-run the whole method zoo
             # for hours. ci_eval_targets.py includes a slug iff a non-yml file (run.sh/Dockerfile/…)
             # changed, or algorithm.yml changed outside a cosmetic allowlist, or it's a new method.
             slugs=$(python scripts/ci_eval_targets.py --base "origin/$BASE_REF")
-            echo "slugs=$slugs" >> "$GITHUB_OUTPUT"
           fi
+          echo "slugs=$slugs" >> "$GITHUB_OUTPUT"
+          # Each slug with the runner its smoke runs on (its scoring tier).
+          echo "matrix=$(SLUGS="$slugs" python -c 'import json, os, sys; sys.path.insert(0, "scripts"); import ci_eval_targets as c; print(json.dumps(c.matrix(json.loads(os.environ["SLUGS"])), separators=(",", ":")))')" >> "$GITHUB_OUTPUT"
 
   # Fork PRs get an explicit, visible skip instead of a silent one (the evaluate job below is gated
   # off for them). Hosted, no checkout, no secrets — it only prints.
@@ -95,18 +100,19 @@ jobs:
       needs.discover.outputs.slugs != '[]' &&
       (github.event_name == 'workflow_dispatch' ||
       github.event.pull_request.head.repo.full_name == github.repository)
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ${{ matrix.target.runs_on }}
+    name: evaluate (${{ matrix.target.slug }})
     strategy:
       fail-fast: false
       matrix:
-        slug: ${{ fromJson(needs.discover.outputs.slugs) }}
+        target: ${{ fromJson(needs.discover.outputs.matrix) }}
     env:
       # Per-job container tag — see score.yml; lets the post-job kill step and the reaper identify
       # exactly this job's containers on the persistent self-hosted box.
-      QSMCI_JOB_TAG: ${{ github.run_id }}-${{ matrix.slug }}
+      QSMCI_JOB_TAG: ${{ github.run_id }}-${{ matrix.target.slug }}
       # The slug comes from the dispatch input (or a PR's directory names): it reaches the shell
       # through env, never interpolated into a `run:` script.
-      SLUG: ${{ matrix.slug }}
+      SLUG: ${{ matrix.target.slug }}
     steps:
       - uses: actions/checkout@v7
 
@@ -116,11 +122,12 @@ jobs:
       # continue-on-error stays HERE, not on the action's inner step: a reaper that cannot confirm
       # anything must not fail the job, and the caller is what decides that.
       - name: Reap orphaned qsm-ci containers (self-hosted)
+        if: ${{ !matrix.target.hosted }}   # a hosted runner is fresh: nothing to reap
         continue-on-error: true
         uses: ./.github/actions/reap-containers
         with:
           # `matrix` is not visible inside a composite action, so this job's tag is passed in.
-          job-tag: ${{ github.run_id }}-${{ matrix.slug }}
+          job-tag: ${{ github.run_id }}-${{ matrix.target.slug }}
 
       # Pin the INTERPRETER the scoring stack is installed into. eval/requirements.txt pins
       # numpy/scipy/nibabel/pillow exactly, but no job that installs it used to pin a Python
@@ -131,8 +138,8 @@ jobs:
       # working even if this interpreter pin later has to be reverted. Do NOT raise numpy to a
       # 3.12-only release: that belt-and-braces property is deliberate.
       #
-      # continue-on-error is load-bearing here: this job always runs on a self-hosted runner, which
-      # may have no Python tool cache, so setup-python has to download the interpreter. If that
+      # continue-on-error is load-bearing here: on a self-hosted runner, which may have no Python
+      # tool cache, so setup-python has to download the interpreter. If that
       # fails the job carries on with the runner's default Python — exactly today's behaviour —
       # instead of taking the gate out entirely, which is how an earlier dependency pin broke every
       # evaluate job. A fallback is visible rather than silent: scored rows record the interpreter
@@ -243,9 +250,9 @@ jobs:
       # `if:`/continue-on-error stay HERE: a composite's inner `if:` cannot see the caller's job
       # status, and an inner continue-on-error would hide the failure inside the action.
       - name: Kill this job's containers
-        if: always()
+        if: always() && !matrix.target.hosted
         continue-on-error: true
         uses: ./.github/actions/kill-containers
         with:
           # `matrix` is not visible inside a composite action, so this job's tag is passed in.
-          job-tag: ${{ github.run_id }}-${{ matrix.slug }}
+          job-tag: ${{ github.run_id }}-${{ matrix.target.slug }}
