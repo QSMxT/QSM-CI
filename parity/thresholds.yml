@@ -1050,6 +1050,7 @@ pairs:
         measured:
           main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 0.653 %, r 1.0000, max |Δ| 3.1e-4 ppm, p99 1.7e-4 ppm"
           pr412: "run 41404195021: QSMxT main 865a92f, QSM.rs resharp-cgs-404 34eaec8 (limits)"
+          dev: "run 41570391371: dev track, QSMxT main 578e39d, QSM.rs main 6508d4e: NRMSE 1.5e-8 %, r 1.000000, max |Δ| 9.3e-10 ppm, p99 0 ppm"
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs]
         feed: { totalfield: totalfield }
@@ -1058,6 +1059,7 @@ pairs:
         measured:
           main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 3.06 %, r 0.9995, max |Δ| 0.0021 ppm, p99 0.0014 ppm"
           pr412: "run 41404195021: QSMxT main 865a92f, QSM.rs resharp-cgs-404 34eaec8 (limits)"
+          dev: "run 41570391371: dev track, QSMxT main 578e39d, QSM.rs main 6508d4e: NRMSE 7.7e-9 %, r 1.000000, max |Δ| 9.3e-10 ppm, p99 0 ppm"
 
   # ---- MEDI toolbox 2024.11.26 originals (MATLAB; fidelity: QSMxT/QSM-CI#322)
   pdf:
@@ -1082,6 +1084,7 @@ pairs:
         measured:
           main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 0.684 % (0.689 % in run 41390107544), r 1.0000, max |Δ| 0.049 ppm, p99 2.3e-4 ppm"
           pr413: "run 41404199185: QSMxT main 865a92f, QSM.rs pdf-kspace-405 47cfce6 (limits)"
+          dev: "run 41570391371: dev track, QSMxT main 578e39d, QSM.rs main 6508d4e: NRMSE 0.0146 %, r 1.000000, max |Δ| 0.0017 ppm, p99 3.8e-7 ppm"
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs]
         feed: { totalfield: totalfield }
@@ -1090,6 +1093,7 @@ pairs:
         measured:
           main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 2.1e-5 %, r 1.000000, max |Δ| 9.3e-7 ppm, p99 1.9e-8 ppm"
           pr413: "run 41404199185: QSMxT main 865a92f, QSM.rs pdf-kspace-405 47cfce6 (limits)"
+          dev: "run 41570391371: dev track, QSMxT main 578e39d, QSM.rs main 6508d4e: NRMSE 2.1e-5 %, r 1.000000, max |Δ| 9.3e-7 ppm, p99 1.9e-8 ppm"
   lbv:
     reference: lbv-cornell
     candidate: lbv-qsmrs
@@ -1136,6 +1140,7 @@ pairs:
         measured:
           main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 42.1 %, r 0.909, max |Δ| 0.087 ppm, p99 0.034 ppm"
           pr407: "run 41413049827: QSMxT tfi-parity-options 32ae3f1, QSM.rs tfi-scale-407 5c37be1 (limits)"
+          dev: "run 41570391371: dev track, QSMxT main 578e39d, QSM.rs main 6508d4e: NRMSE 3.61 %, r 0.9994, max |Δ| 0.067 ppm, p99 0.0035 ppm"
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs]
         feed: { totalfield: totalfield }
@@ -1145,3 +1150,4 @@ pairs:
         measured:
           main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 1.41 %, r 0.9999, max |Δ| 0.143 ppm, p99 0.0040 ppm"
           pr407: "run 41413049827: QSMxT tfi-parity-options 32ae3f1, QSM.rs tfi-scale-407 5c37be1 (limits)"
+          dev: "run 41570391371: dev track, QSMxT main 578e39d, QSM.rs main 6508d4e: NRMSE 1.26 %, r 0.9999, max |Δ| 0.086 ppm, p99 0.0036 ppm"
