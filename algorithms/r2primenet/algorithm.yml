@@ -28,6 +28,19 @@ code_url: https://github.com/SNU-LIST/chi_sepnet
 license: academic use; toolbox obtained via the SNU-LIST Google Form
 image: ghcr.io/astewartau/qsm-ci/r2primenet@sha256:21a051bec5387524e262a1015b84f0d74de2404eec747bae2460617a6f7b2bea   # v1
 run: bash run.sh
+# The original, checked (QSMxT/QSM-CI#301): pinned versions and weights, and the same output
+# twice at fixed threads. fidelity/dl/README.md; rerun whenever the image changes.
+fidelity:
+  date: 2026-10-28
+  image: sha256:21a051bec5387524e262a1015b84f0d74de2404eec747bae2460617a6f7b2bea
+  source: SNU-LIST R2PRIMEnet (240531_R2PRIMEnet.onnx)
+  weights: [240531_R2PRIMEnet.onnx 0c5b4825, xsepnet_train_patch_norm_factor_inplane_largedegree_romeo_arlo.mat 0a4ea04b]   # sha256 prefixes; full hashes in fidelity/dl/results/weights.sha256
+  python: Python 3.12.14, ONNX Runtime 1.29.0, NumPy 2.5.2
+  threads: 4   # OMP/MKL/OPENBLAS/TF_NUM_*_THREADS set by fidelity/dl/harness.py
+  host: Intel Core i5-11500, podman
+  tolerance: identical   # image twice, 128x160x96 box of prisma-bridge-run1
+  result: pass
+  report: fidelity/dl/README.md
 parameters:
   - name: Dr
     default: 114.0

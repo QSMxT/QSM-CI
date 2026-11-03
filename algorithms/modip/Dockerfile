@@ -29,15 +29,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Default (CUDA) PyTorch wheel + NIfTI/array deps. The CUDA wheel bundles its own CUDA runtime, so it
 # needs only an NVIDIA driver at run time (via --nv/--gpus) and otherwise falls back to CPU cleanly.
 RUN pip install --no-cache-dir \
-        "torch>=2.1.0" \
+        "torch==2.13.0" \
  && pip install --no-cache-dir \
-        "numpy>=1.23" \
-        "scipy>=1.10" \
-        "nibabel>=5.0"
+        "numpy==2.2.6" \
+        "scipy==1.15.3" \
+        "nibabel==5.4.2"
 
 # Clone MoDIP (no weights — the network is optimized per subject at run time) into /opt/MoDIP.
 # Pin a ref for reproducibility (override with --build-arg MODIP_REF=<sha>).
-ARG MODIP_REF=master
+# Pinned (QSMxT/QSM-CI#301) to what the published image holds, so its scores stand: the head of the
+# default branch then and now.
+ARG MODIP_REF=59959f8349af43e7aa57bcf02ea74a3c918af4d3
 RUN git clone https://github.com/sunhongfu/MoDIP /opt/MoDIP \
  && git -C /opt/MoDIP checkout "$MODIP_REF"
 ENV MODIP_HOME="/opt/MoDIP"

@@ -1,0 +1,209 @@
+[
+ {
+  "reference": "xqsm",
+  "candidate": "xqsm-qsmrs",
+  "candidate_image": "localhost/qsmxt-main-models:da928e0",
+  "candidate_seconds": 14.2,
+  "metrics": {
+   "chimap": {
+    "nrmse_pct": 0.00031733572652868316,
+    "r": 0.9999999999949577,
+    "max_abs_diff": 1.0967254638671875e-05,
+    "max_abs_diff_rel_pct": 0.00032047122088318665,
+    "voxels": 261853
+   }
+  }
+ },
+ {
+  "reference": "qsmnet",
+  "candidate": "qsmnet-qsmrs",
+  "candidate_image": "localhost/qsmxt-main-models:da928e0",
+  "candidate_seconds": 8.4,
+  "metrics": {
+   "chimap": {
+    "nrmse_pct": 112.70817744782643,
+    "r": 0.8556287429960747,
+    "max_abs_diff": 0.4047316908836365,
+    "max_abs_diff_rel_pct": 48.7312160859702,
+    "voxels": 261853
+   }
+  }
+ },
+ {
+  "reference": "qsmnet-plus",
+  "candidate": "qsmnet-plus-qsmrs",
+  "candidate_image": "localhost/qsmxt-main-models:da928e0",
+  "candidate_seconds": 9.6,
+  "metrics": {
+   "chimap": {
+    "nrmse_pct": 0.00021203753199694868,
+    "r": 0.999999999997765,
+    "max_abs_diff": 2.205371856689453e-06,
+    "max_abs_diff_rel_pct": 0.00020865362134149843,
+    "voxels": 261853
+   }
+  }
+ },
+ {
+  "reference": "lpcnn",
+  "candidate": "lpcnn-qsmrs",
+  "candidate_image": "localhost/qsmxt-main-models:da928e0",
+  "candidate_seconds": 7.0,
+  "metrics": {
+   "chimap": {
+    "nrmse_pct": 3.275884335680975e-05,
+    "r": 0.9999999999999342,
+    "max_abs_diff": 3.2782554626464844e-07,
+    "max_abs_diff_rel_pct": 3.7630887925431725e-05,
+    "voxels": 261853
+   }
+  }
+ },
+ {
+  "reference": "qsmgan",
+  "candidate": "qsmgan-qsmrs",
+  "candidate_image": "localhost/qsmxt-main-models:da928e0",
+  "candidate_seconds": 13.8,
+  "metrics": {
+   "chimap": {
+    "nrmse_pct": 0.00011185091213396818,
+    "r": 0.9999999999993632,
+    "max_abs_diff": 2.4437904357910156e-06,
+    "max_abs_diff_rel_pct": 0.0007125556564623193,
+    "voxels": 261853
+   }
+  }
+ },
+ {
+  "reference": "modl-qsm",
+  "candidate": "modl-qsm-qsmrs",
+  "candidate_image": "localhost/qsmxt-main-models:da928e0",
+  "candidate_seconds": 8.9,
+  "metrics": {
+   "chimap": {
+    "nrmse_pct": 3.4177058830702323,
+    "r": 0.9994012765155753,
+    "max_abs_diff": 0.0028660432435572147,
+    "max_abs_diff_rel_pct": 0.24818191838519033,
+    "voxels": 261853
+   }
+  }
+ },
+ {
+  "reference": "autoqsm",
+  "candidate": "autoqsm-qsmrs",
+  "candidate_image": "localhost/qsmxt-main-models:da928e0",
+  "candidate_seconds": 35.1,
+  "metrics": {
+   "chimap": {
+    "nrmse_pct": 0.0001135100304960875,
+    "r": 0.9999999999993541,
+    "max_abs_diff": 3.129243850708008e-07,
+    "max_abs_diff_rel_pct": 6.417212700165088e-05,
+    "voxels": 261853
+   }
+  }
+ },
+ {
+  "reference": "nextqsm",
+  "candidate": "nextqsm-qsmrs",
+  "candidate_image": "localhost/qsmxt-main-models:da928e0",
+  "candidate_seconds": 13.2,
+  "metrics": {
+   "chimap": {
+    "nrmse_pct": 3.1237857461428384,
+    "r": 0.9994773086252348,
+    "max_abs_diff": 0.020667031407356262,
+    "max_abs_diff_rel_pct": 8.805423914758347,
+    "voxels": 261853
+   }
+  }
+ },
+ {
+  "reference": "bfrnet",
+  "candidate": "bfrnet-qsmrs",
+  "candidate_image": "localhost/qsmxt-main-models:da928e0",
+  "candidate_seconds": 27.3,
+  "metrics": {
+   "localfield": {
+    "nrmse_pct": 0.00013256037439410694,
+    "r": 0.9999999999991266,
+    "max_abs_diff": 5.960464477539062e-07,
+    "max_abs_diff_rel_pct": 0.00011388678514688548,
+    "voxels": 261853
+   }
+  }
+ },
+ {
+  "reference": "chisepnet",
+  "candidate": "chisepnet-qsmrs",
+  "candidate_image": "localhost/qsmxt-main-models:da928e0",
+  "candidate_seconds": 48.9,
+  "metrics": {
+   "chi-para": {
+    "nrmse_pct": 1.403132842993386,
+    "r": 0.9998268921551919,
+    "max_abs_diff": 0.14053596556186676,
+    "max_abs_diff_rel_pct": 10.630354678753765,
+    "voxels": 261853
+   },
+   "chi-dia": {
+    "nrmse_pct": 0.46742335109737204,
+    "r": 0.9999824849086432,
+    "max_abs_diff": 0.04832591116428375,
+    "max_abs_diff_rel_pct": 4.146639877335756,
+    "voxels": 261853
+   }
+  }
+ },
+ {
+  "reference": "susep-net",
+  "candidate": "susep-net-qsmrs",
+  "candidate_image": "localhost/qsmxt-main-models:da928e0",
+  "candidate_seconds": 10.4,
+  "metrics": {
+   "chi-para": {
+    "nrmse_pct": 2.8821561206206758e-05,
+    "r": 0.9999999999999345,
+    "max_abs_diff": 8.344650268554688e-07,
+    "max_abs_diff_rel_pct": 4.924836442663999e-05,
+    "voxels": 261853
+   },
+   "chi-dia": {
+    "nrmse_pct": 2.2865969099917097e-05,
+    "r": 0.9999999999999611,
+    "max_abs_diff": 4.76837158203125e-07,
+    "max_abs_diff_rel_pct": 2.8271829969821942e-05,
+    "voxels": 261853
+   }
+  }
+ },
+ {
+  "reference": "ir2qsm",
+  "candidate": "ir2qsm-qsmrs",
+  "candidate_image": "localhost/qsmxt-main-models:da928e0",
+  "candidate_seconds": 5.9,
+  "metrics": {
+   "chimap": {
+    "nrmse_pct": 0.00012848273848336316,
+    "r": 0.9999999999991944,
+    "max_abs_diff": 2.9802322387695312e-06,
+    "max_abs_diff_rel_pct": 0.00010692604472947411,
+    "voxels": 261853
+   }
+  }
+ },
+ {
+  "reference": "hd-bet-qsmci",
+  "candidate": "hd-bet-qsmrs",
+  "candidate_image": "localhost/qsmxt-main-models:da928e0",
+  "candidate_seconds": 3.2,
+  "metrics": {
+   "mask": {
+    "dice": 0.08954671600370027,
+    "voxels_ref": 3213,
+    "voxels_cand": 2192
+   }
+  }
+ }
+]

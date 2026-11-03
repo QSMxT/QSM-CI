@@ -39,7 +39,9 @@ RUN pip install --no-cache-dir \
         "matplotlib==3.0.3"
 
 # Clone QSMnet (pinned for reproducibility) into /opt/QSMnet.
-ARG QSMNET_REF=master
+# Pinned (QSMxT/QSM-CI#301): the commit the published image was built from (master's head then
+# and now).
+ARG QSMNET_REF=f8782ed26a60680559037d3d11d4b5953eb77f4b
 RUN git clone https://github.com/SNU-LIST/QSMnet.git /opt/QSMnet \
  && git -C /opt/QSMnet checkout "$QSMNET_REF"
 
@@ -51,7 +53,9 @@ RUN cd /opt/QSMnet/Checkpoints \
  && gdown "$QSMNET_GDRIVE_ID" -O "${QSMNET_NAME}.tar.gz" \
  && tar -xvzf "${QSMNET_NAME}.tar.gz" \
  && rm "${QSMNET_NAME}.tar.gz" \
- && test -d "/opt/QSMnet/Checkpoints/${QSMNET_NAME}"
+ && test -d "/opt/QSMnet/Checkpoints/${QSMNET_NAME}" \
+ && cd "/opt/QSMnet/Checkpoints/${QSMNET_NAME}" \
+ && printf '%s\n' 'd577e5417d77d7f21c5a22f50eb9ca7916fdfd7075d79d4772c97d05eb381aca  QSMnet+_64-25.data-00000-of-00001' 'f6fe4bd67a812cf7a7cd5d8ec8dae84d376ed0a46dbf4f08d9765cc60a29a72a  QSMnet+_64-25.index' 'e8cc0511d9a20cf396f395543e4ddd478eabf87158d59ac0feaadf538ad8789c  QSMnet+_64-25.meta' | sha256sum -c -
 
 ENV QSMNET_NAME="QSMnet+_64" \
     QSMNET_CKPT_DIR="/opt/QSMnet/Checkpoints/QSMnet+_64" \

@@ -1,0 +1,28 @@
+[
+ {
+  "reference": "hd-bet-qsmci",
+  "candidate": "hd-bet-qsmrs",
+  "candidate_image": "localhost/qsmxt-main-models:da928e0",
+  "candidate_seconds": 32.7,
+  "metrics": {
+   "mask": {
+    "dice": 0.9890529528130549,
+    "voxels_ref": 1496770,
+    "voxels_cand": 1465490
+   }
+  }
+ },
+ {
+  "reference": "hd-bet-qsmci",
+  "candidate": "mindgrab-qsmrs",
+  "candidate_image": "localhost/qsmxt-main-models:da928e0",
+  "candidate_seconds": 116.9,
+  "metrics": {
+   "mask": {
+    "dice": 0.9623610401447253,
+    "voxels_ref": 1496770,
+    "voxels_cand": 1399750
+   }
+  }
+ }
+]

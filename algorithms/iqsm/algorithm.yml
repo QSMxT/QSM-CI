@@ -32,3 +32,16 @@ code_url: https://github.com/sunhongfu/iQSM
 license: See repository (used with author permission)
 image: ghcr.io/astewartau/qsm-ci/iqsm@sha256:1777cace0a0207b9433f54e53c53cb02c8b52a33629a1aa18682c8d94e04287a   # v1
 run: bash run.sh
+# The original, checked (QSMxT/QSM-CI#301): pinned versions and weights, and the same output
+# twice at fixed threads. fidelity/dl/README.md; rerun whenever the image changes.
+fidelity:
+  date: 2026-10-28
+  image: sha256:1777cace0a0207b9433f54e53c53cb02c8b52a33629a1aa18682c8d94e04287a
+  source: sunhongfu/iQSM bb163ef (unmodified)
+  weights: [iQSM_50_v2.pth 9da07cd5, LPLayer_chi_50_v2.pth 4e43c7ef]   # sha256 prefixes; full hashes in fidelity/dl/results/weights.sha256
+  python: Python 3.11.15, PyTorch 2.13.0+cpu, NumPy 2.4.6
+  threads: 4   # OMP/MKL/OPENBLAS/TF_NUM_*_THREADS set by fidelity/dl/harness.py
+  host: Intel Core i5-11500, podman
+  tolerance: identical   # image twice, 128x160x96 box of prisma-bridge-run1
+  result: pass
+  report: fidelity/dl/README.md

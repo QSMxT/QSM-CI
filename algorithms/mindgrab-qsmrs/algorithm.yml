@@ -1,0 +1,30 @@
+name: MindGrab (QSM.rs)
+slug: mindgrab-qsmrs
+algorithm: mindgrab
+source: qsmrs
+stage: brain-extraction
+language: Rust
+family: deep-learning
+learning: pretrained
+inputs: [magnitude]
+engine: QSMxT / QSM.rs
+description: >
+  MindGrab, the any-contrast skull-stripping MeshNet of brainchop, as QSM.rs runs it: the trained
+  weights exported to ONNX and run by `qsmxt mask mindgrab` (QSM.rs's ONNX engine, CPU), on the
+  whole volume, without test-time augmentation. QSM-CI has no entry for the original yet.
+authors:
+- name: Fani et al.
+  note: MindGrab (brainchop)
+- name: Ashley Stewart
+  note: QSM.rs / QSMxT ONNX port
+doi: 10.48550/arXiv.2506.11860
+citation: Fani et al., arXiv:2506.11860 (2025)
+code_url: https://github.com/astewartau/QSM.rs
+license: MIT (QSM.rs); the weights keep brainchop's terms (MIT)
+# The weights are QSM.rs's ONNX exports (qsmxt/qsm-onnx-weights), baked into the image with
+# algorithms/_qsmxt/models.Dockerfile, since a submission runs with no network.
+# `qsmxt mask mindgrab` is in QSMxT main but in no release yet: v10.0.0 lacks it. Repin to the first
+# release that has it, then drop ci_skip. The parity workflow runs it with qsmxt built from source.
+image: ghcr.io/astewartau/qsm-ci/qsmxt@sha256:3fd27500c18778edc21fd771828573e01c353e4c6147124977293e51256a9053   # v10.0.0-models-2
+run: bash run.sh
+ci_skip: true   # until the image has `qsmxt mask mindgrab` (see image:)

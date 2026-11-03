@@ -50,6 +50,19 @@ import IR2UnetBlock  # noqa: E402  (imported before IR2Unet so the monkeypatch b
 import IR2Unet       # noqa: E402
 
 
+def _add_noise_on() -> bool:
+    """The `add_noise` parameter (qsm-ci run --set add_noise=false -> QSMCI_SET_ADD_NOISE).
+
+    On by default, as the authors' code runs it. Off makes every AddNoise call the identity (the
+    noise-free branch the decoder takes when its `torch.rand(1) > 0.3` draw fails), so the output is
+    deterministic; QSM.rs's ONNX export pins the same branch, so this is the setting to compare a
+    port against."""
+    v = os.environ.get("QSMCI_SET_ADD_NOISE", "true").strip().lower()
+    if v not in ("1", "0", "true", "false", "yes", "no", "on", "off"):
+        sys.exit(f"ir2qsm: add_noise must be true or false, not {v!r}")
+    return v in ("1", "true", "yes", "on")
+
+
 def _install_cpu_safe_addnoise():
     """Replace the repo's GPU-hardcoded AddNoise with a device-correct equivalent.
 
@@ -59,6 +72,13 @@ def _install_cpu_safe_addnoise():
     behavior (same additive-noise formula) while running on CPU. In eval() + no_grad() the other
     AddNoise calls are gated out by self.training, so only this decoder call actually fires.
     """
+    if not _add_noise_on():
+        def AddNoise(ins, SNR):  # noqa: ARG001  (noise off: the identity)
+            return ins
+        IR2Unet.AddNoise = AddNoise
+        IR2UnetBlock.AddNoise = AddNoise
+        return
+
     def AddNoise(ins, SNR):
         sig_power = torch.sum(ins ** 2) / torch.numel(ins)
         noise_power = sig_power / SNR
