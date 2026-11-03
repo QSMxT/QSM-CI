@@ -24,9 +24,7 @@ citation: Kim et al., Hum Brain Mapp 2025 (χ-sepnet; QSMnetME)
 code_url: https://github.com/SNU-LIST/chi-separation
 license: academic use; toolbox obtained via the SNU-LIST Google Form
 # The toolbox's networks + normalisation file (algorithms/chisepnet/BUILD.md; shared with chisepnet).
-# Built locally as ghcr.io/astewartau/qsm-ci/chisep-toolbox:v1 (podman image d127ddf2); the push
-# needs Ashley, then pin the digest here.
-image: ghcr.io/astewartau/qsm-ci/chisep-toolbox:v1
+image: ghcr.io/astewartau/qsm-ci/chisep-toolbox@sha256:dcac7d9f05fe02ee44522feaabc839473db61257feed60648bea698911a6521d   # v1 (config d127ddf2)
 run: bash run.sh
 # The route was recovered from the toolbox's P-code (chi_sepnet_general.p, chi_sepnet.p,
 # CalculateRotMat.p) by black-box probing in licensed MATLAB R2023b (astewartau/QSM.rs#377,

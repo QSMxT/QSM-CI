@@ -22,9 +22,8 @@ doi: 10.1016/j.neuroimage.2021.118371
 citation: Shin et al., NeuroImage 2021 (χ-separation); χ-sepnet, SNU-LIST
 code_url: https://github.com/SNU-LIST/chi-separation
 license: academic use; toolbox obtained via the SNU-LIST Google Form
-# v2 (QSM.rs#377): the toolbox's three networks + normalisation file (BUILD.md). Built locally as
-# ghcr.io/astewartau/qsm-ci/chisep-toolbox:v1 (podman image d127ddf2); the push needs Ashley, then pin the digest here.
-image: ghcr.io/astewartau/qsm-ci/chisep-toolbox:v1
+# v2 (QSM.rs#377): the toolbox's three networks + normalisation file (BUILD.md).
+image: ghcr.io/astewartau/qsm-ci/chisep-toolbox@sha256:dcac7d9f05fe02ee44522feaabc839473db61257feed60648bea698911a6521d   # v1 (config d127ddf2)
 run: bash run.sh
 # The original, checked (QSMxT/QSM-CI#301) as v1 (the network alone, sliding window). v2 runs the
 # toolbox's route, recovered from its P-code by black-box probing in licensed MATLAB R2023b and
