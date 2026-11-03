@@ -3686,6 +3686,16 @@
           "name": "tol",
           "default": 0.1,
           "description": "Gauss-Newton stop on the relative update"
+        },
+        {
+          "name": "kernel",
+          "default": "default",
+          "description": "parity switch, dipole kernel on odd grids (default the Fourier grid, original half a step off as MEDI's dipole_kernel.m)"
+        },
+        {
+          "name": "precision",
+          "default": "double",
+          "description": "parity switch, arithmetic (double, or single as MEDI_L1.m runs)"
         }
       ],
       "ci_notes": []

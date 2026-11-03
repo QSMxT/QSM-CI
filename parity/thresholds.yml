@@ -1109,8 +1109,7 @@ pairs:
   tfi:
     reference: tfi-cornell
     candidate: tfi-qsmrs
-    enabled: false
-    note: "limits proposed at the original's own rounding spread (astewartau/QSM.rs#407); enable on Ashley's OK"
+    enabled: true
     # Was: sim 42.1 % (χ ~0.77×), KKI 1.41 % (run 41384710780). Causes (astewartau/QSM.rs#407):
     # MEDI's dipole_kernel.m samples k half a step off the DFT grid on odd axes (sim is
     # 164×205×205), and MEDI_L1 runs in single precision (tempn = single(N_std)). QSM.rs keeps the
@@ -1121,8 +1120,8 @@ pairs:
     # cg_tol 0.01 in single precision amplify rounding. In one container, 1e-7 relative noise on
     # the total field moves its χ by 1.59 % (sim) / 0.30 % (KKI); the same container on another CPU
     # (QSM-CI runner against the VM) differs from itself by 2.78 % on KKI. With both switches (run
-    # 41413049827) sim 3.61 %, KKI 1.26 %. Proposed limits: NRMSE ~1.5× the measured plus the
-    # original's cross-CPU spread (sim 6 %, KKI 4 %), max/p99 ~10× the derived (as for TGV).
+    # 41413049827) sim 3.61 %, KKI 1.26 %. Limits (Ashley, 2026-11-02): NRMSE ~1.5× the measured plus
+    # the original's cross-CPU spread (sim 6 %, KKI 4 %), max/p99 ~10× the derived (as for TGV).
     candidate_set: { kernel: original, precision: single }
     qsmrs_paths: [src/constants.rs, src/error.rs, src/fft.rs, src/grid.rs, src/inversion/medi.rs,
                   src/inversion/tfi.rs, src/kernels/, src/pipeline/inversion.rs,
