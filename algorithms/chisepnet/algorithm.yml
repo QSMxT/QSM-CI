@@ -25,6 +25,7 @@ license: academic use; toolbox obtained via the SNU-LIST Google Form
 # v2 (QSM.rs#377): the toolbox's three networks + normalisation file (BUILD.md).
 image: ghcr.io/astewartau/qsm-ci/chisep-toolbox@sha256:dcac7d9f05fe02ee44522feaabc839473db61257feed60648bea698911a6521d   # v1 (config d127ddf2)
 run: bash run.sh
+runner: highmem   # OOM (exit 137) on ubuntu-latest\'s 16 GB with ridani-3t-aniso-fitted (native finer grid), score run 41625488721
 # The original, checked (QSMxT/QSM-CI#301) as v1 (the network alone, sliding window). v2 runs the
 # toolbox's route, recovered from its P-code by black-box probing in licensed MATLAB R2023b and
 # reproduced by chisep_route.py to 1.4e-5–2.1e-5 % NRMSE (astewartau/QSM.rs#377); the v1 record
