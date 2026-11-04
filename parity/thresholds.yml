@@ -784,6 +784,9 @@ pairs:
     # inputs, the CLI reproduces itself, and QSM.rs given the CLI's corrected phase reproduces the
     # CLI's unwrapped echoes exactly (#325). QSM.rs stays in Float64 (Ashley, 2026-10-28). Same
     # agreement on #325's heads and on main 7f8271e: sim 1.64 % (r 0.99995), KKI 1.50 % (r 0.9999).
+    # ROMEO.jl runs with one thread since QSM.rs 008b829 follows its echo-by-echo order (run.sh says
+    # why). Against 4 threads that QSM.rs failed sim on 2 voxels (run 41811450319: max |Δ| 0.282 ppm);
+    # against one thread (run 41813858175): sim 1.645 %, max |Δ| 0.164; KKI 1.498 %, max |Δ| 0.127.
     qsmrs_paths: [src/error.rs, src/grid.rs, src/pipeline/field_mapping.rs,
                   src/pipeline/phase_utils.rs, src/pipeline/rules.rs, src/priority_queue.rs,
                   src/region_grow.rs, src/unwrap/bestpath.rs, src/unwrap/mod.rs,
