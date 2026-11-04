@@ -1,6 +1,6 @@
 {
  "schema": 2,
- "generated": "2026-11-03",
+ "generated": "2026-11-04",
  "default_track": "released",
  "badges": "https://qsmxt.github.io/QSM-CI/parity/badges/",
  "tracks": {
@@ -2831,7 +2831,7 @@
       "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1"
      },
      "checks": 100,
-     "date": "2026-11-03T23:52:59Z"
+     "date": "2026-11-04T00:16:44Z"
     }
    ],
    "stale": [
@@ -2844,7 +2844,9 @@
     "ir2qsm",
     "autoqsm",
     "bfrnet",
+    "qsmnetme",
     "susep-net",
+    "r2primenet",
     "iqsm",
     "iqsm-plus",
     "iqfm"
@@ -4230,9 +4232,9 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-03T23:52:59Z",
-        "result": "fail",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41739482104",
+        "date": "2026-11-04T00:16:44Z",
+        "result": "pass",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41742981875",
         "qsmrs": {
          "ref": "main",
          "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
@@ -4241,16 +4243,13 @@
         "qsmxt": {
          "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
         },
-        "nrmse": 0.001928697546536077,
-        "max_abs": 4.628300666809082e-05,
-        "correlation": 0.9999999998043637,
-        "dice": null,
-        "why": "chimap max_abs 4.628e-05 ppm (limit <= 3.54e-05 ppm)"
+        "nrmse": 0.0014089931690850455,
+        "max_abs": 2.8263777494430542e-05,
+        "correlation": 0.9999999998964136,
+        "dice": null
        },
-       "stale": true,
-       "reasons": [
-        "the last check failed: chimap max_abs 4.628e-05 ppm (limit <= 3.54e-05 ppm)"
-       ]
+       "stale": false,
+       "reasons": []
       },
       {
        "dataset": "sim",
@@ -4271,15 +4270,17 @@
         "correlation": 0.9999999998700017,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "the pair's settings or limits for this dataset changed since"
+       ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=xqsm -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "failing",
-      "message": "failing \u00b7 3 Nov",
-      "color": "red"
+      "kind": "stale",
+      "message": "stale \u00b7 3 Nov",
+      "color": "orange"
      }
     },
     {
@@ -4392,8 +4393,10 @@
         "correlation": 0.9999999970701108,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "the pair's settings or limits for this dataset changed since"
+       ]
       },
       {
        "dataset": "sim",
@@ -4544,8 +4547,10 @@
         "correlation": 0.9999999901011175,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "the pair's settings or limits for this dataset changed since"
+       ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=modl-qsm -f dataset=configured -f qsmrs_ref=main",
@@ -4583,8 +4588,10 @@
         "correlation": 0.9999999999445488,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "the pair's settings or limits for this dataset changed since"
+       ]
       },
       {
        "dataset": "sim",
@@ -4852,7 +4859,7 @@
      "reference": "qsmnetme",
      "candidate": "qsmnetme-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-qsmnetme",
      "datasets": [
       {
@@ -4874,8 +4881,10 @@
         "correlation": 0.9999999999995572,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "the pair's settings or limits for this dataset changed since"
+       ]
       },
       {
        "dataset": "sim",
@@ -4896,14 +4905,17 @@
         "correlation": 0.9999999999998205,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "the pair's settings or limits for this dataset changed since"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=qsmnetme -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 3 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 3 Nov",
+      "color": "orange"
      }
     },
     {
@@ -5029,7 +5041,7 @@
      "reference": "r2primenet",
      "candidate": "r2primenet-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-r2primenet",
      "datasets": [
       {
@@ -5051,8 +5063,10 @@
         "correlation": 0.9999999999999616,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "the pair's settings or limits for this dataset changed since"
+       ]
       },
       {
        "dataset": "sim",
@@ -5073,14 +5087,17 @@
         "correlation": 0.9999999999999453,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "the pair's settings or limits for this dataset changed since"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=r2primenet -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 3 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 3 Nov",
+      "color": "orange"
      }
     },
     {
@@ -5225,9 +5242,9 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-03T23:52:59Z",
+        "date": "2026-11-04T00:16:44Z",
         "result": "error",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41739482104",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41742981875",
         "qsmrs": {
          "ref": "main",
          "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
@@ -5273,7 +5290,7 @@
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=iqfm -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "failing",
-      "message": "failing \u00b7 3 Nov",
+      "message": "failing \u00b7 4 Nov",
       "color": "red"
      }
     },

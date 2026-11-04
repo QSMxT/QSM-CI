@@ -1,6 +1,6 @@
 # Port parity status
 
-Generated 2026-11-03 by `scripts/parity.py status` from `parity/results.json` and `parity/thresholds.yml`; do not edit by hand. How checks run, the two tracks, and what makes a check stale: [docs/parity.md](../docs/parity.md).
+Generated 2026-11-04 by `scripts/parity.py status` from `parity/results.json` and `parity/thresholds.yml`; do not edit by hand. How checks run, the two tracks, and what makes a check stale: [docs/parity.md](../docs/parity.md).
 
 ## Released: QSMxT v10.0.0
 
@@ -169,17 +169,17 @@ A check is **stale** when the reference image changed, QSM.rs `main` changed the
 |  |  | sim | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 1.639% | ✅ current |
 | `tgv` | `tgv-tgvjl` → `tgv-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 0.0007664% | ✅ current |
 |  |  | sim | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 0.0003827% | ✅ current |
-| `xqsm` | `xqsm` → `xqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41739482104) | `cc4ae49` | ❌ fail | 0.001929% | ⚠️ stale: the last check failed: chimap max_abs 4.628e-05 ppm (limit <= 3.54e-05 ppm) |
-|  |  | sim | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41739482104) | `cc4ae49` | ✅ pass | 0.001641% | ✅ current |
+| `xqsm` | `xqsm` → `xqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41742981875) | `cc4ae49` | ✅ pass | 0.001409% | ✅ current |
+|  |  | sim | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41739482104) | `cc4ae49` | ✅ pass | 0.001641% | ⚠️ stale: the pair's settings or limits for this dataset changed since |
 | `qsmnet` | `qsmnet` → `qsmnet-qsmrs` | sim | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 0.0001346% | ⚠️ stale: the pair's settings or limits for this dataset changed since |
 | `qsmnet-plus` | `qsmnet-plus` → `qsmnet-plus-qsmrs` | sim | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 0.0002059% | ⚠️ stale: the pair's settings or limits for this dataset changed since |
-| `lpcnn` | `lpcnn` → `lpcnn-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 0.007654% | ✅ current |
+| `lpcnn` | `lpcnn` → `lpcnn-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 0.007654% | ⚠️ stale: the pair's settings or limits for this dataset changed since |
 |  |  | sim | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 3.537e-05% | ⚠️ stale: the pair's settings or limits for this dataset changed since |
 | `qsmgan` | `qsmgan` → `qsmgan-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 9.92e-05% | ⚠️ stale: the pair's settings or limits for this dataset changed since |
 |  |  | sim | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 0.005643% | ⚠️ stale: the pair's settings or limits for this dataset changed since |
 | `modl-qsm` | `modl-qsm` → `modl-qsm-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 5.912e-05% | ⚠️ stale: the pair's settings or limits for this dataset changed since |
-|  |  | sim | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 0.01412% | ✅ current |
-| `ir2qsm` | `ir2qsm` → `ir2qsm-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 0.001054% | ✅ current |
+|  |  | sim | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 0.01412% | ⚠️ stale: the pair's settings or limits for this dataset changed since |
+| `ir2qsm` | `ir2qsm` → `ir2qsm-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 0.001054% | ⚠️ stale: the pair's settings or limits for this dataset changed since |
 |  |  | sim | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 0.0005049% | ⚠️ stale: the pair's settings or limits for this dataset changed since |
 | `autoqsm` | `autoqsm` → `autoqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 0.0001121% | ⚠️ stale: the pair's settings or limits for this dataset changed since |
 |  |  | sim | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 0.0001416% | ⚠️ stale: the pair's settings or limits for this dataset changed since |
@@ -188,18 +188,18 @@ A check is **stale** when the reference image changed, QSM.rs `main` changed the
 | `bfrnet` | `bfrnet` → `bfrnet-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 0.0001557% | ⚠️ stale: the pair's settings or limits for this dataset changed since |
 |  |  | sim | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 0.0002169% | ⚠️ stale: the pair's settings or limits for this dataset changed since |
 | `chisepnet` | `chisepnet` → `chisepnet-qsmrs` | chisep-mc | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 4.001e-05% | ✅ current |
-| `qsmnetme` | `qsmnetme` → `qsmnetme-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 9.434e-05% | ✅ current |
-|  |  | sim | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 6.011e-05% | ✅ current |
+| `qsmnetme` | `qsmnetme` → `qsmnetme-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 9.434e-05% | ⚠️ stale: the pair's settings or limits for this dataset changed since |
+|  |  | sim | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 6.011e-05% | ⚠️ stale: the pair's settings or limits for this dataset changed since |
 | `susep-net` | `susep-net` → `susep-net-qsmrs` | chisep-mc | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 3.103e-05% | ⚠️ stale: the pair's settings or limits for this dataset changed since |
 | `hd-bet` | `hd-bet-qsmci` → `hd-bet-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | — | ✅ current |
 | `mindgrab` | `mindgrab` → `mindgrab-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | — | ✅ current |
-| `r2primenet` | `r2primenet` → `r2primenet-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 2.033e-05% | ✅ current |
-|  |  | sim | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 2.047e-05% | ✅ current |
+| `r2primenet` | `r2primenet` → `r2primenet-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 2.033e-05% | ⚠️ stale: the pair's settings or limits for this dataset changed since |
+|  |  | sim | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 2.047e-05% | ⚠️ stale: the pair's settings or limits for this dataset changed since |
 | `iqsm` | `iqsm` → `iqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 0.0002244% | ⚠️ stale: the pair's settings or limits for this dataset changed since |
 |  |  | sim | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 0.0002708% | ⚠️ stale: the pair's settings or limits for this dataset changed since |
 | `iqsm-plus` | `iqsm-plus` → `iqsm-plus-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 0.0001157% | ⚠️ stale: the pair's settings or limits for this dataset changed since |
 |  |  | sim | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 0.0001549% | ⚠️ stale: the pair's settings or limits for this dataset changed since |
-| `iqfm` | `iqfm` → `iqfm-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41739482104) | `cc4ae49` | ❌ error | — | ⚠️ stale: the last check ended without a result |
+| `iqfm` | `iqfm` → `iqfm-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41742981875) | `cc4ae49` | ❌ error | — | ⚠️ stale: the last check ended without a result |
 |  |  | sim | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41739482104) | `cc4ae49` | ✅ pass | 0.000216% | ✅ current |
 | `lsqr` | `lsqr` → `lsqr-qsmrs` | s005001-cbic-prisma-bridge-run1 | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 0.0002515% | ✅ current |
 |  |  | sim | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41625523205) | `cc4ae49` | ✅ pass | 0.0003931% | ✅ current |
@@ -229,7 +229,7 @@ A check is **stale** when the reference image changed, QSM.rs `main` changed the
 Refresh every stale pair against QSM.rs `main`:
 
 ```bash
-gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=xqsm,qsmnet,qsmnet-plus,lpcnn,qsmgan,modl-qsm,ir2qsm,autoqsm,bfrnet,susep-net,iqsm,iqsm-plus,iqfm -f dataset=configured -f qsmrs_ref=main
+gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=xqsm,qsmnet,qsmnet-plus,lpcnn,qsmgan,modl-qsm,ir2qsm,autoqsm,bfrnet,qsmnetme,susep-net,r2primenet,iqsm,iqsm-plus,iqfm -f dataset=configured -f qsmrs_ref=main
 ```
 
 ## No original
