@@ -111,7 +111,10 @@ unzip -q "$zip" -d "$tmp/extract"
 # Locate the BIDS root (the dir holding sub-*/anat with raw MEGRE, not the derivatives copy).
 phase="$(find "$tmp/extract" -path '*/sub-*/anat/*part-phase_MEGRE.nii*' ! -path '*derivatives*' | head -1)"
 [ -n "$phase" ] || { echo "[fetch_dataset] could not find raw phase under the zip" >&2; exit 1; }
-bids="$(dirname "$(dirname "$(dirname "$phase")")")"
+# The parent of its sub-* directory: not a fixed number of levels up, since a subject may have a
+# ses-* level, and which subject `find` returns first differs between filesystems.
+rel="/${phase#"$tmp/extract/"}"
+bids="$tmp/extract${rel%%/sub-*}"
 
 python3 "$SCRIPT_DIR/pack_dataset.py" "$bids" "$DEST" $PACK_FLAGS
 echo "[fetch_dataset] ${TRACK} dataset ready at ${DEST}"
