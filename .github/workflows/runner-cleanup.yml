@@ -1,0 +1,86 @@
+name: runner-cleanup
+
+# Free disk on QSM-CI's self-hosted runners. Nothing else prunes them: container images pile up
+# (every pinned method image ever pulled, plus parity builds whose job the runner lost: each parity job now removes its own), and
+# on 2026-11-04 the box's /storage filled up ("No space left on device" in the runner's own _diag),
+# killing jobs. What is removed, and why it is safe while other jobs run, is in
+# scripts/runner_cleanup.py (unit-tested in tests/test_runner_cleanup.py). In short: only QSM-CI's
+# images, never one a container uses (no `docker rmi -f`), never a running container, never this
+# job's own workspace, scratch dirs only when nothing in them changed for 2 days.
+# Docker is not the only consumer (on 2026-11-04 images were 179 GB of the full 974 GB /storage): the
+# job also removes `qsm-ci run`'s leaked /tmp/qsm-ci-* scratch (a killed job never cleans it up) and
+# prints the largest runner/_work, ~/.cache, temp and Docker directories, so the rest is visible.
+#
+# A COMPLETELY full disk stops any job from starting (the runner cannot even write its logs), so this
+# workflow cannot rescue that state: clean the box by hand first.
+#
+# Which runner each leg lands on: GitHub can only target a runner by LABEL, and QSM-CI-1 / QSM-CI-2
+# carry the same default labels (self-hosted, Linux, X64). So:
+#   - with repository variable QSMCI_SELFHOSTED_LABELS set to a JSON list of one extra label per
+#     runner (e.g. ["qsm-ci-1", "qsm-ci-2"], added in Settings → Actions → Runners), each leg is
+#     pinned to its runner;
+#   - unset, there are two legs on the shared labels, which may land on the same runner. Each leg
+#     therefore also cleans every sibling runner directory beside its own on that box
+#     (<parent>/actions-runner-*), so one leg covers both runners when they share a box.
+# Docker's image store is per box, so either way one leg cleans it for every runner on that box.
+
+on:
+  schedule:
+    - cron: "17 16 * * 0"   # weekly, Sunday 16:17 UTC (Monday 02:17 AEST): the quietest time for main
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "true = list what would be removed; remove nothing"
+        default: "false"
+      drop_pinned:
+        description: "true = also remove images current main pins when unused for 7 days (the next job re-pulls them)"
+        default: "false"
+
+permissions:
+  contents: read
+  actions: read   # is a parity run that built a qsmxt-under-test image finished?
+
+concurrency:
+  group: runner-cleanup
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  clean:
+    strategy:
+      fail-fast: false
+      matrix:
+        leg: ${{ fromJson(vars.QSMCI_SELFHOSTED_LABELS || '["shared-1", "shared-2"]') }}
+    # A per-runner label when the variable lists them; else the shared labels (see the header).
+    runs-on: ${{ startsWith(matrix.leg, 'shared-') && fromJson('["self-hosted", "Linux", "X64"]') || fromJson(format('["self-hosted", "Linux", "X64", "{0}"]', matrix.leg)) }}
+    timeout-minutes: 60
+    steps:
+      # Checkout cleans this job's own workspace (git clean -ffdx), including the last job's .work/.
+      - uses: actions/checkout@v7
+
+      - name: Disk before
+        run: |
+          echo "runner: $RUNNER_NAME"
+          df -h
+          command -v docker >/dev/null && docker system df || true
+
+      - name: Clean
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          DRY_RUN: ${{ github.event.inputs.dry_run }}
+          DROP_PINNED: ${{ github.event.inputs.drop_pinned }}
+        run: |
+          args=()
+          [ "$DRY_RUN" = true ] && args+=(--dry-run)
+          [ "$DROP_PINNED" = true ] && args+=(--drop-pinned)
+          python3 scripts/runner_cleanup.py "${args[@]}"
+
+      - name: Disk after
+        if: always()
+        run: |
+          df -h
+          command -v docker >/dev/null && docker system df || true

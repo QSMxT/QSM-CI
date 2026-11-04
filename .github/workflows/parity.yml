@@ -389,7 +389,9 @@ jobs:
             echo "note=QSM.rs under test: supplied image \`$QSMXT_IMAGE\`" >> "$GITHUB_OUTPUT"
           elif [ -f qsmxt-build/qsmxt ]; then
             chmod +x qsmxt-build/qsmxt
-            img=qsmxt-under-test:${{ github.run_id }}
+            # One tag per job, not per run: the jobs of a run share the self-hosted box's Docker,
+            # and each removes its own image when it ends (below).
+            img=qsmxt-under-test:${{ github.run_id }}-j${{ strategy.job-index }}
             docker build -q -t "$img" -f parity/qsmxt.Dockerfile qsmxt-build
             note="QSM.rs under test: $([ -n "$RELEASE" ] || echo 'built from ')$(cat qsmxt-build/BUILT_FROM)"
             # A deep-learning pair (`qsmrs_models` in thresholds.yml): the build has no weights and
@@ -493,6 +495,16 @@ jobs:
         uses: ./.github/actions/kill-containers
         with:
           job-tag: ${{ github.run_id }}-parity-${{ matrix.algorithm }}-${{ matrix.phantom }}
+
+      # This job's own build image (and its -models layer), whatever the outcome: nothing else uses
+      # it, and on the shared self-hosted box each run used to leave one or two behind. A job the
+      # runner itself loses is caught by runner-cleanup.yml's weekly sweep.
+      - name: Remove this job's qsmxt image
+        if: always() && startsWith(steps.qsmrs.outputs.image, 'qsmxt-under-test:')
+        continue-on-error: true
+        env:
+          IMG: ${{ steps.qsmrs.outputs.image }}
+        run: docker rmi "$IMG" "${IMG%-models}" 2>/dev/null || true
 
       - uses: actions/upload-artifact@v7
         if: always()
