@@ -17,8 +17,9 @@ description: >
   and the network predicts R2′ in the 3T domain (its training reference — R2′ scales ~linearly
   with B0), which is rescaled ×(B0/3) to the acquisition's native field for the benchmark. Run via
   ONNX (onnxruntime), 192×192×128 sliding-window patches (dims multiples of 64, matching the
-  network's four pooling levels). On 3T phantoms its input is off-distribution by construction —
-  an informative failure mode rather than a defect.
+  network's four pooling levels). Being trained on 7T data only, its R2′ is composed with the
+  χ-separation methods on 7T phantoms only; its isolated R2′ is still scored on the 3T phantoms,
+  where its input is off-distribution by construction.
 authors:
 - name: Jiye Kim
 - name: Jongho Lee
@@ -30,6 +31,11 @@ code_url: https://github.com/SNU-LIST/R2PRIMENET_7T
 license: academic and research use (© Jiye Kim, SNU-LIST)
 image: ghcr.io/astewartau/qsm-ci/r2primenet-7t@sha256:7fb63601ab006c42ade8f2f6a5f8d97f190e83655bedc077d2a02947e427e43e   # v1
 run: bash run.sh
+# Trained on 7T data only. pipeline.py composes it (the GRE-only grid) only on phantoms whose B0 is
+# 7 T (scripts/datasets.json field_strength), and scripts/prune_inapplicable.py drops combos scored
+# before that rule. On 3 T phantoms its out-of-distribution R2′ drove chisep-ilsqr to its 2 h cap
+# (run 41577320951).
+field_strength: 7
 # The original, checked (QSMxT/QSM-CI#301): pinned versions and weights, and the same output
 # twice at fixed threads. fidelity/dl/README.md; rerun whenever the image changes.
 fidelity:
