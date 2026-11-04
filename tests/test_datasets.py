@@ -8,6 +8,10 @@ here, not mid-rescore) and the id-suffix / tuned-parameter fallback semantics th
 published run ids stable.
 """
 import json
+import os
+import shutil
+import subprocess
+import zipfile
 from pathlib import Path
 
 import pytest
@@ -111,3 +115,27 @@ def test_tuned_legacy_scalar_is_sim_only(pipeline):
     assert pipeline._tuned_overrides(DOC, "sim") == {"mu": "5", "tol": "7"}
     assert pipeline._tuned_overrides(DOC, "sim", "sim") == {"mu": "5", "tol": "7"}
     assert pipeline._tuned_overrides(DOC, "invivo") == {"tol": "8"}
+
+
+@pytest.mark.parametrize("phase", [
+    "bids/sub-1/ses-a/anat/sub-1_ses-a_part-phase_MEGRE.nii.gz",
+    "bids/sub-1/anat/sub-1_part-phase_MEGRE.nii.gz",
+    "sub-1/ses-a/anat/sub-1_ses-a_part-phase_MEGRE.nii.gz",
+])
+def test_fetch_finds_the_bids_root_whichever_subject_comes_first(tmp_path, phase):
+    """The root is the parent of sub-*, with or without a ses-* level (the sim zip has both, and
+    which one `find` returns first differs between filesystems)."""
+    scripts = tmp_path / "scripts"
+    scripts.mkdir()
+    shutil.copy(ROOT / "scripts" / "fetch_dataset.sh", scripts)
+    (scripts / "datasets.json").write_text(json.dumps({"x": {"osf_file": "unused"}}))
+    (scripts / "pack_dataset.py").write_text(
+        "import pathlib, sys\npathlib.Path(sys.argv[2]).write_text(sys.argv[1])\n")
+    zip_path = tmp_path / "bids.zip"
+    with zipfile.ZipFile(zip_path, "w") as z:
+        z.writestr(phase, "")
+    dest = tmp_path / "packed"
+    subprocess.run(["bash", str(scripts / "fetch_dataset.sh"), "x", str(dest)], check=True,
+                   env={**os.environ, "OSF_ZIP": str(zip_path)}, capture_output=True)
+    root = dest.read_text()
+    assert Path(root).name == ("bids" if phase.startswith("bids/") else "extract")
