@@ -155,7 +155,7 @@ more, declare it in `algorithm.yml` (`runner:` — see `scripts/score_plan.py` f
 |---|---|---|---|
 | *(unset)* | hosted, 2 containers at a time | 6 h | automatically, inside the parallel shard sweep |
 | `hosted-large` | hosted, 1 container (the full 16 GB) | 6 h | automatically, own job |
-| `self-hosted` | QSM-CI's private 31 GB box | `timeout_minutes:` (default 6 h) | automatically, own job |
+| `self-hosted` | QSM-CI's private 31 GB box | `timeout_minutes:` (default 6 h) | automatically, own job; a scoring run takes one private runner at a time |
 | `manual` / `gpu` | private box | `timeout_minutes:` | **only** when a maintainer dispatches it by name |
 | `highmem` | the runners in repository variable `QSMCI_HIGHMEM_RUNNER` (Neurodesk's 64 GB pool), 1 container; *(unset)* while that variable is unset | 12 h | **only** when a maintainer dispatches it by name, without other tiers in the run |
 
@@ -174,6 +174,10 @@ time (use it when a single run already saturates every core), and `manual_phanto
 only the listed phantoms dispatch-only. A dipole method may also declare a `compose:` subset
 (`fieldmaps:` / `bfrs:` lists) to be composed with a few reference upstream methods instead of the
 full field-map × background-removal matrix — the leaderboard simply shows the other cells empty.
+A method whose trained weights are valid at one field strength only declares it in tesla, e.g.
+`field_strength: 7` (R2PRIMEnet-7T): it is composed only on phantoms at that B0 (each χ-separation
+phantom's `field_strength` in `scripts/datasets.json`), and its other combos are neither run nor
+listed. Its isolated run is still scored on every phantom.
 
 Rescoring is incremental: a merge to `main` rescores what changed since the last completed
 scoring (a new run of the same method supersedes an older one still in flight), and

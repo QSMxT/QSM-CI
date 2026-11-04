@@ -2828,13 +2828,50 @@
      },
      "qsmrs": {
       "version": null,
+      "commit": "7656a79c85b68cecf2448283ee708c5a846c0f13"
+     },
+     "checks": 1,
+     "date": "2026-11-04T01:39:15Z"
+    },
+    {
+     "qsmxt": {
+      "ref": "main",
+      "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+     },
+     "qsmrs": {
+      "version": null,
       "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1"
      },
-     "checks": 100,
+     "checks": 99,
      "date": "2026-11-04T00:16:44Z"
     }
    ],
    "stale": [
+    "qsmart",
+    "ilsqr",
+    "vsharp",
+    "iharperella",
+    "star",
+    "medi",
+    "fit-ppm-complex",
+    "amp-pe",
+    "decompose",
+    "chisep-ilsqr",
+    "chisep-medi",
+    "wavesep",
+    "tkd",
+    "tsvd",
+    "tikhonov",
+    "tv",
+    "nltv",
+    "rts",
+    "ismv",
+    "sharp",
+    "sharp-qsmjl",
+    "vsharp-qsmjl",
+    "laplacian",
+    "romeo",
+    "tgv",
     "xqsm",
     "qsmnet",
     "qsmnet-plus",
@@ -2843,13 +2880,29 @@
     "modl-qsm",
     "ir2qsm",
     "autoqsm",
+    "nextqsm",
     "bfrnet",
+    "chisepnet",
     "qsmnetme",
     "susep-net",
+    "hd-bet",
+    "mindgrab",
     "r2primenet",
     "iqsm",
     "iqsm-plus",
-    "iqfm"
+    "iqfm",
+    "lsqr",
+    "heidi",
+    "ndi",
+    "fansi-nltv",
+    "fansi-nltgv",
+    "l1qsm",
+    "whqsm",
+    "hdqsm",
+    "resharp",
+    "pdf",
+    "lbv",
+    "tfi"
    ],
    "pairs": [
     {
@@ -2858,7 +2911,7 @@
      "reference": "qsmart-matlab",
      "candidate": "qsmart-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-qsmart",
      "datasets": [
       {
@@ -2880,8 +2933,11 @@
         "correlation": 0.9999696244125956,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/config.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` \u2026 since the checked 632fed9 (2 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -2902,14 +2958,18 @@
         "correlation": 0.9999926452872225,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/config.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` \u2026 since the checked 632fed9 (2 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=qsmart -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "0.78 % \u00b7 3 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 3 Nov",
+      "color": "orange"
      }
     },
     {
@@ -2918,7 +2978,7 @@
      "reference": "ilsqr-sti",
      "candidate": "ilsqr-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-ilsqr",
      "datasets": [
       {
@@ -2940,8 +3000,11 @@
         "correlation": 0.9999999863820632,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -2962,14 +3025,18 @@
         "correlation": 0.9999999999993627,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=ilsqr -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "0.017 % \u00b7 3 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 3 Nov",
+      "color": "orange"
      }
     },
     {
@@ -2978,7 +3045,7 @@
      "reference": "vsharp-sti",
      "candidate": "vsharp-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-vsharp",
      "datasets": [
       {
@@ -3000,8 +3067,11 @@
         "correlation": 0.9999999999975201,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -3022,14 +3092,18 @@
         "correlation": 0.9999999999598658,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=vsharp -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 3 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 3 Nov",
+      "color": "orange"
      }
     },
     {
@@ -3038,7 +3112,7 @@
      "reference": "iharperella-sti",
      "candidate": "iharperella-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-iharperella",
      "datasets": [
       {
@@ -3060,14 +3134,18 @@
         "correlation": 0.9999999999999759,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=iharperella -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 3 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 3 Nov",
+      "color": "orange"
      }
     },
     {
@@ -3076,7 +3154,7 @@
      "reference": "star-sti",
      "candidate": "star-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-star",
      "datasets": [
       {
@@ -3098,8 +3176,11 @@
         "correlation": 0.9999999999932063,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -3120,14 +3201,18 @@
         "correlation": 0.9999999999999349,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=star -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "0.0023 % \u00b7 3 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 3 Nov",
+      "color": "orange"
      }
     },
     {
@@ -3136,7 +3221,7 @@
      "reference": "medi-cornell",
      "candidate": "medi-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-medi",
      "datasets": [
       {
@@ -3158,8 +3243,11 @@
         "correlation": 0.9999999634958423,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs`, `src/utils/multi_echo.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -3180,14 +3268,18 @@
         "correlation": 0.9999999572139109,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs`, `src/utils/multi_echo.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=medi -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "0.029 % \u00b7 3 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 3 Nov",
+      "color": "orange"
      }
     },
     {
@@ -3196,7 +3288,7 @@
      "reference": "fit-ppm-complex-cornell",
      "candidate": "fit-ppm-complex-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-fit-ppm-complex",
      "datasets": [
       {
@@ -3218,8 +3310,11 @@
         "correlation": 1.0,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/rules.rs`, `src/utils/multi_echo.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/fieldmap.rs` since the checked 632fed9 (2 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -3240,14 +3335,18 @@
         "correlation": 1.0,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/rules.rs`, `src/utils/multi_echo.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/fieldmap.rs` since the checked 632fed9 (2 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=fit-ppm-complex -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 3 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 3 Nov",
+      "color": "orange"
      }
     },
     {
@@ -3256,7 +3355,7 @@
      "reference": "amp-pe",
      "candidate": "amp-pe-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-amp-pe",
      "datasets": [
       {
@@ -3278,14 +3377,18 @@
         "correlation": 0.9999886378501645,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=amp-pe -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "0.48 % \u00b7 3 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 3 Nov",
+      "color": "orange"
      }
     },
     {
@@ -3294,7 +3397,7 @@
      "reference": "decompose-qsm",
      "candidate": "decompose-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-decompose",
      "datasets": [
       {
@@ -3316,14 +3419,18 @@
         "correlation": 0.9983165707505546,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=decompose -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "4.9 % \u00b7 3 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 3 Nov",
+      "color": "orange"
      }
     },
     {
@@ -3332,7 +3439,7 @@
      "reference": "chisep-ilsqr",
      "candidate": "chisep-ilsqr-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-chisep-ilsqr",
      "datasets": [
       {
@@ -3354,14 +3461,18 @@
         "correlation": 0.9999999999999997,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs`, `src/separation/chi_sep_ilsqr.rs`, `src/separation/chi_sep_medi.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=chisep-ilsqr -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 3 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 3 Nov",
+      "color": "orange"
      }
     },
     {
@@ -3370,7 +3481,7 @@
      "reference": "chisep-medi",
      "candidate": "chisep-medi-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-chisep-medi",
      "datasets": [
       {
@@ -3392,14 +3503,18 @@
         "correlation": 0.9999871885924638,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs`, `src/separation/chi_sep_medi.rs`, `src/utils/multi_echo.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=chisep-medi -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "0.58 % \u00b7 3 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 3 Nov",
+      "color": "orange"
      }
     },
     {
@@ -3408,7 +3523,7 @@
      "reference": "wavesep",
      "candidate": "wavesep-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-wavesep",
      "datasets": [
       {
@@ -3430,14 +3545,18 @@
         "correlation": 0.9999999999999988,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=wavesep -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 3 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 3 Nov",
+      "color": "orange"
      }
     },
     {
@@ -3446,7 +3565,7 @@
      "reference": "tkd-qsmjl",
      "candidate": "tkd-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-tkd",
      "datasets": [
       {
@@ -3468,8 +3587,11 @@
         "correlation": 1.0,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -3490,14 +3612,18 @@
         "correlation": 1.0,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=tkd -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 3 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 3 Nov",
+      "color": "orange"
      }
     },
     {
@@ -3506,7 +3632,7 @@
      "reference": "tsvd-qsmjl",
      "candidate": "tsvd-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-tsvd",
      "datasets": [
       {
@@ -3528,8 +3654,11 @@
         "correlation": 1.0,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -3550,14 +3679,18 @@
         "correlation": 1.0,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=tsvd -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 3 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 3 Nov",
+      "color": "orange"
      }
     },
     {
@@ -3566,7 +3699,7 @@
      "reference": "tikhonov-qsmjl",
      "candidate": "tikhonov-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-tikhonov",
      "datasets": [
       {
@@ -3588,8 +3721,11 @@
         "correlation": 0.9999999999999998,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -3610,14 +3746,18 @@
         "correlation": 0.9999999999999999,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=tikhonov -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "identical \u00b7 3 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 3 Nov",
+      "color": "orange"
      }
     },
     {
@@ -3626,7 +3766,7 @@
      "reference": "tv-qsmjl",
      "candidate": "tv-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-tv",
      "datasets": [
       {
@@ -3648,8 +3788,11 @@
         "correlation": 1.0,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -3670,14 +3813,18 @@
         "correlation": 0.9999999999999999,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=tv -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 3 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 3 Nov",
+      "color": "orange"
      }
     },
     {
@@ -3686,7 +3833,7 @@
      "reference": "nltv-qsmjl",
      "candidate": "nltv-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-nltv",
      "datasets": [
       {
@@ -3708,8 +3855,11 @@
         "correlation": 1.0,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -3730,14 +3880,18 @@
         "correlation": 1.0,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=nltv -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 3 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 3 Nov",
+      "color": "orange"
      }
     },
     {
@@ -3746,7 +3900,7 @@
      "reference": "rts-qsmjl",
      "candidate": "rts-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-rts",
      "datasets": [
       {
@@ -3768,8 +3922,11 @@
         "correlation": 0.9999999999999996,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -3790,14 +3947,18 @@
         "correlation": 0.9999999999999998,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=rts -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 3 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 3 Nov",
+      "color": "orange"
      }
     },
     {
@@ -3806,7 +3967,7 @@
      "reference": "ismv-qsmjl",
      "candidate": "ismv-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-ismv",
      "datasets": [
       {
@@ -3828,8 +3989,11 @@
         "correlation": 0.9999999999999997,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -3850,14 +4014,18 @@
         "correlation": 1.0,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=ismv -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 3 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 3 Nov",
+      "color": "orange"
      }
     },
     {
@@ -3866,7 +4034,7 @@
      "reference": "sharp-sepia",
      "candidate": "sharp-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-sharp",
      "datasets": [
       {
@@ -3888,8 +4056,11 @@
         "correlation": 1.0,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -3910,14 +4081,18 @@
         "correlation": 0.9999999999999991,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=sharp -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 3 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 3 Nov",
+      "color": "orange"
      }
     },
     {
@@ -3926,7 +4101,7 @@
      "reference": "sharp-qsmjl",
      "candidate": "sharp-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-sharp-qsmjl",
      "datasets": [
       {
@@ -3948,8 +4123,11 @@
         "correlation": 1.0,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -3970,14 +4148,18 @@
         "correlation": 0.9999999999999999,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=sharp-qsmjl -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 3 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 3 Nov",
+      "color": "orange"
      }
     },
     {
@@ -3986,7 +4168,7 @@
      "reference": "vsharp-qsmjl",
      "candidate": "vsharp-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-vsharp-qsmjl",
      "datasets": [
       {
@@ -4008,8 +4190,11 @@
         "correlation": 0.9999999999999999,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -4030,14 +4215,18 @@
         "correlation": 1.0,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=vsharp-qsmjl -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 3 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 3 Nov",
+      "color": "orange"
      }
     },
     {
@@ -4046,7 +4235,7 @@
      "reference": "laplacian-qsmjl",
      "candidate": "laplacian-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-laplacian",
      "datasets": [
       {
@@ -4068,8 +4257,11 @@
         "correlation": 0.9999999999999963,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/rules.rs`, `src/utils/multi_echo.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `crates/qsmxt-engine/src/fieldmap.rs` \u2026 since the checked 632fed9 (2 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -4090,14 +4282,18 @@
         "correlation": 1.0,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/rules.rs`, `src/utils/multi_echo.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `crates/qsmxt-engine/src/fieldmap.rs` \u2026 since the checked 632fed9 (2 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=laplacian -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 3 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 3 Nov",
+      "color": "orange"
      }
     },
     {
@@ -4106,7 +4302,7 @@
      "reference": "romeo-romeojl",
      "candidate": "romeo-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-romeo",
      "datasets": [
       {
@@ -4128,8 +4324,11 @@
         "correlation": 0.9998960409773552,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/rules.rs`, `src/unwrap/mod.rs`, `src/utils/multi_echo.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `crates/qsmxt-engine/src/fieldmap.rs` \u2026 since the checked 632fed9 (2 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -4150,14 +4349,18 @@
         "correlation": 0.9999540361809417,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/rules.rs`, `src/unwrap/mod.rs`, `src/utils/multi_echo.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `crates/qsmxt-engine/src/fieldmap.rs` \u2026 since the checked 632fed9 (2 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=romeo -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "1.6 % \u00b7 3 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 3 Nov",
+      "color": "orange"
      }
     },
     {
@@ -4166,7 +4369,7 @@
      "reference": "tgv-tgvjl",
      "candidate": "tgv-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-tgv",
      "datasets": [
       {
@@ -4188,8 +4391,11 @@
         "correlation": 0.9999999999707442,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -4210,14 +4416,18 @@
         "correlation": 0.9999999999926794,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=tgv -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 3 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 3 Nov",
+      "color": "orange"
      }
     },
     {
@@ -4248,8 +4458,11 @@
         "correlation": 0.9999999998964136,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -4272,7 +4485,9 @@
        },
        "stale": true,
        "reasons": [
-        "the pair's settings or limits for this dataset changed since"
+        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "the pair's settings or limits for this dataset changed since",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
        ]
       }
      ],
@@ -4313,7 +4528,9 @@
        },
        "stale": true,
        "reasons": [
-        "the pair's settings or limits for this dataset changed since"
+        "QSM.rs main changed `src/inversion/qsmnet.rs`, `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "the pair's settings or limits for this dataset changed since",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
        ]
       }
      ],
@@ -4354,7 +4571,9 @@
        },
        "stale": true,
        "reasons": [
-        "the pair's settings or limits for this dataset changed since"
+        "QSM.rs main changed `src/inversion/qsmnet.rs`, `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "the pair's settings or limits for this dataset changed since",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
        ]
       }
      ],
@@ -4395,7 +4614,9 @@
        },
        "stale": true,
        "reasons": [
-        "the pair's settings or limits for this dataset changed since"
+        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "the pair's settings or limits for this dataset changed since",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
        ]
       },
       {
@@ -4419,7 +4640,9 @@
        },
        "stale": true,
        "reasons": [
-        "the pair's settings or limits for this dataset changed since"
+        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "the pair's settings or limits for this dataset changed since",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
        ]
       }
      ],
@@ -4460,7 +4683,9 @@
        },
        "stale": true,
        "reasons": [
-        "the pair's settings or limits for this dataset changed since"
+        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "the pair's settings or limits for this dataset changed since",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
        ]
       },
       {
@@ -4484,7 +4709,9 @@
        },
        "stale": true,
        "reasons": [
-        "the pair's settings or limits for this dataset changed since"
+        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "the pair's settings or limits for this dataset changed since",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
        ]
       }
      ],
@@ -4525,7 +4752,9 @@
        },
        "stale": true,
        "reasons": [
-        "the pair's settings or limits for this dataset changed since"
+        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "the pair's settings or limits for this dataset changed since",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
        ]
       },
       {
@@ -4549,7 +4778,9 @@
        },
        "stale": true,
        "reasons": [
-        "the pair's settings or limits for this dataset changed since"
+        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "the pair's settings or limits for this dataset changed since",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
        ]
       }
      ],
@@ -4590,7 +4821,9 @@
        },
        "stale": true,
        "reasons": [
-        "the pair's settings or limits for this dataset changed since"
+        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "the pair's settings or limits for this dataset changed since",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
        ]
       },
       {
@@ -4614,7 +4847,9 @@
        },
        "stale": true,
        "reasons": [
-        "the pair's settings or limits for this dataset changed since"
+        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "the pair's settings or limits for this dataset changed since",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
        ]
       }
      ],
@@ -4655,7 +4890,9 @@
        },
        "stale": true,
        "reasons": [
-        "the pair's settings or limits for this dataset changed since"
+        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "the pair's settings or limits for this dataset changed since",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
        ]
       },
       {
@@ -4679,7 +4916,9 @@
        },
        "stale": true,
        "reasons": [
-        "the pair's settings or limits for this dataset changed since"
+        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "the pair's settings or limits for this dataset changed since",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
        ]
       }
      ],
@@ -4696,7 +4935,7 @@
      "reference": "nextqsm",
      "candidate": "nextqsm-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-nextqsm",
      "datasets": [
       {
@@ -4718,8 +4957,11 @@
         "correlation": 0.999998968770881,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -4740,14 +4982,18 @@
         "correlation": 0.999999986714044,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=nextqsm -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "0.14 % \u00b7 3 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 3 Nov",
+      "color": "orange"
      }
     },
     {
@@ -4780,7 +5026,9 @@
        },
        "stale": true,
        "reasons": [
-        "the pair's settings or limits for this dataset changed since"
+        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "the pair's settings or limits for this dataset changed since",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
        ]
       },
       {
@@ -4804,7 +5052,9 @@
        },
        "stale": true,
        "reasons": [
-        "the pair's settings or limits for this dataset changed since"
+        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "the pair's settings or limits for this dataset changed since",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
        ]
       }
      ],
@@ -4821,7 +5071,7 @@
      "reference": "chisepnet",
      "candidate": "chisepnet-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-chisepnet",
      "datasets": [
       {
@@ -4843,14 +5093,18 @@
         "correlation": 0.9999999999997932,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs`, `src/separation/chisepnet.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=chisepnet -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 3 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 3 Nov",
+      "color": "orange"
      }
     },
     {
@@ -4883,7 +5137,9 @@
        },
        "stale": true,
        "reasons": [
-        "the pair's settings or limits for this dataset changed since"
+        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "the pair's settings or limits for this dataset changed since",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
        ]
       },
       {
@@ -4907,7 +5163,9 @@
        },
        "stale": true,
        "reasons": [
-        "the pair's settings or limits for this dataset changed since"
+        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "the pair's settings or limits for this dataset changed since",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
        ]
       }
      ],
@@ -4948,7 +5206,9 @@
        },
        "stale": true,
        "reasons": [
-        "the pair's settings or limits for this dataset changed since"
+        "QSM.rs main changed `src/geometry.rs`, `src/models/onnx.rs`, `src/pipeline/rules.rs`, `src/separation/chisepnet.rs` since the checked cc4ae49 (7 commits)",
+        "the pair's settings or limits for this dataset changed since",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `src/cli.rs` since the checked 632fed9 (2 commits)"
        ]
       }
      ],
@@ -4965,7 +5225,7 @@
      "reference": "hd-bet-qsmci",
      "candidate": "hd-bet-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-hd-bet",
      "datasets": [
       {
@@ -4987,14 +5247,18 @@
         "correlation": null,
         "dice": 1.0
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=hd-bet -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "pass \u00b7 3 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 3 Nov",
+      "color": "orange"
      }
     },
     {
@@ -5003,7 +5267,7 @@
      "reference": "mindgrab",
      "candidate": "mindgrab-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-mindgrab",
      "datasets": [
       {
@@ -5025,14 +5289,18 @@
         "correlation": null,
         "dice": 0.9999622370256026
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/bet/mindgrab.rs`, `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=mindgrab -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "pass \u00b7 3 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 3 Nov",
+      "color": "orange"
      }
     },
     {
@@ -5065,7 +5333,9 @@
        },
        "stale": true,
        "reasons": [
-        "the pair's settings or limits for this dataset changed since"
+        "QSM.rs main changed `src/models/onnx.rs` since the checked cc4ae49 (7 commits)",
+        "the pair's settings or limits for this dataset changed since",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
        ]
       },
       {
@@ -5089,7 +5359,9 @@
        },
        "stale": true,
        "reasons": [
-        "the pair's settings or limits for this dataset changed since"
+        "QSM.rs main changed `src/models/onnx.rs` since the checked cc4ae49 (7 commits)",
+        "the pair's settings or limits for this dataset changed since",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
        ]
       }
      ],
@@ -5130,7 +5402,9 @@
        },
        "stale": true,
        "reasons": [
-        "the pair's settings or limits for this dataset changed since"
+        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "the pair's settings or limits for this dataset changed since",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
        ]
       },
       {
@@ -5154,7 +5428,9 @@
        },
        "stale": true,
        "reasons": [
-        "the pair's settings or limits for this dataset changed since"
+        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "the pair's settings or limits for this dataset changed since",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
        ]
       }
      ],
@@ -5195,7 +5471,9 @@
        },
        "stale": true,
        "reasons": [
-        "the pair's settings or limits for this dataset changed since"
+        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "the pair's settings or limits for this dataset changed since",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
        ]
       },
       {
@@ -5219,7 +5497,9 @@
        },
        "stale": true,
        "reasons": [
-        "the pair's settings or limits for this dataset changed since"
+        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "the pair's settings or limits for this dataset changed since",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
        ]
       }
      ],
@@ -5242,26 +5522,26 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-04T00:16:44Z",
-        "result": "error",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41742981875",
+        "date": "2026-11-04T01:39:15Z",
+        "result": "pass",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41753949105",
         "qsmrs": {
-         "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "ref": null,
+         "commit": "7656a79c85b68cecf2448283ee708c5a846c0f13",
          "version": null
         },
         "qsmxt": {
          "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
         },
-        "nrmse": null,
-        "max_abs": null,
-        "correlation": null,
-        "dice": null,
-        "why": "no comparison: the job failed or was cancelled before `compare` ran"
+        "nrmse": 0.00018289172900657114,
+        "max_abs": 2.2351741790771484e-07,
+        "correlation": 0.9999999999991782,
+        "dice": null
        },
        "stale": true,
        "reasons": [
-        "the last check ended without a result"
+        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked 7656a79 (9 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
        ]
       },
       {
@@ -5283,15 +5563,18 @@
         "correlation": 0.9999999999985187,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=iqfm -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "failing",
-      "message": "failing \u00b7 4 Nov",
-      "color": "red"
+      "kind": "stale",
+      "message": "stale \u00b7 3 Nov",
+      "color": "orange"
      }
     },
     {
@@ -5300,7 +5583,7 @@
      "reference": "lsqr",
      "candidate": "lsqr-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-lsqr",
      "datasets": [
       {
@@ -5322,8 +5605,11 @@
         "correlation": 0.9999999999968328,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -5344,14 +5630,18 @@
         "correlation": 0.9999999999922717,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=lsqr -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 3 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 3 Nov",
+      "color": "orange"
      }
     },
     {
@@ -5360,7 +5650,7 @@
      "reference": "heidi",
      "candidate": "heidi-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-heidi",
      "datasets": [
       {
@@ -5382,8 +5672,11 @@
         "correlation": 0.9999999999939112,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -5404,14 +5697,18 @@
         "correlation": 0.9999999999897097,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=heidi -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 3 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 3 Nov",
+      "color": "orange"
      }
     },
     {
@@ -5420,7 +5717,7 @@
      "reference": "ndi",
      "candidate": "ndi-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-ndi",
      "datasets": [
       {
@@ -5442,8 +5739,11 @@
         "correlation": 0.9999999999996076,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -5464,14 +5764,18 @@
         "correlation": 0.9999999999393061,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=ndi -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "0.0011 % \u00b7 3 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 3 Nov",
+      "color": "orange"
      }
     },
     {
@@ -5480,7 +5784,7 @@
      "reference": "fansi-nltv",
      "candidate": "fansi-nltv-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-fansi-nltv",
      "datasets": [
       {
@@ -5502,8 +5806,11 @@
         "correlation": 0.9999999996127551,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -5524,14 +5831,18 @@
         "correlation": 0.9999999976383609,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=fansi-nltv -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "0.0069 % \u00b7 3 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 3 Nov",
+      "color": "orange"
      }
     },
     {
@@ -5540,7 +5851,7 @@
      "reference": "fansi-nltgv",
      "candidate": "fansi-nltgv-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-fansi-nltgv",
      "datasets": [
       {
@@ -5562,8 +5873,11 @@
         "correlation": 0.9999999992985029,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -5584,14 +5898,18 @@
         "correlation": 0.9999999980004373,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=fansi-nltgv -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "0.0063 % \u00b7 3 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 3 Nov",
+      "color": "orange"
      }
     },
     {
@@ -5600,7 +5918,7 @@
      "reference": "l1qsm",
      "candidate": "l1qsm-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-l1qsm",
      "datasets": [
       {
@@ -5622,8 +5940,11 @@
         "correlation": 0.9999999996626002,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -5644,14 +5965,18 @@
         "correlation": 0.9999999997608234,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=l1qsm -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "0.0026 % \u00b7 3 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 3 Nov",
+      "color": "orange"
      }
     },
     {
@@ -5660,7 +5985,7 @@
      "reference": "whqsm",
      "candidate": "whqsm-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-whqsm",
      "datasets": [
       {
@@ -5682,8 +6007,11 @@
         "correlation": 0.9999999994460465,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -5704,14 +6032,18 @@
         "correlation": 0.9999999998628014,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=whqsm -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "0.0038 % \u00b7 3 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 3 Nov",
+      "color": "orange"
      }
     },
     {
@@ -5720,7 +6052,7 @@
      "reference": "hdqsm",
      "candidate": "hdqsm-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-hdqsm",
      "datasets": [
       {
@@ -5742,8 +6074,11 @@
         "correlation": 0.9999999999812139,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -5764,14 +6099,18 @@
         "correlation": 0.9999999999391195,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=hdqsm -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "0.0015 % \u00b7 3 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 3 Nov",
+      "color": "orange"
      }
     },
     {
@@ -5780,7 +6119,7 @@
      "reference": "resharp",
      "candidate": "resharp-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-resharp",
      "datasets": [
       {
@@ -5802,8 +6141,11 @@
         "correlation": 0.9999999999999991,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -5824,14 +6166,18 @@
         "correlation": 0.9999999999999993,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=resharp -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 3 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 3 Nov",
+      "color": "orange"
      }
     },
     {
@@ -5840,7 +6186,7 @@
      "reference": "pdf-cornell",
      "candidate": "pdf-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-pdf",
      "datasets": [
       {
@@ -5862,8 +6208,11 @@
         "correlation": 0.9999999999999817,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs`, `src/utils/multi_echo.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -5884,14 +6233,18 @@
         "correlation": 0.9999999893253649,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs`, `src/utils/multi_echo.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=pdf -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "0.015 % \u00b7 3 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 3 Nov",
+      "color": "orange"
      }
     },
     {
@@ -5900,7 +6253,7 @@
      "reference": "lbv-cornell",
      "candidate": "lbv-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-lbv",
      "datasets": [
       {
@@ -5922,8 +6275,11 @@
         "correlation": 0.9999999999614404,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -5944,14 +6300,18 @@
         "correlation": 0.9999999999790135,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=lbv -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "0.0018 % \u00b7 3 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 3 Nov",
+      "color": "orange"
      }
     },
     {
@@ -5960,7 +6320,7 @@
      "reference": "tfi-cornell",
      "candidate": "tfi-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-tfi",
      "datasets": [
       {
@@ -5982,8 +6342,11 @@
         "correlation": 0.9999221270069185,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs`, `src/utils/multi_echo.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -6004,14 +6367,18 @@
         "correlation": 0.9993560445869267,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/pipeline/rules.rs`, `src/utils/multi_echo.rs` since the checked cc4ae49 (7 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=tfi -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "3.6 % \u00b7 3 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 3 Nov",
+      "color": "orange"
      }
     },
     {

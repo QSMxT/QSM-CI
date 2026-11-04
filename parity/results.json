@@ -1848,6 +1848,79 @@
   },
   {
    "pair": "iqfm",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-04T01:24:18Z",
+   "run_id": "41753625357",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41753625357",
+   "qsmci_commit": "0c8bf3c041c70a902b5219f1f3174eb2ab97af33",
+   "thresholds": "4eb92294b33a",
+   "reference": {
+    "slug": "iqfm",
+    "image": "ghcr.io/astewartau/qsm-ci/iqfm@sha256:980ba446e62fb9c864c231d180ec32ed732e39528e9de8d3a44fc6f9e08b8de6",
+    "digest": "sha256:980ba446e62fb9c864c231d180ec32ed732e39528e9de8d3a44fc6f9e08b8de6"
+   },
+   "candidate": {
+    "slug": "iqfm-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "iqfm",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-04T01:39:15Z",
+   "run_id": "41753949105",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41753949105",
+   "qsmci_commit": "ca42abf0eb27c6876febf58ca360b43d12c04afd",
+   "thresholds": "4eb92294b33a",
+   "reference": {
+    "slug": "iqfm",
+    "image": "ghcr.io/astewartau/qsm-ci/iqfm@sha256:980ba446e62fb9c864c231d180ec32ed732e39528e9de8d3a44fc6f9e08b8de6",
+    "digest": "sha256:980ba446e62fb9c864c231d180ec32ed732e39528e9de8d3a44fc6f9e08b8de6",
+    "id": "sha256:980ba446e62fb9c864c231d180ec32ed732e39528e9de8d3a44fc6f9e08b8de6"
+   },
+   "candidate": {
+    "slug": "iqfm-qsmrs",
+    "image": "qsmxt-under-test:41753949105-models",
+    "digest": "sha256:7114744c364b8d6fa55630e2b50fa184ad2a6c44af2d42432df11ff2382e5194",
+    "qsmxt": "qsmxt 0.0.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "7656a79c85b68cecf2448283ee708c5a846c0f13",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+   },
+   "result": "pass",
+   "metrics": {
+    "localfield": {
+     "kind": "continuous",
+     "nrmse": 0.00018289172900657114,
+     "correlation": 0.9999999999991782,
+     "max_abs": 2.2351741790771484e-07,
+     "p99_abs": 5.960464477539063e-08,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "iqfm",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-11-03T23:52:59Z",

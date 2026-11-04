@@ -1050,7 +1050,7 @@
       "language": "Rust",
       "family": "direct",
       "learning": "none",
-      "description": "MEDI's complex fit of the echoes (QSM.rs's port of Fit_ppm_complex, `qsmxt fieldmap --b0-estimation complex-fit`), unwrapped spatially with ROMEO: QSM.rs does not port MEDI's region-growing unwrapPhase. Its pair is fit-ppm-complex-cornell, compared on the fit itself (ifreq_raw), its noise map (n_std) and ARLO's R2* (r2star), which this entry writes as intermediates.",
+      "description": "MEDI's complex fit of the echoes (QSM.rs's port of Fit_ppm_complex, `qsmxt fieldmap --b0-estimation complex-fit`), unwrapped spatially with ROMEO by default, or with QSM.rs's port of MEDI's region-growing unwrapPhase (`unwrapping: medi-region-growing`), which makes it MEDI's field map. Its pair is fit-ppm-complex-cornell, run with MEDI's region growing and compared on the total field, the fit itself (ifreq_raw), its noise map (n_std) and ARLO's R2* (r2star), which this entry writes as intermediates.",
       "citation": "Liu et al., Magn Reson Med 2013;69(2):467-476",
       "doi": "10.1002/mrm.24272",
       "code_url": "https://github.com/astewartau/QSM.rs",
@@ -1073,6 +1073,11 @@
           "name": "max_iter",
           "default": 30,
           "description": "maximum Gauss-Newton iterations of the complex fit"
+        },
+        {
+          "name": "unwrapping",
+          "default": "romeo",
+          "description": "spatial unwrapping of the fit: romeo (QSMxT's default) or medi-region-growing (MEDI's unwrapPhase, as fit-ppm-complex-cornell; needs a qsmxt with `qsmxt fieldmap medi-region-growing`)"
         }
       ],
       "ci_notes": []
@@ -3731,7 +3736,7 @@
       "language": "Python",
       "family": "deep-learning",
       "learning": "pretrained",
-      "description": "R2PRIMEnet-7T \u2014 the 7T-specific R2*\u2192R2\u2032 conversion network (Jiye Kim, SNU-LIST), from the in-vivo high-resolution 7T \u03c7-separation pipeline. Where the 3T R2PRIMEnet was trained on 3T acquisitions, this U-Net was trained on paired 7T R2* / R2\u2032 data: R2* is fit from the multi-echo magnitude, scaled by the family's Dr = 114 and z-scored per the released normalisation stats, and the network predicts R2\u2032 in the 3T domain (its training reference \u2014 R2\u2032 scales ~linearly with B0), which is rescaled \u00d7(B0/3) to the acquisition's native field for the benchmark. Run via ONNX (onnxruntime), 192\u00d7192\u00d7128 sliding-window patches (dims multiples of 64, matching the network's four pooling levels). On 3T phantoms its input is off-distribution by construction \u2014 an informative failure mode rather than a defect.",
+      "description": "R2PRIMEnet-7T \u2014 the 7T-specific R2*\u2192R2\u2032 conversion network (Jiye Kim, SNU-LIST), from the in-vivo high-resolution 7T \u03c7-separation pipeline. Where the 3T R2PRIMEnet was trained on 3T acquisitions, this U-Net was trained on paired 7T R2* / R2\u2032 data: R2* is fit from the multi-echo magnitude, scaled by the family's Dr = 114 and z-scored per the released normalisation stats, and the network predicts R2\u2032 in the 3T domain (its training reference \u2014 R2\u2032 scales ~linearly with B0), which is rescaled \u00d7(B0/3) to the acquisition's native field for the benchmark. Run via ONNX (onnxruntime), 192\u00d7192\u00d7128 sliding-window patches (dims multiples of 64, matching the network's four pooling levels). Being trained on 7T data only, its R2\u2032 is composed with the \u03c7-separation methods on 7T phantoms only; its isolated R2\u2032 is still scored on the 3T phantoms, where its input is off-distribution by construction.",
       "citation": "Kim J. et al., \"In-vivo high-resolution \u03c7-separation at 7T\" (arXiv:2410.12239) \u2014 R2PRIMEnet-7T is its 7T R2*\u2192R2\u2032 conversion network (github.com/SNU-LIST/R2PRIMENET_7T).\n",
       "doi": "10.48550/arXiv.2410.12239",
       "code_url": "https://github.com/SNU-LIST/R2PRIMENET_7T",
@@ -5161,6 +5166,7 @@
     "ridani-3t-iso": {
       "track": "chisep",
       "label": "Ridani 3T isotropic",
+      "field_strength": 3,
       "osf_env": "OSF_FILE_RIDANI_3T_ISO",
       "prepacked": true,
       "path": "data/ridani-3t-iso/scoring",
@@ -5170,6 +5176,7 @@
     "ridani-3t-aniso": {
       "track": "chisep",
       "label": "Ridani 3T anisotropic",
+      "field_strength": 3,
       "osf_env": "OSF_FILE_RIDANI_3T_ANISO",
       "prepacked": true,
       "path": "data/ridani-3t-aniso/scoring",
@@ -5179,6 +5186,7 @@
     "ridani-7t-aniso": {
       "track": "chisep",
       "label": "Ridani 7T anisotropic",
+      "field_strength": 7,
       "osf_env": "OSF_FILE_RIDANI_7T_ANISO",
       "prepacked": true,
       "path": "data/ridani-7t-aniso/scoring",
@@ -5188,6 +5196,7 @@
     "chisep-mc": {
       "track": "chisep",
       "label": "Stewart 7T multicompartment",
+      "field_strength": 7,
       "osf_env": "OSF_FILE_CHISEP_MC",
       "prepacked": true,
       "path": "data/chisep-mc/scoring",
@@ -5197,6 +5206,7 @@
     "meso-3t": {
       "track": "chisep",
       "label": "Mesoscopic 3T",
+      "field_strength": 3,
       "osf_project": "8a2uk",
       "osf_file": "6ae89665067070451dbe0309",
       "prepacked": true,
@@ -5219,6 +5229,7 @@
     "wm-micro-7t": {
       "track": "chisep",
       "label": "WM microstructure 7T",
+      "field_strength": 7,
       "osf_project": "8a2uk",
       "osf_file": "6ae896a29ab7081150a954fa",
       "prepacked": true,
@@ -5241,6 +5252,7 @@
     "ridani-3t-aniso-fitted": {
       "track": "chisep",
       "label": "Ridani 3T anisotropic (fitted R2\u2032)",
+      "field_strength": 3,
       "osf_project": "8a2uk",
       "osf_file": "6ae8970756abddd9e3be0384",
       "prepacked": true,

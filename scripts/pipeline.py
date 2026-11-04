@@ -324,6 +324,48 @@ def phantom_suffix(phantom: "str | None") -> str:
     return "" if load_datasets()[phantom].get("default") else f"-{phantom}"
 
 
+# A method's `field_strength:` (tesla) matches a phantom's B0 within this band: the band QSM.rs uses for
+# R2PRIMEnet's trained field (qsm_core::relaxometry::B0_TOLERANCE_T), so QSM-CI and QSMxT agree on
+# what counts as "at 3 T" / "at 7 T".
+FIELD_TOLERANCE_T = 0.3
+
+
+def _field_strength(doc: dict, slug: str) -> "float | None":
+    """A method's declared `field_strength:` — the B0 (T) its trained weights are only valid at (e.g.
+    R2PRIMEnet-7T: 7). None = any field strength."""
+    v = doc.get("field_strength")
+    if v is None:
+        return None
+    if isinstance(v, bool) or not isinstance(v, (int, float)) or v <= 0:
+        raise SystemExit(f"{slug}/algorithm.yml: field_strength must be a positive number of tesla, not {v!r}")
+    return float(v)
+
+
+def field_matches(method_fs: "float | None", b0: "float | None") -> bool:
+    """Can a method declaring `method_fs` run on data at `b0`? An undeclared field strength runs
+    everywhere; an unknown B0 cannot rule a method out (fail open: never a silent skip on a guess)."""
+    return method_fs is None or b0 is None or abs(float(b0) - method_fs) <= FIELD_TOLERANCE_T
+
+
+def phantom_field_strength(phantom: "str | None", params: "Path | None" = None) -> "float | None":
+    """B0 (T) of a phantom: its scripts/datasets.json `field_strength`, else the dataset's params.json
+    `B0`. With both, a disagreement is flagged (the registry wins: it is what scripts/prune_inapplicable.py
+    reads when it removes rows, so planning and pruning use the same number)."""
+    reg = load_datasets().get(phantom, {}) if phantom else {}
+    declared = reg.get("field_strength")
+    measured = None
+    if params is not None and Path(params).exists():
+        try:
+            measured = json.loads(Path(params).read_text()).get("B0")
+        except (json.JSONDecodeError, OSError):
+            measured = None
+    if declared is not None and measured is not None and abs(float(declared) - float(measured)) > FIELD_TOLERANCE_T:
+        print(f"::warning::{phantom}: scripts/datasets.json field_strength {declared} T disagrees with "
+              f"params.json B0 {measured} T; using the registry value")
+    b0 = declared if declared is not None else measured
+    return float(b0) if b0 is not None else None
+
+
 def _yaml_scalar(v) -> str:
     """Render a parsed YAML scalar as the bare token the old regex captured (`\\S+`).
 
@@ -455,6 +497,10 @@ def discover_algorithms(track: str = "sim", phantom: "str | None" = None,
             # (field-map × bfr) column: `compose: {fieldmaps: [gt, romeo-qsmrs], bfrs: [vsharp-qsmrs]}`
             # keeps only those combos (either key may be omitted = unrestricted). None = the full matrix.
             "compose": _compose_spec(doc, d.name),
+            # Optional B0 (T) a method's trained weights are only valid at (R2PRIMEnet-7T: 7). The
+            # GRE-only grid only composes it on phantoms at that field strength (run_chisep_composed),
+            # and its isolated run is still scored everywhere.
+            "field_strength": _field_strength(doc, d.name),
         })
     return algos
 
@@ -1728,6 +1774,20 @@ def run_chisep_composed(args, algos, gt_sources, gt, mask, runs: list) -> None:
         if f is None or f["stage"] != "chi-separation" or "r2prime" not in f["consumes"]:
             return  # a generator focus (isolated-only here) or a non-χ-sep / GRE-native focus
         seps = [f]
+    # A method trained for one field strength (`field_strength:`, e.g. R2PRIMEnet-7T) is composed only
+    # on phantoms at that field, as QSMxT refuses a field-specific network off its field (R2PRIMEnet
+    # off 3 T); here, off-distribution R2′ made
+    # chisep-ilsqr hit its 2 h cap on a 3 T phantom (DNF, run 41577320951). Not planned at all — no
+    # rows — and said so here; scripts/prune_inapplicable.py drops rows scored before this rule.
+    b0 = phantom_field_strength(getattr(args, "phantom", None), gt_sources.get("params"))
+    for kind, group in (("generator", gens), ("χ-separation method", seps)):
+        for a in group:
+            if not field_matches(a.get("field_strength"), b0):
+                print(f"  composed  not applicable: {kind} {a['slug']} is trained for "
+                      f"{a['field_strength']:g} T only and this phantom is {b0:g} T — its GRE-only "
+                      "combos are not planned")
+    gens = [g for g in gens if field_matches(g.get("field_strength"), b0)]
+    seps = [c for c in seps if field_matches(c.get("field_strength"), b0)]
     if not gens or not seps:
         return
     pairs = shard_partition([(g, c) for g in gens for c in seps], args.shard)
