@@ -1,10 +1,12 @@
 # Complex fit + ROMEO (QSM.rs)
 
 MEDI's field map as QSM.rs ports it: the magnitude-weighted fit of the complex echoes
-(`Fit_ppm_complex`, MEDI toolbox 2024.11.26), unwrapped spatially with ROMEO, through
-`qsmxt fieldmap romeo --b0-estimation complex-fit`. QSM.rs does not port MEDI's region-growing
-`unwrapPhase`, so the total field is not like for like with `fit-ppm-complex-cornell`'s; the pair
-compares the steps that are ported:
+(`Fit_ppm_complex`, MEDI toolbox 2024.11.26), unwrapped spatially, through
+`qsmxt fieldmap <unwrapping> --b0-estimation complex-fit`. The `unwrapping` parameter picks the
+unwrapper: `romeo` (QSMxT's default) or `medi-region-growing`, QSM.rs's port of MEDI's
+region-growing `unwrapPhase`, which makes the total field MEDI's own. The parity pair with
+`fit-ppm-complex-cornell` runs `medi-region-growing` and compares the total field and these
+intermediates:
 
 | intermediate | what | units |
 |---|---|---|
