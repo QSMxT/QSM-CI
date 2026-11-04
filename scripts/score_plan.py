@@ -30,6 +30,7 @@ Per-method `runner:` in algorithm.yml:
     hosted-large  HOSTED_LARGE ubuntu-latest, 360-min cap, 1 container (the full 16 GB).
     self-hosted   SELFHOSTED   QSM-CI's private runners (31 GB, the only tier that may exceed 6 h via
                                `timeout_minutes:`). Own focus job; excluded from the shard sweep.
+                               Scheduled ONE AT A TIME (see "Self-hosted pool" below).
     highmem       highmem()    the runners in repository variable QSMCI_HIGHMEM_RUNNER, 720-min cap,
                                1 container. Dispatch-only (named in `scope`), in runs of their own,
                                capped at max_parallel. Variable unset: identical to (unset).
@@ -50,11 +51,24 @@ Per-method overrides, honoured on self-hosted/manual only (hosted tiers are hard
                          DECOMPOSE on the 5M-voxel ridani-3t-iso phantom exceeds 12 h; the smaller
                          phantoms stay automatic)
 
+Self-hosted pool
+----------------
+QSM-CI has two private runners, shared with parity runs and PR evaluate jobs. Main's scoring of the
+long self-hosted methods (iqfm, amp-pe-qsmrs: up to 12 h per task) used to hold BOTH for hours and
+starve everything else. So every task routed to the SELFHOSTED labels (the self-hosted and the
+manual/gpu tiers) is emitted separately as `selfhosted_tasks`, which score.yml runs in its own
+`score-selfhosted` matrix job with `max-parallel: 1`; everything else (`hosted_tasks`: the hosted
+tiers, and highmem with its own pool cap) keeps full parallelism in the `score` job. The cap is per
+run: two overlapping score runs can each hold one runner (GitHub has no cross-run queue that does
+not cancel pending jobs), but one run never takes both.
+
 Environment (set by score.yml):
     EVENT, SHA, BEFORE, SCOPE, INCLUDE, SHARDS, INCLUDE_MANUAL, RUN_ID, REPO, GH_TOKEN (optional),
     QSMCI_HIGHMEM_RUNNER (optional, see highmem())
-Outputs (GITHUB_OUTPUT): tasks=<json list>, full=true|false, slugs=<json list>, base=<sha>,
-    max_parallel=<n> (only when the run plans highmem tasks)
+Outputs (GITHUB_OUTPUT): tasks=<json list> (every task: merge's scoring state), hosted_tasks /
+    selfhosted_tasks=<json list> (the `score` / `score-selfhosted` job matrices, see split_pools),
+    full=true|false, slugs=<json list>, base=<sha>, max_parallel=<n> (only when the run plans
+    highmem tasks)
 """
 from __future__ import annotations
 
@@ -155,6 +169,18 @@ def route(spec: dict | None) -> dict:
             if isinstance(v, int) and v > 0:
                 out[key] = v
     return out
+
+
+def on_selfhosted(task: dict) -> bool:
+    """Does this task run on QSM-CI's own self-hosted runners (the self-hosted and manual/gpu
+    tiers)? Those go to score.yml's `score-selfhosted` job, one at a time."""
+    return task.get("runs_on") == SELFHOSTED["runs_on"]
+
+
+def split_pools(tasks: list[dict]) -> tuple[list[dict], list[dict]]:
+    """(hosted_tasks, selfhosted_tasks): the matrices of score.yml's `score` job (full parallelism;
+    a highmem run's cap is max_parallel) and its `score-selfhosted` job (max-parallel: 1)."""
+    return [t for t in tasks if not on_selfhosted(t)], [t for t in tasks if on_selfhosted(t)]
 
 
 def stage_of(spec: dict | None) -> str | None:
@@ -398,7 +424,8 @@ def gh_api(path: str) -> dict | list:
 
 def in_progress_runs(repo: str, my_run: str) -> list[dict]:
     """Other in-progress score runs: [{'sha': head_sha, 'active': {task ids queued/running/succeeded}}].
-    A task id is the first element of the matrix job name, `score (<id>, ...)`."""
+    A task id is the first element of the matrix job name, `score (<id>, ...)` or
+    `score-selfhosted (<id>, ...)`."""
     out = []
     try:
         runs = gh_api(f"/repos/{repo}/actions/workflows/score.yml/runs?status=in_progress&per_page=50")
@@ -414,7 +441,7 @@ def in_progress_runs(repo: str, my_run: str) -> list[dict]:
             while True:
                 jobs = gh_api(f"/repos/{repo}/actions/runs/{r['id']}/jobs?per_page=100&filter=latest&page={page}")
                 for j in jobs.get("jobs", []):
-                    m = re.match(r"score \((\S+?)[,)]", j.get("name", ""))
+                    m = re.match(r"score(?:-selfhosted)? \((\S+?)[,)]", j.get("name", ""))
                     if not m:
                         continue
                     if j.get("status") in ("queued", "in_progress", "waiting", "pending") or j.get("conclusion") == "success":
@@ -539,6 +566,9 @@ def main() -> None:
         print(f"skipping {x}: already being scored at an up-to-date commit")
     print(f"scope: full={d['full']} slugs={d['slugs']} base={d['base'][:12]}")
     print(f"planned {len(d['tasks'])} task(s): {', '.join(t['id'] for t in d['tasks']) or '-'}")
+    hosted, selfhosted = split_pools(d["tasks"])
+    if selfhosted:
+        print(f"self-hosted, one at a time: {', '.join(t['id'] for t in selfhosted)}")
     if d["max_parallel"]:
         print(f"highmem run: at most {d['max_parallel']} job(s) at a time on the lent runners")
     if d["skipped_manual"]:
@@ -547,6 +577,8 @@ def main() -> None:
               f"{', '.join(d['skipped_manual'])}")
     with open(os.environ.get("GITHUB_OUTPUT", "/dev/stdout"), "a") as out:
         out.write(f"tasks={json.dumps(d['tasks'])}\n")
+        out.write(f"hosted_tasks={json.dumps(hosted)}\n")
+        out.write(f"selfhosted_tasks={json.dumps(selfhosted)}\n")
         out.write(f"full={'true' if d['full'] else 'false'}\n")
         out.write(f"slugs={json.dumps(d['slugs'])}\n")
         out.write(f"base={d['base']}\n")

@@ -155,7 +155,7 @@ more, declare it in `algorithm.yml` (`runner:` — see `scripts/score_plan.py` f
 |---|---|---|---|
 | *(unset)* | hosted, 2 containers at a time | 6 h | automatically, inside the parallel shard sweep |
 | `hosted-large` | hosted, 1 container (the full 16 GB) | 6 h | automatically, own job |
-| `self-hosted` | QSM-CI's private 31 GB box | `timeout_minutes:` (default 6 h) | automatically, own job |
+| `self-hosted` | QSM-CI's private 31 GB box | `timeout_minutes:` (default 6 h) | automatically, own job; a scoring run takes one private runner at a time |
 | `manual` / `gpu` | private box | `timeout_minutes:` | **only** when a maintainer dispatches it by name |
 | `highmem` | the runners in repository variable `QSMCI_HIGHMEM_RUNNER` (Neurodesk's 64 GB pool), 1 container; *(unset)* while that variable is unset | 12 h | **only** when a maintainer dispatches it by name, without other tiers in the run |
 
