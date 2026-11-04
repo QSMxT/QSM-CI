@@ -1848,6 +1848,37 @@
   },
   {
    "pair": "iqfm",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-04T01:24:18Z",
+   "run_id": "41753625357",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41753625357",
+   "qsmci_commit": "0c8bf3c041c70a902b5219f1f3174eb2ab97af33",
+   "thresholds": "4eb92294b33a",
+   "reference": {
+    "slug": "iqfm",
+    "image": "ghcr.io/astewartau/qsm-ci/iqfm@sha256:980ba446e62fb9c864c231d180ec32ed732e39528e9de8d3a44fc6f9e08b8de6",
+    "digest": "sha256:980ba446e62fb9c864c231d180ec32ed732e39528e9de8d3a44fc6f9e08b8de6"
+   },
+   "candidate": {
+    "slug": "iqfm-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "iqfm",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-11-03T23:52:59Z",
