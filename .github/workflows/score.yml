@@ -35,7 +35,8 @@ name: score
 #
 # Runner tiers (`runner:` in algorithm.yml — see scripts/score_plan.py): hosted (default, inside the
 # shard sweep), hosted-large, self-hosted (own focus job on the private 31 GB box; may exceed 6 h via
-# timeout_minutes:), and manual/gpu — NEVER scheduled automatically, only by a workflow_dispatch that
+# timeout_minutes:; run by the `score-selfhosted` job ONE AT A TIME, so scoring never holds both
+# private runners), and manual/gpu — NEVER scheduled automatically, only by a workflow_dispatch that
 # names the slug in `scope` (or include_manual=true). MoDIP and INR-QSM are manual: one inversion takes
 # ~12-17 h on the shared box, so no cap makes them feasible automatically.
 # highmem: the runners in repository variable QSMCI_HIGHMEM_RUNNER, dispatch-only, in runs of their
@@ -102,6 +103,8 @@ jobs:
       base: ${{ steps.plan.outputs.base }}
       skipped_manual: ${{ steps.plan.outputs.skipped_manual }}   # manual-tier tasks owed but not scheduled
       max_parallel: ${{ steps.plan.outputs.max_parallel }}   # highmem runs only
+      hosted_tasks: ${{ steps.plan.outputs.hosted_tasks }}         # the `score` job's matrix
+      selfhosted_tasks: ${{ steps.plan.outputs.selfhosted_tasks }} # the `score-selfhosted` job's matrix
     steps:
       - uses: actions/checkout@v7
         with: { fetch-depth: 0 }   # the scope walks main back to the last completed scoring
@@ -123,18 +126,28 @@ jobs:
           pip install -q pyyaml
           python3 scripts/score_plan.py
 
+  # The scoring tasks run in TWO matrix jobs with identical steps (YAML anchors below; GitHub does
+  # not support `<<:` merge keys, so each job-level key is aliased on its own):
+  #   score            — hosted tiers at full parallelism, and highmem capped at its pool size;
+  #   score-selfhosted — tasks on QSM-CI's two private runners (`runner: self-hosted`, and
+  #                      manual/gpu when dispatched), ONE AT A TIME. Main's scoring of the 12 h
+  #                      self-hosted methods (iqfm, amp-pe-qsmrs) used to hold both runners and
+  #                      starve parity runs and PR evaluate jobs for hours.
+  # The split is score_plan.py's (split_pools: hosted_tasks / selfhosted_tasks); `tasks` still lists
+  # every task for merge's scoring state. The cap is per run: overlapping score runs can each hold
+  # one runner, since GitHub has no cross-run queue that does not cancel pending jobs.
   score:
     needs: plan
-    if: needs.plan.outputs.tasks != '[]'
+    if: needs.plan.outputs.hosted_tasks != '[]'
     strategy:
       fail-fast: false
       max-parallel: ${{ fromJson(needs.plan.outputs.max_parallel || '256') }}   # pool size for highmem, else no cap
       matrix:
-        task: ${{ fromJson(needs.plan.outputs.tasks) }}
+        task: ${{ fromJson(needs.plan.outputs.hosted_tasks) }}
     # One group per TASK: a newer run's copy of this task supersedes an older run's (its rows were
     # about to be overwritten anyway), and nothing else is touched. The cancelled job still uploads
     # the rows it finished (see the always() upload below).
-    concurrency:
+    concurrency: &score-concurrency
       group: score-${{ matrix.task.id }}
       cancel-in-progress: true
     # Runner, wall-clock budget and intra-job container parallelism are chosen per task by the plan
@@ -143,7 +156,7 @@ jobs:
     # `runner: highmem`). QSM_CI_JOBS here overrides the workflow-level cap of 2.
     runs-on: ${{ matrix.task.runs_on }}
     timeout-minutes: ${{ matrix.task.timeout }}
-    env:
+    env: &score-env
       QSM_CI_JOBS: ${{ matrix.task.jobs }}
       # Per-job container tag — qsm_ci.containers labels every container it starts with this, so the
       # post-job kill step (and the next job's reaper) can identify exactly THIS job's containers.
@@ -156,7 +169,7 @@ jobs:
       # through env, never interpolated into a `run:` script.
       TASK_ID: ${{ matrix.task.id }}
       PHANTOM: ${{ matrix.task.phantom || 'sim' }}
-    steps:
+    steps: &score-steps
       # Full history (commits and trees only; blob:none keeps it cheap): RunsFile.stamp records the
       # last commit touching each scored method's algorithms/<slug>/ as the version it ran.
       - uses: actions/checkout@v7
@@ -315,15 +328,34 @@ jobs:
             !results/index.json
             !results/scoring-state.json
 
+  # Same job as `score` (the aliases below), for the tasks on QSM-CI's own self-hosted runners, one
+  # at a time so the other runner stays free for parity runs and PR evaluate jobs. Its job names,
+  # `score-selfhosted (<task id>, …)`, are what score_plan.in_progress_runs and the container
+  # reaper match on, like `score (<task id>, …)`.
+  score-selfhosted:
+    needs: plan
+    if: needs.plan.outputs.selfhosted_tasks != '[]'
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        task: ${{ fromJson(needs.plan.outputs.selfhosted_tasks) }}
+    concurrency: *score-concurrency
+    runs-on: ${{ matrix.task.runs_on }}
+    timeout-minutes: ${{ matrix.task.timeout }}
+    env: *score-env
+    steps: *score-steps
+
   merge:
-    needs: [plan, score]
+    needs: [plan, score, score-selfhosted]
     # Publish whatever finished scoring — even if a leg failed, timed out, or was cancelled by a newer
     # run's copy of the same task. merge downloads the shard artifacts that exist and merges their rows
     # into results/index.json by run-id; a task that uploaded no rows keeps its previous score, and
     # every task that did not complete (no runs-<id>.done) is recorded as pending in
     # results/scoring-state.json so the next run plans it again. We need always() here: without it,
     # one cancelled leg would skip merge and block the ENTIRE publish, including every finished task.
-    if: ${{ always() && needs.plan.result == 'success' && needs.score.result != 'skipped' }}
+    # Either scoring job may be skipped (nothing for its pool); merge runs if either ran.
+    if: ${{ always() && needs.plan.result == 'success' && (needs.score.result != 'skipped' || needs.score-selfhosted.result != 'skipped') }}
     runs-on: ubuntu-latest
     permissions:
       contents: write   # the only job that commits (results/index.json + results/scoring-state.json)

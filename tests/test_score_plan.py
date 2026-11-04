@@ -15,6 +15,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
 _spec = importlib.util.spec_from_file_location("score_plan", ROOT / "scripts" / "score_plan.py")
@@ -329,3 +330,76 @@ def test_the_workflow_hands_the_highmem_runner_to_the_planner_and_caps_the_matri
     assert "max_parallel: ${{ steps.plan.outputs.max_parallel }}" in plan
     score = wf[wf.index("  score:"):wf.index("  merge:")]
     assert "max-parallel: ${{ fromJson(needs.plan.outputs.max_parallel || '256') }}" in score
+
+
+# ------------------------------------------------------------------------------------ self-hosted pool
+
+def test_self_hosted_tasks_are_split_into_their_own_pool(tmp_path, monkeypatch):
+    """Main's scoring holds at most ONE of QSM-CI's two private runners: every task routed to the
+    self-hosted labels (self-hosted tier, and manual/gpu when dispatched) goes to the
+    `score-selfhosted` job (max-parallel 1); hosted tiers and highmem stay in `score`."""
+    monkeypatch.setenv("QSMCI_HIGHMEM_RUNNER", LENT)
+    root = _algos(tmp_path, {**BASIC, **HIGHMEM,
+                             "large": "stage: dipole\nimage: x\nrunner: hosted-large\n"})
+    tasks = sp.plan_tasks(root, REG, full=True, slugs=[], include_manual=True)
+    hosted, selfhosted = sp.split_pools(tasks)
+    assert sorted(hosted + selfhosted, key=lambda t: t["id"]) == sorted(tasks, key=lambda t: t["id"])
+    sh_ids = {t["id"] for t in selfhosted}
+    assert {"f-big", "iv-big", "f-slow", "iv-slow", "f-gpuonly", "f-chi", "f-chi-ridani-3t-iso"} <= sh_ids
+    assert all(t["runs_on"] == ["self-hosted", "Linux", "X64"] for t in selfhosted)
+    assert all(t["runs_on"] != ["self-hosted", "Linux", "X64"] for t in hosted)
+    assert {"s00", "f-large", "iv-tkd"} <= {t["id"] for t in hosted}
+    named = sp.plan_tasks(root, REG, full=False, slugs=["heavy"], explicit={"heavy"})
+    assert sp.split_pools(named) == (named, [])                      # highmem keeps its own pool cap
+    inc = sp.plan_tasks(root, REG, full=False, slugs=[], include="tkd,vsharp")
+    assert sp.split_pools(inc) == (inc, [])
+
+
+def test_main_writes_both_pools_and_the_full_task_list(tmp_path, monkeypatch):
+    root = _algos(tmp_path, BASIC)
+    out = tmp_path / "out"
+    monkeypatch.setenv("QSMCI_ALGORITHMS_DIR", str(root))
+    monkeypatch.setenv("GITHUB_OUTPUT", str(out))
+    monkeypatch.delenv("GH_TOKEN", raising=False)
+    monkeypatch.delenv("QSMCI_HIGHMEM_RUNNER", raising=False)
+    for k, v in {"EVENT": "workflow_dispatch", "SHA": "HEAD", "SCOPE": "big,tkd"}.items():
+        monkeypatch.setenv(k, v)
+    sp.main()
+    o = dict(line.split("=", 1) for line in out.read_text().splitlines())
+    ids = lambda k: {t["id"] for t in json.loads(o[k])}  # noqa: E731
+    assert ids("tasks") == {"f-big", "iv-big", "f-tkd", "iv-tkd"}
+    assert ids("selfhosted_tasks") == {"f-big", "iv-big"} and ids("hosted_tasks") == {"f-tkd", "iv-tkd"}
+
+
+def test_in_progress_coverage_reads_both_scoring_jobs(monkeypatch):
+    monkeypatch.setenv("GH_TOKEN", "x")
+    jobs = [{"name": "score (f-tkd, f-tkd, sim)", "status": "in_progress"},
+            {"name": "score-selfhosted (f-iqfm, f-iqfm, sim)", "status": "queued"},
+            {"name": "score-selfhosted (iv-iqfm)", "status": "completed", "conclusion": "success"},
+            {"name": "score-selfhosted (f-old, x)", "status": "completed", "conclusion": "cancelled"},
+            {"name": "merge", "status": "queued"}]
+
+    def api(path):
+        return {"workflow_runs": [{"id": 7, "head_sha": "abc"}]} if path.endswith("per_page=50") else {"jobs": jobs}
+    monkeypatch.setattr(sp, "gh_api", api)
+    assert sp.in_progress_runs("o/r", "1") == [{"id": 7, "sha": "abc", "active": {"f-tkd", "f-iqfm", "iv-iqfm"}}]
+
+
+def test_the_workflow_runs_self_hosted_tasks_one_at_a_time():
+    wf = yaml.safe_load((ROOT / ".github" / "workflows" / "score.yml").read_text())
+    jobs = wf["jobs"]
+    assert set(jobs["plan"]["outputs"]) >= {"tasks", "hosted_tasks", "selfhosted_tasks", "max_parallel"}
+    score, sh = jobs["score"], jobs["score-selfhosted"]
+    assert score["strategy"]["matrix"]["task"] == "${{ fromJson(needs.plan.outputs.hosted_tasks) }}"
+    assert "max_parallel" in str(score["strategy"]["max-parallel"])          # highmem's pool cap stays
+    assert sh["strategy"]["matrix"]["task"] == "${{ fromJson(needs.plan.outputs.selfhosted_tasks) }}"
+    assert sh["strategy"]["max-parallel"] == 1 and sh["strategy"]["fail-fast"] is False
+    assert "hosted_tasks != '[]'" in score["if"] and "selfhosted_tasks != '[]'" in sh["if"]
+    # the same job in both pools (YAML aliases), so a change to one can never miss the other
+    for key in ("steps", "env", "concurrency", "runs-on", "timeout-minutes", "needs"):
+        assert sh[key] == score[key], key
+    merge = jobs["merge"]
+    assert set(merge["needs"]) == {"plan", "score", "score-selfhosted"}
+    assert "needs.score.result != 'skipped'" in merge["if"] and "needs.score-selfhosted.result != 'skipped'" in merge["if"]
+    # merge's scoring state is computed from EVERY planned task, not one pool's
+    assert "TASKS: ${{ needs.plan.outputs.tasks }}" in (ROOT / ".github" / "workflows" / "score.yml").read_text()
