@@ -259,10 +259,17 @@ def _route(slugs: list, algorithms_dir: Path) -> dict:
     their tiers (scripts/score_plan.route; a self-hosted method takes the job self-hosted), with the
     caps added up for the hosted tiers, which stop at GitHub's 360 min."""
     import score_plan
-    routes = [score_plan.route(score_plan.load_spec(algorithms_dir, s)) for s in slugs]
+    specs = [score_plan.load_spec(algorithms_dir, s) for s in slugs]
+    routes = [score_plan.route(s) for s in specs]
     selfh = [r for r in routes if r["runs_on"] != "ubuntu-latest"]
     if selfh:
-        return {"runs_on": selfh[0]["runs_on"], "timeout": max(r["timeout"] for r in selfh)}
+        # QSMCI_PARITY_RUNNER (repository variable): the runner label a self-hosted pair's job takes
+        # instead of QSM-CI's two own runners, so it does not queue behind main's scoring. Not the
+        # manual tier: that is for methods that need a GPU, which those runners do not have.
+        other = (os.environ.get("QSMCI_PARITY_RUNNER") or "").strip()
+        manual = any(score_plan.tier_of(s) == "manual" for s in specs)
+        return {"runs_on": other if other and not manual else selfh[0]["runs_on"],
+                "timeout": max(r["timeout"] for r in selfh)}
     return {"runs_on": "ubuntu-latest", "timeout": 360}
 
 

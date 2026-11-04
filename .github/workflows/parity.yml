@@ -120,6 +120,8 @@ jobs:
           QSMXT_IMAGE: ${{ inputs.qsmxt_image }}
           RECORD: ${{ inputs.record || 'false' }}
           REF: ${{ github.ref }}
+          # The runner label self-hosted pairs take instead of QSM-CI's own (parity.py _route).
+          QSMCI_PARITY_RUNNER: ${{ vars.QSMCI_PARITY_RUNNER }}
           GH_TOKEN: ${{ github.token }}
         run: |
           pip install -q pyyaml
@@ -287,8 +289,9 @@ jobs:
       fail-fast: false
       matrix:
         include: ${{ fromJson(needs.plan.outputs.matrix) }}
-    # Hosted, unless a side's algorithm.yml routes it to the self-hosted runners (`runner:`); the
-    # cap is that tier's (parity.py _route: 360 min hosted, timeout_minutes self-hosted).
+    # Hosted, unless a side's algorithm.yml routes it to the self-hosted runners (`runner:`), or to
+    # the runners in QSMCI_PARITY_RUNNER when that is set; the cap is that tier's (parity.py _route:
+    # 360 min hosted, timeout_minutes self-hosted).
     runs-on: ${{ matrix.runs_on }}
     timeout-minutes: ${{ matrix.timeout }}
     env:

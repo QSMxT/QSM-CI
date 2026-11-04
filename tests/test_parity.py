@@ -324,6 +324,26 @@ def test_real_matrix_routes_runners():
     assert jobs and all(j["runs_on"] and j["timeout"] > 0 for j in jobs)
 
 
+def test_parity_runner_variable_moves_only_self_hosted_pairs(tmp_path, monkeypatch):
+    for slug, tier in (("slow", "self-hosted"), ("gpu", "manual"), ("big", "highmem"), ("plain", None)):
+        (tmp_path / slug).mkdir()
+        (tmp_path / slug / "algorithm.yml").write_text(f"runner: {tier}\n" if tier else "algorithm: x\n")
+    route = lambda *slugs: parity._route(list(slugs), tmp_path)
+    own = ["self-hosted", "Linux", "X64"]
+
+    monkeypatch.delenv("QSMCI_PARITY_RUNNER", raising=False)
+    monkeypatch.delenv("QSMCI_HIGHMEM_RUNNER", raising=False)
+    assert route("slow")["runs_on"] == own
+
+    monkeypatch.setenv("QSMCI_PARITY_RUNNER", "lent")
+    assert route("slow")["runs_on"] == "lent"
+    assert route("plain", "slow")["runs_on"] == "lent"
+    assert route("gpu")["runs_on"] == own, "the manual tier needs QSM-CI's own runners"
+    assert route("slow", "gpu")["runs_on"] == own
+    assert route("big")["runs_on"] == "ubuntu-latest", "highmem stays hosted in parity"
+    assert route("plain")["runs_on"] == "ubuntu-latest"
+
+
 def test_plan_matrix_flags_pairs_that_need_the_weights():
     """A pair with `qsmrs_models` asks the workflow to add the ONNX weights to a qsmxt build."""
     th = {"a": {"qsmrs_models": True, "datasets": {"sim": {}}}, "b": {"datasets": {"sim": {}}}}

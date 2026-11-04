@@ -128,7 +128,9 @@ Either side may be a method scoring skips:
   `qsmxt_ref` or `qsmxt_image`; locally `--qsmrs-image`), and is refused without one.
 
 A method with `runner: self-hosted` (e.g. `decompose-qsm`) takes its pair's job to the self-hosted
-runners, with that method's `timeout_minutes`.
+runners, with that method's `timeout_minutes`. When the repository variable `QSMCI_PARITY_RUNNER`
+names a runner label, those jobs run there instead, so they do not queue behind main's scoring;
+unset it to go back. `runner: manual` methods stay on QSM-CI's own runners.
 
 A deep-learning pair (`qsmrs_models: true`) needs the ONNX weights on the QSM.rs side. The pinned
 `qsmxt:v10.0.0-models-2` image has them; a qsmxt built from source does not, and a run has no
