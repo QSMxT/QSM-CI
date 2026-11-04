@@ -5,6 +5,7 @@ writing to, or this job's own workspace.
 """
 from __future__ import annotations
 
+import json
 import os
 import sys
 import time
@@ -74,16 +75,20 @@ def _touch(p: Path, days_ago: float) -> None:
     os.utime(p, (t, t))
 
 
-def _runner(base: Path, name: str) -> Path:
+def _runner(base: Path, name: str, repo: str = "QSMxT/QSM-CI") -> Path:
     r = base / name
     (r / "_work").mkdir(parents=True)
-    (r / ".runner").write_text("{}")
+    (r / ".runner").write_text("\ufeff" + json.dumps({"gitHubUrl": f"https://github.com/{repo}"}),
+                               encoding="utf-8")
     return r
 
 
 def test_scratch_goes_only_when_idle_and_never_from_this_jobs_workspace(tmp_path):
     me, sib = _runner(tmp_path, "actions-runner-QSM-CI-1"), _runner(tmp_path, "actions-runner-QSM-CI-2")
     (tmp_path / "not-a-runner" / "_work").mkdir(parents=True)
+    # The box is shared: other projects' runners are never ours to clean.
+    _runner(tmp_path, "actions-runner-QSMxT-1", "QSMxT/QSMxT")
+    _runner(tmp_path, "actions-runner-neurocontainers-1", "NeuroDesk/neurocontainers")
     assert rc.runner_roots(me) == [me, sib]
     own_ws = me / "_work" / "QSM-CI" / "QSM-CI"
     _touch(own_ws / ".work" / "old.nii", 10)                   # this job's workspace: never
@@ -125,3 +130,9 @@ def test_stale_qsm_ci_temp_dirs_go_and_others_stay(tmp_path):
     _touch(tmp_path / "qsm-ci-live" / "output" / "chi.nii", 0.2)       # a run in progress
     _touch(tmp_path / "other" / "old", 30)                              # not ours
     assert rc.stale_tmp(tmp_path, NOW, 2) == [tmp_path / "qsm-ci-abc"]
+
+
+def test_no_global_docker_prune():
+    # The daemon is shared with other projects' runners: only QSM-CI's own images/containers go.
+    src = (Path(__file__).resolve().parent.parent / "scripts" / "runner_cleanup.py").read_text()
+    assert '"image", "prune"' not in src and '"builder", "prune"' not in src

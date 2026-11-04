@@ -16,8 +16,9 @@ device" in the runner's own _diag), which killed jobs. Safe while other jobs run
   - scratch dirs: `.work/` (pipeline.py) and `.parity/` (parity.py) in each repo checkout under each
     runner's `_work/`, only when NOTHING inside changed in the last 2 days (a running job writes
     there). This job's own workspace is never touched (actions/checkout already cleans it).
-    Sibling runner directories next to this one (`<parent>/*/` with a `.runner` file and `_work/`)
-    are cleaned too, so one leg cleans every runner on a shared box.
+    Sibling runner directories next to this one are cleaned too, but only QSM-CI's own: the box is
+    shared with other projects' runners (Neurodesk's), so a sibling counts only when its `.runner`
+    file registers it to QSMxT/QSM-CI.
   - `_diag` logs (`*.log`, `pages/*`) older than 7 days, for the same runners.
   - `qsm-ci-*` directories in the system temp dir (`qsm-ci run`'s per-run TemporaryDirectory with a
     copy of every input and output volume, and the Zenodo fetch's mkdtemp) idle for 2 days: a job
@@ -27,8 +28,9 @@ device" in the runner's own _diag), which killed jobs. Safe while other jobs run
     `~/.cache/*`, the temp dir and Docker's root, by size. What it cannot safely delete (a
     previous job's checkout leftovers: data/<phantom> datasets, .osfcache zips, results/ volumes,
     which the next checkout on that runner removes) is reported, not removed.
-  - stopped `qsmci`-labelled containers older than 7 days, dangling images and build cache older
-    than 7 days (docker's own prune commands; they never touch a running container).
+  - stopped `qsmci`-labelled containers older than 7 days. Nothing global: the Docker daemon is
+    shared with other projects' runners, so no `image prune` (dangling) or `builder prune`, whose
+    filters cannot tell QSM-CI's from theirs.
 
   python scripts/runner_cleanup.py [--dry-run] [--image-days 7] [--scratch-days 2] [--diag-days 7]
                                    [--drop-pinned]
@@ -115,12 +117,24 @@ def image_verdict(img: dict, *, in_use: set[str], pinned: set[str], now: float, 
 
 # ---------------------------------------------------------------------------------------- directories
 
+def registered_to(runner_dir: Path) -> str:
+    """The repository a runner directory's `.runner` file registers it to ("" when unreadable)."""
+    try:
+        cfg = json.loads((runner_dir / ".runner").read_text(encoding="utf-8-sig"))
+    except (OSError, ValueError):
+        return ""
+    return str(cfg.get("gitHubUrl", "")).rstrip("/")
+
+
 def runner_roots(own_root: Path) -> list[Path]:
-    """This runner's directory and any sibling runner directory beside it (same box)."""
+    """This runner's directory and any sibling QSM-CI runner directory beside it (same box). Other
+    projects' runners on a shared box are never included."""
     roots = [own_root]
+    mine = registered_to(own_root)
     try:
         for d in sorted(own_root.parent.iterdir()):
-            if d != own_root and d.is_dir() and (d / ".runner").exists() and (d / "_work").is_dir():
+            if (d != own_root and d.is_dir() and (d / "_work").is_dir() and mine
+                    and registered_to(d) == mine):
                 roots.append(d)
     except OSError:
         pass
@@ -251,8 +265,7 @@ def clean_images(args, now: float) -> None:
             if r.returncode:
                 print(f"  kept by docker: {r.stderr.strip()}")
     print(f"{removed} QSM-CI image(s) {'would be ' if args.dry_run else ''}removed")
-    prune("image", "prune", "-f", "--filter", f"until={int(args.image_days * 24)}h")      # dangling only
-    prune("builder", "prune", "-f", "--filter", f"until={int(args.image_days * 24)}h")
+    # No `image prune` / `builder prune`: the daemon is shared with other projects' runners.
 
 
 def clean_paths(args, now: float) -> None:
