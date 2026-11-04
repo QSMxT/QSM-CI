@@ -21,8 +21,8 @@ The latest QSMxT release against each verified original. A release does not chan
 |  |  | sim | [2026-11-01](https://github.com/QSMxT/QSM-CI/actions/runs/41283680804) | v0.39.0 `42ab620` | ⚪ not in v10.0.0 | — | ✅ current |
 | `medi` | `medi-cornell` → `medi-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-01](https://github.com/QSMxT/QSM-CI/actions/runs/41283680804) | v0.39.0 `42ab620` | ❌ fail | 81.63% | ✅ current |
 |  |  | sim | [2026-11-01](https://github.com/QSMxT/QSM-CI/actions/runs/41283680804) | v0.39.0 `42ab620` | ❌ fail | 80.37% | ✅ current |
-| `fit-ppm-complex` | `fit-ppm-complex-cornell` → `fit-ppm-complex-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41579904769) | v0.39.0 `42ab620` | ⚪ not in v10.0.0 | — | ⚠️ stale: the pair's settings or limits for this dataset changed since |
-|  |  | sim | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41579904769) | v0.39.0 `42ab620` | ⚪ not in v10.0.0 | — | ⚠️ stale: the pair's settings or limits for this dataset changed since |
+| `fit-ppm-complex` | `fit-ppm-complex-cornell` → `fit-ppm-complex-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ⚪ not in v10.0.0 | — | ✅ current |
+|  |  | sim | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ⚪ not in v10.0.0 | — | ✅ current |
 | `amp-pe` | `amp-pe` → `amp-pe-qsmrs` | sim | [2026-11-01](https://github.com/QSMxT/QSM-CI/actions/runs/41283680804) | v0.39.0 `42ab620` | ✅ pass | 0.4767% | ✅ current |
 | `decompose` | `decompose-qsm` → `decompose-qsmrs` | chisep-mc | [2026-11-02](https://github.com/QSMxT/QSM-CI/actions/runs/41371103875) | v0.39.0 `42ab620` | ❌ fail | 144% | ✅ current |
 | `chisep-ilsqr` | `chisep-ilsqr` → `chisep-ilsqr-qsmrs` | chisep-mc | [2026-11-02](https://github.com/QSMxT/QSM-CI/actions/runs/41371086692) | v0.39.0 `42ab620` | ⚪ not in v10.0.0 | — | ✅ current |
@@ -54,68 +54,62 @@ The latest QSMxT release against each verified original. A release does not chan
 |  |  | sim | [2026-11-01](https://github.com/QSMxT/QSM-CI/actions/runs/41283680804) | v0.39.0 `42ab620` | ❌ fail | 2.566% | ✅ current |
 | `tgv` | `tgv-tgvjl` → `tgv-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41579904769) | v0.39.0 `42ab620` | ❌ fail | 72.64% | ✅ current |
 |  |  | sim | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41579904769) | v0.39.0 `42ab620` | ❌ fail | 50.55% | ✅ current |
-| `xqsm` | `xqsm` → `xqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-|  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-| `qsmnet` | `qsmnet` → `qsmnet-qsmrs` | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-| `qsmnet-plus` | `qsmnet-plus` → `qsmnet-plus-qsmrs` | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-| `lpcnn` | `lpcnn` → `lpcnn-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-|  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-| `qsmgan` | `qsmgan` → `qsmgan-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-|  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-| `modl-qsm` | `modl-qsm` → `modl-qsm-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-|  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-| `ir2qsm` | `ir2qsm` → `ir2qsm-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-|  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-| `autoqsm` | `autoqsm` → `autoqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-|  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-| `nextqsm` | `nextqsm` → `nextqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-|  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-| `bfrnet` | `bfrnet` → `bfrnet-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-|  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-| `chisepnet` | `chisepnet` → `chisepnet-qsmrs` | chisep-mc | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-| `qsmnetme` | `qsmnetme` → `qsmnetme-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-|  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-| `susep-net` | `susep-net` → `susep-net-qsmrs` | chisep-mc | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-| `hd-bet` | `hd-bet-qsmci` → `hd-bet-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-| `mindgrab` | `mindgrab` → `mindgrab-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-| `r2primenet` | `r2primenet` → `r2primenet-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-|  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-| `iqsm` | `iqsm` → `iqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-|  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-| `iqsm-plus` | `iqsm-plus` → `iqsm-plus-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-|  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-| `iqfm` | `iqfm` → `iqfm-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-|  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
+| `xqsm` | `xqsm` → `xqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ✅ pass | 0.001571% | ✅ current |
+|  |  | sim | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ✅ pass | 0.0008659% | ✅ current |
+| `qsmnet` | `qsmnet` → `qsmnet-qsmrs` | sim | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ✅ pass | 0.0001346% | ✅ current |
+| `qsmnet-plus` | `qsmnet-plus` → `qsmnet-plus-qsmrs` | sim | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ✅ pass | 0.0002086% | ✅ current |
+| `lpcnn` | `lpcnn` → `lpcnn-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ✅ pass | 0.007791% | ✅ current |
+|  |  | sim | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ✅ pass | 3.92e-05% | ✅ current |
+| `qsmgan` | `qsmgan` → `qsmgan-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ✅ pass | 9.337e-05% | ✅ current |
+|  |  | sim | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ✅ pass | 0.005643% | ✅ current |
+| `modl-qsm` | `modl-qsm` → `modl-qsm-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ✅ pass | 5.855e-05% | ✅ current |
+|  |  | sim | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ✅ pass | 0.01412% | ✅ current |
+| `ir2qsm` | `ir2qsm` → `ir2qsm-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ✅ pass | 0.001434% | ✅ current |
+|  |  | sim | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ✅ pass | 0.0005049% | ✅ current |
+| `autoqsm` | `autoqsm` → `autoqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ❌ fail | 184.5% | ✅ current |
+|  |  | sim | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ❌ fail | 182.2% | ✅ current |
+| `nextqsm` | `nextqsm` → `nextqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ✅ pass | 0.1025% | ✅ current |
+|  |  | sim | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ❌ fail | 30.74% | ✅ current |
+| `bfrnet` | `bfrnet` → `bfrnet-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ✅ pass | 0.0001557% | ✅ current |
+|  |  | sim | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ✅ pass | 0.0002169% | ✅ current |
+| `chisepnet` | `chisepnet` → `chisepnet-qsmrs` | chisep-mc | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ⚪ not in v10.0.0 | — | ✅ current |
+| `qsmnetme` | `qsmnetme` → `qsmnetme-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ⚪ not in v10.0.0 | — | ✅ current |
+|  |  | sim | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ⚪ not in v10.0.0 | — | ✅ current |
+| `susep-net` | `susep-net` → `susep-net-qsmrs` | chisep-mc | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ✅ pass | 3.103e-05% | ✅ current |
+| `hd-bet` | `hd-bet-qsmci` → `hd-bet-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ✅ pass | — | ✅ current |
+| `mindgrab` | `mindgrab` → `mindgrab-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ⚪ not in v10.0.0 | — | ✅ current |
+| `r2primenet` | `r2primenet` → `r2primenet-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ⚪ not in v10.0.0 | — | ✅ current |
+|  |  | sim | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ⚪ not in v10.0.0 | — | ✅ current |
+| `iqsm` | `iqsm` → `iqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ⚪ not in v10.0.0 | — | ✅ current |
+|  |  | sim | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ⚪ not in v10.0.0 | — | ✅ current |
+| `iqsm-plus` | `iqsm-plus` → `iqsm-plus-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ⚪ not in v10.0.0 | — | ✅ current |
+|  |  | sim | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ⚪ not in v10.0.0 | — | ✅ current |
+| `iqfm` | `iqfm` → `iqfm-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ⚪ not in v10.0.0 | — | ✅ current |
+|  |  | sim | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ⚪ not in v10.0.0 | — | ✅ current |
 | `lsqr` | `lsqr` → `lsqr-qsmrs` | s005001-cbic-prisma-bridge-run1 | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41579904769) | v0.39.0 `42ab620` | ❌ fail | 14.58% | ✅ current |
 |  |  | sim | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41579904769) | v0.39.0 `42ab620` | ❌ fail | 5.557% | ✅ current |
 | `heidi` | `heidi` → `heidi-qsmrs` | s005001-cbic-prisma-bridge-run1 | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41579904769) | v0.39.0 `42ab620` | ❌ fail | 33.13% | ✅ current |
 |  |  | sim | [2026-11-03](https://github.com/QSMxT/QSM-CI/actions/runs/41579904769) | v0.39.0 `42ab620` | ❌ fail | 30.71% | ✅ current |
-| `ndi` | `ndi` → `ndi-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-|  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-| `fansi-nltv` | `fansi-nltv` → `fansi-nltv-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-|  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-| `fansi-nltgv` | `fansi-nltgv` → `fansi-nltgv-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-|  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-| `l1qsm` | `l1qsm` → `l1qsm-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-|  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-| `whqsm` | `whqsm` → `whqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-|  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-| `hdqsm` | `hdqsm` → `hdqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-|  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-| `resharp` | `resharp` → `resharp-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-|  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-| `pdf` | `pdf-cornell` → `pdf-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-|  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-| `lbv` | `lbv-cornell` → `lbv-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-|  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-| `tfi` | `tfi-cornell` → `tfi-qsmrs` | s002001-kki-achieva-bridge-run1 | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-|  |  | sim | never | — | — | — | ⚠️ stale: not run against QSMxT v10.0.0 |
-
-Run the flagged pairs against v10.0.0:
-
-```bash
-gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=fit-ppm-complex,xqsm,qsmnet,qsmnet-plus,lpcnn,qsmgan,modl-qsm,ir2qsm,autoqsm,nextqsm,bfrnet,chisepnet,qsmnetme,susep-net,hd-bet,mindgrab,r2primenet,iqsm,iqsm-plus,iqfm,ndi,fansi-nltv,fansi-nltgv,l1qsm,whqsm,hdqsm,resharp,pdf,lbv,tfi -f dataset=configured -f qsmxt_release=v10.0.0
-```
+| `ndi` | `ndi` → `ndi-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ❌ fail | 84.92% | ✅ current |
+|  |  | sim | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ❌ fail | 48.63% | ✅ current |
+| `fansi-nltv` | `fansi-nltv` → `fansi-nltv-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ❌ fail | 26.74% | ✅ current |
+|  |  | sim | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ❌ fail | 44.63% | ✅ current |
+| `fansi-nltgv` | `fansi-nltgv` → `fansi-nltgv-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ❌ fail | 31.03% | ✅ current |
+|  |  | sim | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ❌ fail | 43.41% | ✅ current |
+| `l1qsm` | `l1qsm` → `l1qsm-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ❌ fail | 116.4% | ✅ current |
+|  |  | sim | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ❌ fail | 51.78% | ✅ current |
+| `whqsm` | `whqsm` → `whqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ❌ fail | 58.08% | ✅ current |
+|  |  | sim | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ❌ fail | 37.49% | ✅ current |
+| `hdqsm` | `hdqsm` → `hdqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ❌ fail | 65.88% | ✅ current |
+|  |  | sim | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ❌ fail | 25.29% | ✅ current |
+| `resharp` | `resharp` → `resharp-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ❌ fail | 39.03% | ✅ current |
+|  |  | sim | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ❌ fail | 27.81% | ✅ current |
+| `pdf` | `pdf-cornell` → `pdf-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ❌ fail | 48.43% | ✅ current |
+|  |  | sim | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ❌ fail | 72.31% | ✅ current |
+| `lbv` | `lbv-cornell` → `lbv-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ❌ fail | 24% | ✅ current |
+|  |  | sim | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ❌ fail | 7.724% | ✅ current |
+| `tfi` | `tfi-cornell` → `tfi-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ❌ fail | 35.37% | ✅ current |
+|  |  | sim | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41775085523) | v0.39.0 `42ab620` | ❌ fail | 84.67% | ✅ current |
 
 ## Development: QSMxT main × QSM.rs main
 
@@ -250,24 +244,51 @@ No original code to check against (QSMxT/QSM-CI#302; tested against ground truth
 | Pair | v10.0.0 |
 |---|---|
 | `amp-pe` | 0.48 % · v10.0.0 |
+| `autoqsm` | failing · v10.0.0 |
+| `bfrnet` | < 0.001 % · v10.0.0 |
 | `chisep-ilsqr` | not in v10.0.0 |
 | `chisep-medi` | not in v10.0.0 |
+| `chisepnet` | not in v10.0.0 |
 | `decompose` | failing · v10.0.0 · no unwrap_phase |
+| `fansi-nltgv` | failing · v10.0.0 |
+| `fansi-nltv` | failing · v10.0.0 |
 | `fit-ppm-complex` | not in v10.0.0 |
+| `hd-bet` | pass · v10.0.0 |
+| `hdqsm` | failing · v10.0.0 |
 | `heidi` | failing · v10.0.0 · no denoise_reference_itk |
 | `iharperella` | failing · v10.0.0 |
 | `ilsqr` | failing · v10.0.0 |
+| `iqfm` | not in v10.0.0 |
+| `iqsm` | not in v10.0.0 |
+| `iqsm-plus` | not in v10.0.0 |
+| `ir2qsm` | 0.0014 % · v10.0.0 |
 | `ismv` | failing · v10.0.0 · no variant |
+| `l1qsm` | failing · v10.0.0 |
 | `laplacian` | < 0.001 % · v10.0.0 |
+| `lbv` | failing · v10.0.0 |
+| `lpcnn` | 0.0078 % · v10.0.0 |
 | `lsqr` | failing · v10.0.0 |
 | `medi` | failing · v10.0.0 |
+| `mindgrab` | not in v10.0.0 |
+| `modl-qsm` | 0.014 % · v10.0.0 |
+| `ndi` | failing · v10.0.0 |
+| `nextqsm` | failing · v10.0.0 |
 | `nltv` | failing · v10.0.0 |
+| `pdf` | failing · v10.0.0 |
 | `qsmart` | failing · v10.0.0 · no reliability, no offset_grid |
+| `qsmgan` | 0.0056 % · v10.0.0 |
+| `qsmnet` | < 0.001 % · v10.0.0 |
+| `qsmnet-plus` | < 0.001 % · v10.0.0 |
+| `qsmnetme` | not in v10.0.0 |
+| `r2primenet` | not in v10.0.0 |
+| `resharp` | failing · v10.0.0 |
 | `romeo` | failing · v10.0.0 |
 | `rts` | failing · v10.0.0 |
 | `sharp` | failing · v10.0.0 |
 | `sharp-qsmjl` | failing · v10.0.0 · no variant |
 | `star` | not in v10.0.0 |
+| `susep-net` | < 0.001 % · v10.0.0 |
+| `tfi` | failing · v10.0.0 |
 | `tgv` | failing · v10.0.0 · no reference_divergence, no reference_edge_erosion, no reference_output_box |
 | `tikhonov` | failing · v10.0.0 |
 | `tkd` | failing · v10.0.0 |
@@ -276,3 +297,5 @@ No original code to check against (QSMxT/QSM-CI#302; tested against ground truth
 | `vsharp` | failing · v10.0.0 |
 | `vsharp-qsmjl` | failing · v10.0.0 · no ball, no radius_step |
 | `wavesep` | failing · v10.0.0 |
+| `whqsm` | failing · v10.0.0 |
+| `xqsm` | 0.0016 % · v10.0.0 |
