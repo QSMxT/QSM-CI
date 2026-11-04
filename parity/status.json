@@ -19,6 +19,7 @@
     "commit": "42ab620190ad315c9dcf7aa8ec4a036402002b7e"
    },
    "stale": [
+    "fit-ppm-complex",
     "xqsm",
     "qsmnet",
     "qsmnet-plus",
@@ -50,6 +51,7 @@
     "tfi"
    ],
    "rerun": [
+    "fit-ppm-complex",
     "xqsm",
     "qsmnet",
     "qsmnet-plus",
@@ -470,7 +472,7 @@
      "reference": "fit-ppm-complex-cornell",
      "candidate": "fit-ppm-complex-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-fit-ppm-complex",
      "datasets": [
       {
@@ -494,9 +496,11 @@
         "release": "v10.0.0",
         "why": "QSMxT v10.0.0 refuses the port's command line: invalid value 'complex-fit' for '--b0-estimation <B0_ESTIMATION>'"
        },
-       "rerun": false,
-       "stale": false,
-       "reasons": []
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "the pair's settings or limits for this dataset changed since"
+       ]
       },
       {
        "dataset": "sim",
@@ -519,11 +523,14 @@
         "release": "v10.0.0",
         "why": "QSMxT v10.0.0 refuses the port's command line: invalid value 'complex-fit' for '--b0-estimation <B0_ESTIMATION>'"
        },
-       "rerun": false,
-       "stale": false,
-       "reasons": []
+       "rerun": true,
+       "stale": true,
+       "reasons": [
+        "the pair's settings or limits for this dataset changed since"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=fit-ppm-complex -f dataset=configured -f qsmxt_release=v10.0.0",
      "badge": {
       "kind": "unavailable",
       "message": "not in v10.0.0",
@@ -2824,26 +2831,14 @@
     {
      "qsmxt": {
       "ref": "main",
-      "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+      "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
      },
      "qsmrs": {
       "version": null,
-      "commit": "7656a79c85b68cecf2448283ee708c5a846c0f13"
+      "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef"
      },
-     "checks": 1,
-     "date": "2026-11-04T01:39:15Z"
-    },
-    {
-     "qsmxt": {
-      "ref": "main",
-      "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
-     },
-     "qsmrs": {
-      "version": null,
-      "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1"
-     },
-     "checks": 99,
-     "date": "2026-11-04T00:16:44Z"
+     "checks": 100,
+     "date": "2026-11-04T06:52:59Z"
     }
    ],
    "stale": [
@@ -2917,16 +2912,16 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 0.779394692990618,
         "max_abs": 0.04549842420965433,
@@ -2935,23 +2930,22 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/config.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` \u2026 since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `crates/qsmxt-engine/src/config.rs`, `src/cli.rs`, `src/pipeline/config.rs` since the checked f5a8ac6 (3 commits)"
        ]
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 0.3834338900378883,
         "max_abs": 0.031001627445220947,
@@ -2960,15 +2954,14 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/config.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` \u2026 since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `crates/qsmxt-engine/src/config.rs`, `src/cli.rs`, `src/pipeline/config.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=qsmart -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -2984,16 +2977,16 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 0.016660601516525406,
         "max_abs": 0.00016544759273529053,
@@ -3002,23 +2995,22 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 0.0023784845504688378,
         "max_abs": 8.988380432128906e-05,
@@ -3027,15 +3019,14 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=ilsqr -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -3051,16 +3042,16 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 0.0002207169164122568,
         "max_abs": 4.898756742477417e-07,
@@ -3069,40 +3060,38 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
-        "nrmse": 0.0009001093706291738,
+        "nrmse": 0.0009001093706291551,
         "max_abs": 6.295740604400635e-07,
-        "correlation": 0.9999999999598658,
+        "correlation": 0.9999999999598636,
         "dice": null
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=vsharp -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -3118,16 +3107,16 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 3.898096447956358e-05,
         "max_abs": 5.960464477539063e-08,
@@ -3136,15 +3125,14 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=iharperella -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -3160,58 +3148,56 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
-        "nrmse": 0.002147456029745283,
+        "nrmse": 0.002147456029745293,
         "max_abs": 1.3113021850585938e-05,
-        "correlation": 0.9999999999932063,
+        "correlation": 0.9999999999932094,
         "dice": null
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
-        "nrmse": 0.002332040836067377,
+        "nrmse": 0.002332040836067368,
         "max_abs": 7.152557373046875e-05,
-        "correlation": 0.9999999999999349,
+        "correlation": 0.9999999999999346,
         "dice": null
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=star -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -3227,41 +3213,40 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
-        "nrmse": 0.027452030932952263,
+        "nrmse": 0.027452030932952145,
         "max_abs": 0.001273512840270996,
-        "correlation": 0.9999999634958423,
+        "correlation": 0.9999999634958365,
         "dice": null
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs`, `src/utils/multi_echo.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 0.028957501325584657,
         "max_abs": 0.0004277825355529785,
@@ -3270,15 +3255,14 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs`, `src/utils/multi_echo.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=medi -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -3294,58 +3278,56 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
-        "nrmse": 2.5591665139143826e-06,
-        "max_abs": 1.3540032568926108e-05,
+        "nrmse": 0.0,
+        "max_abs": 0.0,
         "correlation": 1.0,
         "dice": null
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/rules.rs`, `src/utils/multi_echo.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/fieldmap.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs`, `src/pipeline/config.rs` since the checked f5a8ac6 (3 commits)"
        ]
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
-        "nrmse": 2.600647823319987e-06,
-        "max_abs": 1.4839606023997476e-05,
+        "nrmse": 0.0,
+        "max_abs": 0.0,
         "correlation": 1.0,
         "dice": null
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/rules.rs`, `src/utils/multi_echo.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/fieldmap.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs`, `src/pipeline/config.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=fit-ppm-complex -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -3361,16 +3343,16 @@
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 0.47666130458911443,
         "max_abs": 0.03618806600570679,
@@ -3379,15 +3361,14 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=amp-pe -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -3403,16 +3384,16 @@
       {
        "dataset": "chisep-mc",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 4.889516893324397,
         "max_abs": 0.03532949052682338,
@@ -3421,15 +3402,14 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=decompose -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -3445,33 +3425,32 @@
       {
        "dataset": "chisep-mc",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
-        "nrmse": 8.807660559912346e-09,
-        "max_abs": 9.313225746154785e-10,
-        "correlation": 0.9999999999999997,
+        "nrmse": 7.442306389240081e-08,
+        "max_abs": 1.4901161193847656e-08,
+        "correlation": 0.9999999999999998,
         "dice": null
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs`, `src/separation/chi_sep_ilsqr.rs`, `src/separation/chi_sep_medi.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=chisep-ilsqr -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -3487,33 +3466,32 @@
       {
        "dataset": "chisep-mc",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
-        "nrmse": 0.5786655210899939,
+        "nrmse": 0.5786655210899988,
         "max_abs": 0.00988069735467434,
-        "correlation": 0.9999871885924638,
+        "correlation": 0.9999871885924648,
         "dice": null
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs`, `src/separation/chi_sep_medi.rs`, `src/utils/multi_echo.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=chisep-medi -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -3529,16 +3507,16 @@
       {
        "dataset": "chisep-mc",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 2.1384635481370335e-07,
         "max_abs": 7.450580596923828e-09,
@@ -3547,15 +3525,14 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=wavesep -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -3571,16 +3548,16 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 2.6642761611901972e-14,
         "max_abs": 1.4210854715202004e-14,
@@ -3589,23 +3566,22 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 0.0,
         "max_abs": 0.0,
@@ -3614,15 +3590,14 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=tkd -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -3638,41 +3613,40 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
-        "nrmse": 1.2972927989831984e-16,
+        "nrmse": 1.2972927989832046e-16,
         "max_abs": 5.551115123125783e-17,
         "correlation": 1.0,
         "dice": null
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 0.0,
         "max_abs": 0.0,
@@ -3681,15 +3655,14 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=tsvd -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -3705,58 +3678,56 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 0.0,
         "max_abs": 0.0,
-        "correlation": 0.9999999999999998,
+        "correlation": 1.0,
         "dice": null
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 0.0,
         "max_abs": 0.0,
-        "correlation": 0.9999999999999999,
+        "correlation": 1.0,
         "dice": null
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=tikhonov -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -3772,16 +3743,16 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 0.0,
         "max_abs": 0.0,
@@ -3790,23 +3761,22 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 2.0240539192787753e-16,
         "max_abs": 5.551115123125783e-17,
@@ -3815,15 +3785,14 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=tv -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -3839,16 +3808,16 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 0.0,
         "max_abs": 0.0,
@@ -3857,40 +3826,38 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
-        "nrmse": 2.7493400271563223e-10,
+        "nrmse": 2.749340027156313e-10,
         "max_abs": 5.820766091346741e-11,
-        "correlation": 1.0,
+        "correlation": 0.9999999999999998,
         "dice": null
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=nltv -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -3906,58 +3873,56 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
-        "nrmse": 9.290244058620324e-09,
+        "nrmse": 9.290244058619308e-09,
         "max_abs": 3.725290298461914e-09,
-        "correlation": 0.9999999999999996,
+        "correlation": 1.0,
         "dice": null
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
-        "nrmse": 3.932370209344343e-10,
+        "nrmse": 3.9323702093443537e-10,
         "max_abs": 1.1641532182693481e-10,
         "correlation": 0.9999999999999998,
         "dice": null
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=rts -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -3973,41 +3938,40 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
-        "nrmse": 2.064038263801637e-09,
+        "nrmse": 2.0640382638016306e-09,
         "max_abs": 2.3283064365386963e-10,
-        "correlation": 0.9999999999999997,
+        "correlation": 1.0,
         "dice": null
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 6.02623610728256e-09,
         "max_abs": 4.656612873077393e-10,
@@ -4016,15 +3980,14 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=ismv -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -4040,16 +4003,16 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 1.394353286716442e-08,
         "max_abs": 1.862645149230957e-09,
@@ -4058,23 +4021,22 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 1.0580655069250227e-08,
         "max_abs": 9.313225746154785e-10,
@@ -4083,15 +4045,14 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=sharp -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -4107,16 +4068,16 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 0.0,
         "max_abs": 0.0,
@@ -4125,40 +4086,38 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
-        "nrmse": 6.321997285327097e-12,
+        "nrmse": 6.3219972853271076e-12,
         "max_abs": 4.547473508864641e-13,
         "correlation": 0.9999999999999999,
         "dice": null
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=sharp-qsmjl -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -4174,16 +4133,16 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 1.1328952917352798e-11,
         "max_abs": 1.8189894035458565e-12,
@@ -4192,23 +4151,22 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 5.204795163425769e-12,
         "max_abs": 4.547473508864641e-13,
@@ -4217,15 +4175,14 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=vsharp-qsmjl -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -4241,58 +4198,56 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
-        "nrmse": 4.619987642045952e-06,
+        "nrmse": 4.619987642045918e-06,
         "max_abs": 5.960464477539063e-08,
         "correlation": 0.9999999999999963,
         "dice": null
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/rules.rs`, `src/utils/multi_echo.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `crates/qsmxt-engine/src/fieldmap.rs` \u2026 since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `crates/qsmxt-engine/src/config.rs`, `src/cli.rs`, `src/pipeline/config.rs` since the checked f5a8ac6 (3 commits)"
        ]
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
-        "nrmse": 4.766646207539941e-14,
+        "nrmse": 4.766646207539972e-14,
         "max_abs": 2.842170943040401e-14,
         "correlation": 1.0,
         "dice": null
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/rules.rs`, `src/utils/multi_echo.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `crates/qsmxt-engine/src/fieldmap.rs` \u2026 since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `crates/qsmxt-engine/src/config.rs`, `src/cli.rs`, `src/pipeline/config.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=laplacian -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -4308,41 +4263,40 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
-        "nrmse": 1.4976936015554116,
+        "nrmse": 1.4976936015678584,
         "max_abs": 0.12724245712161064,
-        "correlation": 0.9998960409773552,
+        "correlation": 0.9998960409773588,
         "dice": null
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/rules.rs`, `src/unwrap/mod.rs`, `src/utils/multi_echo.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `crates/qsmxt-engine/src/fieldmap.rs` \u2026 since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `crates/qsmxt-engine/src/config.rs`, `src/cli.rs`, `src/pipeline/config.rs` since the checked f5a8ac6 (3 commits)"
        ]
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 1.6385230635647245,
         "max_abs": 0.16365057229995728,
@@ -4351,15 +4305,14 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/rules.rs`, `src/unwrap/mod.rs`, `src/utils/multi_echo.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `crates/qsmxt-engine/src/fieldmap.rs` \u2026 since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `crates/qsmxt-engine/src/config.rs`, `src/cli.rs`, `src/pipeline/config.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=romeo -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -4375,41 +4328,40 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
-        "nrmse": 0.0007663681110316662,
+        "nrmse": 0.0007663681110316687,
         "max_abs": 2.8759241104125977e-06,
         "correlation": 0.9999999999707442,
         "dice": null
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 0.0003826553324686831,
         "max_abs": 1.430511474609375e-06,
@@ -4418,15 +4370,14 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=tgv -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -4442,16 +4393,16 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-04T00:16:44Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41742981875",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 0.0014089931690850455,
         "max_abs": 2.8263777494430542e-05,
@@ -4460,23 +4411,22 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T23:52:59Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41739482104",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 0.001641430456129324,
         "max_abs": 1.4964491128921509e-05,
@@ -4485,16 +4435,14 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "the pair's settings or limits for this dataset changed since",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=xqsm -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -4510,16 +4458,16 @@
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 0.0001346401967354771,
         "max_abs": 1.9073486328125e-06,
@@ -4528,16 +4476,14 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/inversion/qsmnet.rs`, `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "the pair's settings or limits for this dataset changed since",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=qsmnet -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -4553,34 +4499,32 @@
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
-        "nrmse": 0.00020593049787909,
+        "nrmse": 0.00020793901547846695,
         "max_abs": 1.9669532775878906e-06,
-        "correlation": 0.9999999999978576,
+        "correlation": 0.9999999999978155,
         "dice": null
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/inversion/qsmnet.rs`, `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "the pair's settings or limits for this dataset changed since",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=qsmnet-plus -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -4596,16 +4540,16 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 0.007654043806589603,
         "max_abs": 2.7103349566459656e-05,
@@ -4614,42 +4558,38 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "the pair's settings or limits for this dataset changed since",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
-        "nrmse": 3.536770799104061e-05,
-        "max_abs": 7.152557373046875e-07,
-        "correlation": 0.9999999999999358,
+        "nrmse": 3.9203997354775885e-05,
+        "max_abs": 8.344650268554688e-07,
+        "correlation": 0.999999999999918,
         "dice": null
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "the pair's settings or limits for this dataset changed since",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=lpcnn -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -4665,42 +4605,40 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
-        "nrmse": 9.919649433979691e-05,
-        "max_abs": 1.7881393432617188e-07,
-        "correlation": 0.999999999999509,
+        "nrmse": 9.418124177169661e-05,
+        "max_abs": 1.4901161193847656e-07,
+        "correlation": 0.9999999999995594,
         "dice": null
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "the pair's settings or limits for this dataset changed since",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 0.005642661005171595,
         "max_abs": 0.0005917549133300781,
@@ -4709,16 +4647,14 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "the pair's settings or limits for this dataset changed since",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=qsmgan -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -4734,16 +4670,16 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 5.911561449918532e-05,
         "max_abs": 5.662441253662109e-07,
@@ -4752,42 +4688,38 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "the pair's settings or limits for this dataset changed since",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
-        "nrmse": 0.01411916799139816,
-        "max_abs": 4.7870445996522903e-05,
-        "correlation": 0.9999999901011175,
+        "nrmse": 0.014119303160456963,
+        "max_abs": 4.788720980286598e-05,
+        "correlation": 0.9999999901009912,
         "dice": null
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "the pair's settings or limits for this dataset changed since",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=modl-qsm -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -4803,16 +4735,16 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 0.0010536810708950443,
         "max_abs": 2.2967346012592316e-05,
@@ -4821,42 +4753,38 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "the pair's settings or limits for this dataset changed since",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
-        "nrmse": 0.0005048702182625716,
-        "max_abs": 9.415671229362488e-06,
-        "correlation": 0.9999999999872183,
+        "nrmse": 0.0007881649982821495,
+        "max_abs": 9.253621101379395e-06,
+        "correlation": 0.9999999999688239,
         "dice": null
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "the pair's settings or limits for this dataset changed since",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=ir2qsm -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -4872,42 +4800,40 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
-        "nrmse": 0.0001120835752206852,
-        "max_abs": 3.501772880554199e-07,
-        "correlation": 0.9999999999993624,
+        "nrmse": 0.000110101940993645,
+        "max_abs": 3.0547380447387695e-07,
+        "correlation": 0.9999999999993859,
         "dice": null
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "the pair's settings or limits for this dataset changed since",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 0.00014162011000325386,
         "max_abs": 2.8312206268310547e-07,
@@ -4916,16 +4842,14 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "the pair's settings or limits for this dataset changed since",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=autoqsm -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -4941,16 +4865,16 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 0.14355310656420778,
         "max_abs": 0.004615996964275837,
@@ -4959,40 +4883,38 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
-        "nrmse": 0.01629900410095672,
-        "max_abs": 0.00035032443702220917,
-        "correlation": 0.999999986714044,
+        "nrmse": 0.018227397830932274,
+        "max_abs": 0.0012212526053190231,
+        "correlation": 0.9999999833849628,
         "dice": null
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=nextqsm -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -5008,16 +4930,16 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 0.00015569325552539524,
         "max_abs": 2.5331974029541016e-07,
@@ -5026,42 +4948,38 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "the pair's settings or limits for this dataset changed since",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
-        "nrmse": 0.00021687650376354028,
+        "nrmse": 0.00021687650376354478,
         "max_abs": 1.0579824447631836e-06,
-        "correlation": 0.9999999999976507,
+        "correlation": 0.9999999999976471,
         "dice": null
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "the pair's settings or limits for this dataset changed since",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=bfrnet -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -5077,16 +4995,16 @@
       {
        "dataset": "chisep-mc",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 4.000944411619018e-05,
         "max_abs": 1.9371509552001953e-07,
@@ -5095,15 +5013,14 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs`, `src/separation/chisepnet.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=chisepnet -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -5119,16 +5036,16 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 9.434085525017448e-05,
         "max_abs": 6.318092346191406e-06,
@@ -5137,42 +5054,38 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "the pair's settings or limits for this dataset changed since",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
-        "nrmse": 6.011423915013106e-05,
+        "nrmse": 6.0114239150131285e-05,
         "max_abs": 6.258487701416016e-07,
-        "correlation": 0.9999999999998205,
+        "correlation": 0.9999999999998206,
         "dice": null
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "the pair's settings or limits for this dataset changed since",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=qsmnetme -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -5188,16 +5101,16 @@
       {
        "dataset": "chisep-mc",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 3.1025661717610165e-05,
         "max_abs": 1.9371509552001953e-07,
@@ -5206,16 +5119,14 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/geometry.rs`, `src/models/onnx.rs`, `src/pipeline/rules.rs`, `src/separation/chisepnet.rs` since the checked cc4ae49 (7 commits)",
-        "the pair's settings or limits for this dataset changed since",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=susep-net -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -5231,16 +5142,16 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": null,
         "max_abs": null,
@@ -5249,15 +5160,14 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=hd-bet -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -5273,33 +5183,32 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": null,
         "max_abs": null,
         "correlation": null,
-        "dice": 0.9999622370256026
+        "dice": 1.0
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/bet/mindgrab.rs`, `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=mindgrab -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -5315,16 +5224,16 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 2.0333647304263572e-05,
         "max_abs": 9.1552734375e-05,
@@ -5333,42 +5242,38 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/onnx.rs` since the checked cc4ae49 (7 commits)",
-        "the pair's settings or limits for this dataset changed since",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
-        "nrmse": 2.0470414536279393e-05,
+        "nrmse": 2.047041453627934e-05,
         "max_abs": 0.000152587890625,
-        "correlation": 0.9999999999999453,
+        "correlation": 0.9999999999999442,
         "dice": null
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/onnx.rs` since the checked cc4ae49 (7 commits)",
-        "the pair's settings or limits for this dataset changed since",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=r2primenet -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -5384,60 +5289,56 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
-        "nrmse": 0.00022438482102694752,
-        "max_abs": 2.995133399963379e-06,
-        "correlation": 0.9999999999977195,
+        "nrmse": 0.0002228114580099028,
+        "max_abs": 3.069639205932617e-06,
+        "correlation": 0.9999999999980329,
         "dice": null
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "the pair's settings or limits for this dataset changed since",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
-        "nrmse": 0.00027082193779912376,
-        "max_abs": 7.152557373046875e-07,
-        "correlation": 0.9999999999962856,
+        "nrmse": 0.0002788667357603915,
+        "max_abs": 1.2265518307685852e-06,
+        "correlation": 0.999999999995775,
         "dice": null
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "the pair's settings or limits for this dataset changed since",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=iqsm -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -5453,42 +5354,40 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
-        "nrmse": 0.00011574474770162346,
-        "max_abs": 1.4603137969970703e-06,
-        "correlation": 0.9999999999993286,
+        "nrmse": 0.00011995513711648757,
+        "max_abs": 1.2516975402832031e-06,
+        "correlation": 0.9999999999992905,
         "dice": null
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "the pair's settings or limits for this dataset changed since",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 0.00015486404883580202,
         "max_abs": 1.1101365089416504e-06,
@@ -5497,16 +5396,14 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "the pair's settings or limits for this dataset changed since",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=iqsm-plus -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -5522,16 +5419,16 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-04T01:39:15Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41753949105",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
-         "ref": null,
-         "commit": "7656a79c85b68cecf2448283ee708c5a846c0f13",
+         "ref": "main",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 0.00018289172900657114,
         "max_abs": 2.2351741790771484e-07,
@@ -5540,23 +5437,22 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked 7656a79 (9 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T23:52:59Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41739482104",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 0.00021601584208528758,
         "max_abs": 2.8265640139579773e-07,
@@ -5565,15 +5461,14 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/onnx.rs`, `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=iqfm -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -5589,16 +5484,16 @@
       {
        "dataset": "s005001-cbic-prisma-bridge-run1",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 0.00025153414671653327,
         "max_abs": 1.9952654838562012e-05,
@@ -5607,23 +5502,22 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 0.0003931247099192257,
         "max_abs": 2.1265819668769836e-05,
@@ -5632,15 +5526,14 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=lsqr -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -5656,41 +5549,40 @@
       {
        "dataset": "s005001-cbic-prisma-bridge-run1",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
-        "nrmse": 0.00034893468405343815,
+        "nrmse": 0.00034893468405343924,
         "max_abs": 2.256035804748535e-05,
-        "correlation": 0.9999999999939112,
+        "correlation": 0.9999999999939144,
         "dice": null
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 0.0004536340971534522,
         "max_abs": 2.9501505196094513e-05,
@@ -5699,15 +5591,14 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=heidi -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -5723,16 +5614,16 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 8.885187523872773e-05,
         "max_abs": 5.170702934265137e-06,
@@ -5741,23 +5632,22 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 0.0011028568586269746,
         "max_abs": 0.00011706352233886719,
@@ -5766,15 +5656,14 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=ndi -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -5790,41 +5679,40 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
-        "nrmse": 0.0030037959387534743,
+        "nrmse": 0.0030037959387534834,
         "max_abs": 1.7195940017700195e-05,
-        "correlation": 0.9999999996127551,
+        "correlation": 0.9999999996127504,
         "dice": null
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 0.006892247701029085,
         "max_abs": 0.0008429884910583496,
@@ -5833,15 +5721,14 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=fansi-nltv -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -5857,58 +5744,56 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
-        "nrmse": 0.0038966797727501804,
+        "nrmse": 0.003896679772750194,
         "max_abs": 1.792609691619873e-05,
-        "correlation": 0.9999999992985029,
+        "correlation": 0.9999999992985054,
         "dice": null
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
-        "nrmse": 0.006342802332795329,
+        "nrmse": 0.006342802332795359,
         "max_abs": 0.000807344913482666,
-        "correlation": 0.9999999980004373,
+        "correlation": 0.9999999980004435,
         "dice": null
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=fansi-nltgv -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -5924,41 +5809,40 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
-        "nrmse": 0.002592695485330133,
+        "nrmse": 0.0025926954853301228,
         "max_abs": 2.9832124710083008e-05,
-        "correlation": 0.9999999996626002,
+        "correlation": 0.9999999996625901,
         "dice": null
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 0.002204803204573185,
         "max_abs": 8.225440979003906e-05,
@@ -5967,15 +5851,14 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=l1qsm -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -5991,16 +5874,16 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 0.0038219837356829986,
         "max_abs": 2.205371856689453e-05,
@@ -6009,40 +5892,38 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
-        "nrmse": 0.0018172258553543162,
+        "nrmse": 0.0018172258553543095,
         "max_abs": 1.0788440704345703e-05,
-        "correlation": 0.9999999998628014,
+        "correlation": 0.9999999998627975,
         "dice": null
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=whqsm -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -6058,58 +5939,56 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
-        "nrmse": 0.00086034318680125,
+        "nrmse": 0.0008603431868012454,
         "max_abs": 1.0788440704345703e-05,
-        "correlation": 0.9999999999812139,
+        "correlation": 0.9999999999812081,
         "dice": null
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
-        "nrmse": 0.0014815453101544986,
+        "nrmse": 0.0014815453101545025,
         "max_abs": 0.00011420249938964844,
-        "correlation": 0.9999999999391195,
+        "correlation": 0.999999999939119,
         "dice": null
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=hdqsm -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -6125,58 +6004,56 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
-        "nrmse": 7.730525178916925e-09,
+        "nrmse": 7.730525178916897e-09,
         "max_abs": 9.313225746154785e-10,
-        "correlation": 0.9999999999999991,
+        "correlation": 1.0,
         "dice": null
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
-        "nrmse": 1.4900663543060628e-08,
+        "nrmse": 1.5953676769308725e-08,
         "max_abs": 9.313225746154785e-10,
-        "correlation": 0.9999999999999993,
+        "correlation": 0.9999999999999998,
         "dice": null
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=resharp -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -6192,16 +6069,16 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 2.1066876808678e-05,
         "max_abs": 9.313225746154785e-07,
@@ -6210,23 +6087,22 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs`, `src/utils/multi_echo.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 0.014611984807801815,
         "max_abs": 0.0017065684078261256,
@@ -6235,15 +6111,14 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs`, `src/utils/multi_echo.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=pdf -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -6259,16 +6134,16 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 0.0018394464372793991,
         "max_abs": 1.9669532775878906e-06,
@@ -6277,23 +6152,22 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 0.0007664793938920829,
         "max_abs": 3.948807716369629e-07,
@@ -6302,15 +6176,14 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=lbv -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
@@ -6326,16 +6199,16 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
         "nrmse": 1.2564199756348922,
         "max_abs": 0.08617767691612244,
@@ -6344,40 +6217,38 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs`, `src/utils/multi_echo.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-03T16:10:24Z",
+        "date": "2026-11-04T06:52:59Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41625523205",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
         "qsmrs": {
          "ref": "main",
-         "commit": "cc4ae49fa304b46d29c0bc5721770c84f3411ba1",
+         "commit": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
          "version": null
         },
         "qsmxt": {
-         "commit": "632fed9f25811829aa48b8f1745319570cbd10ba"
+         "commit": "f5a8ac61cdae4b85a996196f326430c705858e5d"
         },
-        "nrmse": 3.606119695914549,
-        "max_abs": 0.06728800386190414,
-        "correlation": 0.9993560445869267,
+        "nrmse": 3.5598971943667572,
+        "max_abs": 0.06569875031709671,
+        "correlation": 0.999366334761111,
         "dice": null
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/rules.rs`, `src/utils/multi_echo.rs` since the checked cc4ae49 (7 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked 632fed9 (2 commits)"
+        "QSMxT main changed `src/cli.rs` since the checked f5a8ac6 (3 commits)"
        ]
       }
      ],
      "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=tfi -f dataset=configured -f qsmrs_ref=main",
      "badge": {
       "kind": "stale",
-      "message": "stale \u00b7 3 Nov",
+      "message": "stale \u00b7 4 Nov",
       "color": "orange"
      }
     },
