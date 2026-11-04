@@ -11,7 +11,8 @@ device" in the runner's own _diag), which killed jobs. Safe while other jobs run
     skipped up front as well. Docker records no last-used time, so "not used in the last N days"
     means: no container uses it, it was not pulled/built/tagged in the last N days (LastTagTime, or
     Created when never tagged), and, unless --drop-pinned, current main does not pin it (the next
-    scoring/evaluate job would only pull it again). A `qsmxt-under-test:<run id>` image goes as soon
+    scoring/evaluate job would only pull it again). A `qsmxt-under-test:<run id>-j<job>` image (each parity job removes its own when it ends; this
+    catches those whose job the runner lost) goes as soon
     as its parity run has finished (it is never used again).
   - scratch dirs: `.work/` (pipeline.py) and `.parity/` (parity.py) in each repo checkout under each
     runner's `_work/`, only when NOTHING inside changed in the last 2 days (a running job writes
@@ -52,7 +53,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 QSMCI_PREFIX = "ghcr.io/astewartau/qsm-ci/"
-UNDER_TEST = "qsmxt-under-test"          # parity.yml: qsmxt-under-test:<run id>[-models]
+UNDER_TEST = "qsmxt-under-test"          # parity.yml: qsmxt-under-test:<run id>[-j<job>][-models]
 SCRATCH = (".work", ".parity")
 DAY = 86400.0
 
@@ -85,7 +86,7 @@ def _ts(s: "str | None") -> "float | None":
 
 
 def under_test_run(ref: str) -> "str | None":
-    m = re.fullmatch(UNDER_TEST + r":(\d+)(?:-models)?", ref)
+    m = re.fullmatch(UNDER_TEST + r":(\d+)(?:-j\d+)?(?:-models)?", ref)
     return m.group(1) if m else None
 
 

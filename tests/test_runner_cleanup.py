@@ -59,6 +59,7 @@ def test_parity_builds_go_once_their_run_finished():
     assert _verdict(_img("sha256:q", tags=["qsmxt-under-test:9"], created=10), finished=lambda r: None)[0] is True
     assert _verdict(b, finished=lambda r: True, in_use={"sha256:p"})[0] is False
     assert rc.under_test_run("qsmxt-under-test:42-models") == "42" and rc.under_test_run("qsmxt-under-test:x") is None
+    assert rc.under_test_run("qsmxt-under-test:42-j3-models") == "42" == rc.under_test_run("qsmxt-under-test:42-j0")
 
 
 def test_pinned_refs_match_what_the_algorithms_pin():
@@ -136,3 +137,10 @@ def test_no_global_docker_prune():
     # The daemon is shared with other projects' runners: only QSM-CI's own images/containers go.
     src = (Path(__file__).resolve().parent.parent / "scripts" / "runner_cleanup.py").read_text()
     assert '"image", "prune"' not in src and '"builder", "prune"' not in src
+
+
+def test_each_parity_job_removes_its_own_build_image():
+    wf = (Path(__file__).resolve().parent.parent / ".github" / "workflows" / "parity.yml").read_text()
+    assert "qsmxt-under-test:${{ github.run_id }}-j${{ strategy.job-index }}" in wf
+    step = wf.split("name: Remove this job's qsmxt image", 1)[1].split("\n      - ", 1)[0]
+    assert "always()" in step and 'docker rmi "$IMG"' in step

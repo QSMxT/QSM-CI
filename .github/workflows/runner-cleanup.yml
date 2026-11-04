@@ -1,7 +1,7 @@
 name: runner-cleanup
 
 # Free disk on QSM-CI's self-hosted runners. Nothing else prunes them: container images pile up
-# (every pinned method image ever pulled, plus a qsmxt-under-test:<run id> build per parity run), and
+# (every pinned method image ever pulled, plus parity builds whose job the runner lost: each parity job now removes its own), and
 # on 2026-11-04 the box's /storage filled up ("No space left on device" in the runner's own _diag),
 # killing jobs. What is removed, and why it is safe while other jobs run, is in
 # scripts/runner_cleanup.py (unit-tested in tests/test_runner_cleanup.py). In short: only QSM-CI's
