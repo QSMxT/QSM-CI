@@ -7,6 +7,9 @@ name: runner-cleanup
 # scripts/runner_cleanup.py (unit-tested in tests/test_runner_cleanup.py). In short: only QSM-CI's
 # images, never one a container uses (no `docker rmi -f`), never a running container, never this
 # job's own workspace, scratch dirs only when nothing in them changed for 2 days.
+# Docker is not the only consumer (on 2026-11-04 images were 179 GB of the full 974 GB /storage): the
+# job also removes `qsm-ci run`'s leaked /tmp/qsm-ci-* scratch (a killed job never cleans it up) and
+# prints the largest runner/_work, ~/.cache, temp and Docker directories, so the rest is visible.
 #
 # A COMPLETELY full disk stops any job from starting (the runner cannot even write its logs), so this
 # workflow cannot rescue that state: clean the box by hand first.

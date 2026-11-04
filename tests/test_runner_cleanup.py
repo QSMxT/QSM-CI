@@ -116,3 +116,12 @@ def test_the_workflow_runs_on_the_self_hosted_runners_weekly_and_on_dispatch():
     assert "df -h" in text
     src = (ROOT / "scripts" / "runner_cleanup.py").read_text()
     assert '["docker", "rmi", *refs]' in src and '"rmi", "-f"' not in src and "--force" not in src
+
+
+def test_stale_qsm_ci_temp_dirs_go_and_others_stay(tmp_path):
+    _touch(tmp_path / "qsm-ci-abc" / "input" / "phase.nii", 5)
+    _touch(tmp_path / "qsm-ci-abc" / "input", 5)
+    _touch(tmp_path / "qsm-ci-abc", 5)
+    _touch(tmp_path / "qsm-ci-live" / "output" / "chi.nii", 0.2)       # a run in progress
+    _touch(tmp_path / "other" / "old", 30)                              # not ours
+    assert rc.stale_tmp(tmp_path, NOW, 2) == [tmp_path / "qsm-ci-abc"]

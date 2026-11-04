@@ -19,6 +19,14 @@ device" in the runner's own _diag), which killed jobs. Safe while other jobs run
     Sibling runner directories next to this one (`<parent>/*/` with a `.runner` file and `_work/`)
     are cleaned too, so one leg cleans every runner on a shared box.
   - `_diag` logs (`*.log`, `pages/*`) older than 7 days, for the same runners.
+  - `qsm-ci-*` directories in the system temp dir (`qsm-ci run`'s per-run TemporaryDirectory with a
+    copy of every input and output volume, and the Zenodo fetch's mkdtemp) idle for 2 days: a job
+    killed at its cap or cancelled never runs the cleanup, so each kill leaks one.
+  - Docker is NOT the only consumer of the box's disk (on 2026-11-04 images were 179 GB of a full
+    974 GB /storage), so the job also prints where the rest is: each runner's `_work/` entries,
+    `~/.cache/*`, the temp dir and Docker's root, by size. What it cannot safely delete (a
+    previous job's checkout leftovers: data/<phantom> datasets, .osfcache zips, results/ volumes,
+    which the next checkout on that runner removes) is reported, not removed.
   - stopped `qsmci`-labelled containers older than 7 days, dangling images and build cache older
     than 7 days (docker's own prune commands; they never touch a running container).
 
@@ -152,6 +160,18 @@ def stale_scratch(roots: list[Path], own_workspace: "Path | None", now: float, d
     return out
 
 
+def stale_tmp(tmp: Path, now: float, days: float) -> list[Path]:
+    """`qsm-ci-*` dirs in the temp dir (qsm-ci run / Zenodo fetch scratch) with nothing newer than `days`."""
+    out = []
+    try:
+        for d in sorted(tmp.glob("qsm-ci-*")):
+            if d.is_dir() and not d.is_symlink() and (now - newest_mtime(d)) / DAY > days:
+                out.append(d)
+    except OSError:
+        pass
+    return out
+
+
 def old_diag(roots: list[Path], now: float, days: float) -> list[Path]:
     out = []
     for root in roots:
@@ -258,6 +278,42 @@ def clean_paths(args, now: float) -> None:
                 print(f"  could not remove {f}: {e}")
 
 
+def clean_tmp(args, now: float) -> None:
+    import tempfile
+    tmp = Path(tempfile.gettempdir())
+    for d in stale_tmp(tmp, now, args.scratch_days):
+        print(f"remove {d}/ (qsm-ci run scratch, nothing changed for > {args.scratch_days:g} d)")
+        if not args.dry_run:
+            shutil.rmtree(d, ignore_errors=True)
+            if d.exists():
+                print(f"  could not fully remove {d} (files owned by another user, e.g. a container's root?)")
+
+
+def report_usage() -> None:
+    """Where the disk goes besides Docker images — printed largest first, nothing removed."""
+    import tempfile
+    places = []
+    ws = os.environ.get("RUNNER_WORKSPACE")
+    if ws:
+        for root in runner_roots(Path(ws).resolve().parent.parent):
+            places += sorted((root / "_work").glob("*")) + sorted((root / "_work").glob("*/*"))
+            places.append(root / "_diag")
+    places += sorted((Path.home() / ".cache").glob("*")) + [Path(tempfile.gettempdir())]
+    if shutil.which("docker"):
+        droot = sh("docker", "info", "--format", "{{.DockerRootDir}}").strip()
+        if droot:
+            places.append(Path(droot))
+    sizes = []
+    for pth in dict.fromkeys(places):
+        if pth.is_dir():
+            out = sh("du", "-sxk", str(pth)).split("\t")[0]
+            if out.strip().isdigit():
+                sizes.append((int(out), pth))
+    print("largest directories (not removed unless listed above):")
+    for kb, pth in sorted(sizes, reverse=True)[:25]:
+        print(f"  {kb / 1048576:8.1f} GB  {pth}")
+
+
 def report_other_runtimes() -> None:
     """QSM-CI scores with docker only on these runners; just report podman/apptainer caches if present."""
     for tool, cache in (("apptainer", Path.home() / ".apptainer" / "cache"),
@@ -278,7 +334,9 @@ def main() -> None:
     now = time.time()
     clean_images(args, now)
     clean_paths(args, now)
+    clean_tmp(args, now)
     report_other_runtimes()
+    report_usage()
 
 
 if __name__ == "__main__":
