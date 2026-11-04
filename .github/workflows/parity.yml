@@ -217,6 +217,21 @@ jobs:
             sed -i -E "/astewartau\/QSM\.rs/ s/(rev|tag|branch) = \"[^\"]*\"/rev = \"$sha\"/" "$f"
             grep -n 'QSM.rs.git' "$f"
           done
+      # What is about to be built, written BEFORE the build: a build that fails is still recorded
+      # (result "error") with the commits it tried. "Record what was built" overwrites it on success.
+      - name: Record the commits under test
+        if: needs.plan.outputs.release == ''
+        working-directory: qsmxt
+        run: |
+          mkdir -p ../qsmxt-build
+          QSMXT_COMMIT=$(git rev-parse HEAD) python3 - <<'PY' > ../qsmxt-build/built.json
+          import json, os, re
+          m = re.search(r'astewartau/QSM\.rs\.git"[^}]*\brev = "([0-9a-f]{40})"', open("Cargo.toml").read())
+          print(json.dumps({"qsmxt_ref": os.environ["QSMXT_REF"], "qsmxt_commit": os.environ["QSMXT_COMMIT"],
+                            "qsmrs_ref": os.environ.get("QSMRS_REF") or None,
+                            "qsmrs_version": None, "qsmrs_commit": m.group(1) if m else None}))
+          PY
+          cat ../qsmxt-build/built.json
       - uses: dtolnay/rust-toolchain@stable
         if: needs.plan.outputs.release == ''
         with:
@@ -258,6 +273,7 @@ jobs:
           PY
           cat ../qsmxt-build/built.json
       - uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() }}   # after a failed build too: report records its commits
         with:
           name: qsmxt-under-test-${{ needs.plan.outputs.key }}
           path: qsmxt-build/
