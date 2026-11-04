@@ -81,8 +81,12 @@ SKIP_TOKEN = "[skip score]"
 # `timeout_minutes` is deliberately NOT here: it is also the per-RUN wall-clock budget
 # (qsm_ci.containers.timeout_s), so raising it is exactly how a run that DNF'd on time gets a real
 # score — which makes it outcome-changing, not scheduling-only.
+# `field_strength` (a method trained for one B0) only REMOVES combos — on phantoms at another field
+# strength — and the rows they leave behind are dropped at merge by scripts/prune_inapplicable.py, so
+# declaring it needs no rescore. (Removing the declaration later does: dispatch scope=<the χ-sep
+# methods> to score the combos it re-allows.)
 SCORE_COSMETIC = COSMETIC_KEYS | {"runner", "jobs", "manual_phantoms",
-                                  "smoke_box", "smoke_params", "ci_skip_reason"}
+                                  "smoke_box", "smoke_params", "ci_skip_reason", "field_strength"}
 
 HOSTED = {"runs_on": "ubuntu-latest", "timeout": 360, "jobs": 2}
 HOSTED_LARGE = {"runs_on": "ubuntu-latest", "timeout": 360, "jobs": 1}
