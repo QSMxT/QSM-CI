@@ -1,6 +1,6 @@
 # Port parity status
 
-Generated 2026-11-04 by `scripts/parity.py status` from `parity/results.json` and `parity/thresholds.yml`; do not edit by hand. How checks run, the two tracks, and what makes a check stale: [docs/parity.md](../docs/parity.md).
+Generated 2026-11-05 by `scripts/parity.py status` from `parity/results.json` and `parity/thresholds.yml`; do not edit by hand. How checks run, the two tracks, and what makes a check stale: [docs/parity.md](../docs/parity.md).
 
 ## Released: QSMxT v10.0.0
 
@@ -159,8 +159,8 @@ A check is **stale** when the reference image changed, QSM.rs `main` changed the
 |  |  | sim | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41757738719) | `de9231e` | ✅ pass | 5.205e-12% | ⚠️ stale: QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` since the checked f5a8ac6 (5 commits) |
 | `laplacian` | `laplacian-qsmjl` → `laplacian-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41811450319) | `008b829` | ✅ pass | 4.62e-06% | ✅ current |
 |  |  | sim | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41811450319) | `008b829` | ✅ pass | 4.767e-14% | ✅ current |
-| `romeo` | `romeo-romeojl` → `romeo-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41811450319) | `008b829` | ✅ pass | 1.498% | ✅ current |
-|  |  | sim | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41811450319) | `008b829` | ❌ fail | 1.684% | ⚠️ stale: the last check failed: totalfield max_abs 0.2823 ppm (limit <= 0.205 ppm) |
+| `romeo` | `romeo-romeojl` → `romeo-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-05](https://github.com/QSMxT/QSM-CI/actions/runs/41949669792) | `008b829` | ✅ pass | 1.498% | ✅ current |
+|  |  | sim | [2026-11-05](https://github.com/QSMxT/QSM-CI/actions/runs/41949669792) | `008b829` | ✅ pass | 1.645% | ✅ current |
 | `tgv` | `tgv-tgvjl` → `tgv-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41757738719) | `de9231e` | ✅ pass | 0.0007664% | ⚠️ stale: QSM.rs main changed `src/pipeline/inversion.rs` since the checked de9231e (1 commits); QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` since the checked f5a8ac6 (5 commits) |
 |  |  | sim | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41757738719) | `de9231e` | ✅ pass | 0.0003827% | ⚠️ stale: QSM.rs main changed `src/pipeline/inversion.rs` since the checked de9231e (1 commits); QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` since the checked f5a8ac6 (5 commits) |
 | `xqsm` | `xqsm` → `xqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-04](https://github.com/QSMxT/QSM-CI/actions/runs/41757738719) | `de9231e` | ✅ pass | 0.001409% | ⚠️ stale: QSM.rs main changed `src/pipeline/inversion.rs` since the checked de9231e (1 commits); QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked f5a8ac6 (5 commits) |
@@ -223,7 +223,7 @@ A check is **stale** when the reference image changed, QSM.rs `main` changed the
 Refresh every stale pair against QSM.rs `main`:
 
 ```bash
-gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=qsmart,ilsqr,vsharp,iharperella,star,medi,amp-pe,decompose,chisep-ilsqr,chisep-medi,wavesep,tkd,tsvd,tikhonov,tv,nltv,rts,ismv,sharp,sharp-qsmjl,vsharp-qsmjl,romeo,tgv,xqsm,qsmnet,qsmnet-plus,lpcnn,qsmgan,modl-qsm,ir2qsm,autoqsm,nextqsm,bfrnet,chisepnet,qsmnetme,susep-net,hd-bet,mindgrab,r2primenet,iqsm,iqsm-plus,iqfm,lsqr,heidi,ndi,fansi-nltv,fansi-nltgv,l1qsm,whqsm,hdqsm,resharp,pdf,lbv,tfi -f dataset=configured -f qsmrs_ref=main
+gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=qsmart,ilsqr,vsharp,iharperella,star,medi,amp-pe,decompose,chisep-ilsqr,chisep-medi,wavesep,tkd,tsvd,tikhonov,tv,nltv,rts,ismv,sharp,sharp-qsmjl,vsharp-qsmjl,tgv,xqsm,qsmnet,qsmnet-plus,lpcnn,qsmgan,modl-qsm,ir2qsm,autoqsm,nextqsm,bfrnet,chisepnet,qsmnetme,susep-net,hd-bet,mindgrab,r2primenet,iqsm,iqsm-plus,iqfm,lsqr,heidi,ndi,fansi-nltv,fansi-nltgv,l1qsm,whqsm,hdqsm,resharp,pdf,lbv,tfi -f dataset=configured -f qsmrs_ref=main
 ```
 
 ## No original

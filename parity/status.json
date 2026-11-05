@@ -1,6 +1,6 @@
 {
  "schema": 2,
- "generated": "2026-11-04",
+ "generated": "2026-11-05",
  "default_track": "released",
  "badges": "https://qsmxt.github.io/QSM-CI/parity/badges/",
  "tracks": {
@@ -3557,7 +3557,7 @@
       "commit": "008b829ed67f4ab3f5edb00b9d0dff7dc7643fff"
      },
      "checks": 6,
-     "date": "2026-11-04T10:13:38Z"
+     "date": "2026-11-05T01:44:16Z"
     },
     {
      "qsmxt": {
@@ -3594,7 +3594,6 @@
     "sharp",
     "sharp-qsmjl",
     "vsharp-qsmjl",
-    "romeo",
     "tgv",
     "xqsm",
     "qsmnet",
@@ -4998,26 +4997,26 @@
      "reference": "romeo-romeojl",
      "candidate": "romeo-qsmrs",
      "enabled": true,
-     "state": "stale",
+     "state": "current",
      "anchor": "pair-romeo",
      "datasets": [
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-04T10:13:38Z",
+        "date": "2026-11-05T01:44:16Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41811450319",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41949669792",
         "qsmrs": {
-         "ref": null,
+         "ref": "main",
          "commit": "008b829ed67f4ab3f5edb00b9d0dff7dc7643fff",
          "version": null
         },
         "qsmxt": {
          "commit": "67c73422b2d429fcfc4c531e5e18e5b6031364d7"
         },
-        "nrmse": 1.4978175887468754,
+        "nrmse": 1.4976924362150144,
         "max_abs": 0.12724245712161064,
-        "correlation": 0.9998960225814828,
+        "correlation": 0.9998960411605831,
         "dice": null
        },
        "stale": false,
@@ -5026,34 +5025,30 @@
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-04T10:13:38Z",
-        "result": "fail",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41811450319",
+        "date": "2026-11-05T01:44:16Z",
+        "result": "pass",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41949669792",
         "qsmrs": {
-         "ref": null,
+         "ref": "main",
          "commit": "008b829ed67f4ab3f5edb00b9d0dff7dc7643fff",
          "version": null
         },
         "qsmxt": {
          "commit": "67c73422b2d429fcfc4c531e5e18e5b6031364d7"
         },
-        "nrmse": 1.6837568261233984,
-        "max_abs": 0.2823115140199661,
-        "correlation": 0.999946593343195,
-        "dice": null,
-        "why": "totalfield max_abs 0.2823 ppm (limit <= 0.205 ppm)"
+        "nrmse": 1.6450217844553718,
+        "max_abs": 0.16365057229995728,
+        "correlation": 0.999952805706336,
+        "dice": null
        },
-       "stale": true,
-       "reasons": [
-        "the last check failed: totalfield max_abs 0.2823 ppm (limit <= 0.205 ppm)"
-       ]
+       "stale": false,
+       "reasons": []
       }
      ],
-     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=romeo -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "failing",
-      "message": "failing \u00b7 4 Nov",
-      "color": "red"
+      "kind": "current",
+      "message": "1.6 % \u00b7 5 Nov",
+      "color": "brightgreen"
      }
     },
     {
