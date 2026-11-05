@@ -9,7 +9,8 @@ by running each submission exactly as QSM-CI does (`qsm-ci run`):
    [`../env/Manifest.toml`](../env/Manifest.toml), with the five authors' packages at the git
    revisions QSM.rs cites. The image is pinned by digest in each `algorithm.yml`.
 2. **Deterministic output.** The image run twice on the same inputs gives bit-identical output,
-   at the fixed thread count `run.sh` sets (4 Julia threads, FFTW 4, BLAS 1).
+   at the fixed thread count `run.sh` sets (4 Julia threads, FFTW 4, BLAS 1; one of each for
+   `romeo-romeojl`).
 3. **Same outside the container.** `run.sh` run on the host (`--runner local`) with a host Julia
    1.10.11 and the same Manifest, without the image's sysimage, gives the same output.
 

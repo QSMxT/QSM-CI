@@ -18,7 +18,8 @@ Combined multi-echo B0 field mapping with the authors' `romeo` command line (ROM
 qsm-ci run romeo-romeojl --phase phase.nii.gz --magnitude magnitude.nii.gz --mask mask.nii.gz --params params.json
 ```
 
-`run.sh` starts Julia with 4 threads (FFTW 4, BLAS 1) and the image's `mritools.so` sysimage.
+`run.sh` starts Julia with one thread (FFTW 1, BLAS 1) and the image's `mritools.so` sysimage: in
+individual mode ROMEO.jl's result depends on the thread count (see `run.sh`).
 
 ## Parameters
 

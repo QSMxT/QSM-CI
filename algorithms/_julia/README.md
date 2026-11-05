@@ -35,7 +35,7 @@ FFTW.jl 1.9 removed.
   `/tmp/julia-depot` in front of it, so the container can run as any UID with no home.
 
 No submission code is baked in. Every submission folder has `recon.jl` (the package calls),
-`run.sh` (starts Julia with 4 threads and the sysimage) and a copy of [`qsmci_io.jl`](qsmci_io.jl),
+`run.sh` (starts Julia with 4 threads, one for `romeo-romeojl`, and the sysimage) and a copy of [`qsmci_io.jl`](qsmci_io.jl),
 the glue that reads the inputs, applies `--set` overrides and writes the output.
 `tests/test_julia_submissions.py` keeps the copies identical to this one.
 
