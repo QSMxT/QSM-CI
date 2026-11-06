@@ -3,7 +3,7 @@
 Some algorithms have two implementations here: the authors' original and the QSM.rs port, with the
 same `algorithm:` in `algorithm.yml` (e.g. `qsmart-matlab` and `qsmart-qsmrs`). The `parity`
 workflow runs both on the same dataset and checks that they still agree as well as they did when the
-limits were set. It is the QSM.rs release gate (see the last section).
+limits were set. Before a QSM.rs release it reruns the pairs whose code changed (see the last section).
 
 Where each pair stands (last check, QSMxT and QSM.rs, result, stale or not), per track:
 [parity/STATUS.md](../parity/STATUS.md), and the **Parity** page on the site.
@@ -14,7 +14,7 @@ Every recorded check belongs to one of two tracks.
 
 | | **Released** (shown first) | **Development** |
 |---|---|---|
-| QSM.rs side | the latest QSMxT release: the `x86_64-unknown-linux-musl` binary that release ships (checked against its `SHA256SUMS`), with the QSM.rs it pins | QSMxT `main` built with its `qsm-core` pin moved to QSM.rs `main` (or a QSM.rs release candidate: the release gate) |
+| QSM.rs side | the latest QSMxT release: the `x86_64-unknown-linux-musl` binary that release ships (checked against its `SHA256SUMS`), with the QSM.rs it pins | QSMxT `main` built with its `qsm-core` pin moved to QSM.rs `main` (or a QSM.rs release candidate) |
 | Dispatch | `-f qsmxt_release=<tag>` (or `latest`) | `-f qsmrs_ref=main` (or `qsmxt_ref`, `qsmxt_image`) |
 | A record names | the release tag, its QSMxT commit, and the QSM.rs version and commit its binary reports | the QSMxT and QSM.rs commits |
 | Runs when | QSMxT publishes a release, or a pair's reference image or settings change (`parity-release.yml`, daily) | on demand, when a check is stale (QSM.rs or QSMxT changed the pair's paths; "Staleness") |
@@ -58,7 +58,7 @@ From the Actions tab: **parity** → *Run workflow* → fill in the fields below
 ```bash
 gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=qsmart                 # one pair, every dataset it has
 gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=qsmart,ilsqr,tkd       # several pairs
-gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=enabled                # every enabled pair (the release gate)
+gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=enabled                # every enabled pair
 gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=all-configured -f baseline=true   # every pair, enabled or not
 gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=tkd,tsvd -f dataset=sim -f qsmrs_ref=main
 gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=enabled -f qsmxt_release=latest   # the released track
@@ -115,7 +115,7 @@ before anything runs. `parity.py pairs` also lists the algorithms that have an o
 but no pair yet.
 
 A pair is `enabled` once its original is verified (for MATLAB, the container's fidelity check) and
-it has limits. Only enabled pairs run in the release gate. A pair whose port does not match its
+it has limits. Only enabled pairs run before a release. A pair whose port does not match its
 original yet stays disabled with `blocked_by: <issue>`: the status shows it as a **gap**, never as a
 pass, and it gets no limits that would bless the gap.
 
@@ -246,8 +246,29 @@ On the **development** track a check is **stale** when any of these holds:
   its `qsmxt --version` names. `Cargo.lock` counts on both sides because the qsmxt binary takes its
   dependency versions (rustfft and the rest) from QSMxT's lockfile, not QSM.rs's.
 
-A check does not expire with age: it stands until one of these changes, and a QSM.rs release runs
-every enabled pair anyway (below).
+A check does not expire with age: it stands until one of these changes. Changes that cannot move a
+result never count:
+
+- a Rust file whose diff changes only comments and blank lines;
+- a path on `qsmrs_ignore_paths` / `qsmxt_ignore_paths` (QSM.rs's `src/pipeline/rules.rs`: the
+  pipeline rules only advise, no computation reads them);
+- a `Cargo.lock` change to packages on `lock_ignore_packages` only (platform crates, such as
+  `windows-sys`, that the Linux runners do not build).
+
+A flag still only says that something on the pair's path changed, not that its result can have: a
+function the pair never calls can share a file with one it does. When a review of the diff shows
+that nothing since can move a pair's result, record that instead of rerunning it:
+
+```bash
+python scripts/parity.py attest --pairs tkd,tsvd --qsmrs <QSM.rs commit> --qsmxt <QSMxT commit> \
+    --reason "the change is run_tgv's multi-echo path, which these pairs do not call"
+```
+
+`attest` carries each pair's newest passing check forward to those commits (full 40-character
+hashes), with the reason and the check it came from. It refuses a pair whose last check did not
+pass, or whose reference image or limits changed since: those are rerun. The status shows a carried
+check as `✅ pass (reviewed)`, current until the next change on its path. Commit the updated
+`parity/results.json` in a PR, with the review in its description.
 
 `qsmrs_paths` lists the port's own modules, the `src/pipeline/` files QSMxT calls it through, and
 every module those import, followed through shared code (`fft.rs`, `grid.rs`, `kernels/`,
@@ -329,20 +350,26 @@ so they always match the Parity page; `parity.py status --badges DIR` writes the
 
 ## Before a QSM.rs release
 
-Dispatch the workflow against the release candidate and wait for it:
+Rerun only the pairs whose computation changed since their last recorded check. `status` lists the
+stale ones (above), but a flag only says a file on the pair's path changed: a doc comment, a rule's
+source text, a new function nothing calls, or a lockfile change in non-numerical crates flags every
+pair that lists the file. Read the diff since each flagged pair's checked QSM.rs and QSMxT commits,
+and dispatch the pairs it can actually move, against the release candidate:
 
 ```bash
+python scripts/parity.py status
 gh workflow run parity.yml -R QSMxT/QSM-CI \
-  -f algorithm=enabled -f dataset=configured -f qsmrs_ref=<release candidate SHA>
+  -f algorithm=<pairs> -f dataset=configured -f qsmrs_ref=<release candidate SHA>
 gh run watch -R QSMxT/QSM-CI --exit-status "$(gh run list -R QSMxT/QSM-CI -w parity -L 1 \
   --json databaseId -q '.[0].databaseId')"
 ```
 
-The run's summary (the `report` job) has one row per pair × dataset, then the answer the release
-needs: which pairs passed against exactly the QSM.rs commit under test, which failed, and any
-enabled pair the run did not check. "Release gate: passed" means every enabled pair passed on
-every configured dataset against that one commit. A dispatch from `main` also records the results,
-so the status shows each pair checked against the release candidate.
+Say which flagged pairs were left out and why, and record the review with `attest` (above), so
+the status shows them current. When nothing a pair computes changed, nothing runs.
+The run's summary (the `report` job) has one row per pair × dataset and which passed against
+exactly the QSM.rs commit under test. A dispatch from `main` also records the results, which clears
+those pairs' staleness. The released track still checks every enabled pair against the next QSMxT
+release by itself.
 
 `qsmxt_ref` defaults to QSMxT `main`. If the release changes an API that QSMxT main does not build
 against yet, pass the QSMxT branch that moves to it (`-f qsmxt_ref=<branch>`). A failing pair blocks

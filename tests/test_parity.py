@@ -781,6 +781,59 @@ def _why(rec, cfg=CFG, manifests=MANIFESTS, changes=None, qsmxt_changes=None):
     return parity.staleness(rec, cfg, "sim", manifests, ST, changes, qsmxt_changes)
 
 
+def test_changes_that_cannot_move_a_result_do_not_make_a_check_stale():
+    rec = _rec(_parity_json())
+    st = {**ST, "qsmrs_ignore_paths": ["src/kernels/rules.rs"],
+          "lock_ignore_packages": ["windows*"]}
+    why = lambda files, patches: parity.staleness(                          # noqa: E731
+        rec, CFG, "sim", MANIFESTS, st,
+        lambda c: {"ahead_by": 1, "files": files, "patches": patches}, None)
+    comment = "@@ -1,3 +1,3 @@\n /// a\n-/// old words\n+/// new words\n+\n fn f() {}\n"
+    code = "@@ -1,2 +1,2 @@\n-    let x = 1;\n+    let x = 2; // now two\n"
+    assert why(["src/kernels/dipole.rs"], {"src/kernels/dipole.rs": comment}) == []
+    assert why(["src/kernels/dipole.rs"], {"src/kernels/dipole.rs": code})
+    assert why(["src/kernels/dipole.rs"], {"src/kernels/dipole.rs": None}), "an omitted diff counts"
+    assert why(["src/kernels/rules.rs"], {"src/kernels/rules.rs": code}) == []
+    platform = ('@@ -10,4 +10,4 @@\n dependencies = [\n- "windows-sys 0.61.2",\n+ "windows-sys 0.59.0",\n ]\n'
+                '@@ -90,3 +90,3 @@\n name = "windows-sys"\n-version = "0.61.2"\n+version = "0.59.0"\n')
+    assert why(["Cargo.lock"], {"Cargo.lock": platform}) == []
+    numeric = '@@ -5,3 +5,3 @@\n name = "rustfft"\n-version = "6.2.0"\n+version = "6.3.0"\n'
+    assert why(["Cargo.lock"], {"Cargo.lock": numeric})
+    no_name = '@@ -5,2 +5,2 @@\n-version = "6.2.0"\n+version = "6.3.0"\n'
+    assert why(["Cargo.lock"], {"Cargo.lock": no_name}), "a change with no package name counts"
+
+
+def test_attest_carries_a_passing_check_to_reviewed_commits(tmp_path):
+    th = {"p": CFG}
+    results = parity.merge_records({"checks": []}, [_rec(_parity_json())])
+    qr, qx = "1" * 40, "2" * 40
+    recs, refused = parity.attest_records(results, th, MANIFESTS, ["p"], qr, qx, "docs only",
+                                          "2026-11-06T00:00:00Z")
+    assert refused == [] and len(recs) == 1
+    r = recs[0]
+    assert r["qsmrs"]["commit"] == qr and r["qsmxt"]["commit"] == qx and r["result"] == "pass"
+    assert r["attested"]["reason"] == "docs only" and r["attested"]["from"]["run_url"] == "https://x/1"
+    res = parity.merge_records(results, recs)
+    assert parity.latest_records(res)[("p", "sim")]["attested"]
+    # Changes since the reviewed commits are judged from them, and the row says it was reviewed.
+    seen = []
+    parity.staleness(parity.latest_records(res)[("p", "sim")], CFG, "sim", MANIFESTS, ST,
+                     lambda c: seen.append(c) or {"ahead_by": 0, "files": []}, None)
+    assert seen == [qr]
+    assert parity._summary(r)["attested"]["reason"] == "docs only"
+    # A failed check, or one whose limits changed, is rerun instead.
+    failed = parity.merge_records({"checks": []}, [_rec(_parity_json(ok=False, nrmse=3))])
+    assert parity.attest_records(failed, th, MANIFESTS, ["p"], qr, qx, "x", "d")[0] == []
+    tighter = {"p": {**CFG, "datasets": {"sim": {"chimap": {"nrmse_max": 1.5}}}}}
+    out, refused = parity.attest_records(results, tighter, MANIFESTS, ["p"], qr, qx, "x", "d")
+    assert out == [] and "limits" in refused[0]
+    # The command wants full commits.
+    f = tmp_path / "results.json"
+    f.write_text(json.dumps(results))
+    assert parity.main(["attest", "--pairs", "p", "--qsmrs", "abc", "--qsmxt", qx,
+                        "--reason", "x", "--results", str(f)]) == 2
+
+
 def test_staleness_rules():
     rec = _rec(_parity_json())
     nothing = lambda c: {"ahead_by": 3, "files": ["src/unwrap/romeo.rs"]}   # noqa: E731
@@ -978,19 +1031,21 @@ def test_report_and_record_cli(tmp_path):
     r = json.loads(recs.read_text())
     assert [x["result"] for x in r] == ["pass", "error"]
     s = summ.read_text()
-    assert "Release gate: not passed" in s and "`" + "c" * 40 + "`" in s
+    assert "Checked pairs: not passed" in s and "`" + "c" * 40 + "`" in s
     results = tmp_path / "results.json"
     assert parity.main(["record", "--records", str(recs), "--results", str(results)]) == 0
     assert parity.main(["record", "--records", str(recs), "--results", str(results)]) == 0
     assert len(json.loads(results.read_text())["checks"]) == 2
 
 
-def test_run_summary_gate_passes_only_on_one_commit_and_every_enabled_pair():
+def test_run_summary_passes_on_the_pairs_it_checked_against_one_commit():
     ok = _rec(_parity_json())
-    assert "Release gate: passed" in parity.render_run_summary([ok], ["p"])
-    assert "Release gate: not passed" in parity.render_run_summary([ok], ["p", "other"])
+    assert "Checked pairs: passed" in parity.render_run_summary([ok], ["p"])
+    # A pair left out is listed, not a failure: a release reruns only the pairs that changed.
+    s = parity.render_run_summary([ok], ["p", "other"])
+    assert "Checked pairs: passed" in s and "did not check: `other`" in s
     other = {**ok, "dataset": "kki", "qsmrs": {"commit": "f" * 40}}
-    assert "Release gate: not passed" in parity.render_run_summary([ok, other], ["p"])
+    assert "Checked pairs: not passed" in parity.render_run_summary([ok, other], ["p"])
 
 
 def test_touched_matches_files_and_directories():
@@ -1179,7 +1234,7 @@ def test_run_summary_for_a_release():
     recs = [_rel(_parity_json()), {**_rel(_unavailable()), "pair": "q"},
             {**_rel(_parity_json(ok=False, nrmse=3)), "pair": "r"}]
     s = parity.render_run_summary(recs, ["p", "q", "r"])
-    assert "Released track: QSMxT **v10.0.0**" in s and "Release gate" not in s
+    assert "Released track: QSMxT **v10.0.0**" in s and "Checked pairs" not in s
     assert "passed on every dataset run: `p`." in s and "Failed or no result: `r`." in s
     assert "Not in v10.0.0: `q`." in s and "invert star" in s
 
