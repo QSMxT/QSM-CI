@@ -656,7 +656,7 @@
         {
           "name": "max_iterations",
           "default": 400,
-          "description": "maximum solver iterations of each fit stage (lsqcurvefit's MaxIterations, which the MATLAB reference leaves at 400; `--max-iterations`, QSM.rs#338). The pinned qsmxt v10.0.0 solves each stage by Levenberg-Marquardt instead, with at most 30 iterations by default; there the value is passed as its `--max-lm-iter`\n"
+          "description": "maximum solver iterations of each fit stage (lsqcurvefit's MaxIterations, which the MATLAB reference leaves at 400; `--max-iterations`, QSM.rs#338). qsmxt v10.0.0 solved each stage by Levenberg-Marquardt instead, with at most 30 iterations by default; there the value was passed as its `--max-lm-iter`\n"
         }
       ],
       "ci_notes": [
@@ -2116,7 +2116,7 @@
         {
           "name": "variant",
           "default": "wen2014",
-          "description": "implementation: wen2014 (the authors' iSMV.m) or qsmjl (QSM.jl's ismv); a qsmxt after v10.0.0 (the pinned v10.0.0 has only QSM.jl-style iSMV and no --variant)"
+          "description": "implementation: wen2014 (the authors' iSMV.m) or qsmjl (QSM.jl's ismv); a qsmxt after v10.0.0 (v10.0.0 has only QSM.jl-style iSMV and no --variant)"
         },
         {
           "name": "tol",
