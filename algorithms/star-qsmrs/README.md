@@ -14,8 +14,7 @@ qsmxt invert star /input/localfield.nii.gz -m /input/mask.nii.gz -o /output/chim
   --b0-direction <B0 dir> --field-strength <B0> --echo-times <TEs>
 ```
 
-`qsmxt invert star` is not in a QSMxT release yet (v10.0.0 lacks it), so the entry is skipped by
-CI until `image:` is repinned to one that has it.
+`qsmxt invert star` is in QSMxT from v11.0.0.
 
 ## Parameters
 

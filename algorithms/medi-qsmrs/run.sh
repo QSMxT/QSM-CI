@@ -17,8 +17,8 @@ FS=$(jq -r .B0 "$IN/params.json")
 # QSMxT after v10.0.0 (QSM.rs main, run by the parity workflow's qsmxt builds) has MEDI_L1's own
 # defaults (λ 1000, SMV 5 mm, MERIT, the CSF zero reference from the echo magnitudes), matching
 # medi-cornell. It is given every echo time and runs with those defaults; λ is then on MEDI's
-# scale, so a `--set lambda` from the pinned v10 (λ 1e-3 scale) does not carry over. The pinned
-# v10.0.0 keeps the call below it was scored with.
+# scale, so a `--set lambda` from v10 (λ 1e-3 scale) does not carry over. v10.0.0
+# takes the call below.
 if qsmxt invert medi --help 2>/dev/null | grep -q -- '--echo-times'; then
   TES=$(jq -r '.TE | map(tostring) | join(" ")' "$IN/params.json")
   exec qsmxt invert medi "$IN/localfield.nii.gz" -m "$IN/mask.nii.gz" -o "$OUT/chimap.nii.gz" \

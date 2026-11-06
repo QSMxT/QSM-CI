@@ -23,7 +23,7 @@ if [ -f "$CFG" ]; then
   V=$(jq -r '.n_inner // empty' "$CFG");     [ -n "$V" ] && SET="$SET --n-inner $V"
   V=$(jq -r '.chi_bound // empty' "$CFG");   [ -n "$V" ] && SET="$SET --chi-bound $V"
   # The fit's iteration limit: lsqcurvefit's MaxIterations, `--max-iterations`, in a qsmxt on
-  # QSM.rs#338 or later; the pinned v10.0.0's Levenberg-Marquardt solver calls it `--max-lm-iter`.
+  # QSM.rs#338 or later; v10.0.0's Levenberg-Marquardt solver calls it `--max-lm-iter`.
   V=$(jq -r '.max_iterations // empty' "$CFG")
   if [ -n "$V" ]; then
     if qsmxt separate decompose --help 2>/dev/null | grep -q -- '--max-iterations'; then
@@ -46,7 +46,7 @@ trap 'rm -rf "$WORK"' EXIT
 # so the one echo-independent chimap repeated at every echo leaves it nothing to fit.
 #  - The dataset ships chimap-echoes (x,y,z,echo, ppm; CONTRACT.md): pass it, one 4D file.
 #  - It doesn't: fall back to chimap at every echo, as before.
-# A qsmxt on QSM.rs#333 or later takes --qsm-per-echo; older releases (v10.0.0, the pinned image)
+# A qsmxt on QSM.rs#333 or later takes --qsm-per-echo; older releases (v10.0.0)
 # take --qsm alone and cannot use chimap-echoes (logged).
 PER_ECHO=""
 if qsmxt separate decompose --help 2>/dev/null | grep -q -- '--qsm-per-echo'; then

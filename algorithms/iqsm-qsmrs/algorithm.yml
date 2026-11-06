@@ -34,12 +34,9 @@ code_url: https://github.com/astewartau/QSM.rs
 license: 'MIT (QSM.rs); the weights keep the original''s terms: See repository (used with author permission)'
 # The weights are QSM.rs's ONNX exports (qsmxt/qsm-onnx-weights), baked into the image with
 # algorithms/_qsmxt/models.Dockerfile, since a submission runs with no network.
-# `qsmxt invert iqsm` is in QSMxT main (QSMxT/QSMxT#460) but in no release yet: v10.0.0 lacks it.
-# Repin to the first release that has it, then drop ci_skip. The parity workflow runs it with qsmxt
-# built from source.
-image: ghcr.io/astewartau/qsm-ci/qsmxt@sha256:3fd27500c18778edc21fd771828573e01c353e4c6147124977293e51256a9053   # v10.0.0-models-2
+# `qsmxt invert iqsm` is in QSMxT from v11.0.0 (QSMxT/QSMxT#460).
+image: ghcr.io/astewartau/qsm-ci/qsmxt@sha256:bb72a8130bd087271d21d5efd2a8b0ed6989b6bcbbe0ca24c268eca38a878341   # v11.0.0-models-1
 run: bash run.sh
-ci_skip: true   # until the image has `qsmxt invert iqsm` (see image:)
 parameters:
 - name: echo_weighting
   default: mag2-te2

@@ -7,12 +7,12 @@
 # models.sha256 (copied from QSM.rs's src/models/registry.rs). qsmxt reads them from
 # $QSM_MODEL_DIR.
 #
-#   docker build -f models.Dockerfile -t ghcr.io/astewartau/qsm-ci/qsmxt:v10.0.0-models-2 .
+#   docker build -f models.Dockerfile -t ghcr.io/astewartau/qsm-ci/qsmxt:v11.0.0-models-1 .
 #
 # BASE is the qsmxt image to add them to: by default the release image (algorithms/_qsmxt/Dockerfile),
 # by digest. Any qsmxt image works, e.g. the parity workflow's build from source
 # (--build-arg BASE=qsmxt-under-test:<run>), which needs the weights for these entries too.
-ARG BASE=ghcr.io/astewartau/qsm-ci/qsmxt@sha256:9258c10e34cd0019dbab12746977813fe0a0b3ad92b13986d1d9ffb2c3326b57
+ARG BASE=ghcr.io/astewartau/qsm-ci/qsmxt@sha256:5a353a43b0a6ceeb2b8ec57422a56770d5e86e1d551e727b72ca5089b2e5277e
 
 FROM debian:bookworm-slim AS weights
 ARG HF_REVISION=e7116c8b8be0ad0aa4155d68cb2f9c23363be362
