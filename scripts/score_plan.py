@@ -242,6 +242,43 @@ def input_levels(spec, reg: dict, ph: str) -> list[str]:
     return [str(lv) for lv in (reg.get(ph, {}).get("input_levels") or [])]
 
 
+# A full re-run's shard count, when none is given: enough shards that each has about this many hours
+# of recorded runtime. GitHub stops a hosted job at 6 h; half that leaves room for uneven shards,
+# setup, and runs with no recorded runtime yet (new methods, cells an earlier run never reached).
+TARGET_SHARD_HOURS = 3.0
+MIN_SHARDS, MAX_SHARDS = 24, 128
+
+
+def sweep_hours(runs: list[dict], excluded: set[str]) -> float:
+    """Container-hours the shard sweep costs, from the last recorded runtime of each run it scores:
+    the sim-track runs that involve none of the `excluded` (dedicated) methods."""
+    total = 0.0
+    for r in runs:
+        if r.get("track") != "sim" or not r.get("runtime_s"):
+            continue
+        parts = set((r.get("combo") or {}).values()) or set((r.get("slug") or "").split("+"))
+        if parts & excluded:
+            continue
+        total += float(r["runtime_s"])
+    return total / 3600
+
+
+def auto_shards(hours: float) -> int:
+    """Shards for `hours` of sweep work: each hosted shard runs HOSTED["jobs"] containers for about
+    TARGET_SHARD_HOURS, within MIN_SHARDS..MAX_SHARDS. The sweep grows with every method added, so
+    a fixed count stops fitting GitHub's 6-h cap (12 on 2026-11-01, 24 on 2026-11-05)."""
+    import math
+    need = math.ceil(hours / (HOSTED["jobs"] * TARGET_SHARD_HOURS))
+    return max(MIN_SHARDS, min(MAX_SHARDS, need))
+
+
+def load_runs(path: Path = ROOT / "results/index.json") -> list[dict]:
+    try:
+        return json.load(open(path)).get("runs") or []
+    except (OSError, ValueError):
+        return []
+
+
 def dedicated(root: Path) -> list[str]:
     """Methods that run as their own focus job rather than inside the shard sweep: any non-hosted
     tier, or a χ-separation-track method (scored on separate phantoms)."""
@@ -478,11 +515,13 @@ def subtract_in_progress(tasks: list[dict], head: str, others: list[dict]) -> tu
 
 # ---------------------------------------------------------------------------------------------------
 
-def decide(env: dict, root: Path, reg: dict, state: dict) -> dict:
-    """The whole decision, as data. Pure given env/root/reg/state except for git (scope diffs)."""
+def decide(env: dict, root: Path, reg: dict, state: dict, runs: "list[dict] | None" = None) -> dict:
+    """The whole decision, as data. Pure given env/root/reg/state except for git (scope diffs).
+    `runs` (results/index.json's, read when None) sizes a full re-run when SHARDS is empty or
+    `auto`."""
     event, sha = env.get("EVENT", "push"), env["SHA"]
     scope_in, include = (env.get("SCOPE") or "auto").strip(), (env.get("INCLUDE") or "").strip()
-    shards = int(env.get("SHARDS") or 24)
+    shards_in = (env.get("SHARDS") or "auto").strip().lower()
     include_manual = (env.get("INCLUDE_MANUAL") or "false").lower() == "true"
     explicit: set[str] = set()
     notes: list[str] = []
@@ -517,6 +556,15 @@ def decide(env: dict, root: Path, reg: dict, state: dict) -> dict:
         if event == "workflow_dispatch" and not files and not full and not slugs:
             notes.append("scope=auto: nothing changed since the last completed scoring")
 
+    if shards_in != "auto":
+        shards = int(shards_in)
+    elif full and not include:
+        hours = sweep_hours(load_runs() if runs is None else runs, set(dedicated(root)))
+        shards = auto_shards(hours)
+        notes.append(f"{shards} shards for about {hours:.0f} container-hours of recorded sweep runtime "
+                     f"({HOSTED['jobs']} containers per shard, about {TARGET_SHARD_HOURS:g} h each)")
+    else:
+        shards = MIN_SHARDS
     tasks = plan_tasks(root, reg, full=full, slugs=slugs, include=include, shards=shards,
                        explicit=explicit, include_manual=include_manual)
     # Manual-tier work this run OWES but is not allowed to schedule. `scored_sha` will advance past

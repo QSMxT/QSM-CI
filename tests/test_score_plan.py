@@ -403,3 +403,26 @@ def test_the_workflow_runs_self_hosted_tasks_one_at_a_time():
     assert "needs.score.result != 'skipped'" in merge["if"] and "needs.score-selfhosted.result != 'skipped'" in merge["if"]
     # merge's scoring state is computed from EVERY planned task, not one pool's
     assert "TASKS: ${{ needs.plan.outputs.tasks }}" in (ROOT / ".github" / "workflows" / "score.yml").read_text()
+
+
+def test_a_full_rerun_is_sized_from_recorded_runtimes(repo):
+    """With no shard count given, a full re-run takes enough shards for about TARGET_SHARD_HOURS
+    each, from what the sweep's runs took last time; runs of dedicated methods (their own jobs) and
+    in-vivo runs don't count. A given count still wins, and a focused run plans no shards."""
+    root = repo["root"]
+    dispatch = {"EVENT": "workflow_dispatch", "SHA": repo["base"], "SCOPE": "all"}
+    ded = set(sp.dedicated(root))
+    hour = 3600.0
+    runs = [{"track": "sim", "slug": "a", "runtime_s": 400 * hour},
+            {"track": "sim", "combo": {"bfr": "x", "dipole": "y"}, "runtime_s": 40 * hour},
+            {"track": "invivo", "slug": "a", "runtime_s": 1000 * hour},
+            {"track": "sim", "slug": "b"}]
+    runs += [{"track": "sim", "combo": {"dipole": d}, "runtime_s": 1000 * hour} for d in ded]
+    assert sp.sweep_hours(runs, ded) == 440
+    d = sp.decide(dispatch, root, REG, {}, runs=runs)
+    shards = [t for t in d["tasks"] if t.get("shard")]
+    assert len(shards) == 74 == sp.auto_shards(440)          # 440 h / (2 containers x 3 h)
+    assert any("74 shards" in n for n in d["notes"])
+    assert sp.auto_shards(1) == sp.MIN_SHARDS and sp.auto_shards(10 ** 6) == sp.MAX_SHARDS
+    d = sp.decide({**dispatch, "SHARDS": "30"}, root, REG, {}, runs=runs)
+    assert len([t for t in d["tasks"] if t.get("shard")]) == 30
