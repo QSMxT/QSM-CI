@@ -3427,10 +3427,67 @@
       "commit": "8a655f4c31b9b0f657c35fe812e7f0bf8867d368"
      },
      "checks": 100,
-     "date": "2026-11-06T08:00:00Z"
+     "date": "2026-11-06T12:33:46Z"
     }
    ],
-   "stale": [],
+   "stale": [
+    "qsmart",
+    "ilsqr",
+    "vsharp",
+    "iharperella",
+    "star",
+    "medi",
+    "fit-ppm-complex",
+    "amp-pe",
+    "decompose",
+    "chisep-ilsqr",
+    "chisep-medi",
+    "wavesep",
+    "tkd",
+    "tsvd",
+    "tikhonov",
+    "tv",
+    "nltv",
+    "rts",
+    "ismv",
+    "sharp",
+    "sharp-qsmjl",
+    "vsharp-qsmjl",
+    "laplacian",
+    "romeo",
+    "tgv",
+    "xqsm",
+    "qsmnet",
+    "qsmnet-plus",
+    "lpcnn",
+    "qsmgan",
+    "modl-qsm",
+    "ir2qsm",
+    "autoqsm",
+    "nextqsm",
+    "bfrnet",
+    "chisepnet",
+    "qsmnetme",
+    "susep-net",
+    "hd-bet",
+    "mindgrab",
+    "r2primenet",
+    "iqsm",
+    "iqsm-plus",
+    "iqfm",
+    "lsqr",
+    "heidi",
+    "ndi",
+    "fansi-nltv",
+    "fansi-nltgv",
+    "l1qsm",
+    "whqsm",
+    "hdqsm",
+    "resharp",
+    "pdf",
+    "lbv",
+    "tfi"
+   ],
    "pairs": [
     {
      "pair": "qsmart",
@@ -3438,7 +3495,7 @@
      "reference": "qsmart-matlab",
      "candidate": "qsmart-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-qsmart",
      "datasets": [
       {
@@ -3469,8 +3526,10 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -3500,14 +3559,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=qsmart -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "0.78 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -3516,7 +3578,7 @@
      "reference": "ilsqr-sti",
      "candidate": "ilsqr-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-ilsqr",
      "datasets": [
       {
@@ -3547,8 +3609,10 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -3578,14 +3642,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=ilsqr -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "0.017 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -3594,7 +3661,7 @@
      "reference": "vsharp-sti",
      "candidate": "vsharp-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-vsharp",
      "datasets": [
       {
@@ -3625,8 +3692,10 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -3656,14 +3725,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=vsharp -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -3672,7 +3744,7 @@
      "reference": "iharperella-sti",
      "candidate": "iharperella-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-iharperella",
      "datasets": [
       {
@@ -3703,14 +3775,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=iharperella -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -3719,7 +3794,7 @@
      "reference": "star-sti",
      "candidate": "star-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-star",
      "datasets": [
       {
@@ -3750,8 +3825,10 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -3781,14 +3858,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=star -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "0.0023 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -3797,7 +3877,7 @@
      "reference": "medi-cornell",
      "candidate": "medi-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-medi",
      "datasets": [
       {
@@ -3828,8 +3908,10 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -3859,14 +3941,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=medi -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "0.029 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -3875,7 +3960,7 @@
      "reference": "fit-ppm-complex-cornell",
      "candidate": "fit-ppm-complex-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-fit-ppm-complex",
      "datasets": [
       {
@@ -3906,8 +3991,10 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -3937,14 +4024,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=fit-ppm-complex -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "identical \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -3953,7 +4043,7 @@
      "reference": "amp-pe",
      "candidate": "amp-pe-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-amp-pe",
      "datasets": [
       {
@@ -3984,14 +4074,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=amp-pe -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "0.48 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -4000,7 +4093,7 @@
      "reference": "decompose-qsm",
      "candidate": "decompose-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-decompose",
      "datasets": [
       {
@@ -4031,14 +4124,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=decompose -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "4.9 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -4047,7 +4143,7 @@
      "reference": "chisep-ilsqr",
      "candidate": "chisep-ilsqr-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-chisep-ilsqr",
      "datasets": [
       {
@@ -4078,14 +4174,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=chisep-ilsqr -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -4094,7 +4193,7 @@
      "reference": "chisep-medi",
      "candidate": "chisep-medi-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-chisep-medi",
      "datasets": [
       {
@@ -4125,14 +4224,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=chisep-medi -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "0.58 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -4141,7 +4243,7 @@
      "reference": "wavesep",
      "candidate": "wavesep-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-wavesep",
      "datasets": [
       {
@@ -4172,14 +4274,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=wavesep -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -4188,7 +4293,7 @@
      "reference": "tkd-qsmjl",
      "candidate": "tkd-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-tkd",
      "datasets": [
       {
@@ -4219,8 +4324,10 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -4250,14 +4357,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=tkd -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -4266,7 +4376,7 @@
      "reference": "tsvd-qsmjl",
      "candidate": "tsvd-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-tsvd",
      "datasets": [
       {
@@ -4297,8 +4407,10 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -4328,14 +4440,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=tsvd -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -4344,7 +4459,7 @@
      "reference": "tikhonov-qsmjl",
      "candidate": "tikhonov-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-tikhonov",
      "datasets": [
       {
@@ -4375,8 +4490,10 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -4406,14 +4523,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=tikhonov -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "identical \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -4422,7 +4542,7 @@
      "reference": "tv-qsmjl",
      "candidate": "tv-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-tv",
      "datasets": [
       {
@@ -4453,8 +4573,10 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -4484,14 +4606,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=tv -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -4500,7 +4625,7 @@
      "reference": "nltv-qsmjl",
      "candidate": "nltv-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-nltv",
      "datasets": [
       {
@@ -4531,8 +4656,10 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -4562,14 +4689,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=nltv -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -4578,7 +4708,7 @@
      "reference": "rts-qsmjl",
      "candidate": "rts-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-rts",
      "datasets": [
       {
@@ -4609,8 +4739,10 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -4640,14 +4772,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=rts -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -4656,7 +4791,7 @@
      "reference": "ismv-qsmjl",
      "candidate": "ismv-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-ismv",
      "datasets": [
       {
@@ -4687,8 +4822,10 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -4718,14 +4855,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=ismv -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -4734,7 +4874,7 @@
      "reference": "sharp-sepia",
      "candidate": "sharp-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-sharp",
      "datasets": [
       {
@@ -4765,8 +4905,10 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -4796,14 +4938,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=sharp -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -4812,7 +4957,7 @@
      "reference": "sharp-qsmjl",
      "candidate": "sharp-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-sharp-qsmjl",
      "datasets": [
       {
@@ -4843,8 +4988,10 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -4874,14 +5021,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=sharp-qsmjl -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -4890,7 +5040,7 @@
      "reference": "vsharp-qsmjl",
      "candidate": "vsharp-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-vsharp-qsmjl",
      "datasets": [
       {
@@ -4921,8 +5071,10 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -4952,14 +5104,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=vsharp-qsmjl -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -4968,7 +5123,7 @@
      "reference": "laplacian-qsmjl",
      "candidate": "laplacian-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-laplacian",
      "datasets": [
       {
@@ -4999,8 +5154,10 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -5030,14 +5187,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=laplacian -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -5046,7 +5206,7 @@
      "reference": "romeo-romeojl",
      "candidate": "romeo-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-romeo",
      "datasets": [
       {
@@ -5077,8 +5237,10 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -5108,14 +5270,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=romeo -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "1.6 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -5124,7 +5289,7 @@
      "reference": "tgv-tgvjl",
      "candidate": "tgv-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-tgv",
      "datasets": [
       {
@@ -5155,8 +5320,10 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -5186,14 +5353,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=tgv -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -5202,7 +5372,7 @@
      "reference": "xqsm",
      "candidate": "xqsm-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-xqsm",
      "datasets": [
       {
@@ -5233,8 +5403,10 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -5264,14 +5436,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=xqsm -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "0.0016 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -5280,7 +5455,7 @@
      "reference": "qsmnet",
      "candidate": "qsmnet-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-qsmnet",
      "datasets": [
       {
@@ -5311,14 +5486,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=qsmnet -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -5327,7 +5505,7 @@
      "reference": "qsmnet-plus",
      "candidate": "qsmnet-plus-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-qsmnet-plus",
      "datasets": [
       {
@@ -5358,14 +5536,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=qsmnet-plus -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -5374,7 +5555,7 @@
      "reference": "lpcnn",
      "candidate": "lpcnn-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-lpcnn",
      "datasets": [
       {
@@ -5405,8 +5586,10 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -5436,14 +5619,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=lpcnn -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "0.0077 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -5452,7 +5638,7 @@
      "reference": "qsmgan",
      "candidate": "qsmgan-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-qsmgan",
      "datasets": [
       {
@@ -5483,8 +5669,10 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -5514,14 +5702,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=qsmgan -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "0.0056 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -5530,7 +5721,7 @@
      "reference": "modl-qsm",
      "candidate": "modl-qsm-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-modl-qsm",
      "datasets": [
       {
@@ -5561,8 +5752,10 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -5592,14 +5785,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=modl-qsm -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "0.014 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -5608,7 +5804,7 @@
      "reference": "ir2qsm",
      "candidate": "ir2qsm-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-ir2qsm",
      "datasets": [
       {
@@ -5639,8 +5835,10 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -5670,14 +5868,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=ir2qsm -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "0.0011 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -5686,7 +5887,7 @@
      "reference": "autoqsm",
      "candidate": "autoqsm-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-autoqsm",
      "datasets": [
       {
@@ -5717,8 +5918,10 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -5748,14 +5951,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=autoqsm -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -5764,7 +5970,7 @@
      "reference": "nextqsm",
      "candidate": "nextqsm-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-nextqsm",
      "datasets": [
       {
@@ -5795,8 +6001,10 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -5826,14 +6034,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=nextqsm -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "0.14 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -5842,7 +6053,7 @@
      "reference": "bfrnet",
      "candidate": "bfrnet-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-bfrnet",
      "datasets": [
       {
@@ -5873,8 +6084,10 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -5904,14 +6117,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=bfrnet -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -5920,7 +6136,7 @@
      "reference": "chisepnet",
      "candidate": "chisepnet-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-chisepnet",
      "datasets": [
       {
@@ -5951,14 +6167,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=chisepnet -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -5967,7 +6186,7 @@
      "reference": "qsmnetme",
      "candidate": "qsmnetme-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-qsmnetme",
      "datasets": [
       {
@@ -5998,8 +6217,10 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -6029,14 +6250,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=qsmnetme -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -6045,7 +6269,7 @@
      "reference": "susep-net",
      "candidate": "susep-net-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-susep-net",
      "datasets": [
       {
@@ -6076,14 +6300,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=susep-net -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -6092,7 +6319,7 @@
      "reference": "hd-bet-qsmci",
      "candidate": "hd-bet-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-hd-bet",
      "datasets": [
       {
@@ -6123,14 +6350,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=hd-bet -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "pass \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -6139,7 +6369,7 @@
      "reference": "mindgrab",
      "candidate": "mindgrab-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-mindgrab",
      "datasets": [
       {
@@ -6170,14 +6400,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=mindgrab -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "pass \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -6186,7 +6419,7 @@
      "reference": "r2primenet",
      "candidate": "r2primenet-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-r2primenet",
      "datasets": [
       {
@@ -6217,8 +6450,10 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -6248,14 +6483,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=r2primenet -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -6264,7 +6502,7 @@
      "reference": "iqsm",
      "candidate": "iqsm-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-iqsm",
      "datasets": [
       {
@@ -6295,8 +6533,10 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -6326,14 +6566,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=iqsm -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -6342,7 +6585,7 @@
      "reference": "iqsm-plus",
      "candidate": "iqsm-plus-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-iqsm-plus",
      "datasets": [
       {
@@ -6373,8 +6616,10 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -6404,14 +6649,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=iqsm-plus -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -6420,7 +6668,7 @@
      "reference": "iqfm",
      "candidate": "iqfm-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-iqfm",
      "datasets": [
       {
@@ -6451,8 +6699,10 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -6482,14 +6732,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=iqfm -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -6498,7 +6751,7 @@
      "reference": "lsqr",
      "candidate": "lsqr-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-lsqr",
      "datasets": [
       {
@@ -6529,8 +6782,10 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -6560,14 +6815,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=lsqr -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -6576,15 +6834,15 @@
      "reference": "heidi",
      "candidate": "heidi-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-heidi",
      "datasets": [
       {
        "dataset": "s005001-cbic-prisma-bridge-run1",
        "last": {
-        "date": "2026-11-06T08:00:00Z",
+        "date": "2026-11-06T12:33:46Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/42194254798",
         "qsmrs": {
          "ref": "main",
          "commit": "8a655f4c31b9b0f657c35fe812e7f0bf8867d368",
@@ -6596,26 +6854,19 @@
         "nrmse": 0.00034893468405343924,
         "max_abs": 2.256035804748535e-05,
         "correlation": 0.9999999999939144,
-        "dice": null,
-        "attested": {
-         "reason": "Reviewed for the QSM.rs v0.41.0 / QSMxT v11.0.0 release: nothing the QSM-CI commands compute changed since the last checks. QSM.rs: #429 changed run_tgv's multi-echo phase path (the tgv pair calls tgv_qsm on a ppm field), MCPC-3D-S (not on the MEDI-family pairs' path; romeo, laplacian and fit-ppm-complex were checked after it) and added scanner_masked_phase (unused by these commands); #433 rule source text; #434 adds uncovered_cone (uncalled). QSMxT: run pipeline, TUI, plan checks and CLI flags; the standalone commands' computation is unchanged; Cargo.lock: qsm-core pin, windows-sys, itertools 0.13 -> 0.12.1, flate2 (no numerical crate).",
-         "from": {
-          "date": "2026-11-04T06:52:59Z",
-          "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
-          "qsmrs": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
-          "qsmxt": "f5a8ac61cdae4b85a996196f326430c705858e5d"
-         }
-        }
+        "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-06T08:00:00Z",
+        "date": "2026-11-06T12:33:46Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/42194254798",
         "qsmrs": {
          "ref": "main",
          "commit": "8a655f4c31b9b0f657c35fe812e7f0bf8867d368",
@@ -6627,25 +6878,19 @@
         "nrmse": 0.0004536340971534522,
         "max_abs": 2.9501505196094513e-05,
         "correlation": 0.9999999999897097,
-        "dice": null,
-        "attested": {
-         "reason": "Reviewed for the QSM.rs v0.41.0 / QSMxT v11.0.0 release: nothing the QSM-CI commands compute changed since the last checks. QSM.rs: #429 changed run_tgv's multi-echo phase path (the tgv pair calls tgv_qsm on a ppm field), MCPC-3D-S (not on the MEDI-family pairs' path; romeo, laplacian and fit-ppm-complex were checked after it) and added scanner_masked_phase (unused by these commands); #433 rule source text; #434 adds uncovered_cone (uncalled). QSMxT: run pipeline, TUI, plan checks and CLI flags; the standalone commands' computation is unchanged; Cargo.lock: qsm-core pin, windows-sys, itertools 0.13 -> 0.12.1, flate2 (no numerical crate).",
-         "from": {
-          "date": "2026-11-04T06:52:59Z",
-          "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/41757738719",
-          "qsmrs": "de9231e7e2095fc48b883cecad0e5b407e9edcef",
-          "qsmxt": "f5a8ac61cdae4b85a996196f326430c705858e5d"
-         }
-        }
+        "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=heidi -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -6654,7 +6899,7 @@
      "reference": "ndi",
      "candidate": "ndi-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-ndi",
      "datasets": [
       {
@@ -6685,8 +6930,10 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -6716,14 +6963,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=ndi -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "0.0011 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -6732,7 +6982,7 @@
      "reference": "fansi-nltv",
      "candidate": "fansi-nltv-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-fansi-nltv",
      "datasets": [
       {
@@ -6763,8 +7013,10 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -6794,14 +7046,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=fansi-nltv -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "0.0069 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -6810,7 +7065,7 @@
      "reference": "fansi-nltgv",
      "candidate": "fansi-nltgv-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-fansi-nltgv",
      "datasets": [
       {
@@ -6841,8 +7096,10 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -6872,14 +7129,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=fansi-nltgv -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "0.0063 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -6888,7 +7148,7 @@
      "reference": "l1qsm",
      "candidate": "l1qsm-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-l1qsm",
      "datasets": [
       {
@@ -6919,8 +7179,10 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -6950,14 +7212,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=l1qsm -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "0.0026 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -6966,7 +7231,7 @@
      "reference": "whqsm",
      "candidate": "whqsm-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-whqsm",
      "datasets": [
       {
@@ -6997,8 +7262,10 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -7028,14 +7295,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=whqsm -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "0.0038 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -7044,7 +7314,7 @@
      "reference": "hdqsm",
      "candidate": "hdqsm-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-hdqsm",
      "datasets": [
       {
@@ -7075,8 +7345,10 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -7106,14 +7378,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=hdqsm -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "0.0015 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -7122,7 +7397,7 @@
      "reference": "resharp",
      "candidate": "resharp-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-resharp",
      "datasets": [
       {
@@ -7153,8 +7428,10 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -7184,14 +7461,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=resharp -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "< 0.001 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -7200,7 +7480,7 @@
      "reference": "pdf-cornell",
      "candidate": "pdf-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-pdf",
      "datasets": [
       {
@@ -7231,8 +7511,10 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -7262,14 +7544,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=pdf -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "0.015 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -7278,7 +7563,7 @@
      "reference": "lbv-cornell",
      "candidate": "lbv-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-lbv",
      "datasets": [
       {
@@ -7309,8 +7594,10 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -7340,14 +7627,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=lbv -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "0.0018 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
@@ -7356,7 +7646,7 @@
      "reference": "tfi-cornell",
      "candidate": "tfi-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-tfi",
      "datasets": [
       {
@@ -7387,8 +7677,10 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -7418,14 +7710,17 @@
          }
         }
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=tfi -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "3.6 % \u00b7 6 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 6 Nov",
+      "color": "orange"
      }
     },
     {
