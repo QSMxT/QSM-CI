@@ -37,7 +37,7 @@ if [ -f "$CFG" ]; then
   if jq -e '.denoise_reference_itk == true' "$CFG" >/dev/null; then SET="$SET --heidi-denoise-reference-itk"; fi
 fi
 
-# QSMxT main requires the field strength and echo times; the pinned v10.0.0 doesn't take them.
+# QSMxT main requires the field strength and echo times; v10.0.0 doesn't take them.
 SCAN=""
 if qsmxt invert heidi --help 2>/dev/null | grep -q -- '--field-strength'; then
   SCAN="--field-strength $FIELD --echo-times $TES"

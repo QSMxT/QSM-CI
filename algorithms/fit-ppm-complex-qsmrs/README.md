@@ -19,6 +19,4 @@ intermediates:
 - **Engine:** QSMxT / [QSM.rs](https://github.com/astewartau/QSM.rs) (Rust), CPU
 - **Reference:** Liu et al., *Magn Reson Med* 2013 ·
   doi:[10.1002/mrm.24272](https://doi.org/10.1002/mrm.24272)
-- **Image:** the shared QSMxT engine image ([`algorithms/_qsmxt`](../_qsmxt)). `ci_skip` until a
-  qsmxt release has `--complex-fit-output` (QSMxT/QSMxT#462); the parity workflow runs it against a
-  qsmxt build.
+- **Image:** `ghcr.io/astewartau/qsm-ci/qsmxt:v11.0.0`, the shared QSMxT engine image ([`algorithms/_qsmxt`](../_qsmxt)).

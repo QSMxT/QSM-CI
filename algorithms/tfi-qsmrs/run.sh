@@ -40,7 +40,7 @@ fi
 # QSMxT after v10.0.0 runs TFI as the MEDI toolbox implements it (MEDI_L1 with a preconditioner,
 # astewartau/QSM.rs#246): λ on MEDI's scale (default 1000), the field in radians over the echo
 # spacing, every echo's magnitude required (edge mask and Fit_ppm_complex's noise weight). It needs
-# the field strength and echo times; a `--set lambda` from the pinned v10.0.0 (λ 7.5e-5 scale) does
+# the field strength and echo times; a `--set lambda` from v10.0.0 (λ 7.5e-5 scale) does
 # not carry over. qsmxt v10.0.0 takes no scan parameters.
 SCAN=""
 if qsmxt invert tfi --help 2>/dev/null | grep -q -- '--field-strength'; then

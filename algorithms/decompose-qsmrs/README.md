@@ -33,7 +33,7 @@ separate.
   2021;242:118477 · doi:[10.1016/j.neuroimage.2021.118477](https://doi.org/10.1016/j.neuroimage.2021.118477).
   (Note: the sibling `decompose-qsm` manifest carries `10.1016/j.neuroimage.2021.118735`, which
   Crossref resolves to a different NeuroImage paper; 118477 is this article.)
-- **Image:** `ghcr.io/astewartau/qsm-ci/qsmxt:v10.0.0` — the shared QSMxT engine image
+- **Image:** `ghcr.io/astewartau/qsm-ci/qsmxt:v11.0.0` — the shared QSMxT engine image
   ([`algorithms/_qsmxt`](../_qsmxt)), already used by the other QSM.rs ports. No new image and no
   Dockerfile: `run.sh` is mounted at run time.
 - **Runner:** the default hosted tier (see *Runtime* below).
@@ -43,7 +43,7 @@ separate.
 `run.sh` reads `B0`, `B0_dir` and `TE` from `params.json` with `jq`, forwards any
 `n_inner` / `chi_bound` / `unwrap_phase` / `max_iterations` overrides from `config.json` (the `qsm-ci run --set` path),
 passes `chimap-echoes.nii.gz` as `--qsm-per-echo` (or `chimap.nii.gz` once per echo when the dataset
-has no `chimap-echoes`; a qsmxt without that flag, such as the pinned v10.0.0, takes `--qsm` alone),
+has no `chimap-echoes`; a qsmxt without that flag, such as v10.0.0, takes `--qsm` alone),
 calls the CLI into a scratch prefix, and gzips the two artifacts into `/output`:
 
 ```bash
@@ -74,7 +74,7 @@ qsm-ci run decompose-qsmrs … --set n_inner=4
 | `n_inner` | 10 | alternating three-stage fit passes per voxel (the reference's inner-iteration count) |
 | `chi_bound` | 0.5 | upper bound on \|χ\| in the per-voxel fit, ppm |
 | `unwrap_phase` | false | unwrap the phase along the echoes (needs a qsmxt with `--unwrap-phase`) |
-| `max_iterations` | 400 | maximum solver iterations of each fit stage (lsqcurvefit's MaxIterations); passed as `--max-lm-iter` to the pinned v10.0.0, whose Levenberg–Marquardt solver defaults to 30 |
+| `max_iterations` | 400 | maximum solver iterations of each fit stage (lsqcurvefit's MaxIterations); passed as `--max-lm-iter` to v10.0.0, whose Levenberg–Marquardt solver defaults to 30 |
 
 Defaults are qsm-core's `DecomposeParams::default()`; no tuned values are declared.
 

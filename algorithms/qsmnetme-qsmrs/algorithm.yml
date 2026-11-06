@@ -24,9 +24,7 @@ citation: Kim et al., Hum Brain Mapp 2025 (χ-sepnet; QSMnetME)
 code_url: https://github.com/astewartau/QSM.rs
 license: 'MIT (QSM.rs); the weights keep the original''s terms: academic use; toolbox obtained via the
   SNU-LIST Google Form'
-# qsmxt with the weights baked in (algorithms/_qsmxt/models.Dockerfile). `invert qsmnetme` is not in
-# a QSMxT release yet: the parity dev track builds qsmxt from source (qsmrs_models), and this image
-# pin moves to the first release with it.
-image: ghcr.io/astewartau/qsm-ci/qsmxt@sha256:3fd27500c18778edc21fd771828573e01c353e4c6147124977293e51256a9053   # v10.0.0-models-2
-ci_skip: true   # until the image has `qsmxt invert qsmnetme` (see image:)
+# qsmxt with the weights baked in (algorithms/_qsmxt/models.Dockerfile). `invert qsmnetme` is in
+# QSMxT from v11.0.0.
+image: ghcr.io/astewartau/qsm-ci/qsmxt@sha256:bb72a8130bd087271d21d5efd2a8b0ed6989b6bcbbe0ca24c268eca38a878341   # v11.0.0-models-1
 run: bash run.sh
