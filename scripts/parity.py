@@ -125,6 +125,10 @@ DEFAULT_SETTINGS = {"qsmrs_repo": "astewartau/QSM.rs", "qsmrs_branch": "main",
                     "qsmrs_shared_paths": ["Cargo.lock"],
                     "qsmxt_repo": "QSMxT/QSMxT", "qsmxt_branch": "main",
                     "qsmxt_shared_paths": ["Cargo.lock"],
+                    # Paths on a pair's list that decide no result (rules b and f skip them), and
+                    # lockfile packages that do not build on the Linux runners parity uses.
+                    "qsmrs_ignore_paths": [], "qsmxt_ignore_paths": [],
+                    "lock_ignore_packages": [],
                     "site_url": "https://qsmxt.github.io/QSM-CI"}
 
 
@@ -1101,13 +1105,14 @@ def github_compare(repo: str, base: str, head: str, token: "str | None" = None) 
                        token)
     if err:
         return {"error": f"compare {_short(base)}...{head}: {err[1]}", "unknown_commit": err[0] == 404}
-    files = set()
+    files, patches = set(), {}
     for f in doc.get("files") or []:
         files.add(f.get("filename"))
+        patches[f.get("filename")] = f.get("patch")   # None when GitHub leaves a large diff out
         if f.get("previous_filename"):
             files.add(f["previous_filename"])
     return {"ahead_by": doc.get("ahead_by", 0), "files": sorted(x for x in files if x),
-            "truncated": len(doc.get("files") or []) >= 300}
+            "patches": patches, "truncated": len(doc.get("files") or []) >= 300}
 
 
 def github_latest_release(repo: str, token: "str | None" = None) -> "str | None":
@@ -1122,9 +1127,66 @@ def touched(files: list, paths: list) -> list:
     return [f for f in files if any(f == p or f.startswith(p + "/") for p in ps)]
 
 
-def _changed(changes, commit: "str | None", paths: list, repo: str, branch: str, what: str) -> list:
+def _changed_lines(patch: str) -> list:
+    """The added and removed lines of a unified diff, without their +/-."""
+    return [ln[1:] for ln in patch.splitlines()
+            if ln[:1] in "+-" and not ln.startswith(("+++", "---"))]
+
+
+def _comment_only(patch: "str | None") -> bool:
+    """A Rust diff that changes only comments (`//`, `///`, `//!`) and blank lines. A diff GitHub
+    left out (None) is not."""
+    if patch is None:
+        return False
+    lines = _changed_lines(patch)
+    return bool(lines) and all(not ln.strip() or ln.strip().startswith("//") for ln in lines)
+
+
+def _lock_packages(patch: "str | None") -> "list | None":
+    """The packages whose entries a Cargo.lock diff changes, by name; None when a change cannot be
+    put to a package (no diff, or no `name =` line above it in its hunk)."""
+    if patch is None:
+        return None
+    import re
+    names, name = set(), None
+    for ln in patch.splitlines():
+        if ln.startswith("@@"):
+            name = None
+            continue
+        m = re.match(r'^[ +-]name = "([^"]+)"', ln)
+        if m:
+            name = m.group(1)
+        if ln[:1] in "+-":
+            dep = re.match(r'^[+-]\s*"([^" ]+)', ln)
+            if dep:
+                names.add(dep.group(1))   # a dependency list entry names the package it points to
+            elif name is None:
+                return None
+            else:
+                names.add(name)
+    return sorted(names)
+
+
+def _matters(file: str, patch: "str | None", ignore_paths: list, ignore_packages: list) -> bool:
+    """Whether a changed file can move a pair's result: not when it is one of `ignore_paths`, when
+    a `.rs` diff changes only comments, or when a `Cargo.lock` diff changes only packages in
+    `ignore_packages` (globs: platform crates the Linux runners do not build)."""
+    from fnmatch import fnmatch
+    if touched([file], ignore_paths):
+        return False
+    if file.endswith(".rs"):
+        return not _comment_only(patch)
+    if file.endswith("Cargo.lock") and ignore_packages:
+        pkgs = _lock_packages(patch)
+        return pkgs is None or any(not any(fnmatch(p, g) for g in ignore_packages) for p in pkgs)
+    return True
+
+
+def _changed(changes, commit: "str | None", paths: list, repo: str, branch: str, what: str,
+             ignore_paths: "list | None" = None, ignore_packages: "list | None" = None) -> list:
     """The staleness reason for one repository's rule (b or f): [] when nothing under `paths`
-    changed on `branch` since `commit`. A network error is not a verdict (no reason)."""
+    that can move the result ([`_matters`]) changed on `branch` since `commit`. A network error is
+    not a verdict (no reason)."""
     if not paths:
         return []
     if not commit:
@@ -1133,7 +1195,9 @@ def _changed(changes, commit: "str | None", paths: list, repo: str, branch: str,
     if c.get("error"):
         return ([f"the checked {what} commit {_short(commit)} is not in {repo}"]
                 if c.get("unknown_commit") else [])
-    hit = touched(c.get("files") or [], paths)
+    patches = c.get("patches") or {}
+    hit = [f for f in touched(c.get("files") or [], paths)
+           if _matters(f, patches.get(f), ignore_paths or [], ignore_packages or [])]
     if not hit:
         return []
     shown = ", ".join(f"`{f}`" for f in hit[:4]) + (" …" if len(hit) > 4 else "")
@@ -1182,7 +1246,8 @@ def staleness(rec: "dict | None", cfg: dict, phantom: str, manifests: dict, sett
     if changes is not None:
         why += _changed(changes, (rec.get("qsmrs") or {}).get("commit"),
                         list(cfg.get("qsmrs_paths") or []) + list(settings.get("qsmrs_shared_paths") or []),
-                        settings["qsmrs_repo"], settings["qsmrs_branch"], "QSM.rs")
+                        settings["qsmrs_repo"], settings["qsmrs_branch"], "QSM.rs",
+                        settings.get("qsmrs_ignore_paths"), settings.get("lock_ignore_packages"))
     if rec.get("thresholds") != thresholds_version(cfg, phantom):
         why.append("the pair's settings or limits for this dataset changed since")
     if rec.get("result") == "error":
@@ -1192,7 +1257,8 @@ def staleness(rec: "dict | None", cfg: dict, phantom: str, manifests: dict, sett
     if qsmxt_changes is not None:
         why += _changed(qsmxt_changes, qsmxt_commit(rec),
                         list(cfg.get("qsmxt_paths") or []) + list(settings.get("qsmxt_shared_paths") or []),
-                        settings["qsmxt_repo"], settings["qsmxt_branch"], "QSMxT")
+                        settings["qsmxt_repo"], settings["qsmxt_branch"], "QSMxT",
+                        settings.get("qsmxt_ignore_paths"), settings.get("lock_ignore_packages"))
     return why
 
 
@@ -1320,6 +1386,8 @@ def _summary(rec: "dict | None", finals: "list | None" = None) -> "dict | None":
            "correlation": final.get("correlation"), "dice": final.get("dice")}
     if rec.get("release"):
         out["release"] = rec["release"]
+    if rec.get("attested"):
+        out["attested"] = rec["attested"]
     for k in ("dropped_feeds", "dropped_settings"):
         if rec.get(k):
             out[k] = rec[k]
@@ -1574,6 +1642,8 @@ def _status_table(rows: list, track: str) -> list:
             when = (f"[{last['date'][:10]}]({last['run_url']})" if last.get("run_url")
                     else (last.get("date") or "")[:10]) if last else "never"
             res = RESULT_LABEL.get(last.get("result"), "—")
+            if last.get("attested"):
+                res += " (reviewed)"
             if last.get("result") == "unavailable":
                 res = f"⚪ not in {last.get('release') or 'release'}"
             if r["state"] in ("current", "stale"):
@@ -1878,6 +1948,65 @@ def cmd_record(args) -> int:
     return 0
 
 
+def attest_records(results: dict, thresholds: dict, manifests: dict, pairs: list, qsmrs: str,
+                   qsmxt: str, reason: str, date: str) -> "tuple[list, list]":
+    """Reviewed, not rerun: for each of `pairs`' datasets, a dev record carrying the newest check's
+    result forward to QSM.rs `qsmrs` and QSMxT `qsmxt`, because what changed since cannot move it
+    (`reason`). Only a passing check carries forward, and only while its reference image and its
+    limits are the ones it was checked with. Returns (records, refusals)."""
+    latest = latest_records(results, DEV)
+    out, refused = [], []
+    for pair in pairs:
+        cfg = thresholds.get(pair)
+        if cfg is None:
+            refused.append(f"{pair}: not in thresholds.yml")
+            continue
+        for ds in sorted(cfg.get("datasets") or {}):
+            rec = latest.get((pair, ds))
+            why = []
+            if rec is None:
+                why.append("never checked")
+            else:
+                if rec.get("result") != "pass":
+                    why.append(f"its last check did not pass ({rec.get('result')})")
+                why += _reference_changed(rec, cfg, manifests)
+                if rec.get("thresholds") != thresholds_version(cfg, ds):
+                    why.append("its settings or limits changed since")
+            if why:
+                refused.append(f"{pair} on {ds}: " + "; ".join(why) + " — rerun it instead")
+                continue
+            from_check = {"date": rec.get("date"), "run_url": rec.get("run_url"),
+                          "qsmrs": (rec.get("qsmrs") or {}).get("commit"), "qsmxt": qsmxt_commit(rec)}
+            prior = rec.get("attested", {}).get("from") or from_check
+            out.append({**rec, "date": date, "run_id": f"attest-{date}",
+                        "qsmrs": {**(rec.get("qsmrs") or {}), "commit": qsmrs},
+                        "qsmxt": {**(rec.get("qsmxt") or {}), "commit": qsmxt},
+                        "attested": {"reason": reason, "from": prior}})
+    return out, refused
+
+
+def cmd_attest(args) -> int:
+    import re
+    from datetime import datetime, timezone
+    for side, c in (("--qsmrs", args.qsmrs), ("--qsmxt", args.qsmxt)):
+        if not re.fullmatch(r"[0-9a-f]{40}", c):
+            print(f"{side} must be a full 40-character commit, not {c!r}", file=sys.stderr)
+            return 2
+    th = load_thresholds(args.thresholds)
+    results = load_results(args.results)
+    pairs = ([n for n, c in th.items() if c.get("enabled")] if args.pairs == "enabled"
+             else [p.strip() for p in args.pairs.split(",") if p.strip()])
+    date = args.date or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    records, refused = attest_records(results, th, _manifests(), pairs, args.qsmrs, args.qsmxt,
+                                      args.reason, date)
+    for r in refused:
+        print(f"refused: {r}", file=sys.stderr)
+    Path(args.results).write_text(json.dumps(merge_records(results, records), indent=1, default=str)
+                                  + "\n")
+    print(f"recorded {len(records)} reviewed check(s) in {args.results}")
+    return 1 if refused else 0
+
+
 def latest_release(args, settings: dict, results: dict, token: "str | None") -> "tuple":
     """(tag, source): `--latest-release`, else GitHub's latest QSMxT release (online), else the
     newest release the released track has records for."""
@@ -2041,6 +2170,15 @@ def main(argv=None) -> int:
     p.add_argument("--records", type=Path, required=True)
     p.add_argument("--results", type=Path, default=RESULTS)
     p.set_defaults(fn=cmd_record)
+    p = sub.add_parser("attest", help="dev track: carry passing checks forward to new commits, "
+                       "reviewed as unable to move them (no rerun)")
+    p.add_argument("--pairs", required=True, help="comma-separated pairs, or 'enabled'")
+    p.add_argument("--qsmrs", required=True, help="the QSM.rs commit (40 characters) reviewed")
+    p.add_argument("--qsmxt", required=True, help="the QSMxT commit (40 characters) reviewed")
+    p.add_argument("--reason", required=True, help="why nothing since can move the results")
+    p.add_argument("--date", help="ISO 8601 UTC (default: now)")
+    p.add_argument("--results", type=Path, default=RESULTS)
+    p.set_defaults(fn=cmd_attest)
     for name, fn, hlp in (("status", cmd_status, "last check and staleness per pair, both tracks"),
                           ("released-plan", cmd_released_plan,
                            "what the released track needs to run (parity-release.yml)")):

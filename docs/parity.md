@@ -246,9 +246,29 @@ On the **development** track a check is **stale** when any of these holds:
   its `qsmxt --version` names. `Cargo.lock` counts on both sides because the qsmxt binary takes its
   dependency versions (rustfft and the rest) from QSMxT's lockfile, not QSM.rs's.
 
-A check does not expire with age: it stands until one of these changes. A flag says a file on the
-pair's path changed, not that its result can have: before a release, only the pairs whose
-computation the change touches are rerun (below).
+A check does not expire with age: it stands until one of these changes. Changes that cannot move a
+result never count:
+
+- a Rust file whose diff changes only comments and blank lines;
+- a path on `qsmrs_ignore_paths` / `qsmxt_ignore_paths` (QSM.rs's `src/pipeline/rules.rs`: the
+  pipeline rules only advise, no computation reads them);
+- a `Cargo.lock` change to packages on `lock_ignore_packages` only (platform crates, such as
+  `windows-sys`, that the Linux runners do not build).
+
+A flag still only says that something on the pair's path changed, not that its result can have: a
+function the pair never calls can share a file with one it does. When a review of the diff shows
+that nothing since can move a pair's result, record that instead of rerunning it:
+
+```bash
+python scripts/parity.py attest --pairs tkd,tsvd --qsmrs <QSM.rs commit> --qsmxt <QSMxT commit> \
+    --reason "the change is run_tgv's multi-echo path, which these pairs do not call"
+```
+
+`attest` carries each pair's newest passing check forward to those commits (full 40-character
+hashes), with the reason and the check it came from. It refuses a pair whose last check did not
+pass, or whose reference image or limits changed since: those are rerun. The status shows a carried
+check as `✅ pass (reviewed)`, current until the next change on its path. Commit the updated
+`parity/results.json` in a PR, with the review in its description.
 
 `qsmrs_paths` lists the port's own modules, the `src/pipeline/` files QSMxT calls it through, and
 every module those import, followed through shared code (`fft.rs`, `grid.rs`, `kernels/`,
@@ -344,7 +364,8 @@ gh run watch -R QSMxT/QSM-CI --exit-status "$(gh run list -R QSMxT/QSM-CI -w par
   --json databaseId -q '.[0].databaseId')"
 ```
 
-Say which flagged pairs were left out and why. When nothing a pair computes changed, nothing runs.
+Say which flagged pairs were left out and why, and record the review with `attest` (above), so
+the status shows them current. When nothing a pair computes changed, nothing runs.
 The run's summary (the `report` job) has one row per pair × dataset and which passed against
 exactly the QSM.rs commit under test. A dispatch from `main` also records the results, which clears
 those pairs' staleness. The released track still checks every enabled pair against the next QSMxT

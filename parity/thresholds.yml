@@ -62,7 +62,8 @@
 # Staleness (`parity.py status`, docs/parity.md): an enabled pair's last check on a dataset is stale
 # when the reference image changed, QSM.rs main touched its qsmrs_paths or Cargo.lock, QSMxT main
 # touched its qsmxt_paths or Cargo.lock, its settings or limits here changed, it was never checked,
-# or it failed. There is no age limit.
+# or it failed. There is no age limit. Comment-only changes and the ignore lists below never count,
+# and `parity.py attest` records a review that nothing since can move a check.
 qsmrs_repo: astewartau/QSM.rs
 qsmrs_branch: main
 qsmrs_shared_paths: [Cargo.lock]   # every pair: a dependency update can move any result
@@ -71,6 +72,11 @@ qsmxt_branch: main
 # The qsmxt binary is built from QSMxT's lockfile (qsm-core is a dependency there, so QSM.rs's own
 # Cargo.lock does not pick the versions of rustfft and the rest in the binary that ran).
 qsmxt_shared_paths: [Cargo.lock]
+# What cannot move a result, so it never makes a check stale (besides comment-only Rust changes,
+# which never do): QSM.rs's pipeline rules only advise (no computation reads them), and these
+# lockfile packages are not built on the Linux runners parity uses.
+qsmrs_ignore_paths: [src/pipeline/rules.rs]
+lock_ignore_packages: ["windows*", "wasm-bindgen*", "js-sys", "web-sys"]
 # Where the site (and parity/badges/<pair>.json) is published; the QSM.rs README's badges read it.
 site_url: https://qsmxt.github.io/QSM-CI
 
