@@ -88,8 +88,8 @@ The latest QSMxT release against each verified original. A release does not chan
 |  |  | sim | [2026-11-06](https://github.com/QSMxT/QSM-CI/actions/runs/42171553924) | v0.41.0 `8a655f4` | ✅ pass | 0.000216% | ✅ current |
 | `lsqr` | `lsqr` → `lsqr-qsmrs` | s005001-cbic-prisma-bridge-run1 | [2026-11-06](https://github.com/QSMxT/QSM-CI/actions/runs/42171553924) | v0.41.0 `8a655f4` | ✅ pass | 0.0002515% | ✅ current |
 |  |  | sim | [2026-11-06](https://github.com/QSMxT/QSM-CI/actions/runs/42171553924) | v0.41.0 `8a655f4` | ✅ pass | 0.0003931% | ✅ current |
-| `heidi` | `heidi` → `heidi-qsmrs` | s005001-cbic-prisma-bridge-run1 | [2026-11-06](https://github.com/QSMxT/QSM-CI/actions/runs/42171553924) | v0.41.0 `8a655f4` | ❌ fail | 0.05137% | ✅ current |
-|  |  | sim | [2026-11-06](https://github.com/QSMxT/QSM-CI/actions/runs/42171553924) | v0.41.0 `8a655f4` | ✅ pass | 0.0004536% | ✅ current |
+| `heidi` | `heidi` → `heidi-qsmrs` | s005001-cbic-prisma-bridge-run1 | [2026-11-06](https://github.com/QSMxT/QSM-CI/actions/runs/42218972686) | v0.41.0 `8a655f4` | ❌ fail | 0.05137% | ✅ current |
+|  |  | sim | [2026-11-06](https://github.com/QSMxT/QSM-CI/actions/runs/42218972686) | v0.41.0 `8a655f4` | ✅ pass | 0.0004536% | ✅ current |
 | `ndi` | `ndi` → `ndi-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-06](https://github.com/QSMxT/QSM-CI/actions/runs/42171553924) | v0.41.0 `8a655f4` | ✅ pass | 8.885e-05% | ✅ current |
 |  |  | sim | [2026-11-06](https://github.com/QSMxT/QSM-CI/actions/runs/42171553924) | v0.41.0 `8a655f4` | ✅ pass | 0.001103% | ✅ current |
 | `fansi-nltv` | `fansi-nltv` → `fansi-nltv-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-06](https://github.com/QSMxT/QSM-CI/actions/runs/42171553924) | v0.41.0 `8a655f4` | ✅ pass | 0.003004% | ✅ current |

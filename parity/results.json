@@ -5012,58 +5012,6 @@
   {
    "pair": "heidi",
    "dataset": "s005001-cbic-prisma-bridge-run1",
-   "track": "released",
-   "release": "v11.0.0",
-   "date": "2026-11-06T09:17:10Z",
-   "run_id": "42171553924",
-   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/42171553924",
-   "qsmci_commit": "023a9e065b5232048c0eba7b8931df4bb0d4609f",
-   "thresholds": "bdb623fddfe6",
-   "reference": {
-    "slug": "heidi",
-    "image": "ghcr.io/astewartau/qsm-ci/heidi@sha256:69f572266b7f232d35fc269774f547f2cd81ae4cdb98c1ed35cdd33290a1a1a6",
-    "digest": "sha256:69f572266b7f232d35fc269774f547f2cd81ae4cdb98c1ed35cdd33290a1a1a6",
-    "id": "sha256:7168eb911d3075be8a856b0ce91e0b21ffe4529ece347c6924fd1f743a11682f"
-   },
-   "candidate": {
-    "slug": "heidi-qsmrs",
-    "image": "qsmxt-under-test:42171553924-j78",
-    "digest": "sha256:e273834db8e167a7ac0271f125133c8211a0d4ee7626ae7c36fa63126578a0fb",
-    "qsmxt": "qsmxt 11.0.0"
-   },
-   "qsmrs": {
-    "ref": null,
-    "commit": "8a655f4c31b9b0f657c35fe812e7f0bf8867d368",
-    "version": "0.41.0"
-   },
-   "qsmxt": {
-    "ref": "v11.0.0",
-    "commit": "dc94cf4dd93b21b1bf68c91f3e0d43da0cc4956d"
-   },
-   "set": {
-    "candidate": {
-     "denoise_reference_itk": "true"
-    }
-   },
-   "result": "fail",
-   "metrics": {
-    "chimap": {
-     "kind": "continuous",
-     "nrmse": 0.05137363221077171,
-     "correlation": 0.9999998680186281,
-     "max_abs": 0.0036644786596298218,
-     "p99_abs": 3.974694758653637e-05,
-     "nonfinite": 0
-    }
-   },
-   "failed": [
-    "chimap max_abs 0.003664 ppm (limit <= 2.83e-05 ppm)",
-    "chimap p99_abs 3.975e-05 ppm (limit <= 1e-06 ppm)"
-   ]
-  },
-  {
-   "pair": "heidi",
-   "dataset": "s005001-cbic-prisma-bridge-run1",
    "track": "dev",
    "date": "2026-11-06T12:33:46Z",
    "run_id": "42194254798",
@@ -5107,6 +5055,58 @@
      "nonfinite": 0
     }
    }
+  },
+  {
+   "pair": "heidi",
+   "dataset": "s005001-cbic-prisma-bridge-run1",
+   "track": "released",
+   "release": "v11.0.0",
+   "date": "2026-11-06T15:59:34Z",
+   "run_id": "42218972686",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/42218972686",
+   "qsmci_commit": "4700c17a97868a8cbc48db5c35d82b71dc82d962",
+   "thresholds": "bdb623fddfe6",
+   "reference": {
+    "slug": "heidi",
+    "image": "ghcr.io/astewartau/qsm-ci/heidi@sha256:69f572266b7f232d35fc269774f547f2cd81ae4cdb98c1ed35cdd33290a1a1a6",
+    "digest": "sha256:69f572266b7f232d35fc269774f547f2cd81ae4cdb98c1ed35cdd33290a1a1a6",
+    "id": "sha256:7168eb911d3075be8a856b0ce91e0b21ffe4529ece347c6924fd1f743a11682f"
+   },
+   "candidate": {
+    "slug": "heidi-qsmrs",
+    "image": "qsmxt-under-test:42218972686-j0",
+    "digest": "sha256:a3f650c1a4c7c43bb614957855d384997a7705a87cb41b8351f870cfafe76313",
+    "qsmxt": "qsmxt 11.0.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "8a655f4c31b9b0f657c35fe812e7f0bf8867d368",
+    "version": "0.41.0"
+   },
+   "qsmxt": {
+    "ref": "v11.0.0",
+    "commit": "dc94cf4dd93b21b1bf68c91f3e0d43da0cc4956d"
+   },
+   "set": {
+    "candidate": {
+     "denoise_reference_itk": "true"
+    }
+   },
+   "result": "fail",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.05137363221077171,
+     "correlation": 0.9999998680186281,
+     "max_abs": 0.0036644786596298218,
+     "p99_abs": 3.974694758653637e-05,
+     "nonfinite": 0
+    }
+   },
+   "failed": [
+    "chimap max_abs 0.003664 ppm (limit <= 2.83e-05 ppm)",
+    "chimap p99_abs 3.975e-05 ppm (limit <= 1e-06 ppm)"
+   ]
   },
   {
    "pair": "heidi",
@@ -5313,54 +5313,6 @@
   {
    "pair": "heidi",
    "dataset": "sim",
-   "track": "released",
-   "release": "v11.0.0",
-   "date": "2026-11-06T09:17:10Z",
-   "run_id": "42171553924",
-   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/42171553924",
-   "qsmci_commit": "023a9e065b5232048c0eba7b8931df4bb0d4609f",
-   "thresholds": "106b40d56bb5",
-   "reference": {
-    "slug": "heidi",
-    "image": "ghcr.io/astewartau/qsm-ci/heidi@sha256:69f572266b7f232d35fc269774f547f2cd81ae4cdb98c1ed35cdd33290a1a1a6",
-    "digest": "sha256:69f572266b7f232d35fc269774f547f2cd81ae4cdb98c1ed35cdd33290a1a1a6",
-    "id": "sha256:7168eb911d3075be8a856b0ce91e0b21ffe4529ece347c6924fd1f743a11682f"
-   },
-   "candidate": {
-    "slug": "heidi-qsmrs",
-    "image": "qsmxt-under-test:42171553924-j79",
-    "digest": "sha256:45ff2b35617d616a7ff269f21b672c036240c8682d75df0ec6989b07d46c238a",
-    "qsmxt": "qsmxt 11.0.0"
-   },
-   "qsmrs": {
-    "ref": null,
-    "commit": "8a655f4c31b9b0f657c35fe812e7f0bf8867d368",
-    "version": "0.41.0"
-   },
-   "qsmxt": {
-    "ref": "v11.0.0",
-    "commit": "dc94cf4dd93b21b1bf68c91f3e0d43da0cc4956d"
-   },
-   "set": {
-    "candidate": {
-     "denoise_reference_itk": "true"
-    }
-   },
-   "result": "pass",
-   "metrics": {
-    "chimap": {
-     "kind": "continuous",
-     "nrmse": 0.0004536340971534522,
-     "correlation": 0.9999999999897097,
-     "max_abs": 2.9501505196094513e-05,
-     "p99_abs": 1.0803341865539551e-07,
-     "nonfinite": 0
-    }
-   }
-  },
-  {
-   "pair": "heidi",
-   "dataset": "sim",
    "track": "dev",
    "date": "2026-11-06T12:33:46Z",
    "run_id": "42194254798",
@@ -5386,6 +5338,54 @@
    },
    "qsmxt": {
     "ref": "main",
+    "commit": "dc94cf4dd93b21b1bf68c91f3e0d43da0cc4956d"
+   },
+   "set": {
+    "candidate": {
+     "denoise_reference_itk": "true"
+    }
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.0004536340971534522,
+     "correlation": 0.9999999999897097,
+     "max_abs": 2.9501505196094513e-05,
+     "p99_abs": 1.0803341865539551e-07,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "heidi",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v11.0.0",
+   "date": "2026-11-06T15:59:34Z",
+   "run_id": "42218972686",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/42218972686",
+   "qsmci_commit": "4700c17a97868a8cbc48db5c35d82b71dc82d962",
+   "thresholds": "106b40d56bb5",
+   "reference": {
+    "slug": "heidi",
+    "image": "ghcr.io/astewartau/qsm-ci/heidi@sha256:69f572266b7f232d35fc269774f547f2cd81ae4cdb98c1ed35cdd33290a1a1a6",
+    "digest": "sha256:69f572266b7f232d35fc269774f547f2cd81ae4cdb98c1ed35cdd33290a1a1a6",
+    "id": "sha256:7168eb911d3075be8a856b0ce91e0b21ffe4529ece347c6924fd1f743a11682f"
+   },
+   "candidate": {
+    "slug": "heidi-qsmrs",
+    "image": "qsmxt-under-test:42218972686-j1",
+    "digest": "sha256:fd74f0249c40a4ca215dd680e451daf46df8bb9ebe69c583adc67463bda36493",
+    "qsmxt": "qsmxt 11.0.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "8a655f4c31b9b0f657c35fe812e7f0bf8867d368",
+    "version": "0.41.0"
+   },
+   "qsmxt": {
+    "ref": "v11.0.0",
     "commit": "dc94cf4dd93b21b1bf68c91f3e0d43da0cc4956d"
    },
    "set": {
