@@ -978,19 +978,21 @@ def test_report_and_record_cli(tmp_path):
     r = json.loads(recs.read_text())
     assert [x["result"] for x in r] == ["pass", "error"]
     s = summ.read_text()
-    assert "Release gate: not passed" in s and "`" + "c" * 40 + "`" in s
+    assert "Checked pairs: not passed" in s and "`" + "c" * 40 + "`" in s
     results = tmp_path / "results.json"
     assert parity.main(["record", "--records", str(recs), "--results", str(results)]) == 0
     assert parity.main(["record", "--records", str(recs), "--results", str(results)]) == 0
     assert len(json.loads(results.read_text())["checks"]) == 2
 
 
-def test_run_summary_gate_passes_only_on_one_commit_and_every_enabled_pair():
+def test_run_summary_passes_on_the_pairs_it_checked_against_one_commit():
     ok = _rec(_parity_json())
-    assert "Release gate: passed" in parity.render_run_summary([ok], ["p"])
-    assert "Release gate: not passed" in parity.render_run_summary([ok], ["p", "other"])
+    assert "Checked pairs: passed" in parity.render_run_summary([ok], ["p"])
+    # A pair left out is listed, not a failure: a release reruns only the pairs that changed.
+    s = parity.render_run_summary([ok], ["p", "other"])
+    assert "Checked pairs: passed" in s and "did not check: `other`" in s
     other = {**ok, "dataset": "kki", "qsmrs": {"commit": "f" * 40}}
-    assert "Release gate: not passed" in parity.render_run_summary([ok, other], ["p"])
+    assert "Checked pairs: not passed" in parity.render_run_summary([ok, other], ["p"])
 
 
 def test_touched_matches_files_and_directories():
@@ -1179,7 +1181,7 @@ def test_run_summary_for_a_release():
     recs = [_rel(_parity_json()), {**_rel(_unavailable()), "pair": "q"},
             {**_rel(_parity_json(ok=False, nrmse=3)), "pair": "r"}]
     s = parity.render_run_summary(recs, ["p", "q", "r"])
-    assert "Released track: QSMxT **v10.0.0**" in s and "Release gate" not in s
+    assert "Released track: QSMxT **v10.0.0**" in s and "Checked pairs" not in s
     assert "passed on every dataset run: `p`." in s and "Failed or no result: `r`." in s
     assert "Not in v10.0.0: `q`." in s and "invert star" in s
 

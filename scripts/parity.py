@@ -32,7 +32,7 @@ Subcommands (the `parity` workflow runs them in this order):
 
 Two tracks (docs/parity.md, "Tracks"): `released` checks the latest QSMxT release (its shipped
 binary, with the QSM.rs it pins) and keeps every release's result; `dev` checks QSMxT main with
-qsm-core at QSM.rs main (the QSM.rs release gate). Two more subcommands serve the released track:
+qsm-core at QSM.rs main (or a release candidate). Two more subcommands serve the released track:
 
   unavailable    write the job's result as "not in <release>" when the release has no such
                  command or option (before the run, or from a failed run's log).
@@ -887,7 +887,7 @@ def cmd_compare(args) -> int:
 #             A release never changes, so it is rerun only for a new release or a changed reference
 #             or pair settings. Every release's records are kept: the history the site shows.
 #   dev       QSMxT main built with qsm-core moved to QSM.rs main (or a release candidate): the QSM.rs
-#             release gate. Stale on any change to the pair's paths; 50 newest records kept.
+#             release candidate. Stale on any change to the pair's paths; 50 newest records kept.
 # ---------------------------------------------------------------------------------------------------
 
 RELEASED, DEV = "released", "dev"
@@ -1677,8 +1677,8 @@ def render_issue(doc: dict) -> str:
 
 def render_run_summary(records: list, enabled: list, baseline: bool = False) -> str:
     """The run's summary (the workflow's report job): one row per pair × dataset, then the answer
-    the run's track needs. Dev: the release gate (which pairs passed against exactly the QSM.rs
-    commit under test). Released: what the release passed, failed and does not have."""
+    the run's track needs. Dev: whether the pairs it checked passed against exactly the QSM.rs
+    commit under test. Released: what the release passed, failed and does not have."""
     lines = ["## Parity run summary", ""]
     release = next((r.get("release") for r in records if r.get("release")), None)
     if release:
@@ -1727,12 +1727,14 @@ def render_run_summary(records: list, enabled: list, baseline: bool = False) -> 
     if missing:
         lines += ["", "Enabled pairs this run did not check: " + ", ".join(f"`{p}`" for p in missing)
                   + "."]
-    gate = (len(commits) == 1 and commits[0] != "?" and not missing
-            and all(r["result"] == "pass" for r in records))
-    lines += ["", ("**Release gate: passed** — every enabled pair passed on every configured "
-                   f"dataset against QSM.rs `{commits[0]}`.") if gate else
-              "**Release gate: not passed** by this run (a pair failed, an enabled pair was not "
-              "run, or the candidates did not all run one QSM.rs commit)."]
+    # A release reruns only the pairs whose computation changed (docs/parity.md, "Before a QSM.rs
+    # release"), so the answer is about the pairs this run checked; the ones it left out are listed.
+    passed = (len(commits) == 1 and commits[0] != "?"
+              and all(r["result"] == "pass" for r in records))
+    lines += ["", (f"**Checked pairs: passed** — every pair this run checked passed against QSM.rs "
+                   f"`{commits[0]}`.") if passed else
+              "**Checked pairs: not passed** (a pair failed or had no result, or the candidates did "
+              "not all run one QSM.rs commit)."]
     return "\n".join(lines) + "\n"
 
 

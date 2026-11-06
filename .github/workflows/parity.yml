@@ -16,7 +16,7 @@ name: parity
 #                  SHA256SUMS), with the QSM.rs it pins. A pair whose port the release lacks (no such
 #                  subcommand, option or value) is recorded as "not in <tag>", not as a failure.
 #   qsmrs_ref      DEV track: QSMxT (qsmxt_ref, default main) built with its qsm-core pin moved to
-#                  this QSM.rs commit (main, or a release candidate: the QSM.rs release gate);
+#                  this QSM.rs commit (main, or a release candidate);
 #   qsmxt_ref      DEV track: a QSMxT ref, built as it is (with the QSM.rs it pins);
 #   qsmxt_image    DEV track: a prebuilt qsmxt image.
 # With none of them, every QSM.rs step runs the qsmxt image its algorithm.yml pins, and nothing is
@@ -31,7 +31,7 @@ name: parity
 #       -f qsmrs_ref=<release candidate SHA>
 #
 # After the jobs, `report` writes the run summary (dev: which pairs passed against exactly the
-# QSM.rs commit under test, the release gate's answer; released: what the release passed, failed and
+# QSM.rs commit under test; released: what the release passed, failed and
 # lacks). A run from main, or one dispatched with record=true, then has `record` commit one record
 # per pair × dataset to parity/results.json and regenerate parity/status.json and parity/STATUS.md
 # (scripts/parity.py report / record / status). Baselines, runs from other branches and runs of the
