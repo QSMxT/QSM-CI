@@ -1315,8 +1315,11 @@ pairs:
       s005001-cbic-prisma-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
-        # Measured: NRMSE 0.00025 %, r 1.000000, max |Δ| 2.0e-05 ppm, p99 |Δ| 8.2e-08 ppm.
-        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 2.5e-05, p99_abs_max: 1.0e-06 }
+        # Measured: NRMSE 0.00025 %, r 1.000000, max |Δ| 2.0e-05 ppm, p99 |Δ| 8.2e-08 ppm. MATLAB's
+        # lsqr stops at a runner-dependent iteration in vivo too (the heidi pair's seed moved by up to
+        # 0.0029 ppm between runners, runs 42171553924 vs 42194254798), so max/p99 take sim's
+        # runner-proof limits.
+        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 0.013, p99_abs_max: 0.000131 }
         measured: { main: "run 41257449272: QSMxT main a78074c, QSM.rs main afed56b; lsqr-v4 sha256:a2deee2d… (limits)" }
   heidi:
     reference: heidi
@@ -1352,8 +1355,12 @@ pairs:
       s005001-cbic-prisma-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
-        # Measured: NRMSE 0.00035 %, r 1.000000, max |Δ| 2.3e-05 ppm, p99 |Δ| 1.8e-07 ppm.
-        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 2.83e-05, p99_abs_max: 1.0e-06 }
+        # Measured: NRMSE 0.00035 %, r 1.000000, max |Δ| 2.3e-05 ppm, p99 |Δ| 1.8e-07 ppm. On
+        # another runner MATLAB's LSQR seed stops at a different iteration (as on sim): NRMSE
+        # 0.0514 %, max |Δ| 0.0037 ppm, p99 |Δ| 4.0e-05 ppm, with the port bit-identical and the
+        # inputs identical (runs 42171553924, 42218972686 vs 42194254798). So max/p99 take sim's
+        # runner-proof limits.
+        chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 0.013, p99_abs_max: 0.000131 }
         measured: { pr389: "run 41277793603: QSMxT heidi-checkbox b4a8658 (QSMxT/QSMxT#471), QSM.rs heidi-cone-fill 76a8ac4 (astewartau/QSM.rs#389); heidi-v4 sha256:69f57226… (limits)" }
 
   # ---- FANSI toolbox originals (MATLAB, FANSI 93044a3; fidelity: QSMxT/QSM-CI#325). Every one
