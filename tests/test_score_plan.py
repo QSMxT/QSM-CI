@@ -289,10 +289,15 @@ def test_in_progress_coverage_subtracts_only_up_to_date_tasks(repo):
     assert {t["id"] for t in keep} == {"f-tkd", "iv-tkd", "f-vsharp"}
     # a shard is covered only when nothing scored changed at all; a scorer change breaks everything
     shard = sp.plan_tasks(repo["root"], REG, full=True, slugs=[])
-    keep, _ = sp.subtract_in_progress(shard, b, [{"id": 1, "sha": a, "active": {t["id"] for t in shard}}])
+    keep, _ = sp.subtract_in_progress(shard, b, [{"id": 1, "sha": a, "active": {sp.task_key(t) for t in shard}}])
     assert {t["id"] for t in keep} == {t["id"] for t in shard if "shard" in t}   # vsharp changed in a..b → shards stale, iv-tkd still covered
-    keep, _ = sp.subtract_in_progress(shard, b, [{"id": 1, "sha": b, "active": {t["id"] for t in shard}}])
+    keep, _ = sp.subtract_in_progress(shard, b, [{"id": 1, "sha": b, "active": {sp.task_key(t) for t in shard}}])
     assert keep == []                                               # same commit → fully covered
+    # The same shard names from a split another way are other slices: not covered (2026-11-07: a
+    # 128-way run skipped s06, s19, … because a 48-way run had them in flight).
+    other_split = sp.plan_tasks(repo["root"], REG, full=True, slugs=[], shards=48)
+    keep, _ = sp.subtract_in_progress(shard, b, [{"id": 1, "sha": b, "active": {sp.task_key(t) for t in other_split}}])
+    assert {t["id"] for t in keep} == {t["id"] for t in shard if "shard" in t}
     e = c("scorer", **{"eval/m.py": "3\n"})
     keep, _ = sp.subtract_in_progress(tasks, e, [{"id": 1, "sha": b, "active": {"f-tkd", "iv-tkd", "f-vsharp"}}])
     assert len(keep) == len(tasks)

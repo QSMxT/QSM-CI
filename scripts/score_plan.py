@@ -464,9 +464,10 @@ def gh_api(path: str) -> dict | list:
 
 
 def in_progress_runs(repo: str, my_run: str) -> list[dict]:
-    """Other in-progress score runs: [{'sha': head_sha, 'active': {task ids queued/running/succeeded}}].
-    A task id is the first element of the matrix job name, `score (<id>, ...)` or
-    `score-selfhosted (<id>, ...)`."""
+    """Other in-progress score runs: [{'sha': head_sha, 'active': {task keys queued/running/succeeded}}].
+    A task's key is the first element of the matrix job name, `score (<id>, ...)` or
+    `score-selfhosted (<id>, ...)`, and for a shard its slice too (`task_key`): `s06` of a 48-way
+    split and `s06` of a 128-way split are different work."""
     out = []
     try:
         runs = gh_api(f"/repos/{repo}/actions/workflows/score.yml/runs?status=in_progress&per_page=50")
@@ -482,11 +483,11 @@ def in_progress_runs(repo: str, my_run: str) -> list[dict]:
             while True:
                 jobs = gh_api(f"/repos/{repo}/actions/runs/{r['id']}/jobs?per_page=100&filter=latest&page={page}")
                 for j in jobs.get("jobs", []):
-                    m = re.match(r"score(?:-selfhosted)? \((\S+?)[,)]", j.get("name", ""))
+                    m = re.match(r"score(?:-selfhosted)? \((\S+?)(?:, (\d+/\d+))?[,)]", j.get("name", ""))
                     if not m:
                         continue
                     if j.get("status") in ("queued", "in_progress", "waiting", "pending") or j.get("conclusion") == "success":
-                        active.add(m.group(1))
+                        active.add(task_key({"id": m.group(1), "shard": m.group(2)}))
                 if len(jobs.get("jobs", [])) < 100:
                     break
                 page += 1
@@ -497,12 +498,17 @@ def in_progress_runs(repo: str, my_run: str) -> list[dict]:
     return out
 
 
+def task_key(t: dict) -> str:
+    """What identifies a task's work across runs: its id, and for a shard its slice (`s06@6/128`)."""
+    return f"{t['id']}@{t['shard']}" if t.get("shard") else t["id"]
+
+
 def subtract_in_progress(tasks: list[dict], head: str, others: list[dict]) -> tuple[list[dict], list[str]]:
     keep, dropped = [], []
     for t in tasks:
         covered_by = None
         for o in others:
-            if t["id"] in o["active"] and o["sha"] and commit_exists(o["sha"]) and is_ancestor(o["sha"], head):
+            if task_key(t) in o["active"] and o["sha"] and commit_exists(o["sha"]) and is_ancestor(o["sha"], head):
                 if task_covered(t, o["sha"], head, changed_files(o["sha"], head)):
                     covered_by = o
                     break
