@@ -617,6 +617,11 @@ const REPRO_SCANNER_META = {
   "cbic-prisma":     { label: "CBIC Prisma Fit", long: "Weill Cornell CBIC · Siemens Prisma Fit",  c: "#9333ea" },
   "umass-skyra":     { label: "UMass Skyra",     long: "UMass · Siemens Skyra",                    c: "#dc2626" },
   "hamburg-ingenia": { label: "Hamburg Ingenia", long: "Hamburg · Philips Ingenia",                c: "#0891b2" },
+  "site2-prisma":    { label: "Site 2 Prisma Fit", long: "Site 2 · Siemens MAGNETOM Prisma Fit",   c: "#be185d" },
+  "site2-cimax":     { label: "Site 2 Cima.X",   long: "Site 2 · Siemens MAGNETOM Cima.X",         c: "#4338ca" },
+  "site2-skyra":     { label: "Site 2 Skyra Fit", long: "Site 2 · Siemens MAGNETOM Skyra Fit",     c: "#7c2d12" },
+  "site3-mr750w":    { label: "Site 3 MR750w",   long: "Site 3 · GE Discovery MR750w",             c: "#b45309" },
+  "site3-prisma":    { label: "Site 3 Prisma",   long: "Site 3 · Siemens MAGNETOM Prisma",         c: "#047857" },
 };
 const REPRO_FALLBACK_COLOURS = ["#4f46e5", "#be123c", "#15803d", "#a16207", "#7c3aed", "#0e7490", "#c2410c", "#475569"];
 const REPRO_SUBJECT_LABEL = { mgh: "MGH pilot" };
