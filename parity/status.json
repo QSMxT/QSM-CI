@@ -1,6 +1,6 @@
 {
  "schema": 2,
- "generated": "2026-11-06",
+ "generated": "2026-11-07",
  "default_track": "released",
  "badges": "https://qsmxt.github.io/QSM-CI/parity/badges/",
  "tracks": {
@@ -2561,9 +2561,9 @@
       {
        "dataset": "s005001-cbic-prisma-bridge-run1",
        "last": {
-        "date": "2026-11-06T09:17:10Z",
+        "date": "2026-11-07T09:05:15Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/42171553924",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/42345015143",
         "qsmrs": {
          "ref": null,
          "commit": "8a655f4c31b9b0f657c35fe812e7f0bf8867d368",
@@ -2572,9 +2572,9 @@
         "qsmxt": {
          "commit": "dc94cf4dd93b21b1bf68c91f3e0d43da0cc4956d"
         },
-        "nrmse": 0.00025153414671653327,
+        "nrmse": 0.00025153414671653213,
         "max_abs": 1.9952654838562012e-05,
-        "correlation": 0.9999999999968328,
+        "correlation": 0.9999999999968369,
         "dice": null,
         "release": "v11.0.0"
        },
@@ -2585,9 +2585,9 @@
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-06T09:17:10Z",
+        "date": "2026-11-07T09:05:15Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/42171553924",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/42345015143",
         "qsmrs": {
          "ref": null,
          "commit": "8a655f4c31b9b0f657c35fe812e7f0bf8867d368",
@@ -2625,9 +2625,9 @@
       {
        "dataset": "s005001-cbic-prisma-bridge-run1",
        "last": {
-        "date": "2026-11-06T15:59:34Z",
-        "result": "fail",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/42218972686",
+        "date": "2026-11-07T09:05:15Z",
+        "result": "pass",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/42345015143",
         "qsmrs": {
          "ref": null,
          "commit": "8a655f4c31b9b0f657c35fe812e7f0bf8867d368",
@@ -2636,12 +2636,11 @@
         "qsmxt": {
          "commit": "dc94cf4dd93b21b1bf68c91f3e0d43da0cc4956d"
         },
-        "nrmse": 0.05137363221077171,
-        "max_abs": 0.0036644786596298218,
-        "correlation": 0.9999998680186281,
+        "nrmse": 0.00034893468405343924,
+        "max_abs": 2.256035804748535e-05,
+        "correlation": 0.9999999999939144,
         "dice": null,
-        "release": "v11.0.0",
-        "why": "chimap max_abs 0.003664 ppm (limit <= 2.83e-05 ppm)"
+        "release": "v11.0.0"
        },
        "rerun": false,
        "stale": false,
@@ -2650,9 +2649,9 @@
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-06T15:59:34Z",
+        "date": "2026-11-07T09:05:15Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/42218972686",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/42345015143",
         "qsmrs": {
          "ref": null,
          "commit": "8a655f4c31b9b0f657c35fe812e7f0bf8867d368",
@@ -2673,9 +2672,9 @@
       }
      ],
      "badge": {
-      "kind": "failing",
-      "message": "failing \u00b7 v11.0.0",
-      "color": "red"
+      "kind": "current",
+      "message": "< 0.001 % \u00b7 v11.0.0",
+      "color": "brightgreen"
      }
     },
     {
@@ -6784,6 +6783,7 @@
        },
        "stale": true,
        "reasons": [
+        "the pair's settings or limits for this dataset changed since",
         "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
        ]
       },
@@ -6858,6 +6858,7 @@
        },
        "stale": true,
        "reasons": [
+        "the pair's settings or limits for this dataset changed since",
         "QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits)"
        ]
       },
@@ -9095,7 +9096,7 @@
   "heidi": [
    {
     "release": "v11.0.0",
-    "date": "2026-11-06T15:59:34Z",
+    "date": "2026-11-07T09:05:15Z",
     "qsmxt": {
      "ref": "v11.0.0",
      "commit": "dc94cf4dd93b21b1bf68c91f3e0d43da0cc4956d"
@@ -9109,9 +9110,9 @@
      {
       "dataset": "s005001-cbic-prisma-bridge-run1",
       "last": {
-       "date": "2026-11-06T15:59:34Z",
-       "result": "fail",
-       "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/42218972686",
+       "date": "2026-11-07T09:05:15Z",
+       "result": "pass",
+       "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/42345015143",
        "qsmrs": {
         "ref": null,
         "commit": "8a655f4c31b9b0f657c35fe812e7f0bf8867d368",
@@ -9120,20 +9121,19 @@
        "qsmxt": {
         "commit": "dc94cf4dd93b21b1bf68c91f3e0d43da0cc4956d"
        },
-       "nrmse": 0.05137363221077171,
-       "max_abs": 0.0036644786596298218,
-       "correlation": 0.9999998680186281,
+       "nrmse": 0.00034893468405343924,
+       "max_abs": 2.256035804748535e-05,
+       "correlation": 0.9999999999939144,
        "dice": null,
-       "release": "v11.0.0",
-       "why": "chimap max_abs 0.003664 ppm (limit <= 2.83e-05 ppm)"
+       "release": "v11.0.0"
       }
      },
      {
       "dataset": "sim",
       "last": {
-       "date": "2026-11-06T15:59:34Z",
+       "date": "2026-11-07T09:05:15Z",
        "result": "pass",
-       "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/42218972686",
+       "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/42345015143",
        "qsmrs": {
         "ref": null,
         "commit": "8a655f4c31b9b0f657c35fe812e7f0bf8867d368",
@@ -9151,9 +9151,9 @@
      }
     ],
     "badge": {
-     "kind": "failing",
-     "message": "failing \u00b7 v11.0.0",
-     "color": "red"
+     "kind": "current",
+     "message": "< 0.001 % \u00b7 v11.0.0",
+     "color": "brightgreen"
     }
    },
    {
@@ -10595,7 +10595,7 @@
   "lsqr": [
    {
     "release": "v11.0.0",
-    "date": "2026-11-06T09:17:10Z",
+    "date": "2026-11-07T09:05:15Z",
     "qsmxt": {
      "ref": "v11.0.0",
      "commit": "dc94cf4dd93b21b1bf68c91f3e0d43da0cc4956d"
@@ -10609,9 +10609,9 @@
      {
       "dataset": "s005001-cbic-prisma-bridge-run1",
       "last": {
-       "date": "2026-11-06T09:17:10Z",
+       "date": "2026-11-07T09:05:15Z",
        "result": "pass",
-       "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/42171553924",
+       "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/42345015143",
        "qsmrs": {
         "ref": null,
         "commit": "8a655f4c31b9b0f657c35fe812e7f0bf8867d368",
@@ -10620,9 +10620,9 @@
        "qsmxt": {
         "commit": "dc94cf4dd93b21b1bf68c91f3e0d43da0cc4956d"
        },
-       "nrmse": 0.00025153414671653327,
+       "nrmse": 0.00025153414671653213,
        "max_abs": 1.9952654838562012e-05,
-       "correlation": 0.9999999999968328,
+       "correlation": 0.9999999999968369,
        "dice": null,
        "release": "v11.0.0"
       }
@@ -10630,9 +10630,9 @@
      {
       "dataset": "sim",
       "last": {
-       "date": "2026-11-06T09:17:10Z",
+       "date": "2026-11-07T09:05:15Z",
        "result": "pass",
-       "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/42171553924",
+       "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/42345015143",
        "qsmrs": {
         "ref": null,
         "commit": "8a655f4c31b9b0f657c35fe812e7f0bf8867d368",

@@ -1,6 +1,6 @@
 # Port parity status
 
-Generated 2026-11-06 by `scripts/parity.py status` from `parity/results.json` and `parity/thresholds.yml`; do not edit by hand. How checks run, the two tracks, and what makes a check stale: [docs/parity.md](../docs/parity.md).
+Generated 2026-11-07 by `scripts/parity.py status` from `parity/results.json` and `parity/thresholds.yml`; do not edit by hand. How checks run, the two tracks, and what makes a check stale: [docs/parity.md](../docs/parity.md).
 
 ## Released: QSMxT v11.0.0
 
@@ -86,10 +86,10 @@ The latest QSMxT release against each verified original. A release does not chan
 |  |  | sim | [2026-11-06](https://github.com/QSMxT/QSM-CI/actions/runs/42171553924) | v0.41.0 `8a655f4` | ✅ pass | 0.0001491% | ✅ current |
 | `iqfm` | `iqfm` → `iqfm-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-06](https://github.com/QSMxT/QSM-CI/actions/runs/42171553924) | v0.41.0 `8a655f4` | ✅ pass | 0.0001829% | ✅ current |
 |  |  | sim | [2026-11-06](https://github.com/QSMxT/QSM-CI/actions/runs/42171553924) | v0.41.0 `8a655f4` | ✅ pass | 0.000216% | ✅ current |
-| `lsqr` | `lsqr` → `lsqr-qsmrs` | s005001-cbic-prisma-bridge-run1 | [2026-11-06](https://github.com/QSMxT/QSM-CI/actions/runs/42171553924) | v0.41.0 `8a655f4` | ✅ pass | 0.0002515% | ✅ current |
-|  |  | sim | [2026-11-06](https://github.com/QSMxT/QSM-CI/actions/runs/42171553924) | v0.41.0 `8a655f4` | ✅ pass | 0.0003931% | ✅ current |
-| `heidi` | `heidi` → `heidi-qsmrs` | s005001-cbic-prisma-bridge-run1 | [2026-11-06](https://github.com/QSMxT/QSM-CI/actions/runs/42218972686) | v0.41.0 `8a655f4` | ❌ fail | 0.05137% | ✅ current |
-|  |  | sim | [2026-11-06](https://github.com/QSMxT/QSM-CI/actions/runs/42218972686) | v0.41.0 `8a655f4` | ✅ pass | 0.0004536% | ✅ current |
+| `lsqr` | `lsqr` → `lsqr-qsmrs` | s005001-cbic-prisma-bridge-run1 | [2026-11-07](https://github.com/QSMxT/QSM-CI/actions/runs/42345015143) | v0.41.0 `8a655f4` | ✅ pass | 0.0002515% | ✅ current |
+|  |  | sim | [2026-11-07](https://github.com/QSMxT/QSM-CI/actions/runs/42345015143) | v0.41.0 `8a655f4` | ✅ pass | 0.0003931% | ✅ current |
+| `heidi` | `heidi` → `heidi-qsmrs` | s005001-cbic-prisma-bridge-run1 | [2026-11-07](https://github.com/QSMxT/QSM-CI/actions/runs/42345015143) | v0.41.0 `8a655f4` | ✅ pass | 0.0003489% | ✅ current |
+|  |  | sim | [2026-11-07](https://github.com/QSMxT/QSM-CI/actions/runs/42345015143) | v0.41.0 `8a655f4` | ✅ pass | 0.0004536% | ✅ current |
 | `ndi` | `ndi` → `ndi-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-06](https://github.com/QSMxT/QSM-CI/actions/runs/42171553924) | v0.41.0 `8a655f4` | ✅ pass | 8.885e-05% | ✅ current |
 |  |  | sim | [2026-11-06](https://github.com/QSMxT/QSM-CI/actions/runs/42171553924) | v0.41.0 `8a655f4` | ✅ pass | 0.001103% | ✅ current |
 | `fansi-nltv` | `fansi-nltv` → `fansi-nltv-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-06](https://github.com/QSMxT/QSM-CI/actions/runs/42171553924) | v0.41.0 `8a655f4` | ✅ pass | 0.003004% | ✅ current |
@@ -195,9 +195,9 @@ A check is **stale** when the reference image changed, QSM.rs `main` changed the
 |  |  | sim | [2026-11-06](https://github.com/QSMxT/QSM-CI/actions/runs/41757738719) | `8a655f4` | ✅ pass (reviewed) | 0.0001549% | ⚠️ stale: QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits) |
 | `iqfm` | `iqfm` → `iqfm-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-06](https://github.com/QSMxT/QSM-CI/actions/runs/41757738719) | `8a655f4` | ✅ pass (reviewed) | 0.0001829% | ⚠️ stale: QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits) |
 |  |  | sim | [2026-11-06](https://github.com/QSMxT/QSM-CI/actions/runs/41757738719) | `8a655f4` | ✅ pass (reviewed) | 0.000216% | ⚠️ stale: QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits) |
-| `lsqr` | `lsqr` → `lsqr-qsmrs` | s005001-cbic-prisma-bridge-run1 | [2026-11-06](https://github.com/QSMxT/QSM-CI/actions/runs/41757738719) | `8a655f4` | ✅ pass (reviewed) | 0.0002515% | ⚠️ stale: QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits) |
+| `lsqr` | `lsqr` → `lsqr-qsmrs` | s005001-cbic-prisma-bridge-run1 | [2026-11-06](https://github.com/QSMxT/QSM-CI/actions/runs/41757738719) | `8a655f4` | ✅ pass (reviewed) | 0.0002515% | ⚠️ stale: the pair's settings or limits for this dataset changed since; QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits) |
 |  |  | sim | [2026-11-06](https://github.com/QSMxT/QSM-CI/actions/runs/41757738719) | `8a655f4` | ✅ pass (reviewed) | 0.0003931% | ⚠️ stale: QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits) |
-| `heidi` | `heidi` → `heidi-qsmrs` | s005001-cbic-prisma-bridge-run1 | [2026-11-06](https://github.com/QSMxT/QSM-CI/actions/runs/42194254798) | `8a655f4` | ✅ pass | 0.0003489% | ⚠️ stale: QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits) |
+| `heidi` | `heidi` → `heidi-qsmrs` | s005001-cbic-prisma-bridge-run1 | [2026-11-06](https://github.com/QSMxT/QSM-CI/actions/runs/42194254798) | `8a655f4` | ✅ pass | 0.0003489% | ⚠️ stale: the pair's settings or limits for this dataset changed since; QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits) |
 |  |  | sim | [2026-11-06](https://github.com/QSMxT/QSM-CI/actions/runs/42194254798) | `8a655f4` | ✅ pass | 0.0004536% | ⚠️ stale: QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits) |
 | `ndi` | `ndi` → `ndi-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-06](https://github.com/QSMxT/QSM-CI/actions/runs/41757738719) | `8a655f4` | ✅ pass (reviewed) | 8.885e-05% | ⚠️ stale: QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits) |
 |  |  | sim | [2026-11-06](https://github.com/QSMxT/QSM-CI/actions/runs/41757738719) | `8a655f4` | ✅ pass (reviewed) | 0.001103% | ⚠️ stale: QSMxT main changed `src/cli.rs` since the checked dc94cf4 (1 commits) |
@@ -255,7 +255,7 @@ No original code to check against (QSMxT/QSM-CI#302; tested against ground truth
 | `fit-ppm-complex` | identical · v11.0.0 | not in v10.0.0 |
 | `hd-bet` | pass · v11.0.0 | pass · v10.0.0 |
 | `hdqsm` | 0.0015 % · v11.0.0 | failing · v10.0.0 |
-| `heidi` | failing · v11.0.0 | failing · v10.0.0 · no denoise_reference_itk |
+| `heidi` | < 0.001 % · v11.0.0 | failing · v10.0.0 · no denoise_reference_itk |
 | `iharperella` | < 0.001 % · v11.0.0 | failing · v10.0.0 |
 | `ilsqr` | 0.017 % · v11.0.0 | failing · v10.0.0 |
 | `iqfm` | < 0.001 % · v11.0.0 | not in v10.0.0 |
