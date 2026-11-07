@@ -11,7 +11,7 @@
 # Build sandboxes for the two CUDA (GPU) dipole images (inr-qsm, modip). Building needs no GPU —
 # it's just OCI extraction — so this runs on the general partition; the RUN (matrix_gpu.slurm)
 # needs gpu_cuda. Idempotent.
-source ~/miniconda3/etc/profile.d/conda.sh && conda activate qsmxt
+source ~/venvs/qsmci/bin/activate
 set -uo pipefail
 cd "${SLURM_SUBMIT_DIR:?}"
 export APPTAINER_CACHEDIR=/scratch/user/uqaste15/apptainer_cache

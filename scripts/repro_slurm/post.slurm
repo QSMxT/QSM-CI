@@ -11,7 +11,7 @@
 # After the matrix array: merge the per-shard run files into results/index.json, then the
 # reproducibility evaluation (register -> SynthSeg -> ROI stats -> ax+b fits), then tar the
 # take-home payload (small JSONs + alignment artifacts; recon volumes stay in scratch).
-source ~/miniconda3/etc/profile.d/conda.sh && conda activate qsmxt   # before set -u (conda gotcha)
+source ~/venvs/qsmci/bin/activate
 set -uo pipefail
 cd "${SLURM_SUBMIT_DIR:?}"
 export APPTAINER_CACHEDIR=/scratch/user/uqaste15/apptainer_cache

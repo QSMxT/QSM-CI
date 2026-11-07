@@ -12,7 +12,7 @@
 # qsmxt/qsm-ci-volumes, the same repo + mechanism the in-silico track uses. Idempotent: identical
 # content is deduped server-side, so re-running after more GPU recons land only uploads the new ones.
 # The HF write token is read from a 0600 file staged over stdin (never in argv/env-dumps).
-source ~/miniconda3/etc/profile.d/conda.sh && conda activate qsmxt
+source ~/venvs/qsmci/bin/activate
 set -uo pipefail
 cd "${SLURM_SUBMIT_DIR:?}"
 pip install -q huggingface_hub 2>&1 | tail -1

@@ -21,7 +21,7 @@
 # Full composed matrix over the 23 harmonization acquisitions, 4 shards each: array index
 # = 4*acq + shard. Each task runs one shard of one acquisition's (field-mapping x bfr x dipole
 # + spans) matrix from raw phase, collecting (not scoring) every produced chimap.
-source ~/miniconda3/etc/profile.d/conda.sh && conda activate qsmxt   # before set -u (conda gotcha)
+source ~/venvs/qsmci/bin/activate
 set -uo pipefail
 cd "${SLURM_SUBMIT_DIR:?}"
 export APPTAINER_CACHEDIR=/scratch/user/uqaste15/apptainer_cache

@@ -14,7 +14,7 @@
 # --focus amp-pe-qsmrs => the dipole stage is pinned to amp-pe-qsmrs while every field-mapping x bfr
 # combo still runs (matching the coverage the ci_skip'd MATLAB `amp-pe` had). Run this AFTER the main
 # eroded matrix (27871761) finishes so it doesn't perturb that run. One shard per acq (fast: one dipole).
-source ~/miniconda3/etc/profile.d/conda.sh && conda activate qsmxt   # before set -u (conda gotcha)
+source ~/venvs/qsmci/bin/activate
 set -uo pipefail
 cd "${SLURM_SUBMIT_DIR:?}"
 export APPTAINER_CACHEDIR=/scratch/user/uqaste15/apptainer_cache

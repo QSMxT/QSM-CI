@@ -14,7 +14,7 @@
 # acquisition (CPU apptainer), one array task per acquisition. Re-runnable: packed acquisitions are
 # kept, missing masks filled in.
 #   sbatch scripts/repro_slurm/pack_emtp.slurm /path/to/03_Analysis_Shared
-source ~/miniconda3/etc/profile.d/conda.sh && conda activate qsmxt   # before set -u (conda gotcha)
+source ~/venvs/qsmci/bin/activate
 set -euo pipefail
 cd "${SLURM_SUBMIT_DIR:?}"
 export APPTAINER_CACHEDIR=/scratch/user/uqaste15/apptainer_cache

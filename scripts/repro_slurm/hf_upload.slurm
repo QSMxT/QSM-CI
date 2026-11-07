@@ -7,7 +7,7 @@
 #SBATCH --mem=16G
 #SBATCH --time=12:00:00
 #SBATCH --output=/scratch/user/uqaste15/qsmci-repro/hf-upload-%j.out
-source ~/miniconda3/etc/profile.d/conda.sh && conda activate qsmxt
+source ~/venvs/qsmci/bin/activate
 set -uo pipefail
 cd /scratch/user/uqaste15/qsmci-repro
 export HF_TOKEN="${HF_QSMXT_KEY:-}"

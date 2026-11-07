@@ -8,7 +8,7 @@
 #
 # The glob (default: every shard file) picks the campaign; its runs replace any rows with the same
 # run id, everything else in repro_rois.json stays.
-source ~/miniconda3/etc/profile.d/conda.sh && conda activate qsmxt
+source ~/venvs/qsmci/bin/activate
 set -uo pipefail
 cd /scratch/user/uqaste15/qsmci-repro
 

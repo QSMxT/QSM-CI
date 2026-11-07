@@ -10,7 +10,7 @@
 # Merge this run's shards into index.json, then publish to HF in INDEX mode so --prune can work
 # (--prune is refused with --runs: a shard publish cannot tell an orphan from another shard's file).
 # This first pass is a DRY RUN — it uploads, then reports what pruning WOULD delete, deleting nothing.
-source ~/miniconda3/etc/profile.d/conda.sh && conda activate qsmxt
+source ~/venvs/qsmci/bin/activate
 set -uo pipefail
 cd /scratch/user/uqaste15/qsmci-repro
 eval "$(grep '^export HF_QSMXT_KEY=' ~/.bashrc)" 2>/dev/null || true
