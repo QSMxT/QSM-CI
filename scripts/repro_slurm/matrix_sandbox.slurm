@@ -24,7 +24,7 @@
 # methods that 100%-DNF'd in the first pass now run. Regenerates every run id; the merge upserts,
 # so this supersedes the partial first pass. inr-qsm/modip stay excluded (CPU-infeasible at this
 # scale — a separate GPU concern, not a container-conversion one).
-source ~/miniconda3/etc/profile.d/conda.sh && conda activate qsmxt   # before set -u (conda gotcha)
+source ~/venvs/qsmci/bin/activate
 set -uo pipefail
 cd "${SLURM_SUBMIT_DIR:?}"
 export APPTAINER_CACHEDIR=/scratch/user/uqaste15/apptainer_cache

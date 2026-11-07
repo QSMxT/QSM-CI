@@ -87,12 +87,21 @@ rsync -a --info=progress2 --exclude .work --exclude 'results/*/' \
     ./ bunya:/scratch/user/uqaste15/qsmci-repro/
 ssh bunya                                                            # login node, see below
 cd /scratch/user/uqaste15/qsmci-repro
-source ~/miniconda3/etc/profile.d/conda.sh && conda activate qsmxt   # BEFORE set -u (conda gotcha)
+# Bunya's miniconda (conda 4.7) can no longer solve new envs: the jobs use a venv on the system
+# Python 3.9 instead (QSM-CI needs >= 3.9).
+[ -x ~/venvs/qsmci/bin/python ] || /usr/bin/python3.9 -m venv ~/venvs/qsmci
+source ~/venvs/qsmci/bin/activate
 SETUPTOOLS_SCM_PRETEND_VERSION=0.0.0 pip install -e .                # qsm-ci CLI (no .git after rsync)
-pip install SimpleITK                                                # for repro_eval register/stats
-export APPTAINER_CACHEDIR=/scratch/user/uqaste15/apptainer_cache
-sbatch scripts/repro_slurm/prepull.slurm      # serial image pre-pull — MUST finish before the array
+pip install SimpleITK matplotlib                                     # repro_eval register/stats, figures
+# Bunya's apptainer can't convert OCI images on the fly (mksquashfs under proot), so every image is
+# prebuilt as a fakeroot .sif in /scratch/project_mnt/S0169/qsmci_sif (QSMCI_SANDBOX_DIR), one array
+# task per image; existing .sifs are skipped. MUST finish before the matrix.
+N=$(LIST=1 bash scripts/repro_slurm/build_sifs.slurm | wc -l)
+sbatch --array=0-$((N-1))%2 scripts/repro_slurm/build_sifs.slurm   # %2: MATLAB unpacks hit the inode quota
 ```
+
+The matrix then runs through `matrix_sandbox.slurm` (the runner execs those .sifs); size its array to
+acquisitions × 4 shards, e.g. `sbatch --array=0-$((4*125-1))%40 scripts/repro_slurm/matrix_sandbox.slurm`.
 
 ## The matrix
 

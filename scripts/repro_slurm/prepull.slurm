@@ -10,7 +10,7 @@
 
 # Serially convert every submission image into the apptainer cache BEFORE the matrix array runs —
 # concurrent array tasks racing to convert the same docker:// image corrupt the shared cache.
-source ~/miniconda3/etc/profile.d/conda.sh && conda activate qsmxt   # before set -u (conda gotcha)
+source ~/venvs/qsmci/bin/activate
 set -uo pipefail
 cd "${SLURM_SUBMIT_DIR:?}"
 export APPTAINER_CACHEDIR=/scratch/user/uqaste15/apptainer_cache

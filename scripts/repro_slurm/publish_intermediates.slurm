@@ -11,7 +11,7 @@
 # Upload every staged harmonization intermediate (results/_intermediates/<acq>/) into the same
 # qsmxt/qsm-ci-volumes `repro/<acq>/` directory as that acquisition's recons, where the viewer's
 # Field map / Local field layers look for them. The HF write token is read from a 0600 file.
-source ~/miniconda3/etc/profile.d/conda.sh && conda activate qsmxt
+source ~/venvs/qsmci/bin/activate
 set -uo pipefail
 cd "${SLURM_SUBMIT_DIR:?}"
 pip install -q huggingface_hub 2>&1 | tail -1

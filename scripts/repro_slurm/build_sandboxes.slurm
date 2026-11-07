@@ -13,7 +13,7 @@
 # mksquashfs step runs under proot and the kernel blocks its ptrace ("Operation not permitted").
 # A sandbox skips squashfs entirely. The runner ($QSMCI_SANDBOX_DIR, qsm_ci/containers.py) then
 # execs these dirs instead of pulling docker://. Idempotent: existing sandboxes are skipped.
-source ~/miniconda3/etc/profile.d/conda.sh && conda activate qsmxt
+source ~/venvs/qsmci/bin/activate
 set -uo pipefail
 cd "${SLURM_SUBMIT_DIR:?}"
 export APPTAINER_CACHEDIR=/scratch/user/uqaste15/apptainer_cache

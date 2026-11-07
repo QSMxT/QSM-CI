@@ -1,7 +1,7 @@
 #!/bin/bash
 # Wait for the repro matrix to launch, confirm it's running, then measure recon-production rate over a
 # 15-min window and estimate a total ETA. Writes a report to matrix_monitor_report.txt.
-source ~/miniconda3/etc/profile.d/conda.sh && conda activate qsmxt 2>/dev/null
+source ~/venvs/qsmci/bin/activate 2>/dev/null
 cd /scratch/user/uqaste15/qsmci-repro
 R=matrix_monitor_report.txt; : > "$R"
 say(){ echo "$@" | tee -a "$R"; }
