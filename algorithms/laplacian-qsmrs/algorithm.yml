@@ -33,3 +33,6 @@ parameters:
   - name: weighting
     default: phase-snr
     description: echo weights of the B0 average, e.g. phase-snr or tes (STI Suite weights by echo time)
+  - name: b0_estimation
+    default: weighted-avg
+    description: how the echoes become one field, weighted-avg or qsmart-echofit (QSMART's fit, which also writes its reliability map)

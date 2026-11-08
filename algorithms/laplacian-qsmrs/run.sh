@@ -17,11 +17,14 @@ if [ -f "$CFG" ]; then
   V=$(jq -r '.fft_pad // empty' "$CFG"); [ -n "$V" ] && SET="$SET --laplacian-fft-pad $V"
   V=$(jq -r '.unmasked // empty' "$CFG"); [ "$V" = "true" ] && SET="$SET --laplacian-unmasked"
   V=$(jq -r '.weighting // empty' "$CFG"); [ -n "$V" ] && SET="$SET --b0-weight-type $V"
+  V=$(jq -r '.b0_estimation // empty' "$CFG"); [ -n "$V" ] && B0EST="$V"
 fi
+# QSMART's echo fit also writes its reliability map R_0, beside the field, for QSMART to read.
+[ "${B0EST:-weighted-avg}" = "qsmart-echofit" ] && SET="$SET --reliability-output $OUT/reliability.nii.gz"
 
 qsmxt fieldmap laplacian "$IN/phase.nii.gz" \
   -m "$IN/mask.nii.gz" \
   --magnitude "$IN/magnitude.nii.gz" \
   --params "$IN/params.json" \
-  --b0-estimation weighted-avg \
+  --b0-estimation "${B0EST:-weighted-avg}" \
   -o "$OUT/totalfield.nii.gz" $SET

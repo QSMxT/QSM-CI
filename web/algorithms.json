@@ -2316,6 +2316,11 @@
           "name": "weighting",
           "default": "phase-snr",
           "description": "echo weights of the B0 average, e.g. phase-snr or tes (STI Suite weights by echo time)"
+        },
+        {
+          "name": "b0_estimation",
+          "default": "weighted-avg",
+          "description": "how the echoes become one field, weighted-avg or qsmart-echofit (QSMART's fit, which also writes its reliability map)"
         }
       ],
       "ci_notes": []
@@ -6005,6 +6010,11 @@
           "name": "weighting",
           "default": "phase-snr",
           "description": "echo weights of the B0 average, e.g. phase-snr or tes (STI Suite weights by echo time)"
+        },
+        {
+          "name": "b0_estimation",
+          "default": "weighted-avg",
+          "description": "how the echoes become one field, weighted-avg or qsmart-echofit (QSMART's fit, which also writes its reliability map)"
         }
       ],
       "ci_notes": [],
@@ -6015,6 +6025,67 @@
         "fft_pad": "12",
         "unmasked": "true",
         "weighting": "tes"
+      }
+    },
+    {
+      "slug": "laplacian-qsmrs.qsmart",
+      "name": "Laplacian (QSM.rs) \u00b7 QSMART",
+      "stage": "field-mapping",
+      "inputs": [
+        "phase",
+        "magnitude",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "laplacian",
+      "language": "Rust",
+      "family": "direct",
+      "learning": "none",
+      "description": "Multi-echo B0 field mapping by Laplacian phase unwrapping (via the QSMxT/QSM.rs engine, `qsmxt fieldmap laplacian`) \u2014 each echo unwrapped with a DCT Poisson solve, then combined into a phase-SNR-weighted B0 estimate. Alternative to ROMEO field mapping.",
+      "citation": "Schofield & Zhu, Optics Letters 2003",
+      "doi": "10.1364/OL.28.001194",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT",
+      "authors": [
+        "Marvin A. Schofield",
+        "Yimei Zhu"
+      ],
+      "parameters": [
+        {
+          "name": "solver",
+          "default": "dct",
+          "description": "Poisson solver, dct, fft (STI Suite's MRPhaseUnwrap) or mirror (QSMART)"
+        },
+        {
+          "name": "fft_pad",
+          "default": 64,
+          "description": "zero padding per side for the fft solver, voxels (STI Suite pads 12)"
+        },
+        {
+          "name": "unmasked",
+          "default": false,
+          "description": "unwrap the raw phase over the whole volume rather than masked (STI Suite, QSMART)"
+        },
+        {
+          "name": "weighting",
+          "default": "phase-snr",
+          "description": "echo weights of the B0 average, e.g. phase-snr or tes (STI Suite weights by echo time)"
+        },
+        {
+          "name": "b0_estimation",
+          "default": "weighted-avg",
+          "description": "how the echoes become one field, weighted-avg or qsmart-echofit (QSMART's fit, which also writes its reliability map)"
+        }
+      ],
+      "ci_notes": [],
+      "variant_of": "laplacian-qsmrs",
+      "repro_only": true,
+      "preset": {
+        "solver": "mirror",
+        "unmasked": "true",
+        "b0_estimation": "qsmart-echofit"
       }
     },
     {

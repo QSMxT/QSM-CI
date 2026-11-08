@@ -87,6 +87,14 @@ variants:
       bfrs: [vsharp-qsmrs.sti]
       dipoles: [ilsqr-qsmrs, ilsqr-qsmrs.sti, star-qsmrs, star-qsmrs.sti]
       spans: []
+  laplacian-qsmrs.qsmart:
+    base: laplacian-qsmrs
+    label: QSMART
+    set: {solver: mirror, unmasked: true, b0_estimation: qsmart-echofit}
+    chain:
+      bfrs: []
+      dipoles: []
+      spans: [qsmart-qsmrs, qsmart-qsmrs.parity]
   fit-ppm-complex-qsmrs.parity:
     base: fit-ppm-complex-qsmrs
     label: MEDI parity
