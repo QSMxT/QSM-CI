@@ -28,6 +28,7 @@ export function qsmxtCommand(steps, bySlug) {
   for (const s of steps) {
     const a = bySlug[s];
     if (!a || !a.engine || !a.engine.includes("QSM.rs")) return null;  // every step on the QSM.rs engine
+    if (a.preset) return null;  // a parity version's settings have no general `qsmxt run` flags
     const flag = QSMXT_FLAG[a.stage];
     const value = a.qsmxt_value || a.algorithm;
     if (!flag || !value) return null;  // no faithful qsmxt run equivalent -> no command

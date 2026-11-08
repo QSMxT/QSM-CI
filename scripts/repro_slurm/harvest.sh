@@ -7,7 +7,9 @@
 #   scripts/repro_slurm/harvest.sh ['results/runs-repro-s0*.json']
 #
 # The glob (default: every shard file) picks the campaign; its runs replace any rows with the same
-# run id, everything else in repro_rois.json stays.
+# run id, everything else in repro_rois.json stays. FRESH=1 starts from an empty repro_rois.json
+# instead (a new campaign whose pipelines replace the previous one's; the old file is kept as
+# results/repro_rois.before-<date>.json), so rows of pipelines the campaign dropped don't linger.
 source ~/venvs/qsmci/bin/activate
 set -uo pipefail
 cd /scratch/user/uqaste15/qsmci-repro
@@ -29,7 +31,10 @@ import json, sys
 from pathlib import Path
 sys.path.insert(0, "scripts")
 import repro_eval
+import os, time
 p = Path("results/repro_rois.json")
+if os.environ.get("FRESH") == "1" and p.exists():
+    p.rename(p.with_name(f"repro_rois.before-{time.strftime('%Y%m%d')}.json"))
 doc = json.loads(p.read_text()) if p.exists() else {"runs": {}}
 before = len(doc["runs"])
 for f in sys.argv[1:]:

@@ -199,14 +199,17 @@ const escapeHtml = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&a
 // Only http(s) URLs may become an href; anything else (javascript:, data:, a bare path) is dropped.
 const safeUrl = (u) => (typeof u === "string" && /^https?:\/\//i.test(u.trim())) ? escapeHtml(u.trim()) : null;
 
-function runLine(slug, stage, truth, inputs) {
+// `preset`: a harmonization parity version's settings (its manifest entry runs its base, `slug`
+// here, with them), shown as the --set flags that reproduce it.
+function runLine(slug, stage, truth, inputs, preset) {
   const io = STAGE_IO[stage];
-  if (!io) return `qsm-ci run ${slug}`;
+  const sets = Object.entries(preset || {}).map(([k, v]) => `--set ${k}=${v}`);
+  if (!io) return [`qsm-ci run ${slug}`, ...sets].join(" \\\n  ");
   // Prefer the method's declared inputs (only the artifacts it actually reads) so the command doesn't
   // advertise flags the method ignores; fall back to the stage's full consumes when a run predates the
   // manifest field. One flag per line, backslash-continued, so long commands don't overflow the block.
   const consumes = (inputs && inputs.length ? inputs.filter((a) => ARTFILE[a]) : io.consumes);
-  const parts = [`qsm-ci run ${slug}`, ...consumes.map((a) => `--${a} ${ARTFILE[a]}`)];
+  const parts = [`qsm-ci run ${slug}`, ...consumes.map((a) => `--${a} ${ARTFILE[a]}`), ...sets];
   if (Array.isArray(io.produces)) {  // multi-output (χ-separation): a directory in, a directory to score against
     parts.push("-o out/");
     if (truth) parts.push("--truth groundtruth/");
@@ -241,7 +244,8 @@ function renderHowToRun() {
   // is in-vivo data with none, so no --truth flag exists to offer there.
   const scored = datasetOf(run) !== "repro";
   const steps = pipelineSteps(run).filter((s) => bySlug[s] && stageOf(s));
-  steps.forEach((s, i) => lines.push(runLine(s, stageOf(s), scored && i === steps.length - 1, bySlug[s].inputs)));
+  steps.forEach((s, i) => lines.push(runLine(bySlug[s].variant_of || s, stageOf(s), scored && i === steps.length - 1,
+                                             bySlug[s].inputs, bySlug[s].preset)));
   if (!lines.length) { el.classList.add("hidden"); return; }
   const ciCmd = "pip install qsm-ci\n" + lines.join("\n");
   const chained = lines.length > 1;

@@ -28,6 +28,7 @@ from qsm_ci.stages import BASELINE_ONLY_ARTIFACTS, STAGES  # noqa: E402
 
 sys.path.insert(0, str(ROOT / "scripts"))
 from repro_format import REPRO_GROUPS, group_of, payload_names  # noqa: E402
+import repro_campaign  # noqa: E402
 
 
 def _inputs(meta: dict) -> list:
@@ -146,6 +147,10 @@ def build() -> dict:
             continue
         meta.setdefault("slug", d.name)
         algos.append(entry(meta))
+    # The harmonization campaign's parity versions (scripts/repro_campaign.yml): the site and
+    # repro_eval.py keep only pipelines built from methods listed here, so each version is listed
+    # under its own slug, marked with its base and the settings it runs.
+    algos += repro_campaign.manifest_entries({a["slug"]: a for a in algos}, repro_campaign.load())
     # The dataset/phantom registry, verbatim — the web needs the label/track/default fields to name
     # phantoms and pick each track's default (a run row without a `phantom` field is the default).
     datasets = json.loads((ROOT / "scripts" / "datasets.json").read_text())

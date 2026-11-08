@@ -11,9 +11,9 @@
 #SBATCH --output=slurm-%x-%A_%a.out
 
 # The two GPU-designed dipole methods (inr-qsm, modip; CUDA :v2 images) across the composed matrix,
-# on gpu_cuda. --include restricts stages to the localfield-producing upstreams + these two dipoles,
-# so each (field-mapping x bfr) localfield is computed once and inverted by inr-qsm and modip on the
-# GPU (QSMCI_GPU=1 -> apptainer --nv). Distinct --runs-out (runs-repro-gpu-*) so it never collides
+# on gpu_cuda. `--campaign-part gpu` keeps the campaign's gpu dipoles and only the upstreams their
+# `compose:` names, so each of those localfields is computed once and inverted by inr-qsm and modip on
+# the GPU (QSMCI_GPU=1 -> apptainer --nv). Distinct --runs-out (runs-repro-gpu-*) so it never collides
 # with the CPU matrix's shard files; the post-merge globs runs-repro-*.json and picks up both.
 # inr-qsm is memory-hungry (full-volume SIREN) -> QSM_CI_JOBS=2, --mem=256G.
 source ~/venvs/qsmci/bin/activate
@@ -26,9 +26,8 @@ export QSMCI_SANDBOX_DIR=/scratch/project_mnt/S0169/qsmci_sif   # prebuilt .sif 
 export QSMCI_GPU=1            # runner adds apptainer --nv so the CUDA images see the GPU
 export QSM_CI_JOBS=2          # inr-qsm SIREN is memory-hungry; 2 concurrent keeps under 256G
 
-INCLUDE=${GPU_INCLUDE:-bfrnet,harperella-qsmrs,iharperella-qsmrs,iqfm,ismv-qsmrs,laplacian-qsmrs,lbv-qsmrs,pdf-qsmrs,resharp-qsmrs,romeo-qsmrs,sharp-qsmrs,vsharp-qsmrs,vsharp-sti,inr-qsm,modip}   # GPU_INCLUDE overrides, e.g. to only non-QSM.rs upstreams
 
-N_SHARDS=4
+N_SHARDS=${N_SHARDS:-4}
 # REPRO_ACQS (shell glob, default *) limits the campaign to matching acquisitions, e.g.
 # REPRO_ACQS='s0*' for the EMTP traveling heads; size --array to match (acquisitions x shards).
 mapfile -t ACQS < <(python -c "
@@ -43,7 +42,7 @@ echo "== [gpu] $ACQ shard $SHARD/$N_SHARDS on $(nvidia-smi --query-gpu=name --fo
 python scripts/pipeline.py \
     --phantom "$ACQ" --track repro --mode composed --runner apptainer \
     --shard "$SHARD/$N_SHARDS" \
-    --include "$INCLUDE" \
+    --campaign "${CAMPAIGN:-scripts/repro_campaign.yml}" --campaign-part gpu \
     --work ".work-repro-gpu-$ACQ-$SHARD" \
     --runs-out "results/${RUNS_PREFIX:-runs-repro-gpu}-$ACQ-s$SHARD.json"
 [ "${STREAM_PUBLISH:-0}" = 1 ] && bash scripts/repro_slurm/stream_publish.sh "results/${RUNS_PREFIX:-runs-repro-gpu}-$ACQ-s$SHARD.json"

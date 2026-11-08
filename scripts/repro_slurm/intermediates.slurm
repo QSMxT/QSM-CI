@@ -42,7 +42,8 @@ echo "== [intermediates] acquisition $ACQ"
 python scripts/pipeline.py \
     --phantom "$ACQ" --track repro --mode composed --runner apptainer \
     --columns-only --emit-intermediates \
-    --exclude "inr-qsm,modip${EXTRA_EXCLUDE:+,$EXTRA_EXCLUDE}" \
+    --campaign "${CAMPAIGN:-scripts/repro_campaign.yml}" --campaign-part cpu \
+    ${EXTRA_EXCLUDE:+--exclude "$EXTRA_EXCLUDE"} \
     --work ".work-repro-inter-$ACQ"
 rm -rf ".work-repro-inter-$ACQ"
 ls -la "results/_intermediates/$ACQ" 2>/dev/null | tail -30

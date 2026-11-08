@@ -100,10 +100,34 @@ N=$(LIST=1 bash scripts/repro_slurm/build_sifs.slurm | wc -l)
 sbatch --array=0-$((N-1))%2 scripts/repro_slurm/build_sifs.slurm   # %2: MATLAB unpacks hit the inode quota
 ```
 
-The matrix then runs through `matrix_sandbox.slurm` (the runner execs those .sifs); size its array to
-acquisitions × 4 shards, e.g. `sbatch --array=0-$((4*125-1))%40 scripts/repro_slurm/matrix_sandbox.slurm`.
+## The streamed campaign (v11 onward)
 
-## The matrix
+What runs is `scripts/repro_campaign.yml`: the QSM.rs ports (an original with a parity-checked port
+is left out), the originals with no port, the ports' parity versions, and the authors' own chains. The
+full matrix's volumes don't fit in scratch, so every shard computes its ROI stats, uploads its
+reconstructions to the Hub and deletes them as it ends (`stream_publish.sh`), and 16 shards per
+acquisition keep each task to ~60 pipelines.
+
+```bash
+N=$(python -c "import json; print(sum(v.get('track') == 'repro' for v in json.load(open('scripts/datasets.json')).values()))")
+PREP=$(sbatch --parsable scripts/repro_slurm/prep.slurm)                    # transforms + SynthSeg, once
+export STREAM_PUBLISH=1 RUNS_PREFIX=runs-repro-v11 N_SHARDS=16
+# array indices stop at 1000 on Bunya: one array per 1000 tasks, ARRAY_OFFSET = its first task
+CPU=$(sbatch --parsable --export=ALL --dependency=afterok:$PREP --array=0-999%40 \
+      scripts/repro_slurm/matrix_sandbox.slurm)
+CPU2=$(ARRAY_OFFSET=1000 sbatch --parsable --export=ALL --dependency=afterok:$PREP \
+       --array=0-$((16*N-1001))%40 scripts/repro_slurm/matrix_sandbox.slurm)
+export RUNS_PREFIX=runs-repro-v11-gpu N_SHARDS=4                           # gpu QOS: 100 jobs a user
+GPU=$(sbatch --parsable --export=ALL --dependency=afterok:$PREP --time=7-00:00:00 --mem=2G \
+      scripts/repro_slurm/gpu_driver.sh $N)
+sbatch --export=ALL --array=0-$((N-1))%8 scripts/repro_slurm/intermediates.slurm   # viewer field maps
+# after both: rows already carry their stats; FRESH=1 drops the previous campaign's rows
+sbatch --account=a_ai_collab --partition=general --time=08:00:00 --cpus-per-task=12 --mem=64G \
+  --dependency=afterany:$CPU:$CPU2:$GPU --wrap \
+  "SKIP_STATS=1 FRESH=1 bash scripts/repro_slurm/harvest.sh 'results/runs-repro-v11*.json'"
+```
+
+## The matrix (before v11)
 
 ```bash
 MATRIX=$(sbatch --parsable scripts/repro_slurm/matrix.slurm)      # 23 acquisitions x 4 shards

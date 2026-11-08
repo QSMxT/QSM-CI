@@ -2296,7 +2296,28 @@
         "Marvin A. Schofield",
         "Yimei Zhu"
       ],
-      "parameters": [],
+      "parameters": [
+        {
+          "name": "solver",
+          "default": "dct",
+          "description": "Poisson solver, dct, fft (STI Suite's MRPhaseUnwrap) or mirror (QSMART)"
+        },
+        {
+          "name": "fft_pad",
+          "default": 64,
+          "description": "zero padding per side for the fft solver, voxels (STI Suite pads 12)"
+        },
+        {
+          "name": "unmasked",
+          "default": false,
+          "description": "unwrap the raw phase over the whole volume rather than masked (STI Suite, QSMART)"
+        },
+        {
+          "name": "weighting",
+          "default": "phase-snr",
+          "description": "echo weights of the B0 average, e.g. phase-snr or tes (STI Suite weights by echo time)"
+        }
+      ],
       "ci_notes": []
     },
     {
@@ -5142,6 +5163,916 @@
       ],
       "parameters": [],
       "ci_notes": []
+    },
+    {
+      "slug": "vsharp-qsmrs.sti",
+      "name": "V-SHARP (QSM.rs) \u00b7 STI Suite parity",
+      "stage": "bfr",
+      "inputs": [
+        "totalfield",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "vsharp",
+      "qsmxt_args": [
+        "--vsharp-deconvolve true",
+        "--vsharp-threshold 0.05"
+      ],
+      "language": "Rust",
+      "family": "iterative",
+      "learning": "none",
+      "description": "Variable-radius SHARP: background removal by SMV filtering with a spatially varying kernel radius (largest kernel that fits at each voxel), then a truncated-SVD deconvolution of the SMV high-pass.",
+      "citation": "Wu et al., Magn Reson Med 2012",
+      "doi": "10.1002/mrm.23000",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT",
+      "authors": [
+        "Bing Wu",
+        "Wei Li",
+        "Arnaud Guidon",
+        "Chunlei Liu"
+      ],
+      "parameters": [
+        {
+          "name": "deconvolve",
+          "default": true,
+          "description": "undo the SMV high-pass with a truncated-SVD deconvolution"
+        },
+        {
+          "name": "threshold",
+          "default": 0.05,
+          "description": "deconvolution (TSVD) threshold; only used with deconvolve=true"
+        },
+        {
+          "name": "max_radius",
+          "default": 12.0,
+          "description": "largest (starting) SMV kernel radius (mm)"
+        },
+        {
+          "name": "min_radius",
+          "default": 1.0,
+          "description": "smallest SMV kernel radius (mm)"
+        },
+        {
+          "name": "radius_step",
+          "default": 1.0,
+          "description": "step between SMV kernel radii (mm)"
+        },
+        {
+          "name": "grid",
+          "default": "isotropic",
+          "description": "working grid: isotropic (1 mm), native or finest; QSM.jl works on the native grid"
+        },
+        {
+          "name": "ball",
+          "default": "default",
+          "description": "SMV ball: default (QSM.rs's) or qsmjl (QSM.jl's); a parity switch, not a tuning parameter"
+        }
+      ],
+      "ci_notes": [],
+      "variant_of": "vsharp-qsmrs",
+      "repro_only": true,
+      "preset": {
+        "deconvolve": "false"
+      }
+    },
+    {
+      "slug": "vsharp-qsmrs.qsmjl",
+      "name": "V-SHARP (QSM.rs) \u00b7 QSM.jl parity",
+      "stage": "bfr",
+      "inputs": [
+        "totalfield",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "vsharp",
+      "qsmxt_args": [
+        "--vsharp-deconvolve true",
+        "--vsharp-threshold 0.05"
+      ],
+      "language": "Rust",
+      "family": "iterative",
+      "learning": "none",
+      "description": "Variable-radius SHARP: background removal by SMV filtering with a spatially varying kernel radius (largest kernel that fits at each voxel), then a truncated-SVD deconvolution of the SMV high-pass.",
+      "citation": "Wu et al., Magn Reson Med 2012",
+      "doi": "10.1002/mrm.23000",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT",
+      "authors": [
+        "Bing Wu",
+        "Wei Li",
+        "Arnaud Guidon",
+        "Chunlei Liu"
+      ],
+      "parameters": [
+        {
+          "name": "deconvolve",
+          "default": true,
+          "description": "undo the SMV high-pass with a truncated-SVD deconvolution"
+        },
+        {
+          "name": "threshold",
+          "default": 0.05,
+          "description": "deconvolution (TSVD) threshold; only used with deconvolve=true"
+        },
+        {
+          "name": "max_radius",
+          "default": 12.0,
+          "description": "largest (starting) SMV kernel radius (mm)"
+        },
+        {
+          "name": "min_radius",
+          "default": 1.0,
+          "description": "smallest SMV kernel radius (mm)"
+        },
+        {
+          "name": "radius_step",
+          "default": 1.0,
+          "description": "step between SMV kernel radii (mm)"
+        },
+        {
+          "name": "grid",
+          "default": "isotropic",
+          "description": "working grid: isotropic (1 mm), native or finest; QSM.jl works on the native grid"
+        },
+        {
+          "name": "ball",
+          "default": "default",
+          "description": "SMV ball: default (QSM.rs's) or qsmjl (QSM.jl's); a parity switch, not a tuning parameter"
+        }
+      ],
+      "ci_notes": [],
+      "variant_of": "vsharp-qsmrs",
+      "repro_only": true,
+      "preset": {
+        "ball": "qsmjl",
+        "grid": "native",
+        "max_radius": "12",
+        "min_radius": "1",
+        "radius_step": "1",
+        "threshold": "0.05"
+      }
+    },
+    {
+      "slug": "sharp-qsmrs.qsmjl",
+      "name": "SHARP (QSM.rs) \u00b7 QSM.jl parity",
+      "stage": "bfr",
+      "inputs": [
+        "totalfield",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "sharp",
+      "language": "Rust",
+      "family": "iterative",
+      "learning": "none",
+      "description": "Sophisticated Harmonic Artifact Reduction for Phase data: SMV deconvolution.",
+      "citation": "Schweser et al., NeuroImage 2011",
+      "doi": "10.1016/j.neuroimage.2010.10.070",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT",
+      "authors": [
+        "Ferdinand Schweser",
+        "Andreas Deistung",
+        "Berengar Wendel Lehr",
+        "J\u00fcrgen Rainer Reichenbach"
+      ],
+      "parameters": [
+        {
+          "name": "threshold",
+          "default": 0.05,
+          "description": "deconvolution threshold"
+        },
+        {
+          "name": "radius",
+          "default": 6.0,
+          "description": "SMV kernel radius (mm)"
+        },
+        {
+          "name": "variant",
+          "default": "sepia",
+          "description": "implementation reproduced: sepia (SEPIA's SHARP.m) or qsmjl (QSM.jl's sharp); a parity switch, not a tuning parameter"
+        }
+      ],
+      "ci_notes": [],
+      "variant_of": "sharp-qsmrs",
+      "repro_only": true,
+      "preset": {
+        "variant": "qsmjl"
+      }
+    },
+    {
+      "slug": "ismv-qsmrs.qsmjl",
+      "name": "iSMV (QSM.rs) \u00b7 QSM.jl parity",
+      "stage": "bfr",
+      "inputs": [
+        "totalfield",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "ismv",
+      "language": "Rust",
+      "family": "iterative",
+      "learning": "none",
+      "description": "Iterative Spherical Mean Value background field removal.",
+      "citation": "Wen et al., Magn Reson Med 2014",
+      "doi": "10.1002/mrm.24998",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT",
+      "authors": [
+        "Yan Wen",
+        "Dong Zhou",
+        "Tian Liu",
+        "Pascal Spincemaille",
+        "Yi Wang"
+      ],
+      "parameters": [
+        {
+          "name": "variant",
+          "default": "wen2014",
+          "description": "implementation: wen2014 (the authors' iSMV.m) or qsmjl (QSM.jl's ismv); a qsmxt after v10.0.0 (v10.0.0 has only QSM.jl-style iSMV and no --variant)"
+        },
+        {
+          "name": "tol",
+          "default": "1e-6",
+          "description": "tolerance"
+        },
+        {
+          "name": "max_iter",
+          "default": 50,
+          "description": "iterations"
+        },
+        {
+          "name": "radius",
+          "default": 5.0,
+          "description": "SMV kernel radius (mm)"
+        }
+      ],
+      "ci_notes": [],
+      "variant_of": "ismv-qsmrs",
+      "repro_only": true,
+      "preset": {
+        "variant": "qsmjl",
+        "tol": "1e-3",
+        "max_iter": "500"
+      }
+    },
+    {
+      "slug": "resharp-qsmrs.parity",
+      "name": "RESHARP (QSM.rs) \u00b7 authors' radius",
+      "stage": "bfr",
+      "inputs": [
+        "totalfield",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "resharp",
+      "language": "Rust",
+      "family": "iterative",
+      "learning": "none",
+      "description": "Regularized SHARP with Tikhonov regularization of the deconvolution.",
+      "citation": "Sun & Wilman, Magn Reson Med 2014",
+      "doi": "10.1002/mrm.24765",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT",
+      "authors": [
+        "Hongfu Sun",
+        "Alan H. Wilman"
+      ],
+      "parameters": [
+        {
+          "name": "radius",
+          "default": 6.0,
+          "tuned": {
+            "sim": 12.0
+          },
+          "description": "SMV kernel radius (mm)"
+        },
+        {
+          "name": "tik_reg",
+          "default": "1e-4",
+          "tuned": {
+            "sim": "1e-4"
+          },
+          "description": "Tikhonov regularization"
+        },
+        {
+          "name": "tol",
+          "default": "1e-6",
+          "description": "relative residual tolerance of the solve"
+        },
+        {
+          "name": "max_iter",
+          "default": 200,
+          "description": "maximum solver iterations"
+        }
+      ],
+      "ci_notes": [],
+      "variant_of": "resharp-qsmrs",
+      "repro_only": true,
+      "preset": {
+        "radius": "3"
+      }
+    },
+    {
+      "slug": "pdf-qsmrs.parity",
+      "name": "PDF (QSM.rs) \u00b7 recommended iterations",
+      "stage": "bfr",
+      "inputs": [
+        "totalfield",
+        "mask",
+        "params",
+        "magnitude"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "pdf",
+      "language": "Rust",
+      "family": "iterative",
+      "learning": "none",
+      "description": "Projection onto Dipole Fields: models the background field as external dipoles.",
+      "citation": "Liu et al., NMR Biomed 2011",
+      "doi": "10.1002/nbm.1670",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT",
+      "authors": [
+        "Tian Liu",
+        "Ildar Khalidov",
+        "Ludovic de Rochefort",
+        "Pascal Spincemaille",
+        "Jing Liu",
+        "A. John Tsiouris",
+        "Yi Wang"
+      ],
+      "parameters": [
+        {
+          "name": "tol",
+          "default": "1e-5",
+          "description": "convergence tolerance"
+        },
+        {
+          "name": "n_cg",
+          "default": 30,
+          "description": "maximum conjugate-gradient iterations (PDF.m's n_CG; qsmxt after v10.0.0)"
+        },
+        {
+          "name": "space",
+          "default": "image",
+          "description": "dipole kernel for an oblique B0, image or kspace (PDF.m's 'imagespace'/'kspace'; qsmxt after v10.0.0)"
+        },
+        {
+          "name": "n_pad",
+          "default": 40,
+          "description": "zero padding around the mask's bounding box, voxels (PDF.m's n_pad; qsmxt after v10.0.0)"
+        }
+      ],
+      "ci_notes": [],
+      "variant_of": "pdf-qsmrs",
+      "repro_only": true,
+      "preset": {
+        "n_cg": "300"
+      }
+    },
+    {
+      "slug": "ilsqr-qsmrs.sti",
+      "name": "iLSQR (QSM.rs) \u00b7 STI Suite parity",
+      "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "ilsqr",
+      "language": "Rust",
+      "family": "iterative",
+      "learning": "none",
+      "description": "Iterative LSQR inversion with streaking-artifact reduction.",
+      "citation": "Li et al., NeuroImage 2015",
+      "doi": "10.1016/j.neuroimage.2014.12.043",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT",
+      "authors": [
+        "Wei Li",
+        "Nian Wang",
+        "Fang Yu",
+        "Hui Han",
+        "Wei Cao",
+        "Rebecca Romero",
+        "Bundhit Tantiwongkosi",
+        "Timothy Q. Duong",
+        "Chunlei Liu"
+      ],
+      "parameters": [
+        {
+          "name": "tol",
+          "default": "1e-3",
+          "description": "tolerance"
+        },
+        {
+          "name": "max_iter",
+          "default": 100,
+          "description": "iterations"
+        },
+        {
+          "name": "pad_mm",
+          "default": 16,
+          "description": "zero-padding per side (mm) before the k-space solve (new in qsmxt v10.0.0)"
+        },
+        {
+          "name": "precision",
+          "default": "double",
+          "description": "arithmetic of the two LSQR solves, double or single (the original's); needs a qsmxt with --precision"
+        }
+      ],
+      "ci_notes": [],
+      "variant_of": "ilsqr-qsmrs",
+      "repro_only": true,
+      "preset": {
+        "pad_mm": "12"
+      }
+    },
+    {
+      "slug": "star-qsmrs.sti",
+      "name": "STAR-QSM (QSM.rs) \u00b7 STI Suite script parity",
+      "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "star",
+      "language": "Rust",
+      "family": "iterative",
+      "learning": "none",
+      "description": "STAR-QSM (streaking artifact reduction) dipole inversion, the QSM.rs port of STI Suite's QSM_star. Its pair is star-sti, the original.",
+      "citation": "Wei et al., NMR Biomed 2015",
+      "doi": "10.1002/nbm.3383",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT",
+      "authors": [
+        "Hongjiang Wei and Chunlei Liu"
+      ],
+      "parameters": [
+        {
+          "name": "te",
+          "default": "sum",
+          "description": "echo time the field is converted to phase at (STAR-QSM's result depends on the phase scale): first, last, spacing (TE2 - TE1), sum (of the echo times), or a time in ms\n"
+        },
+        {
+          "name": "pad",
+          "default": "8 8 20",
+          "description": "zero padding per side in voxels, x y z, or one number for every axis (STI Suite's 'padsize'; the default is what STI Suite's GUI passes, star-sti's recon.m passes 12 12 12)\n"
+        }
+      ],
+      "ci_notes": [],
+      "variant_of": "star-qsmrs",
+      "repro_only": true,
+      "preset": {
+        "te": "first",
+        "pad": "12"
+      }
+    },
+    {
+      "slug": "heidi-qsmrs.parity",
+      "name": "HEIDI (QSM.rs) \u00b7 HEIDI parity",
+      "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params",
+        "magnitude"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "heidi",
+      "language": "Rust",
+      "family": "iterative",
+      "learning": "none",
+      "description": "Homogeneity Enabled Incremental Dipole Inversion. HEIDI splits k-space at the dipole cone and treats the halves differently: well-conditioned coefficients (|D(k)| above a threshold) are taken unchanged from a minimally regularised LSQR solution and held as exact constraints, while the ill-conditioned coefficients inside the cone are recovered by minimising a weighted total variation subject to those constraints. The \"homogeneity\" is that weighting \u2014 each gradient direction gets its own mask, built by thresholding the gradient of the field map, so TV is applied where the field is locally flat and released across anatomical edges. Solved with NESTA (Nesterov smoothing with continuation on \u03bc).",
+      "citation": "Schweser et al., NeuroImage 2012",
+      "doi": "10.1016/j.neuroimage.2012.05.067",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT",
+      "authors": [
+        "Ferdinand Schweser",
+        "Karsten Sommer",
+        "Andreas Deistung",
+        "J\u00fcrgen Rainer Reichenbach"
+      ],
+      "parameters": [
+        {
+          "name": "cone_threshold",
+          "default": 0.1,
+          "description": "|D(k)| above which a coefficient is well-conditioned and kept from the LSQR seed"
+        },
+        {
+          "name": "gradient_threshold",
+          "default": 3925.2,
+          "description": "field-gradient threshold in ppm/mm; below it a direction reads as homogeneous and its TV weight switches on (upstream's 0.00105 in phase/(TE\u00b7B0), converted to ppm)"
+        },
+        {
+          "name": "gradient_mask_floor",
+          "default": 0.1,
+          "description": "TV weight kept where every direction reads as an edge; 0 reproduces upstream's shipped binarised masks"
+        },
+        {
+          "name": "continuation_steps",
+          "default": 8,
+          "description": "NESTA continuation steps on \u03bc \u2014 the dominant quality knob, and more is not better"
+        },
+        {
+          "name": "inner_iterations",
+          "default": 500,
+          "description": "accelerated-gradient iterations per continuation step"
+        },
+        {
+          "name": "tol",
+          "default": "1e-3",
+          "description": "relative objective change that ends an inner loop early"
+        },
+        {
+          "name": "lsqr_residual_weighting",
+          "default": "field-scaled",
+          "description": "residual-field weight w of the LSQR seed; a smaller w leaves more real signal in \u03c7 rather than in r, and HEIDI discards the streak-ridden cone anyway"
+        },
+        {
+          "name": "lsqr_max_iter",
+          "default": 400,
+          "description": "LSQR seed iterations"
+        },
+        {
+          "name": "denoise_reference_itk",
+          "default": false,
+          "description": "ITK 3.20's float arithmetic for the gradient-mask denoising, as the authors' executable runs it (the default computes its conductance scale in double precision)"
+        }
+      ],
+      "ci_notes": [
+        "The seed is run here exactly as QSMxT's pipeline runs it: minimally regularised LSQR with its output left unmasked, since HEIDI low-passes \u03c7 through the dipole cone and a hard mask edge rings.\n",
+        "Upstream's shipped driver overrides the NESTA tolerance to machine epsilon, which disables early stopping and always burns the full continuation \u00d7 inner budget. QSM.rs keeps the paper's own 1e-3, so the continuation levels settle on their own \u2014 minutes rather than hours on a whole brain.\n"
+      ],
+      "variant_of": "heidi-qsmrs",
+      "repro_only": true,
+      "preset": {
+        "denoise_reference_itk": "true"
+      }
+    },
+    {
+      "slug": "tfi-qsmrs.parity",
+      "name": "TFI (QSM.rs) \u00b7 MEDI parity",
+      "stage": "bfr+dipole",
+      "inputs": [
+        "totalfield",
+        "mask",
+        "params",
+        "magnitude"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "tfi",
+      "language": "Rust",
+      "family": "iterative",
+      "learning": "none",
+      "description": "Preconditioned Total Field Inversion: a single-step method that inverts the total field directly to susceptibility over the whole field-of-view, jointly performing background-field removal and dipole inversion. Uses a preconditioner (\u03c7 = P\u00b7y, larger outside the brain) so the large out-of-brain background susceptibility is well-conditioned, with MEDI-style L1 morphology regularization.",
+      "citation": "Liu et al., Magn Reson Med 2017;78(1):303-315",
+      "doi": "10.1002/mrm.26946",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT",
+      "authors": [
+        "Zhe Liu",
+        "Youngwook Kee",
+        "Dong Zhou",
+        "Yi Wang",
+        "Pascal Spincemaille"
+      ],
+      "parameters": [
+        {
+          "name": "lambda",
+          "default": 7.5e-05,
+          "tuned": {
+            "sim": "1e-5"
+          },
+          "description": "data-fidelity weight (matches MEDI's default; larger = closer data fit, less regularization)"
+        },
+        {
+          "name": "precond",
+          "default": 30,
+          "description": "preconditioner \u2014 susceptibility scaling outside the brain mask (Liu 2017 uses ~30 for in-vivo air)"
+        },
+        {
+          "name": "merit",
+          "default": true,
+          "description": "model-error reduction (MERIT), qsmxt after v10.0.0"
+        },
+        {
+          "name": "linear",
+          "default": true,
+          "description": "the paper's linear data term (false, MEDI_L1's exponential one), qsmxt after v10.0.0"
+        },
+        {
+          "name": "data_weighting",
+          "default": 1,
+          "description": "1 weights the data by the field noise from the echo magnitudes, 0 uniform"
+        },
+        {
+          "name": "percentage",
+          "default": 0.9,
+          "description": "fraction of voxels kept as edges in the gradient mask"
+        },
+        {
+          "name": "cg_tol",
+          "default": 0.01,
+          "description": "conjugate-gradient relative residual tolerance"
+        },
+        {
+          "name": "cg_max_iter",
+          "default": 100,
+          "description": "maximum conjugate-gradient iterations per Gauss-Newton step"
+        },
+        {
+          "name": "max_iter",
+          "default": 10,
+          "description": "maximum Gauss-Newton iterations"
+        },
+        {
+          "name": "tol",
+          "default": 0.1,
+          "description": "Gauss-Newton stop on the relative update"
+        },
+        {
+          "name": "kernel",
+          "default": "default",
+          "description": "parity switch, dipole kernel on odd grids (default the Fourier grid, original half a step off as MEDI's dipole_kernel.m)"
+        },
+        {
+          "name": "precision",
+          "default": "double",
+          "description": "parity switch, arithmetic (double, or single as MEDI_L1.m runs)"
+        }
+      ],
+      "ci_notes": [],
+      "variant_of": "tfi-qsmrs",
+      "repro_only": true,
+      "preset": {
+        "kernel": "original",
+        "precision": "single"
+      }
+    },
+    {
+      "slug": "tgv-qsmrs.parity",
+      "name": "TGV (QSM.rs) \u00b7 TGV package parity",
+      "stage": "bfr+dipole",
+      "inputs": [
+        "totalfield",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "tgv",
+      "language": "Rust",
+      "family": "iterative",
+      "learning": "none",
+      "description": "Total Generalized Variation single-step reconstruction: total field -> susceptibility, doing its own background field removal.",
+      "citation": "Langkammer et al., NeuroImage 2015",
+      "doi": "10.1016/j.neuroimage.2015.02.041",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT",
+      "authors": [
+        "Christian Langkammer",
+        "Kristian Bredies",
+        "Benedikt A. Poser",
+        "Markus Barth",
+        "Gernot Reishofer",
+        "Audrey Peiwen Fan",
+        "Berkin Bilgic",
+        "Franz Fazekas",
+        "Caterina Mainero",
+        "Stefan Ropele"
+      ],
+      "parameters": [
+        {
+          "name": "iterations",
+          "default": 1000,
+          "description": "iterations"
+        },
+        {
+          "name": "alpha1",
+          "default": 6.675e-05,
+          "tuned": {
+            "sim": 0.00015
+          },
+          "description": "first-order (gradient) weight, ppm"
+        },
+        {
+          "name": "alpha0",
+          "default": 0.0002002,
+          "tuned": {
+            "sim": 0.0015
+          },
+          "description": "second-order weight, ppm"
+        },
+        {
+          "name": "reference_divergence",
+          "default": false,
+          "description": "TGV.jl's divergence in the w update instead of the exact adjoint (anisotropic voxels only)"
+        },
+        {
+          "name": "reference_edge_erosion",
+          "default": false,
+          "description": "erode the mask as TGV.jl does, not from the array's edge (masks reaching an array face only)"
+        },
+        {
+          "name": "reference_output_box",
+          "default": false,
+          "description": "\u03c7 over TGV.jl's whole output box, including the rim just outside the eroded mask"
+        }
+      ],
+      "ci_notes": [],
+      "variant_of": "tgv-qsmrs",
+      "repro_only": true,
+      "preset": {
+        "reference_divergence": "true",
+        "reference_edge_erosion": "true",
+        "reference_output_box": "true"
+      }
+    },
+    {
+      "slug": "qsmart-qsmrs.parity",
+      "name": "QSMART (QSM.rs) \u00b7 QSMART parity",
+      "stage": "bfr+dipole",
+      "inputs": [
+        "totalfield",
+        "mask",
+        "params",
+        "magnitude",
+        "reliability"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "qsmart",
+      "language": "Rust",
+      "family": "iterative",
+      "learning": "none",
+      "description": "QSMART: vessel-aware two-stage reconstruction. Consumes the total field and produces susceptibility, doing its own spatially-dependent background field removal and vasculature-aware regularization (Frangi vessel detection + SDF).",
+      "citation": "Yaghmaie et al., NeuroImage 2021",
+      "doi": "10.1016/j.neuroimage.2020.117701",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT",
+      "authors": [
+        "Negin Yaghmaie",
+        "Warda T. Syeda",
+        "Chengchuan Wu",
+        "Yicheng Zhang",
+        "Tracy D. Zhang",
+        "Emma L. Burrows",
+        "Amy Brodtmann",
+        "Bradford A. Moffat",
+        "David K. Wright",
+        "Rebecca Glarin",
+        "Scott Kolbe",
+        "Leigh A. Johnston"
+      ],
+      "parameters": [
+        {
+          "name": "offset_grid",
+          "default": "fft",
+          "description": "k-space grid of the stage combination: fft (QSM.rs's) or qsmart-reference (the authors' adjust_offset.m grid; differs only on odd matrix dims); a parity switch, not a tuning parameter"
+        }
+      ],
+      "ci_notes": [],
+      "variant_of": "qsmart-qsmrs",
+      "repro_only": true,
+      "preset": {
+        "offset_grid": "qsmart-reference"
+      }
+    },
+    {
+      "slug": "laplacian-qsmrs.sti",
+      "name": "Laplacian (QSM.rs) \u00b7 STI Suite",
+      "stage": "field-mapping",
+      "inputs": [
+        "phase",
+        "magnitude",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "laplacian",
+      "language": "Rust",
+      "family": "direct",
+      "learning": "none",
+      "description": "Multi-echo B0 field mapping by Laplacian phase unwrapping (via the QSMxT/QSM.rs engine, `qsmxt fieldmap laplacian`) \u2014 each echo unwrapped with a DCT Poisson solve, then combined into a phase-SNR-weighted B0 estimate. Alternative to ROMEO field mapping.",
+      "citation": "Schofield & Zhu, Optics Letters 2003",
+      "doi": "10.1364/OL.28.001194",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT",
+      "authors": [
+        "Marvin A. Schofield",
+        "Yimei Zhu"
+      ],
+      "parameters": [
+        {
+          "name": "solver",
+          "default": "dct",
+          "description": "Poisson solver, dct, fft (STI Suite's MRPhaseUnwrap) or mirror (QSMART)"
+        },
+        {
+          "name": "fft_pad",
+          "default": 64,
+          "description": "zero padding per side for the fft solver, voxels (STI Suite pads 12)"
+        },
+        {
+          "name": "unmasked",
+          "default": false,
+          "description": "unwrap the raw phase over the whole volume rather than masked (STI Suite, QSMART)"
+        },
+        {
+          "name": "weighting",
+          "default": "phase-snr",
+          "description": "echo weights of the B0 average, e.g. phase-snr or tes (STI Suite weights by echo time)"
+        }
+      ],
+      "ci_notes": [],
+      "variant_of": "laplacian-qsmrs",
+      "repro_only": true,
+      "preset": {
+        "solver": "fft",
+        "fft_pad": "12",
+        "unmasked": "true",
+        "weighting": "tes"
+      }
+    },
+    {
+      "slug": "fit-ppm-complex-qsmrs.parity",
+      "name": "Complex fit + ROMEO (QSM.rs) \u00b7 MEDI parity",
+      "stage": "field-mapping",
+      "inputs": [
+        "phase",
+        "magnitude",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "fit-ppm-complex",
+      "qsmxt_value": "romeo",
+      "qsmxt_args": [
+        "--b0-estimation complex-fit"
+      ],
+      "language": "Rust",
+      "family": "direct",
+      "learning": "none",
+      "description": "MEDI's complex fit of the echoes (QSM.rs's port of Fit_ppm_complex, `qsmxt fieldmap --b0-estimation complex-fit`), unwrapped spatially with ROMEO by default, or with QSM.rs's port of MEDI's region-growing unwrapPhase (`unwrapping: medi-region-growing`), which makes it MEDI's field map. Its pair is fit-ppm-complex-cornell, run with MEDI's region growing and compared on the total field, the fit itself (ifreq_raw), its noise map (n_std) and ARLO's R2* (r2star), which this entry writes as intermediates.",
+      "citation": "Liu et al., Magn Reson Med 2013;69(2):467-476",
+      "doi": "10.1002/mrm.24272",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT",
+      "authors": [
+        "Tian Liu",
+        "Cynthia Wisnieff",
+        "Min Lou",
+        "Weiwei Chen",
+        "Pascal Spincemaille",
+        "Yi Wang"
+      ],
+      "parameters": [
+        {
+          "name": "reltol",
+          "default": "1e-4",
+          "description": "Gauss-Newton stop, relative to the norm of the initial field estimate"
+        },
+        {
+          "name": "max_iter",
+          "default": 30,
+          "description": "maximum Gauss-Newton iterations of the complex fit"
+        },
+        {
+          "name": "unwrapping",
+          "default": "romeo",
+          "description": "spatial unwrapping of the fit: romeo (QSMxT's default) or medi-region-growing (MEDI's unwrapPhase, as fit-ppm-complex-cornell; needs a qsmxt with `qsmxt fieldmap medi-region-growing`)"
+        }
+      ],
+      "ci_notes": [],
+      "variant_of": "fit-ppm-complex-qsmrs",
+      "repro_only": true,
+      "preset": {
+        "unwrapping": "medi-region-growing"
+      }
     }
   ],
   "datasets": {

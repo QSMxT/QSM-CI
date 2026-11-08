@@ -18,12 +18,11 @@
 #SBATCH --array=0-91%40
 #SBATCH --output=slurm-%x-%A_%a.out
 
-# Full-coverage re-run of the composed matrix with the local-sandbox override enabled
-# (QSMCI_SANDBOX_DIR). The methods whose images couldn't be built as .sif on Bunya
-# (build_sandboxes.slurm) now exec their prebuilt sandbox directories, so the ~18 DL/MATLAB/span
-# methods that 100%-DNF'd in the first pass now run. Regenerates every run id; the merge upserts,
-# so this supersedes the partial first pass. inr-qsm/modip stay excluded (CPU-infeasible at this
-# scale — a separate GPU concern, not a container-conversion one).
+# The composed harmonization matrix with the prebuilt-image override (QSMCI_SANDBOX_DIR, built by
+# build_sifs.slurm): the campaign's methods, parity versions and chains (scripts/repro_campaign.yml,
+# CAMPAIGN overrides), its gpu methods left to matrix_gpu.slurm. 16 shards per acquisition keep each
+# task to ~60 pipelines, so with STREAM_PUBLISH=1 (stats, upload, delete per shard) a running task
+# holds a few GB, not the whole acquisition's volumes and work directory.
 source ~/venvs/qsmci/bin/activate
 set -uo pipefail
 cd "${SLURM_SUBMIT_DIR:?}"
@@ -33,7 +32,7 @@ export PROOT_NO_SECCOMP=1
 export QSMCI_SANDBOX_DIR=/scratch/project_mnt/S0169/qsmci_sif   # runner execs the prebuilt .sif here
 export QSM_CI_JOBS=4
 
-N_SHARDS=${N_SHARDS:-4}
+N_SHARDS=${N_SHARDS:-16}
 # RUNS_PREFIX names the shard files (pipeline.py empties its --runs-out file on start, so a campaign
 # that must not overwrite earlier shard files uses its own prefix, e.g. runs-repro-v10). EXTRA_EXCLUDE
 # adds slugs to --exclude (comma-separated). INCLUDE (comma-separated slugs) restricts the run to those
@@ -47,14 +46,18 @@ import fnmatch, json, os
 reg = json.load(open('scripts/datasets.json'))
 pat = os.environ.get('REPRO_ACQS', '*')
 print('\n'.join(sorted(k for k, v in reg.items() if v.get('track') == 'repro' and fnmatch.fnmatch(k, pat))))")
-ACQ=${ACQS[$((SLURM_ARRAY_TASK_ID / N_SHARDS))]}
-SHARD=$((SLURM_ARRAY_TASK_ID % N_SHARDS))
+# ARRAY_OFFSET: Bunya caps array indices at 1000 (MaxArraySize 1001), so a campaign of more tasks
+# is submitted as several arrays, each with the offset of its first task.
+TASK=$((SLURM_ARRAY_TASK_ID + ${ARRAY_OFFSET:-0}))
+ACQ=${ACQS[$((TASK / N_SHARDS))]}
+SHARD=$((TASK % N_SHARDS))
 
 echo "== [sandbox] acquisition $ACQ shard $SHARD/$N_SHARDS (QSMCI_SANDBOX_DIR=$QSMCI_SANDBOX_DIR)"
 python scripts/pipeline.py \
     --phantom "$ACQ" --track repro --mode composed --runner apptainer \
     --shard "$SHARD/$N_SHARDS" \
-    --exclude "inr-qsm,modip${EXTRA_EXCLUDE:+,$EXTRA_EXCLUDE}" \
+    --campaign "${CAMPAIGN:-scripts/repro_campaign.yml}" --campaign-part cpu \
+    ${EXTRA_EXCLUDE:+--exclude "$EXTRA_EXCLUDE"} \
     ${INCLUDE:+--include "$INCLUDE"} \
     --work ".work-repro-sb-$ACQ-$SHARD" \
     --runs-out "results/${RUNS_PREFIX:-runs-repro}-$ACQ-s$SHARD.json"

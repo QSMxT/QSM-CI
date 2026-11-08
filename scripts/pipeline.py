@@ -577,6 +577,10 @@ def run_algo(algo: dict, input_dir: Path, output_dir: Path, runner: str = "local
     if output_dir.exists():
         shutil.rmtree(output_dir)
     output_dir.mkdir(parents=True)
+    # A campaign's parity version is its base submission with fixed settings (repro_campaign.py);
+    # explicit overrides still win over them.
+    if algo.get("preset"):
+        overrides = {**algo["preset"], **(overrides or {})}
     limit = timeout_s(algo.get("timeout_minutes"))
     t0 = time.time()
     if runner != "local":
@@ -1484,12 +1488,13 @@ class ComposedPlan:
     """What run_composed will run, and which of it THIS shard owns — see plan_composed."""
 
     def __init__(self, *, fmap, bfr, dipole, tf_spans, e2e_spans, no_gt, fm_keys, col_owner,
-                 span_owner, owns_col, owns_span):
+                 span_owner, owns_col, owns_span, composes=composes):
         self.fmap, self.bfr, self.dipole = fmap, bfr, dipole
         self.tf_spans, self.e2e_spans = tf_spans, e2e_spans
         self.no_gt, self.fm_keys = no_gt, fm_keys
         self.col_owner, self.span_owner = col_owner, span_owner
         self.owns_col, self.owns_span = owns_col, owns_span
+        self.composes = composes   # composes(), narrowed by any campaign chain
 
 
 def plan_composed(algos, focus, track, shard_i, shard_n) -> ComposedPlan:
@@ -1540,13 +1545,21 @@ def plan_composed(algos, focus, track, shard_i, shard_n) -> ComposedPlan:
     # real field-mapping submission (or is an end-to-end span running from raw phase).
     no_gt = track in NO_GT_TRACKS
 
+    # A campaign's field-mapping variant (repro_campaign.py) carries a `chain`: the bfrs, dipoles and
+    # spans it composes with, one authors' pipeline instead of the whole matrix. Taken from the full
+    # field-mapping list, before --shard prunes it, so every shard agrees on the columns.
+    chains = {f["slug"]: f["chain"] for f in fmap if f.get("chain")}
+    in_chain = lambda tfk, kind, slug: tfk not in chains or slug in chains[tfk][kind]
+
     # --shard: own each composed COLUMN = (totalfield-source, bfr) via round-robin over a stable
     # ordering. A column's bfr localfield is computed in exactly one shard (no cross-shard bfr
     # recomputation); a field-map runs only in shards that own a column consuming it.
     fm_keys = ([] if no_gt else ["gt"]) + sorted(f["slug"] for f in fmap)
     col_owner = {(tfk, bs): idx for idx, (tfk, bs)
-                 in enumerate((tfk, b["slug"]) for tfk in fm_keys for b in sorted(bfr, key=lambda x: x["slug"]))}
-    owns_col = lambda tfk, bs: _owns(col_owner.get((tfk, bs), 0))
+                 in enumerate((tfk, b["slug"]) for tfk in fm_keys for b in sorted(bfr, key=lambda x: x["slug"])
+                              if in_chain(tfk, "bfrs", b["slug"]))}
+    # A column outside col_owner (a chain leaves it out) is owned by no shard.
+    owns_col = lambda tfk, bs: (tfk, bs) in col_owner and _owns(col_owner[(tfk, bs)])
     # bfr+dipole spans (TGV, NeXtQSM, MEDI, QSMART, …) consume the total field, so each composes with
     # every total-field source (gt + each field-map); treat each (source, span) as its own shard column
     # so it runs in exactly one shard and that shard runs the field-map it needs. end-to-end spans run
@@ -1554,8 +1567,9 @@ def plan_composed(algos, focus, track, shard_i, shard_n) -> ComposedPlan:
     tf_spans = sorted([s for s in spans if "totalfield" in s["consumes"]], key=lambda x: x["slug"])
     e2e_spans = sorted([s for s in spans if "totalfield" not in s["consumes"]], key=lambda x: x["slug"])
     span_owner = {(tfk, s["slug"]): idx for idx, (tfk, s)
-                  in enumerate((tfk, s) for tfk in fm_keys for s in tf_spans)}
-    owns_span = lambda tfk, ss: _owns(span_owner.get((tfk, ss), 0))
+                  in enumerate((tfk, s) for tfk in fm_keys for s in tf_spans
+                               if in_chain(tfk, "spans", s["slug"]))}
+    owns_span = lambda tfk, ss: (tfk, ss) in span_owner and _owns(span_owner[(tfk, ss)])
 
     if shard_n is not None:
         needed_fm = {tfk for (tfk, bs) in col_owner if tfk != "gt" and owns_col(tfk, bs)}
@@ -1565,7 +1579,8 @@ def plan_composed(algos, focus, track, shard_i, shard_n) -> ComposedPlan:
 
     return ComposedPlan(fmap=fmap, bfr=bfr, dipole=dipole, tf_spans=tf_spans, e2e_spans=e2e_spans,
                         no_gt=no_gt, fm_keys=fm_keys, col_owner=col_owner, span_owner=span_owner,
-                        owns_col=owns_col, owns_span=owns_span)
+                        owns_col=owns_col, owns_span=owns_span,
+                        composes=lambda d, tfk, bs: composes(d, tfk, bs) and in_chain(tfk, "dipoles", d["slug"]))
 
 
 def run_composed(args, algos, gt_sources, gt, mask, shard_i, shard_n, runs: list) -> None:
@@ -1631,7 +1646,7 @@ def run_composed(args, algos, gt_sources, gt, mask, shard_i, shard_n, runs: list
         for b in bfr:
             if owns_col(tfk, b["slug"]):
                 for d in dipole:
-                    if not composes(d, tfk, b["slug"]):
+                    if not plan.composes(d, tfk, b["slug"]):
                         continue
                     upstream_dnf.append(dnf(
                         f"{tfk}~{b['slug']}~{d['slug']}-cmp{sfx}", f"{tfk}+{b['slug']}+{d['slug']}",
@@ -1647,7 +1662,7 @@ def run_composed(args, algos, gt_sources, gt, mask, shard_i, shard_n, runs: list
     for (tfk, bs), why in failed_bfr.items():
         reason = f"upstream bfr {bs} DNF: {why}"
         for d in dipole:
-            if not composes(d, tfk, bs):
+            if not plan.composes(d, tfk, bs):
                 continue
             combo = f"{bs}+{d['slug']}" if tfk == "gt" else f"{tfk}+{bs}+{d['slug']}"
             upstream_dnf.append(dnf(
@@ -1668,7 +1683,7 @@ def run_composed(args, algos, gt_sources, gt, mask, shard_i, shard_n, runs: list
 
     # Stage 3 — dipole: invert each cached localfield with every dipole method.
     dip_tasks = [(tfk, b, d) for tfk in tf_sources for b in bfr
-                 if (tfk, b["slug"]) in lf_cache for d in dipole if composes(d, tfk, b["slug"])]
+                 if (tfk, b["slug"]) in lf_cache for d in dipole if plan.composes(d, tfk, b["slug"])]
     for r in _pmap(dip_tasks, lambda task: do_dipole(task, args, gt_sources, gt, mask, lf_cache)):
         runs.extend(_stamp_phantom([r], getattr(args, "phantom", None)))
     if not args.runs_out:
@@ -1857,6 +1872,13 @@ def main() -> None:
                     help="comma-separated slugs to DROP from the run (isolated + composed). Used by "
                          "score.yml's full re-run so the hosted shards skip methods pinned to the "
                          "self-hosted runner; those run as separate --focus jobs on that runner.")
+    ap.add_argument("--campaign", type=Path, default=None,
+                    help="restrict the composed matrix to a harmonization campaign "
+                         "(scripts/repro_campaign.yml): its methods, its parity versions and their "
+                         "chains. --include/--exclude then narrow that set.")
+    ap.add_argument("--campaign-part", choices=["all", "cpu", "gpu"], default="all",
+                    help="with --campaign: cpu leaves out its gpu methods, gpu runs only those "
+                         "(with the upstream stages they invert)")
     ap.add_argument("--shard", default=None, metavar="i/n",
                     help="run only shard i of n disjoint shards (0-indexed), for parallel scoring "
                          "across jobs. Composed work is split by (field-map, bfr) COLUMN so each "
@@ -1951,6 +1973,9 @@ def main() -> None:
     # leaves those out of scoring, so the gate names its one method explicitly.
     algos = discover_algorithms(args.track, args.phantom,
                                 include={args.only} if args.smoke and args.only else None)
+    if args.campaign:
+        import repro_campaign
+        algos = repro_campaign.derive(algos, repro_campaign.load(args.campaign), args.campaign_part)
     if args.include:
         keep = set(args.include.split(","))
         algos = [a for a in algos if a["slug"] in keep]
