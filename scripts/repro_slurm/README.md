@@ -112,15 +112,18 @@ acquisition keep each task to ~60 pipelines.
 N=$(python -c "import json; print(sum(v.get('track') == 'repro' for v in json.load(open('scripts/datasets.json')).values()))")
 PREP=$(sbatch --parsable scripts/repro_slurm/prep.slurm)                    # transforms + SynthSeg, once
 export STREAM_PUBLISH=1 RUNS_PREFIX=runs-repro-v11 N_SHARDS=16
-CPU=$(sbatch --parsable --export=ALL --dependency=afterok:$PREP --array=0-$((16*N-1))%40 \
+# array indices stop at 1000 on Bunya: one array per 1000 tasks, ARRAY_OFFSET = its first task
+CPU=$(sbatch --parsable --export=ALL --dependency=afterok:$PREP --array=0-999%40 \
       scripts/repro_slurm/matrix_sandbox.slurm)
+CPU2=$(ARRAY_OFFSET=1000 sbatch --parsable --export=ALL --dependency=afterok:$PREP \
+       --array=0-$((16*N-1001))%40 scripts/repro_slurm/matrix_sandbox.slurm)
 export RUNS_PREFIX=runs-repro-v11-gpu N_SHARDS=4                           # gpu QOS: 100 jobs a user
 GPU=$(sbatch --parsable --export=ALL --dependency=afterok:$PREP --time=7-00:00:00 --mem=2G \
       scripts/repro_slurm/gpu_driver.sh $N)
 sbatch --export=ALL --array=0-$((N-1))%8 scripts/repro_slurm/intermediates.slurm   # viewer field maps
 # after both: rows already carry their stats; FRESH=1 drops the previous campaign's rows
 sbatch --account=a_ai_collab --partition=general --time=08:00:00 --cpus-per-task=12 --mem=64G \
-  --dependency=afterany:$CPU:$GPU --wrap \
+  --dependency=afterany:$CPU:$CPU2:$GPU --wrap \
   "SKIP_STATS=1 FRESH=1 bash scripts/repro_slurm/harvest.sh 'results/runs-repro-v11*.json'"
 ```
 

@@ -46,8 +46,11 @@ import fnmatch, json, os
 reg = json.load(open('scripts/datasets.json'))
 pat = os.environ.get('REPRO_ACQS', '*')
 print('\n'.join(sorted(k for k, v in reg.items() if v.get('track') == 'repro' and fnmatch.fnmatch(k, pat))))")
-ACQ=${ACQS[$((SLURM_ARRAY_TASK_ID / N_SHARDS))]}
-SHARD=$((SLURM_ARRAY_TASK_ID % N_SHARDS))
+# ARRAY_OFFSET: Bunya caps array indices at 1000 (MaxArraySize 1001), so a campaign of more tasks
+# is submitted as several arrays, each with the offset of its first task.
+TASK=$((SLURM_ARRAY_TASK_ID + ${ARRAY_OFFSET:-0}))
+ACQ=${ACQS[$((TASK / N_SHARDS))]}
+SHARD=$((TASK % N_SHARDS))
 
 echo "== [sandbox] acquisition $ACQ shard $SHARD/$N_SHARDS (QSMCI_SANDBOX_DIR=$QSMCI_SANDBOX_DIR)"
 python scripts/pipeline.py \
