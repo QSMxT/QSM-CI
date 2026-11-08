@@ -108,3 +108,29 @@ def test_run_algo_passes_the_preset_under_explicit_overrides(pipeline, monkeypat
     algo = {"slug": "bfr-a.p", "preset": {"radius": "3", "tol": "1e-3"}, "produces": ["localfield"]}
     pipeline.run_algo(algo, tmp_path / "in", tmp_path / "out", "apptainer", {"tol": "1e-6"})
     assert seen["ov"] == {"radius": "3", "tol": "1e-6"}
+
+
+def test_a_span_takes_an_optional_input_when_there_is_one(pipeline, monkeypatch, tmp_path):
+    """A composed span (QSMART) runs without its optional reliability map, and takes the one its
+    field map wrote beside the total field (QSMART's echo fit) when there is one."""
+    seen = []
+
+    def fake_run(algo, idir, odir, runner, overrides=None):
+        seen.append(sorted(p.name for p in idir.iterdir()))
+        odir.mkdir(parents=True, exist_ok=True)
+        return 0.0
+    monkeypatch.setattr(pipeline, "run_algo", fake_run)
+    monkeypatch.setattr(pipeline, "collect", lambda *a, **k: {"status": "ok", "metrics": {}})
+    span = _row(pipeline, "qsmart-x", "bfr+dipole", optional=["reliability"])
+    span["consumes"] = span["consumes"] + ["reliability"]
+    fm_dir = tmp_path / "fm"; fm_dir.mkdir()
+    for name in ("totalfield.nii.gz", "mask.nii.gz", "magnitude.nii.gz", "params.json"):
+        (fm_dir / name).write_text("x")
+    gt_sources = {a: fm_dir / pipeline.ARTIFACT_FILE[a] for a in ("mask", "magnitude", "params")}
+    tf_sources = {"fm": (fm_dir / "totalfield.nii.gz", fm_dir / "mask.nii.gz", 0.0, [])}
+    args = type("A", (), {"work": tmp_path / "w", "runner": "local", "track": TRACK,
+                          "emit_volumes": False, "phantom_sfx": ""})()
+    pipeline.do_span((span, "fm"), args, gt_sources, None, fm_dir / "mask.nii.gz", tf_sources)
+    (fm_dir / "reliability.nii.gz").write_text("r")
+    pipeline.do_span((span, "fm"), args, gt_sources, None, fm_dir / "mask.nii.gz", tf_sources)
+    assert "reliability.nii.gz" not in seen[0] and "reliability.nii.gz" in seen[1]

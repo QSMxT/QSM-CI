@@ -1346,7 +1346,7 @@ def do_fieldmap(f, args, gt_sources, mask):
     (slug, totalfield, valid-mask, runtime, trace) or None on DNF."""
     idir, odir = args.work / f"cmp_fm_{f['slug']}_in", args.work / f"cmp_fm_{f['slug']}_out"
     try:
-        prepare_input(f["consumes"], gt_sources, idir)
+        prepare_input(f["consumes"], gt_sources, idir, f.get("optional", ()))
         fm_rt = run_algo(f, idir, odir, args.runner)
         tf = odir / "totalfield.nii.gz"
         # A field-mapping method may erode (e.g. Laplacian unwrapping) — carry its valid region.
@@ -1367,7 +1367,7 @@ def do_bfr(task, args, gt_sources):
         # Run within the incoming valid region (not the full mask) so a field-mapping erosion
         # already narrows the boundary before the BFR erodes further.
         src = dict(gt_sources); src["totalfield"] = tfp; src["mask"] = tf_mask
-        prepare_input(b["consumes"], src, idir)
+        prepare_input(b["consumes"], src, idir, b.get("optional", ()))
         bfr_rt = run_algo(b, idir, odir, args.runner)
         lf = odir / "localfield.nii.gz"
         bfr_mask = _valid_mask(lf, tf_mask, odir / "validmask.nii.gz")
@@ -1393,7 +1393,7 @@ def do_dipole(task, args, gt_sources, gt, mask, lf_cache):
         # never deconvolves a zero-field rim into a blurry boundary.
         src = dict(gt_sources); src["localfield"] = lf; src["mask"] = bfr_mask
         idir, odir = args.work / f"cmp_{cid}_in", args.work / f"cmp_{cid}_out"
-        prepare_input(d["consumes"], src, idir)
+        prepare_input(d["consumes"], src, idir, d.get("optional", ()))
         rt = run_algo(d, idir, odir, args.runner)
         # runtime_s is the whole pipeline's wall-clock: field-mapping + BFR (upstream_rt) + dipole.
         meta = {"id": cid, "slug": combo, "name": combo, "stage": stage,
@@ -1441,6 +1441,11 @@ def do_span(task, args, gt_sources, gt, mask, tf_sources):
     if consumes_tf:
         tfp, tf_mask, upstream_rt, upstream_trace = tf_sources[tfk]
         src["totalfield"], src["mask"] = tfp, tf_mask
+        # A field map written with QSMART's echo fit comes with its reliability map R_0 (the
+        # laplacian-qsmrs wrapper writes it beside the field), which QSMART takes as an optional input.
+        rel = Path(tfp).parent / ARTIFACT_FILE["reliability"]
+        if rel.exists():
+            src["reliability"] = rel
         stage = "bfr+dipole" if tfk == "gt" else "field-mapping+bfr+dipole"
         combo = {"field_mapping": tfk}
         # gt reuses the historical "{slug}-cmp" id (so a re-score overwrites the old ground-truth-field
@@ -1451,7 +1456,7 @@ def do_span(task, args, gt_sources, gt, mask, tf_sources):
     cid += getattr(args, "phantom_sfx", "")     # non-default phantom -> disjoint id space
     idir, odir = args.work / f"cmp_{cid}_in", args.work / f"cmp_{cid}_out"
     try:
-        prepare_input(s["consumes"], src, idir)
+        prepare_input(s["consumes"], src, idir, s.get("optional", ()))
         rt = run_algo(s, idir, odir, args.runner)
         meta = {"id": cid, "slug": s["slug"], "name": s.get("name", s["slug"]), "stage": stage,
                 "mode": "composed", "track": args.track, "runtime": upstream_rt + rt}
