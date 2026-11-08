@@ -129,11 +129,13 @@ def test_every_command_uses_qsmxt_cli_values(commands):
             assert value in QSMXT_VALUES.get(flag, set()), f"{key}: {flag} {value} is not a QSMxT value"
         assert set(extra) <= EXTRA_FLAGS, f"{key}: unexpected flags {extra}"
         produced += 1
-    # Every QSM.rs reconstruction method gets a single-method command.
-    expect = {s for s, a in by_slug.items() if "QSM.rs" in (a.get("engine") or "")
-              and a["stage"] in ("field-mapping", "bfr", "dipole", "bfr+dipole", "end-to-end")}
+    # Every QSM.rs reconstruction method gets a single-method command, except a harmonization parity
+    # version: `qsmxt run` has no general flags for its preset settings.
+    recon = {s for s, a in by_slug.items() if "QSM.rs" in (a.get("engine") or "")
+             and a["stage"] in ("field-mapping", "bfr", "dipole", "bfr+dipole", "end-to-end")}
+    variants = {s for s in recon if by_slug[s].get("preset")}
     got = {k.split(":", 1)[1] for k, v in out.items() if k.startswith("single:") and v}
-    assert got == expect
+    assert variants and got == recon - variants
     assert produced > len(PIPELINES)
 
 

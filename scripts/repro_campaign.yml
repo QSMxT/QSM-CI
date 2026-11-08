@@ -1,0 +1,97 @@
+# The harmonization (repro) matrix: which methods run, the parity versions of the QSM.rs ports, and
+# the authors' own chains. Read by scripts/pipeline.py --campaign (the Bunya matrix) and by
+# scripts/gen_manifest.py (which lists the parity versions in web/algorithms.json, so the site and
+# repro_eval.py keep their pipelines).
+#
+# methods:   the submissions in the matrix. Every QSM.rs port of a stage the matrix composes, plus the
+#            originals that have no port. An original with a parity-checked port is left out: the
+#            port stands for it, and its parity version (below) reproduces the original's settings.
+# gpu:       methods the CPU matrix skips (matrix_gpu.slurm runs them with --campaign-part gpu).
+# variants:  parity versions, `<base slug>.<tag>`: the base submission run with `set` (the parity
+#            pair's candidate_set in parity/thresholds.yml, plus the original's reference values from
+#            QSM.rs's advice rules; Recommended and Required rules win over both). Only where that
+#            differs from the base's defaults. A variant of a field-mapping method enters the matrix
+#            only through its `chain`.
+# chain:     on a field-mapping variant: the background-removal methods, dipole inversions and spans
+#            it composes with — one authors' pipeline, not the whole matrix.
+
+methods:
+  field-mapping: [romeo-qsmrs, laplacian-qsmrs]
+  unwrap+bfr: [iqfm-qsmrs]
+  bfr: [bfrnet-qsmrs, harperella-qsmrs, iharperella-qsmrs, ismv-qsmrs, lbv-qsmrs, pdf-qsmrs,
+        resharp-qsmrs, sharp-qsmrs, vsharp-qsmrs]
+  dipole: [amp-pe-qsmrs, fansi-nltgv-qsmrs, fansi-nltv-qsmrs, hdqsm-qsmrs, heidi-qsmrs, ilsqr-qsmrs,
+           inr-qsm, ir2qsm-qsmrs, l1qsm-qsmrs, lpcnn-qsmrs, lsqr-qsmrs, medi-qsmrs, modip,
+           modl-qsm-qsmrs, ndi-qsmrs, nltv-qsmrs, qsmgan-qsmrs, qsmnet-plus-qsmrs, qsmnet-qsmrs,
+           qsmnetme-qsmrs, rts-qsmrs, star-qsmrs, tikhonov-qsmrs, tkd-qsmrs, tsvd-qsmrs, tv-qsmrs,
+           whqsm-qsmrs, xqsm-qsmrs]
+  bfr+dipole: [autoqsm-qsmrs, nextqsm-qsmrs, qsmart-qsmrs, tfi-qsmrs, tgv-qsmrs]
+  end-to-end: [iqsm-plus-qsmrs, iqsm-qsmrs, ukb-qsm]
+
+gpu: [inr-qsm, modip]
+
+variants:
+  vsharp-qsmrs.sti:
+    base: vsharp-qsmrs
+    label: STI Suite parity
+    set: {deconvolve: false}
+  vsharp-qsmrs.qsmjl:
+    base: vsharp-qsmrs
+    label: QSM.jl parity
+    set: {ball: qsmjl, grid: native, max_radius: 12, min_radius: 1, radius_step: 1, threshold: 0.05}
+  sharp-qsmrs.qsmjl:
+    base: sharp-qsmrs
+    label: QSM.jl parity
+    set: {variant: qsmjl}
+  ismv-qsmrs.qsmjl:
+    base: ismv-qsmrs
+    label: QSM.jl parity
+    set: {variant: qsmjl, tol: 1e-3, max_iter: 500}
+  resharp-qsmrs.parity:
+    base: resharp-qsmrs
+    label: authors' radius
+    set: {radius: 3}
+  pdf-qsmrs.parity:
+    base: pdf-qsmrs
+    label: recommended iterations
+    set: {n_cg: 300}
+  ilsqr-qsmrs.sti:
+    base: ilsqr-qsmrs
+    label: STI Suite parity
+    set: {pad_mm: 12}
+  star-qsmrs.sti:
+    base: star-qsmrs
+    label: STI Suite script parity
+    set: {te: first, pad: 12}
+  heidi-qsmrs.parity:
+    base: heidi-qsmrs
+    label: HEIDI parity
+    set: {denoise_reference_itk: true}
+  tfi-qsmrs.parity:
+    base: tfi-qsmrs
+    label: MEDI parity
+    set: {kernel: original, precision: single}
+  tgv-qsmrs.parity:
+    base: tgv-qsmrs
+    label: TGV package parity
+    set: {reference_divergence: true, reference_edge_erosion: true, reference_output_box: true}
+  qsmart-qsmrs.parity:
+    base: qsmart-qsmrs
+    label: QSMART parity
+    set: {offset_grid: qsmart-reference}
+  laplacian-qsmrs.sti:
+    base: laplacian-qsmrs
+    label: STI Suite
+    set: {solver: fft, fft_pad: 12, unmasked: true, weighting: tes}
+    chain:
+      bfrs: [vsharp-qsmrs.sti]
+      dipoles: [ilsqr-qsmrs, ilsqr-qsmrs.sti, star-qsmrs, star-qsmrs.sti]
+      spans: []
+  fit-ppm-complex-qsmrs.parity:
+    base: fit-ppm-complex-qsmrs
+    label: MEDI parity
+    set: {unwrapping: medi-region-growing}
+    chain:
+      bfrs: [pdf-qsmrs, pdf-qsmrs.parity]
+      dipoles: [medi-qsmrs]
+      spans: [tfi-qsmrs, tfi-qsmrs.parity]
