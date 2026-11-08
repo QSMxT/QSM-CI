@@ -772,7 +772,7 @@ def _prune_repro(tmp_path, monkeypatch, hub, pipelines, *argv, slugs=SLUGS, coho
                            SimpleNamespace(path_in_repo=path_in_repo, path_or_fileobj=path_or_fileobj))
     monkeypatch.setitem(sys.modules, "huggingface_hub", fake)
     monkeypatch.setattr(pv, "repro_acq_groups", lambda: {a: g for g, (acqs, _) in cohorts.items() for a in acqs})
-    monkeypatch.setattr(pv, "live_algo_slugs", lambda: slugs)
+    monkeypatch.setattr(pv, "campaign_slugs", lambda: slugs)
     monkeypatch.setattr(pv.time, "sleep", lambda s: None)
     monkeypatch.setenv("HF_VOLUMES_REPO", REPO)
     monkeypatch.setenv("HF_TOKEN", "t")
@@ -797,8 +797,8 @@ def test_prune_repro_deletes_retired_pipelines_and_keeps_every_live_or_unharvest
     assert {"repro/ghost-acq/iqsm-cmp-ghost-acq__recon.nii.gz", "old__recon.nii.gz"} <= hub.files
 
 
-def test_prune_repro_refuses_without_a_manifest_to_judge_retirement_by(tmp_path, monkeypatch):
-    """No manifest means every method looks retired; the script must refuse rather than delete."""
+def test_prune_repro_refuses_without_a_campaign_to_judge_retirement_by(tmp_path, monkeypatch):
+    """No campaign methods means every method looks retired; the script must refuse rather than delete."""
     before = pv.repro_live_names(PIPES, ACQS) | {RETIRED}
     hub = FakeHub(before)
     assert _prune_repro(tmp_path, monkeypatch, hub, PIPES, slugs=frozenset()) == 0
@@ -806,6 +806,23 @@ def test_prune_repro_refuses_without_a_manifest_to_judge_retirement_by(tmp_path,
     hub = FakeHub(before)                                       # and a slug with '_' is unparseable
     assert _prune_repro(tmp_path, monkeypatch, hub, PIPES, slugs=SLUGS | {"bad_slug"}) == 0
     assert hub.files == before
+
+
+def test_no_campaign_slug_contains_an_underscore():
+    """The harmonization prune reads methods off a file name as `_`-separated slugs and judges them by
+    the campaign (parity versions included): a campaign slug with `_` would make it refuse."""
+    slugs = pv.campaign_slugs()
+    assert slugs and not [s for s in slugs if "_" in s] and any("." in s for s in slugs)
+
+
+def test_prune_repro_retires_a_live_method_the_campaign_does_not_run(tmp_path, monkeypatch):
+    """An original the matrix no longer runs (its QSM.rs port stands for it) is still on the site for
+    the simulation track, but its harmonization volumes from an earlier campaign are retired."""
+    live = pv.repro_live_names(PIPES, ACQS)
+    original = A + "romeo-qsmrs_vsharp-sti_rts-qsmrs-cmp-cima-bridge-run1__recon.nii.gz"
+    hub = FakeHub(live | {original})
+    _prune_repro(tmp_path, monkeypatch, hub, PIPES, slugs=SLUGS - {"vsharp-sti"})
+    assert live <= hub.files and original not in hub.files
 
 
 def test_prune_repro_dry_run_deletes_nothing(tmp_path, monkeypatch):
