@@ -7,7 +7,7 @@
 #   scripts/repro_slurm/harvest.sh ['results/runs-repro-s0*.json']
 #
 # The glob (default: every shard file) picks the campaign; its runs replace any rows with the same
-# run id, everything else in repro_rois.json stays. FRESH=1 starts from an empty repro_rois.json
+# run id, everything else in repro_rois.json stays. FRESH_START=1 starts from an empty repro_rois.json
 # instead (a new campaign whose pipelines replace the previous one's; the old file is kept as
 # results/repro_rois.before-<date>.json), so rows of pipelines the campaign dropped don't linger.
 source ~/venvs/qsmci/bin/activate
@@ -22,7 +22,7 @@ echo "runs-json in this campaign: ${#FRESH[@]}"
 # SKIP_STATS=1: the rows already carry ROI stats (stream_publish.sh ran them per shard and the
 # recon volumes are no longer local), so go straight to the upsert.
 [ "${SKIP_STATS:-0}" = 1 ] || printf '%s\n' "${FRESH[@]}" | xargs -P 12 -I{} python scripts/repro_eval.py stats --runs {} > harvest_stats.log 2>&1
-echo "stats: $(grep -c 'per-job stats' harvest_stats.log)/${#FRESH[@]} runs-json processed"
+[ "${SKIP_STATS:-0}" = 1 ] || echo "stats: $(grep -c 'per-job stats' harvest_stats.log)/${#FRESH[@]} runs-json processed"
 
 # 2) upsert the campaign's rows into results/repro_rois.json
 # Files go in argv: `printf | python - <<'PY'` gave the heredoc stdin, so the list read empty.
@@ -33,7 +33,7 @@ sys.path.insert(0, "scripts")
 import repro_eval
 import os, time
 p = Path("results/repro_rois.json")
-if os.environ.get("FRESH") == "1" and p.exists():
+if os.environ.get("FRESH_START") == "1" and p.exists():
     p.rename(p.with_name(f"repro_rois.before-{time.strftime('%Y%m%d')}.json"))
 doc = json.loads(p.read_text()) if p.exists() else {"runs": {}}
 before = len(doc["runs"])
