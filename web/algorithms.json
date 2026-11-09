@@ -5323,56 +5323,6 @@
       }
     },
     {
-      "slug": "sharp-qsmrs.qsmjl",
-      "name": "SHARP (QSM.rs) \u00b7 QSM.jl parity",
-      "stage": "bfr",
-      "inputs": [
-        "totalfield",
-        "mask",
-        "params"
-      ],
-      "domain": "qsm",
-      "engine": "QSMxT / QSM.rs",
-      "algorithm": "sharp",
-      "language": "Rust",
-      "family": "iterative",
-      "learning": "none",
-      "description": "Sophisticated Harmonic Artifact Reduction for Phase data: SMV deconvolution.",
-      "citation": "Schweser et al., NeuroImage 2011",
-      "doi": "10.1016/j.neuroimage.2010.10.070",
-      "code_url": "https://github.com/astewartau/QSM.rs",
-      "license": "MIT",
-      "authors": [
-        "Ferdinand Schweser",
-        "Andreas Deistung",
-        "Berengar Wendel Lehr",
-        "J\u00fcrgen Rainer Reichenbach"
-      ],
-      "parameters": [
-        {
-          "name": "threshold",
-          "default": 0.05,
-          "description": "deconvolution threshold"
-        },
-        {
-          "name": "radius",
-          "default": 6.0,
-          "description": "SMV kernel radius (mm)"
-        },
-        {
-          "name": "variant",
-          "default": "sepia",
-          "description": "implementation reproduced: sepia (SEPIA's SHARP.m) or qsmjl (QSM.jl's sharp); a parity switch, not a tuning parameter"
-        }
-      ],
-      "ci_notes": [],
-      "variant_of": "sharp-qsmrs",
-      "repro_only": true,
-      "preset": {
-        "variant": "qsmjl"
-      }
-    },
-    {
       "slug": "ismv-qsmrs.qsmjl",
       "name": "iSMV (QSM.rs) \u00b7 QSM.jl parity",
       "stage": "bfr",
