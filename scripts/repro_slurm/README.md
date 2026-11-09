@@ -121,10 +121,10 @@ export RUNS_PREFIX=runs-repro-v11-gpu N_SHARDS=4                           # gpu
 GPU=$(sbatch --parsable --export=ALL --dependency=afterok:$PREP --time=7-00:00:00 --mem=2G \
       scripts/repro_slurm/gpu_driver.sh $N)
 sbatch --export=ALL --array=0-$((N-1))%8 scripts/repro_slurm/intermediates.slurm   # viewer field maps
-# after both: rows already carry their stats; FRESH=1 drops the previous campaign's rows
+# after both: rows already carry their stats; FRESH_START=1 drops the previous campaign's rows
 sbatch --account=a_ai_collab --partition=general --time=08:00:00 --cpus-per-task=12 --mem=64G \
   --dependency=afterany:$CPU:$CPU2:$GPU --wrap \
-  "SKIP_STATS=1 FRESH=1 bash scripts/repro_slurm/harvest.sh 'results/runs-repro-v11*.json'"
+  "SKIP_STATS=1 FRESH_START=1 bash scripts/repro_slurm/harvest.sh 'results/runs-repro-v11*.json'"
 ```
 
 ## The matrix (before v11)
