@@ -83,9 +83,12 @@ names every live pipeline on that cohort's acquisitions (repro_eval.py drops met
 manifest), and the viewer derives every URL from pipeline id × acquisition — recon and sidecars per pipeline, a total field per
 field-mapping method, a local field per (field-mapping, bfr) pair, a magnitude per acquisition. So
 `--prune-repro` (repro.yml's evaluate job) rebuilds that exact name set, under the acquisitions
-scripts/datasets.json knows, and judges what falls outside it by the manifest, the way
-repro_eval.drop_retired does: a file naming a method web/algorithms.json no longer defines is
-RETIRED and deleted; one built only from live methods is merely UNHARVESTED — a GPU method whose
+scripts/datasets.json knows, and judges what falls outside it by the harmonization campaign
+(scripts/repro_campaign.yml: its methods and parity versions), the set of methods the matrix runs: a
+file naming a method outside the campaign is RETIRED and deleted — a method gone from QSM-CI, and
+equally one the matrix no longer runs (an original whose QSM.rs port stands for it, a dropped field
+map), whose earlier campaign's volumes would otherwise stay on the Hub; one built only from campaign
+methods is merely UNHARVESTED — a GPU method whose
 runs were published but never got ROI stats, a parked submission — and is kept, because it is the
 only copy of that output and becomes reachable the moment a stats pass runs. An acquisition
 directory the registry does not know is reported and left alone, and a pipeline list that explains
@@ -112,6 +115,7 @@ sys.path.insert(0, str(ROOT))
 from qsm_ci.stages import STAGES  # noqa: E402 — the stage graph, for produced-artifact lookups
 sys.path.insert(0, str(ROOT / "scripts"))
 from repro_format import group_of, payload_names  # noqa: E402 — the harmonization cohorts' payloads
+import repro_campaign  # noqa: E402 — the harmonization matrix's methods, for --prune-repro
 
 # Per-run volume kinds. Ground truth is handled separately (shared per phantom, see module doc).
 KINDS = ("recon", "error")
@@ -390,6 +394,14 @@ FLAT_COVERAGE_MIN = 0.5
 
 
 @lru_cache(maxsize=1)
+def campaign_slugs() -> frozenset:
+    """Method slugs the harmonization matrix runs: scripts/repro_campaign.yml's methods and parity
+    versions (repro_campaign.py). --prune-repro judges harmonization volumes by these."""
+    c = repro_campaign.load()
+    return frozenset({s for slugs in (c.get("methods") or {}).values() for s in slugs}
+                     | set(c.get("variants") or {}))
+
+
 def live_algo_slugs() -> frozenset:
     """Method slugs web/algorithms.json still defines. Empty when the manifest is absent, which makes
     the corroboration silently unavailable rather than wrongly claiming everything is retired."""
@@ -585,7 +597,7 @@ def repro_orphans(files, live: set, acqs, live_slugs) -> tuple[list, list, float
     acquisition should be a deliberate act, not a side effect of a registry edit.
 
     A judged file no live pipeline can name is RETIRED only if it names a method outside
-    `live_slugs` (the manifest) — the rule repro_eval.drop_retired applies to pipelines. Otherwise it
+    `live_slugs` (the campaign's methods, see campaign_slugs). Otherwise it
     is UNHARVESTED: every method in it is live, only the ROI stats/fits that would put it in its
     cohort's payload are missing (a GPU method run without a stats pass, a parked submission). Those
     are kept; they are the only copy. Methods are read off the name as `_`-separated slugs, which is
@@ -641,9 +653,9 @@ def _prune_repro(api, repo, results: Path, acq_groups: dict, dry_run: bool) -> i
         return 0
     acqs = frozenset(acq_groups)
     pipelines = sorted({p for ps in pipes_by_group.values() for p in ps})
-    slugs = live_algo_slugs()
+    slugs = campaign_slugs()
     if not slugs:
-        print("! prune-repro: web/algorithms.json names no methods — cannot tell retired from "
+        print("! prune-repro: scripts/repro_campaign.yml names no methods — cannot tell retired from "
               "unharvested; refusing.", file=sys.stderr)
         return 0
     if any("_" in s for s in slugs):
@@ -687,7 +699,7 @@ def _prune_repro(api, repo, results: Path, acq_groups: dict, dry_run: bool) -> i
     for f in orphans:
         by_pipe.setdefault(f.rsplit("/", 1)[1].rsplit("__", 1)[0].split("-cmp-")[0], []).append(f)
     print(f"  prune-repro: {len(orphans)} file(s) across {len(by_pipe)} retired pipeline/column(s) "
-          f"(each names a method the manifest no longer defines)")
+          f"(each names a method the harmonization campaign does not run)")
     for k in sorted(by_pipe)[:10]:
         print(f"      - {k}: {len(by_pipe[k])} file(s)")
     if len(by_pipe) > 10:
