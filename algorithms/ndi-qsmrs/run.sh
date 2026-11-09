@@ -11,6 +11,7 @@ if [ -f "$CFG" ]; then
   V=$(jq -r '.tau // empty' "$CFG"); [ -n "$V" ] && SET="$SET --tau $V"
   V=$(jq -r '.alpha // empty' "$CFG"); [ -n "$V" ] && SET="$SET --alpha $V"
   V=$(jq -r '.max_iter // empty' "$CFG"); [ -n "$V" ] && SET="$SET --max-iter $V"
+  V=$(jq -r '.weight_norm // empty' "$CFG"); [ -n "$V" ] && SET="$SET --weight-norm $V"   # global-max | mask-p999 (qsmxt after v11.0.0)
 fi
 # QSMxT after v10.0.0: NDI (FANSI ndi.m, astewartau/QSM.rs#222) converts the field to phase at the first echo time
 # and requires the magnitude as its data weight

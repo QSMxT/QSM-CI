@@ -30,6 +30,9 @@ parameters:
   - name: tol
     default: 1e-6
     description: tolerance
+  - name: rim
+    default: sti
+    description: "boundary-rim Laplacian values set to zero: sti (STI Suite's 20 % largest, the original's) or whole (the whole rim); a qsmxt after v11.0.0"
 
 # Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
 tuning:

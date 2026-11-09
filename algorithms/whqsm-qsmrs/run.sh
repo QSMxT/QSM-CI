@@ -13,6 +13,10 @@ if [ -f "$CFG" ]; then
   V=$(jq -r '.beta // empty' "$CFG"); [ -n "$V" ] && SET="$SET --beta $V"
   V=$(jq -r '.max_iter // empty' "$CFG"); [ -n "$V" ] && SET="$SET --max-iter $V"
   V=$(jq -r '.tol_update // empty' "$CFG"); [ -n "$V" ] && SET="$SET --tol-update $V"
+  # Data weight: flat (WH_nlTV.m's default, 1 over the whole volume), flat-in-mask (qsmxt after
+  # v11.0.0), max-normalised or in-vivo (these two read the magnitude).
+  V=$(jq -r '.weight // empty' "$CFG"); [ -n "$V" ] && SET="$SET --weight $V"
+  case "$V" in max-normalised|in-vivo) SET="$SET --magnitude $IN/magnitude.nii.gz";; esac
 fi
 # QSMxT after v10.0.0: WH-QSM (WH_nlTV.m, astewartau/QSM.rs#233) converts the field to phase at the
 # first echo time and needs the field strength and echo times for it; its default weight is

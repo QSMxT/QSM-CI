@@ -279,7 +279,8 @@ pairs:
     # (run 41315128824: KKI 20.88 %, r 0.979). So the pair checks the algorithm at 10 iterations,
     # where it is deterministic to rounding; the default 40 only measures the chaos.
     reference_set: { niter: 10 }
-    candidate_set: { max_iter: 10 }
+    # rim sti: STI's own rule, explicitly (iHARPERELLA's default; whole-rim zeroing is an option).
+    candidate_set: { max_iter: 10, rim: sti }
     qsmrs_paths: [src/bgremove/iharperella.rs, src/error.rs, src/fft.rs, src/grid.rs,
                   src/inversion/ilsqr.rs, src/kernels/, src/pipeline/bg_removal.rs,
                   src/pipeline/rules.rs, src/utils/padding.rs]
