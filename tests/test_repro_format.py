@@ -203,7 +203,10 @@ def test_committed_repro_payload_is_consistent(group):
         for c in rf.CLASSES:
             n = sum(1 for j, p in enumerate(pairs) if p["class"] == c and s[i * len(pairs) + j] == s[i * len(pairs) + j])
             assert n == idx["summary"][f"{c}_n_pairs"][i]
-    assert len(json.dumps(idx)) < 300_000          # the index stays small; the bulk is in the .bin files
+    # The index stays small; the bulk is in the .bin files. What remains scales with the pipeline
+    # count (summary, pipelines: ~900 in v11, ~640 in v10) and the planned pairs, plus the rejected
+    # fits; ~300 KB for v11 before compression on the wire.
+    assert len(json.dumps(idx)) < 450_000
 
 
 @pytest.mark.parametrize("group", list(rf.REPRO_GROUPS))
