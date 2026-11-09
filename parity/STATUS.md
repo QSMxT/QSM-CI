@@ -1,6 +1,6 @@
 # Port parity status
 
-Generated 2026-11-07 by `scripts/parity.py status` from `parity/results.json` and `parity/thresholds.yml`; do not edit by hand. How checks run, the two tracks, and what makes a check stale: [docs/parity.md](../docs/parity.md).
+Generated 2026-11-09 by `scripts/parity.py status` from `parity/results.json` and `parity/thresholds.yml`; do not edit by hand. How checks run, the two tracks, and what makes a check stale: [docs/parity.md](../docs/parity.md).
 
 ## Released: QSMxT v11.0.0
 
