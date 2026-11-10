@@ -355,7 +355,7 @@ pairs:
   # limits until then (tight where deterministic, baseline after, and anything questionably far
   # off is investigated, not baselined).
   toolbox-pipeline-medi-cornell:
-    reference: toolbox-pipeline-medi-cornell   # MEDI 2024.11.26 README.m chain; image unbuilt
+    reference: toolbox-pipeline-medi-cornell   # MEDI 2024.11.26 README.m chain; image v1, fidelity pass
     candidate: toolbox-pipeline-qsmrs
     enabled: false
     blocked_by: https://github.com/QSMxT/QSM-CI/issues/421

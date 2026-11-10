@@ -22,11 +22,17 @@ doi: 10.1016/j.neuroimage.2011.08.082
 citation: Liu et al., NeuroImage 2012
 code_url: http://pre.weill.cornell.edu/mri/pages/qsm.html
 license: See Cornell MEDI toolbox license
-# Not built yet: compile and verify on Bunya (BUILD.md, fidelity/matlab), then pin the digest.
-image: ghcr.io/astewartau/qsm-ci/medi-pipeline:unbuilt   # built and pushed on Bunya (BUILD.md)
+image: ghcr.io/astewartau/qsm-ci/medi-pipeline@sha256:de46335d78a05726405fe596c1f3e22347b654e9b5929cd3b5668c1c36c246c6   # v1, built and pushed on Bunya (BUILD.md)
 run: bash run.sh
-ci_skip: true   # until the image is built and verified
+ci_skip: true   # a reference for pipeline parity only (QSMxT/QSM-CI#421)
 parity_only: true
+fidelity:
+  date: 2026-11-10
+  image: sha256:de46335d78a05726405fe596c1f3e22347b654e9b5929cd3b5668c1c36c246c6
+  matlab: R2023b Update 5 (23.2.0.2459199); MATLAB Runtime R2023b Update 11 in the image
+  tolerance: identical   # χ and every intermediate, in vivo, 8 threads
+  result: pass
+  report: algorithms/toolbox-pipeline-medi-cornell/fidelity/REPORT.md
 matlab:
   entry: recon.m
   runtime: r2023b
