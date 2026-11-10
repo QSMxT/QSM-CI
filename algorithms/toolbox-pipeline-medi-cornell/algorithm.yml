@@ -1,0 +1,32 @@
+name: MEDI toolbox pipeline (MEDI toolbox)
+slug: toolbox-pipeline-medi-cornell
+algorithm: toolbox-pipeline
+variant: medi
+source: cornell
+stage: pipeline
+language: MATLAB
+family: pipeline
+learning: none
+engine: MEDI toolbox
+description: >
+  The Cornell MEDI toolbox 2024.11.26's own pipeline (README.m), from the echoes to χ:
+  Fit_ppm_complex, region-growing unwrapping, BET, PDF, and MEDI+0 (MEDI_L1 with lambda 1000,
+  lambda_CSF 100, MERIT and SMV 5 mm), with the scanner's centre frequency. The reference for
+  QSMxT's `medi-toolbox` pipeline (QSMxT/QSM-CI#421).
+authors:
+- name: Jing Liu
+- name: Tian Liu
+- name: Pascal Spincemaille
+- name: Yi Wang
+doi: 10.1016/j.neuroimage.2011.08.082
+citation: Liu et al., NeuroImage 2012
+code_url: http://pre.weill.cornell.edu/mri/pages/qsm.html
+license: See Cornell MEDI toolbox license
+# Not built yet: compile and verify on Bunya (BUILD.md, fidelity/matlab), then pin the digest.
+image: ghcr.io/astewartau/qsm-ci/matlab-medi-pipeline:unbuilt
+run: bash run.sh
+ci_skip: true   # until the image is built and verified
+parity_only: true
+matlab:
+  entry: recon.m
+  runtime: r2023b
