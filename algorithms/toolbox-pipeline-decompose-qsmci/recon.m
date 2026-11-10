@@ -98,6 +98,11 @@ function recon(inp, out)
             if isfinite(s), s0 = s; end
         end
         if ~(s0 > 0), continue; end
+        % A zero magnitude at any echo has no log, so stages 5.2 and 5.3 (fitted on the log) are
+        % undefined there and lsqlin refuses the infinite target. The paper says nothing; such a
+        % voxel is left at 0, as QSM.rs's fit leaves it (1,234 of 1.57 M mask voxels in the
+        % in-vivo case).
+        if any(m <= 0), continue; end
         % conj(y), as decompose-qsm's `squeeze(y_data(i,j,k,:))'` (the conjugate transpose).
         ydata = conj(m / s0 .* exp(-1i*(2/3) * chiv(v, :) * gamma * B0 .* TE));
         if sum(ydata) == 0, continue; end
