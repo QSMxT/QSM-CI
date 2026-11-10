@@ -17,12 +17,22 @@ if [ -f "$CFG" ]; then
   V=$(jq -r '.space // empty' "$CFG"); [ -n "$V" ] && SET="$SET --space $V"
   V=$(jq -r '.n_pad // empty' "$CFG"); [ -n "$V" ] && SET="$SET --n-pad $V"
 fi
+# erode_voxels: erode the mask by N voxels before background removal, as `qsmxt run
+# --bf-erode-voxels` does (the same 6-connected erosion); the field is left whole, and the local
+# field is 0 outside the eroded mask. 0 (default): the mask as given.
+MASK="$IN/mask.nii.gz"
+ERODE=0
+[ -f "$CFG" ] && ERODE=$(jq -r '.erode_voxels // 0' "$CFG")
+if [ "$ERODE" -gt 0 ]; then
+  MASK="$(mktemp -d)/mask_eroded.nii.gz"
+  qsmxt mask erode "$IN/mask.nii.gz" -o "$MASK" --iterations "$ERODE"
+fi
 # QSMxT after v10.0.0 ports MEDI's PDF.m (astewartau/QSM.rs#257): it weights the fit by
 # Fit_ppm_complex's noise map from every echo's magnitude, and needs the field strength and echo
 # times to put that map in the field's units. qsmxt v10.0.0 takes none of them.
 if qsmxt bgremove pdf --help 2>/dev/null | grep -q -- '--field-strength'; then
   FS=$(jq -r .B0 "$IN/params.json"); TES=$(jq -r '.TE | map(tostring) | join(" ")' "$IN/params.json")
-  exec qsmxt bgremove pdf "$IN/totalfield.nii.gz" -m "$IN/mask.nii.gz" -o "$OUT/localfield.nii.gz" \
+  exec qsmxt bgremove pdf "$IN/totalfield.nii.gz" -m "$MASK" -o "$OUT/localfield.nii.gz" \
     --b0-direction $B0 --field-strength "$FS" --echo-times $TES --magnitude "$IN/magnitude.nii.gz" $SET
 fi
-qsmxt bgremove pdf "$IN/totalfield.nii.gz" -m "$IN/mask.nii.gz" -o "$OUT/localfield.nii.gz" --b0-direction $B0 $SET
+qsmxt bgremove pdf "$IN/totalfield.nii.gz" -m "$MASK" -o "$OUT/localfield.nii.gz" --b0-direction $B0 $SET
