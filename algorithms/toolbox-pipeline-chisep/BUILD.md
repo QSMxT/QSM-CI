@@ -19,6 +19,8 @@ release that was current when the toolbox's v1.1.3 files were made (July 2025); 
 version.
 
 ## 2. Compile
+Needs the **Image Processing**, **Signal Processing** and **Optimization** toolboxes at compile time
+(the pcode's `imclose`…, `tukeywin`, and `r2star_nnls`'s `lsqnonlin`; `recon.m`'s pragma).
 ```bash
 matlab -batch "addpath('../../fidelity/matlab'); mex_bet2('medi/bet2')"; rm medi/bet2/runmex.m   # runmex with C++98 (FSL code)
 matlab -batch "addpath(genpath('chisep')); addpath('sti','medi','medi/bet2','mritools','nifti'); \
