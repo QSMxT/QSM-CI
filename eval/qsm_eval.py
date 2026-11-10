@@ -98,16 +98,19 @@ def correlation(a: np.ndarray, b: np.ndarray, mask: np.ndarray) -> float:
     return float(num / den) if den != 0.0 else 0.0
 
 
-def xsim(a: np.ndarray, b: np.ndarray, mask: np.ndarray) -> float:
+def xsim(a: np.ndarray, b: np.ndarray, mask: np.ndarray, demean: bool = True) -> float:
     """XSIM (SSIM optimized for QSM), 5x5x5 uniform windows. L=1, K1=0.01, K2=0.001.
 
     Vectorized with truncated boundary windows (out-of-bounds treated as absent), matching the
     per-voxel variable-count neighborhood of the QSM.rs implementation.
 
-    Both maps are demeaned within the mask first (and zero outside it), as `nrmse_challenge` does:
-    the χ reference is arbitrary, so an overall offset is not an error. Without this, a map
-    referenced elsewhere (MEDI's CSF = 0 against a truth whose CSF is +0.02 ppm) lost most of its
-    xSIM through the luminance term alone: 0.20 against 0.56 demeaned.
+    `demean` (the default, for χ and field maps): both maps are demeaned within the mask first (and
+    zero outside it), as `nrmse_challenge` does: the χ reference is arbitrary, so an overall offset
+    is not an error. Without this, a map referenced elsewhere (MEDI's CSF = 0 against a truth whose
+    CSF is +0.02 ppm) lost most of its xSIM through the luminance term alone: 0.20 against 0.56.
+    χ-separation sources are scored with demean=False: χ+ and χ− have a true zero (no source), so
+    an offset there is a false source, and demeaning a mostly-zero map puts most windows' means near
+    0, where the luminance term is unstable (χ+ xSIM fell ~20 % for methods that had not changed).
 
     NaN when there is nothing to score. A flat map does NOT land there: c2 keeps the window
     denominator positive, so a constant recon is scored normally and earns the ~0 it deserves.
@@ -115,9 +118,10 @@ def xsim(a: np.ndarray, b: np.ndarray, mask: np.ndarray) -> float:
     if _no_scoreable_voxels(a, b, mask):
         return math.nan
     c1, c2, k = 1e-4, 1e-6, 5
-    m = mask > 0
-    a = np.where(m, a - a[m].mean(), 0.0)
-    b = np.where(m, b - b[m].mean(), 0.0)
+    if demean:
+        m = mask > 0
+        a = np.where(m, a - a[m].mean(), 0.0)
+        b = np.where(m, b - b[m].mean(), 0.0)
 
     def wsum(x):  # in-bounds neighborhood sum over a 5x5x5 window
         return uniform_filter(x, size=k, mode="constant", cval=0.0) * (k ** 3)
@@ -398,7 +402,7 @@ def chisep_metrics(recon, truth, mask, seg=None, component="para", wm_rois=None,
     The *_slope/*_offset pairs are the region calibration (`region_calibration`): χ+ over the iron
     nuclei, χ− over the white-matter fibre bundles and over the nuclei, whose true |χ−| is 10–30 ppb
     rather than 0, so a method that drops χ− there, or adds iron to it, is caught."""
-    out = field_metrics(recon, truth, mask)
+    out = field_metrics(recon, truth, mask, kind="chisep")
     if seg is None:
         return out
     m = mask > 0
@@ -564,19 +568,21 @@ def chisep_joint_metrics(rec_para, rec_dia, gt_para, gt_dia, mask, seg=None) -> 
     return out
 
 
-def field_metrics(recon, truth, mask) -> dict:
+def field_metrics(recon, truth, mask, kind: str = "field") -> dict:
     """Metric subset appropriate for a field map (total or local), a scalar field in ppm.
 
     The region-specific chi metrics (tissue/blood/DGM/calcification) do not apply to field maps,
     so we score global agreement within the mask: demeaned & detrended NRMSE, correlation, XSIM.
+    `kind` "chisep" scores XSIM without demeaning (a χ-separation source has a true zero; see
+    `xsim`); "relaxation" (a generated R2′, in Hz) reports no XSIM: its constants assume a ppm
+    range, and it was designed and validated for χ, not relaxation rates.
     """
     nrmse, nrmse_dt = nrmse_challenge(recon, truth, mask)
     return {
         "nrmse": nrmse,
         "nrmse_detrend": nrmse_dt,
         "correlation": correlation(recon, truth, mask),
-        "xsim": xsim(recon, truth, mask),
-    }
+    } | ({} if kind == "relaxation" else {"xsim": xsim(recon, truth, mask, demean=kind != "chisep")})
 
 
 def challenge_metrics(recon, truth, mask, seg) -> dict:
@@ -762,7 +768,7 @@ def score_arrays(recon, truth, mask, kind: str = "chi", seg=None, component: str
         if seg is not None:
             regions = region_summary(recon, truth, seg, mask)
     elif kind in ("field", "relaxation"):  # same agreement set; relaxation = a generated R2′ (Hz)
-        metrics = field_metrics(recon, truth, mask)
+        metrics = field_metrics(recon, truth, mask, kind=kind)
     elif seg is not None:  # chi with segmentation -> full challenge suite
         metrics = challenge_metrics(recon, truth, mask, seg)
         regions = region_summary(recon, truth, seg, mask)

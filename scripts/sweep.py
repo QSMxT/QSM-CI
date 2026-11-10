@@ -220,8 +220,10 @@ def run_one(algo: dict, override: dict, src: dict, gt_dir: Path, work: Path) -> 
     except Exception as e:  # noqa: BLE001
         rec.update(status="DNF", error=str(e)[-400:])
     with _print_lock:
-        if rec.get("xsim") is None:
+        if rec.get("status") != "ok":
             x = "DNF"
+        elif rec.get("xsim") is None:  # an R2' generator: no xSIM for relaxation maps
+            x = f"nrmse={_f4(rec.get('nrmse'))}"
         elif chisep:
             x = f"xsim={rec['xsim']:.4f} (χ+={_f4(rec.get('para_xsim'))} χ−={_f4(rec.get('dia_xsim'))})"
         else:
@@ -280,7 +282,7 @@ def main() -> None:
             best, worst = rs[0], rs[-1]
             print(f"{slug:<14} best nrmse={best['nrmse']:.2f}% @ {best['tag']:<26} "
                   f"(range {best['nrmse']:.2f}–{worst['nrmse']:.2f}% over {len(rs)} pts; "
-                  f"xsim={_f4(best.get('xsim'))} corr={_f4(best.get('correlation'))})")
+                  f"corr={_f4(best.get('correlation'))})")
             continue
         rs.sort(key=lambda r: r["xsim"], reverse=True)
         best, worst = rs[0], rs[-1]

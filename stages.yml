@@ -80,8 +80,9 @@ scoring:
   # calc_streak, iron_leak. 'leak' terms measure cross-contamination into the wrong source.
   chisep: [nrmse, nrmse_detrend, correlation, xsim, nrmse_dgm, dgm_linearity, nrmse_blood, calc_leak,
            calc_moment_dev, calc_streak, iron_leak]
-  # r2prime from a generator, scored against the phantom's true R2′ (field agreement set).
-  relaxation: [nrmse, nrmse_detrend, correlation, xsim]
+  # r2prime from a generator, scored against the phantom's true R2′ (field agreement set without
+  # xsim: XSIM's constants assume a ppm range, and it was designed and validated for χ, not Hz).
+  relaxation: [nrmse, nrmse_detrend, correlation]
 
 # Evaluation modes.
 #   isolated  — each stage/span is fed the GROUND-TRUTH artifact(s) it consumes (mounted at run time

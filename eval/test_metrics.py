@@ -15,7 +15,9 @@ QSM.rs port), not from running the code:
                 |mu| ~ 1 and local variance v ~ 0.01 (both >> c1, c2) the luminance and contrast
                 terms are (2 mu_a mu_b)/(mu_a^2 + mu_b^2) and (2 cov)/(var_a + var_b):
                 b = 2a  -> (4/5) * (4/5) = 0.64;   b = a + 1  -> exactly 1 (an overall offset is
-                demeaned away), while an offset on part of the map still costs.
+                demeaned away), while an offset on part of the map still costs. χ-separation
+                sources use demean=False (a true zero: an offset is a false source), and R2′
+                (relaxation) reports no xsim.
   nrmse         100 * |(a - mean a) - (b - mean b)| / |b - mean b| within the mask, so an offset
                 costs nothing, 2b scores 100, -b scores 200 and an all-zero map scores 100 (the
                 do-nothing baseline); the detrended variant divides out any slope: 0 for 2b and -b,
@@ -120,6 +122,30 @@ def test_xsim_still_scores_an_offset_on_part_of_the_map():
     y = x.copy()
     y[: x.shape[0] // 2] += 1.0
     assert qe.xsim(x, y, _mask(x.shape)) < 0.95
+
+
+def test_xsim_demean_false_scores_an_overall_offset():
+    """χ-separation sources have a true zero, so they are scored without demeaning: a global
+    offset costs again, exactly as before demeaning (2a -> 0.64 needs no mean removal here)."""
+    x = _two_level()
+    mask = _mask(x.shape)
+    assert qe.xsim(x, x + 1.0, mask, demean=False) < 0.95
+    assert abs(qe.xsim(x, x, mask, demean=False) - 1.0) < 1e-6
+
+
+def test_score_arrays_xsim_per_kind():
+    """chi and field: demeaned xSIM (an offset is free). chisep: raw xSIM (an offset is a false
+    source). relaxation (R2′, Hz): no xSIM at all."""
+    x = _two_level()
+    mask = _mask(x.shape)
+    y = x + 1.0
+    for kind in ("chi", "field"):
+        assert abs(qe.score_arrays(y, x, mask, kind=kind)[0]["xsim"] - 1.0) < 1e-9
+    m = qe.score_arrays(y, x, mask, kind="chisep")[0]
+    assert m["xsim"] == pytest.approx(qe.xsim(y, x, mask, demean=False))
+    assert m["xsim"] < 0.95
+    m = qe.score_arrays(y, x, mask, kind="relaxation")[0]
+    assert "xsim" not in m and {"nrmse", "nrmse_detrend", "correlation"} <= m.keys()
 
 
 def test_xsim_ordering_prefers_small_noise_to_a_wrong_scale():
