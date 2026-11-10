@@ -33,6 +33,13 @@ function recon(inp, out)
 %
 % Intermediates (QSMCI_INTERMEDIATES), under the names QSMxT's candidate writes: mask (BET's),
 % totalfield (ppm), localfield (ppm, V-SHARP's), r2star (Hz), mask_vsharp, n_std.
+%
+% Toolbox functions the pcode (STI Suite, the χ-separation toolbox) calls, which mcc can't trace
+% into: name them so they are bundled. The `trace` profile of a licensed run reached imclose,
+% imdilate, imerode, padarray, strel and tukeywin; the rest are what chisep-ilsqr and chisep-medi
+% bundle for the same pcode (../../fidelity/matlab/README.md, `trace`). Keep toolbox_functions()
+% below in step.
+%#function hann hanning imclose imdilate imerode imopen medfilt3 padarray strel tukeywin
 
     p   = jsondecode(fileread(fullfile(inp, 'params.json')));
     cfg = struct('method', 'ilsqr');
@@ -171,10 +178,12 @@ function write_niigz(nii, f)
 end
 
 function tb = toolbox_functions()
-% No pcode here: mcc traces every call. These record where the MEDI functions resolved.
+% Where the toolbox functions resolved: the toolboxes' own, and the MATLAB toolbox functions their
+% pcode calls (the %#function pragma above).
     tb = {'tukey_windowing', 'Preprocessing4Phase', 'BET', 'bet2', 'use_arlo', 'r2star_arlo', ...
           'r2star_nnls', 'extract_CSF', 'ROMEO', 'V_SHARP', 'QSM_iLSQR', 'chi_sep_iLSQR', ...
-          'chi_sep_MEDI'};
+          'chi_sep_MEDI', 'hann', 'hanning', 'imclose', 'imdilate', 'imerode', 'imopen', ...
+          'medfilt3', 'padarray', 'strel', 'tukeywin'};
 end
 
 function idir = intermediates_dir(out)

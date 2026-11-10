@@ -6,7 +6,8 @@ FID_SOURCES="FID_CHISEP_TB FID_STI FID_MEDI FID_NIFTI FID_MRITOOLS"
 # The toolbox first, as in chisep-ilsqr: its utils/ shadow the NIfTI loaders.
 FID_MATLAB_PATH="+chisep sti medi medi/bet2 mritools nifti"
 FID_MCC_A="sti chisep medi mritools"   # pcode (STI, χ-sep) and the code pcode calls (MEDI, ROMEO.m)
-FID_WHICH="tukey_windowing Preprocessing4Phase BET bet2 use_arlo r2star_arlo r2star_nnls extract_CSF ROMEO V_SHARP QSM_iLSQR chi_sep_iLSQR chi_sep_MEDI MEDI_L1 load_untouch_nii save_untouch_nii make_nii save_nii"
+FID_WHICH="tukey_windowing Preprocessing4Phase BET bet2 use_arlo r2star_arlo r2star_nnls extract_CSF ROMEO V_SHARP QSM_iLSQR chi_sep_iLSQR chi_sep_MEDI MEDI_L1 load_untouch_nii save_untouch_nii make_nii save_nii
+           hann hanning imclose imdilate imerode imopen medfilt3 padarray strel tukeywin"
 FID_SBATCH="--mem=64G"
 FID_ENV="MRITOOLS_ROMEO=$FID_MRITOOLS/bin/romeo"
 
