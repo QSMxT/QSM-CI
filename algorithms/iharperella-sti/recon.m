@@ -10,6 +10,10 @@ function recon(inp, out)
 % are linear with a relative tolerance, so the ppm field is used directly. Defaults probed:
 % niter 40; padsize 0 (bitwise equal to [0 0 0]; STI_Templates.m lists [12 12 12]).
 %
+% Odd grid dimensions are padded to even (zeros, post) and cropped back: STI's iHARPERELLA leaves
+% the background in on odd grids (astewartau/QSM.rs#393). This is a fix QSM-CI adds; the original
+% has no such step. Even grids are unchanged.
+%
 % Bundled: Jimmy Shen NIfTI toolbox, STI Suite 3.0 Core_Functions_P (pcode), and the real Image
 % Processing Toolbox functions its pcode calls (compiled from licensed MATLAB; the Runtime includes
 % their runtime components). OS gunzip/gzip (no JVM). Optional <inp>/config.json overrides
@@ -43,7 +47,14 @@ function recon(inp, out)
     if any(double(cfg.padsize(:)))                                  % 0: the function's default
         args = [args, {'padsize', double(cfg.padsize(:)') .* [1 1 1]}];
     end
-    TissuePhase = double(iHARPERELLA(field, Mask, args{:}));
+    % STI Suite 3.0's iHARPERELLA does not remove the background on grids with an odd dimension
+    % (QSM-CI's sim, 164x205x205: r 0.10 with the true local field, gradients along the odd axes;
+    % astewartau/QSM.rs#393). Not part of the original: pad odd dims to even with zeros (post),
+    % as ilsqr-sti and star-sti do for STI's calcD2Matrix, and crop back after.
+    sz0 = size(field); po = mod(sz0, 2);
+    TissuePhase = double(iHARPERELLA(padarray(field, po, 0, 'post'), ...
+                                     padarray(Mask, po, 0, 'post'), args{:}));
+    TissuePhase = TissuePhase(1:sz0(1), 1:sz0(2), 1:sz0(3));
     local = TissuePhase .* Mask;                                    % local field, ppm
 
     idir = intermediates_dir(out);
