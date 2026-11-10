@@ -3,7 +3,9 @@ description: >-
   Install apptainer and point podman at runc on a GitHub-hosted ubuntu runner, so the
   docker · podman · apptainer runner matrix works. No inputs: both ci.yml call sites — the
   interface tests and the container-runner smoke — exercise all three runners, so both need both
-  of these. (docker and podman themselves are preinstalled on ubuntu-latest.)
+  of these. (docker and podman themselves are preinstalled on ubuntu-latest.) Callers run on
+  ubuntu-24.04: apptainer's .deb depends on libfuse3-3, which ubuntu-26.04 (ubuntu-latest from
+  2026-11) no longer has.
 
 runs:
   using: composite
