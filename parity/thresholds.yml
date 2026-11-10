@@ -411,7 +411,20 @@ pairs:
       # Coil-combined input on both sides (QSMART's coil_comb/POEM is not run): a known difference.
       # Known, see the reference's ci_notes: the per-echo Laplacian constants (total field, R_0) and
       # the N4 thread spread of the mask.
-      prisma-bridge-run1: {}
+      prisma-bridge-run1:
+        # Limits from the reference's own spread, not from a candidate run (decision 18,
+        # 2026-11-10, QSM-CI#421). Reference v1 (ANTs N4 at 32+ threads) against v2 (N4 at 1
+        # thread), everything else identical: mask Dice 0.9990 (3,131 voxels), χ NRMSE 15.07 %,
+        # r 0.9885. The difference is rounding inside N4, which BET turns into a different mask
+        # edge, and every later stage follows the mask. χ NRMSE inside the common mask eroded by
+        # 3 / 6 voxels: 9.05 % / 6.02 %. QSMxT main 55d3f3f+#531 (qsm-core 1d5b438) against v2:
+        # mask Dice 0.9992 (2,616 voxels), χ 14.56 % (9.19 % / 6.56 % eroded), r 0.9892, within
+        # that spread. Margins as above.
+        mask: { dice_min: 0.989 }
+        chimap: { nrmse_max: 17.1, correlation_min: 0.978 }
+        measured:
+          spread: "local podman runs 2026-11-10: reference v1 sha256:c9ae67fa… vs v2 sha256:6c645318…, χ 15.07 %, Dice 0.9990 (limits)"
+          main: "local run 2026-11-10: QSMxT 55d3f3f + #531 vs reference v2, χ 14.56 %, Dice 0.9992"
   fit-ppm-complex:
     reference: fit-ppm-complex-cornell   # MEDI 2024.11.26 Fit_ppm_complex + unwrapPhase (#322)
     candidate: fit-ppm-complex-qsmrs     # ci_skip for scoring: v10.0.0 has no complex fit

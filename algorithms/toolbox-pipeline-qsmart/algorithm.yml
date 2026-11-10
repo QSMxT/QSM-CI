@@ -22,6 +22,11 @@ ci_notes:
   threads differ from those from 32 or more by 2,261 to 3,555 voxels (Dice about 0.999). Mask
   agreement with another N4 is judged against that spread.
 - >
+  The whole pipeline's χ is sensitive to the same rounding: the reference with N4 at 32+ threads
+  (v1) against 1 thread (v2) differs by 15.1 % NRMSE in χ (r 0.989). That falls to 9.1 % and 6.0 %
+  inside the mask eroded by 3 and 6 voxels. The pipeline-parity limits for χ are set from this
+  spread.
+- >
   QSMART's lapunwrap.m divides by (k2 + eps), so the DC bin is FFT rounding divided by eps. This
   adds an arbitrary constant to each echo's unwrapped phase (in vivo: -0.0018 to -0.0090 rad). An
   implementation that sets DC to 0 differs by those constants in the total field (0.24 % NRMSE in
