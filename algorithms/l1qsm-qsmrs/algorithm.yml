@@ -25,16 +25,13 @@ image: ghcr.io/astewartau/qsm-ci/qsmxt@sha256:5a353a43b0a6ceeb2b8ec57422a56770d5
 run: bash run.sh
 parameters:
   - name: alpha1
-    default: 2e-4
-    tuned:
-      sim: 8e-4
-      invivo: 0.02
+    default: 5e-3
     description: gradient L1 (TV) penalty
   - name: mu1
     default: 2e-2
     description: gradient-consistency ADMM weight
   - name: lambda
-    default: 1.0
+    default: 0.8
     description: L1 fidelity strength (<1 rejects more inconsistent voxels)
   - name: max_iter
     default: 50
@@ -43,8 +40,8 @@ parameters:
     default: 1.0
     description: convergence threshold on the solution update (percent)
 
-# Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
+# Parameter-tuning provenance (from the Bunya sweep). status: stale = re-sweep needed.
 tuning:
   date: 2026-08
-  status: tuned
-  note: "Swept alpha1 on sim+invivo (2026-08, 3 rounds). Tuned both: sim 8e-4, invivo 0.02 (+0.31)."
+  status: stale
+  note: "Tuned on QSMxT v10 (QSM.rs v0.39); v11 (QSM.rs v0.41) changed it: L1-QSM: radians inside, magnitude weight (QSM.rs#237), nlL1TV.m's defaults (#293), FANSI's discrete kernel (#414); alpha1 default 2e-4 -> 5e-3, lambda 1.0 -> 0.8. Tuned values removed 2026-11-10; re-sweep. Was: Swept alpha1 on sim+invivo (2026-08, 3 rounds). Tuned both: sim 8e-4, invivo 0.02 (+0.31)."

@@ -20,14 +20,10 @@ image: ghcr.io/astewartau/qsm-ci/qsmxt@sha256:5a353a43b0a6ceeb2b8ec57422a56770d5
 run: bash run.sh
 parameters:
   - name: radius
-    default: 6.0
-    tuned:
-      sim: 12.0
+    default: 3.0
     description: SMV kernel radius (mm)
   - name: tik_reg
     default: 1e-4
-    tuned:
-      sim: 1e-4
     description: Tikhonov regularization
   - name: tol
     default: 1e-6
@@ -36,8 +32,8 @@ parameters:
     default: 200
     description: maximum solver iterations
 
-# Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
+# Parameter-tuning provenance (from the Bunya sweep). status: stale = re-sweep needed.
 tuning:
   date: 2026-08
-  status: tuned
-  note: "Swept radius/tik_reg on sim (bfr; sim-only). Tuned sim: radius 12, tik_reg 1e-4."
+  status: stale
+  note: "Tuned on QSMxT v10 (QSM.rs v0.39); v11 (QSM.rs v0.41) changed it: RESHARP: resharp.m's cgs solve, kernel and padding (QSM.rs#412); radius default 6 -> 3 mm (#293). Tuned values removed 2026-11-10; re-sweep. Was: Swept radius/tik_reg on sim (bfr; sim-only). Tuned sim: radius 12, tik_reg 1e-4."

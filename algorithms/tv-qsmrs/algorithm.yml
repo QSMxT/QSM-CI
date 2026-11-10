@@ -26,10 +26,7 @@ image: ghcr.io/astewartau/qsm-ci/qsmxt@sha256:5a353a43b0a6ceeb2b8ec57422a56770d5
 run: bash run.sh
 parameters:
   - name: lambda
-    default: 2e-4
-    tuned:
-      sim: 3e-5
-      invivo: 3e-4
+    default: 1e-3
     description: TV regularization
   - name: rho
     default: 2e-2
@@ -38,8 +35,8 @@ parameters:
     default: 250
     description: iterations
 
-# Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
+# Parameter-tuning provenance (from the Bunya sweep). status: stale = re-sweep needed.
 tuning:
   date: 2026-08
-  status: tuned
-  note: "Swept lambda on sim+invivo (2026-08). Tuned both: sim 3e-5, invivo 3e-4."
+  status: stale
+  note: "Tuned on QSMxT v10 (QSM.rs v0.39); v11 (QSM.rs v0.41) changed it: TV: QSM.jl's defaults and start from the field gradient (QSM.rs#225; lambda default 2e-4 -> 1e-3), FFT padding and half-spectrum kernel (#334/#335). Tuned values removed 2026-11-10; re-sweep. Was: Swept lambda on sim+invivo (2026-08). Tuned both: sim 3e-5, invivo 3e-4."

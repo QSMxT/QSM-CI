@@ -23,16 +23,13 @@ run: bash run.sh
 parameters:
   - name: lambda
     default: 1e-3
-    tuned:
-      sim: 3e-3
-      invivo: 3e-3
     description: regularization
   - name: max_iter
     default: 250
     description: iterations
 
-# Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
+# Parameter-tuning provenance (from the Bunya sweep). status: stale = re-sweep needed.
 tuning:
   date: 2026-08
-  status: tuned
-  note: "Swept lambda on sim+invivo (2026-08). Tuned both: 3e-3 (in-vivo xSIM low in absolute terms)."
+  status: stale
+  note: "Tuned on QSMxT v10 (QSM.rs v0.39); v11 (QSM.rs v0.41) changed it: NLTV: QSM.jl's nonlinear data term in radians (QSM.rs#230), QSM.jl's FFT padding and half-spectrum kernel (#334/#335). Tuned values removed 2026-11-10; re-sweep. Was: Swept lambda on sim+invivo (2026-08). Tuned both: 3e-3 (in-vivo xSIM low in absolute terms)."

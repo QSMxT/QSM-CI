@@ -533,6 +533,9 @@ jobs:
             # Drop composed rows that run a method off its trained field strength (`field_strength:`,
             # e.g. R2PRIMEnet-7T on a 3 T phantom): no longer planned, so nothing would replace them.
             python3 scripts/prune_inapplicable.py results/index.json
+            # Drop tuned rows whose tuned value algorithm.yml no longer declares (a removed or changed
+            # tuning): nothing would replace them, and they would show as a stale "tuned" variant.
+            python3 scripts/prune_stale_tuned.py
             # Date and version any row scored before RunsFile.stamp recorded them (idempotent: a no-op
             # once every row has them). Done here, on the latest main, so it never conflicts with
             # another run's results commit. Best-effort: a gh/git hiccup must not block the publish.
@@ -557,6 +560,7 @@ jobs:
           printf '%s' "$TASKS" > /tmp/tasks.json
           printf '%s' "${SKIPPED_MANUAL:-[]}" > /tmp/skipped-manual.json
           python3 scripts/prune_inapplicable.py results/index.json
+          python3 scripts/prune_stale_tuned.py
           python3 scripts/score_state.py --state results/scoring-state.json --sha "$SHA" \
                   --tasks /tmp/tasks.json --done-dir . --skipped-manual /tmp/skipped-manual.json
       - if: ${{ github.event.inputs.dry_run == 'true' }}
