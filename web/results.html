@@ -837,7 +837,6 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
               <th class="px-4 py-3 text-right font-medium"><span class="has-tip" data-tip="Demeaned normalised RMS error of the generated R2′ vs the true R2′ (%). Lower is better.">NRMSE</span></th>
               <th class="px-4 py-3 text-right font-medium"><span class="has-tip" data-tip="NRMSE after correcting a global linear scale, fair to a substitute that is right up to scale. Lower is better.">Detrended</span></th>
               <th class="px-4 py-3 text-right font-medium"><span class="has-tip" data-tip="Pearson correlation with the true R2′ within the mask. Higher is better.">Corr.</span></th>
-              <th class="px-4 py-3 text-right font-medium"><span class="has-tip" data-tip="Structural similarity with the true R2′. Higher is better.">xSIM</span></th>
               <th class="px-4 py-3 text-right font-medium">Runtime</th>
             </tr>
           </thead>
@@ -852,7 +851,6 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
                 <td class="px-4 py-3 text-right tabular-nums text-gray-600 group-hover:bg-emerald-50/40" x-text="(r.metrics||{}).nrmse!=null ? (r.metrics.nrmse).toFixed(1)+'%' : ', '"></td>
                 <td class="px-4 py-3 text-right tabular-nums text-gray-600 group-hover:bg-emerald-50/40" x-text="(r.metrics||{}).nrmse_detrend!=null ? (r.metrics.nrmse_detrend).toFixed(1)+'%' : ', '"></td>
                 <td class="px-4 py-3 text-right tabular-nums text-gray-600 group-hover:bg-emerald-50/40" x-text="(r.metrics||{}).correlation!=null ? (r.metrics.correlation).toFixed(3) : ', '"></td>
-                <td class="px-4 py-3 text-right tabular-nums text-gray-600 group-hover:bg-emerald-50/40" x-text="(r.metrics||{}).xsim!=null ? (r.metrics.xsim).toFixed(3) : ', '"></td>
                 <td class="px-4 py-3 text-right tabular-nums text-gray-600 group-hover:bg-emerald-50/40" x-text="r.runtime_s!=null ? fmt(r.runtime_s,'runtime_s') : ', '"></td>
               </tr>
             </template>

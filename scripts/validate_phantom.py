@@ -53,8 +53,8 @@ def null_model(chi, r2p, mask, gt_pos, gt_neg, dr_values):
         dn, dn_dt = nrmse_challenge(negmag, gt_neg, mask)
         rows.append({
             "dr": dr,
-            "para_xsim": xsim(pos, gt_pos, mask),
-            "dia_xsim": xsim(negmag, gt_neg, mask),
+            "para_xsim": xsim(pos, gt_pos, mask, demean=False),
+            "dia_xsim": xsim(negmag, gt_neg, mask, demean=False),
             "para_nrmse": pn, "dia_nrmse": dn,
             "para_nrmse_detrend": pn_dt, "dia_nrmse_detrend": dn_dt,
         })

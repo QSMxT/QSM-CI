@@ -132,15 +132,17 @@ def test_voxel_size_reads_nifti2_headers(tmp_path):
 
 @pytest.mark.parametrize("artifact", sorted(ARTIFACT_KIND))
 def test_score_uses_the_metric_set_of_the_artifact_kind(tmp_path, artifact):
-    """r2prime (relaxation) gets the field set, not χ's; every kind reports coverage; the no-seg χ
-    set matches what CI publishes (nrmse/hfen included, not just correlation+xsim)."""
+    """r2prime (relaxation) gets the field set without xsim, not χ's; every kind reports coverage;
+    the no-seg χ set matches what CI publishes (nrmse/hfen included, not just correlation+xsim)."""
     truth = _nii(tmp_path / "truth.nii.gz", seed=1)
     mask = _nii(tmp_path / "mask.nii.gz", value=1.0)
     metrics = runner._score(Path(truth), artifact, Path(truth), Path(mask), None)
     kind = ARTIFACT_KIND[artifact]
     assert metrics["coverage"] == 1.0
-    if kind in ("field", "relaxation"):
+    if kind == "field":
         assert set(metrics) == {"nrmse", "nrmse_detrend", "correlation", "xsim", "coverage"}
+    elif kind == "relaxation":
+        assert set(metrics) == {"nrmse", "nrmse_detrend", "correlation", "coverage"}
     elif kind == "chi":
         assert {"nrmse", "nrmse_detrend", "hfen", "correlation", "xsim"} <= set(metrics)
         assert "nrmse_dgm" not in metrics  # region metrics need --seg

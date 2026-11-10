@@ -13,9 +13,11 @@ The metrics are a 1:1 port of the QSM.rs reference implementation
 `xsim` (5×5×5 XSIM), `dgm_linearity`, `dilate_mask_3d`, and `calcification_metrics`. Because it is a
 *second* implementation, it must not drift:
 
-- `xsim` scores both maps demeaned within the mask, as `nrmse_challenge` does (the χ reference is
-  arbitrary, so an overall offset is not an error). QSM.rs's `tests/common/mod.rs` must do the same
-  for the cross-check below to hold.
+- `xsim` scores χ and field maps demeaned within the mask, as `nrmse_challenge` does (the χ
+  reference is arbitrary, so an overall offset is not an error). χ-separation sources are scored
+  without demeaning (`demean=False`: χ+ and χ− have a true zero, so an offset is a false source),
+  and relaxation maps (R2′, Hz) report no xsim. QSM.rs's `tests/common/mod.rs` must match for the
+  cross-check below to hold.
 
 - `test_metrics.py` pins the invariants.
 - `qsm_eval.py --selfcheck` runs quick sanity checks.
@@ -46,6 +48,7 @@ python qsm_eval.py --recon out/localfield.nii.gz --kind field \
 - `--kind chi` with `--seg` → full suite (region NRMSE, DGM linearity, calcification, streak,
   correlation, XSIM). Without `--seg` (e.g. in-vivo) → correlation + XSIM only.
 - `--kind field` → demeaned/detrended NRMSE, correlation, XSIM (region metrics don't apply to fields).
+- `--kind relaxation` (a generated R2′) → the field set without XSIM.
 
 Usually you don't call this directly — `scripts/pipeline.py` drives it per produced artifact.
 
