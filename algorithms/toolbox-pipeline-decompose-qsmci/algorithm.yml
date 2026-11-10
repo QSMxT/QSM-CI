@@ -1,0 +1,30 @@
+name: DECOMPOSE pipeline (paper)
+slug: toolbox-pipeline-decompose-qsmci
+algorithm: toolbox-pipeline
+variant: decompose
+source: qsmci
+stage: pipeline
+language: MATLAB
+family: pipeline
+learning: none
+engine: STI Suite / MATLAB Optimization Toolbox
+description: >
+  DECOMPOSE-QSM as its paper describes it (Chen et al. 2021): FSL BET on the first echo, STI Suite
+  Laplacian unwrapping, V-SHARP and STAR-QSM per echo with whole-brain mean referencing, then the
+  three-stage fit with lsqlin (sum-to-one amplitudes, R2*0) and lsqnonlin (χ±) on per-voxel
+  S(0) = 1 data. QSM-CI's MATLAB of the paper (it ships no code); the reference for QSMxT's
+  `decompose` pipeline (QSMxT/QSM-CI#421).
+authors:
+- name: Jingjia Chen
+- name: Chunlei Liu
+doi: 10.1016/j.neuroimage.2021.118477
+citation: Chen et al., NeuroImage 2021
+code_url: https://github.com/QSMxT/QSM-CI
+license: GPL-3.0
+image: localhost/qsm-ci/decompose-pipeline:unbuilt   # contains FSL's bet2 code: local only
+run: bash run.sh
+ci_skip: true
+parity_only: true
+matlab:
+  entry: recon.m
+  runtime: r2023b

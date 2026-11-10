@@ -26,12 +26,11 @@ matlab -batch "addpath(genpath('chisep')); addpath('sti','medi','medi/bet2','mri
 ```
 On Bunya: `fidelity/matlab/submit.sh toolbox-pipeline-chisep build`.
 
-## 3. Bake the image and push
-The [`Dockerfile`](Dockerfile) adds mritools 4.7.1's `romeo` binary at `/opt/mritools/bin/romeo`
-(`MRITOOLS_ROMEO`, which recon.m passes to ROMEO.m as its `command`).
+## 3. Bake the image (local only)
+MEDI's `bet2` mex is FSL's bet2 code, whose licence does not clearly allow publishing it
+(`../_bet2/README.md`), so the image is built where it runs and never pushed:
 ```bash
-podman build -t ghcr.io/astewartau/qsm-ci/chisep-pipeline:v1 .
-podman push  ghcr.io/astewartau/qsm-ci/chisep-pipeline:v1
+podman build -t localhost/qsm-ci/chisep-pipeline:v1 .   # or apptainer build from it on Bunya
 ```
-Pin `image:` by digest and run the fidelity check. The licensed runs need `FID_MRITOOLS` (the
-unpacked release) so that they call the same `romeo`.
+Run the fidelity check ([`fidelity/REPORT.md`](fidelity/REPORT.md)) and the parity pair on that
+host.

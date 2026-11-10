@@ -23,7 +23,7 @@ citation: Shin et al., NeuroImage 2021
 code_url: https://github.com/SNU-LIST/chi-separation
 license: See the χ-separation toolbox license
 # Not built yet: compile and verify on Bunya (BUILD.md, fidelity/matlab), then pin the digest.
-image: ghcr.io/astewartau/qsm-ci/chisep-pipeline:unbuilt
+image: localhost/qsm-ci/chisep-pipeline:unbuilt   # contains FSL's bet2 code (MEDI's mex): local only
 run: bash run.sh
 ci_skip: true
 parity_only: true

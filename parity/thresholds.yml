@@ -389,6 +389,16 @@ pairs:
     qsmxt_paths: [crates/qsmxt-engine/src/]
     datasets:
       meso-3t: {}
+  toolbox-pipeline-decompose:
+    reference: toolbox-pipeline-decompose-qsmci   # the paper, in QSM-CI's MATLAB; image unbuilt
+    candidate: toolbox-pipeline-qsmrs
+    enabled: false
+    blocked_by: https://github.com/QSMxT/QSM-CI/issues/421
+    candidate_set: { pipeline: decompose }
+    qsmrs_paths: [src/pipeline/, src/separation/decompose.rs]
+    qsmxt_paths: [crates/qsmxt-engine/src/]
+    datasets:
+      meso-3t: {}   # 3 T, the field strength DECOMPOSE was designed for
   fit-ppm-complex:
     reference: fit-ppm-complex-cornell   # MEDI 2024.11.26 Fit_ppm_complex + unwrapPhase (#322)
     candidate: fit-ppm-complex-qsmrs     # ci_skip for scoring: v10.0.0 has no complex fit
