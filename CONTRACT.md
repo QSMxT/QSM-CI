@@ -151,6 +151,15 @@ with `optional_inputs: [r2star]` and fits its own when the file is absent.
 | `B0` | tesla | main field strength |
 | `B0_dir` | unit vector | B0 direction in image coordinates |
 | `voxel_size` | mm | voxel dimensions (x, y, z) |
+| `ImagingFrequency` | MHz | optional: the scanner's centre frequency, as in the BIDS/DICOM sidecar |
+| `Manufacturer` | — | optional: the vendor, as in the BIDS sidecar (`Siemens`, `Philips`, `GE`) |
+
+`ImagingFrequency` and `Manufacturer` are there only when the dataset was packed from a scanner's
+sidecars (they are never made up for a simulated phantom), so a method must run without them. A
+toolbox pipeline reads them: several toolboxes take the centre frequency from `ImagingFrequency`
+rather than the nominal field, and the χ-separation toolbox's k-space window depends on the vendor.
+An in vivo dataset may also carry `B0_nominal`, the sidecar's `MagneticFieldStrength`, when its `B0`
+was computed from the centre frequency (`ImagingFrequency` / γ).
 
 A χ-separation phantom's `params.json` may also carry `chisep_dr_hz_per_ppm`, the paramagnetic
 relaxivity Dr+ (Hz/ppm) the phantom imposes (R2′ = Dr+·|χ+| + Dr−·|χ−|). It documents the phantom;
@@ -185,6 +194,8 @@ them directly without `jq`:
 | `QSMCI_TE0` | first echo | `0.004` |
 | `QSMCI_B0_DIR` | `params.json` `B0_dir` | `0 0 1` |
 | `QSMCI_VOXEL_SIZE` | `params.json` `voxel_size` (mm) | `1 1 1` |
+| `QSMCI_IMAGING_FREQUENCY` | `params.json` `ImagingFrequency` (MHz), when present | `123.243444` |
+| `QSMCI_MANUFACTURER` | `params.json` `Manufacturer`, when present | `Siemens` |
 | `QSMCI_SET_<NAME>` | each `--set NAME=VALUE` override | `QSMCI_SET_THRESHOLD=0.2` |
 
 ```bash

@@ -101,6 +101,12 @@ def params_from_sidecars(anat: Path) -> dict:
         "B0_dir": list(s0.get("B0_dir", [0, 0, 1])),
         "voxel_size": [float(v) for v in vox],
     }
+    # A scanner's sidecar fields a toolbox pipeline reads (CONTRACT.md, params.json): carried
+    # through when the source sidecar has them. qsm-forward's phantoms have neither, and none is
+    # made up for them.
+    for key in ("ImagingFrequency", "Manufacturer"):
+        if s0.get(key) is not None:
+            params[key] = s0[key]
     # Optional matched spin-echo acquisition (magnitude decays with R2, not R2*).
     se = sorted(glob.glob(str(anat / "*_MESE.json")), key=echo_key)
     if se:

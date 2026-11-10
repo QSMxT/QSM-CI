@@ -166,6 +166,10 @@ def pack_acquisition(acq_dir: Path, subject: str, protocol: str, run: str, out_r
         "voxel_size": [round(float(v), 4) for v in nib.affines.voxel_sizes(affine)],
         "B0_nominal": float(meta["MagneticFieldStrength"]),
         "f0_MHz": f0,
+        # The sidecar's own fields, under their BIDS names (CONTRACT.md, params.json): a toolbox
+        # pipeline takes its centre frequency and vendor conventions from them.
+        "ImagingFrequency": f0,
+        "Manufacturer": vendor,
         "TR": round(float(meta["RepetitionTime"]), 6),
         "flip_angle": meta["FlipAngle"],
         "subject": subject,

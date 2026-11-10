@@ -204,6 +204,11 @@ def _params_dict(args, stage: str) -> dict:
             "B0_dir": [float(x) for x in b0_dir], "voxel_size": [float(v) for v in voxel]}
 
 
+# Optional sidecar fields params.json carries under the same BIDS names (CONTRACT.md): the centre
+# frequency (MHz) and the vendor, which toolbox pipelines read.
+SIDECAR_PASSTHROUGH = ("ImagingFrequency", "Manufacturer")
+
+
 def _params_summary(params: dict, stage: str) -> str:
     """One-line echo of the params actually used by a stage. Field-mapping consumes TE + B0;
     BFR/dipole work in ppm and use only B0 direction + voxel size, so don't imply otherwise."""
@@ -303,4 +308,5 @@ def _sidecar_to_params(path: Path, obj: dict, args, stage: str) -> dict:
         raise SystemExit(f"{path} carries no EchoTime, which the {stage} stage needs — "
                          "pass --te SEC [SEC ...] as well, or point --params at a params.json.")
     return {"TE": [float(t) for t in te], "B0": float(b0),
-            "B0_dir": [float(x) for x in b0_dir], "voxel_size": [float(v) for v in voxel]}
+            "B0_dir": [float(x) for x in b0_dir], "voxel_size": [float(v) for v in voxel],
+            **{k: obj[k] for k in SIDECAR_PASSTHROUGH if obj.get(k) is not None}}
