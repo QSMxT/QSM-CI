@@ -35,8 +35,8 @@ Processing Toolbox (35010). The harness does this compile as a Slurm job
 
 ## 3. Bake the image and push
 ```bash
-podman build -t ghcr.io/astewartau/qsm-ci/matlab-sti-iharperella:v2 .   # needs ./recon from §2
-podman push  ghcr.io/astewartau/qsm-ci/matlab-sti-iharperella:v2
+podman build -t ghcr.io/astewartau/qsm-ci/matlab-sti-iharperella:v3 .   # needs ./recon from §2
+podman push  ghcr.io/astewartau/qsm-ci/matlab-sti-iharperella:v3
 ```
 The package is public (its `v1` was QSM-CI's earlier build, removed in #137 as broken), pin `image:` in `algorithm.yml` by the pushed digest, and rerun the
 fidelity check ([`fidelity/REPORT.md`](fidelity/REPORT.md)). The [`Dockerfile`](Dockerfile) is the
@@ -49,7 +49,8 @@ QSM-CI's sim (164×205×205) its output correlates 0.10 with the true local fiel
 along the two odd axes; cropped to 164×204×204 it gives 0.86, as QSM.rs's port does on the full
 grid (astewartau/QSM.rs#393). `recon.m` therefore pads odd dimensions to even with zeros (`post`)
 before the call and crops back after, as `ilsqr-sti` and `star-sti` do. The original has no such
-step; even grids are unchanged. The site shows this as a `ci_notes` entry.
+step; even grids are unchanged. With it (image `v3`) the sim output correlates 0.864 with the true
+local field (NRMSE 50.9 %; QSM.rs 0.865). The site shows this as a `ci_notes` entry.
 
 ## Input, defaults and units
 STI Suite's help text and `STI_Templates.m` call `iHARPERELLA` on the "raw phase", but probed in
@@ -64,4 +65,5 @@ Defaults are the function's: `niter` 40, `padsize` 0 (probed: bitwise equal to `
 tolerance, so `recon.m` gives it the ppm field directly; `localfield` is ppm.
 
 Images: `v1` (an earlier build on the raw phase, removed in #137); `v2` (R2023b, the real
-toolboxes, the total field; see `fidelity:` in `algorithm.yml`).
+toolboxes, the total field); `v3` (v2 with the odd-grid padding; see `fidelity:` in
+`algorithm.yml`).
