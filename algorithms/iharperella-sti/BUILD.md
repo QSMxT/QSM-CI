@@ -43,6 +43,14 @@ fidelity check ([`fidelity/REPORT.md`](fidelity/REPORT.md)). The [`Dockerfile`](
 R2023b Runtime base (pinned by digest) plus `recon`; it sets `LD_LIBRARY_PATH`, which the r2023b
 base doesn't. Never overwrite a tag.
 
+## Odd grid dimensions (a fix QSM-CI adds)
+STI Suite 3.0's `iHARPERELLA` does not remove the background on grids with an odd dimension. On
+QSM-CI's sim (164×205×205) its output correlates 0.10 with the true local field, with gradients
+along the two odd axes; cropped to 164×204×204 it gives 0.86, as QSM.rs's port does on the full
+grid (astewartau/QSM.rs#393). `recon.m` therefore pads odd dimensions to even with zeros (`post`)
+before the call and crops back after, as `ilsqr-sti` and `star-sti` do. The original has no such
+step; even grids are unchanged. The site shows this as a `ci_notes` entry.
+
 ## Input, defaults and units
 STI Suite's help text and `STI_Templates.m` call `iHARPERELLA` on the "raw phase", but probed in
 licensed MATLAB R2023b, STI Suite 3.0's `iHARPERELLA` does not unwrap: it takes the spectral

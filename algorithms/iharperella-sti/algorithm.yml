@@ -13,6 +13,13 @@ description: >
   brain is kept, its boundary rim cleaned, and the Laplacian inverted over the whole field of view by
   LSQR. Run on the unwrapped total field (STI Suite 3.0's iHARPERELLA does not unwrap), with its own
   defaults, compiled from MATLAB and run on the license-free MATLAB Runtime.
+ci_notes:
+- >
+  Includes a fix that is not in STI Suite: grids with an odd dimension are padded to even with
+  zeros before iHARPERELLA and cropped back after. On odd grids, such as the in-silico head
+  (164x205x205), STI Suite 3.0's iHARPERELLA leaves the background field in along the odd axes
+  (correlation 0.10 with the true local field, against 0.86 when cropped to even). Even grids
+  are unchanged.
 authors:
 - name: Wei Li
 - name: Alexandru V. Avram
