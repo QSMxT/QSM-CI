@@ -366,7 +366,7 @@ pairs:
       sim: {}                  # qsm-forward: no ImagingFrequency, so both sides use γ·B0
       prisma-bridge-run1: {}   # Siemens Prisma, ImagingFrequency from the exam card (repack first)
   toolbox-pipeline-chisep-ilsqr:
-    reference: toolbox-pipeline-chisep   # χ-separation toolbox v1.1.3 Chisep_script.m; image unbuilt
+    reference: toolbox-pipeline-chisep   # χ-separation toolbox v1.1.3 Chisep_script.m; image v3, fidelity pass
     candidate: toolbox-pipeline-qsmrs
     enabled: false
     blocked_by: https://github.com/QSMxT/QSM-CI/issues/421
@@ -390,7 +390,7 @@ pairs:
     datasets:
       meso-3t: {}
   toolbox-pipeline-decompose:
-    reference: toolbox-pipeline-decompose-qsmci   # the paper, in QSM-CI's MATLAB; image unbuilt
+    reference: toolbox-pipeline-decompose-qsmci   # the paper, in QSM-CI's MATLAB; image v3, fidelity pass
     candidate: toolbox-pipeline-qsmrs
     enabled: false
     blocked_by: https://github.com/QSMxT/QSM-CI/issues/421
