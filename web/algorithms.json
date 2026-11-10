@@ -1116,6 +1116,11 @@
           "name": "rim",
           "default": "whole",
           "description": "boundary-rim Laplacian values set to zero: whole (the whole rim, QSM.rs's default) or sti (STI Suite's 20 % largest); a qsmxt after v11.0.0"
+        },
+        {
+          "name": "erode_voxels",
+          "default": 0,
+          "description": "erode the brain mask by this many voxels (6-connected) before background removal, as qsmxt run --bf-erode-voxels; the field is left whole (uses qsmxt mask erode, also in v11.0.0)"
         }
       ],
       "ci_notes": []
@@ -1548,6 +1553,11 @@
           "name": "rim",
           "default": "sti",
           "description": "boundary-rim Laplacian values set to zero: sti (STI Suite's 20 % largest, the original's) or whole (the whole rim); a qsmxt after v11.0.0"
+        },
+        {
+          "name": "erode_voxels",
+          "default": 0,
+          "description": "erode the brain mask by this many voxels (6-connected) before background removal, as qsmxt run --bf-erode-voxels; the field is left whole (uses qsmxt mask erode, also in v11.0.0)"
         }
       ],
       "ci_notes": []
@@ -1592,7 +1602,7 @@
         }
       ],
       "ci_notes": [
-        "Includes a fix that is not in STI Suite: grids with an odd dimension are padded to even with zeros before iHARPERELLA and cropped back after. On odd grids, such as the in-silico head (164x205x205), STI Suite 3.0's iHARPERELLA leaves the background field in along the odd axes (correlation 0.10 with the true local field, against 0.86 when cropped to even). Even grids are unchanged.\n"
+        "Includes a fix that is not in STI Suite: grids with an odd dimension are padded to even with zeros before iHARPERELLA and cropped back after. On odd grids, such as the in-silico head (164x205x205), STI Suite 3.0's iHARPERELLA leaves the background field in along the odd axes (correlation 0.10 with the true local field; 0.86 with the padding, as QSM.rs's port gives). Even grids are unchanged.\n"
       ]
     },
     {
@@ -2473,6 +2483,11 @@
           "name": "precision",
           "default": "double",
           "description": "double, or single as mexMGv6 computes (qsmxt after v10.0.0)"
+        },
+        {
+          "name": "erode_voxels",
+          "default": 0,
+          "description": "erode the brain mask by this many voxels (6-connected) before background removal, as qsmxt run --bf-erode-voxels; the field is left whole (uses qsmxt mask erode, also in v11.0.0)"
         }
       ],
       "ci_notes": []
@@ -3289,6 +3304,11 @@
           "name": "n_pad",
           "default": 40,
           "description": "zero padding around the mask's bounding box, voxels (PDF.m's n_pad; qsmxt after v10.0.0)"
+        },
+        {
+          "name": "erode_voxels",
+          "default": 0,
+          "description": "erode the brain mask by this many voxels (6-connected) before background removal, as qsmxt run --bf-erode-voxels; the field is left whole (uses qsmxt mask erode, also in v11.0.0)"
         }
       ],
       "ci_notes": []
@@ -5393,6 +5413,11 @@
           "name": "n_pad",
           "default": 40,
           "description": "zero padding around the mask's bounding box, voxels (PDF.m's n_pad; qsmxt after v10.0.0)"
+        },
+        {
+          "name": "erode_voxels",
+          "default": 0,
+          "description": "erode the brain mask by this many voxels (6-connected) before background removal, as qsmxt run --bf-erode-voxels; the field is left whole (uses qsmxt mask erode, also in v11.0.0)"
         }
       ],
       "ci_notes": [],

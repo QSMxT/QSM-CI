@@ -21,6 +21,16 @@ if [ -f "$CFG" ]; then
     [ -n "$V" ] && grep -q -- "--$K" <<<"$HELP" && SET="$SET --$K $V"
   done
 fi
+# erode_voxels: erode the mask by N voxels before background removal, as `qsmxt run
+# --bf-erode-voxels` does (the same 6-connected erosion); the field is left whole, and the local
+# field is 0 outside the eroded mask. 0 (default): the mask as given.
+MASK="$IN/mask.nii.gz"
+ERODE=0
+[ -f "$CFG" ] && ERODE=$(jq -r '.erode_voxels // 0' "$CFG")
+if [ "$ERODE" -gt 0 ]; then
+  MASK="$(mktemp -d)/mask_eroded.nii.gz"
+  qsmxt mask erode "$IN/mask.nii.gz" -o "$MASK" --iterations "$ERODE"
+fi
 # QSMxT after v10.0.0 ports LBV.m's full multigrid (astewartau/QSM.rs#406), whose tolerance is in
 # radians over the echo spacing: it needs the field strength and echo times. qsmxt v10.0.0 takes
 # neither (its LBV is an SOR solver with a relative tolerance).
@@ -28,4 +38,4 @@ SCAN=""
 if qsmxt bgremove lbv --help 2>/dev/null | grep -q -- '--field-strength'; then
   SCAN="--field-strength $(jq -r .B0 "$IN/params.json") --echo-times $(jq -r '.TE | map(tostring) | join(" ")' "$IN/params.json")"
 fi
-qsmxt bgremove lbv "$IN/totalfield.nii.gz" -m "$IN/mask.nii.gz" -o "$OUT/localfield.nii.gz" --b0-direction $B0 $SCAN $SET
+qsmxt bgremove lbv "$IN/totalfield.nii.gz" -m "$MASK" -o "$OUT/localfield.nii.gz" --b0-direction $B0 $SCAN $SET
