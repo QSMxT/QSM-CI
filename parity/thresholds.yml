@@ -253,7 +253,8 @@ pairs:
     qsmxt_paths: &bgremove_vsharp_wiring [src/cli.rs, src/commands/common.rs,
                                           src/commands/bgremove.rs,
                                           crates/qsmxt-engine/src/config.rs]
-    # STI Suite's V_SHARP does not deconvolve; QSM.rs's vsharp does by default.
+    # STI Suite's V_SHARP does not deconvolve; neither does the wrapper's default (QSMxT's), but the
+    # sim-tuned value does, so the pair says so explicitly.
     candidate_set: { deconvolve: "false" }
     datasets:
       sim:
@@ -279,7 +280,8 @@ pairs:
     # (run 41315128824: KKI 20.88 %, r 0.979). So the pair checks the algorithm at 10 iterations,
     # where it is deterministic to rounding; the default 40 only measures the chaos.
     reference_set: { niter: 10 }
-    candidate_set: { max_iter: 10 }
+    # rim sti: STI's own rule, explicitly (iHARPERELLA's default; whole-rim zeroing is an option).
+    candidate_set: { max_iter: 10, rim: sti }
     qsmrs_paths: [src/bgremove/iharperella.rs, src/error.rs, src/fft.rs, src/grid.rs,
                   src/inversion/ilsqr.rs, src/kernels/, src/pipeline/bg_removal.rs,
                   src/pipeline/rules.rs, src/utils/padding.rs]
@@ -744,7 +746,8 @@ pairs:
                   src/pipeline/bg_removal.rs, src/pipeline/rules.rs, src/utils/padding.rs]
     qsmxt_paths: *bgremove_vsharp_wiring
     reference_set: { max_radius: 12, min_radius: 1, radius_step: 1 }   # QSM.rs's (STI Suite's) radii
-    candidate_set: { ball: qsmjl, grid: native, max_radius: 12, min_radius: 1, radius_step: 1, threshold: 0.05 }
+    # QSM.jl's vsharp always deconvolves; the wrapper's default (QSMxT's) does not.
+    candidate_set: { ball: qsmjl, grid: native, max_radius: 12, min_radius: 1, radius_step: 1, deconvolve: "true", threshold: 0.05 }
     datasets:
       sim:
         # Measured: NRMSE 5.2e-12 %, max |Δ| 4.5e-13 ppm.

@@ -91,8 +91,7 @@ def _args(cmd):
 def test_pipeline_commands(commands):
     out, _ = commands
     assert out["romeo+vsharp+rts"] == (f"{HEAD} \\\n  --unwrapping-algorithm romeo \\\n"
-                                        "  --bf-algorithm vsharp --vsharp-deconvolve true --vsharp-threshold 0.05"
-                                        " \\\n  --qsm-algorithm rts")
+                                        "  --bf-algorithm vsharp \\\n  --qsm-algorithm rts")
     assert out["laplacian+pdf+tv"] == (f"{HEAD} \\\n  --unwrapping-algorithm laplacian \\\n"
                                         "  --bf-algorithm pdf \\\n  --qsm-algorithm tv")
     assert out["romeo+tgv"] == f"{HEAD} \\\n  --unwrapping-algorithm romeo \\\n  --qsm-algorithm tgv"

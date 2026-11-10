@@ -37,3 +37,6 @@ parameters:
   - name: max_iter
     default: 200
     description: iterations
+  - name: weight_norm
+    default: global-max
+    description: "magnitude-weight normaliser: global-max (FANSI's max(mag), the original's) or mask-p999 (the brain's 99.9th percentile); a qsmxt after v11.0.0"

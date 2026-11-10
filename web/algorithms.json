@@ -1111,6 +1111,11 @@
           "name": "tol",
           "default": "1e-6",
           "description": "tolerance"
+        },
+        {
+          "name": "rim",
+          "default": "whole",
+          "description": "boundary-rim Laplacian values set to zero: whole (the whole rim, QSM.rs's default) or sti (STI Suite's 20 % largest); a qsmxt after v11.0.0"
         }
       ],
       "ci_notes": []
@@ -1538,6 +1543,11 @@
           "name": "tol",
           "default": "1e-6",
           "description": "tolerance"
+        },
+        {
+          "name": "rim",
+          "default": "sti",
+          "description": "boundary-rim Laplacian values set to zero: sti (STI Suite's 20 % largest, the original's) or whole (the whole rim); a qsmxt after v11.0.0"
         }
       ],
       "ci_notes": []
@@ -3059,6 +3069,11 @@
           "name": "max_iter",
           "default": 200,
           "description": "iterations"
+        },
+        {
+          "name": "weight_norm",
+          "default": "global-max",
+          "description": "magnitude-weight normaliser: global-max (FANSI's max(mag), the original's) or mask-p999 (the brain's 99.9th percentile); a qsmxt after v11.0.0"
         }
       ],
       "ci_notes": []
@@ -4712,14 +4727,10 @@
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",
       "algorithm": "vsharp",
-      "qsmxt_args": [
-        "--vsharp-deconvolve true",
-        "--vsharp-threshold 0.05"
-      ],
       "language": "Rust",
       "family": "iterative",
       "learning": "none",
-      "description": "Variable-radius SHARP: background removal by SMV filtering with a spatially varying kernel radius (largest kernel that fits at each voxel), then a truncated-SVD deconvolution of the SMV high-pass.",
+      "description": "Variable-radius SHARP: background removal by SMV filtering with a spatially varying kernel radius (largest kernel that fits at each voxel). A truncated-SVD deconvolution of the SMV high-pass is an option (off by default, as in QSMxT; on in the simulation-tuned run).",
       "citation": "Wu et al., Magn Reson Med 2012",
       "doi": "10.1002/mrm.23000",
       "code_url": "https://github.com/astewartau/QSM.rs",
@@ -4733,7 +4744,10 @@
       "parameters": [
         {
           "name": "deconvolve",
-          "default": true,
+          "default": false,
+          "tuned": {
+            "sim": "true"
+          },
           "description": "undo the SMV high-pass with a truncated-SVD deconvolution"
         },
         {
@@ -4993,7 +5007,8 @@
       "inputs": [
         "localfield",
         "mask",
-        "params"
+        "params",
+        "magnitude"
       ],
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",
@@ -5039,6 +5054,11 @@
           "name": "tol_update",
           "default": 0.1,
           "description": "convergence threshold on the solution update (percent)"
+        },
+        {
+          "name": "weight",
+          "default": "flat",
+          "description": "data weight: flat (1 over the whole volume, WH_nlTV.m's default), flat-in-mask (1 inside the mask; a qsmxt after v11.0.0), max-normalised or in-vivo (from the magnitude)"
         }
       ],
       "ci_notes": []
@@ -5123,14 +5143,10 @@
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",
       "algorithm": "vsharp",
-      "qsmxt_args": [
-        "--vsharp-deconvolve true",
-        "--vsharp-threshold 0.05"
-      ],
       "language": "Rust",
       "family": "iterative",
       "learning": "none",
-      "description": "Variable-radius SHARP: background removal by SMV filtering with a spatially varying kernel radius (largest kernel that fits at each voxel), then a truncated-SVD deconvolution of the SMV high-pass.",
+      "description": "Variable-radius SHARP: background removal by SMV filtering with a spatially varying kernel radius (largest kernel that fits at each voxel). A truncated-SVD deconvolution of the SMV high-pass is an option (off by default, as in QSMxT; on in the simulation-tuned run).",
       "citation": "Wu et al., Magn Reson Med 2012",
       "doi": "10.1002/mrm.23000",
       "code_url": "https://github.com/astewartau/QSM.rs",
@@ -5144,7 +5160,10 @@
       "parameters": [
         {
           "name": "deconvolve",
-          "default": true,
+          "default": false,
+          "tuned": {
+            "sim": "true"
+          },
           "description": "undo the SMV high-pass with a truncated-SVD deconvolution"
         },
         {
@@ -5197,14 +5216,10 @@
       "domain": "qsm",
       "engine": "QSMxT / QSM.rs",
       "algorithm": "vsharp",
-      "qsmxt_args": [
-        "--vsharp-deconvolve true",
-        "--vsharp-threshold 0.05"
-      ],
       "language": "Rust",
       "family": "iterative",
       "learning": "none",
-      "description": "Variable-radius SHARP: background removal by SMV filtering with a spatially varying kernel radius (largest kernel that fits at each voxel), then a truncated-SVD deconvolution of the SMV high-pass.",
+      "description": "Variable-radius SHARP: background removal by SMV filtering with a spatially varying kernel radius (largest kernel that fits at each voxel). A truncated-SVD deconvolution of the SMV high-pass is an option (off by default, as in QSMxT; on in the simulation-tuned run).",
       "citation": "Wu et al., Magn Reson Med 2012",
       "doi": "10.1002/mrm.23000",
       "code_url": "https://github.com/astewartau/QSM.rs",
@@ -5218,7 +5233,10 @@
       "parameters": [
         {
           "name": "deconvolve",
-          "default": true,
+          "default": false,
+          "tuned": {
+            "sim": "true"
+          },
           "description": "undo the SMV high-pass with a truncated-SVD deconvolution"
         },
         {

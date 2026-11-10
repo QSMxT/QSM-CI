@@ -12,5 +12,6 @@ CFG="$IN/config.json"
 if [ -f "$CFG" ]; then
   V=$(jq -r '.max_iter // empty' "$CFG"); [ -n "$V" ] && SET="$SET --max-iter $V"
   V=$(jq -r '.tol // empty' "$CFG"); [ -n "$V" ] && SET="$SET --tol $V"
+  V=$(jq -r '.rim // empty' "$CFG"); [ -n "$V" ] && SET="$SET --rim $V"   # sti | whole (qsmxt after v11.0.0)
 fi
 qsmxt bgremove iharperella "$IN/totalfield.nii.gz" -m "$IN/mask.nii.gz" -o "$OUT/localfield.nii.gz" $SET

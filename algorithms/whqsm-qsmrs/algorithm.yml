@@ -7,6 +7,7 @@ language: Rust
 family: iterative
 learning: none
 engine: QSMxT / QSM.rs
+inputs: [localfield, mask, params, magnitude]  # run.sh passes --magnitude for a magnitude weight
 description: >
   Weak-Harmonic QSM: jointly estimates susceptibility and a residual harmonic background field, correcting imperfect background-field removal.
 citation: Milovic et al., Magn Reson Med 2019
@@ -38,6 +39,9 @@ parameters:
   - name: tol_update
     default: 0.1
     description: convergence threshold on the solution update (percent)
+  - name: weight
+    default: flat
+    description: "data weight: flat (1 over the whole volume, WH_nlTV.m's default), flat-in-mask (1 inside the mask; a qsmxt after v11.0.0), max-normalised or in-vivo (from the magnitude)"
 
 # Parameter-tuning provenance (from the Bunya sweep). status: stale = re-sweep needed.
 tuning:
