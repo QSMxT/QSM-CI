@@ -110,7 +110,12 @@ def _placeholder(stage: str, lang: str) -> str:
         kind = "echo"
     else:
         return _PLACEHOLDER[lang]["generic"]
-    return _PLACEHOLDER[lang][kind] + _HDR_NOTE[lang]
+    text = _PLACEHOLDER[lang][kind]
+    if "mask" not in STAGES[stage]["consumes"]:
+        # A `pipeline` makes its own mask, so there is none to multiply by.
+        for masked in ("&echo1 * &mask", "echo1 .* mask", "echo1 * mask"):
+            text = text.replace(masked, "echo1")
+    return text + _HDR_NOTE[lang]
 
 
 def _mag(stage: str, lang: str) -> str:
