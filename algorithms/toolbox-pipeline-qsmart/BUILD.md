@@ -2,10 +2,10 @@
 
 QSMART v1.0's whole pipeline, the reference for QSMxT's `qsmart` pipeline (QSMxT/QSM-CI#421). It is
 [`../qsmart-matlab`](../qsmart-matlab/BUILD.md) with `brainmask.m`'s steps in `recon.m`
-(`brainmask_qsmci`), so it builds the same way, plus FSL `bet2` in the image (from the local-only
-[`../_bet2`](../_bet2/README.md) image, built first: `podman build -t localhost/qsm-ci/bet2:d5acd7f
-algorithms/_bet2`). Because of bet2's licence the image is local only: build it where it runs
-(`podman build -t localhost/qsm-ci/qsmart-pipeline:v1 .`), and don't push it.
+(`brainmask_qsmci`), so it builds the same way, plus FSL `bet2`, built in the image's first stage from Bostrix/FSL-BET2 d5acd7f as
+[`../_bet2`](../_bet2/README.md) does, with its source and FSL's licence text kept in
+`/opt/FSL-BET2` (README.md, *Licence*). Push it like the other references:
+`podman build -t ghcr.io/astewartau/qsm-ci/qsmart-pipeline:v1 . && podman push ...`.
 
 The rest of this file is qsmart-matlab's recipe.
 

@@ -21,7 +21,7 @@ doi: 10.1016/j.neuroimage.2021.118477
 citation: Chen et al., NeuroImage 2021
 code_url: https://github.com/QSMxT/QSM-CI
 license: GPL-3.0
-image: localhost/qsm-ci/decompose-pipeline:unbuilt   # contains FSL's bet2 code: local only
+image: ghcr.io/astewartau/qsm-ci/decompose-pipeline:unbuilt   # built and pushed on Bunya (BUILD.md)
 run: bash run.sh
 ci_skip: true
 parity_only: true

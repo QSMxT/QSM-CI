@@ -23,7 +23,7 @@ citation: Liu et al., NeuroImage 2012
 code_url: http://pre.weill.cornell.edu/mri/pages/qsm.html
 license: See Cornell MEDI toolbox license
 # Not built yet: compile and verify on Bunya (BUILD.md, fidelity/matlab), then pin the digest.
-image: localhost/qsm-ci/medi-pipeline:unbuilt   # contains FSL's bet2 code (MEDI's mex): local only
+image: ghcr.io/astewartau/qsm-ci/medi-pipeline:unbuilt   # built and pushed on Bunya (BUILD.md)
 run: bash run.sh
 ci_skip: true   # until the image is built and verified
 parity_only: true

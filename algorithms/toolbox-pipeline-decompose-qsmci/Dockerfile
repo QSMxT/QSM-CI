@@ -11,4 +11,7 @@ ENV MCRROOT=/opt/matlabruntime/R2023b
 ENV LD_LIBRARY_PATH=${MCRROOT}/runtime/glnxa64:${MCRROOT}/bin/glnxa64:${MCRROOT}/sys/os/glnxa64:${MCRROOT}/extern/bin/glnxa64
 # 755 rather than +x: CI runs as a non-root user that must READ the binary to extract its
 # embedded CTF archive.
+# FSL's licence: the bet2 sources the mex was built from, and licence.html (README.md, BUILD.md).
+COPY fsl-bet2/ /opt/fsl-bet2/
+LABEL org.opencontainers.image.licenses="LicenseRef-FSL-Release-4.0 AND LicenseRef-MATLAB-Runtime"
 COPY --chmod=755 recon /opt/qsm-ci/recon

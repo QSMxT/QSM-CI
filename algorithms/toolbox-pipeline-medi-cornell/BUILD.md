@@ -29,11 +29,13 @@ matlab -batch "addpath('nifti'); addpath(genpath('medi')); mcc('-m','recon.m','-
 ```
 On Bunya the harness does this as a Slurm job (`fidelity/matlab/submit.sh toolbox-pipeline-medi-cornell build`).
 
-## 3. Bake the image (local only)
-MEDI's `bet2` mex is FSL's bet2 code, whose licence does not clearly allow publishing it
-(`../_bet2/README.md`), so the image is built where it runs and never pushed:
+## 3. Bake the image and push
+The image carries the bet2 sources and FSL's licence text (README.md, *Licence*): copy them next
+to `recon` first, without the binaries.
 ```bash
-podman build -t localhost/qsm-ci/medi-pipeline:v1 .   # or apptainer build from it on Bunya
+mkdir -p fsl-bet2 && cp -r medi/bet2/. fsl-bet2/ && rm -f fsl-bet2/*.mex* fsl-bet2/runmex.m
+podman build -t ghcr.io/astewartau/qsm-ci/medi-pipeline:v1 .
+podman push  ghcr.io/astewartau/qsm-ci/medi-pipeline:v1
 ```
-Run the fidelity check ([`fidelity/REPORT.md`](fidelity/REPORT.md)) and the parity pair on that
-host.
+Pin `image:` in `algorithm.yml` by the pushed digest and run the fidelity check
+([`fidelity/REPORT.md`](fidelity/REPORT.md)).

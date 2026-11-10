@@ -18,4 +18,15 @@ matlab -batch "addpath('sti','medi/bet2','decompose_utils','nifti'); \
   mcc('-m','recon.m','-a','sti','-a','medi/bet2/bet2.mexa64','-o','recon','-d','.')"
 ```
 On Bunya: `fidelity/matlab/submit.sh toolbox-pipeline-decompose-qsmci build`. The image contains
-FSL's bet2 code, so it is built locally and not published (`../_bet2/README.md`).
+FSL's bet2 code: it carries bet2's sources and licence (README.md, *Licence*).
+
+## 3. Bake the image and push
+The image carries the bet2 sources and FSL's licence text (README.md, *Licence*): copy them next
+to `recon` first, without the binaries.
+```bash
+mkdir -p fsl-bet2 && cp -r medi/bet2/. fsl-bet2/ && rm -f fsl-bet2/*.mex* fsl-bet2/runmex.m
+podman build -t ghcr.io/astewartau/qsm-ci/decompose-pipeline:v1 .
+podman push  ghcr.io/astewartau/qsm-ci/decompose-pipeline:v1
+```
+Pin `image:` in `algorithm.yml` by the pushed digest and run the fidelity check
+([`fidelity/REPORT.md`](fidelity/REPORT.md)).
