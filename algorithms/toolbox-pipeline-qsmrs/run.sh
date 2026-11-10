@@ -118,13 +118,25 @@ for ((e = 1; e <= NT; e++)); do
   done
 done
 
+# A supplied R2′ (Hz), when the dataset has one: the χ-separation toolbox takes a measured R2′, and
+# QSMxT's χ-separation pipelines use a supplied map (`--use-custom-r2prime`) rather than predicting
+# one. It is an input, not a setting: the pipeline's settings are untouched.
+R2P=()
+if [ -f "$IN/r2prime.nii.gz" ]; then
+  mkdir -p "$BIDS/derivatives/qsmci/sub-1/anat"
+  cp "$IN/r2prime.nii.gz" "$BIDS/derivatives/qsmci/sub-1/anat/sub-1_R2primemap.nii.gz"
+  echo '{"Name": "qsmci", "BIDSVersion": "1.10.0", "DatasetType": "derivative"}' \
+    > "$BIDS/derivatives/qsmci/dataset_description.json"
+  R2P=(--use-custom-r2prime qsmci)
+fi
+
 # --- the pipeline --------------------------------------------------------------------------------
 
 # The pipeline option sets every reconstruction setting to the toolbox's; nothing else here
 # changes one. `--output-space acquired` (QSMxT's default, given so a pipeline cannot change it)
 # puts the outputs back on the input grid when qsmxt resampled to an axial one. stdin is closed so
 # nothing can wait for an answer.
-qsmxt run "$BIDS" "$WORK/out" --pipeline "$PIPELINE" --output-space acquired < /dev/null
+qsmxt run "$BIDS" "$WORK/out" --pipeline "$PIPELINE" --output-space acquired "${R2P[@]}" < /dev/null
 D="$WORK/out/derivatives/qsmxt"
 
 # The file qsmxt wrote under this name, wherever in its tree (published or workflow/); empty if none.

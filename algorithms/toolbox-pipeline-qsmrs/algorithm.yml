@@ -3,6 +3,8 @@ slug: toolbox-pipeline-qsmrs
 algorithm: toolbox-pipeline
 source: qsmrs
 stage: pipeline
+# A measured R2′ for the χ-separation pipelines, when the dataset ships one (run.sh).
+optional_inputs: [r2prime]
 language: Rust
 family: pipeline
 learning: none
