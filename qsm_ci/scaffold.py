@@ -20,6 +20,7 @@ STAGE_HELP = {
     "chi-separation": "χ_total + R2′ → χ+ (paramagnetic) and χ− (diamagnetic)",
     "r2prime-generation": "multi-echo GRE magnitude → R2′ (for GRE-only χ-separation)",
     "brain-extraction": "multi-echo GRE magnitude → brain mask",
+    "pipeline": "multi-echo phase + magnitude → χ, a whole toolbox pipeline (makes its own mask)",
 }
 
 

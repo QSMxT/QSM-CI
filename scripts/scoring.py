@@ -51,9 +51,11 @@ def cli_run_argv(algo: dict, input_dir: Path, output_dir: Path, artifact_file: d
         argv += [f"--{art}", str(f)]
     for k, v in (overrides or {}).items():
         argv += ["--set", f"{k}={fmt(v)}"]
-    # Single-output stages name the file directly (unchanged); a multi-output stage (χ-separation)
-    # gets the output directory and the CLI writes each produced artifact there by canonical name.
-    out = output_dir / artifact_file[produces[0]] if len(produces) == 1 else output_dir
+    # Single-output stages name the file directly (unchanged); a multi-output stage (χ-separation,
+    # or a toolbox `pipeline`, which may also write χ+/χ−: `optional_produces`) gets the output
+    # directory and the CLI writes each produced artifact there by canonical name.
+    n_out = len(produces) + len(algo.get("optional_produces") or ())
+    out = output_dir / artifact_file[produces[0]] if n_out == 1 else output_dir
     argv += ["-o", str(out), "--runner", runner]
     return argv
 

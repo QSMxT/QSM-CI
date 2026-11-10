@@ -145,6 +145,19 @@ as an option next to its default (`candidate_set: {variant: qsmjl}`, passed on b
 `run.sh`). For a Julia original they are its README's "QSM.rs-matched" column. Only the pair's own
 method gets them; prefix steps run with their defaults.
 
+### Whole pipelines
+
+Pipeline parity (QSMxT/QSM-CI#421) checks a whole toolbox pipeline, raw echoes to χ, against the
+toolbox's own script. Both sides are `stage: pipeline` submissions (CONTRACT.md): given the phase,
+magnitude and `params.json` but no mask, since each makes its own, and writing the intermediates
+they have (`mask`, `totalfield`, `localfield`, `r2star`, …), so a difference can be traced to its
+step. The comparison is inside the dataset's mask. The candidate is one submission for every
+pipeline, `toolbox-pipeline-qsmrs` (`qsmxt run --pipeline <id>`), picked with
+`candidate_set: {pipeline: <id>}`; it is `ci_skip` until a QSMxT release has `--pipeline`. A pair
+shares one `algorithm:`, so each reference is `algorithm: toolbox-pipeline` with the toolbox as its
+`variant:` (e.g. `toolbox-pipeline-medi-cornell`), and its pair is keyed by that slug. No reference
+exists yet, so no pair is configured.
+
 ## What is compared
 
 - **The final artifact** (χ): NRMSE (‖candidate − reference‖ / ‖reference‖, %), correlation, and the

@@ -16,6 +16,9 @@ STAGES = {
     "unwrap+bfr": {"consumes": ["phase", "magnitude", "mask", "params"], "produces": ["localfield"]},
     "bfr+dipole": {"consumes": ["totalfield", "mask", "params", "magnitude"], "produces": ["chimap"]},
     "end-to-end": {"consumes": ["phase", "magnitude", "mask", "params"], "produces": ["chimap"]},
+    # A whole toolbox pipeline, raw echoes to χ (QSMxT/QSM-CI#421). No mask: making it is part of
+    # the pipeline being checked. The χ-separation pipelines also write OPTIONAL_PRODUCES below.
+    "pipeline": {"consumes": ["phase", "magnitude", "params"], "produces": ["chimap"]},
     # χ-separation: fed local field, R2′, χ_total and multi-echo magnitude; produces two source maps
     # (χ+ paramagnetic, χ− diamagnetic). Isolated-only — its outputs are neither localfield nor chimap,
     # so the composed field-mapping × bfr × dipole matrix skips it.
@@ -30,6 +33,12 @@ STAGES = {
     # generate masks for datasets that ship without one. mask is not a scored groundtruth artifact.
     "brain-extraction": {"consumes": ["magnitude", "params"], "produces": ["mask"]},
 }
+
+# Products a stage writes only in some runs (stages.yml `optional_produces:`): one `pipeline`
+# submission runs every toolbox pipeline, and only the χ-separation ones compute χ+/χ−. Kept apart
+# from STAGES so every `produces` list stays the set a run must write; a run that writes one of these
+# has it collected like a product, one that does not is not a failure.
+OPTIONAL_PRODUCES = {"pipeline": ["chi-para", "chi-dia"]}
 
 ARTIFACT_FILE = {
     "phase": "phase.nii.gz", "magnitude": "magnitude.nii.gz", "mask": "mask.nii.gz",
@@ -89,9 +98,10 @@ def check_baseline_only(algo: dict) -> None:
 
 # Stages with no magnitude-free method: the multi-echo magnitude is not a weighting nicety there,
 # it IS the measurement. r2prime-generation estimates R2' from the signal decay across echoes;
-# chi-separation fits its source model to that decay. brain-extraction derives the mask from it.
+# chi-separation fits its source model to that decay. brain-extraction derives the mask from it,
+# and so does every toolbox `pipeline` (which makes its own mask; MEDI also weights by it).
 # "Optional when it isn't the only image input" is simply the wrong default for these.
-MAGNITUDE_REQUIRED_STAGES = {"chi-separation", "r2prime-generation", "brain-extraction"}
+MAGNITUDE_REQUIRED_STAGES = {"chi-separation", "r2prime-generation", "brain-extraction", "pipeline"}
 
 
 def is_optional(stage: str, artifact: str, consumes: "list | None" = None,
@@ -152,3 +162,8 @@ def produced_artifact(stage: str) -> str:
 def produced_artifacts(stage: str) -> list:
     """Every artifact a stage produces — one for the linear QSM stages, two for χ-separation."""
     return list(STAGES[stage]["produces"])
+
+
+def optional_products(stage: str) -> list:
+    """Artifacts a stage may also write (stages.yml `optional_produces:`), [] for most."""
+    return list(OPTIONAL_PRODUCES.get(stage, ()))

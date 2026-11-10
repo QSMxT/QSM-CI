@@ -47,7 +47,7 @@ EVAL = ROOT / "eval" / "qsm_eval.py"
 sys.path.insert(0, str(ROOT))
 from qsm_ci.runner import _consumes  # noqa: E402
 from qsm_ci.containers import _human, _kill_process_tree, timeout_s  # noqa: E402
-from qsm_ci.stages import STAGES, ARTIFACT_FILE, ARTIFACT_KIND  # noqa: E402
+from qsm_ci.stages import STAGES, ARTIFACT_FILE, ARTIFACT_KIND, optional_products  # noqa: E402
 # Shared scoring/sweep primitives (scripts/scoring.py, also used by sweep.py + combo_sweep.py) — one
 # home for the `qsm-ci run` argv builder, the GT source map, the --shard partition, and the qsm_eval
 # argv, so the scorer and the sweeps can't drift. Pure literals/argv assembly — no heavy deps at
@@ -471,6 +471,9 @@ def discover_algorithms(track: str = "sim", phantom: "str | None" = None,
             "name": _yaml_scalar(doc.get("name")) if doc.get("name") is not None else d.name,
             "image": _yaml_scalar(image) if image is not None else None,
             "consumes": consumes, "produces": STAGES[s]["produces"],
+            # Products only some runs write (stages.yml `optional_produces:`; a toolbox pipeline's
+            # χ+/χ−). Parity compares them when both sides wrote them; scoring does not read them.
+            "optional_produces": optional_products(s),
             # Extras that only some datasets ship (an `optional_inputs:` artifact that is in no stage's
             # contract, e.g. DECOMPOSE's chimap-echoes or a baseline's dseg): mounted when the dataset has one,
             # skipped when it

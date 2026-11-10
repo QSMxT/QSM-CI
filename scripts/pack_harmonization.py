@@ -209,6 +209,9 @@ def pack_acquisition(scanner: str, protocol: str, run: str, out_root: Path) -> d
         "voxel_size": [round(float(v), 4) for v in nib.affines.voxel_sizes(affine)],
         "B0_nominal": 3.0,
         "f0_MHz": f0,
+        # The carrier frequency under its BIDS name (CONTRACT.md, params.json); a toolbox pipeline
+        # takes its centre frequency from it.
+        "ImagingFrequency": f0,
         "TR": proto["TR_s"],
         "flip_angle": proto["FA_deg"],
         "scanner": SCANNER_MODEL[scanner],
@@ -217,6 +220,11 @@ def pack_acquisition(scanner: str, protocol: str, run: str, out_root: Path) -> d
         "sequence": proto["sequence"],
         "TE_source": TE_SOURCE,
     }
+    # The vendor, as dcm2niix recorded it, where a sidecar exists (the offline recons have none).
+    side = sidecar_for(phases[1])
+    vendor = json.load(open(side)).get("Manufacturer") if side else None
+    if vendor:
+        params["Manufacturer"] = vendor
 
     out = out_root / acq_id / "inputs"
     out.mkdir(parents=True, exist_ok=True)

@@ -286,7 +286,8 @@ def _apptainer_image(algo: dict) -> str:
 def _param_env(input_dir: Path) -> "dict[str, str]":
     """Layer B — expose params.json + config.json as ``QSMCI_*`` env vars so a run.sh needn't parse
     JSON (no `jq` needed): ``QSMCI_B0``, ``QSMCI_TE`` (space-separated echoes), ``QSMCI_TE0`` (first
-    echo), ``QSMCI_B0_DIR``, ``QSMCI_VOXEL_SIZE``, and ``QSMCI_SET_<NAME>`` per --set override. The
+    echo), ``QSMCI_B0_DIR``, ``QSMCI_VOXEL_SIZE``, ``QSMCI_IMAGING_FREQUENCY`` and ``QSMCI_MANUFACTURER``
+    (when params.json has them), and ``QSMCI_SET_<NAME>`` per --set override. The
     JSON files are still written (Layer A), so this is purely additive."""
     env: "dict[str, str]" = {}
     pj = input_dir / ARTIFACT_FILE["params"]
@@ -305,6 +306,11 @@ def _param_env(input_dir: Path) -> "dict[str, str]":
             env["QSMCI_B0_DIR"] = " ".join(str(x) for x in p["B0_dir"])
         if p.get("voxel_size"):
             env["QSMCI_VOXEL_SIZE"] = " ".join(str(x) for x in p["voxel_size"])
+        # Optional: only datasets packed from a scanner's sidecars carry them (CONTRACT.md).
+        if p.get("ImagingFrequency") is not None:
+            env["QSMCI_IMAGING_FREQUENCY"] = str(p["ImagingFrequency"])
+        if p.get("Manufacturer"):
+            env["QSMCI_MANUFACTURER"] = str(p["Manufacturer"])
     cj = input_dir / "config.json"
     if cj.exists():
         try:

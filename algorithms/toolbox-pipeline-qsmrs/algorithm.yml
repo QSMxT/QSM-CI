@@ -1,0 +1,35 @@
+name: Toolbox pipeline (QSMxT / QSM.rs)
+slug: toolbox-pipeline-qsmrs
+algorithm: toolbox-pipeline
+source: qsmrs
+stage: pipeline
+# A measured R2′ for the χ-separation pipelines, when the dataset ships one (run.sh).
+optional_inputs: [r2prime]
+language: Rust
+family: pipeline
+learning: none
+engine: QSMxT / QSM.rs
+description: >
+  A whole original toolbox's QSM pipeline, from the raw echoes to χ, as QSMxT reproduces it with
+  QSM.rs (`qsmxt run --pipeline <id>`): the candidate side of pipeline parity (QSMxT/QSM-CI#421).
+  One submission covers every pipeline; the `pipeline` parameter picks it.
+authors:
+- name: Ashley Stewart
+  note: QSMxT / QSM.rs
+code_url: https://github.com/QSMxT/QSMxT
+license: GPL-3.0
+# `qsmxt run --pipeline` (QSMxT/QSMxT#514) is in QSMxT main but in no release yet: v11.0.0 lacks it.
+# It runs against a qsmxt build (parity.yml qsmrs_ref / qsmxt_ref / qsmxt_image, or
+# `parity.py run --qsmrs-image`). Repin to the first release that has it, then drop ci_skip.
+image: ghcr.io/astewartau/qsm-ci/qsmxt@sha256:5a353a43b0a6ceeb2b8ec57422a56770d5e86e1d551e727b72ca5089b2e5277e   # v11.0.0
+run: bash run.sh
+ci_skip: true   # until the image has `qsmxt run --pipeline` (see image:)
+# A parity candidate, not a method to score or list on the site: each pipeline is compared with
+# the toolbox's own script, not with ground truth.
+parity_only: true
+parameters:
+- name: pipeline
+  default: qsmxt-defaults
+  description: >
+    the pipeline qsmxt runs: qsmxt-defaults, or a toolbox's: medi-toolbox, sti-suite-ilsqr,
+    sti-suite-star, qsmart, heidi, chi-sep-ilsqr, chi-sep-medi, chi-sepnet, decompose

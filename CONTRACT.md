@@ -65,6 +65,18 @@ Spans (declare one of these if your method crosses stages):
 | `unwrap+bfr` | `phase`, `magnitude`, `mask`, `params` | `localfield` | — |
 | `bfr+dipole` | `totalfield`, `mask`, `params`, `magnitude` | `chimap` | QSMART, TGV |
 | `end-to-end` | `phase`, `magnitude`, `mask`, `params` | `chimap` | TGV |
+| `pipeline` | `phase`, `magnitude`, `params` | `chimap`; also `chi-para`, `chi-dia` when the pipeline makes them | `toolbox-pipeline-qsmrs` |
+
+`pipeline` is a whole toolbox pipeline, from the raw echoes to χ: a toolbox's own script, or
+`qsmxt run --pipeline <id>` (QSMxT/QSM-CI#421). It is given no `mask`, because making the mask is
+part of the pipeline being checked, and it reads the magnitude it makes it from. It exists for
+pipeline parity ([docs/parity.md](docs/parity.md)): both sides write the intermediates they have
+(`mask`, `totalfield`, `localfield`, …; "Intermediates" below), so a difference can be traced to its
+step. A χ-separation pipeline also writes `chi-para` and `chi-dia`; the others do not, so the two
+are optional products (`optional_produces:` in `stages.yml`): collected when written, not missing
+when absent. With no brain mask among its inputs, `qsm-ci run` does not score it. A `pipeline`
+submission sets `parity_only: true` (a reference) or `ci_skip: true` (a QSM.rs candidate whose
+pinned qsmxt has no `--pipeline`), so scoring leaves it out.
 
 Your `algorithm.yml` sets `stage:` to one of these names. The platform mounts exactly the consumed
 artifacts into `/input`, and expects exactly the produced artifacts in `/output`.
@@ -139,6 +151,15 @@ with `optional_inputs: [r2star]` and fits its own when the file is absent.
 | `B0` | tesla | main field strength |
 | `B0_dir` | unit vector | B0 direction in image coordinates |
 | `voxel_size` | mm | voxel dimensions (x, y, z) |
+| `ImagingFrequency` | MHz | optional: the scanner's centre frequency, as in the BIDS/DICOM sidecar |
+| `Manufacturer` | — | optional: the vendor, as in the BIDS sidecar (`Siemens`, `Philips`, `GE`) |
+
+`ImagingFrequency` and `Manufacturer` are there only when the dataset was packed from a scanner's
+sidecars (they are never made up for a simulated phantom), so a method must run without them. A
+toolbox pipeline reads them: several toolboxes take the centre frequency from `ImagingFrequency`
+rather than the nominal field, and the χ-separation toolbox's k-space window depends on the vendor.
+An in vivo dataset may also carry `B0_nominal`, the sidecar's `MagneticFieldStrength`, when its `B0`
+was computed from the centre frequency (`ImagingFrequency` / γ).
 
 A χ-separation phantom's `params.json` may also carry `chisep_dr_hz_per_ppm`, the paramagnetic
 relaxivity Dr+ (Hz/ppm) the phantom imposes (R2′ = Dr+·|χ+| + Dr−·|χ−|). It documents the phantom;
@@ -173,6 +194,8 @@ them directly without `jq`:
 | `QSMCI_TE0` | first echo | `0.004` |
 | `QSMCI_B0_DIR` | `params.json` `B0_dir` | `0 0 1` |
 | `QSMCI_VOXEL_SIZE` | `params.json` `voxel_size` (mm) | `1 1 1` |
+| `QSMCI_IMAGING_FREQUENCY` | `params.json` `ImagingFrequency` (MHz), when present | `123.243444` |
+| `QSMCI_MANUFACTURER` | `params.json` `Manufacturer`, when present | `Siemens` |
 | `QSMCI_SET_<NAME>` | each `--set NAME=VALUE` override | `QSMCI_SET_THRESHOLD=0.2` |
 
 ```bash
@@ -197,6 +220,22 @@ in every implementation of an algorithm, since intermediates are compared by nam
 `chimap_stage1`, `localfield_stage2` and `chimap_stage2`. A method whose names differ (an image
 built before this convention) is mapped onto these in `parity/thresholds.yml`. Intermediates are
 never scored.
+
+A `pipeline` writes the maps of each step it has, under these names:
+
+| Name | What | Units |
+|------|------|-------|
+| `mask` | the brain mask the pipeline made | 0/1 |
+| `totalfield` | the total field from the echoes | ppm |
+| `localfield` | the field after background removal | ppm |
+| `chimap_unreferenced` | the inversion's χ before referencing (where the pipeline references) | ppm |
+| `chimap_echo<n>` | the χ map of echo n, for a pipeline that inverts each echo (DECOMPOSE), n from 1 | ppm |
+| `r2star` | R2* | Hz |
+| `r2prime` | R2′ | Hz |
+
+QSMART's steps keep the names above (`reliability`, `vessel_mask`, `localfield_stage1`, …). The
+outputs (`chimap`, `chi-para`, `chi-dia`) are compared as outputs, not as intermediates, so an
+intermediate under one of those names is not compared.
 
 ## Execution model — environment vs. code
 
