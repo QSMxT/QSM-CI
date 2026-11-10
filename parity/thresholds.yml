@@ -350,6 +350,21 @@ pairs:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
 
+  # Whole toolbox pipelines (#421): QSMxT's `qsmxt run --pipeline <id>` against the toolbox's own
+  # script, from the echoes to χ. Disabled until both sides are built and a first run is in; no
+  # limits until then (tight where deterministic, baseline after, and anything questionably far
+  # off is investigated, not baselined).
+  toolbox-pipeline-medi-cornell:
+    reference: toolbox-pipeline-medi-cornell   # MEDI 2024.11.26 README.m chain; image unbuilt
+    candidate: toolbox-pipeline-qsmrs
+    enabled: false
+    blocked_by: https://github.com/QSMxT/QSM-CI/issues/421
+    candidate_set: { pipeline: medi-toolbox }
+    qsmrs_paths: [src/pipeline/]
+    qsmxt_paths: [crates/qsmxt-engine/src/]
+    datasets:
+      sim: {}                  # qsm-forward: no ImagingFrequency, so both sides use γ·B0
+      prisma-bridge-run1: {}   # Siemens Prisma, ImagingFrequency from the exam card (repack first)
   fit-ppm-complex:
     reference: fit-ppm-complex-cornell   # MEDI 2024.11.26 Fit_ppm_complex + unwrapPhase (#322)
     candidate: fit-ppm-complex-qsmrs     # ci_skip for scoring: v10.0.0 has no complex fit
