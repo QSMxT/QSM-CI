@@ -288,8 +288,9 @@ pairs:
     qsmxt_paths: *bgremove_vsharp_wiring
     # Not on sim: its 164x205x205 grid has odd dimensions, where STI Suite 3.0's iHARPERELLA does
     # not remove the background (r 0.10 with the true local field, gradients along the two odd
-    # axes; cropped to 164x204x204 it gives r 0.86, and QSM.rs r 0.86 on the full grid). QSM.rs
-    # keeps working on odd grids (astewartau/QSM.rs#393).
+    # axes). iharperella-sti v3 pads odd dimensions to even and crops back (r 0.864; QSM.rs r 0.865
+    # on the full grid, astewartau/QSM.rs#393), but on a padded FFT domain that QSM.rs does not
+    # use, so the pair keeps checking the algorithm on an even grid.
     datasets:
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs]

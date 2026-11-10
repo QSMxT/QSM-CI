@@ -12,6 +12,8 @@
 #            QSM.rs's advice rules; Recommended and Required rules win over both). Only where that
 #            differs from the base's defaults. A variant of a field-mapping method enters the matrix
 #            only through its `chain`.
+# Left out as duplicates of the default (v11 results identical in every run): RESHARP's authors'
+# radius 3 mm and iLSQR's STI Suite padding 12 mm are QSM.rs's defaults since v0.41.0.
 # Left out after a look at the results: QSM.jl's SHARP (sharp-qsmrs with variant qsmjl) erodes so
 # much of the brain edge that a median of 6 regions survive the 90% coverage rule (every other
 # background removal keeps 20-25), so almost no pair has the 8 common regions a fit needs.
@@ -41,23 +43,17 @@ variants:
   vsharp-qsmrs.qsmjl:
     base: vsharp-qsmrs
     label: QSM.jl parity
-    set: {ball: qsmjl, grid: native, max_radius: 12, min_radius: 1, radius_step: 1, threshold: 0.05}
+    # deconvolve: the QSM.jl parity runs deconvolved; explicit since the base default is off (#416).
+    set: {ball: qsmjl, grid: native, max_radius: 12, min_radius: 1, radius_step: 1, deconvolve: true,
+          threshold: 0.05}
   ismv-qsmrs.qsmjl:
     base: ismv-qsmrs
     label: QSM.jl parity
     set: {variant: qsmjl, tol: 1e-3, max_iter: 500}
-  resharp-qsmrs.parity:
-    base: resharp-qsmrs
-    label: authors' radius
-    set: {radius: 3}
   pdf-qsmrs.parity:
     base: pdf-qsmrs
     label: recommended iterations
     set: {n_cg: 300}
-  ilsqr-qsmrs.sti:
-    base: ilsqr-qsmrs
-    label: STI Suite parity
-    set: {pad_mm: 12}
   star-qsmrs.sti:
     base: star-qsmrs
     label: STI Suite script parity
@@ -84,7 +80,7 @@ variants:
     set: {solver: fft, fft_pad: 12, unmasked: true, weighting: tes}
     chain:
       bfrs: [vsharp-qsmrs.sti]
-      dipoles: [ilsqr-qsmrs, ilsqr-qsmrs.sti, star-qsmrs, star-qsmrs.sti]
+      dipoles: [ilsqr-qsmrs, star-qsmrs, star-qsmrs.sti]
       spans: []
   laplacian-qsmrs.qsmart:
     base: laplacian-qsmrs

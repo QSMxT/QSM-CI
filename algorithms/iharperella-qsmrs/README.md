@@ -23,5 +23,6 @@ method starts from one wrapped echo and unwraps it at the same time; given `--te
 |---|---|---|
 | `max_iter` | 40 | iterations |
 | `tol` | 1e-6 | tolerance |
+| `erode_voxels` | 0 | erode the mask by this many voxels before background removal (`qsmxt run --bf-erode-voxels`); the field is left whole |
 
 _Citations/DOIs are auto-generated best-effort references and should be verified._

@@ -1116,6 +1116,11 @@
           "name": "rim",
           "default": "whole",
           "description": "boundary-rim Laplacian values set to zero: whole (the whole rim, QSM.rs's default) or sti (STI Suite's 20 % largest); a qsmxt after v11.0.0"
+        },
+        {
+          "name": "erode_voxels",
+          "default": 0,
+          "description": "erode the brain mask by this many voxels (6-connected) before background removal, as qsmxt run --bf-erode-voxels; the field is left whole (uses qsmxt mask erode, also in v11.0.0)"
         }
       ],
       "ci_notes": []
@@ -1548,6 +1553,11 @@
           "name": "rim",
           "default": "sti",
           "description": "boundary-rim Laplacian values set to zero: sti (STI Suite's 20 % largest, the original's) or whole (the whole rim); a qsmxt after v11.0.0"
+        },
+        {
+          "name": "erode_voxels",
+          "default": 0,
+          "description": "erode the brain mask by this many voxels (6-connected) before background removal, as qsmxt run --bf-erode-voxels; the field is left whole (uses qsmxt mask erode, also in v11.0.0)"
         }
       ],
       "ci_notes": []
@@ -1592,7 +1602,7 @@
         }
       ],
       "ci_notes": [
-        "Includes a fix that is not in STI Suite: grids with an odd dimension are padded to even with zeros before iHARPERELLA and cropped back after. On odd grids, such as the in-silico head (164x205x205), STI Suite 3.0's iHARPERELLA leaves the background field in along the odd axes (correlation 0.10 with the true local field, against 0.86 when cropped to even). Even grids are unchanged.\n"
+        "Includes a fix that is not in STI Suite: grids with an odd dimension are padded to even with zeros before iHARPERELLA and cropped back after. On odd grids, such as the in-silico head (164x205x205), STI Suite 3.0's iHARPERELLA leaves the background field in along the odd axes (correlation 0.10 with the true local field; 0.86 with the padding, as QSM.rs's port gives). Even grids are unchanged.\n"
       ]
     },
     {
@@ -1639,8 +1649,8 @@
         },
         {
           "name": "pad_mm",
-          "default": 16,
-          "description": "zero-padding per side (mm) before the k-space solve (new in qsmxt v10.0.0)"
+          "default": 12,
+          "description": "zero-padding per side (mm) before the k-space solve (STI Suite QSM_GUI's padsize; 16 in qsmxt v10)"
         },
         {
           "name": "precision",
@@ -2473,6 +2483,11 @@
           "name": "precision",
           "default": "double",
           "description": "double, or single as mexMGv6 computes (qsmxt after v10.0.0)"
+        },
+        {
+          "name": "erode_voxels",
+          "default": 0,
+          "description": "erode the brain mask by this many voxels (6-connected) before background removal, as qsmxt run --bf-erode-voxels; the field is left whole (uses qsmxt mask erode, also in v11.0.0)"
         }
       ],
       "ci_notes": []
@@ -3289,6 +3304,11 @@
           "name": "n_pad",
           "default": 40,
           "description": "zero padding around the mask's bounding box, voxels (PDF.m's n_pad; qsmxt after v10.0.0)"
+        },
+        {
+          "name": "erode_voxels",
+          "default": 0,
+          "description": "erode the brain mask by this many voxels (6-connected) before background removal, as qsmxt run --bf-erode-voxels; the field is left whole (uses qsmxt mask erode, also in v11.0.0)"
         }
       ],
       "ci_notes": []
@@ -5281,6 +5301,7 @@
         "max_radius": "12",
         "min_radius": "1",
         "radius_step": "1",
+        "deconvolve": "true",
         "threshold": "0.05"
       }
     },
@@ -5343,59 +5364,6 @@
       }
     },
     {
-      "slug": "resharp-qsmrs.parity",
-      "name": "RESHARP (QSM.rs) \u00b7 authors' radius",
-      "stage": "bfr",
-      "inputs": [
-        "totalfield",
-        "mask",
-        "params"
-      ],
-      "domain": "qsm",
-      "engine": "QSMxT / QSM.rs",
-      "algorithm": "resharp",
-      "language": "Rust",
-      "family": "iterative",
-      "learning": "none",
-      "description": "Regularized SHARP with Tikhonov regularization of the deconvolution.",
-      "citation": "Sun & Wilman, Magn Reson Med 2014",
-      "doi": "10.1002/mrm.24765",
-      "code_url": "https://github.com/astewartau/QSM.rs",
-      "license": "MIT",
-      "authors": [
-        "Hongfu Sun",
-        "Alan H. Wilman"
-      ],
-      "parameters": [
-        {
-          "name": "radius",
-          "default": 3.0,
-          "description": "SMV kernel radius (mm)"
-        },
-        {
-          "name": "tik_reg",
-          "default": "1e-4",
-          "description": "Tikhonov regularization"
-        },
-        {
-          "name": "tol",
-          "default": "1e-6",
-          "description": "relative residual tolerance of the solve"
-        },
-        {
-          "name": "max_iter",
-          "default": 200,
-          "description": "maximum solver iterations"
-        }
-      ],
-      "ci_notes": [],
-      "variant_of": "resharp-qsmrs",
-      "repro_only": true,
-      "preset": {
-        "radius": "3"
-      }
-    },
-    {
       "slug": "pdf-qsmrs.parity",
       "name": "PDF (QSM.rs) \u00b7 recommended iterations",
       "stage": "bfr",
@@ -5445,6 +5413,11 @@
           "name": "n_pad",
           "default": 40,
           "description": "zero padding around the mask's bounding box, voxels (PDF.m's n_pad; qsmxt after v10.0.0)"
+        },
+        {
+          "name": "erode_voxels",
+          "default": 0,
+          "description": "erode the brain mask by this many voxels (6-connected) before background removal, as qsmxt run --bf-erode-voxels; the field is left whole (uses qsmxt mask erode, also in v11.0.0)"
         }
       ],
       "ci_notes": [],
@@ -5452,66 +5425,6 @@
       "repro_only": true,
       "preset": {
         "n_cg": "300"
-      }
-    },
-    {
-      "slug": "ilsqr-qsmrs.sti",
-      "name": "iLSQR (QSM.rs) \u00b7 STI Suite parity",
-      "stage": "dipole",
-      "inputs": [
-        "localfield",
-        "mask",
-        "params"
-      ],
-      "domain": "qsm",
-      "engine": "QSMxT / QSM.rs",
-      "algorithm": "ilsqr",
-      "language": "Rust",
-      "family": "iterative",
-      "learning": "none",
-      "description": "Iterative LSQR inversion with streaking-artifact reduction.",
-      "citation": "Li et al., NeuroImage 2015",
-      "doi": "10.1016/j.neuroimage.2014.12.043",
-      "code_url": "https://github.com/astewartau/QSM.rs",
-      "license": "MIT",
-      "authors": [
-        "Wei Li",
-        "Nian Wang",
-        "Fang Yu",
-        "Hui Han",
-        "Wei Cao",
-        "Rebecca Romero",
-        "Bundhit Tantiwongkosi",
-        "Timothy Q. Duong",
-        "Chunlei Liu"
-      ],
-      "parameters": [
-        {
-          "name": "tol",
-          "default": "1e-3",
-          "description": "tolerance"
-        },
-        {
-          "name": "max_iter",
-          "default": 100,
-          "description": "iterations"
-        },
-        {
-          "name": "pad_mm",
-          "default": 16,
-          "description": "zero-padding per side (mm) before the k-space solve (new in qsmxt v10.0.0)"
-        },
-        {
-          "name": "precision",
-          "default": "double",
-          "description": "arithmetic of the two LSQR solves, double or single (the original's); needs a qsmxt with --precision"
-        }
-      ],
-      "ci_notes": [],
-      "variant_of": "ilsqr-qsmrs",
-      "repro_only": true,
-      "preset": {
-        "pad_mm": "12"
       }
     },
     {

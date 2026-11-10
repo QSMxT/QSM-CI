@@ -17,5 +17,6 @@ qsmxt bgremove pdf /input/totalfield.nii.gz -m /input/mask.nii.gz -o /output/loc
 | parameter | default | description |
 |---|---|---|
 | `tol` | 1e-5 | convergence tolerance |
+| `erode_voxels` | 0 | erode the mask by this many voxels before background removal (`qsmxt run --bf-erode-voxels`); the field is left whole |
 
 _Citations/DOIs are auto-generated best-effort references and should be verified._

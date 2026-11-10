@@ -34,6 +34,9 @@ parameters:
     default: sti
     description: "boundary-rim Laplacian values set to zero: sti (STI Suite's 20 % largest, the original's) or whole (the whole rim); a qsmxt after v11.0.0"
 
+  - name: erode_voxels
+    default: 0
+    description: "erode the brain mask by this many voxels (6-connected) before background removal, as qsmxt run --bf-erode-voxels; the field is left whole (uses qsmxt mask erode, also in v11.0.0)"
 # Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
 tuning:
   date: 2026-08

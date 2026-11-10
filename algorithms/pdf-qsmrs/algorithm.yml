@@ -37,3 +37,6 @@ parameters:
   - name: n_pad
     default: 40
     description: zero padding around the mask's bounding box, voxels (PDF.m's n_pad; qsmxt after v10.0.0)
+  - name: erode_voxels
+    default: 0
+    description: "erode the brain mask by this many voxels (6-connected) before background removal, as qsmxt run --bf-erode-voxels; the field is left whole (uses qsmxt mask erode, also in v11.0.0)"
