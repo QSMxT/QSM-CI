@@ -62,7 +62,11 @@ function recon(inp, out)
     wd = tempname; mkdir(wd); old = cd(wd); cleaner = onCleanup(@() cd(old));
     save('RDF.mat', 'RDF', 'iFreq', 'iFreq_raw', 'iMag', 'N_std', 'Mask', 'matrix_size', ...
          'voxel_size', 'delta_TE', 'CF', 'B0_dir', 'Mask_CSF', 'R2s');
-    QSM = MEDI_L1('lambda', 1000, 'lambda_CSF', 100, 'merit', 'smv', 5);   % ppm
+    [QSM, ~, ~, resultsfile] = MEDI_L1('lambda', 1000, 'lambda_CSF', 100, 'merit', 'smv', 5);   % ppm
+    % MEDI_L1 zeroes χ outside the mask it inverted on (with SMV, the eroded mask; MEDI_L1.m:201)
+    % and then subtracts the CSF mean everywhere (:204-206), so that ring holds −mean. Keep χ zero
+    % outside the inverted mask, as medi-cornell does and as QSM.rs's MEDI leaves it.
+    Mask_inv = load(resultsfile, 'Mask');  QSM = QSM .* (Mask_inv.Mask > 0);
     cd(old);
 
     tmpl = nph;
