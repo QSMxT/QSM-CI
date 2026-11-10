@@ -221,6 +221,22 @@ in every implementation of an algorithm, since intermediates are compared by nam
 built before this convention) is mapped onto these in `parity/thresholds.yml`. Intermediates are
 never scored.
 
+A `pipeline` writes the maps of each step it has, under these names:
+
+| Name | What | Units |
+|------|------|-------|
+| `mask` | the brain mask the pipeline made | 0/1 |
+| `totalfield` | the total field from the echoes | ppm |
+| `localfield` | the field after background removal | ppm |
+| `chimap_unreferenced` | the inversion's χ before referencing (where the pipeline references) | ppm |
+| `chimap_echo<n>` | the χ map of echo n, for a pipeline that inverts each echo (DECOMPOSE), n from 1 | ppm |
+| `r2star` | R2* | Hz |
+| `r2prime` | R2′ | Hz |
+
+QSMART's steps keep the names above (`reliability`, `vessel_mask`, `localfield_stage1`, …). The
+outputs (`chimap`, `chi-para`, `chi-dia`) are compared as outputs, not as intermediates, so an
+intermediate under one of those names is not compared.
+
 ## Execution model — environment vs. code
 
 Your submission is **code plus an environment**; you do not have to bake your code into a custom
