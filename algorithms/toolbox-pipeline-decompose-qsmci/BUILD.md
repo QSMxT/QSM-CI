@@ -13,7 +13,7 @@ Needs the **Optimization Toolbox** (lsqlin, lsqnonlin) at compile time.
 
 ## Compile
 ```bash
-matlab -batch "cd medi/bet2; runmex"; rm medi/bet2/runmex.m
+matlab -batch "addpath('../../fidelity/matlab'); mex_bet2('medi/bet2')"; rm medi/bet2/runmex.m   # runmex with C++98 (FSL code)
 matlab -batch "addpath('sti','medi/bet2','decompose_utils','nifti'); \
   mcc('-m','recon.m','-a','sti','-a','medi/bet2/bet2.mexa64','-o','recon','-d','.')"
 ```

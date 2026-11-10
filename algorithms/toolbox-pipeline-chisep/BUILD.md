@@ -20,7 +20,7 @@ version.
 
 ## 2. Compile
 ```bash
-matlab -batch "cd medi/bet2; runmex"; rm medi/bet2/runmex.m
+matlab -batch "addpath('../../fidelity/matlab'); mex_bet2('medi/bet2')"; rm medi/bet2/runmex.m   # runmex with C++98 (FSL code)
 matlab -batch "addpath(genpath('chisep')); addpath('sti','medi','medi/bet2','mritools','nifti'); \
   mcc('-m','recon.m','-a','sti','-a','chisep','-a','medi','-a','mritools','-o','recon','-d','.')"
 ```

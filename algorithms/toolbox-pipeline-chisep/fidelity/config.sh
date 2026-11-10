@@ -26,6 +26,6 @@ fid_assemble() {
     cp "$FID_MRITOOLS/matlab/ROMEO.m" "$D/mritools/"
 }
 
-mex_bet2() { mat "cd('$1/medi/bet2'); runmex"; rm -f "$1/medi/bet2/runmex.m"; }
+mex_bet2() { mat "mex_bet2('$1/medi/bet2')"; rm -f "$1/medi/bet2/runmex.m"; }
 fid_build_hook() { mex_bet2 "$1"; }
 fid_setup_hook() { mex_bet2 "$1"; }

@@ -17,6 +17,6 @@ fid_assemble() {
     rm -f "$D/medi/mexUnwrap.mexa64" "$D/medi/bet2/bet2.mexa64"
 }
 
-mex_all() { mat "cd('$1/medi'); mex mexUnwrap.c; cd('bet2'); runmex"; }
+mex_all() { mat "cd('$1/medi'); mex mexUnwrap.c; mex_bet2('$1/medi/bet2')"; }
 fid_build_hook() { mex_all "$1"; }
 fid_setup_hook() { mex_all "$1"; }

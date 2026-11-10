@@ -24,7 +24,7 @@ rm -f algorithms/toolbox-pipeline-medi-cornell/medi/{mexUnwrap.mexa64,bet2/bet2.
 `mexUnwrap`, so the binaries match the MATLAB that compiles `recon`:
 ```bash
 cd algorithms/toolbox-pipeline-medi-cornell
-matlab -batch "cd medi; mex mexUnwrap.c; cd bet2; runmex"
+matlab -batch "addpath('../../fidelity/matlab'); cd medi; mex mexUnwrap.c; mex_bet2('bet2')"   # mex_bet2: runmex with C++98, for FSL code
 matlab -batch "addpath('nifti'); addpath(genpath('medi')); mcc('-m','recon.m','-a','medi/mexUnwrap.mexa64','-a','medi/bet2/bet2.mexa64','-o','recon','-d','.')"
 ```
 On Bunya the harness does this as a Slurm job (`fidelity/matlab/submit.sh toolbox-pipeline-medi-cornell build`).

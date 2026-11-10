@@ -18,6 +18,6 @@ fid_assemble() {
     cp -r "$2/decompose_utils" "$D/decompose_utils"   # vendored, byte-identical to decompose-qsm's
 }
 
-mex_bet2() { mat "cd('$1/medi/bet2'); runmex"; rm -f "$1/medi/bet2/runmex.m"; }
+mex_bet2() { mat "mex_bet2('$1/medi/bet2')"; rm -f "$1/medi/bet2/runmex.m"; }
 fid_build_hook() { mex_bet2 "$1"; }
 fid_setup_hook() { mex_bet2 "$1"; }
