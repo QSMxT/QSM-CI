@@ -22,13 +22,13 @@ doi: 10.1016/j.neuroimage.2011.08.082
 citation: Liu et al., NeuroImage 2012
 code_url: http://pre.weill.cornell.edu/mri/pages/qsm.html
 license: See Cornell MEDI toolbox license
-image: ghcr.io/astewartau/qsm-ci/medi-pipeline@sha256:de46335d78a05726405fe596c1f3e22347b654e9b5929cd3b5668c1c36c246c6   # v1, built and pushed on Bunya (BUILD.md)
+image: ghcr.io/astewartau/qsm-ci/medi-pipeline@sha256:b3f06e4b8720312dbadde08519dad05bfb943ed5d44c27b6a136b1ea5531ca1f   # v2, built and pushed on Bunya (BUILD.md)
 run: bash run.sh
 ci_skip: true   # a reference for pipeline parity only (QSMxT/QSM-CI#421)
 parity_only: true
 fidelity:
   date: 2026-11-10
-  image: sha256:de46335d78a05726405fe596c1f3e22347b654e9b5929cd3b5668c1c36c246c6
+  image: sha256:b3f06e4b8720312dbadde08519dad05bfb943ed5d44c27b6a136b1ea5531ca1f
   matlab: R2023b Update 5 (23.2.0.2459199); MATLAB Runtime R2023b Update 11 in the image
   tolerance: identical   # χ and every intermediate, in vivo, 8 threads
   result: pass
