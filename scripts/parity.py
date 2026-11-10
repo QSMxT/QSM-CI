@@ -720,8 +720,10 @@ def run_side(chain: list, dataset: Path, out: Path, runner: str, feed: "dict | N
                       **({"set": sets} if sets else {}),
                       **image_identity(image, runner)})
     finals = list(algo["produces"])   # every output of the last step (χ-separation has two)
+    # … and each optional product it wrote (a χ-separation toolbox pipeline's χ+ and χ−).
+    finals += [a for a in algo.get("optional_produces", ()) if (odir / ARTIFACT_FILE[a]).exists()]
     for art in finals:
-        shutil.copy(sources[art], out / ARTIFACT_FILE[art])
+        shutil.copy(sources.get(art, odir / ARTIFACT_FILE[art]), out / ARTIFACT_FILE[art])
     apply_names(inter, names, Path(dataset) / "inputs" / "mask.nii.gz")
     prov = {"chain": chain, "steps": steps, "image": steps[-1]["image"], "runtime_s": t_all,
             "final": final, "finals": finals}

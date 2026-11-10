@@ -27,6 +27,7 @@ from .params import (STACKABLE_ARTIFACTS, _check_nifti, _discover_sidecar,
                      _place_echoes, _place_input, _sidecar_to_params,
                      place_nifti, wants_gzip)
 from .stages import (ARTIFACT_FILE, ARTIFACT_KIND, STAGES, check_baseline_only, is_optional,
+                     optional_products,
                      scorable)
 
 
@@ -203,6 +204,7 @@ def _inputs_summary(slug: str, algo: dict) -> str:
     stage = algo["stage"]
     consumes = _consumes(algo)
     prods = STAGES[stage]["produces"]
+    extra = optional_products(stage)
     produced = prods[0]
     needs_echo = "phase" in consumes
     lines = [f"{algo['name']}  —  {stage} stage   ({', '.join(consumes)} → {', '.join(prods)})", "",
@@ -247,7 +249,7 @@ def _inputs_summary(slug: str, algo: dict) -> str:
     example = " ".join(f"--{a} {a}.nii.gz" for a in req_imgs)
     if needs_echo:
         example += " --te 0.004 0.012 0.02 0.028 --field-strength 7"
-    if len(prods) == 1:
+    if len(prods) + len(extra) == 1:
         lines += ["", "Output:",
                   "  -o PATH".ljust(22) + f"where to write {produced}.nii.gz "
                   f"(default: ./{produced}.nii.gz; a directory is fine — end it with a slash "
@@ -258,13 +260,19 @@ def _inputs_summary(slug: str, algo: dict) -> str:
             lines.append(f"Add  --truth {produced}.nii.gz  [--seg dseg.nii.gz]  to score the output.")
     else:
         outs = ", ".join(f"{p}.nii.gz" for p in prods)
+        if extra:
+            outs += " (and " + ", ".join(f"{p}.nii.gz" for p in extra) + " when the run makes them)"
         lines += ["", "Output:",
                   "  -o DIR".ljust(22) + f"directory to write {outs} into (default: current dir)",
                   "",
                   f"Example:  qsm-ci run {slug} {example} -o out/"]
         if scorable(stage):
             lines.append(f"Add  --truth GT_DIR/  (a folder holding {outs}) to score each output.")
-    if not scorable(stage):
+    if not scorable(stage) and produced in ARTIFACT_KIND:
+        # A `pipeline` makes its own mask, so there is no brain mask here to score inside.
+        lines.append(f"(This stage reads no brain mask, which scoring needs: {produced} is not "
+                     "scored by qsm-ci run.)")
+    elif not scorable(stage):
         lines.append(f"({produced} has no metric set — this stage's output is not scored.)")
     lines.append(f"See   qsm-ci run {slug} --help  for runner/scoring options and method parameters.")
     return "\n".join(lines)
@@ -353,6 +361,7 @@ def _build_run_parser(slug: str, algo: dict) -> argparse.ArgumentParser:
     stage = algo["stage"]
     consumes = _consumes(algo)
     prods = STAGES[stage]["produces"]
+    extra = optional_products(stage)
     produced = prods[0]
     desc = f"{algo['name']} — {stage} stage  ({', '.join(consumes)} → {', '.join(prods)})"
     if algo.get("description"):
@@ -395,7 +404,7 @@ def _build_run_parser(slug: str, algo: dict) -> argparse.ArgumentParser:
                      help="unit B0 direction (default: 0 0 1)")
     acq.add_argument("--voxel-size", nargs=3, type=float, metavar=("X", "Y", "Z"),
                      help="voxel size in mm (default: read from the input NIfTI header)")
-    if len(prods) == 1:
+    if len(prods) + len(extra) == 1:
         p.add_argument("-o", "--out", metavar="PATH", default=f"{produced}.nii.gz",
                        help="where to write the produced artifact: a file, or a directory (an existing "
                             "one, or a path ending in a slash to be created)")
@@ -403,6 +412,8 @@ def _build_run_parser(slug: str, algo: dict) -> argparse.ArgumentParser:
             p.add_argument("--truth", metavar="PATH", help=f"ground-truth {produced} to score against")
     else:
         outs = ", ".join(f"{a}.nii.gz" for a in prods)
+        if extra:
+            outs += "; also " + ", ".join(f"{a}.nii.gz" for a in extra) + " when the run makes them"
         p.add_argument("-o", "--out", metavar="DIR", default=".",
                        help=f"directory to write the produced artifacts into ({outs})")
         if scorable(stage):
@@ -547,7 +558,10 @@ def run_command(argv, log=print) -> int:
     stage = algo["stage"]
     consumes = _consumes(algo)
     prods = STAGES[stage]["produces"]
-    multi = len(prods) > 1
+    # A stage with optional products (a toolbox `pipeline`: χ+/χ− from the χ-separation ones) can
+    # write more than one file, so it always writes into an `-o` directory, as χ-separation does.
+    extra = optional_products(stage)
+    multi = len(prods) + len(extra) > 1
 
     import tempfile
     log(f"▸ {algo['name']}  [{stage}]  runner={args.runner}")
@@ -664,6 +678,12 @@ def run_command(argv, log=print) -> int:
             place_nifti(src, dest, gzipped=wants_gzip(dest))
             written[art] = dest
             log(f"✓ wrote {dest}  ({runtime:.1f}s)")
+        for art in extra:   # written only by the runs that compute them; absent is not a failure
+            src = odir / ARTIFACT_FILE[art]
+            if src.exists():
+                dest = _out_path(args.out, art, multi)
+                place_nifti(src, dest, gzipped=wants_gzip(dest))
+                log(f"✓ wrote {dest}")
 
         if args.intermediates:
             inter = sorted((odir / INTERMEDIATES_SUBDIR).glob("*.nii.gz"))

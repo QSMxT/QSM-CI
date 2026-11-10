@@ -69,6 +69,12 @@ spans:
   unwrap+bfr:  { consumes: [phase, magnitude, mask, params], produces: [localfield] }   # e.g. HARPERELLA
   bfr+dipole:  { consumes: [totalfield, mask, params, magnitude], produces: [chimap] }    # e.g. QSMART, TGV
   end-to-end:  { consumes: [phase, magnitude, mask, params], produces: [chimap] }        # e.g. TGV
+  # A whole toolbox pipeline, raw echoes to χ (QSMxT/QSM-CI#421): `qsmxt run --pipeline <id>`
+  # against the toolbox's own script. No mask: making it is part of the pipeline being checked.
+  # `optional_produces` are written only by the pipelines that compute them (the χ-separation
+  # toolbox's chi-para/chi-dia); a run that writes them has them collected like `produces`, and a
+  # run that does not is not a failure. No other stage or span has optional products.
+  pipeline:    { consumes: [phase, magnitude, params], produces: [chimap], optional_produces: [chi-para, chi-dia] }
 
 # Metrics reported per artifact kind (see eval/qsm_eval.py).
 scoring:

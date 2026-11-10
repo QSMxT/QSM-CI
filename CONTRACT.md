@@ -65,6 +65,18 @@ Spans (declare one of these if your method crosses stages):
 | `unwrap+bfr` | `phase`, `magnitude`, `mask`, `params` | `localfield` | — |
 | `bfr+dipole` | `totalfield`, `mask`, `params`, `magnitude` | `chimap` | QSMART, TGV |
 | `end-to-end` | `phase`, `magnitude`, `mask`, `params` | `chimap` | TGV |
+| `pipeline` | `phase`, `magnitude`, `params` | `chimap`; also `chi-para`, `chi-dia` when the pipeline makes them | `toolbox-pipeline-qsmrs` |
+
+`pipeline` is a whole toolbox pipeline, from the raw echoes to χ: a toolbox's own script, or
+`qsmxt run --pipeline <id>` (QSMxT/QSM-CI#421). It is given no `mask`, because making the mask is
+part of the pipeline being checked, and it reads the magnitude it makes it from. It exists for
+pipeline parity ([docs/parity.md](docs/parity.md)): both sides write the intermediates they have
+(`mask`, `totalfield`, `localfield`, …; "Intermediates" below), so a difference can be traced to its
+step. A χ-separation pipeline also writes `chi-para` and `chi-dia`; the others do not, so the two
+are optional products (`optional_produces:` in `stages.yml`): collected when written, not missing
+when absent. With no brain mask among its inputs, `qsm-ci run` does not score it. A `pipeline`
+submission sets `parity_only: true` (a reference) or `ci_skip: true` (a QSM.rs candidate whose
+pinned qsmxt has no `--pipeline`), so scoring leaves it out.
 
 Your `algorithm.yml` sets `stage:` to one of these names. The platform mounts exactly the consumed
 artifacts into `/input`, and expects exactly the produced artifacts in `/output`.

@@ -56,6 +56,7 @@ implement one stage, or a span for methods that cross boundaries. See
 | `unwrap+bfr` | `phase`, `magnitude`, `mask`, `params` | `localfield` |
 | `bfr+dipole` | `totalfield`, `mask`, `params`, `magnitude` | `chimap` |
 | `end-to-end` | `phase`, `magnitude`, `mask`, `params` | `chimap` |
+| `pipeline` | `phase`, `magnitude`, `params` | `chimap` (+ `chi-para`, `chi-dia` when made) |
 | `chi-separation` | `localfield`, `r2prime`, `chimap`, `magnitude`, `mask`, `params` | `chi-para`, `chi-dia` |
 | `r2prime-generation` | `magnitude`, `mask`, `params` | `r2prime` |
 | `brain-extraction` | `magnitude`, `params` | `mask` |
@@ -71,6 +72,8 @@ are isolated-only; a generated `r2prime` is additionally composed with each R2�
 χ-separation method. A `chi-separation` method is also scored on realistic inputs (L3): the same
 artifacts with the errors of a typical real QSM pipeline added, so it needs no change to take part.
 The GRE-only composition runs at both levels: at L3 the generated `r2prime` replaces the L3 one.
+`pipeline` is a whole toolbox pipeline, raw echoes to χ, for pipeline parity
+([`parity.md`](parity.md)); it makes its own mask, so it is given none.
 See [`../CONTRACT.md`](../CONTRACT.md).
 
 ## 2. Provide your code + an environment (you don't bake an image)
