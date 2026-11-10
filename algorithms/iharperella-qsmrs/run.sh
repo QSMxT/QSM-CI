@@ -14,4 +14,14 @@ if [ -f "$CFG" ]; then
   V=$(jq -r '.tol // empty' "$CFG"); [ -n "$V" ] && SET="$SET --tol $V"
   V=$(jq -r '.rim // empty' "$CFG"); [ -n "$V" ] && SET="$SET --rim $V"   # sti | whole (qsmxt after v11.0.0)
 fi
-qsmxt bgremove iharperella "$IN/totalfield.nii.gz" -m "$IN/mask.nii.gz" -o "$OUT/localfield.nii.gz" $SET
+# erode_voxels: erode the mask by N voxels before background removal, as `qsmxt run
+# --bf-erode-voxels` does (the same 6-connected erosion); the field is left whole, and the local
+# field is 0 outside the eroded mask. 0 (default): the mask as given.
+MASK="$IN/mask.nii.gz"
+ERODE=0
+[ -f "$CFG" ] && ERODE=$(jq -r '.erode_voxels // 0' "$CFG")
+if [ "$ERODE" -gt 0 ]; then
+  MASK="$(mktemp -d)/mask_eroded.nii.gz"
+  qsmxt mask erode "$IN/mask.nii.gz" -o "$MASK" --iterations "$ERODE"
+fi
+qsmxt bgremove iharperella "$IN/totalfield.nii.gz" -m "$MASK" -o "$OUT/localfield.nii.gz" $SET

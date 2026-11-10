@@ -42,3 +42,6 @@ parameters:
   - name: precision
     default: double
     description: double, or single as mexMGv6 computes (qsmxt after v10.0.0)
+  - name: erode_voxels
+    default: 0
+    description: "erode the brain mask by this many voxels (6-connected) before background removal, as qsmxt run --bf-erode-voxels; the field is left whole (uses qsmxt mask erode, also in v11.0.0)"
