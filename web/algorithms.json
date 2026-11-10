@@ -837,19 +837,11 @@
         {
           "name": "alpha1",
           "default": "2e-4",
-          "tuned": {
-            "sim": "3e-5",
-            "invivo": "4e-4"
-          },
           "description": "first-order (TGV) L1 penalty"
         },
         {
           "name": "alpha0",
           "default": "4e-4",
-          "tuned": {
-            "sim": "1e-4",
-            "invivo": "8e-4"
-          },
           "description": "second-order (curvature) penalty"
         },
         {
@@ -964,10 +956,6 @@
         {
           "name": "alpha1",
           "default": "2e-4",
-          "tuned": {
-            "sim": "3e-5",
-            "invivo": "4e-4"
-          },
           "description": "gradient L1 (TV) penalty"
         },
         {
@@ -1358,11 +1346,7 @@
       "parameters": [
         {
           "name": "alpha_l2",
-          "default": "1e-4",
-          "tuned": {
-            "sim": "1e-5",
-            "invivo": "3e-4"
-          },
+          "default": "3e-5",
           "description": "L2-stage TV weight"
         },
         {
@@ -2243,11 +2227,7 @@
       "parameters": [
         {
           "name": "alpha1",
-          "default": "2e-4",
-          "tuned": {
-            "sim": "8e-4",
-            "invivo": 0.02
-          },
+          "default": "5e-3",
           "description": "gradient L1 (TV) penalty"
         },
         {
@@ -2257,7 +2237,7 @@
         },
         {
           "name": "lambda",
-          "default": 1.0,
+          "default": 0.8,
           "description": "L1 fidelity strength (<1 rejects more inconsistent voxels)"
         },
         {
@@ -2801,12 +2781,8 @@
       "parameters": [
         {
           "name": "lambda",
-          "default": "1e-3",
-          "tuned": {
-            "sim": "3e-4",
-            "invivo": 0.01
-          },
-          "description": "regularization"
+          "default": 1000,
+          "description": "data-fidelity weight, on MEDI's scale (larger = closer data fit, less regularization)"
         }
       ],
       "ci_notes": []
@@ -3182,10 +3158,6 @@
         {
           "name": "lambda",
           "default": "1e-3",
-          "tuned": {
-            "sim": "3e-3",
-            "invivo": "3e-3"
-          },
           "description": "regularization"
         },
         {
@@ -3909,18 +3881,12 @@
       "parameters": [
         {
           "name": "radius",
-          "default": 6.0,
-          "tuned": {
-            "sim": 12.0
-          },
+          "default": 3.0,
           "description": "SMV kernel radius (mm)"
         },
         {
           "name": "tik_reg",
           "default": "1e-4",
-          "tuned": {
-            "sim": "1e-4"
-          },
           "description": "Tikhonov regularization"
         },
         {
@@ -4367,10 +4333,7 @@
       "parameters": [
         {
           "name": "lambda",
-          "default": 7.5e-05,
-          "tuned": {
-            "sim": "1e-5"
-          },
+          "default": 1000,
           "description": "data-fidelity weight (matches MEDI's default; larger = closer data fit, less regularization)"
         },
         {
@@ -4471,19 +4434,13 @@
         },
         {
           "name": "alpha1",
-          "default": 6.675e-05,
-          "tuned": {
-            "sim": 0.00015
-          },
-          "description": "first-order (gradient) weight, ppm"
+          "default": 0.003,
+          "description": "first-order (gradient) weight, rad at the echo time"
         },
         {
           "name": "alpha0",
-          "default": 0.0002002,
-          "tuned": {
-            "sim": 0.0015
-          },
-          "description": "second-order weight, ppm"
+          "default": 0.002,
+          "description": "second-order weight, rad at the echo time"
         },
         {
           "name": "reference_divergence",
@@ -4536,9 +4493,6 @@
         {
           "name": "lambda",
           "default": 0.01,
-          "tuned": {
-            "sim": "3e-4"
-          },
           "description": "L2 regularization"
         }
       ],
@@ -4608,9 +4562,6 @@
         {
           "name": "threshold",
           "default": 0.15,
-          "tuned": {
-            "invivo": 0.4
-          },
           "description": "k-space threshold"
         }
       ],
@@ -4645,9 +4596,6 @@
         {
           "name": "threshold",
           "default": 0.15,
-          "tuned": {
-            "sim": 0.05
-          },
           "description": "singular-value threshold"
         }
       ],
@@ -4686,11 +4634,7 @@
       "parameters": [
         {
           "name": "lambda",
-          "default": "2e-4",
-          "tuned": {
-            "sim": "3e-5",
-            "invivo": "3e-4"
-          },
+          "default": "1e-3",
           "description": "TV regularization"
         },
         {
@@ -5074,9 +5018,6 @@
         {
           "name": "alpha1",
           "default": "2e-4",
-          "tuned": {
-            "sim": "3e-5"
-          },
           "description": "gradient L1 (TV) penalty"
         },
         {
@@ -5087,9 +5028,6 @@
         {
           "name": "beta",
           "default": 150,
-          "tuned": {
-            "sim": 75
-          },
           "description": "harmonic-constraint weight"
         },
         {
@@ -5411,18 +5349,12 @@
       "parameters": [
         {
           "name": "radius",
-          "default": 6.0,
-          "tuned": {
-            "sim": 12.0
-          },
+          "default": 3.0,
           "description": "SMV kernel radius (mm)"
         },
         {
           "name": "tik_reg",
           "default": "1e-4",
-          "tuned": {
-            "sim": "1e-4"
-          },
           "description": "Tikhonov regularization"
         },
         {
@@ -5720,10 +5652,7 @@
       "parameters": [
         {
           "name": "lambda",
-          "default": 7.5e-05,
-          "tuned": {
-            "sim": "1e-5"
-          },
+          "default": 1000,
           "description": "data-fidelity weight (matches MEDI's default; larger = closer data fit, less regularization)"
         },
         {
@@ -5830,19 +5759,13 @@
         },
         {
           "name": "alpha1",
-          "default": 6.675e-05,
-          "tuned": {
-            "sim": 0.00015
-          },
-          "description": "first-order (gradient) weight, ppm"
+          "default": 0.003,
+          "description": "first-order (gradient) weight, rad at the echo time"
         },
         {
           "name": "alpha0",
-          "default": 0.0002002,
-          "tuned": {
-            "sim": 0.0015
-          },
-          "description": "second-order weight, ppm"
+          "default": 0.002,
+          "description": "second-order weight, rad at the echo time"
         },
         {
           "name": "reference_divergence",

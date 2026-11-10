@@ -22,12 +22,10 @@ run: bash run.sh
 parameters:
   - name: threshold
     default: 0.15
-    tuned:
-      sim: 0.05
     description: singular-value threshold
 
-# Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
+# Parameter-tuning provenance (from the Bunya sweep). status: stale = re-sweep needed.
 tuning:
   date: 2026-08
-  status: partial
-  note: "Swept threshold on sim+invivo (2026-08). sim tuned (0.05); invivo default optimal (+0.002 negligible)."
+  status: stale
+  note: "Tuned on QSMxT v10 (QSM.rs v0.39); v11 (QSM.rs v0.41) changed it: TSVD: QSM.jl's FFT padding by default and half-spectrum kernel (QSM.rs#334/#335). Tuned values removed 2026-11-10; re-sweep. Was: Swept threshold on sim+invivo (2026-08). sim tuned (0.05); invivo default optimal (+0.002 negligible)."

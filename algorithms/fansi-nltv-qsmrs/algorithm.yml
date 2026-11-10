@@ -26,9 +26,6 @@ run: bash run.sh
 parameters:
   - name: alpha1
     default: 2e-4
-    tuned:
-      sim: 3e-5
-      invivo: 4e-4
     description: gradient L1 (TV) penalty
   - name: mu1
     default: 2e-2
@@ -40,8 +37,8 @@ parameters:
     default: 0.1
     description: convergence threshold on the solution update (percent)
 
-# Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
+# Parameter-tuning provenance (from the Bunya sweep). status: stale = re-sweep needed.
 tuning:
   date: 2026-08
-  status: tuned
-  note: "Swept alpha1 on sim+invivo (2026-08). Tuned both: sim 3e-5, invivo 4e-4."
+  status: stale
+  note: "Tuned on QSMxT v10 (QSM.rs v0.39); v11 (QSM.rs v0.41) changed it: FANSI nlTV: radians inside, magnitude weight and mu defaults (QSM.rs#237), FANSI's discrete kernel (#414). Tuned values removed 2026-11-10; re-sweep. Was: Swept alpha1 on sim+invivo (2026-08). Tuned both: sim 3e-5, invivo 4e-4."

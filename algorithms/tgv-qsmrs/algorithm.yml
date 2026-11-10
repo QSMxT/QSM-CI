@@ -31,21 +31,15 @@ parameters:
   - name: iterations
     default: 1000
     description: iterations
-  # α are in ppm (qsmxt >= v10.0.0), so a value means the same at every TE and field strength. The
-  # defaults are QSMxT's own: the Langkammer/nipype rad-domain α (0.0005 / 0.0015) at the 7 T / 4 ms
-  # reference, ÷ 2π·γ·B0·TE = 7.49. The tuned point predates v10 but was already ppm-valued (run.sh
-  # then passed a TE·B0 with 2π·γ·TE·B0 = 1), so it carries over unchanged; alpha0 is now listed with
-  # it because the default it was swept against (0.0015) is no longer the default.
+  # α are in TGV.jl's rad units at the scan's echo time (--te, default the first) and field strength
+  # (qsmxt v11). The defaults are TGV.jl's (regularization 2). v10's α were in ppm, so its tuned
+  # values do not carry over (see tuning below).
   - name: alpha1
-    default: 6.675e-5
-    tuned:
-      sim: 1.5e-4
-    description: first-order (gradient) weight, ppm
+    default: 0.003
+    description: first-order (gradient) weight, rad at the echo time
   - name: alpha0
-    default: 2.002e-4
-    tuned:
-      sim: 1.5e-3
-    description: second-order weight, ppm
+    default: 0.002
+    description: second-order weight, rad at the echo time
   # Parity switches (qsmxt invert tgv after v10.0.0): reproduce QuantitativeSusceptibilityMappingTGV.jl
   # where QSM.rs's default differs. Not tuning parameters.
   - name: reference_divergence
@@ -58,8 +52,8 @@ parameters:
     default: false
     description: χ over TGV.jl's whole output box, including the rim just outside the eroded mask
 
-# Parameter-tuning provenance (from the Bunya sweep) - so this method is not re-swept later.
+# Parameter-tuning provenance (from the Bunya sweep). status: stale = re-sweep needed.
 tuning:
   date: 2026-08
-  status: tuned
-  note: "Swept alpha1/alpha0 on sim (bfr+dipole span; sim-only). Tuned sim: alpha1 1.5e-4."
+  status: stale
+  note: "Tuned on QSMxT v10 (QSM.rs v0.39); v11 (QSM.rs v0.41) changed it: TGV: TGV.jl's rad-unit alpha at the scan's TE and B0 (QSM.rs#231), exact adjoint and edge erosion (#324); defaults alpha1 0.003, alpha0 0.002 rad. Tuned values removed 2026-11-10; re-sweep. Was: Swept alpha1/alpha0 on sim (bfr+dipole span; sim-only). Tuned sim: alpha1 1.5e-4."
