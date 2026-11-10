@@ -1598,7 +1598,7 @@
         }
       ],
       "ci_notes": [
-        "Includes a fix that is not in STI Suite: grids with an odd dimension are padded to even with zeros before iHARPERELLA and cropped back after. On odd grids, such as the in-silico head (164x205x205), STI Suite 3.0's iHARPERELLA leaves the background field in along the odd axes (correlation 0.10 with the true local field, against 0.86 when cropped to even). Even grids are unchanged.\n"
+        "Includes a fix that is not in STI Suite: grids with an odd dimension are padded to even with zeros before iHARPERELLA and cropped back after. On odd grids, such as the in-silico head (164x205x205), STI Suite 3.0's iHARPERELLA leaves the background field in along the odd axes (correlation 0.10 with the true local field; 0.86 with the padding, as QSM.rs's port gives). Even grids are unchanged.\n"
       ]
     },
     {
