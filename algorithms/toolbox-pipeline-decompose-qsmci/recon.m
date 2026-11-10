@@ -60,10 +60,31 @@ function recon(inp, out)
     o1 = optimoptions('lsqlin', 'Algorithm', 'interior-point', 'Display', 'off');
     o3 = optimoptions('lsqnonlin', 'Algorithm', 'trust-region-reflective', 'Display', 'off');
     Cp = zeros(N1,N2,N3); Cm = Cp; C0m = Cp; R0m = Cp; chp = Cp; chm = Cp;
-    idx = find(mask_v);
-    for v = idx'
-        [i, j, k] = ind2sub(matrix_size, v);
-        m = squeeze(mag(i,j,k,:))';
+    % DECOMPOSE_CROPBOX=n fits only the voxels in an (n+1)^3 central box, as decompose-qsm's
+    % fidelity check does: the fit is per voxel and independent between voxels, and the whole
+    % brain takes hours. Everything before the fit (mask, per-echo χ) is whole-volume either way.
+    fitmask = mask_v;
+    box = str2double(getenv('DECOMPOSE_CROPBOX'));
+    if ~isnan(box) && box > 0
+        sel = false(N1, N2, N3); c = round([N1 N2 N3]/2); h = floor(box/2);
+        sel(max(1,c(1)-h):min(N1,c(1)+h), max(1,c(2)-h):min(N2,c(2)+h), max(1,c(3)-h):min(N3,c(3)+h)) = true;
+        fitmask = fitmask & sel;
+    end
+    try
+        if isempty(gcp('nocreate'))
+            pc = parcluster('local'); jsl = tempname; mkdir(jsl); pc.JobStorageLocation = jsl;
+            parpool(pc, feature('numcores'));
+        end
+    catch err
+        fprintf('DECOMPOSE: no parpool (%s), running serially\n', err.message);
+    end
+    idx = find(fitmask);
+    nv = numel(idx);
+    fitted = zeros(nv, 6);
+    magv = reshape(mag, [], ne); chiv = reshape(chi, [], ne);
+    parfor n = 1:nv
+        v = idx(n);
+        m = magv(v, :);
         s0 = m(1);
         if m(1) > 0 && m(2) > 0 && m(2) < m(1)
             s = m(1) * (m(1)/m(2))^(TE(1)/(TE(2)-TE(1)));
@@ -71,7 +92,7 @@ function recon(inp, out)
         end
         if ~(s0 > 0), continue; end
         % conj(y), as decompose-qsm's `squeeze(y_data(i,j,k,:))'` (the conjugate transpose).
-        ydata = conj(m / s0 .* exp(-1i*(2/3) * squeeze(chi(i,j,k,:))' * gamma * B0 .* TE));
+        ydata = conj(m / s0 .* exp(-1i*(2/3) * chiv(v, :) * gamma * B0 .* TE));
         if sum(ydata) == 0, continue; end
         b1 = complex_to_real(ydata);
         b3 = complex_to_real(log(ydata));
@@ -89,11 +110,15 @@ function recon(inp, out)
             f3 = @(x) complex_to_real(objective3(x, TE, C(1), C(2), C(3), R0, B0)) - b3;
             chi_0 = lsqnonlin(f3, chi_0, [0 -0.5], [0.5 0], o3);
         end
-        Cp(v) = C(1); Cm(v) = C(2); C0m(v) = C(3); R0m(v) = R0; chp(v) = chi_0(1); chm(v) = chi_0(2);
+        fitted(n, :) = [C(1) C(2) C(3) R0 chi_0(1) chi_0(2)];
     end
+    Cp(idx) = fitted(:,1); Cm(idx) = fitted(:,2); C0m(idx) = fitted(:,3);
+    R0m(idx) = fitted(:,4); chp(idx) = fitted(:,5); chm(idx) = fitted(:,6);
     den = (2/3) * gamma * B0 * sum(TE);
     PSC = zeros(N1,N2,N3); DSC = PSC;
-    for v = idx'
+    for n = 1:nv
+        if ~any(fitted(n, :)), continue; end   % skipped: no signal, or no S(0)
+        v = idx(n);
         cp = pscModel(TE, Cp(v), Cm(v), C0m(v), chp(v), chm(v), R0m(v), B0);
         cn = dscModel(TE, Cp(v), Cm(v), C0m(v), chp(v), chm(v), R0m(v), B0);
         PSC(v) = -sum(angle(cp)) / den;
@@ -116,8 +141,8 @@ function recon(inp, out)
         end
         write_meta(idir, struct('N_inner', N_inner, 'normalisation', 'extrapolated-s0'));
     end
-    write_niigz(as_float(tmpl, abs(DSC) .* mask_v), fullfile(out, 'chi-para.nii.gz'));
-    write_niigz(as_float(tmpl, abs(PSC) .* mask_v), fullfile(out, 'chi-dia.nii.gz'));
+    write_niigz(as_float(tmpl, abs(DSC) .* fitmask), fullfile(out, 'chi-para.nii.gz'));
+    write_niigz(as_float(tmpl, abs(PSC) .* fitmask), fullfile(out, 'chi-dia.nii.gz'));
     write_niigz(as_float(tmpl, mean(chi, 4)), fullfile(out, 'chimap.nii.gz'));
 end
 

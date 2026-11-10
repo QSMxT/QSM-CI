@@ -5,8 +5,9 @@ FID_SIF=decompose-pipeline
 FID_SOURCES="FID_STI FID_MEDI FID_NIFTI"
 FID_MATLAB_PATH="sti medi/bet2 decompose_utils nifti"
 FID_MCC_A="sti medi/bet2/bet2.mexa64"   # STI Suite is pcode; the mex is built below
-FID_WHICH="BET bet2 MRPhaseUnwrap V_SHARP QSM_star lsqlin lsqnonlin signalModel objective1 objective2 objective3 pscModel dscModel complex_to_real"
-FID_SBATCH="--mem=64G --time=12:00:00"
+FID_WHICH="parpool gcp BET bet2 MRPhaseUnwrap V_SHARP QSM_star lsqlin lsqnonlin signalModel objective1 objective2 objective3 pscModel dscModel complex_to_real"
+FID_SBATCH="--mem=64G --time=06:00:00"
+FID_ENV="DECOMPOSE_CROPBOX=32"   # as decompose-qsm: a 33³ central box; the whole brain takes hours
 
 fid_assemble() {
     local D=$1
