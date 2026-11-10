@@ -365,6 +365,30 @@ pairs:
     datasets:
       sim: {}                  # qsm-forward: no ImagingFrequency, so both sides use γ·B0
       prisma-bridge-run1: {}   # Siemens Prisma, ImagingFrequency from the exam card (repack first)
+  toolbox-pipeline-chisep-ilsqr:
+    reference: toolbox-pipeline-chisep   # χ-separation toolbox v1.1.3 Chisep_script.m; image unbuilt
+    candidate: toolbox-pipeline-qsmrs
+    enabled: false
+    blocked_by: https://github.com/QSMxT/QSM-CI/issues/421
+    reference_set: { method: ilsqr }
+    candidate_set: { pipeline: chi-sep-ilsqr }
+    qsmrs_paths: [src/pipeline/, src/separation/]
+    qsmxt_paths: [crates/qsmxt-engine/src/]
+    datasets:
+      # qsm-forward, 3 T, with a measured-style R2′ input. It has no Manufacturer: the script runs
+      # its Tukey 0.4 regardless, where QSMxT's rules need a known manufacturer.
+      meso-3t: {}
+  toolbox-pipeline-chisep-medi:
+    reference: toolbox-pipeline-chisep
+    candidate: toolbox-pipeline-qsmrs
+    enabled: false
+    blocked_by: https://github.com/QSMxT/QSM-CI/issues/421
+    reference_set: { method: medi }
+    candidate_set: { pipeline: chi-sep-medi }
+    qsmrs_paths: [src/pipeline/, src/separation/]
+    qsmxt_paths: [crates/qsmxt-engine/src/]
+    datasets:
+      meso-3t: {}
   fit-ppm-complex:
     reference: fit-ppm-complex-cornell   # MEDI 2024.11.26 Fit_ppm_complex + unwrapPhase (#322)
     candidate: fit-ppm-complex-qsmrs     # ci_skip for scoring: v10.0.0 has no complex fit

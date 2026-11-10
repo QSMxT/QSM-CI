@@ -1,0 +1,36 @@
+name: χ-separation toolbox pipeline (SNU-LIST)
+slug: toolbox-pipeline-chisep
+algorithm: toolbox-pipeline
+variant: chisep
+source: snu
+stage: pipeline
+# The toolbox takes a measured R2′; datasets without one cannot run this pipeline.
+optional_inputs: [r2prime]
+language: MATLAB
+family: pipeline
+learning: none
+engine: χ-separation toolbox
+description: >
+  The SNU-LIST χ-separation toolbox v1.1.3's own pipeline (Chisep_script.m), from the echoes to χ+
+  and χ−: Tukey windowing, MEDI's BET, ROMEO (mritools 4.7.1) and weighted echo averaging,
+  STI Suite's V-SHARP and iLSQR, then χ-separation-iLSQR or -MEDI (`method`). The reference for
+  QSMxT's `chi-sep-ilsqr` and `chi-sep-medi` pipelines (QSMxT/QSM-CI#421).
+authors:
+- name: Hyeong-Geol Shin
+- name: Jongho Lee
+doi: 10.1016/j.neuroimage.2021.118371
+citation: Shin et al., NeuroImage 2021
+code_url: https://github.com/SNU-LIST/chi-separation
+license: See the χ-separation toolbox license
+# Not built yet: compile and verify on Bunya (BUILD.md, fidelity/matlab), then pin the digest.
+image: ghcr.io/astewartau/qsm-ci/chisep-pipeline:unbuilt
+run: bash run.sh
+ci_skip: true
+parity_only: true
+matlab:
+  entry: recon.m
+  runtime: r2023b
+parameters:
+- name: method
+  default: ilsqr
+  description: the χ-separation the script runs, ilsqr (chi_sep_iLSQR) or medi (chi_sep_MEDI)
