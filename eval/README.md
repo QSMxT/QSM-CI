@@ -13,6 +13,10 @@ The metrics are a 1:1 port of the QSM.rs reference implementation
 `xsim` (5×5×5 XSIM), `dgm_linearity`, `dilate_mask_3d`, and `calcification_metrics`. Because it is a
 *second* implementation, it must not drift:
 
+- `xsim` scores both maps demeaned within the mask, as `nrmse_challenge` does (the χ reference is
+  arbitrary, so an overall offset is not an error). QSM.rs's `tests/common/mod.rs` must do the same
+  for the cross-check below to hold.
+
 - `test_metrics.py` pins the invariants.
 - `qsm_eval.py --selfcheck` runs quick sanity checks.
 - **Cross-checked against QSM.rs** on the head phantom: feeding the same recon/truth/mask/seg to

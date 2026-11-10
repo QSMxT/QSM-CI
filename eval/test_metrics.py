@@ -10,10 +10,12 @@ known-value checks whose expected numbers follow from its DEFINITION (in qsm_eva
 QSM.rs port), not from running the code:
 
   correlation   Pearson within the mask: affine-invariant, corr(x, -x) = -1, constant -> 0.
-  xsim          SSIM with L=1, K1=0.01, K2=0.001 (c1=1e-4, c2=1e-6), 5^3 windows. For a map with
-                local mean mu ~ 1 and local variance v ~ 0.01 (both >> c1, c2) the luminance and
-                contrast terms are (2 mu_a mu_b)/(mu_a^2 + mu_b^2) and (2 cov)/(var_a + var_b):
-                b = 2a  -> (4/5) * (4/5) = 0.64;   b = a + 1  -> (4/5) * 1 = 0.8.
+  xsim          SSIM with L=1, K1=0.01, K2=0.001 (c1=1e-4, c2=1e-6), 5^3 windows, on maps
+                demeaned within the mask (as nrmse). For a map whose demeaned local means are
+                |mu| ~ 1 and local variance v ~ 0.01 (both >> c1, c2) the luminance and contrast
+                terms are (2 mu_a mu_b)/(mu_a^2 + mu_b^2) and (2 cov)/(var_a + var_b):
+                b = 2a  -> (4/5) * (4/5) = 0.64;   b = a + 1  -> exactly 1 (an overall offset is
+                demeaned away), while an offset on part of the map still costs.
   nrmse         100 * |(a - mean a) - (b - mean b)| / |b - mean b| within the mask, so an offset
                 costs nothing, 2b scores 100, -b scores 200 and an all-zero map scores 100 (the
                 do-nothing baseline); the detrended variant divides out any slope: 0 for 2b and -b,
@@ -94,18 +96,36 @@ def test_correlation_of_a_constant_is_zero_not_nan():
 # ----------------------------------------------------------------------------------- xsim
 
 
+def _two_level(shape=(40, 20, 20)):
+    """+1 in the lower half along the first axis and -1 in the upper, plus noise of variance 0.01:
+    demeaned, every 5^3 window has |mu| >= 0.2 >> 0.01 = sqrt(c1), so both constants are negligible."""
+    x = _field(shape=shape, scale=0.1)
+    x[: shape[0] // 2] += 1.0
+    x[shape[0] // 2:] -= 1.0
+    return x
+
+
 def test_xsim_known_values_for_scale_and_offset():
-    """mu ~ 1, v ~ 0.01 so both SSIM constants are negligible: 2a -> 0.64, a + 1 -> 0.8."""
-    x = 1.0 + _field(scale=0.1)
-    mask = _mask()
+    """2a -> 0.64; a + 1 -> exactly the identity score, since XSIM demeans within the mask."""
+    x = _two_level()
+    mask = _mask(x.shape)
     assert abs(qe.xsim(x, 2.0 * x, mask) - 0.64) < 1e-3
-    assert abs(qe.xsim(x, x + 1.0, mask) - 0.8) < 2e-3
+    assert abs(qe.xsim(x, x + 1.0, mask) - 1.0) < 1e-9
+    assert abs(qe.xsim(x, x - 0.3, _half_mask(x.shape)) - 1.0) < 1e-9
+
+
+def test_xsim_still_scores_an_offset_on_part_of_the_map():
+    """Only a GLOBAL offset is free: shifting one half of the map against the other costs."""
+    x = _two_level()
+    y = x.copy()
+    y[: x.shape[0] // 2] += 1.0
+    assert qe.xsim(x, y, _mask(x.shape)) < 0.95
 
 
 def test_xsim_ordering_prefers_small_noise_to_a_wrong_scale():
-    x = 1.0 + _field(scale=0.1)
-    mask = _mask()
-    noisy = x + _field(seed=1, scale=0.01)
+    x = _two_level()
+    mask = _mask(x.shape)
+    noisy = x + _field(seed=1, shape=x.shape, scale=0.01)
     assert qe.xsim(x, 2.0 * x, mask) < qe.xsim(x, noisy, mask) < 1.0
     assert qe.xsim(x, noisy, mask) > 0.95
 
