@@ -9,6 +9,10 @@ FID_WHICH="parpool gcp BET bet2 MRPhaseUnwrap V_SHARP QSM_star lsqlin lsqnonlin 
 FID_SBATCH="--mem=64G --time=06:00:00"
 FID_ENV="DECOMPOSE_CROPBOX=32"   # as decompose-qsm: a 33³ central box; the whole brain takes hours
 
+# Bunya's g++ 11 builds bet2's mex against GLIBCXX_3.4.29; R2023b loads its own older libstdc++
+# first (GLIBCXX_3.4.28), so licensed MATLAB preloads the host's, MathWorks' workaround. The image
+# builds its mex with its own compiler and does not need it.
+FID_MATLAB_ENV="LD_PRELOAD=/usr/lib64/libstdc++.so.6"
 fid_assemble() {
     local D=$1
     rm -rf "$D"; mkdir -p "$D/medi/bet2"

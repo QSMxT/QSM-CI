@@ -6,6 +6,10 @@ FID_MATLAB_PATH="nifti +medi"      # +: MEDI's subfolders too (bet2/)
 FID_MCC_A="medi/mexUnwrap.mexa64 medi/bet2/bet2.mexa64"
 FID_WHICH="Fit_ppm_complex unwrapPhase mexUnwrap BET bet2 PDF arlo extract_CSF MEDI_L1 parse_QSM_input gradient_mask dataterm_mask cgsolve reg_CSF SMV sphere_kernel store_CG_results"
 
+# Bunya's g++ 11 builds bet2's mex against GLIBCXX_3.4.29; R2023b loads its own older libstdc++
+# first (GLIBCXX_3.4.28), so licensed MATLAB preloads the host's, MathWorks' workaround. The image
+# builds its mex with its own compiler and does not need it.
+FID_MATLAB_ENV="LD_PRELOAD=/usr/lib64/libstdc++.so.6"
 fid_assemble() {
     local D=$1
     rm -rf "$D"; mkdir -p "$D"

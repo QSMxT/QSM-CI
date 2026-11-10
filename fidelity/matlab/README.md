@@ -44,6 +44,7 @@ residual is never accepted as a tolerance: find its cause and record it in the a
 | `FID_MCC_A` | folders under `DEST` mcc must force-bundle (`-a`; pcode, mex, classes), or `@path` under `matlabroot` |
 | `FID_WHICH` | functions whose resolution the build and the licensed runs record |
 | `FID_ENV` | optional `K=V` pairs set for every run, licensed and container alike |
+| `FID_MATLAB_ENV` | optional `K=V` pairs set for licensed MATLAB only (the build, mex and the licensed runs), e.g. `LD_PRELOAD` of the host's libstdc++ for a mex the host's g++ built |
 | `FID_SBATCH` | optional extra `sbatch` arguments for the run jobs (memory, time) |
 | `fid_build_hook`, `fid_setup_hook` | optional steps after `fid_assemble` (e.g. a mex compile) |
 

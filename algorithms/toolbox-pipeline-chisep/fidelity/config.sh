@@ -10,6 +10,10 @@ FID_WHICH="tukey_windowing Preprocessing4Phase BET bet2 use_arlo r2star_arlo r2s
 FID_SBATCH="--mem=64G"
 FID_ENV="MRITOOLS_ROMEO=$FID_MRITOOLS/bin/romeo"
 
+# Bunya's g++ 11 builds bet2's mex against GLIBCXX_3.4.29; R2023b loads its own older libstdc++
+# first (GLIBCXX_3.4.28), so licensed MATLAB preloads the host's, MathWorks' workaround. The image
+# builds its mex with its own compiler and does not need it.
+FID_MATLAB_ENV="LD_PRELOAD=/usr/lib64/libstdc++.so.6"
 fid_assemble() {
     local D=$1
     rm -rf "$D"; mkdir -p "$D/chisep" "$D/medi/bet2" "$D/mritools"
