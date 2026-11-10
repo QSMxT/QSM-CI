@@ -10,6 +10,12 @@ engine: STI Suite
 description: STAR-QSM (streaking artifact reduction) dipole inversion from STI Suite v3, compiled from
   MATLAB and run on the license-free MATLAB Runtime. Fast two-level susceptibility inversion of the
   local field.
+ci_notes:
+- >
+  Includes a fix that is not in STI Suite: grids with an odd dimension are padded to even with
+  zeros before QSM_star and cropped back after. STI Suite 3.0's QSM_star stops with an error on odd
+  grids, such as the in-silico head (164x205x205), because its dipole kernel (calcD2Matrix)
+  assumes even dimensions. Even grids are unchanged.
 authors:
 - name: Hongjiang Wei and Chunlei Liu
   affiliation: UC Berkeley
