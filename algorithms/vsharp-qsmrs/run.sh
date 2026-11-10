@@ -7,16 +7,16 @@ IN="${1:-/input}"; OUT="${2:-/output}"
 #   $QSMCI_SET_<NAME>  for each  qsm-ci run --set NAME=VALUE  override
 B0=$(jq -r '.B0_dir | join(" ")' "$IN/params.json")
 
-# QSM-CI deconvolves (TSVD, threshold 0.05) although qsmxt v10's default is not to: on the sim
-# phantom that scored best (xSIM 0.845, vs 0.820 at threshold 0.2 and 0.803 without).
+# QSMxT's default: no deconvolution. Deconvolving (TSVD, threshold 0.05) is the sim-tuned value
+# (xSIM 0.845, vs 0.820 at threshold 0.2 and 0.803 without), passed as --set deconvolve=true.
 # Parameter overrides (qsm-ci run --set NAME=VALUE) arrive as /input/config.json.
-DECONVOLVE=true; THRESHOLD=0.05; SET=""
+DECONVOLVE=false; THRESHOLD=0.05; SET=""
 CFG="$IN/config.json"
 if [ -f "$CFG" ]; then
-  # Not `.deconvolve // empty`: jq's `//` treats `false` as absent, which silently kept
-  # deconvolve=true for `--set deconvolve=false`.
+  # Not `.deconvolve // empty`: jq's `//` treats `false` as absent.
   V=$(jq -r 'if has("deconvolve") then .deconvolve | tostring else empty end' "$CFG")
-  [ -n "$V" ] && DECONVOLVE=$V
+  # Lower-cased: a tuned value can arrive as Python's "True".
+  [ -n "$V" ] && DECONVOLVE=$(printf '%s' "$V" | tr '[:upper:]' '[:lower:]')
   V=$(jq -r '.threshold // empty' "$CFG"); [ -n "$V" ] && THRESHOLD=$V
   V=$(jq -r '.max_radius // empty' "$CFG"); [ -n "$V" ] && SET="$SET --max-radius $V"
   V=$(jq -r '.min_radius // empty' "$CFG"); [ -n "$V" ] && SET="$SET --min-radius $V"

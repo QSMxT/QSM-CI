@@ -7,10 +7,10 @@ language: Rust
 family: iterative
 learning: none
 engine: QSMxT / QSM.rs
-qsmxt_args: [--vsharp-deconvolve true, --vsharp-threshold 0.05]   # run.sh deconvolves at 0.05; `qsmxt run` V-SHARP does not deconvolve by default
 description: >
   Variable-radius SHARP: background removal by SMV filtering with a spatially varying kernel radius
-  (largest kernel that fits at each voxel), then a truncated-SVD deconvolution of the SMV high-pass.
+  (largest kernel that fits at each voxel). A truncated-SVD deconvolution of the SMV high-pass is an
+  option (off by default, as in QSMxT; on in the simulation-tuned run).
 citation: Wu et al., Magn Reson Med 2012
 authors:
 - name: Bing Wu
@@ -22,11 +22,13 @@ code_url: https://github.com/astewartau/QSM.rs
 license: MIT
 image: ghcr.io/astewartau/qsm-ci/qsmxt@sha256:5a353a43b0a6ceeb2b8ec57422a56770d5e86e1d551e727b72ca5089b2e5277e   # v11.0.0
 run: bash run.sh
-# Radii are qsmxt v10.0.0's defaults. QSM-CI deconvolves at threshold 0.05; qsmxt v10's own default
-# is no deconvolution (threshold 0.2 when on).
+# Defaults are QSMxT's: no deconvolution (threshold 0.05 when on). Deconvolution is the
+# simulation-tuned value only.
 parameters:
   - name: deconvolve
-    default: true
+    default: false
+    tuned:
+      sim: "true"   # quoted: the tuned pass passes it on as --set deconvolve=true
     description: undo the SMV high-pass with a truncated-SVD deconvolution
   - name: threshold
     default: 0.05
@@ -51,4 +53,4 @@ parameters:
 tuning:
   date: 2026-10
   status: tuned
-  note: "Defaults chosen on sim with qsmxt v10.0.0: deconvolve at threshold 0.05 (xSIM 0.845) beat threshold 0.2 (0.820) and no deconvolution (0.803). The 2026-08 threshold sweep ran against a documented default (0.05) the engine never used (0.2)."
+  note: "Swept on sim with qsmxt v10.0.0: deconvolve at threshold 0.05 (xSIM 0.845) beat threshold 0.2 (0.820) and no deconvolution (0.803), so deconvolve=true is the sim-tuned value. Since 2026-11 the default follows QSMxT (no deconvolution), so the default run and the harmonization runs match what QSMxT users get."
