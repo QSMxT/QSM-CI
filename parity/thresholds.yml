@@ -399,6 +399,17 @@ pairs:
     qsmxt_paths: [crates/qsmxt-engine/src/]
     datasets:
       meso-3t: {}   # 3 T, the field strength DECOMPOSE was designed for
+  toolbox-pipeline-qsmart:
+    reference: toolbox-pipeline-qsmart   # QSMART v1.0 incl. brainmask.m; image unbuilt, local only
+    candidate: toolbox-pipeline-qsmrs
+    enabled: false
+    blocked_by: https://github.com/QSMxT/QSM-CI/issues/421
+    candidate_set: { pipeline: qsmart }
+    qsmrs_paths: [src/pipeline/, src/utils/qsmart.rs]
+    qsmxt_paths: [crates/qsmxt-engine/src/]
+    datasets:
+      # Coil-combined input on both sides (QSMART's coil_comb/POEM is not run): a known difference.
+      prisma-bridge-run1: {}
   fit-ppm-complex:
     reference: fit-ppm-complex-cornell   # MEDI 2024.11.26 Fit_ppm_complex + unwrapPhase (#322)
     candidate: fit-ppm-complex-qsmrs     # ci_skip for scoring: v10.0.0 has no complex fit
