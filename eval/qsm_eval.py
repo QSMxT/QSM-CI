@@ -104,12 +104,20 @@ def xsim(a: np.ndarray, b: np.ndarray, mask: np.ndarray) -> float:
     Vectorized with truncated boundary windows (out-of-bounds treated as absent), matching the
     per-voxel variable-count neighborhood of the QSM.rs implementation.
 
+    Both maps are demeaned within the mask first (and zero outside it), as `nrmse_challenge` does:
+    the χ reference is arbitrary, so an overall offset is not an error. Without this, a map
+    referenced elsewhere (MEDI's CSF = 0 against a truth whose CSF is +0.02 ppm) lost most of its
+    xSIM through the luminance term alone: 0.20 against 0.56 demeaned.
+
     NaN when there is nothing to score. A flat map does NOT land there: c2 keeps the window
     denominator positive, so a constant recon is scored normally and earns the ~0 it deserves.
     """
     if _no_scoreable_voxels(a, b, mask):
         return math.nan
     c1, c2, k = 1e-4, 1e-6, 5
+    m = mask > 0
+    a = np.where(m, a - a[m].mean(), 0.0)
+    b = np.where(m, b - b[m].mean(), 0.0)
 
     def wsum(x):  # in-bounds neighborhood sum over a 5x5x5 window
         return uniform_filter(x, size=k, mode="constant", cval=0.0) * (k ** 3)
