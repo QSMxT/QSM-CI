@@ -14,6 +14,18 @@ description: >
   three-stage fit with lsqlin (sum-to-one amplitudes, R2*0) and lsqnonlin (χ±) on per-voxel
   S(0) = 1 data. QSM-CI's MATLAB of the paper (it ships no code); the reference for QSMxT's
   `decompose` pipeline (QSMxT/QSM-CI#421).
+ci_notes:
+- >
+  The paper's fit (10 alternating passes of stages 5.1-5.3) depends on stage 5.1's solver at the
+  level of its last digits in degenerate voxels. Here that is MATLAB's lsqlin (interior-point).
+  QSM.rs solves stage 5.1 exactly, and in vivo the two differ by about 8 % NRMSE in χ±. Against a
+  known truth they do not differ (2026-11-10). On 2,000 voxels simulated from the paper's signal
+  model (TE 5:6:29 ms, 2.89 T), noise-free and at SNR 200/100/50, QSM.rs's exact solve,
+  interior-point stand-ins and real MATLAB lsqlin all give χ+ and χ− at about 74 % NRMSE from the
+  truth (r about 0.23). The solvers differ from each other by about 1 % of the truth, while two
+  noise draws at SNR 100 differ by 22 %. The fit itself recovers χ± poorly: each output
+  correlates −0.56 with the other compartment's truth. QSMxT keeps the exact solve (Ashley,
+  decision 57).
 authors:
 - name: Jingjia Chen
 - name: Chunlei Liu

@@ -390,7 +390,7 @@ pairs:
     datasets:
       meso-3t: {}
   toolbox-pipeline-decompose:
-    reference: toolbox-pipeline-decompose-qsmci   # the paper, in QSM-CI's MATLAB; image v3, fidelity pass
+    reference: toolbox-pipeline-decompose-qsmci   # the paper, in QSM-CI's MATLAB; image v3, fidelity pass; pipeline parity: pass in vivo within the solver floor (decision 57)
     candidate: toolbox-pipeline-qsmrs
     enabled: false
     blocked_by: https://github.com/QSMxT/QSM-CI/issues/421
@@ -399,6 +399,21 @@ pairs:
     qsmxt_paths: [crates/qsmxt-engine/src/]
     datasets:
       meso-3t: {}   # 3 T, the field strength DECOMPOSE was designed for
+      prisma-bridge-run1:
+        # Limits from the in-vivo gap, after an investigation (decision 18) and Ashley's decisions
+        # 56 (STAR unpadded, rule decompose.star-pad) and 57 (keep QSM.rs's exact stage-5.1 solve).
+        # Measured inside the reference's fitted 33³ central box (DECOMPOSE_CROPBOX=32) ∩ its
+        # V-SHARP mask, 2026-11-10: QSMxT main (+#532) build with --star-pad 0 0 0 (what #456's rule
+        # gives) against reference v3: χ+ NRMSE 8.34 %, χ− 7.66 %, r 0.9955 / 0.9954, max |Δ|
+        # 0.165 / 0.154 ppm, p99 0.0057 / 0.0066 ppm. Per-echo χ: 0.008-0.049 %. The whole gap is
+        # the stage-5.1 solve (exact simplex vs MATLAB lsqlin), which the 10-pass alternation does
+        # not converge away in degenerate voxels. Against a known truth the solvers do not differ
+        # (see the reference's ci_notes), so this is a parity floor, not an accuracy loss. Margins
+        # as above.
+        chi-para: { nrmse_max: 9.7, correlation_min: 0.985, max_abs_max: 0.21, p99_abs_max: 0.0071 }
+        chi-dia: { nrmse_max: 9.0, correlation_min: 0.985, max_abs_max: 0.2, p99_abs_max: 0.0083 }
+        measured:
+          main: "local run 2026-11-10: QSMxT main + #532, --star-pad 0 0 0, reference v3 sha256:f9ada500…, 33³ box (limits)"
   toolbox-pipeline-qsmart:
     reference: toolbox-pipeline-qsmart   # QSMART v1.0 incl. brainmask.m; image v2, fidelity pass; pipeline parity: pass (within the N4 spread)
     candidate: toolbox-pipeline-qsmrs
