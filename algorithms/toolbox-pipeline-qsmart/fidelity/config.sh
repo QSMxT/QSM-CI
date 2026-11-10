@@ -34,14 +34,17 @@ fid_build_hook() { mat "cd('$1/frangi'); mex eig3volume.c"; }
 fid_setup_hook() {
     local D=$1
     mat "cd('$D/frangi'); mex eig3volume.c"
-    # N4 for licensed MATLAB: the image's own N4BiasFieldCorrection, so all runs share one binary.
+    # N4 and bet2 for licensed MATLAB: the image's own binaries, so all runs share them. bet2 needs
+    # FSLOUTPUTTYPE, which recon.m sets on its command line; --cleanenv would drop it, so pass it.
     mkdir -p "$W/bin"
-    cat > "$W/bin/N4BiasFieldCorrection" <<EON
+    for tool in N4BiasFieldCorrection bet2; do
+        cat > "$W/bin/$tool" <<EON
 #!/bin/bash
 unset LD_LIBRARY_PATH
-exec apptainer exec --no-home --cleanenv -B "\$PWD" --pwd "\$PWD" "$SIF" N4BiasFieldCorrection "\$@"
+exec apptainer exec --no-home --cleanenv --env FSLOUTPUTTYPE="\${FSLOUTPUTTYPE:-NIFTI_GZ}" -B "\$PWD" --pwd "\$PWD" "$SIF" $tool "\$@"
 EON
-    chmod +x "$W/bin/N4BiasFieldCorrection"
+        chmod +x "$W/bin/$tool"
+    done
     apptainer exec --cleanenv "$SIF" bash -c 'command -v N4BiasFieldCorrection; N4BiasFieldCorrection --version' \
         | tee "$W/reports/n4-version.txt" || true
     { for f in calculate_curvature vasculature_mask FrangiFilter3D; do

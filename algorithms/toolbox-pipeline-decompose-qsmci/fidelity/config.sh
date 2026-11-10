@@ -3,9 +3,9 @@ FID_SIF=decompose-pipeline
 # STISuite_V3.0/STISuite_V3.0; MEDI_toolbox-2024.11.26 (BET and its bet2 sources); NIfTI_20140122.
 # The model functions: decompose_utils/ here, a copy of decompose-qsm's (Tim Ho's).
 FID_SOURCES="FID_STI FID_MEDI FID_NIFTI"
-FID_MATLAB_PATH="sti medi/bet2 decompose_utils nifti"
-FID_MCC_A="sti medi/bet2/bet2.mexa64"   # STI Suite is pcode; the mex is built below
-FID_WHICH="parpool gcp BET bet2 MRPhaseUnwrap V_SHARP QSM_star lsqlin lsqnonlin signalModel objective1 objective2 objective3 pscModel dscModel complex_to_real"
+FID_MATLAB_PATH="sti kiwi sparsa medi/bet2 decompose_utils nifti"
+FID_MCC_A="sti kiwi sparsa medi/bet2/bet2.mexa64"   # STI Suite is pcode (and what QSM_star calls); the mex is built below
+FID_WHICH="parpool gcp BET bet2 MRPhaseUnwrap V_SHARP QSM_star iFDF soft padarray lsqlin lsqnonlin signalModel objective1 objective2 objective3 pscModel dscModel complex_to_real"
 FID_SBATCH="--mem=64G --time=06:00:00"
 FID_ENV="DECOMPOSE_CROPBOX=32"   # as decompose-qsm: a 33³ central box; the whole brain takes hours
 
@@ -18,6 +18,11 @@ fid_assemble() {
     rm -rf "$D"; mkdir -p "$D/medi/bet2"
     cp -r "$FID_NIFTI" "$D/nifti"
     cp -r "$FID_STI/Core_Functions_P" "$D/sti"
+    # QSM_star also needs what Core_Functions_P lacks (as star-sti): qsm_kiwi_1 (the @iFDF operator
+    # class and its siblings) and SpaRSA's solver code (soft), without its demo scripts.
+    cp -r "$FID_STI/Support_Functions/qsm_kiwi_1" "$D/kiwi"
+    mkdir -p "$D/sparsa"
+    find "$FID_STI/Support_Functions/SpaRSA" -maxdepth 1 -name '*.m' ! -name 'demo_*' -exec cp {} "$D/sparsa/" \;
     cp -r "$FID_MEDI/functions/bet2/." "$D/medi/bet2/"
     rm -f "$D/medi/bet2/"*.mex*
     cp -r "$2/decompose_utils" "$D/decompose_utils"   # vendored, byte-identical to decompose-qsm's

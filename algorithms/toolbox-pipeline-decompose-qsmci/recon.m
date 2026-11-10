@@ -31,6 +31,10 @@ function recon(inp, out)
 % Intermediates (QSMCI_INTERMEDIATES): mask (BET's), mask_vsharp, chimap_echo<n> (referenced
 % per-echo χ, ppm), and the fitted c_plus, c_minus, c_zero, r2star0, chi_plus, chi_minus, for the
 % lsqlin cross-check of QSM.rs's exact solves (astewartau/QSM.rs#449).
+%
+% Toolbox functions STI Suite's pcode calls, which mcc can't trace into: name them so they are
+% bundled (../../fidelity/matlab/README.md, `trace`); keep toolbox_functions() below in step.
+%#function padarray
 
     p = jsondecode(fileread(fullfile(inp, 'params.json')));
     B0 = double(p.B0); TE = double(p.TE(:)');
@@ -194,8 +198,10 @@ function write_niigz(nii, f)
 end
 
 function tb = toolbox_functions()
-% No pcode here: mcc traces every call. These record where the MEDI functions resolved.
-    tb = {'BET', 'bet2', 'MRPhaseUnwrap', 'V_SHARP', 'QSM_star', 'lsqlin', 'lsqnonlin', ...
+% Where the toolbox functions resolved: MEDI's BET, STI Suite's pcode and what it calls (QSM_star's
+% iFDF and soft from Support_Functions), the Optimization Toolbox, Tim Ho's decompose_utils.
+    tb = {'BET', 'bet2', 'MRPhaseUnwrap', 'V_SHARP', 'QSM_star', 'iFDF', 'soft', 'padarray', ...
+          'lsqlin', 'lsqnonlin', ...
           'signalModel', 'objective1', 'objective2', 'objective3', 'pscModel', 'dscModel', ...
           'complex_to_real'};
 end
