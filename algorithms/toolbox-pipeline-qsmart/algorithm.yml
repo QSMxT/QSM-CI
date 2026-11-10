@@ -15,6 +15,19 @@ description: >
   qsmart-matlab with brainmask.m instead of the dataset's mask; the reference for QSMxT's `qsmart`
   pipeline (QSMxT/QSM-CI#421).
 citation: Yaghmaie et al., NeuroImage 2021
+ci_notes:
+- >
+  N4 runs single-threaded (ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=1). ANTs' N4 result depends on the
+  thread count at rounding level, and bet2 amplifies that. On the in-vivo case, masks from 1 to 24
+  threads differ from those from 32 or more by 2,261 to 3,555 voxels (Dice about 0.999). Mask
+  agreement with another N4 is judged against that spread.
+- >
+  QSMART's lapunwrap.m divides by (k2 + eps), so the DC bin is FFT rounding divided by eps. This
+  adds an arbitrary constant to each echo's unwrapped phase (in vivo: -0.0018 to -0.0090 rad). An
+  implementation that sets DC to 0 differs by those constants in the total field (0.24 % NRMSE in
+  vivo, after the magnitude-weighted fit) and flips the reliability map R_0 where it sits at the
+  fit threshold (596 voxels, 7 inside the mask). The constants depend on FFTW's rounding, so they
+  can't be reproduced. Adding them reproduces this reference's total field to 1.6e-15.
 authors:
 - name: Negin Yaghmaie
 - name: Warda T. Syeda

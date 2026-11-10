@@ -35,13 +35,14 @@ fid_setup_hook() {
     local D=$1
     mat "cd('$D/frangi'); mex eig3volume.c"
     # N4 and bet2 for licensed MATLAB: the image's own binaries, so all runs share them. bet2 needs
-    # FSLOUTPUTTYPE, which recon.m sets on its command line; --cleanenv would drop it, so pass it.
+    # FSLOUTPUTTYPE (recon.m's command line) and N4 ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS (recon.m's
+    # setenv); --cleanenv would drop them, so pass them.
     mkdir -p "$W/bin"
     for tool in N4BiasFieldCorrection bet2; do
         cat > "$W/bin/$tool" <<EON
 #!/bin/bash
 unset LD_LIBRARY_PATH
-exec apptainer exec --no-home --cleanenv --env FSLOUTPUTTYPE="\${FSLOUTPUTTYPE:-NIFTI_GZ}" -B "\$PWD" --pwd "\$PWD" "$SIF" $tool "\$@"
+exec apptainer exec --no-home --cleanenv --env FSLOUTPUTTYPE="\${FSLOUTPUTTYPE:-NIFTI_GZ}" --env ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS="\${ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS:-}" -B "\$PWD" --pwd "\$PWD" "$SIF" $tool "\$@"
 EON
         chmod +x "$W/bin/$tool"
     done

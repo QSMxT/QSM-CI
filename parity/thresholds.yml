@@ -409,6 +409,8 @@ pairs:
     qsmxt_paths: [crates/qsmxt-engine/src/]
     datasets:
       # Coil-combined input on both sides (QSMART's coil_comb/POEM is not run): a known difference.
+      # Known, see the reference's ci_notes: the per-echo Laplacian constants (total field, R_0) and
+      # the N4 thread spread of the mask.
       prisma-bridge-run1: {}
   fit-ppm-complex:
     reference: fit-ppm-complex-cornell   # MEDI 2024.11.26 Fit_ppm_complex + unwrapPhase (#322)

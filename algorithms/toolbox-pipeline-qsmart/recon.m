@@ -48,6 +48,12 @@ function recon(inp, out)
 % they are bundled (the rest are traced from the .m code; listing them too is harmless).
 %#function graythresh imbothat imclose imdilate imerode imfilter imgaussfilt3 imopen padarray prctile strel
 
+    % ANTs' N4 is multithreaded, and its result depends on the thread count at the level of
+    % rounding. BET amplifies that into thousands of mask voxels at the brain's edge (1-24 threads
+    % against 32+ on the in-vivo case: 2,261-3,555 voxels), so the reference would depend on the
+    % host's core count. Both N4 calls (brainmask, vasculature_mask_qsmci) run with one thread.
+    setenv('ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS', '1');
+
     % ---- acquisition parameters (CONTRACT.md params.json) ----
     p      = jsondecode(fileread(fullfile(inp, 'params.json')));
     z_prjs = p.B0_dir(:)'; z_prjs = z_prjs / norm(z_prjs);
