@@ -30,7 +30,7 @@ doi: 10.1002/nbm.3056
 citation: Li et al., NMR Biomed 2014
 code_url: https://people.eecs.berkeley.edu/~chunlei.liu/software.html
 license: See STI Suite license
-image: ghcr.io/astewartau/qsm-ci/matlab-sti-iharperella@sha256:40af0c6187c5e57484e9deeba283ef8f37257bd35ee722db8ff415f0923edd65   # v2
+image: ghcr.io/astewartau/qsm-ci/matlab-sti-iharperella@sha256:b4f9d4840810d3abbbbf4b17ea2673dc48cebcc2a161a9f2d53d864e99fd6db9   # v3
 run: bash run.sh
 smoke_box: 32
 matlab:
@@ -39,13 +39,17 @@ matlab:
 # Container vs the authors' code in licensed MATLAB with the real toolboxes (QSMxT/QSM-CI#300;
 # fidelity/REPORT.md). Rerun and update whenever the image changes.
 fidelity:
-  date: 2026-10-30
-  image: sha256:40af0c6187c5e57484e9deeba283ef8f37257bd35ee722db8ff415f0923edd65   # v2
+  date: 2026-11-10
+  image: sha256:b4f9d4840810d3abbbbf4b17ea2673dc48cebcc2a161a9f2d53d864e99fd6db9   # v3
   matlab: R2023b Update 5 (23.2.0.2459199), Image Processing Toolbox 23.2
   sources: STI Suite 3.0 Core_Functions_P
   tolerance: identical   # local field and the unmasked output, in silico and in vivo, 8 threads
   result: pass
   report: algorithms/iharperella-sti/fidelity/REPORT.md
+  history:   # earlier images, each identical to licensed R2023b (REPORT.md)
+  - image: sha256:40af0c6187c5e57484e9deeba283ef8f37257bd35ee722db8ff415f0923edd65   # v2, no odd-grid padding
+    date: 2026-10-30
+    result: pass
 # iHARPERELLA's own defaults (STI Suite 3.0, probed; QSM.rs IharperellaParams). See BUILD.md.
 parameters:
 - name: niter
