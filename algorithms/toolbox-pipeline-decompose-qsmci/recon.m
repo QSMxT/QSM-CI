@@ -10,7 +10,9 @@ function recon(inp, out)
 %   phase was removed with the V-SHARP method. Lastly, STAR-QSM was performed to compute the
 %   susceptibility maps for each echo. For the in vivo scans, susceptibility values were
 %   referenced to the mean susceptibility of the whole brain."
-%   - BET: FSL bet2 (MEDI's bet2 mex is FSL's bet2 code) on echo 1's magnitude, its defaults.
+%   - BET: FSL bet2 (MEDI's bet2 mex is FSL's bet2 code) on echo 1's magnitude, its defaults, with
+%     x reversed around it for a neurological header, as FSL's bet does when it reads the file
+%     (fsl_bet below); MEDI's BET.m hands the mex the array as stored.
 %   - Per echo: MRPhaseUnwrap, V_SHARP and QSM_star (TE of that echo), STI Suite's defaults: the
 %     paper states no parameters.
 %   - Each echo's χ referenced to its whole-brain mean (inside V-SHARP's mask).
@@ -37,13 +39,14 @@ function recon(inp, out)
     gamma = 42.58 * 2*pi;
     nph = read_niigz(fullfile(inp, 'phase.nii.gz'));
     ph  = double(nph.img);
-    mag = double(getfield(read_niigz(fullfile(inp, 'magnitude.nii.gz')), 'img'));
+    nmag = read_niigz(fullfile(inp, 'magnitude.nii.gz'));
+    mag = double(nmag.img);
     ne = numel(TE);
     [N1, N2, N3, ~] = size(ph);
     matrix_size = [N1 N2 N3];
 
     % --- §3.6 ---
-    mask = BET(mag(:,:,:,1), matrix_size, vox);
+    mask = fsl_bet(mag(:,:,:,1), matrix_size, vox, nmag.hdr);
     chi = zeros(N1, N2, N3, ne);
     mask_v = true(N1, N2, N3);
     for e = 1:ne
@@ -144,6 +147,30 @@ function recon(inp, out)
     write_niigz(as_float(tmpl, abs(DSC) .* fitmask), fullfile(out, 'chi-para.nii.gz'));
     write_niigz(as_float(tmpl, abs(PSC) .* fitmask), fullfile(out, 'chi-dia.nii.gz'));
     write_niigz(as_float(tmpl, mean(chi, 4)), fullfile(out, 'chimap.nii.gz'));
+end
+
+function m = fsl_bet(img, matrix_size, vox, hdr)
+% FSL's bet reads a NIfTI and reverses x of a neurologically stored one before bet2 runs, and back
+% when it saves (fslio.c FslGetLeftRightOrder2; newimage read_volume's makeradiological()). The
+% mesh is not symmetric, so this changes the mask; MEDI's mex, handed the array, never does it.
+    if fsl_neurological(hdr)
+        m = flip(BET(flip(img, 1), matrix_size, vox), 1);
+    else
+        m = BET(img, matrix_size, vox);
+    end
+end
+
+function tf = fsl_neurological(hdr)
+% FslGetLeftRightOrder2: the sform's determinant when sform_code > 0, else the qform's (whose
+% rotation has determinant 1, so its sign is qfac's, pixdim(1), 0 read as 1), else radiological.
+    h = hdr.hist;
+    if h.sform_code > 0
+        tf = det(double([h.srow_x(1:3); h.srow_y(1:3); h.srow_z(1:3)])) > 0;
+    elseif h.qform_code > 0
+        tf = hdr.dime.pixdim(1) >= 0;
+    else
+        tf = false;
+    end
 end
 
 function nii = as_float(tmpl, a)
