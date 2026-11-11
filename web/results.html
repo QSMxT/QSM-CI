@@ -376,6 +376,18 @@
     <!-- ===================== TABLE (Leaderboard sub-view + Stages) ===================== -->
     <template x-if="(lbView==='pipelines'&&pipeView==='table')||lbView==='stages'">
     <div x-cloak>
+      <!-- An isolated stage is scored from ground-truth inputs. For a combined bfr+dipole method that
+           means the ground-truth TOTAL field, which reads like a pipeline score but skips field
+           mapping: say so, and point to the Pipelines view, where the field-mapping selector picks
+           the real upstream step. -->
+      <template x-if="lbView==='stages' && STAGE_INPUT[stage]">
+        <p class="mt-4 text-sm text-gray-600 dark:text-gray-400" data-stage-input>
+          Scored from the <span class="font-medium text-gray-800 dark:text-gray-200" x-text="STAGE_INPUT[stage]"></span>, so no upstream stage contributes error.
+          <template x-if="stage==='bfr+dipole'">
+            <span>For these methods after a real field-mapping step, open <button type="button" class="font-medium text-emerald-700 hover:underline" @click="pickLbStage('pipelines')">Pipelines</button> and pick a field mapping.</span>
+          </template>
+        </p>
+      </template>
 
       <!-- table -->
       <div class="mt-4 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
@@ -1788,6 +1800,9 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
         reproGroups: [], reproReady: {},
         // leaderboard state
         stage: "dipole", fmap: "gt", variant: "default",
+        // The ground-truth input each isolated stage is scored from (Stages view note). Stages that
+        // start from raw phase (field mapping, end-to-end, unwrap+bfr) have no ground-truth input.
+        STAGE_INPUT: { bfr: "ground-truth total field", dipole: "ground-truth local field", "bfr+dipole": "ground-truth total field" },
         metric: "xsim", sortKey: "xsim", sortDir: "desc", filter: "",
         colMenu: false, stageMenu: false, fmapMenu: false, metricMenu: false, selectedCols: ["nrmse", "correlation", "xsim", "runtime_s"],
         chisepPhantom: "chisep",   // which chisep-track phantom the board/findings show (re-derived in init)
