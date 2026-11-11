@@ -139,6 +139,69 @@ def test_a_highmem_dispatch_is_capped_owes_what_it_skips_and_runs_alone(tmp_path
     assert sp.decide({**dispatch, "SCOPE": "heavychi,tkd"}, root, REG, {})["max_parallel"] is None
 
 
+LONG = {"slowdl": "stage: dipole\nimage: x\nrunner: highmem-long\ntimeout_minutes: 9000\njobs: 1\n"
+                  "compose:\n  fieldmaps: [gt, romeo, laplacian]\n  bfrs: [vsharp]\n",
+        "slowdl2": "stage: dipole\nimage: x\nrunner: highmem-long\n",
+        "romeo": "stage: field-mapping\nimage: x\n"}
+
+
+def test_highmem_long_runs_days_on_the_lent_runners_one_job_at_a_time(tmp_path, monkeypatch):
+    monkeypatch.setenv("QSMCI_HIGHMEM_RUNNER", LENT)
+    monkeypatch.delenv("GH_TOKEN", raising=False)
+    root = _algos(tmp_path, {**BASIC, **HIGHMEM, **LONG})
+    # dispatch-only, like highmem: not on a push, not by scope=all even with include_manual
+    assert sp.plan_tasks(root, REG, full=False, slugs=["slowdl"]) == []
+    full = {t["id"] for t in sp.plan_tasks(root, REG, full=True, slugs=[], include_manual=True)}
+    assert not [i for i in full if "slowdl" in i]
+    named = {t["id"]: t for t in sp.plan_tasks(root, REG, full=False, slugs=["slowdl", "slowdl2"],
+                                                explicit={"slowdl", "slowdl2"})}
+    assert set(named) == {"f-slowdl-gt", "f-slowdl-romeo", "f-slowdl-laplacian", "iv-slowdl",
+                          "f-slowdl2-gt", "f-slowdl2-romeo", "iv-slowdl2"}
+    lent = "neurodesk-arcrunner-lent-qsmci"
+    for i, t in named.items():
+        # slowdl's 9000 is clamped to GitHub's 5-day limit; slowdl2 gets that limit by default
+        assert {k: t[k] for k in ("runs_on", "timeout", "jobs")} == {"runs_on": lent, "timeout": 7200, "jobs": 1}
+    dispatch = {"EVENT": "workflow_dispatch", "SHA": "HEAD"}
+    d = sp.decide({**dispatch, "SCOPE": "slowdl"}, root, REG, {})
+    assert d["max_parallel"] == 1
+    assert [t["id"] for t in d["tasks"]] == ["f-slowdl-gt", "f-slowdl-romeo", "f-slowdl-laplacian", "iv-slowdl"]
+    # shares the lent pool with highmem: one run may carry both, capped at one job
+    assert sp.decide({**dispatch, "SCOPE": "slowdl,heavy"}, root, REG, {})["max_parallel"] == 1
+    with pytest.raises(ValueError, match="dispatch highmem methods on their own"):
+        sp.decide({**dispatch, "SCOPE": "slowdl,tkd"}, root, REG, {})
+    d = sp.decide({**dispatch, "SCOPE": "all"}, root, REG, {})
+    assert {"f-slowdl-gt", "f-slowdl-romeo", "f-slowdl-laplacian", "iv-slowdl"} <= set(d["skipped_manual"])
+
+
+def test_a_highmem_long_dipole_is_split_by_field_map_from_the_start(tmp_path, monkeypatch):
+    """One job per total-field source: the gt part keeps the isolated runs (default + tuned), the
+    others run only their field map's composed columns. A lost runner then costs one field map."""
+    monkeypatch.setenv("QSMCI_HIGHMEM_RUNNER", LENT)
+    root = _algos(tmp_path, {**BASIC, **LONG})
+    t = {x["id"]: x for x in sp.plan_tasks(root, REG, full=False, slugs=["slowdl", "slowdl2"],
+                                            explicit={"slowdl", "slowdl2"})}
+    assert [(t[i]["fieldmaps"], t[i]["mode"]) for i in ("f-slowdl-gt", "f-slowdl-romeo", "f-slowdl-laplacian")] \
+        == [("gt", "both"), ("romeo", "composed"), ("laplacian", "composed")]
+    assert {x["replaces"] for i, x in t.items() if i.startswith("f-slowdl-")} == {"f-slowdl"}
+    # without compose: fieldmaps, gt + every scored field-mapping method
+    assert sp.split_fieldmaps(sp.load_spec(root, "slowdl2"), {s: sp.load_spec(root, s) for s in sp.all_slugs(root)}) \
+        == ["gt", "romeo"]
+    # the in-vivo task is isolated (no field maps), so it is never split
+    assert "fieldmaps" not in t["iv-slowdl"] and "mode" not in t["iv-slowdl"]
+    # other tiers are never split, and the split holds while highmem-long falls back to manual
+    assert "fieldmaps" not in sp.plan_tasks(root, REG, full=False, slugs=["slow"], explicit={"slow"})[0]
+    monkeypatch.delenv("QSMCI_HIGHMEM_RUNNER")
+    assert {x["id"] for x in sp.plan_tasks(root, REG, full=False, slugs=["slowdl"], explicit={"slowdl"})} \
+        == {"f-slowdl-gt", "f-slowdl-romeo", "f-slowdl-laplacian", "iv-slowdl"}
+
+
+def test_highmem_long_without_the_lent_runners_is_the_manual_tier(tmp_path, monkeypatch):
+    monkeypatch.delenv("QSMCI_HIGHMEM_RUNNER", raising=False)
+    root = _algos(tmp_path, {**BASIC, **LONG})
+    assert sp.tier_of(sp.load_spec(root, "slowdl")) == "manual"
+    assert sp.route(sp.load_spec(root, "slowdl")) == {**sp.SELFHOSTED, "timeout": 9000, "jobs": 1}
+
+
 def test_the_highmem_variable_is_a_label_or_a_runs_on_max_parallel_object(monkeypatch):
     for raw, want in (("lent", {"runs_on": "lent", "max_parallel": 1}),
                       ('{"runs_on": ["self-hosted", "lent"], "max_parallel": 3}',

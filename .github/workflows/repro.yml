@@ -229,8 +229,9 @@ jobs:
           # must NOT set QSMCI_GPU=1, or the runner adds `docker --gpus all` / `apptainer --nv` and
           # every container fails before the method runs.
           SELFHOSTED = {'runs_on': ['self-hosted', 'Linux', 'X64'], 'timeout': 720, 'gpu': '0'}
-          # `runner: gpu` / `runner: manual` methods (after-qsm, dip-up, inr-qsm, modip) are the ones
-          # whose CPU cost is infeasible (MoDIP ~12 h, INR-QSM ~17 h per inversion), so they ask for
+          # `runner: gpu` / `runner: manual` / `runner: highmem-long` methods (after-qsm, dip-up,
+          # inr-qsm, modip) are the ones whose CPU cost is infeasible here (MoDIP ~12 h, INR-QSM ~17 h
+          # per inversion; score.yml gives them days on the lent runners, one acquisition), so they ask for
           # a GPU-labelled pool explicitly. No such runner is registered yet — these tasks stay
           # queued until one is, which is the honest failure mode; the previous labels ran them on a
           # GPU-less box instead.
@@ -247,7 +248,7 @@ jobs:
               # Any non-hosted tier is "heavy" here: it never joins the hosted shard sweep.
               return tier_of(SPECS.get(slug)) != 'hosted'
           def route(slug):
-              return GPU if tier_of(SPECS.get(slug)) == 'manual' else SELFHOSTED
+              return GPU if tier_of(SPECS.get(slug)) in ('manual', 'highmem-long') else SELFHOSTED
           # The viewer's Field map / Local field layers come from the two UPSTREAM stages. A full
           # shard computes them anyway, so it always emits; a --focus job only does when the changed
           # slug is one of those stages — re-emitting after a dipole change would re-upload bytes

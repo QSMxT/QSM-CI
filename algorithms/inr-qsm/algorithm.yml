@@ -51,14 +51,19 @@ fidelity:
   note: "seeded (torch/NumPy 1), yet two 2-epoch runs on a 32^3 box differ by 0.017 % NRMSE (max |Δ| 1.5e-5 ppm): CPU PyTorch's run-to-run floor here"
   report: fidelity/dl/README.md
 smoke_box: 32   # PR --smoke gate fits a 32^3 central box (fast); full score.yml run is unaffected
-# MANUAL tier: never scored automatically — dispatch score.yml with scope=inr-qsm (or
-# include_manual=true). Why: the full-size CPU optimization needs the 31 GB self-hosted box
-# (OOMs hosted) AND takes ~17 h per run there (2026-09-08 log: 50 epochs at ~20 min each, two
-# runs contending) against a 6-h cap, and a dipole focus job needs 1 isolated + every composed
-# column. 29 automatic attempts since 2026-07-25 finished 3 times (last 2026-07-25), each failure
-# holding a self-hosted runner for its whole cap. `gpu` is the honest tier once a GPU runner exists.
-runner: manual
-timeout_minutes: 2880   # honored on self-hosted/manual only; ~4 h/run with the box to itself
+# HIGHMEM-LONG tier: the lent runners (QSMCI_HIGHMEM_RUNNER, 16 vCPU, 64 GB, no GPU), scored
+# ONLY by a dispatch naming it (score.yml scope=inr-qsm), one job at a time so the other lent runner
+# stays free for parity. Why so long: the full-size CPU optimisation OOMs hosted runners, and on the
+# 16-core self-hosted box it ran ~20 min per epoch (50 epochs, ~17 h per inversion) with two of its
+# runs and other jobs sharing the box (2026-09-08 log, job 101943924009). A dipole focus job runs
+# 1 isolated + 1 tuned isolated + 6 composed columns. 29 automatic attempts on the shared box (6-12 h
+# caps) since 2026-07-25 finished 3 times. Expected here: about 6-9 h per inversion alone on 16
+# cores. The focus job is split by field map (f-inr-qsm-gt: isolated default + tuned and 2 gt
+# columns; f-inr-qsm-romeo-qsmrs and f-inr-qsm-laplacian-qsmrs: 2 columns each), so each job takes
+# roughly 12-36 h, one after another, plus iv-inr-qsm (in-vivo default + tuned); the cap is
+# GitHub's 5-day self-hosted maximum. `gpu` would be the honest tier once a GPU runner exists.
+runner: highmem-long
+timeout_minutes: 7200   # the job cap and the per-run budget: GitHub's 5-day self-hosted limit
 jobs: 1                 # one optimization at a time — each one already uses every core
 compose:                # the two reference BFR methods on the GT field map and the two QSMxT field maps
   fieldmaps: [gt, romeo-qsmrs, laplacian-qsmrs]   # real field maps keep it on no-GT tracks (repro)
@@ -66,8 +71,9 @@ compose:                # the two reference BFR methods on the GT field map and 
 # Notes on how QSM-CI runs this method vs. its reference (shown on the submission page).
 ci_notes:
 - >
-  Executed CPU-only. The reference optimizes per subject on an NVIDIA GPU with mixed precision, so
-  runtime here is substantially longer and not comparable to GPU timings.
+  Executed CPU-only on a 16-core runner. The reference optimizes per subject on an NVIDIA GPU with
+  mixed precision, so runtimes here are far longer (several hours per inversion) and not comparable
+  to the reference's GPU timings.
 parameters:
 - name: epoch
   default: 50

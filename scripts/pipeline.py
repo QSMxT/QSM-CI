@@ -1495,20 +1495,25 @@ def do_span(task, args, gt_sources, gt, mask, tf_sources):
 class ComposedPlan:
     """What run_composed will run, and which of it THIS shard owns — see plan_composed."""
 
-    def __init__(self, *, fmap, bfr, dipole, tf_spans, e2e_spans, no_gt, fm_keys, col_owner,
+    def __init__(self, *, fmap, bfr, dipole, tf_spans, e2e_spans, no_gt, gt_source, fm_keys, col_owner,
                  span_owner, owns_col, owns_span, composes=composes):
         self.fmap, self.bfr, self.dipole = fmap, bfr, dipole
         self.tf_spans, self.e2e_spans = tf_spans, e2e_spans
         self.no_gt, self.fm_keys = no_gt, fm_keys
+        self.gt_source = gt_source   # the ground-truth total field is one of this run's sources
         self.col_owner, self.span_owner = col_owner, span_owner
         self.owns_col, self.owns_span = owns_col, owns_span
         self.composes = composes   # composes(), narrowed by any campaign chain
 
 
-def plan_composed(algos, focus, track, shard_i, shard_n) -> ComposedPlan:
+def plan_composed(algos, focus, track, shard_i, shard_n, fieldmaps=None) -> ComposedPlan:
     """The pure half of run_composed: which submissions enter the matrix (after --focus pinning), the
     total-field sources, the stable COLUMN ordering the --shard partition runs over, and which
     columns this shard owns. No I/O, so tests can check the ownership arithmetic directly.
+
+    `fieldmaps` (--fieldmaps; a set of "gt" and/or field-mapping slugs, None = all) keeps only those
+    total-field sources, so one method's composed matrix can be split into one job per field map (the
+    highmem-long tier). End-to-end spans have no total-field source; they stay with the "gt" part.
 
     `fmap` (field-mapping methods) and `e2e_spans` come back already pruned to this shard: a field
     map runs only in shards that own a column consuming it, and end-to-end spans are round-robined
@@ -1552,6 +1557,11 @@ def plan_composed(algos, focus, track, shard_i, shard_n) -> ComposedPlan:
     # A no-ground-truth track has no gt total field to chain from: every pipeline starts from a
     # real field-mapping submission (or is an end-to-end span running from raw phase).
     no_gt = track in NO_GT_TRACKS
+    if fieldmaps is not None:
+        fmap = [f for f in fmap if f["slug"] in fieldmaps]
+        if "gt" not in fieldmaps:
+            spans = [s for s in spans if "totalfield" in s["consumes"]]
+    gt_source = not no_gt and (fieldmaps is None or "gt" in fieldmaps)
 
     # A campaign's field-mapping variant (repro_campaign.py) carries a `chain`: the bfrs, dipoles and
     # spans it composes with, one authors' pipeline instead of the whole matrix. Taken from the full
@@ -1562,7 +1572,7 @@ def plan_composed(algos, focus, track, shard_i, shard_n) -> ComposedPlan:
     # --shard: own each composed COLUMN = (totalfield-source, bfr) via round-robin over a stable
     # ordering. A column's bfr localfield is computed in exactly one shard (no cross-shard bfr
     # recomputation); a field-map runs only in shards that own a column consuming it.
-    fm_keys = ([] if no_gt else ["gt"]) + sorted(f["slug"] for f in fmap)
+    fm_keys = (["gt"] if gt_source else []) + sorted(f["slug"] for f in fmap)
     col_owner = {(tfk, bs): idx for idx, (tfk, bs)
                  in enumerate((tfk, b["slug"]) for tfk in fm_keys for b in sorted(bfr, key=lambda x: x["slug"])
                               if in_chain(tfk, "bfrs", b["slug"]))}
@@ -1586,7 +1596,7 @@ def plan_composed(algos, focus, track, shard_i, shard_n) -> ComposedPlan:
         e2e_spans = [s for idx, s in enumerate(e2e_spans) if _owns(idx)]  # == shard_partition
 
     return ComposedPlan(fmap=fmap, bfr=bfr, dipole=dipole, tf_spans=tf_spans, e2e_spans=e2e_spans,
-                        no_gt=no_gt, fm_keys=fm_keys, col_owner=col_owner, span_owner=span_owner,
+                        no_gt=no_gt, gt_source=gt_source, fm_keys=fm_keys, col_owner=col_owner, span_owner=span_owner,
                         owns_col=owns_col, owns_span=owns_span,
                         composes=lambda d, tfk, bs: composes(d, tfk, bs) and in_chain(tfk, "dipoles", d["slug"]))
 
@@ -1599,9 +1609,10 @@ def run_composed(args, algos, gt_sources, gt, mask, shard_i, shard_n, runs: list
     caching reused across dipole methods (the N×M matrix), and the _pmap fan-out per stage. Appends
     result rows to `runs` and flushes the index (unless writing a shard file) after the dipole stage,
     exactly as before. The selection/ownership arithmetic is plan_composed's."""
-    plan = plan_composed(algos, args.focus, args.track, shard_i, shard_n)
+    fieldmaps = set(args.fieldmaps.split(",")) if getattr(args, "fieldmaps", None) else None
+    plan = plan_composed(algos, args.focus, args.track, shard_i, shard_n, fieldmaps)
     fmap, bfr, dipole, tf_spans, e2e_spans = plan.fmap, plan.bfr, plan.dipole, plan.tf_spans, plan.e2e_spans
-    no_gt, owns_col, owns_span = plan.no_gt, plan.owns_col, plan.owns_span
+    owns_col, owns_span = plan.owns_col, plan.owns_span
     # --emit-intermediates: which field maps THIS shard publishes (see tf_emit_owner).
     emit_inter = getattr(args, "emit_intermediates", False)
     emit_tf = (tf_emit_owner(plan.col_owner, plan.span_owner, owns_col, owns_span)
@@ -1616,7 +1627,7 @@ def run_composed(args, algos, gt_sources, gt, mask, shard_i, shard_n, runs: list
     # where stage-traces is the ordered list of (name, resources.json path, duration s) for every
     # stage run so far — so the composed run can concatenate the whole pipeline's memory/CPU trace
     # (not just the final stage's). The ground-truth field ran no stage, so its list is empty.
-    tf_sources: dict[str, tuple] = {} if no_gt else {
+    tf_sources: dict[str, tuple] = {} if not plan.gt_source else {
         "gt": (gt / ARTIFACT_FILE["totalfield"], mask, 0.0, [])}
 
     failed_fm: dict[str, str] = {}          # field-map slug -> reason
@@ -1892,6 +1903,11 @@ def main() -> None:
                          "across jobs. Composed work is split by (field-map, bfr) COLUMN so each "
                          "column's bfr localfield is computed in exactly one shard; isolated runs "
                          "and spans are split round-robin. Union of all n shards == a full run.")
+    ap.add_argument("--fieldmaps", default=None, metavar="SRC[,SRC...]",
+                    help="restrict the composed matrix to these total-field sources: 'gt' (the "
+                         "ground-truth total field) and/or field-mapping slugs. Lets score.yml split "
+                         "a slow method's composed matrix into one job per field map (highmem-long "
+                         "tier). End-to-end spans run only when gt is listed. Default: every source.")
     ap.add_argument("--track", default="sim")
     ap.add_argument("--runs-out", type=Path, default=None,
                     help="write ONLY the runs produced by this invocation to this JSON file, instead "

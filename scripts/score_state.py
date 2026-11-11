@@ -77,7 +77,14 @@ def update(cur: dict, sha: str, tasks: list[dict], done: set[str], ancestor=is_a
         # dedicated ones ran as their own focus tasks and are settled per task above.
         if ran_full and not p_full:
             new_slugs -= {s for s in old_slugs if not any(t.get("focus") == s for t in tasks)}
-        new_manual = (old_manual - planned_done) | set(skipped_manual or [])
+        # A split task (score_plan.split_fieldmaps) `replaces` its method's unsplit focus id: that
+        # older entry is paid off once every part of the split finished.
+        parts: dict[str, list[str]] = {}
+        for t in tasks:
+            if t.get("replaces"):
+                parts.setdefault(t["replaces"], []).append(t["id"])
+        replaced = {r for r, ids in parts.items() if all(i in planned_done for i in ids)}
+        new_manual = (old_manual - planned_done - replaced) | set(skipped_manual or [])
     else:
         new_sha = old_sha
         new_full = old_full or p_full
