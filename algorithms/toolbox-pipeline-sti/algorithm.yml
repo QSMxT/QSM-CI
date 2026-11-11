@@ -1,0 +1,40 @@
+name: STI Suite pipeline (STI Suite QSM_GUI, iLSQR)
+slug: toolbox-pipeline-sti
+algorithm: toolbox-pipeline
+variant: sti-ilsqr
+source: sti
+stage: pipeline
+language: MATLAB
+family: pipeline
+learning: none
+engine: STI Suite
+description: >
+  STI Suite 3.0's QSM_GUI iLSQR pipeline, from the echoes to χ, as the GUI runs it: its threshold
+  of the last echo's magnitude (thresh_tool's starting level), the largest component with its holes
+  filled, MRPhaseUnwrap on every echo and their sum, V-SHARP (12 mm), PolishMask, and QSM_iLSQR
+  (40 iterations, 12 voxels of padding), unreferenced. The reference for QSMxT's `sti-suite-ilsqr`
+  pipeline (QSMxT/QSM-CI#421).
+ci_notes:
+- >
+  The chain was read off the GUI driven headless in licensed MATLAB R2023b with every call logged;
+  this recon matches the GUI's own χ to 4.4e-7 ppm on that scan (README.md, Fidelity against the GUI).
+authors:
+- name: Wei Li
+- name: Nian Wang
+- name: Fang Yu
+- name: Hui Han
+- name: Wei Cao
+- name: Rebecca Romero
+- name: Bundhit Tantiwongkosi
+- name: Timothy Q. Duong
+- name: Chunlei Liu
+doi: 10.1016/j.neuroimage.2014.12.043
+citation: Li et al., NeuroImage 2015
+code_url: https://people.eecs.berkeley.edu/~chunlei.liu/software.html
+license: See STI Suite license
+run: bash run.sh
+ci_skip: true   # a reference for pipeline parity only (QSMxT/QSM-CI#421)
+parity_only: true
+matlab:
+  entry: recon.m
+  runtime: r2023b
