@@ -52,7 +52,11 @@ variants:
     base: ismv-qsmrs
     label: QSM.jl parity
     set: {variant: qsmjl, tol: 1e-3, max_iter: 500}
-  # v11 re-runs of fixed methods: pre-release build of QSMxT main 625b9f3 (qsm-ci/qsmxt:interim-625b9f3).
+  # v11 re-runs of fixed methods: pre-release build of QSMxT main 625b9f3, image
+  # ghcr.io/astewartau/qsm-ci/qsmxt@sha256:d9e80a9b39c8e5a5d68fcb94fc7a894534ee16e9ec5180013e6420462bfa4f72
+  # (:interim-625b9f3; models image :interim-625b9f3-models-1 = sha256:5bf528837f273985d2bfc3aa53dfb1e5825fd22d2dfb82abc67ca831c9f3c3f9).
+  # It ran iSMV, HARPERELLA (default whole rim and .sti), iHARPERELLA, NDI and WH-QSM in those chains;
+  # the algorithm.yml files keep the v11.0.0 pin until the next QSMxT release.
   harperella-qsmrs.sti:
     base: harperella-qsmrs
     label: STI Suite rim (v11.0.0 default)
