@@ -36,10 +36,12 @@ methods:
 gpu: [inr-qsm, modip]
 
 variants:
-  vsharp-qsmrs.sti:
+  # V-SHARP: the default no longer deconvolves (#416, as in QSMxT), which is STI
+  # Suite's setting, so vsharp-qsmrs.sti is gone and the deconvolved runs are this variant.
+  vsharp-qsmrs.deconv:
     base: vsharp-qsmrs
-    label: STI Suite parity
-    set: {deconvolve: false}
+    label: simulation-tuned (TSVD 0.05)
+    set: {deconvolve: true, threshold: 0.05}
   vsharp-qsmrs.qsmjl:
     base: vsharp-qsmrs
     label: QSM.jl parity
@@ -50,6 +52,41 @@ variants:
     base: ismv-qsmrs
     label: QSM.jl parity
     set: {variant: qsmjl, tol: 1e-3, max_iter: 500}
+  # v11 re-runs of fixed methods: pre-release build of QSMxT main 625b9f3 (qsm-ci/qsmxt:interim-625b9f3).
+  harperella-qsmrs.sti:
+    base: harperella-qsmrs
+    label: STI Suite rim (v11.0.0 default)
+    set: {rim: sti}
+  iharperella-qsmrs.wholerim:
+    base: iharperella-qsmrs
+    label: whole rim (QSMxT recommendation; pre-release build)
+    set: {rim: whole}
+  # Erode the mask before background removal (#426): dose check for iHARPERELLA,
+  # HARPERELLA, and Laplacian's target case PDF/LBV (also after ROMEO, as the control).
+  iharperella-qsmrs.erode1:
+    base: iharperella-qsmrs
+    label: mask eroded 1 voxel before BFR (pre-release build)
+    set: {erode_voxels: 1}
+  iharperella-qsmrs.erode3:
+    base: iharperella-qsmrs
+    label: mask eroded 3 voxels before BFR (pre-release build)
+    set: {erode_voxels: 3}
+  iharperella-qsmrs.wholerim-erode3:
+    base: iharperella-qsmrs
+    label: whole rim, mask eroded 3 voxels (pre-release build)
+    set: {rim: whole, erode_voxels: 3}
+  harperella-qsmrs.erode3:
+    base: harperella-qsmrs
+    label: mask eroded 3 voxels before BFR (pre-release build)
+    set: {erode_voxels: 3}
+  pdf-qsmrs.erode3:
+    base: pdf-qsmrs
+    label: mask eroded 3 voxels before BFR
+    set: {erode_voxels: 3}
+  lbv-qsmrs.erode3:
+    base: lbv-qsmrs
+    label: mask eroded 3 voxels before BFR
+    set: {erode_voxels: 3}
   pdf-qsmrs.parity:
     base: pdf-qsmrs
     label: recommended iterations
@@ -58,6 +95,14 @@ variants:
     base: star-qsmrs
     label: STI Suite script parity
     set: {te: first, pad: 12}
+  ndi-qsmrs.maskp999:
+    base: ndi-qsmrs
+    label: in-mask p99.9 weight normaliser (pre-release build)
+    set: {weight_norm: mask-p999}
+  whqsm-qsmrs.flatinmask:
+    base: whqsm-qsmrs
+    label: flat weight in the mask (pre-release build)
+    set: {weight: flat-in-mask}
   heidi-qsmrs.parity:
     base: heidi-qsmrs
     label: HEIDI parity
@@ -79,7 +124,7 @@ variants:
     label: STI Suite
     set: {solver: fft, fft_pad: 12, unmasked: true, weighting: tes}
     chain:
-      bfrs: [vsharp-qsmrs.sti]
+      bfrs: [vsharp-qsmrs]
       dipoles: [ilsqr-qsmrs, star-qsmrs, star-qsmrs.sti]
       spans: []
   laplacian-qsmrs.qsmart:
