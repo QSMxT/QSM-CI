@@ -102,3 +102,17 @@ def test_the_merge_job_checks_out_the_history_the_ancestry_check_needs():
     merge = wf[wf.index("  merge:"):]
     checkout = merge[merge.index("actions/checkout"):merge.index("actions/download-artifact")]
     assert "fetch-depth: 0" in checkout
+
+
+def test_a_split_task_pays_off_the_unsplit_id_only_when_every_part_finished():
+    """highmem-long focus jobs are split by field map (f-modip-gt, -romeo-qsmrs, …); an older
+    pending_manual entry for the unsplit f-modip clears once all parts are done."""
+    cur = {"scored_sha": "old", "pending_manual": ["f-modip", "iv-modip"]}
+    parts = [{"id": f"f-modip-{fm}", "focus": "modip", "replaces": "f-modip"} for fm in ("gt", "romeo")]
+    tasks = parts + [{"id": "iv-modip", "focus": "modip", "track": "invivo"}]
+    new = ss.update(cur, "new", tasks, done={"f-modip-gt", "iv-modip"}, ancestor=ANCESTOR, now="t")
+    assert new["pending_manual"] == ["f-modip"]
+    new = ss.update(cur, "new", tasks, done={"f-modip-gt", "f-modip-romeo", "iv-modip"}, ancestor=ANCESTOR, now="t")
+    assert new["pending_manual"] == []
+    new = ss.update(cur, "older", tasks, done={t["id"] for t in tasks}, ancestor=NOT_ANCESTOR, now="t")
+    assert new["pending_manual"] == ["f-modip", "iv-modip"]          # a stale run clears nothing

@@ -34,6 +34,20 @@ Per-method `runner:` in algorithm.yml:
     highmem       highmem()    the runners in repository variable QSMCI_HIGHMEM_RUNNER, 720-min cap,
                                1 container. Dispatch-only (named in `scope`), in runs of their own,
                                capped at max_parallel. Variable unset: identical to (unset).
+    highmem-long  highmem()    the same lent runners for multi-day CPU jobs (MoDIP, INR-QSM: per-subject
+                               optimisations whose reference runs on a GPU). Honours `timeout_minutes:`
+                               (default and ceiling LONG_TIMEOUT_MAX, GitHub's 5-day self-hosted job
+                               limit) and `jobs:` (default 1). Dispatch-only like highmem, and a run
+                               carrying one is capped at ONE job at a time whatever max_parallel says,
+                               so the other lent runner stays free for parity jobs (QSMCI_PARITY_RUNNER
+                               is the same pool, and a self-hosted job queued 24 h is failed).
+                               Variable unset: the manual tier (it cannot run on a hosted runner).
+                               A highmem-long DIPOLE's focus job is split by total-field source from
+                               the start (split_fieldmaps): f-<slug>-gt runs its isolated runs (default
+                               + tuned) and the gt columns, and f-<slug>-<field map> runs that field
+                               map's columns only (pipeline.py --fieldmaps, --mode composed). Each job
+                               is then hours to about a day and a half, a lost runner costs one field
+                               map, and the rows of each publish with the run.
     manual | gpu  MANUAL       NEVER scheduled automatically (not on push, not by scope=all). Scored
                                only when a workflow_dispatch names the slug in `scope`, or with
                                include_manual=true. For methods whose CPU cost makes them infeasible
@@ -41,7 +55,8 @@ Per-method `runner:` in algorithm.yml:
                                cap cannot fix that, and every automatic attempt burned a runner for
                                its whole cap and produced nothing. `gpu` also documents the
                                hardware requirement for when a GPU runner exists.
-Per-method overrides, honoured on self-hosted/manual only (hosted tiers are hard-capped by GitHub):
+Per-method overrides, honoured on self-hosted/manual/highmem-long only (hosted tiers are hard-capped
+by GitHub; highmem keeps its fixed 720 min):
     timeout_minutes: N   wall-clock cap for the job — AND the per-run budget on every tier (see
                          qsm_ci.containers.timeout_s; without it a single run is capped at the
                          contract's 2 h and killed with a timeout DNF past that)
@@ -106,8 +121,10 @@ HOSTED = {"runs_on": "ubuntu-latest", "timeout": 360, "jobs": 2}
 HOSTED_LARGE = {"runs_on": "ubuntu-latest", "timeout": 360, "jobs": 1}
 SELFHOSTED = {"runs_on": ["self-hosted", "Linux", "X64"], "timeout": 360, "jobs": 4}
 HIGHMEM_TIMEOUT = 720
+LONG_TIMEOUT_MAX = 7200   # GitHub's job execution limit on self-hosted runners: 5 days
 TIERS = {"": "hosted", "hosted": "hosted", "hosted-large": "hosted-large", "highmem": "highmem",
-         "self-hosted": "self-hosted", "manual": "manual", "gpu": "manual"}
+         "highmem-long": "highmem-long", "self-hosted": "self-hosted", "manual": "manual", "gpu": "manual"}
+LENT_TIERS = ("highmem", "highmem-long")   # the QSMCI_HIGHMEM_RUNNER pool
 
 
 # ---------------------------------------------------------------------------------------------------
@@ -155,8 +172,11 @@ def highmem() -> dict | None:
 def tier_of(spec: dict | None) -> str:
     r = _scalar((spec or {}).get("runner")) or ""
     tier = TIERS.get(str(r), "hosted")
-    # highmem is the default tier until its runners are configured
-    return "hosted" if tier == "highmem" and highmem() is None else tier
+    # highmem is the default tier until its runners are configured; highmem-long is manual then (a
+    # multi-day job cannot run on a hosted runner)
+    if tier in LENT_TIERS and highmem() is None:
+        return "hosted" if tier == "highmem" else "manual"
+    return tier
 
 
 def route(spec: dict | None) -> dict:
@@ -164,6 +184,11 @@ def route(spec: dict | None) -> dict:
     tier = tier_of(spec)
     if tier == "highmem":   # timeout_minutes:/jobs: don't apply
         return {"runs_on": highmem()["runs_on"], "timeout": HIGHMEM_TIMEOUT, "jobs": 1}
+    if tier == "highmem-long":
+        t, j = (spec or {}).get("timeout_minutes"), (spec or {}).get("jobs")
+        return {"runs_on": highmem()["runs_on"],
+                "timeout": min(t, LONG_TIMEOUT_MAX) if isinstance(t, int) and t > 0 else LONG_TIMEOUT_MAX,
+                "jobs": j if isinstance(j, int) and j > 0 else 1}
     base = {"hosted": HOSTED, "hosted-large": HOSTED_LARGE, "self-hosted": SELFHOSTED,
             "manual": SELFHOSTED}[tier]
     out = dict(base)
@@ -209,6 +234,21 @@ def is_dipole(spec) -> bool:
 def consumes_r2prime(spec) -> bool:
     inp = (spec or {}).get("inputs")
     return "r2prime" in [str(_scalar(a)) for a in inp] if isinstance(inp, list) else True
+
+
+def split_fieldmaps(spec, specs: dict) -> list[str] | None:
+    """The total-field sources a highmem-long dipole's focus job is split into, "gt" first: its
+    `compose: fieldmaps:` list, or "gt" + every scored field-mapping method when it declares none.
+    None = not split (any other tier or stage). Keyed on the DECLARED runner, so the split holds
+    while the tier falls back to manual."""
+    if str(_scalar((spec or {}).get("runner")) or "") != "highmem-long" or not is_dipole(spec):
+        return None
+    c = (spec or {}).get("compose")
+    fm = c.get("fieldmaps") if isinstance(c, dict) else None
+    if not isinstance(fm, list) or not fm:
+        fm = ["gt"] + sorted(s for s, sp in specs.items() if stage_of(sp) == "field-mapping" and not is_skipped(sp))
+    fm = [str(f) for f in fm]
+    return ["gt"] + [f for f in fm if f != "gt"]
 
 
 def manual_phantoms(spec) -> set[str]:
@@ -295,7 +335,7 @@ def plan_tasks(root: Path, reg: dict, *, full: bool, slugs: list[str], include: 
                include_manual: bool = False, include_highmem: bool = False) -> list[dict]:
     """The matrix for a run. `explicit` = slugs a human named on dispatch: they (and their manual
     phantoms) are planned even when their tier is manual or highmem. `include_manual` lifts that for
-    the manual tier, `include_highmem` (internal) for highmem."""
+    the manual tier, `include_highmem` (internal) for highmem and highmem-long."""
     explicit = explicit or set()
     specs = {s: load_spec(root, s) for s in all_slugs(root)}
 
@@ -306,7 +346,7 @@ def plan_tasks(root: Path, reg: dict, *, full: bool, slugs: list[str], include: 
         wanted = include_manual or slug in explicit
         if tier_of(spec) == "manual" and not wanted:
             return False
-        if tier_of(spec) == "highmem" and not (include_highmem or slug in explicit):
+        if tier_of(spec) in LENT_TIERS and not (include_highmem or slug in explicit):
             return False
         if ph is not None and ph in manual_phantoms(spec) and not wanted:
             return False
@@ -325,6 +365,14 @@ def plan_tasks(root: Path, reg: dict, *, full: bool, slugs: list[str], include: 
                 if not allowed(s, ph):
                     continue
                 t = {"id": task_id(reg, "f-", s, ph), "focus": s, "phantom": ph, **route(spec)}
+                split = split_fieldmaps(spec, specs)
+                if split:
+                    # One job per total-field source (see split_fieldmaps). `replaces` names the
+                    # unsplit id, so an older pending_manual entry for it clears once all parts finish.
+                    for fm in split:
+                        tasks.append({**t, "id": f"{t['id']}-{fm}", "fieldmaps": fm,
+                                      "mode": "both" if fm == "gt" else "composed", "replaces": t["id"]})
+                    continue
                 # A non-dipole focus (a bfr/span) varies EVERY dipole; the heavy dedicated dipoles
                 # would overrun its cap, and their combos are owned by their own focus jobs.
                 if heavy_dipoles and not is_dipole(spec) and not is_chisep(spec):
@@ -581,7 +629,7 @@ def decide(env: dict, root: Path, reg: dict, state: dict, runs: "list[dict] | No
     would = plan_tasks(root, reg, full=full, slugs=slugs, include=include, shards=shards,
                        explicit=explicit, include_manual=True, include_highmem=True) if not include else []
     skipped_manual = [t["id"] for t in would if t["id"] not in planned]
-    on_lent = lambda t: bool(t.get("focus")) and tier_of(load_spec(root, t["focus"])) == "highmem"  # noqa: E731
+    on_lent = lambda t: bool(t.get("focus")) and tier_of(load_spec(root, t["focus"])) in LENT_TIERS  # noqa: E731
     owed = [i for i in state.get("pending_manual", []) if i not in planned]
     if owed and (include_manual or explicit) and not include:
         cand = plan_tasks(root, reg, full=False, slugs=all_slugs(root), include_manual=True, include_highmem=True)
@@ -604,6 +652,9 @@ def decide(env: dict, root: Path, reg: dict, state: dict, runs: "list[dict] | No
             raise ValueError(f"dispatch highmem methods on their own: scope={','.join(hm)}, and the rest in "
                              f"another run (this one also planned {', '.join(rest)})")
         max_parallel = highmem()["max_parallel"]
+        # a multi-day job holds its runner for days: never more than one, so parity keeps the other
+        if any(tier_of(load_spec(root, t["focus"])) == "highmem-long" for t in tasks if on_lent(t)):
+            max_parallel = 1
     return {"full": full, "slugs": slugs, "base": base, "tasks": tasks, "dropped": dropped,
             "skipped_manual": skipped_manual, "notes": notes, "max_parallel": max_parallel}
 

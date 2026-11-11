@@ -37,10 +37,15 @@ name: score
 # shard sweep), hosted-large, self-hosted (own focus job on the private 31 GB box; may exceed 6 h via
 # timeout_minutes:; run by the `score-selfhosted` job ONE AT A TIME, so scoring never holds both
 # private runners), and manual/gpu — NEVER scheduled automatically, only by a workflow_dispatch that
-# names the slug in `scope` (or include_manual=true). MoDIP and INR-QSM are manual: one inversion takes
-# ~12-17 h on the shared box, so no cap makes them feasible automatically.
+# names the slug in `scope` (or include_manual=true).
 # highmem: the runners in repository variable QSMCI_HIGHMEM_RUNNER, dispatch-only, in runs of their
 # own capped at the pool size. Unset: the default hosted tier.
+# highmem-long: the same lent runners for multi-day CPU jobs (MoDIP, INR-QSM: GPU-oriented per-subject
+# optimisations, several hours per inversion on CPU). Dispatch-only (scope=<slug>), the method's
+# timeout_minutes: up to GitHub's 5-day self-hosted limit, and ONE job at a time per run so the
+# other lent runner stays free for parity (QSMCI_PARITY_RUNNER is the same pool). Unset: manual.
+# Their focus job is split by total-field source: f-<slug>-gt (isolated + gt columns) and one
+# f-<slug>-<field map> per real field map, so each job is about a day and publishes on its own.
 
 on:
   push:
@@ -56,13 +61,13 @@ on:
   workflow_dispatch:
     inputs:
       scope:
-        description: "all | <comma-separated slugs> (default: auto = everything unscored since the last completed run). Naming a manual-tier slug (modip, inr-qsm) or a method with manual_phantoms scores it."
+        description: "all | <comma-separated slugs> (default: auto = everything unscored since the last completed run). Naming a manual- or highmem-tier slug (e.g. modip, inr-qsm) or a method with manual_phantoms scores it."
         default: "auto"
       include:
         description: "MANUAL recovery only: comma-separated slugs; re-score ONLY the composed pipelines they form (gt is always a field source, so 'bfrnet,medi-cornell' -> gt~bfrnet~medi-cornell; add a field-mapping slug for its prefix). Use to refill a combo that DNF'd on a transient/infra failure. Overrides scope. NOT for algorithm changes — those must re-score the full matrix."
         default: ""
       include_manual:
-        description: "true = also plan the manual-tier methods / manual phantoms (with scope=all: the WHOLE matrix incl. modip + inr-qsm; expect days of self-hosted time)"
+        description: "true = also plan the manual-tier methods / manual phantoms (with scope=all: the WHOLE matrix incl. the manual tier; highmem/highmem-long methods such as modip and inr-qsm only by naming them in scope)"
         default: "false"
       shards:
         description: "number of parallel shards for a full re-run, or auto: about 3 h of recorded runtime each (hosted runners stop at 6 h; at a fixed 12 and then 24, every shard hit that cap)"
@@ -128,7 +133,8 @@ jobs:
 
   # The scoring tasks run in TWO matrix jobs with identical steps (YAML anchors below; GitHub does
   # not support `<<:` merge keys, so each job-level key is aliased on its own):
-  #   score            — hosted tiers at full parallelism, and highmem capped at its pool size;
+  #   score            — hosted tiers at full parallelism, highmem capped at its pool size, and
+  #                      highmem-long at one job;
   #   score-selfhosted — tasks on QSM-CI's two private runners (`runner: self-hosted`, and
   #                      manual/gpu when dispatched), ONE AT A TIME. Main's scoring of the 12 h
   #                      self-hosted methods (iqfm, amp-pe-qsmrs) used to hold both runners and
@@ -141,7 +147,7 @@ jobs:
     if: needs.plan.outputs.hosted_tasks != '[]'
     strategy:
       fail-fast: false
-      max-parallel: ${{ fromJson(needs.plan.outputs.max_parallel || '256') }}   # pool size for highmem, else no cap
+      max-parallel: ${{ fromJson(needs.plan.outputs.max_parallel || '256') }}   # pool size for highmem, 1 for highmem-long, else no cap
       matrix:
         task: ${{ fromJson(needs.plan.outputs.hosted_tasks) }}
     # One group per TASK: a newer run's copy of this task supersedes an older run's (its rows were
@@ -153,7 +159,8 @@ jobs:
     # Runner, wall-clock budget and intra-job container parallelism are chosen per task by the plan
     # job (ubuntu-latest/360/2 by default; the 31 GB self-hosted runners/360/4 for `runner: self-hosted`
     # methods, with per-method timeout_minutes:/jobs: overrides; the lent runners/720/1 for
-    # `runner: highmem`). QSM_CI_JOBS here overrides the workflow-level cap of 2.
+    # `runner: highmem`, and the lent runners/timeout_minutes: (max 7200)/jobs: for
+    # `runner: highmem-long`). QSM_CI_JOBS here overrides the workflow-level cap of 2.
     runs-on: ${{ matrix.task.runs_on }}
     timeout-minutes: ${{ matrix.task.timeout }}
     env: &score-env
@@ -266,6 +273,7 @@ jobs:
           EXCLUDE: ${{ matrix.task.exclude }}
           INCLUDE: ${{ matrix.task.include }}
           INPUTS: ${{ matrix.task.inputs }}   # χ-sep degraded-input task (l3): pipeline.py --inputs
+          FIELDMAPS: ${{ matrix.task.fieldmaps }}   # highmem-long split task: pipeline.py --fieldmaps
         run: |
           MODE="$DS_MODE"
           [ -n "$TASK_MODE" ] && MODE="$TASK_MODE"   # manual-include task pins 'composed'
@@ -282,6 +290,9 @@ jobs:
           # an R2′-consuming method, its GRE-only grid at L3 (its own job, so the ground-truth-input
           # job keeps its length). Rows gain -l3 ids + inputs: "l3".
           [ -n "$INPUTS" ] && ARGS="$ARGS --inputs $INPUTS"
+          # A highmem-long dipole's focus job is split by total-field source (score_plan.split_fieldmaps):
+          # f-<slug>-gt runs isolated + the gt columns, f-<slug>-<field map> only that map's columns.
+          [ -n "$FIELDMAPS" ] && ARGS="$ARGS --fieldmaps $FIELDMAPS"
           echo "== task $TASK_ID: pipeline.py $ARGS =="
           t0=$(date +%s)
           python scripts/pipeline.py $ARGS

@@ -53,19 +53,22 @@ smoke_box: 32   # PR --smoke gate fits a 32^3 central box (fast); full score.yml
 # score.yml runs WITHOUT --smoke, so it ignores this and uses the full epoch_num default (500).
 smoke_params:
   epoch_num: 10
-# MANUAL tier: never scored automatically (not on push, not by a scope=all rescore) — dispatch
-# score.yml with scope=modip (or include_manual=true) to score it. Why: the full 500-epoch
-# per-subject CPU optimization takes ~12 h PER inversion on the shared 16-core self-hosted box
-# (2026-09-07 log: epoch 475/500 at 41 672 s), and a dipole focus job inverts 1 isolated + every
-# composed column. Between 2026-07-25 and 2026-09-10 the automatic job ran 29 times, finished once,
-# and each attempt held a self-hosted runner for its whole cap — so the automatic path was pure
-# waste. `gpu` would be the honest tier once a GPU runner exists (the reference is GPU-oriented).
-runner: manual
-# Only honored on self-hosted/manual (GitHub allows long jobs there); hosted stays 6 h. A manual
-# run is 4 composed + 1 isolated (+ 1 in-vivo) inversions at ~3-5 h each with the box to itself.
-timeout_minutes: 2880
-# One container at a time: an inversion already saturates every core, so 4 concurrent ones just
-# quadruple each one's wall-clock (the 12 h above was measured under exactly that contention).
+# HIGHMEM-LONG tier: the lent runners (QSMCI_HIGHMEM_RUNNER, 16 vCPU, 64 GB, no GPU), scored
+# ONLY by a dispatch naming it (score.yml scope=modip), one job at a time so the other lent runner
+# stays free for parity. Why so long: the full 500-epoch per-subject CPU optimisation took 11.8 h
+# for ONE inversion on the 16-core self-hosted box while it shared it (2026-09-07 log, job
+# 101611239928; epoch 500 at 42 469 s), and a dipole focus job inverts 1 isolated + 6 composed
+# columns. Between 2026-07-25 and 2026-09-10 the automatic job on the shared box (6-12 h caps) ran
+# 29 times and finished once. Expected here: about 5-8 h per inversion alone on 16 cores. The focus
+# job is split by field map (f-modip-gt: isolated + 2 gt columns; f-modip-romeo-qsmrs and
+# f-modip-laplacian-qsmrs: 2 columns each), so each job takes roughly 10-24 h, one after another;
+# the cap is GitHub's 5-day self-hosted maximum. `gpu` would be the honest tier once a GPU runner
+# exists (the reference is GPU-oriented).
+runner: highmem-long
+# The job cap (and the per-run budget, qsm_ci.containers.timeout_s): GitHub's 5-day self-hosted limit.
+timeout_minutes: 7200
+# One container at a time: an inversion already saturates every core, so concurrent ones just
+# multiply each one's wall-clock (the 11.8 h above was measured under exactly that contention).
 jobs: 1
 # Composed-matrix subset: a per-subject optimization cannot afford the full 3 × 11 column matrix,
 # so it is composed only with the two reference BFR methods, on the ground-truth field map and the
@@ -76,8 +79,9 @@ compose:
 # Notes on how QSM-CI runs this method vs. its reference (shown on the submission page).
 ci_notes:
 - >
-  Executed CPU-only. The reference optimizes per subject on a GPU, so runtime here is substantially
-  longer and not comparable to GPU timings.
+  Executed CPU-only on a 16-core runner. The reference optimizes per subject on a GPU, so runtimes
+  here are far longer (several hours per inversion) and not comparable to the reference's GPU
+  timings.
 parameters:
 - name: epoch_num
   default: 500

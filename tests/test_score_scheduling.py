@@ -48,6 +48,29 @@ def test_a_restricted_dipole_focus_job_only_computes_the_columns_it_needs(pipeli
     assert len(plan.bfr) == 3 and len(plan.fmap) == 2                             # unrestricted: everything
 
 
+def test_fieldmaps_restricts_the_total_field_sources_of_a_split_focus_job(pipeline):
+    """--fieldmaps: the highmem-long split. The gt part composes only from the ground-truth total
+    field; a field-map part runs that map and its columns, never the gt ones."""
+    fm = [_algo(pipeline, s, "field-mapping") for s in ("romeo", "laplacian")]
+    bfr = [_algo(pipeline, s, "bfr") for s in ("vsharp", "pdf")]
+    heavy = _algo(pipeline, "heavy", "dipole", {"fieldmaps": {"gt", "romeo", "laplacian"}, "bfrs": {"vsharp", "pdf"}})
+    algos = fm + bfr + [heavy]
+    whole = pipeline.plan_composed(algos, "heavy", "sim", None, None)
+    assert whole.gt_source and whole.fm_keys == ["gt", "laplacian", "romeo"]
+    gt = pipeline.plan_composed(algos, "heavy", "sim", None, None, {"gt"})
+    assert gt.gt_source and gt.fmap == [] and set(gt.col_owner) == {("gt", "vsharp"), ("gt", "pdf")}
+    ro = pipeline.plan_composed(algos, "heavy", "sim", None, None, {"romeo"})
+    assert not ro.gt_source and [f["slug"] for f in ro.fmap] == ["romeo"]
+    assert set(ro.col_owner) == {("romeo", "vsharp"), ("romeo", "pdf")}
+    # the parts partition the whole matrix's columns
+    parts = [pipeline.plan_composed(algos, "heavy", "sim", None, None, {k}).col_owner for k in ("gt", "romeo", "laplacian")]
+    assert set().union(*parts) == set(whole.col_owner) and sum(len(p) for p in parts) == len(whole.col_owner)
+    # end-to-end spans have no total-field source: they run with the gt part only
+    e2e = _algo(pipeline, "e2e", "end-to-end")
+    assert [s["slug"] for s in pipeline.plan_composed(algos + [e2e], None, "sim", None, None, {"gt"}).e2e_spans] == ["e2e"]
+    assert pipeline.plan_composed(algos + [e2e], None, "sim", None, None, {"romeo"}).e2e_spans == []
+
+
 def test_runsfile_stamps_rows_with_the_ci_run_that_scored_them(pipeline, tmp_path, monkeypatch):
     monkeypatch.setenv("QSMCI_RUN", "123.2")
     monkeypatch.setenv("QSMCI_SHA", "abc")
