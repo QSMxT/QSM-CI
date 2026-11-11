@@ -32,9 +32,17 @@ doi: 10.1016/j.neuroimage.2014.12.043
 citation: Li et al., NeuroImage 2015
 code_url: https://people.eecs.berkeley.edu/~chunlei.liu/software.html
 license: See STI Suite license
+image: ghcr.io/astewartau/qsm-ci/sti-pipeline@sha256:60dcc483e1a6a4c18c04d8e2bda99923cdb72673f774622f67c952dfd52a7dd8   # v1 (BUILD.md)
 run: bash run.sh
 ci_skip: true   # a reference for pipeline parity only (QSMxT/QSM-CI#421)
 parity_only: true
+fidelity:
+  date: 2026-11-11
+  image: sha256:60dcc483e1a6a4c18c04d8e2bda99923cdb72673f774622f67c952dfd52a7dd8
+  matlab: R2023b Update 5 (23.2.0.2459199); MATLAB Runtime R2023b Update 11 in the image
+  tolerance: identical   # χ and every intermediate, in vivo, 8 threads
+  result: pass
+  report: algorithms/toolbox-pipeline-sti/fidelity/REPORT.md
 matlab:
   entry: recon.m
   runtime: r2023b

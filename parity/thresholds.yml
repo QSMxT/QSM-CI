@@ -388,15 +388,16 @@ pairs:
       prisma-bridge-run1:
         # Deterministic, so tight (2026-11-11, inside the dataset mask): χ+ / |χ−| NRMSE 0.0008 % /
         # 0.0011 %, max |Δ| 4.9e-5 / 8.2e-5 ppm; mask identical. The QSM (chimap) is the toolbox's
-        # iLSQR either side, 0.23 % / max 2.5e-4 ppm: QSMxT publishes it mean-referenced (its mean
-        # in the mask 1e-10 ppm) where the script keeps it as iLSQR returns it (mean 9.75e-5 ppm),
-        # so the gap is that constant plus ≤ 1.6e-4 ppm of rounding.
+        # iLSQR either side. It was 0.23 % / max 2.5e-4 ppm while QSMxT mean-referenced it; with
+        # rule chi-sep.reference-none (QSM.rs#459, QSMxT#538) it stays as iLSQR returns it, as the
+        # script keeps it: NRMSE 0.0032 %, max |Δ| 1.6e-4 ppm, p99 4.0e-6 ppm (QSMxT#538 build).
         mask: { dice_min: 0.9999 }
         chi-para: { nrmse_max: 0.01, correlation_min: 0.9999, max_abs_max: 0.0001, p99_abs_max: 0.000003 }
         chi-dia: { nrmse_max: 0.01, correlation_min: 0.9999, max_abs_max: 0.00017, p99_abs_max: 0.000003 }
-        chimap: { nrmse_max: 0.3, correlation_min: 0.9999, max_abs_max: 0.0004, p99_abs_max: 0.0002 }
+        chimap: { nrmse_max: 0.01, correlation_min: 0.9999, max_abs_max: 0.0003, p99_abs_max: 0.00001 }
         measured:
-          main: "local run 2026-11-11: QSMxT#534 (qsm-core 0428c09) vs reference v3 sha256:17e9784a…, method ilsqr, dataset mask (limits)"
+          main: "local run 2026-11-11: QSMxT#534 (qsm-core 0428c09) vs reference v3 sha256:17e9784a…, method ilsqr, dataset mask (χ+/χ− limits)"
+          qsmxt538: "local run 2026-11-11: QSMxT#538 e2de679 (qsm-core 59a6164) vs reference v3, method ilsqr, dataset mask (chimap limits; χ+/χ− unchanged)"
   toolbox-pipeline-chisep-medi:
     reference: toolbox-pipeline-chisep
     candidate: toolbox-pipeline-qsmrs
@@ -412,13 +413,14 @@ pairs:
         # Deterministic, so tight. Before QSM.rs#458 / QSMxT#534 (CSF mask from ARLO R2*): χ+ / |χ−|
         # 0.58 % / 0.51 %. With the toolbox's NNLS R2* (2026-11-11, inside the dataset mask): χ+ /
         # |χ−| NRMSE 0.0005 % / 0.0011 %, max |Δ| 5.6e-5 / 5.2e-4 ppm, p99 ≤ 5.3e-7 ppm; mask
-        # identical; CSF mask 11,186 voxels. chimap as for chi-sep-ilsqr (mean referencing).
+        # identical; CSF mask 11,186 voxels. chimap as for chi-sep-ilsqr (unreferenced since #538).
         mask: { dice_min: 0.9999 }
         chi-para: { nrmse_max: 0.01, correlation_min: 0.9999, max_abs_max: 0.0001, p99_abs_max: 0.000002 }
         chi-dia: { nrmse_max: 0.01, correlation_min: 0.9999, max_abs_max: 0.001, p99_abs_max: 0.000002 }
-        chimap: { nrmse_max: 0.3, correlation_min: 0.9999, max_abs_max: 0.0004, p99_abs_max: 0.0002 }
+        chimap: { nrmse_max: 0.01, correlation_min: 0.9999, max_abs_max: 0.0003, p99_abs_max: 0.00001 }
         measured:
-          main: "local run 2026-11-11: QSMxT#534 (qsm-core 0428c09) vs reference v3 sha256:17e9784a…, method medi, dataset mask (limits)"
+          main: "local run 2026-11-11: QSMxT#534 (qsm-core 0428c09) vs reference v3 sha256:17e9784a…, method medi, dataset mask (χ+/χ− limits)"
+          qsmxt538: "local run 2026-11-11: QSMxT#538 e2de679 (qsm-core 59a6164) vs reference v3, method medi, dataset mask (chimap limits; χ+/χ− unchanged)"
   toolbox-pipeline-decompose:
     reference: toolbox-pipeline-decompose-qsmci   # the paper, in QSM-CI's MATLAB; image v3, fidelity pass; pipeline parity: pass in vivo within the solver floor (decision 57)
     candidate: toolbox-pipeline-qsmrs
@@ -471,6 +473,31 @@ pairs:
         measured:
           spread: "local podman runs 2026-11-10: reference v1 sha256:c9ae67fa… vs v2 sha256:6c645318…, χ 15.07 %, Dice 0.9990 (limits)"
           main: "local run 2026-11-10: QSMxT 55d3f3f + #531 vs reference v2, χ 14.56 %, Dice 0.9992"
+  toolbox-pipeline-sti:
+    reference: toolbox-pipeline-sti   # STI Suite 3.0 QSM_GUI iLSQR path; image v1, fidelity pass
+    candidate: toolbox-pipeline-qsmrs
+    enabled: false
+    blocked_by: https://github.com/QSMxT/QSM-CI/issues/421
+    candidate_set: { pipeline: sti-suite-ilsqr }
+    qsmrs_paths: [src/pipeline/, src/bgremove/vsharp.rs, src/inversion/ilsqr.rs, src/utils/threshold.rs, src/utils/mask.rs]
+    qsmxt_paths: [crates/qsmxt-engine/src/]
+    datasets:
+      sim: {}                  # qsm-forward
+      prisma-bridge-run1:
+        # 2026-11-11, inside the dataset mask: thresholding mask and PolishMask's mask identical
+        # (1,366,408 voxels); total field identical up to a constant (−0.0584 ppm, which V-SHARP
+        # removes); local field identical except 4 isolated interior voxels, which STI's V_SHARP
+        # leaves out of its mask (local field 0 there; PolishMask's fill puts them back). Spied in
+        # licensed R2023b: V_SHARP's mask is |S₂∗mask − 1| < 1e-6 with S₂ its 2 mm ball, convolved
+        # in single precision (fftnc/ifftnc); that rule gives its mask with no voxel apart, and at
+        # those 4 voxels the float32 FFT lands 1.01–1.07e-6 from 1 (≤ 2.4e-7 elsewhere). The holes
+        # are FFTW single-precision rounding, which QSM.rs's exact test cannot and should not copy.
+        # Through iLSQR they are the whole χ gap: NRMSE 0.30 %, r 1.000000, max |Δ| 0.020 ppm,
+        # p99 9.2e-5 ppm. Limits from that floor.
+        mask: { dice_min: 0.9999 }
+        chimap: { nrmse_max: 0.4, correlation_min: 0.9999, max_abs_max: 0.025, p99_abs_max: 0.00012 }
+        measured:
+          main: "local run 2026-11-11: QSMxT#538 e2de679 (qsm-core 59a6164) vs reference v1 sha256:60dcc483…, dataset mask (limits); V_SHARP spy: Bunya jobs 32607969, 32610086, 32610529"
   fit-ppm-complex:
     reference: fit-ppm-complex-cornell   # MEDI 2024.11.26 Fit_ppm_complex + unwrapPhase (#322)
     candidate: fit-ppm-complex-qsmrs     # ci_skip for scoring: v10.0.0 has no complex fit
