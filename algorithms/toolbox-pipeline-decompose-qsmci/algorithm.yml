@@ -1,0 +1,49 @@
+name: DECOMPOSE pipeline (paper)
+slug: toolbox-pipeline-decompose-qsmci
+algorithm: toolbox-pipeline
+variant: decompose
+source: qsmci
+stage: pipeline
+language: MATLAB
+family: pipeline
+learning: none
+engine: STI Suite / MATLAB Optimization Toolbox
+description: >
+  DECOMPOSE-QSM as its paper describes it (Chen et al. 2021): FSL BET on the first echo, STI Suite
+  Laplacian unwrapping, V-SHARP and STAR-QSM per echo with whole-brain mean referencing, then the
+  three-stage fit with lsqlin (sum-to-one amplitudes, R2*0) and lsqnonlin (χ±) on per-voxel
+  S(0) = 1 data. QSM-CI's MATLAB of the paper (it ships no code); the reference for QSMxT's
+  `decompose` pipeline (QSMxT/QSM-CI#421).
+ci_notes:
+- >
+  The paper's fit (10 alternating passes of stages 5.1-5.3) depends on stage 5.1's solver at the
+  level of its last digits in degenerate voxels. Here that is MATLAB's lsqlin (interior-point).
+  QSM.rs solves stage 5.1 exactly, and in vivo the two differ by about 8 % NRMSE in χ±. Against a
+  known truth they do not differ (2026-11-10). On 2,000 voxels simulated from the paper's signal
+  model (TE 5:6:29 ms, 2.89 T), noise-free and at SNR 200/100/50, QSM.rs's exact solve,
+  interior-point stand-ins and real MATLAB lsqlin all give χ+ and χ− at about 74 % NRMSE from the
+  truth (r about 0.23). The solvers differ from each other by about 1 % of the truth, while two
+  noise draws at SNR 100 differ by 22 %. The fit itself recovers χ± poorly: each output
+  correlates −0.56 with the other compartment's truth. QSMxT keeps the exact solve (Ashley,
+  decision 57).
+authors:
+- name: Jingjia Chen
+- name: Chunlei Liu
+doi: 10.1016/j.neuroimage.2021.118477
+citation: Chen et al., NeuroImage 2021
+code_url: https://github.com/QSMxT/QSM-CI
+license: GPL-3.0
+image: ghcr.io/astewartau/qsm-ci/decompose-pipeline@sha256:f9ada5009494cdb7c02c12fc7c90f9d91418627bc266e22e3b308f4c5464456c   # v3, built and pushed on Bunya (BUILD.md)
+run: bash run.sh
+ci_skip: true
+parity_only: true
+fidelity:
+  date: 2026-11-10
+  image: sha256:f9ada5009494cdb7c02c12fc7c90f9d91418627bc266e22e3b308f4c5464456c
+  matlab: R2023b Update 5 (23.2.0.2459199); MATLAB Runtime R2023b Update 11 in the image; Image Processing and Optimization toolboxes, Parallel Computing Toolbox
+  tolerance: identical   # every output and intermediate, in vivo, 8 threads
+  result: pass
+  report: algorithms/toolbox-pipeline-decompose-qsmci/fidelity/REPORT.md
+matlab:
+  entry: recon.m
+  runtime: r2023b

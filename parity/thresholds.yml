@@ -351,6 +351,126 @@ pairs:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
 
+  # Whole toolbox pipelines (#421): QSMxT's `qsmxt run --pipeline <id>` against the toolbox's own
+  # script, from the echoes to χ. Disabled until both sides are built and a first run is in; no
+  # limits until then (tight where deterministic, baseline after, and anything questionably far
+  # off is investigated, not baselined).
+  toolbox-pipeline-medi-cornell:
+    reference: toolbox-pipeline-medi-cornell   # MEDI 2024.11.26 README.m chain; image v2, fidelity pass
+    candidate: toolbox-pipeline-qsmrs
+    enabled: false
+    blocked_by: https://github.com/QSMxT/QSM-CI/issues/421
+    candidate_set: { pipeline: medi-toolbox }
+    qsmrs_paths: [src/pipeline/]
+    qsmxt_paths: [crates/qsmxt-engine/src/]
+    datasets:
+      sim: {}                  # qsm-forward: no ImagingFrequency, so both sides use γ·B0
+      prisma-bridge-run1:      # Siemens Prisma, ImagingFrequency from the exam card
+        # Deterministic, so tight (2026-11-11, inside the dataset mask): χ NRMSE 0.0029 %, max |Δ|
+        # 7.4e-5 ppm, p99 4.8e-6 ppm; mask identical; total and local field ≤ 1.1e-5 ppm.
+        mask: { dice_min: 0.9999 }
+        chimap: { nrmse_max: 0.01, correlation_min: 0.9999, max_abs_max: 0.00015, p99_abs_max: 0.00001 }
+        measured:
+          main: "local run 2026-11-11: QSMxT#534 (qsm-core 0428c09) vs reference v2 sha256:b3f06e4b…, dataset mask (limits)"
+  toolbox-pipeline-chisep-ilsqr:
+    reference: toolbox-pipeline-chisep   # χ-separation toolbox v1.1.3 Chisep_script.m; image v3, fidelity pass
+    candidate: toolbox-pipeline-qsmrs
+    enabled: false
+    blocked_by: https://github.com/QSMxT/QSM-CI/issues/421
+    reference_set: { method: ilsqr }
+    candidate_set: { pipeline: chi-sep-ilsqr }
+    qsmrs_paths: [src/pipeline/, src/separation/]
+    qsmxt_paths: [crates/qsmxt-engine/src/]
+    datasets:
+      # qsm-forward, 3 T, with a measured-style R2′ input. It has no Manufacturer: the script runs
+      # its Tukey 0.4 regardless, where QSMxT's rules need a known manufacturer.
+      meso-3t: {}
+      prisma-bridge-run1:
+        # Deterministic, so tight (2026-11-11, inside the dataset mask): χ+ / |χ−| NRMSE 0.0008 % /
+        # 0.0011 %, max |Δ| 4.9e-5 / 8.2e-5 ppm; mask identical. The QSM (chimap) is the toolbox's
+        # iLSQR either side, 0.23 % / max 2.5e-4 ppm: QSMxT publishes it mean-referenced (its mean
+        # in the mask 1e-10 ppm) where the script keeps it as iLSQR returns it (mean 9.75e-5 ppm),
+        # so the gap is that constant plus ≤ 1.6e-4 ppm of rounding.
+        mask: { dice_min: 0.9999 }
+        chi-para: { nrmse_max: 0.01, correlation_min: 0.9999, max_abs_max: 0.0001, p99_abs_max: 0.000003 }
+        chi-dia: { nrmse_max: 0.01, correlation_min: 0.9999, max_abs_max: 0.00017, p99_abs_max: 0.000003 }
+        chimap: { nrmse_max: 0.3, correlation_min: 0.9999, max_abs_max: 0.0004, p99_abs_max: 0.0002 }
+        measured:
+          main: "local run 2026-11-11: QSMxT#534 (qsm-core 0428c09) vs reference v3 sha256:17e9784a…, method ilsqr, dataset mask (limits)"
+  toolbox-pipeline-chisep-medi:
+    reference: toolbox-pipeline-chisep
+    candidate: toolbox-pipeline-qsmrs
+    enabled: false
+    blocked_by: https://github.com/QSMxT/QSM-CI/issues/421
+    reference_set: { method: medi }
+    candidate_set: { pipeline: chi-sep-medi }
+    qsmrs_paths: [src/pipeline/, src/separation/, src/utils/r2star.rs]
+    qsmxt_paths: [crates/qsmxt-engine/src/]
+    datasets:
+      meso-3t: {}
+      prisma-bridge-run1:
+        # Deterministic, so tight. Before QSM.rs#458 / QSMxT#534 (CSF mask from ARLO R2*): χ+ / |χ−|
+        # 0.58 % / 0.51 %. With the toolbox's NNLS R2* (2026-11-11, inside the dataset mask): χ+ /
+        # |χ−| NRMSE 0.0005 % / 0.0011 %, max |Δ| 5.6e-5 / 5.2e-4 ppm, p99 ≤ 5.3e-7 ppm; mask
+        # identical; CSF mask 11,186 voxels. chimap as for chi-sep-ilsqr (mean referencing).
+        mask: { dice_min: 0.9999 }
+        chi-para: { nrmse_max: 0.01, correlation_min: 0.9999, max_abs_max: 0.0001, p99_abs_max: 0.000002 }
+        chi-dia: { nrmse_max: 0.01, correlation_min: 0.9999, max_abs_max: 0.001, p99_abs_max: 0.000002 }
+        chimap: { nrmse_max: 0.3, correlation_min: 0.9999, max_abs_max: 0.0004, p99_abs_max: 0.0002 }
+        measured:
+          main: "local run 2026-11-11: QSMxT#534 (qsm-core 0428c09) vs reference v3 sha256:17e9784a…, method medi, dataset mask (limits)"
+  toolbox-pipeline-decompose:
+    reference: toolbox-pipeline-decompose-qsmci   # the paper, in QSM-CI's MATLAB; image v3, fidelity pass; pipeline parity: pass in vivo within the solver floor (decision 57)
+    candidate: toolbox-pipeline-qsmrs
+    enabled: false
+    blocked_by: https://github.com/QSMxT/QSM-CI/issues/421
+    candidate_set: { pipeline: decompose }
+    qsmrs_paths: [src/pipeline/, src/separation/decompose.rs]
+    qsmxt_paths: [crates/qsmxt-engine/src/]
+    datasets:
+      meso-3t: {}   # 3 T, the field strength DECOMPOSE was designed for
+      prisma-bridge-run1:
+        # Limits from the in-vivo gap, after an investigation (decision 18) and Ashley's decisions
+        # 56 (STAR unpadded, rule decompose.star-pad) and 57 (keep QSM.rs's exact stage-5.1 solve).
+        # Measured inside the reference's fitted 33³ central box (DECOMPOSE_CROPBOX=32) ∩ its
+        # V-SHARP mask, 2026-11-10: QSMxT main (+#532) build with --star-pad 0 0 0 (what #456's rule
+        # gives) against reference v3: χ+ NRMSE 8.34 %, χ− 7.66 %, r 0.9955 / 0.9954, max |Δ|
+        # 0.165 / 0.154 ppm, p99 0.0057 / 0.0066 ppm. Per-echo χ: 0.008-0.049 %. The whole gap is
+        # the stage-5.1 solve (exact simplex vs MATLAB lsqlin), which the 10-pass alternation does
+        # not converge away in degenerate voxels. Against a known truth the solvers do not differ
+        # (see the reference's ci_notes), so this is a parity floor, not an accuracy loss. Margins
+        # as above.
+        chi-para: { nrmse_max: 9.7, correlation_min: 0.985, max_abs_max: 0.21, p99_abs_max: 0.0071 }
+        chi-dia: { nrmse_max: 9.0, correlation_min: 0.985, max_abs_max: 0.2, p99_abs_max: 0.0083 }
+        measured:
+          main: "local run 2026-11-10: QSMxT main + #532, --star-pad 0 0 0, reference v3 sha256:f9ada500…, 33³ box (limits)"
+          qsmxt534: "local run 2026-11-11: QSMxT#534 --pipeline decompose (rule decompose.star-pad, no flag): χ+ 8.34 %, χ− 7.66 %, identical to the --star-pad 0 0 0 run"
+  toolbox-pipeline-qsmart:
+    reference: toolbox-pipeline-qsmart   # QSMART v1.0 incl. brainmask.m; image v2, fidelity pass; pipeline parity: pass (within the N4 spread)
+    candidate: toolbox-pipeline-qsmrs
+    enabled: false
+    blocked_by: https://github.com/QSMxT/QSM-CI/issues/421
+    candidate_set: { pipeline: qsmart }
+    qsmrs_paths: [src/pipeline/, src/utils/qsmart.rs]
+    qsmxt_paths: [crates/qsmxt-engine/src/]
+    datasets:
+      # Coil-combined input on both sides (QSMART's coil_comb/POEM is not run): a known difference.
+      # Known, see the reference's ci_notes: the per-echo Laplacian constants (total field, R_0) and
+      # the N4 thread spread of the mask.
+      prisma-bridge-run1:
+        # Limits from the reference's own spread, not from a candidate run (decision 18,
+        # 2026-11-10, QSM-CI#421). Reference v1 (ANTs N4 at 32+ threads) against v2 (N4 at 1
+        # thread), everything else identical: mask Dice 0.9990 (3,131 voxels), χ NRMSE 15.07 %,
+        # r 0.9885. The difference is rounding inside N4, which BET turns into a different mask
+        # edge, and every later stage follows the mask. χ NRMSE inside the common mask eroded by
+        # 3 / 6 voxels: 9.05 % / 6.02 %. QSMxT main 55d3f3f+#531 (qsm-core 1d5b438) against v2:
+        # mask Dice 0.9992 (2,616 voxels), χ 14.56 % (9.19 % / 6.56 % eroded), r 0.9892, within
+        # that spread. Margins as above.
+        mask: { dice_min: 0.989 }
+        chimap: { nrmse_max: 17.1, correlation_min: 0.978 }
+        measured:
+          spread: "local podman runs 2026-11-10: reference v1 sha256:c9ae67fa… vs v2 sha256:6c645318…, χ 15.07 %, Dice 0.9990 (limits)"
+          main: "local run 2026-11-10: QSMxT 55d3f3f + #531 vs reference v2, χ 14.56 %, Dice 0.9992"
   fit-ppm-complex:
     reference: fit-ppm-complex-cornell   # MEDI 2024.11.26 Fit_ppm_complex + unwrapPhase (#322)
     candidate: fit-ppm-complex-qsmrs     # ci_skip for scoring: v10.0.0 has no complex fit

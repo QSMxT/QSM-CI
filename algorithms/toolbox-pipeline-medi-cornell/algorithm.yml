@@ -1,0 +1,38 @@
+name: MEDI toolbox pipeline (MEDI toolbox)
+slug: toolbox-pipeline-medi-cornell
+algorithm: toolbox-pipeline
+variant: medi
+source: cornell
+stage: pipeline
+language: MATLAB
+family: pipeline
+learning: none
+engine: MEDI toolbox
+description: >
+  The Cornell MEDI toolbox 2024.11.26's own pipeline (README.m), from the echoes to χ:
+  Fit_ppm_complex, region-growing unwrapping, BET, PDF, and MEDI+0 (MEDI_L1 with lambda 1000,
+  lambda_CSF 100, MERIT and SMV 5 mm), with the scanner's centre frequency. The reference for
+  QSMxT's `medi-toolbox` pipeline (QSMxT/QSM-CI#421).
+authors:
+- name: Jing Liu
+- name: Tian Liu
+- name: Pascal Spincemaille
+- name: Yi Wang
+doi: 10.1016/j.neuroimage.2011.08.082
+citation: Liu et al., NeuroImage 2012
+code_url: http://pre.weill.cornell.edu/mri/pages/qsm.html
+license: See Cornell MEDI toolbox license
+image: ghcr.io/astewartau/qsm-ci/medi-pipeline@sha256:b3f06e4b8720312dbadde08519dad05bfb943ed5d44c27b6a136b1ea5531ca1f   # v2, built and pushed on Bunya (BUILD.md)
+run: bash run.sh
+ci_skip: true   # a reference for pipeline parity only (QSMxT/QSM-CI#421)
+parity_only: true
+fidelity:
+  date: 2026-11-10
+  image: sha256:b3f06e4b8720312dbadde08519dad05bfb943ed5d44c27b6a136b1ea5531ca1f
+  matlab: R2023b Update 5 (23.2.0.2459199); MATLAB Runtime R2023b Update 11 in the image
+  tolerance: identical   # χ and every intermediate, in vivo, 8 threads
+  result: pass
+  report: algorithms/toolbox-pipeline-medi-cornell/fidelity/REPORT.md
+matlab:
+  entry: recon.m
+  runtime: r2023b

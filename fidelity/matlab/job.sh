@@ -28,7 +28,8 @@ mkdir -p "$APPTAINER_CACHEDIR" "$APPTAINER_TMPDIR" "$W/reports" "$ROOT/img"
 # One .sif per image digest, so a new image is never confused with an old pull.
 dig=$(sed -n 's/.*sha256:\([0-9a-f]\{12\}\).*/\1/p' <<< "$FID_IMAGE")
 SIF="$ROOT/img/$FID_SIF-$dig.sif"
-mat() { module load matlab/R2023b; matlab -nodisplay -batch "addpath('$H'); $1"; }
+# FID_MATLAB_ENV ("K=V ...") applies to licensed MATLAB only (build, mex, licensed runs).
+mat() { module load matlab/R2023b; env ${FID_MATLAB_ENV:-} matlab -nodisplay -batch "addpath('$H'); $1"; }
 # FID_ENV ("K=V K2=V2") applies to every run, licensed and container alike.
 envargs=(); for kv in ${FID_ENV:-}; do export "${kv?}"; envargs+=(--env "$kv"); done
 echo "STEP=$STEP slug=$FID_SLUG tag=$TAG host=$(hostname) cpus=${SLURM_CPUS_PER_TASK:-?} $(date -Is)"
