@@ -1778,7 +1778,7 @@
         }
       ],
       "ci_notes": [
-        "Executed CPU-only. The reference optimizes per subject on an NVIDIA GPU with mixed precision, so runtime here is substantially longer and not comparable to GPU timings.\n"
+        "Executed CPU-only on a 16-core runner. The reference optimizes per subject on an NVIDIA GPU with mixed precision, so runtimes here are far longer (several hours per inversion) and not comparable to the reference's GPU timings.\n"
       ]
     },
     {
@@ -2910,7 +2910,7 @@
         }
       ],
       "ci_notes": [
-        "Executed CPU-only. The reference optimizes per subject on a GPU, so runtime here is substantially longer and not comparable to GPU timings.\n"
+        "Executed CPU-only on a 16-core runner. The reference optimizes per subject on a GPU, so runtimes here are far longer (several hours per inversion) and not comparable to the reference's GPU timings.\n"
       ]
     },
     {

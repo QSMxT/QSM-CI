@@ -73,9 +73,9 @@ def test_gpu_tier_methods_do_route_to_a_gpu_pool(plan_block):
     """The counterpart: the fix must not have silently dropped the GPU methods instead."""
     tasks = _plan(plan_block, full=True, include_gpu=True)
     gpu_slugs = {s for s in (p.parent.name for p in (ROOT / "algorithms").glob("*/algorithm.yml"))
-                 if str(_spec(s).get("runner", "")).strip("\"'") in ("manual", "gpu")
+                 if str(_spec(s).get("runner", "")).strip("\"'") in ("manual", "gpu", "highmem-long")
                  and not _spec(s).get("ci_skip")}
-    assert gpu_slugs, "no manual/gpu-tier methods — nothing to route"
+    assert gpu_slugs, "no manual/gpu/highmem-long-tier methods — nothing to route"
     routed = {t["focus"] for t in tasks if t.get("focus") and t["gpu"] == "1"}
     assert routed == gpu_slugs, f"expected {gpu_slugs} on the gpu pool, got {routed}"
 
