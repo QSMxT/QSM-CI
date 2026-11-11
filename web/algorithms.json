@@ -5154,8 +5154,8 @@
       "ci_notes": []
     },
     {
-      "slug": "vsharp-qsmrs.sti",
-      "name": "V-SHARP (QSM.rs) \u00b7 STI Suite parity",
+      "slug": "vsharp-qsmrs.deconv",
+      "name": "V-SHARP (QSM.rs) \u00b7 simulation-tuned (TSVD 0.05)",
       "stage": "bfr",
       "inputs": [
         "totalfield",
@@ -5223,7 +5223,8 @@
       "variant_of": "vsharp-qsmrs",
       "repro_only": true,
       "preset": {
-        "deconvolve": "false"
+        "deconvolve": "true",
+        "threshold": "0.05"
       }
     },
     {
@@ -5364,6 +5365,486 @@
       }
     },
     {
+      "slug": "harperella-qsmrs.sti",
+      "name": "HARPERELLA (QSM.rs) \u00b7 STI Suite rim (v11.0.0 default)",
+      "stage": "bfr",
+      "inputs": [
+        "totalfield",
+        "mask"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "harperella",
+      "language": "Rust",
+      "family": "iterative",
+      "learning": "none",
+      "description": "Laplacian-based background field removal (HARPERELLA's harmonic phase removal) on the multi-echo total field. The published method also unwraps, starting from one wrapped echo.",
+      "citation": "Li et al., NMR Biomed 2014",
+      "doi": "10.1002/nbm.3056",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT",
+      "authors": [
+        "Wei Li",
+        "Alexandru V. Avram",
+        "Bing Wu",
+        "Xue Xiao",
+        "Chunlei Liu"
+      ],
+      "parameters": [
+        {
+          "name": "radius",
+          "default": 10.0,
+          "description": "SMV kernel radius (mm)"
+        },
+        {
+          "name": "max_iter",
+          "default": 40,
+          "description": "iterations"
+        },
+        {
+          "name": "tol",
+          "default": "1e-6",
+          "description": "tolerance"
+        },
+        {
+          "name": "rim",
+          "default": "whole",
+          "description": "boundary-rim Laplacian values set to zero: whole (the whole rim, QSM.rs's default) or sti (STI Suite's 20 % largest); a qsmxt after v11.0.0"
+        },
+        {
+          "name": "erode_voxels",
+          "default": 0,
+          "description": "erode the brain mask by this many voxels (6-connected) before background removal, as qsmxt run --bf-erode-voxels; the field is left whole (uses qsmxt mask erode, also in v11.0.0)"
+        }
+      ],
+      "ci_notes": [],
+      "variant_of": "harperella-qsmrs",
+      "repro_only": true,
+      "preset": {
+        "rim": "sti"
+      }
+    },
+    {
+      "slug": "iharperella-qsmrs.wholerim",
+      "name": "iHARPERELLA (QSM.rs) \u00b7 whole rim (QSMxT recommendation; pre-release build)",
+      "stage": "bfr",
+      "inputs": [
+        "totalfield",
+        "mask"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "iharperella",
+      "language": "Rust",
+      "family": "iterative",
+      "learning": "none",
+      "description": "Improved HARPERELLA: background field removal by directly minimising the weighted resulting field, on the multi-echo total field. The published method also unwraps, from one wrapped echo.",
+      "citation": "Li, Wu & Liu, Proc. ISMRM 23 (2015) p. 3313 (iHARPERELLA); Li et al., NMR Biomed 2014 (HARPERELLA)",
+      "doi": "10.1002/nbm.3056",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT",
+      "authors": [
+        "Wei Li",
+        "Alexandru V. Avram",
+        "Bing Wu",
+        "Xue Xiao",
+        "Chunlei Liu"
+      ],
+      "parameters": [
+        {
+          "name": "max_iter",
+          "default": 40,
+          "description": "iterations"
+        },
+        {
+          "name": "tol",
+          "default": "1e-6",
+          "description": "tolerance"
+        },
+        {
+          "name": "rim",
+          "default": "sti",
+          "description": "boundary-rim Laplacian values set to zero: sti (STI Suite's 20 % largest, the original's) or whole (the whole rim); a qsmxt after v11.0.0"
+        },
+        {
+          "name": "erode_voxels",
+          "default": 0,
+          "description": "erode the brain mask by this many voxels (6-connected) before background removal, as qsmxt run --bf-erode-voxels; the field is left whole (uses qsmxt mask erode, also in v11.0.0)"
+        }
+      ],
+      "ci_notes": [],
+      "variant_of": "iharperella-qsmrs",
+      "repro_only": true,
+      "preset": {
+        "rim": "whole"
+      }
+    },
+    {
+      "slug": "iharperella-qsmrs.erode1",
+      "name": "iHARPERELLA (QSM.rs) \u00b7 mask eroded 1 voxel before BFR (pre-release build)",
+      "stage": "bfr",
+      "inputs": [
+        "totalfield",
+        "mask"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "iharperella",
+      "language": "Rust",
+      "family": "iterative",
+      "learning": "none",
+      "description": "Improved HARPERELLA: background field removal by directly minimising the weighted resulting field, on the multi-echo total field. The published method also unwraps, from one wrapped echo.",
+      "citation": "Li, Wu & Liu, Proc. ISMRM 23 (2015) p. 3313 (iHARPERELLA); Li et al., NMR Biomed 2014 (HARPERELLA)",
+      "doi": "10.1002/nbm.3056",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT",
+      "authors": [
+        "Wei Li",
+        "Alexandru V. Avram",
+        "Bing Wu",
+        "Xue Xiao",
+        "Chunlei Liu"
+      ],
+      "parameters": [
+        {
+          "name": "max_iter",
+          "default": 40,
+          "description": "iterations"
+        },
+        {
+          "name": "tol",
+          "default": "1e-6",
+          "description": "tolerance"
+        },
+        {
+          "name": "rim",
+          "default": "sti",
+          "description": "boundary-rim Laplacian values set to zero: sti (STI Suite's 20 % largest, the original's) or whole (the whole rim); a qsmxt after v11.0.0"
+        },
+        {
+          "name": "erode_voxels",
+          "default": 0,
+          "description": "erode the brain mask by this many voxels (6-connected) before background removal, as qsmxt run --bf-erode-voxels; the field is left whole (uses qsmxt mask erode, also in v11.0.0)"
+        }
+      ],
+      "ci_notes": [],
+      "variant_of": "iharperella-qsmrs",
+      "repro_only": true,
+      "preset": {
+        "erode_voxels": "1"
+      }
+    },
+    {
+      "slug": "iharperella-qsmrs.erode3",
+      "name": "iHARPERELLA (QSM.rs) \u00b7 mask eroded 3 voxels before BFR (pre-release build)",
+      "stage": "bfr",
+      "inputs": [
+        "totalfield",
+        "mask"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "iharperella",
+      "language": "Rust",
+      "family": "iterative",
+      "learning": "none",
+      "description": "Improved HARPERELLA: background field removal by directly minimising the weighted resulting field, on the multi-echo total field. The published method also unwraps, from one wrapped echo.",
+      "citation": "Li, Wu & Liu, Proc. ISMRM 23 (2015) p. 3313 (iHARPERELLA); Li et al., NMR Biomed 2014 (HARPERELLA)",
+      "doi": "10.1002/nbm.3056",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT",
+      "authors": [
+        "Wei Li",
+        "Alexandru V. Avram",
+        "Bing Wu",
+        "Xue Xiao",
+        "Chunlei Liu"
+      ],
+      "parameters": [
+        {
+          "name": "max_iter",
+          "default": 40,
+          "description": "iterations"
+        },
+        {
+          "name": "tol",
+          "default": "1e-6",
+          "description": "tolerance"
+        },
+        {
+          "name": "rim",
+          "default": "sti",
+          "description": "boundary-rim Laplacian values set to zero: sti (STI Suite's 20 % largest, the original's) or whole (the whole rim); a qsmxt after v11.0.0"
+        },
+        {
+          "name": "erode_voxels",
+          "default": 0,
+          "description": "erode the brain mask by this many voxels (6-connected) before background removal, as qsmxt run --bf-erode-voxels; the field is left whole (uses qsmxt mask erode, also in v11.0.0)"
+        }
+      ],
+      "ci_notes": [],
+      "variant_of": "iharperella-qsmrs",
+      "repro_only": true,
+      "preset": {
+        "erode_voxels": "3"
+      }
+    },
+    {
+      "slug": "iharperella-qsmrs.wholerim-erode3",
+      "name": "iHARPERELLA (QSM.rs) \u00b7 whole rim, mask eroded 3 voxels (pre-release build)",
+      "stage": "bfr",
+      "inputs": [
+        "totalfield",
+        "mask"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "iharperella",
+      "language": "Rust",
+      "family": "iterative",
+      "learning": "none",
+      "description": "Improved HARPERELLA: background field removal by directly minimising the weighted resulting field, on the multi-echo total field. The published method also unwraps, from one wrapped echo.",
+      "citation": "Li, Wu & Liu, Proc. ISMRM 23 (2015) p. 3313 (iHARPERELLA); Li et al., NMR Biomed 2014 (HARPERELLA)",
+      "doi": "10.1002/nbm.3056",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT",
+      "authors": [
+        "Wei Li",
+        "Alexandru V. Avram",
+        "Bing Wu",
+        "Xue Xiao",
+        "Chunlei Liu"
+      ],
+      "parameters": [
+        {
+          "name": "max_iter",
+          "default": 40,
+          "description": "iterations"
+        },
+        {
+          "name": "tol",
+          "default": "1e-6",
+          "description": "tolerance"
+        },
+        {
+          "name": "rim",
+          "default": "sti",
+          "description": "boundary-rim Laplacian values set to zero: sti (STI Suite's 20 % largest, the original's) or whole (the whole rim); a qsmxt after v11.0.0"
+        },
+        {
+          "name": "erode_voxels",
+          "default": 0,
+          "description": "erode the brain mask by this many voxels (6-connected) before background removal, as qsmxt run --bf-erode-voxels; the field is left whole (uses qsmxt mask erode, also in v11.0.0)"
+        }
+      ],
+      "ci_notes": [],
+      "variant_of": "iharperella-qsmrs",
+      "repro_only": true,
+      "preset": {
+        "rim": "whole",
+        "erode_voxels": "3"
+      }
+    },
+    {
+      "slug": "harperella-qsmrs.erode3",
+      "name": "HARPERELLA (QSM.rs) \u00b7 mask eroded 3 voxels before BFR (pre-release build)",
+      "stage": "bfr",
+      "inputs": [
+        "totalfield",
+        "mask"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "harperella",
+      "language": "Rust",
+      "family": "iterative",
+      "learning": "none",
+      "description": "Laplacian-based background field removal (HARPERELLA's harmonic phase removal) on the multi-echo total field. The published method also unwraps, starting from one wrapped echo.",
+      "citation": "Li et al., NMR Biomed 2014",
+      "doi": "10.1002/nbm.3056",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT",
+      "authors": [
+        "Wei Li",
+        "Alexandru V. Avram",
+        "Bing Wu",
+        "Xue Xiao",
+        "Chunlei Liu"
+      ],
+      "parameters": [
+        {
+          "name": "radius",
+          "default": 10.0,
+          "description": "SMV kernel radius (mm)"
+        },
+        {
+          "name": "max_iter",
+          "default": 40,
+          "description": "iterations"
+        },
+        {
+          "name": "tol",
+          "default": "1e-6",
+          "description": "tolerance"
+        },
+        {
+          "name": "rim",
+          "default": "whole",
+          "description": "boundary-rim Laplacian values set to zero: whole (the whole rim, QSM.rs's default) or sti (STI Suite's 20 % largest); a qsmxt after v11.0.0"
+        },
+        {
+          "name": "erode_voxels",
+          "default": 0,
+          "description": "erode the brain mask by this many voxels (6-connected) before background removal, as qsmxt run --bf-erode-voxels; the field is left whole (uses qsmxt mask erode, also in v11.0.0)"
+        }
+      ],
+      "ci_notes": [],
+      "variant_of": "harperella-qsmrs",
+      "repro_only": true,
+      "preset": {
+        "erode_voxels": "3"
+      }
+    },
+    {
+      "slug": "pdf-qsmrs.erode3",
+      "name": "PDF (QSM.rs) \u00b7 mask eroded 3 voxels before BFR",
+      "stage": "bfr",
+      "inputs": [
+        "totalfield",
+        "mask",
+        "params",
+        "magnitude"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "pdf",
+      "language": "Rust",
+      "family": "iterative",
+      "learning": "none",
+      "description": "Projection onto Dipole Fields: models the background field as external dipoles.",
+      "citation": "Liu et al., NMR Biomed 2011",
+      "doi": "10.1002/nbm.1670",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT",
+      "authors": [
+        "Tian Liu",
+        "Ildar Khalidov",
+        "Ludovic de Rochefort",
+        "Pascal Spincemaille",
+        "Jing Liu",
+        "A. John Tsiouris",
+        "Yi Wang"
+      ],
+      "parameters": [
+        {
+          "name": "tol",
+          "default": "1e-5",
+          "description": "convergence tolerance"
+        },
+        {
+          "name": "n_cg",
+          "default": 30,
+          "description": "maximum conjugate-gradient iterations (PDF.m's n_CG; qsmxt after v10.0.0)"
+        },
+        {
+          "name": "space",
+          "default": "image",
+          "description": "dipole kernel for an oblique B0, image or kspace (PDF.m's 'imagespace'/'kspace'; qsmxt after v10.0.0)"
+        },
+        {
+          "name": "n_pad",
+          "default": 40,
+          "description": "zero padding around the mask's bounding box, voxels (PDF.m's n_pad; qsmxt after v10.0.0)"
+        },
+        {
+          "name": "erode_voxels",
+          "default": 0,
+          "description": "erode the brain mask by this many voxels (6-connected) before background removal, as qsmxt run --bf-erode-voxels; the field is left whole (uses qsmxt mask erode, also in v11.0.0)"
+        }
+      ],
+      "ci_notes": [],
+      "variant_of": "pdf-qsmrs",
+      "repro_only": true,
+      "preset": {
+        "erode_voxels": "3"
+      }
+    },
+    {
+      "slug": "lbv-qsmrs.erode3",
+      "name": "LBV (QSM.rs) \u00b7 mask eroded 3 voxels before BFR",
+      "stage": "bfr",
+      "inputs": [
+        "totalfield",
+        "mask",
+        "params"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "lbv",
+      "language": "Rust",
+      "family": "iterative",
+      "learning": "none",
+      "description": "Laplacian Boundary Value: solves the Laplacian of the field with boundary conditions.",
+      "citation": "Zhou et al., NMR Biomed 2014",
+      "doi": "10.1002/nbm.3064",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT",
+      "authors": [
+        "Dong Zhou",
+        "Tian Liu",
+        "Pascal Spincemaille",
+        "Yi Wang"
+      ],
+      "parameters": [
+        {
+          "name": "tol",
+          "default": 0.01,
+          "description": "stopping tolerance of the coarsest-grid relaxation, absolute, in radians over the echo spacing (LBV.m's tol; qsmxt v10.0.0's SOR took a relative 1e-6)"
+        },
+        {
+          "name": "depth",
+          "default": -1,
+          "description": "coarsest multigrid level; -1 picks log2 of the smallest dimension minus 3 (LBV.m's depth; qsmxt after v10.0.0)"
+        },
+        {
+          "name": "peel",
+          "default": 0,
+          "description": "boundary layers removed beyond the one boundary layer (LBV.m's peel; qsmxt after v10.0.0)"
+        },
+        {
+          "name": "n1",
+          "default": 30,
+          "description": "relaxations per level before the recursive call (qsmxt after v10.0.0)"
+        },
+        {
+          "name": "n2",
+          "default": 100,
+          "description": "relaxations per level after the recursive call (qsmxt after v10.0.0)"
+        },
+        {
+          "name": "n3",
+          "default": 100,
+          "description": "relaxations on the finest grid after the full multigrid cycle (qsmxt after v10.0.0)"
+        },
+        {
+          "name": "precision",
+          "default": "double",
+          "description": "double, or single as mexMGv6 computes (qsmxt after v10.0.0)"
+        },
+        {
+          "name": "erode_voxels",
+          "default": 0,
+          "description": "erode the brain mask by this many voxels (6-connected) before background removal, as qsmxt run --bf-erode-voxels; the field is left whole (uses qsmxt mask erode, also in v11.0.0)"
+        }
+      ],
+      "ci_notes": [],
+      "variant_of": "lbv-qsmrs",
+      "repro_only": true,
+      "preset": {
+        "erode_voxels": "3"
+      }
+    },
+    {
       "slug": "pdf-qsmrs.parity",
       "name": "PDF (QSM.rs) \u00b7 recommended iterations",
       "stage": "bfr",
@@ -5468,6 +5949,136 @@
       "preset": {
         "te": "first",
         "pad": "12"
+      }
+    },
+    {
+      "slug": "ndi-qsmrs.maskp999",
+      "name": "NDI (QSM.rs) \u00b7 in-mask p99.9 weight normaliser (pre-release build)",
+      "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params",
+        "magnitude"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "ndi",
+      "language": "Rust",
+      "family": "iterative",
+      "learning": "none",
+      "description": "Nonlinear Dipole Inversion: gradient-descent solve of a nonlinear (wrapped-phase) data term; effectively tuning-free.",
+      "citation": "Polak et al., NMR Biomed 2020",
+      "doi": "10.1002/nbm.4271",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT",
+      "authors": [
+        "Daniel Polak",
+        "Itthi Chatnuntawech",
+        "Jaeyeon Yoon",
+        "Siddharth Srinivasan Iyer",
+        "Carlos Milovic",
+        "Jongho Lee",
+        "Peter Bachert",
+        "Elfar Adalsteinsson",
+        "Kawin Setsompop",
+        "Berkin Bilgic"
+      ],
+      "parameters": [
+        {
+          "name": "tau",
+          "default": 2.0,
+          "description": "gradient-descent step size"
+        },
+        {
+          "name": "alpha",
+          "default": "1e-5",
+          "description": "L2 regularization weight"
+        },
+        {
+          "name": "max_iter",
+          "default": 200,
+          "description": "iterations"
+        },
+        {
+          "name": "weight_norm",
+          "default": "global-max",
+          "description": "magnitude-weight normaliser: global-max (FANSI's max(mag), the original's) or mask-p999 (the brain's 99.9th percentile); a qsmxt after v11.0.0"
+        }
+      ],
+      "ci_notes": [],
+      "variant_of": "ndi-qsmrs",
+      "repro_only": true,
+      "preset": {
+        "weight_norm": "mask-p999"
+      }
+    },
+    {
+      "slug": "whqsm-qsmrs.flatinmask",
+      "name": "WH-QSM (QSM.rs) \u00b7 flat weight in the mask (pre-release build)",
+      "stage": "dipole",
+      "inputs": [
+        "localfield",
+        "mask",
+        "params",
+        "magnitude"
+      ],
+      "domain": "qsm",
+      "engine": "QSMxT / QSM.rs",
+      "algorithm": "whqsm",
+      "language": "Rust",
+      "family": "iterative",
+      "learning": "none",
+      "description": "Weak-Harmonic QSM: jointly estimates susceptibility and a residual harmonic background field, correcting imperfect background-field removal.",
+      "citation": "Milovic et al., Magn Reson Med 2019",
+      "doi": "10.1002/mrm.27483",
+      "code_url": "https://github.com/astewartau/QSM.rs",
+      "license": "MIT",
+      "authors": [
+        "Carlos Milovic",
+        "Berkin Bilgic",
+        "Bo Zhao",
+        "Christian Langkammer",
+        "Cristian Tejos",
+        "Julio Acosta-Cabronero"
+      ],
+      "parameters": [
+        {
+          "name": "alpha1",
+          "default": "2e-4",
+          "description": "gradient L1 (TV) penalty"
+        },
+        {
+          "name": "mu1",
+          "default": "2e-2",
+          "description": "gradient-consistency ADMM weight"
+        },
+        {
+          "name": "beta",
+          "default": 150,
+          "description": "harmonic-constraint weight"
+        },
+        {
+          "name": "max_iter",
+          "default": 300,
+          "description": "iterations"
+        },
+        {
+          "name": "tol_update",
+          "default": 0.1,
+          "description": "convergence threshold on the solution update (percent)"
+        },
+        {
+          "name": "weight",
+          "default": "flat",
+          "description": "data weight: flat (1 over the whole volume, WH_nlTV.m's default), flat-in-mask (1 inside the mask; a qsmxt after v11.0.0), max-normalised or in-vivo (from the magnitude)"
+        }
+      ],
+      "ci_notes": [],
+      "variant_of": "whqsm-qsmrs",
+      "repro_only": true,
+      "preset": {
+        "weight": "flat-in-mask"
       }
     },
     {
