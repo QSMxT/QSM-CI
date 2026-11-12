@@ -358,13 +358,12 @@ pairs:
   toolbox-pipeline-medi-cornell:
     reference: toolbox-pipeline-medi-cornell   # MEDI 2024.11.26 README.m chain; image v2, fidelity pass
     candidate: toolbox-pipeline-qsmrs
-    enabled: false
-    blocked_by: https://github.com/QSMxT/QSM-CI/issues/421
+    enabled: true
     candidate_set: { pipeline: medi-toolbox }
     qsmrs_paths: [src/pipeline/]
     qsmxt_paths: [crates/qsmxt-engine/src/]
     datasets:
-      sim: {}                  # qsm-forward: no ImagingFrequency, so both sides use γ·B0
+      # sim: in-vivo limits only for this release (decision 2026-11-12); sim not measured yet
       prisma-bridge-run1:      # Siemens Prisma, ImagingFrequency from the exam card
         # Deterministic, so tight (2026-11-11, inside the dataset mask): χ NRMSE 0.0029 %, max |Δ|
         # 7.4e-5 ppm, p99 4.8e-6 ppm; mask identical; total and local field ≤ 1.1e-5 ppm.
@@ -375,16 +374,15 @@ pairs:
   toolbox-pipeline-chisep-ilsqr:
     reference: toolbox-pipeline-chisep   # χ-separation toolbox v1.1.3 Chisep_script.m; image v3, fidelity pass
     candidate: toolbox-pipeline-qsmrs
-    enabled: false
-    blocked_by: https://github.com/QSMxT/QSM-CI/issues/421
+    enabled: true
     reference_set: { method: ilsqr }
     candidate_set: { pipeline: chi-sep-ilsqr }
     qsmrs_paths: [src/pipeline/, src/separation/]
     qsmxt_paths: [crates/qsmxt-engine/src/]
     datasets:
-      # qsm-forward, 3 T, with a measured-style R2′ input. It has no Manufacturer: the script runs
+      # meso-3t (qsm-forward, 3 T, with a measured-style R2′ input) has no Manufacturer: the script runs
       # its Tukey 0.4 regardless, where QSMxT's rules need a known manufacturer.
-      meso-3t: {}
+      # meso-3t: in-vivo limits only for this release (decision 2026-11-12); not measured yet
       prisma-bridge-run1:
         # Deterministic, so tight (2026-11-11, inside the dataset mask): χ+ / |χ−| NRMSE 0.0008 % /
         # 0.0011 %, max |Δ| 4.9e-5 / 8.2e-5 ppm; mask identical. The QSM (chimap) is the toolbox's
@@ -401,14 +399,13 @@ pairs:
   toolbox-pipeline-chisep-medi:
     reference: toolbox-pipeline-chisep
     candidate: toolbox-pipeline-qsmrs
-    enabled: false
-    blocked_by: https://github.com/QSMxT/QSM-CI/issues/421
+    enabled: true
     reference_set: { method: medi }
     candidate_set: { pipeline: chi-sep-medi }
     qsmrs_paths: [src/pipeline/, src/separation/, src/utils/r2star.rs]
     qsmxt_paths: [crates/qsmxt-engine/src/]
     datasets:
-      meso-3t: {}
+      # meso-3t: in-vivo limits only for this release (decision 2026-11-12); not measured yet
       prisma-bridge-run1:
         # Deterministic, so tight. Before QSM.rs#458 / QSMxT#534 (CSF mask from ARLO R2*): χ+ / |χ−|
         # 0.58 % / 0.51 %. With the toolbox's NNLS R2* (2026-11-11, inside the dataset mask): χ+ /
@@ -424,13 +421,12 @@ pairs:
   toolbox-pipeline-decompose:
     reference: toolbox-pipeline-decompose-qsmci   # the paper, in QSM-CI's MATLAB; image v3, fidelity pass; pipeline parity: pass in vivo within the solver floor (decision 57)
     candidate: toolbox-pipeline-qsmrs
-    enabled: false
-    blocked_by: https://github.com/QSMxT/QSM-CI/issues/421
+    enabled: true
     candidate_set: { pipeline: decompose }
     qsmrs_paths: [src/pipeline/, src/separation/decompose.rs]
     qsmxt_paths: [crates/qsmxt-engine/src/]
     datasets:
-      meso-3t: {}   # 3 T, the field strength DECOMPOSE was designed for
+      # meso-3t: in-vivo limits only for this release (decision 2026-11-12); not measured yet
       prisma-bridge-run1:
         # Limits from the in-vivo gap, after an investigation (decision 18) and Ashley's decisions
         # 56 (STAR unpadded, rule decompose.star-pad) and 57 (keep QSM.rs's exact stage-5.1 solve).
@@ -450,8 +446,7 @@ pairs:
   toolbox-pipeline-qsmart:
     reference: toolbox-pipeline-qsmart   # QSMART v1.0 incl. brainmask.m; image v2, fidelity pass; pipeline parity: pass (within the N4 spread)
     candidate: toolbox-pipeline-qsmrs
-    enabled: false
-    blocked_by: https://github.com/QSMxT/QSM-CI/issues/421
+    enabled: true
     candidate_set: { pipeline: qsmart }
     qsmrs_paths: [src/pipeline/, src/utils/qsmart.rs]
     qsmxt_paths: [crates/qsmxt-engine/src/]
@@ -476,13 +471,12 @@ pairs:
   toolbox-pipeline-sti:
     reference: toolbox-pipeline-sti   # STI Suite 3.0 QSM_GUI iLSQR path; image v1, fidelity pass
     candidate: toolbox-pipeline-qsmrs
-    enabled: false
-    blocked_by: https://github.com/QSMxT/QSM-CI/issues/421
+    enabled: true
     candidate_set: { pipeline: sti-suite-ilsqr }
     qsmrs_paths: [src/pipeline/, src/bgremove/vsharp.rs, src/inversion/ilsqr.rs, src/utils/threshold.rs, src/utils/mask.rs]
     qsmxt_paths: [crates/qsmxt-engine/src/]
     datasets:
-      sim: {}                  # qsm-forward
+      # sim: in-vivo limits only for this release (decision 2026-11-12); sim not measured yet
       prisma-bridge-run1:
         # 2026-11-11, inside the dataset mask: thresholding mask and PolishMask's mask identical
         # (1,366,408 voxels); total field identical up to a constant (−0.0584 ppm, which V-SHARP
@@ -700,6 +694,9 @@ pairs:
     # Both sides at their defaults, QSM.jl's fast-FFT padding included (astewartau/QSM.rs#323;
     # until then the pair set QSM.jl's pad to -1). Measured before the change (run 41019310531,
     # QSM.jl pad -1 vs QSM.rs's padding): NRMSE sim 1.30 %, KKI 6.9e-06 % (the KKI grid needs no padding).
+    # QSM.rs#468 (QSMxT#556) moved QSMxT's default threshold to 0.25; the port runs at QSM.jl's
+    # 0.15 (QSM.rs TKD_QSMJL_THRESHOLD), the value the limits were measured at.
+    candidate_set: { threshold: 0.15 }
     qsmrs_paths: [src/fft.rs, src/grid.rs, src/inversion/tkd.rs, src/kernels/,
                   src/pipeline/inversion.rs, src/pipeline/rules.rs, src/utils/mask.rs,
                   src/utils/padding.rs]
@@ -766,6 +763,9 @@ pairs:
     # Both sides at their defaults, QSM.jl's fast-FFT padding included (astewartau/QSM.rs#323;
     # until then the pair set QSM.jl's pad to -1). Measured before the change (run 41019310531,
     # QSM.jl pad -1 vs QSM.rs's padding): NRMSE sim 0.21 %, KKI 1.2e-05 % (the KKI grid needs no padding).
+    # QSM.rs#468 (QSMxT#556) moved QSMxT's default lambda to 3e-4; the port runs at QSM.jl's 1e-3
+    # (QSM.rs TV_QSMJL_LAMBDA), the value the limits were measured at.
+    candidate_set: { lambda: 0.001 }
     qsmrs_paths: [src/constants.rs, src/fft.rs, src/grid.rs, src/inversion/admm.rs,
                   src/inversion/tv.rs, src/kernels/, src/pipeline/inversion.rs,
                   src/pipeline/rules.rs, src/utils/gradient.rs, src/utils/mask.rs, src/utils/ops.rs,
@@ -981,6 +981,9 @@ pairs:
     # QSMxT's ROMEO settings (sigma 4 voxels = 4 mm on these 1 mm datasets).
     reference_set: { weights: romeo4, individual_unwrapping: "true", correct_global: "true",
                      phase_offset_sigma_mm: 4 }
+    # QSMxT#554 made template mode QSMxT's default (ROMEO's own); the pair keeps comparing the
+    # individual mode with global correction it was measured in, on both sides.
+    candidate_set: { individual_unwrapping: "true", correct_global: "true" }
     datasets:
       sim:
         # Measured on main: NRMSE 1.639 %, r 0.99995, max |Δ| 0.164 ppm, p99 |Δ| 0.0027 ppm.

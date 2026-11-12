@@ -20,3 +20,10 @@ code_url: https://github.com/astewartau/QSM.rs
 license: MIT
 image: ghcr.io/astewartau/qsm-ci/qsmxt@sha256:5a353a43b0a6ceeb2b8ec57422a56770d5e86e1d551e727b72ca5089b2e5277e   # v11.0.0
 run: bash run.sh
+parameters:
+  - name: individual_unwrapping
+    default: false
+    description: unwrap each echo on its own (individual mode) instead of from a template echo; QSMxT's default is template mode from the release after v11.0.0 (v11.0.0 itself used individual mode)
+  - name: correct_global
+    default: false
+    description: correct global 2π offsets of each echo and between echoes (QSMxT's default is off from the release after v11.0.0; on in v11.0.0)

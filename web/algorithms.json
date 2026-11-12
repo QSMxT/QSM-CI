@@ -3992,7 +3992,18 @@
       "authors": [
         "Dymerska and Eckstein et al."
       ],
-      "parameters": [],
+      "parameters": [
+        {
+          "name": "individual_unwrapping",
+          "default": false,
+          "description": "unwrap each echo on its own (individual mode) instead of from a template echo; QSMxT's default is template mode from the release after v11.0.0 (v11.0.0 itself used individual mode)"
+        },
+        {
+          "name": "correct_global",
+          "default": false,
+          "description": "correct global 2\u03c0 offsets of each echo and between echoes (QSMxT's default is off from the release after v11.0.0; on in v11.0.0)"
+        }
+      ],
       "ci_notes": []
     },
     {
