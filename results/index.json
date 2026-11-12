@@ -13,15 +13,56 @@
       "variant": "default"
     },
     {
-      "name": "MoDIP",
+      "name": "MoDIP (PyTorch)",
       "track": "sim",
       "stage": "dipole",
-      "mode": "isolated",
-      "status": "DNF",
-      "metrics": {},
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 10262.989558935165,
+      "metrics": {
+        "nrmse": 37.392549893085196,
+        "nrmse_detrend": 40.311564191702544,
+        "nrmse_tissue": 45.1619028503776,
+        "nrmse_blood": 50.446410158471885,
+        "nrmse_dgm": 38.961383194711985,
+        "dgm_linearity": 0.0736106419087863,
+        "calc_moment_dev": 9.34238887578249,
+        "calc_streak": 0.015271303120247104,
+        "correlation": 0.9274769056274601,
+        "xsim": 0.7617524070552665,
+        "hfen": 36.2993221572199,
+        "coverage": 1.0
+      },
+      "status": "ok",
       "id": "modip-iso",
       "slug": "modip",
-      "variant": "default"
+      "mode": "isolated",
+      "variant": "default",
+      "phantom": "sim",
+      "ci_run": "43024151938.1",
+      "ci_sha": "9ea082e6e71feaffe31b496da6f1c5113f69ed6a",
+      "ci_env": {
+        "python": "3.12.16",
+        "numpy": "2.2.6",
+        "scipy": "1.15.3",
+        "nibabel": "5.4.2",
+        "pillow": "12.3.0"
+      },
+      "scored_at": "2026-11-11T15:46:34Z",
+      "method_versions": {
+        "modip": {
+          "commit": "9ea082e6e71feaffe31b496da6f1c5113f69ed6a",
+          "date": "2026-11-11T22:52:39+10:00"
+        }
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/d5/modip-iso__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/d5/modip-iso__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/d5/modip-iso__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/d5/modip-iso__error.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/sim/chimap.nii.gz"
+      }
     },
     {
       "name": "AutoQSM (TensorFlow)",
@@ -34187,24 +34228,26 @@
       }
     },
     {
-      "name": "MoDIP",
+      "name": "MoDIP (PyTorch)",
       "track": "invivo",
       "stage": "dipole",
       "artifact": "chimap",
       "kind": "chi",
       "image": null,
-      "runtime_s": 28158.37702536583,
+      "runtime_s": 4156.780643701553,
       "metrics": {
-        "nrmse": 95.23677778476412,
-        "nrmse_detrend": 95.43599094815839,
-        "hfen": 79.1713929119293,
-        "correlation": 0.7234225819231171,
-        "xsim": 0.3557312371091313,
-        "nrmse_sti": 118.48019387194384,
-        "nrmse_detrend_sti": 135.09011665349317,
-        "hfen_sti": 103.22631180784326,
-        "correlation_sti": 0.5949710714823038,
-        "xsim_sti": 0.23276521144967452
+        "nrmse": 97.07245964472266,
+        "nrmse_detrend": 95.46491623687082,
+        "hfen": 80.56718192630986,
+        "correlation": 0.7233180767550149,
+        "xsim": 0.34138527126298834,
+        "coverage": 0.9995961353257324,
+        "nrmse_sti": 119.63146170464832,
+        "nrmse_detrend_sti": 132.5541731808245,
+        "hfen_sti": 104.33418852592425,
+        "correlation_sti": 0.602250018127829,
+        "xsim_sti": 0.22870591515552877,
+        "coverage_sti": 0.9995961353257324
       },
       "status": "ok",
       "id": "modip-iso-invivo",
@@ -34212,11 +34255,27 @@
       "mode": "isolated",
       "variant": "default",
       "phantom": "invivo",
-      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/modip-iso-invivo__resources.json",
+      "ci_run": "43024151938.1",
+      "ci_sha": "9ea082e6e71feaffe31b496da6f1c5113f69ed6a",
+      "ci_env": {
+        "python": "3.12.16",
+        "numpy": "2.2.6",
+        "scipy": "1.15.3",
+        "nibabel": "5.4.2",
+        "pillow": "12.3.0"
+      },
+      "scored_at": "2026-11-12T01:02:10Z",
+      "method_versions": {
+        "modip": {
+          "commit": "9ea082e6e71feaffe31b496da6f1c5113f69ed6a",
+          "date": "2026-11-11T22:52:39+10:00"
+        }
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/invivo/b9/modip-iso-invivo__resources.json",
       "volumes": {
-        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/modip-iso-invivo__recon.nii.gz",
-        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/invivo/chimap.nii.gz",
-        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/modip-iso-invivo__error.nii.gz"
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/invivo/b9/modip-iso-invivo__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/invivo/b9/modip-iso-invivo__error.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/invivo/chimap.nii.gz"
       }
     },
     {
@@ -358428,6 +358487,382 @@
         "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/27/vsharp-qsmrs-iso-tuned__recon.nii.gz",
         "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/27/vsharp-qsmrs-iso-tuned__error.nii.gz",
         "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/sim/localfield.nii.gz"
+      }
+    },
+    {
+      "name": "pdf-qsmrs+modip",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 4720.418331384659,
+      "metrics": {
+        "nrmse": 84.96627096865058,
+        "nrmse_detrend": 113.02827195677263,
+        "nrmse_tissue": 123.60718852572558,
+        "nrmse_blood": 105.16253512514497,
+        "nrmse_dgm": 41.4076243298028,
+        "dgm_linearity": 0.16568035706319972,
+        "calc_moment_dev": 14.484922982752323,
+        "calc_streak": 0.024650322125991515,
+        "correlation": 0.6626238847435147,
+        "xsim": 0.5129486813333379,
+        "hfen": 65.81071897488552,
+        "coverage": 0.9991858796276868
+      },
+      "status": "ok",
+      "id": "gt~pdf-qsmrs~modip-cmp",
+      "slug": "pdf-qsmrs+modip",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "pdf-qsmrs",
+        "dipole": "modip"
+      },
+      "phantom": "sim",
+      "ci_run": "43024151938.1",
+      "ci_sha": "9ea082e6e71feaffe31b496da6f1c5113f69ed6a",
+      "ci_env": {
+        "python": "3.12.16",
+        "numpy": "2.2.6",
+        "scipy": "1.15.3",
+        "nibabel": "5.4.2",
+        "pillow": "12.3.0"
+      },
+      "scored_at": "2026-11-11T18:22:33Z",
+      "method_versions": {
+        "pdf-qsmrs": {
+          "commit": "05f4e40d81c0430873469c6efd112bc30477654e",
+          "date": "2026-11-10T23:50:19+10:00"
+        },
+        "modip": {
+          "commit": "9ea082e6e71feaffe31b496da6f1c5113f69ed6a",
+          "date": "2026-11-11T22:52:39+10:00"
+        }
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/07/gt_pdf-qsmrs_modip-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/07/gt_pdf-qsmrs_modip-cmp__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/07/gt_pdf-qsmrs_modip-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/07/gt_pdf-qsmrs_modip-cmp__error.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/sim/chimap.nii.gz"
+      }
+    },
+    {
+      "name": "vsharp-qsmrs+modip",
+      "track": "sim",
+      "stage": "bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 4627.781453847885,
+      "metrics": {
+        "nrmse": 64.90111380980524,
+        "nrmse_detrend": 85.24473053360467,
+        "nrmse_tissue": 99.96095746915205,
+        "nrmse_blood": 90.66292675325536,
+        "nrmse_dgm": 50.616683396972626,
+        "dgm_linearity": 0.1284843431892415,
+        "calc_moment_dev": 10.153101447969675,
+        "calc_streak": 0.01957634025468243,
+        "correlation": 0.7610194910681969,
+        "xsim": 0.46531200266985867,
+        "hfen": 47.768727806457285,
+        "coverage": 0.9075649102674542
+      },
+      "status": "ok",
+      "id": "gt~vsharp-qsmrs~modip-cmp",
+      "slug": "vsharp-qsmrs+modip",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "gt",
+        "bfr": "vsharp-qsmrs",
+        "dipole": "modip"
+      },
+      "phantom": "sim",
+      "ci_run": "43024151938.1",
+      "ci_sha": "9ea082e6e71feaffe31b496da6f1c5113f69ed6a",
+      "ci_env": {
+        "python": "3.12.16",
+        "numpy": "2.2.6",
+        "scipy": "1.15.3",
+        "nibabel": "5.4.2",
+        "pillow": "12.3.0"
+      },
+      "scored_at": "2026-11-11T18:22:33Z",
+      "method_versions": {
+        "vsharp-qsmrs": {
+          "commit": "92d6c8a0a058ddbf3e86499b3377ac8327bde059",
+          "date": "2026-11-10T21:20:47+10:00"
+        },
+        "modip": {
+          "commit": "9ea082e6e71feaffe31b496da6f1c5113f69ed6a",
+          "date": "2026-11-11T22:52:39+10:00"
+        }
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/4d/gt_vsharp-qsmrs_modip-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/4d/gt_vsharp-qsmrs_modip-cmp__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/4d/gt_vsharp-qsmrs_modip-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/4d/gt_vsharp-qsmrs_modip-cmp__error.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/sim/chimap.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-qsmrs+pdf-qsmrs+modip",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 5163.333163738251,
+      "metrics": {
+        "nrmse": 261.40716794242576,
+        "nrmse_detrend": 614.2828576375434,
+        "nrmse_tissue": 726.8295246639998,
+        "nrmse_blood": 6160.376449765841,
+        "nrmse_dgm": 84.45280188455875,
+        "dgm_linearity": 0.209959641945622,
+        "calc_moment_dev": 50.75526237487793,
+        "calc_streak": 0.16552025061210246,
+        "correlation": 0.16067632999377993,
+        "xsim": 0.0736212298964902,
+        "hfen": 168.4902771739883,
+        "coverage": 0.9991858796276868
+      },
+      "status": "ok",
+      "id": "laplacian-qsmrs~pdf-qsmrs~modip-cmp",
+      "slug": "laplacian-qsmrs+pdf-qsmrs+modip",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-qsmrs",
+        "bfr": "pdf-qsmrs",
+        "dipole": "modip"
+      },
+      "phantom": "sim",
+      "ci_run": "43024151938.1",
+      "ci_sha": "9ea082e6e71feaffe31b496da6f1c5113f69ed6a",
+      "ci_env": {
+        "python": "3.12.16",
+        "numpy": "2.2.6",
+        "scipy": "1.15.3",
+        "nibabel": "5.4.2",
+        "pillow": "12.3.0"
+      },
+      "scored_at": "2026-11-11T23:51:07Z",
+      "method_versions": {
+        "laplacian-qsmrs": {
+          "commit": "98006d42de4f324df79a041c91d914b9989e850c",
+          "date": "2026-11-08T22:09:50+10:00"
+        },
+        "pdf-qsmrs": {
+          "commit": "05f4e40d81c0430873469c6efd112bc30477654e",
+          "date": "2026-11-10T23:50:19+10:00"
+        },
+        "modip": {
+          "commit": "9ea082e6e71feaffe31b496da6f1c5113f69ed6a",
+          "date": "2026-11-11T22:52:39+10:00"
+        }
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/64/laplacian-qsmrs_pdf-qsmrs_modip-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/64/laplacian-qsmrs_pdf-qsmrs_modip-cmp__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/64/laplacian-qsmrs_pdf-qsmrs_modip-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/64/laplacian-qsmrs_pdf-qsmrs_modip-cmp__error.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/sim/chimap.nii.gz"
+      }
+    },
+    {
+      "name": "laplacian-qsmrs+vsharp-qsmrs+modip",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 4560.993440628052,
+      "metrics": {
+        "nrmse": 88.4413061551941,
+        "nrmse_detrend": 169.32497622112504,
+        "nrmse_tissue": 172.6819411944033,
+        "nrmse_blood": 417.90636542863496,
+        "nrmse_dgm": 92.57296469035425,
+        "dgm_linearity": 0.26259815717406254,
+        "calc_moment_dev": 32.149548381567,
+        "calc_streak": 0.14990962857576215,
+        "correlation": 0.5085194786167803,
+        "xsim": 0.24313454683308927,
+        "hfen": 73.13654145079812,
+        "coverage": 0.9075649102674542
+      },
+      "status": "ok",
+      "id": "laplacian-qsmrs~vsharp-qsmrs~modip-cmp",
+      "slug": "laplacian-qsmrs+vsharp-qsmrs+modip",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "laplacian-qsmrs",
+        "bfr": "vsharp-qsmrs",
+        "dipole": "modip"
+      },
+      "phantom": "sim",
+      "ci_run": "43024151938.1",
+      "ci_sha": "9ea082e6e71feaffe31b496da6f1c5113f69ed6a",
+      "ci_env": {
+        "python": "3.12.16",
+        "numpy": "2.2.6",
+        "scipy": "1.15.3",
+        "nibabel": "5.4.2",
+        "pillow": "12.3.0"
+      },
+      "scored_at": "2026-11-11T23:51:07Z",
+      "method_versions": {
+        "laplacian-qsmrs": {
+          "commit": "98006d42de4f324df79a041c91d914b9989e850c",
+          "date": "2026-11-08T22:09:50+10:00"
+        },
+        "vsharp-qsmrs": {
+          "commit": "92d6c8a0a058ddbf3e86499b3377ac8327bde059",
+          "date": "2026-11-10T21:20:47+10:00"
+        },
+        "modip": {
+          "commit": "9ea082e6e71feaffe31b496da6f1c5113f69ed6a",
+          "date": "2026-11-11T22:52:39+10:00"
+        }
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/39/laplacian-qsmrs_vsharp-qsmrs_modip-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/39/laplacian-qsmrs_vsharp-qsmrs_modip-cmp__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/39/laplacian-qsmrs_vsharp-qsmrs_modip-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/39/laplacian-qsmrs_vsharp-qsmrs_modip-cmp__error.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/sim/chimap.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-qsmrs+pdf-qsmrs+modip",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 4978.350670576096,
+      "metrics": {
+        "nrmse": 99.64759976778696,
+        "nrmse_detrend": 167.15128790519952,
+        "nrmse_tissue": 160.1889131438158,
+        "nrmse_blood": 349.52479860625874,
+        "nrmse_dgm": 70.62310240678657,
+        "dgm_linearity": 0.22209213530447458,
+        "calc_moment_dev": 23.97194091975689,
+        "calc_streak": 0.12898175975434456,
+        "correlation": 0.51339767177032,
+        "xsim": 0.3164158501107745,
+        "hfen": 82.43464069491453,
+        "coverage": 0.9991858796276868
+      },
+      "status": "ok",
+      "id": "romeo-qsmrs~pdf-qsmrs~modip-cmp",
+      "slug": "romeo-qsmrs+pdf-qsmrs+modip",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-qsmrs",
+        "bfr": "pdf-qsmrs",
+        "dipole": "modip"
+      },
+      "phantom": "sim",
+      "ci_run": "43024151938.1",
+      "ci_sha": "9ea082e6e71feaffe31b496da6f1c5113f69ed6a",
+      "ci_env": {
+        "python": "3.12.16",
+        "numpy": "2.2.6",
+        "scipy": "1.15.3",
+        "nibabel": "5.4.2",
+        "pillow": "12.3.0"
+      },
+      "scored_at": "2026-11-11T21:07:03Z",
+      "method_versions": {
+        "romeo-qsmrs": {
+          "commit": "40cd15061373f59016588337c892cf8983339a63",
+          "date": "2026-11-06T18:03:19Z"
+        },
+        "pdf-qsmrs": {
+          "commit": "05f4e40d81c0430873469c6efd112bc30477654e",
+          "date": "2026-11-10T23:50:19+10:00"
+        },
+        "modip": {
+          "commit": "9ea082e6e71feaffe31b496da6f1c5113f69ed6a",
+          "date": "2026-11-11T22:52:39+10:00"
+        }
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/43/romeo-qsmrs_pdf-qsmrs_modip-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/43/romeo-qsmrs_pdf-qsmrs_modip-cmp__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/43/romeo-qsmrs_pdf-qsmrs_modip-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/43/romeo-qsmrs_pdf-qsmrs_modip-cmp__error.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/sim/chimap.nii.gz"
+      }
+    },
+    {
+      "name": "romeo-qsmrs+vsharp-qsmrs+modip",
+      "track": "sim",
+      "stage": "field-mapping+bfr+dipole",
+      "artifact": "chimap",
+      "kind": "chi",
+      "image": null,
+      "runtime_s": 4752.5560483932495,
+      "metrics": {
+        "nrmse": 83.4056092975989,
+        "nrmse_detrend": 147.7231296210593,
+        "nrmse_tissue": 148.99246362260286,
+        "nrmse_blood": 338.65929419028197,
+        "nrmse_dgm": 82.61902646392349,
+        "dgm_linearity": 0.22238359592599632,
+        "calc_moment_dev": 24.666905984282494,
+        "calc_streak": 0.08560071730739714,
+        "correlation": 0.5605771932886212,
+        "xsim": 0.2802091231164412,
+        "hfen": 66.61068194509605,
+        "coverage": 0.9075649102674542
+      },
+      "status": "ok",
+      "id": "romeo-qsmrs~vsharp-qsmrs~modip-cmp",
+      "slug": "romeo-qsmrs+vsharp-qsmrs+modip",
+      "mode": "composed",
+      "combo": {
+        "field_mapping": "romeo-qsmrs",
+        "bfr": "vsharp-qsmrs",
+        "dipole": "modip"
+      },
+      "phantom": "sim",
+      "ci_run": "43024151938.1",
+      "ci_sha": "9ea082e6e71feaffe31b496da6f1c5113f69ed6a",
+      "ci_env": {
+        "python": "3.12.16",
+        "numpy": "2.2.6",
+        "scipy": "1.15.3",
+        "nibabel": "5.4.2",
+        "pillow": "12.3.0"
+      },
+      "scored_at": "2026-11-11T21:07:03Z",
+      "method_versions": {
+        "romeo-qsmrs": {
+          "commit": "40cd15061373f59016588337c892cf8983339a63",
+          "date": "2026-11-06T18:03:19Z"
+        },
+        "vsharp-qsmrs": {
+          "commit": "92d6c8a0a058ddbf3e86499b3377ac8327bde059",
+          "date": "2026-11-10T21:20:47+10:00"
+        },
+        "modip": {
+          "commit": "9ea082e6e71feaffe31b496da6f1c5113f69ed6a",
+          "date": "2026-11-11T22:52:39+10:00"
+        }
+      },
+      "resources_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/b4/romeo-qsmrs_vsharp-qsmrs_modip-cmp__resources.json",
+      "regions_url": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/b4/romeo-qsmrs_vsharp-qsmrs_modip-cmp__regions.json",
+      "volumes": {
+        "recon": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/b4/romeo-qsmrs_vsharp-qsmrs_modip-cmp__recon.nii.gz",
+        "error": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/runs/sim/b4/romeo-qsmrs_vsharp-qsmrs_modip-cmp__error.nii.gz",
+        "truth": "https://huggingface.co/datasets/qsmxt/qsm-ci-volumes/resolve/main/truth/sim/chimap.nii.gz"
       }
     }
   ]
