@@ -364,7 +364,9 @@ pairs:
     qsmxt_paths: [crates/qsmxt-engine/src/]
     datasets:
       # sim: in-vivo limits only for this release (decision 2026-11-12); sim not measured yet
-      prisma-bridge-run1:      # Siemens Prisma, ImagingFrequency from the exam card
+      # The acquisition these limits were measured on (OSF v2: ImagingFrequency, Manufacturer, the
+      # fidelity cases' R2′; QSM-CI#437). Was keyed to prisma-bridge-run1 (MGH), a different scan.
+      s005001-cbic-prisma-bridge-run1:      # Siemens Prisma, ImagingFrequency from its dcm2niix sidecar
         # Deterministic, so tight (2026-11-11, inside the dataset mask): χ NRMSE 0.0029 %, max |Δ|
         # 7.4e-5 ppm, p99 4.8e-6 ppm; mask identical; total and local field ≤ 1.1e-5 ppm.
         mask: { dice_min: 0.9999 }
@@ -383,7 +385,8 @@ pairs:
       # meso-3t (qsm-forward, 3 T, with a measured-style R2′ input) has no Manufacturer: the script runs
       # its Tukey 0.4 regardless, where QSMxT's rules need a known manufacturer.
       # meso-3t: in-vivo limits only for this release (decision 2026-11-12); not measured yet
-      prisma-bridge-run1:
+      # The acquisition these limits were measured on (as above; QSM-CI#437).
+      s005001-cbic-prisma-bridge-run1:
         # Deterministic, so tight (2026-11-11, inside the dataset mask): χ+ / |χ−| NRMSE 0.0008 % /
         # 0.0011 %, max |Δ| 4.9e-5 / 8.2e-5 ppm; mask identical. The QSM (chimap) is the toolbox's
         # iLSQR either side. It was 0.23 % / max 2.5e-4 ppm while QSMxT mean-referenced it; with
@@ -406,7 +409,8 @@ pairs:
     qsmxt_paths: [crates/qsmxt-engine/src/]
     datasets:
       # meso-3t: in-vivo limits only for this release (decision 2026-11-12); not measured yet
-      prisma-bridge-run1:
+      # The acquisition these limits were measured on (as above; QSM-CI#437).
+      s005001-cbic-prisma-bridge-run1:
         # Deterministic, so tight. Before QSM.rs#458 / QSMxT#534 (CSF mask from ARLO R2*): χ+ / |χ−|
         # 0.58 % / 0.51 %. With the toolbox's NNLS R2* (2026-11-11, inside the dataset mask): χ+ /
         # |χ−| NRMSE 0.0005 % / 0.0011 %, max |Δ| 5.6e-5 / 5.2e-4 ppm, p99 ≤ 5.3e-7 ppm; mask
@@ -427,7 +431,8 @@ pairs:
     qsmxt_paths: [crates/qsmxt-engine/src/]
     datasets:
       # meso-3t: in-vivo limits only for this release (decision 2026-11-12); not measured yet
-      prisma-bridge-run1:
+      # The acquisition these limits were measured on (as above; QSM-CI#437).
+      s005001-cbic-prisma-bridge-run1:
         # Limits from the in-vivo gap, after an investigation (decision 18) and Ashley's decisions
         # 56 (STAR unpadded, rule decompose.star-pad) and 57 (keep QSM.rs's exact stage-5.1 solve).
         # Measured inside the reference's fitted 33³ central box (DECOMPOSE_CROPBOX=32) ∩ its
@@ -454,7 +459,8 @@ pairs:
       # Coil-combined input on both sides (QSMART's coil_comb/POEM is not run): a known difference.
       # Known, see the reference's ci_notes: the per-echo Laplacian constants (total field, R_0) and
       # the N4 thread spread of the mask.
-      prisma-bridge-run1:
+      # The acquisition these limits were measured on (as above; QSM-CI#437).
+      s005001-cbic-prisma-bridge-run1:
         # Limits from the reference's own spread, not from a candidate run (decision 18,
         # 2026-11-10, QSM-CI#421). Reference v1 (ANTs N4 at 32+ threads) against v2 (N4 at 1
         # thread), everything else identical: mask Dice 0.9990 (3,131 voxels), χ NRMSE 15.07 %,
@@ -477,7 +483,8 @@ pairs:
     qsmxt_paths: [crates/qsmxt-engine/src/]
     datasets:
       # sim: in-vivo limits only for this release (decision 2026-11-12); sim not measured yet
-      prisma-bridge-run1:
+      # The acquisition these limits were measured on (as above; QSM-CI#437).
+      s005001-cbic-prisma-bridge-run1:
         # 2026-11-11, inside the dataset mask: thresholding mask and PolishMask's mask identical
         # (1,366,408 voxels); total field identical up to a constant (−0.0584 ppm, which V-SHARP
         # removes); local field identical except 4 isolated interior voxels, which STI's V_SHARP
