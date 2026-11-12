@@ -173,6 +173,10 @@ jobs:
         with:
           extras: SimpleITK
       - name: Fetch the target acquisition
+        env:
+          # The harmonization project (gkemr) is public today, but it is going private until the data
+          # are released; fetch_dataset.sh downloads authenticated whenever a token is present.
+          OSF_TOKEN: ${{ secrets.OSF_TOKEN }}
         run: |
           python3 - <<'PY' | while read -r ph path; do scripts/fetch_dataset.sh "$ph" "$path"; done
           import json
@@ -345,8 +349,11 @@ jobs:
         with:
           path: .osfcache/${{ matrix.task.phantom }}.zip
           key: ${{ steps.ds.outputs.zipkey }}
-      - name: Fetch acquisition (public OSF project — tokenless)
+      - name: Fetch acquisition (OSF project gkemr)
         env:
+          # Tokenless works only while gkemr is public; with the token the download keeps working once
+          # it is private (scripts/fetch_dataset.sh).
+          OSF_TOKEN: ${{ secrets.OSF_TOKEN }}
           OSF_ZIP: .osfcache/${{ matrix.task.phantom }}.zip
           DS_PATH: ${{ steps.ds.outputs.path }}
         run: scripts/fetch_dataset.sh "$PHANTOM" "$DS_PATH"

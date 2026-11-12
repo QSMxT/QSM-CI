@@ -12,7 +12,9 @@
 # Usage: fetch_dataset.sh <phantom> <dest>
 #   <phantom> is a scripts/datasets.json registry key. The legacy track args (sim / invivo)
 #   are themselves registry keys, so existing callers keep working identically.
-# Env:   OSF_TOKEN     (required unless OSF_ZIP is set) — OSF personal access token
+# Env:   OSF_TOKEN     OSF personal access token (read scope is enough). Required for a private
+#                      project unless OSF_ZIP is set; optional for an `osf_public` one, which then
+#                      downloads authenticated, so it keeps working if that project is made private.
 #        OSF_PROJECT   (default y8adf), OSF_FILE (overrides the registry's file id)
 #        OSF_FILE_*    (per-phantom secrets) — the registry's `osf_env` names which one applies
 #                      (e.g. OSF_FILE_CHISEP_MC for the chisep-mc phantom)
@@ -63,8 +65,10 @@ if [ -f "$zip" ]; then
 else
   # A public project (e.g. the harmonization dataset) needs no token; a private one (the QSM.rs
   # reference data) does. Only require OSF_TOKEN when the registry entry isn't flagged public.
-  if [ "${PUBLIC:-0}" != "1" ]; then
-    : "${OSF_TOKEN:?OSF_TOKEN must be set (or provide an existing OSF_ZIP)}"
+  if [ "${PUBLIC:-0}" != "1" ] && [ -z "${OSF_TOKEN:-}" ]; then
+    echo "[fetch_dataset] ${TRACK} is in a private OSF project (${OSF_PROJECT}): set OSF_TOKEN to an OSF" \
+         "personal access token with read access (in CI: pass secrets.OSF_TOKEN), or provide an existing OSF_ZIP" >&2
+    exit 1
   fi
   echo "[fetch_dataset] downloading ${OSF_PROJECT}/${OSF_FILE} from OSF"
   mkdir -p "$(dirname "$zip")"
@@ -72,7 +76,10 @@ else
   # downloaded via osf.io/<guid>/download. Both authenticate with the OSF token for a private project.
   # A PUBLIC project's file id downloads tokenless via osf.io/download/<id>/ (the bare waterbutler
   # URL only 302-redirects and then 400s without auth, so use the public download endpoint instead).
-  if [ "${PUBLIC:-0}" = "1" ] && [[ "$OSF_FILE" =~ ^[0-9a-f]{24}$ ]]; then
+  # With a token, a 24-hex id always goes through the authenticated WaterButler URL, public project
+  # or not: it works for both, so flipping a public project to private needs no registry change as
+  # long as CI passes OSF_TOKEN.
+  if [ "${PUBLIC:-0}" = "1" ] && [ -z "${OSF_TOKEN:-}" ] && [[ "$OSF_FILE" =~ ^[0-9a-f]{24}$ ]]; then
     url="https://osf.io/download/${OSF_FILE}/"
   elif [[ "$OSF_FILE" =~ ^[0-9a-f]{24}$ ]]; then
     url="https://files.osf.io/v1/resources/${OSF_PROJECT}/providers/osfstorage/${OSF_FILE}"
@@ -91,7 +98,35 @@ else
       auth=(-H "Authorization: Bearer ${OSF_TOKEN}")
     fi
     # A redirect's small body is overwritten by the next hop; the last hop's body is the file.
-    hop="$(curl -fS -o "$zip" -w '%{redirect_url}' "${auth[@]}" "$hop")"
+    # -f would hide the status, so check it ourselves: a 401/403/404 from OSF on a tokenless
+    # download is what a project that has been made private looks like.
+    out="$(curl -sS -o "$zip" -w '%{http_code} %{redirect_url}' "${auth[@]}" "$hop")" || {
+      echo "[fetch_dataset] download failed: $url" >&2; rm -f "$zip"; exit 1; }
+    code="${out%% *}"; next="${out#* }"
+    if [ "$code" -ge 400 ]; then
+      rm -f "$zip"
+      if [ -z "${OSF_TOKEN:-}" ] && { [ "$code" = 401 ] || [ "$code" = 403 ] || [ "$code" = 404 ] || [ "$code" = 410 ]; }; then
+        echo "[fetch_dataset] HTTP $code downloading ${OSF_PROJECT}/${OSF_FILE} without a token: the OSF" \
+             "project is probably private now. Set OSF_TOKEN (an OSF token with read access; in CI" \
+             "pass secrets.OSF_TOKEN to this step)." >&2
+      elif [ "$code" = 401 ] || [ "$code" = 403 ]; then
+        echo "[fetch_dataset] HTTP $code downloading ${OSF_PROJECT}/${OSF_FILE}: OSF_TOKEN was sent but" \
+             "has no read access to this project (wrong account, expired, or missing a read scope)." >&2
+      else
+        echo "[fetch_dataset] HTTP $code downloading ${OSF_PROJECT}/${OSF_FILE} from $hop" >&2
+      fi
+      exit 1
+    fi
+    # An anonymous request for a private project's file is not refused with a 4xx: OSF redirects it
+    # to its sign-in page (which would then download as a 200 HTML "zip"). Stop there instead.
+    if [[ "$next" =~ ^https://accounts\.osf\.io/ ]]; then
+      rm -f "$zip"
+      echo "[fetch_dataset] OSF redirected ${OSF_PROJECT}/${OSF_FILE} to its sign-in page: the project is" \
+           "private and ${OSF_TOKEN:+the OSF_TOKEN sent has no read access to it}${OSF_TOKEN:-no OSF_TOKEN was set}." \
+           "Set OSF_TOKEN to an OSF token with read access (in CI: pass secrets.OSF_TOKEN to this step)." >&2
+      exit 1
+    fi
+    hop="$next"
     [ -n "$hop" ] || break
   done
   [ -z "$hop" ] || { echo "[fetch_dataset] too many redirects from $url" >&2; exit 1; }

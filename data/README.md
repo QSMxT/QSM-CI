@@ -38,8 +38,10 @@ carries:
   for the repro track).
 - Where its zip lives on OSF: a literal `osf_file` id and/or an `osf_env` naming the CI secret that
   carries it (e.g. `OSF_FILE_CHISEP_MC`). An entry outside the default project `y8adf` adds
-  `osf_project`; the harmonization entries live in the public project `gkemr` and are flagged
-  `osf_public: true`, which lets `fetch_dataset.sh` download them without a token.
+  `osf_project`; the harmonization entries live in the project `gkemr` and are flagged
+  `osf_public: true`, which lets `fetch_dataset.sh` download them without a token while that project
+  is public. Whenever `OSF_TOKEN` is set it downloads authenticated instead, so CI keeps working if
+  the project is made private (every workflow step that fetches passes `secrets.OSF_TOKEN`).
 - `active` — whether CI scores it — and `default`, the track's primary phantom (runs on any other
   phantom get a `-<phantom>` suffix on their id). Exactly one active default per track, enforced by
   `tests/test_datasets.py`.
