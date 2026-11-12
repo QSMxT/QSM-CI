@@ -126,6 +126,38 @@ def test_evaluate_intermediate_limit_exceeded_fails():
     assert not v["ok"] and v["maps"]["vessel_mask"]["status"] == "fail"
 
 
+def test_evaluate_intermediate_limits_at_the_dataset_level_fail_loudly():
+    # `mask: {dice_min}` beside the finals of a pair whose final is chimap was never applied.
+    res = {"chimap": {"kind": "continuous", "nrmse": 0.1},
+           "mask": {"kind": "binary", "dice": 1.0}}
+    v = parity.evaluate(res, {"chimap": {"nrmse_max": 1}, "mask": {"dice_min": 0.99}}, "chimap")
+    assert not v["ok"] and v["maps"]["mask"]["status"] == "fail" and v["maps"]["mask"]["misplaced"]
+    assert v["maps"]["mask"]["checks"][0]["ok"]       # the value itself passes; the place is wrong
+    rep = parity.render_report(algorithm="p", phantom="sim", reference="r", candidate="c",
+                               verdict=v, baseline=False, unmatched={}, provenance={})
+    assert "its limits go under `intermediates:`" in rep
+    # under intermediates: they apply
+    v = parity.evaluate(res, {"chimap": {"nrmse_max": 1},
+                              "intermediates": {"mask": {"dice_min": 0.99}}}, "chimap")
+    assert v["ok"] and v["maps"]["mask"]["status"] == "pass"
+    v = parity.evaluate({**res, "mask": {"kind": "binary", "dice": 0.9}},
+                        {"chimap": {"nrmse_max": 1}, "intermediates": {"mask": {"dice_min": 0.99}}},
+                        "chimap")
+    assert not v["ok"] and v["maps"]["mask"]["status"] == "fail"
+    # a brain-extraction pair's final IS the mask: dataset level is right there
+    v = parity.evaluate({"mask": res["mask"]}, {"mask": {"dice_min": 0.99}}, "mask")
+    assert v["ok"]
+
+
+def test_real_toolbox_pairs_hold_their_mask_dice_as_an_intermediate():
+    th = parity.load_thresholds()
+    for name, c in th.items():
+        if not name.startswith("toolbox-pipeline-"):
+            continue
+        for ph, ds in (c.get("datasets") or {}).items():
+            assert "mask" not in ds, f"{name}/{ph}: mask limits belong under intermediates:"
+
+
 def test_evaluate_intermediates_only_reports_the_final_and_needs_an_intermediate_limit():
     res = {"totalfield": {"kind": "continuous", "nrmse": 80.0},
            "r2star": {"kind": "continuous", "nrmse": 0.5}}

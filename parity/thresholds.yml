@@ -383,7 +383,7 @@ pairs:
         # runs (local 8 threads ×4, local taskset 4 CPUs ×3, CI 4 vCPU ×1): max spread χ NRMSE 0.0216 %,
         # max |Δ| 6.0e-4 ppm, p99 3.6e-5 ppm (CI vs local 8 threads). Candidate vs the local 4-thread
         # reference 0.0084 %, vs CI's 0.0244 % (max 6.7e-4, p99 4.1e-5). Limits just above that.
-        mask: { dice_min: 0.9999 }
+        intermediates: { mask: { dice_min: 0.9999 } }
         chimap: { nrmse_max: 0.03, correlation_min: 0.9999, max_abs_max: 0.0008, p99_abs_max: 0.00005 }
         measured:
           main: "local run 2026-11-11: QSMxT#534 (qsm-core 0428c09) vs reference v2 sha256:b3f06e4b…, dataset mask (limits)"
@@ -406,7 +406,7 @@ pairs:
         # iLSQR either side. It was 0.23 % / max 2.5e-4 ppm while QSMxT mean-referenced it; with
         # rule chi-sep.reference-none (QSM.rs#459, QSMxT#538) it stays as iLSQR returns it, as the
         # script keeps it: NRMSE 0.0032 %, max |Δ| 1.6e-4 ppm, p99 4.0e-6 ppm (QSMxT#538 build).
-        mask: { dice_min: 0.9999 }
+        intermediates: { mask: { dice_min: 0.9999 } }
         chi-para: { nrmse_max: 0.01, correlation_min: 0.9999, max_abs_max: 0.0001, p99_abs_max: 0.000003 }
         chi-dia: { nrmse_max: 0.01, correlation_min: 0.9999, max_abs_max: 0.00017, p99_abs_max: 0.000003 }
         chimap: { nrmse_max: 0.01, correlation_min: 0.9999, max_abs_max: 0.0003, p99_abs_max: 0.00001 }
@@ -429,7 +429,7 @@ pairs:
         # 0.58 % / 0.51 %. With the toolbox's NNLS R2* (2026-11-11, inside the dataset mask): χ+ /
         # |χ−| NRMSE 0.0005 % / 0.0011 %, max |Δ| 5.6e-5 / 5.2e-4 ppm, p99 ≤ 5.3e-7 ppm; mask
         # identical; CSF mask 11,186 voxels. chimap as for chi-sep-ilsqr (unreferenced since #538).
-        mask: { dice_min: 0.9999 }
+        intermediates: { mask: { dice_min: 0.9999 } }
         chi-para: { nrmse_max: 0.01, correlation_min: 0.9999, max_abs_max: 0.0001, p99_abs_max: 0.000002 }
         chi-dia: { nrmse_max: 0.01, correlation_min: 0.9999, max_abs_max: 0.001, p99_abs_max: 0.000002 }
         chimap: { nrmse_max: 0.01, correlation_min: 0.9999, max_abs_max: 0.0003, p99_abs_max: 0.00001 }
@@ -498,7 +498,7 @@ pairs:
         # 3 / 6 voxels: 9.05 % / 6.02 %. QSMxT main 55d3f3f+#531 (qsm-core 1d5b438) against v2:
         # mask Dice 0.9992 (2,616 voxels), χ 14.56 % (9.19 % / 6.56 % eroded), r 0.9892, within
         # that spread. Margins as above.
-        mask: { dice_min: 0.989 }
+        intermediates: { mask: { dice_min: 0.989 } }
         chimap: { nrmse_max: 17.1, correlation_min: 0.978 }
         measured:
           spread: "local podman runs 2026-11-10: reference v1 sha256:c9ae67fa… vs v2 sha256:6c645318…, χ 15.07 %, Dice 0.9990 (limits)"
@@ -524,7 +524,7 @@ pairs:
         # are FFTW single-precision rounding, which QSM.rs's exact test cannot and should not copy.
         # Through iLSQR they are the whole χ gap: NRMSE 0.30 %, r 1.000000, max |Δ| 0.020 ppm,
         # p99 9.2e-5 ppm. Limits from that floor.
-        mask: { dice_min: 0.9999 }
+        intermediates: { mask: { dice_min: 0.9999 } }
         chimap: { nrmse_max: 0.4, correlation_min: 0.9999, max_abs_max: 0.025, p99_abs_max: 0.00012 }
         measured:
           main: "local run 2026-11-11: QSMxT#538 e2de679 (qsm-core 59a6164) vs reference v1 sha256:60dcc483…, dataset mask (limits); V_SHARP spy: Bunya jobs 32607969, 32610086, 32610529"

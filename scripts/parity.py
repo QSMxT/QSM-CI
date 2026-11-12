@@ -490,7 +490,8 @@ def evaluate(results: dict, ds_cfg: dict, final: "str | list",
     Returns {name: {"metrics", "checks", "status"}} with status "pass", "fail" or "info" (compared
     but no limits configured — reported, never fails), plus "ok": no "fail" anywhere and the final
     artifact has limits. A final artifact without limits is "fail": an enabled pair must say what
-    agreement it expects. A stage with several outputs (χ-separation's chi-para and chi-dia) passes
+    agreement it expects. So is an intermediate whose limits sit at the dataset level, beside the
+    final maps', instead of under `intermediates:` (`misplaced`): they would otherwise never apply. A stage with several outputs (χ-separation's chi-para and chi-dia) passes
     them all as `final`: each is a final artifact with its own limits.
 
     `intermediates_only` (the pair's `intermediates_only: true`): the final artifact is not like
@@ -501,6 +502,12 @@ def evaluate(results: dict, ds_cfg: dict, final: "str | list",
     out = {}
     for name, metrics in results.items():
         limits = (ds_cfg or {}).get(name) if name in finals else inter.get(name)
+        stray = (ds_cfg or {}).get(name)
+        if name not in finals and name not in _NOT_MAPS and isinstance(stray, dict) and stray:
+            rows = check(metrics, stray)
+            out[name] = {"metrics": metrics, "checks": rows, "status": "fail", "limits": stray,
+                         "misplaced": True}
+            continue
         rows = check(metrics, limits)
         if intermediates_only and name in finals:
             status = "info"
@@ -583,6 +590,9 @@ def render_report(*, algorithm: str, phantom: str, reference: str, candidate: st
             first = False
         if v["status"] == "fail" and not v["limits"] and not baseline:
             lines.append(f"| | *no limits in parity/thresholds.yml for `{phantom}`* | | | ❌ |")
+        if v.get("misplaced") and not baseline:
+            lines.append(f"| | *`{name}` is an intermediate: its limits go under `intermediates:` in "
+                         f"parity/thresholds.yml* | | | ❌ |")
     finals = provenance.get("finals") or [provenance.get("final")]
     if intermediates_only:
         lines += ["", "Intermediates-only pair: the final map (" + ", ".join(f"`{f}`" for f in finals)
