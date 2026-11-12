@@ -5038,7 +5038,7 @@
       "language": "Rust",
       "family": "iterative",
       "learning": "none",
-      "description": "Weak-Harmonic QSM: jointly estimates susceptibility and a residual harmonic background field, correcting imperfect background-field removal.",
+      "description": "Weak-Harmonic QSM: jointly estimates susceptibility and a residual harmonic background field, correcting imperfect background-field removal. Fixed settings as in WH_nlTV.m: mu2 1, muh (harmonic ADMM weight) 5, tolDelta 1e-6.",
       "citation": "Milovic et al., Magn Reson Med 2019",
       "doi": "10.1002/mrm.27483",
       "code_url": "https://github.com/astewartau/QSM.rs",
@@ -5069,7 +5069,7 @@
         },
         {
           "name": "max_iter",
-          "default": 300,
+          "default": 150,
           "description": "iterations"
         },
         {
@@ -6029,7 +6029,7 @@
       "language": "Rust",
       "family": "iterative",
       "learning": "none",
-      "description": "Weak-Harmonic QSM: jointly estimates susceptibility and a residual harmonic background field, correcting imperfect background-field removal.",
+      "description": "Weak-Harmonic QSM: jointly estimates susceptibility and a residual harmonic background field, correcting imperfect background-field removal. Fixed settings as in WH_nlTV.m: mu2 1, muh (harmonic ADMM weight) 5, tolDelta 1e-6.",
       "citation": "Milovic et al., Magn Reson Med 2019",
       "doi": "10.1002/mrm.27483",
       "code_url": "https://github.com/astewartau/QSM.rs",
@@ -6060,7 +6060,7 @@
         },
         {
           "name": "max_iter",
-          "default": 300,
+          "default": 150,
           "description": "iterations"
         },
         {
