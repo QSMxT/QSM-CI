@@ -466,8 +466,16 @@ pairs:
         compare_box: 32
         chi-para: { nrmse_max: 9.7, correlation_min: 0.985, max_abs_max: 0.21, p99_abs_max: 0.0071 }
         chi-dia: { nrmse_max: 9.0, correlation_min: 0.985, max_abs_max: 0.2, p99_abs_max: 0.0083 }
+        # chimap (both sides write it, so it is a final map and needs limits): in the same box,
+        # QSMxT#534 against reference v3 (2026-11-12, the 11-11 run): NRMSE 0.0932 %, r 1.0, max |Δ|
+        # 0.0064 ppm, p99 3.4e-6 ppm (over the whole dataset mask 0.374 %, max 0.089 ppm). Margins as
+        # χ± (derive_limits). The NRMSE limit is mostly derive_limits' +0.5 pp, which no pair
+        # waives except where a run-to-run spread was measured (MEDI) or both sides are
+        # deterministic (χ-sep); this reference's STAR-QSM has not been run on a second machine yet.
+        chimap: { nrmse_max: 0.603, correlation_min: 0.99, max_abs_max: 0.00803, p99_abs_max: 0.00000375 }
         measured:
           main: "local run 2026-11-10: QSMxT main + #532, --star-pad 0 0 0, reference v3 sha256:f9ada500…, 33³ box (limits)"
+          chimap: "local run 2026-11-11: QSMxT#534 out534-decompose vs reference v3, 33³ box (chimap limits, 2026-11-12)"
           qsmxt534: "local run 2026-11-11: QSMxT#534 --pipeline decompose (rule decompose.star-pad, no flag): χ+ 8.34 %, χ− 7.66 %, identical to the --star-pad 0 0 0 run"
   toolbox-pipeline-qsmart:
     reference: toolbox-pipeline-qsmart   # QSMART v1.0 incl. brainmask.m; image v2, fidelity pass; pipeline parity: pass (within the N4 spread)
