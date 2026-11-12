@@ -367,10 +367,18 @@ pairs:
       # The acquisition these limits were measured on (OSF v2: ImagingFrequency, Manufacturer, the
       # fidelity cases' R2′; QSM-CI#437). Was keyed to prisma-bridge-run1 (MGH), a different scan.
       s005001-cbic-prisma-bridge-run1:      # Siemens Prisma, ImagingFrequency from its dcm2niix sidecar
-        # Deterministic, so tight (2026-11-11, inside the dataset mask): χ NRMSE 0.0029 %, max |Δ|
-        # 7.4e-5 ppm, p99 4.8e-6 ppm; mask identical; total and local field ≤ 1.1e-5 ppm.
+        # 2026-11-11, inside the dataset mask, against the reference run locally at 8 threads: χ NRMSE
+        # 0.0029 %, max |Δ| 7.4e-5 ppm, p99 4.8e-6 ppm; mask identical; total and local field ≤ 1.1e-5 ppm.
+        # Limits from the reference's own run-to-run spread, not from that run (decision 18, QSMART's
+        # precedent; QSM-CI#437, 2026-11-12). The candidate is deterministic: CI's χ equals the local
+        # run to 1.2e-7 ppm. The reference image (v2, same inputs) is deterministic per machine and
+        # thread count, but not across them. Its local field moves by up to 4e-5 ppm (PDF's
+        # multithreaded FFT reductions), and MEDI's Gauss-Newton amplifies that in χ. Eight reference
+        # runs (local 8 threads ×4, local taskset 4 CPUs ×3, CI 4 vCPU ×1): max spread χ NRMSE 0.0216 %,
+        # max |Δ| 6.0e-4 ppm, p99 3.6e-5 ppm (CI vs local 8 threads). Candidate vs the local 4-thread
+        # reference 0.0084 %, vs CI's 0.0244 % (max 6.7e-4, p99 4.1e-5). Limits just above that.
         mask: { dice_min: 0.9999 }
-        chimap: { nrmse_max: 0.01, correlation_min: 0.9999, max_abs_max: 0.00015, p99_abs_max: 0.00001 }
+        chimap: { nrmse_max: 0.03, correlation_min: 0.9999, max_abs_max: 0.0008, p99_abs_max: 0.00005 }
         measured:
           main: "local run 2026-11-11: QSMxT#534 (qsm-core 0428c09) vs reference v2 sha256:b3f06e4b…, dataset mask (limits)"
   toolbox-pipeline-chisep-ilsqr:
