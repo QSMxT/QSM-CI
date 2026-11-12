@@ -9,7 +9,7 @@ learning: none
 engine: QSMxT / QSM.rs
 inputs: [localfield, mask, params, magnitude]  # run.sh passes --magnitude for a magnitude weight
 description: >
-  Weak-Harmonic QSM: jointly estimates susceptibility and a residual harmonic background field, correcting imperfect background-field removal.
+  Weak-Harmonic QSM: jointly estimates susceptibility and a residual harmonic background field, correcting imperfect background-field removal. Fixed settings as in WH_nlTV.m: mu2 1, muh (harmonic ADMM weight) 5, tolDelta 1e-6.
 citation: Milovic et al., Magn Reson Med 2019
 authors:
 - name: Carlos Milovic
@@ -34,7 +34,7 @@ parameters:
     default: 150
     description: harmonic-constraint weight
   - name: max_iter
-    default: 300
+    default: 150
     description: iterations
   - name: tol_update
     default: 0.1
