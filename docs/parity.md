@@ -145,6 +145,13 @@ as an option next to its default (`candidate_set: {variant: qsmjl}`, passed on b
 `run.sh`). For a Julia original they are its README's "QSM.rs-matched" column. Only the pair's own
 method gets them; prefix steps run with their defaults.
 
+`reference_env` / `candidate_env` (per pair, or per dataset) are environment variables for that
+side's own method (`qsm-ci run --env NAME=VALUE`), for a switch the original's code reads that is no
+`--set` parameter. The DECOMPOSE reference fits only a central box with `DECOMPOSE_CROPBOX=32`, as
+its fidelity check does: its whole-brain fit takes hours. A dataset entry's `compare_box: n` then
+restricts every comparison, the final maps and the intermediates, on both sides, to the dataset mask
+∩ that central (n+1)³ box (the box `recon.m` fits). The candidate still runs the whole volume.
+
 ### Whole pipelines
 
 Pipeline parity (QSMxT/QSM-CI#421) checks a whole toolbox pipeline, raw echoes to χ, against the

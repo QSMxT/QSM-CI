@@ -38,6 +38,9 @@
 #   candidate_set:    prefix steps), at the pair level or per dataset (the dataset's win): how a
 #                     pair runs both sides with matched settings where their defaults differ (the
 #                     Julia submissions' README "QSM.rs-matched" column). Changing one re-baselines.
+#   reference_env:    environment variables for the reference / candidate method's run (`qsm-ci run
+#   candidate_env:    --env`), at the pair level or per dataset (the dataset's win): a switch the
+#                     original's code reads that is no `--set` parameter (DECOMPOSE_CROPBOX).
 #   reference_names:  {native: compared name} for intermediates the reference writes under other
 #   candidate_names:  names (CONTRACT.md, "Intermediates"); {name: x, complement: true} also turns a
 #                     mask into its complement inside the dataset mask; {name: x, clip_min: v}
@@ -57,6 +60,9 @@
 #                     exactly what the original computed and only the steps after it are compared.
 #                     Changing it changes what is measured: re-baseline.
 #     <side>_prefix:  slugs run before that side when the dataset lacks the boundary it consumes.
+#     compare_box:    n: compare every map (finals and intermediates, both sides) only inside the
+#                     dataset mask ∩ the central (n+1)³ box (parity.py central_box), e.g. where a
+#                     reference fits only that box (DECOMPOSE_CROPBOX=n).
 #     measured:       the runs the limits came from, and the image each side ran. Informational.
 #
 # Staleness (`parity.py status`, docs/parity.md): an enabled pair's last check on a dataset is stale
@@ -451,6 +457,13 @@ pairs:
         # not converge away in degenerate voxels. Against a known truth the solvers do not differ
         # (see the reference's ci_notes), so this is a parity floor, not an accuracy loss. Margins
         # as above.
+        # As measured: the reference fits only the 33³ central box (its whole-brain fit takes
+        # hours; the 2 h run limit stopped it in run 43241122344), and every map is compared on
+        # both sides inside the dataset mask ∩ that box. The candidate runs the whole volume. The
+        # box lies inside the dataset mask and the reference's V-SHARP mask (35,937 voxels either
+        # way), so this is the region the limits were measured in.
+        reference_env: { DECOMPOSE_CROPBOX: "32" }
+        compare_box: 32
         chi-para: { nrmse_max: 9.7, correlation_min: 0.985, max_abs_max: 0.21, p99_abs_max: 0.0071 }
         chi-dia: { nrmse_max: 9.0, correlation_min: 0.985, max_abs_max: 0.2, p99_abs_max: 0.0083 }
         measured:
