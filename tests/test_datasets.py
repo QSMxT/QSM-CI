@@ -139,3 +139,16 @@ def test_fetch_finds_the_bids_root_whichever_subject_comes_first(tmp_path, phase
                    env={**os.environ, "OSF_ZIP": str(zip_path)}, capture_output=True)
     root = dest.read_text()
     assert Path(root).name == ("bids" if phase.startswith("bids/") else "extract")
+
+
+def test_emtp_inputs_are_private_and_the_mgh_pilot_public():
+    """The EMTP traveling-head packs live in private components of gkemr until they are published
+    (fetching them needs OSF_TOKEN); the MGH pilot stays in the public project gkemr, which
+    `qsmxt example` downloads from anonymously. A file in a component must name that component as
+    its `osf_project`: OSF answers 404 for a file id under the wrong project."""
+    reg = json.loads((ROOT / "scripts" / "datasets.json").read_text())
+    for key, d in reg.items():
+        if d.get("group") == "harmonization":
+            assert d.get("osf_public") is False and d.get("osf_project") not in (None, "gkemr"), key
+        elif d.get("group") == "harmonization-pilot":
+            assert d.get("osf_public") is True and d.get("osf_project") == "gkemr", key

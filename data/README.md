@@ -38,9 +38,9 @@ carries:
   for the repro track).
 - Where its zip lives on OSF: a literal `osf_file` id and/or an `osf_env` naming the CI secret that
   carries it (e.g. `OSF_FILE_CHISEP_MC`). An entry outside the default project `y8adf` adds
-  `osf_project`; the harmonization entries live in the project `gkemr` and are flagged
-  `osf_public: true`, which lets `fetch_dataset.sh` download them without a token while that project
-  is public. Whenever `OSF_TOKEN` is set it downloads authenticated instead, so CI keeps working if
+  `osf_project`; the MGH pilot entries live in the public project `gkemr` and are flagged
+  `osf_public: true`, which lets `fetch_dataset.sh` download them without a token (the EMTP entries
+  are in private components of it, `osf_public: false`). Whenever `OSF_TOKEN` is set it downloads authenticated instead, so CI keeps working if
   the project is made private (every workflow step that fetches passes `secrets.OSF_TOKEN`).
 - `active` — whether CI scores it — and `default`, the track's primary phantom (runs on any other
   phantom get a `-<phantom>` suffix on their id). Exactly one active default per track, enforced by
@@ -197,9 +197,14 @@ The no-ground-truth reproducibility track, in two independent cohorts (registry 
   `local`, `pulseq-online`, `pulseq-offline`), three runs each (one Pulseq offline run could not be
   reconstructed). Registry keys are `<scanner>-<protocol>-run<n>`.
 
-All are `default: false`, prepacked, in the public OSF project `gkemr`
-([`scripts/osf_harmonization_files.json`](../scripts/osf_harmonization_files.json) records each
-upload's file id).
+All are `default: false` and prepacked. The MGH pilot packs, with the raw MGH exports, are in the
+public OSF project [`gkemr`](https://osf.io/gkemr/). The EMTP packs (and `emtp_manifest.json`) are in
+three **private** components of `gkemr` (`vkyr2`, `wmzr3`, `sf65v`; OSF caps a private component at
+5 GB) until the EMTP data are published: their registry entries carry `osf_public: false` and their
+own `osf_project`, so fetching them needs `OSF_TOKEN` (CI passes `secrets.OSF_TOKEN`). Moving a file
+between components keeps its file id, so
+[`scripts/osf_harmonization_files.json`](../scripts/osf_harmonization_files.json) (each upload's file
+id) is unchanged.
 
 The MGH pilot was packed from the raw MGH export by
 [`scripts/pack_harmonization.py`](../scripts/pack_harmonization.py) — which recovers the echo times
