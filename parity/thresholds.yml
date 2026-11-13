@@ -498,6 +498,33 @@ pairs:
         chimap: { nrmse_max: 0.4, correlation_min: 0.9999, max_abs_max: 0.025, p99_abs_max: 0.00012 }
         measured:
           main: "local run 2026-11-11: QSMxT#538 e2de679 (qsm-core 59a6164) vs reference v1 sha256:60dcc483…, dataset mask (limits); V_SHARP spy: Bunya jobs 32607969, 32610086, 32610529"
+  toolbox-pipeline-ukb:
+    reference: toolbox-pipeline-ukb   # UK Biobank's UKBiobank_QSM.m: the ukb-qsm image v3, fidelity pass
+    candidate: toolbox-pipeline-qsmrs
+    enabled: false
+    blocked_by: https://github.com/QSMxT/QSM-CI/issues/421
+    # UK Biobank's brain mask comes from its T1 pipeline, which no pipeline input can make, so both
+    # sides start from the dataset's mask (the reference takes it as an input; the candidate is
+    # told to use it). Everything after is compared: both phase-reliability trims, unwrapping, echo
+    # combination, V-SHARP and iLSQR.
+    candidate_set: { pipeline: uk-biobank, dataset_mask: true }
+    # The reference's `mask` is its first trimmed mask; the candidate's is the brain mask it was
+    # given. Renamed so the two are not compared as one.
+    reference_names: { mask: mask_trimmed }
+    qsmrs_paths: [src/pipeline/, src/utils/phase_reliability.rs, src/unwrap/laplacian.rs,
+                  src/bgremove/vsharp.rs, src/inversion/ilsqr.rs]
+    qsmxt_paths: [crates/qsmxt-engine/src/]
+    datasets:
+      s005001-cbic-prisma-bridge-run1:
+        # Deterministic, so tight (2026-11-13, inside the dataset mask): χ NRMSE 0.0027 %, r 1.000000,
+        # max |Δ| 1.4e-5 ppm, p99 2.4e-6 ppm; the final (second-trim) mask identical, 1,241,992
+        # voxels; the local field 3.3e-4 % (float32 output); the total field identical up to a
+        # constant (≤ 3.2e-6 ppm). Before QSM.rs#473 kept the Laplacian field outside the mask
+        # (`laplacian_keep_outside`: STI Suite's V_SHARP reads it there) and left the local field
+        # unmasked for iLSQR after the second trim, χ was 6.2 %.
+        chimap: { nrmse_max: 0.01, correlation_min: 0.9999, max_abs_max: 0.00003, p99_abs_max: 0.000005 }
+        measured:
+          main: "local run 2026-11-13: QSMxT ukb-pipeline (qsm-core f68bf12, QSM.rs#473) vs reference v3 sha256:7729e63a…, dataset mask (limits)"
   fit-ppm-complex:
     reference: fit-ppm-complex-cornell   # MEDI 2024.11.26 Fit_ppm_complex + unwrapPhase (#322)
     candidate: fit-ppm-complex-qsmrs     # ci_skip for scoring: v10.0.0 has no complex fit

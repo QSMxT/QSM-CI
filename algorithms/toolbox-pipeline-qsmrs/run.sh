@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # QSM-CI submission: a whole toolbox pipeline as QSMxT runs it (`qsmxt run --pipeline <id>`), the
 # candidate side of pipeline parity (QSMxT/QSM-CI#421).
-#   consumes phase.nii.gz (rad, x,y,z,echo), magnitude.nii.gz, params.json
+#   consumes phase.nii.gz (rad, x,y,z,echo), magnitude.nii.gz, params.json; mask.nii.gz only with
+#            `dataset_mask`
 #   produces chimap.nii.gz (ppm); chi-para.nii.gz, chi-dia.nii.gz (ppm) from the χ-separation
 #            pipelines
 #   intermediates (when $QSMCI_INTERMEDIATES is set): the steps qsmxt wrote, under CONTRACT.md's
@@ -13,9 +14,11 @@ set -euo pipefail
 IN="${1:-/input}"; OUT="${2:-/output}"
 
 PIPELINE=qsmxt-defaults
+DATASET_MASK=false
 CFG="$IN/config.json"
 if [ -f "$CFG" ]; then
   V=$(jq -r '.pipeline // empty' "$CFG"); [ -n "$V" ] && PIPELINE="$V"
+  V=$(jq -r '.dataset_mask // empty' "$CFG"); [ -n "$V" ] && DATASET_MASK="$V"
 fi
 
 WORK="$(mktemp -d)"
@@ -122,12 +125,27 @@ done
 # QSMxT's χ-separation pipelines use a supplied map (`--use-custom-r2prime`) rather than predicting
 # one. It is an input, not a setting: the pipeline's settings are untouched.
 R2P=()
-if [ -f "$IN/r2prime.nii.gz" ]; then
+derivative() {
   mkdir -p "$BIDS/derivatives/qsmci/sub-1/anat"
-  cp "$IN/r2prime.nii.gz" "$BIDS/derivatives/qsmci/sub-1/anat/sub-1_R2primemap.nii.gz"
   echo '{"Name": "qsmci", "BIDSVersion": "1.10.0", "DatasetType": "derivative"}' \
     > "$BIDS/derivatives/qsmci/dataset_description.json"
+}
+if [ -f "$IN/r2prime.nii.gz" ]; then
+  derivative
+  cp "$IN/r2prime.nii.gz" "$BIDS/derivatives/qsmci/sub-1/anat/sub-1_R2primemap.nii.gz"
   R2P=(--use-custom-r2prime qsmci)
+fi
+
+# The dataset's brain mask in place of the one the pipeline makes, only when asked
+# (`dataset_mask`): for a toolbox whose mask comes from data no pipeline input has (UK Biobank's,
+# from its T1 pipeline), so both sides of the pair start from the same mask. The pipeline's
+# settings are untouched; qsmxt uses a supplied mask as given (`--use-custom-masks`).
+MASK=()
+if [ "$DATASET_MASK" = true ]; then
+  [ -f "$IN/mask.nii.gz" ] || { echo "toolbox-pipeline-qsmrs: dataset_mask needs mask.nii.gz" >&2; exit 1; }
+  derivative
+  cp "$IN/mask.nii.gz" "$BIDS/derivatives/qsmci/sub-1/anat/sub-1_mask.nii.gz"
+  MASK=(--use-custom-masks qsmci)
 fi
 
 # --- the pipeline --------------------------------------------------------------------------------
@@ -136,7 +154,7 @@ fi
 # changes one. `--output-space acquired` (QSMxT's default, given so a pipeline cannot change it)
 # puts the outputs back on the input grid when qsmxt resampled to an axial one. stdin is closed so
 # nothing can wait for an answer.
-qsmxt run "$BIDS" "$WORK/out" --pipeline "$PIPELINE" --output-space acquired "${R2P[@]}" < /dev/null
+qsmxt run "$BIDS" "$WORK/out" --pipeline "$PIPELINE" --output-space acquired "${R2P[@]}" "${MASK[@]}" < /dev/null
 D="$WORK/out/derivatives/qsmxt"
 
 # The file qsmxt wrote under this name, wherever in its tree (published or workflow/); empty if none.
