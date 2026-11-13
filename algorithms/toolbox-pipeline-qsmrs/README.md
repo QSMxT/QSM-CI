@@ -7,7 +7,8 @@ toolbox's own script, run end to end by a reference submission. It is never scor
 truth (`parity_only`).
 
 - **Stage:** `pipeline` (phase, magnitude, params → chimap; also chi-para, chi-dia from the
-  χ-separation pipelines). No mask is given: making it is part of the pipeline.
+  χ-separation pipelines). No mask is given: making it is part of the pipeline, except with
+  `dataset_mask`, which takes the dataset's.
 - **Engine:** [QSMxT](https://github.com/QSMxT/QSMxT) and [QSM.rs](https://github.com/astewartau/QSM.rs)
   (`qsm_core::pipeline::reference_pipelines`).
 
@@ -29,7 +30,8 @@ qsmxt run bids/ out/ --pipeline <id> --output-space acquired
 
 | Parameter | Default | |
 |---|---|---|
-| `pipeline` | `qsmxt-defaults` | `medi-toolbox`, `sti-suite-ilsqr`, `sti-suite-star`, `qsmart`, `heidi`, `chi-sep-ilsqr`, `chi-sep-medi`, `chi-sepnet`, `decompose`, or `qsmxt-defaults` |
+| `pipeline` | `qsmxt-defaults` | `medi-toolbox`, `sti-suite-ilsqr`, `sti-suite-star`, `qsmart`, `heidi`, `chi-sep-ilsqr`, `chi-sep-medi`, `chi-sepnet`, `decompose`, `uk-biobank`, or `qsmxt-defaults` |
+| `dataset_mask` | `false` | `true`: use the dataset's `mask.nii.gz` (`--use-custom-masks`) instead of the mask the pipeline makes, for a toolbox whose mask needs data no pipeline input has (UK Biobank's comes from its T1 pipeline) |
 
 ```bash
 qsm-ci run toolbox-pipeline-qsmrs --phase phase.nii.gz --magnitude magnitude.nii.gz \

@@ -1,0 +1,38 @@
+name: UK Biobank pipeline (UKBiobank_QSM.m, toolbox-pipeline reference)
+slug: toolbox-pipeline-ukb
+algorithm: toolbox-pipeline
+variant: ukb
+source: ukb
+stage: pipeline
+# UK Biobank's brain mask comes from its T1 pipeline, which no pipeline input can make: the
+# dataset's mask stands in for it on both sides of the pair (the candidate's `dataset_mask`).
+inputs: [phase, magnitude, params, mask]
+language: MATLAB
+family: pipeline
+learning: none
+engine: UK Biobank + STI Suite
+description: >
+  UK Biobank's QSM pipeline (UKBiobank_QSM.m) from the coil-combined echoes to χ, on the dataset's
+  brain mask: phase-reliability mask trimming, MRPhaseUnwrap per echo on the masked phase,
+  TE·exp(−TE/40 ms) echo weights, V_SHARP (12 mm), a second trim, QSM_iLSQR (64 mm padding),
+  unreferenced. The same image and code as `ukb-qsm` (its README lists every difference from
+  upstream); this entry is the reference for QSMxT's `uk-biobank` pipeline (QSMxT/QSM-CI#421).
+ci_notes:
+- >
+  Fidelity is `ukb-qsm`'s: the same image (v3), identical to licensed MATLAB in χ and every
+  intermediate (algorithms/ukb-qsm/fidelity/REPORT.md).
+authors:
+- name: Chaoyue Wang
+- name: Benjamin C. Tendler
+- name: Karla L. Miller
+doi: 10.1038/s41593-022-01074-w
+citation: Wang et al., Nature Neuroscience 2022
+code_url: https://git.fmrib.ox.ac.uk/cwang/uk_biobank_qsm_pipeline
+license: Apache-2.0
+image: ghcr.io/astewartau/qsm-ci/matlab-ukb-qsm@sha256:7729e63a552f043e43043c5742cfcbb3a3f8d56a8f0679f2f6c67c28ea827348   # v3 (algorithms/ukb-qsm/BUILD.md)
+run: bash run.sh
+ci_skip: true   # a reference for pipeline parity only (QSMxT/QSM-CI#421)
+parity_only: true
+matlab:
+  entry: recon.m
+  runtime: r2023b

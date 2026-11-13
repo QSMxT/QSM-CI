@@ -46,6 +46,12 @@ def _run(algo: Path, tmp_path: Path, config: dict | None) -> str:
         d.mkdir(exist_ok=True)
     (inp / "params.json").write_text(json.dumps({
         "B0": 3.0, "B0_dir": [0, 0, 1], "TE": [0.004, 0.008], "voxel_size": [1, 1, 1]}))
+    # Tiny two-echo images and a mask, for a run.sh that builds qsmxt's input from them before
+    # calling it (toolbox-pipeline-qsmrs, whose `dataset_mask` also needs the mask).
+    import nibabel as nib
+    import numpy as np
+    for name, shape in (("phase", (4, 4, 4, 2)), ("magnitude", (4, 4, 4, 2)), ("mask", (4, 4, 4))):
+        nib.save(nib.Nifti1Image(np.ones(shape, np.float32), np.eye(4)), str(inp / f"{name}.nii.gz"))
     cfg = inp / "config.json"
     if config is None:
         cfg.unlink(missing_ok=True)

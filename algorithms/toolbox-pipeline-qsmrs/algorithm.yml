@@ -3,8 +3,9 @@ slug: toolbox-pipeline-qsmrs
 algorithm: toolbox-pipeline
 source: qsmrs
 stage: pipeline
-# A measured R2′ for the χ-separation pipelines, when the dataset ships one (run.sh).
-optional_inputs: [r2prime]
+# A measured R2′ for the χ-separation pipelines, when the dataset ships one, and the dataset's brain
+# mask, used only with `dataset_mask` (run.sh).
+optional_inputs: [r2prime, mask]
 language: Rust
 family: pipeline
 learning: none
@@ -32,4 +33,9 @@ parameters:
   default: qsmxt-defaults
   description: >
     the pipeline qsmxt runs: qsmxt-defaults, or a toolbox's: medi-toolbox, sti-suite-ilsqr,
-    sti-suite-star, qsmart, heidi, chi-sep-ilsqr, chi-sep-medi, chi-sepnet, decompose
+    sti-suite-star, qsmart, heidi, chi-sep-ilsqr, chi-sep-medi, chi-sepnet, decompose, uk-biobank
+- name: dataset_mask
+  default: false
+  description: >
+    use the dataset's brain mask (`--use-custom-masks`) instead of the one the pipeline makes:
+    for a toolbox whose own mask needs data the pipeline is not given (UK Biobank's T1 mask)

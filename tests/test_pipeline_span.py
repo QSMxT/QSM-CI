@@ -135,7 +135,8 @@ def test_candidate_is_a_parity_only_pipeline_submission():
     assert meta["stage"] == "pipeline" and meta["source"] == "qsmrs"
     # never scored or listed: the pinned qsmxt has no --pipeline, and it is a parity candidate
     assert meta.get("ci_skip") is True and meta.get("parity_only") is True
-    assert [p["name"] for p in meta["parameters"]] == ["pipeline"]
+    # `pipeline` picks the toolbox; `dataset_mask` gives it the dataset's mask (UK Biobank's pair)
+    assert [p["name"] for p in meta["parameters"]] == ["pipeline", "dataset_mask"]
 
 
 # --- params.json: ImagingFrequency, Manufacturer -------------------------------------------------
@@ -228,7 +229,7 @@ def stub_qsmxt(tmp_path):
     return {"PATH": f"{bin_dir}{os.pathsep}{os.environ['PATH']}", "STUB_LOG": str(log)}, log
 
 
-def _run_candidate(tmp_path, env_extra, params=None, config=None, gz=True, shape=(6, 5, 4)):
+def _run_candidate(tmp_path, env_extra, params=None, config=None, gz=True, shape=(6, 5, 4), mask=None):
     inp, out, inter = tmp_path / "in", tmp_path / "out", tmp_path / "out" / "intermediates"
     inp.mkdir()
     inter.mkdir(parents=True)
@@ -243,6 +244,8 @@ def _run_candidate(tmp_path, env_extra, params=None, config=None, gz=True, shape
          "voxel_size": [0.9, 1.1, 1.2], **(params or {})}))
     if config:
         (inp / "config.json").write_text(json.dumps(config))
+    if mask is not None:
+        _save(inp / "mask.nii.gz", mask, aff)
     env = {**os.environ, **env_extra, "QSMCI_INTERMEDIATES": str(inter)}
     r = subprocess.run(["bash", str(CANDIDATE / "run.sh"), str(inp), str(out)], env=env,
                        capture_output=True, text=True)
@@ -312,3 +315,29 @@ def test_candidate_refuses_echo_count_mismatch(tmp_path, stub_qsmxt):
     env, _ = stub_qsmxt
     r, *_ = _run_candidate(tmp_path, env, params={"TE": [0.004, 0.008]})
     assert r.returncode != 0 and "TE 2" in r.stderr
+
+
+
+def test_candidate_takes_the_dataset_mask_only_when_asked(tmp_path, stub_qsmxt):
+    env, log = stub_qsmxt
+    mask = (np.arange(6 * 5 * 4).reshape(6, 5, 4) % 3 == 0).astype(np.uint8)
+    # Not asked: a mask.nii.gz in the input is left alone, and the pipeline makes its own.
+    (tmp_path / "a").mkdir()
+    r, *_ = _run_candidate(tmp_path / "a", env, config={"pipeline": "uk-biobank"}, mask=mask)
+    assert r.returncode == 0, r.stderr
+    assert "--use-custom-masks" not in (log / "args").read_text()
+    assert not (log / "bids" / "derivatives").exists()
+    # Asked (UK Biobank's pair): the dataset's mask goes in as the run's supplied mask.
+    shutil.rmtree(log / "bids")
+    (tmp_path / "b").mkdir()
+    r, *_ = _run_candidate(tmp_path / "b", env, config={"pipeline": "uk-biobank", "dataset_mask": True},
+                           mask=mask)
+    assert r.returncode == 0, r.stderr
+    args = (log / "args").read_text().split()
+    assert args[args.index("--use-custom-masks") + 1] == "qsmci"
+    got = nib.load(str(log / "bids" / "derivatives" / "qsmci" / "sub-1" / "anat" / "sub-1_mask.nii.gz"))
+    assert np.array_equal(np.asarray(got.dataobj), mask)
+    # Asked with no mask in the input: refused.
+    (tmp_path / "c").mkdir()
+    r, *_ = _run_candidate(tmp_path / "c", env, config={"dataset_mask": True})
+    assert r.returncode != 0 and "dataset_mask needs mask.nii.gz" in r.stderr
