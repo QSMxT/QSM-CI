@@ -152,3 +152,16 @@ def test_emtp_inputs_are_private_and_the_mgh_pilot_public():
             assert d.get("osf_public") is False and d.get("osf_project") not in (None, "gkemr"), key
         elif d.get("group") == "harmonization-pilot":
             assert d.get("osf_public") is True and d.get("osf_project") == "gkemr", key
+
+
+def test_mgh_pilot_pins_the_remasked_osf_version():
+    """The MGH pilot file ids serve the ORIGINAL packs as their latest OSF version, because every
+    released `qsmxt example` downloads the latest version and checks it against the original checksum.
+    QSM-CI scores the re-masked packs (version 2), so each pilot entry pins that version and its
+    checksum: a later upload to these ids must not silently change QSM-CI's inputs."""
+    reg = json.loads((ROOT / "scripts" / "datasets.json").read_text())
+    pilot = {k: d for k, d in reg.items() if d.get("group") == "harmonization-pilot"}
+    assert len(pilot) == 23
+    for key, d in pilot.items():
+        assert d.get("osf_version") == 2, key
+        assert len(d.get("sha256", "")) == 64, key
