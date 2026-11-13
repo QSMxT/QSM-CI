@@ -193,6 +193,7 @@ jobs:
       - name: Fetch dataset (public inputs + held-out ground truth)
         env:
           OSF_TOKEN: ${{ secrets.OSF_TOKEN }}
+          HF_TOKEN: ${{ secrets.HF_READ_TOKEN || secrets.HF_TOKEN }}   # private HF copy of an input (e.g. the EMTP packs); OSF is the fallback
           # fetch_dataset.sh resolves the zip via the routed phantom's `osf_env` secret — without this
           # a chi-separation / r2prime-generation smoke fails at fetch ("set OSF_FILE_CHISEP_MC").
           OSF_FILE_CHISEP_MC: ${{ secrets.OSF_FILE_CHISEP_MC }}   # χ-sep multicompartment (pre-flattened)
@@ -232,6 +233,7 @@ jobs:
         if: steps.route.outputs.is_dipole == 'true'
         env:
           OSF_TOKEN: ${{ secrets.OSF_TOKEN }}
+          HF_TOKEN: ${{ secrets.HF_READ_TOKEN || secrets.HF_TOKEN }}   # private HF copy of an input (e.g. the EMTP packs); OSF is the fallback
           OSF_FILE_INVIVO: ${{ secrets.OSF_FILE_INVIVO }}
           OSF_ZIP: .osfcache/invivo.zip
         run: scripts/fetch_dataset.sh invivo data/invivo/scoring

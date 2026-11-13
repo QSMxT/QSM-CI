@@ -37,6 +37,7 @@ How each shipped dataset was made; re-run only to rebuild one.
 | `pack_harmonization.py` | Packs the raw MGH two-scanner drop into the 23 prepacked MGH pilot acquisitions (`repro`, `group: harmonization-pilot`), recovering the echo times the sidecars lack |
 | `publish_harmonization_osf.sh` | Uploads those acquisitions (and the raw exports) to the public OSF project; records file ids in `osf_harmonization_files.json` |
 | `osf_harmonization_files.json` | The OSF file ids of every harmonization upload |
+| `publish_harmonization_hf.py` | Uploads harmonization acquisitions to a Hugging Face dataset (the EMTP inputs: private `qsmxt/qsmci-emtp-inputs`) and wires `hf_repo`/`hf_path`/`sha256` into `datasets.json`; replaces the OSF upload (OSF goes read-only 19 Feb 2027) |
 | `mirror_ridani_osf.py` | Mirrors the Ridani et al. OSF project (9xwhz) locally, with a manifest, as the bit-for-bit reference for the Ridani phantoms |
 | `verify_ridani_gt.py` | Checks the `qsm-forward`-generated Ridani ground truth against that mirror and the paper's tables |
 

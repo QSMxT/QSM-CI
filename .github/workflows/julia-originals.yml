@@ -75,6 +75,7 @@ jobs:
       - name: Fetch the in-silico phantom
         env:
           OSF_TOKEN: ${{ secrets.OSF_TOKEN }}
+          HF_TOKEN: ${{ secrets.HF_READ_TOKEN || secrets.HF_TOKEN }}   # private HF copy of an input (e.g. the EMTP packs); OSF is the fallback
           OSF_ZIP: .osfcache/sim.zip
         run: scripts/fetch_dataset.sh sim data/sim/scoring
       # One case directory with every boundary a stage reads: the public inputs plus the

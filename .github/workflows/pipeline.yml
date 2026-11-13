@@ -87,6 +87,7 @@ jobs:
       - name: Fetch the real challenge dataset (public inputs + held-out ground truth)
         env:
           OSF_TOKEN: ${{ secrets.OSF_TOKEN }}
+          HF_TOKEN: ${{ secrets.HF_READ_TOKEN || secrets.HF_TOKEN }}   # private HF copy of an input (e.g. the EMTP packs); OSF is the fallback
           OSF_ZIP: .osfcache/bids.zip
         run: scripts/fetch_dataset.sh sim /tmp/phantom
 
