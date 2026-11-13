@@ -54,7 +54,8 @@ def fetch(tmp_path):
     (bindir / "curl").write_text(CURL_STUB)
     (bindir / "curl").chmod(0o755)
 
-    def run(entry: dict, hops: list, token: "str | None", hf_token: "str | None" = None):
+    def run(entry: dict, hops: list, token: "str | None", hf_token: "str | None" = None,
+            extra_env: "dict | None" = None):
         (scripts / "datasets.json").write_text(json.dumps({"x": {"prepacked": True, **entry}}))
         (tmp_path / "hops.tsv").write_text("".join("|".join(h) + "\n" for h in hops))
         log = tmp_path / "curl.log"
@@ -67,6 +68,7 @@ def fetch(tmp_path):
             env["OSF_TOKEN"] = token
         if hf_token is not None:
             env["HF_TOKEN"] = hf_token
+        env.update(extra_env or {})
         p = subprocess.run(["bash", str(scripts / "fetch_dataset.sh"), "x", str(tmp_path / "out")],
                            env=env, capture_output=True, text=True)
         calls = log.read_text().splitlines() if log.exists() else []
@@ -112,6 +114,38 @@ def test_token_without_access_fails_clearly(fetch):
     assert p.returncode == 1
     assert "HTTP 403" in p.stderr and "no read access" in p.stderr
     assert not zip_path.exists()
+
+
+PINNED = {**PUBLIC, "osf_version": 2}
+
+
+def test_osf_version_pins_the_anonymous_download(fetch):
+    """OSF serves a file's latest version by default; the MGH pilot ids carry the original packs as their
+    latest version (for `qsmxt example`) and the re-masked packs QSM-CI scores as version 2."""
+    p, calls, _ = fetch(PINNED, [(f"https://osf.io/download/{FID}/", "302", STORAGE, ""),
+                                 (STORAGE, "200", "", "zipbytes")], token=None)
+    assert f"https://osf.io/download/{FID}/?version=2" in calls[0].split()
+    assert "pinned to OSF version 2" in p.stdout
+
+
+def test_osf_version_pins_the_authenticated_download(fetch):
+    wb = f"https://files.osf.io/v1/resources/gkemr/providers/osfstorage/{FID}"
+    p, calls, _ = fetch(PINNED, [(wb, "302", STORAGE, ""), (STORAGE, "200", "", "zipbytes")], token="tok")
+    assert f"{wb}?version=2" in calls[0].split() and "Authorization: Bearer tok" in calls[0]
+    assert STORAGE in calls[1] and "version" not in calls[1].split()[-1]
+
+
+def test_osf_version_pins_a_guid_download(fetch):
+    p, calls, _ = fetch({"osf_file": "abcde", "osf_version": 3},
+                        [("https://osf.io/abcde/download", "200", "", "zipbytes")], token="tok")
+    assert "https://osf.io/abcde/download?version=3" in calls[0].split()
+
+
+def test_an_osf_file_override_drops_the_registry_version(fetch):
+    """$OSF_FILE names a different file, which the registry's version number says nothing about."""
+    p, calls, _ = fetch(PINNED, [(f"https://osf.io/download/{FID}/", "200", "", "zipbytes")], token=None,
+                        extra_env={"OSF_FILE": FID})
+    assert f"https://osf.io/download/{FID}/" in calls[0].split() and "version" not in calls[0]
 
 
 def test_unflagged_private_entry_needs_a_token(fetch):

@@ -17,7 +17,8 @@
 #                      downloads authenticated, so it keeps working if that project is made private.
 #        HF_TOKEN      Hugging Face token. An entry with `hf_repo`/`hf_path` (a private HF dataset copy)
 #                      is downloaded from there first when it is set, with OSF as the fallback.
-#        OSF_PROJECT   (default y8adf), OSF_FILE (overrides the registry's file id)
+#        OSF_PROJECT   (default y8adf), OSF_FILE (overrides the registry's file id, and with it
+#                      the registry's `osf_version`)
 #        OSF_FILE_*    (per-phantom secrets) — the registry's `osf_env` names which one applies
 #                      (e.g. OSF_FILE_CHISEP_MC for the chisep-mc phantom)
 #        OSF_ZIP       (optional) — persistent path for the download. If it exists it's reused (no
@@ -48,6 +49,12 @@ if not osf:
     sys.exit(f"[fetch_dataset] no OSF file id for phantom '{ph}' — "
              f"set {d.get('osf_env', 'OSF_FILE')} (or OSF_FILE)")
 print(f"OSF_FILE={osf}")
+# `osf_version` pins one OSF version of the registry's file: OSF serves the LATEST version by default,
+# and a file id can gain new versions that other consumers rely on (the MGH pilot ids carry the
+# original packs as their latest version for `qsmxt example`, and the re-masked packs QSM-CI scores as
+# version 2). It belongs to the registry's file, so an $OSF_FILE / `osf_env` override drops it.
+ver = d.get("osf_version") if osf == d.get("osf_file") and not os.environ.get("OSF_FILE") else None
+print(f"OSF_VERSION={ver or ''}")
 print(f"PACK_FLAGS={d.get('pack_flags', '')}")
 print(f"PREPACKED={'1' if d.get('prepacked') else '0'}")
 print(f"PUBLIC={'1' if d.get('osf_public') else '0'}")
@@ -115,6 +122,12 @@ else
       url="https://files.osf.io/v1/resources/${OSF_PROJECT}/providers/osfstorage/${OSF_FILE}"
     else
       url="https://osf.io/${OSF_FILE}/download"
+    fi
+    # All three endpoints take `?version=N` (a registry `osf_version`); without it OSF serves the latest.
+    if [ -n "${OSF_VERSION:-}" ]; then
+      [[ "$OSF_VERSION" =~ ^[0-9]+$ ]] || { echo "[fetch_dataset] bad osf_version '$OSF_VERSION' for ${TRACK}" >&2; exit 1; }
+      url="${url}?version=${OSF_VERSION}"
+      echo "[fetch_dataset] pinned to OSF version ${OSF_VERSION}"
     fi
     # A GUID download redirects osf.io -> files.osf.io -> a pre-signed object-storage URL. The OSF
     # token must reach the OSF hops of a private project, but the storage host rejects a signed URL

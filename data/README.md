@@ -42,6 +42,11 @@ carries:
   `osf_public: true`, which lets `fetch_dataset.sh` download them without a token (the EMTP entries
   are in private components of it, `osf_public: false`). Whenever `OSF_TOKEN` is set it downloads authenticated instead, so CI keeps working if
   the project is made private (every workflow step that fetches passes `secrets.OSF_TOKEN`).
+- `osf_version` (optional) pins one OSF version of `osf_file` (OSF serves the latest by default), and
+  `sha256` (optional) is checked on whatever was downloaded. The MGH pilot entries pin version 2, the
+  re-masked packs QSM-CI scores; the same file ids serve the original packs as their latest version
+  (version 3) because every released `qsmxt example` downloads the latest version and checks it
+  against the original checksum. Pin a new version here when a pilot pack is re-uploaded.
 - `active` — whether CI scores it — and `default`, the track's primary phantom (runs on any other
   phantom get a `-<phantom>` suffix on their id). Exactly one active default per track, enforced by
   `tests/test_datasets.py`.
