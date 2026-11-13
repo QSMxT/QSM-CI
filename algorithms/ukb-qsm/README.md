@@ -22,11 +22,11 @@ Stephen M. Smith as contributors to the wider pipeline.
 result. The untouched original is kept at `ukb/UKBiobank_QSM.m.reference` so the diff can be
 checked directly.
 
-There are four differences in total. Two are actual code edits, each marked `% EDIT:` in the
-source; the other two are absences, where upstream code simply is not carried over and so there
-is nothing to mark.
-(A third output that copies intermediates out for QSM-CI's fidelity check, marked
-`% EDIT (intermediates)`, changes no computation.)
+Every difference is listed below (audited against upstream line by line, 2026-11-13). Two are
+code edits, each marked `% EDIT:` in the source. The rest are inputs that QSM-CI's contract supplies
+in place of what upstream reads from DICOM and from UK Biobank's structural pipeline, or upstream
+code (IO, coil combination) that is not carried over. A third output that copies intermediates out
+for QSM-CI's fidelity check, marked `% EDIT (intermediates)`, changes no computation.
 
 ### 1. Multi-echo — *code edit*, in the lifted code
 
@@ -51,20 +51,52 @@ upstream of this submission and absent here. **Note this means the Laplacian `MR
 PRELUDE, is the unwrapping step being benchmarked** — PRELUDE only ever touched the inner product
 during coil combination.
 
+Upstream's combined phase is zeroed outside its brain mask before anything reads it
+(`phase1 = mask .* angle(combined1)`, l. 158-160), so `MRPhaseUnwrap` solves on the masked phase.
+`recon.m` masks QSM-CI's phase the same way before calling the lifted code. **Images up to v2 did
+not**: they unwrapped the raw phase over the whole volume, which differs from upstream (fixed in
+v3, decision 148).
+
 ### 4. Even-dimension padding — *code edit*, in the adapter
 
 STI Suite indexes assuming even matrix dimensions. UK Biobank's own 256×288×48 is even on every
 axis, so upstream never encounters this, but `MRPhaseUnwrap` errors on an odd dimension. The
 adapter zero-pads odd dimensions before the call and crops back after, which is lossless for the
-FFT model and leaves the vendored code untouched.
+FFT model and leaves the vendored code untouched. (The phase-variance maps are computed on the
+padded grid, so on an odd grid they are not what upstream's code would make of the unpadded one.)
+
+### 5. Brain mask — *input*
+
+Upstream's mask is UK Biobank's structural brain mask (from the T1 pipeline, registered to the
+SWI), binarised with `fslmaths -thr 0.6 -bin`. That needs the T1 and UK Biobank's structural
+pipeline; here the dataset's `mask.nii.gz` stands in for it. Everything after (both trims) is
+upstream's.
+
+### 6. Field strength — *input*
+
+Upstream passes `QSM_iLSQR` the DICOM's nominal `MagneticFieldStrength` (e.g. 3). Here it is
+`params.json` `B0`, which for in vivo datasets is computed from the scanner's centre frequency
+(`ImagingFrequency` / γ; CONTRACT.md), as QSMxT uses for every run (orchestrator decisions 31 and
+149). On a Siemens Prisma (2.89 T) χ scales by about 3.6 % against the nominal 3 T. The nominal
+value is `params.json` `B0_nominal` where a dataset has it.
+
+### 7. Geometry — *input*
+
+Upstream computes the field direction from `ImageOrientationPatient` (`H = [-Xz, -Yz, Zz]`, for
+its own array orientation) and the voxel size from `PixelSpacing` and `SliceThickness`; here they
+are `params.json` `B0_dir` and `voxel_size`, in the image's own axes. Both describe the same
+geometry. The mask is logical here and `double` upstream (read from NIfTI); every function it
+reaches gives the same result for either.
 
 ## A caveat on generalisation
 
-`phasevariance_nonlin_v2` assumes UK Biobank's voxel geometry. It computes a kernel offset as
-`(dim − dimX)/2`, an integer only for some combinations of matrix size and resolution. On a 1 mm
-isotropic phantom it warns on every call and the reliability kernel may be misplaced. This is
-upstream's limitation, not the port's, and it is why `mask_refine` is exposed as a parameter —
-set it false to reconstruct across the mask the dataset supplies.
+`phasevariance_nonlin_v2` assumes UK Biobank's voxel geometry. It places its kernel at
+`(dim − dimX)/2 + 1`, a half-integer for many combinations of matrix size and resolution (1 mm
+isotropic among them). MATLAB then warns ("Integer operands are required for colon operator when
+used as index") on every call and rounds the index up, so the reliability kernel sits half a
+voxel off centre on those grids. This is upstream's code, followed as it is. (Earlier versions of
+this README offered a `mask_refine` switch to turn the trimming off; `recon.m` never read one, and
+the trimming always runs.)
 
 Because the default trimming is faithful to what UK Biobank actually runs, scored coverage is
 smaller than other submissions': on the in-silico phantom it reconstructs 88% of the dataset mask.

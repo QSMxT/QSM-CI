@@ -1,6 +1,6 @@
 # MCR image for the compiled ukb-qsm submission. Build the `recon` binary first (BUILD.md: licensed
 # MATLAB R2023b + MATLAB Compiler, against the real Image Processing Toolbox), then:
-#   podman build -t ghcr.io/astewartau/qsm-ci/matlab-ukb-qsm:v2 .
+#   podman build -t ghcr.io/astewartau/qsm-ci/matlab-ukb-qsm:v3 .
 # STI Suite, the UKB code and the toolbox functions they call are baked into `recon` at compile
 # time; the image only needs the MATLAB Runtime of the compiling release, which includes the
 # toolboxes' runtime components. CI never builds this file; it pulls `image:` from algorithm.yml.

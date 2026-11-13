@@ -3,8 +3,8 @@ function recon(inp, out)
 %
 % This file is only the adapter: read the QSM-CI artifacts, call the upstream reconstruction
 % in ukb/UKBiobank_QSM_core.m, write the result. The pipeline itself is upstream's code (Wang,
-% Tendler & Miller, Oxford, Apache-2.0) with two marked edits, documented in that file and in
-% BUILD.md: N echoes instead of two, and ppm output instead of ppb.
+% Tendler & Miller, Oxford, Apache-2.0); every difference from upstream is listed in README.md
+% ("Exactly what differs from the original").
 %
 % Reads  <inp>/phase.nii.gz (radians, x,y,z,echo), mask.nii.gz, params.json
 % Writes <out>/chimap.nii.gz in ppm.
@@ -42,6 +42,13 @@ function recon(inp, out)
     if size(phase, 4) ~= numel(TEs)
         error('recon: %d phase volumes but %d echo times', size(phase, 4), numel(TEs));
     end
+
+    % Upstream's reconstruction starts from the combined phase zeroed outside its brain mask,
+    % `phase1 = mask .* angle(combined1)` (UKBiobank_QSM.m l. 158-160, just before the lifted
+    % region), and unwraps that: MRPhaseUnwrap's global Poisson solve sees no phase outside the
+    % brain. QSM-CI's phase is not masked, so it is masked here, as upstream's is. (Before v3 it
+    % was not: the unwrapping saw the raw phase over the whole volume.)
+    phase = phase .* mask;
 
     % EDIT (adapter): STI Suite's kernels index assuming even matrix dimensions (the same constraint
     % ilsqr-sti handles). UK Biobank's own 256x288x48 is even throughout, so upstream

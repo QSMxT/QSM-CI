@@ -21,7 +21,7 @@ doi: 10.1038/s41593-022-01074-w
 citation: Wang et al., Nature Neuroscience 2022
 code_url: https://git.fmrib.ox.ac.uk/cwang/uk_biobank_qsm_pipeline
 license: Apache-2.0
-image: ghcr.io/astewartau/qsm-ci/matlab-ukb-qsm@sha256:c8a50375ab0b69e8a928a07b1ecef51e533f7948c67b706434284ec6f1e3b9cf   # v2
+image: ghcr.io/astewartau/qsm-ci/matlab-ukb-qsm@sha256:7729e63a552f043e43043c5742cfcbb3a3f8d56a8f0679f2f6c67c28ea827348   # v3
 run: bash run.sh
 matlab:
   entry: recon.m
@@ -29,23 +29,21 @@ matlab:
 # Container vs the authors' code in licensed MATLAB with the real toolboxes (QSMxT/QSM-CI#300;
 # fidelity/REPORT.md). Rerun and update whenever the image changes.
 fidelity:
-  date: 2026-10-28
-  image: sha256:c8a50375ab0b69e8a928a07b1ecef51e533f7948c67b706434284ec6f1e3b9cf
+  date: 2026-11-13
+  image: sha256:7729e63a552f043e43043c5742cfcbb3a3f8d56a8f0679f2f6c67c28ea827348
   matlab: R2023b Update 5 (23.2.0.2459199), Image Processing Toolbox 23.2
   tolerance: identical   # chi and every intermediate, in silico and in vivo, 8 threads
   result: pass
   report: algorithms/ukb-qsm/fidelity/REPORT.md
+# Upstream's constants, for reference: recon.m reads no config.json, so none of them can be changed
+# (until 2026-11-13 this listed them, and a `mask_refine` switch, as if they were parameters).
 params:
 - name: t2star_ms
   default: 40
-  description: assumed T2* in ms, setting the echo weights W_i = TE_i * exp(-TE_i / T2*)
+  description: assumed T2* in ms, setting the echo weights W_i = TE_i * exp(-TE_i / T2*) (fixed)
 - name: smvsize
   default: 12
-  description: largest V-SHARP SMV kernel radius in mm
+  description: largest V-SHARP SMV kernel radius in mm (fixed)
 - name: padsize
   default: 64
-  description: zero-pad size (voxels, isotropic) used by both the Laplacian unwrap and iLSQR
-- name: mask_refine
-  default: true
-  description: apply the pipeline's own phase-variance mask trimming; set false to reconstruct
-    strictly inside the mask the dataset supplies
+  description: zero-pad size (voxels, isotropic) used by both the Laplacian unwrap and iLSQR (fixed)
