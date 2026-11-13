@@ -4,12 +4,14 @@ QSMxT/QSM-CI#300: does the `ukb-qsm` container compute what the authors' MATLAB 
 is the shared harness [`fidelity/matlab/`](../../../fidelity/matlab/README.md) with this algorithm's
 [`config.sh`](config.sh); rerun it whenever `recon.m`, its dependencies or the image change.
 
-- **Checked:** 2026-10-28, on Slurm compute nodes, 8 CPUs per job.
+- **Checked:** 2026-11-13 (v3), on Slurm compute nodes, 8 CPUs per job. (v2: 2026-10-28, identical
+  on the same cases.)
 - **Licensed MATLAB:** 23.2.0.2459199 (R2023b) Update 5, with the real toolboxes.
-- **Image checked:** `ghcr.io/astewartau/qsm-ci/matlab-ukb-qsm@sha256:c8a50375ab0b69e8a928a07b1ecef51e533f7948c67b706434284ec6f1e3b9cf` (`v2`).
+- **Image checked:** `ghcr.io/astewartau/qsm-ci/matlab-ukb-qsm@sha256:7729e63a552f043e43043c5742cfcbb3a3f8d56a8f0679f2f6c67c28ea827348` (`v3`).
   - `recon` is compiled with that licensed R2023b against the real toolboxes, with no shims.
   - It runs on the R2023b MATLAB Runtime (23.2.0.3097123 (R2023b) Update 11) under Apptainer.
-- **Previous image:** `ghcr.io/astewartau/qsm-ci/matlab-ukb-qsm@sha256:a3aeab5ff603b95288c563a0499d355d8ac564281fae221959b014f644ffa5db` (`v1`).
+- **Previous images:** `ghcr.io/astewartau/qsm-ci/matlab-ukb-qsm@sha256:c8a50375ab0b69e8a928a07b1ecef51e533f7948c67b706434284ec6f1e3b9cf` (`v2`),
+  `ghcr.io/astewartau/qsm-ci/matlab-ukb-qsm@sha256:a3aeab5ff603b95288c563a0499d355d8ac564281fae221959b014f644ffa5db` (`v1`).
 - **Cases:**
   - `sim`: QSM-CI's in-silico head (QSM Challenge 2.0 simulation: 7 T, 4 echoes, 1 mm, 164×205×205).
   - `invivo`: one EMTP travelling-head acquisition (`s005001-cbic-prisma-bridge-run1`: 3 T, 5 echoes, 1 mm, 184×256×128).
@@ -34,6 +36,14 @@ licensed runs all used 8 threads (recorded in `intermediates.json`).
 **Where the toolbox functions resolved** (`intermediates.json`): in the container, `bwareaopen`, `imclose`, `imdilate`, `imerode`, `imfill`, `padarray`, `strel` resolve to the Runtime's `toolbox/images/images`; in licensed MATLAB, to the same folders of its own installation.
 The build's `unresolvedSymbols.txt` and `mccExcludedFiles.log` list nothing, and `requiredMCRProducts.txt` lists 35000, 35002, 35003, 35010, 35117, 35180.
 
+## What changed from v2
+
+`recon.m` masks QSM-CI's phase with the dataset's brain mask before calling the lifted code, as
+upstream's `phase1 = mask .* angle(combined1)` does (README, difference 3), so `MRPhaseUnwrap` solves
+on the masked phase. Nothing else changed. On the in-vivo case (s005001 Prisma), v2's χ differs from
+v3's by NRMSE 3.6 % (r 0.9993, max |Δ| 0.13 ppm) inside the dataset mask; both trimmed masks are
+identical.
+
 ## What changed from v1
 
 `v1` was compiled with R2026a against the free Runtime, with our own re-implementations of the Image
@@ -54,6 +64,10 @@ T2*-weighted combined phase, V-SHARP's local field and mask, the final mask and 
 
 | What | Job ids |
 |---|---|
+| Compile (v3) | 32888567 |
+| Setup and pull (v3) | 32889692 |
+| sim (v3): container, real, real2, compare | 32889693, 32889694, 32889695, 32889696 |
+| invivo (v3): container, real, real2, compare | 32889697, 32889698, 32889699, 32889700 |
 | Compile | 30729323 |
 | Setup and pull | 30729572 |
 | sim: container, real, real2, compare | 30729573, 30729574, 30729575, 30729576 |
