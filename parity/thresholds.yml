@@ -531,8 +531,7 @@ pairs:
   toolbox-pipeline-ukb:
     reference: toolbox-pipeline-ukb   # UK Biobank's UKBiobank_QSM.m: the ukb-qsm image v3, fidelity pass
     candidate: toolbox-pipeline-qsmrs
-    enabled: false
-    blocked_by: https://github.com/QSMxT/QSM-CI/issues/421
+    enabled: true
     # UK Biobank's brain mask comes from its T1 pipeline, which no pipeline input can make, so both
     # sides start from the dataset's mask (the reference takes it as an input; the candidate is
     # told to use it). Everything after is compared: both phase-reliability trims, unwrapping, echo

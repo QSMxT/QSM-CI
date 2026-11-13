@@ -20,10 +20,10 @@ authors:
 code_url: https://github.com/QSMxT/QSMxT
 license: GPL-3.0
 # `qsmxt run --pipeline` (QSMxT/QSMxT#514) is in QSMxT main but in no release yet: v11.0.0 lacks it.
-# Pinned to the release candidate build the release parity run checked (QSMxT main 22e9351 with
-# QSM.rs main 8a32052, static musl, not a release). Repin to the first release that has it, then
+# Pinned to the release candidate build the release parity run checked (QSMxT main e983055 with
+# QSM.rs main 1c38ad9, static musl, not a release). Repin to the first release that has it, then
 # drop ci_skip.
-image: ghcr.io/astewartau/qsm-ci/qsmxt@sha256:c09c8a259db776cb47bd85f51f7d66125b582b3244bbcefd4a71266c1efaecfe   # candidate-22e9351
+image: ghcr.io/astewartau/qsm-ci/qsmxt@sha256:2ddfdccda30d9296c029a9b1d2833543eee3afc3a81833bf9b6d21744740a3b1   # candidate-e983055
 run: bash run.sh
 ci_skip: true   # until the image has `qsmxt run --pipeline` (see image:)
 # A parity candidate, not a method to score or list on the site: each pipeline is compared with

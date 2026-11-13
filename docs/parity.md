@@ -162,8 +162,9 @@ step. The comparison is inside the dataset's mask. The candidate is one submissi
 pipeline, `toolbox-pipeline-qsmrs` (`qsmxt run --pipeline <id>`), picked with
 `candidate_set: {pipeline: <id>}`; it is `ci_skip` until a QSMxT release has `--pipeline`. A pair
 shares one `algorithm:`, so each reference is `algorithm: toolbox-pipeline` with the toolbox as its
-`variant:` (e.g. `toolbox-pipeline-medi-cornell`), and its pair is keyed by that slug. No reference
-exists yet, so no pair is configured.
+`variant:` (e.g. `toolbox-pipeline-medi-cornell`), and its pair is keyed by that slug. The DECOMPOSE
+reference (`toolbox-pipeline-decompose-qsmci`) is QSM-CI's own implementation of the paper, not the
+authors' code.
 
 ## What is compared
 
