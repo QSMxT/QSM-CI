@@ -35,17 +35,15 @@ fidelity:
   tolerance: identical   # chi and every intermediate, in silico and in vivo, 8 threads
   result: pass
   report: algorithms/ukb-qsm/fidelity/REPORT.md
+# Upstream's constants, for reference: recon.m reads no config.json, so none of them can be changed
+# (until 2026-11-13 this listed them, and a `mask_refine` switch, as if they were parameters).
 params:
 - name: t2star_ms
   default: 40
-  description: assumed T2* in ms, setting the echo weights W_i = TE_i * exp(-TE_i / T2*)
+  description: assumed T2* in ms, setting the echo weights W_i = TE_i * exp(-TE_i / T2*) (fixed)
 - name: smvsize
   default: 12
-  description: largest V-SHARP SMV kernel radius in mm
+  description: largest V-SHARP SMV kernel radius in mm (fixed)
 - name: padsize
   default: 64
-  description: zero-pad size (voxels, isotropic) used by both the Laplacian unwrap and iLSQR
-- name: mask_refine
-  default: true
-  description: apply the pipeline's own phase-variance mask trimming; set false to reconstruct
-    strictly inside the mask the dataset supplies
+  description: zero-pad size (voxels, isotropic) used by both the Laplacian unwrap and iLSQR (fixed)

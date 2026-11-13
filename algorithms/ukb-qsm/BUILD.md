@@ -11,11 +11,12 @@ Toolbox** (no shims) and baked onto the R2023b MATLAB Runtime, the release the f
 ## What this reproduces
 
 `ukb/UKBiobank_QSM_core.m` is upstream's `UKBiobank_QSM.m` reconstruction lifted **verbatim**;
-`recon.m` is only an adapter that reads the QSM-CI artifacts and calls it. Every divergence from
-upstream carries an `% EDIT:` comment, and there are exactly two — N echoes instead of the
-hard-coded two, and ppm output (upstream's `x1000` lived in its `niftiwrite` call, which is IO and
-outside the lifted region). `ukb/UKBiobank_QSM.m.reference` is the untouched original, so the diff
-is auditable. A third output copies intermediates out for the fidelity check (lines marked
+`recon.m` is only an adapter that reads the QSM-CI artifacts and calls it. Every difference from
+upstream is listed in [README.md](README.md) ("Exactly what differs from the original"); the two
+code edits carry an `% EDIT:` comment — N echoes instead of the hard-coded two (in the lifted code)
+and even-dimension padding (in the adapter) — and `recon.m` masks the phase as upstream's is
+before it calls the lifted code (since v3). `ukb/UKBiobank_QSM.m.reference` is the untouched
+original, so the diff is auditable. A third output copies intermediates out for the fidelity check (lines marked
 `% EDIT (intermediates)`); it changes no computation.
 
 The chain, from the point where combined phase exists:
@@ -66,15 +67,16 @@ the Image Processing Toolbox functions STI Suite's pcode calls (`imclose`, `imdi
 
 ## 3. Bake the image and push
 ```bash
-podman build -t ghcr.io/astewartau/qsm-ci/matlab-ukb-qsm:v2 .   # needs ./recon from §2
-podman push  ghcr.io/astewartau/qsm-ci/matlab-ukb-qsm:v2
+podman build -t ghcr.io/astewartau/qsm-ci/matlab-ukb-qsm:v3 .   # needs ./recon from §2
+podman push  ghcr.io/astewartau/qsm-ci/matlab-ukb-qsm:v3
 ```
 Keep the package public, pin `image:` in `algorithm.yml` by the pushed digest, and rerun the
 fidelity check ([`fidelity/REPORT.md`](fidelity/REPORT.md)).
 
 Images: `v1` (R2026a Runtime, IPT shims including our own `bwareaopen`/`imfill`/`qsmci_label`, whose
 greyscale `imdilate`/`imerode` wrapped round at the volume border); `v2` (R2023b, the real toolboxes,
-no shims; see `fidelity:` in `algorithm.yml`).
+no shims); `v3` (as v2, with the phase masked before unwrapping as upstream's is; see `fidelity:`
+in `algorithm.yml`).
 
 ## Two things that bite when porting this
 
@@ -83,12 +85,11 @@ upstream never meets this; `MRPhaseUnwrap` errors on an odd dimension. `recon.m`
 dimensions before the call and crops back after — lossless for the FFT model, and it keeps the
 vendored code untouched.
 
-**`phasevariance_nonlin_v2` assumes UK Biobank's voxel geometry.** It computes a kernel offset as
-`(dim - dimX)/2`, which is only an integer for some combinations of matrix size and resolution.
-On a 1 mm isotropic phantom it warns ("Integer operands are required for colon operator") on every
-call and the reliability kernel may be misplaced. This is upstream's limitation, not the port's,
-and it is why `mask_refine` is exposed as a parameter. Reconstructions on non-UKB geometry should
-consider `mask_refine: false`.
+**`phasevariance_nonlin_v2` assumes UK Biobank's voxel geometry.** It places its kernel at
+`(dim - dimX)/2 + 1`, a half-integer on many grids (1 mm isotropic among them). MATLAB warns
+("Integer operands are required for colon operator when used as index") on every call and rounds
+the index up (measured against this image by QSM.rs's port, `utils::phase_reliability`), so the
+kernel sits half a voxel off centre there. This is upstream's code, kept as it is.
 
 ## Performance
 
