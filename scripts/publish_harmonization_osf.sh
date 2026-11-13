@@ -1,4 +1,8 @@
 #!/bin/bash
+# SUPERSEDED for new uploads by scripts/publish_harmonization_hf.py: OSF Projects take no new
+# components from 16 Nov 2026 and go read-only on 19 Feb 2027. Kept as the record of how the OSF copy
+# (which fetch_dataset.sh still falls back to) was made.
+#
 # Upload the harmonization dataset to OSF via the WaterButler API (osfclient's recursive upload
 # is broken — parent._new_file_url NoneType on nested folders).
 #

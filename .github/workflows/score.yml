@@ -253,6 +253,7 @@ jobs:
       - name: Fetch dataset (public inputs + held-out ground truth)
         env:
           OSF_TOKEN: ${{ secrets.OSF_TOKEN }}
+          HF_TOKEN: ${{ secrets.HF_READ_TOKEN || secrets.HF_TOKEN }}   # private HF copy of an input (e.g. the EMTP packs); OSF is the fallback
           OSF_FILE_INVIVO: ${{ secrets.OSF_FILE_INVIVO }}   # invivo_qsm2016.zip OSF file id (pre-flattened)
           OSF_FILE_RIDANI_3T_ISO: ${{ secrets.OSF_FILE_RIDANI_3T_ISO }}      # Ridani 3T isotropic (pre-flattened)
           OSF_FILE_RIDANI_3T_ANISO: ${{ secrets.OSF_FILE_RIDANI_3T_ANISO }}  # Ridani 3T anisotropic (pre-flattened)

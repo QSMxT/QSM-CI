@@ -177,12 +177,17 @@ jobs:
           # The harmonization project (gkemr) is public today, but it is going private until the data
           # are released; fetch_dataset.sh downloads authenticated whenever a token is present.
           OSF_TOKEN: ${{ secrets.OSF_TOKEN }}
+          HF_TOKEN: ${{ secrets.HF_READ_TOKEN || secrets.HF_TOKEN }}   # private HF copy of an input (e.g. the EMTP packs); OSF is the fallback
         run: |
           python3 - <<'PY' | while read -r ph path; do scripts/fetch_dataset.sh "$ph" "$path"; done
           import json
           reg = json.load(open('scripts/datasets.json'))
-          # the repro track's registration target (repro_eval.DEFAULT_TARGET)
-          print('cima-bridge-run1', reg['cima-bridge-run1']['path'])
+          # Every subject's registration target (`repro_target: true`, repro_eval.subject_targets):
+          # `register --target-only` builds one frame per subject, so it needs all of them, not just
+          # the MGH pilot's.
+          for k, v in reg.items():
+              if v.get('track') == 'repro' and v.get('active') and v.get('repro_target'):
+                  print(k, v['path'])
           PY
       - name: Build reference frame (target grid + SynthSeg dseg)
         run: |
@@ -354,6 +359,7 @@ jobs:
           # Tokenless works only while gkemr is public; with the token the download keeps working once
           # it is private (scripts/fetch_dataset.sh).
           OSF_TOKEN: ${{ secrets.OSF_TOKEN }}
+          HF_TOKEN: ${{ secrets.HF_READ_TOKEN || secrets.HF_TOKEN }}   # private HF copy of an input (e.g. the EMTP packs); OSF is the fallback
           OSF_ZIP: .osfcache/${{ matrix.task.phantom }}.zip
           DS_PATH: ${{ steps.ds.outputs.path }}
         run: scripts/fetch_dataset.sh "$PHANTOM" "$DS_PATH"
