@@ -244,9 +244,15 @@ pairs:
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
-        # Measured: NRMSE 0.01666 %, r 1.000000, max |Δ| 1.65e-04 ppm, p99 |Δ| 2.1e-05 ppm.
-        chimap: { nrmse_max: 0.519, correlation_min: 0.989, max_abs_max: 0.000207, p99_abs_max: 2.68e-05 }
-        measured: { main: "run 41256314678: QSMxT main a78074c, QSM.rs main afed56b (limits)" }
+        # Re-baselined on QSMxT v12.0.0 (2026-11-14): QSM-CI #416 (92d6c8a) made vsharp-qsmrs not
+        # deconvolve by default, so this chained input (reference_prefix laplacian-qsmrs ->
+        # vsharp-qsmrs) changed. The v11 and v12 field maps are bit-identical and the inversion
+        # is unchanged.
+        # Was NRMSE 0.01666 %, max |Δ| 1.65e-04 ppm, p99 |Δ| 2.1e-05 ppm on the old input (run
+        # 41256314678; limits 0.519 / 0.000207 / 2.68e-05). Measured: NRMSE 0.02599 %, r 1.000000,
+        # max |Δ| 2.33e-04 ppm, p99 |Δ| 2.7e-05 ppm.
+        chimap: { nrmse_max: 0.529, correlation_min: 0.989, max_abs_max: 0.000292, p99_abs_max: 3.42e-05 }
+        measured: { main: "run 43587544111: QSMxT v12.0.0 2c1485a, QSM.rs v0.42.0 1c38ad9, baseline on the v12 chained input (limits)" }
   vsharp:
     reference: vsharp-sti
     candidate: vsharp-qsmrs
@@ -323,9 +329,15 @@ pairs:
       s002001-kki-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
-        # Measured: NRMSE 0.002147 % (6.68 % with STI's GUI padding, run 40605505892).
-        chimap: { nrmse_max: 0.503, correlation_min: 0.989, max_abs_max: 1.64e-05, p99_abs_max: 3.45e-06 }
-        measured: { main: "run 41019608126: QSMxT main 2533f94, QSM.rs main 7f8271e (limits)" }
+        # Re-baselined on QSMxT v12.0.0 (2026-11-14): QSM-CI #416 (92d6c8a) made vsharp-qsmrs not
+        # deconvolve by default, so this chained input (reference_prefix laplacian-qsmrs ->
+        # vsharp-qsmrs) changed. The v11 and v12 field maps are bit-identical and the inversion
+        # is unchanged.
+        # Was NRMSE 0.002147 % on the old input (run 41019608126; limits 0.503 / 1.64e-05 / 3.45e-06;
+        # 6.68 % with STI's GUI padding, run 40605505892). Measured: NRMSE 0.002085 %, r 1.000000,
+        # max |Δ| 1.26e-05 ppm, p99 |Δ| 2.3e-06 ppm.
+        chimap: { nrmse_max: 0.503, correlation_min: 0.989, max_abs_max: 1.58e-05, p99_abs_max: 2.94e-06 }
+        measured: { main: "run 43587547674: QSMxT v12.0.0 2c1485a, QSM.rs v0.42.0 1c38ad9, baseline on the v12 chained input (limits)" }
   medi:
     reference: medi-cornell
     candidate: medi-qsmrs
@@ -352,8 +364,14 @@ pairs:
         # da928e0) came from a different case: both sides take the local field and mask of the
         # QSM.rs prefix, and V-SHARP's ball (astewartau/QSM.rs#332) and STI crop (#361) changed both
         # since. Still rounding level (r 1.000000, NRMSE 0.03 %); sim, which has no prefix, is unchanged.
-        chimap: { nrmse_max: 0.531, correlation_min: 0.989, max_abs_max: 0.0016, p99_abs_max: 4.72e-05 }
-        measured: { main: "runs 41002894810, 41019517030: QSMxT main 2533f94, QSM.rs df84af4 / main 7f8271e; medi-cornell v4 sha256:b81527b0… (limits)" }
+        # Re-baselined on QSMxT v12.0.0 (2026-11-14): QSM-CI #416 (92d6c8a) made vsharp-qsmrs not
+        # deconvolve by default, so this chained input (reference_prefix laplacian-qsmrs ->
+        # vsharp-qsmrs) changed. The v11 and v12 field maps are bit-identical and the inversion
+        # is unchanged.
+        # Limits on the old input were 0.531 / 0.0016 / 4.72e-05 (runs 41002894810, 41019517030).
+        # Measured: NRMSE 0.02066 %, r 1.000000, max |Δ| 0.00114 ppm, p99 |Δ| 2.3e-05 ppm.
+        chimap: { nrmse_max: 0.523, correlation_min: 0.989, max_abs_max: 0.00143, p99_abs_max: 2.84e-05 }
+        measured: { main: "run 43587550617: QSMxT v12.0.0 2c1485a, QSM.rs v0.42.0 1c38ad9; medi-cornell v4 sha256:b81527b0…, baseline on the v12 chained input (limits)" }
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
 
