@@ -133,8 +133,8 @@ def test_scorer_argv_gives_a_pipeline_an_output_directory(pipeline, tmp_path, mo
 def test_candidate_is_a_parity_only_pipeline_submission():
     meta = yaml.safe_load((CANDIDATE / "algorithm.yml").read_text())
     assert meta["stage"] == "pipeline" and meta["source"] == "qsmrs"
-    # never scored or listed: the pinned qsmxt has no --pipeline, and it is a parity candidate
-    assert meta.get("ci_skip") is True and meta.get("parity_only") is True
+    # never scored or listed: it is a parity candidate (the pinned qsmxt, v12.0.0, has --pipeline)
+    assert not meta.get("ci_skip") and meta.get("parity_only") is True
     # `pipeline` picks the toolbox; `dataset_mask` gives it the dataset's mask (UK Biobank's pair)
     assert [p["name"] for p in meta["parameters"]] == ["pipeline", "dataset_mask"]
 
