@@ -12,8 +12,8 @@ The latest QSMxT release against each verified original. A release does not chan
 |---|---|---|---|---|---|---|---|
 | `qsmart` | `qsmart-matlab` → `qsmart-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-14](https://github.com/QSMxT/QSM-CI/actions/runs/43555783179) | v0.42.0 `1c38ad9` | ✅ pass | 0.7794% | ✅ current |
 |  |  | sim | [2026-11-14](https://github.com/QSMxT/QSM-CI/actions/runs/43555783179) | v0.42.0 `1c38ad9` | ✅ pass | 0.3588% | ✅ current |
-| `ilsqr` | `ilsqr-sti` → `ilsqr-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-14](https://github.com/QSMxT/QSM-CI/actions/runs/43555783179) | v0.42.0 `1c38ad9` | ❌ fail | 0.02599% | ✅ current |
-|  |  | sim | [2026-11-14](https://github.com/QSMxT/QSM-CI/actions/runs/43555783179) | v0.42.0 `1c38ad9` | ❌ error | — | ⚠️ stale: the run against v12.0.0 ended without a result |
+| `ilsqr` | `ilsqr-sti` → `ilsqr-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-14](https://github.com/QSMxT/QSM-CI/actions/runs/43568313828) | v0.42.0 `1c38ad9` | ❌ fail | 0.02599% | ✅ current |
+|  |  | sim | [2026-11-14](https://github.com/QSMxT/QSM-CI/actions/runs/43568313828) | v0.42.0 `1c38ad9` | ✅ pass | 0.002378% | ✅ current |
 | `vsharp` | `vsharp-sti` → `vsharp-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-14](https://github.com/QSMxT/QSM-CI/actions/runs/43555783179) | v0.42.0 `1c38ad9` | ✅ pass | 0.0002207% | ✅ current |
 |  |  | sim | [2026-11-14](https://github.com/QSMxT/QSM-CI/actions/runs/43555783179) | v0.42.0 `1c38ad9` | ✅ pass | 0.0009001% | ✅ current |
 | `iharperella` | `iharperella-sti` → `iharperella-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-14](https://github.com/QSMxT/QSM-CI/actions/runs/43555783179) | v0.42.0 `1c38ad9` | ⚪ not in v12.0.0 | — | ✅ current |
@@ -117,12 +117,6 @@ The latest QSMxT release against each verified original. A release does not chan
 |  |  | sim | [2026-11-14](https://github.com/QSMxT/QSM-CI/actions/runs/43555783179) | v0.42.0 `1c38ad9` | ✅ pass | 0.0007665% | ✅ current |
 | `tfi` | `tfi-cornell` → `tfi-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-14](https://github.com/QSMxT/QSM-CI/actions/runs/43555783179) | v0.42.0 `1c38ad9` | ✅ pass | 2.485% | ✅ current |
 |  |  | sim | [2026-11-14](https://github.com/QSMxT/QSM-CI/actions/runs/43555783179) | v0.42.0 `1c38ad9` | ✅ pass | 3.606% | ✅ current |
-
-Run the flagged pairs against v12.0.0:
-
-```bash
-gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=ilsqr -f dataset=configured -f qsmxt_release=v12.0.0
-```
 
 ## Development: QSMxT main × QSM.rs main
 

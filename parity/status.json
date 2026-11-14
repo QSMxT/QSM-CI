@@ -18,9 +18,7 @@
     "version": "0.42.0",
     "commit": "1c38ad9a79ed6f1229df8b10b310547974c5e746"
    },
-   "stale": [
-    "ilsqr"
-   ],
+   "stale": [],
    "rerun": [],
    "pairs": [
     {
@@ -93,15 +91,15 @@
      "reference": "ilsqr-sti",
      "candidate": "ilsqr-qsmrs",
      "enabled": true,
-     "state": "stale",
+     "state": "current",
      "anchor": "pair-ilsqr",
      "datasets": [
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-14T09:48:47Z",
+        "date": "2026-11-14T10:05:11Z",
         "result": "fail",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/43555783179",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/43568313828",
         "qsmrs": {
          "ref": null,
          "commit": "1c38ad9a79ed6f1229df8b10b310547974c5e746",
@@ -124,9 +122,9 @@
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-14T09:48:47Z",
-        "result": "error",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/43555783179",
+        "date": "2026-11-14T10:05:11Z",
+        "result": "pass",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/43568313828",
         "qsmrs": {
          "ref": null,
          "commit": "1c38ad9a79ed6f1229df8b10b310547974c5e746",
@@ -135,21 +133,17 @@
         "qsmxt": {
          "commit": "2c1485ad627375ba5aa1a3fc3c191c66c79bc0ae"
         },
-        "nrmse": null,
-        "max_abs": null,
-        "correlation": null,
+        "nrmse": 0.0023784845504688378,
+        "max_abs": 8.988380432128906e-05,
+        "correlation": 0.9999999999993627,
         "dice": null,
-        "release": "v12.0.0",
-        "why": "no comparison: the job failed or was cancelled before `compare` ran"
+        "release": "v12.0.0"
        },
        "rerun": false,
-       "stale": true,
-       "reasons": [
-        "the run against v12.0.0 ended without a result"
-       ]
+       "stale": false,
+       "reasons": []
       }
      ],
-     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=ilsqr -f dataset=configured -f qsmxt_release=v12.0.0",
      "badge": {
       "kind": "failing",
       "message": "failing \u00b7 v12.0.0",
@@ -10621,7 +10615,7 @@
   "ilsqr": [
    {
     "release": "v12.0.0",
-    "date": "2026-11-14T09:48:47Z",
+    "date": "2026-11-14T10:05:11Z",
     "qsmxt": {
      "ref": "v12.0.0",
      "commit": "2c1485ad627375ba5aa1a3fc3c191c66c79bc0ae"
@@ -10635,9 +10629,9 @@
      {
       "dataset": "s002001-kki-achieva-bridge-run1",
       "last": {
-       "date": "2026-11-14T09:48:47Z",
+       "date": "2026-11-14T10:05:11Z",
        "result": "fail",
-       "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/43555783179",
+       "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/43568313828",
        "qsmrs": {
         "ref": null,
         "commit": "1c38ad9a79ed6f1229df8b10b310547974c5e746",
@@ -10657,9 +10651,9 @@
      {
       "dataset": "sim",
       "last": {
-       "date": "2026-11-14T09:48:47Z",
-       "result": "error",
-       "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/43555783179",
+       "date": "2026-11-14T10:05:11Z",
+       "result": "pass",
+       "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/43568313828",
        "qsmrs": {
         "ref": null,
         "commit": "1c38ad9a79ed6f1229df8b10b310547974c5e746",
@@ -10668,12 +10662,11 @@
        "qsmxt": {
         "commit": "2c1485ad627375ba5aa1a3fc3c191c66c79bc0ae"
        },
-       "nrmse": null,
-       "max_abs": null,
-       "correlation": null,
+       "nrmse": 0.0023784845504688378,
+       "max_abs": 8.988380432128906e-05,
+       "correlation": 0.9999999999993627,
        "dice": null,
-       "release": "v12.0.0",
-       "why": "no comparison: the job failed or was cancelled before `compare` ran"
+       "release": "v12.0.0"
       }
      }
     ],
