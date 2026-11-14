@@ -126,6 +126,38 @@ def test_evaluate_intermediate_limit_exceeded_fails():
     assert not v["ok"] and v["maps"]["vessel_mask"]["status"] == "fail"
 
 
+def test_evaluate_intermediate_limits_at_the_dataset_level_fail_loudly():
+    # `mask: {dice_min}` beside the finals of a pair whose final is chimap was never applied.
+    res = {"chimap": {"kind": "continuous", "nrmse": 0.1},
+           "mask": {"kind": "binary", "dice": 1.0}}
+    v = parity.evaluate(res, {"chimap": {"nrmse_max": 1}, "mask": {"dice_min": 0.99}}, "chimap")
+    assert not v["ok"] and v["maps"]["mask"]["status"] == "fail" and v["maps"]["mask"]["misplaced"]
+    assert v["maps"]["mask"]["checks"][0]["ok"]       # the value itself passes; the place is wrong
+    rep = parity.render_report(algorithm="p", phantom="sim", reference="r", candidate="c",
+                               verdict=v, baseline=False, unmatched={}, provenance={})
+    assert "its limits go under `intermediates:`" in rep
+    # under intermediates: they apply
+    v = parity.evaluate(res, {"chimap": {"nrmse_max": 1},
+                              "intermediates": {"mask": {"dice_min": 0.99}}}, "chimap")
+    assert v["ok"] and v["maps"]["mask"]["status"] == "pass"
+    v = parity.evaluate({**res, "mask": {"kind": "binary", "dice": 0.9}},
+                        {"chimap": {"nrmse_max": 1}, "intermediates": {"mask": {"dice_min": 0.99}}},
+                        "chimap")
+    assert not v["ok"] and v["maps"]["mask"]["status"] == "fail"
+    # a brain-extraction pair's final IS the mask: dataset level is right there
+    v = parity.evaluate({"mask": res["mask"]}, {"mask": {"dice_min": 0.99}}, "mask")
+    assert v["ok"]
+
+
+def test_real_toolbox_pairs_hold_their_mask_dice_as_an_intermediate():
+    th = parity.load_thresholds()
+    for name, c in th.items():
+        if not name.startswith("toolbox-pipeline-"):
+            continue
+        for ph, ds in (c.get("datasets") or {}).items():
+            assert "mask" not in ds, f"{name}/{ph}: mask limits belong under intermediates:"
+
+
 def test_evaluate_intermediates_only_reports_the_final_and_needs_an_intermediate_limit():
     res = {"totalfield": {"kind": "continuous", "nrmse": 80.0},
            "r2star": {"kind": "continuous", "nrmse": 0.5}}
@@ -488,7 +520,7 @@ def test_cli_image_override_replaces_the_pinned_image(tmp_path, monkeypatch):
     from qsm_ci import runner
     seen = {}
 
-    def fake_run(algo, idir, odir, rn, log, timeout=None, intermediates=False):
+    def fake_run(algo, idir, odir, rn, log, timeout=None, intermediates=False, env=None):
         seen.update(algo)
         odir.mkdir(parents=True, exist_ok=True)
         import shutil
@@ -567,6 +599,114 @@ def test_run_side_sets_only_the_pairs_own_method(tmp_path, monkeypatch):
     assert "--set" not in calls[0]
     assert calls[1][calls[1].index("--set") + 1] == "threshold=0.2"
     assert prov["steps"][1]["set"] == {"threshold": 0.2} and "set" not in prov["steps"][0]
+
+
+def test_side_env_dataset_wins_and_is_strings():
+    cfg = {"reference_env": {"A": 1, "B": "x"},
+           "datasets": {"kki": {"reference_env": {"A": "2"}}}}
+    assert parity.side_env(cfg, "reference", "kki") == {"A": "2", "B": "x"}
+    assert parity.side_env(cfg, "reference", "sim") == {"A": "1", "B": "x"}
+    assert parity.side_env(cfg, "candidate", "kki") == {}
+
+
+def test_run_side_passes_env_only_to_the_pairs_own_method(tmp_path, monkeypatch):
+    calls = []
+    monkeypatch.setattr(parity.subprocess, "run", _fake_qsmci(calls))
+    ds = _dipole_ds(tmp_path)
+    _save(ds / "groundtruth" / "totalfield.nii.gz", np.zeros((4, 4, 4)))
+    prov = parity.run_side(["vsharp-qsmrs", "tkd-qsmrs"], ds, tmp_path / "w", "docker",
+                           env={"DECOMPOSE_CROPBOX": "32"}, log=lambda *_: None)
+    assert "--env" not in calls[0]
+    assert calls[1][calls[1].index("--env") + 1] == "DECOMPOSE_CROPBOX=32"
+    assert prov["steps"][1]["env"] == {"DECOMPOSE_CROPBOX": "32"} and "env" not in prov["steps"][0]
+
+
+def test_cmd_run_gives_reference_env_to_the_reference_only(tmp_path, monkeypatch):
+    seen = {}
+
+    def fake_run_side(chain, dataset, out, runner, **kw):
+        seen[out.name] = kw.get("env")
+        return {}
+    monkeypatch.setattr(parity, "run_side", fake_run_side)
+    t = tmp_path / "t.yml"
+    t.write_text(yaml.safe_dump({"pairs": {"p": {
+        "reference": "r", "candidate": "c", "enabled": True,
+        "datasets": {"sim": {"reference_env": {"DECOMPOSE_CROPBOX": "32"}}}}}}))
+    monkeypatch.setattr(parity, "_manifests", lambda *a, **k: {
+        "r": {"algorithm": "x", "source": "o"}, "c": {"algorithm": "x", "source": "qsmrs"}})
+    rc = parity.main(["--thresholds", str(t), "run", "--algorithm", "p", "--phantom", "sim",
+                      "--dataset", str(tmp_path), "--work", str(tmp_path / "w")])
+    assert rc == 0
+    assert seen == {"reference": {"DECOMPOSE_CROPBOX": "32"}, "candidate": {}}
+
+
+def test_cli_env_reaches_the_method(tmp_path):
+    from qsm_ci import runner
+    d = tmp_path / "env-bfr"
+    d.mkdir()
+    (d / "algorithm.yml").write_text("name: Env BFR\nslug: env-bfr\nstage: bfr\nimage: bash:latest\n"
+                                     "run: bash run.sh\n")
+    (d / "run.sh").write_text('set -euo pipefail\nIN="$1"; OUT="$2"\n'
+                              'cp "$IN/totalfield.nii.gz" "$OUT/localfield.nii.gz"\n'
+                              f'echo "$DECOMPOSE_CROPBOX" > {tmp_path}/cropbox.txt\n')
+    rc = runner.run_command([str(d), *_bfr_inputs(tmp_path), "--env", "DECOMPOSE_CROPBOX=32"],
+                            log=lambda *_: None)
+    assert rc == 0
+    assert (tmp_path / "cropbox.txt").read_text().strip() == "32"
+    with pytest.raises(SystemExit):
+        runner.run_command([str(d), *_bfr_inputs(tmp_path), "--env", "NOEQUALS"], log=lambda *_: None)
+
+
+def test_central_box_matches_the_decompose_reference():
+    # recon.m: c = round(N/2), indices max(1, c-h):min(N, c+h), h = floor(n/2) (1-based). The
+    # 2026-11-10 limits were measured in [75:108, 111:144, 47:80] on the 184×256×128 volume.
+    b = parity.central_box((184, 256, 128), 32)
+    want = np.zeros((184, 256, 128), bool)
+    want[75:108, 111:144, 47:80] = True
+    assert np.array_equal(b, want) and b.sum() == 33 ** 3
+    # odd sizes round the centre up (MATLAB round(2.5) = 3), and the box is cut at the edges
+    b = parity.central_box((5, 7, 3, 2), 4)
+    assert b.shape == (5, 7, 3)
+    assert np.argwhere(b).min(0).tolist() == [0, 1, 0] and np.argwhere(b).max(0).tolist() == [4, 5, 2]
+    with pytest.raises(ValueError):
+        parity.central_box((4, 4, 4), 0)
+
+
+def test_compare_box_restricts_every_map_on_both_sides(tmp_path):
+    ds, work = _work(tmp_path)
+    # a difference outside the central box (and inside the dataset mask) …
+    for f in ("chimap.nii.gz", "intermediates/vessel_mask.nii.gz"):
+        a = np.asarray(nib.load(str(work / "candidate" / f)).dataobj, float)
+        a[4, 4, 4] += 5 if f == "chimap.nii.gz" else 1
+        _save(work / "candidate" / f, a)
+    lim = {"chimap": {"max_abs_max": 1e-6}, "intermediates": {"vessel_mask": {"dice_min": 0.999}}}
+    rc, _, js = _compare(tmp_path, ds, work, _thresholds(tmp_path, lim))
+    assert rc == 1 and js["maps"]["chimap"]["metrics"]["max_abs"] > 4
+    assert "compare_box" not in js
+    # … is outside the compared region with compare_box: 2 (the central 3³ box, [1:4] on 6³) …
+    rc, rep, js = _compare(tmp_path, ds, work, _thresholds(tmp_path, {**lim, "compare_box": 2}))
+    assert rc == 0 and js["ok"] and js["compare_box"] == 2
+    assert js["maps"]["chimap"]["metrics"]["voxels"] == 3 ** 3   # [1:4]³ ∩ mask [1:5]³
+    assert js["maps"]["vessel_mask"]["metrics"]["voxels"] == 27
+    assert "central 3³ box" in rep
+    # compare_box is a setting, not a map's limits
+    cfg = {"datasets": {"sim": {"compare_box": 2, "reference_env": {"A": "1"}, "chimap": {}}}}
+    assert parity.final_maps(cfg, "sim") == ["chimap"]
+
+
+def test_real_decompose_pair_crops_the_reference_and_the_comparison():
+    cfg = parity.load_thresholds()["toolbox-pipeline-decompose"]
+    ph = "s005001-cbic-prisma-bridge-run1"
+    assert parity.side_env(cfg, "reference", ph) == {"DECOMPOSE_CROPBOX": "32"}
+    assert parity.side_env(cfg, "candidate", ph) == {}
+    assert parity.compare_box(cfg, ph) == 32
+    # every other pair runs and compares as before
+    for name, c in parity.load_thresholds().items():
+        if name == "toolbox-pipeline-decompose":
+            continue
+        for p in (c.get("datasets") or {}):
+            assert parity.compare_box(c, p) is None
+            assert parity.side_env(c, "reference", p) == parity.side_env(c, "candidate", p) == {}
 
 
 def _qsmart_ds(tmp_path):

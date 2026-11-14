@@ -425,6 +425,9 @@ def _build_run_parser(slug: str, algo: dict) -> argparse.ArgumentParser:
                    help="docker/podman/apptainer run the image; local runs run.sh on the host")
     p.add_argument("--set", action="append", default=[], dest="overrides", metavar="NAME=VALUE",
                    help="override a method parameter (repeatable); valid names listed below")
+    p.add_argument("--env", action="append", default=[], dest="env", metavar="NAME=VALUE",
+                   help="set an environment variable in the method's run (repeatable), for a "
+                        "switch its run.sh or code reads, e.g. DECOMPOSE_CROPBOX=32")
     p.add_argument("--image", metavar="REF",
                    help="run in this image instead of algorithm.yml's image: (docker/podman/"
                         "apptainer); a local tag is used without pulling. For trying a method on "
@@ -443,7 +446,7 @@ def _build_run_parser(slug: str, algo: dict) -> argparse.ArgumentParser:
 # `./my-method`, not `local`. Artifact flags and --te are nargs="+" (swallow every following
 # non-flag token); --b0-dir/--voxel-size take three; the rest take one. `--opt=value` takes none.
 _ONE_VALUE = {"--runner", "--set", "-o", "--out", "--truth", "--seg", "--params", "--field-strength",
-              "--b0", "--timeout", "--intermediates", "--image"}
+              "--b0", "--timeout", "--intermediates", "--image", "--env"}
 _THREE_VALUES = {"--b0-dir", "--voxel-size"}
 _GREEDY = {"--te"} | {f"--{a}" for a in ARTIFACT_FILE}
 
@@ -489,6 +492,18 @@ def _coerce(v: str):
     if v.lower() in ("true", "false"):
         return v.lower() == "true"
     return v
+
+
+def _env_items(items: list) -> dict:
+    """`--env NAME=VALUE` items as {NAME: VALUE}."""
+    import re
+    out = {}
+    for item in items or []:
+        k, sep, v = item.partition("=")
+        if not sep or not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", k):
+            raise SystemExit(f"--env expects NAME=VALUE, got '{item}'")
+        out[k] = v
+    return out
 
 
 def _overrides(algo: dict, items: list) -> dict:
@@ -548,6 +563,7 @@ def run_command(argv, log=print) -> int:
     args = parser.parse_args(argv)
 
     cfg = _overrides(algo, args.overrides)  # validate --set up front, before any work
+    env = _env_items(args.env)
 
     if not check_runner(args.runner):
         hint = ("Install/start Docker" if args.runner == "docker" else f"'{args.runner}' not found")
@@ -648,7 +664,7 @@ def run_command(argv, log=print) -> int:
         try:
             runtime = _run_container(algo, idir, odir, args.runner, log,
                                      timeout=timeout_s(getattr(args, "timeout", None)),
-                                     intermediates=bool(args.intermediates))
+                                     intermediates=bool(args.intermediates), env=env)
         except RunTimeout as e:
             # The container/process tree is already dead (_run_container kills it before raising),
             # so this is just the exit path: non-zero, with the reason on one line. The scorer turns

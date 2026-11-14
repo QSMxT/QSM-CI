@@ -86,3 +86,14 @@ def test_discovery_carries_the_optional_list(pipeline):
     algos = {a["slug"]: a for a in pipeline.discover_algorithms(track="chisep")}
     assert algos["ridani-null-qsmci"]["optional"] == ["dseg"]
     assert all("dseg" not in a["consumes"] for s, a in algos.items() if s != "ridani-null-qsmci")
+
+
+def test_toolbox_pipeline_r2prime_is_optional(pipeline):
+    # r2prime is a χ-separation contract input, not a pipeline's: an in-vivo dataset without one
+    # still runs the pipeline candidate (parity run 43230142775, toolbox-pipeline-sti).
+    slugs = {"toolbox-pipeline-qsmrs", "toolbox-pipeline-chisep", "amp-pe-qsmrs"}
+    algos = {a["slug"]: a for a in pipeline.discover_algorithms(include=slugs)}
+    # mask: the dataset's brain mask, read only with `dataset_mask` (the UK Biobank pair, #443).
+    assert algos["toolbox-pipeline-qsmrs"]["optional"] == ["r2prime", "mask"]
+    assert algos["toolbox-pipeline-chisep"]["optional"] == ["r2prime"]
+    assert "magnitude" not in algos["amp-pe-qsmrs"]["optional"]   # magnitude stays required

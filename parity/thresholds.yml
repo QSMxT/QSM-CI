@@ -38,6 +38,9 @@
 #   candidate_set:    prefix steps), at the pair level or per dataset (the dataset's win): how a
 #                     pair runs both sides with matched settings where their defaults differ (the
 #                     Julia submissions' README "QSM.rs-matched" column). Changing one re-baselines.
+#   reference_env:    environment variables for the reference / candidate method's run (`qsm-ci run
+#   candidate_env:    --env`), at the pair level or per dataset (the dataset's win): a switch the
+#                     original's code reads that is no `--set` parameter (DECOMPOSE_CROPBOX).
 #   reference_names:  {native: compared name} for intermediates the reference writes under other
 #   candidate_names:  names (CONTRACT.md, "Intermediates"); {name: x, complement: true} also turns a
 #                     mask into its complement inside the dataset mask; {name: x, clip_min: v}
@@ -57,6 +60,9 @@
 #                     exactly what the original computed and only the steps after it are compared.
 #                     Changing it changes what is measured: re-baseline.
 #     <side>_prefix:  slugs run before that side when the dataset lacks the boundary it consumes.
+#     compare_box:    n: compare every map (finals and intermediates, both sides) only inside the
+#                     dataset mask ∩ the central (n+1)³ box (parity.py central_box), e.g. where a
+#                     reference fits only that box (DECOMPOSE_CROPBOX=n).
 #     measured:       the runs the limits came from, and the image each side ran. Informational.
 #
 # Staleness (`parity.py status`, docs/parity.md): an enabled pair's last check on a dataset is stale
@@ -358,40 +364,49 @@ pairs:
   toolbox-pipeline-medi-cornell:
     reference: toolbox-pipeline-medi-cornell   # MEDI 2024.11.26 README.m chain; image v2, fidelity pass
     candidate: toolbox-pipeline-qsmrs
-    enabled: false
-    blocked_by: https://github.com/QSMxT/QSM-CI/issues/421
+    enabled: true
     candidate_set: { pipeline: medi-toolbox }
     qsmrs_paths: [src/pipeline/]
     qsmxt_paths: [crates/qsmxt-engine/src/]
     datasets:
-      sim: {}                  # qsm-forward: no ImagingFrequency, so both sides use γ·B0
-      prisma-bridge-run1:      # Siemens Prisma, ImagingFrequency from the exam card
-        # Deterministic, so tight (2026-11-11, inside the dataset mask): χ NRMSE 0.0029 %, max |Δ|
-        # 7.4e-5 ppm, p99 4.8e-6 ppm; mask identical; total and local field ≤ 1.1e-5 ppm.
-        mask: { dice_min: 0.9999 }
-        chimap: { nrmse_max: 0.01, correlation_min: 0.9999, max_abs_max: 0.00015, p99_abs_max: 0.00001 }
+      # sim: in-vivo limits only for this release (decision 2026-11-12); sim not measured yet
+      # The acquisition these limits were measured on (OSF v2: ImagingFrequency, Manufacturer, the
+      # fidelity cases' R2′; QSM-CI#437). Was keyed to prisma-bridge-run1 (MGH), a different scan.
+      s005001-cbic-prisma-bridge-run1:      # Siemens Prisma, ImagingFrequency from its dcm2niix sidecar
+        # 2026-11-11, inside the dataset mask, against the reference run locally at 8 threads: χ NRMSE
+        # 0.0029 %, max |Δ| 7.4e-5 ppm, p99 4.8e-6 ppm; mask identical; total and local field ≤ 1.1e-5 ppm.
+        # Limits from the reference's own run-to-run spread, not from that run (decision 18, QSMART's
+        # precedent; QSM-CI#437, 2026-11-12). The candidate is deterministic: CI's χ equals the local
+        # run to 1.2e-7 ppm. The reference image (v2, same inputs) is deterministic per machine and
+        # thread count, but not across them. Its local field moves by up to 4e-5 ppm (PDF's
+        # multithreaded FFT reductions), and MEDI's Gauss-Newton amplifies that in χ. Eight reference
+        # runs (local 8 threads ×4, local taskset 4 CPUs ×3, CI 4 vCPU ×1): max spread χ NRMSE 0.0216 %,
+        # max |Δ| 6.0e-4 ppm, p99 3.6e-5 ppm (CI vs local 8 threads). Candidate vs the local 4-thread
+        # reference 0.0084 %, vs CI's 0.0244 % (max 6.7e-4, p99 4.1e-5). Limits just above that.
+        intermediates: { mask: { dice_min: 0.9999 } }
+        chimap: { nrmse_max: 0.03, correlation_min: 0.9999, max_abs_max: 0.0008, p99_abs_max: 0.00005 }
         measured:
           main: "local run 2026-11-11: QSMxT#534 (qsm-core 0428c09) vs reference v2 sha256:b3f06e4b…, dataset mask (limits)"
   toolbox-pipeline-chisep-ilsqr:
     reference: toolbox-pipeline-chisep   # χ-separation toolbox v1.1.3 Chisep_script.m; image v3, fidelity pass
     candidate: toolbox-pipeline-qsmrs
-    enabled: false
-    blocked_by: https://github.com/QSMxT/QSM-CI/issues/421
+    enabled: true
     reference_set: { method: ilsqr }
     candidate_set: { pipeline: chi-sep-ilsqr }
     qsmrs_paths: [src/pipeline/, src/separation/]
     qsmxt_paths: [crates/qsmxt-engine/src/]
     datasets:
-      # qsm-forward, 3 T, with a measured-style R2′ input. It has no Manufacturer: the script runs
+      # meso-3t (qsm-forward, 3 T, with a measured-style R2′ input) has no Manufacturer: the script runs
       # its Tukey 0.4 regardless, where QSMxT's rules need a known manufacturer.
-      meso-3t: {}
-      prisma-bridge-run1:
+      # meso-3t: in-vivo limits only for this release (decision 2026-11-12); not measured yet
+      # The acquisition these limits were measured on (as above; QSM-CI#437).
+      s005001-cbic-prisma-bridge-run1:
         # Deterministic, so tight (2026-11-11, inside the dataset mask): χ+ / |χ−| NRMSE 0.0008 % /
         # 0.0011 %, max |Δ| 4.9e-5 / 8.2e-5 ppm; mask identical. The QSM (chimap) is the toolbox's
         # iLSQR either side. It was 0.23 % / max 2.5e-4 ppm while QSMxT mean-referenced it; with
         # rule chi-sep.reference-none (QSM.rs#459, QSMxT#538) it stays as iLSQR returns it, as the
         # script keeps it: NRMSE 0.0032 %, max |Δ| 1.6e-4 ppm, p99 4.0e-6 ppm (QSMxT#538 build).
-        mask: { dice_min: 0.9999 }
+        intermediates: { mask: { dice_min: 0.9999 } }
         chi-para: { nrmse_max: 0.01, correlation_min: 0.9999, max_abs_max: 0.0001, p99_abs_max: 0.000003 }
         chi-dia: { nrmse_max: 0.01, correlation_min: 0.9999, max_abs_max: 0.00017, p99_abs_max: 0.000003 }
         chimap: { nrmse_max: 0.01, correlation_min: 0.9999, max_abs_max: 0.0003, p99_abs_max: 0.00001 }
@@ -401,20 +416,20 @@ pairs:
   toolbox-pipeline-chisep-medi:
     reference: toolbox-pipeline-chisep
     candidate: toolbox-pipeline-qsmrs
-    enabled: false
-    blocked_by: https://github.com/QSMxT/QSM-CI/issues/421
+    enabled: true
     reference_set: { method: medi }
     candidate_set: { pipeline: chi-sep-medi }
     qsmrs_paths: [src/pipeline/, src/separation/, src/utils/r2star.rs]
     qsmxt_paths: [crates/qsmxt-engine/src/]
     datasets:
-      meso-3t: {}
-      prisma-bridge-run1:
+      # meso-3t: in-vivo limits only for this release (decision 2026-11-12); not measured yet
+      # The acquisition these limits were measured on (as above; QSM-CI#437).
+      s005001-cbic-prisma-bridge-run1:
         # Deterministic, so tight. Before QSM.rs#458 / QSMxT#534 (CSF mask from ARLO R2*): χ+ / |χ−|
         # 0.58 % / 0.51 %. With the toolbox's NNLS R2* (2026-11-11, inside the dataset mask): χ+ /
         # |χ−| NRMSE 0.0005 % / 0.0011 %, max |Δ| 5.6e-5 / 5.2e-4 ppm, p99 ≤ 5.3e-7 ppm; mask
         # identical; CSF mask 11,186 voxels. chimap as for chi-sep-ilsqr (unreferenced since #538).
-        mask: { dice_min: 0.9999 }
+        intermediates: { mask: { dice_min: 0.9999 } }
         chi-para: { nrmse_max: 0.01, correlation_min: 0.9999, max_abs_max: 0.0001, p99_abs_max: 0.000002 }
         chi-dia: { nrmse_max: 0.01, correlation_min: 0.9999, max_abs_max: 0.001, p99_abs_max: 0.000002 }
         chimap: { nrmse_max: 0.01, correlation_min: 0.9999, max_abs_max: 0.0003, p99_abs_max: 0.00001 }
@@ -424,14 +439,14 @@ pairs:
   toolbox-pipeline-decompose:
     reference: toolbox-pipeline-decompose-qsmci   # the paper, in QSM-CI's MATLAB; image v3, fidelity pass; pipeline parity: pass in vivo within the solver floor (decision 57)
     candidate: toolbox-pipeline-qsmrs
-    enabled: false
-    blocked_by: https://github.com/QSMxT/QSM-CI/issues/421
+    enabled: true
     candidate_set: { pipeline: decompose }
     qsmrs_paths: [src/pipeline/, src/separation/decompose.rs]
     qsmxt_paths: [crates/qsmxt-engine/src/]
     datasets:
-      meso-3t: {}   # 3 T, the field strength DECOMPOSE was designed for
-      prisma-bridge-run1:
+      # meso-3t: in-vivo limits only for this release (decision 2026-11-12); not measured yet
+      # The acquisition these limits were measured on (as above; QSM-CI#437).
+      s005001-cbic-prisma-bridge-run1:
         # Limits from the in-vivo gap, after an investigation (decision 18) and Ashley's decisions
         # 56 (STAR unpadded, rule decompose.star-pad) and 57 (keep QSM.rs's exact stage-5.1 solve).
         # Measured inside the reference's fitted 33³ central box (DECOMPOSE_CROPBOX=32) ∩ its
@@ -442,16 +457,30 @@ pairs:
         # not converge away in degenerate voxels. Against a known truth the solvers do not differ
         # (see the reference's ci_notes), so this is a parity floor, not an accuracy loss. Margins
         # as above.
+        # As measured: the reference fits only the 33³ central box (its whole-brain fit takes
+        # hours; the 2 h run limit stopped it in run 43241122344), and every map is compared on
+        # both sides inside the dataset mask ∩ that box. The candidate runs the whole volume. The
+        # box lies inside the dataset mask and the reference's V-SHARP mask (35,937 voxels either
+        # way), so this is the region the limits were measured in.
+        reference_env: { DECOMPOSE_CROPBOX: "32" }
+        compare_box: 32
         chi-para: { nrmse_max: 9.7, correlation_min: 0.985, max_abs_max: 0.21, p99_abs_max: 0.0071 }
         chi-dia: { nrmse_max: 9.0, correlation_min: 0.985, max_abs_max: 0.2, p99_abs_max: 0.0083 }
+        # chimap (both sides write it, so it is a final map and needs limits): in the same box,
+        # QSMxT#534 against reference v3 (2026-11-12, the 11-11 run): NRMSE 0.0932 %, r 1.0, max |Δ|
+        # 0.0064 ppm, p99 3.4e-6 ppm (over the whole dataset mask 0.374 %, max 0.089 ppm). Margins as
+        # χ± (derive_limits). The NRMSE limit is mostly derive_limits' +0.5 pp, which no pair
+        # waives except where a run-to-run spread was measured (MEDI) or both sides are
+        # deterministic (χ-sep); this reference's STAR-QSM has not been run on a second machine yet.
+        chimap: { nrmse_max: 0.603, correlation_min: 0.99, max_abs_max: 0.00803, p99_abs_max: 0.00000375 }
         measured:
           main: "local run 2026-11-10: QSMxT main + #532, --star-pad 0 0 0, reference v3 sha256:f9ada500…, 33³ box (limits)"
+          chimap: "local run 2026-11-11: QSMxT#534 out534-decompose vs reference v3, 33³ box (chimap limits, 2026-11-12)"
           qsmxt534: "local run 2026-11-11: QSMxT#534 --pipeline decompose (rule decompose.star-pad, no flag): χ+ 8.34 %, χ− 7.66 %, identical to the --star-pad 0 0 0 run"
   toolbox-pipeline-qsmart:
     reference: toolbox-pipeline-qsmart   # QSMART v1.0 incl. brainmask.m; image v2, fidelity pass; pipeline parity: pass (within the N4 spread)
     candidate: toolbox-pipeline-qsmrs
-    enabled: false
-    blocked_by: https://github.com/QSMxT/QSM-CI/issues/421
+    enabled: true
     candidate_set: { pipeline: qsmart }
     qsmrs_paths: [src/pipeline/, src/utils/qsmart.rs]
     qsmxt_paths: [crates/qsmxt-engine/src/]
@@ -459,7 +488,8 @@ pairs:
       # Coil-combined input on both sides (QSMART's coil_comb/POEM is not run): a known difference.
       # Known, see the reference's ci_notes: the per-echo Laplacian constants (total field, R_0) and
       # the N4 thread spread of the mask.
-      prisma-bridge-run1:
+      # The acquisition these limits were measured on (as above; QSM-CI#437).
+      s005001-cbic-prisma-bridge-run1:
         # Limits from the reference's own spread, not from a candidate run (decision 18,
         # 2026-11-10, QSM-CI#421). Reference v1 (ANTs N4 at 32+ threads) against v2 (N4 at 1
         # thread), everything else identical: mask Dice 0.9990 (3,131 voxels), χ NRMSE 15.07 %,
@@ -468,7 +498,7 @@ pairs:
         # 3 / 6 voxels: 9.05 % / 6.02 %. QSMxT main 55d3f3f+#531 (qsm-core 1d5b438) against v2:
         # mask Dice 0.9992 (2,616 voxels), χ 14.56 % (9.19 % / 6.56 % eroded), r 0.9892, within
         # that spread. Margins as above.
-        mask: { dice_min: 0.989 }
+        intermediates: { mask: { dice_min: 0.989 } }
         chimap: { nrmse_max: 17.1, correlation_min: 0.978 }
         measured:
           spread: "local podman runs 2026-11-10: reference v1 sha256:c9ae67fa… vs v2 sha256:6c645318…, χ 15.07 %, Dice 0.9990 (limits)"
@@ -476,14 +506,14 @@ pairs:
   toolbox-pipeline-sti:
     reference: toolbox-pipeline-sti   # STI Suite 3.0 QSM_GUI iLSQR path; image v1, fidelity pass
     candidate: toolbox-pipeline-qsmrs
-    enabled: false
-    blocked_by: https://github.com/QSMxT/QSM-CI/issues/421
+    enabled: true
     candidate_set: { pipeline: sti-suite-ilsqr }
     qsmrs_paths: [src/pipeline/, src/bgremove/vsharp.rs, src/inversion/ilsqr.rs, src/utils/threshold.rs, src/utils/mask.rs]
     qsmxt_paths: [crates/qsmxt-engine/src/]
     datasets:
-      sim: {}                  # qsm-forward
-      prisma-bridge-run1:
+      # sim: in-vivo limits only for this release (decision 2026-11-12); sim not measured yet
+      # The acquisition these limits were measured on (as above; QSM-CI#437).
+      s005001-cbic-prisma-bridge-run1:
         # 2026-11-11, inside the dataset mask: thresholding mask and PolishMask's mask identical
         # (1,366,408 voxels); total field identical up to a constant (−0.0584 ppm, which V-SHARP
         # removes); local field identical except 4 isolated interior voxels, which STI's V_SHARP
@@ -494,15 +524,14 @@ pairs:
         # are FFTW single-precision rounding, which QSM.rs's exact test cannot and should not copy.
         # Through iLSQR they are the whole χ gap: NRMSE 0.30 %, r 1.000000, max |Δ| 0.020 ppm,
         # p99 9.2e-5 ppm. Limits from that floor.
-        mask: { dice_min: 0.9999 }
+        intermediates: { mask: { dice_min: 0.9999 } }
         chimap: { nrmse_max: 0.4, correlation_min: 0.9999, max_abs_max: 0.025, p99_abs_max: 0.00012 }
         measured:
           main: "local run 2026-11-11: QSMxT#538 e2de679 (qsm-core 59a6164) vs reference v1 sha256:60dcc483…, dataset mask (limits); V_SHARP spy: Bunya jobs 32607969, 32610086, 32610529"
   toolbox-pipeline-ukb:
     reference: toolbox-pipeline-ukb   # UK Biobank's UKBiobank_QSM.m: the ukb-qsm image v3, fidelity pass
     candidate: toolbox-pipeline-qsmrs
-    enabled: false
-    blocked_by: https://github.com/QSMxT/QSM-CI/issues/421
+    enabled: true
     # UK Biobank's brain mask comes from its T1 pipeline, which no pipeline input can make, so both
     # sides start from the dataset's mask (the reference takes it as an input; the candidate is
     # told to use it). Everything after is compared: both phase-reliability trims, unwrapping, echo
@@ -700,6 +729,9 @@ pairs:
     # Both sides at their defaults, QSM.jl's fast-FFT padding included (astewartau/QSM.rs#323;
     # until then the pair set QSM.jl's pad to -1). Measured before the change (run 41019310531,
     # QSM.jl pad -1 vs QSM.rs's padding): NRMSE sim 1.30 %, KKI 6.9e-06 % (the KKI grid needs no padding).
+    # QSM.rs#468 (QSMxT#556) moved QSMxT's default threshold to 0.25; the port runs at QSM.jl's
+    # 0.15 (QSM.rs TKD_QSMJL_THRESHOLD), the value the limits were measured at.
+    candidate_set: { threshold: 0.15 }
     qsmrs_paths: [src/fft.rs, src/grid.rs, src/inversion/tkd.rs, src/kernels/,
                   src/pipeline/inversion.rs, src/pipeline/rules.rs, src/utils/mask.rs,
                   src/utils/padding.rs]
@@ -766,6 +798,9 @@ pairs:
     # Both sides at their defaults, QSM.jl's fast-FFT padding included (astewartau/QSM.rs#323;
     # until then the pair set QSM.jl's pad to -1). Measured before the change (run 41019310531,
     # QSM.jl pad -1 vs QSM.rs's padding): NRMSE sim 0.21 %, KKI 1.2e-05 % (the KKI grid needs no padding).
+    # QSM.rs#468 (QSMxT#556) moved QSMxT's default lambda to 3e-4; the port runs at QSM.jl's 1e-3
+    # (QSM.rs TV_QSMJL_LAMBDA), the value the limits were measured at.
+    candidate_set: { lambda: 0.001 }
     qsmrs_paths: [src/constants.rs, src/fft.rs, src/grid.rs, src/inversion/admm.rs,
                   src/inversion/tv.rs, src/kernels/, src/pipeline/inversion.rs,
                   src/pipeline/rules.rs, src/utils/gradient.rs, src/utils/mask.rs, src/utils/ops.rs,
@@ -981,6 +1016,9 @@ pairs:
     # QSMxT's ROMEO settings (sigma 4 voxels = 4 mm on these 1 mm datasets).
     reference_set: { weights: romeo4, individual_unwrapping: "true", correct_global: "true",
                      phase_offset_sigma_mm: 4 }
+    # QSMxT#554 made template mode QSMxT's default (ROMEO's own); the pair keeps comparing the
+    # individual mode with global correction it was measured in, on both sides.
+    candidate_set: { individual_unwrapping: "true", correct_global: "true" }
     datasets:
       sim:
         # Measured on main: NRMSE 1.639 %, r 0.99995, max |Δ| 0.164 ppm, p99 |Δ| 0.0027 ppm.

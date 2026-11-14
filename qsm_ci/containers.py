@@ -358,7 +358,7 @@ INTERMEDIATES_SUBDIR = "intermediates"
 
 
 def _run_container(algo, input_dir, output_dir, runner, log, timeout: "float | None" = None,
-                   intermediates: bool = False) -> float:
+                   intermediates: bool = False, env: "dict | None" = None) -> float:
     """Run a submission's run.sh and return its wall-clock seconds.
 
     `timeout` (seconds, None = uncapped) bounds the run: on expiry the container/process tree is
@@ -367,6 +367,10 @@ def _run_container(algo, input_dir, output_dir, runner, log, timeout: "float | N
 
     `intermediates` creates <output_dir>/intermediates and points $QSMCI_INTERMEDIATES at it (its
     path as the method sees it: /output/intermediates in a container, the host path for `local`).
+
+    `env` ({NAME: value}, `qsm-ci run --env`) adds environment variables to the method's run, e.g. a
+    reference's own switch that parity sets for one pair (DECOMPOSE_CROPBOX); they win over the
+    QSMCI_* ones.
     """
     if output_dir.exists():
         shutil.rmtree(output_dir)
@@ -376,6 +380,7 @@ def _run_container(algo, input_dir, output_dir, runner, log, timeout: "float | N
         (output_dir / INTERMEDIATES_SUBDIR).mkdir()
         penv["QSMCI_INTERMEDIATES"] = (str(output_dir / INTERMEDIATES_SUBDIR) if runner == "local"
                                        else f"/output/{INTERMEDIATES_SUBDIR}")
+    penv.update({str(k): str(v) for k, v in (env or {}).items()})
     t0 = time.time()
     if runner in _OCI_ENGINES:
         image = _build_oci(algo, runner, log)

@@ -474,13 +474,14 @@ def discover_algorithms(track: str = "sim", phantom: "str | None" = None,
             # Products only some runs write (stages.yml `optional_produces:`; a toolbox pipeline's
             # χ+/χ−). Parity compares them when both sides wrote them; scoring does not read them.
             "optional_produces": optional_products(s),
-            # Extras that only some datasets ship (an `optional_inputs:` artifact that is in no stage's
-            # contract, e.g. DECOMPOSE's chimap-echoes or a baseline's dseg): mounted when the dataset has one,
-            # skipped when it
-            # doesn't (prepare_input / cli_run_argv). A contract artifact such as magnitude stays
-            # required of the dataset, so a dataset missing it is still a DNF, not a silent downgrade.
+            # Extras that only some datasets ship (an `optional_inputs:` artifact outside the method's
+            # own stage contract, e.g. DECOMPOSE's chimap-echoes, a baseline's dseg, or a toolbox
+            # pipeline's r2prime, which in-vivo datasets lack): mounted when the dataset has one,
+            # skipped when it doesn't (prepare_input / cli_run_argv). Magnitude and the method's own
+            # contract stay required of the dataset, so a dataset missing them is still a DNF, not a
+            # silent downgrade.
             "optional": [a for a in consumes if a in set(manifest["optional_inputs"] or ())
-                         and not any(a in st["consumes"] for st in STAGES.values())],
+                         and a != "magnitude" and a not in STAGES[s]["consumes"]],
             "tuned": _tuned_overrides(doc, "chisep" if s in ("chi-separation", "r2prime-generation")
                                       else ("invivo" if track == "invivo" else "sim"), phantom),
             # Optional per-method smoke-crop size (voxels): a slow per-voxel method (e.g. DECOMPOSE)

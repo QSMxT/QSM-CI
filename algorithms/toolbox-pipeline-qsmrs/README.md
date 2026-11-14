@@ -64,8 +64,8 @@ resample them itself (a resampling of its own would be a difference neither pipe
 
 ## Image
 
-The shared qsmxt image (`algorithms/_qsmxt`), pinned to v11.0.0, which has no `--pipeline` yet: the
-submission is `ci_skip` and runs against a qsmxt build, as parity's development track does. The
+The shared qsmxt image (`algorithms/_qsmxt`), pinned to v12.0.0, the first release with `--pipeline`.
+Parity's development track runs it against a qsmxt build instead. The
 χ-separation pipelines estimate R2′ with R2PRIMEnet when there is no spin-echo data, and
 `chi-sepnet` is a network, so those need the image with the model weights
 (`algorithms/_qsmxt/models.Dockerfile`; `qsmrs_models: true` on a pair).

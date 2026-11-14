@@ -351,6 +351,42 @@ def side_set(cfg: dict, side: str, phantom: str) -> dict:
     return {**(cfg.get(f"{side}_set") or {}), **(ds.get(f"{side}_set") or {})}
 
 
+def side_env(cfg: dict, side: str, phantom: str) -> dict:
+    """Environment variables one side's own method runs with (`qsm-ci run --env`): the pair's
+    `<side>_env`, then the dataset entry's (which wins). For a switch the original's code reads
+    that has no `--set` parameter, e.g. the DECOMPOSE reference's DECOMPOSE_CROPBOX (fit only a
+    central box: the whole brain takes hours). Prefix steps run without them."""
+    ds = (cfg.get("datasets") or {}).get(phantom) or {}
+    return {str(k): str(v) for k, v in
+            {**(cfg.get(f"{side}_env") or {}), **(ds.get(f"{side}_env") or {})}.items()}
+
+
+def compare_box(cfg: dict, phantom: str) -> "int | None":
+    """The dataset entry's `compare_box: n`, or None: compare only inside the central (n+1)³ box."""
+    ds = (cfg.get("datasets") or {}).get(phantom) or {}
+    n = ds.get("compare_box")
+    return None if n is None else int(n)
+
+
+def central_box(shape, n: int):
+    """A boolean mask of `shape`'s first three axes that is True in the central box of half-width
+    n // 2 (an (n+1)³ box for even n), cut at the volume's edges: the box the DECOMPOSE reference
+    fits with DECOMPOSE_CROPBOX=n. As its recon.m: centre c = round(N/2) (1-based, MATLAB rounds
+    halves up), indices max(1, c−h) … min(N, c+h), h = floor(n/2)."""
+    import numpy as np
+    if n <= 0:
+        raise ValueError(f"compare_box must be positive, got {n}")
+    shape = tuple(shape)[:3]
+    box = np.zeros(shape, dtype=bool)
+    h = n // 2
+    sl = []
+    for N in shape:
+        c = (N + 1) // 2                      # MATLAB round(N/2) for a positive integer N
+        sl.append(slice(max(1, c - h) - 1, min(N, c + h)))
+    box[tuple(sl)] = True
+    return box
+
+
 # ---------------------------------------------------------------------------------------------------
 # Comparison (pure numpy — unit-tested in tests/test_parity.py)
 # ---------------------------------------------------------------------------------------------------
@@ -454,7 +490,8 @@ def evaluate(results: dict, ds_cfg: dict, final: "str | list",
     Returns {name: {"metrics", "checks", "status"}} with status "pass", "fail" or "info" (compared
     but no limits configured — reported, never fails), plus "ok": no "fail" anywhere and the final
     artifact has limits. A final artifact without limits is "fail": an enabled pair must say what
-    agreement it expects. A stage with several outputs (χ-separation's chi-para and chi-dia) passes
+    agreement it expects. So is an intermediate whose limits sit at the dataset level, beside the
+    final maps', instead of under `intermediates:` (`misplaced`): they would otherwise never apply. A stage with several outputs (χ-separation's chi-para and chi-dia) passes
     them all as `final`: each is a final artifact with its own limits.
 
     `intermediates_only` (the pair's `intermediates_only: true`): the final artifact is not like
@@ -465,6 +502,12 @@ def evaluate(results: dict, ds_cfg: dict, final: "str | list",
     out = {}
     for name, metrics in results.items():
         limits = (ds_cfg or {}).get(name) if name in finals else inter.get(name)
+        stray = (ds_cfg or {}).get(name)
+        if name not in finals and name not in _NOT_MAPS and isinstance(stray, dict) and stray:
+            rows = check(metrics, stray)
+            out[name] = {"metrics": metrics, "checks": rows, "status": "fail", "limits": stray,
+                         "misplaced": True}
+            continue
         rows = check(metrics, limits)
         if intermediates_only and name in finals:
             status = "info"
@@ -499,14 +542,17 @@ def _fmt(v, metric: str = "") -> str:
 
 def render_report(*, algorithm: str, phantom: str, reference: str, candidate: str, verdict: dict,
                   baseline: bool, unmatched: dict, provenance: dict, note: str = "",
-                  intermediates_only: bool = False, models: bool = False) -> str:
+                  intermediates_only: bool = False, models: bool = False,
+                  box: "int | None" = None) -> str:
     maps = verdict["maps"]
     if baseline:
         head = "📏 **Baseline measured** (no limits applied)"
     else:
         head = "✅ **Parity holds**" if verdict["ok"] else "❌ **Parity regression**"
+    region = "the dataset mask" if box is None else \
+        f"the dataset mask ∩ the central {box // 2 * 2 + 1}³ box (`compare_box: {box}`)"
     lines = [f"## Parity: `{algorithm}` on `{phantom}`", "",
-             f"{head} — candidate `{candidate}` vs reference `{reference}`, inside the dataset mask.",
+             f"{head} — candidate `{candidate}` vs reference `{reference}`, inside {region}.",
              ""] + ([note, ""] if note else [])
     for side in ("reference", "candidate"):
         p = provenance.get(side) or {}
@@ -522,6 +568,8 @@ def render_report(*, algorithm: str, phantom: str, reference: str, candidate: st
                 if st.get("fed") else []
             bits += [f"`--set {' '.join(f'{k}={v}' for k, v in st['set'].items())}`"] \
                 if st.get("set") else []
+            bits += [f"env `{' '.join(f'{k}={v}' for k, v in st['env'].items())}`"] \
+                if st.get("env") else []
             if bits:
                 lines.append(f"  - `{st['slug']}`: " + ", ".join(bits))
     lines.append("")
@@ -542,6 +590,9 @@ def render_report(*, algorithm: str, phantom: str, reference: str, candidate: st
             first = False
         if v["status"] == "fail" and not v["limits"] and not baseline:
             lines.append(f"| | *no limits in parity/thresholds.yml for `{phantom}`* | | | ❌ |")
+        if v.get("misplaced") and not baseline:
+            lines.append(f"| | *`{name}` is an intermediate: its limits go under `intermediates:` in "
+                         f"parity/thresholds.yml* | | | ❌ |")
     finals = provenance.get("finals") or [provenance.get("final")]
     if intermediates_only:
         lines += ["", "Intermediates-only pair: the final map (" + ", ".join(f"`{f}`" for f in finals)
@@ -663,14 +714,15 @@ def apply_names(inter: Path, names: "dict | None", mask_path: "Path | None" = No
 
 def run_side(chain: list, dataset: Path, out: Path, runner: str, feed: "dict | None" = None,
              qsmrs_image: "str | None" = None, names: "dict | None" = None,
-             overrides: "dict | None" = None, log=print) -> dict:
+             overrides: "dict | None" = None, env: "dict | None" = None, log=print) -> dict:
     """Run `chain` (slugs, in order) on `dataset`; the last slug's produced artifact lands in
     out/<artifact>.nii.gz and every slug's intermediates in out/intermediates/. Each stage's output
     replaces that artifact as an input of the next, and is also kept as an intermediate under the
     artifact's name (e.g. a field-mapping prefix's `totalfield`) unless the method wrote one itself.
     `feed` ({artifact: path}) overrides inputs first; `qsmrs_image` replaces the image of every
     QSM.rs step; `names` renames the intermediates afterwards (apply_names); `overrides` are the
-    `--set` values for the chain's last slug, the pair's own method (side_set).
+    `--set` values for the chain's last slug, the pair's own method (side_set); `env` its
+    environment variables (side_env, `qsm-ci run --env`).
     Returns provenance {chain, steps: [{slug, image, …}], image, runtime_s, final}."""
     import shutil
     import time
@@ -696,18 +748,21 @@ def run_side(chain: list, dataset: Path, out: Path, runner: str, feed: "dict | N
         pipeline.prepare_input(algo["consumes"], sources, idir, algo.get("optional", ()))
         odir.mkdir(parents=True, exist_ok=True)
         sets = dict(overrides or {}) if i == len(chain) - 1 else {}
+        envs = dict(env or {}) if i == len(chain) - 1 else {}
         argv = cli_run_argv(algo, idir, odir, ARTIFACT_FILE, runner, overrides=sets) \
             + ["--intermediates", str(inter)]
+        for k, v in envs.items():
+            argv += ["--env", f"{k}={v}"]
         image = algo.get("image")
         # discover_algorithms() keeps no `source`: read it from algorithm.yml.
         if qsmrs_image and is_port(_manifests().get(slug) or {}):
             image = qsmrs_image
             argv += ["--image", qsmrs_image]
         limit = timeout_s(algo.get("timeout_minutes"))
-        env = {**os.environ, "QSMCI_TIMEOUT": "0" if limit is None else str(limit)}
+        proc_env = {**os.environ, "QSMCI_TIMEOUT": "0" if limit is None else str(limit)}
         log(f"▸ {slug}: {' '.join(argv)}")
         t0 = time.time()
-        subprocess.run(argv, env=env, check=True)
+        subprocess.run(argv, env=proc_env, check=True)
         dt = time.time() - t0
         t_all += dt
         for art in algo["produces"]:
@@ -718,6 +773,7 @@ def run_side(chain: list, dataset: Path, out: Path, runner: str, feed: "dict | N
         steps.append({"slug": slug, "image": image, "runtime_s": dt,
                       **({"fed": sorted(feed)} if feed and i == 0 else {}),
                       **({"set": sets} if sets else {}),
+                      **({"env": envs} if envs else {}),
                       **image_identity(image, runner)})
     finals = list(algo["produces"])   # every output of the last step (χ-separation has two)
     # … and each optional product it wrote (a χ-separation toolbox pipeline's χ+ and χ−).
@@ -787,7 +843,8 @@ def cmd_run(args) -> int:
     else:
         run_side(side_chain(cfg, "reference", args.phantom), Path(args.dataset), work / "reference",
                  args.runner, qsmrs_image=args.qsmrs_image or None,
-                 names=cfg.get("reference_names"), overrides=side_set(cfg, "reference", args.phantom))
+                 names=cfg.get("reference_names"), overrides=side_set(cfg, "reference", args.phantom),
+                 env=side_env(cfg, "reference", args.phantom))
     # `feed: {totalfield: totalfield}` hands the candidate the reference's intermediate of that name
     # (after reference_names) in place of the dataset's artifact, so both reconstruct from the same
     # input. A declared feed whose intermediate the reference did not write is an error, never a
@@ -807,7 +864,8 @@ def cmd_run(args) -> int:
              args.runner, feed=feed, qsmrs_image=args.qsmrs_image or None,
              names=cfg.get("candidate_names"),
              overrides={k: v for k, v in side_set(cfg, "candidate", args.phantom).items()
-                        if k not in unset})
+                        if k not in unset},
+             env=side_env(cfg, "candidate", args.phantom))
     if drop:
         (work / "candidate" / DROPPED).write_text(json.dumps(drop) + "\n")
         print(f"{args.algorithm}: the candidate ran without the optional feed(s) {', '.join(drop)}")
@@ -824,12 +882,16 @@ def _load(path: Path):
 
 
 def compare_dirs(ref_dir: Path, cand_dir: Path, mask_path: Path,
-                 final: "str | list") -> "tuple[dict, dict]":
+                 final: "str | list", box: "int | None" = None) -> "tuple[dict, dict]":
     """({name: metrics}, unmatched) for the final artifact(s) and the intermediates both sides
-    wrote."""
+    wrote. `box` (the dataset entry's compare_box) restricts every comparison, on both sides, to
+    the mask ∩ the central box (central_box)."""
     finals = [final] if isinstance(final, str) else list(final)
     from qsm_ci.stages import ARTIFACT_FILE
     mask = _load(mask_path)
+    if box is not None:
+        import numpy as np
+        mask = (np.asarray(mask) > 0.5) & central_box(np.shape(mask), box)
     results = {f: compare_maps(_load(ref_dir / ARTIFACT_FILE[f]), _load(cand_dir / ARTIFACT_FILE[f]),
                                mask) for f in finals}
     names = {s: {p.name[:-7] for p in (d / "intermediates").glob("*.nii.gz")}
@@ -861,7 +923,8 @@ def cmd_compare(args) -> int:
         + (f" Run without the candidate setting(s) {', '.join(unset)}: this qsmxt has no option "
            f"for them." if unset else "")
     mask = Path(args.mask) if args.mask else Path(args.dataset) / "inputs" / "mask.nii.gz"
-    results, unmatched = compare_dirs(work / "reference", work / "candidate", mask, final)
+    box = compare_box(cfg, args.phantom)
+    results, unmatched = compare_dirs(work / "reference", work / "candidate", mask, final, box)
     verdict = evaluate(results, ds_cfg, final, bool(cfg.get("intermediates_only")))
     report = render_report(algorithm=args.algorithm, phantom=args.phantom,
                            reference=cfg["reference"], candidate=cfg["candidate"], verdict=verdict,
@@ -870,7 +933,7 @@ def cmd_compare(args) -> int:
                                        "finals": [final] if isinstance(final, str) else final},
                            note=note.strip(),
                            intermediates_only=bool(cfg.get("intermediates_only")),
-                           models=bool(cfg.get("qsmrs_models")))
+                           models=bool(cfg.get("qsmrs_models")), box=box)
     print(report)
     if args.report:
         Path(args.report).write_text(report)
@@ -879,6 +942,7 @@ def cmd_compare(args) -> int:
             "algorithm": args.algorithm, "phantom": args.phantom, "reference": cfg["reference"],
             "candidate": cfg["candidate"], "baseline": args.baseline, "provenance": prov,
             "note": note.strip(), **({"dropped_feeds": dropped} if dropped else {}),
+            **({"compare_box": box} if box is not None else {}),
             **({"dropped_settings": unset} if unset else {}),
             "unmatched": unmatched, **verdict,
             "suggested": {n: derive_limits(v["metrics"], bool(cfg.get("qsmrs_models")))
@@ -928,7 +992,7 @@ REPO = "QSMxT/QSM-CI"
 # (or to the dataset's entry, limits included) makes the last check stale (rule c). `measured`,
 # `enabled`, `blocked_by`, `qsmrs_paths` and `qsmxt_paths` are bookkeeping and do not count.
 MEASURED_BY = ("reference", "candidate", "reference_names", "candidate_names", "reference_set",
-               "candidate_set", "intermediates_only")
+               "candidate_set", "reference_env", "candidate_env", "intermediates_only")
 
 
 def thresholds_version(cfg: dict, phantom: str) -> str:
@@ -1358,7 +1422,7 @@ def pair_status(thresholds: dict, results: dict, manifests: dict, settings: dict
 
 # Datasets-entry keys that are not a final map's limits.
 _NOT_MAPS = {"intermediates", "feed", "measured", "reference_prefix", "candidate_prefix",
-             "reference_set", "candidate_set"}
+             "reference_set", "candidate_set", "reference_env", "candidate_env", "compare_box"}
 
 
 def final_maps(cfg: dict, phantom: str) -> list:
