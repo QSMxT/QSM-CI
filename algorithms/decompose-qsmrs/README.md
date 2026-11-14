@@ -33,7 +33,7 @@ separate.
   2021;242:118477 · doi:[10.1016/j.neuroimage.2021.118477](https://doi.org/10.1016/j.neuroimage.2021.118477).
   (Note: the sibling `decompose-qsm` manifest carries `10.1016/j.neuroimage.2021.118735`, which
   Crossref resolves to a different NeuroImage paper; 118477 is this article.)
-- **Image:** `ghcr.io/astewartau/qsm-ci/qsmxt:v11.0.0` — the shared QSMxT engine image
+- **Image:** `ghcr.io/astewartau/qsm-ci/qsmxt:v12.0.0` — the shared QSMxT engine image
   ([`algorithms/_qsmxt`](../_qsmxt)), already used by the other QSM.rs ports. No new image and no
   Dockerfile: `run.sh` is mounted at run time.
 - **Runner:** the default hosted tier (see *Runtime* below).

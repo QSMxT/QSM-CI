@@ -13,7 +13,7 @@ if [ -f "$CFG" ]; then
   V=$(jq -r '.radius // empty' "$CFG"); [ -n "$V" ] && SET="$SET --radius $V"
   V=$(jq -r '.max_iter // empty' "$CFG"); [ -n "$V" ] && SET="$SET --max-iter $V"
   V=$(jq -r '.tol // empty' "$CFG"); [ -n "$V" ] && SET="$SET --tol $V"
-  V=$(jq -r '.rim // empty' "$CFG"); [ -n "$V" ] && SET="$SET --rim $V"   # whole | sti (qsmxt after v11.0.0)
+  V=$(jq -r '.rim // empty' "$CFG"); [ -n "$V" ] && SET="$SET --rim $V"   # whole | sti (qsmxt from v12.0.0)
 fi
 # erode_voxels: erode the mask by N voxels before background removal, as `qsmxt run
 # --bf-erode-voxels` does (the same 6-connected erosion); the field is left whole, and the local

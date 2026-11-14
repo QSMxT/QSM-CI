@@ -9,7 +9,7 @@ ONNX engine (tract, CPU).
 - **Engine:** QSMxT / [QSM.rs](https://github.com/astewartau/QSM.rs) (`inversion::qsmnetme`).
 - **Original:** [`qsmnetme`](../qsmnetme) runs the toolbox's own network by its route; the two
   entries share `algorithm: qsmnetme`, so they form a port parity pair.
-- **Image:** `qsmxt:v11.0.0-models-1`, the QSMxT image with the ONNX weights baked in ([`_qsmxt/models.Dockerfile`](../_qsmxt/models.Dockerfile)).
+- **Image:** `qsmxt:v12.0.0-models-1`, the QSMxT image with the ONNX weights baked in ([`_qsmxt/models.Dockerfile`](../_qsmxt/models.Dockerfile)).
 - **Reference:** Kim et al., Hum Brain Mapp 2025 · doi:[10.1002/hbm.70136](https://doi.org/10.1002/hbm.70136)
 
 ## How QSM-CI runs it

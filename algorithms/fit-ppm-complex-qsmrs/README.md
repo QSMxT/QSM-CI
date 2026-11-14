@@ -19,4 +19,4 @@ intermediates:
 - **Engine:** QSMxT / [QSM.rs](https://github.com/astewartau/QSM.rs) (Rust), CPU
 - **Reference:** Liu et al., *Magn Reson Med* 2013 ·
   doi:[10.1002/mrm.24272](https://doi.org/10.1002/mrm.24272)
-- **Image:** `ghcr.io/astewartau/qsm-ci/qsmxt:v11.0.0`, the shared QSMxT engine image ([`algorithms/_qsmxt`](../_qsmxt)).
+- **Image:** `ghcr.io/astewartau/qsm-ci/qsmxt:v12.0.0`, the shared QSMxT engine image ([`algorithms/_qsmxt`](../_qsmxt)).

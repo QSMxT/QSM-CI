@@ -11,7 +11,7 @@ fit.
 - **Engine:** QSMxT / [QSM.rs](https://github.com/astewartau/QSM.rs) (Rust), CPU
 - **Reference:** Dymerska et al., *Magn Reson Med* 2021 ·
   doi:[10.1002/mrm.28563](https://doi.org/10.1002/mrm.28563)
-- **Image:** `ghcr.io/astewartau/qsm-ci/qsmxt:v11.0.0`, the shared QSMxT engine image
+- **Image:** `ghcr.io/astewartau/qsm-ci/qsmxt:v12.0.0`, the shared QSMxT engine image
   ([`algorithms/_qsmxt`](../_qsmxt)), like the other QSM.rs methods. This folder has no Dockerfile:
   `run.sh` calls only `qsmxt`, so the separate `romeo-fieldmap` image (py-ref + qsmxt v9.15.0) it
   used to run on is no longer needed.

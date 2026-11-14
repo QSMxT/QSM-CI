@@ -7,7 +7,7 @@ iQFM as QSM.rs runs it: the authors' trained weights exported to ONNX (QSM.rs's
 - **Engine:** QSMxT / [QSM.rs](https://github.com/astewartau/QSM.rs).
 - **Original:** [`iqfm`](../iqfm) runs the authors' own code and weights; the two entries share `algorithm: iqfm`, so they form a port parity pair (`parity/thresholds.yml`).
 - **Echo combination:** each echo goes through the network, and the echoes are combined with (magnitude × TE)² weights, as the authors' Python code that the original entry runs; `--set echo_weighting=mag-te2` gives their MATLAB code's magnitude × TE².
-- **Image:** `qsmxt:v11.0.0-models-1`, the QSMxT v11.0.0 release image with the ONNX weights baked in ([`_qsmxt/models.Dockerfile`](../_qsmxt/models.Dockerfile)).
+- **Image:** `qsmxt:v12.0.0-models-1`, the QSMxT v12.0.0 release image with the ONNX weights baked in ([`_qsmxt/models.Dockerfile`](../_qsmxt/models.Dockerfile)).
 - **Reference:** Gao et al., NeuroImage 2022 · doi:[10.1016/j.neuroimage.2022.119410](https://doi.org/10.1016/j.neuroimage.2022.119410)
 
 ## How QSM-CI runs it

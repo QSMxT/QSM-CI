@@ -1115,7 +1115,7 @@
         {
           "name": "rim",
           "default": "whole",
-          "description": "boundary-rim Laplacian values set to zero: whole (the whole rim, QSM.rs's default) or sti (STI Suite's 20 % largest); a qsmxt after v11.0.0"
+          "description": "boundary-rim Laplacian values set to zero: whole (the whole rim, QSM.rs's default) or sti (STI Suite's 20 % largest); qsmxt from v12.0.0"
         },
         {
           "name": "erode_voxels",
@@ -1552,7 +1552,7 @@
         {
           "name": "rim",
           "default": "sti",
-          "description": "boundary-rim Laplacian values set to zero: sti (STI Suite's 20 % largest, the original's) or whole (the whole rim); a qsmxt after v11.0.0"
+          "description": "boundary-rim Laplacian values set to zero: sti (STI Suite's 20 % largest, the original's) or whole (the whole rim); qsmxt from v12.0.0"
         },
         {
           "name": "erode_voxels",
@@ -3090,7 +3090,7 @@
         {
           "name": "weight_norm",
           "default": "global-max",
-          "description": "magnitude-weight normaliser: global-max (FANSI's max(mag), the original's) or mask-p999 (the brain's 99.9th percentile); a qsmxt after v11.0.0"
+          "description": "magnitude-weight normaliser: global-max (FANSI's max(mag), the original's) or mask-p999 (the brain's 99.9th percentile); qsmxt from v12.0.0"
         }
       ],
       "ci_notes": []
@@ -5086,7 +5086,7 @@
         {
           "name": "weight",
           "default": "flat",
-          "description": "data weight: flat (1 over the whole volume, WH_nlTV.m's default), flat-in-mask (1 inside the mask; a qsmxt after v11.0.0), max-normalised or in-vivo (from the magnitude)"
+          "description": "data weight: flat (1 over the whole volume, WH_nlTV.m's default), flat-in-mask (1 inside the mask; qsmxt from v12.0.0), max-normalised or in-vivo (from the magnitude)"
         }
       ],
       "ci_notes": []
@@ -5415,7 +5415,7 @@
         {
           "name": "rim",
           "default": "whole",
-          "description": "boundary-rim Laplacian values set to zero: whole (the whole rim, QSM.rs's default) or sti (STI Suite's 20 % largest); a qsmxt after v11.0.0"
+          "description": "boundary-rim Laplacian values set to zero: whole (the whole rim, QSM.rs's default) or sti (STI Suite's 20 % largest); qsmxt from v12.0.0"
         },
         {
           "name": "erode_voxels",
@@ -5470,7 +5470,7 @@
         {
           "name": "rim",
           "default": "sti",
-          "description": "boundary-rim Laplacian values set to zero: sti (STI Suite's 20 % largest, the original's) or whole (the whole rim); a qsmxt after v11.0.0"
+          "description": "boundary-rim Laplacian values set to zero: sti (STI Suite's 20 % largest, the original's) or whole (the whole rim); qsmxt from v12.0.0"
         },
         {
           "name": "erode_voxels",
@@ -5525,7 +5525,7 @@
         {
           "name": "rim",
           "default": "sti",
-          "description": "boundary-rim Laplacian values set to zero: sti (STI Suite's 20 % largest, the original's) or whole (the whole rim); a qsmxt after v11.0.0"
+          "description": "boundary-rim Laplacian values set to zero: sti (STI Suite's 20 % largest, the original's) or whole (the whole rim); qsmxt from v12.0.0"
         },
         {
           "name": "erode_voxels",
@@ -5580,7 +5580,7 @@
         {
           "name": "rim",
           "default": "sti",
-          "description": "boundary-rim Laplacian values set to zero: sti (STI Suite's 20 % largest, the original's) or whole (the whole rim); a qsmxt after v11.0.0"
+          "description": "boundary-rim Laplacian values set to zero: sti (STI Suite's 20 % largest, the original's) or whole (the whole rim); qsmxt from v12.0.0"
         },
         {
           "name": "erode_voxels",
@@ -5635,7 +5635,7 @@
         {
           "name": "rim",
           "default": "sti",
-          "description": "boundary-rim Laplacian values set to zero: sti (STI Suite's 20 % largest, the original's) or whole (the whole rim); a qsmxt after v11.0.0"
+          "description": "boundary-rim Laplacian values set to zero: sti (STI Suite's 20 % largest, the original's) or whole (the whole rim); qsmxt from v12.0.0"
         },
         {
           "name": "erode_voxels",
@@ -5696,7 +5696,7 @@
         {
           "name": "rim",
           "default": "whole",
-          "description": "boundary-rim Laplacian values set to zero: whole (the whole rim, QSM.rs's default) or sti (STI Suite's 20 % largest); a qsmxt after v11.0.0"
+          "description": "boundary-rim Laplacian values set to zero: whole (the whole rim, QSM.rs's default) or sti (STI Suite's 20 % largest); qsmxt from v12.0.0"
         },
         {
           "name": "erode_voxels",
@@ -6009,7 +6009,7 @@
         {
           "name": "weight_norm",
           "default": "global-max",
-          "description": "magnitude-weight normaliser: global-max (FANSI's max(mag), the original's) or mask-p999 (the brain's 99.9th percentile); a qsmxt after v11.0.0"
+          "description": "magnitude-weight normaliser: global-max (FANSI's max(mag), the original's) or mask-p999 (the brain's 99.9th percentile); qsmxt from v12.0.0"
         }
       ],
       "ci_notes": [],
@@ -6077,7 +6077,7 @@
         {
           "name": "weight",
           "default": "flat",
-          "description": "data weight: flat (1 over the whole volume, WH_nlTV.m's default), flat-in-mask (1 inside the mask; a qsmxt after v11.0.0), max-normalised or in-vivo (from the magnitude)"
+          "description": "data weight: flat (1 over the whole volume, WH_nlTV.m's default), flat-in-mask (1 inside the mask; qsmxt from v12.0.0), max-normalised or in-vivo (from the magnitude)"
         }
       ],
       "ci_notes": [],

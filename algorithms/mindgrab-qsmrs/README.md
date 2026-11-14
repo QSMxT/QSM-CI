@@ -6,7 +6,7 @@ MindGrab as QSM.rs runs it: the authors' trained weights exported to ONNX (QSM.r
 - **Stage:** `brain-extraction`: reads `magnitude`; writes `mask.nii.gz`.
 - **Engine:** QSMxT / [QSM.rs](https://github.com/astewartau/QSM.rs).
 - **Original:** none in QSM-CI yet (see [`fidelity/dl/`](../../fidelity/dl)).
-- **Image:** `qsmxt:v11.0.0-models-1`, the QSMxT v11.0.0 release image with the ONNX weights baked in ([`_qsmxt/models.Dockerfile`](../_qsmxt/models.Dockerfile)), since the run has no network.
+- **Image:** `qsmxt:v12.0.0-models-1`, the QSMxT v12.0.0 release image with the ONNX weights baked in ([`_qsmxt/models.Dockerfile`](../_qsmxt/models.Dockerfile)), since the run has no network.
 - **Reference:** Fani et al., arXiv:2506.11860 (2025) · doi:[10.48550/arXiv.2506.11860](https://doi.org/10.48550/arXiv.2506.11860)
 
 ## How QSM-CI runs it
