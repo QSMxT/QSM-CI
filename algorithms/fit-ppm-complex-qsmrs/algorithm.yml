@@ -31,7 +31,7 @@ license: MIT
 # `--b0-estimation complex-fit` and QSMxT/QSMxT#462's `--complex-fit-output` /
 # `--complex-fit-noise-output` are in QSMxT from v11.0.0.
 # Parity runs a qsmxt build or release (parity/thresholds.yml, fit-ppm-complex).
-image: ghcr.io/astewartau/qsm-ci/qsmxt@sha256:5a353a43b0a6ceeb2b8ec57422a56770d5e86e1d551e727b72ca5089b2e5277e   # v11.0.0
+image: ghcr.io/astewartau/qsm-ci/qsmxt@sha256:c78a9ffb14b54c319cb5fb3409ccf06ac83bb79bf250a0baa2663710255b709e   # v12.0.0
 run: bash run.sh
 # Fit_ppm_complex's own defaults (as fit-ppm-complex-cornell's).
 parameters:
