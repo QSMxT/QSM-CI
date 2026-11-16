@@ -29,17 +29,20 @@ image: ghcr.io/astewartau/qsm-ci/qsmxt@sha256:c78a9ffb14b54c319cb5fb3409ccf06ac8
 run: bash run.sh
 parameters:
   - name: iterations
-    default: 1000
-    description: iterations
+    default: "max(1000, 3200/prod(voxel_size)^0.42)/step_size^0.6"
+    description: iterations (TGV.jl's voxel-size formula by default)
   # α are in TGV.jl's rad units at the scan's echo time (--te, default the first) and field strength
-  # (qsmxt v11). The defaults are TGV.jl's (regularization 2). v10's α were in ppm, so its tuned
-  # values do not carry over (see tuning below).
+  # (qsmxt v11). Defaults from QSMxT v12.1 (astewartau/QSM.rs#478, QSMxT decision 172): α0 0.00636,
+  # α1 0.00212, ratio 3 at 1.5x the strength of TGV.jl's regularization 2 (0.002 / 0.003), from our
+  # evaluation on the 2016 and 2019 challenge data. The pinned v12.0.0 image still has TGV.jl's
+  # 0.002 / 0.003 until the image moves to v12.1. v10's α were in ppm, so its tuned values do not
+  # carry over (see tuning below).
   - name: alpha1
-    default: 0.003
-    description: first-order (gradient) weight, rad at the echo time
+    default: 0.00212
+    description: first-order (gradient) weight, rad at the echo time (TGV.jl regularization 2 = 0.003)
   - name: alpha0
-    default: 0.002
-    description: second-order weight, rad at the echo time
+    default: 0.00636
+    description: second-order weight, rad at the echo time (TGV.jl regularization 2 = 0.002)
   # Parity switches (qsmxt invert tgv after v10.0.0): reproduce QuantitativeSusceptibilityMappingTGV.jl
   # where QSM.rs's default differs. Not tuning parameters.
   - name: reference_divergence
@@ -56,4 +59,4 @@ parameters:
 tuning:
   date: 2026-08
   status: stale
-  note: "Tuned on QSMxT v10 (QSM.rs v0.39); v11 (QSM.rs v0.41) changed it: TGV: TGV.jl's rad-unit alpha at the scan's TE and B0 (QSM.rs#231), exact adjoint and edge erosion (#324); defaults alpha1 0.003, alpha0 0.002 rad. Tuned values removed 2026-11-10; re-sweep. Was: Swept alpha1/alpha0 on sim (bfr+dipole span; sim-only). Tuned sim: alpha1 1.5e-4."
+  note: "Tuned on QSMxT v10 (QSM.rs v0.39); v11 (QSM.rs v0.41) changed it: TGV: TGV.jl's rad-unit alpha at the scan's TE and B0 (QSM.rs#231), exact adjoint and edge erosion (#324); defaults alpha1 0.003, alpha0 0.002 rad (v12.1: alpha1 0.00212, alpha0 0.00636). Tuned values removed 2026-11-10; re-sweep. Was: Swept alpha1/alpha0 on sim (bfr+dipole span; sim-only). Tuned sim: alpha1 1.5e-4."

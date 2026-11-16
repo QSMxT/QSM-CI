@@ -1083,23 +1083,29 @@ pairs:
     qsmxt_paths: &invert_tgv_wiring [src/cli.rs, src/commands/common.rs, src/commands/invert.rs,
                                      crates/qsmxt-engine/src/config.rs,
                                      crates/qsmxt-engine/src/stages/inversion.rs]
-    # QSM.rs ports qsm_tgv with the package's defaults (α from get_default_alpha(2), the
-    # voxel-size iteration count, 3 erosions, step 3, the first echo's TE) and, for a field in ppm,
-    # the ordinary discrete Laplacian: tgv-tgvjl's `unwrapped` (the package's laplacian_kernel
-    # without ROMEO's re-unwrap, which adds ±2π jumps to an already unwrapped field).
-    reference_set: { laplacian: unwrapped }
-    candidate_set: { reference_divergence: "true", reference_edge_erosion: "true", reference_output_box: "true" }
+    # QSM.rs ports qsm_tgv with the package's defaults (the voxel-size iteration count, 3
+    # erosions, step 3, the first echo's TE) and, for a field in ppm, the ordinary discrete
+    # Laplacian: tgv-tgvjl's `unwrapped` (the package's laplacian_kernel without ROMEO's
+    # re-unwrap, which adds ±2π jumps to an already unwrapped field). Its default α differ from
+    # the package's regularization 2 (0.002 / 0.003) since astewartau/QSM.rs#478 (QSMxT decision
+    # 172: α0 0.00636, α1 0.00212, from our challenge-data evaluation), so both sides are given
+    # those α explicitly: the pair compares the code at QSMxT's default weights.
+    reference_set: { laplacian: unwrapped, alpha0: 0.00636, alpha1: 0.00212 }
+    candidate_set: { reference_divergence: "true", reference_edge_erosion: "true", reference_output_box: "true",
+                     alpha0: 0.00636, alpha1: 0.00212 }
     datasets:
       sim:
         # Measured: NRMSE 0.00044 %, r 1.000000, max |Δ| 2.4e-06 ppm, p99 |Δ| 3.3e-07 ppm.
         chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 3.0e-05, p99_abs_max: 1.0e-05 }
         measured: { pr369: "run 41031701965: QSMxT tgv-output-box-369 43baf55 (QSMxT/QSMxT#465), QSM.rs tgv-output-box-369 40b0dcf (astewartau/QSM.rs#375) (limits)",
-                    main: "run 41196090520: QSMxT main 9cfe3f9, qsm-core 15c938f, NRMSE 0.00038 %, pass" }
+                    main: "run 41196090520: QSMxT main 9cfe3f9, qsm-core 15c938f, NRMSE 0.00038 %, pass",
+                    pr478: "run 43889756447: α0 0.00636 / α1 0.00212 on both sides, QSMxT tgv-ratio3-default 85b0cb4 (QSMxT/QSMxT#570), QSM.rs 3d69d3a (astewartau/QSM.rs#478): NRMSE 0.00034 %, r 1.000000, max |Δ| 1.4e-6, p99 2.7e-7 ppm, pass" }
       s002001-kki-achieva-bridge-run1:
         # Measured: NRMSE 0.0049 %, r 1.000000, max |Δ| 2.5e-05 ppm, p99 |Δ| 6.4e-06 ppm.
         chimap: { nrmse_max: 0.506, correlation_min: 0.989, max_abs_max: 3.2e-04, p99_abs_max: 8.0e-05 }
         measured: { pr369: "run 41031701965: QSMxT tgv-output-box-369 43baf55 (QSMxT/QSMxT#465), QSM.rs tgv-output-box-369 40b0dcf (astewartau/QSM.rs#375) (limits)",
-                    main: "run 41196090520: QSMxT main 9cfe3f9, qsm-core 15c938f, NRMSE 0.0049 %, pass" }
+                    main: "run 41196090520: QSMxT main 9cfe3f9, qsm-core 15c938f, NRMSE 0.0049 %, pass",
+                    pr478: "run 43889756447: α0 0.00636 / α1 0.00212 on both sides, QSMxT tgv-ratio3-default 85b0cb4 (QSMxT/QSMxT#570), QSM.rs 3d69d3a (astewartau/QSM.rs#478): NRMSE 0.00068 %, r 1.000000, max |Δ| 2.7e-6, p99 8.0e-7 ppm, pass" }
         reference_prefix: [laplacian-qsmrs]
         feed: { totalfield: totalfield }
 
