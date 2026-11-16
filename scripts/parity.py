@@ -1878,18 +1878,45 @@ def render_run_summary(records: list, enabled: list, baseline: bool = False) -> 
 # Released track: does the release have the port at all? (`parity.py unavailable`)
 # ---------------------------------------------------------------------------------------------------
 
+def strip_shell_comments(run_sh: str) -> str:
+    """`run_sh` without its shell comments: a `#` that starts a word (at the start of a line or
+    after whitespace or one of `;&|()<>`) outside single and double quotes runs to the end of the
+    line, as in bash. Quotes carry across lines, a backslash escapes the next character (outside
+    single quotes), and a `#` inside a word (`$#`, `${#x}`, `a#b`) is kept."""
+    out, quote, i, n = [], None, 0, len(run_sh)
+    while i < n:
+        c = run_sh[i]
+        if quote == "'":
+            if c == "'":
+                quote = None
+        elif c == "\\" and i + 1 < n:
+            out.append(c + run_sh[i + 1])
+            i += 2
+            continue
+        elif quote == '"':
+            if c == '"':
+                quote = None
+        elif c in "'\"":
+            quote = c
+        elif c == "#" and (i == 0 or run_sh[i - 1] in " \t\n;&|()<>"):
+            while i < n and run_sh[i] != "\n":
+                i += 1
+            continue
+        out.append(c)
+        i += 1
+    return "".join(out)
+
+
 def port_commands(run_sh: str) -> list:
     """The qsmxt subcommands a port's run.sh calls (`qsmxt invert star …` → ["invert", "star"];
-    `qsmxt qsmart "$IN/…"` → ["qsmart"]), in order, without duplicates. Comment lines are skipped."""
+    `qsmxt qsmart "$IN/…"` → ["qsmart"]), in order, without duplicates. Comments, whole-line or at
+    the end of a line, are skipped (`… # (qsmxt from v12.0.0)` is not `qsmxt from v12`, #446)."""
     import re
     call = re.compile(r"(?:^|[;&|(!]\s*|\bexec\s+|\bthen\s+|\bif\s+|\$\(\s*)"
                       r"qsmxt((?:\s+[a-z][a-z0-9-]*){1,2})")
     out = []
-    for line in run_sh.splitlines():
-        s = line.strip()
-        if s.startswith("#"):
-            continue
-        for m in call.finditer(s):
+    for line in strip_shell_comments(run_sh).splitlines():
+        for m in call.finditer(line.strip()):
             cmd = m.group(1).split()
             if cmd not in out:
                 out.append(cmd)
