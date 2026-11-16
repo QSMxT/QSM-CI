@@ -1390,6 +1390,23 @@ def test_port_commands_from_run_sh():
                                         ["separate", "decompose"]]
 
 
+def test_port_commands_skip_trailing_comments():
+    # #446: a trailing comment's `(qsmxt from v12.0.0)` was read as the command `qsmxt from v12`
+    sh = ('V=$(jq -r \'.weight_norm // empty\' "$CFG"); [ -n "$V" ] && SET="$SET --weight-norm $V"'
+          '   # global-max | mask-p999 (qsmxt from v12.0.0)\n'
+          'V=$(jq -r \'.rim // empty\' "$CFG"); [ -n "$V" ] && SET="$SET --rim $V"'
+          '   # sti | whole (qsmxt after v11.0.0)\n'
+          'qsmxt invert ndi "$IN/x" $SET  # then (qsmxt mask erode) is not run\n'
+          'echo "a # b" \'c # d\'; echo $# ${#SET} x#y\n'
+          'qsmxt bgremove iharperella "$IN/y"\n')
+    assert parity.port_commands(sh) == [["invert", "ndi"], ["bgremove", "iharperella"]]
+    assert parity.strip_shell_comments('a "b # c" \'d # e\' $# ${#x} f#g # h\ni \\# j') == \
+        'a "b # c" \'d # e\' $# ${#x} f#g \ni \\# j'
+    for port in ("ndi-qsmrs", "iharperella-qsmrs", "harperella-qsmrs"):
+        cmds = parity.port_commands((ROOT / "algorithms" / port / "run.sh").read_text())
+        assert all(c[0] not in ("from", "after") for c in cmds), (port, cmds)
+
+
 def test_every_port_run_sh_names_a_qsmxt_command():
     for spec in sorted((ROOT / "algorithms").glob("*/algorithm.yml")):
         doc = yaml.safe_load(spec.read_text()) or {}
