@@ -16,7 +16,7 @@ The latest QSMxT release against each verified original. A release does not chan
 |  |  | sim | [2026-11-15](https://github.com/QSMxT/QSM-CI/actions/runs/43678102506) | v0.42.0 `1c38ad9` | ✅ pass | 0.002378% | ✅ current |
 | `vsharp` | `vsharp-sti` → `vsharp-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-14](https://github.com/QSMxT/QSM-CI/actions/runs/43555783179) | v0.42.0 `1c38ad9` | ✅ pass | 0.0002207% | ✅ current |
 |  |  | sim | [2026-11-14](https://github.com/QSMxT/QSM-CI/actions/runs/43555783179) | v0.42.0 `1c38ad9` | ✅ pass | 0.0009001% | ✅ current |
-| `iharperella` | `iharperella-sti` → `iharperella-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-14](https://github.com/QSMxT/QSM-CI/actions/runs/43555783179) | v0.42.0 `1c38ad9` | ⚪ not in v12.0.0 | — | ✅ current |
+| `iharperella` | `iharperella-sti` → `iharperella-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-16](https://github.com/QSMxT/QSM-CI/actions/runs/43807930427) | v0.42.0 `1c38ad9` | ✅ pass | 1.764e-05% | ✅ current |
 | `star` | `star-sti` → `star-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-15](https://github.com/QSMxT/QSM-CI/actions/runs/43678102506) | v0.42.0 `1c38ad9` | ✅ pass | 0.002085% | ✅ current |
 |  |  | sim | [2026-11-15](https://github.com/QSMxT/QSM-CI/actions/runs/43678102506) | v0.42.0 `1c38ad9` | ✅ pass | 0.002332% | ✅ current |
 | `medi` | `medi-cornell` → `medi-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-15](https://github.com/QSMxT/QSM-CI/actions/runs/43678102506) | v0.42.0 `1c38ad9` | ✅ pass | 0.02066% | ✅ current |
@@ -97,8 +97,8 @@ The latest QSMxT release against each verified original. A release does not chan
 |  |  | sim | [2026-11-14](https://github.com/QSMxT/QSM-CI/actions/runs/43555783179) | v0.42.0 `1c38ad9` | ✅ pass | 0.0003931% | ✅ current |
 | `heidi` | `heidi` → `heidi-qsmrs` | s005001-cbic-prisma-bridge-run1 | [2026-11-14](https://github.com/QSMxT/QSM-CI/actions/runs/43555783179) | v0.42.0 `1c38ad9` | ✅ pass | 0.0006515% | ✅ current |
 |  |  | sim | [2026-11-14](https://github.com/QSMxT/QSM-CI/actions/runs/43555783179) | v0.42.0 `1c38ad9` | ✅ pass | 0.1622% | ✅ current |
-| `ndi` | `ndi` → `ndi-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-14](https://github.com/QSMxT/QSM-CI/actions/runs/43555783179) | v0.42.0 `1c38ad9` | ⚪ not in v12.0.0 | — | ✅ current |
-|  |  | sim | [2026-11-14](https://github.com/QSMxT/QSM-CI/actions/runs/43555783179) | v0.42.0 `1c38ad9` | ⚪ not in v12.0.0 | — | ✅ current |
+| `ndi` | `ndi` → `ndi-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-16](https://github.com/QSMxT/QSM-CI/actions/runs/43807930427) | v0.42.0 `1c38ad9` | ✅ pass | 9.525e-05% | ✅ current |
+|  |  | sim | [2026-11-16](https://github.com/QSMxT/QSM-CI/actions/runs/43807930427) | v0.42.0 `1c38ad9` | ✅ pass | 0.001103% | ✅ current |
 | `fansi-nltv` | `fansi-nltv` → `fansi-nltv-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-14](https://github.com/QSMxT/QSM-CI/actions/runs/43555783179) | v0.42.0 `1c38ad9` | ✅ pass | 0.003387% | ✅ current |
 |  |  | sim | [2026-11-14](https://github.com/QSMxT/QSM-CI/actions/runs/43555783179) | v0.42.0 `1c38ad9` | ✅ pass | 0.006892% | ✅ current |
 | `fansi-nltgv` | `fansi-nltgv` → `fansi-nltgv-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-14](https://github.com/QSMxT/QSM-CI/actions/runs/43555783179) | v0.42.0 `1c38ad9` | ✅ pass | 0.003419% | ✅ current |
@@ -270,7 +270,7 @@ No original code to check against (QSMxT/QSM-CI#302; tested against ground truth
 | `hd-bet` | pass · v12.0.0 | pass · v11.0.0 | pass · v10.0.0 |
 | `hdqsm` | 0.0015 % · v12.0.0 | 0.0015 % · v11.0.0 | failing · v10.0.0 |
 | `heidi` | 0.16 % · v12.0.0 | < 0.001 % · v11.0.0 | failing · v10.0.0 · no denoise_reference_itk |
-| `iharperella` | not in v12.0.0 | not in v11.0.0 | failing · v10.0.0 |
+| `iharperella` | < 0.001 % · v12.0.0 | not in v11.0.0 | failing · v10.0.0 |
 | `ilsqr` | 0.026 % · v12.0.0 | 0.017 % · v11.0.0 | failing · v10.0.0 |
 | `iqfm` | < 0.001 % · v12.0.0 | < 0.001 % · v11.0.0 | not in v10.0.0 |
 | `iqsm` | < 0.001 % · v12.0.0 | < 0.001 % · v11.0.0 | not in v10.0.0 |
@@ -285,7 +285,7 @@ No original code to check against (QSMxT/QSM-CI#302; tested against ground truth
 | `medi` | 0.029 % · v12.0.0 | 0.029 % · v11.0.0 | failing · v10.0.0 |
 | `mindgrab` | pass · v12.0.0 | pass · v11.0.0 | not in v10.0.0 |
 | `modl-qsm` | 0.014 % · v12.0.0 | 0.014 % · v11.0.0 | 0.014 % · v10.0.0 |
-| `ndi` | not in v12.0.0 | 0.0011 % · v11.0.0 | failing · v10.0.0 |
+| `ndi` | 0.0011 % · v12.0.0 | 0.0011 % · v11.0.0 | failing · v10.0.0 |
 | `nextqsm` | 0.1 % · v12.0.0 | 0.1 % · v11.0.0 | failing · v10.0.0 |
 | `nltv` | < 0.001 % · v12.0.0 | < 0.001 % · v11.0.0 | failing · v10.0.0 |
 | `pdf` | 0.015 % · v12.0.0 | 0.015 % · v11.0.0 | failing · v10.0.0 |
