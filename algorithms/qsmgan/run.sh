@@ -6,9 +6,10 @@
 #   consumes  localfield.nii.gz, mask.nii.gz, params.json   ->   produces  chimap.nii.gz
 #
 # Units: the authors never state the input unit (paper: "tissue phase"; code: only
-# input_scale=100). We feed QSM-CI's local field in ppm, unscaled; χ then comes out at
-# ~0.25-0.33x the true scale (Hz input saturates the output). See README "Units". The
-# model's own input_scale=100 and output_scale=10 / arctanh handling live in recon.py.
+# input_scale=100). The fork README's SEPIA local field is in Hz, which saturates the
+# output. We feed QSM-CI's local field in ppm, unscaled; chi then comes out at ~0.25-0.33x
+# the true scale. See README "Units". The model's own input_scale=100 and
+# output_scale=10 / arctanh handling live in recon.py.
 #
 # Field POLARITY: QSM-CI's local field is simulated by qsm-forward with the dipole kernel
 # D = 1/3 - kz^2/k^2. QSMGAN was trained on the OPPOSITE field convention (QSMnet-lineage

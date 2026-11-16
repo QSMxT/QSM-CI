@@ -10,9 +10,9 @@ Wasserstein GAN (WGAN-GP) and an increased receptive field.
 ## Why `dipole`
 
 QSMGAN learns the dipole inversion only. Upstream, the network is fed the
-background-removed **tissue phase** (their in-house MATLAB pipeline removes the
-background field with V-SHARP first) and outputs susceptibility. It does not do field mapping or background
-removal itself, so it maps exactly onto the QSM-CI `dipole` stage: consumes
+background-removed **tissue phase** (the paper's in-house MATLAB pipeline uses V-SHARP;
+the fork's README says to run SEPIA first) and outputs susceptibility. It does not do
+field mapping or background removal itself, so it maps exactly onto the QSM-CI `dipole` stage: consumes
 `localfield.nii.gz`, `mask.nii.gz`, `params.json`; produces `chimap.nii.gz`.
 
 The architecture is a 3D U-Net **generator** (`UNet3D`, 4 pool layers, LeakyReLU,
@@ -33,15 +33,16 @@ Both repos are MIT-licensed (the fork's LICENSE is © 2021 Melanie A. Morrison).
 The input unit is **not stated** by the authors. The paper (arXiv 1905.03356 §2.3–2.5)
 calls the input "tissue phase" (in-house MATLAB, V-SHARP background removal) and gives
 no unit, TE or field-strength scaling; the fork's code (521d202, `config.json`) only
-multiplies the input by `input_scale = 100`. The output is `chi = arctanh(net_out) / 10`
-(`output_scale = 10`, tanh head), reproduced verbatim in `recon.py`.
+multiplies the input by `input_scale = 100`. The fork's README says to feed SEPIA's local
+field, which is in **Hz**, but Hz input does not work (below). The output is
+`chi = arctanh(net_out) / 10` (`output_scale = 10`, tanh head), reproduced verbatim in `recon.py`.
 
 QSM-CI feeds its local field in **ppm**, unscaled. What we measured on the simulation
 (field = D·χ_truth), as the slope of output on truth:
 
 - ppm (as fed): slope ≈ 0.25 on the simulation (≈ 0.33 in vivo), correlation ≈ 0.72.
-- Hz (×127.7 at 3 T): saturates the tanh output; slope ≈ 7.9, correlation ≈ 0.58.
-  Hz is ruled out.
+- Hz (×127.7 at 3 T, SEPIA's unit): saturates the tanh output; slope ≈ 7.9,
+  correlation ≈ 0.58. Hz is ruled out.
 - ≈ 2π·ppm (×6): slope ≈ 1.0, but correlation stays ≈ 0.72.
 
 So QSMGAN's χ comes out at about a quarter to a third of the true scale here, and the
