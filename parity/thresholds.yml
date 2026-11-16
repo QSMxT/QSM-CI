@@ -1083,12 +1083,16 @@ pairs:
     qsmxt_paths: &invert_tgv_wiring [src/cli.rs, src/commands/common.rs, src/commands/invert.rs,
                                      crates/qsmxt-engine/src/config.rs,
                                      crates/qsmxt-engine/src/stages/inversion.rs]
-    # QSM.rs ports qsm_tgv with the package's defaults (α from get_default_alpha(2), the
-    # voxel-size iteration count, 3 erosions, step 3, the first echo's TE) and, for a field in ppm,
-    # the ordinary discrete Laplacian: tgv-tgvjl's `unwrapped` (the package's laplacian_kernel
-    # without ROMEO's re-unwrap, which adds ±2π jumps to an already unwrapped field).
-    reference_set: { laplacian: unwrapped }
-    candidate_set: { reference_divergence: "true", reference_edge_erosion: "true", reference_output_box: "true" }
+    # QSM.rs ports qsm_tgv with the package's defaults (the voxel-size iteration count, 3
+    # erosions, step 3, the first echo's TE) and, for a field in ppm, the ordinary discrete
+    # Laplacian: tgv-tgvjl's `unwrapped` (the package's laplacian_kernel without ROMEO's
+    # re-unwrap, which adds ±2π jumps to an already unwrapped field). Its default α differ from
+    # the package's regularization 2 (0.002 / 0.003) since astewartau/QSM.rs#478 (QSMxT decision
+    # 172: α0 0.00636, α1 0.00212, from our challenge-data evaluation), so both sides are given
+    # those α explicitly: the pair compares the code at QSMxT's default weights.
+    reference_set: { laplacian: unwrapped, alpha0: 0.00636, alpha1: 0.00212 }
+    candidate_set: { reference_divergence: "true", reference_edge_erosion: "true", reference_output_box: "true",
+                     alpha0: 0.00636, alpha1: 0.00212 }
     datasets:
       sim:
         # Measured: NRMSE 0.00044 %, r 1.000000, max |Δ| 2.4e-06 ppm, p99 |Δ| 3.3e-07 ppm.

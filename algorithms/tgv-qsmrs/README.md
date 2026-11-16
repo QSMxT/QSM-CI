@@ -16,8 +16,8 @@ qsmxt invert tgv /input/totalfield.nii.gz -m /input/mask.nii.gz -o /output/chima
 
 | parameter | default | description |
 |---|---|---|
-| `iterations` | 1000 | iterations |
-| `alpha1` | 0.0015 | first-order weight |
-| `alpha0` | 0.003 | second-order weight |
+| `iterations` | from the voxel size | iterations |
+| `alpha1` | 0.00212 | first-order weight, rad at the echo time |
+| `alpha0` | 0.00636 | second-order weight, rad at the echo time |
 
 _Citations/DOIs are auto-generated best-effort references and should be verified._
