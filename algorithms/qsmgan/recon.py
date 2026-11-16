@@ -2,7 +2,8 @@
 """QSMGAN dipole inversion for QSM-CI (CPU-only, patch-based inference).
 
 QSMGAN is a 3D U-Net generator refined by a WGAN-GP that maps a background-removed
-LOCAL field (in ppm) directly to susceptibility (chimap, ppm). This is the `dipole`
+LOCAL field directly to susceptibility (chimap, ppm). The input unit is unstated
+upstream; QSM-CI feeds ppm (see README "Units"). This is the `dipole`
 stage: consumes localfield + mask (+ params), produces chimap.
 
 The generator (UNet3D) is defined here verbatim from the upstream fork
@@ -13,7 +14,7 @@ and reproduce the upstream patch pipeline (utils/data.py QsmPatchDataHD +
 predict.py QsmPredict.run_net):
 
   * input patch  64^3, output (receptive-field crop) 48^3  ->  i64o48
-  * input_scale  = 100   (localfield ppm is multiplied by this before the net)
+  * input_scale  = 100   (the input is multiplied by this before the net)
   * output_scale = 10, output_transform = tanh -> inverse is arctanh
         chi_patch = arctanh(net_out) / output_scale
   * the volume is tiled by 48^3 OUTPUT patches; each 64^3 input patch is the same

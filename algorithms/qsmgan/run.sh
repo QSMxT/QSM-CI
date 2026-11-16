@@ -2,13 +2,13 @@
 # QSM-CI submission — QSMGAN (dipole stage), CPU-only.
 #
 # QSMGAN is a 3D U-Net generator refined by a WGAN-GP. It maps a background-removed
-# LOCAL field (in ppm) straight to susceptibility. Hence stage = dipole:
+# LOCAL field straight to susceptibility. Hence stage = dipole:
 #   consumes  localfield.nii.gz, mask.nii.gz, params.json   ->   produces  chimap.nii.gz
 #
-# Units: QSMGAN's upstream pipeline feeds it the SEPIA local field (background-removed,
-# ppm). QSM-CI's localfield.nii.gz is already that: a local field in ppm on the mask
-# grid. No rescaling of the input is applied here (the model's own input_scale=100 and
-# output_scale=10 / arctanh handling live in recon.py, matching the upstream config).
+# Units: the authors never state the input unit (paper: "tissue phase"; code: only
+# input_scale=100). We feed QSM-CI's local field in ppm, unscaled; χ then comes out at
+# ~0.25-0.33x the true scale (Hz input saturates the output). See README "Units". The
+# model's own input_scale=100 and output_scale=10 / arctanh handling live in recon.py.
 #
 # Field POLARITY: QSM-CI's local field is simulated by qsm-forward with the dipole kernel
 # D = 1/3 - kz^2/k^2. QSMGAN was trained on the OPPOSITE field convention (QSMnet-lineage
