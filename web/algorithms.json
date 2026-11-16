@@ -4477,18 +4477,18 @@
       "parameters": [
         {
           "name": "iterations",
-          "default": 1000,
-          "description": "iterations"
+          "default": "max(1000, 3200/prod(voxel_size)^0.42)/step_size^0.6",
+          "description": "iterations (TGV.jl's voxel-size formula by default)"
         },
         {
           "name": "alpha1",
-          "default": 0.003,
-          "description": "first-order (gradient) weight, rad at the echo time"
+          "default": 0.00212,
+          "description": "first-order (gradient) weight, rad at the echo time (TGV.jl regularization 2 = 0.003)"
         },
         {
           "name": "alpha0",
-          "default": 0.002,
-          "description": "second-order weight, rad at the echo time"
+          "default": 0.00636,
+          "description": "second-order weight, rad at the echo time (TGV.jl regularization 2 = 0.002)"
         },
         {
           "name": "reference_divergence",
@@ -6304,18 +6304,18 @@
       "parameters": [
         {
           "name": "iterations",
-          "default": 1000,
-          "description": "iterations"
+          "default": "max(1000, 3200/prod(voxel_size)^0.42)/step_size^0.6",
+          "description": "iterations (TGV.jl's voxel-size formula by default)"
         },
         {
           "name": "alpha1",
-          "default": 0.003,
-          "description": "first-order (gradient) weight, rad at the echo time"
+          "default": 0.00212,
+          "description": "first-order (gradient) weight, rad at the echo time (TGV.jl regularization 2 = 0.003)"
         },
         {
           "name": "alpha0",
-          "default": 0.002,
-          "description": "second-order weight, rad at the echo time"
+          "default": 0.00636,
+          "description": "second-order weight, rad at the echo time (TGV.jl regularization 2 = 0.002)"
         },
         {
           "name": "reference_divergence",

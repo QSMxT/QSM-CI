@@ -17,3 +17,12 @@ B0DIR="${QSMCI_B0_DIR:-0 0 1}"
 qsmxt invert modl-qsm "$IN/localfield.nii.gz" -m "$IN/mask.nii.gz" -o "$OUT/chimap.nii.gz" \
   --b0-direction $B0DIR --field-strength "${QSMCI_B0:-3}"
 ```
+
+## Amplitude
+
+MoDL-QSM's χ comes out at about 0.5× the reference on QSM-CI's simulation and in vivo data (slope
+0.49 / 0.53, correlation 0.85 / 0.79), and about 0.5–0.7× on the authors' own demo outputs (2016
+challenge 0.53; their Prisma data 0.72). On the authors' outputs the reverse slope (reference on χ)
+is ≈1, i.e. the released network shrinks values towards the mean. Input units (ppm) and wiring match
+the authors' code (the QSM.rs port matches it to 0.0002 % NRMSE). QSM-CI reports the method as
+published; its deep-grey-matter slope shows the effect.
