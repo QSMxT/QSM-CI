@@ -25538,11 +25538,11 @@
    "dataset": "s002001-kki-achieva-bridge-run1",
    "track": "released",
    "release": "v12.0.0",
-   "date": "2026-11-14T09:48:47Z",
-   "run_id": "43555783179",
-   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/43555783179",
-   "qsmci_commit": "f6ee5ac74a4a834d9c24a5c535d2fe2612d81f39",
-   "thresholds": "e02857b5363e",
+   "date": "2026-11-17T05:02:07Z",
+   "run_id": "44019257008",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44019257008",
+   "qsmci_commit": "265972cef881e1ed0a5238daff0683166ba995e7",
+   "thresholds": "4fcbf92b7c0a",
    "reference": {
     "slug": "tgv-tgvjl",
     "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
@@ -25551,8 +25551,8 @@
    },
    "candidate": {
     "slug": "tgv-qsmrs",
-    "image": "qsmxt-under-test:43555783179-j49",
-    "digest": "sha256:f1ab06d5a7ad92245079cd71ef475d30ae10937c1230bbbc453d16b1ca2917c4",
+    "image": "qsmxt-under-test:44019257008-j0",
+    "digest": "sha256:c9cb30a8b35090c35c882397e6831afc9c821078f9a4477d7d005f7d8b72fdb5",
     "qsmxt": "qsmxt 12.0.0"
    },
    "qsmrs": {
@@ -25566,22 +25566,26 @@
    },
    "set": {
     "reference": {
-     "laplacian": "unwrapped"
+     "laplacian": "unwrapped",
+     "alpha0": 0.00636,
+     "alpha1": 0.00212
     },
     "candidate": {
      "reference_divergence": "true",
      "reference_edge_erosion": "true",
-     "reference_output_box": "true"
+     "reference_output_box": "true",
+     "alpha0": 0.00636,
+     "alpha1": 0.00212
     }
    },
    "result": "pass",
    "metrics": {
     "chimap": {
      "kind": "continuous",
-     "nrmse": 0.0007663681110316662,
-     "correlation": 0.9999999999707442,
-     "max_abs": 2.8759241104125977e-06,
-     "p99_abs": 8.717179298400879e-07,
+     "nrmse": 0.0006843553585213529,
+     "correlation": 0.9999999999767,
+     "max_abs": 2.734363079071045e-06,
+     "p99_abs": 7.953494787216187e-07,
      "nonfinite": 0
     }
    }
@@ -25868,11 +25872,11 @@
    "dataset": "sim",
    "track": "released",
    "release": "v12.0.0",
-   "date": "2026-11-14T09:48:47Z",
-   "run_id": "43555783179",
-   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/43555783179",
-   "qsmci_commit": "f6ee5ac74a4a834d9c24a5c535d2fe2612d81f39",
-   "thresholds": "1ccad39399e0",
+   "date": "2026-11-17T05:02:07Z",
+   "run_id": "44019257008",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44019257008",
+   "qsmci_commit": "265972cef881e1ed0a5238daff0683166ba995e7",
+   "thresholds": "ead996d3d73b",
    "reference": {
     "slug": "tgv-tgvjl",
     "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
@@ -25881,8 +25885,8 @@
    },
    "candidate": {
     "slug": "tgv-qsmrs",
-    "image": "qsmxt-under-test:43555783179-j50",
-    "digest": "sha256:949a2a85ae3465c9e66f4357f26c31a21e1aa3fe735f146602da6981c599ca05",
+    "image": "qsmxt-under-test:44019257008-j1",
+    "digest": "sha256:f28cae6e38d0fd80ca3abac128fd0fedc4c0126ac7d7597b8204f83713b898f7",
     "qsmxt": "qsmxt 12.0.0"
    },
    "qsmrs": {
@@ -25896,22 +25900,26 @@
    },
    "set": {
     "reference": {
-     "laplacian": "unwrapped"
+     "laplacian": "unwrapped",
+     "alpha0": 0.00636,
+     "alpha1": 0.00212
     },
     "candidate": {
      "reference_divergence": "true",
      "reference_edge_erosion": "true",
-     "reference_output_box": "true"
+     "reference_output_box": "true",
+     "alpha0": 0.00636,
+     "alpha1": 0.00212
     }
    },
    "result": "pass",
    "metrics": {
     "chimap": {
      "kind": "continuous",
-     "nrmse": 0.0003826553324686831,
-     "correlation": 0.9999999999926794,
+     "nrmse": 0.0003367005503703575,
+     "correlation": 0.9999999999943355,
      "max_abs": 1.430511474609375e-06,
-     "p99_abs": 2.998858690261841e-07,
+     "p99_abs": 2.682209014892578e-07,
      "nonfinite": 0
     }
    }
