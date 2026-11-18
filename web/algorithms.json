@@ -5032,7 +5032,7 @@
         }
       ],
       "ci_notes": [
-        "Includes a fix that is not in the FANSI toolbox: the Newton step of WH_nlTV.m's nonlinear data term is kept inside the interval that always holds its solution. FANSI's step is unguarded and can run away and turn the whole map into NaN, as it does on the in-silico head with a PDF local field. Where FANSI's step stays inside that interval the result is bit-identical; the option newton_guard false runs FANSI's step unchanged.\n"
+        "Includes a fix that is not in the FANSI toolbox: the Newton step of WH_nlTV.m's nonlinear data term is kept inside the interval that always holds its solution. FANSI's step is unguarded and can run away and turn the whole map into NaN, as it does on the in-silico head with a PDF local field. Where FANSI's step converges, the map changes by about 1e-6 ppm; the option newton_guard false runs FANSI's step unchanged.\n"
       ]
     },
     {

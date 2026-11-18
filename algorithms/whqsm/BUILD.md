@@ -57,8 +57,10 @@ the flat weight (W = 1 = mu2) it can jump far from the solution and then go NaN.
 head with a PDF local field does this in the first ADMM iteration, and the whole map comes out NaN.
 [`wh_nltv_newton_guard.patch`](wh_nltv_newton_guard.patch) adds `params.isNewtonGuard`: when set,
 each Newton iterate is clamped to `[(rhs − W)/mu2, (rhs + W)/mu2]`, the interval that always holds
-the minimiser (its gradient is `W·sin(z2 − phase) + mu2·z2 − rhs`), so the fix is exact. Only
-clamped voxels change, so wherever FANSI's Newton step behaves the result is bit-identical.
+the minimiser (its gradient is `W·sin(z2 − phase) + mu2·z2 − rhs`), so the step still converges
+to the same solution. An iterate inside the interval is untouched. Even where FANSI's step converges
+it sometimes overshoots on the way, so the guard moves maps that never went NaN by about 1e-6 ppm
+(NRMSE 0.0001% on the fidelity cases, [`fidelity/REPORT.md`](fidelity/REPORT.md)).
 `recon.m` turns it on by default; `newton_guard: false` in `config.json` runs FANSI's step
 verbatim. QSM.rs's port has the same guard (QSM.rs#461).
 
