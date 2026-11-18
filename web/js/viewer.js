@@ -1474,7 +1474,7 @@ function renderRegionTable(entry, errorMode) {
         <td class="py-1.5 pr-1 leading-tight text-gray-500 dark:text-gray-400"><span data-tip="n=${r.n} voxels in this run's support">${escapeHtml(block.labels[r.k] || "label-" + r.k)}</span></td>
         <td class="whitespace-nowrap py-1.5 pl-2 text-right tabular-nums font-medium ${Math.abs(r.d) >= 0.01 ? "text-gray-900 dark:text-gray-100" : "text-gray-600 dark:text-gray-300"}">${p3(r.d)}</td>
         <td class="whitespace-nowrap py-1.5 pl-2 text-right tabular-nums text-gray-600 dark:text-gray-300">${p3(r.dm)}</td>
-        <td class="whitespace-nowrap py-1.5 pl-2 text-right tabular-nums text-gray-600 dark:text-gray-300">${r.pct == null ? ", " : (r.pct > 0 ? "+" : "−") + Math.abs(r.pct).toFixed(0) + "%"}</td>
+        <td class="whitespace-nowrap py-1.5 pl-2 text-right tabular-nums text-gray-600 dark:text-gray-300">${r.pct == null ? "—" : (r.pct > 0 ? "+" : "−") + Math.abs(r.pct).toFixed(0) + "%"}</td>
         <td class="py-1.5 pl-2" style="width:4.25rem"><div data-tip="under- / over-estimation vs ground truth (bars √-scaled to the largest |Δ mean|)" style="display:flex;align-items:center;height:8px;width:100%">
           <div style="flex:1;display:flex;justify-content:flex-end"><div style="height:8px;border-radius:3px 0 0 3px;width:${wNeg * 2}%;background:#3b82f6;opacity:.7"></div></div>
           <div style="width:1px;height:12px;background:#94a3b8;opacity:.55"></div>
