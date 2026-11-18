@@ -1,6 +1,6 @@
 # MCR image for the compiled whqsm submission. Build the `recon` binary first (BUILD.md: licensed
-# MATLAB R2023b + MATLAB Compiler, with the FANSI toolbox 93044a3), then:
-#   podman build -t ghcr.io/astewartau/qsm-ci/wh-qsm:v2 .
+# MATLAB R2023b + MATLAB Compiler, with the FANSI toolbox 93044a3 and QSM-CI's Newton-guard patch), then:
+#   podman build -t ghcr.io/astewartau/qsm-ci/wh-qsm:v3 .
 # The FANSI toolbox code it calls is baked into `recon` at compile time; the image
 # only needs the MATLAB Runtime of the compiling release, which includes the toolboxes' runtime
 # components. CI never builds this file; it pulls `image:` from algorithm.yml.

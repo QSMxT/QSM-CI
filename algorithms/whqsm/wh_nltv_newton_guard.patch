@@ -1,0 +1,32 @@
+--- WH_nlTV.m
++++ WH_nlTV.m
+@@ -110,6 +110,12 @@
+         
+     end
+     
++    if isfield(params,'isNewtonGuard')   % QSM-CI addition (BUILD.md); false is FANSI's unguarded step
++        isNewtonGuard = params.isNewtonGuard;
++    else
++        isNewtonGuard = false;
++    end
++
+     if isfield(params,'isPrecond')
+         isPrecond = params.isPrecond;
+     else
+@@ -264,6 +270,16 @@
+             
+             update = ( W .* sin(z2 - phase) + mu2*z2 - rhs_z2 ) ./ ( W .* cos(z2 - phase) + mu2 );            
+         
++            if isNewtonGuard
++                % QSM-CI guard: keep z2 in [(rhs-W)/mu2, (rhs+W)/mu2], which holds the minimiser.
++                % Only clamped voxels change, so steps that stay inside are bit-identical.
++                zn = z2 - update;
++                zc = min(max(zn, (rhs_z2 - W)/mu2), (rhs_z2 + W)/mu2);
++                k = zc ~= zn;
++                update(k) = z2(k) - zc(k);
++                clear zn zc k
++            end
++
+             z2 = z2 - update;     
+             delta = norm(update(:)) / norm_old;
+         end
