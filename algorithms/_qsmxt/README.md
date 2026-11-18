@@ -1,13 +1,13 @@
 # QSMxT engine image
 
 Shared environment for every QSMxT-backed submission (the QSM.rs algorithms, `*-qsmrs`). Pinned to an
-official QSMxT release (`v12.0.0`, built on QSM.rs v0.42.0) plus `jq` (used by each `run.sh` to read
+official QSMxT release (`v12.1.0`, built on QSM.rs v0.43.0) plus `jq` (used by each `run.sh` to read
 `params.json` / `config.json`). Submissions mount their `run.sh` at `/algo` and call
 `qsmxt fieldmap <algo>` / `qsmxt bgremove <algo>` / `qsmxt invert <algo>` / `qsmxt separate <algo>` /
 `qsmxt qsmart`. The release archive is verified against its `SHA256SUMS` at build time.
 
-    docker build --build-arg QSMXT_VERSION=v12.0.0 -t ghcr.io/astewartau/qsm-ci/qsmxt:v12.0.0 .
-    docker push ghcr.io/astewartau/qsm-ci/qsmxt:v12.0.0
+    docker build --build-arg QSMXT_VERSION=v12.1.0 -t ghcr.io/astewartau/qsm-ci/qsmxt:v12.1.0 .
+    docker push ghcr.io/astewartau/qsm-ci/qsmxt:v12.1.0
 
 Each submission pins its own image in `image:` by digest (with the tag as a comment), so older
 methods keep running against the release they were scored on. Build a new tag when a submission needs
@@ -21,12 +21,15 @@ weights, which qsmxt would download on first use; the run has no network. `model
 them to a qsmxt image at `/opt/qsm-models` (`$QSM_MODEL_DIR`), fetched from `qsmxt/qsm-onnx-weights`
 at a pinned commit and checked against `models.sha256` (QSM.rs's registry hashes):
 
-    docker build -f models.Dockerfile -t ghcr.io/astewartau/qsm-ci/qsmxt:v12.0.0-models-1 .
+    docker build -f models.Dockerfile -t ghcr.io/astewartau/qsm-ci/qsmxt:v12.1.0-models-1 .
     docker build -f models.Dockerfile --build-arg BASE=<any qsmxt image> -t <tag> .   # e.g. a source build
 
-`v12.0.0` is `sha256:c78a9ffb14b54c319cb5fb3409ccf06ac83bb79bf250a0baa2663710255b709e`, and `v12.0.0-models-1`
-(on it) is `sha256:3e13833ef127a9f549525ecfbcbd6f2adbb7673c586e5ed554f7cedec64f2ea0` (weights at `e7116c8`;
-QSM.rs v0.42.0's registry is unchanged from v0.41.0's). Before them, `v11.0.0` was
+`v12.1.0` is `sha256:fb2ce810e33b377ed4fdd959ea32e6565c3e74bef92217651608dddb937efafd`, and `v12.1.0-models-1`
+(on it) is `sha256:984411644a17600b2dea0582ad290da76b68b74a4ed2ab0077ecc80f67dd4b21` (weights at `e7116c8`;
+QSM.rs v0.43.0's registry adds only `synthseg-2.0.onnx`, which no submission uses, and keeps every other
+file's hash). Before them, `v12.0.0` was `sha256:c78a9ffb14b54c319cb5fb3409ccf06ac83bb79bf250a0baa2663710255b709e`
+and `v12.0.0-models-1` `sha256:3e13833ef127a9f549525ecfbcbd6f2adbb7673c586e5ed554f7cedec64f2ea0` (the same
+weights), `v11.0.0` was
 `sha256:5a353a43b0a6ceeb2b8ec57422a56770d5e86e1d551e727b72ca5089b2e5277e` and `v11.0.0-models-1`
 `sha256:bb72a8130bd087271d21d5efd2a8b0ed6989b6bcbbe0ca24c268eca38a878341` (the same weights), and `v10.0.0-models-2` was
 `sha256:3fd27500c18778edc21fd771828573e01c353e4c6147124977293e51256a9053` (weights at `f9a6681`). Published tags are never overwritten: a weight change gets the next `-models-N` tag.
