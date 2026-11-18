@@ -350,6 +350,49 @@
    }
   },
   {
+   "pair": "amp-pe",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "04ab590899de",
+   "reference": {
+    "slug": "amp-pe",
+    "image": "ghcr.io/astewartau/qsm-ci/amp-pe@sha256:0e1f44758045229f3297926a573e5664e6de5d2a895dca2a30d2f2339d507fc1",
+    "digest": "sha256:0e1f44758045229f3297926a573e5664e6de5d2a895dca2a30d2f2339d507fc1",
+    "id": "sha256:f889d5cbe95d2a6499707011b24abc5e2df955548c071e30be87a723cae5d442"
+   },
+   "candidate": {
+    "slug": "amp-pe-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j20",
+    "digest": "sha256:44e2b9b7d6cacdb66241ab9b0dbe1da8e8236ff43d03c836da44e40c265c6d52",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.47666130458911443,
+     "correlation": 0.9999886378501645,
+     "max_abs": 0.03618806600570679,
+     "p99_abs": 0.00045672051608562473,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
    "pair": "autoqsm",
    "dataset": "s002001-kki-achieva-bridge-run1",
    "track": "dev",
@@ -621,6 +664,49 @@
   },
   {
    "pair": "autoqsm",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "1e2ae184bb95",
+   "reference": {
+    "slug": "autoqsm",
+    "image": "ghcr.io/astewartau/qsm-ci/autoqsm@sha256:8b5e8552a6795a59add02f9ddb392f45c7a8dcb98f465520ecda89a2fa055d54",
+    "digest": "sha256:8b5e8552a6795a59add02f9ddb392f45c7a8dcb98f465520ecda89a2fa055d54",
+    "id": "sha256:8b5e8552a6795a59add02f9ddb392f45c7a8dcb98f465520ecda89a2fa055d54"
+   },
+   "candidate": {
+    "slug": "autoqsm-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j63-models",
+    "digest": "sha256:bc6f2d17159b7e8b83783f0c828ca65a68d6105136d6ccd28015e1a3eda0abe0",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.0001120835752206852,
+     "correlation": 0.9999999999993624,
+     "max_abs": 3.501772880554199e-07,
+     "p99_abs": 8.940696716308594e-08,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "autoqsm",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-11-03T16:10:24Z",
@@ -876,6 +962,49 @@
    "qsmxt": {
     "ref": "v12.0.0",
     "commit": "2c1485ad627375ba5aa1a3fc3c191c66c79bc0ae"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.00014431278486715598,
+     "correlation": 0.9999999999989571,
+     "max_abs": 2.859160304069519e-07,
+     "p99_abs": 8.719507604837418e-08,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "autoqsm",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "ed5bcec33acf",
+   "reference": {
+    "slug": "autoqsm",
+    "image": "ghcr.io/astewartau/qsm-ci/autoqsm@sha256:8b5e8552a6795a59add02f9ddb392f45c7a8dcb98f465520ecda89a2fa055d54",
+    "digest": "sha256:8b5e8552a6795a59add02f9ddb392f45c7a8dcb98f465520ecda89a2fa055d54",
+    "id": "sha256:8b5e8552a6795a59add02f9ddb392f45c7a8dcb98f465520ecda89a2fa055d54"
+   },
+   "candidate": {
+    "slug": "autoqsm-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j64-models",
+    "digest": "sha256:57060e25ae8c67aa92aa2057115cee4dac58f07f8a0aa807e606faee48454eeb",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
    },
    "result": "pass",
    "metrics": {
@@ -1185,6 +1314,54 @@
   },
   {
    "pair": "bfrnet",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "a5416d702dea",
+   "reference": {
+    "slug": "bfrnet",
+    "image": "ghcr.io/astewartau/qsm-ci/bfrnet@sha256:ab939d3759104300dcca11421b020221dcc682bd397d77c656862cc02b5c9891",
+    "digest": "sha256:ab939d3759104300dcca11421b020221dcc682bd397d77c656862cc02b5c9891",
+    "id": "sha256:ab939d3759104300dcca11421b020221dcc682bd397d77c656862cc02b5c9891"
+   },
+   "candidate": {
+    "slug": "bfrnet-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j67-models",
+    "digest": "sha256:24df9d834092d55148ea0d1636af3403e97ef08c87c72ab7eee577a8eac8e821",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "set": {
+    "reference": {
+     "patch_size": 0
+    }
+   },
+   "result": "pass",
+   "metrics": {
+    "localfield": {
+     "kind": "continuous",
+     "nrmse": 0.00015569325552539524,
+     "correlation": 0.9999999999987849,
+     "max_abs": 2.5331974029541016e-07,
+     "p99_abs": 5.21540641784668e-08,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "bfrnet",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-11-03T16:10:24Z",
@@ -1471,6 +1648,54 @@
      "kind": "continuous",
      "nrmse": 0.00021687650376354028,
      "correlation": 0.9999999999976507,
+     "max_abs": 1.0579824447631836e-06,
+     "p99_abs": 4.470348358154297e-08,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "bfrnet",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "670e371e6fe1",
+   "reference": {
+    "slug": "bfrnet",
+    "image": "ghcr.io/astewartau/qsm-ci/bfrnet@sha256:ab939d3759104300dcca11421b020221dcc682bd397d77c656862cc02b5c9891",
+    "digest": "sha256:ab939d3759104300dcca11421b020221dcc682bd397d77c656862cc02b5c9891",
+    "id": "sha256:ab939d3759104300dcca11421b020221dcc682bd397d77c656862cc02b5c9891"
+   },
+   "candidate": {
+    "slug": "bfrnet-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j68-models",
+    "digest": "sha256:4ddeead64cc39d05271a9f38d880d24ca38952c356fb258286157a4cdd48e563",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "set": {
+    "reference": {
+     "patch_size": 0
+    }
+   },
+   "result": "pass",
+   "metrics": {
+    "localfield": {
+     "kind": "continuous",
+     "nrmse": 0.00021687650376354478,
+     "correlation": 0.9999999999976471,
      "max_abs": 1.0579824447631836e-06,
      "p99_abs": 4.470348358154297e-08,
      "nonfinite": 0
@@ -1773,6 +1998,63 @@
    "qsmxt": {
     "ref": "v12.0.0",
     "commit": "2c1485ad627375ba5aa1a3fc3c191c66c79bc0ae"
+   },
+   "set": {
+    "candidate": {
+     "qsm": "chimap",
+     "gamma": 42.5774
+    }
+   },
+   "result": "pass",
+   "metrics": {
+    "chi-para": {
+     "kind": "continuous",
+     "nrmse": 4.614315383946022e-09,
+     "correlation": 1.0,
+     "max_abs": 9.313225746154785e-10,
+     "p99_abs": 0.0,
+     "nonfinite": 0
+    },
+    "chi-dia": {
+     "kind": "continuous",
+     "nrmse": 8.80766055991229e-09,
+     "correlation": 0.9999999999999994,
+     "max_abs": 9.313225746154785e-10,
+     "p99_abs": 0.0,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "chisep-ilsqr",
+   "dataset": "chisep-mc",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "ad46cffd87fd",
+   "reference": {
+    "slug": "chisep-ilsqr",
+    "image": "ghcr.io/astewartau/qsm-ci/chi-sep-ilsqr@sha256:0c5bb3a6989a07b8fbb38459d2477df59b28035bc673b98c3f671159ac22769e",
+    "digest": "sha256:0c5bb3a6989a07b8fbb38459d2477df59b28035bc673b98c3f671159ac22769e",
+    "id": "sha256:0c5bb3a6989a07b8fbb38459d2477df59b28035bc673b98c3f671159ac22769e"
+   },
+   "candidate": {
+    "slug": "chisep-ilsqr-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j22",
+    "digest": "sha256:0750860cc3b895b6c7f1455dca7a5d80425d01af3bb82e749deb94ceaf0b96c3",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
    },
    "set": {
     "candidate": {
@@ -2119,6 +2401,62 @@
    }
   },
   {
+   "pair": "chisep-medi",
+   "dataset": "chisep-mc",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "d3901afd4435",
+   "reference": {
+    "slug": "chisep-medi",
+    "image": "ghcr.io/astewartau/qsm-ci/chi-sep-medi@sha256:c3afb14130929cb73fd41d9011afcce69634969b73216e996341e9c946fc8d7c",
+    "digest": "sha256:c3afb14130929cb73fd41d9011afcce69634969b73216e996341e9c946fc8d7c",
+    "id": "sha256:c3afb14130929cb73fd41d9011afcce69634969b73216e996341e9c946fc8d7c"
+   },
+   "candidate": {
+    "slug": "chisep-medi-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j23",
+    "digest": "sha256:6aca7475c515f54e23593399452b18c8382a2b50888652d6f94c0296cfaa47d7",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "set": {
+    "candidate": {
+     "gamma": 42.5774
+    }
+   },
+   "result": "pass",
+   "metrics": {
+    "chi-para": {
+     "kind": "continuous",
+     "nrmse": 0.380498150144947,
+     "correlation": 0.9999871885924648,
+     "max_abs": 0.00988069735467434,
+     "p99_abs": 0.0003651501983404164,
+     "nonfinite": 0
+    },
+    "chi-dia": {
+     "kind": "continuous",
+     "nrmse": 0.5786655210899988,
+     "correlation": 0.9999623829527929,
+     "max_abs": 0.0068000731989741325,
+     "p99_abs": 0.00032187446951866244,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
    "pair": "chisepnet",
    "dataset": "chisep-mc",
    "track": "dev",
@@ -2390,6 +2728,57 @@
    "qsmxt": {
     "ref": "v12.0.0",
     "commit": "2c1485ad627375ba5aa1a3fc3c191c66c79bc0ae"
+   },
+   "result": "pass",
+   "metrics": {
+    "chi-para": {
+     "kind": "continuous",
+     "nrmse": 4.000944411619044e-05,
+     "correlation": 0.999999999999795,
+     "max_abs": 1.9371509552001953e-07,
+     "p99_abs": 4.470348358154297e-08,
+     "nonfinite": 0
+    },
+    "chi-dia": {
+     "kind": "continuous",
+     "nrmse": 3.7854568403805333e-05,
+     "correlation": 0.9999999999995508,
+     "max_abs": 1.6391277313232422e-07,
+     "p99_abs": 3.3527612686157227e-08,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "chisepnet",
+   "dataset": "chisep-mc",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "cfd677cc8c9b",
+   "reference": {
+    "slug": "chisepnet",
+    "image": "ghcr.io/astewartau/qsm-ci/chisep-toolbox@sha256:dcac7d9f05fe02ee44522feaabc839473db61257feed60648bea698911a6521d",
+    "digest": "sha256:dcac7d9f05fe02ee44522feaabc839473db61257feed60648bea698911a6521d",
+    "id": "sha256:dcac7d9f05fe02ee44522feaabc839473db61257feed60648bea698911a6521d"
+   },
+   "candidate": {
+    "slug": "chisepnet-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j69-models",
+    "digest": "sha256:73996e98efbe36272bc53b1e394185c70e14c23aeb898bc791b16caf6b728057",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
    },
    "result": "pass",
    "metrics": {
@@ -2882,6 +3271,63 @@
    }
   },
   {
+   "pair": "decompose",
+   "dataset": "chisep-mc",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "60bf8bd33c70",
+   "reference": {
+    "slug": "decompose-qsm",
+    "image": "ghcr.io/astewartau/qsm-ci/decompose-qsm@sha256:39a91b0435d6729cfd4a8c2441ebad1cbfe45c7358ea6d3ca95a1b65ec0e4033",
+    "digest": "sha256:39a91b0435d6729cfd4a8c2441ebad1cbfe45c7358ea6d3ca95a1b65ec0e4033",
+    "id": "sha256:8a42b0ce6eddab9f8f9598255f5f8444fae4228e45d126ad3007482cf300d0a2"
+   },
+   "candidate": {
+    "slug": "decompose-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j21",
+    "digest": "sha256:8e9c3259dde491339631c853a84642ac9324413cb2902c2d166eb4c5b711d6fb",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "set": {
+    "candidate": {
+     "unwrap_phase": "false",
+     "chi_bound": 0.5
+    }
+   },
+   "result": "pass",
+   "metrics": {
+    "chi-para": {
+     "kind": "continuous",
+     "nrmse": 4.889516893324397,
+     "correlation": 0.9983165707505546,
+     "max_abs": 0.030020805075764656,
+     "p99_abs": 0.002031070962548293,
+     "nonfinite": 0
+    },
+    "chi-dia": {
+     "kind": "continuous",
+     "nrmse": 4.202586532448282,
+     "correlation": 0.9986325252735104,
+     "max_abs": 0.03532949052682338,
+     "p99_abs": 0.004060731083154688,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
    "pair": "fansi-nltgv",
    "dataset": "s002001-kki-achieva-bridge-run1",
    "track": "dev",
@@ -3153,6 +3599,49 @@
   },
   {
    "pair": "fansi-nltgv",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "5ac9bd48b3f3",
+   "reference": {
+    "slug": "fansi-nltgv",
+    "image": "ghcr.io/astewartau/qsm-ci/fansi@sha256:e34728c1a66c2ab7654bfcf5308ed507db79da9d7be599936a77156cd4df8730",
+    "digest": "sha256:e34728c1a66c2ab7654bfcf5308ed507db79da9d7be599936a77156cd4df8730",
+    "id": "sha256:e34728c1a66c2ab7654bfcf5308ed507db79da9d7be599936a77156cd4df8730"
+   },
+   "candidate": {
+    "slug": "fansi-nltgv-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j91",
+    "digest": "sha256:77d83f0163147216a9c8cf7a1b2ffae21eddae462a72f328805f12fb253fd9df",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.003419495934527062,
+     "correlation": 0.9999999995312708,
+     "max_abs": 1.7091631889343262e-05,
+     "p99_abs": 3.5427510738372803e-06,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "fansi-nltgv",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-11-03T16:10:24Z",
@@ -3408,6 +3897,49 @@
    "qsmxt": {
     "ref": "v12.0.0",
     "commit": "2c1485ad627375ba5aa1a3fc3c191c66c79bc0ae"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.006342802330315241,
+     "correlation": 0.9999999980004434,
+     "max_abs": 0.000807344913482666,
+     "p99_abs": 2.7455389499664307e-06,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "fansi-nltgv",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "1b1fcae6c05f",
+   "reference": {
+    "slug": "fansi-nltgv",
+    "image": "ghcr.io/astewartau/qsm-ci/fansi@sha256:e34728c1a66c2ab7654bfcf5308ed507db79da9d7be599936a77156cd4df8730",
+    "digest": "sha256:e34728c1a66c2ab7654bfcf5308ed507db79da9d7be599936a77156cd4df8730",
+    "id": "sha256:e34728c1a66c2ab7654bfcf5308ed507db79da9d7be599936a77156cd4df8730"
+   },
+   "candidate": {
+    "slug": "fansi-nltgv-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j92",
+    "digest": "sha256:8658296b822a9e9cec8015e7575e7ce0172c3a393748142f376f51e5664fa14c",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
    },
    "result": "pass",
    "metrics": {
@@ -3693,6 +4225,49 @@
   },
   {
    "pair": "fansi-nltv",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "249990e0d54e",
+   "reference": {
+    "slug": "fansi-nltv",
+    "image": "ghcr.io/astewartau/qsm-ci/fansi@sha256:e606064f1d980cddf65ad7cc51cea68a759e26593f0e161531ab21b2d9399995",
+    "digest": "sha256:e606064f1d980cddf65ad7cc51cea68a759e26593f0e161531ab21b2d9399995",
+    "id": "sha256:e606064f1d980cddf65ad7cc51cea68a759e26593f0e161531ab21b2d9399995"
+   },
+   "candidate": {
+    "slug": "fansi-nltv-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j89",
+    "digest": "sha256:aab4a8010f4e51c436ac5ccc6d7e7c9913c87bba84bac4e239a3125190e431dd",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.003386934412862976,
+     "correlation": 0.9999999995424981,
+     "max_abs": 1.7151236534118652e-05,
+     "p99_abs": 3.520399332046509e-06,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "fansi-nltv",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-11-03T16:10:24Z",
@@ -3955,6 +4530,49 @@
      "kind": "continuous",
      "nrmse": 0.006892247745461004,
      "correlation": 0.9999999976383592,
+     "max_abs": 0.0008429884910583496,
+     "p99_abs": 2.857297658920288e-06,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "fansi-nltv",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "5d6f835c3a25",
+   "reference": {
+    "slug": "fansi-nltv",
+    "image": "ghcr.io/astewartau/qsm-ci/fansi@sha256:e606064f1d980cddf65ad7cc51cea68a759e26593f0e161531ab21b2d9399995",
+    "digest": "sha256:e606064f1d980cddf65ad7cc51cea68a759e26593f0e161531ab21b2d9399995",
+    "id": "sha256:e606064f1d980cddf65ad7cc51cea68a759e26593f0e161531ab21b2d9399995"
+   },
+   "candidate": {
+    "slug": "fansi-nltv-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j90",
+    "digest": "sha256:3341f3138ab63ba6eb666ec2196105a2269bbebbdab5992e7036c3bb2097d3e4",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.006892247745460972,
+     "correlation": 0.9999999976383581,
      "max_abs": 0.0008429884910583496,
      "p99_abs": 2.857297658920288e-06,
      "nonfinite": 0
@@ -4427,6 +5045,78 @@
   },
   {
    "pair": "fit-ppm-complex",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "f99dd52d4132",
+   "reference": {
+    "slug": "fit-ppm-complex-cornell",
+    "image": "ghcr.io/astewartau/qsm-ci/matlab-medi@sha256:7efa4bd641b8311ac97a8a09dd438290f998f8163219b2f5d7ecae777a59811c",
+    "digest": "sha256:7efa4bd641b8311ac97a8a09dd438290f998f8163219b2f5d7ecae777a59811c",
+    "id": "sha256:7efa4bd641b8311ac97a8a09dd438290f998f8163219b2f5d7ecae777a59811c"
+   },
+   "candidate": {
+    "slug": "fit-ppm-complex-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j18",
+    "digest": "sha256:a0c170da22f3d96f4c6b0cfb1a7bdc8adb6b5257b60c9110768c776a6ee72020",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "set": {
+    "candidate": {
+     "unwrapping": "medi-region-growing"
+    }
+   },
+   "result": "pass",
+   "metrics": {
+    "totalfield": {
+     "kind": "continuous",
+     "nrmse": 0.0,
+     "correlation": 1.0,
+     "max_abs": 0.0,
+     "p99_abs": 0.0,
+     "nonfinite": 0
+    },
+    "ifreq_raw": {
+     "kind": "continuous",
+     "nrmse": 2.5591665139143826e-06,
+     "correlation": 1.0,
+     "max_abs": 1.1920750075944397e-07,
+     "p99_abs": 1.0340315196977181e-07,
+     "nonfinite": 0
+    },
+    "n_std": {
+     "kind": "continuous",
+     "nrmse": 2.420043559537875e-06,
+     "correlation": 0.9999999999999939,
+     "max_abs": 5.059461116935834e-13,
+     "p99_abs": 7.923391773114242e-14,
+     "nonfinite": 0
+    },
+    "r2star": {
+     "kind": "continuous",
+     "nrmse": 2.5180770111848677e-06,
+     "correlation": 0.9999999999999988,
+     "max_abs": 1.3540032568926108e-05,
+     "p99_abs": 1.6056969982969272e-06,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "fit-ppm-complex",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-11-03T16:10:24Z",
@@ -4890,6 +5580,78 @@
    }
   },
   {
+   "pair": "fit-ppm-complex",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "6802cb016b33",
+   "reference": {
+    "slug": "fit-ppm-complex-cornell",
+    "image": "ghcr.io/astewartau/qsm-ci/matlab-medi@sha256:7efa4bd641b8311ac97a8a09dd438290f998f8163219b2f5d7ecae777a59811c",
+    "digest": "sha256:7efa4bd641b8311ac97a8a09dd438290f998f8163219b2f5d7ecae777a59811c",
+    "id": "sha256:7efa4bd641b8311ac97a8a09dd438290f998f8163219b2f5d7ecae777a59811c"
+   },
+   "candidate": {
+    "slug": "fit-ppm-complex-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j19",
+    "digest": "sha256:2a3770363760594976501851d14a95faa23303a0dcf7270019a15afd937bf5d6",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "set": {
+    "candidate": {
+     "unwrapping": "medi-region-growing"
+    }
+   },
+   "result": "pass",
+   "metrics": {
+    "totalfield": {
+     "kind": "continuous",
+     "nrmse": 0.0,
+     "correlation": 1.0,
+     "max_abs": 0.0,
+     "p99_abs": 0.0,
+     "nonfinite": 0
+    },
+    "ifreq_raw": {
+     "kind": "continuous",
+     "nrmse": 2.554184617909713e-06,
+     "correlation": 1.0,
+     "max_abs": 1.192082996759325e-07,
+     "p99_abs": 1.0564257030054597e-07,
+     "nonfinite": 0
+    },
+    "n_std": {
+     "kind": "continuous",
+     "nrmse": 2.5087000433361997e-06,
+     "correlation": 0.9999999999999987,
+     "max_abs": 1.1227460250395893e-07,
+     "p99_abs": 3.454756636878118e-09,
+     "nonfinite": 0
+    },
+    "r2star": {
+     "kind": "continuous",
+     "nrmse": 2.6006478233199884e-06,
+     "correlation": 0.9999999999999958,
+     "max_abs": 1.4839606023997476e-05,
+     "p99_abs": 3.259358465470544e-06,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
    "pair": "hd-bet",
    "dataset": "s002001-kki-achieva-bridge-run1",
    "track": "dev",
@@ -5145,6 +5907,50 @@
    "qsmxt": {
     "ref": "v12.0.0",
     "commit": "2c1485ad627375ba5aa1a3fc3c191c66c79bc0ae"
+   },
+   "set": {
+    "candidate": {
+     "window": "true"
+    }
+   },
+   "result": "pass",
+   "metrics": {
+    "mask": {
+     "kind": "binary",
+     "dice": 1.0
+    }
+   }
+  },
+  {
+   "pair": "hd-bet",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "544f0a7cac34",
+   "reference": {
+    "slug": "hd-bet-qsmci",
+    "image": "ghcr.io/astewartau/qsm-ci/hd-bet@sha256:0a0e31375fbb6c5526eacdcd5d639d4eab52bc01f7cef2cba3bd74d0dc3b038d",
+    "digest": "sha256:0a0e31375fbb6c5526eacdcd5d639d4eab52bc01f7cef2cba3bd74d0dc3b038d",
+    "id": "sha256:0a0e31375fbb6c5526eacdcd5d639d4eab52bc01f7cef2cba3bd74d0dc3b038d"
+   },
+   "candidate": {
+    "slug": "hd-bet-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j73-models",
+    "digest": "sha256:074add75571aba626c784ed13417532eb15183d2d042c4af0af80f7d6fe335ab",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
    },
    "set": {
     "candidate": {
@@ -5431,6 +6237,49 @@
   },
   {
    "pair": "hdqsm",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "de78ea8ce08a",
+   "reference": {
+    "slug": "hdqsm",
+    "image": "ghcr.io/astewartau/qsm-ci/hd-qsm@sha256:79d3ecefcd9ad766502c8ef079bcb1a3408d658cfe27f50bfc6f0b61cba8cb92",
+    "digest": "sha256:79d3ecefcd9ad766502c8ef079bcb1a3408d658cfe27f50bfc6f0b61cba8cb92",
+    "id": "sha256:79d3ecefcd9ad766502c8ef079bcb1a3408d658cfe27f50bfc6f0b61cba8cb92"
+   },
+   "candidate": {
+    "slug": "hdqsm-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j97",
+    "digest": "sha256:1e1946706a678143100c3f9cec6f810c7584e0214933d13d96ea8ed29e7d3fe4",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.0008345982379703684,
+     "correlation": 0.999999999988303,
+     "max_abs": 1.1354684829711914e-05,
+     "p99_abs": 7.078051567077637e-07,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "hdqsm",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-11-03T16:10:24Z",
@@ -5686,6 +6535,49 @@
    "qsmxt": {
     "ref": "v12.0.0",
     "commit": "2c1485ad627375ba5aa1a3fc3c191c66c79bc0ae"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.0014815453101544986,
+     "correlation": 0.9999999999391195,
+     "max_abs": 0.00011420249938964844,
+     "p99_abs": 8.23289155960083e-07,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "hdqsm",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "9ed6459a24f6",
+   "reference": {
+    "slug": "hdqsm",
+    "image": "ghcr.io/astewartau/qsm-ci/hd-qsm@sha256:79d3ecefcd9ad766502c8ef079bcb1a3408d658cfe27f50bfc6f0b61cba8cb92",
+    "digest": "sha256:79d3ecefcd9ad766502c8ef079bcb1a3408d658cfe27f50bfc6f0b61cba8cb92",
+    "id": "sha256:79d3ecefcd9ad766502c8ef079bcb1a3408d658cfe27f50bfc6f0b61cba8cb92"
+   },
+   "candidate": {
+    "slug": "hdqsm-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j98",
+    "digest": "sha256:c7c9ddbdbc1254c6533843008649a1b9587acbfaad79091a5b260dbb5b0bd58c",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
    },
    "result": "pass",
    "metrics": {
@@ -6046,6 +6938,54 @@
   },
   {
    "pair": "heidi",
+   "dataset": "s005001-cbic-prisma-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "a3c095c4f0b3",
+   "reference": {
+    "slug": "heidi",
+    "image": "ghcr.io/astewartau/qsm-ci/heidi@sha256:69f572266b7f232d35fc269774f547f2cd81ae4cdb98c1ed35cdd33290a1a1a6",
+    "digest": "sha256:69f572266b7f232d35fc269774f547f2cd81ae4cdb98c1ed35cdd33290a1a1a6",
+    "id": "sha256:69f572266b7f232d35fc269774f547f2cd81ae4cdb98c1ed35cdd33290a1a1a6"
+   },
+   "candidate": {
+    "slug": "heidi-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j85",
+    "digest": "sha256:e8777801912f3ae6c7051cfa70b35335b9b6431635c170e770287fe50dd642e1",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "set": {
+    "candidate": {
+     "denoise_reference_itk": "true"
+    }
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.10524661349652144,
+     "correlation": 0.9999994461540522,
+     "max_abs": 0.006090596318244934,
+     "p99_abs": 6.529498845338818e-05,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "heidi",
    "dataset": "sim",
    "track": "released",
    "release": "v10.0.0",
@@ -6390,6 +7330,54 @@
    }
   },
   {
+   "pair": "heidi",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "106b40d56bb5",
+   "reference": {
+    "slug": "heidi",
+    "image": "ghcr.io/astewartau/qsm-ci/heidi@sha256:69f572266b7f232d35fc269774f547f2cd81ae4cdb98c1ed35cdd33290a1a1a6",
+    "digest": "sha256:69f572266b7f232d35fc269774f547f2cd81ae4cdb98c1ed35cdd33290a1a1a6",
+    "id": "sha256:69f572266b7f232d35fc269774f547f2cd81ae4cdb98c1ed35cdd33290a1a1a6"
+   },
+   "candidate": {
+    "slug": "heidi-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j86",
+    "digest": "sha256:46b2181fd0aad15a1b9154bdf8a5d9bb45b23982997b4e6834e03ee464dc69bc",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "set": {
+    "candidate": {
+     "denoise_reference_itk": "true"
+    }
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.00045363409715345424,
+     "correlation": 0.9999999999897062,
+     "max_abs": 2.9501505196094513e-05,
+     "p99_abs": 1.0803341865539551e-07,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
    "pair": "iharperella",
    "dataset": "s002001-kki-achieva-bridge-run1",
    "track": "released",
@@ -6693,6 +7681,58 @@
    }
   },
   {
+   "pair": "iharperella",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "60774465955c",
+   "reference": {
+    "slug": "iharperella-sti",
+    "image": "ghcr.io/astewartau/qsm-ci/matlab-sti-iharperella@sha256:b4f9d4840810d3abbbbf4b17ea2673dc48cebcc2a161a9f2d53d864e99fd6db9",
+    "digest": "sha256:b4f9d4840810d3abbbbf4b17ea2673dc48cebcc2a161a9f2d53d864e99fd6db9",
+    "id": "sha256:b4f9d4840810d3abbbbf4b17ea2673dc48cebcc2a161a9f2d53d864e99fd6db9"
+   },
+   "candidate": {
+    "slug": "iharperella-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j6",
+    "digest": "sha256:d92901fc62bec9897f0a53826fa9c6ea52804232a39c4952388239534f4d3570",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "set": {
+    "reference": {
+     "niter": 10
+    },
+    "candidate": {
+     "max_iter": 10,
+     "rim": "sti"
+    }
+   },
+   "result": "pass",
+   "metrics": {
+    "localfield": {
+     "kind": "continuous",
+     "nrmse": 3.898096447956358e-05,
+     "correlation": 0.9999999999999759,
+     "max_abs": 5.960464477539063e-08,
+     "p99_abs": 2.9802322387695312e-08,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
    "pair": "ilsqr",
    "dataset": "s002001-kki-achieva-bridge-run1",
    "track": "released",
@@ -6963,6 +8003,49 @@
   },
   {
    "pair": "ilsqr",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "228cf46696d8",
+   "reference": {
+    "slug": "ilsqr-sti",
+    "image": "ghcr.io/astewartau/qsm-ci/matlab-sti-ilsqr@sha256:fa2660014473dbff51a6ddd6aba0840074349ce6d97be9efd0cb8afe6c1c597c",
+    "digest": "sha256:fa2660014473dbff51a6ddd6aba0840074349ce6d97be9efd0cb8afe6c1c597c",
+    "id": "sha256:fa2660014473dbff51a6ddd6aba0840074349ce6d97be9efd0cb8afe6c1c597c"
+   },
+   "candidate": {
+    "slug": "ilsqr-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j2",
+    "digest": "sha256:011b2d1e02e3de7d7a7c2cb0085d1ef93609a5b7ef99898ceef6d147606db14b",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.025989406057420873,
+     "correlation": 0.9999999665074693,
+     "max_abs": 0.00023292005062103271,
+     "p99_abs": 2.7332454919815063e-05,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "ilsqr",
    "dataset": "sim",
    "track": "released",
    "release": "v10.0.0",
@@ -7224,6 +8307,49 @@
      "kind": "continuous",
      "nrmse": 0.0023784845504688287,
      "correlation": 0.9999999999993617,
+     "max_abs": 8.988380432128906e-05,
+     "p99_abs": 2.175569534301758e-06,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "ilsqr",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "e8d3ce2131df",
+   "reference": {
+    "slug": "ilsqr-sti",
+    "image": "ghcr.io/astewartau/qsm-ci/matlab-sti-ilsqr@sha256:fa2660014473dbff51a6ddd6aba0840074349ce6d97be9efd0cb8afe6c1c597c",
+    "digest": "sha256:fa2660014473dbff51a6ddd6aba0840074349ce6d97be9efd0cb8afe6c1c597c",
+    "id": "sha256:fa2660014473dbff51a6ddd6aba0840074349ce6d97be9efd0cb8afe6c1c597c"
+   },
+   "candidate": {
+    "slug": "ilsqr-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j3",
+    "digest": "sha256:d27f753c1809cf8a3b85db6af12d71f223252cb4749f03542f62bffafd21ecde",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.0023784845504688378,
+     "correlation": 0.9999999999993627,
      "max_abs": 8.988380432128906e-05,
      "p99_abs": 2.175569534301758e-06,
      "nonfinite": 0
@@ -7581,6 +8707,49 @@
   },
   {
    "pair": "iqfm",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "4eb92294b33a",
+   "reference": {
+    "slug": "iqfm",
+    "image": "ghcr.io/astewartau/qsm-ci/iqfm@sha256:980ba446e62fb9c864c231d180ec32ed732e39528e9de8d3a44fc6f9e08b8de6",
+    "digest": "sha256:980ba446e62fb9c864c231d180ec32ed732e39528e9de8d3a44fc6f9e08b8de6",
+    "id": "sha256:46a434ef29c211e58d0119d7c4122f674e334d8f5f7803ace47f305bf10a56fb"
+   },
+   "candidate": {
+    "slug": "iqfm-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j81-models",
+    "digest": "sha256:e42a2e946c08c871bb3287da9d6bf9c6cc114a94f2e7e6c2f416c4bd33e00b34",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "result": "pass",
+   "metrics": {
+    "localfield": {
+     "kind": "continuous",
+     "nrmse": 0.00018289172900657114,
+     "correlation": 0.9999999999991782,
+     "max_abs": 2.2351741790771484e-07,
+     "p99_abs": 5.960464477539063e-08,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "iqfm",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-11-03T23:52:59Z",
@@ -7822,6 +8991,49 @@
    "qsmxt": {
     "ref": "v12.0.0",
     "commit": "2c1485ad627375ba5aa1a3fc3c191c66c79bc0ae"
+   },
+   "result": "pass",
+   "metrics": {
+    "localfield": {
+     "kind": "continuous",
+     "nrmse": 0.00021601584208528758,
+     "correlation": 0.9999999999985187,
+     "max_abs": 2.8265640139579773e-07,
+     "p99_abs": 4.1676685214042664e-08,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "iqfm",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "4eb92294b33a",
+   "reference": {
+    "slug": "iqfm",
+    "image": "ghcr.io/astewartau/qsm-ci/iqfm@sha256:980ba446e62fb9c864c231d180ec32ed732e39528e9de8d3a44fc6f9e08b8de6",
+    "digest": "sha256:980ba446e62fb9c864c231d180ec32ed732e39528e9de8d3a44fc6f9e08b8de6",
+    "id": "sha256:46a434ef29c211e58d0119d7c4122f674e334d8f5f7803ace47f305bf10a56fb"
+   },
+   "candidate": {
+    "slug": "iqfm-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j82-models",
+    "digest": "sha256:92406a5d685134db838cee54d79fe8ceae1c0a0c3fcbb8b26cff3ba49e310420",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
    },
    "result": "pass",
    "metrics": {
@@ -8093,6 +9305,49 @@
   },
   {
    "pair": "iqsm",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "a641bb9547fd",
+   "reference": {
+    "slug": "iqsm",
+    "image": "ghcr.io/astewartau/qsm-ci/iqsm@sha256:1777cace0a0207b9433f54e53c53cb02c8b52a33629a1aa18682c8d94e04287a",
+    "digest": "sha256:1777cace0a0207b9433f54e53c53cb02c8b52a33629a1aa18682c8d94e04287a",
+    "id": "sha256:1777cace0a0207b9433f54e53c53cb02c8b52a33629a1aa18682c8d94e04287a"
+   },
+   "candidate": {
+    "slug": "iqsm-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j77-models",
+    "digest": "sha256:feead543668709fe21d982367077d27d3aecd1e2223ca4eea12e5d99f553503f",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.00022438482102694752,
+     "correlation": 0.9999999999977195,
+     "max_abs": 2.995133399963379e-06,
+     "p99_abs": 2.384185791015625e-07,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "iqsm",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-11-03T16:10:24Z",
@@ -8334,6 +9589,49 @@
    "qsmxt": {
     "ref": "v12.0.0",
     "commit": "2c1485ad627375ba5aa1a3fc3c191c66c79bc0ae"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.0002710210158813416,
+     "correlation": 0.999999999996287,
+     "max_abs": 6.854534149169922e-07,
+     "p99_abs": 1.8812716007232666e-07,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "iqsm",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "9999005d158f",
+   "reference": {
+    "slug": "iqsm",
+    "image": "ghcr.io/astewartau/qsm-ci/iqsm@sha256:1777cace0a0207b9433f54e53c53cb02c8b52a33629a1aa18682c8d94e04287a",
+    "digest": "sha256:1777cace0a0207b9433f54e53c53cb02c8b52a33629a1aa18682c8d94e04287a",
+    "id": "sha256:1777cace0a0207b9433f54e53c53cb02c8b52a33629a1aa18682c8d94e04287a"
+   },
+   "candidate": {
+    "slug": "iqsm-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j78-models",
+    "digest": "sha256:f5b2b52e9577eb9bab77f5ee1ec8058c82d7391c8b2c45307f3a4bd119d3cf7b",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
    },
    "result": "pass",
    "metrics": {
@@ -8605,6 +9903,49 @@
   },
   {
    "pair": "iqsm-plus",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "286bbaf8ec5c",
+   "reference": {
+    "slug": "iqsm-plus",
+    "image": "ghcr.io/astewartau/qsm-ci/iqsm-plus@sha256:0541a1ba778023a315708be3d6695425bbd31e5ce6711c3b198197256cc11429",
+    "digest": "sha256:0541a1ba778023a315708be3d6695425bbd31e5ce6711c3b198197256cc11429",
+    "id": "sha256:0541a1ba778023a315708be3d6695425bbd31e5ce6711c3b198197256cc11429"
+   },
+   "candidate": {
+    "slug": "iqsm-plus-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j79-models",
+    "digest": "sha256:108ef68da52cdf98e3d071e467c1f91a032c542cc74832a848834001a5965735",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.00011995513711648757,
+     "correlation": 0.9999999999992905,
+     "max_abs": 1.2516975402832031e-06,
+     "p99_abs": 1.1548399925231934e-07,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "iqsm-plus",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-11-03T16:10:24Z",
@@ -8846,6 +10187,49 @@
    "qsmxt": {
     "ref": "v12.0.0",
     "commit": "2c1485ad627375ba5aa1a3fc3c191c66c79bc0ae"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.0001695137988771742,
+     "correlation": 0.9999999999985338,
+     "max_abs": 1.8402934074401855e-06,
+     "p99_abs": 1.0989606380462646e-07,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "iqsm-plus",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "b04cc8021b7f",
+   "reference": {
+    "slug": "iqsm-plus",
+    "image": "ghcr.io/astewartau/qsm-ci/iqsm-plus@sha256:0541a1ba778023a315708be3d6695425bbd31e5ce6711c3b198197256cc11429",
+    "digest": "sha256:0541a1ba778023a315708be3d6695425bbd31e5ce6711c3b198197256cc11429",
+    "id": "sha256:0541a1ba778023a315708be3d6695425bbd31e5ce6711c3b198197256cc11429"
+   },
+   "candidate": {
+    "slug": "iqsm-plus-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j80-models",
+    "digest": "sha256:a08b92fe7aa1f1e31a8d23fde9d0da47794c82e43144a4036acb085eda81e05f",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
    },
    "result": "pass",
    "metrics": {
@@ -9155,6 +10539,54 @@
   },
   {
    "pair": "ir2qsm",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "f293ca7bb2df",
+   "reference": {
+    "slug": "ir2qsm",
+    "image": "ghcr.io/astewartau/qsm-ci/ir2qsm@sha256:7df8887acc7cdfac4ea3ec845377c3d0b595975c3d240cd1ee63e826908c98ca",
+    "digest": "sha256:7df8887acc7cdfac4ea3ec845377c3d0b595975c3d240cd1ee63e826908c98ca",
+    "id": "sha256:7df8887acc7cdfac4ea3ec845377c3d0b595975c3d240cd1ee63e826908c98ca"
+   },
+   "candidate": {
+    "slug": "ir2qsm-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j61-models",
+    "digest": "sha256:d8fc48b7b5ceb0a99282d35bec188f27c7361fdc5257d11bca0c56e17a9ca960",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "set": {
+    "reference": {
+     "add_noise": "false"
+    }
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.0011900912218379646,
+     "correlation": 0.999999999929293,
+     "max_abs": 3.489851951599121e-05,
+     "p99_abs": 1.33574940264225e-06,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "ir2qsm",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-11-03T16:10:24Z",
@@ -9429,6 +10861,54 @@
    "qsmxt": {
     "ref": "v12.0.0",
     "commit": "2c1485ad627375ba5aa1a3fc3c191c66c79bc0ae"
+   },
+   "set": {
+    "reference": {
+     "add_noise": "false"
+    }
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.0005048702182625716,
+     "correlation": 0.9999999999872183,
+     "max_abs": 9.415671229362488e-06,
+     "p99_abs": 4.116445779800415e-07,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "ir2qsm",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "e37263fc3b32",
+   "reference": {
+    "slug": "ir2qsm",
+    "image": "ghcr.io/astewartau/qsm-ci/ir2qsm@sha256:7df8887acc7cdfac4ea3ec845377c3d0b595975c3d240cd1ee63e826908c98ca",
+    "digest": "sha256:7df8887acc7cdfac4ea3ec845377c3d0b595975c3d240cd1ee63e826908c98ca",
+    "id": "sha256:7df8887acc7cdfac4ea3ec845377c3d0b595975c3d240cd1ee63e826908c98ca"
+   },
+   "candidate": {
+    "slug": "ir2qsm-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j62-models",
+    "digest": "sha256:c0f7c4a8ba7f1f9fbfa3273efb0baeb7825eb189c33259bf2f564e6842e1f30f",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
    },
    "set": {
     "reference": {
@@ -9790,6 +11270,56 @@
    "qsmxt": {
     "ref": "v12.0.0",
     "commit": "2c1485ad627375ba5aa1a3fc3c191c66c79bc0ae"
+   },
+   "set": {
+    "candidate": {
+     "variant": "qsmjl",
+     "tol": "1e-3",
+     "max_iter": 500
+    }
+   },
+   "result": "pass",
+   "metrics": {
+    "localfield": {
+     "kind": "continuous",
+     "nrmse": 2.0640382638016306e-09,
+     "correlation": 1.0,
+     "max_abs": 2.3283064365386963e-10,
+     "p99_abs": 0.0,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "ismv",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "0db7b0cc973a",
+   "reference": {
+    "slug": "ismv-qsmjl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "id": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "ismv-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j37",
+    "digest": "sha256:a7934f797ef5157128f73d160df2a316c74c9e4f6406a788f2f2012e4f3da7b8",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
    },
    "set": {
     "candidate": {
@@ -10174,6 +11704,56 @@
    }
   },
   {
+   "pair": "ismv",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "188523a3effb",
+   "reference": {
+    "slug": "ismv-qsmjl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "id": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "ismv-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j38",
+    "digest": "sha256:feb20a2e88378de6c0d5d379b792401b85fc8014ca5ea376714cc869c012395f",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "set": {
+    "candidate": {
+     "variant": "qsmjl",
+     "tol": "1e-3",
+     "max_iter": 500
+    }
+   },
+   "result": "pass",
+   "metrics": {
+    "localfield": {
+     "kind": "continuous",
+     "nrmse": 6.02623610728256e-09,
+     "correlation": 1.0,
+     "max_abs": 4.656612873077393e-10,
+     "p99_abs": 0.0,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
    "pair": "l1qsm",
    "dataset": "s002001-kki-achieva-bridge-run1",
    "track": "dev",
@@ -10445,6 +12025,49 @@
   },
   {
    "pair": "l1qsm",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "33f47d7cb12d",
+   "reference": {
+    "slug": "l1qsm",
+    "image": "ghcr.io/astewartau/qsm-ci/l1-qsm@sha256:edb8c46ae324f34ce337eea4f7179f8d73267f5c21f1517a9041e28c449b2177",
+    "digest": "sha256:edb8c46ae324f34ce337eea4f7179f8d73267f5c21f1517a9041e28c449b2177",
+    "id": "sha256:edb8c46ae324f34ce337eea4f7179f8d73267f5c21f1517a9041e28c449b2177"
+   },
+   "candidate": {
+    "slug": "l1qsm-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j93",
+    "digest": "sha256:9fe3717979679affa90dc5880952feb1fea2db5a6288c12e5111910937a9b6a2",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.002987794473295892,
+     "correlation": 0.9999999995513463,
+     "max_abs": 2.8312206268310547e-05,
+     "p99_abs": 3.667147830128622e-06,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "l1qsm",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-11-03T16:10:24Z",
@@ -10700,6 +12323,49 @@
    "qsmxt": {
     "ref": "v12.0.0",
     "commit": "2c1485ad627375ba5aa1a3fc3c191c66c79bc0ae"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.002204803204573185,
+     "correlation": 0.9999999997608234,
+     "max_abs": 8.225440979003906e-05,
+     "p99_abs": 2.0116567611694336e-06,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "l1qsm",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "b9ccacec9b6f",
+   "reference": {
+    "slug": "l1qsm",
+    "image": "ghcr.io/astewartau/qsm-ci/l1-qsm@sha256:edb8c46ae324f34ce337eea4f7179f8d73267f5c21f1517a9041e28c449b2177",
+    "digest": "sha256:edb8c46ae324f34ce337eea4f7179f8d73267f5c21f1517a9041e28c449b2177",
+    "id": "sha256:edb8c46ae324f34ce337eea4f7179f8d73267f5c21f1517a9041e28c449b2177"
+   },
+   "candidate": {
+    "slug": "l1qsm-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j94",
+    "digest": "sha256:2c37c04188d2dabed8c3de85ca68a6d9942d02843eaca81984f31ae4d6f1c8f4",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
    },
    "result": "pass",
    "metrics": {
@@ -11159,6 +12825,55 @@
   },
   {
    "pair": "laplacian",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "545ce92f2bd5",
+   "reference": {
+    "slug": "laplacian-qsmjl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "id": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "laplacian-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j45",
+    "digest": "sha256:e9364422520e533676b1e9c981897084c196a9f60f6d315dcad25382d564067b",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "set": {
+    "reference": {
+     "mask_phase": "true",
+     "demean": "true"
+    }
+   },
+   "result": "pass",
+   "metrics": {
+    "totalfield": {
+     "kind": "continuous",
+     "nrmse": 4.6199876420459216e-06,
+     "correlation": 1.0,
+     "max_abs": 5.960464477539063e-08,
+     "p99_abs": 1.4901161193847656e-08,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "laplacian",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-10-30T10:02:18Z",
@@ -11602,6 +13317,55 @@
    }
   },
   {
+   "pair": "laplacian",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "c8cb8e30e675",
+   "reference": {
+    "slug": "laplacian-qsmjl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "id": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "laplacian-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j46",
+    "digest": "sha256:8c0b5f8ebd5c1ff11dda0f5725b66812940ba3f5e803272057b3c25e44a019f8",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "set": {
+    "reference": {
+     "mask_phase": "true",
+     "demean": "true"
+    }
+   },
+   "result": "pass",
+   "metrics": {
+    "totalfield": {
+     "kind": "continuous",
+     "nrmse": 4.766646207539941e-14,
+     "correlation": 1.0,
+     "max_abs": 2.842170943040401e-14,
+     "p99_abs": 0.0,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
    "pair": "lbv",
    "dataset": "s002001-kki-achieva-bridge-run1",
    "track": "dev",
@@ -11873,6 +13637,49 @@
   },
   {
    "pair": "lbv",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "3a97f8e0698a",
+   "reference": {
+    "slug": "lbv-cornell",
+    "image": "ghcr.io/astewartau/qsm-ci/matlab-medi@sha256:aceec8964177fbce20e46635632be6ae167d6cd395c5e65a3030198ea25fff1f",
+    "digest": "sha256:aceec8964177fbce20e46635632be6ae167d6cd395c5e65a3030198ea25fff1f",
+    "id": "sha256:aceec8964177fbce20e46635632be6ae167d6cd395c5e65a3030198ea25fff1f"
+   },
+   "candidate": {
+    "slug": "lbv-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j103",
+    "digest": "sha256:0560b7bef39a575be877892edf27dedf0ec7c9d1b380e1193c0efa7c6d6227db",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "result": "pass",
+   "metrics": {
+    "localfield": {
+     "kind": "continuous",
+     "nrmse": 0.0018394464372793991,
+     "correlation": 0.9999999999614404,
+     "max_abs": 1.9669532775878906e-06,
+     "p99_abs": 1.7285346984863281e-06,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "lbv",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-11-03T16:10:24Z",
@@ -12127,6 +13934,49 @@
    "qsmxt": {
     "ref": "v12.0.0",
     "commit": "2c1485ad627375ba5aa1a3fc3c191c66c79bc0ae"
+   },
+   "result": "pass",
+   "metrics": {
+    "localfield": {
+     "kind": "continuous",
+     "nrmse": 0.0007664793938920829,
+     "correlation": 0.9999999999790135,
+     "max_abs": 3.948807716369629e-07,
+     "p99_abs": 2.421438694000244e-07,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "lbv",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "ebfaf636553c",
+   "reference": {
+    "slug": "lbv-cornell",
+    "image": "ghcr.io/astewartau/qsm-ci/matlab-medi@sha256:aceec8964177fbce20e46635632be6ae167d6cd395c5e65a3030198ea25fff1f",
+    "digest": "sha256:aceec8964177fbce20e46635632be6ae167d6cd395c5e65a3030198ea25fff1f",
+    "id": "sha256:aceec8964177fbce20e46635632be6ae167d6cd395c5e65a3030198ea25fff1f"
+   },
+   "candidate": {
+    "slug": "lbv-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j104",
+    "digest": "sha256:3ee5de69ba7cbdcdf774ced153e364b7e609ccd070865c138efef5008a2767c3",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
    },
    "result": "pass",
    "metrics": {
@@ -12406,6 +14256,49 @@
   },
   {
    "pair": "lpcnn",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "f715fe518ea1",
+   "reference": {
+    "slug": "lpcnn",
+    "image": "ghcr.io/astewartau/qsm-ci/lpcnn@sha256:d0878b2e361437c9f2adc86a45949344fd19b0150e474267bafb18dbb57b2b51",
+    "digest": "sha256:d0878b2e361437c9f2adc86a45949344fd19b0150e474267bafb18dbb57b2b51",
+    "id": "sha256:d0878b2e361437c9f2adc86a45949344fd19b0150e474267bafb18dbb57b2b51"
+   },
+   "candidate": {
+    "slug": "lpcnn-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j55-models",
+    "digest": "sha256:7c33e6996b61030992664b0d83a6e2050b7b74d29057e28fe84381bfae0e3111",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.009191483914804108,
+     "correlation": 0.9999999957745214,
+     "max_abs": 4.484807141125202e-05,
+     "p99_abs": 7.488862611353326e-06,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "lpcnn",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-11-03T16:10:24Z",
@@ -12664,6 +14557,49 @@
      "correlation": 0.9999999999999303,
      "max_abs": 1.3113021850585938e-06,
      "p99_abs": 2.8870999813079834e-08,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "lpcnn",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "7afc32fd740d",
+   "reference": {
+    "slug": "lpcnn",
+    "image": "ghcr.io/astewartau/qsm-ci/lpcnn@sha256:d0878b2e361437c9f2adc86a45949344fd19b0150e474267bafb18dbb57b2b51",
+    "digest": "sha256:d0878b2e361437c9f2adc86a45949344fd19b0150e474267bafb18dbb57b2b51",
+    "id": "sha256:d0878b2e361437c9f2adc86a45949344fd19b0150e474267bafb18dbb57b2b51"
+   },
+   "candidate": {
+    "slug": "lpcnn-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j56-models",
+    "digest": "sha256:669b09e50c85efae80500919919d5361f111741421145644636c702280cbf657",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 3.536770799104061e-05,
+     "correlation": 0.9999999999999358,
+     "max_abs": 7.152557373046875e-07,
+     "p99_abs": 2.6542693376541138e-08,
      "nonfinite": 0
     }
    }
@@ -12939,6 +14875,49 @@
   },
   {
    "pair": "lsqr",
+   "dataset": "s005001-cbic-prisma-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "00aafb1a47e4",
+   "reference": {
+    "slug": "lsqr",
+    "image": "ghcr.io/astewartau/qsm-ci/heidi@sha256:a2deee2d35a926871a838509324014dbc482e4ca5c02fc09b1fed348376a8229",
+    "digest": "sha256:a2deee2d35a926871a838509324014dbc482e4ca5c02fc09b1fed348376a8229",
+    "id": "sha256:a2deee2d35a926871a838509324014dbc482e4ca5c02fc09b1fed348376a8229"
+   },
+   "candidate": {
+    "slug": "lsqr-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j83",
+    "digest": "sha256:cb62d27894bead1f6dfb5c821b97835ce41dba1ebb923e7265606a31bf571464",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.08921751769483258,
+     "correlation": 0.9999996020239789,
+     "max_abs": 0.006044924259185791,
+     "p99_abs": 6.587803363800049e-05,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "lsqr",
    "dataset": "sim",
    "track": "released",
    "release": "v10.0.0",
@@ -13193,6 +15172,49 @@
    "qsmxt": {
     "ref": "v12.0.0",
     "commit": "2c1485ad627375ba5aa1a3fc3c191c66c79bc0ae"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.00039312470991922775,
+     "correlation": 0.9999999999922731,
+     "max_abs": 2.1265819668769836e-05,
+     "p99_abs": 2.2351741790771484e-08,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "lsqr",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "106ee3450d31",
+   "reference": {
+    "slug": "lsqr",
+    "image": "ghcr.io/astewartau/qsm-ci/heidi@sha256:a2deee2d35a926871a838509324014dbc482e4ca5c02fc09b1fed348376a8229",
+    "digest": "sha256:a2deee2d35a926871a838509324014dbc482e4ca5c02fc09b1fed348376a8229",
+    "id": "sha256:a2deee2d35a926871a838509324014dbc482e4ca5c02fc09b1fed348376a8229"
+   },
+   "candidate": {
+    "slug": "lsqr-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j84",
+    "digest": "sha256:272775ec9ce4e6e74bcdb9cdfb20c7a161f86863e61d608a0800e6a3a447c54d",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
    },
    "result": "pass",
    "metrics": {
@@ -13566,6 +15588,49 @@
   },
   {
    "pair": "medi",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "1f3ee987a57e",
+   "reference": {
+    "slug": "medi-cornell",
+    "image": "ghcr.io/astewartau/qsm-ci/matlab-medi@sha256:b81527b0c5a49a39378700358dd3b0ada3a4a0ed5742715d0d699c99846f0278",
+    "digest": "sha256:b81527b0c5a49a39378700358dd3b0ada3a4a0ed5742715d0d699c99846f0278",
+    "id": "sha256:b81527b0c5a49a39378700358dd3b0ada3a4a0ed5742715d0d699c99846f0278"
+   },
+   "candidate": {
+    "slug": "medi-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j9",
+    "digest": "sha256:28487d3de6f85ccb6970e088e5952dbff80800c937a8aca55da3490e36293d52",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.020658178823051453,
+     "correlation": 0.9999999783471225,
+     "max_abs": 0.00113677978515625,
+     "p99_abs": 2.267211675643921e-05,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "medi",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-10-30T10:02:18Z",
@@ -13919,6 +15984,49 @@
    }
   },
   {
+   "pair": "medi",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "64e35b94d579",
+   "reference": {
+    "slug": "medi-cornell",
+    "image": "ghcr.io/astewartau/qsm-ci/matlab-medi@sha256:b81527b0c5a49a39378700358dd3b0ada3a4a0ed5742715d0d699c99846f0278",
+    "digest": "sha256:b81527b0c5a49a39378700358dd3b0ada3a4a0ed5742715d0d699c99846f0278",
+    "id": "sha256:b81527b0c5a49a39378700358dd3b0ada3a4a0ed5742715d0d699c99846f0278"
+   },
+   "candidate": {
+    "slug": "medi-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j10",
+    "digest": "sha256:b7e641171c2bd4837e9ce63eb47a5fd8affb79d60137ed164eca8223f6645b45",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.0289575013255845,
+     "correlation": 0.9999999572139011,
+     "max_abs": 0.0004277825355529785,
+     "p99_abs": 2.208147197961817e-05,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
    "pair": "mindgrab",
    "dataset": "s002001-kki-achieva-bridge-run1",
    "track": "dev",
@@ -14145,6 +16253,45 @@
    "qsmxt": {
     "ref": "v12.0.0",
     "commit": "2c1485ad627375ba5aa1a3fc3c191c66c79bc0ae"
+   },
+   "result": "pass",
+   "metrics": {
+    "mask": {
+     "kind": "binary",
+     "dice": 1.0
+    }
+   }
+  },
+  {
+   "pair": "mindgrab",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "d425e1ad35a7",
+   "reference": {
+    "slug": "mindgrab",
+    "image": "ghcr.io/astewartau/qsm-ci/mindgrab@sha256:90e81df79b5ef346a30bff0edd279100a7b2c025c224962aa47f083d90f08d3c",
+    "digest": "sha256:90e81df79b5ef346a30bff0edd279100a7b2c025c224962aa47f083d90f08d3c",
+    "id": "sha256:90e81df79b5ef346a30bff0edd279100a7b2c025c224962aa47f083d90f08d3c"
+   },
+   "candidate": {
+    "slug": "mindgrab-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j74-models",
+    "digest": "sha256:1de0f87e172ac12027260b35ccd8ee24c221d2a25d6c94ceeb6820814c73ae81",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
    },
    "result": "pass",
    "metrics": {
@@ -14420,6 +16567,49 @@
   },
   {
    "pair": "modl-qsm",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "e9499aafb39b",
+   "reference": {
+    "slug": "modl-qsm",
+    "image": "ghcr.io/astewartau/qsm-ci/modl-qsm@sha256:75ada9f042b203a3398731efd1a552a974b1176dec8e1e30c683bffdeb73063e",
+    "digest": "sha256:75ada9f042b203a3398731efd1a552a974b1176dec8e1e30c683bffdeb73063e",
+    "id": "sha256:75ada9f042b203a3398731efd1a552a974b1176dec8e1e30c683bffdeb73063e"
+   },
+   "candidate": {
+    "slug": "modl-qsm-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j59-models",
+    "digest": "sha256:749ae1a0d55108bdaae08b036c2cedbf75604c873c0e7421458f2c9b3135afe2",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 6.237625760896648e-05,
+     "correlation": 0.9999999999998201,
+     "max_abs": 4.470348358154297e-07,
+     "p99_abs": 4.470348358154297e-08,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "modl-qsm",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-11-03T16:10:24Z",
@@ -14683,6 +16873,49 @@
    }
   },
   {
+   "pair": "modl-qsm",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "40acd80d8b8f",
+   "reference": {
+    "slug": "modl-qsm",
+    "image": "ghcr.io/astewartau/qsm-ci/modl-qsm@sha256:75ada9f042b203a3398731efd1a552a974b1176dec8e1e30c683bffdeb73063e",
+    "digest": "sha256:75ada9f042b203a3398731efd1a552a974b1176dec8e1e30c683bffdeb73063e",
+    "id": "sha256:75ada9f042b203a3398731efd1a552a974b1176dec8e1e30c683bffdeb73063e"
+   },
+   "candidate": {
+    "slug": "modl-qsm-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j60-models",
+    "digest": "sha256:e6efb2e94121c045cce9db637a000e0bdf9c80d756185572bc2e13619463a3b8",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.01411916799139816,
+     "correlation": 0.9999999901011175,
+     "max_abs": 4.7870445996522903e-05,
+     "p99_abs": 9.05059278011322e-06,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
    "pair": "ndi",
    "dataset": "s002001-kki-achieva-bridge-run1",
    "track": "dev",
@@ -14939,6 +17172,49 @@
    "qsmxt": {
     "ref": "v12.0.0",
     "commit": "2c1485ad627375ba5aa1a3fc3c191c66c79bc0ae"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 9.525106649900495e-05,
+     "correlation": 0.9999999999995465,
+     "max_abs": 4.76837158203125e-06,
+     "p99_abs": 4.936009645462036e-08,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "ndi",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "14abdcb04b87",
+   "reference": {
+    "slug": "ndi",
+    "image": "ghcr.io/astewartau/qsm-ci/ndi@sha256:98f820be521d171c729f96e1deef733ebfad7d8bbb4996693a12187a59719f28",
+    "digest": "sha256:98f820be521d171c729f96e1deef733ebfad7d8bbb4996693a12187a59719f28",
+    "id": "sha256:98f820be521d171c729f96e1deef733ebfad7d8bbb4996693a12187a59719f28"
+   },
+   "candidate": {
+    "slug": "ndi-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j87",
+    "digest": "sha256:9c3c14aaf3c5d54b7d4cbb9a5a062cd17b72a410c8a13613268cc7a31102fc8c",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
    },
    "result": "pass",
    "metrics": {
@@ -15223,6 +17499,49 @@
    }
   },
   {
+   "pair": "ndi",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "08525cc99181",
+   "reference": {
+    "slug": "ndi",
+    "image": "ghcr.io/astewartau/qsm-ci/ndi@sha256:98f820be521d171c729f96e1deef733ebfad7d8bbb4996693a12187a59719f28",
+    "digest": "sha256:98f820be521d171c729f96e1deef733ebfad7d8bbb4996693a12187a59719f28",
+    "id": "sha256:98f820be521d171c729f96e1deef733ebfad7d8bbb4996693a12187a59719f28"
+   },
+   "candidate": {
+    "slug": "ndi-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j88",
+    "digest": "sha256:a7fdeb8779618d1b4620c1b522611675a7d1ebc6f5553cb03d8aa079718d8da6",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.0011028568586269787,
+     "correlation": 0.9999999999393129,
+     "max_abs": 0.00011706352233886719,
+     "p99_abs": 2.086162567138672e-07,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
    "pair": "nextqsm",
    "dataset": "s002001-kki-achieva-bridge-run1",
    "track": "dev",
@@ -15473,6 +17792,49 @@
    "qsmxt": {
     "ref": "v12.0.0",
     "commit": "2c1485ad627375ba5aa1a3fc3c191c66c79bc0ae"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.10186641169966773,
+     "correlation": 0.999999480555008,
+     "max_abs": 0.00831160880625248,
+     "p99_abs": 7.060941308736782e-05,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "nextqsm",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "a8cb5d2f295d",
+   "reference": {
+    "slug": "nextqsm",
+    "image": "ghcr.io/astewartau/qsm-ci/nextqsm@sha256:015ff4413ee0b8b2f665194b1dc722aca6523f63cf9c5ce1c2fc5ec27891a4e4",
+    "digest": "sha256:015ff4413ee0b8b2f665194b1dc722aca6523f63cf9c5ce1c2fc5ec27891a4e4",
+    "id": "sha256:015ff4413ee0b8b2f665194b1dc722aca6523f63cf9c5ce1c2fc5ec27891a4e4"
+   },
+   "candidate": {
+    "slug": "nextqsm-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j65-models",
+    "digest": "sha256:5d15473edb2fdf1c3807e93688b7de35e40d23e6b25f7f88652e5854ad5074d3",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
    },
    "result": "pass",
    "metrics": {
@@ -15752,6 +18114,49 @@
      "correlation": 0.9999999833849628,
      "max_abs": 0.0012212526053190231,
      "p99_abs": 1.6294419765472412e-05,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "nextqsm",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "580a042e07c3",
+   "reference": {
+    "slug": "nextqsm",
+    "image": "ghcr.io/astewartau/qsm-ci/nextqsm@sha256:015ff4413ee0b8b2f665194b1dc722aca6523f63cf9c5ce1c2fc5ec27891a4e4",
+    "digest": "sha256:015ff4413ee0b8b2f665194b1dc722aca6523f63cf9c5ce1c2fc5ec27891a4e4",
+    "id": "sha256:015ff4413ee0b8b2f665194b1dc722aca6523f63cf9c5ce1c2fc5ec27891a4e4"
+   },
+   "candidate": {
+    "slug": "nextqsm-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j66-models",
+    "digest": "sha256:aaba59c4a29b0e423a800d7976e856188b4a9110c9195ee005bf13f507e6ccb6",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.01629900410095672,
+     "correlation": 0.999999986714044,
+     "max_abs": 0.00035032443702220917,
+     "p99_abs": 1.5579015016555864e-05,
      "nonfinite": 0
     }
    }
@@ -16055,6 +18460,49 @@
    "qsmxt": {
     "ref": "v12.0.0",
     "commit": "2c1485ad627375ba5aa1a3fc3c191c66c79bc0ae"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 1.797741521730507e-15,
+     "correlation": 1.0,
+     "max_abs": 4.440892098500626e-16,
+     "p99_abs": 0.0,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "nltv",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "ee833b9c61c7",
+   "reference": {
+    "slug": "nltv-qsmjl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "id": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "nltv-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j33",
+    "digest": "sha256:3b4faf2c38f2ee03b4c65975144f61f549ebef3df8515cd6fdae47425aff466f",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
    },
    "result": "pass",
    "metrics": {
@@ -16381,6 +18829,49 @@
    }
   },
   {
+   "pair": "nltv",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "d62e8e999aab",
+   "reference": {
+    "slug": "nltv-qsmjl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "id": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "nltv-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j34",
+    "digest": "sha256:e56707b2acdbd4012e5db4882fb3354bd2e09d948c40e9626b1a66d20138d846",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 1.9441066437397582e-10,
+     "correlation": 1.0,
+     "max_abs": 5.820766091346741e-11,
+     "p99_abs": 0.0,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
    "pair": "pdf",
    "dataset": "s002001-kki-achieva-bridge-run1",
    "track": "dev",
@@ -16652,6 +19143,49 @@
   },
   {
    "pair": "pdf",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "8677465b8bd3",
+   "reference": {
+    "slug": "pdf-cornell",
+    "image": "ghcr.io/astewartau/qsm-ci/matlab-medi@sha256:bfff9adf6acd0001a408322d113ab29353af1eb22dcb84a9fa5fd2af26d5fb34",
+    "digest": "sha256:bfff9adf6acd0001a408322d113ab29353af1eb22dcb84a9fa5fd2af26d5fb34",
+    "id": "sha256:bfff9adf6acd0001a408322d113ab29353af1eb22dcb84a9fa5fd2af26d5fb34"
+   },
+   "candidate": {
+    "slug": "pdf-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j101",
+    "digest": "sha256:61897e455a4c673df74b1386479df9effbe58e2fb7e808cba57fc082e2911b1e",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "result": "pass",
+   "metrics": {
+    "localfield": {
+     "kind": "continuous",
+     "nrmse": 2.106687680867807e-05,
+     "correlation": 0.9999999999999823,
+     "max_abs": 9.313225746154785e-07,
+     "p99_abs": 1.862645149230957e-08,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "pdf",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-11-03T16:10:24Z",
@@ -16907,6 +19441,49 @@
    "qsmxt": {
     "ref": "v12.0.0",
     "commit": "2c1485ad627375ba5aa1a3fc3c191c66c79bc0ae"
+   },
+   "result": "pass",
+   "metrics": {
+    "localfield": {
+     "kind": "continuous",
+     "nrmse": 0.014611984807801869,
+     "correlation": 0.9999999893253685,
+     "max_abs": 0.0017065684078261256,
+     "p99_abs": 3.762543201446533e-07,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "pdf",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "652d68606adc",
+   "reference": {
+    "slug": "pdf-cornell",
+    "image": "ghcr.io/astewartau/qsm-ci/matlab-medi@sha256:bfff9adf6acd0001a408322d113ab29353af1eb22dcb84a9fa5fd2af26d5fb34",
+    "digest": "sha256:bfff9adf6acd0001a408322d113ab29353af1eb22dcb84a9fa5fd2af26d5fb34",
+    "id": "sha256:bfff9adf6acd0001a408322d113ab29353af1eb22dcb84a9fa5fd2af26d5fb34"
+   },
+   "candidate": {
+    "slug": "pdf-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j102",
+    "digest": "sha256:19ce338575af218856a2a4c4ddc407b61b3d3c4b0dccec16c03f31d21974629c",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
    },
    "result": "pass",
    "metrics": {
@@ -17595,6 +20172,90 @@
   },
   {
    "pair": "qsmart",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "019de1c25e67",
+   "reference": {
+    "slug": "qsmart-matlab",
+    "image": "ghcr.io/astewartau/qsm-ci/matlab-qsmart@sha256:01f36e868bcacf494914b498b8f1cfc39480e533b0b654519e4476c19e532493",
+    "digest": "sha256:01f36e868bcacf494914b498b8f1cfc39480e533b0b654519e4476c19e532493",
+    "id": "sha256:01f36e868bcacf494914b498b8f1cfc39480e533b0b654519e4476c19e532493"
+   },
+   "candidate": {
+    "slug": "qsmart-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j0",
+    "digest": "sha256:7b777d34ded7c068ded4ef8dbbaad077a98fa37c351057cd5d88d64843043f37",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "set": {
+    "candidate": {
+     "offset_grid": "qsmart-reference"
+    }
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.7946673225951171,
+     "correlation": 0.9999684225347523,
+     "max_abs": 0.04549550451338291,
+     "p99_abs": 0.0004467175900936104,
+     "nonfinite": 0
+    },
+    "chimap_stage1": {
+     "kind": "continuous",
+     "nrmse": 0.24016440779161558,
+     "correlation": 0.999997115329707,
+     "max_abs": 0.00982191227376461,
+     "p99_abs": 0.0002216089516878109,
+     "nonfinite": 0
+    },
+    "chimap_stage2": {
+     "kind": "continuous",
+     "nrmse": 1.215427515588922,
+     "correlation": 0.9999259919236924,
+     "max_abs": 0.031240366399288177,
+     "p99_abs": 0.00040684532374143543,
+     "nonfinite": 0
+    },
+    "localfield_stage1": {
+     "kind": "continuous",
+     "nrmse": 0.11874991759983744,
+     "correlation": 0.9999992726962768,
+     "max_abs": 0.004411295336263317,
+     "p99_abs": 8.720157951280768e-10,
+     "nonfinite": 0
+    },
+    "localfield_stage2": {
+     "kind": "continuous",
+     "nrmse": 0.7347030887233434,
+     "correlation": 0.9999729589519092,
+     "max_abs": 0.03414753203570836,
+     "p99_abs": 7.995118794790201e-10,
+     "nonfinite": 0
+    },
+    "vessel_mask": {
+     "kind": "binary",
+     "dice": 0.9999198623518043
+    }
+   }
+  },
+  {
+   "pair": "qsmart",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-10-30T10:02:18Z",
@@ -18278,6 +20939,90 @@
    }
   },
   {
+   "pair": "qsmart",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "006ab310b551",
+   "reference": {
+    "slug": "qsmart-matlab",
+    "image": "ghcr.io/astewartau/qsm-ci/matlab-qsmart@sha256:01f36e868bcacf494914b498b8f1cfc39480e533b0b654519e4476c19e532493",
+    "digest": "sha256:01f36e868bcacf494914b498b8f1cfc39480e533b0b654519e4476c19e532493",
+    "id": "sha256:01f36e868bcacf494914b498b8f1cfc39480e533b0b654519e4476c19e532493"
+   },
+   "candidate": {
+    "slug": "qsmart-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j1",
+    "digest": "sha256:d0f46c4b24a8757fdffa503681904eb049e71866fd479952ae01c5820638c376",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "set": {
+    "candidate": {
+     "offset_grid": "qsmart-reference"
+    }
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.3588253312937859,
+     "correlation": 0.999993558955672,
+     "max_abs": 0.031008729711174965,
+     "p99_abs": 9.129688143730199e-05,
+     "nonfinite": 0
+    },
+    "chimap_stage1": {
+     "kind": "continuous",
+     "nrmse": 0.12616639012442044,
+     "correlation": 0.999999204668,
+     "max_abs": 0.006417291588149965,
+     "p99_abs": 7.737889885902553e-05,
+     "nonfinite": 0
+    },
+    "chimap_stage2": {
+     "kind": "continuous",
+     "nrmse": 0.55077978959027,
+     "correlation": 0.9999848102792144,
+     "max_abs": 0.010903464630246162,
+     "p99_abs": 6.360150640830426e-05,
+     "nonfinite": 0
+    },
+    "localfield_stage1": {
+     "kind": "continuous",
+     "nrmse": 0.07518247509791948,
+     "correlation": 0.9999997079714681,
+     "max_abs": 0.0031112300038647622,
+     "p99_abs": 7.031532420209724e-10,
+     "nonfinite": 0
+    },
+    "localfield_stage2": {
+     "kind": "continuous",
+     "nrmse": 0.20213214190189369,
+     "correlation": 0.9999979567078842,
+     "max_abs": 0.006185381191464306,
+     "p99_abs": 4.2002850864086913e-10,
+     "nonfinite": 0
+    },
+    "vessel_mask": {
+     "kind": "binary",
+     "dice": 0.9999963751567744
+    }
+   }
+  },
+  {
    "pair": "qsmgan",
    "dataset": "s002001-kki-achieva-bridge-run1",
    "track": "dev",
@@ -18535,6 +21280,49 @@
      "kind": "continuous",
      "nrmse": 0.00010758147553412842,
      "correlation": 0.9999999999994291,
+     "max_abs": 1.7881393432617188e-07,
+     "p99_abs": 3.725290298461914e-08,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "qsmgan",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "8882fa588b83",
+   "reference": {
+    "slug": "qsmgan",
+    "image": "ghcr.io/astewartau/qsm-ci/qsmgan@sha256:c7c83e392af271ed21e9a63062fbdc2a4ed2e46547798d81cc1e7e527700d380",
+    "digest": "sha256:c7c83e392af271ed21e9a63062fbdc2a4ed2e46547798d81cc1e7e527700d380",
+    "id": "sha256:c7c83e392af271ed21e9a63062fbdc2a4ed2e46547798d81cc1e7e527700d380"
+   },
+   "candidate": {
+    "slug": "qsmgan-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j57-models",
+    "digest": "sha256:85dd0fcba01c95864c2a555faebfd4ee062c2847d4bc7388f6f12de734d6fa81",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.00010758590483811463,
+     "correlation": 0.9999999999994267,
      "max_abs": 1.7881393432617188e-07,
      "p99_abs": 3.725290298461914e-08,
      "nonfinite": 0
@@ -18806,6 +21594,49 @@
    }
   },
   {
+   "pair": "qsmgan",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "e1358ec0e572",
+   "reference": {
+    "slug": "qsmgan",
+    "image": "ghcr.io/astewartau/qsm-ci/qsmgan@sha256:c7c83e392af271ed21e9a63062fbdc2a4ed2e46547798d81cc1e7e527700d380",
+    "digest": "sha256:c7c83e392af271ed21e9a63062fbdc2a4ed2e46547798d81cc1e7e527700d380",
+    "id": "sha256:c7c83e392af271ed21e9a63062fbdc2a4ed2e46547798d81cc1e7e527700d380"
+   },
+   "candidate": {
+    "slug": "qsmgan-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j58-models",
+    "digest": "sha256:d94d116baf7b5020ec339fe293a08d94864395ceedba35b65abc8a4d736d6e62",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.0048179798219879924,
+     "correlation": 0.9999999988426491,
+     "max_abs": 0.0005917549133300781,
+     "p99_abs": 3.166496753692627e-08,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
    "pair": "qsmnet",
    "dataset": "sim",
    "track": "dev",
@@ -19068,6 +21899,38 @@
      "nonfinite": 0
     }
    }
+  },
+  {
+   "pair": "qsmnet",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "245f50b9b260",
+   "reference": {
+    "slug": "qsmnet",
+    "image": "ghcr.io/astewartau/qsm-ci/qsmnet@sha256:7081b0782c7cb23ec8a9fc509af44f7f3a4960eec886299af63dc950c6d0b2c3",
+    "digest": "sha256:7081b0782c7cb23ec8a9fc509af44f7f3a4960eec886299af63dc950c6d0b2c3"
+   },
+   "candidate": {
+    "slug": "qsmnet-qsmrs"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
   },
   {
    "pair": "qsmnet-plus",
@@ -19334,6 +22197,49 @@
    }
   },
   {
+   "pair": "qsmnet-plus",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "49c4ac39b518",
+   "reference": {
+    "slug": "qsmnet-plus",
+    "image": "ghcr.io/astewartau/qsm-ci/qsmnet-plus@sha256:d63e1a6ad3f0e208c9fb45e510c715fe4669cf806c52e47814e80898a4c65ea7",
+    "digest": "sha256:d63e1a6ad3f0e208c9fb45e510c715fe4669cf806c52e47814e80898a4c65ea7",
+    "id": "sha256:d63e1a6ad3f0e208c9fb45e510c715fe4669cf806c52e47814e80898a4c65ea7"
+   },
+   "candidate": {
+    "slug": "qsmnet-plus-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j54-models",
+    "digest": "sha256:4e11a245b0a8980ab5098a362fb55de77fc43d050f355f097d57b315a71f4961",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.00020862977501738913,
+     "correlation": 0.9999999999978002,
+     "max_abs": 2.0265579223632812e-06,
+     "p99_abs": 1.4889519661664963e-07,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
    "pair": "qsmnetme",
    "dataset": "s002001-kki-achieva-bridge-run1",
    "track": "dev",
@@ -19591,6 +22497,49 @@
   },
   {
    "pair": "qsmnetme",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "c12860d6b31b",
+   "reference": {
+    "slug": "qsmnetme",
+    "image": "ghcr.io/astewartau/qsm-ci/chisep-toolbox@sha256:dcac7d9f05fe02ee44522feaabc839473db61257feed60648bea698911a6521d",
+    "digest": "sha256:dcac7d9f05fe02ee44522feaabc839473db61257feed60648bea698911a6521d",
+    "id": "sha256:dcac7d9f05fe02ee44522feaabc839473db61257feed60648bea698911a6521d"
+   },
+   "candidate": {
+    "slug": "qsmnetme-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j70-models",
+    "digest": "sha256:9bb219a19faecbb90d8f0459c2dcb3376d0b7a6b01425dfa7ca97e961063d985",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 9.915663013831436e-05,
+     "correlation": 0.9999999999995101,
+     "max_abs": 7.867813110351562e-06,
+     "p99_abs": 5.587935447692871e-08,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "qsmnetme",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-11-03T16:10:24Z",
@@ -19832,6 +22781,49 @@
    "qsmxt": {
     "ref": "v12.0.0",
     "commit": "2c1485ad627375ba5aa1a3fc3c191c66c79bc0ae"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 6.0114239150131285e-05,
+     "correlation": 0.9999999999998206,
+     "max_abs": 6.258487701416016e-07,
+     "p99_abs": 4.284083843231201e-08,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "qsmnetme",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "2acd2bfa0218",
+   "reference": {
+    "slug": "qsmnetme",
+    "image": "ghcr.io/astewartau/qsm-ci/chisep-toolbox@sha256:dcac7d9f05fe02ee44522feaabc839473db61257feed60648bea698911a6521d",
+    "digest": "sha256:dcac7d9f05fe02ee44522feaabc839473db61257feed60648bea698911a6521d",
+    "id": "sha256:dcac7d9f05fe02ee44522feaabc839473db61257feed60648bea698911a6521d"
+   },
+   "candidate": {
+    "slug": "qsmnetme-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j71-models",
+    "digest": "sha256:a9420feac1e671597a50e75aaa3a998ceb5001576d1f524286ef4f66d7bee951",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
    },
    "result": "pass",
    "metrics": {
@@ -20124,6 +23116,57 @@
      "kind": "continuous",
      "nrmse": 2.0333647304263572e-05,
      "correlation": 0.9999999999999616,
+     "max_abs": 9.1552734375e-05,
+     "p99_abs": 7.62939453125e-06,
+     "nonfinite": 0
+    },
+    "r2star": {
+     "kind": "continuous",
+     "nrmse": 0.0,
+     "correlation": 1.0,
+     "max_abs": 0.0,
+     "p99_abs": 0.0,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "r2primenet",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "cd5193eae5ce",
+   "reference": {
+    "slug": "r2primenet",
+    "image": "ghcr.io/astewartau/qsm-ci/r2primenet@sha256:21a051bec5387524e262a1015b84f0d74de2404eec747bae2460617a6f7b2bea",
+    "digest": "sha256:21a051bec5387524e262a1015b84f0d74de2404eec747bae2460617a6f7b2bea",
+    "id": "sha256:21a051bec5387524e262a1015b84f0d74de2404eec747bae2460617a6f7b2bea"
+   },
+   "candidate": {
+    "slug": "r2primenet-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j75-models",
+    "digest": "sha256:4b58ef837234beb12920415df400ca36e7c13df30df43cfc6f9fb9e4cfdefbe7",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "result": "pass",
+   "metrics": {
+    "r2prime": {
+     "kind": "continuous",
+     "nrmse": 2.0333647304263657e-05,
+     "correlation": 0.9999999999999635,
      "max_abs": 9.1552734375e-05,
      "p99_abs": 7.62939453125e-06,
      "nonfinite": 0
@@ -20457,6 +23500,62 @@
    }
   },
   {
+   "pair": "r2primenet",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "f959afeec632",
+   "reference": {
+    "slug": "r2primenet",
+    "image": "ghcr.io/astewartau/qsm-ci/r2primenet@sha256:21a051bec5387524e262a1015b84f0d74de2404eec747bae2460617a6f7b2bea",
+    "digest": "sha256:21a051bec5387524e262a1015b84f0d74de2404eec747bae2460617a6f7b2bea",
+    "id": "sha256:21a051bec5387524e262a1015b84f0d74de2404eec747bae2460617a6f7b2bea"
+   },
+   "candidate": {
+    "slug": "r2primenet-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j76-models",
+    "digest": "sha256:6ea36403293a4bbe184d2eb756dec2bd10cf14f51a5617ced002ffb59399d259",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "set": {
+    "candidate": {
+     "ignore_field_mismatch": "true"
+    }
+   },
+   "result": "pass",
+   "metrics": {
+    "r2prime": {
+     "kind": "continuous",
+     "nrmse": 2.047041453627934e-05,
+     "correlation": 0.9999999999999442,
+     "max_abs": 0.000152587890625,
+     "p99_abs": 1.9073486328125e-05,
+     "nonfinite": 0
+    },
+    "r2star": {
+     "kind": "continuous",
+     "nrmse": 0.0,
+     "correlation": 1.0,
+     "max_abs": 0.0,
+     "p99_abs": 0.0,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
    "pair": "resharp",
    "dataset": "s002001-kki-achieva-bridge-run1",
    "track": "dev",
@@ -20728,6 +23827,49 @@
   },
   {
    "pair": "resharp",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "f36633ac2744",
+   "reference": {
+    "slug": "resharp",
+    "image": "ghcr.io/astewartau/qsm-ci/resharp@sha256:b147f71e433555c8be550195d16451caa191dacbcbccd3e392e200db8e0d7e2d",
+    "digest": "sha256:b147f71e433555c8be550195d16451caa191dacbcbccd3e392e200db8e0d7e2d",
+    "id": "sha256:b147f71e433555c8be550195d16451caa191dacbcbccd3e392e200db8e0d7e2d"
+   },
+   "candidate": {
+    "slug": "resharp-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j99",
+    "digest": "sha256:61dad41655a740ea0b6b1131b089b6cef3c5eb1c5e7896ee3b66be44b5353e11",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "result": "pass",
+   "metrics": {
+    "localfield": {
+     "kind": "continuous",
+     "nrmse": 3.8611874631143415e-09,
+     "correlation": 0.9999999999999999,
+     "max_abs": 4.656612873077393e-10,
+     "p99_abs": 0.0,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "resharp",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-11-03T16:10:24Z",
@@ -20983,6 +24125,49 @@
    "qsmxt": {
     "ref": "v12.0.0",
     "commit": "2c1485ad627375ba5aa1a3fc3c191c66c79bc0ae"
+   },
+   "result": "pass",
+   "metrics": {
+    "localfield": {
+     "kind": "continuous",
+     "nrmse": 1.4900663543060582e-08,
+     "correlation": 1.0,
+     "max_abs": 9.313225746154785e-10,
+     "p99_abs": 0.0,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "resharp",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "e15da89f2d84",
+   "reference": {
+    "slug": "resharp",
+    "image": "ghcr.io/astewartau/qsm-ci/resharp@sha256:b147f71e433555c8be550195d16451caa191dacbcbccd3e392e200db8e0d7e2d",
+    "digest": "sha256:b147f71e433555c8be550195d16451caa191dacbcbccd3e392e200db8e0d7e2d",
+    "id": "sha256:b147f71e433555c8be550195d16451caa191dacbcbccd3e392e200db8e0d7e2d"
+   },
+   "candidate": {
+    "slug": "resharp-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j100",
+    "digest": "sha256:6756b4ef18d453666c5492686f3e8f8a1711db6379b510432411f8afd8ab9ef3",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
    },
    "result": "pass",
    "metrics": {
@@ -21468,6 +24653,61 @@
   },
   {
    "pair": "romeo",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "8f5bd2a470dd",
+   "reference": {
+    "slug": "romeo-romeojl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "id": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "romeo-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j47",
+    "digest": "sha256:656ac945184bdb8f5f2e2811519a2fba4490ffe02075ac31b57e59ee31536995",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "set": {
+    "reference": {
+     "weights": "romeo4",
+     "individual_unwrapping": "true",
+     "correct_global": "true",
+     "phase_offset_sigma_mm": 4
+    },
+    "candidate": {
+     "individual_unwrapping": "true",
+     "correct_global": "true"
+    }
+   },
+   "result": "pass",
+   "metrics": {
+    "totalfield": {
+     "kind": "continuous",
+     "nrmse": 1.4976924362274104,
+     "correlation": 0.9998960411605834,
+     "max_abs": 0.12724245712161064,
+     "p99_abs": 0.014367064833641037,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "romeo",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-10-31T11:57:25Z",
@@ -21941,6 +25181,61 @@
    }
   },
   {
+   "pair": "romeo",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "42546f05e11d",
+   "reference": {
+    "slug": "romeo-romeojl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "id": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "romeo-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j48",
+    "digest": "sha256:5ba297cd45836f01161f6e144b4b69f9253746e7f646c68a2643f05088cb2971",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "set": {
+    "reference": {
+     "weights": "romeo4",
+     "individual_unwrapping": "true",
+     "correct_global": "true",
+     "phase_offset_sigma_mm": 4
+    },
+    "candidate": {
+     "individual_unwrapping": "true",
+     "correct_global": "true"
+    }
+   },
+   "result": "pass",
+   "metrics": {
+    "totalfield": {
+     "kind": "continuous",
+     "nrmse": 1.6450217844553718,
+     "correlation": 0.999952805706336,
+     "max_abs": 0.16365057229995728,
+     "p99_abs": 0.002704319651238622,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
    "pair": "rts",
    "dataset": "s002001-kki-achieva-bridge-run1",
    "track": "dev",
@@ -22254,6 +25549,49 @@
   },
   {
    "pair": "rts",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "d93a593736b3",
+   "reference": {
+    "slug": "rts-qsmjl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "id": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "rts-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j35",
+    "digest": "sha256:4c5f398bfe20353ffca3634a012ea66f671f2238fcbd3705300925c5a4595988",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 7.8118766056199e-10,
+     "correlation": 1.0,
+     "max_abs": 2.3283064365386963e-10,
+     "p99_abs": 0.0,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "rts",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-10-31T11:57:25Z",
@@ -22557,6 +25895,49 @@
     "chimap": {
      "kind": "continuous",
      "nrmse": 3.932370209344343e-10,
+     "correlation": 0.9999999999999998,
+     "max_abs": 1.1641532182693481e-10,
+     "p99_abs": 0.0,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "rts",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "f085e8d55741",
+   "reference": {
+    "slug": "rts-qsmjl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "id": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "rts-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j36",
+    "digest": "sha256:23518bb1d3ce19bd71dd8a38247ee9ae1773ab94c3a60539bd243d23e3a1275e",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 3.9323702093443537e-10,
      "correlation": 0.9999999999999998,
      "max_abs": 1.1641532182693481e-10,
      "p99_abs": 0.0,
@@ -22878,6 +26259,49 @@
   },
   {
    "pair": "sharp",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "f3dbbb7a0398",
+   "reference": {
+    "slug": "sharp-sepia",
+    "image": "ghcr.io/astewartau/qsm-ci/matlab-sharp-sepia@sha256:3ad75137e636fac724356641b488ad8cec0f87bb67e7ae0aa1c290f70eac209e",
+    "digest": "sha256:3ad75137e636fac724356641b488ad8cec0f87bb67e7ae0aa1c290f70eac209e",
+    "id": "sha256:3ad75137e636fac724356641b488ad8cec0f87bb67e7ae0aa1c290f70eac209e"
+   },
+   "candidate": {
+    "slug": "sharp-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j39",
+    "digest": "sha256:a5253a5ce34965c49da27fde1ff5087ab3bada38476c5bba75d93d4d7ef4a5d2",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "result": "pass",
+   "metrics": {
+    "localfield": {
+     "kind": "continuous",
+     "nrmse": 1.3943532867164452e-08,
+     "correlation": 0.9999999999999997,
+     "max_abs": 1.862645149230957e-09,
+     "p99_abs": 0.0,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "sharp",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-10-31T11:57:25Z",
@@ -23189,6 +26613,49 @@
    }
   },
   {
+   "pair": "sharp",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "f19e991b2cf9",
+   "reference": {
+    "slug": "sharp-sepia",
+    "image": "ghcr.io/astewartau/qsm-ci/matlab-sharp-sepia@sha256:3ad75137e636fac724356641b488ad8cec0f87bb67e7ae0aa1c290f70eac209e",
+    "digest": "sha256:3ad75137e636fac724356641b488ad8cec0f87bb67e7ae0aa1c290f70eac209e",
+    "id": "sha256:3ad75137e636fac724356641b488ad8cec0f87bb67e7ae0aa1c290f70eac209e"
+   },
+   "candidate": {
+    "slug": "sharp-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j40",
+    "digest": "sha256:a951dfd478414b72a6ebc3709c2f9f427144337929c7465ff5ba49d738e52f5b",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "result": "pass",
+   "metrics": {
+    "localfield": {
+     "kind": "continuous",
+     "nrmse": 1.058065506925026e-08,
+     "correlation": 1.0,
+     "max_abs": 9.313225746154785e-10,
+     "p99_abs": 0.0,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
    "pair": "sharp-qsmjl",
    "dataset": "s002001-kki-achieva-bridge-run1",
    "track": "released",
@@ -23468,6 +26935,54 @@
    "qsmxt": {
     "ref": "v12.0.0",
     "commit": "2c1485ad627375ba5aa1a3fc3c191c66c79bc0ae"
+   },
+   "set": {
+    "candidate": {
+     "variant": "qsmjl"
+    }
+   },
+   "result": "pass",
+   "metrics": {
+    "localfield": {
+     "kind": "continuous",
+     "nrmse": 0.0,
+     "correlation": 1.0,
+     "max_abs": 0.0,
+     "p99_abs": 0.0,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "sharp-qsmjl",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "1bb485965c21",
+   "reference": {
+    "slug": "sharp-qsmjl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "id": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "sharp-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j41",
+    "digest": "sha256:57343910e68518c03415961e8364ac02a6b5a984f7d924868edb1e9f421ab7ce",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
    },
    "set": {
     "candidate": {
@@ -23777,6 +27292,54 @@
     "localfield": {
      "kind": "continuous",
      "nrmse": 6.321997285327097e-12,
+     "correlation": 0.9999999999999999,
+     "max_abs": 4.547473508864641e-13,
+     "p99_abs": 0.0,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "sharp-qsmjl",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "280e3e55fa4c",
+   "reference": {
+    "slug": "sharp-qsmjl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "id": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "sharp-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j42",
+    "digest": "sha256:551c410013007aed5a17d5f6c1261962b40c91bf8446f1c8fed1d7518aaee18f",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "set": {
+    "candidate": {
+     "variant": "qsmjl"
+    }
+   },
+   "result": "pass",
+   "metrics": {
+    "localfield": {
+     "kind": "continuous",
+     "nrmse": 6.3219972853271076e-12,
      "correlation": 0.9999999999999999,
      "max_abs": 4.547473508864641e-13,
      "p99_abs": 0.0,
@@ -24112,6 +27675,55 @@
      "kind": "continuous",
      "nrmse": 0.0020852671551235533,
      "correlation": 0.99999999999155,
+     "max_abs": 1.2636184692382812e-05,
+     "p99_abs": 2.346932888031006e-06,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "star",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "91b24ae0ebc8",
+   "reference": {
+    "slug": "star-sti",
+    "image": "ghcr.io/astewartau/qsm-ci/matlab-sti-star@sha256:77674d0ef999060e6b9afcaea022a69d277958cad40435f8c113b7bc1ea02b84",
+    "digest": "sha256:77674d0ef999060e6b9afcaea022a69d277958cad40435f8c113b7bc1ea02b84",
+    "id": "sha256:77674d0ef999060e6b9afcaea022a69d277958cad40435f8c113b7bc1ea02b84"
+   },
+   "candidate": {
+    "slug": "star-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j7",
+    "digest": "sha256:275d091e2e5f6a4a816621139d2572a8d7954f764a539668ceba5cb9c14da8bb",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "set": {
+    "candidate": {
+     "te": "first",
+     "pad": 12
+    }
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.0020852671612916034,
+     "correlation": 0.9999999999915501,
      "max_abs": 1.2636184692382812e-05,
      "p99_abs": 2.346932888031006e-06,
      "nonfinite": 0
@@ -24500,6 +28112,55 @@
    }
   },
   {
+   "pair": "star",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "e7c2b62c2132",
+   "reference": {
+    "slug": "star-sti",
+    "image": "ghcr.io/astewartau/qsm-ci/matlab-sti-star@sha256:77674d0ef999060e6b9afcaea022a69d277958cad40435f8c113b7bc1ea02b84",
+    "digest": "sha256:77674d0ef999060e6b9afcaea022a69d277958cad40435f8c113b7bc1ea02b84",
+    "id": "sha256:77674d0ef999060e6b9afcaea022a69d277958cad40435f8c113b7bc1ea02b84"
+   },
+   "candidate": {
+    "slug": "star-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j8",
+    "digest": "sha256:ec9203bef50c99ecd2c8db1d5228a0f5e80e9b72a2a68870407954588b112f1b",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "set": {
+    "candidate": {
+     "te": "first",
+     "pad": 12
+    }
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.002332040836067368,
+     "correlation": 0.9999999999999346,
+     "max_abs": 7.152557373046875e-05,
+     "p99_abs": 1.8253922462463379e-06,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
    "pair": "susep-net",
    "dataset": "chisep-mc",
    "track": "dev",
@@ -24812,6 +28473,57 @@
    }
   },
   {
+   "pair": "susep-net",
+   "dataset": "chisep-mc",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "2b8d88c848ee",
+   "reference": {
+    "slug": "susep-net",
+    "image": "ghcr.io/astewartau/qsm-ci/susep-net@sha256:b4d175563f6b32f84b3af163a1ac5975cc8397393457c2ef83367db11056d975",
+    "digest": "sha256:b4d175563f6b32f84b3af163a1ac5975cc8397393457c2ef83367db11056d975",
+    "id": "sha256:b4d175563f6b32f84b3af163a1ac5975cc8397393457c2ef83367db11056d975"
+   },
+   "candidate": {
+    "slug": "susep-net-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j72-models",
+    "digest": "sha256:17f8540c880480eb2b0cd8a1899ceae7d4722d22d8313644bc84b56cf7c79d54",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "result": "pass",
+   "metrics": {
+    "chi-para": {
+     "kind": "continuous",
+     "nrmse": 3.1025661717610165e-05,
+     "correlation": 0.9999999999998983,
+     "max_abs": 1.7881393432617188e-07,
+     "p99_abs": 2.9802322387695312e-08,
+     "nonfinite": 0
+    },
+    "chi-dia": {
+     "kind": "continuous",
+     "nrmse": 2.8633848170789735e-05,
+     "correlation": 0.9999999999998677,
+     "max_abs": 1.9371509552001953e-07,
+     "p99_abs": 2.2351741790771484e-08,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
    "pair": "tfi",
    "dataset": "s002001-kki-achieva-bridge-run1",
    "track": "dev",
@@ -25118,6 +28830,55 @@
   },
   {
    "pair": "tfi",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "64210dc6aeb4",
+   "reference": {
+    "slug": "tfi-cornell",
+    "image": "ghcr.io/astewartau/qsm-ci/matlab-medi@sha256:ba6b3eb2c7c410cd1f66544dd455060a2da32ab76b9d9029e0b7b9345fb69565",
+    "digest": "sha256:ba6b3eb2c7c410cd1f66544dd455060a2da32ab76b9d9029e0b7b9345fb69565",
+    "id": "sha256:ba6b3eb2c7c410cd1f66544dd455060a2da32ab76b9d9029e0b7b9345fb69565"
+   },
+   "candidate": {
+    "slug": "tfi-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j105",
+    "digest": "sha256:5c138a5fd2588757dd0b3af8645591d67d23af1ee4532ebf594954eec92ae5c8",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "set": {
+    "candidate": {
+     "kernel": "original",
+     "precision": "single"
+    }
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 1.256419975634904,
+     "correlation": 0.9999221270069115,
+     "max_abs": 0.08617767691612244,
+     "p99_abs": 0.0036468120291828833,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "tfi",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-11-03T16:10:24Z",
@@ -25416,6 +29177,55 @@
      "kind": "continuous",
      "nrmse": 3.606119695914492,
      "correlation": 0.9993560445869296,
+     "max_abs": 0.06728800386190414,
+     "p99_abs": 0.003547621704638007,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "tfi",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "4c8f62b227ae",
+   "reference": {
+    "slug": "tfi-cornell",
+    "image": "ghcr.io/astewartau/qsm-ci/matlab-medi@sha256:ba6b3eb2c7c410cd1f66544dd455060a2da32ab76b9d9029e0b7b9345fb69565",
+    "digest": "sha256:ba6b3eb2c7c410cd1f66544dd455060a2da32ab76b9d9029e0b7b9345fb69565",
+    "id": "sha256:ba6b3eb2c7c410cd1f66544dd455060a2da32ab76b9d9029e0b7b9345fb69565"
+   },
+   "candidate": {
+    "slug": "tfi-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j106",
+    "digest": "sha256:33a0ee42545fd997d652edd556abba260ff7a9d6da76dba5378b7db9ddc09b62",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "set": {
+    "candidate": {
+     "kernel": "original",
+     "precision": "single"
+    }
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 3.606119695914549,
+     "correlation": 0.9993560445869267,
      "max_abs": 0.06728800386190414,
      "p99_abs": 0.003547621704638007,
      "nonfinite": 0
@@ -25814,6 +29624,63 @@
   },
   {
    "pair": "tgv",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "4fcbf92b7c0a",
+   "reference": {
+    "slug": "tgv-tgvjl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "id": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "tgv-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j49",
+    "digest": "sha256:1c53851609094d7fed5180f3720ed330d3f45770e02cf073e0e8a3727cfaf3a4",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "set": {
+    "reference": {
+     "laplacian": "unwrapped",
+     "alpha0": 0.00636,
+     "alpha1": 0.00212
+    },
+    "candidate": {
+     "reference_divergence": "true",
+     "reference_edge_erosion": "true",
+     "reference_output_box": "true",
+     "alpha0": 0.00636,
+     "alpha1": 0.00212
+    }
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.0006843553585213529,
+     "correlation": 0.9999999999767,
+     "max_abs": 2.734363079071045e-06,
+     "p99_abs": 7.953494787216187e-07,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "tgv",
    "dataset": "sim",
    "track": "released",
    "release": "v10.0.0",
@@ -26203,6 +30070,63 @@
    }
   },
   {
+   "pair": "tgv",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "ead996d3d73b",
+   "reference": {
+    "slug": "tgv-tgvjl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "id": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "tgv-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j50",
+    "digest": "sha256:babbd25ea77757a7fe6d0968389436e58754430871719f631eecf906b2fb8351",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "set": {
+    "reference": {
+     "laplacian": "unwrapped",
+     "alpha0": 0.00636,
+     "alpha1": 0.00212
+    },
+    "candidate": {
+     "reference_divergence": "true",
+     "reference_edge_erosion": "true",
+     "reference_output_box": "true",
+     "alpha0": 0.00636,
+     "alpha1": 0.00212
+    }
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.0003367005503703575,
+     "correlation": 0.9999999999943355,
+     "max_abs": 1.430511474609375e-06,
+     "p99_abs": 2.682209014892578e-07,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
    "pair": "tikhonov",
    "dataset": "s002001-kki-achieva-bridge-run1",
    "track": "dev",
@@ -26500,6 +30424,49 @@
    "qsmxt": {
     "ref": "v12.0.0",
     "commit": "2c1485ad627375ba5aa1a3fc3c191c66c79bc0ae"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.0,
+     "correlation": 1.0,
+     "max_abs": 0.0,
+     "p99_abs": 0.0,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "tikhonov",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "1a54af6f5a31",
+   "reference": {
+    "slug": "tikhonov-qsmjl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "id": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "tikhonov-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j29",
+    "digest": "sha256:a1b245052dbc8395cf2c4a0582462816044e59ef3edd14a842ddfb672d6c9382",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
    },
    "result": "pass",
    "metrics": {
@@ -26824,6 +30791,49 @@
    }
   },
   {
+   "pair": "tikhonov",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "4f585b91d046",
+   "reference": {
+    "slug": "tikhonov-qsmjl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "id": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "tikhonov-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j30",
+    "digest": "sha256:f24d9c850dac9c88f0acb3c0f358a9da162a0be380771aa8deb54cf9750474b4",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.0,
+     "correlation": 0.9999999999999999,
+     "max_abs": 0.0,
+     "p99_abs": 0.0,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
    "pair": "tkd",
    "dataset": "s002001-kki-achieva-bridge-run1",
    "track": "dev",
@@ -27133,6 +31143,54 @@
      "kind": "continuous",
      "nrmse": 0.0,
      "correlation": 1.0,
+     "max_abs": 0.0,
+     "p99_abs": 0.0,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "tkd",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "776fb52e8dc2",
+   "reference": {
+    "slug": "tkd-qsmjl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "id": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "tkd-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j25",
+    "digest": "sha256:d601ed38a3ace3b28fece6ba39d9b04a5a589a02ac1f91860aeb25413bbfaba2",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "set": {
+    "candidate": {
+     "threshold": 0.15
+    }
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.0,
+     "correlation": 0.9999999999999998,
      "max_abs": 0.0,
      "p99_abs": 0.0,
      "nonfinite": 0
@@ -27456,6 +31514,54 @@
    }
   },
   {
+   "pair": "tkd",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "93c482ec1a24",
+   "reference": {
+    "slug": "tkd-qsmjl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "id": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "tkd-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j26",
+    "digest": "sha256:ff2623e8229f6a743d1115872944c7932aa2ce5a348740dbb9c1f08eb32ff8a7",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "set": {
+    "candidate": {
+     "threshold": 0.15
+    }
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.0,
+     "correlation": 1.0,
+     "max_abs": 0.0,
+     "p99_abs": 0.0,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
    "pair": "toolbox-pipeline-chisep-ilsqr",
    "dataset": "s005001-cbic-prisma-bridge-run1",
    "track": "released",
@@ -27516,6 +31622,93 @@
      "kind": "continuous",
      "nrmse": 0.0012269158563288473,
      "correlation": 0.9999999997636286,
+     "max_abs": 8.249282836914062e-05,
+     "p99_abs": 1.1753290891647339e-06,
+     "nonfinite": 0
+    },
+    "localfield": {
+     "kind": "continuous",
+     "nrmse": 0.0009606745978060691,
+     "correlation": 0.9999999999539078,
+     "max_abs": 1.3145664729976789e-05,
+     "p99_abs": 2.2246145676681039e-07,
+     "nonfinite": 0
+    },
+    "mask": {
+     "kind": "binary",
+     "dice": 1.0
+    },
+    "totalfield": {
+     "kind": "continuous",
+     "nrmse": 0.0001558916993409757,
+     "correlation": 0.9999999999985899,
+     "max_abs": 4.022307597995045e-05,
+     "p99_abs": 1.533876702947134e-07,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "toolbox-pipeline-chisep-ilsqr",
+   "dataset": "s005001-cbic-prisma-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "d89dfae1d275",
+   "reference": {
+    "slug": "toolbox-pipeline-chisep",
+    "image": "ghcr.io/astewartau/qsm-ci/chisep-pipeline@sha256:17e9784a259dfc917aa238d7418ce8bd1af07c3c2e35fbe57e281b2b8b3c1f96",
+    "digest": "sha256:17e9784a259dfc917aa238d7418ce8bd1af07c3c2e35fbe57e281b2b8b3c1f96",
+    "id": "sha256:17e9784a259dfc917aa238d7418ce8bd1af07c3c2e35fbe57e281b2b8b3c1f96"
+   },
+   "candidate": {
+    "slug": "toolbox-pipeline-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j12",
+    "digest": "sha256:fa160017e8348ec6220db2ef6992f76f07ab5bfc4c77947517b1c3a6c4952f47",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "set": {
+    "reference": {
+     "method": "ilsqr"
+    },
+    "candidate": {
+     "pipeline": "chi-sep-ilsqr"
+    }
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.003284849324356396,
+     "correlation": 0.9999999998136754,
+     "max_abs": 0.0001564621925354004,
+     "p99_abs": 4.291534423828125e-06,
+     "nonfinite": 0
+    },
+    "chi-para": {
+     "kind": "continuous",
+     "nrmse": 0.0008294438208518188,
+     "correlation": 0.9999999999046651,
+     "max_abs": 4.947185516357422e-05,
+     "p99_abs": 9.164214134216309e-07,
+     "nonfinite": 0
+    },
+    "chi-dia": {
+     "kind": "continuous",
+     "nrmse": 0.0012269156857361684,
+     "correlation": 0.999999999763625,
      "max_abs": 8.249282836914062e-05,
      "p99_abs": 1.1753290891647339e-06,
      "nonfinite": 0
@@ -27623,6 +31816,93 @@
      "kind": "continuous",
      "nrmse": 0.0001558916993409757,
      "correlation": 0.9999999999985899,
+     "max_abs": 4.022307597995045e-05,
+     "p99_abs": 1.533876702947134e-07,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "toolbox-pipeline-chisep-medi",
+   "dataset": "s005001-cbic-prisma-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "9c9b65d31923",
+   "reference": {
+    "slug": "toolbox-pipeline-chisep",
+    "image": "ghcr.io/astewartau/qsm-ci/chisep-pipeline@sha256:17e9784a259dfc917aa238d7418ce8bd1af07c3c2e35fbe57e281b2b8b3c1f96",
+    "digest": "sha256:17e9784a259dfc917aa238d7418ce8bd1af07c3c2e35fbe57e281b2b8b3c1f96",
+    "id": "sha256:17e9784a259dfc917aa238d7418ce8bd1af07c3c2e35fbe57e281b2b8b3c1f96"
+   },
+   "candidate": {
+    "slug": "toolbox-pipeline-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j13",
+    "digest": "sha256:4cb0a112d373488b51ce5771f74ad8dd7efcf83789883b4d9593aeada05cd7a6",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "set": {
+    "reference": {
+     "method": "medi"
+    },
+    "candidate": {
+     "pipeline": "chi-sep-medi"
+    }
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.0032848493243563884,
+     "correlation": 0.9999999998136746,
+     "max_abs": 0.0001564621925354004,
+     "p99_abs": 4.291534423828125e-06,
+     "nonfinite": 0
+    },
+    "chi-para": {
+     "kind": "continuous",
+     "nrmse": 0.0005162387641090299,
+     "correlation": 0.9999999999676403,
+     "max_abs": 5.4527801694348454e-05,
+     "p99_abs": 5.066394805908203e-07,
+     "nonfinite": 0
+    },
+    "chi-dia": {
+     "kind": "continuous",
+     "nrmse": 0.0011149027233436767,
+     "correlation": 0.9999999998316432,
+     "max_abs": 0.0005083493888378143,
+     "p99_abs": 5.401670932769775e-07,
+     "nonfinite": 0
+    },
+    "localfield": {
+     "kind": "continuous",
+     "nrmse": 0.0009606745978060697,
+     "correlation": 0.999999999953904,
+     "max_abs": 1.3145664729976789e-05,
+     "p99_abs": 2.2246145676681039e-07,
+     "nonfinite": 0
+    },
+    "mask": {
+     "kind": "binary",
+     "dice": 1.0
+    },
+    "totalfield": {
+     "kind": "continuous",
+     "nrmse": 0.00015589169934097585,
+     "correlation": 0.9999999999985879,
      "max_abs": 4.022307597995045e-05,
      "p99_abs": 1.533876702947134e-07,
      "nonfinite": 0
@@ -27738,6 +32018,114 @@
    }
   },
   {
+   "pair": "toolbox-pipeline-decompose",
+   "dataset": "s005001-cbic-prisma-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "9236761e790a",
+   "reference": {
+    "slug": "toolbox-pipeline-decompose-qsmci",
+    "image": "ghcr.io/astewartau/qsm-ci/decompose-pipeline@sha256:f9ada5009494cdb7c02c12fc7c90f9d91418627bc266e22e3b308f4c5464456c",
+    "digest": "sha256:f9ada5009494cdb7c02c12fc7c90f9d91418627bc266e22e3b308f4c5464456c",
+    "id": "sha256:f9ada5009494cdb7c02c12fc7c90f9d91418627bc266e22e3b308f4c5464456c"
+   },
+   "candidate": {
+    "slug": "toolbox-pipeline-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j14",
+    "digest": "sha256:659508e1b50a8fa6367b435eda334e02978e70358f6c82094b9fcb1e55894cfd",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "set": {
+    "candidate": {
+     "pipeline": "decompose"
+    }
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.0931539731924104,
+     "correlation": 0.9999995616432911,
+     "max_abs": 0.006418985314667225,
+     "p99_abs": 3.387331962585445e-06,
+     "nonfinite": 0
+    },
+    "chi-para": {
+     "kind": "continuous",
+     "nrmse": 8.14449871432464,
+     "correlation": 0.99575491819634,
+     "max_abs": 0.16459500044584274,
+     "p99_abs": 0.005641808905635229,
+     "nonfinite": 0
+    },
+    "chi-dia": {
+     "kind": "continuous",
+     "nrmse": 7.7235851245733365,
+     "correlation": 0.9953032843630308,
+     "max_abs": 0.15414629871142657,
+     "p99_abs": 0.00648506686091423,
+     "nonfinite": 0
+    },
+    "chimap_echo1": {
+     "kind": "continuous",
+     "nrmse": 0.0025443653655011526,
+     "correlation": 0.9999999999944744,
+     "max_abs": 2.7775505506699716e-05,
+     "p99_abs": 4.983871828436737e-06,
+     "nonfinite": 0
+    },
+    "chimap_echo2": {
+     "kind": "continuous",
+     "nrmse": 0.03017856605845545,
+     "correlation": 0.9999999545335461,
+     "max_abs": 0.0027752852842562454,
+     "p99_abs": 3.6853423382421254e-06,
+     "nonfinite": 0
+    },
+    "chimap_echo3": {
+     "kind": "continuous",
+     "nrmse": 0.02177108686513808,
+     "correlation": 0.9999999764630518,
+     "max_abs": 0.0018367721389189748,
+     "p99_abs": 3.3637566283761797e-06,
+     "nonfinite": 0
+    },
+    "chimap_echo4": {
+     "kind": "continuous",
+     "nrmse": 0.0025884521786633447,
+     "correlation": 0.9999999999983253,
+     "max_abs": 8.8060761730957e-06,
+     "p99_abs": 3.2287906253564117e-06,
+     "nonfinite": 0
+    },
+    "chimap_echo5": {
+     "kind": "continuous",
+     "nrmse": 0.002608452403038431,
+     "correlation": 0.9999999999987217,
+     "max_abs": 7.455015505364315e-06,
+     "p99_abs": 3.039565530742471e-06,
+     "nonfinite": 0
+    },
+    "mask": {
+     "kind": "binary",
+     "dice": 1.0
+    }
+   }
+  },
+  {
    "pair": "toolbox-pipeline-medi-cornell",
    "dataset": "s005001-cbic-prisma-bridge-run1",
    "track": "released",
@@ -27798,6 +32186,74 @@
     "totalfield": {
      "kind": "continuous",
      "nrmse": 2.548971653351799e-06,
+     "correlation": 1.0,
+     "max_abs": 1.1915145314844722e-07,
+     "p99_abs": 2.4549839668930297e-08,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "toolbox-pipeline-medi-cornell",
+   "dataset": "s005001-cbic-prisma-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "77fbf01d6dcf",
+   "reference": {
+    "slug": "toolbox-pipeline-medi-cornell",
+    "image": "ghcr.io/astewartau/qsm-ci/medi-pipeline@sha256:b3f06e4b8720312dbadde08519dad05bfb943ed5d44c27b6a136b1ea5531ca1f",
+    "digest": "sha256:b3f06e4b8720312dbadde08519dad05bfb943ed5d44c27b6a136b1ea5531ca1f",
+    "id": "sha256:b3f06e4b8720312dbadde08519dad05bfb943ed5d44c27b6a136b1ea5531ca1f"
+   },
+   "candidate": {
+    "slug": "toolbox-pipeline-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j11",
+    "digest": "sha256:8f9d83e1758b663b1d5701d02d121a37964753482ebe762748565129674b863d",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "set": {
+    "candidate": {
+     "pipeline": "medi-toolbox"
+    }
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.024394923220237577,
+     "correlation": 0.9999999693909631,
+     "max_abs": 0.0006666183471679688,
+     "p99_abs": 4.119984805583954e-05,
+     "nonfinite": 0
+    },
+    "localfield": {
+     "kind": "continuous",
+     "nrmse": 0.00029526876688703516,
+     "correlation": 0.999999999995637,
+     "max_abs": 3.949168702260071e-05,
+     "p99_abs": 2.6011081249975318e-08,
+     "nonfinite": 0
+    },
+    "mask": {
+     "kind": "binary",
+     "dice": 1.0
+    },
+    "totalfield": {
+     "kind": "continuous",
+     "nrmse": 2.548971653351802e-06,
      "correlation": 1.0,
      "max_abs": 1.1915145314844722e-07,
      "p99_abs": 2.4549839668930297e-08,
@@ -27925,6 +32381,66 @@
    }
   },
   {
+   "pair": "toolbox-pipeline-qsmart",
+   "dataset": "s005001-cbic-prisma-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "8e80750b8ffb",
+   "reference": {
+    "slug": "toolbox-pipeline-qsmart",
+    "image": "ghcr.io/astewartau/qsm-ci/qsmart-pipeline@sha256:6c6453186cc5b83864b5f765a4d388e235f8e77745099dfd5e85ae411a613092",
+    "digest": "sha256:6c6453186cc5b83864b5f765a4d388e235f8e77745099dfd5e85ae411a613092",
+    "id": "sha256:6c6453186cc5b83864b5f765a4d388e235f8e77745099dfd5e85ae411a613092"
+   },
+   "candidate": {
+    "slug": "toolbox-pipeline-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j15",
+    "digest": "sha256:011578087d44541c5f36d8470d7540763beffc7c19f81154ab137dc0a5ea8e9c",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "set": {
+    "candidate": {
+     "pipeline": "qsmart"
+    }
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 8.57894054771267,
+     "correlation": 0.9963327369293428,
+     "max_abs": 0.29367223754525185,
+     "p99_abs": 0.007215846264734857,
+     "nonfinite": 0
+    },
+    "mask": {
+     "kind": "binary",
+     "dice": 0.999996561974197
+    },
+    "totalfield": {
+     "kind": "continuous",
+     "nrmse": 0.26085210524521635,
+     "correlation": 0.9999999969326412,
+     "max_abs": 0.0007497239657089094,
+     "p99_abs": 0.00038444004129178417,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
    "pair": "toolbox-pipeline-sti",
    "dataset": "s005001-cbic-prisma-bridge-run1",
    "track": "released",
@@ -27993,6 +32509,74 @@
    }
   },
   {
+   "pair": "toolbox-pipeline-sti",
+   "dataset": "s005001-cbic-prisma-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "d0acf678a262",
+   "reference": {
+    "slug": "toolbox-pipeline-sti",
+    "image": "ghcr.io/astewartau/qsm-ci/sti-pipeline@sha256:60dcc483e1a6a4c18c04d8e2bda99923cdb72673f774622f67c952dfd52a7dd8",
+    "digest": "sha256:60dcc483e1a6a4c18c04d8e2bda99923cdb72673f774622f67c952dfd52a7dd8",
+    "id": "sha256:60dcc483e1a6a4c18c04d8e2bda99923cdb72673f774622f67c952dfd52a7dd8"
+   },
+   "candidate": {
+    "slug": "toolbox-pipeline-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j16",
+    "digest": "sha256:fc099eb6d230c8b12da73e67e7fa19e9392ba4600ff75780f09b807274c2f3ee",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "set": {
+    "candidate": {
+     "pipeline": "sti-suite-ilsqr"
+    }
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.2980281643902167,
+     "correlation": 0.9999955590620916,
+     "max_abs": 0.0196500513702631,
+     "p99_abs": 8.968824869953093e-05,
+     "nonfinite": 0
+    },
+    "localfield": {
+     "kind": "continuous",
+     "nrmse": 0.17630693747865786,
+     "correlation": 0.9999984225549801,
+     "max_abs": 0.009465595707297325,
+     "p99_abs": 1.3450245208043027e-07,
+     "nonfinite": 0
+    },
+    "mask": {
+     "kind": "binary",
+     "dice": 1.0
+    },
+    "totalfield": {
+     "kind": "continuous",
+     "nrmse": 58.88697823698017,
+     "correlation": 0.9125230188114297,
+     "max_abs": 1.3385153072771578,
+     "p99_abs": 0.09388869326431369,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
    "pair": "toolbox-pipeline-ukb",
    "dataset": "s005001-cbic-prisma-bridge-run1",
    "track": "released",
@@ -28022,6 +32606,55 @@
    "qsmxt": {
     "ref": "v12.0.0",
     "commit": "2c1485ad627375ba5aa1a3fc3c191c66c79bc0ae"
+   },
+   "set": {
+    "candidate": {
+     "pipeline": "uk-biobank",
+     "dataset_mask": true
+    }
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.0026572426095822443,
+     "correlation": 0.9999999999965925,
+     "max_abs": 1.3649463653564453e-05,
+     "p99_abs": 2.421438694000244e-06,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "toolbox-pipeline-ukb",
+   "dataset": "s005001-cbic-prisma-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "e3d12d91df6f",
+   "reference": {
+    "slug": "toolbox-pipeline-ukb",
+    "image": "ghcr.io/astewartau/qsm-ci/matlab-ukb-qsm@sha256:7729e63a552f043e43043c5742cfcbb3a3f8d56a8f0679f2f6c67c28ea827348",
+    "digest": "sha256:7729e63a552f043e43043c5742cfcbb3a3f8d56a8f0679f2f6c67c28ea827348",
+    "id": "sha256:7729e63a552f043e43043c5742cfcbb3a3f8d56a8f0679f2f6c67c28ea827348"
+   },
+   "candidate": {
+    "slug": "toolbox-pipeline-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j17",
+    "digest": "sha256:526a4ae092f6816ef9fe91a7ef0c386bf3fa7378ed7884d8d74e9240f81bbdcb",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
    },
    "set": {
     "candidate": {
@@ -28354,6 +32987,49 @@
   },
   {
    "pair": "tsvd",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "794706bc59a5",
+   "reference": {
+    "slug": "tsvd-qsmjl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "id": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "tsvd-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j27",
+    "digest": "sha256:5993f859adc72f632dc92ff4f2ca4f54ea3d82b1a28780fcd8ad84fcc9be111f",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.0,
+     "correlation": 0.9999999999999999,
+     "max_abs": 0.0,
+     "p99_abs": 0.0,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "tsvd",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-10-31T11:57:25Z",
@@ -28650,6 +33326,49 @@
    "qsmxt": {
     "ref": "v12.0.0",
     "commit": "2c1485ad627375ba5aa1a3fc3c191c66c79bc0ae"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.0,
+     "correlation": 1.0,
+     "max_abs": 0.0,
+     "p99_abs": 0.0,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "tsvd",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "ebacad7c3cd2",
+   "reference": {
+    "slug": "tsvd-qsmjl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "id": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "tsvd-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j28",
+    "digest": "sha256:4034f96ef9914ecc94fafb5342e70f09793690a76cd7c2e8d808cb33149a125b",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
    },
    "result": "pass",
    "metrics": {
@@ -28982,6 +33701,54 @@
   },
   {
    "pair": "tv",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "5e378ab6b944",
+   "reference": {
+    "slug": "tv-qsmjl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "id": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "tv-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j31",
+    "digest": "sha256:c35fceb52306325e17ac461a6f4717db050a048bf52798bc49c79863876fec0c",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "set": {
+    "candidate": {
+     "lambda": 0.001
+    }
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.0,
+     "correlation": 1.0,
+     "max_abs": 0.0,
+     "p99_abs": 0.0,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "tv",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-10-31T11:57:25Z",
@@ -29291,6 +34058,54 @@
      "kind": "continuous",
      "nrmse": 2.0240539192787824e-16,
      "correlation": 1.0,
+     "max_abs": 5.551115123125783e-17,
+     "p99_abs": 0.0,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "tv",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "c707727c722f",
+   "reference": {
+    "slug": "tv-qsmjl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "id": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "tv-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j32",
+    "digest": "sha256:e23e40fa803c6d04cac855844f67f7be5c4d683dc181e134511c13a50d3eaa33",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "set": {
+    "candidate": {
+     "lambda": 0.001
+    }
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 2.0240539192787753e-16,
+     "correlation": 0.9999999999999999,
      "max_abs": 5.551115123125783e-17,
      "p99_abs": 0.0,
      "nonfinite": 0
@@ -29645,6 +34460,54 @@
   },
   {
    "pair": "vsharp",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "62fd7c9f9e7c",
+   "reference": {
+    "slug": "vsharp-sti",
+    "image": "ghcr.io/astewartau/qsm-ci/matlab-sti-vsharp@sha256:715c565758a5a64c6df8e73d34a0a62bf7afeb5d6d7feae5f748322cba2504d6",
+    "digest": "sha256:715c565758a5a64c6df8e73d34a0a62bf7afeb5d6d7feae5f748322cba2504d6",
+    "id": "sha256:715c565758a5a64c6df8e73d34a0a62bf7afeb5d6d7feae5f748322cba2504d6"
+   },
+   "candidate": {
+    "slug": "vsharp-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j4",
+    "digest": "sha256:5d93181fb20fa42d28ef1532d1c50b9cc2e52d530b4041c1672e4084081427c0",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "set": {
+    "candidate": {
+     "deconvolve": "false"
+    }
+   },
+   "result": "pass",
+   "metrics": {
+    "localfield": {
+     "kind": "continuous",
+     "nrmse": 0.0002207169164122568,
+     "correlation": 0.9999999999975201,
+     "max_abs": 4.898756742477417e-07,
+     "p99_abs": 7.543712854385376e-08,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "vsharp",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-10-31T11:57:25Z",
@@ -29971,6 +34834,54 @@
    "qsmxt": {
     "ref": "v12.0.0",
     "commit": "2c1485ad627375ba5aa1a3fc3c191c66c79bc0ae"
+   },
+   "set": {
+    "candidate": {
+     "deconvolve": "false"
+    }
+   },
+   "result": "pass",
+   "metrics": {
+    "localfield": {
+     "kind": "continuous",
+     "nrmse": 0.0009001093706291551,
+     "correlation": 0.9999999999598636,
+     "max_abs": 6.295740604400635e-07,
+     "p99_abs": 2.0954757928848267e-07,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "vsharp",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "a258274c957e",
+   "reference": {
+    "slug": "vsharp-sti",
+    "image": "ghcr.io/astewartau/qsm-ci/matlab-sti-vsharp@sha256:715c565758a5a64c6df8e73d34a0a62bf7afeb5d6d7feae5f748322cba2504d6",
+    "digest": "sha256:715c565758a5a64c6df8e73d34a0a62bf7afeb5d6d7feae5f748322cba2504d6",
+    "id": "sha256:715c565758a5a64c6df8e73d34a0a62bf7afeb5d6d7feae5f748322cba2504d6"
+   },
+   "candidate": {
+    "slug": "vsharp-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j5",
+    "digest": "sha256:822f2bd84a647cab8d20a839aa14d88bc94982cfe77f52c5433e78d35327e139",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
    },
    "set": {
     "candidate": {
@@ -30355,6 +35266,65 @@
   },
   {
    "pair": "vsharp-qsmjl",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "9a8db608fe83",
+   "reference": {
+    "slug": "vsharp-qsmjl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "id": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "vsharp-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j43",
+    "digest": "sha256:0eb23a64fc4eaa9fdb289e568b3023e573c6f26ae3ee7ecb7cf148ba453beabe",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "set": {
+    "reference": {
+     "max_radius": 12,
+     "min_radius": 1,
+     "radius_step": 1
+    },
+    "candidate": {
+     "ball": "qsmjl",
+     "grid": "native",
+     "max_radius": 12,
+     "min_radius": 1,
+     "radius_step": 1,
+     "deconvolve": "true",
+     "threshold": 0.05
+    }
+   },
+   "result": "pass",
+   "metrics": {
+    "localfield": {
+     "kind": "continuous",
+     "nrmse": 1.1328952917352848e-11,
+     "correlation": 0.9999999999999999,
+     "max_abs": 1.8189894035458565e-12,
+     "p99_abs": 0.0,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "vsharp-qsmjl",
    "dataset": "sim",
    "track": "released",
    "release": "v10.0.0",
@@ -30687,6 +35657,65 @@
    "qsmxt": {
     "ref": "v12.0.0",
     "commit": "2c1485ad627375ba5aa1a3fc3c191c66c79bc0ae"
+   },
+   "set": {
+    "reference": {
+     "max_radius": 12,
+     "min_radius": 1,
+     "radius_step": 1
+    },
+    "candidate": {
+     "ball": "qsmjl",
+     "grid": "native",
+     "max_radius": 12,
+     "min_radius": 1,
+     "radius_step": 1,
+     "deconvolve": "true",
+     "threshold": 0.05
+    }
+   },
+   "result": "pass",
+   "metrics": {
+    "localfield": {
+     "kind": "continuous",
+     "nrmse": 5.204795163425769e-12,
+     "correlation": 1.0,
+     "max_abs": 4.547473508864641e-13,
+     "p99_abs": 0.0,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "vsharp-qsmjl",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "91e92a95024c",
+   "reference": {
+    "slug": "vsharp-qsmjl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "id": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "vsharp-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j44",
+    "digest": "sha256:68627d9f203ce02c070c6fad6cd3d66820384861e63205dbf3a83fe448bcc348",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
    },
    "set": {
     "reference": {
@@ -31089,6 +36118,57 @@
    }
   },
   {
+   "pair": "wavesep",
+   "dataset": "chisep-mc",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "35ea404518fb",
+   "reference": {
+    "slug": "wavesep",
+    "image": "ghcr.io/astewartau/qsm-ci/wavesep@sha256:c96094a98049ccfb9d660a2463ef772502b30dcb412095e45641d67edeb8791a",
+    "digest": "sha256:c96094a98049ccfb9d660a2463ef772502b30dcb412095e45641d67edeb8791a",
+    "id": "sha256:c96094a98049ccfb9d660a2463ef772502b30dcb412095e45641d67edeb8791a"
+   },
+   "candidate": {
+    "slug": "wavesep-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j24",
+    "digest": "sha256:e748f146c867d3e2170e8f32bdbb2036860075883d590b2e79de6117d4477ad0",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "result": "pass",
+   "metrics": {
+    "chi-para": {
+     "kind": "continuous",
+     "nrmse": 2.0848021319889139e-07,
+     "correlation": 0.9999999999999988,
+     "max_abs": 7.450580596923828e-09,
+     "p99_abs": 0.0,
+     "nonfinite": 0
+    },
+    "chi-dia": {
+     "kind": "continuous",
+     "nrmse": 2.1384635481370335e-07,
+     "correlation": 1.0,
+     "max_abs": 7.450580596923828e-09,
+     "p99_abs": 0.0,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
    "pair": "whqsm",
    "dataset": "s002001-kki-achieva-bridge-run1",
    "track": "dev",
@@ -31360,6 +36440,49 @@
   },
   {
    "pair": "whqsm",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "51ca9163162f",
+   "reference": {
+    "slug": "whqsm",
+    "image": "ghcr.io/astewartau/qsm-ci/wh-qsm@sha256:f0e2678680d195b13a2de71b180b3177171a2a79840c134f68310cb665fca451",
+    "digest": "sha256:f0e2678680d195b13a2de71b180b3177171a2a79840c134f68310cb665fca451",
+    "id": "sha256:f0e2678680d195b13a2de71b180b3177171a2a79840c134f68310cb665fca451"
+   },
+   "candidate": {
+    "slug": "whqsm-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j95",
+    "digest": "sha256:07adcd42854ba7c23cbc790cf2c939d95145558ebe8ca8864251b3ad0a424763",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.0033701559659124803,
+     "correlation": 0.9999999995436967,
+     "max_abs": 1.728534698486328e-05,
+     "p99_abs": 4.67151403427124e-06,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "whqsm",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-11-03T16:10:24Z",
@@ -31622,6 +36745,49 @@
      "kind": "continuous",
      "nrmse": 0.0018172258553543162,
      "correlation": 0.9999999998628014,
+     "max_abs": 1.0788440704345703e-05,
+     "p99_abs": 1.909211277961731e-06,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "whqsm",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "cbd793856706",
+   "reference": {
+    "slug": "whqsm",
+    "image": "ghcr.io/astewartau/qsm-ci/wh-qsm@sha256:f0e2678680d195b13a2de71b180b3177171a2a79840c134f68310cb665fca451",
+    "digest": "sha256:f0e2678680d195b13a2de71b180b3177171a2a79840c134f68310cb665fca451",
+    "id": "sha256:f0e2678680d195b13a2de71b180b3177171a2a79840c134f68310cb665fca451"
+   },
+   "candidate": {
+    "slug": "whqsm-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j96",
+    "digest": "sha256:83e04d627d3a880dabe04e24986a8f68035ea67cbf775c160583daadaeae0442",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.0018172258553543095,
+     "correlation": 0.9999999998627975,
      "max_abs": 1.0788440704345703e-05,
      "p99_abs": 1.909211277961731e-06,
      "nonfinite": 0
@@ -31981,6 +37147,49 @@
   },
   {
    "pair": "xqsm",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "f4e8dfd95c79",
+   "reference": {
+    "slug": "xqsm",
+    "image": "ghcr.io/astewartau/qsm-ci/xqsm@sha256:f28dabe6f7f41db967133a022f3eb5205d2a2bbb5fab78117d58b1fb84b26444",
+    "digest": "sha256:f28dabe6f7f41db967133a022f3eb5205d2a2bbb5fab78117d58b1fb84b26444",
+    "id": "sha256:f28dabe6f7f41db967133a022f3eb5205d2a2bbb5fab78117d58b1fb84b26444"
+   },
+   "candidate": {
+    "slug": "xqsm-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j51-models",
+    "digest": "sha256:ffc0f07e0d57aa5eefeba5f3353073e32c28f52f253baeadc632ec5559586223",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.001783825810664354,
+     "correlation": 0.9999999998338008,
+     "max_abs": 3.1713396310806274e-05,
+     "p99_abs": 2.8051435947418213e-06,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "xqsm",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-11-03T13:28:56Z",
@@ -32318,6 +37527,49 @@
    "qsmxt": {
     "ref": "v12.0.0",
     "commit": "2c1485ad627375ba5aa1a3fc3c191c66c79bc0ae"
+   },
+   "result": "pass",
+   "metrics": {
+    "chimap": {
+     "kind": "continuous",
+     "nrmse": 0.000865919204080593,
+     "correlation": 0.9999999999635204,
+     "max_abs": 7.197260856628418e-06,
+     "p99_abs": 8.195638656616211e-07,
+     "nonfinite": 0
+    }
+   }
+  },
+  {
+   "pair": "xqsm",
+   "dataset": "sim",
+   "track": "released",
+   "release": "v12.1.0",
+   "date": "2026-11-18T10:50:09Z",
+   "run_id": "44225214508",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+   "qsmci_commit": "6af5b498bc53911a9b1239fc1d17d00d25b17321",
+   "thresholds": "204f55c25115",
+   "reference": {
+    "slug": "xqsm",
+    "image": "ghcr.io/astewartau/qsm-ci/xqsm@sha256:f28dabe6f7f41db967133a022f3eb5205d2a2bbb5fab78117d58b1fb84b26444",
+    "digest": "sha256:f28dabe6f7f41db967133a022f3eb5205d2a2bbb5fab78117d58b1fb84b26444",
+    "id": "sha256:f28dabe6f7f41db967133a022f3eb5205d2a2bbb5fab78117d58b1fb84b26444"
+   },
+   "candidate": {
+    "slug": "xqsm-qsmrs",
+    "image": "qsmxt-under-test:44225214508-j52-models",
+    "digest": "sha256:6f18dec3f8fe386ba92676ef30230d9bb024a6ac570987cf2a3fb78d824006ce",
+    "qsmxt": "qsmxt 12.1.0"
+   },
+   "qsmrs": {
+    "ref": null,
+    "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "v12.1.0",
+    "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
    },
    "result": "pass",
    "metrics": {
