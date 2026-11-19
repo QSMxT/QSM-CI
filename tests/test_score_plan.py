@@ -213,6 +213,33 @@ def test_a_self_hosted_bfr_focus_is_split_by_field_map(tmp_path, monkeypatch):
     assert {"f-iq-gt", "f-iq-romeo"} <= full and "f-iq" not in full
 
 
+def test_split_fieldmaps_opts_a_hosted_dipole_into_the_split(tmp_path, monkeypatch):
+    """whqsm (hosted dipole) needs ~12 h for its 108 composed cells and lost them at the 6 h cap;
+    `split: fieldmaps` splits it like a highmem-long dipole while it keeps the hosted route, and the
+    key is scheduling-only (no rescore). Without the key a hosted dipole stays one job."""
+    monkeypatch.delenv("QSMCI_HIGHMEM_RUNNER", raising=False)
+    root = _algos(tmp_path, {**BASIC, "romeo": "stage: field-mapping\nimage: x\n",
+                             "wh": "stage: dipole\nimage: x\nsplit: fieldmaps\n",
+                             "whbfr": "stage: bfr\nimage: x\nsplit: fieldmaps\n",
+                             "lap": "stage: field-mapping\nimage: x\nsplit: fieldmaps\n"})
+    t = {x["id"]: x for x in sp.plan_tasks(root, REG, full=False, slugs=["wh"])}
+    assert list(t) == ["f-wh-gt", "f-wh-lap", "f-wh-romeo", "iv-wh"]
+    assert [(t[i]["fieldmaps"], t[i]["mode"]) for i in ("f-wh-gt", "f-wh-romeo")] == [("gt", "both"), ("romeo", "composed")]
+    for i in ("f-wh-gt", "f-wh-romeo"):
+        assert t[i]["runs_on"] == "ubuntu-latest" and t[i]["timeout"] == 360 and t[i]["replaces"] == "f-wh"
+        assert "exclude" not in t[i]                     # a dipole focus excludes nothing
+    assert "fieldmaps" not in t["iv-wh"]
+    b = {x["id"]: x for x in sp.plan_tasks(root, REG, full=False, slugs=["whbfr"])}
+    assert list(b) == ["f-whbfr-gt", "f-whbfr-lap", "f-whbfr-romeo"] and all("exclude" in x for x in b.values())
+    # a field-mapping method has no field maps to split by; a hosted dipole without the key is one job
+    assert [x["id"] for x in sp.plan_tasks(root, REG, full=False, slugs=["lap"])] == ["f-lap"]
+    assert [x["id"] for x in sp.plan_tasks(root, REG, full=False, slugs=["tkd"])] == ["f-tkd", "iv-tkd"]
+    # on a full re-run a hosted method is still scored inside the shard sweep, not as its own job
+    full = {x["id"] for x in sp.plan_tasks(root, REG, full=True, slugs=[])}
+    assert not {i for i in full if i.startswith("f-wh")}
+    assert "split" in sp.SCORE_COSMETIC
+
+
 def test_highmem_long_without_the_lent_runners_is_the_manual_tier(tmp_path, monkeypatch):
     monkeypatch.delenv("QSMCI_HIGHMEM_RUNNER", raising=False)
     root = _algos(tmp_path, {**BASIC, **LONG})

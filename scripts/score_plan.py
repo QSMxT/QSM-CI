@@ -33,6 +33,8 @@ Per-method `runner:` in algorithm.yml:
                                Scheduled ONE AT A TIME (see "Self-hosted pool" below). A bfr /
                                unwrap+bfr method's job (iqfm) is split by total-field source like a
                                highmem-long dipole's (split_fieldmaps): f-<slug>-gt, f-<slug>-<map>.
+Per-method `split: fieldmaps` (any tier, a dipole or bfr / unwrap+bfr method): split its focus job the
+same way, for a method whose composed matrix outgrows its tier's cap (whqsm on hosted).
     highmem       highmem()    the runners in repository variable QSMCI_HIGHMEM_RUNNER, 720-min cap,
                                1 container. Dispatch-only (named in `scope`), in runs of their own,
                                capped at max_parallel. Variable unset: identical to (unset).
@@ -116,7 +118,7 @@ SKIP_TOKEN = "[skip score]"
 # strength — and the rows they leave behind are dropped at merge by scripts/prune_inapplicable.py, so
 # declaring it needs no rescore. (Removing the declaration later does: dispatch scope=<the χ-sep
 # methods> to score the combos it re-allows.)
-SCORE_COSMETIC = COSMETIC_KEYS | {"runner", "jobs", "manual_phantoms",
+SCORE_COSMETIC = COSMETIC_KEYS | {"runner", "jobs", "manual_phantoms", "split",
                                   "smoke_box", "smoke_params", "ci_skip_reason", "field_strength"}
 
 HOSTED = {"runs_on": "ubuntu-latest", "timeout": 360, "jobs": 2}
@@ -248,10 +250,15 @@ def split_fieldmaps(spec, specs: dict) -> list[str] | None:
     dipole, and a self-hosted bfr / unwrap+bfr method. The latter composes with the whole dipole set
     (~40 methods, HEIDI at ~2.5 h a run) for every total-field source: iqfm's single focus job grew
     to 11-12 h and hit its 720-min cap (score runs 42448576786, 42801864615, 44225121850), losing all
-    of it. One part per source is ~2-3 h. None = not split (any other tier or stage). Keyed on the
-    DECLARED runner, so the split holds while highmem-long falls back to manual."""
+    of it. One part per source is ~2-3 h. Any other dipole / bfr / unwrap+bfr method opts in with
+    `split: fieldmaps` in its algorithm.yml, on any tier: whqsm (hosted, 2 containers) runs ~13 min a
+    cell, so its 108-cell job needs ~12 h and was capped at 6 h after 28 cells (score run
+    44438127054); split, each of its 6 parts is ~2.5 h. None = not split (any other tier or stage).
+    Keyed on the DECLARED runner, so the split holds while highmem-long falls back to manual."""
     runner = str(_scalar((spec or {}).get("runner")) or "")
-    if not ((runner == "highmem-long" and is_dipole(spec))
+    opted = str(_scalar((spec or {}).get("split")) or "") == "fieldmaps" and (
+        is_dipole(spec) or stage_of(spec) in LOCALFIELD_STAGES)
+    if not (opted or (runner == "highmem-long" and is_dipole(spec))
             or (runner == "self-hosted" and stage_of(spec) in LOCALFIELD_STAGES)):
         return None
     c = (spec or {}).get("compose")
