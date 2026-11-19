@@ -1,6 +1,6 @@
 {
  "schema": 2,
- "generated": "2026-11-18",
+ "generated": "2026-11-19",
  "default_track": "released",
  "badges": "https://qsmxt.github.io/QSM-CI/parity/badges/",
  "tracks": {
@@ -3231,9 +3231,9 @@
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-18T10:50:09Z",
+        "date": "2026-11-19T05:00:27Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44460453262",
         "qsmrs": {
          "ref": null,
          "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
@@ -3242,9 +3242,9 @@
         "qsmxt": {
          "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
         },
-        "nrmse": 0.0033701559659124803,
+        "nrmse": 0.0033701559659124907,
         "max_abs": 1.728534698486328e-05,
-        "correlation": 0.9999999995436967,
+        "correlation": 0.9999999995436891,
         "dice": null,
         "release": "v12.1.0"
        },
@@ -3255,9 +3255,9 @@
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-18T10:50:09Z",
+        "date": "2026-11-19T05:00:27Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44460453262",
         "qsmrs": {
          "ref": null,
          "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
@@ -3266,9 +3266,9 @@
         "qsmxt": {
          "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
         },
-        "nrmse": 0.0018172258553543095,
-        "max_abs": 1.0788440704345703e-05,
-        "correlation": 0.9999999998627975,
+        "nrmse": 0.0018189737632516338,
+        "max_abs": 1.1146068572998047e-05,
+        "correlation": 0.999999999862505,
         "dice": null,
         "release": "v12.1.0"
        },
@@ -3823,7 +3823,7 @@
        },
        "stale": true,
        "reasons": [
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs`, `src/pipeline/config.rs` since the checked 657ac33 (2 commits)"
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `crates/qsmxt-engine/src/stages/qsmart.rs` \u2026 since the checked 657ac33 (21 commits)"
        ]
       },
       {
@@ -3847,7 +3847,7 @@
        },
        "stale": true,
        "reasons": [
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs`, `src/pipeline/config.rs` since the checked 657ac33 (2 commits)"
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `crates/qsmxt-engine/src/stages/qsmart.rs` \u2026 since the checked 657ac33 (21 commits)"
        ]
       }
      ],
@@ -3897,9 +3897,9 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
+        "QSM.rs main changed `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
         "the pair's settings or limits for this dataset changed since",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       },
       {
@@ -3932,8 +3932,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -3983,8 +3983,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/bg_removal.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/pipeline/bg_removal.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked dc94cf4 (75 commits)"
        ]
       },
       {
@@ -4017,8 +4017,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/bg_removal.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/pipeline/bg_removal.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -4069,9 +4069,9 @@
        "stale": true,
        "reasons": [
         "reference image changed: checked sha256:40af0c6187c5, algorithm.yml pins sha256:b4f9d4840810",
-        "QSM.rs main changed `src/bgremove/iharperella.rs`, `src/pipeline/bg_removal.rs` since the checked 8a655f4 (44 commits)",
+        "QSM.rs main changed `src/bgremove/iharperella.rs`, `src/pipeline/bg_removal.rs` since the checked 8a655f4 (45 commits)",
         "the pair's settings or limits for this dataset changed since",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked dc94cf4 (56 commits)"
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -4121,9 +4121,9 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
+        "QSM.rs main changed `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
         "the pair's settings or limits for this dataset changed since",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       },
       {
@@ -4156,8 +4156,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -4207,9 +4207,9 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/utils/connected.rs`, `src/utils/morphology.rs`, `src/utils/r2star.rs` since the checked 8a655f4 (44 commits)",
+        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/utils/connected.rs`, `src/utils/morphology.rs`, `src/utils/r2star.rs` since the checked 8a655f4 (45 commits)",
         "the pair's settings or limits for this dataset changed since",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       },
       {
@@ -4242,8 +4242,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/utils/connected.rs`, `src/utils/morphology.rs`, `src/utils/r2star.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/utils/connected.rs`, `src/utils/morphology.rs`, `src/utils/r2star.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -4384,7 +4384,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/cache.rs`, `crates/qsmxt-engine/src/command.rs`, `crates/qsmxt-engine/src/config.rs` \u2026 since the checked 657ac33 (2 commits)"
+        "QSM.rs main changed `src/pipeline/field_mapping.rs` since the checked df6e736 (2 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/advice/decide.rs`, `crates/qsmxt-engine/src/advice/edit.rs`, `crates/qsmxt-engine/src/advice/mod.rs` \u2026 since the checked 657ac33 (21 commits)"
        ]
       }
      ],
@@ -4484,8 +4485,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/phase_utils.rs`, `src/utils/r2star.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `src/cli.rs`, `src/commands/fieldmap.rs` \u2026 since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/phase_utils.rs`, `src/utils/r2star.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `src/cli.rs`, `src/commands/fieldmap.rs` \u2026 since the checked dc94cf4 (75 commits)"
        ]
       },
       {
@@ -4518,8 +4519,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/phase_utils.rs`, `src/utils/r2star.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `src/cli.rs`, `src/commands/fieldmap.rs` \u2026 since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/phase_utils.rs`, `src/utils/r2star.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `src/cli.rs`, `src/commands/fieldmap.rs` \u2026 since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -4569,8 +4570,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -4620,8 +4621,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/separation/decompose.rs`, `src/separation/mod.rs`, `src/solvers/mgpcg.rs`, `src/solvers/mod.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `src/cli.rs`, `src/commands/separate.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/separation/decompose.rs`, `src/separation/mod.rs`, `src/solvers/mgpcg.rs`, `src/solvers/mod.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `src/cli.rs`, `src/commands/separate.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -4671,8 +4672,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/separation/chi_sep_ilsqr.rs`, `src/separation/chi_sep_medi.rs`, `src/separation/mod.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `src/cli.rs`, `src/commands/separate.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/separation/chi_sep_ilsqr.rs`, `src/separation/chi_sep_medi.rs`, `src/separation/mod.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `src/cli.rs`, `src/commands/separate.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -4722,8 +4723,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/separation/chi_sep_medi.rs`, `src/separation/mod.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `src/cli.rs`, `src/commands/separate.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/separation/chi_sep_medi.rs`, `src/separation/mod.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `src/cli.rs`, `src/commands/separate.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -4773,8 +4774,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/separation/mod.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `src/cli.rs`, `src/commands/separate.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/separation/mod.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `src/cli.rs`, `src/commands/separate.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -4824,9 +4825,9 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/inversion/tkd.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
+        "QSM.rs main changed `src/inversion/tkd.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
         "the pair's settings or limits for this dataset changed since",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       },
       {
@@ -4859,9 +4860,9 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/inversion/tkd.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
+        "QSM.rs main changed `src/inversion/tkd.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
         "the pair's settings or limits for this dataset changed since",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -4911,8 +4912,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/inversion/tkd.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/inversion/tkd.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       },
       {
@@ -4945,8 +4946,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/inversion/tkd.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/inversion/tkd.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -4996,8 +4997,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       },
       {
@@ -5030,8 +5031,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -5081,9 +5082,9 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/inversion/tv.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
+        "QSM.rs main changed `src/inversion/tv.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
         "the pair's settings or limits for this dataset changed since",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       },
       {
@@ -5116,9 +5117,9 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/inversion/tv.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
+        "QSM.rs main changed `src/inversion/tv.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
         "the pair's settings or limits for this dataset changed since",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -5168,8 +5169,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/inversion/ndi.rs`, `src/inversion/nltv.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/inversion/ndi.rs`, `src/inversion/nltv.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       },
       {
@@ -5202,8 +5203,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/inversion/ndi.rs`, `src/inversion/nltv.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/inversion/ndi.rs`, `src/inversion/nltv.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -5253,8 +5254,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/inversion/rts.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/inversion/rts.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       },
       {
@@ -5287,8 +5288,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/inversion/rts.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/inversion/rts.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -5338,8 +5339,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/bgremove/ismv.rs`, `src/pipeline/bg_removal.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/bgremove/ismv.rs`, `src/pipeline/bg_removal.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked dc94cf4 (75 commits)"
        ]
       },
       {
@@ -5372,8 +5373,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/bgremove/ismv.rs`, `src/pipeline/bg_removal.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/bgremove/ismv.rs`, `src/pipeline/bg_removal.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -5423,8 +5424,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/bg_removal.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/pipeline/bg_removal.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked dc94cf4 (75 commits)"
        ]
       },
       {
@@ -5457,8 +5458,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/bg_removal.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/pipeline/bg_removal.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -5508,8 +5509,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/bg_removal.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/pipeline/bg_removal.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked dc94cf4 (75 commits)"
        ]
       },
       {
@@ -5542,8 +5543,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/bg_removal.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/pipeline/bg_removal.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -5593,9 +5594,9 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/bg_removal.rs` since the checked 8a655f4 (44 commits)",
+        "QSM.rs main changed `src/pipeline/bg_removal.rs` since the checked 8a655f4 (45 commits)",
         "the pair's settings or limits for this dataset changed since",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked dc94cf4 (56 commits)"
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked dc94cf4 (75 commits)"
        ]
       },
       {
@@ -5628,9 +5629,9 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/bg_removal.rs` since the checked 8a655f4 (44 commits)",
+        "QSM.rs main changed `src/pipeline/bg_removal.rs` since the checked 8a655f4 (45 commits)",
         "the pair's settings or limits for this dataset changed since",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked dc94cf4 (56 commits)"
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -5680,8 +5681,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/phase_utils.rs`, `src/unwrap/laplacian.rs`, `src/utils/connected.rs` \u2026 since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` \u2026 since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/phase_utils.rs`, `src/unwrap/laplacian.rs`, `src/utils/connected.rs` \u2026 since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` \u2026 since the checked dc94cf4 (75 commits)"
        ]
       },
       {
@@ -5714,8 +5715,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/phase_utils.rs`, `src/unwrap/laplacian.rs`, `src/utils/connected.rs` \u2026 since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` \u2026 since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/phase_utils.rs`, `src/unwrap/laplacian.rs`, `src/utils/connected.rs` \u2026 since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` \u2026 since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -5765,9 +5766,9 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/phase_utils.rs`, `src/unwrap/romeo.rs`, `src/utils/connected.rs` \u2026 since the checked 8a655f4 (44 commits)",
+        "QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/phase_utils.rs`, `src/unwrap/romeo.rs`, `src/utils/connected.rs` \u2026 since the checked 8a655f4 (45 commits)",
         "the pair's settings or limits for this dataset changed since",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` \u2026 since the checked dc94cf4 (56 commits)"
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` \u2026 since the checked dc94cf4 (75 commits)"
        ]
       },
       {
@@ -5800,9 +5801,9 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/phase_utils.rs`, `src/unwrap/romeo.rs`, `src/utils/connected.rs` \u2026 since the checked 8a655f4 (44 commits)",
+        "QSM.rs main changed `src/pipeline/field_mapping.rs`, `src/pipeline/phase_utils.rs`, `src/unwrap/romeo.rs`, `src/utils/connected.rs` \u2026 since the checked 8a655f4 (45 commits)",
         "the pair's settings or limits for this dataset changed since",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` \u2026 since the checked dc94cf4 (56 commits)"
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs` \u2026 since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -5843,7 +5844,7 @@
        },
        "stale": true,
        "reasons": [
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `crates/qsmxt-engine/src/stages/inversion.rs`, `src/cli.rs` since the checked 657ac33 (2 commits)"
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `crates/qsmxt-engine/src/stages/inversion.rs`, `src/cli.rs` since the checked 657ac33 (21 commits)"
        ]
       },
       {
@@ -5867,7 +5868,7 @@
        },
        "stale": true,
        "reasons": [
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `crates/qsmxt-engine/src/stages/inversion.rs`, `src/cli.rs` since the checked 657ac33 (2 commits)"
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `crates/qsmxt-engine/src/stages/inversion.rs`, `src/cli.rs` since the checked 657ac33 (21 commits)"
        ]
       }
      ],
@@ -5917,8 +5918,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       },
       {
@@ -5951,8 +5952,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -6002,8 +6003,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -6053,8 +6054,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -6104,8 +6105,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       },
       {
@@ -6138,8 +6139,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -6189,8 +6190,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       },
       {
@@ -6223,8 +6224,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -6274,8 +6275,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       },
       {
@@ -6308,8 +6309,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -6359,8 +6360,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       },
       {
@@ -6393,8 +6394,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -6444,8 +6445,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       },
       {
@@ -6478,8 +6479,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -6529,8 +6530,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       },
       {
@@ -6563,8 +6564,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -6614,8 +6615,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/bg_removal.rs` \u2026 since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/bg_removal.rs` \u2026 since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked dc94cf4 (75 commits)"
        ]
       },
       {
@@ -6648,8 +6649,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/bg_removal.rs` \u2026 since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/bg_removal.rs` \u2026 since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -6699,8 +6700,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/separation/mod.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `src/cli.rs`, `src/commands/separate.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/separation/mod.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `src/cli.rs`, `src/commands/separate.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -6750,8 +6751,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       },
       {
@@ -6784,8 +6785,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -6835,8 +6836,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/separation/mod.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `src/cli.rs`, `src/commands/separate.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/separation/mod.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/bridge.rs`, `src/cli.rs`, `src/commands/separate.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -6886,8 +6887,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/bet/mod.rs`, `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs` \u2026 since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/mask.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/bet/mod.rs`, `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs` \u2026 since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/mask.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -6937,8 +6938,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/bet/mod.rs`, `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs` \u2026 since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/mask.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/bet/mod.rs`, `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs` \u2026 since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/mask.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -6988,8 +6989,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/utils/r2star.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/utils/r2star.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked dc94cf4 (75 commits)"
        ]
       },
       {
@@ -7022,8 +7023,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/utils/r2star.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/utils/r2star.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -7073,8 +7074,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       },
       {
@@ -7107,8 +7108,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -7158,8 +7159,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       },
       {
@@ -7192,8 +7193,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -7243,8 +7244,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked dc94cf4 (75 commits)"
        ]
       },
       {
@@ -7277,8 +7278,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -7328,9 +7329,9 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
+        "QSM.rs main changed `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
         "the pair's settings or limits for this dataset changed since",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       },
       {
@@ -7363,8 +7364,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -7405,9 +7406,9 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
+        "QSM.rs main changed `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
         "the pair's settings or limits for this dataset changed since",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       },
       {
@@ -7431,8 +7432,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `crates/qsmxt-engine/src/config.rs`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -7482,8 +7483,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/inversion/ndi.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/inversion/ndi.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       },
       {
@@ -7516,8 +7517,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/inversion/ndi.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/inversion/ndi.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -7567,8 +7568,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/inversion/fansi.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/inversion/fansi.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       },
       {
@@ -7601,8 +7602,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/inversion/fansi.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/inversion/fansi.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -7652,8 +7653,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/inversion/fansi.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/inversion/fansi.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       },
       {
@@ -7686,8 +7687,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/inversion/fansi.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/inversion/fansi.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -7737,8 +7738,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       },
       {
@@ -7771,8 +7772,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -7822,8 +7823,9 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/inversion/whqsm.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "reference image changed: checked sha256:f0e2678680d1, algorithm.yml pins sha256:8ac7798e437e",
+        "QSM.rs main changed `src/inversion/whqsm.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       },
       {
@@ -7856,8 +7858,9 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/inversion/whqsm.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "reference image changed: checked sha256:f0e2678680d1, algorithm.yml pins sha256:8ac7798e437e",
+        "QSM.rs main changed `src/inversion/whqsm.rs`, `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -7907,8 +7910,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       },
       {
@@ -7941,8 +7944,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/pipeline/inversion.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -7992,8 +7995,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/bg_removal.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/pipeline/bg_removal.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked dc94cf4 (75 commits)"
        ]
       },
       {
@@ -8026,8 +8029,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/bg_removal.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/pipeline/bg_removal.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -8077,8 +8080,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/bg_removal.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/pipeline/bg_removal.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked dc94cf4 (75 commits)"
        ]
       },
       {
@@ -8111,8 +8114,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/bg_removal.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/pipeline/bg_removal.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -8162,8 +8165,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/bg_removal.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/pipeline/bg_removal.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked dc94cf4 (75 commits)"
        ]
       },
       {
@@ -8196,8 +8199,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/bg_removal.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/pipeline/bg_removal.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/bgremove.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -8247,8 +8250,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/utils/morphology.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/utils/morphology.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       },
       {
@@ -8281,8 +8284,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/utils/morphology.rs` since the checked 8a655f4 (44 commits)",
-        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (56 commits)"
+        "QSM.rs main changed `src/pipeline/inversion.rs`, `src/utils/morphology.rs` since the checked 8a655f4 (45 commits)",
+        "QSMxT main changed `Cargo.lock`, `src/cli.rs`, `src/commands/invert.rs` since the checked dc94cf4 (75 commits)"
        ]
       }
      ],
@@ -21601,7 +21604,7 @@
   "whqsm": [
    {
     "release": "v12.1.0",
-    "date": "2026-11-18T10:50:09Z",
+    "date": "2026-11-19T05:00:27Z",
     "qsmxt": {
      "ref": "v12.1.0",
      "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
@@ -21615,9 +21618,9 @@
      {
       "dataset": "s002001-kki-achieva-bridge-run1",
       "last": {
-       "date": "2026-11-18T10:50:09Z",
+       "date": "2026-11-19T05:00:27Z",
        "result": "pass",
-       "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+       "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44460453262",
        "qsmrs": {
         "ref": null,
         "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
@@ -21626,9 +21629,9 @@
        "qsmxt": {
         "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
        },
-       "nrmse": 0.0033701559659124803,
+       "nrmse": 0.0033701559659124907,
        "max_abs": 1.728534698486328e-05,
-       "correlation": 0.9999999995436967,
+       "correlation": 0.9999999995436891,
        "dice": null,
        "release": "v12.1.0"
       }
@@ -21636,9 +21639,9 @@
      {
       "dataset": "sim",
       "last": {
-       "date": "2026-11-18T10:50:09Z",
+       "date": "2026-11-19T05:00:27Z",
        "result": "pass",
-       "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44225214508",
+       "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44460453262",
        "qsmrs": {
         "ref": null,
         "commit": "df6e736c1a4c6ac9bc6b2f050073abc2afa8fe3e",
@@ -21647,9 +21650,9 @@
        "qsmxt": {
         "commit": "c9d4ef870232d99732ebb0b187bd39a4353b2d23"
        },
-       "nrmse": 0.0018172258553543095,
-       "max_abs": 1.0788440704345703e-05,
-       "correlation": 0.9999999998627975,
+       "nrmse": 0.0018189737632516338,
+       "max_abs": 1.1146068572998047e-05,
+       "correlation": 0.999999999862505,
        "dice": null,
        "release": "v12.1.0"
       }
