@@ -47,7 +47,7 @@ EVAL = ROOT / "eval" / "qsm_eval.py"
 sys.path.insert(0, str(ROOT))
 from qsm_ci.runner import _consumes  # noqa: E402
 from qsm_ci.containers import _human, _kill_process_tree, timeout_s  # noqa: E402
-from qsm_ci.stages import STAGES, ARTIFACT_FILE, ARTIFACT_KIND, optional_products  # noqa: E402
+from qsm_ci.stages import STAGES, ARTIFACT_FILE, ARTIFACT_KIND, optional_products, scorable  # noqa: E402
 # Shared scoring/sweep primitives (scripts/scoring.py, also used by sweep.py + combo_sweep.py) — one
 # home for the `qsm-ci run` argv builder, the GT source map, the --shard partition, and the qsm_eval
 # argv, so the scorer and the sweeps can't drift. Pure literals/argv assembly — no heavy deps at
@@ -1300,6 +1300,11 @@ def run_isolated(args, algos, gt_sources, gt, mask, iso_target, runs: list) -> N
         # magnitude, the same at every level, so its ground-truth-level run already scores it; it is
         # still in `algos` because it feeds this level's GRE-only grid (run_chisep_composed).
         iso_algos = [a for a in iso_algos if a["stage"] == "chi-separation"]
+    if not getattr(args, "smoke", False):
+        # A stage the scorer cannot score (brain-extraction: its output IS the mask, and there is no
+        # metric set for one) only ever produced a DNF row (`'mask'`), so it is not run. The smoke
+        # gate (evaluate.yml) still runs it to check the submission works.
+        iso_algos = [a for a in iso_algos if scorable(a["stage"])]
     iso_tasks = [t for a in iso_algos for t in iso_variants(a)]
     if getattr(args, "inputs", "gt") != "gt":
         # Degraded inputs score each method at its published defaults only: the tuned values were
