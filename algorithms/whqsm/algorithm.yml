@@ -33,6 +33,11 @@ license: "No license file; author toolbox distribution"
 image: ghcr.io/astewartau/qsm-ci/wh-qsm@sha256:8ac7798e437e0ef68e111d056a7381e976c471d3835099631b3eea5f95550be4   # v3
 run: bash run.sh
 smoke_box: 32
+# Scheduling only (scripts/score_plan.py split_fieldmaps): one focus job per total-field source. With
+# the Newton guard every cell runs all its iterations, ~13 min each on a hosted runner, so the single
+# 108-cell job needs ~12 h and hit the 6 h cap after 28 cells (score run 44438127054). Each of the 6
+# parts (18 bfr local fields + 18 cells) is ~2.5 h.
+split: fieldmaps
 matlab:
   entry: recon.m
   runtime: r2023b

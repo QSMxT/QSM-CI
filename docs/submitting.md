@@ -176,7 +176,7 @@ per-subject optimisations that take many hours per inversion on CPU (MoDIP, INR-
 scoring job), run on the lent pool without blocking it; `gpu` records a GPU requirement for when a GPU
 runner exists. Two more knobs apply on the self-hosted tiers (`jobs:` also on `highmem-long`): `jobs: 1` runs one container at a
 time (use it when a single run already saturates every core), and `manual_phantoms: [...]` makes
-only the listed phantoms dispatch-only. A dipole method may also declare a `compose:` subset
+only the listed phantoms dispatch-only. On any tier, `split: fieldmaps` splits a dipole's (or a background-removal method's) scoring job into one job per field map (`f-<slug>-gt`, then `f-<slug>-<field map>`), for a method whose composed matrix does not fit its tier's cap in one job. A dipole method may also declare a `compose:` subset
 (`fieldmaps:` / `bfrs:` lists) to be composed with a few reference upstream methods instead of the
 full field-map × background-removal matrix — the leaderboard simply shows the other cells empty.
 A method whose trained weights are valid at one field strength only declares it in tesla, e.g.
