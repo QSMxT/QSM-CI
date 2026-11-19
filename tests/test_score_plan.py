@@ -195,6 +195,24 @@ def test_a_highmem_long_dipole_is_split_by_field_map_from_the_start(tmp_path, mo
         == {"f-slowdl-gt", "f-slowdl-romeo", "f-slowdl-laplacian", "iv-slowdl"}
 
 
+def test_a_self_hosted_bfr_focus_is_split_by_field_map(tmp_path, monkeypatch):
+    """iqfm (unwrap+bfr, self-hosted) composes with every dipole for every total-field source; as one
+    job it hit its 720-min cap and lost everything. Split like a highmem-long dipole, each part keeping
+    the self-hosted route and the heavy dedicated dipoles excluded. A self-hosted dipole is not split."""
+    monkeypatch.delenv("QSMCI_HIGHMEM_RUNNER", raising=False)
+    root = _algos(tmp_path, {**BASIC, "romeo": "stage: field-mapping\nimage: x\n",
+                             "iq": "stage: unwrap+bfr\nimage: x\nrunner: self-hosted\ntimeout_minutes: 720\n"})
+    t = {x["id"]: x for x in sp.plan_tasks(root, REG, full=False, slugs=["iq"])}
+    assert list(t) == ["f-iq-gt", "f-iq-romeo"]
+    assert [(t[i]["fieldmaps"], t[i]["mode"]) for i in t] == [("gt", "both"), ("romeo", "composed")]
+    for x in t.values():
+        assert x["runs_on"] == ["self-hosted", "Linux", "X64"] and x["timeout"] == 720
+        assert x["replaces"] == "f-iq" and set(x["exclude"].split(",")) >= {"big"}
+    assert [x["id"] for x in sp.plan_tasks(root, REG, full=False, slugs=["big"])] == ["f-big", "iv-big"]
+    full = {x["id"] for x in sp.plan_tasks(root, REG, full=True, slugs=[])}
+    assert {"f-iq-gt", "f-iq-romeo"} <= full and "f-iq" not in full
+
+
 def test_highmem_long_without_the_lent_runners_is_the_manual_tier(tmp_path, monkeypatch):
     monkeypatch.delenv("QSMCI_HIGHMEM_RUNNER", raising=False)
     root = _algos(tmp_path, {**BASIC, **LONG})

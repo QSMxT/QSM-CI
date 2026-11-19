@@ -30,7 +30,9 @@ Per-method `runner:` in algorithm.yml:
     hosted-large  HOSTED_LARGE ubuntu-latest, 360-min cap, 1 container (the full 16 GB).
     self-hosted   SELFHOSTED   QSM-CI's private runners (31 GB, the only tier that may exceed 6 h via
                                `timeout_minutes:`). Own focus job; excluded from the shard sweep.
-                               Scheduled ONE AT A TIME (see "Self-hosted pool" below).
+                               Scheduled ONE AT A TIME (see "Self-hosted pool" below). A bfr /
+                               unwrap+bfr method's job (iqfm) is split by total-field source like a
+                               highmem-long dipole's (split_fieldmaps): f-<slug>-gt, f-<slug>-<map>.
     highmem       highmem()    the runners in repository variable QSMCI_HIGHMEM_RUNNER, 720-min cap,
                                1 container. Dispatch-only (named in `scope`), in runs of their own,
                                capped at max_parallel. Variable unset: identical to (unset).
@@ -236,12 +238,21 @@ def consumes_r2prime(spec) -> bool:
     return "r2prime" in [str(_scalar(a)) for a in inp] if isinstance(inp, list) else True
 
 
+# Stages whose focus job composes ONE local field with every dipole: a self-hosted one is split too.
+LOCALFIELD_STAGES = ("bfr", "unwrap+bfr")
+
+
 def split_fieldmaps(spec, specs: dict) -> list[str] | None:
-    """The total-field sources a highmem-long dipole's focus job is split into, "gt" first: its
-    `compose: fieldmaps:` list, or "gt" + every scored field-mapping method when it declares none.
-    None = not split (any other tier or stage). Keyed on the DECLARED runner, so the split holds
-    while the tier falls back to manual."""
-    if str(_scalar((spec or {}).get("runner")) or "") != "highmem-long" or not is_dipole(spec):
+    """The total-field sources a focus job is split into, "gt" first: its `compose: fieldmaps:`
+    list, or "gt" + every scored field-mapping method when it declares none. Split: a highmem-long
+    dipole, and a self-hosted bfr / unwrap+bfr method. The latter composes with the whole dipole set
+    (~40 methods, HEIDI at ~2.5 h a run) for every total-field source: iqfm's single focus job grew
+    to 11-12 h and hit its 720-min cap (score runs 42448576786, 42801864615, 44225121850), losing all
+    of it. One part per source is ~2-3 h. None = not split (any other tier or stage). Keyed on the
+    DECLARED runner, so the split holds while highmem-long falls back to manual."""
+    runner = str(_scalar((spec or {}).get("runner")) or "")
+    if not ((runner == "highmem-long" and is_dipole(spec))
+            or (runner == "self-hosted" and stage_of(spec) in LOCALFIELD_STAGES)):
         return None
     c = (spec or {}).get("compose")
     fm = c.get("fieldmaps") if isinstance(c, dict) else None
@@ -365,6 +376,10 @@ def plan_tasks(root: Path, reg: dict, *, full: bool, slugs: list[str], include: 
                 if not allowed(s, ph):
                     continue
                 t = {"id": task_id(reg, "f-", s, ph), "focus": s, "phantom": ph, **route(spec)}
+                # A non-dipole focus (a bfr/span) varies EVERY dipole; the heavy dedicated dipoles
+                # would overrun its cap, and their combos are owned by their own focus jobs.
+                if heavy_dipoles and not is_dipole(spec) and not is_chisep(spec):
+                    t["exclude"] = heavy_dipoles
                 split = split_fieldmaps(spec, specs)
                 if split:
                     # One job per total-field source (see split_fieldmaps). `replaces` names the
@@ -373,10 +388,6 @@ def plan_tasks(root: Path, reg: dict, *, full: bool, slugs: list[str], include: 
                         tasks.append({**t, "id": f"{t['id']}-{fm}", "fieldmaps": fm,
                                       "mode": "both" if fm == "gt" else "composed", "replaces": t["id"]})
                     continue
-                # A non-dipole focus (a bfr/span) varies EVERY dipole; the heavy dedicated dipoles
-                # would overrun its cap, and their combos are owned by their own focus jobs.
-                if heavy_dipoles and not is_dipole(spec) and not is_chisep(spec):
-                    t["exclude"] = heavy_dipoles
                 tasks.append(t)
                 # Degraded inputs (pipeline.py --inputs <level>): a separate job per level, so it
                 # never lengthens the ground-truth-input job. Like that job it runs the method's
