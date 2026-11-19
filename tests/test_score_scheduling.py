@@ -208,3 +208,60 @@ def test_method_commit_is_the_last_commit_touching_the_method(pipeline):
                           cwd=pipeline.ROOT, capture_output=True, text=True).stdout.strip()
     assert got["commit"] == want and "T" in got["date"]
     assert pipeline.method_commit("no-such-method", "HEAD") is None
+
+
+@pytest.mark.parametrize("jobs", [1, 2])
+def test_composed_rows_reach_the_runs_file_while_the_stage_is_still_running(pipeline, tmp_path, monkeypatch, jobs):
+    """A job killed at its cap must already have every finished row on disk. The pool used to collect
+    a whole stage before appending (list(ex.map)), so f-whqsm (score run 44438127054) finished 28 of
+    its 108 composed cells in 6 h and published none. Here the second dipole cell checks the runs
+    file while it is still running: the first cell's row must already be there."""
+    import threading
+    import time
+    from types import SimpleNamespace
+    monkeypatch.setattr(pipeline, "JOBS", jobs)
+    out = tmp_path / "runs-f-d.json"
+    runs = pipeline.RunsFile(out)
+    algos = [_algo(pipeline, "b1", "bfr"), _algo(pipeline, "b2", "bfr"), _algo(pipeline, "d", "dipole")]
+    monkeypatch.setattr(pipeline, "do_bfr",
+                        lambda task, args, gt_sources: ((task[0], task[5]["slug"]), ("lf", "m", 0.0, [])))
+    seen, gate = {}, threading.Event()
+
+    def do_dipole(task, args, gt_sources, gt, mask, lf_cache):
+        tfk, b, d = task
+        rid = f"{tfk}~{b['slug']}~{d['slug']}-cmp"
+        if b["slug"] == "b2":
+            gate.set() if jobs == 1 else gate.wait(5)
+            deadline = time.time() + 5
+            while time.time() < deadline:
+                seen["on_disk"] = [r["id"] for r in json.loads(out.read_text())]
+                if seen["on_disk"]:
+                    break
+                time.sleep(0.01)
+        else:
+            gate.set()
+        return {"id": rid, "status": "ok"}
+
+    monkeypatch.setattr(pipeline, "do_dipole", do_dipole)
+    args = SimpleNamespace(fieldmaps=None, focus="d", track="sim", phantom=None, runs_out=out,
+                           emit_intermediates=False, columns_only=False, work=tmp_path)
+    pipeline.run_composed(args, algos, {}, tmp_path / "gt", "mask", None, None, runs)
+    assert seen["on_disk"] == ["gt~b1~d-cmp"]
+    assert sorted(r["id"] for r in json.loads(out.read_text())) == ["gt~b1~d-cmp", "gt~b2~d-cmp"]
+
+
+def test_pmap_yields_in_completion_order_and_runs_every_task(pipeline, monkeypatch):
+    import threading
+    monkeypatch.setattr(pipeline, "JOBS", 2)
+    slow_may_finish = threading.Event()
+
+    def fn(x):
+        if x == "slow":
+            slow_may_finish.wait(5)
+        return x
+
+    got = []
+    for r in pipeline._pmap(["slow", "fast"], fn):
+        got.append(r)
+        slow_may_finish.set()
+    assert got == ["fast", "slow"]
