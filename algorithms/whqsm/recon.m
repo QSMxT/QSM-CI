@@ -9,12 +9,18 @@ function recon(inp, out)
 % The dipole kernel is dipole_kernel_angulated(N, voxel_size, B0_dir), as script_invivo.m:44 makes
 % it (and nlTV/nlTGV build it when given none). The data weight is WH_nlTV.m's own default, ones: its only example (script_DICOM_Philips.m) weights by M0 and the multi-echo fit noise, which the dipole stage does not have.
 % Defaults: WH_nlTV.m's own (mu1 100*alpha1, mu2 1, beta 150, muh 5, 150 iterations, tolUpdate 0.1, tolDelta 1e-6, weight ones); alpha1 2e-4 as FANSI's demos; the mask is given (without it WH_nlTV takes W > 0).
+% Newton guard (newton_guard, default true): WH_nlTV.m's Newton step for the nonlinear data term is
+% unguarded and can diverge to NaN (e.g. on a PDF local field with the flat weight). Bundled
+% WH_nlTV.m carries QSM-CI's patch (wh_nltv_newton_guard.patch, BUILD.md), which with
+% params.isNewtonGuard clamps each Newton iterate to [(rhs-W)/mu2, (rhs+W)/mu2], the interval that
+% holds the minimiser. Steps that stay inside are unchanged, bit for bit. newton_guard false runs
+% FANSI's step verbatim.
 % isGPU is false: FANSI defaults to the GPU and falls back to the CPU when there is none; the
 % compiled Runtime and the licensed runs both run on the CPU. chi is masked, as the other
 % inversions leave it.
 %
-% Bundled: Jimmy Shen NIfTI toolbox, the FANSI toolbox's WH_nlTV.m and dipole_kernel_angulated.m
-% (plain .m). OS gunzip/gzip (no JVM). Optional <inp>/config.json overrides the parameters in `cfg`
+% Bundled: Jimmy Shen NIfTI toolbox, the FANSI toolbox's WH_nlTV.m (with the Newton-guard patch)
+% and dipole_kernel_angulated.m (plain .m). OS gunzip/gzip (no JVM). Optional <inp>/config.json overrides the parameters in `cfg`
 % below. See BUILD.md.
 %
 % Optional intermediates (fidelity checks, ../../fidelity/matlab/README.md): set QSMCI_INTERMEDIATES
@@ -28,7 +34,7 @@ function recon(inp, out)
     vox = double(p.voxel_size(:)');
     TE  = double(p.TE(:)');
 
-    cfg = struct('alpha1', 2e-4, 'mu1', [], 'mu2', 1, 'beta', 150, 'muh', 5, 'max_iter', 150, 'tol_update', 0.1, 'tol_delta', 1e-6);
+    cfg = struct('alpha1', 2e-4, 'mu1', [], 'mu2', 1, 'beta', 150, 'muh', 5, 'max_iter', 150, 'tol_update', 0.1, 'tol_delta', 1e-6, 'newton_guard', true);
     cf_file = fullfile(inp, 'config.json');
     if exist(cf_file, 'file')
         u = jsondecode(fileread(cf_file));
@@ -57,6 +63,7 @@ function recon(inp, out)
     prm.maxOuterIter = double(cfg.max_iter);
     prm.tolUpdate = double(cfg.tol_update);
     prm.tolDelta = double(cfg.tol_delta);
+    prm.isNewtonGuard = logical(cfg.newton_guard);                          % QSM-CI patch; false = FANSI verbatim
     prm.isGPU = false;
     res = WH_nlTV(prm);
     x = double(res.x);

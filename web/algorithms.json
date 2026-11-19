@@ -4966,7 +4966,7 @@
         "params"
       ],
       "domain": "qsm",
-      "engine": "FANSI toolbox 93044a3 (WH_nlTV.m)",
+      "engine": "FANSI toolbox 93044a3 (WH_nlTV.m, with a Newton guard)",
       "algorithm": "whqsm",
       "language": "MATLAB",
       "family": "iterative",
@@ -5024,9 +5024,16 @@
           "name": "tol_delta",
           "default": "1e-06",
           "description": "Newton tolerance of the nonlinear data step"
+        },
+        {
+          "name": "newton_guard",
+          "default": true,
+          "description": "clamp each Newton iterate of the nonlinear data step to [(rhs-W)/mu2, (rhs+W)/mu2], which holds the minimiser (QSM-CI's patch, BUILD.md); false runs FANSI's unguarded step verbatim\n"
         }
       ],
-      "ci_notes": []
+      "ci_notes": [
+        "Includes a fix that is not in the FANSI toolbox: the Newton step of WH_nlTV.m's nonlinear data term is kept inside the interval that always holds its solution. FANSI's step is unguarded and can run away and turn the whole map into NaN, as it does on the in-silico head with a PDF local field. Where FANSI's step converges, the map changes by about 1e-6 ppm; the option newton_guard false runs FANSI's step unchanged.\n"
+      ]
     },
     {
       "slug": "whqsm-qsmrs",

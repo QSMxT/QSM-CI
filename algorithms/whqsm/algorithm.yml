@@ -6,12 +6,19 @@ stage: dipole
 language: MATLAB
 family: iterative
 learning: none
-engine: FANSI toolbox 93044a3 (WH_nlTV.m)
+engine: FANSI toolbox 93044a3 (WH_nlTV.m, with a Newton guard)
 inputs: [localfield, mask, params]
 description: >
   Weak-Harmonic QSM: nonlinear TV inversion that jointly estimates a residual harmonic background
   field, the authors' WH_nlTV.m from the FANSI toolbox (commit 93044a3) with its own defaults,
   compiled from MATLAB and run on the license-free MATLAB Runtime.
+ci_notes:
+- >
+  Includes a fix that is not in the FANSI toolbox: the Newton step of WH_nlTV.m's nonlinear data
+  term is kept inside the interval that always holds its solution. FANSI's step is unguarded and
+  can run away and turn the whole map into NaN, as it does on the in-silico head with a PDF local
+  field. Where FANSI's step converges, the map changes by about 1e-6 ppm; the option newton_guard
+  false runs FANSI's step unchanged.
 citation: Milovic et al., Magn Reson Med 2019
 authors:
 - name: Carlos Milovic
@@ -23,7 +30,7 @@ authors:
 doi: 10.1002/mrm.27483
 code_url: https://gitlab.com/cmilovic/FANSI-toolbox
 license: "No license file; author toolbox distribution"
-image: ghcr.io/astewartau/qsm-ci/wh-qsm@sha256:f0e2678680d195b13a2de71b180b3177171a2a79840c134f68310cb665fca451   # v2
+image: ghcr.io/astewartau/qsm-ci/wh-qsm@sha256:8ac7798e437e0ef68e111d056a7381e976c471d3835099631b3eea5f95550be4   # v3
 run: bash run.sh
 smoke_box: 32
 matlab:
@@ -66,3 +73,8 @@ parameters:
 - name: tol_delta
   default: 1e-06
   description: Newton tolerance of the nonlinear data step
+- name: newton_guard
+  default: true
+  description: >
+    clamp each Newton iterate of the nonlinear data step to [(rhs-W)/mu2, (rhs+W)/mu2], which holds
+    the minimiser (QSM-CI's patch, BUILD.md); false runs FANSI's unguarded step verbatim
