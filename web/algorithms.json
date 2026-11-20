@@ -2325,6 +2325,11 @@
           "name": "b0_estimation",
           "default": "weighted-avg",
           "description": "how the echoes become one field, weighted-avg or qsmart-echofit (QSMART's fit, which also writes its reliability map)"
+        },
+        {
+          "name": "phase_offset_removal",
+          "default": false,
+          "description": "remove the echoes' phase offsets (MCPC-3D-S) before unwrapping; true is QSMxT's default (qsmxt v12.2.0 on, which has the flag)"
         }
       ],
       "ci_notes": []
@@ -6449,6 +6454,11 @@
           "name": "b0_estimation",
           "default": "weighted-avg",
           "description": "how the echoes become one field, weighted-avg or qsmart-echofit (QSMART's fit, which also writes its reliability map)"
+        },
+        {
+          "name": "phase_offset_removal",
+          "default": false,
+          "description": "remove the echoes' phase offsets (MCPC-3D-S) before unwrapping; true is QSMxT's default (qsmxt v12.2.0 on, which has the flag)"
         }
       ],
       "ci_notes": [],
@@ -6511,6 +6521,11 @@
           "name": "b0_estimation",
           "default": "weighted-avg",
           "description": "how the echoes become one field, weighted-avg or qsmart-echofit (QSMART's fit, which also writes its reliability map)"
+        },
+        {
+          "name": "phase_offset_removal",
+          "default": false,
+          "description": "remove the echoes' phase offsets (MCPC-3D-S) before unwrapping; true is QSMxT's default (qsmxt v12.2.0 on, which has the flag)"
         }
       ],
       "ci_notes": [],
