@@ -1761,7 +1761,9 @@ def do_r2gen(g, args, gt_sources):
     lv = getattr(args, "phantom_sfx", "") + getattr(args, "inputs_sfx", "")   # keep levels apart in --work
     idir, odir = args.work / f"cmp_r2g_{g['slug']}{lv}_in", args.work / f"cmp_r2g_{g['slug']}{lv}_out"
     try:
-        prepare_input(g["consumes"], gt_sources, idir)
+        # `optional` as in do_isolated: R2PRIMEnet (QSM.rs) declares `optional_inputs: [r2star]` for
+        # port parity only. No dataset ships an R2*, so it is skipped and the method fits its own.
+        prepare_input(g["consumes"], gt_sources, idir, g.get("optional", ()))
         rt = run_algo(g, idir, odir, args.runner)
         r2p = odir / ARTIFACT_FILE["r2prime"]
         if not r2p.exists():
