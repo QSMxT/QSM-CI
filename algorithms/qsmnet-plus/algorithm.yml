@@ -31,6 +31,12 @@ code_url: https://github.com/SNU-LIST/QSMnet
 license: SNU-LIST academic license (LICENSE.pdf); used with author permission
 image: ghcr.io/astewartau/qsm-ci/qsmnet-plus@sha256:d63e1a6ad3f0e208c9fb45e510c715fe4669cf806c52e47814e80898a4c65ea7   # v1
 run: bash run.sh
+# TensorFlow 1 aborts with std::bad_alloc (exit 134) when it shares ubuntu-latest's 16 GB with the
+# shard sweep's second container: 16 of its 108 sim pipelines DNF'd in score run 44225121850 (e.g.
+# shard s15, gt~vsharp-qsmrs). On the lent runner it runs alone. Its focus job (every field map and
+# bfr, then this dipole, one container) is about 10 h of the 12 h highmem cap at hosted CPU speed; if
+# it overruns, move to highmem-long, which splits the job by field map.
+runner: highmem
 # The original, checked (QSMxT/QSM-CI#301): pinned versions and weights, and the same output
 # twice at fixed threads. fidelity/dl/README.md; rerun whenever the image changes.
 fidelity:
