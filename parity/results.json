@@ -15075,6 +15075,37 @@
   },
   {
    "pair": "laplacian",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:08Z",
+   "run_id": "44810301006",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810301006",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "545ce92f2bd5",
+   "reference": {
+    "slug": "laplacian-qsmjl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "laplacian-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "laplacian",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-10-30T10:02:18Z",
@@ -15590,6 +15621,37 @@
    },
    "qsmxt": {
     "ref": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "laplacian",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-20T20:20:08Z",
+   "run_id": "44810301006",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810301006",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "c8cb8e30e675",
+   "reference": {
+    "slug": "laplacian-qsmjl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "laplacian-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
     "commit": null
    },
    "result": "error",
@@ -37680,6 +37742,37 @@
    ]
   },
   {
+   "pair": "toolbox-pipeline-qsmart",
+   "dataset": "s005001-cbic-prisma-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:08Z",
+   "run_id": "44810301006",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810301006",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "8e80750b8ffb",
+   "reference": {
+    "slug": "toolbox-pipeline-qsmart",
+    "image": "ghcr.io/astewartau/qsm-ci/qsmart-pipeline@sha256:6c6453186cc5b83864b5f765a4d388e235f8e77745099dfd5e85ae411a613092",
+    "digest": "sha256:6c6453186cc5b83864b5f765a4d388e235f8e77745099dfd5e85ae411a613092"
+   },
+   "candidate": {
+    "slug": "toolbox-pipeline-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
    "pair": "toolbox-pipeline-sti",
    "dataset": "s005001-cbic-prisma-bridge-run1",
    "track": "released",
@@ -37847,6 +37940,37 @@
    ]
   },
   {
+   "pair": "toolbox-pipeline-sti",
+   "dataset": "s005001-cbic-prisma-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:08Z",
+   "run_id": "44810301006",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810301006",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "d0acf678a262",
+   "reference": {
+    "slug": "toolbox-pipeline-sti",
+    "image": "ghcr.io/astewartau/qsm-ci/sti-pipeline@sha256:60dcc483e1a6a4c18c04d8e2bda99923cdb72673f774622f67c952dfd52a7dd8",
+    "digest": "sha256:60dcc483e1a6a4c18c04d8e2bda99923cdb72673f774622f67c952dfd52a7dd8"
+   },
+   "candidate": {
+    "slug": "toolbox-pipeline-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
    "pair": "toolbox-pipeline-ukb",
    "dataset": "s005001-cbic-prisma-bridge-run1",
    "track": "released",
@@ -37968,6 +38092,37 @@
    },
    "qsmxt": {
     "ref": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "toolbox-pipeline-ukb",
+   "dataset": "s005001-cbic-prisma-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:08Z",
+   "run_id": "44810301006",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810301006",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "e3d12d91df6f",
+   "reference": {
+    "slug": "toolbox-pipeline-ukb",
+    "image": "ghcr.io/astewartau/qsm-ci/matlab-ukb-qsm@sha256:7729e63a552f043e43043c5742cfcbb3a3f8d56a8f0679f2f6c67c28ea827348",
+    "digest": "sha256:7729e63a552f043e43043c5742cfcbb3a3f8d56a8f0679f2f6c67c28ea827348"
+   },
+   "candidate": {
+    "slug": "toolbox-pipeline-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
     "commit": null
    },
    "result": "error",
