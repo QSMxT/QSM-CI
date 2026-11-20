@@ -210,12 +210,16 @@ jobs:
         if: needs.plan.outputs.release == '' && needs.plan.outputs.qsmrs_ref != ''
         working-directory: qsmxt
         run: |
-          # QSMxT pins qsm-core by git rev in both manifests (they move in lockstep). A tag or branch
-          # is resolved to its commit so the build records exactly what it tested.
+          # QSMxT pins qsm-core by git rev: in the workspace root's [workspace.dependencies] since
+          # QSMxT#576, and in both Cargo.toml and crates/qsmxt-engine/Cargo.toml before that. Every
+          # manifest that names QSM.rs is moved. A tag or branch is resolved to its commit so the
+          # build records exactly what it tested.
           sha=$(git ls-remote https://github.com/astewartau/QSM.rs.git "$QSMRS_REF" "refs/tags/$QSMRS_REF^{}" | tail -1 | cut -f1)
           [[ "$QSMRS_REF" =~ ^[0-9a-f]{40}$ ]] && sha="$QSMRS_REF"
           [ -n "$sha" ] || { echo "::error::QSM.rs ref '$QSMRS_REF' not found"; exit 1; }
-          for f in Cargo.toml crates/qsmxt-engine/Cargo.toml; do
+          manifests=$(grep -l 'astewartau/QSM\.rs' Cargo.toml crates/*/Cargo.toml 2>/dev/null || true)
+          [ -n "$manifests" ] || { echo "::error::no Cargo.toml in QSMxT names QSM.rs"; exit 1; }
+          for f in $manifests; do
             sed -i -E "/astewartau\/QSM\.rs/ s/(rev|tag|branch) = \"[^\"]*\"/rev = \"$sha\"/" "$f"
             grep -n 'QSM.rs.git' "$f"
           done
