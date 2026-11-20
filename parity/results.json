@@ -424,6 +424,37 @@
    ]
   },
   {
+   "pair": "amp-pe",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "04ab590899de",
+   "reference": {
+    "slug": "amp-pe",
+    "image": "ghcr.io/astewartau/qsm-ci/amp-pe@sha256:0e1f44758045229f3297926a573e5664e6de5d2a895dca2a30d2f2339d507fc1",
+    "digest": "sha256:0e1f44758045229f3297926a573e5664e6de5d2a895dca2a30d2f2339d507fc1"
+   },
+   "candidate": {
+    "slug": "amp-pe-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
    "pair": "autoqsm",
    "dataset": "s002001-kki-achieva-bridge-run1",
    "track": "dev",
@@ -769,6 +800,37 @@
   },
   {
    "pair": "autoqsm",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "1e2ae184bb95",
+   "reference": {
+    "slug": "autoqsm",
+    "image": "ghcr.io/astewartau/qsm-ci/autoqsm@sha256:8b5e8552a6795a59add02f9ddb392f45c7a8dcb98f465520ecda89a2fa055d54",
+    "digest": "sha256:8b5e8552a6795a59add02f9ddb392f45c7a8dcb98f465520ecda89a2fa055d54"
+   },
+   "candidate": {
+    "slug": "autoqsm-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "autoqsm",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-11-03T16:10:24Z",
@@ -1104,6 +1166,37 @@
    },
    "qsmxt": {
     "ref": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "autoqsm",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "ed5bcec33acf",
+   "reference": {
+    "slug": "autoqsm",
+    "image": "ghcr.io/astewartau/qsm-ci/autoqsm@sha256:8b5e8552a6795a59add02f9ddb392f45c7a8dcb98f465520ecda89a2fa055d54",
+    "digest": "sha256:8b5e8552a6795a59add02f9ddb392f45c7a8dcb98f465520ecda89a2fa055d54"
+   },
+   "candidate": {
+    "slug": "autoqsm-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
     "commit": null
    },
    "result": "error",
@@ -1486,6 +1579,37 @@
   },
   {
    "pair": "bfrnet",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "a5416d702dea",
+   "reference": {
+    "slug": "bfrnet",
+    "image": "ghcr.io/astewartau/qsm-ci/bfrnet@sha256:ab939d3759104300dcca11421b020221dcc682bd397d77c656862cc02b5c9891",
+    "digest": "sha256:ab939d3759104300dcca11421b020221dcc682bd397d77c656862cc02b5c9891"
+   },
+   "candidate": {
+    "slug": "bfrnet-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "bfrnet",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-11-03T16:10:24Z",
@@ -1850,6 +1974,37 @@
    },
    "qsmxt": {
     "ref": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "bfrnet",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "670e371e6fe1",
+   "reference": {
+    "slug": "bfrnet",
+    "image": "ghcr.io/astewartau/qsm-ci/bfrnet@sha256:ab939d3759104300dcca11421b020221dcc682bd397d77c656862cc02b5c9891",
+    "digest": "sha256:ab939d3759104300dcca11421b020221dcc682bd397d77c656862cc02b5c9891"
+   },
+   "candidate": {
+    "slug": "bfrnet-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
     "commit": null
    },
    "result": "error",
@@ -2269,6 +2424,37 @@
    ]
   },
   {
+   "pair": "chisep-ilsqr",
+   "dataset": "chisep-mc",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "ad46cffd87fd",
+   "reference": {
+    "slug": "chisep-ilsqr",
+    "image": "ghcr.io/astewartau/qsm-ci/chi-sep-ilsqr@sha256:0c5bb3a6989a07b8fbb38459d2477df59b28035bc673b98c3f671159ac22769e",
+    "digest": "sha256:0c5bb3a6989a07b8fbb38459d2477df59b28035bc673b98c3f671159ac22769e"
+   },
+   "candidate": {
+    "slug": "chisep-ilsqr-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
    "pair": "chisep-medi",
    "dataset": "chisep-mc",
    "track": "released",
@@ -2674,6 +2860,37 @@
    ]
   },
   {
+   "pair": "chisep-medi",
+   "dataset": "chisep-mc",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "d3901afd4435",
+   "reference": {
+    "slug": "chisep-medi",
+    "image": "ghcr.io/astewartau/qsm-ci/chi-sep-medi@sha256:c3afb14130929cb73fd41d9011afcce69634969b73216e996341e9c946fc8d7c",
+    "digest": "sha256:c3afb14130929cb73fd41d9011afcce69634969b73216e996341e9c946fc8d7c"
+   },
+   "candidate": {
+    "slug": "chisep-medi-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
    "pair": "chisepnet",
    "dataset": "chisep-mc",
    "track": "dev",
@@ -3041,6 +3258,37 @@
    },
    "qsmxt": {
     "ref": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "chisepnet",
+   "dataset": "chisep-mc",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "cfd677cc8c9b",
+   "reference": {
+    "slug": "chisepnet",
+    "image": "ghcr.io/astewartau/qsm-ci/chisep-toolbox@sha256:dcac7d9f05fe02ee44522feaabc839473db61257feed60648bea698911a6521d",
+    "digest": "sha256:dcac7d9f05fe02ee44522feaabc839473db61257feed60648bea698911a6521d"
+   },
+   "candidate": {
+    "slug": "chisepnet-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
     "commit": null
    },
    "result": "error",
@@ -3607,6 +3855,37 @@
    ]
   },
   {
+   "pair": "decompose",
+   "dataset": "chisep-mc",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "60bf8bd33c70",
+   "reference": {
+    "slug": "decompose-qsm",
+    "image": "ghcr.io/astewartau/qsm-ci/decompose-qsm@sha256:39a91b0435d6729cfd4a8c2441ebad1cbfe45c7358ea6d3ca95a1b65ec0e4033",
+    "digest": "sha256:39a91b0435d6729cfd4a8c2441ebad1cbfe45c7358ea6d3ca95a1b65ec0e4033"
+   },
+   "candidate": {
+    "slug": "decompose-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
    "pair": "fansi-nltgv",
    "dataset": "s002001-kki-achieva-bridge-run1",
    "track": "dev",
@@ -3952,6 +4231,37 @@
   },
   {
    "pair": "fansi-nltgv",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "5ac9bd48b3f3",
+   "reference": {
+    "slug": "fansi-nltgv",
+    "image": "ghcr.io/astewartau/qsm-ci/fansi@sha256:e34728c1a66c2ab7654bfcf5308ed507db79da9d7be599936a77156cd4df8730",
+    "digest": "sha256:e34728c1a66c2ab7654bfcf5308ed507db79da9d7be599936a77156cd4df8730"
+   },
+   "candidate": {
+    "slug": "fansi-nltgv-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "fansi-nltgv",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-11-03T16:10:24Z",
@@ -4287,6 +4597,37 @@
    },
    "qsmxt": {
     "ref": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "fansi-nltgv",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "1b1fcae6c05f",
+   "reference": {
+    "slug": "fansi-nltgv",
+    "image": "ghcr.io/astewartau/qsm-ci/fansi@sha256:e34728c1a66c2ab7654bfcf5308ed507db79da9d7be599936a77156cd4df8730",
+    "digest": "sha256:e34728c1a66c2ab7654bfcf5308ed507db79da9d7be599936a77156cd4df8730"
+   },
+   "candidate": {
+    "slug": "fansi-nltgv-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
     "commit": null
    },
    "result": "error",
@@ -4640,6 +4981,37 @@
   },
   {
    "pair": "fansi-nltv",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "249990e0d54e",
+   "reference": {
+    "slug": "fansi-nltv",
+    "image": "ghcr.io/astewartau/qsm-ci/fansi@sha256:e606064f1d980cddf65ad7cc51cea68a759e26593f0e161531ab21b2d9399995",
+    "digest": "sha256:e606064f1d980cddf65ad7cc51cea68a759e26593f0e161531ab21b2d9399995"
+   },
+   "candidate": {
+    "slug": "fansi-nltv-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "fansi-nltv",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-11-03T16:10:24Z",
@@ -4975,6 +5347,37 @@
    },
    "qsmxt": {
     "ref": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "fansi-nltv",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "5d6f835c3a25",
+   "reference": {
+    "slug": "fansi-nltv",
+    "image": "ghcr.io/astewartau/qsm-ci/fansi@sha256:e606064f1d980cddf65ad7cc51cea68a759e26593f0e161531ab21b2d9399995",
+    "digest": "sha256:e606064f1d980cddf65ad7cc51cea68a759e26593f0e161531ab21b2d9399995"
+   },
+   "candidate": {
+    "slug": "fansi-nltv-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
     "commit": null
    },
    "result": "error",
@@ -5551,6 +5954,37 @@
   },
   {
    "pair": "fit-ppm-complex",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "f99dd52d4132",
+   "reference": {
+    "slug": "fit-ppm-complex-cornell",
+    "image": "ghcr.io/astewartau/qsm-ci/matlab-medi@sha256:7efa4bd641b8311ac97a8a09dd438290f998f8163219b2f5d7ecae777a59811c",
+    "digest": "sha256:7efa4bd641b8311ac97a8a09dd438290f998f8163219b2f5d7ecae777a59811c"
+   },
+   "candidate": {
+    "slug": "fit-ppm-complex-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "fit-ppm-complex",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-11-03T16:10:24Z",
@@ -6117,6 +6551,37 @@
    ]
   },
   {
+   "pair": "fit-ppm-complex",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "6802cb016b33",
+   "reference": {
+    "slug": "fit-ppm-complex-cornell",
+    "image": "ghcr.io/astewartau/qsm-ci/matlab-medi@sha256:7efa4bd641b8311ac97a8a09dd438290f998f8163219b2f5d7ecae777a59811c",
+    "digest": "sha256:7efa4bd641b8311ac97a8a09dd438290f998f8163219b2f5d7ecae777a59811c"
+   },
+   "candidate": {
+    "slug": "fit-ppm-complex-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
    "pair": "hd-bet",
    "dataset": "s002001-kki-achieva-bridge-run1",
    "track": "dev",
@@ -6454,6 +6919,37 @@
    },
    "qsmxt": {
     "ref": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "hd-bet",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "544f0a7cac34",
+   "reference": {
+    "slug": "hd-bet-qsmci",
+    "image": "ghcr.io/astewartau/qsm-ci/hd-bet@sha256:0a0e31375fbb6c5526eacdcd5d639d4eab52bc01f7cef2cba3bd74d0dc3b038d",
+    "digest": "sha256:0a0e31375fbb6c5526eacdcd5d639d4eab52bc01f7cef2cba3bd74d0dc3b038d"
+   },
+   "candidate": {
+    "slug": "hd-bet-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
     "commit": null
    },
    "result": "error",
@@ -6807,6 +7303,37 @@
   },
   {
    "pair": "hdqsm",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "de78ea8ce08a",
+   "reference": {
+    "slug": "hdqsm",
+    "image": "ghcr.io/astewartau/qsm-ci/hd-qsm@sha256:79d3ecefcd9ad766502c8ef079bcb1a3408d658cfe27f50bfc6f0b61cba8cb92",
+    "digest": "sha256:79d3ecefcd9ad766502c8ef079bcb1a3408d658cfe27f50bfc6f0b61cba8cb92"
+   },
+   "candidate": {
+    "slug": "hdqsm-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "hdqsm",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-11-03T16:10:24Z",
@@ -7142,6 +7669,37 @@
    },
    "qsmxt": {
     "ref": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "hdqsm",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "9ed6459a24f6",
+   "reference": {
+    "slug": "hdqsm",
+    "image": "ghcr.io/astewartau/qsm-ci/hd-qsm@sha256:79d3ecefcd9ad766502c8ef079bcb1a3408d658cfe27f50bfc6f0b61cba8cb92",
+    "digest": "sha256:79d3ecefcd9ad766502c8ef079bcb1a3408d658cfe27f50bfc6f0b61cba8cb92"
+   },
+   "candidate": {
+    "slug": "hdqsm-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
     "commit": null
    },
    "result": "error",
@@ -7575,6 +8133,37 @@
   },
   {
    "pair": "heidi",
+   "dataset": "s005001-cbic-prisma-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "a3c095c4f0b3",
+   "reference": {
+    "slug": "heidi",
+    "image": "ghcr.io/astewartau/qsm-ci/heidi@sha256:69f572266b7f232d35fc269774f547f2cd81ae4cdb98c1ed35cdd33290a1a1a6",
+    "digest": "sha256:69f572266b7f232d35fc269774f547f2cd81ae4cdb98c1ed35cdd33290a1a1a6"
+   },
+   "candidate": {
+    "slug": "heidi-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "heidi",
    "dataset": "sim",
    "track": "released",
    "release": "v10.0.0",
@@ -7998,6 +8587,37 @@
    ]
   },
   {
+   "pair": "heidi",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "106b40d56bb5",
+   "reference": {
+    "slug": "heidi",
+    "image": "ghcr.io/astewartau/qsm-ci/heidi@sha256:69f572266b7f232d35fc269774f547f2cd81ae4cdb98c1ed35cdd33290a1a1a6",
+    "digest": "sha256:69f572266b7f232d35fc269774f547f2cd81ae4cdb98c1ed35cdd33290a1a1a6"
+   },
+   "candidate": {
+    "slug": "heidi-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
    "pair": "iharperella",
    "dataset": "s002001-kki-achieva-bridge-run1",
    "track": "released",
@@ -8384,6 +9004,37 @@
    ]
   },
   {
+   "pair": "iharperella",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "60774465955c",
+   "reference": {
+    "slug": "iharperella-sti",
+    "image": "ghcr.io/astewartau/qsm-ci/matlab-sti-iharperella@sha256:b4f9d4840810d3abbbbf4b17ea2673dc48cebcc2a161a9f2d53d864e99fd6db9",
+    "digest": "sha256:b4f9d4840810d3abbbbf4b17ea2673dc48cebcc2a161a9f2d53d864e99fd6db9"
+   },
+   "candidate": {
+    "slug": "iharperella-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
    "pair": "ilsqr",
    "dataset": "s002001-kki-achieva-bridge-run1",
    "track": "released",
@@ -8728,6 +9379,37 @@
   },
   {
    "pair": "ilsqr",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "228cf46696d8",
+   "reference": {
+    "slug": "ilsqr-sti",
+    "image": "ghcr.io/astewartau/qsm-ci/matlab-sti-ilsqr@sha256:fa2660014473dbff51a6ddd6aba0840074349ce6d97be9efd0cb8afe6c1c597c",
+    "digest": "sha256:fa2660014473dbff51a6ddd6aba0840074349ce6d97be9efd0cb8afe6c1c597c"
+   },
+   "candidate": {
+    "slug": "ilsqr-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "ilsqr",
    "dataset": "sim",
    "track": "released",
    "release": "v10.0.0",
@@ -9062,6 +9744,37 @@
    },
    "qsmxt": {
     "ref": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "ilsqr",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "e8d3ce2131df",
+   "reference": {
+    "slug": "ilsqr-sti",
+    "image": "ghcr.io/astewartau/qsm-ci/matlab-sti-ilsqr@sha256:fa2660014473dbff51a6ddd6aba0840074349ce6d97be9efd0cb8afe6c1c597c",
+    "digest": "sha256:fa2660014473dbff51a6ddd6aba0840074349ce6d97be9efd0cb8afe6c1c597c"
+   },
+   "candidate": {
+    "slug": "ilsqr-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
     "commit": null
    },
    "result": "error",
@@ -9494,6 +10207,37 @@
   },
   {
    "pair": "iqfm",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "4eb92294b33a",
+   "reference": {
+    "slug": "iqfm",
+    "image": "ghcr.io/astewartau/qsm-ci/iqfm@sha256:980ba446e62fb9c864c231d180ec32ed732e39528e9de8d3a44fc6f9e08b8de6",
+    "digest": "sha256:980ba446e62fb9c864c231d180ec32ed732e39528e9de8d3a44fc6f9e08b8de6"
+   },
+   "candidate": {
+    "slug": "iqfm-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "iqfm",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-11-03T23:52:59Z",
@@ -9815,6 +10559,37 @@
    },
    "qsmxt": {
     "ref": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "iqfm",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "4eb92294b33a",
+   "reference": {
+    "slug": "iqfm",
+    "image": "ghcr.io/astewartau/qsm-ci/iqfm@sha256:980ba446e62fb9c864c231d180ec32ed732e39528e9de8d3a44fc6f9e08b8de6",
+    "digest": "sha256:980ba446e62fb9c864c231d180ec32ed732e39528e9de8d3a44fc6f9e08b8de6"
+   },
+   "candidate": {
+    "slug": "iqfm-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
     "commit": null
    },
    "result": "error",
@@ -10154,6 +10929,37 @@
   },
   {
    "pair": "iqsm",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "a641bb9547fd",
+   "reference": {
+    "slug": "iqsm",
+    "image": "ghcr.io/astewartau/qsm-ci/iqsm@sha256:1777cace0a0207b9433f54e53c53cb02c8b52a33629a1aa18682c8d94e04287a",
+    "digest": "sha256:1777cace0a0207b9433f54e53c53cb02c8b52a33629a1aa18682c8d94e04287a"
+   },
+   "candidate": {
+    "slug": "iqsm-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "iqsm",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-11-03T16:10:24Z",
@@ -10475,6 +11281,37 @@
    },
    "qsmxt": {
     "ref": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "iqsm",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "9999005d158f",
+   "reference": {
+    "slug": "iqsm",
+    "image": "ghcr.io/astewartau/qsm-ci/iqsm@sha256:1777cace0a0207b9433f54e53c53cb02c8b52a33629a1aa18682c8d94e04287a",
+    "digest": "sha256:1777cace0a0207b9433f54e53c53cb02c8b52a33629a1aa18682c8d94e04287a"
+   },
+   "candidate": {
+    "slug": "iqsm-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
     "commit": null
    },
    "result": "error",
@@ -10814,6 +11651,37 @@
   },
   {
    "pair": "iqsm-plus",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "286bbaf8ec5c",
+   "reference": {
+    "slug": "iqsm-plus",
+    "image": "ghcr.io/astewartau/qsm-ci/iqsm-plus@sha256:0541a1ba778023a315708be3d6695425bbd31e5ce6711c3b198197256cc11429",
+    "digest": "sha256:0541a1ba778023a315708be3d6695425bbd31e5ce6711c3b198197256cc11429"
+   },
+   "candidate": {
+    "slug": "iqsm-plus-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "iqsm-plus",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-11-03T16:10:24Z",
@@ -11135,6 +12003,37 @@
    },
    "qsmxt": {
     "ref": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "iqsm-plus",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "b04cc8021b7f",
+   "reference": {
+    "slug": "iqsm-plus",
+    "image": "ghcr.io/astewartau/qsm-ci/iqsm-plus@sha256:0541a1ba778023a315708be3d6695425bbd31e5ce6711c3b198197256cc11429",
+    "digest": "sha256:0541a1ba778023a315708be3d6695425bbd31e5ce6711c3b198197256cc11429"
+   },
+   "candidate": {
+    "slug": "iqsm-plus-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
     "commit": null
    },
    "result": "error",
@@ -11517,6 +12416,37 @@
   },
   {
    "pair": "ir2qsm",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "f293ca7bb2df",
+   "reference": {
+    "slug": "ir2qsm",
+    "image": "ghcr.io/astewartau/qsm-ci/ir2qsm@sha256:7df8887acc7cdfac4ea3ec845377c3d0b595975c3d240cd1ee63e826908c98ca",
+    "digest": "sha256:7df8887acc7cdfac4ea3ec845377c3d0b595975c3d240cd1ee63e826908c98ca"
+   },
+   "candidate": {
+    "slug": "ir2qsm-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "ir2qsm",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-11-03T16:10:24Z",
@@ -11881,6 +12811,37 @@
    },
    "qsmxt": {
     "ref": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "ir2qsm",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "e37263fc3b32",
+   "reference": {
+    "slug": "ir2qsm",
+    "image": "ghcr.io/astewartau/qsm-ci/ir2qsm@sha256:7df8887acc7cdfac4ea3ec845377c3d0b595975c3d240cd1ee63e826908c98ca",
+    "digest": "sha256:7df8887acc7cdfac4ea3ec845377c3d0b595975c3d240cd1ee63e826908c98ca"
+   },
+   "candidate": {
+    "slug": "ir2qsm-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
     "commit": null
    },
    "result": "error",
@@ -12334,6 +13295,37 @@
   },
   {
    "pair": "ismv",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "0db7b0cc973a",
+   "reference": {
+    "slug": "ismv-qsmjl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "ismv-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "ismv",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-10-31T11:57:25Z",
@@ -12777,6 +13769,37 @@
    ]
   },
   {
+   "pair": "ismv",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "188523a3effb",
+   "reference": {
+    "slug": "ismv-qsmjl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "ismv-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
    "pair": "l1qsm",
    "dataset": "s002001-kki-achieva-bridge-run1",
    "track": "dev",
@@ -13122,6 +14145,37 @@
   },
   {
    "pair": "l1qsm",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "33f47d7cb12d",
+   "reference": {
+    "slug": "l1qsm",
+    "image": "ghcr.io/astewartau/qsm-ci/l1-qsm@sha256:edb8c46ae324f34ce337eea4f7179f8d73267f5c21f1517a9041e28c449b2177",
+    "digest": "sha256:edb8c46ae324f34ce337eea4f7179f8d73267f5c21f1517a9041e28c449b2177"
+   },
+   "candidate": {
+    "slug": "l1qsm-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "l1qsm",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-11-03T16:10:24Z",
@@ -13457,6 +14511,37 @@
    },
    "qsmxt": {
     "ref": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "l1qsm",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "b9ccacec9b6f",
+   "reference": {
+    "slug": "l1qsm",
+    "image": "ghcr.io/astewartau/qsm-ci/l1-qsm@sha256:edb8c46ae324f34ce337eea4f7179f8d73267f5c21f1517a9041e28c449b2177",
+    "digest": "sha256:edb8c46ae324f34ce337eea4f7179f8d73267f5c21f1517a9041e28c449b2177"
+   },
+   "candidate": {
+    "slug": "l1qsm-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
     "commit": null
    },
    "result": "error",
@@ -14858,6 +15943,37 @@
   },
   {
    "pair": "lbv",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "3a97f8e0698a",
+   "reference": {
+    "slug": "lbv-cornell",
+    "image": "ghcr.io/astewartau/qsm-ci/matlab-medi@sha256:aceec8964177fbce20e46635632be6ae167d6cd395c5e65a3030198ea25fff1f",
+    "digest": "sha256:aceec8964177fbce20e46635632be6ae167d6cd395c5e65a3030198ea25fff1f"
+   },
+   "candidate": {
+    "slug": "lbv-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "lbv",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-11-03T16:10:24Z",
@@ -15192,6 +16308,37 @@
    },
    "qsmxt": {
     "ref": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "lbv",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "ebfaf636553c",
+   "reference": {
+    "slug": "lbv-cornell",
+    "image": "ghcr.io/astewartau/qsm-ci/matlab-medi@sha256:aceec8964177fbce20e46635632be6ae167d6cd395c5e65a3030198ea25fff1f",
+    "digest": "sha256:aceec8964177fbce20e46635632be6ae167d6cd395c5e65a3030198ea25fff1f"
+   },
+   "candidate": {
+    "slug": "lbv-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
     "commit": null
    },
    "result": "error",
@@ -15539,6 +16686,37 @@
   },
   {
    "pair": "lpcnn",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "f715fe518ea1",
+   "reference": {
+    "slug": "lpcnn",
+    "image": "ghcr.io/astewartau/qsm-ci/lpcnn@sha256:d0878b2e361437c9f2adc86a45949344fd19b0150e474267bafb18dbb57b2b51",
+    "digest": "sha256:d0878b2e361437c9f2adc86a45949344fd19b0150e474267bafb18dbb57b2b51"
+   },
+   "candidate": {
+    "slug": "lpcnn-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "lpcnn",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-11-03T16:10:24Z",
@@ -15868,6 +17046,37 @@
    },
    "qsmxt": {
     "ref": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "lpcnn",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "7afc32fd740d",
+   "reference": {
+    "slug": "lpcnn",
+    "image": "ghcr.io/astewartau/qsm-ci/lpcnn@sha256:d0878b2e361437c9f2adc86a45949344fd19b0150e474267bafb18dbb57b2b51",
+    "digest": "sha256:d0878b2e361437c9f2adc86a45949344fd19b0150e474267bafb18dbb57b2b51"
+   },
+   "candidate": {
+    "slug": "lpcnn-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
     "commit": null
    },
    "result": "error",
@@ -16220,6 +17429,37 @@
   },
   {
    "pair": "lsqr",
+   "dataset": "s005001-cbic-prisma-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "00aafb1a47e4",
+   "reference": {
+    "slug": "lsqr",
+    "image": "ghcr.io/astewartau/qsm-ci/heidi@sha256:a2deee2d35a926871a838509324014dbc482e4ca5c02fc09b1fed348376a8229",
+    "digest": "sha256:a2deee2d35a926871a838509324014dbc482e4ca5c02fc09b1fed348376a8229"
+   },
+   "candidate": {
+    "slug": "lsqr-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "lsqr",
    "dataset": "sim",
    "track": "released",
    "release": "v10.0.0",
@@ -16554,6 +17794,37 @@
    },
    "qsmxt": {
     "ref": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "lsqr",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "106ee3450d31",
+   "reference": {
+    "slug": "lsqr",
+    "image": "ghcr.io/astewartau/qsm-ci/heidi@sha256:a2deee2d35a926871a838509324014dbc482e4ca5c02fc09b1fed348376a8229",
+    "digest": "sha256:a2deee2d35a926871a838509324014dbc482e4ca5c02fc09b1fed348376a8229"
+   },
+   "candidate": {
+    "slug": "lsqr-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
     "commit": null
    },
    "result": "error",
@@ -16995,6 +18266,37 @@
   },
   {
    "pair": "medi",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "1f3ee987a57e",
+   "reference": {
+    "slug": "medi-cornell",
+    "image": "ghcr.io/astewartau/qsm-ci/matlab-medi@sha256:b81527b0c5a49a39378700358dd3b0ada3a4a0ed5742715d0d699c99846f0278",
+    "digest": "sha256:b81527b0c5a49a39378700358dd3b0ada3a4a0ed5742715d0d699c99846f0278"
+   },
+   "candidate": {
+    "slug": "medi-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "medi",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-10-30T10:02:18Z",
@@ -17422,6 +18724,37 @@
    ]
   },
   {
+   "pair": "medi",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "64e35b94d579",
+   "reference": {
+    "slug": "medi-cornell",
+    "image": "ghcr.io/astewartau/qsm-ci/matlab-medi@sha256:b81527b0c5a49a39378700358dd3b0ada3a4a0ed5742715d0d699c99846f0278",
+    "digest": "sha256:b81527b0c5a49a39378700358dd3b0ada3a4a0ed5742715d0d699c99846f0278"
+   },
+   "candidate": {
+    "slug": "medi-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
    "pair": "mindgrab",
    "dataset": "s002001-kki-achieva-bridge-run1",
    "track": "dev",
@@ -17720,6 +19053,37 @@
    },
    "qsmxt": {
     "ref": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "mindgrab",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "d425e1ad35a7",
+   "reference": {
+    "slug": "mindgrab",
+    "image": "ghcr.io/astewartau/qsm-ci/mindgrab@sha256:90e81df79b5ef346a30bff0edd279100a7b2c025c224962aa47f083d90f08d3c",
+    "digest": "sha256:90e81df79b5ef346a30bff0edd279100a7b2c025c224962aa47f083d90f08d3c"
+   },
+   "candidate": {
+    "slug": "mindgrab-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
     "commit": null
    },
    "result": "error",
@@ -18067,6 +19431,37 @@
   },
   {
    "pair": "modl-qsm",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "e9499aafb39b",
+   "reference": {
+    "slug": "modl-qsm",
+    "image": "ghcr.io/astewartau/qsm-ci/modl-qsm@sha256:75ada9f042b203a3398731efd1a552a974b1176dec8e1e30c683bffdeb73063e",
+    "digest": "sha256:75ada9f042b203a3398731efd1a552a974b1176dec8e1e30c683bffdeb73063e"
+   },
+   "candidate": {
+    "slug": "modl-qsm-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "modl-qsm",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-11-03T16:10:24Z",
@@ -18396,6 +19791,37 @@
    },
    "qsmxt": {
     "ref": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "modl-qsm",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "40acd80d8b8f",
+   "reference": {
+    "slug": "modl-qsm",
+    "image": "ghcr.io/astewartau/qsm-ci/modl-qsm@sha256:75ada9f042b203a3398731efd1a552a974b1176dec8e1e30c683bffdeb73063e",
+    "digest": "sha256:75ada9f042b203a3398731efd1a552a974b1176dec8e1e30c683bffdeb73063e"
+   },
+   "candidate": {
+    "slug": "modl-qsm-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
     "commit": null
    },
    "result": "error",
@@ -18749,6 +20175,37 @@
   },
   {
    "pair": "ndi",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "14abdcb04b87",
+   "reference": {
+    "slug": "ndi",
+    "image": "ghcr.io/astewartau/qsm-ci/ndi@sha256:98f820be521d171c729f96e1deef733ebfad7d8bbb4996693a12187a59719f28",
+    "digest": "sha256:98f820be521d171c729f96e1deef733ebfad7d8bbb4996693a12187a59719f28"
+   },
+   "candidate": {
+    "slug": "ndi-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "ndi",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-11-03T16:10:24Z",
@@ -19084,6 +20541,37 @@
    },
    "qsmxt": {
     "ref": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "ndi",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "08525cc99181",
+   "reference": {
+    "slug": "ndi",
+    "image": "ghcr.io/astewartau/qsm-ci/ndi@sha256:98f820be521d171c729f96e1deef733ebfad7d8bbb4996693a12187a59719f28",
+    "digest": "sha256:98f820be521d171c729f96e1deef733ebfad7d8bbb4996693a12187a59719f28"
+   },
+   "candidate": {
+    "slug": "ndi-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
     "commit": null
    },
    "result": "error",
@@ -19431,6 +20919,37 @@
   },
   {
    "pair": "nextqsm",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "a8cb5d2f295d",
+   "reference": {
+    "slug": "nextqsm",
+    "image": "ghcr.io/astewartau/qsm-ci/nextqsm@sha256:015ff4413ee0b8b2f665194b1dc722aca6523f63cf9c5ce1c2fc5ec27891a4e4",
+    "digest": "sha256:015ff4413ee0b8b2f665194b1dc722aca6523f63cf9c5ce1c2fc5ec27891a4e4"
+   },
+   "candidate": {
+    "slug": "nextqsm-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "nextqsm",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-11-03T16:10:24Z",
@@ -19766,6 +21285,37 @@
    },
    "qsmxt": {
     "ref": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "nextqsm",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "580a042e07c3",
+   "reference": {
+    "slug": "nextqsm",
+    "image": "ghcr.io/astewartau/qsm-ci/nextqsm@sha256:015ff4413ee0b8b2f665194b1dc722aca6523f63cf9c5ce1c2fc5ec27891a4e4",
+    "digest": "sha256:015ff4413ee0b8b2f665194b1dc722aca6523f63cf9c5ce1c2fc5ec27891a4e4"
+   },
+   "candidate": {
+    "slug": "nextqsm-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
     "commit": null
    },
    "result": "error",
@@ -20161,6 +21711,37 @@
   },
   {
    "pair": "nltv",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "ee833b9c61c7",
+   "reference": {
+    "slug": "nltv-qsmjl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "nltv-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "nltv",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-10-31T11:57:25Z",
@@ -20546,6 +22127,37 @@
    ]
   },
   {
+   "pair": "nltv",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "d62e8e999aab",
+   "reference": {
+    "slug": "nltv-qsmjl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "nltv-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
    "pair": "pdf",
    "dataset": "s002001-kki-achieva-bridge-run1",
    "track": "dev",
@@ -20891,6 +22503,37 @@
   },
   {
    "pair": "pdf",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "8677465b8bd3",
+   "reference": {
+    "slug": "pdf-cornell",
+    "image": "ghcr.io/astewartau/qsm-ci/matlab-medi@sha256:bfff9adf6acd0001a408322d113ab29353af1eb22dcb84a9fa5fd2af26d5fb34",
+    "digest": "sha256:bfff9adf6acd0001a408322d113ab29353af1eb22dcb84a9fa5fd2af26d5fb34"
+   },
+   "candidate": {
+    "slug": "pdf-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "pdf",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-11-03T16:10:24Z",
@@ -21226,6 +22869,37 @@
    },
    "qsmxt": {
     "ref": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "pdf",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "652d68606adc",
+   "reference": {
+    "slug": "pdf-cornell",
+    "image": "ghcr.io/astewartau/qsm-ci/matlab-medi@sha256:bfff9adf6acd0001a408322d113ab29353af1eb22dcb84a9fa5fd2af26d5fb34",
+    "digest": "sha256:bfff9adf6acd0001a408322d113ab29353af1eb22dcb84a9fa5fd2af26d5fb34"
+   },
+   "candidate": {
+    "slug": "pdf-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
     "commit": null
    },
    "result": "error",
@@ -22014,6 +23688,37 @@
    },
    "qsmxt": {
     "ref": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "qsmart",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "019de1c25e67",
+   "reference": {
+    "slug": "qsmart-matlab",
+    "image": "ghcr.io/astewartau/qsm-ci/matlab-qsmart@sha256:01f36e868bcacf494914b498b8f1cfc39480e533b0b654519e4476c19e532493",
+    "digest": "sha256:01f36e868bcacf494914b498b8f1cfc39480e533b0b654519e4476c19e532493"
+   },
+   "candidate": {
+    "slug": "qsmart-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
     "commit": null
    },
    "result": "error",
@@ -22821,6 +24526,37 @@
    ]
   },
   {
+   "pair": "qsmart",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "006ab310b551",
+   "reference": {
+    "slug": "qsmart-matlab",
+    "image": "ghcr.io/astewartau/qsm-ci/matlab-qsmart@sha256:01f36e868bcacf494914b498b8f1cfc39480e533b0b654519e4476c19e532493",
+    "digest": "sha256:01f36e868bcacf494914b498b8f1cfc39480e533b0b654519e4476c19e532493"
+   },
+   "candidate": {
+    "slug": "qsmart-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
    "pair": "qsmgan",
    "dataset": "s002001-kki-achieva-bridge-run1",
    "track": "dev",
@@ -23151,6 +24887,37 @@
    },
    "qsmxt": {
     "ref": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "qsmgan",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "8882fa588b83",
+   "reference": {
+    "slug": "qsmgan",
+    "image": "ghcr.io/astewartau/qsm-ci/qsmgan@sha256:c7c83e392af271ed21e9a63062fbdc2a4ed2e46547798d81cc1e7e527700d380",
+    "digest": "sha256:c7c83e392af271ed21e9a63062fbdc2a4ed2e46547798d81cc1e7e527700d380"
+   },
+   "candidate": {
+    "slug": "qsmgan-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
     "commit": null
    },
    "result": "error",
@@ -23497,6 +25264,37 @@
    ]
   },
   {
+   "pair": "qsmgan",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "e1358ec0e572",
+   "reference": {
+    "slug": "qsmgan",
+    "image": "ghcr.io/astewartau/qsm-ci/qsmgan@sha256:c7c83e392af271ed21e9a63062fbdc2a4ed2e46547798d81cc1e7e527700d380",
+    "digest": "sha256:c7c83e392af271ed21e9a63062fbdc2a4ed2e46547798d81cc1e7e527700d380"
+   },
+   "candidate": {
+    "slug": "qsmgan-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
    "pair": "qsmnet",
    "dataset": "sim",
    "track": "dev",
@@ -23816,6 +25614,37 @@
    },
    "qsmxt": {
     "ref": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "qsmnet",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "245f50b9b260",
+   "reference": {
+    "slug": "qsmnet",
+    "image": "ghcr.io/astewartau/qsm-ci/qsmnet@sha256:7081b0782c7cb23ec8a9fc509af44f7f3a4960eec886299af63dc950c6d0b2c3",
+    "digest": "sha256:7081b0782c7cb23ec8a9fc509af44f7f3a4960eec886299af63dc950c6d0b2c3"
+   },
+   "candidate": {
+    "slug": "qsmnet-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
     "commit": null
    },
    "result": "error",
@@ -24162,6 +25991,37 @@
    ]
   },
   {
+   "pair": "qsmnet-plus",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "49c4ac39b518",
+   "reference": {
+    "slug": "qsmnet-plus",
+    "image": "ghcr.io/astewartau/qsm-ci/qsmnet-plus@sha256:d63e1a6ad3f0e208c9fb45e510c715fe4669cf806c52e47814e80898a4c65ea7",
+    "digest": "sha256:d63e1a6ad3f0e208c9fb45e510c715fe4669cf806c52e47814e80898a4c65ea7"
+   },
+   "candidate": {
+    "slug": "qsmnet-plus-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
    "pair": "qsmnetme",
    "dataset": "s002001-kki-achieva-bridge-run1",
    "track": "dev",
@@ -24493,6 +26353,37 @@
   },
   {
    "pair": "qsmnetme",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "c12860d6b31b",
+   "reference": {
+    "slug": "qsmnetme",
+    "image": "ghcr.io/astewartau/qsm-ci/chisep-toolbox@sha256:dcac7d9f05fe02ee44522feaabc839473db61257feed60648bea698911a6521d",
+    "digest": "sha256:dcac7d9f05fe02ee44522feaabc839473db61257feed60648bea698911a6521d"
+   },
+   "candidate": {
+    "slug": "qsmnetme-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "qsmnetme",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-11-03T16:10:24Z",
@@ -24814,6 +26705,37 @@
    },
    "qsmxt": {
     "ref": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "qsmnetme",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "2acd2bfa0218",
+   "reference": {
+    "slug": "qsmnetme",
+    "image": "ghcr.io/astewartau/qsm-ci/chisep-toolbox@sha256:dcac7d9f05fe02ee44522feaabc839473db61257feed60648bea698911a6521d",
+    "digest": "sha256:dcac7d9f05fe02ee44522feaabc839473db61257feed60648bea698911a6521d"
+   },
+   "candidate": {
+    "slug": "qsmnetme-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
     "commit": null
    },
    "result": "error",
@@ -25885,6 +27807,37 @@
   },
   {
    "pair": "resharp",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "f36633ac2744",
+   "reference": {
+    "slug": "resharp",
+    "image": "ghcr.io/astewartau/qsm-ci/resharp@sha256:b147f71e433555c8be550195d16451caa191dacbcbccd3e392e200db8e0d7e2d",
+    "digest": "sha256:b147f71e433555c8be550195d16451caa191dacbcbccd3e392e200db8e0d7e2d"
+   },
+   "candidate": {
+    "slug": "resharp-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "resharp",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-11-03T16:10:24Z",
@@ -26220,6 +28173,37 @@
    },
    "qsmxt": {
     "ref": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "resharp",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "e15da89f2d84",
+   "reference": {
+    "slug": "resharp",
+    "image": "ghcr.io/astewartau/qsm-ci/resharp@sha256:b147f71e433555c8be550195d16451caa191dacbcbccd3e392e200db8e0d7e2d",
+    "digest": "sha256:b147f71e433555c8be550195d16451caa191dacbcbccd3e392e200db8e0d7e2d"
+   },
+   "candidate": {
+    "slug": "resharp-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
     "commit": null
    },
    "result": "error",
@@ -26776,6 +28760,37 @@
    },
    "qsmxt": {
     "ref": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "romeo",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "8f5bd2a470dd",
+   "reference": {
+    "slug": "romeo-romeojl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "romeo-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
     "commit": null
    },
    "result": "error",
@@ -27344,6 +29359,37 @@
    ]
   },
   {
+   "pair": "romeo",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "42546f05e11d",
+   "reference": {
+    "slug": "romeo-romeojl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "romeo-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
    "pair": "rts",
    "dataset": "s002001-kki-achieva-bridge-run1",
    "track": "dev",
@@ -27731,6 +29777,37 @@
   },
   {
    "pair": "rts",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "d93a593736b3",
+   "reference": {
+    "slug": "rts-qsmjl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "rts-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "rts",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-10-31T11:57:25Z",
@@ -28108,6 +30185,37 @@
    },
    "qsmxt": {
     "ref": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "rts",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "f085e8d55741",
+   "reference": {
+    "slug": "rts-qsmjl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "rts-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
     "commit": null
    },
    "result": "error",
@@ -28503,6 +30611,37 @@
   },
   {
    "pair": "sharp",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "f3dbbb7a0398",
+   "reference": {
+    "slug": "sharp-sepia",
+    "image": "ghcr.io/astewartau/qsm-ci/matlab-sharp-sepia@sha256:3ad75137e636fac724356641b488ad8cec0f87bb67e7ae0aa1c290f70eac209e",
+    "digest": "sha256:3ad75137e636fac724356641b488ad8cec0f87bb67e7ae0aa1c290f70eac209e"
+   },
+   "candidate": {
+    "slug": "sharp-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "sharp",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-10-31T11:57:25Z",
@@ -28880,6 +31019,37 @@
    },
    "qsmxt": {
     "ref": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "sharp",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "f19e991b2cf9",
+   "reference": {
+    "slug": "sharp-sepia",
+    "image": "ghcr.io/astewartau/qsm-ci/matlab-sharp-sepia@sha256:3ad75137e636fac724356641b488ad8cec0f87bb67e7ae0aa1c290f70eac209e",
+    "digest": "sha256:3ad75137e636fac724356641b488ad8cec0f87bb67e7ae0aa1c290f70eac209e"
+   },
+   "candidate": {
+    "slug": "sharp-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
     "commit": null
    },
    "result": "error",
@@ -29266,6 +31436,37 @@
   },
   {
    "pair": "sharp-qsmjl",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "1bb485965c21",
+   "reference": {
+    "slug": "sharp-qsmjl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "sharp-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "sharp-qsmjl",
    "dataset": "sim",
    "track": "released",
    "release": "v10.0.0",
@@ -29634,6 +31835,37 @@
    },
    "qsmxt": {
     "ref": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "sharp-qsmjl",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "280e3e55fa4c",
+   "reference": {
+    "slug": "sharp-qsmjl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "sharp-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
     "commit": null
    },
    "result": "error",
@@ -30048,6 +32280,37 @@
    },
    "qsmxt": {
     "ref": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "star",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "91b24ae0ebc8",
+   "reference": {
+    "slug": "star-sti",
+    "image": "ghcr.io/astewartau/qsm-ci/matlab-sti-star@sha256:77674d0ef999060e6b9afcaea022a69d277958cad40435f8c113b7bc1ea02b84",
+    "digest": "sha256:77674d0ef999060e6b9afcaea022a69d277958cad40435f8c113b7bc1ea02b84"
+   },
+   "candidate": {
+    "slug": "star-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
     "commit": null
    },
    "result": "error",
@@ -30517,6 +32780,37 @@
    ]
   },
   {
+   "pair": "star",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "e7c2b62c2132",
+   "reference": {
+    "slug": "star-sti",
+    "image": "ghcr.io/astewartau/qsm-ci/matlab-sti-star@sha256:77674d0ef999060e6b9afcaea022a69d277958cad40435f8c113b7bc1ea02b84",
+    "digest": "sha256:77674d0ef999060e6b9afcaea022a69d277958cad40435f8c113b7bc1ea02b84"
+   },
+   "candidate": {
+    "slug": "star-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
    "pair": "susep-net",
    "dataset": "chisep-mc",
    "track": "dev",
@@ -30911,6 +33205,37 @@
    ]
   },
   {
+   "pair": "susep-net",
+   "dataset": "chisep-mc",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "2b8d88c848ee",
+   "reference": {
+    "slug": "susep-net",
+    "image": "ghcr.io/astewartau/qsm-ci/susep-net@sha256:b4d175563f6b32f84b3af163a1ac5975cc8397393457c2ef83367db11056d975",
+    "digest": "sha256:b4d175563f6b32f84b3af163a1ac5975cc8397393457c2ef83367db11056d975"
+   },
+   "candidate": {
+    "slug": "susep-net-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
    "pair": "tfi",
    "dataset": "s002001-kki-achieva-bridge-run1",
    "track": "dev",
@@ -31297,6 +33622,37 @@
   },
   {
    "pair": "tfi",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "64210dc6aeb4",
+   "reference": {
+    "slug": "tfi-cornell",
+    "image": "ghcr.io/astewartau/qsm-ci/matlab-medi@sha256:ba6b3eb2c7c410cd1f66544dd455060a2da32ab76b9d9029e0b7b9345fb69565",
+    "digest": "sha256:ba6b3eb2c7c410cd1f66544dd455060a2da32ab76b9d9029e0b7b9345fb69565"
+   },
+   "candidate": {
+    "slug": "tfi-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "tfi",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-11-03T16:10:24Z",
@@ -31674,6 +34030,37 @@
    },
    "qsmxt": {
     "ref": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "tfi",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "4c8f62b227ae",
+   "reference": {
+    "slug": "tfi-cornell",
+    "image": "ghcr.io/astewartau/qsm-ci/matlab-medi@sha256:ba6b3eb2c7c410cd1f66544dd455060a2da32ab76b9d9029e0b7b9345fb69565",
+    "digest": "sha256:ba6b3eb2c7c410cd1f66544dd455060a2da32ab76b9d9029e0b7b9345fb69565"
+   },
+   "candidate": {
+    "slug": "tfi-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
     "commit": null
    },
    "result": "error",
@@ -32161,6 +34548,37 @@
   },
   {
    "pair": "tgv",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "4fcbf92b7c0a",
+   "reference": {
+    "slug": "tgv-tgvjl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "tgv-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "tgv",
    "dataset": "sim",
    "track": "released",
    "release": "v10.0.0",
@@ -32638,6 +35056,37 @@
    ]
   },
   {
+   "pair": "tgv",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "ead996d3d73b",
+   "reference": {
+    "slug": "tgv-tgvjl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "tgv-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
    "pair": "tikhonov",
    "dataset": "s002001-kki-achieva-bridge-run1",
    "track": "dev",
@@ -33024,6 +35473,37 @@
   },
   {
    "pair": "tikhonov",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "1a54af6f5a31",
+   "reference": {
+    "slug": "tikhonov-qsmjl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "tikhonov-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "tikhonov",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-10-31T11:57:25Z",
@@ -33399,6 +35879,37 @@
    },
    "qsmxt": {
     "ref": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "tikhonov",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "4f585b91d046",
+   "reference": {
+    "slug": "tikhonov-qsmjl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "tikhonov-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
     "commit": null
    },
    "result": "error",
@@ -33803,6 +36314,37 @@
   },
   {
    "pair": "tkd",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "776fb52e8dc2",
+   "reference": {
+    "slug": "tkd-qsmjl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "tkd-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "tkd",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-10-31T11:57:25Z",
@@ -34189,6 +36731,37 @@
    },
    "qsmxt": {
     "ref": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "tkd",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "93c482ec1a24",
+   "reference": {
+    "slug": "tkd-qsmjl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "tkd-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
     "commit": null
    },
    "result": "error",
@@ -35789,6 +38362,37 @@
   },
   {
    "pair": "tsvd",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "794706bc59a5",
+   "reference": {
+    "slug": "tsvd-qsmjl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "tsvd-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "tsvd",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-10-31T11:57:25Z",
@@ -36165,6 +38769,37 @@
    },
    "qsmxt": {
     "ref": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "tsvd",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "ebacad7c3cd2",
+   "reference": {
+    "slug": "tsvd-qsmjl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "tsvd-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
     "commit": null
    },
    "result": "error",
@@ -36570,6 +39205,37 @@
   },
   {
    "pair": "tv",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "5e378ab6b944",
+   "reference": {
+    "slug": "tv-qsmjl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "tv-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "tv",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-10-31T11:57:25Z",
@@ -36957,6 +39623,37 @@
    },
    "qsmxt": {
     "ref": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "tv",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "c707727c722f",
+   "reference": {
+    "slug": "tv-qsmjl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "tv-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
     "commit": null
    },
    "result": "error",
@@ -37391,6 +40088,37 @@
   },
   {
    "pair": "vsharp",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "62fd7c9f9e7c",
+   "reference": {
+    "slug": "vsharp-sti",
+    "image": "ghcr.io/astewartau/qsm-ci/matlab-sti-vsharp@sha256:715c565758a5a64c6df8e73d34a0a62bf7afeb5d6d7feae5f748322cba2504d6",
+    "digest": "sha256:715c565758a5a64c6df8e73d34a0a62bf7afeb5d6d7feae5f748322cba2504d6"
+   },
+   "candidate": {
+    "slug": "vsharp-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "vsharp",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-10-31T11:57:25Z",
@@ -37807,6 +40535,37 @@
    },
    "qsmxt": {
     "ref": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "vsharp",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "a258274c957e",
+   "reference": {
+    "slug": "vsharp-sti",
+    "image": "ghcr.io/astewartau/qsm-ci/matlab-sti-vsharp@sha256:715c565758a5a64c6df8e73d34a0a62bf7afeb5d6d7feae5f748322cba2504d6",
+    "digest": "sha256:715c565758a5a64c6df8e73d34a0a62bf7afeb5d6d7feae5f748322cba2504d6"
+   },
+   "candidate": {
+    "slug": "vsharp-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
     "commit": null
    },
    "result": "error",
@@ -38270,6 +41029,37 @@
   },
   {
    "pair": "vsharp-qsmjl",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "9a8db608fe83",
+   "reference": {
+    "slug": "vsharp-qsmjl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "vsharp-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "vsharp-qsmjl",
    "dataset": "sim",
    "track": "released",
    "release": "v10.0.0",
@@ -38714,6 +41504,37 @@
    },
    "qsmxt": {
     "ref": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "vsharp-qsmjl",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "91e92a95024c",
+   "reference": {
+    "slug": "vsharp-qsmjl",
+    "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
+    "digest": "sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185"
+   },
+   "candidate": {
+    "slug": "vsharp-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
     "commit": null
    },
    "result": "error",
@@ -39176,6 +41997,37 @@
    ]
   },
   {
+   "pair": "wavesep",
+   "dataset": "chisep-mc",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "35ea404518fb",
+   "reference": {
+    "slug": "wavesep",
+    "image": "ghcr.io/astewartau/qsm-ci/wavesep@sha256:c96094a98049ccfb9d660a2463ef772502b30dcb412095e45641d67edeb8791a",
+    "digest": "sha256:c96094a98049ccfb9d660a2463ef772502b30dcb412095e45641d67edeb8791a"
+   },
+   "candidate": {
+    "slug": "wavesep-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
    "pair": "whqsm",
    "dataset": "s002001-kki-achieva-bridge-run1",
    "track": "dev",
@@ -39521,6 +42373,37 @@
   },
   {
    "pair": "whqsm",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "51ca9163162f",
+   "reference": {
+    "slug": "whqsm",
+    "image": "ghcr.io/astewartau/qsm-ci/wh-qsm@sha256:8ac7798e437e0ef68e111d056a7381e976c471d3835099631b3eea5f95550be4",
+    "digest": "sha256:8ac7798e437e0ef68e111d056a7381e976c471d3835099631b3eea5f95550be4"
+   },
+   "candidate": {
+    "slug": "whqsm-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "whqsm",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-11-03T16:10:24Z",
@@ -39856,6 +42739,37 @@
    },
    "qsmxt": {
     "ref": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "whqsm",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "cbd793856706",
+   "reference": {
+    "slug": "whqsm",
+    "image": "ghcr.io/astewartau/qsm-ci/wh-qsm@sha256:8ac7798e437e0ef68e111d056a7381e976c471d3835099631b3eea5f95550be4",
+    "digest": "sha256:8ac7798e437e0ef68e111d056a7381e976c471d3835099631b3eea5f95550be4"
+   },
+   "candidate": {
+    "slug": "whqsm-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
     "commit": null
    },
    "result": "error",
@@ -40290,6 +43204,37 @@
   },
   {
    "pair": "xqsm",
+   "dataset": "s002001-kki-achieva-bridge-run1",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "f4e8dfd95c79",
+   "reference": {
+    "slug": "xqsm",
+    "image": "ghcr.io/astewartau/qsm-ci/xqsm@sha256:f28dabe6f7f41db967133a022f3eb5205d2a2bbb5fab78117d58b1fb84b26444",
+    "digest": "sha256:f28dabe6f7f41db967133a022f3eb5205d2a2bbb5fab78117d58b1fb84b26444"
+   },
+   "candidate": {
+    "slug": "xqsm-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "xqsm",
    "dataset": "sim",
    "track": "dev",
    "date": "2026-11-03T13:28:56Z",
@@ -40707,6 +43652,37 @@
    },
    "qsmxt": {
     "ref": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137",
+    "commit": null
+   },
+   "result": "error",
+   "failed": [
+    "no comparison: the job failed or was cancelled before `compare` ran"
+   ]
+  },
+  {
+   "pair": "xqsm",
+   "dataset": "sim",
+   "track": "dev",
+   "date": "2026-11-20T20:20:02Z",
+   "run_id": "44810316568",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44810316568",
+   "qsmci_commit": "e08ac12f5041bd1c06aeff3dca979eb00d9ede73",
+   "thresholds": "204f55c25115",
+   "reference": {
+    "slug": "xqsm",
+    "image": "ghcr.io/astewartau/qsm-ci/xqsm@sha256:f28dabe6f7f41db967133a022f3eb5205d2a2bbb5fab78117d58b1fb84b26444",
+    "digest": "sha256:f28dabe6f7f41db967133a022f3eb5205d2a2bbb5fab78117d58b1fb84b26444"
+   },
+   "candidate": {
+    "slug": "xqsm-qsmrs"
+   },
+   "qsmrs": {
+    "ref": "main",
+    "commit": null,
+    "version": null
+   },
+   "qsmxt": {
+    "ref": "main",
     "commit": null
    },
    "result": "error",
