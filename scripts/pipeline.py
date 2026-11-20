@@ -69,12 +69,30 @@ JOBS = max(1, int(os.environ.get("QSM_CI_JOBS", "4")))
 
 
 def _pmap(items, fn):
-    """Apply fn to each item, up to JOBS at a time, preserving input order. fn must handle its own
-    errors (return a value, never raise) so one bad task can't sink the batch."""
+    """Apply fn to each item, up to JOBS at a time, YIELDING each result as soon as its task
+    finishes (completion order, not input order). fn must handle its own errors (return a value,
+    never raise) so one bad task can't sink the batch.
+
+    It yields rather than returns a list because every caller appends the results to a RunsFile,
+    which flushes per row: a CI job killed at its wall-clock cap (or cancelled) must already have
+    every finished row on disk. It used to return `list(ex.map(...))`, so a stage's rows reached the
+    runs file only when the WHOLE stage was done: f-whqsm (score run 44438127054) scored 28 of its
+    108 composed cells in 6 h, hit the cap mid-stage and published none of them. Completion order,
+    not input order, so one slow task cannot hold back rows that finished after it.
+
+    On early exit (the consumer stops, or KeyboardInterrupt), tasks not yet started are cancelled;
+    running ones are waited for, as before."""
+    items = list(items)
     if JOBS <= 1 or len(items) <= 1:
-        return [fn(x) for x in items]
-    with _cf.ThreadPoolExecutor(max_workers=JOBS) as ex:
-        return list(ex.map(fn, items))
+        for x in items:
+            yield fn(x)
+        return
+    ex = _cf.ThreadPoolExecutor(max_workers=JOBS)
+    try:
+        for fut in _cf.as_completed([ex.submit(fn, x) for x in items]):
+            yield fut.result()
+    finally:
+        ex.shutdown(wait=True, cancel_futures=True)
 
 # Stage graph / artifact tables: STAGES, ARTIFACT_FILE, ARTIFACT_KIND are imported once from
 # qsm_ci.stages (top of file) — single source of truth, checked against stages.yml by
