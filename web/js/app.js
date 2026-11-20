@@ -11,6 +11,8 @@
 })();
 
 const GH = "https://github.com/QSMxT/QSM-CI";
+// Stages pipeline.py does not score (qsm_ci.stages.scorable is False): no metric set for their output.
+const UNSCORED_STAGES = new Set(["brain-extraction"]);
 
 // ---- theme (dark mode) ------------------------------------------------------
 function applyTheme() {
@@ -365,6 +367,9 @@ async function loadRuns() {
   // the stored slug, which omits "gt"); non-pipeline combos (χ-separation) have no +-name and pass through.
   const nm = new Map(algos.map((a) => [a.slug, a.name || a.slug]));
   const disp = (slug) => nm.get(slug) || slug;
+  // Stages the scorer cannot score (brain-extraction: its output IS the mask) never get a metric, so
+  // their rows are only ever DNF. pipeline.py no longer runs them; this drops the rows already stored.
+  runs = runs.filter((r) => !UNSCORED_STAGES.has(r.stage));
   // A method flagged `hidden: true` in its algorithm.yml (a retired/parked submission — e.g. amp-pe,
   // whose original MATLAB build is superseded by the Rust port) keeps its stored results in index.json
   // so it can be revived, but is dropped from every results surface. Hide a run if it IS that method
