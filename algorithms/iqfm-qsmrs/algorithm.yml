@@ -35,7 +35,7 @@ license: 'MIT (QSM.rs); the weights keep the original''s terms: See repository (
 # The weights are QSM.rs's ONNX exports (qsmxt/qsm-onnx-weights), baked into the image with
 # algorithms/_qsmxt/models.Dockerfile, since a submission runs with no network.
 # `qsmxt bgremove iqfm` is in QSMxT from v11.0.0 (QSMxT/QSMxT#460).
-image: ghcr.io/astewartau/qsm-ci/qsmxt@sha256:984411644a17600b2dea0582ad290da76b68b74a4ed2ab0077ecc80f67dd4b21   # v12.1.0-models-1
+image: ghcr.io/astewartau/qsm-ci/qsmxt@sha256:29042176474473222df5982e1701be0ea54093b8291953c2512d054dac2f989d   # v12.2.0-models-1
 run: bash run.sh
 parameters:
 - name: echo_weighting

@@ -6,18 +6,18 @@ IN="${1:-/input}"; OUT="${2:-/output}"
 # is Laplacian-unwrapped on its own (Schofield & Zhu; `--laplacian-solver dct`, the default), then
 # the echoes are combined into a B0 estimate by the phase-SNR-weighted average
 # (`--b0-estimation weighted-avg`, `--b0-weight-type phase-snr`, the default). Writes the total
-# field in ppm. No phase-offset removal or bipolar correction.
+# field in ppm. No bipolar correction.
 #
 # Phase offsets: since QSMxT v12.2.0, `fieldmap laplacian` removes them first by default
-# (MCPC-3D-S, `--phase-offset-removal`). This entry keeps them in (`phase_offset_removal: false`):
-# the `laplacian` parity pair's reference, QSM.jl's Laplacian unwrap, removes none, and the bridge
-# datasets' parity pairs chain their inputs from this method with its defaults. Earlier qsmxt
-# releases have no such flag and never removed offsets with Laplacian unwrap, so the default is
-# passed only where `--help` lists it; an explicit `--set phase_offset_removal=...` is always passed.
+# (MCPC-3D-S, `--phase-offset-removal`), and so does this entry (`phase_offset_removal: true`):
+# QSM-CI scores methods as QSMxT runs them. Earlier qsmxt releases have no such flag and never
+# removed offsets with Laplacian unwrap. An explicit `--set phase_offset_removal=...` is always
+# passed on: the `laplacian` parity pair sets it false (`candidate_set`), as QSM.jl's Laplacian
+# unwrap removes none, and so do the STI Suite and QSMART repro variants.
 
 # Parameter overrides (qsm-ci run --set NAME=VALUE) arrive as /input/config.json. Unset, the
-# command runs QSMxT's defaults (DCT solve, masked phase, phase-SNR echo weights), except that the
-# phase offsets are kept in (above).
+# command runs QSMxT's defaults (DCT solve, masked phase, phase-SNR echo weights, phase offsets
+# removed on v12.2.0 and later).
 SET=""
 OFFSETS=""
 CFG="$IN/config.json"
@@ -30,11 +30,7 @@ if [ -f "$CFG" ]; then
   # `has`, not `//`: jq's `//` drops an explicit false.
   OFFSETS=$(jq -r 'if has("phase_offset_removal") then .phase_offset_removal | tostring else empty end' "$CFG")
 fi
-if [ -n "$OFFSETS" ]; then
-  SET="$SET --phase-offset-removal $OFFSETS"
-elif qsmxt fieldmap laplacian --help 2>/dev/null | grep -q -- '--phase-offset-removal'; then
-  SET="$SET --phase-offset-removal false"
-fi
+[ -n "$OFFSETS" ] && SET="$SET --phase-offset-removal $OFFSETS"
 # QSMART's echo fit also writes its reliability map R_0, beside the field, for QSMART to read.
 [ "${B0EST:-weighted-avg}" = "qsmart-echofit" ] && SET="$SET --reliability-output $OUT/reliability.nii.gz"
 
