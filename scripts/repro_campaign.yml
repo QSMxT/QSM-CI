@@ -126,7 +126,8 @@ variants:
   laplacian-qsmrs.sti:
     base: laplacian-qsmrs
     label: STI Suite
-    set: {solver: fft, fft_pad: 12, unmasked: true, weighting: tes}
+    # STI Suite and QSMART remove no phase offsets (QSMxT's sti./qsmart. rules turn it off too).
+    set: {solver: fft, fft_pad: 12, unmasked: true, weighting: tes, phase_offset_removal: false}
     chain:
       bfrs: [vsharp-qsmrs]
       dipoles: [ilsqr-qsmrs, star-qsmrs, star-qsmrs.sti]
@@ -134,7 +135,7 @@ variants:
   laplacian-qsmrs.qsmart:
     base: laplacian-qsmrs
     label: QSMART
-    set: {solver: mirror, unmasked: true, b0_estimation: qsmart-echofit}
+    set: {solver: mirror, unmasked: true, b0_estimation: qsmart-echofit, phase_offset_removal: false}
     chain:
       bfrs: []
       dipoles: []

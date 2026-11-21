@@ -9,7 +9,7 @@ then the echoes are combined into a single B0 estimate. The alternative to `rome
 - **Engine:** QSMxT / [QSM.rs](https://github.com/astewartau/QSM.rs) (Rust), CPU
 - **Reference:** Schofield & Zhu, *Optics Letters* 2003 ·
   doi:[10.1364/OL.28.001194](https://doi.org/10.1364/OL.28.001194)
-- **Image:** `ghcr.io/astewartau/qsm-ci/qsmxt:v12.1.0`, the shared QSMxT engine image
+- **Image:** `ghcr.io/astewartau/qsm-ci/qsmxt:v12.2.0`, the shared QSMxT engine image
   ([`algorithms/_qsmxt`](../_qsmxt))
 
 ## How QSM-CI runs it
@@ -28,5 +28,6 @@ qsm-ci run laplacian-qsmrs --phase phase.nii.gz --magnitude magnitude.nii.gz --m
 | `--laplacian-solver` | `dct` (default) | unweighted least-squares Poisson solve with Neumann boundaries (DCT); `fft` is the zero-padded FFT solve of STI Suite's `MRPhaseUnwrap` |
 | `--b0-estimation` | `weighted-avg` (passed explicitly) | per-echo field estimates averaged with per-voxel weights |
 | `--b0-weight-type` | `phase-snr` (default) | weights from the magnitude-derived phase SNR of each echo |
+| `--phase-offset-removal` | `true` (default, `phase_offset_removal`) | removes the echoes' phase offsets with MCPC-3D-S before unwrapping, as QSMxT does from v12.2.0; `false` (QSM.jl, STI Suite, QSMART) is set by the `laplacian` parity pair and the STI Suite and QSMART repro variants |
 
-Phase-offset removal and bipolar correction are not applied with Laplacian unwrapping.
+Bipolar correction is not applied.

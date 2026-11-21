@@ -25,7 +25,7 @@ authors:
 doi: 10.1016/j.neuroimage.2015.02.041
 code_url: https://github.com/astewartau/QSM.rs
 license: MIT
-image: ghcr.io/astewartau/qsm-ci/qsmxt@sha256:fb2ce810e33b377ed4fdd959ea32e6565c3e74bef92217651608dddb937efafd   # v12.1.0
+image: ghcr.io/astewartau/qsm-ci/qsmxt@sha256:8e34872865be8f8786b4452f06004857bf7f8a055029de7a030c7df6d7da35cd   # v12.2.0
 run: bash run.sh
 parameters:
   - name: iterations
@@ -34,7 +34,7 @@ parameters:
   # α are in TGV.jl's rad units at the scan's echo time (--te, default the first) and field strength
   # (qsmxt v11). Defaults from QSMxT v12.1 (astewartau/QSM.rs#478, QSMxT decision 172): α0 0.00636,
   # α1 0.00212, ratio 3 at 1.5x the strength of TGV.jl's regularization 2 (0.002 / 0.003), from our
-  # evaluation on the 2016 and 2019 challenge data; the pinned v12.1.0 image has them (v11 and
+  # evaluation on the 2016 and 2019 challenge data; the pinned v12.2.0 image has them (v11 and
   # v12.0 had TGV.jl's 0.002 / 0.003). v10's α were in ppm, so its tuned values do not carry over
   # (see tuning below).
   - name: alpha1
