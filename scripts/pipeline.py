@@ -1625,6 +1625,17 @@ def plan_composed(algos, focus, track, shard_i, shard_n, fieldmaps=None) -> Comp
                         composes=lambda d, tfk, bs: composes(d, tfk, bs) and in_chain(tfk, "dipoles", d["slug"]))
 
 
+def _skip_ids(args) -> set:
+    """Run ids listed in --skip-ids (blank lines and #-comments ignored); empty without the flag."""
+    path = getattr(args, "skip_ids", None)
+    if not path:
+        return set()
+    ids = {ln.strip() for ln in Path(path).read_text().splitlines()
+           if ln.strip() and not ln.lstrip().startswith("#")}
+    print(f"  composed  --skip-ids: {len(ids)} run id(s) already computed are left out")
+    return ids
+
+
 def run_composed(args, algos, gt_sources, gt, mask, shard_i, shard_n, runs: list) -> None:
     """Composed: (field-mapping) x bfr x dipole, chaining real outputs, plus spans.
 
@@ -1634,6 +1645,8 @@ def run_composed(args, algos, gt_sources, gt, mask, shard_i, shard_n, runs: list
     result rows to `runs` and flushes the index (unless writing a shard file) after the dipole stage,
     exactly as before. The selection/ownership arithmetic is plan_composed's."""
     fieldmaps = set(args.fieldmaps.split(",")) if getattr(args, "fieldmaps", None) else None
+    skip = _skip_ids(args)
+    sfx = getattr(args, "phantom_sfx", "")
     plan = plan_composed(algos, args.focus, args.track, shard_i, shard_n, fieldmaps)
     fmap, bfr, dipole, tf_spans, e2e_spans = plan.fmap, plan.bfr, plan.dipole, plan.tf_spans, plan.e2e_spans
     owns_col, owns_span = plan.owns_col, plan.owns_span
@@ -1667,9 +1680,13 @@ def run_composed(args, algos, gt_sources, gt, mask, shard_i, shard_n, runs: list
     # Each entry caches (localfield, valid-region mask, cumulative runtime s) so the dipole
     # inherits any erosion and the upstream field-mapping + BFR wall-clock time.
     lf_cache: dict[tuple, tuple] = {}
+    # --skip-ids: a column is needed only while one of its pipelines is still to run.
+    col_needed = lambda tfk, bs: not skip or any(
+        f"{tfk}~{bs}~{d['slug']}-cmp{sfx}" not in skip for d in dipole if plan.composes(d, tfk, bs))
     bfr_tasks = [(tfk, tfp, tf_mask, fm_rt, fm_trace, b)
                  for tfk, (tfp, tf_mask, fm_rt, fm_trace) in tf_sources.items()
-                 for b in bfr if owns_col(tfk, b["slug"])]  # --shard: only this shard's columns
+                 for b in bfr if owns_col(tfk, b["slug"])   # --shard: only this shard's columns
+                 and (emit_inter or col_needed(tfk, b["slug"]))]
     failed_bfr: dict[tuple, str] = {}       # (tfk, bfr slug) -> reason
     for res in _pmap(bfr_tasks, lambda task: do_bfr(task, args, gt_sources)):
         if isinstance(res, Failed):
@@ -1682,7 +1699,6 @@ def run_composed(args, algos, gt_sources, gt, mask, shard_i, shard_n, runs: list
     # Every pipeline an upstream DNF took down gets its own DNF row (reason = the upstream failure),
     # so a re-score REPLACES the previous score for that pipeline id instead of leaving it in
     # index.json as a stale "ok". Columns are enumerated exactly as the run stages below would have.
-    sfx = getattr(args, "phantom_sfx", "")
     upstream_dnf: list = []
     for tfk, why in failed_fm.items():
         reason = f"upstream field-mapping {tfk} DNF: {why}"
@@ -1712,6 +1728,7 @@ def run_composed(args, algos, gt_sources, gt, mask, shard_i, shard_n, runs: list
                 f"{tfk}~{bs}~{d['slug']}-cmp{sfx}", combo, combo,
                 "bfr+dipole" if tfk == "gt" else "field-mapping+bfr+dipole", "composed", args.track,
                 {"field_mapping": tfk, "bfr": bs, "dipole": d["slug"]}, reason=reason))
+    upstream_dnf = [r for r in upstream_dnf if r["id"] not in skip]   # never overwrite a done row
     if upstream_dnf:
         print(f"  composed  {len(upstream_dnf)} pipeline(s) recorded as DNF after an upstream failure")
         runs.extend(_stamp_phantom(upstream_dnf, getattr(args, "phantom", None)))
@@ -1726,7 +1743,8 @@ def run_composed(args, algos, gt_sources, gt, mask, shard_i, shard_n, runs: list
 
     # Stage 3 — dipole: invert each cached localfield with every dipole method.
     dip_tasks = [(tfk, b, d) for tfk in tf_sources for b in bfr
-                 if (tfk, b["slug"]) in lf_cache for d in dipole if plan.composes(d, tfk, b["slug"])]
+                 if (tfk, b["slug"]) in lf_cache for d in dipole if plan.composes(d, tfk, b["slug"])
+                 and f"{tfk}~{b['slug']}~{d['slug']}-cmp{sfx}" not in skip]
     for r in _pmap(dip_tasks, lambda task: do_dipole(task, args, gt_sources, gt, mask, lf_cache)):
         runs.extend(_stamp_phantom([r], getattr(args, "phantom", None)))
     if not args.runs_out:
@@ -1736,6 +1754,8 @@ def run_composed(args, algos, gt_sources, gt, mask, shard_i, shard_n, runs: list
     # shard's owned (source, span) columns only); end-to-end spans run once from GT phase.
     span_tasks = [(s, tfk) for tfk in tf_sources for s in tf_spans if owns_span(tfk, s["slug"])]
     span_tasks += [(s, "gt") for s in e2e_spans]
+    span_id = lambda s, tfk: (f"{s['slug']}-cmp" if tfk == "gt" else f"{tfk}~{s['slug']}-cmp") + sfx
+    span_tasks = [(s, tfk) for s, tfk in span_tasks if span_id(s, tfk) not in skip]
     for r in _pmap(span_tasks, lambda t: do_span(t, args, gt_sources, gt, mask, tf_sources)):
         runs.extend(_stamp_phantom([r], getattr(args, "phantom", None)))
 
@@ -1939,6 +1959,10 @@ def main() -> None:
                     help="write ONLY the runs produced by this invocation to this JSON file, instead "
                          "of merging into results/index.json. For sharded scoring: each shard writes "
                          "its own runs; a merge step combines them into index.json.")
+    ap.add_argument("--skip-ids", type=Path, default=None,
+                    help="file of run ids (one per line) already computed: the composed matrix leaves "
+                         "those pipelines out, and a bfr column whose pipelines are all listed is not "
+                         "computed. For a campaign run in tranches (scripts/repro_slurm/README.md).")
     ap.add_argument("--work", type=Path, default=ROOT / ".work")
     ap.add_argument("--emit-volumes", action="store_true",
                     help="write recon/truth/error NIfTIs per run under results/<id>/ for the web viewer")
