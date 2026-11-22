@@ -208,7 +208,8 @@ three **private** components of `gkemr` (`vkyr2`, `wmzr3`, `sf65v`; OSF caps a p
 own `osf_project`, so fetching them needs `OSF_TOKEN` (CI passes `secrets.OSF_TOKEN`). Moving a file
 between components keeps its file id, so
 [`scripts/osf_harmonization_files.json`](../scripts/osf_harmonization_files.json) (each upload's file
-id) is unchanged.
+id) is unchanged. Its EMTP keys use the site-numbered acquisition ids; the files on OSF (a read-only
+copy since the inputs moved to Hugging Face) keep the names they were uploaded under.
 
 The MGH pilot was packed from the raw MGH export by
 [`scripts/pack_harmonization.py`](../scripts/pack_harmonization.py) — which recovers the echo times
