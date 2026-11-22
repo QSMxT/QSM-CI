@@ -12,7 +12,7 @@ the shared harness [`fidelity/matlab/`](../../../fidelity/matlab/README.md) with
 - **Sources:** MEDI toolbox 2024.11.26 (`Fit_ppm_complex.m`, `unwrapPhase.m`, `arlo.m`, and `mexUnwrap.c` compiled with R2023b's `mex` and gcc; BUILD.md).
 - **Cases:**
   - `sim`: QSM-CI's in-silico head (QSM Challenge 2.0 simulation: 7 T, 4 echoes 4/12/20/28 ms, 1 mm, 164×205×205), its contract inputs.
-  - `invivo`: one EMTP travelling-head acquisition (`s005001-cbic-prisma-bridge-run1`: 3 T, 5 echoes 5–29 ms, 1 mm, 184×256×128), its contract inputs.
+  - `invivo`: one EMTP travelling-head acquisition (`s005001-site5-prisma-bridge-run1`: 3 T, 5 echoes 5–29 ms, 1 mm, 184×256×128), its contract inputs.
 
 ## Result: identical
 

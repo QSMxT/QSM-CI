@@ -12,7 +12,7 @@ the shared harness [`fidelity/matlab/`](../../../fidelity/matlab/README.md) with
 - **Sources:** github.com/mglambert/HD-QSM c456a94 (`HDQSM.m`); FANSI-toolbox 93044a3 (`dipole_kernel_angulated.m`).
 - **Cases:**
   - `sim`: QSM-CI's in-silico head (QSM Challenge 2.0 simulation: 7 T, 4 echoes, 1 mm, 164×205×205), its ground-truth local field and its magnitude.
-  - `invivo`: one EMTP travelling-head acquisition (`s005001-cbic-prisma-bridge-run1`: 3 T, 5 echoes, 1 mm, 184×256×128), with the local field and eroded mask derived once with QSMxT v10.0.0 (ROMEO, V-SHARP; `fidelity/matlab/make_cases.sh`) and its magnitude.
+  - `invivo`: one EMTP travelling-head acquisition (`s005001-site5-prisma-bridge-run1`: 3 T, 5 echoes, 1 mm, 184×256×128), with the local field and eroded mask derived once with QSMxT v10.0.0 (ROMEO, V-SHARP; `fidelity/matlab/make_cases.sh`) and its magnitude.
 
 ## Result: identical
 

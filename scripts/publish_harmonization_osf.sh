@@ -20,7 +20,7 @@
 #
 # [acq-glob] limits the upload to matching acquisitions, e.g. 's0*' for the EMTP traveling heads
 # (default: every acquisition). The pilot's raw exports are uploaded only when that raw tree is
-# present; the EMTP raw drop stays with its provider (KKI) and only its manifest is uploaded.
+# present; the EMTP raw drop stays with its provider and only its manifest is uploaded.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 

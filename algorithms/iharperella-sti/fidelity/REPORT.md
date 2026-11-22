@@ -13,7 +13,7 @@ the shared harness [`fidelity/matlab/`](../../../fidelity/matlab/README.md) with
 - **Sources:** STI Suite 3.0 `Core_Functions_P` (`iHARPERELLA.p` and the helpers it calls: `SMVFiltering`, `ball3D`, `fftnc`, `ifftnc`).
 - **Cases:**
   - `sim`: QSM-CI's in-silico head (QSM Challenge 2.0 simulation: 7 T, 1 mm, 164×205×205), its ground-truth total field.
-  - `invivo`: one EMTP travelling-head acquisition (`s005001-cbic-prisma-bridge-run1`: 3 T, 1 mm, 184×256×128), the total field derived once with QSMxT v10.0.0 (ROMEO; `fidelity/matlab/make_cases.sh`).
+  - `invivo`: one EMTP travelling-head acquisition (`s005001-site5-prisma-bridge-run1`: 3 T, 1 mm, 184×256×128), the total field derived once with QSMxT v10.0.0 (ROMEO; `fidelity/matlab/make_cases.sh`).
 
 ## Result: identical
 

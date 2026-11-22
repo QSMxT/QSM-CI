@@ -23,7 +23,7 @@ is the shared harness [`fidelity/matlab/`](../../../fidelity/matlab/README.md) w
   `v1` `sha256:d1f5e3ecb92c9153983c5d82c135cf50e451387a21d5814bdfdd10edc238a5d5`.
 - **Cases:**
   - `chisep-mc`: QSM-CI's default χ-separation phantom (7 T, 8 echoes, 1 mm, 164×205×205).
-  - `invivo`: one EMTP travelling-head acquisition (`s005001-cbic-prisma-bridge-run1`: 3 T, 5 echoes, 1 mm, 184×256×128), with the local field, eroded mask, χ and R2′ (0.52·R2*) derived once with QSMxT v10.0.0 (`fidelity/matlab/make_cases.sh`).
+  - `invivo`: one EMTP travelling-head acquisition (`s005001-site5-prisma-bridge-run1`: 3 T, 5 echoes, 1 mm, 184×256×128), with the local field, eroded mask, χ and R2′ (0.52·R2*) derived once with QSMxT v10.0.0 (`fidelity/matlab/make_cases.sh`).
 
 ## Result: identical
 

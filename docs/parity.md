@@ -216,7 +216,7 @@ purpose (a new original image, or a QSM.rs change that is meant to move the resu
 
 Limits are measured on the development track. A release older than the fixes they were measured
 with fails them, which is what the released track should show: QSMxT v10.0.0 (QSM.rs v0.39.0)
-predates the QSMART fixes (sim NRMSE 65.9 %, KKI 133.8 %) and most ports' parity fixes.
+predates the QSMART fixes (sim NRMSE 65.9 %, EMTP 133.8 %) and most ports' parity fixes.
 
 ## Recorded results
 

@@ -315,10 +315,10 @@ def _pm(th, alg, ds):
 
 
 def test_plan_matrix():
-    th = {"a": {"enabled": True, "datasets": {"sim": {}, "kki": {}}},
+    th = {"a": {"enabled": True, "datasets": {"sim": {}, "invivo": {}}},
           "b": {"enabled": False, "datasets": {"sim": {}}},
           "c": {"enabled": False}}
-    assert _pm(th, "enabled", "configured") == [("a", "kki"), ("a", "sim")]
+    assert _pm(th, "enabled", "configured") == [("a", "invivo"), ("a", "sim")]
     assert _pm(th, "b", "sim") == [("b", "sim")]
     assert _pm(th, "a", "other") == [("a", "other")]
     with pytest.raises(SystemExit):
@@ -345,7 +345,7 @@ def test_plan_matrix_validates_before_anything_runs():
     with pytest.raises(SystemExit, match="shares one algorithm"):
         parity.plan_matrix(th, "a,b", "configured", manifests=m, datasets={"sim": {}})
     with pytest.raises(SystemExit, match="not in scripts/datasets.json"):
-        parity.plan_matrix(th, "a", "kki", manifests=m, datasets={"sim": {}})
+        parity.plan_matrix(th, "a", "invivo", manifests=m, datasets={"sim": {}})
 
 
 def test_real_matrix_routes_runners():
@@ -384,17 +384,17 @@ def test_plan_matrix_flags_pairs_that_need_the_weights():
 
 
 def test_side_set_dataset_wins():
-    cfg = {"reference_set": {"pad": -1, "a": 1}, "datasets": {"kki": {"reference_set": {"a": 2}}}}
-    assert parity.side_set(cfg, "reference", "kki") == {"pad": -1, "a": 2}
+    cfg = {"reference_set": {"pad": -1, "a": 1}, "datasets": {"invivo": {"reference_set": {"a": 2}}}}
+    assert parity.side_set(cfg, "reference", "invivo") == {"pad": -1, "a": 2}
     assert parity.side_set(cfg, "reference", "sim") == {"pad": -1, "a": 1}
     assert parity.side_set(cfg, "candidate", "sim") == {}
 
 
 def test_side_chain_prefix():
     cfg = {"reference": "r", "candidate": "c",
-           "datasets": {"kki": {"candidate_prefix": ["fm"]}}}
-    assert parity.side_chain(cfg, "candidate", "kki") == ["fm", "c"]
-    assert parity.side_chain(cfg, "reference", "kki") == ["r"]
+           "datasets": {"invivo": {"candidate_prefix": ["fm"]}}}
+    assert parity.side_chain(cfg, "candidate", "invivo") == ["fm", "c"]
+    assert parity.side_chain(cfg, "reference", "invivo") == ["r"]
     assert parity.side_chain(cfg, "candidate", "sim") == ["c"]
 
 
@@ -603,10 +603,10 @@ def test_run_side_sets_only_the_pairs_own_method(tmp_path, monkeypatch):
 
 def test_side_env_dataset_wins_and_is_strings():
     cfg = {"reference_env": {"A": 1, "B": "x"},
-           "datasets": {"kki": {"reference_env": {"A": "2"}}}}
-    assert parity.side_env(cfg, "reference", "kki") == {"A": "2", "B": "x"}
+           "datasets": {"invivo": {"reference_env": {"A": "2"}}}}
+    assert parity.side_env(cfg, "reference", "invivo") == {"A": "2", "B": "x"}
     assert parity.side_env(cfg, "reference", "sim") == {"A": "1", "B": "x"}
-    assert parity.side_env(cfg, "candidate", "kki") == {}
+    assert parity.side_env(cfg, "candidate", "invivo") == {}
 
 
 def test_run_side_passes_env_only_to_the_pairs_own_method(tmp_path, monkeypatch):
@@ -696,7 +696,7 @@ def test_compare_box_restricts_every_map_on_both_sides(tmp_path):
 
 def test_real_decompose_pair_crops_the_reference_and_the_comparison():
     cfg = parity.load_thresholds()["toolbox-pipeline-decompose"]
-    ph = "s005001-cbic-prisma-bridge-run1"
+    ph = "s005001-site5-prisma-bridge-run1"
     assert parity.side_env(cfg, "reference", ph) == {"DECOMPOSE_CROPBOX": "32"}
     assert parity.side_env(cfg, "candidate", ph) == {}
     assert parity.compare_box(cfg, ph) == 32
@@ -741,7 +741,7 @@ def test_qsmart_pair_feeds_the_originals_reliability(tmp_path, monkeypatch):
         return sp.CompletedProcess(argv, 1, "", "")
 
     monkeypatch.setattr(parity.subprocess, "run", fake)
-    for ds_key in ("sim", "s002001-kki-achieva-bridge-run1"):
+    for ds_key in ("sim", "s002001-site1-achieva-bridge-run1"):
         calls.clear()
         work = tmp_path / ds_key
         args = argparse.Namespace(thresholds=parity.THRESHOLDS, algorithm="qsmart", phantom=ds_key,
@@ -1073,13 +1073,13 @@ def _badge(th, recs, **kw):
 
 
 def test_badges_per_state():
-    two = {**CFG, "datasets": {"sim": CFG["datasets"]["sim"], "kki": CFG["datasets"]["sim"]}}
+    two = {**CFG, "datasets": {"sim": CFG["datasets"]["sim"], "invivo": CFG["datasets"]["sim"]}}
     sim = _rec(_parity_json(nrmse=0.326), date="2026-10-30T01:00:00Z")
-    kki = {**_rec(_parity_json(nrmse=0.05), date="2026-10-29T01:00:00Z", run_id="2"), "dataset": "kki"}
-    kki["thresholds"] = parity.thresholds_version(two, "kki")
+    invivo = {**_rec(_parity_json(nrmse=0.05), date="2026-10-29T01:00:00Z", run_id="2"), "dataset": "invivo"}
+    invivo["thresholds"] = parity.thresholds_version(two, "invivo")
     sim["thresholds"] = parity.thresholds_version(two, "sim")
     # current: the worst NRMSE over the datasets, dated by the oldest check
-    assert _badge({"p": two}, [sim, kki]) == [{"kind": "current", "message": "0.33 % · 29 Oct",
+    assert _badge({"p": two}, [sim, invivo]) == [{"kind": "current", "message": "0.33 % · 29 Oct",
                                                "color": "brightgreen"}]
     same = {**sim, "metrics": {"chimap": {**sim["metrics"]["chimap"], "nrmse": 0.0, "max_abs": 0.0}}}
     assert _badge({"p": CFG}, [{**same, "thresholds": parity.thresholds_version(CFG, "sim")}])[0][
@@ -1088,7 +1088,7 @@ def test_badges_per_state():
             "thresholds": parity.thresholds_version(CFG, "sim")}
     assert _badge({"p": CFG}, [tiny])[0]["message"] == "< 0.001 % · 30 Oct"
     lock = lambda c: {"ahead_by": 1, "files": ["Cargo.lock"]}   # noqa: E731
-    assert _badge({"p": two}, [sim, kki], changes=lock)[0] == {
+    assert _badge({"p": two}, [sim, invivo], changes=lock)[0] == {
         "kind": "stale", "message": "stale · 29 Oct", "color": "orange"}
     bad = _rec(_parity_json(ok=False, nrmse=3), date="2026-10-28T00:00:00Z")
     assert _badge({"p": CFG}, [bad])[0] == {"kind": "failing", "message": "failing · 28 Oct",
@@ -1163,7 +1163,7 @@ def test_report_and_record_cli(tmp_path):
     pj.update(algorithm="qsmart", phantom="sim")
     (arts / "parity.json").write_text(json.dumps(pj))
     matrix = json.dumps([{"algorithm": "qsmart", "phantom": "sim"},
-                         {"algorithm": "qsmart", "phantom": "s002001-kki-achieva-bridge-run1"}])
+                         {"algorithm": "qsmart", "phantom": "s002001-site1-achieva-bridge-run1"}])
     recs, summ = tmp_path / "recs.json", tmp_path / "summary.md"
     assert parity.main(["--thresholds", str(th), "report", "--artifacts", str(tmp_path / "arts"),
                         "--matrix", matrix, "--date", "2026-10-28T00:00:00Z", "--run-id", "7",
@@ -1184,7 +1184,7 @@ def test_run_summary_passes_on_the_pairs_it_checked_against_one_commit():
     # A pair left out is listed, not a failure: a release reruns only the pairs that changed.
     s = parity.render_run_summary([ok], ["p", "other"])
     assert "Checked pairs: passed" in s and "did not check: `other`" in s
-    other = {**ok, "dataset": "kki", "qsmrs": {"commit": "f" * 40}}
+    other = {**ok, "dataset": "invivo", "qsmrs": {"commit": "f" * 40}}
     assert "Checked pairs: not passed" in parity.render_run_summary([ok, other], ["p"])
 
 

@@ -47,7 +47,7 @@ on:
         description: "pairs in parity/thresholds.yml, comma-separated (e.g. qsmart,ilsqr,tkd), and/or 'enabled' (every enabled pair) / 'all-configured' (every pair with a dataset, enabled or not)"
         default: "enabled"
       dataset:
-        description: "scripts/datasets.json keys, comma-separated (e.g. sim, s002001-kki-achieva-bridge-run1), or 'configured' for every dataset each pair has an entry for"
+        description: "scripts/datasets.json keys, comma-separated (e.g. sim, s002001-site1-achieva-bridge-run1), or 'configured' for every dataset each pair has an entry for"
         default: "configured"
       baseline:
         description: "true = measure and print suggested limits; never fail on them"

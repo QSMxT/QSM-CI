@@ -3,7 +3,7 @@
 
 The `repro` track reconstructs each subject from many acquisitions (scanner x protocol x run), in
 two independent cohorts (the registry's `group`, see scripts/repro_format.py REPRO_GROUPS): the EMTP
-traveling heads (six subjects, KKI Philips plus GE/Siemens/Philips sessions at other sites) and the
+traveling heads (six subjects, home-site Philips plus GE/Siemens/Philips sessions at other sites) and the
 MGH pilot (one subject, two Siemens scanners). There is no truth map; the question is how
 reproducible each pipeline's χ values are across acquisitions of the same subject — the analysis Marta Lancione ran with two pipelines (per-ROI orthogonal ax+b fits,
 Bland-Altman agreement), generalized over the whole QSM-CI combination matrix.
@@ -505,7 +505,7 @@ def comparison_plan(acqs: dict[str, dict]) -> list[tuple[str, str, str, str, str
     for subj in subjects:
         mine = [a for a in acqs.values() if a["subject"] == subj]
         # Registry order, not alphabetical: it keeps the pilot's prisma-vs-cima direction and puts
-        # each traveling head's home (KKI) session first, so slopes read "other scanner vs home".
+        # each traveling head's home (Site 1) session first, so slopes read "other scanner vs home".
         scanners = list(dict.fromkeys(a["scanner"] for a in mine))
         protocols = sorted({a["protocol"] for a in mine})
         runs = sorted({a["run"] for a in mine})
