@@ -31,7 +31,10 @@ import shutil
 import signal
 import subprocess
 import sys
+import threading
 import time
+from collections import deque
+from contextlib import contextmanager
 from pathlib import Path
 
 import yaml
@@ -93,6 +96,66 @@ def _pmap(items, fn):
             yield fut.result()
     finally:
         ex.shutdown(wait=True, cancel_futures=True)
+
+# Memory: a method whose container needs most of the runner declares `memory_gb:` (its measured peak,
+# GB) in algorithm.yml, and its container then starts only when the declared needs of the containers
+# already running leave room for it (any other run counts DEFAULT_RUN_GB). Without this, two containers
+# of a hosted job (QSM_CI_JOBS=2, 16 GB) could both be heavy: fit-ppm-complex-qsmrs~bfrnet-qsmrs cells
+# were OOM-killed (exit 137) with BFRnet (QSM.rs) at a 12.4 GB peak beside another run. On a hosted
+# runner BFRnet now runs alone; on the 31 GB self-hosted box it still shares. A container always
+# starts when nothing else is running, and waiters start in arrival order, so a heavy run is never
+# starved by a stream of light ones. QSMCI_MEM_GB overrides the budget (default: the machine's
+# memory less RESERVE_GB for the scorer and the OS).
+DEFAULT_RUN_GB = 4.0
+RESERVE_GB = 1.5
+
+
+def memory_budget_gb() -> float:
+    env = os.environ.get("QSMCI_MEM_GB")
+    if env:
+        return float(env)
+    try:
+        for line in Path("/proc/meminfo").read_text().splitlines():
+            if line.startswith("MemTotal:"):
+                return int(line.split()[1]) * 1024 / 1e9 - RESERVE_GB
+    except (OSError, ValueError, IndexError):
+        pass
+    return float("inf")
+
+
+def memory_need_gb(algo: dict) -> float:
+    v = algo.get("memory_gb")
+    return float(v) if isinstance(v, (int, float)) and not isinstance(v, bool) and v > 0 else DEFAULT_RUN_GB
+
+
+class MemoryGate:
+    """Admits containers while their declared memory fits the budget (see DEFAULT_RUN_GB), FIFO."""
+
+    def __init__(self, budget_gb: float):
+        self.budget, self.used, self.running = budget_gb, 0.0, 0
+        self._cv, self._queue = threading.Condition(), deque()
+
+    @contextmanager
+    def hold(self, algo: dict):
+        gb, me = memory_need_gb(algo), object()
+        with self._cv:
+            self._queue.append(me)
+            while not (self._queue[0] is me and (self.running == 0 or self.used + gb <= self.budget)):
+                self._cv.wait()
+            self._queue.popleft()
+            self.used += gb
+            self.running += 1
+            self._cv.notify_all()
+        try:
+            yield
+        finally:
+            with self._cv:
+                self.used -= gb
+                self.running -= 1
+                self._cv.notify_all()
+
+
+MEMORY_GATE = MemoryGate(memory_budget_gb())
 
 # Stage graph / artifact tables: STAGES, ARTIFACT_FILE, ARTIFACT_KIND are imported once from
 # qsm_ci.stages (top of file) — single source of truth, checked against stages.yml by
@@ -523,6 +586,9 @@ def discover_algorithms(track: str = "sim", phantom: "str | None" = None,
             # GRE-only grid only composes it on phantoms at that field strength (run_chisep_composed),
             # and its isolated run is still scored everywhere.
             "field_strength": _field_strength(doc, d.name),
+            # Optional measured peak memory (GB) of one run: MEMORY_GATE keeps a heavy container from
+            # sharing a runner it does not fit on beside another.
+            "memory_gb": doc.get("memory_gb"),
         })
     return algos
 
@@ -603,6 +669,12 @@ def run_algo(algo: dict, input_dir: Path, output_dir: Path, runner: str = "local
     # explicit overrides still win over them.
     if algo.get("preset"):
         overrides = {**algo["preset"], **(overrides or {})}
+    with MEMORY_GATE.hold(algo):   # waits (untimed) until this container's memory fits beside the others
+        return _run_algo(algo, input_dir, output_dir, runner, overrides)
+
+
+def _run_algo(algo: dict, input_dir: Path, output_dir: Path, runner: str,
+              overrides: "dict | None") -> float:
     limit = timeout_s(algo.get("timeout_minutes"))
     t0 = time.time()
     if runner != "local":
@@ -1053,6 +1125,60 @@ def flush_index(runs):
     merged = merge_index.upsert(existing, runs)
     idx.write_text(json.dumps({"generated": None, "runs": merged}, indent=2) + "\n")
     return len(merged)
+
+
+def load_index_runs(path: "Path | None" = None) -> list:
+    try:
+        return json.loads((path or ROOT / "results" / "index.json").read_text()).get("runs") or []
+    except (OSError, ValueError):
+        return []
+
+
+# --resume: paths whose change can move ANY score (the scorer, the stage contract, the container CLI,
+# the phantom registry, methods' shared build files). A row scored before such a change is not reused.
+RESUME_SCORER_PATHS = ("eval/", "qsm_ci/", "stages.yml", "scripts/pipeline.py", "scripts/scoring.py",
+                       "scripts/publish_volumes.py", "scripts/datasets.json", "algorithms/_")
+
+
+def _git_changed(base: str, head: str) -> "set[str] | None":
+    """Files changed in base..head, or None when git cannot tell (not an ancestor, not in history)."""
+    try:
+        if subprocess.run(["git", "merge-base", "--is-ancestor", base, head], cwd=ROOT,
+                          capture_output=True, timeout=60).returncode != 0:
+            return None
+        r = subprocess.run(["git", "diff", "--name-only", base, head], cwd=ROOT, capture_output=True,
+                           text=True, timeout=120)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return set(r.stdout.split()) if r.returncode == 0 else None
+
+
+def row_members(row: dict) -> set:
+    """Every method a composed row ran: its combo's stages and its slug's parts (a span row's combo
+    names only its field map), without the ground-truth "gt" start."""
+    combo = row.get("combo") or {}
+    return ({str(v) for v in combo.values() if v} | set(str(row.get("slug") or "").split("+"))) - {"gt", ""}
+
+
+def fresh_cell_ids(rows: list, head: str = "HEAD", changed=_git_changed) -> frozenset:
+    """--resume: ids of composed rows that re-running would only reproduce. A row is fresh when it
+    scored OK in CI at a commit (`ci_sha`) that is an ancestor of `head`, and nothing it depends on
+    changed since: no RESUME_SCORER_PATHS file, no file under algorithms/<m>/ for any method m it ran
+    (which pins each method's image, run.sh and parameters). A cell a cancelled or capped job already
+    published is then not run again when the next run re-plans that job. Anything git cannot answer
+    counts as stale, so the worst case is re-running a cell, never keeping a stale score."""
+    by_sha: dict = {}
+    for r in rows:
+        if r.get("mode") == "composed" and r.get("status") == "ok" and r.get("ci_sha") and r.get("id"):
+            by_sha.setdefault(r["ci_sha"], []).append(r)
+    fresh = set()
+    for sha, rs in by_sha.items():
+        files = changed(sha, head)
+        if files is None or any(f.startswith(RESUME_SCORER_PATHS) for f in files):
+            continue
+        touched = {f.split("/")[1] for f in files if f.startswith("algorithms/") and f.count("/") >= 2}
+        fresh |= {r["id"] for r in rs if not (row_members(r) & touched)}
+    return frozenset(fresh)
 
 
 # ---------------------------------------------------------------------------------------------------
@@ -1520,17 +1646,42 @@ class ComposedPlan:
     """What run_composed will run, and which of it THIS shard owns — see plan_composed."""
 
     def __init__(self, *, fmap, bfr, dipole, tf_spans, e2e_spans, no_gt, gt_source, fm_keys, col_owner,
-                 span_owner, owns_col, owns_span, composes=composes):
+                 span_owner, owns_col, owns_span, composes=composes, cells=None, skipped=0):
         self.fmap, self.bfr, self.dipole = fmap, bfr, dipole
         self.tf_spans, self.e2e_spans = tf_spans, e2e_spans
         self.no_gt, self.fm_keys = no_gt, fm_keys
         self.gt_source = gt_source   # the ground-truth total field is one of this run's sources
         self.col_owner, self.span_owner = col_owner, span_owner
         self.owns_col, self.owns_span = owns_col, owns_span
-        self.composes = composes   # composes(), narrowed by any campaign chain
+        self.composes = composes   # composes(), narrowed by any campaign chain and --cells / --resume
+        self.cells = cells         # every composed cell this job runs, in --cells order (before its range is taken)
+        self.skipped = skipped     # cells of this part --resume found already scored and fresh
 
 
-def plan_composed(algos, focus, track, shard_i, shard_n, fieldmaps=None) -> ComposedPlan:
+def parse_cells(spec: "str | None") -> "tuple[int, int] | None":
+    """--cells k/n → (k, n), 0 ≤ k < n."""
+    if not spec:
+        return None
+    k, _, n = str(spec).partition("/")
+    k, n = int(k), int(n)
+    if not (n >= 1 and 0 <= k < n):
+        raise SystemExit(f"--cells {spec}: expected k/n with 0 <= k < n")
+    return k, n
+
+
+def cell_range(n_cells: int, k: int, n: int) -> range:
+    """Part k of n contiguous, near-equal ranges over n_cells cells (score_plan.cell_range mirrors it)."""
+    return range(k * n_cells // n, (k + 1) * n_cells // n)
+
+
+def cell_id(cell: tuple, sfx: str = "") -> str:
+    """A composed cell's run id: ("cell", tfk, bfr, dipole) as do_dipole names it, ("span", tfk, span)
+    as do_span does."""
+    return (f"{cell[1]}~{cell[2]}~{cell[3]}-cmp{sfx}" if cell[0] == "cell" else f"{cell[1]}~{cell[2]}-cmp{sfx}")
+
+
+def plan_composed(algos, focus, track, shard_i, shard_n, fieldmaps=None, cells=None,
+                  skip=frozenset(), sfx: str = "") -> ComposedPlan:
     """The pure half of run_composed: which submissions enter the matrix (after --focus pinning), the
     total-field sources, the stable COLUMN ordering the --shard partition runs over, and which
     columns this shard owns. No I/O, so tests can check the ownership arithmetic directly.
@@ -1542,7 +1693,23 @@ def plan_composed(algos, focus, track, shard_i, shard_n, fieldmaps=None) -> Comp
     `fmap` (field-mapping methods) and `e2e_spans` come back already pruned to this shard: a field
     map runs only in shards that own a column consuming it, and end-to-end spans are round-robined
     like isolated runs. `col_owner` / `span_owner` keep the FULL ordering (every shard must agree on
-    it) and `owns_col(tfk, bfr_slug)` / `owns_span(tfk, span_slug)` answer for this shard."""
+    it) and `owns_col(tfk, bfr_slug)` / `owns_span(tfk, span_slug)` answer for this shard.
+
+    A field-mapping focus composes only its OWN field map: the ground-truth columns (gt~bfr~dipole)
+    do not involve it and belong to the bfr / dipole methods' jobs. It used to run them too, doubling
+    every field-mapping focus job (laplacian-qsmrs: 36 columns instead of 18).
+
+    `cells` = (k, n) (--cells k/n, score_plan.py's split of a focus job too long for one runner):
+    after the --fieldmaps / --shard selection, list this job's composed cells in a stable order
+    (every (source, bfr, dipole) column-major, then every (source, bfr+dipole span)) and
+    keep the k-th of n contiguous ranges. Contiguous keeps a part's cells in few columns, so each
+    part computes few field maps and local fields; the union of the n parts is the whole job. End-to-
+    end spans stay with part 0 (score_plan gives the isolated runs to part 0 too).
+
+    `skip` (--resume): ids of cells already scored at an up-to-date commit (fresh_cell_ids). They are
+    dropped AFTER the range split, so the parts of one run partition the same list whatever any of
+    them skips, and a column / field map whose cells are all skipped is not computed. `sfx` is the
+    phantom's run-id suffix, to match those ids."""
     def _owns(index):
         return shard_owns(index, shard_i, shard_n)
 
@@ -1568,6 +1735,7 @@ def plan_composed(algos, focus, track, shard_i, shard_n, fieldmaps=None) -> Comp
             bfr, spans = [f], []
         elif "totalfield" in f["produces"]:      # a field-mapping — this map through the matrix
             fmap, spans = [f], []
+            fieldmaps = {f["slug"]} if fieldmaps is None else set(fieldmaps) - {"gt"}
         elif f["stage"] in ("chi-separation", "r2prime-generation"):
             # χ-separation / R2′-generation never enter the QSM matrix; their GRE-only combos are
             # run_chisep_composed's job (called instead of this on chisep-track phantoms).
@@ -1619,10 +1787,34 @@ def plan_composed(algos, focus, track, shard_i, shard_n, fieldmaps=None) -> Comp
         fmap = [f for f in fmap if f["slug"] in needed_fm]
         e2e_spans = [s for idx, s in enumerate(e2e_spans) if _owns(idx)]  # == shard_partition
 
+    composes_ = lambda d, tfk, bs: composes(d, tfk, bs) and in_chain(tfk, "dipoles", d["slug"])  # noqa: E731
+    # Every composed cell this job runs, in the stable order --cells splits (score_plan mirrors it).
+    order = [("cell", tfk, bs, d["slug"]) for (tfk, bs) in col_owner if owns_col(tfk, bs)
+             for d in sorted(dipole, key=lambda x: x["slug"]) if composes_(d, tfk, bs)]
+    order += [("span", tfk, ss) for (tfk, ss) in span_owner if owns_span(tfk, ss)]
+    skipped = 0
+    if cells is not None or skip:
+        keep = order
+        if cells is not None:
+            keep = [order[i] for i in cell_range(len(order), *cells)]
+            if cells[0] != 0:
+                e2e_spans = []
+        kept = [c for c in keep if cell_id(c, sfx) not in skip]
+        skipped = len(keep) - len(kept)
+        own_cells = {c[1:] for c in kept if c[0] == "cell"}
+        own_spans = {c[1:] for c in kept if c[0] == "span"}
+        own_cols = {(tfk, bs) for (tfk, bs, _) in own_cells}
+        owns_col = lambda tfk, bs: (tfk, bs) in own_cols  # noqa: E731
+        owns_span = lambda tfk, ss: (tfk, ss) in own_spans  # noqa: E731
+        base = composes_
+        composes_ = lambda d, tfk, bs: base(d, tfk, bs) and (tfk, bs, d["slug"]) in own_cells  # noqa: E731
+        needed_fm = {tfk for (tfk, _) in own_cols | own_spans if tfk != "gt"}
+        fmap = [f for f in fmap if f["slug"] in needed_fm]
+
     return ComposedPlan(fmap=fmap, bfr=bfr, dipole=dipole, tf_spans=tf_spans, e2e_spans=e2e_spans,
                         no_gt=no_gt, gt_source=gt_source, fm_keys=fm_keys, col_owner=col_owner, span_owner=span_owner,
-                        owns_col=owns_col, owns_span=owns_span,
-                        composes=lambda d, tfk, bs: composes(d, tfk, bs) and in_chain(tfk, "dipoles", d["slug"]))
+                        owns_col=owns_col, owns_span=owns_span, composes=composes_, cells=order,
+                        skipped=skipped)
 
 
 def run_composed(args, algos, gt_sources, gt, mask, shard_i, shard_n, runs: list) -> None:
@@ -1634,7 +1826,16 @@ def run_composed(args, algos, gt_sources, gt, mask, shard_i, shard_n, runs: list
     result rows to `runs` and flushes the index (unless writing a shard file) after the dipole stage,
     exactly as before. The selection/ownership arithmetic is plan_composed's."""
     fieldmaps = set(args.fieldmaps.split(",")) if getattr(args, "fieldmaps", None) else None
-    plan = plan_composed(algos, args.focus, args.track, shard_i, shard_n, fieldmaps)
+    sfx = getattr(args, "phantom_sfx", "")
+    skip = fresh_cell_ids(load_index_runs()) if getattr(args, "resume", False) else frozenset()
+    plan = plan_composed(algos, args.focus, args.track, shard_i, shard_n, fieldmaps,
+                         parse_cells(getattr(args, "cells", None)), skip, sfx)
+    if getattr(args, "cells", None):
+        k, n = parse_cells(args.cells)
+        part = cell_range(len(plan.cells), k, n)
+        print(f"  composed  --cells {args.cells}: cells {part.start}-{part.stop - 1} of {len(plan.cells)}")
+    if plan.skipped:
+        print(f"  composed  --resume: {plan.skipped} cell(s) already scored at an up-to-date commit, skipped")
     fmap, bfr, dipole, tf_spans, e2e_spans = plan.fmap, plan.bfr, plan.dipole, plan.tf_spans, plan.e2e_spans
     owns_col, owns_span = plan.owns_col, plan.owns_span
     # --emit-intermediates: which field maps THIS shard publishes (see tf_emit_owner).
@@ -1682,7 +1883,6 @@ def run_composed(args, algos, gt_sources, gt, mask, shard_i, shard_n, runs: list
     # Every pipeline an upstream DNF took down gets its own DNF row (reason = the upstream failure),
     # so a re-score REPLACES the previous score for that pipeline id instead of leaving it in
     # index.json as a stale "ok". Columns are enumerated exactly as the run stages below would have.
-    sfx = getattr(args, "phantom_sfx", "")
     upstream_dnf: list = []
     for tfk, why in failed_fm.items():
         reason = f"upstream field-mapping {tfk} DNF: {why}"
@@ -1934,6 +2134,16 @@ def main() -> None:
                          "ground-truth total field) and/or field-mapping slugs. Lets score.yml split "
                          "a slow method's composed matrix into one job per field map (highmem-long "
                          "tier). End-to-end spans run only when gt is listed. Default: every source.")
+    ap.add_argument("--cells", default=None, metavar="k/n",
+                    help="run only the k-th (0-indexed) of n contiguous ranges of this job's composed "
+                         "cells (after --fieldmaps/--shard), so score.yml can split a focus job that "
+                         "would outrun its runner's cap (score_plan.py picks n from recorded runtimes). "
+                         "Each part computes only the field maps and local fields its cells need; "
+                         "end-to-end spans run in part 0. Union of the n parts == the whole job.")
+    ap.add_argument("--resume", action="store_true",
+                    help="skip composed cells results/index.json already holds as OK rows scored at an "
+                         "up-to-date commit (nothing they depend on changed since; see fresh_cell_ids), "
+                         "so a re-planned job does not redo what an aborted run already published")
     ap.add_argument("--track", default="sim")
     ap.add_argument("--runs-out", type=Path, default=None,
                     help="write ONLY the runs produced by this invocation to this JSON file, instead "

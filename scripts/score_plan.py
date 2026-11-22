@@ -34,7 +34,9 @@ Per-method `runner:` in algorithm.yml:
                                unwrap+bfr method's job (iqfm) is split by total-field source like a
                                highmem-long dipole's (split_fieldmaps): f-<slug>-gt, f-<slug>-<map>.
 Per-method `split: fieldmaps` (any tier, a dipole or bfr / unwrap+bfr method): split its focus job the
-same way, for a method whose composed matrix outgrows its tier's cap (whqsm on hosted).
+same way, for a method whose composed matrix outgrows its tier's cap (whqsm on hosted). On the hosted
+tiers this is also automatic: a focus job estimated past TARGET_PART_HOURS from recorded runtimes is
+split by total-field source and/or into ranges of its composed cells (size_focus, "Sizing focus jobs").
     highmem       highmem()    the runners in repository variable QSMCI_HIGHMEM_RUNNER, 720-min cap,
                                1 container. Dispatch-only (named in `scope`), in runs of their own,
                                capped at max_parallel. Variable unset: identical to (unset).
@@ -118,7 +120,7 @@ SKIP_TOKEN = "[skip score]"
 # strength — and the rows they leave behind are dropped at merge by scripts/prune_inapplicable.py, so
 # declaring it needs no rescore. (Removing the declaration later does: dispatch scope=<the χ-sep
 # methods> to score the combos it re-allows.)
-SCORE_COSMETIC = COSMETIC_KEYS | {"runner", "jobs", "manual_phantoms", "split",
+SCORE_COSMETIC = COSMETIC_KEYS | {"runner", "jobs", "manual_phantoms", "split", "memory_gb",
                                   "smoke_box", "smoke_params", "ci_skip_reason", "field_strength"}
 
 HOSTED = {"runs_on": "ubuntu-latest", "timeout": 360, "jobs": 2}
@@ -275,6 +277,143 @@ def manual_phantoms(spec) -> set[str]:
 
 
 # ---------------------------------------------------------------------------------------------------
+# Sizing focus jobs: split one that would outrun GitHub's 6-h hosted cap
+# ---------------------------------------------------------------------------------------------------
+# A QSM.rs release repins many *-qsmrs methods at once, and each changed method gets one focus job
+# scoring every composed cell it is part of. On push run 44991702275 (2026-11-22) 24 of those hit the
+# 6-h cap: a field-mapping method has ~770 cells (45-60 container-hours), a bfr ~250, a dipole ~110
+# behind 2.5-3.4 h of field maps and local fields computed first. A capped job is re-planned from cell
+# 0 by the next run, so they never finished. Now the planner estimates each focus job from the
+# runtimes results/index.json records and, on the hosted tiers, splits one that would run longer
+# than TARGET_PART_HOURS:
+#   1. a dipole / bfr / span method with more than one total-field source: one part per source
+#      (f-<slug>-<source>, pipeline.py --fieldmaps; the same split as `split: fieldmaps`), so each
+#      part computes one field map and its local fields;
+#   2. any part still too long: n contiguous ranges of its composed cells (f-<id>-p<k>of<n>,
+#      pipeline.py --cells k-1/n), n the fewest whose longest range fits.
+# The isolated runs stay with the first part. Ids carry n, so another run's differently split parts
+# never count as covering these (subtract_in_progress). Estimates use each stage's isolated runtime
+# on the sim phantom (a composed row's runtime_s is the whole pipeline's, upstream included; the
+# field map and local field are computed once per job, not once per cell) and DEFAULT_RUN_S for a
+# method with none. On the 2.5-5 h focus jobs that finished in run 44991702275 it was 8-55 % high
+# (it ignores the overlap of a job's two containers), so a part estimated at 3-4 h is well under 6.
+TARGET_PART_HOURS = 3.0
+PART_HOURS_STEPS = (TARGET_PART_HOURS, 4.0, 5.0)   # raised only to keep the matrix within MATRIX_MAX
+DEFAULT_RUN_S = 600.0
+SPLIT_TIERS = ("hosted", "hosted-large")   # the 6-h ones; self-hosted / lent tiers keep their caps
+MATRIX_MAX = 256           # GitHub's limit on jobs one matrix generates
+# Hosted jobs this run's `score` matrix runs at once. The organisation runs at most 60 hosted jobs at
+# a time across every workflow; a release's score run used to take all of them for hours, starving
+# PR CI, pages and parity. The rest of the matrix waits in the run (not in the runner queue, so
+# GitHub's 24-h queue limit does not apply).
+HOSTED_MAX_PARALLEL = 48
+QSM_STAGES = ("field-mapping", "bfr", "unwrap+bfr", "dipole", "bfr+dipole", "end-to-end", "pipeline")
+SPAN_STAGES = ("bfr+dipole", "end-to-end", "pipeline")
+
+
+def stage_costs(runs: list[dict]) -> dict[str, dict[str, float]]:
+    """{slug: {variant: seconds}}: each method's recorded isolated runtime on the sim phantom."""
+    out: dict[str, dict[str, float]] = {}
+    for r in runs:
+        if (r.get("track") != "sim" or r.get("mode") != "isolated" or r.get("phantom") not in (None, "sim")
+                or r.get("inputs") not in (None, "gt") or not r.get("runtime_s") or not r.get("slug")):
+            continue
+        out.setdefault(r["slug"], {})[r.get("variant") or "default"] = float(r["runtime_s"])
+    return out
+
+
+def _consumes_totalfield(spec) -> bool:
+    inp = (spec or {}).get("inputs")
+    opt = (spec or {}).get("optional_inputs") or []
+    names = [str(_scalar(a)) for a in inp] if isinstance(inp, list) and inp else \
+        (["totalfield"] if stage_of(spec) in ("bfr", "bfr+dipole") else [])
+    return "totalfield" in names + [str(_scalar(a)) for a in opt]
+
+
+def focus_cells(specs: dict, focus: str, exclude=(), fieldmaps=None) -> tuple[list, list, list]:
+    """(sources, cells, end-to-end spans) of a sim-phantom focus job, mirroring pipeline.plan_composed
+    (a test holds the two together on the real algorithms/): cells are ("cell", source, bfr, dipole)
+    column-major, then ("span", source, span), the order pipeline.py --cells splits."""
+    exclude = set(exclude)
+    live = {s: sp for s, sp in specs.items() if not is_skipped(sp) and s not in exclude and stage_of(sp)}
+    by = lambda *st: sorted(s for s, sp in live.items() if stage_of(sp) in st)  # noqa: E731
+    fm, bfr, dip = by("field-mapping"), by(*LOCALFIELD_STAGES), by("dipole")
+    spans = by(*SPAN_STAGES)
+    tf_spans = [s for s in spans if _consumes_totalfield(live[s])]
+    e2e = [s for s in spans if s not in tf_spans]
+    f = live.get(focus)
+    st = stage_of(f)
+    if f is None or is_chisep(f) or st not in QSM_STAGES:
+        return [], [], []
+    if st == "dipole":
+        dip, tf_spans, e2e = [focus], [], []
+        c = f.get("compose") if isinstance(f.get("compose"), dict) else {}
+        if isinstance(c.get("bfrs"), list):
+            bfr = [b for b in bfr if b in c["bfrs"]]
+        if isinstance(c.get("fieldmaps"), list):
+            fm = [m for m in fm if m in c["fieldmaps"]]
+    elif st in LOCALFIELD_STAGES:
+        bfr, tf_spans, e2e = [focus], [], []
+    elif st == "field-mapping":
+        fm, tf_spans, e2e = [focus], [], []
+        fieldmaps = {focus} if fieldmaps is None else set(fieldmaps) - {"gt"}
+    else:
+        bfr, dip = [], []
+        fm = fm if focus in tf_spans else []
+        tf_spans, e2e = [x for x in tf_spans if x == focus], [x for x in e2e if x == focus]
+    if fieldmaps is not None:
+        fm = [m for m in fm if m in fieldmaps]
+        if "gt" not in fieldmaps:
+            e2e = []
+    sources = (["gt"] if fieldmaps is None or "gt" in fieldmaps else []) + fm
+
+    def composes(d, tfk, b):
+        c = live[d].get("compose") if isinstance(live[d].get("compose"), dict) else {}
+        return tfk in (c.get("fieldmaps") or [tfk]) and b in (c.get("bfrs") or [b])
+    cells = [("cell", tfk, b, d) for tfk in sources for b in bfr for d in dip if composes(d, tfk, b)]
+    cells += [("span", tfk, x) for tfk in sources for x in tf_spans]
+    return sources, cells, e2e
+
+
+def cell_range(n_cells: int, k: int, n: int) -> range:
+    """pipeline.cell_range: part k of n contiguous, near-equal ranges."""
+    return range(k * n_cells // n, (k + 1) * n_cells // n)
+
+
+def part_seconds(cells: list, costs: dict, iso: str | None = None, e2e=()) -> float:
+    """Container-seconds of a part: each field map and each local field it needs once, each cell's
+    last stage, the end-to-end spans and (`iso`) the focus method's isolated runs."""
+    c = lambda s, v="default": costs.get(s, {}).get(v, DEFAULT_RUN_S if v == "default" else 0.0)  # noqa: E731
+    fms = {x[1] for x in cells if x[1] != "gt"}
+    cols = {(x[1], x[2]) for x in cells if x[0] == "cell"}
+    total = sum(c(f) for f in fms) + sum(c(b) for _, b in cols)
+    total += sum(c(x[3]) if x[0] == "cell" else c(x[2]) for x in cells) + sum(c(s) for s in e2e)
+    if iso:
+        total += c(iso) + c(iso, "tuned")
+    return total
+
+
+def parts_needed(cells: list, costs: dict, budget_s: float, iso: str | None, e2e=()) -> tuple[int, float]:
+    """(n, longest part's container-seconds): the fewest contiguous cell ranges whose longest fits
+    `budget_s`, the isolated runs and end-to-end spans riding with range 0."""
+    for n in range(1, max(1, len(cells)) + 1):
+        worst = max(part_seconds([cells[i] for i in cell_range(len(cells), k, n)], costs,
+                                 iso if k == 0 else None, e2e if k == 0 else ()) for k in range(n))
+        if worst <= budget_s:
+            return n, worst
+    return n, worst
+
+
+def makespan_hours(hours: list[float], slots: int) -> float:
+    """Wall-clock of jobs started in matrix order on `slots` runners, each as soon as one frees."""
+    import heapq
+    free = [0.0] * max(1, slots)
+    for h in hours:
+        heapq.heappush(free, heapq.heappop(free) + h)
+    return max(free) if hours else 0.0
+
+
+# ---------------------------------------------------------------------------------------------------
 # Task planning (pure)
 # ---------------------------------------------------------------------------------------------------
 
@@ -348,12 +487,61 @@ def dedicated(root: Path) -> list[str]:
     return out
 
 
+def size_focus(t: dict, spec: dict | None, specs: dict, costs: dict | None,
+               hours: float = TARGET_PART_HOURS, estimates: dict | None = None) -> list[dict]:
+    """A focus task as the job(s) that run it (see "Sizing focus jobs"). Without `costs`, or off the
+    hosted tiers, only split_fieldmaps' declared split applies. `estimates` collects each sized job's
+    estimated wall-clock hours by id."""
+    forced = split_fieldmaps(spec, specs)
+
+    def by_source(g: str) -> dict:
+        return {**t, "id": f"{t['id']}-{g}", "fieldmaps": g, "mode": "both" if g == "gt" else "composed",
+                "replaces": t["id"]}
+    if not (costs is not None and tier_of(spec) in SPLIT_TIERS and t.get("phantom") == "sim"
+            and stage_of(spec) in QSM_STAGES):
+        return [by_source(g) for g in forced] if forced else [t]
+    jobs = t.get("jobs") or 1
+    budget = hours * 3600 * jobs
+    sources, cells, e2e = focus_cells(specs, t["focus"], (t.get("exclude") or "").split(","))
+    groups = forced
+    if (not groups and len(sources) > 1 and stage_of(spec) != "field-mapping"
+            and part_seconds(cells, costs, t["focus"], e2e) > budget):
+        groups = sources
+    out = []
+    for g in groups or [None]:
+        if g is None:
+            base, gcells, ge2e, iso = t, cells, e2e, t["focus"]
+        else:
+            base, gcells = by_source(g), [c for c in cells if c[1] == g]
+            ge2e, iso = (e2e, t["focus"]) if g == "gt" else ((), None)
+        n, worst = parts_needed(gcells, costs, budget, iso, ge2e)
+        if n == 1:
+            out.append(base)
+            if estimates is not None:
+                estimates[base["id"]] = worst / 3600 / jobs
+            continue
+        for k in range(n):
+            part = {**base, "id": f"{base['id']}-p{k + 1}of{n}", "cells": f"{k}/{n}", "replaces": t["id"]}
+            if k:
+                part["mode"] = "composed"   # the isolated runs (and end-to-end spans) ride with part 1
+            out.append(part)
+            if estimates is not None:
+                estimates[part["id"]] = part_seconds([gcells[i] for i in cell_range(len(gcells), k, n)], costs,
+                                                     iso if k == 0 else None, ge2e if k == 0 else ()) / 3600 / jobs
+    return out
+
+
 def plan_tasks(root: Path, reg: dict, *, full: bool, slugs: list[str], include: str = "",
                shards: int = 24, explicit: set[str] | None = None,
-               include_manual: bool = False, include_highmem: bool = False) -> list[dict]:
+               include_manual: bool = False, include_highmem: bool = False,
+               costs: dict | None = None, part_hours: float = TARGET_PART_HOURS, resume: bool = False,
+               estimates: dict | None = None) -> list[dict]:
     """The matrix for a run. `explicit` = slugs a human named on dispatch: they (and their manual
     phantoms) are planned even when their tier is manual or highmem. `include_manual` lifts that for
-    the manual tier, `include_highmem` (internal) for highmem and highmem-long."""
+    the manual tier, `include_highmem` (internal) for highmem and highmem-long. `costs` (stage_costs)
+    sizes the hosted focus jobs (size_focus; None = no automatic split), `part_hours` is the target
+    length of one part, and `resume` marks the sim focus jobs to skip cells already scored and fresh
+    (pipeline.py --resume)."""
     explicit = explicit or set()
     specs = {s: load_spec(root, s) for s in all_slugs(root)}
 
@@ -387,15 +575,15 @@ def plan_tasks(root: Path, reg: dict, *, full: bool, slugs: list[str], include: 
                 # would overrun its cap, and their combos are owned by their own focus jobs.
                 if heavy_dipoles and not is_dipole(spec) and not is_chisep(spec):
                     t["exclude"] = heavy_dipoles
-                split = split_fieldmaps(spec, specs)
-                if split:
-                    # One job per total-field source (see split_fieldmaps). `replaces` names the
-                    # unsplit id, so an older pending_manual entry for it clears once all parts finish.
-                    for fm in split:
-                        tasks.append({**t, "id": f"{t['id']}-{fm}", "fieldmaps": fm,
-                                      "mode": "both" if fm == "gt" else "composed", "replaces": t["id"]})
+                if resume and ph == "sim" and stage_of(spec) in QSM_STAGES:
+                    t["resume"] = "true"
+                # One job, or one per total-field source / cell range (size_focus). A part's `replaces`
+                # names the unsplit id, so an older pending_manual entry clears once all parts finish.
+                parts = size_focus(t, spec, specs, costs, part_hours, estimates)
+                tasks += parts
+                if len(parts) > 1 or parts[0] is not t:
                     continue
-                tasks.append(t)
+
                 # Degraded inputs (pipeline.py --inputs <level>): a separate job per level, so it
                 # never lengthens the ground-truth-input job. Like that job it runs the method's
                 # isolated run and, for an R2′-consuming method, its GRE-only grid at the level
@@ -597,6 +785,7 @@ def decide(env: dict, root: Path, reg: dict, state: dict, runs: "list[dict] | No
     include_manual = (env.get("INCLUDE_MANUAL") or "false").lower() == "true"
     explicit: set[str] = set()
     notes: list[str] = []
+    resume = False
 
     if include:  # manual single-combo recovery — wins over everything
         full, slugs, base = False, [], sha
@@ -627,30 +816,53 @@ def decide(env: dict, root: Path, reg: dict, state: dict, runs: "list[dict] | No
             slugs = sorted(set(slugs) | set(carried))
         if event == "workflow_dispatch" and not files and not full and not slugs:
             notes.append("scope=auto: nothing changed since the last completed scoring")
+        # An automatic run's focus jobs skip what an earlier run already published at an up-to-date
+        # commit (pipeline.py --resume). A dispatch naming slugs, or scope=all, rescores everything.
+        resume = True
 
+    if runs is None:
+        runs = load_runs()
+    costs = stage_costs(runs)
     if shards_in != "auto":
         shards = int(shards_in)
     elif full and not include:
-        hours = sweep_hours(load_runs() if runs is None else runs, set(dedicated(root)))
+        hours = sweep_hours(runs, set(dedicated(root)))
         shards = auto_shards(hours)
         notes.append(f"{shards} shards for about {hours:.0f} container-hours of recorded sweep runtime "
                      f"({HOSTED['jobs']} containers per shard, about {TARGET_SHARD_HOURS:g} h each)")
     else:
         shards = MIN_SHARDS
-    tasks = plan_tasks(root, reg, full=full, slugs=slugs, include=include, shards=shards,
-                       explicit=explicit, include_manual=include_manual)
+    # Size the focus jobs to TARGET_PART_HOURS; only if that outgrows one matrix, allow longer parts.
+    for part_hours in PART_HOURS_STEPS:
+        estimates: dict[str, float] = {}
+        tasks = plan_tasks(root, reg, full=full, slugs=slugs, include=include, shards=shards,
+                           explicit=explicit, include_manual=include_manual, costs=costs,
+                           part_hours=part_hours, resume=resume, estimates=estimates)
+        if len(split_pools(tasks)[0]) <= MATRIX_MAX:
+            break
+    if part_hours != TARGET_PART_HOURS:
+        notes.append(f"focus jobs sized to {part_hours:g} h (not {TARGET_PART_HOURS:g} h) to keep the "
+                     f"matrix within GitHub's {MATRIX_MAX} jobs")
+    if estimates:
+        longest = max(estimates, key=estimates.get)
+        hosted_est = [estimates[t["id"]] for t in split_pools(tasks)[0] if t["id"] in estimates]
+        notes.append(f"{len(estimates)} sized focus job(s), longest {longest} at about "
+                     f"{estimates[longest]:.1f} h; together about {makespan_hours(hosted_est, HOSTED_MAX_PARALLEL):.1f} h "
+                     f"on {HOSTED_MAX_PARALLEL} hosted runners (estimated from recorded runtimes)")
     # Manual-tier work this run OWES but is not allowed to schedule. `scored_sha` will advance past
     # the change that made it due, so it must be remembered explicitly: merge folds it into the
     # state's `pending_manual`, and an include_manual / explicit dispatch plans it from there —
     # so "score the manual ones too" means only the ones that actually need it.
     planned = {t["id"] for t in tasks}
     would = plan_tasks(root, reg, full=full, slugs=slugs, include=include, shards=shards,
-                       explicit=explicit, include_manual=True, include_highmem=True) if not include else []
+                       explicit=explicit, include_manual=True, include_highmem=True, costs=costs,
+                       part_hours=part_hours) if not include else []
     skipped_manual = [t["id"] for t in would if t["id"] not in planned]
     on_lent = lambda t: bool(t.get("focus")) and tier_of(load_spec(root, t["focus"])) in LENT_TIERS  # noqa: E731
     owed = [i for i in state.get("pending_manual", []) if i not in planned]
     if owed and (include_manual or explicit) and not include:
-        cand = plan_tasks(root, reg, full=False, slugs=all_slugs(root), include_manual=True, include_highmem=True)
+        cand = plan_tasks(root, reg, full=False, slugs=all_slugs(root), include_manual=True, include_highmem=True,
+                          costs=costs, part_hours=part_hours)
         extra = [t for t in cand if t["id"] in owed
                  and (t.get("focus") in explicit or (include_manual and not on_lent(t)))]
         if extra:
@@ -674,7 +886,9 @@ def decide(env: dict, root: Path, reg: dict, state: dict, runs: "list[dict] | No
         if any(tier_of(load_spec(root, t["focus"])) == "highmem-long" for t in tasks if on_lent(t)):
             max_parallel = 1
     return {"full": full, "slugs": slugs, "base": base, "tasks": tasks, "dropped": dropped,
-            "skipped_manual": skipped_manual, "notes": notes, "max_parallel": max_parallel}
+            "skipped_manual": skipped_manual, "notes": notes, "max_parallel": max_parallel,
+            "estimates": {i: h for i, h in estimates.items() if i in {t["id"] for t in tasks}},
+            "part_hours": part_hours}
 
 
 def main() -> None:
@@ -710,8 +924,8 @@ def main() -> None:
         out.write(f"slugs={json.dumps(d['slugs'])}\n")
         out.write(f"base={d['base']}\n")
         out.write(f"skipped_manual={json.dumps(d['skipped_manual'])}\n")
-        if d["max_parallel"]:
-            out.write(f"max_parallel={d['max_parallel']}\n")
+        # highmem runs: the lent pool's cap; any other run: HOSTED_MAX_PARALLEL of the org's 60
+        out.write(f"max_parallel={d['max_parallel'] or HOSTED_MAX_PARALLEL}\n")
 
 
 if __name__ == "__main__":
