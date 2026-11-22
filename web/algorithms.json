@@ -2328,8 +2328,8 @@
         },
         {
           "name": "phase_offset_removal",
-          "default": false,
-          "description": "remove the echoes' phase offsets (MCPC-3D-S) before unwrapping; true is QSMxT's default (qsmxt v12.2.0 on, which has the flag)"
+          "default": true,
+          "description": "remove the echoes' phase offsets (MCPC-3D-S) before unwrapping, QSMxT's default from v12.2.0 (earlier releases have no flag and remove none); false matches QSM.jl, STI Suite and QSMART"
         }
       ],
       "ci_notes": []
@@ -6457,8 +6457,8 @@
         },
         {
           "name": "phase_offset_removal",
-          "default": false,
-          "description": "remove the echoes' phase offsets (MCPC-3D-S) before unwrapping; true is QSMxT's default (qsmxt v12.2.0 on, which has the flag)"
+          "default": true,
+          "description": "remove the echoes' phase offsets (MCPC-3D-S) before unwrapping, QSMxT's default from v12.2.0 (earlier releases have no flag and remove none); false matches QSM.jl, STI Suite and QSMART"
         }
       ],
       "ci_notes": [],
@@ -6468,7 +6468,8 @@
         "solver": "fft",
         "fft_pad": "12",
         "unmasked": "true",
-        "weighting": "tes"
+        "weighting": "tes",
+        "phase_offset_removal": "false"
       }
     },
     {
@@ -6524,8 +6525,8 @@
         },
         {
           "name": "phase_offset_removal",
-          "default": false,
-          "description": "remove the echoes' phase offsets (MCPC-3D-S) before unwrapping; true is QSMxT's default (qsmxt v12.2.0 on, which has the flag)"
+          "default": true,
+          "description": "remove the echoes' phase offsets (MCPC-3D-S) before unwrapping, QSMxT's default from v12.2.0 (earlier releases have no flag and remove none); false matches QSM.jl, STI Suite and QSMART"
         }
       ],
       "ci_notes": [],
@@ -6534,7 +6535,8 @@
       "preset": {
         "solver": "mirror",
         "unmasked": "true",
-        "b0_estimation": "qsmart-echofit"
+        "b0_estimation": "qsmart-echofit",
+        "phase_offset_removal": "false"
       }
     },
     {

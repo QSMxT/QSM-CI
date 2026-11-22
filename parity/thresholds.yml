@@ -1002,6 +1002,9 @@ pairs:
                                    crates/qsmxt-engine/src/bridge.rs,
                                    crates/qsmxt-engine/src/fieldmap.rs]
     reference_set: { mask_phase: "true", demean: "true" }
+    # QSM.jl's Laplacian unwrap removes no phase offsets; QSMxT's (and the entry's) default does
+    # from v12.2.0 (MCPC-3D-S). On earlier releases, which have no flag, the setting is dropped.
+    candidate_set: { phase_offset_removal: "false" }
     datasets:
       sim:
         # Measured: NRMSE 4.8e-14 %, max |Δ| 2.8e-14 ppm.
