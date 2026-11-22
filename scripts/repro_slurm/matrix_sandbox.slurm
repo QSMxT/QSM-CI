@@ -26,8 +26,8 @@
 source ~/venvs/qsmci/bin/activate
 set -uo pipefail
 cd "${SLURM_SUBMIT_DIR:?}"
-export APPTAINER_CACHEDIR=/scratch/user/uqaste15/apptainer_cache
-export APPTAINER_TMPDIR=/scratch/user/uqaste15/apptainer_tmp
+export APPTAINER_CACHEDIR=${APPTAINER_CACHEDIR:-/scratch/user/uqaste15/apptainer_cache}
+export APPTAINER_TMPDIR=${APPTAINER_TMPDIR:-/scratch/user/uqaste15/apptainer_tmp}
 export PROOT_NO_SECCOMP=1
 export QSMCI_SANDBOX_DIR=/scratch/project_mnt/S0169/qsmci_sif   # runner execs the prebuilt .sif here
 export QSM_CI_JOBS=4

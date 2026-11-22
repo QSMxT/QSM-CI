@@ -12,7 +12,7 @@
 # results/repro_rois.before-<date>.json), so rows of pipelines the campaign dropped don't linger.
 source ~/venvs/qsmci/bin/activate
 set -uo pipefail
-cd /scratch/user/uqaste15/qsmci-repro
+cd "${REPRO_DIR:-/scratch/user/uqaste15/qsmci-repro}"
 
 GLOB=${1:-results/runs-repro-*.json}
 mapfile -t FRESH < <(compgen -G "$GLOB" | sort)

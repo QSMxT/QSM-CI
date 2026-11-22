@@ -52,36 +52,34 @@ variants:
     base: ismv-qsmrs
     label: QSM.jl parity
     set: {variant: qsmjl, tol: 1e-3, max_iter: 500}
-  # v11 re-runs of fixed methods: pre-release build of QSMxT main 625b9f3, image
-  # ghcr.io/astewartau/qsm-ci/qsmxt@sha256:d9e80a9b39c8e5a5d68fcb94fc7a894534ee16e9ec5180013e6420462bfa4f72
-  # (:interim-625b9f3; models image :interim-625b9f3-models-1 = sha256:5bf528837f273985d2bfc3aa53dfb1e5825fd22d2dfb82abc67ca831c9f3c3f9).
-  # It ran iSMV, HARPERELLA (default whole rim and .sti), iHARPERELLA, NDI and WH-QSM in those chains;
-  # the algorithm.yml files keep the v11.0.0 pin until the next QSMxT release.
+  # Options added for the v11 harmonization re-runs (HARPERELLA/iHARPERELLA rim, NDI weight
+  # normaliser, WH-QSM weight, BFR erosion), first run on an interim build of QSMxT main, are in
+  # QSMxT releases from v12.0.0; the v12.2 campaign runs every method on its pinned release.
   harperella-qsmrs.sti:
     base: harperella-qsmrs
     label: STI Suite rim (v11.0.0 default)
     set: {rim: sti}
   iharperella-qsmrs.wholerim:
     base: iharperella-qsmrs
-    label: whole rim (QSMxT recommendation; pre-release build)
+    label: whole rim (QSMxT recommendation)
     set: {rim: whole}
   # Erode the mask before background removal (#426): dose check for iHARPERELLA,
   # HARPERELLA, and Laplacian's target case PDF/LBV (also after ROMEO, as the control).
   iharperella-qsmrs.erode1:
     base: iharperella-qsmrs
-    label: mask eroded 1 voxel before BFR (pre-release build)
+    label: mask eroded 1 voxel before BFR
     set: {erode_voxels: 1}
   iharperella-qsmrs.erode3:
     base: iharperella-qsmrs
-    label: mask eroded 3 voxels before BFR (pre-release build)
+    label: mask eroded 3 voxels before BFR
     set: {erode_voxels: 3}
   iharperella-qsmrs.wholerim-erode3:
     base: iharperella-qsmrs
-    label: whole rim, mask eroded 3 voxels (pre-release build)
+    label: whole rim, mask eroded 3 voxels
     set: {rim: whole, erode_voxels: 3}
   harperella-qsmrs.erode3:
     base: harperella-qsmrs
-    label: mask eroded 3 voxels before BFR (pre-release build)
+    label: mask eroded 3 voxels before BFR
     set: {erode_voxels: 3}
   pdf-qsmrs.erode3:
     base: pdf-qsmrs
@@ -101,11 +99,11 @@ variants:
     set: {te: first, pad: 12}
   ndi-qsmrs.maskp999:
     base: ndi-qsmrs
-    label: in-mask p99.9 weight normaliser (pre-release build)
+    label: in-mask p99.9 weight normaliser
     set: {weight_norm: mask-p999}
   whqsm-qsmrs.flatinmask:
     base: whqsm-qsmrs
-    label: flat weight in the mask (pre-release build)
+    label: flat weight in the mask
     set: {weight: flat-in-mask}
   heidi-qsmrs.parity:
     base: heidi-qsmrs
