@@ -442,7 +442,7 @@ def test_the_workflow_hands_the_highmem_runner_to_the_planner_and_caps_the_matri
     assert "QSMCI_HIGHMEM_RUNNER: ${{ vars.QSMCI_HIGHMEM_RUNNER }}" in plan
     assert "max_parallel: ${{ steps.plan.outputs.max_parallel }}" in plan
     score = wf[wf.index("  score:"):wf.index("  merge:")]
-    assert "max-parallel: ${{ fromJson(needs.plan.outputs.max_parallel || '256') }}" in score
+    assert f"max-parallel: ${{{{ fromJson(needs.plan.outputs.max_parallel || '{sp.HOSTED_MAX_PARALLEL}') }}}}" in score
 
 
 # ------------------------------------------------------------------------------------ self-hosted pool

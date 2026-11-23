@@ -24,4 +24,5 @@ license: 'MIT (QSM.rs); the weights keep the original''s terms: Used with author
 # The weights are QSM.rs's ONNX exports (qsmxt/qsm-onnx-weights), baked into the image with
 # algorithms/_qsmxt/models.Dockerfile, since a submission runs with no network.
 image: ghcr.io/astewartau/qsm-ci/qsmxt@sha256:29042176474473222df5982e1701be0ea54093b8291953c2512d054dac2f989d   # v12.2.0-models-1
+memory_gb: 13   # peak 12.4 GB on the sim phantom (its isolated run's resources.json): never beside a second heavy container on a 16 GB hosted runner (scripts/pipeline.py MEMORY_GATE)
 run: bash run.sh
