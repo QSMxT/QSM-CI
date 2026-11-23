@@ -1,6 +1,6 @@
 {
  "schema": 2,
- "generated": "2026-11-22",
+ "generated": "2026-11-23",
  "default_track": "released",
  "badges": "https://qsmxt.github.io/QSM-CI/parity/badges/",
  "tracks": {
@@ -3742,7 +3742,8 @@
     "toolbox-pipeline-decompose",
     "laplacian",
     "modl-qsm",
-    "r2primenet"
+    "r2primenet",
+    "whqsm"
    ],
    "pairs": [
     {
@@ -6143,7 +6144,7 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/utils/r2star.rs` since the checked 8a655f4 (50 commits)",
+        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/utils/r2star.rs` since the checked 8a655f4 (52 commits)",
         "QSMxT main changed `Cargo.lock` since the checked dc94cf4 (99 commits)"
        ]
       },
@@ -6177,7 +6178,7 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/utils/r2star.rs` since the checked 8a655f4 (50 commits)",
+        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/utils/r2star.rs` since the checked 8a655f4 (52 commits)",
         "QSMxT main changed `Cargo.lock` since the checked dc94cf4 (99 commits)"
        ]
       }
@@ -6735,7 +6736,7 @@
      "reference": "whqsm",
      "candidate": "whqsm-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-whqsm",
      "datasets": [
       {
@@ -6757,8 +6758,10 @@
         "correlation": 0.9999999995436967,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/inversion/whqsm.rs` since the checked dff62e2 (2 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -6779,14 +6782,17 @@
         "correlation": 0.999999999862505,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/inversion/whqsm.rs` since the checked dff62e2 (2 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=whqsm -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "0.0034 % \u00b7 21 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 21 Nov",
+      "color": "orange"
      }
     },
     {
