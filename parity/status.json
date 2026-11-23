@@ -19,12 +19,9 @@
     "commit": "dff62e20144fb9c79a31b88ae7b1617010b49282"
    },
    "stale": [
-    "laplacian",
     "modl-qsm"
    ],
-   "rerun": [
-    "laplacian"
-   ],
+   "rerun": [],
    "pairs": [
     {
      "pair": "qsmart",
@@ -1576,15 +1573,15 @@
      "reference": "laplacian-qsmjl",
      "candidate": "laplacian-qsmrs",
      "enabled": true,
-     "state": "stale",
+     "state": "current",
      "anchor": "pair-laplacian",
      "datasets": [
       {
        "dataset": "s002001-kki-achieva-bridge-run1",
        "last": {
-        "date": "2026-11-22T07:28:38Z",
+        "date": "2026-11-23T04:48:45Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44986395967",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/45113672747",
         "qsmrs": {
          "ref": null,
          "commit": "dff62e20144fb9c79a31b88ae7b1617010b49282",
@@ -1593,24 +1590,22 @@
         "qsmxt": {
          "commit": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137"
         },
-        "nrmse": 4.619987642045952e-06,
+        "nrmse": 4.619987642045918e-06,
         "max_abs": 5.960464477539063e-08,
         "correlation": 0.9999999999999963,
         "dice": null,
         "release": "v12.2.0"
        },
-       "rerun": true,
-       "stale": true,
-       "reasons": [
-        "the pair's settings or limits for this dataset changed since"
-       ]
+       "rerun": false,
+       "stale": false,
+       "reasons": []
       },
       {
        "dataset": "sim",
        "last": {
-        "date": "2026-11-22T07:28:38Z",
+        "date": "2026-11-23T04:48:45Z",
         "result": "pass",
-        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44986395967",
+        "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/45113672747",
         "qsmrs": {
          "ref": null,
          "commit": "dff62e20144fb9c79a31b88ae7b1617010b49282",
@@ -1619,24 +1614,21 @@
         "qsmxt": {
          "commit": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137"
         },
-        "nrmse": 4.766646207539972e-14,
+        "nrmse": 4.766646207539941e-14,
         "max_abs": 2.842170943040401e-14,
         "correlation": 1.0,
         "dice": null,
         "release": "v12.2.0"
        },
-       "rerun": true,
-       "stale": true,
-       "reasons": [
-        "the pair's settings or limits for this dataset changed since"
-       ]
+       "rerun": false,
+       "stale": false,
+       "reasons": []
       }
      ],
-     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=laplacian -f dataset=configured -f qsmxt_release=v12.2.0",
      "badge": {
-      "kind": "stale",
-      "message": "stale \u00b7 v12.2.0",
-      "color": "orange"
+      "kind": "current",
+      "message": "< 0.001 % \u00b7 v12.2.0",
+      "color": "brightgreen"
      }
     },
     {
@@ -3741,6 +3733,7 @@
     "toolbox-pipeline-chisep-medi",
     "toolbox-pipeline-decompose",
     "laplacian",
+    "romeo",
     "modl-qsm",
     "r2primenet",
     "whqsm"
@@ -5219,7 +5212,7 @@
      "reference": "romeo-romeojl",
      "candidate": "romeo-qsmrs",
      "enabled": true,
-     "state": "current",
+     "state": "stale",
      "anchor": "pair-romeo",
      "datasets": [
       {
@@ -5241,8 +5234,10 @@
         "correlation": 0.9998960411605831,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/region_grow.rs`, `src/unwrap/romeo.rs` since the checked dff62e2 (3 commits)"
+       ]
       },
       {
        "dataset": "sim",
@@ -5263,14 +5258,17 @@
         "correlation": 0.9999528057063367,
         "dice": null
        },
-       "stale": false,
-       "reasons": []
+       "stale": true,
+       "reasons": [
+        "QSM.rs main changed `src/region_grow.rs`, `src/unwrap/romeo.rs` since the checked dff62e2 (3 commits)"
+       ]
       }
      ],
+     "refresh": "gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=romeo -f dataset=configured -f qsmrs_ref=main",
      "badge": {
-      "kind": "current",
-      "message": "1.6 % \u00b7 21 Nov",
-      "color": "brightgreen"
+      "kind": "stale",
+      "message": "stale \u00b7 21 Nov",
+      "color": "orange"
      }
     },
     {
@@ -6144,8 +6142,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/utils/r2star.rs` since the checked 8a655f4 (52 commits)",
-        "QSMxT main changed `Cargo.lock` since the checked dc94cf4 (99 commits)"
+        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/utils/r2star.rs` since the checked 8a655f4 (53 commits)",
+        "QSMxT main changed `Cargo.lock` since the checked dc94cf4 (100 commits)"
        ]
       },
       {
@@ -6178,8 +6176,8 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/utils/r2star.rs` since the checked 8a655f4 (52 commits)",
-        "QSMxT main changed `Cargo.lock` since the checked dc94cf4 (99 commits)"
+        "QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/utils/r2star.rs` since the checked 8a655f4 (53 commits)",
+        "QSMxT main changed `Cargo.lock` since the checked dc94cf4 (100 commits)"
        ]
       }
      ],
@@ -6760,7 +6758,7 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/inversion/whqsm.rs` since the checked dff62e2 (2 commits)"
+        "QSM.rs main changed `src/inversion/whqsm.rs` since the checked dff62e2 (3 commits)"
        ]
       },
       {
@@ -6784,7 +6782,7 @@
        },
        "stale": true,
        "reasons": [
-        "QSM.rs main changed `src/inversion/whqsm.rs` since the checked dff62e2 (2 commits)"
+        "QSM.rs main changed `src/inversion/whqsm.rs` since the checked dff62e2 (3 commits)"
        ]
       }
      ],
@@ -13055,7 +13053,7 @@
   "laplacian": [
    {
     "release": "v12.2.0",
-    "date": "2026-11-22T07:28:38Z",
+    "date": "2026-11-23T04:48:45Z",
     "qsmxt": {
      "ref": "v12.2.0",
      "commit": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137"
@@ -13069,9 +13067,9 @@
      {
       "dataset": "s002001-kki-achieva-bridge-run1",
       "last": {
-       "date": "2026-11-22T07:28:38Z",
+       "date": "2026-11-23T04:48:45Z",
        "result": "pass",
-       "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44986395967",
+       "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/45113672747",
        "qsmrs": {
         "ref": null,
         "commit": "dff62e20144fb9c79a31b88ae7b1617010b49282",
@@ -13080,7 +13078,7 @@
        "qsmxt": {
         "commit": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137"
        },
-       "nrmse": 4.619987642045952e-06,
+       "nrmse": 4.619987642045918e-06,
        "max_abs": 5.960464477539063e-08,
        "correlation": 0.9999999999999963,
        "dice": null,
@@ -13090,9 +13088,9 @@
      {
       "dataset": "sim",
       "last": {
-       "date": "2026-11-22T07:28:38Z",
+       "date": "2026-11-23T04:48:45Z",
        "result": "pass",
-       "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44986395967",
+       "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/45113672747",
        "qsmrs": {
         "ref": null,
         "commit": "dff62e20144fb9c79a31b88ae7b1617010b49282",
@@ -13101,7 +13099,7 @@
        "qsmxt": {
         "commit": "7473f09ccfe7d2c3a52c27d983a9a0a554e35137"
        },
-       "nrmse": 4.766646207539972e-14,
+       "nrmse": 4.766646207539941e-14,
        "max_abs": 2.842170943040401e-14,
        "correlation": 1.0,
        "dice": null,
