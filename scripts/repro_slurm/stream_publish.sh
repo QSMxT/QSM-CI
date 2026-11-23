@@ -6,6 +6,9 @@
 set -uo pipefail
 F=$1
 python scripts/repro_eval.py stats --runs "$F" || echo "STREAM_STATS_FAILED $F"
+# HF allows a repo 128 commits/hour, shared with QSM-CI's own publishing: while the pause file exists
+# (touched by whoever coordinates, e.g. during a score run's merge), wait before committing.
+while [ -e "${HF_PAUSE_FILE:-.hf-pause}" ]; do sleep 60; done
 HF_TOKEN="$(cat ~/.hf_publish_token)" HF_VOLUMES_REPO=qsmxt/qsm-ci-volumes \
   python scripts/publish_volumes.py results --runs "$F" || echo "STREAM_PUBLISH_FAILED $F"
 python - "$F" <<'PY'
