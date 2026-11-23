@@ -15,7 +15,7 @@ qsmci-inputs/<acq>.zip, and its registry entry (scripts/datasets.json) gets `hf_
     HF_TOKEN=... python scripts/publish_harmonization_hf.py 's0*' --dry-run  # list what would go up
 
 An acquisition whose registry entry already names this repo with the same sha256 as the remote file
-is skipped, so an interrupted run resumes. Re-packing an acquisition gives a zip with new bytes (zip
+is skipped, so an interrupted run resumes; --force uploads it anyway (after repacking its inputs). Re-packing an acquisition gives a zip with new bytes (zip
 timestamps): it is uploaded as a new revision of the same path and the registry's sha256 follows.
 """
 from __future__ import annotations
@@ -65,6 +65,8 @@ def main(argv: "list[str] | None" = None) -> int:
     ap.add_argument("--repo", default=DEFAULT_REPO)
     ap.add_argument("--data", type=Path, default=ROOT / "data" / "harmonization")
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--force", action="store_true",
+                    help="upload even when the registry already matches the remote zip (after repacking an acquisition)")
     a = ap.parse_args(argv)
 
     acqs = sorted(p for p in a.data.iterdir() if p.is_dir() and not p.name.startswith("_")
@@ -109,7 +111,7 @@ def main(argv: "list[str] | None" = None) -> int:
         if key not in reg:
             raise SystemExit(f"{key}: not in scripts/datasets.json — add its registry entry first")
         d = reg[key]
-        if d.get("hf_repo") == a.repo and d.get("sha256") and remote.get(hp) == d["sha256"]:
+        if not a.force and d.get("hf_repo") == a.repo and d.get("sha256") and remote.get(hp) == d["sha256"]:
             continue
         z = tmp / f"{key}.zip"
         subprocess.run(["zip", "-q", "-r", str(z), "inputs"], cwd=p, check=True)
