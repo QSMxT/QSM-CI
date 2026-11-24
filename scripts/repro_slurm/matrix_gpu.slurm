@@ -9,6 +9,7 @@
 #SBATCH --mem=256G
 #SBATCH --array=0-91%6
 #SBATCH --output=slurm-%x-%A_%a.out
+umask 077   # campaign run dirs hold unpublished inputs and results: owner-only files
 
 # The two GPU-designed dipole methods (inr-qsm, modip; CUDA :v2 images) across the composed matrix,
 # on gpu_cuda. `--campaign-part gpu` keeps the campaign's gpu dipoles and only the upstreams their

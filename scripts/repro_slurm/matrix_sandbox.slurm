@@ -17,6 +17,7 @@
 # ~12-14h.
 #SBATCH --array=0-91%40
 #SBATCH --output=slurm-%x-%A_%a.out
+umask 077   # campaign run dirs hold unpublished inputs and results: owner-only files
 
 # The composed harmonization matrix with the prebuilt-image override (QSMCI_SANDBOX_DIR, built by
 # build_sifs.slurm): the campaign's methods, parity versions and chains (scripts/repro_campaign.yml,

@@ -7,6 +7,7 @@
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=16G
 #SBATCH --output=slurm-%x-%j.out
+umask 077   # campaign run dirs hold unpublished inputs and results: owner-only files
 
 # Upload every staged harmonization intermediate (results/_intermediates/<acq>/) into the same
 # qsmxt/qsm-ci-volumes `repro/<acq>/` directory as that acquisition's recons, where the viewer's

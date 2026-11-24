@@ -8,6 +8,7 @@
 #SBATCH --mem=200G
 #SBATCH --array=0-22%8
 #SBATCH --output=slurm-%x-%A_%a.out
+umask 077   # campaign run dirs hold unpublished inputs and results: owner-only files
 
 # Regenerate the harmonization track's INTERMEDIATE maps for the submission viewer: the field-mapping
 # stage's total field and the background-removal stage's local field.

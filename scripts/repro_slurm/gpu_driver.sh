@@ -3,6 +3,7 @@
 # submit limit (MaxSubmitPU, 100 jobs) so other GPU work can still be submitted. Submit this as a small CPU job; the environment (RUNS_PREFIX,
 # STREAM_PUBLISH, CAMPAIGN, N_SHARDS) passes through to every chunk.
 #   sbatch --export=ALL --time=7-00:00:00 --mem=2G scripts/repro_slurm/gpu_driver.sh <n-acquisitions>
+umask 077   # campaign run dirs hold unpublished inputs and results: owner-only files
 set -uo pipefail
 cd "${SLURM_SUBMIT_DIR:?}"
 # GPU_START / GPU_END (task indices) resubmit part of the range, e.g. chunks that were refused.

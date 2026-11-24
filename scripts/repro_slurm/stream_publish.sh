@@ -3,6 +3,7 @@
 # landed. The full matrix's recons (~340 GB) don't fit in user scratch, so they live on the Hub; the
 # runs-json keeps the rows, ROI stats and volume URLs (harvest.sh with SKIP_STATS=1 merges them).
 #   scripts/repro_slurm/stream_publish.sh results/<prefix>-<acq>-s<k>.json
+umask 077   # campaign run dirs hold unpublished inputs and results: owner-only files
 set -uo pipefail
 F=$1
 python scripts/repro_eval.py stats --runs "$F" || echo "STREAM_STATS_FAILED $F"
