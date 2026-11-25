@@ -161,12 +161,12 @@ more, declare it in `algorithm.yml` (`runner:` — see `scripts/score_plan.py` f
 | `self-hosted` | QSM-CI's private 31 GB box | `timeout_minutes:` (default 6 h) | automatically, own job; a scoring run takes one private runner at a time |
 | `manual` / `gpu` | private box | `timeout_minutes:` | **only** when a maintainer dispatches it by name |
 | `highmem` | the runners in repository variable `QSMCI_HIGHMEM_RUNNER` (Neurodesk's 64 GB pool), 1 container; *(unset)* while that variable is unset | 12 h | **only** when a maintainer dispatches it by name, without other tiers in the run |
-| `highmem-long` | the same `QSMCI_HIGHMEM_RUNNER` pool, `jobs:` containers (default 1), **one job at a time** so the pool's other runner stays free for parity runs; `manual` while that variable is unset. A dipole's focus job is split into one job per field map (`f-<slug>-gt` with the isolated runs, then `f-<slug>-<field map>`) | `timeout_minutes:` (default and maximum 5 days, GitHub's self-hosted job limit) | **only** when a maintainer dispatches it by name, without non-lent tiers in the run |
+| `highmem-long` | the same `QSMCI_HIGHMEM_RUNNER` pool, `jobs:` containers (default 1), **one job at a time** so the pool's other runner stays free for parity runs; `manual` while that variable is unset. A dipole's focus job is split into one job per field map (`f-<slug>-gt` with the isolated runs, then `f-<slug>-<field map>`), and each into jobs of about 8 h from recorded runtimes (an isolated run per job if need be); a re-dispatch runs only what is still owed | 12 h (the lent runner is shut down 13 h into a job) | **only** when a maintainer dispatches it by name, without non-lent tiers in the run |
 
 The caps above are per **job** (a job scores many runs). Each individual run is also bounded, by
 the contract's 2-hour wall clock: go over it and that run's container is killed and the run is
 recorded `DNF (timed out)` — the rest of the job carries on. `timeout_minutes:` raises the per-run
-budget on **every** tier (and the job cap on the self-hosted ones and `highmem-long`), so a method whose single
+budget on **every** tier (and the job cap on the self-hosted ones), so a method whose single
 inversion legitimately takes longer than 2 h must set it — `decompose-qsm`, `modip` and `inr-qsm`
 already do. (`$QSMCI_TIMEOUT`, in seconds, overrides the default when you run the CLI yourself;
 `qsm-ci run --timeout <minutes>` does the same for one run, and `0` means no limit.)

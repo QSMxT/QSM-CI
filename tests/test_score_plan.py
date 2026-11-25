@@ -159,8 +159,11 @@ def test_highmem_long_runs_days_on_the_lent_runners_one_job_at_a_time(tmp_path, 
                           "f-slowdl2-gt", "f-slowdl2-romeo", "iv-slowdl2"}
     lent = "neurodesk-arcrunner-lent-qsmci"
     for i, t in named.items():
-        # slowdl's 9000 is clamped to GitHub's 5-day limit; slowdl2 gets that limit by default
-        assert {k: t[k] for k in ("runs_on", "timeout", "jobs")} == {"runs_on": lent, "timeout": 7200, "jobs": 1}
+        # the job is capped below the lent runner's 13-h shutdown, whatever timeout_minutes says (that
+        # stays the per-run budget), so GitHub's own timeout cancels it and its teardown + upload run
+        assert {k: t[k] for k in ("runs_on", "timeout", "jobs")} == \
+            {"runs_on": lent, "timeout": sp.LENT_JOB_MINUTES, "jobs": 1}
+        assert sp.LENT_JOB_MINUTES < 13 * 60
     dispatch = {"EVENT": "workflow_dispatch", "SHA": "HEAD"}
     d = sp.decide({**dispatch, "SCOPE": "slowdl"}, root, REG, {})
     assert d["max_parallel"] == 1

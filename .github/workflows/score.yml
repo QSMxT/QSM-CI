@@ -40,12 +40,16 @@ name: score
 # names the slug in `scope` (or include_manual=true).
 # highmem: the runners in repository variable QSMCI_HIGHMEM_RUNNER, dispatch-only, in runs of their
 # own capped at the pool size. Unset: the default hosted tier.
-# highmem-long: the same lent runners for multi-day CPU jobs (MoDIP, INR-QSM: GPU-oriented per-subject
-# optimisations, several hours per inversion on CPU). Dispatch-only (scope=<slug>), the method's
-# timeout_minutes: up to GitHub's 5-day self-hosted limit, and ONE job at a time per run so the
-# other lent runner stays free for parity (QSMCI_PARITY_RUNNER is the same pool). Unset: manual.
-# Their focus job is split by total-field source: f-<slug>-gt (isolated + gt columns) and one
-# f-<slug>-<field map> per real field map, so each job is about a day and publishes on its own.
+# highmem-long: the same lent runners for long CPU work (MoDIP, INR-QSM: GPU-oriented per-subject
+# optimisations, several hours per inversion on CPU). Dispatch-only (scope=<slug>), and ONE job at a
+# time per run so the other lent runner stays free for parity (QSMCI_PARITY_RUNNER is the same pool).
+# Unset: manual. The lent runner is shut down 13 h into a job, which skips the always() upload below
+# and loses every finished row, so a lent job is capped at 12 h (score_plan.LENT_JOB_MINUTES: GitHub's
+# own timeout cancels it normally and its rows are uploaded) and sized to about 8 h
+# (score_plan.LENT_MAX_HOURS) from recorded runtimes: split by total-field source, then into ranges
+# of cells, and an isolated pair too long for one job into one job per variant (f-<slug>-iso-tuned).
+# A re-dispatch runs only the parts with rows still owed (the rest are "settled") and each job skips
+# runs already scored at an up-to-date commit (--resume).
 
 on:
   push:
@@ -161,8 +165,8 @@ jobs:
     # Runner, wall-clock budget and intra-job container parallelism are chosen per task by the plan
     # job (ubuntu-latest/360/2 by default; the 31 GB self-hosted runners/360/4 for `runner: self-hosted`
     # methods, with per-method timeout_minutes:/jobs: overrides; the lent runners/720/1 for
-    # `runner: highmem`, and the lent runners/timeout_minutes: (max 7200)/jobs: for
-    # `runner: highmem-long`). QSM_CI_JOBS here overrides the workflow-level cap of 2.
+    # `runner: highmem`, and the lent runners/720/jobs: for `runner: highmem-long`, 720 being under the
+    # lent runner's 13-h shutdown). QSM_CI_JOBS here overrides the workflow-level cap of 2.
     runs-on: ${{ matrix.task.runs_on }}
     timeout-minutes: ${{ matrix.task.timeout }}
     env: &score-env
@@ -278,6 +282,7 @@ jobs:
           INPUTS: ${{ matrix.task.inputs }}   # χ-sep degraded-input task (l3): pipeline.py --inputs
           FIELDMAPS: ${{ matrix.task.fieldmaps }}   # split by total-field source: pipeline.py --fieldmaps
           CELLS: ${{ matrix.task.cells }}           # split into cell ranges: pipeline.py --cells k/n
+          VARIANTS: ${{ matrix.task.variants }}     # one isolated variant per job: pipeline.py --variants
           RESUME: ${{ matrix.task.resume }}         # skip cells already scored and fresh: pipeline.py --resume
         run: |
           MODE="$DS_MODE"
@@ -301,8 +306,11 @@ jobs:
           # A focus job too long for its runner's cap is split further into contiguous ranges of its
           # composed cells (score_plan.split_focus): f-<slug>[-<field map>]-c<k> runs range k of n.
           [ -n "$CELLS" ] && ARGS="$ARGS --cells $CELLS"
-          # A push run's focus job skips the cells an earlier (cancelled / capped) run already published
-          # at an up-to-date commit, so a re-planned job resumes instead of starting from cell 0.
+          # An isolated pair too long for one lent-runner job runs one variant per job (f-<slug>-iso-tuned).
+          [ -n "$VARIANTS" ] && ARGS="$ARGS --variants $VARIANTS"
+          # A push run's focus job (and every lent-runner job) skips the cells and isolated runs an
+          # earlier (cancelled / capped) run already published at an up-to-date commit, so a re-planned
+          # job resumes instead of starting from cell 0.
           [ "$RESUME" = "true" ] && ARGS="$ARGS --resume"
           echo "== task $TASK_ID: pipeline.py $ARGS =="
           t0=$(date +%s)

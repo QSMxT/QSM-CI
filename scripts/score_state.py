@@ -34,7 +34,9 @@ def is_ancestor(a: str, b: str) -> bool:
 
 
 def done_ids(tasks: list[dict], done_dir: Path) -> set[str]:
-    return {t["id"] for t in tasks if (done_dir / f"runs-{t['id']}.done").exists()}
+    """Tasks that finished (their `.done` marker), plus the lent-runner jobs the planner settled
+    without running them because every row they score is already scored and fresh."""
+    return {t["id"] for t in tasks if t.get("settled") or (done_dir / f"runs-{t['id']}.done").exists()}
 
 
 def unfinished(tasks: list[dict], done: set[str]) -> tuple[bool, set[str]]:
@@ -77,12 +79,16 @@ def update(cur: dict, sha: str, tasks: list[dict], done: set[str], ancestor=is_a
         # dedicated ones ran as their own focus tasks and are settled per task above.
         if ran_full and not p_full:
             new_slugs -= {s for s in old_slugs if not any(t.get("focus") == s for t in tasks)}
-        # A split task (score_plan.split_fieldmaps) `replaces` its method's unsplit focus id: that
-        # older entry is paid off once every part of the split finished.
+        # A split task (score_plan.size_focus) `replaces` the coarser ids it was cut from, comma-
+        # separated: its method's unsplit focus id, and for a part of a field map's job that job's id
+        # too (f-inr-qsm-gt-p1of2 replaces "f-inr-qsm,f-inr-qsm-gt"). Each older entry is paid off once
+        # every part this run planned for it finished (or was settled as already fresh); parts of an
+        # earlier run that finished are not re-planned (the planner settles them), so parts that
+        # complete in separate runs still clear it.
         parts: dict[str, list[str]] = {}
         for t in tasks:
-            if t.get("replaces"):
-                parts.setdefault(t["replaces"], []).append(t["id"])
+            for r in filter(None, str(t.get("replaces") or "").split(",")):
+                parts.setdefault(r, []).append(t["id"])
         replaced = {r for r, ids in parts.items() if all(i in planned_done for i in ids)}
         new_manual = (old_manual - planned_done - replaced) | set(skipped_manual or [])
     else:

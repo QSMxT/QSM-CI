@@ -40,10 +40,11 @@ split by total-field source and/or into ranges of its composed cells (size_focus
     highmem       highmem()    the runners in repository variable QSMCI_HIGHMEM_RUNNER, 720-min cap,
                                1 container. Dispatch-only (named in `scope`), in runs of their own,
                                capped at max_parallel. Variable unset: identical to (unset).
-    highmem-long  highmem()    the same lent runners for multi-day CPU jobs (MoDIP, INR-QSM: per-subject
-                               optimisations whose reference runs on a GPU). Honours `timeout_minutes:`
-                               (default and ceiling LONG_TIMEOUT_MAX, GitHub's 5-day self-hosted job
-                               limit) and `jobs:` (default 1). Dispatch-only like highmem, and a run
+                               Focus jobs sized to LENT_MAX_HOURS ("Sizing lent-runner jobs").
+    highmem-long  highmem()    the same lent runners for long CPU work (MoDIP, INR-QSM: per-subject
+                               optimisations whose reference runs on a GPU). Job cap LENT_JOB_MINUTES
+                               (under the lent runner's 13-h shutdown); `timeout_minutes:` stays the
+                               per-run budget, and `jobs:` (default 1). Dispatch-only like highmem, and a run
                                carrying one is capped at ONE job at a time whatever max_parallel says,
                                so the other lent runner stays free for parity jobs (QSMCI_PARITY_RUNNER
                                is the same pool, and a self-hosted job queued 24 h is failed).
@@ -51,9 +52,8 @@ split by total-field source and/or into ranges of its composed cells (size_focus
                                A highmem-long DIPOLE's focus job is split by total-field source from
                                the start (split_fieldmaps): f-<slug>-gt runs its isolated runs (default
                                + tuned) and the gt columns, and f-<slug>-<field map> runs that field
-                               map's columns only (pipeline.py --fieldmaps, --mode composed). Each job
-                               is then hours to about a day and a half, a lost runner costs one field
-                               map, and the rows of each publish with the run.
+                               map's columns only (pipeline.py --fieldmaps, --mode composed). Each is
+                               then sized to LENT_MAX_HOURS like any lent job (size_focus).
     manual | gpu  MANUAL       NEVER scheduled automatically (not on push, not by scope=all). Scored
                                only when a workflow_dispatch names the slug in `scope`, or with
                                include_manual=true. For methods whose CPU cost makes them infeasible
@@ -105,6 +105,7 @@ import yaml
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 from ci_eval_targets import COSMETIC_KEYS  # noqa: E402
+import score_fresh  # noqa: E402
 
 STATE_PATH = "results/scoring-state.json"
 # Paths whose change re-scores everything (the scorer / orchestration). Mirrors score.yml's `paths:`
@@ -131,6 +132,16 @@ LONG_TIMEOUT_MAX = 7200   # GitHub's job execution limit on self-hosted runners:
 TIERS = {"": "hosted", "hosted": "hosted", "hosted-large": "hosted-large", "highmem": "highmem",
          "highmem-long": "highmem-long", "self-hosted": "self-hosted", "manual": "manual", "gpu": "manual"}
 LENT_TIERS = ("highmem", "highmem-long")   # the QSMCI_HIGHMEM_RUNNER pool
+# The lent runner is shut down 13 h after a job starts: f-inr-qsm-gt (score runs 43137514862,
+# 44654877699, 45292298269) and f-inr-qsm-romeo-qsmrs (45292298269) each got "The runner has received
+# a shutdown signal" 12 h 59 m 30 s in. That shutdown skips every `if: always()` step, so the job's
+# finished rows were never uploaded (in 44654877699 both isolated INR-QSM runs, 10 h of work, were
+# lost). So a lent job is capped by GitHub first, at LENT_JOB_MINUTES: a timed-out job is cancelled
+# the ordinary way, its teardown and upload run, and merge publishes what it finished. And lent jobs
+# are sized to LENT_MAX_HOURS from recorded runtimes (size_focus), leaving room for a slower runner
+# (INR-QSM inversions took 5.1-5.3 h on 2026-11-20 and 7.0 h on 2026-11-24).
+LENT_JOB_MINUTES = 720
+LENT_MAX_HOURS = 8.0
 
 
 # ---------------------------------------------------------------------------------------------------
@@ -192,8 +203,11 @@ def route(spec: dict | None) -> dict:
         return {"runs_on": highmem()["runs_on"], "timeout": HIGHMEM_TIMEOUT, "jobs": 1}
     if tier == "highmem-long":
         t, j = (spec or {}).get("timeout_minutes"), (spec or {}).get("jobs")
+        # timeout_minutes: stays the per-RUN budget (qsm_ci.containers.timeout_s); the JOB is capped
+        # below the lent runner's 13-h shutdown (LENT_JOB_MINUTES)
         return {"runs_on": highmem()["runs_on"],
-                "timeout": min(t, LONG_TIMEOUT_MAX) if isinstance(t, int) and t > 0 else LONG_TIMEOUT_MAX,
+                "timeout": min(t, LONG_TIMEOUT_MAX, LENT_JOB_MINUTES) if isinstance(t, int) and t > 0
+                else LENT_JOB_MINUTES,
                 "jobs": j if isinstance(j, int) and j > 0 else 1}
     base = {"hosted": HOSTED, "hosted-large": HOSTED_LARGE, "self-hosted": SELFHOSTED,
             "manual": SELFHOSTED}[tier]
@@ -277,6 +291,22 @@ def manual_phantoms(spec) -> set[str]:
 
 
 # ---------------------------------------------------------------------------------------------------
+# Sizing lent-runner jobs (highmem, highmem-long): the same split, to LENT_MAX_HOURS (8 h)
+# ---------------------------------------------------------------------------------------------------
+# The lent runner is shut down 13 h into a job (see LENT_JOB_MINUTES), and INR-QSM's gt job alone
+# (isolated default + tuned + 2 gt cells, ~5-7 h per inversion) could never finish. size_focus sizes
+# lent focus jobs like hosted ones but to LENT_MAX_HOURS, with one container (jobs: 1) and each cell
+# costed from the method's composed rows where it has them (closer than its isolated runtime on a
+# runner it has to itself: MoDIP 2.9 h isolated, 1.3 h a cell). When the isolated runs do not fit
+# beside any cells they get a job of their own (f-<slug>-iso), or one per variant when the pair is
+# too long (f-<slug>-iso-default, -iso-tuned; pipeline.py --variants), and the cells are ranged as
+# f-<slug>-<source>-p<k>of<n>. An in-vivo job too long for one part is split by variant the same way.
+# Every lent job resumes (pipeline.py --resume), and a job whose every row is already scored and fresh
+# is not scheduled at all (settle_fresh), so a re-dispatch after a cut-off run runs only what is owed.
+# A part's `replaces` lists every coarser id it was cut from (f-inr-qsm, f-inr-qsm-gt), so the older
+# pending_manual entries clear once all their parts are done, across runs (score_state).
+
+# ---------------------------------------------------------------------------------------------------
 # Sizing focus jobs: split one that would outrun GitHub's 6-h hosted cap
 # ---------------------------------------------------------------------------------------------------
 # A QSM.rs release repins many *-qsmrs methods at once, and each changed method gets one focus job
@@ -312,14 +342,80 @@ SPAN_STAGES = ("bfr+dipole", "end-to-end", "pipeline")
 
 
 def stage_costs(runs: list[dict]) -> dict[str, dict[str, float]]:
-    """{slug: {variant: seconds}}: each method's recorded isolated runtime on the sim phantom."""
+    """{slug: {variant: seconds}}: each method's recorded isolated runtime on the sim phantom, plus
+    "composed": the median time its own stage took in its composed rows (the row's whole-pipeline
+    runtime_s less its field map's and local field's isolated runtimes), and "invivo-<variant>": its
+    isolated runtimes on the in-vivo track. A method with no isolated sim runtime (INR-QSM: its
+    isolated rows are DNFs from capped jobs) is costed from "composed" (see _cost)."""
     out: dict[str, dict[str, float]] = {}
     for r in runs:
-        if (r.get("track") != "sim" or r.get("mode") != "isolated" or r.get("phantom") not in (None, "sim")
-                or r.get("inputs") not in (None, "gt") or not r.get("runtime_s") or not r.get("slug")):
+        if (r.get("mode") != "isolated" or r.get("inputs") not in (None, "gt") or not r.get("runtime_s")
+                or not r.get("slug")):
             continue
-        out.setdefault(r["slug"], {})[r.get("variant") or "default"] = float(r["runtime_s"])
+        if r.get("track") == "sim" and r.get("phantom") in (None, "sim"):
+            out.setdefault(r["slug"], {})[r.get("variant") or "default"] = float(r["runtime_s"])
+        elif r.get("track") == "invivo":
+            out.setdefault(r["slug"], {})["invivo-" + (r.get("variant") or "default")] = float(r["runtime_s"])
+    nets: dict[str, list[float]] = {}
+    for r in runs:
+        combo = r.get("combo") or {}
+        if (r.get("track") != "sim" or r.get("mode") != "composed" or r.get("phantom") not in (None, "sim")
+                or r.get("status") != "ok" or not r.get("runtime_s") or not combo):
+            continue
+        last = combo.get("dipole") or r.get("slug")
+        if not last or "+" in str(last):
+            continue
+        up = [v for k, v in combo.items() if k in ("field_mapping", "bfr") and v and v != "gt"]
+        nets.setdefault(last, []).append(
+            float(r["runtime_s"]) - sum(out.get(u, {}).get("default", 0.0) for u in up))
+    for slug, xs in nets.items():
+        xs = sorted(x for x in xs if x > 0)
+        if xs:
+            out.setdefault(slug, {})["composed"] = xs[len(xs) // 2]
     return out
+
+
+def _cost(costs: dict, slug: str, variant: str = "default", composed: bool = False) -> float:
+    """Seconds one run of `slug` takes: its recorded isolated runtime (a cell's last stage prefers its
+    composed-row time when `composed`, as on the lent runners, where one container runs alone and that
+    is the closer measure: MoDIP 2.9 h isolated, 1.3 h per cell), else its composed-row time, else
+    DEFAULT_RUN_S. A tuned variant with no recorded runtime costs what the default does."""
+    c = costs.get(slug, {})
+    if composed and "composed" in c:
+        return c["composed"]
+    if variant in c:
+        return c[variant]
+    if variant == "tuned" and "default" in c:
+        return c["default"]
+    return c.get("composed", DEFAULT_RUN_S)
+
+
+def has_tuned(spec, dataset: str = "sim") -> bool:
+    """Does the method declare tuned parameters for this dataset (pipeline._tuned_overrides: a
+    per-dataset map, or a legacy scalar for sim)? Then its isolated job runs a tuned variant too."""
+    for p in (spec or {}).get("parameters") or []:
+        if isinstance(p, dict) and "tuned" in p:
+            t = p["tuned"]
+            if (isinstance(t, dict) and t.get(dataset) is not None) or (not isinstance(t, dict) and dataset == "sim"):
+                return True
+    return False
+
+
+def iso_variants_of(spec, costs: dict, slug: str, dataset: str = "sim") -> list[str]:
+    """The isolated variants a focus job runs: default, and tuned when declared (or recorded)."""
+    key = "tuned" if dataset == "sim" else f"{dataset}-tuned"
+    return ["default"] + (["tuned"] if has_tuned(spec, dataset) or key in costs.get(slug, {}) else [])
+
+
+def iso_unit_ids(slug: str, variants, track: str = "sim") -> list[str]:
+    """Row ids of a method's isolated runs on the track's default phantom (pipeline.iso_run_id)."""
+    sfx = "" if track == "sim" else f"-{track}"
+    return [f"{slug}-iso{'' if v == 'default' else '-tuned'}{sfx}" for v in variants]
+
+
+def cell_unit_id(cell: tuple) -> str:
+    """pipeline.cell_id on the default phantom."""
+    return f"{cell[1]}~{cell[2]}~{cell[3]}-cmp" if cell[0] == "cell" else f"{cell[1]}~{cell[2]}-cmp"
 
 
 def _consumes_totalfield(spec) -> bool:
@@ -380,25 +476,32 @@ def cell_range(n_cells: int, k: int, n: int) -> range:
     return range(k * n_cells // n, (k + 1) * n_cells // n)
 
 
-def part_seconds(cells: list, costs: dict, iso: str | None = None, e2e=()) -> float:
+def part_seconds(cells: list, costs: dict, iso: str | None = None, e2e=(), variants=None,
+                 composed: bool = False) -> float:
     """Container-seconds of a part: each field map and each local field it needs once, each cell's
-    last stage, the end-to-end spans and (`iso`) the focus method's isolated runs."""
-    c = lambda s, v="default": costs.get(s, {}).get(v, DEFAULT_RUN_S if v == "default" else 0.0)  # noqa: E731
+    last stage, the end-to-end spans and (`iso`) the focus method's isolated runs: `variants` (default
+    + any recorded tuned when None). `composed`: cost each cell's last stage from its composed rows."""
+    c = lambda s: _cost(costs, s)  # noqa: E731
     fms = {x[1] for x in cells if x[1] != "gt"}
     cols = {(x[1], x[2]) for x in cells if x[0] == "cell"}
     total = sum(c(f) for f in fms) + sum(c(b) for _, b in cols)
-    total += sum(c(x[3]) if x[0] == "cell" else c(x[2]) for x in cells) + sum(c(s) for s in e2e)
+    total += sum(_cost(costs, x[3] if x[0] == "cell" else x[2], composed=composed) for x in cells)
+    total += sum(c(s) for s in e2e)
     if iso:
-        total += c(iso) + c(iso, "tuned")
+        if variants is None:
+            variants = ["default"] + (["tuned"] if "tuned" in costs.get(iso, {}) else [])
+        total += sum(_cost(costs, iso, v) for v in variants)
     return total
 
 
-def parts_needed(cells: list, costs: dict, budget_s: float, iso: str | None, e2e=()) -> tuple[int, float]:
+def parts_needed(cells: list, costs: dict, budget_s: float, iso: str | None, e2e=(), variants=None,
+                 composed: bool = False) -> tuple[int, float]:
     """(n, longest part's container-seconds): the fewest contiguous cell ranges whose longest fits
     `budget_s`, the isolated runs and end-to-end spans riding with range 0."""
     for n in range(1, max(1, len(cells)) + 1):
         worst = max(part_seconds([cells[i] for i in cell_range(len(cells), k, n)], costs,
-                                 iso if k == 0 else None, e2e if k == 0 else ()) for k in range(n))
+                                 iso if k == 0 else None, e2e if k == 0 else (), variants, composed)
+                    for k in range(n))
         if worst <= budget_s:
             return n, worst
     return n, worst
@@ -488,46 +591,106 @@ def dedicated(root: Path) -> list[str]:
 
 
 def size_focus(t: dict, spec: dict | None, specs: dict, costs: dict | None,
-               hours: float = TARGET_PART_HOURS, estimates: dict | None = None) -> list[dict]:
-    """A focus task as the job(s) that run it (see "Sizing focus jobs"). Without `costs`, or off the
-    hosted tiers, only split_fieldmaps' declared split applies. `estimates` collects each sized job's
-    estimated wall-clock hours by id."""
+               hours: float = TARGET_PART_HOURS, estimates: dict | None = None,
+               units: dict | None = None) -> list[dict]:
+    """A focus task as the job(s) that run it (see "Sizing focus jobs" and "Sizing lent-runner jobs").
+    Without `costs`, or off the sized tiers, only split_fieldmaps' declared split applies. `estimates`
+    collects each sized job's estimated wall-clock hours by id, `units` the row ids it scores (None
+    when they cannot be listed), which the planner uses to leave a fully fresh lent part unscheduled."""
     forced = split_fieldmaps(spec, specs)
+    tier = tier_of(spec)
+    lent = tier in LENT_TIERS
 
     def by_source(g: str) -> dict:
         return {**t, "id": f"{t['id']}-{g}", "fieldmaps": g, "mode": "both" if g == "gt" else "composed",
                 "replaces": t["id"]}
-    if not (costs is not None and tier_of(spec) in SPLIT_TIERS and t.get("phantom") == "sim"
+    if not (costs is not None and (tier in SPLIT_TIERS or lent) and t.get("phantom") == "sim"
             and stage_of(spec) in QSM_STAGES):
         return [by_source(g) for g in forced] if forced else [t]
+    if lent:
+        hours = LENT_MAX_HOURS
+    focus = t["focus"]
     jobs = t.get("jobs") or 1
     budget = hours * 3600 * jobs
-    sources, cells, e2e = focus_cells(specs, t["focus"], (t.get("exclude") or "").split(","))
+    sources, cells, e2e = focus_cells(specs, focus, (t.get("exclude") or "").split(","))
+    variants = iso_variants_of(spec, costs, focus)
     groups = forced
     if (not groups and len(sources) > 1 and stage_of(spec) != "field-mapping"
-            and part_seconds(cells, costs, t["focus"], e2e) > budget):
+            and part_seconds(cells, costs, focus, e2e, variants, lent) > budget):
         groups = sources
     out = []
+
+    def emit(job: dict, gcells: list, iso_vs, ge2e) -> None:
+        out.append(job)
+        secs = part_seconds(gcells, costs, focus if iso_vs else None, ge2e, iso_vs, lent)
+        if estimates is not None:
+            estimates[job["id"]] = secs / 3600 / jobs
+        if units is not None:
+            units[job["id"]] = None if ge2e else (iso_unit_ids(focus, iso_vs or []) + [cell_unit_id(c) for c in gcells])
+
     for g in groups or [None]:
         if g is None:
-            base, gcells, ge2e, iso = t, cells, e2e, t["focus"]
+            base, gcells, ge2e, iso, rep = t, cells, e2e, True, t["id"]
         else:
             base, gcells = by_source(g), [c for c in cells if c[1] == g]
-            ge2e, iso = (e2e, t["focus"]) if g == "gt" else ((), None)
-        n, worst = parts_needed(gcells, costs, budget, iso, ge2e)
-        if n == 1:
-            out.append(base)
-            if estimates is not None:
-                estimates[base["id"]] = worst / 3600 / jobs
+            ge2e, iso = (e2e, True) if g == "gt" else ((), False)
+            rep = t["id"]
+        vs = variants if iso else None
+        n, worst = parts_needed(gcells, costs, budget, focus if iso else None, ge2e, vs, lent)
+        if iso and worst > budget:
+            # The isolated runs do not fit beside any cells (INR-QSM: ~5-7 h per inversion, default
+            # and tuned): give them their own job, or one per variant, and range the cells without them.
+            rep = t["id"] if g is None else f"{t['id']},{base['id']}"
+            iso_job = {k: v for k, v in t.items() if k not in ("fieldmaps", "cells")}
+            if len(vs) == 1 or sum(_cost(costs, focus, v) for v in vs) <= budget:
+                emit({**iso_job, "id": f"{t['id']}-iso", "mode": "isolated", "replaces": rep}, [], vs, ())
+            else:
+                for v in vs:
+                    emit({**iso_job, "id": f"{t['id']}-iso-{v}", "mode": "isolated", "variants": v,
+                          "replaces": rep}, [], [v], ())
+            if not gcells and not ge2e:
+                continue
+            n, _ = parts_needed(gcells, costs, budget, None, ge2e, None, lent)
+            for k in range(n):
+                rng = [gcells[i] for i in cell_range(len(gcells), k, n)]
+                emit({**base, "id": f"{base['id']}-p{k + 1}of{n}", "cells": f"{k}/{n}", "mode": "composed",
+                      "replaces": rep}, rng, None, ge2e if k == 0 else ())
             continue
+        if n == 1:
+            emit(base, gcells, vs if base.get("mode", "both") != "composed" else None, ge2e)
+            continue
+        if g is not None:
+            rep = f"{t['id']},{base['id']}"
         for k in range(n):
-            part = {**base, "id": f"{base['id']}-p{k + 1}of{n}", "cells": f"{k}/{n}", "replaces": t["id"]}
+            part = {**base, "id": f"{base['id']}-p{k + 1}of{n}", "cells": f"{k}/{n}", "replaces": rep}
             if k:
                 part["mode"] = "composed"   # the isolated runs (and end-to-end spans) ride with part 1
-            out.append(part)
-            if estimates is not None:
-                estimates[part["id"]] = part_seconds([gcells[i] for i in cell_range(len(gcells), k, n)], costs,
-                                                     iso if k == 0 else None, ge2e if k == 0 else ()) / 3600 / jobs
+            emit(part, [gcells[i] for i in cell_range(len(gcells), k, n)], vs if k == 0 else None,
+                 ge2e if k == 0 else ())
+    return out
+
+
+def size_invivo(t: dict, spec: dict | None, costs: dict | None, estimates: dict | None = None,
+                units: dict | None = None) -> list[dict]:
+    """A lent-runner in-vivo task (isolated runs only): one job, or one per variant when together
+    they would run past LENT_MAX_HOURS. Other tiers' in-vivo tasks are left as they are."""
+    if costs is None or tier_of(spec) not in LENT_TIERS:
+        return [t]
+    s, jobs = t["focus"], t.get("jobs") or 1
+    vs = iso_variants_of(spec, costs, s, "invivo")
+    secs = {v: _cost(costs, s, "invivo-" + v) if ("invivo-" + v) in costs.get(s, {}) else
+            _cost(costs, s, "invivo-default") if "invivo-default" in costs.get(s, {}) else _cost(costs, s, v)
+            for v in vs}
+    if len(vs) > 1 and sum(secs.values()) > LENT_MAX_HOURS * 3600 * jobs:
+        out = [{**t, "id": f"{t['id']}-{v}", "variants": v, "replaces": t["id"]} for v in vs]
+    else:
+        out = [t]
+    for j in out:
+        jv = [j["variants"]] if j.get("variants") else vs
+        if estimates is not None:
+            estimates[j["id"]] = sum(secs[v] for v in jv) / 3600 / jobs
+        if units is not None:
+            units[j["id"]] = iso_unit_ids(s, jv, "invivo")
     return out
 
 
@@ -535,13 +698,14 @@ def plan_tasks(root: Path, reg: dict, *, full: bool, slugs: list[str], include: 
                shards: int = 24, explicit: set[str] | None = None,
                include_manual: bool = False, include_highmem: bool = False,
                costs: dict | None = None, part_hours: float = TARGET_PART_HOURS, resume: bool = False,
-               estimates: dict | None = None) -> list[dict]:
+               estimates: dict | None = None, units: dict | None = None) -> list[dict]:
     """The matrix for a run. `explicit` = slugs a human named on dispatch: they (and their manual
     phantoms) are planned even when their tier is manual or highmem. `include_manual` lifts that for
     the manual tier, `include_highmem` (internal) for highmem and highmem-long. `costs` (stage_costs)
     sizes the hosted focus jobs (size_focus; None = no automatic split), `part_hours` is the target
-    length of one part, and `resume` marks the sim focus jobs to skip cells already scored and fresh
-    (pipeline.py --resume)."""
+    length of one part (LENT_MAX_HOURS on the lent tiers), and `resume` marks the sim focus jobs to
+    skip cells already scored and fresh (pipeline.py --resume; always on for the lent tiers).
+    `estimates` / `units` collect each sized job's hours and row ids (size_focus)."""
     explicit = explicit or set()
     specs = {s: load_spec(root, s) for s in all_slugs(root)}
 
@@ -575,11 +739,11 @@ def plan_tasks(root: Path, reg: dict, *, full: bool, slugs: list[str], include: 
                 # would overrun its cap, and their combos are owned by their own focus jobs.
                 if heavy_dipoles and not is_dipole(spec) and not is_chisep(spec):
                     t["exclude"] = heavy_dipoles
-                if resume and ph == "sim" and stage_of(spec) in QSM_STAGES:
+                if (resume or tier_of(spec) in LENT_TIERS) and ph == "sim" and stage_of(spec) in QSM_STAGES:
                     t["resume"] = "true"
                 # One job, or one per total-field source / cell range (size_focus). A part's `replaces`
                 # names the unsplit id, so an older pending_manual entry clears once all parts finish.
-                parts = size_focus(t, spec, specs, costs, part_hours, estimates)
+                parts = size_focus(t, spec, specs, costs, part_hours, estimates, units)
                 tasks += parts
                 if len(parts) > 1 or parts[0] is not t:
                     continue
@@ -598,8 +762,15 @@ def plan_tasks(root: Path, reg: dict, *, full: bool, slugs: list[str], include: 
         return tasks
 
     def invivo_tasks(sl: list[str]) -> list[dict]:
-        return [{"id": "iv-" + s, "focus": s, "phantom": "invivo", "track": "invivo", **route(specs[s])}
-                for s in sorted(set(sl)) if s in specs and is_dipole(specs[s]) and allowed(s)]
+        out = []
+        for s in sorted(set(sl)):
+            if not (s in specs and is_dipole(specs[s]) and allowed(s)):
+                continue
+            t = {"id": "iv-" + s, "focus": s, "phantom": "invivo", "track": "invivo", **route(specs[s])}
+            if tier_of(specs[s]) in LENT_TIERS:
+                t["resume"] = "true"   # a re-dispatch skips the in-vivo runs a cut-off job published
+            out += size_invivo(t, specs[s], costs, estimates, units)
+        return out
 
     if include:
         return [{"id": "manual-include", "include": include, "mode": "composed", "phantom": "sim", **HOSTED}]
@@ -773,12 +944,27 @@ def subtract_in_progress(tasks: list[dict], head: str, others: list[dict]) -> tu
     return keep, dropped
 
 
+def settle_fresh(tasks: list[dict], units: dict, on_lent, is_fresh) -> tuple[list[dict], list[dict]]:
+    """(to run, settled): a lent-runner job whose every row (units[id]) is already scored and fresh is
+    not scheduled. It goes into the run's scoring state as done (`settled`), so the pending_manual
+    entries it stands for are paid off like a finished job's (score_state.done_ids)."""
+    keep, settled = [], []
+    for t in tasks:
+        if on_lent(t) and is_fresh(units.get(t["id"])):
+            settled.append({**t, "settled": "fresh"})
+        else:
+            keep.append(t)
+    return keep, settled
+
+
 # ---------------------------------------------------------------------------------------------------
 
-def decide(env: dict, root: Path, reg: dict, state: dict, runs: "list[dict] | None" = None) -> dict:
+def decide(env: dict, root: Path, reg: dict, state: dict, runs: "list[dict] | None" = None,
+           fresh: "set[str] | None" = None) -> dict:
     """The whole decision, as data. Pure given env/root/reg/state except for git (scope diffs).
     `runs` (results/index.json's, read when None) sizes a full re-run when SHARDS is empty or
-    `auto`."""
+    `auto`. `fresh` (row ids a re-run would only reproduce; score_fresh.fresh_ids over `runs` at SHA
+    when None) settles the lent-runner jobs whose every run is already scored (settle_fresh)."""
     event, sha = env.get("EVENT", "push"), env["SHA"]
     scope_in, include = (env.get("SCOPE") or "auto").strip(), (env.get("INCLUDE") or "").strip()
     shards_in = (env.get("SHARDS") or "auto").strip().lower()
@@ -833,21 +1019,25 @@ def decide(env: dict, root: Path, reg: dict, state: dict, runs: "list[dict] | No
     else:
         shards = MIN_SHARDS
     # Size the focus jobs to TARGET_PART_HOURS; only if that outgrows one matrix, allow longer parts.
+    units: dict[str, "list[str] | None"] = {}
     for part_hours in PART_HOURS_STEPS:
         estimates: dict[str, float] = {}
         tasks = plan_tasks(root, reg, full=full, slugs=slugs, include=include, shards=shards,
                            explicit=explicit, include_manual=include_manual, costs=costs,
-                           part_hours=part_hours, resume=resume, estimates=estimates)
+                           part_hours=part_hours, resume=resume, estimates=estimates, units=units)
         if len(split_pools(tasks)[0]) <= MATRIX_MAX:
             break
     if part_hours != TARGET_PART_HOURS:
         notes.append(f"focus jobs sized to {part_hours:g} h (not {TARGET_PART_HOURS:g} h) to keep the "
                      f"matrix within GitHub's {MATRIX_MAX} jobs")
-    if estimates:
-        longest = max(estimates, key=estimates.get)
-        hosted_est = [estimates[t["id"]] for t in split_pools(tasks)[0] if t["id"] in estimates]
-        notes.append(f"{len(estimates)} sized focus job(s), longest {longest} at about "
-                     f"{estimates[longest]:.1f} h; together about {makespan_hours(hosted_est, HOSTED_MAX_PARALLEL):.1f} h "
+    on_lent = lambda t: bool(t.get("focus")) and tier_of(load_spec(root, t["focus"])) in LENT_TIERS  # noqa: E731
+    hosted_est = {t["id"]: estimates[t["id"]] for t in split_pools(tasks)[0]
+                  if t["id"] in estimates and not on_lent(t)}
+    if hosted_est:
+        longest = max(hosted_est, key=hosted_est.get)
+        notes.append(f"{len(hosted_est)} sized focus job(s), longest {longest} at about "
+                     f"{hosted_est[longest]:.1f} h; together about "
+                     f"{makespan_hours(list(hosted_est.values()), HOSTED_MAX_PARALLEL):.1f} h "
                      f"on {HOSTED_MAX_PARALLEL} hosted runners (estimated from recorded runtimes)")
     # Manual-tier work this run OWES but is not allowed to schedule. `scored_sha` will advance past
     # the change that made it due, so it must be remembered explicitly: merge folds it into the
@@ -856,18 +1046,36 @@ def decide(env: dict, root: Path, reg: dict, state: dict, runs: "list[dict] | No
     planned = {t["id"] for t in tasks}
     would = plan_tasks(root, reg, full=full, slugs=slugs, include=include, shards=shards,
                        explicit=explicit, include_manual=True, include_highmem=True, costs=costs,
-                       part_hours=part_hours) if not include else []
+                       part_hours=part_hours, units=units) if not include else []
+
+    # Lent-runner jobs whose every run is already scored and fresh are not run again (nor owed).
+    fresh_cache: list = []
+
+    def is_fresh(ids) -> bool:
+        if not fresh_cache:
+            fresh_cache.append(fresh if fresh is not None else
+                               score_fresh.fresh_ids(runs, sha, modes=("composed", "isolated")))
+        return bool(ids) and all(i in fresh_cache[0] for i in ids)
+    would, _ = settle_fresh(would, units, on_lent, is_fresh)
     skipped_manual = [t["id"] for t in would if t["id"] not in planned]
-    on_lent = lambda t: bool(t.get("focus")) and tier_of(load_spec(root, t["focus"])) in LENT_TIERS  # noqa: E731
     owed = [i for i in state.get("pending_manual", []) if i not in planned]
     if owed and (include_manual or explicit) and not include:
         cand = plan_tasks(root, reg, full=False, slugs=all_slugs(root), include_manual=True, include_highmem=True,
-                          costs=costs, part_hours=part_hours)
+                          costs=costs, part_hours=part_hours, units=units)
         extra = [t for t in cand if t["id"] in owed
                  and (t.get("focus") in explicit or (include_manual and not on_lent(t)))]
         if extra:
             notes.append(f"pending manual tasks carried: {', '.join(t['id'] for t in extra)}")
             tasks += extra
+    tasks, settled = settle_fresh(tasks, units, on_lent, is_fresh)
+    if settled:
+        notes.append(f"already scored at an up-to-date commit, not run again: {', '.join(t['id'] for t in settled)}")
+    lent_est = {t["id"]: estimates[t["id"]] for t in tasks if on_lent(t) and t["id"] in estimates}
+    if lent_est:
+        longest = max(lent_est, key=lent_est.get)
+        notes.append(f"{len(lent_est)} lent-runner job(s) sized to {LENT_MAX_HOURS:g} h, longest {longest} at about "
+                     f"{lent_est[longest]:.1f} h; together about {sum(lent_est.values()):.1f} h one after another "
+                     f"(estimated from recorded runtimes; each job capped at {LENT_JOB_MINUTES // 60} h)")
     dropped: list[str] = []
     if tasks and os.environ.get("GH_TOKEN") and env.get("REPO"):
         others = in_progress_runs(env["REPO"], env.get("RUN_ID", ""))
@@ -888,7 +1096,7 @@ def decide(env: dict, root: Path, reg: dict, state: dict, runs: "list[dict] | No
     return {"full": full, "slugs": slugs, "base": base, "tasks": tasks, "dropped": dropped,
             "skipped_manual": skipped_manual, "notes": notes, "max_parallel": max_parallel,
             "estimates": {i: h for i, h in estimates.items() if i in {t["id"] for t in tasks}},
-            "part_hours": part_hours}
+            "part_hours": part_hours, "settled": settled}
 
 
 def main() -> None:
@@ -917,7 +1125,8 @@ def main() -> None:
               f"with include_manual=true or scope=<slug> to run them, highmem ones only by scope=<slug>): "
               f"{', '.join(d['skipped_manual'])}")
     with open(os.environ.get("GITHUB_OUTPUT", "/dev/stdout"), "a") as out:
-        out.write(f"tasks={json.dumps(d['tasks'])}\n")
+        # merge's scoring state also gets the settled (fresh, unscheduled) jobs, counted as done
+        out.write(f"tasks={json.dumps(d['tasks'] + d['settled'])}\n")
         out.write(f"hosted_tasks={json.dumps(hosted)}\n")
         out.write(f"selfhosted_tasks={json.dumps(selfhosted)}\n")
         out.write(f"full={'true' if d['full'] else 'false'}\n")
