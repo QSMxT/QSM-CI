@@ -140,7 +140,8 @@ def test_a_dipole_focus_is_split_by_field_source_then_by_cells_only_where_needed
     assert [t[i]["fieldmaps"] for i in medi] == ["gt", "gt", "lap", "romeo"]
     assert [t[i]["mode"] for i in medi] == ["both", "composed", "composed", "composed"]
     assert [t[i].get("cells") for i in medi] == ["0/2", "1/2", None, None]
-    assert all(t[i]["replaces"] == "f-medi" for i in medi)
+    # a part of a field map's job pays off both the unsplit id and that field map's job id
+    assert [t[i]["replaces"] for i in medi] == ["f-medi,f-medi-gt", "f-medi,f-medi-gt", "f-medi", "f-medi"]
     assert all(est[i] <= sp.TARGET_PART_HOURS for i in medi)
     # tkd: fits one job, so it stays whole (no split, no estimate overrun)
     assert "f-tkd" in t and "cells" not in t["f-tkd"] and est["f-tkd"] <= sp.TARGET_PART_HOURS

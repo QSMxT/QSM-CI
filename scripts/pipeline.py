@@ -1134,51 +1134,26 @@ def load_index_runs(path: "Path | None" = None) -> list:
         return []
 
 
-# --resume: paths whose change can move ANY score (the scorer, the stage contract, the container CLI,
-# the phantom registry, methods' shared build files). A row scored before such a change is not reused.
-RESUME_SCORER_PATHS = ("eval/", "qsm_ci/", "stages.yml", "scripts/pipeline.py", "scripts/scoring.py",
-                       "scripts/publish_volumes.py", "scripts/datasets.json", "algorithms/_")
+# --resume: which rows a re-run would only reproduce. The rule lives in score_fresh.py, shared with
+# score_plan.py (which leaves a lent-runner part whose every run is fresh unscheduled).
+from score_fresh import RESUME_SCORER_PATHS, row_members  # noqa: E402,F401
+import score_fresh  # noqa: E402
 
 
 def _git_changed(base: str, head: str) -> "set[str] | None":
-    """Files changed in base..head, or None when git cannot tell (not an ancestor, not in history)."""
-    try:
-        if subprocess.run(["git", "merge-base", "--is-ancestor", base, head], cwd=ROOT,
-                          capture_output=True, timeout=60).returncode != 0:
-            return None
-        r = subprocess.run(["git", "diff", "--name-only", base, head], cwd=ROOT, capture_output=True,
-                           text=True, timeout=120)
-    except (OSError, subprocess.SubprocessError):
-        return None
-    return set(r.stdout.split()) if r.returncode == 0 else None
+    """Files changed in base..head outside `[skip score]` commits, or None when git cannot tell."""
+    return score_fresh.git_changed(base, head, ROOT)
 
 
-def row_members(row: dict) -> set:
-    """Every method a composed row ran: its combo's stages and its slug's parts (a span row's combo
-    names only its field map), without the ground-truth "gt" start."""
-    combo = row.get("combo") or {}
-    return ({str(v) for v in combo.values() if v} | set(str(row.get("slug") or "").split("+"))) - {"gt", ""}
-
-
-def fresh_cell_ids(rows: list, head: str = "HEAD", changed=_git_changed) -> frozenset:
-    """--resume: ids of composed rows that re-running would only reproduce. A row is fresh when it
-    scored OK in CI at a commit (`ci_sha`) that is an ancestor of `head`, and nothing it depends on
-    changed since: no RESUME_SCORER_PATHS file, no file under algorithms/<m>/ for any method m it ran
-    (which pins each method's image, run.sh and parameters). A cell a cancelled or capped job already
+def fresh_cell_ids(rows: list, head: str = "HEAD", changed=_git_changed, modes=("composed",)) -> frozenset:
+    """--resume: ids of rows (composed cells by default; `modes` adds isolated runs) that re-running
+    would only reproduce. A row is fresh when it scored OK in CI at a commit (`ci_sha`) that is an
+    ancestor of `head`, and nothing it depends on changed since: no RESUME_SCORER_PATHS file, no file
+    under algorithms/<m>/ for any method m it ran (which pins each method's image, run.sh and
+    parameters), counting only commits without `[skip score]`. A cell a cancelled or capped job already
     published is then not run again when the next run re-plans that job. Anything git cannot answer
     counts as stale, so the worst case is re-running a cell, never keeping a stale score."""
-    by_sha: dict = {}
-    for r in rows:
-        if r.get("mode") == "composed" and r.get("status") == "ok" and r.get("ci_sha") and r.get("id"):
-            by_sha.setdefault(r["ci_sha"], []).append(r)
-    fresh = set()
-    for sha, rs in by_sha.items():
-        files = changed(sha, head)
-        if files is None or any(f.startswith(RESUME_SCORER_PATHS) for f in files):
-            continue
-        touched = {f.split("/")[1] for f in files if f.startswith("algorithms/") and f.count("/") >= 2}
-        fresh |= {r["id"] for r in rs if not (row_members(r) & touched)}
-    return frozenset(fresh)
+    return score_fresh.fresh_ids(rows, head, changed, modes)
 
 
 # ---------------------------------------------------------------------------------------------------
@@ -1368,6 +1343,12 @@ def _smoke_check(a, sfx, variant, odir, rt, args, idir=None):
     return row
 
 
+def iso_run_id(slug: str, variant: str, args) -> str:
+    """An isolated run's row id, as do_isolated names it (score_plan.iso_unit_ids mirrors it)."""
+    return (f"{slug}-iso{'' if variant == 'default' else '-tuned'}{id_suffix(args.track)}"
+            f"{getattr(args, 'phantom_sfx', '')}{getattr(args, 'inputs_sfx', '')}")
+
+
 def do_isolated(task, args, gt_sources, gt, mask):
     """Run + score one isolated (algorithm, variant) task. Returns a list of result rows (one per
     produced artifact — χ-separation folds its two into one), or a single DNF row on any failure —
@@ -1454,6 +1435,20 @@ def run_isolated(args, algos, gt_sources, gt, mask, iso_target, runs: list) -> N
         # Degraded inputs score each method at its published defaults only: the tuned values were
         # optimised on the ground-truth inputs, and the realistic-input board has no Tuned toggle.
         iso_tasks = [t for t in iso_tasks if t[1] == "default"]
+    variants = getattr(args, "variants", None)
+    if variants:
+        # --variants: score_plan.py's split of an isolated pair too long for one lent-runner job
+        # (INR-QSM: ~5-7 h per inversion) into one job per variant.
+        keep = set(variants.split(","))
+        iso_tasks = [t for t in iso_tasks if t[1] in keep]
+    if getattr(args, "resume", False):
+        # --resume: an isolated run already scored at an up-to-date commit is not run again.
+        fresh = fresh_cell_ids(load_index_runs(), modes=("isolated",))
+        kept = [t for t in iso_tasks if iso_run_id(t[0]["slug"], t[1], args) not in fresh]
+        if len(kept) < len(iso_tasks):
+            print(f"  isolated  --resume: {len(iso_tasks) - len(kept)} run(s) already scored at an "
+                  "up-to-date commit, skipped")
+        iso_tasks = kept
     iso_tasks = shard_partition(iso_tasks, args.shard)  # --shard: round-robin over a stable order
     for out in _pmap(iso_tasks, lambda task: do_isolated(task, args, gt_sources, gt, mask)):
         runs.extend(_stamp_inputs(_stamp_phantom(out, getattr(args, "phantom", None)),
@@ -2141,9 +2136,13 @@ def main() -> None:
                          "Each part computes only the field maps and local fields its cells need; "
                          "end-to-end spans run in part 0. Union of the n parts == the whole job.")
     ap.add_argument("--resume", action="store_true",
-                    help="skip composed cells results/index.json already holds as OK rows scored at an "
-                         "up-to-date commit (nothing they depend on changed since; see fresh_cell_ids), "
-                         "so a re-planned job does not redo what an aborted run already published")
+                    help="skip composed cells and isolated runs results/index.json already holds as OK "
+                         "rows scored at an up-to-date commit (nothing they depend on changed since; see "
+                         "fresh_cell_ids), so a re-planned job does not redo what an aborted run already "
+                         "published")
+    ap.add_argument("--variants", default=None, metavar="V[,V...]",
+                    help="run only these isolated variants (default / tuned), so score.yml can give "
+                         "each of a slow method's isolated runs its own job (score_plan.py)")
     ap.add_argument("--track", default="sim")
     ap.add_argument("--runs-out", type=Path, default=None,
                     help="write ONLY the runs produced by this invocation to this JSON file, instead "
