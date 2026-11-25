@@ -25,6 +25,7 @@ code_url: https://github.com/SNU-LIST/chi-separation
 license: academic use; toolbox obtained via the SNU-LIST Google Form
 # The toolbox's networks + normalisation file (algorithms/chisepnet/BUILD.md; shared with chisepnet).
 image: ghcr.io/astewartau/qsm-ci/chisep-toolbox@sha256:dcac7d9f05fe02ee44522feaabc839473db61257feed60648bea698911a6521d   # v1 (config d127ddf2)
+memory_gb: 9   # peak 8.6 GB on the sim phantom (its isolated run's resources.json): never beside a second heavy container on a 16 GB hosted runner (scripts/pipeline.py MEMORY_GATE)
 run: bash run.sh
 # The route was recovered from the toolbox's P-code (chi_sepnet_general.p, chi_sepnet.p,
 # CalculateRotMat.p) by black-box probing in licensed MATLAB R2023b (astewartau/QSM.rs#377,

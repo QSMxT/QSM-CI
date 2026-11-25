@@ -57,13 +57,13 @@ smoke_box: 32   # PR --smoke gate fits a 32^3 central box (fast); full score.yml
 # 16-core self-hosted box it ran ~20 min per epoch (50 epochs, ~17 h per inversion) with two of its
 # runs and other jobs sharing the box (2026-09-08 log, job 101943924009). A dipole focus job runs
 # 1 isolated + 1 tuned isolated + 6 composed columns. 29 automatic attempts on the shared box (6-12 h
-# caps) since 2026-07-25 finished 3 times. Expected here: about 6-9 h per inversion alone on 16
-# cores. The focus job is split by field map (f-inr-qsm-gt: isolated default + tuned and 2 gt
-# columns; f-inr-qsm-romeo-qsmrs and f-inr-qsm-laplacian-qsmrs: 2 columns each), so each job takes
-# roughly 12-36 h, one after another, plus iv-inr-qsm (in-vivo default + tuned); the cap is
-# GitHub's 5-day self-hosted maximum. `gpu` would be the honest tier once a GPU runner exists.
+# caps) since 2026-07-25 finished 3 times. Measured on the lent runner: 5.1-7.0 h per inversion. The
+# lent runner is shut down 13 h into a job, so the planner sizes jobs to about 8 h and caps each at
+# 12 h (score_plan.LENT_MAX_HOURS / LENT_JOB_MINUTES): one inversion per job (f-inr-qsm-iso-default,
+# -iso-tuned, then f-inr-qsm-<field map>-p<k>of2), plus iv-inr-qsm (in-vivo default + tuned).
+# `gpu` would be the honest tier once a GPU runner exists.
 runner: highmem-long
-timeout_minutes: 7200   # the job cap and the per-run budget: GitHub's 5-day self-hosted limit
+timeout_minutes: 7200   # the per-run budget: GitHub's 5-day self-hosted limit
 jobs: 1                 # one optimization at a time — each one already uses every core
 compose:                # the two reference BFR methods on the GT field map and the two QSMxT field maps
   fieldmaps: [gt, romeo-qsmrs, laplacian-qsmrs]   # real field maps keep it on no-GT tracks (repro)

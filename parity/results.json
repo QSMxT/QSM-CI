@@ -16222,11 +16222,11 @@
    "dataset": "s002001-site1-achieva-bridge-run1",
    "track": "released",
    "release": "v12.2.0",
-   "date": "2026-11-22T07:28:38Z",
-   "run_id": "44986395967",
-   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44986395967",
-   "qsmci_commit": "d2fa2c66d50f0a588c7b8a2f552eae41778579d5",
-   "thresholds": "545ce92f2bd5",
+   "date": "2026-11-23T04:48:45Z",
+   "run_id": "45113672747",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/45113672747",
+   "qsmci_commit": "a16cde31d1aee1288edad8d964e6872b64dd3ec7",
+   "thresholds": "102eaa20bbaf",
    "reference": {
     "slug": "laplacian-qsmjl",
     "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
@@ -16235,8 +16235,8 @@
    },
    "candidate": {
     "slug": "laplacian-qsmrs",
-    "image": "qsmxt-under-test:44986395967-j45",
-    "digest": "sha256:de3226222ff5be34d73728fbe4987fbed6e8a7f3797b0d71afac6f606e6b8396",
+    "image": "qsmxt-under-test:45113672747-j0",
+    "digest": "sha256:dc944d4cc8406f46b7668a1769614ec2e22145cc4621d64986430b74f937cd25",
     "qsmxt": "qsmxt 12.2.0"
    },
    "qsmrs": {
@@ -16252,13 +16252,16 @@
     "reference": {
      "mask_phase": "true",
      "demean": "true"
+    },
+    "candidate": {
+     "phase_offset_removal": "false"
     }
    },
    "result": "pass",
    "metrics": {
     "totalfield": {
      "kind": "continuous",
-     "nrmse": 4.619987642045952e-06,
+     "nrmse": 4.619987642045918e-06,
      "correlation": 0.9999999999999963,
      "max_abs": 5.960464477539063e-08,
      "p99_abs": 1.4901161193847656e-08,
@@ -16812,11 +16815,11 @@
    "dataset": "sim",
    "track": "released",
    "release": "v12.2.0",
-   "date": "2026-11-22T07:28:38Z",
-   "run_id": "44986395967",
-   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/44986395967",
-   "qsmci_commit": "d2fa2c66d50f0a588c7b8a2f552eae41778579d5",
-   "thresholds": "c8cb8e30e675",
+   "date": "2026-11-23T04:48:45Z",
+   "run_id": "45113672747",
+   "run_url": "https://github.com/QSMxT/QSM-CI/actions/runs/45113672747",
+   "qsmci_commit": "a16cde31d1aee1288edad8d964e6872b64dd3ec7",
+   "thresholds": "2796b15377d1",
    "reference": {
     "slug": "laplacian-qsmjl",
     "image": "ghcr.io/astewartau/qsm-ci/julia-qsm@sha256:b3c048acd8a88f23b7a04378f2b85dbac433bcc78b3d9cdf8ce58eb8a7478185",
@@ -16825,8 +16828,8 @@
    },
    "candidate": {
     "slug": "laplacian-qsmrs",
-    "image": "qsmxt-under-test:44986395967-j46",
-    "digest": "sha256:1caf809fee2ff06b111bdabc81e072abd5248e9562263ffbb593cd28978a90f2",
+    "image": "qsmxt-under-test:45113672747-j1",
+    "digest": "sha256:105044ae5d357e989ef5f565243475c2fa13101fe2c164e3c93d4d7d8e68c57c",
     "qsmxt": "qsmxt 12.2.0"
    },
    "qsmrs": {
@@ -16842,13 +16845,16 @@
     "reference": {
      "mask_phase": "true",
      "demean": "true"
+    },
+    "candidate": {
+     "phase_offset_removal": "false"
     }
    },
    "result": "pass",
    "metrics": {
     "totalfield": {
      "kind": "continuous",
-     "nrmse": 4.766646207539972e-14,
+     "nrmse": 4.766646207539941e-14,
      "correlation": 1.0,
      "max_abs": 2.842170943040401e-14,
      "p99_abs": 0.0,

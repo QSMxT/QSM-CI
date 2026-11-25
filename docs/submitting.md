@@ -161,12 +161,12 @@ more, declare it in `algorithm.yml` (`runner:` — see `scripts/score_plan.py` f
 | `self-hosted` | QSM-CI's private 31 GB box | `timeout_minutes:` (default 6 h) | automatically, own job; a scoring run takes one private runner at a time |
 | `manual` / `gpu` | private box | `timeout_minutes:` | **only** when a maintainer dispatches it by name |
 | `highmem` | the runners in repository variable `QSMCI_HIGHMEM_RUNNER` (Neurodesk's 64 GB pool), 1 container; *(unset)* while that variable is unset | 12 h | **only** when a maintainer dispatches it by name, without other tiers in the run |
-| `highmem-long` | the same `QSMCI_HIGHMEM_RUNNER` pool, `jobs:` containers (default 1), **one job at a time** so the pool's other runner stays free for parity runs; `manual` while that variable is unset. A dipole's focus job is split into one job per field map (`f-<slug>-gt` with the isolated runs, then `f-<slug>-<field map>`) | `timeout_minutes:` (default and maximum 5 days, GitHub's self-hosted job limit) | **only** when a maintainer dispatches it by name, without non-lent tiers in the run |
+| `highmem-long` | the same `QSMCI_HIGHMEM_RUNNER` pool, `jobs:` containers (default 1), **one job at a time** so the pool's other runner stays free for parity runs; `manual` while that variable is unset. A dipole's focus job is split into one job per field map (`f-<slug>-gt` with the isolated runs, then `f-<slug>-<field map>`), and each into jobs of about 8 h from recorded runtimes (an isolated run per job if need be); a re-dispatch runs only what is still owed | 12 h (the lent runner is shut down 13 h into a job) | **only** when a maintainer dispatches it by name, without non-lent tiers in the run |
 
 The caps above are per **job** (a job scores many runs). Each individual run is also bounded, by
 the contract's 2-hour wall clock: go over it and that run's container is killed and the run is
 recorded `DNF (timed out)` — the rest of the job carries on. `timeout_minutes:` raises the per-run
-budget on **every** tier (and the job cap on the self-hosted ones and `highmem-long`), so a method whose single
+budget on **every** tier (and the job cap on the self-hosted ones), so a method whose single
 inversion legitimately takes longer than 2 h must set it — `decompose-qsm`, `modip` and `inr-qsm`
 already do. (`$QSMCI_TIMEOUT`, in seconds, overrides the default when you run the CLI yourself;
 `qsm-ci run --timeout <minutes>` does the same for one run, and `0` means no limit.)
@@ -176,7 +176,7 @@ per-subject optimisations that take many hours per inversion on CPU (MoDIP, INR-
 scoring job), run on the lent pool without blocking it; `gpu` records a GPU requirement for when a GPU
 runner exists. Two more knobs apply on the self-hosted tiers (`jobs:` also on `highmem-long`): `jobs: 1` runs one container at a
 time (use it when a single run already saturates every core), and `manual_phantoms: [...]` makes
-only the listed phantoms dispatch-only. On any tier, `split: fieldmaps` splits a dipole's (or a background-removal method's) scoring job into one job per field map (`f-<slug>-gt`, then `f-<slug>-<field map>`), for a method whose composed matrix does not fit its tier's cap in one job. A dipole method may also declare a `compose:` subset
+only the listed phantoms dispatch-only. On any tier, `split: fieldmaps` splits a dipole's (or a background-removal method's) scoring job into one job per field map (`f-<slug>-gt`, then `f-<slug>-<field map>`), for a method whose composed matrix does not fit its tier's cap in one job. On the hosted tiers you rarely need it: the planner estimates every scoring job from the runtimes the leaderboard has recorded and splits one that would run past about 3 hours by field map and, if still too long, into ranges of its composed pipelines (`f-<slug>[-<field map>]-p<k>of<n>`); a re-planned job skips the pipelines an interrupted run already scored. A method whose single run needs most of a 16 GB hosted runner declares its measured peak, e.g. `memory_gb: 13` (BFRnet QSM.rs): the scorer then never starts it beside another container it would not fit with. A dipole method may also declare a `compose:` subset
 (`fieldmaps:` / `bfrs:` lists) to be composed with a few reference upstream methods instead of the
 full field-map × background-removal matrix — the leaderboard simply shows the other cells empty.
 A method whose trained weights are valid at one field strength only declares it in tesla, e.g.

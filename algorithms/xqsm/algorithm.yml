@@ -29,6 +29,7 @@ citation: Gao et al., NMR Biomed 2021
 code_url: https://github.com/sunhongfu/xQSM
 license: Used with author permission (Hongfu Sun); see repository for terms.
 image: ghcr.io/astewartau/qsm-ci/xqsm@sha256:f28dabe6f7f41db967133a022f3eb5205d2a2bbb5fab78117d58b1fb84b26444   # v1
+memory_gb: 10   # peak 9.9 GB on the sim phantom (its isolated run's resources.json): never beside a second heavy container on a 16 GB hosted runner (scripts/pipeline.py MEMORY_GATE)
 run: bash run.sh
 # The original, checked (QSMxT/QSM-CI#301): pinned versions and weights, and the same output
 # twice at fixed threads. fidelity/dl/README.md; rerun whenever the image changes.

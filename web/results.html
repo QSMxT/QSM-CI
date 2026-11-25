@@ -316,13 +316,13 @@
                         :title="algoName(g.run.combo.bfr)+' + '+algoName(g.run.combo.dipole)+': '+METRICS[metric].label+': '+fmt(val(g.run,metric),metric)"
                         class="heat-cell group relative h-9 w-full rounded-md font-semibold text-xs transition hover:z-10 hover:scale-[1.08] hover:shadow-md focus:outline-none"
                         :class="g.run.variant==='tuned' ? 'ring-2 ring-emerald-600 ring-offset-1' : 'ring-1 ring-black/5'"
-                        :style="'--heat:'+heatScale(norm(val(g.run,metric)))">
-                        <span x-text="fmt(val(g.run, metric), metric)"></span>
+                        :style="g.run.status==='DNF' ? 'background:transparent;color:#9ca3af' : '--heat:'+heatScale(norm(val(g.run,metric)))">
+                        <span x-text="g.run.status==='DNF' ? 'DNF' : fmt(val(g.run, metric), metric)"></span>
                         <span x-show="g.run.variant==='tuned'" class="absolute -right-1 -top-1 grid h-3.5 w-3.5 place-items-center rounded-full bg-emerald-600 text-[8px] shadow" title="tuned parameters">⚙</span>
                       </button>
                     </template>
                     <template x-if="g.t==='empty'">
-                      <div class="flex h-9 w-full items-center justify-center rounded-md border border-dashed border-gray-200 text-gray-300 text-xs">, </div>
+                      <div class="flex h-9 w-full items-center justify-center rounded-md border border-dashed border-gray-200 text-gray-300 text-xs" title="Not run: this pipeline is not scored">—</div>
                     </template>
                   </div>
                 </template>
@@ -860,10 +860,10 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
                   <span x-show="r.slug===chisepBestGen()" class="ml-2 rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700" data-tip="Best fidelity to the true R2′ on this phantom (lowest detrended NRMSE: scale-independent, so a well-scaled copy of R2* can't win on scale alone); the leaderboard above feeds this substitute (at default parameters) to every R2′-consuming method, under both input levels.">supplies R2′ above</span>
                   <span x-show="r.status==='DNF'" class="ml-2 rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold text-gray-500">DNF</span>
                 </td>
-                <td class="px-4 py-3 text-right tabular-nums text-gray-600 group-hover:bg-emerald-50/40" x-text="(r.metrics||{}).nrmse!=null ? (r.metrics.nrmse).toFixed(1)+'%' : ', '"></td>
-                <td class="px-4 py-3 text-right tabular-nums text-gray-600 group-hover:bg-emerald-50/40" x-text="(r.metrics||{}).nrmse_detrend!=null ? (r.metrics.nrmse_detrend).toFixed(1)+'%' : ', '"></td>
-                <td class="px-4 py-3 text-right tabular-nums text-gray-600 group-hover:bg-emerald-50/40" x-text="(r.metrics||{}).correlation!=null ? (r.metrics.correlation).toFixed(3) : ', '"></td>
-                <td class="px-4 py-3 text-right tabular-nums text-gray-600 group-hover:bg-emerald-50/40" x-text="r.runtime_s!=null ? fmt(r.runtime_s,'runtime_s') : ', '"></td>
+                <td class="px-4 py-3 text-right tabular-nums text-gray-600 group-hover:bg-emerald-50/40" x-text="(r.metrics||{}).nrmse!=null ? (r.metrics.nrmse).toFixed(1)+'%' : '—'"></td>
+                <td class="px-4 py-3 text-right tabular-nums text-gray-600 group-hover:bg-emerald-50/40" x-text="(r.metrics||{}).nrmse_detrend!=null ? (r.metrics.nrmse_detrend).toFixed(1)+'%' : '—'"></td>
+                <td class="px-4 py-3 text-right tabular-nums text-gray-600 group-hover:bg-emerald-50/40" x-text="(r.metrics||{}).correlation!=null ? (r.metrics.correlation).toFixed(3) : '—'"></td>
+                <td class="px-4 py-3 text-right tabular-nums text-gray-600 group-hover:bg-emerald-50/40" x-text="r.runtime_s!=null ? fmt(r.runtime_s,'runtime_s') : '—'"></td>
               </tr>
             </template>
           </tbody>
@@ -3411,7 +3411,7 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
           const k = this.chisepSort;
           return rows.some((r) => this.chiVal(r, k) != null) ? k : "avg_mspe";
         },
-        chiFmt(v, key) { return v == null ? ", " : fmt(v, key); },
+        chiFmt(v, key) { return v == null ? "—" : fmt(v, key); },
         chisepDisplayCols() {
           const sel = CHISEP_COLS.filter((c) => this.chisepSelectedCols.includes(c.key));
           return sel.length ? sel : CHISEP_COLS.filter((c) => c.key === "split_rms_rw");
@@ -3485,7 +3485,7 @@ qsm-forward head ./qsm-challenge-2.0 bids_qsm --save-field</code></pre>
           if (this.invivoSortKey === k) this.invivoDir = this.invivoDir === "asc" ? "desc" : "asc";
           else { this.invivoSortKey = k; this.invivoDir = (INVIVO_COL[k] || {}).better === "lower" ? "asc" : "desc"; }
         },
-        invFmt(v, key) { return v == null ? ", " : fmt(v, key); },
+        invFmt(v, key) { return v == null ? "—" : fmt(v, key); },
         // A submission DOI belongs to one algorithm, so it follows the row's slug rather than the
         // leaderboard tab. Rows chaining several algorithms carry a composite slug ("a+b+c"), which
         // is not in the registry, so they still resolve to nothing. An end-to-end submission is

@@ -1,6 +1,6 @@
 # Port parity status
 
-Generated 2026-11-22 by `scripts/parity.py status` from `parity/results.json` and `parity/thresholds.yml`; do not edit by hand. How checks run, the two tracks, and what makes a check stale: [docs/parity.md](../docs/parity.md).
+Generated 2026-11-23 by `scripts/parity.py status` from `parity/results.json` and `parity/thresholds.yml`; do not edit by hand. How checks run, the two tracks, and what makes a check stale: [docs/parity.md](../docs/parity.md).
 
 ## Released: QSMxT v12.2.0
 
@@ -55,8 +55,8 @@ The latest QSMxT release against each verified original. A release does not chan
 |  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 6.322e-12% | ✅ current |
 | `vsharp-qsmjl` | `vsharp-qsmjl` → `vsharp-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 1.133e-11% | ✅ current |
 |  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 5.205e-12% | ✅ current |
-| `laplacian` | `laplacian-qsmjl` → `laplacian-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 4.62e-06% | ⚠️ stale: the pair's settings or limits for this dataset changed since |
-|  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 4.767e-14% | ⚠️ stale: the pair's settings or limits for this dataset changed since |
+| `laplacian` | `laplacian-qsmjl` → `laplacian-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-23](https://github.com/QSMxT/QSM-CI/actions/runs/45113672747) | `dff62e2` | ✅ pass | 4.62e-06% | ✅ current |
+|  |  | sim | [2026-11-23](https://github.com/QSMxT/QSM-CI/actions/runs/45113672747) | `dff62e2` | ✅ pass | 4.767e-14% | ✅ current |
 | `romeo` | `romeo-romeojl` → `romeo-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 1.498% | ✅ current |
 |  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 1.645% | ✅ current |
 | `tgv` | `tgv-tgvjl` → `tgv-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.0006844% | ✅ current |
@@ -121,7 +121,7 @@ The latest QSMxT release against each verified original. A release does not chan
 Run the flagged pairs against v12.2.0:
 
 ```bash
-gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=laplacian,modl-qsm -f dataset=configured -f qsmxt_release=v12.2.0
+gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=modl-qsm -f dataset=configured -f qsmxt_release=v12.2.0
 ```
 
 ## Development: QSMxT main × QSM.rs main
@@ -179,8 +179,8 @@ A check is **stale** when the reference image changed, QSM.rs `main` changed the
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 5.205e-12% | ✅ current |
 | `laplacian` | `laplacian-qsmjl` → `laplacian-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-20](https://github.com/QSMxT/QSM-CI/actions/runs/44816285676) | `dff62e2` | ✅ pass | 4.62e-06% | ⚠️ stale: the pair's settings or limits for this dataset changed since |
 |  |  | sim | [2026-11-20](https://github.com/QSMxT/QSM-CI/actions/runs/44816285676) | `dff62e2` | ✅ pass | 4.767e-14% | ⚠️ stale: the pair's settings or limits for this dataset changed since |
-| `romeo` | `romeo-romeojl` → `romeo-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 1.498% | ✅ current |
-|  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 1.645% | ✅ current |
+| `romeo` | `romeo-romeojl` → `romeo-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 1.498% | ⚠️ stale: QSM.rs main changed `src/region_grow.rs`, `src/unwrap/romeo.rs` since the checked dff62e2 (3 commits) |
+|  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 1.645% | ⚠️ stale: QSM.rs main changed `src/region_grow.rs`, `src/unwrap/romeo.rs` since the checked dff62e2 (3 commits) |
 | `tgv` | `tgv-tgvjl` → `tgv-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.0006844% | ✅ current |
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.0003367% | ✅ current |
 | `xqsm` | `xqsm` → `xqsm-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.001784% | ✅ current |
@@ -207,8 +207,8 @@ A check is **stale** when the reference image changed, QSM.rs `main` changed the
 | `susep-net` | `susep-net` → `susep-net-qsmrs` | chisep-mc | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 2.434e-05% | ✅ current |
 | `hd-bet` | `hd-bet-qsmci` → `hd-bet-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | — | ✅ current |
 | `mindgrab` | `mindgrab` → `mindgrab-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | — | ✅ current |
-| `r2primenet` | `r2primenet` → `r2primenet-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-06](https://github.com/QSMxT/QSM-CI/actions/runs/41757738719) | `8a655f4` | ✅ pass (reviewed) | 2.033e-05% | ⚠️ stale: QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/utils/r2star.rs` since the checked 8a655f4 (50 commits); QSMxT main changed `Cargo.lock` since the checked dc94cf4 (99 commits) |
-|  |  | sim | [2026-11-06](https://github.com/QSMxT/QSM-CI/actions/runs/41757738719) | `8a655f4` | ✅ pass (reviewed) | 2.047e-05% | ⚠️ stale: QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/utils/r2star.rs` since the checked 8a655f4 (50 commits); QSMxT main changed `Cargo.lock` since the checked dc94cf4 (99 commits) |
+| `r2primenet` | `r2primenet` → `r2primenet-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-06](https://github.com/QSMxT/QSM-CI/actions/runs/41757738719) | `8a655f4` | ✅ pass (reviewed) | 2.033e-05% | ⚠️ stale: QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/utils/r2star.rs` since the checked 8a655f4 (53 commits); QSMxT main changed `Cargo.lock` since the checked dc94cf4 (100 commits) |
+|  |  | sim | [2026-11-06](https://github.com/QSMxT/QSM-CI/actions/runs/41757738719) | `8a655f4` | ✅ pass (reviewed) | 2.047e-05% | ⚠️ stale: QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/utils/r2star.rs` since the checked 8a655f4 (53 commits); QSMxT main changed `Cargo.lock` since the checked dc94cf4 (100 commits) |
 | `iqsm` | `iqsm` → `iqsm-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.0002228% | ✅ current |
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.0002708% | ✅ current |
 | `iqsm-plus` | `iqsm-plus` → `iqsm-plus-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.0001157% | ✅ current |
@@ -227,8 +227,8 @@ A check is **stale** when the reference image changed, QSM.rs `main` changed the
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.006343% | ✅ current |
 | `l1qsm` | `l1qsm` → `l1qsm-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.002988% | ✅ current |
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.002205% | ✅ current |
-| `whqsm` | `whqsm` → `whqsm-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.00337% | ✅ current |
-|  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.001819% | ✅ current |
+| `whqsm` | `whqsm` → `whqsm-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.00337% | ⚠️ stale: QSM.rs main changed `src/inversion/whqsm.rs` since the checked dff62e2 (3 commits) |
+|  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.001819% | ⚠️ stale: QSM.rs main changed `src/inversion/whqsm.rs` since the checked dff62e2 (3 commits) |
 | `hdqsm` | `hdqsm` → `hdqsm-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.0008346% | ✅ current |
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.001482% | ✅ current |
 | `resharp` | `resharp` → `resharp-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 3.861e-09% | ✅ current |
@@ -243,7 +243,7 @@ A check is **stale** when the reference image changed, QSM.rs `main` changed the
 Refresh every stale pair against QSM.rs `main`:
 
 ```bash
-gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=toolbox-pipeline-medi-cornell,toolbox-pipeline-chisep-ilsqr,toolbox-pipeline-chisep-medi,toolbox-pipeline-decompose,laplacian,modl-qsm,r2primenet -f dataset=configured -f qsmrs_ref=main
+gh workflow run parity.yml -R QSMxT/QSM-CI -f algorithm=toolbox-pipeline-medi-cornell,toolbox-pipeline-chisep-ilsqr,toolbox-pipeline-chisep-medi,toolbox-pipeline-decompose,laplacian,romeo,modl-qsm,r2primenet,whqsm -f dataset=configured -f qsmrs_ref=main
 ```
 
 ## No original
