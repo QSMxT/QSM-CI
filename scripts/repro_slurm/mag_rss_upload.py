@@ -8,9 +8,11 @@ from huggingface_hub import HfApi, CommitOperationAdd
 
 api = HfApi(token=os.environ["HF_QSMXT_KEY"])
 REPO = os.environ.get("HF_VOLUMES_REPO", "qsmxt/qsm-ci-volumes")
-os.makedirs("/scratch/user/uqaste15/mag_rss", exist_ok=True)
+OUT = os.environ.get("MAG_RSS_DIR", "/scratch/user/uqaste15/mag_rss")
+ACQS = os.environ.get("REPRO_ACQS", "*")   # shell glob, as in matrix_sandbox.slurm
+os.makedirs(OUT, exist_ok=True)
 ops = []
-for d in sorted(glob.glob("data/harmonization/*/inputs")):
+for d in sorted(glob.glob(f"data/harmonization/{ACQS}/inputs")):
     acq = d.split("/")[-2]
     if acq == "_align":
         continue
@@ -20,7 +22,7 @@ for d in sorted(glob.glob("data/harmonization/*/inputs")):
     img = nibabel.load(mp)
     m = np.asanyarray(img.dataobj, dtype="float32")
     rss = np.sqrt(np.sum(m ** 2, axis=3)) if m.ndim == 4 else m   # SNR-weighted structural reference
-    out = f"/scratch/user/uqaste15/mag_rss/{acq}__magnitude.nii.gz"
+    out = f"{OUT}/{acq}__magnitude.nii.gz"
     nibabel.save(nibabel.Nifti1Image(rss.astype("float32"), img.affine), out)
     ops.append(CommitOperationAdd(path_in_repo=f"repro/{acq}/{acq}__magnitude.nii.gz", path_or_fileobj=out))
     print(f"prepared {acq}: {rss.shape}")

@@ -10,9 +10,10 @@
 # run id, everything else in repro_rois.json stays. FRESH_START=1 starts from an empty repro_rois.json
 # instead (a new campaign whose pipelines replace the previous one's; the old file is kept as
 # results/repro_rois.before-<date>.json), so rows of pipelines the campaign dropped don't linger.
+umask 077   # campaign run dirs hold unpublished inputs and results: owner-only files
 source ~/venvs/qsmci/bin/activate
 set -uo pipefail
-cd /scratch/user/uqaste15/qsmci-repro
+cd "${REPRO_DIR:-/scratch/user/uqaste15/qsmci-repro}"
 
 GLOB=${1:-results/runs-repro-*.json}
 mapfile -t FRESH < <(compgen -G "$GLOB" | sort)

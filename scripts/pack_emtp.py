@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Pack the EMTP 2026 traveling-head QSM data into QSM-CI canonical inputs.
 
-The raw drop (Xu Li, KKI; "03_Analysis_Shared") is six subjects, each scanned at KKI on Philips
-and some also at other sites, with the shared `bridge` protocol and each site's `local` protocol
+The raw drop (Xu Li; "03_Analysis_Shared") is six subjects, each scanned at their home site (Site 1,
+Philips) and some also at other sites, with the shared `bridge` protocol and each site's `local` protocol
 x 3 runs. It is dcm2niix output, one 3D volume per echo with complete sidecars:
 
     <subject>/<session>/run{1,2,3}/{bridge,local}/*_e<N>.nii.gz           magnitude
@@ -10,7 +10,7 @@ x 3 runs. It is dcm2niix output, one 3D volume per echo with complete sidecars:
                                                   *_e<N>_{real,imaginary}.nii.gz   (GE)
 
 Folder names carry subject initials, so nothing from them is published: subjects are renamed to
-the numeric part of their folder (`005001_XX` -> `s005001`) and scanners to a site-model tag.
+the numeric part of their folder (`005001_XX` -> `s005001`) and scanners to a site-model tag from the private --scanner-map table.
 
 For each acquisition this writes
     <out>/<subject>-<scanner>-<protocol>-<runN>/inputs/{magnitude,phase,mask}.nii.gz + params.json
@@ -19,13 +19,14 @@ from the image affine. GE real/imaginary pairs are combined into magnitude and p
 GE's alternate-slice pi modulation (see `ge_complex_to_phase`).
 
 Usage:
-    python scripts/pack_emtp.py --raw DIR [--out DIR] [--only ID] [--no-mask]
+    python scripts/pack_emtp.py --raw DIR --scanner-map CSV [--out DIR] [--only ID] [--no-mask]
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -38,19 +39,22 @@ from pack_harmonization import GAMMA_MHZ_PER_T, b0_dir_from_affine, hdbet_mask, 
 
 OUT = Path("data/harmonization")
 
-# (Manufacturer, ManufacturersModelName, InstitutionName) -> scanner tag used in acquisition ids.
-SCANNERS = {
-    ("Philips", "Achieva dStream", "Kennedy Krieger Institute"): "kki-achieva",
-    ("Philips", "Ingenia Elition X", "Kennedy Krieger Institute"): "kki-elition",
-    ("GE", "DISCOVERY MR750", "CBIC"): "cbic-mr750",
-    ("Siemens", "MAGNETOM Prisma Fit", "Weill Medical College-Cornell"): "cbic-prisma",
-    ("Siemens", "MAGNETOM Skyra", "UMass Life Science Lab"): "umass-skyra",
-    ("Philips", "Ingenia", "Hamburg"): "hamburg-ingenia",
-}
-SITE_LABEL = {
-    "kki-achieva": "KKI", "kki-elition": "KKI", "cbic-mr750": "Weill Cornell CBIC",
-    "cbic-prisma": "Weill Cornell CBIC", "umass-skyra": "UMass", "hamburg-ingenia": "Hamburg",
-}
+# (Manufacturer, ManufacturersModelName, InstitutionName) -> scanner tag and site label. The sites are
+# public by number only, so the table lives outside the repository: a CSV with the header
+# vendor,model,institution,scanner,site (e.g. scanner `site1-achieva`, site `Site 1`), passed as
+# --scanner-map (default: $EMTP_SCANNER_MAP).
+SCANNERS: dict[tuple[str, str, str], str] = {}
+SITE_LABEL: dict[str, str] = {}
+
+
+def load_scanner_map(path: Path) -> None:
+    import csv
+    with open(path, newline="") as fh:
+        for row in csv.DictReader(fh):
+            SCANNERS[(row["vendor"], row["model"], row["institution"])] = row["scanner"]
+            SITE_LABEL[row["scanner"]] = row["site"]
+
+
 # Multiplier taking each vendor's stored phase to QSM-CI's convention (paramagnetic = positive
 # chi after the standard pipeline). Checked per vendor on the same subjects across sites: GE
 # frequency maps anticorrelate with the same subject's Siemens and Philips maps, so GE is negated.
@@ -198,7 +202,9 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--raw", type=Path, required=True, help="the 03_Analysis_Shared folder")
     ap.add_argument("--out", type=Path, default=OUT)
-    ap.add_argument("--only", help="pack a single acquisition id, e.g. s002001-kki-achieva-bridge-run1")
+    ap.add_argument("--only", help="pack a single acquisition id, e.g. s002001-site1-achieva-bridge-run1")
+    ap.add_argument("--scanner-map", type=Path, default=os.environ.get("EMTP_SCANNER_MAP"),
+                    help="private CSV: vendor,model,institution,scanner,site (see SCANNERS)")
     ap.add_argument("--no-mask", action="store_true", help="skip HD-BET masking")
     ap.add_argument("--skip-existing", action="store_true",
                     help="keep acquisitions that already have a params.json (masks are still filled in)")
@@ -206,6 +212,9 @@ def main() -> None:
                     help="qsm-ci executable used to run the hd-bet-qsmci masking stage")
     ap.add_argument("--runner", help="container runner for masking (qsm-ci run --runner), e.g. apptainer")
     args = ap.parse_args()
+    if not args.scanner_map:
+        ap.error("--scanner-map (or EMTP_SCANNER_MAP) is required: the private scanner table")
+    load_scanner_map(args.scanner_map)
 
     manifest = []
     for acq_dir in sorted(args.raw.glob("*/*/run*/*")):
@@ -219,8 +228,8 @@ def main() -> None:
 
     if not args.only:  # a single-acquisition run (one array task) must not clobber the full manifest
         (args.out / "emtp_manifest.json").write_text(json.dumps({
-            "description": "EMTP 2026 traveling-head QSM dataset (6 subjects, KKI Philips plus "
-                           "traveling sessions on GE, Siemens and Philips; bridge + local x 3 runs)",
+            "description": "EMTP 2026 traveling-head QSM dataset (6 subjects, home site Philips "
+                           "plus traveling sessions on GE, Siemens and Philips; bridge + local x 3 runs)",
             "acquisitions": manifest,
         }, indent=2) + "\n")
 

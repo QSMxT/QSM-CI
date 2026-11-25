@@ -34,7 +34,7 @@ fidelity:
   python: Python 3.12, tinygrad 0.12.0, NumPy 2.4.2, niimath 1.0.20250804
   threads: 8   # Slurm CPUs; tinygrad's CPU backend
   host: Bunya (UQ HPC) bun155, apptainer, read-only SIF (job 31574231); v1 also twice (job 31557381)
-  tolerance: identical   # image twice on the KKI s002001 bridge-run1 head (256x256x128, 5 echoes); v2 = v1 byte for byte
+  tolerance: identical   # image twice on the EMTP s002001 bridge-run1 head (256x256x128, 5 echoes); v2 = v1 byte for byte
   result: pass
   runtime: 10-20 min, 2.7 GB peak RSS
   report: algorithms/mindgrab/README.md

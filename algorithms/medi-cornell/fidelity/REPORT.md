@@ -17,7 +17,7 @@ is the shared harness [`fidelity/matlab/`](../../../fidelity/matlab/README.md) w
   `v2` `sha256:3747339b38bb93294bbe07c3c5f1b4882ce675b6e57d473e0148b224afd6186d` (below).
 - **Cases:**
   - `sim`: QSM-CI's in-silico head (QSM Challenge 2.0 simulation: 7 T, 4 echoes, 1 mm, 164×205×205), its ground-truth local field.
-  - `invivo`: one EMTP travelling-head acquisition (`s005001-cbic-prisma-bridge-run1`: 3 T, 5 echoes, 1 mm, 184×256×128), with the local field and eroded mask derived once with QSMxT v10.0.0 (ROMEO, V-SHARP; `fidelity/matlab/make_cases.sh`).
+  - `invivo`: one EMTP travelling-head acquisition (`s005001-site5-prisma-bridge-run1`: 3 T, 5 echoes, 1 mm, 184×256×128), with the local field and eroded mask derived once with QSMxT v10.0.0 (ROMEO, V-SHARP; `fidelity/matlab/make_cases.sh`).
 
 ## Result: identical
 

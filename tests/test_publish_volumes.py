@@ -843,7 +843,7 @@ def test_prune_repro_refuses_an_empty_or_unrepresentative_pipeline_list(tmp_path
 
 # Two cohorts, each payload naming its own pipelines: liveness is per cohort (its pipelines × its
 # acquisitions), so neither list can vouch for, or condemn, files on the other cohort's acquisitions.
-HEAD_ACQ, PILOT_ACQ = "s002001-kki-achieva-bridge-run1", "cima-bridge-run1"
+HEAD_ACQ, PILOT_ACQ = "s002001-site1-achieva-bridge-run1", "cima-bridge-run1"
 COHORTS = {"harmonization": ({HEAD_ACQ}, ["romeo-qsmrs+vsharp-qsmrs+rts-qsmrs", "iqsm"]),
            "harmonization-pilot": ({PILOT_ACQ}, ["romeo-qsmrs+vsharp-qsmrs+rts-qsmrs"])}
 

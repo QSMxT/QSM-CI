@@ -265,3 +265,33 @@ def test_pmap_yields_in_completion_order_and_runs_every_task(pipeline, monkeypat
         got.append(r)
         slow_may_finish.set()
     assert got == ["fast", "slow"]
+
+
+def test_skip_ids_leave_done_pipelines_and_their_idle_columns_out(pipeline, tmp_path, monkeypatch):
+    """A campaign's second tranche (--skip-ids) must not recompute what the first already did: the
+    listed pipelines are not run, and a bfr column with nothing left to invert is not computed."""
+    from types import SimpleNamespace
+    algos = [_algo(pipeline, "b1", "bfr"), _algo(pipeline, "b2", "bfr"),
+             _algo(pipeline, "d1", "dipole"), _algo(pipeline, "d2", "dipole")]
+    bfr_ran, dip_ran = [], []
+
+    def do_bfr(task, args, gt_sources):
+        bfr_ran.append(task[5]["slug"])
+        return (task[0], task[5]["slug"]), ("lf", "m", 0.0, [])
+
+    def do_dipole(task, args, gt_sources, gt, mask, lf_cache):
+        tfk, b, d = task
+        dip_ran.append(f"{b['slug']}~{d['slug']}")
+        return {"id": f"{tfk}~{b['slug']}~{d['slug']}-cmp", "status": "ok"}
+
+    monkeypatch.setattr(pipeline, "do_bfr", do_bfr)
+    monkeypatch.setattr(pipeline, "do_dipole", do_dipole)
+    skip = tmp_path / "skip.txt"
+    skip.write_text("# done in tranche 1\ngt~b1~d1-cmp\ngt~b1~d2-cmp\ngt~b2~d1-cmp\n")
+    args = SimpleNamespace(fieldmaps=None, focus=None, track="sim", phantom=None, runs_out=None,
+                           emit_intermediates=False, columns_only=False, work=tmp_path, skip_ids=skip)
+    monkeypatch.setattr(pipeline, "flush_index", lambda runs: None)
+    runs = []
+    pipeline.run_composed(args, algos, {}, tmp_path / "gt", "mask", None, None, runs)
+    assert bfr_ran == ["b2"] and dip_ran == ["b2~d2"]
+    assert [r["id"] for r in runs] == ["gt~b2~d2-cmp"]

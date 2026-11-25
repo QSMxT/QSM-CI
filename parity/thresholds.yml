@@ -101,7 +101,7 @@ no_original:
     # Checked 2026-11-02 (QSMxT/QSM-CI#302): no published method or code does this. The nearest
     # originals cover one unwrapper each: FSL `prelude -s` (slice-wise PRELUDE; it differs from
     # QSM.rs's slice-wise PRELUDE: it writes 0 in small in-slice components, 14k/23k in-mask voxels
-    # on sim/KKI, and 0.1–0.6 % of the rest take another wrap count beyond a per-component offset;
+    # on sim/EMTP, and 0.1–0.6 % of the rest take another wrap count beyond a per-component offset;
     # fidelity/cpp-py) and CLEARSWI.jl's `laplacianslice` (CLEAR-SWI's own step, ported in
     # QSM.rs's swi.rs, not here). The inter-echo consistency pass has no published counterpart.
   robust-fit:
@@ -124,7 +124,7 @@ no_original:
     # Checked 2026-11-02 with fidelity/cpp-py/qsmrs-probe `morph` (QSM.rs a44046e): erode_mask and
     # dilate_mask equal scipy.ndimage.binary_erosion / binary_dilation (6-connected cross,
     # `iterations`, border_value 0), and morphological_close equals binary_dilation then
-    # binary_erosion with the same ball (border_value 0), voxel for voxel, on the sim and KKI masks
+    # binary_erosion with the same ball (border_value 0), voxel for voxel, on the sim and EMTP masks
     # and on a mask cut to touch the array faces (1, 2 and 5 iterations; radius 1 and 3). MATLAB's
     # imerode/imdilate(strel('sphere')) variants QSMART uses are checked by the qsmart pair.
 
@@ -133,7 +133,7 @@ no_original:
 # `no_original` either. PRELUDE (`unwrap_prelude`): FSL `prelude` (fsl-fugue 2603.0,
 # algorithms/_fsl-prelude, local only under FSL's licence). With FSL's full-3-D mode (`-f`), every
 # in-mask voxel of every echo takes the same wrap count as QSM.rs at 6 and at 8 partitions, on sim
-# (4 echoes) and KKI (5 echoes) (2026-11-02, QSM.rs a44046e); FSL's defaults (8 partitions,
+# (4 echoes) and EMTP (5 echoes) (2026-11-02, QSM.rs a44046e); FSL's defaults (8 partitions,
 # regions labelled slice by slice) are not implemented in QSM.rs (astewartau/QSM.rs#397).
 
 # Limits are the agreement measured with the QSM.rs under test at the time (the current QSMxT main
@@ -171,7 +171,7 @@ pairs:
       chi2: chimap_stage2
     # The authors' adjust_offset.m builds its dipole on -N/2:N/2-1, half a step off the FFT grid
     # when a dimension is odd (the sim, 164×205×205); QSM.rs keeps the FFT grid as its default and
-    # the authors' as an option (astewartau/QSM.rs#386), which the pair turns on. No effect on KKI.
+    # the authors' as an option (astewartau/QSM.rs#386), which the pair turns on. No effect on EMTP.
     candidate_set: { offset_grid: qsmart-reference }
     datasets:
       # The port starts from the original's own total field (Laplacian unwrapping + QSMART's
@@ -182,10 +182,10 @@ pairs:
       #
       # Limits: re-baselined with the R_0 feed (run 41190547845: QSMxT main 9cfe3f9, qsm-core
       # 15c938f, built by this workflow), plus the margins above. The same build without the feed
-      # (run 41190566176): sim NRMSE 16.32 %, KKI 0.779 %. The pinned qsmxt v10.0.0 (QSM.rs v0.39.0)
-      # is far outside them (sim NRMSE 65.9 %, KKI 133.8 %, without the feed): those runs record
+      # (run 41190566176): sim NRMSE 16.32 %, EMTP 0.779 %. The pinned qsmxt v10.0.0 (QSM.rs v0.39.0)
+      # is far outside them (sim NRMSE 65.9 %, EMTP 133.8 %, without the feed): those runs record
       # the gap, not a limit. Reference image: matlab-qsmart v3, sha256:e0e8bc69… (algorithm.yml);
-      # both datasets re-measured on v4 (below). KKI has all-even dims, so v3 never padded it; it
+      # both datasets re-measured on v4 (below). EMTP has all-even dims, so v3 never padded it; it
       # is unchanged and its limits stand.
       sim:
         feed: { totalfield: totalfield, reliability: reliability }
@@ -205,9 +205,9 @@ pairs:
           v3: "run 41190547845: QSMxT main 9cfe3f9, qsm-core 15c938f, R_0 fed, v3 (padded), NRMSE 13.45 %"
           unfed: "run 41190566176: QSMxT main 9cfe3f9, qsm-core 15c938f, no R_0, NRMSE 16.32 %, r 0.9868"
           pinned: "run 40530165113: qsmxt v10.0.0 sha256:9258c10e…, NRMSE 65.94 %, r 0.8003"
-      # In vivo (EMTP travelling head, KKI Philips 3 T, public). R_0 rejects no voxel here: the
+      # In vivo (EMTP travelling head, Philips 3 T, public). R_0 rejects no voxel here: the
       # result is the same with and without the feed (runs 41190547845, 41190566176).
-      s002001-kki-achieva-bridge-run1:
+      s002001-site1-achieva-bridge-run1:
         feed: { totalfield: totalfield, reliability: reliability }
         # Measured: NRMSE 0.779 %, r 1.0000, max |Δ| 0.0455 ppm, p99 |Δ| 0.000446 ppm, the same on
         # v3 and v4 and with either offset grid (all dims even).
@@ -217,7 +217,7 @@ pairs:
           v4: "runs 41214814110, 41214822789: v4, qsmart-reference grid, NRMSE 0.779 % (unchanged)"
           pinned: "run 40530165113: qsmxt v10.0.0 sha256:9258c10e…, NRMSE 133.8 %, r 0.5346"
 
-  # ---- In vivo inputs. The KKI travelling head has no ground-truth fields, so a pair that starts
+  # ---- In vivo inputs. The EMTP travelling head has no ground-truth fields, so a pair that starts
   # from a field gets one from QSM.rs steps run before its reference (`reference_prefix`), and the
   # candidate is fed exactly what the reference was given (`feed`): both sides start from the same
   # voxels, and only the pair's own step is compared. Prefix steps run the QSM.rs under test.
@@ -227,7 +227,7 @@ pairs:
     reference: ilsqr-sti
     candidate: ilsqr-qsmrs
     enabled: true
-    # Was sim 18.0 % / KKI 17.2 % NRMSE at QSM.rs da928e0 (40 iterations, the GUI's; the container
+    # Was sim 18.0 % / EMTP 17.2 % NRMSE at QSM.rs da928e0 (40 iterations, the GUI's; the container
     # runs QSM_iLSQR's own 100, now QSM.rs's default), then 0.99 % / 1.78 % at main 7f8271e (run
     # 41019608126): FastQSM's kernel closing differed from imclose's. With that fixed
     # (astewartau/QSM.rs#372): 0.0024 % / 0.017 % at qsmxt's default double precision (run
@@ -241,7 +241,7 @@ pairs:
         # Measured: NRMSE 0.002378 %, r 1.000000, max |Δ| 9.0e-05 ppm, p99 |Δ| 2.2e-06 ppm.
         chimap: { nrmse_max: 0.503, correlation_min: 0.989, max_abs_max: 0.000113, p99_abs_max: 2.72e-06 }
         measured: { main: "run 41256314678: QSMxT main a78074c, QSM.rs main afed56b (limits)" }
-      s002001-kki-achieva-bridge-run1:
+      s002001-site1-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
         # Re-baselined on QSMxT v12.0.0 (2026-11-14): QSM-CI #416 (92d6c8a) made vsharp-qsmrs not
@@ -258,7 +258,7 @@ pairs:
     candidate: vsharp-qsmrs
     enabled: true
     # Closed by STI Suite's ball (astewartau/QSM.rs#332) and its even crop and single-precision mask
-    # resampling (#361): from NRMSE sim 40.7 %, KKI 58.5 % at da928e0 to STI's float32 rounding.
+    # resampling (#361): from NRMSE sim 40.7 %, EMTP 58.5 % at da928e0 to STI's float32 rounding.
     qsmrs_paths: [src/bgremove/sharp.rs, src/bgremove/smv.rs, src/bgremove/vsharp.rs, src/error.rs,
                   src/fft.rs, src/grid.rs, src/inversion/medi.rs, src/kernels/,
                   src/pipeline/bg_removal.rs, src/pipeline/rules.rs, src/utils/padding.rs]
@@ -273,7 +273,7 @@ pairs:
         # Measured: NRMSE 0.00090 %, r 1.000000, max |Δ| 6.3e-07 ppm, p99 |Δ| 2.1e-07 ppm.
         localfield: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
         measured: { main: "run 41019310531: QSMxT main 2533f94, QSM.rs main 7f8271e; vsharp-sti v2 (limits)" }
-      s002001-kki-achieva-bridge-run1:
+      s002001-site1-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs]
         feed: { totalfield: totalfield }
         # Measured: NRMSE 0.00022 %, r 1.000000, max |Δ| 4.9e-07 ppm, p99 |Δ| 7.5e-08 ppm.
@@ -285,11 +285,11 @@ pairs:
     enabled: true
     # Same algorithm: with both sides' defaults (LSQR tol 0.001, no padding; QSM.rs
     # IharperellaParams::default, probed from STI Suite 3.0) the outputs agree to 5e-9 % NRMSE at
-    # 5 LSQR iterations and 2e-5 % at 10 (KKI, run locally on the CI's qsmxt build). Past ~10
+    # 5 LSQR iterations and 2e-5 % at 10 (EMTP, run locally on the CI's qsmxt build). Past ~10
     # iterations LSQR amplifies rounding about 5x per iteration, in the original too: at its
     # default 40 iterations, STI against itself with a 1-ulp change to the float32 input differs
-    # by 2.4 % (sim cropped to even) and 2.6 % (KKI), and QSM.rs against STI by 4.4 % / 16.7-20.9 %
-    # (run 41315128824: KKI 20.88 %, r 0.979). So the pair checks the algorithm at 10 iterations,
+    # by 2.4 % (sim cropped to even) and 2.6 % (EMTP), and QSM.rs against STI by 4.4 % / 16.7-20.9 %
+    # (run 41315128824: EMTP 20.88 %, r 0.979). So the pair checks the algorithm at 10 iterations,
     # where it is deterministic to rounding; the default 40 only measures the chaos.
     reference_set: { niter: 10 }
     # rim sti: STI's own rule, explicitly (iHARPERELLA's default; whole-rim zeroing is an option).
@@ -304,7 +304,7 @@ pairs:
     # on the full grid, astewartau/QSM.rs#393), but on a padded FFT domain that QSM.rs does not
     # use, so the pair keeps checking the algorithm on an even grid.
     datasets:
-      s002001-kki-achieva-bridge-run1:
+      s002001-site1-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs]
         feed: { totalfield: totalfield }
         # Measured (10 iterations): NRMSE 3.9e-5 %, r 1.000000, max |Δ| 6.0e-08 ppm, p99 |Δ| 3.0e-08 ppm.
@@ -326,7 +326,7 @@ pairs:
         # Measured: NRMSE 0.002332 % (0.326 % with STI's GUI padding [8 8 20], run 40605505892).
         chimap: { nrmse_max: 0.503, correlation_min: 0.989, max_abs_max: 8.95e-05, p99_abs_max: 2.29e-06 }
         measured: { main: "run 41019608126: QSMxT main 2533f94, QSM.rs main 7f8271e (limits)" }
-      s002001-kki-achieva-bridge-run1:
+      s002001-site1-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
         # Re-baselined on QSMxT v12.0.0 (2026-11-14): QSM-CI #416 (92d6c8a) made vsharp-qsmrs not
@@ -357,7 +357,7 @@ pairs:
         # Measured: NRMSE 0.0290 %, r 1.000000, max |Δ| 0.00043 ppm, p99 |Δ| 2.2e-05 ppm.
         chimap: { nrmse_max: 0.532, correlation_min: 0.989, max_abs_max: 0.000535, p99_abs_max: 2.77e-05 }
         measured: { main: "run 40613723628: QSMxT main 8a7072a, QSM.rs main da928e0; medi-cornell v4 sha256:b81527b0… (limits)" }
-      s002001-kki-achieva-bridge-run1:
+      s002001-site1-achieva-bridge-run1:
         # Measured: NRMSE 0.0275 %, r 1.000000, max |Δ| 0.00127 ppm, p99 |Δ| 3.8e-05 ppm, the same
         # with QSM.rs df84af4 (record run 41002894810, which failed the old max/p99 limits) and
         # 7f8271e. The first limits (NRMSE 0.0039 %, max 0.00017, p99 5.4e-06; run 40613723628,
@@ -390,7 +390,7 @@ pairs:
       # sim: in-vivo limits only for this release (decision 2026-11-12); sim not measured yet
       # The acquisition these limits were measured on (OSF v2: ImagingFrequency, Manufacturer, the
       # fidelity cases' R2′; QSM-CI#437). Was keyed to prisma-bridge-run1 (MGH), a different scan.
-      s005001-cbic-prisma-bridge-run1:      # Siemens Prisma, ImagingFrequency from its dcm2niix sidecar
+      s005001-site5-prisma-bridge-run1:      # Siemens Prisma, ImagingFrequency from its dcm2niix sidecar
         # 2026-11-11, inside the dataset mask, against the reference run locally at 8 threads: χ NRMSE
         # 0.0029 %, max |Δ| 7.4e-5 ppm, p99 4.8e-6 ppm; mask identical; total and local field ≤ 1.1e-5 ppm.
         # Limits from the reference's own run-to-run spread, not from that run (decision 18, QSMART's
@@ -418,7 +418,7 @@ pairs:
       # its Tukey 0.4 regardless, where QSMxT's rules need a known manufacturer.
       # meso-3t: in-vivo limits only for this release (decision 2026-11-12); not measured yet
       # The acquisition these limits were measured on (as above; QSM-CI#437).
-      s005001-cbic-prisma-bridge-run1:
+      s005001-site5-prisma-bridge-run1:
         # Deterministic, so tight (2026-11-11, inside the dataset mask): χ+ / |χ−| NRMSE 0.0008 % /
         # 0.0011 %, max |Δ| 4.9e-5 / 8.2e-5 ppm; mask identical. The QSM (chimap) is the toolbox's
         # iLSQR either side. It was 0.23 % / max 2.5e-4 ppm while QSMxT mean-referenced it; with
@@ -442,7 +442,7 @@ pairs:
     datasets:
       # meso-3t: in-vivo limits only for this release (decision 2026-11-12); not measured yet
       # The acquisition these limits were measured on (as above; QSM-CI#437).
-      s005001-cbic-prisma-bridge-run1:
+      s005001-site5-prisma-bridge-run1:
         # Deterministic, so tight. Before QSM.rs#458 / QSMxT#534 (CSF mask from ARLO R2*): χ+ / |χ−|
         # 0.58 % / 0.51 %. With the toolbox's NNLS R2* (2026-11-11, inside the dataset mask): χ+ /
         # |χ−| NRMSE 0.0005 % / 0.0011 %, max |Δ| 5.6e-5 / 5.2e-4 ppm, p99 ≤ 5.3e-7 ppm; mask
@@ -464,7 +464,7 @@ pairs:
     datasets:
       # meso-3t: in-vivo limits only for this release (decision 2026-11-12); not measured yet
       # The acquisition these limits were measured on (as above; QSM-CI#437).
-      s005001-cbic-prisma-bridge-run1:
+      s005001-site5-prisma-bridge-run1:
         # Limits from the in-vivo gap, after an investigation (decision 18) and Ashley's decisions
         # 56 (STAR unpadded, rule decompose.star-pad) and 57 (keep QSM.rs's exact stage-5.1 solve).
         # Measured inside the reference's fitted 33³ central box (DECOMPOSE_CROPBOX=32) ∩ its
@@ -507,7 +507,7 @@ pairs:
       # Known, see the reference's ci_notes: the per-echo Laplacian constants (total field, R_0) and
       # the N4 thread spread of the mask.
       # The acquisition these limits were measured on (as above; QSM-CI#437).
-      s005001-cbic-prisma-bridge-run1:
+      s005001-site5-prisma-bridge-run1:
         # Limits from the reference's own spread, not from a candidate run (decision 18,
         # 2026-11-10, QSM-CI#421). Reference v1 (ANTs N4 at 32+ threads) against v2 (N4 at 1
         # thread), everything else identical: mask Dice 0.9990 (3,131 voxels), χ NRMSE 15.07 %,
@@ -531,7 +531,7 @@ pairs:
     datasets:
       # sim: in-vivo limits only for this release (decision 2026-11-12); sim not measured yet
       # The acquisition these limits were measured on (as above; QSM-CI#437).
-      s005001-cbic-prisma-bridge-run1:
+      s005001-site5-prisma-bridge-run1:
         # 2026-11-11, inside the dataset mask: thresholding mask and PolishMask's mask identical
         # (1,366,408 voxels); total field identical up to a constant (−0.0584 ppm, which V-SHARP
         # removes); local field identical except 4 isolated interior voxels, which STI's V_SHARP
@@ -562,7 +562,7 @@ pairs:
                   src/bgremove/vsharp.rs, src/inversion/ilsqr.rs]
     qsmxt_paths: [crates/qsmxt-engine/src/]
     datasets:
-      s005001-cbic-prisma-bridge-run1:
+      s005001-site5-prisma-bridge-run1:
         # Deterministic, so tight (2026-11-13, inside the dataset mask): χ NRMSE 0.0027 %, r 1.000000,
         # max |Δ| 1.4e-5 ppm, p99 2.4e-6 ppm; the final (second-trim) mask identical, 1,241,992
         # voxels; the local field 3.3e-4 % (float32 output); the total field identical up to a
@@ -578,7 +578,7 @@ pairs:
     enabled: true
     # The whole field map: the candidate unwraps with QSM.rs's port of MEDI's region-growing
     # unwrapPhase (`qsmxt fieldmap medi-region-growing`, astewartau/QSM.rs#425), not its default
-    # ROMEO. With ROMEO the total fields differed by unwrapper (sim 3.8 %, KKI 7.6 % NRMSE) and the
+    # ROMEO. With ROMEO the total fields differed by unwrapper (sim 3.8 %, EMTP 7.6 % NRMSE) and the
     # pair was intermediates only. The intermediates are compared by name as before: ifreq_raw (the
     # fit before unwrapping, rad per echo spacing, wrapped), n_std (its noise map) and r2star
     # (ARLO). Both sides write them in MEDI's units and sign; the candidate writes float32, hence
@@ -586,7 +586,7 @@ pairs:
     candidate_set: { unwrapping: medi-region-growing }
     # ARLO: QSM.rs clamps negative R2* at 0 (a documented deviation, src/utils/r2star.rs), where
     # arlo.m returns negative noise estimates; unclamped the maps differ by exactly those voxels
-    # (sim 4068 voxels, NRMSE 0.91 %, max |Δ| 108 Hz; KKI 18985, 3.87 %, 96 Hz) and agree to float32
+    # (sim 4068 voxels, NRMSE 0.91 %, max |Δ| 108 Hz; EMTP 18985, 3.87 %, 96 Hz) and agree to float32
     # rounding everywhere else. The reference's r2star is clamped the same way before comparing.
     reference_names: { r2star: { name: r2star, clip_min: 0 } }
     qsmrs_paths: [src/error.rs, src/grid.rs, src/pipeline/field_mapping.rs,
@@ -611,7 +611,7 @@ pairs:
         measured:
           main: "run 41383188529: QSMxT main 865a92f, QSM.rs main a44046e; matlab-medi sha256:7efa4bd6… (intermediates' limits)"
           pr425: "run 41635345604: QSMxT af9262d (QSMxT/QSMxT medi-region-growing), QSM.rs 17bf7b8 (astewartau/QSM.rs#425); matlab-medi sha256:7efa4bd6… (totalfield limits)"
-      s002001-kki-achieva-bridge-run1:
+      s002001-site1-achieva-bridge-run1:
         # Measured: totalfield identical (NRMSE 0, max |Δ| 0 ppm); ifreq_raw NRMSE 2.56e-06 %,
         # max |Δ| 1.2e-07; n_std 2.42e-06 %, 5.1e-13; r2star (clamped reference) 2.5e-06 %,
         # max |Δ| 1.4e-05 Hz.
@@ -635,7 +635,7 @@ pairs:
                   src/utils/special.rs, src/utils/wavelet.rs]
     qsmxt_paths: *invert_wiring
     datasets:
-      # In silico only: on the KKI travelling head the original was killed (exit 137) on the
+      # In silico only: on the EMTP travelling head the original was killed (exit 137) on the
       # self-hosted runner (run 40605505892), as it diverges on real multi-echo data.
       sim:
         # Measured: NRMSE 0.477 %, r 0.99999, max |Δ| 0.0362 ppm, p99 |Δ| 0.00046 ppm.
@@ -746,7 +746,7 @@ pairs:
     enabled: true
     # Both sides at their defaults, QSM.jl's fast-FFT padding included (astewartau/QSM.rs#323;
     # until then the pair set QSM.jl's pad to -1). Measured before the change (run 41019310531,
-    # QSM.jl pad -1 vs QSM.rs's padding): NRMSE sim 1.30 %, KKI 6.9e-06 % (the KKI grid needs no padding).
+    # QSM.jl pad -1 vs QSM.rs's padding): NRMSE sim 1.30 %, EMTP 6.9e-06 % (the EMTP grid needs no padding).
     # QSM.rs#468 (QSMxT#556) moved QSMxT's default threshold to 0.25; the port runs at QSM.jl's
     # 0.15 (QSM.rs TKD_QSMJL_THRESHOLD), the value the limits were measured at.
     candidate_set: { threshold: 0.15 }
@@ -759,7 +759,7 @@ pairs:
         # Measured: identical (NRMSE 0 %).
         chimap: { nrmse_max: 0.5, correlation_min: 0.99, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
         measured: { main: "run 41025064947: QSMxT main 007799a, QSM.rs main 7f8271e (limits)" }
-      s002001-kki-achieva-bridge-run1:
+      s002001-site1-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
         # Measured: NRMSE 6.9e-06 %, r 1.000000, max |Δ| 6.0e-08 ppm, p99 |Δ| 8.1e-09 ppm.
@@ -771,7 +771,7 @@ pairs:
     enabled: true
     # Both sides at their defaults, QSM.jl's fast-FFT padding included (astewartau/QSM.rs#323;
     # until then the pair set QSM.jl's pad to -1). Measured before the change (run 41019310531,
-    # QSM.jl pad -1 vs QSM.rs's padding): NRMSE sim 2.74 %, KKI 8.1e-06 % (the KKI grid needs no padding).
+    # QSM.jl pad -1 vs QSM.rs's padding): NRMSE sim 2.74 %, EMTP 8.1e-06 % (the EMTP grid needs no padding).
     qsmrs_paths: [src/fft.rs, src/grid.rs, src/inversion/tkd.rs, src/kernels/,
                   src/pipeline/inversion.rs, src/pipeline/rules.rs, src/utils/mask.rs,
                   src/utils/padding.rs]
@@ -781,7 +781,7 @@ pairs:
         # Measured: identical (NRMSE 0 %).
         chimap: { nrmse_max: 0.5, correlation_min: 0.99, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
         measured: { main: "run 41025064947: QSMxT main 007799a, QSM.rs main 7f8271e (limits)" }
-      s002001-kki-achieva-bridge-run1:
+      s002001-site1-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
         # Measured: NRMSE 8.1e-06 %, max |Δ| 6.0e-08 ppm, p99 |Δ| 7.5e-09 ppm.
@@ -793,7 +793,7 @@ pairs:
     enabled: true
     # Both sides at their defaults, QSM.jl's fast-FFT padding included (astewartau/QSM.rs#323;
     # until then the pair set QSM.jl's pad to -1). Measured before the change (run 41019310531,
-    # QSM.jl pad -1 vs QSM.rs's padding): NRMSE sim 0.32 %, KKI 1.3e-05 % (the KKI grid needs no padding).
+    # QSM.jl pad -1 vs QSM.rs's padding): NRMSE sim 0.32 %, EMTP 1.3e-05 % (the EMTP grid needs no padding).
     qsmrs_paths: [src/fft.rs, src/grid.rs, src/inversion/tikhonov.rs, src/kernels/,
                   src/pipeline/inversion.rs, src/pipeline/rules.rs, src/utils/mask.rs,
                   src/utils/padding.rs]
@@ -803,7 +803,7 @@ pairs:
         # Measured: identical (NRMSE 0 %).
         chimap: { nrmse_max: 0.5, correlation_min: 0.99, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
         measured: { main: "run 41025064947: QSMxT main 007799a, QSM.rs main 7f8271e (limits)" }
-      s002001-kki-achieva-bridge-run1:
+      s002001-site1-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
         # Measured: NRMSE 1.3e-05 %, max |Δ| 1.6e-07 ppm, p99 |Δ| 1.5e-08 ppm.
@@ -815,7 +815,7 @@ pairs:
     enabled: true
     # Both sides at their defaults, QSM.jl's fast-FFT padding included (astewartau/QSM.rs#323;
     # until then the pair set QSM.jl's pad to -1). Measured before the change (run 41019310531,
-    # QSM.jl pad -1 vs QSM.rs's padding): NRMSE sim 0.21 %, KKI 1.2e-05 % (the KKI grid needs no padding).
+    # QSM.jl pad -1 vs QSM.rs's padding): NRMSE sim 0.21 %, EMTP 1.2e-05 % (the EMTP grid needs no padding).
     # QSM.rs#468 (QSMxT#556) moved QSMxT's default lambda to 3e-4; the port runs at QSM.jl's 1e-3
     # (QSM.rs TV_QSMJL_LAMBDA), the value the limits were measured at.
     candidate_set: { lambda: 0.001 }
@@ -829,7 +829,7 @@ pairs:
         # Measured: NRMSE 2.0e-16 %, max |Δ| 5.6e-17 ppm.
         chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
         measured: { main: "run 41025064947: QSMxT main 007799a, QSM.rs main 7f8271e (limits)" }
-      s002001-kki-achieva-bridge-run1:
+      s002001-site1-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
         # Measured: NRMSE 1.2e-05 %, max |Δ| 1.5e-07 ppm, p99 |Δ| 1.2e-08 ppm.
@@ -856,7 +856,7 @@ pairs:
         # Measured: NRMSE 2.7e-10 %, max |Δ| 5.8e-11 ppm.
         chimap: { nrmse_max: 0.501, correlation_min: 0.99, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
         measured: { main: "run 41025064947: QSMxT main 007799a, QSM.rs main 7f8271e (limits)" }
-      s002001-kki-achieva-bridge-run1:
+      s002001-site1-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
         # Measured: NRMSE 9.6e-06 %, max |Δ| 8.9e-08 ppm, p99 |Δ| 8.4e-09 ppm.
@@ -868,7 +868,7 @@ pairs:
     enabled: true
     # Both sides at their defaults, QSM.jl's fast-FFT padding included (astewartau/QSM.rs#323;
     # until then the pair set QSM.jl's pad to -1). Measured before the change (run 41019310531,
-    # QSM.jl pad -1 vs QSM.rs's padding): NRMSE sim 1.02 %, KKI 5.8e-06 % (the KKI grid needs no padding).
+    # QSM.jl pad -1 vs QSM.rs's padding): NRMSE sim 1.02 %, EMTP 5.8e-06 % (the EMTP grid needs no padding).
     qsmrs_paths: [src/fft.rs, src/grid.rs, src/inversion/rts.rs, src/kernels/,
                   src/pipeline/inversion.rs, src/pipeline/rules.rs, src/utils/gradient.rs,
                   src/utils/mask.rs, src/utils/padding.rs]
@@ -878,7 +878,7 @@ pairs:
         # Measured: NRMSE 3.9e-10 %, max |Δ| 1.2e-10 ppm.
         chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
         measured: { main: "run 41025064947: QSMxT main 007799a, QSM.rs main 7f8271e (limits)" }
-      s002001-kki-achieva-bridge-run1:
+      s002001-site1-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
         # Measured: NRMSE 5.8e-06 %, max |Δ| 6.0e-08 ppm, p99 |Δ| 7.5e-09 ppm.
@@ -893,8 +893,8 @@ pairs:
     # defaults (2 × the largest voxel, tol 1e-3, 500 iterations); the candidate selects it. qsmxt
     # keeps the tolerance and cap at the user's values when the variant changes (it suggests
     # QSM.jl's by a rule, never silently), so they are set too: both sides run QSM.jl's defaults.
-    # With the variant alone (tol 5e-5, no cap; run 41025625969): NRMSE sim 51.3 %, KKI 364 %. With
-    # QSM.rs's defaults against QSM.jl (run 41019310531): sim 21.6 %, KKI 266 %.
+    # With the variant alone (tol 5e-5, no cap; run 41025625969): NRMSE sim 51.3 %, EMTP 364 %. With
+    # QSM.rs's defaults against QSM.jl (run 41019310531): sim 21.6 %, EMTP 266 %.
     qsmrs_paths: [src/bgremove/ismv.rs, src/bgremove/smv.rs, src/error.rs, src/fft.rs, src/grid.rs,
                   src/kernels/, src/pipeline/bg_removal.rs, src/pipeline/rules.rs, src/utils/ops.rs]
     qsmxt_paths: &bgremove_wiring [src/cli.rs, src/commands/common.rs, src/commands/bgremove.rs]
@@ -904,7 +904,7 @@ pairs:
         # Measured: NRMSE 6.0e-09 %, max |Δ| 4.7e-10 ppm.
         localfield: { nrmse_max: 0.501, correlation_min: 0.99, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
         measured: { main: "run 41027339410: QSMxT main 007799a, QSM.rs main 7f8271e (limits)" }
-      s002001-kki-achieva-bridge-run1:
+      s002001-site1-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs]
         feed: { totalfield: totalfield }
         # Measured: NRMSE 2.1e-09 %, max |Δ| 2.3e-10 ppm.
@@ -927,7 +927,7 @@ pairs:
         # Measured: NRMSE 1.1e-08 %, max |Δ| 9.3e-10 ppm.
         localfield: { nrmse_max: 0.501, correlation_min: 0.99, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
         measured: { main: "run 41025064947: QSMxT main 007799a, QSM.rs main 7f8271e (limits)" }
-      s002001-kki-achieva-bridge-run1:
+      s002001-site1-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs]
         feed: { totalfield: totalfield }
         # Measured: NRMSE 1.4e-08 %, max |Δ| 1.9e-09 ppm.
@@ -940,7 +940,7 @@ pairs:
     # QSM.rs keeps QSM.jl's sharp as SharpVariant::QsmJl (astewartau/QSM.rs#321), selected by
     # `qsmxt bgremove sharp --variant qsmjl` (QSMxT/QSMxT#460) with QSM.jl's own defaults (18 × the
     # smallest voxel, 0.05); both sides run at those. QSM.rs's default (SEPIA's SHARP) is the
-    # `sharp` pair. On KKI the pair measured 2.95 % (run 41191842680) until the Julia glue took the
+    # `sharp` pair. On EMTP the pair measured 2.95 % (run 41191842680) until the Julia glue took the
     # voxel size from the header as qsmxt does (QSM.jl pads by cld(18, 0.99999994) = 19, not 18).
     qsmrs_paths: *sharp_paths
     qsmxt_paths: *bgremove_wiring
@@ -950,7 +950,7 @@ pairs:
         # Measured: NRMSE 6.3e-12 %, max |Δ| 4.6e-13 ppm.
         localfield: { nrmse_max: 0.501, correlation_min: 0.99, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
         measured: { main: "run 41191905549: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
-      s002001-kki-achieva-bridge-run1:
+      s002001-site1-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs]
         feed: { totalfield: totalfield }
         # Measured: NRMSE 0 (identical in float32).
@@ -963,8 +963,8 @@ pairs:
     # QSM.rs's V-SHARP uses STI Suite's ball and edge test by default (astewartau/QSM.rs#332);
     # QSM.jl's are VsharpBall::QsmJl, which `qsmxt bgremove vsharp --ball qsmjl` selects
     # (QSMxT/QSMxT#460). With the default ball and STI's radii on both sides (run 41019310531):
-    # NRMSE sim 12.8 %, KKI 13.9 %; with the QSM.jl ball, the native grid and the candidate's
-    # radii and threshold given explicitly (run 41029942914): sim 5.2e-12 %, KKI 1.19 %. The KKI
+    # NRMSE sim 12.8 %, EMTP 13.9 %; with the QSM.jl ball, the native grid and the candidate's
+    # radii and threshold given explicitly (run 41029942914): sim 5.2e-12 %, EMTP 1.19 %. The EMTP
     # 1.19 % was the voxel size: QSM.jl pads its box by cld(max(r), minimum(vsz)) voxels, and the
     # reference read params.json's 1.0 mm while qsmxt reads the header's z spacing, 0.99999994
     # (13 voxels of padding instead of 12). The reference now takes the header's voxel size too
@@ -981,7 +981,7 @@ pairs:
         # Measured: NRMSE 5.2e-12 %, max |Δ| 4.5e-13 ppm.
         localfield: { nrmse_max: 0.501, correlation_min: 0.99, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
         measured: { main: "run 41190280885: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
-      s002001-kki-achieva-bridge-run1:
+      s002001-site1-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs]
         feed: { totalfield: totalfield }
         # Measured: NRMSE 1.1e-11 %, max |Δ| 1.8e-12 ppm.
@@ -1010,7 +1010,7 @@ pairs:
         # Measured: NRMSE 4.8e-14 %, max |Δ| 2.8e-14 ppm.
         totalfield: { nrmse_max: 0.501, correlation_min: 0.99, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
         measured: { main: "run 40605505892: QSMxT main 8a7072a, QSM.rs main da928e0 (limits)" }
-      s002001-kki-achieva-bridge-run1:
+      s002001-site1-achieva-bridge-run1:
         # Measured: NRMSE 6.4e-10 %, max |Δ| 9.3e-10 ppm.
         totalfield: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.0e-6, p99_abs_max: 1.0e-6 }
         measured: { main: "run 40605505892: QSMxT main 8a7072a, QSM.rs main da928e0 (limits)" }
@@ -1018,15 +1018,15 @@ pairs:
     reference: romeo-romeojl
     candidate: romeo-qsmrs
     enabled: true
-    # Was NRMSE sim 4.67 %, KKI 2.99 % at QSM.rs da928e0 (run 40605505892). astewartau/QSM.rs#325
+    # Was NRMSE sim 4.67 %, EMTP 2.99 % at QSM.rs da928e0 (run 40605505892). astewartau/QSM.rs#325
     # (merged) ports ROMEO.jl and MriResearchTools exactly in Float64; what remains is the ROMEO
     # CLI's own Float32 arithmetic (it reads the NIfTIs as Float32): given Float64 copies of the
     # inputs, the CLI reproduces itself, and QSM.rs given the CLI's corrected phase reproduces the
     # CLI's unwrapped echoes exactly (#325). QSM.rs stays in Float64 (Ashley, 2026-10-28). Same
-    # agreement on #325's heads and on main 7f8271e: sim 1.64 % (r 0.99995), KKI 1.50 % (r 0.9999).
+    # agreement on #325's heads and on main 7f8271e: sim 1.64 % (r 0.99995), EMTP 1.50 % (r 0.9999).
     # ROMEO.jl runs with one thread since QSM.rs 008b829 follows its echo-by-echo order (run.sh says
     # why). Against 4 threads that QSM.rs failed sim on 2 voxels (run 41811450319: max |Δ| 0.282 ppm);
-    # against one thread (run 41813858175): sim 1.645 %, max |Δ| 0.164; KKI 1.498 %, max |Δ| 0.127.
+    # against one thread (run 41813858175): sim 1.645 %, max |Δ| 0.164; EMTP 1.498 %, max |Δ| 0.127.
     qsmrs_paths: [src/error.rs, src/grid.rs, src/pipeline/field_mapping.rs,
                   src/pipeline/phase_utils.rs, src/pipeline/rules.rs, src/priority_queue.rs,
                   src/region_grow.rs, src/unwrap/bestpath.rs, src/unwrap/mod.rs,
@@ -1047,7 +1047,7 @@ pairs:
         measured:
           pr325: "runs 40616429914, 40620298336: QSMxT main 8a7072a, QSM.rs 2ea20c8 and 38bc215 (astewartau/QSM.rs#325) (limits)"
           main: "run 41019310531: QSMxT main 2533f94, QSM.rs main 7f8271e (within the limits)"
-      s002001-kki-achieva-bridge-run1:
+      s002001-site1-achieva-bridge-run1:
         # Measured on main: NRMSE 1.498 %, r 0.9999, max |Δ| 0.127 ppm, p99 |Δ| 0.0144 ppm.
         totalfield: { nrmse_max: 2.15, correlation_min: 0.989, max_abs_max: 0.16, p99_abs_max: 0.018 }
         measured:
@@ -1059,24 +1059,24 @@ pairs:
     enabled: true
     # With laplacian=romeo (run 40607732498): sim 59.7 %, from the ±2π jumps ROMEO's re-unwrap adds.
     # With laplacian=unwrapped, QSM.rs main da928e0 and #324's first head (b0f9984) give the same
-    # result through QSMxT main (run 40616429914): NRMSE sim 3.84 % (r 0.99926), KKI 6.74 %
+    # result through QSMxT main (run 40616429914): NRMSE sim 3.84 % (r 0.99926), EMTP 6.74 %
     # (r 0.99772). #324, reworked (f47f4f3), keeps QSM.rs's exact adjoint and edge erosion as the
     # default and reproduces the package with `TgvParams::reference_divergence` and
     # `reference_edge_erosion` (merged as 1f891b2); its own test matches the package to float32
     # rounding that way. `qsmxt invert tgv --reference-divergence --reference-edge-erosion` exposes
     # them (QSMxT/QSMxT#460), and the candidate_set below turns them on. Baseline with both on
-    # (run 41024142665): NRMSE sim 3.84 %, KKI 6.74 %, unchanged: on these 1 mm isotropic datasets
+    # (run 41024142665): NRMSE sim 3.84 %, EMTP 6.74 %, unchanged: on these 1 mm isotropic datasets
     # with masks clear of the array faces the two switches change nothing, so the gap is elsewhere.
     # The gap was the output support (astewartau/QSM.rs#369): QSM.rs returns χ inside the eroded
     # mask, the package its whole box, whose rim just outside that mask is compared here inside the
-    # dataset mask (sim 41,907 voxels, KKI 46,101). Over the voxels both return, run 41019310531's
-    # outputs differ by 3.8e-4 % (sim) / 4.9e-3 % (KKI). `reference_output_box` (QSM.rs#375,
+    # dataset mask (sim 41,907 voxels, EMTP 46,101). Over the voxels both return, run 41019310531's
+    # outputs differ by 3.8e-4 % (sim) / 4.9e-3 % (EMTP). `reference_output_box` (QSM.rs#375,
     # `qsmxt invert tgv --reference-output-box`, QSMxT/QSMxT#465) returns the package's box; with
     # all three switches (run 41031701965) the pair is at float32 rounding (limits below). Enabled
     # once QSMxT main had #465: run 41196090520 (QSMxT main 9cfe3f9, qsm-core 15c938f) passes, NRMSE
-    # sim 0.00038 % (max |Δ| 1.4e-6, p99 3.0e-7 ppm), KKI 0.0049 % (2.5e-5, 6.4e-6 ppm), r 1.000000.
+    # sim 0.00038 % (max |Δ| 1.4e-6, p99 3.0e-7 ppm), EMTP 0.0049 % (2.5e-5, 6.4e-6 ppm), r 1.000000.
     # max/p99 |Δ| limits: ~10× the derived ones (Ashley, 2026-10-31). The derived limits sat at
-    # float32 rounding (sim max 2.99e-6, p99 1.0e-6; KKI 3.16e-5, 8.03e-6), and the package's
+    # float32 rounding (sim max 2.99e-6, p99 1.0e-6; EMTP 3.16e-5, 8.03e-6), and the package's
     # FFTW/SIMD kernels round differently on different CPUs, so a pass must not depend on which
     # runner the job lands on. NRMSE and correlation keep the derived limits.
     qsmrs_paths: [src/error.rs, src/fft.rs, src/grid.rs, src/inversion/tgv.rs, src/kernels/,
@@ -1103,7 +1103,7 @@ pairs:
         measured: { pr369: "run 41031701965: QSMxT tgv-output-box-369 43baf55 (QSMxT/QSMxT#465), QSM.rs tgv-output-box-369 40b0dcf (astewartau/QSM.rs#375) (limits)",
                     main: "run 41196090520: QSMxT main 9cfe3f9, qsm-core 15c938f, NRMSE 0.00038 %, pass",
                     pr478: "run 43889756447: α0 0.00636 / α1 0.00212 on both sides, QSMxT tgv-ratio3-default 85b0cb4 (QSMxT/QSMxT#570), QSM.rs 3d69d3a (astewartau/QSM.rs#478): NRMSE 0.00034 %, r 1.000000, max |Δ| 1.4e-6, p99 2.7e-7 ppm, pass" }
-      s002001-kki-achieva-bridge-run1:
+      s002001-site1-achieva-bridge-run1:
         # Measured: NRMSE 0.0049 %, r 1.000000, max |Δ| 2.5e-05 ppm, p99 |Δ| 6.4e-06 ppm.
         chimap: { nrmse_max: 0.506, correlation_min: 0.989, max_abs_max: 3.2e-04, p99_abs_max: 8.0e-05 }
         measured: { pr369: "run 41031701965: QSMxT tgv-output-box-369 43baf55 (QSMxT/QSMxT#465), QSM.rs tgv-output-box-369 40b0dcf (astewartau/QSM.rs#375) (limits)",
@@ -1126,7 +1126,7 @@ pairs:
                   src/pipeline/rules.rs]
     qsmxt_paths: *invert_wiring
     datasets:
-      s002001-kki-achieva-bridge-run1:
+      s002001-site1-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
         # Measured: NRMSE 0.00141 %, r 1.000000, max |Δ| 2.8e-05 ppm, p99 |Δ| 2.5e-06 ppm.
@@ -1135,7 +1135,7 @@ pairs:
       sim:
         # Measured: NRMSE 0.00087 %, r 1.000000, max |Δ| 7.2e-06 ppm, p99 |Δ| 8.2e-07 ppm (runs
         # 41190020480 and 41642974449), and NRMSE 0.0016 %, max |Δ| 1.5e-05 ppm, p99 |Δ| 1.6e-06 ppm
-        # on another hosted runner with the same code and data (run 41625523205; KKI identical in
+        # on another hosted runner with the same code and data (run 41625523205; EMTP identical in
         # both). ONNX Runtime's CPU kernels round by instruction set, so the |Δ| limits are derived
         # from the larger run.
         chimap: { nrmse_max: 0.502, correlation_min: 0.989, max_abs_max: 2.16e-05, p99_abs_max: 2.46e-06 }
@@ -1152,7 +1152,7 @@ pairs:
                   src/inversion/tiled.rs, src/models/, src/pipeline/inversion.rs,
                   src/pipeline/rules.rs]
     qsmxt_paths: *invert_wiring
-    # Sim only: on the KKI head the original's TensorFlow graph runs out of memory on a hosted
+    # Sim only: on the EMTP head the original's TensorFlow graph runs out of memory on a hosted
     # runner (std::bad_alloc, run 41190020480).
     datasets:
       sim:
@@ -1168,7 +1168,7 @@ pairs:
                   src/inversion/tiled.rs, src/models/, src/pipeline/inversion.rs,
                   src/pipeline/rules.rs]
     qsmxt_paths: *invert_wiring
-    # Sim only: on the KKI head the original's TensorFlow graph runs out of memory on a hosted
+    # Sim only: on the EMTP head the original's TensorFlow graph runs out of memory on a hosted
     # runner (std::bad_alloc, run 41190020480).
     datasets:
       sim:
@@ -1185,7 +1185,7 @@ pairs:
                   src/pipeline/rules.rs]
     qsmxt_paths: *invert_wiring
     datasets:
-      s002001-kki-achieva-bridge-run1:
+      s002001-site1-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
         # Measured: NRMSE 0.00765 %, r 1.000000, max |Δ| 2.7e-05 ppm, p99 |Δ| 7.4e-06 ppm.
@@ -1205,7 +1205,7 @@ pairs:
                   src/pipeline/rules.rs]
     qsmxt_paths: *invert_wiring
     datasets:
-      s002001-kki-achieva-bridge-run1:
+      s002001-site1-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
         # Measured: NRMSE 9.4e-05 %, r 1.000000, max |Δ| 1.5e-07 ppm, p99 |Δ| 3.7e-08 ppm.
@@ -1223,7 +1223,7 @@ pairs:
     # header (fixed in QSMxT/QSM-CI#331); with float32 output the port is 0.0002 %. Two more wrapper
     # bugs, fixed here: χ was padded back at the end where model_test had cropped slice 0 of an odd
     # axis (sim 63 % → 0.014 %), and a float32 header zoom of 0.99999994 sent model_test down its
-    # resampling branch, which feeds the network an all-ones mask (KKI 15 % → 6e-5 %). What is left
+    # resampling branch, which feeds the network an all-ones mask (EMTP 15 % → 6e-5 %). What is left
     # on sim is likely the odd grid itself: the original crops it to even, QSM.rs does not.
     qsmrs_models: true
     qsmrs_paths: [src/fft.rs, src/grid.rs, src/inversion/modl_qsm.rs, src/inversion/tile_budget.rs,
@@ -1231,7 +1231,7 @@ pairs:
                   src/pipeline/rules.rs]
     qsmxt_paths: *invert_wiring
     datasets:
-      s002001-kki-achieva-bridge-run1:
+      s002001-site1-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
         # Measured: NRMSE 5.9e-05 %, r 1.000000, max |Δ| 5.4e-07 ppm, p99 |Δ| 5.2e-08 ppm.
@@ -1254,7 +1254,7 @@ pairs:
                   src/pipeline/rules.rs]
     qsmxt_paths: *invert_wiring
     datasets:
-      s002001-kki-achieva-bridge-run1:
+      s002001-site1-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
         # Measured: NRMSE 0.00105 %, r 1.000000, max |Δ| 2.3e-05 ppm, p99 |Δ| 1.3e-06 ppm.
@@ -1274,7 +1274,7 @@ pairs:
                   src/pipeline/rules.rs]
     qsmxt_paths: *invert_wiring
     datasets:
-      s002001-kki-achieva-bridge-run1:
+      s002001-site1-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs]
         feed: { totalfield: totalfield }
         # Measured: NRMSE 0.00011 %, r 1.000000, max |Δ| 3.5e-07 ppm, p99 |Δ| 8.9e-08 ppm.
@@ -1290,7 +1290,7 @@ pairs:
     enabled: true
     # astewartau/QSM.rs#367 pads odd axes as the package does (70.6 % → 0.038 % on an odd box).
     # The package itself moves by ~0.1 % between CPUs (the regulariser's sign(VarNet(x)) flips
-    # near-zero voxels), which is what is left here: sim 0.016 %, KKI 0.10 % (max |Δ| 0.008 ppm).
+    # near-zero voxels), which is what is left here: sim 0.016 %, EMTP 0.10 % (max |Δ| 0.008 ppm).
     # Enabled at that level (Ashley, 2026-10-31); max/p99 have ~10× headroom over one runner's
     # measurement for that CPU spread, as for tgv.
     qsmrs_models: true
@@ -1299,7 +1299,7 @@ pairs:
                   src/pipeline/rules.rs]
     qsmxt_paths: *invert_wiring
     datasets:
-      s002001-kki-achieva-bridge-run1:
+      s002001-site1-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs]
         feed: { totalfield: totalfield }
         # Measured: NRMSE 0.103 %, r 0.999999, max |Δ| 0.0083 ppm, p99 |Δ| 7.2e-05 ppm.
@@ -1322,7 +1322,7 @@ pairs:
                   src/pipeline/inversion.rs, src/pipeline/rules.rs]
     qsmxt_paths: *bgremove_wiring
     datasets:
-      s002001-kki-achieva-bridge-run1:
+      s002001-site1-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs]
         feed: { totalfield: totalfield }
         # Measured: NRMSE 0.00016 %, r 1.000000, max |Δ| 2.5e-07 ppm, p99 |Δ| 5.2e-08 ppm.
@@ -1370,7 +1370,7 @@ pairs:
         # Measured: NRMSE 6.0e-05 %, r 1.000000, max |Δ| 6.3e-07 ppm, p99 |Δ| 4.3e-08 ppm.
         chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.89e-06, p99_abs_max: 1.0e-06 }
         measured: { main: "run 41569073453: QSMxT qsmnetme-377 (QSMxT#480), QSM.rs qsmnetme-377 6eb018a (limits)" }
-      s002001-kki-achieva-bridge-run1:
+      s002001-site1-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
         # Measured: NRMSE 9.4e-05 %, r 1.000000, max |Δ| 6.3e-06 ppm, p99 |Δ| 6.0e-08 ppm.
@@ -1406,7 +1406,7 @@ pairs:
                   src/utils/resample.rs]
     qsmxt_paths: [src/cli.rs, src/commands/common.rs, src/commands/mask.rs]
     datasets:
-      s002001-kki-achieva-bridge-run1:
+      s002001-site1-achieva-bridge-run1:
         # Measured: Dice 1.000000.
         mask: { dice_min: 0.99 }
         measured: { main: "run 41190020480: QSMxT main 9cfe3f9, QSM.rs main 15c938f (limits)" }
@@ -1415,7 +1415,7 @@ pairs:
     candidate: mindgrab-qsmrs
     enabled: true
     # The original is brainchop-cli 31150c3 (the first commit with the trained head bias,
-    # neuroneural/brainchop-cli#60), CPU tinygrad: ~10 min and 2.7 GB peak RSS on the KKI head
+    # neuroneural/brainchop-cli#60), CPU tinygrad: ~10 min and 2.7 GB peak RSS on the EMTP head
     # (Bunya, 8 CPUs), 45 min on a hosted runner. Both sides combine the echoes by root-sum-of-squares.
     # Not bit-identical: 517 of 1.6 M voxels differ over the volume (Dice 0.99984), 28 net inside the
     # dataset mask (Dice 0.99996; not investigated: tinygrad vs tract float rounding at the logit
@@ -1426,7 +1426,7 @@ pairs:
                   src/utils/resample.rs]
     qsmxt_paths: [src/cli.rs, src/commands/common.rs, src/commands/mask.rs]
     datasets:
-      s002001-kki-achieva-bridge-run1:
+      s002001-site1-achieva-bridge-run1:
         # Measured: Dice 0.999962 (reference 1,509,401 / candidate 1,509,429 mask voxels).
         mask: { dice_min: 0.9996 }
         measured: { main: "run 41556813951: QSMxT main 578e39d, qsm-core 6508d4e, mindgrab v2 (limits)" }
@@ -1437,8 +1437,8 @@ pairs:
     # R2* by ARLO on both sides: the toolbox's r2star_arlo is MEDI's arlo.m (black box, licensed
     # MATLAB R2023b, 2026-11-02); the entry's recon.py reproduces it bit for bit. QSM.rs sets negative
     # rates to 0 (its rule for relaxation maps), the toolbox keeps them: the r2star intermediate
-    # differs there only (KKI: 18,985 of 1.52 M mask voxels; elsewhere identical, run 41474160070).
-    # Through the network that clip alone moves R2' by 3.54 % on KKI (r 0.9989) and 0.39 % on sim,
+    # differs there only (EMTP: 18,985 of 1.52 M mask voxels; elsewhere identical, run 41474160070).
+    # Through the network that clip alone moves R2' by 3.54 % on EMTP (r 0.9989) and 0.39 % on sim,
     # so the pair feeds the reference's own R2* to the port (`feed`), comparing the network on
     # identical inputs; the r2star intermediate then shows only the clip. The weights are trained at 3 T; on the 7 T sim the candidate runs with
     # ignore_field_mismatch (the reference has no guard), which checks the computation, not a
@@ -1449,7 +1449,7 @@ pairs:
     qsmxt_paths: [src/cli.rs, src/commands/common.rs, src/commands/r2prime.rs,
                   src/commands/r2star.rs]
     datasets:
-      s002001-kki-achieva-bridge-run1:
+      s002001-site1-achieva-bridge-run1:
         feed: { r2star: r2star }
         # Measured (fed): NRMSE 2.0e-05 %, r 1.000000, max |Δ| 9.2e-05 Hz, p99 |Δ| 7.6e-06 Hz.
         # Unfed: R2' 3.54 %, r 0.9989; R2* 3.87 % (the clip of 18,985 negative voxels).
@@ -1489,7 +1489,7 @@ pairs:
         # Measured: NRMSE 0.00028 %, r 1.000000, max |Δ| 1.2e-06 ppm, p99 |Δ| 1.9e-07 ppm.
         chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 3.6e-06, p99_abs_max: 1.0e-06 }
         measured: { main: "run 41474160070: QSMxT main 0c12a84, qsm-core a44046e (limits)" }
-      s002001-kki-achieva-bridge-run1:
+      s002001-site1-achieva-bridge-run1:
         # Measured: NRMSE 0.00022 %, r 1.000000, max |Δ| 3.0e-06 ppm, p99 |Δ| 2.4e-07 ppm.
         chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 9.0e-06, p99_abs_max: 1.0e-06 }
         measured: { main: "run 41474160070: QSMxT main 0c12a84, qsm-core a44046e (limits)" }
@@ -1508,7 +1508,7 @@ pairs:
         # Measured: NRMSE 0.00015 %, r 1.000000, max |Δ| 1.1e-06 ppm, p99 |Δ| 1.0e-07 ppm.
         chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 3.3e-06, p99_abs_max: 1.0e-06 }
         measured: { main: "run 41474160070: QSMxT main 0c12a84, qsm-core a44046e (limits)" }
-      s002001-kki-achieva-bridge-run1:
+      s002001-site1-achieva-bridge-run1:
         # Measured: NRMSE 0.00012 %, r 1.000000, max |Δ| 1.3e-06 ppm, p99 |Δ| 1.2e-07 ppm.
         chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 3.9e-06, p99_abs_max: 1.0e-06 }
         measured: { main: "run 41474160070: QSMxT main 0c12a84, qsm-core a44046e (limits)" }
@@ -1527,7 +1527,7 @@ pairs:
         # Measured: NRMSE 0.00022 %, r 1.000000, max |Δ| 2.8e-07 ppm, p99 |Δ| 4.2e-08 ppm.
         localfield: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.0e-06, p99_abs_max: 1.0e-06 }
         measured: { main: "run 41629073160: QSMxT main 632fed9, QSM.rs main cc4ae49 (limits)" }
-      s002001-kki-achieva-bridge-run1:
+      s002001-site1-achieva-bridge-run1:
         # Measured: NRMSE 0.00018 %, r 1.000000, max |Δ| 2.2e-07 ppm, p99 |Δ| 6.0e-08 ppm.
         localfield: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 1.0e-06, p99_abs_max: 1.0e-06 }
         measured: { main: "run 41629073160: QSMxT main 632fed9, QSM.rs main cc4ae49 (limits)" }
@@ -1554,8 +1554,8 @@ pairs:
         chimap: { nrmse_max: 0.646, correlation_min: 0.989, max_abs_max: 0.013, p99_abs_max: 0.000131 }
         measured: { main: "run 41256482022: QSMxT main a78074c, QSM.rs main afed56b; lsqr-v4 sha256:a2deee2d… (limits)" }
       # In vivo: the fidelity check's case (axial; the original's recon.m runs B0 along z only and
-      # stops on the KKI scan's oblique B0_dir).
-      s005001-cbic-prisma-bridge-run1:
+      # stops on the EMTP scan's oblique B0_dir).
+      s005001-site5-prisma-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
         # Measured: NRMSE 0.00025 %, r 1.000000, max |Δ| 2.0e-05 ppm, p99 |Δ| 8.2e-08 ppm. MATLAB's
@@ -1594,8 +1594,8 @@ pairs:
         chimap: { nrmse_max: 0.646, correlation_min: 0.989, max_abs_max: 0.013, p99_abs_max: 0.000131 }
         measured: { pr389: "run 41277793603: QSMxT heidi-checkbox b4a8658 (QSMxT/QSMxT#471), QSM.rs heidi-cone-fill 76a8ac4 (astewartau/QSM.rs#389); heidi-v4 sha256:69f57226… (limits)" }
       # In vivo: the fidelity check's case (axial; the original's recon.m runs B0 along z only and
-      # stops on the KKI scan's oblique B0_dir).
-      s005001-cbic-prisma-bridge-run1:
+      # stops on the EMTP scan's oblique B0_dir).
+      s005001-site5-prisma-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
         # Measured: NRMSE 0.00035 %, r 1.000000, max |Δ| 2.3e-05 ppm, p99 |Δ| 1.8e-07 ppm. On
@@ -1615,7 +1615,7 @@ pairs:
     candidate: ndi-qsmrs
     enabled: true
     # At rounding since astewartau/QSM.rs#414: FANSI's discrete kernel (dipole_kernel_angulated mode 1,
-    # as the original) was the whole gap (#399; continuous kernel: sim 10.61 %, KKI 9.52 %).
+    # as the original) was the whole gap (#399; continuous kernel: sim 10.61 %, EMTP 9.52 %).
     # Limits: derived (scripts/parity.py), with max/p99 |Δ| ~10× (the originals iterate in single
     # precision through MKL's FFTs, which may round differently on another CPU; Ashley, 2026-10-31).
     # What remains is single vs double precision and FANSI's γ 42.58 vs QSM.rs's 42.576 (no pair
@@ -1631,7 +1631,7 @@ pairs:
         measured:
           main: "run 41403629314: QSM.rs fansi-kernel cdf8a44 (astewartau/QSM.rs#414), QSMxT hdqsm-echo-magnitudes (QSMxT/QSMxT#477): NRMSE 0.0011 %, r 1.000000000, max |Δ| 0.000117 ppm, p99 2.09e-07 ppm"
           dev: "run 41574682988: dev track, QSMxT main 578e39d, QSM.rs main 6508d4e: NRMSE 0.0011 %, r 1.000000, max |Δ| 1.2e-4 ppm, p99 2.1e-7 ppm"
-      s002001-kki-achieva-bridge-run1:
+      s002001-site1-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 6.47e-05, p99_abs_max: 1.0e-05 }
         measured:
@@ -1643,7 +1643,7 @@ pairs:
     candidate: fansi-nltv-qsmrs
     enabled: true
     # At rounding since astewartau/QSM.rs#414: FANSI's discrete kernel was the whole gap (#400;
-    # continuous kernel: sim 11.04 %, KKI 9.48 %).
+    # continuous kernel: sim 11.04 %, EMTP 9.48 %).
     # Limits: derived (scripts/parity.py), with max/p99 |Δ| ~10× (the originals iterate in single
     # precision through MKL's FFTs, which may round differently on another CPU; Ashley, 2026-10-31).
     # What remains is single vs double precision and FANSI's γ 42.58 vs QSM.rs's 42.576 (no pair
@@ -1659,7 +1659,7 @@ pairs:
         measured:
           main: "run 41403629314: QSM.rs fansi-kernel cdf8a44 (astewartau/QSM.rs#414), QSMxT hdqsm-echo-magnitudes (QSMxT/QSMxT#477): NRMSE 0.00689 %, r 0.999999998, max |Δ| 0.000843 ppm, p99 2.86e-06 ppm"
           dev: "run 41570388382: dev track, QSMxT main 578e39d, QSM.rs main 6508d4e: NRMSE 0.0069 %, r 1.000000, max |Δ| 8.4e-4 ppm, p99 2.9e-6 ppm"
-      s002001-kki-achieva-bridge-run1:
+      s002001-site1-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         chimap: { nrmse_max: 0.504, correlation_min: 0.989, max_abs_max: 0.000215, p99_abs_max: 4.77e-05 }
         measured:
@@ -1671,7 +1671,7 @@ pairs:
     candidate: fansi-nltgv-qsmrs
     enabled: true
     # At rounding since astewartau/QSM.rs#414: FANSI's discrete kernel was the whole gap (#400;
-    # continuous kernel: sim 11.03 %, KKI 9.61 %).
+    # continuous kernel: sim 11.03 %, EMTP 9.61 %).
     # Limits: derived (scripts/parity.py), with max/p99 |Δ| ~10× (the originals iterate in single
     # precision through MKL's FFTs, which may round differently on another CPU; Ashley, 2026-10-31).
     # What remains is single vs double precision and FANSI's γ 42.58 vs QSM.rs's 42.576 (no pair
@@ -1684,7 +1684,7 @@ pairs:
         measured:
           main: "run 41403629314: QSM.rs fansi-kernel cdf8a44 (astewartau/QSM.rs#414), QSMxT hdqsm-echo-magnitudes (QSMxT/QSMxT#477): NRMSE 0.00634 %, r 0.999999998, max |Δ| 0.000807 ppm, p99 2.75e-06 ppm"
           dev: "run 41570388382: dev track, QSMxT main 578e39d, QSM.rs main 6508d4e: NRMSE 0.0063 %, r 1.000000, max |Δ| 8.1e-4 ppm, p99 2.7e-6 ppm"
-      s002001-kki-achieva-bridge-run1:
+      s002001-site1-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         chimap: { nrmse_max: 0.505, correlation_min: 0.989, max_abs_max: 0.000225, p99_abs_max: 5.54e-05 }
         measured:
@@ -1696,7 +1696,7 @@ pairs:
     candidate: l1qsm-qsmrs
     enabled: true
     # At rounding since astewartau/QSM.rs#414: FANSI's discrete kernel was the whole gap (#401;
-    # continuous kernel: sim 14.39 %, KKI 15.46 %).
+    # continuous kernel: sim 14.39 %, EMTP 15.46 %).
     # Limits: derived (scripts/parity.py), with max/p99 |Δ| ~10× (the originals iterate in single
     # precision through MKL's FFTs, which may round differently on another CPU; Ashley, 2026-10-31).
     # What remains is single vs double precision and FANSI's γ 42.58 vs QSM.rs's 42.576 (no pair
@@ -1712,7 +1712,7 @@ pairs:
         measured:
           main: "run 41403629314: QSM.rs fansi-kernel cdf8a44 (astewartau/QSM.rs#414), QSMxT hdqsm-echo-magnitudes (QSMxT/QSMxT#477): NRMSE 0.0022 %, r 1.000000000, max |Δ| 8.23e-05 ppm, p99 2.01e-06 ppm"
           dev: "run 41570388382: dev track, QSMxT main 578e39d, QSM.rs main 6508d4e: NRMSE 0.0022 %, r 1.000000, max |Δ| 8.2e-5 ppm, p99 2.0e-6 ppm"
-      s002001-kki-achieva-bridge-run1:
+      s002001-site1-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         chimap: { nrmse_max: 0.503, correlation_min: 0.989, max_abs_max: 0.000373, p99_abs_max: 4.74e-05 }
         measured:
@@ -1723,7 +1723,7 @@ pairs:
     reference: whqsm
     candidate: whqsm-qsmrs
     enabled: true
-    # At rounding since astewartau/QSM.rs#414 (#402; before: sim 21.4 %, KKI 50.7 %): FANSI's discrete
+    # At rounding since astewartau/QSM.rs#414 (#402; before: sim 21.4 %, EMTP 50.7 %): FANSI's discrete
     # kernel, WH_nlTV's flat weight over the whole volume (the port weighted the mask only), and a
     # Newton safeguard the port adds (sim's field is non-zero outside the mask, where the unguarded
     # step can bounce; the original happened to settle, the port went NaN).
@@ -1742,7 +1742,7 @@ pairs:
         measured:
           main: "run 41403629314: QSM.rs fansi-kernel cdf8a44 (astewartau/QSM.rs#414), QSMxT hdqsm-echo-magnitudes (QSMxT/QSMxT#477): NRMSE 0.00182 %, r 1.000000000, max |Δ| 1.08e-05 ppm, p99 1.91e-06 ppm"
           dev: "run 41570388382: dev track, QSMxT main 578e39d, QSM.rs main 6508d4e: NRMSE 0.0018 %, r 1.000000, max |Δ| 1.1e-5 ppm, p99 1.9e-6 ppm"
-      s002001-kki-achieva-bridge-run1:
+      s002001-site1-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
         chimap: { nrmse_max: 0.505, correlation_min: 0.989, max_abs_max: 0.000276, p99_abs_max: 7.75e-05 }
@@ -1755,7 +1755,7 @@ pairs:
     reference: hdqsm
     candidate: hdqsm-qsmrs
     enabled: true
-    # At rounding since astewartau/QSM.rs#414 (#403; before: sim 9.08 %, KKI 7.07 %): FANSI's discrete
+    # At rounding since astewartau/QSM.rs#414 (#403; before: sim 9.08 %, EMTP 7.07 %): FANSI's discrete
     # kernel, the paper's Eq. 2 magnitude computed by QSM.rs from every echo's magnitude (QSMxT gave
     # the root sum of squares; QSMxT/QSMxT#477 passes the echoes), and the masked input.
     # Limits: derived (scripts/parity.py), with max/p99 |Δ| ~10× (the originals iterate in single
@@ -1772,7 +1772,7 @@ pairs:
         measured:
           main: "run 41403629314: QSM.rs fansi-kernel cdf8a44 (astewartau/QSM.rs#414), QSMxT hdqsm-echo-magnitudes (QSMxT/QSMxT#477): NRMSE 0.00148 %, r 1.000000000, max |Δ| 0.000114 ppm, p99 8.23e-07 ppm"
           dev: "run 41570388382: dev track, QSMxT main 578e39d, QSM.rs main 6508d4e: NRMSE 0.0015 %, r 1.000000, max |Δ| 1.1e-4 ppm, p99 8.2e-7 ppm"
-      s002001-kki-achieva-bridge-run1:
+      s002001-site1-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs, vsharp-qsmrs]
         feed: { localfield: localfield }
         chimap: { nrmse_max: 0.501, correlation_min: 0.989, max_abs_max: 0.000135, p99_abs_max: 1.16e-05 }
@@ -1785,8 +1785,8 @@ pairs:
     reference: resharp
     candidate: resharp-qsmrs
     enabled: true
-    # Gap was the solver: resharp.m solves with MATLAB's cgs (converges in 199 iterations on KKI),
-    # the port ran CG, which stops unconverged at 200 (sim 0.653 %, KKI 3.06 %, run 41384710780).
+    # Gap was the solver: resharp.m solves with MATLAB's cgs (converges in 199 iterations on EMTP),
+    # the port ran CG, which stops unconverged at 200 (sim 0.653 %, EMTP 3.06 %, run 41384710780).
     # astewartau/QSM.rs#412 (#404) ports cgs with MATLAB's stopping rules and returned iterate, and
     # resharp.m's padding, round(r/voxel) ellipsoid and erosion threshold: at the container's own
     # rounding (run 41404195021; sim 1.5e-8 % is the container's residual against MATLAB).
@@ -1801,7 +1801,7 @@ pairs:
           main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 0.653 %, r 1.0000, max |Δ| 3.1e-4 ppm, p99 1.7e-4 ppm"
           pr412: "run 41404195021: QSMxT main 865a92f, QSM.rs resharp-cgs-404 34eaec8 (limits)"
           dev: "run 41570391371: dev track, QSMxT main 578e39d, QSM.rs main 6508d4e: NRMSE 1.5e-8 %, r 1.000000, max |Δ| 9.3e-10 ppm, p99 0 ppm"
-      s002001-kki-achieva-bridge-run1:
+      s002001-site1-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs]
         feed: { totalfield: totalfield }
         # Measured: NRMSE 7.7e-9 %, r 1.000000, max |Δ| 9.3e-10 ppm, p99 |Δ| 0 ppm.
@@ -1816,8 +1816,8 @@ pairs:
     reference: pdf-cornell
     candidate: pdf-qsmrs
     enabled: true
-    # KKI (oblique B0, PDF.m's imagespace kernel) was at rounding. Sim (B0 along z, so PDF.m's
-    # k-space kernel) was not: 0.68 % at the 30-iteration CG cap (KKI with space=kspace 0.74 %, run
+    # EMTP (oblique B0, PDF.m's imagespace kernel) was at rounding. Sim (B0 along z, so PDF.m's
+    # k-space kernel) was not: 0.68 % at the 30-iteration CG cap (EMTP with space=kspace 0.74 %, run
     # 41389432873). On the k-space path the 30-iteration CG amplifies a ~1e-13 difference in its
     # first step size to ~10 % by iteration 30; the port's plain inner-product sums carried that
     # much error, MATLAB's BLAS ddot does not. astewartau/QSM.rs#413 (#405) sums them compensated:
@@ -1835,7 +1835,7 @@ pairs:
           main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 0.684 % (0.689 % in run 41390107544), r 1.0000, max |Δ| 0.049 ppm, p99 2.3e-4 ppm"
           pr413: "run 41404199185: QSMxT main 865a92f, QSM.rs pdf-kspace-405 47cfce6 (limits)"
           dev: "run 41570391371: dev track, QSMxT main 578e39d, QSM.rs main 6508d4e: NRMSE 0.0146 %, r 1.000000, max |Δ| 0.0017 ppm, p99 3.8e-7 ppm"
-      s002001-kki-achieva-bridge-run1:
+      s002001-site1-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs]
         feed: { totalfield: totalfield }
         # Measured: NRMSE 2.1e-5 %, r 1.000000, max |Δ| 9.3e-7 ppm, p99 |Δ| 1.9e-8 ppm.
@@ -1863,7 +1863,7 @@ pairs:
           main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 7.72 %, r 0.9983, max |Δ| 0.021 ppm, p99 0.0022 ppm"
           pr416: "run 41423039167: QSMxT lbv-multigrid cc5518e, QSM.rs lbv-multigrid-406 90d9ae8 (limits)"
           dev: "run 41570394775: dev track, QSMxT main 578e39d, QSM.rs main 6508d4e: NRMSE 7.7e-4 %, r 1.000000, max |Δ| 3.9e-7 ppm, p99 2.4e-7 ppm"
-      s002001-kki-achieva-bridge-run1:
+      s002001-site1-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs]
         feed: { totalfield: totalfield }
         # Measured: NRMSE 0.0018 %, r 1.000000, max |Δ| 2.0e-6 ppm, p99 |Δ| 1.7e-6 ppm.
@@ -1876,7 +1876,7 @@ pairs:
     reference: tfi-cornell
     candidate: tfi-qsmrs
     enabled: true
-    # Was: sim 42.1 % (χ ~0.77×), KKI 1.41 % (run 41384710780). Causes (astewartau/QSM.rs#407):
+    # Was: sim 42.1 % (χ ~0.77×), EMTP 1.41 % (run 41384710780). Causes (astewartau/QSM.rs#407):
     # MEDI's dipole_kernel.m samples k half a step off the DFT grid on odd axes (sim is
     # 164×205×205), and MEDI_L1 runs in single precision (tempn = single(N_std)). QSM.rs keeps the
     # DFT-grid kernel and double precision as defaults and offers both as parity switches
@@ -1884,10 +1884,10 @@ pairs:
     # below turns them on. On the fixture's small odd phantom that matches the container to 4.7e-4.
     # At full size the original is not reproducible below a few %: its 100-iteration CG solves at
     # cg_tol 0.01 in single precision amplify rounding. In one container, 1e-7 relative noise on
-    # the total field moves its χ by 1.59 % (sim) / 0.30 % (KKI); the same container on another CPU
-    # (QSM-CI runner against the VM) differs from itself by 2.78 % on KKI. With both switches (run
-    # 41413049827) sim 3.61 %, KKI 1.26 %. Limits (Ashley, 2026-11-02): NRMSE ~1.5× the measured plus
-    # the original's cross-CPU spread (sim 6 %, KKI 4 %), max/p99 ~10× the derived (as for TGV).
+    # the total field moves its χ by 1.59 % (sim) / 0.30 % (EMTP); the same container on another CPU
+    # (QSM-CI runner against the VM) differs from itself by 2.78 % on EMTP. With both switches (run
+    # 41413049827) sim 3.61 %, EMTP 1.26 %. Limits (Ashley, 2026-11-02): NRMSE ~1.5× the measured plus
+    # the original's cross-CPU spread (sim 6 %, EMTP 4 %), max/p99 ~10× the derived (as for TGV).
     candidate_set: { kernel: original, precision: single }
     qsmrs_paths: [src/constants.rs, src/error.rs, src/fft.rs, src/grid.rs, src/inversion/medi.rs,
                   src/inversion/tfi.rs, src/kernels/, src/pipeline/inversion.rs,
@@ -1903,7 +1903,7 @@ pairs:
           main: "run 41384710780: QSMxT main 865a92f, QSM.rs main a44046e: NRMSE 42.1 %, r 0.909, max |Δ| 0.087 ppm, p99 0.034 ppm"
           pr407: "run 41413049827: QSMxT tfi-parity-options 32ae3f1, QSM.rs tfi-scale-407 5c37be1 (limits)"
           dev: "run 41570391371: dev track, QSMxT main 578e39d, QSM.rs main 6508d4e: NRMSE 3.61 %, r 0.9994, max |Δ| 0.067 ppm, p99 0.0035 ppm"
-      s002001-kki-achieva-bridge-run1:
+      s002001-site1-achieva-bridge-run1:
         reference_prefix: [laplacian-qsmrs]
         feed: { totalfield: totalfield }
         # Measured: NRMSE 1.26 %, r 0.9999, max |Δ| 0.086 ppm, p99 |Δ| 0.0036 ppm (derived: 1.89 %,

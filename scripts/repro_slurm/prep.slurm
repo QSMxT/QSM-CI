@@ -7,6 +7,7 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=64G
 #SBATCH --output=slurm-%x-%j.out
+umask 077   # campaign run dirs hold unpublished inputs and results: owner-only files
 
 # Before a streamed matrix (STREAM_PUBLISH=1): register every acquisition to its subject's target and
 # SynthSeg each target, once. Each shard's `repro_eval.py stats --runs` then only reads the transforms

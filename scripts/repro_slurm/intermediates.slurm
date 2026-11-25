@@ -8,6 +8,7 @@
 #SBATCH --mem=200G
 #SBATCH --array=0-22%8
 #SBATCH --output=slurm-%x-%A_%a.out
+umask 077   # campaign run dirs hold unpublished inputs and results: owner-only files
 
 # Regenerate the harmonization track's INTERMEDIATE maps for the submission viewer: the field-mapping
 # stage's total field and the background-removal stage's local field.
@@ -23,8 +24,8 @@
 source ~/venvs/qsmci/bin/activate
 set -uo pipefail
 cd "${SLURM_SUBMIT_DIR:?}"
-export APPTAINER_CACHEDIR=/scratch/user/uqaste15/apptainer_cache
-export APPTAINER_TMPDIR=/scratch/user/uqaste15/apptainer_tmp
+export APPTAINER_CACHEDIR=${APPTAINER_CACHEDIR:-/scratch/user/uqaste15/apptainer_cache}
+export APPTAINER_TMPDIR=${APPTAINER_TMPDIR:-/scratch/user/uqaste15/apptainer_tmp}
 export PROOT_NO_SECCOMP=1
 export QSMCI_SANDBOX_DIR=/scratch/project_mnt/S0169/qsmci_sif   # runner execs the prebuilt .sif here
 export QSM_CI_JOBS=4

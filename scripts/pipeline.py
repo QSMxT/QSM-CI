@@ -1812,6 +1812,17 @@ def plan_composed(algos, focus, track, shard_i, shard_n, fieldmaps=None, cells=N
                         skipped=skipped)
 
 
+def _skip_ids(args) -> frozenset:
+    """Run ids listed in --skip-ids (blank lines and #-comments ignored); empty without the flag."""
+    path = getattr(args, "skip_ids", None)
+    if not path:
+        return frozenset()
+    ids = frozenset(ln.strip() for ln in Path(path).read_text().splitlines()
+                    if ln.strip() and not ln.lstrip().startswith("#"))
+    print(f"  composed  --skip-ids: {len(ids)} run id(s) already computed are left out")
+    return ids
+
+
 def run_composed(args, algos, gt_sources, gt, mask, shard_i, shard_n, runs: list) -> None:
     """Composed: (field-mapping) x bfr x dipole, chaining real outputs, plus spans.
 
@@ -1823,6 +1834,7 @@ def run_composed(args, algos, gt_sources, gt, mask, shard_i, shard_n, runs: list
     fieldmaps = set(args.fieldmaps.split(",")) if getattr(args, "fieldmaps", None) else None
     sfx = getattr(args, "phantom_sfx", "")
     skip = fresh_cell_ids(load_index_runs()) if getattr(args, "resume", False) else frozenset()
+    skip = skip | _skip_ids(args)   # --skip-ids: cells an earlier campaign tranche already computed
     plan = plan_composed(algos, args.focus, args.track, shard_i, shard_n, fieldmaps,
                          parse_cells(getattr(args, "cells", None)), skip, sfx)
     if getattr(args, "cells", None):
@@ -2135,6 +2147,11 @@ def main() -> None:
                          "would outrun its runner's cap (score_plan.py picks n from recorded runtimes). "
                          "Each part computes only the field maps and local fields its cells need; "
                          "end-to-end spans run in part 0. Union of the n parts == the whole job.")
+    ap.add_argument("--skip-ids", type=Path, default=None,
+                    help="file of run ids (one per line) already computed: the composed matrix leaves "
+                         "those cells out, as --resume does for ids in results/index.json (a column "
+                         "whose cells are all listed is not computed). For a campaign run in tranches "
+                         "(scripts/repro_slurm/README.md).")
     ap.add_argument("--resume", action="store_true",
                     help="skip composed cells and isolated runs results/index.json already holds as OK "
                          "rows scored at an up-to-date commit (nothing they depend on changed since; see "

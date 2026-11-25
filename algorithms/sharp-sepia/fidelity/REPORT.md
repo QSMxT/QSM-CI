@@ -12,7 +12,7 @@ algorithm's [`config.sh`](config.sh); rerun it whenever `recon.m`, its dependenc
 - **Sources:** kschan0214/sepia `db939ccc1e9aa2d02c2dc0e6adb5ad2b1f0cc839` (`SHARP.m`, `zeropad_odd_dimension.m`); MEDI toolbox 2024.11.26 (`SMV.m`, `SMV_kernel.m`, `sphere_kernel.m`).
 - **Cases:**
   - `sim`: QSM-CI's in-silico head (QSM Challenge 2.0 simulation: 7 T, 1 mm, 164×205×205, two odd axes), its ground-truth total field.
-  - `invivo`: one EMTP travelling-head acquisition (`s005001-cbic-prisma-bridge-run1`: 3 T, 1 mm, 184×256×128), the total field derived once with QSMxT v10.0.0 (ROMEO; `fidelity/matlab/make_cases.sh`).
+  - `invivo`: one EMTP travelling-head acquisition (`s005001-site5-prisma-bridge-run1`: 3 T, 1 mm, 184×256×128), the total field derived once with QSMxT v10.0.0 (ROMEO; `fidelity/matlab/make_cases.sh`).
 
 ## Result: identical
 

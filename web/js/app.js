@@ -616,17 +616,17 @@ function heatText(rgb) {
 const REPRO_SCANNER_META = {
   prisma:            { label: "Prisma",          long: "MGH · Siemens MAGNETOM Prisma Fit",       c: "#db2777" },
   cima:              { label: "Cima.X",          long: "MGH · Siemens MAGNETOM Cima.X",            c: "#2563eb" },
-  "kki-achieva":     { label: "KKI Achieva",     long: "KKI · Philips Achieva",                    c: "#0d9488" },
-  "kki-elition":     { label: "KKI Elition X",   long: "KKI · Philips Ingenia Elition X",          c: "#65a30d" },
-  "cbic-mr750":      { label: "CBIC MR750",      long: "Weill Cornell CBIC · GE MR750",            c: "#d97706" },
-  "cbic-prisma":     { label: "CBIC Prisma Fit", long: "Weill Cornell CBIC · Siemens Prisma Fit",  c: "#9333ea" },
-  "umass-skyra":     { label: "UMass Skyra",     long: "UMass · Siemens Skyra",                    c: "#dc2626" },
-  "hamburg-ingenia": { label: "Hamburg Ingenia", long: "Hamburg · Philips Ingenia",                c: "#0891b2" },
-  "site2-prisma":    { label: "Site 2 Prisma Fit", long: "Site 2 · Siemens MAGNETOM Prisma Fit",   c: "#be185d" },
-  "site2-cimax":     { label: "Site 2 Cima.X",   long: "Site 2 · Siemens MAGNETOM Cima.X",         c: "#4338ca" },
-  "site2-skyra":     { label: "Site 2 Skyra Fit", long: "Site 2 · Siemens MAGNETOM Skyra Fit",     c: "#7c2d12" },
-  "site3-mr750w":    { label: "Site 3 MR750w",   long: "Site 3 · GE Discovery MR750w",             c: "#b45309" },
-  "site3-prisma":    { label: "Site 3 Prisma",   long: "Site 3 · Siemens MAGNETOM Prisma",         c: "#047857" },
+  "site1-achieva":   { label: "Site 1 Achieva",  long: "Site 1 · Philips Achieva dStream · 3 T",   c: "#0d9488" },
+  "site1-elition":   { label: "Site 1 Elition X", long: "Site 1 · Philips Ingenia Elition X · 3 T", c: "#65a30d" },
+  "site5-mr750":     { label: "Site 5 MR750",    long: "Site 5 · GE Discovery MR750 · 3 T",        c: "#d97706" },
+  "site5-prisma":    { label: "Site 5 Prisma Fit", long: "Site 5 · Siemens MAGNETOM Prisma Fit · 3 T", c: "#9333ea" },
+  "site4-skyra":     { label: "Site 4 Skyra",    long: "Site 4 · Siemens MAGNETOM Skyra · 3 T",    c: "#dc2626" },
+  "site6-ingenia":   { label: "Site 6 Ingenia",  long: "Site 6 · Philips Ingenia · 3 T",           c: "#0891b2" },
+  "site2-prisma":    { label: "Site 2 Prisma Fit", long: "Site 2 · Siemens MAGNETOM Prisma Fit · 3 T",   c: "#be185d" },
+  "site2-cimax":     { label: "Site 2 Cima.X",   long: "Site 2 · Siemens MAGNETOM Cima.X · 3 T",         c: "#4338ca" },
+  "site2-skyra":     { label: "Site 2 Skyra Fit", long: "Site 2 · Siemens MAGNETOM Skyra Fit · 3 T",     c: "#7c2d12" },
+  "site3-mr750w":    { label: "Site 3 MR750w",   long: "Site 3 · GE Discovery MR750w · 3 T",             c: "#b45309" },
+  "site3-prisma":    { label: "Site 3 Prisma",   long: "Site 3 · Siemens MAGNETOM Prisma · 3 T",         c: "#047857" },
 };
 const REPRO_FALLBACK_COLOURS = ["#4f46e5", "#be123c", "#15803d", "#a16207", "#7c3aed", "#0e7490", "#c2410c", "#475569"];
 const REPRO_SUBJECT_LABEL = { mgh: "MGH pilot" };
@@ -642,7 +642,7 @@ function reproProtoLabel(p) { return String(p).replace("pulseq-online", "Pulseq 
 function reproSubjectLabel(s) { return REPRO_SUBJECT_LABEL[s] || s; }
 // id -> {subject, scanner, protocol, run} for every harmonization acquisition, in REGISTRY order
 // (the order repro_eval.py pairs scanners in: the pilot's Prisma before Cima.X, each traveling
-// head's home KKI session first). `payload` is a cohort's repro or regions payload (either may carry
+// head's home (Site 1) session first). `payload` is a cohort's repro or regions payload (either may carry
 // `acquisitions`); registry entries fill in anything the payload lacks. With `group`, only that
 // cohort's registry entries count, so one cohort's views never list another's acquisitions.
 function reproAcquisitions(datasetsReg, payload, group) {

@@ -174,27 +174,27 @@ so wrap counts are compared after the most common offset (`wraps4d.py`):
 |---|---|---|---|
 | Prisma `prisma-bridge-run1` echo 1 (harness) | `-f -n 6` | 6 partitions | 0 (identical voxel for voxel) |
 | sim, 4 echoes | `-f -n 6` / `-f` | 6 / 8 partitions | 0 on every echo |
-| KKI `s002001-kki-achieva-bridge-run1`, 5 echoes | `-f -n 6` / `-f` | 6 / 8 partitions | 0 on every echo |
+| EMTP `s002001-site1-achieva-bridge-run1`, 5 echoes | `-f -n 6` / `-f` | 6 / 8 partitions | 0 on every echo |
 | Prisma echo 1 (harness) | defaults | 8 partitions | 0.020 % |
 | sim | default mode, `-n 6` | 6 partitions | 0, 0.007, 0.023, 0.16 % |
-| KKI | default mode, `-n 6` | 6 partitions | 0.001, 0.0001, 0.004, 10.1, 13.3 % |
-| KKI | defaults | 8 partitions | 0.003, 0, 0.004, 1.47, 10.2 % |
+| EMTP | default mode, `-n 6` | 6 partitions | 0.001, 0.0001, 0.004, 10.1, 13.3 % |
+| EMTP | defaults | 8 partitions | 0.003, 0, 0.004, 1.47, 10.2 % |
 
 - **`prelude -f` (full 3-D) is the port's algorithm, and they agree exactly.** FSL writes 0 outside
   the mask (QSM.rs keeps the wrapped input) and puts the median in-mask wrap count at 0, as QSM.rs's
   `correct_global` does.
 - **FSL's defaults are another algorithm**: 8 partitions (`-v` prints it; QSM.rs uses the report's
   example, 6) and initial regions labelled slice by slice before a 3-D merge (the default and
-  `--labelslices` give identical output on KKI). On KKI's late echoes that is the better one:
+  `--labelslices` give identical output on EMTP). On the EMTP head's late echoes that is the better one:
   the share of voxels whose echo-to-echo step disagrees with the wrapped echo difference is
   3.45 % on echoes 4 and 5 with FSL's default mode, against 12.4 % / 6.9 % (6 partitions) and
   4.7 % / 11.9 % (8) with full 3-D labelling, FSL's and QSM.rs's alike. Owner: QSM.rs
   (astewartau/QSM.rs#397).
 - **`prelude -s`** (everything slice by slice) is not QSM.rs's slice-wise PRELUDE: FSL writes 0 in
-  small in-slice components (14,291 / 23,231 in-mask voxels on sim / KKI) and, beyond a
+  small in-slice components (14,291 / 23,231 in-mask voxels on sim / EMTP) and, beyond a
   per-component offset, 0.1–0.6 % of the rest take another wrap count. Slice-wise unwrapping stays
   a `no_original` entry (parity/thresholds.yml).
 
 No parity pair: PRELUDE is not a QSM-CI stage (it unwraps one echo; the contract has no unwrapped
 phase artifact), qsmxt has no PRELUDE command, and the FSL image cannot be published. The FSL runs
-on sim and KKI were `prelude.sh` in the image on the dataset's 4-D phase, magnitude and mask.
+on sim and EMTP were `prelude.sh` in the image on the dataset's 4-D phase, magnitude and mask.

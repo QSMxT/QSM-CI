@@ -17,6 +17,7 @@
 # ~12-14h.
 #SBATCH --array=0-91%40
 #SBATCH --output=slurm-%x-%A_%a.out
+umask 077   # campaign run dirs hold unpublished inputs and results: owner-only files
 
 # The composed harmonization matrix with the prebuilt-image override (QSMCI_SANDBOX_DIR, built by
 # build_sifs.slurm): the campaign's methods, parity versions and chains (scripts/repro_campaign.yml,
@@ -26,8 +27,8 @@
 source ~/venvs/qsmci/bin/activate
 set -uo pipefail
 cd "${SLURM_SUBMIT_DIR:?}"
-export APPTAINER_CACHEDIR=/scratch/user/uqaste15/apptainer_cache
-export APPTAINER_TMPDIR=/scratch/user/uqaste15/apptainer_tmp
+export APPTAINER_CACHEDIR=${APPTAINER_CACHEDIR:-/scratch/user/uqaste15/apptainer_cache}
+export APPTAINER_TMPDIR=${APPTAINER_TMPDIR:-/scratch/user/uqaste15/apptainer_tmp}
 export PROOT_NO_SECCOMP=1
 export QSMCI_SANDBOX_DIR=/scratch/project_mnt/S0169/qsmci_sif   # runner execs the prebuilt .sif here
 export QSM_CI_JOBS=4
@@ -39,6 +40,8 @@ N_SHARDS=${N_SHARDS:-16}
 # stages, e.g. the upstreams plus one newly added dipole; N_SHARDS sets shards per acquisition.
 # Export these in the environment and submit with --export=ALL: sbatch --export=ALL,INCLUDE=a,b
 # splits on the commas and passes only INCLUDE=a.
+# SKIP_IDS (a file of run ids, one per line) leaves pipelines an earlier tranche already computed out
+# of the matrix, e.g. the ok rows of a first tranche run with INCLUDE (pipeline.py --skip-ids).
 # REPRO_ACQS (shell glob, default *) limits the campaign to matching acquisitions, e.g.
 # REPRO_ACQS='s0*' for the EMTP traveling heads; size --array to match (acquisitions x shards).
 mapfile -t ACQS < <(python -c "
@@ -59,6 +62,7 @@ python scripts/pipeline.py \
     --campaign "${CAMPAIGN:-scripts/repro_campaign.yml}" --campaign-part cpu \
     ${EXTRA_EXCLUDE:+--exclude "$EXTRA_EXCLUDE"} \
     ${INCLUDE:+--include "$INCLUDE"} \
+    ${SKIP_IDS:+--skip-ids "$SKIP_IDS"} \
     --work ".work-repro-sb-$ACQ-$SHARD" \
     --runs-out "results/${RUNS_PREFIX:-runs-repro}-$ACQ-s$SHARD.json"
 [ "${STREAM_PUBLISH:-0}" = 1 ] && bash scripts/repro_slurm/stream_publish.sh "results/${RUNS_PREFIX:-runs-repro}-$ACQ-s$SHARD.json"

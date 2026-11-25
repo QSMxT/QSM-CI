@@ -85,7 +85,7 @@ CORR_ABS = 0.01                         # correlation may drop by 0.01
 ABS_REL = 0.25                          # max |Δ| and p99 |Δ| may grow by 25 %
 # A pair whose QSM.rs side runs a network (`qsmrs_models: true`) gets |Δ| limits of 3× the measured
 # |Δ| instead: ONNX Runtime's CPU kernels round by instruction set, and the same code and data gave
-# xqsm a max |Δ| 2.1× (sim) and 1.6× (KKI) apart on two hosted runners (parity runs 41642974449 /
+# xqsm a max |Δ| 2.1× (sim) and 1.6× (EMTP) apart on two hosted runners (parity runs 41642974449 /
 # 41625523205, 41190020480 / 41739482104). Its NRMSE and correlation limits are the usual ones.
 ABS_REL_MODELS = 2.0
 DICE_ABS = 0.01                         # Dice may drop by 0.01

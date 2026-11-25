@@ -9,6 +9,7 @@
 #SBATCH --mem=256G
 #SBATCH --array=0-91%6
 #SBATCH --output=slurm-%x-%A_%a.out
+umask 077   # campaign run dirs hold unpublished inputs and results: owner-only files
 
 # The two GPU-designed dipole methods (inr-qsm, modip; CUDA :v2 images) across the composed matrix,
 # on gpu_cuda. `--campaign-part gpu` keeps the campaign's gpu dipoles and only the upstreams their
@@ -19,8 +20,8 @@
 source ~/venvs/qsmci/bin/activate
 set -uo pipefail
 cd "${SLURM_SUBMIT_DIR:?}"
-export APPTAINER_CACHEDIR=/scratch/user/uqaste15/apptainer_cache
-export APPTAINER_TMPDIR=/scratch/user/uqaste15/apptainer_tmp
+export APPTAINER_CACHEDIR=${APPTAINER_CACHEDIR:-/scratch/user/uqaste15/apptainer_cache}
+export APPTAINER_TMPDIR=${APPTAINER_TMPDIR:-/scratch/user/uqaste15/apptainer_tmp}
 export PROOT_NO_SECCOMP=1
 export QSMCI_SANDBOX_DIR=/scratch/project_mnt/S0169/qsmci_sif   # prebuilt .sif (incl. inr-qsm/modip)
 export QSMCI_GPU=1            # runner adds apptainer --nv so the CUDA images see the GPU

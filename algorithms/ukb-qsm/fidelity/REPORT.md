@@ -14,7 +14,7 @@ is the shared harness [`fidelity/matlab/`](../../../fidelity/matlab/README.md) w
   `ghcr.io/astewartau/qsm-ci/matlab-ukb-qsm@sha256:a3aeab5ff603b95288c563a0499d355d8ac564281fae221959b014f644ffa5db` (`v1`).
 - **Cases:**
   - `sim`: QSM-CI's in-silico head (QSM Challenge 2.0 simulation: 7 T, 4 echoes, 1 mm, 164×205×205).
-  - `invivo`: one EMTP travelling-head acquisition (`s005001-cbic-prisma-bridge-run1`: 3 T, 5 echoes, 1 mm, 184×256×128).
+  - `invivo`: one EMTP travelling-head acquisition (`s005001-site5-prisma-bridge-run1`: 3 T, 5 echoes, 1 mm, 184×256×128).
 
 ## Result: identical
 

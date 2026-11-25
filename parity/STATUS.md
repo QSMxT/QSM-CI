@@ -10,112 +10,112 @@ The latest QSMxT release against each verified original. A release does not chan
 
 | Pair | Original → port | Dataset | Last check | QSM.rs | Result | NRMSE | Status |
 |---|---|---|---|---|---|---|---|
-| `qsmart` | `qsmart-matlab` → `qsmart-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.7947% | ✅ current |
+| `qsmart` | `qsmart-matlab` → `qsmart-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.7947% | ✅ current |
 |  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.3834% | ✅ current |
-| `ilsqr` | `ilsqr-sti` → `ilsqr-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.02599% | ✅ current |
+| `ilsqr` | `ilsqr-sti` → `ilsqr-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.02599% | ✅ current |
 |  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.002378% | ✅ current |
-| `vsharp` | `vsharp-sti` → `vsharp-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.0002207% | ✅ current |
+| `vsharp` | `vsharp-sti` → `vsharp-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.0002207% | ✅ current |
 |  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.0009001% | ✅ current |
-| `iharperella` | `iharperella-sti` → `iharperella-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 3.898e-05% | ✅ current |
-| `star` | `star-sti` → `star-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.002085% | ✅ current |
+| `iharperella` | `iharperella-sti` → `iharperella-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 3.898e-05% | ✅ current |
+| `star` | `star-sti` → `star-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.002085% | ✅ current |
 |  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.002332% | ✅ current |
-| `medi` | `medi-cornell` → `medi-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.003049% | ✅ current |
+| `medi` | `medi-cornell` → `medi-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.003049% | ✅ current |
 |  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.003712% | ✅ current |
-| `toolbox-pipeline-medi-cornell` | `toolbox-pipeline-medi-cornell` → `toolbox-pipeline-qsmrs` | s005001-cbic-prisma-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.02439% | ✅ current |
-| `toolbox-pipeline-chisep-ilsqr` | `toolbox-pipeline-chisep` → `toolbox-pipeline-qsmrs` | s005001-cbic-prisma-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.003285% | ✅ current |
-| `toolbox-pipeline-chisep-medi` | `toolbox-pipeline-chisep` → `toolbox-pipeline-qsmrs` | s005001-cbic-prisma-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.003285% | ✅ current |
-| `toolbox-pipeline-decompose` | `toolbox-pipeline-decompose-qsmci` → `toolbox-pipeline-qsmrs` | s005001-cbic-prisma-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 8.144% | ✅ current |
-| `toolbox-pipeline-qsmart` | `toolbox-pipeline-qsmart` → `toolbox-pipeline-qsmrs` | s005001-cbic-prisma-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 8.579% | ✅ current |
-| `toolbox-pipeline-sti` | `toolbox-pipeline-sti` → `toolbox-pipeline-qsmrs` | s005001-cbic-prisma-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.298% | ✅ current |
-| `toolbox-pipeline-ukb` | `toolbox-pipeline-ukb` → `toolbox-pipeline-qsmrs` | s005001-cbic-prisma-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.002657% | ✅ current |
-| `fit-ppm-complex` | `fit-ppm-complex-cornell` → `fit-ppm-complex-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0% | ✅ current |
+| `toolbox-pipeline-medi-cornell` | `toolbox-pipeline-medi-cornell` → `toolbox-pipeline-qsmrs` | s005001-site5-prisma-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.02439% | ✅ current |
+| `toolbox-pipeline-chisep-ilsqr` | `toolbox-pipeline-chisep` → `toolbox-pipeline-qsmrs` | s005001-site5-prisma-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.003285% | ✅ current |
+| `toolbox-pipeline-chisep-medi` | `toolbox-pipeline-chisep` → `toolbox-pipeline-qsmrs` | s005001-site5-prisma-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.003285% | ✅ current |
+| `toolbox-pipeline-decompose` | `toolbox-pipeline-decompose-qsmci` → `toolbox-pipeline-qsmrs` | s005001-site5-prisma-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 8.144% | ✅ current |
+| `toolbox-pipeline-qsmart` | `toolbox-pipeline-qsmart` → `toolbox-pipeline-qsmrs` | s005001-site5-prisma-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 8.579% | ✅ current |
+| `toolbox-pipeline-sti` | `toolbox-pipeline-sti` → `toolbox-pipeline-qsmrs` | s005001-site5-prisma-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.298% | ✅ current |
+| `toolbox-pipeline-ukb` | `toolbox-pipeline-ukb` → `toolbox-pipeline-qsmrs` | s005001-site5-prisma-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.002657% | ✅ current |
+| `fit-ppm-complex` | `fit-ppm-complex-cornell` → `fit-ppm-complex-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0% | ✅ current |
 |  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0% | ✅ current |
 | `amp-pe` | `amp-pe` → `amp-pe-qsmrs` | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.4767% | ✅ current |
 | `decompose` | `decompose-qsm` → `decompose-qsmrs` | chisep-mc | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 4.89% | ✅ current |
 | `chisep-ilsqr` | `chisep-ilsqr` → `chisep-ilsqr-qsmrs` | chisep-mc | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 7.442e-08% | ✅ current |
 | `chisep-medi` | `chisep-medi` → `chisep-medi-qsmrs` | chisep-mc | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.6334% | ✅ current |
 | `wavesep` | `wavesep` → `wavesep-qsmrs` | chisep-mc | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 2.138e-07% | ✅ current |
-| `tkd` | `tkd-qsmjl` → `tkd-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0% | ✅ current |
+| `tkd` | `tkd-qsmjl` → `tkd-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0% | ✅ current |
 |  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0% | ✅ current |
-| `tsvd` | `tsvd-qsmjl` → `tsvd-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0% | ✅ current |
+| `tsvd` | `tsvd-qsmjl` → `tsvd-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0% | ✅ current |
 |  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0% | ✅ current |
-| `tikhonov` | `tikhonov-qsmjl` → `tikhonov-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0% | ✅ current |
+| `tikhonov` | `tikhonov-qsmjl` → `tikhonov-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0% | ✅ current |
 |  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0% | ✅ current |
-| `tv` | `tv-qsmjl` → `tv-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0% | ✅ current |
+| `tv` | `tv-qsmjl` → `tv-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0% | ✅ current |
 |  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 2.024e-16% | ✅ current |
-| `nltv` | `nltv-qsmjl` → `nltv-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 1.798e-15% | ✅ current |
+| `nltv` | `nltv-qsmjl` → `nltv-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 1.798e-15% | ✅ current |
 |  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 1.944e-10% | ✅ current |
-| `rts` | `rts-qsmjl` → `rts-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 7.812e-10% | ✅ current |
+| `rts` | `rts-qsmjl` → `rts-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 7.812e-10% | ✅ current |
 |  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 3.932e-10% | ✅ current |
-| `ismv` | `ismv-qsmjl` → `ismv-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 2.064e-09% | ✅ current |
+| `ismv` | `ismv-qsmjl` → `ismv-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 2.064e-09% | ✅ current |
 |  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 6.026e-09% | ✅ current |
-| `sharp` | `sharp-sepia` → `sharp-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 1.394e-08% | ✅ current |
+| `sharp` | `sharp-sepia` → `sharp-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 1.394e-08% | ✅ current |
 |  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 1.058e-08% | ✅ current |
-| `sharp-qsmjl` | `sharp-qsmjl` → `sharp-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0% | ✅ current |
+| `sharp-qsmjl` | `sharp-qsmjl` → `sharp-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0% | ✅ current |
 |  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 6.322e-12% | ✅ current |
-| `vsharp-qsmjl` | `vsharp-qsmjl` → `vsharp-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 1.133e-11% | ✅ current |
+| `vsharp-qsmjl` | `vsharp-qsmjl` → `vsharp-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 1.133e-11% | ✅ current |
 |  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 5.205e-12% | ✅ current |
-| `laplacian` | `laplacian-qsmjl` → `laplacian-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-23](https://github.com/QSMxT/QSM-CI/actions/runs/45113672747) | `dff62e2` | ✅ pass | 4.62e-06% | ✅ current |
+| `laplacian` | `laplacian-qsmjl` → `laplacian-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-23](https://github.com/QSMxT/QSM-CI/actions/runs/45113672747) | `dff62e2` | ✅ pass | 4.62e-06% | ✅ current |
 |  |  | sim | [2026-11-23](https://github.com/QSMxT/QSM-CI/actions/runs/45113672747) | `dff62e2` | ✅ pass | 4.767e-14% | ✅ current |
-| `romeo` | `romeo-romeojl` → `romeo-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 1.498% | ✅ current |
+| `romeo` | `romeo-romeojl` → `romeo-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 1.498% | ✅ current |
 |  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 1.645% | ✅ current |
-| `tgv` | `tgv-tgvjl` → `tgv-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.0006844% | ✅ current |
+| `tgv` | `tgv-tgvjl` → `tgv-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.0006844% | ✅ current |
 |  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.0003367% | ✅ current |
-| `xqsm` | `xqsm` → `xqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.001784% | ✅ current |
+| `xqsm` | `xqsm` → `xqsm-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.001784% | ✅ current |
 |  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.0008659% | ✅ current |
 | `qsmnet` | `qsmnet` → `qsmnet-qsmrs` | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.0001349% | ✅ current |
 | `qsmnet-plus` | `qsmnet-plus` → `qsmnet-plus-qsmrs` | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.0002079% | ✅ current |
-| `lpcnn` | `lpcnn` → `lpcnn-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.009191% | ✅ current |
+| `lpcnn` | `lpcnn` → `lpcnn-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.009191% | ✅ current |
 |  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 3.711e-05% | ✅ current |
-| `qsmgan` | `qsmgan` → `qsmgan-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.0001076% | ✅ current |
+| `qsmgan` | `qsmgan` → `qsmgan-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.0001076% | ✅ current |
 |  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.005643% | ✅ current |
-| `modl-qsm` | `modl-qsm` → `modl-qsm-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | unknown | ❌ error | — | ⚠️ stale: the run against v12.2.0 ended without a result |
+| `modl-qsm` | `modl-qsm` → `modl-qsm-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | unknown | ❌ error | — | ⚠️ stale: the run against v12.2.0 ended without a result |
 |  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.01412% | ✅ current |
-| `ir2qsm` | `ir2qsm` → `ir2qsm-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.001523% | ✅ current |
+| `ir2qsm` | `ir2qsm` → `ir2qsm-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.001523% | ✅ current |
 |  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.0005049% | ✅ current |
-| `autoqsm` | `autoqsm` → `autoqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.0001121% | ✅ current |
+| `autoqsm` | `autoqsm` → `autoqsm-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.0001121% | ✅ current |
 |  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.0001443% | ✅ current |
-| `nextqsm` | `nextqsm` → `nextqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.1025% | ✅ current |
+| `nextqsm` | `nextqsm` → `nextqsm-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.1025% | ✅ current |
 |  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.01823% | ✅ current |
-| `bfrnet` | `bfrnet` → `bfrnet-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.0001557% | ✅ current |
+| `bfrnet` | `bfrnet` → `bfrnet-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.0001557% | ✅ current |
 |  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.0002169% | ✅ current |
 | `chisepnet` | `chisepnet` → `chisepnet-qsmrs` | chisep-mc | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 4.001e-05% | ✅ current |
-| `qsmnetme` | `qsmnetme` → `qsmnetme-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 9.916e-05% | ✅ current |
+| `qsmnetme` | `qsmnetme` → `qsmnetme-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 9.916e-05% | ✅ current |
 |  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 6.011e-05% | ✅ current |
 | `susep-net` | `susep-net` → `susep-net-qsmrs` | chisep-mc | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 3.103e-05% | ✅ current |
-| `hd-bet` | `hd-bet-qsmci` → `hd-bet-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | — | ✅ current |
-| `mindgrab` | `mindgrab` → `mindgrab-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | — | ✅ current |
-| `r2primenet` | `r2primenet` → `r2primenet-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 2.033e-05% | ✅ current |
+| `hd-bet` | `hd-bet-qsmci` → `hd-bet-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | — | ✅ current |
+| `mindgrab` | `mindgrab` → `mindgrab-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | — | ✅ current |
+| `r2primenet` | `r2primenet` → `r2primenet-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 2.033e-05% | ✅ current |
 |  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 2.047e-05% | ✅ current |
-| `iqsm` | `iqsm` → `iqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.0002228% | ✅ current |
+| `iqsm` | `iqsm` → `iqsm-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.0002228% | ✅ current |
 |  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.0002708% | ✅ current |
-| `iqsm-plus` | `iqsm-plus` → `iqsm-plus-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.0001157% | ✅ current |
+| `iqsm-plus` | `iqsm-plus` → `iqsm-plus-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.0001157% | ✅ current |
 |  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.0001549% | ✅ current |
-| `iqfm` | `iqfm` → `iqfm-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.0001829% | ✅ current |
+| `iqfm` | `iqfm` → `iqfm-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.0001829% | ✅ current |
 |  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.000216% | ✅ current |
-| `lsqr` | `lsqr` → `lsqr-qsmrs` | s005001-cbic-prisma-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.0004323% | ✅ current |
+| `lsqr` | `lsqr` → `lsqr-qsmrs` | s005001-site5-prisma-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.0004323% | ✅ current |
 |  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.0003931% | ✅ current |
-| `heidi` | `heidi` → `heidi-qsmrs` | s005001-cbic-prisma-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.0006515% | ✅ current |
+| `heidi` | `heidi` → `heidi-qsmrs` | s005001-site5-prisma-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.0006515% | ✅ current |
 |  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.1622% | ✅ current |
-| `ndi` | `ndi` → `ndi-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 9.525e-05% | ✅ current |
+| `ndi` | `ndi` → `ndi-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 9.525e-05% | ✅ current |
 |  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.001103% | ✅ current |
-| `fansi-nltv` | `fansi-nltv` → `fansi-nltv-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.003387% | ✅ current |
+| `fansi-nltv` | `fansi-nltv` → `fansi-nltv-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.003387% | ✅ current |
 |  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.006892% | ✅ current |
-| `fansi-nltgv` | `fansi-nltgv` → `fansi-nltgv-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.003419% | ✅ current |
+| `fansi-nltgv` | `fansi-nltgv` → `fansi-nltgv-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.003419% | ✅ current |
 |  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.006343% | ✅ current |
-| `l1qsm` | `l1qsm` → `l1qsm-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.002988% | ✅ current |
+| `l1qsm` | `l1qsm` → `l1qsm-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.002988% | ✅ current |
 |  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.002205% | ✅ current |
-| `whqsm` | `whqsm` → `whqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.00337% | ✅ current |
+| `whqsm` | `whqsm` → `whqsm-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.00337% | ✅ current |
 |  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.001819% | ✅ current |
-| `hdqsm` | `hdqsm` → `hdqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.0008346% | ✅ current |
+| `hdqsm` | `hdqsm` → `hdqsm-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.0008346% | ✅ current |
 |  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.001482% | ✅ current |
-| `resharp` | `resharp` → `resharp-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 3.861e-09% | ✅ current |
+| `resharp` | `resharp` → `resharp-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 3.861e-09% | ✅ current |
 |  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 1.49e-08% | ✅ current |
-| `pdf` | `pdf-cornell` → `pdf-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 2.107e-05% | ✅ current |
+| `pdf` | `pdf-cornell` → `pdf-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 2.107e-05% | ✅ current |
 |  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.01461% | ✅ current |
-| `lbv` | `lbv-cornell` → `lbv-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.001839% | ✅ current |
+| `lbv` | `lbv-cornell` → `lbv-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.001839% | ✅ current |
 |  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 0.0007665% | ✅ current |
-| `tfi` | `tfi-cornell` → `tfi-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 2.485% | ✅ current |
+| `tfi` | `tfi-cornell` → `tfi-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 2.485% | ✅ current |
 |  |  | sim | [2026-11-22](https://github.com/QSMxT/QSM-CI/actions/runs/44986395967) | `dff62e2` | ✅ pass | 3.606% | ✅ current |
 
 Run the flagged pairs against v12.2.0:
@@ -132,112 +132,112 @@ A check is **stale** when the reference image changed, QSM.rs `main` changed the
 
 | Pair | Original → port | Dataset | Last check | QSM.rs | Result | NRMSE | Status |
 |---|---|---|---|---|---|---|---|
-| `qsmart` | `qsmart-matlab` → `qsmart-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.7794% | ✅ current |
+| `qsmart` | `qsmart-matlab` → `qsmart-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.7794% | ✅ current |
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.3834% | ✅ current |
-| `ilsqr` | `ilsqr-sti` → `ilsqr-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.02599% | ✅ current |
+| `ilsqr` | `ilsqr-sti` → `ilsqr-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.02599% | ✅ current |
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.002378% | ✅ current |
-| `vsharp` | `vsharp-sti` → `vsharp-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.0002207% | ✅ current |
+| `vsharp` | `vsharp-sti` → `vsharp-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.0002207% | ✅ current |
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.0009001% | ✅ current |
-| `iharperella` | `iharperella-sti` → `iharperella-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 3.898e-05% | ✅ current |
-| `star` | `star-sti` → `star-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.002085% | ✅ current |
+| `iharperella` | `iharperella-sti` → `iharperella-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 3.898e-05% | ✅ current |
+| `star` | `star-sti` → `star-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.002085% | ✅ current |
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.002332% | ✅ current |
-| `medi` | `medi-cornell` → `medi-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.02066% | ✅ current |
+| `medi` | `medi-cornell` → `medi-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.02066% | ✅ current |
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.02896% | ✅ current |
-| `toolbox-pipeline-medi-cornell` | `toolbox-pipeline-medi-cornell` → `toolbox-pipeline-qsmrs` | s005001-cbic-prisma-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
-| `toolbox-pipeline-chisep-ilsqr` | `toolbox-pipeline-chisep` → `toolbox-pipeline-qsmrs` | s005001-cbic-prisma-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
-| `toolbox-pipeline-chisep-medi` | `toolbox-pipeline-chisep` → `toolbox-pipeline-qsmrs` | s005001-cbic-prisma-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
-| `toolbox-pipeline-decompose` | `toolbox-pipeline-decompose-qsmci` → `toolbox-pipeline-qsmrs` | s005001-cbic-prisma-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
-| `toolbox-pipeline-qsmart` | `toolbox-pipeline-qsmart` → `toolbox-pipeline-qsmrs` | s005001-cbic-prisma-bridge-run1 | [2026-11-20](https://github.com/QSMxT/QSM-CI/actions/runs/44816285676) | `dff62e2` | ✅ pass | 8.579% | ✅ current |
-| `toolbox-pipeline-sti` | `toolbox-pipeline-sti` → `toolbox-pipeline-qsmrs` | s005001-cbic-prisma-bridge-run1 | [2026-11-20](https://github.com/QSMxT/QSM-CI/actions/runs/44816285676) | `dff62e2` | ✅ pass | 0.298% | ✅ current |
-| `toolbox-pipeline-ukb` | `toolbox-pipeline-ukb` → `toolbox-pipeline-qsmrs` | s005001-cbic-prisma-bridge-run1 | [2026-11-20](https://github.com/QSMxT/QSM-CI/actions/runs/44816285676) | `dff62e2` | ✅ pass | 0.002657% | ✅ current |
-| `fit-ppm-complex` | `fit-ppm-complex-cornell` → `fit-ppm-complex-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0% | ✅ current |
+| `toolbox-pipeline-medi-cornell` | `toolbox-pipeline-medi-cornell` → `toolbox-pipeline-qsmrs` | s005001-site5-prisma-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
+| `toolbox-pipeline-chisep-ilsqr` | `toolbox-pipeline-chisep` → `toolbox-pipeline-qsmrs` | s005001-site5-prisma-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
+| `toolbox-pipeline-chisep-medi` | `toolbox-pipeline-chisep` → `toolbox-pipeline-qsmrs` | s005001-site5-prisma-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
+| `toolbox-pipeline-decompose` | `toolbox-pipeline-decompose-qsmci` → `toolbox-pipeline-qsmrs` | s005001-site5-prisma-bridge-run1 | never | — | — | — | ⚠️ stale: never checked |
+| `toolbox-pipeline-qsmart` | `toolbox-pipeline-qsmart` → `toolbox-pipeline-qsmrs` | s005001-site5-prisma-bridge-run1 | [2026-11-20](https://github.com/QSMxT/QSM-CI/actions/runs/44816285676) | `dff62e2` | ✅ pass | 8.579% | ✅ current |
+| `toolbox-pipeline-sti` | `toolbox-pipeline-sti` → `toolbox-pipeline-qsmrs` | s005001-site5-prisma-bridge-run1 | [2026-11-20](https://github.com/QSMxT/QSM-CI/actions/runs/44816285676) | `dff62e2` | ✅ pass | 0.298% | ✅ current |
+| `toolbox-pipeline-ukb` | `toolbox-pipeline-ukb` → `toolbox-pipeline-qsmrs` | s005001-site5-prisma-bridge-run1 | [2026-11-20](https://github.com/QSMxT/QSM-CI/actions/runs/44816285676) | `dff62e2` | ✅ pass | 0.002657% | ✅ current |
+| `fit-ppm-complex` | `fit-ppm-complex-cornell` → `fit-ppm-complex-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0% | ✅ current |
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0% | ✅ current |
 | `amp-pe` | `amp-pe` → `amp-pe-qsmrs` | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.4767% | ✅ current |
 | `decompose` | `decompose-qsm` → `decompose-qsmrs` | chisep-mc | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 4.89% | ✅ current |
 | `chisep-ilsqr` | `chisep-ilsqr` → `chisep-ilsqr-qsmrs` | chisep-mc | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 7.442e-08% | ✅ current |
 | `chisep-medi` | `chisep-medi` → `chisep-medi-qsmrs` | chisep-mc | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.5787% | ✅ current |
 | `wavesep` | `wavesep` → `wavesep-qsmrs` | chisep-mc | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 2.138e-07% | ✅ current |
-| `tkd` | `tkd-qsmjl` → `tkd-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0% | ✅ current |
+| `tkd` | `tkd-qsmjl` → `tkd-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0% | ✅ current |
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0% | ✅ current |
-| `tsvd` | `tsvd-qsmjl` → `tsvd-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0% | ✅ current |
+| `tsvd` | `tsvd-qsmjl` → `tsvd-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0% | ✅ current |
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0% | ✅ current |
-| `tikhonov` | `tikhonov-qsmjl` → `tikhonov-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0% | ✅ current |
+| `tikhonov` | `tikhonov-qsmjl` → `tikhonov-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0% | ✅ current |
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0% | ✅ current |
-| `tv` | `tv-qsmjl` → `tv-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0% | ✅ current |
+| `tv` | `tv-qsmjl` → `tv-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0% | ✅ current |
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 2.024e-16% | ✅ current |
-| `nltv` | `nltv-qsmjl` → `nltv-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 1.798e-15% | ✅ current |
+| `nltv` | `nltv-qsmjl` → `nltv-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 1.798e-15% | ✅ current |
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 1.944e-10% | ✅ current |
-| `rts` | `rts-qsmjl` → `rts-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 7.812e-10% | ✅ current |
+| `rts` | `rts-qsmjl` → `rts-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 7.812e-10% | ✅ current |
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 3.932e-10% | ✅ current |
-| `ismv` | `ismv-qsmjl` → `ismv-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 2.064e-09% | ✅ current |
+| `ismv` | `ismv-qsmjl` → `ismv-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 2.064e-09% | ✅ current |
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 6.026e-09% | ✅ current |
-| `sharp` | `sharp-sepia` → `sharp-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 1.394e-08% | ✅ current |
+| `sharp` | `sharp-sepia` → `sharp-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 1.394e-08% | ✅ current |
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 1.058e-08% | ✅ current |
-| `sharp-qsmjl` | `sharp-qsmjl` → `sharp-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0% | ✅ current |
+| `sharp-qsmjl` | `sharp-qsmjl` → `sharp-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0% | ✅ current |
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 6.322e-12% | ✅ current |
-| `vsharp-qsmjl` | `vsharp-qsmjl` → `vsharp-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 1.133e-11% | ✅ current |
+| `vsharp-qsmjl` | `vsharp-qsmjl` → `vsharp-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 1.133e-11% | ✅ current |
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 5.205e-12% | ✅ current |
-| `laplacian` | `laplacian-qsmjl` → `laplacian-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-20](https://github.com/QSMxT/QSM-CI/actions/runs/44816285676) | `dff62e2` | ✅ pass | 4.62e-06% | ⚠️ stale: the pair's settings or limits for this dataset changed since |
+| `laplacian` | `laplacian-qsmjl` → `laplacian-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-20](https://github.com/QSMxT/QSM-CI/actions/runs/44816285676) | `dff62e2` | ✅ pass | 4.62e-06% | ⚠️ stale: the pair's settings or limits for this dataset changed since |
 |  |  | sim | [2026-11-20](https://github.com/QSMxT/QSM-CI/actions/runs/44816285676) | `dff62e2` | ✅ pass | 4.767e-14% | ⚠️ stale: the pair's settings or limits for this dataset changed since |
-| `romeo` | `romeo-romeojl` → `romeo-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 1.498% | ⚠️ stale: QSM.rs main changed `src/region_grow.rs`, `src/unwrap/romeo.rs` since the checked dff62e2 (3 commits) |
+| `romeo` | `romeo-romeojl` → `romeo-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 1.498% | ⚠️ stale: QSM.rs main changed `src/region_grow.rs`, `src/unwrap/romeo.rs` since the checked dff62e2 (3 commits) |
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 1.645% | ⚠️ stale: QSM.rs main changed `src/region_grow.rs`, `src/unwrap/romeo.rs` since the checked dff62e2 (3 commits) |
-| `tgv` | `tgv-tgvjl` → `tgv-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.0006844% | ✅ current |
+| `tgv` | `tgv-tgvjl` → `tgv-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.0006844% | ✅ current |
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.0003367% | ✅ current |
-| `xqsm` | `xqsm` → `xqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.001784% | ✅ current |
+| `xqsm` | `xqsm` → `xqsm-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.001784% | ✅ current |
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.0008659% | ✅ current |
 | `qsmnet` | `qsmnet` → `qsmnet-qsmrs` | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.0001346% | ✅ current |
 | `qsmnet-plus` | `qsmnet-plus` → `qsmnet-plus-qsmrs` | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.0002079% | ✅ current |
-| `lpcnn` | `lpcnn` → `lpcnn-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.009192% | ✅ current |
+| `lpcnn` | `lpcnn` → `lpcnn-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.009192% | ✅ current |
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 3.537e-05% | ✅ current |
-| `qsmgan` | `qsmgan` → `qsmgan-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.0001132% | ✅ current |
+| `qsmgan` | `qsmgan` → `qsmgan-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.0001132% | ✅ current |
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.004818% | ✅ current |
-| `modl-qsm` | `modl-qsm` → `modl-qsm-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ❌ error | — | ⚠️ stale: the last check ended without a result |
+| `modl-qsm` | `modl-qsm` → `modl-qsm-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ❌ error | — | ⚠️ stale: the last check ended without a result |
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.01412% | ✅ current |
-| `ir2qsm` | `ir2qsm` → `ir2qsm-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.001523% | ✅ current |
+| `ir2qsm` | `ir2qsm` → `ir2qsm-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.001523% | ✅ current |
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.0005049% | ✅ current |
-| `autoqsm` | `autoqsm` → `autoqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.0001101% | ✅ current |
+| `autoqsm` | `autoqsm` → `autoqsm-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.0001101% | ✅ current |
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.0001443% | ✅ current |
-| `nextqsm` | `nextqsm` → `nextqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.1019% | ✅ current |
+| `nextqsm` | `nextqsm` → `nextqsm-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.1019% | ✅ current |
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.01711% | ✅ current |
-| `bfrnet` | `bfrnet` → `bfrnet-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.0001557% | ✅ current |
+| `bfrnet` | `bfrnet` → `bfrnet-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.0001557% | ✅ current |
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.0002169% | ✅ current |
 | `chisepnet` | `chisepnet` → `chisepnet-qsmrs` | chisep-mc | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 4.001e-05% | ✅ current |
-| `qsmnetme` | `qsmnetme` → `qsmnetme-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 9.916e-05% | ✅ current |
+| `qsmnetme` | `qsmnetme` → `qsmnetme-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 9.916e-05% | ✅ current |
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 6.011e-05% | ✅ current |
 | `susep-net` | `susep-net` → `susep-net-qsmrs` | chisep-mc | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 2.434e-05% | ✅ current |
-| `hd-bet` | `hd-bet-qsmci` → `hd-bet-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | — | ✅ current |
-| `mindgrab` | `mindgrab` → `mindgrab-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | — | ✅ current |
-| `r2primenet` | `r2primenet` → `r2primenet-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-06](https://github.com/QSMxT/QSM-CI/actions/runs/41757738719) | `8a655f4` | ✅ pass (reviewed) | 2.033e-05% | ⚠️ stale: QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/utils/r2star.rs` since the checked 8a655f4 (53 commits); QSMxT main changed `Cargo.lock` since the checked dc94cf4 (100 commits) |
+| `hd-bet` | `hd-bet-qsmci` → `hd-bet-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | — | ✅ current |
+| `mindgrab` | `mindgrab` → `mindgrab-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | — | ✅ current |
+| `r2primenet` | `r2primenet` → `r2primenet-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-06](https://github.com/QSMxT/QSM-CI/actions/runs/41757738719) | `8a655f4` | ✅ pass (reviewed) | 2.033e-05% | ⚠️ stale: QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/utils/r2star.rs` since the checked 8a655f4 (53 commits); QSMxT main changed `Cargo.lock` since the checked dc94cf4 (100 commits) |
 |  |  | sim | [2026-11-06](https://github.com/QSMxT/QSM-CI/actions/runs/41757738719) | `8a655f4` | ✅ pass (reviewed) | 2.047e-05% | ⚠️ stale: QSM.rs main changed `src/models/memory_calibration.rs`, `src/models/mod.rs`, `src/models/registry.rs`, `src/utils/r2star.rs` since the checked 8a655f4 (53 commits); QSMxT main changed `Cargo.lock` since the checked dc94cf4 (100 commits) |
-| `iqsm` | `iqsm` → `iqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.0002228% | ✅ current |
+| `iqsm` | `iqsm` → `iqsm-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.0002228% | ✅ current |
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.0002708% | ✅ current |
-| `iqsm-plus` | `iqsm-plus` → `iqsm-plus-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.0001157% | ✅ current |
+| `iqsm-plus` | `iqsm-plus` → `iqsm-plus-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.0001157% | ✅ current |
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.0001695% | ✅ current |
-| `iqfm` | `iqfm` → `iqfm-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.0001829% | ✅ current |
+| `iqfm` | `iqfm` → `iqfm-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.0001829% | ✅ current |
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.000216% | ✅ current |
-| `lsqr` | `lsqr` → `lsqr-qsmrs` | s005001-cbic-prisma-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.0004323% | ✅ current |
+| `lsqr` | `lsqr` → `lsqr-qsmrs` | s005001-site5-prisma-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.0004323% | ✅ current |
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.0003931% | ✅ current |
-| `heidi` | `heidi` → `heidi-qsmrs` | s005001-cbic-prisma-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.0006515% | ✅ current |
+| `heidi` | `heidi` → `heidi-qsmrs` | s005001-site5-prisma-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.0006515% | ✅ current |
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.1622% | ✅ current |
-| `ndi` | `ndi` → `ndi-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 9.525e-05% | ✅ current |
+| `ndi` | `ndi` → `ndi-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 9.525e-05% | ✅ current |
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.001103% | ✅ current |
-| `fansi-nltv` | `fansi-nltv` → `fansi-nltv-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.003387% | ✅ current |
+| `fansi-nltv` | `fansi-nltv` → `fansi-nltv-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.003387% | ✅ current |
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.006892% | ✅ current |
-| `fansi-nltgv` | `fansi-nltgv` → `fansi-nltgv-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.003419% | ✅ current |
+| `fansi-nltgv` | `fansi-nltgv` → `fansi-nltgv-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.003419% | ✅ current |
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.006343% | ✅ current |
-| `l1qsm` | `l1qsm` → `l1qsm-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.002988% | ✅ current |
+| `l1qsm` | `l1qsm` → `l1qsm-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.002988% | ✅ current |
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.002205% | ✅ current |
-| `whqsm` | `whqsm` → `whqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.00337% | ⚠️ stale: QSM.rs main changed `src/inversion/whqsm.rs` since the checked dff62e2 (3 commits) |
+| `whqsm` | `whqsm` → `whqsm-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.00337% | ⚠️ stale: QSM.rs main changed `src/inversion/whqsm.rs` since the checked dff62e2 (3 commits) |
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.001819% | ⚠️ stale: QSM.rs main changed `src/inversion/whqsm.rs` since the checked dff62e2 (3 commits) |
-| `hdqsm` | `hdqsm` → `hdqsm-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.0008346% | ✅ current |
+| `hdqsm` | `hdqsm` → `hdqsm-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.0008346% | ✅ current |
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.001482% | ✅ current |
-| `resharp` | `resharp` → `resharp-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 3.861e-09% | ✅ current |
+| `resharp` | `resharp` → `resharp-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 3.861e-09% | ✅ current |
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 1.49e-08% | ✅ current |
-| `pdf` | `pdf-cornell` → `pdf-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 2.107e-05% | ✅ current |
+| `pdf` | `pdf-cornell` → `pdf-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 2.107e-05% | ✅ current |
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.01461% | ✅ current |
-| `lbv` | `lbv-cornell` → `lbv-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.001839% | ✅ current |
+| `lbv` | `lbv-cornell` → `lbv-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.001839% | ✅ current |
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 0.0007665% | ✅ current |
-| `tfi` | `tfi-cornell` → `tfi-qsmrs` | s002001-kki-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 1.256% | ✅ current |
+| `tfi` | `tfi-cornell` → `tfi-qsmrs` | s002001-site1-achieva-bridge-run1 | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 1.256% | ✅ current |
 |  |  | sim | [2026-11-21](https://github.com/QSMxT/QSM-CI/actions/runs/44816299994) | `dff62e2` | ✅ pass | 3.56% | ✅ current |
 
 Refresh every stale pair against QSM.rs `main`:

@@ -22,7 +22,7 @@ change.
   brain would; the whole brain takes hours on 8 cores.
 - **Cases:**
   - `chisep-mc`: QSM-CI's default χ-separation phantom (7 T, 8 echoes, 1 mm, 164×205×205).
-  - `invivo-nz`: one EMTP travelling-head acquisition (`s005001-cbic-prisma-bridge-run1`: 3 T,
+  - `invivo-nz`: one EMTP travelling-head acquisition (`s005001-site5-prisma-bridge-run1`: 3 T,
     5 echoes, 1 mm, 184×256×128), with χ and the eroded mask derived once with QSMxT v10.0.0
     (`fidelity/matlab/make_cases.sh`), and every zero of the magnitude raised to 1.
   - `chisep-mc-echoes`, `invivo-nz-echoes`: the same two cases plus a `chimap-echoes.nii.gz`, so the

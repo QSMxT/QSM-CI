@@ -12,7 +12,7 @@ is the shared harness [`fidelity/matlab/`](../../../fidelity/matlab/README.md) w
 - **Sources:** STI Suite 3.0 `Core_Functions_P` (`MRPhaseUnwrap.p` and the helpers it calls: `fftnc`, `ifftnc`).
 - **Cases:**
   - `sim`: QSM-CI's in-silico head (QSM Challenge 2.0 simulation: 7 T, 4 echoes, 1 mm, 164×205×205), its wrapped multi-echo phase.
-  - `invivo`: one EMTP travelling-head acquisition (`s005001-cbic-prisma-bridge-run1`: 3 T, 5 echoes, 1 mm, 184×256×128), its wrapped multi-echo phase.
+  - `invivo`: one EMTP travelling-head acquisition (`s005001-site5-prisma-bridge-run1`: 3 T, 5 echoes, 1 mm, 184×256×128), its wrapped multi-echo phase.
 
 ## Result: identical
 
