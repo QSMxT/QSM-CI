@@ -345,11 +345,14 @@ jobs:
       # ALWAYS upload: pipeline.py flushes runs-<id>.json after every scored row and writes
       # runs-<id>.done only when the task completed, so a job killed at its cap / cancelled by a newer
       # commit / failed still hands merge everything it finished — and merge can tell it did not finish.
+      # 7 days: merge runs only after the LAST task, and a lent-runner run is serial (~7 h a part, 9
+      # parts ≈ 49 h for inr-qsm), so 1 day let its first parts' shards expire before merge (run
+      # 45542736788). Shards are ~40 MB a task, ~8 GB for a full rescore; public-repo storage is free.
       - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: shard-${{ matrix.task.id }}
-          retention-days: 1
+          retention-days: 7
           if-no-files-found: ignore   # killed before pipeline.py wrote anything
           path: |
             runs-${{ matrix.task.id }}.json
@@ -600,3 +603,24 @@ jobs:
           path: |
             results/index.json
             results/scoring-state.json
+
+      # Last, after publishing what did arrive: a planned task whose shard never reached merge (expired,
+      # lost, or its job died before writing) published no rows — not even DNF — and, having no
+      # `.done` marker, the scoring state above kept it owed for the next run. Say so loudly: a job
+      # that SUCCEEDED but has no shard fails merge (the rows are lost until the task re-runs); one
+      # cancelled / failed before writing anything is only a warning.
+      - name: Check every planned task's shard arrived
+        if: always()
+        env:
+          TASKS: ${{ needs.plan.outputs.tasks }}
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          printf '%s' "$TASKS" > /tmp/tasks-check.json
+          # {task id: conclusion} from the `score (<id>, …)` / `score-selfhosted (<id>, …)` job names.
+          gh api --paginate "repos/$REPO/actions/runs/$RUN_ID/jobs?per_page=100&filter=latest" \
+              --jq '.jobs[] | select(.name | test("^score(-selfhosted)? \\(")) | {(.name | capture("\\((?<id>[^,) ]+)").id): .conclusion}' \
+            | jq -s 'add // {}' > /tmp/job-conclusions.json || rm -f /tmp/job-conclusions.json
+          python3 scripts/score_state.py --check-shards --tasks /tmp/tasks-check.json --done-dir . \
+                  --job-conclusions /tmp/job-conclusions.json
