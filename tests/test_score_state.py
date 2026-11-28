@@ -116,3 +116,37 @@ def test_a_split_task_pays_off_the_unsplit_id_only_when_every_part_finished():
     assert new["pending_manual"] == []
     new = ss.update(cur, "older", tasks, done={t["id"] for t in tasks}, ancestor=NOT_ANCESTOR, now="t")
     assert new["pending_manual"] == ["f-modip", "iv-modip"]          # a stale run clears nothing
+
+
+def test_a_shard_that_never_reached_merge_stays_owed_and_fails_merge(tmp_path):
+    """Run 45542736788: a serial lent run outlived its first parts' 1-day shard retention, so merge
+    saw 4 of 9 shards. A missing shard must publish nothing, stay owed, and make merge fail."""
+    tasks = [{"id": "f-a", "focus": "a"}, {"id": "f-b", "focus": "b"}, {"id": "f-c", "focus": "c"},
+             {"id": "f-d", "focus": "d", "settled": "fresh"}]
+    (tmp_path / "runs-f-a.json").write_text("[]")
+    (tmp_path / "runs-f-a.done").write_text("0\n")
+    (tmp_path / "tasks.json").write_text(json.dumps(tasks))
+    assert ss.missing_shards(tasks, tmp_path) == ["f-b", "f-c"]       # settled f-d ran nothing, needs none
+    assert ss.update({"scored_sha": "old"}, "new", tasks, ss.done_ids(tasks, tmp_path),
+                     ancestor=ANCESTOR, now="t")["pending_slugs"] == ["b", "c"]
+    (tmp_path / "jobs.json").write_text(json.dumps({"f-a": "success", "f-b": "success", "f-c": "cancelled"}))
+    cmd = ["python3", str(ROOT / "scripts" / "score_state.py"), "--check-shards", "--tasks",
+           str(tmp_path / "tasks.json"), "--done-dir", str(tmp_path)]
+    r = subprocess.run(cmd + ["--job-conclusions", str(tmp_path / "jobs.json")], capture_output=True, text=True)
+    assert r.returncode == 1
+    assert "::error::shard for f-b missing" in r.stdout and "still owed" in r.stdout
+    assert "::warning::no shard for f-c (job cancelled" in r.stdout
+    (tmp_path / "jobs.json").write_text(json.dumps({"f-b": "failure", "f-c": "cancelled"}))
+    r = subprocess.run(cmd + ["--job-conclusions", str(tmp_path / "jobs.json")], capture_output=True, text=True)
+    assert r.returncode == 0                                           # nothing lost, only never written
+    r = subprocess.run(cmd, capture_output=True, text=True)            # no job info → assume lost
+    assert r.returncode == 1
+
+
+def test_the_merge_job_keeps_shards_long_enough_and_checks_them_last():
+    wf = (ROOT / ".github" / "workflows" / "score.yml").read_text()
+    up = wf[wf.index("name: shard-${{ matrix.task.id }}"):][:200]
+    assert "retention-days: 7" in up
+    merge = wf[wf.index("  merge:"):]
+    assert merge.rstrip().endswith("--job-conclusions /tmp/job-conclusions.json")
+    assert "--check-shards" in merge
